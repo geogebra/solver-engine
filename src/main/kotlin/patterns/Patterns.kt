@@ -3,63 +3,80 @@ package patterns
 import expressions.*
 
 interface Pattern {
-    fun findMatches(m: Match, p: Path?, e: Expression) : Sequence<Match>
-    fun substitute(m: Match, result: Expression) : Expression
+    fun findMatches(match: Match, subexpression: Subexpression): Sequence<Match>
+    fun substitute(m: Match, result: Expression) : Expression = result
 }
 
-
-class IntegerPattern : Pattern
-
-data class UnaryPattern(val operator: UnaryOperator, val ptn: Pattern) : Pattern {
-     override fun findMatches(m: Match, p: Path?, e: Expression): Sequence<Match> {
-        if (e !is UnaryExpr || e.operator != operator) {
+class IntegerPattern : Pattern {
+    override fun findMatches(match: Match, subexpression: Subexpression): Sequence<Match> {
+        if (subexpression.expr !is IntegerExpr) {
             return emptySequence()
         }
-        return ptn.findMatches(m, Path(p, 0), e.expr)
-    }
 
-    override fun substitute(m: Match, result: Expression): Expression {
-        TODO("Not yet implemented")
+        val previouslyMatched = match.getBinding(this)
+        if (previouslyMatched == null || previouslyMatched.expr == subexpression.expr) {
+            return sequenceOf(match.childBindings(this, subexpression))
+        }
+
+        return emptySequence();
+    }
+}
+
+class VariablePattern : Pattern {
+    override fun findMatches(match: Match, subexpression: Subexpression): Sequence<Match> {
+        if (subexpression.expr !is VariableExpr) {
+            return emptySequence()
+        }
+
+        val previouslyMatched = match.getBinding(this)
+        if (previouslyMatched == null || previouslyMatched.expr == subexpression.expr) {
+            return sequenceOf(match.childBindings(this, subexpression))
+        }
+
+        return emptySequence();
+    }
+}
+
+data class UnaryPattern(val operator: UnaryOperator, val ptn: Pattern) : Pattern {
+     override fun findMatches(match: Match, subexpression: Subexpression): Sequence<Match> {
+        if (subexpression.expr !is UnaryExpr || subexpression.expr.operator != operator) {
+            return emptySequence()
+        }
+        return ptn.findMatches(match.childBindings(this, subexpression), subexpression.nthChild(0))
     }
 }
 
 data class BinaryPattern(val operator: BinaryOperator, val left: Pattern, val right: Pattern) : Pattern {
-    override fun findMatches(m: Match, p: Path?, e: Expression): Sequence<Match> {
-        if (e !is BinaryExpr || e.operator != operator) {
+    override fun findMatches(match: Match, subexpression: Subexpression): Sequence<Match> {
+        if (subexpression.expr !is BinaryExpr || subexpression.expr.operator != operator) {
             return emptySequence()
         }
 
         return left
-            .findMatches(m, Path(p, 0), e.left)
-            .flatMap { right.findMatches(it, Path(p, 1), e.right) }
-    }
-
-    override fun substitute(m: Match, result: Expression): Expression {
-        TODO("Not yet implemented")
+            .findMatches(match.childBindings(this, subexpression), subexpression.nthChild(0))
+            .flatMap { right.findMatches(it, subexpression.nthChild(1)) }
     }
 }
 
 data class NaryPattern(val operator: NaryOperator, val operands: Sequence<Pattern>) : Pattern {
-    override fun findMatches(m: Match, p: Path?, e: Expression): Sequence<Match> {
-        if (e !is NaryExpr || e.operator != operator) {
+    override fun findMatches(match: Match, subexpression: Subexpression): Sequence<Match> {
+        if (subexpression.expr !is NaryExpr || subexpression.expr.operator != operator) {
             return emptySequence()
         }
 
-        var matches = sequenceOf(m)
+        var matches = sequenceOf(match.childBindings(this, subexpression))
         for ((index, op) in operands.withIndex()) {
-            matches = matches.flatMap { op.findMatches(it, Path(p, index), e.operands.elementAt(index)) }
+            matches = matches.flatMap { op.findMatches(it, subexpression.nthChild(index)) }
         }
 
         return matches
     }
-
-    override fun substitute(m: Match, result: Expression): Expression {
-        TODO("Not yet implemented")
-    }
 }
 
-fun acSumPatternOf(vararg terms: Pattern): ACSumPattern {
-    return ACSumPattern(terms.asList())
-}
 
-data class Match(val expression: Expression, val bindings: Map<Pattern, Path>)
+
+fun fractionOf(numerator: Pattern, denominator: Pattern)
+        = BinaryPattern(BinaryOperator.Fraction, numerator, denominator)
+
+fun sumOf(vararg terms: Pattern)
+        = NaryPattern(NaryOperator.Sum, terms.asSequence())

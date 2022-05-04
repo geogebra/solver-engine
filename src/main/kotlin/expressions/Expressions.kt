@@ -13,14 +13,26 @@ interface Literal : Expression
 
 data class IntegerExpr(val value: BigInteger) : Literal {
     constructor(value: Long) : this(BigInteger.valueOf(value))
+
+    override fun toString(): String {
+        return value.toString()
+    }
 }
 
 data class DecimalExpr(val value: BigDecimal) : Literal {
     constructor(value: Double) : this(BigDecimal.valueOf(value))
+
+    override fun toString(): String {
+        return value.toString()
+    }
 }
 
 data class VariableExpr(val name: String) : Expression {
     override fun variables(): Set<VariableExpr> = setOf(this)
+
+    override fun toString(): String {
+        return name
+    }
 }
 
 data class UnaryExpr(val operator: UnaryOperator, val expr: Expression) : Expression {
@@ -32,6 +44,10 @@ data class UnaryExpr(val operator: UnaryOperator, val expr: Expression) : Expres
         }
 
         return UnaryExpr(operator, children.elementAt(0))
+    }
+
+    override fun toString(): String {
+        return "${operator}(${expr})"
     }
 }
 
@@ -45,6 +61,10 @@ data class BinaryExpr(val operator: BinaryOperator, val left: Expression, val ri
 
         return BinaryExpr(operator, children.elementAt(0), children.elementAt(1))
     }
+
+    override fun toString(): String {
+        return "${operator}(${left}, ${right})"
+    }
 }
 
 data class NaryExpr(val operator: NaryOperator, val operands: Sequence<Expression>) : Expression {
@@ -53,4 +73,15 @@ data class NaryExpr(val operator: NaryOperator, val operands: Sequence<Expressio
     override fun copyWithChildren(children: Sequence<Expression>): Expression {
         return NaryExpr(operator, children)
     }
+
+    override fun toString(): String {
+        return operands.map { it.toString() }.joinToString(", ", "${operator}(", ")")
+    }
 }
+
+
+fun fractionOf(numerator: Expression, denominator: Expression)
+        = BinaryExpr(BinaryOperator.Fraction, numerator, denominator)
+
+fun sumOf(vararg terms: Expression)
+        = NaryExpr(NaryOperator.Sum, terms.asSequence())

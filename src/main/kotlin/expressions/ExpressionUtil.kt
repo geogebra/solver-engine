@@ -9,6 +9,8 @@ fun Expression.getAt(path: Path?): Expression {
     return getAt(path.parent).children().elementAt(path.index)
 }
 
+/*
+
 fun Expression.replace(path: Path?, newExpression: Expression): Expression {
     if (path == null) {
         return newExpression
@@ -24,3 +26,5 @@ fun SumExpr.groupLiterals(): SumExpr {
     val nonLiterals = operands.filter { it !is Literal }
     return sumOf(SumExpr(nonLiterals), SumExpr(literals))
 }
+
+ */

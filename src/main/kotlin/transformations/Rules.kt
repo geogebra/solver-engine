@@ -1,9 +1,10 @@
 package transformations
 
 import expressions.Expression
-import expressions.SumExpr
+import expressions.Subexpression
 import patterns.Match
 import patterns.Pattern
+import patterns.RootMatch
 
 interface Rule {
     val pattern: Pattern
@@ -11,7 +12,7 @@ interface Rule {
     fun apply(match: Match): Expression?
 
     fun apply(expr: Expression): Expression? {
-        for (match in pattern.findMatches(expr)) {
+        for (match in pattern.findMatches(RootMatch, Subexpression(null, expr))) {
             val result = apply(match);
             if (result != null) {
                 return pattern.substitute(match, result);
@@ -22,6 +23,7 @@ interface Rule {
     }
 }
 
+/*
 object groupSumLiterals : Rule {
     override fun apply(expr: Expression): Expression? {
         return when (expr) {
@@ -30,3 +32,4 @@ object groupSumLiterals : Rule {
         }
     }
 }
+ */
