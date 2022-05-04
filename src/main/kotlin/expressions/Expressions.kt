@@ -1,12 +1,24 @@
 package expressions
 
+import steps.PathMapper
+import steps.PathMapping
 import java.math.BigDecimal
 import java.math.BigInteger
 
 interface Expression {
     fun variables(): Set<VariableExpr> = emptySet()
-    fun children(): Sequence<Expression> = emptySequence()
-    fun copyWithChildren(children: Sequence<Expression>) = this
+    fun children(): List<Expression> = emptyList()
+    fun copyWithChildren(children: List<Expression>) = this
+
+    fun accPathMappings(path: Path, acc: MutableList<PathMapping>): Expression {
+        return copyWithChildren(children().mapIndexed { i, expr -> expr.accPathMappings(path.child(i), acc) })
+    }
+
+    fun extractPathMappings(): Pair<Expression, List<PathMapping>> {
+        val acc = mutableListOf<PathMapping>()
+        val expr = accPathMappings(RootPath, acc)
+        return Pair(expr, acc)
+    }
 }
 
 interface Literal : Expression
@@ -17,6 +29,20 @@ data class IntegerExpr(val value: BigInteger) : Literal {
     override fun toString(): String {
         return value.toString()
     }
+
+}
+
+
+data class PathMappingExpression(val expr: Expression, val mapper: PathMapper): Expression {
+    override fun accPathMappings(path: Path, acc: MutableList<PathMapping>): Expression {
+        mapper.accPathMaps(path, acc)
+        return expr.accPathMappings(path, acc)
+    }
+
+    override fun toString(): String {
+        return "[$mapper:  $expr]"
+    }
+
 }
 
 data class DecimalExpr(val value: BigDecimal) : Literal {
@@ -36,9 +62,9 @@ data class VariableExpr(val name: String) : Expression {
 }
 
 data class UnaryExpr(val operator: UnaryOperator, val expr: Expression) : Expression {
-    override fun children(): Sequence<Expression> = sequenceOf(expr)
+    override fun children(): List<Expression> = listOf(expr)
 
-    override fun copyWithChildren(children: Sequence<Expression>): Expression {
+    override fun copyWithChildren(children: List<Expression>): Expression {
         if (children.count() != 1) {
             throw java.lang.IllegalArgumentException()
         }
@@ -52,9 +78,9 @@ data class UnaryExpr(val operator: UnaryOperator, val expr: Expression) : Expres
 }
 
 data class BinaryExpr(val operator: BinaryOperator, val left: Expression, val right: Expression) : Expression {
-    override fun children(): Sequence<Expression> = sequenceOf(left, right)
+    override fun children(): List<Expression> = listOf(left, right)
 
-    override fun copyWithChildren(children: Sequence<Expression>): Expression {
+    override fun copyWithChildren(children: List<Expression>): Expression {
         if (children.count() != 2) {
             throw java.lang.IllegalArgumentException()
         }
@@ -67,10 +93,10 @@ data class BinaryExpr(val operator: BinaryOperator, val left: Expression, val ri
     }
 }
 
-data class NaryExpr(val operator: NaryOperator, val operands: Sequence<Expression>) : Expression {
-    override fun children(): Sequence<Expression> = operands
+data class NaryExpr(val operator: NaryOperator, val operands: List<Expression>) : Expression {
+    override fun children(): List<Expression> = operands
 
-    override fun copyWithChildren(children: Sequence<Expression>): Expression {
+    override fun copyWithChildren(children: List<Expression>): Expression {
         return NaryExpr(operator, children)
     }
 
@@ -83,5 +109,4 @@ data class NaryExpr(val operator: NaryOperator, val operands: Sequence<Expressio
 fun fractionOf(numerator: Expression, denominator: Expression)
         = BinaryExpr(BinaryOperator.Fraction, numerator, denominator)
 
-fun sumOf(vararg terms: Expression)
-        = NaryExpr(NaryOperator.Sum, terms.asSequence())
+fun sumOf(vararg terms: Expression) = NaryExpr(NaryOperator.Sum, terms.asList())

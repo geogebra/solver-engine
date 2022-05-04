@@ -10,6 +10,6 @@ fun main(args: Array<String>) {
     val sum = sumOf(frac, frac)
     // Try adding program arguments via Run/Debug configuration.
     // Learn more about running applications: https://www.jetbrains.com/help/idea/running-applications.html.
-    val result = AddLikeFractions.apply(sum)
-    println("original: $sum, result: $result")
+    val step = AddLikeFractions.apply(sum)
+    step?.prettyPrint()
 }

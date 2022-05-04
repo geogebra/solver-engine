@@ -1,13 +1,14 @@
 package expressions
 
-fun Sum(vararg expression: Expression): Expression = NaryExpr(NaryOperator.Sum, expression.asSequence())
+fun Sum(vararg expression: Expression): Expression = NaryExpr(NaryOperator.Sum, expression.asList())
 
-fun Expression.getAt(path: Path?): Expression {
-    if (path == null) {
-        return this
-    }
-    return getAt(path.parent).children().elementAt(path.index)
-}
+//
+//fun Expression.getAt(path: Path?): Expression {
+//    if (path == null) {
+//        return this
+//    }
+//    return getAt(path.parent).children().elementAt(path.index)
+//}
 
 /*
 

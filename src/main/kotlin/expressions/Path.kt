@@ -1,15 +1,29 @@
 package expressions
 
-data class Path(val parent : Path?, val index: Int) {
-    fun child(index : Int) : Path {
-        return Path(this, index)
+interface Path {
+    fun child(index: Int) : Path {
+        return ChildPath(this, index)
     }
 }
+data class ChildPath(val parent : Path, val index: Int): Path {
+    override fun toString() ="${parent}/${index}"
+}
 
-fun rootPath(index: Int) : Path = Path(null, index)
+object RootPath : Path {
+    override fun toString() = "."
+}
 
-data class Subexpression(val path: Path?, val expr: Expression) {
+data class Subexpression(val path: Path, val expr: Expression) {
     fun nthChild(index : Int): Subexpression {
-        return Subexpression(Path(path, index), expr.children().elementAt(index))
+        return Subexpression(path.child(index), expr.children().elementAt(index))
     }
+
+}
+
+fun pathOf(vararg indexes: Int): Path {
+    var path : Path = RootPath
+    for (i in indexes) {
+        path = path.child(i)
+    }
+    return path
 }

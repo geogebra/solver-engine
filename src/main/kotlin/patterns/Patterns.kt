@@ -5,6 +5,8 @@ import expressions.*
 interface Pattern {
     fun findMatches(match: Match, subexpression: Subexpression): Sequence<Match>
     fun substitute(m: Match, result: Expression) : Expression = result
+
+    fun getExpressionBinding(m: Match): Expression = m.getBinding(this)!!.expr
 }
 
 class IntegerPattern : Pattern {
@@ -19,6 +21,14 @@ class IntegerPattern : Pattern {
         }
 
         return emptySequence();
+    }
+
+    fun getIntBinding(m : Match): IntegerExpr {
+        return m.getBinding(this)!!.expr as IntegerExpr
+    }
+
+    fun getPath(m : Match): Path {
+        return m.getBinding(this)!!.path
     }
 }
 
