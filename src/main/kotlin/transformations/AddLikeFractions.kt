@@ -20,14 +20,12 @@ object AddLikeFractions : Rule {
     private val sum = sumOf(f1, f2)
 
     override val pattern = sum
-//
-//    override fun getTransformation(match: Match) : Transformation {
+
+//    override fun getTransformation(match: Match): Transformation {
 //        class AddLikeFractionsTransformation(
 //            val first: Expression,
 //            val second: Expression,
-//        ) : Transformation {
-//            override val name = "AddLikeFractions"
-//        }
+//        ) : Transformation("AddLikeFractions", sequenceOf(first, second))
 //
 //        return AddLikeFractionsTransformation(
 //            f1.getExpressionBinding(match),
@@ -35,7 +33,7 @@ object AddLikeFractions : Rule {
 //        )
 //    }
 
-    override fun getSkills(match: Match) : Sequence<Skill> {
+    override fun getSkills(match: Match): Sequence<Skill> {
         return sequenceOf(NumericLCM(num1.getIntBinding(match), num2.getIntBinding(match)))
     }
 
