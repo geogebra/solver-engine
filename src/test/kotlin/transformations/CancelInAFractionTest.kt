@@ -24,5 +24,4 @@ class CancelInAFractionTest {
             step?.toExpr
         )
     }
-
 }

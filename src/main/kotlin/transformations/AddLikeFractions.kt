@@ -6,7 +6,7 @@ import expressions.sumOf
 import patterns.IntegerPattern
 import patterns.Match
 import patterns.fractionOf
-import patterns.sumOf
+import patterns.sumContaining
 import steps.NumericLCM
 import steps.PathMappingType
 import steps.Skill
@@ -17,7 +17,7 @@ object AddLikeFractions : Rule {
     private val denom = IntegerPattern()
     private val f1 = fractionOf(num1, denom)
     private val f2 = fractionOf(num2, denom)
-    private val sum = sumOf(f1, f2)
+    private val sum = sumContaining(f1, f2)
 
     override val pattern = sum
 

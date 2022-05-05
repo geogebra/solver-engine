@@ -1,19 +1,18 @@
 package transformations
 
 import expressions.Expression
-import expressions.NaryOperator
 import expressions.fractionOf
 import patterns.AnyPattern
-import patterns.AssocNaryPattern
 import patterns.Match
 import patterns.fractionOf
+import patterns.productContaining
 import steps.PathMappingType
 
 object CancelInAFraction : Rule {
 
-    val common = AnyPattern()
-    val numerator = AssocNaryPattern(NaryOperator.Product, listOf(common))
-    val denominator = AssocNaryPattern(NaryOperator.Product, listOf(common))
+    private val common = AnyPattern()
+    private val numerator = productContaining(common)
+    private val denominator = productContaining(common)
 
     override val pattern = fractionOf(numerator, denominator)
 

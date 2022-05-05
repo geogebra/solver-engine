@@ -159,3 +159,9 @@ fun fractionOf(numerator: Pattern, denominator: Pattern) =
     BinaryPattern(BinaryOperator.Fraction, numerator, denominator)
 
 fun sumOf(vararg terms: Pattern) = NaryPattern(NaryOperator.Sum, terms.asList())
+
+fun sumContaining(vararg terms: Pattern) = AssocNaryPattern(NaryOperator.Sum, terms.asList())
+
+fun productOf(vararg factors: Pattern) = NaryPattern(NaryOperator.Product, factors.asList())
+
+fun productContaining(vararg factors: Pattern) = AssocNaryPattern(NaryOperator.Product, factors.asList())
