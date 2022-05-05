@@ -35,7 +35,7 @@ data class IntegerExpr(val value: BigInteger) : Literal {
 
 data class PathMappingExpression(val expr: Expression, val mapper: PathMapper): Expression {
     override fun accPathMappings(path: Path, acc: MutableList<PathMapping>): Expression {
-        mapper.accPathMaps(path, acc)
+        mapper.accPathMappings(path, acc)
         return expr.accPathMappings(path, acc)
     }
 
