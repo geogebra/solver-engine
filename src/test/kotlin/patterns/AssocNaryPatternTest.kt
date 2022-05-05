@@ -64,4 +64,37 @@ class AssocNaryPatternTest {
         val matches = ptn.findMatches(RootMatch, Subexpression(RootPath, expression))
         assertEquals(6, matches.count())
     }
+
+    @Test
+    fun testCommonExpressionInFraction() {
+        val common = AnyPattern()
+        val numerator = AssocNaryPattern(NaryOperator.Product, listOf(common))
+        val denominator = AssocNaryPattern(NaryOperator.Product, listOf(common))
+
+        val ptn = fractionOf(numerator, denominator)
+
+        val expression = fractionOf(
+            productOf(VariableExpr("x"), VariableExpr("y"), VariableExpr("z")),
+            productOf(VariableExpr("a"), VariableExpr("y"), VariableExpr("c"))
+        )
+
+        val matches = ptn.findMatches(RootMatch, Subexpression(RootPath, expression))
+
+        assertEquals(1, matches.count())
+        assertEquals(VariableExpr("y"), matches.first().getBinding(common)?.expr)
+    }
+
+    @Test
+    fun getRest() {
+        val expression =
+            NaryExpr(NaryOperator.Sum, listOf(IntegerExpr(1), IntegerExpr(2), IntegerExpr(1), IntegerExpr(3)))
+        val intPtn = IntegerPattern()
+        val ptn = AssocNaryPattern(NaryOperator.Sum, listOf(intPtn, intPtn))
+
+        val matches = ptn.findMatches(RootMatch, Subexpression(RootPath, expression))
+        assertEquals(1, matches.count())
+        val match = matches.elementAt(0)
+        val rest = ptn.getRest(match)
+        assertEquals(sumOf(IntegerExpr(2), IntegerExpr(3)), rest)
+    }
 }

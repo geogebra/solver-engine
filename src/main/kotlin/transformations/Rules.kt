@@ -26,8 +26,8 @@ interface Rule {
         return null;
     }
 
-//    fun getTransformation(match: Match): Transformation
-    fun getSkills(match: Match): Sequence<Skill>
+    //    fun getTransformation(match: Match): Transformation
+    fun getSkills(match: Match): Sequence<Skill> = emptySequence()
 //    fun getPathMappings(match: Match): List<PathMapping>
 }
 

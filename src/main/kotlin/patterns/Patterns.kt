@@ -1,6 +1,7 @@
 package patterns
 
 import expressions.*
+import java.util.*
 
 interface Pattern {
     fun findMatches(match: Match, subexpression: Subexpression): Sequence<Match>
@@ -37,6 +38,12 @@ interface FixedSizePattern : Pattern {
     }
 
     override fun substitute(m: Match, result: Expression): Expression = result
+}
+
+class AnyPattern : FixedSizePattern {
+    override fun children() = emptyList<Pattern>()
+
+    override fun checkExpressionKind(expr: Expression) = true
 }
 
 class IntegerPattern : FixedSizePattern {
@@ -105,11 +112,46 @@ data class AssocNaryPattern(val operator: NaryOperator, val operands: List<Patte
             }
         }
 
-        return rec(match, 0, 0)
+        return rec(match.childBindings(this, subexpression), 0, 0)
+    }
+
+    private fun getMatchIndexes(m: Match, sub: Subexpression): SortedSet<Int> {
+        val matchIndexes = TreeSet<Int>()
+        for (op in operands) {
+            for (p in m.getPaths(op)) {
+                val (parent, index) = p as ChildPath
+                if (parent == sub.path) {
+                    matchIndexes.add(index)
+                }
+            }
+        }
+
+        return matchIndexes
     }
 
     override fun substitute(m: Match, result: Expression): Expression {
-        TODO("Not yet implemented")
+        val sub = m.getBinding(this)!!
+        val matchIndexes = getMatchIndexes(m, sub)
+        val firstIndex = matchIndexes.first()
+
+        val restChildren = ArrayList<Expression>()
+        for ((index, child) in sub.expr.children().withIndex()) {
+            if (index == firstIndex) {
+                restChildren.add(result)
+            } else if (!matchIndexes.contains(index)) {
+                restChildren.add(child)
+            }
+        }
+
+        return sub.expr.copyWithChildren(restChildren)
+    }
+
+    fun getRest(m: Match): Expression {
+        val sub = m.getBinding(this)!!
+        val matchIndexes = getMatchIndexes(m, sub)
+
+        val restChildren = sub.expr.children().filterIndexed { i, _ -> !matchIndexes.contains(i) }
+        return sub.expr.copyWithChildren(restChildren)
     }
 }
 

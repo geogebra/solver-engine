@@ -33,7 +33,7 @@ data class IntegerExpr(val value: BigInteger) : Literal {
 }
 
 
-data class PathMappingExpression(val expr: Expression, val mapper: PathMapper): Expression {
+data class PathMappingExpression(val expr: Expression, val mapper: PathMapper) : Expression {
     override fun accPathMappings(path: Path, acc: MutableList<PathMapping>): Expression {
         mapper.accPathMappings(path, acc)
         return expr.accPathMappings(path, acc)
@@ -106,7 +106,9 @@ data class NaryExpr(val operator: NaryOperator, val operands: List<Expression>) 
 }
 
 
-fun fractionOf(numerator: Expression, denominator: Expression)
-        = BinaryExpr(BinaryOperator.Fraction, numerator, denominator)
+fun fractionOf(numerator: Expression, denominator: Expression) =
+    BinaryExpr(BinaryOperator.Fraction, numerator, denominator)
 
 fun sumOf(vararg terms: Expression) = NaryExpr(NaryOperator.Sum, terms.asList())
+
+fun productOf(vararg terms: Expression) = NaryExpr(NaryOperator.Product, terms.asList())

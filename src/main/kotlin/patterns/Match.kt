@@ -34,7 +34,7 @@ data class ChildMatch(
     private val parent: Match
 ) : Match {
     override fun getBinding(p: Pattern): Subexpression? {
-        return if (key == p) value else parent.getBinding(p)
+        return if (key === p) value else parent.getBinding(p)
     }
 
     override fun accPaths(p: Pattern, acc: MutableList<Path>) {
