@@ -1,6 +1,5 @@
 package transformations
 
-import expressions.Expression
 import patterns.*
 
 object CancelInAFraction : Rule {
@@ -10,9 +9,5 @@ object CancelInAFraction : Rule {
     private val denominator = productContaining(common, minSize = 2)
 
     override val pattern = fractionOf(numerator, denominator)
-
-    override fun apply(match: Match): Expression? {
-        return cancel(common, makeFractionOf(restOf(numerator), restOf(denominator))).makeExpression(match)
-    }
+    override val resultMaker = cancel(common, makeFractionOf(restOf(numerator), restOf(denominator)))
 }
-

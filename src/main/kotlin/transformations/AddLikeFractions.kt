@@ -13,6 +13,7 @@ object AddLikeFractions : Rule {
     private val sum = sumContaining(f1, f2)
 
     override val pattern = sum
+    override val resultMaker = makeFractionOf(makeSumOf(move(num1), move(num2)), factor(denom))
 
 //    override fun getTransformation(match: Match): Transformation {
 //        class AddLikeFractionsTransformation(
@@ -29,7 +30,4 @@ object AddLikeFractions : Rule {
     override fun getSkills(match: Match): Sequence<Skill> {
         return sequenceOf(NumericLCM(num1.getIntBinding(match), num2.getIntBinding(match)))
     }
-
-    override fun apply(match: Match) =
-        makeFractionOf(makeSumOf(move(num1), move(num2)), factor(denom)).makeExpression(match)
 }

@@ -3,6 +3,7 @@ package transformations
 import expressions.Expression
 import expressions.RootPath
 import expressions.Subexpression
+import patterns.ExpressionMaker
 import patterns.Match
 import patterns.Pattern
 import patterns.RootMatch
@@ -11,16 +12,13 @@ import steps.Step
 
 interface Rule {
     val pattern: Pattern
-
-    fun apply(match: Match): Expression?
+    val resultMaker: ExpressionMaker
 
     fun apply(expr: Expression): Step? {
         for (match in pattern.findMatches(RootMatch, Subexpression(RootPath, expr))) {
-            val result = apply(match);
-            if (result != null) {
-                val (endResult, pathMappings) = pattern.substitute(match, result).extractPathMappings()
-                return Step(expr, endResult, pathMappings)
-            }
+            val result = resultMaker.makeExpression(match);
+            val (endResult, pathMappings) = pattern.substitute(match, result).extractPathMappings()
+            return Step(expr, endResult, pathMappings)
         }
 
         return null;
