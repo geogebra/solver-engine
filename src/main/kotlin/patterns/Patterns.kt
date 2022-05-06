@@ -3,10 +3,14 @@ package patterns
 import expressions.*
 import java.util.*
 
-interface Pattern {
+interface Pattern : ExpressionMaker {
     fun findMatches(match: Match, subexpression: Subexpression): Sequence<Match>
 
     fun substitute(m: Match, result: Expression): Expression
+
+    override fun makeExpression(m: Match): Expression {
+        return m.getBinding(this)!!.expr
+    }
 }
 
 interface FixedSizePattern : Pattern {
@@ -87,11 +91,12 @@ data class NaryPattern(val operator: NaryOperator, val operands: List<Pattern>) 
     }
 }
 
-data class AssocNaryPattern(val operator: NaryOperator, val operands: List<Pattern>) : Pattern {
+data class AssocNaryPattern(val operator: NaryOperator, val operands: List<Pattern>, val minSize: Int = 0) : Pattern {
 
     override fun findMatches(match: Match, subexpression: Subexpression): Sequence<Match> {
+        val childCount = subexpression.expr.children().count()
         if (subexpression.expr !is NaryExpr || subexpression.expr.operator != operator
-            || subexpression.expr.children().count() < operands.count()
+            || childCount < operands.count() || childCount < minSize
         ) {
             return emptySequence()
         }
@@ -99,7 +104,7 @@ data class AssocNaryPattern(val operator: NaryOperator, val operands: List<Patte
         fun rec(match: Match, searchIndex: Int, initialChildIndex: Int): Sequence<Match> {
             return sequence {
                 if (searchIndex < operands.size) {
-                    val lastChildIndex = subexpression.expr.children().count() - operands.count() + searchIndex
+                    val lastChildIndex = childCount - operands.count() + searchIndex
                     for (childIndex in initialChildIndex..lastChildIndex) {
                         val childMatches = operands[searchIndex].findMatches(match, subexpression.nthChild(childIndex))
                         for (childMatch in childMatches) {
@@ -164,4 +169,5 @@ fun sumContaining(vararg terms: Pattern) = AssocNaryPattern(NaryOperator.Sum, te
 
 fun productOf(vararg factors: Pattern) = NaryPattern(NaryOperator.Product, factors.asList())
 
-fun productContaining(vararg factors: Pattern) = AssocNaryPattern(NaryOperator.Product, factors.asList())
+fun productContaining(vararg factors: Pattern, minSize: Int = 0) =
+    AssocNaryPattern(NaryOperator.Product, factors.asList(), minSize)

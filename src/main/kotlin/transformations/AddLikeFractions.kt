@@ -1,14 +1,7 @@
 package transformations
 
-import expressions.Expression
-import expressions.fractionOf
-import expressions.sumOf
-import patterns.IntegerPattern
-import patterns.Match
-import patterns.fractionOf
-import patterns.sumContaining
+import patterns.*
 import steps.NumericLCM
-import steps.PathMappingType
 import steps.Skill
 
 object AddLikeFractions : Rule {
@@ -37,11 +30,6 @@ object AddLikeFractions : Rule {
         return sequenceOf(NumericLCM(num1.getIntBinding(match), num2.getIntBinding(match)))
     }
 
-    override fun apply(match: Match): Expression {
-        val num1Val = match.getPathMappingExpr(num1, PathMappingType.Move)
-        val num2Val = match.getPathMappingExpr(num2, PathMappingType.Move)
-        val denomVal = match.getPathMappingExpr(denom, PathMappingType.Combine)
-
-        return fractionOf(sumOf(num1Val, num2Val), denomVal)
-    }
+    override fun apply(match: Match) =
+        makeFractionOf(makeSumOf(move(num1), move(num2)), factor(denom)).makeExpression(match)
 }
