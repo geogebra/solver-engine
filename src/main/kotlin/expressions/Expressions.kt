@@ -1,24 +1,18 @@
 package expressions
 
-import steps.PathMapper
+import patterns.ExpressionMaker
+import patterns.Match
 import steps.PathMapping
 import java.math.BigDecimal
 import java.math.BigInteger
 
-interface Expression {
+interface Expression : ExpressionMaker {
     fun variables(): Set<VariableExpr> = emptySet()
     fun children(): List<Expression> = emptyList()
     fun copyWithChildren(children: List<Expression>) = this
 
-    fun accPathMappings(path: Path, acc: MutableList<PathMapping>): Expression {
-        return copyWithChildren(children().mapIndexed { i, expr -> expr.accPathMappings(path.child(i), acc) })
-    }
-
-    fun extractPathMappings(): Pair<Expression, List<PathMapping>> {
-        val acc = mutableListOf<PathMapping>()
-        val expr = accPathMappings(RootPath, acc)
-        return Pair(expr, acc)
-    }
+    override fun makeExpressionAcc(match: Match, currentPath: Path, acc: MutableList<PathMapping>) = this
+    
 }
 
 interface Literal : Expression
@@ -28,19 +22,6 @@ data class IntegerExpr(val value: BigInteger) : Literal {
 
     override fun toString(): String {
         return value.toString()
-    }
-
-}
-
-
-data class PathMappingExpression(val expr: Expression, val mapper: PathMapper) : Expression {
-    override fun accPathMappings(path: Path, acc: MutableList<PathMapping>): Expression {
-        mapper.accPathMappings(path, acc)
-        return expr.accPathMappings(path, acc)
-    }
-
-    override fun toString(): String {
-        return "[$mapper:  $expr]"
     }
 
 }
@@ -101,10 +82,9 @@ data class NaryExpr(val operator: NaryOperator, val operands: List<Expression>) 
     }
 
     override fun toString(): String {
-        return operands.map { it.toString() }.joinToString(", ", "${operator}(", ")")
+        return operands.joinToString(", ", "${operator}(", ")") { it.toString() }
     }
 }
-
 
 fun fractionOf(numerator: Expression, denominator: Expression) =
     BinaryExpr(BinaryOperator.Fraction, numerator, denominator)

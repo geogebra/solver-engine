@@ -1,9 +1,6 @@
 package transformations
 
-import expressions.IntegerExpr
-import expressions.VariableExpr
-import expressions.fractionOf
-import expressions.sumOf
+import expressions.*
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
@@ -17,7 +14,7 @@ internal class AddLikeFractionsTest {
             VariableExpr("z"),
             fractionOf(IntegerExpr(3), IntegerExpr(10)),
         )
-        val step = AddLikeFractions.apply(expr)
+        val step = AddLikeFractions.apply(Subexpression(RootPath, expr))
         assertEquals(
             sumOf(
                 IntegerExpr(1),
@@ -26,5 +23,6 @@ internal class AddLikeFractionsTest {
             ),
             step?.toExpr,
         )
+        step?.prettyPrint()
     }
 }

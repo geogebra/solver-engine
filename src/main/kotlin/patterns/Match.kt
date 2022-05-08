@@ -1,12 +1,7 @@
 package patterns
 
-import expressions.Expression
 import expressions.Path
-import expressions.PathMappingExpression
 import expressions.Subexpression
-import steps.PathMappingType
-import steps.TypePathMapper
-import steps.VanishingPathMapper
 
 interface Match {
     fun getBinding(p: Pattern): Subexpression?
@@ -16,17 +11,6 @@ interface Match {
     fun getPaths(p: Pattern): List<Path>
 
     fun childBindings(key: Pattern, value: Subexpression): Match = ChildMatch(key, value, this)
-
-    fun getPathMappingExpr(p: Pattern, type: PathMappingType) = PathMappingExpression(
-        this.getBinding(p)!!.expr,
-        TypePathMapper(getPaths(p), type),
-    )
-
-    fun getVanishingPathMappingExpr(p: Pattern, type: PathMappingType, inExpression: Expression) =
-        PathMappingExpression(
-            inExpression,
-            VanishingPathMapper(getPaths(p), type),
-        )
 }
 
 object RootMatch : Match {

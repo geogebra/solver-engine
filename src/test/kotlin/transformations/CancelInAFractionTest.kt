@@ -1,8 +1,6 @@
 package transformations
 
-import expressions.VariableExpr
-import expressions.fractionOf
-import expressions.productOf
+import expressions.*
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
@@ -15,7 +13,7 @@ class CancelInAFractionTest {
             productOf(VariableExpr("a"), VariableExpr("y"), VariableExpr("c"))
         )
 
-        val step = CancelInAFraction.apply(expression)
+        val step = CancelInAFraction.apply(Subexpression(RootPath, expression))
         assertEquals(
             fractionOf(
                 productOf(VariableExpr("x"), VariableExpr("z")),
@@ -23,5 +21,7 @@ class CancelInAFractionTest {
             ),
             step?.toExpr
         )
+
+        step?.prettyPrint()
     }
 }

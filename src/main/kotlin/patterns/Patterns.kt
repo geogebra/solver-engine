@@ -1,15 +1,16 @@
 package patterns
 
 import expressions.*
+import steps.PathMapping
 import java.util.*
 
 interface Pattern : ExpressionMaker {
     fun findMatches(match: Match, subexpression: Subexpression): Sequence<Match>
 
-    fun substitute(m: Match, result: Expression): Expression
+    fun substitute(m: Match, result: ExpressionMaker): ExpressionMaker
 
-    override fun makeExpression(m: Match): Expression {
-        return m.getBinding(this)!!.expr
+    override fun makeExpressionAcc(match: Match, currentPath: Path, acc: MutableList<PathMapping>): Expression {
+        return match.getBinding(this)!!.expr
     }
 }
 
@@ -41,7 +42,7 @@ interface FixedSizePattern : Pattern {
         return matches
     }
 
-    override fun substitute(m: Match, result: Expression): Expression = result
+    override fun substitute(m: Match, result: ExpressionMaker): ExpressionMaker = result
 }
 
 class AnyPattern : FixedSizePattern {
@@ -134,12 +135,12 @@ data class AssocNaryPattern(val operator: NaryOperator, val operands: List<Patte
         return matchIndexes
     }
 
-    override fun substitute(m: Match, result: Expression): Expression {
+    override fun substitute(m: Match, result: ExpressionMaker): ExpressionMaker {
         val sub = m.getBinding(this)!!
         val matchIndexes = getMatchIndexes(m, sub)
         val firstIndex = matchIndexes.first()
 
-        val restChildren = ArrayList<Expression>()
+        val restChildren = ArrayList<ExpressionMaker>()
         for ((index, child) in sub.expr.children().withIndex()) {
             if (index == firstIndex) {
                 restChildren.add(result)
@@ -148,7 +149,7 @@ data class AssocNaryPattern(val operator: NaryOperator, val operands: List<Patte
             }
         }
 
-        return sub.expr.copyWithChildren(restChildren)
+        return NaryExpressionMaker(operator, restChildren)
     }
 
     fun getRest(m: Match): Expression {

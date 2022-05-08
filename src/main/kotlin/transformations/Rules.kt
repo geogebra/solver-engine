@@ -1,7 +1,5 @@
 package transformations
 
-import expressions.Expression
-import expressions.RootPath
 import expressions.Subexpression
 import patterns.ExpressionMaker
 import patterns.Match
@@ -14,14 +12,14 @@ interface Rule {
     val pattern: Pattern
     val resultMaker: ExpressionMaker
 
-    fun apply(expr: Expression): Step? {
-        for (match in pattern.findMatches(RootMatch, Subexpression(RootPath, expr))) {
-            val result = resultMaker.makeExpression(match);
-            val (endResult, pathMappings) = pattern.substitute(match, result).extractPathMappings()
-            return Step(expr, endResult, pathMappings)
+    fun apply(sub: Subexpression): Step? {
+        for (match in pattern.findMatches(RootMatch, sub)) {
+            val endResultMaker = pattern.substitute(match, resultMaker)
+            val (endResult, pathMappings) = endResultMaker.makeExpression(match, sub.path)
+            return Step(sub.expr, endResult, pathMappings)
         }
 
-        return null;
+        return null
     }
 
     //    fun getTransformation(match: Match): Transformation

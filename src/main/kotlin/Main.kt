@@ -1,6 +1,4 @@
-import expressions.IntegerExpr
-import expressions.fractionOf
-import expressions.sumOf
+import expressions.*
 import transformations.AddLikeFractions
 
 fun main(args: Array<String>) {
@@ -10,6 +8,6 @@ fun main(args: Array<String>) {
     val sum = sumOf(frac, frac)
     // Try adding program arguments via Run/Debug configuration.
     // Learn more about running applications: https://www.jetbrains.com/help/idea/running-applications.html.
-    val step = AddLikeFractions.apply(sum)
+    val step = AddLikeFractions.apply(Subexpression(RootPath, sum))
     step?.prettyPrint()
 }
