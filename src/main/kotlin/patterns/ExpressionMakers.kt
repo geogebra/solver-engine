@@ -36,6 +36,13 @@ data class VanishingPathAnnotator(
     }
 }
 
+data class FixedExpressionMaker(val expr: Expression) : ExpressionMaker {
+
+    override fun makeExpressionAcc(match: Match, currentPath: Path, acc: MutableList<PathMapping>): Expression {
+        return expr
+    }
+}
+
 data class UnaryExpressionMaker(val operator: UnaryOperator, val expr: ExpressionMaker) : ExpressionMaker {
     override fun makeExpressionAcc(
         match: Match,

@@ -1,18 +1,12 @@
 package expressions
 
-import patterns.ExpressionMaker
-import patterns.Match
-import steps.PathMapping
 import java.math.BigDecimal
 import java.math.BigInteger
 
-interface Expression : ExpressionMaker {
+interface Expression {
     fun variables(): Set<VariableExpr> = emptySet()
     fun children(): List<Expression> = emptyList()
     fun copyWithChildren(children: List<Expression>) = this
-
-    override fun makeExpressionAcc(match: Match, currentPath: Path, acc: MutableList<PathMapping>) = this
-    
 }
 
 interface Literal : Expression

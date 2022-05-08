@@ -28,10 +28,9 @@ interface FixedSizePattern : Pattern {
         val previouslyMatched = match.getBinding(this)
 
         if (previouslyMatched != null) {
-            return if (previouslyMatched.expr == subexpression.expr) {
-                sequenceOf(match.childBindings(this, subexpression))
-            } else {
-                emptySequence()
+            return when (previouslyMatched.expr) {
+                subexpression.expr -> sequenceOf(match.childBindings(this, subexpression))
+                else -> emptySequence()
             }
         }
 
@@ -43,6 +42,13 @@ interface FixedSizePattern : Pattern {
     }
 
     override fun substitute(m: Match, result: ExpressionMaker): ExpressionMaker = result
+}
+
+
+data class FixedPattern(val expr: Expression) : FixedSizePattern {
+    override fun children(): List<Pattern> = emptyList()
+
+    override fun checkExpressionKind(expr: Expression) = this.expr == expr
 }
 
 class AnyPattern : FixedSizePattern {
@@ -57,7 +63,7 @@ class IntegerPattern : FixedSizePattern {
         return m.getBinding(this)!!.expr as IntegerExpr
     }
 
-    override fun children() = emptyList<Pattern>()
+    override fun children(): List<Pattern> = emptyList()
 
     override fun checkExpressionKind(expr: Expression) = expr is IntegerExpr
 }
@@ -145,7 +151,7 @@ data class AssocNaryPattern(val operator: NaryOperator, val operands: List<Patte
             if (index == firstIndex) {
                 restChildren.add(result)
             } else if (!matchIndexes.contains(index)) {
-                restChildren.add(child)
+                restChildren.add(FixedExpressionMaker(child))
             }
         }
 
