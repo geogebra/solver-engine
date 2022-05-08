@@ -28,6 +28,6 @@ object AddLikeFractions : Rule {
 //    }
 
     override fun getSkills(match: Match): Sequence<Skill> {
-        return sequenceOf(NumericLCM(num1.getIntBinding(match), num2.getIntBinding(match)))
+        return sequenceOf(NumericLCM(num1.getBoundInt(match), num2.getBoundInt(match)))
     }
 }

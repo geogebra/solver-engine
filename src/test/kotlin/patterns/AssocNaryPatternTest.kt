@@ -18,7 +18,7 @@ class AssocNaryPatternTest {
         assertEquals(terms.count(), matches.count())
 
         for ((index, match) in matches.withIndex()) {
-            assertEquals(terms[index], integerPattern.getIntBinding(match))
+            assertEquals(terms[index], integerPattern.getBoundInt(match))
         }
     }
 

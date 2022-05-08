@@ -18,7 +18,7 @@ interface ExpressionMaker {
 
 data class PathMappingAnnotator(val pathMappingType: PathMappingType, val pattern: Pattern) : ExpressionMaker {
     override fun makeExpressionAcc(match: Match, currentPath: Path, acc: MutableList<PathMapping>): Expression {
-        val paths = match.getPaths(pattern)
+        val paths = match.getBoundPaths(pattern)
         TypePathMapper(paths, pathMappingType).accPathMappings(currentPath, acc)
         return match.getBinding(pattern)!!.expr
     }
@@ -30,7 +30,7 @@ data class VanishingPathAnnotator(
     val inExpression: ExpressionMaker
 ) : ExpressionMaker {
     override fun makeExpressionAcc(match: Match, currentPath: Path, acc: MutableList<PathMapping>): Expression {
-        val paths = match.getPaths(pattern)
+        val paths = match.getBoundPaths(pattern)
         VanishingPathMapper(paths, pathMappingType).accPathMappings(currentPath, acc)
         return inExpression.makeExpressionAcc(match, currentPath, acc)
     }

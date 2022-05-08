@@ -29,12 +29,12 @@ interface FixedSizePattern : Pattern {
 
         if (previouslyMatched != null) {
             return when (previouslyMatched.expr) {
-                subexpression.expr -> sequenceOf(match.childBindings(this, subexpression))
+                subexpression.expr -> sequenceOf(match.newChild(this, subexpression))
                 else -> emptySequence()
             }
         }
 
-        var matches = sequenceOf(match.childBindings(this, subexpression))
+        var matches = sequenceOf(match.newChild(this, subexpression))
         for ((index, op) in children().withIndex()) {
             matches = matches.flatMap { op.findMatches(it, subexpression.nthChild(index)) }
         }
@@ -59,7 +59,7 @@ class AnyPattern : FixedSizePattern {
 
 class IntegerPattern : FixedSizePattern {
 
-    fun getIntBinding(m: Match): IntegerExpr {
+    fun getBoundInt(m: Match): IntegerExpr {
         return m.getBinding(this)!!.expr as IntegerExpr
     }
 
@@ -124,13 +124,13 @@ data class AssocNaryPattern(val operator: NaryOperator, val operands: List<Patte
             }
         }
 
-        return rec(match.childBindings(this, subexpression), 0, 0)
+        return rec(match.newChild(this, subexpression), 0, 0)
     }
 
     private fun getMatchIndexes(m: Match, sub: Subexpression): SortedSet<Int> {
         val matchIndexes = TreeSet<Int>()
         for (op in operands) {
-            for (p in m.getPaths(op)) {
+            for (p in m.getBoundPaths(op)) {
                 val (parent, index) = p as ChildPath
                 if (parent == sub.path) {
                     matchIndexes.add(index)

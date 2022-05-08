@@ -8,16 +8,16 @@ interface Match {
 
     fun accPaths(p: Pattern, acc: MutableList<Path>)
 
-    fun getPaths(p: Pattern): List<Path>
+    fun getBoundPaths(p: Pattern): List<Path>
 
-    fun childBindings(key: Pattern, value: Subexpression): Match = ChildMatch(key, value, this)
+    fun newChild(key: Pattern, value: Subexpression): Match = ChildMatch(key, value, this)
 }
 
 object RootMatch : Match {
     override fun getBinding(p: Pattern): Subexpression? = null
 
     override fun accPaths(p: Pattern, acc: MutableList<Path>) {}
-    override fun getPaths(p: Pattern): List<Path> = emptyList()
+    override fun getBoundPaths(p: Pattern): List<Path> = emptyList()
 }
 
 data class ChildMatch(
@@ -36,7 +36,7 @@ data class ChildMatch(
         }
     }
 
-    override fun getPaths(p: Pattern): List<Path> {
+    override fun getBoundPaths(p: Pattern): List<Path> {
         var acc = mutableListOf<Path>()
         accPaths(p, acc)
         return acc
