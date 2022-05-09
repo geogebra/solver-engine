@@ -1,6 +1,11 @@
 package transformations
 
-import patterns.*
+import expressionmakers.cancel
+import expressionmakers.makeFractionOf
+import expressionmakers.restOf
+import patterns.AnyPattern
+import patterns.fractionOf
+import patterns.productContaining
 
 object CancelInAFraction : Rule {
 

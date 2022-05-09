@@ -1,7 +1,7 @@
 package transformations
 
+import expressionmakers.ExpressionMaker
 import expressions.Subexpression
-import patterns.ExpressionMaker
 import patterns.Match
 import patterns.Pattern
 import patterns.RootMatch
@@ -14,9 +14,8 @@ interface Rule {
 
     fun apply(sub: Subexpression): Step? {
         for (match in pattern.findMatches(RootMatch, sub)) {
-            val endResultMaker = pattern.substitute(match, resultMaker)
-            val (endResult, pathMappings) = endResultMaker.makeExpression(match, sub.path)
-            return Step(sub.expr, endResult, pathMappings)
+            val (result, pathMappings) = resultMaker.makeExpression(match, sub.path)
+            return Step(sub.expr, result, pathMappings)
         }
 
         return null

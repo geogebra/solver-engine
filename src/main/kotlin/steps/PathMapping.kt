@@ -17,6 +17,7 @@ enum class PathMappingType {
     Distribute,
     Relate,
     Cancel,
+    Introduce,
 }
 
 interface PathMapper {

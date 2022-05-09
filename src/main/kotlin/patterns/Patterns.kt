@@ -1,12 +1,11 @@
 package patterns
 
 import expressions.*
+import java.math.BigInteger
 import java.util.*
 
 interface Pattern {
     fun findMatches(match: Match, subexpression: Subexpression): Sequence<Match>
-
-    fun substitute(m: Match, result: ExpressionMaker): ExpressionMaker
 }
 
 interface FixedSizePattern : Pattern {
@@ -35,8 +34,6 @@ interface FixedSizePattern : Pattern {
         }
         return matches
     }
-
-    override fun substitute(m: Match, result: ExpressionMaker): ExpressionMaker = result
 }
 
 
@@ -122,7 +119,7 @@ data class AssocNaryPattern(val operator: NaryOperator, val operands: List<Patte
         return rec(match.newChild(this, subexpression), 0, 0)
     }
 
-    private fun getMatchIndexes(m: Match, path: Path): SortedSet<Int> {
+    fun getMatchIndexes(m: Match, path: Path): SortedSet<Int> {
         val matchIndexes = TreeSet<Int>()
         for (op in operands) {
             for (p in m.getBoundPaths(op)) {
@@ -136,28 +133,29 @@ data class AssocNaryPattern(val operator: NaryOperator, val operands: List<Patte
         return matchIndexes
     }
 
-    override fun substitute(m: Match, result: ExpressionMaker): ExpressionMaker {
-        val sub = m.getLastBinding(this)!!
-        val matchIndexes = getMatchIndexes(m, sub.path)
-        val firstIndex = matchIndexes.first()
-
-        val restChildren = ArrayList<ExpressionMaker>()
-        for (child in sub.children()) {
-            if (child.index() == firstIndex) {
-                restChildren.add(result)
-            } else if (!matchIndexes.contains(child.index())) {
-                restChildren.add(FixedExpressionMaker(child))
-            }
-        }
-
-        return NaryExpressionMaker(operator, restChildren)
-    }
-
     fun getRestSubexpressions(m: Match): List<Subexpression> {
         val sub = m.getLastBinding(this)!!
         val matchIndexes = getMatchIndexes(m, sub.path)
 
         return sub.children().filter { subexpression -> !matchIndexes.contains(subexpression.index()) }
+    }
+}
+
+data class MixedNumberPattern(
+    val integer: IntegerPattern,
+    val numerator: IntegerPattern,
+    val denominator: IntegerPattern,
+) : FixedSizePattern {
+
+    override fun children() = listOf(integer, numerator, denominator)
+
+    override fun checkExpressionKind(expr: Expression) = expr is MixedNumber
+}
+
+data class ConditionPattern(val pattern: Pattern, val condition: MatchCondition) : Pattern {
+
+    override fun findMatches(match: Match, subexpression: Subexpression): Sequence<Match> {
+        return pattern.findMatches(match, subexpression).filter { condition.checkMatch(it) }
     }
 }
 
@@ -172,3 +170,23 @@ fun productOf(vararg factors: Pattern) = NaryPattern(NaryOperator.Product, facto
 
 fun productContaining(vararg factors: Pattern, minSize: Int = 0) =
     AssocNaryPattern(NaryOperator.Product, factors.asList(), minSize)
+
+data class NumericCondition2(
+    val ptn1: IntegerPattern,
+    val ptn2: IntegerPattern,
+    val condition: (BigInteger, BigInteger) -> Boolean
+) : MatchCondition {
+    override fun checkMatch(match: Match): Boolean {
+        val n1 = ptn1.getBoundInt(match).value
+        val n2 = ptn2.getBoundInt(match).value
+
+        return condition(n1, n2)
+    }
+}
+
+fun numericCondition(ptn1: IntegerPattern, ptn2: IntegerPattern, condition: (BigInteger, BigInteger) -> Boolean) =
+    NumericCondition2(ptn1, ptn2, condition)
+
+interface MatchCondition {
+    fun checkMatch(match: Match): Boolean
+}

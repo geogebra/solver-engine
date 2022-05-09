@@ -18,6 +18,10 @@ object CancelRootPath : Path {
     override fun toString() = "x"
 }
 
+object IntroduceRootPath : Path {
+    override fun toString() = "+"
+}
+
 data class Subexpression(val path: Path, val expr: Expression) {
     fun nthChild(index: Int): Subexpression {
         return Subexpression(path.child(index), expr.children().elementAt(index))

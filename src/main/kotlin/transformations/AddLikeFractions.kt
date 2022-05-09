@@ -1,6 +1,10 @@
 package transformations
 
-import patterns.*
+import expressionmakers.*
+import patterns.IntegerPattern
+import patterns.Match
+import patterns.fractionOf
+import patterns.sumContaining
 import steps.NumericLCM
 import steps.Skill
 
@@ -13,7 +17,7 @@ object AddLikeFractions : Rule {
     private val sum = sumContaining(f1, f2)
 
     override val pattern = sum
-    override val resultMaker = makeFractionOf(makeSumOf(move(num1), move(num2)), factor(denom))
+    override val resultMaker = substituteIn(sum, makeFractionOf(makeSumOf(move(num1), move(num2)), factor(denom)))
 
 //    override fun getTransformation(match: Match): Transformation {
 //        class AddLikeFractionsTransformation(

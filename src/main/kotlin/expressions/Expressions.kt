@@ -80,6 +80,25 @@ data class NaryExpr(val operator: NaryOperator, val operands: List<Expression>) 
     }
 }
 
+data class MixedNumber(val integer: IntegerExpr, val numerator: IntegerExpr, val denominator: IntegerExpr) :
+    Expression {
+
+    override fun children() = listOf<Expression>(integer, numerator, denominator)
+
+    override fun copyWithChildren(children: List<Expression>): Expression {
+        if (children.count() != 3 || children[0] !is IntegerExpr || children[1] !is IntegerExpr
+            || children[2] !is IntegerExpr
+        ) {
+            throw java.lang.IllegalArgumentException()
+        }
+        return MixedNumber(children[0] as IntegerExpr, children[1] as IntegerExpr, children[2] as IntegerExpr)
+    }
+
+    override fun toString(): String {
+        return "$integer $numerator/$denominator"
+    }
+}
+
 fun fractionOf(numerator: Expression, denominator: Expression) =
     BinaryExpr(BinaryOperator.Fraction, numerator, denominator)
 
