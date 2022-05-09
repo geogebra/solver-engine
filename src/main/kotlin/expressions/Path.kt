@@ -23,6 +23,14 @@ data class Subexpression(val path: Path, val expr: Expression) {
         return Subexpression(path.child(index), expr.children().elementAt(index))
     }
 
+    fun children(): List<Subexpression> {
+        return expr.children().mapIndexed { i, child -> Subexpression(path.child(i), child) }
+    }
+
+    fun index() = when (path) {
+        is ChildPath -> path.index
+        else -> 0
+    }
 }
 
 fun pathOf(vararg indexes: Int): Path {

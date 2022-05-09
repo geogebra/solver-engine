@@ -13,6 +13,7 @@ internal class AddLikeFractionsTest {
             fractionOf(IntegerExpr(2), IntegerExpr(10)),
             VariableExpr("z"),
             fractionOf(IntegerExpr(3), IntegerExpr(10)),
+            VariableExpr("x"),
         )
         val step = AddLikeFractions.apply(Subexpression(RootPath, expr))
         assertEquals(
@@ -20,6 +21,7 @@ internal class AddLikeFractionsTest {
                 IntegerExpr(1),
                 fractionOf(sumOf(IntegerExpr(2), IntegerExpr(3)), IntegerExpr(10)),
                 VariableExpr("z"),
+                VariableExpr("x"),
             ),
             step?.toExpr,
         )

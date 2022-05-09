@@ -1,7 +1,6 @@
 package patterns
 
 import expressions.*
-import steps.PathMapping
 import java.util.*
 
 interface Pattern {
@@ -143,10 +142,10 @@ data class AssocNaryPattern(val operator: NaryOperator, val operands: List<Patte
         val firstIndex = matchIndexes.first()
 
         val restChildren = ArrayList<ExpressionMaker>()
-        for ((index, child) in sub.expr.children().withIndex()) {
-            if (index == firstIndex) {
+        for (child in sub.children()) {
+            if (child.index() == firstIndex) {
                 restChildren.add(result)
-            } else if (!matchIndexes.contains(index)) {
+            } else if (!matchIndexes.contains(child.index())) {
                 restChildren.add(FixedExpressionMaker(child))
             }
         }
@@ -154,12 +153,11 @@ data class AssocNaryPattern(val operator: NaryOperator, val operands: List<Patte
         return NaryExpressionMaker(operator, restChildren)
     }
 
-    fun getRest(m: Match): Expression {
+    fun getRestSubexpressions(m: Match): List<Subexpression> {
         val sub = m.getLastBinding(this)!!
         val matchIndexes = getMatchIndexes(m, sub.path)
 
-        val restChildren = sub.expr.children().filterIndexed { i, _ -> !matchIndexes.contains(i) }
-        return sub.expr.copyWithChildren(restChildren)
+        return sub.children().filter { subexpression -> !matchIndexes.contains(subexpression.index()) }
     }
 }
 

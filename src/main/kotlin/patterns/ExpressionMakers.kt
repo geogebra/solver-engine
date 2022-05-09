@@ -36,10 +36,13 @@ data class VanishingPathAnnotator(
     }
 }
 
-data class FixedExpressionMaker(val expr: Expression) : ExpressionMaker {
+data class FixedExpressionMaker(val subexpression: Subexpression) : ExpressionMaker {
 
     override fun makeExpressionAcc(match: Match, currentPath: Path, acc: MutableList<PathMapping>): Expression {
-        return expr
+        if (subexpression.path != currentPath) {
+            acc.add(PathMapping(subexpression.path, PathMappingType.Move, currentPath))
+        }
+        return subexpression.expr
     }
 }
 
@@ -84,7 +87,12 @@ data class NaryExpressionMaker(val operator: NaryOperator, val operands: List<Ex
 data class RestExpressionMaker(val pattern: AssocNaryPattern) : ExpressionMaker {
 
     override fun makeExpressionAcc(match: Match, currentPath: Path, acc: MutableList<PathMapping>): Expression {
-        return pattern.getRest(match)
+        val subexpressions = pattern.getRestSubexpressions(match);
+        for ((i, subexpression) in subexpressions.withIndex()) {
+            acc.add(PathMapping(subexpression.path, PathMappingType.Move, currentPath.child(i)))
+        }
+
+        return NaryExpr(pattern.operator, subexpressions.map { it.expr })
     }
 }
 
