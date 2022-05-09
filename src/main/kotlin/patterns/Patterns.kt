@@ -4,14 +4,10 @@ import expressions.*
 import steps.PathMapping
 import java.util.*
 
-interface Pattern : ExpressionMaker {
+interface Pattern {
     fun findMatches(match: Match, subexpression: Subexpression): Sequence<Match>
 
     fun substitute(m: Match, result: ExpressionMaker): ExpressionMaker
-
-    override fun makeExpressionAcc(match: Match, currentPath: Path, acc: MutableList<PathMapping>): Expression {
-        return match.getBoundExpr(this)!!
-    }
 }
 
 interface FixedSizePattern : Pattern {
