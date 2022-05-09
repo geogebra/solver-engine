@@ -1,10 +1,14 @@
 package patterns
 
+import expressions.Expression
 import expressions.Path
 import expressions.Subexpression
 
 interface Match {
-    fun getBinding(p: Pattern): Subexpression?
+
+    fun getLastBinding(p: Pattern): Subexpression?
+
+    fun getBoundExpr(p: Pattern): Expression?
 
     fun accPaths(p: Pattern, acc: MutableList<Path>)
 
@@ -14,7 +18,9 @@ interface Match {
 }
 
 object RootMatch : Match {
-    override fun getBinding(p: Pattern): Subexpression? = null
+
+    override fun getLastBinding(p: Pattern): Subexpression? = null
+    override fun getBoundExpr(p: Pattern): Expression? = null
 
     override fun accPaths(p: Pattern, acc: MutableList<Path>) {}
     override fun getBoundPaths(p: Pattern): List<Path> = emptyList()
@@ -25,8 +31,16 @@ data class ChildMatch(
     private val value: Subexpression,
     private val parent: Match
 ) : Match {
-    override fun getBinding(p: Pattern): Subexpression? {
-        return if (key === p) value else parent.getBinding(p)
+
+    override fun getLastBinding(p: Pattern): Subexpression? {
+        return when {
+            key === p -> value
+            else -> parent.getLastBinding(p)
+        }
+    }
+
+    override fun getBoundExpr(p: Pattern): Expression? {
+        return if (key === p) value.expr else parent.getBoundExpr(p)
     }
 
     override fun accPaths(p: Pattern, acc: MutableList<Path>) {

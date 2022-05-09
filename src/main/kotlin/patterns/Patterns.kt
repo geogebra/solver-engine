@@ -10,7 +10,7 @@ interface Pattern : ExpressionMaker {
     fun substitute(m: Match, result: ExpressionMaker): ExpressionMaker
 
     override fun makeExpressionAcc(match: Match, currentPath: Path, acc: MutableList<PathMapping>): Expression {
-        return match.getBinding(this)!!.expr
+        return match.getBoundExpr(this)!!
     }
 }
 
@@ -25,10 +25,10 @@ interface FixedSizePattern : Pattern {
             return emptySequence()
         }
 
-        val previouslyMatched = match.getBinding(this)
+        val previouslyMatched = match.getBoundExpr(this)
 
         if (previouslyMatched != null) {
-            return when (previouslyMatched.expr) {
+            return when (previouslyMatched) {
                 subexpression.expr -> sequenceOf(match.newChild(this, subexpression))
                 else -> emptySequence()
             }
@@ -60,7 +60,7 @@ class AnyPattern : FixedSizePattern {
 class IntegerPattern : FixedSizePattern {
 
     fun getBoundInt(m: Match): IntegerExpr {
-        return m.getBinding(this)!!.expr as IntegerExpr
+        return m.getBoundExpr(this)!! as IntegerExpr
     }
 
     override fun children(): List<Pattern> = emptyList()
@@ -127,12 +127,12 @@ data class AssocNaryPattern(val operator: NaryOperator, val operands: List<Patte
         return rec(match.newChild(this, subexpression), 0, 0)
     }
 
-    private fun getMatchIndexes(m: Match, sub: Subexpression): SortedSet<Int> {
+    private fun getMatchIndexes(m: Match, path: Path): SortedSet<Int> {
         val matchIndexes = TreeSet<Int>()
         for (op in operands) {
             for (p in m.getBoundPaths(op)) {
                 val (parent, index) = p as ChildPath
-                if (parent == sub.path) {
+                if (parent == path) {
                     matchIndexes.add(index)
                 }
             }
@@ -142,8 +142,8 @@ data class AssocNaryPattern(val operator: NaryOperator, val operands: List<Patte
     }
 
     override fun substitute(m: Match, result: ExpressionMaker): ExpressionMaker {
-        val sub = m.getBinding(this)!!
-        val matchIndexes = getMatchIndexes(m, sub)
+        val sub = m.getLastBinding(this)!!
+        val matchIndexes = getMatchIndexes(m, sub.path)
         val firstIndex = matchIndexes.first()
 
         val restChildren = ArrayList<ExpressionMaker>()
@@ -159,8 +159,8 @@ data class AssocNaryPattern(val operator: NaryOperator, val operands: List<Patte
     }
 
     fun getRest(m: Match): Expression {
-        val sub = m.getBinding(this)!!
-        val matchIndexes = getMatchIndexes(m, sub)
+        val sub = m.getLastBinding(this)!!
+        val matchIndexes = getMatchIndexes(m, sub.path)
 
         val restChildren = sub.expr.children().filterIndexed { i, _ -> !matchIndexes.contains(i) }
         return sub.expr.copyWithChildren(restChildren)

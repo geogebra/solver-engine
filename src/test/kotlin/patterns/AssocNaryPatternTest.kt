@@ -81,7 +81,7 @@ class AssocNaryPatternTest {
         val matches = ptn.findMatches(RootMatch, Subexpression(RootPath, expression))
 
         assertEquals(1, matches.count())
-        assertEquals(VariableExpr("y"), matches.first().getBinding(common)?.expr)
+        assertEquals(VariableExpr("y"), matches.first().getBoundExpr(common))
     }
 
     @Test

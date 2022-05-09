@@ -20,7 +20,7 @@ data class PathMappingAnnotator(val pathMappingType: PathMappingType, val patter
     override fun makeExpressionAcc(match: Match, currentPath: Path, acc: MutableList<PathMapping>): Expression {
         val paths = match.getBoundPaths(pattern)
         TypePathMapper(paths, pathMappingType).accPathMappings(currentPath, acc)
-        return match.getBinding(pattern)!!.expr
+        return match.getBoundExpr(pattern)!!
     }
 }
 
