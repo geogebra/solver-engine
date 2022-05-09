@@ -1,5 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="ANTLRGenerationPreferences">
+    <option name="perGrammarGenerationSettings">
+      <list>
+        <PerGrammarGenerationSettings>
+          <option name="fileName" value="$PROJECT_DIR$/src/main/antlr/expressions/Expression.g4" />
+          <option name="autoGen" value="true" />
+          <option name="outputDir" value="$PROJECT_DIR$/src/main/java" />
+          <option name="libDir" value="$PROJECT_DIR$/src/main/antlr/expressions" />
+          <option name="encoding" value="" />
+          <option name="pkg" value="org.geogebra.solver.parser" />
+          <option name="language" value="" />
+          <option name="generateVisitor" value="true" />
+        </PerGrammarGenerationSettings>
+      </list>
+    </option>
+  </component>
   <component name="ExternalStorageConfigurationManager" enabled="true" />
   <component name="FrameworkDetectionExcludesConfiguration">
     <file type="web" url="file://$PROJECT_DIR$" />

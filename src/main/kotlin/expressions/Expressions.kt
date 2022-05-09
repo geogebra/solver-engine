@@ -99,9 +99,22 @@ data class MixedNumber(val integer: IntegerExpr, val numerator: IntegerExpr, val
     }
 }
 
+
+fun xp(n: Int) = IntegerExpr(n.toBigInteger())
+fun xp(n: BigInteger) = IntegerExpr(n)
+fun xp(v: String) = VariableExpr(v)
+
+fun bracketOf(expr: Expression) = UnaryExpr(UnaryOperator.Bracket, expr)
+
+fun negOf(expr: Expression) = UnaryExpr(UnaryOperator.Minus, expr)
+
 fun fractionOf(numerator: Expression, denominator: Expression) =
     BinaryExpr(BinaryOperator.Fraction, numerator, denominator)
 
+fun powerOf(base: Expression, exponent: Expression) = BinaryExpr(BinaryOperator.Power, base, exponent)
+
 fun sumOf(vararg terms: Expression) = NaryExpr(NaryOperator.Sum, terms.asList())
 
-fun productOf(vararg terms: Expression) = NaryExpr(NaryOperator.Product, terms.asList())
+fun productOf(vararg factors: Expression) = NaryExpr(NaryOperator.Product, factors.asList())
+
+fun implicitProductOf(vararg factors: Expression) = NaryExpr(NaryOperator.ImplicitProduct, factors.asList())

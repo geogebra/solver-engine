@@ -2,6 +2,7 @@ package expressions
 
 enum class UnaryOperator {
     Bracket,
+    Plus,
     Minus,
     SquareRoot,
     NaturalLog,
@@ -18,4 +19,5 @@ enum class BinaryOperator {
 enum class NaryOperator {
     Sum,
     Product,
+    ImplicitProduct,
 }
