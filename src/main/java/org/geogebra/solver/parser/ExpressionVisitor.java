@@ -35,12 +35,6 @@ public interface ExpressionVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitOtherTerm(ExpressionParser.OtherTermContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link ExpressionParser#product}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitProduct(ExpressionParser.ProductContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link ExpressionParser#explicitProduct}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -53,23 +47,23 @@ public interface ExpressionVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitImplicitProduct(ExpressionParser.ImplicitProductContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link ExpressionParser#nonNumericFactor}.
+	 * Visit a parse tree produced by {@link ExpressionParser#firstFactor}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitNonNumericFactor(ExpressionParser.NonNumericFactorContext ctx);
+	T visitFirstFactor(ExpressionParser.FirstFactorContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ExpressionParser#otherFactor}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitOtherFactor(ExpressionParser.OtherFactorContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link ExpressionParser#fraction}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitFraction(ExpressionParser.FractionContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link ExpressionParser#factor}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitFactor(ExpressionParser.FactorContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link ExpressionParser#power}.
 	 * @param ctx the parse tree

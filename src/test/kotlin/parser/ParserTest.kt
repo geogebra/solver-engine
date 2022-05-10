@@ -22,11 +22,18 @@ class ParserTest {
             )
         )
         testCase(
-            "2x^3y^5",
+            "2[x^3][y^5]",
             implicitProductOf(
                 xp(2),
                 powerOf(xp("x"), xp(3)),
                 powerOf(xp("y"), xp(5))
+            )
+        )
+        testCase(
+            "[1/2][x^3]",
+            implicitProductOf(
+                fractionOf(xp(1), xp(2)),
+                powerOf(xp("x"), xp(3))
             )
         )
     }

@@ -33,7 +33,7 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
     }
 
     override fun visitFirstTerm(ctx: ExpressionParser.FirstTermContext?): Expression {
-        val p = visit(ctx!!.product())
+        val p = visit(ctx!!.explicitProduct())
         if (ctx.sign == null) {
             return p
         }
@@ -44,19 +44,18 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
     }
 
     override fun visitOtherTerm(ctx: ExpressionParser.OtherTermContext?): Expression {
-        val p = visit(ctx!!.product())
+        val p = visit(ctx!!.explicitProduct())
         return when (ctx.sign.text) {
             "+" -> p
             else -> UnaryExpr(UnaryOperator.Minus, p)
         }
     }
 
-    override fun visitProduct(ctx: ExpressionParser.ProductContext?): Expression {
-        return visit(ctx?.getChild(0))
-    }
-
     override fun visitExplicitProduct(ctx: ExpressionParser.ExplicitProductContext?): Expression {
         val factors = ctx!!.products.map { visit(it) }
+        if (factors.size == 1) {
+            return factors[0]
+        }
         return NaryExpr(NaryOperator.Product, factors)
     }
 
@@ -71,16 +70,8 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
         return NaryExpr(NaryOperator.ImplicitProduct, factors)
     }
 
-    override fun visitNonNumericFactor(ctx: ExpressionParser.NonNumericFactorContext?): Expression {
-        return visit(ctx?.getChild(0))
-    }
-
     override fun visitFraction(ctx: ExpressionParser.FractionContext?): Expression {
         return fractionOf(visit(ctx!!.num), visit(ctx!!.den))
-    }
-
-    override fun visitFactor(ctx: ExpressionParser.FactorContext?): Expression {
-        return visit(ctx?.getChild(-0))
     }
 
     override fun visitPower(ctx: ExpressionParser.PowerContext?): Expression {
@@ -89,14 +80,6 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
 
     override fun visitBracket(ctx: ExpressionParser.BracketContext?): Expression {
         return bracketOf(visit(ctx!!.expr()))
-    }
-
-    override fun visitAtom(ctx: ExpressionParser.AtomContext?): Expression {
-        return visit(ctx?.getChild(-0))
-    }
-
-    override fun visitNonNumericAtom(ctx: ExpressionParser.NonNumericAtomContext?): Expression {
-        return visit(ctx?.getChild(-0))
     }
 
     override fun visitNaturalNumber(ctx: ExpressionParser.NaturalNumberContext?): Expression {

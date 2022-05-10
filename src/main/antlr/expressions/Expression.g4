@@ -4,29 +4,27 @@ expr: sum;
 
 sum: first=firstTerm (rest+=otherTerm)*;
 
-firstTerm: sign=('+'|'-')? product;
+firstTerm: sign=('+'|'-')? explicitProduct;
 
-otherTerm: sign=('+'|'-') product;
+otherTerm: sign=('+'|'-') explicitProduct;
 
-product: implicitProduct | explicitProduct;
+explicitProduct: products+=implicitProduct ('*' products+=implicitProduct)*;
 
-explicitProduct: products+=implicitProduct ('*' products+=implicitProduct)+;
+implicitProduct: first=firstFactor (others+=otherFactor)*;
 
-implicitProduct: first=factor (others+=nonNumericFactor)*;
+firstFactor: fraction | power | atom;
 
-nonNumericFactor: nonNumericAtom | power;
+otherFactor: power | atom;
 
 fraction: '[' num=expr '/' den=expr ']';
 
-factor: atom | power;
-
-power: base=atom '^' exp=atom;
+power: '[' base=atom '^' exp=expr ']';
 
 bracket: '(' expr ')';
 
 atom: nonNumericAtom | naturalNumber;
 
-nonNumericAtom: bracket | fraction | variable;
+nonNumericAtom: bracket | variable;
 
 naturalNumber: NATNUM;
 

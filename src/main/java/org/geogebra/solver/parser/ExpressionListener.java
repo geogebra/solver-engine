@@ -48,16 +48,6 @@ public interface ExpressionListener extends ParseTreeListener {
 	 */
 	void exitOtherTerm(ExpressionParser.OtherTermContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link ExpressionParser#product}.
-	 * @param ctx the parse tree
-	 */
-	void enterProduct(ExpressionParser.ProductContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link ExpressionParser#product}.
-	 * @param ctx the parse tree
-	 */
-	void exitProduct(ExpressionParser.ProductContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link ExpressionParser#explicitProduct}.
 	 * @param ctx the parse tree
 	 */
@@ -78,15 +68,25 @@ public interface ExpressionListener extends ParseTreeListener {
 	 */
 	void exitImplicitProduct(ExpressionParser.ImplicitProductContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link ExpressionParser#nonNumericFactor}.
+	 * Enter a parse tree produced by {@link ExpressionParser#firstFactor}.
 	 * @param ctx the parse tree
 	 */
-	void enterNonNumericFactor(ExpressionParser.NonNumericFactorContext ctx);
+	void enterFirstFactor(ExpressionParser.FirstFactorContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link ExpressionParser#nonNumericFactor}.
+	 * Exit a parse tree produced by {@link ExpressionParser#firstFactor}.
 	 * @param ctx the parse tree
 	 */
-	void exitNonNumericFactor(ExpressionParser.NonNumericFactorContext ctx);
+	void exitFirstFactor(ExpressionParser.FirstFactorContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ExpressionParser#otherFactor}.
+	 * @param ctx the parse tree
+	 */
+	void enterOtherFactor(ExpressionParser.OtherFactorContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ExpressionParser#otherFactor}.
+	 * @param ctx the parse tree
+	 */
+	void exitOtherFactor(ExpressionParser.OtherFactorContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link ExpressionParser#fraction}.
 	 * @param ctx the parse tree
@@ -97,16 +97,6 @@ public interface ExpressionListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitFraction(ExpressionParser.FractionContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link ExpressionParser#factor}.
-	 * @param ctx the parse tree
-	 */
-	void enterFactor(ExpressionParser.FactorContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link ExpressionParser#factor}.
-	 * @param ctx the parse tree
-	 */
-	void exitFactor(ExpressionParser.FactorContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link ExpressionParser#power}.
 	 * @param ctx the parse tree

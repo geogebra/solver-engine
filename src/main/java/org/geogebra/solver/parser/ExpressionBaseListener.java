@@ -64,18 +64,6 @@ public class ExpressionBaseListener implements ExpressionListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterProduct(ExpressionParser.ProductContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitProduct(ExpressionParser.ProductContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterExplicitProduct(ExpressionParser.ExplicitProductContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -100,13 +88,25 @@ public class ExpressionBaseListener implements ExpressionListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterNonNumericFactor(ExpressionParser.NonNumericFactorContext ctx) { }
+	@Override public void enterFirstFactor(ExpressionParser.FirstFactorContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitNonNumericFactor(ExpressionParser.NonNumericFactorContext ctx) { }
+	@Override public void exitFirstFactor(ExpressionParser.FirstFactorContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterOtherFactor(ExpressionParser.OtherFactorContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitOtherFactor(ExpressionParser.OtherFactorContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -119,18 +119,6 @@ public class ExpressionBaseListener implements ExpressionListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitFraction(ExpressionParser.FractionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterFactor(ExpressionParser.FactorContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitFactor(ExpressionParser.FactorContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
