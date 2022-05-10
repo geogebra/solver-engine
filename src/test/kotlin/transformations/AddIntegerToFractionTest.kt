@@ -1,28 +1,11 @@
 package transformations
 
-import expressions.*
-import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
+import java.util.stream.Stream
 
-class AddIntegerToFractionTest {
+object AddIntegerToFractionTest : RuleTest() {
 
-    @Test
-    fun testAddIntegerToFraction() {
-        val expression = sumOf(IntegerExpr(5), fractionOf(IntegerExpr(2), IntegerExpr(4)))
-
-        val step = AddIntegerToFraction.apply(Subexpression(RootPath, expression))
-
-        assertEquals(
-            sumOf(
-                fractionOf(
-                    productOf(IntegerExpr(5), IntegerExpr(4)),
-                    productOf(IntegerExpr(1), IntegerExpr(4)),
-                ),
-                fractionOf(IntegerExpr(2), IntegerExpr(4))
-            ),
-            step?.toExpr
-        )
-
-        step?.prettyPrint()
-    }
+    @JvmStatic
+    fun testCaseProvider(): Stream<RuleTestCase> = Stream.of(
+        RuleTestCase("5 + [2/4]", AddIntegerToFraction, "[5*4/1*4] + [2/4]")
+    )
 }

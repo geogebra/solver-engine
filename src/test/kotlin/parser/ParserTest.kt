@@ -44,6 +44,12 @@ class ParserTest {
                     powerOf(xp("x"), xp(3))
                 )
             ),
+            TestCase(
+                "[(x+1)^2]",
+                powerOf(bracketOf(sumOf(xp("x"), xp(1))), xp(2))
+            ),
+            TestCase("2[2^2]", implicitProductOf(xp(2), powerOf(xp(2), xp(2)))), // Should that be correct?
+            TestCase("3*-4", productOf(xp(3), negOf(xp(4)))),
         )
     }
 }

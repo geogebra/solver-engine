@@ -78,7 +78,7 @@ data class NaryExpressionMaker(val operator: NaryOperator, val operands: List<Ex
 data class RestExpressionMaker(val pattern: AssocNaryPattern) : ExpressionMaker {
 
     override fun makeExpressionAcc(match: Match, currentPath: Path, acc: MutableList<PathMapping>): Expression {
-        val subexpressions = pattern.getRestSubexpressions(match);
+        val subexpressions = pattern.getRestSubexpressions(match)
         for ((i, subexpression) in subexpressions.withIndex()) {
             acc.add(PathMapping(subexpression.path, PathMappingType.Move, currentPath.child(i)))
         }

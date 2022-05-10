@@ -2,9 +2,7 @@ grammar Expression;
 
 expr: sum;
 
-sum: first=firstTerm (rest+=otherTerm)*;
-
-firstTerm: sign=('+'|'-')? explicitProduct;
+sum: first=explicitProduct (rest+=otherTerm)*;
 
 otherTerm: sign=('+'|'-') explicitProduct;
 
@@ -12,9 +10,12 @@ explicitProduct: products+=implicitProduct ('*' products+=implicitProduct)*;
 
 implicitProduct: first=firstFactor (others+=otherFactor)*;
 
-firstFactor: fraction | power | atom;
+firstFactor
+    : sign=('+' | '-') factor=firstFactor           #firstFactorWithSign
+    | (mixedNumber | fraction | power | atom)       #firstFactorWithoutSign
+;
 
-otherFactor: power | atom;
+otherFactor: power | nonNumericAtom;
 
 fraction: '[' num=expr '/' den=expr ']';
 
@@ -26,6 +27,8 @@ atom: nonNumericAtom | naturalNumber;
 
 nonNumericAtom: bracket | variable;
 
+mixedNumber: '[' integer=naturalNumber num=naturalNumber '/' den=naturalNumber ']';
+
 naturalNumber: NATNUM;
 
 variable: VARIABLE;
@@ -34,3 +37,4 @@ fragment DIGIT: [0-9];
 NATNUM: DIGIT+;
 
 VARIABLE: [a-z];
+WHITESPACE: [ \t] -> skip;

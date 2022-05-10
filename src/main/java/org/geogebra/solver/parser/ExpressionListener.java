@@ -28,16 +28,6 @@ public interface ExpressionListener extends ParseTreeListener {
 	 */
 	void exitSum(ExpressionParser.SumContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link ExpressionParser#firstTerm}.
-	 * @param ctx the parse tree
-	 */
-	void enterFirstTerm(ExpressionParser.FirstTermContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link ExpressionParser#firstTerm}.
-	 * @param ctx the parse tree
-	 */
-	void exitFirstTerm(ExpressionParser.FirstTermContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link ExpressionParser#otherTerm}.
 	 * @param ctx the parse tree
 	 */
@@ -68,15 +58,29 @@ public interface ExpressionListener extends ParseTreeListener {
 	 */
 	void exitImplicitProduct(ExpressionParser.ImplicitProductContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link ExpressionParser#firstFactor}.
+	 * Enter a parse tree produced by the {@code firstFactorWithSign}
+	 * labeled alternative in {@link ExpressionParser#firstFactor}.
 	 * @param ctx the parse tree
 	 */
-	void enterFirstFactor(ExpressionParser.FirstFactorContext ctx);
+	void enterFirstFactorWithSign(ExpressionParser.FirstFactorWithSignContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link ExpressionParser#firstFactor}.
+	 * Exit a parse tree produced by the {@code firstFactorWithSign}
+	 * labeled alternative in {@link ExpressionParser#firstFactor}.
 	 * @param ctx the parse tree
 	 */
-	void exitFirstFactor(ExpressionParser.FirstFactorContext ctx);
+	void exitFirstFactorWithSign(ExpressionParser.FirstFactorWithSignContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code firstFactorWithoutSign}
+	 * labeled alternative in {@link ExpressionParser#firstFactor}.
+	 * @param ctx the parse tree
+	 */
+	void enterFirstFactorWithoutSign(ExpressionParser.FirstFactorWithoutSignContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code firstFactorWithoutSign}
+	 * labeled alternative in {@link ExpressionParser#firstFactor}.
+	 * @param ctx the parse tree
+	 */
+	void exitFirstFactorWithoutSign(ExpressionParser.FirstFactorWithoutSignContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link ExpressionParser#otherFactor}.
 	 * @param ctx the parse tree
@@ -137,6 +141,16 @@ public interface ExpressionListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitNonNumericAtom(ExpressionParser.NonNumericAtomContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ExpressionParser#mixedNumber}.
+	 * @param ctx the parse tree
+	 */
+	void enterMixedNumber(ExpressionParser.MixedNumberContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ExpressionParser#mixedNumber}.
+	 * @param ctx the parse tree
+	 */
+	void exitMixedNumber(ExpressionParser.MixedNumberContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link ExpressionParser#naturalNumber}.
 	 * @param ctx the parse tree

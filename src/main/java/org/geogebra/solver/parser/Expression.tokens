@@ -9,6 +9,7 @@ T__7=8
 T__8=9
 NATNUM=10
 VARIABLE=11
+WHITESPACE=12
 '+'=1
 '-'=2
 '*'=3

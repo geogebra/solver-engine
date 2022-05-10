@@ -23,12 +23,6 @@ public interface ExpressionVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitSum(ExpressionParser.SumContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link ExpressionParser#firstTerm}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitFirstTerm(ExpressionParser.FirstTermContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link ExpressionParser#otherTerm}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -47,11 +41,19 @@ public interface ExpressionVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitImplicitProduct(ExpressionParser.ImplicitProductContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link ExpressionParser#firstFactor}.
+	 * Visit a parse tree produced by the {@code firstFactorWithSign}
+	 * labeled alternative in {@link ExpressionParser#firstFactor}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitFirstFactor(ExpressionParser.FirstFactorContext ctx);
+	T visitFirstFactorWithSign(ExpressionParser.FirstFactorWithSignContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code firstFactorWithoutSign}
+	 * labeled alternative in {@link ExpressionParser#firstFactor}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFirstFactorWithoutSign(ExpressionParser.FirstFactorWithoutSignContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link ExpressionParser#otherFactor}.
 	 * @param ctx the parse tree
@@ -88,6 +90,12 @@ public interface ExpressionVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitNonNumericAtom(ExpressionParser.NonNumericAtomContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ExpressionParser#mixedNumber}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitMixedNumber(ExpressionParser.MixedNumberContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link ExpressionParser#naturalNumber}.
 	 * @param ctx the parse tree
