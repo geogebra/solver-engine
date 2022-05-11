@@ -5,11 +5,26 @@ import java.math.BigInteger
 
 interface Expression {
     fun variables(): Set<VariableExpr> = emptySet()
+
     fun children(): List<Expression> = emptyList()
-    fun copyWithChildren(children: List<Expression>) = this
+
+    fun mapChildrenIndexed(f: (i: Int, expr: Expression) -> Expression): Expression
+
+    fun substitute(subexpression: Subexpression): Expression {
+        return Subexpression(RootPath, this).substitute(subexpression)
+    }
+
+    fun getAt(path: Path): Expression {
+        return when (path) {
+            is ChildPath -> getAt(path.parent).children().elementAt(path.index)
+            else -> this
+        }
+    }
 }
 
-interface Literal : Expression
+interface Literal : Expression {
+    override fun mapChildrenIndexed(f: (i: Int, expr: Expression) -> Expression) = this
+}
 
 data class IntegerExpr(val value: BigInteger) : Literal {
     constructor(value: Long) : this(BigInteger.valueOf(value))
@@ -31,6 +46,8 @@ data class DecimalExpr(val value: BigDecimal) : Literal {
 data class VariableExpr(val name: String) : Expression {
     override fun variables(): Set<VariableExpr> = setOf(this)
 
+    override fun mapChildrenIndexed(f: (i: Int, expr: Expression) -> Expression) = this
+
     override fun toString(): String {
         return name
     }
@@ -39,13 +56,7 @@ data class VariableExpr(val name: String) : Expression {
 data class UnaryExpr(val operator: UnaryOperator, val expr: Expression) : Expression {
     override fun children(): List<Expression> = listOf(expr)
 
-    override fun copyWithChildren(children: List<Expression>): Expression {
-        if (children.count() != 1) {
-            throw java.lang.IllegalArgumentException()
-        }
-
-        return UnaryExpr(operator, children.elementAt(0))
-    }
+    override fun mapChildrenIndexed(f: (i: Int, expr: Expression) -> Expression) = copy(expr = f(0, expr))
 
     override fun toString(): String {
         return "${operator}(${expr})"
@@ -55,13 +66,8 @@ data class UnaryExpr(val operator: UnaryOperator, val expr: Expression) : Expres
 data class BinaryExpr(val operator: BinaryOperator, val left: Expression, val right: Expression) : Expression {
     override fun children(): List<Expression> = listOf(left, right)
 
-    override fun copyWithChildren(children: List<Expression>): Expression {
-        if (children.count() != 2) {
-            throw java.lang.IllegalArgumentException()
-        }
-
-        return BinaryExpr(operator, children.elementAt(0), children.elementAt(1))
-    }
+    override fun mapChildrenIndexed(f: (i: Int, expr: Expression) -> Expression) =
+        copy(left = f(0, left), right = f(1, right))
 
     override fun toString(): String {
         return "${operator}(${left}, ${right})"
@@ -71,9 +77,8 @@ data class BinaryExpr(val operator: BinaryOperator, val left: Expression, val ri
 data class NaryExpr(val operator: NaryOperator, val operands: List<Expression>) : Expression {
     override fun children(): List<Expression> = operands
 
-    override fun copyWithChildren(children: List<Expression>): Expression {
-        return NaryExpr(operator, children)
-    }
+    override fun mapChildrenIndexed(f: (i: Int, expr: Expression) -> Expression) =
+        copy(operands = operands.mapIndexed(f))
 
     override fun toString(): String {
         return operands.joinToString(", ", "${operator}(", ")") { it.toString() }
@@ -85,14 +90,11 @@ data class MixedNumber(val integer: IntegerExpr, val numerator: IntegerExpr, val
 
     override fun children() = listOf<Expression>(integer, numerator, denominator)
 
-    override fun copyWithChildren(children: List<Expression>): Expression {
-        if (children.count() != 3 || children[0] !is IntegerExpr || children[1] !is IntegerExpr
-            || children[2] !is IntegerExpr
-        ) {
-            throw java.lang.IllegalArgumentException()
-        }
-        return MixedNumber(children[0] as IntegerExpr, children[1] as IntegerExpr, children[2] as IntegerExpr)
-    }
+    override fun mapChildrenIndexed(f: (i: Int, expr: Expression) -> Expression) = MixedNumber(
+        f(0, integer) as IntegerExpr,
+        f(1, numerator) as IntegerExpr,
+        f(2, denominator) as IntegerExpr,
+    )
 
     override fun toString(): String {
         return "$integer $numerator/$denominator"

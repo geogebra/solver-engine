@@ -5,7 +5,7 @@ import java.math.BigInteger
 import java.util.*
 
 interface Pattern {
-    fun findMatches(match: Match, subexpression: Subexpression): Sequence<Match>
+    fun findMatches(subexpression: Subexpression, match: Match = RootMatch): Sequence<Match>
 }
 
 interface FixedSizePattern : Pattern {
@@ -14,7 +14,7 @@ interface FixedSizePattern : Pattern {
 
     fun checkExpressionKind(expr: Expression): Boolean
 
-    override fun findMatches(match: Match, subexpression: Subexpression): Sequence<Match> {
+    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
         if (!checkExpressionKind(subexpression.expr)) {
             return emptySequence()
         }
@@ -30,7 +30,7 @@ interface FixedSizePattern : Pattern {
 
         var matches = sequenceOf(match.newChild(this, subexpression))
         for ((index, op) in children().withIndex()) {
-            matches = matches.flatMap { op.findMatches(it, subexpression.nthChild(index)) }
+            matches = matches.flatMap { op.findMatches(subexpression.nthChild(index), it) }
         }
         return matches
     }
@@ -92,7 +92,7 @@ data class NaryPattern(val operator: NaryOperator, val operands: List<Pattern>) 
 
 data class AssocNaryPattern(val operator: NaryOperator, val operands: List<Pattern>, val minSize: Int = 0) : Pattern {
 
-    override fun findMatches(match: Match, subexpression: Subexpression): Sequence<Match> {
+    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
         val childCount = subexpression.expr.children().count()
         if (subexpression.expr !is NaryExpr || subexpression.expr.operator != operator
             || childCount < operands.count() || childCount < minSize
@@ -105,7 +105,7 @@ data class AssocNaryPattern(val operator: NaryOperator, val operands: List<Patte
                 if (searchIndex < operands.size) {
                     val lastChildIndex = childCount - operands.count() + searchIndex
                     for (childIndex in initialChildIndex..lastChildIndex) {
-                        val childMatches = operands[searchIndex].findMatches(match, subexpression.nthChild(childIndex))
+                        val childMatches = operands[searchIndex].findMatches(subexpression.nthChild(childIndex), match)
                         for (childMatch in childMatches) {
                             yieldAll(rec(childMatch, searchIndex + 1, childIndex + 1))
                         }
@@ -142,9 +142,9 @@ data class AssocNaryPattern(val operator: NaryOperator, val operands: List<Patte
 }
 
 data class MixedNumberPattern(
-    val integer: IntegerPattern,
-    val numerator: IntegerPattern,
-    val denominator: IntegerPattern,
+    val integer: IntegerPattern = IntegerPattern(),
+    val numerator: IntegerPattern = IntegerPattern(),
+    val denominator: IntegerPattern = IntegerPattern(),
 ) : FixedSizePattern {
 
     override fun children() = listOf(integer, numerator, denominator)
@@ -154,8 +154,8 @@ data class MixedNumberPattern(
 
 data class ConditionPattern(val pattern: Pattern, val condition: MatchCondition) : Pattern {
 
-    override fun findMatches(match: Match, subexpression: Subexpression): Sequence<Match> {
-        return pattern.findMatches(match, subexpression).filter { condition.checkMatch(it) }
+    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+        return pattern.findMatches(subexpression, match).filter { condition.checkMatch(it) }
     }
 }
 
@@ -189,4 +189,21 @@ fun numericCondition(ptn1: IntegerPattern, ptn2: IntegerPattern, condition: (Big
 
 interface MatchCondition {
     fun checkMatch(match: Match): Boolean
+}
+
+data class FindPattern(val pattern: Pattern) : Pattern {
+
+    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+        val self = this
+        return sequence {
+            for (match in pattern.findMatches(subexpression, match)) {
+                yield(match.newChild(self, match.getLastBinding(pattern)!!))
+            }
+            for (child in subexpression.children()) {
+                for (match in self.findMatches(child, match)) {
+                    yield(match.newChild(self, match.getLastBinding(pattern)!!))
+                }
+            }
+        }
+    }
 }

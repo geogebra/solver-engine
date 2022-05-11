@@ -11,7 +11,7 @@ import kotlin.test.assertNull
 data class RuleTestCase(val inputExpr: String, val rule: Rule, val outputExpr: String?) {
     fun assert() {
         val expression = parseExpression(inputExpr)
-        val step = rule.apply(Subexpression(RootPath, expression))
+        val step = rule.tryExecute(Subexpression(RootPath, expression))
         if (outputExpr == null) {
             assertNull(step)
         } else {

@@ -102,7 +102,13 @@ data class SubstituteInExpressionMaker(val pattern: AssocNaryPattern, val newVal
             }
         }
 
-        return NaryExpressionMaker(pattern.operator, restChildren).makeExpressionAcc(match, currentPath, acc)
+        // If there is only one operand, it makes no sense to wrap it in an nary expression
+        val exprMaker = when (restChildren.size) {
+            1 -> restChildren[0]
+            else -> NaryExpressionMaker(pattern.operator, restChildren)
+        }
+
+        return exprMaker.makeExpressionAcc(match, currentPath, acc)
     }
 }
 

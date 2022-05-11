@@ -3,36 +3,14 @@ package transformations
 import expressionmakers.ExpressionMaker
 import expressions.Subexpression
 import patterns.Match
-import patterns.Pattern
-import patterns.RootMatch
-import steps.Skill
-import steps.Step
+import plans.Plan
+import steps.Transformation
 
-interface Rule {
-    val pattern: Pattern
+interface Rule : Plan {
     val resultMaker: ExpressionMaker
 
-    fun apply(sub: Subexpression): Step? {
-        for (match in pattern.findMatches(RootMatch, sub)) {
-            val (result, pathMappings) = resultMaker.makeExpression(match, sub.path)
-            return Step(sub.expr, result, pathMappings)
-        }
-
-        return null
-    }
-
-    //    fun getTransformation(match: Match): Transformation
-    fun getSkills(match: Match): Sequence<Skill> = emptySequence()
-//    fun getPathMappings(match: Match): List<PathMapping>
-}
-
-/*
-object groupSumLiterals : Rule {
-    override fun apply(expr: Expression): Expression? {
-        return when (expr) {
-            is SumExpr -> expr
-            else -> null
-        }
+    override fun execute(match: Match, sub: Subexpression): Transformation? {
+        val (result, pathMappings) = resultMaker.makeExpression(match, sub.path)
+        return Transformation(sub.path, sub.expr, result, pathMappings)
     }
 }
- */

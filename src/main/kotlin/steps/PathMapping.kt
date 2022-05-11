@@ -7,17 +7,35 @@ data class PathMapping(
     val fromPath: Path,
     val type: PathMappingType,
     val toPath: Path,
-)
+) {
+    fun composeWith(other: PathMapping): PathMapping {
+        if (!this.toPath.hasAncestor(other.fromPath)) {
+            return this
+        }
+
+        return this
+    }
+}
 
 enum class PathMappingType {
-    Move,
-    Transform,
+    Move {
+        override fun composeWith(other: PathMappingType) = other
+    },
+    Relate,
     Combine,
     Factor,
     Distribute,
-    Relate,
     Cancel,
-    Introduce,
+    Introduce;
+
+    open fun composeWith(other: PathMappingType): PathMappingType {
+        return when(other) {
+            Move -> this
+            Cancel -> Cancel
+            this -> this
+            else -> Relate
+        }
+    }
 }
 
 interface PathMapper {
