@@ -1,11 +1,11 @@
 package parser
 
+import parser.antlr.ExpressionBaseVisitor
+import parser.antlr.ExpressionLexer
+import parser.antlr.ExpressionParser
 import expressions.*
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
-import org.geogebra.solver.parser.ExpressionBaseVisitor
-import org.geogebra.solver.parser.ExpressionLexer
-import org.geogebra.solver.parser.ExpressionParser
 
 fun parseExpression(text: String): Expression {
     val lexer = ExpressionLexer(CharStreams.fromString(text))
@@ -13,7 +13,6 @@ fun parseExpression(text: String): Expression {
     val visitor = ExpressionVisitor()
     return visitor.visit(parser.expr())
 }
-
 
 private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
 

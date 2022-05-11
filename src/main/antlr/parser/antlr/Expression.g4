@@ -1,5 +1,9 @@
 grammar Expression;
 
+@header {
+    package parser.antlr;
+}
+
 expr: sum;
 
 sum: first=explicitProduct (rest+=otherTerm)*;

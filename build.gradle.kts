@@ -6,8 +6,8 @@ plugins {
     antlr
 }
 
-group = "org.example"
-version = "1.0-SNAPSHOT"
+group = "org.geogebra.solver"
+version = "0.1"
 
 repositories {
     mavenCentral()
@@ -36,8 +36,6 @@ tasks.compileTestKotlin {
     dependsOn(tasks.generateTestGrammarSource)
 }
 
-// Arnaud: This should generate the grammar java source in the correct place,
-// but I can't make IDEA pick up the generated source for some reason.
 tasks.generateGrammarSource {
     arguments = arguments + listOf("-visitor")
 }
