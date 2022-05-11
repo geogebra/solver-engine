@@ -1,7 +1,7 @@
 import expressions.*
 import transformations.AddLikeFractions
 
-fun main(args: Array<String>) {
+fun main() {
     val one = IntegerExpr(1)
     val two = IntegerExpr(2)
     val frac = fractionOf(one, two)

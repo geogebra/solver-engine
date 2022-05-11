@@ -21,7 +21,7 @@ enum class PathMappingType {
 }
 
 interface PathMapper {
-    fun accPathMappings(path: Path, acc: MutableList<PathMapping>)
+    fun accPathMappings(toPath: Path, acc: MutableList<PathMapping>)
 }
 
 data class TypePathMapper(val fromPaths: List<Path>, val type: PathMappingType) : PathMapper {
@@ -37,7 +37,7 @@ data class TypePathMapper(val fromPaths: List<Path>, val type: PathMappingType) 
 }
 
 data class VanishingPathMapper(val fromPaths: List<Path>, val type: PathMappingType) : PathMapper {
-    override fun accPathMappings(path: Path, acc: MutableList<PathMapping>) {
+    override fun accPathMappings(toPath: Path, acc: MutableList<PathMapping>) {
         for (fromPath in fromPaths) {
             acc.add(PathMapping(fromPath, type, cancelPath(fromPaths[0])))
         }

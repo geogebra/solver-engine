@@ -61,7 +61,7 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
 
     override fun visitFirstFactorWithSign(ctx: ExpressionParser.FirstFactorWithSignContext?): Expression {
         val factor = visit(ctx!!.factor)
-        val operator = when (ctx!!.sign.text) {
+        val operator = when (ctx.sign.text) {
             "+" -> UnaryOperator.Plus
             else -> UnaryOperator.Minus
         }
