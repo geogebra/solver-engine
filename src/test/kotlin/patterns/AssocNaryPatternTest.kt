@@ -2,6 +2,7 @@ package patterns
 
 import expressions.*
 import org.junit.jupiter.api.Test
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
 class AssocNaryPatternTest {
@@ -95,6 +96,6 @@ class AssocNaryPatternTest {
         assertEquals(1, matches.count())
         val match = matches.elementAt(0)
         val rest = ptn.getRestSubexpressions(match)
-        // assertEquals(sumOf(IntegerExpr(2), IntegerExpr(3)), rest)
+        assertContentEquals(listOf<Expression>(IntegerExpr(2), IntegerExpr(3)), rest.map { it -> it.expr })
     }
 }
