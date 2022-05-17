@@ -194,14 +194,13 @@ interface MatchCondition {
 data class FindPattern(val pattern: Pattern) : Pattern {
 
     override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
-        val self = this
         return sequence {
             for (match in pattern.findMatches(subexpression, match)) {
-                yield(match.newChild(self, match.getLastBinding(pattern)!!))
+                yield(match.newChild(this@FindPattern, match.getLastBinding(pattern)!!))
             }
             for (child in subexpression.children()) {
-                for (match in self.findMatches(child, match)) {
-                    yield(match.newChild(self, match.getLastBinding(pattern)!!))
+                for (match in findMatches(child, match)) {
+                    yield(match.newChild(this@FindPattern, match.getLastBinding(pattern)!!))
                 }
             }
         }
