@@ -90,7 +90,7 @@ data class Subexpression(val path: Path, val expr: Expression) {
     }
 
     fun subst(sub: Subexpression): Subexpression {
-        return Subexpression(sub.path, substitute(sub))
+        return Subexpression(path, substitute(sub))
     }
 }
 

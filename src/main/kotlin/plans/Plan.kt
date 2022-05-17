@@ -67,6 +67,51 @@ interface PlanPipeline : Plan {
     }
 }
 
+interface InStep : Plan {
+
+    val pipeline: PlanPipeline
+    fun getSubexpressions(match: Match, sub: Subexpression): List<Subexpression>
+
+    override fun execute(match: Match, sub: Subexpression): Transformation? {
+        val stepSubs = getSubexpressions(match, sub).toMutableList()
+
+        val steps = mutableListOf<Transformation>()
+        var lastSub = sub
+        for (stepPlan in pipeline.plans) {
+            val stepTransformations = stepSubs.map { stepPlan.tryExecute(it) }
+            val nonNullTransformations = stepTransformations.filterNotNull()
+            if (nonNullTransformations.isNotEmpty()) {
+                val prevSub = lastSub
+                for (tr in nonNullTransformations) {
+                    lastSub = lastSub.subst(tr.toSubexpr)
+                }
+                steps.add(
+                    Transformation(
+                        prevSub.path,
+                        prevSub.expr,
+                        lastSub.expr,
+                        emptyList(),
+                        nonNullTransformations
+                    )
+                )
+                for ((i, tr) in stepTransformations.withIndex()) {
+                    if (tr != null) {
+                        stepSubs[i] = tr.toSubexpr
+                    }
+                }
+            }
+        }
+
+        return Transformation(sub.path, sub.expr, lastSub.expr, emptyList(), steps)
+    }
+}
+
+data class ApplyToChildrenInStep(override val pipeline: PlanPipeline, override val pattern: Pattern = AnyPattern()): InStep {
+    override fun getSubexpressions(match: Match, sub: Subexpression): List<Subexpression> {
+        return sub.children()
+    }
+}
+
 object ConvertMixedNumberToImproperFraction : PlanPipeline {
     override val pattern = MixedNumberPattern()
 
@@ -97,7 +142,7 @@ object AddMixedNumbers : PlanPipeline {
     override val pattern = sumOf(MixedNumberPattern(), MixedNumberPattern())
 
     override val plans = listOf(
-        WhilePossible(Deeply(ConvertMixedNumberToImproperFraction)),
+        ApplyToChildrenInStep(ConvertMixedNumberToImproperFraction),
         AddUnlikeFractions,
         FractionToMixedNumber,
     )
