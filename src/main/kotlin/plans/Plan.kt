@@ -1,6 +1,8 @@
 package plans
 
 import context.Context
+import context.Resource
+import context.ResourceData
 import expressions.Subexpression
 import patterns.*
 import rules.*
@@ -114,20 +116,21 @@ data class ApplyToChildrenInStep(override val pipeline: PlanPipeline, override v
     }
 }
 
-interface ContextSensitivePlan : Plan {
+data class AnnotatedPlan(val plan: Plan, override val resourceData: ResourceData) : Resource
 
-    fun sortPlans(ctx: Context): Sequence<Plan>
+data class ContextSensitivePlanSelector(
+    val alternatives: List<AnnotatedPlan>,
+    val default: Plan,
+    override val pattern: Pattern = AnyPattern()
+) : Plan {
 
     override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
-        for (plan in sortPlans(ctx)) {
-            val trans = tryExecute(ctx, sub)
-            if (trans != null) {
-                return trans
-            }
-        }
-        return null
+        val alternative = ctx.selectBestResource(alternatives.asSequence())?.plan ?: default
+        return alternative.tryExecute(ctx, sub)
     }
 }
+
+// emptyResourceData -> defaultPlan
 
 val convertMixedNumberToImproperFraction = PlanPipeline(
     pattern = MixedNumberPattern(),
@@ -176,3 +179,13 @@ val addMixedNumbersUsingCommutativity = PlanPipeline(
         addLikeFractions,
     )
 )
+
+val addMixedNumbers = ContextSensitivePlanSelector(
+    alternatives = listOf(
+        AnnotatedPlan(addMixedNumbersByConverting, ResourceData("EU")),
+        AnnotatedPlan(addMixedNumbersUsingCommutativity, ResourceData("US")),
+    ),
+    default = addMixedNumbersByConverting,
+    pattern = sumOf(MixedNumberPattern(), MixedNumberPattern()),
+)
+

@@ -2,6 +2,8 @@ package context
 
 data class ResourceData(val curriculum: String?)
 
+val emptyResourceData = ResourceData(null)
+
 interface Resource {
     val resourceData: ResourceData
 }
