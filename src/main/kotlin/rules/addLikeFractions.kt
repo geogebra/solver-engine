@@ -15,7 +15,7 @@ val addLikeFractions = run {
 
     val pattern = sumContaining(f1, f2)
 
-    RuleData(
+    Rule(
         pattern = pattern,
         resultMaker = substituteIn(pattern, makeFractionOf(makeSumOf(move(num1), move(num2)), factor(denom))),
         explanationMaker = makeMetadata("add like fractions", move(f1), move(f2)),

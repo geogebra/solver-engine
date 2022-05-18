@@ -17,7 +17,7 @@ val commonDenominator = run {
     val factor1 = makeNumericOp(denom1, denom2) { n1, n2 -> n2 / n1.gcd(n2) }
     val factor2 = makeNumericOp(denom1, denom2) { n1, n2 -> n1 / n1.gcd(n2) }
 
-    RuleData(
+    Rule(
         pattern = ConditionPattern(sum, numericCondition(denom1, denom2) { n1, n2 -> n1 != n2 }),
         resultMaker = substituteIn(
             sum,

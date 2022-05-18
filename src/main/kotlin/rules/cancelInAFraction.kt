@@ -15,7 +15,7 @@ val cancelInAFraction = run {
     val denominator = productContaining(common, minSize = 2)
     val pattern = fractionOf(numerator, denominator)
 
-    RuleData(
+    Rule(
         pattern = pattern,
         resultMaker = cancel(common, makeFractionOf(restOf(numerator), restOf(denominator))),
         explanationMaker = makeMetadata("cancel in fraction", move(pattern), move(common)),

@@ -35,10 +35,10 @@ class TestPlan {
     @Test
     fun testAddMixedNumbersPlan() {
         val inExpr = parseExpression("[5 1/4] + [2 2/3]")
-        val trans = addMixedNumbers.tryExecute(emptyContext, Subexpression(RootPath, inExpr))
+        val trans = addMixedNumbersByConverting.tryExecute(emptyContext, Subexpression(RootPath, inExpr))
         assertNotNull(trans)
         assertNotNull(trans.steps)
-        assertEquals(addMixedNumbers.plans.size, trans.steps?.size)
+        assertEquals(addMixedNumbersByConverting.plans.size, trans.steps?.size)
         assertEquals(parseExpression("[7 11/12]"), trans.toExpr)
         trans.prettyPrint()
     }

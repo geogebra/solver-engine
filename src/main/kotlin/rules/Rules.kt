@@ -10,8 +10,12 @@ import steps.ExplanationMaker
 import steps.SkillMaker
 import steps.Transformation
 
-interface Rule : Plan {
-    val resultMaker: ExpressionMaker
+data class Rule(
+    override val pattern: Pattern,
+    override val explanationMaker: ExplanationMaker,
+    override val skillMakers: List<SkillMaker> = emptyList(),
+    val resultMaker: ExpressionMaker,
+) : Plan {
 
     override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
         val (result, pathMappings) = resultMaker.makeExpression(match, sub.path)
@@ -27,9 +31,24 @@ interface Rule : Plan {
     }
 }
 
-data class RuleData(
-    override val pattern: Pattern,
-    override val explanationMaker: ExplanationMaker,
-    override val skillMakers: List<SkillMaker> = emptyList(),
-    override val resultMaker: ExpressionMaker,
-) : Rule
+class RuleBuilder {
+    var pattern: Pattern? = null
+    var explanationMaker: ExplanationMaker? = null
+    var skillMakers: List<SkillMaker> = emptyList()
+    var resultMaker: ExpressionMaker? = null
+
+    fun buildRule(): Rule {
+        return Rule(
+            pattern = pattern!!,
+            explanationMaker = explanationMaker!!,
+            skillMakers = skillMakers,
+            resultMaker = resultMaker!!,
+        )
+    }
+}
+
+fun rule(init: RuleBuilder.() -> Unit): Rule {
+    val ruleBuilder = RuleBuilder()
+    ruleBuilder.init()
+    return ruleBuilder.buildRule()
+}

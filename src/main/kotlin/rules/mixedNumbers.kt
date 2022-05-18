@@ -11,7 +11,7 @@ val splitMixedNumber = run {
     val denominator = IntegerPattern()
     val pattern = MixedNumberPattern(integer, numerator, denominator)
 
-    RuleData(
+    Rule(
         pattern = pattern,
         resultMaker = makeSumOf(move(integer), makeFractionOf(move(numerator), move(denominator))),
         explanationMaker = makeMetadata("split mixed number", move(pattern)),
@@ -27,7 +27,7 @@ val fractionToMixedNumber = run {
     val quotient = makeNumericOp(numerator, denominator) { n, d -> n / d }
     val remainder = makeNumericOp(numerator, denominator) { n, d -> n % d }
 
-    RuleData(
+    Rule(
         pattern = ConditionPattern(fractionOf(numerator, denominator), isImproperFraction),
         explanationMaker = makeMetadata(
             "fraction to mixed number",

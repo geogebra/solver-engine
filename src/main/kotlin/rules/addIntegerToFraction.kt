@@ -14,7 +14,7 @@ val addIntegerToFraction = run {
     val denominator = IntegerPattern()
     val fraction = fractionOf(numerator, denominator)
 
-    RuleData(
+    Rule(
         pattern = sumOf(integer, fraction),
         resultMaker = makeSumOf(
             makeFractionOf(

@@ -156,11 +156,23 @@ val addUnlikeFractions = run {
     PlanPipeline(pattern, plans)
 }
 
-val addMixedNumbers = PlanPipeline(
+val addMixedNumbersByConverting = PlanPipeline(
     pattern = sumOf(MixedNumberPattern(), MixedNumberPattern()),
     plans = listOf(
         ApplyToChildrenInStep(convertMixedNumberToImproperFraction),
         addUnlikeFractions,
         fractionToMixedNumber,
     ),
+)
+
+val addMixedNumbersUsingCommutativity = PlanPipeline(
+    pattern = sumOf(MixedNumberPattern(), MixedNumberPattern()),
+    plans = listOf(
+        splitMixedNumber,
+        evaluateIntegerSum,
+        addUnlikeFractions,
+        addIntegerToFraction,
+        WhilePossible(Deeply(evaluateIntegerProduct)),
+        addLikeFractions,
+    )
 )
