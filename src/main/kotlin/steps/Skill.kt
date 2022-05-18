@@ -1,3 +1,0 @@
-package steps
-
-interface Skill

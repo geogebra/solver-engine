@@ -1,32 +1,35 @@
 package plans
 
+import context.Context
 import expressions.Subexpression
 import patterns.*
-import steps.Skill
+import rules.*
+import steps.ExplanationMaker
+import steps.SkillMaker
 import steps.Transformation
-import transformations.*
+import steps.makeMetadata
 
 interface Plan {
 
     val pattern: Pattern
-    fun execute(match: Match, sub: Subexpression): Transformation?
+    val explanationMaker: ExplanationMaker get() = makeMetadata("magic")
+    val skillMakers: List<SkillMaker> get() = emptyList()
 
-    fun tryExecute(sub: Subexpression): Transformation? {
+    fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation?
+
+    fun tryExecute(ctx: Context, sub: Subexpression): Transformation? {
         for (match in pattern.findMatches(sub, RootMatch)) {
-            return execute(match, sub)
+            return execute(ctx, match, sub)
         }
         return null
     }
-
-    // fun getExplanation(match: Match): Explanation
-    fun getSkills(match: Match): Sequence<Skill> = emptySequence()
 }
 
 data class Deeply(val plan: Plan) : Plan {
 
     override val pattern = FindPattern(plan.pattern)
-    override fun execute(match: Match, sub: Subexpression): Transformation? {
-        val step = plan.execute(match, match.getLastBinding(plan.pattern)!!) ?: return null
+    override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
+        val step = plan.execute(ctx, match, match.getLastBinding(plan.pattern)!!) ?: return null
         return Transformation(sub.path, sub.expr, sub.subst(step.toSubexpr).expr, emptyList(), listOf(step))
     }
 }
@@ -35,28 +38,26 @@ data class WhilePossible(val plan: Plan) : Plan {
 
     override val pattern = plan.pattern
 
-    override fun execute(match: Match, sub: Subexpression): Transformation? {
-        var lastStep: Transformation? = plan.execute(match, sub)
+    override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
+        var lastStep: Transformation? = plan.execute(ctx, match, sub)
         var lastSub = sub
         val steps: MutableList<Transformation> = mutableListOf()
         while (lastStep != null) {
             steps.add(lastStep)
             lastSub = lastSub.subst(lastStep.toSubexpr)
-            lastStep = plan.tryExecute(lastSub)
+            lastStep = plan.tryExecute(ctx, lastSub)
         }
         return Transformation(sub.path, sub.expr, lastSub.expr, emptyList(), steps)
     }
 }
 
-interface PlanPipeline : Plan {
+data class PlanPipeline(override val pattern: Pattern, val plans: List<Plan>) : Plan {
 
-    val plans : List<Plan>
-
-    override fun execute(match: Match, sub: Subexpression): Transformation? {
+    override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
         val steps = mutableListOf<Transformation>()
         var lastSub = sub
         for (plan in plans) {
-            val step = plan.tryExecute(lastSub)
+            val step = plan.tryExecute(ctx, lastSub)
             if (step != null) {
                 lastSub = lastSub.subst(step.toSubexpr)
                 steps.add(step)
@@ -72,13 +73,13 @@ interface InStep : Plan {
     val pipeline: PlanPipeline
     fun getSubexpressions(match: Match, sub: Subexpression): List<Subexpression>
 
-    override fun execute(match: Match, sub: Subexpression): Transformation? {
+    override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
         val stepSubs = getSubexpressions(match, sub).toMutableList()
 
         val steps = mutableListOf<Transformation>()
         var lastSub = sub
         for (stepPlan in pipeline.plans) {
-            val stepTransformations = stepSubs.map { stepPlan.tryExecute(it) }
+            val stepTransformations = stepSubs.map { stepPlan.tryExecute(ctx, it) }
             val nonNullTransformations = stepTransformations.filterNotNull()
             if (nonNullTransformations.isNotEmpty()) {
                 val prevSub = lastSub
@@ -106,44 +107,60 @@ interface InStep : Plan {
     }
 }
 
-data class ApplyToChildrenInStep(override val pipeline: PlanPipeline, override val pattern: Pattern = AnyPattern()): InStep {
+data class ApplyToChildrenInStep(override val pipeline: PlanPipeline, override val pattern: Pattern = AnyPattern()) :
+    InStep {
     override fun getSubexpressions(match: Match, sub: Subexpression): List<Subexpression> {
         return sub.children()
     }
 }
 
-object ConvertMixedNumberToImproperFraction : PlanPipeline {
-    override val pattern = MixedNumberPattern()
+interface ContextSensitivePlan : Plan {
 
-    override val plans = listOf(
-        SplitMixedNumber,
-        AddIntegerToFraction,
-        WhilePossible(Deeply(EvaluateIntegerProduct)),
-        AddLikeFractions,
-        WhilePossible(Deeply(EvaluateIntegerSum)),
-    )
+    fun sortPlans(ctx: Context): Sequence<Plan>
+
+    override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
+        for (plan in sortPlans(ctx)) {
+            val trans = tryExecute(ctx, sub)
+            if (trans != null) {
+                return trans
+            }
+        }
+        return null
+    }
 }
 
-object AddUnlikeFractions : PlanPipeline {
-    private val f1 = fractionOf(IntegerPattern(), IntegerPattern())
-    private val f2 = fractionOf(IntegerPattern(), IntegerPattern())
-
-    override val pattern = sumContaining(f1, f2)
-
-    override val plans = listOf(
-        CommonDenominator,
-        WhilePossible(Deeply(EvaluateIntegerProduct)),
-        AddLikeFractions,
-        WhilePossible(Deeply(EvaluateIntegerSum)),
+val convertMixedNumberToImproperFraction = PlanPipeline(
+    pattern = MixedNumberPattern(),
+    plans = listOf(
+        splitMixedNumber,
+        addIntegerToFraction,
+        WhilePossible(Deeply(evaluateIntegerProduct)),
+        addLikeFractions,
+        WhilePossible(Deeply(evaluateIntegerSum)),
     )
+)
+
+val addUnlikeFractions = run {
+    val f1 = fractionOf(IntegerPattern(), IntegerPattern())
+    val f2 = fractionOf(IntegerPattern(), IntegerPattern())
+
+    val pattern = sumContaining(f1, f2)
+
+    val plans = listOf(
+        commonDenominator,
+        WhilePossible(Deeply(evaluateIntegerProduct)),
+        addLikeFractions,
+        WhilePossible(Deeply(evaluateIntegerSum)),
+    )
+
+    PlanPipeline(pattern, plans)
 }
 
-object AddMixedNumbers : PlanPipeline {
-    override val pattern = sumOf(MixedNumberPattern(), MixedNumberPattern())
-
-    override val plans = listOf(
-        ApplyToChildrenInStep(ConvertMixedNumberToImproperFraction),
-        AddUnlikeFractions,
-        FractionToMixedNumber,
-    )
-}
+val addMixedNumbers = PlanPipeline(
+    pattern = sumOf(MixedNumberPattern(), MixedNumberPattern()),
+    plans = listOf(
+        ApplyToChildrenInStep(convertMixedNumberToImproperFraction),
+        addUnlikeFractions,
+        fractionToMixedNumber,
+    ),
+)

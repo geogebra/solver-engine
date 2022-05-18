@@ -1,5 +1,6 @@
 package plans
 
+import context.emptyContext
 import expressions.RootPath
 import expressions.Subexpression
 import org.junit.jupiter.api.Test
@@ -12,10 +13,10 @@ class TestPlan {
     @Test
     fun testConvertMixedNumberToImproperFractionsPlan() {
         val inExpr = parseExpression("[1 2/3]")
-        val trans = ConvertMixedNumberToImproperFraction.tryExecute(Subexpression(RootPath, inExpr))
+        val trans = convertMixedNumberToImproperFraction.tryExecute(emptyContext, Subexpression(RootPath, inExpr))
         assertNotNull(trans)
         assertNotNull(trans.steps)
-        assertEquals(ConvertMixedNumberToImproperFraction.plans.size, trans.steps?.size)
+        assertEquals(convertMixedNumberToImproperFraction.plans.size, trans.steps?.size)
         assertEquals(parseExpression("[5/3]"), trans.toExpr)
         trans.prettyPrint()
     }
@@ -23,10 +24,10 @@ class TestPlan {
     @Test
     fun testAddUnlikeFractionsPlan() {
         val inExpr = parseExpression("[3/8] + [5/12]")
-        val trans = AddUnlikeFractions.tryExecute(Subexpression(RootPath, inExpr))
+        val trans = addUnlikeFractions.tryExecute(emptyContext, Subexpression(RootPath, inExpr))
         assertNotNull(trans)
         assertNotNull(trans.steps)
-        assertEquals(AddUnlikeFractions.plans.size, trans.steps?.size)
+        assertEquals(addUnlikeFractions.plans.size, trans.steps?.size)
         assertEquals(parseExpression("[19 / 24]"), trans.toExpr)
         trans.prettyPrint()
     }
@@ -34,10 +35,10 @@ class TestPlan {
     @Test
     fun testAddMixedNumbersPlan() {
         val inExpr = parseExpression("[5 1/4] + [2 2/3]")
-        val trans = AddMixedNumbers.tryExecute(Subexpression(RootPath, inExpr))
+        val trans = addMixedNumbers.tryExecute(emptyContext, Subexpression(RootPath, inExpr))
         assertNotNull(trans)
         assertNotNull(trans.steps)
-        assertEquals(AddMixedNumbers.plans.size, trans.steps?.size)
+        assertEquals(addMixedNumbers.plans.size, trans.steps?.size)
         assertEquals(parseExpression("[7 11/12]"), trans.toExpr)
         trans.prettyPrint()
     }

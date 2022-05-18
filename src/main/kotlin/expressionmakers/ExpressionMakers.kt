@@ -10,7 +10,7 @@ import steps.TypePathMapper
 import java.math.BigInteger
 
 interface ExpressionMaker {
-    fun makeExpression(match: Match, currentPath: Path): Pair<Expression, List<PathMapping>> {
+    fun makeExpression(match: Match, currentPath: Path = RootPath): Pair<Expression, List<PathMapping>> {
         val pathMappingsAccumulator = mutableListOf<PathMapping>()
         val result = makeExpressionAcc(match, currentPath, pathMappingsAccumulator)
         return Pair(result, pathMappingsAccumulator)
