@@ -162,6 +162,8 @@ data class ConditionPattern(val pattern: Pattern, val condition: MatchCondition)
 fun fractionOf(numerator: Pattern, denominator: Pattern) =
     BinaryPattern(BinaryOperator.Fraction, numerator, denominator)
 
+fun bracketOf(expr: Pattern) = UnaryPattern(UnaryOperator.Bracket, expr)
+
 fun sumOf(vararg terms: Pattern) = NaryPattern(NaryOperator.Sum, terms.asList())
 
 fun sumContaining(vararg terms: Pattern) = AssocNaryPattern(NaryOperator.Sum, terms.asList())

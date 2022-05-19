@@ -1,5 +1,6 @@
 package plans
 
+import context.Context
 import context.emptyContext
 import expressions.RootPath
 import expressions.Subexpression
@@ -41,5 +42,30 @@ class TestPlan {
         assertEquals(addMixedNumbersByConverting.plans.size, trans.steps?.size)
         assertEquals(parseExpression("[7 11/12]"), trans.toExpr)
         trans.prettyPrint()
+    }
+
+    @Test
+    fun testContextSensitivePlan() {
+        val inExpr = parseExpression("[5 1/4] + [2 2/3]")
+
+        val trans1 = addMixedNumbers.tryExecute(Context("EU"), Subexpression(RootPath, inExpr))
+        assertNotNull(trans1)
+        assertNotNull(trans1.steps)
+        assertEquals(addMixedNumbersByConverting.plans.size, trans1.steps?.size)
+        assertEquals(parseExpression("[7 11/12]"), trans1.toExpr)
+
+        val trans2 = addMixedNumbers.tryExecute(Context("US"), Subexpression(RootPath, inExpr))
+        trans2?.prettyPrint()
+        assertNotNull(trans2)
+        assertNotNull(trans2.steps)
+        assertEquals(addMixedNumbersUsingCommutativity.plans.size, trans2.steps?.size)
+        assertEquals(parseExpression("[7 11/12]"), trans2.toExpr)
+
+        val trans3 = addMixedNumbers.tryExecute(emptyContext, Subexpression(RootPath, inExpr))
+        assertNotNull(trans3)
+        assertNotNull(trans3.steps)
+        assertEquals(addMixedNumbersByConverting.plans.size, trans3.steps?.size)
+        assertEquals(parseExpression("[7 11/12]"), trans3.toExpr)
+
     }
 }

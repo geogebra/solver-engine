@@ -171,7 +171,8 @@ val addMixedNumbersByConverting = PlanPipeline(
 val addMixedNumbersUsingCommutativity = PlanPipeline(
     pattern = sumOf(MixedNumberPattern(), MixedNumberPattern()),
     plans = listOf(
-        splitMixedNumber,
+        WhilePossible(Deeply(splitMixedNumber)),
+        removeBracketsSum,
         evaluateIntegerSum,
         addUnlikeFractions,
         addIntegerToFraction,

@@ -15,6 +15,11 @@ data class PathMappingAnnotator(val pathMappingType: PathMappingType, val patter
         TypePathMapper(paths, pathMappingType).accPathMappings(currentPath, acc)
         return match.getBoundExpr(pattern)!!
     }
+
+    override fun makeMappedExpression(match: Match): MappedExpression {
+        val paths = match.getBoundPaths(pattern)
+        return MappedExpression(match.getBoundExpr(pattern)!!, PathMappingLeaf(paths, pathMappingType))
+    }
 }
 
 data class VanishingPathAnnotator(
@@ -26,6 +31,11 @@ data class VanishingPathAnnotator(
         val paths = match.getBoundPaths(pattern)
         VanishingPathMapper(paths, pathMappingType).accPathMappings(currentPath, acc)
         return inExpression.makeExpressionAcc(match, currentPath, acc)
+    }
+
+    override fun makeMappedExpression(match: Match): MappedExpression {
+        // TODO
+        return inExpression.makeMappedExpression(match)
     }
 }
 

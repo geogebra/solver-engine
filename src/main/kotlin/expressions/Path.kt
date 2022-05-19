@@ -9,6 +9,10 @@ interface Path {
 
     fun truncate(newLength: Int) = this
 
+    fun parent(indexInParent: Int): Path {
+        TODO()
+    }
+    
     val length: Int
     // M .0/1/2/ -> ./0/2/1
     // M .0/2 -> .0/3

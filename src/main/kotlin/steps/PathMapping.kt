@@ -15,6 +15,12 @@ data class PathMapping(
 
         return this
     }
+
+    fun parent(indexInParent: Int) = PathMapping(fromPath, type, toPath.parent(indexInParent))
+
+    fun offsetIndex(offset: Int): PathMapping {
+        TODO()
+    }
 }
 
 enum class PathMappingType {
@@ -29,7 +35,7 @@ enum class PathMappingType {
     Introduce;
 
     open fun composeWith(other: PathMappingType): PathMappingType {
-        return when(other) {
+        return when (other) {
             Move -> this
             Cancel -> Cancel
             this -> this
