@@ -96,6 +96,6 @@ class AssocNaryPatternTest {
         assertEquals(1, matches.count())
         val match = matches.elementAt(0)
         val rest = ptn.getRestSubexpressions(match)
-        assertContentEquals(listOf<Expression>(IntegerExpr(2), IntegerExpr(3)), rest.map { it -> it.expr })
+        assertContentEquals(listOf<Expression>(IntegerExpr(2), IntegerExpr(3)), rest.map { it.expr })
     }
 }

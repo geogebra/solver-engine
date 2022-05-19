@@ -21,7 +21,7 @@ data class Transformation(
             println("$prefix  explanation: $explanation")
         }
         println("$prefix  pathMappings: [${
-            pathMappings.joinToString("") { "\n$prefix    ${it.type} ${it.fromPath} => ${it.toPath}" }
+            pathMappings.joinToString("") { "\n$prefix    ${it.type} ${it.fromPaths} => ${it.toPath}" }
         }\n$prefix  ]")
         if (steps != null) {
             println("$prefix  substeps:")

@@ -20,11 +20,11 @@ data class PathMappingLeaf(val paths: List<Path>, val type: PathMappingType) : P
         (0 until size).map { i ->
             PathMappingLeaf(
                 paths.map { it.child(i) },
-                type.composeWith(PathMappingType.Move)
+                type
             )
         }
 
-    override fun pathMappings(root: Path) = paths.map { PathMapping(it, type, root) }.asSequence()
+    override fun pathMappings(root: Path) = sequenceOf(PathMapping(paths, type, root))
 }
 
 data class PathMappingParent(val children: List<PathMappingSet>) : PathMappingSet {
@@ -91,8 +91,8 @@ data class BinaryExpressionMaker(val operator: BinaryOperator, val left: Express
 
 data class NaryExpressionMaker(val operator: NaryOperator, val operands: List<ExpressionMaker>) : ExpressionMaker {
     override fun makeMappedExpression(match: Match): MappedExpression {
-        var ops = mutableListOf<Expression>()
-        var mappingSets = mutableListOf<PathMappingSet>()
+        val ops = mutableListOf<Expression>()
+        val mappingSets = mutableListOf<PathMappingSet>()
         for (operand in operands) {
             val mappedExpr = operand.makeMappedExpression(match)
             if (mappedExpr.expr is NaryExpr && mappedExpr.expr.operator == operator) {
@@ -115,9 +115,7 @@ data class RestExpressionMaker(val pattern: AssocNaryPattern) : ExpressionMaker 
         val subexpressions = pattern.getRestSubexpressions(match)
         return MappedExpression(
             NaryExpr(pattern.operator, subexpressions.map { it.expr }),
-            PathMappingParent(subexpressions.mapIndexed { i, sub ->
-                PathMappingLeaf(listOf(sub.path), PathMappingType.Move)
-            })
+            PathMappingParent(subexpressions.map { PathMappingLeaf(listOf(it.path), PathMappingType.Move) })
         )
     }
 }

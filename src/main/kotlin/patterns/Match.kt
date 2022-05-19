@@ -51,7 +51,7 @@ data class ChildMatch(
     }
 
     override fun getBoundPaths(p: Pattern): List<Path> {
-        var acc = mutableListOf<Path>()
+        val acc = mutableListOf<Path>()
         accPaths(p, acc)
         return acc
     }
