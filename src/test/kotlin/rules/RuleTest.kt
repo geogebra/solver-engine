@@ -16,7 +16,7 @@ data class RuleTestCase(val inputExpr: String, val rule: Rule, val outputExpr: S
         if (outputExpr == null) {
             assertNull(step)
         } else {
-            assertEquals(parseExpression(outputExpr), step?.toExpr, inputExpr)
+            assertEquals(parseExpression(outputExpr), step?.toExpr?.expr, inputExpr)
             step?.prettyPrint()
         }
     }

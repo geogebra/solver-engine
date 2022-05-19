@@ -10,11 +10,7 @@ interface Expression {
 
     fun mapChildrenIndexed(f: (i: Int, expr: Expression) -> Expression): Expression
 
-    fun substitute(subexpression: Subexpression): Expression {
-        return Subexpression(RootPath, this).substitute(subexpression)
-    }
-
-    fun getAt(path: Path): Expression {
+    fun getAt(path: Path): Expression{
         return when (path) {
             is ChildPath -> getAt(path.parent).children().elementAt(path.index)
             else -> this

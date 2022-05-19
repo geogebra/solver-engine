@@ -3,13 +3,12 @@ package plans
 import context.Context
 import context.Resource
 import context.ResourceData
+import expressionmakers.MappedExpression
+import expressionmakers.PathMappingLeaf
 import expressions.Subexpression
 import patterns.*
 import rules.*
-import steps.ExplanationMaker
-import steps.SkillMaker
-import steps.Transformation
-import steps.makeMetadata
+import steps.*
 
 interface Plan {
 
@@ -32,7 +31,7 @@ data class Deeply(val plan: Plan) : Plan {
     override val pattern = FindPattern(plan.pattern)
     override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
         val step = plan.execute(ctx, match, match.getLastBinding(plan.pattern)!!) ?: return null
-        return Transformation(sub.path, sub.expr, sub.subst(step.toSubexpr).expr, emptyList(), listOf(step))
+        return Transformation(sub, sub.substitute(step.fromExpr.path, step.toExpr), listOf(step))
     }
 }
 
@@ -46,10 +45,11 @@ data class WhilePossible(val plan: Plan) : Plan {
         val steps: MutableList<Transformation> = mutableListOf()
         while (lastStep != null) {
             steps.add(lastStep)
-            lastSub = lastSub.subst(lastStep.toSubexpr)
+            val substitution = lastSub.substitute(lastStep.fromExpr.path, lastStep.toExpr)
+            lastSub = Subexpression(lastSub.path, substitution.expr)
             lastStep = plan.tryExecute(ctx, lastSub)
         }
-        return Transformation(sub.path, sub.expr, lastSub.expr, emptyList(), steps)
+        return Transformation(sub, MappedExpression(lastSub.expr, PathMappingLeaf(listOf(lastSub.path), PathMappingType.Move)), steps)
     }
 }
 
@@ -61,12 +61,13 @@ data class PlanPipeline(override val pattern: Pattern, val plans: List<Plan>) : 
         for (plan in plans) {
             val step = plan.tryExecute(ctx, lastSub)
             if (step != null) {
-                lastSub = lastSub.subst(step.toSubexpr)
+                val substitution = lastSub.substitute(step.fromExpr.path, step.toExpr)
+                lastSub = Subexpression(lastSub.path, substitution.expr)
                 steps.add(step)
             }
         }
 
-        return Transformation(sub.path, sub.expr, lastSub.expr, emptyList(), steps)
+        return Transformation(sub, MappedExpression(lastSub.expr, PathMappingLeaf(listOf(lastSub.path), PathMappingType.Move)), steps)
     }
 }
 
@@ -86,26 +87,25 @@ interface InStep : Plan {
             if (nonNullTransformations.isNotEmpty()) {
                 val prevSub = lastSub
                 for (tr in nonNullTransformations) {
-                    lastSub = lastSub.subst(tr.toSubexpr)
+                    val substitution = lastSub.substitute(tr.fromExpr.path, tr.toExpr)
+                    lastSub = Subexpression(lastSub.path, substitution.expr)
                 }
                 steps.add(
                     Transformation(
-                        prevSub.path,
-                        prevSub.expr,
-                        lastSub.expr,
-                        emptyList(),
+                        prevSub,
+                        MappedExpression(lastSub.expr, PathMappingLeaf(listOf(lastSub.path), PathMappingType.Move)),
                         nonNullTransformations
                     )
                 )
                 for ((i, tr) in stepTransformations.withIndex()) {
                     if (tr != null) {
-                        stepSubs[i] = tr.toSubexpr
+                        stepSubs[i] = Subexpression(tr.fromExpr.path, tr.toExpr.expr)
                     }
                 }
             }
         }
 
-        return Transformation(sub.path, sub.expr, lastSub.expr, emptyList(), steps)
+        return Transformation(sub, MappedExpression(lastSub.expr, PathMappingLeaf(listOf(lastSub.path), PathMappingType.Move)), steps)
     }
 }
 

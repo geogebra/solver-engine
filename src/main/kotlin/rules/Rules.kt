@@ -18,12 +18,10 @@ data class Rule(
 ) : Plan {
 
     override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
-        val (result, pathMappings) = resultMaker.makeExpression(match, sub.path)
+        val result = resultMaker.makeMappedExpression(match)
         return Transformation(
-            sub.path,
-            sub.expr,
+            sub,
             result,
-            pathMappings,
             null,
             explanationMaker.makeMetadata(match),
             skillMakers.map { it.makeMetadata(match) },

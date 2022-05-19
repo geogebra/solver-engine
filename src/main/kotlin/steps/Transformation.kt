@@ -1,36 +1,30 @@
 package steps
 
-import expressions.Expression
-import expressions.Path
+import expressionmakers.MappedExpression
 import expressions.Subexpression
 
 data class Transformation(
-    val path: Path,
-    val fromExpr: Expression,
-    val toExpr: Expression,
-    val pathMappings: List<PathMapping>,
+    val fromExpr: Subexpression,
+    val toExpr: MappedExpression,
     val steps: List<Transformation>? = null,
     val explanation: Metadata? = null,
     val skills: List<Metadata> = emptyList(),
 ) {
     fun prettyPrint(prefix: String = "") {
-        println("$prefix- path: $path")
-        println("$prefix  fromExpr: $fromExpr")
-        println("$prefix  toExpr: $toExpr")
+        println("$prefix{")
+        println("$prefix  fromExpr: \"$fromExpr\",")
+        println("$prefix  toExpr: \"${toExpr.expr}\",")
         if (explanation != null) {
-            println("$prefix  explanation: $explanation")
+            println("$prefix  explanation: \"$explanation\"")
         }
-        println("$prefix  pathMappings: [${
-            pathMappings.joinToString("") { "\n$prefix    ${it.type} ${it.fromPaths} => ${it.toPath}" }
-        }\n$prefix  ]")
+        println("$prefix  pathMappings: \"${toExpr.mappings}\"")
         if (steps != null) {
-            println("$prefix  substeps:")
+            println("$prefix  substeps: [")
             for (step in steps) {
                 step.prettyPrint("$prefix  ")
             }
+            println("$prefix  ]")
         }
+        println("$prefix}")
     }
-
-    val fromSubexpr: Subexpression get() = Subexpression(path, fromExpr)
-    val toSubexpr: Subexpression get() = Subexpression(path, toExpr)
 }

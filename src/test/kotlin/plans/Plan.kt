@@ -18,7 +18,7 @@ class TestPlan {
         assertNotNull(trans)
         assertNotNull(trans.steps)
         assertEquals(convertMixedNumberToImproperFraction.plans.size, trans.steps?.size)
-        assertEquals(parseExpression("[5/3]"), trans.toExpr)
+        assertEquals(parseExpression("[5/3]"), trans.toExpr.expr)
         trans.prettyPrint()
     }
 
@@ -29,7 +29,7 @@ class TestPlan {
         assertNotNull(trans)
         assertNotNull(trans.steps)
         assertEquals(addUnlikeFractions.plans.size, trans.steps?.size)
-        assertEquals(parseExpression("[19 / 24]"), trans.toExpr)
+        assertEquals(parseExpression("[19 / 24]"), trans.toExpr.expr)
         trans.prettyPrint()
     }
 
@@ -40,7 +40,7 @@ class TestPlan {
         assertNotNull(trans)
         assertNotNull(trans.steps)
         assertEquals(addMixedNumbersByConverting.plans.size, trans.steps?.size)
-        assertEquals(parseExpression("[7 11/12]"), trans.toExpr)
+        assertEquals(parseExpression("[7 11/12]"), trans.toExpr.expr)
         trans.prettyPrint()
     }
 
@@ -52,20 +52,20 @@ class TestPlan {
         assertNotNull(trans1)
         assertNotNull(trans1.steps)
         assertEquals(addMixedNumbersByConverting.plans.size, trans1.steps?.size)
-        assertEquals(parseExpression("[7 11/12]"), trans1.toExpr)
+        assertEquals(parseExpression("[7 11/12]"), trans1.toExpr.expr)
 
         val trans2 = addMixedNumbers.tryExecute(Context("US"), Subexpression(RootPath, inExpr))
         trans2?.prettyPrint()
         assertNotNull(trans2)
         assertNotNull(trans2.steps)
         assertEquals(addMixedNumbersUsingCommutativity.plans.size, trans2.steps?.size)
-        assertEquals(parseExpression("[7 11/12]"), trans2.toExpr)
+        assertEquals(parseExpression("[7 11/12]"), trans2.toExpr.expr)
 
         val trans3 = addMixedNumbers.tryExecute(emptyContext, Subexpression(RootPath, inExpr))
         assertNotNull(trans3)
         assertNotNull(trans3.steps)
         assertEquals(addMixedNumbersByConverting.plans.size, trans3.steps?.size)
-        assertEquals(parseExpression("[7 11/12]"), trans3.toExpr)
+        assertEquals(parseExpression("[7 11/12]"), trans3.toExpr.expr)
 
     }
 }
