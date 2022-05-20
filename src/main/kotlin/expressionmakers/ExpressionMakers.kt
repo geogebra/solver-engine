@@ -40,6 +40,10 @@ data class PathMappingParent(val children: List<PathMappingSet>) : PathMappingSe
 
 data class MappedExpression(val expr: Expression, val mappings: PathMappingSet)
 
+fun Subexpression.toMappedExpr(): MappedExpression {
+    return MappedExpression(expr, PathMappingLeaf(listOf(path), PathMappingType.Move))
+}
+
 interface ExpressionMaker {
     fun makeExpression(match: Match, currentPath: Path = RootPath): Pair<Expression, List<PathMapping>> {
         val mappedExpr = makeMappedExpression(match)
@@ -77,36 +81,41 @@ data class UnaryExpressionMaker(val operator: UnaryOperator, val expr: Expressio
     }
 }
 
+fun binary(operator: BinaryOperator, left: MappedExpression, right: MappedExpression): MappedExpression {
+    return MappedExpression(
+        BinaryExpr(operator, left.expr, right.expr),
+        PathMappingParent(listOf(left.mappings, right.mappings))
+    )
+}
+
 data class BinaryExpressionMaker(val operator: BinaryOperator, val left: ExpressionMaker, val right: ExpressionMaker) :
     ExpressionMaker {
     override fun makeMappedExpression(match: Match): MappedExpression {
-        val mappedLeft = left.makeMappedExpression(match)
-        val mappedRight = right.makeMappedExpression(match)
-        return MappedExpression(
-            BinaryExpr(operator, mappedLeft.expr, mappedRight.expr),
-            PathMappingParent(listOf(mappedLeft.mappings, mappedRight.mappings)),
-        )
+        return binary(operator, left.makeMappedExpression(match), right.makeMappedExpression(match))
     }
+}
+
+fun nary(operator: NaryOperator, operands: List<MappedExpression>): MappedExpression {
+    val ops = mutableListOf<Expression>()
+    val mappingSets = mutableListOf<PathMappingSet>()
+    for (mappedExpr in operands) {
+        if (mappedExpr.expr is NaryExpr && mappedExpr.expr.operator == operator) {
+            ops.addAll(mappedExpr.expr.operands)
+            mappingSets.addAll(mappedExpr.mappings.childList(mappedExpr.expr.operands.size))
+        } else {
+            ops.add(mappedExpr.expr)
+            mappingSets.add(mappedExpr.mappings)
+        }
+    }
+    return MappedExpression(
+        NaryExpr(operator, ops),
+        PathMappingParent(mappingSets)
+    )
 }
 
 data class NaryExpressionMaker(val operator: NaryOperator, val operands: List<ExpressionMaker>) : ExpressionMaker {
     override fun makeMappedExpression(match: Match): MappedExpression {
-        val ops = mutableListOf<Expression>()
-        val mappingSets = mutableListOf<PathMappingSet>()
-        for (operand in operands) {
-            val mappedExpr = operand.makeMappedExpression(match)
-            if (mappedExpr.expr is NaryExpr && mappedExpr.expr.operator == operator) {
-                ops.addAll(mappedExpr.expr.operands)
-                mappingSets.addAll(mappedExpr.mappings.childList(mappedExpr.expr.operands.size))
-            } else {
-                ops.add(mappedExpr.expr)
-                mappingSets.add(mappedExpr.mappings)
-            }
-        }
-        return MappedExpression(
-            NaryExpr(operator, ops),
-            PathMappingParent(mappingSets)
-        )
+        return nary(operator, operands.map { it.makeMappedExpression(match) })
     }
 }
 

@@ -5,6 +5,7 @@ import context.Resource
 import context.ResourceData
 import expressionmakers.MappedExpression
 import expressionmakers.PathMappingLeaf
+import expressionmakers.toMappedExpr
 import expressions.Subexpression
 import patterns.*
 import rules.*
@@ -49,7 +50,7 @@ data class WhilePossible(val plan: Plan) : Plan {
             lastSub = Subexpression(lastSub.path, substitution.expr)
             lastStep = plan.tryExecute(ctx, lastSub)
         }
-        return Transformation(sub, MappedExpression(lastSub.expr, PathMappingLeaf(listOf(lastSub.path), PathMappingType.Move)), steps)
+        return Transformation(sub, lastSub.toMappedExpr(), steps)
     }
 }
 
@@ -67,7 +68,7 @@ data class PlanPipeline(override val pattern: Pattern, val plans: List<Plan>) : 
             }
         }
 
-        return Transformation(sub, MappedExpression(lastSub.expr, PathMappingLeaf(listOf(lastSub.path), PathMappingType.Move)), steps)
+        return Transformation(sub, lastSub.toMappedExpr(), steps)
     }
 }
 
@@ -91,11 +92,7 @@ interface InStep : Plan {
                     lastSub = Subexpression(lastSub.path, substitution.expr)
                 }
                 steps.add(
-                    Transformation(
-                        prevSub,
-                        MappedExpression(lastSub.expr, PathMappingLeaf(listOf(lastSub.path), PathMappingType.Move)),
-                        nonNullTransformations
-                    )
+                    Transformation(prevSub, lastSub.toMappedExpr(), nonNullTransformations)
                 )
                 for ((i, tr) in stepTransformations.withIndex()) {
                     if (tr != null) {
@@ -105,7 +102,11 @@ interface InStep : Plan {
             }
         }
 
-        return Transformation(sub, MappedExpression(lastSub.expr, PathMappingLeaf(listOf(lastSub.path), PathMappingType.Move)), steps)
+        return Transformation(
+            sub,
+            MappedExpression(lastSub.expr, PathMappingLeaf(listOf(lastSub.path), PathMappingType.Move)),
+            steps
+        )
     }
 }
 

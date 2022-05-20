@@ -1,6 +1,7 @@
 package steps
 
 import expressionmakers.MappedExpression
+import expressions.RootPath
 import expressions.Subexpression
 
 data class Transformation(
@@ -17,7 +18,11 @@ data class Transformation(
         if (explanation != null) {
             println("$prefix  explanation: \"$explanation\"")
         }
-        println("$prefix  pathMappings: \"${toExpr.mappings}\"")
+        println("$prefix  pathMappings: [")
+        for (mapping in toExpr.mappings.pathMappings(RootPath)) {
+            println("$prefix    ${mapping.type}  ${mapping.fromPaths} -> ${mapping.toPath}")
+        }
+        println("$prefix ]")
         if (steps != null) {
             println("$prefix  substeps: [")
             for (step in steps) {
