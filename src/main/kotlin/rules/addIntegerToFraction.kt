@@ -3,8 +3,8 @@ package rules
 import expressionmakers.*
 import expressions.IntegerExpr
 import patterns.IntegerPattern
+import patterns.commutativeSumOf
 import patterns.fractionOf
-import patterns.sumOf
 import steps.makeMetadata
 
 val addIntegerToFraction = run {
@@ -13,15 +13,17 @@ val addIntegerToFraction = run {
     val numerator = IntegerPattern()
     val denominator = IntegerPattern()
     val fraction = fractionOf(numerator, denominator)
+    val sum = commutativeSumOf(integer, fraction)
 
     Rule(
-        pattern = sumOf(integer, fraction),
-        resultMaker = makeSumOf(
+        pattern = sum,
+        resultMaker = substituteIn(
+            sum,
             makeFractionOf(
                 makeProductOf(move(integer), introduce(denominator)),
                 makeProductOf(FixedExpressionMaker(IntegerExpr(1)), introduce(denominator))
             ),
-            move(fraction)
+            move(fraction),
         ),
         explanationMaker = makeMetadata("add integer to fraction", move(integer), move(fraction)),
     )

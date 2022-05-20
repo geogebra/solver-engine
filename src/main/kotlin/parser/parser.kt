@@ -1,11 +1,11 @@
 package parser
 
-import parser.antlr.ExpressionBaseVisitor
-import parser.antlr.ExpressionLexer
-import parser.antlr.ExpressionParser
 import expressions.*
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
+import parser.antlr.ExpressionBaseVisitor
+import parser.antlr.ExpressionLexer
+import parser.antlr.ExpressionParser
 
 fun parseExpression(text: String): Expression {
     val lexer = ExpressionLexer(CharStreams.fromString(text))

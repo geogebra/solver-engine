@@ -1,6 +1,4 @@
-package steps
-
-import expressions.Path
+package expressions
 
 data class PathMapping(
     val fromPaths: List<Path>,

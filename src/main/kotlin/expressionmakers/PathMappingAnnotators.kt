@@ -1,8 +1,10 @@
 package expressionmakers
 
+import expressions.MappedExpression
+import expressions.PathMappingLeaf
+import expressions.PathMappingType
 import patterns.Match
 import patterns.Pattern
-import steps.PathMappingType
 
 data class PathMappingAnnotator(val pathMappingType: PathMappingType, val pattern: Pattern) : ExpressionMaker {
     override fun makeMappedExpression(match: Match): MappedExpression {

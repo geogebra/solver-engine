@@ -1,10 +1,5 @@
 package expressions
 
-import expressionmakers.MappedExpression
-import expressionmakers.PathMappingLeaf
-import expressionmakers.PathMappingParent
-import steps.PathMappingType
-
 interface Path {
     fun child(index: Int): Path {
         return ChildPath(this, index)
@@ -13,7 +8,7 @@ interface Path {
     fun hasAncestor(path: Path) = this == path
 
     fun truncate(newLength: Int) = this
-    
+
     val length: Int
 }
 
@@ -65,14 +60,8 @@ data class Subexpression(val path: Path, val expr: Expression) {
     fun substitute(subPath: Path, mappedExpr: MappedExpression): MappedExpression {
         return when {
             path == subPath -> mappedExpr
-            !subPath.hasAncestor(path) -> MappedExpression(expr, PathMappingLeaf(listOf(path), PathMappingType.Move))
-            else -> {
-                val substitutedChildren = children().map { it.substitute(subPath, mappedExpr) }
-                MappedExpression(
-                    expr.mapChildrenIndexed { i, _ ->  substitutedChildren[i].expr },
-                    PathMappingParent(substitutedChildren.map { it.mappings }),
-                )
-            }
+            !subPath.hasAncestor(path) -> toMappedExpr()
+            else -> expr.copyWithMappedChildren(children().map { it.substitute(subPath, mappedExpr) })
         }
     }
 }

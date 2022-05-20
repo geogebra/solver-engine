@@ -1,6 +1,6 @@
 package steps
 
-import expressionmakers.MappedExpression
+import expressions.MappedExpression
 import expressions.RootPath
 import expressions.Subexpression
 

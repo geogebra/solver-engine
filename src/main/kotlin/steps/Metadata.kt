@@ -2,6 +2,7 @@ package steps
 
 import expressionmakers.ExpressionMaker
 import expressions.Expression
+import expressions.PathMapping
 import patterns.Match
 
 data class MetadataMaker<T>(val key: T, val expressionMakers: List<ExpressionMaker>) {

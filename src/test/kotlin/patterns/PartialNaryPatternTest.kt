@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
-class AssocNaryPatternTest {
+class PartialNaryPatternTest {
 
     @Test
     fun testSinglePattern() {
@@ -13,7 +13,7 @@ class AssocNaryPatternTest {
         val expression = NaryExpr(NaryOperator.Sum, terms)
 
         val integerPattern = IntegerPattern()
-        val ptn = AssocNaryPattern(NaryOperator.Sum, listOf(integerPattern))
+        val ptn = PartialNaryPattern(NaryOperator.Sum, listOf(integerPattern))
 
         val matches = ptn.findMatches(Subexpression(RootPath, expression), RootMatch)
         assertEquals(terms.count(), matches.count())
@@ -26,7 +26,7 @@ class AssocNaryPatternTest {
     @Test
     fun testTwoPatterns() {
         val expression = NaryExpr(NaryOperator.Sum, listOf(IntegerExpr(1), IntegerExpr(2), IntegerExpr(3)))
-        val ptn = AssocNaryPattern(NaryOperator.Sum, listOf(IntegerPattern(), IntegerPattern()))
+        val ptn = PartialNaryPattern(NaryOperator.Sum, listOf(IntegerPattern(), IntegerPattern()))
 
         val matches = ptn.findMatches(Subexpression(RootPath, expression), RootMatch)
         assertEquals(3, matches.count())
@@ -37,7 +37,7 @@ class AssocNaryPatternTest {
         val expression =
             NaryExpr(NaryOperator.Sum, listOf(IntegerExpr(1), IntegerExpr(2), IntegerExpr(1), IntegerExpr(3)))
         val intPtn = IntegerPattern()
-        val ptn = AssocNaryPattern(NaryOperator.Sum, listOf(intPtn, intPtn))
+        val ptn = PartialNaryPattern(NaryOperator.Sum, listOf(intPtn, intPtn))
         val matches = ptn.findMatches(Subexpression(RootPath, expression), RootMatch)
         assertEquals(1, matches.count())
     }
@@ -47,7 +47,7 @@ class AssocNaryPatternTest {
         val expression =
             NaryExpr(NaryOperator.Sum, listOf(IntegerExpr(1), IntegerExpr(2), VariableExpr("x"), IntegerExpr(3)))
         val intPtn = IntegerPattern()
-        val ptn = AssocNaryPattern(NaryOperator.Sum, listOf(intPtn, intPtn))
+        val ptn = PartialNaryPattern(NaryOperator.Sum, listOf(intPtn, intPtn))
         val matches = ptn.findMatches(Subexpression(RootPath, expression), RootMatch)
         assertEquals(0, matches.count())
     }
@@ -61,7 +61,7 @@ class AssocNaryPatternTest {
             )
         )
         val intPtn = IntegerPattern()
-        val ptn = AssocNaryPattern(NaryOperator.Sum, listOf(intPtn, intPtn, VariablePattern(), IntegerPattern()))
+        val ptn = PartialNaryPattern(NaryOperator.Sum, listOf(intPtn, intPtn, VariablePattern(), IntegerPattern()))
         val matches = ptn.findMatches(Subexpression(RootPath, expression), RootMatch)
         assertEquals(6, matches.count())
     }
@@ -69,8 +69,8 @@ class AssocNaryPatternTest {
     @Test
     fun testCommonExpressionInFraction() {
         val common = AnyPattern()
-        val numerator = AssocNaryPattern(NaryOperator.Product, listOf(common))
-        val denominator = AssocNaryPattern(NaryOperator.Product, listOf(common))
+        val numerator = PartialNaryPattern(NaryOperator.Product, listOf(common))
+        val denominator = PartialNaryPattern(NaryOperator.Product, listOf(common))
 
         val ptn = fractionOf(numerator, denominator)
 
@@ -90,7 +90,7 @@ class AssocNaryPatternTest {
         val expression =
             NaryExpr(NaryOperator.Sum, listOf(IntegerExpr(1), IntegerExpr(2), IntegerExpr(1), IntegerExpr(3)))
         val intPtn = IntegerPattern()
-        val ptn = AssocNaryPattern(NaryOperator.Sum, listOf(intPtn, intPtn))
+        val ptn = PartialNaryPattern(NaryOperator.Sum, listOf(intPtn, intPtn))
 
         val matches = ptn.findMatches(Subexpression(RootPath, expression), RootMatch)
         assertEquals(1, matches.count())

@@ -3,13 +3,13 @@ package plans
 import context.Context
 import context.Resource
 import context.ResourceData
-import expressionmakers.MappedExpression
-import expressionmakers.PathMappingLeaf
-import expressionmakers.toMappedExpr
-import expressions.Subexpression
+import expressions.*
 import patterns.*
 import rules.*
-import steps.*
+import steps.ExplanationMaker
+import steps.SkillMaker
+import steps.Transformation
+import steps.makeMetadata
 
 interface Plan {
 
@@ -173,12 +173,14 @@ val addMixedNumbersUsingCommutativity = PlanPipeline(
     pattern = sumOf(MixedNumberPattern(), MixedNumberPattern()),
     plans = listOf(
         WhilePossible(Deeply(splitMixedNumber)),
-        removeBracketsSum,
+        WhilePossible(removeBracketsSum),
         evaluateIntegerSum,
         addUnlikeFractions,
         addIntegerToFraction,
         WhilePossible(Deeply(evaluateIntegerProduct)),
         addLikeFractions,
+        Deeply(evaluateIntegerSum),
+        fractionToMixedNumber,
     )
 )
 

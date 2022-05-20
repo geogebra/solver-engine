@@ -1,48 +1,11 @@
 package expressionmakers
 
 import expressions.*
-import patterns.AssocNaryPattern
 import patterns.IntegerPattern
 import patterns.Match
-import steps.PathMapping
-import steps.PathMappingType
+import patterns.NaryPatternBase
+import patterns.PartialNaryPattern
 import java.math.BigInteger
-
-interface PathMappingSet {
-    fun childList(size: Int): List<PathMappingSet>
-
-    fun pathMappings(root: Path): Sequence<PathMapping>
-}
-
-data class PathMappingLeaf(val paths: List<Path>, val type: PathMappingType) : PathMappingSet {
-
-    override fun childList(size: Int) =
-        (0 until size).map { i ->
-            PathMappingLeaf(
-                paths.map { it.child(i) },
-                type
-            )
-        }
-
-    override fun pathMappings(root: Path) = sequenceOf(PathMapping(paths, type, root))
-}
-
-data class PathMappingParent(val children: List<PathMappingSet>) : PathMappingSet {
-
-    override fun childList(size: Int): List<PathMappingSet> {
-        return children
-    }
-
-    override fun pathMappings(root: Path): Sequence<PathMapping> {
-        return children.mapIndexed { i, child -> child.pathMappings(root.child(i)) }.asSequence().flatten()
-    }
-}
-
-data class MappedExpression(val expr: Expression, val mappings: PathMappingSet)
-
-fun Subexpression.toMappedExpr(): MappedExpression {
-    return MappedExpression(expr, PathMappingLeaf(listOf(path), PathMappingType.Move))
-}
 
 interface ExpressionMaker {
     fun makeExpression(match: Match, currentPath: Path = RootPath): Pair<Expression, List<PathMapping>> {
@@ -81,45 +44,20 @@ data class UnaryExpressionMaker(val operator: UnaryOperator, val expr: Expressio
     }
 }
 
-fun binary(operator: BinaryOperator, left: MappedExpression, right: MappedExpression): MappedExpression {
-    return MappedExpression(
-        BinaryExpr(operator, left.expr, right.expr),
-        PathMappingParent(listOf(left.mappings, right.mappings))
-    )
-}
-
 data class BinaryExpressionMaker(val operator: BinaryOperator, val left: ExpressionMaker, val right: ExpressionMaker) :
     ExpressionMaker {
     override fun makeMappedExpression(match: Match): MappedExpression {
-        return binary(operator, left.makeMappedExpression(match), right.makeMappedExpression(match))
+        return binaryMappedExpression(operator, left.makeMappedExpression(match), right.makeMappedExpression(match))
     }
-}
-
-fun nary(operator: NaryOperator, operands: List<MappedExpression>): MappedExpression {
-    val ops = mutableListOf<Expression>()
-    val mappingSets = mutableListOf<PathMappingSet>()
-    for (mappedExpr in operands) {
-        if (mappedExpr.expr is NaryExpr && mappedExpr.expr.operator == operator) {
-            ops.addAll(mappedExpr.expr.operands)
-            mappingSets.addAll(mappedExpr.mappings.childList(mappedExpr.expr.operands.size))
-        } else {
-            ops.add(mappedExpr.expr)
-            mappingSets.add(mappedExpr.mappings)
-        }
-    }
-    return MappedExpression(
-        NaryExpr(operator, ops),
-        PathMappingParent(mappingSets)
-    )
 }
 
 data class NaryExpressionMaker(val operator: NaryOperator, val operands: List<ExpressionMaker>) : ExpressionMaker {
     override fun makeMappedExpression(match: Match): MappedExpression {
-        return nary(operator, operands.map { it.makeMappedExpression(match) })
+        return naryMappedExpression(operator, operands.map { it.makeMappedExpression(match) })
     }
 }
 
-data class RestExpressionMaker(val pattern: AssocNaryPattern) : ExpressionMaker {
+data class RestExpressionMaker(val pattern: PartialNaryPattern) : ExpressionMaker {
     override fun makeMappedExpression(match: Match): MappedExpression {
         val subexpressions = pattern.getRestSubexpressions(match)
         return MappedExpression(
@@ -129,18 +67,18 @@ data class RestExpressionMaker(val pattern: AssocNaryPattern) : ExpressionMaker 
     }
 }
 
-data class SubstituteInExpressionMaker(val pattern: AssocNaryPattern, val newVal: ExpressionMaker) : ExpressionMaker {
+data class SubstituteInExpressionMaker(val pattern: NaryPatternBase, val newVals: List<ExpressionMaker>) :
+    ExpressionMaker {
     override fun makeMappedExpression(match: Match): MappedExpression {
         val sub = match.getLastBinding(pattern)!!
         val matchIndexes = pattern.getMatchIndexes(match, sub.path)
-        val firstIndex = matchIndexes.first()
 
         val restChildren = ArrayList<ExpressionMaker>()
         for (child in sub.children()) {
-            if (child.index() == firstIndex) {
-                restChildren.add(newVal)
-            } else if (!matchIndexes.contains(child.index())) {
-                restChildren.add(SubexpressionMaker(child))
+            val newValIndex = matchIndexes.indexOf(child.index())
+            when {
+                newValIndex == -1 -> restChildren.add(SubexpressionMaker(child))
+                newValIndex < newVals.size -> restChildren.add(newVals[newValIndex])
             }
         }
 
@@ -160,22 +98,10 @@ data class MixedNumberMaker(
     val denominator: ExpressionMaker,
 ) : ExpressionMaker {
     override fun makeMappedExpression(match: Match): MappedExpression {
-        val mappedInteger = integer.makeMappedExpression(match)
-        val mappedNumerator = numerator.makeMappedExpression(match)
-        val mappedDenominator = denominator.makeMappedExpression(match)
-        return MappedExpression(
-            MixedNumber(
-                mappedInteger.expr as IntegerExpr,
-                mappedNumerator.expr as IntegerExpr,
-                mappedDenominator.expr as IntegerExpr
-            ),
-            PathMappingParent(
-                listOf(
-                    mappedInteger.mappings,
-                    mappedNumerator.mappings,
-                    mappedDenominator.mappings,
-                ),
-            )
+        return mixedNumberMappedExpression(
+            integer.makeMappedExpression(match),
+            numerator.makeMappedExpression(match),
+            denominator.makeMappedExpression(match)
         )
     }
 }
@@ -200,7 +126,7 @@ fun makeSumOf(vararg terms: ExpressionMaker) = NaryExpressionMaker(NaryOperator.
 
 fun makeProductOf(vararg terms: ExpressionMaker) = NaryExpressionMaker(NaryOperator.Product, terms.asList())
 
-fun restOf(pattern: AssocNaryPattern) = RestExpressionMaker(pattern)
+fun restOf(pattern: PartialNaryPattern) = RestExpressionMaker(pattern)
 
 fun makeMixedNumberOf(integer: ExpressionMaker, numerator: ExpressionMaker, denominator: ExpressionMaker) =
     MixedNumberMaker(integer, numerator, denominator)
@@ -213,4 +139,5 @@ fun makeNumericOp(
     return NumericOp2(ptn1, ptn2, operation)
 }
 
-fun substituteIn(pattern: AssocNaryPattern, newVal: ExpressionMaker) = SubstituteInExpressionMaker(pattern, newVal)
+fun substituteIn(pattern: NaryPatternBase, vararg newVals: ExpressionMaker) =
+    SubstituteInExpressionMaker(pattern, newVals.asList())
