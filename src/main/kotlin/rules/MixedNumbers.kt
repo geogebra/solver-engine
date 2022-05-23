@@ -6,9 +6,9 @@ import steps.SkillType
 import steps.makeMetadata
 
 val splitMixedNumber = run {
-    val integer = IntegerPattern()
-    val numerator = IntegerPattern()
-    val denominator = IntegerPattern()
+    val integer = UnsignedIntegerPattern()
+    val numerator = UnsignedIntegerPattern()
+    val denominator = UnsignedIntegerPattern()
     val pattern = MixedNumberPattern(integer, numerator, denominator)
 
     Rule(
@@ -19,8 +19,8 @@ val splitMixedNumber = run {
 }
 
 val fractionToMixedNumber = run {
-    val numerator = IntegerPattern()
-    val denominator = IntegerPattern()
+    val numerator = UnsignedIntegerPattern()
+    val denominator = UnsignedIntegerPattern()
 
     val isImproperFraction = numericCondition(numerator, denominator) { n, d -> n > d }
 

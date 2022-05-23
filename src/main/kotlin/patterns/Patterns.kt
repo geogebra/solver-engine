@@ -48,15 +48,39 @@ class AnyPattern : FullSizePattern {
     override fun checkExpressionKind(expr: Expression) = true
 }
 
-class IntegerPattern : FullSizePattern {
+interface IntegerPattern : Pattern {
+    fun getBoundInt(m: Match): BigInteger
 
-    fun getBoundInt(m: Match): IntegerExpr {
-        return m.getBoundExpr(this)!! as IntegerExpr
+
+}
+
+class UnsignedIntegerPattern : IntegerPattern, FullSizePattern {
+
+    override fun getBoundInt(m: Match): BigInteger {
+        return (m.getBoundExpr(this)!! as IntegerExpr).value
     }
 
     override fun children(): List<Pattern> = emptyList()
 
     override fun checkExpressionKind(expr: Expression) = expr is IntegerExpr
+}
+
+class SignedIntegerPattern : IntegerPattern {
+    private val integer = UnsignedIntegerPattern()
+    private val neg = negOf(integer)
+    private val ptn = OneOfPattern(listOf(integer, neg, bracketOf(neg)))
+
+    override fun getBoundInt(m: Match): BigInteger {
+        val value = integer.getBoundInt(m)
+        return when {
+            m.getLastBinding(neg) == null -> value
+            else -> -value
+        }
+    }
+
+    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+        return ptn.findMatches(subexpression, match).map { it.newChild(this, it.getLastBinding(ptn)!!) }
+    }
 }
 
 class VariablePattern : FullSizePattern {
@@ -190,9 +214,9 @@ data class CommutativeNaryPattern(override val operator: NaryOperator, override 
 }
 
 data class MixedNumberPattern(
-    val integer: IntegerPattern = IntegerPattern(),
-    val numerator: IntegerPattern = IntegerPattern(),
-    val denominator: IntegerPattern = IntegerPattern(),
+    val integer: UnsignedIntegerPattern = UnsignedIntegerPattern(),
+    val numerator: UnsignedIntegerPattern = UnsignedIntegerPattern(),
+    val denominator: UnsignedIntegerPattern = UnsignedIntegerPattern(),
 ) : FullSizePattern {
 
     override fun children() = listOf(integer, numerator, denominator)
@@ -231,30 +255,45 @@ data class NumericCondition2(
     val condition: (BigInteger, BigInteger) -> Boolean
 ) : MatchCondition {
     override fun checkMatch(match: Match): Boolean {
-        val n1 = ptn1.getBoundInt(match).value
-        val n2 = ptn2.getBoundInt(match).value
+        val n1 = ptn1.getBoundInt(match)
+        val n2 = ptn2.getBoundInt(match)
 
         return condition(n1, n2)
     }
 }
 
-fun numericCondition(ptn1: IntegerPattern, ptn2: IntegerPattern, condition: (BigInteger, BigInteger) -> Boolean) =
+fun numericCondition(
+    ptn1: UnsignedIntegerPattern,
+    ptn2: UnsignedIntegerPattern,
+    condition: (BigInteger, BigInteger) -> Boolean
+) =
     NumericCondition2(ptn1, ptn2, condition)
 
 interface MatchCondition {
     fun checkMatch(match: Match): Boolean
 }
 
-data class FindPattern(val pattern: Pattern) : Pattern {
+data class FindPattern(val pattern: Pattern, val deepFirst: Boolean = false) : Pattern {
+
+    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+        val ownMatches = pattern.findMatches(subexpression, match)
+        val childMatches = subexpression.children().asSequence()
+            .flatMap { findMatches(it, match) }
+            .map { it.newChild(this, it.getLastBinding(pattern)!!) }
+        return when {
+            deepFirst -> childMatches + ownMatches
+            else -> ownMatches + childMatches
+        }
+    }
+}
+
+data class OneOfPattern(val options: List<Pattern>) : Pattern {
 
     override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
         return sequence {
-            for (match in pattern.findMatches(subexpression, match)) {
-                yield(match.newChild(this@FindPattern, match.getLastBinding(pattern)!!))
-            }
-            for (child in subexpression.children()) {
-                for (match in findMatches(child, match)) {
-                    yield(match.newChild(this@FindPattern, match.getLastBinding(pattern)!!))
+            for (option in options) {
+                for (match in option.findMatches(subexpression, match)) {
+                    yield(match.newChild(this@OneOfPattern, match.getLastBinding(option)!!))
                 }
             }
         }

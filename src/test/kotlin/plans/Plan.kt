@@ -68,7 +68,6 @@ class TestPlan {
         trans2.prettyPrint()
     }
 
-
     @Test
     fun testContextSensitivePlanDefault() {
         val inExpr = parseExpression("[5 1/4] + [2 2/3]")
@@ -86,5 +85,26 @@ class TestPlan {
         val trans = simplifyIntegerSum.tryExecute(emptyContext, Subexpression(RootPath, inExpr))
         assertNotNull(trans)
         assertEquals(parseExpression("4"), trans.toExpr.expr)
+        trans.prettyPrint()
     }
+    
+    @Test
+    fun testSimplifyIntegerProduct() {
+        val inExpr = parseExpression("1*(-2)*3")
+        val trans = simplifyIntegerProduct.tryExecute(emptyContext, Subexpression(RootPath, inExpr))
+        assertNotNull(trans)
+        assertEquals(parseExpression("(-6)"), trans.toExpr.expr)
+        trans.prettyPrint()
+    }
+
+    @Test
+    fun testSimplifyIntegerSumProducts() {
+        val inExpr = parseExpression("1 + (2 + 0 - 3*(-2)*5) + 4*(-3)")
+        val trans = simplifyIntegerSumProducts.tryExecute(emptyContext, Subexpression(RootPath, inExpr))
+        assertNotNull(trans)
+        assertEquals(parseExpression("21"), trans.toExpr.expr)
+        trans.prettyPrint()
+    }
+
+
 }

@@ -111,11 +111,11 @@ data class NumericOp2(
     val operation: (BigInteger, BigInteger) -> BigInteger
 ) : ExpressionMaker {
     override fun makeMappedExpression(match: Match): MappedExpression {
-        val value = operation(num1.getBoundInt(match).value, num2.getBoundInt(match).value)
+        val value = operation(num1.getBoundInt(match), num2.getBoundInt(match))
 
         val result = when {
             value.signum() >= 0 -> IntegerExpr(value)
-            else -> negOf(IntegerExpr(-value))
+            else -> bracketOf(negOf(IntegerExpr(-value)))
         }
         return MappedExpression(
             result,

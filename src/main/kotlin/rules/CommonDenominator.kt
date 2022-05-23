@@ -6,10 +6,10 @@ import steps.SkillType
 import steps.makeMetadata
 
 val commonDenominator = run {
-    val num1 = IntegerPattern()
-    val num2 = IntegerPattern()
-    val denom1 = IntegerPattern()
-    val denom2 = IntegerPattern()
+    val num1 = UnsignedIntegerPattern()
+    val num2 = UnsignedIntegerPattern()
+    val denom1 = UnsignedIntegerPattern()
+    val denom2 = UnsignedIntegerPattern()
     val f1 = fractionOf(num1, denom1)
     val f2 = fractionOf(num2, denom2)
     val sum = sumContaining(f1, f2)

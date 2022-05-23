@@ -27,71 +27,38 @@ val eliminateOneInProduct = run {
     )
 }
 
-val evaluateIntegerSum = run {
-    val term1 = IntegerPattern()
-    val term2 = IntegerPattern()
-    val pattern = sumContaining(term1, term2)
-
-    Rule(
-        pattern = pattern,
-        resultMaker = substituteIn(pattern, makeNumericOp(term1, term2) { n1, n2 -> n1 + n2 }),
-        explanationMaker = makeMetadata("evaluate integer sum", move(term1), move(term2)),
-    )
-}
-
-val evaluateIntegerSubtraction = run {
-    val term1 = IntegerPattern()
-    val term2 = IntegerPattern()
+val evaluateUnsignedIntegerSubtraction = run {
+    val term1 = UnsignedIntegerPattern()
+    val term2 = UnsignedIntegerPattern()
     val sum = sumContaining(term1, negOf(term2))
     val pattern = ConditionPattern(sum, numericCondition(term1, term2) { n1, n2 -> n1 >= n2 })
 
     Rule(
         pattern = pattern,
         resultMaker = substituteIn(sum, makeNumericOp(term1, term2) { n1, n2 -> n1 - n2 }),
-        explanationMaker = makeMetadata("evaluate integer subtraction", move(term1), move(term2)),
+        explanationMaker = makeMetadata(
+            "evaluate integer subtraction", move(term1), move(term2)
+        ),
     )
 }
 
-val evaluateSumOfPositiveAndNegativeIntegers = run {
-    val term1 = IntegerPattern()
-    val term2 = IntegerPattern()
-    val pattern = sumContaining(term1, negOf(term2))
+val evaluateSignedIntegerAddition = run {
+    val term1 = SignedIntegerPattern()
+    val term2 = SignedIntegerPattern()
+    val sum = sumContaining(term1, term2)
 
     Rule(
-        pattern = pattern,
-        resultMaker = substituteIn(pattern, makeNumericOp(term1, term2) { n1, n2 -> n1 - n2 }),
-        explanationMaker = makeMetadata("add positive and negative integers", move(term1), move(term2)),
-    )
-}
-
-
-val evaluateSumOfNegativeAndPositiveIntegers = run {
-    val term1 = IntegerPattern()
-    val term2 = IntegerPattern()
-    val pattern = sumContaining(negOf(term1), term2)
-
-    Rule(
-        pattern = pattern,
-        resultMaker = substituteIn(pattern, makeNumericOp(term1, term2) { n1, n2 -> -n1 + n2 }),
-        explanationMaker = makeMetadata("add negative and positive integers", move(term1), move(term2)),
-    )
-}
-
-val evaluateSumOfNegativeIntegers = run {
-    val term1 = IntegerPattern()
-    val term2 = IntegerPattern()
-    val pattern = sumContaining(negOf(term1), negOf(term2))
-
-    Rule(
-        pattern = pattern,
-        resultMaker = substituteIn(pattern, makeNumericOp(term1, term2) { n1, n2 -> -n1 - n2 }),
-        explanationMaker = makeMetadata("add negative integers", move(term1), move(term2)),
+        pattern = sum,
+        resultMaker = substituteIn(sum, makeNumericOp(term1, term2) { n1, n2 -> n1 + n2 }),
+        explanationMaker = makeMetadata(
+            "evaluate integer addition", move(term1), move(term2)
+        ),
     )
 }
 
 val evaluateIntegerProduct = run {
-    val factor1 = IntegerPattern()
-    val factor2 = IntegerPattern()
+    val factor1 = UnsignedIntegerPattern()
+    val factor2 = UnsignedIntegerPattern()
     val pattern = productContaining(factor1, factor2)
 
     Rule(
@@ -101,3 +68,42 @@ val evaluateIntegerProduct = run {
     )
 }
 
+val evaluateSignedIntegerProduct = run {
+    val factor1 = SignedIntegerPattern()
+    val factor2 = SignedIntegerPattern()
+    val product = productContaining(factor1, factor2)
+
+    Rule(
+        pattern = product,
+        resultMaker = substituteIn(product, makeNumericOp(factor1, factor2) { n1, n2 -> n1 * n2 }),
+        explanationMaker = makeMetadata(
+            "evaluate integer product", move(factor1), move(factor2)
+        ),
+    )
+}
+
+val simplifyDoubleNeg = run {
+    val value = AnyPattern()
+    val pattern = negOf(bracketOf(negOf(value)))
+
+    Rule(
+        pattern = pattern,
+        resultMaker = move(value),
+        explanationMaker = makeMetadata("simplify -(-x)", move(value))
+    )
+}
+
+// 1 + 2 - 3 +  4 + (-3) * 4 * (-6)
+
+
+// (-3) * 4 * (-6)
+// (-12) * (-6)
+// 72
+
+// (-3) * 4 * (-6)
+// 3 * 4 * 6
+//
+
+// 1 + 4 * (-3) * (-4) * 4 * (-6)
+// 1 + 4 * 3 * 4 * 4 * (-6)
+// 1 - 4 * 3 * 4 * 4 * 6

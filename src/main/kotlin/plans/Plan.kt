@@ -27,9 +27,9 @@ interface Plan {
     }
 }
 
-data class Deeply(val plan: Plan) : Plan {
+data class Deeply(val plan: Plan, val deepFirst: Boolean = false) : Plan {
 
-    override val pattern = FindPattern(plan.pattern)
+    override val pattern = FindPattern(plan.pattern, deepFirst)
     override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
         val step = plan.execute(ctx, match, match.getLastBinding(plan.pattern)!!) ?: return null
         return Transformation(sub, sub.substitute(step.fromExpr.path, step.toExpr), listOf(step))
@@ -54,11 +54,11 @@ data class WhilePossible(val plan: Plan) : Plan {
     }
 }
 
-data class FirstOf(override val pattern: Pattern, val options: List<Plan>) : Plan {
+data class FirstOf(val options: List<Plan>) : Plan {
 
-    override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
-        return options.map { it.execute(ctx, match, sub) }.firstOrNull { it != null }
-    }
+    override val pattern = OneOfPattern(options.map { it.pattern })
+    override fun execute(ctx: Context, match: Match, sub: Subexpression) =
+        options.firstOrNull { match.getLastBinding(it.pattern) != null }?.execute(ctx, match, sub)
 }
 
 data class PlanPipeline(override val pattern: Pattern, val plans: List<Plan>) : Plan {
@@ -78,6 +78,11 @@ data class PlanPipeline(override val pattern: Pattern, val plans: List<Plan>) : 
         return Transformation(sub, lastSub.toMappedExpr(), steps)
     }
 }
+
+fun pipeline(pattern: Pattern, vararg plans: Plan) = PlanPipeline(pattern, plans.asList())
+fun pipeline(vararg plans: Plan) = PlanPipeline(plans[0].pattern, plans.asList())
+
+fun firstOf(vararg options: Plan) = FirstOf(options.asList())
 
 interface InStep : Plan {
 
@@ -147,13 +152,13 @@ val convertMixedNumberToImproperFraction = PlanPipeline(
         addIntegerToFraction,
         WhilePossible(Deeply(evaluateIntegerProduct)),
         addLikeFractions,
-        WhilePossible(Deeply(evaluateIntegerSum)),
+        WhilePossible(Deeply(evaluateSignedIntegerAddition)),
     )
 )
 
 val addUnlikeFractions = run {
-    val f1 = fractionOf(IntegerPattern(), IntegerPattern())
-    val f2 = fractionOf(IntegerPattern(), IntegerPattern())
+    val f1 = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
+    val f2 = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
 
     val pattern = sumContaining(f1, f2)
 
@@ -161,7 +166,7 @@ val addUnlikeFractions = run {
         commonDenominator,
         WhilePossible(Deeply(evaluateIntegerProduct)),
         addLikeFractions,
-        WhilePossible(Deeply(evaluateIntegerSum)),
+        WhilePossible(Deeply(evaluateSignedIntegerAddition)),
     )
 
     PlanPipeline(pattern, plans)
@@ -181,12 +186,12 @@ val addMixedNumbersUsingCommutativity = PlanPipeline(
     plans = listOf(
         WhilePossible(Deeply(splitMixedNumber)),
         WhilePossible(removeBracketsSum),
-        evaluateIntegerSum,
+        evaluateSignedIntegerAddition,
         addUnlikeFractions,
         addIntegerToFraction,
         WhilePossible(Deeply(evaluateIntegerProduct)),
         addLikeFractions,
-        Deeply(evaluateIntegerSum),
+        Deeply(evaluateSignedIntegerAddition),
         fractionToMixedNumber,
     )
 )
@@ -200,16 +205,18 @@ val addMixedNumbers = ContextSensitivePlanSelector(
     pattern = sumOf(MixedNumberPattern(), MixedNumberPattern()),
 )
 
-val simplifyIntegerSum = WhilePossible(
-    FirstOf(
-        pattern = AnyPattern(),
-        options = listOf(
-            eliminateZeroInSum,
-            evaluateIntegerSum,
-            evaluateIntegerSubtraction,
-            evaluateSumOfPositiveAndNegativeIntegers,
-            evaluateSumOfNegativeAndPositiveIntegers,
-            evaluateSumOfNegativeIntegers,
-        )
+val simplifyIntegerSum = WhilePossible(evaluateSignedIntegerAddition)
+
+val simplifyIntegerProduct = WhilePossible(evaluateSignedIntegerProduct)
+
+val simplifyIntegerSumProducts = WhilePossible(
+    Deeply(
+        plan = firstOf(
+            removeBracketAroundSignedIntegerInSum,
+            simplifyDoubleNeg,
+            simplifyIntegerProduct,
+            simplifyIntegerSum,
+        ),
+        deepFirst = true
     )
 )

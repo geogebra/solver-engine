@@ -2,16 +2,16 @@ package rules
 
 import expressionmakers.*
 import expressions.IntegerExpr
-import patterns.IntegerPattern
+import patterns.UnsignedIntegerPattern
 import patterns.commutativeSumOf
 import patterns.fractionOf
 import steps.makeMetadata
 
 val addIntegerToFraction = run {
 
-    val integer = IntegerPattern()
-    val numerator = IntegerPattern()
-    val denominator = IntegerPattern()
+    val integer = UnsignedIntegerPattern()
+    val numerator = UnsignedIntegerPattern()
+    val denominator = UnsignedIntegerPattern()
     val fraction = fractionOf(numerator, denominator)
     val sum = commutativeSumOf(integer, fraction)
 

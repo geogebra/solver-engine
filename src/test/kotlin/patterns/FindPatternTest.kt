@@ -11,8 +11,8 @@ class FindPatternTest {
 
     @Test
     fun testFindPattern() {
-        val n1 = IntegerPattern()
-        val n2 = IntegerPattern()
+        val n1 = UnsignedIntegerPattern()
+        val n2 = UnsignedIntegerPattern()
         val intProd = productContaining(n1, n2)
         val findPattern = FindPattern(intProd)
 
@@ -21,7 +21,7 @@ class FindPatternTest {
         assertEquals(2, matches.count())
         assertContentEquals(
             listOf(15, 9).map { it.toBigInteger() },
-            matches.map { n1.getBoundInt(it).value * n2.getBoundInt(it).value }.toList()
+            matches.map { n1.getBoundInt(it) * n2.getBoundInt(it) }.toList()
         )
     }
 }
