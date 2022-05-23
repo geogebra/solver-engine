@@ -57,11 +57,24 @@ data class Subexpression(val path: Path, val expr: Expression) {
         else -> 0
     }
 
-    fun substitute(subPath: Path, mappedExpr: MappedExpression): MappedExpression {
+    fun substitute(subPath: Path, mappedExpr: MappedExpression): MappedExpression =
+        substitute(subPath, mappedExpr) { true }
+
+    private fun substitute(
+        subPath: Path,
+        mappedExpr: MappedExpression,
+        childAllowed: (Operator) -> Boolean
+    ): MappedExpression {
         return when {
-            path == subPath -> mappedExpr
+            path == subPath -> mappedExpr.wrapInBracketsUnless(childAllowed)
             !subPath.hasAncestor(path) -> toMappedExpr()
-            else -> expr.copyWithMappedChildren(children().map { it.substitute(subPath, mappedExpr) })
+            else -> expr.copyWithMappedChildren(
+                children().mapIndexed { index, child ->
+                    child.substitute(
+                        subPath,
+                        mappedExpr,
+                    ) { childOp -> expr.operator.nthChildAllowed(index, childOp) }
+                })
         }
     }
 }

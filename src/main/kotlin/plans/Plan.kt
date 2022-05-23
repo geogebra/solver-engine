@@ -54,6 +54,13 @@ data class WhilePossible(val plan: Plan) : Plan {
     }
 }
 
+data class FirstOf(override val pattern: Pattern, val options: List<Plan>) : Plan {
+
+    override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
+        return options.map { it.execute(ctx, match, sub) }.firstOrNull { it != null }
+    }
+}
+
 data class PlanPipeline(override val pattern: Pattern, val plans: List<Plan>) : Plan {
 
     override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
@@ -193,3 +200,16 @@ val addMixedNumbers = ContextSensitivePlanSelector(
     pattern = sumOf(MixedNumberPattern(), MixedNumberPattern()),
 )
 
+val simplifyIntegerSum = WhilePossible(
+    FirstOf(
+        pattern = AnyPattern(),
+        options = listOf(
+            eliminateZeroInSum,
+            evaluateIntegerSum,
+            evaluateIntegerSubtraction,
+            evaluateSumOfPositiveAndNegativeIntegers,
+            evaluateSumOfNegativeAndPositiveIntegers,
+            evaluateSumOfNegativeIntegers,
+        )
+    )
+)

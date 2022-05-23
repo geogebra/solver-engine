@@ -214,6 +214,8 @@ fun bracketOf(expr: Pattern) = UnaryPattern(UnaryOperator.Bracket, expr)
 
 fun sumOf(vararg terms: Pattern) = NaryPattern(NaryOperator.Sum, terms.asList())
 
+fun negOf(operand: Pattern) = UnaryPattern(UnaryOperator.Minus, operand)
+
 fun sumContaining(vararg terms: Pattern) = PartialNaryPattern(NaryOperator.Sum, terms.asList())
 
 fun commutativeSumOf(vararg terms: Pattern) = CommutativeNaryPattern(NaryOperator.Sum, terms.asList())

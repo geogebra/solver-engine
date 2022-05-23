@@ -17,7 +17,7 @@ val splitMixedNumber = run {
         explanationMaker = makeMetadata("split mixed number", move(pattern)),
     )
 }
- 
+
 val fractionToMixedNumber = run {
     val numerator = IntegerPattern()
     val denominator = IntegerPattern()

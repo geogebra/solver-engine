@@ -35,26 +35,25 @@ data class SubexpressionMaker(val subexpression: Subexpression) : ExpressionMake
 }
 
 data class UnaryExpressionMaker(val operator: UnaryOperator, val expr: ExpressionMaker) : ExpressionMaker {
-    override fun makeMappedExpression(match: Match): MappedExpression {
-        val mappedExpr = expr.makeMappedExpression(match)
-        return MappedExpression(
-            UnaryExpr(operator, mappedExpr.expr),
-            PathMappingParent(listOf(mappedExpr.mappings)),
-        )
-    }
+    override fun makeMappedExpression(match: Match) = unaryMappedExpression(
+        operator,
+        expr.makeMappedExpression(match),
+    )
+
 }
 
 data class BinaryExpressionMaker(val operator: BinaryOperator, val left: ExpressionMaker, val right: ExpressionMaker) :
     ExpressionMaker {
-    override fun makeMappedExpression(match: Match): MappedExpression {
-        return binaryMappedExpression(operator, left.makeMappedExpression(match), right.makeMappedExpression(match))
-    }
+    override fun makeMappedExpression(match: Match) = binaryMappedExpression(
+        operator,
+        left.makeMappedExpression(match),
+        right.makeMappedExpression(match),
+    )
 }
 
 data class NaryExpressionMaker(val operator: NaryOperator, val operands: List<ExpressionMaker>) : ExpressionMaker {
-    override fun makeMappedExpression(match: Match): MappedExpression {
-        return naryMappedExpression(operator, operands.map { it.makeMappedExpression(match) })
-    }
+    override fun makeMappedExpression(match: Match) =
+        naryMappedExpression(operator, operands.map { it.makeMappedExpression(match) })
 }
 
 data class RestExpressionMaker(val pattern: PartialNaryPattern) : ExpressionMaker {
@@ -112,8 +111,14 @@ data class NumericOp2(
     val operation: (BigInteger, BigInteger) -> BigInteger
 ) : ExpressionMaker {
     override fun makeMappedExpression(match: Match): MappedExpression {
+        val value = operation(num1.getBoundInt(match).value, num2.getBoundInt(match).value)
+
+        val result = when {
+            value.signum() >= 0 -> IntegerExpr(value)
+            else -> negOf(IntegerExpr(-value))
+        }
         return MappedExpression(
-            IntegerExpr(operation(num1.getBoundInt(match).value, num2.getBoundInt(match).value)),
+            result,
             PathMappingLeaf(match.getBoundPaths(num1) + match.getBoundPaths(num2), PathMappingType.Combine),
         )
     }
@@ -125,6 +130,8 @@ fun makeFractionOf(numerator: ExpressionMaker, denominator: ExpressionMaker) =
 fun makeSumOf(vararg terms: ExpressionMaker) = NaryExpressionMaker(NaryOperator.Sum, terms.asList())
 
 fun makeProductOf(vararg terms: ExpressionMaker) = NaryExpressionMaker(NaryOperator.Product, terms.asList())
+
+fun makeNegOf(operand: ExpressionMaker) = UnaryExpressionMaker(UnaryOperator.Minus, operand)
 
 fun restOf(pattern: PartialNaryPattern) = RestExpressionMaker(pattern)
 

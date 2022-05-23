@@ -3,7 +3,10 @@ package expressions
 import java.math.BigDecimal
 import java.math.BigInteger
 
-interface Expression {
+sealed interface Expression {
+
+    val operator: Operator
+
     fun variables(): Set<VariableExpr> = emptySet()
 
     fun children(): List<Expression> = emptyList()
@@ -21,6 +24,10 @@ interface Expression {
 }
 
 interface Literal : Expression {
+
+    override val operator: NullaryOperator
+        get() = NullaryOperator
+
     override fun mapChildrenIndexed(f: (i: Int, expr: Expression) -> Expression) = this
 
     override fun copyWithChildren(newChildren: List<Expression>): Expression {
@@ -49,6 +56,9 @@ data class DecimalExpr(val value: BigDecimal) : Literal {
 }
 
 data class VariableExpr(val name: String) : Expression {
+
+    override val operator = NullaryOperator
+
     override fun variables(): Set<VariableExpr> = setOf(this)
 
     override fun mapChildrenIndexed(f: (i: Int, expr: Expression) -> Expression) = this
@@ -66,7 +76,12 @@ data class VariableExpr(val name: String) : Expression {
     }
 }
 
-data class UnaryExpr(val operator: UnaryOperator, val expr: Expression) : Expression {
+data class UnaryExpr(override val operator: UnaryOperator, val expr: Expression) : Expression {
+
+    init {
+        require(operator.childAllowed(expr.operator))
+    }
+
     override fun children(): List<Expression> = listOf(expr)
 
     override fun mapChildrenIndexed(f: (i: Int, expr: Expression) -> Expression) = copy(expr = f(0, expr))
@@ -84,7 +99,13 @@ data class UnaryExpr(val operator: UnaryOperator, val expr: Expression) : Expres
     }
 }
 
-data class BinaryExpr(val operator: BinaryOperator, val left: Expression, val right: Expression) : Expression {
+data class BinaryExpr(override val operator: BinaryOperator, val left: Expression, val right: Expression) : Expression {
+
+    init {
+        require(operator.leftChildAllowed(left.operator))
+        require(operator.rightChildAllowed(right.operator))
+    }
+
     override fun children(): List<Expression> = listOf(left, right)
 
     override fun mapChildrenIndexed(f: (i: Int, expr: Expression) -> Expression) =
@@ -103,7 +124,15 @@ data class BinaryExpr(val operator: BinaryOperator, val left: Expression, val ri
     }
 }
 
-data class NaryExpr(val operator: NaryOperator, val operands: List<Expression>) : Expression {
+data class NaryExpr(override val operator: NaryOperator, val operands: List<Expression>) : Expression {
+
+    init {
+        require(operands.size >= 2)
+        for ((i, operand) in operands.withIndex()) {
+            require(operator.nthChildAllowed(i, operand.operator))
+        }
+    }
+
     override fun children(): List<Expression> = operands
 
     override fun mapChildrenIndexed(f: (i: Int, expr: Expression) -> Expression) =
@@ -111,7 +140,7 @@ data class NaryExpr(val operator: NaryOperator, val operands: List<Expression>) 
 
 
     override fun copyWithChildren(newChildren: List<Expression>): Expression {
-        if (newChildren.size != 2) {
+        if (newChildren.size < 2) {
             throw IllegalArgumentException()
         }
         return NaryExpr(operator, newChildren)
@@ -125,8 +154,9 @@ data class NaryExpr(val operator: NaryOperator, val operands: List<Expression>) 
 data class MixedNumber(val integer: IntegerExpr, val numerator: IntegerExpr, val denominator: IntegerExpr) :
     Expression {
 
-    override fun children() = listOf<Expression>(integer, numerator, denominator)
+    override val operator = NullaryOperator // TODO: operator for this
 
+    override fun children() = listOf<Expression>(integer, numerator, denominator)
 
     override fun copyWithChildren(newChildren: List<Expression>): Expression {
         if (newChildren.size != 3) {

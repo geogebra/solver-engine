@@ -79,4 +79,12 @@ class TestPlan {
         assertEquals(addMixedNumbersByConverting.plans.size, trans3.steps?.size)
         assertEquals(parseExpression("[7 11/12]"), trans3.toExpr.expr)
     }
+
+    @Test
+    fun testSimplifyIntegerSum() {
+        val inExpr = parseExpression("1 + 2 + 0 - 3 + 4")
+        val trans = simplifyIntegerSum.tryExecute(emptyContext, Subexpression(RootPath, inExpr))
+        assertNotNull(trans)
+        assertEquals(parseExpression("4"), trans.toExpr.expr)
+    }
 }

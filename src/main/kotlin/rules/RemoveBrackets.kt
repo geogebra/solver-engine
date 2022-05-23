@@ -6,7 +6,6 @@ import patterns.bracketOf
 import patterns.sumContaining
 import steps.makeMetadata
 
-
 val removeBracketsSum = run {
     val innerSum = sumContaining()
     val bracket = bracketOf(innerSum)
