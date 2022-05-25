@@ -1,7 +1,11 @@
 package patterns
 
-import expressions.*
+import expressions.NaryOperator
+import expressions.RootPath
+import expressions.Subexpression
+import expressions.xp
 import org.junit.jupiter.api.Test
+import parser.parseExpression
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
@@ -9,8 +13,8 @@ class PartialNaryPatternTest {
 
     @Test
     fun testSinglePattern() {
-        val terms = listOf(IntegerExpr(1), IntegerExpr(2), IntegerExpr(3))
-        val expression = NaryExpr(NaryOperator.Sum, terms)
+        val expression = parseExpression("1 + 2 + 3")
+        val terms = expression.operands
 
         val integerPattern = UnsignedIntegerPattern()
         val ptn = PartialNaryPattern(NaryOperator.Sum, listOf(integerPattern))
@@ -19,13 +23,13 @@ class PartialNaryPatternTest {
         assertEquals(terms.count(), matches.count())
 
         for ((index, match) in matches.withIndex()) {
-            assertEquals(terms[index].value, integerPattern.getBoundInt(match))
+            assertEquals((index + 1).toBigInteger(), integerPattern.getBoundInt(match))
         }
     }
 
     @Test
     fun testTwoPatterns() {
-        val expression = NaryExpr(NaryOperator.Sum, listOf(IntegerExpr(1), IntegerExpr(2), IntegerExpr(3)))
+        val expression = parseExpression("1 + 2 + 3")
         val ptn = PartialNaryPattern(NaryOperator.Sum, listOf(UnsignedIntegerPattern(), UnsignedIntegerPattern()))
 
         val matches = ptn.findMatches(Subexpression(RootPath, expression), RootMatch)
@@ -34,8 +38,7 @@ class PartialNaryPatternTest {
 
     @Test
     fun testTwoDependentPatterns() {
-        val expression =
-            NaryExpr(NaryOperator.Sum, listOf(IntegerExpr(1), IntegerExpr(2), IntegerExpr(1), IntegerExpr(3)))
+        val expression = parseExpression("1 + 2 + 1 + 3")
         val intPtn = UnsignedIntegerPattern()
         val ptn = PartialNaryPattern(NaryOperator.Sum, listOf(intPtn, intPtn))
         val matches = ptn.findMatches(Subexpression(RootPath, expression), RootMatch)
@@ -44,8 +47,7 @@ class PartialNaryPatternTest {
 
     @Test
     fun testTwoDependentPatternsWithNoMatch() {
-        val expression =
-            NaryExpr(NaryOperator.Sum, listOf(IntegerExpr(1), IntegerExpr(2), VariableExpr("x"), IntegerExpr(3)))
+        val expression = parseExpression("1 + 2 + x + 3")
         val intPtn = UnsignedIntegerPattern()
         val ptn = PartialNaryPattern(NaryOperator.Sum, listOf(intPtn, intPtn))
         val matches = ptn.findMatches(Subexpression(RootPath, expression), RootMatch)
@@ -54,14 +56,10 @@ class PartialNaryPatternTest {
 
     @Test
     fun testComplexPattern() {
-        val expression = NaryExpr(
-            NaryOperator.Sum, listOf(
-                IntegerExpr(1), IntegerExpr(2), IntegerExpr(1), IntegerExpr(1),
-                VariableExpr("x"), IntegerExpr(3), IntegerExpr(4)
-            )
-        )
+        val expression = parseExpression("1 + 2 + 1 + 1 + x + 3 + 4")
         val intPtn = UnsignedIntegerPattern()
-        val ptn = PartialNaryPattern(NaryOperator.Sum, listOf(intPtn, intPtn, VariablePattern(), UnsignedIntegerPattern()))
+        val ptn =
+            PartialNaryPattern(NaryOperator.Sum, listOf(intPtn, intPtn, VariablePattern(), UnsignedIntegerPattern()))
         val matches = ptn.findMatches(Subexpression(RootPath, expression), RootMatch)
         assertEquals(6, matches.count())
     }
@@ -74,21 +72,17 @@ class PartialNaryPatternTest {
 
         val ptn = fractionOf(numerator, denominator)
 
-        val expression = fractionOf(
-            productOf(VariableExpr("x"), VariableExpr("y"), VariableExpr("z")),
-            productOf(VariableExpr("a"), VariableExpr("y"), VariableExpr("c"))
-        )
+        val expression = parseExpression("[x*y*z/a*y*c]")
 
         val matches = ptn.findMatches(Subexpression(RootPath, expression), RootMatch)
 
         assertEquals(1, matches.count())
-        assertEquals(VariableExpr("y"), matches.first().getBoundExpr(common))
+        assertEquals(xp("y"), matches.first().getBoundExpr(common))
     }
 
     @Test
     fun getRest() {
-        val expression =
-            NaryExpr(NaryOperator.Sum, listOf(IntegerExpr(1), IntegerExpr(2), IntegerExpr(1), IntegerExpr(3)))
+        val expression = parseExpression("1 + 2 + 1 + 3")
         val intPtn = UnsignedIntegerPattern()
         val ptn = PartialNaryPattern(NaryOperator.Sum, listOf(intPtn, intPtn))
 
@@ -96,6 +90,6 @@ class PartialNaryPatternTest {
         assertEquals(1, matches.count())
         val match = matches.elementAt(0)
         val rest = ptn.getRestSubexpressions(match)
-        assertContentEquals(listOf<Expression>(IntegerExpr(2), IntegerExpr(3)), rest.map { it.expr })
+        assertContentEquals(listOf(xp(2), xp(3)), rest.map { it.expr })
     }
 }

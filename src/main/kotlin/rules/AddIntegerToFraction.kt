@@ -1,7 +1,7 @@
 package rules
 
 import expressionmakers.*
-import expressions.IntegerExpr
+import expressions.xp
 import patterns.UnsignedIntegerPattern
 import patterns.commutativeSumOf
 import patterns.fractionOf
@@ -21,7 +21,7 @@ val addIntegerToFraction = run {
             sum,
             makeFractionOf(
                 makeProductOf(move(integer), introduce(denominator)),
-                makeProductOf(FixedExpressionMaker(IntegerExpr(1)), introduce(denominator))
+                makeProductOf(FixedExpressionMaker(xp(1)), introduce(denominator))
             ),
             move(fraction),
         ),

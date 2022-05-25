@@ -28,14 +28,14 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
         }
         val terms = mutableListOf<Expression>(first)
         terms.addAll(rest)
-        return NaryExpr(NaryOperator.Sum, terms)
+        return Expression(NaryOperator.Sum, terms)
     }
 
     override fun visitOtherTerm(ctx: ExpressionParser.OtherTermContext?): Expression {
         val p = visit(ctx!!.explicitProduct())
         return when (ctx.sign.text) {
             "+" -> p
-            else -> UnaryExpr(UnaryOperator.Minus, p)
+            else -> negOf(p)
         }
     }
 
@@ -44,7 +44,7 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
         if (factors.size == 1) {
             return factors[0]
         }
-        return NaryExpr(NaryOperator.Product, factors)
+        return Expression(NaryOperator.Product, factors)
     }
 
     override fun visitImplicitProduct(ctx: ExpressionParser.ImplicitProductContext?): Expression {
@@ -55,7 +55,7 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
         }
         val factors = mutableListOf<Expression>(first)
         factors.addAll(rest)
-        return NaryExpr(NaryOperator.ImplicitProduct, factors)
+        return Expression(NaryOperator.ImplicitProduct, factors)
     }
 
     override fun visitFirstFactorWithSign(ctx: ExpressionParser.FirstFactorWithSignContext?): Expression {
@@ -64,7 +64,7 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
             "+" -> UnaryOperator.Plus
             else -> UnaryOperator.Minus
         }
-        return UnaryExpr(operator, factor)
+        return Expression(operator, listOf(factor))
     }
 
     override fun visitFraction(ctx: ExpressionParser.FractionContext?): Expression {
@@ -80,18 +80,18 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
     }
 
     override fun visitMixedNumber(ctx: ExpressionParser.MixedNumberContext?): Expression {
-        return MixedNumber(
-            visit(ctx!!.integer) as IntegerExpr,
-            visit(ctx.num) as IntegerExpr,
-            visit(ctx.den) as IntegerExpr,
+        return mixedNumber(
+            ctx!!.integer.text.toBigInteger(),
+            ctx.num.text.toBigInteger(),
+            ctx.den.text.toBigInteger(),
         )
     }
 
     override fun visitNaturalNumber(ctx: ExpressionParser.NaturalNumberContext?): Expression {
-        return IntegerExpr(ctx!!.NATNUM().text.toBigInteger())
+        return xp(ctx!!.NATNUM().text.toBigInteger())
     }
 
     override fun visitVariable(ctx: ExpressionParser.VariableContext?): Expression {
-        return VariableExpr(ctx!!.VARIABLE().text)
+        return xp(ctx!!.VARIABLE().text)
     }
 }

@@ -4,12 +4,13 @@ import expressions.MappedExpression
 import expressions.PathMappingLeaf
 import expressions.PathMappingType
 import patterns.Match
+import patterns.PathProvider
 import patterns.Pattern
 
-data class PathMappingAnnotator(val pathMappingType: PathMappingType, val pattern: Pattern) : ExpressionMaker {
+data class PathMappingAnnotator(val pathMappingType: PathMappingType, val pattern: PathProvider) : ExpressionMaker {
     override fun makeMappedExpression(match: Match): MappedExpression {
-        val paths = match.getBoundPaths(pattern)
-        return MappedExpression(match.getBoundExpr(pattern)!!, PathMappingLeaf(paths, pathMappingType))
+        val paths = pattern.getBoundPaths(match)
+        return MappedExpression(pattern.getBoundExpr(match)!!, PathMappingLeaf(paths, pathMappingType))
     }
 }
 
@@ -24,7 +25,7 @@ data class VanishingPathAnnotator(
     }
 }
 
-fun move(pattern: Pattern) = PathMappingAnnotator(PathMappingType.Move, pattern)
+fun move(pattern: PathProvider) = PathMappingAnnotator(PathMappingType.Move, pattern)
 fun factor(pattern: Pattern) = PathMappingAnnotator(PathMappingType.Factor, pattern)
 fun cancel(pattern: Pattern, inExpression: ExpressionMaker) =
     VanishingPathAnnotator(PathMappingType.Cancel, pattern, inExpression)

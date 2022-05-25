@@ -1,7 +1,7 @@
 package expressionmakers
 
 import expressions.*
-import patterns.IntegerPattern
+import patterns.IntegerProvider
 import patterns.Match
 import patterns.NaryPatternBase
 import patterns.PartialNaryPattern
@@ -60,7 +60,7 @@ data class RestExpressionMaker(val pattern: PartialNaryPattern) : ExpressionMake
     override fun makeMappedExpression(match: Match): MappedExpression {
         val subexpressions = pattern.getRestSubexpressions(match)
         return MappedExpression(
-            NaryExpr(pattern.operator, subexpressions.map { it.expr }),
+            Expression(pattern.operator, subexpressions.map { it.expr }),
             PathMappingParent(subexpressions.map { PathMappingLeaf(listOf(it.path), PathMappingType.Move) })
         )
     }
@@ -106,20 +106,20 @@ data class MixedNumberMaker(
 }
 
 data class NumericOp2(
-    val num1: IntegerPattern,
-    val num2: IntegerPattern,
+    val num1: IntegerProvider,
+    val num2: IntegerProvider,
     val operation: (BigInteger, BigInteger) -> BigInteger
 ) : ExpressionMaker {
     override fun makeMappedExpression(match: Match): MappedExpression {
         val value = operation(num1.getBoundInt(match), num2.getBoundInt(match))
 
         val result = when {
-            value.signum() >= 0 -> IntegerExpr(value)
-            else -> bracketOf(negOf(IntegerExpr(-value)))
+            value.signum() >= 0 -> xp(value)
+            else -> bracketOf(negOf(xp(-value)))
         }
         return MappedExpression(
             result,
-            PathMappingLeaf(match.getBoundPaths(num1) + match.getBoundPaths(num2), PathMappingType.Combine),
+            PathMappingLeaf(num1.getBoundPaths(match) + num2.getBoundPaths(match), PathMappingType.Combine),
         )
     }
 }
@@ -139,8 +139,8 @@ fun makeMixedNumberOf(integer: ExpressionMaker, numerator: ExpressionMaker, deno
     MixedNumberMaker(integer, numerator, denominator)
 
 fun makeNumericOp(
-    ptn1: IntegerPattern,
-    ptn2: IntegerPattern,
+    ptn1: IntegerProvider,
+    ptn2: IntegerProvider,
     operation: (BigInteger, BigInteger) -> BigInteger
 ): ExpressionMaker {
     return NumericOp2(ptn1, ptn2, operation)

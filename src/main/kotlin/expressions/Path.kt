@@ -45,11 +45,11 @@ object IntroduceRootPath : Path {
 
 data class Subexpression(val path: Path, val expr: Expression) {
     fun nthChild(index: Int): Subexpression {
-        return Subexpression(path.child(index), expr.children().elementAt(index))
+        return Subexpression(path.child(index), expr.operands.elementAt(index))
     }
 
     fun children(): List<Subexpression> {
-        return expr.children().mapIndexed { i, child -> Subexpression(path.child(i), child) }
+        return expr.operands.mapIndexed { i, child -> Subexpression(path.child(i), child) }
     }
 
     fun index() = when (path) {

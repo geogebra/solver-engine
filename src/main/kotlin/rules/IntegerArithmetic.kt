@@ -1,12 +1,12 @@
 package rules
 
 import expressionmakers.*
-import expressions.IntegerExpr
+import expressions.xp
 import patterns.*
 import steps.makeMetadata
 
 val eliminateZeroInSum = run {
-    val zero = FixedPattern(IntegerExpr(0))
+    val zero = FixedPattern(xp(0))
     val pattern = sumContaining(zero)
 
     Rule(
@@ -17,7 +17,7 @@ val eliminateZeroInSum = run {
 }
 
 val eliminateOneInProduct = run {
-    val one = FixedPattern(IntegerExpr(1))
+    val one = FixedPattern(xp(1))
     val pattern = productContaining(one)
 
     Rule(
@@ -80,7 +80,7 @@ val evaluateSignedIntegerProduct = run {
             "evaluate integer product", move(factor1), move(factor2)
         ),
     )
-}
+} // x * 2 * y * 7 -> x * 14 * y
 
 val simplifyDoubleNeg = run {
     val value = AnyPattern()

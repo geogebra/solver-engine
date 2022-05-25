@@ -31,7 +31,7 @@ atom: nonNumericAtom | naturalNumber;
 
 nonNumericAtom: bracket | variable;
 
-mixedNumber: '[' integer=naturalNumber num=naturalNumber '/' den=naturalNumber ']';
+mixedNumber: '[' integer=NATNUM num=NATNUM '/' den=NATNUM ']';
 
 naturalNumber: NATNUM;
 

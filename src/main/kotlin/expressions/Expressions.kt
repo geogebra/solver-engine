@@ -1,197 +1,33 @@
 package expressions
 
-import java.math.BigDecimal
 import java.math.BigInteger
 
-sealed interface Expression {
 
-    val operator: Operator
-
-    fun variables(): Set<VariableExpr> = emptySet()
-
-    fun children(): List<Expression> = emptyList()
-
-    fun mapChildrenIndexed(f: (i: Int, expr: Expression) -> Expression): Expression
-
-    fun copyWithChildren(newChildren: List<Expression>): Expression
-
-    fun getAt(path: Path): Expression {
-        return when (path) {
-            is ChildPath -> getAt(path.parent).children().elementAt(path.index)
-            else -> this
-        }
-    }
-}
-
-interface Literal : Expression {
-
-    override val operator: NullaryOperator
-        get() = NullaryOperator
-
-    override fun mapChildrenIndexed(f: (i: Int, expr: Expression) -> Expression) = this
-
-    override fun copyWithChildren(newChildren: List<Expression>): Expression {
-        if (newChildren.isNotEmpty()) {
-            throw IllegalArgumentException()
-        }
-        return this
-    }
-}
-
-data class IntegerExpr(val value: BigInteger) : Literal {
-    constructor(value: Long) : this(BigInteger.valueOf(value))
-
-    override fun toString(): String {
-        return value.toString()
-    }
-
-}
-
-data class DecimalExpr(val value: BigDecimal) : Literal {
-    constructor(value: Double) : this(BigDecimal.valueOf(value))
-
-    override fun toString(): String {
-        return value.toString()
-    }
-}
-
-data class VariableExpr(val name: String) : Expression {
-
-    override val operator = NullaryOperator
-
-    override fun variables(): Set<VariableExpr> = setOf(this)
-
-    override fun mapChildrenIndexed(f: (i: Int, expr: Expression) -> Expression) = this
-
-
-    override fun copyWithChildren(newChildren: List<Expression>): Expression {
-        if (newChildren.isNotEmpty()) {
-            throw IllegalArgumentException()
-        }
-        return this
-    }
-
-    override fun toString(): String {
-        return name
-    }
-}
-
-data class UnaryExpr(override val operator: UnaryOperator, val expr: Expression) : Expression {
-
+data class Expression(val operator: Operator, val operands: List<Expression>) {
     init {
-        require(operator.childAllowed(expr.operator))
-    }
-
-    override fun children(): List<Expression> = listOf(expr)
-
-    override fun mapChildrenIndexed(f: (i: Int, expr: Expression) -> Expression) = copy(expr = f(0, expr))
-
-    override fun copyWithChildren(newChildren: List<Expression>): Expression {
-        if (newChildren.size != 1) {
-            throw IllegalArgumentException()
-        }
-        return UnaryExpr(operator, newChildren[0])
-    }
-
-
-    override fun toString(): String {
-        return "${operator}(${expr})"
-    }
-}
-
-data class BinaryExpr(override val operator: BinaryOperator, val left: Expression, val right: Expression) : Expression {
-
-    init {
-        require(operator.leftChildAllowed(left.operator))
-        require(operator.rightChildAllowed(right.operator))
-    }
-
-    override fun children(): List<Expression> = listOf(left, right)
-
-    override fun mapChildrenIndexed(f: (i: Int, expr: Expression) -> Expression) =
-        copy(left = f(0, left), right = f(1, right))
-
-
-    override fun copyWithChildren(newChildren: List<Expression>): Expression {
-        if (newChildren.size != 2) {
-            throw IllegalArgumentException()
-        }
-        return BinaryExpr(operator, newChildren[0], newChildren[1])
-    }
-
-    override fun toString(): String {
-        return "${operator}(${left}, ${right})"
-    }
-}
-
-data class NaryExpr(override val operator: NaryOperator, val operands: List<Expression>) : Expression {
-
-    init {
-        require(operands.size >= 2)
-        for ((i, operand) in operands.withIndex()) {
-            require(operator.nthChildAllowed(i, operand.operator))
-        }
-    }
-
-    override fun children(): List<Expression> = operands
-
-    override fun mapChildrenIndexed(f: (i: Int, expr: Expression) -> Expression) =
-        copy(operands = operands.mapIndexed(f))
-
-
-    override fun copyWithChildren(newChildren: List<Expression>): Expression {
-        if (newChildren.size < 2) {
-            throw IllegalArgumentException()
-        }
-        return NaryExpr(operator, newChildren)
-    }
-
-    override fun toString(): String {
-        return operands.joinToString(", ", "${operator}(", ")") { it.toString() }
-    }
-}
-
-data class MixedNumber(val integer: IntegerExpr, val numerator: IntegerExpr, val denominator: IntegerExpr) :
-    Expression {
-
-    override val operator = NullaryOperator // TODO: operator for this
-
-    override fun children() = listOf<Expression>(integer, numerator, denominator)
-
-    override fun copyWithChildren(newChildren: List<Expression>): Expression {
-        if (newChildren.size != 3) {
-            throw IllegalArgumentException()
-        }
-        return MixedNumber(newChildren[0] as IntegerExpr, newChildren[1] as IntegerExpr, newChildren[2] as IntegerExpr)
-    }
-
-    override fun mapChildrenIndexed(f: (i: Int, expr: Expression) -> Expression) = MixedNumber(
-        f(0, integer) as IntegerExpr,
-        f(1, numerator) as IntegerExpr,
-        f(2, denominator) as IntegerExpr,
-    )
-
-    override fun toString(): String {
-        return "$integer $numerator/$denominator"
+        require(operator.childrenAllowed(operands.map { it.operator }))
     }
 }
 
 
-fun xp(n: Int) = IntegerExpr(n.toBigInteger())
-fun xp(n: BigInteger) = IntegerExpr(n)
-fun xp(v: String) = VariableExpr(v)
+fun xp(n: Int) = Expression(IntegerOperator(n.toBigInteger()), emptyList())
+fun xp(n: BigInteger) = Expression(IntegerOperator(n), emptyList())
+fun xp(v: String) = Expression(VariableOperator(v), emptyList())
 
-fun bracketOf(expr: Expression) = UnaryExpr(UnaryOperator.Bracket, expr)
+fun mixedNumber(integer: BigInteger, numerator: BigInteger, denominator: BigInteger) =
+    Expression(MixedNumberOperator(integer, numerator, denominator), emptyList())
 
-fun negOf(expr: Expression) = UnaryExpr(UnaryOperator.Minus, expr)
+fun bracketOf(expr: Expression) = Expression(UnaryOperator.Bracket, listOf(expr))
+
+fun negOf(expr: Expression) = Expression(UnaryOperator.Minus, listOf(expr))
 
 fun fractionOf(numerator: Expression, denominator: Expression) =
-    BinaryExpr(BinaryOperator.Fraction, numerator, denominator)
+    Expression(BinaryOperator.Fraction, listOf(numerator, denominator))
 
-fun powerOf(base: Expression, exponent: Expression) = BinaryExpr(BinaryOperator.Power, base, exponent)
+fun powerOf(base: Expression, exponent: Expression) = Expression(BinaryOperator.Power, listOf(base, exponent))
 
-fun sumOf(vararg terms: Expression) = NaryExpr(NaryOperator.Sum, terms.asList())
+fun sumOf(vararg terms: Expression) = Expression(NaryOperator.Sum, terms.asList())
 
-fun productOf(vararg factors: Expression) = NaryExpr(NaryOperator.Product, factors.asList())
+fun productOf(vararg factors: Expression) = Expression(NaryOperator.Product, factors.asList())
 
-fun implicitProductOf(vararg factors: Expression) = NaryExpr(NaryOperator.ImplicitProduct, factors.asList())
+fun implicitProductOf(vararg factors: Expression) = Expression(NaryOperator.ImplicitProduct, factors.asList())

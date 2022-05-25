@@ -6,14 +6,14 @@ import steps.SkillType
 import steps.makeMetadata
 
 val splitMixedNumber = run {
-    val integer = UnsignedIntegerPattern()
-    val numerator = UnsignedIntegerPattern()
-    val denominator = UnsignedIntegerPattern()
-    val pattern = MixedNumberPattern(integer, numerator, denominator)
+    val pattern = MixedNumberPattern()
 
     Rule(
         pattern = pattern,
-        resultMaker = makeSumOf(move(integer), makeFractionOf(move(numerator), move(denominator))),
+        resultMaker = makeSumOf(
+            move(pattern.integer),
+            makeFractionOf(move(pattern.numerator), move(pattern.denominator))
+        ),
         explanationMaker = makeMetadata("split mixed number", move(pattern)),
     )
 }

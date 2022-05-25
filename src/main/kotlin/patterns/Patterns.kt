@@ -3,69 +3,91 @@ package patterns
 import expressions.*
 import java.math.BigInteger
 
-interface Pattern {
-    fun findMatches(subexpression: Subexpression, match: Match = RootMatch): Sequence<Match>
+interface PathProvider {
+
+    fun getBoundPaths(m: Match): List<Path>
+
+    fun getBoundExpr(m: Match): Expression?
+
+    fun checkPreviousMatch(expr: Expression, match: Match): Boolean {
+        val previous = getBoundExpr(match)
+        return previous == null || previous == expr
+    }
 }
 
-interface FullSizePattern : Pattern {
+interface Pattern : PathProvider {
+    fun findMatches(subexpression: Subexpression, match: Match = RootMatch): Sequence<Match>
 
-    fun children(): List<Pattern>
+    override fun getBoundPaths(m: Match) = m.getBoundPaths(this)
 
-    fun checkExpressionKind(expr: Expression): Boolean
+    override fun getBoundExpr(m: Match) = m.getBoundExpr(this)
+}
+
+data class OperatorPattern(val operator: Operator, val childPatterns: List<Pattern>) : Pattern {
+    init {
+        require(childPatterns.size >= operator.minChildCount())
+        require(childPatterns.size <= operator.maxChildCount())
+    }
 
     override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
-        if (!checkExpressionKind(subexpression.expr)) {
+        if (subexpression.expr.operator != operator ||
+            subexpression.expr.operands.size != childPatterns.size ||
+            !checkPreviousMatch(subexpression.expr, match)
+        ) {
             return emptySequence()
         }
 
-        val previouslyMatched = match.getBoundExpr(this)
-
-        if (previouslyMatched != null) {
-            return when (previouslyMatched) {
-                subexpression.expr -> sequenceOf(match.newChild(this, subexpression))
-                else -> emptySequence()
-            }
-        }
-
         var matches = sequenceOf(match.newChild(this, subexpression))
-        for ((index, op) in children().withIndex()) {
+        for ((index, op) in childPatterns.withIndex()) {
             matches = matches.flatMap { op.findMatches(subexpression.nthChild(index), it) }
         }
         return matches
     }
 }
 
+data class FixedPattern(val expr: Expression) : Pattern {
 
-data class FixedPattern(val expr: Expression) : FullSizePattern {
-    override fun children(): List<Pattern> = emptyList()
-
-    override fun checkExpressionKind(expr: Expression) = this.expr == expr
+    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+        return when (subexpression.expr) {
+            expr -> sequenceOf(match.newChild(this, subexpression))
+            else -> emptySequence()
+        }
+    }
 }
 
-class AnyPattern : FullSizePattern {
-    override fun children() = emptyList<Pattern>()
+class AnyPattern : Pattern {
 
-    override fun checkExpressionKind(expr: Expression) = true
+    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+        if (!checkPreviousMatch(subexpression.expr, match)) {
+            return emptySequence()
+        }
+        return sequenceOf(match.newChild(this, subexpression))
+    }
 }
 
-interface IntegerPattern : Pattern {
+interface IntegerProvider : PathProvider {
+
     fun getBoundInt(m: Match): BigInteger
-
-
 }
 
-class UnsignedIntegerPattern : IntegerPattern, FullSizePattern {
+class UnsignedIntegerPattern : Pattern, IntegerProvider {
 
     override fun getBoundInt(m: Match): BigInteger {
-        return (m.getBoundExpr(this)!! as IntegerExpr).value
+        return (m.getBoundExpr(this)!!.operator as IntegerOperator).value
     }
 
-    override fun children(): List<Pattern> = emptyList()
-
-    override fun checkExpressionKind(expr: Expression) = expr is IntegerExpr
+    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+        if (!checkPreviousMatch(subexpression.expr, match)) {
+            return emptySequence()
+        }
+        return when (subexpression.expr.operator) {
+            is IntegerOperator -> sequenceOf(match.newChild(this, subexpression))
+            else -> emptySequence()
+        }
+    }
 }
 
-class SignedIntegerPattern : IntegerPattern {
+class SignedIntegerPattern : Pattern, IntegerProvider {
     private val integer = UnsignedIntegerPattern()
     private val neg = negOf(integer)
     private val ptn = OneOfPattern(listOf(integer, neg, bracketOf(neg)))
@@ -79,29 +101,55 @@ class SignedIntegerPattern : IntegerPattern {
     }
 
     override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+        if (!checkPreviousMatch(subexpression.expr, match)) {
+            return emptySequence()
+        }
         return ptn.findMatches(subexpression, match).map { it.newChild(this, it.getLastBinding(ptn)!!) }
     }
 }
 
-class VariablePattern : FullSizePattern {
+class VariablePattern : Pattern {
+    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+        if (!checkPreviousMatch(subexpression.expr, match)) {
+            return emptySequence()
+        }
 
-    override fun children() = emptyList<Pattern>()
-
-    override fun checkExpressionKind(expr: Expression) = expr is VariableExpr
+        return when (subexpression.expr.operator) {
+            is VariableOperator -> sequenceOf(match.newChild(this, subexpression))
+            else -> emptySequence()
+        }
+    }
 }
 
-data class UnaryPattern(val operator: UnaryOperator, val ptn: Pattern) : FullSizePattern {
+class MixedNumberPattern : Pattern {
 
-    override fun children() = listOf(ptn)
+    private fun getBoundMixedNumber(match: Match) = match.getBoundExpr(this)!!.operator as MixedNumberOperator
 
-    override fun checkExpressionKind(expr: Expression) = expr is UnaryExpr && expr.operator == operator
-}
+    inner class PartIntegerProvider(val getInt: (MixedNumberOperator) -> BigInteger) : IntegerProvider {
+        override fun getBoundInt(m: Match): BigInteger {
+            return getInt(getBoundMixedNumber(m))
+        }
 
-data class BinaryPattern(val operator: BinaryOperator, val left: Pattern, val right: Pattern) : FullSizePattern {
+        override fun getBoundPaths(m: Match): List<Path> {
+            return this@MixedNumberPattern.getBoundPaths(m)
+        }
 
-    override fun children() = listOf(left, right)
+        override fun getBoundExpr(m: Match): Expression? = xp(getBoundInt(m))
+    }
 
-    override fun checkExpressionKind(expr: Expression) = expr is BinaryExpr && expr.operator == operator
+    val integer = PartIntegerProvider { it.integer }
+    val numerator = PartIntegerProvider { it.numerator }
+    val denominator = PartIntegerProvider { it.denominator }
+
+    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+        if (!checkPreviousMatch(subexpression.expr, match)) {
+            return emptySequence()
+        }
+        return when (subexpression.expr.operator) {
+            is MixedNumberOperator -> sequenceOf(match.newChild(this, subexpression))
+            else -> emptySequence()
+        }
+    }
 }
 
 interface NaryPatternBase : Pattern {
@@ -125,16 +173,6 @@ interface NaryPatternBase : Pattern {
 
 }
 
-data class NaryPattern(override val operator: NaryOperator, override val operands: List<Pattern>) : NaryPatternBase,
-    FullSizePattern {
-
-    override fun children() = operands
-
-    override fun checkExpressionKind(expr: Expression): Boolean {
-        return expr is NaryExpr && expr.operator == operator && expr.children().count() == children().count()
-    }
-}
-
 data class PartialNaryPattern(
     override val operator: NaryOperator,
     override val operands: List<Pattern>,
@@ -142,10 +180,8 @@ data class PartialNaryPattern(
 ) : NaryPatternBase {
 
     override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
-        val childCount = subexpression.expr.children().count()
-        if (subexpression.expr !is NaryExpr || subexpression.expr.operator != operator
-            || childCount < operands.count() || childCount < minSize
-        ) {
+        val childCount = subexpression.expr.operands.size
+        if (subexpression.expr.operator != operator || childCount < operands.size || childCount < minSize) {
             return emptySequence()
         }
 
@@ -180,10 +216,8 @@ data class CommutativeNaryPattern(override val operator: NaryOperator, override 
     NaryPatternBase {
 
     override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
-        val childCount = subexpression.expr.children().count()
-        if (subexpression.expr !is NaryExpr || subexpression.expr.operator != operator
-            || childCount != operands.count()
-        ) {
+        val childCount = subexpression.expr.operands.size
+        if (subexpression.expr.operator != operator || childCount != operands.count()) {
             return emptySequence()
         }
 
@@ -213,17 +247,6 @@ data class CommutativeNaryPattern(override val operator: NaryOperator, override 
     }
 }
 
-data class MixedNumberPattern(
-    val integer: UnsignedIntegerPattern = UnsignedIntegerPattern(),
-    val numerator: UnsignedIntegerPattern = UnsignedIntegerPattern(),
-    val denominator: UnsignedIntegerPattern = UnsignedIntegerPattern(),
-) : FullSizePattern {
-
-    override fun children() = listOf(integer, numerator, denominator)
-
-    override fun checkExpressionKind(expr: Expression) = expr is MixedNumber
-}
-
 data class ConditionPattern(val pattern: Pattern, val condition: MatchCondition) : Pattern {
 
     override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
@@ -232,33 +255,30 @@ data class ConditionPattern(val pattern: Pattern, val condition: MatchCondition)
 }
 
 fun fractionOf(numerator: Pattern, denominator: Pattern) =
-    BinaryPattern(BinaryOperator.Fraction, numerator, denominator)
+    OperatorPattern(BinaryOperator.Fraction, listOf(numerator, denominator))
 
-fun bracketOf(expr: Pattern) = UnaryPattern(UnaryOperator.Bracket, expr)
+fun bracketOf(expr: Pattern) = OperatorPattern(UnaryOperator.Bracket, listOf(expr))
 
-fun sumOf(vararg terms: Pattern) = NaryPattern(NaryOperator.Sum, terms.asList())
+fun sumOf(vararg terms: Pattern) = OperatorPattern(NaryOperator.Sum, terms.asList())
 
-fun negOf(operand: Pattern) = UnaryPattern(UnaryOperator.Minus, operand)
+fun negOf(operand: Pattern) = OperatorPattern(UnaryOperator.Minus, listOf(operand))
 
 fun sumContaining(vararg terms: Pattern) = PartialNaryPattern(NaryOperator.Sum, terms.asList())
 
 fun commutativeSumOf(vararg terms: Pattern) = CommutativeNaryPattern(NaryOperator.Sum, terms.asList())
 
-fun productOf(vararg factors: Pattern) = NaryPattern(NaryOperator.Product, factors.asList())
+fun productOf(vararg factors: Pattern) = OperatorPattern(NaryOperator.Product, factors.asList())
 
 fun productContaining(vararg factors: Pattern, minSize: Int = 0) =
     PartialNaryPattern(NaryOperator.Product, factors.asList(), minSize)
 
 data class NumericCondition2(
-    val ptn1: IntegerPattern,
-    val ptn2: IntegerPattern,
+    val ptn1: IntegerProvider,
+    val ptn2: IntegerProvider,
     val condition: (BigInteger, BigInteger) -> Boolean
 ) : MatchCondition {
     override fun checkMatch(match: Match): Boolean {
-        val n1 = ptn1.getBoundInt(match)
-        val n2 = ptn2.getBoundInt(match)
-
-        return condition(n1, n2)
+        return condition(ptn1.getBoundInt(match), ptn2.getBoundInt(match))
     }
 }
 
