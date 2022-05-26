@@ -34,21 +34,10 @@ data class SubexpressionMaker(val subexpression: Subexpression) : ExpressionMake
     }
 }
 
-data class UnaryExpressionMaker(val operator: UnaryOperator, val expr: ExpressionMaker) : ExpressionMaker {
-    override fun makeMappedExpression(match: Match) = unaryMappedExpression(
-        operator,
-        expr.makeMappedExpression(match),
-    )
-
-}
-
-data class BinaryExpressionMaker(val operator: BinaryOperator, val left: ExpressionMaker, val right: ExpressionMaker) :
-    ExpressionMaker {
-    override fun makeMappedExpression(match: Match) = binaryMappedExpression(
-        operator,
-        left.makeMappedExpression(match),
-        right.makeMappedExpression(match),
-    )
+data class OperatorExpressionMaker(val operator: Operator, val operands: List<ExpressionMaker>) : ExpressionMaker {
+    override fun makeMappedExpression(match: Match): MappedExpression {
+        return mappedExpression(operator, operands.map { it.makeMappedExpression(match) })
+    }
 }
 
 data class NaryExpressionMaker(val operator: NaryOperator, val operands: List<ExpressionMaker>) : ExpressionMaker {
@@ -125,13 +114,13 @@ data class NumericOp2(
 }
 
 fun makeFractionOf(numerator: ExpressionMaker, denominator: ExpressionMaker) =
-    BinaryExpressionMaker(BinaryOperator.Fraction, numerator, denominator)
+    OperatorExpressionMaker(BinaryOperator.Fraction, listOf(numerator, denominator))
 
 fun makeSumOf(vararg terms: ExpressionMaker) = NaryExpressionMaker(NaryOperator.Sum, terms.asList())
 
 fun makeProductOf(vararg terms: ExpressionMaker) = NaryExpressionMaker(NaryOperator.Product, terms.asList())
 
-fun makeNegOf(operand: ExpressionMaker) = UnaryExpressionMaker(UnaryOperator.Minus, operand)
+fun makeNegOf(operand: ExpressionMaker) = OperatorExpressionMaker(UnaryOperator.Minus, listOf(operand))
 
 fun restOf(pattern: PartialNaryPattern) = RestExpressionMaker(pattern)
 

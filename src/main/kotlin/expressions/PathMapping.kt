@@ -7,11 +7,22 @@ data class PathMapping(
 )
 
 enum class PathMappingType {
-    Move,
+    Move {
+        override fun composeWith(other: PathMappingType) = other
+    },
     Relate,
     Combine,
     Factor,
     Distribute,
     Cancel,
     Introduce;
+
+    open fun composeWith(other: PathMappingType): PathMappingType {
+        return when (other) {
+            Move -> this
+            Cancel -> Cancel
+            this -> this
+            else -> Relate
+        }
+    }
 }

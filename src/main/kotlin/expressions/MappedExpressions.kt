@@ -1,44 +1,7 @@
 package expressions
 
 
-interface PathMappingSet {
-    fun childList(size: Int): List<PathMappingSet>
-
-    fun pathMappings(root: Path): Sequence<PathMapping>
-}
-
-data class PathMappingLeaf(val paths: List<Path>, val type: PathMappingType) : PathMappingSet {
-
-    override fun childList(size: Int) =
-        (0 until size).map { i ->
-            PathMappingLeaf(
-                paths.map { it.child(i) },
-                type
-            )
-        }
-
-    override fun pathMappings(root: Path) = sequenceOf(PathMapping(paths, type, root))
-}
-
-fun combinePathMappingLeaves(vararg leaves: PathMappingLeaf): PathMappingLeaf {
-    if (leaves.size == 1) {
-        return leaves[0]
-    }
-    return PathMappingLeaf(leaves.map { it.paths }.flatten(), PathMappingType.Combine)
-}
-
-data class PathMappingParent(val children: List<PathMappingSet>) : PathMappingSet {
-
-    override fun childList(size: Int): List<PathMappingSet> {
-        return children
-    }
-
-    override fun pathMappings(root: Path): Sequence<PathMapping> {
-        return children.mapIndexed { i, child -> child.pathMappings(root.child(i)) }.asSequence().flatten()
-    }
-}
-
-data class MappedExpression(val expr: Expression, val mappings: PathMappingSet) {
+data class MappedExpression(val expr: Expression, val mappings: PathMappingTree) {
     fun wrapInBracketsUnless(cond: (Operator) -> Boolean): MappedExpression = when {
         cond(expr.operator) -> this
         else -> MappedExpression(bracketOf(expr), PathMappingParent(listOf(mappings)))
@@ -54,6 +17,21 @@ fun Expression.copyWithMappedChildren(mappedChildren: List<MappedExpression>): M
 
 fun Subexpression.toMappedExpr(): MappedExpression {
     return MappedExpression(expr, PathMappingLeaf(listOf(path), PathMappingType.Move))
+}
+
+fun mappedExpression(operator: Operator, mappedOperands: List<MappedExpression>): MappedExpression {
+    val wrappedOperands = mappedOperands.mapIndexed { i, operand ->
+        operand.wrapInBracketsUnless {
+            operator.nthChildAllowed(
+                i,
+                operand.expr.operator
+            )
+        }
+    }
+    return MappedExpression(
+        Expression(operator, wrappedOperands.map { it.expr }),
+        PathMappingParent(wrappedOperands.map { it.mappings })
+    )
 }
 
 fun unaryMappedExpression(operator: UnaryOperator, operand: MappedExpression): MappedExpression {
@@ -79,7 +57,7 @@ fun binaryMappedExpression(
 
 fun naryMappedExpression(operator: NaryOperator, operands: List<MappedExpression>): MappedExpression {
     val ops = mutableListOf<Expression>()
-    val mappingSets = mutableListOf<PathMappingSet>()
+    val mappingSets = mutableListOf<PathMappingTree>()
     for (mappedExpr in operands) {
         if (mappedExpr.expr.operator == operator) {
             ops.addAll(mappedExpr.expr.operands)
@@ -111,9 +89,11 @@ fun mixedNumberMappedExpression(
             ),
             emptyList()
         ),
-        combinePathMappingLeaves(
-            integer.mappings as PathMappingLeaf,
-            numerator.mappings as PathMappingLeaf,
-            denominator.mappings as PathMappingLeaf
+        combinePathMappingTrees(
+            listOf(
+                integer.mappings,
+                numerator.mappings,
+                denominator.mappings
+            )
         )
     )

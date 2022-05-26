@@ -16,7 +16,7 @@ data class PathMappingAnnotator(val pathMappingType: PathMappingType, val patter
 
 data class VanishingPathAnnotator(
     val pathMappingType: PathMappingType,
-    val pattern: Pattern,
+    val pattern: PathProvider,
     val inExpression: ExpressionMaker
 ) : ExpressionMaker {
     override fun makeMappedExpression(match: Match): MappedExpression {
@@ -26,8 +26,8 @@ data class VanishingPathAnnotator(
 }
 
 fun move(pattern: PathProvider) = PathMappingAnnotator(PathMappingType.Move, pattern)
-fun factor(pattern: Pattern) = PathMappingAnnotator(PathMappingType.Factor, pattern)
-fun cancel(pattern: Pattern, inExpression: ExpressionMaker) =
+fun factor(pattern: PathProvider) = PathMappingAnnotator(PathMappingType.Factor, pattern)
+fun cancel(pattern: PathProvider, inExpression: ExpressionMaker) =
     VanishingPathAnnotator(PathMappingType.Cancel, pattern, inExpression)
 
 fun introduce(pattern: Pattern) = PathMappingAnnotator(PathMappingType.Introduce, pattern)
