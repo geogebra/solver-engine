@@ -87,7 +87,7 @@ class TestPlan {
         assertEquals(parseExpression("4"), trans.toExpr.expr)
         trans.prettyPrint()
     }
-    
+
     @Test
     fun testSimplifyIntegerProduct() {
         val inExpr = parseExpression("1*(-2)*3")
@@ -99,11 +99,11 @@ class TestPlan {
 
     @Test
     fun testSimplifyIntegerSumProducts() {
-        val inExpr = parseExpression("1 + (2 + 0 - 3*(-2)*5) + 4*(-3)")
-        val trans = simplifyIntegerSumProducts.tryExecute(emptyContext, Subexpression(RootPath, inExpr))
+        val inExpr = parseExpression("1 + ([2^6:2] + 0 - 3*(-2)*5) + 4*(-3)")
+        val trans = simplifyIntegerExpression.tryExecute(emptyContext, Subexpression(RootPath, inExpr))
         assertNotNull(trans)
-        assertEquals(parseExpression("21"), trans.toExpr.expr)
         trans.prettyPrint()
+        assertEquals(parseExpression("27"), trans.toExpr.expr)
     }
 
 

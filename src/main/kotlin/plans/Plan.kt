@@ -10,6 +10,7 @@ import steps.ExplanationMaker
 import steps.SkillMaker
 import steps.Transformation
 import steps.makeMetadata
+import java.util.Collections.emptyList
 
 interface Plan {
 
@@ -209,11 +210,13 @@ val simplifyIntegerSum = WhilePossible(evaluateSignedIntegerAddition)
 
 val simplifyIntegerProduct = WhilePossible(evaluateSignedIntegerProduct)
 
-val simplifyIntegerSumProducts = WhilePossible(
+val simplifyIntegerExpression = WhilePossible(
     Deeply(
         plan = firstOf(
+            removeBracketAroundUnsignedInteger,
             removeBracketAroundSignedIntegerInSum,
             simplifyDoubleNeg,
+            evaluateSignedIntegerPower,
             simplifyIntegerProduct,
             simplifyIntegerSum,
         ),

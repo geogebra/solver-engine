@@ -40,11 +40,22 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
     }
 
     override fun visitExplicitProduct(ctx: ExpressionParser.ExplicitProductContext?): Expression {
-        val factors = ctx!!.products.map { visit(it) }
-        if (factors.size == 1) {
-            return factors[0]
+        val first = visit(ctx!!.first)
+        val rest = ctx.rest.map { visit(it) }
+        if (rest.isEmpty()) {
+            return first
         }
+        val factors = mutableListOf<Expression>(first)
+        factors.addAll(rest)
         return Expression(NaryOperator.Product, factors)
+    }
+
+    override fun visitOtherExplicitFactor(ctx: ExpressionParser.OtherExplicitFactorContext?): Expression {
+        val p = visit(ctx!!.implicitProduct())
+        return when (ctx.op.text) {
+            "*" -> p
+            else -> divideBy(p)
+        }
     }
 
     override fun visitImplicitProduct(ctx: ExpressionParser.ImplicitProductContext?): Expression {

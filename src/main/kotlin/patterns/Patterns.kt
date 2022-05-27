@@ -21,6 +21,8 @@ interface Pattern : PathProvider {
     override fun getBoundPaths(m: Match) = m.getBoundPaths(this)
 
     override fun getBoundExpr(m: Match) = m.getBoundExpr(this)
+
+    val key get() = this
 }
 
 data class OperatorPattern(val operator: Operator, val childPatterns: List<Pattern>) : Pattern {
@@ -249,6 +251,8 @@ data class CommutativeNaryPattern(override val operator: NaryOperator, override 
 
 data class ConditionPattern(val pattern: Pattern, val condition: MatchCondition) : Pattern {
 
+    override val key = pattern.key
+
     override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
         return pattern.findMatches(subexpression, match).filter { condition.checkMatch(it) }
     }
@@ -256,6 +260,12 @@ data class ConditionPattern(val pattern: Pattern, val condition: MatchCondition)
 
 fun fractionOf(numerator: Pattern, denominator: Pattern) =
     OperatorPattern(BinaryOperator.Fraction, listOf(numerator, denominator))
+
+fun divideBy(divisor: Pattern) =
+    OperatorPattern(UnaryOperator.DivideBy, listOf(divisor))
+
+fun powerOf(base: Pattern, exponent: Pattern) =
+    OperatorPattern(BinaryOperator.Power, listOf(base, exponent))
 
 fun bracketOf(expr: Pattern) = OperatorPattern(UnaryOperator.Bracket, listOf(expr))
 
@@ -272,6 +282,16 @@ fun productOf(vararg factors: Pattern) = OperatorPattern(NaryOperator.Product, f
 fun productContaining(vararg factors: Pattern, minSize: Int = 0) =
     PartialNaryPattern(NaryOperator.Product, factors.asList(), minSize)
 
+
+data class NumericCondition1(
+    val ptn: IntegerProvider,
+    val condition: (BigInteger) -> Boolean
+) : MatchCondition {
+    override fun checkMatch(match: Match): Boolean {
+        return condition(ptn.getBoundInt(match))
+    }
+}
+
 data class NumericCondition2(
     val ptn1: IntegerProvider,
     val ptn2: IntegerProvider,
@@ -282,9 +302,11 @@ data class NumericCondition2(
     }
 }
 
+fun numericCondition(ptn: IntegerProvider, condition: (BigInteger) -> Boolean) = NumericCondition1(ptn, condition)
+
 fun numericCondition(
-    ptn1: UnsignedIntegerPattern,
-    ptn2: UnsignedIntegerPattern,
+    ptn1: IntegerProvider,
+    ptn2: IntegerProvider,
     condition: (BigInteger, BigInteger) -> Boolean
 ) =
     NumericCondition2(ptn1, ptn2, condition)
@@ -295,11 +317,11 @@ interface MatchCondition {
 
 data class FindPattern(val pattern: Pattern, val deepFirst: Boolean = false) : Pattern {
 
+    override val key = pattern
+
     override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
         val ownMatches = pattern.findMatches(subexpression, match)
-        val childMatches = subexpression.children().asSequence()
-            .flatMap { findMatches(it, match) }
-            .map { it.newChild(this, it.getLastBinding(pattern)!!) }
+        val childMatches = subexpression.children().asSequence().flatMap { findMatches(it, match) }
         return when {
             deepFirst -> childMatches + ownMatches
             else -> ownMatches + childMatches
@@ -319,3 +341,5 @@ data class OneOfPattern(val options: List<Pattern>) : Pattern {
         }
     }
 }
+
+fun oneOf(vararg options: Pattern) = OneOfPattern(options.asList())

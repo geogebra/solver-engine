@@ -1,10 +1,7 @@
 package expressionmakers
 
 import expressions.*
-import patterns.IntegerProvider
-import patterns.Match
-import patterns.NaryPatternBase
-import patterns.PartialNaryPattern
+import patterns.*
 import java.math.BigInteger
 
 interface ExpressionMaker {
@@ -137,3 +134,21 @@ fun makeNumericOp(
 
 fun substituteIn(pattern: NaryPatternBase, vararg newVals: ExpressionMaker) =
     SubstituteInExpressionMaker(pattern, newVals.asList())
+
+class ExpressionMakerBuilder(private val match: Match) {
+    fun isBound(pattern: Pattern): Boolean {
+        return match.getLastBinding(pattern) != null
+    }
+}
+
+class CustomExpressionMaker(val run: ExpressionMakerBuilder.() -> ExpressionMaker) : ExpressionMaker {
+
+    override fun makeMappedExpression(match: Match): MappedExpression {
+        val builder = ExpressionMakerBuilder(match)
+        return builder.run().makeMappedExpression(match)
+    }
+}
+
+fun custom(run: ExpressionMakerBuilder.() -> ExpressionMaker): ExpressionMaker {
+    return CustomExpressionMaker(run)
+}

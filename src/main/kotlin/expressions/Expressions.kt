@@ -7,6 +7,10 @@ data class Expression(val operator: Operator, val operands: List<Expression>) {
     init {
         require(operator.childrenAllowed(operands.map { it.operator }))
     }
+
+    override fun toString(): String {
+        return operator.readableString(operands)
+    }
 }
 
 
@@ -21,8 +25,12 @@ fun bracketOf(expr: Expression) = Expression(UnaryOperator.Bracket, listOf(expr)
 
 fun negOf(expr: Expression) = Expression(UnaryOperator.Minus, listOf(expr))
 
+fun divideBy(expr: Expression) = Expression(UnaryOperator.DivideBy, listOf(expr))
+
 fun fractionOf(numerator: Expression, denominator: Expression) =
     Expression(BinaryOperator.Fraction, listOf(numerator, denominator))
+
+fun divisionOf(dividend: Expression, divisor: Expression) = Expression(BinaryOperator.Divide, listOf(dividend, divisor))
 
 fun powerOf(base: Expression, exponent: Expression) = Expression(BinaryOperator.Power, listOf(base, exponent))
 

@@ -10,7 +10,9 @@ sum: first=explicitProduct (rest+=otherTerm)*;
 
 otherTerm: sign=('+'|'-') explicitProduct;
 
-explicitProduct: products+=implicitProduct ('*' products+=implicitProduct)*;
+explicitProduct: first=implicitProduct (rest+=otherExplicitFactor)*;
+
+otherExplicitFactor: op=('*'|':') implicitProduct;
 
 implicitProduct: first=firstFactor (others+=otherFactor)*;
 

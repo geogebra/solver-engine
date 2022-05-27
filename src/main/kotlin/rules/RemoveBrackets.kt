@@ -3,6 +3,7 @@ package rules
 import expressionmakers.move
 import expressionmakers.substituteIn
 import patterns.SignedIntegerPattern
+import patterns.UnsignedIntegerPattern
 import patterns.bracketOf
 import patterns.sumContaining
 import steps.makeMetadata
@@ -28,5 +29,17 @@ val removeBracketAroundSignedIntegerInSum = run {
         pattern = pattern,
         resultMaker = substituteIn(pattern, move(number)),
         explanationMaker = makeMetadata("remove brackets around integer in sum")
+    )
+}
+
+
+val removeBracketAroundUnsignedInteger = run {
+    val number = UnsignedIntegerPattern()
+    val pattern = bracketOf(number)
+
+    Rule(
+        pattern = pattern,
+        resultMaker = move(number),
+        explanationMaker = makeMetadata("remove brackets around unsigned integer")
     )
 }

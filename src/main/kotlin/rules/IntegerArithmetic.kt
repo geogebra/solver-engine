@@ -69,18 +69,52 @@ val evaluateIntegerProduct = run {
 }
 
 val evaluateSignedIntegerProduct = run {
-    val factor1 = SignedIntegerPattern()
-    val factor2 = SignedIntegerPattern()
-    val product = productContaining(factor1, factor2)
+    val base = SignedIntegerPattern()
+    val multiplier = SignedIntegerPattern()
+    val divisor = SignedIntegerPattern()
+    val product = productContaining(
+        base, oneOf(
+            multiplier,
+            ConditionPattern(
+                divideBy(divisor),
+                numericCondition(base, divisor) { n1, n2 -> n1.mod(n2) == 0.toBigInteger() }
+            )
+        )
+    )
 
     Rule(
         pattern = product,
-        resultMaker = substituteIn(product, makeNumericOp(factor1, factor2) { n1, n2 -> n1 * n2 }),
-        explanationMaker = makeMetadata(
-            "evaluate integer product", move(factor1), move(factor2)
+        resultMaker = substituteIn(
+            product,
+            custom {
+                if (isBound(multiplier))
+                    makeNumericOp(base, multiplier) { n1, n2 -> n1 * n2 }
+                else
+                    makeNumericOp(base, divisor) { n1, n2 -> n1 / n2 }
+            }
         ),
+        explanationMaker = makeMetadata(
+            "evaluate integer product", move(base), custom {
+                if (isBound(multiplier)) move(multiplier) else move(divisor)
+            }
+        )
     )
-} // x * 2 * y * 7 -> x * 14 * y
+}
+
+val evaluateSignedIntegerPower = run {
+    val base = SignedIntegerPattern()
+    val exponent = UnsignedIntegerPattern()
+    val power = powerOf(
+        base,
+        ConditionPattern(exponent, numericCondition(exponent) { it < Int.MAX_VALUE.toBigInteger() })
+    )
+
+    Rule(
+        pattern = power,
+        resultMaker = makeNumericOp(base, exponent) { n1, n2 -> n1.pow(n2.toInt()) },
+        explanationMaker = makeMetadata("evaluate integer power", move(base), move(power))
+    )
+}
 
 val simplifyDoubleNeg = run {
     val value = AnyPattern()

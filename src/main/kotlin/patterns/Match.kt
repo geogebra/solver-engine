@@ -34,18 +34,18 @@ data class ChildMatch(
 
     override fun getLastBinding(p: Pattern): Subexpression? {
         return when {
-            key === p -> value
+            key === p.key -> value
             else -> parent.getLastBinding(p)
         }
     }
 
     override fun getBoundExpr(p: Pattern): Expression? {
-        return if (key === p) value.expr else parent.getBoundExpr(p)
+        return if (key === p.key) value.expr else parent.getBoundExpr(p)
     }
 
     override fun accPaths(p: Pattern, acc: MutableList<Path>) {
         parent.accPaths(p, acc)
-        if (key == p) {
+        if (key == p.key) {
             acc.add(value.path)
         }
     }
