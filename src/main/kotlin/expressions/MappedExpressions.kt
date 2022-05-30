@@ -1,6 +1,5 @@
 package expressions
 
-
 data class MappedExpression(val expr: Expression, val mappings: PathMappingTree) {
     fun wrapInBracketsUnless(cond: (Operator) -> Boolean): MappedExpression = when {
         cond(expr.operator) -> this
@@ -34,28 +33,7 @@ fun mappedExpression(operator: Operator, mappedOperands: List<MappedExpression>)
     )
 }
 
-fun unaryMappedExpression(operator: UnaryOperator, operand: MappedExpression): MappedExpression {
-    val wrappedOperand = operand.wrapInBracketsUnless(operator::childAllowed)
-    return MappedExpression(
-        Expression(operator, listOf(wrappedOperand.expr)),
-        PathMappingParent(listOf(wrappedOperand.mappings))
-    )
-}
-
-fun binaryMappedExpression(
-    operator: BinaryOperator,
-    left: MappedExpression,
-    right: MappedExpression
-): MappedExpression {
-    val wrappedLeft = left.wrapInBracketsUnless(operator::leftChildAllowed)
-    val wrappedRight = right.wrapInBracketsUnless(operator::rightChildAllowed)
-    return MappedExpression(
-        Expression(operator, listOf(wrappedLeft.expr, wrappedRight.expr)),
-        PathMappingParent(listOf(wrappedLeft.mappings, wrappedRight.mappings))
-    )
-}
-
-fun naryMappedExpression(operator: NaryOperator, operands: List<MappedExpression>): MappedExpression {
+fun flattenedNaryMappedExpression(operator: NaryOperator, operands: List<MappedExpression>): MappedExpression {
     val ops = mutableListOf<Expression>()
     val mappingSets = mutableListOf<PathMappingTree>()
     for (mappedExpr in operands) {
@@ -75,25 +53,3 @@ fun naryMappedExpression(operator: NaryOperator, operands: List<MappedExpression
     )
 }
 
-fun mixedNumberMappedExpression(
-    integer: MappedExpression,
-    numerator: MappedExpression,
-    denominator: MappedExpression
-) =
-    MappedExpression(
-        Expression(
-            MixedNumberOperator(
-                (integer.expr.operator as IntegerOperator).value,
-                (numerator.expr.operator as IntegerOperator).value,
-                (denominator.expr.operator as IntegerOperator).value,
-            ),
-            emptyList()
-        ),
-        combinePathMappingTrees(
-            listOf(
-                integer.mappings,
-                numerator.mappings,
-                denominator.mappings
-            )
-        )
-    )

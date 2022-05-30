@@ -2,7 +2,6 @@ package expressions
 
 import java.math.BigInteger
 
-
 data class Expression(val operator: Operator, val operands: List<Expression>) {
     init {
         require(operator.childrenAllowed(operands.map { it.operator }))
@@ -19,7 +18,7 @@ fun xp(n: BigInteger) = Expression(IntegerOperator(n), emptyList())
 fun xp(v: String) = Expression(VariableOperator(v), emptyList())
 
 fun mixedNumber(integer: BigInteger, numerator: BigInteger, denominator: BigInteger) =
-    Expression(MixedNumberOperator(integer, numerator, denominator), emptyList())
+    Expression(MixedNumberOperator, listOf(xp(integer), xp(numerator), xp(denominator)))
 
 fun bracketOf(expr: Expression) = Expression(UnaryOperator.Bracket, listOf(expr))
 

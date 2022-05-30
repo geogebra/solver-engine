@@ -6,13 +6,16 @@ import steps.SkillType
 import steps.makeMetadata
 
 val splitMixedNumber = run {
-    val pattern = MixedNumberPattern()
+    val integer = UnsignedIntegerPattern()
+    val numerator = UnsignedIntegerPattern()
+    val denominator = UnsignedIntegerPattern()
+    val pattern = mixedNumberOf(integer, numerator, denominator)
 
     Rule(
         pattern = pattern,
         resultMaker = makeSumOf(
-            move(pattern.integer),
-            makeFractionOf(move(pattern.numerator), move(pattern.denominator))
+            move(integer),
+            makeFractionOf(move(numerator), move(denominator))
         ),
         explanationMaker = makeMetadata("split mixed number", move(pattern)),
     )
@@ -34,6 +37,6 @@ val fractionToMixedNumber = run {
             move(numerator), move(denominator), quotient, remainder
         ),
         skillMakers = listOf(makeMetadata(SkillType.DivisionWithRemainder, move(numerator), move(denominator))),
-        resultMaker = MixedNumberMaker(quotient, remainder, move(denominator)),
+        resultMaker = makeMixedNumberOf(quotient, remainder, move(denominator)),
     )
 }

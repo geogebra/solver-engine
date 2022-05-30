@@ -28,25 +28,3 @@ data class Rule(
         )
     }
 }
-
-class RuleBuilder {
-    var pattern: Pattern? = null
-    var explanationMaker: ExplanationMaker? = null
-    var skillMakers: List<SkillMaker> = emptyList()
-    var resultMaker: ExpressionMaker? = null
-
-    fun buildRule(): Rule {
-        return Rule(
-            pattern = pattern!!,
-            explanationMaker = explanationMaker!!,
-            skillMakers = skillMakers,
-            resultMaker = resultMaker!!,
-        )
-    }
-}
-
-fun rule(init: RuleBuilder.() -> Unit): Rule {
-    val ruleBuilder = RuleBuilder()
-    ruleBuilder.init()
-    return ruleBuilder.buildRule()
-}

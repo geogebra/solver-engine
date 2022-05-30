@@ -123,37 +123,6 @@ class VariablePattern : Pattern {
     }
 }
 
-class MixedNumberPattern : Pattern {
-
-    private fun getBoundMixedNumber(match: Match) = match.getBoundExpr(this)!!.operator as MixedNumberOperator
-
-    inner class PartIntegerProvider(val getInt: (MixedNumberOperator) -> BigInteger) : IntegerProvider {
-        override fun getBoundInt(m: Match): BigInteger {
-            return getInt(getBoundMixedNumber(m))
-        }
-
-        override fun getBoundPaths(m: Match): List<Path> {
-            return this@MixedNumberPattern.getBoundPaths(m)
-        }
-
-        override fun getBoundExpr(m: Match): Expression? = xp(getBoundInt(m))
-    }
-
-    val integer = PartIntegerProvider { it.integer }
-    val numerator = PartIntegerProvider { it.numerator }
-    val denominator = PartIntegerProvider { it.denominator }
-
-    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
-        if (!checkPreviousMatch(subexpression.expr, match)) {
-            return emptySequence()
-        }
-        return when (subexpression.expr.operator) {
-            is MixedNumberOperator -> sequenceOf(match.newChild(this, subexpression))
-            else -> emptySequence()
-        }
-    }
-}
-
 interface NaryPatternBase : Pattern {
 
     val operator: NaryOperator
@@ -268,6 +237,12 @@ fun powerOf(base: Pattern, exponent: Pattern) =
     OperatorPattern(BinaryOperator.Power, listOf(base, exponent))
 
 fun bracketOf(expr: Pattern) = OperatorPattern(UnaryOperator.Bracket, listOf(expr))
+
+fun mixedNumberOf(
+    integer: UnsignedIntegerPattern = UnsignedIntegerPattern(),
+    numerator: UnsignedIntegerPattern = UnsignedIntegerPattern(),
+    denominator: UnsignedIntegerPattern = UnsignedIntegerPattern(),
+) = OperatorPattern(MixedNumberOperator, listOf(integer, numerator, denominator))
 
 fun sumOf(vararg terms: Pattern) = OperatorPattern(NaryOperator.Sum, terms.asList())
 

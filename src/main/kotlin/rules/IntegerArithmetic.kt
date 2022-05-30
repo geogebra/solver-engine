@@ -4,6 +4,7 @@ import expressionmakers.*
 import expressions.xp
 import patterns.*
 import steps.makeMetadata
+import java.math.BigInteger
 
 val eliminateZeroInSum = run {
     val zero = FixedPattern(xp(0))
@@ -77,7 +78,7 @@ val evaluateSignedIntegerProduct = run {
             multiplier,
             ConditionPattern(
                 divideBy(divisor),
-                numericCondition(base, divisor) { n1, n2 -> n1.mod(n2) == 0.toBigInteger() }
+                numericCondition(base, divisor) { n1, n2 -> n1 % n2 == BigInteger.ZERO }
             )
         )
     )
@@ -126,18 +127,3 @@ val simplifyDoubleNeg = run {
         explanationMaker = makeMetadata("simplify -(-x)", move(value))
     )
 }
-
-// 1 + 2 - 3 +  4 + (-3) * 4 * (-6)
-
-
-// (-3) * 4 * (-6)
-// (-12) * (-6)
-// 72
-
-// (-3) * 4 * (-6)
-// 3 * 4 * 6
-//
-
-// 1 + 4 * (-3) * (-4) * 4 * (-6)
-// 1 + 4 * 3 * 4 * 4 * (-6)
-// 1 - 4 * 3 * 4 * 4 * 6

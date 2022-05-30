@@ -37,9 +37,9 @@ data class OperatorExpressionMaker(val operator: Operator, val operands: List<Ex
     }
 }
 
-data class NaryExpressionMaker(val operator: NaryOperator, val operands: List<ExpressionMaker>) : ExpressionMaker {
+data class FlattenedNaryExpressionMaker(val operator: NaryOperator, val operands: List<ExpressionMaker>) : ExpressionMaker {
     override fun makeMappedExpression(match: Match) =
-        naryMappedExpression(operator, operands.map { it.makeMappedExpression(match) })
+        flattenedNaryMappedExpression(operator, operands.map { it.makeMappedExpression(match) })
 }
 
 data class RestExpressionMaker(val pattern: PartialNaryPattern) : ExpressionMaker {
@@ -70,24 +70,10 @@ data class SubstituteInExpressionMaker(val pattern: NaryPatternBase, val newVals
         // If there is only one operand, it makes no sense to wrap it in an nary expression
         val exprMaker = when (restChildren.size) {
             1 -> restChildren[0]
-            else -> NaryExpressionMaker(pattern.operator, restChildren)
+            else -> FlattenedNaryExpressionMaker(pattern.operator, restChildren)
         }
 
         return exprMaker.makeMappedExpression(match)
-    }
-}
-
-data class MixedNumberMaker(
-    val integer: ExpressionMaker,
-    val numerator: ExpressionMaker,
-    val denominator: ExpressionMaker,
-) : ExpressionMaker {
-    override fun makeMappedExpression(match: Match): MappedExpression {
-        return mixedNumberMappedExpression(
-            integer.makeMappedExpression(match),
-            numerator.makeMappedExpression(match),
-            denominator.makeMappedExpression(match)
-        )
     }
 }
 
@@ -113,16 +99,16 @@ data class NumericOp2(
 fun makeFractionOf(numerator: ExpressionMaker, denominator: ExpressionMaker) =
     OperatorExpressionMaker(BinaryOperator.Fraction, listOf(numerator, denominator))
 
-fun makeSumOf(vararg terms: ExpressionMaker) = NaryExpressionMaker(NaryOperator.Sum, terms.asList())
+fun makeSumOf(vararg terms: ExpressionMaker) = FlattenedNaryExpressionMaker(NaryOperator.Sum, terms.asList())
 
-fun makeProductOf(vararg terms: ExpressionMaker) = NaryExpressionMaker(NaryOperator.Product, terms.asList())
+fun makeProductOf(vararg terms: ExpressionMaker) = FlattenedNaryExpressionMaker(NaryOperator.Product, terms.asList())
 
 fun makeNegOf(operand: ExpressionMaker) = OperatorExpressionMaker(UnaryOperator.Minus, listOf(operand))
 
 fun restOf(pattern: PartialNaryPattern) = RestExpressionMaker(pattern)
 
 fun makeMixedNumberOf(integer: ExpressionMaker, numerator: ExpressionMaker, denominator: ExpressionMaker) =
-    MixedNumberMaker(integer, numerator, denominator)
+    OperatorExpressionMaker(MixedNumberOperator, listOf(integer, numerator, denominator))
 
 fun makeNumericOp(
     ptn1: IntegerProvider,

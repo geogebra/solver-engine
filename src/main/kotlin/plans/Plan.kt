@@ -147,7 +147,7 @@ data class ContextSensitivePlanSelector(
 // emptyResourceData -> defaultPlan
 
 val convertMixedNumberToImproperFraction = PlanPipeline(
-    pattern = MixedNumberPattern(),
+    pattern = mixedNumberOf(),
     plans = listOf(
         splitMixedNumber,
         addIntegerToFraction,
@@ -174,7 +174,7 @@ val addUnlikeFractions = run {
 }
 
 val addMixedNumbersByConverting = PlanPipeline(
-    pattern = sumOf(MixedNumberPattern(), MixedNumberPattern()),
+    pattern = sumOf(mixedNumberOf(), mixedNumberOf()),
     plans = listOf(
         ApplyToChildrenInStep(convertMixedNumberToImproperFraction),
         addUnlikeFractions,
@@ -183,7 +183,7 @@ val addMixedNumbersByConverting = PlanPipeline(
 )
 
 val addMixedNumbersUsingCommutativity = PlanPipeline(
-    pattern = sumOf(MixedNumberPattern(), MixedNumberPattern()),
+    pattern = sumOf(mixedNumberOf(), mixedNumberOf()),
     plans = listOf(
         WhilePossible(Deeply(splitMixedNumber)),
         WhilePossible(removeBracketsSum),
@@ -203,7 +203,7 @@ val addMixedNumbers = ContextSensitivePlanSelector(
         AnnotatedPlan(addMixedNumbersUsingCommutativity, ResourceData("US")),
     ),
     default = addMixedNumbersByConverting,
-    pattern = sumOf(MixedNumberPattern(), MixedNumberPattern()),
+    pattern = sumOf(mixedNumberOf(), mixedNumberOf()),
 )
 
 val simplifyIntegerSum = WhilePossible(evaluateSignedIntegerAddition)

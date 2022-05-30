@@ -5,6 +5,7 @@ import java.math.BigInteger
 interface Operator {
     val precedence: Int
     val arity: Int
+
     fun nthChildAllowed(n: Int, op: Operator): Boolean
 
     fun childrenAllowed(ops: Iterable<Operator>): Boolean {
@@ -27,7 +28,6 @@ abstract class NullaryOperator : Operator {
         throw IllegalArgumentException()
     }
 
-
     override fun <T> readableString(children: List<T>): String {
         require(children.isEmpty())
         return toString()
@@ -35,6 +35,10 @@ abstract class NullaryOperator : Operator {
 }
 
 data class IntegerOperator(val value: BigInteger) : NullaryOperator() {
+    init {
+        require(value.signum() >= 0)
+    }
+
     override fun toString() = value.toString()
 }
 
@@ -42,11 +46,17 @@ data class VariableOperator(val name: String) : NullaryOperator() {
     override fun toString() = name
 }
 
-data class MixedNumberOperator(
-    val integer: BigInteger,
-    val numerator: BigInteger,
-    val denominator: BigInteger
-) : NullaryOperator()
+object MixedNumberOperator : Operator {
+    override val precedence = 10
+    override val arity = 3
+
+    override fun nthChildAllowed(n: Int, op: Operator): Boolean {
+        require(n in 0 until 3)
+        return op is IntegerOperator
+    }
+
+    override fun <T> readableString(children: List<T>) = "[${children[0]} ${children[1]}/${children[2]}]"
+}
 
 enum class UnaryOperator(override val precedence: Int) : Operator {
     Bracket(10) {
