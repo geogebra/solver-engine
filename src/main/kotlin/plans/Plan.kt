@@ -10,15 +10,16 @@ import steps.ExplanationMaker
 import steps.SkillMaker
 import steps.Transformation
 import steps.makeMetadata
-import java.util.Collections.emptyList
 
-interface Plan {
+interface PlanExecutor {
+    fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation?
+}
+
+interface Plan : PlanExecutor {
 
     val pattern: Pattern
     val explanationMaker: ExplanationMaker get() = makeMetadata("magic")
     val skillMakers: List<SkillMaker> get() = emptyList()
-
-    fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation?
 
     fun tryExecute(ctx: Context, sub: Subexpression): Transformation? {
         for (match in pattern.findMatches(sub, RootMatch)) {
@@ -28,17 +29,34 @@ interface Plan {
     }
 }
 
-data class Deeply(val plan: Plan, val deepFirst: Boolean = false) : Plan {
+val noExplanationMaker = makeMetadata("no explanation")
+
+class Deeply(
+    val plan: Plan,
+    val deepFirst: Boolean = false,
+    override val explanationMaker: ExplanationMaker = noExplanationMaker,
+    override val skillMakers: List<SkillMaker> = emptyList()
+) : Plan {
 
     override val pattern = FindPattern(plan.pattern, deepFirst)
 
     override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
         val step = plan.execute(ctx, match, match.getLastBinding(plan.pattern)!!) ?: return null
-        return Transformation(sub, sub.substitute(step.fromExpr.path, step.toExpr), listOf(step))
+        return Transformation(
+            fromExpr = sub,
+            toExpr = sub.substitute(step.fromExpr.path, step.toExpr),
+            steps = listOf(step),
+            explanation = explanationMaker.makeMetadata(match),
+            skills = skillMakers.map { it.makeMetadata(match) }
+        )
     }
 }
 
-data class WhilePossible(val plan: Plan) : Plan {
+data class WhilePossible(
+    val plan: Plan,
+    override val explanationMaker: ExplanationMaker = noExplanationMaker,
+    override val skillMakers: List<SkillMaker> = emptyList()
+) : Plan {
 
     override val pattern = plan.pattern
 
@@ -52,18 +70,33 @@ data class WhilePossible(val plan: Plan) : Plan {
             lastSub = Subexpression(lastSub.path, substitution.expr)
             lastStep = plan.tryExecute(ctx, lastSub)
         }
-        return Transformation(sub, lastSub.toMappedExpr(), steps)
+        return Transformation(
+            fromExpr = sub,
+            toExpr = lastSub.toMappedExpr(),
+            steps = steps,
+            explanation = explanationMaker.makeMetadata(match),
+            skills = skillMakers.map { it.makeMetadata(match) }
+        )
     }
 }
 
-data class FirstOf(val options: List<Plan>) : Plan {
+data class FirstOf(
+    val options: List<Plan>,
+    override val explanationMaker: ExplanationMaker = noExplanationMaker,
+    override val skillMakers: List<SkillMaker> = emptyList()
+) : Plan {
 
     override val pattern = OneOfPattern(options.map { it.pattern })
     override fun execute(ctx: Context, match: Match, sub: Subexpression) =
         options.firstOrNull { match.getLastBinding(it.pattern) != null }?.execute(ctx, match, sub)
 }
 
-data class PlanPipeline(override val pattern: Pattern, val plans: List<Plan>) : Plan {
+data class PlanPipeline(
+    override val pattern: Pattern,
+    val plans: List<Plan>,
+    override val explanationMaker: ExplanationMaker = noExplanationMaker,
+    override val skillMakers: List<SkillMaker> = emptyList()
+) : Plan {
 
     override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
         val steps = mutableListOf<Transformation>()
@@ -77,12 +110,15 @@ data class PlanPipeline(override val pattern: Pattern, val plans: List<Plan>) : 
             }
         }
 
-        return Transformation(sub, lastSub.toMappedExpr(), steps)
+        return Transformation(
+            fromExpr = sub,
+            toExpr = lastSub.toMappedExpr(),
+            steps = steps,
+            explanation = explanationMaker.makeMetadata(match),
+            skills = skillMakers.map { it.makeMetadata(match) }
+        )
     }
 }
-
-fun pipeline(pattern: Pattern, vararg plans: Plan) = PlanPipeline(pattern, plans.asList())
-fun pipeline(vararg plans: Plan) = PlanPipeline(plans[0].pattern, plans.asList())
 
 fun firstOf(vararg options: Plan) = FirstOf(options.asList())
 
@@ -158,20 +194,28 @@ val convertMixedNumberToImproperFraction = PlanPipeline(
     )
 )
 
-val addUnlikeFractions = run {
+val addUnlikeFractions = plan {
     val f1 = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
     val f2 = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
 
-    val pattern = sumContaining(f1, f2)
+    pattern = sumContaining(f1, f2)
 
-    val plans = listOf(
-        commonDenominator,
-        WhilePossible(Deeply(evaluateIntegerProduct)),
-        addLikeFractions,
-        WhilePossible(Deeply(evaluateSignedIntegerAddition)),
-    )
+    explanation("add unlike fractions")
 
-    PlanPipeline(pattern, plans)
+    pipeline {
+        step(commonDenominator)
+        step {
+            whilePossible {
+                deeply(evaluateIntegerProduct)
+            }
+        }
+        step(addLikeFractions)
+        step {
+            whilePossible {
+                deeply(evaluateSignedIntegerAddition)
+            }
+        }
+    }
 }
 
 val addMixedNumbersByConverting = PlanPipeline(

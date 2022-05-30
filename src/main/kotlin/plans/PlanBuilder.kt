@@ -1,44 +1,111 @@
 package plans
-//
-//import patterns.Pattern
-//import patterns.UnsignedIntegerPattern
-//import patterns.fractionOf
-//import patterns.sumContaining
-//import rules.*
-//import steps.ExplanationMaker
-//import steps.SkillMaker
-//
-//class PlanBuilder {
-//
-//    var steps: MutableList<Plan> = mutableListOf()
-//    var explanationMaker: ExplanationMaker? = null
-//    var skillMakers: MutableList<SkillMaker> = mutableListOf()
-//    var pattern: Pattern? = null
-//
-//    fun step(init: PlanBuilder.() -> Unit) {
-//        val stepBuilder = PlanBuilder()
-//        stepBuilder.init()
-//        steps.add(stepBuilder.buildPlan())
-//    }
-//
-//    fun step(step: Plan) {
-//        steps.add(step)
-//    }
-//
-//    fun firstOf(init: PlanBuilder.() -> Unit) {
-//
-//    }
-//
-//    fun buildPlan(): Plan {
-//
-//    }
-//}
-//
-//fun plan(init: PlanBuilder.() -> Unit): Plan {
-//    val planBuilder = PlanBuilder()
-//    planBuilder.init()
-//    return planBuilder.buildPlan()
-//}
+
+import patterns.AnyPattern
+import patterns.Pattern
+import rules.*
+import steps.ExplanationMaker
+import steps.SkillMaker
+import steps.makeMetadata
+
+class PipelineBuilder {
+    private var steps: MutableList<Plan> = mutableListOf()
+
+    fun step(step: Plan) {
+        steps.add(step)
+    }
+
+    fun step(init: PlanBuilder.() -> Unit) {
+        step(plan(init))
+    }
+
+    fun buildPlan(planBuilder: PlanBuilder): PlanPipeline {
+        require(steps.isNotEmpty())
+        return PlanPipeline(
+            pattern = planBuilder.pattern ?: steps[0].pattern,
+            plans = steps.toList(),
+            explanationMaker = planBuilder.explanationMaker,
+            skillMakers = planBuilder.skillMakers.toList(),
+        )
+    }
+}
+
+class FirstOfBuilder {
+    private var options: MutableList<Plan> = mutableListOf()
+
+    fun option(opt: Plan) {
+        options.add(opt)
+    }
+
+    fun option(init: PlanBuilder.() -> Unit) {
+        option(plan(init))
+    }
+
+    fun buildPlan(planBuilder: PlanBuilder): FirstOf {
+        require(options.isNotEmpty())
+        return FirstOf(
+            options = options,
+            explanationMaker = planBuilder.explanationMaker,
+            skillMakers = planBuilder.skillMakers.toList(),
+        )
+    }
+}
+
+class PlanBuilder {
+
+    var explanationMaker: ExplanationMaker = noExplanationMaker
+    var skillMakers: MutableList<SkillMaker> = mutableListOf()
+    var pattern: Pattern? = null
+    private lateinit var plan: Plan
+
+    private fun setPlan(p: Plan) {
+        if (this::plan.isInitialized) {
+            throw IllegalStateException()
+        }
+        plan = p
+    }
+
+    fun explanation(explanationKey: String) {
+        explanationMaker = makeMetadata(explanationKey)
+    }
+
+    fun pipeline(init: PipelineBuilder.() -> Unit) {
+        val builder = PipelineBuilder()
+        builder.init()
+        setPlan(builder.buildPlan(this))
+    }
+
+    fun firstOf(init: FirstOfBuilder.() -> Unit) {
+        val builder = FirstOfBuilder()
+        builder.init()
+        setPlan(builder.buildPlan(this))
+    }
+
+    fun whilePossible(subPlan: Plan) {
+        setPlan(WhilePossible(subPlan, explanationMaker, skillMakers.toList()))
+    }
+
+    fun whilePossible(init: PlanBuilder.() -> Unit) {
+        whilePossible(plan(init))
+    }
+
+    fun deeply(plan: Plan, deepFirst: Boolean = false) {
+        setPlan(Deeply(plan, deepFirst))
+    }
+
+    fun deeply(deepFirst: Boolean = false, init: PlanBuilder.() -> Unit) {
+        deeply(plan(init), deepFirst)
+    }
+
+    fun buildPlan(): Plan {
+        return plan
+    }
+}
+
+fun plan(init: PlanBuilder.() -> Unit): Plan {
+    val planBuilder = PlanBuilder()
+    planBuilder.init()
+    return planBuilder.buildPlan()
+}
 //
 //val addUnlikeFractions2 = plan {
 //    val f1 = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
@@ -46,36 +113,40 @@ package plans
 //
 //    pattern = sumContaining(f1, f2)
 //
-//    step(commonDenominator)
-//    step {
-//        whilePossible {
-//            deeply(evaluateIntegerProduct)
-//        }
-//    }
-//    step {
-//        apply(add)
-//    }
-//}
-//
-//val simplifyArithmeticExpression = plan {
-//
-//    explanation = "simplify arithmetic expression"
-//
-//    whilePossible {
-//        deeply {
-//            deepFirst()
-//            firstOf {
-//                option(removeBracketAroundSignedIntegerInSum)
-//                option(simplifyDoubleNeg)
-//                option {
-//                    explanation = "simplify integer product"
-//                    whilePossible(evaluateSignedIntegerProduct)
-//                }
-//                option {
-//                    explanation = "simplify integer sum"
-//                    whilePossible(evaluateSignedIntegerAddition)
-//                }
+//    pipeline {
+//        step(commonDenominator)
+//        step {
+//            whilePossible {
+//                deeply(evaluateIntegerProduct)
 //            }
 //        }
+//        step {
+//            apply(add)
+//        }
 //    }
 //}
+
+val simplifyArithmeticExpression = plan {
+
+    pattern = AnyPattern() /* TODO add condition that it is constant in all variables */
+    explanation("simplify arithmetic expression")
+
+    whilePossible {
+        deeply(deepFirst = true) {
+            firstOf {
+                option(removeBracketAroundUnsignedInteger)
+                option(removeBracketAroundSignedIntegerInSum)
+                option(simplifyDoubleNeg)
+                option(evaluateSignedIntegerPower)
+                option {
+                    explanation("simplify integer product")
+                    whilePossible(evaluateSignedIntegerProduct)
+                }
+                option {
+                    explanation("simplify integer sum")
+                    whilePossible(evaluateSignedIntegerAddition)
+                }
+            }
+        }
+    }
+}

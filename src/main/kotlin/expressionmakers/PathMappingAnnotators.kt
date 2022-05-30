@@ -27,6 +27,9 @@ data class VanishingPathAnnotator(
 
 fun move(pattern: PathProvider) = PathMappingAnnotator(PathMappingType.Move, pattern)
 fun factor(pattern: PathProvider) = PathMappingAnnotator(PathMappingType.Factor, pattern)
+
+fun transform(pattern: PathProvider) = PathMappingAnnotator(PathMappingType.Transform, pattern)
+
 fun cancel(pattern: PathProvider, inExpression: ExpressionMaker) =
     VanishingPathAnnotator(PathMappingType.Cancel, pattern, inExpression)
 

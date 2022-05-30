@@ -44,6 +44,7 @@ class TransformationCheck {
     var toExpr: String? = null
     var steps: MutableList<TransformationCheck>? = null
     var pathMappings: MutableList<PathMapping>? = null
+    var explanation: String? = null
 
     fun step(init: TransformationCheck.() -> Unit) {
         val stepCheck = TransformationCheck()
@@ -72,11 +73,17 @@ class TransformationCheck {
             }
         }
         if (pathMappings != null) {
-            assertContentEquals(pathMappings, trans.toExpr.mappings.pathMappings(RootPath).map { it.relativeTo(trans.fromExpr.path) }.toList())
+            assertContentEquals(
+                pathMappings,
+                trans.toExpr.mappings.pathMappings(RootPath).map { it.relativeTo(trans.fromExpr.path) }.toList()
+            )
+        }
+        if (explanation != null) {
+            assertEquals(explanation, trans.explanation?.key)
         }
     }
 
-    private fun addpathMapping(type: PathMappingType, init: PathMappingBuilder.() -> Unit) {
+    private fun addPathMapping(type: PathMappingType, init: PathMappingBuilder.() -> Unit) {
         if (pathMappings == null) {
             pathMappings = mutableListOf()
         }
@@ -87,19 +94,19 @@ class TransformationCheck {
     }
 
     fun cancel(init: PathMappingBuilder.() -> Unit) {
-        addpathMapping(PathMappingType.Cancel, init)
+        addPathMapping(PathMappingType.Cancel, init)
     }
 
     fun introduce(init: PathMappingBuilder.() -> Unit) {
-        addpathMapping(PathMappingType.Introduce, init)
+        addPathMapping(PathMappingType.Introduce, init)
     }
 
     fun combine(init: PathMappingBuilder.() -> Unit) {
-        addpathMapping(PathMappingType.Combine, init)
+        addPathMapping(PathMappingType.Combine, init)
     }
 
     fun move(init: PathMappingBuilder.() -> Unit) {
-        addpathMapping(PathMappingType.Move, init)
+        addPathMapping(PathMappingType.Move, init)
     }
 }
 
@@ -129,6 +136,7 @@ class PlanTestCase {
         val expr = parseExpression(inputExpr)
         val trans = plan.tryExecute(context, Subexpression(RootPath, expr))
         checkTrans.checkTransformation(trans)
+        trans?.prettyPrint()
     }
 }
 
@@ -136,7 +144,7 @@ class TestSimplifyIntegerExpression {
 
     @Test
     fun simpleTest() = testPlan {
-        plan = simplifyIntegerExpression
+        plan = simplifyArithmeticExpression
         inputExpr = "1 + 2 + 3"
 
         check {
@@ -165,7 +173,7 @@ class TestSimplifyIntegerExpression {
 
     @Test
     fun testAddMultiplyDivide() = testPlan {
-        plan = simplifyIntegerExpression
+        plan = simplifyArithmeticExpression
         inputExpr = "3*4*5:6 + 6 + 7"
 
         check {
@@ -199,11 +207,15 @@ class TestSimplifyIntegerExpression {
 
     @Test
     fun testBracketsAndNegativeMultiply() = testPlan {
-        plan = simplifyIntegerExpression
+        plan = simplifyArithmeticExpression
         inputExpr = "34 + 60 + 6 - (4 + 10 - 3 * 5 * (-2))"
+
 
         check {
             toExpr = "56"
+
+            explanation = "simplify arithmetic expression"
+
             step {
                 fromExpr = "34 + 60 + 6 - (4 + 10 - 3 * 5 * (-2))"
                 toExpr = "34 + 60 + 6 - (4 + 10 - (-30))"
@@ -211,6 +223,8 @@ class TestSimplifyIntegerExpression {
                 step {
                     fromExpr = "3 * 5 * (-2)"
                     toExpr = "(-30)"
+
+                    explanation = "simplify integer product"
 
                     step {
                         fromExpr = "3 * 5 * (-2)"
@@ -238,6 +252,8 @@ class TestSimplifyIntegerExpression {
                 step {
                     fromExpr = "-(-30)"
                     toExpr = "30"
+
+                    explanation = "simplify -(-x)"
                 }
             }
 
@@ -246,6 +262,8 @@ class TestSimplifyIntegerExpression {
                 step {
                     fromExpr = "4 + 10 + 30"
                     toExpr = "44"
+
+                    explanation = "simplify integer sum"
                 }
             }
 
@@ -253,6 +271,8 @@ class TestSimplifyIntegerExpression {
                 step {
                     fromExpr = "(44)"
                     toExpr = "44"
+
+                    explanation = "remove brackets around unsigned integer"
                 }
             }
 
@@ -261,6 +281,8 @@ class TestSimplifyIntegerExpression {
                 step {
                     fromExpr = "34 + 60 + 6 - 44"
                     toExpr = "56"
+
+                    explanation = "simplify integer sum"
                 }
             }
         }
@@ -268,7 +290,7 @@ class TestSimplifyIntegerExpression {
 
     @Test
     fun testPowerAndBrackets() = testPlan {
-        plan = simplifyIntegerExpression
+        plan = simplifyArithmeticExpression
         inputExpr = "[(1 + 1) ^ [2 ^ 3]]"
 
         check {

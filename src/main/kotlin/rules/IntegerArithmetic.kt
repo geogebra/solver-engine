@@ -28,6 +28,17 @@ val eliminateOneInProduct = run {
     )
 }
 
+val zeroInProduct = run {
+    val zero = FixedPattern(xp(0))
+    val pattern = productContaining(zero)
+
+    Rule(
+        pattern = pattern,
+        resultMaker = transform(zero),
+        explanationMaker = makeMetadata("a product containing 0 is 0", move(zero))
+    )
+}
+
 val evaluateUnsignedIntegerSubtraction = run {
     val term1 = UnsignedIntegerPattern()
     val term2 = UnsignedIntegerPattern()

@@ -28,3 +28,25 @@ data class Rule(
         )
     }
 }
+
+class RuleBuilder<T : Pattern> {
+    lateinit var pattern: T
+    lateinit var resultMaker: ExpressionMaker
+    lateinit var explanationMaker: ExplanationMaker
+    var skillMakers: List<SkillMaker> = emptyList()
+
+    fun buildRule(): Rule {
+        return Rule(
+            pattern = pattern,
+            resultMaker = resultMaker,
+            explanationMaker = explanationMaker,
+            skillMakers = skillMakers,
+        )
+    }
+}
+
+fun <T : Pattern> rule(init: RuleBuilder<T>.() -> Unit): Rule {
+    val ruleBuilder = RuleBuilder<T>()
+    ruleBuilder.init()
+    return ruleBuilder.buildRule()
+}

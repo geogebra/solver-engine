@@ -18,7 +18,20 @@ enum class PathMappingType {
     Combine,
     Factor,
     Distribute,
+
+    /**
+     * Used when two or more expressions cancel with each other,
+     * e.g. `a - a` or `[ab / ac]`
+     */
     Cancel,
+
+    /**
+     * Used when a single subexpression changes into another
+     * independently of others, e.g. `3 * 4 * 0 * 5 -> 0`
+     * or `d/dx sin(x) -> cos(x)`
+     */
+    Transform,
+
     Introduce;
 
     open fun composeWith(other: PathMappingType): PathMappingType {
