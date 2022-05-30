@@ -17,7 +17,7 @@ data class FixedExpressionMaker(val expression: Expression) : ExpressionMaker {
     override fun makeMappedExpression(match: Match): MappedExpression {
         return MappedExpression(
             expression,
-            PathMappingLeaf(listOf(IntroduceRootPath), PathMappingType.Introduce),
+            PathMappingLeaf(listOf(), PathMappingType.Introduce),
         )
     }
 }

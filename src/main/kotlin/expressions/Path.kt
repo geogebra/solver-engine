@@ -10,6 +10,8 @@ interface Path {
     fun truncate(newLength: Int) = this
 
     val length: Int
+
+    fun relativeTo(path: Path): Path
 }
 
 data class ChildPath(val parent: Path, val index: Int) : Path {
@@ -26,21 +28,20 @@ data class ChildPath(val parent: Path, val index: Int) : Path {
         newLength < length -> parent.truncate(newLength)
         else -> this
     }
+
+    override fun relativeTo(path: Path) = when {
+        path is RootPath -> this
+        this == path -> RootPath
+        this.length <= path.length -> this
+        else -> parent.relativeTo(path).child(index)
+    }
 }
 
 object RootPath : Path {
     override fun toString() = "."
     override val length = 0
-}
 
-object CancelRootPath : Path {
-    override fun toString() = "x"
-    override val length = 0
-}
-
-object IntroduceRootPath : Path {
-    override fun toString() = "+"
-    override val length = 0
+    override fun relativeTo(path: Path) = this
 }
 
 fun pathOf(vararg indexes: Int): Path {
@@ -49,11 +50,4 @@ fun pathOf(vararg indexes: Int): Path {
         path = path.child(i)
     }
     return path
-}
-
-fun cancelPath(path: Path): Path {
-    return when (path) {
-        is ChildPath -> ChildPath(cancelPath(path.parent), path.index)
-        else -> CancelRootPath
-    }
 }

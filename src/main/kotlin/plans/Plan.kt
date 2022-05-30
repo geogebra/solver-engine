@@ -31,6 +31,7 @@ interface Plan {
 data class Deeply(val plan: Plan, val deepFirst: Boolean = false) : Plan {
 
     override val pattern = FindPattern(plan.pattern, deepFirst)
+
     override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
         val step = plan.execute(ctx, match, match.getLastBinding(plan.pattern)!!) ?: return null
         return Transformation(sub, sub.substitute(step.fromExpr.path, step.toExpr), listOf(step))

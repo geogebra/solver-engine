@@ -2,18 +2,48 @@ package plans
 
 import context.Context
 import context.emptyContext
-import expressions.RootPath
-import expressions.Subexpression
+import expressions.*
 import parser.parseExpression
 import steps.Transformation
 import kotlin.test.Test
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+
+fun parsePath(s: String): Path {
+    val pieces = s.split('/')
+    if (pieces[0] != ".") throw IllegalArgumentException("$s is not a valid path")
+
+    var path: Path = RootPath
+    for (piece in pieces.drop(1)) {
+        path = path.child(piece.toInt())
+    }
+
+    return path
+}
+
+data class PathMappingBuilder(val type: PathMappingType) {
+    private var _fromPaths: List<Path> = emptyList()
+    private var _toPaths: List<Path> = emptyList()
+
+    fun fromPaths(vararg pathStrings: String) {
+        _fromPaths = pathStrings.map { parsePath(it) }
+    }
+
+    fun toPaths(vararg pathStrings: String) {
+        _toPaths = pathStrings.map { parsePath(it) }
+    }
+
+    fun getPathMapping(): PathMapping {
+        return PathMapping(_fromPaths, type, _toPaths)
+    }
+}
 
 class TransformationCheck {
     var fromExpr: String? = null
     var toExpr: String? = null
     var steps: MutableList<TransformationCheck>? = null
+    var pathMappings: MutableList<PathMapping>? = null
 
     fun step(init: TransformationCheck.() -> Unit) {
         val stepCheck = TransformationCheck()
@@ -41,6 +71,35 @@ class TransformationCheck {
                 s.checkTransformation(t)
             }
         }
+        if (pathMappings != null) {
+            assertContentEquals(pathMappings, trans.toExpr.mappings.pathMappings(RootPath).map { it.relativeTo(trans.fromExpr.path) }.toList())
+        }
+    }
+
+    private fun addpathMapping(type: PathMappingType, init: PathMappingBuilder.() -> Unit) {
+        if (pathMappings == null) {
+            pathMappings = mutableListOf()
+        }
+
+        val builder = PathMappingBuilder(type)
+        builder.init()
+        pathMappings?.add(builder.getPathMapping())
+    }
+
+    fun cancel(init: PathMappingBuilder.() -> Unit) {
+        addpathMapping(PathMappingType.Cancel, init)
+    }
+
+    fun introduce(init: PathMappingBuilder.() -> Unit) {
+        addpathMapping(PathMappingType.Introduce, init)
+    }
+
+    fun combine(init: PathMappingBuilder.() -> Unit) {
+        addpathMapping(PathMappingType.Combine, init)
+    }
+
+    fun move(init: PathMappingBuilder.() -> Unit) {
+        addpathMapping(PathMappingType.Move, init)
     }
 }
 
@@ -84,7 +143,20 @@ class TestSimplifyIntegerExpression {
             toExpr = "6"
             step {
                 step {
-                    step { toExpr = "3 + 3" }
+                    step {
+                        fromExpr = "1 + 2 + 3"
+                        toExpr = "3 + 3"
+
+                        combine {
+                            fromPaths("./0", "./1")
+                            toPaths("./0")
+                        }
+
+                        move {
+                            fromPaths("./2")
+                            toPaths("./1")
+                        }
+                    }
                     step { toExpr = "6" }
                 }
             }
@@ -133,10 +205,31 @@ class TestSimplifyIntegerExpression {
         check {
             toExpr = "56"
             step {
+                fromExpr = "34 + 60 + 6 - (4 + 10 - 3 * 5 * (-2))"
+                toExpr = "34 + 60 + 6 - (4 + 10 - (-30))"
 
                 step {
                     fromExpr = "3 * 5 * (-2)"
                     toExpr = "(-30)"
+
+                    step {
+                        fromExpr = "3 * 5 * (-2)"
+                        toExpr = "15 * (-2)"
+
+                        combine {
+                            fromPaths("./0", "./1")
+                            toPaths("./0")
+                        }
+
+                        move {
+                            fromPaths("./2")
+                            toPaths("./1")
+                        }
+                    }
+                    step {
+                        fromExpr = "15 * (-2)"
+                        toExpr = "(-30)"
+                    }
                 }
             }
 

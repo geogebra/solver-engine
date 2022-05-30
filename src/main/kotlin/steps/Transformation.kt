@@ -20,7 +20,7 @@ data class Transformation(
         }
         println("$prefix  pathMappings: [")
         for (mapping in toExpr.mappings.pathMappings(RootPath)) {
-            println("$prefix    ${mapping.type}  ${mapping.fromPaths} -> ${mapping.toPath}")
+            println("$prefix    ${mapping.type}  ${mapping.fromPaths} -> ${mapping.toPaths}")
         }
         println("$prefix ]")
         if (steps != null) {

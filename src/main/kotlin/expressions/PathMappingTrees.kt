@@ -29,7 +29,7 @@ data class PathMappingLeaf(val paths: List<Path>, val type: PathMappingType) : P
     override fun childList(size: Int) =
         (0 until size).map { nthChild(it) }
 
-    override fun pathMappings(root: Path) = sequenceOf(PathMapping(paths, type, root))
+    override fun pathMappings(root: Path) = sequenceOf(PathMapping(paths, type, listOf(root)))
 
     override fun composeWith(previous: PathMappingTree): PathMappingTree {
         // TODO: this is WIP
