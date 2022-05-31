@@ -1,11 +1,12 @@
 package plans
 
+import expressionmakers.ExpressionMaker
 import patterns.AnyPattern
 import patterns.Pattern
 import rules.*
-import steps.ExplanationMaker
-import steps.SkillMaker
-import steps.makeMetadata
+import steps.metadata.MetadataKey
+import steps.metadata.MetadataMaker
+import steps.metadata.PlanExplanation
 
 class PipelineBuilder {
     private var steps: MutableList<Plan> = mutableListOf()
@@ -52,8 +53,8 @@ class FirstOfBuilder {
 
 class PlanBuilder {
 
-    var explanationMaker: ExplanationMaker = noExplanationMaker
-    var skillMakers: MutableList<SkillMaker> = mutableListOf()
+    var explanationMaker: MetadataMaker = noExplanationMaker
+    var skillMakers: MutableList<MetadataMaker> = mutableListOf()
     var pattern: Pattern? = null
     private lateinit var plan: Plan
 
@@ -64,8 +65,8 @@ class PlanBuilder {
         plan = p
     }
 
-    fun explanation(explanationKey: String) {
-        explanationMaker = makeMetadata(explanationKey)
+    fun explanation(explanationKey: MetadataKey, vararg params: ExpressionMaker) {
+        explanationMaker = MetadataMaker(explanationKey, params.asList())
     }
 
     fun pipeline(init: PipelineBuilder.() -> Unit) {
@@ -129,7 +130,7 @@ fun plan(init: PlanBuilder.() -> Unit): Plan {
 val simplifyArithmeticExpression = plan {
 
     pattern = AnyPattern() /* TODO add condition that it is constant in all variables */
-    explanation("simplify arithmetic expression")
+    explanation(PlanExplanation.SimplifyArithmeticExpression)
 
     whilePossible {
         deeply(deepFirst = true) {
@@ -139,11 +140,11 @@ val simplifyArithmeticExpression = plan {
                 option(simplifyDoubleNeg)
                 option(evaluateSignedIntegerPower)
                 option {
-                    explanation("simplify integer product")
+                    explanation(PlanExplanation.SimplifyIntegerProduct)
                     whilePossible(evaluateSignedIntegerProduct)
                 }
                 option {
-                    explanation("simplify integer sum")
+                    explanation(PlanExplanation.SimplifyIntegerSum)
                     whilePossible(evaluateSignedIntegerAddition)
                 }
             }

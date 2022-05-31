@@ -3,6 +3,7 @@ package steps
 import expressions.MappedExpression
 import expressions.RootPath
 import expressions.Subexpression
+import steps.metadata.Metadata
 
 data class Transformation(
     val fromExpr: Subexpression,

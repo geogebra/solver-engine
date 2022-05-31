@@ -3,23 +3,27 @@ package plans
 import context.Context
 import context.Resource
 import context.ResourceData
+import expressionmakers.move
 import expressions.*
 import patterns.*
 import rules.*
-import steps.ExplanationMaker
-import steps.SkillMaker
 import steps.Transformation
-import steps.makeMetadata
+import steps.metadata.EmptyMetadataKey
+import steps.metadata.MetadataMaker
+import steps.metadata.PlanExplanation
+import steps.metadata.makeMetadata
 
 interface PlanExecutor {
     fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation?
 }
 
+val noExplanationMaker = makeMetadata(EmptyMetadataKey)
+
 interface Plan : PlanExecutor {
 
     val pattern: Pattern
-    val explanationMaker: ExplanationMaker get() = makeMetadata("magic")
-    val skillMakers: List<SkillMaker> get() = emptyList()
+    val explanationMaker: MetadataMaker get() = noExplanationMaker
+    val skillMakers: List<MetadataMaker> get() = emptyList()
 
     fun tryExecute(ctx: Context, sub: Subexpression): Transformation? {
         for (match in pattern.findMatches(sub, RootMatch)) {
@@ -29,13 +33,11 @@ interface Plan : PlanExecutor {
     }
 }
 
-val noExplanationMaker = makeMetadata("no explanation")
-
 class Deeply(
     val plan: Plan,
     val deepFirst: Boolean = false,
-    override val explanationMaker: ExplanationMaker = noExplanationMaker,
-    override val skillMakers: List<SkillMaker> = emptyList()
+    override val explanationMaker: MetadataMaker = noExplanationMaker,
+    override val skillMakers: List<MetadataMaker> = emptyList()
 ) : Plan {
 
     override val pattern = FindPattern(plan.pattern, deepFirst)
@@ -54,8 +56,8 @@ class Deeply(
 
 data class WhilePossible(
     val plan: Plan,
-    override val explanationMaker: ExplanationMaker = noExplanationMaker,
-    override val skillMakers: List<SkillMaker> = emptyList()
+    override val explanationMaker: MetadataMaker = noExplanationMaker,
+    override val skillMakers: List<MetadataMaker> = emptyList()
 ) : Plan {
 
     override val pattern = plan.pattern
@@ -82,8 +84,8 @@ data class WhilePossible(
 
 data class FirstOf(
     val options: List<Plan>,
-    override val explanationMaker: ExplanationMaker = noExplanationMaker,
-    override val skillMakers: List<SkillMaker> = emptyList()
+    override val explanationMaker: MetadataMaker = noExplanationMaker,
+    override val skillMakers: List<MetadataMaker> = emptyList()
 ) : Plan {
 
     override val pattern = OneOfPattern(options.map { it.pattern })
@@ -94,8 +96,8 @@ data class FirstOf(
 data class PlanPipeline(
     override val pattern: Pattern,
     val plans: List<Plan>,
-    override val explanationMaker: ExplanationMaker = noExplanationMaker,
-    override val skillMakers: List<SkillMaker> = emptyList()
+    override val explanationMaker: MetadataMaker = noExplanationMaker,
+    override val skillMakers: List<MetadataMaker> = emptyList()
 ) : Plan {
 
     override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
@@ -187,7 +189,7 @@ val convertMixedNumberToImproperFraction = PlanPipeline(
     pattern = mixedNumberOf(),
     plans = listOf(
         splitMixedNumber,
-        addIntegerToFraction,
+        convertIntegerToFraction,
         WhilePossible(Deeply(evaluateIntegerProduct)),
         addLikeFractions,
         WhilePossible(Deeply(evaluateSignedIntegerAddition)),
@@ -200,7 +202,7 @@ val addUnlikeFractions = plan {
 
     pattern = sumContaining(f1, f2)
 
-    explanation("add unlike fractions")
+    explanation(PlanExplanation.AddFractions, move(f1), move(f2))
 
     pipeline {
         step(commonDenominator)
@@ -234,7 +236,7 @@ val addMixedNumbersUsingCommutativity = PlanPipeline(
         WhilePossible(removeBracketsSum),
         evaluateSignedIntegerAddition,
         addUnlikeFractions,
-        addIntegerToFraction,
+        convertIntegerToFraction,
         WhilePossible(Deeply(evaluateIntegerProduct)),
         addLikeFractions,
         Deeply(evaluateSignedIntegerAddition),

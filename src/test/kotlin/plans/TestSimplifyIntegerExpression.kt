@@ -5,6 +5,9 @@ import context.emptyContext
 import expressions.*
 import parser.parseExpression
 import steps.Transformation
+import steps.metadata.Explanation
+import steps.metadata.MetadataKey
+import steps.metadata.PlanExplanation
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
@@ -44,7 +47,7 @@ class TransformationCheck {
     var toExpr: String? = null
     var steps: MutableList<TransformationCheck>? = null
     var pathMappings: MutableList<PathMapping>? = null
-    var explanation: String? = null
+    var explanation: MetadataKey? = null
 
     fun step(init: TransformationCheck.() -> Unit) {
         val stepCheck = TransformationCheck()
@@ -214,7 +217,7 @@ class TestSimplifyIntegerExpression {
         check {
             toExpr = "56"
 
-            explanation = "simplify arithmetic expression"
+            explanation = PlanExplanation.SimplifyArithmeticExpression
 
             step {
                 fromExpr = "34 + 60 + 6 - (4 + 10 - 3 * 5 * (-2))"
@@ -224,7 +227,7 @@ class TestSimplifyIntegerExpression {
                     fromExpr = "3 * 5 * (-2)"
                     toExpr = "(-30)"
 
-                    explanation = "simplify integer product"
+                    explanation = PlanExplanation.SimplifyIntegerProduct
 
                     step {
                         fromExpr = "3 * 5 * (-2)"
@@ -253,7 +256,7 @@ class TestSimplifyIntegerExpression {
                     fromExpr = "-(-30)"
                     toExpr = "30"
 
-                    explanation = "simplify -(-x)"
+                    explanation = Explanation.SimplifyDoubleMinus
                 }
             }
 
@@ -263,7 +266,7 @@ class TestSimplifyIntegerExpression {
                     fromExpr = "4 + 10 + 30"
                     toExpr = "44"
 
-                    explanation = "simplify integer sum"
+                    explanation = PlanExplanation.SimplifyIntegerSum
                 }
             }
 
@@ -272,7 +275,7 @@ class TestSimplifyIntegerExpression {
                     fromExpr = "(44)"
                     toExpr = "44"
 
-                    explanation = "remove brackets around unsigned integer"
+                    explanation = Explanation.RemoveBracketUnsignedInteger
                 }
             }
 
@@ -282,7 +285,7 @@ class TestSimplifyIntegerExpression {
                     fromExpr = "34 + 60 + 6 - 44"
                     toExpr = "56"
 
-                    explanation = "simplify integer sum"
+                    explanation = PlanExplanation.SimplifyIntegerSum
                 }
             }
         }

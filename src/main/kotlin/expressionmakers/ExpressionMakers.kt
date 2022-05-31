@@ -5,11 +5,6 @@ import patterns.*
 import java.math.BigInteger
 
 interface ExpressionMaker {
-    fun makeExpression(match: Match, currentPath: Path = RootPath): Pair<Expression, List<PathMapping>> {
-        val mappedExpr = makeMappedExpression(match)
-        return Pair(mappedExpr.expr, mappedExpr.mappings.pathMappings(currentPath).toList())
-    }
-
     fun makeMappedExpression(match: Match): MappedExpression
 }
 

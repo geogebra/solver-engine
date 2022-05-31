@@ -2,8 +2,9 @@ package rules
 
 import expressionmakers.*
 import patterns.*
-import steps.SkillType
-import steps.makeMetadata
+import steps.metadata.Explanation
+import steps.metadata.Skill
+import steps.metadata.makeMetadata
 
 val splitMixedNumber = run {
     val integer = UnsignedIntegerPattern()
@@ -17,7 +18,7 @@ val splitMixedNumber = run {
             move(integer),
             makeFractionOf(move(numerator), move(denominator))
         ),
-        explanationMaker = makeMetadata("split mixed number", move(pattern)),
+        explanationMaker = makeMetadata(Explanation.ConvertMixedNumberToSum, move(pattern)),
     )
 }
 
@@ -33,10 +34,10 @@ val fractionToMixedNumber = run {
     Rule(
         pattern = ConditionPattern(fractionOf(numerator, denominator), isImproperFraction),
         explanationMaker = makeMetadata(
-            "fraction to mixed number",
+            Explanation.ConvertFractionToMixedNumber,
             move(numerator), move(denominator), quotient, remainder
         ),
-        skillMakers = listOf(makeMetadata(SkillType.DivisionWithRemainder, move(numerator), move(denominator))),
+        skillMakers = listOf(makeMetadata(Skill.DivisionWithRemainder, move(numerator), move(denominator))),
         resultMaker = makeMixedNumberOf(quotient, remainder, move(denominator)),
     )
 }

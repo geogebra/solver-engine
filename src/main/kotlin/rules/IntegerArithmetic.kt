@@ -3,7 +3,8 @@ package rules
 import expressionmakers.*
 import expressions.xp
 import patterns.*
-import steps.makeMetadata
+import steps.metadata.Explanation
+import steps.metadata.makeMetadata
 import java.math.BigInteger
 
 val eliminateZeroInSum = run {
@@ -13,7 +14,7 @@ val eliminateZeroInSum = run {
     Rule(
         pattern = pattern,
         resultMaker = cancel(zero, restOf(pattern)),
-        explanationMaker = makeMetadata("eliminate 0 in sum", move(zero)),
+        explanationMaker = makeMetadata(Explanation.EliminateZeroInSum, move(zero)),
     )
 }
 
@@ -24,7 +25,7 @@ val eliminateOneInProduct = run {
     Rule(
         pattern = pattern,
         resultMaker = cancel(one, restOf(pattern)),
-        explanationMaker = makeMetadata("eliminate 1 in product", move(one)),
+        explanationMaker = makeMetadata(Explanation.EliminateOneInProduct, move(one)),
     )
 }
 
@@ -35,7 +36,7 @@ val zeroInProduct = run {
     Rule(
         pattern = pattern,
         resultMaker = transform(zero),
-        explanationMaker = makeMetadata("a product containing 0 is 0", move(zero))
+        explanationMaker = makeMetadata(Explanation.ProductContainingZero, move(zero))
     )
 }
 
@@ -48,9 +49,7 @@ val evaluateUnsignedIntegerSubtraction = run {
     Rule(
         pattern = pattern,
         resultMaker = substituteIn(sum, makeNumericOp(term1, term2) { n1, n2 -> n1 - n2 }),
-        explanationMaker = makeMetadata(
-            "evaluate integer subtraction", move(term1), move(term2)
-        ),
+        explanationMaker = makeMetadata(Explanation.EvaluateIntegerSubtraction, move(term1), move(term2)),
     )
 }
 
@@ -62,9 +61,7 @@ val evaluateSignedIntegerAddition = run {
     Rule(
         pattern = sum,
         resultMaker = substituteIn(sum, makeNumericOp(term1, term2) { n1, n2 -> n1 + n2 }),
-        explanationMaker = makeMetadata(
-            "evaluate integer addition", move(term1), move(term2)
-        ),
+        explanationMaker = makeMetadata(Explanation.EvaluateIntegerAddition, move(term1), move(term2)),
     )
 }
 
@@ -76,7 +73,7 @@ val evaluateIntegerProduct = run {
     Rule(
         pattern = pattern,
         resultMaker = substituteIn(pattern, makeNumericOp(factor1, factor2) { n1, n2 -> n1 * n2 }),
-        explanationMaker = makeMetadata("evaluate integer product", move(factor1), move(factor2)),
+        explanationMaker = makeMetadata(Explanation.EvaluateIntegerProduct, move(factor1), move(factor2)),
     )
 }
 
@@ -106,7 +103,7 @@ val evaluateSignedIntegerProduct = run {
             }
         ),
         explanationMaker = makeMetadata(
-            "evaluate integer product", move(base), custom {
+            Explanation.EvaluateIntegerProduct, move(base), custom {
                 if (isBound(multiplier)) move(multiplier) else move(divisor)
             }
         )
@@ -124,7 +121,7 @@ val evaluateSignedIntegerPower = run {
     Rule(
         pattern = power,
         resultMaker = makeNumericOp(base, exponent) { n1, n2 -> n1.pow(n2.toInt()) },
-        explanationMaker = makeMetadata("evaluate integer power", move(base), move(power))
+        explanationMaker = makeMetadata(Explanation.EvaluateIntegerPower, move(base), move(power))
     )
 }
 
@@ -135,6 +132,6 @@ val simplifyDoubleNeg = run {
     Rule(
         pattern = pattern,
         resultMaker = move(value),
-        explanationMaker = makeMetadata("simplify -(-x)", move(value))
+        explanationMaker = makeMetadata(Explanation.SimplifyDoubleMinus, move(value))
     )
 }
