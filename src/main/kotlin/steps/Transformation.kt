@@ -3,14 +3,13 @@ package steps
 import expressions.MappedExpression
 import expressions.RootPath
 import expressions.Subexpression
-import steps.metadata.Metadata
 
 data class Transformation(
     val fromExpr: Subexpression,
     val toExpr: MappedExpression,
     val steps: List<Transformation>? = null,
-    val explanation: Metadata? = null,
-    val skills: List<Metadata> = emptyList(),
+    val explanation: MappedExpression? = null,
+    val skills: List<MappedExpression> = emptyList(),
 ) {
     fun prettyPrint(prefix: String = "") {
         println("$prefix{")

@@ -3,13 +3,13 @@ package plans
 import context.Context
 import context.Resource
 import context.ResourceData
+import expressionmakers.ExpressionMaker
 import expressionmakers.move
 import expressions.*
 import patterns.*
 import rules.*
 import steps.Transformation
 import steps.metadata.EmptyMetadataKey
-import steps.metadata.MetadataMaker
 import steps.metadata.PlanExplanation
 import steps.metadata.makeMetadata
 
@@ -22,8 +22,8 @@ val noExplanationMaker = makeMetadata(EmptyMetadataKey)
 interface Plan : PlanExecutor {
 
     val pattern: Pattern
-    val explanationMaker: MetadataMaker get() = noExplanationMaker
-    val skillMakers: List<MetadataMaker> get() = emptyList()
+    val explanationMaker: ExpressionMaker get() = noExplanationMaker
+    val skillMakers: List<ExpressionMaker> get() = emptyList()
 
     fun tryExecute(ctx: Context, sub: Subexpression): Transformation? {
         for (match in pattern.findMatches(sub, RootMatch)) {
@@ -36,8 +36,8 @@ interface Plan : PlanExecutor {
 class Deeply(
     val plan: Plan,
     val deepFirst: Boolean = false,
-    override val explanationMaker: MetadataMaker = noExplanationMaker,
-    override val skillMakers: List<MetadataMaker> = emptyList()
+    override val explanationMaker: ExpressionMaker = noExplanationMaker,
+    override val skillMakers: List<ExpressionMaker> = emptyList()
 ) : Plan {
 
     override val pattern = FindPattern(plan.pattern, deepFirst)
@@ -48,16 +48,16 @@ class Deeply(
             fromExpr = sub,
             toExpr = sub.substitute(step.fromExpr.path, step.toExpr),
             steps = listOf(step),
-            explanation = explanationMaker.makeMetadata(match),
-            skills = skillMakers.map { it.makeMetadata(match) }
+            explanation = explanationMaker.makeMappedExpression(match),
+            skills = skillMakers.map { it.makeMappedExpression(match) }
         )
     }
 }
 
 data class WhilePossible(
     val plan: Plan,
-    override val explanationMaker: MetadataMaker = noExplanationMaker,
-    override val skillMakers: List<MetadataMaker> = emptyList()
+    override val explanationMaker: ExpressionMaker = noExplanationMaker,
+    override val skillMakers: List<ExpressionMaker> = emptyList()
 ) : Plan {
 
     override val pattern = plan.pattern
@@ -76,16 +76,16 @@ data class WhilePossible(
             fromExpr = sub,
             toExpr = lastSub.toMappedExpr(),
             steps = steps,
-            explanation = explanationMaker.makeMetadata(match),
-            skills = skillMakers.map { it.makeMetadata(match) }
+            explanation = explanationMaker.makeMappedExpression(match),
+            skills = skillMakers.map { it.makeMappedExpression(match) }
         )
     }
 }
 
 data class FirstOf(
     val options: List<Plan>,
-    override val explanationMaker: MetadataMaker = noExplanationMaker,
-    override val skillMakers: List<MetadataMaker> = emptyList()
+    override val explanationMaker: ExpressionMaker = noExplanationMaker,
+    override val skillMakers: List<ExpressionMaker> = emptyList()
 ) : Plan {
 
     override val pattern = OneOfPattern(options.map { it.pattern })
@@ -96,8 +96,8 @@ data class FirstOf(
 data class PlanPipeline(
     override val pattern: Pattern,
     val plans: List<Plan>,
-    override val explanationMaker: MetadataMaker = noExplanationMaker,
-    override val skillMakers: List<MetadataMaker> = emptyList()
+    override val explanationMaker: ExpressionMaker = noExplanationMaker,
+    override val skillMakers: List<ExpressionMaker> = emptyList()
 ) : Plan {
 
     override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
@@ -116,8 +116,8 @@ data class PlanPipeline(
             fromExpr = sub,
             toExpr = lastSub.toMappedExpr(),
             steps = steps,
-            explanation = explanationMaker.makeMetadata(match),
-            skills = skillMakers.map { it.makeMetadata(match) }
+            explanation = explanationMaker.makeMappedExpression(match),
+            skills = skillMakers.map { it.makeMappedExpression(match) }
         )
     }
 }

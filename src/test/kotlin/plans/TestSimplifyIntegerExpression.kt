@@ -6,6 +6,7 @@ import expressions.*
 import parser.parseExpression
 import steps.Transformation
 import steps.metadata.Explanation
+import steps.metadata.Metadata
 import steps.metadata.MetadataKey
 import steps.metadata.PlanExplanation
 import kotlin.test.Test
@@ -25,7 +26,7 @@ fun parsePath(s: String): Path {
     return path
 }
 
-data class PathMappingBuilder(val type: PathMappingType) {
+data class PathMappingPathsBuilder(val type: PathMappingType) {
     private var _fromPaths: List<Path> = emptyList()
     private var _toPaths: List<Path> = emptyList()
 
@@ -42,12 +43,85 @@ data class PathMappingBuilder(val type: PathMappingType) {
     }
 }
 
-class TransformationCheck {
+open class PathMappingsCheck {
+    var pathMappings: MutableList<PathMapping>? = null
+
+    private fun addPathMapping(type: PathMappingType, init: PathMappingPathsBuilder.() -> Unit) {
+        if (pathMappings == null) {
+            pathMappings = mutableListOf()
+        }
+
+        val builder = PathMappingPathsBuilder(type)
+        builder.init()
+        pathMappings?.add(builder.getPathMapping())
+    }
+
+    fun cancel(init: PathMappingPathsBuilder.() -> Unit) {
+        addPathMapping(PathMappingType.Cancel, init)
+    }
+
+    fun introduce(init: PathMappingPathsBuilder.() -> Unit) {
+        addPathMapping(PathMappingType.Introduce, init)
+    }
+
+    fun combine(init: PathMappingPathsBuilder.() -> Unit) {
+        addPathMapping(PathMappingType.Combine, init)
+    }
+
+    fun move(init: PathMappingPathsBuilder.() -> Unit) {
+        addPathMapping(PathMappingType.Move, init)
+    }
+
+    fun checkPathMappings(mappings: PathMappingTree?, rootPath: Path) {
+        if (pathMappings != null) {
+            assertNotNull(mappings)
+            assertContentEquals(
+                pathMappings,
+                mappings.pathMappings(RootPath).map { it.relativeTo(rootPath) }.toList()
+            )
+        }
+    }
+}
+
+class MappedExpressionCheck : PathMappingsCheck() {
+    lateinit var expr: String
+
+    fun checkMappedExpression(mappedExpression: MappedExpression, rootPath: Path) {
+        assertEquals(parseExpression(expr), mappedExpression.expr)
+        checkPathMappings(mappedExpression.mappings, rootPath)
+    }
+}
+
+class MetadataCheck {
+    lateinit var key: MetadataKey
+    var params: MutableList<MappedExpressionCheck>? = null
+
+    fun param(init: MappedExpressionCheck.() -> Unit) {
+        val param = MappedExpressionCheck()
+        param.init()
+        if (params == null) {
+            params = mutableListOf(param)
+        } else {
+            params!!.add(param)
+        }
+    }
+
+    fun checkMetadata(metadata: Metadata, rootPath: Path) {
+        assertEquals(key, metadata.key)
+        if (params != null) {
+            assertEquals(params!!.size, metadata.mappedParams.size)
+            for ((checker, mappedExpr) in params!!.zip(metadata.mappedParams)) {
+                checker.checkMappedExpression(mappedExpr, rootPath)
+            }
+        }
+    }
+}
+
+class TransformationCheck : PathMappingsCheck() {
     var fromExpr: String? = null
     var toExpr: String? = null
     var steps: MutableList<TransformationCheck>? = null
-    var pathMappings: MutableList<PathMapping>? = null
-    var explanation: MetadataKey? = null
+    private var explanationCheck: MetadataCheck? = null
 
     fun step(init: TransformationCheck.() -> Unit) {
         val stepCheck = TransformationCheck()
@@ -57,6 +131,11 @@ class TransformationCheck {
         } else {
             steps!!.add(stepCheck)
         }
+    }
+
+    fun explanation(init: MetadataCheck.() -> Unit) {
+        explanationCheck = MetadataCheck()
+        explanationCheck!!.init()
     }
 
     fun checkTransformation(trans: Transformation?) {
@@ -75,41 +154,16 @@ class TransformationCheck {
                 s.checkTransformation(t)
             }
         }
-        if (pathMappings != null) {
-            assertContentEquals(
-                pathMappings,
-                trans.toExpr.mappings.pathMappings(RootPath).map { it.relativeTo(trans.fromExpr.path) }.toList()
-            )
+        checkPathMappings(trans.toExpr.mappings, trans.fromExpr.path)
+        if (explanationCheck != null) {
+            val operator = trans.explanation!!.expr.operator as MetadataOperator
+            val paramExprs = trans.explanation!!.expr.operands
+            val paramMappings = trans.explanation!!.mappings.childList(paramExprs.size)
+            val metadata = Metadata(
+                operator.key,
+                paramExprs.zip(paramMappings).map { (expr, mappings) -> MappedExpression(expr, mappings) })
+            explanationCheck!!.checkMetadata(metadata, trans.fromExpr.path)
         }
-        if (explanation != null) {
-            assertEquals(explanation, trans.explanation?.key)
-        }
-    }
-
-    private fun addPathMapping(type: PathMappingType, init: PathMappingBuilder.() -> Unit) {
-        if (pathMappings == null) {
-            pathMappings = mutableListOf()
-        }
-
-        val builder = PathMappingBuilder(type)
-        builder.init()
-        pathMappings?.add(builder.getPathMapping())
-    }
-
-    fun cancel(init: PathMappingBuilder.() -> Unit) {
-        addPathMapping(PathMappingType.Cancel, init)
-    }
-
-    fun introduce(init: PathMappingBuilder.() -> Unit) {
-        addPathMapping(PathMappingType.Introduce, init)
-    }
-
-    fun combine(init: PathMappingBuilder.() -> Unit) {
-        addPathMapping(PathMappingType.Combine, init)
-    }
-
-    fun move(init: PathMappingBuilder.() -> Unit) {
-        addPathMapping(PathMappingType.Move, init)
     }
 }
 
@@ -217,7 +271,9 @@ class TestSimplifyIntegerExpression {
         check {
             toExpr = "56"
 
-            explanation = PlanExplanation.SimplifyArithmeticExpression
+            explanation {
+                key = PlanExplanation.SimplifyArithmeticExpression
+            }
 
             step {
                 fromExpr = "34 + 60 + 6 - (4 + 10 - 3 * 5 * (-2))"
@@ -227,7 +283,9 @@ class TestSimplifyIntegerExpression {
                     fromExpr = "3 * 5 * (-2)"
                     toExpr = "(-30)"
 
-                    explanation = PlanExplanation.SimplifyIntegerProduct
+                    explanation {
+                        key = PlanExplanation.SimplifyIntegerProduct
+                    }
 
                     step {
                         fromExpr = "3 * 5 * (-2)"
@@ -251,22 +309,30 @@ class TestSimplifyIntegerExpression {
             }
 
             step {
+                fromExpr = "34 + 60 + 6 - (4 + 10 - (-30))"
+                toExpr = "34 + 60 + 6 - (4 + 10 + 30)"
 
                 step {
                     fromExpr = "-(-30)"
                     toExpr = "30"
 
-                    explanation = Explanation.SimplifyDoubleMinus
+                    explanation {
+                        key = Explanation.SimplifyDoubleMinus
+                    }
                 }
             }
 
             step {
+                fromExpr = "34 + 60 + 6 - (4 + 10 + 30)"
+                toExpr = "34 + 60 + 6 - (44)"
 
                 step {
                     fromExpr = "4 + 10 + 30"
                     toExpr = "44"
 
-                    explanation = PlanExplanation.SimplifyIntegerSum
+                    explanation {
+                        key = PlanExplanation.SimplifyIntegerSum
+                    }
                 }
             }
 
@@ -275,7 +341,9 @@ class TestSimplifyIntegerExpression {
                     fromExpr = "(44)"
                     toExpr = "44"
 
-                    explanation = Explanation.RemoveBracketUnsignedInteger
+                    explanation {
+                        key = Explanation.RemoveBracketUnsignedInteger
+                    }
                 }
             }
 
@@ -285,7 +353,9 @@ class TestSimplifyIntegerExpression {
                     fromExpr = "34 + 60 + 6 - 44"
                     toExpr = "56"
 
-                    explanation = PlanExplanation.SimplifyIntegerSum
+                    explanation {
+                        key = PlanExplanation.SimplifyIntegerSum
+                    }
                 }
             }
         }

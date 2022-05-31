@@ -1,11 +1,12 @@
 package plans
 
 import expressionmakers.ExpressionMaker
+import expressionmakers.OperatorExpressionMaker
+import expressions.MetadataOperator
 import patterns.AnyPattern
 import patterns.Pattern
 import rules.*
 import steps.metadata.MetadataKey
-import steps.metadata.MetadataMaker
 import steps.metadata.PlanExplanation
 
 class PipelineBuilder {
@@ -53,8 +54,8 @@ class FirstOfBuilder {
 
 class PlanBuilder {
 
-    var explanationMaker: MetadataMaker = noExplanationMaker
-    var skillMakers: MutableList<MetadataMaker> = mutableListOf()
+    var explanationMaker: ExpressionMaker = noExplanationMaker
+    var skillMakers: MutableList<ExpressionMaker> = mutableListOf()
     var pattern: Pattern? = null
     private lateinit var plan: Plan
 
@@ -66,7 +67,7 @@ class PlanBuilder {
     }
 
     fun explanation(explanationKey: MetadataKey, vararg params: ExpressionMaker) {
-        explanationMaker = MetadataMaker(explanationKey, params.asList())
+        explanationMaker = OperatorExpressionMaker(MetadataOperator(explanationKey), params.asList())
     }
 
     fun pipeline(init: PipelineBuilder.() -> Unit) {

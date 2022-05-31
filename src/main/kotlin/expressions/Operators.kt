@@ -1,5 +1,6 @@
 package expressions
 
+import steps.metadata.MetadataKey
 import java.math.BigInteger
 
 interface Operator {
@@ -197,4 +198,15 @@ enum class NaryOperator(override val precedence: Int) : Operator {
 
     override val arity = -1
     override fun nthChildAllowed(n: Int, op: Operator) = op.precedence > this.precedence
+}
+
+data class MetadataOperator(val key: MetadataKey) : Operator {
+    override val precedence = 0
+    override val arity = -1 // TODO: get arity from key
+
+    override fun nthChildAllowed(n: Int, op: Operator) = true
+
+    override fun <T> readableString(children: List<T>): String {
+        return "${key}(${children.joinToString(", ")})"
+    }
 }
