@@ -51,3 +51,15 @@ fun pathOf(vararg indexes: Int): Path {
     }
     return path
 }
+
+fun parsePath(s: String): Path {
+    val pieces = s.split('/')
+    if (pieces[0] != ".") throw IllegalArgumentException("$s is not a valid path")
+
+    var path: Path = RootPath
+    for (piece in pieces.drop(1)) {
+        path = path.child(piece.toInt())
+    }
+
+    return path
+}
