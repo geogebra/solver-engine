@@ -32,7 +32,8 @@ data class OperatorExpressionMaker(val operator: Operator, val operands: List<Ex
     }
 }
 
-data class FlattenedNaryExpressionMaker(val operator: NaryOperator, val operands: List<ExpressionMaker>) : ExpressionMaker {
+data class FlattenedNaryExpressionMaker(val operator: NaryOperator, val operands: List<ExpressionMaker>) :
+    ExpressionMaker {
     override fun makeMappedExpression(match: Match) =
         flattenedNaryMappedExpression(operator, operands.map { it.makeMappedExpression(match) })
 }
@@ -91,12 +92,17 @@ data class NumericOp2(
     }
 }
 
+fun makeBracketOf(operand: ExpressionMaker) =
+    OperatorExpressionMaker(UnaryOperator.Bracket, listOf(operand))
+
 fun makeFractionOf(numerator: ExpressionMaker, denominator: ExpressionMaker) =
     OperatorExpressionMaker(BinaryOperator.Fraction, listOf(numerator, denominator))
 
-fun makeSumOf(vararg terms: ExpressionMaker) = FlattenedNaryExpressionMaker(NaryOperator.Sum, terms.asList())
+fun makeSumOf(vararg terms: ExpressionMaker) =
+    FlattenedNaryExpressionMaker(NaryOperator.Sum, terms.asList())
 
-fun makeProductOf(vararg terms: ExpressionMaker) = FlattenedNaryExpressionMaker(NaryOperator.Product, terms.asList())
+fun makeProductOf(vararg terms: ExpressionMaker) =
+    FlattenedNaryExpressionMaker(NaryOperator.Product, terms.asList())
 
 fun makeNegOf(operand: ExpressionMaker) = OperatorExpressionMaker(UnaryOperator.Minus, listOf(operand))
 

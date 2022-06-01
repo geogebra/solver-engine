@@ -9,10 +9,7 @@ import steps.metadata.Explanation
 import steps.metadata.Metadata
 import steps.metadata.MetadataKey
 import steps.metadata.PlanExplanation
-import kotlin.test.Test
-import kotlin.test.assertContentEquals
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
+import kotlin.test.*
 
 fun parsePath(s: String): Path {
     val pieces = s.split('/')
@@ -122,6 +119,11 @@ class TransformationCheck : PathMappingsCheck() {
     var toExpr: String? = null
     var steps: MutableList<TransformationCheck>? = null
     private var explanationCheck: MetadataCheck? = null
+    var nullTransformation = false
+
+    fun noTransformation() {
+        nullTransformation = true
+    }
 
     fun step(init: TransformationCheck.() -> Unit) {
         val stepCheck = TransformationCheck()
@@ -139,6 +141,10 @@ class TransformationCheck : PathMappingsCheck() {
     }
 
     fun checkTransformation(trans: Transformation?) {
+        if (nullTransformation) {
+            assertNull(trans)
+            return
+        }
         assertNotNull(trans)
         if (fromExpr != null) {
             assertEquals(parseExpression(fromExpr!!), trans.fromExpr.expr)

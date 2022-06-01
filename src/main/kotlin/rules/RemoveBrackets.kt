@@ -1,13 +1,23 @@
 package rules
 
+import expressionmakers.makeBracketOf
 import expressionmakers.move
 import expressionmakers.substituteIn
-import patterns.SignedIntegerPattern
-import patterns.UnsignedIntegerPattern
-import patterns.bracketOf
-import patterns.sumContaining
+import expressions.UnaryOperator
+import patterns.*
 import steps.metadata.Explanation
 import steps.metadata.makeMetadata
+
+val replaceInvisibleBrackets = run {
+    val innerExpr = AnyPattern()
+    val pattern = OperatorPattern(UnaryOperator.InvisibleBracket, listOf(innerExpr))
+
+    Rule(
+        pattern = pattern,
+        resultMaker = makeBracketOf(move(innerExpr)),
+        explanationMaker = makeMetadata(Explanation.ReplaceInvisibleBrackets),
+    )
+}
 
 val removeBracketsSum = run {
     val innerSum = sumContaining()

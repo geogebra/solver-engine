@@ -152,3 +152,12 @@ val simplifyArithmeticExpression = plan {
         }
     }
 }
+
+val replaceAllInvisibleBrackets = plan {
+
+    explanation(PlanExplanation.ReplaceAllInvisibleBrackets)
+
+    whilePossible {
+        deeply(replaceInvisibleBrackets)
+    }
+}

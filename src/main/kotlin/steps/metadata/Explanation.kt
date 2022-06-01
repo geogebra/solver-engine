@@ -5,6 +5,7 @@ enum class Explanation : MetadataKey {
     SimplifyDoubleMinus,
 
     /* Handling brackets */
+    ReplaceInvisibleBrackets,
     RemoveBracketSumInSum,
     RemoveBracketSignedIntegerInSum,
     RemoveBracketUnsignedInteger,
