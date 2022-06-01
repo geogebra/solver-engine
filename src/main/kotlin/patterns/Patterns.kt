@@ -318,3 +318,31 @@ data class OneOfPattern(val options: List<Pattern>) : Pattern {
 }
 
 fun oneOf(vararg options: Pattern) = OneOfPattern(options.asList())
+
+data class AllOfPattern(val patterns: List<Pattern>) : Pattern {
+
+    init {
+        require(patterns.isNotEmpty())
+    }
+
+    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+
+        fun rec(i: Int, m: Match): Sequence<Match> {
+            if (i == patterns.size - 1) {
+                return patterns[i].findMatches(subexpression, m)
+            }
+            return patterns[i].findMatches(subexpression, m).flatMap { rec(i + 1, it) }
+        }
+
+        return rec(0, match)
+    }
+}
+
+fun allOf(vararg patterns: Pattern?): Pattern {
+    val nonNullPatterns = patterns.filterNotNull()
+    return when (nonNullPatterns.size) {
+        0 -> throw java.lang.IllegalArgumentException()
+        1 -> nonNullPatterns[0]
+        else -> AllOfPattern(nonNullPatterns)
+    }
+}

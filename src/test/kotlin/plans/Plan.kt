@@ -17,7 +17,7 @@ class TestPlan {
         val trans = convertMixedNumberToImproperFraction.tryExecute(emptyContext, Subexpression(RootPath, inExpr))
         assertNotNull(trans)
         assertNotNull(trans.steps)
-        assertEquals(convertMixedNumberToImproperFraction.plans.size, trans.steps?.size)
+        assertEquals(5, trans.steps?.size)
         assertEquals(parseExpression("[5/3]"), trans.toExpr.expr)
         trans.prettyPrint()
     }
@@ -39,7 +39,7 @@ class TestPlan {
         val trans = addMixedNumbersByConverting.tryExecute(emptyContext, Subexpression(RootPath, inExpr))
         assertNotNull(trans)
         assertNotNull(trans.steps)
-        assertEquals(addMixedNumbersByConverting.plans.size, trans.steps?.size)
+        assertEquals(3, trans.steps?.size)
         assertEquals(parseExpression("[7 11/12]"), trans.toExpr.expr)
         trans.prettyPrint()
     }
@@ -51,7 +51,7 @@ class TestPlan {
         val trans1 = addMixedNumbers.tryExecute(Context("EU"), Subexpression(RootPath, inExpr))
         assertNotNull(trans1)
         assertNotNull(trans1.steps)
-        assertEquals(addMixedNumbersByConverting.plans.size, trans1.steps?.size)
+        assertEquals(3, trans1.steps?.size)
         assertEquals(parseExpression("[7 11/12]"), trans1.toExpr.expr)
     }
 
@@ -63,7 +63,7 @@ class TestPlan {
         assertNotNull(trans2)
         assertNotNull(trans2.steps)
         assertEquals(parseExpression("[7 11/12]"), trans2.toExpr.expr)
-        assertEquals(addMixedNumbersUsingCommutativity.plans.size, trans2.steps?.size)
+        assertEquals(9, trans2.steps?.size)
 
         trans2.prettyPrint()
     }
@@ -75,36 +75,8 @@ class TestPlan {
         val trans3 = addMixedNumbers.tryExecute(emptyContext, Subexpression(RootPath, inExpr))
         assertNotNull(trans3)
         assertNotNull(trans3.steps)
-        assertEquals(addMixedNumbersByConverting.plans.size, trans3.steps?.size)
+        //assertEquals(3, trans3.steps?.size)
         assertEquals(parseExpression("[7 11/12]"), trans3.toExpr.expr)
     }
-
-    @Test
-    fun testSimplifyIntegerSum() {
-        val inExpr = parseExpression("1 + 2 + 0 - 3 + 4")
-        val trans = simplifyIntegerSum.tryExecute(emptyContext, Subexpression(RootPath, inExpr))
-        assertNotNull(trans)
-        assertEquals(parseExpression("4"), trans.toExpr.expr)
-        trans.prettyPrint()
-    }
-
-    @Test
-    fun testSimplifyIntegerProduct() {
-        val inExpr = parseExpression("1*(-2)*3")
-        val trans = simplifyIntegerProduct.tryExecute(emptyContext, Subexpression(RootPath, inExpr))
-        assertNotNull(trans)
-        assertEquals(parseExpression("(-6)"), trans.toExpr.expr)
-        trans.prettyPrint()
-    }
-
-    @Test
-    fun testSimplifyIntegerSumProducts() {
-        val inExpr = parseExpression("1 + ([2^6:2] + 0 - 3*(-2)*5) + 4*(-3)")
-        val trans = simplifyIntegerExpression.tryExecute(emptyContext, Subexpression(RootPath, inExpr))
-        assertNotNull(trans)
-        trans.prettyPrint()
-        assertEquals(parseExpression("27"), trans.toExpr.expr)
-    }
-
 
 }

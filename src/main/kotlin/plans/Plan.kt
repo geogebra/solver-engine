@@ -34,36 +34,49 @@ interface Plan : PlanExecutor {
     }
 }
 
-class Deeply(
-    val plan: Plan,
-    val deepFirst: Boolean = false,
+interface StepsProducer {
+    val pattern: Pattern
+    fun produceSteps(ctx: Context, match: Match, sub: Subexpression): List<Transformation>
+}
+
+data class DeeplySP(val plan: Plan, val deepFirst: Boolean = false) : StepsProducer {
+    override val pattern = FindPattern(plan.pattern, deepFirst)
+    override fun produceSteps(ctx: Context, match: Match, sub: Subexpression): List<Transformation> {
+        val step = plan.execute(ctx, match, match.getLastBinding(plan.pattern)!!)
+        return if (step == null) emptyList() else listOf(step)
+    }
+}
+
+data class StepsPlan(
+    val ownPattern: Pattern? = null,
+    val stepsProducer: StepsProducer,
     override val explanationMaker: ExpressionMaker = noExplanationMaker,
     override val skillMakers: List<ExpressionMaker> = emptyList()
 ) : Plan {
 
-    override val pattern = FindPattern(plan.pattern, deepFirst)
+    override val pattern = allOf(ownPattern, stepsProducer.pattern)
 
     override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
-        val step = plan.execute(ctx, match, match.getLastBinding(plan.pattern)!!) ?: return null
+        val steps = stepsProducer.produceSteps(ctx, match, sub)
+        if (steps.isEmpty()) {
+            return null
+        }
+        val lastStep = steps.last()
         return Transformation(
             fromExpr = sub,
-            toExpr = sub.substitute(step.fromExpr.path, step.toExpr),
-            steps = listOf(step),
+            toExpr = sub.substitute(lastStep.fromExpr.path, lastStep.toExpr),
+            steps = steps,
             explanation = explanationMaker.makeMappedExpression(match),
             skills = skillMakers.map { it.makeMappedExpression(match) }
         )
     }
 }
 
-data class WhilePossible(
-    val plan: Plan,
-    override val explanationMaker: ExpressionMaker = noExplanationMaker,
-    override val skillMakers: List<ExpressionMaker> = emptyList()
-) : Plan {
+data class WhilePossibleSP(val plan: Plan) : StepsProducer {
 
     override val pattern = plan.pattern
 
-    override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
+    override fun produceSteps(ctx: Context, match: Match, sub: Subexpression): List<Transformation> {
         var lastStep: Transformation? = plan.execute(ctx, match, sub)
         var lastSub = sub
         val steps: MutableList<Transformation> = mutableListOf()
@@ -73,13 +86,7 @@ data class WhilePossible(
             lastSub = Subexpression(lastSub.path, substitution.expr)
             lastStep = plan.tryExecute(ctx, lastSub)
         }
-        return Transformation(
-            fromExpr = sub,
-            toExpr = lastSub.toMappedExpr(),
-            steps = steps,
-            explanation = explanationMaker.makeMappedExpression(match),
-            skills = skillMakers.map { it.makeMappedExpression(match) }
-        )
+        return steps
     }
 }
 
@@ -94,14 +101,14 @@ data class FirstOf(
         options.firstOrNull { match.getLastBinding(it.pattern) != null }?.execute(ctx, match, sub)
 }
 
-data class PlanPipeline(
-    override val pattern: Pattern,
-    val plans: List<Plan>,
-    override val explanationMaker: ExpressionMaker = noExplanationMaker,
-    override val skillMakers: List<ExpressionMaker> = emptyList()
-) : Plan {
+data class PipelineSP(val plans: List<Plan>) : StepsProducer {
 
-    override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
+    init {
+        require(plans.isNotEmpty())
+    }
+
+    override val pattern = plans[0].pattern
+    override fun produceSteps(ctx: Context, match: Match, sub: Subexpression): List<Transformation> {
         val steps = mutableListOf<Transformation>()
         var lastSub = sub
         for (plan in plans) {
@@ -112,22 +119,13 @@ data class PlanPipeline(
                 steps.add(step)
             }
         }
-
-        return Transformation(
-            fromExpr = sub,
-            toExpr = lastSub.toMappedExpr(),
-            steps = steps,
-            explanation = explanationMaker.makeMappedExpression(match),
-            skills = skillMakers.map { it.makeMappedExpression(match) }
-        )
+        return steps
     }
 }
 
-fun firstOf(vararg options: Plan) = FirstOf(options.asList())
-
 interface InStep : Plan {
 
-    val pipeline: PlanPipeline
+    val pipeline: List<Plan>
     fun getSubexpressions(match: Match, sub: Subexpression): List<Subexpression>
 
     override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
@@ -135,7 +133,7 @@ interface InStep : Plan {
 
         val steps = mutableListOf<Transformation>()
         var lastSub = sub
-        for (stepPlan in pipeline.plans) {
+        for (stepPlan in pipeline) {
             val stepTransformations = stepSubs.map { stepPlan.tryExecute(ctx, it) }
             val nonNullTransformations = stepTransformations.filterNotNull()
             if (nonNullTransformations.isNotEmpty()) {
@@ -163,8 +161,11 @@ interface InStep : Plan {
     }
 }
 
-data class ApplyToChildrenInStep(override val pipeline: PlanPipeline, override val pattern: Pattern = AnyPattern()) :
+data class ApplyToChildrenInStep(val plan: Plan, override val pattern: Pattern = AnyPattern()) :
     InStep {
+
+    override val pipeline = ((plan as StepsPlan).stepsProducer as PipelineSP).plans
+
     override fun getSubexpressions(match: Match, sub: Subexpression): List<Subexpression> {
         return sub.children()
     }
@@ -186,16 +187,25 @@ data class ContextSensitivePlanSelector(
 
 // emptyResourceData -> defaultPlan
 
-val convertMixedNumberToImproperFraction = PlanPipeline(
-    pattern = mixedNumberOf(),
-    plans = listOf(
-        splitMixedNumber,
-        convertIntegerToFraction,
-        WhilePossible(Deeply(evaluateIntegerProduct)),
-        addLikeFractions,
-        WhilePossible(Deeply(evaluateSignedIntegerAddition)),
-    )
-)
+val convertMixedNumberToImproperFraction = plan {
+    pattern = mixedNumberOf()
+
+    pipeline {
+        step(splitMixedNumber)
+        step(convertIntegerToFraction)
+        step {
+            whilePossible {
+                deeply(evaluateIntegerProduct)
+            }
+        }
+        step(addLikeFractions)
+        step {
+            whilePossible {
+                deeply(evaluateSignedIntegerAddition)
+            }
+        }
+    }
+}
 
 val addUnlikeFractions = plan {
     val f1 = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
@@ -206,7 +216,7 @@ val addUnlikeFractions = plan {
     explanation(PlanExplanation.AddFractions, move(f1), move(f2))
 
     skill(Skill.AddFractions, move(f1), move(f2))
-    
+
     pipeline {
         step(commonDenominator)
         step {
@@ -223,29 +233,44 @@ val addUnlikeFractions = plan {
     }
 }
 
-val addMixedNumbersByConverting = PlanPipeline(
-    pattern = sumOf(mixedNumberOf(), mixedNumberOf()),
-    plans = listOf(
-        ApplyToChildrenInStep(convertMixedNumberToImproperFraction),
-        addUnlikeFractions,
-        fractionToMixedNumber,
-    ),
-)
+val addMixedNumbersByConverting = plan {
+    pattern = sumOf(mixedNumberOf(), mixedNumberOf())
 
-val addMixedNumbersUsingCommutativity = PlanPipeline(
-    pattern = sumOf(mixedNumberOf(), mixedNumberOf()),
-    plans = listOf(
-        WhilePossible(Deeply(splitMixedNumber)),
-        WhilePossible(removeBracketsSum),
-        evaluateSignedIntegerAddition,
-        addUnlikeFractions,
-        convertIntegerToFraction,
-        WhilePossible(Deeply(evaluateIntegerProduct)),
-        addLikeFractions,
-        Deeply(evaluateSignedIntegerAddition),
-        fractionToMixedNumber,
-    )
-)
+    pipeline {
+        step(ApplyToChildrenInStep(convertMixedNumberToImproperFraction))
+        step(addUnlikeFractions)
+        step(fractionToMixedNumber)
+    }
+}
+
+val addMixedNumbersUsingCommutativity = plan {
+    pattern = sumOf(mixedNumberOf(), mixedNumberOf())
+
+    pipeline {
+        step {
+            whilePossible {
+                deeply(splitMixedNumber)
+            }
+        }
+        step {
+            whilePossible(removeBracketsSum)
+        }
+        step(evaluateSignedIntegerAddition)
+        step(addUnlikeFractions)
+        step(convertIntegerToFraction)
+        step {
+            whilePossible {
+                deeply(evaluateIntegerProduct)
+            }
+        }
+        step(addLikeFractions)
+        step {
+            deeply(evaluateSignedIntegerAddition)
+        }
+        step(fractionToMixedNumber)
+    }
+}
+
 
 val addMixedNumbers = ContextSensitivePlanSelector(
     alternatives = listOf(
@@ -254,22 +279,4 @@ val addMixedNumbers = ContextSensitivePlanSelector(
     ),
     default = addMixedNumbersByConverting,
     pattern = sumOf(mixedNumberOf(), mixedNumberOf()),
-)
-
-val simplifyIntegerSum = WhilePossible(evaluateSignedIntegerAddition)
-
-val simplifyIntegerProduct = WhilePossible(evaluateSignedIntegerProduct)
-
-val simplifyIntegerExpression = WhilePossible(
-    Deeply(
-        plan = firstOf(
-            removeBracketAroundUnsignedInteger,
-            removeBracketAroundSignedIntegerInSum,
-            simplifyDoubleNeg,
-            evaluateSignedIntegerPower,
-            simplifyIntegerProduct,
-            simplifyIntegerSum,
-        ),
-        deepFirst = true
-    )
 )

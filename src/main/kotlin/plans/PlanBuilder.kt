@@ -20,14 +20,8 @@ class PipelineBuilder {
         step(plan(init))
     }
 
-    fun buildPlan(planBuilder: PlanBuilder): PlanPipeline {
-        require(steps.isNotEmpty())
-        return PlanPipeline(
-            pattern = planBuilder.pattern ?: steps[0].pattern,
-            plans = steps.toList(),
-            explanationMaker = planBuilder.explanationMaker,
-            skillMakers = planBuilder.skillMakers.toList(),
-        )
+    fun buildPlan(): PipelineSP {
+        return PipelineSP(steps)
     }
 }
 
@@ -66,6 +60,17 @@ class PlanBuilder {
         plan = p
     }
 
+    private fun setStepsPlan(stepsProducer: StepsProducer) {
+        setPlan(
+            StepsPlan(
+                ownPattern = pattern,
+                stepsProducer = stepsProducer,
+                explanationMaker = explanationMaker,
+                skillMakers = skillMakers
+            )
+        )
+    }
+
     fun explanation(explanationKey: MetadataKey, vararg params: ExpressionMaker) {
         explanationMaker = OperatorExpressionMaker(MetadataOperator(explanationKey), params.asList())
     }
@@ -77,7 +82,7 @@ class PlanBuilder {
     fun pipeline(init: PipelineBuilder.() -> Unit) {
         val builder = PipelineBuilder()
         builder.init()
-        setPlan(builder.buildPlan(this))
+        setStepsPlan(builder.buildPlan())
     }
 
     fun firstOf(init: FirstOfBuilder.() -> Unit) {
@@ -87,7 +92,7 @@ class PlanBuilder {
     }
 
     fun whilePossible(subPlan: Plan) {
-        setPlan(WhilePossible(subPlan, explanationMaker, skillMakers.toList()))
+        setStepsPlan(WhilePossibleSP(subPlan))
     }
 
     fun whilePossible(init: PlanBuilder.() -> Unit) {
@@ -95,7 +100,7 @@ class PlanBuilder {
     }
 
     fun deeply(plan: Plan, deepFirst: Boolean = false) {
-        setPlan(Deeply(plan, deepFirst))
+        setStepsPlan(DeeplySP(plan, deepFirst))
     }
 
     fun deeply(deepFirst: Boolean = false, init: PlanBuilder.() -> Unit) {
