@@ -22,7 +22,7 @@ interface Operator {
 }
 
 abstract class NullaryOperator : Operator {
-    override val precedence = 10
+    override val precedence = 100
     override val arity = 0
 
     override fun nthChildAllowed(n: Int, op: Operator): Boolean {
@@ -48,7 +48,7 @@ data class VariableOperator(val name: String) : NullaryOperator() {
 }
 
 object MixedNumberOperator : Operator {
-    override val precedence = 10
+    override val precedence = 100
     override val arity = 3
 
     override fun nthChildAllowed(n: Int, op: Operator): Boolean {
@@ -60,30 +60,28 @@ object MixedNumberOperator : Operator {
 }
 
 enum class UnaryOperator(override val precedence: Int) : Operator {
-    Bracket(10) {
+    InvisibleBracket(100) {
+        override fun childAllowed(op: Operator) = true
+        override fun <T> readableString(child: T) = "{$child}"
+    },
+    Bracket(100) {
         override fun childAllowed(op: Operator) = true
         override fun <T> readableString(child: T) = "($child)"
     },
-    DivideBy(9) {
+    DivideBy(90) {
         override fun childAllowed(op: Operator) = op.precedence > NaryOperator.Product.precedence
         override fun <T> readableString(child: T) = ":$child"
     },
-    Plus(9) {
-        override fun childAllowed(op: Operator) =
-            op.precedence >= NaryOperator.Product.precedence
-
+    Plus(15) {
         override fun <T> readableString(child: T) = "+$child"
     },
-    Minus(9) {
-        override fun childAllowed(op: Operator) =
-            op.precedence >= NaryOperator.Product.precedence
-
+    Minus(15) {
         override fun <T> readableString(child: T) = "-$child"
     },
-    SquareRoot(10) {
+    SquareRoot(100) {
         override fun childAllowed(op: Operator) = true
     },
-    NaturalLog(5) {
+    NaturalLog(50) {
         override fun childAllowed(op: Operator) =
             op.precedence >= BinaryOperator.Fraction.precedence
     };
@@ -107,12 +105,12 @@ enum class UnaryOperator(override val precedence: Int) : Operator {
 }
 
 enum class BinaryOperator(override val precedence: Int) : Operator {
-    Fraction(5) {
+    Fraction(50) {
         override fun leftChildAllowed(op: Operator) = true
         override fun rightChildAllowed(op: Operator) = true
         override fun <T> readableString(left: T, right: T) = "[$left / $right]"
     },
-    Divide(3) {
+    Divide(30) {
         override fun leftChildAllowed(op: Operator) =
             op.precedence >= NaryOperator.ImplicitProduct.precedence
 
@@ -121,7 +119,7 @@ enum class BinaryOperator(override val precedence: Int) : Operator {
 
         override fun <T> readableString(left: T, right: T) = "$left:$right"
     },
-    Power(6) {
+    Power(60) {
         override fun leftChildAllowed(op: Operator) =
             op.precedence >= UnaryOperator.Bracket.precedence
 
@@ -129,7 +127,7 @@ enum class BinaryOperator(override val precedence: Int) : Operator {
 
         override fun <T> readableString(left: T, right: T) = "[$left ^ $right]"
     },
-    Root(10) {
+    Root(100) {
         override fun leftChildAllowed(op: Operator) = true
         override fun rightChildAllowed(op: Operator) = true
     };
@@ -156,7 +154,7 @@ enum class BinaryOperator(override val precedence: Int) : Operator {
 }
 
 enum class NaryOperator(override val precedence: Int) : Operator {
-    Sum(1) {
+    Sum(10) {
         override fun <T> readableString(children: List<T>): String {
             return buildString {
                 for ((i, child) in children.map { it.toString() }.withIndex()) {
@@ -173,7 +171,7 @@ enum class NaryOperator(override val precedence: Int) : Operator {
             }
         }
     },
-    Product(2) {
+    Product(20) {
         override fun <T> readableString(children: List<T>): String {
             return buildString {
                 for ((i, child) in children.map { it.toString() }.withIndex()) {
@@ -190,7 +188,7 @@ enum class NaryOperator(override val precedence: Int) : Operator {
             }
         }
     },
-    ImplicitProduct(4) {
+    ImplicitProduct(40) {
         override fun <T> readableString(children: List<T>): String {
             return children.joinToString("")
         }

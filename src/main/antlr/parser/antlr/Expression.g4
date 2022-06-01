@@ -6,7 +6,7 @@ grammar Expression;
 
 expr: sum;
 
-sum: first=explicitProduct (rest+=otherTerm)*;
+sum: sign=('+'|'-')? first=explicitProduct (rest+=otherTerm)*;
 
 otherTerm: sign=('+'|'-') explicitProduct;
 

@@ -49,7 +49,17 @@ class ParserTest {
                 powerOf(bracketOf(sumOf(xp("x"), xp(1))), xp(2))
             ),
             TestCase("2[2^2]", implicitProductOf(xp(2), powerOf(xp(2), xp(2)))), // Should that be correct?
-            TestCase("3*-4", productOf(xp(3), negOf(xp(4)))),
+            TestCase("3*-4", productOf(xp(3), invisibleBracketOf(negOf(xp(4))))),
+            TestCase("-4*3", negOf(productOf(xp(4), xp(3)))),
+            TestCase("--2", negOf(invisibleBracketOf(negOf(xp(2))))),
+            TestCase("1+-3", sumOf(xp(1), invisibleBracketOf(negOf(xp(3))))),
+            TestCase(
+                "3*+-+2",
+                productOf(
+                    xp(3),
+                    invisibleBracketOf(plusOf(invisibleBracketOf(negOf(invisibleBracketOf(plusOf(xp(2)))))))
+                )
+            )
         )
     }
 }

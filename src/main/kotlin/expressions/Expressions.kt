@@ -12,7 +12,6 @@ data class Expression(val operator: Operator, val operands: List<Expression>) {
     }
 }
 
-
 fun xp(n: Int) = Expression(IntegerOperator(n.toBigInteger()), emptyList())
 fun xp(n: BigInteger) = Expression(IntegerOperator(n), emptyList())
 fun xp(v: String) = Expression(VariableOperator(v), emptyList())
@@ -23,6 +22,7 @@ fun mixedNumber(integer: BigInteger, numerator: BigInteger, denominator: BigInte
 fun bracketOf(expr: Expression) = Expression(UnaryOperator.Bracket, listOf(expr))
 
 fun negOf(expr: Expression) = Expression(UnaryOperator.Minus, listOf(expr))
+fun plusOf(expr: Expression) = Expression(UnaryOperator.Plus, listOf(expr))
 
 fun divideBy(expr: Expression) = Expression(UnaryOperator.DivideBy, listOf(expr))
 
