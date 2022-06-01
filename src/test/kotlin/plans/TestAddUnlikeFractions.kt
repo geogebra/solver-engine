@@ -3,6 +3,7 @@ package plans
 import org.junit.jupiter.api.Test
 import steps.metadata.Explanation
 import steps.metadata.PlanExplanation
+import steps.metadata.Skill
 
 class TestAddUnlikeFractions {
 
@@ -16,6 +17,17 @@ class TestAddUnlikeFractions {
 
             explanation {
                 key = PlanExplanation.AddFractions
+
+                param {
+                    expr = "[1/5]"
+                }
+                param {
+                    expr = "[2/5]"
+                }
+            }
+
+            skill {
+                key = Skill.AddFractions
 
                 param {
                     expr = "[1/5]"

@@ -70,6 +70,10 @@ class PlanBuilder {
         explanationMaker = OperatorExpressionMaker(MetadataOperator(explanationKey), params.asList())
     }
 
+    fun skill(skillKey: MetadataKey, vararg params: ExpressionMaker) {
+        skillMakers.add(OperatorExpressionMaker(MetadataOperator(skillKey), params.asList()))
+    }
+
     fun pipeline(init: PipelineBuilder.() -> Unit) {
         val builder = PipelineBuilder()
         builder.init()
@@ -108,25 +112,6 @@ fun plan(init: PlanBuilder.() -> Unit): Plan {
     planBuilder.init()
     return planBuilder.buildPlan()
 }
-//
-//val addUnlikeFractions2 = plan {
-//    val f1 = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
-//    val f2 = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
-//
-//    pattern = sumContaining(f1, f2)
-//
-//    pipeline {
-//        step(commonDenominator)
-//        step {
-//            whilePossible {
-//                deeply(evaluateIntegerProduct)
-//            }
-//        }
-//        step {
-//            apply(add)
-//        }
-//    }
-//}
 
 val simplifyArithmeticExpression = plan {
 

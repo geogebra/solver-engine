@@ -11,6 +11,7 @@ import rules.*
 import steps.Transformation
 import steps.metadata.EmptyMetadataKey
 import steps.metadata.PlanExplanation
+import steps.metadata.Skill
 import steps.metadata.makeMetadata
 
 interface PlanExecutor {
@@ -204,6 +205,8 @@ val addUnlikeFractions = plan {
 
     explanation(PlanExplanation.AddFractions, move(f1), move(f2))
 
+    skill(Skill.AddFractions, move(f1), move(f2))
+    
     pipeline {
         step(commonDenominator)
         step {

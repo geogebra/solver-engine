@@ -101,6 +101,18 @@ class MetadataCheck {
             }
         }
     }
+
+    fun checkMetadataMappedExpression(mappedExpression: MappedExpression?, rootPath: Path) {
+        assertNotNull(mappedExpression)
+        val operator = mappedExpression.expr.operator as MetadataOperator
+        val paramExprs = mappedExpression.expr.operands
+        val paramMappings = mappedExpression.mappings.childList(paramExprs.size)
+        val metadata = Metadata(
+            operator.key,
+            paramExprs.zip(paramMappings).map { (expr, mappings) -> MappedExpression(expr, mappings) })
+        checkMetadata(metadata, rootPath)
+
+    }
 }
 
 class TransformationCheck : PathMappingsCheck() {
@@ -108,6 +120,8 @@ class TransformationCheck : PathMappingsCheck() {
     var toExpr: String? = null
     var steps: MutableList<TransformationCheck>? = null
     private var explanationCheck: MetadataCheck? = null
+    private var skillChecks = mutableMapOf<Operator, MetadataCheck>()
+
     var nullTransformation = false
 
     fun noTransformation() {
@@ -127,6 +141,12 @@ class TransformationCheck : PathMappingsCheck() {
     fun explanation(init: MetadataCheck.() -> Unit) {
         explanationCheck = MetadataCheck()
         explanationCheck!!.init()
+    }
+
+    fun skill(init: MetadataCheck.() -> Unit) {
+        val skillCheck = MetadataCheck()
+        skillCheck.init()
+        skillChecks[MetadataOperator(skillCheck.key)] = skillCheck
     }
 
     fun checkTransformation(trans: Transformation?) {
@@ -151,13 +171,15 @@ class TransformationCheck : PathMappingsCheck() {
         }
         checkPathMappings(trans.toExpr.mappings, trans.fromExpr.path)
         if (explanationCheck != null) {
-            val operator = trans.explanation!!.expr.operator as MetadataOperator
-            val paramExprs = trans.explanation!!.expr.operands
-            val paramMappings = trans.explanation!!.mappings.childList(paramExprs.size)
-            val metadata = Metadata(
-                operator.key,
-                paramExprs.zip(paramMappings).map { (expr, mappings) -> MappedExpression(expr, mappings) })
-            explanationCheck!!.checkMetadata(metadata, trans.fromExpr.path)
+            explanationCheck!!.checkMetadataMappedExpression(trans.explanation, trans.fromExpr.path)
+        }
+        if (skillChecks.isNotEmpty()) {
+            assertEquals(skillChecks.size, trans.skills.size)
+            for (skill in trans.skills) {
+                val skillCheck = skillChecks[skill.expr.operator]
+                assertNotNull(skillCheck)
+                skillCheck.checkMetadataMappedExpression(skill, trans.fromExpr.path)
+            }
         }
     }
 }
