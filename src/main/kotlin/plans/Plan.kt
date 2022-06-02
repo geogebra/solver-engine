@@ -4,14 +4,10 @@ import context.Context
 import context.Resource
 import context.ResourceData
 import expressionmakers.ExpressionMaker
-import expressionmakers.move
 import expressions.*
 import patterns.*
-import rules.*
 import steps.Transformation
 import steps.metadata.EmptyMetadataKey
-import steps.metadata.PlanExplanation
-import steps.metadata.Skill
 import steps.metadata.makeMetadata
 
 interface PlanExecutor {
@@ -49,12 +45,13 @@ data class DeeplySP(val plan: Plan, val deepFirst: Boolean = false) : StepsProdu
 
 data class StepsPlan(
     val ownPattern: Pattern? = null,
+    val overridePattern: Pattern? = null,
     val stepsProducer: StepsProducer,
     override val explanationMaker: ExpressionMaker = noExplanationMaker,
     override val skillMakers: List<ExpressionMaker> = emptyList()
 ) : Plan {
 
-    override val pattern = allOf(ownPattern, stepsProducer.pattern)
+    override val pattern = overridePattern ?: allOf(ownPattern, stepsProducer.pattern)
 
     override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
         val steps = stepsProducer.produceSteps(ctx, match, sub)
@@ -184,99 +181,3 @@ data class ContextSensitivePlanSelector(
         return alternative.tryExecute(ctx, sub)
     }
 }
-
-// emptyResourceData -> defaultPlan
-
-val convertMixedNumberToImproperFraction = plan {
-    pattern = mixedNumberOf()
-
-    pipeline {
-        step(splitMixedNumber)
-        step(convertIntegerToFraction)
-        step {
-            whilePossible {
-                deeply(evaluateIntegerProduct)
-            }
-        }
-        step(addLikeFractions)
-        step {
-            whilePossible {
-                deeply(evaluateSignedIntegerAddition)
-            }
-        }
-    }
-}
-
-val addUnlikeFractions = plan {
-    val f1 = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
-    val f2 = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
-
-    pattern = sumContaining(f1, f2)
-
-    explanation(PlanExplanation.AddFractions, move(f1), move(f2))
-
-    skill(Skill.AddFractions, move(f1), move(f2))
-
-    pipeline {
-        step(commonDenominator)
-        step {
-            whilePossible {
-                deeply(evaluateIntegerProduct)
-            }
-        }
-        step(addLikeFractions)
-        step {
-            whilePossible {
-                deeply(evaluateSignedIntegerAddition)
-            }
-        }
-    }
-}
-
-val addMixedNumbersByConverting = plan {
-    pattern = sumOf(mixedNumberOf(), mixedNumberOf())
-
-    pipeline {
-        step(ApplyToChildrenInStep(convertMixedNumberToImproperFraction))
-        step(addUnlikeFractions)
-        step(fractionToMixedNumber)
-    }
-}
-
-val addMixedNumbersUsingCommutativity = plan {
-    pattern = sumOf(mixedNumberOf(), mixedNumberOf())
-
-    pipeline {
-        step {
-            whilePossible {
-                deeply(splitMixedNumber)
-            }
-        }
-        step {
-            whilePossible(removeBracketsSum)
-        }
-        step(evaluateSignedIntegerAddition)
-        step(addUnlikeFractions)
-        step(convertIntegerToFraction)
-        step {
-            whilePossible {
-                deeply(evaluateIntegerProduct)
-            }
-        }
-        step(addLikeFractions)
-        step {
-            deeply(evaluateSignedIntegerAddition)
-        }
-        step(fractionToMixedNumber)
-    }
-}
-
-
-val addMixedNumbers = ContextSensitivePlanSelector(
-    alternatives = listOf(
-        AnnotatedPlan(addMixedNumbersByConverting, ResourceData("EU")),
-        AnnotatedPlan(addMixedNumbersUsingCommutativity, ResourceData("US")),
-    ),
-    default = addMixedNumbersByConverting,
-    pattern = sumOf(mixedNumberOf(), mixedNumberOf()),
-)

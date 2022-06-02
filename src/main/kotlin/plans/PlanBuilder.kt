@@ -3,11 +3,8 @@ package plans
 import expressionmakers.ExpressionMaker
 import expressionmakers.OperatorExpressionMaker
 import expressions.MetadataOperator
-import patterns.AnyPattern
 import patterns.Pattern
-import rules.*
 import steps.metadata.MetadataKey
-import steps.metadata.PlanExplanation
 
 class PipelineBuilder {
     private var steps: MutableList<Plan> = mutableListOf()
@@ -51,6 +48,8 @@ class PlanBuilder {
     var explanationMaker: ExpressionMaker = noExplanationMaker
     var skillMakers: MutableList<ExpressionMaker> = mutableListOf()
     var pattern: Pattern? = null
+    var overridePattern: Pattern? = null
+
     private lateinit var plan: Plan
 
     private fun setPlan(p: Plan) {
@@ -64,6 +63,7 @@ class PlanBuilder {
         setPlan(
             StepsPlan(
                 ownPattern = pattern,
+                overridePattern = overridePattern,
                 stepsProducer = stepsProducer,
                 explanationMaker = explanationMaker,
                 skillMakers = skillMakers
@@ -116,38 +116,4 @@ fun plan(init: PlanBuilder.() -> Unit): Plan {
     val planBuilder = PlanBuilder()
     planBuilder.init()
     return planBuilder.buildPlan()
-}
-
-val simplifyArithmeticExpression = plan {
-
-    pattern = AnyPattern() /* TODO add condition that it is constant in all variables */
-    explanation(PlanExplanation.SimplifyArithmeticExpression)
-
-    whilePossible {
-        deeply(deepFirst = true) {
-            firstOf {
-                option(removeBracketAroundUnsignedInteger)
-                option(removeBracketAroundSignedIntegerInSum)
-                option(simplifyDoubleNeg)
-                option(evaluateSignedIntegerPower)
-                option {
-                    explanation(PlanExplanation.SimplifyIntegerProduct)
-                    whilePossible(evaluateSignedIntegerProduct)
-                }
-                option {
-                    explanation(PlanExplanation.SimplifyIntegerSum)
-                    whilePossible(evaluateSignedIntegerAddition)
-                }
-            }
-        }
-    }
-}
-
-val replaceAllInvisibleBrackets = plan {
-
-    explanation(PlanExplanation.ReplaceAllInvisibleBrackets)
-
-    whilePossible {
-        deeply(replaceInvisibleBrackets)
-    }
 }
