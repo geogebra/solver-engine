@@ -24,8 +24,10 @@ enum class Explanation : MetadataKey {
     ConvertFractionToMixedNumber,
 
     /* Fractions */
+    SimplifyNegativeInDenominator,
     ConvertIntegerToFraction,
     AddLikeFractions,
+    SubtractLikeFractions,
     BringToCommonDenominator,
     CancelCommonTerms,
 }

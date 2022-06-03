@@ -81,3 +81,32 @@ val cancelInAFraction = run {
         explanationMaker = makeMetadata(Explanation.CancelCommonTerms, move(pattern), move(common)),
     )
 }
+
+val negativeDenominator = run {
+    val numerator = UnsignedIntegerPattern()
+    val denominator = UnsignedIntegerPattern()
+
+    val pattern = fractionOf(numerator, negOf(denominator))
+
+    Rule(
+        pattern = pattern,
+        resultMaker = makeNegOf(makeFractionOf(move(numerator), move(denominator))),
+        explanationMaker = makeMetadata(Explanation.SimplifyNegativeInDenominator, move(pattern)),
+    )
+}
+
+val subtractLikeFraction = run {
+    val num1 = UnsignedIntegerPattern()
+    val num2 = UnsignedIntegerPattern()
+    val denom = UnsignedIntegerPattern()
+    val f1 = fractionOf(num1, denom)
+    val f2 = fractionOf(num2, denom)
+
+    val pattern = sumOf(f1, negOf(f2))
+
+    Rule(
+        pattern = pattern,
+        resultMaker = makeFractionOf(makeSumOf(move(num1), makeNegOf(move(num2))), factor(denom)),
+        explanationMaker = makeMetadata(Explanation.SubtractLikeFractions, move(f1), move(f2))
+    )
+}

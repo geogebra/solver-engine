@@ -8,7 +8,7 @@ import steps.metadata.Skill
 class TestAddUnlikeFractions {
 
     @Test
-    fun simpleTest() = testPlan {
+    fun addLikeFractionsTest() = testPlan {
         plan = addUnlikeFractions
         inputExpr = "[1/5] + [2/5]"
 
@@ -55,6 +55,32 @@ class TestAddUnlikeFractions {
                         toExpr = "3"
                     }
                 }
+            }
+        }
+    }
+
+    @Test
+    fun addUnlikeFractionsTest() = testPlan {
+        plan = addUnlikeFractions
+        inputExpr = "[1/3] + [2/5]"
+
+        check {
+            toExpr = "[11 / 15]"
+
+            step {
+                toExpr = "[1 * 5 / 3 * 5] + [2 * 3 / 5 * 3]"
+            }
+
+            step {
+                toExpr = "[5 / 15] + [6 / 15]"
+            }
+
+            step {
+                toExpr = "[5 + 6 / 15]"
+            }
+
+            step {
+                toExpr = "[11 / 15]"
             }
         }
     }
