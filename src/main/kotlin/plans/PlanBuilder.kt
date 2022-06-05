@@ -7,9 +7,9 @@ import patterns.Pattern
 import steps.metadata.MetadataKey
 
 class PipelineBuilder {
-    private var steps: MutableList<Plan> = mutableListOf()
+    private var steps: MutableList<TransformationProducer> = mutableListOf()
 
-    fun step(step: Plan) {
+    fun step(step: TransformationProducer) {
         steps.add(step)
     }
 
@@ -23,9 +23,9 @@ class PipelineBuilder {
 }
 
 class FirstOfBuilder {
-    private var options: MutableList<Plan> = mutableListOf()
+    private var options: MutableList<TransformationProducer> = mutableListOf()
 
-    fun option(opt: Plan) {
+    fun option(opt: TransformationProducer) {
         options.add(opt)
     }
 
@@ -33,19 +33,15 @@ class FirstOfBuilder {
         option(plan(init))
     }
 
-    fun buildPlan(planBuilder: PlanBuilder): FirstOf {
+    fun buildPlan(): FirstOfSP {
         require(options.isNotEmpty())
-        return FirstOf(
-            options = options,
-            explanationMaker = planBuilder.explanationMaker,
-            skillMakers = planBuilder.skillMakers.toList(),
-        )
+        return FirstOfSP(options)
     }
 }
 
 class PlanBuilder {
 
-    var explanationMaker: ExpressionMaker = noExplanationMaker
+    var explanationMaker: ExpressionMaker? = null
     var skillMakers: MutableList<ExpressionMaker> = mutableListOf()
     var pattern: Pattern? = null
     var overridePattern: Pattern? = null
@@ -61,7 +57,7 @@ class PlanBuilder {
 
     private fun setStepsPlan(stepsProducer: StepsProducer) {
         setPlan(
-            StepsPlan(
+            Plan(
                 ownPattern = pattern,
                 overridePattern = overridePattern,
                 stepsProducer = stepsProducer,
@@ -88,10 +84,10 @@ class PlanBuilder {
     fun firstOf(init: FirstOfBuilder.() -> Unit) {
         val builder = FirstOfBuilder()
         builder.init()
-        setPlan(builder.buildPlan(this))
+        setStepsPlan(builder.buildPlan())
     }
 
-    fun whilePossible(subPlan: Plan) {
+    fun whilePossible(subPlan: TransformationProducer) {
         setStepsPlan(WhilePossibleSP(subPlan))
     }
 
@@ -99,7 +95,7 @@ class PlanBuilder {
         whilePossible(plan(init))
     }
 
-    fun deeply(plan: Plan, deepFirst: Boolean = false) {
+    fun deeply(plan: TransformationProducer, deepFirst: Boolean = false) {
         setStepsPlan(DeeplySP(plan, deepFirst))
     }
 

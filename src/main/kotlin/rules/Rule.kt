@@ -5,15 +5,15 @@ import expressionmakers.ExpressionMaker
 import expressions.Subexpression
 import patterns.Match
 import patterns.Pattern
-import plans.Plan
+import plans.TransformationProducer
 import steps.Transformation
 
 data class Rule(
     override val pattern: Pattern,
-    override val explanationMaker: ExpressionMaker,
-    override val skillMakers: List<ExpressionMaker> = emptyList(),
     val resultMaker: ExpressionMaker,
-) : Plan {
+    val explanationMaker: ExpressionMaker,
+    val skillMakers: List<ExpressionMaker> = emptyList(),
+) : TransformationProducer {
 
     override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
         val result = resultMaker.makeMappedExpression(match)

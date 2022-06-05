@@ -50,10 +50,8 @@ class TestAddUnlikeFractions {
                 toExpr = "[3/5]"
 
                 step {
-                    step {
-                        fromExpr = "1 + 2"
-                        toExpr = "3"
-                    }
+                    fromExpr = "1 + 2"
+                    toExpr = "3"
                 }
             }
         }

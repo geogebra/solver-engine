@@ -7,20 +7,10 @@ import expressionmakers.ExpressionMaker
 import expressions.*
 import patterns.*
 import steps.Transformation
-import steps.metadata.EmptyMetadataKey
-import steps.metadata.makeMetadata
 
-interface PlanExecutor {
-    fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation?
-}
-
-val noExplanationMaker = makeMetadata(EmptyMetadataKey)
-
-interface Plan : PlanExecutor {
-
+interface TransformationProducer {
     val pattern: Pattern
-    val explanationMaker: ExpressionMaker get() = noExplanationMaker
-    val skillMakers: List<ExpressionMaker> get() = emptyList()
+    fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation?
 
     fun tryExecute(ctx: Context, sub: Subexpression): Transformation? {
         for (match in pattern.findMatches(sub, RootMatch)) {
@@ -30,99 +20,48 @@ interface Plan : PlanExecutor {
     }
 }
 
-interface StepsProducer {
-    val pattern: Pattern
-    fun produceSteps(ctx: Context, match: Match, sub: Subexpression): List<Transformation>
-}
-
-data class DeeplySP(val plan: Plan, val deepFirst: Boolean = false) : StepsProducer {
-    override val pattern = FindPattern(plan.pattern, deepFirst)
-    override fun produceSteps(ctx: Context, match: Match, sub: Subexpression): List<Transformation> {
-        val step = plan.execute(ctx, match, match.getLastBinding(plan.pattern)!!)
-        return if (step == null) emptyList() else listOf(step)
-    }
-}
-
-data class StepsPlan(
+data class Plan(
     val ownPattern: Pattern? = null,
     val overridePattern: Pattern? = null,
-    val stepsProducer: StepsProducer,
-    override val explanationMaker: ExpressionMaker = noExplanationMaker,
-    override val skillMakers: List<ExpressionMaker> = emptyList()
-) : Plan {
+    val explanationMaker: ExpressionMaker? = null,
+    val skillMakers: List<ExpressionMaker> = emptyList(),
+    val stepsProducer: StepsProducer
+) : TransformationProducer {
 
     override val pattern = overridePattern ?: allOf(ownPattern, stepsProducer.pattern)
 
     override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
         val steps = stepsProducer.produceSteps(ctx, match, sub)
+
         if (steps.isEmpty()) {
             return null
         }
+
+        if (steps.size == 1 && steps[0].explanation == null && steps[0].skills.isEmpty()) {
+            val onlyStep = steps[0]
+            return Transformation(
+                fromExpr = sub,
+                toExpr = sub.substitute(onlyStep.fromExpr.path, onlyStep.toExpr),
+                steps = onlyStep.steps,
+                explanation = explanationMaker?.makeMappedExpression(match),
+                skills = skillMakers.map { it.makeMappedExpression(match) }
+            )
+        }
+
         val lastStep = steps.last()
         return Transformation(
             fromExpr = sub,
             toExpr = sub.substitute(lastStep.fromExpr.path, lastStep.toExpr),
             steps = steps,
-            explanation = explanationMaker.makeMappedExpression(match),
+            explanation = explanationMaker?.makeMappedExpression(match),
             skills = skillMakers.map { it.makeMappedExpression(match) }
         )
     }
 }
 
-data class WhilePossibleSP(val plan: Plan) : StepsProducer {
+interface InStep : TransformationProducer {
 
-    override val pattern = plan.pattern
-
-    override fun produceSteps(ctx: Context, match: Match, sub: Subexpression): List<Transformation> {
-        var lastStep: Transformation? = plan.execute(ctx, match, sub)
-        var lastSub = sub
-        val steps: MutableList<Transformation> = mutableListOf()
-        while (lastStep != null) {
-            steps.add(lastStep)
-            val substitution = lastSub.substitute(lastStep.fromExpr.path, lastStep.toExpr)
-            lastSub = Subexpression(lastSub.path, substitution.expr)
-            lastStep = plan.tryExecute(ctx, lastSub)
-        }
-        return steps
-    }
-}
-
-data class FirstOf(
-    val options: List<Plan>,
-    override val explanationMaker: ExpressionMaker = noExplanationMaker,
-    override val skillMakers: List<ExpressionMaker> = emptyList()
-) : Plan {
-
-    override val pattern = OneOfPattern(options.map { it.pattern })
-    override fun execute(ctx: Context, match: Match, sub: Subexpression) =
-        options.firstOrNull { match.getLastBinding(it.pattern) != null }?.execute(ctx, match, sub)
-}
-
-data class PipelineSP(val plans: List<Plan>) : StepsProducer {
-
-    init {
-        require(plans.isNotEmpty())
-    }
-
-    override val pattern = plans[0].pattern
-    override fun produceSteps(ctx: Context, match: Match, sub: Subexpression): List<Transformation> {
-        val steps = mutableListOf<Transformation>()
-        var lastSub = sub
-        for (plan in plans) {
-            val step = plan.tryExecute(ctx, lastSub)
-            if (step != null) {
-                val substitution = lastSub.substitute(step.fromExpr.path, step.toExpr)
-                lastSub = Subexpression(lastSub.path, substitution.expr)
-                steps.add(step)
-            }
-        }
-        return steps
-    }
-}
-
-interface InStep : Plan {
-
-    val pipeline: List<Plan>
+    val pipeline: List<TransformationProducer>
     fun getSubexpressions(match: Match, sub: Subexpression): List<Subexpression>
 
     override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
@@ -161,20 +100,20 @@ interface InStep : Plan {
 data class ApplyToChildrenInStep(val plan: Plan, override val pattern: Pattern = AnyPattern()) :
     InStep {
 
-    override val pipeline = ((plan as StepsPlan).stepsProducer as PipelineSP).plans
+    override val pipeline = (plan.stepsProducer as PipelineSP).plans
 
     override fun getSubexpressions(match: Match, sub: Subexpression): List<Subexpression> {
         return sub.children()
     }
 }
 
-data class AnnotatedPlan(val plan: Plan, override val resourceData: ResourceData) : Resource
+data class AnnotatedPlan(val plan: TransformationProducer, override val resourceData: ResourceData) : Resource
 
 data class ContextSensitivePlanSelector(
     val alternatives: List<AnnotatedPlan>,
-    val default: Plan,
+    val default: TransformationProducer,
     override val pattern: Pattern = AnyPattern()
-) : Plan {
+) : TransformationProducer {
 
     override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
         val alternative = ctx.selectBestResource(alternatives.asSequence())?.plan ?: default

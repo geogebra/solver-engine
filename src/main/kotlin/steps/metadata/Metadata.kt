@@ -7,8 +7,6 @@ import expressions.MetadataOperator
 
 interface MetadataKey
 
-object EmptyMetadataKey : MetadataKey
-
 data class Metadata(val key: MetadataKey, val mappedParams: List<MappedExpression>)
 
 fun makeMetadata(key: MetadataKey, vararg expressionMakers: ExpressionMaker) =

@@ -15,22 +15,20 @@ class TestSimplifyIntegerExpression {
             toExpr = "6"
             step {
                 step {
-                    step {
-                        fromExpr = "1 + 2 + 3"
-                        toExpr = "3 + 3"
+                    fromExpr = "1 + 2 + 3"
+                    toExpr = "3 + 3"
 
-                        combine {
-                            fromPaths("./0", "./1")
-                            toPaths("./0")
-                        }
-
-                        move {
-                            fromPaths("./2")
-                            toPaths("./1")
-                        }
+                    combine {
+                        fromPaths("./0", "./1")
+                        toPaths("./0")
                     }
-                    step { toExpr = "6" }
+
+                    move {
+                        fromPaths("./2")
+                        toPaths("./1")
+                    }
                 }
+                step { toExpr = "6" }
             }
         }
     }
