@@ -17,7 +17,7 @@ class TestPlan {
         val trans = convertMixedNumberToImproperFraction.tryExecute(emptyContext, Subexpression(RootPath, inExpr))
         assertNotNull(trans)
         assertNotNull(trans.steps)
-        assertEquals(5, trans.steps?.size)
+        assertEquals(3, trans.steps?.size)
         assertEquals(parseExpression("[5/3]"), trans.toExpr.expr)
         trans.prettyPrint()
     }
@@ -63,7 +63,7 @@ class TestPlan {
         assertNotNull(trans2)
         assertNotNull(trans2.steps)
         assertEquals(parseExpression("[7 11/12]"), trans2.toExpr.expr)
-        assertEquals(9, trans2.steps?.size)
+        assertEquals(7, trans2.steps?.size)
 
         trans2.prettyPrint()
     }

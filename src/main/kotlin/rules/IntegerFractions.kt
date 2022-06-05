@@ -18,10 +18,7 @@ val convertIntegerToFraction = run {
         pattern = sum,
         resultMaker = substituteIn(
             sum,
-            makeFractionOf(
-                makeProductOf(move(integer), introduce(denominator)),
-                makeProductOf(FixedExpressionMaker(xp(1)), introduce(denominator))
-            ),
+            makeFractionOf(move(integer), FixedExpressionMaker(xp(1))),
             move(fraction),
         ),
         explanationMaker = makeMetadata(Explanation.ConvertIntegerToFraction, move(integer), move(fraction)),
@@ -40,6 +37,22 @@ val addLikeFractions = run {
         pattern = sum,
         resultMaker = substituteIn(sum, makeFractionOf(makeSumOf(move(num1), move(num2)), factor(denom))),
         explanationMaker = makeMetadata(Explanation.AddLikeFractions, move(f1), move(f2)),
+    )
+}
+
+val subtractLikeFraction = run {
+    val num1 = UnsignedIntegerPattern()
+    val num2 = UnsignedIntegerPattern()
+    val denom = UnsignedIntegerPattern()
+    val f1 = fractionOf(num1, denom)
+    val f2 = fractionOf(num2, denom)
+
+    val pattern = sumOf(f1, negOf(f2))
+
+    Rule(
+        pattern = pattern,
+        resultMaker = makeFractionOf(makeSumOf(move(num1), makeNegOf(move(num2))), factor(denom)),
+        explanationMaker = makeMetadata(Explanation.SubtractLikeFractions, move(f1), move(f2))
     )
 }
 
@@ -69,19 +82,6 @@ val commonDenominator = run {
     )
 }
 
-val cancelInAFraction = run {
-    val common = AnyPattern()
-    val numerator = productContaining(common, minSize = 2)
-    val denominator = productContaining(common, minSize = 2)
-    val pattern = fractionOf(numerator, denominator)
-
-    Rule(
-        pattern = pattern,
-        resultMaker = cancel(common, makeFractionOf(restOf(numerator), restOf(denominator))),
-        explanationMaker = makeMetadata(Explanation.CancelCommonTerms, move(pattern), move(common)),
-    )
-}
-
 val negativeDenominator = run {
     val numerator = UnsignedIntegerPattern()
     val denominator = UnsignedIntegerPattern()
@@ -95,18 +95,3 @@ val negativeDenominator = run {
     )
 }
 
-val subtractLikeFraction = run {
-    val num1 = UnsignedIntegerPattern()
-    val num2 = UnsignedIntegerPattern()
-    val denom = UnsignedIntegerPattern()
-    val f1 = fractionOf(num1, denom)
-    val f2 = fractionOf(num2, denom)
-
-    val pattern = sumOf(f1, negOf(f2))
-
-    Rule(
-        pattern = pattern,
-        resultMaker = makeFractionOf(makeSumOf(move(num1), makeNegOf(move(num2))), factor(denom)),
-        explanationMaker = makeMetadata(Explanation.SubtractLikeFractions, move(f1), move(f2))
-    )
-}

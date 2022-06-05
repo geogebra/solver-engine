@@ -42,26 +42,6 @@ val replaceAllInvisibleBrackets = plan {
     }
 }
 
-val convertMixedNumberToImproperFraction = plan {
-    pattern = mixedNumberOf()
-
-    pipeline {
-        step(splitMixedNumber)
-        step(convertIntegerToFraction)
-        step {
-            whilePossible {
-                deeply(evaluateIntegerProduct)
-            }
-        }
-        step(addLikeFractions)
-        step {
-            whilePossible {
-                deeply(evaluateSignedIntegerAddition)
-            }
-        }
-    }
-}
-
 val addUnlikeFractions = plan {
     val f1 = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
     val f2 = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
@@ -85,6 +65,16 @@ val addUnlikeFractions = plan {
                 deeply(evaluateSignedIntegerAddition)
             }
         }
+    }
+}
+
+val convertMixedNumberToImproperFraction = plan {
+    pattern = mixedNumberOf()
+
+    pipeline {
+        step(splitMixedNumber)
+        step(convertIntegerToFraction)
+        step(addUnlikeFractions)
     }
 }
 
@@ -113,15 +103,7 @@ val addMixedNumbersUsingCommutativity = plan {
         step(evaluateSignedIntegerAddition)
         step(addUnlikeFractions)
         step(convertIntegerToFraction)
-        step {
-            whilePossible {
-                deeply(evaluateIntegerProduct)
-            }
-        }
-        step(addLikeFractions)
-        step {
-            deeply(evaluateSignedIntegerAddition)
-        }
+        step(addUnlikeFractions)
         step(fractionToMixedNumber)
     }
 }

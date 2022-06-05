@@ -2,7 +2,7 @@ package rules
 
 import java.util.stream.Stream
 
-object EvaluateIntegerProductTest : RuleTest() {
+object IntegerArithmeticTest : RuleTest() {
 
     @JvmStatic
     fun testCaseProvider(): Stream<RuleTestCase> = Stream.of(
