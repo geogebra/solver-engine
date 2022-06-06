@@ -2,10 +2,8 @@ package plans
 
 import context.Context
 import expressions.Subexpression
-import patterns.FindPattern
-import patterns.Match
-import patterns.OneOfPattern
-import patterns.Pattern
+import expressions.toMappedExpr
+import patterns.*
 import steps.Transformation
 
 interface StepsProducer {
@@ -63,16 +61,67 @@ data class PipelineSP(val plans: List<TransformationProducer>) : StepsProducer {
     }
 }
 
-data class FirstOfSP(val options: List<TransformationProducer>) : StepsProducer {
+data class FirstOfSP(val options: List<TransformationProducer>) : StepsProducer, TransformationProducer {
 
     override val pattern = OneOfPattern(options.map { it.pattern })
 
+    override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
+        for (option in options) {
+            if (match.getLastBinding(option.pattern) != null) {
+                val result = option.execute(ctx, match, sub)
+                if (result != null) {
+                    return result
+                }
+            }
+        }
+        return null
+    }
+
     override fun produceSteps(ctx: Context, match: Match, sub: Subexpression): List<Transformation> {
-        return options.asSequence()
-            .filter { match.getLastBinding(it.pattern) != null }
-            .map { it.execute(ctx, match, sub) }
-            .filterNotNull()
-            .map { listOf(it) }
-            .firstOrNull() ?: emptyList()
+        val trans = execute(ctx, match, sub)
+        return if (trans == null) emptyList() else listOf(trans)
+    }
+}
+
+interface InStepSP : StepsProducer {
+
+    val pipeline: List<TransformationProducer>
+    fun getSubexpressions(match: Match, sub: Subexpression): List<Subexpression>
+
+    override fun produceSteps(ctx: Context, match: Match, sub: Subexpression): List<Transformation> {
+        val stepSubs = getSubexpressions(match, sub).toMutableList()
+
+        val steps = mutableListOf<Transformation>()
+        var lastSub = sub
+        for (stepPlan in pipeline) {
+            val stepTransformations = stepSubs.map { stepPlan.tryExecute(ctx, it) }
+            val nonNullTransformations = stepTransformations.filterNotNull()
+            if (nonNullTransformations.isNotEmpty()) {
+                val prevSub = lastSub
+                for (tr in nonNullTransformations) {
+                    val substitution = lastSub.substitute(tr.fromExpr.path, tr.toExpr)
+                    lastSub = Subexpression(lastSub.path, substitution.expr)
+                }
+                steps.add(
+                    Transformation(prevSub, lastSub.toMappedExpr(), nonNullTransformations)
+                )
+                for ((i, tr) in stepTransformations.withIndex()) {
+                    if (tr != null) {
+                        stepSubs[i] = Subexpression(tr.fromExpr.path, tr.toExpr.expr)
+                    }
+                }
+            }
+        }
+        return steps
+    }
+}
+
+data class ApplyToChildrenInStep(val plan: Plan, override val pattern: Pattern = AnyPattern()) :
+    InStepSP {
+
+    override val pipeline = (plan.stepsProducer as PipelineSP).plans
+
+    override fun getSubexpressions(match: Match, sub: Subexpression): List<Subexpression> {
+        return sub.children()
     }
 }

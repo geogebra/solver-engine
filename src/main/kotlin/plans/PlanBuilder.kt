@@ -106,6 +106,10 @@ class PlanBuilder {
     fun buildPlan(): Plan {
         return plan
     }
+
+    fun applyToChildrenInStep(plan: Plan) {
+        setStepsPlan(ApplyToChildrenInStep(plan))
+    }
 }
 
 fun plan(init: PlanBuilder.() -> Unit): Plan {

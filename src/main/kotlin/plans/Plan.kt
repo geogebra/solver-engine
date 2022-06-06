@@ -4,7 +4,7 @@ import context.Context
 import context.Resource
 import context.ResourceData
 import expressionmakers.ExpressionMaker
-import expressions.*
+import expressions.Subexpression
 import patterns.*
 import steps.Transformation
 
@@ -56,54 +56,6 @@ data class Plan(
             explanation = explanationMaker?.makeMappedExpression(match),
             skills = skillMakers.map { it.makeMappedExpression(match) }
         )
-    }
-}
-
-interface InStep : TransformationProducer {
-
-    val pipeline: List<TransformationProducer>
-    fun getSubexpressions(match: Match, sub: Subexpression): List<Subexpression>
-
-    override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
-        val stepSubs = getSubexpressions(match, sub).toMutableList()
-
-        val steps = mutableListOf<Transformation>()
-        var lastSub = sub
-        for (stepPlan in pipeline) {
-            val stepTransformations = stepSubs.map { stepPlan.tryExecute(ctx, it) }
-            val nonNullTransformations = stepTransformations.filterNotNull()
-            if (nonNullTransformations.isNotEmpty()) {
-                val prevSub = lastSub
-                for (tr in nonNullTransformations) {
-                    val substitution = lastSub.substitute(tr.fromExpr.path, tr.toExpr)
-                    lastSub = Subexpression(lastSub.path, substitution.expr)
-                }
-                steps.add(
-                    Transformation(prevSub, lastSub.toMappedExpr(), nonNullTransformations)
-                )
-                for ((i, tr) in stepTransformations.withIndex()) {
-                    if (tr != null) {
-                        stepSubs[i] = Subexpression(tr.fromExpr.path, tr.toExpr.expr)
-                    }
-                }
-            }
-        }
-
-        return Transformation(
-            sub,
-            MappedExpression(lastSub.expr, PathMappingLeaf(listOf(lastSub.path), PathMappingType.Move)),
-            steps
-        )
-    }
-}
-
-data class ApplyToChildrenInStep(val plan: Plan, override val pattern: Pattern = AnyPattern()) :
-    InStep {
-
-    override val pipeline = (plan.stepsProducer as PipelineSP).plans
-
-    override fun getSubexpressions(match: Match, sub: Subexpression): List<Subexpression> {
-        return sub.children()
     }
 }
 

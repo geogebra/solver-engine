@@ -28,7 +28,15 @@ class TestSimplifyIntegerExpression {
                         toPaths("./1")
                     }
                 }
-                step { toExpr = "6" }
+                step {
+                    fromExpr = "3 + 3"
+                    toExpr = "6"
+
+                    combine {
+                        fromPaths("./0", "./1")
+                        toPaths(".")
+                    }
+                }
             }
         }
     }

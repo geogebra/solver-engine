@@ -82,7 +82,10 @@ val addMixedNumbersByConverting = plan {
     pattern = sumOf(mixedNumberOf(), mixedNumberOf())
 
     pipeline {
-        step(ApplyToChildrenInStep(convertMixedNumberToImproperFraction))
+
+        step {
+            applyToChildrenInStep(convertMixedNumberToImproperFraction)
+        }
         step(addUnlikeFractions)
         step(fractionToMixedNumber)
     }
