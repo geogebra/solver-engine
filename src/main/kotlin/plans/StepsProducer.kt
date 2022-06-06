@@ -3,7 +3,10 @@ package plans
 import context.Context
 import expressions.Subexpression
 import expressions.toMappedExpr
-import patterns.*
+import patterns.AnyPattern
+import patterns.FindPattern
+import patterns.Match
+import patterns.Pattern
 import steps.Transformation
 
 interface StepsProducer {
@@ -11,7 +14,7 @@ interface StepsProducer {
     fun produceSteps(ctx: Context, match: Match, sub: Subexpression): List<Transformation>
 }
 
-data class DeeplySP(val plan: TransformationProducer, val deepFirst: Boolean = false) : StepsProducer {
+data class Deeply(val plan: TransformationProducer, val deepFirst: Boolean = false) : StepsProducer {
 
     override val pattern = FindPattern(plan.pattern, deepFirst)
 
@@ -21,7 +24,7 @@ data class DeeplySP(val plan: TransformationProducer, val deepFirst: Boolean = f
     }
 }
 
-data class WhilePossibleSP(val plan: TransformationProducer) : StepsProducer {
+data class WhilePossible(val plan: TransformationProducer) : StepsProducer {
 
     override val pattern = plan.pattern
 
@@ -39,7 +42,7 @@ data class WhilePossibleSP(val plan: TransformationProducer) : StepsProducer {
     }
 }
 
-data class PipelineSP(val plans: List<TransformationProducer>) : StepsProducer {
+data class Pipeline(val plans: List<TransformationProducer>) : StepsProducer {
     init {
         require(plans.isNotEmpty())
     }
@@ -61,29 +64,7 @@ data class PipelineSP(val plans: List<TransformationProducer>) : StepsProducer {
     }
 }
 
-data class FirstOfSP(val options: List<TransformationProducer>) : StepsProducer, TransformationProducer {
-
-    override val pattern = OneOfPattern(options.map { it.pattern })
-
-    override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
-        for (option in options) {
-            if (match.getLastBinding(option.pattern) != null) {
-                val result = option.execute(ctx, match, sub)
-                if (result != null) {
-                    return result
-                }
-            }
-        }
-        return null
-    }
-
-    override fun produceSteps(ctx: Context, match: Match, sub: Subexpression): List<Transformation> {
-        val trans = execute(ctx, match, sub)
-        return if (trans == null) emptyList() else listOf(trans)
-    }
-}
-
-interface InStepSP : StepsProducer {
+interface InStep : StepsProducer {
 
     val pipeline: List<TransformationProducer>
     fun getSubexpressions(match: Match, sub: Subexpression): List<Subexpression>
@@ -117,9 +98,9 @@ interface InStepSP : StepsProducer {
 }
 
 data class ApplyToChildrenInStep(val plan: Plan, override val pattern: Pattern = AnyPattern()) :
-    InStepSP {
+    InStep {
 
-    override val pipeline = (plan.stepsProducer as PipelineSP).plans
+    override val pipeline = (plan.stepsProducer as Pipeline).plans
 
     override fun getSubexpressions(match: Match, sub: Subexpression): List<Subexpression> {
         return sub.children()

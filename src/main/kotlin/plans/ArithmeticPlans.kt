@@ -1,6 +1,5 @@
 package plans
 
-import context.ResourceData
 import expressionmakers.move
 import patterns.*
 import rules.*
@@ -112,11 +111,14 @@ val addMixedNumbersUsingCommutativity = plan {
 }
 
 
-val addMixedNumbers = ContextSensitivePlanSelector(
-    alternatives = listOf(
-        AnnotatedPlan(addMixedNumbersByConverting, ResourceData("EU")),
-        AnnotatedPlan(addMixedNumbersUsingCommutativity, ResourceData("US")),
-    ),
-    default = addMixedNumbersByConverting,
-    pattern = sumOf(mixedNumberOf(), mixedNumberOf()),
-)
+val addMixedNumbers = plan {
+
+    pattern = sumOf(mixedNumberOf(), mixedNumberOf())
+
+    selectFromContext {
+        case(curriculum = "EU", addMixedNumbersByConverting)
+        case(curriculum = "US", addMixedNumbersUsingCommutativity)
+        default(addMixedNumbersByConverting)
+
+    }
+}

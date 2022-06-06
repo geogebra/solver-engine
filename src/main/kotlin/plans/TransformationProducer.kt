@@ -8,8 +8,7 @@ import expressions.Subexpression
 import patterns.*
 import steps.Transformation
 
-interface TransformationProducer {
-    val pattern: Pattern
+interface TransformationProducer : StepsProducer {
     fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation?
 
     fun tryExecute(ctx: Context, sub: Subexpression): Transformation? {
@@ -17,6 +16,11 @@ interface TransformationProducer {
             return execute(ctx, match, sub)
         }
         return null
+    }
+
+    override fun produceSteps(ctx: Context, match: Match, sub: Subexpression): List<Transformation> {
+        val trans = execute(ctx, match, sub)
+        return if (trans == null) emptyList() else listOf(trans)
     }
 }
 
@@ -57,6 +61,24 @@ data class Plan(
             skills = skillMakers.map { it.makeMappedExpression(match) }
         )
     }
+}
+
+data class FirstOf(val options: List<TransformationProducer>) : TransformationProducer {
+
+    override val pattern = OneOfPattern(options.map { it.pattern })
+
+    override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
+        for (option in options) {
+            if (match.getLastBinding(option.pattern) != null) {
+                val result = option.execute(ctx, match, sub)
+                if (result != null) {
+                    return result
+                }
+            }
+        }
+        return null
+    }
+
 }
 
 data class AnnotatedPlan(val plan: TransformationProducer, override val resourceData: ResourceData) : Resource

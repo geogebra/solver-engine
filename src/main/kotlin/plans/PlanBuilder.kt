@@ -1,8 +1,10 @@
 package plans
 
+import context.ResourceData
 import expressionmakers.ExpressionMaker
 import expressionmakers.OperatorExpressionMaker
 import expressions.MetadataOperator
+import patterns.AnyPattern
 import patterns.Pattern
 import steps.metadata.MetadataKey
 
@@ -17,8 +19,8 @@ class PipelineBuilder {
         step(plan(init))
     }
 
-    fun buildPlan(): PipelineSP {
-        return PipelineSP(steps)
+    fun buildPlan(): Pipeline {
+        return Pipeline(steps)
     }
 }
 
@@ -33,9 +35,39 @@ class FirstOfBuilder {
         option(plan(init))
     }
 
-    fun buildPlan(): FirstOfSP {
+    fun buildPlan(): FirstOf {
         require(options.isNotEmpty())
-        return FirstOfSP(options)
+        return FirstOf(options)
+    }
+}
+
+class ContextSensitivePlanBuilder {
+
+    private var alternatives: MutableList<AnnotatedPlan> = mutableListOf()
+    private lateinit var defaultPlan: TransformationProducer
+
+    fun case(curriculum: String?, init: PlanBuilder.() -> Unit) {
+        case(curriculum = curriculum, plan(init))
+    }
+
+    fun case(curriculum: String?, plan: TransformationProducer) {
+        alternatives.add(AnnotatedPlan(plan, ResourceData(curriculum = curriculum)))
+    }
+
+    fun default(init: PlanBuilder.() -> Unit) {
+        default(plan(init))
+    }
+
+    fun default(plan: TransformationProducer) {
+        if (this::defaultPlan.isInitialized) {
+            throw IllegalStateException()
+        }
+        val planBuilder = PlanBuilder()
+        defaultPlan = plan
+    }
+
+    fun buildPlan(pattern: Pattern): ContextSensitivePlanSelector {
+        return ContextSensitivePlanSelector(alternatives, defaultPlan, pattern)
     }
 }
 
@@ -88,7 +120,7 @@ class PlanBuilder {
     }
 
     fun whilePossible(subPlan: TransformationProducer) {
-        setStepsPlan(WhilePossibleSP(subPlan))
+        setStepsPlan(WhilePossible(subPlan))
     }
 
     fun whilePossible(init: PlanBuilder.() -> Unit) {
@@ -96,7 +128,7 @@ class PlanBuilder {
     }
 
     fun deeply(plan: TransformationProducer, deepFirst: Boolean = false) {
-        setStepsPlan(DeeplySP(plan, deepFirst))
+        setStepsPlan(Deeply(plan, deepFirst))
     }
 
     fun deeply(deepFirst: Boolean = false, init: PlanBuilder.() -> Unit) {
@@ -109,6 +141,12 @@ class PlanBuilder {
 
     fun applyToChildrenInStep(plan: Plan) {
         setStepsPlan(ApplyToChildrenInStep(plan))
+    }
+
+    fun selectFromContext(init: ContextSensitivePlanBuilder.() -> Unit) {
+        val builder = ContextSensitivePlanBuilder()
+        builder.init()
+        setStepsPlan(builder.buildPlan(pattern ?: AnyPattern()))
     }
 }
 
