@@ -5,9 +5,7 @@ import context.emptyContext
 import expressions.*
 import parser.parseExpression
 import steps.Transformation
-import steps.metadata.Metadata
 import steps.metadata.MetadataKey
-import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -29,17 +27,16 @@ data class PathMappingPathsBuilder(val type: PathMappingType) {
     }
 }
 
-open class PathMappingsCheck {
-    var pathMappings: MutableList<PathMapping>? = null
+open class PathMappingsCheck(mappings: PathMappingTree?, private val rootPath: Path) {
+    private val pathMappings: Sequence<PathMapping> = mappings?.pathMappings(rootPath) ?: emptySequence()
+
+    var checkedMappings: Int? = null
 
     private fun addPathMapping(type: PathMappingType, init: PathMappingPathsBuilder.() -> Unit) {
-        if (pathMappings == null) {
-            pathMappings = mutableListOf()
-        }
-
         val builder = PathMappingPathsBuilder(type)
         builder.init()
-        pathMappings?.add(builder.getPathMapping())
+        pathMappings.contains(builder.getPathMapping().relativeTo(rootPath))
+        checkedMappings = (checkedMappings ?: 0) + 1
     }
 
     fun cancel(init: PathMappingPathsBuilder.() -> Unit) {
@@ -58,158 +55,147 @@ open class PathMappingsCheck {
         addPathMapping(PathMappingType.Move, init)
     }
 
-    fun checkPathMappings(mappings: PathMappingTree?, rootPath: Path) {
-        if (pathMappings != null) {
-            assertNotNull(mappings)
-            assertContentEquals(
-                pathMappings,
-                mappings.pathMappings(RootPath).map { it.relativeTo(rootPath) }.toList()
-            )
+    open fun finalize() {
+        if (checkedMappings != null) {
+            assertEquals(pathMappings.count(), checkedMappings, "Some path mappings have not been checked")
         }
     }
 }
 
-class MappedExpressionCheck : PathMappingsCheck() {
-    lateinit var expr: String
+class MappedExpressionCheck(private val mappedExpression: MappedExpression, rootPath: Path)
+    : PathMappingsCheck(mappedExpression.mappings, rootPath) {
 
-    fun checkMappedExpression(mappedExpression: MappedExpression, rootPath: Path) {
-        assertEquals(parseExpression(expr), mappedExpression.expr)
-        checkPathMappings(mappedExpression.mappings, rootPath)
+    var expr: String?
+        get() = null
+        set(value) {
+            assertEquals(parseExpression(value!!), mappedExpression.expr)
+        }
+}
+
+class MetadataCheck(private val rootPath: Path, private val keyChecker: (MetadataKey) -> MappedExpression) {
+    private var checkedParams: Int? = null
+    private var params: List<MappedExpression>? = null
+
+    var key: MetadataKey?
+        get() = null
+        set(value) {
+            val mappedExpression = keyChecker(value!!)
+
+            val paramExprs = mappedExpression.expr.operands
+            val paramMappings = mappedExpression.mappings.childList(paramExprs.size)
+            params = paramExprs.zip(paramMappings).map { (expr, mappings) -> MappedExpression(expr, mappings) }
+        }
+
+    fun param(assert: MappedExpressionCheck.() -> Unit) {
+        assertNotNull(params, "Please specify the MetadataKey before the parameters")
+
+        val param = MappedExpressionCheck(params!![checkedParams ?: 0], rootPath)
+        param.assert()
+        param.finalize()
+        checkedParams = (checkedParams ?: 0) + 1
+    }
+
+    fun finalize() {
+        if (checkedParams != null) {
+            assertNotNull(params) // should fail already in `param` and never here
+            assertEquals(params!!.size, checkedParams, "Some parameters have not been checked")
+        }
     }
 }
 
-class MetadataCheck {
-    lateinit var key: MetadataKey
-    var params: MutableList<MappedExpressionCheck>? = null
-
-    fun param(init: MappedExpressionCheck.() -> Unit) {
-        val param = MappedExpressionCheck()
-        param.init()
-        if (params == null) {
-            params = mutableListOf(param)
-        } else {
-            params!!.add(param)
+class TransformationCheck(private val trans: Transformation?)
+    : PathMappingsCheck(trans?.toExpr?.mappings, trans?.fromExpr?.path ?: RootPath) {
+    var fromExpr: String?
+        get() = null
+        set(value) {
+            assertNotNull(trans)
+            assertEquals(parseExpression(value!!), trans.fromExpr.expr)
         }
-    }
 
-    fun checkMetadata(metadata: Metadata, rootPath: Path) {
-        assertEquals(key, metadata.key)
-        if (params != null) {
-            assertEquals(params!!.size, metadata.mappedParams.size)
-            for ((checker, mappedExpr) in params!!.zip(metadata.mappedParams)) {
-                checker.checkMappedExpression(mappedExpr, rootPath)
-            }
+    var toExpr: String?
+        get() = null
+        set(value) {
+            assertNotNull(trans)
+            assertEquals(parseExpression(value!!), trans.toExpr.expr)
         }
-    }
 
-    fun checkMetadataMappedExpression(mappedExpression: MappedExpression?, rootPath: Path) {
-        assertNotNull(mappedExpression)
-        val operator = mappedExpression.expr.operator as MetadataOperator
-        val paramExprs = mappedExpression.expr.operands
-        val paramMappings = mappedExpression.mappings.childList(paramExprs.size)
-        val metadata = Metadata(
-            operator.key,
-            paramExprs.zip(paramMappings).map { (expr, mappings) -> MappedExpression(expr, mappings) })
-        checkMetadata(metadata, rootPath)
-
-    }
-}
-
-class TransformationCheck : PathMappingsCheck() {
-    var fromExpr: String? = null
-    var toExpr: String? = null
-    var steps: MutableList<TransformationCheck>? = null
-    private var explanationCheck: MetadataCheck? = null
-    private var skillChecks = mutableMapOf<Operator, MetadataCheck>()
-
-    var nullTransformation = false
+    private var checkedSkills: Int? = null
+    private var checkedSteps: Int? = null
 
     fun noTransformation() {
-        nullTransformation = true
-    }
-
-    fun step(init: TransformationCheck.() -> Unit) {
-        val stepCheck = TransformationCheck()
-        stepCheck.init()
-        if (steps == null) {
-            steps = mutableListOf(stepCheck)
-        } else {
-            steps!!.add(stepCheck)
-        }
+        assertNull(trans, "Transformation should not have been executed")
     }
 
     fun explanation(init: MetadataCheck.() -> Unit) {
-        explanationCheck = MetadataCheck()
-        explanationCheck!!.init()
+        assertNotNull(trans)
+        val explanationCheck = MetadataCheck(trans.fromExpr.path) {
+            assertNotNull(trans.explanation, "Explanation is empty")
+            assertEquals(it, (trans.explanation!!.expr.operator as MetadataOperator).key, "Explanation key does not match")
+            trans.explanation!!
+        }
+
+        explanationCheck.init()
+        explanationCheck.finalize()
     }
 
     fun skill(init: MetadataCheck.() -> Unit) {
-        val skillCheck = MetadataCheck()
-        skillCheck.init()
-        skillChecks[MetadataOperator(skillCheck.key)] = skillCheck
-    }
-
-    fun checkTransformation(trans: Transformation?) {
-        if (nullTransformation) {
-            assertNull(trans)
-            return
-        }
         assertNotNull(trans)
-        if (fromExpr != null) {
-            assertEquals(parseExpression(fromExpr!!), trans.fromExpr.expr)
+
+        val skillCheck = MetadataCheck(trans.fromExpr.path) {
+            val skill = trans.skills.find { s -> (s.expr.operator as MetadataOperator).key == it }
+            assertNotNull(skill, "No skill with given key found")
+            skill
         }
-        if (toExpr != null) {
-            assertEquals(parseExpression(toExpr!!), trans.toExpr.expr)
+        skillCheck.init()
+        skillCheck.finalize()
+        checkedSkills = (checkedSkills ?: 0) + 1
+    }
+
+    fun step(assert: TransformationCheck.() -> Unit) {
+        assertNotNull(trans)
+
+        val currentStep = checkedSteps ?: 0
+        checkedSteps = currentStep + 1
+
+        assertNotNull(trans.steps, "The transformation has no steps, even though some were specified")
+        assert(trans.steps!!.size > currentStep) {
+            "$checkedSteps steps were specified, but the transformation only has ${trans.steps!!.size}"
         }
-        if (steps != null) {
-            val transSteps = trans.steps
-            assertNotNull(transSteps)
-            assertEquals(steps!!.size, transSteps.size)
-            for ((s, t) in steps!!.zip(transSteps)) {
-                s.checkTransformation(t)
-            }
+
+        val stepCheck = TransformationCheck(trans.steps!![currentStep])
+        stepCheck.assert()
+        stepCheck.finalize()
+    }
+
+    override fun finalize() {
+        super.finalize()
+        if (checkedSkills != null) {
+            assertEquals(checkedSkills, trans!!.skills.size, "Some skills have not been checked")
         }
-        checkPathMappings(trans.toExpr.mappings, trans.fromExpr.path)
-        if (explanationCheck != null) {
-            explanationCheck!!.checkMetadataMappedExpression(trans.explanation, trans.fromExpr.path)
-        }
-        if (skillChecks.isNotEmpty()) {
-            assertEquals(skillChecks.size, trans.skills.size)
-            for (skill in trans.skills) {
-                val skillCheck = skillChecks[skill.expr.operator]
-                assertNotNull(skillCheck)
-                skillCheck.checkMetadataMappedExpression(skill, trans.fromExpr.path)
-            }
+        if (checkedSteps != null) {
+            val transSteps = trans!!.steps
+            assertNotNull(transSteps) // should fail already in `step` and never here
+            assertEquals(checkedSteps, transSteps.size, "Some steps have not been checked")
         }
     }
-}
-
-fun makeCheck(init: TransformationCheck.() -> Unit): TransformationCheck {
-    val check = TransformationCheck()
-    check.init()
-    return check
 }
 
 fun testPlan(init: PlanTestCase.() -> Unit) {
     val testCase = PlanTestCase()
     testCase.init()
-    testCase.assert()
 }
 
 class PlanTestCase {
-    lateinit var plan: Plan
     var context: Context = emptyContext
+    lateinit var plan: Plan
     lateinit var inputExpr: String
-    lateinit var checkTrans: TransformationCheck
 
-    fun check(init: TransformationCheck.() -> Unit) {
-        checkTrans = makeCheck(init)
-    }
-
-    fun assert() {
+    fun check(assert: TransformationCheck.() -> Unit) {
         val expr = parseExpression(inputExpr)
         val trans = plan.tryExecute(context, Subexpression(RootPath, expr))
-        checkTrans.checkTransformation(trans)
-        trans?.prettyPrint()
+
+        val check = TransformationCheck(trans)
+        check.assert()
+        check.finalize()
     }
 }
