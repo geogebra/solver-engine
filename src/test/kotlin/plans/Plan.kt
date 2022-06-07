@@ -25,7 +25,7 @@ class TestPlan {
     @Test
     fun testAddUnlikeFractionsPlan() {
         val inExpr = parseExpression("[3/8] + [5/12]")
-        val trans = addUnlikeFractions.tryExecute(emptyContext, Subexpression(RootPath, inExpr))
+        val trans = addFractions.tryExecute(emptyContext, Subexpression(RootPath, inExpr))
         assertNotNull(trans)
         assertNotNull(trans.steps)
         // assertEquals(addUnlikeFractions.plans.size, trans.steps?.size)

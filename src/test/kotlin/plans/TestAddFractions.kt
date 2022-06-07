@@ -5,11 +5,11 @@ import steps.metadata.Explanation
 import steps.metadata.PlanExplanation
 import steps.metadata.Skill
 
-class TestAddUnlikeFractions {
+class TestAddFractions {
 
     @Test
     fun addLikeFractionsTest() = testPlan {
-        plan = addUnlikeFractions
+        plan = addFractions
         inputExpr = "[1/5] + [2/5]"
 
         check {
@@ -59,7 +59,7 @@ class TestAddUnlikeFractions {
 
     @Test
     fun addUnlikeFractionsTest() = testPlan {
-        plan = addUnlikeFractions
+        plan = addFractions
         inputExpr = "[1/3] + [2/5]"
 
         check {
