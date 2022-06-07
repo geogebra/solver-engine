@@ -46,10 +46,10 @@ data class Pipeline(val items: List<PipelineItem>) : StepsProducer {
         require(!items.all { it.optional })
     }
 
-    val firstNonOptionalItemIndex = items.indexOfFirst { !it.optional }
-    override val pattern = _getPattern()
+    override val pattern = calcPattern()
 
-    private fun _getPattern(): Pattern {
+    private fun calcPattern(): Pattern {
+        val firstNonOptionalItemIndex = items.indexOfFirst { !it.optional }
         if (firstNonOptionalItemIndex == 0) {
             return items[0].plan.pattern
         }
@@ -59,9 +59,15 @@ data class Pipeline(val items: List<PipelineItem>) : StepsProducer {
     override fun produceSteps(ctx: Context, match: Match, sub: Subexpression): List<Transformation> {
         val steps = mutableListOf<Transformation>()
         var lastSub = sub
+        var started = false
         for (item in items) {
-            val step = item.plan.tryExecute(ctx, lastSub)
+            val step = when {
+                !started && match.getLastBinding(item.plan.pattern) == null -> null
+                !started -> item.plan.execute(ctx, match, sub)
+                else -> item.plan.tryExecute(ctx, lastSub)
+            }
             if (step != null) {
+                started = true
                 val substitution = lastSub.substitute(step.fromExpr.path, step.toExpr)
                 lastSub = Subexpression(lastSub.path, substitution.expr)
                 steps.add(step)
