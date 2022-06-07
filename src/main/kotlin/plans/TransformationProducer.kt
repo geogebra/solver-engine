@@ -26,13 +26,12 @@ interface TransformationProducer : StepsProducer {
 
 data class Plan(
     val ownPattern: Pattern? = null,
-    val overridePattern: Pattern? = null,
     val explanationMaker: ExpressionMaker? = null,
     val skillMakers: List<ExpressionMaker> = emptyList(),
     val stepsProducer: StepsProducer
 ) : TransformationProducer {
 
-    override val pattern = overridePattern ?: allOf(ownPattern, stepsProducer.pattern)
+    override val pattern = allOf(ownPattern, stepsProducer.pattern)
 
     override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
         val steps = stepsProducer.produceSteps(ctx, match, sub)

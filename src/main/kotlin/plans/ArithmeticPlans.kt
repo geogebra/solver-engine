@@ -45,15 +45,15 @@ val addUnlikeFractions = plan {
     val f1 = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
     val f2 = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
 
-    overridePattern = sumContaining(f1, f2)
+    pattern = sumContaining(f1, f2)
 
     explanation(PlanExplanation.AddFractions, move(f1), move(f2))
 
     skill(Skill.AddFractions, move(f1), move(f2))
 
     pipeline {
-        step(commonDenominator)
-        step {
+        optionalStep(commonDenominator)
+        optionalStep {
             whilePossible {
                 deeply(evaluateIntegerProduct)
             }

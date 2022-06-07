@@ -9,14 +9,26 @@ import patterns.Pattern
 import steps.metadata.MetadataKey
 
 class PipelineBuilder {
-    private var steps: MutableList<TransformationProducer> = mutableListOf()
+    private var steps: MutableList<PipelineItem> = mutableListOf()
+
+    private fun step(step: TransformationProducer, optional: Boolean) {
+        steps.add(PipelineItem(step, optional))
+    }
 
     fun step(step: TransformationProducer) {
-        steps.add(step)
+        step(step, false)
     }
 
     fun step(init: PlanBuilder.() -> Unit) {
-        step(plan(init))
+        step(plan(init), optional = false)
+    }
+
+    fun optionalStep(step: TransformationProducer) {
+        step(step, true)
+    }
+
+    fun optionalStep(init: PlanBuilder.() -> Unit) {
+        step(plan(init), optional = true)
     }
 
     fun buildPlan(): Pipeline {
@@ -62,7 +74,6 @@ class ContextSensitivePlanBuilder {
         if (this::defaultPlan.isInitialized) {
             throw IllegalStateException()
         }
-        val planBuilder = PlanBuilder()
         defaultPlan = plan
     }
 
@@ -76,7 +87,6 @@ class PlanBuilder {
     var explanationMaker: ExpressionMaker? = null
     var skillMakers: MutableList<ExpressionMaker> = mutableListOf()
     var pattern: Pattern? = null
-    var overridePattern: Pattern? = null
 
     private lateinit var plan: Plan
 
@@ -91,7 +101,6 @@ class PlanBuilder {
         setPlan(
             Plan(
                 ownPattern = pattern,
-                overridePattern = overridePattern,
                 stepsProducer = stepsProducer,
                 explanationMaker = explanationMaker,
                 skillMakers = skillMakers
