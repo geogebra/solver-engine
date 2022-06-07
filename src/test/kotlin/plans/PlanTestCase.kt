@@ -10,6 +10,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
+@DslMarker
+annotation class TestCaseBuilderMarker
+
 data class PathMappingPathsBuilder(val type: PathMappingType) {
     private var _fromPaths: List<Path> = emptyList()
     private var _toPaths: List<Path> = emptyList()
@@ -27,15 +30,17 @@ data class PathMappingPathsBuilder(val type: PathMappingType) {
     }
 }
 
+@TestCaseBuilderMarker
 open class PathMappingsCheck(mappings: PathMappingTree?, private val rootPath: Path) {
-    private val pathMappings: Sequence<PathMapping> = mappings?.pathMappings(rootPath) ?: emptySequence()
+    private val pathMappings: Sequence<PathMapping>
+        = mappings?.pathMappings(RootPath)?.map { it.relativeTo(rootPath) } ?: emptySequence()
 
-    var checkedMappings: Int? = null
+    private var checkedMappings: Int? = null
 
     private fun addPathMapping(type: PathMappingType, init: PathMappingPathsBuilder.() -> Unit) {
         val builder = PathMappingPathsBuilder(type)
         builder.init()
-        pathMappings.contains(builder.getPathMapping().relativeTo(rootPath))
+        assert(pathMappings.contains(builder.getPathMapping())) { "No such path mapping found" }
         checkedMappings = (checkedMappings ?: 0) + 1
     }
 
@@ -72,6 +77,7 @@ class MappedExpressionCheck(private val mappedExpression: MappedExpression, root
         }
 }
 
+@TestCaseBuilderMarker
 class MetadataCheck(private val rootPath: Path, private val keyChecker: (MetadataKey) -> MappedExpression) {
     private var checkedParams: Int? = null
     private var params: List<MappedExpression>? = null
@@ -180,11 +186,7 @@ class TransformationCheck(private val trans: Transformation?)
     }
 }
 
-fun testPlan(init: PlanTestCase.() -> Unit) {
-    val testCase = PlanTestCase()
-    testCase.init()
-}
-
+@TestCaseBuilderMarker
 class PlanTestCase {
     var context: Context = emptyContext
     lateinit var plan: Plan
@@ -198,4 +200,9 @@ class PlanTestCase {
         check.assert()
         check.finalize()
     }
+}
+
+fun testPlan(init: PlanTestCase.() -> Unit) {
+    val testCase = PlanTestCase()
+    testCase.init()
 }
