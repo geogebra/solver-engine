@@ -1,11 +1,14 @@
 package plans
 
-import expressionmakers.move
+import engine.expressionmakers.move
+import engine.patterns.AnyPattern
+import engine.plans.Pipeline
+import engine.plans.PipelineItem
+import engine.plans.Plan
+import engine.rules.Rule
+import engine.steps.metadata.MetadataKey
+import engine.steps.metadata.makeMetadata
 import org.junit.jupiter.api.Test
-import patterns.AnyPattern
-import rules.Rule
-import steps.metadata.MetadataKey
-import steps.metadata.makeMetadata
 import kotlin.test.assertFails
 
 class PlanTestCaseTest {
@@ -266,7 +269,7 @@ class PlanTestCaseTest {
             check {
                 step {
                     skill {
-                       key = testRuleSkillMetadataKey1
+                        key = testRuleSkillMetadataKey1
 
                         param {
                             move {
@@ -281,8 +284,8 @@ class PlanTestCaseTest {
                     }
                 }
 
-                step {  }
-                step {  }
+                step { }
+                step { }
             }
         }
 
@@ -302,8 +305,8 @@ class PlanTestCaseTest {
                         }
                     }
 
-                    step {  }
-                    step {  }
+                    step { }
+                    step { }
                 }
             }
         }

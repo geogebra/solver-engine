@@ -1,5 +1,6 @@
 package rules
 
+import methods.rules.removeBracketsSum
 import java.util.stream.Stream
 
 object RemoveBracketsTest : RuleTest() {

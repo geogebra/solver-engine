@@ -1,5 +1,7 @@
 package rules
 
+import methods.rules.fractionToMixedNumber
+import methods.rules.splitMixedNumber
 import java.util.stream.Stream
 
 object MixedNumbersTest : RuleTest() {

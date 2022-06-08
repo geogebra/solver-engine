@@ -1,5 +1,6 @@
 package rules
 
+import methods.rules.*
 import java.util.stream.Stream
 
 object IntegerFractionsTest : RuleTest() {

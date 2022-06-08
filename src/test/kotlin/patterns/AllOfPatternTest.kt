@@ -1,9 +1,13 @@
 package patterns
 
-import expressions.RootPath
-import expressions.Subexpression
-import expressions.parsePath
-import expressions.xp
+import engine.expressions.RootPath
+import engine.expressions.Subexpression
+import engine.expressions.parsePath
+import engine.expressions.xp
+import engine.patterns.FixedPattern
+import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.allOf
+import engine.patterns.sumContaining
 import org.junit.jupiter.api.Test
 import parser.parseExpression
 import kotlin.test.assertEquals

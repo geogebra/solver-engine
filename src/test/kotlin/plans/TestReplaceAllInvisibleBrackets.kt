@@ -1,12 +1,13 @@
 package plans
 
+import engine.steps.metadata.PlanExplanation
+import methods.plans.replaceAllInvisibleBrackets
 import org.junit.jupiter.api.Test
-import steps.metadata.PlanExplanation
 
 class TestReplaceAllInvisibleBrackets {
 
     @Test
-    fun simpleTest() = testPlan {
+    fun testReplaceAllInvisibleBracketsSimple() = testPlan {
         plan = replaceAllInvisibleBrackets
         inputExpr = "3*-4"
         check {
@@ -19,7 +20,7 @@ class TestReplaceAllInvisibleBrackets {
     }
 
     @Test
-    fun testNoTransformation() = testPlan {
+    fun testReplaceAllInvisibleBracketsNoTransformation() = testPlan {
         plan = replaceAllInvisibleBrackets
         inputExpr = "[1/3 -4x]"
 
@@ -29,7 +30,7 @@ class TestReplaceAllInvisibleBrackets {
     }
 
     @Test
-    fun harderTest() = testPlan {
+    fun testReplaceAllInvisibleBracketsNested() = testPlan {
         plan = replaceAllInvisibleBrackets
         inputExpr = "[3 * -4/1 --+-2]"
 

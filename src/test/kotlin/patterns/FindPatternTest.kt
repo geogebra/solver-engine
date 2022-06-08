@@ -1,7 +1,10 @@
 package patterns
 
-import expressions.RootPath
-import expressions.Subexpression
+import engine.expressions.RootPath
+import engine.expressions.Subexpression
+import engine.patterns.FindPattern
+import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.productContaining
 import org.junit.jupiter.api.Test
 import parser.parseExpression
 import kotlin.test.assertContentEquals

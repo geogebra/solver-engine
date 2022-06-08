@@ -1,8 +1,9 @@
 package rules
 
-import context.emptyContext
-import expressions.RootPath
-import expressions.Subexpression
+import engine.context.emptyContext
+import engine.expressions.RootPath
+import engine.expressions.Subexpression
+import engine.rules.Rule
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import parser.parseExpression

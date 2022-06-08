@@ -1,5 +1,6 @@
 package rules
 
+import methods.rules.cancelInAFraction
 import java.util.stream.Stream
 
 object AlgebraicFractionsTest : RuleTest() {

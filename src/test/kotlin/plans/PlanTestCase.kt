@@ -1,11 +1,12 @@
 package plans
 
-import context.Context
-import context.emptyContext
-import expressions.*
+import engine.context.Context
+import engine.context.emptyContext
+import engine.expressions.*
+import engine.plans.Plan
+import engine.steps.Transformation
+import engine.steps.metadata.MetadataKey
 import parser.parseExpression
-import steps.Transformation
-import steps.metadata.MetadataKey
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -32,8 +33,8 @@ data class PathMappingPathsBuilder(val type: PathMappingType) {
 
 @TestCaseBuilderMarker
 open class PathMappingsCheck(mappings: PathMappingTree?, private val rootPath: Path) {
-    private val pathMappings: Sequence<PathMapping>
-        = mappings?.pathMappings(RootPath)?.map { it.relativeTo(rootPath) } ?: emptySequence()
+    private val pathMappings: Sequence<PathMapping> =
+        mappings?.pathMappings(RootPath)?.map { it.relativeTo(rootPath) } ?: emptySequence()
 
     private var checkedMappings: Int? = null
 
@@ -67,8 +68,8 @@ open class PathMappingsCheck(mappings: PathMappingTree?, private val rootPath: P
     }
 }
 
-class MappedExpressionCheck(private val mappedExpression: MappedExpression, rootPath: Path)
-    : PathMappingsCheck(mappedExpression.mappings, rootPath) {
+class MappedExpressionCheck(private val mappedExpression: MappedExpression, rootPath: Path) :
+    PathMappingsCheck(mappedExpression.mappings, rootPath) {
 
     var expr: String?
         get() = null
@@ -109,8 +110,8 @@ class MetadataCheck(private val rootPath: Path, private val keyChecker: (Metadat
     }
 }
 
-class TransformationCheck(private val trans: Transformation?)
-    : PathMappingsCheck(trans?.toExpr?.mappings, trans?.fromExpr?.path ?: RootPath) {
+class TransformationCheck(private val trans: Transformation?) :
+    PathMappingsCheck(trans?.toExpr?.mappings, trans?.fromExpr?.path ?: RootPath) {
     var fromExpr: String?
         get() = null
         set(value) {
@@ -136,7 +137,11 @@ class TransformationCheck(private val trans: Transformation?)
         assertNotNull(trans)
         val explanationCheck = MetadataCheck(trans.fromExpr.path) {
             assertNotNull(trans.explanation, "Explanation is empty")
-            assertEquals(it, (trans.explanation!!.expr.operator as MetadataOperator).key, "Explanation key does not match")
+            assertEquals(
+                it,
+                (trans.explanation!!.expr.operator as MetadataOperator).key,
+                "Explanation key does not match"
+            )
             trans.explanation!!
         }
 

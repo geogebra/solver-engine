@@ -1,9 +1,10 @@
 package patterns
 
-import expressions.NaryOperator
-import expressions.RootPath
-import expressions.Subexpression
-import expressions.xp
+import engine.expressions.NaryOperator
+import engine.expressions.RootPath
+import engine.expressions.Subexpression
+import engine.expressions.xp
+import engine.patterns.*
 import org.junit.jupiter.api.Test
 import parser.parseExpression
 import kotlin.test.assertContentEquals
