@@ -59,6 +59,19 @@ class ParserTest {
                     xp(3),
                     invisibleBracketOf(plusOf(invisibleBracketOf(negOf(invisibleBracketOf(plusOf(xp(2)))))))
                 )
+            ),
+            TestCase(
+                "{.1 + [.2 * (3 - 6).].}", curlyBracketOf(
+                    sumOf(
+                        xp(1), squareBracketOf(
+                            productOf(
+                                xp(2), bracketOf(
+                                    sumOf(xp(3), negOf(xp(6)))
+                                )
+                            )
+                        )
+                    )
+                )
             )
         )
     }

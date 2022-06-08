@@ -93,7 +93,7 @@ data class NumericOp2(
 }
 
 fun makeBracketOf(operand: ExpressionMaker) =
-    OperatorExpressionMaker(UnaryOperator.Bracket, listOf(operand))
+    OperatorExpressionMaker(BracketOperator.Bracket, listOf(operand))
 
 fun makeFractionOf(numerator: ExpressionMaker, denominator: ExpressionMaker) =
     OperatorExpressionMaker(BinaryOperator.Fraction, listOf(numerator, denominator))

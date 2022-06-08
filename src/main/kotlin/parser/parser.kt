@@ -106,8 +106,16 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
         return makeExpression(BinaryOperator.Power, visit(ctx!!.base), visit(ctx.exp))
     }
 
-    override fun visitBracket(ctx: ExpressionParser.BracketContext?): Expression {
-        return makeExpression(UnaryOperator.Bracket, visit(ctx!!.expr()))
+    override fun visitRoundBracket(ctx: ExpressionParser.RoundBracketContext?): Expression {
+        return makeExpression(BracketOperator.Bracket, visit(ctx!!.expr()))
+    }
+
+    override fun visitSquareBracket(ctx: ExpressionParser.SquareBracketContext?): Expression {
+        return makeExpression(BracketOperator.SquareBracket, visit(ctx!!.expr()))
+    }
+
+    override fun visitCurlyBracket(ctx: ExpressionParser.CurlyBracketContext?): Expression {
+        return makeExpression(BracketOperator.CurlyBracket, visit(ctx!!.expr()))
     }
 
     override fun visitMixedNumber(ctx: ExpressionParser.MixedNumberContext?): Expression {

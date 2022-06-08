@@ -42,6 +42,38 @@ class TestSimplifyIntegerExpression {
     }
 
     @Test
+    fun testWithDifferentBrackets() = testPlan {
+        plan = simplifyArithmeticExpression
+        inputExpr = "1 + {.2 + [.3 + (4 + 5).].}"
+
+        check {
+            toExpr = "15"
+
+            step {
+                toExpr = "1 + {.2 + [.3 + (9).].}"
+            }
+            step {
+                toExpr = "1 + {.2 + [.3 + 9.].}"
+            }
+            step {
+                toExpr = "1 + {.2 + [.12.].}"
+            }
+            step {
+                toExpr = "1 + {.2 + 12.}"
+            }
+            step {
+                toExpr = "1 + {.14.}"
+            }
+            step {
+                toExpr = "1 + 14"
+            }
+            step {
+                toExpr = "15"
+            }
+        }
+    }
+
+    @Test
     fun testAddMultiplyDivide() = testPlan {
         plan = simplifyArithmeticExpression
         inputExpr = "3*4*5:6 + 6 + 7"

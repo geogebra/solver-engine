@@ -7,6 +7,7 @@ interface Operator {
     val precedence: Int
     val arity: Int
 
+    fun equiv(other: Operator) = this == other
     fun nthChildAllowed(n: Int, op: Operator): Boolean
 
     fun childrenAllowed(ops: Iterable<Operator>): Boolean {
@@ -59,14 +60,33 @@ object MixedNumberOperator : Operator {
     override fun <T> readableString(children: List<T>) = "[${children[0]} ${children[1]}/${children[2]}]"
 }
 
+enum class BracketOperator(private val opening: String, private val closing: String) : Operator {
+    Bracket("(", ")"),
+    SquareBracket("[.", ".]"),
+    CurlyBracket("{.", ".}");
+
+    override val precedence = 100
+    override val arity = 1
+
+    override fun nthChildAllowed(n: Int, op: Operator): Boolean {
+        require(n == 0)
+        return true
+    }
+
+    override fun <T> readableString(children: List<T>): String {
+        require(children.size == 1)
+        return opening + children[0] + closing
+    }
+
+    override fun equiv(other: Operator): Boolean {
+        return other is BracketOperator
+    }
+}
+
 enum class UnaryOperator(override val precedence: Int) : Operator {
     InvisibleBracket(100) {
         override fun childAllowed(op: Operator) = true
         override fun <T> readableString(child: T) = "{$child}"
-    },
-    Bracket(100) {
-        override fun childAllowed(op: Operator) = true
-        override fun <T> readableString(child: T) = "($child)"
     },
     DivideBy(90) {
         override fun childAllowed(op: Operator) = op.precedence > NaryOperator.Product.precedence
@@ -121,7 +141,7 @@ enum class BinaryOperator(override val precedence: Int) : Operator {
     },
     Power(60) {
         override fun leftChildAllowed(op: Operator) =
-            op.precedence >= UnaryOperator.Bracket.precedence
+            op.precedence >= BracketOperator.Bracket.precedence
 
         override fun rightChildAllowed(op: Operator) = true
 

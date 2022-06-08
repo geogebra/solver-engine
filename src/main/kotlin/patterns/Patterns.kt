@@ -11,7 +11,7 @@ interface PathProvider {
 
     fun checkPreviousMatch(expr: Expression, match: Match): Boolean {
         val previous = getBoundExpr(match)
-        return previous == null || previous == expr
+        return previous == null || previous.equiv(expr)
     }
 }
 
@@ -32,7 +32,7 @@ data class OperatorPattern(val operator: Operator, val childPatterns: List<Patte
     }
 
     override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
-        if (subexpression.expr.operator != operator ||
+        if (!subexpression.expr.operator.equiv(operator) ||
             subexpression.expr.operands.size != childPatterns.size ||
             !checkPreviousMatch(subexpression.expr, match)
         ) {
@@ -50,8 +50,8 @@ data class OperatorPattern(val operator: Operator, val childPatterns: List<Patte
 data class FixedPattern(val expr: Expression) : Pattern {
 
     override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
-        return when (subexpression.expr) {
-            expr -> sequenceOf(match.newChild(this, subexpression))
+        return when {
+            subexpression.expr.equiv(expr) -> sequenceOf(match.newChild(this, subexpression))
             else -> emptySequence()
         }
     }
@@ -236,7 +236,7 @@ fun divideBy(divisor: Pattern) =
 fun powerOf(base: Pattern, exponent: Pattern) =
     OperatorPattern(BinaryOperator.Power, listOf(base, exponent))
 
-fun bracketOf(expr: Pattern) = OperatorPattern(UnaryOperator.Bracket, listOf(expr))
+fun bracketOf(expr: Pattern) = OperatorPattern(BracketOperator.Bracket, listOf(expr))
 
 fun mixedNumberOf(
     integer: UnsignedIntegerPattern = UnsignedIntegerPattern(),
