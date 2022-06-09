@@ -41,10 +41,19 @@ data class FlattenedNaryExpressionMaker(val operator: NaryOperator, val operands
 data class RestExpressionMaker(val pattern: PartialNaryPattern) : ExpressionMaker {
     override fun makeMappedExpression(match: Match): MappedExpression {
         val subexpressions = pattern.getRestSubexpressions(match)
-        return MappedExpression(
-            Expression(pattern.operator, subexpressions.map { it.expr }),
-            PathMappingParent(subexpressions.map { PathMappingLeaf(listOf(it.path), PathMappingType.Move) })
-        )
+        return when (subexpressions.size) {
+            1 -> MappedExpression(
+                subexpressions[0].expr,
+                PathMappingLeaf(
+                    listOf(subexpressions[0].path),
+                    PathMappingType.Move
+                )
+            )
+            else -> MappedExpression(
+                Expression(pattern.operator, subexpressions.map {it.expr}),
+                PathMappingParent(subexpressions.map{PathMappingLeaf(listOf(it.path), PathMappingType.Move)})
+            )
+        }
     }
 }
 

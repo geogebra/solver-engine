@@ -41,7 +41,7 @@ val addLikeFractions = run {
     )
 }
 
-val subtractLikeFraction = run {
+val subtractLikeFractions = run {
     val num1 = UnsignedIntegerPattern()
     val num2 = UnsignedIntegerPattern()
     val denom = UnsignedIntegerPattern()
