@@ -7,10 +7,7 @@ import engine.patterns.sumContaining
 import engine.plans.plan
 import engine.steps.metadata.PlanExplanation
 import engine.steps.metadata.Skill
-import methods.rules.addLikeFractions
-import methods.rules.commonDenominator
-import methods.rules.evaluateIntegerProduct
-import methods.rules.evaluateSignedIntegerAddition
+import methods.rules.*
 
 val addFractions = plan {
     val f1 = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
@@ -34,6 +31,35 @@ val addFractions = plan {
             whilePossible {
                 deeply(evaluateSignedIntegerAddition)
             }
+        }
+    }
+}
+
+val simplifyNumericFraction = plan {
+    val f = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
+
+    pattern = f
+
+    explanation(PlanExplanation.SimplifyNumericFraction, move(f))
+
+    skill(Skill.SimplifyNumericFraction, move(f))
+
+    firstOf {
+        option(simplifyFractionToInteger)
+        option {
+            pipeline {
+                step(findCommonFactorInFraction)
+                step(cancelInAFraction)
+            }
+        }
+    }
+}
+
+val addFractionsAndSimplify = plan {
+    pipeline {
+        step(addFractions)
+        optionalStep {
+            deeply(simplifyNumericFraction)
         }
     }
 }

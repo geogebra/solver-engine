@@ -20,5 +20,10 @@ object IntegerFractionsTest : RuleTest() {
 
         RuleTestCase("[4/-5]", negativeDenominator, "-[4/5]"),
         RuleTestCase("[4/5]", negativeDenominator, null),
+
+        RuleTestCase("[6/10]", findCommonFactorInFraction, "[2 * 3/2 * 5]"),
+        RuleTestCase("[5/7]", findCommonFactorInFraction, null),
+        RuleTestCase("[700/500]", findCommonFactorInFraction, "[100* 7/100 * 5"),
+        RuleTestCase("[1/10]", findCommonFactorInFraction, null),
     )
 }

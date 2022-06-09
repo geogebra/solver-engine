@@ -8,5 +8,6 @@ enum class PlanExplanation : MetadataKey {
     SimplifyIntegerSum,
     SimplifyIntegerProduct,
 
+    SimplifyNumericFraction,
     AddFractions,
 }

@@ -320,13 +320,13 @@ data class OneOfPattern(val options: List<Pattern>) : Pattern {
 fun oneOf(vararg options: Pattern) = OneOfPattern(options.asList())
 
 data class AllOfPattern(val patterns: List<Pattern>) : Pattern {
-
     init {
         require(patterns.isNotEmpty())
     }
 
+    override val key = patterns[0]
+    
     override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
-
         fun rec(i: Int, m: Match): Sequence<Match> {
             if (i == patterns.size - 1) {
                 return patterns[i].findMatches(subexpression, m)

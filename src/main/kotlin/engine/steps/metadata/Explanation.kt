@@ -30,4 +30,6 @@ enum class Explanation : MetadataKey {
     SubtractLikeFractions,
     BringToCommonDenominator,
     CancelCommonTerms,
+    FindCommonFactorInFraction,
+    SimplifyFractionToInteger,
 }

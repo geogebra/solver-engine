@@ -26,5 +26,4 @@ class AllOfPatternTest {
         assertEquals(xp(1), match.getBoundExpr(n))
         assertEquals(match.getBoundPaths(x), listOf(parsePath("./1")))
     }
-
 }

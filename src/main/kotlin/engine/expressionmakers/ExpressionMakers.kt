@@ -50,8 +50,8 @@ data class RestExpressionMaker(val pattern: PartialNaryPattern) : ExpressionMake
                 )
             )
             else -> MappedExpression(
-                Expression(pattern.operator, subexpressions.map {it.expr}),
-                PathMappingParent(subexpressions.map{PathMappingLeaf(listOf(it.path), PathMappingType.Move)})
+                Expression(pattern.operator, subexpressions.map { it.expr }),
+                PathMappingParent(subexpressions.map { PathMappingLeaf(listOf(it.path), PathMappingType.Move) })
             )
         }
     }

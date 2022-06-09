@@ -7,6 +7,7 @@ import engine.rules.Rule
 import engine.steps.metadata.Explanation
 import engine.steps.metadata.Skill
 import engine.steps.metadata.makeMetadata
+import java.math.BigInteger
 
 val convertIntegerToFraction = run {
     val integer = UnsignedIntegerPattern()
@@ -96,3 +97,38 @@ val negativeDenominator = run {
     )
 }
 
+val simplifyFractionToInteger = run {
+    val numerator = UnsignedIntegerPattern()
+    val denominator = UnsignedIntegerPattern()
+
+    val frac = fractionOf(numerator, denominator)
+
+    Rule(
+        pattern = ConditionPattern(frac, numericCondition(numerator, denominator) { n, d -> n.mod(d).signum() == 0 }),
+        resultMaker = makeNumericOp(numerator, denominator) { n, d -> n / d },
+        explanationMaker = makeMetadata(Explanation.SimplifyFractionToInteger),
+    )
+}
+
+val findCommonFactorInFraction = run {
+    val numerator = UnsignedIntegerPattern()
+    val denominator = UnsignedIntegerPattern()
+
+    val frac = fractionOf(numerator, denominator)
+
+    val gcd = makeNumericOp(numerator, denominator) { n, d -> n.gcd(d) }
+    val numeratorOverGcd = makeNumericOp(numerator, denominator) { n, d -> n / n.gcd(d) }
+    val denominatorOverGcd = makeNumericOp(numerator, denominator) { n, d -> d / n.gcd(d) }
+
+    Rule(
+        pattern = ConditionPattern(
+            frac,
+            numericCondition(numerator, denominator) { n, d -> n.gcd(d) != BigInteger.ONE }
+        ),
+        resultMaker = makeFractionOf(
+            makeProductOf(gcd, numeratorOverGcd),
+            makeProductOf(gcd, denominatorOverGcd),
+        ),
+        explanationMaker = makeMetadata(Explanation.FindCommonFactorInFraction),
+    )
+}
