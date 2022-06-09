@@ -1,7 +1,6 @@
 package rules
 
-import methods.rules.eliminateOneInProduct
-import methods.rules.evaluateIntegerProduct
+import methods.rules.*
 import java.util.stream.Stream
 
 object IntegerArithmeticTest : RuleTest() {

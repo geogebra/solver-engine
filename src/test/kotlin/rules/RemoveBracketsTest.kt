@@ -1,5 +1,7 @@
 package rules
 
+import methods.rules.removeBracketAroundSignedIntegerInSum
+import methods.rules.removeBracketAroundUnsignedInteger
 import methods.rules.removeBracketsSum
 import java.util.stream.Stream
 
