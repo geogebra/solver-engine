@@ -3,6 +3,8 @@ package engine.steps.metadata
 enum class Explanation : MetadataKey {
     /* Basic algebraic rules */
     SimplifyDoubleMinus,
+    SimplifyTwoNegativeFactorsInProduct,
+    MoveSignOfNegativeFactorOutOfProduct,
 
     /* Handling brackets */
     ReplaceInvisibleBrackets,
@@ -25,11 +27,14 @@ enum class Explanation : MetadataKey {
 
     /* Fractions */
     SimplifyNegativeInDenominator,
+    SimplifyNegativeInNumerator,
+    SimplifyNegativeInNumeratorAndDenominator,
     ConvertIntegerToFraction,
     AddLikeFractions,
     SubtractLikeFractions,
     BringToCommonDenominator,
     CancelCommonTerms,
+    MultiplyFractions,
     FindCommonFactorInFraction,
     SimplifyFractionToInteger,
 }

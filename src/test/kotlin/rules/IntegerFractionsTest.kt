@@ -25,5 +25,7 @@ object IntegerFractionsTest : RuleTest() {
         RuleTestCase("[5/7]", findCommonFactorInFraction, null),
         RuleTestCase("[700/500]", findCommonFactorInFraction, "[100* 7/100 * 5"),
         RuleTestCase("[1/10]", findCommonFactorInFraction, null),
+
+        RuleTestCase("[2/3] * [4/5]", multiplyPositiveFractions, "[2*4/3*5]")
     )
 }

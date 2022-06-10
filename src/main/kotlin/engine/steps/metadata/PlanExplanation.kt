@@ -10,4 +10,6 @@ enum class PlanExplanation : MetadataKey {
 
     SimplifyNumericFraction,
     AddFractions,
+    MultiplyFractions,
+
 }

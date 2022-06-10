@@ -4,5 +4,6 @@ enum class Skill : MetadataKey {
     NumericLCM,
     DivisionWithRemainder,
     AddFractions,
+    MultiplyFractions,
     SimplifyNumericFraction,
 }

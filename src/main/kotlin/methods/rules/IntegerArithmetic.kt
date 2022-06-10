@@ -8,17 +8,6 @@ import engine.steps.metadata.Explanation
 import engine.steps.metadata.makeMetadata
 import java.math.BigInteger
 
-val eliminateZeroInSum = run {
-    val zero = FixedPattern(xp(0))
-    val pattern = sumContaining(zero)
-
-    Rule(
-        pattern = pattern,
-        resultMaker = cancel(zero, restOf(pattern)),
-        explanationMaker = makeMetadata(Explanation.EliminateZeroInSum, move(zero)),
-    )
-}
-
 val eliminateOneInProduct = run {
     val one = FixedPattern(xp(1))
     val pattern = productContaining(one)
@@ -27,17 +16,6 @@ val eliminateOneInProduct = run {
         pattern = pattern,
         resultMaker = cancel(one, restOf(pattern)),
         explanationMaker = makeMetadata(Explanation.EliminateOneInProduct, move(one)),
-    )
-}
-
-val zeroInProduct = run {
-    val zero = FixedPattern(xp(0))
-    val pattern = productContaining(zero)
-
-    Rule(
-        pattern = pattern,
-        resultMaker = transform(zero),
-        explanationMaker = makeMetadata(Explanation.ProductContainingZero, move(zero))
     )
 }
 
@@ -123,16 +101,5 @@ val evaluateSignedIntegerPower = run {
         pattern = power,
         resultMaker = makeNumericOp(base, exponent) { n1, n2 -> n1.pow(n2.toInt()) },
         explanationMaker = makeMetadata(Explanation.EvaluateIntegerPower, move(base), move(power))
-    )
-}
-
-val simplifyDoubleNeg = run {
-    val value = AnyPattern()
-    val pattern = negOf(bracketOf(negOf(value)))
-
-    Rule(
-        pattern = pattern,
-        resultMaker = move(value),
-        explanationMaker = makeMetadata(Explanation.SimplifyDoubleMinus, move(value))
     )
 }

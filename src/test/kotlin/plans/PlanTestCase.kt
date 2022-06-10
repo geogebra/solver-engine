@@ -200,6 +200,7 @@ class PlanTestCase {
     fun check(assert: TransformationCheck.() -> Unit) {
         val expr = parseExpression(inputExpr)
         val trans = plan.tryExecute(context, Subexpression(RootPath, expr))
+        trans?.prettyPrint()
 
         val check = TransformationCheck(trans)
         check.assert()

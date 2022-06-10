@@ -3,8 +3,8 @@ package plans
 import engine.steps.metadata.Explanation
 import engine.steps.metadata.PlanExplanation
 import engine.steps.metadata.Skill
-import methods.plans.addFractions
-import methods.plans.addFractionsAndSimplify
+import methods.plans.addPositiveFractions
+import methods.plans.combineFractionsInExpression
 import methods.plans.simplifyNumericFraction
 import org.junit.jupiter.api.Test
 
@@ -12,7 +12,7 @@ class TestAddFractions {
 
     @Test
     fun addLikeFractionsTest() = testPlan {
-        plan = addFractions
+        plan = addPositiveFractions
         inputExpr = "[1/5] + [2/5]"
 
         check {
@@ -62,7 +62,7 @@ class TestAddFractions {
 
     @Test
     fun addUnlikeFractionsTest() = testPlan {
-        plan = addFractions
+        plan = addPositiveFractions
         inputExpr = "[1/3] + [2/5]"
 
         check {
@@ -88,11 +88,81 @@ class TestAddFractions {
 
     @Test
     fun testAddFractionsWithCommonFactor() = testPlan {
-        plan = addFractions
+        plan = addPositiveFractions
         inputExpr = "[1 / 4] + [1 / 4]"
 
         check {
-            toExpr = "[2 /4 ]"
+            toExpr = "[1 / 2]"
+        }
+    }
+
+
+    @Test
+    fun testSumSimplifies() = testPlan {
+        plan = addPositiveFractions
+        inputExpr = "[1 / 4] + [1 / 4]"
+
+        check {
+            toExpr = "[1 / 2]"
+
+            step {
+                toExpr = "[1 + 1 / 4]"
+            }
+
+            step {
+                toExpr = "[2 / 4]"
+            }
+
+            step {
+                toExpr = "[1 / 2]"
+            }
+        }
+    }
+
+    @Test
+    fun testSumIsInteger() = testPlan {
+        plan = addPositiveFractions
+        inputExpr = "[3 / 5] + [7 / 5]"
+
+        check {
+            toExpr = "2"
+
+            step {
+                toExpr = "[3 + 7 / 5]"
+            }
+
+            step {
+                toExpr = "[10 / 5]"
+            }
+
+            step {
+                toExpr = "2"
+            }
+        }
+    }
+
+    @Test
+    fun testSumDoesNotSimplify() = testPlan {
+        plan = addPositiveFractions
+        inputExpr = "[2 / 5] + [1 / 3]"
+
+        check {
+
+            step {
+                toExpr = "[2 * 3 / 5 * 3] + [1 * 5 / 3 * 5]"
+            }
+
+            step {
+                toExpr = "[6 / 15] + [5 / 15]"
+            }
+
+            step {
+                toExpr = "[6 + 5 / 15]"
+            }
+            
+            step {
+                toExpr = "[11 / 15]"
+            }
         }
     }
 }
@@ -142,52 +212,62 @@ class TestSimplifyNumericFraction {
     }
 }
 
-class TestAddFractionsAndSimplify {
+class TestCombineFractionsInExpression {
 
     @Test
-    fun testSumSimplifies() = testPlan {
-        plan = addFractionsAndSimplify
-        inputExpr = "[1 / 4] + [1 / 4]"
+    fun simpleTest() = testPlan {
+        plan = combineFractionsInExpression
+        inputExpr = "[1 / 3] + [2 / 3] * [1 / 2]"
 
         check {
-            toExpr = "[1 / 2]"
+            toExpr = "[2 / 3]"
 
             step {
-                toExpr = "[2 / 4]"
+                toExpr = "[1 / 3] + [1 / 3]"
             }
 
             step {
-                toExpr = "[1 / 2]"
+                toExpr = "[2 / 3]"
             }
         }
     }
 
     @Test
-    fun testSumIsInteger() = testPlan {
-        plan = addFractionsAndSimplify
-        inputExpr = "[3 / 5] + [7 / 5]"
+    fun testWithNegativesInFractions() = testPlan {
+        plan = combineFractionsInExpression
+        inputExpr = "[-1 / 6] * [2 / -5]"
 
         check {
-            toExpr = "2"
+            toExpr = "[1 / 15]"
 
             step {
-                toExpr = "[10 / 5]"
+                toExpr = "[1 / 6] * [2 / 5]"
             }
 
             step {
-                toExpr = "2"
+                toExpr = "[1 / 15]"
             }
         }
     }
 
     @Test
-    fun testSumDoesNotSimplify() = testPlan {
-        plan = addFractionsAndSimplify
-        inputExpr = "[2 / 5] + [1 / 3]"
+    fun testWithMoreNegativesInFractions() = testPlan {
+        plan = combineFractionsInExpression
+        inputExpr = "(-[1 / 3]) * [-1 / 4] * [3 / -2]"
 
         check {
+            toExpr = "-[1 / 8]"
+
             step {
-                toExpr = "[11 / 15]"
+                toExpr = "- [1 / 3] * [1 / 4] * [3 / 2]"
+            }
+
+            step {
+                toExpr = "- [1 / 12] * [3 / 2]"
+            }
+
+            step {
+                toExpr = "-[1 / 8]"
             }
         }
     }

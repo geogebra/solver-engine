@@ -132,3 +132,52 @@ val findCommonFactorInFraction = run {
         explanationMaker = makeMetadata(Explanation.FindCommonFactorInFraction),
     )
 }
+
+val negativeNumerator = run {
+    val numerator = UnsignedIntegerPattern()
+    val denominator = UnsignedIntegerPattern()
+
+    val pattern = fractionOf(negOf(numerator), denominator)
+
+    Rule(
+        pattern = pattern,
+        resultMaker = makeNegOf(makeFractionOf(move(numerator), move(denominator))),
+        explanationMaker = makeMetadata(Explanation.SimplifyNegativeInNumerator, move(pattern)),
+    )
+}
+
+
+val negativeNumeratorAndDenominator = run {
+    val numerator = UnsignedIntegerPattern()
+    val denominator = UnsignedIntegerPattern()
+
+    val pattern = fractionOf(negOf(numerator), negOf(denominator))
+
+    Rule(
+        pattern = pattern,
+        resultMaker = makeFractionOf(move(numerator), move(denominator)),
+        explanationMaker = makeMetadata(Explanation.SimplifyNegativeInNumeratorAndDenominator, move(pattern)),
+    )
+}
+
+val multiplyPositiveFractions = run {
+    val num1 = UnsignedIntegerPattern()
+    val num2 = UnsignedIntegerPattern()
+    val denom1 = UnsignedIntegerPattern()
+    val denom2 = UnsignedIntegerPattern()
+    val f1 = fractionOf(num1, denom1)
+    val f2 = fractionOf(num2, denom2)
+    val product = productContaining(f1, f2)
+
+    Rule(
+        pattern = product,
+        resultMaker = substituteIn(
+            product,
+            makeFractionOf(
+                makeProductOf(move(num1), move(num2)),
+                makeProductOf(move(denom1), move(denom2))
+            ),
+        ),
+        explanationMaker = makeMetadata(Explanation.MultiplyFractions),
+    )
+}
