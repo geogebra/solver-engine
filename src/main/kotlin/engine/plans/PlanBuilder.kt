@@ -2,11 +2,10 @@ package engine.plans
 
 import engine.context.ResourceData
 import engine.expressionmakers.ExpressionMaker
-import engine.expressionmakers.OperatorExpressionMaker
-import engine.expressions.MetadataOperator
 import engine.patterns.AnyPattern
 import engine.patterns.Pattern
 import engine.steps.metadata.MetadataKey
+import engine.steps.metadata.MetadataMaker
 
 class PipelineBuilder {
     private var steps: MutableList<PipelineItem> = mutableListOf()
@@ -84,8 +83,8 @@ class ContextSensitivePlanBuilder {
 
 class PlanBuilder {
 
-    var explanationMaker: ExpressionMaker? = null
-    var skillMakers: MutableList<ExpressionMaker> = mutableListOf()
+    var explanationMaker: MetadataMaker? = null
+    var skillMakers: MutableList<MetadataMaker> = mutableListOf()
     var pattern: Pattern? = null
 
     private lateinit var plan: Plan
@@ -109,11 +108,11 @@ class PlanBuilder {
     }
 
     fun explanation(explanationKey: MetadataKey, vararg params: ExpressionMaker) {
-        explanationMaker = OperatorExpressionMaker(MetadataOperator(explanationKey), params.asList())
+        explanationMaker = MetadataMaker(explanationKey, params.asList())
     }
 
     fun skill(skillKey: MetadataKey, vararg params: ExpressionMaker) {
-        skillMakers.add(OperatorExpressionMaker(MetadataOperator(skillKey), params.asList()))
+        skillMakers.add(MetadataMaker(skillKey, params.asList()))
     }
 
     fun pipeline(init: PipelineBuilder.() -> Unit) {

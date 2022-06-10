@@ -1,0 +1,12 @@
+title: MappedExpression
+type: object
+required:
+  - expression
+  - pathMappings
+properties:
+  expression:
+    type: string
+  pathMappings:
+    type: array
+    items:
+      $ref: 'path-mapping-schema.yaml'

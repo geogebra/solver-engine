@@ -1,0 +1,17 @@
+title: PathMapping
+type: object
+required:
+  - type
+  - fromPaths
+  - toPaths
+properties:
+  type:
+    type: string
+  fromPaths:
+    type: array
+    items:
+      type: string
+  toPaths:
+    type: array
+    items:
+      type: string

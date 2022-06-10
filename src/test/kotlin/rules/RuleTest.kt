@@ -1,5 +1,6 @@
 package rules
 
+import OutputValidator
 import engine.context.emptyContext
 import engine.expressions.RootPath
 import engine.expressions.Subexpression
@@ -10,7 +11,9 @@ import parser.parseExpression
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
+
 data class RuleTestCase(val inputExpr: String, val rule: Rule, val outputExpr: String?) {
+
     fun assert() {
         val expression = parseExpression(inputExpr)
         val step = rule.tryExecute(emptyContext, Subexpression(RootPath, expression))
@@ -18,7 +21,9 @@ data class RuleTestCase(val inputExpr: String, val rule: Rule, val outputExpr: S
             assertNull(step)
         } else {
             assertEquals(parseExpression(outputExpr), step?.toExpr?.expr, inputExpr)
-            step?.prettyPrint()
+            if (step != null) {
+                OutputValidator.validateAgainstSchema(step)
+            }
         }
     }
 }

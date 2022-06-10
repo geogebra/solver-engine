@@ -1,0 +1,28 @@
+title: Transformation
+type: object
+required:
+  - path
+  - fromExpr
+  - toExpr
+  - pathMappings
+properties:
+  path:
+    type: string
+  fromExpr:
+    type: string
+  toExpr:
+    type: string
+  pathMappings:
+    type: array
+    items:
+      $ref: 'path-mapping-schema.yaml'
+  explanation:
+    $ref: 'metadata-schema.yaml'
+  skills:
+    type: array
+    items:
+      $ref: 'metadata-schema.yaml'
+  steps:
+    type: array
+    items:
+      $recursiveRef: '#'

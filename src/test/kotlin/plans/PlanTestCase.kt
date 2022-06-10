@@ -1,10 +1,12 @@
 package plans
 
+import OutputValidator
 import engine.context.Context
 import engine.context.emptyContext
 import engine.expressions.*
 import engine.plans.Plan
 import engine.steps.Transformation
+import engine.steps.metadata.Metadata
 import engine.steps.metadata.MetadataKey
 import parser.parseExpression
 import kotlin.test.assertEquals
@@ -79,18 +81,14 @@ class MappedExpressionCheck(private val mappedExpression: MappedExpression, root
 }
 
 @TestCaseBuilderMarker
-class MetadataCheck(private val rootPath: Path, private val keyChecker: (MetadataKey) -> MappedExpression) {
+class MetadataCheck(private val rootPath: Path, private val keyChecker: (MetadataKey) -> Metadata) {
     private var checkedParams: Int? = null
     private var params: List<MappedExpression>? = null
 
     var key: MetadataKey?
         get() = null
         set(value) {
-            val mappedExpression = keyChecker(value!!)
-
-            val paramExprs = mappedExpression.expr.operands
-            val paramMappings = mappedExpression.mappings.childList(paramExprs.size)
-            params = paramExprs.zip(paramMappings).map { (expr, mappings) -> MappedExpression(expr, mappings) }
+            params = keyChecker(value!!).mappedParams
         }
 
     fun param(assert: MappedExpressionCheck.() -> Unit) {
@@ -139,7 +137,7 @@ class TransformationCheck(private val trans: Transformation?) :
             assertNotNull(trans.explanation, "Explanation is empty")
             assertEquals(
                 it,
-                (trans.explanation!!.expr.operator as MetadataOperator).key,
+                trans.explanation!!.key,
                 "Explanation key does not match"
             )
             trans.explanation!!
@@ -153,7 +151,7 @@ class TransformationCheck(private val trans: Transformation?) :
         assertNotNull(trans)
 
         val skillCheck = MetadataCheck(trans.fromExpr.path) {
-            val skill = trans.skills.find { s -> (s.expr.operator as MetadataOperator).key == it }
+            val skill = trans.skills.find { s -> s.key == it }
             assertNotNull(skill, "No skill with given key found")
             skill
         }
@@ -200,11 +198,14 @@ class PlanTestCase {
     fun check(assert: TransformationCheck.() -> Unit) {
         val expr = parseExpression(inputExpr)
         val trans = plan.tryExecute(context, Subexpression(RootPath, expr))
-        trans?.prettyPrint()
 
         val check = TransformationCheck(trans)
         check.assert()
         check.finalize()
+
+        if (trans != null) {
+            OutputValidator.validateAgainstSchema(trans)
+        }
     }
 }
 

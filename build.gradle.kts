@@ -14,8 +14,10 @@ repositories {
 }
 
 dependencies {
+    implementation("com.fasterxml.jackson.jr:jackson-jr-objects:2.13.3")
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")
+    testImplementation("net.pwall.json:json-kotlin-schema:0.34")
     antlr("org.antlr:antlr4:4.10.1")
 }
 

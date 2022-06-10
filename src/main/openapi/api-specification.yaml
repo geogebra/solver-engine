@@ -1,0 +1,12 @@
+openapi: 3.0.3
+
+info:
+  title: "Specification for the GeoGebra Solver Engine API"
+  version: "1.0"
+
+paths:
+  /solve:
+    post:
+      responses:
+        "200":
+          description: "Solve successful"

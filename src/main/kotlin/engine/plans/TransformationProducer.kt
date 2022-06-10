@@ -3,10 +3,10 @@ package engine.plans
 import engine.context.Context
 import engine.context.Resource
 import engine.context.ResourceData
-import engine.expressionmakers.ExpressionMaker
 import engine.expressions.Subexpression
 import engine.patterns.*
 import engine.steps.Transformation
+import engine.steps.metadata.MetadataMaker
 
 interface TransformationProducer : StepsProducer {
     fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation?
@@ -26,8 +26,8 @@ interface TransformationProducer : StepsProducer {
 
 data class Plan(
     val ownPattern: Pattern? = null,
-    val explanationMaker: ExpressionMaker? = null,
-    val skillMakers: List<ExpressionMaker> = emptyList(),
+    val explanationMaker: MetadataMaker? = null,
+    val skillMakers: List<MetadataMaker> = emptyList(),
     val stepsProducer: StepsProducer
 ) : TransformationProducer {
 
@@ -46,8 +46,8 @@ data class Plan(
                 fromExpr = sub,
                 toExpr = sub.substitute(onlyStep.fromExpr.path, onlyStep.toExpr),
                 steps = onlyStep.steps,
-                explanation = explanationMaker?.makeMappedExpression(match),
-                skills = skillMakers.map { it.makeMappedExpression(match) }
+                explanation = explanationMaker?.makeMetadata(match),
+                skills = skillMakers.map { it.makeMetadata(match) }
             )
         }
 
@@ -56,8 +56,8 @@ data class Plan(
             fromExpr = sub,
             toExpr = sub.substitute(lastStep.fromExpr.path, lastStep.toExpr),
             steps = steps,
-            explanation = explanationMaker?.makeMappedExpression(match),
-            skills = skillMakers.map { it.makeMappedExpression(match) }
+            explanation = explanationMaker?.makeMetadata(match),
+            skills = skillMakers.map { it.makeMetadata(match) }
         )
     }
 }

@@ -7,12 +7,13 @@ import engine.patterns.Match
 import engine.patterns.Pattern
 import engine.plans.TransformationProducer
 import engine.steps.Transformation
+import engine.steps.metadata.MetadataMaker
 
 data class Rule(
     override val pattern: Pattern,
     val resultMaker: ExpressionMaker,
-    val explanationMaker: ExpressionMaker,
-    val skillMakers: List<ExpressionMaker> = emptyList(),
+    val explanationMaker: MetadataMaker,
+    val skillMakers: List<MetadataMaker> = emptyList(),
 ) : TransformationProducer {
 
     override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
@@ -21,8 +22,8 @@ data class Rule(
             sub,
             result,
             null,
-            explanationMaker.makeMappedExpression(match),
-            skillMakers.map { it.makeMappedExpression(match) },
+            explanationMaker.makeMetadata(match),
+            skillMakers.map { it.makeMetadata(match) },
         )
     }
 }

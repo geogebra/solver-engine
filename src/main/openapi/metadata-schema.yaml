@@ -1,0 +1,11 @@
+title: Metadata
+type: object
+required:
+  - key
+properties:
+  key:
+    type: string
+  params:
+    type: array
+    items:
+      $ref: 'mapped-expression-schema.yaml'
