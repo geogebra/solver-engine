@@ -1,12 +1,27 @@
 package methods.plans
 
 import engine.expressionmakers.move
-import engine.patterns.*
+import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.fractionOf
+import engine.patterns.optionalNegOf
+import engine.patterns.productContaining
+import engine.patterns.sumContaining
 import engine.plans.plan
 import engine.steps.metadata.PlanExplanation
 import engine.steps.metadata.Skill
-import methods.rules.*
-
+import methods.rules.addLikeFractions
+import methods.rules.cancelInAFraction
+import methods.rules.commonDenominator
+import methods.rules.findCommonFactorInFraction
+import methods.rules.moveSignOfNegativeFactorOutOfProduct
+import methods.rules.multiplyPositiveFractions
+import methods.rules.negativeDenominator
+import methods.rules.negativeNumerator
+import methods.rules.negativeNumeratorAndDenominator
+import methods.rules.simplifyDoubleNeg
+import methods.rules.simplifyDoubleNegBracket
+import methods.rules.simplifyFractionToInteger
+import methods.rules.simplifyProductWithTwoNegativeFactors
 
 val normalizeFractionSigns = plan {
     firstOf {
@@ -24,7 +39,6 @@ val normalizeSignsInProduct = plan {
         option(moveSignOfNegativeFactorOutOfProduct)
     }
 }
-
 
 val simplifyNumericFraction = plan {
     val f = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())

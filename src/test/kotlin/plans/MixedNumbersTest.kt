@@ -4,8 +4,8 @@ import engine.context.Context
 import engine.steps.metadata.Explanation
 import engine.steps.metadata.PlanExplanation
 import methods.plans.addMixedNumbers
-import methods.plans.convertMixedNumberToImproperFraction
 import methods.plans.addMixedNumbersByConverting
+import methods.plans.convertMixedNumberToImproperFraction
 import kotlin.test.Test
 
 class MixedNumbersTest {

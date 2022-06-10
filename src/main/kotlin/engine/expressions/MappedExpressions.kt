@@ -52,4 +52,3 @@ fun flattenedNaryMappedExpression(operator: NaryOperator, operands: List<MappedE
         PathMappingParent(mappingSets)
     )
 }
-

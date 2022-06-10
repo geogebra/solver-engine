@@ -3,7 +3,14 @@ package plans
 import OutputValidator
 import engine.context.Context
 import engine.context.emptyContext
-import engine.expressions.*
+import engine.expressions.MappedExpression
+import engine.expressions.Path
+import engine.expressions.PathMapping
+import engine.expressions.PathMappingTree
+import engine.expressions.PathMappingType
+import engine.expressions.RootPath
+import engine.expressions.Subexpression
+import engine.expressions.parsePath
 import engine.plans.Plan
 import engine.steps.Transformation
 import engine.steps.metadata.Metadata

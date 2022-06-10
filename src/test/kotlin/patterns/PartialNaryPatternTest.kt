@@ -4,7 +4,12 @@ import engine.expressions.NaryOperator
 import engine.expressions.RootPath
 import engine.expressions.Subexpression
 import engine.expressions.xp
-import engine.patterns.*
+import engine.patterns.AnyPattern
+import engine.patterns.PartialNaryPattern
+import engine.patterns.RootMatch
+import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.VariablePattern
+import engine.patterns.fractionOf
 import org.junit.jupiter.api.Test
 import parser.parseExpression
 import kotlin.test.assertContentEquals

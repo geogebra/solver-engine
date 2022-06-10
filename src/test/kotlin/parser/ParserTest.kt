@@ -1,6 +1,17 @@
 package parser
 
-import engine.expressions.*
+import engine.expressions.Expression
+import engine.expressions.bracketOf
+import engine.expressions.curlyBracketOf
+import engine.expressions.fractionOf
+import engine.expressions.implicitProductOf
+import engine.expressions.negOf
+import engine.expressions.plusOf
+import engine.expressions.powerOf
+import engine.expressions.productOf
+import engine.expressions.squareBracketOf
+import engine.expressions.sumOf
+import engine.expressions.xp
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import java.util.stream.Stream
@@ -61,11 +72,14 @@ class ParserTest {
                 )
             ),
             TestCase(
-                "{.1 + [.2 * (3 - 6).].}", curlyBracketOf(
+                "{.1 + [.2 * (3 - 6).].}",
+                curlyBracketOf(
                     sumOf(
-                        xp(1), squareBracketOf(
+                        xp(1),
+                        squareBracketOf(
                             productOf(
-                                xp(2), bracketOf(
+                                xp(2),
+                                bracketOf(
                                     sumOf(xp(3), negOf(xp(6)))
                                 )
                             )

@@ -3,7 +3,11 @@ package methods.plans
 import engine.patterns.mixedNumberOf
 import engine.patterns.sumOf
 import engine.plans.plan
-import methods.rules.*
+import methods.rules.convertIntegerToFraction
+import methods.rules.evaluateSignedIntegerAddition
+import methods.rules.fractionToMixedNumber
+import methods.rules.removeBracketsSum
+import methods.rules.splitMixedNumber
 
 val convertMixedNumberToImproperFraction = plan {
     pattern = mixedNumberOf()

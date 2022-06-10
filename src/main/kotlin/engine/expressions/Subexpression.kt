@@ -31,7 +31,8 @@ data class Subexpression(val path: Path, val expr: Expression) {
                         subPath,
                         mappedExpr,
                     ) { childOp -> expr.operator.nthChildAllowed(index, childOp) }
-                })
+                }
+            )
         }
     }
 }

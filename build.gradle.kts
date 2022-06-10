@@ -4,6 +4,8 @@ plugins {
     kotlin("jvm") version "1.6.21"
     application
     antlr
+    id("org.jlleitschuh.gradle.ktlint") version "10.3.0"
+    id("io.gitlab.arturbosch.detekt") version "1.20.0"
 }
 
 group = "org.geogebra.solver"
@@ -33,7 +35,6 @@ tasks.withType<KotlinCompile> {
 }
 
 tasks.compileTestKotlin {
-
     // The antlr plugin defines a dependency for java compilation but not Kotlin, so we do it manually here.
     dependsOn(tasks.generateTestGrammarSource)
 }

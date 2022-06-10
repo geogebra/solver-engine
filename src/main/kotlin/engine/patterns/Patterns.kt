@@ -1,6 +1,17 @@
 package engine.patterns
 
-import engine.expressions.*
+import engine.expressions.BinaryOperator
+import engine.expressions.BracketOperator
+import engine.expressions.ChildPath
+import engine.expressions.Expression
+import engine.expressions.IntegerOperator
+import engine.expressions.MixedNumberOperator
+import engine.expressions.NaryOperator
+import engine.expressions.Operator
+import engine.expressions.Path
+import engine.expressions.Subexpression
+import engine.expressions.UnaryOperator
+import engine.expressions.VariableOperator
 import java.math.BigInteger
 
 interface PathProvider {
@@ -146,7 +157,6 @@ interface NaryPatternBase : Pattern {
 
         return matchIndexes
     }
-
 }
 
 data class PartialNaryPattern(
@@ -263,7 +273,6 @@ fun productOf(vararg factors: Pattern) = OperatorPattern(NaryOperator.Product, f
 
 fun productContaining(vararg factors: Pattern, minSize: Int = 0) =
     PartialNaryPattern(NaryOperator.Product, factors.asList(), minSize)
-
 
 data class NumericCondition1(
     val ptn: IntegerProvider,

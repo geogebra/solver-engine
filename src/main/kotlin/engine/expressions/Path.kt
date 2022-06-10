@@ -17,7 +17,7 @@ interface Path {
 data class ChildPath(val parent: Path, val index: Int) : Path {
     override val length = parent.length + 1
 
-    override fun toString() = "${parent}/${index}"
+    override fun toString() = "$parent/$index"
 
     override fun hasAncestor(path: Path) = when {
         path.length > length -> false

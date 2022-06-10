@@ -11,7 +11,6 @@ import parser.parseExpression
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-
 data class RuleTestCase(val inputExpr: String, val rule: Rule, val outputExpr: String?) {
 
     fun assert() {

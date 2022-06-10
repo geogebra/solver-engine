@@ -3,7 +3,12 @@ package methods.plans
 import engine.patterns.AnyPattern
 import engine.plans.plan
 import engine.steps.metadata.PlanExplanation
-import methods.rules.*
+import methods.rules.evaluateSignedIntegerAddition
+import methods.rules.evaluateSignedIntegerPower
+import methods.rules.evaluateSignedIntegerProduct
+import methods.rules.removeBracketAroundSignedIntegerInSum
+import methods.rules.removeBracketAroundUnsignedInteger
+import methods.rules.simplifyDoubleNeg
 
 val simplifyArithmeticExpression = plan {
     pattern = AnyPattern() /* TODO add condition that it is constant in all variables */

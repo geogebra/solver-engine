@@ -1,6 +1,13 @@
 package parser
 
-import engine.expressions.*
+import engine.expressions.BinaryOperator
+import engine.expressions.BracketOperator
+import engine.expressions.Expression
+import engine.expressions.NaryOperator
+import engine.expressions.Operator
+import engine.expressions.UnaryOperator
+import engine.expressions.mixedNumber
+import engine.expressions.xp
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import parser.antlr.ExpressionBaseVisitor
@@ -28,7 +35,6 @@ private fun makeExpression(operator: Operator, operands: List<Expression>) = Exp
 
 private fun makeExpression(operator: Operator, vararg operands: Expression) =
     makeExpression(operator, operands.asList())
-
 
 private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
 

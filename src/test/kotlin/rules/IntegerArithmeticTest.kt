@@ -1,6 +1,14 @@
 package rules
 
-import methods.rules.*
+import methods.rules.eliminateOneInProduct
+import methods.rules.eliminateZeroInSum
+import methods.rules.evaluateIntegerProduct
+import methods.rules.evaluateSignedIntegerAddition
+import methods.rules.evaluateSignedIntegerPower
+import methods.rules.evaluateSignedIntegerProduct
+import methods.rules.evaluateUnsignedIntegerSubtraction
+import methods.rules.simplifyDoubleNeg
+import methods.rules.zeroInProduct
 import java.util.stream.Stream
 
 object IntegerArithmeticTest : RuleTest() {

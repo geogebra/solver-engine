@@ -1,8 +1,26 @@
 package methods.rules
 
-import engine.expressionmakers.*
+import engine.expressionmakers.FixedExpressionMaker
+import engine.expressionmakers.factor
+import engine.expressionmakers.makeFractionOf
+import engine.expressionmakers.makeNegOf
+import engine.expressionmakers.makeNumericOp
+import engine.expressionmakers.makeOptionalNegOf
+import engine.expressionmakers.makeProductOf
+import engine.expressionmakers.makeSumOf
+import engine.expressionmakers.move
+import engine.expressionmakers.substituteIn
 import engine.expressions.xp
-import engine.patterns.*
+import engine.patterns.ConditionPattern
+import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.commutativeSumOf
+import engine.patterns.fractionOf
+import engine.patterns.negOf
+import engine.patterns.numericCondition
+import engine.patterns.optionalNegOf
+import engine.patterns.productContaining
+import engine.patterns.sumContaining
+import engine.patterns.sumOf
 import engine.rules.Rule
 import engine.steps.metadata.Explanation
 import engine.steps.metadata.Skill
@@ -163,7 +181,6 @@ val negativeNumerator = run {
         explanationMaker = makeMetadata(Explanation.SimplifyNegativeInNumerator, move(pattern)),
     )
 }
-
 
 val negativeNumeratorAndDenominator = run {
     val numerator = UnsignedIntegerPattern()

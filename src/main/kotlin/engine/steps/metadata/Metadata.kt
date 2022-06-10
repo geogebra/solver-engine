@@ -12,5 +12,5 @@ data class MetadataMaker(val key: MetadataKey, val expressionMakers: List<Expres
     fun makeMetadata(match: Match) = Metadata(key, expressionMakers.map { it.makeMappedExpression(match) })
 }
 
-fun makeMetadata(key: MetadataKey, vararg expressionMakers: ExpressionMaker)
-    = MetadataMaker(key, expressionMakers.asList())
+fun makeMetadata(key: MetadataKey, vararg expressionMakers: ExpressionMaker) =
+    MetadataMaker(key, expressionMakers.asList())

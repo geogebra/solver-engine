@@ -4,7 +4,12 @@ import engine.expressionmakers.makeBracketOf
 import engine.expressionmakers.move
 import engine.expressionmakers.substituteIn
 import engine.expressions.UnaryOperator
-import engine.patterns.*
+import engine.patterns.AnyPattern
+import engine.patterns.OperatorPattern
+import engine.patterns.SignedIntegerPattern
+import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.bracketOf
+import engine.patterns.sumContaining
 import engine.rules.Rule
 import engine.steps.metadata.Explanation
 import engine.steps.metadata.makeMetadata
@@ -43,7 +48,6 @@ val removeBracketAroundSignedIntegerInSum = run {
         explanationMaker = makeMetadata(Explanation.RemoveBracketSignedIntegerInSum)
     )
 }
-
 
 val removeBracketAroundUnsignedInteger = run {
     val number = UnsignedIntegerPattern()

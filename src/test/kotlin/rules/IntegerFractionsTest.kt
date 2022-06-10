@@ -1,6 +1,11 @@
 package rules
 
-import methods.rules.*
+import methods.rules.addLikeFractions
+import methods.rules.commonDenominator
+import methods.rules.convertIntegerToFraction
+import methods.rules.findCommonFactorInFraction
+import methods.rules.multiplyPositiveFractions
+import methods.rules.negativeDenominator
 import java.util.stream.Stream
 
 object IntegerFractionsTest : RuleTest() {

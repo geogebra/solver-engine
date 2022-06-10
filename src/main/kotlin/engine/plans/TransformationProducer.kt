@@ -4,7 +4,12 @@ import engine.context.Context
 import engine.context.Resource
 import engine.context.ResourceData
 import engine.expressions.Subexpression
-import engine.patterns.*
+import engine.patterns.AnyPattern
+import engine.patterns.Match
+import engine.patterns.OneOfPattern
+import engine.patterns.Pattern
+import engine.patterns.RootMatch
+import engine.patterns.allOf
 import engine.steps.Transformation
 import engine.steps.metadata.MetadataMaker
 
@@ -77,7 +82,6 @@ data class FirstOf(val options: List<TransformationProducer>) : TransformationPr
         }
         return null
     }
-
 }
 
 data class AnnotatedPlan(val plan: TransformationProducer, override val resourceData: ResourceData) : Resource

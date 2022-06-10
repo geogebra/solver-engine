@@ -1,7 +1,15 @@
 package methods.rules
 
-import engine.expressionmakers.*
-import engine.patterns.*
+import engine.expressionmakers.makeFractionOf
+import engine.expressionmakers.makeMixedNumberOf
+import engine.expressionmakers.makeNumericOp
+import engine.expressionmakers.makeSumOf
+import engine.expressionmakers.move
+import engine.patterns.ConditionPattern
+import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.fractionOf
+import engine.patterns.mixedNumberOf
+import engine.patterns.numericCondition
 import engine.rules.Rule
 import engine.steps.metadata.Explanation
 import engine.steps.metadata.Skill

@@ -114,7 +114,7 @@ enum class UnaryOperator(override val precedence: Int) : Operator {
     }
 
     open fun <T> readableString(child: T): String {
-        return "${this}($child)"
+        return "$this($child)"
     }
 
     override fun <T> readableString(children: List<T>): String {
@@ -163,7 +163,7 @@ enum class BinaryOperator(override val precedence: Int) : Operator {
     }
 
     open fun <T> readableString(left: T, right: T): String {
-        return "${this}($left, $right)"
+        return "$this($left, $right)"
     }
 
     override fun <T> readableString(children: List<T>): String {

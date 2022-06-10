@@ -1,7 +1,27 @@
 package engine.expressionmakers
 
-import engine.expressions.*
-import engine.patterns.*
+import engine.expressions.BinaryOperator
+import engine.expressions.BracketOperator
+import engine.expressions.Expression
+import engine.expressions.MappedExpression
+import engine.expressions.MixedNumberOperator
+import engine.expressions.NaryOperator
+import engine.expressions.Operator
+import engine.expressions.PathMappingLeaf
+import engine.expressions.PathMappingParent
+import engine.expressions.PathMappingType
+import engine.expressions.Subexpression
+import engine.expressions.UnaryOperator
+import engine.expressions.flattenedNaryMappedExpression
+import engine.expressions.mappedExpression
+import engine.expressions.negOf
+import engine.expressions.xp
+import engine.patterns.IntegerProvider
+import engine.patterns.Match
+import engine.patterns.NaryPatternBase
+import engine.patterns.OptionalNegPattern
+import engine.patterns.PartialNaryPattern
+import engine.patterns.Pattern
 import java.math.BigInteger
 
 interface ExpressionMaker {

@@ -13,8 +13,8 @@ data class Expression(val operator: Operator, val operands: List<Expression>) {
 
     fun equiv(other: Expression): Boolean {
         return operator.equiv(other.operator) &&
-                operands.size == other.operands.size &&
-                operands.zip(other.operands).all { (op1, op2) -> op1.equiv(op2) }
+            operands.size == other.operands.size &&
+            operands.zip(other.operands).all { (op1, op2) -> op1.equiv(op2) }
     }
 }
 

@@ -3,7 +3,11 @@ package engine.plans
 import engine.context.Context
 import engine.expressions.Subexpression
 import engine.expressions.toMappedExpr
-import engine.patterns.*
+import engine.patterns.AnyPattern
+import engine.patterns.FindPattern
+import engine.patterns.Match
+import engine.patterns.OneOfPattern
+import engine.patterns.Pattern
 import engine.steps.Transformation
 
 interface StepsProducer {

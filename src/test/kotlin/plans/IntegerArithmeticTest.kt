@@ -113,7 +113,6 @@ class IntegerArithmeticTest {
         plan = simplifyArithmeticExpression
         inputExpr = "34 + 60 + 6 - (4 + 10 - 3 * 5 * (-2))"
 
-
         check {
             toExpr = "56"
 

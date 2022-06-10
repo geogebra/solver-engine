@@ -96,7 +96,6 @@ class TestAddFractions {
         }
     }
 
-
     @Test
     fun testSumSimplifies() = testPlan {
         plan = addFractions

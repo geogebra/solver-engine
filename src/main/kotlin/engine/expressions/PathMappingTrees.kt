@@ -1,6 +1,5 @@
 package engine.expressions
 
-
 interface PathMappingTree {
 
     fun nthChild(index: Int): PathMappingTree
