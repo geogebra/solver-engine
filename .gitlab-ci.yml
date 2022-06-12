@@ -1,0 +1,44 @@
+image: gradle:jdk17-alpine
+
+stages:
+  - assemble
+  - lint
+
+before_script:
+  - export GRADLE_USER_HOME=`pwd`/.gradle
+
+cache:
+  paths:
+    - .gradle/wrapper
+    - .gradle/caches
+
+assemble:
+  stage: assemble
+  tags:
+    - docker
+  script:
+    - ./gradlew assemble
+    - ./gradlew test --stacktrace
+
+code_style:
+  stage: lint
+  tags:
+    - docker
+  script:
+    - ./gradlew ktlintCheck
+  artifacts:
+    paths:
+      - build/reports/ktlint
+    expire_in: 1 day
+
+static_analysis:
+  stage: lint
+  tags:
+    - docker
+  script:
+    - ./gradlew detekt
+  artifacts:
+    paths:
+      - build/reports/detekt
+    expire_in: 1 day
+  allow_failure: true

@@ -28,15 +28,10 @@ tasks.test {
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "16"
+    kotlinOptions.jvmTarget = "17"
 
     // The antlr plugin defines a dependency for java compilation but not Kotlin, so we do it manually here.
     dependsOn(tasks.generateGrammarSource)
-}
-
-tasks.compileTestKotlin {
-    // The antlr plugin defines a dependency for java compilation but not Kotlin, so we do it manually here.
-    dependsOn(tasks.generateTestGrammarSource)
 }
 
 tasks.generateGrammarSource {
