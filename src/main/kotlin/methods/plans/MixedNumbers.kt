@@ -11,7 +11,7 @@ val convertMixedNumberToImproperFraction = plan {
     pipeline {
         step(splitMixedNumber)
         step(convertIntegerToFraction)
-        step(addPositiveFractions)
+        step(addFractions)
     }
 }
 
@@ -23,7 +23,7 @@ val addMixedNumbersByConverting = plan {
         step {
             applyToChildrenInStep(convertMixedNumberToImproperFraction)
         }
-        step(addPositiveFractions)
+        step(addFractions)
         step(fractionToMixedNumber)
     }
 }
@@ -41,9 +41,9 @@ val addMixedNumbersUsingCommutativity = plan {
             whilePossible(removeBracketsSum)
         }
         step(evaluateSignedIntegerAddition)
-        step(addPositiveFractions)
+        step(addFractions)
         step(convertIntegerToFraction)
-        step(addPositiveFractions)
+        step(addFractions)
         step(fractionToMixedNumber)
     }
 }

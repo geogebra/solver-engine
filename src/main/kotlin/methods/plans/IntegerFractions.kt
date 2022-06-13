@@ -1,10 +1,7 @@
 package methods.plans
 
 import engine.expressionmakers.move
-import engine.patterns.UnsignedIntegerPattern
-import engine.patterns.fractionOf
-import engine.patterns.productContaining
-import engine.patterns.sumContaining
+import engine.patterns.*
 import engine.plans.plan
 import engine.steps.metadata.PlanExplanation
 import engine.steps.metadata.Skill
@@ -55,9 +52,9 @@ val simplifyFractionsInExpression = plan {
     }
 }
 
-val addPositiveFractions = plan {
-    val f1 = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
-    val f2 = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
+val addFractions = plan {
+    val f1 = optionalNegOf(fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern()))
+    val f2 = optionalNegOf(fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern()))
 
     pattern = sumContaining(f1, f2)
 
@@ -70,6 +67,7 @@ val addPositiveFractions = plan {
         optionalStep(simplifyArithmeticExpression)
         step(addLikeFractions)
         step(simplifyArithmeticExpression)
+        optionalStep(normalizeFractionSigns)
         optionalStep(simplifyFractionsInExpression)
     }
 }
@@ -108,7 +106,7 @@ val combineFractionsInExpression = plan {
                 deeply(deepFirst = true) {
                     firstOf {
                         option(evaluatePositiveFractionProduct)
-                        option(addPositiveFractions)
+                        option(addFractions)
                     }
                 }
             }
@@ -118,7 +116,7 @@ val combineFractionsInExpression = plan {
 
 val addFractionsAndSimplify = plan {
     pipeline {
-        step(addPositiveFractions)
+        step(addFractions)
         optionalStep {
             deeply(simplifyNumericFraction)
         }

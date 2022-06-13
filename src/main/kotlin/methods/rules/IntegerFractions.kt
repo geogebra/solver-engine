@@ -33,11 +33,21 @@ val addLikeFractions = run {
     val denom = UnsignedIntegerPattern()
     val f1 = fractionOf(num1, denom)
     val f2 = fractionOf(num2, denom)
-    val sum = sumContaining(f1, f2)
+    val nf1 = optionalNegOf(f1)
+    val nf2 = optionalNegOf(f2)
+    val sum = sumContaining(nf1, nf2)
 
     Rule(
         pattern = sum,
-        resultMaker = substituteIn(sum, makeFractionOf(makeSumOf(move(num1), move(num2)), factor(denom))),
+        resultMaker = substituteIn(
+            sum, makeFractionOf(
+                makeSumOf(
+                    makeOptionalNegOf(nf1, move(num1)),
+                    makeOptionalNegOf(nf2, move(num2))
+                ),
+                factor(denom)
+            )
+        ),
         explanationMaker = makeMetadata(Explanation.AddLikeFractions, move(f1), move(f2)),
     )
 }
@@ -65,7 +75,9 @@ val commonDenominator = run {
     val denom2 = UnsignedIntegerPattern()
     val f1 = fractionOf(num1, denom1)
     val f2 = fractionOf(num2, denom2)
-    val sum = sumContaining(f1, f2)
+    val nf1 = optionalNegOf(f1)
+    val nf2 = optionalNegOf(f2)
+    val sum = sumContaining(nf1, nf2)
 
     val factor1 = makeNumericOp(denom1, denom2) { n1, n2 -> n2 / n1.gcd(n2) }
     val factor2 = makeNumericOp(denom1, denom2) { n1, n2 -> n1 / n1.gcd(n2) }
@@ -75,8 +87,14 @@ val commonDenominator = run {
         resultMaker = substituteIn(
             sum,
             makeSumOf(
-                makeFractionOf(makeProductOf(move(num1), factor1), makeProductOf(move(denom1), factor1)),
-                makeFractionOf(makeProductOf(move(num2), factor2), makeProductOf(move(denom2), factor2))
+                makeOptionalNegOf(
+                    nf1,
+                    makeFractionOf(makeProductOf(move(num1), factor1), makeProductOf(move(denom1), factor1))
+                ),
+                makeOptionalNegOf(
+                    nf2,
+                    makeFractionOf(makeProductOf(move(num2), factor2), makeProductOf(move(denom2), factor2))
+                ),
             )
         ),
         explanationMaker = makeMetadata(Explanation.BringToCommonDenominator, move(f1), move(f2)),
@@ -178,6 +196,6 @@ val multiplyPositiveFractions = run {
                 makeProductOf(move(denom1), move(denom2))
             ),
         ),
-        explanationMaker = makeMetadata(Explanation.MultiplyFractions),
+        explanationMaker = makeMetadata(Explanation.MultiplyFractions, move(f1), move(f2)),
     )
 }

@@ -26,20 +26,20 @@ object IntegerArithmeticTest : RuleTest() {
         RuleTestCase("4 - 5", evaluateUnsignedIntegerSubtraction, null),
 
         RuleTestCase("1 + x + 2", evaluateSignedIntegerAddition, "3 + x"),
-        RuleTestCase("1 + x + (-2)", evaluateSignedIntegerAddition, "(-1) + x"),
+        RuleTestCase("1 + x + (-2)", evaluateSignedIntegerAddition, "-1 + x"),
         RuleTestCase("(-2) + 3", evaluateSignedIntegerAddition, "1"),
-        RuleTestCase("(-2) + (-3) + x", evaluateSignedIntegerAddition, "(-5) + x"),
+        RuleTestCase("(-2) + (-3) + x", evaluateSignedIntegerAddition, "-5 + x"),
 
         RuleTestCase("z*2*x*3*y", evaluateIntegerProduct, "z*6*x*y"),
         RuleTestCase("2*3", evaluateIntegerProduct, "6"),
 
-        RuleTestCase("1 * (-2)", evaluateSignedIntegerProduct, "(-2)"),
+        RuleTestCase("1 * (-2)", evaluateSignedIntegerProduct, "-2"),
         RuleTestCase("(-2) * x * 5", evaluateSignedIntegerProduct, "(-10) * x"),
         RuleTestCase("10:2", evaluateSignedIntegerProduct, "5"),
-        RuleTestCase("10:(-2)", evaluateSignedIntegerProduct, "(-5)"),
+        RuleTestCase("10:(-2)", evaluateSignedIntegerProduct, "-5"),
 
         RuleTestCase("[5^3]", evaluateSignedIntegerPower, "125"),
-        RuleTestCase("[(-5) ^ 3]", evaluateSignedIntegerPower, "(-125)"),
+        RuleTestCase("[(-5) ^ 3]", evaluateSignedIntegerPower, "-125"),
 
         RuleTestCase("-(-5)", simplifyDoubleNeg, "5"),
         RuleTestCase("-(-x)", simplifyDoubleNeg, "x")

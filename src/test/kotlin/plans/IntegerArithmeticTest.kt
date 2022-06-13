@@ -127,7 +127,7 @@ class IntegerArithmeticTest {
 
                 step {
                     fromExpr = "3 * 5 * (-2)"
-                    toExpr = "(-30)"
+                    toExpr = "-30"
 
                     explanation {
                         key = PlanExplanation.SimplifyIntegerProduct
@@ -149,7 +149,7 @@ class IntegerArithmeticTest {
                     }
                     step {
                         fromExpr = "15 * (-2)"
-                        toExpr = "(-30)"
+                        toExpr = "-30"
                     }
                 }
             }

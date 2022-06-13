@@ -89,24 +89,29 @@ class UnsignedIntegerPattern : Pattern, IntegerProvider {
     }
 }
 
-class SignedIntegerPattern : Pattern, IntegerProvider {
-    private val integer = UnsignedIntegerPattern()
-    private val neg = negOf(integer)
-    private val ptn = OneOfPattern(listOf(integer, neg, bracketOf(neg)))
+sealed class OptionalNegPatternBase<T : Pattern>(val pattern: T) : Pattern {
 
-    override fun getBoundInt(m: Match): BigInteger {
-        val value = integer.getBoundInt(m)
-        return when {
-            m.getLastBinding(neg) == null -> value
-            else -> -value
-        }
-    }
+    private val neg = negOf(pattern)
+    private val ptn = OneOfPattern(listOf(pattern, neg, bracketOf(neg)))
+
+    override val key = ptn
+
+    fun isNeg(m: Match) = m.getLastBinding(neg) != null
 
     override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
         if (!checkPreviousMatch(subexpression.expr, match)) {
             return emptySequence()
         }
-        return ptn.findMatches(subexpression, match).map { it.newChild(this, it.getLastBinding(ptn)!!) }
+        return ptn.findMatches(subexpression, match)
+    }
+}
+
+class OptionalNegPattern(pattern: Pattern) : OptionalNegPatternBase<Pattern>(pattern)
+
+class SignedIntegerPattern : OptionalNegPatternBase<UnsignedIntegerPattern>(UnsignedIntegerPattern()), IntegerProvider {
+    override fun getBoundInt(m: Match): BigInteger {
+        val value = pattern.getBoundInt(m)
+        return if (isNeg(m)) -value else value
     }
 }
 
@@ -248,6 +253,8 @@ fun sumOf(vararg terms: Pattern) = OperatorPattern(NaryOperator.Sum, terms.asLis
 
 fun negOf(operand: Pattern) = OperatorPattern(UnaryOperator.Minus, listOf(operand))
 
+fun optionalNegOf(operand: Pattern) = OptionalNegPattern(operand)
+
 fun sumContaining(vararg terms: Pattern) = PartialNaryPattern(NaryOperator.Sum, terms.asList())
 
 fun commutativeSumOf(vararg terms: Pattern) = CommutativeNaryPattern(NaryOperator.Sum, terms.asList())
@@ -325,7 +332,7 @@ data class AllOfPattern(val patterns: List<Pattern>) : Pattern {
     }
 
     override val key = patterns[0]
-    
+
     override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
         fun rec(i: Int, m: Match): Sequence<Match> {
             if (i == patterns.size - 1) {

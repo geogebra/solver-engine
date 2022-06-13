@@ -13,10 +13,13 @@ object IntegerFractionsTest : RuleTest() {
         RuleTestCase("1+[2/10]+z+[3/10]+x", addLikeFractions, "1+[2+3/10]+z+x"),
         RuleTestCase("1+[2/10]-x", addLikeFractions, null),
 
-        RuleTestCase("[3/10] - [2/10]", subtractLikeFractions, "[3 - 2 / 10]"),
-        RuleTestCase("1 - [2/10]", subtractLikeFractions, null),
+        RuleTestCase("[3/10] - [2/10]", addLikeFractions, "[3 - 2 / 10]"),
+        RuleTestCase("-[3/10] - [2/10]", addLikeFractions, "[-3 - 2 / 10]"),
+        RuleTestCase("1 - [2/10]", addLikeFractions, null),
 
         RuleTestCase("[3/8] + [5/12]", commonDenominator, "[3 * 3/8 * 3] + [5 * 2/12 * 2]"),
+        RuleTestCase("[3/8] - [5/12]", commonDenominator, "[3 * 3/8 * 3] - [5 * 2/12 * 2]"),
+        RuleTestCase("-[3/8] + [5/12]", commonDenominator, "-[3 * 3/8 * 3] + [5 * 2/12 * 2]"),
 
         RuleTestCase("[4/-5]", negativeDenominator, "-[4/5]"),
         RuleTestCase("[4/5]", negativeDenominator, null),

@@ -92,7 +92,7 @@ data class NumericOp2(
 
         val result = when {
             value.signum() >= 0 -> xp(value)
-            else -> engine.expressions.bracketOf(engine.expressions.negOf(xp(-value)))
+            else -> negOf(xp(-value))
         }
         return MappedExpression(
             result,
@@ -148,3 +148,15 @@ class CustomExpressionMaker(val run: ExpressionMakerBuilder.() -> ExpressionMake
 fun custom(run: ExpressionMakerBuilder.() -> ExpressionMaker): ExpressionMaker {
     return CustomExpressionMaker(run)
 }
+
+data class OptionalNegExpressionMaker(val negPattern: OptionalNegPattern, val operand: ExpressionMaker) :
+    ExpressionMaker {
+
+    override fun makeMappedExpression(match: Match): MappedExpression {
+        val maker = if (negPattern.isNeg(match)) makeNegOf(operand) else operand
+        return maker.makeMappedExpression(match)
+    }
+}
+
+fun makeOptionalNegOf(negPattern: OptionalNegPattern, operand: ExpressionMaker) =
+    OptionalNegExpressionMaker(negPattern, operand)
