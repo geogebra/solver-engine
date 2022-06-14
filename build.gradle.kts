@@ -38,6 +38,11 @@ tasks.generateGrammarSource {
     arguments = arguments + listOf("-visitor")
 }
 
+detekt {
+    buildUponDefaultConfig = true
+    config = files("$projectDir/config/detekt.yaml")
+}
+
 application {
     mainClass.set("MainKt")
 }

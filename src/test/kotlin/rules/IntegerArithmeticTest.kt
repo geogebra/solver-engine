@@ -11,7 +11,7 @@ import methods.rules.simplifyDoubleNeg
 import methods.rules.zeroInProduct
 import java.util.stream.Stream
 
-object IntegerArithmeticTest : RuleTest() {
+object IntegerArithmeticTest : RuleTest {
 
     @JvmStatic
     fun testCaseProvider(): Stream<RuleTestCase> = Stream.of(

@@ -4,7 +4,7 @@ import methods.rules.fractionToMixedNumber
 import methods.rules.splitMixedNumber
 import java.util.stream.Stream
 
-object MixedNumbersTest : RuleTest() {
+object MixedNumbersTest : RuleTest {
     @JvmStatic
     fun testCaseProvider(): Stream<RuleTestCase> = Stream.of(
         RuleTestCase("[4/21]", fractionToMixedNumber, null),

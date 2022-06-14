@@ -98,20 +98,23 @@ interface InStep : StepsProducer {
             if (!optional && stepTransformations.any { it == null }) {
                 return emptyList()
             }
+
             val nonNullTransformations = stepTransformations.filterNotNull()
-            if (nonNullTransformations.isNotEmpty()) {
-                val prevSub = lastSub
-                for (tr in nonNullTransformations) {
-                    val substitution = lastSub.substitute(tr.fromExpr.path, tr.toExpr)
-                    lastSub = Subexpression(lastSub.path, substitution.expr)
-                }
-                steps.add(
-                    Transformation(prevSub, lastSub.toMappedExpr(), nonNullTransformations)
-                )
-                for ((i, tr) in stepTransformations.withIndex()) {
-                    if (tr != null) {
-                        stepSubs[i] = Subexpression(tr.fromExpr.path, tr.toExpr.expr)
-                    }
+            if (nonNullTransformations.isEmpty()) {
+                continue
+            }
+
+            val prevSub = lastSub
+            for (tr in nonNullTransformations) {
+                val substitution = lastSub.substitute(tr.fromExpr.path, tr.toExpr)
+                lastSub = Subexpression(lastSub.path, substitution.expr)
+            }
+            steps.add(
+                Transformation(prevSub, lastSub.toMappedExpr(), nonNullTransformations)
+            )
+            for ((i, tr) in stepTransformations.withIndex()) {
+                if (tr != null) {
+                    stepSubs[i] = Subexpression(tr.fromExpr.path, tr.toExpr.expr)
                 }
             }
         }

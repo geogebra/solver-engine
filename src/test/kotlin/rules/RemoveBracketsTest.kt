@@ -5,7 +5,7 @@ import methods.rules.removeBracketAroundUnsignedInteger
 import methods.rules.removeBracketsSum
 import java.util.stream.Stream
 
-object RemoveBracketsTest : RuleTest() {
+object RemoveBracketsTest : RuleTest {
 
     @JvmStatic
     fun testCaseProvider(): Stream<RuleTestCase> = Stream.of(

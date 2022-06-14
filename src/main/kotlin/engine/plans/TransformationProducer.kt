@@ -45,22 +45,13 @@ data class Plan(
             return null
         }
 
-        if (steps.size == 1 && steps[0].explanation == null && steps[0].skills.isEmpty()) {
-            val onlyStep = steps[0]
-            return Transformation(
-                fromExpr = sub,
-                toExpr = sub.substitute(onlyStep.fromExpr.path, onlyStep.toExpr),
-                steps = onlyStep.steps,
-                explanation = explanationMaker?.makeMetadata(match),
-                skills = skillMakers.map { it.makeMetadata(match) }
-            )
-        }
-
         val lastStep = steps.last()
+        val singletonStep = steps.size == 1 && steps[0].explanation == null && steps[0].skills.isEmpty()
+
         return Transformation(
             fromExpr = sub,
             toExpr = sub.substitute(lastStep.fromExpr.path, lastStep.toExpr),
-            steps = steps,
+            steps = if (singletonStep) lastStep.steps else steps,
             explanation = explanationMaker?.makeMetadata(match),
             skills = skillMakers.map { it.makeMetadata(match) }
         )

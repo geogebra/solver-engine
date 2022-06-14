@@ -22,7 +22,7 @@ object RootMatch : Match {
     override fun getLastBinding(p: Pattern): Subexpression? = null
     override fun getBoundExpr(p: Pattern): Expression? = null
 
-    override fun accPaths(p: Pattern, acc: MutableList<Path>) {}
+    override fun accPaths(p: Pattern, acc: MutableList<Path>) { /* do nothing */ }
     override fun getBoundPaths(p: Pattern): List<Path> = emptyList()
 }
 

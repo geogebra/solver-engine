@@ -8,7 +8,7 @@ import methods.rules.multiplyPositiveFractions
 import methods.rules.negativeDenominator
 import java.util.stream.Stream
 
-object IntegerFractionsTest : RuleTest() {
+object IntegerFractionsTest : RuleTest {
 
     @JvmStatic
     fun testCaseProvider(): Stream<RuleTestCase> = Stream.of(

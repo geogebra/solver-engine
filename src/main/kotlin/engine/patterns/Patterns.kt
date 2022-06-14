@@ -357,7 +357,7 @@ data class AllOfPattern(val patterns: List<Pattern>) : Pattern {
 fun allOf(vararg patterns: Pattern?): Pattern {
     val nonNullPatterns = patterns.filterNotNull()
     return when (nonNullPatterns.size) {
-        0 -> throw java.lang.IllegalArgumentException()
+        0 -> throw java.lang.IllegalArgumentException("At least one non-null pattern should be specified in allOf")
         1 -> nonNullPatterns[0]
         else -> AllOfPattern(nonNullPatterns)
     }

@@ -5,7 +5,7 @@ import methods.rules.moveSignOfNegativeFactorOutOfProduct
 import methods.rules.simplifyProductWithTwoNegativeFactors
 import java.util.stream.Stream
 
-object BasicRulesTest : RuleTest() {
+object BasicRulesTest : RuleTest {
 
     @JvmStatic
     fun testCaseProvider(): Stream<RuleTestCase> = Stream.of(

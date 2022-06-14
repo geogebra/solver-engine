@@ -118,7 +118,6 @@ class MixedNumbersTest {
                 explanation {
                     key = PlanExplanation.AddFractions
                 }
-
             }
 
             step {
@@ -165,13 +164,8 @@ class MixedNumbersTest {
                 }
             }
 
-            step {
-
-            }
-
-            step {
-
-            }
+            step { }
+            step { }
         }
     }
 
@@ -232,7 +226,6 @@ class MixedNumbersTest {
                     fromPaths("./2/0/1")
                     toPaths("./3")
                 }
-
             }
 
             step {
@@ -305,7 +298,6 @@ class MixedNumbersTest {
                 explanation {
                     key = Explanation.ConvertIntegerToFraction
                 }
-
             }
 
             step {

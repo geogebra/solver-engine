@@ -1,6 +1,6 @@
 package engine.expressions
 
-interface Path {
+sealed interface Path {
     fun child(index: Int): Path {
         return ChildPath(this, index)
     }

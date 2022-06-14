@@ -3,7 +3,7 @@ package rules
 import methods.rules.cancelInAFraction
 import java.util.stream.Stream
 
-object AlgebraicFractionsTest : RuleTest() {
+object AlgebraicFractionsTest : RuleTest {
     @JvmStatic
     fun testCaseProvider(): Stream<RuleTestCase> = Stream.of(
         RuleTestCase("[x*y*z/a*y*c]", cancelInAFraction, "[x*z/a*c]"),

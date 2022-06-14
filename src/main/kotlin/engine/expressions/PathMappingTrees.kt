@@ -12,7 +12,6 @@ interface PathMappingTree {
         return when (path) {
             is RootPath -> this
             is ChildPath -> subtree(path.parent).nthChild(path.index)
-            else -> throw IllegalArgumentException()
         }
     }
 
@@ -31,21 +30,8 @@ data class PathMappingLeaf(val paths: List<Path>, val type: PathMappingType) : P
     override fun pathMappings(root: Path) = sequenceOf(PathMapping(paths, type, listOf(root)))
 
     override fun composeWith(previous: PathMappingTree): PathMappingTree {
-        // TODO: this is WIP
-        val combined = combinePathMappingTrees(paths.map { previous.subtree(it) })
-        if (type == PathMappingType.Combine || type == PathMappingType.Move) {
-            return combined
-        }
-        if (combined is PathMappingLeaf && combined.type == PathMappingType.Move) {
-            return PathMappingLeaf(combined.paths, type)
-        }
-
-        when (type) {
-            PathMappingType.Move -> return combined
-            PathMappingType.Combine -> return combined
-        }
-        // TODO: this is wrong
-        return combined
+        /* WIP */
+        return previous
     }
 }
 

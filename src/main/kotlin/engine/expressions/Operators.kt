@@ -26,7 +26,10 @@ abstract class NullaryOperator : Operator {
     override val arity = 0
 
     override fun nthChildAllowed(n: Int, op: Operator): Boolean {
-        throw IllegalArgumentException()
+        throw IllegalArgumentException(
+            "Nullary operator ${this::class.simpleName} should have no children. " +
+                "Child $op is invalid at position $n."
+        )
     }
 
     override fun <T> readableString(children: List<T>): String {
@@ -159,7 +162,10 @@ enum class BinaryOperator(override val precedence: Int) : Operator {
     override fun nthChildAllowed(n: Int, op: Operator) = when (n) {
         0 -> leftChildAllowed(op)
         1 -> rightChildAllowed(op)
-        else -> throw IllegalArgumentException()
+        else -> throw IllegalArgumentException(
+            "Binary operator ${this::class.simpleName} should have exactly two children. " +
+                "Child $op is invalid at position $n."
+        )
     }
 
     open fun <T> readableString(left: T, right: T): String {

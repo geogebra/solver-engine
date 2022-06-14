@@ -71,7 +71,7 @@ class ContextSensitivePlanBuilder {
 
     fun default(plan: TransformationProducer) {
         if (this::defaultPlan.isInitialized) {
-            throw IllegalStateException()
+            throw IllegalStateException("Default plan has already been set once")
         }
         defaultPlan = plan
     }
@@ -91,7 +91,7 @@ class PlanBuilder {
 
     private fun setPlan(p: Plan) {
         if (this::plan.isInitialized) {
-            throw IllegalStateException()
+            throw IllegalStateException("Plan has already been set once")
         }
         plan = p
     }

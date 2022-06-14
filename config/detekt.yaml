@@ -1,0 +1,6 @@
+complexity:
+  TooManyFunctions:
+    thresholdInFiles: 20
+    thresholdInClasses: 20
+  LongMethod:
+    excludes: ['**/test/**']

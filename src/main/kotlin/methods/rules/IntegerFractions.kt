@@ -58,7 +58,8 @@ val addLikeFractions = run {
     Rule(
         pattern = sum,
         resultMaker = substituteIn(
-            sum, makeFractionOf(
+            sum,
+            makeFractionOf(
                 makeSumOf(
                     makeOptionalNegOf(nf1, move(num1)),
                     makeOptionalNegOf(nf2, move(num2))

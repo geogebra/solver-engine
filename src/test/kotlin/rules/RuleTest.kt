@@ -27,7 +27,7 @@ data class RuleTestCase(val inputExpr: String, val rule: Rule, val outputExpr: S
     }
 }
 
-abstract class RuleTest {
+interface RuleTest {
 
     @ParameterizedTest
     @MethodSource("testCaseProvider")
