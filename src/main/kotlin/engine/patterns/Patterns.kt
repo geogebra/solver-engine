@@ -325,8 +325,8 @@ data class OneOfPattern(val options: List<Pattern>) : Pattern {
     override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
         return sequence {
             for (option in options) {
-                for (match in option.findMatches(subexpression, match)) {
-                    yield(match.newChild(this@OneOfPattern, match.getLastBinding(option)!!))
+                for (m in option.findMatches(subexpression, match)) {
+                    yield(m.newChild(this@OneOfPattern, m.getLastBinding(option)!!))
                 }
             }
         }

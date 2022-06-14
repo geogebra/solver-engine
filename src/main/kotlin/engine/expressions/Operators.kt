@@ -2,6 +2,25 @@ package engine.expressions
 
 import java.math.BigInteger
 
+const val MAX_CHILD_COUNT = 1000
+
+private const val SUM_PRECEDENCE = 10
+private const val PLUS_MINUS_PRECEDENCE = 15
+private const val PRODUCT_PRECEDENCE = 20
+private const val DIVIDE_PRECEDENCE = 30
+private const val IMPLICIT_PRODUCT_PRECEDENCE = 40
+private const val FRACTION_PRECEDENCE = 50
+private const val POWER_PRECEDENCE = 60
+private const val NATURAL_LOG_PRECEDENCE = 50
+private const val DIVIDE_BY_PRECEDENCE = 90
+private const val MAX_PRECEDENCE = 100
+
+private const val ARITY_NULL = 0
+private const val ARITY_ONE = 1
+private const val ARITY_TWO = 2
+private const val ARITY_THREE = 3
+private const val ARITY_VARIABLE = -1
+
 interface Operator {
     val precedence: Int
     val arity: Int
@@ -13,8 +32,8 @@ interface Operator {
         return ops.withIndex().all { (i, op) -> nthChildAllowed(i, op) }
     }
 
-    fun minChildCount(): Int = if (arity >= 0) arity else 2
-    fun maxChildCount(): Int = if (arity >= 0) arity else 1000
+    fun minChildCount(): Int = if (arity == ARITY_VARIABLE) 2 else arity
+    fun maxChildCount(): Int = if (arity == ARITY_VARIABLE) MAX_CHILD_COUNT else arity
 
     fun <T> readableString(children: List<T>): String {
         return "${toString()}(${children.joinToString(", ")})"
@@ -22,8 +41,8 @@ interface Operator {
 }
 
 abstract class NullaryOperator : Operator {
-    override val precedence = 100
-    override val arity = 0
+    override val precedence = MAX_PRECEDENCE
+    override val arity = ARITY_NULL
 
     override fun nthChildAllowed(n: Int, op: Operator): Boolean {
         throw IllegalArgumentException(
@@ -51,11 +70,11 @@ data class VariableOperator(val name: String) : NullaryOperator() {
 }
 
 object MixedNumberOperator : Operator {
-    override val precedence = 100
-    override val arity = 3
+    override val precedence = MAX_PRECEDENCE
+    override val arity = ARITY_THREE
 
     override fun nthChildAllowed(n: Int, op: Operator): Boolean {
-        require(n in 0 until 3)
+        require(n in 0 until arity)
         return op is IntegerOperator
     }
 
@@ -67,8 +86,8 @@ enum class BracketOperator(private val opening: String, private val closing: Str
     SquareBracket("[.", ".]"),
     CurlyBracket("{.", ".}");
 
-    override val precedence = 100
-    override val arity = 1
+    override val precedence = MAX_PRECEDENCE
+    override val arity = ARITY_ONE
 
     override fun nthChildAllowed(n: Int, op: Operator): Boolean {
         require(n == 0)
@@ -86,29 +105,29 @@ enum class BracketOperator(private val opening: String, private val closing: Str
 }
 
 enum class UnaryOperator(override val precedence: Int) : Operator {
-    InvisibleBracket(100) {
+    InvisibleBracket(MAX_PRECEDENCE) {
         override fun childAllowed(op: Operator) = true
         override fun <T> readableString(child: T) = "{$child}"
     },
-    DivideBy(90) {
+    DivideBy(DIVIDE_BY_PRECEDENCE) {
         override fun childAllowed(op: Operator) = op.precedence > NaryOperator.Product.precedence
         override fun <T> readableString(child: T) = ":$child"
     },
-    Plus(15) {
+    Plus(PLUS_MINUS_PRECEDENCE) {
         override fun <T> readableString(child: T) = "+$child"
     },
-    Minus(15) {
+    Minus(PLUS_MINUS_PRECEDENCE) {
         override fun <T> readableString(child: T) = "-$child"
     },
-    SquareRoot(100) {
+    SquareRoot(MAX_PRECEDENCE) {
         override fun childAllowed(op: Operator) = true
     },
-    NaturalLog(50) {
+    NaturalLog(NATURAL_LOG_PRECEDENCE) {
         override fun childAllowed(op: Operator) =
             op.precedence >= BinaryOperator.Fraction.precedence
     };
 
-    override val arity = 1
+    override val arity = ARITY_ONE
     open fun childAllowed(op: Operator) = op.precedence > this.precedence
 
     override fun nthChildAllowed(n: Int, op: Operator): Boolean {
@@ -121,18 +140,18 @@ enum class UnaryOperator(override val precedence: Int) : Operator {
     }
 
     override fun <T> readableString(children: List<T>): String {
-        require(children.size == 1)
+        require(children.size == arity)
         return readableString(children[0])
     }
 }
 
 enum class BinaryOperator(override val precedence: Int) : Operator {
-    Fraction(50) {
+    Fraction(FRACTION_PRECEDENCE) {
         override fun leftChildAllowed(op: Operator) = true
         override fun rightChildAllowed(op: Operator) = true
         override fun <T> readableString(left: T, right: T) = "[$left / $right]"
     },
-    Divide(30) {
+    Divide(DIVIDE_PRECEDENCE) {
         override fun leftChildAllowed(op: Operator) =
             op.precedence >= NaryOperator.ImplicitProduct.precedence
 
@@ -141,7 +160,7 @@ enum class BinaryOperator(override val precedence: Int) : Operator {
 
         override fun <T> readableString(left: T, right: T) = "$left:$right"
     },
-    Power(60) {
+    Power(POWER_PRECEDENCE) {
         override fun leftChildAllowed(op: Operator) =
             op.precedence >= BracketOperator.Bracket.precedence
 
@@ -149,12 +168,12 @@ enum class BinaryOperator(override val precedence: Int) : Operator {
 
         override fun <T> readableString(left: T, right: T) = "[$left ^ $right]"
     },
-    Root(100) {
+    Root(MAX_PRECEDENCE) {
         override fun leftChildAllowed(op: Operator) = true
         override fun rightChildAllowed(op: Operator) = true
     };
 
-    override val arity = 2
+    override val arity = ARITY_TWO
 
     open fun leftChildAllowed(op: Operator) = op.precedence > this.precedence
     open fun rightChildAllowed(op: Operator) = op.precedence > this.precedence
@@ -173,13 +192,13 @@ enum class BinaryOperator(override val precedence: Int) : Operator {
     }
 
     override fun <T> readableString(children: List<T>): String {
-        require(children.size == 2)
+        require(children.size == arity)
         return readableString(children[0], children[1])
     }
 }
 
 enum class NaryOperator(override val precedence: Int) : Operator {
-    Sum(10) {
+    Sum(SUM_PRECEDENCE) {
         override fun <T> readableString(children: List<T>): String {
             return buildString {
                 for ((i, child) in children.map { it.toString() }.withIndex()) {
@@ -196,7 +215,7 @@ enum class NaryOperator(override val precedence: Int) : Operator {
             }
         }
     },
-    Product(20) {
+    Product(PRODUCT_PRECEDENCE) {
         override fun <T> readableString(children: List<T>): String {
             return buildString {
                 for ((i, child) in children.map { it.toString() }.withIndex()) {
@@ -213,12 +232,12 @@ enum class NaryOperator(override val precedence: Int) : Operator {
             }
         }
     },
-    ImplicitProduct(40) {
+    ImplicitProduct(IMPLICIT_PRODUCT_PRECEDENCE) {
         override fun <T> readableString(children: List<T>): String {
             return children.joinToString("")
         }
     };
 
-    override val arity = -1
+    override val arity = ARITY_VARIABLE
     override fun nthChildAllowed(n: Int, op: Operator) = op.precedence > this.precedence
 }
