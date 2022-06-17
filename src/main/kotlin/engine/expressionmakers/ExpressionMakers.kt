@@ -19,6 +19,7 @@ import engine.expressions.xp
 import engine.patterns.IntegerProvider
 import engine.patterns.Match
 import engine.patterns.NaryPatternBase
+import engine.patterns.OptionalDivideBy
 import engine.patterns.OptionalNegPattern
 import engine.patterns.PartialNaryPattern
 import engine.patterns.Pattern
@@ -135,6 +136,8 @@ fun makeProductOf(vararg terms: ExpressionMaker) =
 
 fun makeNegOf(operand: ExpressionMaker) = OperatorExpressionMaker(UnaryOperator.Minus, listOf(operand))
 
+fun makeDivideBy(operand: ExpressionMaker) = OperatorExpressionMaker(UnaryOperator.DivideBy, listOf(operand))
+
 fun restOf(pattern: PartialNaryPattern) = RestExpressionMaker(pattern)
 
 fun makeMixedNumberOf(integer: ExpressionMaker, numerator: ExpressionMaker, denominator: ExpressionMaker) =
@@ -180,3 +183,16 @@ data class OptionalNegExpressionMaker(val negPattern: OptionalNegPattern, val op
 
 fun makeOptionalNegOf(negPattern: OptionalNegPattern, operand: ExpressionMaker) =
     OptionalNegExpressionMaker(negPattern, operand)
+
+data class OptionalDivideByExpressionMaker(
+    val divPattern: OptionalDivideBy,
+    val operand: ExpressionMaker,
+) : ExpressionMaker {
+    override fun makeMappedExpression(match: Match): MappedExpression {
+        val maker = if (divPattern.isDivide(match)) makeDivideBy(operand) else operand
+        return maker.makeMappedExpression(match)
+    }
+}
+
+fun makeOptionalDivideBy(divPattern: OptionalDivideBy, operand: ExpressionMaker) =
+    OptionalDivideByExpressionMaker(divPattern, operand)

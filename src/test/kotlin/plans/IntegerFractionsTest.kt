@@ -290,4 +290,66 @@ class TestCombineFractionsInExpression {
             }
         }
     }
+
+    @Test
+    fun testDividingTwice() = testPlan {
+        plan = combineFractionsInExpression
+        inputExpr = "3 : 4 : 5"
+
+        check {
+            toExpr = "[3 / 20]"
+
+            step {
+                toExpr = "[3/4] * [1/5]"
+
+                step {
+                    toExpr = "[3/4] : 5"
+                }
+                step {
+                    toExpr = "[[3/4] / 5]"
+                }
+                step {
+                    toExpr = "[3/4] * [1/5]"
+                }
+            }
+            step {
+                toExpr = "[3/20]"
+            }
+        }
+    }
+
+    @Test
+    fun testDividingFractions() = testPlan {
+        plan = combineFractionsInExpression
+        inputExpr = "[5/6] : [3/4]"
+
+        check {
+            toExpr = "[10/9]"
+
+            step {
+                toExpr = "[5/6] * [4/3]"
+            }
+            step {
+                toExpr = "[10/9]"
+            }
+        }
+    }
+
+    @Test
+    fun testDividingWithNegatives() = testPlan {
+        plan = combineFractionsInExpression
+        inputExpr = "3:(-5)"
+
+        check {
+            toExpr = "-[3/5]"
+
+            step {
+                toExpr = "- 3:5"
+            }
+
+            step {
+                toExpr = "-[3/5]"
+            }
+        }
+    }
 }

@@ -86,6 +86,13 @@ class ParserTest {
                         )
                     )
                 )
+            ),
+            TestCase(
+                "[[1/2]/[3/4]]",
+                fractionOf(
+                    fractionOf(xp(1), xp(2)),
+                    fractionOf(xp(3), xp(4)),
+                )
             )
         )
     }

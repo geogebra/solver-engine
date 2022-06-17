@@ -37,4 +37,8 @@ enum class Explanation : MetadataKey {
     MultiplyFractions,
     FindCommonFactorInFraction,
     SimplifyFractionToInteger,
+    DivideByAFraction,
+    TurnDivisionToFraction,
+    SimplifyFractionWithFractionDenominator,
+    SimplifyFractionWithFractionNumerator,
 }

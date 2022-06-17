@@ -18,9 +18,13 @@ import methods.rules.multiplyPositiveFractions
 import methods.rules.negativeDenominator
 import methods.rules.negativeNumerator
 import methods.rules.negativeNumeratorAndDenominator
+import methods.rules.simplifyDividingByAFraction
+import methods.rules.simplifyDividingByANumber
 import methods.rules.simplifyDoubleNeg
 import methods.rules.simplifyDoubleNegBracket
 import methods.rules.simplifyFractionToInteger
+import methods.rules.simplifyFractionWithFractionDenominator
+import methods.rules.simplifyFractionWithFractionNumerator
 import methods.rules.simplifyProductWithTwoNegativeFactors
 
 val normalizeFractionSigns = plan {
@@ -112,6 +116,18 @@ val combineFractionsInExpression = plan {
                         firstOf {
                             option(normalizeFractionSigns)
                             option(normalizeSignsInProduct)
+                        }
+                    }
+                }
+            }
+            option {
+                whilePossible {
+                    deeply {
+                        firstOf {
+                            option(simplifyDividingByANumber)
+                            option(simplifyDividingByAFraction)
+                            option(simplifyFractionWithFractionDenominator)
+                            option(simplifyFractionWithFractionNumerator)
                         }
                     }
                 }

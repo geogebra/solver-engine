@@ -362,3 +362,20 @@ fun allOf(vararg patterns: Pattern?): Pattern {
         else -> AllOfPattern(nonNullPatterns)
     }
 }
+
+data class OptionalDivideBy(val pattern: Pattern) : Pattern {
+
+    private val divide = divideBy(pattern)
+    private val ptn = oneOf(pattern, divide)
+
+    override val key = ptn
+
+    fun isDivide(m: Match) = m.getLastBinding(divide) != null
+
+    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+        if (!checkPreviousMatch(subexpression.expr, match)) {
+            return emptySequence()
+        }
+        return ptn.findMatches(subexpression, match)
+    }
+}

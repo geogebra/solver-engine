@@ -6,6 +6,10 @@ import methods.rules.convertIntegerToFraction
 import methods.rules.findCommonFactorInFraction
 import methods.rules.multiplyPositiveFractions
 import methods.rules.negativeDenominator
+import methods.rules.simplifyDividingByAFraction
+import methods.rules.simplifyDividingByANumber
+import methods.rules.simplifyFractionWithFractionDenominator
+import methods.rules.simplifyFractionWithFractionNumerator
 import java.util.stream.Stream
 
 object IntegerFractionsTest : RuleTest {
@@ -34,6 +38,17 @@ object IntegerFractionsTest : RuleTest {
         RuleTestCase("[700/500]", findCommonFactorInFraction, "[100* 7/100 * 5"),
         RuleTestCase("[1/10]", findCommonFactorInFraction, null),
 
-        RuleTestCase("[2/3] * [4/5]", multiplyPositiveFractions, "[2*4/3*5]")
+        RuleTestCase("[2/3] * [4/5]", multiplyPositiveFractions, "[2*4/3*5]"),
+
+        RuleTestCase("5 : [2/3]", simplifyDividingByAFraction, "5 * [3/2]"),
+        RuleTestCase("[1/2] : [11/10] * 5", simplifyDividingByAFraction, "[1/2] * [10/11] * 5"),
+
+        RuleTestCase("6 : 8 * 3", simplifyDividingByANumber, "[6 / 8] * 3"),
+        RuleTestCase("4 * x : 8", simplifyDividingByANumber, "[4 / 8] * x"),
+
+        RuleTestCase("[5 / [2/3]]", simplifyFractionWithFractionDenominator, "5 * [3/2]"),
+        RuleTestCase("[[1/2] / [3/4]]", simplifyFractionWithFractionDenominator, "[1/2] * [4/3]"),
+
+        RuleTestCase("[[1 / 2] / 3]", simplifyFractionWithFractionNumerator, "[1/2] * [1/3]"),
     )
 }
