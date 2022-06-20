@@ -16,21 +16,33 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import java.util.stream.Stream
 import kotlin.test.assertEquals
+import kotlin.test.assertFails
 
 class ParserTest {
 
-    data class TestCase(val text: String, val expr: Expression)
+    data class TestCase(val text: String, val expr: Expression?)
 
     @ParameterizedTest
     @MethodSource("testCaseProvider")
     fun testParser(testCase: TestCase) {
-        assertEquals(testCase.expr, parseExpression(testCase.text), testCase.text)
+        if (testCase.expr != null) {
+            assertEquals(testCase.expr, parseExpression(testCase.text), testCase.text)
+        } else {
+            assertFails {
+                parseExpression(testCase.text)
+            }
+        }
     }
 
     companion object {
 
         @JvmStatic
         fun testCaseProvider(): Stream<TestCase> = Stream.of(
+            TestCase("1+", null),
+            TestCase("[1/2", null),
+            TestCase("?x", null),
+            TestCase("[1/3]??", null),
+
             TestCase("1+2", sumOf(xp(1), xp(2))),
             TestCase("3-2*5", sumOf(xp(3), negOf(productOf(xp(2), xp(5))))),
             TestCase(

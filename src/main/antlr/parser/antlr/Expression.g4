@@ -4,6 +4,8 @@ grammar Expression;
     package parser.antlr;
 }
 
+wholeInput: expr EOF;
+
 expr: sum;
 
 sum: sign=('+'|'-')? first=explicitProduct (rest+=otherTerm)*;
@@ -54,3 +56,5 @@ CLOSE_CURLY: '.}';
 
 VARIABLE: [a-z];
 WHITESPACE: [ \t] -> skip;
+
+UNKNOWN: .;

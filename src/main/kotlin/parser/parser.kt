@@ -8,6 +8,7 @@ import engine.expressions.Operator
 import engine.expressions.UnaryOperator
 import engine.expressions.mixedNumber
 import engine.expressions.xp
+import org.antlr.v4.runtime.BailErrorStrategy
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import parser.antlr.ExpressionBaseVisitor
@@ -19,8 +20,9 @@ fun invisibleBracketOf(operand: Expression) = Expression(UnaryOperator.Invisible
 fun parseExpression(text: String): Expression {
     val lexer = ExpressionLexer(CharStreams.fromString(text))
     val parser = ExpressionParser(CommonTokenStream(lexer))
+    parser.errorHandler = BailErrorStrategy()
     val visitor = ExpressionVisitor()
-    return visitor.visit(parser.expr())
+    return visitor.visit(parser.wholeInput())
 }
 
 private fun makeExpression(operator: Operator, operands: List<Expression>) = Expression(
@@ -37,6 +39,10 @@ private fun makeExpression(operator: Operator, vararg operands: Expression) =
     makeExpression(operator, operands.asList())
 
 private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
+
+    override fun visitWholeInput(ctx: ExpressionParser.WholeInputContext?): Expression {
+        return visit(ctx?.getChild(0))
+    }
 
     override fun visitExpr(ctx: ExpressionParser.ExprContext?): Expression {
         return visit(ctx?.getChild(0))
