@@ -46,6 +46,10 @@ fun divisionOf(dividend: Expression, divisor: Expression) = Expression(BinaryOpe
 
 fun powerOf(base: Expression, exponent: Expression) = Expression(BinaryOperator.Power, listOf(base, exponent))
 
+fun squareRootOf(radicand: Expression) = Expression(UnaryOperator.SquareRoot, listOf(radicand))
+
+fun rootOf(radicand: Expression, order: Expression) = Expression(BinaryOperator.Root, listOf(radicand, order))
+
 fun sumOf(vararg terms: Expression) = Expression(NaryOperator.Sum, terms.asList())
 
 fun productOf(vararg factors: Expression) = Expression(NaryOperator.Product, factors.asList())

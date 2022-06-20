@@ -9,7 +9,9 @@ import engine.expressions.negOf
 import engine.expressions.plusOf
 import engine.expressions.powerOf
 import engine.expressions.productOf
+import engine.expressions.rootOf
 import engine.expressions.squareBracketOf
+import engine.expressions.squareRootOf
 import engine.expressions.sumOf
 import engine.expressions.xp
 import org.junit.jupiter.params.ParameterizedTest
@@ -104,6 +106,26 @@ class ParserTest {
                 fractionOf(
                     fractionOf(xp(1), xp(2)),
                     fractionOf(xp(3), xp(4)),
+                )
+            ),
+            TestCase(
+                "sqrt[2] * sqrt[3]",
+                productOf(squareRootOf(xp(2)), squareRootOf(xp(3)))
+            ),
+            TestCase(
+                "[root[2, 3] / root[4, 5]]",
+                fractionOf(rootOf(xp(2), xp(3)), rootOf(xp(4), xp(5)))
+            ),
+            TestCase(
+                "[sqrt[3] ^ 2]",
+                powerOf(squareRootOf(xp(3)), xp(2))
+            ),
+            TestCase(
+                "root[2, 3] * [sqrt[3] ^ 2] * [root[4, 5] ^ x]",
+                productOf(
+                    rootOf(xp(2), xp(3)),
+                    powerOf(squareRootOf(xp(3)), xp(2)),
+                    powerOf(rootOf(xp(4), xp(5)), xp("x")),
                 )
             )
         )

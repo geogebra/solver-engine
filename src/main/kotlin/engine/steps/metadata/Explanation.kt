@@ -48,4 +48,12 @@ enum class Explanation : MetadataKey {
     SimplifyFractionToMinusOne,
     TurnIntegerToMinusOneToFraction,
     TurnNegativePowerOfIntegerToFraction,
+
+    /* Roots */
+    RootOfOne,
+    RootOfZero,
+    FactorizeNumberUnderSquareRoot,
+    SeparateIntegerPowersUnderSquareRoot,
+    SeparateSquaresUnderSquareRoot,
+    SimplifySquareRootOfPower,
 }

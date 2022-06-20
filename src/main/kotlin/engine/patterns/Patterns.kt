@@ -251,6 +251,12 @@ fun divideBy(divisor: Pattern) =
 fun powerOf(base: Pattern, exponent: Pattern) =
     OperatorPattern(BinaryOperator.Power, listOf(base, exponent))
 
+fun squareRootOf(radicand: Pattern) =
+    OperatorPattern(UnaryOperator.SquareRoot, listOf(radicand))
+
+fun rootOf(radicand: Pattern, degree: Pattern) =
+    OperatorPattern(BinaryOperator.Root, listOf(radicand, degree))
+
 fun bracketOf(expr: Pattern) = OperatorPattern(BracketOperator.Bracket, listOf(expr))
 
 fun mixedNumberOf(

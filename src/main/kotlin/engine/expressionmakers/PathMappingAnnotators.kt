@@ -6,29 +6,37 @@ import engine.expressions.PathMappingType
 import engine.patterns.Match
 import engine.patterns.PathProvider
 
-data class PathMappingAnnotator(val pathMappingType: PathMappingType, val pattern: PathProvider) : ExpressionMaker {
+private data class UnaryPathMappingAnnotator(
+    val pathMappingType: PathMappingType,
+    val pattern: PathProvider,
+) : ExpressionMaker {
     override fun makeMappedExpression(match: Match): MappedExpression {
         val paths = pattern.getBoundPaths(match)
         return MappedExpression(pattern.getBoundExpr(match)!!, PathMappingLeaf(paths, pathMappingType))
     }
 }
 
-data class VanishingPathAnnotator(
+private data class BinaryPathMappingAnnotator(
     val pathMappingType: PathMappingType,
     val pattern: PathProvider,
-    val inExpression: ExpressionMaker
+    val expressionMaker: ExpressionMaker,
 ) : ExpressionMaker {
     override fun makeMappedExpression(match: Match): MappedExpression {
-        // TODO
-        return inExpression.makeMappedExpression(match)
+        return expressionMaker.makeMappedExpression(match)
     }
 }
 
-fun move(pattern: PathProvider) = PathMappingAnnotator(PathMappingType.Move, pattern)
+fun move(pattern: PathProvider): ExpressionMaker =
+    UnaryPathMappingAnnotator(PathMappingType.Move, pattern)
 
-fun factor(pattern: PathProvider) = PathMappingAnnotator(PathMappingType.Factor, pattern)
+fun factor(pattern: PathProvider): ExpressionMaker =
+    UnaryPathMappingAnnotator(PathMappingType.Factor, pattern)
 
-fun transform(pattern: PathProvider) = PathMappingAnnotator(PathMappingType.Transform, pattern)
+fun transform(pattern: PathProvider): ExpressionMaker =
+    UnaryPathMappingAnnotator(PathMappingType.Transform, pattern)
 
-fun cancel(pattern: PathProvider, inExpression: ExpressionMaker) =
-    VanishingPathAnnotator(PathMappingType.Cancel, pattern, inExpression)
+fun transform(pattern: PathProvider, toExpression: ExpressionMaker): ExpressionMaker =
+    BinaryPathMappingAnnotator(PathMappingType.Transform, pattern, toExpression)
+
+fun cancel(pattern: PathProvider, inExpression: ExpressionMaker): ExpressionMaker =
+    BinaryPathMappingAnnotator(PathMappingType.Cancel, pattern, inExpression)

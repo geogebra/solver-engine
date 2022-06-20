@@ -255,4 +255,38 @@ class IntegerArithmeticTest {
             }
         }
     }
+
+    @Test
+    fun testSimplifyRoots() = testPlan {
+        plan = simplifyArithmeticExpression
+        inputExpr = "sqrt[63]"
+
+        check {
+            toExpr = "3 * sqrt[7]"
+
+            step {
+                toExpr = "[3 ^ 2 : 2] * sqrt[7]"
+
+                step {
+                    toExpr = "sqrt[[3 ^ 2] * 7]"
+                }
+
+                step {
+                    toExpr = "sqrt[[3 ^ 2]] * sqrt[7]"
+                }
+
+                step {
+                    toExpr = "[3 ^ 2 : 2] * sqrt[7]"
+                }
+            }
+
+            step {
+                toExpr = "[3 ^ 1] * sqrt[7]"
+            }
+
+            step {
+                toExpr = "3 * sqrt[7]"
+            }
+        }
+    }
 }

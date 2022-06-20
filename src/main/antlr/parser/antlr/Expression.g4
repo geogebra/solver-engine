@@ -29,6 +29,10 @@ fraction: '[' num=expr '/' den=expr ']';
 
 power: '[' base=atom '^' exp=expr ']';
 
+sqrt: 'sqrt[' radicand=expr ']';
+
+root: 'root[' radicand=expr ',' order=expr ']';
+
 bracket
     :'(' expr ')' #roundBracket
     | OPEN_SQUARE expr CLOSE_SQUARE #squareBracket
@@ -37,7 +41,7 @@ bracket
 
 atom: nonNumericAtom | naturalNumber;
 
-nonNumericAtom: bracket | variable;
+nonNumericAtom: sqrt | root | bracket | variable;
 
 mixedNumber: '[' integer=NATNUM num=NATNUM '/' den=NATNUM ']';
 

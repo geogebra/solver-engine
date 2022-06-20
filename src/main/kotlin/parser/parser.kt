@@ -27,7 +27,7 @@ fun parseExpression(text: String): Expression {
 
 private fun makeExpression(operator: Operator, operands: List<Expression>) = Expression(
     operator,
-    operands.mapIndexed() { i, operand ->
+    operands.mapIndexed { i, operand ->
         when {
             operator.nthChildAllowed(i, operand.operator) -> operand
             else -> invisibleBracketOf(operand)
@@ -116,6 +116,14 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
 
     override fun visitPower(ctx: ExpressionParser.PowerContext?): Expression {
         return makeExpression(BinaryOperator.Power, visit(ctx!!.base), visit(ctx.exp))
+    }
+
+    override fun visitSqrt(ctx: ExpressionParser.SqrtContext?): Expression {
+        return makeExpression(UnaryOperator.SquareRoot, visit(ctx!!.radicand))
+    }
+
+    override fun visitRoot(ctx: ExpressionParser.RootContext?): Expression {
+        return makeExpression(BinaryOperator.Root, visit(ctx!!.radicand), visit(ctx.order))
     }
 
     override fun visitRoundBracket(ctx: ExpressionParser.RoundBracketContext?): Expression {

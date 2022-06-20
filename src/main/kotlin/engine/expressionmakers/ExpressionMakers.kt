@@ -8,7 +8,6 @@ import engine.expressions.MixedNumberOperator
 import engine.expressions.NaryOperator
 import engine.expressions.Operator
 import engine.expressions.PathMappingLeaf
-import engine.expressions.PathMappingParent
 import engine.expressions.PathMappingType
 import engine.expressions.Subexpression
 import engine.expressions.UnaryOperator
@@ -55,25 +54,11 @@ data class OperatorExpressionMaker(val operator: Operator, val operands: List<Ex
 
 data class FlattenedNaryExpressionMaker(val operator: NaryOperator, val operands: List<ExpressionMaker>) :
     ExpressionMaker {
-    override fun makeMappedExpression(match: Match) =
-        flattenedNaryMappedExpression(operator, operands.map { it.makeMappedExpression(match) })
-}
-
-data class RestExpressionMaker(val pattern: PartialNaryPattern) : ExpressionMaker {
     override fun makeMappedExpression(match: Match): MappedExpression {
-        val subexpressions = pattern.getRestSubexpressions(match)
-        return when (subexpressions.size) {
-            1 -> MappedExpression(
-                subexpressions[0].expr,
-                PathMappingLeaf(
-                    listOf(subexpressions[0].path),
-                    PathMappingType.Move
-                )
-            )
-            else -> MappedExpression(
-                Expression(pattern.operator, subexpressions.map { it.expr }),
-                PathMappingParent(subexpressions.map { PathMappingLeaf(listOf(it.path), PathMappingType.Move) })
-            )
+        // If there is only one operand, it makes no sense to wrap it in an nary expression
+        return when (operands.size) {
+            1 -> operands[0].makeMappedExpression(match)
+            else -> flattenedNaryMappedExpression(operator, operands.map { it.makeMappedExpression(match) })
         }
     }
 }
@@ -93,13 +78,28 @@ data class SubstituteInExpressionMaker(val pattern: NaryPatternBase, val newVals
             }
         }
 
-        // If there is only one operand, it makes no sense to wrap it in an nary expression
-        val exprMaker = when (restChildren.size) {
-            1 -> restChildren[0]
-            else -> FlattenedNaryExpressionMaker(pattern.operator, restChildren)
-        }
+        return FlattenedNaryExpressionMaker(pattern.operator, restChildren).makeMappedExpression(match)
+    }
+}
 
-        return exprMaker.makeMappedExpression(match)
+data class RestExpressionMaker(val pattern: PartialNaryPattern) :
+    ExpressionMaker by SubstituteInExpressionMaker(pattern, listOf())
+
+data class NumericOp(
+    val num: IntegerProvider,
+    val operation: (BigInteger) -> BigInteger
+) : ExpressionMaker {
+    override fun makeMappedExpression(match: Match): MappedExpression {
+        val value = operation(num.getBoundInt(match))
+
+        val result = when {
+            value.signum() >= 0 -> xp(value)
+            else -> negOf(xp(-value))
+        }
+        return MappedExpression(
+            result,
+            PathMappingLeaf(num.getBoundPaths(match), PathMappingType.Transform),
+        )
     }
 }
 
@@ -141,10 +141,19 @@ fun makeNegOf(operand: ExpressionMaker) = OperatorExpressionMaker(UnaryOperator.
 
 fun makeDivideBy(operand: ExpressionMaker) = OperatorExpressionMaker(UnaryOperator.DivideBy, listOf(operand))
 
+fun makeSquareRootOf(radicand: ExpressionMaker) = OperatorExpressionMaker(UnaryOperator.SquareRoot, listOf(radicand))
+
 fun restOf(pattern: PartialNaryPattern) = RestExpressionMaker(pattern)
 
 fun makeMixedNumberOf(integer: ExpressionMaker, numerator: ExpressionMaker, denominator: ExpressionMaker) =
     OperatorExpressionMaker(MixedNumberOperator, listOf(integer, numerator, denominator))
+
+fun makeNumericOp(
+    ptn: IntegerProvider,
+    operation: (BigInteger) -> BigInteger
+): ExpressionMaker {
+    return NumericOp(ptn, operation)
+}
 
 fun makeNumericOp(
     ptn1: IntegerProvider,
@@ -160,6 +169,10 @@ fun substituteIn(pattern: NaryPatternBase, vararg newVals: ExpressionMaker) =
 class ExpressionMakerBuilder(private val match: Match) {
     fun isBound(pattern: Pattern): Boolean {
         return match.getLastBinding(pattern) != null
+    }
+
+    fun getValue(integerProvider: IntegerProvider): BigInteger {
+        return integerProvider.getBoundInt(match)
     }
 }
 
