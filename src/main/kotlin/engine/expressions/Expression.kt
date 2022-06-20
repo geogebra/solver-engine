@@ -18,8 +18,13 @@ data class Expression(val operator: Operator, val operands: List<Expression>) {
     }
 }
 
-fun xp(n: Int) = Expression(IntegerOperator(n.toBigInteger()), emptyList())
-fun xp(n: BigInteger) = Expression(IntegerOperator(n), emptyList())
+fun xp(n: Int) = xp(n.toBigInteger())
+
+fun xp(n: BigInteger): Expression {
+    val posExpr = Expression(IntegerOperator(n.abs()), emptyList())
+    return if (n.signum() >= 0) posExpr else negOf(posExpr)
+}
+
 fun xp(v: String) = Expression(VariableOperator(v), emptyList())
 
 fun mixedNumber(integer: BigInteger, numerator: BigInteger, denominator: BigInteger) =

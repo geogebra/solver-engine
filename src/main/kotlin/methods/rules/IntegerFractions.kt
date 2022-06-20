@@ -6,20 +6,28 @@ import engine.expressionmakers.makeFractionOf
 import engine.expressionmakers.makeNegOf
 import engine.expressionmakers.makeNumericOp
 import engine.expressionmakers.makeOptionalNegOf
+import engine.expressionmakers.makePowerOf
 import engine.expressionmakers.makeProductOf
 import engine.expressionmakers.makeSumOf
 import engine.expressionmakers.move
 import engine.expressionmakers.substituteIn
+import engine.expressions.Subexpression
 import engine.expressions.xp
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
+import engine.patterns.FixedPattern
+import engine.patterns.Match
+import engine.patterns.Pattern
+import engine.patterns.SignedIntegerPattern
 import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.bracketOf
 import engine.patterns.commutativeSumOf
 import engine.patterns.divideBy
 import engine.patterns.fractionOf
 import engine.patterns.negOf
 import engine.patterns.numericCondition
 import engine.patterns.optionalNegOf
+import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
 import engine.patterns.sumOf
@@ -29,11 +37,21 @@ import engine.steps.metadata.Skill
 import engine.steps.metadata.makeMetadata
 import java.math.BigInteger
 
-val convertIntegerToFraction = run {
-    val integer = UnsignedIntegerPattern()
+private class FractionPattern : Pattern {
     val numerator = UnsignedIntegerPattern()
     val denominator = UnsignedIntegerPattern()
     val fraction = fractionOf(numerator, denominator)
+
+    override val key = fraction.key
+
+    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+        return fraction.findMatches(subexpression, match)
+    }
+}
+
+val convertIntegerToFraction = run {
+    val integer = UnsignedIntegerPattern()
+    val fraction = FractionPattern()
     val sum = commutativeSumOf(integer, fraction)
 
     Rule(
@@ -90,36 +108,38 @@ val subtractLikeFractions = run {
 }
 
 val commonDenominator = run {
-    val num1 = UnsignedIntegerPattern()
-    val num2 = UnsignedIntegerPattern()
-    val denom1 = UnsignedIntegerPattern()
-    val denom2 = UnsignedIntegerPattern()
-    val f1 = fractionOf(num1, denom1)
-    val f2 = fractionOf(num2, denom2)
+    val f1 = FractionPattern()
+    val f2 = FractionPattern()
     val nf1 = optionalNegOf(f1)
     val nf2 = optionalNegOf(f2)
     val sum = sumContaining(nf1, nf2)
 
-    val factor1 = makeNumericOp(denom1, denom2) { n1, n2 -> n2 / n1.gcd(n2) }
-    val factor2 = makeNumericOp(denom1, denom2) { n1, n2 -> n1 / n1.gcd(n2) }
+    val factor1 = makeNumericOp(f1.denominator, f2.denominator) { n1, n2 -> n2 / n1.gcd(n2) }
+    val factor2 = makeNumericOp(f1.denominator, f2.denominator) { n1, n2 -> n1 / n1.gcd(n2) }
 
     Rule(
-        pattern = ConditionPattern(sum, numericCondition(denom1, denom2) { n1, n2 -> n1 != n2 }),
+        pattern = ConditionPattern(sum, numericCondition(f1.denominator, f2.denominator) { n1, n2 -> n1 != n2 }),
         resultMaker = substituteIn(
             sum,
             makeSumOf(
                 makeOptionalNegOf(
                     nf1,
-                    makeFractionOf(makeProductOf(move(num1), factor1), makeProductOf(move(denom1), factor1))
+                    makeFractionOf(
+                        makeProductOf(move(f1.numerator), factor1),
+                        makeProductOf(move(f1.denominator), factor1)
+                    )
                 ),
                 makeOptionalNegOf(
                     nf2,
-                    makeFractionOf(makeProductOf(move(num2), factor2), makeProductOf(move(denom2), factor2))
+                    makeFractionOf(
+                        makeProductOf(move(f2.numerator), factor2),
+                        makeProductOf(move(f2.denominator), factor2)
+                    )
                 ),
             )
         ),
         explanationMaker = makeMetadata(Explanation.BringToCommonDenominator, move(f1), move(f2)),
-        skillMakers = listOf(makeMetadata(Skill.NumericLCM, move(denom1), move(denom2))),
+        skillMakers = listOf(makeMetadata(Skill.NumericLCM, move(f1.denominator), move(f2.denominator))),
     )
 }
 
@@ -280,5 +300,75 @@ val simplifyFractionWithFractionDenominator = run {
             makeFractionOf(move(denominator), move(numerator))
         ),
         explanationMaker = makeMetadata(Explanation.SimplifyFractionWithFractionDenominator, move(outerFraction)),
+    )
+}
+
+val distributeFractionPositivePower = run {
+    val fraction = FractionPattern()
+    val exponent = UnsignedIntegerPattern()
+    val exponentGreaterThanOne = ConditionPattern(exponent, numericCondition(exponent) { it > BigInteger.ONE })
+    val pattern = powerOf(bracketOf(fraction), exponentGreaterThanOne)
+
+    Rule(
+        pattern = pattern,
+        resultMaker = makeFractionOf(
+            makePowerOf(move(fraction.numerator), move(exponent)),
+            makePowerOf(move(fraction.denominator), move(exponent))
+        ),
+        explanationMaker = makeMetadata(Explanation.DistributeFractionPositivePower, move(fraction), move(exponent))
+    )
+}
+
+val simplifyFractionNegativePower = run {
+    val fraction = FractionPattern()
+    val exponent = SignedIntegerPattern()
+    val negativeExponent = ConditionPattern(exponent, numericCondition(exponent) { it < -BigInteger.ONE })
+    val pattern = powerOf(bracketOf(fraction), negativeExponent)
+
+    Rule(
+        pattern = pattern,
+        resultMaker = makePowerOf(
+            makeFractionOf(move(fraction.denominator), move(fraction.numerator)),
+            move(exponent.pattern)
+        ),
+        explanationMaker = makeMetadata(Explanation.SimplifyFractionNegativePower, move(fraction), move(exponent))
+    )
+}
+
+val simplifyFractionToMinusOne = run {
+    val fraction = FractionPattern()
+    val pattern = powerOf(bracketOf(fraction), FixedPattern(xp(-1)))
+
+    Rule(
+        pattern = pattern,
+        resultMaker = makeFractionOf(move(fraction.denominator), move(fraction.numerator)),
+        explanationMaker = makeMetadata(Explanation.SimplifyFractionToMinusOne, move(fraction)),
+    )
+}
+
+val turnIntegerToMinusOneToFraction = run {
+    val base = UnsignedIntegerPattern()
+    val pattern = powerOf(base, FixedPattern(xp(-1)))
+
+    Rule(
+        pattern = pattern,
+        resultMaker = makeFractionOf(FixedExpressionMaker(xp(1)), move(base)),
+        explanationMaker = makeMetadata(Explanation.TurnIntegerToMinusOneToFraction, move(base))
+    )
+}
+
+val turnNegativePowerOfIntegerToFraction = run {
+    val base = UnsignedIntegerPattern()
+    val exponent = SignedIntegerPattern()
+    val negativeExponent = ConditionPattern(exponent, numericCondition(exponent) { it < -BigInteger.ONE })
+    val pattern = powerOf(base, negativeExponent)
+
+    Rule(
+        pattern = pattern,
+        resultMaker = makeFractionOf(
+            FixedExpressionMaker(xp(1)),
+            makePowerOf(move(base), move(exponent.pattern)),
+        ),
+        explanationMaker = makeMetadata(Explanation.TurnNegativePowerOfIntegerToFraction, move(base), move(exponent))
     )
 }

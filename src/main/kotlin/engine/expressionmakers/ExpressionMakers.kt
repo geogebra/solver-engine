@@ -134,6 +134,9 @@ fun makeSumOf(vararg terms: ExpressionMaker) =
 fun makeProductOf(vararg terms: ExpressionMaker) =
     FlattenedNaryExpressionMaker(NaryOperator.Product, terms.asList())
 
+fun makePowerOf(base: ExpressionMaker, exponent: ExpressionMaker) =
+    OperatorExpressionMaker(BinaryOperator.Power, listOf(base, exponent))
+
 fun makeNegOf(operand: ExpressionMaker) = OperatorExpressionMaker(UnaryOperator.Minus, listOf(operand))
 
 fun makeDivideBy(operand: ExpressionMaker) = OperatorExpressionMaker(UnaryOperator.DivideBy, listOf(operand))

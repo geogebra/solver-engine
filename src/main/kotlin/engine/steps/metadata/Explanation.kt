@@ -5,6 +5,8 @@ enum class Explanation : MetadataKey {
     SimplifyDoubleMinus,
     SimplifyTwoNegativeFactorsInProduct,
     MoveSignOfNegativeFactorOutOfProduct,
+    SimplifyEvenPowerOfNegative,
+    SimplifyOddPowerOfNegative,
 
     /* Handling brackets */
     ReplaceInvisibleBrackets,
@@ -41,4 +43,9 @@ enum class Explanation : MetadataKey {
     TurnDivisionToFraction,
     SimplifyFractionWithFractionDenominator,
     SimplifyFractionWithFractionNumerator,
+    DistributeFractionPositivePower,
+    SimplifyFractionNegativePower,
+    SimplifyFractionToMinusOne,
+    TurnIntegerToMinusOneToFraction,
+    TurnNegativePowerOfIntegerToFraction,
 }

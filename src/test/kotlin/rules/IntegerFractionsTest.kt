@@ -3,13 +3,18 @@ package rules
 import methods.rules.addLikeFractions
 import methods.rules.commonDenominator
 import methods.rules.convertIntegerToFraction
+import methods.rules.distributeFractionPositivePower
 import methods.rules.findCommonFactorInFraction
 import methods.rules.multiplyPositiveFractions
 import methods.rules.negativeDenominator
 import methods.rules.simplifyDividingByAFraction
 import methods.rules.simplifyDividingByANumber
+import methods.rules.simplifyFractionNegativePower
+import methods.rules.simplifyFractionToMinusOne
 import methods.rules.simplifyFractionWithFractionDenominator
 import methods.rules.simplifyFractionWithFractionNumerator
+import methods.rules.turnIntegerToMinusOneToFraction
+import methods.rules.turnNegativePowerOfIntegerToFraction
 import java.util.stream.Stream
 
 object IntegerFractionsTest : RuleTest {
@@ -50,5 +55,19 @@ object IntegerFractionsTest : RuleTest {
         RuleTestCase("[[1/2] / [3/4]]", simplifyFractionWithFractionDenominator, "[1/2] * [4/3]"),
 
         RuleTestCase("[[1 / 2] / 3]", simplifyFractionWithFractionNumerator, "[1/2] * [1/3]"),
+
+        RuleTestCase("[([2 / 3]) ^ 5]", distributeFractionPositivePower, "[[2 ^ 5] / [3 ^ 5]]"),
+        RuleTestCase("[([2 / 3]) ^ 1]", distributeFractionPositivePower, null),
+        RuleTestCase("[([2 / 3]) ^ 0]", distributeFractionPositivePower, null),
+        RuleTestCase("[([2 / 3]) ^ -2]", distributeFractionPositivePower, null),
+
+        RuleTestCase("[([3 / 5]) ^ -2]", simplifyFractionNegativePower, "[([5 / 3]) ^ 2]"),
+        RuleTestCase("[([7 / 10]) ^ (-5)]", simplifyFractionNegativePower, "[([10 / 7]) ^ 5]"),
+        RuleTestCase("[([1 / 3]) ^ -1]", simplifyFractionNegativePower, null),
+
+        RuleTestCase("[([1 / 3]) ^ -1]", simplifyFractionToMinusOne, "[3 / 1]"),
+
+        RuleTestCase("[3 ^ -1]", turnIntegerToMinusOneToFraction, "[1 / 3]"),
+        RuleTestCase("[3 ^ -2]", turnNegativePowerOfIntegerToFraction, "[1 / [3 ^ 2]]"),
     )
 }

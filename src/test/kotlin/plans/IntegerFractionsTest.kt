@@ -352,4 +352,74 @@ class TestCombineFractionsInExpression {
             }
         }
     }
+
+    @Test
+    fun testFractionExponent() = testPlan {
+        plan = combineFractionsInExpression
+        inputExpr = "[(-[1/2])^3] + [([2/3])^-2]"
+
+        check {
+            toExpr = "[17/8]"
+
+            step {
+                toExpr = "-[([1/2])^3] + [([2/3])^-2]"
+            }
+
+            step {
+                toExpr = "-[1/8] + [([2/3])^-2]"
+            }
+
+            step {
+                toExpr = "-[1/8] + [9/4]"
+            }
+
+            step {
+                toExpr = "[17/8]"
+            }
+        }
+    }
+
+    @Test
+    fun testNegativeExponentsOfIntegers() = testPlan {
+        plan = combineFractionsInExpression
+        inputExpr = "[3 ^ -1] - [3 ^ -2]"
+
+        check {
+            toExpr = "[2/9]"
+
+            step {
+                toExpr = "[1/3] - [3 ^ -2]"
+            }
+
+            step {
+                toExpr = "[1/3] - [1/9]"
+            }
+
+            step {
+                toExpr = "[2/9]"
+            }
+        }
+    }
+
+    @Test
+    fun testFractionToTheMinusOne() = testPlan {
+        plan = combineFractionsInExpression
+        inputExpr = "[([1 / 3])^-1] * [2 ^ -2]"
+
+        check {
+            toExpr = "[3 / 4]"
+
+            step {
+                toExpr = "[3 / 1] * [2 ^ -2]"
+            }
+
+            step {
+                toExpr = "[3 / 1] * [1 / 4]"
+            }
+
+            step {
+                toExpr = "[3 / 4]"
+            }
+        }
+    }
 }
