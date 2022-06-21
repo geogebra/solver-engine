@@ -127,7 +127,7 @@ val evaluateSignedIntegerPower = run {
   re-writes [4^2] as 1 * 4 * 4
  */
 val writeIntegerSquareAsMulWithOneAtStart = run {
-    val base = UnsignedIntegerPattern()
+    val base = SignedIntegerPattern()
     val exponent = FixedPattern(xp(2))
 
     val power = powerOf(base, exponent)
@@ -143,7 +143,7 @@ val writeIntegerSquareAsMulWithOneAtStart = run {
   re-writes [4^2] as 4 * 4
  */
 val writeIntegerSquareAsMulWithoutOneAtStart = run {
-    val base = UnsignedIntegerPattern()
+    val base = SignedIntegerPattern()
     val exponent = FixedPattern(xp(2))
 
     val power = powerOf(base, exponent)

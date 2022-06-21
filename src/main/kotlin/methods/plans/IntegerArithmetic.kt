@@ -4,6 +4,7 @@ import engine.expressions.xp
 import engine.patterns.AnyPattern
 import engine.patterns.squareRootOf
 import engine.patterns.FixedPattern
+import engine.patterns.SignedIntegerPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.powerOf
 import engine.plans.plan
@@ -80,7 +81,7 @@ val evaluateSquareOfIntegerWithoutOneAtStart = plan {
 }
 
 val evaluateSquareOfInteger = plan {
-    pattern = powerOf(UnsignedIntegerPattern(), FixedPattern(xp(2)))
+    pattern = powerOf(SignedIntegerPattern(), FixedPattern(xp(2)))
 
     selectFromContext {
         case(curriculum = "EU", evaluateSquareOfIntegerWithoutOneAtStart)
