@@ -15,13 +15,13 @@ properties:
   pathMappings:
     type: array
     items:
-      $ref: 'path-mapping-schema.yaml'
+      $ref: 'PathMapping.yaml'
   explanation:
-    $ref: 'metadata-schema.yaml'
+    $ref: 'Metadata.yaml'
   skills:
     type: array
     items:
-      $ref: 'metadata-schema.yaml'
+      $ref: 'Metadata.yaml'
   steps:
     type: array
     items:

@@ -9,4 +9,4 @@ properties:
   pathMappings:
     type: array
     items:
-      $ref: 'path-mapping-schema.yaml'
+      $ref: 'PathMapping.yaml'

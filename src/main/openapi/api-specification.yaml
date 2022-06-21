@@ -5,8 +5,33 @@ info:
   version: "1.0"
 
 paths:
-  /solve:
+  /applyPlan:
     post:
+      description: apply a plan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - plan
+                - input
+              properties:
+                plan:
+                  type: string
+                input:
+                  type: string
       responses:
         "200":
           description: "Solve successful"
+          content:
+            application/json:
+              schema:
+                $ref: 'Transformation.yaml'
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object

@@ -1,6 +1,5 @@
 package rules
 
-import OutputValidator
 import engine.context.emptyContext
 import engine.expressions.RootPath
 import engine.expressions.Subexpression
@@ -20,9 +19,6 @@ data class RuleTestCase(val inputExpr: String, val rule: Rule, val outputExpr: S
             assertNull(step)
         } else {
             assertEquals(parseExpression(outputExpr), step?.toExpr?.expr, inputExpr)
-            if (step != null) {
-                OutputValidator.validateAgainstSchema(step)
-            }
         }
     }
 }

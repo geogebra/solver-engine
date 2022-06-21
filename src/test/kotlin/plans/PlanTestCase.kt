@@ -1,6 +1,5 @@
 package plans
 
-import OutputValidator
 import engine.context.Context
 import engine.context.emptyContext
 import engine.expressions.MappedExpression
@@ -209,10 +208,6 @@ class PlanTestCase {
         val check = TransformationCheck(trans)
         check.assert()
         check.finalize()
-
-        if (trans != null) {
-            OutputValidator.validateAgainstSchema(trans)
-        }
     }
 }
 
