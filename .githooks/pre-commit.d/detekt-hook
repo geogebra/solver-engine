@@ -1,0 +1,10 @@
+#!/bin/sh
+
+echo "Running detekt"
+
+./gradlew --quiet detekt
+gradle_command_exit_code=$?
+
+echo "Completed detekt hook"
+
+exit $gradle_command_exit_code

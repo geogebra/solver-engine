@@ -1,0 +1,4 @@
+#!/bin/sh
+
+.githooks/pre-commit.d/ktlint-hook &&
+.githooks/pre-commit.d/detekt-hook

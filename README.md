@@ -14,7 +14,7 @@ This project hosts the code for the solver engine.
 
 **Expression maker** // TODO
 
-**Transformation** is the data structure which stores the 
+**Transformation** is the data structure which stores the
 generated solution. It consists of the original and resulting
 expressions, an explanation of the change in the current step,
 the skills involved and a list of substeps which are themselves
@@ -25,13 +25,14 @@ transformations.
 **Rule** is the simplest transformation producer. It creates a
 transformation with explanation and potentially with associated
 skills, but with no substeps. It transforms the input which
-matches its pattern into an equivalent expression, but it does 
+matches its pattern into an equivalent expression, but it does
 not know when it should apply.
 
-**Plan** is the top and mid-level transformation producer. 
+**Plan** is the top and mid-level transformation producer.
 It may have an explanation and skills, just like rules, but the
-actual work is done by one of the many possible steps 
+actual work is done by one of the many possible steps
 producers:
+
 - **FirstOf**: given a list of transformation producers it
   executes the first one which applies
 - **Pipeline**: given a list of transformation producers it
@@ -46,7 +47,7 @@ producers:
 - **WhilePossible**: given a transformation producer it is
   executed as many times as possible on the expression. E.g.
   multiplication of integers is defined as a rule for two numbers,
-  but is extended to an arbitrary number of values using a 
+  but is extended to an arbitrary number of values using a
   WhilePossible steps producer.
 - **InStep**: given a list of transformation producers and a list
   of input expressions it executes the transformation producers in
@@ -54,6 +55,20 @@ producers:
   first producer on second expression, ..., then second producer
   on first expression, second producer on second expression etc.
 
-Rules are combined into simpler plans, which are in turn combined 
-into more and more complex plans to achieve at the top level 
+Rules are combined into simpler plans, which are in turn combined
+into more and more complex plans to achieve at the top level
 plans which are able to solve the required problems.
+
+## Development
+
+### Commit hooks
+
+There are commit hooks under revision control in the `.githooks/`
+directory. To activate them in your repository you can do:
+
+```shell
+git config --local core.hooksPath .githooks/
+```
+
+Currently, there is a pre-commit hook that runs the `ktlintCheck`
+and `detekt` tasks.
