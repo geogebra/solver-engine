@@ -8,6 +8,8 @@ import methods.rules.evaluateSignedIntegerPower
 import methods.rules.evaluateSignedIntegerProduct
 import methods.rules.evaluateUnsignedIntegerSubtraction
 import methods.rules.simplifyDoubleNeg
+import methods.rules.writeIntegerSquareAsMulWithOneAtStart
+import methods.rules.writeIntegerSquareAsMulWithoutOneAtStart
 import methods.rules.zeroInProduct
 import java.util.stream.Stream
 
@@ -50,6 +52,9 @@ object IntegerArithmeticTest : RuleTest {
         RuleTestCase("[(-5) ^ 3]", evaluateSignedIntegerPower, "-125"),
 
         RuleTestCase("-(-5)", simplifyDoubleNeg, "5"),
-        RuleTestCase("-(-x)", simplifyDoubleNeg, "x")
+        RuleTestCase("-(-x)", simplifyDoubleNeg, "x"),
+
+        RuleTestCase("[4^2]", writeIntegerSquareAsMulWithOneAtStart, "1 * 4 * 4"),
+        RuleTestCase("[4^2]", writeIntegerSquareAsMulWithoutOneAtStart, "4 * 4"),
     )
 }

@@ -22,6 +22,8 @@ enum class Explanation : MetadataKey {
     EvaluateIntegerAddition,
     EvaluateIntegerProduct,
     EvaluateIntegerPower,
+    WriteIntegerSquareAsMulWithoutOneAtStart,
+    WriteIntegerSquareAsMulWithOneAtStart,
 
     /* Mixed numbers */
     ConvertMixedNumberToSum,

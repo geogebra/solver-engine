@@ -1,7 +1,11 @@
 package plans
 
+import engine.context.Context
 import engine.steps.metadata.Explanation
 import engine.steps.metadata.PlanExplanation
+import methods.plans.evaluateSquareOfInteger
+import methods.plans.evaluateSquareOfIntegerWithOneAtStart
+import methods.plans.evaluateSquareOfIntegerWithoutOneAtStart
 import methods.plans.simplifyArithmeticExpression
 import kotlin.test.Test
 
@@ -289,4 +293,106 @@ class IntegerArithmeticTest {
             }
         }
     }
+
+    @Test
+    fun testEvaluateSquareOfIntegerWithoutOneAtStart() = testPlan {
+        plan = evaluateSquareOfIntegerWithoutOneAtStart
+        inputExpr = "[4^2]"
+
+        check {
+            toExpr = "16"
+
+            step {
+                fromExpr = "[4^2]"
+                toExpr = "4 * 4"
+
+                explanation {
+                    key = Explanation.WriteIntegerSquareAsMulWithoutOneAtStart
+                }
+            }
+
+            step {
+                fromExpr = "4 * 4"
+                toExpr = "16"
+
+                explanation {
+                    key = PlanExplanation.SimplifyArithmeticExpression
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testEvaluateSquareOfIntegerWithOneAtStart() = testPlan {
+        plan = evaluateSquareOfIntegerWithOneAtStart
+        inputExpr = "[4^2]"
+
+        check {
+            toExpr = "16"
+
+            step {
+                fromExpr = "[4^2]"
+                toExpr = "1 * 4 * 4"
+
+                explanation {
+                    key = Explanation.WriteIntegerSquareAsMulWithOneAtStart
+                }
+            }
+
+            step {
+                fromExpr = "1 * 4 * 4"
+                toExpr = "16"
+
+                explanation {
+                    key = PlanExplanation.SimplifyArithmeticExpression
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testEvaluateSquareOfIntegerPlanEU() = testPlan {
+        context = Context("EU")
+        plan = evaluateSquareOfInteger
+        inputExpr = "[4^2]"
+
+        check {
+            toExpr = "16"
+
+            step {
+                fromExpr = "[4^2]"
+                toExpr = "4 * 4"
+
+                explanation {
+                    key = Explanation.WriteIntegerSquareAsMulWithoutOneAtStart
+                }
+            }
+
+            step {}
+        }
+    }
+
+    @Test
+    fun testEvaluateSquareOfIntegerPlanUS() = testPlan {
+        context = Context("US")
+        plan = evaluateSquareOfInteger
+        inputExpr = "[4^2]"
+
+        check {
+            toExpr = "16"
+
+            step {
+                fromExpr = "[4^2]"
+                toExpr = "1 * 4 * 4"
+
+                explanation {
+                    key = Explanation.WriteIntegerSquareAsMulWithOneAtStart
+                }
+            }
+
+            step {}
+        }
+    }
 }
+
+

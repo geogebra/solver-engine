@@ -1,8 +1,10 @@
 package methods.rules
 
+import engine.expressionmakers.FixedExpressionMaker
 import engine.expressionmakers.cancel
 import engine.expressionmakers.custom
 import engine.expressionmakers.makeNumericOp
+import engine.expressionmakers.makeProductOf
 import engine.expressionmakers.move
 import engine.expressionmakers.restOf
 import engine.expressionmakers.substituteIn
@@ -118,5 +120,37 @@ val evaluateSignedIntegerPower = run {
         pattern = power,
         resultMaker = makeNumericOp(base, exponent) { n1, n2 -> n1.pow(n2.toInt()) },
         explanationMaker = makeMetadata(Explanation.EvaluateIntegerPower, move(base), move(power))
+    )
+}
+
+/*
+  re-writes [4^2] as 1 * 4 * 4
+ */
+val writeIntegerSquareAsMulWithOneAtStart = run {
+    val base = UnsignedIntegerPattern()
+    val exponent = FixedPattern(xp(2))
+
+    val power = powerOf(base, exponent)
+
+    Rule(
+        pattern = power,
+        resultMaker = makeProductOf(FixedExpressionMaker(xp(1)), move(base), move(base)),
+        explanationMaker = makeMetadata(Explanation.WriteIntegerSquareAsMulWithOneAtStart, move(base), move(power))
+    )
+}
+
+/*
+  re-writes [4^2] as 4 * 4
+ */
+val writeIntegerSquareAsMulWithoutOneAtStart = run {
+    val base = UnsignedIntegerPattern()
+    val exponent = FixedPattern(xp(2))
+
+    val power = powerOf(base, exponent)
+
+    Rule(
+        pattern = power,
+        resultMaker = makeProductOf(move(base), move(base)),
+        explanationMaker = makeMetadata(Explanation.WriteIntegerSquareAsMulWithoutOneAtStart, move(base), move(power))
     )
 }
