@@ -57,6 +57,6 @@ object IntegerArithmeticTest : RuleTest {
         RuleTestCase("[4^2]", writeIntegerSquareAsMulWithOneAtStart, "1 * 4 * 4"),
         RuleTestCase("[4^2]", writeIntegerSquareAsMulWithoutOneAtStart, "4 * 4"),
         RuleTestCase("[(-3) ^ 2]", writeIntegerSquareAsMulWithoutOneAtStart, "(-3) * (-3)"),
-        RuleTestCase("[(-3) ^ 2]", writeIntegerSquareAsMulWithOneAtStart, "1 * (-3) * (-3)"),
+        RuleTestCase("[(-3) ^ 2]", writeIntegerSquareAsMulWithOneAtStart, "1 * (-3) * (-3)")
     )
 }

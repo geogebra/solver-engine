@@ -197,7 +197,6 @@ class IntegerArithmeticTest {
             }
 
             step {
-
                 step {
                     fromExpr = "34 + 60 + 6 - 44"
                     toExpr = "56"
@@ -394,5 +393,3 @@ class IntegerArithmeticTest {
         }
     }
 }
-
-

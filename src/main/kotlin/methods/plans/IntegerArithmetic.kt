@@ -2,11 +2,11 @@ package methods.plans
 
 import engine.expressions.xp
 import engine.patterns.AnyPattern
-import engine.patterns.squareRootOf
 import engine.patterns.FixedPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.powerOf
+import engine.patterns.squareRootOf
 import engine.plans.plan
 import engine.steps.metadata.PlanExplanation
 import methods.rules.evaluateSignedIntegerAddition

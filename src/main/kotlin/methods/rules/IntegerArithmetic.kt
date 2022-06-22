@@ -32,7 +32,7 @@ val eliminateOneInProduct = run {
     Rule(
         pattern = pattern,
         resultMaker = cancel(one, restOf(pattern)),
-        explanationMaker = makeMetadata(Explanation.EliminateOneInProduct, move(one)),
+        explanationMaker = makeMetadata(Explanation.EliminateOneInProduct, move(one))
     )
 }
 
@@ -45,7 +45,7 @@ val evaluateUnsignedIntegerSubtraction = run {
     Rule(
         pattern = pattern,
         resultMaker = substituteIn(sum, makeNumericOp(term1, term2) { n1, n2 -> n1 - n2 }),
-        explanationMaker = makeMetadata(Explanation.EvaluateIntegerSubtraction, move(term1), move(term2)),
+        explanationMaker = makeMetadata(Explanation.EvaluateIntegerSubtraction, move(term1), move(term2))
     )
 }
 
@@ -57,7 +57,7 @@ val evaluateSignedIntegerAddition = run {
     Rule(
         pattern = sum,
         resultMaker = substituteIn(sum, makeNumericOp(term1, term2) { n1, n2 -> n1 + n2 }),
-        explanationMaker = makeMetadata(Explanation.EvaluateIntegerAddition, move(term1), move(term2)),
+        explanationMaker = makeMetadata(Explanation.EvaluateIntegerAddition, move(term1), move(term2))
     )
 }
 
@@ -69,7 +69,7 @@ val evaluateIntegerProduct = run {
     Rule(
         pattern = pattern,
         resultMaker = substituteIn(pattern, makeNumericOp(factor1, factor2) { n1, n2 -> n1 * n2 }),
-        explanationMaker = makeMetadata(Explanation.EvaluateIntegerProduct, move(factor1), move(factor2)),
+        explanationMaker = makeMetadata(Explanation.EvaluateIntegerProduct, move(factor1), move(factor2))
     )
 }
 
