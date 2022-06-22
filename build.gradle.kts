@@ -63,7 +63,7 @@ detekt {
 }
 
 application {
-    mainClass.set("org.openapitools.ApplicationKt")
+    mainClass.set("server.ApplicationKt")
 }
 
 tasks.openApiGenerate {

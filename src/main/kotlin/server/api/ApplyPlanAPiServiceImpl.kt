@@ -6,19 +6,27 @@ import engine.expressions.Subexpression
 import methods.plans.simplifyArithmeticExpression
 import org.springframework.stereotype.Service
 import parser.parseExpression
-import server.models.ApplyPlanPostRequest
+import server.models.ApplyPlanRequest
 import server.models.MappedExpression
 import server.models.Metadata
 import server.models.PathMapping
 import server.models.Transformation
 
 @Service
-class ApplyPlanApiServiceImpl : ApplyPlanApiService {
+class PlanApiServiceImpl : PlansApiService {
+    override fun applyPlan(planId: String, applyPlanRequest: ApplyPlanRequest): Transformation {
 
-    override fun applyPlanPost(applyPlanPostRequest: ApplyPlanPostRequest): Transformation {
-        val expr = parseExpression(applyPlanPostRequest.input)
+        val expr = parseExpression(applyPlanRequest.input)
         val trans = simplifyArithmeticExpression.tryExecute(emptyContext, Subexpression(RootPath, expr))
         return TransformationModeller.modelTransformation(trans!!)
+    }
+
+    override fun getPlan(planId: String): Any {
+        TODO()
+    }
+
+    override fun listPlans(): Any {
+        TODO()
     }
 }
 

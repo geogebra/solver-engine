@@ -5,9 +5,52 @@ info:
   version: "1.0"
 
 paths:
-  /applyPlan:
+  /plans:
+    get:
+      operationId: listPlans
+      description: "List all plans"
+      responses:
+        "200":
+          description: "Sucessfully listed plans"
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /plans/{planId}:
+    get:
+      operationId: getPlan
+      description: "Get the details of a plan"
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Successfully returned plan details"
+          content:
+            application/json:
+              schema:
+                type: object
+        "400":
+          description: "Invalid request"
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /plans/{planId}/apply:
     post:
-      description: apply a plan
+      operationId: applyPlan
+      description: "Apply plan to input and return the transformation"
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema:
+            type: string
       requestBody:
         required: true
         content:
@@ -15,16 +58,13 @@ paths:
             schema:
               type: object
               required:
-                - plan
                 - input
               properties:
-                plan:
-                  type: string
                 input:
                   type: string
       responses:
         "200":
-          description: "Solve successful"
+          description: "Plan applied successfully"
           content:
             application/json:
               schema:
