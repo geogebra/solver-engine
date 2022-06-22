@@ -83,6 +83,7 @@ class ContextSensitivePlanBuilder {
 
 class PlanBuilder {
 
+    var planId: PlanId? = null
     var explanationMaker: MetadataMaker? = null
     var skillMakers: MutableList<MetadataMaker> = mutableListOf()
     var pattern: Pattern? = null
@@ -102,7 +103,8 @@ class PlanBuilder {
                 ownPattern = pattern,
                 stepsProducer = stepsProducer,
                 explanationMaker = explanationMaker,
-                skillMakers = skillMakers
+                skillMakers = skillMakers,
+                planId = planId,
             )
         )
     }

@@ -7,6 +7,7 @@ import engine.patterns.SignedIntegerPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.powerOf
 import engine.patterns.squareRootOf
+import engine.plans.PlanId
 import engine.plans.plan
 import engine.steps.metadata.PlanExplanation
 import methods.rules.evaluateSignedIntegerAddition
@@ -25,6 +26,8 @@ import methods.rules.writeIntegerSquareAsMulWithOneAtStart
 import methods.rules.writeIntegerSquareAsMulWithoutOneAtStart
 
 val simplifyArithmeticExpression = plan {
+    planId = PlanId.SimplifyArithmeticExpression
+
     pattern = AnyPattern() /* TODO add condition that it is constant in all variables */
     explanation(PlanExplanation.SimplifyArithmeticExpression)
 

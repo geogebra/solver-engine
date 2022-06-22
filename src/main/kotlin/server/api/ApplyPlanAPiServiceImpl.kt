@@ -3,8 +3,12 @@ package server.api
 import engine.context.emptyContext
 import engine.expressions.RootPath
 import engine.expressions.Subexpression
-import methods.plans.simplifyArithmeticExpression
+import engine.plans.PlanRegistry
+import methods.plans.registerPlans
+import org.antlr.v4.runtime.misc.ParseCancellationException
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.web.server.ResponseStatusException
 import parser.parseExpression
 import server.models.ApplyPlanRequest
 import server.models.MappedExpression
@@ -15,9 +19,14 @@ import server.models.Transformation
 @Service
 class PlanApiServiceImpl : PlansApiService {
     override fun applyPlan(planId: String, applyPlanRequest: ApplyPlanRequest): Transformation {
-
-        val expr = parseExpression(applyPlanRequest.input)
-        val trans = simplifyArithmeticExpression.tryExecute(emptyContext, Subexpression(RootPath, expr))
+        val plan = PlanRegistry.getPlan(planId) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "plan not found")
+        val expr = try {
+            parseExpression(applyPlanRequest.input)
+        } catch (e: ParseCancellationException) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid expression", e)
+        }
+        val trans = plan.tryExecute(emptyContext, Subexpression(RootPath, expr))
+            ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "plan cannot be applied to expression")
         return TransformationModeller.modelTransformation(trans!!)
     }
 
@@ -27,6 +36,12 @@ class PlanApiServiceImpl : PlansApiService {
 
     override fun listPlans(): Any {
         TODO()
+    }
+
+    companion object {
+        init {
+            registerPlans()
+        }
     }
 }
 

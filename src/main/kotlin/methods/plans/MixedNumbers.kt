@@ -2,6 +2,7 @@ package methods.plans
 
 import engine.patterns.mixedNumberOf
 import engine.patterns.sumOf
+import engine.plans.PlanId
 import engine.plans.plan
 import methods.rules.convertIntegerToFraction
 import methods.rules.evaluateSignedIntegerAddition
@@ -53,6 +54,8 @@ val addMixedNumbersUsingCommutativity = plan {
 }
 
 val addMixedNumbers = plan {
+    planId = PlanId.AddMixedNumbers
+
     pattern = sumOf(mixedNumberOf(), mixedNumberOf())
 
     selectFromContext {

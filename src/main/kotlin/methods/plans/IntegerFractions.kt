@@ -6,6 +6,7 @@ import engine.patterns.fractionOf
 import engine.patterns.optionalNegOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
+import engine.plans.PlanId
 import engine.plans.plan
 import engine.steps.metadata.PlanExplanation
 import engine.steps.metadata.Skill
@@ -130,6 +131,8 @@ val evaluateNegativePowerOfInteger = plan {
 }
 
 val combineFractionsInExpression = plan {
+    planId = PlanId.CombineFractionsInExpression
+
     whilePossible {
         firstOf {
             option {

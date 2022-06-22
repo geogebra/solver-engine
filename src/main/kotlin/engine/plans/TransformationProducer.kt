@@ -33,7 +33,8 @@ data class Plan(
     val ownPattern: Pattern? = null,
     val explanationMaker: MetadataMaker? = null,
     val skillMakers: List<MetadataMaker> = emptyList(),
-    val stepsProducer: StepsProducer
+    val stepsProducer: StepsProducer,
+    val planId: PlanId? = null,
 ) : TransformationProducer {
 
     override val pattern = allOf(ownPattern, stepsProducer.pattern)
