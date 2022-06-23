@@ -28,7 +28,7 @@ object PlanRegistry {
         return try {
             val planId = PlanId.valueOf(planIdString)
             plans[planId]
-        } catch (e: IllegalArgumentException) {
+        } catch (@Suppress("SwallowedException") e: IllegalArgumentException) {
             null
         }
     }
