@@ -1,21 +1,23 @@
 openapi: 3.0.3
 
 info:
-  title: "Specification for the GeoGebra Solver Engine API"
-  version: "1.0"
+  title: "GeoGebra Solver API"
+  version: "1.0-alpha0"
 
 paths:
   /plans:
     get:
       operationId: listPlans
-      description: "List all plans"
+      description: "List all available plan IDs"
       responses:
         "200":
           description: "Sucessfully listed plans"
           content:
             application/json:
               schema:
-                type: object
+                type: array
+                items:
+                  type: string
 
   /plans/{planId}:
     get:

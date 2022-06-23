@@ -3,8 +3,8 @@ package plans
 import engine.steps.metadata.Explanation
 import engine.steps.metadata.PlanExplanation
 import engine.steps.metadata.Skill
-import methods.plans.addFractions
 import methods.plans.combineFractionsInExpression
+import methods.plans.evaluatePositiveFractionSum
 import methods.plans.simplifyNumericFraction
 import org.junit.jupiter.api.Test
 
@@ -12,7 +12,7 @@ class TestAddFractions {
 
     @Test
     fun addLikeFractionsTest() = testPlan {
-        plan = addFractions
+        plan = evaluatePositiveFractionSum
         inputExpr = "[1/5] + [2/5]"
 
         check {
@@ -62,7 +62,7 @@ class TestAddFractions {
 
     @Test
     fun addUnlikeFractionsTest() = testPlan {
-        plan = addFractions
+        plan = evaluatePositiveFractionSum
         inputExpr = "[1/3] + [2/5]"
 
         check {
@@ -88,7 +88,7 @@ class TestAddFractions {
 
     @Test
     fun testAddFractionsWithCommonFactor() = testPlan {
-        plan = addFractions
+        plan = evaluatePositiveFractionSum
         inputExpr = "[1 / 4] + [1 / 4]"
 
         check {
@@ -98,7 +98,7 @@ class TestAddFractions {
 
     @Test
     fun testSumSimplifies() = testPlan {
-        plan = addFractions
+        plan = evaluatePositiveFractionSum
         inputExpr = "[1 / 4] + [1 / 4]"
 
         check {
@@ -120,7 +120,7 @@ class TestAddFractions {
 
     @Test
     fun testSumIsInteger() = testPlan {
-        plan = addFractions
+        plan = evaluatePositiveFractionSum
         inputExpr = "[3 / 5] + [7 / 5]"
 
         check {
@@ -142,7 +142,7 @@ class TestAddFractions {
 
     @Test
     fun testSumDoesNotSimplify() = testPlan {
-        plan = addFractions
+        plan = evaluatePositiveFractionSum
         inputExpr = "[2 / 5] + [1 / 3]"
 
         check {
@@ -167,7 +167,7 @@ class TestAddFractions {
 
     @Test
     fun testSubtract() = testPlan {
-        plan = addFractions
+        plan = evaluatePositiveFractionSum
         inputExpr = "[3 / 5] - [1 / 4]"
 
         check {
@@ -177,7 +177,7 @@ class TestAddFractions {
 
     @Test
     fun testAddNegatives() = testPlan {
-        plan = addFractions
+        plan = evaluatePositiveFractionSum
         inputExpr = "- [3 / 5] - [1 / 4]"
 
         check {

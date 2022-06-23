@@ -6,4 +6,8 @@ fun registerPlans() {
     PlanRegistry.addPlan(simplifyArithmeticExpression)
     PlanRegistry.addPlan(combineFractionsInExpression)
     PlanRegistry.addPlan(addMixedNumbers)
+    PlanRegistry.addPlan(simplifyNumericFraction)
+    PlanRegistry.addPlan(evaluatePositiveFractionSum)
+    PlanRegistry.addPlan(evaluatePositiveFractionProduct)
+    PlanRegistry.addPlan(evaluatePositiveFractionPower)
 }

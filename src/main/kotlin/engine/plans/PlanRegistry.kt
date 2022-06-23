@@ -3,7 +3,11 @@ package engine.plans
 enum class PlanId {
     SimplifyArithmeticExpression,
     CombineFractionsInExpression,
-    AddMixedNumbers;
+    AddMixedNumbers,
+    SimplifyNumericFraction,
+    EvaluatePositiveFractionSum,
+    EvaluatePositiveFractionProduct,
+    EvaluatePositiveFractionPower;
 }
 
 object PlanRegistry {
@@ -28,4 +32,6 @@ object PlanRegistry {
             null
         }
     }
+
+    fun allPlans(): Sequence<Plan> = plans.values.asSequence()
 }

@@ -53,6 +53,8 @@ val normalizeSignsInProduct = plan {
 }
 
 val simplifyNumericFraction = plan {
+    planId = PlanId.SimplifyNumericFraction
+
     val f = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
 
     pattern = f
@@ -78,7 +80,9 @@ val simplifyFractionsInExpression = plan {
     }
 }
 
-val addFractions = plan {
+val evaluatePositiveFractionSum = plan {
+    planId = PlanId.EvaluatePositiveFractionSum
+
     val f1 = optionalNegOf(fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern()))
     val f2 = optionalNegOf(fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern()))
 
@@ -99,6 +103,8 @@ val addFractions = plan {
 }
 
 val evaluatePositiveFractionProduct = plan {
+    planId = PlanId.EvaluatePositiveFractionProduct
+
     val f1 = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
     val f2 = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
 
@@ -116,6 +122,8 @@ val evaluatePositiveFractionProduct = plan {
 }
 
 val evaluatePositiveFractionPower = plan {
+    planId = PlanId.EvaluatePositiveFractionPower
+
     pipeline {
         optionalStep(simplifyFractionNegativePower)
         step(distributeFractionPositivePower)
@@ -167,19 +175,10 @@ val combineFractionsInExpression = plan {
                         option(evaluateNegativePowerOfInteger)
                         option(evaluatePositiveFractionPower)
                         option(evaluatePositiveFractionProduct)
-                        option(addFractions)
+                        option(evaluatePositiveFractionSum)
                     }
                 }
             }
-        }
-    }
-}
-
-val addFractionsAndSimplify = plan {
-    pipeline {
-        step(addFractions)
-        optionalStep {
-            deeply(simplifyNumericFraction)
         }
     }
 }

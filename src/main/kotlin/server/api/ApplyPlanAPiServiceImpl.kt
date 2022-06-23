@@ -34,8 +34,8 @@ class PlanApiServiceImpl : PlansApiService {
         TODO()
     }
 
-    override fun listPlans(): Any {
-        TODO()
+    override fun listPlans(): List<String> {
+        return PlanRegistry.allPlans().map { it.planId.toString() }.toList()
     }
 
     companion object {
