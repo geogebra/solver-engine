@@ -11,6 +11,18 @@ data class Expression(val operator: Operator, val operands: List<Expression>) {
         return operator.readableString(operands)
     }
 
+    /**
+     * Returns a LaTeX string representation of the expression.  The string should be of the form "{...}".
+     * Each operand should itself be enclosed in "{...}" and there should be no other curly brackets,
+     * except for the pair "{}" itself.
+     *
+     * This ensures that paths can be followed in the string representation by counting instances of
+     * "{" and "}" and discarding "{}".
+     */
+    fun toLatexString(): String {
+        return operator.latexString(operands)
+    }
+
     fun equiv(other: Expression): Boolean {
         return operator.equiv(other.operator) &&
             operands.size == other.operands.size &&

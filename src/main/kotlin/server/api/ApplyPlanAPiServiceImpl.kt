@@ -19,15 +19,16 @@ import server.models.Transformation
 @Service
 class PlanApiServiceImpl : PlansApiService {
     override fun applyPlan(planId: String, applyPlanRequest: ApplyPlanRequest): Transformation {
-        val plan = PlanRegistry.getPlan(planId) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "plan not found")
+        val plan = PlanRegistry.getPlan(planId) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Plan not found")
         val expr = try {
             parseExpression(applyPlanRequest.input)
         } catch (e: ParseCancellationException) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid expression", e)
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid expression", e)
         }
         val trans = plan.tryExecute(emptyContext, Subexpression(RootPath, expr))
-            ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "plan cannot be applied to expression")
-        return TransformationModeller.modelTransformation(trans!!)
+            ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Plan cannot be applied to expression")
+        val modeller = TransformationModeller(format = applyPlanRequest.format)
+        return modeller.modelTransformation(trans)
     }
 
     override fun getPlan(planId: String): Any {
@@ -45,25 +46,25 @@ class PlanApiServiceImpl : PlansApiService {
     }
 }
 
-object TransformationModeller {
+data class TransformationModeller(val format: ApplyPlanRequest.Format) {
 
     fun modelTransformation(trans: engine.steps.Transformation): Transformation {
         return Transformation(
             path = trans.fromExpr.path.toString(),
-            fromExpr = trans.fromExpr.expr.toString(),
-            toExpr = trans.toExpr.expr.toString(),
+            fromExpr = modelExpression(trans.fromExpr.expr),
+            toExpr = modelExpression(trans.toExpr.expr),
             pathMappings = modelPathMappings(trans.toExpr.mappings.pathMappings(RootPath)),
             explanation = trans.explanation?.let { modelMetadata(it) },
             skills = trans.skills.map { modelMetadata(it) },
-            steps = trans.steps?.let { it.map { modelTransformation(it) } }
+            steps = trans.steps?.let { step -> step.map { modelTransformation(it) } }
         )
     }
 
-    fun modelPathMappings(mappings: Sequence<engine.expressions.PathMapping>): List<PathMapping> {
+    private fun modelPathMappings(mappings: Sequence<engine.expressions.PathMapping>): List<PathMapping> {
         return mappings.map { modelPathMapping(it) }.toList()
     }
 
-    fun modelPathMapping(mapping: engine.expressions.PathMapping): PathMapping {
+    private fun modelPathMapping(mapping: engine.expressions.PathMapping): PathMapping {
         return PathMapping(
             type = mapping.type.toString(),
             fromPaths = mapping.fromPaths.map { it.toString() },
@@ -71,15 +72,22 @@ object TransformationModeller {
         )
     }
 
-    fun modelMetadata(metadata: engine.steps.metadata.Metadata): Metadata {
-        return server.models.Metadata(
+    private fun modelMetadata(metadata: engine.steps.metadata.Metadata): Metadata {
+        return Metadata(
             key = metadata.key.toString(),
             params = metadata.mappedParams.map {
                 MappedExpression(
-                    expression = it.expr.toString(),
+                    expression = modelExpression(it.expr),
                     pathMappings = modelPathMappings(it.mappings.pathMappings(RootPath))
                 )
             }
         )
+    }
+
+    private fun modelExpression(expr: engine.expressions.Expression): String {
+        return when (format) {
+            ApplyPlanRequest.Format.Latex -> expr.toLatexString()
+            ApplyPlanRequest.Format.Solver -> expr.toString()
+        }
     }
 }

@@ -38,6 +38,8 @@ interface Operator {
     fun <T> readableString(children: List<T>): String {
         return "${toString()}(${children.joinToString(", ")})"
     }
+
+    fun <T : Expression> latexString(children: List<T>): String
 }
 
 abstract class NullaryOperator : Operator {
@@ -55,6 +57,13 @@ abstract class NullaryOperator : Operator {
         require(children.isEmpty())
         return toString()
     }
+
+    override fun <T : Expression> latexString(children: List<T>): String {
+        require(children.isEmpty())
+        return "{${latexString()}}"
+    }
+
+    abstract fun latexString(): String
 }
 
 data class IntegerOperator(val value: BigInteger) : NullaryOperator() {
@@ -63,10 +72,14 @@ data class IntegerOperator(val value: BigInteger) : NullaryOperator() {
     }
 
     override fun toString() = value.toString()
+
+    override fun latexString() = value.toString()
 }
 
 data class VariableOperator(val name: String) : NullaryOperator() {
     override fun toString() = name
+
+    override fun latexString() = name
 }
 
 object MixedNumberOperator : Operator {
@@ -79,12 +92,20 @@ object MixedNumberOperator : Operator {
     }
 
     override fun <T> readableString(children: List<T>) = "[${children[0]} ${children[1]}/${children[2]}]"
+
+    override fun <T : Expression> latexString(children: List<T>) =
+        "{${children[0].toLatexString()}\\frac${children[1].toLatexString()}${children[2].toLatexString()}}"
 }
 
-enum class BracketOperator(private val opening: String, private val closing: String) : Operator {
-    Bracket("(", ")"),
-    SquareBracket("[.", ".]"),
-    CurlyBracket("{.", ".}");
+enum class BracketOperator(
+    private val opening: String,
+    private val closing: String,
+    private val latexOpening: String,
+    private val latexClosing: String
+) : Operator {
+    Bracket("(", ")", "\\left(", "\\right)"),
+    SquareBracket("[.", ".]", "\\left[", "\\right]"),
+    CurlyBracket("{.", ".}", "\\left\\{", "\\right\\}");
 
     override val precedence = MAX_PRECEDENCE
     override val arity = ARITY_ONE
@@ -99,6 +120,11 @@ enum class BracketOperator(private val opening: String, private val closing: Str
         return opening + children[0] + closing
     }
 
+    override fun <T : Expression> latexString(children: List<T>): String {
+        require(children.size == 1)
+        return "{$latexOpening ${children[0].toLatexString()} $latexClosing}"
+    }
+
     override fun equiv(other: Operator): Boolean {
         return other is BracketOperator
     }
@@ -108,23 +134,31 @@ enum class UnaryOperator(override val precedence: Int) : Operator {
     InvisibleBracket(MAX_PRECEDENCE) {
         override fun childAllowed(op: Operator) = true
         override fun <T> readableString(child: T) = "{$child}"
+        override fun <T : Expression> latexString(child: T) = "{${child.toLatexString()}}"
     },
     DivideBy(DIVIDE_BY_PRECEDENCE) {
         override fun childAllowed(op: Operator) = op.precedence > NaryOperator.Product.precedence
         override fun <T> readableString(child: T) = ":$child"
+        override fun <T : Expression> latexString(child: T) = "\\div ${child.toLatexString()}"
     },
     Plus(PLUS_MINUS_PRECEDENCE) {
         override fun <T> readableString(child: T) = "+$child"
+        override fun <T : Expression> latexString(child: T) = "{+${child.toLatexString()}}"
     },
     Minus(PLUS_MINUS_PRECEDENCE) {
         override fun <T> readableString(child: T) = "-$child"
+        override fun <T : Expression> latexString(child: T) = "{-${child.toLatexString()}}"
     },
     SquareRoot(MAX_PRECEDENCE) {
         override fun childAllowed(op: Operator) = true
+        override fun <T> readableString(child: T) = "sqrt[$child]"
+        override fun <T : Expression> latexString(child: T) = "{\\sqrt${child.toLatexString()}}"
     },
     NaturalLog(NATURAL_LOG_PRECEDENCE) {
         override fun childAllowed(op: Operator) =
             op.precedence >= BinaryOperator.Fraction.precedence
+
+        override fun <T : Expression> latexString(child: T) = "{\\ln${child.toLatexString()}}"
     };
 
     override val arity = ARITY_ONE
@@ -143,6 +177,13 @@ enum class UnaryOperator(override val precedence: Int) : Operator {
         require(children.size == arity)
         return readableString(children[0])
     }
+
+    abstract fun <T : Expression> latexString(child: T): String
+
+    override fun <T : Expression> latexString(children: List<T>): String {
+        require(children.size == arity)
+        return latexString(children[0])
+    }
 }
 
 enum class BinaryOperator(override val precedence: Int) : Operator {
@@ -150,6 +191,8 @@ enum class BinaryOperator(override val precedence: Int) : Operator {
         override fun leftChildAllowed(op: Operator) = true
         override fun rightChildAllowed(op: Operator) = true
         override fun <T> readableString(left: T, right: T) = "[$left / $right]"
+        override fun <T : Expression> latexString(left: T, right: T) =
+            "{\\frac${left.toLatexString()}${right.toLatexString()}}"
     },
     Divide(DIVIDE_PRECEDENCE) {
         override fun leftChildAllowed(op: Operator) =
@@ -159,6 +202,8 @@ enum class BinaryOperator(override val precedence: Int) : Operator {
             op.precedence >= NaryOperator.ImplicitProduct.precedence
 
         override fun <T> readableString(left: T, right: T) = "$left:$right"
+        override fun <T : Expression> latexString(left: T, right: T) =
+            "{${left.toLatexString()} \\div ${right.toLatexString()}}"
     },
     Power(POWER_PRECEDENCE) {
         override fun leftChildAllowed(op: Operator) =
@@ -167,10 +212,15 @@ enum class BinaryOperator(override val precedence: Int) : Operator {
         override fun rightChildAllowed(op: Operator) = true
 
         override fun <T> readableString(left: T, right: T) = "[$left ^ $right]"
+
+        override fun <T : Expression> latexString(left: T, right: T) =
+            "{${left.toLatexString()} ^ ${right.toLatexString()}}"
     },
     Root(MAX_PRECEDENCE) {
         override fun leftChildAllowed(op: Operator) = true
         override fun rightChildAllowed(op: Operator) = true
+        override fun <T : Expression> latexString(left: T, right: T) =
+            "{\\sqrt[${left.toLatexString()}]${right.toLatexString()}}"
     };
 
     override val arity = ARITY_TWO
@@ -195,6 +245,13 @@ enum class BinaryOperator(override val precedence: Int) : Operator {
         require(children.size == arity)
         return readableString(children[0], children[1])
     }
+
+    abstract fun <T : Expression> latexString(left: T, right: T): String
+
+    override fun <T : Expression> latexString(children: List<T>): String {
+        require(children.size == arity)
+        return latexString(children[0], children[1])
+    }
 }
 
 enum class NaryOperator(override val precedence: Int) : Operator {
@@ -214,6 +271,22 @@ enum class NaryOperator(override val precedence: Int) : Operator {
                 }
             }
         }
+
+        override fun <T : Expression> latexString(children: List<T>): String {
+            return buildString {
+                append("{")
+                for ((i, child) in children.withIndex()) {
+                    if (i == 0) {
+                        append(child.toLatexString())
+                    } else if (child.operator == UnaryOperator.Minus) {
+                        append(" {{} - ", child.operands[0].toLatexString(), "}")
+                    } else {
+                        append(" + ", child.toLatexString())
+                    }
+                }
+                append("}")
+            }
+        }
     },
     Product(PRODUCT_PRECEDENCE) {
         override fun <T> readableString(children: List<T>): String {
@@ -231,10 +304,30 @@ enum class NaryOperator(override val precedence: Int) : Operator {
                 }
             }
         }
+
+        override fun <T : Expression> latexString(children: List<T>): String {
+            return buildString {
+                append("{")
+                for ((i, child) in children.withIndex()) {
+                    if (i == 0) {
+                        append(child.toLatexString())
+                    } else if (child.operator == UnaryOperator.DivideBy) {
+                        append(" {{} \\div ", child.operands[0].toLatexString(), "}")
+                    } else {
+                        append(" \\times ", child.toLatexString())
+                    }
+                }
+                append("}")
+            }
+        }
     },
     ImplicitProduct(IMPLICIT_PRODUCT_PRECEDENCE) {
         override fun <T> readableString(children: List<T>): String {
-            return children.joinToString("")
+            return children.joinToString(" ")
+        }
+
+        override fun <T : Expression> latexString(children: List<T>): String {
+            return children.joinToString(separator = " ", prefix = "{", postfix = "}") { it.toLatexString() }
         }
     };
 
