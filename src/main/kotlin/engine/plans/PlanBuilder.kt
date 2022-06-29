@@ -4,6 +4,7 @@ import engine.context.ResourceData
 import engine.expressionmakers.ExpressionMaker
 import engine.patterns.AnyPattern
 import engine.patterns.Pattern
+import engine.steps.metadata.KeyExprsMetadataMaker
 import engine.steps.metadata.MetadataKey
 import engine.steps.metadata.MetadataMaker
 
@@ -110,11 +111,11 @@ class PlanBuilder {
     }
 
     fun explanation(explanationKey: MetadataKey, vararg params: ExpressionMaker) {
-        explanationMaker = MetadataMaker(explanationKey, params.asList())
+        explanationMaker = KeyExprsMetadataMaker(explanationKey, params.asList())
     }
 
     fun skill(skillKey: MetadataKey, vararg params: ExpressionMaker) {
-        skillMakers.add(MetadataMaker(skillKey, params.asList()))
+        skillMakers.add(KeyExprsMetadataMaker(skillKey, params.asList()))
     }
 
     fun pipeline(init: PipelineBuilder.() -> Unit) {

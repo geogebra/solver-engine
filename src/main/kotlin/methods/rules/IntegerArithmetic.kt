@@ -2,7 +2,6 @@ package methods.rules
 
 import engine.expressionmakers.FixedExpressionMaker
 import engine.expressionmakers.cancel
-import engine.expressionmakers.custom
 import engine.expressionmakers.makeNumericOp
 import engine.expressionmakers.makeProductOf
 import engine.expressionmakers.move
@@ -13,6 +12,7 @@ import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.custom
 import engine.patterns.divideBy
 import engine.patterns.negOf
 import engine.patterns.numericCondition
@@ -99,12 +99,12 @@ val evaluateSignedIntegerProduct = run {
                     makeNumericOp(base, divisor) { n1, n2 -> n1 / n2 }
             }
         ),
-        explanationMaker = makeMetadata(
-            Explanation.EvaluateIntegerProduct, move(base),
-            custom {
-                if (isBound(multiplier)) move(multiplier) else move(divisor)
-            }
-        )
+        explanationMaker = custom {
+            if (isBound(multiplier))
+                makeMetadata(Explanation.EvaluateIntegerProduct, move(base), move(multiplier))
+            else
+                makeMetadata(Explanation.EvaluateIntegerDivision, move(base), move(divisor))
+        }
     )
 }
 

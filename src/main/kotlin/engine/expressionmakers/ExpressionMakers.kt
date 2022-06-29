@@ -16,20 +16,18 @@ import engine.expressions.mappedExpression
 import engine.expressions.negOf
 import engine.expressions.xp
 import engine.patterns.IntegerProvider
+import engine.patterns.Maker
 import engine.patterns.Match
 import engine.patterns.NaryPatternBase
 import engine.patterns.OptionalDivideBy
 import engine.patterns.OptionalNegPattern
 import engine.patterns.PartialNaryPattern
-import engine.patterns.Pattern
 import java.math.BigInteger
 
-interface ExpressionMaker {
-    fun makeMappedExpression(match: Match): MappedExpression
-}
+typealias ExpressionMaker = Maker<MappedExpression>
 
 data class FixedExpressionMaker(val expression: Expression) : ExpressionMaker {
-    override fun makeMappedExpression(match: Match): MappedExpression {
+    override fun make(match: Match): MappedExpression {
         return MappedExpression(
             expression,
             PathMappingLeaf(listOf(), PathMappingType.Introduce),
@@ -38,7 +36,7 @@ data class FixedExpressionMaker(val expression: Expression) : ExpressionMaker {
 }
 
 data class SubexpressionMaker(val subexpression: Subexpression) : ExpressionMaker {
-    override fun makeMappedExpression(match: Match): MappedExpression {
+    override fun make(match: Match): MappedExpression {
         return MappedExpression(
             subexpression.expr,
             PathMappingLeaf(listOf(subexpression.path), PathMappingType.Move),
@@ -47,25 +45,25 @@ data class SubexpressionMaker(val subexpression: Subexpression) : ExpressionMake
 }
 
 data class OperatorExpressionMaker(val operator: Operator, val operands: List<ExpressionMaker>) : ExpressionMaker {
-    override fun makeMappedExpression(match: Match): MappedExpression {
-        return mappedExpression(operator, operands.map { it.makeMappedExpression(match) })
+    override fun make(match: Match): MappedExpression {
+        return mappedExpression(operator, operands.map { it.make(match) })
     }
 }
 
 data class FlattenedNaryExpressionMaker(val operator: NaryOperator, val operands: List<ExpressionMaker>) :
     ExpressionMaker {
-    override fun makeMappedExpression(match: Match): MappedExpression {
+    override fun make(match: Match): MappedExpression {
         // If there is only one operand, it makes no sense to wrap it in an nary expression
         return when (operands.size) {
-            1 -> operands[0].makeMappedExpression(match)
-            else -> flattenedNaryMappedExpression(operator, operands.map { it.makeMappedExpression(match) })
+            1 -> operands[0].make(match)
+            else -> flattenedNaryMappedExpression(operator, operands.map { it.make(match) })
         }
     }
 }
 
 data class SubstituteInExpressionMaker(val pattern: NaryPatternBase, val newVals: List<ExpressionMaker>) :
     ExpressionMaker {
-    override fun makeMappedExpression(match: Match): MappedExpression {
+    override fun make(match: Match): MappedExpression {
         val sub = match.getLastBinding(pattern)!!
         val matchIndexes = pattern.getMatchIndexes(match, sub.path)
 
@@ -78,7 +76,7 @@ data class SubstituteInExpressionMaker(val pattern: NaryPatternBase, val newVals
             }
         }
 
-        return FlattenedNaryExpressionMaker(pattern.operator, restChildren).makeMappedExpression(match)
+        return FlattenedNaryExpressionMaker(pattern.operator, restChildren).make(match)
     }
 }
 
@@ -89,7 +87,7 @@ data class NumericOp(
     val num: IntegerProvider,
     val operation: (BigInteger) -> BigInteger
 ) : ExpressionMaker {
-    override fun makeMappedExpression(match: Match): MappedExpression {
+    override fun make(match: Match): MappedExpression {
         val value = operation(num.getBoundInt(match))
 
         val result = when {
@@ -108,7 +106,7 @@ data class NumericOp2(
     val num2: IntegerProvider,
     val operation: (BigInteger, BigInteger) -> BigInteger
 ) : ExpressionMaker {
-    override fun makeMappedExpression(match: Match): MappedExpression {
+    override fun make(match: Match): MappedExpression {
         val value = operation(num1.getBoundInt(match), num2.getBoundInt(match))
 
         val result = when {
@@ -166,34 +164,12 @@ fun makeNumericOp(
 fun substituteIn(pattern: NaryPatternBase, vararg newVals: ExpressionMaker) =
     SubstituteInExpressionMaker(pattern, newVals.asList())
 
-class ExpressionMakerBuilder(private val match: Match) {
-    fun isBound(pattern: Pattern): Boolean {
-        return match.getLastBinding(pattern) != null
-    }
-
-    fun getValue(integerProvider: IntegerProvider): BigInteger {
-        return integerProvider.getBoundInt(match)
-    }
-}
-
-class CustomExpressionMaker(val run: ExpressionMakerBuilder.() -> ExpressionMaker) : ExpressionMaker {
-
-    override fun makeMappedExpression(match: Match): MappedExpression {
-        val builder = ExpressionMakerBuilder(match)
-        return builder.run().makeMappedExpression(match)
-    }
-}
-
-fun custom(run: ExpressionMakerBuilder.() -> ExpressionMaker): ExpressionMaker {
-    return CustomExpressionMaker(run)
-}
-
 data class OptionalNegExpressionMaker(val negPattern: OptionalNegPattern, val operand: ExpressionMaker) :
     ExpressionMaker {
 
-    override fun makeMappedExpression(match: Match): MappedExpression {
+    override fun make(match: Match): MappedExpression {
         val maker = if (negPattern.isNeg(match)) makeNegOf(operand) else operand
-        return maker.makeMappedExpression(match)
+        return maker.make(match)
     }
 }
 
@@ -204,9 +180,9 @@ data class OptionalDivideByExpressionMaker(
     val divPattern: OptionalDivideBy,
     val operand: ExpressionMaker,
 ) : ExpressionMaker {
-    override fun makeMappedExpression(match: Match): MappedExpression {
+    override fun make(match: Match): MappedExpression {
         val maker = if (divPattern.isDivide(match)) makeDivideBy(operand) else operand
-        return maker.makeMappedExpression(match)
+        return maker.make(match)
     }
 }
 

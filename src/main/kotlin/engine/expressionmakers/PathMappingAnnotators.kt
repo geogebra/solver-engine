@@ -10,7 +10,7 @@ private data class UnaryPathMappingAnnotator(
     val pathMappingType: PathMappingType,
     val pattern: PathProvider,
 ) : ExpressionMaker {
-    override fun makeMappedExpression(match: Match): MappedExpression {
+    override fun make(match: Match): MappedExpression {
         val paths = pattern.getBoundPaths(match)
         return MappedExpression(pattern.getBoundExpr(match)!!, PathMappingLeaf(paths, pathMappingType))
     }
@@ -21,8 +21,8 @@ private data class BinaryPathMappingAnnotator(
     val pattern: PathProvider,
     val expressionMaker: ExpressionMaker,
 ) : ExpressionMaker {
-    override fun makeMappedExpression(match: Match): MappedExpression {
-        return expressionMaker.makeMappedExpression(match)
+    override fun make(match: Match): MappedExpression {
+        return expressionMaker.make(match)
     }
 }
 

@@ -17,13 +17,13 @@ data class Rule(
 ) : TransformationProducer {
 
     override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
-        val result = resultMaker.makeMappedExpression(match)
+        val result = resultMaker.make(match)
         return Transformation(
             sub,
             result,
             null,
-            explanationMaker.makeMetadata(match),
-            skillMakers.map { it.makeMetadata(match) },
+            explanationMaker.make(match),
+            skillMakers.map { it.make(match) },
         )
     }
 }

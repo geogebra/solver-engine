@@ -2,7 +2,6 @@ package methods.rules
 
 import engine.expressionmakers.FixedExpressionMaker
 import engine.expressionmakers.FlattenedNaryExpressionMaker
-import engine.expressionmakers.custom
 import engine.expressionmakers.makeDivideBy
 import engine.expressionmakers.makeNumericOp
 import engine.expressionmakers.makePowerOf
@@ -19,6 +18,7 @@ import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
 import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.custom
 import engine.patterns.numericCondition
 import engine.patterns.oneOf
 import engine.patterns.powerOf

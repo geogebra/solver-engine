@@ -53,8 +53,8 @@ data class Plan(
             fromExpr = sub,
             toExpr = sub.substitute(lastStep.fromExpr.path, lastStep.toExpr),
             steps = if (singletonStep) lastStep.steps else steps,
-            explanation = explanationMaker?.makeMetadata(match),
-            skills = skillMakers.map { it.makeMetadata(match) }
+            explanation = explanationMaker?.make(match),
+            skills = skillMakers.map { it.make(match) }
         )
     }
 }

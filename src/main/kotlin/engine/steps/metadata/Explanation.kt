@@ -21,6 +21,7 @@ enum class Explanation : MetadataKey {
     EvaluateIntegerSubtraction,
     EvaluateIntegerAddition,
     EvaluateIntegerProduct,
+    EvaluateIntegerDivision,
     EvaluateIntegerPower,
     WriteIntegerSquareAsMulWithoutOneAtStart,
     WriteIntegerSquareAsMulWithOneAtStart,

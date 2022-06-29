@@ -94,8 +94,22 @@ class IntegerArithmeticTest {
                     toExpr = "10"
 
                     step { toExpr = "12*5:6" }
-                    step { toExpr = "60:6" }
-                    step { toExpr = "10" }
+                    step {
+                        toExpr = "60:6"
+                        explanation {
+                            key = Explanation.EvaluateIntegerProduct
+                            param { expr = "12" }
+                            param { expr = "5" }
+                        }
+                    }
+                    step {
+                        toExpr = "10"
+                        explanation {
+                            key = Explanation.EvaluateIntegerDivision
+                            param { expr = "60" }
+                            param { expr = "6" }
+                        }
+                    }
                 }
             }
 
