@@ -38,13 +38,13 @@ const applyPlan = async (planId, input) => {
 };
 
 const renderTransformation = (trans, depth = 0) => {
-    if (trans.steps && trans.steps.length === 1 && trans.steps[0].path === '.') {
+    if (trans.steps && trans.steps.length === 1 && trans.steps[0].path === trans.path) {
         return renderTransformation(trans.steps[0], depth);
     }
     return `
     <div class="trans">
         ${renderExplanation(trans.explanation)}
-        <div>${renderExpression(`${trans.fromExpr} {\\color{#8888ff}\\longmapsto} ${trans.toExpr}`)}</div>
+        <div>${renderExpression(`${trans.fromExpr} {\\color{#8888ff}\\thickspace\\longmapsto\\thickspace} ${trans.toExpr}`)}</div>
         ${renderSteps(trans.steps, depth)}
     </div>`;
 };
