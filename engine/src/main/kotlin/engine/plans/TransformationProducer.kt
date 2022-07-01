@@ -50,6 +50,7 @@ data class Plan(
         val singletonStep = steps.size == 1 && steps[0].explanation == null && steps[0].skills.isEmpty()
 
         return Transformation(
+            planId = planId,
             fromExpr = sub,
             toExpr = sub.substitute(lastStep.fromExpr.path, lastStep.toExpr),
             steps = if (singletonStep) lastStep.steps else steps,

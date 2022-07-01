@@ -43,6 +43,7 @@ const renderTransformation = (trans, depth = 0) => {
     }
     return `
     <div class="trans">
+        ${trans.planId ? `<div class="plan-id">${trans.planId}</div>` : ""}
         ${renderExplanation(trans.explanation)}
         <div>${renderExpression(`${trans.fromExpr} {\\color{#8888ff}\\thickspace\\longmapsto\\thickspace} ${trans.toExpr}`)}</div>
         ${renderSteps(trans.steps, depth)}

@@ -19,11 +19,11 @@ data class Rule(
     override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
         val result = resultMaker.make(match)
         return Transformation(
-            sub,
-            result,
-            null,
-            explanationMaker.make(match),
-            skillMakers.map { it.make(match) },
+            fromExpr = sub,
+            toExpr = result,
+            steps = null,
+            explanation = explanationMaker.make(match),
+            skills = skillMakers.map { it.make(match) },
         )
     }
 }

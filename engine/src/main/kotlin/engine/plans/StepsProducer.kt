@@ -110,7 +110,11 @@ interface InStep : StepsProducer {
                 lastSub = Subexpression(lastSub.path, substitution.expr)
             }
             steps.add(
-                Transformation(prevSub, lastSub.toMappedExpr(), nonNullTransformations)
+                Transformation(
+                    fromExpr = prevSub,
+                    toExpr = lastSub.toMappedExpr(),
+                    steps = nonNullTransformations
+                )
             )
             for ((i, tr) in stepTransformations.withIndex()) {
                 if (tr != null) {

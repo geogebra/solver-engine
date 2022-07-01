@@ -6,6 +6,8 @@ required:
   - toExpr
   - pathMappings
 properties:
+  planId:
+    type: string
   path:
     type: string
   fromExpr:
