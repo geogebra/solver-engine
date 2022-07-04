@@ -43,6 +43,51 @@ class IntegerArithmeticTest {
     }
 
     @Test
+    fun testSimplifyArithmeticExpressionPowerSmall() = testPlan {
+        plan = simplifyArithmeticExpression
+        inputExpr = "[2 ^ 4]"
+
+        check {
+            toExpr = "16"
+
+            step {
+                fromExpr = "[2 ^ 4]"
+                toExpr = "2 * 2 * 2 * 2"
+            }
+
+            step {
+                fromExpr = "2 * 2 * 2 * 2"
+                toExpr = "16"
+
+                step {
+                    fromExpr = "2 * 2 * 2 * 2"
+                    toExpr = "4 * 2 * 2"
+                }
+
+                step {
+                    fromExpr = "4 * 2 * 2"
+                    toExpr = "8 * 2"
+                }
+
+                step {
+                    fromExpr = "8 * 2"
+                    toExpr = "16"
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testSimplifyArithmeticExpressionPowerLarge() = testPlan {
+        plan = simplifyArithmeticExpression
+        inputExpr = "[2 ^ 6]"
+
+        check {
+            toExpr = "64"
+        }
+    }
+
+    @Test
     fun testWithDifferentBrackets() = testPlan {
         plan = simplifyArithmeticExpression
         inputExpr = "1 + {.2 + [.3 + (4 + 5).].}"
@@ -253,6 +298,11 @@ class IntegerArithmeticTest {
 
                 step {
                     fromExpr = "[2 ^ 3]"
+                    toExpr = "2 * 2 * 2"
+                }
+
+                step {
+                    fromExpr = "2 * 2 * 2"
                     toExpr = "8"
                 }
             }
@@ -400,6 +450,25 @@ class IntegerArithmeticTest {
             }
 
             step {}
+        }
+    }
+
+    @Test
+    fun testEvaluateSignedIntegerPowerPlan() = testPlan {
+        plan = evaluateSignedIntegerPower
+        inputExpr = "[4^2]"
+
+        check {
+            toExpr = "16"
+
+            step {
+                fromExpr = "[4^2]"
+                toExpr = "4 * 4"
+            }
+            step {
+                fromExpr = "4 * 4"
+                toExpr = "16"
+            }
         }
     }
 }

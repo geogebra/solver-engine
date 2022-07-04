@@ -419,4 +419,53 @@ class TestCombineFractionsInExpression {
             }
         }
     }
+
+    @Test
+    fun testEvaluatePowerOfFraction() = testPlan {
+        plan = evaluatePowerOfFraction
+        inputExpr = "[([3/4]) ^ 2]"
+
+        check {
+            toExpr = "[9 / 16]"
+
+            step {
+                toExpr = "[ [3^2] / [4^2] ]"
+            }
+            step {
+                toExpr = "[9 / 16]"
+            }
+        }
+    }
+
+    @Test
+    fun testEvaluateSignedIntegerPower1() = testPlan {
+        plan = evaluateSignedIntegerPower
+        inputExpr = "[2 ^ 6]"
+
+        check {
+            toExpr = "64"
+
+            step {
+                toExpr = "64"
+            }
+        }
+    }
+
+    @Test
+    fun testEvaluateSignedIntegerPower2() = testPlan {
+        plan = evaluateSignedIntegerPower
+        inputExpr = "[2^5]"
+
+        check {
+            toExpr = "32"
+
+            step {
+                toExpr = "2 * 2 * 2 * 2 * 2"
+            }
+
+            step {
+                toExpr = "32"
+            }
+        }
+    }
 }

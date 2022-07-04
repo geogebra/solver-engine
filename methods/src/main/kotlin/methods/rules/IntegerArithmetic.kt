@@ -1,12 +1,15 @@
 package methods.rules
 
+import engine.expressionmakers.ExpressionMaker
 import engine.expressionmakers.FixedExpressionMaker
+import engine.expressionmakers.OperatorExpressionMaker
 import engine.expressionmakers.cancel
 import engine.expressionmakers.makeNumericOp
 import engine.expressionmakers.makeProductOf
 import engine.expressionmakers.move
 import engine.expressionmakers.restOf
 import engine.expressionmakers.substituteIn
+import engine.expressions.NaryOperator
 import engine.expressions.xp
 import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
@@ -108,7 +111,7 @@ val evaluateSignedIntegerProduct = run {
     )
 }
 
-val evaluateSignedIntegerPower = run {
+val evaluateSignedIntegerPowerWithoutProductStep = run {
     val base = SignedIntegerPattern()
     val exponent = UnsignedIntegerPattern()
     val power = powerOf(
@@ -152,5 +155,26 @@ val writeIntegerSquareAsMulWithoutOneAtStart = run {
         pattern = power,
         resultMaker = makeProductOf(move(base), move(base)),
         explanationMaker = makeMetadata(Explanation.WriteIntegerSquareAsMulWithoutOneAtStart, move(base), move(power))
+    )
+}
+
+val writeIntegerPowerAsProduct = run {
+    val base = SignedIntegerPattern()
+    val exponent = UnsignedIntegerPattern()
+    val power = powerOf(
+        base,
+        ConditionPattern(exponent, numericCondition(exponent) { it <= 5.toBigInteger() && it >= BigInteger.TWO })
+    )
+
+    Rule(
+        pattern = power,
+        resultMaker = custom {
+            val argsList = mutableListOf<ExpressionMaker>()
+            repeat(getValue(exponent).toInt()) {
+                argsList += move(base)
+            }
+            OperatorExpressionMaker(NaryOperator.Product, argsList)
+        },
+        explanationMaker = makeMetadata(Explanation.EvaluateIntegerPower, move(base), move(exponent))
     )
 }

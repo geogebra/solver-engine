@@ -11,7 +11,7 @@ import engine.plans.PlanId
 import engine.plans.plan
 import engine.steps.metadata.PlanExplanation
 import methods.rules.evaluateSignedIntegerAddition
-import methods.rules.evaluateSignedIntegerPower
+import methods.rules.evaluateSignedIntegerPowerWithoutProductStep
 import methods.rules.evaluateSignedIntegerProduct
 import methods.rules.factorizeIntegerUnderSquareRoot
 import methods.rules.removeBracketAroundSignedIntegerInSum
@@ -22,8 +22,34 @@ import methods.rules.separateIntegerPowersUnderSquareRoot
 import methods.rules.separateSquaresUnderSquareRoot
 import methods.rules.simplifyDoubleNeg
 import methods.rules.simplifySquareRootOfPower
+import methods.rules.writeIntegerPowerAsProduct
 import methods.rules.writeIntegerSquareAsMulWithOneAtStart
 import methods.rules.writeIntegerSquareAsMulWithoutOneAtStart
+
+/*
+evaluates: [2^4] as:
+1. [2^4] --> 2 * 2 * 2 * 2
+2. 2 * 2 * 2 * 2 --> 16
+
+and
+evaluates: [2^6] as:
+1. [2^6] --> 64
+ */
+val evaluateSignedIntegerPower = plan {
+    planId = PlanId.EvaluateSignedIntegerPower
+
+    firstOf {
+        option {
+            pipeline {
+                step(writeIntegerPowerAsProduct)
+                step {
+                    whilePossible(evaluateSignedIntegerProduct)
+                }
+            }
+        }
+        option(evaluateSignedIntegerPowerWithoutProductStep)
+    }
+}
 
 val simplifyArithmeticExpression = plan {
     planId = PlanId.SimplifyArithmeticExpression

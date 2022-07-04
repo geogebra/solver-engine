@@ -7,6 +7,8 @@ enum class PlanId {
     SimplifyNumericFraction,
     EvaluatePositiveFractionSum,
     EvaluatePositiveFractionProduct,
+    EvaluatePowerOfFraction,
+    EvaluateSignedIntegerPower,
     EvaluatePositiveFractionPower;
 }
 

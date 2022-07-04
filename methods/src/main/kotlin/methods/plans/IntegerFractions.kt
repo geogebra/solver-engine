@@ -2,8 +2,10 @@ package methods.plans
 
 import engine.expressionmakers.move
 import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.bracketOf
 import engine.patterns.fractionOf
 import engine.patterns.optionalNegOf
+import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
 import engine.plans.PlanId
@@ -180,5 +182,20 @@ val combineFractionsInExpression = plan {
                 }
             }
         }
+    }
+}
+
+val evaluatePowerOfFraction = plan {
+    planId = PlanId.EvaluatePowerOfFraction
+
+    val f = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
+    val exponent = UnsignedIntegerPattern()
+    pattern = powerOf(bracketOf(f), exponent)
+
+    explanation(PlanExplanation.EvaluatePowerOfFraction, move(f), move(exponent))
+
+    pipeline {
+        step(distributeFractionPositivePower)
+        step(simplifyArithmeticExpression)
     }
 }

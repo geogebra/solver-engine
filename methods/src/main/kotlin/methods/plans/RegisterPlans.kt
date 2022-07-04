@@ -10,4 +10,6 @@ fun registerPlans() {
     PlanRegistry.addPlan(evaluatePositiveFractionSum)
     PlanRegistry.addPlan(evaluatePositiveFractionProduct)
     PlanRegistry.addPlan(evaluatePositiveFractionPower)
+    PlanRegistry.addPlan(evaluatePowerOfFraction)
+    PlanRegistry.addPlan(evaluateSignedIntegerPower)
 }

@@ -37,8 +37,8 @@ object IntegerArithmeticTest : RuleTest {
         RuleTestCase("10:2", evaluateSignedIntegerProduct, "5"),
         RuleTestCase("10:(-2)", evaluateSignedIntegerProduct, "-5"),
 
-        RuleTestCase("[5^3]", evaluateSignedIntegerPower, "125"),
-        RuleTestCase("[(-5) ^ 3]", evaluateSignedIntegerPower, "-125"),
+        RuleTestCase("[5^3]", evaluateSignedIntegerPowerWithoutProductStep, "125"),
+        RuleTestCase("[(-5) ^ 3]", evaluateSignedIntegerPowerWithoutProductStep, "-125"),
 
         RuleTestCase("-(-5)", simplifyDoubleNeg, "5"),
         RuleTestCase("-(-x)", simplifyDoubleNeg, "x"),
@@ -46,6 +46,8 @@ object IntegerArithmeticTest : RuleTest {
         RuleTestCase("[4^2]", writeIntegerSquareAsMulWithOneAtStart, "1 * 4 * 4"),
         RuleTestCase("[4^2]", writeIntegerSquareAsMulWithoutOneAtStart, "4 * 4"),
         RuleTestCase("[(-3) ^ 2]", writeIntegerSquareAsMulWithoutOneAtStart, "(-3) * (-3)"),
-        RuleTestCase("[(-3) ^ 2]", writeIntegerSquareAsMulWithOneAtStart, "1 * (-3) * (-3)")
+        RuleTestCase("[(-3) ^ 2]", writeIntegerSquareAsMulWithOneAtStart, "1 * (-3) * (-3)"),
+
+        RuleTestCase("[4^2]", writeIntegerPowerAsProduct, "4 * 4")
     )
 }
