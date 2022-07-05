@@ -85,3 +85,39 @@ paths:
               schema:
                 type: object
 
+  /selectPlans:
+    post:
+      operationId: selectPlans
+      description: "Select appropriate plans for given expression"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - input
+                - format
+              properties:
+                input:
+                  type: string
+                format:
+                  type: string
+                  enum: [ latex, solver ]
+                  default:
+                    solver
+      responses:
+        "200":
+          description: "Plans selected sucessfully"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'PlanSelection.yaml'
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object

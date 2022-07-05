@@ -1,12 +1,16 @@
 const el = id => document.getElementById(id);
 
 const initPlans = (plans) => {
-    el("plansSelect").innerHTML = plans
+    const options = plans
         .sort()
         .map(plan => `<option value='${plan}'}>${plan}</option>`)
         .join('');
+
+    el("plansSelect").innerHTML = `
+        <option value="selectPlans">Select Plans</option>
+        ${options}`;
     // Default to something simple
-    el("plansSelect").value = "SimplifyArithmeticExpression";
+    el("plansSelect").value = "selectPlans";
 };
 
 const fetchPlans = () =>
@@ -14,6 +18,13 @@ const fetchPlans = () =>
         .then(response => response.json())
         .then(initPlans);
 
+const selectPlansOrApplyPlan = (planId, input) => {
+    if (planId === "selectPlans") {
+        return selectPlans(input);
+    } else {
+        return applyPlan(planId, input);
+    }
+}
 
 const applyPlan = async (planId, input) => {
     const response = await fetch(`/api/v1.0-alpha0/plans/${planId}/apply`, {
@@ -25,7 +36,7 @@ const applyPlan = async (planId, input) => {
             "input": input,
             "format": "latex"
         })
-    })
+    });
     const result = await response.json();
     if (result.error !== undefined) {
         console.log(result);
@@ -36,6 +47,49 @@ const applyPlan = async (planId, input) => {
         renderMathInElement(el("result"));
     }
 };
+
+const selectPlans = async (input) => {
+    const response = await fetch(`/api/v1.0-alpha0/selectPlans`, {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            "input": input,
+            "format": "latex"
+        })
+    });
+    const result = await response.json();
+    if (result.error !== undefined) {
+        console.log(result);
+        el("result").innerHTML = `Error: ${result.error}<br/>Message: ${result.message}`;
+    } else {
+        console.log(result);
+        el("result").innerHTML = renderPlanSelections(result);
+        renderMathInElement(el("result"));
+    }
+}
+
+const renderPlanSelections = (selections) => {
+    if (!selections || selections.length === 0) {
+        return `<div class="selections">No plans found</div>`;
+    }
+    return `
+    <div class ="selections">${selections.length} plans found
+        <ol>
+            ${selections.map(selection => `<li>${renderPlanSelection(selection)}</li>`).join('')}
+        </ol>
+    </div>
+    `;
+}
+
+const renderPlanSelection = (selection) => {
+    return `
+    <div class="plan-selection">
+        <div class="plan-id">${selection.transformation.planId}</div>
+        ${renderTransformation(selection.transformation)}
+    </div>`;
+}
 
 const renderTransformation = (trans, depth = 0) => {
     if (trans.steps && trans.steps.length === 1 && trans.steps[0].path === trans.path) {
@@ -89,7 +143,7 @@ window.onload = () => {
             el("input").value = input;
         }
         if (planId && input) {
-            applyPlan(planId, input);
+            selectPlansOrApplyPlan(planId, input);
         }
     });
 
@@ -102,6 +156,6 @@ window.onload = () => {
         url.searchParams.set("input", input);
         const urlString = url.toString();
         history.replaceState({url: urlString}, null, urlString);
-        applyPlan(planId, input);
+        selectPlansOrApplyPlan(planId, input);
     }
 };

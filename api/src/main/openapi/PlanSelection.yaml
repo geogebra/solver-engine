@@ -1,0 +1,7 @@
+title: PlanSelection
+type: object
+required:
+  - transformation
+properties:
+  transformation:
+    $ref: 'Transformation.yaml'

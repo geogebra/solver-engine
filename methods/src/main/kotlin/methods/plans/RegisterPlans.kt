@@ -2,14 +2,17 @@ package methods.plans
 
 import engine.plans.PlanRegistry
 
-fun registerPlans() {
-    PlanRegistry.addPlan(simplifyArithmeticExpression)
-    PlanRegistry.addPlan(combineFractionsInExpression)
-    PlanRegistry.addPlan(addMixedNumbers)
-    PlanRegistry.addPlan(simplifyNumericFraction)
-    PlanRegistry.addPlan(evaluatePositiveFractionSum)
-    PlanRegistry.addPlan(evaluatePositiveFractionProduct)
-    PlanRegistry.addPlan(evaluatePositiveFractionPower)
-    PlanRegistry.addPlan(evaluatePowerOfFraction)
-    PlanRegistry.addPlan(evaluateSignedIntegerPower)
+val planRegistry = run {
+    val planRegistry = PlanRegistry()
+    planRegistry.addPlan(simplifyArithmeticExpression)
+    planRegistry.addPlan(combineFractionsInExpression)
+    planRegistry.addPlan(addMixedNumbers)
+    planRegistry.addPlan(simplifyNumericFraction)
+    planRegistry.addPlan(evaluatePositiveFractionSum)
+    planRegistry.addPlan(evaluatePositiveFractionProduct)
+    planRegistry.addPlan(evaluatePositiveFractionPower)
+    planRegistry.addPlan(evaluatePowerOfFraction)
+    planRegistry.addPlan(evaluateSignedIntegerPower)
+
+    planRegistry
 }

@@ -12,7 +12,7 @@ enum class PlanId {
     EvaluatePositiveFractionPower;
 }
 
-object PlanRegistry {
+class PlanRegistry {
 
     private var plans = HashMap<PlanId, Plan>()
 
