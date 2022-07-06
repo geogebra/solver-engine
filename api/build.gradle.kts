@@ -34,6 +34,7 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-ui:1.6.9")
     implementation("org.springdoc:springdoc-openapi-kotlin:1.6.9")
     implementation("javax.annotation:javax.annotation-api:1.3.2")
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
 }
 
 tasks.withType<KotlinCompile> {

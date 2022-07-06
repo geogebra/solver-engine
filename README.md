@@ -61,6 +61,17 @@ plans which are able to solve the required problems.
 
 ## Development
 
+### IntelliJ IDEA
+
+There are two run configurations that can be used out of the box.
+
+- `All Tests`: runs all the unit tests
+- `API Server`: runs the API Server on local machine on port 8080
+
+When the API server runs, you can inspect the API by navigating to
+http://localhost:8080 and access the _Solver Poker_ at
+http://localhost:8080/poker.html.
+
 ### Commit hooks
 
 There are commit hooks under revision control in the `.githooks/`
