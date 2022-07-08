@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 
 plugins {
     application
@@ -63,6 +64,18 @@ tasks.openApiGenerate {
             "enumPropertyNaming" to "PascalCase",
         )
     )
+}
+
+tasks.named<BootBuildImage>("bootBuildImage") {
+    imageName = "registry.git.geogebra.org/solver-team/solver-engine/${project.name}:${project.version}"
+    isPublish = true
+    docker {
+        publishRegistry {
+            username = "gitlab-ci"
+            password = "glpat-dEpokBR2Dkhy_gw61vXU"
+            url = "https://registry.git.geogebra.org/v2/"
+        }
+    }
 }
 
 sourceSets["main"].java {

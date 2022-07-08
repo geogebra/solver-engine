@@ -51,3 +51,48 @@ git config --local core.hooksPath .githooks/
 
 Currently, there is a pre-commit hook that runs the `ktlintCheck`
 and `detekt` tasks.
+
+## Deployment
+
+The project can be deployed to a Kubernetes cluster. The configured
+one is run on AWS EKS and called `solver`. It is powered by Fargate
+which needs to be controlled by so called "fargate profiles".
+
+The cluster uses the "AWS Load Balancer Controller" plugin, which
+creates load balancers to route the traffic to the corresponding
+namespaces.
+
+For every git branch in the project a different namespace and hence
+a different route and url will be created.
+
+The deployment is done in two separate stages that are defined in
+the [pipeline configuration](.gitlab-ci.yml):
+
+## Stage `publish`
+
+The only job in this stage is `package`. It uses the Spring Boot 
+Gradle Plugin to [generate a docker image](https://docs.spring.io/spring-boot/docs/current/gradle-plugin/reference/htmlsingle/#build-image)
+and push it to the [project's container registry](https://git.geogebra.org/solver-team/solver-engine/container_registry).
+
+It communicates with a docker engine through the gitlab-runner's
+shared docker socket, see [doc](https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#use-docker-socket-binding).
+In order to choose the correct gitlab-runner we have to use the tag
+`docker` in the pipeline config.
+
+## Stage `deploy`
+
+The first job in this stage is `deploy`. It will push the docker
+image to the AWS EKS Kubernetes cluster and hence make it available
+to the public. These are the actions it performs:
+
+1. Connect to a Gitlab kubernetes agent with name `eks-solver`.
+2. Make sure there is a fargate profile that supports the required 
+   namespace.
+3. Install the package using `helm`.
+4. Provide a nice url using AWS Route53 service.
+
+It uses a [Gitlab cluster agent](https://docs.gitlab.com/ee/user/clusters/agent/install/)
+to communicate to the cluster.
+
+The second job in this stage is `undeploy`. It can only be triggered
+manually and will undo the above steps in reverse order.
