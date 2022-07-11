@@ -1,5 +1,4 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 
 plugins {
     application
@@ -48,13 +47,15 @@ application {
     mainClass.set("server.ApplicationKt")
 }
 
+val generatedRoot: String = File(buildDir, "generated-src/openapi").absolutePath
+
 tasks.openApiGenerate {
     generatorName.set("kotlin-spring")
     inputSpec.set("$projectDir/src/main/openapi/api-specification.yaml")
     packageName.set("server.application")
     apiPackage.set("server.api")
     modelPackage.set("server.models")
-    outputDir.set("$buildDir/generated-src/openapi")
+    outputDir.set(generatedRoot)
     configOptions.set(
         mapOf(
             "serviceInterface" to "true",
@@ -65,7 +66,7 @@ tasks.openApiGenerate {
 }
 
 sourceSets["main"].java {
-    srcDirs("$buildDir/generated-src/openapi/src/main/kotlin")
+    srcDirs("$generatedRoot/src/main/kotlin")
 }
 
 detekt {
@@ -73,5 +74,10 @@ detekt {
     config = files("$rootDir/config/detekt.yaml")
 }
 
-tasks.named<BootBuildImage>("bootBuildImage") {
+ktlint {
+    filter {
+        exclude {
+            it.file.path.contains(generatedRoot)
+        }
+    }
 }
