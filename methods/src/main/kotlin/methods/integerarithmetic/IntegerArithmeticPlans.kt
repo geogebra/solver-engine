@@ -1,8 +1,8 @@
 package methods.integerarithmetic
 
+import engine.methods.PlanId
+import engine.methods.plan
 import engine.patterns.AnyPattern
-import engine.plans.PlanId
-import engine.plans.plan
 import methods.general.removeBracketAroundSignedIntegerInSum
 import methods.general.removeBracketAroundUnsignedInteger
 import methods.general.simplifyDoubleMinus

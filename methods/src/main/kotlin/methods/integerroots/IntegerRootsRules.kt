@@ -14,6 +14,7 @@ import engine.expressionmakers.transform
 import engine.expressions.NaryOperator
 import engine.expressions.powerOf
 import engine.expressions.xp
+import engine.methods.Rule
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
@@ -25,7 +26,6 @@ import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.rootOf
 import engine.patterns.squareRootOf
-import engine.rules.Rule
 import engine.steps.metadata.Skill
 import engine.steps.metadata.makeMetadata
 import engine.utility.hasFactorOfDegree

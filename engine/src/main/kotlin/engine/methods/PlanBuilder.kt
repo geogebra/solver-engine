@@ -1,8 +1,6 @@
-package engine.plans
+package engine.methods
 
-import engine.context.ResourceData
 import engine.expressionmakers.ExpressionMaker
-import engine.patterns.AnyPattern
 import engine.patterns.Pattern
 import engine.steps.metadata.KeyExprsMetadataMaker
 import engine.steps.metadata.MetadataKey
@@ -11,11 +9,11 @@ import engine.steps.metadata.MetadataMaker
 class PipelineBuilder {
     private var steps: MutableList<PipelineItem> = mutableListOf()
 
-    private fun step(step: TransformationProducer, optional: Boolean) {
+    private fun step(step: Method, optional: Boolean) {
         steps.add(PipelineItem(step, optional))
     }
 
-    fun step(step: TransformationProducer) {
+    fun step(step: Method) {
         step(step, false)
     }
 
@@ -23,7 +21,7 @@ class PipelineBuilder {
         step(plan(init), optional = false)
     }
 
-    fun optionalStep(step: TransformationProducer) {
+    fun optionalStep(step: Method) {
         step(step, true)
     }
 
@@ -37,9 +35,9 @@ class PipelineBuilder {
 }
 
 class FirstOfBuilder {
-    private var options: MutableList<TransformationProducer> = mutableListOf()
+    private var options: MutableList<Method> = mutableListOf()
 
-    fun option(opt: TransformationProducer) {
+    fun option(opt: Method) {
         options.add(opt)
     }
 
@@ -53,38 +51,9 @@ class FirstOfBuilder {
     }
 }
 
-class ContextSensitivePlanBuilder {
-
-    private var alternatives: MutableList<AnnotatedPlan> = mutableListOf()
-    private lateinit var defaultPlan: TransformationProducer
-
-    fun case(curriculum: String?, init: PlanBuilder.() -> Unit) {
-        case(curriculum = curriculum, plan(init))
-    }
-
-    fun case(curriculum: String?, plan: TransformationProducer) {
-        alternatives.add(AnnotatedPlan(plan, ResourceData(curriculum = curriculum)))
-    }
-
-    fun default(init: PlanBuilder.() -> Unit) {
-        default(plan(init))
-    }
-
-    fun default(plan: TransformationProducer) {
-        if (this::defaultPlan.isInitialized) {
-            throw IllegalStateException("Default plan has already been set once")
-        }
-        defaultPlan = plan
-    }
-
-    fun buildPlan(pattern: Pattern): ContextSensitivePlanSelector {
-        return ContextSensitivePlanSelector(alternatives, defaultPlan, pattern)
-    }
-}
-
 class PlanBuilder {
 
-    var planId: PlanId? = null
+    var planId: MethodId? = null
     var explanationMaker: MetadataMaker? = null
     var skillMakers: MutableList<MetadataMaker> = mutableListOf()
     var pattern: Pattern? = null
@@ -130,7 +99,7 @@ class PlanBuilder {
         setStepsPlan(builder.buildPlan())
     }
 
-    fun whilePossible(subPlan: TransformationProducer) {
+    fun whilePossible(subPlan: Method) {
         setStepsPlan(WhilePossible(subPlan))
     }
 
@@ -138,7 +107,7 @@ class PlanBuilder {
         whilePossible(plan(init))
     }
 
-    fun deeply(plan: TransformationProducer, deepFirst: Boolean = false) {
+    fun deeply(plan: Method, deepFirst: Boolean = false) {
         setStepsPlan(Deeply(plan, deepFirst))
     }
 
@@ -152,12 +121,6 @@ class PlanBuilder {
 
     fun applyToChildrenInStep(plan: Plan) {
         setStepsPlan(ApplyToChildrenInStep(plan))
-    }
-
-    fun selectFromContext(init: ContextSensitivePlanBuilder.() -> Unit) {
-        val builder = ContextSensitivePlanBuilder()
-        builder.init()
-        setStepsPlan(builder.buildPlan(pattern ?: AnyPattern()))
     }
 }
 

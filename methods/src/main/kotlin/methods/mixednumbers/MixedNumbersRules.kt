@@ -5,12 +5,12 @@ import engine.expressionmakers.makeMixedNumberOf
 import engine.expressionmakers.makeNumericOp
 import engine.expressionmakers.makeSumOf
 import engine.expressionmakers.move
+import engine.methods.Rule
 import engine.patterns.ConditionPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.fractionOf
 import engine.patterns.mixedNumberOf
 import engine.patterns.numericCondition
-import engine.rules.Rule
 import engine.steps.metadata.Skill
 import engine.steps.metadata.makeMetadata
 

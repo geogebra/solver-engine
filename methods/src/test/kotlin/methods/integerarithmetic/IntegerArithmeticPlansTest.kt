@@ -1,6 +1,5 @@
 package methods.integerarithmetic
 
-import methods.general.GeneralExplanation
 import methods.plans.testPlan
 import kotlin.test.Test
 
@@ -220,7 +219,7 @@ class IntegerArithmeticPlansTest {
                     toExpr = "30"
 
                     explanation {
-                        key = GeneralExplanation.SimplifyDoubleMinus
+                        key = methods.general.Explanation.SimplifyDoubleMinus
                     }
                 }
             }
@@ -245,7 +244,7 @@ class IntegerArithmeticPlansTest {
                     toExpr = "44"
 
                     explanation {
-                        key = GeneralExplanation.RemoveBracketAroundUnsignedInteger
+                        key = methods.general.Explanation.RemoveBracketAroundUnsignedInteger
                     }
                 }
             }

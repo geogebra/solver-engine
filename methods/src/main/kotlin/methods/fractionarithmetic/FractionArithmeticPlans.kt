@@ -1,6 +1,8 @@
 package methods.fractionarithmetic
 
 import engine.expressionmakers.move
+import engine.methods.PlanId
+import engine.methods.plan
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.bracketOf
 import engine.patterns.fractionOf
@@ -8,8 +10,6 @@ import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
-import engine.plans.PlanId
-import engine.plans.plan
 import engine.steps.metadata.Skill
 import methods.general.cancelCommonTerms
 import methods.general.moveSignOfNegativeFactorOutOfProduct

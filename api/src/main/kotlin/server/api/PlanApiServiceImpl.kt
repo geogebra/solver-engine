@@ -3,7 +3,7 @@ package server.api
 import engine.context.emptyContext
 import engine.expressions.RootPath
 import engine.expressions.Subexpression
-import methods.planRegistry
+import methods.methodRegistry
 import org.antlr.v4.runtime.misc.ParseCancellationException
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -15,7 +15,11 @@ import server.models.Transformation
 @Service
 class PlanApiServiceImpl : PlansApiService {
     override fun applyPlan(planId: String, applyPlanRequest: ApplyPlanRequest): Transformation {
-        val plan = planRegistry.getPlan(planId) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Plan not found")
+        val plan =
+            methodRegistry.getMethodByName(planId) ?: throw ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Plan not found"
+            )
         val expr = try {
             parseExpression(applyPlanRequest.input)
         } catch (e: ParseCancellationException) {
@@ -32,6 +36,6 @@ class PlanApiServiceImpl : PlansApiService {
     }
 
     override fun listPlans(): List<String> {
-        return planRegistry.allPlans().map { it.planId.toString() }.toList()
+        return methodRegistry.getPublicEntries().map { it.first.methodId.key }.toList()
     }
 }

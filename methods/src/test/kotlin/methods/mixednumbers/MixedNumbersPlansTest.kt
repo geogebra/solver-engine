@@ -1,7 +1,6 @@
 package methods.mixednumbers
 
 import engine.context.Context
-import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
 import methods.plans.testPlan
 import kotlin.test.Test
@@ -43,7 +42,7 @@ class MixedNumbersPlansTest {
                 toExpr = "[1 / 1] + [2 / 3]"
 
                 explanation {
-                    FractionArithmeticExplanation.ConvertIntegerToFraction
+                    methods.fractionarithmetic.Explanation.ConvertIntegerToFraction
                 }
 
                 move {
@@ -66,7 +65,7 @@ class MixedNumbersPlansTest {
                 toExpr = "[5 / 3]"
 
                 explanation {
-                    FractionArithmeticExplanation.AddFractions
+                    methods.fractionarithmetic.Explanation.AddFractions
                 }
 
                 combine {
@@ -114,7 +113,7 @@ class MixedNumbersPlansTest {
                 }
 
                 explanation {
-                    key = FractionArithmeticExplanation.AddFractions
+                    key = methods.fractionarithmetic.Explanation.AddFractions
                 }
             }
 
@@ -270,7 +269,7 @@ class MixedNumbersPlansTest {
                 }
 
                 explanation {
-                    key = FractionArithmeticExplanation.AddFractions
+                    key = methods.fractionarithmetic.Explanation.AddFractions
                 }
             }
 
@@ -294,7 +293,7 @@ class MixedNumbersPlansTest {
                 }
 
                 explanation {
-                    key = FractionArithmeticExplanation.ConvertIntegerToFraction
+                    key = methods.fractionarithmetic.Explanation.ConvertIntegerToFraction
                 }
             }
 
@@ -313,7 +312,7 @@ class MixedNumbersPlansTest {
                 }
 
                 explanation {
-                    key = FractionArithmeticExplanation.AddFractions
+                    key = methods.fractionarithmetic.Explanation.AddFractions
                 }
             }
 

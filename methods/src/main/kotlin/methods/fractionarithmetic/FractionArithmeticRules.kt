@@ -13,6 +13,7 @@ import engine.expressionmakers.move
 import engine.expressionmakers.substituteIn
 import engine.expressions.Subexpression
 import engine.expressions.xp
+import engine.methods.Rule
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
@@ -32,7 +33,6 @@ import engine.patterns.productContaining
 import engine.patterns.productOf
 import engine.patterns.sumContaining
 import engine.patterns.sumOf
-import engine.rules.Rule
 import engine.steps.metadata.Skill
 import engine.steps.metadata.makeMetadata
 import java.math.BigInteger

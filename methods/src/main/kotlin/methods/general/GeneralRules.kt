@@ -10,6 +10,7 @@ import engine.expressionmakers.restOf
 import engine.expressionmakers.substituteIn
 import engine.expressionmakers.transform
 import engine.expressions.xp
+import engine.methods.Rule
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
@@ -23,7 +24,6 @@ import engine.patterns.oneOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
-import engine.rules.Rule
 import engine.steps.metadata.makeMetadata
 import java.math.BigInteger
 

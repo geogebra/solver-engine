@@ -1,0 +1,14 @@
+metadata:
+  name: FractionRoots
+  title: Fractions Involving Roots
+
+explanations:
+  # Rules
+  DistributeRadicalRuleOverFractionsToNumeratorAndDenominator:
+    defaultTranslation:
+  WriteAsMultiplicationWithUnitaryRadicalFraction:
+    defaultTranslation:
+
+  # Plans
+  EvaluateSquareRootFractions:
+    defaultTranslation:

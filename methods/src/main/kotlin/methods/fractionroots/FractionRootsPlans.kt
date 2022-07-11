@@ -1,7 +1,6 @@
 package methods.fractionroots
 
-import engine.plans.PlanId
-import engine.plans.plan
+import engine.methods.plan
 import methods.fractionarithmetic.writeMultiplicationOfFractionsAsFraction
 import methods.integerarithmetic.simplifyArithmeticExpression
 import methods.integerroots.simplifyMultiplicationOfSquareRoots
@@ -33,8 +32,6 @@ val rationalizationWithRadicalInDenominator = plan {
 evaluates: sqrt[ [ 4 / 5 ] ] -> [ 2 * sqrt[5] / 5 ]
  */
 val evaluateSquareRootFractions = plan {
-    planId = PlanId.EvaluateSquareRootFractions
-
     pipeline {
         step(distributeRadicalRuleOverFractionsToNumeratorAndDenominator)
         optionalStep(simplifyArithmeticExpression)

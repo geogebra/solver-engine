@@ -6,6 +6,7 @@ import engine.expressionmakers.makeNumericOp
 import engine.expressionmakers.move
 import engine.expressionmakers.substituteIn
 import engine.expressions.NaryOperator
+import engine.methods.Rule
 import engine.patterns.ConditionPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.UnsignedIntegerPattern
@@ -17,7 +18,6 @@ import engine.patterns.oneOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
-import engine.rules.Rule
 import engine.steps.metadata.makeMetadata
 import java.math.BigInteger
 

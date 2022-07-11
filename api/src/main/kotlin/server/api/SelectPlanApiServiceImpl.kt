@@ -3,8 +3,8 @@ package server.api
 import engine.context.emptyContext
 import engine.expressions.RootPath
 import engine.expressions.Subexpression
-import engine.plans.PlanId
-import methods.planRegistry
+import engine.methods.PlanId
+import methods.methodRegistry
 import org.antlr.v4.runtime.misc.ParseCancellationException
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -12,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException
 import parser.parseExpression
 import server.models.ApplyPlanRequest
 import server.models.PlanSelection
+import server.models.PlanSelectionMetadata
 
 @Service
 class SelectPlanApiServiceImpl : SelectPlansApiService {
@@ -23,11 +24,15 @@ class SelectPlanApiServiceImpl : SelectPlansApiService {
         }
         val modeller = TransformationModeller(applyPlanRequest.format)
         val selections = mutableListOf<PlanSelection>()
-        for (planId in planIds) {
-            val plan = planRegistry.getPlan(planId)
+        for ((methodData, plan) in methodRegistry.getPublicEntries()) {
             val transformation = plan?.tryExecute(emptyContext, Subexpression(RootPath, expr))
             if (transformation != null) {
-                selections.add(PlanSelection(modeller.modelTransformation(transformation)))
+                selections.add(
+                    PlanSelection(
+                        modeller.modelTransformation(transformation),
+                        PlanSelectionMetadata(methodData.methodId.key)
+                    )
+                )
             }
         }
         return selections

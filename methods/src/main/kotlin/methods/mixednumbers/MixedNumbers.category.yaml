@@ -1,0 +1,20 @@
+metadata:
+  name: MixedNumbers
+  title: Mixed Numbers
+
+explanations:
+  ConvertMixedNumberToSum:
+    defaultTranslation:
+  ConvertFractionToMixedNumber:
+    defaultTranslation:
+
+methods:
+  AddMixedNumbers:
+    visibility: public
+    description: "Adds mixed number wow"
+    defaultVariant:
+      implementationName: addMixedNumbersByConverting
+      region: EU
+    variants:
+      - implementationName: addMixedNumbersUsingCommutativity
+        region: US

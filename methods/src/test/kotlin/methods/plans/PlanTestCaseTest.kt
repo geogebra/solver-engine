@@ -1,11 +1,11 @@
 package methods.plans
 
 import engine.expressionmakers.move
+import engine.methods.Pipeline
+import engine.methods.PipelineItem
+import engine.methods.Plan
+import engine.methods.Rule
 import engine.patterns.AnyPattern
-import engine.plans.Pipeline
-import engine.plans.PipelineItem
-import engine.plans.Plan
-import engine.rules.Rule
 import engine.steps.metadata.MetadataKey
 import engine.steps.metadata.makeMetadata
 import org.junit.jupiter.api.Test

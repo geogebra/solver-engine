@@ -3,7 +3,7 @@ package methods.rules
 import engine.context.emptyContext
 import engine.expressions.RootPath
 import engine.expressions.Subexpression
-import engine.rules.Rule
+import engine.methods.Rule
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import parser.parseExpression

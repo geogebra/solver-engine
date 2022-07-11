@@ -10,7 +10,7 @@ import engine.expressions.PathMappingType
 import engine.expressions.RootPath
 import engine.expressions.Subexpression
 import engine.expressions.parsePath
-import engine.plans.Plan
+import engine.methods.Plan
 import engine.steps.Transformation
 import engine.steps.metadata.Metadata
 import engine.steps.metadata.MetadataKey

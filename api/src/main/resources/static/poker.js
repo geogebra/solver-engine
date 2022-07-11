@@ -86,7 +86,7 @@ const renderPlanSelections = (selections) => {
 const renderPlanSelection = (selection) => {
     return `
     <div class="plan-selection">
-        <div class="plan-id">${selection.transformation.planId}</div>
+        <div class="plan-id">${selection.metadata.methodId}</div>
         ${renderTransformation(selection.transformation)}
     </div>`;
 }

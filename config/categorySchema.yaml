@@ -1,0 +1,79 @@
+title: Category
+description: Various data about a category
+type: object
+required:
+  - metadata
+  - explanations
+properties:
+  metadata:
+    description: Contains general data about the category
+    type: object
+    required:
+      - name
+      - title
+    properties:
+      name:
+        description: The name of the category in PascalCase
+        type: string
+      title:
+        description: A human-readable name for the category
+        type: string
+
+  explanations:
+    description: Maps Explanation keys to Explanation data (currently Translation data)
+    type: object
+    additionalProperties:
+      description: Explanation key
+      type: object
+      required:
+        - defaultTranslation
+      properties:
+        defaultTranslation:
+          description: The default US English translation for the explanation. It will form the basis for localization
+          type: string
+        parameters:
+          description: Descriptions of the explanation parameters (one for each %n in the defaultTranslation field)
+          type: array
+          items:
+            type: string
+
+  methods:
+    description: Maps method IDs to method specifications
+    type: object
+    additionalProperties:
+      description: Method ID
+      type: object
+      required:
+        - visibility
+        - description
+        - defaultVariant
+      properties:
+        visibility:
+          description: Availability of the plan
+          type: string
+          enum: [ 'public', 'internal' ]
+        description:
+          description: Description of the plan in US English - this text will be localized
+          type: string
+        defaultVariant:
+          description: The variant of the method used by default
+          $ref: '#/$defs/name'
+        variants:
+          description: List of plan variants that can be used in specific contexts
+          type: array
+          items:
+            $ref: '#/$defs/name'
+
+$defs:
+  variant:
+    type: object
+    description: Data specifying how a method variant is implemented and selected
+    required:
+      - implementationName
+    properties:
+      implementationName:
+        description: Name of the Kotlin package-level identifier containing the plan implementation
+        type: string
+      region:
+        description: Region that this plan is appropriate for (currently we have US and EU)
+        type: string

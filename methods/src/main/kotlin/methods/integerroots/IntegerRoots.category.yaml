@@ -1,0 +1,21 @@
+metadata:
+  name: IntegerRoots
+  title: Integer Roots
+
+explanations:
+  SimplifyRootOfOne:
+    defaultTranslation:
+  SimplifyRootOfZero:
+    defaultTranslation:
+  FactorizeNumberUnderSquareRoot:
+    defaultTranslation:
+  SeparateIntegerPowersUnderSquareRoot:
+    defaultTranslation:
+  SeparateSquaresUnderSquareRoot:
+    defaultTranslation:
+  SimplifyMultiplicationOfSquareRoots:
+    defaultTranslation:
+  SimplifySquareRootOfSquare:
+    defaultTranslation:
+  SimplifySquareRootOfPower:
+    defaultTranslation:

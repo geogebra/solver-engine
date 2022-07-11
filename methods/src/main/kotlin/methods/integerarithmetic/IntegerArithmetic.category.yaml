@@ -1,0 +1,54 @@
+metadata:
+  name: IntegerArithmetic
+  title: Integer Arithmetic
+
+explanations:
+  # Rules
+  EvaluateIntegerSubtraction:
+    defaultTranslation: Subtract %2 from %1
+    parameters:
+      - term to subtract from
+      - term to subtract
+  EvaluateIntegerAddition:
+    defaultTranslation: Add %1 and %2
+    parameters:
+      - first term
+      - second term
+  EvaluateIntegerProduct:
+    defaultTranslation: Multiply %1 by %2
+    parameters:
+      - first factor
+      - second factor
+  EvaluateIntegerDivision:
+    defaultTranslation: Divide %1 by %2
+    parameters:
+      - dividend
+      - divisor
+  EvaluateIntegerPower:
+    defaultTranslation: Raise %1 to the power of %2
+    parameters:
+      - base
+      - exponent
+  RewriteIntegerPowerAsProduct:
+    defaultTranslation: Expand %1 to the power of %2 as a product
+    parameters:
+      - base
+      - exponent
+
+  # Plans
+  SimplifyArithmeticExpression:
+    defaultTranslation: evaluate the expression %1
+    parameters:
+      - expression
+
+  SimplifyIntegerSum:
+    defaultTranslation: evaluate the sum
+  SimplifyIntegerProduct:
+    defaultTranslation: evaluate the product
+
+methods:
+  SimplifyArithmeticExpression:
+    visibility: public
+    description: Simplify an arithmetic expression
+    defaultVariant:
+      implementationName: simplifyArithmeticExpression

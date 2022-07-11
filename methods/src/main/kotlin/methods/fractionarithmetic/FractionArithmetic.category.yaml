@@ -1,0 +1,65 @@
+metadata:
+  name: FractionArithmetic
+  title: Fraction Arithmetic
+
+explanations:
+  SimplifyNegativeInDenominator:
+    defaultTranslation: Move negative denominator sign out of fraction in %1
+    parameters:
+      - fraction with negative denominator
+  SimplifyNegativeInNumerator:
+    defaultTranslation: Move negative numerator sign out of fraction in %1
+    parameters:
+      - fraction with negative numerator
+  SimplifyNegativeInNumeratorAndDenominator:
+    defaultTranslation: Cancel negative signs in numerator and denominator of %1
+    parameters:
+      - fraction with negative numerator and denominator
+  ConvertIntegerToFraction:
+    defaultTranslation: Write %1 as a fraction with denominator 1
+    parameters:
+      - integer
+  AddLikeFractions:
+    defaultTranslation: Add fractions %1 and %2 with the same denominator
+    parameters:
+      - first fraction
+      - second fraction
+  SubtractLikeFractions:
+    defaultTranslation:
+  BringToCommonDenominator:
+    defaultTranslation:
+  MultiplyFractions:
+    defaultTranslation:
+  FindCommonFactorInFraction:
+    defaultTranslation:
+  SimplifyFractionToInteger:
+    defaultTranslation:
+  SimplifyDividingByAFraction:
+    defaultTranslation:
+  TurnDivisionToFraction:
+    defaultTranslation:
+  SimplifyFractionWithFractionDenominator:
+    defaultTranslation:
+  SimplifyFractionWithFractionNumerator:
+    defaultTranslation:
+  DistributeFractionPositivePower:
+    defaultTranslation:
+  SimplifyFractionNegativePower:
+    defaultTranslation:
+  SimplifyFractionToMinusOne:
+    defaultTranslation:
+  TurnIntegerToMinusOneToFraction:
+    defaultTranslation:
+  TurnNegativePowerOfIntegerToFraction:
+    defaultTranslation:
+  ConvertMultiplicationOfFractionsToFraction:
+    defaultTranslation:
+
+  SimplifyNumericFraction:
+    defaultTranslation:
+  AddFractions:
+    defaultTranslation:
+  EvaluatePositiveFractionProduct:
+    defaultTranslation:
+  EvaluatePowerOfFraction:
+    defaultTranslation:

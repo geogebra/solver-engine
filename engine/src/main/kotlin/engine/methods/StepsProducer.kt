@@ -1,4 +1,4 @@
-package engine.plans
+package engine.methods
 
 import engine.context.Context
 import engine.expressions.Subexpression
@@ -15,7 +15,7 @@ interface StepsProducer {
     fun produceSteps(ctx: Context, match: Match, sub: Subexpression): List<Transformation>
 }
 
-data class Deeply(val plan: TransformationProducer, val deepFirst: Boolean = false) : StepsProducer {
+data class Deeply(val plan: Method, val deepFirst: Boolean = false) : StepsProducer {
 
     override val pattern = FindPattern(plan.pattern, deepFirst)
 
@@ -25,7 +25,7 @@ data class Deeply(val plan: TransformationProducer, val deepFirst: Boolean = fal
     }
 }
 
-data class WhilePossible(val plan: TransformationProducer) : StepsProducer {
+data class WhilePossible(val plan: Method) : StepsProducer {
 
     override val pattern = plan.pattern
 
@@ -43,7 +43,24 @@ data class WhilePossible(val plan: TransformationProducer) : StepsProducer {
     }
 }
 
-data class PipelineItem(val plan: TransformationProducer, val optional: Boolean = false)
+data class FirstOf(val options: List<Method>) : Method {
+
+    override val pattern = OneOfPattern(options.map { it.pattern })
+
+    override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
+        for (option in options) {
+            if (match.getLastBinding(option.pattern) != null) {
+                val result = option.execute(ctx, match, sub)
+                if (result != null) {
+                    return result
+                }
+            }
+        }
+        return null
+    }
+}
+
+data class PipelineItem(val plan: Method, val optional: Boolean = false)
 
 data class Pipeline(val items: List<PipelineItem>) : StepsProducer {
     init {

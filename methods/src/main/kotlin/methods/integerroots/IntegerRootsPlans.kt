@@ -1,8 +1,8 @@
 package methods.integerroots
 
+import engine.methods.plan
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.squareRootOf
-import engine.plans.plan
 import methods.integerarithmetic.evaluateIntegerProductAndDivision
 
 val simplifyIntegerRoot = plan {

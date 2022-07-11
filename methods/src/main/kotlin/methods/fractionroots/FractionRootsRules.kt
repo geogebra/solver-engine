@@ -4,12 +4,12 @@ import engine.expressionmakers.makeFractionOf
 import engine.expressionmakers.makeProductOf
 import engine.expressionmakers.makeSquareRootOf
 import engine.expressionmakers.move
+import engine.methods.Rule
 import engine.patterns.AnyPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.fractionOf
 import engine.patterns.productContaining
 import engine.patterns.squareRootOf
-import engine.rules.Rule
 import engine.steps.metadata.makeMetadata
 
 /*

@@ -2,6 +2,14 @@ title: PlanSelection
 type: object
 required:
   - transformation
+  - metadata
 properties:
   transformation:
     $ref: 'Transformation.yaml'
+  metadata:
+    type: object
+    required:
+      - methodId
+    properties:
+      methodId:
+        type: string

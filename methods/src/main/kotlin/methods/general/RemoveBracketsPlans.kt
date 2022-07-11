@@ -1,6 +1,6 @@
 package methods.general
 
-import engine.plans.plan
+import engine.methods.plan
 
 val replaceAllInvisibleBrackets = plan {
     explanation(Explanation.ReplaceAllInvisibleBrackets)

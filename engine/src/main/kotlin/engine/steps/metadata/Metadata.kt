@@ -9,6 +9,11 @@ interface MetadataKey {
     val key: String
 }
 
+interface CategorisedMetadataKey : MetadataKey {
+    val category: String
+    override val key get() = "$category.$this"
+}
+
 data class Metadata(val key: MetadataKey, val mappedParams: List<MappedExpression>)
 
 typealias MetadataMaker = Maker<Metadata>

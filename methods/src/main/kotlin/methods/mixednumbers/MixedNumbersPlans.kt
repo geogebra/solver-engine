@@ -1,9 +1,12 @@
 package methods.mixednumbers
 
+import engine.context.ResourceData
+import engine.methods.ContextSensitiveMethod
+import engine.methods.ContextSensitiveMethodSelector
+import engine.methods.PlanId
+import engine.methods.plan
 import engine.patterns.mixedNumberOf
 import engine.patterns.sumOf
-import engine.plans.PlanId
-import engine.plans.plan
 import methods.fractionarithmetic.convertIntegerToFraction
 import methods.fractionarithmetic.evaluatePositiveFractionSum
 import methods.general.removeBracketsSum
@@ -57,9 +60,15 @@ val addMixedNumbers = plan {
 
     pattern = sumOf(mixedNumberOf(), mixedNumberOf())
 
-    selectFromContext {
-        case(curriculum = "EU", addMixedNumbersByConverting)
-        case(curriculum = "US", addMixedNumbersUsingCommutativity)
-        default(addMixedNumbersByConverting)
+    firstOf {
+        option(
+            ContextSensitiveMethodSelector(
+                default = ContextSensitiveMethod(addMixedNumbersByConverting, ResourceData(curriculum = "EU")),
+                alternatives = listOf(
+                    ContextSensitiveMethod(addMixedNumbersByConverting, ResourceData(curriculum = "EU")),
+                    ContextSensitiveMethod(addMixedNumbersUsingCommutativity, ResourceData(curriculum = "US")),
+                )
+            )
+        )
     }
 }

@@ -1,0 +1,40 @@
+metadata:
+  name: General
+  title: General Techniques
+explanations:
+  # Rules
+  ReplaceInvisibleBrackets:
+    defaultTranslation: "Add brackets to make the expression clearer"
+    parameters: [ "fragment that needs brackets" ]
+  RemoveBracketSumInSum:
+    defaultTranslation: "Brackets around a sum term which is itself a sum can be removed"
+    parameters: [ "inner sum" ]
+  RemoveBracketAroundSignedIntegerInSum:
+    defaultTranslation: "Brackets can be removed from a negative term in a sum"
+    parameters: [ "negative term" ]
+  RemoveBracketAroundUnsignedInteger:
+    defaultTranslation: "Brackets around a positive integer can be removed"
+    parameters: [ "positive integer" ]
+  EliminateOneInProduct:
+    defaultTranslation: "A factor of 1 can be eliminated from a product"
+    parameters: [ "factor 1" ]
+  EliminateZeroInSum:
+    defaultTranslation:
+  EvaluateProductContainingZero:
+    defaultTranslation:
+  SimplifyDoubleMinus:
+    defaultTranslation:
+  SimplifyProductWithTwoNegativeFactors:
+    defaultTranslation:
+  MoveSignOfNegativeFactorOutOfProduct:
+    defaultTranslation:
+  SimplifyEvenPowerOfNegative:
+    defaultTranslation:
+  SimplifyOddPowerOfNegative:
+    defaultTranslation:
+  CancelCommonTerms:
+    defaultTranslation:
+
+  # Plans
+  ReplaceAllInvisibleBrackets:
+    defaultTranslation:

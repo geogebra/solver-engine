@@ -1,11 +1,10 @@
-package engine.rules
+package engine.methods
 
 import engine.context.Context
 import engine.expressionmakers.ExpressionMaker
 import engine.expressions.Subexpression
 import engine.patterns.Match
 import engine.patterns.Pattern
-import engine.plans.TransformationProducer
 import engine.steps.Transformation
 import engine.steps.metadata.MetadataMaker
 
@@ -14,7 +13,7 @@ data class Rule(
     val resultMaker: ExpressionMaker,
     val explanationMaker: MetadataMaker,
     val skillMakers: List<MetadataMaker> = emptyList(),
-) : TransformationProducer {
+) : Method {
 
     override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
         val result = resultMaker.make(match)

@@ -4,13 +4,13 @@ import engine.expressionmakers.makeBracketOf
 import engine.expressionmakers.move
 import engine.expressionmakers.substituteIn
 import engine.expressions.UnaryOperator
+import engine.methods.Rule
 import engine.patterns.AnyPattern
 import engine.patterns.OperatorPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.bracketOf
 import engine.patterns.sumContaining
-import engine.rules.Rule
 import engine.steps.metadata.makeMetadata
 
 val replaceInvisibleBrackets = run {
