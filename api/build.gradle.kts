@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 
 plugins {
     application
@@ -9,7 +10,7 @@ plugins {
     kotlin("plugin.spring") version kotlinVersion
 
     id("org.openapi.generator") version "6.0.0"
-    id("org.springframework.boot") version "2.7.0"
+    id("org.springframework.boot") version "2.7.1"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
 
     id("org.jlleitschuh.gradle.ktlint")
@@ -38,7 +39,7 @@ dependencies {
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "17"
+    kotlinOptions.jvmTarget = "18"
 
     dependsOn(tasks.openApiGenerate)
 }
@@ -70,4 +71,7 @@ sourceSets["main"].java {
 detekt {
     buildUponDefaultConfig = true
     config = files("$rootDir/config/detekt.yaml")
+}
+
+tasks.named<BootBuildImage>("bootBuildImage") {
 }

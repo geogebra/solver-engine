@@ -5,7 +5,9 @@ import engine.expressions.MappedExpression
 import engine.patterns.Maker
 import engine.patterns.Match
 
-interface MetadataKey
+interface MetadataKey {
+    val key: String
+}
 
 data class Metadata(val key: MetadataKey, val mappedParams: List<MappedExpression>)
 

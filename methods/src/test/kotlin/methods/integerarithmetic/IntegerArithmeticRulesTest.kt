@@ -1,0 +1,33 @@
+package methods.integerarithmetic
+
+import methods.rules.RuleTest
+import methods.rules.RuleTestCase
+import java.util.stream.Stream
+
+object IntegerArithmeticRulesTest : RuleTest {
+
+    @JvmStatic
+    fun testCaseProvider(): Stream<RuleTestCase> = Stream.of(
+
+        RuleTestCase("5 - 4", evaluateUnsignedIntegerSubtraction, "1"),
+        RuleTestCase("4 - 5", evaluateUnsignedIntegerSubtraction, null),
+
+        RuleTestCase("1 + x + 2", evaluateSignedIntegerAddition, "3 + x"),
+        RuleTestCase("1 + x + (-2)", evaluateSignedIntegerAddition, "-1 + x"),
+        RuleTestCase("(-2) + 3", evaluateSignedIntegerAddition, "1"),
+        RuleTestCase("(-2) + (-3) + x", evaluateSignedIntegerAddition, "-5 + x"),
+
+        RuleTestCase("z*2*x*3*y", evaluateIntegerProductAndDivision, "z*6*x*y"),
+        RuleTestCase("2*3", evaluateIntegerProductAndDivision, "6"),
+
+        RuleTestCase("1 * (-2)", evaluateIntegerProductAndDivision, "-2"),
+        RuleTestCase("(-2) * x * 5", evaluateIntegerProductAndDivision, "(-10) * x"),
+        RuleTestCase("10:2", evaluateIntegerProductAndDivision, "5"),
+        RuleTestCase("10:(-2)", evaluateIntegerProductAndDivision, "-5"),
+
+        RuleTestCase("[5^3]", evaluateIntegerPower, "125"),
+        RuleTestCase("[(-5) ^ 3]", evaluateIntegerPower, "-125"),
+
+        RuleTestCase("[4^2]", rewriteIntegerPowerAsProduct, "4 * 4")
+    )
+}

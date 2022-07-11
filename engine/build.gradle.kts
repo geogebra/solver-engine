@@ -16,6 +16,7 @@ repositories {
 dependencies {
     antlr("org.antlr:antlr4:4.10.1")
 
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.7.0")
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")
 }

@@ -3,7 +3,7 @@ package server.api
 import engine.context.emptyContext
 import engine.expressions.RootPath
 import engine.expressions.Subexpression
-import methods.plans.planRegistry
+import methods.planRegistry
 import org.antlr.v4.runtime.misc.ParseCancellationException
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service

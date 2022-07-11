@@ -11,13 +11,17 @@ import engine.steps.metadata.makeMetadata
 import org.junit.jupiter.api.Test
 import kotlin.test.assertFails
 
+class DummyKey : MetadataKey {
+    override val key = "dummy"
+}
+
 class PlanTestCaseTest {
 
-    private val testRuleMetadataKey = object : MetadataKey {}
-    private val testPlanMetadataKey = object : MetadataKey {}
-    private val testRuleSkillMetadataKey1 = object : MetadataKey {}
-    private val testRuleSkillMetadataKey2 = object : MetadataKey {}
-    private val testRuleSkillMetadataKey3 = object : MetadataKey {}
+    private val testRuleMetadataKey = DummyKey()
+    private val testPlanMetadataKey = DummyKey()
+    private val testRuleSkillMetadataKey1 = DummyKey()
+    private val testRuleSkillMetadataKey2 = DummyKey()
+    private val testRuleSkillMetadataKey3 = DummyKey()
 
     private val testRule = run {
         val pattern = AnyPattern()
