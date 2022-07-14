@@ -7,6 +7,7 @@ import methods.fractionarithmetic.evaluatePositiveFractionProduct
 import methods.fractionarithmetic.evaluatePositiveFractionSum
 import methods.fractionarithmetic.evaluatePowerOfFraction
 import methods.fractionarithmetic.simplifyNumericFraction
+import methods.fractionroots.evaluateSquareRootFractions
 import methods.integerarithmetic.evaluateSignedIntegerPower
 import methods.integerarithmetic.simplifyArithmeticExpression
 import methods.mixednumbers.addMixedNumbers
@@ -22,6 +23,7 @@ val planRegistry = run {
     planRegistry.addPlan(evaluatePositiveFractionPower)
     planRegistry.addPlan(evaluatePowerOfFraction)
     planRegistry.addPlan(evaluateSignedIntegerPower)
+    planRegistry.addPlan(evaluateSquareRootFractions)
 
     planRegistry
 }

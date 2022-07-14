@@ -29,6 +29,7 @@ import engine.patterns.numericCondition
 import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
+import engine.patterns.productOf
 import engine.patterns.sumContaining
 import engine.patterns.sumOf
 import engine.rules.Rule
@@ -369,5 +370,25 @@ val turnNegativePowerOfIntegerToFraction = run {
             makePowerOf(move(base), move(exponent.pattern)),
         ),
         explanationMaker = makeMetadata(Explanation.TurnNegativePowerOfIntegerToFraction, move(base), move(exponent))
+    )
+}
+
+/*
+[a / b] * [c / d] --> [a * c / b * d]
+ */
+val writeMultiplicationOfFractionsAsFraction = run {
+    val num1 = AnyPattern()
+    val den1 = AnyPattern()
+    val num2 = AnyPattern()
+    val den2 = AnyPattern()
+    val pattern = productOf(fractionOf(num1, den1), fractionOf(num2, den2))
+
+    Rule(
+        pattern = pattern,
+        resultMaker = makeFractionOf(
+            makeProductOf(move(num1), move(num2)),
+            makeProductOf(move(den1), move(den2))
+        ),
+        explanationMaker = makeMetadata(Explanation.ConvertMultiplicationOfFractionsToFraction)
     )
 }

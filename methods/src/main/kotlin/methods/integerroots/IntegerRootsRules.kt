@@ -130,16 +130,50 @@ val simplifySquareRootOfSquare = run {
 val simplifySquareRootOfPower = run {
     val base = UnsignedIntegerPattern()
     val exponent = UnsignedIntegerPattern()
-    val exponentCondition = ConditionPattern(exponent, numericCondition(exponent) { it.isEven() })
-    val square = powerOf(base, exponentCondition)
+    val square = powerOf(base, exponent)
     val root = squareRootOf(square)
 
     Rule(
         pattern = root,
-        resultMaker = makePowerOf(
-            move(base),
-            makeProductOf(move(exponent), makeDivideBy(FixedExpressionMaker(xp(2))))
+        resultMaker = custom {
+            if (getValue(exponent) == BigInteger.TWO) {
+                move(base)
+            } else if (getValue(exponent).isEven()) {
+                makePowerOf(
+                    move(base),
+                    makeProductOf(move(exponent), makeDivideBy(FixedExpressionMaker(xp(2))))
+                )
+            } else {
+                makeProductOf(
+                    makePowerOf(
+                        move(base),
+                        makeProductOf(
+                            makeNumericOp(exponent) { it - BigInteger.ONE },
+                            makeDivideBy(FixedExpressionMaker(xp(2)))
+                        )
+                    ),
+                    makeSquareRootOf(move(base))
+                )
+            }
+        },
+        explanationMaker = makeMetadata(Explanation.SimplifySquareRootOfPower, move(exponent))
+    )
+}
+
+/*
+sqrt[a] * sqrt[a] --> a
+ */
+val simplifyMultiplicationOfSquareRoots = run {
+    val radicand = UnsignedIntegerPattern()
+    val radical = squareRootOf(radicand)
+    val pattern = productContaining(radical, radical)
+
+    Rule(
+        pattern = pattern,
+        resultMaker = substituteIn(
+            pattern,
+            move(radicand)
         ),
-        explanationMaker = makeMetadata(Explanation.SimplifySquareRootOfPower, move(exponent)),
+        explanationMaker = makeMetadata(Explanation.SimplifyMultiplicationOfSquareRoots, move(radical), move(radical))
     )
 }

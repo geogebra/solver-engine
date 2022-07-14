@@ -56,5 +56,11 @@ object IntegerFractionsRulesTest : RuleTest {
 
         RuleTestCase("[3 ^ -1]", turnIntegerToMinusOneToFraction, "[1 / 3]"),
         RuleTestCase("[3 ^ -2]", turnNegativePowerOfIntegerToFraction, "[1 / [3 ^ 2]]"),
+
+        RuleTestCase(
+            "[4 / 3 * sqrt[3]] * [sqrt[3] / sqrt[3]]",
+            writeMultiplicationOfFractionsAsFraction,
+            "[4 * sqrt[3] / 3 * sqrt[3] * sqrt[3]]"
+        )
     )
 }

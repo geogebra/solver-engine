@@ -1,6 +1,7 @@
 package methods.fractionarithmetic
 
 import engine.steps.metadata.Skill
+import methods.integerarithmetic.evaluateSignedIntegerPower
 import methods.plans.testPlan
 import org.junit.jupiter.api.Test
 
@@ -432,6 +433,47 @@ class TestCombineFractionsInExpression {
             }
             step {
                 toExpr = "[9 / 16]"
+            }
+        }
+    }
+
+    fun testEvaluatePositiveFractionPower() = testPlan {
+        plan = evaluatePositiveFractionPower
+        inputExpr = "[([2 / 3]) ^ 2]"
+
+        check {
+            toExpr = "[4 / 9]"
+        }
+    }
+
+    @Test
+    fun testEvaluateSignedIntegerPower1() = testPlan {
+        plan = evaluateSignedIntegerPower
+        inputExpr = "[2 ^ 6]"
+
+        check {
+            toExpr = "64"
+
+            step {
+                toExpr = "64"
+            }
+        }
+    }
+
+    @Test
+    fun testEvaluateSignedIntegerPower2() = testPlan {
+        plan = evaluateSignedIntegerPower
+        inputExpr = "[2^5]"
+
+        check {
+            toExpr = "32"
+
+            step {
+                toExpr = "2 * 2 * 2 * 2 * 2"
+            }
+
+            step {
+                toExpr = "32"
             }
         }
     }

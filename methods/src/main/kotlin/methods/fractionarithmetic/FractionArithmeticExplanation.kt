@@ -24,6 +24,7 @@ enum class FractionArithmeticExplanation : ExplanationBase {
     SimplifyFractionToMinusOne,
     TurnIntegerToMinusOneToFraction,
     TurnNegativePowerOfIntegerToFraction,
+    ConvertMultiplicationOfFractionsToFraction,
 
     // Plans
     SimplifyNumericFraction,

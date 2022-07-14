@@ -9,6 +9,7 @@ enum class PlanId {
     EvaluatePositiveFractionProduct,
     EvaluatePowerOfFraction,
     EvaluateSignedIntegerPower,
+    EvaluateSquareRootFractions,
     EvaluatePositiveFractionPower;
 }
 
