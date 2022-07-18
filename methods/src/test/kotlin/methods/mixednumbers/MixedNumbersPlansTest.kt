@@ -83,7 +83,7 @@ class MixedNumbersPlansTest {
 
     @Test
     fun testAddMixedNumbersPlan() = testPlan {
-        plan = addMixedNumbersByConverting
+        plan = addMixedNumbers
         inputExpr = "[5 1/4] + [2 2/3]"
 
         check {

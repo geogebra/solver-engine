@@ -67,22 +67,14 @@ class CategoryProcessor(val categoryFile: File, val outputDir: File) {
                 appendLine("MethodRegistry.EntryData(")
                 appendLine("methodId = $className.$methodId,")
                 appendLine("isPublic = ${methodData.visibility == "public"},")
-                appendLine("description = \"${methodData.description}\", ")
-                appendLine("),")
-                appendVariant(methodData.defaultVariant)
-                methodData.variants.forEach { appendVariant(it) }
+                appendLine("description = \"${methodData.description}\",")
+                appendLine("implementation = ${methodData.implementationName},")
+                appendLine(")")
                 appendLine(")")
             }
             appendLine("}")
         }
 
         writeFormattedString(outFile, enumFileContent)
-    }
-
-    fun StringBuilder.appendVariant(variant: MethodVariant) {
-        appendLine("ContextSensitiveMethod(")
-        appendLine("${variant.implementationName},")
-        appendLine("ResourceData(curriculum = \"${variant.region}\")")
-        appendLine("),")
     }
 }

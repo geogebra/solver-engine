@@ -26,12 +26,17 @@ data class Context(val curriculum: String? = null) {
         return rateResourceData(resource.resourceData)
     }
 
-    fun <T : Resource> sortResources(resources: Sequence<T>): Sequence<T> {
-        return resources.sortedByDescending { rateResource(it) }.filter { rateResource(it) > 0 }
-    }
-
-    fun <T : Resource> selectBestResource(resources: Sequence<T>): T? {
-        return resources.filter { rateResource(it) > 0 }.maxByOrNull { rateResource(it) }
+    fun <T : Resource> selectBestResource(default: T, alternatives: List<T>): T {
+        var bestResource = default
+        var bestScore = rateResource(default)
+        for (alt in alternatives) {
+            val score = rateResource(alt)
+            if (score > bestScore) {
+                bestResource = alt
+                bestScore = score
+            }
+        }
+        return bestResource
     }
 }
 

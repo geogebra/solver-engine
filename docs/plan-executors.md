@@ -1,8 +1,3 @@
-**Plan** is the top and mid-level transformation producer.
-It may have an explanation and skills, just like rules, but the
-actual work is done by one of the many possible steps
-producers:
-
 - **FirstOf**: given a list of transformation producers it
   executes the first one which applies
 - **Pipeline**: given a list of transformation producers it
@@ -24,6 +19,7 @@ producers:
   an interlaced way, e.g. first producer on first expression, then
   first producer on second expression, ..., then second producer
   on first expression, second producer on second expression etc.
+- **ContextSensitiveSelector**
 
 Rules are combined into simpler plans, which are in turn combined
 into more and more complex plans to achieve at the top level

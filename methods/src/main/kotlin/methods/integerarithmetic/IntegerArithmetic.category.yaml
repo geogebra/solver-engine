@@ -50,5 +50,4 @@ methods:
   SimplifyArithmeticExpression:
     visibility: public
     description: Simplify an arithmetic expression
-    defaultVariant:
-      implementationName: simplifyArithmeticExpression
+    implementationName: simplifyArithmeticExpression

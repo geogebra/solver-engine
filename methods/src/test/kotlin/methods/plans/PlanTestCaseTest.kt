@@ -1,10 +1,10 @@
 package methods.plans
 
 import engine.expressionmakers.move
-import engine.methods.Pipeline
-import engine.methods.PipelineItem
 import engine.methods.Plan
 import engine.methods.Rule
+import engine.methods.executors.Pipeline
+import engine.methods.executors.PipelineItem
 import engine.patterns.AnyPattern
 import engine.steps.metadata.MetadataKey
 import engine.steps.metadata.makeMetadata
@@ -42,7 +42,7 @@ class PlanTestCaseTest {
 
         Plan(
             ownPattern = pattern,
-            stepsProducer = Pipeline((1..3).map { PipelineItem(testRule) }),
+            planExecutor = Pipeline((1..3).map { PipelineItem(testRule) }),
             explanationMaker = makeMetadata(testPlanMetadataKey, move(pattern)),
         )
     }

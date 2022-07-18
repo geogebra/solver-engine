@@ -2,6 +2,7 @@ package engine.methods
 
 import engine.context.Context
 import engine.expressions.Subexpression
+import engine.methods.executors.PlanExecutor
 import engine.patterns.Match
 import engine.patterns.Pattern
 import engine.patterns.allOf
@@ -12,14 +13,14 @@ data class Plan(
     val ownPattern: Pattern? = null,
     val explanationMaker: MetadataMaker? = null,
     val skillMakers: List<MetadataMaker> = emptyList(),
-    val stepsProducer: StepsProducer,
+    val planExecutor: PlanExecutor,
     val planId: MethodId? = null,
 ) : Method {
 
-    override val pattern = allOf(ownPattern, stepsProducer.pattern)
+    override val pattern = allOf(ownPattern, planExecutor.pattern)
 
     override fun execute(ctx: Context, match: Match, sub: Subexpression): Transformation? {
-        val steps = stepsProducer.produceSteps(ctx, match, sub)
+        val steps = planExecutor.produceSteps(ctx, match, sub)
 
         if (steps.isEmpty()) {
             return null

@@ -5,17 +5,10 @@ data class TranslationData(
     val parameters: List<String>?,
 )
 
-data class MethodVariant(
-    val implementationName: String,
-    val level: Int?,
-    val region: String?,
-)
-
 data class MethodData(
     val visibility: String,
     val description: String,
-    val defaultVariant: MethodVariant,
-    val variants: List<MethodVariant>,
+    val implementationName: String,
 )
 
 data class CategoryMetadata(

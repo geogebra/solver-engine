@@ -12,9 +12,4 @@ methods:
   AddMixedNumbers:
     visibility: public
     description: "Adds mixed number wow"
-    defaultVariant:
-      implementationName: addMixedNumbersByConverting
-      region: EU
-    variants:
-      - implementationName: addMixedNumbersUsingCommutativity
-        region: US
+    implementationName: addMixedNumbers

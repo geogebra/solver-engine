@@ -36,6 +36,6 @@ class PlanApiServiceImpl : PlansApiService {
     }
 
     override fun listPlans(): List<String> {
-        return methodRegistry.getPublicEntries().map { it.first.methodId.key }.toList()
+        return methodRegistry.getPublicEntries().map { it.methodId.key }.toList()
     }
 }

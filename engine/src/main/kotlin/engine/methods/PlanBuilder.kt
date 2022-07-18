@@ -1,6 +1,16 @@
 package engine.methods
 
+import engine.context.ResourceData
 import engine.expressionmakers.ExpressionMaker
+import engine.methods.executors.ApplyToChildrenInStep
+import engine.methods.executors.ContextSensitiveAlternative
+import engine.methods.executors.ContextSensitiveSelector
+import engine.methods.executors.Deeply
+import engine.methods.executors.FirstOf
+import engine.methods.executors.Pipeline
+import engine.methods.executors.PipelineItem
+import engine.methods.executors.PlanExecutor
+import engine.methods.executors.WhilePossible
 import engine.patterns.Pattern
 import engine.steps.metadata.KeyExprsMetadataMaker
 import engine.steps.metadata.MetadataKey
@@ -29,7 +39,7 @@ class PipelineBuilder {
         step(plan(init), optional = true)
     }
 
-    fun buildPlan(): Pipeline {
+    fun buildPlanExecutor(): Pipeline {
         return Pipeline(steps)
     }
 }
@@ -45,39 +55,54 @@ class FirstOfBuilder {
         option(plan(init))
     }
 
-    fun buildPlan(): FirstOf {
+    fun buildPlanExecutor(): FirstOf {
         require(options.isNotEmpty())
         return FirstOf(options)
     }
 }
 
-class PlanBuilder {
+open class PlanExecutorBuilder {
+    lateinit var resourceData: ResourceData
+    lateinit var planExecutor: PlanExecutor
 
-    var planId: MethodId? = null
+    fun pipeline(init: PipelineBuilder.() -> Unit) {
+        val builder = PipelineBuilder()
+        builder.init()
+        planExecutor = builder.buildPlanExecutor()
+    }
+
+    fun firstOf(init: FirstOfBuilder.() -> Unit) {
+        val builder = FirstOfBuilder()
+        builder.init()
+        planExecutor = builder.buildPlanExecutor()
+    }
+
+    fun whilePossible(subPlan: Method) {
+        planExecutor = WhilePossible(subPlan)
+    }
+
+    fun whilePossible(init: PlanBuilder.() -> Unit) {
+        whilePossible(plan(init))
+    }
+
+    fun deeply(plan: Method, deepFirst: Boolean = false) {
+        planExecutor = Deeply(plan, deepFirst)
+    }
+
+    fun deeply(deepFirst: Boolean = false, init: PlanBuilder.() -> Unit) {
+        deeply(plan(init), deepFirst)
+    }
+
+    fun applyToChildrenInStep(plan: Plan) {
+        planExecutor = ApplyToChildrenInStep(plan)
+    }
+}
+
+class PlanBuilder : PlanExecutorBuilder() {
     var explanationMaker: MetadataMaker? = null
     var skillMakers: MutableList<MetadataMaker> = mutableListOf()
     var pattern: Pattern? = null
-
-    private lateinit var plan: Plan
-
-    private fun setPlan(p: Plan) {
-        if (this::plan.isInitialized) {
-            throw IllegalStateException("Plan has already been set once")
-        }
-        plan = p
-    }
-
-    private fun setStepsPlan(stepsProducer: StepsProducer) {
-        setPlan(
-            Plan(
-                ownPattern = pattern,
-                stepsProducer = stepsProducer,
-                explanationMaker = explanationMaker,
-                skillMakers = skillMakers,
-                planId = planId,
-            )
-        )
-    }
+    var alternatives: MutableList<ContextSensitiveAlternative> = mutableListOf()
 
     fun explanation(explanationKey: MetadataKey, vararg params: ExpressionMaker) {
         explanationMaker = KeyExprsMetadataMaker(explanationKey, params.asList())
@@ -87,40 +112,31 @@ class PlanBuilder {
         skillMakers.add(KeyExprsMetadataMaker(skillKey, params.asList()))
     }
 
-    fun pipeline(init: PipelineBuilder.() -> Unit) {
-        val builder = PipelineBuilder()
-        builder.init()
-        setStepsPlan(builder.buildPlan())
+    fun alternative(init: PlanExecutorBuilder.() -> Unit) {
+        val alternative = PlanExecutorBuilder()
+        alternative.init()
+        alternatives.add(ContextSensitiveAlternative(alternative.planExecutor, alternative.resourceData))
     }
 
-    fun firstOf(init: FirstOfBuilder.() -> Unit) {
-        val builder = FirstOfBuilder()
-        builder.init()
-        setStepsPlan(builder.buildPlan())
-    }
-
-    fun whilePossible(subPlan: Method) {
-        setStepsPlan(WhilePossible(subPlan))
-    }
-
-    fun whilePossible(init: PlanBuilder.() -> Unit) {
-        whilePossible(plan(init))
-    }
-
-    fun deeply(plan: Method, deepFirst: Boolean = false) {
-        setStepsPlan(Deeply(plan, deepFirst))
-    }
-
-    fun deeply(deepFirst: Boolean = false, init: PlanBuilder.() -> Unit) {
-        deeply(plan(init), deepFirst)
+    private fun wrapPlanExecutor(planExecutor: PlanExecutor): Plan {
+        return Plan(
+            ownPattern = pattern,
+            planExecutor = planExecutor,
+            explanationMaker = explanationMaker,
+            skillMakers = skillMakers,
+        )
     }
 
     fun buildPlan(): Plan {
-        return plan
-    }
-
-    fun applyToChildrenInStep(plan: Plan) {
-        setStepsPlan(ApplyToChildrenInStep(plan))
+        if (alternatives.isEmpty()) {
+            return wrapPlanExecutor(planExecutor)
+        }
+        return wrapPlanExecutor(
+            ContextSensitiveSelector(
+                default = ContextSensitiveAlternative(planExecutor, resourceData),
+                alternatives = alternatives,
+            )
+        )
     }
 }
 

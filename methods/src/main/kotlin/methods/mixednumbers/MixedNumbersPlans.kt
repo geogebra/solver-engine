@@ -1,9 +1,6 @@
 package methods.mixednumbers
 
 import engine.context.ResourceData
-import engine.methods.ContextSensitiveMethod
-import engine.methods.ContextSensitiveMethodSelector
-import engine.methods.PlanId
 import engine.methods.plan
 import engine.patterns.mixedNumberOf
 import engine.patterns.sumOf
@@ -22,53 +19,36 @@ val convertMixedNumberToImproperFraction = plan {
     }
 }
 
-val addMixedNumbersByConverting = plan {
+val addMixedNumbers = plan {
     pattern = sumOf(mixedNumberOf(), mixedNumberOf())
 
+    resourceData = ResourceData(curriculum = "EU")
     pipeline {
-
         step {
             applyToChildrenInStep(convertMixedNumberToImproperFraction)
         }
+
         step(evaluatePositiveFractionSum)
         step(fractionToMixedNumber)
     }
-}
 
-val addMixedNumbersUsingCommutativity = plan {
-    pattern = sumOf(mixedNumberOf(), mixedNumberOf())
+    alternative {
+        resourceData = ResourceData(curriculum = "US")
 
-    pipeline {
-        step {
-            whilePossible {
-                deeply(splitMixedNumber)
+        pipeline {
+            step {
+                whilePossible {
+                    deeply(splitMixedNumber)
+                }
             }
+            step {
+                whilePossible(removeBracketsSum)
+            }
+            step(evaluateSignedIntegerAddition)
+            step(evaluatePositiveFractionSum)
+            step(convertIntegerToFraction)
+            step(evaluatePositiveFractionSum)
+            step(fractionToMixedNumber)
         }
-        step {
-            whilePossible(removeBracketsSum)
-        }
-        step(evaluateSignedIntegerAddition)
-        step(evaluatePositiveFractionSum)
-        step(convertIntegerToFraction)
-        step(evaluatePositiveFractionSum)
-        step(fractionToMixedNumber)
-    }
-}
-
-val addMixedNumbers = plan {
-    planId = PlanId.AddMixedNumbers
-
-    pattern = sumOf(mixedNumberOf(), mixedNumberOf())
-
-    firstOf {
-        option(
-            ContextSensitiveMethodSelector(
-                default = ContextSensitiveMethod(addMixedNumbersByConverting, ResourceData(curriculum = "EU")),
-                alternatives = listOf(
-                    ContextSensitiveMethod(addMixedNumbersByConverting, ResourceData(curriculum = "EU")),
-                    ContextSensitiveMethod(addMixedNumbersUsingCommutativity, ResourceData(curriculum = "US")),
-                )
-            )
-        )
     }
 }

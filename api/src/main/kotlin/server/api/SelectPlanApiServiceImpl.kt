@@ -3,7 +3,6 @@ package server.api
 import engine.context.emptyContext
 import engine.expressions.RootPath
 import engine.expressions.Subexpression
-import engine.methods.PlanId
 import methods.methodRegistry
 import org.antlr.v4.runtime.misc.ParseCancellationException
 import org.springframework.http.HttpStatus
@@ -24,25 +23,17 @@ class SelectPlanApiServiceImpl : SelectPlansApiService {
         }
         val modeller = TransformationModeller(applyPlanRequest.format)
         val selections = mutableListOf<PlanSelection>()
-        for ((methodData, plan) in methodRegistry.getPublicEntries()) {
-            val transformation = plan?.tryExecute(emptyContext, Subexpression(RootPath, expr))
+        for (entryData in methodRegistry.getPublicEntries()) {
+            val transformation = entryData.implementation.tryExecute(emptyContext, Subexpression(RootPath, expr))
             if (transformation != null) {
                 selections.add(
                     PlanSelection(
                         modeller.modelTransformation(transformation),
-                        PlanSelectionMetadata(methodData.methodId.key)
+                        PlanSelectionMetadata(entryData.methodId.key)
                     )
                 )
             }
         }
         return selections
-    }
-
-    companion object {
-        val planIds = listOf(
-            PlanId.SimplifyArithmeticExpression,
-            PlanId.CombineFractionsInExpression,
-            PlanId.AddMixedNumbers
-        )
     }
 }

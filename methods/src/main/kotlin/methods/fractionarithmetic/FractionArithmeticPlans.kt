@@ -1,7 +1,6 @@
 package methods.fractionarithmetic
 
 import engine.expressionmakers.move
-import engine.methods.PlanId
 import engine.methods.plan
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.bracketOf
@@ -36,8 +35,6 @@ val normalizeSignsInProduct = plan {
 }
 
 val simplifyNumericFraction = plan {
-    planId = PlanId.SimplifyNumericFraction
-
     val f = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
 
     pattern = f
@@ -64,8 +61,6 @@ val simplifyFractionsInExpression = plan {
 }
 
 val evaluatePositiveFractionSum = plan {
-    planId = PlanId.EvaluatePositiveFractionSum
-
     val f1 = optionalNegOf(fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern()))
     val f2 = optionalNegOf(fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern()))
 
@@ -86,8 +81,6 @@ val evaluatePositiveFractionSum = plan {
 }
 
 val evaluatePositiveFractionProduct = plan {
-    planId = PlanId.EvaluatePositiveFractionProduct
-
     val f1 = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
     val f2 = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
 
@@ -105,8 +98,6 @@ val evaluatePositiveFractionProduct = plan {
 }
 
 val evaluatePositiveFractionPower = plan {
-    planId = PlanId.EvaluatePositiveFractionPower
-
     pipeline {
         optionalStep(simplifyFractionNegativePower)
         step(distributeFractionPositivePower)
@@ -122,8 +113,6 @@ val evaluateNegativePowerOfInteger = plan {
 }
 
 val combineFractionsInExpression = plan {
-    planId = PlanId.CombineFractionsInExpression
-
     whilePossible {
         firstOf {
             option {
@@ -167,8 +156,6 @@ val combineFractionsInExpression = plan {
 }
 
 val evaluatePowerOfFraction = plan {
-    planId = PlanId.EvaluatePowerOfFraction
-
     val f = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
     val exponent = UnsignedIntegerPattern()
     pattern = powerOf(bracketOf(f), exponent)

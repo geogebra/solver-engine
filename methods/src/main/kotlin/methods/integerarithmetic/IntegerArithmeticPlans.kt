@@ -1,6 +1,5 @@
 package methods.integerarithmetic
 
-import engine.methods.PlanId
 import engine.methods.plan
 import engine.patterns.AnyPattern
 import methods.general.removeBracketAroundSignedIntegerInSum
@@ -20,8 +19,6 @@ evaluates: [2^6] as:
 1. [2^6] --> 64
  */
 val evaluateSignedIntegerPower = plan {
-    planId = PlanId.EvaluateSignedIntegerPower
-
     firstOf {
         option {
             pipeline {
@@ -36,8 +33,6 @@ val evaluateSignedIntegerPower = plan {
 }
 
 val simplifyArithmeticExpression = plan {
-    planId = PlanId.SimplifyArithmeticExpression
-
     pattern = AnyPattern() /* TODO add condition that it is constant in all variables */
     explanation(Explanation.SimplifyArithmeticExpression)
 
