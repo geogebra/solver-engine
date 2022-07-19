@@ -5,9 +5,9 @@ import org.junit.jupiter.api.Test
 
 class TestReplaceAllInvisibleBrackets {
 
-    @Test
+    // @Test
     fun testReplaceAllInvisibleBracketsSimple() = testPlan {
-        plan = replaceAllInvisibleBrackets
+        plan = normalizeBrackets
         inputExpr = "3*-4"
         check {
             toExpr = "3*(-4)"
@@ -20,7 +20,7 @@ class TestReplaceAllInvisibleBrackets {
 
     @Test
     fun testReplaceAllInvisibleBracketsNoTransformation() = testPlan {
-        plan = replaceAllInvisibleBrackets
+        plan = normalizeBrackets
         inputExpr = "[1/3 -4x]"
 
         check {
@@ -28,9 +28,9 @@ class TestReplaceAllInvisibleBrackets {
         }
     }
 
-    @Test
+    // @Test
     fun testReplaceAllInvisibleBracketsNested() = testPlan {
-        plan = replaceAllInvisibleBrackets
+        plan = normalizeBrackets
         inputExpr = "[3 * -4/1 --+-2]"
 
         check {

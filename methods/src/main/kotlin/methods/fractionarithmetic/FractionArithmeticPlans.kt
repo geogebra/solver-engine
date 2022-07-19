@@ -11,26 +11,38 @@ import engine.patterns.productContaining
 import engine.patterns.sumContaining
 import engine.steps.metadata.Skill
 import methods.general.cancelCommonTerms
-import methods.general.moveSignOfNegativeFactorOutOfProduct
-import methods.general.simplifyDoubleMinus
-import methods.general.simplifyEvenPowerOfNegative
-import methods.general.simplifyOddPowerOfNegative
-import methods.general.simplifyProductWithTwoNegativeFactors
+import methods.general.normalizeNegativeSigns
 import methods.integerarithmetic.simplifyArithmeticExpression
+import methods.integerarithmetic.simplifyEvenPowerOfNegative
+import methods.integerarithmetic.simplifyOddPowerOfNegative
 
-val normalizeFractionSigns = plan {
-    firstOf {
-        option(simplifyNegativeNumeratorAndDenominator)
-        option(simplifyNegativeInNumerator)
-        option(simplifyNegativeInDenominator)
+val normalizeSignsInFraction = plan {
+    explanation(Explanation.NormalizeSignsInFraction)
+
+    whilePossible {
+        deeply {
+            firstOf {
+                option(normalizeNegativeSigns)
+                option(simplifyNegativeNumeratorAndDenominator)
+                option(simplifyNegativeInNumerator)
+                option(simplifyNegativeInDenominator)
+            }
+        }
     }
 }
 
-val normalizeSignsInProduct = plan {
-    firstOf {
-        option(simplifyDoubleMinus)
-        option(simplifyProductWithTwoNegativeFactors)
-        option(moveSignOfNegativeFactorOutOfProduct)
+val normalizeFractionsAndDivisions = plan {
+    // Normalize division / fractions (e.g. fractions within fractions)
+    explanation(Explanation.NormalizeFractionsAndDivisions)
+
+    whilePossible {
+        deeply {
+            firstOf {
+                option(simplifyDividingByAFraction)
+                option(simplifyFractionWithFractionDenominator)
+                option(simplifyFractionWithFractionNumerator)
+            }
+        }
     }
 }
 
@@ -60,13 +72,13 @@ val simplifyFractionsInExpression = plan {
     }
 }
 
-val evaluatePositiveFractionSum = plan {
+val evaluateFractionSum = plan {
     val f1 = optionalNegOf(fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern()))
     val f2 = optionalNegOf(fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern()))
 
     pattern = sumContaining(f1, f2)
 
-    explanation(Explanation.AddFractions, move(f1), move(f2))
+    explanation(Explanation.EvaluateFractionSum, move(f1), move(f2))
 
     skill(Skill.AddFractions, move(f1), move(f2))
 
@@ -75,7 +87,7 @@ val evaluatePositiveFractionSum = plan {
         optionalStep(simplifyArithmeticExpression)
         step(addLikeFractions)
         step(simplifyArithmeticExpression)
-        optionalStep(normalizeFractionSigns)
+        optionalStep(normalizeSignsInFraction)
         optionalStep(simplifyFractionsInExpression)
     }
 }
@@ -97,8 +109,25 @@ val evaluatePositiveFractionProduct = plan {
     }
 }
 
+val evaluatePositiveFractionProductByAnInteger = plan {
+    pipeline {
+        step(turnProductOfFractionByIntegerToFractionProduct)
+        step(evaluatePositiveFractionProduct)
+    }
+}
+
+val evaluateSumOfFractionAndInteger = plan {
+    pipeline {
+        step(turnSumOfFractionAndIntegerToFractionSum)
+        step(simplifyArithmeticExpression)
+        step(evaluateFractionSum)
+    }
+}
+
 val evaluatePositiveFractionPower = plan {
     pipeline {
+        optionalStep(simplifyEvenPowerOfNegative)
+        optionalStep(simplifyOddPowerOfNegative)
         optionalStep(simplifyFractionNegativePower)
         step(distributeFractionPositivePower)
         step(simplifyArithmeticExpression)
@@ -115,31 +144,10 @@ val evaluateNegativePowerOfInteger = plan {
 val combineFractionsInExpression = plan {
     whilePossible {
         firstOf {
+            option(normalizeSignsInFraction)
+            option(normalizeFractionsAndDivisions)
             option {
-                whilePossible {
-                    deeply {
-                        firstOf {
-                            option(simplifyEvenPowerOfNegative)
-                            option(simplifyOddPowerOfNegative)
-                            option(normalizeFractionSigns)
-                            option(normalizeSignsInProduct)
-                        }
-                    }
-                }
-            }
-            option {
-                whilePossible {
-                    deeply {
-                        firstOf {
-                            option(turnDivisionToFraction)
-                            option(simplifyDividingByAFraction)
-                            option(simplifyFractionWithFractionDenominator)
-                            option(simplifyFractionWithFractionNumerator)
-                        }
-                    }
-                }
-            }
-            option {
+                // Evaluate a fraction operation
                 deeply(deepFirst = true) {
                     firstOf {
                         option(turnIntegerToMinusOneToFraction)
@@ -147,7 +155,10 @@ val combineFractionsInExpression = plan {
                         option(evaluateNegativePowerOfInteger)
                         option(evaluatePositiveFractionPower)
                         option(evaluatePositiveFractionProduct)
-                        option(evaluatePositiveFractionSum)
+                        option(evaluatePositiveFractionProductByAnInteger)
+                        option(evaluateFractionSum)
+                        option(evaluateSumOfFractionAndInteger)
+                        option(turnDivisionToFraction)
                     }
                 }
             }

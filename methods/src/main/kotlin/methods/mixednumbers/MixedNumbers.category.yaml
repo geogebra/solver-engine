@@ -7,6 +7,8 @@ explanations:
     defaultTranslation:
   ConvertFractionToMixedNumber:
     defaultTranslation:
+  ConvertMixedNumbersToImproperFraction:
+    defaultTranslation:
 
 methods:
   AddMixedNumbers:

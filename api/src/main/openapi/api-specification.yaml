@@ -67,6 +67,8 @@ paths:
               properties:
                 input:
                   type: string
+                curriculum:
+                  type: string
                 format:
                   type: string
                   enum: [ latex, solver ]
@@ -100,6 +102,8 @@ paths:
                 - format
               properties:
                 input:
+                  type: string
+                curriculum:
                   type: string
                 format:
                   type: string

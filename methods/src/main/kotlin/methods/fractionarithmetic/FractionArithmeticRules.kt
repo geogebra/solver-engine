@@ -22,6 +22,7 @@ import engine.patterns.Pattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.bracketOf
+import engine.patterns.commutativeProductOf
 import engine.patterns.commutativeSumOf
 import engine.patterns.divideBy
 import engine.patterns.fractionOf
@@ -215,6 +216,52 @@ val simplifyNegativeNumeratorAndDenominator = run {
         pattern = pattern,
         resultMaker = makeFractionOf(move(numerator), move(denominator)),
         explanationMaker = makeMetadata(Explanation.SimplifyNegativeInNumeratorAndDenominator, move(pattern)),
+    )
+}
+
+val turnProductOfFractionByIntegerToFractionProduct = run {
+    val numerator = UnsignedIntegerPattern()
+    val denominator = UnsignedIntegerPattern()
+    val fraction = fractionOf(numerator, denominator)
+    val integerFactor = UnsignedIntegerPattern()
+
+    val product = commutativeProductOf(fraction, integerFactor)
+
+    Rule(
+        pattern = product,
+        resultMaker = substituteIn(
+            product,
+            move(fraction),
+            makeFractionOf(move(integerFactor), FixedExpressionMaker(xp(1)))
+        ),
+        explanationMaker = makeMetadata(Explanation.MultiplyFractions),
+    )
+}
+
+val turnSumOfFractionAndIntegerToFractionSum = run {
+    val numerator = UnsignedIntegerPattern()
+    val denominator = UnsignedIntegerPattern()
+    val f = fractionOf(numerator, denominator)
+    val nf = optionalNegOf(f)
+    val integerTerm = UnsignedIntegerPattern()
+    val ni = optionalNegOf(integerTerm)
+
+    val sum = commutativeSumOf(nf, ni)
+
+    Rule(
+        pattern = sum,
+        resultMaker = substituteIn(
+            sum,
+            move(nf),
+            makeOptionalNegOf(
+                ni,
+                makeFractionOf(
+                    makeProductOf(move(integerTerm), move(denominator)),
+                    move(denominator)
+                )
+            )
+        ),
+        explanationMaker = makeMetadata(Explanation.MultiplyFractions),
     )
 }
 

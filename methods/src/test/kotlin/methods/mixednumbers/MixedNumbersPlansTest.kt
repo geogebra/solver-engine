@@ -65,7 +65,7 @@ class MixedNumbersPlansTest {
                 toExpr = "[5 / 3]"
 
                 explanation {
-                    methods.fractionarithmetic.Explanation.AddFractions
+                    methods.fractionarithmetic.Explanation.EvaluateFractionSum
                 }
 
                 combine {
@@ -113,7 +113,7 @@ class MixedNumbersPlansTest {
                 }
 
                 explanation {
-                    key = methods.fractionarithmetic.Explanation.AddFractions
+                    key = methods.fractionarithmetic.Explanation.EvaluateFractionSum
                 }
             }
 
@@ -269,7 +269,7 @@ class MixedNumbersPlansTest {
                 }
 
                 explanation {
-                    key = methods.fractionarithmetic.Explanation.AddFractions
+                    key = methods.fractionarithmetic.Explanation.EvaluateFractionSum
                 }
             }
 
@@ -312,7 +312,7 @@ class MixedNumbersPlansTest {
                 }
 
                 explanation {
-                    key = methods.fractionarithmetic.Explanation.AddFractions
+                    key = methods.fractionarithmetic.Explanation.EvaluateFractionSum
                 }
             }
 

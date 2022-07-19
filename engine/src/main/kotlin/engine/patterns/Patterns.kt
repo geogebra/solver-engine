@@ -280,6 +280,8 @@ fun productOf(vararg factors: Pattern) = OperatorPattern(NaryOperator.Product, f
 fun productContaining(vararg factors: Pattern, minSize: Int = 0) =
     PartialNaryPattern(NaryOperator.Product, factors.asList(), minSize)
 
+fun commutativeProductOf(vararg factors: Pattern) = CommutativeNaryPattern(NaryOperator.Product, factors.asList())
+
 data class NumericCondition1(
     val ptn: IntegerProvider,
     val condition: (BigInteger) -> Boolean

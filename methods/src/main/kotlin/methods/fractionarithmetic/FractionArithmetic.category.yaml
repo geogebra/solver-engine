@@ -57,9 +57,21 @@ explanations:
 
   SimplifyNumericFraction:
     defaultTranslation:
-  AddFractions:
+  EvaluateFractionSum:
     defaultTranslation:
   EvaluatePositiveFractionProduct:
     defaultTranslation:
   EvaluatePowerOfFraction:
     defaultTranslation:
+  NormalizeSignsInFraction:
+    defaultTranslation:
+  NormalizeFractionsAndDivisions:
+    defaultTranslation:
+
+
+methods:
+  CombineFractionsInExpression:
+    implementationName: combineFractionsInExpression
+    visibility: public
+    description: Combine fractions in expression
+

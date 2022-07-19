@@ -2,14 +2,18 @@ package methods.integerarithmetic
 
 import engine.expressionmakers.ExpressionMaker
 import engine.expressionmakers.OperatorExpressionMaker
+import engine.expressionmakers.makeNegOf
 import engine.expressionmakers.makeNumericOp
+import engine.expressionmakers.makePowerOf
 import engine.expressionmakers.move
 import engine.expressionmakers.substituteIn
 import engine.expressions.NaryOperator
 import engine.methods.Rule
+import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.bracketOf
 import engine.patterns.custom
 import engine.patterns.divideBy
 import engine.patterns.negOf
@@ -114,5 +118,33 @@ val rewriteIntegerPowerAsProduct = run {
             OperatorExpressionMaker(NaryOperator.Product, argsList)
         },
         explanationMaker = makeMetadata(Explanation.RewriteIntegerPowerAsProduct, move(base), move(exponent))
+    )
+}
+
+val simplifyEvenPowerOfNegative = run {
+    val positiveBase = AnyPattern()
+    val base = bracketOf(negOf(positiveBase))
+    val exponent = SignedIntegerPattern()
+    val power =
+        powerOf(base, ConditionPattern(exponent, numericCondition(exponent) { it.mod(BigInteger.TWO).signum() == 0 }))
+
+    Rule(
+        pattern = power,
+        resultMaker = makePowerOf(move(positiveBase), move(exponent)),
+        explanationMaker = makeMetadata(Explanation.SimplifyEvenPowerOfNegative),
+    )
+}
+
+val simplifyOddPowerOfNegative = run {
+    val positiveBase = AnyPattern()
+    val base = bracketOf(negOf(positiveBase))
+    val exponent = SignedIntegerPattern()
+    val power =
+        powerOf(base, ConditionPattern(exponent, numericCondition(exponent) { it.mod(BigInteger.TWO).signum() != 0 }))
+
+    Rule(
+        pattern = power,
+        resultMaker = makeNegOf(makePowerOf(move(positiveBase), move(exponent))),
+        explanationMaker = makeMetadata(Explanation.SimplifyOddPowerOfNegative),
     )
 }

@@ -4,7 +4,6 @@ import engine.expressionmakers.cancel
 import engine.expressionmakers.makeFractionOf
 import engine.expressionmakers.makeNegOf
 import engine.expressionmakers.makeOptionalDivideBy
-import engine.expressionmakers.makePowerOf
 import engine.expressionmakers.move
 import engine.expressionmakers.restOf
 import engine.expressionmakers.substituteIn
@@ -12,20 +11,15 @@ import engine.expressionmakers.transform
 import engine.expressions.xp
 import engine.methods.Rule
 import engine.patterns.AnyPattern
-import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
 import engine.patterns.OptionalDivideBy
-import engine.patterns.SignedIntegerPattern
 import engine.patterns.bracketOf
 import engine.patterns.fractionOf
 import engine.patterns.negOf
-import engine.patterns.numericCondition
 import engine.patterns.oneOf
-import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
 import engine.steps.metadata.makeMetadata
-import java.math.BigInteger
 
 val eliminateOneInProduct = run {
     val one = FixedPattern(xp(1))
@@ -107,34 +101,6 @@ val moveSignOfNegativeFactorOutOfProduct = run {
         pattern = product,
         resultMaker = makeNegOf(substituteIn(product, makeOptionalDivideBy(fd, move(f)))),
         explanationMaker = makeMetadata(Explanation.MoveSignOfNegativeFactorOutOfProduct)
-    )
-}
-
-val simplifyEvenPowerOfNegative = run {
-    val positiveBase = AnyPattern()
-    val base = bracketOf(negOf(positiveBase))
-    val exponent = SignedIntegerPattern()
-    val power =
-        powerOf(base, ConditionPattern(exponent, numericCondition(exponent) { it.mod(BigInteger.TWO).signum() == 0 }))
-
-    Rule(
-        pattern = power,
-        resultMaker = makePowerOf(move(positiveBase), move(exponent)),
-        explanationMaker = makeMetadata(Explanation.SimplifyEvenPowerOfNegative),
-    )
-}
-
-val simplifyOddPowerOfNegative = run {
-    val positiveBase = AnyPattern()
-    val base = bracketOf(negOf(positiveBase))
-    val exponent = SignedIntegerPattern()
-    val power =
-        powerOf(base, ConditionPattern(exponent, numericCondition(exponent) { it.mod(BigInteger.TWO).signum() != 0 }))
-
-    Rule(
-        pattern = power,
-        resultMaker = makeNegOf(makePowerOf(move(positiveBase), move(exponent))),
-        explanationMaker = makeMetadata(Explanation.SimplifyOddPowerOfNegative),
     )
 }
 

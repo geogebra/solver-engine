@@ -11,18 +11,18 @@ import engine.steps.Transformation
 data class PipelineItem(val plan: Method, val optional: Boolean = false)
 
 data class Pipeline(val items: List<PipelineItem>) : PlanExecutor {
-    init {
-        require(!items.all { it.optional })
-    }
+    // init {
+    //     require(!items.all { it.optional })
+    // }
 
     override val pattern = calcPattern()
 
     private fun calcPattern(): Pattern {
-        val firstNonOptionalItemIndex = items.indexOfFirst { !it.optional }
-        if (firstNonOptionalItemIndex == 0) {
-            return items[0].plan.pattern
+        return when (val firstNonOptionalItemIndex = items.indexOfFirst { !it.optional }) {
+            -1 -> OneOfPattern(items.map { it.plan.pattern })
+            0 -> items[0].plan.pattern
+            else -> OneOfPattern(items.subList(0, firstNonOptionalItemIndex + 1).map { it.plan.pattern })
         }
-        return OneOfPattern(items.subList(0, firstNonOptionalItemIndex + 1).map { it.plan.pattern })
     }
 
     override fun produceSteps(ctx: Context, match: Match, sub: Subexpression): List<Transformation> {

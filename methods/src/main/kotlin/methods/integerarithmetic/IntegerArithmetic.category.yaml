@@ -34,6 +34,10 @@ explanations:
     parameters:
       - base
       - exponent
+  SimplifyEvenPowerOfNegative:
+    defaultTranslation:
+  SimplifyOddPowerOfNegative:
+    defaultTranslation:
 
   # Plans
   SimplifyArithmeticExpression:
@@ -41,9 +45,9 @@ explanations:
     parameters:
       - expression
 
-  SimplifyIntegerSum:
+  SimplifyIntegersInSum:
     defaultTranslation: evaluate the sum
-  SimplifyIntegerProduct:
+  SimplifyIntegersInProduct:
     defaultTranslation: evaluate the product
 
 methods:

@@ -1,6 +1,6 @@
 package server.api
 
-import engine.context.emptyContext
+import engine.context.Context
 import engine.expressions.RootPath
 import engine.expressions.Subexpression
 import methods.methodRegistry
@@ -23,8 +23,10 @@ class SelectPlanApiServiceImpl : SelectPlansApiService {
         }
         val modeller = TransformationModeller(applyPlanRequest.format)
         val selections = mutableListOf<PlanSelection>()
+        val context = Context(curriculum = applyPlanRequest.curriculum)
+
         for (entryData in methodRegistry.getPublicEntries()) {
-            val transformation = entryData.implementation.tryExecute(emptyContext, Subexpression(RootPath, expr))
+            val transformation = entryData.implementation.tryExecute(context, Subexpression(RootPath, expr))
             if (transformation != null) {
                 selections.add(
                     PlanSelection(

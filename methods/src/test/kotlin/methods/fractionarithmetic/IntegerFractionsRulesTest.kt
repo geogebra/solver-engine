@@ -61,6 +61,8 @@ object IntegerFractionsRulesTest : RuleTest {
             "[4 / 3 * sqrt[3]] * [sqrt[3] / sqrt[3]]",
             writeMultiplicationOfFractionsAsFraction,
             "[4 * sqrt[3] / 3 * sqrt[3] * sqrt[3]]"
-        )
+        ),
+
+        RuleTestCase("[2/5] * 3", turnProductOfFractionByIntegerToFractionProduct, "[2/5] * [3/1]"),
     )
 }

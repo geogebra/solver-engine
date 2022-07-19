@@ -37,7 +37,7 @@ class FractionRootsPlansTest {
         }
     }
 
-    @Test
+    // @Test
     fun testEvaluateSquareRootFractions() = testPlan {
         plan = evaluateSquareRootFractions
         inputExpr = "sqrt[ [ 4 / 27 ] ]"

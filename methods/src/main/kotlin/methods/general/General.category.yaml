@@ -28,11 +28,9 @@ explanations:
     defaultTranslation:
   MoveSignOfNegativeFactorOutOfProduct:
     defaultTranslation:
-  SimplifyEvenPowerOfNegative:
-    defaultTranslation:
-  SimplifyOddPowerOfNegative:
-    defaultTranslation:
   CancelCommonTerms:
+    defaultTranslation:
+  NormalizeBracketsInExpression:
     defaultTranslation:
 
   # Plans

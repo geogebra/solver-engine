@@ -18,15 +18,15 @@ const fetchPlans = () =>
         .then(response => response.json())
         .then(initPlans);
 
-const selectPlansOrApplyPlan = (planId, input) => {
+const selectPlansOrApplyPlan = (planId, input, curriculum) => {
     if (planId === "selectPlans") {
-        return selectPlans(input);
+        return selectPlans(input, curriculum);
     } else {
-        return applyPlan(planId, input);
+        return applyPlan(planId, input, curriculum);
     }
 }
 
-const applyPlan = async (planId, input) => {
+const applyPlan = async (planId, input, curriculum = "") => {
     const response = await fetch(`/api/v1.0-alpha0/plans/${planId}/apply`, {
         method: "POST",
         headers: {
@@ -34,7 +34,8 @@ const applyPlan = async (planId, input) => {
         },
         body: JSON.stringify({
             "input": input,
-            "format": "latex"
+            "format": "latex",
+            "curriculum": curriculum,
         })
     });
     const result = await response.json();
@@ -48,7 +49,7 @@ const applyPlan = async (planId, input) => {
     }
 };
 
-const selectPlans = async (input) => {
+const selectPlans = async (input, curriculum = "") => {
     const response = await fetch(`/api/v1.0-alpha0/selectPlans`, {
         method: "POST",
         headers: {
@@ -56,7 +57,8 @@ const selectPlans = async (input) => {
         },
         body: JSON.stringify({
             "input": input,
-            "format": "latex"
+            "format": "latex",
+            "curriculum": curriculum,
         })
     });
     const result = await response.json();
@@ -136,14 +138,18 @@ window.onload = () => {
         const url = new URL(window.location);
         const planId = url.searchParams.get("plan")
         const input = url.searchParams.get("input")
+        const curriculum = url.searchParams.get("curriculum")
         if (planId) {
             el("plansSelect").value = planId;
         }
         if (input) {
             el("input").value = input;
         }
+        if (curriculum) {
+            el("curriculumSelect").value = curriculum
+        }
         if (planId && input) {
-            selectPlansOrApplyPlan(planId, input);
+            selectPlansOrApplyPlan(planId, input, curriculum);
         }
     });
 
@@ -151,11 +157,12 @@ window.onload = () => {
         evt.preventDefault();
         const planId = el("plansSelect").value;
         const input = el("input").value;
+        const curriculum = el("curriculumSelect").value;
         const url = new URL(window.location);
         url.searchParams.set("plan", planId);
         url.searchParams.set("input", input);
         const urlString = url.toString();
         history.replaceState({url: urlString}, null, urlString);
-        selectPlansOrApplyPlan(planId, input);
+        selectPlansOrApplyPlan(planId, input, curriculum);
     }
 };

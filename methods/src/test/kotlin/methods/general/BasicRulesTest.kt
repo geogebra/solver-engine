@@ -17,11 +17,6 @@ object BasicRulesTest : RuleTest {
         RuleTestCase("x * (-y) * z", moveSignOfNegativeFactorOutOfProduct, "-x * y * z"),
         RuleTestCase("x*3:(-5)", moveSignOfNegativeFactorOutOfProduct, "- x*3:5"),
 
-        RuleTestCase("[(-2)^4]", simplifyEvenPowerOfNegative, "[2^4]"),
-        RuleTestCase("[(-x)^6]", simplifyEvenPowerOfNegative, "[x^6]"),
-        RuleTestCase("[(-2)^5]", simplifyOddPowerOfNegative, "-[2^5]"),
-        RuleTestCase("[(-x)^7]", simplifyOddPowerOfNegative, "-[x^7]"),
-
         RuleTestCase("0 + x + y", eliminateZeroInSum, "x + y"),
         RuleTestCase("0 + 1 + x", eliminateZeroInSum, "1 + x"),
         RuleTestCase("x + 0 + y", eliminateZeroInSum, "x + y"),

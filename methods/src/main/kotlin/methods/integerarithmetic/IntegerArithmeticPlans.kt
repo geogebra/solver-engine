@@ -2,21 +2,15 @@ package methods.integerarithmetic
 
 import engine.methods.plan
 import engine.patterns.AnyPattern
-import methods.general.removeBracketAroundSignedIntegerInSum
-import methods.general.removeBracketAroundUnsignedInteger
-import methods.general.simplifyDoubleMinus
-import methods.integerroots.simplifyIntegerRoot
-import methods.integerroots.simplifyRootOfOne
-import methods.integerroots.simplifyRootOfZero
+import methods.general.normalizeBrackets
+import methods.general.normalizeNegativeSigns
 
-/*
-evaluates: [2^4] as:
-1. [2^4] --> 2 * 2 * 2 * 2
-2. 2 * 2 * 2 * 2 --> 16
-
-and
-evaluates: [2^6] as:
-1. [2^6] --> 64
+/**
+ * evaluates: [2^4] as:
+ *  1. [2^4] --> 2 * 2 * 2 * 2
+ *  2. 2 * 2 * 2 * 2 --> 16
+ * and evaluates: [2^6] as:
+ *  1. [2^6] --> 64
  */
 val evaluateSignedIntegerPower = plan {
     firstOf {
@@ -28,32 +22,39 @@ val evaluateSignedIntegerPower = plan {
                 }
             }
         }
+        option(simplifyEvenPowerOfNegative)
+        option(simplifyOddPowerOfNegative)
         option(evaluateIntegerPower)
     }
+}
+
+val simplifyIntegersInProduct = plan {
+    explanation(Explanation.SimplifyIntegersInProduct)
+    whilePossible(evaluateIntegerProductAndDivision)
+}
+
+val simplifyIntegersInSum = plan {
+    explanation(Explanation.SimplifyIntegersInSum)
+    whilePossible(evaluateSignedIntegerAddition)
 }
 
 val simplifyArithmeticExpression = plan {
     pattern = AnyPattern() /* TODO add condition that it is constant in all variables */
     explanation(Explanation.SimplifyArithmeticExpression)
 
-    whilePossible {
-        deeply(deepFirst = true) {
-            firstOf {
-                option(removeBracketAroundUnsignedInteger)
-                option(removeBracketAroundSignedIntegerInSum)
-                option(simplifyDoubleMinus)
-                option(simplifyRootOfOne)
-                option(simplifyRootOfZero)
-                option(evaluateSignedIntegerPower)
-                option {
-                    explanation(Explanation.SimplifyIntegerProduct)
-                    whilePossible(evaluateIntegerProductAndDivision)
+    pipeline {
+        optionalStep(normalizeBrackets)
+        step {
+            whilePossible {
+                deeply(deepFirst = true) {
+                    firstOf {
+                        option(normalizeBrackets)
+                        option(normalizeNegativeSigns)
+                        option(evaluateSignedIntegerPower)
+                        option(simplifyIntegersInProduct)
+                        option(simplifyIntegersInSum)
+                    }
                 }
-                option {
-                    explanation(Explanation.SimplifyIntegerSum)
-                    whilePossible(evaluateSignedIntegerAddition)
-                }
-                option(simplifyIntegerRoot)
             }
         }
     }
