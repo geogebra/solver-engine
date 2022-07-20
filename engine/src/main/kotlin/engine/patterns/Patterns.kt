@@ -15,11 +15,24 @@ import engine.expressions.VariableOperator
 import java.math.BigInteger
 
 interface PathProvider {
-
+    /**
+     * Returns a list of `Path` objects from the root of
+     * the tree to the where the pattern is present in the
+     * match `m`.
+     */
     fun getBoundPaths(m: Match): List<Path>
 
+    /**
+     * Returns the `Expression` value of the given pattern
+     * with the provided `match` "m"
+     */
     fun getBoundExpr(m: Match): Expression?
 
+    /**
+     * Returns `true` when either the expression value
+     * of match is `null` (i.e. root object) or is equivalent
+     * to the passed `expr` else return `false`
+     */
     fun checkPreviousMatch(expr: Expression, match: Match): Boolean {
         val previous = getBoundExpr(match)
         return previous == null || previous.equiv(expr)
@@ -27,8 +40,18 @@ interface PathProvider {
 }
 
 interface Pattern : PathProvider {
+    /**
+     * Gives a `Sequence` of all possible matches of `Pattern` object
+     * in the `subexpression` using the built-up `match` until the
+     * `subexpression` and extending it
+     */
     fun findMatches(subexpression: Subexpression, match: Match = RootMatch): Sequence<Match>
 
+    /**
+     * Returns a list of `Path` objects from the root of
+     * the tree to the where the pattern is present in the
+     * match `m`.
+     */
     override fun getBoundPaths(m: Match) = m.getBoundPaths(this)
 
     override fun getBoundExpr(m: Match) = m.getBoundExpr(this)
@@ -36,6 +59,10 @@ interface Pattern : PathProvider {
     val key get() = this
 }
 
+/**
+ * Produces a `Pattern` having a list of child patterns
+ * `childPattern`'s connected by an operator `operator`.
+ */
 data class OperatorPattern(val operator: Operator, val childPatterns: List<Pattern>) : Pattern {
     init {
         require(childPatterns.size >= operator.minChildCount())
@@ -58,6 +85,9 @@ data class OperatorPattern(val operator: Operator, val childPatterns: List<Patte
     }
 }
 
+/**
+ * A pattern with a fixed or static expression value
+ */
 data class FixedPattern(val expr: Expression) : Pattern {
 
     override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
@@ -68,6 +98,10 @@ data class FixedPattern(val expr: Expression) : Pattern {
     }
 }
 
+/**
+ * Used to create a `Pattern` to match with any possible
+ * kind of pattern
+ */
 class AnyPattern : Pattern {
 
     override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
@@ -126,6 +160,9 @@ class SignedIntegerPattern : OptionalNegPatternBase<UnsignedIntegerPattern>(Unsi
     }
 }
 
+/**
+ * A pattern to match with a variable (i.e. symbol)
+ */
 class VariablePattern : Pattern {
     override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
         if (!checkPreviousMatch(subexpression.expr, match)) {
@@ -139,6 +176,11 @@ class VariablePattern : Pattern {
     }
 }
 
+/**
+ * An interface for a Pattern connected by an
+ * NaryOperator, with the operands provided as
+ * list of `Pattern` objects
+ */
 interface NaryPatternBase : Pattern {
 
     val operator: NaryOperator
@@ -328,6 +370,11 @@ data class FindPattern(val pattern: Pattern, val deepFirst: Boolean = false) : P
     }
 }
 
+/**
+ * Used to matches in a given `Subexpression` object, containing any of
+ * the given `Pattern`'s in the given order in the list `options`
+ */
+
 data class OneOfPattern(val options: List<Pattern>) : Pattern {
 
     override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
@@ -343,6 +390,10 @@ data class OneOfPattern(val options: List<Pattern>) : Pattern {
 
 fun oneOf(vararg options: Pattern) = OneOfPattern(options.asList())
 
+/**
+ * Used to find matches in a given `Subexpression` object, containing all
+ * the `Pattern`'s in the given order in the list `patterns`.
+ */
 data class AllOfPattern(val patterns: List<Pattern>) : Pattern {
     init {
         require(patterns.isNotEmpty())
@@ -371,6 +422,10 @@ fun allOf(vararg patterns: Pattern?): Pattern {
     }
 }
 
+/**
+ * Used to find matches in a `Subexpression` object, either containing
+ * the `Pattern` pattern or division by the pattern
+ */
 data class OptionalDivideBy(val pattern: Pattern) : Pattern {
 
     private val divide = divideBy(pattern)

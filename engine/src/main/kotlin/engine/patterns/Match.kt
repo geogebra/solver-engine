@@ -4,28 +4,66 @@ import engine.expressions.Expression
 import engine.expressions.Path
 import engine.expressions.Subexpression
 
+/**
+ * An interface for matching with a pattern. Can be
+ * thought of as a linked-list of (pattern, pattern's value)
+ */
 interface Match {
 
+    /**
+     * Returns the `Expression` of the given pattern
+     * with the provided `match` "m". It differs from
+     * getBoundExpr as it returns the "Expression"
+     * , i.e. value and the path
+     */
     fun getLastBinding(p: Pattern): Subexpression?
 
+    /**
+     * Returns the `Expression` value of the given match
+     * with the provided `Pattern` "p".
+     */
     fun getBoundExpr(p: Pattern): Expression?
 
-    fun accPaths(p: Pattern, acc: MutableList<Path>)
+    /**
+     * Appends to the list `acc` the `Path`s from
+     * root to the start of the pattern `p` in
+     * a provided match
+     *
+     * @see getBoundPaths
+     */
+    fun accumulatePaths(p: Pattern, acc: MutableList<Path>)
 
+    /**
+     * Returns a list of `Path` objects from the root of
+     * the tree to the where the pattern `p` is present
+     * in a provided match object
+     */
     fun getBoundPaths(p: Pattern): List<Path>
 
     fun newChild(key: Pattern, value: Subexpression): Match = ChildMatch(key, value, this)
 }
 
+/**
+ * Object to refer to the matching with the root of
+ * expression tree.
+ */
 object RootMatch : Match {
 
     override fun getLastBinding(p: Pattern): Subexpression? = null
     override fun getBoundExpr(p: Pattern): Expression? = null
 
-    override fun accPaths(p: Pattern, acc: MutableList<Path>) { /* do nothing */ }
+    override fun accumulatePaths(p: Pattern, acc: MutableList<Path>) { /* do nothing */ }
     override fun getBoundPaths(p: Pattern): List<Path> = emptyList()
 }
 
+/**
+ * Used to create a non-root `Match` object. Created
+ * with `Pattern` pointing to a `Subexpression` value.
+ *
+ * @param key the pattern to be searched for
+ * @param value the expression in which to search for the pattern
+ * @param parent the parent Match object of the ChildMatch object
+ */
 data class ChildMatch(
     private val key: Pattern,
     private val value: Subexpression,
@@ -43,8 +81,8 @@ data class ChildMatch(
         return if (key === p.key) value.expr else parent.getBoundExpr(p)
     }
 
-    override fun accPaths(p: Pattern, acc: MutableList<Path>) {
-        parent.accPaths(p, acc)
+    override fun accumulatePaths(p: Pattern, acc: MutableList<Path>) {
+        parent.accumulatePaths(p, acc)
         if (key == p.key) {
             acc.add(value.path)
         }
@@ -52,7 +90,7 @@ data class ChildMatch(
 
     override fun getBoundPaths(p: Pattern): List<Path> {
         val acc = mutableListOf<Path>()
-        accPaths(p, acc)
+        accumulatePaths(p, acc)
         return acc
     }
 }

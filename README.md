@@ -27,6 +27,18 @@ The solver engine project is split into modules:
       available in [config/cathegorySchema.yaml](config/categorySchema.yaml).
     - A guide for adding new rules and plans is available [here](/docs/).
 
+## Documentation
+
+We use [Dokka](https://kotlinlang.org/docs/kotlin-doc.html) to generate documentation.
+
+Simply run
+
+```shell
+./gradlew dokkaHtml
+```
+
+in command-line, which will generate html documentation in [documentation/html](documentation/html)
+
 ## Development
 
 ### IntelliJ IDEA

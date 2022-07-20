@@ -2,6 +2,7 @@ plugins {
     val kotlinVersion = "1.7.0"
     kotlin("jvm") version kotlinVersion
 
+    id("org.jetbrains.dokka") version kotlinVersion apply false
     id("org.jlleitschuh.gradle.ktlint") version "10.3.0" apply false
     id("io.gitlab.arturbosch.detekt") version "1.20.0" apply false
 }

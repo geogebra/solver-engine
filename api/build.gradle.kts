@@ -15,6 +15,7 @@ plugins {
 
     id("org.jlleitschuh.gradle.ktlint")
     id("io.gitlab.arturbosch.detekt")
+    id("org.jetbrains.dokka")
 }
 
 group = "org.geogebra.solver"
@@ -36,6 +37,8 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-kotlin:1.6.9")
     implementation("javax.annotation:javax.annotation-api:1.3.2")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
+
+    dokkaHtmlPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:1.7.0")
 }
 
 tasks.withType<KotlinCompile> {
