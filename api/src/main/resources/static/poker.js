@@ -1,9 +1,18 @@
 const el = id => document.getElementById(id);
 
+let translationData = {}
+const loadDefaultTranslations = () => fetch("./DefaultTranslations.json")
+    .then(function (resp) {
+        return resp.json();
+    })
+    .then(function (data) {
+        translationData = data
+    })
+
 const initPlans = (plans) => {
     const options = plans
         .sort()
-        .map(plan => `<option value='${plan}'}>${plan}</option>`)
+        .map(plan => `<option value='${plan}'>${plan}</option>`)
         .join('');
 
     el("plansSelect").innerHTML = `
@@ -119,21 +128,51 @@ const renderSteps = (steps, depth = 0) => {
     </details>`;
 };
 
+const renderWarning = (content) => `<div class="warning">${content}</div>`
+
+const getExplanationString = (expl) => {
+    let explanationString = translationData[expl.key];
+    let warnings = [];
+    if (!explanationString) {
+        warnings.push(`Missing default translation for ${expl.key}`)
+        explanationString = `${expl.key}(${[...expl.params.keys()].map(i => `%${i + 1}`).join()})`
+    }
+
+    for (let [i, param] of expl.params.entries()) {
+        // replacing "%1", "%2", ... with the respective rendered expression
+        if (explanationString.includes("%" + (i + 1))) {
+            explanationString = explanationString.replace("%" + (i + 1), renderExpression(param.expression))
+        } else {
+            warnings.push(`Missing %${i + 1} in default translation, should contain ${renderExpression(param.expression)}`);
+        }
+    }
+    let unusedPlaceholders = explanationString.match(/%[1-9]/g)
+    if (unusedPlaceholders) {
+        for (let placeholder of unusedPlaceholders) {
+            warnings.push(`Missing parameter for placeholder ${placeholder}`)
+        }
+    }
+    return {explanationString, warnings}
+}
+
 const renderExplanation = expl => {
     if (!expl) {
         return '';
     }
+
+    const {explanationString, warnings} = getExplanationString(expl)
+
     return `
     <div>
-        explanation: ${expl.key}
-        ${expl.params && expl.params.length > 0 ? expl.params.map(p => renderExpression(p.expression)).join() : ''}
-    </div>
-    `
+        ${explanationString ? `<div title="${expl.key}">${explanationString}</div>` : ""}
+        ${warnings ? warnings.map(renderWarning).join("") : ""}
+    </div>`;
 }
 
 const renderExpression = expr => `\\(\\displaystyle${expr}\\)`;
 
 window.onload = () => {
+    loadDefaultTranslations()
     fetchPlans().then(() => {
         const url = new URL(window.location);
         const planId = url.searchParams.get("plan")

@@ -9,17 +9,7 @@ import java.io.File
 class CategoryProcessor(val categoryFile: File, val outputDir: File) {
 
     fun processCategory() {
-        val mapper = ObjectMapper(YAMLFactory()) // Enable YAML parsing
-        mapper.registerModule(
-            KotlinModule.Builder()
-                .enable(KotlinFeature.NullToEmptyCollection)
-                .enable(KotlinFeature.NullToEmptyMap)
-                .build()
-        ) // Enable Kotlin support
-
-        val category = categoryFile.inputStream().bufferedReader().use {
-            mapper.readValue(it, Category::class.java)
-        }
+        val category = CategoryReader.parseCategoryFile(categoryFile)
 
         outputDir.mkdirs()
         createExplanationEnum(category)

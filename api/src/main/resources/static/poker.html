@@ -7,6 +7,22 @@
           integrity="sha384-Xi8rHCmBmhbuyyhbI88391ZKP2dmfnOl4rT9ZfRI7mLTdk1wblIUnrIq35nqwEvC" crossorigin="anonymous">
 
     <style>
+
+        .plan-id {
+            color: gray;
+            font-family: monospace;
+        }
+
+        .plan-selection > .plan-id {
+            color: blue;
+        }
+
+        .warning {
+            color: #ac0000;
+        }
+
+        /* Separations between plan steps / sub-steps */
+
         details.steps > ol {
             margin: 0 0 0 0;
             border-left: thin solid lightgray;
@@ -24,15 +40,7 @@
             margin-bottom: 0;
         }
 
-        .plan-id {
-            color: gray;
-            font-family: monospace;
-        }
-
-        .plan-selection > .plan-id {
-            color: blue;
-        }
-
+        /* Separations between selected plans */
         .selections > ol > li {
             border-bottom: thin solid black;
             padding: 6px 0;

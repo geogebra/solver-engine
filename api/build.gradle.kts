@@ -45,6 +45,7 @@ tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "17"
 
     dependsOn(tasks.openApiGenerate)
+    dependsOn(":methods:processTranslations")
 }
 
 application {

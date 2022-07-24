@@ -28,6 +28,9 @@ tasks.withType<KotlinCompile> {
 }
 
 val generatedRoot = "$buildDir/generated-src"
+val translationsPath = "$rootDir/api/build/resources/main/static"
+val translationsFileName = "ExplanationKeyToDefaultTranslation.json"
+
 
 sourceSets["main"].java {
     srcDirs("$generatedRoot/main/kotlin")
@@ -41,6 +44,11 @@ detekt {
 tasks.register<processor.ProcessCategoriesTask>("processCategories") {
     categoriesRoot.set(file("$projectDir/src"))
     outputRoot.set(file(generatedRoot))
+}
+
+tasks.register<processor.ProcessTranslationsTask>("processTranslations") {
+    categoriesRoot.set(file("$projectDir/src"))
+    outputRoot.set(file(translationsPath))
 }
 
 ktlint {
