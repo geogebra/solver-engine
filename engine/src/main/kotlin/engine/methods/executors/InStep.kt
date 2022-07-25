@@ -3,23 +3,28 @@ package engine.methods.executors
 import engine.context.Context
 import engine.expressions.Subexpression
 import engine.expressions.toMappedExpr
-import engine.methods.Plan
-import engine.patterns.AnyPattern
-import engine.patterns.Match
-import engine.patterns.Pattern
+import engine.methods.Method
+import engine.patterns.RootMatch
 import engine.steps.Transformation
+import engine.steps.metadata.MetadataMaker
+
+data class InStepItem(
+    val method: Method,
+    val explanation: MetadataMaker,
+    val optional: Boolean,
+)
 
 interface InStep : PlanExecutor {
 
-    val pipelineItems: List<PipelineItem>
-    fun getSubexpressions(match: Match, sub: Subexpression): List<Subexpression>
+    val inStepItems: List<InStepItem>
+    fun getSubexpressions(sub: Subexpression): List<Subexpression>
 
-    override fun produceSteps(ctx: Context, match: Match, sub: Subexpression): List<Transformation> {
-        val stepSubs = getSubexpressions(match, sub).toMutableList()
+    override fun produceSteps(ctx: Context, sub: Subexpression): List<Transformation> {
+        val stepSubs = getSubexpressions(sub).toMutableList()
 
         val steps = mutableListOf<Transformation>()
         var lastSub = sub
-        for ((stepPlan, optional) in pipelineItems) {
+        for ((stepPlan, explanation, optional) in inStepItems) {
             val stepTransformations = stepSubs.map { stepPlan.tryExecute(ctx, it) }
             if (!optional && stepTransformations.any { it == null }) {
                 return emptyList()
@@ -33,10 +38,11 @@ interface InStep : PlanExecutor {
             val prevSub = lastSub
             for (tr in nonNullTransformations) {
                 val substitution = lastSub.substitute(tr.fromExpr.path, tr.toExpr)
-                lastSub = Subexpression(lastSub.path, substitution.expr)
+                lastSub = Subexpression(substitution.expr, sub.parent, lastSub.path)
             }
             steps.add(
                 Transformation(
+                    explanation = explanation.make(RootMatch),
                     fromExpr = prevSub,
                     toExpr = lastSub.toMappedExpr(),
                     steps = nonNullTransformations
@@ -44,7 +50,7 @@ interface InStep : PlanExecutor {
             )
             for ((i, tr) in stepTransformations.withIndex()) {
                 if (tr != null) {
-                    stepSubs[i] = Subexpression(tr.fromExpr.path, tr.toExpr.expr)
+                    stepSubs[i] = Subexpression(tr.toExpr.expr, tr.fromExpr.parent, tr.fromExpr.path)
                 }
             }
         }
@@ -52,12 +58,10 @@ interface InStep : PlanExecutor {
     }
 }
 
-data class ApplyToChildrenInStep(val plan: Plan, override val pattern: Pattern = AnyPattern()) :
-    InStep {
-
-    override val pipelineItems = (plan.planExecutor as Pipeline).items
-
-    override fun getSubexpressions(match: Match, sub: Subexpression): List<Subexpression> {
+data class ApplyToChildrenInStep(
+    override val inStepItems: List<InStepItem>
+) : InStep {
+    override fun getSubexpressions(sub: Subexpression): List<Subexpression> {
         return sub.children()
     }
 }

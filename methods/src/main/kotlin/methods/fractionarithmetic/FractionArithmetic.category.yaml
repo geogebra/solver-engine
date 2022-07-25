@@ -3,6 +3,8 @@ metadata:
   title: Fraction Arithmetic
 
 explanations:
+  SimplifyExpressionInBrackets:
+    defaultTranslation: Simplify expression in brackets
   SimplifyNegativeInDenominator:
     defaultTranslation: Move negative denominator sign out of fraction in %1
     parameters:
@@ -55,10 +57,14 @@ explanations:
   ConvertMultiplicationOfFractionsToFraction:
     defaultTranslation:
 
-  SimplifyNumericFraction:
+  SimplifyFraction:
     defaultTranslation:
   EvaluateFractionSum:
     defaultTranslation:
+  EvaluateProductsInNumeratorAndDenominator:
+    defaultTranslation: Evaluate the products in the numerator and the denominator
+  EvaluateSumInNumerator:
+    defaultTranslation: Evaluate the sum in the numerator
   EvaluatePositiveFractionProduct:
     defaultTranslation:
   EvaluatePowerOfFraction:
@@ -67,11 +73,3 @@ explanations:
     defaultTranslation:
   NormalizeFractionsAndDivisions:
     defaultTranslation:
-
-
-methods:
-  CombineFractionsInExpression:
-    implementationName: combineFractionsInExpression
-    visibility: public
-    description: Combine fractions in expression
-

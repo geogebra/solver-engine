@@ -30,6 +30,11 @@ data class Expression(val operator: Operator, val operands: List<Expression>) {
     }
 }
 
+object Constants {
+    val Zero = xp(0)
+    val One = xp(1)
+}
+
 fun xp(n: Int) = xp(n.toBigInteger())
 
 fun xp(n: BigInteger): Expression {
@@ -53,8 +58,6 @@ fun divideBy(expr: Expression) = Expression(UnaryOperator.DivideBy, listOf(expr)
 
 fun fractionOf(numerator: Expression, denominator: Expression) =
     Expression(BinaryOperator.Fraction, listOf(numerator, denominator))
-
-fun divisionOf(dividend: Expression, divisor: Expression) = Expression(BinaryOperator.Divide, listOf(dividend, divisor))
 
 fun powerOf(base: Expression, exponent: Expression) = Expression(BinaryOperator.Power, listOf(base, exponent))
 

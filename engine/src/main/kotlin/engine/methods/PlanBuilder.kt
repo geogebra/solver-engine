@@ -2,11 +2,15 @@ package engine.methods
 
 import engine.context.ResourceData
 import engine.expressionmakers.ExpressionMaker
+import engine.methods.executors.ApplyTo
 import engine.methods.executors.ApplyToChildrenInStep
 import engine.methods.executors.ContextSensitiveAlternative
 import engine.methods.executors.ContextSensitiveSelector
 import engine.methods.executors.Deeply
+import engine.methods.executors.Extractor
 import engine.methods.executors.FirstOf
+import engine.methods.executors.InStep
+import engine.methods.executors.InStepItem
 import engine.methods.executors.Pipeline
 import engine.methods.executors.PipelineItem
 import engine.methods.executors.PlanExecutor
@@ -15,9 +19,14 @@ import engine.patterns.Pattern
 import engine.steps.metadata.KeyExprsMetadataMaker
 import engine.steps.metadata.MetadataKey
 import engine.steps.metadata.MetadataMaker
+import engine.steps.metadata.makeMetadata
 
+@DslMarker
+annotation class PlanBuilderMarker
+
+@PlanBuilderMarker
 class PipelineBuilder {
-    private var steps: MutableList<PipelineItem> = mutableListOf()
+    private var steps = mutableListOf<PipelineItem>()
 
     private fun step(step: Method, optional: Boolean) {
         steps.add(PipelineItem(step, optional))
@@ -44,6 +53,34 @@ class PipelineBuilder {
     }
 }
 
+@PlanBuilderMarker
+class InStepStepBuilder {
+    lateinit var method: Method
+    lateinit var explanationKey: MetadataKey
+}
+
+@PlanBuilderMarker
+class InStepBuilder {
+    private var steps = mutableListOf<InStepItem>()
+
+    fun step(init: InStepStepBuilder.() -> Unit) {
+        val builder = InStepStepBuilder()
+        builder.init()
+        steps.add(InStepItem(builder.method, makeMetadata(builder.explanationKey), false))
+    }
+
+    fun optionalStep(init: InStepStepBuilder.() -> Unit) {
+        val builder = InStepStepBuilder()
+        builder.init()
+        steps.add(InStepItem(builder.method, makeMetadata(builder.explanationKey), true))
+    }
+
+    fun buildPlanExecutor(): InStep {
+        return ApplyToChildrenInStep(steps)
+    }
+}
+
+@PlanBuilderMarker
 class FirstOfBuilder {
     private var options: MutableList<Method> = mutableListOf()
 
@@ -61,12 +98,23 @@ class FirstOfBuilder {
     }
 }
 
+@PlanBuilderMarker
 open class PlanExecutorBuilder {
     lateinit var resourceData: ResourceData
     lateinit var planExecutor: PlanExecutor
 
     fun pipeline(init: PipelineBuilder.() -> Unit) {
         val builder = PipelineBuilder()
+        builder.init()
+        planExecutor = builder.buildPlanExecutor()
+    }
+
+    fun applyTo(method: Method, extractor: Extractor) {
+        planExecutor = ApplyTo(extractor, method)
+    }
+
+    fun applyToChildrenInStep(init: InStepBuilder.() -> Unit) {
+        val builder = InStepBuilder()
         builder.init()
         planExecutor = builder.buildPlanExecutor()
     }
@@ -92,10 +140,6 @@ open class PlanExecutorBuilder {
     fun deeply(deepFirst: Boolean = false, init: PlanBuilder.() -> Unit) {
         deeply(plan(init), deepFirst)
     }
-
-    fun applyToChildrenInStep(plan: Plan) {
-        planExecutor = ApplyToChildrenInStep(plan)
-    }
 }
 
 class PlanBuilder : PlanExecutorBuilder() {
@@ -120,7 +164,7 @@ class PlanBuilder : PlanExecutorBuilder() {
 
     private fun wrapPlanExecutor(planExecutor: PlanExecutor): Plan {
         return Plan(
-            ownPattern = pattern,
+            pattern = pattern,
             planExecutor = planExecutor,
             explanationMaker = explanationMaker,
             skillMakers = skillMakers,

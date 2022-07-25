@@ -2,7 +2,7 @@ package methods.fractionroots
 
 import engine.methods.plan
 import methods.fractionarithmetic.writeMultiplicationOfFractionsAsFraction
-import methods.integerarithmetic.simplifyArithmeticExpression
+import methods.integerarithmetic.evaluateArithmeticExpression
 import methods.integerroots.simplifyMultiplicationOfSquareRoots
 
 /*
@@ -14,7 +14,7 @@ val evaluateMultiplicationOfFractionWithUnitaryRadicalFraction = plan {
         step {
             deeply(simplifyMultiplicationOfSquareRoots, deepFirst = true)
         }
-        step(simplifyArithmeticExpression)
+        step(evaluateArithmeticExpression)
     }
 }
 
@@ -34,7 +34,7 @@ evaluates: sqrt[ [ 4 / 5 ] ] -> [ 2 * sqrt[5] / 5 ]
 val evaluateSquareRootFractions = plan {
     pipeline {
         step(distributeRadicalRuleOverFractionsToNumeratorAndDenominator)
-        optionalStep(simplifyArithmeticExpression)
+        optionalStep(evaluateArithmeticExpression)
         optionalStep(rationalizationWithRadicalInDenominator)
     }
 }

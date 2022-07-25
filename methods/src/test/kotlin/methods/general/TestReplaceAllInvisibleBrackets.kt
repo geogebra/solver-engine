@@ -7,7 +7,7 @@ class TestReplaceAllInvisibleBrackets {
 
     // @Test
     fun testReplaceAllInvisibleBracketsSimple() = testPlan {
-        plan = normalizeBrackets
+        plan = addClarifyingBrackets
         inputExpr = "3*-4"
         check {
             toExpr = "3*(-4)"
@@ -20,7 +20,7 @@ class TestReplaceAllInvisibleBrackets {
 
     @Test
     fun testReplaceAllInvisibleBracketsNoTransformation() = testPlan {
-        plan = normalizeBrackets
+        plan = addClarifyingBrackets
         inputExpr = "[1/3 -4x]"
 
         check {
@@ -30,7 +30,7 @@ class TestReplaceAllInvisibleBrackets {
 
     // @Test
     fun testReplaceAllInvisibleBracketsNested() = testPlan {
-        plan = normalizeBrackets
+        plan = addClarifyingBrackets
         inputExpr = "[3 * -4/1 --+-2]"
 
         check {

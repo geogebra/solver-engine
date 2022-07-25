@@ -8,7 +8,6 @@ import engine.methods.Rule
 import engine.patterns.AnyPattern
 import engine.patterns.OperatorPattern
 import engine.patterns.SignedIntegerPattern
-import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.bracketOf
 import engine.patterns.sumContaining
 import engine.steps.metadata.makeMetadata
@@ -48,13 +47,13 @@ val removeBracketAroundSignedIntegerInSum = run {
     )
 }
 
-val removeBracketAroundUnsignedInteger = run {
-    val number = UnsignedIntegerPattern()
-    val pattern = bracketOf(number)
+val removeOuterBracket = run {
+    val insideBracket = AnyPattern()
+    val pattern = bracketOf(insideBracket)
 
     Rule(
         pattern = pattern,
-        resultMaker = move(number),
-        explanationMaker = makeMetadata(Explanation.RemoveBracketAroundUnsignedInteger)
+        resultMaker = move(insideBracket),
+        explanationMaker = makeMetadata(Explanation.RemoveRedundantBracket)
     )
 }

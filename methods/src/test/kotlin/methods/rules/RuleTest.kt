@@ -14,7 +14,7 @@ data class RuleTestCase(val inputExpr: String, val rule: Rule, val outputExpr: S
 
     fun assert() {
         val expression = parseExpression(inputExpr)
-        val step = rule.tryExecute(emptyContext, Subexpression(RootPath, expression))
+        val step = rule.tryExecute(emptyContext, Subexpression(expression, null, RootPath))
         if (outputExpr == null) {
             assertNull(step)
         } else {

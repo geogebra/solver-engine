@@ -1,3 +1,5 @@
+let showThroughSteps = false;
+
 const el = id => document.getElementById(id);
 
 let translationData = {}
@@ -48,11 +50,11 @@ const applyPlan = async (planId, input, curriculum = "") => {
         })
     });
     const result = await response.json();
+    el("source").innerHTML = JSON.stringify(result, null, 4)
     if (result.error !== undefined) {
         console.log(result);
         el("result").innerHTML = `Error: ${result.error}<br/>Message: ${result.message}`;
     } else {
-        console.log(result);
         el("result").innerHTML = renderTransformation(result, 1);
         renderMathInElement(el("result"));
     }
@@ -71,6 +73,7 @@ const selectPlans = async (input, curriculum = "") => {
         })
     });
     const result = await response.json();
+    el("source").innerHTML = JSON.stringify(result, null, 4)
     if (result.error !== undefined) {
         console.log(result);
         el("result").innerHTML = `Error: ${result.error}<br/>Message: ${result.message}`;
@@ -103,25 +106,26 @@ const renderPlanSelection = (selection) => {
 }
 
 const renderTransformation = (trans, depth = 0) => {
-    if (trans.steps && trans.steps.length === 1 && trans.steps[0].path === trans.path) {
-        return renderTransformation(trans.steps[0], depth);
+    const isThroughStep = trans.steps && trans.steps.length === 1 && trans.steps[0].path === trans.path
+    if (isThroughStep && !showThroughSteps) {
+        return renderTransformation(trans.steps[0], depth)
     }
     return `
-    <div class="trans">
+    <div class="trans ${isThroughStep ? "through-step" : ""}">
         ${trans.planId ? `<div class="plan-id">${trans.planId}</div>` : ""}
         ${renderExplanation(trans.explanation)}
-        <div>${renderExpression(`${trans.fromExpr} {\\color{#8888ff}\\thickspace\\longmapsto\\thickspace} ${trans.toExpr}`)}</div>
-        ${renderSteps(trans.steps, depth)}
+        <div class="expr">${renderExpression(`${trans.fromExpr} {\\color{#8888ff}\\thickspace\\longmapsto\\thickspace} ${trans.toExpr}`)}</div>
+        ${renderSteps(trans.steps, depth, depth >= 0 || isThroughStep)}
     </div>`;
 };
 
-const renderSteps = (steps, depth = 0) => {
+const renderSteps = (steps, depth = 0, open = false) => {
     if (steps === null || steps.length === 0) {
         return '';
     }
     return `
-    <details class="steps" ${depth > 0 ? "open" : ""}>
-        <summary>${steps.length} steps</summary>
+    <details class="steps" ${open ? "open" : ""}>
+        <summary>${steps.length} ${steps.length === 1 ? "step" : "steps"}</summary>
         <ol>
             ${steps.map(step => `<li>${renderTransformation(step, depth - 1)}</li>`).join('')}
         </ol>
@@ -163,7 +167,7 @@ const renderExplanation = expl => {
     const {explanationString, warnings} = getExplanationString(expl)
 
     return `
-    <div>
+    <div class="plan-explanation">
         ${explanationString ? `<div title="${expl.key}">${explanationString}</div>` : ""}
         ${warnings ? warnings.map(renderWarning).join("") : ""}
     </div>`;
@@ -203,5 +207,14 @@ window.onload = () => {
         const urlString = url.toString();
         history.replaceState({url: urlString}, null, urlString);
         selectPlansOrApplyPlan(planId, input, curriculum);
+    }
+    el("showThroughSteps").onchange = (evt) => {
+        showThroughSteps = evt.target.checked
+        const planId = el("plansSelect").value;
+        const input = el("input").value;
+        const curriculum = el("curriculumSelect").value;
+        if (input !== "") {
+            selectPlansOrApplyPlan(planId, input, curriculum);
+        }
     }
 };

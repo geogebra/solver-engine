@@ -64,5 +64,10 @@ object IntegerFractionsRulesTest : RuleTest {
         ),
 
         RuleTestCase("[2/5] * 3", turnProductOfFractionByIntegerToFractionProduct, "[2/5] * [3/1]"),
+
+        RuleTestCase("[1/3] + 2", turnSumOfFractionAndIntegerToFractionSum, "[1/3] + [2 * 3/3]"),
+        RuleTestCase("[1/2] - 2", turnSumOfFractionAndIntegerToFractionSum, "[1/2] - [2 * 2/2]"),
+        RuleTestCase("3 - [1/4]", turnSumOfFractionAndIntegerToFractionSum, "[3 * 4/4] - [1/4]"),
+
     )
 }

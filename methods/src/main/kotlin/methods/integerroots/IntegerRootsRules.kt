@@ -71,7 +71,7 @@ val factorizeIntegerUnderSquareRoot = run {
     )
 }
 
-val separateIntegerPowersUnderSquareRoot = run {
+val separateOddPowersUnderSquareRoot = run {
     val base = UnsignedIntegerPattern()
     val exponent = UnsignedIntegerPattern()
     val exponentCondition = ConditionPattern(
@@ -97,7 +97,7 @@ val separateIntegerPowersUnderSquareRoot = run {
     )
 }
 
-val separateSquaresUnderSquareRoot = run {
+val splitEvenPowersUnderSeparateRoot = run {
     val base = UnsignedIntegerPattern()
     val exponent = UnsignedIntegerPattern()
     val exponentCondition = ConditionPattern(exponent, numericCondition(exponent) { it.isEven() })

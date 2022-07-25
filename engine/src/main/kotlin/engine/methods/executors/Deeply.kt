@@ -3,16 +3,26 @@ package engine.methods.executors
 import engine.context.Context
 import engine.expressions.Subexpression
 import engine.methods.Method
-import engine.patterns.FindPattern
-import engine.patterns.Match
 import engine.steps.Transformation
 
 data class Deeply(val plan: Method, val deepFirst: Boolean = false) : PlanExecutor {
 
-    override val pattern = FindPattern(plan.pattern, deepFirst)
+    private fun visitPrefix(ctx: Context, sub: Subexpression): Transformation? {
+        return plan.tryExecute(ctx, sub)
+            ?: sub.children().firstNotNullOfOrNull { visitPrefix(ctx, it) }
+    }
 
-    override fun produceSteps(ctx: Context, match: Match, sub: Subexpression): List<Transformation> {
-        val step = plan.execute(ctx, match, match.getLastBinding(plan.pattern)!!)
-        return if (step == null) emptyList() else listOf(step)
+    private fun visitPostfix(ctx: Context, sub: Subexpression): Transformation? {
+        return sub.children().firstNotNullOfOrNull { visitPostfix(ctx, it) }
+            ?: plan.tryExecute(ctx, sub)
+    }
+
+    override fun produceSteps(ctx: Context, sub: Subexpression): List<Transformation> {
+        val step = if (deepFirst) visitPostfix(ctx, sub) else visitPrefix(ctx, sub)
+        if (step != null) {
+            return listOf(step)
+        }
+
+        return emptyList()
     }
 }

@@ -15,6 +15,8 @@ explanations:
   RemoveBracketAroundUnsignedInteger:
     defaultTranslation: "Brackets around a positive integer can be removed"
     parameters: [ "positive integer" ]
+  RemoveRedundantBracket:
+    defaultTranslation: "Redundant bracket can be removed"
   EliminateOneInProduct:
     defaultTranslation: "A factor of 1 can be eliminated from a product"
     parameters: [ "factor 1" ]
@@ -30,7 +32,7 @@ explanations:
     defaultTranslation:
   CancelCommonTerms:
     defaultTranslation:
-  NormalizeBracketsInExpression:
+  AddClarifyingBrackets:
     defaultTranslation:
 
   # Plans

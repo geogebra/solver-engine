@@ -17,7 +17,7 @@ class FindPatternTest {
         val findPattern = FindPattern(intProd)
 
         val expr = parseExpression("2 + 3 * 5 + [5/3 * x * 3]")
-        val matches = findPattern.findMatches(Subexpression(RootPath, expr))
+        val matches = findPattern.findMatches(Subexpression(expr, null, RootPath))
         assertEquals(2, matches.count())
         assertContentEquals(
             listOf(15, 9).map { it.toBigInteger() },

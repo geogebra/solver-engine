@@ -4,7 +4,6 @@ import engine.context.Context
 import engine.context.Resource
 import engine.context.ResourceData
 import engine.expressions.Subexpression
-import engine.patterns.Match
 import engine.steps.Transformation
 
 /**
@@ -30,18 +29,8 @@ data class ContextSensitiveSelector(
     val alternatives: List<ContextSensitiveAlternative>
 ) : PlanExecutor {
 
-    override val pattern = default.planExecutor.pattern
-
-    override fun produceSteps(ctx: Context, match: Match, sub: Subexpression): List<Transformation> {
+    override fun produceSteps(ctx: Context, sub: Subexpression): List<Transformation> {
         val best = ctx.selectBestResource(default, alternatives).planExecutor
-        if (best === default.planExecutor) {
-            return best.produceSteps(ctx, match, sub)
-        } else {
-            // Hack to bind the pattern
-            for (submatch in best.pattern.findMatches(sub, match)) {
-                return best.produceSteps(ctx, submatch, sub)
-            }
-            throw (IllegalStateException("alternative steps producer does not match"))
-        }
+        return best.produceSteps(ctx, sub)
     }
 }

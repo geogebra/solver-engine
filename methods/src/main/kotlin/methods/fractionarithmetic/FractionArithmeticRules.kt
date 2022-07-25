@@ -8,6 +8,7 @@ import engine.expressionmakers.makeNumericOp
 import engine.expressionmakers.makeOptionalNegOf
 import engine.expressionmakers.makePowerOf
 import engine.expressionmakers.makeProductOf
+import engine.expressionmakers.makeSimplifiedProductOf
 import engine.expressionmakers.makeSumOf
 import engine.expressionmakers.move
 import engine.expressionmakers.substituteIn
@@ -24,10 +25,12 @@ import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.bracketOf
 import engine.patterns.commutativeProductOf
 import engine.patterns.commutativeSumOf
+import engine.patterns.custom
 import engine.patterns.divideBy
 import engine.patterns.fractionOf
 import engine.patterns.negOf
 import engine.patterns.numericCondition
+import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
@@ -62,7 +65,7 @@ val convertIntegerToFraction = run {
             makeFractionOf(move(integer), FixedExpressionMaker(xp(1))),
             move(fraction),
         ),
-        explanationMaker = makeMetadata(Explanation.ConvertIntegerToFraction, move(integer), move(fraction)),
+        explanationMaker = makeMetadata(Explanation.ConvertIntegerToFraction, move(integer)),
     )
 }
 
@@ -171,23 +174,41 @@ val simplifyFractionToInteger = run {
 }
 
 val findCommonFactorInFraction = run {
-    val numerator = UnsignedIntegerPattern()
-    val denominator = UnsignedIntegerPattern()
+    val factorNumerator = UnsignedIntegerPattern()
+    val factorDenominator = UnsignedIntegerPattern()
+
+    val productNumerator = productContaining(factorNumerator)
+    val productDenominator = productContaining(factorDenominator)
+
+    val numerator = oneOf(factorNumerator, productNumerator)
+    val denominator = oneOf(factorDenominator, productDenominator)
 
     val frac = fractionOf(numerator, denominator)
 
-    val gcd = makeNumericOp(numerator, denominator) { n, d -> n.gcd(d) }
-    val numeratorOverGcd = makeNumericOp(numerator, denominator) { n, d -> n / n.gcd(d) }
-    val denominatorOverGcd = makeNumericOp(numerator, denominator) { n, d -> d / n.gcd(d) }
+    val gcd = makeNumericOp(factorNumerator, factorDenominator) { n, d -> n.gcd(d) }
+    val numeratorOverGcd = makeNumericOp(factorNumerator, factorDenominator) { n, d -> n / n.gcd(d) }
+    val denominatorOverGcd = makeNumericOp(factorNumerator, factorDenominator) { n, d -> d / n.gcd(d) }
 
     Rule(
         pattern = ConditionPattern(
             frac,
-            numericCondition(numerator, denominator) { n, d -> n.gcd(d) != BigInteger.ONE }
+            numericCondition(factorNumerator, factorDenominator) { n, d -> n.gcd(d) != BigInteger.ONE }
         ),
         resultMaker = makeFractionOf(
-            makeProductOf(gcd, numeratorOverGcd),
-            makeProductOf(gcd, denominatorOverGcd),
+            custom {
+                if (isBound(productNumerator)) {
+                    substituteIn(productNumerator, makeSimplifiedProductOf(gcd, numeratorOverGcd))
+                } else {
+                    makeProductOf(gcd, numeratorOverGcd)
+                }
+            },
+            custom {
+                if (isBound(productDenominator)) {
+                    substituteIn(productDenominator, makeSimplifiedProductOf(gcd, denominatorOverGcd))
+                } else {
+                    makeProductOf(gcd, denominatorOverGcd)
+                }
+            }
         ),
         explanationMaker = makeMetadata(Explanation.FindCommonFactorInFraction),
     )
@@ -261,15 +282,15 @@ val turnSumOfFractionAndIntegerToFractionSum = run {
                 )
             )
         ),
-        explanationMaker = makeMetadata(Explanation.MultiplyFractions),
+        explanationMaker = makeMetadata(Explanation.BringToCommonDenominator, move(f), move(integerTerm)),
     )
 }
 
 val multiplyFractions = run {
-    val num1 = UnsignedIntegerPattern()
-    val num2 = UnsignedIntegerPattern()
-    val denom1 = UnsignedIntegerPattern()
-    val denom2 = UnsignedIntegerPattern()
+    val num1 = AnyPattern()
+    val num2 = AnyPattern()
+    val denom1 = AnyPattern()
+    val denom2 = AnyPattern()
     val f1 = fractionOf(num1, denom1)
     val f2 = fractionOf(num2, denom2)
     val product = productContaining(f1, f2)

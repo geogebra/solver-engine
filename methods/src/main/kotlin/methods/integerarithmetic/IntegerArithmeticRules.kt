@@ -23,6 +23,8 @@ import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
 import engine.steps.metadata.makeMetadata
+import engine.utility.isEven
+import engine.utility.isOdd
 import java.math.BigInteger
 
 val evaluateUnsignedIntegerSubtraction = run {
@@ -85,7 +87,7 @@ val evaluateIntegerProductAndDivision = run {
     )
 }
 
-val evaluateIntegerPower = run {
+val evaluateIntegerPowerDirectly = run {
     val base = SignedIntegerPattern()
     val exponent = UnsignedIntegerPattern()
     val power = powerOf(
@@ -96,7 +98,7 @@ val evaluateIntegerPower = run {
     Rule(
         pattern = power,
         resultMaker = makeNumericOp(base, exponent) { n1, n2 -> n1.pow(n2.toInt()) },
-        explanationMaker = makeMetadata(Explanation.EvaluateIntegerPower, move(base), move(power))
+        explanationMaker = makeMetadata(Explanation.EvaluateIntegerPowerDirectly, move(base), move(exponent))
     )
 }
 
@@ -125,8 +127,7 @@ val simplifyEvenPowerOfNegative = run {
     val positiveBase = AnyPattern()
     val base = bracketOf(negOf(positiveBase))
     val exponent = SignedIntegerPattern()
-    val power =
-        powerOf(base, ConditionPattern(exponent, numericCondition(exponent) { it.mod(BigInteger.TWO).signum() == 0 }))
+    val power = powerOf(base, ConditionPattern(exponent, numericCondition(exponent) { it.isEven() }))
 
     Rule(
         pattern = power,
@@ -139,8 +140,7 @@ val simplifyOddPowerOfNegative = run {
     val positiveBase = AnyPattern()
     val base = bracketOf(negOf(positiveBase))
     val exponent = SignedIntegerPattern()
-    val power =
-        powerOf(base, ConditionPattern(exponent, numericCondition(exponent) { it.mod(BigInteger.TWO).signum() != 0 }))
+    val power = powerOf(base, ConditionPattern(exponent, numericCondition(exponent) { it.isOdd() }))
 
     Rule(
         pattern = power,

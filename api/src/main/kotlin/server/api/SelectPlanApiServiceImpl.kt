@@ -26,7 +26,7 @@ class SelectPlanApiServiceImpl : SelectPlansApiService {
         val context = Context(curriculum = applyPlanRequest.curriculum)
 
         for (entryData in methodRegistry.getPublicEntries()) {
-            val transformation = entryData.implementation.tryExecute(context, Subexpression(RootPath, expr))
+            val transformation = entryData.implementation.tryExecute(context, Subexpression(expr, null, RootPath))
             if (transformation != null) {
                 selections.add(
                     PlanSelection(

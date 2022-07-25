@@ -16,7 +16,7 @@ class AllOfPatternTest {
         val n = UnsignedIntegerPattern()
         val x = FixedPattern(xp("x"))
         val pattern = allOf(sumContaining(n), sumContaining(x))
-        val matches = pattern.findMatches(Subexpression(RootPath, expr))
+        val matches = pattern.findMatches(Subexpression(expr, null, RootPath))
         assertEquals(1, matches.count())
         val match = matches.first()
         assertEquals(xp(1), match.getBoundExpr(n))

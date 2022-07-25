@@ -10,12 +10,21 @@ import methods.general.removeBracketsSum
 import methods.integerarithmetic.evaluateSignedIntegerAddition
 
 val convertMixedNumberToImproperFraction = plan {
-    pattern = mixedNumberOf()
+    explanation(Explanation.ConvertMixedNumbersToImproperFraction)
 
-    pipeline {
-        step(splitMixedNumber)
-        step(convertIntegerToFraction)
-        step(evaluateFractionSum)
+    applyToChildrenInStep {
+        step {
+            explanationKey = Explanation.ConvertMixedNumbersToSums
+            method = splitMixedNumber
+        }
+        step {
+            explanationKey = Explanation.ConvertIntegersToFractions
+            method = convertIntegerToFraction
+        }
+        step {
+            explanationKey = Explanation.AddFractions
+            method = evaluateFractionSum
+        }
     }
 }
 
@@ -24,13 +33,11 @@ val addMixedNumbers = plan {
 
     resourceData = ResourceData(curriculum = "EU")
     pipeline {
-        step {
-            explanation(Explanation.ConvertMixedNumbersToImproperFraction)
-            applyToChildrenInStep(convertMixedNumberToImproperFraction)
-        }
-
+        step(convertMixedNumberToImproperFraction)
         step(evaluateFractionSum)
-        step(fractionToMixedNumber)
+        // result might be integer or proper fraction after
+        // simplification, so this step is optional
+        optionalStep(fractionToMixedNumber)
     }
 
     alternative {
@@ -38,6 +45,7 @@ val addMixedNumbers = plan {
 
         pipeline {
             step {
+                explanation(Explanation.ConvertMixedNumbersToSums)
                 whilePossible {
                     deeply(splitMixedNumber)
                 }

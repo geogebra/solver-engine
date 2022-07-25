@@ -41,7 +41,7 @@ class PlanTestCaseTest {
         val pattern = AnyPattern()
 
         Plan(
-            ownPattern = pattern,
+            pattern = pattern,
             planExecutor = Pipeline((1..3).map { PipelineItem(testRule) }),
             explanationMaker = makeMetadata(testPlanMetadataKey, move(pattern)),
         )

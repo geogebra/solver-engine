@@ -20,12 +20,12 @@ object IntegerRootsRulesTest : RuleTest {
         RuleTestCase("sqrt[147]", factorizeIntegerUnderSquareRoot, "sqrt[3 * [7 ^ 2]]"),
         RuleTestCase(
             "sqrt[2 * [3 ^ 5] * 5 * [7 ^ 3]]",
-            separateIntegerPowersUnderSquareRoot,
+            separateOddPowersUnderSquareRoot,
             "sqrt[2 * [3 ^ 4] * 3 * 5 * [7 ^ 3]]"
         ),
         RuleTestCase(
             "sqrt[2 * [3 ^ 4] * 3 * 5 * [7 ^ 3]]",
-            separateSquaresUnderSquareRoot,
+            splitEvenPowersUnderSeparateRoot,
             "sqrt[[3 ^ 4]] * sqrt[2 * 3 * 5 * [7 ^ 3]]"
         ),
         RuleTestCase(

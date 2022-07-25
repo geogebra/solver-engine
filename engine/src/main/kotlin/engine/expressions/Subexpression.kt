@@ -1,12 +1,16 @@
 package engine.expressions
 
-data class Subexpression(val path: Path, val expr: Expression) {
+data class Subexpression(
+    val expr: Expression,
+    val parent: Subexpression?,
+    val path: Path
+) {
     fun nthChild(index: Int): Subexpression {
-        return Subexpression(path.child(index), expr.operands.elementAt(index))
+        return Subexpression(expr.operands.elementAt(index), this, path.child(index))
     }
 
     fun children(): List<Subexpression> {
-        return expr.operands.mapIndexed { i, child -> Subexpression(path.child(i), child) }
+        return expr.operands.mapIndexed { i, child -> Subexpression(child, this, path.child(i)) }
     }
 
     fun index() = when (path) {

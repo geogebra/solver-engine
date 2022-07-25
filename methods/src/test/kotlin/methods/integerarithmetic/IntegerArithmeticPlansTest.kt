@@ -7,11 +7,12 @@ class IntegerArithmeticPlansTest {
 
     @Test
     fun testSimplifyArithmeticExpressionSimple() = testPlan {
-        plan = simplifyArithmeticExpression
+        plan = evaluateArithmeticExpression
         inputExpr = "1 + 2 + 3"
 
         check {
             toExpr = "6"
+
             step {
                 step {
                     fromExpr = "1 + 2 + 3"
@@ -42,34 +43,36 @@ class IntegerArithmeticPlansTest {
 
     @Test
     fun testSimplifyArithmeticExpressionPowerSmall() = testPlan {
-        plan = simplifyArithmeticExpression
+        plan = evaluateArithmeticExpression
         inputExpr = "[2 ^ 4]"
 
         check {
             toExpr = "16"
 
             step {
-                fromExpr = "[2 ^ 4]"
-                toExpr = "2 * 2 * 2 * 2"
-            }
-
-            step {
-                fromExpr = "2 * 2 * 2 * 2"
-                toExpr = "16"
+                step {
+                    fromExpr = "[2 ^ 4]"
+                    toExpr = "2 * 2 * 2 * 2"
+                }
 
                 step {
                     fromExpr = "2 * 2 * 2 * 2"
-                    toExpr = "4 * 2 * 2"
-                }
-
-                step {
-                    fromExpr = "4 * 2 * 2"
-                    toExpr = "8 * 2"
-                }
-
-                step {
-                    fromExpr = "8 * 2"
                     toExpr = "16"
+
+                    step {
+                        fromExpr = "2 * 2 * 2 * 2"
+                        toExpr = "4 * 2 * 2"
+                    }
+
+                    step {
+                        fromExpr = "4 * 2 * 2"
+                        toExpr = "8 * 2"
+                    }
+
+                    step {
+                        fromExpr = "8 * 2"
+                        toExpr = "16"
+                    }
                 }
             }
         }
@@ -77,7 +80,7 @@ class IntegerArithmeticPlansTest {
 
     @Test
     fun testSimplifyArithmeticExpressionPowerLarge() = testPlan {
-        plan = simplifyArithmeticExpression
+        plan = evaluateArithmeticExpression
         inputExpr = "[2 ^ 6]"
 
         check {
@@ -87,26 +90,17 @@ class IntegerArithmeticPlansTest {
 
     @Test
     fun testWithDifferentBrackets() = testPlan {
-        plan = simplifyArithmeticExpression
+        plan = evaluateArithmeticExpression
         inputExpr = "1 + {.2 + [.3 + (4 + 5).].}"
 
         check {
             toExpr = "15"
 
             step {
-                toExpr = "1 + {.2 + [.3 + (9).].}"
-            }
-            step {
                 toExpr = "1 + {.2 + [.3 + 9.].}"
             }
             step {
-                toExpr = "1 + {.2 + [.12.].}"
-            }
-            step {
                 toExpr = "1 + {.2 + 12.}"
-            }
-            step {
-                toExpr = "1 + {.14.}"
             }
             step {
                 toExpr = "1 + 14"
@@ -119,7 +113,7 @@ class IntegerArithmeticPlansTest {
 
     @Test
     fun testSimplifyArithmeticExpressionAddMultiplyDivide() = testPlan {
-        plan = simplifyArithmeticExpression
+        plan = evaluateArithmeticExpression
         inputExpr = "3*4*5:6 + 6 + 7"
 
         check {
@@ -156,8 +150,6 @@ class IntegerArithmeticPlansTest {
                 toExpr = "23"
 
                 step {
-                    toExpr = "23"
-
                     step { toExpr = "16 + 7" }
                     step { toExpr = "23" }
                 }
@@ -165,86 +157,88 @@ class IntegerArithmeticPlansTest {
         }
     }
 
-    // @Test
+    @Test
     fun testSimplifyArithmeticExpressionBracketsAndNegativeMultiply() = testPlan {
-        plan = simplifyArithmeticExpression
+        plan = evaluateArithmeticExpression
         inputExpr = "34 + 60 + 6 - (4 + 10 - 3 * 5 * (-2))"
 
         check {
             toExpr = "56"
 
             explanation {
-                key = Explanation.SimplifyArithmeticExpression
+                key = Explanation.EvaluateArithmeticExpression
             }
 
             step {
-                fromExpr = "34 + 60 + 6 - (4 + 10 - 3 * 5 * (-2))"
-                toExpr = "34 + 60 + 6 - (4 + 10 - (-30))"
-
                 step {
-                    fromExpr = "3 * 5 * (-2)"
-                    toExpr = "-30"
+                    fromExpr = "34 + 60 + 6 - (4 + 10 - 3 * 5 * (-2))"
+                    toExpr = "34 + 60 + 6 - 44"
 
-                    explanation {
-                        key = Explanation.SimplifyIntegersInProduct
+                    step {
+                        fromExpr = "(4 + 10 - 3 * 5 * (-2))"
+                        toExpr = "(4 + 10 - (-30))"
+
+                        step {
+                            explanation {
+                                key = Explanation.EvaluateProductOfIntegers
+                            }
+
+                            step {
+                                fromExpr = "3 * 5 * (-2)"
+                                toExpr = "15 * (-2)"
+
+                                combine {
+                                    fromPaths("./0", "./1")
+                                    toPaths("./0")
+                                }
+
+                                move {
+                                    fromPaths("./2")
+                                    toPaths("./1")
+                                }
+                            }
+                            step {
+                                fromExpr = "15 * (-2)"
+                                toExpr = "-30"
+                            }
+                        }
                     }
 
                     step {
-                        fromExpr = "3 * 5 * (-2)"
-                        toExpr = "15 * (-2)"
+                        fromExpr = "(4 + 10 - (-30))"
+                        toExpr = "(4 + 10 + 30)"
 
-                        combine {
-                            fromPaths("./0", "./1")
-                            toPaths("./0")
-                        }
+                        step {
+                            fromExpr = "-(-30)"
+                            toExpr = "30"
 
-                        move {
-                            fromPaths("./2")
-                            toPaths("./1")
+                            explanation {
+                                key = methods.general.Explanation.SimplifyDoubleMinus
+                            }
                         }
                     }
+
                     step {
-                        fromExpr = "15 * (-2)"
-                        toExpr = "-30"
+                        toExpr = "(44)"
+
+                        step {
+                            fromExpr = "4 + 10 + 30"
+                            toExpr = "44"
+
+                            explanation {
+                                key = Explanation.EvaluateSumOfIntegers
+                            }
+                        }
                     }
-                }
-            }
 
-            step {
-                fromExpr = "34 + 60 + 6 - (4 + 10 - (-30))"
-                toExpr = "34 + 60 + 6 - (4 + 10 + 30)"
+                    step {
+                        toExpr = "44"
 
-                step {
-                    fromExpr = "-(-30)"
-                    toExpr = "30"
-
-                    explanation {
-                        key = methods.general.Explanation.SimplifyDoubleMinus
-                    }
-                }
-            }
-
-            step {
-                fromExpr = "34 + 60 + 6 - (4 + 10 + 30)"
-                toExpr = "34 + 60 + 6 - (44)"
-
-                step {
-                    fromExpr = "4 + 10 + 30"
-                    toExpr = "44"
-
-                    explanation {
-                        key = Explanation.SimplifyIntegersInSum
-                    }
-                }
-            }
-
-            step {
-                step {
-                    fromExpr = "(44)"
-                    toExpr = "44"
-
-                    explanation {
-                        key = methods.general.Explanation.RemoveBracketAroundUnsignedInteger
+                        step {
+                            explanation {
+                                key = methods.general.Explanation.RemoveRedundantBracket
+                            }
+                        }
                     }
                 }
             }
@@ -255,7 +249,7 @@ class IntegerArithmeticPlansTest {
                     toExpr = "56"
 
                     explanation {
-                        key = Explanation.SimplifyIntegersInSum
+                        key = Explanation.EvaluateSumOfIntegers
                     }
                 }
             }
@@ -263,8 +257,8 @@ class IntegerArithmeticPlansTest {
     }
 
     @Test
-    fun testSimplifyArithmeticExpressionPowerAndBrackets() = testPlan {
-        plan = simplifyArithmeticExpression
+    fun testEvaluateArithmeticExpressionPowerAndBrackets() = testPlan {
+        plan = evaluateArithmeticExpression
         inputExpr = "[(1 + 1) ^ [2 ^ 3]]"
 
         check {
@@ -272,45 +266,39 @@ class IntegerArithmeticPlansTest {
 
             step {
                 fromExpr = "[(1 + 1) ^ [2 ^ 3]]"
-                toExpr = "[(2) ^ [2 ^ 3]]"
-
-                step {
-                    fromExpr = "1 + 1"
-                    toExpr = "2"
-                }
-            }
-
-            step {
-                fromExpr = "[(2) ^ [2 ^ 3]]"
                 toExpr = "[2 ^ [2 ^ 3]]"
 
                 step {
-                    fromExpr = "(2)"
-                    toExpr = "2"
+                    step {
+                        fromExpr = "(1 + 1)"
+                        toExpr = "(2)"
+                    }
+                    step {
+                        fromExpr = "(2)"
+                        toExpr = "2"
+                    }
                 }
             }
 
             step {
-                fromExpr = "[2 ^ [2 ^ 3]]"
-                toExpr = "[2 ^ 8]"
-
-                step {
-                    fromExpr = "[2 ^ 3]"
-                    toExpr = "2 * 2 * 2"
-                }
-
-                step {
-                    fromExpr = "2 * 2 * 2"
-                    toExpr = "8"
-                }
-            }
-
-            step {
-                fromExpr = "[2 ^ 8]"
                 toExpr = "256"
-
                 step {
-                    fromExpr = "[2 ^ 8]"
+                    toExpr = "[2 ^ 8]"
+                    step {
+                        fromExpr = "[2 ^3]"
+                        toExpr = "8"
+                        step {
+                            fromExpr = "[2 ^ 3]"
+                            toExpr = "2 * 2 * 2"
+                        }
+
+                        step {
+                            fromExpr = "2 * 2 * 2"
+                            toExpr = "8"
+                        }
+                    }
+                }
+                step {
                     toExpr = "256"
                 }
             }
@@ -319,7 +307,7 @@ class IntegerArithmeticPlansTest {
 
     // @Test
     fun testSimplifyRoots() = testPlan {
-        plan = simplifyArithmeticExpression
+        plan = evaluateArithmeticExpression
         inputExpr = "sqrt[63]"
 
         check {

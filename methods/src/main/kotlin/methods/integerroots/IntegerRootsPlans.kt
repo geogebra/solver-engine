@@ -10,8 +10,8 @@ val simplifyIntegerRoot = plan {
 
     pipeline {
         optionalStep(factorizeIntegerUnderSquareRoot)
-        optionalStep(separateIntegerPowersUnderSquareRoot)
-        optionalStep(separateSquaresUnderSquareRoot)
+        optionalStep(separateOddPowersUnderSquareRoot)
+        optionalStep(splitEvenPowersUnderSeparateRoot)
         step {
             firstOf {
                 option {

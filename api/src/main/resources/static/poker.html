@@ -52,6 +52,10 @@
             padding-bottom: 0;
             margin-bottom: 0;
         }
+
+        .through-step > .expr, .through-step > .plan-id, .through-step > .plan-explanation {
+            color: lightgray;
+        }
     </style>
 
     <!-- The loading of KaTeX is deferred to speed up page rendering -->
@@ -91,9 +95,17 @@
     <select id="plansSelect"></select>
     <label for="input">Input</label>
     <input type="text" id="input" placeholder="Expression" size="30"/>
-    <input type="submit" id="submit" value="Submit"/>
+     <input type="submit" id="submit" value="Submit"/>
+</form>
+<form>
+    <label for="showThroughSteps">Show through steps</label>
+    <input id="showThroughSteps" type="checkbox" />
 </form>
 </p>
 <p id="result"></p>
+<details>
+    <summary>Response Source</summary>
+    <pre id="source"></pre>
+</details>
 </body>
 </html>

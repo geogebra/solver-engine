@@ -3,11 +3,19 @@ metadata:
   title: Mixed Numbers
 
 explanations:
-  ConvertMixedNumberToSum:
-    defaultTranslation:
-  ConvertFractionToMixedNumber:
-    defaultTranslation:
   ConvertMixedNumbersToImproperFraction:
+    defaultTranslation: Convert the mixed numbers to improper fractions
+  ConvertMixedNumbersToSums:
+    defaultTranslation: Convert the mixed numbers to sums of an integer and a fraction
+  ConvertMixedNumberToSum:
+    defaultTranslation: Convert the mixed number %0 to a sum
+    parameters:
+      - mixed number
+  ConvertIntegersToFractions:
+    defaultTranslation: Convert the integers to fractions with a denominator of 1
+  AddFractions:
+    defaultTranslation: Add the fractions together
+  ConvertFractionToMixedNumber:
     defaultTranslation:
 
 methods:

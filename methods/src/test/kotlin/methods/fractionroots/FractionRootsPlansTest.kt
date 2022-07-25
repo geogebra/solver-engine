@@ -1,11 +1,10 @@
 package methods.fractionroots
 
 import methods.plans.testPlan
-import org.junit.jupiter.api.Test
 
 class FractionRootsPlansTest {
 
-    @Test
+    // @Test
     fun testRationalizationWithRadicalInDenominator() = testPlan {
         plan = rationalizationWithRadicalInDenominator
         inputExpr = "[ 5 / 3 * sqrt[3] ]"
@@ -15,7 +14,7 @@ class FractionRootsPlansTest {
         }
     }
 
-    @Test
+    // @Test
     fun testEvaluateMultiplicationOfFractionWithUnitaryRadicalFraction() = testPlan {
         plan = evaluateMultiplicationOfFractionWithUnitaryRadicalFraction
         inputExpr = "[4 / 3 * sqrt[3]] * [sqrt[3] / sqrt[3]]"

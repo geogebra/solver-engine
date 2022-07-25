@@ -29,29 +29,53 @@ explanations:
     parameters:
       - base
       - exponent
+  EvaluateIntegerPowerDirectly:
+    defaultTranslation: Calculate %1 to the power of %2 directly
+    parameters:
+      - base
+      - exponent
   RewriteIntegerPowerAsProduct:
     defaultTranslation: Expand %1 to the power of %2 as a product
     parameters:
       - base
       - exponent
   SimplifyEvenPowerOfNegative:
-    defaultTranslation:
+    defaultTranslation: The even power of a negative number is positive
   SimplifyOddPowerOfNegative:
-    defaultTranslation:
+    defaultTranslation: The odd power of a negative number is negative
+  UseOrderOfOperations:
+    defaultTranslation: Use order of operations
 
   # Plans
-  SimplifyArithmeticExpression:
-    defaultTranslation: evaluate the expression %1
+  EvaluateArithmeticExpression:
+    defaultTranslation: Evaluate the expression %1
     parameters:
-      - expression
+      - integer expression
+  EvaluateProductOfIntegers:
+    defaultTranslation: Evaluate the product %1
+    parameters:
+      - product of integers
+  EvaluateSumOfIntegers:
+    defaultTranslation: Evaluate the sum %1
+    parameters:
+      - sum of integers
 
   SimplifyIntegersInSum:
-    defaultTranslation: evaluate the sum
+    defaultTranslation: Simplify the sum %1
+    parameters:
+      - sum of integers
   SimplifyIntegersInProduct:
-    defaultTranslation: evaluate the product
+    defaultTranslation: Simplify the product %1
+    parameters:
+      - product of integers
+  SimplifyExpressionInBrackets:
+    defaultTranslation: Simplify the expression in brackets
+  SimplifyArithmeticExpressionWithoutInnerBrackets:
+    defaultTranslation: Simplify expression without inner brackets
 
 methods:
-  SimplifyArithmeticExpression:
+  EvaluateArithmeticExpression:
     visibility: public
-    description: Simplify an arithmetic expression
-    implementationName: simplifyArithmeticExpression
+    description: "Evaluate an arithmetic expression (i.e. an expression containing only
+      integers and the operators +, -, *, :, ^ and brackets)"
+    implementationName: evaluateArithmeticExpression

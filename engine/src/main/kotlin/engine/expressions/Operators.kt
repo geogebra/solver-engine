@@ -7,7 +7,6 @@ const val MAX_CHILD_COUNT = 1000
 private const val SUM_PRECEDENCE = 10
 private const val PLUS_MINUS_PRECEDENCE = 15
 private const val PRODUCT_PRECEDENCE = 20
-private const val DIVIDE_PRECEDENCE = 30
 private const val IMPLICIT_PRODUCT_PRECEDENCE = 40
 private const val FRACTION_PRECEDENCE = 50
 private const val POWER_PRECEDENCE = 60
@@ -193,17 +192,6 @@ enum class BinaryOperator(override val precedence: Int) : Operator {
         override fun <T> readableString(left: T, right: T) = "[$left / $right]"
         override fun <T : Expression> latexString(left: T, right: T) =
             "{\\frac${left.toLatexString()}${right.toLatexString()}}"
-    },
-    Divide(DIVIDE_PRECEDENCE) {
-        override fun leftChildAllowed(op: Operator) =
-            op.precedence >= NaryOperator.ImplicitProduct.precedence
-
-        override fun rightChildAllowed(op: Operator) =
-            op.precedence >= NaryOperator.ImplicitProduct.precedence
-
-        override fun <T> readableString(left: T, right: T) = "$left:$right"
-        override fun <T : Expression> latexString(left: T, right: T) =
-            "{${left.toLatexString()} \\div ${right.toLatexString()}}"
     },
     Power(POWER_PRECEDENCE) {
         override fun leftChildAllowed(op: Operator) =

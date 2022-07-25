@@ -13,6 +13,6 @@ object RemoveBracketsTest : RuleTest {
         RuleTestCase("1 + (-1)", removeBracketAroundSignedIntegerInSum, "1 - 1"),
         RuleTestCase("x + y + (-2)", removeBracketAroundSignedIntegerInSum, "x + y - 2"),
 
-        RuleTestCase("(1)", removeBracketAroundUnsignedInteger, "1")
+        RuleTestCase("(1)", removeOuterBracket, "1")
     )
 }

@@ -3,23 +3,26 @@ package engine.methods.executors
 import engine.context.Context
 import engine.expressions.Subexpression
 import engine.methods.Method
-import engine.patterns.Match
 import engine.steps.Transformation
+
+private const val MAX_WHILE_POSSIBLE_ITERATIONS = 100
+
+class TooManyIterationsException(msg: String) : RuntimeException(msg)
 
 data class WhilePossible(val plan: Method) : PlanExecutor {
 
-    override val pattern = plan.pattern
-
-    override fun produceSteps(ctx: Context, match: Match, sub: Subexpression): List<Transformation> {
-        var lastStep: Transformation? = plan.execute(ctx, match, sub)
-        var lastSub = sub
+    override fun produceSteps(ctx: Context, sub: Subexpression): List<Transformation> {
         val steps: MutableList<Transformation> = mutableListOf()
-        while (lastStep != null) {
+
+        var lastSub = sub
+        repeat(MAX_WHILE_POSSIBLE_ITERATIONS) {
+            val lastStep: Transformation = plan.tryExecute(ctx, lastSub) ?: return steps
             steps.add(lastStep)
+
             val substitution = lastSub.substitute(lastStep.fromExpr.path, lastStep.toExpr)
-            lastSub = Subexpression(lastSub.path, substitution.expr)
-            lastStep = plan.tryExecute(ctx, lastSub)
+            lastSub = Subexpression(substitution.expr, sub.parent, lastSub.path)
         }
-        return steps
+
+        throw TooManyIterationsException("WhilePossible max iteration number ($MAX_WHILE_POSSIBLE_ITERATIONS) exceeded")
     }
 }

@@ -2,6 +2,7 @@ package engine.expressionmakers
 
 import engine.expressions.BinaryOperator
 import engine.expressions.BracketOperator
+import engine.expressions.Constants
 import engine.expressions.Expression
 import engine.expressions.MappedExpression
 import engine.expressions.MixedNumberOperator
@@ -57,6 +58,16 @@ data class FlattenedNaryExpressionMaker(val operator: NaryOperator, val operands
         return when (operands.size) {
             1 -> operands[0].make(match)
             else -> flattenedNaryMappedExpression(operator, operands.map { it.make(match) })
+        }
+    }
+}
+
+data class SimplifiedProductMaker(val operands: List<ExpressionMaker>) : ExpressionMaker {
+    override fun make(match: Match): MappedExpression {
+        val madeOperands = operands.map { it.make(match) }.filter { it.expr != Constants.One }
+        return when (madeOperands.size) {
+            1 -> madeOperands[0]
+            else -> flattenedNaryMappedExpression(NaryOperator.Product, madeOperands)
         }
     }
 }
@@ -131,6 +142,9 @@ fun makeSumOf(vararg terms: ExpressionMaker) =
 
 fun makeProductOf(vararg terms: ExpressionMaker) =
     FlattenedNaryExpressionMaker(NaryOperator.Product, terms.asList())
+
+fun makeSimplifiedProductOf(vararg terms: ExpressionMaker) =
+    SimplifiedProductMaker(terms.asList())
 
 fun makePowerOf(base: ExpressionMaker, exponent: ExpressionMaker) =
     OperatorExpressionMaker(BinaryOperator.Power, listOf(base, exponent))

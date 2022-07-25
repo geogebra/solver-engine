@@ -26,7 +26,7 @@ class PlanApiServiceImpl : PlansApiService {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid expression", e)
         }
         val context = Context(curriculum = applyPlanRequest.curriculum)
-        val trans = plan.tryExecute(context, Subexpression(RootPath, expr))
+        val trans = plan.tryExecute(context, Subexpression(expr, null, RootPath))
             ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Plan cannot be applied to expression")
         val modeller = TransformationModeller(format = applyPlanRequest.format)
         return modeller.modelTransformation(trans)
