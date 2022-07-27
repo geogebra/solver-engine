@@ -48,11 +48,6 @@ class TestAddFractions {
             step {
                 fromExpr = "[1 + 2/5]"
                 toExpr = "[3/5]"
-
-                step {
-                    fromExpr = "1 + 2"
-                    toExpr = "3"
-                }
             }
         }
     }
@@ -213,6 +208,7 @@ class TestSimplifyFraction {
 
         check {
             step { toExpr = "[[3 ^ 2] / [4 ^ 2]]" }
+            step { toExpr = "[9 / [4 ^ 2]]" }
             step { toExpr = "[9 / 16]" }
         }
     }

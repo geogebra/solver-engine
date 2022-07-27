@@ -8,6 +8,7 @@ import engine.expressions.IntegerOperator
 import engine.expressions.NaryOperator
 import engine.expressions.UnaryOperator
 import engine.methods.plan
+import engine.methods.steps
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.SignedIntegerPattern
@@ -52,15 +53,15 @@ val evaluateSignedIntegerPower = plan {
     firstOf {
         option {
             pipeline {
-                step(rewriteIntegerPowerAsProduct)
-                step(evaluateProductOfIntegers)
+                steps(rewriteIntegerPowerAsProduct)
+                steps(evaluateProductOfIntegers)
             }
         }
         option {
             pipeline {
-                optionalStep(simplifyEvenPowerOfNegative)
-                optionalStep(simplifyOddPowerOfNegative)
-                step(evaluateIntegerPowerDirectly)
+                optionalSteps(simplifyEvenPowerOfNegative)
+                optionalSteps(simplifyOddPowerOfNegative)
+                steps(evaluateIntegerPowerDirectly)
             }
         }
     }
@@ -110,18 +111,20 @@ private fun Expression.isArithmeticExpression(): Boolean {
         arithmeticOperators.contains(operator)
 }
 
-val evaluateArithmeticSubexpression = plan {
-    pattern = AnyPattern()
-
-    whilePossible {
-        firstOf {
-            option { deeply(removeRedundantBrackets, deepFirst = true) }
-            option { deeply(simplifyDoubleMinus, deepFirst = true) }
-            option { deeply(evaluateSignedIntegerPower, deepFirst = true) }
-            option { deeply(evaluateProductOfIntegers, deepFirst = true) }
-            option { deeply(evaluateSumOfIntegers, deepFirst = true) }
-        }
+val evaluationSteps = steps {
+    firstOf {
+        option { deeply(removeRedundantBrackets, deepFirst = true) }
+        option { deeply(simplifyDoubleMinus, deepFirst = true) }
+        option { deeply(evaluateSignedIntegerPower, deepFirst = true) }
+        option { deeply(evaluateProductOfIntegers, deepFirst = true) }
+        option { deeply(evaluateSumOfIntegers, deepFirst = true) }
     }
+}
+
+val evaluateArithmeticSubexpression = plan {
+    explanation(Explanation.SimplifyExpressionInBrackets)
+    pattern = bracketOf(AnyPattern())
+    whilePossible(evaluationSteps)
 }
 
 val evaluateArithmeticExpression = plan {
@@ -135,17 +138,14 @@ val evaluateArithmeticExpression = plan {
             option(removeOuterBracket)
 
             option {
-                explanation(Explanation.SimplifyExpressionInBrackets)
-
-                deeply(deepFirst = true) {
-                    pattern = bracketOf(AnyPattern())
-                    pipeline {
-                        step(evaluateArithmeticSubexpression)
-                    }
-                }
+                deeply(evaluateArithmeticSubexpression, deepFirst = true)
             }
 
-            option(evaluateArithmeticSubexpression)
+            option {
+                plan {
+                    whilePossible(evaluationSteps)
+                }
+            }
         }
     }
 }

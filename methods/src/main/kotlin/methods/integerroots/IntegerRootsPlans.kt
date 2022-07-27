@@ -9,10 +9,10 @@ val simplifyIntegerRoot = plan {
     pattern = squareRootOf(UnsignedIntegerPattern())
 
     pipeline {
-        optionalStep(factorizeIntegerUnderSquareRoot)
-        optionalStep(separateOddPowersUnderSquareRoot)
-        optionalStep(splitEvenPowersUnderSeparateRoot)
-        step {
+        optionalSteps(factorizeIntegerUnderSquareRoot)
+        optionalSteps(separateOddPowersUnderSquareRoot)
+        optionalSteps(splitEvenPowersUnderSeparateRoot)
+        steps {
             firstOf {
                 option {
                     deeply(simplifySquareRootOfSquare)
@@ -22,7 +22,7 @@ val simplifyIntegerRoot = plan {
                 }
             }
         }
-        optionalStep {
+        optionalSteps {
             deeply(evaluateIntegerProductAndDivision)
         }
     }

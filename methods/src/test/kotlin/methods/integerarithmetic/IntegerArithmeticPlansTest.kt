@@ -123,25 +123,23 @@ class IntegerArithmeticPlansTest {
                 toExpr = "10 + 6 + 7"
 
                 step {
-                    fromExpr = "3*4*5:6"
-                    toExpr = "10"
-
-                    step { toExpr = "12*5:6" }
-                    step {
-                        toExpr = "60:6"
-                        explanation {
-                            key = Explanation.EvaluateIntegerProduct
-                            param { expr = "12" }
-                            param { expr = "5" }
-                        }
+                    fromExpr = "3 * 4 * 5 : 6"
+                    toExpr = "12 * 5 : 6"
+                }
+                step {
+                    toExpr = "60 : 6"
+                    explanation {
+                        key = Explanation.EvaluateIntegerProduct
+                        param { expr = "12" }
+                        param { expr = "5" }
                     }
-                    step {
-                        toExpr = "10"
-                        explanation {
-                            key = Explanation.EvaluateIntegerDivision
-                            param { expr = "60" }
-                            param { expr = "6" }
-                        }
+                }
+                step {
+                    toExpr = "10"
+                    explanation {
+                        key = Explanation.EvaluateIntegerDivision
+                        param { expr = "60" }
+                        param { expr = "6" }
                     }
                 }
             }
@@ -149,10 +147,8 @@ class IntegerArithmeticPlansTest {
             step {
                 toExpr = "23"
 
-                step {
-                    step { toExpr = "16 + 7" }
-                    step { toExpr = "23" }
-                }
+                step { toExpr = "16 + 7" }
+                step { toExpr = "23" }
             }
         }
     }
@@ -170,87 +166,73 @@ class IntegerArithmeticPlansTest {
             }
 
             step {
+                fromExpr = "34 + 60 + 6 - (4 + 10 - 3 * 5 * (-2))"
+                toExpr = "34 + 60 + 6 - 44"
+
                 step {
-                    fromExpr = "34 + 60 + 6 - (4 + 10 - 3 * 5 * (-2))"
-                    toExpr = "34 + 60 + 6 - 44"
+                    fromExpr = "(4 + 10 - 3 * 5 * (-2))"
+                    toExpr = "(4 + 10 - (-30))"
+
+                    explanation {
+                        key = Explanation.EvaluateProductOfIntegers
+                    }
 
                     step {
-                        fromExpr = "(4 + 10 - 3 * 5 * (-2))"
-                        toExpr = "(4 + 10 - (-30))"
+                        fromExpr = "3 * 5 * (-2)"
+                        toExpr = "15 * (-2)"
 
-                        step {
-                            explanation {
-                                key = Explanation.EvaluateProductOfIntegers
-                            }
+                        combine {
+                            fromPaths("./0", "./1")
+                            toPaths("./0")
+                        }
 
-                            step {
-                                fromExpr = "3 * 5 * (-2)"
-                                toExpr = "15 * (-2)"
-
-                                combine {
-                                    fromPaths("./0", "./1")
-                                    toPaths("./0")
-                                }
-
-                                move {
-                                    fromPaths("./2")
-                                    toPaths("./1")
-                                }
-                            }
-                            step {
-                                fromExpr = "15 * (-2)"
-                                toExpr = "-30"
-                            }
+                        move {
+                            fromPaths("./2")
+                            toPaths("./1")
                         }
                     }
 
                     step {
-                        fromExpr = "(4 + 10 - (-30))"
-                        toExpr = "(4 + 10 + 30)"
-
-                        step {
-                            fromExpr = "-(-30)"
-                            toExpr = "30"
-
-                            explanation {
-                                key = methods.general.Explanation.SimplifyDoubleMinus
-                            }
-                        }
+                        fromExpr = "15 * (-2)"
+                        toExpr = "-30"
                     }
+                }
+
+                step {
+                    fromExpr = "(4 + 10 - (-30))"
+                    toExpr = "(4 + 10 + 30)"
+
+                    explanation {
+                        key = methods.general.Explanation.SimplifyDoubleMinus
+                    }
+                }
+
+                step {
+                    fromExpr = "(4 + 10 + 30)"
+                    toExpr = "(44)"
+
+                    explanation {
+                        key = Explanation.EvaluateSumOfIntegers
+                    }
+                }
+
+                step {
+                    toExpr = "44"
 
                     step {
-                        toExpr = "(44)"
-
-                        step {
-                            fromExpr = "4 + 10 + 30"
-                            toExpr = "44"
-
-                            explanation {
-                                key = Explanation.EvaluateSumOfIntegers
-                            }
-                        }
-                    }
-
-                    step {
-                        toExpr = "44"
-
-                        step {
-                            explanation {
-                                key = methods.general.Explanation.RemoveRedundantBracket
-                            }
+                        explanation {
+                            key = methods.general.Explanation.RemoveRedundantBracket
                         }
                     }
                 }
             }
 
             step {
-                step {
-                    fromExpr = "34 + 60 + 6 - 44"
-                    toExpr = "56"
+                fromExpr = "34 + 60 + 6 - 44"
+                toExpr = "56"
 
-                    explanation {
-                        key = Explanation.EvaluateSumOfIntegers
-                    }
+                explanation {
+                    key = Explanation.EvaluateSumOfIntegers
                 }
             }
         }
@@ -269,35 +251,33 @@ class IntegerArithmeticPlansTest {
                 toExpr = "[2 ^ [2 ^ 3]]"
 
                 step {
-                    step {
-                        fromExpr = "(1 + 1)"
-                        toExpr = "(2)"
-                    }
-                    step {
-                        fromExpr = "(2)"
-                        toExpr = "2"
-                    }
+                    fromExpr = "(1 + 1)"
+                    toExpr = "(2)"
+                }
+                step {
+                    fromExpr = "(2)"
+                    toExpr = "2"
                 }
             }
 
             step {
                 toExpr = "256"
-                step {
-                    toExpr = "[2 ^ 8]"
-                    step {
-                        fromExpr = "[2 ^3]"
-                        toExpr = "8"
-                        step {
-                            fromExpr = "[2 ^ 3]"
-                            toExpr = "2 * 2 * 2"
-                        }
 
-                        step {
-                            fromExpr = "2 * 2 * 2"
-                            toExpr = "8"
-                        }
+                step {
+                    fromExpr = "[2 ^ [2 ^ 3]]"
+                    toExpr = "[2 ^ 8]"
+
+                    step {
+                        fromExpr = "[2 ^ 3]"
+                        toExpr = "2 * 2 * 2"
+                    }
+
+                    step {
+                        fromExpr = "2 * 2 * 2"
+                        toExpr = "8"
                     }
                 }
+
                 step {
                     toExpr = "256"
                 }

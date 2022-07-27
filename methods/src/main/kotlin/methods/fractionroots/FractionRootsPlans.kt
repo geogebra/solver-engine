@@ -10,11 +10,11 @@ import methods.integerroots.simplifyMultiplicationOfSquareRoots
  */
 val evaluateMultiplicationOfFractionWithUnitaryRadicalFraction = plan {
     pipeline {
-        step(writeMultiplicationOfFractionsAsFraction)
-        step {
+        steps(writeMultiplicationOfFractionsAsFraction)
+        steps {
             deeply(simplifyMultiplicationOfSquareRoots, deepFirst = true)
         }
-        step(evaluateArithmeticExpression)
+        steps(evaluateArithmeticExpression)
     }
 }
 
@@ -23,8 +23,8 @@ val evaluateMultiplicationOfFractionWithUnitaryRadicalFraction = plan {
  */
 val rationalizationWithRadicalInDenominator = plan {
     pipeline {
-        step(writeAsMultiplicationWithUnitaryRadicalFraction)
-        step(evaluateMultiplicationOfFractionWithUnitaryRadicalFraction)
+        steps(writeAsMultiplicationWithUnitaryRadicalFraction)
+        steps(evaluateMultiplicationOfFractionWithUnitaryRadicalFraction)
     }
 }
 
@@ -33,8 +33,8 @@ evaluates: sqrt[ [ 4 / 5 ] ] -> [ 2 * sqrt[5] / 5 ]
  */
 val evaluateSquareRootFractions = plan {
     pipeline {
-        step(distributeRadicalRuleOverFractionsToNumeratorAndDenominator)
-        optionalStep(evaluateArithmeticExpression)
-        optionalStep(rationalizationWithRadicalInDenominator)
+        steps(distributeRadicalRuleOverFractionsToNumeratorAndDenominator)
+        optionalSteps(evaluateArithmeticExpression)
+        optionalSteps(rationalizationWithRadicalInDenominator)
     }
 }

@@ -1,4 +1,4 @@
-package engine.methods.executors
+package engine.methods.stepsproducers
 
 import engine.context.Context
 import engine.expressions.Subexpression
@@ -14,12 +14,12 @@ data class InStepItem(
     val optional: Boolean,
 )
 
-interface InStep : PlanExecutor {
+interface InStep : StepsProducer {
 
     val inStepItems: List<InStepItem>
     fun getSubexpressions(sub: Subexpression): List<Subexpression>
 
-    override fun produceSteps(ctx: Context, sub: Subexpression): List<Transformation> {
+    override fun produceSteps(ctx: Context, sub: Subexpression): List<Transformation>? {
         val stepSubs = getSubexpressions(sub).toMutableList()
 
         val steps = mutableListOf<Transformation>()
@@ -27,7 +27,7 @@ interface InStep : PlanExecutor {
         for ((stepPlan, explanation, optional) in inStepItems) {
             val stepTransformations = stepSubs.map { stepPlan.tryExecute(ctx, it) }
             if (!optional && stepTransformations.any { it == null }) {
-                return emptyList()
+                return null
             }
 
             val nonNullTransformations = stepTransformations.filterNotNull()
@@ -54,7 +54,7 @@ interface InStep : PlanExecutor {
                 }
             }
         }
-        return steps
+        return if (steps.isEmpty()) null else steps
     }
 }
 

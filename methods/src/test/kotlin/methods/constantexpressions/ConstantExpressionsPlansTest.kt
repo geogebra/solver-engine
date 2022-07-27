@@ -42,11 +42,9 @@ class ConstantExpressionsPlansTest {
 
         check {
             step {
-                step {
-                    step { toExpr = "(-[1 / 6]) * [2 / -5]" }
-                    step { toExpr = "(-[1 / 6]) * (-[2 / 5])" }
-                    step { toExpr = "[1 / 6] * [2 / 5]" }
-                }
+                step { toExpr = "(-[1 / 6]) * [2 / -5]" }
+                step { toExpr = "(-[1 / 6]) * (-[2 / 5])" }
+                step { toExpr = "[1 / 6] * [2 / 5]" }
             }
             step { toExpr = "[1 / 15]" }
         }
@@ -59,12 +57,10 @@ class ConstantExpressionsPlansTest {
 
         check {
             step {
-                step {
-                    step { toExpr = "(-[1 / 3]) * (-[1 / 4]) * [3 / -2]" }
-                    step { toExpr = "(-[1 / 3]) * (-[1 / 4]) * (-[3 / 2])" }
-                    step { toExpr = "[1 / 3] * [1 / 4] * (-[3 / 2])" }
-                    step { toExpr = "-[1 / 3] * [1 / 4] * [3 / 2]" }
-                }
+                step { toExpr = "(-[1 / 3]) * (-[1 / 4]) * [3 / -2]" }
+                step { toExpr = "(-[1 / 3]) * (-[1 / 4]) * (-[3 / 2])" }
+                step { toExpr = "[1 / 3] * [1 / 4] * (-[3 / 2])" }
+                step { toExpr = "-[1 / 3] * [1 / 4] * [3 / 2]" }
             }
             step { toExpr = "-[1 / 8]" }
         }

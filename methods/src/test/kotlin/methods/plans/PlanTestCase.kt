@@ -14,6 +14,7 @@ import engine.methods.Plan
 import engine.steps.Transformation
 import engine.steps.metadata.Metadata
 import engine.steps.metadata.MetadataKey
+import org.opentest4j.AssertionFailedError
 import parser.parseExpression
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -177,9 +178,7 @@ class TransformationCheck(private val trans: Transformation?) :
             "$checkedSteps steps were specified, but the transformation only has ${trans.steps!!.size}"
         }
 
-        val stepCheck = TransformationCheck(trans.steps!![currentStep])
-        stepCheck.assert()
-        stepCheck.finalize()
+        checkTransformation(trans.steps!![currentStep], assert)
     }
 
     override fun finalize() {
@@ -204,11 +203,28 @@ class PlanTestCase {
     fun check(assert: TransformationCheck.() -> Unit) {
         val expr = parseExpression(inputExpr)
         val trans = plan.tryExecute(context, Subexpression(expr, null, RootPath))
-
-        val check = TransformationCheck(trans)
-        check.assert()
-        check.finalize()
+        checkTransformation(trans, assert)
     }
+}
+
+private fun Transformation.isThroughStep() =
+    steps?.let { it.size == 1 && it[0].fromExpr.expr == fromExpr.expr } ?: false
+
+private fun checkTransformation(trans: Transformation?, assert: TransformationCheck.() -> Unit) {
+    if (trans != null && trans.isThroughStep()) {
+        try {
+            val check = TransformationCheck(trans.steps?.get(0))
+            check.assert()
+            check.finalize()
+            return
+        } catch (_: AssertionFailedError) {
+            // do nothing
+        }
+    }
+
+    val check = TransformationCheck(trans)
+    check.assert()
+    check.finalize()
 }
 
 fun testPlan(init: PlanTestCase.() -> Unit) {

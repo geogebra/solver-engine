@@ -2,19 +2,19 @@ package engine.methods
 
 import engine.context.ResourceData
 import engine.expressionmakers.ExpressionMaker
-import engine.methods.executors.ApplyTo
-import engine.methods.executors.ApplyToChildrenInStep
-import engine.methods.executors.ContextSensitiveAlternative
-import engine.methods.executors.ContextSensitiveSelector
-import engine.methods.executors.Deeply
-import engine.methods.executors.Extractor
-import engine.methods.executors.FirstOf
-import engine.methods.executors.InStep
-import engine.methods.executors.InStepItem
-import engine.methods.executors.Pipeline
-import engine.methods.executors.PipelineItem
-import engine.methods.executors.PlanExecutor
-import engine.methods.executors.WhilePossible
+import engine.methods.stepsproducers.ApplyTo
+import engine.methods.stepsproducers.ApplyToChildrenInStep
+import engine.methods.stepsproducers.ContextSensitiveAlternative
+import engine.methods.stepsproducers.ContextSensitiveSelector
+import engine.methods.stepsproducers.Deeply
+import engine.methods.stepsproducers.Extractor
+import engine.methods.stepsproducers.FirstOf
+import engine.methods.stepsproducers.InStep
+import engine.methods.stepsproducers.InStepItem
+import engine.methods.stepsproducers.Pipeline
+import engine.methods.stepsproducers.PipelineItem
+import engine.methods.stepsproducers.StepsProducer
+import engine.methods.stepsproducers.WhilePossible
 import engine.patterns.Pattern
 import engine.steps.metadata.KeyExprsMetadataMaker
 import engine.steps.metadata.MetadataKey
@@ -26,30 +26,30 @@ annotation class PlanBuilderMarker
 
 @PlanBuilderMarker
 class PipelineBuilder {
-    private var steps = mutableListOf<PipelineItem>()
+    private var pipelineItems = mutableListOf<PipelineItem>()
 
-    private fun step(step: Method, optional: Boolean) {
-        steps.add(PipelineItem(step, optional))
+    private fun addItem(stepsProducer: StepsProducer, optional: Boolean) {
+        pipelineItems.add(PipelineItem(stepsProducer, optional))
     }
 
-    fun step(step: Method) {
-        step(step, false)
+    fun steps(step: StepsProducer) {
+        addItem(step, false)
     }
 
-    fun step(init: PlanBuilder.() -> Unit) {
-        step(plan(init), optional = false)
+    fun steps(init: StepsProducerBuilder.() -> Unit) {
+        addItem(engine.methods.steps(init), optional = false)
     }
 
-    fun optionalStep(step: Method) {
-        step(step, true)
+    fun optionalSteps(step: StepsProducer) {
+        addItem(step, true)
     }
 
-    fun optionalStep(init: PlanBuilder.() -> Unit) {
-        step(plan(init), optional = true)
+    fun optionalSteps(init: StepsProducerBuilder.() -> Unit) {
+        addItem(engine.methods.steps(init), optional = true)
     }
 
     fun buildPlanExecutor(): Pipeline {
-        return Pipeline(steps)
+        return Pipeline(pipelineItems)
     }
 }
 
@@ -82,14 +82,14 @@ class InStepBuilder {
 
 @PlanBuilderMarker
 class FirstOfBuilder {
-    private var options: MutableList<Method> = mutableListOf()
+    private var options: MutableList<StepsProducer> = mutableListOf()
 
-    fun option(opt: Method) {
+    fun option(opt: StepsProducer) {
         options.add(opt)
     }
 
-    fun option(init: PlanBuilder.() -> Unit) {
-        option(plan(init))
+    fun option(init: StepsProducerBuilder.() -> Unit) {
+        option(steps(init))
     }
 
     fun buildPlanExecutor(): FirstOf {
@@ -99,50 +99,54 @@ class FirstOfBuilder {
 }
 
 @PlanBuilderMarker
-open class PlanExecutorBuilder {
+open class StepsProducerBuilder {
     lateinit var resourceData: ResourceData
-    lateinit var planExecutor: PlanExecutor
+    lateinit var stepsProducer: StepsProducer
 
     fun pipeline(init: PipelineBuilder.() -> Unit) {
         val builder = PipelineBuilder()
         builder.init()
-        planExecutor = builder.buildPlanExecutor()
+        stepsProducer = builder.buildPlanExecutor()
     }
 
-    fun applyTo(method: Method, extractor: Extractor) {
-        planExecutor = ApplyTo(extractor, method)
+    fun applyTo(steps: StepsProducer, extractor: Extractor) {
+        stepsProducer = ApplyTo(extractor, steps)
     }
 
     fun applyToChildrenInStep(init: InStepBuilder.() -> Unit) {
         val builder = InStepBuilder()
         builder.init()
-        planExecutor = builder.buildPlanExecutor()
+        stepsProducer = builder.buildPlanExecutor()
     }
 
     fun firstOf(init: FirstOfBuilder.() -> Unit) {
         val builder = FirstOfBuilder()
         builder.init()
-        planExecutor = builder.buildPlanExecutor()
+        stepsProducer = builder.buildPlanExecutor()
     }
 
-    fun whilePossible(subPlan: Method) {
-        planExecutor = WhilePossible(subPlan)
+    fun whilePossible(steps: StepsProducer) {
+        stepsProducer = WhilePossible(steps)
     }
 
-    fun whilePossible(init: PlanBuilder.() -> Unit) {
-        whilePossible(plan(init))
+    fun whilePossible(init: StepsProducerBuilder.() -> Unit) {
+        whilePossible(steps(init))
     }
 
-    fun deeply(plan: Method, deepFirst: Boolean = false) {
-        planExecutor = Deeply(plan, deepFirst)
+    fun deeply(steps: StepsProducer, deepFirst: Boolean = false) {
+        stepsProducer = Deeply(steps, deepFirst)
     }
 
-    fun deeply(deepFirst: Boolean = false, init: PlanBuilder.() -> Unit) {
-        deeply(plan(init), deepFirst)
+    fun deeply(deepFirst: Boolean = false, init: StepsProducerBuilder.() -> Unit) {
+        deeply(steps(init), deepFirst)
+    }
+
+    fun plan(init: PlanBuilder.() -> Unit) {
+        stepsProducer = engine.methods.plan(init)
     }
 }
 
-class PlanBuilder : PlanExecutorBuilder() {
+class PlanBuilder : StepsProducerBuilder() {
     var explanationMaker: MetadataMaker? = null
     var skillMakers: MutableList<MetadataMaker> = mutableListOf()
     var pattern: Pattern? = null
@@ -156,16 +160,16 @@ class PlanBuilder : PlanExecutorBuilder() {
         skillMakers.add(KeyExprsMetadataMaker(skillKey, params.asList()))
     }
 
-    fun alternative(init: PlanExecutorBuilder.() -> Unit) {
-        val alternative = PlanExecutorBuilder()
+    fun alternative(init: StepsProducerBuilder.() -> Unit) {
+        val alternative = StepsProducerBuilder()
         alternative.init()
-        alternatives.add(ContextSensitiveAlternative(alternative.planExecutor, alternative.resourceData))
+        alternatives.add(ContextSensitiveAlternative(alternative.stepsProducer, alternative.resourceData))
     }
 
-    private fun wrapPlanExecutor(planExecutor: PlanExecutor): Plan {
+    private fun wrapPlanExecutor(stepsProducer: StepsProducer): Plan {
         return Plan(
             pattern = pattern,
-            planExecutor = planExecutor,
+            stepsProducer = stepsProducer,
             explanationMaker = explanationMaker,
             skillMakers = skillMakers,
         )
@@ -173,11 +177,11 @@ class PlanBuilder : PlanExecutorBuilder() {
 
     fun buildPlan(): Plan {
         if (alternatives.isEmpty()) {
-            return wrapPlanExecutor(planExecutor)
+            return wrapPlanExecutor(stepsProducer)
         }
         return wrapPlanExecutor(
             ContextSensitiveSelector(
-                default = ContextSensitiveAlternative(planExecutor, resourceData),
+                default = ContextSensitiveAlternative(stepsProducer, resourceData),
                 alternatives = alternatives,
             )
         )
@@ -188,4 +192,10 @@ fun plan(init: PlanBuilder.() -> Unit): Plan {
     val planBuilder = PlanBuilder()
     planBuilder.init()
     return planBuilder.buildPlan()
+}
+
+fun steps(init: StepsProducerBuilder.() -> Unit): StepsProducer {
+    val builder = StepsProducerBuilder()
+    builder.init()
+    return builder.stepsProducer
 }

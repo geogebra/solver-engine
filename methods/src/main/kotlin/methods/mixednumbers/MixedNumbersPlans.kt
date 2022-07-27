@@ -33,31 +33,35 @@ val addMixedNumbers = plan {
 
     resourceData = ResourceData(curriculum = "EU")
     pipeline {
-        step(convertMixedNumberToImproperFraction)
-        step(evaluateFractionSum)
+        steps(convertMixedNumberToImproperFraction)
+        steps(evaluateFractionSum)
         // result might be integer or proper fraction after
         // simplification, so this step is optional
-        optionalStep(fractionToMixedNumber)
+        optionalSteps(fractionToMixedNumber)
     }
 
     alternative {
         resourceData = ResourceData(curriculum = "US")
 
         pipeline {
-            step {
-                explanation(Explanation.ConvertMixedNumbersToSums)
-                whilePossible {
-                    deeply(splitMixedNumber)
+            steps {
+                plan {
+                    explanation(Explanation.ConvertMixedNumbersToSums)
+                    whilePossible {
+                        deeply(splitMixedNumber)
+                    }
                 }
             }
-            step {
-                whilePossible(removeBracketsSum)
+            steps {
+                plan {
+                    whilePossible(removeBracketsSum)
+                }
             }
-            step(evaluateSignedIntegerAddition)
-            step(evaluateFractionSum)
-            step(convertIntegerToFraction)
-            step(evaluateFractionSum)
-            step(fractionToMixedNumber)
+            steps(evaluateSignedIntegerAddition)
+            steps(evaluateFractionSum)
+            steps(convertIntegerToFraction)
+            steps(evaluateFractionSum)
+            steps(fractionToMixedNumber)
         }
     }
 }
