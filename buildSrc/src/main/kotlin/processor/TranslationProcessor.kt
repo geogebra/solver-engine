@@ -18,12 +18,12 @@ class TranslationProcessor(val categoryFiles: Sequence<File>, val outputDir: Fil
 
     fun createJSONstrings(categories: Sequence<Category>) {
         val outFile = File("$outputDir/DefaultTranslations.json")
-        val hashMap:HashMap<String, String> = HashMap<String, String>()
+        val hashMap: HashMap<String, String> = HashMap<String, String>()
 
         for (category in categories) {
             for ((k, v) in category.explanations) {
                 if (v.defaultTranslation != null) {
-                    hashMap.put(k, v.defaultTranslation)
+                    hashMap.put("${category.metadata.name}.$k", v.defaultTranslation)
                 }
             }
         }

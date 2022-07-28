@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertFails
 
 class DummyKey : MetadataKey {
-    override val key = "dummy"
+    override val keyName = "dummy"
 }
 
 class PlanTestCaseTest {

@@ -36,7 +36,7 @@ data class TransformationModeller(val format: ApplyPlanRequest.Format) {
 
     private fun modelMetadata(metadata: engine.steps.metadata.Metadata): Metadata {
         return Metadata(
-            key = metadata.key.toString(),
+            key = metadata.key.keyName,
             params = metadata.mappedParams.map {
                 MappedExpression(
                     expression = modelExpression(it.expr),

@@ -8,5 +8,5 @@ enum class Skill : MetadataKey {
     MultiplyFractions,
     SimplifyNumericFraction;
 
-    override val key = "foo"
+    override val keyName = name
 }

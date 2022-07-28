@@ -6,12 +6,12 @@ import engine.patterns.Maker
 import engine.patterns.Match
 
 interface MetadataKey {
-    val key: String
+    val keyName: String
 }
 
 interface CategorisedMetadataKey : MetadataKey {
     val category: String
-    override val key get() = "$category.$this"
+    override val keyName get() = "$category.$this"
 }
 
 data class Metadata(val key: MetadataKey, val mappedParams: List<MappedExpression>)
