@@ -37,9 +37,10 @@ interface InStep : StepsProducer {
 
             val prevSub = lastSub
             for (tr in nonNullTransformations) {
-                val substitution = lastSub.substitute(tr.fromExpr.path, tr.toExpr)
-                lastSub = Subexpression(substitution.expr, sub.parent, lastSub.path)
+                val (_, newSub) = lastSub.substitute(tr.fromExpr.path, tr.toExpr)
+                lastSub = newSub
             }
+
             steps.add(
                 Transformation(
                     explanation = explanation.make(RootMatch),
@@ -48,9 +49,11 @@ interface InStep : StepsProducer {
                     steps = nonNullTransformations
                 )
             )
+
             for ((i, tr) in stepTransformations.withIndex()) {
                 if (tr != null) {
-                    stepSubs[i] = Subexpression(tr.toExpr.expr, tr.fromExpr.parent, tr.fromExpr.path)
+                    val (_, newSub) = tr.fromExpr.substitute(tr.fromExpr.path, tr.toExpr)
+                    stepSubs[i] = newSub
                 }
             }
         }

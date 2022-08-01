@@ -1,6 +1,5 @@
 package engine.patterns
 
-import engine.expressions.RootPath
 import engine.expressions.Subexpression
 import engine.expressions.parsePath
 import engine.expressions.xp
@@ -16,7 +15,7 @@ class AllOfPatternTest {
         val n = UnsignedIntegerPattern()
         val x = FixedPattern(xp("x"))
         val pattern = allOf(sumContaining(n), sumContaining(x))
-        val matches = pattern.findMatches(Subexpression(expr, null, RootPath))
+        val matches = pattern.findMatches(Subexpression(expr))
         assertEquals(1, matches.count())
         val match = matches.first()
         assertEquals(xp(1), match.getBoundExpr(n))

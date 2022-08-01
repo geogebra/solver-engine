@@ -1,7 +1,6 @@
 package server.api
 
 import engine.context.Context
-import engine.expressions.RootPath
 import engine.expressions.Subexpression
 import methods.methodRegistry
 import org.antlr.v4.runtime.misc.ParseCancellationException
@@ -26,7 +25,7 @@ class PlanApiServiceImpl : PlansApiService {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid expression", e)
         }
         val context = Context(curriculum = applyPlanRequest.curriculum)
-        val trans = plan.tryExecute(context, Subexpression(expr, null, RootPath))
+        val trans = plan.tryExecute(context, Subexpression(expr))
             ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Plan cannot be applied to expression")
         val modeller = TransformationModeller(format = applyPlanRequest.format)
         return modeller.modelTransformation(trans)

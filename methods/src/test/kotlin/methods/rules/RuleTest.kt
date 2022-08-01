@@ -1,7 +1,6 @@
 package methods.rules
 
 import engine.context.emptyContext
-import engine.expressions.RootPath
 import engine.expressions.Subexpression
 import engine.methods.Rule
 import org.junit.jupiter.params.ParameterizedTest
@@ -14,7 +13,7 @@ data class RuleTestCase(val inputExpr: String, val rule: Rule, val outputExpr: S
 
     fun assert() {
         val expression = parseExpression(inputExpr)
-        val step = rule.tryExecute(emptyContext, Subexpression(expression, null, RootPath))
+        val step = rule.tryExecute(emptyContext, Subexpression(expression))
         if (outputExpr == null) {
             assertNull(step)
         } else {

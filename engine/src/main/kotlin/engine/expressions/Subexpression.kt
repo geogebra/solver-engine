@@ -1,10 +1,12 @@
 package engine.expressions
 
-data class Subexpression(
+class Subexpression private constructor(
     val expr: Expression,
     val parent: Subexpression?,
     val path: Path
 ) {
+    constructor(root: Expression) : this(root, null, RootPath)
+
     fun nthChild(index: Int): Subexpression {
         return Subexpression(expr.operands.elementAt(index), this, path.child(index))
     }
@@ -18,8 +20,11 @@ data class Subexpression(
         else -> 0
     }
 
-    fun substitute(subPath: Path, mappedExpr: MappedExpression): MappedExpression =
-        substitute(subPath, mappedExpr) { true }
+    fun substitute(subPath: Path, mappedExpr: MappedExpression): Pair<MappedExpression, Subexpression> {
+        val substitution = substitute(subPath, mappedExpr) { true }
+        val sub = Subexpression(substitution.expr, parent, path)
+        return Pair(substitution, sub)
+    }
 
     private fun substitute(
         subPath: Path,

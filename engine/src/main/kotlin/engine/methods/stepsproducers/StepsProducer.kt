@@ -23,7 +23,7 @@ class StepsBuilder(private var sub: Subexpression) {
     private var aborted = false
 
     private fun add(step: Transformation) {
-        val substitution = sub.substitute(step.fromExpr.path, step.toExpr)
+        val (substitution, newSub) = sub.substitute(step.fromExpr.path, step.toExpr)
         steps.add(
             Transformation(
                 fromExpr = sub,
@@ -34,7 +34,7 @@ class StepsBuilder(private var sub: Subexpression) {
             )
         )
 
-        sub = Subexpression(substitution.expr, sub.parent, sub.path)
+        sub = newSub
     }
 
     /**
