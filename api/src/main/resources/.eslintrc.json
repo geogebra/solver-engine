@@ -1,0 +1,14 @@
+{
+  "extends": [
+    "eslint:recommended",
+    "prettier"
+  ],
+  "env": {
+    "browser": true,
+    "es2022": true
+  },
+  "rules": {
+    "semi": "error",
+    "eqeqeq": "error"
+  }
+}

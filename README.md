@@ -64,6 +64,13 @@ git config --local core.hooksPath .githooks/
 Currently, there is a pre-commit hook that runs the `ktlintCheck`
 and `detekt` tasks.
 
+### Javascript
+
+The project configures IntelliJ to use eslint and prettier for
+formatting and linting javascript code. If you want to use this,
+make sure you have node.js installed and run `npm i` at the root
+of the project.
+
 ## Deployment
 
 The project can be deployed to a Kubernetes cluster. The configured
@@ -82,9 +89,11 @@ the [pipeline configuration](.gitlab-ci.yml):
 
 ## Stage `publish`
 
-The only job in this stage is `package`. It uses the Spring Boot 
-Gradle Plugin to [generate a docker image](https://docs.spring.io/spring-boot/docs/current/gradle-plugin/reference/htmlsingle/#build-image)
-and push it to the [project's container registry](https://git.geogebra.org/solver-team/solver-engine/container_registry).
+The only job in this stage is `package`. It uses the Spring Boot
+Gradle Plugin
+to [generate a docker image](https://docs.spring.io/spring-boot/docs/current/gradle-plugin/reference/htmlsingle/#build-image)
+and push it to the [project's container registry](https://git.geogebra.org/solver-team/solver-engine/container_registry)
+.
 
 It communicates with a docker engine through the gitlab-runner's
 shared docker socket, see [doc](https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#use-docker-socket-binding).
@@ -98,7 +107,7 @@ image to the AWS EKS Kubernetes cluster and hence make it available
 to the public. These are the actions it performs:
 
 1. Connect to a Gitlab kubernetes agent with name `eks-solver`.
-2. Make sure there is a fargate profile that supports the required 
+2. Make sure there is a fargate profile that supports the required
    namespace.
 3. Install the package using `helm`.
 4. Provide a nice url using AWS Route53 service.
