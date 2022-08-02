@@ -22,7 +22,9 @@ imagePullSecrets:
 nameOverride: ""
 fullnameOverride: ""
 
-podAnnotations: {}
+podAnnotations:
+  # Filled in by CI job with the commit-sha of the build
+  solver/commit-sha: ""
 
 podSecurityContext: {}
   # fsGroup: 2000

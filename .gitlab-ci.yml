@@ -72,7 +72,12 @@ deploy:
     - eksctl get fargateprofile --cluster solver --name "fp-$SLUG" || eksctl create fargateprofile --cluster solver --name "fp-$SLUG" --namespace "$NS"
     # Deploy package
     - helm package helm --version "6.6.6"
-    - helm upgrade --install solver ./solver-6.6.6.tgz --values helm/values.yaml --set image.tag=$SLUG --namespace $NS --create-namespace --wait
+    - |
+      helm upgrade --install solver ./solver-6.6.6.tgz \
+          --values helm/values.yaml \
+          --set image.tag=$SLUG \
+          --set podAnnotations.solver/commit-sha=$CI_COMMIT_SHA \
+          --namespace $NS --create-namespace --wait
     # Create DNS entries
     - export ELB=$(kubectl get svc --namespace $NS solver --template "{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}")
     - |
