@@ -12,6 +12,7 @@ private const val FRACTION_PRECEDENCE = 50
 private const val POWER_PRECEDENCE = 60
 private const val NATURAL_LOG_PRECEDENCE = 50
 private const val DIVIDE_BY_PRECEDENCE = 90
+private const val ROOT_PRECEDENCE = 95
 private const val MAX_PRECEDENCE = 100
 
 private const val ARITY_NULL = 0
@@ -148,7 +149,7 @@ enum class UnaryOperator(override val precedence: Int) : Operator {
         override fun <T> readableString(child: T) = "-$child"
         override fun <T : Expression> latexString(child: T) = "{-${child.toLatexString()}}"
     },
-    SquareRoot(MAX_PRECEDENCE) {
+    SquareRoot(ROOT_PRECEDENCE) {
         override fun childAllowed(op: Operator) = true
         override fun <T> readableString(child: T) = "sqrt[$child]"
         override fun <T : Expression> latexString(child: T) = "{\\sqrt${child.toLatexString()}}"
@@ -204,7 +205,7 @@ enum class BinaryOperator(override val precedence: Int) : Operator {
         override fun <T : Expression> latexString(left: T, right: T) =
             "{${left.toLatexString()} ^ ${right.toLatexString()}}"
     },
-    Root(MAX_PRECEDENCE) {
+    Root(ROOT_PRECEDENCE) {
         override fun leftChildAllowed(op: Operator) = true
         override fun rightChildAllowed(op: Operator) = true
         override fun <T : Expression> latexString(left: T, right: T) =

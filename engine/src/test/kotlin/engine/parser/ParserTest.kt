@@ -120,14 +120,14 @@ class ParserTest {
             ),
             TestCase(
                 "[sqrt[3] ^ 2]",
-                powerOf(squareRootOf(xp(3)), xp(2))
+                powerOf(invisibleBracketOf(squareRootOf(xp(3))), xp(2))
             ),
             TestCase(
                 "root[2, 3] * [sqrt[3] ^ 2] * [root[4, 5] ^ x]",
                 productOf(
                     rootOf(xp(2), xp(3)),
-                    powerOf(squareRootOf(xp(3)), xp(2)),
-                    powerOf(rootOf(xp(4), xp(5)), xp("x")),
+                    powerOf(invisibleBracketOf(squareRootOf(xp(3))), xp(2)),
+                    powerOf(invisibleBracketOf(rootOf(xp(4), xp(5))), xp("x")),
                 )
             )
         )
