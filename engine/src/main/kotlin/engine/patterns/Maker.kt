@@ -1,5 +1,6 @@
 package engine.patterns
 
+import engine.expressions.Subexpression
 import java.math.BigInteger
 
 /**
@@ -25,10 +26,17 @@ class CustomMakerBuilder(private val match: Match) {
     }
 
     /**
+     * Returns the last subexpression bound to pattern
+     */
+    fun get(pattern: Pattern): Subexpression? {
+        return match.getLastBinding(pattern)
+    }
+
+    /**
      * Returns the integer value bound to the argument in the match.
      */
-    fun getValue(integerProvider: IntegerProvider): BigInteger {
-        return integerProvider.getBoundInt(match)
+    fun getValue(integerPattern: IntegerPattern): BigInteger {
+        return integerPattern.getBoundInt(match)
     }
 }
 

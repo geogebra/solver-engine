@@ -2,7 +2,6 @@ package engine.methods.stepsproducers
 
 import engine.context.Context
 import engine.expressions.Subexpression
-import engine.expressions.toMappedExpr
 import engine.methods.Method
 import engine.patterns.RootMatch
 import engine.steps.Transformation

@@ -14,10 +14,6 @@ fun Expression.copyWithMappedChildren(mappedChildren: List<MappedExpression>): M
     )
 }
 
-fun Subexpression.toMappedExpr(): MappedExpression {
-    return MappedExpression(expr, PathMappingLeaf(listOf(path), PathMappingType.Move))
-}
-
 fun mappedExpression(operator: Operator, mappedOperands: List<MappedExpression>): MappedExpression {
     val wrappedOperands = mappedOperands.mapIndexed { i, operand ->
         operand.wrapInBracketsUnless {

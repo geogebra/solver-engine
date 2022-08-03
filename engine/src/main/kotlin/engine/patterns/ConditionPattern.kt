@@ -8,12 +8,29 @@ interface MatchCondition {
     fun checkMatch(match: Match): Boolean
 }
 
-data class ConditionPattern(val pattern: Pattern, val condition: MatchCondition) : Pattern {
+data class ConditionPattern(
+    private val pattern: Pattern,
+    private val condition: MatchCondition
+) : Pattern {
 
     override val key = pattern.key
 
     override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
         return pattern.findMatches(subexpression, match).filter { condition.checkMatch(it) }
+    }
+}
+
+data class NumericConditionPattern(
+    private val pattern: IntegerPattern,
+    private val condition: (BigInteger) -> Boolean,
+) : IntegerPattern {
+
+    override val key = pattern.key
+
+    override fun getBoundInt(m: Match) = pattern.getBoundInt(m)
+
+    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+        return pattern.findMatches(subexpression, match).filter { condition(pattern.getBoundInt(it)) }
     }
 }
 
@@ -27,7 +44,7 @@ data class UnaryCondition(
 }
 
 data class UnaryNumericCondition(
-    val ptn: IntegerProvider,
+    val ptn: IntegerPattern,
     val condition: (BigInteger) -> Boolean
 ) : MatchCondition {
     override fun checkMatch(match: Match): Boolean {
@@ -36,8 +53,8 @@ data class UnaryNumericCondition(
 }
 
 data class BinaryNumericCondition(
-    val ptn1: IntegerProvider,
-    val ptn2: IntegerProvider,
+    val ptn1: IntegerPattern,
+    val ptn2: IntegerPattern,
     val condition: (BigInteger, BigInteger) -> Boolean
 ) : MatchCondition {
     override fun checkMatch(match: Match): Boolean {
@@ -48,15 +65,15 @@ data class BinaryNumericCondition(
 fun condition(
     ptn: Pattern,
     condition: (Expression) -> Boolean
-) = UnaryCondition(ptn, condition)
+) = ConditionPattern(ptn, UnaryCondition(ptn, condition))
 
 fun numericCondition(
-    ptn: IntegerProvider,
+    ptn: IntegerPattern,
     condition: (BigInteger) -> Boolean,
-) = UnaryNumericCondition(ptn, condition)
+) = NumericConditionPattern(ptn, condition)
 
 fun numericCondition(
-    ptn1: IntegerProvider,
-    ptn2: IntegerProvider,
+    ptn1: IntegerPattern,
+    ptn2: IntegerPattern,
     condition: (BigInteger, BigInteger) -> Boolean,
 ) = BinaryNumericCondition(ptn1, ptn2, condition)

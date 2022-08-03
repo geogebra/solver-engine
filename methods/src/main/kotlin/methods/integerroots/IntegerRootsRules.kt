@@ -16,7 +16,6 @@ import engine.expressions.powerOf
 import engine.expressions.xp
 import engine.methods.Rule
 import engine.patterns.AnyPattern
-import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.custom
@@ -55,11 +54,11 @@ val simplifyRootOfZero = run {
 }
 
 val factorizeIntegerUnderSquareRoot = run {
-    val integer = UnsignedIntegerPattern()
+    val integer = numericCondition(UnsignedIntegerPattern()) { it.hasFactorOfDegree(2) }
     val root = squareRootOf(integer)
 
     Rule(
-        pattern = ConditionPattern(root, numericCondition(integer) { it.hasFactorOfDegree(2) }),
+        pattern = root,
         resultMaker = custom {
             val factorized = getValue(integer)
                 .primeFactorDecomposition()
@@ -73,12 +72,8 @@ val factorizeIntegerUnderSquareRoot = run {
 
 val separateOddPowersUnderSquareRoot = run {
     val base = UnsignedIntegerPattern()
-    val exponent = UnsignedIntegerPattern()
-    val exponentCondition = ConditionPattern(
-        exponent,
-        numericCondition(exponent) { it.isOdd() && it != BigInteger.ONE }
-    )
-    val power = powerOf(base, exponentCondition)
+    val exponent = numericCondition(UnsignedIntegerPattern()) { it.isOdd() && it != BigInteger.ONE }
+    val power = powerOf(base, exponent)
     val product = productContaining(power)
     val root = squareRootOf(product)
 
@@ -99,9 +94,8 @@ val separateOddPowersUnderSquareRoot = run {
 
 val splitEvenPowersUnderSeparateRoot = run {
     val base = UnsignedIntegerPattern()
-    val exponent = UnsignedIntegerPattern()
-    val exponentCondition = ConditionPattern(exponent, numericCondition(exponent) { it.isEven() })
-    val square = powerOf(base, exponentCondition)
+    val exponent = numericCondition(UnsignedIntegerPattern()) { it.isEven() }
+    val square = powerOf(base, exponent)
     val product = productContaining(square, minSize = 2)
     val root = squareRootOf(product)
 

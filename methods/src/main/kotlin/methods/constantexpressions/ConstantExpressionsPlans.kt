@@ -5,7 +5,6 @@ import engine.expressions.VariableOperator
 import engine.methods.plan
 import engine.methods.steps
 import engine.patterns.AnyPattern
-import engine.patterns.ConditionPattern
 import engine.patterns.bracketOf
 import engine.patterns.condition
 import methods.fractionarithmetic.evaluateFractionPower
@@ -72,8 +71,7 @@ private fun Expression.isConstantExpression(): Boolean {
 }
 
 val simplifyConstantExpression = plan {
-    val expression = AnyPattern()
-    pattern = ConditionPattern(expression, condition(expression) { it.isConstantExpression() })
+    pattern = condition(AnyPattern()) { it.isConstantExpression() }
 
     whilePossible {
         firstOf {

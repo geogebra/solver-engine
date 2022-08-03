@@ -10,13 +10,12 @@ import engine.expressions.NaryOperator
 import engine.expressions.Operator
 import engine.expressions.PathMappingLeaf
 import engine.expressions.PathMappingType
-import engine.expressions.Subexpression
 import engine.expressions.UnaryOperator
 import engine.expressions.flattenedNaryMappedExpression
 import engine.expressions.mappedExpression
 import engine.expressions.negOf
 import engine.expressions.xp
-import engine.patterns.IntegerProvider
+import engine.patterns.IntegerPattern
 import engine.patterns.Maker
 import engine.patterns.Match
 import engine.patterns.NaryPatternBase
@@ -32,15 +31,6 @@ data class FixedExpressionMaker(val expression: Expression) : ExpressionMaker {
         return MappedExpression(
             expression,
             PathMappingLeaf(listOf(), PathMappingType.Introduce),
-        )
-    }
-}
-
-data class SubexpressionMaker(val subexpression: Subexpression) : ExpressionMaker {
-    override fun make(match: Match): MappedExpression {
-        return MappedExpression(
-            subexpression.expr,
-            PathMappingLeaf(listOf(subexpression.path), PathMappingType.Move),
         )
     }
 }
@@ -82,7 +72,7 @@ data class SubstituteInExpressionMaker(val pattern: NaryPatternBase, val newVals
         for (child in sub.children()) {
             val newValIndex = matchIndexes.indexOf(child.index())
             when {
-                newValIndex == -1 -> restChildren.add(SubexpressionMaker(child))
+                newValIndex == -1 -> restChildren.add(child)
                 newValIndex < newVals.size -> restChildren.add(newVals[newValIndex])
             }
         }
@@ -95,7 +85,7 @@ data class RestExpressionMaker(val pattern: PartialNaryPattern) :
     ExpressionMaker by SubstituteInExpressionMaker(pattern, listOf())
 
 data class NumericOp(
-    val num: IntegerProvider,
+    val num: IntegerPattern,
     val operation: (BigInteger) -> BigInteger
 ) : ExpressionMaker {
     override fun make(match: Match): MappedExpression {
@@ -113,8 +103,8 @@ data class NumericOp(
 }
 
 data class NumericOp2(
-    val num1: IntegerProvider,
-    val num2: IntegerProvider,
+    val num1: IntegerPattern,
+    val num2: IntegerPattern,
     val operation: (BigInteger, BigInteger) -> BigInteger
 ) : ExpressionMaker {
     override fun make(match: Match): MappedExpression {
@@ -137,8 +127,14 @@ fun makeBracketOf(operand: ExpressionMaker) =
 fun makeFractionOf(numerator: ExpressionMaker, denominator: ExpressionMaker) =
     OperatorExpressionMaker(BinaryOperator.Fraction, listOf(numerator, denominator))
 
+fun makeSumOf(terms: List<ExpressionMaker>) =
+    FlattenedNaryExpressionMaker(NaryOperator.Sum, terms)
+
 fun makeSumOf(vararg terms: ExpressionMaker) =
     FlattenedNaryExpressionMaker(NaryOperator.Sum, terms.asList())
+
+fun makeProductOf(terms: List<ExpressionMaker>) =
+    FlattenedNaryExpressionMaker(NaryOperator.Product, terms)
 
 fun makeProductOf(vararg terms: ExpressionMaker) =
     FlattenedNaryExpressionMaker(NaryOperator.Product, terms.asList())
@@ -161,15 +157,15 @@ fun makeMixedNumberOf(integer: ExpressionMaker, numerator: ExpressionMaker, deno
     OperatorExpressionMaker(MixedNumberOperator, listOf(integer, numerator, denominator))
 
 fun makeNumericOp(
-    ptn: IntegerProvider,
+    ptn: IntegerPattern,
     operation: (BigInteger) -> BigInteger
 ): ExpressionMaker {
     return NumericOp(ptn, operation)
 }
 
 fun makeNumericOp(
-    ptn1: IntegerProvider,
-    ptn2: IntegerProvider,
+    ptn1: IntegerPattern,
+    ptn2: IntegerPattern,
     operation: (BigInteger, BigInteger) -> BigInteger
 ): ExpressionMaker {
     return NumericOp2(ptn1, ptn2, operation)

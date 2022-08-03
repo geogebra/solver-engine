@@ -32,10 +32,10 @@ class AnyPattern : Pattern {
     }
 }
 
-open class OptionalNegPatternBase<T : Pattern>(val pattern: T) : Pattern {
+open class OptionalNegPatternBase<T : Pattern>(val unsignedPattern: T) : Pattern {
 
-    private val neg = negOf(pattern)
-    private val ptn = OneOfPattern(listOf(pattern, neg, bracketOf(neg)))
+    private val neg = negOf(unsignedPattern)
+    private val ptn = OneOfPattern(listOf(unsignedPattern, neg, bracketOf(neg)))
 
     override val key = ptn
 

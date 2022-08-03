@@ -47,6 +47,6 @@ object IntegerRootsRulesTest : RuleTest {
             "sqrt[3] * sqrt[3]",
             simplifyMultiplicationOfSquareRoots,
             "3"
-        )
+        ),
     )
 }

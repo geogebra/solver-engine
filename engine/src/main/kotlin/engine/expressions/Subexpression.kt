@@ -1,11 +1,20 @@
 package engine.expressions
 
+import engine.expressionmakers.ExpressionMaker
+import engine.patterns.Match
+
 class Subexpression private constructor(
     val expr: Expression,
     val parent: Subexpression?,
     val path: Path
-) {
+) : ExpressionMaker {
     constructor(root: Expression) : this(root, null, RootPath)
+
+    override fun make(match: Match) = toMappedExpr()
+
+    fun toMappedExpr(): MappedExpression {
+        return MappedExpression(expr, PathMappingLeaf(listOf(path), PathMappingType.Move))
+    }
 
     fun nthChild(index: Int): Subexpression {
         return Subexpression(expr.operands.elementAt(index), this, path.child(index))

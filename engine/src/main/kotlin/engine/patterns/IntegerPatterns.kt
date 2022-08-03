@@ -4,12 +4,12 @@ import engine.expressions.IntegerOperator
 import engine.expressions.Subexpression
 import java.math.BigInteger
 
-interface IntegerProvider : PathProvider {
+interface IntegerPattern : Pattern {
 
     fun getBoundInt(m: Match): BigInteger
 }
 
-class UnsignedIntegerPattern : Pattern, IntegerProvider {
+class UnsignedIntegerPattern : IntegerPattern {
 
     override fun getBoundInt(m: Match): BigInteger {
         return (m.getBoundExpr(this)!!.operator as IntegerOperator).value
@@ -26,9 +26,9 @@ class UnsignedIntegerPattern : Pattern, IntegerProvider {
     }
 }
 
-class SignedIntegerPattern : OptionalNegPatternBase<UnsignedIntegerPattern>(UnsignedIntegerPattern()), IntegerProvider {
+class SignedIntegerPattern : OptionalNegPatternBase<UnsignedIntegerPattern>(UnsignedIntegerPattern()), IntegerPattern {
     override fun getBoundInt(m: Match): BigInteger {
-        val value = pattern.getBoundInt(m)
+        val value = unsignedPattern.getBoundInt(m)
         return if (isNeg(m)) -value else value
     }
 }

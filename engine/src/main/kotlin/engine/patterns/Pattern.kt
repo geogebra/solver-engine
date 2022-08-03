@@ -47,5 +47,9 @@ interface Pattern : PathProvider {
 
     override fun getBoundExpr(m: Match) = m.getBoundExpr(this)
 
+    fun matches(expression: Expression): Boolean {
+        return findMatches(Subexpression(expression), RootMatch).any()
+    }
+
     val key get() = this
 }

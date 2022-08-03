@@ -1,6 +1,5 @@
 package methods.integerarithmetic
 
-import engine.expressionmakers.ExpressionMaker
 import engine.expressionmakers.OperatorExpressionMaker
 import engine.expressionmakers.makeNegOf
 import engine.expressionmakers.makeNumericOp
@@ -89,11 +88,8 @@ val evaluateIntegerProductAndDivision = run {
 
 val evaluateIntegerPowerDirectly = run {
     val base = SignedIntegerPattern()
-    val exponent = UnsignedIntegerPattern()
-    val power = powerOf(
-        base,
-        ConditionPattern(exponent, numericCondition(exponent) { it < Int.MAX_VALUE.toBigInteger() })
-    )
+    val exponent = numericCondition(UnsignedIntegerPattern()) { it < Int.MAX_VALUE.toBigInteger() }
+    val power = powerOf(base, exponent)
 
     Rule(
         pattern = power,
@@ -104,19 +100,13 @@ val evaluateIntegerPowerDirectly = run {
 
 val rewriteIntegerPowerAsProduct = run {
     val base = SignedIntegerPattern()
-    val exponent = UnsignedIntegerPattern()
-    val power = powerOf(
-        base,
-        ConditionPattern(exponent, numericCondition(exponent) { it <= 5.toBigInteger() && it >= BigInteger.TWO })
-    )
+    val exponent = numericCondition(UnsignedIntegerPattern()) { it <= 5.toBigInteger() && it >= BigInteger.TWO }
+    val power = powerOf(base, exponent)
 
     Rule(
         pattern = power,
         resultMaker = custom {
-            val argsList = mutableListOf<ExpressionMaker>()
-            repeat(getValue(exponent).toInt()) {
-                argsList += move(base)
-            }
+            val argsList = List(getValue(exponent).toInt()) { move(base) }
             OperatorExpressionMaker(NaryOperator.Product, argsList)
         },
         explanationMaker = makeMetadata(Explanation.RewriteIntegerPowerAsProduct, move(base), move(exponent))
@@ -126,8 +116,8 @@ val rewriteIntegerPowerAsProduct = run {
 val simplifyEvenPowerOfNegative = run {
     val positiveBase = AnyPattern()
     val base = bracketOf(negOf(positiveBase))
-    val exponent = SignedIntegerPattern()
-    val power = powerOf(base, ConditionPattern(exponent, numericCondition(exponent) { it.isEven() }))
+    val exponent = numericCondition(SignedIntegerPattern()) { it.isEven() }
+    val power = powerOf(base, exponent)
 
     Rule(
         pattern = power,
@@ -139,8 +129,8 @@ val simplifyEvenPowerOfNegative = run {
 val simplifyOddPowerOfNegative = run {
     val positiveBase = AnyPattern()
     val base = bracketOf(negOf(positiveBase))
-    val exponent = SignedIntegerPattern()
-    val power = powerOf(base, ConditionPattern(exponent, numericCondition(exponent) { it.isOdd() }))
+    val exponent = numericCondition(SignedIntegerPattern()) { it.isOdd() }
+    val power = powerOf(base, exponent)
 
     Rule(
         pattern = power,

@@ -10,7 +10,6 @@ import engine.expressions.UnaryOperator
 import engine.methods.plan
 import engine.methods.steps
 import engine.patterns.AnyPattern
-import engine.patterns.ConditionPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.bracketOf
 import engine.patterns.condition
@@ -129,7 +128,7 @@ val evaluateArithmeticSubexpression = plan {
 
 val evaluateArithmeticExpression = plan {
     val expression = AnyPattern()
-    pattern = ConditionPattern(expression, condition(expression) { it.isArithmeticExpression() })
+    pattern = condition(expression) { it.isArithmeticExpression() }
     explanation(Explanation.EvaluateArithmeticExpression, move(expression))
 
     whilePossible {

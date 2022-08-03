@@ -373,9 +373,8 @@ val simplifyFractionWithFractionDenominator = run {
 
 val distributeFractionPositivePower = run {
     val fraction = FractionPattern()
-    val exponent = UnsignedIntegerPattern()
-    val exponentGreaterThanOne = ConditionPattern(exponent, numericCondition(exponent) { it > BigInteger.ONE })
-    val pattern = powerOf(bracketOf(fraction), exponentGreaterThanOne)
+    val exponent = numericCondition(UnsignedIntegerPattern()) { it > BigInteger.ONE }
+    val pattern = powerOf(bracketOf(fraction), exponent)
 
     Rule(
         pattern = pattern,
@@ -390,14 +389,13 @@ val distributeFractionPositivePower = run {
 val simplifyFractionNegativePower = run {
     val fraction = FractionPattern()
     val exponent = SignedIntegerPattern()
-    val negativeExponent = ConditionPattern(exponent, numericCondition(exponent) { it < -BigInteger.ONE })
-    val pattern = powerOf(bracketOf(fraction), negativeExponent)
+    val pattern = powerOf(bracketOf(fraction), numericCondition(exponent) { it < -BigInteger.ONE })
 
     Rule(
         pattern = pattern,
         resultMaker = makePowerOf(
             makeFractionOf(move(fraction.denominator), move(fraction.numerator)),
-            move(exponent.pattern)
+            move(exponent.unsignedPattern)
         ),
         explanationMaker = makeMetadata(Explanation.SimplifyFractionNegativePower, move(fraction), move(exponent))
     )
@@ -428,14 +426,13 @@ val turnIntegerToMinusOneToFraction = run {
 val turnNegativePowerOfIntegerToFraction = run {
     val base = UnsignedIntegerPattern()
     val exponent = SignedIntegerPattern()
-    val negativeExponent = ConditionPattern(exponent, numericCondition(exponent) { it < -BigInteger.ONE })
-    val pattern = powerOf(base, negativeExponent)
+    val pattern = powerOf(base, numericCondition(exponent) { it < -BigInteger.ONE })
 
     Rule(
         pattern = pattern,
         resultMaker = makeFractionOf(
             FixedExpressionMaker(xp(1)),
-            makePowerOf(move(base), move(exponent.pattern)),
+            makePowerOf(move(base), move(exponent.unsignedPattern)),
         ),
         explanationMaker = makeMetadata(Explanation.TurnNegativePowerOfIntegerToFraction, move(base), move(exponent))
     )
@@ -455,7 +452,7 @@ val writeMultiplicationOfFractionsAsFraction = run {
         pattern = pattern,
         resultMaker = makeFractionOf(
             makeProductOf(move(num1), move(num2)),
-            makeProductOf(move(den1), move(den2))
+            makeProductOf(move(den1), move(den2)),
         ),
         explanationMaker = makeMetadata(Explanation.ConvertMultiplicationOfFractionsToFraction)
     )
