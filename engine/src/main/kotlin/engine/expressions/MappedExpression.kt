@@ -1,6 +1,11 @@
 package engine.expressions
 
-data class MappedExpression(val expr: Expression, val mappings: PathMappingTree) {
+import engine.expressionmakers.ExpressionMaker
+import engine.patterns.Match
+
+data class MappedExpression(val expr: Expression, val mappings: PathMappingTree) : ExpressionMaker {
+    override fun make(match: Match) = this
+
     fun wrapInBracketsUnless(cond: (Operator) -> Boolean): MappedExpression = when {
         cond(expr.operator) -> this
         else -> MappedExpression(bracketOf(expr), PathMappingParent(listOf(mappings)))

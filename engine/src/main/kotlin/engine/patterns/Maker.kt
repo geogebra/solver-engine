@@ -6,7 +6,7 @@ import java.math.BigInteger
 /**
  * Can build an instance of T from a match.  Examples are ExpressionMaker and MetadataMaker.
  */
-interface Maker<T> {
+fun interface Maker<T> {
     /**
      * Returns a new instance of T build from the given match.
      */

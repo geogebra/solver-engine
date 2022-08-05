@@ -19,3 +19,22 @@ explanations:
     defaultTranslation:
   SimplifySquareRootOfPower:
     defaultTranslation:
+  SeparateFactorizedPowersUnderSquareRootAsSquareRoots:
+    defaultTranslation:
+  SplitPowerUnderSquareRootOfProduct:
+    defaultTranslation:
+  SplitProductOfPowerUnderSquareRootAsProductMultipleRemoveBrackets:
+    defaultTranslation:
+  SimplifyEvenIntegerPowerUnderRootProduct:
+    defaultTranslation:
+  RewriteWithIntegerFactorsAtFront:
+    defaultTranslation:
+  CombineProductOfNonSquareRootFactors:
+    defaultTranslation:
+  MultiplySquareRootFactors:
+    defaultTranslation:
+methods:
+  SimplifyIntegerRoots:
+    description: Simplifies an integer root
+    visibility: public
+    implementationName: simplifyIntegerRoot
