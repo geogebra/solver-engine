@@ -11,6 +11,7 @@ stages:
   - lint
   - publish
   - deploy
+  - undeploy
 
 before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
@@ -89,7 +90,9 @@ deploy:
     - aws route53 change-resource-record-sets --hosted-zone-id /hostedzone/$HOSTED_ZONE_PUBLIC --change-batch "$CHANGES"
 
 undeploy:
-  stage: deploy
+  stage: undeploy
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
   image: alpine/k8s:1.22.10
   tags:
     - docker
@@ -110,4 +113,3 @@ undeploy:
     - kubectl delete namespaces $NS
     # Remove fargate profile
     - eksctl delete fargateprofile --cluster solver --name "fp-$SLUG"
-  when: manual
