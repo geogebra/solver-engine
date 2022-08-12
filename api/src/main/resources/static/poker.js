@@ -1,5 +1,7 @@
 /* global renderMathInElement */
 
+const apiRoot = './api/v1.0-alpha0';
+
 // Globally changes the rendering of steps.
 let showThroughSteps = false;
 
@@ -23,7 +25,7 @@ const requestApplyPlan = async (
     curriculum = "",
     format = "latex"
 ) => {
-    const response = await fetch(`/api/v1.0-alpha0/plans/${planId}/apply`, {
+    const response = await fetch(`${apiRoot}/plans/${planId}/apply`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -34,7 +36,7 @@ const requestApplyPlan = async (
 };
 
 const requestSelectPlans = async (input, curriculum = "", format = "latex") => {
-    const response = await fetch(`/api/v1.0-alpha0/selectPlans`, {
+    const response = await fetch(`${apiRoot}/selectPlans`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -45,7 +47,7 @@ const requestSelectPlans = async (input, curriculum = "", format = "latex") => {
 };
 
 const fetchPlans = () =>
-    fetch("/api/v1.0-alpha0/plans/").then((response) => response.json());
+    fetch(`${apiRoot}/plans/`).then((response) => response.json());
 
 const fetchDefaultTranslations = () =>
     fetch("./DefaultTranslations.json").then((resp) => resp.json());
