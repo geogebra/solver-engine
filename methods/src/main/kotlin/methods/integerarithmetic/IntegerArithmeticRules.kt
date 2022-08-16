@@ -86,9 +86,12 @@ val evaluateIntegerProductAndDivision = run {
     )
 }
 
+private val MAX_POWER = 64.toBigInteger()
+private val MAX_POWER_AS_PRODUCT = 5.toBigInteger()
+
 val evaluateIntegerPowerDirectly = run {
     val base = SignedIntegerPattern()
-    val exponent = numericCondition(UnsignedIntegerPattern()) { it < Int.MAX_VALUE.toBigInteger() }
+    val exponent = numericCondition(UnsignedIntegerPattern()) { it <= MAX_POWER }
     val power = powerOf(base, exponent)
 
     Rule(
@@ -100,7 +103,7 @@ val evaluateIntegerPowerDirectly = run {
 
 val rewriteIntegerPowerAsProduct = run {
     val base = SignedIntegerPattern()
-    val exponent = numericCondition(UnsignedIntegerPattern()) { it <= 5.toBigInteger() && it >= BigInteger.TWO }
+    val exponent = numericCondition(UnsignedIntegerPattern()) { it <= MAX_POWER_AS_PRODUCT && it >= BigInteger.TWO }
     val power = powerOf(base, exponent)
 
     Rule(

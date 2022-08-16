@@ -72,10 +72,14 @@ class ConstantExpressionsPlansTest {
         inputExpr = "3 : 4 : 5"
 
         check {
-            step { toExpr = "[3 / 4] : 5" }
-            step { toExpr = "[[3 / 4] / 5]" }
-            step { toExpr = "[3 / 4] * [1 / 5]" }
-            step { toExpr = "[3 / 20]" }
+            step {
+                step { toExpr = "[3 / 4] : 5" }
+                step { toExpr = "[[3 / 4] / 5]" }
+            }
+            step {
+                step { toExpr = "[3 / 4] * [1 / 5]" }
+                step { toExpr = "[3 / 20]" }
+            }
         }
     }
 
@@ -85,8 +89,11 @@ class ConstantExpressionsPlansTest {
         inputExpr = "[5 / 6] : [3 / 4]"
 
         check {
-            step { toExpr = "[5 / 6] * [4 / 3]" }
-            step { toExpr = "[10 / 9]" }
+            step { toExpr = "[[5 / 6] / [3 / 4]]" }
+            step {
+                step { toExpr = "[5 / 6] * [4 / 3]" }
+                step { toExpr = "[10 / 9]" }
+            }
         }
     }
 
@@ -96,7 +103,7 @@ class ConstantExpressionsPlansTest {
         inputExpr = "3 : (-5)"
 
         check {
-            step { toExpr = "-3 : 5" }
+            step { toExpr = "[3 / -5]" }
             step { toExpr = "-[3 / 5]" }
         }
     }
@@ -136,6 +143,101 @@ class ConstantExpressionsPlansTest {
             // TODO this is not good
             step { toExpr = "3 * [1 / 4]" }
             step { toExpr = "[3 / 4]" }
+        }
+    }
+
+    @Test
+    fun testResultSimplifyPowerOfRoot() = testPlan {
+        plan = simplifyConstantExpression
+        inputExpr = "[(root[12, 5]) ^ 4]"
+
+        check {
+            fromExpr = "[(root[12, 5]) ^ 4]"
+            toExpr = "2 * root[648, 5]"
+        }
+    }
+
+    @Test
+    fun testResultSimplifyPowerOfRootWithCoefficients() = testPlan {
+        testPlan {
+            plan = simplifyConstantExpression
+            inputExpr = "[(2 * sqrt[5]) ^ 3]"
+
+            check {
+                fromExpr = "[(2 * sqrt[5]) ^ 3]"
+                toExpr = "40 * sqrt[5]"
+            }
+        }
+    }
+
+    @Test
+    fun testResultPowerOfBinomialContainingRoots() = testPlan {
+        plan = simplifyConstantExpression
+        inputExpr = "[(2 * sqrt[6] + 3 * sqrt[2]) ^ 2]"
+
+        check {
+            fromExpr = "[(2 * sqrt[6] + 3 * sqrt[2]) ^ 2]"
+            toExpr = "42 + 24 * sqrt[3]"
+
+            // Currently has 10 steps!
+        }
+    }
+
+    @Test
+    fun testSimplifyRootOfRoot() = testPlan {
+        plan = simplifyConstantExpression
+        inputExpr = "sqrt[root[12, 4]]"
+
+        check {
+            fromExpr = "sqrt[root[12, 4]]"
+            toExpr = "root[12, 8]"
+
+            step {
+                fromExpr = "sqrt[root[12, 4]]"
+                toExpr = "root[12, 2 * 4]"
+            }
+
+            step {
+                fromExpr = "root[12, 2* 4]"
+                toExpr = "root[12, 8]"
+            }
+        }
+    }
+
+    @Test
+    fun testSimplifyRootOfRootWithCoefficient() = testPlan {
+        plan = simplifyConstantExpression
+        inputExpr = "root[2 * sqrt[6], 3]"
+
+        check {
+            step {
+                toExpr = "root[sqrt[24], 3]"
+
+                step {
+                    fromExpr = "2 * sqrt[6]"
+                    toExpr = "sqrt[[2 ^ 2] * 6]"
+                }
+
+                step {
+                    fromExpr = "sqrt[[2 ^ 2] * 6]"
+                    toExpr = "sqrt[4 * 6]"
+                }
+
+                step {
+                    fromExpr = "sqrt[4 * 6]"
+                    toExpr = "sqrt[24]"
+                }
+            }
+
+            step {
+                fromExpr = "root[sqrt[24], 3]"
+                toExpr = "root[24, 3 * 2]"
+            }
+
+            step {
+                fromExpr = "root[24, 3 * 2]"
+                toExpr = "root[24, 6]"
+            }
         }
     }
 }

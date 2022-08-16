@@ -12,6 +12,8 @@ import engine.expressionmakers.makeSimplifiedProductOf
 import engine.expressionmakers.makeSumOf
 import engine.expressionmakers.move
 import engine.expressionmakers.substituteIn
+import engine.expressions.BinaryOperator
+import engine.expressions.Constants
 import engine.expressions.Subexpression
 import engine.expressions.xp
 import engine.methods.Rule
@@ -23,10 +25,9 @@ import engine.patterns.Pattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.bracketOf
-import engine.patterns.commutativeProductOf
 import engine.patterns.commutativeSumOf
+import engine.patterns.condition
 import engine.patterns.custom
-import engine.patterns.divideBy
 import engine.patterns.fractionOf
 import engine.patterns.negOf
 import engine.patterns.numericCondition
@@ -241,19 +242,16 @@ val simplifyNegativeNumeratorAndDenominator = run {
 }
 
 val turnProductOfFractionByIntegerToFractionProduct = run {
-    val numerator = UnsignedIntegerPattern()
-    val denominator = UnsignedIntegerPattern()
-    val fraction = fractionOf(numerator, denominator)
-    val integerFactor = UnsignedIntegerPattern()
-
-    val product = commutativeProductOf(fraction, integerFactor)
+    val nonFractionTerm = condition(AnyPattern()) { it.operator != BinaryOperator.Fraction }
+    val product = productContaining(nonFractionTerm)
 
     Rule(
-        pattern = product,
+        pattern = condition(product) { expression ->
+            expression.operands.any { it.operator == BinaryOperator.Fraction }
+        },
         resultMaker = substituteIn(
             product,
-            move(fraction),
-            makeFractionOf(move(integerFactor), FixedExpressionMaker(xp(1)))
+            makeFractionOf(move(nonFractionTerm), FixedExpressionMaker(Constants.One))
         ),
         explanationMaker = makeMetadata(Explanation.MultiplyFractions),
     )
@@ -305,37 +303,6 @@ val multiplyFractions = run {
             ),
         ),
         explanationMaker = makeMetadata(Explanation.MultiplyFractions, move(f1), move(f2)),
-    )
-}
-
-val simplifyDividingByAFraction = run {
-    val numerator = UnsignedIntegerPattern()
-    val denominator = UnsignedIntegerPattern()
-    val f = fractionOf(numerator, denominator)
-    val product = productContaining(divideBy(f))
-
-    Rule(
-        pattern = product,
-        resultMaker = substituteIn(
-            product,
-            makeFractionOf(move(denominator), move(numerator))
-        ),
-        explanationMaker = makeMetadata(Explanation.SimplifyDividingByAFraction, move(f)),
-    )
-}
-
-val turnDivisionToFraction = run {
-    val dividend = AnyPattern()
-    val divisor = UnsignedIntegerPattern()
-    val product = productContaining(dividend, divideBy(divisor))
-
-    Rule(
-        pattern = product,
-        resultMaker = substituteIn(
-            product,
-            makeFractionOf(move(dividend), move(divisor)),
-        ),
-        explanationMaker = makeMetadata(Explanation.TurnDivisionToFraction, move(dividend), move(divisor)),
     )
 }
 

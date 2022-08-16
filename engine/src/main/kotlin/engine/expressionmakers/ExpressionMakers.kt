@@ -13,16 +13,13 @@ import engine.expressions.PathMappingType
 import engine.expressions.UnaryOperator
 import engine.expressions.flattenedNaryMappedExpression
 import engine.expressions.mappedExpression
-import engine.expressions.negOf
 import engine.expressions.xp
-import engine.patterns.IntegerPattern
 import engine.patterns.Maker
 import engine.patterns.Match
 import engine.patterns.NaryPatternBase
 import engine.patterns.OptionalDivideBy
 import engine.patterns.OptionalNegPattern
 import engine.patterns.PartialNaryPattern
-import java.math.BigInteger
 
 typealias ExpressionMaker = Maker<MappedExpression>
 
@@ -62,6 +59,16 @@ data class SimplifiedProductMaker(val operands: List<ExpressionMaker>) : Express
     }
 }
 
+data class SimplifiedPowerMaker(val base: ExpressionMaker, val exponent: ExpressionMaker) : ExpressionMaker {
+    override fun make(match: Match): MappedExpression {
+        val madeBase = base.make(match)
+        val madeExponent = exponent.make(match)
+
+        return if (madeExponent.expr.equiv(Constants.One)) madeBase
+        else mappedExpression(BinaryOperator.Power, listOf(madeBase, madeExponent))
+    }
+}
+
 data class SubstituteInExpressionMaker(val pattern: NaryPatternBase, val newVals: List<ExpressionMaker>) :
     ExpressionMaker {
     override fun make(match: Match): MappedExpression {
@@ -84,40 +91,14 @@ data class SubstituteInExpressionMaker(val pattern: NaryPatternBase, val newVals
 data class RestExpressionMaker(val pattern: PartialNaryPattern) :
     ExpressionMaker by SubstituteInExpressionMaker(pattern, listOf())
 
-data class NumericOp(
-    val num: IntegerPattern,
-    val operation: (BigInteger) -> BigInteger
-) : ExpressionMaker {
+data class RootExpressionMaker(val radicand: ExpressionMaker, val order: ExpressionMaker) : ExpressionMaker {
     override fun make(match: Match): MappedExpression {
-        val value = operation(num.getBoundInt(match))
-
-        val result = when {
-            value.signum() >= 0 -> xp(value)
-            else -> negOf(xp(-value))
+        val orderExpr = order.make(match)
+        return if (orderExpr.expr.equiv(xp(2))) {
+            makeSquareRootOf(radicand).make(match)
+        } else {
+            OperatorExpressionMaker(BinaryOperator.Root, listOf(radicand, order)).make(match)
         }
-        return MappedExpression(
-            result,
-            PathMappingLeaf(num.getBoundPaths(match), PathMappingType.Transform),
-        )
-    }
-}
-
-data class NumericOp2(
-    val num1: IntegerPattern,
-    val num2: IntegerPattern,
-    val operation: (BigInteger, BigInteger) -> BigInteger
-) : ExpressionMaker {
-    override fun make(match: Match): MappedExpression {
-        val value = operation(num1.getBoundInt(match), num2.getBoundInt(match))
-
-        val result = when {
-            value.signum() >= 0 -> xp(value)
-            else -> negOf(xp(-value))
-        }
-        return MappedExpression(
-            result,
-            PathMappingLeaf(num1.getBoundPaths(match) + num2.getBoundPaths(match), PathMappingType.Combine),
-        )
     }
 }
 
@@ -145,31 +126,21 @@ fun makeSimplifiedProductOf(vararg terms: ExpressionMaker) =
 fun makePowerOf(base: ExpressionMaker, exponent: ExpressionMaker) =
     OperatorExpressionMaker(BinaryOperator.Power, listOf(base, exponent))
 
+fun makeSimplifiedPowerOf(base: ExpressionMaker, exponent: ExpressionMaker) =
+    SimplifiedPowerMaker(base, exponent)
+
 fun makeNegOf(operand: ExpressionMaker) = OperatorExpressionMaker(UnaryOperator.Minus, listOf(operand))
 
 fun makeDivideBy(operand: ExpressionMaker) = OperatorExpressionMaker(UnaryOperator.DivideBy, listOf(operand))
 
 fun makeSquareRootOf(radicand: ExpressionMaker) = OperatorExpressionMaker(UnaryOperator.SquareRoot, listOf(radicand))
 
+fun makeRootOf(radicand: ExpressionMaker, order: ExpressionMaker) = RootExpressionMaker(radicand, order)
+
 fun restOf(pattern: PartialNaryPattern) = RestExpressionMaker(pattern)
 
 fun makeMixedNumberOf(integer: ExpressionMaker, numerator: ExpressionMaker, denominator: ExpressionMaker) =
     OperatorExpressionMaker(MixedNumberOperator, listOf(integer, numerator, denominator))
-
-fun makeNumericOp(
-    ptn: IntegerPattern,
-    operation: (BigInteger) -> BigInteger
-): ExpressionMaker {
-    return NumericOp(ptn, operation)
-}
-
-fun makeNumericOp(
-    ptn1: IntegerPattern,
-    ptn2: IntegerPattern,
-    operation: (BigInteger, BigInteger) -> BigInteger
-): ExpressionMaker {
-    return NumericOp2(ptn1, ptn2, operation)
-}
 
 fun substituteIn(pattern: NaryPatternBase, vararg newVals: ExpressionMaker) =
     SubstituteInExpressionMaker(pattern, newVals.asList())

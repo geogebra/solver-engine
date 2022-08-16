@@ -4,6 +4,8 @@ metadata:
 explanations:
   SimplifyExpressionInBrackets:
     defaultTranslation: Simplify the subexpression in the bracket
+  SimplifyPowers:
+    defaultTranslation:
 methods:
   SimplifyConstantExpression:
     description: Simplifies a constant expression, i.e. one containing no variables

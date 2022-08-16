@@ -13,9 +13,7 @@ import methods.general.normalizeNegativeSigns
 import methods.integerarithmetic.evaluateIntegerProductAndDivision
 import methods.integerarithmetic.evaluateSignedIntegerAddition
 import methods.integerarithmetic.evaluateSignedIntegerPower
-import methods.integerarithmetic.simplifyEvenPowerOfNegative
 import methods.integerarithmetic.simplifyIntegersInProduct
-import methods.integerarithmetic.simplifyOddPowerOfNegative
 
 val normalizeSignsInFraction = plan {
     explanation(Explanation.NormalizeSignsInFraction)
@@ -30,14 +28,13 @@ val normalizeSignsInFraction = plan {
     }
 }
 
-val normalizeFractionsAndDivisions = plan {
-    // Normalize division / fractions (e.g. fractions within fractions)
+val normalizeFractions = plan {
+    // Normalize fractions within fractions)
     explanation(Explanation.NormalizeFractionsAndDivisions)
 
     whilePossible {
         deeply {
             firstOf {
-                option(simplifyDividingByAFraction)
                 option(simplifyFractionWithFractionDenominator)
                 option(simplifyFractionWithFractionNumerator)
             }
@@ -134,23 +131,6 @@ val evaluateIntegerToNegativePower = plan {
                         deeply(evaluateSignedIntegerPower)
                     }
                 }
-            }
-        }
-    }
-}
-
-val evaluateFractionPower = plan {
-    pipeline {
-        optionalSteps(simplifyEvenPowerOfNegative)
-        optionalSteps(simplifyOddPowerOfNegative)
-        optionalSteps(simplifyFractionNegativePower)
-        steps {
-            // there might be a minus before the fraction, needs deeply
-            deeply(distributeFractionPositivePower)
-        }
-        steps {
-            whilePossible {
-                deeply(evaluateSignedIntegerPower)
             }
         }
     }

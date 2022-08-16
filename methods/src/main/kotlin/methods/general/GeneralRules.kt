@@ -1,24 +1,37 @@
 package methods.general
 
+import engine.expressionmakers.ExpressionMaker
+import engine.expressionmakers.FixedExpressionMaker
 import engine.expressionmakers.cancel
 import engine.expressionmakers.makeFractionOf
 import engine.expressionmakers.makeNegOf
 import engine.expressionmakers.makeOptionalDivideBy
+import engine.expressionmakers.makePowerOf
+import engine.expressionmakers.makeProductOf
+import engine.expressionmakers.makeSumOf
 import engine.expressionmakers.move
 import engine.expressionmakers.restOf
 import engine.expressionmakers.substituteIn
 import engine.expressionmakers.transform
+import engine.expressions.BracketOperator
+import engine.expressions.Constants
+import engine.expressions.UnaryOperator
 import engine.expressions.xp
 import engine.methods.Rule
 import engine.patterns.AnyPattern
 import engine.patterns.FixedPattern
 import engine.patterns.OptionalDivideBy
 import engine.patterns.bracketOf
+import engine.patterns.condition
+import engine.patterns.custom
+import engine.patterns.divideBy
 import engine.patterns.fractionOf
 import engine.patterns.negOf
 import engine.patterns.oneOf
+import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
+import engine.patterns.sumOf
 import engine.steps.metadata.makeMetadata
 
 val eliminateOneInProduct = run {
@@ -105,7 +118,7 @@ val moveSignOfNegativeFactorOutOfProduct = run {
 }
 
 val cancelCommonTerms = run {
-    val common = AnyPattern()
+    val common = condition(AnyPattern()) { it != Constants.One }
     val numerator = productContaining(common, minSize = 2)
     val denominator = productContaining(common, minSize = 2)
     val pattern = fractionOf(numerator, denominator)
@@ -118,5 +131,62 @@ val cancelCommonTerms = run {
             move(pattern),
             move(common)
         ),
+    )
+}
+
+val distributePowerOfProduct = run {
+    val exponent = AnyPattern()
+    val product = productContaining()
+    val pattern = powerOf(bracketOf(product), exponent)
+
+    Rule(
+        pattern = pattern,
+        resultMaker = custom {
+            makeProductOf(get(product)!!.children().map { makePowerOf(it, move(exponent)) })
+        },
+        explanationMaker = makeMetadata(Explanation.DistributePowerOfProduct)
+    )
+}
+
+val expandBinomialSquared = run {
+    val a = AnyPattern()
+    val b = AnyPattern()
+    val pattern = powerOf(bracketOf(sumOf(a, b)), FixedPattern(xp(2)))
+
+    Rule(
+        pattern = pattern,
+        resultMaker = makeSumOf(
+            makePowerOf(move(a), FixedExpressionMaker(xp(2))),
+            makeProductOf(FixedExpressionMaker(xp(2)), move(a), move(b)),
+            makePowerOf(move(b), FixedExpressionMaker(xp(2)))
+        ),
+        explanationMaker = makeMetadata(Explanation.ExpandBinomialSquared)
+    )
+}
+
+val rewriteDivisionAsFraction = run {
+    val product = productContaining(divideBy(AnyPattern()))
+
+    Rule(
+        pattern = product,
+        resultMaker = custom {
+            val factors = get(product)!!.children()
+            val division = factors.indexOfFirst { it.expr.operator == UnaryOperator.DivideBy }
+
+            val result = mutableListOf<ExpressionMaker>()
+            result.addAll(factors.subList(0, division - 1))
+
+            // We take the opportunity to remove unneeded brackets
+            val rawDenominator = factors[division].nthChild(0)
+            val denominator = when (rawDenominator.expr.operator) {
+                is BracketOperator -> rawDenominator.nthChild(0)
+                else -> rawDenominator
+            }
+            result.add(makeFractionOf(factors[division - 1], denominator))
+            result.addAll(factors.subList(division + 1, factors.size))
+
+            makeProductOf(result)
+        },
+        explanationMaker = makeMetadata(Explanation.RewriteDivisionAsFraction),
     )
 }

@@ -9,6 +9,9 @@ explanations:
   RemoveBracketSumInSum:
     defaultTranslation: "Brackets around a sum term which is itself a sum can be removed"
     parameters: [ "inner sum" ]
+  RemoveBracketProductInProduct:
+    defaultTranslation: "Brackets around a product term which is itself a product can be removed"
+    parameters: [ "inner product" ]
   RemoveBracketAroundSignedIntegerInSum:
     defaultTranslation: "Brackets can be removed from a negative term in a sum"
     parameters: [ "negative term" ]
@@ -33,6 +36,12 @@ explanations:
   CancelCommonTerms:
     defaultTranslation:
   AddClarifyingBrackets:
+    defaultTranslation:
+  DistributePowerOfProduct:
+    defaultTranslation:
+  ExpandBinomialSquared:
+    defaultTranslation:
+  RewriteDivisionAsFraction:
     defaultTranslation:
 
   # Plans

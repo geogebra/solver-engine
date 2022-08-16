@@ -6,7 +6,7 @@ class FractionRootsPlansTest {
 
     // @Test
     fun testRationalizationWithRadicalInDenominator() = testPlan {
-        plan = rationalizationWithRadicalInDenominator
+        plan = rationalizeWithRadicalInDenominator
         inputExpr = "[ 5 / 3 * sqrt[3] ]"
 
         check {

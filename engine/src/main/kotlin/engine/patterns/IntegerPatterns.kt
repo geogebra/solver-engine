@@ -4,10 +4,11 @@ import engine.expressions.IntegerOperator
 import engine.expressions.Subexpression
 import java.math.BigInteger
 
-interface IntegerPattern : Pattern {
-
+interface IntegerProvider : PathProvider {
     fun getBoundInt(m: Match): BigInteger
 }
+
+interface IntegerPattern : Pattern, IntegerProvider
 
 class UnsignedIntegerPattern : IntegerPattern {
 

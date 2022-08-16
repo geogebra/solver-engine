@@ -2,6 +2,7 @@ package methods.general
 
 import methods.rules.RuleTest
 import methods.rules.RuleTestCase
+import org.junit.jupiter.api.Test
 import java.util.stream.Stream
 
 object BasicRulesTest : RuleTest {
@@ -36,4 +37,40 @@ object BasicRulesTest : RuleTest {
         RuleTestCase("-(-x)", simplifyDoubleMinus, "x"),
 
     )
+}
+
+class GeneralRulesTest {
+
+    @Test
+    fun testDistributePowerOfProduct() {
+        RuleTestCase(
+            "[(2 * x * y) ^ 5]",
+            distributePowerOfProduct,
+            "[2 ^ 5] * [x ^ 5] * [y ^ 5]"
+        ).assert()
+        RuleTestCase(
+            "[(sqrt[3] * root[5, 2]) ^ n]",
+            distributePowerOfProduct,
+            "[(sqrt[3]) ^ n] * [(root[5, 2]) ^ n]"
+        ).assert()
+    }
+
+    @Test
+    fun testExpandBinomialSquared() {
+        RuleTestCase(
+            "[(a + b) ^ 2]",
+            expandBinomialSquared,
+            "[a ^ 2] + 2 * a * b + [b ^ 2]"
+        ).assert()
+        RuleTestCase(
+            "[(sqrt[2] + 1) ^ 2]",
+            expandBinomialSquared,
+            "[(sqrt[2]) ^ 2] + 2 * sqrt[2] * 1 + [1 ^ 2]"
+        ).assert()
+        RuleTestCase(
+            "[(x - y) ^ 2]",
+            expandBinomialSquared,
+            "[x ^ 2] + 2 * x * (-y) + [(-y) ^ 2]"
+        ).assert()
+    }
 }

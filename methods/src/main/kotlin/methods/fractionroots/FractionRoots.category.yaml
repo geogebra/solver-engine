@@ -8,7 +8,17 @@ explanations:
     defaultTranslation:
   WriteAsMultiplicationWithUnitaryRadicalFraction:
     defaultTranslation:
+  simplifyFractionOfRootsWithSameOrder:
+    defaultTranslation:
+  BringRootsToSameIndexInFraction:
+    defaultTranslation:
 
   # Plans
   EvaluateSquareRootFractions:
     defaultTranslation:
+  SimplifyFractionOfRoots:
+    defaultTranslation:
+  RationalizeWithRadicalInDenominator:
+    defaultTranslation:
+  EvaluateMultiplicationOfFractionWithUnitaryRadicalFraction:
+    defaultTranslation: 

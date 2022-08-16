@@ -44,7 +44,7 @@ data class UnaryCondition(
 }
 
 data class UnaryNumericCondition(
-    val ptn: IntegerPattern,
+    val ptn: IntegerProvider,
     val condition: (BigInteger) -> Boolean
 ) : MatchCondition {
     override fun checkMatch(match: Match): Boolean {
@@ -53,8 +53,8 @@ data class UnaryNumericCondition(
 }
 
 data class BinaryNumericCondition(
-    val ptn1: IntegerPattern,
-    val ptn2: IntegerPattern,
+    val ptn1: IntegerProvider,
+    val ptn2: IntegerProvider,
     val condition: (BigInteger, BigInteger) -> Boolean
 ) : MatchCondition {
     override fun checkMatch(match: Match): Boolean {
@@ -73,7 +73,7 @@ fun numericCondition(
 ) = NumericConditionPattern(ptn, condition)
 
 fun numericCondition(
-    ptn1: IntegerPattern,
-    ptn2: IntegerPattern,
+    ptn1: IntegerProvider,
+    ptn2: IntegerProvider,
     condition: (BigInteger, BigInteger) -> Boolean,
 ) = BinaryNumericCondition(ptn1, ptn2, condition)

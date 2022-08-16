@@ -9,3 +9,9 @@ val normalizeNegativeSigns = plan {
         option(moveSignOfNegativeFactorOutOfProduct)
     }
 }
+
+val rewriteDivisionsAsFractions = plan {
+    whilePossible {
+        deeply(rewriteDivisionAsFraction)
+    }
+}

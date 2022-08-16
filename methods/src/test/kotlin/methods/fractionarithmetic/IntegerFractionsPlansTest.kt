@@ -1,6 +1,7 @@
 package methods.fractionarithmetic
 
 import engine.steps.metadata.Skill
+import methods.constantexpressions.simplifyConstantExpression
 import methods.integerarithmetic.evaluateSignedIntegerPower
 import methods.plans.testPlan
 import org.junit.jupiter.api.Test
@@ -203,7 +204,7 @@ class TestSimplifyFraction {
 
     @Test
     fun testEvaluatePowerOfFraction() = testPlan {
-        plan = evaluateFractionPower
+        plan = simplifyConstantExpression
         inputExpr = "[([3 / 4]) ^ 2]"
 
         check {
@@ -215,7 +216,7 @@ class TestSimplifyFraction {
 
     @Test
     fun testEvaluatePositiveFractionPower() = testPlan {
-        plan = evaluateFractionPower
+        plan = simplifyConstantExpression
         inputExpr = "[([2 / 3]) ^ 2]"
 
         check {

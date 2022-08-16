@@ -68,7 +68,7 @@ val evaluateSignedIntegerPower = plan {
 
 val simplifyIntegersInProduct = plan {
     pattern = productContaining()
-    explanation(Explanation.SimplifyIntegersInSum, move(pattern!!))
+    explanation(Explanation.SimplifyIntegersInProduct, move(pattern!!))
 
     whilePossible {
         firstOf {

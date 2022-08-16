@@ -32,12 +32,6 @@ object IntegerFractionsRulesTest : RuleTest {
 
         RuleTestCase("[2/3] * [4/5]", multiplyFractions, "[2*4/3*5]"),
 
-        RuleTestCase("5 : [2/3]", simplifyDividingByAFraction, "5 * [3/2]"),
-        RuleTestCase("[1/2] : [11/10] * 5", simplifyDividingByAFraction, "[1/2] * [10/11] * 5"),
-
-        RuleTestCase("6 : 8 * 3", turnDivisionToFraction, "[6 / 8] * 3"),
-        RuleTestCase("4 * x : 8", turnDivisionToFraction, "[4 / 8] * x"),
-
         RuleTestCase("[5 / [2/3]]", simplifyFractionWithFractionDenominator, "5 * [3/2]"),
         RuleTestCase("[[1/2] / [3/4]]", simplifyFractionWithFractionDenominator, "[1/2] * [4/3]"),
 

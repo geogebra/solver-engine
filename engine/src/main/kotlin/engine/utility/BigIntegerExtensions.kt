@@ -2,13 +2,15 @@ package engine.utility
 
 import java.math.BigInteger
 
+private val MAX_FACTOR = 1000.toBigInteger()
+
 fun BigInteger.isZero() = this.signum() == 0
 
-fun BigInteger.isOdd() = !this.hasFactor(BigInteger.TWO)
+fun BigInteger.isOdd() = this.lowestSetBit == 0
 
-fun BigInteger.isEven() = this.hasFactor(BigInteger.TWO)
+fun BigInteger.isEven() = this.lowestSetBit != 0
 
-fun BigInteger.hasFactor(d: BigInteger) = this.mod(d).isZero()
+fun BigInteger.divides(d: BigInteger) = d.mod(this) == BigInteger.ZERO
 
 fun BigInteger.hasFactorOfDegree(n: Int): Boolean {
     var factor = BigInteger.ONE
@@ -18,7 +20,32 @@ fun BigInteger.hasFactorOfDegree(n: Int): Boolean {
         if (this.mod(power).signum() == 0) {
             return true
         }
-    } while (power <= this)
+    } while (power <= this && factor < MAX_FACTOR)
+
+    return false
+}
+
+@Suppress("ReturnCount")
+fun BigInteger.isPowerOfDegree(n: Int): Boolean {
+    var remainder = this
+    var factor = BigInteger.ONE
+
+    if (this == BigInteger.ZERO || n == 1) {
+        return true
+    }
+
+    do {
+        factor = factor.nextProbablePrime()
+
+        val factorPower = factor.pow(n)
+        while (remainder.mod(factorPower).signum() == 0) {
+            remainder = remainder.divide(factorPower)
+        }
+
+        if (remainder == BigInteger.ONE) {
+            return true
+        }
+    } while (factor <= MAX_FACTOR && remainder.mod(factor).signum() != 0)
 
     return false
 }
@@ -32,6 +59,10 @@ fun BigInteger.primeFactorDecomposition(): List<Pair<BigInteger, BigInteger>> {
     while (remainder > BigInteger.ONE) {
         factor = factor.nextProbablePrime()
 
+        if (factor > MAX_FACTOR) {
+            factors.add(Pair(remainder, BigInteger.ONE))
+            break
+        }
         var multiplicity = 0L
         while (remainder.mod(factor).signum() == 0) {
             multiplicity++
@@ -39,7 +70,7 @@ fun BigInteger.primeFactorDecomposition(): List<Pair<BigInteger, BigInteger>> {
         }
 
         if (multiplicity > 0) {
-            factors.add(factor to BigInteger.valueOf(multiplicity))
+            factors.add(Pair(factor, BigInteger.valueOf(multiplicity)))
         }
     }
 

@@ -213,9 +213,7 @@ private fun Transformation.isThroughStep() =
 private fun checkTransformation(trans: Transformation?, assert: TransformationCheck.() -> Unit) {
     if (trans != null && trans.isThroughStep()) {
         try {
-            val check = TransformationCheck(trans.steps?.get(0))
-            check.assert()
-            check.finalize()
+            checkTransformation(trans.steps?.get(0), assert)
             return
         } catch (_: AssertionFailedError) {
             // do nothing

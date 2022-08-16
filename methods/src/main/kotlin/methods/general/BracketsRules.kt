@@ -9,6 +9,7 @@ import engine.patterns.AnyPattern
 import engine.patterns.OperatorPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.bracketOf
+import engine.patterns.productContaining
 import engine.patterns.sumContaining
 import engine.steps.metadata.makeMetadata
 
@@ -32,6 +33,18 @@ val removeBracketsSum = run {
         pattern = pattern,
         resultMaker = substituteIn(pattern, move(innerSum)),
         explanationMaker = makeMetadata(Explanation.RemoveBracketSumInSum)
+    )
+}
+
+val removeBracketsProduct = run {
+    val innerSum = productContaining()
+    val bracket = bracketOf(innerSum)
+    val pattern = productContaining(bracket)
+
+    Rule(
+        pattern = pattern,
+        resultMaker = substituteIn(pattern, move(innerSum)),
+        explanationMaker = makeMetadata(Explanation.RemoveBracketProductInProduct)
     )
 }
 

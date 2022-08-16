@@ -3,38 +3,59 @@ metadata:
   title: Integer Roots
 
 explanations:
+
+  # Rules - Square roots
   SimplifyRootOfOne:
     defaultTranslation:
   SimplifyRootOfZero:
     defaultTranslation:
   FactorizeNumberUnderSquareRoot:
     defaultTranslation:
-  SeparateIntegerPowersUnderSquareRoot:
+  SimplifyMultiplicationOfSquareRoots:
     defaultTranslation:
   SeparateSquaresUnderSquareRoot:
     defaultTranslation:
-  SimplifyMultiplicationOfSquareRoots:
+
+  # Plans - Square roots
+  SimplifyProductOfRoots:
     defaultTranslation:
-  SimplifySquareRootOfSquare:
+  SimplifyProductWithRoots:
     defaultTranslation:
-  SimplifySquareRootOfPower:
+  SimplifyIntegerRoot:
     defaultTranslation:
-  SeparateFactorizedPowersUnderSquareRootAsSquareRoots:
+  SimplifyIntegerRootToInteger:
     defaultTranslation:
-  SplitPowerUnderSquareRootOfProduct:
+
+  # Rules - Higher order roots
+  MultiplyNthRoots:
     defaultTranslation:
-  SplitProductOfPowerUnderSquareRootAsProductMultipleRemoveBrackets:
+  SplitRootOfProduct:
     defaultTranslation:
-  SimplifyEvenIntegerPowerUnderRootProduct:
+  NormaliseProductWithRoots:
     defaultTranslation:
-  RewriteWithIntegerFactorsAtFront:
+  SimplifyNthRootToThePowerOfN:
     defaultTranslation:
-  CombineProductOfNonSquareRootFactors:
+  PrepareCancellingPowerOfARoot:
     defaultTranslation:
-  MultiplySquareRootFactors:
+  SimplifyNthRootOfNthPower:
     defaultTranslation:
-methods:
-  SimplifyIntegerRoots:
-    description: Simplifies an integer root
-    visibility: public
-    implementationName: simplifyIntegerRoot
+  PrepareCancellingRootOfAPower:
+    defaultTranslation:
+  TurnPowerOfRootToRootOfPower:
+    defaultTranslation:
+  SimplifyRootOfRoot:
+    defaultTranslation:
+  PutRootCoefficientUnderRoot:
+    defaultTranslation:
+  BringRootsToSameIndexInProduct:
+    defaultTranslation:
+
+  # Plans - Higher order roots
+  CancelPowerOfARoot:
+    defaultTranslation:
+  CancelRootOfAPower:
+    defaultTranslation:
+  PutRootCoefficientUnderRootAndSimplify:
+    defaultTranslation:
+  SimplifyRootOfRootWithCoefficient:
+    defaultTranslation:

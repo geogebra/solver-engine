@@ -208,8 +208,9 @@ enum class BinaryOperator(override val precedence: Int) : Operator {
     Root(ROOT_PRECEDENCE) {
         override fun leftChildAllowed(op: Operator) = true
         override fun rightChildAllowed(op: Operator) = true
+        override fun <T> readableString(left: T, right: T) = "root[$left, $right]"
         override fun <T : Expression> latexString(left: T, right: T) =
-            "{\\sqrt[${left.toLatexString()}]${right.toLatexString()}}"
+            "{\\sqrt[${right.toLatexString()}]${left.toLatexString()}}"
     };
 
     override val arity = ARITY_TWO

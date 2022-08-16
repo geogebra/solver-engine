@@ -35,8 +35,8 @@ class CustomMakerBuilder(private val match: Match) {
     /**
      * Returns the integer value bound to the argument in the match.
      */
-    fun getValue(integerPattern: IntegerPattern): BigInteger {
-        return integerPattern.getBoundInt(match)
+    fun getValue(integerProvider: IntegerProvider): BigInteger {
+        return integerProvider.getBoundInt(match)
     }
 }
 
