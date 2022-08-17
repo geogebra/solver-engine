@@ -11,6 +11,7 @@ stages:
   - lint
   - publish
   - deploy
+  - before-udeploy
   - undeploy
 
 before_script:
@@ -89,10 +90,15 @@ deploy:
     - aws route53 change-resource-record-sets --hosted-zone-id /hostedzone/$HOSTED_ZONE_PRIVATE --change-batch "$CHANGES"
     - aws route53 change-resource-record-sets --hosted-zone-id /hostedzone/$HOSTED_ZONE_PUBLIC --change-batch "$CHANGES"
 
+before-udeploy:
+  stage: before-udeploy
+  script:
+    - sleep 1
+  only:
+    - merge_requests
+
 undeploy:
   stage: undeploy
-  rules:
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
   image: alpine/k8s:1.22.10
   tags:
     - docker
@@ -113,3 +119,7 @@ undeploy:
     - kubectl delete namespaces $NS
     # Remove fargate profile
     - eksctl delete fargateprofile --cluster solver --name "fp-$SLUG"
+  when: manual
+  allow_failure: false
+  only:
+    - merge_requests
