@@ -19,21 +19,18 @@ import methods.fractionarithmetic.simplifyFraction
 import methods.fractionarithmetic.simplifyFractionNegativePower
 import methods.fractionarithmetic.simplifyFractionToMinusOne
 import methods.fractionroots.simplifyFractionOfRoots
-import methods.general.addClarifyingBrackets
 import methods.general.distributePowerOfProduct
 import methods.general.evaluateProductContainingZero
 import methods.general.expandBinomialSquared
-import methods.general.removeBracketsProduct
-import methods.general.removeBracketsSum
-import methods.general.removeOuterBracket
+import methods.general.normalizeExpression
 import methods.general.removeRedundantBrackets
-import methods.general.rewriteDivisionsAsFractions
 import methods.integerarithmetic.evaluateSignedIntegerPower
 import methods.integerarithmetic.simplifyEvenPowerOfNegative
 import methods.integerarithmetic.simplifyIntegersInProduct
 import methods.integerarithmetic.simplifyIntegersInSum
 import methods.integerarithmetic.simplifyOddPowerOfNegative
 import methods.integerroots.cancelPowerOfARoot
+import methods.integerroots.collectLikeRootsAndSimplify
 import methods.integerroots.simplifyIntegerRoot
 import methods.integerroots.simplifyIntegerRootToInteger
 import methods.integerroots.simplifyProductWithRoots
@@ -82,8 +79,6 @@ val simplificationSteps = steps {
         option { deeply(evaluateProductContainingZero) }
 
         option { deeply(removeRedundantBrackets, deepFirst = true) }
-        option { deeply(removeBracketsProduct, deepFirst = true) }
-        option { deeply(removeBracketsSum, deepFirst = true) }
 
         option { deeply(simplifyPowers, deepFirst = true) }
         option { deeply(simplifyRoots, deepFirst = true) }
@@ -100,6 +95,8 @@ val simplificationSteps = steps {
         option { deeply(simplifyIntegersInSum, deepFirst = true) }
         option { deeply(evaluateFractionSum, deepFirst = true) }
         option { deeply(evaluateSumOfFractionAndInteger, deepFirst = true) }
+
+        option { deeply(collectLikeRootsAndSimplify, deepFirst = true) }
     }
 }
 
@@ -121,20 +118,25 @@ private fun Expression.isConstantExpression(): Boolean {
 val simplifyConstantExpression = plan {
     pattern = condition(AnyPattern()) { it.isConstantExpression() }
 
-    whilePossible {
-        firstOf {
-            option(addClarifyingBrackets)
-            option(removeOuterBracket)
-            option(rewriteDivisionsAsFractions)
+    pipeline {
+        // even before normalization, clean up products containing zero
+        optionalSteps {
+            whilePossible {
+                deeply(evaluateProductContainingZero)
+            }
+        }
 
-            option {
+        optionalSteps(normalizeExpression)
+
+        optionalSteps {
+            whilePossible {
                 deeply(simplifyConstantSubexpression, deepFirst = true)
             }
+        }
 
-            option {
-                plan {
-                    whilePossible(simplificationSteps)
-                }
+        optionalSteps {
+            plan {
+                whilePossible(simplificationSteps)
             }
         }
     }

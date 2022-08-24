@@ -10,6 +10,7 @@ import engine.patterns.sumContaining
 import engine.steps.metadata.Skill
 import methods.general.cancelCommonTerms
 import methods.general.normalizeNegativeSigns
+import methods.general.rewriteDivisionsAsFractions
 import methods.integerarithmetic.evaluateIntegerProductAndDivision
 import methods.integerarithmetic.evaluateSignedIntegerAddition
 import methods.integerarithmetic.evaluateSignedIntegerPower
@@ -35,6 +36,7 @@ val normalizeFractions = plan {
     whilePossible {
         deeply {
             firstOf {
+                option(rewriteDivisionsAsFractions)
                 option(simplifyFractionWithFractionDenominator)
                 option(simplifyFractionWithFractionNumerator)
             }

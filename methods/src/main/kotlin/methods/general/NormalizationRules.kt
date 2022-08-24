@@ -9,6 +9,7 @@ import engine.patterns.AnyPattern
 import engine.patterns.OperatorPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.bracketOf
+import engine.patterns.plusOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
 import engine.steps.metadata.makeMetadata
@@ -68,5 +69,16 @@ val removeOuterBracket = run {
         pattern = pattern,
         resultMaker = move(insideBracket),
         explanationMaker = makeMetadata(Explanation.RemoveRedundantBracket)
+    )
+}
+
+val removeRedundantPlusSign = run {
+    val value = AnyPattern()
+    val pattern = plusOf(value)
+
+    Rule(
+        pattern = pattern,
+        resultMaker = move(value),
+        explanationMaker = makeMetadata(Explanation.RemoveRedundantPlusSign)
     )
 }

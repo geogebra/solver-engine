@@ -20,13 +20,15 @@ explanations:
     parameters: [ "positive integer" ]
   RemoveRedundantBracket:
     defaultTranslation: "Redundant bracket can be removed"
+  RemoveRedundantPlusSign:
+    defaultTranslation: "Remove redundant plus sign"
   EliminateOneInProduct:
     defaultTranslation: "A factor of 1 can be eliminated from a product"
     parameters: [ "factor 1" ]
   EliminateZeroInSum:
     defaultTranslation:
   EvaluateProductContainingZero:
-    defaultTranslation:
+    defaultTranslation: "Any product containing a %1 is zero"
   SimplifyDoubleMinus:
     defaultTranslation:
   SimplifyProductWithTwoNegativeFactors:
@@ -43,6 +45,8 @@ explanations:
     defaultTranslation:
   RewriteDivisionAsFraction:
     defaultTranslation:
+  NormalizeExpression:
+    defaultTranslation: Normalize the expression
 
   # Plans
   ReplaceAllInvisibleBrackets:

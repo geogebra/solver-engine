@@ -219,10 +219,8 @@ class IntegerArithmeticPlansTest {
                 step {
                     toExpr = "44"
 
-                    step {
-                        explanation {
-                            key = methods.general.Explanation.RemoveRedundantBracket
-                        }
+                    explanation {
+                        key = methods.general.Explanation.RemoveRedundantBracket
                     }
                 }
             }

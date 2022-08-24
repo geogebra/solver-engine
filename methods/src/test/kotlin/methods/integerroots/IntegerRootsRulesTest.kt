@@ -78,4 +78,30 @@ class SeparateIntegerRootsRulesTest {
             "3"
         ).assert()
     }
+
+    @Test
+    fun testCollectLikeRoots() {
+        RuleTestCase("sqrt[2] + 2*sqrt[2] + 2", collectLikeRoots, "(1 + 2)*sqrt[2] + 2").assert()
+        RuleTestCase("sqrt[3] + sqrt[3]", collectLikeRoots, "(1 + 1)*sqrt[3]").assert()
+        RuleTestCase(
+            "sqrt[3] + sqrt[7] + sqrt[3] + sqrt[5]",
+            collectLikeRoots,
+            "(1 + 1) * sqrt[3] + sqrt[7] + sqrt[5]"
+        ).assert()
+        RuleTestCase(
+            "sqrt[7] + sqrt[3] + sqrt[3] + sqrt[5]",
+            collectLikeRoots,
+            "sqrt[7] + (1 + 1) * sqrt[3] + sqrt[5]"
+        ).assert()
+        RuleTestCase(
+            "sqrt[7] + root[5, 3] + sqrt[5] + root[5, 3]",
+            collectLikeRoots,
+            "sqrt[7] + (1 + 1) * root[5, 3] + sqrt[5]"
+        ).assert()
+        RuleTestCase(
+            "[2 * sqrt[2] / 3] + [1 / 5] * sqrt[2] - 4 * sqrt[2]",
+            collectLikeRoots,
+            "([2 / 3] + [1 / 5] - 4) * sqrt[2]"
+        ).assert()
+    }
 }

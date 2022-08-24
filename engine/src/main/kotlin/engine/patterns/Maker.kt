@@ -38,6 +38,13 @@ class CustomMakerBuilder(private val match: Match) {
     fun getValue(integerProvider: IntegerProvider): BigInteger {
         return integerProvider.getBoundInt(match)
     }
+
+    /**
+     * Finds a match for the given pattern in the given subexpression in the context of the current match.
+     */
+    fun matchPattern(pattern: Pattern, subexpression: Subexpression): Match? {
+        return pattern.findMatches(subexpression, match).firstOrNull()
+    }
 }
 
 /**

@@ -25,6 +25,8 @@ explanations:
     defaultTranslation:
   SimplifyIntegerRootToInteger:
     defaultTranslation:
+  CollectLikeRootsAndSimplify:
+    defaultTranslation: Collect like roots and simplify the coefficient
 
   # Rules - Higher order roots
   MultiplyNthRoots:
@@ -58,4 +60,7 @@ explanations:
   PutRootCoefficientUnderRootAndSimplify:
     defaultTranslation:
   SimplifyRootOfRootWithCoefficient:
+    defaultTranslation:
+
+  CollectLikeRoots:
     defaultTranslation:

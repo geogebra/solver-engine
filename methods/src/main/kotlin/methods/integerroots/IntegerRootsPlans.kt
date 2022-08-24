@@ -7,8 +7,12 @@ import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.integerOrderRootOf
 import engine.patterns.numericCondition
 import engine.utility.isPowerOfDegree
-import methods.constantexpressions.evaluateSimpleIntegerExpression
+import methods.constantexpressions.simplifyFractionsInExpression
+import methods.constantexpressions.simplifyIntegersInExpression
+import methods.fractionarithmetic.multiplyAndSimplifyFractions
+import methods.general.moveSignOfNegativeFactorOutOfProduct
 import methods.general.removeBracketsProduct
+import methods.general.removeRedundantBrackets
 import methods.integerarithmetic.evaluateIntegerPowerDirectly
 import methods.integerarithmetic.evaluateProductOfIntegers
 import methods.integerarithmetic.simplifyIntegersInProduct
@@ -35,7 +39,7 @@ val putRootCoefficientUnderRootAndSimplify = plan {
     explanation(Explanation.PutRootCoefficientUnderRootAndSimplify)
     pipeline {
         steps(putRootCoefficientUnderRoot)
-        steps(evaluateSimpleIntegerExpression)
+        steps(simplifyIntegersInExpression)
     }
 }
 
@@ -156,4 +160,25 @@ val simplifyIntegerRootToInteger = plan {
     )
 
     applyTo(simplifyIntegerRoot) { it }
+}
+
+/**
+ * Collects a set of like roots (square or higher) in a sum and simplifies the resulting expression
+ *   E.g. 2 + sqrt[3] - [2/3]*sqrt[3]] + sqrt[5] + [sqrt[3]/2]
+ * sqrt[3] is collected first
+ *   2 + (1 - [2/3] + [1/2])*sqrt[3] + sqrt[5]
+ * then the bracket is simplified
+ *   2 + [5/6]*sqrt[3] + sqrt[5]
+ * And the expression is written in a normalized way
+ *   2 + [5*sqrt[3]/6] + sqrt[5]
+ */
+val collectLikeRootsAndSimplify = plan {
+    explanation(Explanation.CollectLikeRootsAndSimplify)
+    pipeline {
+        steps(collectLikeRoots)
+        steps(simplifyFractionsInExpression)
+        optionalSteps { deeply(moveSignOfNegativeFactorOutOfProduct) }
+        optionalSteps { deeply(removeRedundantBrackets) }
+        optionalSteps { deeply(multiplyAndSimplifyFractions) }
+    }
 }

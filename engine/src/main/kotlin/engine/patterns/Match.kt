@@ -18,6 +18,8 @@ interface Match {
      */
     fun getLastBinding(p: Pattern): Subexpression?
 
+    fun isBound(p: Pattern) = getLastBinding(p) != null
+
     /**
      * Returns the `Expression` value of the given match
      * with the provided `Pattern` "p".
@@ -52,7 +54,9 @@ object RootMatch : Match {
     override fun getLastBinding(p: Pattern): Subexpression? = null
     override fun getBoundExpr(p: Pattern): Expression? = null
 
-    override fun accumulatePaths(p: Pattern, acc: MutableList<Path>) { /* do nothing */ }
+    override fun accumulatePaths(p: Pattern, acc: MutableList<Path>) { /* do nothing */
+    }
+
     override fun getBoundPaths(p: Pattern): List<Path> = emptyList()
 }
 

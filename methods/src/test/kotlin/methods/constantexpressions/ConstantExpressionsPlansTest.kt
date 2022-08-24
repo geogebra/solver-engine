@@ -1,5 +1,6 @@
 package methods.constantexpressions
 
+import methods.general.GeneralExplanation
 import methods.plans.testPlan
 import org.junit.jupiter.api.Test
 
@@ -73,13 +74,14 @@ class ConstantExpressionsPlansTest {
 
         check {
             step {
-                step { toExpr = "[3 / 4] : 5" }
-                step { toExpr = "[[3 / 4] / 5]" }
-            }
-            step {
+                step {
+                    step { toExpr = "[3 / 4] : 5" }
+                    step { toExpr = "[[3 / 4] / 5]" }
+                }
                 step { toExpr = "[3 / 4] * [1 / 5]" }
-                step { toExpr = "[3 / 20]" }
             }
+
+            step { toExpr = "[3 / 20]" }
         }
     }
 
@@ -89,11 +91,11 @@ class ConstantExpressionsPlansTest {
         inputExpr = "[5 / 6] : [3 / 4]"
 
         check {
-            step { toExpr = "[[5 / 6] / [3 / 4]]" }
             step {
+                step { toExpr = "[[5 / 6] / [3 / 4]]" }
                 step { toExpr = "[5 / 6] * [4 / 3]" }
-                step { toExpr = "[10 / 9]" }
             }
+            step { toExpr = "[10 / 9]" }
         }
     }
 
@@ -237,6 +239,45 @@ class ConstantExpressionsPlansTest {
             step {
                 fromExpr = "root[24, 3 * 2]"
                 toExpr = "root[24, 6]"
+            }
+        }
+    }
+}
+
+class TestNormalization {
+
+    @Test
+    fun testSimpleNormalization() = testPlan {
+        plan = simplifyConstantExpression
+        inputExpr = "(+1 + (3))"
+
+        check {
+            step {
+                toExpr = "1 + 3"
+                explanation {
+                    key = GeneralExplanation.NormalizeExpression
+                }
+
+                step { toExpr = "+1 + (3)" }
+                step { toExpr = "+1 + 3" }
+                step { toExpr = "1 + 3" }
+            }
+
+            step { toExpr = "4" }
+        }
+    }
+
+    @Test
+    fun testNoNormalizationIfNotNeeded() = testPlan {
+        plan = simplifyConstantExpression
+        inputExpr = "0 * (1)"
+
+        check {
+            fromExpr = "0 * (1)"
+            toExpr = "0"
+
+            explanation {
+                key = GeneralExplanation.EvaluateProductContainingZero
             }
         }
     }
