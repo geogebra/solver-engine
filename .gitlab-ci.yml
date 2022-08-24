@@ -11,7 +11,7 @@ stages:
   - lint
   - publish
   - deploy
-  - before-udeploy
+  - before-undeploy
   - undeploy
 
 before_script:
@@ -90,10 +90,11 @@ deploy:
     - aws route53 change-resource-record-sets --hosted-zone-id /hostedzone/$HOSTED_ZONE_PRIVATE --change-batch "$CHANGES"
     - aws route53 change-resource-record-sets --hosted-zone-id /hostedzone/$HOSTED_ZONE_PUBLIC --change-batch "$CHANGES"
 
-before-udeploy:
-  stage: before-udeploy
+# Merge-request pipeline jobs
+wait:
+  stage: before-undeploy
   script:
-    - sleep 1
+    - echo "Block the pipeline until the next job (undeploy) run"
   only:
     - merge_requests
 
