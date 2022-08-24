@@ -22,6 +22,8 @@ import engine.patterns.AnyPattern
 import engine.patterns.FixedPattern
 import engine.patterns.OptionalDivideBy
 import engine.patterns.bracketOf
+import engine.patterns.commutativeProductOf
+import engine.patterns.commutativeSumOf
 import engine.patterns.condition
 import engine.patterns.custom
 import engine.patterns.divideBy
@@ -117,6 +119,41 @@ val moveSignOfNegativeFactorOutOfProduct = run {
     )
 }
 
+val simplifyUnitFractionToOne = run {
+    val common = AnyPattern()
+    val pattern = fractionOf(common, common)
+
+    Rule(
+        pattern = pattern,
+        resultMaker = cancel(common, FixedExpressionMaker(Constants.One)),
+        explanationMaker = makeMetadata(Explanation.SimplifyUnitFractionToOne)
+    )
+}
+
+val simplifyFractionWithOneDenominator = run {
+    val numerator = AnyPattern()
+    val denominator = FixedPattern(Constants.One)
+    val pattern = fractionOf(numerator, denominator)
+
+    Rule(
+        pattern = pattern,
+        resultMaker = cancel(denominator, move(numerator)),
+        explanationMaker = makeMetadata(Explanation.SimplifyFractionWithOneDenominator)
+    )
+}
+
+val cancelDenominator = run {
+    val common = AnyPattern()
+    val numerator = productContaining(common, minSize = 2)
+    val pattern = fractionOf(numerator, common)
+
+    Rule(
+        pattern = pattern,
+        resultMaker = cancel(common, restOf(numerator)),
+        explanationMaker = makeMetadata(Explanation.CancelDenominator)
+    )
+}
+
 val cancelCommonTerms = run {
     val common = condition(AnyPattern()) { it != Constants.One }
     val numerator = productContaining(common, minSize = 2)
@@ -131,6 +168,36 @@ val cancelCommonTerms = run {
             move(pattern),
             move(common)
         ),
+    )
+}
+
+val factorMinusFromSum = run {
+    val sum = condition(sumContaining()) { expression ->
+        expression.operands.all { it.operator == UnaryOperator.Minus }
+    }
+
+    Rule(
+        pattern = sum,
+        resultMaker = makeNegOf(custom { makeSumOf(get(sum)!!.children().map { it.children()[0] }) }),
+        explanationMaker = makeMetadata(Explanation.FactorMinusFromSum),
+    )
+}
+
+val simplifyProductOfConjugates = run {
+    val a = AnyPattern()
+    val b = AnyPattern()
+    val sum1 = commutativeSumOf(a, b)
+    val sum2 = commutativeSumOf(a, negOf(b))
+    val product = commutativeProductOf(bracketOf(sum1), bracketOf(sum2))
+
+    Rule(
+        pattern = product,
+        resultMaker = substituteIn(
+            sum2,
+            makePowerOf(move(a), FixedExpressionMaker(xp(2))),
+            makeNegOf(makePowerOf(move(b), FixedExpressionMaker(xp(2)))),
+        ),
+        explanationMaker = makeMetadata(Explanation.SimplifyProductOfConjugates),
     )
 }
 

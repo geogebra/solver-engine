@@ -1,11 +1,11 @@
 package methods.fractionarithmetic
 
 import engine.expressionmakers.FixedExpressionMaker
+import engine.expressionmakers.copySign
 import engine.expressionmakers.factor
 import engine.expressionmakers.makeFractionOf
 import engine.expressionmakers.makeNegOf
 import engine.expressionmakers.makeNumericOp
-import engine.expressionmakers.makeOptionalNegOf
 import engine.expressionmakers.makePowerOf
 import engine.expressionmakers.makeProductOf
 import engine.expressionmakers.makeSimplifiedProductOf
@@ -86,8 +86,8 @@ val addLikeFractions = run {
             sum,
             makeFractionOf(
                 makeSumOf(
-                    makeOptionalNegOf(nf1, move(num1)),
-                    makeOptionalNegOf(nf2, move(num2))
+                    copySign(nf1, move(num1)),
+                    copySign(nf2, move(num2))
                 ),
                 factor(denom)
             )
@@ -127,14 +127,14 @@ val bringToCommonDenominator = run {
         resultMaker = substituteIn(
             sum,
             makeSumOf(
-                makeOptionalNegOf(
+                copySign(
                     nf1,
                     makeFractionOf(
                         makeProductOf(move(f1.numerator), factor1),
                         makeProductOf(move(f1.denominator), factor1)
                     )
                 ),
-                makeOptionalNegOf(
+                copySign(
                     nf2,
                     makeFractionOf(
                         makeProductOf(move(f2.numerator), factor2),
@@ -149,10 +149,13 @@ val bringToCommonDenominator = run {
 }
 
 val simplifyNegativeInDenominator = run {
-    val numerator = UnsignedIntegerPattern()
-    val denominator = UnsignedIntegerPattern()
+    val numerator = AnyPattern()
+    val denominator = AnyPattern()
 
-    val pattern = fractionOf(numerator, negOf(denominator))
+    val pattern = fractionOf(
+        numerator,
+        negOf(oneOf(bracketOf(denominator), denominator)),
+    )
 
     Rule(
         pattern = pattern,
@@ -216,10 +219,13 @@ val findCommonFactorInFraction = run {
 }
 
 val simplifyNegativeInNumerator = run {
-    val numerator = UnsignedIntegerPattern()
-    val denominator = UnsignedIntegerPattern()
+    val numerator = AnyPattern()
+    val denominator = AnyPattern()
 
-    val pattern = fractionOf(negOf(numerator), denominator)
+    val pattern = fractionOf(
+        negOf(oneOf(bracketOf(numerator), numerator)),
+        denominator,
+    )
 
     Rule(
         pattern = pattern,
@@ -229,10 +235,13 @@ val simplifyNegativeInNumerator = run {
 }
 
 val simplifyNegativeNumeratorAndDenominator = run {
-    val numerator = UnsignedIntegerPattern()
-    val denominator = UnsignedIntegerPattern()
+    val numerator = AnyPattern()
+    val denominator = AnyPattern()
 
-    val pattern = fractionOf(negOf(numerator), negOf(denominator))
+    val pattern = fractionOf(
+        negOf(oneOf(bracketOf(numerator), numerator)),
+        negOf(oneOf(bracketOf(denominator), denominator)),
+    )
 
     Rule(
         pattern = pattern,
@@ -272,7 +281,7 @@ val turnSumOfFractionAndIntegerToFractionSum = run {
         resultMaker = substituteIn(
             sum,
             move(nf),
-            makeOptionalNegOf(
+            copySign(
                 ni,
                 makeFractionOf(
                     makeProductOf(move(integerTerm), move(denominator)),

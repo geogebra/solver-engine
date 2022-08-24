@@ -54,3 +54,13 @@ class Subexpression private constructor(
         }
     }
 }
+
+fun Subexpression.numerator(): Subexpression {
+    require(expr.operator == BinaryOperator.Fraction) { "Fraction expected, got: ${expr.operator}" }
+    return nthChild(0)
+}
+
+fun Subexpression.denominator(): Subexpression {
+    require(expr.operator == BinaryOperator.Fraction) { "Fraction expected, got: ${expr.operator}" }
+    return nthChild(1)
+}

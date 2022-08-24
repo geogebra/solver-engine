@@ -1,66 +1,137 @@
 package methods.fractionroots
 
+import methods.integerarithmetic.IntegerArithmeticExplanation
+import methods.integerroots.IntegerRootsExplanation
 import methods.plans.testPlan
+import org.junit.jupiter.api.Test
 
 class FractionRootsPlansTest {
 
-    // @Test
-    fun testRationalizationWithRadicalInDenominator() = testPlan {
-        plan = rationalizeWithRadicalInDenominator
-        inputExpr = "[ 5 / 3 * sqrt[3] ]"
+    @Test
+    fun testRationalizationOfSimpleDenominators() = testPlan {
+        plan = rationalizeDenominators
+        inputExpr = "sqrt[[3 / 2]]"
 
         check {
-            toExpr = "[5 * sqrt[3] / 9]"
-        }
-    }
-
-    // @Test
-    fun testEvaluateMultiplicationOfFractionWithUnitaryRadicalFraction() = testPlan {
-        plan = evaluateMultiplicationOfFractionWithUnitaryRadicalFraction
-        inputExpr = "[4 / 3 * sqrt[3]] * [sqrt[3] / sqrt[3]]"
-
-        check {
-            toExpr = "[4 * sqrt[3] / 9]"
+            fromExpr = "sqrt[[3 / 2]]"
+            toExpr = "[sqrt[6] / 2]"
 
             step {
-                toExpr = "[4 * sqrt[3] / 3 * sqrt[3] * sqrt[3]]"
-            }
-
-            step {
-                toExpr = "[4 * sqrt[3] / 3 * 3]"
-            }
-
-            step {
-                toExpr = "[4 * sqrt[3] / 9]"
-            }
-        }
-    }
-
-    // @Test
-    fun testEvaluateSquareRootFractions() = testPlan {
-        plan = evaluateSquareRootFractions
-        inputExpr = "sqrt[ [ 4 / 27 ] ]"
-
-        check {
-            toExpr = "[ 2 * sqrt[3] / 9 ]"
-
-            step {
-                fromExpr = "sqrt[ [ 4 / 27 ] ]"
-                toExpr = "[ sqrt[4] / sqrt[27] ]"
-
+                fromExpr = "sqrt[[3 / 2]]"
+                toExpr = "[sqrt[3] / sqrt[2]]"
                 explanation {
-                    key = Explanation.DistributeRadicalRuleOverFractionsToNumeratorAndDenominator
+                    key = FractionRootsExplanation.DistributeRadicalOverFraction
                 }
             }
 
             step {
-                fromExpr = "[ sqrt[4] / sqrt[27] ]"
-                toExpr = "[ 2 / 3 * sqrt[3] ]"
+                fromExpr = "[sqrt[3] / sqrt[2]]"
+                toExpr = "[sqrt[3] * sqrt[2] / sqrt[2] * sqrt[2]]"
+                explanation {
+                    key = FractionRootsExplanation.RationalizeSimpleDenominator
+                }
             }
 
             step {
-                fromExpr = "[ 2 / 3 * sqrt[3] ]"
-                toExpr = "[ 2 * sqrt[3] / 9]"
+                fromExpr = "[sqrt[3] * sqrt[2] / sqrt[2] * sqrt[2]]"
+                toExpr = "[sqrt[6] / sqrt[2] * sqrt[2]]"
+                explanation {
+                    key = IntegerRootsExplanation.SimplifyProductWithRoots
+                }
+            }
+
+            step {
+                fromExpr = "[sqrt[6] / sqrt[2] * sqrt[2]]"
+                toExpr = "[sqrt[6] / 2]"
+                explanation {
+                    key = IntegerRootsExplanation.SimplifyProductWithRoots
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testRationalizationRadicalWithCoefficient() = testPlan {
+        plan = rationalizeDenominators
+        inputExpr = "[sqrt[3] / 3 * sqrt[2]]"
+
+        check {
+            fromExpr = "[sqrt[3] / 3 * sqrt[2]]"
+            toExpr = "[sqrt[6] / 6]"
+
+            step {
+                fromExpr = "[sqrt[3] / 3 * sqrt[2]]"
+                toExpr = "[sqrt[3] * sqrt[2] / 3 * sqrt[2] * sqrt[2]]"
+                explanation {
+                    key = FractionRootsExplanation.RationalizeSimpleDenominatorWithCoefficient
+                }
+            }
+
+            step {
+                fromExpr = "[sqrt[3] * sqrt[2] / 3 * sqrt[2] * sqrt[2]]"
+                toExpr = "[sqrt[6] / 3 * sqrt[2] * sqrt[2]]"
+                explanation {
+                    key = IntegerRootsExplanation.SimplifyProductWithRoots
+                }
+
+                step {
+                    fromExpr = "sqrt[3] * sqrt[2]"
+                    toExpr = "sqrt[3 * 2]"
+                    explanation {
+                        key = IntegerRootsExplanation.MultiplyNthRoots
+                    }
+                }
+
+                step {
+                    fromExpr = "sqrt[3 * 2]"
+                    toExpr = "sqrt[6]"
+                    explanation {
+                        key = IntegerArithmeticExplanation.SimplifyIntegersInProduct
+                    }
+
+                    step {
+                        fromExpr = "3 * 2"
+                        toExpr = "6"
+                        explanation {
+                            key = IntegerArithmeticExplanation.EvaluateIntegerProduct
+                        }
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "[sqrt[6] / 3 * sqrt[2] * sqrt[2]]"
+                toExpr = "[sqrt[6] / 6]"
+                explanation {
+                    key = IntegerRootsExplanation.SimplifyProductWithRoots
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testRationalizationWithSumOfRadicalsInNumerator() = testPlan {
+        plan = rationalizeDenominators
+        inputExpr = "[sqrt[2] + sqrt[3] / sqrt[2]]"
+
+        check {
+            fromExpr = "[sqrt[2] + sqrt[3] / sqrt[2]]"
+            toExpr = "[(sqrt[2] + sqrt[3]) * sqrt[2] / 2]"
+
+            step {
+                fromExpr = "[sqrt[2] + sqrt[3] / sqrt[2]]"
+                toExpr = "[(sqrt[2] + sqrt[3]) * sqrt[2] / sqrt[2] * sqrt[2]]"
+                explanation {
+                    key = FractionRootsExplanation.RationalizeSimpleDenominator
+                }
+            }
+
+            step {
+                fromExpr = "[(sqrt[2] + sqrt[3]) * sqrt[2] / sqrt[2] * sqrt[2]]"
+                toExpr = "[(sqrt[2] + sqrt[3]) * sqrt[2] / 2]"
+                explanation {
+                    key = IntegerRootsExplanation.SimplifyProductWithRoots
+                }
             }
         }
     }

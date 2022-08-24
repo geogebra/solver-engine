@@ -37,7 +37,17 @@ explanations:
     defaultTranslation:
   CancelCommonTerms:
     defaultTranslation:
+  SimplifyUnitFractionToOne:
+    defaultTranslation: "Simplify unit fraction to one"
+  SimplifyFractionWithOneDenominator:
+    defaultTranslation: "Simplify fraction with one in the denominator"
+  CancelDenominator:
+    defaultTranslation:
   AddClarifyingBrackets:
+    defaultTranslation:
+  FactorMinusFromSum:
+    defaultTranslation:
+  SimplifyProductOfConjugates:
     defaultTranslation:
   DistributePowerOfProduct:
     defaultTranslation:

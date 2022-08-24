@@ -1,6 +1,7 @@
 package methods.fractionarithmetic
 
 import engine.expressionmakers.move
+import engine.expressions.BinaryOperator
 import engine.methods.plan
 import engine.patterns.AnyPattern
 import engine.patterns.UnsignedIntegerPattern
@@ -9,8 +10,12 @@ import engine.patterns.optionalNegOf
 import engine.patterns.sumContaining
 import engine.steps.metadata.Skill
 import methods.general.cancelCommonTerms
+import methods.general.cancelDenominator
+import methods.general.factorMinusFromSum
 import methods.general.normalizeNegativeSigns
 import methods.general.rewriteDivisionsAsFractions
+import methods.general.simplifyFractionWithOneDenominator
+import methods.general.simplifyUnitFractionToOne
 import methods.integerarithmetic.evaluateIntegerProductAndDivision
 import methods.integerarithmetic.evaluateSignedIntegerAddition
 import methods.integerarithmetic.evaluateSignedIntegerPower
@@ -21,6 +26,13 @@ val normalizeSignsInFraction = plan {
 
     whilePossible {
         firstOf {
+            option {
+                deeply {
+                    applyTo(factorMinusFromSum) {
+                        if (it.parent?.expr?.operator == BinaryOperator.Fraction) it else null
+                    }
+                }
+            }
             option { deeply(simplifyNegativeNumeratorAndDenominator) }
             option { deeply(simplifyNegativeInNumerator) }
             option { deeply(simplifyNegativeInDenominator) }
@@ -54,8 +66,11 @@ val simplifyFraction = plan {
 
     whilePossible {
         firstOf {
+            option(simplifyUnitFractionToOne)
+            option(simplifyFractionWithOneDenominator)
             option(simplifyFractionToInteger)
             option(cancelCommonTerms)
+            option(cancelDenominator)
             option(findCommonFactorInFraction)
         }
     }

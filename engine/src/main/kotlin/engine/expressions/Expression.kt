@@ -30,11 +30,6 @@ data class Expression(val operator: Operator, val operands: List<Expression>) {
     }
 }
 
-object Constants {
-    val Zero = xp(0)
-    val One = xp(1)
-}
-
 fun xp(n: Int) = xp(n.toBigInteger())
 
 fun xp(n: BigInteger): Expression {

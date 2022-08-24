@@ -21,7 +21,6 @@ data class FindPattern(val pattern: Pattern, val deepFirst: Boolean = false) : P
  * the given `Pattern`'s in the given order in the list `options`
  */
 data class OneOfPattern(val options: List<Pattern>) : Pattern {
-
     override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
         return sequence {
             for (option in options) {

@@ -1,6 +1,7 @@
 package methods.integerroots
 
 import engine.methods.plan
+import engine.methods.steps
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.UnsignedIntegerPattern
@@ -63,8 +64,7 @@ val simplifyRootOfRootWithCoefficient = plan {
 /**
  * Turns a product of roots of integers into a root of a single integer (roots have different orders)
  */
-val simplifyProductOfRoots = plan {
-    explanation(Explanation.SimplifyProductOfRoots)
+val simplifyProductOfRoots = steps {
     pipeline {
         optionalSteps {
             whilePossible(bringRootsToSameIndexInProduct)

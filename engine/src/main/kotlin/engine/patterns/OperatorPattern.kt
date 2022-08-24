@@ -51,6 +51,8 @@ fun rootOf(radicand: Pattern, degree: Pattern) =
 
 fun bracketOf(expr: Pattern) = OperatorPattern(BracketOperator.Bracket, listOf(expr))
 
+fun invisibleBracketOf(expr: Pattern) = OperatorPattern(UnaryOperator.InvisibleBracket, listOf(expr))
+
 fun mixedNumberOf(
     integer: UnsignedIntegerPattern = UnsignedIntegerPattern(),
     numerator: UnsignedIntegerPattern = UnsignedIntegerPattern(),

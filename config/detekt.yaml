@@ -4,3 +4,7 @@ complexity:
     thresholdInClasses: 20
   LongMethod:
     excludes: ['**/test/**']
+style:
+  MagicNumber:
+    excludes: ['**/test/**', '**/engine/expressions/Constants.kt']
+

@@ -119,7 +119,7 @@ class SimplifyProductOfRootsTest {
 
     @Test
     fun testProductOfEqualSquareRoots() = testPlan {
-        plan = simplifyProductOfRoots
+        plan = simplifyProductWithRoots
         inputExpr = "sqrt[6] * sqrt[6]"
 
         check {
@@ -131,7 +131,7 @@ class SimplifyProductOfRootsTest {
 
     @Test
     fun testProductOfDifferentSquareRoots() = testPlan {
-        plan = simplifyProductOfRoots
+        plan = simplifyProductWithRoots
         inputExpr = "sqrt[6] * sqrt[3]"
 
         check {

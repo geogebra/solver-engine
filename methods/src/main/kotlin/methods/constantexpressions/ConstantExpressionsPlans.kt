@@ -18,6 +18,7 @@ import methods.fractionarithmetic.normalizeSignsInFraction
 import methods.fractionarithmetic.simplifyFraction
 import methods.fractionarithmetic.simplifyFractionNegativePower
 import methods.fractionarithmetic.simplifyFractionToMinusOne
+import methods.fractionroots.rationalizeDenominators
 import methods.fractionroots.simplifyFractionOfRoots
 import methods.general.distributePowerOfProduct
 import methods.general.evaluateProductContainingZero
@@ -96,6 +97,7 @@ val simplificationSteps = steps {
         option { deeply(evaluateFractionSum, deepFirst = true) }
         option { deeply(evaluateSumOfFractionAndInteger, deepFirst = true) }
 
+        option { deeply(rationalizeDenominators, deepFirst = true) }
         option { deeply(collectLikeRootsAndSimplify, deepFirst = true) }
     }
 }

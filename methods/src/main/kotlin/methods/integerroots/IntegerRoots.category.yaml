@@ -61,6 +61,11 @@ explanations:
     defaultTranslation:
   SimplifyRootOfRootWithCoefficient:
     defaultTranslation:
-
   CollectLikeRoots:
     defaultTranslation:
+
+methods:
+  SimplifyIntegerRoots:
+    description: Simplifies an integer root
+    visibility: public
+    implementationName: simplifyIntegerRoot

@@ -1,49 +1,56 @@
 package methods.fractionroots
 
+import engine.expressions.denominator
+import engine.expressions.numerator
 import engine.methods.plan
+import engine.methods.steps
+import methods.fractionarithmetic.multiplyFractions
 import methods.fractionarithmetic.simplifyFractionToInteger
-import methods.fractionarithmetic.writeMultiplicationOfFractionsAsFraction
-import methods.integerarithmetic.evaluateArithmeticExpression
+import methods.general.simplifyProductOfConjugates
 import methods.integerarithmetic.evaluateIntegerPowerDirectly
-import methods.integerroots.simplifyMultiplicationOfSquareRoots
+import methods.integerarithmetic.simplifyIntegersInSum
+import methods.integerroots.simplifyIntegerRoot
+import methods.integerroots.simplifyNthRootToThePowerOfN
+import methods.integerroots.simplifyProductWithRoots
+import methods.integerroots.simplifyRootOfOne
 
-/*
-[4 / 3 * sqrt[3]] * [sqrt[3] / sqrt[3]] --> [4 * sqrt[3] / 9]
- */
-val evaluateMultiplicationOfFractionWithUnitaryRadicalFraction = plan {
-    explanation(Explanation.EvaluateMultiplicationOfFractionWithUnitaryRadicalFraction)
+val rationalizeDenominatorSubstep = plan {
+    firstOf {
+        option(rationalizeSimpleDenominator)
+        option(rationalizeSimpleDenominatorWithCoefficient)
+        option(rationalizeSumOfIntegerAndRadical)
+        option(rationalizeCubeRootDenominator)
+    }
+}
 
+private val simplifyAfterRationalization = steps {
     pipeline {
-        steps(writeMultiplicationOfFractionsAsFraction)
-        steps {
-            deeply(simplifyMultiplicationOfSquareRoots, deepFirst = true)
+        optionalSteps { deeply(identityCubeSumDifference) }
+        optionalSteps { deeply(simplifyProductWithRoots) }
+        optionalSteps { deeply(simplifyProductOfConjugates) }
+        optionalSteps {
+            whilePossible {
+                deeply(simplifyNthRootToThePowerOfN)
+            }
         }
-        steps(evaluateArithmeticExpression)
+        optionalSteps(simplifyIntegersInSum)
     }
 }
 
-/*
-[4 / 3 * sqrt[3]] --> [4 * sqrt[3] / 9]
- */
-val rationalizeWithRadicalInDenominator = plan {
-    explanation(Explanation.RationalizeWithRadicalInDenominator)
-
+val rationalizeDenominators = plan {
     pipeline {
-        steps(writeAsMultiplicationWithUnitaryRadicalFraction)
-        steps(evaluateMultiplicationOfFractionWithUnitaryRadicalFraction)
-    }
-}
-
-/*
-evaluates: sqrt[ [ 4 / 5 ] ] -> [ 2 * sqrt[5] / 5 ]
- */
-val evaluateSquareRootFractions = plan {
-    explanation(Explanation.EvaluateSquareRootFractions)
-
-    pipeline {
-        steps(distributeRadicalRuleOverFractionsToNumeratorAndDenominator)
-        optionalSteps(evaluateArithmeticExpression)
-        optionalSteps(rationalizeWithRadicalInDenominator)
+        optionalSteps(distributeRadicalOverFraction)
+        optionalSteps(rewriteCubeRootDenominator)
+        optionalSteps { deeply(simplifyRootOfOne) }
+        optionalSteps { deeply(simplifyIntegerRoot) }
+        steps(rationalizeDenominatorSubstep)
+        optionalSteps(multiplyFractions)
+        optionalSteps {
+            applyTo(simplifyAfterRationalization) { it.numerator() }
+        }
+        optionalSteps {
+            applyTo(simplifyAfterRationalization) { it.denominator() }
+        }
     }
 }
 

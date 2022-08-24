@@ -51,6 +51,28 @@ open class OptionalNegPatternBase<T : Pattern>(val unsignedPattern: T) : Pattern
 
 class OptionalNegPattern(pattern: Pattern) : OptionalNegPatternBase<Pattern>(pattern)
 
+data class SameSignPatten(val from: OptionalNegPattern, val to: Pattern) : Pattern {
+
+    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+        if (!checkPreviousMatch(subexpression.expr, match)) {
+            return emptySequence()
+        }
+        val ptn = if (from.isNeg(match)) negOf(to) else to
+        return ptn.findMatches(subexpression, match)
+    }
+}
+
+data class OppositeSignPatten(val from: OptionalNegPattern, val to: Pattern) : Pattern {
+
+    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+        if (!checkPreviousMatch(subexpression.expr, match)) {
+            return emptySequence()
+        }
+        val ptn = if (from.isNeg(match)) to else negOf(to)
+        return ptn.findMatches(subexpression, match)
+    }
+}
+
 /**
  * A pattern to match with a variable (i.e. symbol)
  */
@@ -89,3 +111,7 @@ data class OptionalDivideBy(val pattern: Pattern) : Pattern {
 }
 
 fun optionalNegOf(operand: Pattern) = OptionalNegPattern(operand)
+
+fun sameSignPattern(from: OptionalNegPattern, to: Pattern) = SameSignPatten(from, to)
+
+fun oppositeSignPattern(from: OptionalNegPattern, to: Pattern) = OppositeSignPatten(from, to)

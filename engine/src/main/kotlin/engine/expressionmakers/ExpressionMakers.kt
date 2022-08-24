@@ -18,7 +18,6 @@ import engine.patterns.Maker
 import engine.patterns.Match
 import engine.patterns.NaryPatternBase
 import engine.patterns.OptionalDivideBy
-import engine.patterns.OptionalNegPattern
 import engine.patterns.PartialNaryPattern
 
 typealias ExpressionMaker = Maker<MappedExpression>
@@ -105,6 +104,9 @@ data class RootExpressionMaker(val radicand: ExpressionMaker, val order: Express
 fun makeBracketOf(operand: ExpressionMaker) =
     OperatorExpressionMaker(BracketOperator.Bracket, listOf(operand))
 
+fun makeInvisibleBracketOf(operand: ExpressionMaker) =
+    OperatorExpressionMaker(UnaryOperator.InvisibleBracket, listOf(operand))
+
 fun makeFractionOf(numerator: ExpressionMaker, denominator: ExpressionMaker) =
     OperatorExpressionMaker(BinaryOperator.Fraction, listOf(numerator, denominator))
 
@@ -144,18 +146,6 @@ fun makeMixedNumberOf(integer: ExpressionMaker, numerator: ExpressionMaker, deno
 
 fun substituteIn(pattern: NaryPatternBase, vararg newVals: ExpressionMaker) =
     SubstituteInExpressionMaker(pattern, newVals.asList())
-
-data class OptionalNegExpressionMaker(val negPattern: OptionalNegPattern, val operand: ExpressionMaker) :
-    ExpressionMaker {
-
-    override fun make(match: Match): MappedExpression {
-        val maker = if (negPattern.isNeg(match)) makeNegOf(operand) else operand
-        return maker.make(match)
-    }
-}
-
-fun makeOptionalNegOf(negPattern: OptionalNegPattern, operand: ExpressionMaker) =
-    OptionalNegExpressionMaker(negPattern, operand)
 
 data class OptionalDivideByExpressionMaker(
     val divPattern: OptionalDivideBy,

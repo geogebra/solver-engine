@@ -244,6 +244,108 @@ class ConstantExpressionsPlansTest {
     }
 }
 
+class ConstantExpressionRationalizationTest {
+    @Test
+    fun testRationalizeCubeRootDenominator1() = testPlan {
+        plan = simplifyConstantExpression
+        inputExpr = "[2 / root[5, 3] + root[3, 3]]"
+
+        check {
+            toExpr = "[root[25, 3] - root[15, 3] + root[9, 3] / 4]"
+
+            step {
+                toExpr = "[2 * ([(root[5, 3]) ^ 2] - (root[5, 3]) * (root[3, 3]) + [(root[3, 3]) ^ 2]) / 8]"
+            }
+
+            step {
+                toExpr = "[2 * ([(root[5, 3]) ^ 2] - root[5, 3] * (root[3, 3]) + [(root[3, 3]) ^ 2]) / 8]"
+            }
+
+            step {
+                toExpr = "[2 * ([(root[5, 3]) ^ 2] - root[5, 3] * root[3, 3] + [(root[3, 3]) ^ 2]) / 8]"
+            }
+
+            step {
+                toExpr = "[2 * (root[[5 ^ 2], 3] - root[5, 3] * root[3, 3] + [(root[3, 3]) ^ 2]) / 8]"
+            }
+
+            step {
+                toExpr = "[2 * (root[25, 3] - root[5, 3] * root[3, 3] + [(root[3, 3]) ^ 2]) / 8]"
+            }
+
+            step {
+                toExpr = "[2 * (root[25, 3] - root[5, 3] * root[3, 3] + root[[3 ^ 2], 3]) / 8]"
+            }
+
+            step {
+                toExpr = "[2 * (root[25, 3] - root[5, 3] * root[3, 3] + root[9, 3]) / 8]"
+            }
+
+            step {
+                toExpr = "[(root[25, 3] - root[5, 3] * root[3, 3] + root[9, 3]) / 4]"
+            }
+
+            step {
+                toExpr = "[root[25, 3] - root[5, 3] * root[3, 3] + root[9, 3] / 4]"
+            }
+
+            step {
+                toExpr = "[root[25, 3] - root[15, 3] + root[9, 3] / 4]"
+            }
+        }
+    }
+
+    @Test
+    fun testRationalizeCubeRootDenominator2() = testPlan {
+        plan = simplifyConstantExpression
+        inputExpr = "[2 / -root[5, 3] + root[3, 3]]"
+
+        check {
+            toExpr = "-(root[9, 3] + root[15, 3] + root[25, 3])"
+
+            step {
+                toExpr = "[2 * ([(root[3, 3]) ^ 2] + (root[3, 3]) * (root[5, 3]) + [(root[5, 3]) ^ 2]) / -2]"
+            }
+
+            step {
+                toExpr = "[2 * ([(root[3, 3]) ^ 2] + root[3, 3] * (root[5, 3]) + [(root[5, 3]) ^ 2]) / -2]"
+            }
+
+            step {
+                toExpr = "[2 * ([(root[3, 3]) ^ 2] + root[3, 3] * root[5, 3] + [(root[5, 3]) ^ 2]) / -2]"
+            }
+
+            step {
+                toExpr = "[2 * (root[[3 ^ 2], 3] + root[3, 3] * root[5, 3] + [(root[5, 3]) ^ 2]) / -2]"
+            }
+
+            step {
+                toExpr = "[2 * (root[9, 3] + root[3, 3] * root[5, 3] + [(root[5, 3]) ^ 2]) / -2]"
+            }
+
+            step {
+                toExpr = "[2 * (root[9, 3] + root[3, 3] * root[5, 3] + root[[5 ^ 2], 3]) / -2]"
+            }
+
+            step {
+                toExpr = "[2 * (root[9, 3] + root[3, 3] * root[5, 3] + root[25, 3]) / -2]"
+            }
+
+            step {
+                toExpr = "-[2 * (root[9, 3] + root[3, 3] * root[5, 3] + root[25, 3]) / 2]"
+            }
+
+            step {
+                toExpr = "-(root[9, 3] + root[3, 3] * root[5, 3] + root[25, 3])"
+            }
+
+            step {
+                toExpr = "-(root[9, 3] + root[15, 3] + root[25, 3])"
+            }
+        }
+    }
+}
+
 class TestNormalization {
 
     @Test

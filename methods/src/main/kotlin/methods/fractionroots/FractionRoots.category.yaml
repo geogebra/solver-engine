@@ -4,13 +4,27 @@ metadata:
 
 explanations:
   # Rules
-  DistributeRadicalRuleOverFractionsToNumeratorAndDenominator:
+  RationalizeSimpleDenominator:
+    defaultTranslation: Multiply numerator and denominator by the radical currently in the denominator
+  RationalizeSimpleDenominatorWithCoefficient:
+    defaultTranslation: Multiply numerator and denominator by the radical currently in the denominator
+  DistributeRadicalOverFraction:
+    defaultTranslation: Apply the root separately to the numerator and denominator
+  RationalizeSumOfIntegerAndRadical:
     defaultTranslation:
-  WriteAsMultiplicationWithUnitaryRadicalFraction:
-    defaultTranslation:
-  simplifyFractionOfRootsWithSameOrder:
+  SimplifyFractionOfRootsWithSameOrder:
     defaultTranslation:
   BringRootsToSameIndexInFraction:
+    defaultTranslation:
+  RationalizeCubeRootDenominator:
+    defaultTranslation:
+  MultiplyRationalizingTerm:
+    defaultTranslation:
+  IdentityCubeSum:
+    defaultTranslation:
+  IdentityCubeDiff:
+    defaultTranslation:
+  RewriteCubeRootDenominator:
     defaultTranslation:
 
   # Plans
@@ -21,4 +35,10 @@ explanations:
   RationalizeWithRadicalInDenominator:
     defaultTranslation:
   EvaluateMultiplicationOfFractionWithUnitaryRadicalFraction:
-    defaultTranslation: 
+    defaultTranslation:
+
+methods:
+  RationalizeDenominators:
+    visibility: public
+    description: ""
+    implementationName: rationalizeDenominators

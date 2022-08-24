@@ -1,8 +1,8 @@
 package engine.patterns
 
 import engine.expressionmakers.FixedExpressionMaker
+import engine.expressionmakers.copySign
 import engine.expressionmakers.makeFractionOf
-import engine.expressionmakers.makeOptionalNegOf
 import engine.expressionmakers.move
 import engine.expressions.Constants
 import engine.expressions.MappedExpression
@@ -54,7 +54,7 @@ class RationalCoefficientPattern(value: Pattern) : Pattern {
             else -> numeratorCoefficient
         }
 
-        return makeOptionalNegOf(ptn, coefficient).make(match)
+        return copySign(ptn, coefficient).make(match)
     }
 }
 
