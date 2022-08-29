@@ -20,6 +20,7 @@ import methods.fractionarithmetic.simplifyFractionNegativePower
 import methods.fractionarithmetic.simplifyFractionToMinusOne
 import methods.fractionroots.rationalizeDenominators
 import methods.fractionroots.simplifyFractionOfRoots
+import methods.general.distributeMultiplicationOverSum
 import methods.general.distributePowerOfProduct
 import methods.general.evaluateProductContainingZero
 import methods.general.expandBinomialSquared
@@ -99,6 +100,7 @@ val simplificationSteps = steps {
 
         option { deeply(rationalizeDenominators, deepFirst = true) }
         option { deeply(collectLikeRootsAndSimplify, deepFirst = true) }
+        option { deeply(distributeMultiplicationOverSum, deepFirst = true) }
     }
 }
 

@@ -10,7 +10,7 @@ import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.custom
 import engine.patterns.integerOrderRootOf
 import engine.patterns.sumContaining
-import engine.patterns.withRationalCoefficient
+import engine.patterns.withOptionalRationalCoefficient
 import engine.steps.metadata.makeMetadata
 
 /**
@@ -19,14 +19,14 @@ import engine.steps.metadata.makeMetadata
  */
 val collectLikeRoots = run {
     val root = integerOrderRootOf(UnsignedIntegerPattern())
-    val rootTerm1 = withRationalCoefficient(root)
-    val rootTerm2 = withRationalCoefficient(root)
+    val rootTerm1 = withOptionalRationalCoefficient(root)
+    val rootTerm2 = withOptionalRationalCoefficient(root)
     val pattern = sumContaining(rootTerm1, rootTerm2)
 
     Rule(
         pattern = pattern,
         resultMaker = custom {
-            val rootTerm = withRationalCoefficient(root)
+            val rootTerm = withOptionalRationalCoefficient(root)
             val rootCoefficients = mutableListOf<MappedExpression>()
 
             val otherTerms = mutableListOf<ExpressionMaker>()

@@ -4,7 +4,7 @@ import engine.expressions.Expression
 import engine.expressions.Subexpression
 import java.math.BigInteger
 
-interface MatchCondition {
+fun interface MatchCondition {
     fun checkMatch(match: Match): Boolean
 }
 

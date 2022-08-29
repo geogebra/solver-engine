@@ -3,6 +3,7 @@ package methods.general
 import engine.expressionmakers.ExpressionMaker
 import engine.expressionmakers.FixedExpressionMaker
 import engine.expressionmakers.cancel
+import engine.expressionmakers.distribute
 import engine.expressionmakers.makeFractionOf
 import engine.expressionmakers.makeNegOf
 import engine.expressionmakers.makeOptionalDivideBy
@@ -255,5 +256,31 @@ val rewriteDivisionAsFraction = run {
             makeProductOf(result)
         },
         explanationMaker = makeMetadata(Explanation.RewriteDivisionAsFraction),
+    )
+}
+
+/**
+ * a * (b + c) -> a * b + a * c
+ * (b + c + d) * a -> b * a + c * a + d * a
+ */
+val distributeMultiplicationOverSum = run {
+    val singleTerm = AnyPattern()
+    val sum = sumContaining()
+    val product = commutativeProductOf(singleTerm, bracketOf(sum))
+
+    Rule(
+        pattern = product,
+        resultMaker = custom {
+            val terms = get(sum)!!.children()
+            makeSumOf(
+                terms.map {
+                    when (it.expr.operator) {
+                        UnaryOperator.Minus -> makeNegOf(substituteIn(product, distribute(singleTerm), it.nthChild(0)))
+                        else -> substituteIn(product, distribute(singleTerm), it)
+                    }
+                }
+            )
+        },
+        explanationMaker = makeMetadata(Explanation.DistributeMultiplicationOverSum)
     )
 }

@@ -24,17 +24,15 @@ explanations:
     defaultTranslation:
   IdentityCubeDiff:
     defaultTranslation:
-  RewriteCubeRootDenominator:
+  FlipRootsInDenominator:
     defaultTranslation:
 
   # Plans
+  RationalizeDenominator:
+    defaultTranslation: "Rationalize the denominator of the fraction"
   EvaluateSquareRootFractions:
     defaultTranslation:
   SimplifyFractionOfRoots:
-    defaultTranslation:
-  RationalizeWithRadicalInDenominator:
-    defaultTranslation:
-  EvaluateMultiplicationOfFractionWithUnitaryRadicalFraction:
     defaultTranslation:
 
 methods:

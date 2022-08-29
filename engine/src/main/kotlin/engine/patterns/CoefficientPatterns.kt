@@ -9,6 +9,38 @@ import engine.expressions.MappedExpression
 import engine.expressions.Subexpression
 
 /**
+ * A pattern matching `value` multiplied by an integer coefficient.
+ * Say `value` matches x, the pattern can then match
+ *      x
+ *      3 * x
+ */
+class IntegerCoefficientPattern(value: Pattern) : Pattern {
+
+    private val coefficient = UnsignedIntegerPattern()
+
+    private val options = oneOf(
+        value,
+        productOf(coefficient, value),
+    )
+
+    override val key = options
+
+    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+        if (!checkPreviousMatch(subexpression.expr, match)) {
+            return emptySequence()
+        }
+        return options.findMatches(subexpression, match)
+    }
+
+    fun coefficient(match: Match): MappedExpression {
+        return when {
+            match.isBound(coefficient) -> move(coefficient)
+            else -> FixedExpressionMaker(Constants.One)
+        }.make(match)
+    }
+}
+
+/**
  * A pattern matching `value` multiplied by a rational coefficient.
  * Say `value` matches x, the pattern can then match
  *     2 * x
@@ -59,7 +91,13 @@ class RationalCoefficientPattern(value: Pattern) : Pattern {
 }
 
 /**
- * Creates a pattern for the given pattern multiplied by a rational coefficient.
- * See RationalCoefficientPattern for details.
+ * Creates a pattern for the given pattern optionally multiplied by an integer
+ * coefficient. See IntegerCoefficientPattern for details.
  */
-fun withRationalCoefficient(pattern: Pattern) = RationalCoefficientPattern(pattern)
+fun withOptionalIntegerCoefficient(pattern: Pattern) = IntegerCoefficientPattern(pattern)
+
+/**
+ * Creates a pattern for the given pattern optionally multiplied by a rational
+ * coefficient. See RationalCoefficientPattern for details.
+ */
+fun withOptionalRationalCoefficient(pattern: Pattern) = RationalCoefficientPattern(pattern)

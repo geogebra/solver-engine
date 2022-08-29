@@ -73,4 +73,28 @@ class GeneralRulesTest {
             "[x ^ 2] + 2 * x * (-y) + [(-y) ^ 2]"
         ).assert()
     }
+
+    @Test
+    fun testExpandProductOfSingleTermAndSum() {
+        RuleTestCase(
+            "sqrt[2] * (3 + sqrt[4])",
+            distributeMultiplicationOverSum,
+            "sqrt[2] * 3 + sqrt[2] * sqrt[4]"
+        ).assert()
+        RuleTestCase(
+            "(3 + sqrt[4]) * sqrt[2]",
+            distributeMultiplicationOverSum,
+            "3 * sqrt[2] + sqrt[4] * sqrt[2]"
+        ).assert()
+        RuleTestCase(
+            "(3 - sqrt[4]) * sqrt[2]",
+            distributeMultiplicationOverSum,
+            "3 * sqrt[2] - sqrt[4] * sqrt[2]"
+        ).assert()
+        RuleTestCase(
+            "(3 + sqrt[4] + sqrt[5]) * sqrt[2]",
+            distributeMultiplicationOverSum,
+            "3 * sqrt[2] + sqrt[4] * sqrt[2] + sqrt[5] * sqrt[2]"
+        ).assert()
+    }
 }

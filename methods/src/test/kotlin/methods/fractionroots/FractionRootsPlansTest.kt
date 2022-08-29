@@ -1,6 +1,7 @@
 package methods.fractionroots
 
-import methods.integerarithmetic.IntegerArithmeticExplanation
+import methods.constantexpressions.simplifyConstantExpression
+import methods.general.GeneralExplanation
 import methods.integerroots.IntegerRootsExplanation
 import methods.plans.testPlan
 import org.junit.jupiter.api.Test
@@ -13,11 +14,12 @@ class FractionRootsPlansTest {
         inputExpr = "sqrt[[3 / 2]]"
 
         check {
-            fromExpr = "sqrt[[3 / 2]]"
             toExpr = "[sqrt[6] / 2]"
+            explanation {
+                key = FractionRootsExplanation.RationalizeDenominator
+            }
 
             step {
-                fromExpr = "sqrt[[3 / 2]]"
                 toExpr = "[sqrt[3] / sqrt[2]]"
                 explanation {
                     key = FractionRootsExplanation.DistributeRadicalOverFraction
@@ -25,27 +27,19 @@ class FractionRootsPlansTest {
             }
 
             step {
-                fromExpr = "[sqrt[3] / sqrt[2]]"
+                toExpr = "[sqrt[3] / sqrt[2]] * [sqrt[2] / sqrt[2]]"
+            }
+
+            step {
                 toExpr = "[sqrt[3] * sqrt[2] / sqrt[2] * sqrt[2]]"
-                explanation {
-                    key = FractionRootsExplanation.RationalizeSimpleDenominator
-                }
             }
 
             step {
-                fromExpr = "[sqrt[3] * sqrt[2] / sqrt[2] * sqrt[2]]"
                 toExpr = "[sqrt[6] / sqrt[2] * sqrt[2]]"
-                explanation {
-                    key = IntegerRootsExplanation.SimplifyProductWithRoots
-                }
             }
 
             step {
-                fromExpr = "[sqrt[6] / sqrt[2] * sqrt[2]]"
                 toExpr = "[sqrt[6] / 2]"
-                explanation {
-                    key = IntegerRootsExplanation.SimplifyProductWithRoots
-                }
             }
         }
     }
@@ -56,79 +50,73 @@ class FractionRootsPlansTest {
         inputExpr = "[sqrt[3] / 3 * sqrt[2]]"
 
         check {
-            fromExpr = "[sqrt[3] / 3 * sqrt[2]]"
             toExpr = "[sqrt[6] / 6]"
+            explanation {
+                key = FractionRootsExplanation.RationalizeDenominator
+            }
 
             step {
-                fromExpr = "[sqrt[3] / 3 * sqrt[2]]"
+                toExpr = "[sqrt[3] / 3 * sqrt[2]] * [sqrt[2] / sqrt[2]]"
+            }
+
+            step {
                 toExpr = "[sqrt[3] * sqrt[2] / 3 * sqrt[2] * sqrt[2]]"
-                explanation {
-                    key = FractionRootsExplanation.RationalizeSimpleDenominatorWithCoefficient
-                }
             }
 
             step {
-                fromExpr = "[sqrt[3] * sqrt[2] / 3 * sqrt[2] * sqrt[2]]"
                 toExpr = "[sqrt[6] / 3 * sqrt[2] * sqrt[2]]"
-                explanation {
-                    key = IntegerRootsExplanation.SimplifyProductWithRoots
-                }
-
-                step {
-                    fromExpr = "sqrt[3] * sqrt[2]"
-                    toExpr = "sqrt[3 * 2]"
-                    explanation {
-                        key = IntegerRootsExplanation.MultiplyNthRoots
-                    }
-                }
-
-                step {
-                    fromExpr = "sqrt[3 * 2]"
-                    toExpr = "sqrt[6]"
-                    explanation {
-                        key = IntegerArithmeticExplanation.SimplifyIntegersInProduct
-                    }
-
-                    step {
-                        fromExpr = "3 * 2"
-                        toExpr = "6"
-                        explanation {
-                            key = IntegerArithmeticExplanation.EvaluateIntegerProduct
-                        }
-                    }
-                }
             }
 
             step {
-                fromExpr = "[sqrt[6] / 3 * sqrt[2] * sqrt[2]]"
                 toExpr = "[sqrt[6] / 6]"
-                explanation {
-                    key = IntegerRootsExplanation.SimplifyProductWithRoots
-                }
             }
         }
     }
 
     @Test
     fun testRationalizationWithSumOfRadicalsInNumerator() = testPlan {
-        plan = rationalizeDenominators
+        plan = simplifyConstantExpression
         inputExpr = "[sqrt[2] + sqrt[3] / sqrt[2]]"
 
         check {
             fromExpr = "[sqrt[2] + sqrt[3] / sqrt[2]]"
-            toExpr = "[(sqrt[2] + sqrt[3]) * sqrt[2] / 2]"
+            toExpr = "[2 + sqrt[6] / 2]"
 
             step {
                 fromExpr = "[sqrt[2] + sqrt[3] / sqrt[2]]"
-                toExpr = "[(sqrt[2] + sqrt[3]) * sqrt[2] / sqrt[2] * sqrt[2]]"
+                toExpr = "[(sqrt[2] + sqrt[3]) * sqrt[2] / 2]"
                 explanation {
-                    key = FractionRootsExplanation.RationalizeSimpleDenominator
+                    key = FractionRootsExplanation.RationalizeDenominator
                 }
             }
 
             step {
-                fromExpr = "[(sqrt[2] + sqrt[3]) * sqrt[2] / sqrt[2] * sqrt[2]]"
-                toExpr = "[(sqrt[2] + sqrt[3]) * sqrt[2] / 2]"
+                fromExpr = "[(sqrt[2] + sqrt[3]) * sqrt[2] / 2]"
+                toExpr = "[sqrt[2] * sqrt[2] + sqrt[3] * sqrt[2] / 2]"
+                explanation {
+                    key = GeneralExplanation.DistributeMultiplicationOverSum
+                }
+            }
+
+            step {
+                fromExpr = "[sqrt[2] * sqrt[2] + sqrt[3] * sqrt[2] / 2]"
+                toExpr = "[2 + sqrt[3] * sqrt[2] / 2]"
+                explanation {
+                    key = IntegerRootsExplanation.SimplifyProductWithRoots
+                }
+
+                step {
+                    fromExpr = "sqrt[2] * sqrt[2]"
+                    toExpr = "2"
+                    explanation {
+                        key = IntegerRootsExplanation.SimplifyMultiplicationOfSquareRoots
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "[2 + sqrt[3] * sqrt[2] / 2]"
+                toExpr = "[2 + sqrt[6] / 2]"
                 explanation {
                     key = IntegerRootsExplanation.SimplifyProductWithRoots
                 }

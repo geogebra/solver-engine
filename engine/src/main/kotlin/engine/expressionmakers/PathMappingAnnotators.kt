@@ -32,6 +32,9 @@ fun move(pattern: PathProvider): ExpressionMaker =
 fun factor(pattern: PathProvider): ExpressionMaker =
     UnaryPathMappingAnnotator(PathMappingType.Factor, pattern)
 
+fun distribute(pattern: PathProvider): ExpressionMaker =
+    UnaryPathMappingAnnotator(PathMappingType.Distribute, pattern)
+
 fun transform(pattern: PathProvider): ExpressionMaker =
     UnaryPathMappingAnnotator(PathMappingType.Transform, pattern)
 

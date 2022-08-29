@@ -3,7 +3,6 @@ package methods.fractionroots
 import engine.expressions.denominator
 import engine.expressions.numerator
 import engine.methods.plan
-import engine.methods.steps
 import methods.fractionarithmetic.multiplyFractions
 import methods.fractionarithmetic.simplifyFractionToInteger
 import methods.general.simplifyProductOfConjugates
@@ -14,37 +13,38 @@ import methods.integerroots.simplifyNthRootToThePowerOfN
 import methods.integerroots.simplifyProductWithRoots
 import methods.integerroots.simplifyRootOfOne
 
-val rationalizeDenominatorSubstep = plan {
+val findRationalizingTerm = plan {
     firstOf {
         option(rationalizeSimpleDenominator)
-        option(rationalizeSimpleDenominatorWithCoefficient)
         option(rationalizeSumOfIntegerAndRadical)
         option(rationalizeCubeRootDenominator)
     }
 }
 
-private val simplifyAfterRationalization = steps {
-    pipeline {
-        optionalSteps { deeply(identityCubeSumDifference) }
-        optionalSteps { deeply(simplifyProductWithRoots) }
-        optionalSteps { deeply(simplifyProductOfConjugates) }
-        optionalSteps {
-            whilePossible {
-                deeply(simplifyNthRootToThePowerOfN)
+private val simplifyAfterRationalization = plan {
+    whilePossible {
+        deeply {
+            firstOf {
+                option(identityCubeSumDifference)
+                option(simplifyProductWithRoots)
+                option(simplifyProductOfConjugates)
+                option(simplifyNthRootToThePowerOfN)
+                option(simplifyIntegersInSum)
             }
         }
-        optionalSteps(simplifyIntegersInSum)
     }
 }
 
 val rationalizeDenominators = plan {
+    explanation(Explanation.RationalizeDenominator)
+
     pipeline {
         optionalSteps(distributeRadicalOverFraction)
-        optionalSteps(rewriteCubeRootDenominator)
+        optionalSteps(flipRootsInDenominator)
         optionalSteps { deeply(simplifyRootOfOne) }
         optionalSteps { deeply(simplifyIntegerRoot) }
-        steps(rationalizeDenominatorSubstep)
-        optionalSteps(multiplyFractions)
+        steps(findRationalizingTerm)
+        steps(multiplyFractions)
         optionalSteps {
             applyTo(simplifyAfterRationalization) { it.numerator() }
         }

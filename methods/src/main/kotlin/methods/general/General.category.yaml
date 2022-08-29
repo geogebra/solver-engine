@@ -57,6 +57,8 @@ explanations:
     defaultTranslation:
   NormalizeExpression:
     defaultTranslation: Normalize the expression
+  DistributeMultiplicationOverSum:
+    defaultTranslation:
 
   # Plans
   ReplaceAllInvisibleBrackets:

@@ -31,7 +31,7 @@ explanations:
   BringToCommonDenominator:
     defaultTranslation:
   MultiplyFractions:
-    defaultTranslation:
+    defaultTranslation: Multiply the fractions %1 and %2
   FindCommonFactorInFraction:
     defaultTranslation:
   SimplifyFractionToInteger:

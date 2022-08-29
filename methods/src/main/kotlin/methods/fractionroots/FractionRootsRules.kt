@@ -5,7 +5,6 @@ import engine.expressionmakers.copyFlippedSign
 import engine.expressionmakers.copySign
 import engine.expressionmakers.makeBracketOf
 import engine.expressionmakers.makeFractionOf
-import engine.expressionmakers.makeNegOf
 import engine.expressionmakers.makeNumericOp
 import engine.expressionmakers.makePowerOf
 import engine.expressionmakers.makeProductOf
@@ -14,7 +13,6 @@ import engine.expressionmakers.makeSimplifiedPowerOf
 import engine.expressionmakers.makeSquareRootOf
 import engine.expressionmakers.makeSumOf
 import engine.expressionmakers.move
-import engine.expressionmakers.substituteIn
 import engine.expressions.Constants.Three
 import engine.expressions.xp
 import engine.methods.Rule
@@ -24,7 +22,6 @@ import engine.patterns.FixedPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.bracketOf
-import engine.patterns.commutativeSumOf
 import engine.patterns.custom
 import engine.patterns.fractionOf
 import engine.patterns.integerOrderRootOf
@@ -35,11 +32,11 @@ import engine.patterns.oneOf
 import engine.patterns.oppositeSignPattern
 import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
-import engine.patterns.productContaining
 import engine.patterns.productOf
 import engine.patterns.rootOf
 import engine.patterns.squareRootOf
 import engine.patterns.sumOf
+import engine.patterns.withOptionalIntegerCoefficient
 import engine.steps.metadata.makeMetadata
 import engine.utility.divides
 
@@ -64,39 +61,22 @@ val distributeRadicalOverFraction = run {
 }
 
 /**
- * E.g: [4 / sqrt[3]] -> [4 * sqrt[3] / sqrt[3] * sqrt[3]]
+ * [4 / sqrt[3]] -> [4 / sqrt[3]] * [sqrt[3] / sqrt[3]]
+ * [5 / 3 * sqrt[2]] -> [5 / 3 * sqrt[2]] * [sqrt[2] / sqrt[2]]
  */
 val rationalizeSimpleDenominator = run {
     val numerator = AnyPattern()
     val radical = squareRootOf(UnsignedIntegerPattern())
-    val pattern = fractionOf(numerator, radical)
+    val denominator = withOptionalIntegerCoefficient(radical)
+    val fraction = fractionOf(numerator, denominator)
 
     Rule(
-        pattern = pattern,
-        resultMaker = makeFractionOf(
-            makeProductOf(move(numerator), move(radical)),
-            makeProductOf(move(radical), move(radical))
+        pattern = fraction,
+        resultMaker = makeProductOf(
+            move(fraction),
+            makeFractionOf(move(radical), move(radical))
         ),
         explanationMaker = makeMetadata(Explanation.RationalizeSimpleDenominator)
-    )
-}
-
-/**
- * E.g: [4 / 2 * sqrt[3]] -> [4 * sqrt[3] / 2 * sqrt[3] * sqrt[3]]
- */
-val rationalizeSimpleDenominatorWithCoefficient = run {
-    val numerator = AnyPattern()
-    val radical = squareRootOf(UnsignedIntegerPattern())
-    val denominator = productContaining(radical)
-    val pattern = fractionOf(numerator, denominator)
-
-    Rule(
-        pattern = pattern,
-        resultMaker = makeFractionOf(
-            makeProductOf(move(numerator), move(radical)),
-            makeProductOf(move(denominator), move(radical))
-        ),
-        explanationMaker = makeMetadata(Explanation.RationalizeSimpleDenominatorWithCoefficient)
     )
 }
 
@@ -164,20 +144,18 @@ val bringRootsToSameIndexInFraction = run {
 val rationalizeCubeRootDenominator = run {
     val numerator = AnyPattern()
     val cubePattern = FixedPattern(Three)
-    val a = UnsignedIntegerPattern()
     val xRoot = rootOf(UnsignedIntegerPattern(), cubePattern)
-    val b = UnsignedIntegerPattern()
     val yRoot = rootOf(UnsignedIntegerPattern(), cubePattern)
     // a * root[x, 3] + b * root[y, 3]
-    val term1 = oneOf(xRoot, productOf(a, xRoot))
-    val term2 = oneOf(yRoot, productOf(b, yRoot))
+    val term1 = withOptionalIntegerCoefficient(xRoot)
+    val term2 = withOptionalIntegerCoefficient(yRoot)
     val negatedTerm2 = optionalNegOf(term2)
     val denominator = sumOf(term1, negatedTerm2)
 
-    val pattern = fractionOf(numerator, denominator)
+    val fraction = fractionOf(numerator, denominator)
 
     Rule(
-        pattern = pattern,
+        pattern = fraction,
         resultMaker = custom {
             val rationalizationTerm = makeSumOf(
                 makePowerOf(move(term1), FixedExpressionMaker(xp(2))),
@@ -189,10 +167,7 @@ val rationalizeCubeRootDenominator = run {
             )
 
             makeProductOf(
-                makeFractionOf(
-                    move(numerator),
-                    move(denominator)
-                ),
+                move(fraction),
                 makeFractionOf(
                     rationalizationTerm,
                     rationalizationTerm
@@ -204,9 +179,9 @@ val rationalizeCubeRootDenominator = run {
 }
 
 /**
- * (a + b)*(a^2 - ab + b^2) -> a^3 + b^3
+ * (a + b) * (a^2 - ab + b^2) -> a^3 + b^3
  * or
- * (a - b)*(a^2 + ab + b^2) -> a^3 - b^3
+ * (a - b) * (a^2 + ab + b^2) -> a^3 - b^3
  */
 val identityCubeSumDifference = run {
     val a = rootOf(UnsignedIntegerPattern(), FixedPattern(Three))
@@ -248,49 +223,65 @@ val identityCubeSumDifference = run {
 }
 
 /**
- * [ numerator / -root[x, 3] + root[y, 3] ]  ->  [ numerator / root[y, 3] - root[x, 3] ]
+ * If a fractions denominator consists of two roots, optionally
+ * with integer coefficients, with the first one having a negative
+ * sign in front and the second one not, then it flips them.
  */
-val rewriteCubeRootDenominator = run {
+val flipRootsInDenominator = run {
     val numerator = AnyPattern()
 
-    val a = rootOf(UnsignedIntegerPattern(), FixedPattern(Three))
-    val b = rootOf(UnsignedIntegerPattern(), FixedPattern(Three))
+    val integer1 = UnsignedIntegerPattern()
+    val radical1 = withOptionalIntegerCoefficient(integerOrderRootOf(UnsignedIntegerPattern()))
+    val term1 = negOf(oneOf(integer1, radical1))
 
-    val denominator = sumOf(negOf(a), b)
+    val integer2 = UnsignedIntegerPattern()
+    val radical2 = withOptionalIntegerCoefficient(integerOrderRootOf(UnsignedIntegerPattern()))
+    val term2 = oneOf(integer2, radical2)
 
-    val pattern = fractionOf(numerator, denominator)
-
-    Rule(
-        pattern = pattern,
-        resultMaker = makeFractionOf(
-            move(numerator),
-            makeSumOf(move(b), makeNegOf(move(a)))
-        ),
-        explanationMaker = makeMetadata(Explanation.RewriteCubeRootDenominator)
-    )
-}
-
-/**
- *
- */
-val rationalizeSumOfIntegerAndRadical = run {
-    val numerator = AnyPattern()
-    val integer = SignedIntegerPattern()
-    val radical = optionalNegOf(squareRootOf(UnsignedIntegerPattern()))
-    val denominator = commutativeSumOf(integer, radical)
+    val denominator = ConditionPattern(sumOf(term1, term2)) { it.isBound(radical1) || it.isBound(radical2) }
 
     val fraction = fractionOf(numerator, denominator)
 
     Rule(
         pattern = fraction,
         resultMaker = makeFractionOf(
-            makeProductOf(
-                move(numerator),
-                substituteIn(denominator, move(integer), copyFlippedSign(radical, move(radical.unsignedPattern)))
-            ),
-            makeProductOf(
-                move(denominator),
-                substituteIn(denominator, move(integer), copyFlippedSign(radical, move(radical.unsignedPattern)))
+            move(numerator),
+            makeSumOf(move(term2), move(term1))
+        ),
+        explanationMaker = makeMetadata(Explanation.FlipRootsInDenominator)
+    )
+}
+
+/**
+ * Handles denominators in the form
+ *      integer +- square root
+ *      square root +- integer
+ *      square root +- square root
+ * with each root potentially having an integer coefficient.
+ */
+val rationalizeSumOfIntegerAndRadical = run {
+    val numerator = AnyPattern()
+
+    val integer1 = UnsignedIntegerPattern()
+    val radical1 = withOptionalIntegerCoefficient(squareRootOf(UnsignedIntegerPattern()))
+    val term1 = oneOf(integer1, radical1)
+
+    val integer2 = UnsignedIntegerPattern()
+    val radical2 = withOptionalIntegerCoefficient(squareRootOf(UnsignedIntegerPattern()))
+    val term2 = oneOf(integer2, radical2)
+
+    val signedTerm2 = optionalNegOf(term2)
+    val denominator = ConditionPattern(sumOf(term1, signedTerm2)) { it.isBound(radical1) || it.isBound(radical2) }
+
+    val fraction = fractionOf(numerator, denominator)
+
+    Rule(
+        pattern = fraction,
+        resultMaker = makeProductOf(
+            move(fraction),
+            makeFractionOf(
+                makeSumOf(move(term1), copyFlippedSign(signedTerm2, move(term2))),
+                makeSumOf(move(term1), copyFlippedSign(signedTerm2, move(term2))),
             )
         ),
         explanationMaker = makeMetadata(Explanation.RationalizeSumOfIntegerAndRadical)
