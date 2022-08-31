@@ -3,6 +3,7 @@ package engine.utility
 import java.math.BigInteger
 
 private val MAX_FACTOR = 1000.toBigInteger()
+private const val PRIME_CERTAINTY = 5
 
 fun BigInteger.isZero() = this.signum() == 0
 
@@ -75,4 +76,28 @@ fun BigInteger.primeFactorDecomposition(): List<Pair<BigInteger, BigInteger>> {
     }
 
     return factors
+}
+
+/**
+ * reference: https://stackoverflow.com/a/32035942/3396379
+ */
+@Suppress("ReturnCount")
+fun BigInteger.isPrime(): Boolean {
+    if (!isProbablePrime(PRIME_CERTAINTY)) {
+        return false
+    }
+
+    if (this != BigInteger.TWO && isEven()) {
+        return false
+    }
+
+    var i = 3.toBigInteger()
+    while (i * i <= this && i < MAX_FACTOR) {
+        if (this.mod(i) == BigInteger.ZERO) {
+            return false
+        }
+        i += BigInteger.TWO
+    }
+
+    return true
 }

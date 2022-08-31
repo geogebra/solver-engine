@@ -25,6 +25,8 @@ explanations:
   EliminateOneInProduct:
     defaultTranslation: "A factor of 1 can be eliminated from a product"
     parameters: [ "factor 1" ]
+  EliminateLoneOneInExponent:
+    defaultTranslation:
   EliminateZeroInSum:
     defaultTranslation:
   EvaluateProductContainingZero:

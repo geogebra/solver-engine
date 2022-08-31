@@ -48,6 +48,18 @@ val eliminateOneInProduct = run {
     )
 }
 
+val eliminateLoneOneInExponent = run {
+    val one = FixedPattern(xp(1))
+    val base = AnyPattern()
+    val pattern = powerOf(base, one)
+
+    Rule(
+        pattern = pattern,
+        resultMaker = move(base),
+        explanationMaker = makeMetadata(Explanation.EliminateLoneOneInExponent)
+    )
+}
+
 val eliminateZeroInSum = run {
     val zero = FixedPattern(xp(0))
     val pattern = sumContaining(zero)

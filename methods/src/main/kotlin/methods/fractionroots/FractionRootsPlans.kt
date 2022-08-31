@@ -5,17 +5,45 @@ import engine.expressions.numerator
 import engine.methods.plan
 import methods.fractionarithmetic.multiplyFractions
 import methods.fractionarithmetic.simplifyFractionToInteger
+import methods.general.eliminateLoneOneInExponent
 import methods.general.simplifyProductOfConjugates
 import methods.integerarithmetic.evaluateIntegerPowerDirectly
+import methods.integerarithmetic.evaluateSignedIntegerAddition
 import methods.integerarithmetic.simplifyIntegersInSum
+import methods.integerroots.bringSameIndexSameFactorRootsAsOneRoot
+import methods.integerroots.combineProductOfSamePowerUnderHigherRoot
 import methods.integerroots.simplifyIntegerRoot
+import methods.integerroots.simplifyNthRootOfNthPower
 import methods.integerroots.simplifyNthRootToThePowerOfN
 import methods.integerroots.simplifyProductWithRoots
 import methods.integerroots.simplifyRootOfOne
 
+private val rationalizeHigherOrderRoot = plan {
+    pipeline {
+        steps(higherOrderRationalizingTerm)
+        steps {
+            plan {
+                pipeline {
+                    steps {
+                        whilePossible {
+                            deeply(evaluateSignedIntegerAddition)
+                        }
+                    }
+                    optionalSteps {
+                        whilePossible {
+                            deeply(eliminateLoneOneInExponent)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 val findRationalizingTerm = plan {
     firstOf {
         option(rationalizeSimpleDenominator)
+        option(rationalizeHigherOrderRoot)
         option(rationalizeSumOfIntegerAndRadical)
         option(rationalizeCubeRootDenominator)
     }
@@ -26,9 +54,19 @@ private val simplifyAfterRationalization = plan {
         deeply {
             firstOf {
                 option(identityCubeSumDifference)
+                option(bringSameIndexSameFactorRootsAsOneRoot)
+                option {
+                    plan {
+                        whilePossible {
+                            deeply(evaluateSignedIntegerAddition)
+                        }
+                    }
+                }
+                option(combineProductOfSamePowerUnderHigherRoot)
+                option(simplifyNthRootToThePowerOfN)
+                option(simplifyNthRootOfNthPower)
                 option(simplifyProductWithRoots)
                 option(simplifyProductOfConjugates)
-                option(simplifyNthRootToThePowerOfN)
                 option(simplifyIntegersInSum)
             }
         }
@@ -43,6 +81,7 @@ val rationalizeDenominators = plan {
         optionalSteps(flipRootsInDenominator)
         optionalSteps { deeply(simplifyRootOfOne) }
         optionalSteps { deeply(simplifyIntegerRoot) }
+        optionalSteps { deeply(factorizeHigherOrderRadicand) }
         steps(findRationalizingTerm)
         steps(multiplyFractions)
         optionalSteps {

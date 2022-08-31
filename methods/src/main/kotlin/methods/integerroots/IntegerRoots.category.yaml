@@ -17,8 +17,6 @@ explanations:
     defaultTranslation:
 
   # Plans - Square roots
-  SimplifyProductOfRoots:
-    defaultTranslation:
   SimplifyProductWithRoots:
     defaultTranslation:
   SimplifyIntegerRoot:
@@ -50,6 +48,10 @@ explanations:
   PutRootCoefficientUnderRoot:
     defaultTranslation:
   BringRootsToSameIndexInProduct:
+    defaultTranslation:
+  BringSameIndexSameFactorRootsAsOneRoot:
+    defaultTranslation:
+  CombineProductOfSamePowerUnderHigherRoot:
     defaultTranslation:
 
   # Plans - Higher order roots

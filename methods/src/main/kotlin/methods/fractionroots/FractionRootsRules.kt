@@ -5,15 +5,23 @@ import engine.expressionmakers.copyFlippedSign
 import engine.expressionmakers.copySign
 import engine.expressionmakers.makeBracketOf
 import engine.expressionmakers.makeFractionOf
+import engine.expressionmakers.makeNegOf
 import engine.expressionmakers.makeNumericOp
 import engine.expressionmakers.makePowerOf
 import engine.expressionmakers.makeProductOf
 import engine.expressionmakers.makeRootOf
 import engine.expressionmakers.makeSimplifiedPowerOf
+import engine.expressionmakers.makeSimplifiedProductOf
 import engine.expressionmakers.makeSquareRootOf
 import engine.expressionmakers.makeSumOf
 import engine.expressionmakers.move
+import engine.expressionmakers.transform
+import engine.expressions.BinaryOperator
 import engine.expressions.Constants.Three
+import engine.expressions.MappedExpression
+import engine.expressions.NaryOperator
+import engine.expressions.mappedExpression
+import engine.expressions.powerOf
 import engine.expressions.xp
 import engine.methods.Rule
 import engine.patterns.AnyPattern
@@ -32,6 +40,7 @@ import engine.patterns.oneOf
 import engine.patterns.oppositeSignPattern
 import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
+import engine.patterns.productContaining
 import engine.patterns.productOf
 import engine.patterns.rootOf
 import engine.patterns.squareRootOf
@@ -39,6 +48,9 @@ import engine.patterns.sumOf
 import engine.patterns.withOptionalIntegerCoefficient
 import engine.steps.metadata.makeMetadata
 import engine.utility.divides
+import engine.utility.isPrime
+import engine.utility.primeFactorDecomposition
+import java.math.BigInteger
 
 /**
  * E.g: sqrt[[2 / 3]] -> [sqrt[2] / sqrt[3]]
@@ -218,7 +230,7 @@ val identityCubeSumDifference = run {
             makePowerOf(move(term1), FixedExpressionMaker(Three)),
             copySign(opbTerm2, makePowerOf(move(term2), FixedExpressionMaker(Three)))
         ),
-        explanationMaker = makeMetadata(Explanation.IdentityCubeSum)
+        explanationMaker = makeMetadata(Explanation.IdentityCubeSumDifference)
     )
 }
 
@@ -281,9 +293,131 @@ val rationalizeSumOfIntegerAndRadical = run {
             move(fraction),
             makeFractionOf(
                 makeSumOf(move(term1), copyFlippedSign(signedTerm2, move(term2))),
-                makeSumOf(move(term1), copyFlippedSign(signedTerm2, move(term2))),
+                makeSumOf(move(term1), copyFlippedSign(signedTerm2, move(term2)))
             )
         ),
         explanationMaker = makeMetadata(Explanation.RationalizeSumOfIntegerAndRadical)
+    )
+}
+
+/**
+ * finds and multiplies the rationalizing term of a higher order root
+ * input: [a / root[x, n]]
+*/
+val higherOrderRationalizingTerm = run {
+    val numerator = AnyPattern()
+    val index = UnsignedIntegerPattern()
+    val base = UnsignedIntegerPattern()
+    val exponent = UnsignedIntegerPattern()
+    val exponentFactorPtn = powerOf(base, exponent)
+    val integerFactorPtn = UnsignedIntegerPattern()
+    val radicand = oneOf(
+        productContaining(),
+        exponentFactorPtn,
+        integerFactorPtn
+    )
+    val radical = rootOf(radicand, index)
+    val denominator = withOptionalIntegerCoefficient(radical)
+
+    val pattern = fractionOf(numerator, denominator)
+
+    Rule(
+        pattern = pattern,
+        resultMaker = custom {
+            val rationalizationFactors = mutableListOf<MappedExpression>()
+            val matchPatternRadical = radical.findMatches(get(radical)!!).firstOrNull()
+
+            val indexValue = matchPatternRadical?.let { index.getBoundExpr(it) }
+
+            if (indexValue != null) {
+                val primeFactorizedFormExpr = get(radical)!!.children()[0]
+
+                if (primeFactorizedFormExpr.expr.operator == NaryOperator.Product) {
+                    for (term in primeFactorizedFormExpr.children()) {
+                        val exponentFactorMatch = exponentFactorPtn.findMatches(term).firstOrNull()
+                        val integerFactorMatch = integerFactorPtn.findMatches(term).firstOrNull()
+                        if (exponentFactorMatch != null) {
+                            rationalizationFactors.add(
+                                makePowerOf(
+                                    move(base),
+                                    makeSumOf(FixedExpressionMaker(indexValue), makeNegOf(move(exponent)))
+                                ).make(exponentFactorMatch)
+                            )
+                        } else if (integerFactorMatch != null) {
+                            rationalizationFactors.add(
+                                makePowerOf(
+                                    FixedExpressionMaker(term.expr),
+                                    makeSumOf(FixedExpressionMaker(indexValue), FixedExpressionMaker(xp(-1)))
+                                ).make(integerFactorMatch)
+                            )
+                        }
+                    }
+                } else if (primeFactorizedFormExpr.expr.operator == BinaryOperator.Power) {
+                    val exponentFactorMatch = exponentFactorPtn.findMatches(primeFactorizedFormExpr).firstOrNull()
+                    if (exponentFactorMatch != null) {
+                        rationalizationFactors.add(
+                            makePowerOf(
+                                move(base),
+                                makeSumOf(FixedExpressionMaker(indexValue), makeNegOf(move(exponent)))
+                            ).make(exponentFactorMatch)
+                        )
+                    }
+                } else {
+                    val integerFactorMatch = integerFactorPtn.findMatches(primeFactorizedFormExpr).firstOrNull()
+                    if (integerFactorMatch != null) {
+                        rationalizationFactors.add(
+                            makePowerOf(
+                                FixedExpressionMaker(primeFactorizedFormExpr.expr),
+                                makeSumOf(FixedExpressionMaker(indexValue), FixedExpressionMaker(xp(-1)))
+                            ).make(integerFactorMatch)
+                        )
+                    }
+                }
+            }
+
+            val rationalizationTerm = makeRootOf(
+                if (rationalizationFactors.size == 1) rationalizationFactors[0]
+                else mappedExpression(NaryOperator.Product, rationalizationFactors),
+                move(index)
+            )
+
+            makeProductOf(
+                move(pattern),
+                makeFractionOf(rationalizationTerm, rationalizationTerm)
+            )
+        },
+        explanationMaker = makeMetadata(Explanation.HigherOrderRationalizingTerm)
+    )
+}
+
+/**
+ * factorize radicand of nth root in the denominator, possibly with a coefficient
+ * [9 / root[18, 4]] --> [9 / root[ 2 * 3^2, 4] ]
+ */
+val factorizeHigherOrderRadicand = run {
+    val numerator = AnyPattern()
+    val radicand = numericCondition(UnsignedIntegerPattern()) { !it.isPrime() }
+    val rootOrder = numericCondition(UnsignedIntegerPattern()) { it > BigInteger.TWO }
+    val root = rootOf(radicand, rootOrder)
+    val denominator = withOptionalIntegerCoefficient(root)
+    val pattern = fractionOf(numerator, denominator)
+
+    Rule(
+        pattern = pattern,
+        resultMaker = custom {
+            val factorized = getValue(radicand)
+                .primeFactorDecomposition()
+                .map { (f, n) -> FixedExpressionMaker(if (n == BigInteger.ONE) xp(f) else powerOf(xp(f), xp(n))) }
+
+            val match = matchPattern(pattern, get(pattern)!!)
+            makeFractionOf(
+                move(numerator),
+                makeSimplifiedProductOf(
+                    denominator.coefficient(match!!),
+                    makeRootOf(transform(radicand, makeProductOf(factorized)), move(rootOrder))
+                )
+            )
+        },
+        explanationMaker = makeMetadata(Explanation.FactorizeHigherOrderRadicand)
     )
 }

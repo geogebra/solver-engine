@@ -1,6 +1,10 @@
 package methods.constantexpressions
 
+import methods.fractionarithmetic.FractionArithmeticExplanation
+import methods.fractionroots.FractionRootsExplanation
 import methods.general.GeneralExplanation
+import methods.integerarithmetic.IntegerArithmeticExplanation
+import methods.integerroots.IntegerRootsExplanation
 import methods.plans.testPlan
 import org.junit.jupiter.api.Test
 
@@ -341,6 +345,359 @@ class ConstantExpressionRationalizationTest {
 
             step {
                 toExpr = "-(root[9, 3] + root[15, 3] + root[25, 3])"
+            }
+        }
+    }
+
+    @Test
+    fun testRationalizeHigherOrderRoot1() = testPlan {
+        plan = simplifyConstantExpression
+        inputExpr = "[9 / 2 * root[18, 4]]"
+
+        check {
+            fromExpr = "[9 / 2 * root[18, 4]]"
+            toExpr = "[3 * root[72, 4] / 4]"
+
+            step {
+                fromExpr = "[9 / 2 * root[18, 4]]"
+                toExpr = "[9 * root[72, 4] / 12]"
+
+                step {
+                    fromExpr = "[9 / 2 * root[18, 4]]"
+                    toExpr = "[9 / 2 * root[2 * [3 ^ 2], 4]]"
+                }
+
+                step {
+                    fromExpr = "[9 / 2 * root[2 * [3 ^ 2], 4]]"
+                    toExpr = "[9 / 2 * root[2 * [3 ^ 2], 4]] * " +
+                        "[root[[2 ^ 3] * [3 ^ 2], 4] / root[[2 ^ 3] * [3 ^ 2], 4]]"
+
+                    step {
+                        fromExpr = "[9 / 2 * root[2 * [3 ^ 2], 4]]"
+                        toExpr = "[9 / 2 * root[2 * [3 ^ 2], 4]] * " +
+                            "[root[[2 ^ 4 - 1] * [3 ^ 4 - 2], 4] / root[[2 ^ 4 - 1] * [3 ^ 4 - 2], 4]]"
+                    }
+
+                    step {
+                        fromExpr = "[9 / 2 * root[2 * [3 ^ 2], 4]] * " +
+                            "[root[[2 ^ 4 - 1] * [3 ^ 4 - 2], 4] / root[[2 ^ 4 - 1] * [3 ^ 4 - 2], 4]]"
+                        toExpr = "[9 / 2 * root[2 * [3 ^ 2], 4]] * " +
+                            "[root[[2 ^ 3] * [3 ^ 2], 4] / root[[2 ^ 3] * [3 ^ 2], 4]]"
+                    }
+                }
+
+                step {
+                    fromExpr = "[9 / 2 * root[2 * [3 ^ 2], 4]] * " +
+                        "[root[[2 ^ 3] * [3 ^ 2], 4] / root[[2 ^ 3] * [3 ^ 2], 4]]"
+                    toExpr = "[9 * root[[2 ^ 3] * [3 ^ 2], 4] / " +
+                        "2 * root[2 * [3 ^ 2], 4] * root[[2 ^ 3] * [3 ^ 2], 4]]"
+                }
+
+                step {
+                    fromExpr = "[9 * root[[2 ^ 3] * [3 ^ 2], 4] / " +
+                        "2 * root[2 * [3 ^ 2], 4] * root[[2 ^ 3] * [3 ^ 2], 4]]"
+                    toExpr = "[9 * root[72, 4] / 2 * root[2 * [3 ^ 2], 4] * root[[2 ^ 3] * [3 ^ 2], 4]]"
+
+                    step {
+                        fromExpr = "9 * root[[2 ^ 3] * [3 ^ 2], 4]"
+                        toExpr = "9 * root[72, 4]"
+
+                        step {
+                            fromExpr = "9 * root[[2 ^ 3] * [3 ^ 2], 4]"
+                            toExpr = "9 * root[8 * [3 ^ 2], 4]"
+                        }
+
+                        step {
+                            fromExpr = "9 * root[8 * [3 ^ 2], 4]"
+                            toExpr = "9 * root[8 * 9, 4]"
+                        }
+
+                        step {
+                            fromExpr = "9 * root[8 * 9, 4]"
+                            toExpr = "9 * root[72, 4]"
+
+                            step {
+                                fromExpr = "8 * 9"
+                                toExpr = "72"
+                            }
+                        }
+                    }
+                }
+
+                step {
+                    fromExpr = "[9 * root[72, 4] / 2 * root[2 * [3 ^ 2], 4] * root[[2 ^ 3] * [3 ^ 2], 4]]"
+                    toExpr = "[9 * root[72, 4] / 12]"
+
+                    step {
+                        fromExpr = "2 * root[2 * [3 ^ 2], 4] * root[[2 ^ 3] * [3 ^ 2], 4]"
+                        toExpr = "2 * root[[2 ^ 1 + 3] * [3 ^ 2 + 2], 4]"
+                    }
+
+                    step {
+                        fromExpr = "2 * root[[2 ^ 1 + 3] * [3 ^ 2 + 2], 4]"
+                        toExpr = "2 * root[[2 ^ 4] * [3 ^ 4], 4]"
+                    }
+
+                    step {
+                        fromExpr = "2 * root[[2 ^ 4] * [3 ^ 4], 4]"
+                        toExpr = "2 * root[[(2 * 3) ^ 4], 4]"
+                    }
+
+                    step {
+                        fromExpr = "2 * root[[(2 * 3) ^ 4], 4]"
+                        toExpr = "2 * root[[(6) ^ 4], 4]"
+
+                        step {
+                            fromExpr = "2 * 3"
+                            toExpr = "6"
+                        }
+                    }
+
+                    step {
+                        fromExpr = "2 * root[[(6) ^ 4], 4]"
+                        toExpr = "2 * 6"
+                    }
+
+                    step {
+                        fromExpr = "2 * 6"
+                        toExpr = "12"
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "[9 * root[72, 4] / 12]"
+                toExpr = "[3 * root[72, 4] / 4]"
+
+                step {
+                    fromExpr = "[9 * root[72, 4] / 12]"
+                    toExpr = "[3 * 3 * root[72, 4] / 3 * 4]"
+                }
+
+                step {
+                    fromExpr = "[3 * 3 * root[72, 4] / 3 * 4]"
+                    toExpr = "[3 * root[72, 4] / 4]"
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testRationalizeHigherOrderRoot2() = testPlan {
+        plan = simplifyConstantExpression
+        inputExpr = "[2/root[2, 3]]"
+
+        check {
+            fromExpr = "[2 / root[2, 3]]"
+            toExpr = "root[4, 3]"
+
+            step {
+                fromExpr = "[2 / root[2, 3]]"
+                toExpr = "[2 * root[4, 3] / 2]"
+                explanation {
+                    key = FractionRootsExplanation.RationalizeDenominator
+                }
+
+                step {
+                    fromExpr = "[2 / root[2, 3]]"
+                    toExpr = "[2 / root[2, 3]] * [root[[2 ^ 2], 3] / root[[2 ^ 2], 3]]"
+
+                    step {
+                        fromExpr = "[2 / root[2, 3]]"
+                        toExpr = "[2 / root[2, 3]] * [root[[2 ^ 3 - 1], 3] / root[[2 ^ 3 - 1], 3]]"
+                        explanation {
+                            key = FractionRootsExplanation.HigherOrderRationalizingTerm
+                        }
+                    }
+
+                    step {
+                        fromExpr = "[2 / root[2, 3]] * [root[[2 ^ 3 - 1], 3] / root[[2 ^ 3 - 1], 3]]"
+                        toExpr = "[2 / root[2, 3]] * [root[[2 ^ 2], 3] / root[[2 ^ 2], 3]]"
+
+                        step {
+                            fromExpr = "[2 / root[2, 3]] * [root[[2 ^ 3 - 1], 3] / root[[2 ^ 3 - 1], 3]]"
+                            toExpr = "[2 / root[2, 3]] * [root[[2 ^ 2], 3] / root[[2 ^ 3 - 1], 3]]"
+                            explanation {
+                                key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                            }
+                        }
+
+                        step {
+                            fromExpr = "[2 / root[2, 3]] * [root[[2 ^ 2], 3] / root[[2 ^ 3 - 1], 3]]"
+                            toExpr = "[2 / root[2, 3]] * [root[[2 ^ 2], 3] / root[[2 ^ 2], 3]]"
+                            explanation {
+                                key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                            }
+                        }
+                    }
+                }
+
+                step {
+                    fromExpr = "[2 / root[2, 3]] * [root[[2 ^ 2], 3] / root[[2 ^ 2], 3]]"
+                    toExpr = "[2 * root[[2 ^ 2], 3] / root[2, 3] * root[[2 ^ 2], 3]]"
+                    explanation {
+                        key = FractionArithmeticExplanation.MultiplyFractions
+                    }
+                }
+
+                step {
+                    fromExpr = "[2 * root[[2 ^ 2], 3] / root[2, 3] * root[[2 ^ 2], 3]]"
+                    toExpr = "[2 * root[4, 3] / root[2, 3] * root[[2 ^ 2], 3]]"
+
+                    step {
+                        fromExpr = "2 * root[[2 ^ 2], 3]"
+                        toExpr = "2 * root[4, 3]"
+                        explanation {
+                            key = IntegerArithmeticExplanation.EvaluateIntegerPowerDirectly
+                        }
+                    }
+                }
+
+                step {
+                    fromExpr = "[2 * root[4, 3] / root[2, 3] * root[[2 ^ 2], 3]]"
+                    toExpr = "[2 * root[4, 3] / 2]"
+
+                    step {
+                        fromExpr = "root[2, 3] * root[[2 ^ 2], 3]"
+                        toExpr = "root[[2 ^ 1 + 2], 3]"
+                        explanation {
+                            key = IntegerRootsExplanation.BringSameIndexSameFactorRootsAsOneRoot
+                        }
+                    }
+
+                    step {
+                        fromExpr = "root[[2 ^ 1 + 2], 3]"
+                        toExpr = "root[[2 ^ 3], 3]"
+                        explanation {
+                            key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                        }
+                    }
+
+                    step {
+                        fromExpr = "root[[2 ^ 3], 3]"
+                        toExpr = "2"
+                        explanation {
+                            key = IntegerRootsExplanation.SimplifyNthRootOfNthPower
+                        }
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "[2 * root[4, 3] / 2]"
+                toExpr = "root[4, 3]"
+                explanation {
+                    key = GeneralExplanation.CancelDenominator
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testSimplifyArithmeticExpression3() = testPlan {
+        plan = simplifyConstantExpression
+        inputExpr = "[2 / root[9, 3]]"
+
+        check {
+            fromExpr = "[2 / root[9, 3]]"
+            toExpr = "[2 * root[3, 3] / 3]"
+            explanation {
+                key = FractionRootsExplanation.RationalizeDenominator
+            }
+
+            step {
+                fromExpr = "[2 / root[9, 3]]"
+                toExpr = "[2 / root[[3 ^ 2], 3]]"
+                explanation {
+                    key = FractionRootsExplanation.FactorizeHigherOrderRadicand
+                }
+            }
+
+            step {
+                fromExpr = "[2 / root[[3 ^ 2], 3]]"
+                toExpr = "[2 / root[[3 ^ 2], 3]] * [root[3, 3] / root[3, 3]]"
+
+                step {
+                    fromExpr = "[2 / root[[3 ^ 2], 3]]"
+                    toExpr = "[2 / root[[3 ^ 2], 3]] * [root[[3 ^ 3 - 2], 3] / root[[3 ^ 3 - 2], 3]]"
+                    explanation {
+                        key = FractionRootsExplanation.HigherOrderRationalizingTerm
+                    }
+                }
+
+                step {
+                    fromExpr = "[2 / root[[3 ^ 2], 3]] * [root[[3 ^ 3 - 2], 3] / root[[3 ^ 3 - 2], 3]]"
+                    toExpr = "[2 / root[[3 ^ 2], 3]] * [root[3, 3] / root[3, 3]]"
+
+                    step {
+                        fromExpr = "[2 / root[[3 ^ 2], 3]] * [root[[3 ^ 3 - 2], 3] / root[[3 ^ 3 - 2], 3]]"
+                        toExpr = "[2 / root[[3 ^ 2], 3]] * [root[[3 ^ 1], 3] / root[[3 ^ 3 - 2], 3]]"
+                        explanation {
+                            key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                        }
+                    }
+
+                    step {
+                        fromExpr = "[2 / root[[3 ^ 2], 3]] * [root[[3 ^ 1], 3] / root[[3 ^ 3 - 2], 3]]"
+                        toExpr = "[2 / root[[3 ^ 2], 3]] * [root[[3 ^ 1], 3] / root[[3 ^ 1], 3]]"
+                        explanation {
+                            key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                        }
+                    }
+
+                    step {
+                        fromExpr = "[2 / root[[3 ^ 2], 3]] * [root[[3 ^ 1], 3] / root[[3 ^ 1], 3]]"
+                        toExpr = "[2 / root[[3 ^ 2], 3]] * [root[3, 3] / root[[3 ^ 1], 3]]"
+                        explanation {
+                            key = GeneralExplanation.EliminateLoneOneInExponent
+                        }
+                    }
+
+                    step {
+                        fromExpr = "[2 / root[[3 ^ 2], 3]] * [root[3, 3] / root[[3 ^ 1], 3]]"
+                        toExpr = "[2 / root[[3 ^ 2], 3]] * [root[3, 3] / root[3, 3]]"
+                        explanation {
+                            key = GeneralExplanation.EliminateLoneOneInExponent
+                        }
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "[2 / root[[3 ^ 2], 3]] * [root[3, 3] / root[3, 3]]"
+                toExpr = "[2 * root[3, 3] / root[[3 ^ 2], 3] * root[3, 3]]"
+                explanation {
+                    key = FractionArithmeticExplanation.MultiplyFractions
+                }
+            }
+
+            step {
+                fromExpr = "[2 * root[3, 3] / root[[3 ^ 2], 3] * root[3, 3]]"
+                toExpr = "[2 * root[3, 3] / 3]"
+
+                step {
+                    fromExpr = "root[[3 ^ 2], 3] * root[3, 3]"
+                    toExpr = "root[[3 ^ 2 + 1], 3]"
+                    explanation {
+                        key = IntegerRootsExplanation.BringSameIndexSameFactorRootsAsOneRoot
+                    }
+                }
+
+                step {
+                    fromExpr = "root[[3 ^ 2 + 1], 3]"
+                    toExpr = "root[[3 ^ 3], 3]"
+                    explanation {
+                        key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                    }
+                }
+
+                step {
+                    fromExpr = "root[[3 ^ 3], 3]"
+                    toExpr = "3"
+                    explanation {
+                        key = IntegerRootsExplanation.SimplifyNthRootOfNthPower
+                    }
+                }
             }
         }
     }

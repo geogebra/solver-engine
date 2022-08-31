@@ -42,7 +42,7 @@ val normalizeSignsInFraction = plan {
 }
 
 val normalizeFractions = plan {
-    // Normalize fractions within fractions)
+    // Normalize fractions within fractions
     explanation(Explanation.NormalizeFractionsAndDivisions)
 
     whilePossible {

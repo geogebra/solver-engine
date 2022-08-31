@@ -12,26 +12,22 @@ explanations:
     defaultTranslation: Apply the root separately to the numerator and denominator
   RationalizeSumOfIntegerAndRadical:
     defaultTranslation:
-  SimplifyFractionOfRootsWithSameOrder:
-    defaultTranslation:
   BringRootsToSameIndexInFraction:
     defaultTranslation:
   RationalizeCubeRootDenominator:
     defaultTranslation:
-  MultiplyRationalizingTerm:
-    defaultTranslation:
-  IdentityCubeSum:
-    defaultTranslation:
-  IdentityCubeDiff:
+  IdentityCubeSumDifference:
     defaultTranslation:
   FlipRootsInDenominator:
+    defaultTranslation:
+  HigherOrderRationalizingTerm:
+    defaultTranslation:
+  FactorizeHigherOrderRadicand:
     defaultTranslation:
 
   # Plans
   RationalizeDenominator:
     defaultTranslation: "Rationalize the denominator of the fraction"
-  EvaluateSquareRootFractions:
-    defaultTranslation:
   SimplifyFractionOfRoots:
     defaultTranslation:
 

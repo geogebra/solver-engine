@@ -14,5 +14,6 @@ class TestBigIntegerExtensions {
         assert(!125.toBigInteger().isPowerOfDegree(2))
         assert(1.toBigInteger().isPowerOfDegree(6))
         assert(0.toBigInteger().isPowerOfDegree(10))
+        assert(11.toBigInteger().isPrime())
     }
 }

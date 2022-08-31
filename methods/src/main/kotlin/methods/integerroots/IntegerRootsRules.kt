@@ -6,11 +6,16 @@ import engine.expressionmakers.makePowerOf
 import engine.expressionmakers.makeProductOf
 import engine.expressionmakers.makeRootOf
 import engine.expressionmakers.makeSimplifiedPowerOf
+import engine.expressionmakers.makeSimplifiedProductOf
+import engine.expressionmakers.makeSumOf
 import engine.expressionmakers.move
 import engine.expressionmakers.substituteIn
 import engine.expressionmakers.transform
 import engine.expressions.BinaryOperator
+import engine.expressions.MappedExpression
+import engine.expressions.NaryOperator
 import engine.expressions.UnaryOperator
+import engine.expressions.mappedExpression
 import engine.expressions.powerOf
 import engine.expressions.xp
 import engine.methods.Rule
@@ -29,6 +34,7 @@ import engine.patterns.productContaining
 import engine.patterns.productOf
 import engine.patterns.rootOf
 import engine.patterns.squareRootOf
+import engine.patterns.withOptionalIntegerCoefficient
 import engine.steps.metadata.Skill
 import engine.steps.metadata.makeMetadata
 import engine.utility.divides
@@ -42,7 +48,7 @@ val simplifyRootOfOne = run {
     Rule(
         pattern = oneOf(squareRootOf(one), rootOf(one, AnyPattern())),
         resultMaker = move(one),
-        explanationMaker = makeMetadata(Explanation.SimplifyRootOfOne, move(one)),
+        explanationMaker = makeMetadata(Explanation.SimplifyRootOfOne, move(one))
     )
 }
 
@@ -52,7 +58,7 @@ val simplifyRootOfZero = run {
     Rule(
         pattern = oneOf(squareRootOf(zero), rootOf(zero, AnyPattern())),
         resultMaker = move(zero),
-        explanationMaker = makeMetadata(Explanation.SimplifyRootOfZero, move(zero)),
+        explanationMaker = makeMetadata(Explanation.SimplifyRootOfZero, move(zero))
     )
 }
 
@@ -110,9 +116,9 @@ val splitPowerUnderRoot = run {
                 makePowerOf(move(base), makeNumericOp(root.order, exponent) { n1, n2 -> n2 - n2 % n1 }),
                 makeSimplifiedPowerOf(move(base), makeNumericOp(root.order, exponent) { p, n -> n % p })
             ),
-            move(root.order),
+            move(root.order)
         ),
-        explanationMaker = makeMetadata(Explanation.SeparateSquaresUnderSquareRoot, move(base), move(exponent)),
+        explanationMaker = makeMetadata(Explanation.SeparateSquaresUnderSquareRoot, move(base), move(exponent))
     )
 }
 
@@ -130,7 +136,7 @@ val multiplyNthRoots = run {
         pattern = ConditionPattern(product, numericCondition(root1.order, root2.order) { n1, n2 -> n1 == n2 }),
         resultMaker = substituteIn(
             product,
-            makeRootOf(makeProductOf(move(radicand1), move(radicand2)), move(root1.order)),
+            makeRootOf(makeProductOf(move(radicand1), move(radicand2)), move(root1.order))
         ),
         explanationMaker = makeMetadata(Explanation.MultiplyNthRoots)
     )
@@ -183,7 +189,7 @@ val simplifyNthRootToThePowerOfN = run {
     Rule(
         pattern = power,
         resultMaker = move(radicand),
-        explanationMaker = makeMetadata(Explanation.SimplifyNthRootToThePowerOfN),
+        explanationMaker = makeMetadata(Explanation.SimplifyNthRootToThePowerOfN)
     )
 }
 
@@ -224,7 +230,7 @@ val simplifyNthRootOfNthPower = run {
     Rule(
         pattern = ConditionPattern(radical, numericCondition(radical.order, exponent) { n1, n2 -> n1 == n2 }),
         resultMaker = move(base),
-        explanationMaker = makeMetadata(Explanation.SimplifyNthRootOfNthPower),
+        explanationMaker = makeMetadata(Explanation.SimplifyNthRootOfNthPower)
     )
 }
 
@@ -245,9 +251,9 @@ val prepareCancellingRootOfAPower = run {
         resultMaker = makeRootOf(
             makePowerOf(
                 makePowerOf(move(base), makeNumericOp(radical.order, exponent) { n1, n2 -> n2 / n1 }),
-                move(radical.order),
+                move(radical.order)
             ),
-            move(radical.order),
+            move(radical.order)
         ),
         explanationMaker = makeMetadata(Explanation.PrepareCancellingRootOfAPower)
     )
@@ -337,8 +343,122 @@ val bringRootsToSameIndexInProduct = run {
                     makeNumericOp(leftRoot.order, rightRoot.order) { n1, n2 -> n1 / n1.gcd(n2) }
                 ),
                 makeNumericOp(leftRoot.order, rightRoot.order) { n1, n2 -> n1 * n2 / n1.gcd(n2) }
-            ),
+            )
         ),
-        explanationMaker = makeMetadata(Explanation.BringRootsToSameIndexInProduct),
+        explanationMaker = makeMetadata(Explanation.BringRootsToSameIndexInProduct)
+    )
+}
+
+val bringSameIndexSameFactorRootsAsOneRoot = run {
+    val integerFactor = UnsignedIntegerPattern()
+    val base = UnsignedIntegerPattern()
+    val exponent = UnsignedIntegerPattern()
+    val powerFactor = powerOf(base, exponent)
+    val factorPtn = oneOf(integerFactor, powerFactor)
+    val leftRadicand = oneOf(
+        condition(productContaining()) { expression ->
+            expression.operands.all { factorPtn.matches(it) }
+        },
+        factorPtn
+    )
+
+    val rightRadicand = oneOf(
+        condition(productContaining()) { expression ->
+            expression.operands.all { factorPtn.matches(it) }
+        },
+        factorPtn
+    )
+
+    val orderOfRoot = UnsignedIntegerPattern()
+    val leftRoot = rootOf(leftRadicand, orderOfRoot)
+    val rightRoot = integerOrderRootOf(rightRadicand)
+
+    val pattern = productContaining(leftRoot, rightRoot)
+
+    Rule(
+        pattern = pattern,
+        resultMaker = custom {
+            val result = mutableListOf<MappedExpression>()
+            val valLeftRadicand = get(leftRadicand)!!
+
+            val terms = if (valLeftRadicand.expr.operator == NaryOperator.Product) valLeftRadicand.children()
+            else listOf(valLeftRadicand)
+
+            val indexValue = getValue(orderOfRoot)
+
+            for (term in terms) {
+                val powerFactorMatch = powerFactor.findMatches(term).firstOrNull()
+                if (powerFactorMatch != null) {
+                    result.add(
+                        makePowerOf(
+                            move(base),
+                            makeSumOf(move(exponent), makeNumericOp(exponent) { indexValue - it })
+                        ).make(powerFactorMatch)
+                    )
+                } else {
+                    val integerFactorMatch = integerFactor.findMatches(term).firstOrNull()
+                    if (integerFactorMatch != null) {
+                        result.add(
+                            makePowerOf(
+                                move(integerFactor),
+                                makeSumOf(
+                                    FixedExpressionMaker(xp(1)),
+                                    FixedExpressionMaker(xp(indexValue - BigInteger.ONE))
+                                )
+                            ).make(integerFactorMatch)
+                        )
+                    }
+                }
+            }
+
+            val resultRadicand = if (result.size == 1) result[0] else mappedExpression(NaryOperator.Product, result)
+
+            substituteIn(
+                pattern,
+                makeRootOf(
+                    resultRadicand,
+                    move(orderOfRoot)
+                )
+            )
+        },
+        explanationMaker = makeMetadata(Explanation.BringSameIndexSameFactorRootsAsOneRoot)
+    )
+}
+
+/**
+ * root[ [a^p] * [b^p] * [c^p] * ..., p] --> root[[(a * b * c * ... )^p], p]
+ */
+val combineProductOfSamePowerUnderHigherRoot = run {
+    val prod = productContaining()
+    val root = integerOrderRootOf(prod)
+    val cond = ConditionPattern(root) { match ->
+        val order = root.order.getBoundExpr(match)!!
+        val product = prod.getBoundExpr(match)!!
+
+        product.operands.all { it.operator == BinaryOperator.Power && it.operands[1] == order }
+    }
+
+    val pattern = withOptionalIntegerCoefficient(cond)
+
+    Rule(
+        pattern = pattern,
+        resultMaker = custom {
+            val product = get(prod)!!
+            val order = product.nthChild(0).nthChild(1)
+
+            val match = matchPattern(pattern, get(pattern)!!)
+
+            makeSimplifiedProductOf(
+                pattern.coefficient(match!!),
+                makeRootOf(
+                    makePowerOf(
+                        makeProductOf(product.children().map { it.nthChild(0) }),
+                        order
+                    ),
+                    move(root.order)
+                )
+            )
+        },
+        explanationMaker = makeMetadata(Explanation.CombineProductOfSamePowerUnderHigherRoot)
     )
 }

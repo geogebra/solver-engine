@@ -29,7 +29,7 @@ object IntegerRootsRulesTest : RuleTest {
             "sqrt[[2^3] * 5 * [7^2]]",
             splitRootOfProduct,
             "sqrt[[2^3]] * sqrt[5] * sqrt[[7^2]]"
-        ),
+        )
     )
 }
 
@@ -102,6 +102,65 @@ class SeparateIntegerRootsRulesTest {
             "[2 * sqrt[2] / 3] + [1 / 5] * sqrt[2] - 4 * sqrt[2]",
             collectLikeRoots,
             "([2 / 3] + [1 / 5] - 4) * sqrt[2]"
+        ).assert()
+    }
+
+    @Test
+    fun testBringSameIndexSameFactorRootsAsOneRoot() {
+        RuleTestCase(
+            "root[2 * [3^2], 4] * root[ [2^3] * [3^2], 4]",
+            bringSameIndexSameFactorRootsAsOneRoot,
+            "root[[2 ^ 1 + 3] * [3 ^ 2 + 2], 4]"
+        ).assert()
+
+        RuleTestCase(
+            "2 * root[2 * [3^2], 4] * root[ [2^3] * [3^2], 4]",
+            bringSameIndexSameFactorRootsAsOneRoot,
+            "2 * root[[2 ^ 1 + 3] * [3 ^ 2 + 2], 4]"
+        ).assert()
+
+        RuleTestCase(
+            "root[2, 4] * root[[2^3], 4]",
+            bringSameIndexSameFactorRootsAsOneRoot,
+            "root[[2^1 + 3], 4]"
+        ).assert()
+    }
+
+    @Test
+    fun testCombineSamePowerUnderHigherRoot() {
+        RuleTestCase(
+            "root[[2^4] * [3^4], 5]",
+            combineProductOfSamePowerUnderHigherRoot,
+            null
+        ).assert()
+        RuleTestCase(
+            "root[[2^4] * [3^5], 4]",
+            combineProductOfSamePowerUnderHigherRoot,
+            null
+        ).assert()
+        RuleTestCase(
+            "root[[2^4] * [3^4], 4]",
+            combineProductOfSamePowerUnderHigherRoot,
+            "root[[(2 * 3) ^ 4], 4]"
+        ).assert()
+        RuleTestCase(
+            "root[[2^4] * [3^4] * [5^4], 4]",
+            combineProductOfSamePowerUnderHigherRoot,
+            "root[[(2 * 3 * 5) ^ 4], 4]"
+        ).assert()
+        RuleTestCase(
+            "2 * root[[2^4] * [3^4] * [5^4], 4]",
+            combineProductOfSamePowerUnderHigherRoot,
+            "2 * root[[(2 * 3 * 5) ^ 4], 4]"
+        ).assert()
+    }
+
+    @Test
+    fun testSimplifyNthRootOfNthPower() {
+        RuleTestCase(
+            "root[ [2^3], 3]",
+            simplifyNthRootOfNthPower,
+            "2"
         ).assert()
     }
 }

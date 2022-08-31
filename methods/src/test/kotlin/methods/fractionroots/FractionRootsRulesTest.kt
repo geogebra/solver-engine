@@ -120,6 +120,57 @@ object FractionRootsRulesTest : RuleTest {
             "[2 / -3 * root[3, 3] + sqrt[3]]",
             flipRootsInDenominator,
             "[2 / sqrt[3] - 3 * root[3, 3]]"
+        ),
+        RuleTestCase(
+            "[ 9 / root[[2^2] * [3^2], 4] ]",
+            higherOrderRationalizingTerm,
+            "[9 / root[[2^2] * [3^2], 4]] * [root[[2^4 - 2] * [3^ 4 - 2], 4] / root[[2^4 - 2] * [3^ 4 - 2], 4]]"
+        ),
+        RuleTestCase(
+            "[9 / root[2, 4]]",
+            higherOrderRationalizingTerm,
+            "[9 / root[2, 4]] * [ root[ [2^4-1], 4] / root[ [2^4-1], 4] ]"
+        ),
+        RuleTestCase(
+            "[9 / root[[2^3], 4]]",
+            higherOrderRationalizingTerm,
+            "[9 / root[[2^3], 4]] * [ root[ [2^4-3], 4] / root[ [2^4-3], 4] ]"
+        ),
+        RuleTestCase(
+            "[ 9 / root[[2^2] * [3^2] * 5, 4] ]",
+            higherOrderRationalizingTerm,
+            "[9 / root[[2 ^ 2] * [3 ^ 2] * 5, 4]] * " +
+                "[root[[2 ^ 4 - 2] * [3 ^ 4 - 2] * [5 ^ 4 - 1], 4] / root[[2 ^ 4 - 2] * [3 ^ 4 - 2] * [5 ^ 4 - 1], 4]]"
+        ),
+        RuleTestCase(
+            "[9 / root[ 2 * [3^2], 4]]",
+            higherOrderRationalizingTerm,
+            "[9 / root[2 * [3^2], 4]] * [root[ [2^4 - 1] * [3^4 - 2], 4] / root[ [2^4 - 1] * [3^4 - 2], 4]]"
+        ),
+        RuleTestCase(
+            "[9 / 2 * root[ 2 * [3^2], 4]]",
+            higherOrderRationalizingTerm,
+            "[9 / 2 * root[2 * [3^2], 4]] * [root[ [2^4 - 1] * [3^4 - 2], 4] / root[ [2^4 - 1] * [3^4 - 2], 4]]"
+        ),
+        RuleTestCase(
+            "[9 / root[18, 4]]",
+            factorizeHigherOrderRadicand,
+            "[9 / root[2 * [3^2], 4]]"
+        ),
+        RuleTestCase(
+            "[9 / root[18, 2]]",
+            factorizeHigherOrderRadicand,
+            null
+        ),
+        RuleTestCase(
+            "[9 / 2 * root[18, 4]]",
+            factorizeHigherOrderRadicand,
+            "[9 / 2 * root[2 * [3^2], 4]]"
+        ),
+        RuleTestCase(
+            "[9 / root[2, 3]]",
+            factorizeHigherOrderRadicand,
+            null
         )
     )
 }

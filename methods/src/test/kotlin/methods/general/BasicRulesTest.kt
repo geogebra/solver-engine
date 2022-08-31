@@ -10,6 +10,7 @@ object BasicRulesTest : RuleTest {
     @JvmStatic
     fun testCaseProvider(): Stream<RuleTestCase> = Stream.of(
         RuleTestCase("3*x*1*y*4", eliminateOneInProduct, "3*x*y*4"),
+        RuleTestCase("[2^1]", eliminateLoneOneInExponent, "2"),
         RuleTestCase("(-2) * (-3)", simplifyProductWithTwoNegativeFactors, "2 * 3"),
         RuleTestCase("(-x) * y * (-12) * 5", simplifyProductWithTwoNegativeFactors, "x * y * 12 * 5"),
         RuleTestCase("(-2):(-3)", simplifyProductWithTwoNegativeFactors, "2:3"),
