@@ -37,6 +37,8 @@ object BasicRulesTest : RuleTest {
         RuleTestCase("-(-5)", simplifyDoubleMinus, "5"),
         RuleTestCase("-(-x)", simplifyDoubleMinus, "x"),
 
+        RuleTestCase("1:8", rewriteDivisionAsFraction, "[1 / 8]")
+
     )
 }
 
