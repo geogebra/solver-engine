@@ -5,6 +5,7 @@ plugins {
 
     id("org.jlleitschuh.gradle.ktlint")
     id("io.gitlab.arturbosch.detekt")
+    id("com.google.devtools.ksp") version "1.7.10-1.0.6"
 }
 
 repositories {
@@ -13,8 +14,10 @@ repositories {
 
 dependencies {
     implementation(project(":engine"))
+    implementation(project(":export"))
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")
+    ksp(project(":export"))
 }
 
 tasks.test {
@@ -44,11 +47,6 @@ detekt {
 tasks.register<processor.ProcessCategoriesTask>("processCategories") {
     categoriesRoot.set(file("$projectDir/src"))
     outputRoot.set(file(generatedRoot))
-}
-
-tasks.register<processor.ProcessTranslationsTask>("processTranslations") {
-    categoriesRoot.set(file("$projectDir/src"))
-    outputRoot.set(file(translationsPath))
 }
 
 ktlint {

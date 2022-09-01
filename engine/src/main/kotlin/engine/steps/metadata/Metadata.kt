@@ -5,6 +5,12 @@ import engine.expressions.MappedExpression
 import engine.patterns.Maker
 import engine.patterns.Match
 
+/**
+ * Enums containing translation keys should be annotated with this so that the keys will be imported into ggbtrans.
+ */
+@Target(AnnotationTarget.CLASS)
+annotation class TranslationKeys
+
 interface MetadataKey {
     val keyName: String
 }

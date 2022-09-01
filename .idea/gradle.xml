@@ -15,6 +15,7 @@
             <option value="$PROJECT_DIR$/api" />
             <option value="$PROJECT_DIR$/buildSrc" />
             <option value="$PROJECT_DIR$/engine" />
+            <option value="$PROJECT_DIR$/export" />
             <option value="$PROJECT_DIR$/methods" />
           </set>
         </option>

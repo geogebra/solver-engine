@@ -1,10 +1,5 @@
 package processor
 
-data class TranslationData(
-    val defaultTranslation: String?,
-    val parameters: List<String>?,
-)
-
 data class MethodData(
     val visibility: String,
     val description: String,
@@ -18,6 +13,5 @@ data class CategoryMetadata(
 
 data class Category(
     val metadata: CategoryMetadata,
-    val explanations: Map<String, TranslationData>,
     val methods: Map<String, MethodData>,
 )

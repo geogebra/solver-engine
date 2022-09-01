@@ -2,35 +2,6 @@ metadata:
   name: FractionRoots
   title: Fractions Involving Roots
 
-explanations:
-  # Rules
-  RationalizeSimpleDenominator:
-    defaultTranslation: Multiply numerator and denominator by the radical currently in the denominator
-  RationalizeSimpleDenominatorWithCoefficient:
-    defaultTranslation: Multiply numerator and denominator by the radical currently in the denominator
-  DistributeRadicalOverFraction:
-    defaultTranslation: Apply the root separately to the numerator and denominator
-  RationalizeSumOfIntegerAndRadical:
-    defaultTranslation:
-  BringRootsToSameIndexInFraction:
-    defaultTranslation:
-  RationalizeCubeRootDenominator:
-    defaultTranslation:
-  IdentityCubeSumDifference:
-    defaultTranslation:
-  FlipRootsInDenominator:
-    defaultTranslation:
-  HigherOrderRationalizingTerm:
-    defaultTranslation:
-  FactorizeHigherOrderRadicand:
-    defaultTranslation:
-
-  # Plans
-  RationalizeDenominator:
-    defaultTranslation: "Rationalize the denominator of the fraction"
-  SimplifyFractionOfRoots:
-    defaultTranslation:
-
 methods:
   RationalizeDenominators:
     visibility: public

@@ -19,24 +19,6 @@ properties:
         description: A human-readable name for the category
         type: string
 
-  explanations:
-    description: Maps Explanation keys to Explanation data (currently Translation data)
-    type: object
-    additionalProperties:
-      description: Explanation key
-      type: object
-      required:
-        - defaultTranslation
-      properties:
-        defaultTranslation:
-          description: The default US English translation for the explanation. It will form the basis for localization
-          type: string
-        parameters:
-          description: Descriptions of the explanation parameters (one for each %n in the defaultTranslation field)
-          type: array
-          items:
-            type: string
-
   methods:
     description: Maps method IDs to method specifications
     type: object

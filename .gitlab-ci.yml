@@ -30,6 +30,10 @@ assemble:
   script:
     - ./gradlew assemble
     - ./gradlew test --stacktrace
+  artifacts:
+    paths:
+      - methods/build/generated/ksp/main/resources/TranslationKeys.json
+    expire_in: 1 day
 
 code_style:
   stage: lint
@@ -60,6 +64,19 @@ package:
     - docker
   script:
     - ./gradlew bootBuildImage --imageName="registry.git.geogebra.org/solver-team/solver-engine/api:$SLUG"
+
+export-translation-keys:
+  stage: publish
+  image: curlimages/curl
+  tags:
+    - docker
+  script:
+    - |
+      curl -X POST https://dev.geogebra.org/ggbtrans/props/api/solver_import/ \
+        --fail-with-body \
+        --header "X-Token: $GGBTRANS_API_TOKEN" \
+        --data @methods/build/generated/ksp/main/resources/TranslationKeys.json
+  when: manual
 
 deploy:
   stage: deploy

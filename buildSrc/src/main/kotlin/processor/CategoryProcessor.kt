@@ -12,27 +12,7 @@ class CategoryProcessor(val categoryFile: File, val outputDir: File) {
         val category = CategoryReader.parseCategoryFile(categoryFile)
 
         outputDir.mkdirs()
-        createExplanationEnum(category)
         createMethodIdEnum(category)
-    }
-
-    fun createExplanationEnum(category: Category) {
-        val className = "${category.metadata.name}Explanation"
-        val outFile = File("$outputDir/$className.kt")
-
-        val enumFileContent = buildString {
-            appendLine("package ${getPackageName(outputDir)}")
-            appendLine("import engine.steps.metadata.CategorisedMetadataKey")
-
-            appendLine("enum class $className : CategorisedMetadataKey {")
-            category.explanations.keys.joinTo(buffer = this, separator = ",\n", postfix = ";\n")
-            appendLine("override val category = \"${category.metadata.name}\"")
-            appendLine("}")
-
-            appendLine("typealias Explanation = $className")
-        }
-
-        writeFormattedString(outFile, enumFileContent)
     }
 
     fun createMethodIdEnum(category: Category) {
