@@ -2,14 +2,14 @@ package methods.rules
 
 import engine.context.emptyContext
 import engine.expressions.Subexpression
-import engine.methods.Rule
+import engine.methods.Method
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import parser.parseExpression
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-data class RuleTestCase(val inputExpr: String, val rule: Rule, val outputExpr: String?) {
+data class RuleTestCase(val inputExpr: String, val rule: Method, val outputExpr: String?) {
 
     fun assert() {
         val expression = parseExpression(inputExpr)

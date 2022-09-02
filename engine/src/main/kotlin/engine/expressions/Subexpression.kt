@@ -1,16 +1,14 @@
 package engine.expressions
 
-import engine.expressionmakers.ExpressionMaker
 import engine.patterns.Match
+import engine.patterns.PathProvider
 
 class Subexpression private constructor(
     val expr: Expression,
     val parent: Subexpression?,
     val path: Path
-) : ExpressionMaker {
+) : PathProvider {
     constructor(root: Expression) : this(root, null, RootPath)
-
-    override fun make(match: Match) = toMappedExpr()
 
     fun toMappedExpr(): MappedExpression {
         return MappedExpression(expr, PathMappingLeaf(listOf(path), PathMappingType.Move))
@@ -53,6 +51,9 @@ class Subexpression private constructor(
             )
         }
     }
+
+    override fun getBoundPaths(m: Match) = listOf(path)
+    override fun getBoundExpr(m: Match) = expr
 }
 
 fun Subexpression.numerator(): Subexpression {

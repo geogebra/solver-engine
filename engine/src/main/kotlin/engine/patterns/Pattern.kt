@@ -18,16 +18,6 @@ interface PathProvider {
      * with the provided `match` "m"
      */
     fun getBoundExpr(m: Match): Expression?
-
-    /**
-     * Returns `true` when either the expression value
-     * of match is `null` (i.e. root object) or is equivalent
-     * to the passed `expr` else return `false`
-     */
-    fun checkPreviousMatch(expr: Expression, match: Match): Boolean {
-        val previous = getBoundExpr(match)
-        return previous == null || previous.equiv(expr)
-    }
 }
 
 interface Pattern : PathProvider {
@@ -49,6 +39,16 @@ interface Pattern : PathProvider {
 
     fun matches(expression: Expression): Boolean {
         return findMatches(Subexpression(expression), RootMatch).any()
+    }
+
+    /**
+     * Returns `true` when either the expression value
+     * of match is `null` (i.e. root object) or is equivalent
+     * to the passed `expr` else return `false`
+     */
+    fun checkPreviousMatch(expr: Expression, match: Match): Boolean {
+        val previous = getBoundExpr(match)
+        return previous == null || previous.equiv(expr)
     }
 
     val key get() = this

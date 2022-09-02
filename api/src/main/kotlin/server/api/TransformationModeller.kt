@@ -11,7 +11,6 @@ data class TransformationModeller(val format: ApplyPlanRequest.Format) {
 
     fun modelTransformation(trans: engine.steps.Transformation): Transformation {
         return Transformation(
-            planId = trans.planId?.toString(),
             path = trans.fromExpr.path.toString(),
             fromExpr = modelExpression(trans.fromExpr.expr),
             toExpr = modelExpression(trans.toExpr.expr),

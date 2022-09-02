@@ -1,298 +1,306 @@
 package methods.general
 
-import engine.expressionmakers.ExpressionMaker
-import engine.expressionmakers.FixedExpressionMaker
-import engine.expressionmakers.cancel
-import engine.expressionmakers.distribute
-import engine.expressionmakers.makeFractionOf
-import engine.expressionmakers.makeNegOf
-import engine.expressionmakers.makeOptionalDivideBy
-import engine.expressionmakers.makePowerOf
-import engine.expressionmakers.makeProductOf
-import engine.expressionmakers.makeSumOf
-import engine.expressionmakers.move
-import engine.expressionmakers.restOf
-import engine.expressionmakers.substituteIn
-import engine.expressionmakers.transform
 import engine.expressions.BracketOperator
 import engine.expressions.Constants
+import engine.expressions.MappedExpression
 import engine.expressions.UnaryOperator
+import engine.expressions.fractionOf
+import engine.expressions.negOf
+import engine.expressions.powerOf
+import engine.expressions.productOf
+import engine.expressions.sumOf
 import engine.expressions.xp
-import engine.methods.Rule
+import engine.methods.TransformationResult
+import engine.methods.rule
 import engine.patterns.AnyPattern
 import engine.patterns.FixedPattern
-import engine.patterns.OptionalDivideBy
 import engine.patterns.bracketOf
 import engine.patterns.commutativeProductOf
 import engine.patterns.commutativeSumOf
 import engine.patterns.condition
-import engine.patterns.custom
 import engine.patterns.divideBy
 import engine.patterns.fractionOf
 import engine.patterns.negOf
-import engine.patterns.oneOf
+import engine.patterns.optionalBracketOf
+import engine.patterns.optionalDivideBy
 import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
 import engine.patterns.sumOf
-import engine.steps.metadata.makeMetadata
+import engine.steps.metadata.metadata
 
-val eliminateOneInProduct = run {
-    val one = FixedPattern(xp(1))
+val eliminateOneInProduct = rule {
+    val one = FixedPattern(Constants.One)
     val pattern = productContaining(one)
 
-    Rule(
-        pattern = pattern,
-        resultMaker = cancel(one, restOf(pattern)),
-        explanationMaker = makeMetadata(Explanation.EliminateOneInProduct, move(one))
-    )
+    onPattern(pattern) {
+        TransformationResult(
+            toExpr = cancel(one, restOf(pattern)),
+            explanation = metadata(Explanation.EliminateOneInProduct, move(one))
+        )
+    }
 }
 
-val eliminateLoneOneInExponent = run {
+val eliminateLoneOneInExponent = rule {
     val one = FixedPattern(xp(1))
     val base = AnyPattern()
     val pattern = powerOf(base, one)
 
-    Rule(
-        pattern = pattern,
-        resultMaker = move(base),
-        explanationMaker = makeMetadata(Explanation.EliminateLoneOneInExponent)
-    )
+    onPattern(pattern) {
+        TransformationResult(
+
+            toExpr = move(base),
+            explanation = metadata(Explanation.EliminateLoneOneInExponent)
+        )
+    }
 }
 
-val eliminateZeroInSum = run {
-    val zero = FixedPattern(xp(0))
+val eliminateZeroInSum = rule {
+    val zero = FixedPattern(Constants.Zero)
     val pattern = sumContaining(zero)
 
-    Rule(
-        pattern = pattern,
-        resultMaker = cancel(zero, restOf(pattern)),
-        explanationMaker = makeMetadata(Explanation.EliminateZeroInSum, move(zero)),
-    )
+    onPattern(pattern) {
+        TransformationResult(
+            toExpr = cancel(zero, restOf(pattern)),
+            explanation = metadata(Explanation.EliminateZeroInSum, move(zero)),
+        )
+    }
 }
 
-val evaluateProductContainingZero = run {
-    val zero = FixedPattern(xp(0))
+val evaluateProductContainingZero = rule {
+    val zero = FixedPattern(Constants.Zero)
     val pattern = productContaining(zero)
 
-    Rule(
-        pattern = pattern,
-        resultMaker = transform(zero),
-        explanationMaker = makeMetadata(Explanation.EvaluateProductContainingZero, move(zero))
-    )
+    onPattern(pattern) {
+        TransformationResult(
+            toExpr = transform(zero),
+            explanation = metadata(Explanation.EvaluateProductContainingZero, move(zero))
+        )
+    }
 }
 
-val simplifyDoubleMinus = run {
+val simplifyDoubleMinus = rule {
     val value = AnyPattern()
     val pattern = negOf(
         bracketOf(
-            negOf(
-                oneOf(
-                    value,
-                    bracketOf(value)
-                )
-            )
+            negOf(optionalBracketOf(value))
         )
     )
 
-    Rule(
-        pattern = pattern,
-        resultMaker = move(value),
-        explanationMaker = makeMetadata(Explanation.SimplifyDoubleMinus, move(value))
-    )
+    onPattern(pattern) {
+        TransformationResult(
+            toExpr = move(value),
+            explanation = metadata(Explanation.SimplifyDoubleMinus, move(value))
+        )
+    }
 }
 
-val simplifyProductWithTwoNegativeFactors = run {
+val simplifyProductWithTwoNegativeFactors = rule {
     val f1 = AnyPattern()
     val f2 = AnyPattern()
-    val fd1 = OptionalDivideBy(bracketOf(negOf(f1)))
-    val fd2 = OptionalDivideBy(bracketOf(negOf(f2)))
+    val fd1 = optionalDivideBy(bracketOf(negOf(f1)))
+    val fd2 = optionalDivideBy(bracketOf(negOf(f2)))
     val product = productContaining(fd1, fd2)
 
-    Rule(
-        pattern = product,
-        resultMaker = substituteIn(
-            product,
-            makeOptionalDivideBy(fd1, move(f1)),
-            makeOptionalDivideBy(fd2, move(f2)),
-        ),
-        explanationMaker = makeMetadata(Explanation.SimplifyProductWithTwoNegativeFactors)
-    )
+    onPattern(product) {
+        TransformationResult(
+            toExpr = product.substitute(
+                optionalDivideBy(fd1, move(f1)),
+                optionalDivideBy(fd2, move(f2)),
+            ),
+            explanation = metadata(Explanation.SimplifyProductWithTwoNegativeFactors)
+        )
+    }
 }
 
-val moveSignOfNegativeFactorOutOfProduct = run {
+val moveSignOfNegativeFactorOutOfProduct = rule {
     val f = AnyPattern()
-    val fd = OptionalDivideBy(bracketOf(negOf(f)))
+    val fd = optionalDivideBy(bracketOf(negOf(f)))
     val product = productContaining(fd)
 
-    Rule(
-        pattern = product,
-        resultMaker = makeNegOf(substituteIn(product, makeOptionalDivideBy(fd, move(f)))),
-        explanationMaker = makeMetadata(Explanation.MoveSignOfNegativeFactorOutOfProduct)
-    )
+    onPattern(product) {
+        TransformationResult(
+            toExpr = negOf(product.substitute(optionalDivideBy(fd, move(f)))),
+            explanation = metadata(Explanation.MoveSignOfNegativeFactorOutOfProduct)
+        )
+    }
 }
 
-val simplifyUnitFractionToOne = run {
+val simplifyUnitFractionToOne = rule {
     val common = AnyPattern()
     val pattern = fractionOf(common, common)
 
-    Rule(
-        pattern = pattern,
-        resultMaker = cancel(common, FixedExpressionMaker(Constants.One)),
-        explanationMaker = makeMetadata(Explanation.SimplifyUnitFractionToOne)
-    )
+    onPattern(pattern) {
+        TransformationResult(
+            toExpr = cancel(common, introduce(Constants.One)),
+            explanation = metadata(Explanation.SimplifyUnitFractionToOne)
+        )
+    }
 }
 
-val simplifyFractionWithOneDenominator = run {
+val simplifyFractionWithOneDenominator = rule {
     val numerator = AnyPattern()
     val denominator = FixedPattern(Constants.One)
     val pattern = fractionOf(numerator, denominator)
 
-    Rule(
-        pattern = pattern,
-        resultMaker = cancel(denominator, move(numerator)),
-        explanationMaker = makeMetadata(Explanation.SimplifyFractionWithOneDenominator)
-    )
+    onPattern(pattern) {
+        TransformationResult(
+            toExpr = cancel(denominator, move(numerator)),
+            explanation = metadata(Explanation.SimplifyFractionWithOneDenominator)
+        )
+    }
 }
 
-val cancelDenominator = run {
+val cancelDenominator = rule {
     val common = AnyPattern()
     val numerator = productContaining(common, minSize = 2)
     val pattern = fractionOf(numerator, common)
 
-    Rule(
-        pattern = pattern,
-        resultMaker = cancel(common, restOf(numerator)),
-        explanationMaker = makeMetadata(Explanation.CancelDenominator)
-    )
+    onPattern(pattern) {
+        TransformationResult(
+            toExpr = cancel(common, restOf(numerator)),
+            explanation = metadata(Explanation.CancelDenominator)
+        )
+    }
 }
 
-val cancelCommonTerms = run {
+val cancelCommonTerms = rule {
     val common = condition(AnyPattern()) { it != Constants.One }
     val numerator = productContaining(common, minSize = 2)
     val denominator = productContaining(common, minSize = 2)
-    val pattern = fractionOf(numerator, denominator)
+    val fraction = fractionOf(numerator, denominator)
 
-    Rule(
-        pattern = pattern,
-        resultMaker = cancel(common, makeFractionOf(restOf(numerator), restOf(denominator))),
-        explanationMaker = makeMetadata(
-            Explanation.CancelCommonTerms,
-            move(pattern),
-            move(common)
-        ),
-    )
+    onPattern(fraction) {
+        TransformationResult(
+            toExpr = cancel(common, fractionOf(restOf(numerator), restOf(denominator))),
+            explanation = metadata(
+                Explanation.CancelCommonTerms,
+                move(fraction),
+                move(common)
+            )
+        )
+    }
 }
 
-val factorMinusFromSum = run {
+val factorMinusFromSum = rule {
     val sum = condition(sumContaining()) { expression ->
         expression.operands.all { it.operator == UnaryOperator.Minus }
     }
 
-    Rule(
-        pattern = sum,
-        resultMaker = makeNegOf(custom { makeSumOf(get(sum)!!.children().map { it.children()[0] }) }),
-        explanationMaker = makeMetadata(Explanation.FactorMinusFromSum),
-    )
+    onPattern(sum) {
+        TransformationResult(
+            toExpr = negOf(sumOf(get(sum)!!.children().map { move(it.children()[0]) })),
+            explanation = metadata(Explanation.FactorMinusFromSum)
+        )
+    }
 }
 
-val simplifyProductOfConjugates = run {
+val simplifyProductOfConjugates = rule {
     val a = AnyPattern()
     val b = AnyPattern()
     val sum1 = commutativeSumOf(a, b)
     val sum2 = commutativeSumOf(a, negOf(b))
     val product = commutativeProductOf(bracketOf(sum1), bracketOf(sum2))
 
-    Rule(
-        pattern = product,
-        resultMaker = substituteIn(
-            sum2,
-            makePowerOf(move(a), FixedExpressionMaker(xp(2))),
-            makeNegOf(makePowerOf(move(b), FixedExpressionMaker(xp(2)))),
-        ),
-        explanationMaker = makeMetadata(Explanation.SimplifyProductOfConjugates),
-    )
+    onPattern(product) {
+        TransformationResult(
+            toExpr = sum2.substitute(
+                powerOf(move(a), introduce(Constants.Two)),
+                negOf(powerOf(move(b), introduce(Constants.Two))),
+            ),
+            explanation = metadata(Explanation.SimplifyProductOfConjugates),
+        )
+    }
 }
 
-val distributePowerOfProduct = run {
+val distributePowerOfProduct = rule {
     val exponent = AnyPattern()
     val product = productContaining()
     val pattern = powerOf(bracketOf(product), exponent)
 
-    Rule(
-        pattern = pattern,
-        resultMaker = custom {
-            makeProductOf(get(product)!!.children().map { makePowerOf(it, move(exponent)) })
-        },
-        explanationMaker = makeMetadata(Explanation.DistributePowerOfProduct)
-    )
+    onPattern(pattern) {
+        TransformationResult(
+            toExpr = productOf(get(product)!!.children().map { powerOf(move(it), move(exponent)) }),
+            explanation = metadata(Explanation.DistributePowerOfProduct)
+        )
+    }
 }
 
-val expandBinomialSquared = run {
+val expandBinomialSquared = rule {
     val a = AnyPattern()
     val b = AnyPattern()
     val pattern = powerOf(bracketOf(sumOf(a, b)), FixedPattern(xp(2)))
 
-    Rule(
-        pattern = pattern,
-        resultMaker = makeSumOf(
-            makePowerOf(move(a), FixedExpressionMaker(xp(2))),
-            makeProductOf(FixedExpressionMaker(xp(2)), move(a), move(b)),
-            makePowerOf(move(b), FixedExpressionMaker(xp(2)))
-        ),
-        explanationMaker = makeMetadata(Explanation.ExpandBinomialSquared)
-    )
+    onPattern(pattern) {
+        TransformationResult(
+            toExpr = sumOf(
+                powerOf(move(a), introduce(Constants.Two)),
+                productOf(introduce(Constants.Two), move(a), move(b)),
+                powerOf(move(b), introduce(Constants.Two))
+            ),
+            explanation = metadata(Explanation.ExpandBinomialSquared)
+        )
+    }
 }
 
-val rewriteDivisionAsFraction = run {
+val rewriteDivisionAsFraction = rule {
     val product = productContaining(divideBy(AnyPattern()))
 
-    Rule(
-        pattern = product,
-        resultMaker = custom {
-            val factors = get(product)!!.children()
-            val division = factors.indexOfFirst { it.expr.operator == UnaryOperator.DivideBy }
+    onPattern(product) {
+        val factors = get(product)!!.children()
+        val division = factors.indexOfFirst { it.expr.operator == UnaryOperator.DivideBy }
 
-            val result = mutableListOf<ExpressionMaker>()
-            result.addAll(factors.subList(0, division - 1))
+        val result = mutableListOf<MappedExpression>()
+        result.addAll(factors.subList(0, division - 1).map { move(it) })
 
-            // We take the opportunity to remove unneeded brackets
-            val rawDenominator = factors[division].nthChild(0)
-            val denominator = when (rawDenominator.expr.operator) {
-                is BracketOperator -> rawDenominator.nthChild(0)
-                else -> rawDenominator
-            }
-            result.add(makeFractionOf(factors[division - 1], denominator))
-            result.addAll(factors.subList(division + 1, factors.size))
+        // We take the opportunity to remove unneeded brackets
+        val rawDenominator = factors[division].nthChild(0)
+        val denominator = when (rawDenominator.expr.operator) {
+            is BracketOperator -> rawDenominator.nthChild(0)
+            else -> rawDenominator
+        }
+        result.add(
+            fractionOf(
+                move(factors[division - 1]),
+                move(denominator)
+            )
+        )
+        result.addAll(factors.subList(division + 1, factors.size).map { move(it) })
 
-            makeProductOf(result)
-        },
-        explanationMaker = makeMetadata(Explanation.RewriteDivisionAsFraction),
-    )
+        TransformationResult(
+            toExpr = productOf(result),
+            explanation = metadata(Explanation.RewriteDivisionAsFraction),
+        )
+    }
 }
 
 /**
  * a * (b + c) -> a * b + a * c
  * (b + c + d) * a -> b * a + c * a + d * a
  */
-val distributeMultiplicationOverSum = run {
+val distributeMultiplicationOverSum = rule {
     val singleTerm = AnyPattern()
     val sum = sumContaining()
     val product = commutativeProductOf(singleTerm, bracketOf(sum))
 
-    Rule(
-        pattern = product,
-        resultMaker = custom {
-            val terms = get(sum)!!.children()
-            makeSumOf(
+    onPattern(product) {
+        val terms = get(sum)!!.children()
+
+        TransformationResult(
+            toExpr = sumOf(
                 terms.map {
                     when (it.expr.operator) {
-                        UnaryOperator.Minus -> makeNegOf(substituteIn(product, distribute(singleTerm), it.nthChild(0)))
-                        else -> substituteIn(product, distribute(singleTerm), it)
+                        UnaryOperator.Minus -> negOf(
+                            product.substitute(
+                                distribute(singleTerm),
+                                move(it.nthChild(0))
+                            )
+                        )
+                        else -> product.substitute(distribute(singleTerm), move(it))
                     }
                 }
-            )
-        },
-        explanationMaker = makeMetadata(Explanation.DistributeMultiplicationOverSum)
-    )
+            ),
+            explanation = metadata(Explanation.DistributeMultiplicationOverSum)
+        )
+    }
 }

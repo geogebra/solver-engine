@@ -89,6 +89,28 @@ class VariablePattern : Pattern {
     }
 }
 
+class OptionalWrappingPattern(val pattern: Pattern, wrapper: (Pattern) -> Pattern) : Pattern {
+
+    private val wrappingPattern = wrapper(pattern)
+    private val ptn = oneOf(pattern, wrappingPattern)
+
+    override val key = ptn
+
+    fun isWrapping(m: Match) = m.getLastBinding(wrappingPattern) != null
+
+    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+        if (!checkPreviousMatch(subexpression.expr, match)) {
+            return emptySequence()
+        }
+        return ptn.findMatches(subexpression, match)
+    }
+}
+
+fun optional(pattern: Pattern, wrapper: (Pattern) -> Pattern) = OptionalWrappingPattern(pattern, wrapper)
+
+fun optionalDivideBy(pattern: Pattern) = OptionalWrappingPattern(pattern, ::divideBy)
+fun optionalBracketOf(pattern: Pattern) = OptionalWrappingPattern(pattern, ::bracketOf)
+
 /**
  * Used to find matches in a `Subexpression` object, either containing
  * the `Pattern` pattern or division by the pattern

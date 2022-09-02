@@ -25,10 +25,12 @@ val exampleRule = run {
 
     Rule(
         pattern = outerPattern,
-        resultMaker = makeProductOf(
-            bracketOf(FixedExpressionMaker(xp(-1))),
-            move(innerPattern),
-        ),
+        resultMaker = maker {
+           productOf(
+              bracketOf(introduce(xp(-1))),
+              move(innerPattern),
+           )
+        },
         explanationMaker = makeMetadata(
             Explanation.ExampleRule,
             move(innerPattern),

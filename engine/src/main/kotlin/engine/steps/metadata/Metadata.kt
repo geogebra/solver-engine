@@ -30,3 +30,6 @@ data class KeyExprsMetadataMaker(val key: MetadataKey, val expressionMakers: Lis
 
 fun makeMetadata(key: MetadataKey, vararg expressionMakers: ExpressionMaker): MetadataMaker =
     KeyExprsMetadataMaker(key, expressionMakers.asList())
+
+fun metadata(key: MetadataKey, vararg parameters: MappedExpression) =
+    Metadata(key, parameters.asList())

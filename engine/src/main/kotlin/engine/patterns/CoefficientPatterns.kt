@@ -1,12 +1,10 @@
 package engine.patterns
 
-import engine.expressionmakers.FixedExpressionMaker
-import engine.expressionmakers.copySign
-import engine.expressionmakers.makeFractionOf
-import engine.expressionmakers.move
+import engine.expressionmakers.MakerBuilder
 import engine.expressions.Constants
 import engine.expressions.MappedExpression
 import engine.expressions.Subexpression
+import engine.expressions.fractionOf
 
 /**
  * A pattern matching `value` multiplied by an integer coefficient.
@@ -32,11 +30,11 @@ class IntegerCoefficientPattern(value: Pattern) : Pattern {
         return options.findMatches(subexpression, match)
     }
 
-    fun coefficient(match: Match): MappedExpression {
-        return when {
+    fun coefficient(match: Match): MappedExpression = with(MakerBuilder(match)) {
+        when {
             match.isBound(coefficient) -> move(coefficient)
-            else -> FixedExpressionMaker(Constants.One)
-        }.make(match)
+            else -> introduce(Constants.One)
+        }
     }
 }
 
@@ -75,18 +73,18 @@ class RationalCoefficientPattern(value: Pattern) : Pattern {
     /**
      * Given a match, returns the coefficient as an integer or fraction
      */
-    fun coefficient(match: Match): MappedExpression {
+    fun coefficient(match: Match): MappedExpression = with(MakerBuilder(match)) {
         val numeratorCoefficient = when {
             match.isBound(numerator) -> move(numerator)
-            else -> FixedExpressionMaker(Constants.One)
+            else -> introduce(Constants.One)
         }
 
         val coefficient = when {
-            match.isBound(denominator) -> makeFractionOf(numeratorCoefficient, move(denominator))
+            match.isBound(denominator) -> fractionOf(numeratorCoefficient, move(denominator))
             else -> numeratorCoefficient
         }
 
-        return copySign(ptn, coefficient).make(match)
+        copySign(ptn, coefficient)
     }
 }
 

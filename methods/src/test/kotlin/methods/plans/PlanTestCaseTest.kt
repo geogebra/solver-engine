@@ -2,12 +2,14 @@ package methods.plans
 
 import engine.expressionmakers.move
 import engine.methods.Plan
-import engine.methods.Rule
+import engine.methods.TransformationResult
+import engine.methods.rule
 import engine.methods.stepsproducers.Pipeline
 import engine.methods.stepsproducers.PipelineItem
 import engine.patterns.AnyPattern
 import engine.steps.metadata.MetadataKey
 import engine.steps.metadata.makeMetadata
+import engine.steps.metadata.metadata
 import org.junit.jupiter.api.Test
 import kotlin.test.assertFails
 
@@ -23,18 +25,19 @@ class PlanTestCaseTest {
     private val testRuleSkillMetadataKey2 = DummyKey()
     private val testRuleSkillMetadataKey3 = DummyKey()
 
-    private val testRule = run {
+    private val testRule = rule {
         val pattern = AnyPattern()
 
-        Rule(
-            pattern = pattern,
-            resultMaker = move(pattern),
-            explanationMaker = makeMetadata(testRuleMetadataKey),
-            skillMakers = listOf(
-                makeMetadata(testRuleSkillMetadataKey1, move(pattern)),
-                makeMetadata(testRuleSkillMetadataKey2),
-            ),
-        )
+        onPattern(pattern) {
+            TransformationResult(
+                toExpr = move(pattern),
+                explanation = metadata(testRuleMetadataKey),
+                skills = listOf(
+                    metadata(testRuleSkillMetadataKey1, move(pattern)),
+                    metadata(testRuleSkillMetadataKey2),
+                )
+            )
+        }
     }
 
     private val testPlan = run {

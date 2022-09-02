@@ -6,7 +6,7 @@ import engine.expressions.PathMappingType
 import engine.patterns.Match
 import engine.patterns.PathProvider
 
-private data class UnaryPathMappingAnnotator(
+data class UnaryPathMappingAnnotator(
     val pathMappingType: PathMappingType,
     val pattern: PathProvider,
 ) : ExpressionMaker {
@@ -16,7 +16,7 @@ private data class UnaryPathMappingAnnotator(
     }
 }
 
-private data class BinaryPathMappingAnnotator(
+data class BinaryPathMappingAnnotator(
     val pathMappingType: PathMappingType,
     val pattern: PathProvider,
     val expressionMaker: ExpressionMaker,
@@ -31,15 +31,3 @@ fun move(pattern: PathProvider): ExpressionMaker =
 
 fun factor(pattern: PathProvider): ExpressionMaker =
     UnaryPathMappingAnnotator(PathMappingType.Factor, pattern)
-
-fun distribute(pattern: PathProvider): ExpressionMaker =
-    UnaryPathMappingAnnotator(PathMappingType.Distribute, pattern)
-
-fun transform(pattern: PathProvider): ExpressionMaker =
-    UnaryPathMappingAnnotator(PathMappingType.Transform, pattern)
-
-fun transform(pattern: PathProvider, toExpression: ExpressionMaker): ExpressionMaker =
-    BinaryPathMappingAnnotator(PathMappingType.Transform, pattern, toExpression)
-
-fun cancel(pattern: PathProvider, inExpression: ExpressionMaker): ExpressionMaker =
-    BinaryPathMappingAnnotator(PathMappingType.Cancel, pattern, inExpression)

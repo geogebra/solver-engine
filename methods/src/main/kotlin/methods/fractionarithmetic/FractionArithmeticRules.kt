@@ -1,22 +1,17 @@
 package methods.fractionarithmetic
 
-import engine.expressionmakers.FixedExpressionMaker
-import engine.expressionmakers.copySign
-import engine.expressionmakers.factor
-import engine.expressionmakers.makeFractionOf
-import engine.expressionmakers.makeNegOf
-import engine.expressionmakers.makeNumericOp
-import engine.expressionmakers.makePowerOf
-import engine.expressionmakers.makeProductOf
-import engine.expressionmakers.makeSimplifiedProductOf
-import engine.expressionmakers.makeSumOf
-import engine.expressionmakers.move
-import engine.expressionmakers.substituteIn
 import engine.expressions.BinaryOperator
 import engine.expressions.Constants
 import engine.expressions.Subexpression
+import engine.expressions.fractionOf
+import engine.expressions.negOf
+import engine.expressions.powerOf
+import engine.expressions.productOf
+import engine.expressions.simplifiedProductOf
+import engine.expressions.sumOf
 import engine.expressions.xp
-import engine.methods.Rule
+import engine.methods.TransformationResult
+import engine.methods.rule
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
@@ -27,7 +22,6 @@ import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.bracketOf
 import engine.patterns.commutativeSumOf
 import engine.patterns.condition
-import engine.patterns.custom
 import engine.patterns.fractionOf
 import engine.patterns.negOf
 import engine.patterns.numericCondition
@@ -35,11 +29,9 @@ import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
-import engine.patterns.productOf
 import engine.patterns.sumContaining
-import engine.patterns.sumOf
 import engine.steps.metadata.Skill
-import engine.steps.metadata.makeMetadata
+import engine.steps.metadata.metadata
 import java.math.BigInteger
 
 private class FractionPattern : Pattern {
@@ -54,23 +46,23 @@ private class FractionPattern : Pattern {
     }
 }
 
-val convertIntegerToFraction = run {
+val convertIntegerToFraction = rule {
     val integer = UnsignedIntegerPattern()
     val fraction = FractionPattern()
     val sum = commutativeSumOf(integer, fraction)
 
-    Rule(
-        pattern = sum,
-        resultMaker = substituteIn(
-            sum,
-            makeFractionOf(move(integer), FixedExpressionMaker(xp(1))),
-            move(fraction),
-        ),
-        explanationMaker = makeMetadata(Explanation.ConvertIntegerToFraction, move(integer)),
-    )
+    onPattern(sum) {
+        TransformationResult(
+            toExpr = sum.substitute(
+                fractionOf(move(integer), introduce(Constants.One)),
+                move(fraction),
+            ),
+            explanation = metadata(Explanation.ConvertIntegerToFraction, move(integer)),
+        )
+    }
 }
 
-val addLikeFractions = run {
+val addLikeFractions = rule {
     val num1 = UnsignedIntegerPattern()
     val num2 = UnsignedIntegerPattern()
     val denom = UnsignedIntegerPattern()
@@ -80,75 +72,59 @@ val addLikeFractions = run {
     val nf2 = optionalNegOf(f2)
     val sum = sumContaining(nf1, nf2)
 
-    Rule(
-        pattern = sum,
-        resultMaker = substituteIn(
-            sum,
-            makeFractionOf(
-                makeSumOf(
-                    copySign(nf1, move(num1)),
-                    copySign(nf2, move(num2))
-                ),
-                factor(denom)
-            )
-        ),
-        explanationMaker = makeMetadata(Explanation.AddLikeFractions, move(f1), move(f2)),
-    )
+    onPattern(sum) {
+        TransformationResult(
+            toExpr = sum.substitute(
+                fractionOf(
+                    sumOf(
+                        copySign(nf1, move(num1)),
+                        copySign(nf2, move(num2))
+                    ),
+                    factor(denom)
+                )
+            ),
+            explanation = metadata(Explanation.AddLikeFractions, move(f1), move(f2)),
+        )
+    }
 }
 
-val subtractLikeFractions = run {
-    val num1 = UnsignedIntegerPattern()
-    val num2 = UnsignedIntegerPattern()
-    val denom = UnsignedIntegerPattern()
-    val f1 = fractionOf(num1, denom)
-    val f2 = fractionOf(num2, denom)
-
-    val pattern = sumOf(f1, negOf(f2))
-
-    Rule(
-        pattern = pattern,
-        resultMaker = makeFractionOf(makeSumOf(move(num1), makeNegOf(move(num2))), factor(denom)),
-        explanationMaker = makeMetadata(Explanation.SubtractLikeFractions, move(f1), move(f2))
-    )
-}
-
-val bringToCommonDenominator = run {
+val bringToCommonDenominator = rule {
     val f1 = FractionPattern()
     val f2 = FractionPattern()
     val nf1 = optionalNegOf(f1)
     val nf2 = optionalNegOf(f2)
     val sum = sumContaining(nf1, nf2)
 
-    val factor1 = makeNumericOp(f1.denominator, f2.denominator) { n1, n2 -> n2 / n1.gcd(n2) }
-    val factor2 = makeNumericOp(f1.denominator, f2.denominator) { n1, n2 -> n1 / n1.gcd(n2) }
+    onPattern(ConditionPattern(sum, numericCondition(f1.denominator, f2.denominator) { n1, n2 -> n1 != n2 })) {
+        val factor1 = numericOp(f1.denominator, f2.denominator) { n1, n2 -> n2 / n1.gcd(n2) }
+        val factor2 = numericOp(f1.denominator, f2.denominator) { n1, n2 -> n1 / n1.gcd(n2) }
 
-    Rule(
-        pattern = ConditionPattern(sum, numericCondition(f1.denominator, f2.denominator) { n1, n2 -> n1 != n2 }),
-        resultMaker = substituteIn(
-            sum,
-            makeSumOf(
-                copySign(
-                    nf1,
-                    makeFractionOf(
-                        makeProductOf(move(f1.numerator), factor1),
-                        makeProductOf(move(f1.denominator), factor1)
-                    )
-                ),
-                copySign(
-                    nf2,
-                    makeFractionOf(
-                        makeProductOf(move(f2.numerator), factor2),
-                        makeProductOf(move(f2.denominator), factor2)
-                    )
-                ),
-            )
-        ),
-        explanationMaker = makeMetadata(Explanation.BringToCommonDenominator, move(f1), move(f2)),
-        skillMakers = listOf(makeMetadata(Skill.NumericLCM, move(f1.denominator), move(f2.denominator))),
-    )
+        TransformationResult(
+            toExpr = sum.substitute(
+                sumOf(
+                    copySign(
+                        nf1,
+                        fractionOf(
+                            productOf(move(f1.numerator), factor1),
+                            productOf(move(f1.denominator), factor1)
+                        )
+                    ),
+                    copySign(
+                        nf2,
+                        fractionOf(
+                            productOf(move(f2.numerator), factor2),
+                            productOf(move(f2.denominator), factor2)
+                        )
+                    ),
+                )
+            ),
+            explanation = metadata(Explanation.BringToCommonDenominator, move(f1), move(f2)),
+            skills = listOf(metadata(Skill.NumericLCM, move(f1.denominator), move(f2.denominator))),
+        )
+    }
 }
 
-val simplifyNegativeInDenominator = run {
+val simplifyNegativeInDenominator = rule {
     val numerator = AnyPattern()
     val denominator = AnyPattern()
 
@@ -157,27 +133,29 @@ val simplifyNegativeInDenominator = run {
         negOf(oneOf(bracketOf(denominator), denominator)),
     )
 
-    Rule(
-        pattern = pattern,
-        resultMaker = makeNegOf(makeFractionOf(move(numerator), move(denominator))),
-        explanationMaker = makeMetadata(Explanation.SimplifyNegativeInDenominator, move(pattern)),
-    )
+    onPattern(pattern) {
+        TransformationResult(
+            toExpr = negOf(fractionOf(move(numerator), move(denominator))),
+            explanation = metadata(Explanation.SimplifyNegativeInDenominator, move(pattern)),
+        )
+    }
 }
 
-val simplifyFractionToInteger = run {
+val simplifyFractionToInteger = rule {
     val numerator = UnsignedIntegerPattern()
     val denominator = UnsignedIntegerPattern()
 
     val frac = fractionOf(numerator, denominator)
 
-    Rule(
-        pattern = ConditionPattern(frac, numericCondition(numerator, denominator) { n, d -> n.mod(d).signum() == 0 }),
-        resultMaker = makeNumericOp(numerator, denominator) { n, d -> n / d },
-        explanationMaker = makeMetadata(Explanation.SimplifyFractionToInteger),
-    )
+    onPattern(ConditionPattern(frac, numericCondition(numerator, denominator) { n, d -> n.mod(d).signum() == 0 })) {
+        TransformationResult(
+            toExpr = numericOp(numerator, denominator) { n, d -> n / d },
+            explanation = metadata(Explanation.SimplifyFractionToInteger),
+        )
+    }
 }
 
-val findCommonFactorInFraction = run {
+val findCommonFactorInFraction = rule {
     val factorNumerator = UnsignedIntegerPattern()
     val factorDenominator = UnsignedIntegerPattern()
 
@@ -189,36 +167,35 @@ val findCommonFactorInFraction = run {
 
     val frac = fractionOf(numerator, denominator)
 
-    val gcd = makeNumericOp(factorNumerator, factorDenominator) { n, d -> n.gcd(d) }
-    val numeratorOverGcd = makeNumericOp(factorNumerator, factorDenominator) { n, d -> n / n.gcd(d) }
-    val denominatorOverGcd = makeNumericOp(factorNumerator, factorDenominator) { n, d -> d / n.gcd(d) }
-
-    Rule(
-        pattern = ConditionPattern(
+    onPattern(
+        ConditionPattern(
             frac,
             numericCondition(factorNumerator, factorDenominator) { n, d -> n.gcd(d) != BigInteger.ONE }
-        ),
-        resultMaker = makeFractionOf(
-            custom {
+        )
+    ) {
+        val gcd = numericOp(factorNumerator, factorDenominator) { n, d -> n.gcd(d) }
+        val numeratorOverGcd = numericOp(factorNumerator, factorDenominator) { n, d -> n / n.gcd(d) }
+        val denominatorOverGcd = numericOp(factorNumerator, factorDenominator) { n, d -> d / n.gcd(d) }
+
+        TransformationResult(
+            toExpr = fractionOf(
                 if (isBound(productNumerator)) {
-                    substituteIn(productNumerator, makeSimplifiedProductOf(gcd, numeratorOverGcd))
+                    productNumerator.substitute(simplifiedProductOf(gcd, numeratorOverGcd))
                 } else {
-                    makeProductOf(gcd, numeratorOverGcd)
-                }
-            },
-            custom {
+                    productOf(gcd, numeratorOverGcd)
+                },
                 if (isBound(productDenominator)) {
-                    substituteIn(productDenominator, makeSimplifiedProductOf(gcd, denominatorOverGcd))
+                    productDenominator.substitute(simplifiedProductOf(gcd, denominatorOverGcd))
                 } else {
-                    makeProductOf(gcd, denominatorOverGcd)
+                    productOf(gcd, denominatorOverGcd)
                 }
-            }
-        ),
-        explanationMaker = makeMetadata(Explanation.FindCommonFactorInFraction),
-    )
+            ),
+            explanation = metadata(Explanation.FindCommonFactorInFraction),
+        )
+    }
 }
 
-val simplifyNegativeInNumerator = run {
+val simplifyNegativeInNumerator = rule {
     val numerator = AnyPattern()
     val denominator = AnyPattern()
 
@@ -227,14 +204,15 @@ val simplifyNegativeInNumerator = run {
         denominator,
     )
 
-    Rule(
-        pattern = pattern,
-        resultMaker = makeNegOf(makeFractionOf(move(numerator), move(denominator))),
-        explanationMaker = makeMetadata(Explanation.SimplifyNegativeInNumerator, move(pattern)),
-    )
+    onPattern(pattern) {
+        TransformationResult(
+            negOf(fractionOf(move(numerator), move(denominator))),
+            explanation = metadata(Explanation.SimplifyNegativeInNumerator, move(pattern)),
+        )
+    }
 }
 
-val simplifyNegativeNumeratorAndDenominator = run {
+val simplifyNegativeNumeratorAndDenominator = rule {
     val numerator = AnyPattern()
     val denominator = AnyPattern()
 
@@ -243,30 +221,33 @@ val simplifyNegativeNumeratorAndDenominator = run {
         negOf(oneOf(bracketOf(denominator), denominator)),
     )
 
-    Rule(
-        pattern = pattern,
-        resultMaker = makeFractionOf(move(numerator), move(denominator)),
-        explanationMaker = makeMetadata(Explanation.SimplifyNegativeInNumeratorAndDenominator, move(pattern)),
-    )
+    onPattern(pattern) {
+        TransformationResult(
+            fractionOf(move(numerator), move(denominator)),
+            explanation = metadata(Explanation.SimplifyNegativeInNumeratorAndDenominator, move(pattern)),
+        )
+    }
 }
 
-val turnProductOfFractionByIntegerToFractionProduct = run {
+val turnProductOfFractionByIntegerToFractionProduct = rule {
     val nonFractionTerm = condition(AnyPattern()) { it.operator != BinaryOperator.Fraction }
     val product = productContaining(nonFractionTerm)
 
-    Rule(
-        pattern = condition(product) { expression ->
+    onPattern(
+        condition(product) { expression ->
             expression.operands.any { it.operator == BinaryOperator.Fraction }
-        },
-        resultMaker = substituteIn(
-            product,
-            makeFractionOf(move(nonFractionTerm), FixedExpressionMaker(Constants.One))
-        ),
-        explanationMaker = makeMetadata(Explanation.MultiplyFractions),
-    )
+        }
+    ) {
+        TransformationResult(
+            toExpr = product.substitute(
+                fractionOf(move(nonFractionTerm), introduce(Constants.One))
+            ),
+            explanation = metadata(Explanation.MultiplyFractions),
+        )
+    }
 }
 
-val turnSumOfFractionAndIntegerToFractionSum = run {
+val turnSumOfFractionAndIntegerToFractionSum = rule {
     val numerator = UnsignedIntegerPattern()
     val denominator = UnsignedIntegerPattern()
     val f = fractionOf(numerator, denominator)
@@ -276,24 +257,24 @@ val turnSumOfFractionAndIntegerToFractionSum = run {
 
     val sum = commutativeSumOf(nf, ni)
 
-    Rule(
-        pattern = sum,
-        resultMaker = substituteIn(
-            sum,
-            move(nf),
-            copySign(
-                ni,
-                makeFractionOf(
-                    makeProductOf(move(integerTerm), move(denominator)),
-                    move(denominator)
+    onPattern(sum) {
+        TransformationResult(
+            sum.substitute(
+                move(nf),
+                copySign(
+                    ni,
+                    fractionOf(
+                        productOf(move(integerTerm), move(denominator)),
+                        move(denominator)
+                    )
                 )
-            )
-        ),
-        explanationMaker = makeMetadata(Explanation.BringToCommonDenominator, move(f), move(integerTerm)),
-    )
+            ),
+            explanation = metadata(Explanation.BringToCommonDenominator, move(f), move(integerTerm)),
+        )
+    }
 }
 
-val multiplyFractions = run {
+val multiplyFractions = rule {
     val num1 = AnyPattern()
     val num2 = AnyPattern()
     val denom1 = AnyPattern()
@@ -302,134 +283,121 @@ val multiplyFractions = run {
     val f2 = fractionOf(num2, denom2)
     val product = productContaining(f1, f2)
 
-    Rule(
-        pattern = product,
-        resultMaker = substituteIn(
-            product,
-            makeFractionOf(
-                makeProductOf(move(num1), move(num2)),
-                makeProductOf(move(denom1), move(denom2))
+    onPattern(product) {
+        TransformationResult(
+            product.substitute(
+                fractionOf(
+                    productOf(move(num1), move(num2)),
+                    productOf(move(denom1), move(denom2))
+                ),
             ),
-        ),
-        explanationMaker = makeMetadata(Explanation.MultiplyFractions, move(f1), move(f2)),
-    )
+            explanation = metadata(Explanation.MultiplyFractions, move(f1), move(f2)),
+        )
+    }
 }
 
-val simplifyFractionWithFractionNumerator = run {
+val simplifyFractionWithFractionNumerator = rule {
     val numerator = fractionOf(AnyPattern(), AnyPattern())
     val denominator = UnsignedIntegerPattern()
     val f = fractionOf(numerator, denominator)
 
-    Rule(
-        pattern = f,
-        resultMaker = makeProductOf(
-            move(numerator),
-            makeFractionOf(FixedExpressionMaker(xp(1)), move(denominator))
-        ),
-        explanationMaker = makeMetadata(Explanation.SimplifyFractionWithFractionNumerator, move(f)),
-    )
+    onPattern(f) {
+        TransformationResult(
+            productOf(
+                move(numerator),
+                fractionOf(introduce(Constants.One), move(denominator))
+            ),
+            explanation = metadata(Explanation.SimplifyFractionWithFractionNumerator, move(f)),
+        )
+    }
 }
 
-val simplifyFractionWithFractionDenominator = run {
+val simplifyFractionWithFractionDenominator = rule {
     val numerator = UnsignedIntegerPattern()
     val denominator = UnsignedIntegerPattern()
     val innerFraction = fractionOf(numerator, denominator)
     val outerNumerator = AnyPattern()
     val outerFraction = fractionOf(outerNumerator, innerFraction)
 
-    Rule(
-        pattern = outerFraction,
-        resultMaker = makeProductOf(
-            move(outerNumerator),
-            makeFractionOf(move(denominator), move(numerator))
-        ),
-        explanationMaker = makeMetadata(Explanation.SimplifyFractionWithFractionDenominator, move(outerFraction)),
-    )
+    onPattern(outerFraction) {
+        TransformationResult(
+            productOf(
+                move(outerNumerator),
+                fractionOf(move(denominator), move(numerator))
+            ),
+            explanation = metadata(Explanation.SimplifyFractionWithFractionDenominator, move(outerFraction)),
+        )
+    }
 }
 
-val distributeFractionPositivePower = run {
+val distributeFractionPositivePower = rule {
     val fraction = FractionPattern()
     val exponent = numericCondition(UnsignedIntegerPattern()) { it > BigInteger.ONE }
     val pattern = powerOf(bracketOf(fraction), exponent)
 
-    Rule(
-        pattern = pattern,
-        resultMaker = makeFractionOf(
-            makePowerOf(move(fraction.numerator), move(exponent)),
-            makePowerOf(move(fraction.denominator), move(exponent))
-        ),
-        explanationMaker = makeMetadata(Explanation.DistributeFractionPositivePower, move(fraction), move(exponent))
-    )
+    onPattern(pattern) {
+        TransformationResult(
+            fractionOf(
+                powerOf(move(fraction.numerator), move(exponent)),
+                powerOf(move(fraction.denominator), move(exponent))
+            ),
+            explanation = metadata(Explanation.DistributeFractionPositivePower, move(fraction), move(exponent))
+        )
+    }
 }
 
-val simplifyFractionNegativePower = run {
+val simplifyFractionNegativePower = rule {
     val fraction = FractionPattern()
     val exponent = SignedIntegerPattern()
     val pattern = powerOf(bracketOf(fraction), numericCondition(exponent) { it < -BigInteger.ONE })
 
-    Rule(
-        pattern = pattern,
-        resultMaker = makePowerOf(
-            makeFractionOf(move(fraction.denominator), move(fraction.numerator)),
-            move(exponent.unsignedPattern)
-        ),
-        explanationMaker = makeMetadata(Explanation.SimplifyFractionNegativePower, move(fraction), move(exponent))
-    )
+    onPattern(pattern) {
+        TransformationResult(
+            powerOf(
+                fractionOf(move(fraction.denominator), move(fraction.numerator)),
+                move(exponent.unsignedPattern)
+            ),
+            explanation = metadata(Explanation.SimplifyFractionNegativePower, move(fraction), move(exponent))
+        )
+    }
 }
 
-val simplifyFractionToMinusOne = run {
+val simplifyFractionToMinusOne = rule {
     val fraction = FractionPattern()
     val pattern = powerOf(bracketOf(fraction), FixedPattern(xp(-1)))
 
-    Rule(
-        pattern = pattern,
-        resultMaker = makeFractionOf(move(fraction.denominator), move(fraction.numerator)),
-        explanationMaker = makeMetadata(Explanation.SimplifyFractionToMinusOne, move(fraction)),
-    )
+    onPattern(pattern) {
+        TransformationResult(
+            fractionOf(move(fraction.denominator), move(fraction.numerator)),
+            explanation = metadata(Explanation.SimplifyFractionToMinusOne, move(fraction)),
+        )
+    }
 }
 
-val turnIntegerToMinusOneToFraction = run {
+val turnIntegerToMinusOneToFraction = rule {
     val base = UnsignedIntegerPattern()
     val pattern = powerOf(base, FixedPattern(xp(-1)))
 
-    Rule(
-        pattern = pattern,
-        resultMaker = makeFractionOf(FixedExpressionMaker(xp(1)), move(base)),
-        explanationMaker = makeMetadata(Explanation.TurnIntegerToMinusOneToFraction, move(base))
-    )
+    onPattern(pattern) {
+        TransformationResult(
+            fractionOf(introduce(Constants.One), move(base)),
+            explanation = metadata(Explanation.TurnIntegerToMinusOneToFraction, move(base))
+        )
+    }
 }
 
-val turnNegativePowerOfIntegerToFraction = run {
+val turnNegativePowerOfIntegerToFraction = rule {
     val base = UnsignedIntegerPattern()
     val exponent = SignedIntegerPattern()
     val pattern = powerOf(base, numericCondition(exponent) { it < -BigInteger.ONE })
 
-    Rule(
-        pattern = pattern,
-        resultMaker = makeFractionOf(
-            FixedExpressionMaker(xp(1)),
-            makePowerOf(move(base), move(exponent.unsignedPattern)),
-        ),
-        explanationMaker = makeMetadata(Explanation.TurnNegativePowerOfIntegerToFraction, move(base), move(exponent))
-    )
-}
-
-/*
-[a / b] * [c / d] --> [a * c / b * d]
- */
-val writeMultiplicationOfFractionsAsFraction = run {
-    val num1 = AnyPattern()
-    val den1 = AnyPattern()
-    val num2 = AnyPattern()
-    val den2 = AnyPattern()
-    val pattern = productOf(fractionOf(num1, den1), fractionOf(num2, den2))
-
-    Rule(
-        pattern = pattern,
-        resultMaker = makeFractionOf(
-            makeProductOf(move(num1), move(num2)),
-            makeProductOf(move(den1), move(den2)),
-        ),
-        explanationMaker = makeMetadata(Explanation.ConvertMultiplicationOfFractionsToFraction)
-    )
+    onPattern(pattern) {
+        TransformationResult(
+            fractionOf(
+                introduce(Constants.One),
+                powerOf(move(base), move(exponent.unsignedPattern)),
+            ),
+            explanation = metadata(Explanation.TurnNegativePowerOfIntegerToFraction, move(base), move(exponent))
+        )
+    }
 }
