@@ -17,7 +17,7 @@ class DummyKey : MetadataKey {
     override val keyName = "dummy"
 }
 
-class PlanTestCaseTest {
+class MethodTestCaseTest {
 
     private val testRuleMetadataKey = DummyKey()
     private val testPlanMetadataKey = DummyKey()
@@ -52,9 +52,9 @@ class PlanTestCaseTest {
 
     @Test
     fun testsFromExprCorrectly() {
-        testPlan {
+        testMethod {
             inputExpr = "1"
-            plan = testPlan
+            method = testPlan
 
             check {
                 step { }
@@ -64,9 +64,9 @@ class PlanTestCaseTest {
         }
 
         assertFails {
-            testPlan {
+            testMethod {
                 inputExpr = "1"
-                plan = testPlan
+                method = testPlan
 
                 check {
                     step { }
@@ -79,9 +79,9 @@ class PlanTestCaseTest {
 
     @Test
     fun testsToExprCorrectly() {
-        testPlan {
+        testMethod {
             inputExpr = "1"
-            plan = testPlan
+            method = testPlan
 
             check {
                 step { }
@@ -91,9 +91,9 @@ class PlanTestCaseTest {
         }
 
         assertFails {
-            testPlan {
+            testMethod {
                 inputExpr = "1"
-                plan = testPlan
+                method = testPlan
 
                 check {
                     step { }
@@ -107,9 +107,9 @@ class PlanTestCaseTest {
     @Test
     fun testsNumberOfStepsCorrectly() {
         assertFails {
-            testPlan {
+            testMethod {
                 inputExpr = "1"
-                plan = testPlan
+                method = testPlan
 
                 check {
                     step { }
@@ -118,9 +118,9 @@ class PlanTestCaseTest {
             }
         }
 
-        testPlan {
+        testMethod {
             inputExpr = "1"
-            plan = testPlan
+            method = testPlan
 
             check {
                 step { }
@@ -130,9 +130,9 @@ class PlanTestCaseTest {
         }
 
         assertFails {
-            testPlan {
+            testMethod {
                 inputExpr = "1"
-                plan = testPlan
+                method = testPlan
 
                 check {
                     step { }
@@ -146,9 +146,9 @@ class PlanTestCaseTest {
 
     @Test
     fun testsPathMappingCorrectly() {
-        testPlan {
+        testMethod {
             inputExpr = "1"
-            plan = testPlan
+            method = testPlan
 
             check {
                 step {
@@ -164,9 +164,9 @@ class PlanTestCaseTest {
         }
 
         assertFails {
-            testPlan {
+            testMethod {
                 inputExpr = "1"
-                plan = testPlan
+                method = testPlan
 
                 check {
                     step {
@@ -185,9 +185,9 @@ class PlanTestCaseTest {
 
     @Test
     fun testsExplanationKeyCorrectly() {
-        testPlan {
+        testMethod {
             inputExpr = "1"
-            plan = testPlan
+            method = testPlan
 
             check {
                 explanation {
@@ -206,9 +206,9 @@ class PlanTestCaseTest {
         }
 
         assertFails {
-            testPlan {
+            testMethod {
                 inputExpr = "1"
-                plan = testPlan
+                method = testPlan
 
                 check {
                     explanation {
@@ -230,9 +230,9 @@ class PlanTestCaseTest {
 
     @Test
     fun testsExplanationPathMappingCorrectly() {
-        testPlan {
+        testMethod {
             inputExpr = "1"
-            plan = testPlan
+            method = testPlan
 
             check {
                 explanation {
@@ -248,9 +248,9 @@ class PlanTestCaseTest {
         }
 
         assertFails {
-            testPlan {
+            testMethod {
                 inputExpr = "1"
-                plan = testPlan
+                method = testPlan
 
                 check {
                     explanation {
@@ -269,9 +269,9 @@ class PlanTestCaseTest {
 
     @Test
     fun testsSkillsCorrectly() {
-        testPlan {
+        testMethod {
             inputExpr = "1"
-            plan = testPlan
+            method = testPlan
 
             check {
                 step {
@@ -297,9 +297,9 @@ class PlanTestCaseTest {
         }
 
         assertFails {
-            testPlan {
+            testMethod {
                 inputExpr = "1"
-                plan = testPlan
+                method = testPlan
 
                 check {
                     step {

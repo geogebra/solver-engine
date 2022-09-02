@@ -22,29 +22,22 @@ import engine.utility.isEven
 import engine.utility.isOdd
 import java.math.BigInteger
 
-val evaluateUnsignedIntegerSubtraction = rule {
-    val term1 = UnsignedIntegerPattern()
-    val term2 = UnsignedIntegerPattern()
-    val sum = sumContaining(term1, negOf(term2))
-    val pattern = ConditionPattern(sum, numericCondition(term1, term2) { n1, n2 -> n1 >= n2 })
-
-    onPattern(pattern) {
-        TransformationResult(
-            toExpr = sum.substitute(numericOp(term1, term2) { n1, n2 -> n1 - n2 }),
-            explanation = metadata(Explanation.EvaluateIntegerSubtraction, move(term1), move(term2))
-        )
-    }
-}
-
 val evaluateSignedIntegerAddition = rule {
     val term1 = SignedIntegerPattern()
     val term2 = SignedIntegerPattern()
     val sum = sumContaining(term1, term2)
 
     onPattern(sum) {
+        val explanation = when {
+            getValue(term1) > BigInteger.ZERO && getValue(term2) < BigInteger.ZERO ->
+                metadata(Explanation.EvaluateIntegerSubtraction, move(term1), move(term2.unsignedPattern))
+            else ->
+                metadata(Explanation.EvaluateIntegerAddition, move(term1), move(term2))
+        }
+
         TransformationResult(
             toExpr = sum.substitute(numericOp(term1, term2) { n1, n2 -> n1 + n2 }),
-            explanation = metadata(Explanation.EvaluateIntegerAddition, move(term1), move(term2))
+            explanation = explanation
         )
     }
 }

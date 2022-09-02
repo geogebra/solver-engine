@@ -5,14 +5,14 @@ import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.general.GeneralExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
 import methods.integerroots.IntegerRootsExplanation
-import methods.plans.testPlan
+import methods.plans.testMethod
 import org.junit.jupiter.api.Test
 
 class FractionRootsPlansTest {
 
     @Test
-    fun testRationalizationOfSimpleDenominators() = testPlan {
-        plan = rationalizeDenominators
+    fun testRationalizationOfSimpleDenominators() = testMethod {
+        method = rationalizeDenominators
         inputExpr = "sqrt[[3 / 2]]"
 
         check {
@@ -47,8 +47,8 @@ class FractionRootsPlansTest {
     }
 
     @Test
-    fun testRationalizationRadicalWithCoefficient() = testPlan {
-        plan = rationalizeDenominators
+    fun testRationalizationRadicalWithCoefficient() = testMethod {
+        method = rationalizeDenominators
         inputExpr = "[sqrt[3] / 3 * sqrt[2]]"
 
         check {
@@ -76,8 +76,8 @@ class FractionRootsPlansTest {
     }
 
     @Test
-    fun testRationalizationWithSumOfRadicalsInNumerator() = testPlan {
-        plan = simplifyConstantExpression
+    fun testRationalizationWithSumOfRadicalsInNumerator() = testMethod {
+        method = simplifyConstantExpression
         inputExpr = "[sqrt[2] + sqrt[3] / sqrt[2]]"
 
         check {
@@ -127,8 +127,8 @@ class FractionRootsPlansTest {
     }
 
     @Test
-    fun testRationalizeHigherOrderRoot() = testPlan {
-        plan = simplifyConstantExpression
+    fun testRationalizeHigherOrderRoot() = testMethod {
+        method = simplifyConstantExpression
         inputExpr = "[9 / 2 * root[18, 4]]"
 
         check {
@@ -176,7 +176,7 @@ class FractionRootsPlansTest {
                             toExpr = "[9 / 2 * root[2 * [3 ^ 2], 4]] * " +
                                 "[root[[2 ^ 3] * [3 ^ 4 - 2], 4] / root[[2 ^ 4 - 1] * [3 ^ 4 - 2], 4]]"
                             explanation {
-                                key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                                key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
                             }
                         }
 
@@ -186,7 +186,7 @@ class FractionRootsPlansTest {
                             toExpr = "[9 / 2 * root[2 * [3 ^ 2], 4]] * " +
                                 "[root[[2 ^ 3] * [3 ^ 2], 4] / root[[2 ^ 4 - 1] * [3 ^ 4 - 2], 4]]"
                             explanation {
-                                key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                                key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
                             }
                         }
 
@@ -196,7 +196,7 @@ class FractionRootsPlansTest {
                             toExpr = "[9 / 2 * root[2 * [3 ^ 2], 4]] * " +
                                 "[root[[2 ^ 3] * [3 ^ 2], 4] / root[[2 ^ 3] * [3 ^ 4 - 2], 4]]"
                             explanation {
-                                key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                                key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
                             }
                         }
 
@@ -206,7 +206,7 @@ class FractionRootsPlansTest {
                             toExpr = "[9 / 2 * root[2 * [3 ^ 2], 4]] * " +
                                 "[root[[2 ^ 3] * [3 ^ 2], 4] / root[[2 ^ 3] * [3 ^ 2], 4]]"
                             explanation {
-                                key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                                key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
                             }
                         }
                     }

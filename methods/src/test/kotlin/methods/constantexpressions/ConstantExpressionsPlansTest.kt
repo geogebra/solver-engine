@@ -5,14 +5,14 @@ import methods.fractionroots.FractionRootsExplanation
 import methods.general.GeneralExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
 import methods.integerroots.IntegerRootsExplanation
-import methods.plans.testPlan
+import methods.plans.testMethod
 import org.junit.jupiter.api.Test
 
 class ConstantExpressionsPlansTest {
 
     @Test
-    fun simpleTest() = testPlan {
-        plan = simplifyConstantExpression
+    fun simpleTest() = testMethod {
+        method = simplifyConstantExpression
         inputExpr = "[1 / 3] + [2 / 3] * [1 / 2]"
 
         check {
@@ -22,8 +22,8 @@ class ConstantExpressionsPlansTest {
     }
 
     @Test
-    fun testMultiplyAndSimplify() = testPlan {
-        plan = simplifyConstantExpression
+    fun testMultiplyAndSimplify() = testMethod {
+        method = simplifyConstantExpression
         inputExpr = "[14 / 4] * [4 / 21]"
 
         check {
@@ -41,8 +41,8 @@ class ConstantExpressionsPlansTest {
     }
 
     @Test
-    fun testWithNegativesInFractions() = testPlan {
-        plan = simplifyConstantExpression
+    fun testWithNegativesInFractions() = testMethod {
+        method = simplifyConstantExpression
         inputExpr = "[-1 / 6] * [2 / -5]"
 
         check {
@@ -56,8 +56,8 @@ class ConstantExpressionsPlansTest {
     }
 
     @Test
-    fun testWithMoreNegativesInFractions() = testPlan {
-        plan = simplifyConstantExpression
+    fun testWithMoreNegativesInFractions() = testMethod {
+        method = simplifyConstantExpression
         inputExpr = "(-[1 / 3]) * [-1 / 4] * [3 / -2]"
 
         check {
@@ -72,8 +72,8 @@ class ConstantExpressionsPlansTest {
     }
 
     @Test
-    fun testDividingTwice() = testPlan {
-        plan = simplifyConstantExpression
+    fun testDividingTwice() = testMethod {
+        method = simplifyConstantExpression
         inputExpr = "3 : 4 : 5"
 
         check {
@@ -90,8 +90,8 @@ class ConstantExpressionsPlansTest {
     }
 
     @Test
-    fun testDividingFractions() = testPlan {
-        plan = simplifyConstantExpression
+    fun testDividingFractions() = testMethod {
+        method = simplifyConstantExpression
         inputExpr = "[5 / 6] : [3 / 4]"
 
         check {
@@ -104,8 +104,8 @@ class ConstantExpressionsPlansTest {
     }
 
     @Test
-    fun testDividingWithNegatives() = testPlan {
-        plan = simplifyConstantExpression
+    fun testDividingWithNegatives() = testMethod {
+        method = simplifyConstantExpression
         inputExpr = "3 : (-5)"
 
         check {
@@ -115,8 +115,8 @@ class ConstantExpressionsPlansTest {
     }
 
     @Test
-    fun testFractionExponent() = testPlan {
-        plan = simplifyConstantExpression
+    fun testFractionExponent() = testMethod {
+        method = simplifyConstantExpression
         inputExpr = "[(-[1 / 2]) ^ 3] + [([2 / 3]) ^ -2]"
 
         check {
@@ -127,8 +127,8 @@ class ConstantExpressionsPlansTest {
     }
 
     @Test
-    fun testNegativeExponentsOfIntegers() = testPlan {
-        plan = simplifyConstantExpression
+    fun testNegativeExponentsOfIntegers() = testMethod {
+        method = simplifyConstantExpression
         inputExpr = "[3 ^ -1] - [3 ^ -2]"
 
         check {
@@ -139,8 +139,8 @@ class ConstantExpressionsPlansTest {
     }
 
     @Test
-    fun testFractionToTheMinusOne() = testPlan {
-        plan = simplifyConstantExpression
+    fun testFractionToTheMinusOne() = testMethod {
+        method = simplifyConstantExpression
         inputExpr = "[([1 / 3])^-1] * [2 ^ -2]"
 
         check {
@@ -153,8 +153,8 @@ class ConstantExpressionsPlansTest {
     }
 
     @Test
-    fun testResultSimplifyPowerOfRoot() = testPlan {
-        plan = simplifyConstantExpression
+    fun testResultSimplifyPowerOfRoot() = testMethod {
+        method = simplifyConstantExpression
         inputExpr = "[(root[12, 5]) ^ 4]"
 
         check {
@@ -164,9 +164,9 @@ class ConstantExpressionsPlansTest {
     }
 
     @Test
-    fun testResultSimplifyPowerOfRootWithCoefficients() = testPlan {
-        testPlan {
-            plan = simplifyConstantExpression
+    fun testResultSimplifyPowerOfRootWithCoefficients() = testMethod {
+        testMethod {
+            method = simplifyConstantExpression
             inputExpr = "[(2 * sqrt[5]) ^ 3]"
 
             check {
@@ -177,8 +177,8 @@ class ConstantExpressionsPlansTest {
     }
 
     @Test
-    fun testResultPowerOfBinomialContainingRoots() = testPlan {
-        plan = simplifyConstantExpression
+    fun testResultPowerOfBinomialContainingRoots() = testMethod {
+        method = simplifyConstantExpression
         inputExpr = "[(2 * sqrt[6] + 3 * sqrt[2]) ^ 2]"
 
         check {
@@ -190,8 +190,8 @@ class ConstantExpressionsPlansTest {
     }
 
     @Test
-    fun testSimplifyRootOfRoot() = testPlan {
-        plan = simplifyConstantExpression
+    fun testSimplifyRootOfRoot() = testMethod {
+        method = simplifyConstantExpression
         inputExpr = "sqrt[root[12, 4]]"
 
         check {
@@ -211,8 +211,8 @@ class ConstantExpressionsPlansTest {
     }
 
     @Test
-    fun testSimplifyRootOfRootWithCoefficient() = testPlan {
-        plan = simplifyConstantExpression
+    fun testSimplifyRootOfRootWithCoefficient() = testMethod {
+        method = simplifyConstantExpression
         inputExpr = "root[2 * sqrt[6], 3]"
 
         check {
@@ -250,8 +250,8 @@ class ConstantExpressionsPlansTest {
 
 class ConstantExpressionRationalizationTest {
     @Test
-    fun testRationalizeCubeRootDenominator1() = testPlan {
-        plan = simplifyConstantExpression
+    fun testRationalizeCubeRootDenominator1() = testMethod {
+        method = simplifyConstantExpression
         inputExpr = "[2 / root[5, 3] + root[3, 3]]"
 
         check {
@@ -300,8 +300,8 @@ class ConstantExpressionRationalizationTest {
     }
 
     @Test
-    fun testRationalizeCubeRootDenominator2() = testPlan {
-        plan = simplifyConstantExpression
+    fun testRationalizeCubeRootDenominator2() = testMethod {
+        method = simplifyConstantExpression
         inputExpr = "[2 / -root[5, 3] + root[3, 3]]"
 
         check {
@@ -350,8 +350,8 @@ class ConstantExpressionRationalizationTest {
     }
 
     @Test
-    fun testRationalizeHigherOrderRoot1() = testPlan {
-        plan = simplifyConstantExpression
+    fun testRationalizeHigherOrderRoot1() = testMethod {
+        method = simplifyConstantExpression
         inputExpr = "[9 / 2 * root[18, 4]]"
 
         check {
@@ -483,8 +483,8 @@ class ConstantExpressionRationalizationTest {
     }
 
     @Test
-    fun testRationalizeHigherOrderRoot2() = testPlan {
-        plan = simplifyConstantExpression
+    fun testRationalizeHigherOrderRoot2() = testMethod {
+        method = simplifyConstantExpression
         inputExpr = "[2/root[2, 3]]"
 
         check {
@@ -518,7 +518,7 @@ class ConstantExpressionRationalizationTest {
                             fromExpr = "[2 / root[2, 3]] * [root[[2 ^ 3 - 1], 3] / root[[2 ^ 3 - 1], 3]]"
                             toExpr = "[2 / root[2, 3]] * [root[[2 ^ 2], 3] / root[[2 ^ 3 - 1], 3]]"
                             explanation {
-                                key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                                key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
                             }
                         }
 
@@ -526,7 +526,7 @@ class ConstantExpressionRationalizationTest {
                             fromExpr = "[2 / root[2, 3]] * [root[[2 ^ 2], 3] / root[[2 ^ 3 - 1], 3]]"
                             toExpr = "[2 / root[2, 3]] * [root[[2 ^ 2], 3] / root[[2 ^ 2], 3]]"
                             explanation {
-                                key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                                key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
                             }
                         }
                     }
@@ -594,8 +594,8 @@ class ConstantExpressionRationalizationTest {
     }
 
     @Test
-    fun testSimplifyArithmeticExpression3() = testPlan {
-        plan = simplifyConstantExpression
+    fun testSimplifyArithmeticExpression3() = testMethod {
+        method = simplifyConstantExpression
         inputExpr = "[2 / root[9, 3]]"
 
         check {
@@ -633,7 +633,7 @@ class ConstantExpressionRationalizationTest {
                         fromExpr = "[2 / root[[3 ^ 2], 3]] * [root[[3 ^ 3 - 2], 3] / root[[3 ^ 3 - 2], 3]]"
                         toExpr = "[2 / root[[3 ^ 2], 3]] * [root[[3 ^ 1], 3] / root[[3 ^ 3 - 2], 3]]"
                         explanation {
-                            key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                            key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
                         }
                     }
 
@@ -641,7 +641,7 @@ class ConstantExpressionRationalizationTest {
                         fromExpr = "[2 / root[[3 ^ 2], 3]] * [root[[3 ^ 1], 3] / root[[3 ^ 3 - 2], 3]]"
                         toExpr = "[2 / root[[3 ^ 2], 3]] * [root[[3 ^ 1], 3] / root[[3 ^ 1], 3]]"
                         explanation {
-                            key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                            key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
                         }
                     }
 
@@ -706,8 +706,8 @@ class ConstantExpressionRationalizationTest {
 class TestNormalization {
 
     @Test
-    fun testSimpleNormalization() = testPlan {
-        plan = simplifyConstantExpression
+    fun testSimpleNormalization() = testMethod {
+        method = simplifyConstantExpression
         inputExpr = "(+1 + (3))"
 
         check {
@@ -727,8 +727,8 @@ class TestNormalization {
     }
 
     @Test
-    fun testNoNormalizationIfNotNeeded() = testPlan {
-        plan = simplifyConstantExpression
+    fun testNoNormalizationIfNotNeeded() = testMethod {
+        method = simplifyConstantExpression
         inputExpr = "0 * (1)"
 
         check {

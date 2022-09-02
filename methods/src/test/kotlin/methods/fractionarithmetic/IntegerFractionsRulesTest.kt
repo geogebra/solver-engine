@@ -1,7 +1,9 @@
 package methods.fractionarithmetic
 
+import methods.plans.testMethod
 import methods.rules.RuleTest
 import methods.rules.RuleTestCase
+import org.junit.jupiter.api.Test
 import java.util.stream.Stream
 
 object IntegerFractionsRulesTest : RuleTest {
@@ -58,4 +60,37 @@ object IntegerFractionsRulesTest : RuleTest {
         RuleTestCase("3 - [1/4]", turnSumOfFractionAndIntegerToFractionSum, "[3 * 4/4] - [1/4]"),
 
     )
+}
+
+class SeparateIntegerFractionsRulesTest {
+
+    @Test
+    fun testAddLikeFractions() {
+        testMethod {
+            method = addLikeFractions
+            inputExpr = "[7/10] - [3/10]"
+
+            check {
+                toExpr = "[7 - 3/10]"
+                explanation {
+                    key = Explanation.SubtractLikeFractions
+                    param { expr = "[7/10]" }
+                    param { expr = "[3/10]" }
+                }
+            }
+        }
+        testMethod {
+            method = addLikeFractions
+            inputExpr = "-[7/10] - [3/10]"
+
+            check {
+                toExpr = "[-7 - 3/10]"
+                explanation {
+                    key = Explanation.AddLikeFractions
+                    param { expr = "-[7/10]" }
+                    param { expr = "-[3/10]" }
+                }
+            }
+        }
+    }
 }

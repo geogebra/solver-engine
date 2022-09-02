@@ -3,13 +3,13 @@ package methods.integerroots
 import methods.constantexpressions.simplifyConstantExpression
 import methods.general.GeneralExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
-import methods.plans.testPlan
+import methods.plans.testMethod
 import org.junit.jupiter.api.Test
 
 class IntegerRootsPlansTest {
     @Test
-    fun testSimplifyIntegerRootsTest() = testPlan {
-        plan = simplifyIntegerRoot
+    fun testSimplifyIntegerRootsTest() = testMethod {
+        method = simplifyIntegerRoot
         inputExpr = "sqrt[113400]"
 
         check {
@@ -44,8 +44,8 @@ class IntegerRootsPlansTest {
     }
 
     @Test
-    fun testRootOfRootWithCoefficient() = testPlan {
-        plan = simplifyConstantExpression
+    fun testRootOfRootWithCoefficient() = testMethod {
+        method = simplifyConstantExpression
         inputExpr = "root[3 * sqrt[4], 3]"
 
         check {
@@ -67,8 +67,8 @@ class IntegerRootsPlansTest {
     }
 
     @Test
-    fun testCollectLikeRootsAndSimplify() = testPlan {
-        plan = collectLikeRootsAndSimplify
+    fun testCollectLikeRootsAndSimplify() = testMethod {
+        method = collectLikeRootsAndSimplify
         inputExpr = "2 - 3 * sqrt[3] + root[3, 3] + [2 * sqrt[3] / 3] + 2 * sqrt[3]"
 
         check {
@@ -118,8 +118,8 @@ class IntegerRootsPlansTest {
 class SimplifyProductOfRootsTest {
 
     @Test
-    fun testProductOfEqualSquareRoots() = testPlan {
-        plan = simplifyProductWithRoots
+    fun testProductOfEqualSquareRoots() = testMethod {
+        method = simplifyProductWithRoots
         inputExpr = "sqrt[6] * sqrt[6]"
 
         check {
@@ -130,8 +130,8 @@ class SimplifyProductOfRootsTest {
     }
 
     @Test
-    fun testProductOfDifferentSquareRoots() = testPlan {
-        plan = simplifyProductWithRoots
+    fun testProductOfDifferentSquareRoots() = testMethod {
+        method = simplifyProductWithRoots
         inputExpr = "sqrt[6] * sqrt[3]"
 
         check {

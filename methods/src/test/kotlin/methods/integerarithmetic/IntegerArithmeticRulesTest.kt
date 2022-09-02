@@ -1,7 +1,9 @@
 package methods.integerarithmetic
 
+import methods.plans.testMethod
 import methods.rules.RuleTest
 import methods.rules.RuleTestCase
+import org.junit.jupiter.api.Test
 import java.util.stream.Stream
 
 object IntegerArithmeticRulesTest : RuleTest {
@@ -9,9 +11,8 @@ object IntegerArithmeticRulesTest : RuleTest {
     @JvmStatic
     fun testCaseProvider(): Stream<RuleTestCase> = Stream.of(
 
-        RuleTestCase("5 - 4", evaluateUnsignedIntegerSubtraction, "1"),
-        RuleTestCase("4 - 5", evaluateUnsignedIntegerSubtraction, null),
-
+        RuleTestCase("5 - 4", evaluateSignedIntegerAddition, "1"),
+        RuleTestCase("4 - 5", evaluateSignedIntegerAddition, "-1"),
         RuleTestCase("1 + x + 2", evaluateSignedIntegerAddition, "3 + x"),
         RuleTestCase("1 + x + (-2)", evaluateSignedIntegerAddition, "-1 + x"),
         RuleTestCase("(-2) + 3", evaluateSignedIntegerAddition, "1"),
@@ -36,4 +37,41 @@ object IntegerArithmeticRulesTest : RuleTest {
         RuleTestCase("[(-x)^7]", simplifyOddPowerOfNegative, "-[x^7]"),
         RuleTestCase("[(-[1 / 2]) ^ 3]", simplifyOddPowerOfNegative, "-[([1 / 2]) ^ 3]"),
     )
+}
+
+class SeparateIntegerArithmeticRulesTest {
+
+    @Test
+    fun testEvaluateSignedIntegerAddition() {
+        testMethod {
+            method = evaluateSignedIntegerAddition
+            inputExpr = "5 - 3"
+            check {
+                toExpr = "2"
+                explanation {
+                    key = Explanation.EvaluateIntegerSubtraction
+                }
+            }
+        }
+        testMethod {
+            method = evaluateSignedIntegerAddition
+            inputExpr = "-5 - 6"
+            check {
+                toExpr = "-11"
+                explanation {
+                    key = Explanation.EvaluateIntegerAddition
+                }
+            }
+        }
+        testMethod {
+            method = evaluateSignedIntegerAddition
+            inputExpr = "5 + 10"
+            check {
+                toExpr = "15"
+                explanation {
+                    key = Explanation.EvaluateIntegerAddition
+                }
+            }
+        }
+    }
 }

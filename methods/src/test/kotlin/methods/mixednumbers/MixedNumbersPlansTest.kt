@@ -2,14 +2,14 @@ package methods.mixednumbers
 
 import engine.context.Context
 import methods.integerarithmetic.IntegerArithmeticExplanation
-import methods.plans.testPlan
+import methods.plans.testMethod
 import kotlin.test.Test
 
 class MixedNumbersPlansTest {
 
     @Test
-    fun testAddMixedNumbersPlan() = testPlan {
-        plan = addMixedNumbers
+    fun testAddMixedNumbersPlan() = testMethod {
+        method = addMixedNumbers
         inputExpr = "[5 1/4] + [2 2/3]"
 
         check {
@@ -70,9 +70,9 @@ class MixedNumbersPlansTest {
     }
 
     @Test
-    fun testContextSensitivePlanEU() = testPlan {
+    fun testContextSensitivePlanEU() = testMethod {
         context = Context("EU")
-        plan = addMixedNumbers
+        method = addMixedNumbers
         inputExpr = "[5 1/4] + [2 2/3]"
 
         check {
@@ -93,9 +93,9 @@ class MixedNumbersPlansTest {
     }
 
     @Test
-    fun testContextSensitivePlanUS() = testPlan {
+    fun testContextSensitivePlanUS() = testMethod {
         context = Context("US")
-        plan = addMixedNumbers
+        method = addMixedNumbers
         inputExpr = "[5 1/4] + [2 2/3]"
 
         check {

@@ -10,7 +10,7 @@ import engine.expressions.PathMappingType
 import engine.expressions.RootPath
 import engine.expressions.Subexpression
 import engine.expressions.parsePath
-import engine.methods.Plan
+import engine.methods.Method
 import engine.steps.Transformation
 import engine.steps.metadata.Metadata
 import engine.steps.metadata.MetadataKey
@@ -195,14 +195,14 @@ class TransformationCheck(private val trans: Transformation?) :
 }
 
 @TestCaseBuilderMarker
-class PlanTestCase {
+class MethodTestCase {
     var context: Context = emptyContext
-    lateinit var plan: Plan
+    lateinit var method: Method
     lateinit var inputExpr: String
 
     fun check(assert: TransformationCheck.() -> Unit) {
         val expr = parseExpression(inputExpr)
-        val trans = plan.tryExecute(context, Subexpression(expr))
+        val trans = method.tryExecute(context, Subexpression(expr))
         checkTransformation(trans, assert)
     }
 }
@@ -225,7 +225,7 @@ private fun checkTransformation(trans: Transformation?, assert: TransformationCh
     check.finalize()
 }
 
-fun testPlan(init: PlanTestCase.() -> Unit) {
-    val testCase = PlanTestCase()
+fun testMethod(init: MethodTestCase.() -> Unit) {
+    val testCase = MethodTestCase()
     testCase.init()
 }

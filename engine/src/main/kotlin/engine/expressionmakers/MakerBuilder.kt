@@ -168,6 +168,8 @@ class MakerBuilder(private val match: Match) {
     fun MappedExpression.wrapIf(pattern: OptionalWrappingPattern, wrapper: (MappedExpression) -> MappedExpression) =
         if (pattern.isWrapping()) wrapper(this) else this
 
+    fun OptionalNegPattern.isNeg() = this.isNeg(match)
+
     fun optionalDivideBy(pattern: OptionalWrappingPattern, mappedExpression: MappedExpression) =
         mappedExpression.wrapIf(pattern, ::divideBy)
 }

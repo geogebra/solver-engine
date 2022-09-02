@@ -83,7 +83,10 @@ val addLikeFractions = rule {
                     factor(denom)
                 )
             ),
-            explanation = metadata(Explanation.AddLikeFractions, move(f1), move(f2)),
+            explanation = when {
+                !nf1.isNeg() && nf2.isNeg() -> metadata(Explanation.SubtractLikeFractions, move(f1), move(f2))
+                else -> metadata(Explanation.AddLikeFractions, move(nf1), move(nf2))
+            }
         )
     }
 }

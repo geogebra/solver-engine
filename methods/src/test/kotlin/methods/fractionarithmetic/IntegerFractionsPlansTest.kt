@@ -3,14 +3,14 @@ package methods.fractionarithmetic
 import engine.steps.metadata.Skill
 import methods.constantexpressions.simplifyConstantExpression
 import methods.integerarithmetic.evaluateSignedIntegerPower
-import methods.plans.testPlan
+import methods.plans.testMethod
 import org.junit.jupiter.api.Test
 
 class TestAddFractions {
 
     @Test
-    fun addLikeFractionsTest() = testPlan {
-        plan = evaluateFractionSum
+    fun addLikeFractionsTest() = testMethod {
+        method = evaluateFractionSum
         inputExpr = "[1/5] + [2/5]"
 
         check {
@@ -54,8 +54,8 @@ class TestAddFractions {
     }
 
     @Test
-    fun addUnlikeFractionsTest() = testPlan {
-        plan = evaluateFractionSum
+    fun addUnlikeFractionsTest() = testMethod {
+        method = evaluateFractionSum
         inputExpr = "[1/3] + [2/5]"
 
         check {
@@ -67,8 +67,8 @@ class TestAddFractions {
     }
 
     @Test
-    fun testAddFractionsWithCommonFactor() = testPlan {
-        plan = evaluateFractionSum
+    fun testAddFractionsWithCommonFactor() = testMethod {
+        method = evaluateFractionSum
         inputExpr = "[1 / 4] + [1 / 4]"
 
         check {
@@ -77,8 +77,8 @@ class TestAddFractions {
     }
 
     @Test
-    fun testSumSimplifies() = testPlan {
-        plan = evaluateFractionSum
+    fun testSumSimplifies() = testMethod {
+        method = evaluateFractionSum
         inputExpr = "[1 / 4] + [1 / 4]"
 
         check {
@@ -89,8 +89,8 @@ class TestAddFractions {
     }
 
     @Test
-    fun testSumIsInteger() = testPlan {
-        plan = evaluateFractionSum
+    fun testSumIsInteger() = testMethod {
+        method = evaluateFractionSum
         inputExpr = "[3 / 5] + [7 / 5]"
 
         check {
@@ -101,8 +101,8 @@ class TestAddFractions {
     }
 
     @Test
-    fun testSumDoesNotSimplify() = testPlan {
-        plan = evaluateFractionSum
+    fun testSumDoesNotSimplify() = testMethod {
+        method = evaluateFractionSum
         inputExpr = "[2 / 5] + [1 / 3]"
 
         check {
@@ -114,8 +114,8 @@ class TestAddFractions {
     }
 
     @Test
-    fun testSubtract() = testPlan {
-        plan = evaluateFractionSum
+    fun testSubtract() = testMethod {
+        method = evaluateFractionSum
         inputExpr = "[3 / 5] - [1 / 4]"
 
         check {
@@ -124,8 +124,8 @@ class TestAddFractions {
     }
 
     @Test
-    fun testAddNegatives() = testPlan {
-        plan = evaluateFractionSum
+    fun testAddNegatives() = testMethod {
+        method = evaluateFractionSum
         inputExpr = "- [3 / 5] - [1 / 4]"
 
         check {
@@ -137,8 +137,8 @@ class TestAddFractions {
 class TestSimplifyFraction {
 
     @Test
-    fun testToInteger() = testPlan {
-        plan = simplifyFraction
+    fun testToInteger() = testMethod {
+        method = simplifyFraction
         inputExpr = "[40 / 8]"
 
         check {
@@ -147,8 +147,8 @@ class TestSimplifyFraction {
     }
 
     @Test
-    fun testWithDenominatorEqualTo1() = testPlan {
-        plan = simplifyFraction
+    fun testWithDenominatorEqualTo1() = testMethod {
+        method = simplifyFraction
         inputExpr = "[7 / 1]"
 
         check {
@@ -157,8 +157,8 @@ class TestSimplifyFraction {
     }
 
     @Test
-    fun testWithGCD() = testPlan {
-        plan = simplifyFraction
+    fun testWithGCD() = testMethod {
+        method = simplifyFraction
         inputExpr = "[28 / 42]"
 
         check {
@@ -168,8 +168,8 @@ class TestSimplifyFraction {
     }
 
     @Test
-    fun testAlreadyFactorized() = testPlan {
-        plan = simplifyFraction
+    fun testAlreadyFactorized() = testMethod {
+        method = simplifyFraction
         inputExpr = "[3 * 4 / 4 * 5]"
 
         check {
@@ -178,8 +178,8 @@ class TestSimplifyFraction {
     }
 
     @Test
-    fun testAlreadyPartiallyFactorized() = testPlan {
-        plan = simplifyFraction
+    fun testAlreadyPartiallyFactorized() = testMethod {
+        method = simplifyFraction
         inputExpr = "[14 * 12 / 21 * 6]"
 
         check {
@@ -193,8 +193,8 @@ class TestSimplifyFraction {
     }
 
     @Test
-    fun testNoSimplification() = testPlan {
-        plan = simplifyFraction
+    fun testNoSimplification() = testMethod {
+        method = simplifyFraction
         inputExpr = "[3 / 4]"
 
         check {
@@ -203,8 +203,8 @@ class TestSimplifyFraction {
     }
 
     @Test
-    fun testEvaluatePowerOfFraction() = testPlan {
-        plan = simplifyConstantExpression
+    fun testEvaluatePowerOfFraction() = testMethod {
+        method = simplifyConstantExpression
         inputExpr = "[([3 / 4]) ^ 2]"
 
         check {
@@ -215,8 +215,8 @@ class TestSimplifyFraction {
     }
 
     @Test
-    fun testEvaluatePositiveFractionPower() = testPlan {
-        plan = simplifyConstantExpression
+    fun testEvaluatePositiveFractionPower() = testMethod {
+        method = simplifyConstantExpression
         inputExpr = "[([2 / 3]) ^ 2]"
 
         check {
@@ -225,8 +225,8 @@ class TestSimplifyFraction {
     }
 
     @Test
-    fun testEvaluateSignedIntegerPower1() = testPlan {
-        plan = evaluateSignedIntegerPower
+    fun testEvaluateSignedIntegerPower1() = testMethod {
+        method = evaluateSignedIntegerPower
         inputExpr = "[2 ^ 6]"
 
         check {
@@ -239,8 +239,8 @@ class TestSimplifyFraction {
     }
 
     @Test
-    fun testEvaluateSignedIntegerPower2() = testPlan {
-        plan = evaluateSignedIntegerPower
+    fun testEvaluateSignedIntegerPower2() = testMethod {
+        method = evaluateSignedIntegerPower
         inputExpr = "[2^5]"
 
         check {
@@ -257,8 +257,8 @@ class TestSimplifyFraction {
     }
 
     @Test
-    fun testEvaluateSumOfFractionAnInteger() = testPlan {
-        plan = evaluateSumOfFractionAndInteger
+    fun testEvaluateSumOfFractionAnInteger() = testMethod {
+        method = evaluateSumOfFractionAndInteger
         inputExpr = "[2/5] + 3"
 
         check {

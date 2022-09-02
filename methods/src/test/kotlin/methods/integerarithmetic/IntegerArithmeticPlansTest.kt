@@ -1,13 +1,13 @@
 package methods.integerarithmetic
 
-import methods.plans.testPlan
+import methods.plans.testMethod
 import kotlin.test.Test
 
 class IntegerArithmeticPlansTest {
 
     @Test
-    fun testSimplifyArithmeticExpressionSimple() = testPlan {
-        plan = evaluateArithmeticExpression
+    fun testSimplifyArithmeticExpressionSimple() = testMethod {
+        method = evaluateArithmeticExpression
         inputExpr = "1 + 2 + 3"
 
         check {
@@ -42,8 +42,8 @@ class IntegerArithmeticPlansTest {
     }
 
     @Test
-    fun testSimplifyArithmeticExpressionPowerSmall() = testPlan {
-        plan = evaluateArithmeticExpression
+    fun testSimplifyArithmeticExpressionPowerSmall() = testMethod {
+        method = evaluateArithmeticExpression
         inputExpr = "[2 ^ 4]"
 
         check {
@@ -79,8 +79,8 @@ class IntegerArithmeticPlansTest {
     }
 
     @Test
-    fun testSimplifyArithmeticExpressionPowerLarge() = testPlan {
-        plan = evaluateArithmeticExpression
+    fun testSimplifyArithmeticExpressionPowerLarge() = testMethod {
+        method = evaluateArithmeticExpression
         inputExpr = "[2 ^ 6]"
 
         check {
@@ -89,8 +89,8 @@ class IntegerArithmeticPlansTest {
     }
 
     @Test
-    fun testWithDifferentBrackets() = testPlan {
-        plan = evaluateArithmeticExpression
+    fun testWithDifferentBrackets() = testMethod {
+        method = evaluateArithmeticExpression
         inputExpr = "1 + {.2 + [.3 + (4 + 5).].}"
 
         check {
@@ -112,8 +112,8 @@ class IntegerArithmeticPlansTest {
     }
 
     @Test
-    fun testSimplifyArithmeticExpressionAddMultiplyDivide() = testPlan {
-        plan = evaluateArithmeticExpression
+    fun testSimplifyArithmeticExpressionAddMultiplyDivide() = testMethod {
+        method = evaluateArithmeticExpression
         inputExpr = "3*4*5:6 + 6 + 7"
 
         check {
@@ -154,8 +154,8 @@ class IntegerArithmeticPlansTest {
     }
 
     @Test
-    fun testSimplifyArithmeticExpressionBracketsAndNegativeMultiply() = testPlan {
-        plan = evaluateArithmeticExpression
+    fun testSimplifyArithmeticExpressionBracketsAndNegativeMultiply() = testMethod {
+        method = evaluateArithmeticExpression
         inputExpr = "34 + 60 + 6 - (4 + 10 - 3 * 5 * (-2))"
 
         check {
@@ -237,8 +237,8 @@ class IntegerArithmeticPlansTest {
     }
 
     @Test
-    fun testEvaluateArithmeticExpressionPowerAndBrackets() = testPlan {
-        plan = evaluateArithmeticExpression
+    fun testEvaluateArithmeticExpressionPowerAndBrackets() = testMethod {
+        method = evaluateArithmeticExpression
         inputExpr = "[(1 + 1) ^ [2 ^ 3]]"
 
         check {
@@ -284,8 +284,8 @@ class IntegerArithmeticPlansTest {
     }
 
     // @Test
-    fun testSimplifyRoots() = testPlan {
-        plan = evaluateArithmeticExpression
+    fun testSimplifyRoots() = testMethod {
+        method = evaluateArithmeticExpression
         inputExpr = "sqrt[63]"
 
         check {
@@ -306,8 +306,8 @@ class IntegerArithmeticPlansTest {
     }
 
     @Test
-    fun testEvaluateSignedIntegerPowerPlan() = testPlan {
-        plan = evaluateSignedIntegerPower
+    fun testEvaluateSignedIntegerPowerPlan() = testMethod {
+        method = evaluateSignedIntegerPower
         inputExpr = "[4^2]"
 
         check {
@@ -325,8 +325,8 @@ class IntegerArithmeticPlansTest {
     }
 
     @Test
-    fun testEvaluateSignedIntegerPower1() = testPlan {
-        plan = evaluateSignedIntegerPower
+    fun testEvaluateSignedIntegerPower1() = testMethod {
+        method = evaluateSignedIntegerPower
         inputExpr = "[2 ^ 6]"
 
         check {
@@ -339,8 +339,8 @@ class IntegerArithmeticPlansTest {
     }
 
     @Test
-    fun testEvaluateSignedIntegerPower2() = testPlan {
-        plan = evaluateSignedIntegerPower
+    fun testEvaluateSignedIntegerPower2() = testMethod {
+        method = evaluateSignedIntegerPower
         inputExpr = "[2^5]"
 
         check {

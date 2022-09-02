@@ -1,13 +1,13 @@
 package methods.general
 
-import methods.plans.testPlan
+import methods.plans.testMethod
 import org.junit.jupiter.api.Test
 
 class TestReplaceAllInvisibleBrackets {
 
     // @Test
-    fun testReplaceAllInvisibleBracketsSimple() = testPlan {
-        plan = addClarifyingBrackets
+    fun testReplaceAllInvisibleBracketsSimple() = testMethod {
+        method = addClarifyingBrackets
         inputExpr = "3*-4"
         check {
             toExpr = "3*(-4)"
@@ -19,8 +19,8 @@ class TestReplaceAllInvisibleBrackets {
     }
 
     @Test
-    fun testReplaceAllInvisibleBracketsNoTransformation() = testPlan {
-        plan = addClarifyingBrackets
+    fun testReplaceAllInvisibleBracketsNoTransformation() = testMethod {
+        method = addClarifyingBrackets
         inputExpr = "[1/3 -4x]"
 
         check {
@@ -29,8 +29,8 @@ class TestReplaceAllInvisibleBrackets {
     }
 
     // @Test
-    fun testReplaceAllInvisibleBracketsNested() = testPlan {
-        plan = addClarifyingBrackets
+    fun testReplaceAllInvisibleBracketsNested() = testMethod {
+        method = addClarifyingBrackets
         inputExpr = "[3 * -4/1 --+-2]"
 
         check {
