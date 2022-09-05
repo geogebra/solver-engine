@@ -106,27 +106,6 @@ class SeparateIntegerRootsRulesTest {
     }
 
     @Test
-    fun testBringSameIndexSameFactorRootsAsOneRoot() {
-        RuleTestCase(
-            "root[2 * [3^2], 4] * root[ [2^3] * [3^2], 4]",
-            bringSameIndexSameFactorRootsAsOneRoot,
-            "root[[2 ^ 1 + 3] * [3 ^ 2 + 2], 4]"
-        ).assert()
-
-        RuleTestCase(
-            "2 * root[2 * [3^2], 4] * root[ [2^3] * [3^2], 4]",
-            bringSameIndexSameFactorRootsAsOneRoot,
-            "2 * root[[2 ^ 1 + 3] * [3 ^ 2 + 2], 4]"
-        ).assert()
-
-        RuleTestCase(
-            "root[2, 4] * root[[2^3], 4]",
-            bringSameIndexSameFactorRootsAsOneRoot,
-            "root[[2^1 + 3], 4]"
-        ).assert()
-    }
-
-    @Test
     fun testCombineSamePowerUnderHigherRoot() {
         RuleTestCase(
             "root[[2^4] * [3^4], 5]",
@@ -161,6 +140,33 @@ class SeparateIntegerRootsRulesTest {
             "root[ [2^3], 3]",
             simplifyNthRootOfNthPower,
             "2"
+        ).assert()
+    }
+
+    @Test
+    fun testFun() {
+        RuleTestCase(
+            "4 * [3^3] * [3^2]",
+            collectPowersOfExponentsWithSameBase,
+            "4 * [3^3 + 2]"
+        ).assert()
+
+        RuleTestCase(
+            "[3^3] * [5^2]",
+            collectPowersOfExponentsWithSameBase,
+            null
+        ).assert()
+
+        RuleTestCase(
+            "[3^2] * 3",
+            collectPowersOfExponentsWithSameBase,
+            "[3^2 + 1]"
+        ).assert()
+
+        RuleTestCase(
+            "3 * 3",
+            collectPowersOfExponentsWithSameBase,
+            "[3^1 + 1]"
         ).assert()
     }
 }

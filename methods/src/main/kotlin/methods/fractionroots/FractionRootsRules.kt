@@ -13,7 +13,6 @@ import engine.expressions.productOf
 import engine.expressions.rootOf
 import engine.expressions.simplifiedPowerOf
 import engine.expressions.simplifiedProductOf
-import engine.expressions.squareRootOf
 import engine.expressions.sumOf
 import engine.expressions.xp
 import engine.methods.TransformationResult
@@ -46,20 +45,20 @@ import engine.utility.primeFactorDecomposition
 import java.math.BigInteger
 
 /**
- * E.g: sqrt[[2 / 3]] -> [sqrt[2] / sqrt[3]]
+ * E.g: root[[2 / 3], 4] -> [root[2, 4] / root[3, 4]]
  */
 val distributeRadicalOverFraction = rule {
     val numerator = UnsignedIntegerPattern()
     val denominator = UnsignedIntegerPattern()
     val fraction = fractionOf(numerator, denominator)
 
-    val pattern = squareRootOf(fraction)
+    val pattern = integerOrderRootOf(fraction)
 
     onPattern(pattern) {
         TransformationResult(
             toExpr = fractionOf(
-                squareRootOf(move(numerator)),
-                squareRootOf(move(denominator))
+                rootOf(move(numerator), move(pattern.order)),
+                rootOf(move(denominator), move(pattern.order))
             ),
             explanation = metadata(Explanation.DistributeRadicalOverFraction)
         )

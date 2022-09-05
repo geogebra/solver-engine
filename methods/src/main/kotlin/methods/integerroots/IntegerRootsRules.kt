@@ -1,6 +1,7 @@
 package methods.integerroots
 
 import engine.expressions.BinaryOperator
+import engine.expressions.Constants
 import engine.expressions.MappedExpression
 import engine.expressions.NaryOperator
 import engine.expressions.UnaryOperator
@@ -126,8 +127,8 @@ val splitPowerUnderRoot = rule {
  * root[a, p] * root[b, p] -> root[a * b, p]
  */
 val multiplyNthRoots = rule {
-    val radicand1 = UnsignedIntegerPattern()
-    val radicand2 = UnsignedIntegerPattern()
+    val radicand1 = AnyPattern()
+    val radicand2 = AnyPattern()
     val root1 = integerOrderRootOf(radicand1)
     val root2 = integerOrderRootOf(radicand2)
     val product = productContaining(root1, root2)
@@ -386,7 +387,21 @@ val bringSameIndexSameFactorRootsAsOneRoot = rule {
     val leftRoot = rootOf(leftRadicand, orderOfRoot)
     val rightRoot = integerOrderRootOf(rightRadicand)
 
-    val pattern = productContaining(leftRoot, rightRoot)
+    val prod = productContaining(leftRoot, rightRoot)
+    val pattern = ConditionPattern(prod) { match ->
+        val leftExpr = leftRadicand.getBoundExpr(match)!!
+        val rightExpr = rightRadicand.getBoundExpr(match)!!
+        val leftOp = leftExpr.operator
+        val rightOp = rightExpr.operator
+
+        if (leftOp == NaryOperator.Product || rightOp == NaryOperator.Product) {
+            leftOp == rightOp
+        } else {
+            val leftFactor = if (leftOp == BinaryOperator.Power) leftExpr.operands[0] else leftExpr
+            val rightFactor = if (rightOp == BinaryOperator.Power) rightExpr.operands[0] else rightExpr
+            leftFactor == rightFactor
+        }
+    }
 
     onPattern(pattern) {
         val result = mutableListOf<MappedExpression>()
@@ -429,7 +444,7 @@ val bringSameIndexSameFactorRootsAsOneRoot = rule {
         val resultRadicand = if (result.size == 1) result[0] else mappedExpression(NaryOperator.Product, result)
 
         TransformationResult(
-            toExpr = pattern.substitute(
+            toExpr = prod.substitute(
                 rootOf(
                     resultRadicand,
                     move(orderOfRoot)
@@ -473,6 +488,41 @@ val combineProductOfSamePowerUnderHigherRoot = rule {
                 )
             ),
             explanation = metadata(Explanation.CombineProductOfSamePowerUnderHigherRoot)
+        )
+    }
+}
+
+/**
+ * collect the powers of two exponents with the same base
+ * 3^3 * 3^2 -> 3^(3 + 2)
+ */
+val collectPowersOfExponentsWithSameBase = rule {
+    val base = UnsignedIntegerPattern()
+    val exponent1 = UnsignedIntegerPattern()
+    val exponent2 = UnsignedIntegerPattern()
+    val term1ExpFactor = powerOf(base, exponent1)
+    val term2ExpFactor = powerOf(base, exponent2)
+    val term1 = oneOf(term1ExpFactor, base)
+    val term2 = oneOf(term2ExpFactor, base)
+
+    val prod = productContaining(term1, term2)
+
+    onPattern(prod) {
+        val exponentValue1 = when {
+            isBound(term1ExpFactor) -> move(exponent1)
+            else -> introduce(Constants.One)
+        }
+
+        val exponentValue2 = when {
+            isBound(term2ExpFactor) -> move(exponent2)
+            else -> introduce(Constants.One)
+        }
+
+        TransformationResult(
+            toExpr = prod.substitute(
+                powerOf(move(base), sumOf(exponentValue1, exponentValue2))
+            ),
+            explanation = metadata(Explanation.CollectPowersOfExponentsWithSameBase)
         )
     }
 }

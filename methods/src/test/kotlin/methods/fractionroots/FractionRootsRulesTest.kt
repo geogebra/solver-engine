@@ -14,6 +14,11 @@ object FractionRootsRulesTest : RuleTest {
             "[sqrt[2] / sqrt[3]]"
         ),
         RuleTestCase(
+            "root[ [2 / 9], 4]",
+            distributeRadicalOverFraction,
+            "[ root[2, 4] / root[9, 4] ]"
+        ),
+        RuleTestCase(
             "[4 / sqrt[3]]",
             rationalizeSimpleDenominator,
             "[4 / sqrt[3]] * [sqrt[3] / sqrt[3]]"

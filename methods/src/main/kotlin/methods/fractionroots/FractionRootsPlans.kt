@@ -10,8 +10,9 @@ import methods.general.simplifyProductOfConjugates
 import methods.integerarithmetic.evaluateIntegerPowerDirectly
 import methods.integerarithmetic.evaluateSignedIntegerAddition
 import methods.integerarithmetic.simplifyIntegersInSum
-import methods.integerroots.bringSameIndexSameFactorRootsAsOneRoot
+import methods.integerroots.collectPowersOfExponentsWithSameBase
 import methods.integerroots.combineProductOfSamePowerUnderHigherRoot
+import methods.integerroots.multiplyNthRoots
 import methods.integerroots.simplifyIntegerRoot
 import methods.integerroots.simplifyNthRootOfNthPower
 import methods.integerroots.simplifyNthRootToThePowerOfN
@@ -49,22 +50,41 @@ val findRationalizingTerm = plan {
     }
 }
 
+/**
+ * root[ 3 * [4^2] * [5^3], 4] * root[ [3^3] * [4^2] * 5, 4] -->
+ * root[ [3^1 + 3] * [4^2 + 2] * [5^3 + 1], 4]
+ */
+val collectRationalizingRadicals = plan {
+    pipeline {
+        steps(multiplyNthRoots)
+        optionalSteps {
+            whilePossible {
+                deeply(collectPowersOfExponentsWithSameBase)
+            }
+        }
+    }
+}
+
 private val simplifyAfterRationalization = plan {
     whilePossible {
         deeply {
             firstOf {
                 option(identityCubeSumDifference)
-                option(bringSameIndexSameFactorRootsAsOneRoot)
                 option {
-                    plan {
-                        whilePossible {
-                            deeply(evaluateSignedIntegerAddition)
+                    pipeline {
+                        steps(collectRationalizingRadicals)
+                        optionalSteps {
+                            plan {
+                                whilePossible {
+                                    deeply(evaluateSignedIntegerAddition)
+                                }
+                            }
                         }
+                        steps(combineProductOfSamePowerUnderHigherRoot)
+                        steps(simplifyNthRootOfNthPower)
                     }
                 }
-                option(combineProductOfSamePowerUnderHigherRoot)
                 option(simplifyNthRootToThePowerOfN)
-                option(simplifyNthRootOfNthPower)
                 option(simplifyProductWithRoots)
                 option(simplifyProductOfConjugates)
                 option(simplifyIntegersInSum)

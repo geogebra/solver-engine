@@ -31,7 +31,8 @@ enum class IntegerRootsExplanation : CategorisedMetadataKey {
     SimplifyRootOfRootWithCoefficient,
     CollectLikeRoots,
     BringSameIndexSameFactorRootsAsOneRoot,
-    CombineProductOfSamePowerUnderHigherRoot;
+    CombineProductOfSamePowerUnderHigherRoot,
+    CollectPowersOfExponentsWithSameBase;
 
     override val category = "IntegerRoots"
 }
