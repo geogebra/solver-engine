@@ -80,7 +80,7 @@ private val simplifyAfterRationalization = plan {
                                 }
                             }
                         }
-                        steps(combineProductOfSamePowerUnderHigherRoot)
+                        optionalSteps(combineProductOfSamePowerUnderHigherRoot)
                         steps(simplifyNthRootOfNthPower)
                     }
                 }
