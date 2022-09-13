@@ -416,7 +416,7 @@ class ConstantExpressionRationalizationTest {
                         "[[(root[3, 3]) ^ 2] + (root[3, 3]) * (root[5, 3]) + [(root[5, 3]) ^ 2] / " +
                         "[(root[3, 3]) ^ 2] + (root[3, 3]) * (root[5, 3]) + [(root[5, 3]) ^ 2]]"
                     explanation {
-                        key = FractionRootsExplanation.RationalizeCubeRootDenominator
+                        key = FractionRootsExplanation.RationalizeSumOfIntegerAndCubeRoot
                     }
                 }
 
@@ -983,13 +983,21 @@ class ConstantExpressionFractionHigherOrderRootTest {
 }
 
 class ConstantExpressionTests {
-    @Test
     fun testCancelUnitaryDenominator() = testMethod {
         method = simplifyConstantExpression
         inputExpr = "[sqrt[8] / 2]"
 
         check {
             toExpr = "sqrt[2]"
+        }
+    }
+
+    fun testRationalizationIntegerAndCubeRoot() = testMethod {
+        method = simplifyConstantExpression
+        inputExpr = "[2 / 2 - root[3, 3]]"
+
+        check {
+            toExpr = "[8 + 4 * root[3, 3] + 2 * root[9, 3] / 5]"
         }
     }
 }

@@ -7,9 +7,9 @@ import engine.steps.metadata.TranslationKeys
 enum class FractionRootsExplanation : CategorisedMetadataKey {
     RationalizeSimpleDenominator,
     DistributeRadicalOverFraction,
-    RationalizeSumOfIntegerAndRadical,
+    RationalizeSumOfIntegerAndSquareRoot,
     BringRootsToSameIndexInFraction,
-    RationalizeCubeRootDenominator,
+    RationalizeSumOfIntegerAndCubeRoot,
     IdentityCubeSumDifference,
     FlipRootsInDenominator,
     RationalizeDenominator,

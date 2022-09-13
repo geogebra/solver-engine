@@ -153,16 +153,26 @@ val bringRootsToSameIndexInFraction = rule {
     }
 }
 
-val rationalizeCubeRootDenominator = rule {
+/**
+ * Handles denominators in the form
+ *      integer +- cube root
+ *      cube root +- integer
+ *      cube root +- cube root
+ * with each root potentially having an integer coefficient.
+ */
+val rationalizeSumOfIntegerAndCubeRoot = rule {
     val numerator = AnyPattern()
     val cubePattern = FixedPattern(Three)
-    val xRoot = rootOf(UnsignedIntegerPattern(), cubePattern)
-    val yRoot = rootOf(UnsignedIntegerPattern(), cubePattern)
+    val integer1 = UnsignedIntegerPattern()
+    val radical1 = withOptionalIntegerCoefficient(rootOf(UnsignedIntegerPattern(), cubePattern))
+    val term1 = oneOf(integer1, radical1)
+
+    val integer2 = UnsignedIntegerPattern()
+    val radical2 = withOptionalIntegerCoefficient(rootOf(UnsignedIntegerPattern(), cubePattern))
+    val term2 = oneOf(integer2, radical2)
     // a * root[x, 3] + b * root[y, 3]
-    val term1 = withOptionalIntegerCoefficient(xRoot)
-    val term2 = withOptionalIntegerCoefficient(yRoot)
-    val negatedTerm2 = optionalNegOf(term2)
-    val denominator = sumOf(term1, negatedTerm2)
+    val signedTerm2 = optionalNegOf(term2)
+    val denominator = ConditionPattern(sumOf(term1, signedTerm2)) { it.isBound(radical1) || it.isBound(radical2) }
 
     val fraction = fractionOf(numerator, denominator)
 
@@ -170,7 +180,7 @@ val rationalizeCubeRootDenominator = rule {
         val rationalizationTerm = sumOf(
             powerOf(move(term1), introduce(xp(2))),
             copyFlippedSign(
-                negatedTerm2,
+                signedTerm2,
                 productOf(
                     bracketOf(move(term1)),
                     bracketOf(move(term2))
@@ -186,7 +196,7 @@ val rationalizeCubeRootDenominator = rule {
                     rationalizationTerm
                 )
             ),
-            explanation = metadata(Explanation.RationalizeCubeRootDenominator)
+            explanation = metadata(Explanation.RationalizeSumOfIntegerAndCubeRoot)
         )
     }
 }
@@ -197,33 +207,36 @@ val rationalizeCubeRootDenominator = rule {
  * (a - b) * (a^2 + ab + b^2) -> a^3 - b^3
  */
 val identityCubeSumDifference = rule {
-    val a = rootOf(UnsignedIntegerPattern(), FixedPattern(Three))
-    val b = rootOf(UnsignedIntegerPattern(), FixedPattern(Three))
-    val x = UnsignedIntegerPattern()
-    val y = UnsignedIntegerPattern()
-    val term1 = oneOf(a, productOf(x, a))
-    val term2 = oneOf(b, productOf(y, b))
+    val integer1 = UnsignedIntegerPattern()
+    val radical1 = withOptionalIntegerCoefficient(rootOf(UnsignedIntegerPattern(), FixedPattern(Three)))
+    val term1 = oneOf(integer1, radical1)
+
+    val integer2 = UnsignedIntegerPattern()
+    val radical2 = withOptionalIntegerCoefficient(rootOf(UnsignedIntegerPattern(), FixedPattern(Three)))
+    val term2 = oneOf(integer2, radical2)
 
     val bTerm1 = oneOf(invisibleBracketOf(term1), bracketOf(term1), term1)
     val bTerm2 = oneOf(invisibleBracketOf(term2), bracketOf(term2), term2)
     val opbTerm2 = optionalNegOf(bTerm2)
 
-    val pattern = productOf(
-        bracketOf(sumOf(bTerm1, opbTerm2)),
-        bracketOf(
-            sumOf(
-                powerOf(
-                    bTerm1,
-                    FixedPattern(xp(2))
-                ),
-                oppositeSignPattern(opbTerm2, productOf(bTerm1, bTerm2)),
-                powerOf(
-                    bTerm2,
-                    FixedPattern(xp(2))
+    val pattern = ConditionPattern(
+        productOf(
+            bracketOf(sumOf(bTerm1, opbTerm2)),
+            bracketOf(
+                sumOf(
+                    powerOf(
+                        bTerm1,
+                        FixedPattern(xp(2))
+                    ),
+                    oppositeSignPattern(opbTerm2, productOf(bTerm1, bTerm2)),
+                    powerOf(
+                        bTerm2,
+                        FixedPattern(xp(2))
+                    )
                 )
             )
         )
-    )
+    ) { it.isBound(radical1) || it.isBound(radical2) }
 
     onPattern(pattern) {
         TransformationResult(
@@ -274,7 +287,7 @@ val flipRootsInDenominator = rule {
  *      square root +- square root
  * with each root potentially having an integer coefficient.
  */
-val rationalizeSumOfIntegerAndRadical = rule {
+val rationalizeSumOfIntegerAndSquareRoot = rule {
     val numerator = AnyPattern()
 
     val integer1 = UnsignedIntegerPattern()
@@ -299,7 +312,7 @@ val rationalizeSumOfIntegerAndRadical = rule {
                     sumOf(move(term1), copyFlippedSign(signedTerm2, move(term2)))
                 )
             ),
-            explanation = metadata(Explanation.RationalizeSumOfIntegerAndRadical)
+            explanation = metadata(Explanation.RationalizeSumOfIntegerAndSquareRoot)
         )
     }
 }

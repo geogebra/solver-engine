@@ -30,47 +30,47 @@ object FractionRootsRulesTest : RuleTest {
         ),
         RuleTestCase(
             "[1 / 2 + 3]",
-            rationalizeSumOfIntegerAndRadical,
+            rationalizeSumOfIntegerAndSquareRoot,
             null
         ),
         RuleTestCase(
             "[1 / 1 + sqrt[3]]",
-            rationalizeSumOfIntegerAndRadical,
+            rationalizeSumOfIntegerAndSquareRoot,
             "[1 / 1 + sqrt[3]] * [1 - sqrt[3] / 1 - sqrt[3]]"
         ),
         RuleTestCase(
             "[1 / 1 + 2 * sqrt[3]]",
-            rationalizeSumOfIntegerAndRadical,
+            rationalizeSumOfIntegerAndSquareRoot,
             "[1 / 1 + 2 * sqrt[3]] * [1 - 2 * sqrt[3] / 1 - 2 * sqrt[3]]"
         ),
         RuleTestCase(
             "[1 / 1 - sqrt[3]]",
-            rationalizeSumOfIntegerAndRadical,
+            rationalizeSumOfIntegerAndSquareRoot,
             "[1 / 1 - sqrt[3]] * [1 + sqrt[3] / 1 + sqrt[3]]"
         ),
         RuleTestCase(
             "[1 / 1 - 2 * sqrt[3]]",
-            rationalizeSumOfIntegerAndRadical,
+            rationalizeSumOfIntegerAndSquareRoot,
             "[1 / 1 - 2 * sqrt[3]] * [1 + 2 * sqrt[3] / 1 + 2 * sqrt[3]]"
         ),
         RuleTestCase(
             "[1 / 2 * sqrt[3] - 1]",
-            rationalizeSumOfIntegerAndRadical,
+            rationalizeSumOfIntegerAndSquareRoot,
             "[1 / 2 * sqrt[3] - 1] * [2 * sqrt[3] + 1 / 2 * sqrt[3] + 1]"
         ),
         RuleTestCase(
             "[1 / 2 * sqrt[3] - sqrt[5]]",
-            rationalizeSumOfIntegerAndRadical,
+            rationalizeSumOfIntegerAndSquareRoot,
             "[1 / 2 * sqrt[3] - sqrt[5]] * [2 * sqrt[3] + sqrt[5] / 2 * sqrt[3] + sqrt[5]]"
         ),
         RuleTestCase(
             "[1 / sqrt[3] + 4 * sqrt[5]]",
-            rationalizeSumOfIntegerAndRadical,
+            rationalizeSumOfIntegerAndSquareRoot,
             "[1 / sqrt[3] + 4 * sqrt[5]] * [sqrt[3] - 4 * sqrt[5] / sqrt[3] - 4 * sqrt[5]]"
         ),
         RuleTestCase(
             "[2 / 2 * root[3, 3] + 3 * root[4, 3]]",
-            rationalizeCubeRootDenominator,
+            rationalizeSumOfIntegerAndCubeRoot,
             "[2 / 2 * root[3, 3] + 3 * root[4, 3]] * " +
                 "[[(2 * root[3, 3]) ^ 2] - (2 * root[3, 3]) * (3 * root[4, 3]) + " +
                 "[(3 * root[4, 3]) ^ 2] / [(2 * root[3, 3]) ^ 2] - " +
@@ -78,11 +78,27 @@ object FractionRootsRulesTest : RuleTest {
         ),
         RuleTestCase(
             "[2 / 2 * root[3, 3] - 3 * root[4, 3]]",
-            rationalizeCubeRootDenominator,
+            rationalizeSumOfIntegerAndCubeRoot,
             "[2 / 2 * root[3, 3] - 3 * root[4, 3]] * " +
                 "[[(2 * root[3, 3]) ^ 2] + (2 * root[3, 3]) * (3 * root[4, 3]) + " +
                 "[(3 * root[4, 3]) ^ 2] / [(2 * root[3, 3]) ^ 2] + " +
                 "(2 * root[3, 3]) * (3 * root[4, 3]) + [(3 * root[4, 3]) ^ 2]]"
+        ),
+        RuleTestCase(
+            "[2 / 2 - root[3, 3]]",
+            rationalizeSumOfIntegerAndCubeRoot,
+            "[2 / 2 - root[3, 3]] * " +
+                "[ [2^2] + (2) * (root[3, 3]) + [(root[3, 3])^2] / [2^2] + (2) * (root[3, 3]) + [(root[3, 3])^2]]"
+        ),
+        RuleTestCase(
+            "[2 / 3 + 2]",
+            rationalizeSumOfIntegerAndCubeRoot,
+            null
+        ),
+        RuleTestCase(
+            "[2 / 3 - 2]",
+            rationalizeSumOfIntegerAndCubeRoot,
+            null
         ),
         RuleTestCase(
             "(root[5, 3] + root[3, 3]) * ([root[5, 3] ^ 2] - root[5, 3] * root[3, 3] + [root[3, 3]^2])",

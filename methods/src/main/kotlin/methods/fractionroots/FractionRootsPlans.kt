@@ -45,8 +45,8 @@ val findRationalizingTerm = plan {
     firstOf {
         option(rationalizeSimpleDenominator)
         option(rationalizeHigherOrderRoot)
-        option(rationalizeSumOfIntegerAndRadical)
-        option(rationalizeCubeRootDenominator)
+        option(rationalizeSumOfIntegerAndSquareRoot)
+        option(rationalizeSumOfIntegerAndCubeRoot)
     }
 }
 
