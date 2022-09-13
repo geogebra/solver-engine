@@ -13,11 +13,13 @@ import engine.patterns.IntegerProvider
 import engine.patterns.Maker
 import engine.patterns.Match
 import engine.patterns.NaryPatternBase
+import engine.patterns.NumberProvider
 import engine.patterns.OptionalNegPattern
 import engine.patterns.OptionalWrappingPattern
 import engine.patterns.PartialNaryPattern
 import engine.patterns.PathProvider
 import engine.patterns.Pattern
+import java.math.BigDecimal
 import java.math.BigInteger
 
 typealias ExpressionMaker = Maker<MappedExpression>
@@ -96,7 +98,7 @@ class MakerBuilder(private val match: Match) {
     /**
      * Transforms the integer provided by [ptn] according to the given [operation].
      */
-    fun numericOp(
+    fun integerOp(
         ptn: IntegerProvider,
         operation: (BigInteger) -> BigInteger
     ): MappedExpression {
@@ -115,12 +117,32 @@ class MakerBuilder(private val match: Match) {
     /**
      * Combines the integer values of [ptn1] and [ptn2] according to the given [operation].
      */
-    fun numericOp(
+    fun integerOp(
         ptn1: IntegerProvider,
         ptn2: IntegerProvider,
         operation: (BigInteger, BigInteger) -> BigInteger
     ): MappedExpression {
         val value = operation(ptn1.getBoundInt(match), ptn2.getBoundInt(match))
+
+        val result = when {
+            value.signum() >= 0 -> xp(value)
+            else -> negOf(xp(-value))
+        }
+        return MappedExpression(
+            result,
+            PathMappingLeaf(ptn1.getBoundPaths(match) + ptn2.getBoundPaths(match), PathMappingType.Combine),
+        )
+    }
+
+    /**
+     * Combines the numeric values of [ptn1] and [ptn2] according to the given [operation].
+     */
+    fun numericOp(
+        ptn1: NumberProvider,
+        ptn2: NumberProvider,
+        operation: (BigDecimal, BigDecimal) -> BigDecimal
+    ): MappedExpression {
+        val value = operation(ptn1.getBoundNumber(match), ptn2.getBoundNumber(match))
 
         val result = when {
             value.signum() >= 0 -> xp(value)

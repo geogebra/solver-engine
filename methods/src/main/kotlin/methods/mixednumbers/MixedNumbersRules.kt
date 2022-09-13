@@ -8,8 +8,8 @@ import engine.methods.rule
 import engine.patterns.ConditionPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.fractionOf
+import engine.patterns.integerCondition
 import engine.patterns.mixedNumberOf
-import engine.patterns.numericCondition
 import engine.steps.metadata.Skill
 import engine.steps.metadata.metadata
 
@@ -34,11 +34,11 @@ val fractionToMixedNumber = rule {
     val numerator = UnsignedIntegerPattern()
     val denominator = UnsignedIntegerPattern()
 
-    val isImproperFraction = numericCondition(numerator, denominator) { n, d -> n > d }
+    val isImproperFraction = integerCondition(numerator, denominator) { n, d -> n > d }
 
     onPattern(ConditionPattern(fractionOf(numerator, denominator), isImproperFraction)) {
-        val quotient = numericOp(numerator, denominator) { n, d -> n / d }
-        val remainder = numericOp(numerator, denominator) { n, d -> n % d }
+        val quotient = integerOp(numerator, denominator) { n, d -> n / d }
+        val remainder = integerOp(numerator, denominator) { n, d -> n % d }
 
         TransformationResult(
             toExpr = mixedNumberOf(quotient, remainder, move(denominator)),

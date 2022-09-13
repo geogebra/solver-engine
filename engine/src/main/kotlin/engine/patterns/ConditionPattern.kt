@@ -2,6 +2,7 @@ package engine.patterns
 
 import engine.expressions.Expression
 import engine.expressions.Subexpression
+import java.math.BigDecimal
 import java.math.BigInteger
 
 fun interface MatchCondition {
@@ -20,17 +21,27 @@ data class ConditionPattern(
     }
 }
 
-data class NumericConditionPattern(
+data class IntegerConditionPattern(
     private val pattern: IntegerPattern,
     private val condition: (BigInteger) -> Boolean,
-) : IntegerPattern {
+) : IntegerPattern by pattern {
 
     override val key = pattern.key
 
-    override fun getBoundInt(m: Match) = pattern.getBoundInt(m)
-
     override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
         return pattern.findMatches(subexpression, match).filter { condition(pattern.getBoundInt(it)) }
+    }
+}
+
+data class NumericConditionPattern(
+    private val pattern: NumberPattern,
+    private val condition: (BigDecimal) -> Boolean,
+) : NumberPattern by pattern {
+
+    override val key = pattern.key
+
+    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+        return pattern.findMatches(subexpression, match).filter { condition(pattern.getBoundNumber(it)) }
     }
 }
 
@@ -43,16 +54,7 @@ data class UnaryCondition(
     }
 }
 
-data class UnaryNumericCondition(
-    val ptn: IntegerProvider,
-    val condition: (BigInteger) -> Boolean
-) : MatchCondition {
-    override fun checkMatch(match: Match): Boolean {
-        return condition(ptn.getBoundInt(match))
-    }
-}
-
-data class BinaryNumericCondition(
+data class BinaryIntegerCondition(
     val ptn1: IntegerProvider,
     val ptn2: IntegerProvider,
     val condition: (BigInteger, BigInteger) -> Boolean
@@ -62,18 +64,39 @@ data class BinaryNumericCondition(
     }
 }
 
+data class BinaryNumericCondition(
+    val ptn1: NumberProvider,
+    val ptn2: NumberProvider,
+    val condition: (BigDecimal, BigDecimal) -> Boolean
+) : MatchCondition {
+    override fun checkMatch(match: Match): Boolean {
+        return condition(ptn1.getBoundNumber(match), ptn2.getBoundNumber(match))
+    }
+}
+
 fun condition(
     ptn: Pattern,
     condition: (Expression) -> Boolean
 ) = ConditionPattern(ptn, UnaryCondition(ptn, condition))
 
-fun numericCondition(
+fun integerCondition(
     ptn: IntegerPattern,
     condition: (BigInteger) -> Boolean,
-) = NumericConditionPattern(ptn, condition)
+) = IntegerConditionPattern(ptn, condition)
 
-fun numericCondition(
+fun integerCondition(
     ptn1: IntegerProvider,
     ptn2: IntegerProvider,
     condition: (BigInteger, BigInteger) -> Boolean,
+) = BinaryIntegerCondition(ptn1, ptn2, condition)
+
+fun numericCondition(
+    ptn: NumberPattern,
+    condition: (BigDecimal) -> Boolean,
+) = NumericConditionPattern(ptn, condition)
+
+fun numericCondition(
+    ptn1: NumberProvider,
+    ptn2: NumberProvider,
+    condition: (BigDecimal, BigDecimal) -> Boolean,
 ) = BinaryNumericCondition(ptn1, ptn2, condition)

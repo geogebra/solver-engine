@@ -15,17 +15,20 @@ private class Rule(
 ) : Method {
 
     override fun tryExecute(ctx: Context, sub: Subexpression): Transformation? {
-        val match = pattern.findMatches(sub, RootMatch).firstOrNull() ?: return null
-        val builder = MakerBuilder(match)
-        return builder.transformation()?.let {
-            Transformation(
-                fromExpr = sub,
-                toExpr = it.toExpr,
-                steps = it.steps,
-                explanation = it.explanation,
-                skills = it.skills,
-            )
+        for (match in pattern.findMatches(sub, RootMatch)) {
+            val builder = MakerBuilder(match)
+            builder.transformation()?.let {
+                return Transformation(
+                    fromExpr = sub,
+                    toExpr = it.toExpr,
+                    steps = it.steps,
+                    explanation = it.explanation,
+                    skills = it.skills,
+                )
+            }
         }
+
+        return null
     }
 }
 

@@ -11,8 +11,8 @@ import engine.patterns.SignedIntegerPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.bracketOf
 import engine.patterns.divideBy
+import engine.patterns.integerCondition
 import engine.patterns.negOf
-import engine.patterns.numericCondition
 import engine.patterns.oneOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
@@ -31,12 +31,13 @@ val evaluateSignedIntegerAddition = rule {
         val explanation = when {
             getValue(term1) > BigInteger.ZERO && getValue(term2) < BigInteger.ZERO ->
                 metadata(Explanation.EvaluateIntegerSubtraction, move(term1), move(term2.unsignedPattern))
+
             else ->
                 metadata(Explanation.EvaluateIntegerAddition, move(term1), move(term2))
         }
 
         TransformationResult(
-            toExpr = sum.substitute(numericOp(term1, term2) { n1, n2 -> n1 + n2 }),
+            toExpr = sum.substitute(integerOp(term1, term2) { n1, n2 -> n1 + n2 }),
             explanation = explanation
         )
     }
@@ -52,7 +53,7 @@ val evaluateIntegerProductAndDivision = rule {
             multiplier,
             ConditionPattern(
                 divideBy(divisor),
-                numericCondition(base, divisor) { n1, n2 -> n1 % n2 == BigInteger.ZERO }
+                integerCondition(base, divisor) { n1, n2 -> n1 % n2 == BigInteger.ZERO }
             )
         )
     )
@@ -60,11 +61,12 @@ val evaluateIntegerProductAndDivision = rule {
     onPattern(product) {
         when {
             isBound(multiplier) -> TransformationResult(
-                toExpr = product.substitute(numericOp(base, multiplier) { n1, n2 -> n1 * n2 }),
+                toExpr = product.substitute(integerOp(base, multiplier) { n1, n2 -> n1 * n2 }),
                 explanation = metadata(Explanation.EvaluateIntegerProduct, move(base), move(multiplier))
             )
+
             else -> TransformationResult(
-                toExpr = product.substitute(numericOp(base, divisor) { n1, n2 -> n1 / n2 }),
+                toExpr = product.substitute(integerOp(base, divisor) { n1, n2 -> n1 / n2 }),
                 explanation = metadata(Explanation.EvaluateIntegerDivision, move(base), move(divisor))
             )
         }
@@ -76,12 +78,12 @@ private val MAX_POWER_AS_PRODUCT = 5.toBigInteger()
 
 val evaluateIntegerPowerDirectly = rule {
     val base = SignedIntegerPattern()
-    val exponent = numericCondition(UnsignedIntegerPattern()) { it <= MAX_POWER }
+    val exponent = integerCondition(UnsignedIntegerPattern()) { it <= MAX_POWER }
     val power = powerOf(base, exponent)
 
     onPattern(power) {
         TransformationResult(
-            toExpr = numericOp(base, exponent) { n1, n2 -> n1.pow(n2.toInt()) },
+            toExpr = integerOp(base, exponent) { n1, n2 -> n1.pow(n2.toInt()) },
             explanation = metadata(Explanation.EvaluateIntegerPowerDirectly, move(base), move(exponent))
         )
     }
@@ -89,7 +91,7 @@ val evaluateIntegerPowerDirectly = rule {
 
 val rewriteIntegerPowerAsProduct = rule {
     val base = SignedIntegerPattern()
-    val exponent = numericCondition(UnsignedIntegerPattern()) { it <= MAX_POWER_AS_PRODUCT && it >= BigInteger.TWO }
+    val exponent = integerCondition(UnsignedIntegerPattern()) { it <= MAX_POWER_AS_PRODUCT && it >= BigInteger.TWO }
     val power = powerOf(base, exponent)
 
     onPattern(power) {
@@ -103,7 +105,7 @@ val rewriteIntegerPowerAsProduct = rule {
 val simplifyEvenPowerOfNegative = rule {
     val positiveBase = AnyPattern()
     val base = bracketOf(negOf(positiveBase))
-    val exponent = numericCondition(SignedIntegerPattern()) { it.isEven() }
+    val exponent = integerCondition(SignedIntegerPattern()) { it.isEven() }
     val power = powerOf(base, exponent)
 
     onPattern(power) {
@@ -117,7 +119,7 @@ val simplifyEvenPowerOfNegative = rule {
 val simplifyOddPowerOfNegative = rule {
     val positiveBase = AnyPattern()
     val base = bracketOf(negOf(positiveBase))
-    val exponent = numericCondition(SignedIntegerPattern()) { it.isOdd() }
+    val exponent = integerCondition(SignedIntegerPattern()) { it.isOdd() }
     val power = powerOf(base, exponent)
 
     onPattern(power) {

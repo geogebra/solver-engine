@@ -1,5 +1,6 @@
 package engine.expressions
 
+import java.math.BigDecimal
 import java.math.BigInteger
 
 data class Expression(val operator: Operator, val operands: List<Expression>) {
@@ -35,6 +36,16 @@ fun xp(n: Int) = xp(n.toBigInteger())
 fun xp(n: BigInteger): Expression {
     val posExpr = Expression(IntegerOperator(n.abs()), emptyList())
     return if (n.signum() >= 0) posExpr else negOf(posExpr)
+}
+
+fun xp(x: BigDecimal): Expression {
+    val posExpr = Expression(DecimalOperator(x.abs()), emptyList())
+    return if (x.signum() >= 0) posExpr else negOf(posExpr)
+}
+
+fun xp(x: BigDecimal, repeatingDigits: Int): Expression {
+    val posExpr = Expression(RecurringDecimalOperator(x.abs(), repeatingDigits), emptyList())
+    return if (x.signum() >= 0) posExpr else negOf(posExpr)
 }
 
 fun xp(v: String) = Expression(VariableOperator(v), emptyList())

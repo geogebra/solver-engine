@@ -14,6 +14,7 @@ import org.antlr.v4.runtime.CommonTokenStream
 import parser.antlr.ExpressionBaseVisitor
 import parser.antlr.ExpressionLexer
 import parser.antlr.ExpressionParser
+import java.math.BigDecimal
 
 fun invisibleBracketOf(operand: Expression) = Expression(UnaryOperator.InvisibleBracket, listOf(operand))
 
@@ -38,6 +39,7 @@ private fun makeExpression(operator: Operator, operands: List<Expression>) = Exp
 private fun makeExpression(operator: Operator, vararg operands: Expression) =
     makeExpression(operator, operands.asList())
 
+@Suppress("TooManyFunctions")
 private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
 
     override fun visitWholeInput(ctx: ExpressionParser.WholeInputContext?): Expression {
@@ -148,6 +150,15 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
 
     override fun visitNaturalNumber(ctx: ExpressionParser.NaturalNumberContext?): Expression {
         return xp(ctx!!.NATNUM().text.toBigInteger())
+    }
+
+    override fun visitDecimalNumber(ctx: ExpressionParser.DecimalNumberContext?): Expression {
+        return xp(ctx!!.DECNUM().text.toBigDecimal())
+    }
+
+    override fun visitRecurringDecimalNumber(ctx: ExpressionParser.RecurringDecimalNumberContext?): Expression {
+        val decimal = BigDecimal(ctx!!.decimal.text + ctx.repetend.text)
+        return xp(decimal, ctx.repetend.text.length)
     }
 
     override fun visitVariable(ctx: ExpressionParser.VariableContext?): Expression {

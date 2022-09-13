@@ -39,7 +39,7 @@ bracket
     | OPEN_CURLY expr CLOSE_CURLY #curlyBracket
     ;
 
-atom: nonNumericAtom | naturalNumber;
+atom: nonNumericAtom | naturalNumber | decimalNumber | recurringDecimalNumber;
 
 nonNumericAtom: sqrt | root | bracket | variable;
 
@@ -47,10 +47,15 @@ mixedNumber: '[' integer=NATNUM num=NATNUM '/' den=NATNUM ']';
 
 naturalNumber: NATNUM;
 
+decimalNumber: DECNUM;
+
+recurringDecimalNumber: decimal=DECNUM '[' repetend=NATNUM ']';
+
 variable: VARIABLE;
 
 fragment DIGIT: [0-9];
 NATNUM: DIGIT+;
+DECNUM: NATNUM '.' NATNUM;
 
 OPEN_SQUARE: '[.';
 CLOSE_SQUARE: '.]';

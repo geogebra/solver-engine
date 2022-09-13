@@ -24,10 +24,10 @@ import engine.patterns.SignedIntegerPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.bracketOf
 import engine.patterns.fractionOf
+import engine.patterns.integerCondition
 import engine.patterns.integerOrderRootOf
 import engine.patterns.invisibleBracketOf
 import engine.patterns.negOf
-import engine.patterns.numericCondition
 import engine.patterns.oneOf
 import engine.patterns.oppositeSignPattern
 import engine.patterns.optionalNegOf
@@ -95,13 +95,13 @@ val simplifyFractionOfRootsWithSameOrder = rule {
 
     val fraction = ConditionPattern(
         fractionOf(numerator, denominator),
-        numericCondition(radicand1, radicand2) { n1, n2 -> n2.divides(n1) }
+        integerCondition(radicand1, radicand2) { n1, n2 -> n2.divides(n1) }
     )
 
     onPattern(
         ConditionPattern(
             fraction,
-            numericCondition(numerator.order, denominator.order) { n1, n2 -> n1 == n2 }
+            integerCondition(numerator.order, denominator.order) { n1, n2 -> n1 == n2 }
         )
     ) {
         TransformationResult(
@@ -128,7 +128,7 @@ val bringRootsToSameIndexInFraction = rule {
     onPattern(
         ConditionPattern(
             product,
-            numericCondition(leftRoot.order, rightRoot.order) { n1, n2 -> n1 != n2 }
+            integerCondition(leftRoot.order, rightRoot.order) { n1, n2 -> n1 != n2 }
         )
     ) {
         TransformationResult(
@@ -136,16 +136,16 @@ val bringRootsToSameIndexInFraction = rule {
                 rootOf(
                     simplifiedPowerOf(
                         move(leftRadicand),
-                        numericOp(leftRoot.order, rightRoot.order) { n1, n2 -> n2 / n1.gcd(n2) }
+                        integerOp(leftRoot.order, rightRoot.order) { n1, n2 -> n2 / n1.gcd(n2) }
                     ),
-                    numericOp(leftRoot.order, rightRoot.order) { n1, n2 -> n1 * n2 / n1.gcd(n2) }
+                    integerOp(leftRoot.order, rightRoot.order) { n1, n2 -> n1 * n2 / n1.gcd(n2) }
                 ),
                 rootOf(
                     simplifiedPowerOf(
                         move(rightRadicand),
-                        numericOp(leftRoot.order, rightRoot.order) { n1, n2 -> n1 / n1.gcd(n2) }
+                        integerOp(leftRoot.order, rightRoot.order) { n1, n2 -> n1 / n1.gcd(n2) }
                     ),
-                    numericOp(leftRoot.order, rightRoot.order) { n1, n2 -> n1 * n2 / n1.gcd(n2) }
+                    integerOp(leftRoot.order, rightRoot.order) { n1, n2 -> n1 * n2 / n1.gcd(n2) }
                 )
             ),
             explanation = metadata(Explanation.BringRootsToSameIndexInFraction)
@@ -407,8 +407,8 @@ val higherOrderRationalizingTerm = rule {
  */
 val factorizeHigherOrderRadicand = rule {
     val numerator = AnyPattern()
-    val radicand = numericCondition(UnsignedIntegerPattern()) { !it.isPrime() }
-    val rootOrder = numericCondition(UnsignedIntegerPattern()) { it > BigInteger.TWO }
+    val radicand = integerCondition(UnsignedIntegerPattern()) { !it.isPrime() }
+    val rootOrder = integerCondition(UnsignedIntegerPattern()) { it > BigInteger.TWO }
     val root = rootOf(radicand, rootOrder)
     val denominator = withOptionalIntegerCoefficient(root)
     val pattern = fractionOf(numerator, denominator)

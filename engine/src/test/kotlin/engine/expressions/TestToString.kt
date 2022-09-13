@@ -22,6 +22,10 @@ class TestToString {
 
         @JvmStatic
         fun testCaseProvider(): Stream<TestCase> = Stream.of(
+            TestCase("3.1415", "3.1415", "{3.1415}"),
+            TestCase("35.000", "35.000", "{35.000}"),
+            TestCase("2.71[82]", "2.71[82]", "{2.71\\overline{82}}"),
+            TestCase("0.00[100]", "0.00[100]", "{0.00\\overline{100}}"),
             TestCase("1+1", "1 + 1", "{{1} + {1}}"),
             TestCase("x-y", "x - y", "{{x} {{} - {y}}}"),
             TestCase("[3/5]", "[3 / 5]", "{\\frac{3}{5}}"),

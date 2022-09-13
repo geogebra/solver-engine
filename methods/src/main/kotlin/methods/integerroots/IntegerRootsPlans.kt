@@ -5,8 +5,8 @@ import engine.methods.steps
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.integerCondition
 import engine.patterns.integerOrderRootOf
-import engine.patterns.numericCondition
 import engine.utility.isPowerOfDegree
 import methods.constantexpressions.simplifyFractionsInExpression
 import methods.constantexpressions.simplifyIntegersInExpression
@@ -156,7 +156,7 @@ val simplifyIntegerRootToInteger = plan {
     val radical = integerOrderRootOf(radicand)
     pattern = ConditionPattern(
         radical,
-        numericCondition(radicand, radical.order) { n, order -> n.isPowerOfDegree(order.toInt()) }
+        integerCondition(radicand, radical.order) { n, order -> n.isPowerOfDegree(order.toInt()) }
     )
 
     applyTo(simplifyIntegerRoot) { it }

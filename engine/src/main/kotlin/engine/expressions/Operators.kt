@@ -1,5 +1,6 @@
 package engine.expressions
 
+import java.math.BigDecimal
 import java.math.BigInteger
 
 const val MAX_CHILD_COUNT = 1000
@@ -66,6 +67,9 @@ abstract class NullaryOperator : Operator {
     abstract fun latexString(): String
 }
 
+/**
+ * Operator representing an unsigned integer.
+ */
 data class IntegerOperator(val value: BigInteger) : NullaryOperator() {
     init {
         require(value.signum() >= 0)
@@ -74,6 +78,46 @@ data class IntegerOperator(val value: BigInteger) : NullaryOperator() {
     override fun toString() = value.toString()
 
     override fun latexString() = value.toString()
+}
+
+/**
+ * Operator representing an unsigned terminating decimal.
+ */
+data class DecimalOperator(val value: BigDecimal) : NullaryOperator() {
+    init {
+        require(value.signum() > 0)
+    }
+
+    override fun toString(): String = value.toString()
+
+    override fun latexString(): String = value.toString()
+}
+
+/**
+ * Operator representing an unsigned recurring decimal, e.g. 1.045454545... = 1.0[45]. The [value] must include the
+ * occurrence of the repeating pattern and [repeatingDigits] is the length of the repeating pattern.
+ * Examples:
+ * - 0.[6] is RecurringDecimalOperator(BigDecimal("0.6", 1)
+ * - 1.0[45] is RecurringDecimalOperator(BigDecimal("1.045"), 2)
+ */
+data class RecurringDecimalOperator(val value: BigDecimal, val repeatingDigits: Int) : NullaryOperator() {
+    init {
+        require(value.signum() > 0)
+        require(repeatingDigits > 0)
+        require(repeatingDigits <= value.scale())
+    }
+
+    override fun toString(): String {
+        val s = value.toString()
+        val repeatingStartIndex = s.length - repeatingDigits
+        return "${s.substring(0, repeatingStartIndex)}[${s.substring(repeatingStartIndex)}]"
+    }
+
+    override fun latexString(): String {
+        val s = value.toString()
+        val repeatingStartIndex = s.length - repeatingDigits
+        return "${s.substring(0, repeatingStartIndex)}\\overline{${s.substring(repeatingStartIndex)}}"
+    }
 }
 
 data class VariableOperator(val name: String) : NullaryOperator() {

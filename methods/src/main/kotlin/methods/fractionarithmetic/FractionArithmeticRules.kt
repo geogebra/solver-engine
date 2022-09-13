@@ -23,8 +23,8 @@ import engine.patterns.bracketOf
 import engine.patterns.commutativeSumOf
 import engine.patterns.condition
 import engine.patterns.fractionOf
+import engine.patterns.integerCondition
 import engine.patterns.negOf
-import engine.patterns.numericCondition
 import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
@@ -98,9 +98,9 @@ val bringToCommonDenominator = rule {
     val nf2 = optionalNegOf(f2)
     val sum = sumContaining(nf1, nf2)
 
-    onPattern(ConditionPattern(sum, numericCondition(f1.denominator, f2.denominator) { n1, n2 -> n1 != n2 })) {
-        val factor1 = numericOp(f1.denominator, f2.denominator) { n1, n2 -> n2 / n1.gcd(n2) }
-        val factor2 = numericOp(f1.denominator, f2.denominator) { n1, n2 -> n1 / n1.gcd(n2) }
+    onPattern(ConditionPattern(sum, integerCondition(f1.denominator, f2.denominator) { n1, n2 -> n1 != n2 })) {
+        val factor1 = integerOp(f1.denominator, f2.denominator) { n1, n2 -> n2 / n1.gcd(n2) }
+        val factor2 = integerOp(f1.denominator, f2.denominator) { n1, n2 -> n1 / n1.gcd(n2) }
 
         TransformationResult(
             toExpr = sum.substitute(
@@ -150,9 +150,9 @@ val simplifyFractionToInteger = rule {
 
     val frac = fractionOf(numerator, denominator)
 
-    onPattern(ConditionPattern(frac, numericCondition(numerator, denominator) { n, d -> n.mod(d).signum() == 0 })) {
+    onPattern(ConditionPattern(frac, integerCondition(numerator, denominator) { n, d -> n.mod(d).signum() == 0 })) {
         TransformationResult(
-            toExpr = numericOp(numerator, denominator) { n, d -> n / d },
+            toExpr = integerOp(numerator, denominator) { n, d -> n / d },
             explanation = metadata(Explanation.SimplifyFractionToInteger),
         )
     }
@@ -173,12 +173,12 @@ val findCommonFactorInFraction = rule {
     onPattern(
         ConditionPattern(
             frac,
-            numericCondition(factorNumerator, factorDenominator) { n, d -> n.gcd(d) != BigInteger.ONE }
+            integerCondition(factorNumerator, factorDenominator) { n, d -> n.gcd(d) != BigInteger.ONE }
         )
     ) {
-        val gcd = numericOp(factorNumerator, factorDenominator) { n, d -> n.gcd(d) }
-        val numeratorOverGcd = numericOp(factorNumerator, factorDenominator) { n, d -> n / n.gcd(d) }
-        val denominatorOverGcd = numericOp(factorNumerator, factorDenominator) { n, d -> d / n.gcd(d) }
+        val gcd = integerOp(factorNumerator, factorDenominator) { n, d -> n.gcd(d) }
+        val numeratorOverGcd = integerOp(factorNumerator, factorDenominator) { n, d -> n / n.gcd(d) }
+        val denominatorOverGcd = integerOp(factorNumerator, factorDenominator) { n, d -> d / n.gcd(d) }
 
         TransformationResult(
             toExpr = fractionOf(
@@ -335,7 +335,7 @@ val simplifyFractionWithFractionDenominator = rule {
 
 val distributeFractionPositivePower = rule {
     val fraction = FractionPattern()
-    val exponent = numericCondition(UnsignedIntegerPattern()) { it > BigInteger.ONE }
+    val exponent = integerCondition(UnsignedIntegerPattern()) { it > BigInteger.ONE }
     val pattern = powerOf(bracketOf(fraction), exponent)
 
     onPattern(pattern) {
@@ -352,7 +352,7 @@ val distributeFractionPositivePower = rule {
 val simplifyFractionNegativePower = rule {
     val fraction = FractionPattern()
     val exponent = SignedIntegerPattern()
-    val pattern = powerOf(bracketOf(fraction), numericCondition(exponent) { it < -BigInteger.ONE })
+    val pattern = powerOf(bracketOf(fraction), integerCondition(exponent) { it < -BigInteger.ONE })
 
     onPattern(pattern) {
         TransformationResult(
@@ -392,7 +392,7 @@ val turnIntegerToMinusOneToFraction = rule {
 val turnNegativePowerOfIntegerToFraction = rule {
     val base = UnsignedIntegerPattern()
     val exponent = SignedIntegerPattern()
-    val pattern = powerOf(base, numericCondition(exponent) { it < -BigInteger.ONE })
+    val pattern = powerOf(base, integerCondition(exponent) { it < -BigInteger.ONE })
 
     onPattern(pattern) {
         TransformationResult(
