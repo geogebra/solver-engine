@@ -1,51 +1,31 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "solver.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  name: {{ .Values.branchName }}
+  namespace: {{ .Values.branchName }}
   labels:
-    {{- include "solver.labels" . | nindent 4 }}
+    app: {{ .Values.branchName }}
 spec:
-  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "solver.selectorLabels" . | nindent 6 }}
+      app: {{ .Values.branchName }}
+  replicas: 1
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
-      annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       labels:
-        {{- include "solver.selectorLabels" . | nindent 8 }}
+        app: {{ .Values.branchName }}
     spec:
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-        - name: {{ .Chart.Name }}
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+        - name: {{ .Values.branchName }}
+          image: "registry.git.geogebra.org/solver-team/solver-engine/api:{{ .Values.branchName }}"
           ports:
-            - name: http
-              containerPort: {{ .Values.image.port }}
-              protocol: TCP
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+            - containerPort: 8080
+          env:
+            - name: SERVER_SERVLET_CONTEXT_PATH
+              value: "/{{ .Values.branchName }}"
+          # resources:
+          #   limits:
+          #     memory: "100Mi"
+          #     cpu: "200m"
+      imagePullSecrets:
+        - name: ggb-registry-key

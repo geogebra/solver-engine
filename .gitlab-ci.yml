@@ -2,9 +2,7 @@ default:
   image: gradle:jdk17-alpine
 
 variables:
-  HOSTED_ZONE_ELB: "Z2IFOLAFXWLO4F" # for .elb.eu-west-1.amazonaws.com
-  HOSTED_ZONE_PRIVATE: "Z07386271714PMB4T58VC" # private geogebra.net
-  HOSTED_ZONE_PUBLIC: "Z3ODPVF4F5ZU2W" # public geogebra.net
+  GITLAB_CLUSTER: solver-v2
 
 stages:
   - assemble
@@ -17,6 +15,7 @@ stages:
 before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
   - export SLUG=`echo $CI_COMMIT_REF_SLUG | sed 's/^\([a-z][a-z]*\-[0-9][0-9]*\).*/\1/'`
+  - export REPO_FULL_NAME=`echo $CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME`
 
 cache:
   paths:
@@ -80,32 +79,18 @@ export-translation-keys:
 
 deploy:
   stage: deploy
-  image: alpine/k8s:1.22.10
+  image: alpine/k8s:1.23.7
   tags:
     - docker
   script:
-    # AWS credentials are defined in https://git.geogebra.org/solver-team/solver-engine/-/settings/ci_cd
-    - export NS="solver-$SLUG"
-    - kubectl config use-context solver-team/solver-engine:eks-solver
-    # Create fargate profile if necessary
-    - eksctl get fargateprofile --cluster solver --name "fp-$SLUG" || eksctl create fargateprofile --cluster solver --name "fp-$SLUG" --namespace "$NS"
-    # Deploy package
-    - helm package helm --version "6.6.6"
+    - kubectl config get-contexts
+    - kubectl config use-context $REPO_FULL_NAME:$GITLAB_CLUSTER
+    - helm package helm/ --version "6.6.6"
     - |
-      helm upgrade --install solver ./solver-6.6.6.tgz \
-          --values helm/values.yaml \
-          --set image.tag=$SLUG \
-          --set podAnnotations.solver/commit-sha=$CI_COMMIT_SHA \
-          --namespace $NS --create-namespace --wait
-    # Create DNS entries
-    - export ELB=$(kubectl get svc --namespace $NS solver --template "{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}")
-    - |
-      export CHANGES="{\"Changes\": [ { \"Action\": \"UPSERT\", \"ResourceRecordSet\": { 
-        \"Name\": \"$NS.geogebra.net\", \"Type\": \"A\", 
-        \"AliasTarget\": { \"HostedZoneId\": \"$HOSTED_ZONE_ELB\",\"DNSName\": \"$ELB\",\"EvaluateTargetHealth\": false } 
-      } } ] }"
-    - aws route53 change-resource-record-sets --hosted-zone-id /hostedzone/$HOSTED_ZONE_PRIVATE --change-batch "$CHANGES"
-    - aws route53 change-resource-record-sets --hosted-zone-id /hostedzone/$HOSTED_ZONE_PUBLIC --change-batch "$CHANGES"
+      helm upgrade --install $SLUG solver-6.6.6.tgz \
+          --set branchName=$SLUG \
+          --set imageCredentials.username=$CI_REGISTRY_USER \
+          --set imageCredentials.password=$CI_REGISTRY_PASSWORD
 
 # Merge-request pipeline jobs
 wait:
@@ -117,26 +102,13 @@ wait:
 
 undeploy:
   stage: undeploy
-  image: alpine/k8s:1.22.10
+  image: alpine/k8s:1.23.7
   tags:
     - docker
   script:
-    - export NS="solver-$SLUG"
-    - kubectl config use-context solver-team/solver-engine:eks-solver
-    # Remove DNS entries
-    - export ELB=$(kubectl get svc --namespace $NS solver --template "{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}")
-    - |
-      export CHANGES="{\"Changes\": [ { \"Action\": \"DELETE\", \"ResourceRecordSet\": { 
-        \"Name\": \"$NS.geogebra.net\", \"Type\": \"A\", 
-        \"AliasTarget\": { \"HostedZoneId\": \"$HOSTED_ZONE_ELB\",\"DNSName\": \"$ELB\",\"EvaluateTargetHealth\": false } 
-      } } ] }"
-    - aws route53 change-resource-record-sets --hosted-zone-id /hostedzone/$HOSTED_ZONE_PRIVATE --change-batch "$CHANGES"
-    - aws route53 change-resource-record-sets --hosted-zone-id /hostedzone/$HOSTED_ZONE_PUBLIC --change-batch "$CHANGES"
-    # Undeploy
-    - helm uninstall solver --namespace $NS --wait
-    - kubectl delete namespaces $NS
-    # Remove fargate profile
-    - eksctl delete fargateprofile --cluster solver --name "fp-$SLUG"
+    - kubectl config get-contexts
+    - kubectl config use-context $REPO_FULL_NAME:$GITLAB_CLUSTER
+    - helm uninstall $SLUG
   when: manual
   allow_failure: false
   only:

@@ -1,68 +1,7 @@
-# Default values for solver.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
-replicaCount: 1
-
-image:
-  repository: registry.git.geogebra.org/solver-team/solver-engine/api
-  pullPolicy: Always
-  port: 8080
-  tag: "0.1"
+branchName: dev
+LoadBalancerPath: /dev
 
 imageCredentials:
-  enabled: true
   registry: registry.git.geogebra.org
-  username: gitlab-ci
-  password: glpat-dEpokBR2Dkhy_gw61vXU
-
-imagePullSecrets:
-  - name: ggb-registry-key
-
-nameOverride: ""
-fullnameOverride: ""
-
-podAnnotations:
-  # Filled in by CI job with the commit-sha of the build
-  solver/commit-sha: ""
-
-podSecurityContext: {}
-  # fsGroup: 2000
-
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
-
-service:
-  type: LoadBalancer
-  port: 80
-  annotations:
-    service.beta.kubernetes.io/aws-load-balancer-type: external
-    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
-    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
-
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
-
-nodeSelector: {}
-
-tolerations:
-  - key: "eks.amazonaws.com/compute-type"
-    operator: "Equal"
-    value: "fargate"
-    effect: "NoSchedule"
-
-affinity: {}
+  username: #username is get from CI/CD variable store while running job.
+  password: #password is get from CI/CD variable store while running job.

@@ -1,20 +1,16 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "solver.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ .Values.branchName }}
+  name: {{ .Values.branchName }}-service
   labels:
-    {{- include "solver.labels" . | nindent 4 }}
-  {{- with .Values.service.annotations }}
+    app: {{ .Values.branchName }}
   annotations:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+    alb.ingress.kubernetes.io/healthcheck-path: "/{{ .Values.branchName }}/poker.html"
 spec:
-  type: {{ .Values.service.type }}
-  ports:
-    - port: {{ .Values.service.port }}
-      targetPort: http
-      protocol: TCP
-      name: http
+  type: NodePort
   selector:
-    {{- include "solver.selectorLabels" . | nindent 4 }}
+    app: {{ .Values.branchName }}
+  ports:
+    - port: 80
+      targetPort: 8080

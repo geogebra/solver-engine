@@ -74,8 +74,8 @@ tasks.named<BootBuildImage>("bootBuildImage") {
     isPublish = true
     docker {
         publishRegistry {
-            username = "gitlab-ci"
-            password = "glpat-dEpokBR2Dkhy_gw61vXU"
+            username = System.getenv("CI_REGISTRY_USER")
+            password = System.getenv("CI_REGISTRY_PASSWORD")
             url = "https://registry.git.geogebra.org/v2/"
         }
     }
