@@ -225,7 +225,8 @@ class FractionRootsPlansTest {
                 step {
                     fromExpr = "[9 * root[[2 ^ 3] * [3 ^ 2], 4] / " +
                         "2 * root[2 * [3 ^ 2], 4] * root[[2 ^ 3] * [3 ^ 2], 4]]"
-                    toExpr = "[9 * root[72, 4] / 2 * root[2 * [3 ^ 2], 4] * root[[2 ^ 3] * [3 ^ 2], 4]]"
+                    toExpr = "[9 * root[72, 4] / 2 * " +
+                        "root[2 * [3 ^ 2], 4] * root[[2 ^ 3] * [3 ^ 2], 4]]"
 
                     step {
                         fromExpr = "9 * root[[2 ^ 3] * [3 ^ 2], 4]"
@@ -411,46 +412,48 @@ class FractionRootsPlansTest {
 
             step {
                 fromExpr = "[9 * root[72, 4] / 2 * 6]"
-                toExpr = "[3 * root[72, 4] / 2 * 2]"
+                toExpr = "[9 * root[72, 4] / 12]"
+                explanation {
+                    key = IntegerRootsExplanation.SimplifyProductWithRoots
+                }
+
+                step {
+                    fromExpr = "2 * 6"
+                    toExpr = "12"
+                    explanation {
+                        key = IntegerArithmeticExplanation.EvaluateIntegerProduct
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "[9 * root[72, 4] / 12]"
+                toExpr = "[3 * root[72, 4] / 4]"
                 explanation {
                     key = FractionArithmeticExplanation.SimplifyFraction
                 }
 
                 step {
-                    fromExpr = "[9 * root[72, 4] / 2 * 6]"
-                    toExpr = "[3 * 3 * root[72, 4] / 2 * 3 * 2]"
+                    fromExpr = "[9 * root[72, 4] / 12]"
+                    toExpr = "[3 * 3 * root[72, 4] / 3 * 4]"
                     explanation {
                         key = FractionArithmeticExplanation.FindCommonFactorInFraction
                     }
                 }
 
                 step {
-                    fromExpr = "[3 * 3 * root[72, 4] / 2 * 3 * 2]"
-                    toExpr = "[3 * root[72, 4] / 2 * 2]"
+                    fromExpr = "[3 * 3 * root[72, 4] / 3 * 4]"
+                    toExpr = "[3 * root[72, 4] / 4]"
                     explanation {
                         key = GeneralExplanation.CancelCommonTerms
                     }
                 }
             }
-
-            step {
-                fromExpr = "[3 * root[72, 4] / 2 * 2]"
-                toExpr = "[3 * root[72, 4] / 4]"
-                explanation {
-                    key = IntegerRootsExplanation.SimplifyProductWithRoots
-                }
-
-                step {
-                    fromExpr = "2 * 2"
-                    toExpr = "4"
-                    explanation {
-                        key = IntegerArithmeticExplanation.EvaluateIntegerProduct
-                    }
-                }
-            }
         }
     }
+}
 
+class FractionRootsRationalization {
     @Test
     fun testRationalizeHigherOrderRootWithPrimeRadicand() = testMethod {
         method = rationalizeDenominators

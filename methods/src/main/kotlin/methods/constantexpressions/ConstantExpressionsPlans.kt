@@ -87,7 +87,6 @@ val simplificationSteps = steps {
 
         option(normalizeFractions)
         option(normalizeSignsInFraction)
-        option { deeply(simplifyFraction, deepFirst = true) }
         option { deeply(multiplyAndSimplifyFractions, deepFirst = true) }
         option { deeply(simplifyProductWithRoots, deepFirst = true) }
 
@@ -97,6 +96,8 @@ val simplificationSteps = steps {
         option { deeply(simplifyIntegersInSum, deepFirst = true) }
         option { deeply(evaluateFractionSum, deepFirst = true) }
         option { deeply(evaluateSumOfFractionAndInteger, deepFirst = true) }
+
+        option { deeply(simplifyFraction, deepFirst = true) }
 
         option { deeply(rationalizeDenominators, deepFirst = true) }
         option { deeply(collectLikeRootsAndSimplify, deepFirst = true) }
