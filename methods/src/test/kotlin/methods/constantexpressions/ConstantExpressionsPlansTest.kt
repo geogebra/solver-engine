@@ -981,3 +981,15 @@ class ConstantExpressionFractionHigherOrderRootTest {
         }
     }
 }
+
+class ConstantExpressionTests {
+    @Test
+    fun testCancelUnitaryDenominator() = testMethod {
+        method = simplifyConstantExpression
+        inputExpr = "[sqrt[8] / 2]"
+
+        check {
+            toExpr = "sqrt[2]"
+        }
+    }
+}
