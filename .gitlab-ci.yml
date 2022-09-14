@@ -89,6 +89,7 @@ deploy:
     - |
       helm upgrade --install $SLUG solver-6.6.6.tgz \
           --set branchName=$SLUG \
+          --set commitSha=$CI_COMMIT_SHA \
           --set imageCredentials.username=$CI_REGISTRY_USER \
           --set imageCredentials.password=$CI_REGISTRY_PASSWORD
 

@@ -1,6 +1,6 @@
 /* global renderMathInElement */
 
-const apiRoot = './api/v1.0-alpha0';
+const apiRoot = "./api/v1.0-alpha0";
 
 // Globally changes the rendering of steps.
 let showThroughSteps = false;
@@ -11,20 +11,13 @@ let translationData = {};
 const el = (id) => document.getElementById(id);
 
 const isThroughStep = (trans) =>
-    trans.steps &&
-    trans.steps.length === 1 &&
-    trans.steps[0].path === trans.path;
+    trans.steps && trans.steps.length === 1 && trans.steps[0].path === trans.path;
 
 /******************************************
  * API access
  ******************************************/
 
-const requestApplyPlan = async (
-    planId,
-    input,
-    curriculum = "",
-    format = "latex"
-) => {
+const requestApplyPlan = async (planId, input, curriculum = "", format = "latex") => {
     const response = await fetch(`${apiRoot}/plans/${planId}/apply`, {
         method: "POST",
         headers: {
@@ -46,11 +39,12 @@ const requestSelectPlans = async (input, curriculum = "", format = "latex") => {
     return await response.json();
 };
 
-const fetchPlans = () =>
-    fetch(`${apiRoot}/plans/`).then((response) => response.json());
+const fetchPlans = () => fetch(`${apiRoot}/plans/`).then((response) => response.json());
 
 const fetchDefaultTranslations = () =>
     fetch("./DefaultTranslations.json").then((resp) => resp.json());
+
+const fetchVersionInfo = () => fetch(`${apiRoot}/versionInfo`).then((resp) => resp.json());
 
 /******************************************
  * Setting up
@@ -86,21 +80,10 @@ const applyPlan = async (planId, input, curriculum = "") => {
     el("source").innerHTML = JSON.stringify(result, null, 4);
     if (result.error !== undefined) {
         console.log(result);
-        el(
-            "result"
-        ).innerHTML = `Error: ${result.error}<br/>Message: ${result.message}`;
+        el("result").innerHTML = `Error: ${result.error}<br/>Message: ${result.message}`;
     } else {
-        const solverResult = await requestApplyPlan(
-            planId,
-            input,
-            curriculum,
-            "solver"
-        );
-        el("result").innerHTML = renderTransformationAndTest(
-            result,
-            solverResult,
-            1
-        );
+        const solverResult = await requestApplyPlan(planId, input, curriculum, "solver");
+        el("result").innerHTML = renderTransformationAndTest(result, solverResult, 1);
         renderMathInElement(el("result"));
     }
 };
@@ -110,16 +93,10 @@ const selectPlans = async (input, curriculum = "") => {
     el("source").innerHTML = JSON.stringify(result, null, 4);
     if (result.error !== undefined) {
         console.log(result);
-        el(
-            "result"
-        ).innerHTML = `Error: ${result.error}<br/>Message: ${result.message}`;
+        el("result").innerHTML = `Error: ${result.error}<br/>Message: ${result.message}`;
     } else {
         console.log(result);
-        const testResult = await requestSelectPlans(
-            input,
-            curriculum,
-            "solver"
-        );
+        const testResult = await requestSelectPlans(input, curriculum, "solver");
         el("result").innerHTML = renderPlanSelections(result, testResult);
         renderMathInElement(el("result"));
     }
@@ -165,10 +142,7 @@ const renderPlanSelection = (selection, testTransformation) => {
     return `
     <div class="plan-selection">
         <div class="plan-id">${selection.metadata.methodId}</div>
-        ${renderTransformationAndTest(
-            selection.transformation,
-            testTransformation
-        )}
+        ${renderTransformationAndTest(selection.transformation, testTransformation)}
     </div>`;
 };
 
@@ -204,16 +178,9 @@ const renderSteps = (steps, depth = 0, open = false) => {
     }
     return `
     <details class="steps" ${open ? "open" : ""}>
-        <summary>${steps.length} ${
-        steps.length === 1 ? "step" : "steps"
-    }</summary>
+        <summary>${steps.length} ${steps.length === 1 ? "step" : "steps"}</summary>
         <ol>
-            ${steps
-                .map(
-                    (step) =>
-                        `<li>${renderTransformation(step, depth - 1)}</li>`
-                )
-                .join("")}
+            ${steps.map((step) => `<li>${renderTransformation(step, depth - 1)}</li>`).join("")}
         </ol>
     </details>`;
 };
@@ -239,9 +206,7 @@ const getExplanationString = (expl) => {
             );
         } else {
             warnings.push(
-                `Missing %${
-                    i + 1
-                } in default translation, should contain ${renderExpression(
+                `Missing %${i + 1} in default translation, should contain ${renderExpression(
                     param.expression
                 )}`
             );
@@ -265,11 +230,7 @@ const renderExplanation = (expl) => {
 
     return `
     <div class="plan-explanation">
-        ${
-            explanationString
-                ? `<div title="${expl.key}">${explanationString}</div>`
-                : ""
-        }
+        ${explanationString ? `<div title="${expl.key}">${explanationString}</div>` : ""}
         ${warnings ? warnings.map(renderWarning).join("") : ""}
     </div>`;
 };
@@ -350,9 +311,7 @@ const buildTestBody = (trans) => (builder) => {
     if (throughStep) {
         builder.addLine("// Through step");
     } else {
-        builder
-            .addLine(`fromExpr = "${trans.fromExpr}"`)
-            .addLine(`toExpr = "${trans.toExpr}"`);
+        builder.addLine(`fromExpr = "${trans.fromExpr}"`).addLine(`toExpr = "${trans.toExpr}"`);
         if (trans.explanation) {
             builder.nest(`explanation`, (builder) => {
                 // By convention, the name of the explanation enum in the code is
@@ -376,6 +335,16 @@ const buildTestBody = (trans) => (builder) => {
 window.onload = () => {
     fetchDefaultTranslations().then((translations) => {
         translationData = translations;
+    });
+
+    fetchVersionInfo().then((info) => {
+        el("version-info").innerHTML = info.commit
+            ? `commit
+        <a href="https://git.geogebra.org/solver-team/solver-engine/-/commit/${info.commit}">
+            ${info.commit.substring(0, 8)}
+        </a>
+        `
+            : "no commit info";
     });
 
     fetchPlans().then((plans) => {

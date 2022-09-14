@@ -1,0 +1,5 @@
+title: VersionInfo
+type: object
+properties:
+  commit:
+    type: string

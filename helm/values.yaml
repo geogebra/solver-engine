@@ -1,5 +1,6 @@
 branchName: dev
 LoadBalancerPath: /dev
+commitSha: latest
 
 imageCredentials:
   registry: registry.git.geogebra.org

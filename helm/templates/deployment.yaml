@@ -12,17 +12,23 @@ spec:
   replicas: 1
   template:
     metadata:
+      annotations:
+        # This annotation is necessary to update the deployed pod for a branch as the image name doesn't change
+        solver/commit-sha: {{ .Values.commitSha }}
       labels:
         app: {{ .Values.branchName }}
     spec:
       containers:
         - name: {{ .Values.branchName }}
           image: "registry.git.geogebra.org/solver-team/solver-engine/api:{{ .Values.branchName }}"
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           env:
             - name: SERVER_SERVLET_CONTEXT_PATH
               value: "/{{ .Values.branchName }}"
+            - name: SOLVER_COMMIT_SHA
+              value: "{{ .Values.commitSha }}"
           # resources:
           #   limits:
           #     memory: "100Mi"

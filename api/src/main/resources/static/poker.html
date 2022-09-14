@@ -56,6 +56,17 @@
         .through-step > .expr, .through-step > .plan-id, .through-step > .plan-explanation {
             color: lightgray;
         }
+
+        .version-info {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            background-color: white;
+            color: dimgrey;
+            padding: 4px;
+            font-family: monospace;
+            font-size: small;
+        }
     </style>
 
     <!-- The loading of KaTeX is deferred to speed up page rendering -->
@@ -72,6 +83,7 @@
     <script src="poker.js"></script>
 </head>
 <body>
+<div id="version-info" class="version-info">fetching commit...</div>
 <h1>Solver Poker</h1>
 <details>
     <summary>Input syntax</summary>
