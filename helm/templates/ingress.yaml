@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ .Values.branchName }}-ingress
-  namespace: {{ .Values.branchName }}
+  namespace: "solver-{{ .Values.branchName }}"
   labels:
     app: {{ .Values.branchName }}
   annotations:

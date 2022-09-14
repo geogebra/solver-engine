@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Values.branchName }}
-  namespace: {{ .Values.branchName }}
+  namespace: "solver-{{ .Values.branchName }}"
   labels:
     app: {{ .Values.branchName }}
 spec:
@@ -29,9 +29,5 @@ spec:
               value: "/{{ .Values.branchName }}"
             - name: SOLVER_COMMIT_SHA
               value: "{{ .Values.commitSha }}"
-          # resources:
-          #   limits:
-          #     memory: "100Mi"
-          #     cpu: "200m"
       imagePullSecrets:
         - name: ggb-registry-key

@@ -1,4 +1,4 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: {{ .Values.branchName }}
+  name: "solver-{{ .Values.branchName }}"
