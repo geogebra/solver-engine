@@ -6,6 +6,7 @@ import engine.expressions.Expression
 import engine.expressions.NaryOperator
 import engine.expressions.Operator
 import engine.expressions.UnaryOperator
+import engine.expressions.UndefinedOperator
 import engine.expressions.mixedNumber
 import engine.expressions.xp
 import org.antlr.v4.runtime.BailErrorStrategy
@@ -163,5 +164,9 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
 
     override fun visitVariable(ctx: ExpressionParser.VariableContext?): Expression {
         return xp(ctx!!.VARIABLE().text)
+    }
+
+    override fun visitUndefined(ctx: ExpressionParser.UndefinedContext?): Expression {
+        return Expression(UndefinedOperator, emptyList())
     }
 }

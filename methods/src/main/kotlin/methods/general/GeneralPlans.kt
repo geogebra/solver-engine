@@ -15,3 +15,10 @@ val rewriteDivisionsAsFractions = plan {
         deeply(rewriteDivisionAsFraction)
     }
 }
+
+val evaluateOperationContainingZero = plan {
+    firstOf {
+        option(evaluateZeroDividedByAnyValue)
+        option(evaluateProductContainingZero)
+    }
+}

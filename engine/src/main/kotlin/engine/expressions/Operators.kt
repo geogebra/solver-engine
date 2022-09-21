@@ -80,6 +80,13 @@ data class IntegerOperator(val value: BigInteger) : NullaryOperator() {
     override fun latexString() = value.toString()
 }
 
+object UndefinedOperator : NullaryOperator() {
+
+    override fun toString() = "UNDEFINED"
+
+    override fun latexString() = "\\text{undefined}"
+}
+
 /**
  * Operator representing an unsigned terminating decimal.
  */

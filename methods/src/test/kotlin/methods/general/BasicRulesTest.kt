@@ -33,6 +33,22 @@ object BasicRulesTest : RuleTest {
         RuleTestCase("z*x*0", evaluateProductContainingZero, "0"),
         RuleTestCase("0*1", evaluateProductContainingZero, "0"),
         RuleTestCase("(-2)*0*x", evaluateProductContainingZero, "0"),
+        RuleTestCase("0:1", evaluateProductContainingZero, null),
+        RuleTestCase("0:(1+1)", evaluateProductContainingZero, null),
+        RuleTestCase("0 * [1 / 1 + 1] * 3", evaluateProductContainingZero, "0"),
+        // this test case doesn't pass right now
+        // RuleTestCase("0 * [1 / 1 - 1] * 3", evaluateProductContainingZero, null),
+
+        RuleTestCase("0:1", evaluateZeroDividedByAnyValue, "0"),
+        RuleTestCase("0:0", evaluateZeroDividedByAnyValue, null),
+        // the rule "can't see the future" right now that the denominator is non-zero
+        RuleTestCase("0:(1+1)", evaluateZeroDividedByAnyValue, null),
+        RuleTestCase("[0 / 2]", simplifyZeroNumeratorFractionToZero, "0"),
+        RuleTestCase("[0 / -1]", simplifyZeroNumeratorFractionToZero, "0"),
+        RuleTestCase("[0 / root[3, 3] + root[5, 3]]", simplifyZeroNumeratorFractionToZero, null),
+
+        RuleTestCase("[2 / 0]", simplifyZeroDenominatorFractionToUndefined, "UNDEFINED"),
+        RuleTestCase("[sqrt[2] / 0]", simplifyZeroDenominatorFractionToUndefined, "UNDEFINED"),
 
         RuleTestCase("-(-5)", simplifyDoubleMinus, "5"),
         RuleTestCase("-(-x)", simplifyDoubleMinus, "x"),

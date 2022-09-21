@@ -983,6 +983,7 @@ class ConstantExpressionFractionHigherOrderRootTest {
 }
 
 class ConstantExpressionTests {
+    @Test
     fun testCancelUnitaryDenominator() = testMethod {
         method = simplifyConstantExpression
         inputExpr = "[sqrt[8] / 2]"
@@ -992,12 +993,313 @@ class ConstantExpressionTests {
         }
     }
 
+    @Test
     fun testRationalizationIntegerAndCubeRoot() = testMethod {
         method = simplifyConstantExpression
         inputExpr = "[2 / 2 - root[3, 3]]"
 
         check {
             toExpr = "[8 + 4 * root[3, 3] + 2 * root[9, 3] / 5]"
+        }
+    }
+
+    // this test case might need to be changed
+    @Test
+    fun testZeroNumerator1() = testMethod {
+        method = simplifyConstantExpression
+        inputExpr = "[0 / root[3, 3] + root[4, 3]]"
+        check {
+            fromExpr = "[0 / root[3, 3] + root[4, 3]]"
+            toExpr = "0"
+
+            step {
+                fromExpr = "[0 / root[3, 3] + root[4, 3]]"
+                toExpr = "[0 / 7]"
+                explanation {
+                    key = FractionRootsExplanation.RationalizeDenominator
+                }
+            }
+
+            step {
+                fromExpr = "[0 / 7]"
+                toExpr = "0"
+                explanation {
+                    key = FractionArithmeticExplanation.SimplifyFractionToInteger
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testZeroNumerator2() = testMethod {
+        method = simplifyConstantExpression
+        inputExpr = "[15 / 5] * [0 / 2]"
+        check {
+            toExpr = "0"
+
+            step {
+                toExpr = "[15 / 5] * 0"
+                explanation {
+                    key = GeneralExplanation.SimplifyZeroNumeratorFractionToZero
+                }
+            }
+
+            step {
+                toExpr = "0"
+                explanation {
+                    key = GeneralExplanation.EvaluateProductContainingZero
+                }
+            }
+        }
+    }
+}
+
+class SimplifyToZero {
+    @Test
+    fun testZeroNumerator1() = testMethod {
+        method = simplifyConstantExpression
+        inputExpr = "[0 / -1]"
+
+        check {
+            fromExpr = "[0 / -1]"
+            toExpr = "0"
+            explanation {
+                key = GeneralExplanation.SimplifyZeroNumeratorFractionToZero
+            }
+        }
+    }
+
+    @Test
+    fun testZeroDivideByValue() = testMethod {
+        method = simplifyConstantExpression
+        inputExpr = "0:(1+1)"
+
+        check {
+            fromExpr = "0 : (1 + 1)"
+            toExpr = "0"
+
+            step {
+                fromExpr = "0 : (1 + 1)"
+                toExpr = "0 : 2"
+                explanation {
+                    key = ConstantExpressionsExplanation.SimplifyExpressionInBrackets
+                }
+
+                step {
+                    fromExpr = "(1 + 1)"
+                    toExpr = "(2)"
+                    explanation {
+                        key = IntegerArithmeticExplanation.SimplifyIntegersInSum
+                    }
+
+                    step {
+                        fromExpr = "1 + 1"
+                        toExpr = "2"
+                        explanation {
+                            key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                        }
+                    }
+                }
+
+                step {
+                    fromExpr = "(2)"
+                    toExpr = "2"
+                    explanation {
+                        key = GeneralExplanation.RemoveRedundantBracket
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "0 : 2"
+                toExpr = "0"
+
+                step {
+                    fromExpr = "0 : 2"
+                    toExpr = "[0 / 2]"
+                    explanation {
+                        key = GeneralExplanation.RewriteDivisionAsFraction
+                    }
+                }
+
+                step {
+                    fromExpr = "[0 / 2]"
+                    toExpr = "0"
+                    explanation {
+                        key = FractionArithmeticExplanation.SimplifyFractionToInteger
+                    }
+                }
+            }
+        }
+    }
+}
+
+class SimplifyToUndefined {
+    @Test
+    fun testZeroDenominator1() = testMethod {
+        method = simplifyConstantExpression
+        inputExpr = "[5 - 4 / 1 - 1] + 2"
+
+        check {
+            fromExpr = "[5 - 4 / 1 - 1] + 2"
+            toExpr = "UNDEFINED"
+
+            step {
+                fromExpr = "[5 - 4 / 1 - 1] + 2"
+                toExpr = "[1 / 1 - 1] + 2"
+                explanation {
+                    key = IntegerArithmeticExplanation.SimplifyIntegersInSum
+                }
+
+                step {
+                    fromExpr = "5 - 4"
+                    toExpr = "1"
+                    explanation {
+                        key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "[1 / 1 - 1] + 2"
+                toExpr = "[1 / 0] + 2"
+                explanation {
+                    key = IntegerArithmeticExplanation.SimplifyIntegersInSum
+                }
+
+                step {
+                    fromExpr = "1 - 1"
+                    toExpr = "0"
+                    explanation {
+                        key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "[1 / 0] + 2"
+                toExpr = "UNDEFINED"
+                explanation {
+                    key = GeneralExplanation.SimplifyZeroDenominatorFractionToUndefined
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testDivisionByZero1() = testMethod {
+        method = simplifyConstantExpression
+        inputExpr = "(5 - 4) : (1 - 1) + 2"
+
+        check {
+            fromExpr = "(5 - 4) : (1 - 1) + 2"
+            toExpr = "UNDEFINED"
+
+            step {
+                fromExpr = "(5 - 4) : (1 - 1) + 2"
+                toExpr = "1 : (1 - 1) + 2"
+                explanation {
+                    key = ConstantExpressionsExplanation.SimplifyExpressionInBrackets
+                }
+
+                step {
+                    fromExpr = "(5 - 4)"
+                    toExpr = "(1)"
+                    explanation {
+                        key = IntegerArithmeticExplanation.SimplifyIntegersInSum
+                    }
+
+                    step {
+                        fromExpr = "5 - 4"
+                        toExpr = "1"
+                        explanation {
+                            key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
+                        }
+                    }
+                }
+
+                step {
+                    fromExpr = "(1)"
+                    toExpr = "1"
+                    explanation {
+                        key = GeneralExplanation.RemoveRedundantBracket
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "1 : (1 - 1) + 2"
+                toExpr = "1 : 0 + 2"
+                explanation {
+                    key = ConstantExpressionsExplanation.SimplifyExpressionInBrackets
+                }
+
+                step {
+                    fromExpr = "(1 - 1)"
+                    toExpr = "(0)"
+                    explanation {
+                        key = IntegerArithmeticExplanation.SimplifyIntegersInSum
+                    }
+
+                    step {
+                        fromExpr = "1 - 1"
+                        toExpr = "0"
+                        explanation {
+                            key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
+                        }
+                    }
+                }
+
+                step {
+                    fromExpr = "(0)"
+                    toExpr = "0"
+                    explanation {
+                        key = GeneralExplanation.RemoveRedundantBracket
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "1 : 0 + 2"
+                toExpr = "UNDEFINED"
+
+                step {
+                    fromExpr = "1 : 0 + 2"
+                    toExpr = "[1 / 0] + 2"
+                    explanation {
+                        key = GeneralExplanation.RewriteDivisionAsFraction
+                    }
+                }
+
+                step {
+                    fromExpr = "[1 / 0] + 2"
+                    toExpr = "UNDEFINED"
+                    explanation {
+                        key = GeneralExplanation.SimplifyZeroDenominatorFractionToUndefined
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testZeroDenominator2() = testMethod {
+        method = simplifyConstantExpression
+        inputExpr = "[0 / 1 - 1]"
+
+        check {
+            toExpr = "UNDEFINED"
+        }
+    }
+
+    // step-by-step of this needs to be improved
+    @Test
+    fun testDivisionByZero2() = testMethod {
+        method = simplifyConstantExpression
+        inputExpr = "0:(1 - 1)"
+
+        check {
+            toExpr = "UNDEFINED"
         }
     }
 }

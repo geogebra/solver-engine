@@ -267,4 +267,15 @@ class MixedNumbersPlansTest {
             }
         }
     }
+
+    // this would need a check as well
+    // @Test
+    // fun testFunction() = testMethod {
+    //     method = convertMixedNumberToImproperFraction
+    //     inputExpr = "[3 1/0] + [2 1/0]"
+    //
+    //     check {
+    //         toExpr = "[7 / 2] + [7 / 3]"
+    //     }
+    // }
 }

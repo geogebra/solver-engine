@@ -2,8 +2,10 @@ package methods.general
 
 import engine.expressions.BracketOperator
 import engine.expressions.Constants
+import engine.expressions.Expression
 import engine.expressions.MappedExpression
 import engine.expressions.UnaryOperator
+import engine.expressions.UndefinedOperator
 import engine.expressions.fractionOf
 import engine.expressions.negOf
 import engine.expressions.powerOf
@@ -14,6 +16,7 @@ import engine.methods.TransformationResult
 import engine.methods.rule
 import engine.patterns.AnyPattern
 import engine.patterns.FixedPattern
+import engine.patterns.SignedNumberPattern
 import engine.patterns.bracketOf
 import engine.patterns.commutativeProductOf
 import engine.patterns.commutativeSumOf
@@ -21,6 +24,7 @@ import engine.patterns.condition
 import engine.patterns.divideBy
 import engine.patterns.fractionOf
 import engine.patterns.negOf
+import engine.patterns.numericCondition
 import engine.patterns.optionalBracketOf
 import engine.patterns.optionalDivideBy
 import engine.patterns.powerOf
@@ -28,6 +32,7 @@ import engine.patterns.productContaining
 import engine.patterns.sumContaining
 import engine.patterns.sumOf
 import engine.steps.metadata.metadata
+import java.math.BigDecimal
 
 val eliminateOneInProduct = rule {
     val one = FixedPattern(Constants.One)
@@ -62,19 +67,41 @@ val eliminateZeroInSum = rule {
     onPattern(pattern) {
         TransformationResult(
             toExpr = cancel(zero, restOf(pattern)),
-            explanation = metadata(Explanation.EliminateZeroInSum, move(zero)),
+            explanation = metadata(Explanation.EliminateZeroInSum, move(zero))
         )
     }
 }
 
+/**
+ * 0 * anyX --> 0
+ */
 val evaluateProductContainingZero = rule {
     val zero = FixedPattern(Constants.Zero)
-    val pattern = productContaining(zero)
+    val p = productContaining(zero)
+    val pattern = condition(p) { expression ->
+        expression.operands.all { it.operator != UnaryOperator.DivideBy }
+    }
 
     onPattern(pattern) {
         TransformationResult(
             toExpr = transform(zero),
             explanation = metadata(Explanation.EvaluateProductContainingZero, move(zero))
+        )
+    }
+}
+
+/**
+ * 0:anyX && anyX != 0 --> 0
+ */
+val evaluateZeroDividedByAnyValue = rule {
+    val zero = FixedPattern(Constants.Zero)
+    val divByPattern = numericCondition(SignedNumberPattern()) { it != BigDecimal.ZERO }
+    val pattern = productContaining(zero, divideBy(divByPattern))
+
+    onPattern(pattern) {
+        TransformationResult(
+            toExpr = transform(zero),
+            explanation = metadata(Explanation.EvaluateZeroDividedByAnyValue, move(zero))
         )
     }
 }
@@ -106,7 +133,7 @@ val simplifyProductWithTwoNegativeFactors = rule {
         TransformationResult(
             toExpr = product.substitute(
                 optionalDivideBy(fd1, move(f1)),
-                optionalDivideBy(fd2, move(f2)),
+                optionalDivideBy(fd2, move(f2))
             ),
             explanation = metadata(Explanation.SimplifyProductWithTwoNegativeFactors)
         )
@@ -122,6 +149,38 @@ val moveSignOfNegativeFactorOutOfProduct = rule {
         TransformationResult(
             toExpr = negOf(product.substitute(optionalDivideBy(fd, move(f)))),
             explanation = metadata(Explanation.MoveSignOfNegativeFactorOutOfProduct)
+        )
+    }
+}
+
+/**
+ * anyX / 0 --> undefined
+ */
+val simplifyZeroDenominatorFractionToUndefined = rule {
+    val zero = FixedPattern(Constants.Zero)
+    val numerator = AnyPattern()
+    val pattern = fractionOf(numerator, zero)
+
+    onPattern(pattern) {
+        TransformationResult(
+            toExpr = introduce(Expression(UndefinedOperator, emptyList())),
+            explanation = metadata(Explanation.SimplifyZeroDenominatorFractionToUndefined, move(pattern))
+        )
+    }
+}
+
+/**
+ * 0 / anyX = 0 && anyX != 0 --> 0
+ */
+val simplifyZeroNumeratorFractionToZero = rule {
+    val zero = FixedPattern(Constants.Zero)
+    val denominator = numericCondition(SignedNumberPattern()) { it != BigDecimal.ZERO }
+    val pattern = fractionOf(zero, denominator)
+
+    onPattern(pattern) {
+        TransformationResult(
+            toExpr = transform(zero),
+            explanation = metadata(Explanation.SimplifyZeroNumeratorFractionToZero)
         )
     }
 }
@@ -206,9 +265,9 @@ val simplifyProductOfConjugates = rule {
         TransformationResult(
             toExpr = sum2.substitute(
                 powerOf(move(a), introduce(Constants.Two)),
-                negOf(powerOf(move(b), introduce(Constants.Two))),
+                negOf(powerOf(move(b), introduce(Constants.Two)))
             ),
-            explanation = metadata(Explanation.SimplifyProductOfConjugates),
+            explanation = metadata(Explanation.SimplifyProductOfConjugates)
         )
     }
 }
@@ -269,7 +328,7 @@ val rewriteDivisionAsFraction = rule {
 
         TransformationResult(
             toExpr = productOf(result),
-            explanation = metadata(Explanation.RewriteDivisionAsFraction),
+            explanation = metadata(Explanation.RewriteDivisionAsFraction)
         )
     }
 }

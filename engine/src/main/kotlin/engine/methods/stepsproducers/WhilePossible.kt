@@ -24,6 +24,9 @@ data class WhilePossible(val stepsProducer: StepsProducer) : StepsProducer {
         repeat(MAX_WHILE_POSSIBLE_ITERATIONS) {
             val iterationSteps = stepsProducer.produceSteps(ctx, lastSub) ?: return@buildSteps
             addSteps(iterationSteps)
+            if (undefined()) {
+                return@buildSteps
+            }
         }
 
         throw TooManyIterationsException("WhilePossible max iteration number ($MAX_WHILE_POSSIBLE_ITERATIONS) exceeded")

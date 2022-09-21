@@ -7,6 +7,7 @@ import engine.patterns.sumOf
 import methods.fractionarithmetic.convertIntegerToFraction
 import methods.fractionarithmetic.evaluateFractionSum
 import methods.general.removeBracketsSum
+import methods.general.simplifyZeroDenominatorFractionToUndefined
 import methods.integerarithmetic.evaluateSignedIntegerAddition
 
 val convertMixedNumberToImproperFraction = plan {
@@ -52,6 +53,12 @@ val addMixedNumbers = plan {
                     }
                 }
             }
+            optionalSteps {
+                whilePossible {
+                    deeply(simplifyZeroDenominatorFractionToUndefined)
+                }
+            }
+
             steps {
                 plan {
                     whilePossible(removeBracketsSum)

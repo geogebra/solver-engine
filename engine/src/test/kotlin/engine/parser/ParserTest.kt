@@ -1,6 +1,7 @@
 package engine.parser
 
 import engine.expressions.Expression
+import engine.expressions.UndefinedOperator
 import engine.expressions.bracketOf
 import engine.expressions.curlyBracketOf
 import engine.expressions.fractionOf
@@ -107,7 +108,7 @@ class ParserTest {
                 "[[1/2]/[3/4]]",
                 fractionOf(
                     fractionOf(xp(1), xp(2)),
-                    fractionOf(xp(3), xp(4)),
+                    fractionOf(xp(3), xp(4))
                 )
             ),
             TestCase(
@@ -127,9 +128,10 @@ class ParserTest {
                 productOf(
                     rootOf(xp(2), xp(3)),
                     powerOf(invisibleBracketOf(squareRootOf(xp(3))), xp(2)),
-                    powerOf(invisibleBracketOf(rootOf(xp(4), xp(5))), xp("x")),
+                    powerOf(invisibleBracketOf(rootOf(xp(4), xp(5))), xp("x"))
                 )
-            )
+            ),
+            TestCase("UNDEFINED", Expression(UndefinedOperator, emptyList()))
         )
     }
 }

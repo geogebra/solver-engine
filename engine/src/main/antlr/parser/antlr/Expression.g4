@@ -4,7 +4,9 @@ grammar Expression;
     package parser.antlr;
 }
 
-wholeInput: expr EOF;
+wholeInput: exprOrUndefined EOF;
+
+exprOrUndefined: expr | undefined;
 
 expr: sum;
 
@@ -47,6 +49,8 @@ mixedNumber: '[' integer=NATNUM num=NATNUM '/' den=NATNUM ']';
 
 naturalNumber: NATNUM;
 
+undefined: UNDEFINED;
+
 decimalNumber: DECNUM;
 
 recurringDecimalNumber: decimal=DECNUM '[' repetend=NATNUM ']';
@@ -62,6 +66,8 @@ CLOSE_SQUARE: '.]';
 
 OPEN_CURLY: '{.';
 CLOSE_CURLY: '.}';
+
+UNDEFINED: 'UNDEFINED';
 
 VARIABLE: [a-z];
 WHITESPACE: [ \t] -> skip;

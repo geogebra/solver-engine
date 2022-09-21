@@ -23,9 +23,12 @@ import methods.fractionroots.simplifyFractionOfRoots
 import methods.general.distributeMultiplicationOverSum
 import methods.general.distributePowerOfProduct
 import methods.general.evaluateProductContainingZero
+import methods.general.evaluateZeroDividedByAnyValue
 import methods.general.expandBinomialSquared
 import methods.general.normalizeExpression
 import methods.general.removeRedundantBrackets
+import methods.general.simplifyZeroDenominatorFractionToUndefined
+import methods.general.simplifyZeroNumeratorFractionToZero
 import methods.integerarithmetic.evaluateSignedIntegerPower
 import methods.integerarithmetic.simplifyEvenPowerOfNegative
 import methods.integerarithmetic.simplifyIntegersInProduct
@@ -78,6 +81,8 @@ val simplifyRoots = plan {
 
 val simplificationSteps = steps {
     firstOf {
+        option { deeply(simplifyZeroDenominatorFractionToUndefined) }
+
         option { deeply(evaluateProductContainingZero) }
 
         option { deeply(removeRedundantBrackets, deepFirst = true) }
@@ -124,6 +129,24 @@ val simplifyConstantExpression = plan {
     pattern = condition(AnyPattern()) { it.isConstantExpression() }
 
     pipeline {
+        optionalSteps {
+            whilePossible {
+                deeply(simplifyZeroDenominatorFractionToUndefined)
+            }
+        }
+
+        optionalSteps {
+            whilePossible {
+                deeply(simplifyZeroNumeratorFractionToZero)
+            }
+        }
+
+        optionalSteps {
+            whilePossible {
+                deeply(evaluateZeroDividedByAnyValue)
+            }
+        }
+
         // even before normalization, clean up products containing zero
         optionalSteps {
             whilePossible {

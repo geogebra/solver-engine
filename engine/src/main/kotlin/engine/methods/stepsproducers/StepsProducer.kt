@@ -2,6 +2,7 @@ package engine.methods.stepsproducers
 
 import engine.context.Context
 import engine.expressions.Subexpression
+import engine.expressions.UndefinedOperator
 import engine.steps.Transformation
 
 /**
@@ -22,15 +23,34 @@ class StepsBuilder(private var sub: Subexpression) {
     private val steps = mutableListOf<Transformation>()
     private var aborted = false
 
+    fun undefined() = sub.expr.operator == UndefinedOperator
+
     private fun add(step: Transformation) {
-        val (substitution, newSub) = sub.substitute(step.fromExpr.path, step.toExpr)
+        if (undefined()) {
+            return
+        }
+
+        /**
+         * If `step` results in `undefined` for a subexpression of the current
+         * working expression, the execution of the plan is halted and the
+         * result of the current plan is also `undefined`.
+         * For ex:
+         * [1 / 1 - 1] + 2
+         * --> [1 / 0] + 2
+         * --> undefined ([1/ 0] is undefined)
+         */
+        val (substitution, newSub) = when (step.toExpr.expr.operator) {
+            UndefinedOperator -> sub.substitute(sub.path, step.toExpr)
+            else -> sub.substitute(step.fromExpr.path, step.toExpr)
+        }
+
         steps.add(
             Transformation(
                 fromExpr = sub,
                 toExpr = substitution,
                 explanation = step.explanation,
                 skills = step.skills,
-                steps = step.steps,
+                steps = step.steps
             )
         )
 
