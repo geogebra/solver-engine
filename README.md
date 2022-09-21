@@ -74,15 +74,15 @@ of the project.
 ## Deployment
 
 The project can be deployed to a Kubernetes cluster. The configured
-one is run on AWS EKS and called `solver`. It is powered by Fargate
-which needs to be controlled by so called "fargate profiles".
+one is run on AWS EKS and called `solver-v2`. It is powered by EKS managed
+node groups.
 
 The cluster uses the "AWS Load Balancer Controller" plugin, which
-creates load balancers to route the traffic to the corresponding
+creates load balancer to route the traffic to the corresponding
 namespaces.
 
 For every git branch in the project a different namespace and hence
-a different route and url will be created.
+a different path-route on the same domain will be created.
 
 The deployment is done in two separate stages that are defined in
 the [pipeline configuration](.gitlab-ci.yml):
@@ -106,11 +106,20 @@ The first job in this stage is `deploy`. It will push the docker
 image to the AWS EKS Kubernetes cluster and hence make it available
 to the public. These are the actions it performs:
 
-1. Connect to a Gitlab kubernetes agent with name `eks-solver`.
-2. Make sure there is a fargate profile that supports the required
-   namespace.
-3. Install the package using `helm`.
-4. Provide a nice url using AWS Route53 service.
+1. Connect to a Gitlab kubernetes agent with name `solver-v2`.
+2. Install the package using `helm`.
+3. Provide a path-base (branch) name in the load balancer url.
+
+Example: 
+  Branch name: plut-254-example
+  Solver URL: http://solver.geogebra.net/plut-254 (http://solver.geogebra.net/{branch-name})
+
+  * If it's a number after the first hyphen (-) just the '{string}-{number}' is put for the route-path. 
+
+  Branch name: plut-string-example
+  Solver URL: http://solver.geogebra.net/plut-string-example (http://solver.geogebra.net/{branch-name})
+  
+  * If it's a string after the first hyphen (-) the whole branch name is put for route-path. 
 
 It uses a [Gitlab cluster agent](https://docs.gitlab.com/ee/user/clusters/agent/install/)
 to communicate to the cluster.
