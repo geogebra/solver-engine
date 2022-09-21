@@ -97,7 +97,6 @@ val rationalizeDenominators = plan {
     explanation(Explanation.RationalizeDenominator)
 
     pipeline {
-        optionalSteps(distributeRadicalOverFraction)
         optionalSteps(flipRootsInDenominator)
         optionalSteps { deeply(simplifyRootOfOne) }
         optionalSteps { deeply(simplifyIntegerRoot) }

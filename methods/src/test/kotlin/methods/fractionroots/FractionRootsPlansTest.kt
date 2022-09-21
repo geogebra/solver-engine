@@ -11,16 +11,11 @@ import org.junit.jupiter.api.Test
 class FractionRootsPlansTest {
 
     @Test
-    fun testRationalizationOfSimpleDenominators() = testMethod {
-        method = rationalizeDenominators
+    fun testRootOfFraction() = testMethod {
+        method = simplifyConstantExpression
         inputExpr = "sqrt[[3 / 2]]"
 
         check {
-            toExpr = "[sqrt[6] / 2]"
-            explanation {
-                key = FractionRootsExplanation.RationalizeDenominator
-            }
-
             step {
                 toExpr = "[sqrt[3] / sqrt[2]]"
                 explanation {
@@ -29,19 +24,26 @@ class FractionRootsPlansTest {
             }
 
             step {
-                toExpr = "[sqrt[3] / sqrt[2]] * [sqrt[2] / sqrt[2]]"
-            }
-
-            step {
-                toExpr = "[sqrt[3] * sqrt[2] / sqrt[2] * sqrt[2]]"
-            }
-
-            step {
-                toExpr = "[sqrt[6] / sqrt[2] * sqrt[2]]"
-            }
-
-            step {
                 toExpr = "[sqrt[6] / 2]"
+                explanation {
+                    key = FractionRootsExplanation.RationalizeDenominator
+                }
+
+                step {
+                    toExpr = "[sqrt[3] / sqrt[2]] * [sqrt[2] / sqrt[2]]"
+                }
+
+                step {
+                    toExpr = "[sqrt[3] * sqrt[2] / sqrt[2] * sqrt[2]]"
+                }
+
+                step {
+                    toExpr = "[sqrt[6] / sqrt[2] * sqrt[2]]"
+                }
+
+                step {
+                    toExpr = "[sqrt[6] / 2]"
+                }
             }
         }
     }

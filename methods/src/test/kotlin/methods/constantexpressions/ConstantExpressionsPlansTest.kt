@@ -931,14 +931,9 @@ class ConstantExpressionFractionHigherOrderRootTest {
         inputExpr = "root[[5 / 12], 4]"
 
         check {
-            fromExpr = "root[[5 / 12], 4]"
             toExpr = "[root[540, 4] / 6]"
-            explanation {
-                key = FractionRootsExplanation.RationalizeDenominator
-            }
 
             step {
-                fromExpr = "root[[5 / 12], 4]"
                 toExpr = "[root[5, 4] / root[12, 4]]"
                 explanation {
                     key = FractionRootsExplanation.DistributeRadicalOverFraction
@@ -946,38 +941,38 @@ class ConstantExpressionFractionHigherOrderRootTest {
             }
 
             step {
-                fromExpr = "[root[5, 4] / root[12, 4]]"
-                toExpr = "[root[5, 4] / root[[2 ^ 2] * 3, 4]]"
-                explanation {
-                    key = FractionRootsExplanation.FactorizeHigherOrderRadicand
-                }
-            }
-
-            step {
-                fromExpr = "[root[5, 4] / root[[2 ^ 2] * 3, 4]]"
-                toExpr = "[root[5, 4] / root[[2 ^ 2] * 3, 4]] * " +
-                    "[root[[2 ^ 2] * [3 ^ 3], 4] / root[[2 ^ 2] * [3 ^ 3], 4]]"
-            }
-
-            step {
-                fromExpr = "[root[5, 4] / root[[2 ^ 2] * 3, 4]] * " +
-                    "[root[[2 ^ 2] * [3 ^ 3], 4] / root[[2 ^ 2] * [3 ^ 3], 4]]"
-                toExpr = "[root[5, 4] * root[[2 ^ 2] * [3 ^ 3], 4] / " +
-                    "root[[2 ^ 2] * 3, 4] * root[[2 ^ 2] * [3 ^ 3], 4]]"
-                explanation {
-                    key = FractionArithmeticExplanation.MultiplyFractions
-                }
-            }
-
-            step {
-                fromExpr = "[root[5, 4] * root[[2 ^ 2] * [3 ^ 3], 4] / " +
-                    "root[[2 ^ 2] * 3, 4] * root[[2 ^ 2] * [3 ^ 3], 4]]"
-                toExpr = "[root[540, 4] / root[[2 ^ 2] * 3, 4] * root[[2 ^ 2] * [3 ^ 3], 4]]"
-            }
-
-            step {
-                fromExpr = "[root[540, 4] / root[[2 ^ 2] * 3, 4] * root[[2 ^ 2] * [3 ^ 3], 4]]"
                 toExpr = "[root[540, 4] / 6]"
+                explanation {
+                    key = FractionRootsExplanation.RationalizeDenominator
+                }
+
+                step {
+                    toExpr = "[root[5, 4] / root[[2 ^ 2] * 3, 4]]"
+                    explanation {
+                        key = FractionRootsExplanation.FactorizeHigherOrderRadicand
+                    }
+                }
+
+                step {
+                    toExpr = "[root[5, 4] / root[[2 ^ 2] * 3, 4]] " +
+                        "* [root[[2 ^ 2] * [3 ^ 3], 4] / root[[2 ^ 2] * [3 ^ 3], 4]]"
+                }
+
+                step {
+                    toExpr =
+                        "[root[5, 4] * root[[2 ^ 2] * [3 ^ 3], 4] / root[[2 ^ 2] * 3, 4] * root[[2 ^ 2] * [3 ^ 3], 4]]"
+                    explanation {
+                        key = FractionArithmeticExplanation.MultiplyFractions
+                    }
+                }
+
+                step {
+                    toExpr = "[root[540, 4] / root[[2 ^ 2] * 3, 4] * root[[2 ^ 2] * [3 ^ 3], 4]]"
+                }
+
+                step {
+                    toExpr = "[root[540, 4] / 6]"
+                }
             }
         }
     }

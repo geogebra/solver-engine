@@ -21,6 +21,7 @@ import methods.fractionarithmetic.normalizeSignsInFraction
 import methods.fractionarithmetic.simplifyFraction
 import methods.fractionarithmetic.simplifyFractionNegativePower
 import methods.fractionarithmetic.simplifyFractionToMinusOne
+import methods.fractionroots.distributeRadicalOverFraction
 import methods.fractionroots.rationalizeDenominators
 import methods.fractionroots.simplifyFractionOfRoots
 import methods.general.distributeMultiplicationOverSum
@@ -78,6 +79,7 @@ val simplifyRoots = plan {
             option { deeply(simplifyIntegerRoot, deepFirst = true) }
             option { deeply(turnPowerOfRootToRootOfPower, deepFirst = true) }
             option { deeply(simplifyFractionOfRoots, deepFirst = true) }
+            option { deeply(distributeRadicalOverFraction, deepFirst = true) }
         }
     }
 }
