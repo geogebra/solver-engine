@@ -1,9 +1,9 @@
 package methods.general
 
-import engine.expressions.UnaryOperator
 import engine.expressions.bracketOf
 import engine.methods.TransformationResult
 import engine.methods.rule
+import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.OperatorPattern
 import engine.patterns.SignedIntegerPattern
@@ -15,7 +15,7 @@ import engine.steps.metadata.metadata
 
 val replaceInvisibleBrackets = rule {
     val innerExpr = AnyPattern()
-    val pattern = OperatorPattern(UnaryOperator.InvisibleBracket, listOf(innerExpr))
+    val pattern = OperatorPattern(UnaryExpressionOperator.InvisibleBracket, listOf(innerExpr))
 
     onPattern(pattern) {
         TransformationResult(

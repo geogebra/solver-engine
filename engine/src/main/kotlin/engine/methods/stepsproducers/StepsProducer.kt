@@ -2,7 +2,7 @@ package engine.methods.stepsproducers
 
 import engine.context.Context
 import engine.expressions.Subexpression
-import engine.expressions.UndefinedOperator
+import engine.operators.UndefinedOperator
 import engine.steps.Transformation
 
 /**

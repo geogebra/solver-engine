@@ -1,7 +1,6 @@
 package engine.parser
 
 import engine.expressions.Expression
-import engine.expressions.UndefinedOperator
 import engine.expressions.bracketOf
 import engine.expressions.curlyBracketOf
 import engine.expressions.fractionOf
@@ -15,6 +14,7 @@ import engine.expressions.squareBracketOf
 import engine.expressions.squareRootOf
 import engine.expressions.sumOf
 import engine.expressions.xp
+import engine.operators.UndefinedOperator
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import parser.invisibleBracketOf

@@ -1,5 +1,7 @@
 package engine.expressions
 
+import engine.operators.BinaryExpressionOperator
+import engine.operators.Operator
 import engine.patterns.Match
 import engine.patterns.PathProvider
 
@@ -57,11 +59,11 @@ class Subexpression private constructor(
 }
 
 fun Subexpression.numerator(): Subexpression {
-    require(expr.operator == BinaryOperator.Fraction) { "Fraction expected, got: ${expr.operator}" }
+    require(expr.operator == BinaryExpressionOperator.Fraction) { "Fraction expected, got: ${expr.operator}" }
     return nthChild(0)
 }
 
 fun Subexpression.denominator(): Subexpression {
-    require(expr.operator == BinaryOperator.Fraction) { "Fraction expected, got: ${expr.operator}" }
+    require(expr.operator == BinaryExpressionOperator.Fraction) { "Fraction expected, got: ${expr.operator}" }
     return nthChild(1)
 }

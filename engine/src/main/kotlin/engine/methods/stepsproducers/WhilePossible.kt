@@ -29,6 +29,8 @@ data class WhilePossible(val stepsProducer: StepsProducer) : StepsProducer {
             }
         }
 
-        throw TooManyIterationsException("WhilePossible max iteration number ($MAX_WHILE_POSSIBLE_ITERATIONS) exceeded")
+        throw TooManyIterationsException(
+            "WhilePossible max iteration number ($MAX_WHILE_POSSIBLE_ITERATIONS) exceeded for expression ${sub.expr}"
+        )
     }
 }

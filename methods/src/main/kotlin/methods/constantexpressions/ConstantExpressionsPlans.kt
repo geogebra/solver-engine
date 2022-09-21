@@ -1,13 +1,16 @@
 package methods.constantexpressions
 
 import engine.expressions.Expression
-import engine.expressions.VariableOperator
 import engine.methods.plan
 import engine.methods.steps
+import engine.operators.VariableOperator
 import engine.patterns.AnyPattern
 import engine.patterns.bracketOf
 import engine.patterns.condition
 import engine.patterns.powerOf
+import methods.decimals.convertRecurringDecimalToFractionAndSimplify
+import methods.decimals.convertTerminatingDecimalToFractionAndSimplify
+import methods.decimals.normalizeFractionOfDecimals
 import methods.fractionarithmetic.distributeFractionPositivePower
 import methods.fractionarithmetic.evaluateFractionSum
 import methods.fractionarithmetic.evaluateIntegerToNegativePower
@@ -92,6 +95,11 @@ val simplificationSteps = steps {
 
         option(normalizeFractions)
         option(normalizeSignsInFraction)
+
+        option { deeply(normalizeFractionOfDecimals, deepFirst = true) }
+        option { deeply(convertTerminatingDecimalToFractionAndSimplify, deepFirst = true) }
+        option { deeply(convertRecurringDecimalToFractionAndSimplify, deepFirst = true) }
+
         option { deeply(multiplyAndSimplifyFractions, deepFirst = true) }
         option { deeply(simplifyProductWithRoots, deepFirst = true) }
 

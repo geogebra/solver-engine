@@ -2,7 +2,7 @@ package engine.patterns
 
 import engine.expressions.Expression
 import engine.expressions.Subexpression
-import engine.expressions.VariableOperator
+import engine.operators.VariableOperator
 
 /**
  * A pattern which matches only the exact expression it was

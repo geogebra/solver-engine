@@ -1,9 +1,9 @@
 package engine.patterns
 
 import engine.expressions.ChildPath
-import engine.expressions.NaryOperator
 import engine.expressions.Path
 import engine.expressions.Subexpression
+import engine.operators.NaryOperator
 
 /**
  * An interface for a Pattern connected by an

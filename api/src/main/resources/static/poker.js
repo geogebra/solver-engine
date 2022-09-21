@@ -293,9 +293,9 @@ const renderTest = (trans) => {
 };
 
 const buildTest = (trans) => (builder) => {
-    builder.nest("testPlan", (builder) => {
+    builder.nest("testMethod", (builder) => {
         builder
-            .addLine(`plan = FILL_ME_IN`)
+            .addLine(`method = FILL_ME_IN`)
             .addLine(`inputExpr = "${trans.fromExpr}"`)
             .addLine("")
             .nest("check", buildTestBody(trans));

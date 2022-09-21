@@ -1,5 +1,6 @@
 package methods.constantexpressions
 
+import methods.decimals.DecimalsExplanation
 import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.fractionroots.FractionRootsExplanation
 import methods.general.GeneralExplanation
@@ -977,6 +978,38 @@ class ConstantExpressionFractionHigherOrderRootTest {
             step {
                 fromExpr = "[root[540, 4] / root[[2 ^ 2] * 3, 4] * root[[2 ^ 2] * [3 ^ 3], 4]]"
                 toExpr = "[root[540, 4] / 6]"
+            }
+        }
+    }
+
+    @Test
+    fun testSimplifyConstantExpressionWithDivisionOfDecimals() = testMethod {
+        method = simplifyConstantExpression
+        inputExpr = "1 + 0.002 : 0.6"
+
+        check {
+            fromExpr = "1 + 0.002 : 0.6"
+            toExpr = "[301 / 300]"
+
+            step {
+                fromExpr = "1 + 0.002 : 0.6"
+                toExpr = "1 + [0.002 / 0.6]"
+                explanation {
+                    key = GeneralExplanation.RewriteDivisionAsFraction
+                }
+            }
+
+            step {
+                fromExpr = "1 + [0.002 / 0.6]"
+                toExpr = "1 + [2 / 600]"
+                explanation {
+                    key = DecimalsExplanation.NormalizeFractionOfDecimals
+                }
+            }
+
+            step {
+                fromExpr = "1 + [2 / 600]"
+                toExpr = "[301 / 300]"
             }
         }
     }

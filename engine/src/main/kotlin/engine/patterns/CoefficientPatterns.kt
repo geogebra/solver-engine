@@ -5,6 +5,7 @@ import engine.expressions.Constants
 import engine.expressions.MappedExpression
 import engine.expressions.Subexpression
 import engine.expressions.fractionOf
+import java.math.BigInteger
 
 /**
  * A pattern matching `value` multiplied by an integer coefficient.
@@ -14,27 +15,22 @@ import engine.expressions.fractionOf
  */
 class IntegerCoefficientPattern(value: Pattern) : Pattern {
 
-    private val coefficient = UnsignedIntegerPattern()
+    private val coefficientPattern = UnsignedIntegerPattern()
 
     private val options = oneOf(
         value,
-        productOf(coefficient, value),
+        productOf(coefficientPattern, value),
     )
 
     override val key = options
+
+    val coefficient = IntegerProviderWithDefault(coefficientPattern, BigInteger.ONE)
 
     override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
         if (!checkPreviousMatch(subexpression.expr, match)) {
             return emptySequence()
         }
         return options.findMatches(subexpression, match)
-    }
-
-    fun coefficient(match: Match): MappedExpression = with(MakerBuilder(match)) {
-        when {
-            match.isBound(coefficient) -> move(coefficient)
-            else -> introduce(Constants.One)
-        }
     }
 }
 

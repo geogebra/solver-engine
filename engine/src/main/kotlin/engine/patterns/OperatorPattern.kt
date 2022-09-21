@@ -1,12 +1,12 @@
 package engine.patterns
 
-import engine.expressions.BinaryOperator
-import engine.expressions.BracketOperator
-import engine.expressions.MixedNumberOperator
-import engine.expressions.NaryOperator
-import engine.expressions.Operator
 import engine.expressions.Subexpression
-import engine.expressions.UnaryOperator
+import engine.operators.BinaryExpressionOperator
+import engine.operators.BracketOperator
+import engine.operators.MixedNumberOperator
+import engine.operators.NaryOperator
+import engine.operators.Operator
+import engine.operators.UnaryExpressionOperator
 
 /**
  * Produces a `Pattern` having a list of child patterns
@@ -35,23 +35,23 @@ data class OperatorPattern(val operator: Operator, val childPatterns: List<Patte
 }
 
 fun fractionOf(numerator: Pattern, denominator: Pattern) =
-    OperatorPattern(BinaryOperator.Fraction, listOf(numerator, denominator))
+    OperatorPattern(BinaryExpressionOperator.Fraction, listOf(numerator, denominator))
 
 fun divideBy(divisor: Pattern) =
-    OperatorPattern(UnaryOperator.DivideBy, listOf(divisor))
+    OperatorPattern(UnaryExpressionOperator.DivideBy, listOf(divisor))
 
 fun powerOf(base: Pattern, exponent: Pattern) =
-    OperatorPattern(BinaryOperator.Power, listOf(base, exponent))
+    OperatorPattern(BinaryExpressionOperator.Power, listOf(base, exponent))
 
 fun squareRootOf(radicand: Pattern) =
-    OperatorPattern(UnaryOperator.SquareRoot, listOf(radicand))
+    OperatorPattern(UnaryExpressionOperator.SquareRoot, listOf(radicand))
 
 fun rootOf(radicand: Pattern, degree: Pattern) =
-    OperatorPattern(BinaryOperator.Root, listOf(radicand, degree))
+    OperatorPattern(BinaryExpressionOperator.Root, listOf(radicand, degree))
 
 fun bracketOf(expr: Pattern) = OperatorPattern(BracketOperator.Bracket, listOf(expr))
 
-fun invisibleBracketOf(expr: Pattern) = OperatorPattern(UnaryOperator.InvisibleBracket, listOf(expr))
+fun invisibleBracketOf(expr: Pattern) = OperatorPattern(UnaryExpressionOperator.InvisibleBracket, listOf(expr))
 
 fun mixedNumberOf(
     integer: UnsignedIntegerPattern = UnsignedIntegerPattern(),
@@ -61,7 +61,7 @@ fun mixedNumberOf(
 
 fun sumOf(vararg terms: Pattern) = OperatorPattern(NaryOperator.Sum, terms.asList())
 
-fun plusOf(operand: Pattern) = OperatorPattern(UnaryOperator.Plus, listOf(operand))
-fun negOf(operand: Pattern) = OperatorPattern(UnaryOperator.Minus, listOf(operand))
+fun plusOf(operand: Pattern) = OperatorPattern(UnaryExpressionOperator.Plus, listOf(operand))
+fun negOf(operand: Pattern) = OperatorPattern(UnaryExpressionOperator.Minus, listOf(operand))
 
 fun productOf(vararg factors: Pattern) = OperatorPattern(NaryOperator.Product, factors.asList())

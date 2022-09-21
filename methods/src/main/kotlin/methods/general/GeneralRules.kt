@@ -1,11 +1,8 @@
 package methods.general
 
-import engine.expressions.BracketOperator
 import engine.expressions.Constants
 import engine.expressions.Expression
 import engine.expressions.MappedExpression
-import engine.expressions.UnaryOperator
-import engine.expressions.UndefinedOperator
 import engine.expressions.fractionOf
 import engine.expressions.negOf
 import engine.expressions.powerOf
@@ -14,6 +11,9 @@ import engine.expressions.sumOf
 import engine.expressions.xp
 import engine.methods.TransformationResult
 import engine.methods.rule
+import engine.operators.BracketOperator
+import engine.operators.UnaryExpressionOperator
+import engine.operators.UndefinedOperator
 import engine.patterns.AnyPattern
 import engine.patterns.FixedPattern
 import engine.patterns.SignedNumberPattern
@@ -79,7 +79,7 @@ val evaluateProductContainingZero = rule {
     val zero = FixedPattern(Constants.Zero)
     val p = productContaining(zero)
     val pattern = condition(p) { expression ->
-        expression.operands.all { it.operator != UnaryOperator.DivideBy }
+        expression.operands.all { it.operator != UnaryExpressionOperator.DivideBy }
     }
 
     onPattern(pattern) {
@@ -243,7 +243,7 @@ val cancelCommonTerms = rule {
 
 val factorMinusFromSum = rule {
     val sum = condition(sumContaining()) { expression ->
-        expression.operands.all { it.operator == UnaryOperator.Minus }
+        expression.operands.all { it.operator == UnaryExpressionOperator.Minus }
     }
 
     onPattern(sum) {
@@ -307,7 +307,7 @@ val rewriteDivisionAsFraction = rule {
 
     onPattern(product) {
         val factors = get(product)!!.children()
-        val division = factors.indexOfFirst { it.expr.operator == UnaryOperator.DivideBy }
+        val division = factors.indexOfFirst { it.expr.operator == UnaryExpressionOperator.DivideBy }
 
         val result = mutableListOf<MappedExpression>()
         result.addAll(factors.subList(0, division - 1).map { move(it) })
@@ -349,12 +349,13 @@ val distributeMultiplicationOverSum = rule {
             toExpr = sumOf(
                 terms.map {
                     when (it.expr.operator) {
-                        UnaryOperator.Minus -> negOf(
+                        UnaryExpressionOperator.Minus -> negOf(
                             product.substitute(
                                 distribute(singleTerm),
                                 move(it.nthChild(0))
                             )
                         )
+
                         else -> product.substitute(distribute(singleTerm), move(it))
                     }
                 }

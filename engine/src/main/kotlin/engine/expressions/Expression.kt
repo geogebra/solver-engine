@@ -1,9 +1,22 @@
 package engine.expressions
 
+import engine.operators.BinaryExpressionOperator
+import engine.operators.BracketOperator
+import engine.operators.DecimalOperator
+import engine.operators.IntegerOperator
+import engine.operators.LatexRenderable
+import engine.operators.MixedNumberOperator
+import engine.operators.NaryOperator
+import engine.operators.Operator
+import engine.operators.RecurringDecimalOperator
+import engine.operators.RenderContext
+import engine.operators.UnaryExpressionOperator
+import engine.operators.VariableOperator
+import engine.utility.RecurringDecimal
 import java.math.BigDecimal
 import java.math.BigInteger
 
-data class Expression(val operator: Operator, val operands: List<Expression>) {
+data class Expression(val operator: Operator, val operands: List<Expression>) : LatexRenderable {
     init {
         require(operator.childrenAllowed(operands.map { it.operator }))
     }
@@ -20,8 +33,8 @@ data class Expression(val operator: Operator, val operands: List<Expression>) {
      * This ensures that paths can be followed in the string representation by counting instances of
      * "{" and "}" and discarding "{}".
      */
-    fun toLatexString(): String {
-        return operator.latexString(operands)
+    override fun toLatexString(ctx: RenderContext): String {
+        return operator.latexString(ctx, operands)
     }
 
     fun equiv(other: Expression): Boolean {
@@ -39,13 +52,14 @@ fun xp(n: BigInteger): Expression {
 }
 
 fun xp(x: BigDecimal): Expression {
-    val posExpr = Expression(DecimalOperator(x.abs()), emptyList())
+    val operator =
+        if (x.scale() <= 0) IntegerOperator(x.abs().toBigInteger()) else DecimalOperator(x.abs())
+    val posExpr = Expression(operator, emptyList())
     return if (x.signum() >= 0) posExpr else negOf(posExpr)
 }
 
-fun xp(x: BigDecimal, repeatingDigits: Int): Expression {
-    val posExpr = Expression(RecurringDecimalOperator(x.abs(), repeatingDigits), emptyList())
-    return if (x.signum() >= 0) posExpr else negOf(posExpr)
+fun xp(x: RecurringDecimal): Expression {
+    return Expression(RecurringDecimalOperator(x), emptyList())
 }
 
 fun xp(v: String) = Expression(VariableOperator(v), emptyList())
@@ -57,19 +71,19 @@ fun bracketOf(expr: Expression) = Expression(BracketOperator.Bracket, listOf(exp
 fun squareBracketOf(expr: Expression) = Expression(BracketOperator.SquareBracket, listOf(expr))
 fun curlyBracketOf(expr: Expression) = Expression(BracketOperator.CurlyBracket, listOf(expr))
 
-fun negOf(expr: Expression) = Expression(UnaryOperator.Minus, listOf(expr))
-fun plusOf(expr: Expression) = Expression(UnaryOperator.Plus, listOf(expr))
+fun negOf(expr: Expression) = Expression(UnaryExpressionOperator.Minus, listOf(expr))
+fun plusOf(expr: Expression) = Expression(UnaryExpressionOperator.Plus, listOf(expr))
 
-fun divideBy(expr: Expression) = Expression(UnaryOperator.DivideBy, listOf(expr))
+fun divideBy(expr: Expression) = Expression(UnaryExpressionOperator.DivideBy, listOf(expr))
 
 fun fractionOf(numerator: Expression, denominator: Expression) =
-    Expression(BinaryOperator.Fraction, listOf(numerator, denominator))
+    Expression(BinaryExpressionOperator.Fraction, listOf(numerator, denominator))
 
-fun powerOf(base: Expression, exponent: Expression) = Expression(BinaryOperator.Power, listOf(base, exponent))
+fun powerOf(base: Expression, exponent: Expression) = Expression(BinaryExpressionOperator.Power, listOf(base, exponent))
 
-fun squareRootOf(radicand: Expression) = Expression(UnaryOperator.SquareRoot, listOf(radicand))
+fun squareRootOf(radicand: Expression) = Expression(UnaryExpressionOperator.SquareRoot, listOf(radicand))
 
-fun rootOf(radicand: Expression, order: Expression) = Expression(BinaryOperator.Root, listOf(radicand, order))
+fun rootOf(radicand: Expression, order: Expression) = Expression(BinaryExpressionOperator.Root, listOf(radicand, order))
 
 fun sumOf(vararg terms: Expression) = Expression(NaryOperator.Sum, terms.asList())
 

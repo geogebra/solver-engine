@@ -4,7 +4,11 @@ grammar Expression;
     package parser.antlr;
 }
 
-wholeInput: exprOrUndefined EOF;
+wholeInput: equationSystem | equation | exprOrUndefined EOF;
+
+equationSystem: equations += equation (',' equations += equation)+;
+
+equation: lhs=expr '=' rhs=expr;
 
 exprOrUndefined: expr | undefined;
 
@@ -53,13 +57,14 @@ undefined: UNDEFINED;
 
 decimalNumber: DECNUM;
 
-recurringDecimalNumber: decimal=DECNUM '[' repetend=NATNUM ']';
+recurringDecimalNumber: RECURRING_DECNUM;
 
 variable: VARIABLE;
 
 fragment DIGIT: [0-9];
 NATNUM: DIGIT+;
 DECNUM: NATNUM '.' NATNUM;
+RECURRING_DECNUM: NATNUM '.' NATNUM? '[' NATNUM ']';
 
 OPEN_SQUARE: '[.';
 CLOSE_SQUARE: '.]';

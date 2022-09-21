@@ -1,9 +1,7 @@
 package methods.fractionroots
 
-import engine.expressions.BinaryOperator
 import engine.expressions.Constants.Three
 import engine.expressions.MappedExpression
-import engine.expressions.NaryOperator
 import engine.expressions.bracketOf
 import engine.expressions.fractionOf
 import engine.expressions.mappedExpression
@@ -17,6 +15,8 @@ import engine.expressions.sumOf
 import engine.expressions.xp
 import engine.methods.TransformationResult
 import engine.methods.rule
+import engine.operators.BinaryExpressionOperator
+import engine.operators.NaryOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
@@ -371,7 +371,7 @@ val higherOrderRationalizingTerm = rule {
                         )
                     }
                 }
-            } else if (primeFactorizedFormExpr.expr.operator == BinaryOperator.Power) {
+            } else if (primeFactorizedFormExpr.expr.operator == BinaryExpressionOperator.Power) {
                 val exponentFactorMatch = exponentFactorPtn.findMatches(primeFactorizedFormExpr).firstOrNull()
                 if (exponentFactorMatch != null) {
                     rationalizationFactors.add(
@@ -431,13 +431,11 @@ val factorizeHigherOrderRadicand = rule {
             .primeFactorDecomposition()
             .map { (f, n) -> introduce(if (n == BigInteger.ONE) xp(f) else powerOf(xp(f), xp(n))) }
 
-        val match = matchPattern(pattern, get(pattern)!!)
-
         TransformationResult(
             toExpr = fractionOf(
                 move(numerator),
                 simplifiedProductOf(
-                    denominator.coefficient(match!!),
+                    move(denominator.coefficient),
                     rootOf(transform(radicand, productOf(factorized)), move(rootOrder))
                 )
             ),

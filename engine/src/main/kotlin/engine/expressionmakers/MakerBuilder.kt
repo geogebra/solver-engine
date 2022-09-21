@@ -19,6 +19,8 @@ import engine.patterns.OptionalWrappingPattern
 import engine.patterns.PartialNaryPattern
 import engine.patterns.PathProvider
 import engine.patterns.Pattern
+import engine.patterns.RecurringDecimalPattern
+import engine.utility.RecurringDecimal
 import java.math.BigDecimal
 import java.math.BigInteger
 
@@ -61,10 +63,21 @@ class MakerBuilder(private val match: Match) {
     fun get(pattern: Pattern): Subexpression? = match.getLastBinding(pattern)
 
     /**
+     * Returns the numeric value bound to the argument in the match.
+     */
+    fun getValue(numberProvider: NumberProvider): BigDecimal {
+        return numberProvider.getBoundNumber(match)
+    }
+
+    /**
      * Returns the integer value bound to the argument in the match.
      */
     fun getValue(integerProvider: IntegerProvider): BigInteger {
         return integerProvider.getBoundInt(match)
+    }
+
+    fun getValue(pattern: RecurringDecimalPattern): RecurringDecimal {
+        return pattern.getBoundRecurringDecimal(match)
     }
 
     /**
@@ -95,24 +108,27 @@ class MakerBuilder(private val match: Match) {
     fun copyFlippedSign(from: OptionalNegPattern, to: MappedExpression) =
         if (from.isNeg(match)) to else negOf(to)
 
+    fun transformTo(ptn: PathProvider, value: Expression): MappedExpression {
+        return MappedExpression(
+            value,
+            PathMappingLeaf(ptn.getBoundPaths(match), PathMappingType.Transform),
+        )
+    }
+
+    fun combineTo(ptn1: PathProvider, ptn2: PathProvider, value: Expression): MappedExpression {
+        return MappedExpression(
+            value,
+            PathMappingLeaf(ptn1.getBoundPaths(match) + ptn2.getBoundPaths(match), PathMappingType.Combine),
+        )
+    }
+
     /**
      * Transforms the integer provided by [ptn] according to the given [operation].
      */
     fun integerOp(
         ptn: IntegerProvider,
         operation: (BigInteger) -> BigInteger
-    ): MappedExpression {
-        val value = operation(ptn.getBoundInt(match))
-
-        val result = when {
-            value.signum() >= 0 -> xp(value)
-            else -> negOf(xp(-value))
-        }
-        return MappedExpression(
-            result,
-            PathMappingLeaf(ptn.getBoundPaths(match), PathMappingType.Transform),
-        )
-    }
+    ) = transformTo(ptn, xp(operation(ptn.getBoundInt(match))))
 
     /**
      * Combines the integer values of [ptn1] and [ptn2] according to the given [operation].
@@ -121,18 +137,7 @@ class MakerBuilder(private val match: Match) {
         ptn1: IntegerProvider,
         ptn2: IntegerProvider,
         operation: (BigInteger, BigInteger) -> BigInteger
-    ): MappedExpression {
-        val value = operation(ptn1.getBoundInt(match), ptn2.getBoundInt(match))
-
-        val result = when {
-            value.signum() >= 0 -> xp(value)
-            else -> negOf(xp(-value))
-        }
-        return MappedExpression(
-            result,
-            PathMappingLeaf(ptn1.getBoundPaths(match) + ptn2.getBoundPaths(match), PathMappingType.Combine),
-        )
-    }
+    ) = combineTo(ptn1, ptn2, xp(operation(ptn1.getBoundInt(match), ptn2.getBoundInt(match))))
 
     /**
      * Combines the numeric values of [ptn1] and [ptn2] according to the given [operation].
@@ -141,18 +146,7 @@ class MakerBuilder(private val match: Match) {
         ptn1: NumberProvider,
         ptn2: NumberProvider,
         operation: (BigDecimal, BigDecimal) -> BigDecimal
-    ): MappedExpression {
-        val value = operation(ptn1.getBoundNumber(match), ptn2.getBoundNumber(match))
-
-        val result = when {
-            value.signum() >= 0 -> xp(value)
-            else -> negOf(xp(-value))
-        }
-        return MappedExpression(
-            result,
-            PathMappingLeaf(ptn1.getBoundPaths(match) + ptn2.getBoundPaths(match), PathMappingType.Combine),
-        )
-    }
+    ) = combineTo(ptn1, ptn2, xp(operation(ptn1.getBoundNumber(match), ptn2.getBoundNumber(match))))
 
     /**
      * Returns the "rest of" part of [pattern] which match some operands of an nary expression, i.e. the non-matched

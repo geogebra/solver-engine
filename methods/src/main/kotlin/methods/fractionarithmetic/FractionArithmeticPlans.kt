@@ -1,8 +1,8 @@
 package methods.fractionarithmetic
 
 import engine.expressionmakers.move
-import engine.expressions.BinaryOperator
 import engine.methods.plan
+import engine.operators.BinaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.fractionOf
@@ -29,7 +29,7 @@ val normalizeSignsInFraction = plan {
             option {
                 deeply {
                     applyTo(factorMinusFromSum) {
-                        if (it.parent?.expr?.operator == BinaryOperator.Fraction) it else null
+                        if (it.parent?.expr?.operator == BinaryExpressionOperator.Fraction) it else null
                     }
                 }
             }

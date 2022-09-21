@@ -1,14 +1,14 @@
 package methods.integerarithmetic
 
 import engine.expressionmakers.move
-import engine.expressions.BinaryOperator
-import engine.expressions.BracketOperator
 import engine.expressions.Expression
-import engine.expressions.IntegerOperator
-import engine.expressions.NaryOperator
-import engine.expressions.UnaryOperator
 import engine.methods.plan
 import engine.methods.steps
+import engine.operators.BinaryExpressionOperator
+import engine.operators.BracketOperator
+import engine.operators.IntegerOperator
+import engine.operators.NaryOperator
+import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.bracketOf
@@ -92,11 +92,11 @@ val simplifyIntegersInSum = plan {
 }
 
 private val arithmeticOperators = listOf(
-    UnaryOperator.InvisibleBracket,
-    UnaryOperator.Minus,
-    UnaryOperator.Plus,
-    UnaryOperator.DivideBy,
-    BinaryOperator.Power,
+    UnaryExpressionOperator.InvisibleBracket,
+    UnaryExpressionOperator.Minus,
+    UnaryExpressionOperator.Plus,
+    UnaryExpressionOperator.DivideBy,
+    BinaryExpressionOperator.Power,
     NaryOperator.Sum,
     NaryOperator.Product,
 )

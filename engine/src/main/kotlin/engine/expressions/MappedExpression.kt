@@ -1,6 +1,14 @@
 package engine.expressions
 
 import engine.expressionmakers.ExpressionMaker
+import engine.operators.BinaryExpressionOperator
+import engine.operators.BracketOperator
+import engine.operators.EquationOperator
+import engine.operators.EquationSystemOperator
+import engine.operators.MixedNumberOperator
+import engine.operators.NaryOperator
+import engine.operators.Operator
+import engine.operators.UnaryExpressionOperator
 import engine.patterns.Match
 
 data class MappedExpression(val expr: Expression, val mappings: PathMappingTree) : ExpressionMaker {
@@ -80,10 +88,10 @@ fun simplifiedProductOf(vararg operands: MappedExpression): MappedExpression {
 }
 
 fun fractionOf(numerator: MappedExpression, denominator: MappedExpression) =
-    mappedExpression(BinaryOperator.Fraction, listOf(numerator, denominator))
+    mappedExpression(BinaryExpressionOperator.Fraction, listOf(numerator, denominator))
 
 fun powerOf(base: MappedExpression, exponent: MappedExpression) =
-    mappedExpression(BinaryOperator.Power, listOf(base, exponent))
+    mappedExpression(BinaryExpressionOperator.Power, listOf(base, exponent))
 
 fun simplifiedPowerOf(base: MappedExpression, exponent: MappedExpression): MappedExpression {
     return if (exponent.expr.equiv(Constants.One)) base
@@ -94,16 +102,20 @@ fun rootOf(radicand: MappedExpression, order: MappedExpression): MappedExpressio
     return if (order.expr.equiv(xp(2))) {
         squareRootOf(radicand)
     } else {
-        mappedExpression(BinaryOperator.Root, listOf(radicand, order))
+        mappedExpression(BinaryExpressionOperator.Root, listOf(radicand, order))
     }
 }
 
 fun squareRootOf(radicand: MappedExpression) =
-    mappedExpression(UnaryOperator.SquareRoot, listOf(radicand))
+    mappedExpression(UnaryExpressionOperator.SquareRoot, listOf(radicand))
 
-fun negOf(operand: MappedExpression) = mappedExpression(UnaryOperator.Minus, listOf(operand))
+fun negOf(operand: MappedExpression) = mappedExpression(UnaryExpressionOperator.Minus, listOf(operand))
 
-fun divideBy(operand: MappedExpression) = mappedExpression(UnaryOperator.DivideBy, listOf(operand))
+fun divideBy(operand: MappedExpression) = mappedExpression(UnaryExpressionOperator.DivideBy, listOf(operand))
 
 fun mixedNumberOf(integer: MappedExpression, numerator: MappedExpression, denominator: MappedExpression) =
     mappedExpression(MixedNumberOperator, listOf(integer, numerator, denominator))
+
+fun equationOf(lhs: MappedExpression, rhs: MappedExpression) = mappedExpression(EquationOperator, listOf(lhs, rhs))
+
+fun equationSystemOf(vararg equations: MappedExpression) = mappedExpression(EquationSystemOperator, equations.asList())

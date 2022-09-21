@@ -1,9 +1,9 @@
 package methods.general
 
-import engine.expressions.BracketOperator
 import engine.expressions.Subexpression
 import engine.methods.plan
 import engine.methods.steps
+import engine.operators.BracketOperator
 
 val addClarifyingBrackets = plan {
     explanation(Explanation.AddClarifyingBrackets)

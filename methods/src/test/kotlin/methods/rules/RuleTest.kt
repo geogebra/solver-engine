@@ -30,3 +30,7 @@ interface RuleTest {
         testCase.assert()
     }
 }
+
+fun testRule(inputExpr: String, rule: Method, outputExpr: String?) {
+    RuleTestCase(inputExpr, rule, outputExpr).assert()
+}

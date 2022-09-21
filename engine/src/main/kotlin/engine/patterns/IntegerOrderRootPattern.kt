@@ -1,9 +1,6 @@
 package engine.patterns
 
-import engine.expressions.Expression
-import engine.expressions.Path
 import engine.expressions.Subexpression
-import engine.expressions.xp
 import java.math.BigInteger
 
 /**
@@ -32,29 +29,3 @@ data class IntegerOrderRootPattern(val radicand: Pattern) : Pattern {
 }
 
 fun integerOrderRootOf(radicand: Pattern) = IntegerOrderRootPattern(radicand)
-
-/**
- * This wraps a PathProvider so that it is given a default value if did not match.  It could be useful in other place
- * but for now only used here so kept private.
- */
-private class IntegerProviderWithDefault(
-    private val integerProvider: IntegerProvider,
-    private val default: BigInteger
-) : IntegerProvider {
-
-    override fun getBoundInt(m: Match): BigInteger {
-        return if (integerProvider.getBoundExpr(m) != null) {
-            integerProvider.getBoundInt(m)
-        } else {
-            default
-        }
-    }
-
-    override fun getBoundPaths(m: Match): List<Path> {
-        return integerProvider.getBoundPaths(m)
-    }
-
-    override fun getBoundExpr(m: Match): Expression {
-        return integerProvider.getBoundExpr(m) ?: xp(default)
-    }
-}

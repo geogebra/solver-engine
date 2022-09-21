@@ -26,6 +26,7 @@ class TestToString {
             TestCase("35.000", "35.000", "{35.000}"),
             TestCase("2.71[82]", "2.71[82]", "{2.71\\overline{82}}"),
             TestCase("0.00[100]", "0.00[100]", "{0.00\\overline{100}}"),
+            TestCase("0.[6]", "0.[6]", "{0.\\overline{6}}"),
             TestCase("1+1", "1 + 1", "{{1} + {1}}"),
             TestCase("x-y", "x - y", "{{x} {{} - {y}}}"),
             TestCase("[3/5]", "[3 / 5]", "{\\frac{3}{5}}"),
@@ -41,6 +42,8 @@ class TestToString {
                 "sqrt[[b ^ 2] - 4 a c]",
                 "{\\sqrt{{{b} ^ {2}} {{} - {{4} {a} {c}}}}}"
             ),
+
+            TestCase("x = y", "x = y", "{{x} = {y}}")
         )
     }
 }

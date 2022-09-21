@@ -1,8 +1,8 @@
 package engine.patterns
 
-import engine.expressions.NaryOperator
 import engine.expressions.Subexpression
 import engine.expressions.xp
+import engine.operators.NaryOperator
 import org.junit.jupiter.api.Test
 import parser.parseExpression
 import kotlin.test.assertContentEquals

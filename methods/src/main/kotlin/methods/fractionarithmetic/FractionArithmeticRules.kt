@@ -1,6 +1,5 @@
 package methods.fractionarithmetic
 
-import engine.expressions.BinaryOperator
 import engine.expressions.Constants
 import engine.expressions.Subexpression
 import engine.expressions.fractionOf
@@ -12,6 +11,7 @@ import engine.expressions.sumOf
 import engine.expressions.xp
 import engine.methods.TransformationResult
 import engine.methods.rule
+import engine.operators.BinaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
@@ -233,12 +233,12 @@ val simplifyNegativeNumeratorAndDenominator = rule {
 }
 
 val turnProductOfFractionByIntegerToFractionProduct = rule {
-    val nonFractionTerm = condition(AnyPattern()) { it.operator != BinaryOperator.Fraction }
+    val nonFractionTerm = condition(AnyPattern()) { it.operator != BinaryExpressionOperator.Fraction }
     val product = productContaining(nonFractionTerm)
 
     onPattern(
         condition(product) { expression ->
-            expression.operands.any { it.operator == BinaryOperator.Fraction }
+            expression.operands.any { it.operator == BinaryExpressionOperator.Fraction }
         }
     ) {
         TransformationResult(

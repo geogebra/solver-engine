@@ -1,8 +1,6 @@
 package methods.integerroots
 
-import engine.expressions.BinaryOperator
 import engine.expressions.Constants
-import engine.expressions.UnaryOperator
 import engine.expressions.powerOf
 import engine.expressions.productOf
 import engine.expressions.rootOf
@@ -12,6 +10,8 @@ import engine.expressions.sumOf
 import engine.expressions.xp
 import engine.methods.TransformationResult
 import engine.methods.rule
+import engine.operators.BinaryExpressionOperator
+import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
@@ -156,12 +156,16 @@ val splitRootOfProduct = rule {
 
 val normaliseProductWithRoots = rule {
     val notRoot =
-        condition(AnyPattern()) { it.operator != UnaryOperator.SquareRoot && it.operator != BinaryOperator.Root }
+        condition(AnyPattern()) {
+            it.operator != UnaryExpressionOperator.SquareRoot && it.operator != BinaryExpressionOperator.Root
+        }
     val product = productContaining(integerOrderRootOf(UnsignedIntegerPattern()), notRoot)
-
     onPattern(product) {
         val (roots, nonRoots) = get(product)!!.children()
-            .partition { it.expr.operator == UnaryOperator.SquareRoot || it.expr.operator == BinaryOperator.Root }
+            .partition {
+                it.expr.operator == UnaryExpressionOperator.SquareRoot ||
+                    it.expr.operator == BinaryExpressionOperator.Root
+            }
 
         TransformationResult(
             toExpr = productOf(productOf(nonRoots.map { move(it) }), productOf(roots.map { move(it) })),
@@ -369,7 +373,7 @@ val combineProductOfSamePowerUnderHigherRoot = rule {
         val order = root.order.getBoundExpr(match)!!
         val product = prod.getBoundExpr(match)!!
 
-        product.operands.all { it.operator == BinaryOperator.Power && it.operands[1] == order }
+        product.operands.all { it.operator == BinaryExpressionOperator.Power && it.operands[1] == order }
     }
 
     val pattern = withOptionalIntegerCoefficient(cond)
@@ -378,11 +382,9 @@ val combineProductOfSamePowerUnderHigherRoot = rule {
         val product = get(prod)!!
         val order = product.nthChild(0).nthChild(1)
 
-        val match = matchPattern(pattern, get(pattern)!!)
-
         TransformationResult(
             toExpr = simplifiedProductOf(
-                pattern.coefficient(match!!),
+                move(pattern.coefficient),
                 rootOf(
                     powerOf(
                         productOf(product.children().map { move(it.nthChild(0)) }),
