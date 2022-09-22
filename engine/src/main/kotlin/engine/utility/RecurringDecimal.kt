@@ -13,19 +13,20 @@ data class RecurringDecimal(
     }
 
     val decimalDigits = nonRepeatingValue.scale()
+    val nonRepeatingDigits = decimalDigits - repeatingDigits
+    val repetend = nonRepeatingValue
+        .remainder(BigDecimal.ONE.movePointLeft(decimalDigits - repeatingDigits))
 
     constructor(s: String, repeatingDigits: Int) : this(BigDecimal(s), repeatingDigits)
 
-    fun repetend() = nonRepeatingValue
-        .remainder(BigDecimal.ONE.movePointLeft(decimalDigits - repeatingDigits))
-
     /**
-     * [n] is the target # of decimal places for nonRepeatingValue
+     * Returns a RecurringDecimal equivalent to the current such that
+     * its [decimalDigits] are at least [n]
      */
     fun expand(n: Int): RecurringDecimal {
         var decimal = nonRepeatingValue
         // E.g. 0.065 for 3.5[65]
-        var repetend = repetend()
+        var repetend = repetend
 
         while (decimal.scale() < n) {
             repetend = repetend.movePointLeft(repeatingDigits)

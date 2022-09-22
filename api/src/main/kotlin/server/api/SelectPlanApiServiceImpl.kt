@@ -1,6 +1,5 @@
 package server.api
 
-import engine.context.Context
 import engine.expressions.Subexpression
 import methods.methodRegistry
 import org.antlr.v4.runtime.misc.ParseCancellationException
@@ -22,7 +21,7 @@ class SelectPlanApiServiceImpl : SelectPlansApiService {
         }
         val modeller = TransformationModeller(applyPlanRequest.format)
         val selections = mutableListOf<PlanSelection>()
-        val context = Context(curriculum = applyPlanRequest.curriculum)
+        val context = getContext(applyPlanRequest.context)
 
         for (entryData in methodRegistry.getPublicEntries()) {
             val transformation = entryData.implementation.tryExecute(context, Subexpression(expr))

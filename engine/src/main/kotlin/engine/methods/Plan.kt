@@ -13,30 +13,33 @@ import engine.steps.metadata.MetadataMaker
  * A `Plan` is a `Method` with a non-empty set of steps which are produced by a `StepsProducer`.
  */
 data class Plan(
-    val pattern: Pattern? = null,
+    val pattern: Pattern,
+    val resultPattern: Pattern,
     val explanationMaker: MetadataMaker? = null,
     val skillMakers: List<MetadataMaker> = emptyList(),
     val stepsProducer: StepsProducer,
 ) : Method {
 
     private fun getMatch(sub: Subexpression): Match? {
-        return when {
-            pattern != null -> pattern.findMatches(sub, RootMatch).firstOrNull()
-            else -> RootMatch
-        }
+        return pattern.findMatches(sub, RootMatch).firstOrNull()
     }
 
     override fun tryExecute(ctx: Context, sub: Subexpression): Transformation? {
-        return getMatch(sub)?.let { match ->
-            stepsProducer.produceSteps(ctx, sub)?.let { steps ->
-                val lastStep = steps.last()
-                return Transformation(
+        val match = getMatch(sub) ?: return null
+
+        return stepsProducer.produceSteps(ctx, sub)?.let { steps ->
+            val toExpr = steps.last().toExpr
+
+            when {
+                resultPattern.matches(toExpr.expr) -> Transformation(
                     fromExpr = sub,
-                    toExpr = lastStep.toExpr,
+                    toExpr = toExpr,
                     steps = steps,
                     explanation = explanationMaker?.make(match),
                     skills = skillMakers.map { it.make(match) }
                 )
+
+                else -> null
             }
         }
     }

@@ -1,5 +1,6 @@
 package engine.patterns
 
+import engine.context.emptyContext
 import engine.expressionmakers.MakerBuilder
 import engine.expressions.Constants
 import engine.expressions.MappedExpression
@@ -69,7 +70,7 @@ class RationalCoefficientPattern(value: Pattern) : Pattern {
     /**
      * Given a match, returns the coefficient as an integer or fraction
      */
-    fun coefficient(match: Match): MappedExpression = with(MakerBuilder(match)) {
+    fun coefficient(match: Match): MappedExpression = with(MakerBuilder(emptyContext /* TODO */, match)) {
         val numeratorCoefficient = when {
             match.isBound(numerator) -> move(numerator)
             else -> introduce(Constants.One)

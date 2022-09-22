@@ -15,6 +15,7 @@ import engine.methods.stepsproducers.Pipeline
 import engine.methods.stepsproducers.PipelineItem
 import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.WhilePossible
+import engine.patterns.AnyPattern
 import engine.patterns.Pattern
 import engine.steps.metadata.KeyExprsMetadataMaker
 import engine.steps.metadata.MetadataKey
@@ -149,7 +150,8 @@ open class StepsProducerBuilder {
 class PlanBuilder : StepsProducerBuilder() {
     var explanationMaker: MetadataMaker? = null
     var skillMakers: MutableList<MetadataMaker> = mutableListOf()
-    var pattern: Pattern? = null
+    var pattern: Pattern = AnyPattern()
+    var resultPattern: Pattern = AnyPattern()
     var alternatives: MutableList<ContextSensitiveAlternative> = mutableListOf()
 
     fun explanation(explanationKey: MetadataKey, vararg params: ExpressionMaker) {
@@ -169,6 +171,7 @@ class PlanBuilder : StepsProducerBuilder() {
     private fun wrapPlanExecutor(stepsProducer: StepsProducer): Plan {
         return Plan(
             pattern = pattern,
+            resultPattern = resultPattern,
             stepsProducer = stepsProducer,
             explanationMaker = explanationMaker,
             skillMakers = skillMakers,

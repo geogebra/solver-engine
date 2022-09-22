@@ -45,6 +45,7 @@ class MethodTestCaseTest {
 
         Plan(
             pattern = pattern,
+            resultPattern = AnyPattern(),
             stepsProducer = Pipeline((1..3).map { PipelineItem(testRule) }),
             explanationMaker = makeMetadata(testPlanMetadataKey, move(pattern)),
         )

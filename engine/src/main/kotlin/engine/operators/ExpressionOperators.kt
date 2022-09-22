@@ -68,7 +68,7 @@ object UndefinedOperator : NullaryOperator() {
  */
 data class DecimalOperator(val value: BigDecimal) : NullaryOperator() {
     init {
-        require(value.signum() > 0)
+        require(value.signum() >= 0)
     }
 
     override fun toString(): String = value.toPlainString()

@@ -1,5 +1,6 @@
 package engine.expressionmakers
 
+import engine.context.Context
 import engine.expressions.Expression
 import engine.expressions.MappedExpression
 import engine.expressions.PathMappingLeaf
@@ -23,11 +24,15 @@ import engine.patterns.RecurringDecimalPattern
 import engine.utility.RecurringDecimal
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.math.RoundingMode
 
 typealias ExpressionMaker = Maker<MappedExpression>
 
 @Suppress("TooManyFunctions")
-class MakerBuilder(private val match: Match) {
+class MakerBuilder(
+    val context: Context,
+    private val match: Match,
+) {
 
     fun introduce(expression: Expression): MappedExpression =
         MappedExpression(expression, PathMappingLeaf(listOf(), PathMappingType.Introduce))
@@ -92,7 +97,7 @@ class MakerBuilder(private val match: Match) {
      * To be used together with [matchPattern].
      */
     fun buildWith(match: Match, init: MakerBuilder.() -> MappedExpression): MappedExpression {
-        val builder = MakerBuilder(match)
+        val builder = MakerBuilder(context, match)
         return builder.init()
     }
 
@@ -143,10 +148,23 @@ class MakerBuilder(private val match: Match) {
      * Combines the numeric values of [ptn1] and [ptn2] according to the given [operation].
      */
     fun numericOp(
+        ptn: NumberProvider,
+        operation: (BigDecimal) -> BigDecimal
+    ) = transformTo(ptn, xp(operation(ptn.getBoundNumber(match))))
+
+    /**
+     * Combines the numeric values of [ptn1] and [ptn2] according to the given [operation].
+     */
+    fun numericOp(
         ptn1: NumberProvider,
         ptn2: NumberProvider,
         operation: (BigDecimal, BigDecimal) -> BigDecimal
     ) = combineTo(ptn1, ptn2, xp(operation(ptn1.getBoundNumber(match), ptn2.getBoundNumber(match))))
+
+    /**
+     * Rounds [n] to the context's precision.
+     */
+    fun round(n: BigDecimal): BigDecimal = n.setScale(context.effectivePrecision, RoundingMode.HALF_UP)
 
     /**
      * Returns the "rest of" part of [pattern] which match some operands of an nary expression, i.e. the non-matched

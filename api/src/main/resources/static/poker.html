@@ -109,11 +109,22 @@
         <option value="US">US</option>
         <option value="EU">EU</option>
     </select>
+    <label for="precisionSelect">Precision</label>
+    <select id="precisionSelect">
+        <option value="2">2 d.p.</option>
+        <option value="3" selected>3 d.p.</option>
+        <option value="4">4 d.p.</option>
+        <option value="5">5 d.p.</option>
+        <option value="6">6 d.p.</option>
+    </select>
+
+    <br />
+
     <label for="plansSelect">Plan</label>
     <select id="plansSelect"></select>
     <label for="input">Input</label>
     <input type="text" id="input" placeholder="Expression" size="30"/>
-     <input type="submit" id="submit" value="Submit"/>
+    <input type="submit" id="submit" value="Submit"/>
 </form>
 <form>
     <label for="showThroughSteps">Show through steps</label>

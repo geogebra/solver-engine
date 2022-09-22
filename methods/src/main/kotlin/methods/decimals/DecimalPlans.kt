@@ -4,10 +4,17 @@ import engine.context.ResourceData
 import engine.expressionmakers.move
 import engine.methods.plan
 import engine.patterns.productContaining
+import engine.patterns.sumContaining
 import methods.fractionarithmetic.simplifyFraction
 import methods.general.eliminateOneInProduct
 import methods.general.evaluateProductContainingZero
 import methods.integerarithmetic.evaluateSignedIntegerAddition
+
+val evaluateSumOfDecimals = plan {
+    pattern = sumContaining()
+    explanation(Explanation.EvaluateSumOfDecimals, move(pattern!!))
+    whilePossible(evaluateSignedDecimalAddition)
+}
 
 val convertTerminatingDecimalToFractionAndSimplify = plan {
     explanation(Explanation.ConvertTerminatingDecimalToFractionAndSimplify)

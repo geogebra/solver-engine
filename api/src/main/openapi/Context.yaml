@@ -1,0 +1,7 @@
+title: Context
+type: object
+properties:
+  curriculum:
+    type: string
+  precision:
+    type: number

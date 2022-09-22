@@ -26,13 +26,13 @@ import methods.general.simplifyDoubleMinus
 
 val evaluateProductOfIntegers = plan {
     pattern = productContaining()
-    explanation(Explanation.EvaluateProductOfIntegers, move(pattern!!))
+    explanation(Explanation.EvaluateProductOfIntegers, move(pattern))
     whilePossible(evaluateIntegerProductAndDivision)
 }
 
 val evaluateSumOfIntegers = plan {
     pattern = sumContaining()
-    explanation(Explanation.EvaluateSumOfIntegers, move(pattern!!))
+    explanation(Explanation.EvaluateSumOfIntegers, move(pattern))
     whilePossible(evaluateSignedIntegerAddition)
 }
 
@@ -68,7 +68,7 @@ val evaluateSignedIntegerPower = plan {
 
 val simplifyIntegersInProduct = plan {
     pattern = productContaining()
-    explanation(Explanation.SimplifyIntegersInProduct, move(pattern!!))
+    explanation(Explanation.SimplifyIntegersInProduct, move(pattern))
 
     whilePossible {
         firstOf {
@@ -81,7 +81,7 @@ val simplifyIntegersInProduct = plan {
 
 val simplifyIntegersInSum = plan {
     pattern = sumContaining()
-    explanation(Explanation.SimplifyIntegersInSum, move(pattern!!))
+    explanation(Explanation.SimplifyIntegersInSum, move(pattern))
 
     whilePossible {
         firstOf {
@@ -91,7 +91,7 @@ val simplifyIntegersInSum = plan {
     }
 }
 
-private val arithmeticOperators = listOf(
+val arithmeticOperators = listOf(
     UnaryExpressionOperator.InvisibleBracket,
     UnaryExpressionOperator.Minus,
     UnaryExpressionOperator.Plus,
@@ -102,12 +102,10 @@ private val arithmeticOperators = listOf(
 )
 
 private fun Expression.isArithmeticExpression(): Boolean {
-    for (operand in operands) {
-        if (!operand.isArithmeticExpression()) return false
-    }
-
-    return operator is IntegerOperator || operator is BracketOperator ||
+    val validOperator = operator is IntegerOperator || operator is BracketOperator ||
         arithmeticOperators.contains(operator)
+
+    return validOperator && operands.all { it.isArithmeticExpression() }
 }
 
 val evaluationSteps = steps {

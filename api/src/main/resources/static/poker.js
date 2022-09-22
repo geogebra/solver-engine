@@ -17,24 +17,24 @@ const isThroughStep = (trans) =>
  * API access
  ******************************************/
 
-const requestApplyPlan = async (planId, input, curriculum = "", format = "latex") => {
+const requestApplyPlan = async (planId, input, context, format = "latex") => {
     const response = await fetch(`${apiRoot}/plans/${planId}/apply`, {
         method: "POST",
         headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "application/json"
         },
-        body: JSON.stringify({ input, format, curriculum }),
+        body: JSON.stringify({ input, format, context })
     });
     return await response.json();
 };
 
-const requestSelectPlans = async (input, curriculum = "", format = "latex") => {
+const requestSelectPlans = async (input, context, format = "latex") => {
     const response = await fetch(`${apiRoot}/selectPlans`, {
         method: "POST",
         headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "application/json"
         },
-        body: JSON.stringify({ input, format, curriculum }),
+        body: JSON.stringify({ input, format, context })
     });
     return await response.json();
 };
@@ -67,36 +67,36 @@ const initPlans = (plans) => {
  * Functions to execute plans and render the result
  *******************************************/
 
-const selectPlansOrApplyPlan = (planId, input, curriculum) => {
+const selectPlansOrApplyPlan = (planId, input, context) => {
     if (planId === "selectPlans") {
-        return selectPlans(input, curriculum);
+        return selectPlans(input, context);
     } else {
-        return applyPlan(planId, input, curriculum);
+        return applyPlan(planId, input, context);
     }
 };
 
-const applyPlan = async (planId, input, curriculum = "") => {
-    const result = await requestApplyPlan(planId, input, curriculum);
+const applyPlan = async (planId, input, context) => {
+    const result = await requestApplyPlan(planId, input, context);
     el("source").innerHTML = JSON.stringify(result, null, 4);
     if (result.error !== undefined) {
         console.log(result);
         el("result").innerHTML = `Error: ${result.error}<br/>Message: ${result.message}`;
     } else {
-        const solverResult = await requestApplyPlan(planId, input, curriculum, "solver");
+        const solverResult = await requestApplyPlan(planId, input, context, "solver");
         el("result").innerHTML = renderTransformationAndTest(result, solverResult, 1);
         renderMathInElement(el("result"));
     }
 };
 
-const selectPlans = async (input, curriculum = "") => {
-    const result = await requestSelectPlans(input, curriculum);
+const selectPlans = async (input, context) => {
+    const result = await requestSelectPlans(input, context);
     el("source").innerHTML = JSON.stringify(result, null, 4);
     if (result.error !== undefined) {
         console.log(result);
         el("result").innerHTML = `Error: ${result.error}<br/>Message: ${result.message}`;
     } else {
         console.log(result);
-        const testResult = await requestSelectPlans(input, curriculum, "solver");
+        const testResult = await requestSelectPlans(input, context, "solver");
         el("result").innerHTML = renderPlanSelections(result, testResult);
         renderMathInElement(el("result"));
     }
@@ -122,17 +122,17 @@ const renderPlanSelections = (selections, testSelections) => {
     <div class ="selections">${selections.length} plans found
         <ol>
             ${selections
-                .map(
-                    (selection) =>
-                        `<li>${renderPlanSelection(
-                            selection,
-                            findTransformationInSelections(
-                                testSelections,
-                                selection.metadata.methodId
-                            )
-                        )}</li>`
-                )
-                .join("")}
+        .map(
+            (selection) =>
+                `<li>${renderPlanSelection(
+                    selection,
+                    findTransformationInSelections(
+                        testSelections,
+                        selection.metadata.methodId
+                    )
+                )}</li>`
+        )
+        .join("")}
         </ol>
     </div>
     `;
@@ -166,8 +166,8 @@ const renderTransformation = (trans, depth = 0) => {
         ${trans.planId ? `<div class="plan-id">${trans.planId}</div>` : ""}
         ${renderExplanation(trans.explanation)}
         <div class="expr">${renderExpression(
-            `${trans.fromExpr} {\\color{#8888ff}\\thickspace\\longmapsto\\thickspace} ${trans.toExpr}`
-        )}</div>
+        `${trans.fromExpr} {\\color{#8888ff}\\thickspace\\longmapsto\\thickspace} ${trans.toExpr}`
+    )}</div>
         ${renderSteps(trans.steps, depth, depth >= 0 || isThrough)}
     </div>`;
 };
@@ -332,6 +332,30 @@ const buildTestBody = (trans) => (builder) => {
  * Do initial setup and register event handlers
  ******************************************/
 
+const fetchPlansAndUpdatePage = () => fetchPlans().then((plans) => {
+    initPlans(plans);
+    const url = new URL(window.location);
+    const planId = url.searchParams.get("plan");
+    const input = url.searchParams.get("input");
+    const curriculum = url.searchParams.get("curriculum");
+    const precision = url.searchParams.get("precision");
+    if (planId) {
+        el("plansSelect").value = planId;
+    }
+    if (input) {
+        el("input").value = input;
+    }
+    if (curriculum) {
+        el("curriculumSelect").value = curriculum;
+    }
+    if (precision) {
+        el("precisionSelect").value = precision;
+    }
+    if (planId && input) {
+        selectPlansOrApplyPlan(planId, input, { curriculum, precision: parseInt(precision) });
+    }
+});
+
 window.onload = () => {
     fetchDefaultTranslations().then((translations) => {
         translationData = translations;
@@ -347,37 +371,21 @@ window.onload = () => {
             : "no commit info";
     });
 
-    fetchPlans().then((plans) => {
-        initPlans(plans);
-        const url = new URL(window.location);
-        const planId = url.searchParams.get("plan");
-        const input = url.searchParams.get("input");
-        const curriculum = url.searchParams.get("curriculum");
-        if (planId) {
-            el("plansSelect").value = planId;
-        }
-        if (input) {
-            el("input").value = input;
-        }
-        if (curriculum) {
-            el("curriculumSelect").value = curriculum;
-        }
-        if (planId && input) {
-            selectPlansOrApplyPlan(planId, input, curriculum);
-        }
-    });
+    fetchPlansAndUpdatePage();
 
     el("form").onsubmit = (evt) => {
         evt.preventDefault();
         const planId = el("plansSelect").value;
         const input = el("input").value;
         const curriculum = el("curriculumSelect").value;
+        const precision = parseInt(el("precisionSelect").value);
         const url = new URL(window.location);
         url.searchParams.set("plan", planId);
         url.searchParams.set("input", input);
+        url.searchParams.set("precision", precision);
         const urlString = url.toString();
-        history.replaceState({ url: urlString }, null, urlString);
-        selectPlansOrApplyPlan(planId, input, curriculum);
+        history.pushState({ url: urlString }, null, urlString);
+        selectPlansOrApplyPlan(planId, input, { curriculum, precision });
     };
 
     el("showThroughSteps").onchange = (evt) => {
@@ -385,8 +393,11 @@ window.onload = () => {
         const planId = el("plansSelect").value;
         const input = el("input").value;
         const curriculum = el("curriculumSelect").value;
+        const precision = parseInt(el("precisionSelect").value);
         if (input !== "") {
-            selectPlansOrApplyPlan(planId, input, curriculum);
+            selectPlansOrApplyPlan(planId, input, { curriculum, precision });
         }
     };
 };
+
+window.onpopstate = fetchPlansAndUpdatePage;

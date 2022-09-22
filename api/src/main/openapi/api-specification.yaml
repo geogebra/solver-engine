@@ -25,7 +25,7 @@ paths:
       description: "List all available plan IDs"
       responses:
         "200":
-          description: "Sucessfully listed plans"
+          description: "Successfully listed plans"
           content:
             application/json:
               schema:
@@ -79,8 +79,8 @@ paths:
               properties:
                 input:
                   type: string
-                curriculum:
-                  type: string
+                context:
+                  $ref: 'Context.yaml'
                 format:
                   type: string
                   enum: [ latex, solver ]
@@ -115,8 +115,8 @@ paths:
               properties:
                 input:
                   type: string
-                curriculum:
-                  type: string
+                context:
+                  $ref: 'Context.yaml'
                 format:
                   type: string
                   enum: [ latex, solver ]
@@ -124,7 +124,7 @@ paths:
                     solver
       responses:
         "200":
-          description: "Plans selected sucessfully"
+          description: "Plans selected successfully"
           content:
             application/json:
               schema:

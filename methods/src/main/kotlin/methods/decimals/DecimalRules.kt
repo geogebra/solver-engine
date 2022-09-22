@@ -23,6 +23,7 @@ import engine.patterns.numericCondition
 import engine.patterns.oneOf
 import engine.patterns.productContaining
 import engine.patterns.productOf
+import engine.patterns.sumContaining
 import engine.patterns.withOptionalIntegerCoefficient
 import engine.steps.Transformation
 import engine.steps.metadata.metadata
@@ -164,7 +165,7 @@ val simplifyEquationSystemForRecurringDecimal = rule {
         val d2 = getValue(decimal2)
 
         when {
-            d1.repetend() == d2.repetend() -> TransformationResult(
+            d1.repetend == d2.repetend -> TransformationResult(
                 toExpr = equationOf(
                     productOf(integerOp(lhs1.coefficient, lhs2.coefficient) { n1, n2 -> n2 - n1 }, move(variable)),
                     combineTo(decimal1, decimal2, xp((d2.nonRepeatingValue - d1.nonRepeatingValue).toBigInteger()))
@@ -250,5 +251,26 @@ val evaluateDecimalProductAndDivision = rule {
                 explanation = metadata(Explanation.EvaluateDecimalDivision, move(base), move(divisor))
             )
         }
+    }
+}
+
+val evaluateSignedDecimalAddition = rule {
+    val term1 = SignedNumberPattern()
+    val term2 = SignedNumberPattern()
+    val sum = sumContaining(term1, term2)
+
+    onPattern(sum) {
+        val explanation = when {
+            getValue(term1) > BigDecimal.ZERO && getValue(term2) < BigDecimal.ZERO ->
+                metadata(Explanation.EvaluateDecimalSubtraction, move(term1), move(term2.unsignedPattern))
+
+            else ->
+                metadata(Explanation.EvaluateDecimalAddition, move(term1), move(term2))
+        }
+
+        TransformationResult(
+            toExpr = sum.substitute(numericOp(term1, term2) { n1, n2 -> n1 + n2 }),
+            explanation = explanation
+        )
     }
 }

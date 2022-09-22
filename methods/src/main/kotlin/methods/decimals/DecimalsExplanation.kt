@@ -56,7 +56,22 @@ enum class DecimalsExplanation : CategorisedMetadataKey {
     SimplifyDecimalsInProduct,
     MultiplyFractionOfDecimalsByPowerOfTen,
     EvaluateDecimalProduct,
-    EvaluateDecimalDivision;
+    EvaluateDecimalDivision,
+
+    /**
+     * Evaluate the sum or difference of several (decimal) numbers
+     */
+    EvaluateSumOfDecimals,
+
+    /**
+     * Evaluate the addition of two (decimal) numbers
+     */
+    EvaluateDecimalAddition,
+
+    /**
+     * Evaluate the subtraction of two (decimal) numbers
+     */
+    EvaluateDecimalSubtraction;
 
     override val category = "Decimals"
 }
