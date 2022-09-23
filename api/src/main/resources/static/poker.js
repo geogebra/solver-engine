@@ -21,9 +21,9 @@ const requestApplyPlan = async (planId, input, context, format = "latex") => {
     const response = await fetch(`${apiRoot}/plans/${planId}/apply`, {
         method: "POST",
         headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         },
-        body: JSON.stringify({ input, format, context })
+        body: JSON.stringify({ input, format, context }),
     });
     return await response.json();
 };
@@ -32,9 +32,9 @@ const requestSelectPlans = async (input, context, format = "latex") => {
     const response = await fetch(`${apiRoot}/selectPlans`, {
         method: "POST",
         headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         },
-        body: JSON.stringify({ input, format, context })
+        body: JSON.stringify({ input, format, context }),
     });
     return await response.json();
 };
@@ -122,17 +122,17 @@ const renderPlanSelections = (selections, testSelections) => {
     <div class ="selections">${selections.length} plans found
         <ol>
             ${selections
-        .map(
-            (selection) =>
-                `<li>${renderPlanSelection(
-                    selection,
-                    findTransformationInSelections(
-                        testSelections,
-                        selection.metadata.methodId
-                    )
-                )}</li>`
-        )
-        .join("")}
+                .map(
+                    (selection) =>
+                        `<li>${renderPlanSelection(
+                            selection,
+                            findTransformationInSelections(
+                                testSelections,
+                                selection.metadata.methodId
+                            )
+                        )}</li>`
+                )
+                .join("")}
         </ol>
     </div>
     `;
@@ -166,8 +166,8 @@ const renderTransformation = (trans, depth = 0) => {
         ${trans.planId ? `<div class="plan-id">${trans.planId}</div>` : ""}
         ${renderExplanation(trans.explanation)}
         <div class="expr">${renderExpression(
-        `${trans.fromExpr} {\\color{#8888ff}\\thickspace\\longmapsto\\thickspace} ${trans.toExpr}`
-    )}</div>
+            `${trans.fromExpr} {\\color{#8888ff}\\thickspace\\longmapsto\\thickspace} ${trans.toExpr}`
+        )}</div>
         ${renderSteps(trans.steps, depth, depth >= 0 || isThrough)}
     </div>`;
 };
@@ -332,29 +332,30 @@ const buildTestBody = (trans) => (builder) => {
  * Do initial setup and register event handlers
  ******************************************/
 
-const fetchPlansAndUpdatePage = () => fetchPlans().then((plans) => {
-    initPlans(plans);
-    const url = new URL(window.location);
-    const planId = url.searchParams.get("plan");
-    const input = url.searchParams.get("input");
-    const curriculum = url.searchParams.get("curriculum");
-    const precision = url.searchParams.get("precision");
-    if (planId) {
-        el("plansSelect").value = planId;
-    }
-    if (input) {
-        el("input").value = input;
-    }
-    if (curriculum) {
-        el("curriculumSelect").value = curriculum;
-    }
-    if (precision) {
-        el("precisionSelect").value = precision;
-    }
-    if (planId && input) {
-        selectPlansOrApplyPlan(planId, input, { curriculum, precision: parseInt(precision) });
-    }
-});
+const fetchPlansAndUpdatePage = () =>
+    fetchPlans().then((plans) => {
+        initPlans(plans);
+        const url = new URL(window.location);
+        const planId = url.searchParams.get("plan");
+        const input = url.searchParams.get("input");
+        const curriculum = url.searchParams.get("curriculum");
+        const precision = url.searchParams.get("precision");
+        if (planId) {
+            el("plansSelect").value = planId;
+        }
+        if (input) {
+            el("input").value = input;
+        }
+        if (curriculum) {
+            el("curriculumSelect").value = curriculum;
+        }
+        if (precision) {
+            el("precisionSelect").value = precision;
+        }
+        if (planId && input) {
+            selectPlansOrApplyPlan(planId, input, { curriculum, precision: parseInt(precision) });
+        }
+    });
 
 window.onload = () => {
     fetchDefaultTranslations().then((translations) => {
@@ -382,7 +383,12 @@ window.onload = () => {
         const url = new URL(window.location);
         url.searchParams.set("plan", planId);
         url.searchParams.set("input", input);
-        url.searchParams.set("precision", precision);
+        if (curriculum) {
+            url.searchParams.set("curriculum", curriculum);
+        } else {
+            url.searchParams.delete("curriculum");
+        }
+        url.searchParams.set("precision", precision.toString());
         const urlString = url.toString();
         history.pushState({ url: urlString }, null, urlString);
         selectPlansOrApplyPlan(planId, input, { curriculum, precision });
