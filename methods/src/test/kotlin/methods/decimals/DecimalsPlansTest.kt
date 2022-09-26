@@ -188,4 +188,54 @@ class DecimalsPlansTest {
             toExpr = "[6 / 2000]"
         }
     }
+
+    @Test
+    fun testConvertNiceFractionToDecimalSimple() = testMethod {
+        method = convertNiceFractionToDecimal
+        inputExpr = "[2/5]"
+
+        check {
+            toExpr = "0.4"
+
+            step { toExpr = "[2*2 / 5 * 2]" }
+            step { toExpr = "[4 / 5 * 2]" }
+            step { toExpr = "[4 / 10]" }
+            step { toExpr = "0.4" }
+        }
+    }
+
+    @Test
+    fun testConvertNiceFractionToDecimalAlreadyAPowerOfTen() = testMethod {
+        method = convertNiceFractionToDecimal
+        inputExpr = "[2/100]"
+
+        check {
+            toExpr = "0.02"
+
+            step { toExpr = "0.02" }
+        }
+    }
+
+    @Test
+    fun testConvertNiceFractionToDecimalHarder() = testMethod {
+        method = convertNiceFractionToDecimal
+        inputExpr = "[7/40]"
+
+        check {
+            toExpr = "0.175"
+
+            step { toExpr = "[7*25 / 40*25]" }
+            step { toExpr = "[175 / 40*25]" }
+            step { toExpr = "[175 / 1000]" }
+            step { toExpr = "0.175" }
+        }
+    }
+
+    @Test
+    fun testConvertNiceFractionToDecimalWithDenominatorOne() = testMethod {
+        method = convertNiceFractionToDecimal
+        inputExpr = "[8/1]"
+
+        check { noTransformation() }
+    }
 }

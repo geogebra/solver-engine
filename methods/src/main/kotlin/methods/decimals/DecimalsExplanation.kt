@@ -64,6 +64,11 @@ enum class DecimalsExplanation : CategorisedMetadataKey {
     EvaluateSumOfDecimals,
 
     /**
+     * Evaluate the product / division of several (decimal) numbers
+     */
+    EvaluateProductOfDecimals,
+
+    /**
      * Evaluate the addition of two (decimal) numbers
      */
     EvaluateDecimalAddition,
@@ -71,7 +76,28 @@ enum class DecimalsExplanation : CategorisedMetadataKey {
     /**
      * Evaluate the subtraction of two (decimal) numbers
      */
-    EvaluateDecimalSubtraction;
+    EvaluateDecimalSubtraction,
+
+    /**
+     * Convert a fraction to a terminating decimal if possible
+     *
+     * E.g. [7/25 -> 0.28]
+     */
+    ConvertNiceFractionToDecimal,
+
+    /**
+     * Scale a fraction so its denominator will be a power of 10
+     *
+     * E.g. [3/25] -> []12 * 4/25 * 4]
+     */
+    ExpandFractionToPowerOfTenDenominator,
+
+    /**
+     * Convert a fraction over a power of 10 to a terminating decimal
+     *
+     * E.g. []45/100] -> 0.45
+     */
+    ConvertFractionWithPowerOfTenDenominatorToDecimal;
 
     override val category = "Decimals"
 }

@@ -14,6 +14,7 @@ import engine.patterns.RecurringDecimalPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.SignedNumberPattern
 import engine.patterns.UnsignedDecimalPattern
+import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.VariablePattern
 import engine.patterns.divideBy
 import engine.patterns.equationOf
@@ -27,6 +28,7 @@ import engine.patterns.sumContaining
 import engine.patterns.withOptionalIntegerCoefficient
 import engine.steps.Transformation
 import engine.steps.metadata.metadata
+import engine.utility.Factorizer
 import java.math.BigDecimal
 import java.math.BigInteger
 import kotlin.math.max
@@ -271,6 +273,58 @@ val evaluateSignedDecimalAddition = rule {
         TransformationResult(
             toExpr = sum.substitute(numericOp(term1, term2) { n1, n2 -> n1 + n2 }),
             explanation = explanation
+        )
+    }
+}
+
+@Suppress("MagicNumber")
+private val five = BigInteger.valueOf(5)
+
+val expandFractionToPowerOfTenDenominator = rule {
+    val numerator = UnsignedIntegerPattern()
+    val denominator = UnsignedIntegerPattern()
+
+    val fraction = fractionOf(numerator, denominator)
+
+    onPattern(fraction) {
+        val factorizer = Factorizer(getValue(denominator))
+
+        val powerOfTwo = factorizer.extractMultiplicity(BigInteger.TWO)
+        val powerOfFive = factorizer.extractMultiplicity(five)
+
+        if (!factorizer.fullyFactorized() || powerOfFive == powerOfTwo) {
+            return@onPattern null
+        }
+        val maxPower = max(powerOfTwo, powerOfFive)
+        val expandWith = xp(BigInteger.TWO.pow(maxPower - powerOfTwo) * five.pow(maxPower - powerOfFive))
+
+        TransformationResult(
+            toExpr = fractionOf(
+                productOf(move(numerator), introduce(expandWith)),
+                productOf(move(denominator), introduce(expandWith))
+            ),
+            explanation = metadata(Explanation.ExpandFractionToPowerOfTenDenominator)
+        )
+    }
+}
+
+val convertFractionWithPowerOfTenDenominatorToDecimal = rule {
+    val numerator = UnsignedIntegerPattern()
+    val denominator = UnsignedIntegerPattern()
+
+    val fraction = fractionOf(numerator, denominator)
+
+    onPattern(fraction) {
+        val factorizer = Factorizer(getValue(denominator))
+        val powerOfTen = factorizer.extractMultiplicity(BigInteger.TEN)
+
+        if (!factorizer.fullyFactorized() || powerOfTen == 0) {
+            return@onPattern null
+        }
+
+        TransformationResult(
+            toExpr = numericOp(numerator) { it.movePointLeft(powerOfTen) },
+            explanation = metadata(Explanation.ConvertFractionWithPowerOfTenDenominatorToDecimal)
         )
     }
 }

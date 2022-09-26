@@ -54,24 +54,20 @@ fun BigInteger.isPowerOfDegree(n: Int): Boolean {
 fun BigInteger.primeFactorDecomposition(): List<Pair<BigInteger, BigInteger>> {
     val factors = mutableListOf<Pair<BigInteger, BigInteger>>()
 
-    var remainder = this
+    val factorizer = Factorizer(this)
     var factor = BigInteger.ONE
 
-    while (remainder > BigInteger.ONE) {
+    while (!factorizer.fullyFactorized()) {
         factor = factor.nextProbablePrime()
 
         if (factor > MAX_FACTOR) {
-            factors.add(Pair(remainder, BigInteger.ONE))
+            factors.add(Pair(factorizer.n, BigInteger.ONE))
             break
         }
-        var multiplicity = 0L
-        while (remainder.mod(factor).signum() == 0) {
-            multiplicity++
-            remainder = remainder.divide(factor)
-        }
 
+        val multiplicity = factorizer.extractMultiplicity(factor)
         if (multiplicity > 0) {
-            factors.add(Pair(factor, BigInteger.valueOf(multiplicity)))
+            factors.add(Pair(factor, BigInteger.valueOf(multiplicity.toLong())))
         }
     }
 
@@ -100,4 +96,18 @@ fun BigInteger.isPrime(): Boolean {
     }
 
     return true
+}
+
+class Factorizer(var n: BigInteger) {
+
+    fun fullyFactorized() = n == BigInteger.ONE
+
+    fun extractMultiplicity(f: BigInteger): Int {
+        var multiplicity = 0
+        while (f.divides(n)) {
+            n /= f
+            multiplicity++
+        }
+        return multiplicity
+    }
 }
