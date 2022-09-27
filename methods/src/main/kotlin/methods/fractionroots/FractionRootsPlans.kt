@@ -6,6 +6,7 @@ import engine.methods.plan
 import methods.fractionarithmetic.multiplyFractions
 import methods.fractionarithmetic.simplifyFractionToInteger
 import methods.general.eliminateLoneOneInExponent
+import methods.general.removeBracketsProduct
 import methods.general.simplifyProductOfConjugates
 import methods.integerarithmetic.evaluateIntegerPowerDirectly
 import methods.integerarithmetic.evaluateSignedIntegerAddition
@@ -81,7 +82,15 @@ private val simplifyAfterRationalization = plan {
                             }
                         }
                         optionalSteps(combineProductOfSamePowerUnderHigherRoot)
-                        steps(simplifyNthRootOfNthPower)
+                        steps {
+                            plan {
+                                explanation(Explanation.SimplifyNthRootOfNthPower)
+                                pipeline {
+                                    steps { deeply(simplifyNthRootOfNthPower) }
+                                    optionalSteps(removeBracketsProduct)
+                                }
+                            }
+                        }
                     }
                 }
                 option(simplifyNthRootToThePowerOfN)
