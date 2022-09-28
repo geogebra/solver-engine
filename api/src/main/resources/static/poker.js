@@ -1,6 +1,7 @@
 /* global renderMathInElement */
 
 const apiRoot = "./api/v1.0-alpha0";
+const translationsRootURL = "https://export-solver.s3.eu-west-1.amazonaws.com";
 
 // Globally changes the rendering of steps.
 let showThroughSteps = false;
@@ -42,7 +43,10 @@ const requestSelectPlans = async (input, context, format = "latex") => {
 const fetchPlans = () => fetch(`${apiRoot}/plans/`).then((response) => response.json());
 
 const fetchDefaultTranslations = () =>
-    fetch("./DefaultTranslations.json").then((resp) => resp.json());
+    fetch(`${translationsRootURL}/en/method-translations.json`, {
+        mode: "cors",
+        cache: "no-cache",
+    }).then((resp) => resp.json());
 
 const fetchVersionInfo = () => fetch(`${apiRoot}/versionInfo`).then((resp) => resp.json());
 
@@ -359,6 +363,7 @@ const fetchPlansAndUpdatePage = () =>
 
 window.onload = () => {
     fetchDefaultTranslations().then((translations) => {
+        console.log("Test translation:", translations.Test);
         translationData = translations;
     });
 
