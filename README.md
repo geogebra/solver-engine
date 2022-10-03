@@ -7,25 +7,23 @@ This project hosts the code for the solver engine.
 The solver engine project is split into modules:
 
 - The `engine` module contains the internal representation of the
-  expressions and the bits required to describe transformations on
-  these, such as patterns and expression makers and also the
-  transformation producers: rules and plans, the so-called methods.
-    - More about the [internal representation](docs/representation.md).
-    - The rule are the simplest method. It creates a transformation with
-      an explanation and potentially with associated skills, but with no
-      sub-steps. It transforms the input which matches its pattern into
-      an equivalent expression created by its expression maker.
-    - The plan is the top and mid-level method. It may have an explanation
-      and skills, just like rules, but the actual work is done by one of
-      the many possible [plan executors](docs/plan-executors.md).
+  expressions, the bits required to describe transformations on
+  these, such as patterns and mapped expression, and also the
+  framework for creating solutions (so-called rules and plans).
+  [More about the engine](docs/engine.md).
 - The `methods` module contains the concrete descriptions of the
   possible transformations. These methods are organized into categories
-  and each category contains a number of rules and plans.
-    - Each category has a `.category.yaml` file which contains the associated
-      metadata, such as default translation for translation keys and
-      description of public plans. The schema for the category files is
-      available in [config/cathegorySchema.yaml](config/categorySchema.yaml).
-    - A guide for adding new rules and plans is available [here](/docs/).
+  and each category contains a number of rules and plans. 
+  [More about implementing methods](/docs/methods.md).
+- The `api` module is how our system communicates with the outside
+  world. It uses Spring Boot for the server and Openapi Generator
+  to create the endpoints and DTOs from formal specification files.
+  It also hosts the "Solver Poker" (the name coming from the iron
+  rod as opposed to the card game), which is a static HTML page and
+  some Javascript which connects to the API, and it is the quickest 
+  way to check your newly written solution.
+- The `export` module is used only to upload the translation keys
+  into GgbTrans. These are then translated and loaded by the poker.
 
 ## Documentation
 
