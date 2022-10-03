@@ -2,6 +2,7 @@ package methods.fractionarithmetic
 
 import engine.expressionmakers.move
 import engine.methods.plan
+import engine.methods.steps
 import engine.operators.BinaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.UnsignedIntegerPattern
@@ -19,6 +20,7 @@ import methods.general.simplifyUnitFractionToOne
 import methods.integerarithmetic.evaluateIntegerProductAndDivision
 import methods.integerarithmetic.evaluateSignedIntegerAddition
 import methods.integerarithmetic.evaluateSignedIntegerPower
+import methods.integerarithmetic.simplifyIntegersInExpression
 import methods.integerarithmetic.simplifyIntegersInProduct
 
 val normalizeSignsInFraction = plan {
@@ -149,6 +151,17 @@ val evaluateIntegerToNegativePower = plan {
                     }
                 }
             }
+        }
+    }
+}
+
+// Auxiliary steps used in several plans
+val simplifyFractionsInExpression = steps {
+    whilePossible {
+        firstOf {
+            option { deeply(simplifyIntegersInExpression) }
+            option { deeply(evaluateFractionSum) }
+            option { deeply(evaluateSumOfFractionAndInteger) }
         }
     }
 }

@@ -146,3 +146,14 @@ val evaluateArithmeticExpression = plan {
         }
     }
 }
+
+// Auxiliary steps used in several plans
+val simplifyIntegersInExpression = steps {
+    whilePossible {
+        firstOf {
+            option { deeply(evaluateIntegerPowerDirectly) }
+            option { deeply(simplifyIntegersInProduct) }
+            option { deeply(simplifyIntegersInSum) }
+        }
+    }
+}

@@ -8,14 +8,14 @@ import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.integerCondition
 import engine.patterns.integerOrderRootOf
 import engine.utility.isPowerOfDegree
-import methods.constantexpressions.simplifyFractionsInExpression
-import methods.constantexpressions.simplifyIntegersInExpression
 import methods.fractionarithmetic.multiplyAndSimplifyFractions
+import methods.fractionarithmetic.simplifyFractionsInExpression
 import methods.general.moveSignOfNegativeFactorOutOfProduct
 import methods.general.removeBracketsProduct
 import methods.general.removeRedundantBrackets
 import methods.integerarithmetic.evaluateIntegerPowerDirectly
 import methods.integerarithmetic.evaluateProductOfIntegers
+import methods.integerarithmetic.simplifyIntegersInExpression
 import methods.integerarithmetic.simplifyIntegersInProduct
 
 val cancelPowerOfARoot = plan {
