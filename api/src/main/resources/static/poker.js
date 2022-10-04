@@ -365,6 +365,7 @@ window.onload = () => {
     fetchDefaultTranslations().then((translations) => {
         console.log("Test translation:", translations.Test);
         translationData = translations;
+        fetchPlansAndUpdatePage();
     });
 
     fetchVersionInfo().then((info) => {
@@ -376,8 +377,6 @@ window.onload = () => {
         `
             : "no commit info";
     });
-
-    fetchPlansAndUpdatePage();
 
     el("form").onsubmit = (evt) => {
         evt.preventDefault();
