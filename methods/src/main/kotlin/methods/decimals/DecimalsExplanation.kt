@@ -97,7 +97,38 @@ enum class DecimalsExplanation : CategorisedMetadataKey {
      *
      * E.g. []45/100] -> 0.45
      */
-    ConvertFractionWithPowerOfTenDenominatorToDecimal;
+    ConvertFractionWithPowerOfTenDenominatorToDecimal,
+
+    /**
+     * Rewrite a division of decimals as a fraction, with a view to converting it back into a decimal
+     *
+     * E.g. 0.1 : 0.05 -> [0.1 / 0.05]
+     */
+    TurnDivisionOfDecimalsIntoFraction,
+
+    /**
+     * Evaluate a decimal to an integer power
+     * E.g. [0.1 ^ 3] -> 0.001
+     */
+    EvaluateDecimalPower,
+
+    /**
+     * Evaluate a decimal to an integer power directly
+     *
+     * %1: the base
+     * %2: the power
+     */
+    EvaluateDecimalPowerDirectly,
+
+    /**
+     * Evaluate the expression in brackets as a decimal
+     */
+    EvaluateExpressionInBracketsAsDecimal,
+
+    /**
+     * Evaluate the expression as a decimal
+     */
+    EvaluateExpressionAsDecimal;
 
     override val category = "Decimals"
 }

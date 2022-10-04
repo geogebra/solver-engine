@@ -2,6 +2,7 @@ package methods.general
 
 import methods.rules.RuleTest
 import methods.rules.RuleTestCase
+import methods.rules.testRule
 import org.junit.jupiter.api.Test
 import java.util.stream.Stream
 
@@ -115,5 +116,23 @@ class GeneralRulesTest {
             distributeMultiplicationOverSum,
             "3 * sqrt[2] + sqrt[4] * sqrt[2] + sqrt[5] * sqrt[2]"
         ).assert()
+    }
+
+    @Test
+    fun testRewritePowerAsProduct() {
+        testRule("[3^3]", rewritePowerAsProduct, "3 * 3 * 3")
+        testRule("[0.3 ^ 2]", rewritePowerAsProduct, "0.3 * 0.3")
+        testRule("[(x + 1) ^ 2]", rewritePowerAsProduct, "(x + 1) * (x + 1)")
+        testRule("[([1/2])^4]", rewritePowerAsProduct, "[1/2] * [1/2] * [1/2] * [1/2]")
+        testRule("[x^5]", rewritePowerAsProduct, "x * x * x * x * x")
+        testRule("[x^6]", rewritePowerAsProduct, null)
+        testRule("[x^1]", rewritePowerAsProduct, null)
+        testRule("[x^0]", rewritePowerAsProduct, null)
+    }
+
+    @Test
+    fun testEvaluateProductDividedByZeroAsUndefined() {
+        testRule("3 * 5 : 0", evaluateProductDividedByZeroAsUndefined, "UNDEFINED")
+        testRule("x : 0 * y", evaluateProductDividedByZeroAsUndefined, "UNDEFINED")
     }
 }

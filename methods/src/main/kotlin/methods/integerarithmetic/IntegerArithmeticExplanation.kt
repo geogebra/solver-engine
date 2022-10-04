@@ -11,7 +11,6 @@ enum class IntegerArithmeticExplanation : CategorisedMetadataKey {
     EvaluateIntegerDivision,
     EvaluateIntegerPower,
     EvaluateIntegerPowerDirectly,
-    RewriteIntegerPowerAsProduct,
     SimplifyEvenPowerOfNegative,
     SimplifyOddPowerOfNegative,
     EvaluateArithmeticExpression,

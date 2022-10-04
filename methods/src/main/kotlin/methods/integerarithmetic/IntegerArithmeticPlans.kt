@@ -22,6 +22,7 @@ import methods.general.eliminateZeroInSum
 import methods.general.evaluateProductContainingZero
 import methods.general.removeOuterBracket
 import methods.general.removeRedundantBrackets
+import methods.general.rewritePowerAsProduct
 import methods.general.simplifyDoubleMinus
 
 val evaluateProductOfIntegers = plan {
@@ -52,7 +53,7 @@ val evaluateSignedIntegerPower = plan {
     firstOf {
         option {
             pipeline {
-                steps(rewriteIntegerPowerAsProduct)
+                steps(rewritePowerAsProduct)
                 steps(evaluateProductOfIntegers)
             }
         }
@@ -108,7 +109,7 @@ private fun Expression.isArithmeticExpression(): Boolean {
     return validOperator && operands.all { it.isArithmeticExpression() }
 }
 
-val evaluationSteps = steps {
+private val evaluationSteps = steps {
     firstOf {
         option { deeply(removeRedundantBrackets, deepFirst = true) }
         option { deeply(simplifyDoubleMinus, deepFirst = true) }

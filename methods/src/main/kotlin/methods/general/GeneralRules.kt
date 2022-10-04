@@ -1,7 +1,6 @@
 package methods.general
 
 import engine.expressions.Constants
-import engine.expressions.Expression
 import engine.expressions.MappedExpression
 import engine.expressions.fractionOf
 import engine.expressions.negOf
@@ -13,16 +12,17 @@ import engine.methods.TransformationResult
 import engine.methods.rule
 import engine.operators.BracketOperator
 import engine.operators.UnaryExpressionOperator
-import engine.operators.UndefinedOperator
 import engine.patterns.AnyPattern
 import engine.patterns.FixedPattern
 import engine.patterns.SignedNumberPattern
+import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.bracketOf
 import engine.patterns.commutativeProductOf
 import engine.patterns.commutativeSumOf
 import engine.patterns.condition
 import engine.patterns.divideBy
 import engine.patterns.fractionOf
+import engine.patterns.integerCondition
 import engine.patterns.negOf
 import engine.patterns.numericCondition
 import engine.patterns.optionalBracketOf
@@ -33,6 +33,7 @@ import engine.patterns.sumContaining
 import engine.patterns.sumOf
 import engine.steps.metadata.metadata
 import java.math.BigDecimal
+import java.math.BigInteger
 
 val eliminateOneInProduct = rule {
     val one = FixedPattern(Constants.One)
@@ -106,6 +107,21 @@ val evaluateZeroDividedByAnyValue = rule {
     }
 }
 
+/**
+ * anyX : 0 --> undefined
+ */
+val evaluateProductDividedByZeroAsUndefined = rule {
+    val zero = FixedPattern(Constants.Zero)
+    val pattern = productContaining(divideBy(zero))
+
+    onPattern(pattern) {
+        TransformationResult(
+            toExpr = transformTo(pattern, Constants.Undefined),
+            explanation = metadata(Explanation.EvaluateProductDividedByZeroAsUndefined, move(zero))
+        )
+    }
+}
+
 val simplifyDoubleMinus = rule {
     val value = AnyPattern()
     val pattern = negOf(
@@ -163,7 +179,7 @@ val simplifyZeroDenominatorFractionToUndefined = rule {
 
     onPattern(pattern) {
         TransformationResult(
-            toExpr = introduce(Expression(UndefinedOperator, emptyList())),
+            toExpr = transformTo(pattern, Constants.Undefined),
             explanation = metadata(Explanation.SimplifyZeroDenominatorFractionToUndefined, move(pattern))
         )
     }
@@ -232,11 +248,7 @@ val cancelCommonTerms = rule {
     onPattern(fraction) {
         TransformationResult(
             toExpr = cancel(common, fractionOf(restOf(numerator), restOf(denominator))),
-            explanation = metadata(
-                Explanation.CancelCommonTerms,
-                move(fraction),
-                move(common)
-            )
+            explanation = metadata(Explanation.CancelCommonTerms)
         )
     }
 }
@@ -361,6 +373,69 @@ val distributeMultiplicationOverSum = rule {
                 }
             ),
             explanation = metadata(Explanation.DistributeMultiplicationOverSum)
+        )
+    }
+}
+
+private val MAX_POWER_AS_PRODUCT = 5.toBigInteger()
+
+val rewritePowerAsProduct = rule {
+    val base = AnyPattern()
+    val exponent = integerCondition(UnsignedIntegerPattern()) { it <= MAX_POWER_AS_PRODUCT && it >= BigInteger.TWO }
+    val power = powerOf(optionalBracketOf(base), exponent)
+
+    onPattern(power) {
+        TransformationResult(
+            toExpr = productOf(List(getValue(exponent).toInt()) { move(base) }),
+            explanation = metadata(Explanation.RewritePowerAsProduct, move(base), move(exponent))
+        )
+    }
+}
+
+val simplifyExpressionToThePowerOfOne = rule {
+    val base = AnyPattern()
+    val power = powerOf(optionalBracketOf(base), FixedPattern(Constants.One))
+
+    onPattern(power) {
+        TransformationResult(
+            toExpr = move(base),
+            explanation = metadata(Explanation.SimplifyExpressionToThePowerOfOne)
+        )
+    }
+}
+
+val evaluateZeroToThePowerOfZero = rule {
+    val power = powerOf(FixedPattern(Constants.Zero), FixedPattern(Constants.Zero))
+    onPattern(power) {
+        TransformationResult(
+            toExpr = transformTo(power, Constants.Undefined),
+            explanation = metadata(Explanation.EvaluateZeroToThePowerOfZero)
+        )
+    }
+}
+
+/**
+ * This rule should only be used when it has been asserted that the base is not 0.
+ */
+val evaluateExpressionToThePowerOfZero = rule {
+    val power = powerOf(AnyPattern(), FixedPattern(Constants.Zero))
+    onPattern(power) {
+        TransformationResult(
+            toExpr = transformTo(power, Constants.One),
+            explanation = metadata(Explanation.EvaluateExpressionToThePowerOfZero)
+        )
+    }
+}
+
+/**
+ * This rule should only be used when it has been asserted that the exponent is > 0.
+ */
+val evaluateZeroToAPositivePower = rule {
+    val power = powerOf(FixedPattern(Constants.Zero), AnyPattern())
+    onPattern(power) {
+        TransformationResult(
+            toExpr = transformTo(power, Constants.Zero),
+            explanation = metadata(Explanation.EvaluateZeroToAPositivePower)
         )
     }
 }

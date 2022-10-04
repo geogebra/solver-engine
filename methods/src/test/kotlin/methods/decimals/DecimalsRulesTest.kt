@@ -49,6 +49,8 @@ class DecimalsRulesTest {
         testRule("0.2 * 0.1", evaluateDecimalProductAndDivision, "0.02")
         testRule("2 * 0.4", evaluateDecimalProductAndDivision, "0.8")
         testRule("0.002 * 3000", evaluateDecimalProductAndDivision, "6")
+        testRule("2 * 4", evaluateDecimalProductAndDivision, "8")
+        testRule("6 : 2", evaluateDecimalProductAndDivision, "3")
     }
 
     @Test
@@ -63,5 +65,13 @@ class DecimalsRulesTest {
         testRule("[1/5]", convertFractionWithPowerOfTenDenominatorToDecimal, null)
         testRule("[12345/1000]", convertFractionWithPowerOfTenDenominatorToDecimal, "12.345")
         testRule("[1000/100]", convertFractionWithPowerOfTenDenominatorToDecimal, "10.00")
+    }
+
+    @Test
+    fun testTurnDivisionOfDecimalsIntoFraction() {
+        testRule("0.1 : 2", turnDivisionOfDecimalsIntoFraction, "[0.1 / 2]")
+        testRule("5 : 0.7 * 3", turnDivisionOfDecimalsIntoFraction, "[5 / 0.7] * 3")
+        testRule("3 : 5", turnDivisionOfDecimalsIntoFraction, "[3 / 5]")
+        testRule("1.25 : 120.77", turnDivisionOfDecimalsIntoFraction, "[1.25 / 120.77]")
     }
 }

@@ -521,7 +521,7 @@ class ConstantExpressionRationalizationTest {
                         fromExpr = "[3 ^ 2]"
                         toExpr = "3 * 3"
                         explanation {
-                            key = IntegerArithmeticExplanation.RewriteIntegerPowerAsProduct
+                            key = GeneralExplanation.RewritePowerAsProduct
                         }
                     }
 
@@ -566,7 +566,7 @@ class ConstantExpressionRationalizationTest {
                         fromExpr = "[5 ^ 2]"
                         toExpr = "5 * 5"
                         explanation {
-                            key = IntegerArithmeticExplanation.RewriteIntegerPowerAsProduct
+                            key = GeneralExplanation.RewritePowerAsProduct
                         }
                     }
 

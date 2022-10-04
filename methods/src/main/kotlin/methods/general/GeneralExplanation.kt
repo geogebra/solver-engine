@@ -15,6 +15,15 @@ enum class GeneralExplanation : CategorisedMetadataKey {
     EliminateZeroInSum,
     EvaluateProductContainingZero,
     EvaluateZeroDividedByAnyValue,
+
+    /**
+     * Dividing by %1 is undefined
+     *
+     * %1 is the instance of 0 that the expression is divided by
+     *
+     * E.g. 3 * 5 : 0 -> UNDEFINED
+     */
+    EvaluateProductDividedByZeroAsUndefined,
     SimplifyDoubleMinus,
     SimplifyProductWithTwoNegativeFactors,
     MoveSignOfNegativeFactorOutOfProduct,
@@ -33,7 +42,40 @@ enum class GeneralExplanation : CategorisedMetadataKey {
     NormalizeExpression,
     DistributeMultiplicationOverSum,
     ReplaceAllInvisibleBrackets,
-    EliminateLoneOneInExponent;
+    EliminateLoneOneInExponent,
+
+    /**
+     * Rewrite a power as a product
+     *
+     * E.g. [5 ^ 3] -> 5 * 5 * 5
+     */
+    RewritePowerAsProduct,
+
+    /**
+     * Raising to the power of 1 has no effect
+     *
+     * E.g. [(x + 1) ^ 1] -> x + 1
+     */
+    SimplifyExpressionToThePowerOfOne,
+
+    /**
+     * [0 ^ 0] is undefined
+     */
+    EvaluateZeroToThePowerOfZero,
+
+    /**
+     * Any (non-zero) value to the power of 0 is 1
+     *
+     * E.g. [(1 + 1) ^ 0] -> 1
+     */
+    EvaluateExpressionToThePowerOfZero,
+
+    /**
+     * 0 to any positive power is 0
+     *
+     * E.g. [0 ^ 3] -> 0
+     */
+    EvaluateZeroToAPositivePower;
 
     override val category = "General"
 }

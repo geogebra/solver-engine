@@ -1,6 +1,7 @@
 package engine.methods
 
 import engine.context.Context
+import engine.expressions.Constants
 import engine.expressions.Subexpression
 import engine.methods.stepsproducers.StepsProducer
 import engine.patterns.Match
@@ -31,7 +32,7 @@ data class Plan(
             val toExpr = steps.last().toExpr
 
             when {
-                resultPattern.matches(toExpr.expr) -> Transformation(
+                toExpr.expr == Constants.Undefined || resultPattern.matches(toExpr.expr) -> Transformation(
                     fromExpr = sub,
                     toExpr = toExpr,
                     steps = steps,

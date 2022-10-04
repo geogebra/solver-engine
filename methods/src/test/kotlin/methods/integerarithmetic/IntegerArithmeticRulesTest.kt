@@ -29,8 +29,6 @@ object IntegerArithmeticRulesTest : RuleTest {
         RuleTestCase("[5^3]", evaluateIntegerPowerDirectly, "125"),
         RuleTestCase("[(-5) ^ 3]", evaluateIntegerPowerDirectly, "-125"),
 
-        RuleTestCase("[4^2]", rewriteIntegerPowerAsProduct, "4 * 4"),
-
         RuleTestCase("[(-2)^4]", simplifyEvenPowerOfNegative, "[2^4]"),
         RuleTestCase("[(-x)^6]", simplifyEvenPowerOfNegative, "[x^6]"),
         RuleTestCase("[(-2)^5]", simplifyOddPowerOfNegative, "-[2^5]"),

@@ -2,7 +2,6 @@ package methods.integerarithmetic
 
 import engine.expressions.negOf
 import engine.expressions.powerOf
-import engine.expressions.productOf
 import engine.methods.TransformationResult
 import engine.methods.rule
 import engine.patterns.AnyPattern
@@ -74,7 +73,6 @@ val evaluateIntegerProductAndDivision = rule {
 }
 
 private val MAX_POWER = 64.toBigInteger()
-private val MAX_POWER_AS_PRODUCT = 5.toBigInteger()
 
 val evaluateIntegerPowerDirectly = rule {
     val base = SignedIntegerPattern()
@@ -85,19 +83,6 @@ val evaluateIntegerPowerDirectly = rule {
         TransformationResult(
             toExpr = integerOp(base, exponent) { n1, n2 -> n1.pow(n2.toInt()) },
             explanation = metadata(Explanation.EvaluateIntegerPowerDirectly, move(base), move(exponent))
-        )
-    }
-}
-
-val rewriteIntegerPowerAsProduct = rule {
-    val base = SignedIntegerPattern()
-    val exponent = integerCondition(UnsignedIntegerPattern()) { it <= MAX_POWER_AS_PRODUCT && it >= BigInteger.TWO }
-    val power = powerOf(base, exponent)
-
-    onPattern(power) {
-        TransformationResult(
-            toExpr = productOf(List(getValue(exponent).toInt()) { move(base) }),
-            explanation = metadata(Explanation.RewriteIntegerPowerAsProduct, move(base), move(exponent))
         )
     }
 }

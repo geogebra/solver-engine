@@ -92,7 +92,7 @@ class VariablePattern : Pattern {
 class OptionalWrappingPattern(val pattern: Pattern, wrapper: (Pattern) -> Pattern) : Pattern {
 
     private val wrappingPattern = wrapper(pattern)
-    private val ptn = oneOf(pattern, wrappingPattern)
+    private val ptn = oneOf(wrappingPattern, pattern)
 
     override val key = ptn
 

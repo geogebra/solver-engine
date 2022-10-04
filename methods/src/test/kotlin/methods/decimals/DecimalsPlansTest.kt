@@ -238,4 +238,143 @@ class DecimalsPlansTest {
 
         check { noTransformation() }
     }
+
+    @Test
+    fun testEvaluateDecimalPowers() {
+        testMethod {
+            method = evaluateDecimalPower
+            inputExpr = "[0.1 ^ 3]"
+
+            check {
+                toExpr = "0.001"
+
+                explanation {
+                    key = Explanation.EvaluateDecimalPower
+                }
+                step { toExpr = "0.1 * 0.1 * 0.1" }
+                step { toExpr = "0.001" }
+            }
+        }
+        testMethod {
+            method = evaluateDecimalPower
+            inputExpr = "[(-0.2) ^ 2]"
+
+            check {
+                toExpr = "0.04"
+
+                explanation {
+                    key = Explanation.EvaluateDecimalPower
+                }
+                step { toExpr = "(-0.2) * (-0.2)" }
+                step { toExpr = "0.04" }
+            }
+        }
+        testMethod {
+            method = evaluateDecimalPower
+            inputExpr = "[3 ^ 4]"
+
+            check {
+                toExpr = "81"
+            }
+        }
+        testMethod {
+            method = evaluateDecimalPower
+            inputExpr = "[(-3.01) ^ 1]"
+
+            check {
+                toExpr = "-3.01"
+            }
+        }
+        testMethod {
+            method = evaluateDecimalPower
+            inputExpr = "[0.6 ^ 0]"
+
+            check {
+                toExpr = "1"
+            }
+        }
+        testMethod {
+            method = evaluateDecimalPower
+            inputExpr = "[0 ^ 0]"
+
+            check {
+                toExpr = "UNDEFINED"
+            }
+        }
+        testMethod {
+            method = evaluateDecimalPower
+            inputExpr = "[0.1 ^ 10]"
+
+            check {
+                toExpr = "0.0000000001"
+
+                step {
+                    toExpr = "0.0000000001"
+                    explanation {
+                        key = Explanation.EvaluateDecimalPowerDirectly
+                    }
+                }
+            }
+        }
+    }
+}
+
+class EvaluatExpressionAsDecimalTest {
+
+    @Test
+    fun testArithmeticOps() = testMethod {
+        method = evaluateExpressionAsDecimal
+        inputExpr = "0.2 + 0.6 * 0.1 + [0.2 ^ 3]"
+
+        check {
+            toExpr = "0.268"
+
+            step {
+                toExpr = "0.2 + 0.6*0.1 + 0.008"
+            }
+            step {
+                toExpr = "0.2 + 0.06 + 0.008"
+            }
+            step {
+                toExpr = "0.268"
+            }
+        }
+    }
+
+    @Test
+    fun testFractions() = testMethod {
+        method = evaluateExpressionAsDecimal
+        inputExpr = "0.25 - [1 / 8]"
+
+        check {
+            toExpr = "0.125"
+
+            step {
+                toExpr = "0.25 - 0.125"
+            }
+            step {
+                toExpr = "0.125"
+            }
+        }
+    }
+
+    @Test
+    fun testDecimalDivision() = testMethod {
+        method = evaluateExpressionAsDecimal
+        inputExpr = "0.03:0.015"
+
+        check {
+            toExpr = "2"
+
+            step {
+                toExpr = "[0.03 / 0.015]"
+            }
+            step {
+                toExpr = "[30 / 15]"
+            }
+            step {
+                toExpr = "2"
+            }
+        }
+    }
 }

@@ -20,8 +20,10 @@ import engine.patterns.divideBy
 import engine.patterns.equationOf
 import engine.patterns.equationSystemOf
 import engine.patterns.fractionOf
+import engine.patterns.integerCondition
 import engine.patterns.numericCondition
 import engine.patterns.oneOf
+import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.productOf
 import engine.patterns.sumContaining
@@ -195,6 +197,10 @@ val solveLinearEquation = rule {
     }
 }
 
+/**
+ * If a fraction [x / y] has decimal numerator and denominator, multiply them by a power of 10 f
+ * so that x*f and y*f are integers, unless x == y (in that case the fraction would be equal to 1).
+ */
 val multiplyFractionOfDecimalsByPowerOfTen = rule {
     val numerator = UnsignedDecimalPattern()
     val denominator = UnsignedDecimalPattern()
@@ -202,10 +208,12 @@ val multiplyFractionOfDecimalsByPowerOfTen = rule {
     val fraction = fractionOf(numerator, denominator)
 
     onPattern(fraction) {
-        val maxDecimalPlaces = max(getValue(numerator).scale(), getValue(denominator).scale())
+        val numeratorValue = getValue(numerator)
+        val denominatorValue = getValue(denominator)
+        val maxDecimalPlaces = max(numeratorValue.scale(), denominatorValue.scale())
         val multiplier = introduce(xp(BigInteger.TEN.pow(maxDecimalPlaces)))
         when {
-            maxDecimalPlaces > 0 -> TransformationResult(
+            maxDecimalPlaces > 0 && numeratorValue != denominatorValue -> TransformationResult(
                 toExpr = fractionOf(productOf(move(numerator), multiplier), productOf(move(denominator), multiplier)),
                 explanation = metadata(Explanation.MultiplyFractionOfDecimalsByPowerOfTen, move(fraction), multiplier)
             )
@@ -214,6 +222,22 @@ val multiplyFractionOfDecimalsByPowerOfTen = rule {
     }
 }
 
+val turnDivisionOfDecimalsIntoFraction = rule {
+    val numerator = SignedNumberPattern()
+    val denominator = SignedNumberPattern()
+    val product = productContaining(numerator, divideBy(denominator))
+
+    onPattern(product) {
+        TransformationResult(
+            toExpr = product.substitute(fractionOf(move(numerator), move(denominator))),
+            explanation = metadata(Explanation.TurnDivisionOfDecimalsIntoFraction, move(numerator), move(denominator))
+        )
+    }
+}
+
+/**
+ * Multiply out decimals in product and also divide if the dividend and divisor are integers.
+ */
 val evaluateDecimalProductAndDivision = rule {
     val base = SignedNumberPattern()
     val multiplier = SignedNumberPattern()
@@ -224,7 +248,10 @@ val evaluateDecimalProductAndDivision = rule {
             multiplier,
             ConditionPattern(
                 divideBy(divisor),
-                numericCondition(base, divisor) { n1, n2 -> n1 % n2 == BigInteger.ZERO }
+                numericCondition(
+                    base,
+                    divisor
+                ) { n1, n2 -> n2.stripTrailingZeros().scale() <= 0 && n1 % n2 == BigDecimal.ZERO }
             )
         )
     )
@@ -325,6 +352,21 @@ val convertFractionWithPowerOfTenDenominatorToDecimal = rule {
         TransformationResult(
             toExpr = numericOp(numerator) { it.movePointLeft(powerOfTen) },
             explanation = metadata(Explanation.ConvertFractionWithPowerOfTenDenominatorToDecimal)
+        )
+    }
+}
+
+private val MAX_POWER = 64.toBigInteger()
+
+val evaluateDecimalPowerDirectly = rule {
+    val base = SignedNumberPattern()
+    val exponent = integerCondition(UnsignedIntegerPattern()) { it <= MAX_POWER }
+    val power = powerOf(base, exponent)
+
+    onPattern(power) {
+        TransformationResult(
+            toExpr = numericOp(base, exponent) { n1, n2 -> n1.pow(n2.toInt()) },
+            explanation = metadata(Explanation.EvaluateDecimalPowerDirectly, move(base), move(exponent))
         )
     }
 }
