@@ -11,6 +11,7 @@ import engine.patterns.powerOf
 import methods.decimals.convertRecurringDecimalToFractionAndSimplify
 import methods.decimals.convertTerminatingDecimalToFractionAndSimplify
 import methods.decimals.normalizeFractionOfDecimals
+import methods.fractionarithmetic.addLikeFractions
 import methods.fractionarithmetic.distributeFractionPositivePower
 import methods.fractionarithmetic.evaluateFractionSum
 import methods.fractionarithmetic.evaluateIntegerToNegativePower
@@ -98,6 +99,8 @@ val simplificationSteps = steps {
         option(normalizeFractions)
         option(normalizeSignsInFraction)
 
+        option { deeply(addLikeFractions, deepFirst = true) }
+        option { deeply(simplifyFraction, deepFirst = true) }
         option { deeply(normalizeFractionOfDecimals, deepFirst = true) }
         option { deeply(convertTerminatingDecimalToFractionAndSimplify, deepFirst = true) }
         option { deeply(convertRecurringDecimalToFractionAndSimplify, deepFirst = true) }
@@ -111,8 +114,6 @@ val simplificationSteps = steps {
         option { deeply(simplifyIntegersInSum, deepFirst = true) }
         option { deeply(evaluateFractionSum, deepFirst = true) }
         option { deeply(evaluateSumOfFractionAndInteger, deepFirst = true) }
-
-        option { deeply(simplifyFraction, deepFirst = true) }
 
         option { deeply(rationalizeDenominators, deepFirst = true) }
         option { deeply(collectLikeRootsAndSimplify, deepFirst = true) }
