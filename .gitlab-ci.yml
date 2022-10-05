@@ -71,7 +71,7 @@ export-translation-keys:
     - docker
   script:
     - |
-      curl -X POST https://dev.geogebra.org/ggbtrans/props/api/solver_import/ \
+      curl -X POST 'https://dev.geogebra.org/ggbtrans/props/api/solver_import/?override_test=1' \
         --fail-with-body \
         --header "X-Token: $GGBTRANS_API_TOKEN" \
         --data @methods/build/generated/ksp/main/resources/TranslationKeys.json
