@@ -1,14 +1,24 @@
 package methods.mixednumbers
 
-import methods.rules.RuleTest
-import methods.rules.RuleTestCase
-import java.util.stream.Stream
+import methods.rules.testRule
+import org.junit.jupiter.api.Test
 
-object MixedNumbersRulesTest : RuleTest {
-    @JvmStatic
-    fun testCaseProvider(): Stream<RuleTestCase> = Stream.of(
-        RuleTestCase("[4/21]", fractionToMixedNumber, null),
-        RuleTestCase("[21/4]", fractionToMixedNumber, "[5 1/4]"),
-        RuleTestCase("[2 3/4]", splitMixedNumber, "2 + [3/4]"),
-    )
+class MixedNumbersRulesTest {
+
+    @Test
+    fun testFractionToMixedNumber() {
+        testRule("[4 / 21]", fractionToMixedNumber, null)
+        testRule("[21 / 4]", fractionToMixedNumber, "[5 1/4]")
+    }
+
+    @Test
+    fun testSplitMixedNumber() {
+        testRule("[2 3/4]", splitMixedNumber, "2 + [3/4]")
+    }
+
+    @Test
+    fun testConvertSumOfIntegerAndProperFractionToMixedNumber() {
+        testRule("4 + [13 / 12]", convertSumOfIntegerAndProperFractionToMixedNumber, null)
+        testRule("3 + [11 / 12]", convertSumOfIntegerAndProperFractionToMixedNumber, "[3 11/12]")
+    }
 }

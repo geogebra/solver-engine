@@ -1,7 +1,6 @@
 package methods.fractionarithmetic
 
 import engine.expressions.Constants
-import engine.expressions.Subexpression
 import engine.expressions.fractionOf
 import engine.expressions.negOf
 import engine.expressions.powerOf
@@ -15,8 +14,7 @@ import engine.operators.BinaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
-import engine.patterns.Match
-import engine.patterns.Pattern
+import engine.patterns.IntegerFractionPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.bracketOf
@@ -34,21 +32,9 @@ import engine.steps.metadata.Skill
 import engine.steps.metadata.metadata
 import java.math.BigInteger
 
-private class FractionPattern : Pattern {
-    val numerator = UnsignedIntegerPattern()
-    val denominator = UnsignedIntegerPattern()
-    val fraction = fractionOf(numerator, denominator)
-
-    override val key = fraction.key
-
-    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
-        return fraction.findMatches(subexpression, match)
-    }
-}
-
 val convertIntegerToFraction = rule {
     val integer = UnsignedIntegerPattern()
-    val fraction = FractionPattern()
+    val fraction = IntegerFractionPattern()
     val sum = commutativeSumOf(integer, fraction)
 
     onPattern(sum) {
@@ -92,8 +78,8 @@ val addLikeFractions = rule {
 }
 
 val bringToCommonDenominator = rule {
-    val f1 = FractionPattern()
-    val f2 = FractionPattern()
+    val f1 = IntegerFractionPattern()
+    val f2 = IntegerFractionPattern()
     val nf1 = optionalNegOf(f1)
     val nf2 = optionalNegOf(f2)
     val sum = sumContaining(nf1, nf2)
@@ -334,7 +320,7 @@ val simplifyFractionWithFractionDenominator = rule {
 }
 
 val distributeFractionPositivePower = rule {
-    val fraction = FractionPattern()
+    val fraction = IntegerFractionPattern()
     val exponent = integerCondition(UnsignedIntegerPattern()) { it > BigInteger.ONE }
     val pattern = powerOf(bracketOf(fraction), exponent)
 
@@ -350,7 +336,7 @@ val distributeFractionPositivePower = rule {
 }
 
 val simplifyFractionNegativePower = rule {
-    val fraction = FractionPattern()
+    val fraction = IntegerFractionPattern()
     val exponent = SignedIntegerPattern()
     val pattern = powerOf(bracketOf(fraction), integerCondition(exponent) { it < -BigInteger.ONE })
 
@@ -366,7 +352,7 @@ val simplifyFractionNegativePower = rule {
 }
 
 val simplifyFractionToMinusOne = rule {
-    val fraction = FractionPattern()
+    val fraction = IntegerFractionPattern()
     val pattern = powerOf(bracketOf(fraction), FixedPattern(xp(-1)))
 
     onPattern(pattern) {

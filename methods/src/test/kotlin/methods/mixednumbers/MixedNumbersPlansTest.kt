@@ -1,6 +1,7 @@
 package methods.mixednumbers
 
 import engine.context.Context
+import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
 import methods.plans.testMethod
 import kotlin.test.Test
@@ -71,8 +72,8 @@ class MixedNumbersPlansTest {
 
     @Test
     fun testContextSensitivePlanEU() = testMethod {
-        context = Context("EU")
         method = addMixedNumbers
+        context = Context(curriculum = "EU")
         inputExpr = "[5 1/4] + [2 2/3]"
 
         check {
@@ -94,175 +95,152 @@ class MixedNumbersPlansTest {
 
     @Test
     fun testContextSensitivePlanUS() = testMethod {
-        context = Context("US")
         method = addMixedNumbers
-        inputExpr = "[5 1/4] + [2 2/3]"
+        context = Context(curriculum = "US")
+        inputExpr = "[5 3/4] + [2 2/3]"
 
         check {
-            toExpr = "[7 11/12]"
+            fromExpr = "[5 3/4] + [2 2/3]"
+            toExpr = "[8 5/12]"
 
             step {
-                fromExpr = "[5 1/4] + [2 2/3]"
-                toExpr = "(5 + [1 / 4]) + (2 + [2 / 3])"
-
-                move {
-                    fromPaths("./0")
-                    toPaths("./0")
-                }
-
-                move {
-                    fromPaths("./1/0")
-                    toPaths("./1/0/0")
-                }
-
-                move {
-                    fromPaths("./1/1")
-                    toPaths("./1/0/1/0")
-                }
-
-                move {
-                    fromPaths("./1/2")
-                    toPaths("./1/0/1/1")
+                toExpr = "(5 + [3 / 4]) + (2 + [2 / 3])"
+                explanation {
+                    key = MixedNumbersExplanation.ConvertMixedNumbersToSums
                 }
             }
 
             step {
-                fromExpr = "(5 + [1 / 4]) + (2 + [2 / 3])"
-                toExpr = "5 + [1 / 4] + 2 + [2 / 3]"
-
-                move {
-                    fromPaths("./0")
-                    toPaths("./0")
-                }
-
-                move {
-                    fromPaths("./1")
-                    toPaths("./1")
-                }
-
-                move {
-                    fromPaths("./2/0/0")
-                    toPaths("./2")
-                }
-
-                move {
-                    fromPaths("./2/0/1")
-                    toPaths("./3")
-                }
+                toExpr = "5 + [3 / 4] + 2 + [2 / 3]"
             }
 
             step {
-                fromExpr = "5 + [1 / 4] + 2 + [2 / 3]"
-                toExpr = "7 + [1 / 4] + [2 / 3]"
-
-                combine {
-                    fromPaths("./0", "./2")
-                    toPaths("./0")
-                }
-
-                move {
-                    fromPaths("./1")
-                    toPaths("./1")
-                }
-
-                move {
-                    fromPaths("./3")
-                    toPaths("./2")
-                }
-
+                toExpr = "7 + [3 / 4] + [2 / 3]"
                 explanation {
                     key = IntegerArithmeticExplanation.EvaluateIntegerAddition
                 }
             }
 
             step {
-                fromExpr = "7 + [1 / 4] + [2 / 3]"
-                toExpr = "7 + [11 / 12]"
-
-                move {
-                    fromPaths("./0")
-                    toPaths("./0")
-                }
-
-                combine {
-                    fromPaths("./1/0/0", "./1/0/1")
-                    toPaths("./1/0")
-                }
-
-                move {
-                    fromPaths("./1/1")
-                    toPaths("./1/1")
-                }
-
+                toExpr = "7 + [17 / 12]"
                 explanation {
-                    key = methods.fractionarithmetic.Explanation.EvaluateFractionSum
+                    key = FractionArithmeticExplanation.EvaluateFractionSum
                 }
             }
 
             step {
-                fromExpr = "7 + [11 / 12]"
-                toExpr = "[7 / 1] + [11 / 12]"
-
-                move {
-                    fromPaths("./0")
-                    toPaths("./0/0")
-                }
-
-                introduce {
-                    fromPaths()
-                    toPaths("./0/1")
-                }
-
-                move {
-                    fromPaths("./1")
-                    toPaths("./1")
-                }
-
+                toExpr = "[7 / 1] + [17 / 12]"
                 explanation {
-                    key = methods.fractionarithmetic.Explanation.ConvertIntegerToFraction
+                    key = FractionArithmeticExplanation.ConvertIntegerToFraction
                 }
             }
 
             step {
-                fromExpr = "[7 / 1] + [11 / 12]"
-                toExpr = "[95 / 12]"
-
-                combine {
-                    fromPaths("./0/0", "./0/1")
-                    toPaths("./0")
-                }
-
-                move {
-                    fromPaths("./1")
-                    toPaths("./1")
-                }
-
+                toExpr = "[101 / 12]"
                 explanation {
-                    key = methods.fractionarithmetic.Explanation.EvaluateFractionSum
+                    key = FractionArithmeticExplanation.EvaluateFractionSum
                 }
             }
 
             step {
-                fromExpr = "[95 / 12]"
-                toExpr = "[7 11/12]"
-
-                combine {
-                    fromPaths("./0", "./1")
-                    toPaths("./0")
-                }
-
-                combine {
-                    fromPaths("./0", "./1")
-                    toPaths("./1")
-                }
-
-                move {
-                    fromPaths("./1")
-                    toPaths("./2")
-                }
-
+                toExpr = "[8 5/12]"
                 explanation {
-                    key = Explanation.ConvertFractionToMixedNumber
+                    key = MixedNumbersExplanation.ConvertFractionToMixedNumber
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testUSStyleConversionWithShortcut() = testMethod {
+        method = addMixedNumbers
+        context = Context(curriculum = "US")
+        inputExpr = "[1 1/2] + [2 1/3]"
+
+        check {
+            fromExpr = "[1 1/2] + [2 1/3]"
+            toExpr = "[3 5/6]"
+
+            step {
+                toExpr = "(1 + [1 / 2]) + (2 + [1 / 3])"
+                explanation {
+                    key = MixedNumbersExplanation.ConvertMixedNumbersToSums
+                }
+            }
+
+            step {
+                toExpr = "1 + [1 / 2] + 2 + [1 / 3]"
+            }
+
+            step {
+                toExpr = "3 + [1 / 2] + [1 / 3]"
+                explanation {
+                    key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                }
+            }
+
+            step {
+                toExpr = "3 + [5 / 6]"
+                explanation {
+                    key = FractionArithmeticExplanation.EvaluateFractionSum
+                }
+            }
+
+            step {
+                toExpr = "[3 5/6]"
+                explanation {
+                    key = MixedNumbersExplanation.ConvertSumOfIntegerAndProperFractionToMixedNumber
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testUSStyleConversionResultingInInteger() = testMethod {
+        method = addMixedNumbers
+        context = Context(curriculum = "US")
+        inputExpr = "[5 2/3] + [3 12/36]"
+
+        check {
+            fromExpr = "[5 2/3] + [3 12/36]"
+            toExpr = "9"
+
+            step {
+                toExpr = "(5 + [2 / 3]) + (3 + [12 / 36])"
+                explanation {
+                    key = MixedNumbersExplanation.ConvertMixedNumbersToSums
+                }
+            }
+
+            step {
+                toExpr = "5 + [2 / 3] + 3 + [12 / 36]"
+            }
+
+            step {
+                toExpr = "5 + [2 / 3] + 3 + [1 / 3]"
+                explanation {
+                    key = FractionArithmeticExplanation.SimplifyFraction
+                }
+            }
+
+            step {
+                toExpr = "8 + [2 / 3] + [1 / 3]"
+                explanation {
+                    key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                }
+            }
+
+            step {
+                toExpr = "8 + 1"
+                explanation {
+                    key = FractionArithmeticExplanation.EvaluateFractionSum
+                }
+            }
+
+            step {
+                toExpr = "9"
+                explanation {
+                    key = IntegerArithmeticExplanation.EvaluateIntegerAddition
                 }
             }
         }

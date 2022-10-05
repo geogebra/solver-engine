@@ -6,7 +6,9 @@ import engine.expressions.sumOf
 import engine.methods.TransformationResult
 import engine.methods.rule
 import engine.patterns.ConditionPattern
+import engine.patterns.IntegerFractionPattern
 import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.commutativeSumOf
 import engine.patterns.fractionOf
 import engine.patterns.integerCondition
 import engine.patterns.mixedNumberOf
@@ -27,6 +29,27 @@ val splitMixedNumber = rule {
             ),
             explanation = metadata(Explanation.ConvertMixedNumberToSum, move(mixedNumber)),
         )
+    }
+}
+
+val convertSumOfIntegerAndProperFractionToMixedNumber = rule {
+    val integer = UnsignedIntegerPattern()
+    val fraction = IntegerFractionPattern()
+    val sum = commutativeSumOf(integer, fraction)
+
+    onPattern(sum) {
+        val numeratorValue = getValue(fraction.numerator)
+        val denominatorValue = getValue(fraction.denominator)
+
+        when {
+            numeratorValue < denominatorValue -> TransformationResult(
+                toExpr = mixedNumberOf(
+                    move(integer), move(fraction.numerator), move(fraction.denominator)
+                ),
+                explanation = metadata(Explanation.ConvertSumOfIntegerAndProperFractionToMixedNumber)
+            )
+            else -> null
+        }
     }
 }
 

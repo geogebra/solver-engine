@@ -6,6 +6,7 @@ import engine.patterns.mixedNumberOf
 import engine.patterns.sumOf
 import methods.fractionarithmetic.convertIntegerToFraction
 import methods.fractionarithmetic.evaluateFractionSum
+import methods.fractionarithmetic.simplifyFraction
 import methods.general.removeBracketsSum
 import methods.general.simplifyZeroDenominatorFractionToUndefined
 import methods.integerarithmetic.evaluateSignedIntegerAddition
@@ -64,11 +65,29 @@ val addMixedNumbers = plan {
                     whilePossible(removeBracketsSum)
                 }
             }
+
+            optionalSteps {
+                whilePossible {
+                    deeply(simplifyFraction)
+                }
+            }
+
             steps(evaluateSignedIntegerAddition)
             steps(evaluateFractionSum)
-            steps(convertIntegerToFraction)
-            steps(evaluateFractionSum)
-            steps(fractionToMixedNumber)
+
+            steps {
+                firstOf {
+                    option(evaluateSignedIntegerAddition)
+                    option(convertSumOfIntegerAndProperFractionToMixedNumber)
+                    option {
+                        pipeline {
+                            steps(convertIntegerToFraction)
+                            steps(evaluateFractionSum)
+                            steps(fractionToMixedNumber)
+                        }
+                    }
+                }
+            }
         }
     }
 }

@@ -95,7 +95,7 @@ enum class DecimalsExplanation : CategorisedMetadataKey {
     /**
      * Convert a fraction over a power of 10 to a terminating decimal
      *
-     * E.g. []45/100] -> 0.45
+     * E.g. [45/100] -> 0.45
      */
     ConvertFractionWithPowerOfTenDenominatorToDecimal,
 
