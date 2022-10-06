@@ -1,8 +1,7 @@
 package methods.fractionroots
 
-import engine.expressions.Constants.Three
+import engine.expressions.Constants
 import engine.expressions.MappedExpression
-import engine.expressions.bracketOf
 import engine.expressions.fractionOf
 import engine.expressions.mappedExpression
 import engine.expressions.negOf
@@ -26,10 +25,10 @@ import engine.patterns.bracketOf
 import engine.patterns.fractionOf
 import engine.patterns.integerCondition
 import engine.patterns.integerOrderRootOf
-import engine.patterns.invisibleBracketOf
 import engine.patterns.negOf
 import engine.patterns.oneOf
 import engine.patterns.oppositeSignPattern
+import engine.patterns.optionalBracketOf
 import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
@@ -162,7 +161,7 @@ val bringRootsToSameIndexInFraction = rule {
  */
 val rationalizeSumOfIntegerAndCubeRoot = rule {
     val numerator = AnyPattern()
-    val cubePattern = FixedPattern(Three)
+    val cubePattern = FixedPattern(Constants.Three)
     val integer1 = UnsignedIntegerPattern()
     val radical1 = withOptionalIntegerCoefficient(rootOf(UnsignedIntegerPattern(), cubePattern))
     val term1 = oneOf(integer1, radical1)
@@ -178,15 +177,12 @@ val rationalizeSumOfIntegerAndCubeRoot = rule {
 
     onPattern(fraction) {
         val rationalizationTerm = sumOf(
-            powerOf(move(term1), introduce(xp(2))),
+            powerOf(move(term1), introduce(Constants.Two)),
             copyFlippedSign(
                 signedTerm2,
-                productOf(
-                    bracketOf(move(term1)),
-                    bracketOf(move(term2))
-                )
+                productOf(move(term1), move(term2))
             ),
-            powerOf(move(term2), introduce(xp(2)))
+            powerOf(move(term2), introduce(Constants.Two))
         )
         TransformationResult(
             toExpr = productOf(
@@ -206,46 +202,49 @@ val rationalizeSumOfIntegerAndCubeRoot = rule {
  * or
  * (a - b) * (a^2 + ab + b^2) -> a^3 - b^3
  */
-val identityCubeSumDifference = rule {
+val identifyCubeSumDifference = rule {
     val integer1 = UnsignedIntegerPattern()
-    val radical1 = withOptionalIntegerCoefficient(rootOf(UnsignedIntegerPattern(), FixedPattern(Three)))
+    val radical1 = withOptionalIntegerCoefficient(rootOf(UnsignedIntegerPattern(), FixedPattern(Constants.Three)))
     val term1 = oneOf(integer1, radical1)
 
     val integer2 = UnsignedIntegerPattern()
-    val radical2 = withOptionalIntegerCoefficient(rootOf(UnsignedIntegerPattern(), FixedPattern(Three)))
+    val radical2 = withOptionalIntegerCoefficient(rootOf(UnsignedIntegerPattern(), FixedPattern(Constants.Three)))
     val term2 = oneOf(integer2, radical2)
 
-    val bTerm1 = oneOf(invisibleBracketOf(term1), bracketOf(term1), term1)
-    val bTerm2 = oneOf(invisibleBracketOf(term2), bracketOf(term2), term2)
-    val opbTerm2 = optionalNegOf(bTerm2)
+    val opNegTerm2 = optionalNegOf(optionalBracketOf(term2))
 
-    val pattern = ConditionPattern(
-        productOf(
-            bracketOf(sumOf(bTerm1, opbTerm2)),
-            bracketOf(
-                sumOf(
-                    powerOf(
-                        bTerm1,
-                        FixedPattern(xp(2))
-                    ),
-                    oppositeSignPattern(opbTerm2, productOf(bTerm1, bTerm2)),
-                    powerOf(
-                        bTerm2,
-                        FixedPattern(xp(2))
-                    )
+    val middleTerm = AnyPattern()
+
+    val pattern = productOf(
+        bracketOf(sumOf(optionalBracketOf(term1), opNegTerm2)),
+        bracketOf(
+            sumOf(
+                powerOf(
+                    optionalBracketOf(term1),
+                    FixedPattern(Constants.Two)
+                ),
+                oppositeSignPattern(opNegTerm2, middleTerm),
+                powerOf(
+                    optionalBracketOf(term2),
+                    FixedPattern(Constants.Two)
                 )
             )
         )
-    ) { it.isBound(radical1) || it.isBound(radical2) }
+    )
 
     onPattern(pattern) {
-        TransformationResult(
-            toExpr = sumOf(
-                powerOf(move(term1), introduce(Three)),
-                copySign(opbTerm2, powerOf(move(term2), introduce(Three)))
-            ),
-            explanation = metadata(Explanation.IdentityCubeSumDifference)
-        )
+        val middleTermMatches = productOf(move(term1), move(term2)).expr == get(middleTerm)!!.expr
+
+        when {
+            middleTermMatches -> TransformationResult(
+                toExpr = sumOf(
+                    powerOf(move(term1), introduce(Constants.Three)),
+                    copySign(opNegTerm2, powerOf(move(term2), introduce(Constants.Three)))
+                ),
+                explanation = metadata(Explanation.IdentityCubeSumDifference)
+            )
+            else -> null
+        }
     }
 }
 

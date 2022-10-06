@@ -68,36 +68,34 @@ val collectRationalizingRadicals = plan {
 
 private val simplifyAfterRationalization = plan {
     whilePossible {
-        deeply {
-            firstOf {
-                option(identityCubeSumDifference)
-                option {
-                    pipeline {
-                        steps(collectRationalizingRadicals)
-                        optionalSteps {
-                            plan {
-                                whilePossible {
-                                    deeply(evaluateSignedIntegerAddition)
-                                }
+        firstOf {
+            option(simplifyProductOfConjugates)
+            option(identifyCubeSumDifference)
+            option {
+                pipeline {
+                    steps(collectRationalizingRadicals)
+                    optionalSteps {
+                        plan {
+                            whilePossible {
+                                deeply(evaluateSignedIntegerAddition)
                             }
                         }
-                        optionalSteps(combineProductOfSamePowerUnderHigherRoot)
-                        steps {
-                            plan {
-                                explanation(Explanation.SimplifyNthRootOfNthPower)
-                                pipeline {
-                                    steps { deeply(simplifyNthRootOfNthPower) }
-                                    optionalSteps(removeBracketsProduct)
-                                }
+                    }
+                    optionalSteps(combineProductOfSamePowerUnderHigherRoot)
+                    steps {
+                        plan {
+                            explanation(Explanation.SimplifyNthRootOfNthPower)
+                            pipeline {
+                                steps { deeply(simplifyNthRootOfNthPower) }
+                                optionalSteps(removeBracketsProduct)
                             }
                         }
                     }
                 }
-                option(simplifyNthRootToThePowerOfN)
-                option(simplifyProductWithRoots)
-                option(simplifyProductOfConjugates)
-                option(simplifyIntegersInSum)
             }
+            option { deeply(simplifyNthRootToThePowerOfN) }
+            option { deeply(simplifyProductWithRoots) }
+            option { deeply(simplifyIntegersInSum) }
         }
     }
 }

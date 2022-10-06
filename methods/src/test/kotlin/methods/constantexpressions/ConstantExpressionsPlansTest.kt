@@ -344,6 +344,7 @@ class ConstantExpressionSimpleOperationsTest {
 }
 
 class ConstantExpressionRationalizationTest {
+
     @Test
     fun testRationalizeCubeRootDenominator1() = testMethod {
         method = simplifyConstantExpression
@@ -353,62 +354,50 @@ class ConstantExpressionRationalizationTest {
             toExpr = "[root[25, 3] - root[15, 3] + root[9, 3] / 4]"
 
             step {
-                toExpr = "[2 * ([(root[5, 3]) ^ 2] - (root[5, 3]) * (root[3, 3]) + [(root[3, 3]) ^ 2]) / 8]"
+                toExpr = "[2 * ([(root[5, 3]) ^ 2] - root[15, 3] + [(root[3, 3]) ^ 2]) / 8]"
                 explanation {
                     key = FractionRootsExplanation.RationalizeDenominator
                 }
             }
 
-            step {}
-
-            step {}
-
             step {
-                fromExpr = "[2 * ([(root[5, 3]) ^ 2] - root[5, 3] * root[3, 3] + [(root[3, 3]) ^ 2]) / 8]"
-                toExpr = "[2 * (root[[5 ^ 2], 3] - root[5, 3] * root[3, 3] + [(root[3, 3]) ^ 2]) / 8]"
+                fromExpr = "[2 * ([(root[5, 3]) ^ 2] - root[15, 3] + [(root[3, 3]) ^ 2]) / 8]"
+                toExpr = "[2 * (root[[5 ^ 2], 3] - root[15, 3] + [(root[3, 3]) ^ 2]) / 8]"
             }
 
             step {
-                toExpr = "[2 * (root[25, 3] - root[5, 3] * root[3, 3] + [(root[3, 3]) ^ 2]) / 8]"
+                toExpr = "[2 * (root[25, 3] - root[15, 3] + [(root[3, 3]) ^ 2]) / 8]"
                 explanation {
                     key = ConstantExpressionsExplanation.SimplifyPowers
                 }
             }
 
             step {
-                fromExpr = "[2 * (root[25, 3] - root[5, 3] * root[3, 3] + [(root[3, 3]) ^ 2]) / 8]"
-                toExpr = "[2 * (root[25, 3] - root[5, 3] * root[3, 3] + root[[3 ^ 2], 3]) / 8]"
+                fromExpr = "[2 * (root[25, 3] - root[15, 3] + [(root[3, 3]) ^ 2]) / 8]"
+                toExpr = "[2 * (root[25, 3] - root[15, 3] + root[[3 ^ 2], 3]) / 8]"
             }
 
             step {
-                fromExpr = "[2 * (root[25, 3] - root[5, 3] * root[3, 3] + root[[3 ^ 2], 3]) / 8]"
-                toExpr = "[2 * (root[25, 3] - root[5, 3] * root[3, 3] + root[9, 3]) / 8]"
+                fromExpr = "[2 * (root[25, 3] - root[15, 3] + root[[3 ^ 2], 3]) / 8]"
+                toExpr = "[2 * (root[25, 3] - root[15, 3] + root[9, 3]) / 8]"
                 explanation {
                     key = ConstantExpressionsExplanation.SimplifyPowers
                 }
             }
 
             step {
-                fromExpr = "[2 * (root[25, 3] - root[5, 3] * root[3, 3] + root[9, 3]) / 8]"
-                toExpr = "[(root[25, 3] - root[5, 3] * root[3, 3] + root[9, 3]) / 4]"
+                fromExpr = "[2 * (root[25, 3] - root[15, 3] + root[9, 3]) / 8]"
+                toExpr = "[(root[25, 3] - root[15, 3] + root[9, 3]) / 4]"
                 explanation {
                     key = FractionArithmeticExplanation.SimplifyFraction
                 }
             }
 
             step {
-                fromExpr = "[(root[25, 3] - root[5, 3] * root[3, 3] + root[9, 3]) / 4]"
-                toExpr = "[root[25, 3] - root[5, 3] * root[3, 3] + root[9, 3] / 4]"
-                explanation {
-                    key = GeneralExplanation.RemoveRedundantBracket
-                }
-            }
-
-            step {
-                fromExpr = "[root[25, 3] - root[5, 3] * root[3, 3] + root[9, 3] / 4]"
+                fromExpr = "[(root[25, 3] - root[15, 3] + root[9, 3]) / 4]"
                 toExpr = "[root[25, 3] - root[15, 3] + root[9, 3] / 4]"
                 explanation {
-                    key = IntegerRootsExplanation.SimplifyProductWithRoots
+                    key = GeneralExplanation.RemoveRedundantBracket
                 }
             }
         }
@@ -425,13 +414,12 @@ class ConstantExpressionRationalizationTest {
 
             step {
                 fromExpr = "[2 / -root[5, 3] + root[3, 3]]"
-                toExpr = "[2 * ([(root[3, 3]) ^ 2] + (root[3, 3]) * (root[5, 3]) + [(root[5, 3]) ^ 2]) / -2]"
+                toExpr = "[2 * ([(root[3, 3]) ^ 2] + root[15, 3] + [(root[5, 3]) ^ 2]) / -2]"
                 explanation {
                     key = FractionRootsExplanation.RationalizeDenominator
                 }
 
                 step {
-                    fromExpr = "[2 / -root[5, 3] + root[3, 3]]"
                     toExpr = "[2 / root[3, 3] - root[5, 3]]"
                     explanation {
                         key = FractionRootsExplanation.FlipRootsInDenominator
@@ -439,36 +427,34 @@ class ConstantExpressionRationalizationTest {
                 }
 
                 step {
-                    fromExpr = "[2 / root[3, 3] - root[5, 3]]"
-                    toExpr = "[2 / root[3, 3] - root[5, 3]] * " +
-                        "[[(root[3, 3]) ^ 2] + (root[3, 3]) * (root[5, 3]) + [(root[5, 3]) ^ 2] / " +
-                        "[(root[3, 3]) ^ 2] + (root[3, 3]) * (root[5, 3]) + [(root[5, 3]) ^ 2]]"
+                    toExpr = "[2 / root[3, 3] - root[5, 3]] * [[(root[3, 3]) ^ 2] + root[3, 3] * root[5, 3] " +
+                        "+ [(root[5, 3]) ^ 2] / [(root[3, 3]) ^ 2] + root[3, 3] * root[5, 3] + [(root[5, 3]) ^ 2]]"
                     explanation {
                         key = FractionRootsExplanation.RationalizeSumOfIntegerAndCubeRoot
                     }
                 }
 
                 step {
-                    fromExpr = "[2 / root[3, 3] - root[5, 3]] * " +
-                        "[[(root[3, 3]) ^ 2] + (root[3, 3]) * (root[5, 3]) + [(root[5, 3]) ^ 2] " +
-                        "/ [(root[3, 3]) ^ 2] + (root[3, 3]) * (root[5, 3]) + [(root[5, 3]) ^ 2]]"
-                    toExpr = "[2 * ([(root[3, 3]) ^ 2] + (root[3, 3]) * (root[5, 3]) + [(root[5, 3]) ^ 2]) / " +
-                        "(root[3, 3] - root[5, 3]) * ([(root[3, 3]) ^ 2] + (root[3, 3]) " +
-                        "* (root[5, 3]) + [(root[5, 3]) ^ 2])]"
+                    toExpr = "[2 * ([(root[3, 3]) ^ 2] + root[3, 3] * root[5, 3] + [(root[5, 3]) ^ 2]) " +
+                        "/ (root[3, 3] - root[5, 3]) * ([(root[3, 3]) ^ 2] + root[3, 3] " +
+                        "* root[5, 3] + [(root[5, 3]) ^ 2])]"
                     explanation {
                         key = FractionArithmeticExplanation.MultiplyFractions
                     }
                 }
 
                 step {
-                    fromExpr = "[2 * ([(root[3, 3]) ^ 2] + (root[3, 3]) * (root[5, 3]) + [(root[5, 3]) ^ 2]) / " +
-                        "(root[3, 3] - root[5, 3]) * ([(root[3, 3]) ^ 2] " +
-                        "+ (root[3, 3]) * (root[5, 3]) + [(root[5, 3]) ^ 2])]"
-                    toExpr = "[2 * ([(root[3, 3]) ^ 2] + (root[3, 3]) * (root[5, 3]) + [(root[5, 3]) ^ 2]) / -2]"
+                    toExpr = "[2 * ([(root[3, 3]) ^ 2] + root[15, 3] + [(root[5, 3]) ^ 2]) " +
+                        "/ (root[3, 3] - root[5, 3]) * ([(root[3, 3]) ^ 2] + root[3, 3] " +
+                        "* root[5, 3] + [(root[5, 3]) ^ 2])]"
+                }
+
+                step {
+                    toExpr = "[2 * ([(root[3, 3]) ^ 2] + root[15, 3] + [(root[5, 3]) ^ 2]) / -2]"
 
                     step {
-                        fromExpr = "(root[3, 3] - root[5, 3]) * " +
-                            "([(root[3, 3]) ^ 2] + (root[3, 3]) * (root[5, 3]) + [(root[5, 3]) ^ 2])"
+                        fromExpr = "(root[3, 3] - root[5, 3]) * ([(root[3, 3]) ^ 2] + root[3, 3] " +
+                            "* root[5, 3] + [(root[5, 3]) ^ 2])"
                         toExpr = "[(root[3, 3]) ^ 3] - [(root[5, 3]) ^ 3]"
                         explanation {
                             key = FractionRootsExplanation.IdentityCubeSumDifference
@@ -502,24 +488,8 @@ class ConstantExpressionRationalizationTest {
             }
 
             step {
-                fromExpr = "[2 * ([(root[3, 3]) ^ 2] + (root[3, 3]) * (root[5, 3]) + [(root[5, 3]) ^ 2]) / -2]"
-                toExpr = "[2 * ([(root[3, 3]) ^ 2] + root[3, 3] * (root[5, 3]) + [(root[5, 3]) ^ 2]) / -2]"
-                explanation {
-                    key = GeneralExplanation.RemoveRedundantBracket
-                }
-            }
-
-            step {
-                fromExpr = "[2 * ([(root[3, 3]) ^ 2] + root[3, 3] * (root[5, 3]) + [(root[5, 3]) ^ 2]) / -2]"
-                toExpr = "[2 * ([(root[3, 3]) ^ 2] + root[3, 3] * root[5, 3] + [(root[5, 3]) ^ 2]) / -2]"
-                explanation {
-                    key = GeneralExplanation.RemoveRedundantBracket
-                }
-            }
-
-            step {
-                fromExpr = "[2 * ([(root[3, 3]) ^ 2] + root[3, 3] * root[5, 3] + [(root[5, 3]) ^ 2]) / -2]"
-                toExpr = "[2 * (root[[3 ^ 2], 3] + root[3, 3] * root[5, 3] + [(root[5, 3]) ^ 2]) / -2]"
+                fromExpr = "[2 * ([(root[3, 3]) ^ 2] + root[15, 3] + [(root[5, 3]) ^ 2]) / -2]"
+                toExpr = "[2 * (root[[3 ^ 2], 3] + root[15, 3] + [(root[5, 3]) ^ 2]) / -2]"
 
                 step {
                     fromExpr = "[(root[3, 3]) ^ 2]"
@@ -531,8 +501,8 @@ class ConstantExpressionRationalizationTest {
             }
 
             step {
-                fromExpr = "[2 * (root[[3 ^ 2], 3] + root[3, 3] * root[5, 3] + [(root[5, 3]) ^ 2]) / -2]"
-                toExpr = "[2 * (root[9, 3] + root[3, 3] * root[5, 3] + [(root[5, 3]) ^ 2]) / -2]"
+                fromExpr = "[2 * (root[[3 ^ 2], 3] + root[15, 3] + [(root[5, 3]) ^ 2]) / -2]"
+                toExpr = "[2 * (root[9, 3] + root[15, 3] + [(root[5, 3]) ^ 2]) / -2]"
                 explanation {
                     key = ConstantExpressionsExplanation.SimplifyPowers
                 }
@@ -563,8 +533,8 @@ class ConstantExpressionRationalizationTest {
             }
 
             step {
-                fromExpr = "[2 * (root[9, 3] + root[3, 3] * root[5, 3] + [(root[5, 3]) ^ 2]) / -2]"
-                toExpr = "[2 * (root[9, 3] + root[3, 3] * root[5, 3] + root[[5 ^ 2], 3]) / -2]"
+                fromExpr = "[2 * (root[9, 3] + root[15, 3] + [(root[5, 3]) ^ 2]) / -2]"
+                toExpr = "[2 * (root[9, 3] + root[15, 3] + root[[5 ^ 2], 3]) / -2]"
 
                 step {
                     fromExpr = "[(root[5, 3]) ^ 2]"
@@ -576,8 +546,8 @@ class ConstantExpressionRationalizationTest {
             }
 
             step {
-                fromExpr = "[2 * (root[9, 3] + root[3, 3] * root[5, 3] + root[[5 ^ 2], 3]) / -2]"
-                toExpr = "[2 * (root[9, 3] + root[3, 3] * root[5, 3] + root[25, 3]) / -2]"
+                fromExpr = "[2 * (root[9, 3] + root[15, 3] + root[[5 ^ 2], 3]) / -2]"
+                toExpr = "[2 * (root[9, 3] + root[15, 3] + root[25, 3]) / -2]"
                 explanation {
                     key = ConstantExpressionsExplanation.SimplifyPowers
                 }
@@ -608,57 +578,25 @@ class ConstantExpressionRationalizationTest {
             }
 
             step {
-                fromExpr = "[2 * (root[9, 3] + root[3, 3] * root[5, 3] + root[25, 3]) / -2]"
-                toExpr = "-[2 * (root[9, 3] + root[3, 3] * root[5, 3] + root[25, 3]) / 2]"
+                fromExpr = "[2 * (root[9, 3] + root[15, 3] + root[25, 3]) / -2]"
+                toExpr = "-[2 * (root[9, 3] + root[15, 3] + root[25, 3]) / 2]"
                 explanation {
                     key = FractionArithmeticExplanation.SimplifyNegativeInDenominator
                 }
             }
 
             step {
-                fromExpr = "-[2 * (root[9, 3] + root[3, 3] * root[5, 3] + root[25, 3]) / 2]"
-                toExpr = "-(root[9, 3] + root[3, 3] * root[5, 3] + root[25, 3])"
+                fromExpr = "-[2 * (root[9, 3] + root[15, 3] + root[25, 3]) / 2]"
+                toExpr = "-(root[9, 3] + root[15, 3] + root[25, 3])"
                 explanation {
                     key = FractionArithmeticExplanation.SimplifyFraction
                 }
 
                 step {
-                    fromExpr = "[2 * (root[9, 3] + root[3, 3] * root[5, 3] + root[25, 3]) / 2]"
-                    toExpr = "(root[9, 3] + root[3, 3] * root[5, 3] + root[25, 3])"
+                    fromExpr = "[2 * (root[9, 3] + root[15, 3] + root[25, 3]) / 2]"
+                    toExpr = "(root[9, 3] + root[15, 3] + root[25, 3])"
                     explanation {
                         key = GeneralExplanation.CancelDenominator
-                    }
-                }
-            }
-
-            step {
-                fromExpr = "-(root[9, 3] + root[3, 3] * root[5, 3] + root[25, 3])"
-                toExpr = "-(root[9, 3] + root[15, 3] + root[25, 3])"
-                explanation {
-                    key = IntegerRootsExplanation.SimplifyProductWithRoots
-                }
-
-                step {
-                    fromExpr = "root[3, 3] * root[5, 3]"
-                    toExpr = "root[3 * 5, 3]"
-                    explanation {
-                        key = IntegerRootsExplanation.MultiplyNthRoots
-                    }
-                }
-
-                step {
-                    fromExpr = "root[3 * 5, 3]"
-                    toExpr = "root[15, 3]"
-                    explanation {
-                        key = IntegerArithmeticExplanation.SimplifyIntegersInProduct
-                    }
-
-                    step {
-                        fromExpr = "3 * 5"
-                        toExpr = "15"
-                        explanation {
-                            key = IntegerArithmeticExplanation.EvaluateIntegerProduct
-                        }
                     }
                 }
             }
