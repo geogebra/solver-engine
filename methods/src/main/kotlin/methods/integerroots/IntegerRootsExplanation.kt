@@ -30,7 +30,6 @@ enum class IntegerRootsExplanation : CategorisedMetadataKey {
     PutRootCoefficientUnderRootAndSimplify,
     SimplifyRootOfRootWithCoefficient,
     CollectLikeRoots,
-    BringSameIndexSameFactorRootsAsOneRoot,
     CombineProductOfSamePowerUnderHigherRoot,
     CollectPowersOfExponentsWithSameBase;
 

@@ -5,6 +5,18 @@ import engine.steps.metadata.TranslationKeys
 
 @TranslationKeys
 enum class GeneralExplanation : CategorisedMetadataKey {
+    /**
+     * Multiply the exponents using power rule, but don't
+     * evaluate the product of exponents i.e. [( [a^b] ) ^ c] = [ a ^ b*c]
+     * for e.g. [ ([2^6]) ^ 2] --> [ 2^6*2 ]
+     */
+    MultiplyExponentsUsingPowerRule,
+
+    /**
+     * distribute sum of powers to a base as a product of exponents with same base,
+     * i.e. [base ^ exp1 + ... + expN] --> [base ^ exp1] * ... * [base ^ expN]
+     */
+    DistributeSumOfPowers,
     ReplaceInvisibleBrackets,
     RemoveBracketSumInSum,
     RemoveBracketProductInProduct,

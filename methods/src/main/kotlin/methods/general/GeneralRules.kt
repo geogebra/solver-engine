@@ -6,6 +6,7 @@ import engine.expressions.fractionOf
 import engine.expressions.negOf
 import engine.expressions.powerOf
 import engine.expressions.productOf
+import engine.expressions.simplifiedPowerOf
 import engine.expressions.sumOf
 import engine.expressions.xp
 import engine.methods.TransformationResult
@@ -284,6 +285,9 @@ val simplifyProductOfConjugates = rule {
     }
 }
 
+/**
+ * [ ( [x1^a1] * ... * [xn^an] ) ^ [ p/q ] ] --> [(x1^a1) ^ [p/q]] * ... * [(xn^an) ^ [p/q]]
+ */
 val distributePowerOfProduct = rule {
     val exponent = AnyPattern()
     val product = productContaining()
@@ -341,6 +345,50 @@ val rewriteDivisionAsFraction = rule {
         TransformationResult(
             toExpr = productOf(result),
             explanation = metadata(Explanation.RewriteDivisionAsFraction)
+        )
+    }
+}
+
+/**
+ * [([a^b]) ^ c] --> [a^b*c]
+ */
+val multiplyExponentsUsingPowerRule = rule {
+    val base = AnyPattern()
+    val exp1 = AnyPattern()
+    val exp2 = AnyPattern()
+
+    val pattern = powerOf(
+        bracketOf(powerOf(base, exp1)),
+        exp2
+    )
+
+    onPattern(pattern) {
+        TransformationResult(
+            toExpr = powerOf(
+                move(base),
+                productOf(move(exp1), move(exp2))
+            ),
+            explanation = metadata(Explanation.MultiplyExponentsUsingPowerRule)
+        )
+    }
+}
+
+/**
+ * [base ^ exp1 + ... + expN] --> [base ^ exp1] * ... [base ^ expN]
+ */
+val distributeSumOfPowers = rule {
+    val base = AnyPattern()
+    val sumOfExponents = sumContaining()
+    val pattern = powerOf(base, sumOfExponents)
+
+    onPattern(pattern) {
+        TransformationResult(
+            toExpr = productOf(
+                get(sumOfExponents)!!.children().map {
+                    simplifiedPowerOf(move(base), move(it))
+                }
+            ),
+            explanation = metadata(Explanation.DistributeSumOfPowers)
         )
     }
 }

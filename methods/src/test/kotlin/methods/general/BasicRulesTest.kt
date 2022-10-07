@@ -60,19 +60,61 @@ object BasicRulesTest : RuleTest {
 }
 
 class GeneralRulesTest {
+    @Test
+    fun testDistributeSumOfExponentsToBaseAsProductOfExponents() {
+        testRule(
+            "[2 ^ 3 + [1 / 2] + [1 / 3] ]",
+            distributeSumOfPowers,
+            "[2 ^ 3] * [2 ^ [1 / 2]] * [2 ^ [1 / 3]]"
+        )
+        testRule(
+            "[2 ^ x + y + z]",
+            distributeSumOfPowers,
+            "[2 ^ x] * [2 ^ y] * [2 ^ z]"
+        )
+    }
 
     @Test
     fun testDistributePowerOfProduct() {
-        RuleTestCase(
+        testRule(
             "[(2 * x * y) ^ 5]",
             distributePowerOfProduct,
             "[2 ^ 5] * [x ^ 5] * [y ^ 5]"
-        ).assert()
-        RuleTestCase(
+        )
+        testRule(
             "[(sqrt[3] * root[5, 2]) ^ n]",
             distributePowerOfProduct,
             "[(sqrt[3]) ^ n] * [(root[5, 2]) ^ n]"
-        ).assert()
+        )
+        testRule(
+            "[ ([2^3] * [5^2] * [7^5]) ^ [2 / 5] ]",
+            distributePowerOfProduct,
+            "[ ([2^3]) ^ [2 / 5] ] * [ ([5^2]) ^ [2 / 5] ] * [ ([7^5]) ^ [2 / 5] ]"
+        )
+    }
+
+    @Test
+    fun testMultiplyExponentsUsingPowerRule() {
+        testRule(
+            "[ ([2^6]) ^ 2]",
+            multiplyExponentsUsingPowerRule,
+            "[ 2^6*2 ]"
+        )
+        testRule(
+            "[ ( [2^5] )^ [2/5] ]",
+            multiplyExponentsUsingPowerRule,
+            "[2^5 * [2 / 5]]"
+        )
+        testRule(
+            "[ ([([1 / 2]) ^ 2]) ^ 3 ]",
+            multiplyExponentsUsingPowerRule,
+            "[([1 / 2]) ^ 2 * 3]"
+        )
+        testRule(
+            "[ ([x ^ a]) ^ b ]",
+            multiplyExponentsUsingPowerRule,
+            "[x ^ a * b]"
+        )
     }
 
     @Test

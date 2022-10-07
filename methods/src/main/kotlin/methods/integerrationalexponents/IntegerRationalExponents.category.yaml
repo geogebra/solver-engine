@@ -1,0 +1,8 @@
+metadata:
+  name: IntegerRationalExponents
+  title: Integer Rational Exponents
+methods:
+  RationalExponents:
+    description: Simplifies RationalPowers of an Integer
+    visibility: public
+    implementationName: simplifyRationalExponentOfInteger
