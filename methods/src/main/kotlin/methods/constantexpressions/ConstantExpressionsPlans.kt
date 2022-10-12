@@ -69,7 +69,8 @@ val simplifyPowers = plan {
     }
 }
 
-val simplifyRoots = plan {
+val simplifyRootsInExpression = plan {
+    explanation(Explanation.SimplifyRootsInExpression)
     whilePossible {
         firstOf {
             option { deeply(simplifyRootOfZero, deepFirst = true) }
@@ -94,7 +95,7 @@ val simplificationSteps = steps {
         option { deeply(removeRedundantBrackets, deepFirst = true) }
 
         option { deeply(simplifyPowers, deepFirst = true) }
-        option { deeply(simplifyRoots, deepFirst = true) }
+        option(simplifyRootsInExpression)
 
         option(normalizeFractions)
         option(normalizeSignsInFraction)
@@ -138,6 +139,7 @@ private fun Expression.isConstantExpression(): Boolean {
 
 val simplifyConstantExpression = plan {
     pattern = condition(AnyPattern()) { it.isConstantExpression() }
+    explanation(Explanation.SimplifyConstantExpression)
 
     pipeline {
         optionalSteps {
@@ -174,9 +176,7 @@ val simplifyConstantExpression = plan {
         }
 
         optionalSteps {
-            plan {
-                whilePossible(simplificationSteps)
-            }
+            whilePossible(simplificationSteps)
         }
     }
 }

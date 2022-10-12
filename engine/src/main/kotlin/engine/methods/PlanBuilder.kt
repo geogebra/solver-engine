@@ -148,7 +148,7 @@ open class StepsProducerBuilder {
 }
 
 class PlanBuilder : StepsProducerBuilder() {
-    var explanationMaker: MetadataMaker? = null
+    lateinit var explanationMaker: MetadataMaker
     var skillMakers: MutableList<MetadataMaker> = mutableListOf()
     var pattern: Pattern = AnyPattern()
     var resultPattern: Pattern = AnyPattern()
@@ -179,6 +179,7 @@ class PlanBuilder : StepsProducerBuilder() {
     }
 
     fun buildPlan(): Plan {
+        require(this::explanationMaker.isInitialized)
         if (alternatives.isEmpty()) {
             return wrapPlanExecutor(stepsProducer)
         }

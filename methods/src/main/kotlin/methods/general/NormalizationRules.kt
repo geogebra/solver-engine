@@ -25,7 +25,7 @@ val replaceInvisibleBrackets = rule {
     }
 }
 
-val removeBracketsSum = rule {
+val removeBracketsInSum = rule {
     val innerSum = sumContaining()
     val bracket = bracketOf(innerSum)
     val pattern = sumContaining(bracket)

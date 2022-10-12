@@ -113,6 +113,8 @@ val evaluateFractionSum = plan {
 }
 
 val evaluateSumOfFractionAndInteger = plan {
+    explanation(Explanation.EvaluateSumOfFractionAndInteger)
+
     pipeline {
         steps(turnSumOfFractionAndIntegerToFractionSum)
         steps {
@@ -123,9 +125,11 @@ val evaluateSumOfFractionAndInteger = plan {
 }
 
 val multiplyAndSimplifyFractions = plan {
+    explanation(Explanation.MultiplyAndSimplifyFractions)
+
     pipeline {
         optionalSteps {
-            whilePossible(turnProductOfFractionByIntegerToFractionProduct)
+            whilePossible(turnFactorIntoFractionInProduct)
         }
         steps {
             whilePossible(multiplyFractions)
@@ -140,6 +144,8 @@ val multiplyAndSimplifyFractions = plan {
 }
 
 val evaluateIntegerToNegativePower = plan {
+    explanation(Explanation.EvaluateIntegerToNegativePower)
+
     firstOf {
         option(turnIntegerToMinusOneToFraction)
         option {

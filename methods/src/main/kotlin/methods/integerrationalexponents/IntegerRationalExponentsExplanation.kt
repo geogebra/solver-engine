@@ -5,6 +5,7 @@ import engine.steps.metadata.TranslationKeys
 
 @TranslationKeys
 enum class IntegerRationalExponentsExplanation : CategorisedMetadataKey {
+
     /**
      * factorize integer under rational exponent
      * e.g. [ 18^[2/3] ] --> [ ([2 * [3^2]]) ^ [2/3] ]
@@ -19,14 +20,6 @@ enum class IntegerRationalExponentsExplanation : CategorisedMetadataKey {
     PowerRuleOfExponents,
 
     /**
-     * applies the "PowerRuleOfExponents" to all the exponent terms,
-     * this plan encompasses the "PowerRuleOfExponents"
-     * for e.g. ([2^3]) ^ [2/5] * ([5^4]) ^ [2/5] * ([7^5]) ^ [2/5] -->
-     * [2 ^ [6/5]] * [5 ^ [8/5] ] * [7 ^ 2]
-     */
-    PowerRule,
-
-    /**
      * brings the "integers" or exponents with integral powers to the front
      * e.g. [2 ^ [2 / 5]] * [3 ^ 2] * 5 --> [3 ^ 2] * 5 * [2 ^ [2 / 5]]
      */
@@ -38,6 +31,8 @@ enum class IntegerRationalExponentsExplanation : CategorisedMetadataKey {
      * [2 ^ [2 / 3]] * [3 ^ 3] *  [3 ^ [1 / 3]] * 5 * [5 ^ [4 / 3]]
      */
     SplitProductOfExponentsWithImproperFractionPowers,
+
+    SplitRationalExponent,
 
     /**
      * evaluates product of integers, integer exponents

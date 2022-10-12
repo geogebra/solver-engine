@@ -45,7 +45,14 @@ enum class MixedNumbersExplanation : CategorisedMetadataKey {
      * Convert an improper fraction to a mixed number
      * E.g. [13 / 5] -> [2 3/5]
      */
-    ConvertFractionToMixedNumber;
+    ConvertFractionToMixedNumber,
+
+    RemoveAllBracketsInSum,
+
+    /**
+     * Add mixed numbers
+     */
+    AddMixedNumbers;
 
     override val category = "MixedNumbers"
 }

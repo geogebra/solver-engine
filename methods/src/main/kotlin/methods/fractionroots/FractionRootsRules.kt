@@ -85,7 +85,7 @@ val rationalizeSimpleDenominator = rule {
     }
 }
 
-val simplifyFractionOfRootsWithSameOrder = rule {
+val turnFractionOfRootsIntoRootOfFractions = rule {
     val radicand1 = SignedIntegerPattern()
     val radicand2 = SignedIntegerPattern()
 
@@ -108,7 +108,7 @@ val simplifyFractionOfRootsWithSameOrder = rule {
                 fractionOf(move(radicand1), move(radicand2)),
                 move(numerator.order)
             ),
-            explanation = metadata(Explanation.SimplifyFractionOfRoots)
+            explanation = metadata(Explanation.TurnFractionOfRootsIntoRootOfFractions)
         )
     }
 }

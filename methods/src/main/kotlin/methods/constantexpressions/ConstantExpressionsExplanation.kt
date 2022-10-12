@@ -9,7 +9,23 @@ enum class ConstantExpressionsExplanation : CategorisedMetadataKey {
      * Simplify an expression in brackets
      */
     SimplifyExpressionInBrackets,
-    SimplifyPowers;
+
+    /**
+     * Simplify roots in the expression, even if they are deep inside it
+     *
+     * E.g. 5 + 7 * root[12]] -> 5 + 7 * (2 * root[2])
+     *
+     * Note: it can be roots of any order, not just square roots.
+     */
+    SimplifyRootsInExpression,
+    SimplifyPowers,
+
+    /**
+     * Simplify an expression containing only constant terms (no variable)
+     *
+     * This is a public top-level transformation.
+     */
+    SimplifyConstantExpression;
 
     override val category = "ConstantExpressions"
 }

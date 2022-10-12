@@ -120,33 +120,30 @@ val simplifyIntegerRoot = plan {
         // root[2^3, 2] * root[5^2, 2] * root[7^5, 2]
         optionalSteps(splitRootOfProduct)
 
+        // root[2^2, 2] * root[2] * root[5^2, 2] * root[7^4, 2] * root[7, 2]
         optionalSteps {
             plan {
+                explanation(Explanation.SplitRootsInProduct)
                 pipeline {
-                    // root[2^2, 2] * root[2] * root[5^2, 2] * root[7^4, 2] * root[7, 2]
-                    optionalSteps {
-                        plan {
-                            pipeline {
-                                optionalSteps { whilePossible { deeply(splitPowerUnderRoot) } }
-                                optionalSteps { whilePossible { deeply(splitRootOfProduct) } }
-                                optionalSteps { whilePossible(removeBracketsProduct) }
-                            }
-                        }
-                    }
-                    // 2 * root[2] * 5 * 7^2 * root[7]
-                    optionalSteps {
-                        plan {
-                            whilePossible {
-                                deeply(cancelRootOfAPower)
-                            }
-                        }
-                    }
-
-                    // 490 * root[14]
-                    optionalSteps(simplifyProductWithRoots)
+                    optionalSteps { whilePossible { deeply(splitPowerUnderRoot) } }
+                    optionalSteps { whilePossible { deeply(splitRootOfProduct) } }
+                    optionalSteps { whilePossible(removeBracketsProduct) }
                 }
             }
         }
+
+        // 2 * root[2] * 5 * 7^2 * root[7]
+        optionalSteps {
+            plan {
+                explanation(Explanation.CancelAllRootsOfPowers)
+                whilePossible {
+                    deeply(cancelRootOfAPower)
+                }
+            }
+        }
+
+        // 490 * root[14]
+        optionalSteps(simplifyProductWithRoots)
     }
 }
 

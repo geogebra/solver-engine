@@ -5,7 +5,6 @@ import engine.steps.metadata.TranslationKeys
 
 @TranslationKeys
 enum class ApproximationExplanation : CategorisedMetadataKey {
-
     /**
      * Round a terminating decimal to a specified number of decimal places
      * %1 - original decimal number, such as 4.7548
@@ -24,9 +23,14 @@ enum class ApproximationExplanation : CategorisedMetadataKey {
     ExpandRecurringDecimal,
 
     /**
-     * Round a terminating decimal to a specified number of decimal places
+     * Round a recurring decimal to a specified number of decimal places
      */
     RoundRecurringDecimal,
+
+    /**
+     * Expand and round a recurring decimal
+     */
+    ExpandAndRoundRecurringDecimal,
 
     /**
      * Approximate the product or division of several (decimal) numbers

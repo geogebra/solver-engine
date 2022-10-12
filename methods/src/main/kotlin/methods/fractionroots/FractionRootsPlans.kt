@@ -3,6 +3,7 @@ package methods.fractionroots
 import engine.expressions.denominator
 import engine.expressions.numerator
 import engine.methods.plan
+import engine.methods.steps
 import methods.fractionarithmetic.multiplyFractions
 import methods.fractionarithmetic.simplifyFractionToInteger
 import methods.general.eliminateLoneOneInExponent
@@ -21,10 +22,13 @@ import methods.integerroots.simplifyProductWithRoots
 import methods.integerroots.simplifyRootOfOne
 
 private val rationalizeHigherOrderRoot = plan {
+    explanation(Explanation.RationalizeHigherOrderRoot)
+
     pipeline {
         steps(higherOrderRationalizingTerm)
         steps {
             plan {
+                explanation(Explanation.SimplifyRationalizingTerm)
                 pipeline {
                     steps {
                         whilePossible {
@@ -42,7 +46,7 @@ private val rationalizeHigherOrderRoot = plan {
     }
 }
 
-val findRationalizingTerm = plan {
+val findRationalizingTerm = steps {
     firstOf {
         option(rationalizeSimpleDenominator)
         option(rationalizeHigherOrderRoot)
@@ -56,17 +60,21 @@ val findRationalizingTerm = plan {
  * root[ [3^1 + 3] * [4^2 + 2] * [5^3 + 1], 4]
  */
 val collectRationalizingRadicals = plan {
+    explanation(Explanation.CollectRationalizingRadicals)
     pipeline {
         steps(multiplyNthRoots)
         optionalSteps {
             whilePossible {
-                deeply(collectPowersOfExponentsWithSameBase)
+                pipeline {
+                    steps { deeply(collectPowersOfExponentsWithSameBase) }
+                    steps { deeply(evaluateSignedIntegerAddition) }
+                }
             }
         }
     }
 }
 
-private val simplifyAfterRationalization = plan {
+private val simplifyAfterRationalization = steps {
     whilePossible {
         firstOf {
             option(simplifyProductOfConjugates)
@@ -74,23 +82,9 @@ private val simplifyAfterRationalization = plan {
             option {
                 pipeline {
                     steps(collectRationalizingRadicals)
-                    optionalSteps {
-                        plan {
-                            whilePossible {
-                                deeply(evaluateSignedIntegerAddition)
-                            }
-                        }
-                    }
                     optionalSteps(combineProductOfSamePowerUnderHigherRoot)
-                    steps {
-                        plan {
-                            explanation(Explanation.SimplifyNthRootOfNthPower)
-                            pipeline {
-                                steps { deeply(simplifyNthRootOfNthPower) }
-                                optionalSteps(removeBracketsProduct)
-                            }
-                        }
-                    }
+                    steps { deeply(simplifyNthRootOfNthPower) }
+                    optionalSteps(removeBracketsProduct)
                 }
             }
             option { deeply(simplifyNthRootToThePowerOfN) }
@@ -111,10 +105,16 @@ val rationalizeDenominators = plan {
         steps(findRationalizingTerm)
         steps(multiplyFractions)
         optionalSteps {
-            applyTo(simplifyAfterRationalization) { it.numerator() }
+            plan {
+                explanation(Explanation.SimplifyNumeratorAfterRationalization)
+                applyTo(simplifyAfterRationalization) { it.numerator() }
+            }
         }
         optionalSteps {
-            applyTo(simplifyAfterRationalization) { it.denominator() }
+            plan {
+                explanation(Explanation.SimplifyDenominatorAfterRationalization)
+                applyTo(simplifyAfterRationalization) { it.denominator() }
+            }
         }
     }
 }
@@ -129,7 +129,7 @@ val simplifyFractionOfRoots = plan {
                 deeply(evaluateIntegerPowerDirectly)
             }
         }
-        steps(simplifyFractionOfRootsWithSameOrder)
+        steps(turnFractionOfRootsIntoRootOfFractions)
         steps {
             // apply to the fraction under the root
             applyTo(simplifyFractionToInteger) { it.nthChild(0) }

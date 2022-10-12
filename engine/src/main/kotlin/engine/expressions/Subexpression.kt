@@ -67,3 +67,8 @@ fun Subexpression.denominator(): Subexpression {
     require(expr.operator == BinaryExpressionOperator.Fraction) { "Fraction expected, got: ${expr.operator}" }
     return nthChild(1)
 }
+
+fun Subexpression.exponent(): Subexpression {
+    require(expr.operator == BinaryExpressionOperator.Power) { "Power expected, got: ${expr.operator}" }
+    return nthChild(1)
+}

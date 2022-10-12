@@ -9,9 +9,8 @@ import engine.patterns.ConditionPattern
 import engine.patterns.IntegerFractionPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.commutativeSumOf
-import engine.patterns.fractionOf
-import engine.patterns.integerCondition
 import engine.patterns.mixedNumberOf
+import engine.patterns.numericCondition
 import engine.steps.metadata.Skill
 import engine.steps.metadata.metadata
 
@@ -54,23 +53,19 @@ val convertSumOfIntegerAndProperFractionToMixedNumber = rule {
 }
 
 val fractionToMixedNumber = rule {
-    val numerator = UnsignedIntegerPattern()
-    val denominator = UnsignedIntegerPattern()
+    val fraction = IntegerFractionPattern()
+    val improperFractionCondition = numericCondition(fraction.numerator, fraction.denominator) { n1, n2 -> n1 > n2 }
+    val improperFraction = ConditionPattern(fraction, improperFractionCondition)
 
-    val isImproperFraction = integerCondition(numerator, denominator) { n, d -> n > d }
-
-    onPattern(ConditionPattern(fractionOf(numerator, denominator), isImproperFraction)) {
-        val quotient = integerOp(numerator, denominator) { n, d -> n / d }
-        val remainder = integerOp(numerator, denominator) { n, d -> n % d }
+    onPattern(improperFraction) {
+        val quotient = integerOp(fraction.numerator, fraction.denominator) { n, d -> n / d }
+        val remainder = integerOp(fraction.numerator, fraction.denominator) { n, d -> n % d }
 
         TransformationResult(
-            toExpr = mixedNumberOf(quotient, remainder, move(denominator)),
-            explanation = metadata(
-                Explanation.ConvertFractionToMixedNumber,
-                move(numerator), move(denominator), quotient, remainder
-            ),
+            toExpr = mixedNumberOf(quotient, remainder, move(fraction.denominator)),
+            explanation = metadata(Explanation.ConvertFractionToMixedNumber),
             skills = listOf(
-                metadata(Skill.DivisionWithRemainder, move(numerator), move(denominator))
+                metadata(Skill.DivisionWithRemainder, move(fraction.numerator), move(fraction.denominator))
             ),
         )
     }

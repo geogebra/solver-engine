@@ -191,7 +191,7 @@ val evaluateExpressionAsDecimal = plan {
     pattern = condition(expression) { it.isDecimalExpression() }
     resultPattern = SignedNumberPattern()
 
-    explanation(Explanation.EvaluateExpressionAsDecimal, move(expression))
+    explanation(Explanation.EvaluateExpressionAsDecimal)
 
     whilePossible {
         firstOf {
@@ -203,9 +203,7 @@ val evaluateExpressionAsDecimal = plan {
             }
 
             option {
-                plan {
-                    whilePossible(evaluationSteps)
-                }
+                whilePossible(evaluationSteps)
             }
         }
     }

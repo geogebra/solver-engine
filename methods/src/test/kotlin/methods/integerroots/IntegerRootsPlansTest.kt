@@ -25,20 +25,16 @@ class IntegerRootsPlansTest {
             }
 
             step {
+                fromExpr = "sqrt[[2 ^ 3]] * sqrt[[3 ^ 4]] * sqrt[[5 ^ 2]] * sqrt[7]"
+                toExpr = "sqrt[[2 ^ 2]] * sqrt[2] * sqrt[[3 ^ 4]] * sqrt[[5 ^ 2]] * sqrt[7]"
+            }
+
+            step {
+                toExpr = "2 * sqrt[2] * [3 ^ 2] * 5 * sqrt[7]"
+            }
+
+            step {
                 toExpr = "90 * sqrt[14]"
-
-                step {
-                    fromExpr = "sqrt[[2 ^ 3]] * sqrt[[3 ^ 4]] * sqrt[[5 ^ 2]] * sqrt[7]"
-                    toExpr = "sqrt[[2 ^ 2]] * sqrt[2] * sqrt[[3 ^ 4]] * sqrt[[5 ^ 2]] * sqrt[7]"
-                }
-
-                step {
-                    toExpr = "2 * sqrt[2] * [3 ^ 2] * 5 * sqrt[7]"
-                }
-
-                step {
-                    toExpr = "90 * sqrt[14]"
-                }
             }
         }
     }

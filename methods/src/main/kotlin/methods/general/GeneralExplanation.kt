@@ -51,6 +51,13 @@ enum class GeneralExplanation : CategorisedMetadataKey {
     DistributePowerOfProduct,
     ExpandBinomialSquared,
     RewriteDivisionAsFraction,
+
+    /**
+     * Rewrite all divisions as fractions in an expression
+     *
+     * E.g. 3 : 4 + 4 * ( 2 - 1 : 2) -> [3 / 4] + 4 * (2 - [1 / 2])
+     */
+    RewriteDivisionsAsFractionInExpression,
     NormalizeExpression,
     DistributeMultiplicationOverSum,
     ReplaceAllInvisibleBrackets,

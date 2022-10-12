@@ -204,7 +204,7 @@ const getExplanationString = (expl) => {
     for (let [i, param] of expl.params.entries()) {
         // replacing "%1", "%2", ... with the respective rendered expression
         if (explanationString.includes("%" + (i + 1))) {
-            explanationString = explanationString.replace(
+            explanationString = explanationString.replaceAll(
                 "%" + (i + 1),
                 renderExpression(param.expression)
             );

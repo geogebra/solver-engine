@@ -30,7 +30,7 @@ val removeRedundantBrackets = steps {
         option {
             applyTo(removeOuterBracket, redundantBracketChecker)
         }
-        option(removeBracketsSum)
+        option(removeBracketsInSum)
         option(removeBracketsProduct)
         option(removeBracketAroundSignedIntegerInSum)
     }

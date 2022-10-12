@@ -16,7 +16,7 @@ import engine.steps.metadata.MetadataMaker
 data class Plan(
     val pattern: Pattern,
     val resultPattern: Pattern,
-    val explanationMaker: MetadataMaker? = null,
+    val explanationMaker: MetadataMaker,
     val skillMakers: List<MetadataMaker> = emptyList(),
     val stepsProducer: StepsProducer,
 ) : Method {
@@ -36,7 +36,7 @@ data class Plan(
                     fromExpr = sub,
                     toExpr = toExpr,
                     steps = steps,
-                    explanation = explanationMaker?.make(match),
+                    explanation = explanationMaker.make(match),
                     skills = skillMakers.map { it.make(match) }
                 )
 

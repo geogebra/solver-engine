@@ -1,18 +1,19 @@
 package methods.integerrationalexponents
 
+import engine.expressions.exponent
 import engine.methods.plan
+import engine.patterns.IntegerFractionPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.fractionOf
 import engine.patterns.powerOf
 import method.integerrationalexponents.Explanation
+import methods.fractionarithmetic.convertImproperFractionToSumOfIntegerAndFraction
 import methods.fractionarithmetic.multiplyAndSimplifyFractions
 import methods.general.distributePowerOfProduct
 import methods.general.distributeSumOfPowers
 import methods.general.multiplyExponentsUsingPowerRule
 import methods.general.removeBracketsProduct
 import methods.integerarithmetic.simplifyIntegersInExpression
-import methods.mixednumbers.fractionToMixedNumber
-import methods.mixednumbers.splitMixedNumber
 
 /**
  * [ ( [x^a] ) ^ b ] --> [x^ (ab)]
@@ -34,15 +35,12 @@ val applyPowerRuleOfExponents = plan {
  * --> [2 ^ 3] * [2 ^ [2 / 3]]
  */
 val splitRationalExponent = plan {
-    pattern = powerOf(
-        UnsignedIntegerPattern(),
-        fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
-    )
+    pattern = powerOf(UnsignedIntegerPattern(), IntegerFractionPattern())
+    explanation(Explanation.SplitRationalExponent)
 
     pipeline {
-        optionalSteps { deeply(fractionToMixedNumber) }
-        optionalSteps { deeply(splitMixedNumber) }
-        optionalSteps(distributeSumOfPowers)
+        steps { applyTo(convertImproperFractionToSumOfIntegerAndFraction) { it.exponent() } }
+        steps(distributeSumOfPowers)
     }
 }
 
@@ -63,12 +61,7 @@ val simplifyRationalExponentOfInteger = plan {
 
         // [2 ^ [2 / 5] ] * [ 3 ^ [6 / 5] ] * [ 5 ^ [4 / 5] ]
         optionalSteps {
-            plan {
-                explanation(Explanation.PowerRule)
-                pipeline {
-                    optionalSteps { whilePossible { deeply(applyPowerRuleOfExponents) } }
-                }
-            }
+            whilePossible { deeply(applyPowerRuleOfExponents) }
         }
 
         // [2 ^ [2 / 5] ] * [ 3 * 3 ^ [1 / 5] ] * [ 5 ^ [4 / 5] ]

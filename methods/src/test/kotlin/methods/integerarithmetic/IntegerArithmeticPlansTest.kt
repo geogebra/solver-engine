@@ -259,26 +259,22 @@ class IntegerArithmeticPlansTest {
             }
 
             step {
+                fromExpr = "[2 ^ [2 ^ 3]]"
+                toExpr = "[2 ^ 8]"
+
+                step {
+                    fromExpr = "[2 ^ 3]"
+                    toExpr = "2 * 2 * 2"
+                }
+
+                step {
+                    fromExpr = "2 * 2 * 2"
+                    toExpr = "8"
+                }
+            }
+
+            step {
                 toExpr = "256"
-
-                step {
-                    fromExpr = "[2 ^ [2 ^ 3]]"
-                    toExpr = "[2 ^ 8]"
-
-                    step {
-                        fromExpr = "[2 ^ 3]"
-                        toExpr = "2 * 2 * 2"
-                    }
-
-                    step {
-                        fromExpr = "2 * 2 * 2"
-                        toExpr = "8"
-                    }
-                }
-
-                step {
-                    toExpr = "256"
-                }
             }
         }
     }

@@ -23,6 +23,7 @@ import engine.patterns.condition
 import engine.patterns.fractionOf
 import engine.patterns.integerCondition
 import engine.patterns.negOf
+import engine.patterns.numericCondition
 import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
@@ -218,9 +219,9 @@ val simplifyNegativeNumeratorAndDenominator = rule {
     }
 }
 
-val turnProductOfFractionByIntegerToFractionProduct = rule {
-    val nonFractionTerm = condition(AnyPattern()) { it.operator != BinaryExpressionOperator.Fraction }
-    val product = productContaining(nonFractionTerm)
+val turnFactorIntoFractionInProduct = rule {
+    val nonFractionFactor = condition(AnyPattern()) { it.operator != BinaryExpressionOperator.Fraction }
+    val product = productContaining(nonFractionFactor)
 
     onPattern(
         condition(product) { expression ->
@@ -229,9 +230,9 @@ val turnProductOfFractionByIntegerToFractionProduct = rule {
     ) {
         TransformationResult(
             toExpr = product.substitute(
-                fractionOf(move(nonFractionTerm), introduce(Constants.One))
+                fractionOf(move(nonFractionFactor), introduce(Constants.One))
             ),
-            explanation = metadata(Explanation.MultiplyFractions),
+            explanation = metadata(Explanation.TurnFactorIntoFractionInProduct, move(nonFractionFactor)),
         )
     }
 }
@@ -386,7 +387,26 @@ val turnNegativePowerOfIntegerToFraction = rule {
                 introduce(Constants.One),
                 powerOf(move(base), move(exponent.unsignedPattern)),
             ),
-            explanation = metadata(Explanation.TurnNegativePowerOfIntegerToFraction, move(base), move(exponent))
+            explanation = metadata(Explanation.TurnNegativePowerOfIntegerToFraction, move(exponent.unsignedPattern))
+        )
+    }
+}
+
+val convertImproperFractionToSumOfIntegerAndFraction = rule {
+    val fraction = IntegerFractionPattern()
+    val improperFractionCondition = numericCondition(fraction.numerator, fraction.denominator) { n1, n2 -> n1 > n2 }
+    val improperFraction = ConditionPattern(fraction, improperFractionCondition)
+
+    onPattern(improperFraction) {
+        val quotient = integerOp(fraction.numerator, fraction.denominator) { n, d -> n / d }
+        val remainder = integerOp(fraction.numerator, fraction.denominator) { n, d -> n % d }
+
+        TransformationResult(
+            toExpr = sumOf(quotient, fractionOf(remainder, move(fraction.denominator))),
+            explanation = metadata(Explanation.ConvertImproperFractionToSumOfIntegerAndFraction),
+            skills = listOf(
+                metadata(Skill.DivisionWithRemainder, move(fraction.numerator), move(fraction.denominator))
+            ),
         )
     }
 }

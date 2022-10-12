@@ -4,8 +4,18 @@ import engine.context.Context
 import methods.decimals.DecimalsExplanation
 import methods.plans.testMethod
 import org.junit.jupiter.api.Test
+import java.math.BigInteger
+
+fun List<BigInteger>.gcd() = this.fold(BigInteger.ZERO, BigInteger::gcd)
 
 class ApproximationPlansTest {
+
+    @Test
+    fun testGcd() {
+        assert(BigInteger.ZERO.gcd(BigInteger.TWO) == BigInteger.TWO)
+        val numbers = listOf(BigInteger.TWO, BigInteger.ONE)
+        assert(numbers.gcd() == BigInteger.ONE)
+    }
 
     @Test
     fun testRoundingTerminatingDecimals() = testMethod {

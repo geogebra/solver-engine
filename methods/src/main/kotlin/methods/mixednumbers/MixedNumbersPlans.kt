@@ -7,7 +7,7 @@ import engine.patterns.sumOf
 import methods.fractionarithmetic.convertIntegerToFraction
 import methods.fractionarithmetic.evaluateFractionSum
 import methods.fractionarithmetic.simplifyFraction
-import methods.general.removeBracketsSum
+import methods.general.removeBracketsInSum
 import methods.general.simplifyZeroDenominatorFractionToUndefined
 import methods.integerarithmetic.evaluateSignedIntegerAddition
 
@@ -32,6 +32,8 @@ val convertMixedNumberToImproperFraction = plan {
 
 val addMixedNumbers = plan {
     pattern = sumOf(mixedNumberOf(), mixedNumberOf())
+
+    explanation(Explanation.AddMixedNumbers)
 
     resourceData = ResourceData(curriculum = "EU")
     pipeline {
@@ -62,7 +64,8 @@ val addMixedNumbers = plan {
 
             steps {
                 plan {
-                    whilePossible(removeBracketsSum)
+                    explanation(Explanation.RemoveAllBracketsInSum)
+                    whilePossible(removeBracketsInSum)
                 }
             }
 

@@ -1,8 +1,9 @@
 package methods.general
 
 import engine.methods.plan
+import engine.methods.steps
 
-val normalizeNegativeSigns = plan {
+val normalizeNegativeSigns = steps {
     firstOf {
         option(simplifyDoubleMinus)
         option(simplifyProductWithTwoNegativeFactors)
@@ -11,12 +12,14 @@ val normalizeNegativeSigns = plan {
 }
 
 val rewriteDivisionsAsFractions = plan {
+    explanation(Explanation.RewriteDivisionsAsFractionInExpression)
+
     whilePossible {
         deeply(rewriteDivisionAsFraction)
     }
 }
 
-val evaluateOperationContainingZero = plan {
+val evaluateOperationContainingZero = steps {
     firstOf {
         option(evaluateZeroDividedByAnyValue)
         option(evaluateProductContainingZero)

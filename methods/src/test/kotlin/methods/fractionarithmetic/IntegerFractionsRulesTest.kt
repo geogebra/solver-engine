@@ -53,7 +53,7 @@ object IntegerFractionsRulesTest : RuleTest {
         RuleTestCase("[3 ^ -1]", turnIntegerToMinusOneToFraction, "[1 / 3]"),
         RuleTestCase("[3 ^ -2]", turnNegativePowerOfIntegerToFraction, "[1 / [3 ^ 2]]"),
 
-        RuleTestCase("[2/5] * 3", turnProductOfFractionByIntegerToFractionProduct, "[2/5] * [3/1]"),
+        RuleTestCase("[2/5] * 3", turnFactorIntoFractionInProduct, "[2/5] * [3/1]"),
 
         RuleTestCase("[1/3] + 2", turnSumOfFractionAndIntegerToFractionSum, "[1/3] + [2 * 3/3]"),
         RuleTestCase("[1/2] - 2", turnSumOfFractionAndIntegerToFractionSum, "[1/2] - [2 * 2/2]"),

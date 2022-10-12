@@ -5,7 +5,6 @@ import engine.steps.metadata.TranslationKeys
 
 @TranslationKeys
 enum class DecimalsExplanation : CategorisedMetadataKey {
-
     /**
      * Convert a terminating decimal to a fraction and then simplify the result
      */

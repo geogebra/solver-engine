@@ -140,9 +140,7 @@ val evaluateArithmeticExpression = plan {
             }
 
             option {
-                plan {
-                    whilePossible(evaluationSteps)
-                }
+                whilePossible(evaluationSteps)
             }
         }
     }
