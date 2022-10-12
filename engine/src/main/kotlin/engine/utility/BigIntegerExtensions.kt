@@ -11,7 +11,7 @@ fun BigInteger.isOdd() = this.lowestSetBit == 0
 
 fun BigInteger.isEven() = this.lowestSetBit != 0
 
-fun BigInteger.divides(d: BigInteger) = d.mod(this) == BigInteger.ZERO
+fun BigInteger.divides(n: BigInteger) = !isZero() && n.mod(this) == BigInteger.ZERO
 
 fun BigInteger.hasFactorOfDegree(n: Int): Boolean {
     var factor = BigInteger.ONE

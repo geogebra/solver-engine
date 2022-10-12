@@ -5,7 +5,7 @@ import engine.operators.Operator
 import engine.patterns.Match
 import engine.patterns.PathProvider
 
-class Subexpression private constructor(
+class Subexpression constructor(
     val expr: Expression,
     val parent: Subexpression?,
     val path: Path
@@ -29,10 +29,28 @@ class Subexpression private constructor(
         else -> 0
     }
 
+    /**
+     * Substitute [mappedExpr] into [this] at [subPath], returning a pair of
+     * - a [MappedExpression] containing the substitution and starting at [subPath]
+     * - a new [Subexpression] with the substitution operated.
+     */
     fun substitute(subPath: Path, mappedExpr: MappedExpression): Pair<MappedExpression, Subexpression> {
         val substitution = substitute(subPath, mappedExpr) { true }
         val sub = Subexpression(substitution.expr, parent, path)
         return Pair(substitution, sub)
+    }
+
+    /**
+     * Wrap [mappedExpr] in the correct bracket or absence of bracket so that it can correctly replace [this] in its
+     * parent.
+     */
+    fun wrapInBracketsForParent(mappedExpr: MappedExpression): MappedExpression {
+        return mappedExpr.wrapInBracketsUnless(expr.outerBracket()) { childOp ->
+            parent?.expr?.operator?.nthChildAllowed(
+                index(),
+                childOp
+            ) ?: true
+        }
     }
 
     private fun substitute(
@@ -41,7 +59,7 @@ class Subexpression private constructor(
         childAllowed: (Operator) -> Boolean
     ): MappedExpression {
         return when {
-            path == subPath -> mappedExpr.wrapInBracketsUnless(childAllowed)
+            path == subPath -> mappedExpr.wrapInBracketsUnless(expr.outerBracket(), childAllowed)
             !subPath.hasAncestor(path) -> toMappedExpr()
             else -> expr.copyWithMappedChildren(
                 children().mapIndexed { index, child ->

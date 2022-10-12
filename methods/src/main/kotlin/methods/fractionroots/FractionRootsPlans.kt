@@ -7,7 +7,7 @@ import engine.methods.steps
 import methods.fractionarithmetic.multiplyFractions
 import methods.fractionarithmetic.simplifyFractionToInteger
 import methods.general.eliminateLoneOneInExponent
-import methods.general.removeBracketsProduct
+import methods.general.removeBracketProductInProduct
 import methods.general.simplifyProductOfConjugates
 import methods.integerarithmetic.evaluateIntegerPowerDirectly
 import methods.integerarithmetic.evaluateSignedIntegerAddition
@@ -84,7 +84,7 @@ private val simplifyAfterRationalization = steps {
                     steps(collectRationalizingRadicals)
                     optionalSteps(combineProductOfSamePowerUnderHigherRoot)
                     steps { deeply(simplifyNthRootOfNthPower) }
-                    optionalSteps(removeBracketsProduct)
+                    optionalSteps(removeBracketProductInProduct)
                 }
             }
             option { deeply(simplifyNthRootToThePowerOfN) }

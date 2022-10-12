@@ -712,14 +712,6 @@ class SimplifyRationalExponentDifferentPrimeFactors {
 
                 step {
                     fromExpr = "[2 ^ [2 / 3]] * ([3 ^ 3] * [3 ^ [1 / 3]]) * (5 * [5 ^ [1 / 3]]) * [7 ^ [2 / 3]]"
-                    toExpr = "[2 ^ [2 / 3]] * [3 ^ 3] * [3 ^ [1 / 3]] * (5 * [5 ^ [1 / 3]]) * [7 ^ [2 / 3]]"
-                    explanation {
-                        key = GeneralExplanation.RemoveBracketProductInProduct
-                    }
-                }
-
-                step {
-                    fromExpr = "[2 ^ [2 / 3]] * [3 ^ 3] * [3 ^ [1 / 3]] * (5 * [5 ^ [1 / 3]]) * [7 ^ [2 / 3]]"
                     toExpr = "[2 ^ [2 / 3]] * [3 ^ 3] * [3 ^ [1 / 3]] * 5 * [5 ^ [1 / 3]] * [7 ^ [2 / 3]]"
                     explanation {
                         key = GeneralExplanation.RemoveBracketProductInProduct

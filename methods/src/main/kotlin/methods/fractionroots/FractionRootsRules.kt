@@ -21,14 +21,12 @@ import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.UnsignedIntegerPattern
-import engine.patterns.bracketOf
 import engine.patterns.fractionOf
 import engine.patterns.integerCondition
 import engine.patterns.integerOrderRootOf
 import engine.patterns.negOf
 import engine.patterns.oneOf
 import engine.patterns.oppositeSignPattern
-import engine.patterns.optionalBracketOf
 import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
@@ -211,29 +209,21 @@ val identifyCubeSumDifference = rule {
     val radical2 = withOptionalIntegerCoefficient(rootOf(UnsignedIntegerPattern(), FixedPattern(Constants.Three)))
     val term2 = oneOf(integer2, radical2)
 
-    val opNegTerm2 = optionalNegOf(optionalBracketOf(term2))
+    val opNegTerm2 = optionalNegOf(term2)
 
     val middleTerm = AnyPattern()
 
     val pattern = productOf(
-        bracketOf(sumOf(optionalBracketOf(term1), opNegTerm2)),
-        bracketOf(
-            sumOf(
-                powerOf(
-                    optionalBracketOf(term1),
-                    FixedPattern(Constants.Two)
-                ),
-                oppositeSignPattern(opNegTerm2, middleTerm),
-                powerOf(
-                    optionalBracketOf(term2),
-                    FixedPattern(Constants.Two)
-                )
-            )
+        sumOf(term1, opNegTerm2),
+        sumOf(
+            powerOf(term1, FixedPattern(Constants.Two)),
+            oppositeSignPattern(opNegTerm2, middleTerm),
+            powerOf(term2, FixedPattern(Constants.Two))
         )
     )
 
     onPattern(pattern) {
-        val middleTermMatches = productOf(move(term1), move(term2)).expr == get(middleTerm)!!.expr
+        val middleTermMatches = productOf(move(term1), move(term2)).expr.equiv(get(middleTerm)!!.expr)
 
         when {
             middleTermMatches -> TransformationResult(

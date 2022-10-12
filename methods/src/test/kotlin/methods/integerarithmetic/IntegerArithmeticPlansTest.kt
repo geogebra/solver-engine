@@ -170,8 +170,8 @@ class IntegerArithmeticPlansTest {
                 toExpr = "34 + 60 + 6 - 44"
 
                 step {
-                    fromExpr = "(4 + 10 - 3 * 5 * (-2))"
-                    toExpr = "(4 + 10 - (-30))"
+                    fromExpr = "4 + 10 - 3 * 5 * (-2)"
+                    toExpr = "4 + 10 - (-30)"
 
                     explanation {
                         key = Explanation.EvaluateProductOfIntegers
@@ -199,8 +199,8 @@ class IntegerArithmeticPlansTest {
                 }
 
                 step {
-                    fromExpr = "(4 + 10 - (-30))"
-                    toExpr = "(4 + 10 + 30)"
+                    fromExpr = "4 + 10 - (-30)"
+                    toExpr = "4 + 10 + 30"
 
                     explanation {
                         key = methods.general.Explanation.SimplifyDoubleMinus
@@ -208,19 +208,11 @@ class IntegerArithmeticPlansTest {
                 }
 
                 step {
-                    fromExpr = "(4 + 10 + 30)"
-                    toExpr = "(44)"
-
-                    explanation {
-                        key = Explanation.EvaluateSumOfIntegers
-                    }
-                }
-
-                step {
+                    fromExpr = "4 + 10 + 30"
                     toExpr = "44"
 
                     explanation {
-                        key = methods.general.Explanation.RemoveRedundantBracket
+                        key = Explanation.EvaluateSumOfIntegers
                     }
                 }
             }
@@ -249,11 +241,7 @@ class IntegerArithmeticPlansTest {
                 toExpr = "[2 ^ [2 ^ 3]]"
 
                 step {
-                    fromExpr = "(1 + 1)"
-                    toExpr = "(2)"
-                }
-                step {
-                    fromExpr = "(2)"
+                    fromExpr = "1 + 1"
                     toExpr = "2"
                 }
             }

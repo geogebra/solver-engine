@@ -3,7 +3,6 @@ package methods.general
 import engine.expressions.Subexpression
 import engine.methods.plan
 import engine.methods.steps
-import engine.operators.BracketOperator
 
 val addClarifyingBrackets = plan {
     explanation(Explanation.AddClarifyingBrackets)
@@ -14,9 +13,9 @@ val addClarifyingBrackets = plan {
 }
 
 val redundantBracketChecker = { sub: Subexpression ->
-    if (sub.expr.operator is BracketOperator && (
+    if (sub.expr.hasBracket() && (
         sub.parent == null ||
-            sub.parent!!.expr.operator.nthChildAllowed(sub.index(), sub.expr.operands[0].operator)
+            sub.parent!!.expr.operator.nthChildAllowed(sub.index(), sub.expr.operator)
         )
     ) {
         sub
@@ -30,8 +29,8 @@ val removeRedundantBrackets = steps {
         option {
             applyTo(removeOuterBracket, redundantBracketChecker)
         }
-        option(removeBracketsInSum)
-        option(removeBracketsProduct)
+        option(removeBracketSumInSum)
+        option(removeBracketProductInProduct)
         option(removeBracketAroundSignedIntegerInSum)
     }
 }

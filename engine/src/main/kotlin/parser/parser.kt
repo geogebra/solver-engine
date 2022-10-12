@@ -1,10 +1,10 @@
 package parser
 
+import engine.expressions.Decorator
 import engine.expressions.Expression
 import engine.expressions.mixedNumber
 import engine.expressions.xp
 import engine.operators.BinaryExpressionOperator
-import engine.operators.BracketOperator
 import engine.operators.EquationOperator
 import engine.operators.EquationSystemOperator
 import engine.operators.NaryOperator
@@ -20,8 +20,6 @@ import parser.antlr.ExpressionLexer
 import parser.antlr.ExpressionParser
 import java.math.BigDecimal
 
-fun invisibleBracketOf(operand: Expression) = Expression(UnaryExpressionOperator.InvisibleBracket, listOf(operand))
-
 fun parseExpression(text: String): Expression {
     val lexer = ExpressionLexer(CharStreams.fromString(text))
     val parser = ExpressionParser(CommonTokenStream(lexer))
@@ -34,8 +32,8 @@ private fun makeExpression(operator: Operator, operands: List<Expression>) = Exp
     operator,
     operands.mapIndexed { i, operand ->
         when {
-            operator.nthChildAllowed(i, operand.operator) -> operand
-            else -> invisibleBracketOf(operand)
+            operand.hasBracket() || operator.nthChildAllowed(i, operand.operator) -> operand
+            else -> operand.decorate(Decorator.MissingBracket)
         }
     }
 )
@@ -79,9 +77,10 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
 
     override fun visitOtherTerm(ctx: ExpressionParser.OtherTermContext): Expression {
         val p = visit(ctx.explicitProduct())
-        return when (ctx.sign.text) {
-            "+" -> if (UnaryExpressionOperator.Plus.childAllowed(p.operator)) p else invisibleBracketOf(p)
-            else -> makeExpression(UnaryExpressionOperator.Minus, p)
+        return when {
+            ctx.sign.text == "-" -> makeExpression(UnaryExpressionOperator.Minus, p)
+            UnaryExpressionOperator.Plus.childAllowed(p.operator) || p.hasBracket() -> p
+            else -> p.decorate(Decorator.MissingBracket)
         }
     }
 
@@ -141,15 +140,15 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
     }
 
     override fun visitRoundBracket(ctx: ExpressionParser.RoundBracketContext): Expression {
-        return makeExpression(BracketOperator.Bracket, visit(ctx.expr()))
+        return visit(ctx.expr()).decorate(Decorator.RoundBracket)
     }
 
     override fun visitSquareBracket(ctx: ExpressionParser.SquareBracketContext): Expression {
-        return makeExpression(BracketOperator.SquareBracket, visit(ctx.expr()))
+        return visit(ctx.expr()).decorate(Decorator.SquareBracket)
     }
 
     override fun visitCurlyBracket(ctx: ExpressionParser.CurlyBracketContext): Expression {
-        return makeExpression(BracketOperator.CurlyBracket, visit(ctx.expr()))
+        return visit(ctx.expr()).decorate(Decorator.CurlyBracket)
     }
 
     override fun visitMixedNumber(ctx: ExpressionParser.MixedNumberContext): Expression {

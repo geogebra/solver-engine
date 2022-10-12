@@ -5,7 +5,6 @@ import engine.expressions.xp
 import engine.operators.NaryOperator
 import org.junit.jupiter.api.Test
 import parser.parseExpression
-import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
 class PartialNaryPatternTest {
@@ -89,6 +88,8 @@ class PartialNaryPatternTest {
         assertEquals(1, matches.count())
         val match = matches.elementAt(0)
         val rest = ptn.getRestSubexpressions(match)
-        assertContentEquals(listOf(xp(2), xp(3)), rest.map { it.expr })
+        assertEquals(rest.size, 2)
+        assertEquals(xp(2), rest[0].expr)
+        assertEquals(xp(3), rest[1].expr)
     }
 }

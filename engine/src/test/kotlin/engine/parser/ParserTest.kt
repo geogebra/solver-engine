@@ -5,6 +5,7 @@ import engine.expressions.bracketOf
 import engine.expressions.curlyBracketOf
 import engine.expressions.fractionOf
 import engine.expressions.implicitProductOf
+import engine.expressions.missingBracketOf
 import engine.expressions.negOf
 import engine.expressions.plusOf
 import engine.expressions.powerOf
@@ -17,7 +18,6 @@ import engine.expressions.xp
 import engine.operators.UndefinedOperator
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
-import parser.invisibleBracketOf
 import parser.parseExpression
 import java.util.stream.Stream
 import kotlin.test.assertEquals
@@ -77,15 +77,15 @@ class ParserTest {
                 powerOf(bracketOf(sumOf(xp("x"), xp(1))), xp(2))
             ),
             TestCase("2[2^2]", implicitProductOf(xp(2), powerOf(xp(2), xp(2)))), // Should that be correct?
-            TestCase("3*-4", productOf(xp(3), invisibleBracketOf(negOf(xp(4))))),
+            TestCase("3*-4", productOf(xp(3), missingBracketOf(negOf(xp(4))))),
             TestCase("-4*3", negOf(productOf(xp(4), xp(3)))),
-            TestCase("--2", negOf(invisibleBracketOf(negOf(xp(2))))),
-            TestCase("1+-3", sumOf(xp(1), invisibleBracketOf(negOf(xp(3))))),
+            TestCase("--2", negOf(missingBracketOf(negOf(xp(2))))),
+            TestCase("1+-3", sumOf(xp(1), missingBracketOf(negOf(xp(3))))),
             TestCase(
                 "3*+-+2",
                 productOf(
                     xp(3),
-                    invisibleBracketOf(plusOf(invisibleBracketOf(negOf(invisibleBracketOf(plusOf(xp(2)))))))
+                    missingBracketOf(plusOf(missingBracketOf(negOf(missingBracketOf(plusOf(xp(2)))))))
                 )
             ),
             TestCase(
@@ -121,14 +121,14 @@ class ParserTest {
             ),
             TestCase(
                 "[sqrt[3] ^ 2]",
-                powerOf(invisibleBracketOf(squareRootOf(xp(3))), xp(2))
+                powerOf(missingBracketOf(squareRootOf(xp(3))), xp(2))
             ),
             TestCase(
                 "root[2, 3] * [sqrt[3] ^ 2] * [root[4, 5] ^ x]",
                 productOf(
                     rootOf(xp(2), xp(3)),
-                    powerOf(invisibleBracketOf(squareRootOf(xp(3))), xp(2)),
-                    powerOf(invisibleBracketOf(rootOf(xp(4), xp(5))), xp("x"))
+                    powerOf(missingBracketOf(squareRootOf(xp(3))), xp(2)),
+                    powerOf(missingBracketOf(rootOf(xp(4), xp(5))), xp("x"))
                 )
             ),
             TestCase("UNDEFINED", Expression(UndefinedOperator, emptyList()))

@@ -1,14 +1,14 @@
 package methods.general
 
-import methods.rules.RuleTest
-import methods.rules.RuleTestCase
-import java.util.stream.Stream
+import methods.rules.testRule
+import org.junit.jupiter.api.Test
 
-object AlgebraicFractionsTest : RuleTest {
-    @JvmStatic
-    fun testCaseProvider(): Stream<RuleTestCase> = Stream.of(
-        RuleTestCase("[x*y*z/a*y*c]", cancelCommonTerms, "[x*z/a*c]"),
-        RuleTestCase("[5*2/5*3]", cancelCommonTerms, "[2/3]"),
-        RuleTestCase("[x*y/a*y]", cancelCommonTerms, "[x / a]")
-    )
+object AlgebraicFractionsTest {
+
+    @Test
+    fun testCancelCommonTerms() {
+        testRule("[x*y*z/a*y*c]", cancelCommonTerms, "[x*z/a*c]")
+        testRule("[5*2/5*3]", cancelCommonTerms, "[2/3]")
+        testRule("[x*y/a*y]", cancelCommonTerms, "[x / a]")
+    }
 }

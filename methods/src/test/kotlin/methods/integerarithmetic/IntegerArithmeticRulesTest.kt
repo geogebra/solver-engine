@@ -1,46 +1,20 @@
 package methods.integerarithmetic
 
 import methods.plans.testMethod
-import methods.rules.RuleTest
-import methods.rules.RuleTestCase
+import methods.rules.testRule
 import org.junit.jupiter.api.Test
-import java.util.stream.Stream
 
-object IntegerArithmeticRulesTest : RuleTest {
-
-    @JvmStatic
-    fun testCaseProvider(): Stream<RuleTestCase> = Stream.of(
-
-        RuleTestCase("5 - 4", evaluateSignedIntegerAddition, "1"),
-        RuleTestCase("4 - 5", evaluateSignedIntegerAddition, "-1"),
-        RuleTestCase("1 + x + 2", evaluateSignedIntegerAddition, "3 + x"),
-        RuleTestCase("1 + x + (-2)", evaluateSignedIntegerAddition, "-1 + x"),
-        RuleTestCase("(-2) + 3", evaluateSignedIntegerAddition, "1"),
-        RuleTestCase("(-2) + (-3) + x", evaluateSignedIntegerAddition, "-5 + x"),
-
-        RuleTestCase("z*2*x*3*y", evaluateIntegerProductAndDivision, "z*6*x*y"),
-        RuleTestCase("2*3", evaluateIntegerProductAndDivision, "6"),
-
-        RuleTestCase("1 * (-2)", evaluateIntegerProductAndDivision, "-2"),
-        RuleTestCase("(-2) * x * 5", evaluateIntegerProductAndDivision, "(-10) * x"),
-        RuleTestCase("10:2", evaluateIntegerProductAndDivision, "5"),
-        RuleTestCase("10:(-2)", evaluateIntegerProductAndDivision, "-5"),
-
-        RuleTestCase("[5^3]", evaluateIntegerPowerDirectly, "125"),
-        RuleTestCase("[(-5) ^ 3]", evaluateIntegerPowerDirectly, "-125"),
-
-        RuleTestCase("[(-2)^4]", simplifyEvenPowerOfNegative, "[2^4]"),
-        RuleTestCase("[(-x)^6]", simplifyEvenPowerOfNegative, "[x^6]"),
-        RuleTestCase("[(-2)^5]", simplifyOddPowerOfNegative, "-[2^5]"),
-        RuleTestCase("[(-x)^7]", simplifyOddPowerOfNegative, "-[x^7]"),
-        RuleTestCase("[(-[1 / 2]) ^ 3]", simplifyOddPowerOfNegative, "-[([1 / 2]) ^ 3]"),
-    )
-}
-
-class SeparateIntegerArithmeticRulesTest {
+class IntegerArithmeticRulesTest {
 
     @Test
     fun testEvaluateSignedIntegerAddition() {
+        testRule("5 - 4", evaluateSignedIntegerAddition, "1")
+        testRule("4 - 5", evaluateSignedIntegerAddition, "-1")
+        testRule("1 + x + 2", evaluateSignedIntegerAddition, "3 + x")
+        testRule("1 + x + (-2)", evaluateSignedIntegerAddition, "-1 + x")
+        testRule("(-2) + 3", evaluateSignedIntegerAddition, "1")
+        testRule("(-2) + (-3) + x", evaluateSignedIntegerAddition, "-5 + x")
+
         testMethod {
             method = evaluateSignedIntegerAddition
             inputExpr = "5 - 3"
@@ -71,5 +45,30 @@ class SeparateIntegerArithmeticRulesTest {
                 }
             }
         }
+    }
+
+    @Test
+    fun testEvaluateIntegerProductAndDivision() {
+        testRule("z*2*x*3*y", evaluateIntegerProductAndDivision, "z*6*x*y")
+        testRule("2*3", evaluateIntegerProductAndDivision, "6")
+        testRule("1 * (-2)", evaluateIntegerProductAndDivision, "-2")
+        testRule("(-2) * x * 5", evaluateIntegerProductAndDivision, "(-10) * x")
+        testRule("10:2", evaluateIntegerProductAndDivision, "5")
+        testRule("10:(-2)", evaluateIntegerProductAndDivision, "-5")
+    }
+
+    @Test
+    fun testEvaluateIntegerPowerDirectly() {
+        testRule("[5^3]", evaluateIntegerPowerDirectly, "125")
+        testRule("[(-5) ^ 3]", evaluateIntegerPowerDirectly, "-125")
+    }
+
+    @Test
+    fun testSimplifyPowerOfNegative() {
+        testRule("[(-2)^4]", simplifyEvenPowerOfNegative, "[2^4]")
+        testRule("[(-x)^6]", simplifyEvenPowerOfNegative, "[x^6]")
+        testRule("[(-2)^5]", simplifyOddPowerOfNegative, "-[2^5]")
+        testRule("[(-x)^7]", simplifyOddPowerOfNegative, "-[x^7]")
+        testRule("[(-[1 / 2]) ^ 3]", simplifyOddPowerOfNegative, "-[([1 / 2]) ^ 3]")
     }
 }

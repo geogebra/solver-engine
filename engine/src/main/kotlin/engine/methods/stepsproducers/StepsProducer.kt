@@ -1,6 +1,7 @@
 package engine.methods.stepsproducers
 
 import engine.context.Context
+import engine.expressions.RootPath
 import engine.expressions.Subexpression
 import engine.operators.UndefinedOperator
 import engine.steps.Transformation
@@ -19,9 +20,20 @@ interface StepsProducer {
 /**
  * This helps build a list of chained `Transformation` instances, starting from the given `Subexpression`.
  */
-class StepsBuilder(private var sub: Subexpression) {
+class StepsBuilder(sub: Subexpression) {
+    private var sub: Subexpression
+
     private val steps = mutableListOf<Transformation>()
     private var aborted = false
+
+    init {
+        // Redundant brackets are removed because the outer brackets in the expression serve no
+        // useful purpose
+        this.sub = when (sub.path) {
+            RootPath -> sub
+            else -> Subexpression(sub.expr.removeBrackets(), sub.parent, sub.path)
+        }
+    }
 
     fun undefined() = sub.expr.operator == UndefinedOperator
 

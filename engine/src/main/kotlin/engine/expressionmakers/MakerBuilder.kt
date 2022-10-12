@@ -104,13 +104,13 @@ class MakerBuilder(
     /**
      * Adds a negative sign to [to] if [from] matches a negative expression.
      */
-    fun copySign(from: OptionalNegPattern, to: MappedExpression) =
+    fun <T : Pattern> copySign(from: OptionalNegPattern<T>, to: MappedExpression) =
         if (from.isNeg(match)) negOf(to) else to
 
     /**
      * Adds a negative sign to [to] unless [from] matches a negative expression.
      */
-    fun copyFlippedSign(from: OptionalNegPattern, to: MappedExpression) =
+    fun <T : Pattern> copyFlippedSign(from: OptionalNegPattern<T>, to: MappedExpression) =
         if (from.isNeg(match)) to else negOf(to)
 
     fun transformTo(ptn: PathProvider, value: Expression): MappedExpression {
@@ -119,6 +119,9 @@ class MakerBuilder(
             PathMappingLeaf(ptn.getBoundPaths(match), PathMappingType.Transform),
         )
     }
+
+    fun transformTo(ptn: PathProvider, transformer: (Expression) -> Expression) =
+        transformTo(ptn, transformer(ptn.getBoundExpr(match)!!))
 
     fun combineTo(ptn1: PathProvider, ptn2: PathProvider, value: Expression): MappedExpression {
         return MappedExpression(
@@ -202,7 +205,7 @@ class MakerBuilder(
     fun MappedExpression.wrapIf(pattern: OptionalWrappingPattern, wrapper: (MappedExpression) -> MappedExpression) =
         if (pattern.isWrapping()) wrapper(this) else this
 
-    fun OptionalNegPattern.isNeg() = this.isNeg(match)
+    fun OptionalNegPattern<Pattern>.isNeg() = this.isNeg(match)
 
     fun optionalDivideBy(pattern: OptionalWrappingPattern, mappedExpression: MappedExpression) =
         mappedExpression.wrapIf(pattern, ::divideBy)

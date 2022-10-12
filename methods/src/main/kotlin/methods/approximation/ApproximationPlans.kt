@@ -10,7 +10,6 @@ import engine.operators.IntegerOperator
 import engine.operators.RecurringDecimalOperator
 import engine.patterns.AnyPattern
 import engine.patterns.SignedNumberPattern
-import engine.patterns.bracketOf
 import engine.patterns.condition
 import engine.patterns.productContaining
 import methods.decimals.evaluateSumOfDecimals
@@ -56,16 +55,15 @@ val approximationSteps = steps {
 
 val approximateSubexpression = plan {
     explanation(Explanation.ApproximateExpressionInBrackets)
-    pattern = bracketOf(AnyPattern())
+    pattern = condition(AnyPattern()) { it.hasBracket() }
     whilePossible(approximationSteps)
 }
 
 val approximateExpression = plan {
-    val expression = AnyPattern()
-    pattern = condition(expression) { it.canBeApproximated() }
+    pattern = condition(AnyPattern()) { it.canBeApproximated() }
     resultPattern = SignedNumberPattern()
 
-    explanation(Explanation.ApproximateExpression, move(expression))
+    explanation(Explanation.ApproximateExpression, move(pattern))
 
     whilePossible {
         firstOf {

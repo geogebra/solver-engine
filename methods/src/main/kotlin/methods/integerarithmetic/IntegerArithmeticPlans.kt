@@ -11,7 +11,6 @@ import engine.operators.NaryOperator
 import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.SignedIntegerPattern
-import engine.patterns.bracketOf
 import engine.patterns.condition
 import engine.patterns.powerOf
 import engine.patterns.productContaining
@@ -121,7 +120,7 @@ private val evaluationSteps = steps {
 
 val evaluateArithmeticSubexpression = plan {
     explanation(Explanation.SimplifyExpressionInBrackets)
-    pattern = bracketOf(AnyPattern())
+    pattern = condition(AnyPattern()) { it.hasBracket() }
     whilePossible(evaluationSteps)
 }
 

@@ -16,7 +16,6 @@ import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
 import engine.patterns.UnsignedIntegerPattern
-import engine.patterns.bracketOf
 import engine.patterns.condition
 import engine.patterns.integerCondition
 import engine.patterns.integerOrderRootOf
@@ -57,7 +56,7 @@ val simplifyRootOfZero = rule {
     }
 }
 
-val factorizeIntegerUnderSquareRoot = rule {
+val factorizeIntegerUnderRoot = rule {
     val integer = UnsignedIntegerPattern()
     val root = integerOrderRootOf(integer)
 
@@ -182,7 +181,7 @@ val simplifyNthRootToThePowerOfN = rule {
     val root = integerOrderRootOf(radicand)
     val exponent = UnsignedIntegerPattern()
     val power = ConditionPattern(
-        powerOf(bracketOf(root), exponent),
+        powerOf(root, exponent),
         integerCondition(root.order, exponent) { n1, n2 -> n1 == n2 }
     )
 
@@ -202,7 +201,7 @@ val prepareCancellingPowerOfARoot = rule {
     val root = integerOrderRootOf(radicand)
     val exponent = UnsignedIntegerPattern()
     val power = ConditionPattern(
-        powerOf(bracketOf(root), exponent),
+        powerOf(root, exponent),
         integerCondition(root.order, exponent) { n1, n2 -> n1.divides(n2) && n1 != n2 }
     )
 
@@ -226,7 +225,7 @@ val prepareCancellingPowerOfARoot = rule {
 val simplifyNthRootOfNthPower = rule {
     val base = AnyPattern()
     val exponent = UnsignedIntegerPattern()
-    val power = powerOf(oneOf(bracketOf(base), base), exponent)
+    val power = powerOf(base, exponent)
     val radical = integerOrderRootOf(power)
 
     onPattern(ConditionPattern(radical, integerCondition(radical.order, exponent) { n1, n2 -> n1 == n2 })) {
@@ -272,7 +271,7 @@ val turnPowerOfRootToRootOfPower = rule {
     val radicand = UnsignedIntegerPattern()
     val root = integerOrderRootOf(radicand)
     val exponent = UnsignedIntegerPattern()
-    val power = powerOf(bracketOf(root), exponent)
+    val power = powerOf(root, exponent)
 
     onPattern(power) {
         TransformationResult(

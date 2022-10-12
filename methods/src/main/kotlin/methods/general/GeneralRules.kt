@@ -11,13 +11,11 @@ import engine.expressions.sumOf
 import engine.expressions.xp
 import engine.methods.TransformationResult
 import engine.methods.rule
-import engine.operators.BracketOperator
 import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.FixedPattern
 import engine.patterns.SignedNumberPattern
 import engine.patterns.UnsignedIntegerPattern
-import engine.patterns.bracketOf
 import engine.patterns.commutativeProductOf
 import engine.patterns.commutativeSumOf
 import engine.patterns.condition
@@ -26,7 +24,6 @@ import engine.patterns.fractionOf
 import engine.patterns.integerCondition
 import engine.patterns.negOf
 import engine.patterns.numericCondition
-import engine.patterns.optionalBracketOf
 import engine.patterns.optionalDivideBy
 import engine.patterns.powerOf
 import engine.patterns.productContaining
@@ -125,11 +122,7 @@ val evaluateProductDividedByZeroAsUndefined = rule {
 
 val simplifyDoubleMinus = rule {
     val value = AnyPattern()
-    val pattern = negOf(
-        bracketOf(
-            negOf(optionalBracketOf(value))
-        )
-    )
+    val pattern = negOf(negOf(value))
 
     onPattern(pattern) {
         TransformationResult(
@@ -142,8 +135,8 @@ val simplifyDoubleMinus = rule {
 val simplifyProductWithTwoNegativeFactors = rule {
     val f1 = AnyPattern()
     val f2 = AnyPattern()
-    val fd1 = optionalDivideBy(bracketOf(negOf(f1)))
-    val fd2 = optionalDivideBy(bracketOf(negOf(f2)))
+    val fd1 = optionalDivideBy(negOf(f1))
+    val fd2 = optionalDivideBy(negOf(f2))
     val product = productContaining(fd1, fd2)
 
     onPattern(product) {
@@ -159,7 +152,7 @@ val simplifyProductWithTwoNegativeFactors = rule {
 
 val moveSignOfNegativeFactorOutOfProduct = rule {
     val f = AnyPattern()
-    val fd = optionalDivideBy(bracketOf(negOf(f)))
+    val fd = optionalDivideBy(negOf(f))
     val product = productContaining(fd)
 
     onPattern(product) {
@@ -272,7 +265,7 @@ val simplifyProductOfConjugates = rule {
     val b = AnyPattern()
     val sum1 = commutativeSumOf(a, b)
     val sum2 = commutativeSumOf(a, negOf(b))
-    val product = commutativeProductOf(bracketOf(sum1), bracketOf(sum2))
+    val product = commutativeProductOf(sum1, sum2)
 
     onPattern(product) {
         TransformationResult(
@@ -291,7 +284,7 @@ val simplifyProductOfConjugates = rule {
 val distributePowerOfProduct = rule {
     val exponent = AnyPattern()
     val product = productContaining()
-    val pattern = powerOf(bracketOf(product), exponent)
+    val pattern = powerOf(product, exponent)
 
     onPattern(pattern) {
         TransformationResult(
@@ -304,7 +297,7 @@ val distributePowerOfProduct = rule {
 val expandBinomialSquared = rule {
     val a = AnyPattern()
     val b = AnyPattern()
-    val pattern = powerOf(bracketOf(sumOf(a, b)), FixedPattern(xp(2)))
+    val pattern = powerOf(sumOf(a, b), FixedPattern(xp(2)))
 
     onPattern(pattern) {
         TransformationResult(
@@ -328,12 +321,8 @@ val rewriteDivisionAsFraction = rule {
         val result = mutableListOf<MappedExpression>()
         result.addAll(factors.subList(0, division - 1).map { move(it) })
 
-        // We take the opportunity to remove unneeded brackets
-        val rawDenominator = factors[division].nthChild(0)
-        val denominator = when (rawDenominator.expr.operator) {
-            is BracketOperator -> rawDenominator.nthChild(0)
-            else -> rawDenominator
-        }
+        val denominator = factors[division].nthChild(0)
+
         result.add(
             fractionOf(
                 move(factors[division - 1]),
@@ -357,10 +346,7 @@ val multiplyExponentsUsingPowerRule = rule {
     val exp1 = AnyPattern()
     val exp2 = AnyPattern()
 
-    val pattern = powerOf(
-        bracketOf(powerOf(base, exp1)),
-        exp2
-    )
+    val pattern = powerOf(powerOf(base, exp1), exp2)
 
     onPattern(pattern) {
         TransformationResult(
@@ -400,7 +386,7 @@ val distributeSumOfPowers = rule {
 val distributeMultiplicationOverSum = rule {
     val singleTerm = AnyPattern()
     val sum = sumContaining()
-    val product = commutativeProductOf(singleTerm, bracketOf(sum))
+    val product = commutativeProductOf(singleTerm, sum)
 
     onPattern(product) {
         val terms = get(sum)!!.children()
@@ -430,7 +416,7 @@ private val MAX_POWER_AS_PRODUCT = 5.toBigInteger()
 val rewritePowerAsProduct = rule {
     val base = AnyPattern()
     val exponent = integerCondition(UnsignedIntegerPattern()) { it <= MAX_POWER_AS_PRODUCT && it >= BigInteger.TWO }
-    val power = powerOf(optionalBracketOf(base), exponent)
+    val power = powerOf(base, exponent)
 
     onPattern(power) {
         TransformationResult(
@@ -442,7 +428,7 @@ val rewritePowerAsProduct = rule {
 
 val simplifyExpressionToThePowerOfOne = rule {
     val base = AnyPattern()
-    val power = powerOf(optionalBracketOf(base), FixedPattern(Constants.One))
+    val power = powerOf(base, FixedPattern(Constants.One))
 
     onPattern(power) {
         TransformationResult(

@@ -8,7 +8,6 @@ import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.UnsignedIntegerPattern
-import engine.patterns.bracketOf
 import engine.patterns.divideBy
 import engine.patterns.integerCondition
 import engine.patterns.negOf
@@ -89,7 +88,7 @@ val evaluateIntegerPowerDirectly = rule {
 
 val simplifyEvenPowerOfNegative = rule {
     val positiveBase = AnyPattern()
-    val base = bracketOf(negOf(positiveBase))
+    val base = negOf(positiveBase)
     val exponent = integerCondition(SignedIntegerPattern()) { it.isEven() }
     val power = powerOf(base, exponent)
 
@@ -103,7 +102,7 @@ val simplifyEvenPowerOfNegative = rule {
 
 val simplifyOddPowerOfNegative = rule {
     val positiveBase = AnyPattern()
-    val base = bracketOf(negOf(positiveBase))
+    val base = negOf(positiveBase)
     val exponent = integerCondition(SignedIntegerPattern()) { it.isOdd() }
     val power = powerOf(base, exponent)
 

@@ -2,7 +2,6 @@ package engine.patterns
 
 import engine.expressions.Subexpression
 import engine.operators.BinaryExpressionOperator
-import engine.operators.BracketOperator
 import engine.operators.MixedNumberOperator
 import engine.operators.NaryOperator
 import engine.operators.Operator
@@ -48,10 +47,6 @@ fun squareRootOf(radicand: Pattern) =
 
 fun rootOf(radicand: Pattern, degree: Pattern) =
     OperatorPattern(BinaryExpressionOperator.Root, listOf(radicand, degree))
-
-fun bracketOf(expr: Pattern) = OperatorPattern(BracketOperator.Bracket, listOf(expr))
-
-fun invisibleBracketOf(expr: Pattern) = OperatorPattern(UnaryExpressionOperator.InvisibleBracket, listOf(expr))
 
 fun mixedNumberOf(
     integer: UnsignedIntegerPattern = UnsignedIntegerPattern(),

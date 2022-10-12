@@ -32,26 +32,13 @@ class AnyPattern : Pattern {
     }
 }
 
-open class OptionalNegPatternBase<T : Pattern>(val unsignedPattern: T) : Pattern {
+open class OptionalNegPattern<T : Pattern>(val unsignedPattern: T) :
+    OptionalWrappingPattern(unsignedPattern, ::negOf) {
 
-    private val neg = negOf(unsignedPattern)
-    private val ptn = OneOfPattern(listOf(unsignedPattern, neg, bracketOf(neg)))
-
-    override val key = ptn
-
-    fun isNeg(m: Match) = m.getLastBinding(neg) != null
-
-    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
-        if (!checkPreviousMatch(subexpression.expr, match)) {
-            return emptySequence()
-        }
-        return ptn.findMatches(subexpression, match)
-    }
+    fun isNeg(m: Match) = isWrapping(m)
 }
 
-class OptionalNegPattern(pattern: Pattern) : OptionalNegPatternBase<Pattern>(pattern)
-
-data class SameSignPatten(val from: OptionalNegPattern, val to: Pattern) : Pattern {
+data class SameSignPatten(val from: OptionalNegPattern<Pattern>, val to: Pattern) : Pattern {
 
     override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
         if (!checkPreviousMatch(subexpression.expr, match)) {
@@ -62,7 +49,7 @@ data class SameSignPatten(val from: OptionalNegPattern, val to: Pattern) : Patte
     }
 }
 
-data class OppositeSignPatten(val from: OptionalNegPattern, val to: Pattern) : Pattern {
+data class OppositeSignPatten(val from: OptionalNegPattern<Pattern>, val to: Pattern) : Pattern {
 
     override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
         if (!checkPreviousMatch(subexpression.expr, match)) {
@@ -89,7 +76,7 @@ class VariablePattern : Pattern {
     }
 }
 
-class OptionalWrappingPattern(val pattern: Pattern, wrapper: (Pattern) -> Pattern) : Pattern {
+open class OptionalWrappingPattern(val pattern: Pattern, wrapper: (Pattern) -> Pattern) : Pattern {
 
     private val wrappingPattern = wrapper(pattern)
     private val ptn = oneOf(wrappingPattern, pattern)
@@ -108,32 +95,9 @@ class OptionalWrappingPattern(val pattern: Pattern, wrapper: (Pattern) -> Patter
 
 fun optional(pattern: Pattern, wrapper: (Pattern) -> Pattern) = OptionalWrappingPattern(pattern, wrapper)
 
-fun optionalDivideBy(pattern: Pattern) = OptionalWrappingPattern(pattern, ::divideBy)
-fun optionalBracketOf(pattern: Pattern) = OptionalWrappingPattern(pattern, ::bracketOf)
-
-/**
- * Used to find matches in a `Subexpression` object, either containing
- * the `Pattern` pattern or division by the pattern
- */
-data class OptionalDivideBy(val pattern: Pattern) : Pattern {
-
-    private val divide = divideBy(pattern)
-    private val ptn = oneOf(pattern, divide)
-
-    override val key = ptn
-
-    fun isDivide(m: Match) = m.getLastBinding(divide) != null
-
-    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
-        if (!checkPreviousMatch(subexpression.expr, match)) {
-            return emptySequence()
-        }
-        return ptn.findMatches(subexpression, match)
-    }
-}
-
 fun optionalNegOf(operand: Pattern) = OptionalNegPattern(operand)
+fun optionalDivideBy(pattern: Pattern) = OptionalWrappingPattern(pattern, ::divideBy)
 
-fun sameSignPattern(from: OptionalNegPattern, to: Pattern) = SameSignPatten(from, to)
+fun sameSignPattern(from: OptionalNegPattern<Pattern>, to: Pattern) = SameSignPatten(from, to)
 
-fun oppositeSignPattern(from: OptionalNegPattern, to: Pattern) = OppositeSignPatten(from, to)
+fun oppositeSignPattern(from: OptionalNegPattern<Pattern>, to: Pattern) = OppositeSignPatten(from, to)

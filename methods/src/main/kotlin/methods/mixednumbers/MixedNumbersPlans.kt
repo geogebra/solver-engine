@@ -7,7 +7,7 @@ import engine.patterns.sumOf
 import methods.fractionarithmetic.convertIntegerToFraction
 import methods.fractionarithmetic.evaluateFractionSum
 import methods.fractionarithmetic.simplifyFraction
-import methods.general.removeBracketsInSum
+import methods.general.removeBracketSumInSum
 import methods.general.simplifyZeroDenominatorFractionToUndefined
 import methods.integerarithmetic.evaluateSignedIntegerAddition
 
@@ -65,7 +65,7 @@ val addMixedNumbers = plan {
             steps {
                 plan {
                     explanation(Explanation.RemoveAllBracketsInSum)
-                    whilePossible(removeBracketsInSum)
+                    whilePossible(removeBracketSumInSum)
                 }
             }
 

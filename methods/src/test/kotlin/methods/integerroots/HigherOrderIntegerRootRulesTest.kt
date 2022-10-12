@@ -1,54 +1,54 @@
 package methods.integerroots
 
-import methods.rules.RuleTestCase
+import methods.rules.testRule
 import org.junit.jupiter.api.Test
 
 class HigherOrderIntegerRootRulesTest {
 
     @Test
     fun testTurnPowerOfRootToRootOfPower() {
-        RuleTestCase(
+        testRule(
             "[(root[5, 4]) ^ 3]",
             turnPowerOfRootToRootOfPower,
             "root[[5 ^ 3], 4]"
-        ).assert()
-        RuleTestCase(
+        )
+        testRule(
             "[(sqrt[3]) ^ 5]",
             turnPowerOfRootToRootOfPower,
             "sqrt[[3 ^ 5]]"
-        ).assert()
+        )
     }
 
     @Test
     fun testSimplifyRootOfRoot() {
-        RuleTestCase(
+        testRule(
             "root[root[5, 3], 4]",
             simplifyRootOfRoot,
             "root[5, 4 * 3]"
-        ).assert()
-        RuleTestCase(
+        )
+        testRule(
             "sqrt[sqrt[3]]",
             simplifyRootOfRoot,
             "root[3, 2 * 2]"
-        ).assert()
-        RuleTestCase(
+        )
+        testRule(
             "root[sqrt[6], 3]",
             simplifyRootOfRoot,
             "root[6, 3 * 2]"
-        ).assert()
+        )
     }
 
     @Test
     fun testPutRootCoefficientUnderRoot() {
-        RuleTestCase(
+        testRule(
             "7 * root[20, 3]",
             putRootCoefficientUnderRoot,
             "root[[7 ^ 3] * 20, 3]"
-        ).assert()
-        RuleTestCase(
+        )
+        testRule(
             "8 * sqrt[40]",
             putRootCoefficientUnderRoot,
             "sqrt[[8 ^ 2] * 40]"
-        ).assert()
+        )
     }
 }

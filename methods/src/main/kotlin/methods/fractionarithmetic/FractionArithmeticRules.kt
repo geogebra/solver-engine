@@ -17,7 +17,6 @@ import engine.patterns.FixedPattern
 import engine.patterns.IntegerFractionPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.UnsignedIntegerPattern
-import engine.patterns.bracketOf
 import engine.patterns.commutativeSumOf
 import engine.patterns.condition
 import engine.patterns.fractionOf
@@ -31,6 +30,7 @@ import engine.patterns.productContaining
 import engine.patterns.sumContaining
 import engine.steps.metadata.Skill
 import engine.steps.metadata.metadata
+import engine.utility.divides
 import java.math.BigInteger
 
 val convertIntegerToFraction = rule {
@@ -118,10 +118,7 @@ val simplifyNegativeInDenominator = rule {
     val numerator = AnyPattern()
     val denominator = AnyPattern()
 
-    val pattern = fractionOf(
-        numerator,
-        negOf(oneOf(bracketOf(denominator), denominator)),
-    )
+    val pattern = fractionOf(numerator, negOf(denominator))
 
     onPattern(pattern) {
         TransformationResult(
@@ -137,7 +134,12 @@ val simplifyFractionToInteger = rule {
 
     val frac = fractionOf(numerator, denominator)
 
-    onPattern(ConditionPattern(frac, integerCondition(numerator, denominator) { n, d -> n.mod(d).signum() == 0 })) {
+    onPattern(
+        ConditionPattern(
+            frac,
+            integerCondition(numerator, denominator) { n, d -> d.divides(n) }
+        )
+    ) {
         TransformationResult(
             toExpr = integerOp(numerator, denominator) { n, d -> n / d },
             explanation = metadata(Explanation.SimplifyFractionToInteger),
@@ -189,10 +191,7 @@ val simplifyNegativeInNumerator = rule {
     val numerator = AnyPattern()
     val denominator = AnyPattern()
 
-    val pattern = fractionOf(
-        negOf(oneOf(bracketOf(numerator), numerator)),
-        denominator,
-    )
+    val pattern = fractionOf(negOf(numerator), denominator)
 
     onPattern(pattern) {
         TransformationResult(
@@ -206,10 +205,7 @@ val simplifyNegativeNumeratorAndDenominator = rule {
     val numerator = AnyPattern()
     val denominator = AnyPattern()
 
-    val pattern = fractionOf(
-        negOf(oneOf(bracketOf(numerator), numerator)),
-        negOf(oneOf(bracketOf(denominator), denominator)),
-    )
+    val pattern = fractionOf(negOf(numerator), negOf(denominator))
 
     onPattern(pattern) {
         TransformationResult(
@@ -238,24 +234,21 @@ val turnFactorIntoFractionInProduct = rule {
 }
 
 val turnSumOfFractionAndIntegerToFractionSum = rule {
-    val numerator = UnsignedIntegerPattern()
-    val denominator = UnsignedIntegerPattern()
-    val f = fractionOf(numerator, denominator)
+    val f = IntegerFractionPattern()
     val nf = optionalNegOf(f)
-    val integerTerm = UnsignedIntegerPattern()
-    val ni = optionalNegOf(integerTerm)
+    val integerTerm = SignedIntegerPattern()
 
-    val sum = commutativeSumOf(nf, ni)
+    val sum = commutativeSumOf(nf, integerTerm)
 
     onPattern(sum) {
         TransformationResult(
             sum.substitute(
                 move(nf),
                 copySign(
-                    ni,
+                    integerTerm,
                     fractionOf(
-                        productOf(move(integerTerm), move(denominator)),
-                        move(denominator)
+                        productOf(move(integerTerm.unsignedPattern), move(f.denominator)),
+                        move(f.denominator)
                     )
                 )
             ),
@@ -288,7 +281,7 @@ val multiplyFractions = rule {
 
 val simplifyFractionWithFractionNumerator = rule {
     val numerator = fractionOf(AnyPattern(), AnyPattern())
-    val denominator = UnsignedIntegerPattern()
+    val denominator = AnyPattern()
     val f = fractionOf(numerator, denominator)
 
     onPattern(f) {
@@ -323,7 +316,7 @@ val simplifyFractionWithFractionDenominator = rule {
 val distributeFractionPositivePower = rule {
     val fraction = IntegerFractionPattern()
     val exponent = integerCondition(UnsignedIntegerPattern()) { it > BigInteger.ONE }
-    val pattern = powerOf(bracketOf(fraction), exponent)
+    val pattern = powerOf(fraction, exponent)
 
     onPattern(pattern) {
         TransformationResult(
@@ -339,7 +332,7 @@ val distributeFractionPositivePower = rule {
 val simplifyFractionNegativePower = rule {
     val fraction = IntegerFractionPattern()
     val exponent = SignedIntegerPattern()
-    val pattern = powerOf(bracketOf(fraction), integerCondition(exponent) { it < -BigInteger.ONE })
+    val pattern = powerOf(fraction, integerCondition(exponent) { it < -BigInteger.ONE })
 
     onPattern(pattern) {
         TransformationResult(
@@ -354,7 +347,7 @@ val simplifyFractionNegativePower = rule {
 
 val simplifyFractionToMinusOne = rule {
     val fraction = IntegerFractionPattern()
-    val pattern = powerOf(bracketOf(fraction), FixedPattern(xp(-1)))
+    val pattern = powerOf(fraction, FixedPattern(xp(-1)))
 
     onPattern(pattern) {
         TransformationResult(

@@ -5,7 +5,6 @@ import engine.methods.plan
 import engine.methods.steps
 import engine.operators.VariableOperator
 import engine.patterns.AnyPattern
-import engine.patterns.bracketOf
 import engine.patterns.condition
 import engine.patterns.powerOf
 import methods.decimals.convertRecurringDecimalToFractionAndSimplify
@@ -124,7 +123,7 @@ val simplificationSteps = steps {
 
 val simplifyConstantSubexpression = plan {
     explanation(Explanation.SimplifyExpressionInBrackets)
-    pattern = bracketOf(AnyPattern())
+    pattern = condition(AnyPattern()) { it.hasBracket() }
 
     whilePossible(simplificationSteps)
 }

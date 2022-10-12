@@ -381,17 +381,9 @@ class ConstantExpressionRationalizationTest {
 
             step {
                 fromExpr = "[2 * (root[25, 3] - root[15, 3] + root[9, 3]) / 8]"
-                toExpr = "[(root[25, 3] - root[15, 3] + root[9, 3]) / 4]"
-                explanation {
-                    key = FractionArithmeticExplanation.SimplifyFraction
-                }
-            }
-
-            step {
-                fromExpr = "[(root[25, 3] - root[15, 3] + root[9, 3]) / 4]"
                 toExpr = "[root[25, 3] - root[15, 3] + root[9, 3] / 4]"
                 explanation {
-                    key = GeneralExplanation.RemoveRedundantBracket
+                    key = FractionArithmeticExplanation.SimplifyFraction
                 }
             }
         }
@@ -627,7 +619,7 @@ class ConstantExpressionRationalizationTest {
 
                 step {
                     fromExpr = "[2 * (root[9, 3] + root[15, 3] + root[25, 3]) / 2]"
-                    toExpr = "(root[9, 3] + root[15, 3] + root[25, 3])"
+                    toExpr = "root[9, 3] + root[15, 3] + root[25, 3]"
                     explanation {
                         key = GeneralExplanation.CancelDenominator
                     }
@@ -1014,28 +1006,11 @@ class SimplifyToZero {
                 explanation {
                     key = ConstantExpressionsExplanation.SimplifyExpressionInBrackets
                 }
-
                 step {
-                    fromExpr = "(1 + 1)"
-                    toExpr = "(2)"
-                    explanation {
-                        key = IntegerArithmeticExplanation.SimplifyIntegersInSum
-                    }
-
-                    step {
-                        fromExpr = "1 + 1"
-                        toExpr = "2"
-                        explanation {
-                            key = IntegerArithmeticExplanation.EvaluateIntegerAddition
-                        }
-                    }
-                }
-
-                step {
-                    fromExpr = "(2)"
+                    fromExpr = "1 + 1"
                     toExpr = "2"
                     explanation {
-                        key = GeneralExplanation.RemoveRedundantBracket
+                        key = IntegerArithmeticExplanation.SimplifyIntegersInSum
                     }
                 }
             }
@@ -1128,26 +1103,10 @@ class SimplifyToUndefined {
                 }
 
                 step {
-                    fromExpr = "(5 - 4)"
-                    toExpr = "(1)"
-                    explanation {
-                        key = IntegerArithmeticExplanation.SimplifyIntegersInSum
-                    }
-
-                    step {
-                        fromExpr = "5 - 4"
-                        toExpr = "1"
-                        explanation {
-                            key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
-                        }
-                    }
-                }
-
-                step {
-                    fromExpr = "(1)"
+                    fromExpr = "5 - 4"
                     toExpr = "1"
                     explanation {
-                        key = GeneralExplanation.RemoveRedundantBracket
+                        key = IntegerArithmeticExplanation.SimplifyIntegersInSum
                     }
                 }
             }
@@ -1160,26 +1119,10 @@ class SimplifyToUndefined {
                 }
 
                 step {
-                    fromExpr = "(1 - 1)"
-                    toExpr = "(0)"
-                    explanation {
-                        key = IntegerArithmeticExplanation.SimplifyIntegersInSum
-                    }
-
-                    step {
-                        fromExpr = "1 - 1"
-                        toExpr = "0"
-                        explanation {
-                            key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
-                        }
-                    }
-                }
-
-                step {
-                    fromExpr = "(0)"
+                    fromExpr = "1 - 1"
                     toExpr = "0"
                     explanation {
-                        key = GeneralExplanation.RemoveRedundantBracket
+                        key = IntegerArithmeticExplanation.SimplifyIntegersInSum
                     }
                 }
             }

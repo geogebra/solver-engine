@@ -88,14 +88,14 @@ class RecurringDecimalPattern : Pattern {
     }
 }
 
-class SignedIntegerPattern : OptionalNegPatternBase<UnsignedIntegerPattern>(UnsignedIntegerPattern()), IntegerPattern {
+class SignedIntegerPattern : OptionalNegPattern<UnsignedIntegerPattern>(UnsignedIntegerPattern()), IntegerPattern {
     override fun getBoundInt(m: Match): BigInteger {
         val value = unsignedPattern.getBoundInt(m)
         return if (isNeg(m)) -value else value
     }
 }
 
-class SignedNumberPattern : OptionalNegPatternBase<UnsignedDecimalPattern>(UnsignedDecimalPattern()), NumberPattern {
+class SignedNumberPattern : OptionalNegPattern<UnsignedDecimalPattern>(UnsignedDecimalPattern()), NumberPattern {
     override fun getBoundNumber(m: Match): BigDecimal {
         val value = unsignedPattern.getBoundNumber(m)
         return if (isNeg(m)) -value else value

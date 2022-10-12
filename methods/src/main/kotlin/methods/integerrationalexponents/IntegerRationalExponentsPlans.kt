@@ -12,7 +12,7 @@ import methods.fractionarithmetic.multiplyAndSimplifyFractions
 import methods.general.distributePowerOfProduct
 import methods.general.distributeSumOfPowers
 import methods.general.multiplyExponentsUsingPowerRule
-import methods.general.removeBracketsProduct
+import methods.general.removeBracketProductInProduct
 import methods.integerarithmetic.simplifyIntegersInExpression
 
 /**
@@ -76,7 +76,7 @@ val simplifyRationalExponentOfInteger = plan {
                     }
                     optionalSteps {
                         whilePossible {
-                            deeply(removeBracketsProduct)
+                            deeply(removeBracketProductInProduct)
                         }
                     }
                 }

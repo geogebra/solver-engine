@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 
 class TestReplaceAllInvisibleBrackets {
 
-    // @Test
+    @Test
     fun testReplaceAllInvisibleBracketsSimple() = testMethod {
         method = addClarifyingBrackets
         inputExpr = "3*-4"
@@ -13,7 +13,7 @@ class TestReplaceAllInvisibleBrackets {
             toExpr = "3*(-4)"
 
             explanation {
-                key = Explanation.ReplaceAllInvisibleBrackets
+                key = Explanation.AddClarifyingBrackets
             }
         }
     }
@@ -28,7 +28,7 @@ class TestReplaceAllInvisibleBrackets {
         }
     }
 
-    // @Test
+    @Test
     fun testReplaceAllInvisibleBracketsNested() = testMethod {
         method = addClarifyingBrackets
         inputExpr = "[3 * -4/1 --+-2]"
@@ -37,7 +37,7 @@ class TestReplaceAllInvisibleBrackets {
             toExpr = "[3 * (-4) / 1 - (-(+(-2)))]"
 
             explanation {
-                key = Explanation.ReplaceAllInvisibleBrackets
+                key = Explanation.AddClarifyingBrackets
             }
         }
     }

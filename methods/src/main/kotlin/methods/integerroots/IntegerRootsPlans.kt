@@ -11,7 +11,7 @@ import engine.utility.isPowerOfDegree
 import methods.fractionarithmetic.multiplyAndSimplifyFractions
 import methods.fractionarithmetic.simplifyFractionsInExpression
 import methods.general.moveSignOfNegativeFactorOutOfProduct
-import methods.general.removeBracketsProduct
+import methods.general.removeBracketProductInProduct
 import methods.general.removeRedundantBrackets
 import methods.integerarithmetic.evaluateIntegerPowerDirectly
 import methods.integerarithmetic.evaluateProductOfIntegers
@@ -115,7 +115,7 @@ val simplifyIntegerRoot = plan {
     explanation(Explanation.SimplifyIntegerRoot)
     pipeline {
         // root[2^3 * 5^2 * 7^5, 2]
-        optionalSteps(factorizeIntegerUnderSquareRoot)
+        optionalSteps(factorizeIntegerUnderRoot)
 
         // root[2^3, 2] * root[5^2, 2] * root[7^5, 2]
         optionalSteps(splitRootOfProduct)
@@ -127,7 +127,7 @@ val simplifyIntegerRoot = plan {
                 pipeline {
                     optionalSteps { whilePossible { deeply(splitPowerUnderRoot) } }
                     optionalSteps { whilePossible { deeply(splitRootOfProduct) } }
-                    optionalSteps { whilePossible(removeBracketsProduct) }
+                    optionalSteps { whilePossible(removeBracketProductInProduct) }
                 }
             }
         }

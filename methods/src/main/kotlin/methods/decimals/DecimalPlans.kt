@@ -14,7 +14,6 @@ import engine.operators.IntegerOperator
 import engine.patterns.AnyPattern
 import engine.patterns.SignedNumberPattern
 import engine.patterns.UnsignedIntegerPattern
-import engine.patterns.bracketOf
 import engine.patterns.condition
 import engine.patterns.fractionOf
 import engine.patterns.powerOf
@@ -175,7 +174,7 @@ private val evaluationSteps = steps {
 
 val evaluateSubexpressionAsDecimal = plan {
     explanation(Explanation.EvaluateExpressionInBracketsAsDecimal)
-    pattern = bracketOf(AnyPattern())
+    pattern = condition(AnyPattern()) { it.hasBracket() }
     whilePossible(evaluationSteps)
 }
 

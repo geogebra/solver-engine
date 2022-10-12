@@ -2,7 +2,6 @@ package engine.expressions
 
 import engine.expressionmakers.ExpressionMaker
 import engine.operators.BinaryExpressionOperator
-import engine.operators.BracketOperator
 import engine.operators.EquationOperator
 import engine.operators.EquationSystemOperator
 import engine.operators.MixedNumberOperator
@@ -14,15 +13,16 @@ import engine.patterns.Match
 data class MappedExpression(val expr: Expression, val mappings: PathMappingTree) : ExpressionMaker {
     override fun make(match: Match) = this
 
-    fun wrapInBracketsUnless(cond: (Operator) -> Boolean): MappedExpression = when {
-        cond(expr.operator) -> this
-        else -> MappedExpression(bracketOf(expr), PathMappingParent(listOf(mappings)))
+    fun wrapInBracketsUnless(bracket: Decorator? = null, cond: (Operator) -> Boolean): MappedExpression = when {
+        cond(expr.operator) -> MappedExpression(expr.removeBrackets(), mappings)
+        expr.hasBracket() -> this
+        else -> MappedExpression(bracketOf(expr, bracket), mappings)
     }
 }
 
 fun Expression.copyWithMappedChildren(mappedChildren: List<MappedExpression>): MappedExpression {
     return MappedExpression(
-        Expression(operator, mappedChildren.map { it.expr }),
+        Expression(operator, mappedChildren.map { it.expr }, decorators),
         PathMappingParent(mappedChildren.map { it.mappings }),
     )
 }
@@ -64,9 +64,6 @@ fun flattenedNaryMappedExpression(operator: NaryOperator, operands: List<MappedE
         PathMappingParent(mappingSets)
     )
 }
-
-fun bracketOf(operand: MappedExpression) =
-    mappedExpression(BracketOperator.Bracket, listOf(operand))
 
 fun sumOf(vararg operands: MappedExpression) = sumOf(operands.asList())
 

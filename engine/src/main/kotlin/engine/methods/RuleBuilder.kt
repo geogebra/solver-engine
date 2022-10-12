@@ -20,7 +20,7 @@ private class Rule(
             builder.transformation()?.let {
                 return Transformation(
                     fromExpr = sub,
-                    toExpr = it.toExpr,
+                    toExpr = sub.wrapInBracketsForParent(it.toExpr),
                     steps = it.steps,
                     explanation = it.explanation,
                     skills = it.skills,
