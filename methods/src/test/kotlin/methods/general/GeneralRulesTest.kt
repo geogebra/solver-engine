@@ -159,4 +159,17 @@ class GeneralRulesTest {
         testRule("3 * 5 : 0", evaluateProductDividedByZeroAsUndefined, "UNDEFINED")
         testRule("x : 0 * y", evaluateProductDividedByZeroAsUndefined, "UNDEFINED")
     }
+
+    @Test
+    fun testCancelAdditiveInverseElements() {
+        testRule("sqrt[12] - sqrt[12] + 1", cancelAdditiveInverseElements, "1")
+        testRule(
+            "(sqrt[2] + root[3, 3])  + 1 - (sqrt[2] + root[3, 3]) + 2",
+            cancelAdditiveInverseElements,
+            "1 + 2"
+        )
+        testRule("sqrt[12] - sqrt[12]", cancelAdditiveInverseElements, "0")
+        testRule("-sqrt[12] + sqrt[12]", cancelAdditiveInverseElements, "0")
+        testRule("(x + 1 - y) - (x + 1 - y)", cancelAdditiveInverseElements, "0")
+    }
 }

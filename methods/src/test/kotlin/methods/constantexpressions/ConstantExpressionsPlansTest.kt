@@ -1046,38 +1046,14 @@ class SimplifyToUndefined {
 
             step {
                 fromExpr = "[5 - 4 / 1 - 1] + 2"
-                toExpr = "[1 / 1 - 1] + 2"
+                toExpr = "[5 - 4 / 0] + 2"
                 explanation {
-                    key = IntegerArithmeticExplanation.SimplifyIntegersInSum
-                }
-
-                step {
-                    fromExpr = "5 - 4"
-                    toExpr = "1"
-                    explanation {
-                        key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
-                    }
+                    key = GeneralExplanation.CancelAdditiveInverseElements
                 }
             }
 
             step {
-                fromExpr = "[1 / 1 - 1] + 2"
-                toExpr = "[1 / 0] + 2"
-                explanation {
-                    key = IntegerArithmeticExplanation.SimplifyIntegersInSum
-                }
-
-                step {
-                    fromExpr = "1 - 1"
-                    toExpr = "0"
-                    explanation {
-                        key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
-                    }
-                }
-            }
-
-            step {
-                fromExpr = "[1 / 0] + 2"
+                fromExpr = "[5 - 4 / 0] + 2"
                 toExpr = "UNDEFINED"
                 explanation {
                     key = GeneralExplanation.SimplifyZeroDenominatorFractionToUndefined
@@ -1094,10 +1070,21 @@ class SimplifyToUndefined {
         check {
             fromExpr = "(5 - 4) : (1 - 1) + 2"
             toExpr = "UNDEFINED"
+            explanation {
+                key = ConstantExpressionsExplanation.SimplifyConstantExpression
+            }
 
             step {
                 fromExpr = "(5 - 4) : (1 - 1) + 2"
-                toExpr = "1 : (1 - 1) + 2"
+                toExpr = "(5 - 4) : 0 + 2"
+                explanation {
+                    key = GeneralExplanation.CancelAdditiveInverseElements
+                }
+            }
+
+            step {
+                fromExpr = "(5 - 4) : 0 + 2"
+                toExpr = "1 : 0 + 2"
                 explanation {
                     key = ConstantExpressionsExplanation.SimplifyExpressionInBrackets
                 }
@@ -1106,23 +1093,7 @@ class SimplifyToUndefined {
                     fromExpr = "5 - 4"
                     toExpr = "1"
                     explanation {
-                        key = IntegerArithmeticExplanation.SimplifyIntegersInSum
-                    }
-                }
-            }
-
-            step {
-                fromExpr = "1 : (1 - 1) + 2"
-                toExpr = "1 : 0 + 2"
-                explanation {
-                    key = ConstantExpressionsExplanation.SimplifyExpressionInBrackets
-                }
-
-                step {
-                    fromExpr = "1 - 1"
-                    toExpr = "0"
-                    explanation {
-                        key = IntegerArithmeticExplanation.SimplifyIntegersInSum
+                        key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
                     }
                 }
             }
@@ -1163,6 +1134,126 @@ class SimplifyToUndefined {
 
         check {
             toExpr = "UNDEFINED"
+        }
+    }
+}
+
+class CancelOppositeTerm {
+    @Test
+    fun testCancelOppositeTerm() = testMethod {
+        method = simplifyConstantExpression
+        inputExpr = "(sqrt[2] + root[3, 3]) + 1 - (sqrt[2] + root[3, 3]) - 2"
+
+        check {
+            fromExpr = "(sqrt[2] + root[3, 3]) + 1 - (sqrt[2] + root[3, 3]) - 2"
+            toExpr = "-1"
+
+            step {
+                fromExpr = "(sqrt[2] + root[3, 3]) + 1 - (sqrt[2] + root[3, 3]) - 2"
+                toExpr = "1 - 2"
+                explanation {
+                    key = GeneralExplanation.CancelAdditiveInverseElements
+                }
+            }
+
+            step {
+                fromExpr = "1 - 2"
+                toExpr = "-1"
+                explanation {
+                    key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testCommutativeCancelAdditiveInverseElements() = testMethod {
+        method = simplifyConstantExpression
+        inputExpr = "-(sqrt[2] + root[3, 3]) + 1 + (sqrt[2] + root[3, 3]) - 2"
+
+        check {
+            fromExpr = "-(sqrt[2] + root[3, 3]) + 1 + (sqrt[2] + root[3, 3]) - 2"
+            toExpr = "-1"
+
+            step {
+                fromExpr = "-(sqrt[2] + root[3, 3]) + 1 + (sqrt[2] + root[3, 3]) - 2"
+                toExpr = "1 - 2"
+                explanation {
+                    key = GeneralExplanation.CancelAdditiveInverseElements
+                }
+            }
+
+            step {
+                fromExpr = "1 - 2"
+                toExpr = "-1"
+                explanation {
+                    key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testCommutativeAdditiveInverseElementsComplex() = testMethod {
+        method = simplifyConstantExpression
+        inputExpr = "-1 + root[2, 3] + 2 - 1 - root[2, 3]"
+
+        check {
+            step {
+                toExpr = "-1 + 2 - 1"
+                explanation {
+                    key = GeneralExplanation.CancelAdditiveInverseElements
+                }
+            }
+
+            step { }
+        }
+    }
+
+    @Test
+    fun testCancelAdditiveInverseElementsAfterSimplifying() = testMethod {
+        method = simplifyConstantExpression
+        inputExpr = "-(root[3, 3] + 2 * root[3, 3] - 4 * root[3, 3]) - (-root[3, 3] - 3 * root[3, 3] + 5 * root[3, 3])"
+
+        check {
+            toExpr = "0"
+
+            step { }
+
+            step { }
+
+            // earlier it used to apply IntegerRoots.CollectLikeRootsAndSimplify
+            step {
+                fromExpr = "-(-root[3, 3]) - root[3, 3]"
+                toExpr = "0"
+                explanation {
+                    key = GeneralExplanation.CancelAdditiveInverseElements
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testCancelTermsBeforeRationalizatin() = testMethod {
+        method = simplifyConstantExpression
+        inputExpr = "[1 / root[3, 3] - root[3, 3]]"
+
+        check {
+            toExpr = "UNDEFINED"
+
+            step {
+                toExpr = "[1 / 0]"
+                explanation {
+                    key = GeneralExplanation.CancelAdditiveInverseElements
+                }
+            }
+
+            step {
+                toExpr = "UNDEFINED"
+                explanation {
+                    key = GeneralExplanation.SimplifyZeroDenominatorFractionToUndefined
+                }
+            }
         }
     }
 }

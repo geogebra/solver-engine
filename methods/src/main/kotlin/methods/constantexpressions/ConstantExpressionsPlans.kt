@@ -24,6 +24,7 @@ import methods.fractionarithmetic.simplifyFractionToMinusOne
 import methods.fractionroots.distributeRadicalOverFraction
 import methods.fractionroots.rationalizeDenominators
 import methods.fractionroots.simplifyFractionOfRoots
+import methods.general.cancelAdditiveInverseElements
 import methods.general.distributeMultiplicationOverSum
 import methods.general.distributePowerOfProduct
 import methods.general.evaluateProductContainingZero
@@ -90,6 +91,8 @@ val simplificationSteps = steps {
         option { deeply(simplifyZeroDenominatorFractionToUndefined) }
 
         option { deeply(evaluateProductContainingZero) }
+
+        option { deeply(cancelAdditiveInverseElements) }
 
         option { deeply(removeRedundantBrackets, deepFirst = true) }
 
@@ -163,6 +166,16 @@ val simplifyConstantExpression = plan {
         optionalSteps {
             whilePossible {
                 deeply(evaluateProductContainingZero)
+            }
+        }
+
+        // we also need this here, before the simplification
+        // of subexpression within brackets as well, as we can
+        // directly cancel terms without simplifying what's within
+        // brackets
+        optionalSteps {
+            whilePossible {
+                deeply(cancelAdditiveInverseElements)
             }
         }
 

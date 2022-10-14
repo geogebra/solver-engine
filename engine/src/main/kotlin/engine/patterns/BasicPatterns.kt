@@ -45,7 +45,7 @@ data class SameSignPatten(val from: OptionalNegPattern<Pattern>, val to: Pattern
             return emptySequence()
         }
         val ptn = if (from.isNeg(match)) negOf(to) else to
-        return ptn.findMatches(subexpression, match)
+        return ptn.findMatches(subexpression, match).map { it.newChild(this, subexpression) }
     }
 }
 
@@ -56,7 +56,7 @@ data class OppositeSignPatten(val from: OptionalNegPattern<Pattern>, val to: Pat
             return emptySequence()
         }
         val ptn = if (from.isNeg(match)) to else negOf(to)
-        return ptn.findMatches(subexpression, match)
+        return ptn.findMatches(subexpression, match).map { it.newChild(this, subexpression) }
     }
 }
 

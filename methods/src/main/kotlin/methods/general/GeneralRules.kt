@@ -24,7 +24,9 @@ import engine.patterns.fractionOf
 import engine.patterns.integerCondition
 import engine.patterns.negOf
 import engine.patterns.numericCondition
+import engine.patterns.oppositeSignPattern
 import engine.patterns.optionalDivideBy
+import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
@@ -470,6 +472,24 @@ val evaluateZeroToAPositivePower = rule {
         TransformationResult(
             toExpr = transformTo(power, Constants.Zero),
             explanation = metadata(Explanation.EvaluateZeroToAPositivePower)
+        )
+    }
+}
+
+val cancelAdditiveInverseElements = rule {
+    val term = AnyPattern()
+    val searchTerm = optionalNegOf(term)
+    val additiveInverseSearchTerm = oppositeSignPattern(searchTerm, term)
+    val pattern = sumContaining(searchTerm, additiveInverseSearchTerm)
+
+    onPattern(pattern) {
+        val toExpr = when (get(pattern)!!.children().size) {
+            2 -> transformTo(pattern, Constants.Zero)
+            else -> cancel(term, restOf(pattern))
+        }
+        TransformationResult(
+            toExpr = toExpr,
+            explanation = metadata(Explanation.CancelAdditiveInverseElements, move(term))
         )
     }
 }
