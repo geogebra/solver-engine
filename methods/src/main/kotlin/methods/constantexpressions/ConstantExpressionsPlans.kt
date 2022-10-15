@@ -118,8 +118,8 @@ val simplificationSteps = steps {
         option { deeply(evaluateFractionSum, deepFirst = true) }
         option { deeply(evaluateSumOfFractionAndInteger, deepFirst = true) }
 
-        option { deeply(rationalizeDenominators, deepFirst = true) }
         option { deeply(collectLikeRootsAndSimplify, deepFirst = true) }
+        option { deeply(rationalizeDenominators, deepFirst = true) }
         option { deeply(distributeMultiplicationOverSum, deepFirst = true) }
     }
 }
