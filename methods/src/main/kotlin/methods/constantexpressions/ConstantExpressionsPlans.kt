@@ -91,7 +91,7 @@ val simplifyRootsInExpression = plan {
 val simplificationSteps = steps {
     firstOf {
         option { deeply(simplifyZeroDenominatorFractionToUndefined) }
-
+        option { deeply(simplifyZeroNumeratorFractionToZero) }
         option { deeply(evaluateProductContainingZero) }
 
         option { deeply(cancelAdditiveInverseElements) }

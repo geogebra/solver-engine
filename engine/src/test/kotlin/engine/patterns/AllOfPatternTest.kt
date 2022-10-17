@@ -21,4 +21,13 @@ class AllOfPatternTest {
         assertEquals(xp(1), match.getBoundExpr(n))
         assertEquals(match.getBoundPaths(x), listOf(parsePath("./1")))
     }
+
+    @Test
+    fun testRationalPattern() {
+        val expr = parseExpression("-[1/2]")
+        val pattern = RationalPattern()
+        val matches = pattern.findMatches(Subexpression(expr))
+        assertEquals(1, matches.count())
+        val match = matches.first()
+    }
 }

@@ -58,7 +58,7 @@ class RationalCoefficientPattern(value: Pattern) : Pattern {
 
     private val ptn = optionalNegOf(options)
 
-    override val key = ptn
+    override val key = ptn.key
 
     override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
         if (!checkPreviousMatch(subexpression.expr, match)) {

@@ -1,5 +1,6 @@
 package methods.general
 
+import engine.conditions.isDefinitelyNotZero
 import engine.expressions.Constants
 import engine.expressions.MappedExpression
 import engine.expressions.fractionOf
@@ -172,13 +173,13 @@ val simplifyZeroDenominatorFractionToUndefined = rule {
  */
 val simplifyZeroNumeratorFractionToZero = rule {
     val zero = FixedPattern(Constants.Zero)
-    val denominator = numericCondition(SignedNumberPattern()) { it != BigDecimal.ZERO }
+    val denominator = condition(AnyPattern()) { it.isDefinitelyNotZero() }
     val pattern = fractionOf(zero, denominator)
 
     onPattern(pattern) {
         TransformationResult(
             toExpr = transform(zero),
-            explanation = metadata(Explanation.SimplifyZeroNumeratorFractionToZero)
+            explanation = metadata(Explanation.SimplifyZeroNumeratorFractionToZero, move(zero))
         )
     }
 }

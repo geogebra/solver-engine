@@ -60,7 +60,12 @@ class GeneralRulesTest {
     fun testSimplifyZeroNumeratorFractionToZero() {
         testRule("[0 / 2]", simplifyZeroNumeratorFractionToZero, "0")
         testRule("[0 / -1]", simplifyZeroNumeratorFractionToZero, "0")
-        testRule("[0 / root[3, 3] + root[5, 3]]", simplifyZeroNumeratorFractionToZero, null)
+        testRule("[0 / root[3, 3] + root[5, 3]]", simplifyZeroNumeratorFractionToZero, "0")
+        testRule("[0 / 3 * (sqrt[2] - 1)]", simplifyZeroNumeratorFractionToZero, "0")
+        testRule("[0 / 1 - 1]", simplifyZeroNumeratorFractionToZero, null)
+
+        // This one works because the denominator is "obviously" positive
+        testRule("[0 / sqrt[2] + sqrt[2]]", simplifyZeroNumeratorFractionToZero, "0")
     }
 
     @Test

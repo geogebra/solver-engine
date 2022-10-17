@@ -971,72 +971,9 @@ class ConstantExpressionTests {
             toExpr = "[8 + 4 * root[3, 3] + 2 * root[9, 3] / 5]"
         }
     }
-
-    // this test case might need to be changed
-    @Test
-    fun testZeroNumerator1() = testMethod {
-        method = simplifyConstantExpression
-        inputExpr = "[0 / root[3, 3] + root[4, 3]]"
-        check {
-            fromExpr = "[0 / root[3, 3] + root[4, 3]]"
-            toExpr = "0"
-
-            step {
-                fromExpr = "[0 / root[3, 3] + root[4, 3]]"
-                toExpr = "[0 / 7]"
-                explanation {
-                    key = FractionRootsExplanation.RationalizeDenominator
-                }
-            }
-
-            step {
-                fromExpr = "[0 / 7]"
-                toExpr = "0"
-                explanation {
-                    key = FractionArithmeticExplanation.SimplifyFractionToInteger
-                }
-            }
-        }
-    }
-
-    @Test
-    fun testZeroNumerator2() = testMethod {
-        method = simplifyConstantExpression
-        inputExpr = "[15 / 5] * [0 / 2]"
-        check {
-            toExpr = "0"
-
-            step {
-                toExpr = "[15 / 5] * 0"
-                explanation {
-                    key = GeneralExplanation.SimplifyZeroNumeratorFractionToZero
-                }
-            }
-
-            step {
-                toExpr = "0"
-                explanation {
-                    key = GeneralExplanation.EvaluateProductContainingZero
-                }
-            }
-        }
-    }
 }
 
 class SimplifyToZero {
-    @Test
-    fun testZeroNumerator1() = testMethod {
-        method = simplifyConstantExpression
-        inputExpr = "[0 / -1]"
-
-        check {
-            fromExpr = "[0 / -1]"
-            toExpr = "0"
-            explanation {
-                key = GeneralExplanation.SimplifyZeroNumeratorFractionToZero
-            }
-        }
-    }
 
     @Test
     fun testZeroDivideByValue() = testMethod {
@@ -1074,7 +1011,7 @@ class SimplifyToZero {
                 fromExpr = "[0 / 2]"
                 toExpr = "0"
                 explanation {
-                    key = FractionArithmeticExplanation.SimplifyFractionToInteger
+                    key = GeneralExplanation.SimplifyZeroNumeratorFractionToZero
                 }
             }
         }
