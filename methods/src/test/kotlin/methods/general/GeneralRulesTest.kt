@@ -152,6 +152,7 @@ class GeneralRulesTest {
     @Test
     fun testEvaluateProductDividedByZeroAsUndefined() {
         testRule("3 * 5 : 0", evaluateProductDividedByZeroAsUndefined, "UNDEFINED")
+        testRule("7 : 0.00", evaluateProductDividedByZeroAsUndefined, "UNDEFINED")
         testRule("x : 0 * y", evaluateProductDividedByZeroAsUndefined, "UNDEFINED")
     }
 

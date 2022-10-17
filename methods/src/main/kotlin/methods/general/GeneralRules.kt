@@ -97,8 +97,8 @@ val evaluateZeroDividedByAnyValue = rule {
  * anyX : 0 --> undefined
  */
 val evaluateProductDividedByZeroAsUndefined = rule {
-    val zero = FixedPattern(Constants.Zero)
-    val pattern = productContaining(divideBy(zero))
+    val zero = SignedNumberPattern()
+    val pattern = productContaining(divideBy(numericCondition(zero) { it.signum() == 0 }))
 
     onPattern(pattern) {
         TransformationResult(

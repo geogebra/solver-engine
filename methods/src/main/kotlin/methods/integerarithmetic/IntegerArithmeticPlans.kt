@@ -19,6 +19,7 @@ import methods.general.addClarifyingBrackets
 import methods.general.eliminateOneInProduct
 import methods.general.eliminateZeroInSum
 import methods.general.evaluateProductContainingZero
+import methods.general.evaluateProductDividedByZeroAsUndefined
 import methods.general.removeOuterBracket
 import methods.general.removeRedundantBrackets
 import methods.general.rewritePowerAsProduct
@@ -27,7 +28,12 @@ import methods.general.simplifyDoubleMinus
 val evaluateProductOfIntegers = plan {
     pattern = productContaining()
     explanation(Explanation.EvaluateProductOfIntegers, move(pattern))
-    whilePossible(evaluateIntegerProductAndDivision)
+    whilePossible {
+        firstOf {
+            option(evaluateProductDividedByZeroAsUndefined)
+            option(evaluateIntegerProductAndDivision)
+        }
+    }
 }
 
 val evaluateSumOfIntegers = plan {
@@ -72,6 +78,7 @@ val simplifyIntegersInProduct = plan {
 
     whilePossible {
         firstOf {
+            option(evaluateProductDividedByZeroAsUndefined)
             option(evaluateProductContainingZero)
             option(evaluateIntegerProductAndDivision)
             option(eliminateOneInProduct)

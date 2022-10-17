@@ -51,7 +51,7 @@ val evaluateIntegerProductAndDivision = rule {
             multiplier,
             ConditionPattern(
                 divideBy(divisor),
-                integerCondition(base, divisor) { n1, n2 -> n1 % n2 == BigInteger.ZERO }
+                integerCondition(base, divisor) { n1, n2 -> n2.signum() != 0 && (n1 % n2).signum() == 0 }
             )
         )
     )

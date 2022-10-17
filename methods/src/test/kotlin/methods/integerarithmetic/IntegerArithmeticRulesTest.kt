@@ -55,6 +55,7 @@ class IntegerArithmeticRulesTest {
         testRule("(-2) * x * 5", evaluateIntegerProductAndDivision, "(-10) * x")
         testRule("10:2", evaluateIntegerProductAndDivision, "5")
         testRule("10:(-2)", evaluateIntegerProductAndDivision, "-5")
+        testRule("5:0", evaluateIntegerProductAndDivision, null)
     }
 
     @Test

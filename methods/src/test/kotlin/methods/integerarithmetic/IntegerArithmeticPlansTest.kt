@@ -290,6 +290,24 @@ class IntegerArithmeticPlansTest {
     }
 
     @Test
+    fun testDividingByZero() = testMethod {
+        method = evaluateArithmeticExpression
+        inputExpr = "5 : (4 - 4)"
+
+        check {
+            toExpr = "UNDEFINED"
+
+            step {
+                toExpr = "5 : 0"
+            }
+
+            step {
+                toExpr = "UNDEFINED"
+            }
+        }
+    }
+
+    @Test
     fun testEvaluateSignedIntegerPowerPlan() = testMethod {
         method = evaluateSignedIntegerPower
         inputExpr = "[4^2]"

@@ -9,6 +9,7 @@ import engine.patterns.UnsignedDecimalPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.divideBy
 import engine.patterns.integerCondition
+import engine.patterns.numericCondition
 import engine.patterns.oneOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
@@ -84,7 +85,9 @@ val approximateDecimalProductAndDivision = rule {
         base,
         oneOf(
             multiplier,
-            divideBy(divisor),
+            divideBy(
+                numericCondition(divisor) { it.signum() != 0 }
+            ),
         )
     )
 
@@ -102,7 +105,7 @@ val approximateDecimalProductAndDivision = rule {
 
             else -> TransformationResult(
                 toExpr = product.substitute(
-                    numericOp(base, divisor) { n1, n2 -> round(n1 / n2) }
+                    numericOp(base, divisor) { n1, n2 -> round(n1) / n2 }
                 ),
                 explanation = metadata(
                     Explanation.ApproximateDecimalDivision,

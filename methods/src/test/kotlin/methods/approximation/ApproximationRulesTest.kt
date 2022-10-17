@@ -25,4 +25,12 @@ class ApproximationRulesTest {
         testRule("0.12[3]", roundRecurringDecimal, null)
         testRule("167.12[35]", roundRecurringDecimal, "167.124")
     }
+
+    @Test
+    fun testApproximateDecimalProductAndDivision() {
+        testRule("3.5001 * 1.9999", approximateDecimalProductAndDivision, "7.000")
+        testRule("2.1 * 3", approximateDecimalProductAndDivision, "6.300")
+        testRule("1 : 3", approximateDecimalProductAndDivision, "0.333")
+        testRule("4 : 0.0", approximateDecimalProductAndDivision, null)
+    }
 }
