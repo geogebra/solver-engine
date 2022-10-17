@@ -14,11 +14,6 @@ class GeneralRulesTest {
     }
 
     @Test
-    fun testEliminateLoneOneInExponent() {
-        testRule("[2^1]", eliminateLoneOneInExponent, "2")
-    }
-
-    @Test
     fun testSimplifyProductWithTwoNegativeFactors() {
         testRule("(-2) * (-3)", simplifyProductWithTwoNegativeFactors, "2 * 3")
         testRule("(-x) * y * (-12) * 5", simplifyProductWithTwoNegativeFactors, "x * y * 12 * 5")
@@ -171,5 +166,11 @@ class GeneralRulesTest {
         testRule("sqrt[12] - sqrt[12]", cancelAdditiveInverseElements, "0")
         testRule("-sqrt[12] + sqrt[12]", cancelAdditiveInverseElements, "0")
         testRule("(x + 1 - y) - (x + 1 - y)", cancelAdditiveInverseElements, "0")
+    }
+
+    @Test
+    fun testSimplifyExpressionToThePowerOfOne() {
+        testRule("[ (sqrt[2] + 1) ^ 1]", simplifyExpressionToThePowerOfOne, "sqrt[2] + 1")
+        testRule("[2 ^ 1]", simplifyExpressionToThePowerOfOne, "2")
     }
 }

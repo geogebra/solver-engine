@@ -32,6 +32,7 @@ import methods.general.evaluateZeroDividedByAnyValue
 import methods.general.expandBinomialSquared
 import methods.general.normalizeExpression
 import methods.general.removeRedundantBrackets
+import methods.general.simplifyExpressionToThePowerOfOne
 import methods.general.simplifyZeroDenominatorFractionToUndefined
 import methods.general.simplifyZeroNumeratorFractionToZero
 import methods.integerarithmetic.evaluateSignedIntegerPower
@@ -56,6 +57,7 @@ val simplifyPowers = plan {
 
     whilePossible {
         firstOf {
+            option { deeply(simplifyExpressionToThePowerOfOne) }
             option { deeply(simplifyEvenPowerOfNegative) }
             option { deeply(simplifyOddPowerOfNegative) }
             option { deeply(simplifyFractionToMinusOne) }

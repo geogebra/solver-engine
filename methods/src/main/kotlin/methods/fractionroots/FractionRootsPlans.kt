@@ -6,8 +6,8 @@ import engine.methods.plan
 import engine.methods.steps
 import methods.fractionarithmetic.multiplyFractions
 import methods.fractionarithmetic.simplifyFractionToInteger
-import methods.general.eliminateLoneOneInExponent
 import methods.general.removeBracketProductInProduct
+import methods.general.simplifyExpressionToThePowerOfOne
 import methods.general.simplifyProductOfConjugates
 import methods.integerarithmetic.evaluateIntegerPowerDirectly
 import methods.integerarithmetic.evaluateSignedIntegerAddition
@@ -37,7 +37,7 @@ private val rationalizeHigherOrderRoot = plan {
                     }
                     optionalSteps {
                         whilePossible {
-                            deeply(eliminateLoneOneInExponent)
+                            deeply(simplifyExpressionToThePowerOfOne)
                         }
                     }
                 }

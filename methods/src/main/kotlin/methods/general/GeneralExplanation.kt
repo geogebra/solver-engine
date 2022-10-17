@@ -86,13 +86,13 @@ enum class GeneralExplanation : CategorisedMetadataKey {
      * E.g. [(1 + 1) ^ 0] -> 1
      */
     EvaluateExpressionToThePowerOfZero,
+
     /**
      * cancels any two additive inverse elements in a sum, i.e. `a + X - a + Y = X + Y`
      * e.g. `sqrt[12] + 1 - sqrt[12] + 2` --> `1 + 2`
      * another e.g. `-root[3, 3] + root[3, 3] --> 0` (return `0`)
      */
     CancelAdditiveInverseElements,
-    EliminateLoneOneInExponent,
 
     /**
      * 0 to any positive power is 0

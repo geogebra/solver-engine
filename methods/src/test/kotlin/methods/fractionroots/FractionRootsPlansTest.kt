@@ -725,7 +725,7 @@ class FractionRootsRationalization {
                         fromExpr = "[1 / root[[13 ^ 2], 3]] * [root[[13 ^ 1], 3] / root[[13 ^ 1], 3]]"
                         toExpr = "[1 / root[[13 ^ 2], 3]] * [root[13, 3] / root[[13 ^ 1], 3]]"
                         explanation {
-                            key = GeneralExplanation.EliminateLoneOneInExponent
+                            key = GeneralExplanation.SimplifyExpressionToThePowerOfOne
                         }
                     }
 
@@ -733,7 +733,7 @@ class FractionRootsRationalization {
                         fromExpr = "[1 / root[[13 ^ 2], 3]] * [root[13, 3] / root[[13 ^ 1], 3]]"
                         toExpr = "[1 / root[[13 ^ 2], 3]] * [root[13, 3] / root[13, 3]]"
                         explanation {
-                            key = GeneralExplanation.EliminateLoneOneInExponent
+                            key = GeneralExplanation.SimplifyExpressionToThePowerOfOne
                         }
                     }
                 }

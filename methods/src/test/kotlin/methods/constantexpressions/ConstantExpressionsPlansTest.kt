@@ -1303,4 +1303,87 @@ class CancelOppositeTermTest {
             }
         }
     }
+
+    @Test
+    fun testEvaluateExpressionToThePowerOfOneComplexExpression() = testMethod {
+        method = simplifyConstantExpression
+        inputExpr = "[ (sqrt[2] + 1) ^ [5 / 5]]  + 1"
+
+        check {
+            toExpr = "sqrt[2] + 2"
+
+            step {
+                toExpr = "[(sqrt[2] + 1) ^ 1] + 1"
+            }
+
+            step {
+                toExpr = "(sqrt[2] + 1) + 1"
+                explanation {
+                    key = ConstantExpressionsExplanation.SimplifyPowers
+                }
+
+                step {
+                    fromExpr = "[(sqrt[2] + 1) ^ 1]"
+                    toExpr = "sqrt[2] + 1"
+                    explanation {
+                        key = GeneralExplanation.SimplifyExpressionToThePowerOfOne
+                    }
+                }
+            }
+
+            step { }
+
+            step { }
+        }
+    }
+
+    @Test
+    fun testEvaluateExpressionToThePowerOfOneSimpleExpr() = testMethod {
+        method = simplifyConstantExpression
+        inputExpr = "[2 ^ 1] + [5 ^ 1]"
+
+        check {
+            toExpr = "7"
+
+            step {
+                fromExpr = "[2 ^ 1] + [5 ^ 1]"
+                toExpr = "2 + [5 ^ 1]"
+                explanation {
+                    key = ConstantExpressionsExplanation.SimplifyPowers
+                }
+
+                step {
+                    fromExpr = "[2 ^ 1]"
+                    toExpr = "2"
+                    explanation {
+                        key = GeneralExplanation.SimplifyExpressionToThePowerOfOne
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "2 + [5 ^ 1]"
+                toExpr = "2 + 5"
+                explanation {
+                    key = ConstantExpressionsExplanation.SimplifyPowers
+                }
+
+                step {
+                    fromExpr = "[5 ^ 1]"
+                    toExpr = "5"
+                    explanation {
+                        key = GeneralExplanation.SimplifyExpressionToThePowerOfOne
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "2 + 5"
+                toExpr = "7"
+                explanation {
+                    key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                }
+            }
+        }
+    }
 }

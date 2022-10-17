@@ -47,20 +47,6 @@ val eliminateOneInProduct = rule {
     }
 }
 
-val eliminateLoneOneInExponent = rule {
-    val one = FixedPattern(xp(1))
-    val base = AnyPattern()
-    val pattern = powerOf(base, one)
-
-    onPattern(pattern) {
-        TransformationResult(
-
-            toExpr = move(base),
-            explanation = metadata(Explanation.EliminateLoneOneInExponent)
-        )
-    }
-}
-
 val eliminateZeroInSum = rule {
     val zero = FixedPattern(Constants.Zero)
     val pattern = sumContaining(zero)
@@ -428,6 +414,9 @@ val rewritePowerAsProduct = rule {
     }
 }
 
+/**
+ * [expr ^ 1] --> expr, for any expression "expr"
+ */
 val simplifyExpressionToThePowerOfOne = rule {
     val base = AnyPattern()
     val power = powerOf(base, FixedPattern(Constants.One))
