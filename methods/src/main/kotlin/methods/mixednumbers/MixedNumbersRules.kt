@@ -1,5 +1,6 @@
 package methods.mixednumbers
 
+import engine.expressions.Constants
 import engine.expressions.fractionOf
 import engine.expressions.mixedNumberOf
 import engine.expressions.sumOf
@@ -13,6 +14,8 @@ import engine.patterns.mixedNumberOf
 import engine.patterns.numericCondition
 import engine.steps.metadata.Skill
 import engine.steps.metadata.metadata
+import methods.general.GeneralExplanation
+import java.math.BigInteger
 
 val splitMixedNumber = rule {
     val integer = UnsignedIntegerPattern()
@@ -21,13 +24,26 @@ val splitMixedNumber = rule {
     val mixedNumber = mixedNumberOf(integer, numerator, denominator)
 
     onPattern(mixedNumber) {
-        TransformationResult(
-            toExpr = sumOf(
-                move(integer),
-                fractionOf(move(numerator), move(denominator))
-            ),
-            explanation = metadata(Explanation.ConvertMixedNumberToSum, move(mixedNumber)),
-        )
+        when {
+            getValue(denominator) == BigInteger.ZERO -> TransformationResult(
+                toExpr = transformTo(mixedNumber, Constants.Undefined),
+                explanation = metadata(
+                    GeneralExplanation.SimplifyZeroDenominatorFractionToUndefined,
+                    fractionOf(move(numerator), move(denominator))
+                )
+            )
+            getValue(numerator) == BigInteger.ZERO -> TransformationResult(
+                toExpr = move(integer),
+                explanation = metadata(GeneralExplanation.SimplifyZeroNumeratorFractionToZero)
+            )
+            else -> TransformationResult(
+                toExpr = sumOf(
+                    move(integer),
+                    fractionOf(move(numerator), move(denominator))
+                ),
+                explanation = metadata(Explanation.ConvertMixedNumberToSum, move(mixedNumber))
+            )
+        }
     }
 }
 
