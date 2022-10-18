@@ -151,7 +151,7 @@ class ConstantExpressionsPlansTest {
 
             step { toExpr = "[3 / 1] * [2 ^ -2]" }
 
-            step { toExpr = "[3 / 1] * [1 / 4]" }
+            step { toExpr = "3 * [2 ^ -2]" }
 
             step { toExpr = "3 * [1 / 4]" }
 
@@ -251,6 +251,19 @@ class ConstantExpressionsPlansTest {
                 fromExpr = "root[24, 3 * 2]"
                 toExpr = "root[24, 6]"
             }
+        }
+    }
+
+    @Test
+    fun testFractionOverOnePriority() = testMethod {
+        method = simplifyConstantExpression
+        inputExpr = "[sqrt[12] / 1]"
+
+        check {
+            step {
+                toExpr = "sqrt[12]"
+            }
+            step {}
         }
     }
 }
@@ -951,7 +964,7 @@ class ConstantExpressionFractionHigherOrderRootTest {
     }
 }
 
-class ConstantExpressionTests {
+class ConstantExpressionTest {
     @Test
     fun testCancelUnitaryDenominator() = testMethod {
         method = simplifyConstantExpression
@@ -973,7 +986,7 @@ class ConstantExpressionTests {
     }
 }
 
-class SimplifyToZero {
+class SimplifyToZeroTest {
 
     @Test
     fun testZeroDivideByValue() = testMethod {
@@ -1240,7 +1253,9 @@ class CancelOppositeTermTest {
             }
         }
     }
+}
 
+class ExponentsTest {
     @Test
     fun testEvaluateExpressionToThePowerOfOneComplexExpression() = testMethod {
         method = simplifyConstantExpression

@@ -28,11 +28,11 @@ import methods.general.cancelAdditiveInverseElements
 import methods.general.distributeMultiplicationOverSum
 import methods.general.distributePowerOfProduct
 import methods.general.evaluateProductContainingZero
-import methods.general.evaluateZeroDividedByAnyValue
 import methods.general.expandBinomialSquared
 import methods.general.normalizeExpression
 import methods.general.removeRedundantBrackets
 import methods.general.simplifyExpressionToThePowerOfOne
+import methods.general.simplifyFractionWithOneDenominator
 import methods.general.simplifyZeroDenominatorFractionToUndefined
 import methods.general.simplifyZeroNumeratorFractionToZero
 import methods.integerarithmetic.evaluateSignedIntegerPower
@@ -88,13 +88,19 @@ val simplifyRootsInExpression = plan {
     }
 }
 
-val simplificationSteps = steps {
+val simpleTidyUpSteps = steps {
     firstOf {
         option { deeply(simplifyZeroDenominatorFractionToUndefined) }
         option { deeply(simplifyZeroNumeratorFractionToZero) }
+        option { deeply(simplifyFractionWithOneDenominator) }
         option { deeply(evaluateProductContainingZero) }
-
         option { deeply(cancelAdditiveInverseElements) }
+    }
+}
+
+val simplificationSteps = steps {
+    firstOf {
+        option(simpleTidyUpSteps)
 
         option { deeply(removeRedundantBrackets, deepFirst = true) }
 
@@ -148,36 +154,7 @@ val simplifyConstantExpression = plan {
     pipeline {
         optionalSteps {
             whilePossible {
-                deeply(simplifyZeroDenominatorFractionToUndefined)
-            }
-        }
-
-        optionalSteps {
-            whilePossible {
-                deeply(simplifyZeroNumeratorFractionToZero)
-            }
-        }
-
-        optionalSteps {
-            whilePossible {
-                deeply(evaluateZeroDividedByAnyValue)
-            }
-        }
-
-        // even before normalization, clean up products containing zero
-        optionalSteps {
-            whilePossible {
-                deeply(evaluateProductContainingZero)
-            }
-        }
-
-        // we also need this here, before the simplification
-        // of subexpression within brackets as well, as we can
-        // directly cancel terms without simplifying what's within
-        // brackets
-        optionalSteps {
-            whilePossible {
-                deeply(cancelAdditiveInverseElements)
+                deeply(simpleTidyUpSteps)
             }
         }
 
