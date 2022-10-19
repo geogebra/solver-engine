@@ -27,6 +27,8 @@ import engine.patterns.squareRootOf
 import engine.patterns.withOptionalIntegerCoefficient
 import engine.steps.metadata.Skill
 import engine.steps.metadata.metadata
+import engine.utility.asPowerForRoot
+import engine.utility.asProductForRoot
 import engine.utility.divides
 import engine.utility.hasFactorOfDegree
 import engine.utility.primeFactorDecomposition
@@ -56,6 +58,42 @@ val simplifyRootOfZero = rule {
     }
 }
 
+val writeRootAsRootProduct = rule {
+    val radicand = UnsignedIntegerPattern()
+    val root = integerOrderRootOf(radicand)
+
+    onPattern(root) {
+        val asProduct = getValue(radicand).asProductForRoot(getValue(root.order))
+        asProduct?.let {
+            TransformationResult(
+                toExpr = rootOf(transform(radicand, productOf(asProduct.map { introduce(xp(it)) })), move(root.order)),
+                explanation = metadata(Explanation.WriteRootAsRootProduct, move(radicand)),
+            )
+        }
+    }
+}
+
+val writeRootAsRootPower = rule {
+    val radicand = UnsignedIntegerPattern()
+    val root = integerOrderRootOf(radicand)
+
+    onPattern(root) {
+        val asPower = getValue(radicand).asPowerForRoot(getValue(root.order))
+        asPower?.let {
+            TransformationResult(
+                toExpr = rootOf(
+                    transform(
+                        radicand,
+                        powerOf(introduce(xp(asPower.first)), introduce(xp(asPower.second)))
+                    ),
+                    move(root.order)
+                ),
+                explanation = metadata(Explanation.WriteRootAsRootPower, move(radicand)),
+            )
+        }
+    }
+}
+
 val factorizeIntegerUnderRoot = rule {
     val integer = UnsignedIntegerPattern()
     val root = integerOrderRootOf(integer)
@@ -72,7 +110,7 @@ val factorizeIntegerUnderRoot = rule {
 
         TransformationResult(
             toExpr = rootOf(transform(integer, productOf(factorized)), move(root.order)),
-            explanation = metadata(Explanation.FactorizeNumberUnderSquareRoot, move(integer)),
+            explanation = metadata(Explanation.FactorizeIntegerUnderRoot, move(integer)),
             skills = listOf(metadata(Skill.FactorInteger, move(integer)))
         )
     }

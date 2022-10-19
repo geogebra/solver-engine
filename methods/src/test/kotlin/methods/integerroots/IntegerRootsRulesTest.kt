@@ -42,6 +42,11 @@ class IntegerRootsRulesTest {
             splitRootOfProduct,
             "sqrt[[2^3]] * sqrt[5] * sqrt[[7^2]]"
         )
+        testRule(
+            "sqrt[49 * 100]",
+            splitRootOfProduct,
+            "sqrt[49] * sqrt[100]"
+        )
     }
 
     @Test

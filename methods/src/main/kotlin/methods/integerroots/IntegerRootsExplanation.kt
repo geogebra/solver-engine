@@ -7,7 +7,15 @@ import engine.steps.metadata.TranslationKeys
 enum class IntegerRootsExplanation : CategorisedMetadataKey {
     SimplifyRootOfOne,
     SimplifyRootOfZero,
-    FactorizeNumberUnderSquareRoot,
+
+    /**
+     * factorize the integer under the root term, if some special
+     * factorization exists for the integer depending upon the order
+     * of the root (for e.g. root[1000, 3] -> root[ [10^3], 3])
+     * otherwise do the prime factor decomposition of the number
+     */
+    FactorizeIntegerUnderRoot,
+
     SimplifyMultiplicationOfSquareRoots,
     SeparateSquaresUnderSquareRoot,
 
@@ -23,6 +31,32 @@ enum class IntegerRootsExplanation : CategorisedMetadataKey {
     SimplifyIntegerRootToInteger,
     CollectLikeRootsAndSimplify,
     MultiplyNthRoots,
+
+    /**
+     * Write a root of an integer as a product of values whose root can easily be computed
+     *
+     * E.g. sqrt[400] -> sqrt[4 * 100]
+     * E.g. root[8000, 3] -> root[8 * 1000, 3]
+     * E.g. sqrt[160] -> sqrt[16 * 10]
+     */
+    WriteRootAsRootProduct,
+
+    /**
+     * Write the integer in a root so it can be cancelled easily
+     *
+     * E.g. sqrt[36] -> sqrt[6 ^ 2]
+     * E.g. sqrt[10000] -> sqrt[100 ^ 2]
+     * E.g. root[10000, 3] -> root[10 ^ 4, 3]
+     */
+    WriteRootAsRootPower,
+
+    /**
+     * Write each root in a product of roots so that it can be easily cancelled
+     *
+     * E.g. sqrt[36] * sqrt[100] -> sqrt[6 ^ 2] * sqrt[10 ^ 2]
+     * E.g. root[8, 3] * root[10000, 3] -> root[2 ^ 3, 3] * root[10 ^ 4, 3]
+     */
+    WriteRootsAsRootPowers,
 
     /**
      * Split roots that can be in a product of roots so that they can be simplified

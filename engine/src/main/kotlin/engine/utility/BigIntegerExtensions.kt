@@ -5,6 +5,27 @@ import java.math.BigInteger
 private val MAX_FACTOR = 1000.toBigInteger()
 private const val PRIME_CERTAINTY = 5
 
+private const val MAX_KNOWN_SQUARE = 15
+private const val MAX_KNOWN_CUBE = 5
+
+private const val CUBE_POWER = 3
+
+/**
+ * Map (n, a^n) -> a for n and a >= 2 a small enough
+ * This represents the powers that students should know by heart
+ * (e.g. 36 = 6^2, 8 = 2^3)
+ */
+private val knownPowers = buildMap<Pair<BigInteger, BigInteger>, BigInteger> {
+    for (n in 2..MAX_KNOWN_SQUARE) {
+        val bn = n.toBigInteger()
+        put(Pair(BigInteger.TWO, bn * bn), bn)
+    }
+    for (n in 2..MAX_KNOWN_CUBE) {
+        val bn = n.toBigInteger()
+        put(Pair(CUBE_POWER.toBigInteger(), bn.pow(CUBE_POWER)), bn)
+    }
+}
+
 fun BigInteger.isZero() = this.signum() == 0
 
 fun BigInteger.isOdd() = this.lowestSetBit == 0
@@ -72,6 +93,42 @@ fun BigInteger.primeFactorDecomposition(): List<Pair<BigInteger, BigInteger>> {
     }
 
     return factors
+}
+
+/**
+ * Splits an integer as a product whose root of order [rootOrder] will be easy to compute.
+ */
+fun BigInteger.asProductForRoot(rootOrder: BigInteger): List<BigInteger>? {
+    val factorizer = Factorizer(this)
+    val multiplicityOfTen = factorizer.extractMultiplicity(BigInteger.TEN)
+    if (multiplicityOfTen == 0 || Pair(rootOrder, factorizer.n) !in knownPowers) {
+        return null
+    }
+    return listOf(factorizer.n, BigInteger.TEN.pow(multiplicityOfTen))
+}
+
+/**
+ * Writes an integer as a power whose root of order [rootOrder] will be easy to compute.
+ */
+fun BigInteger.asPowerForRoot(rootOrder: BigInteger): Pair<BigInteger, BigInteger>? {
+    val factorizer = Factorizer(this)
+    val multiplicityOfTen = factorizer.extractMultiplicity(BigInteger.TEN)
+    return when {
+        multiplicityOfTen == 0 -> {
+            val root = knownPowers[Pair(rootOrder, this)]
+            if (root == null) null else Pair(root, rootOrder)
+        }
+        multiplicityOfTen == 1 || !factorizer.fullyFactorized() -> null
+        rootOrder.divides(multiplicityOfTen.toBigInteger()) -> Pair(
+            BigInteger.TEN.pow(multiplicityOfTen / rootOrder.toInt()),
+            rootOrder
+        )
+        rootOrder < multiplicityOfTen.toBigInteger() -> Pair(
+            BigInteger.TEN,
+            multiplicityOfTen.toBigInteger()
+        )
+        else -> null
+    }
 }
 
 /**

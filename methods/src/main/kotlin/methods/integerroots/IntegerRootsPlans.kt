@@ -114,11 +114,38 @@ val simplifyIntegerRoot = plan {
 
     explanation(Explanation.SimplifyIntegerRoot)
     pipeline {
-        // root[2^3 * 5^2 * 7^5, 2]
-        optionalSteps(factorizeIntegerUnderRoot)
 
-        // root[2^3, 2] * root[5^2, 2] * root[7^5, 2]
-        optionalSteps(splitRootOfProduct)
+        steps {
+            firstOf {
+
+                // First try to do easy factorisation without prime factor decomposition
+                option {
+                    pipeline {
+                        optionalSteps(writeRootAsRootProduct)
+                        optionalSteps(splitRootOfProduct)
+                        steps {
+                            plan {
+                                explanation(Explanation.WriteRootsAsRootPowers)
+                                whilePossible {
+                                    deeply(writeRootAsRootPower)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // If that fails try prime factor decomposition
+                option {
+                    pipeline {
+                        // root[2^3 * 5^2 * 7^5, 2]
+                        steps(factorizeIntegerUnderRoot)
+
+                        // root[2^3, 2] * root[5^2, 2] * root[7^5, 2]
+                        optionalSteps(splitRootOfProduct)
+                    }
+                }
+            }
+        }
 
         // root[2^2, 2] * root[2] * root[5^2, 2] * root[7^4, 2] * root[7, 2]
         optionalSteps {
