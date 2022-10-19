@@ -1,6 +1,9 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="API Server" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
     <option name="ACTIVE_PROFILES" />
+    <envs>
+      <env name="DEPLOYMENT_NAME" value="dev" />
+    </envs>
     <module name="solver-engine.api.main" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="server.Application" />
     <method v="2">

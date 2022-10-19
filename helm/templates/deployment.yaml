@@ -29,5 +29,7 @@ spec:
               value: "/{{ .Values.branchName }}"
             - name: SOLVER_COMMIT_SHA
               value: "{{ .Values.commitSha }}"
+            - name: DEPLOYMENT_NAME
+              value: "{{ .Values.branchName }}"
       imagePullSecrets:
         - name: ggb-registry-key

@@ -7,6 +7,7 @@ import server.models.VersionInfo
 class VersionInfoApiServiceImpl : VersionInfoApiService {
     override fun getVersionInfo(): VersionInfo {
         val commitSha = System.getenv("SOLVER_COMMIT_SHA")
-        return VersionInfo(commitSha)
+        val deploymentName = System.getenv("DEPLOYMENT_NAME")
+        return VersionInfo(commitSha, deploymentName)
     }
 }

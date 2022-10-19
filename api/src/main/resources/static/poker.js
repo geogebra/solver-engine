@@ -2,6 +2,7 @@
 
 const apiRoot = "./api/v1.0-alpha0";
 const translationsRootURL = "https://export-solver.s3.eu-west-1.amazonaws.com";
+const mainPokerURL = "http://solver.geogebra.net/main/poker.html";
 
 // Globally changes the rendering of steps.
 let showThroughSteps = false;
@@ -71,7 +72,7 @@ const initPlans = (plans) => {
  * Functions to execute plans and render the result
  *******************************************/
 
-const selectPlansOrApplyPlan = (planId, input, context) => {
+const selectPlansOrApplyPlan = ({ planId, input, ...context }) => {
     if (planId === "selectPlans") {
         return selectPlans(input, context);
     } else {
@@ -357,9 +358,34 @@ const fetchPlansAndUpdatePage = () =>
             el("precisionSelect").value = precision;
         }
         if (planId && input) {
-            selectPlansOrApplyPlan(planId, input, { curriculum, precision: parseInt(precision) });
+            selectPlansOrApplyPlan({
+                planId,
+                input,
+                curriculum,
+                precision: parseInt(precision),
+            });
         }
     });
+
+const getRequestDataFromForm = () => ({
+    planId: el("plansSelect").value,
+    input: el("input").value,
+    curriculum: el("curriculumSelect").value,
+    precision: parseInt(el("precisionSelect").value),
+});
+
+const buildURLString = (startURL, data) => {
+    const url = new URL(startURL);
+    url.searchParams.set("plan", data.planId);
+    url.searchParams.set("input", data.input);
+    if (data.curriculum) {
+        url.searchParams.set("curriculum", data.curriculum);
+    } else {
+        url.searchParams.delete("curriculum");
+    }
+    url.searchParams.set("precision", data.precision.toString());
+    return url.toString();
+};
 
 window.onload = () => {
     fetchDefaultTranslations().then((translations) => {
@@ -376,26 +402,35 @@ window.onload = () => {
         </a>
         `
             : "no commit info";
+
+        if (info.deploymentName === "main") {
+            el("submitToMain").remove();
+        } else if (info.deploymentName) {
+            if (/^PLUT-\d+$/i.test(info.deploymentName)) {
+                el("title").innerHTML = `
+                Solver Poker
+                <a href="https://geogebra-jira.atlassian.net/browse/${info.deploymentName.toUpperCase()}">
+                ${info.deploymentName.toUpperCase()}</a>
+            `;
+            } else {
+                el("title").innerHTML = `Solver Poker (${info.deploymentName})`;
+            }
+            document.title = `${info.deploymentName} Solver Poker`;
+        }
     });
 
     el("form").onsubmit = (evt) => {
         evt.preventDefault();
-        const planId = el("plansSelect").value;
-        const input = el("input").value;
-        const curriculum = el("curriculumSelect").value;
-        const precision = parseInt(el("precisionSelect").value);
-        const url = new URL(window.location);
-        url.searchParams.set("plan", planId);
-        url.searchParams.set("input", input);
-        if (curriculum) {
-            url.searchParams.set("curriculum", curriculum);
-        } else {
-            url.searchParams.delete("curriculum");
-        }
-        url.searchParams.set("precision", precision.toString());
-        const urlString = url.toString();
+        const data = getRequestDataFromForm();
+        const urlString = buildURLString(window.location, data);
         history.pushState({ url: urlString }, null, urlString);
-        selectPlansOrApplyPlan(planId, input, { curriculum, precision });
+        selectPlansOrApplyPlan(data);
+    };
+
+    el("submitToMain").onclick = () => {
+        const data = getRequestDataFromForm();
+        const urlString = buildURLString(mainPokerURL, data);
+        window.open(urlString, "_blank");
     };
 
     el("showThroughSteps").onchange = (evt) => {
