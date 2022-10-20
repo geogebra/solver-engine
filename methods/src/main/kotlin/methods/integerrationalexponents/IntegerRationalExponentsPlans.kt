@@ -29,11 +29,9 @@ import methods.integerarithmetic.simplifyIntegersInProduct
 val applyPowerRuleOfExponents = plan {
     explanation(Explanation.PowerRuleOfExponents)
 
-    pipeline {
-        optionalSteps(multiplyExponentsUsingPowerRule)
-        optionalSteps {
-            deeply(multiplyAndSimplifyFractions, deepFirst = true)
-        }
+    optionally(multiplyExponentsUsingPowerRule)
+    optionally {
+        deeply(multiplyAndSimplifyFractions, deepFirst = true)
     }
 }
 
@@ -45,10 +43,8 @@ val splitRationalExponent = plan {
     pattern = powerOf(UnsignedIntegerPattern(), IntegerFractionPattern())
     explanation(Explanation.SplitRationalExponent)
 
-    pipeline {
-        steps { applyTo(convertImproperFractionToSumOfIntegerAndFraction) { it.exponent() } }
-        steps(distributeSumOfPowers)
-    }
+    applyTo(convertImproperFractionToSumOfIntegerAndFraction) { it.exponent() }
+    apply(distributeSumOfPowers)
 }
 
 val simplifyRationalExponentOfInteger = plan {
@@ -57,48 +53,31 @@ val simplifyRationalExponentOfInteger = plan {
     explanation(Explanation.SimplifyRationalExponentOfInteger)
 
     // input: 1350 ^ [2 / 5]
-    pipeline {
-        // [ ( 2 * 3^3 * 5^2 ) ^ [2 / 5] ]
-        optionalSteps(factorizeIntegerUnderRationalExponent)
-        // [2 ^ [2 / 5]] * [ (3^3) ^ [2 / 5]] * [ (5^2) ^ [2 / 5]]
-        optionalSteps(distributePowerOfProduct)
 
-        // [2 ^ [2 / 5] ] * [ 3 ^ [6 / 5] ] * [ 5 ^ [4 / 5] ]
-        optionalSteps {
-            whilePossible { deeply(applyPowerRuleOfExponents) }
+    // [ ( 2 * 3^3 * 5^2 ) ^ [2 / 5] ]
+    optionally(factorizeIntegerUnderRationalExponent)
+    // [2 ^ [2 / 5]] * [ (3^3) ^ [2 / 5]] * [ (5^2) ^ [2 / 5]]
+    optionally(distributePowerOfProduct)
+
+    // [2 ^ [2 / 5] ] * [ 3 ^ [6 / 5] ] * [ 5 ^ [4 / 5] ]
+    whilePossible { deeply(applyPowerRuleOfExponents) }
+
+    // [2 ^ [2 / 5] ] * [ 3 * 3 ^ [1 / 5] ] * [ 5 ^ [4 / 5] ]
+    optionally {
+        plan {
+            explanation(Explanation.SplitProductOfExponentsWithImproperFractionPowers)
+
+            whilePossible { deeply(splitRationalExponent) }
+            whilePossible { deeply(removeBracketProductInProduct) }
         }
+    }
 
-        // [2 ^ [2 / 5] ] * [ 3 * 3 ^ [1 / 5] ] * [ 5 ^ [4 / 5] ]
-        optionalSteps {
-            plan {
-                explanation(Explanation.SplitProductOfExponentsWithImproperFractionPowers)
-                pipeline {
-                    optionalSteps {
-                        whilePossible {
-                            deeply(splitRationalExponent)
-                        }
-                    }
-                    optionalSteps {
-                        whilePossible {
-                            deeply(removeBracketProductInProduct)
-                        }
-                    }
-                }
-            }
-        }
+    optionally {
+        plan {
+            explanation(Explanation.NormalizeRationalExponentsAndIntegers)
 
-        optionalSteps {
-            plan {
-                explanation(Explanation.NormalizeRationalExponentsAndIntegers)
-                pipeline {
-                    optionalSteps(normaliseProductWithRationalExponents)
-                    optionalSteps {
-                        whilePossible {
-                            deeply(simplifyIntegersInExpression)
-                        }
-                    }
-                }
-            }
+            optionally(normaliseProductWithRationalExponents)
+            whilePossible { deeply(simplifyIntegersInExpression) }
         }
     }
 }
@@ -106,45 +85,27 @@ val simplifyRationalExponentOfInteger = plan {
 val simplifyProductOfPowersWithSameBase = plan {
     explanation(Explanation.SimplifyProductOfPowersWithSameBase)
 
-    pipeline {
-        steps(rewriteProductOfPowersWithSameBase)
-        steps { deeply(evaluateFractionSum) }
-    }
+    apply(rewriteProductOfPowersWithSameBase)
+    apply { deeply(evaluateFractionSum) }
 }
 
 val simplifyProductOfPowersWithSameExponent = plan {
     explanation(Explanation.SimplifyProductOfPowersWithSameExponent)
 
-    pipeline {
-        steps(rewriteProductOfPowersWithSameExponent)
-        steps {
-            whilePossible {
-                deeply(evaluateIntegerProductAndDivision)
-            }
-        }
+    apply(rewriteProductOfPowersWithSameExponent)
+    whilePossible {
+        deeply(evaluateIntegerProductAndDivision)
     }
 }
 
 val simplifyProductOfPowersWithRationalExponents = plan {
     explanation(Explanation.SimplifyProductOfPowersWithRationalExponents)
 
-    pipeline {
-        steps(bringRationalExponentsToSameDenominator)
-        steps {
-            whilePossible {
-                deeply(evaluateIntegerProductAndDivision)
-            }
-        }
-        steps(factorDenominatorOfRationalExponents)
-        optionalSteps {
-            whilePossible {
-                deeply(evaluateIntegerPowerDirectly)
-            }
-        }
-        steps {
-            deeply(evaluateIntegerProductAndDivision)
-        }
-    }
+    apply(bringRationalExponentsToSameDenominator)
+    whilePossible { deeply(evaluateIntegerProductAndDivision) }
+    apply(factorDenominatorOfRationalExponents)
+    whilePossible { deeply(evaluateIntegerPowerDirectly) }
+    deeply(evaluateIntegerProductAndDivision)
 }
 
 val simplifyRationalExponentsInProduct = steps {

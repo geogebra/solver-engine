@@ -31,10 +31,8 @@ private fun Expression.canBeApproximated(): Boolean {
 val expandAndRoundRecurringDecimal = plan {
     explanation(Explanation.ExpandAndRoundRecurringDecimal)
 
-    pipeline {
-        optionalSteps(expandRecurringDecimal)
-        steps(roundRecurringDecimal)
-    }
+    optionally(expandRecurringDecimal)
+    apply(roundRecurringDecimal)
 }
 
 val approximateProductAndDivisionOfDecimals = plan {

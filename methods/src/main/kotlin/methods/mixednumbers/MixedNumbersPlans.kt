@@ -36,60 +36,46 @@ val addMixedNumbers = plan {
     explanation(Explanation.AddMixedNumbers)
 
     resourceData = ResourceData(curriculum = "EU")
-    pipeline {
-        steps(convertMixedNumberToImproperFraction)
-        steps(evaluateFractionSum)
-        // result might be integer or proper fraction after
-        // simplification, so this step is optional
-        optionalSteps(fractionToMixedNumber)
-    }
+
+    apply(convertMixedNumberToImproperFraction)
+    apply(evaluateFractionSum)
+    // result might be integer or proper fraction after
+    // simplification, so this step is optional
+    optionally(fractionToMixedNumber)
 
     alternative {
         resourceData = ResourceData(curriculum = "US")
 
-        pipeline {
-            steps {
-                plan {
-                    explanation(Explanation.ConvertMixedNumbersToSums)
-                    whilePossible {
-                        deeply(splitMixedNumber)
-                    }
-                }
+        plan {
+            explanation(Explanation.ConvertMixedNumbersToSums)
+            whilePossible {
+                deeply(splitMixedNumber)
             }
-            optionalSteps {
-                whilePossible {
-                    deeply(simplifyZeroDenominatorFractionToUndefined)
-                }
-            }
+        }
 
-            steps {
-                plan {
-                    explanation(Explanation.RemoveAllBracketsInSum)
-                    whilePossible(removeBracketSumInSum)
-                }
-            }
+        whilePossible {
+            deeply(simplifyZeroDenominatorFractionToUndefined)
+        }
 
-            optionalSteps {
-                whilePossible {
-                    deeply(simplifyFraction)
-                }
-            }
+        plan {
+            explanation(Explanation.RemoveAllBracketsInSum)
+            whilePossible(removeBracketSumInSum)
+        }
 
-            steps(evaluateSignedIntegerAddition)
-            steps(evaluateFractionSum)
+        whilePossible {
+            deeply(simplifyFraction)
+        }
 
-            steps {
-                firstOf {
-                    option(evaluateSignedIntegerAddition)
-                    option(convertSumOfIntegerAndProperFractionToMixedNumber)
-                    option {
-                        pipeline {
-                            steps(convertIntegerToFraction)
-                            steps(evaluateFractionSum)
-                            steps(fractionToMixedNumber)
-                        }
-                    }
-                }
+        apply(evaluateSignedIntegerAddition)
+        apply(evaluateFractionSum)
+
+        firstOf {
+            option(evaluateSignedIntegerAddition)
+            option(convertSumOfIntegerAndProperFractionToMixedNumber)
+            option {
+                apply(convertIntegerToFraction)
+                apply(evaluateFractionSum)
+                apply(fractionToMixedNumber)
             }
         }
     }

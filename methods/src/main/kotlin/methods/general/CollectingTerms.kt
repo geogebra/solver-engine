@@ -72,12 +72,11 @@ val collectLikeTerms = { common: Pattern, explanation: MetadataKey ->
 val collectLikeTermsAndSimplify = { common: Pattern, planExplanation: MetadataKey, ruleExplanation: MetadataKey ->
     plan {
         explanation(planExplanation)
-        pipeline {
-            steps(collectLikeTerms(common, ruleExplanation))
-            steps(simplifyFractionsInExpression)
-            optionalSteps { deeply(moveSignOfNegativeFactorOutOfProduct) }
-            optionalSteps { deeply(removeRedundantBrackets) }
-            optionalSteps { deeply(multiplyAndSimplifyFractions) }
-        }
+
+        apply(collectLikeTerms(common, ruleExplanation))
+        apply(simplifyFractionsInExpression)
+        optionally { deeply(moveSignOfNegativeFactorOutOfProduct) }
+        optionally { deeply(removeRedundantBrackets) }
+        optionally { deeply(multiplyAndSimplifyFractions) }
     }
 }

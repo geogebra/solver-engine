@@ -26,35 +26,6 @@ import engine.steps.metadata.makeMetadata
 annotation class PlanBuilderMarker
 
 @PlanBuilderMarker
-class PipelineBuilder {
-    private var pipelineItems = mutableListOf<PipelineItem>()
-
-    private fun addItem(stepsProducer: StepsProducer, optional: Boolean) {
-        pipelineItems.add(PipelineItem(stepsProducer, optional))
-    }
-
-    fun steps(step: StepsProducer) {
-        addItem(step, false)
-    }
-
-    fun steps(init: StepsProducerBuilder.() -> Unit) {
-        addItem(engine.methods.steps(init), optional = false)
-    }
-
-    fun optionalSteps(step: StepsProducer) {
-        addItem(step, true)
-    }
-
-    fun optionalSteps(init: StepsProducerBuilder.() -> Unit) {
-        addItem(engine.methods.steps(init), optional = true)
-    }
-
-    fun buildPlanExecutor(): Pipeline {
-        return Pipeline(pipelineItems)
-    }
-}
-
-@PlanBuilderMarker
 class InStepStepBuilder {
     lateinit var method: Method
     lateinit var explanationKey: MetadataKey
@@ -76,7 +47,7 @@ class InStepBuilder {
         steps.add(InStepItem(builder.method, makeMetadata(builder.explanationKey), true))
     }
 
-    fun buildPlanExecutor(): InStep {
+    fun buildStepsProducer(): InStep {
         return ApplyToChildrenInStep(steps)
     }
 }
@@ -93,7 +64,7 @@ class FirstOfBuilder {
         option(steps(init))
     }
 
-    fun buildPlanExecutor(): FirstOf {
+    fun buildStepsProducer(): FirstOf {
         require(options.isNotEmpty())
         return FirstOf(options)
     }
@@ -102,32 +73,54 @@ class FirstOfBuilder {
 @PlanBuilderMarker
 open class StepsProducerBuilder {
     lateinit var resourceData: ResourceData
-    lateinit var stepsProducer: StepsProducer
+    private var pipelineItems = mutableListOf<PipelineItem>()
 
-    fun pipeline(init: PipelineBuilder.() -> Unit) {
-        val builder = PipelineBuilder()
-        builder.init()
-        stepsProducer = builder.buildPlanExecutor()
+    private fun addItem(stepsProducer: StepsProducer, optional: Boolean = false) {
+        pipelineItems.add(PipelineItem(stepsProducer, optional))
+    }
+
+    fun buildStepsProducer(): StepsProducer {
+        return when (pipelineItems.size) {
+            0 -> throw IllegalStateException("steps producer produces no steps")
+            1 -> pipelineItems[0].stepsProducer
+            else -> Pipeline(pipelineItems)
+        }
+    }
+
+    fun optionally(steps: StepsProducer) {
+        addItem(steps, true)
+    }
+
+    fun optionally(init: StepsProducerBuilder.() -> Unit) {
+        optionally(steps(init))
+    }
+
+    fun apply(steps: StepsProducer) {
+        addItem(steps)
+    }
+
+    fun apply(init: StepsProducerBuilder.() -> Unit) {
+        apply(steps(init))
     }
 
     fun applyTo(steps: StepsProducer, extractor: Extractor) {
-        stepsProducer = ApplyTo(extractor, steps)
+        addItem(ApplyTo(extractor, steps))
     }
 
     fun applyToChildrenInStep(init: InStepBuilder.() -> Unit) {
         val builder = InStepBuilder()
         builder.init()
-        stepsProducer = builder.buildPlanExecutor()
+        addItem(builder.buildStepsProducer())
     }
 
     fun firstOf(init: FirstOfBuilder.() -> Unit) {
         val builder = FirstOfBuilder()
         builder.init()
-        stepsProducer = builder.buildPlanExecutor()
+        addItem(builder.buildStepsProducer())
     }
 
     fun whilePossible(steps: StepsProducer) {
-        stepsProducer = WhilePossible(steps)
+        addItem(WhilePossible(steps), true)
     }
 
     fun whilePossible(init: StepsProducerBuilder.() -> Unit) {
@@ -135,7 +128,7 @@ open class StepsProducerBuilder {
     }
 
     fun deeply(steps: StepsProducer, deepFirst: Boolean = false) {
-        stepsProducer = Deeply(steps, deepFirst)
+        addItem(Deeply(steps, deepFirst))
     }
 
     fun deeply(deepFirst: Boolean = false, init: StepsProducerBuilder.() -> Unit) {
@@ -143,7 +136,7 @@ open class StepsProducerBuilder {
     }
 
     fun plan(init: PlanBuilder.() -> Unit) {
-        stepsProducer = engine.methods.plan(init)
+        addItem(engine.methods.plan(init))
     }
 }
 
@@ -165,7 +158,7 @@ class PlanBuilder : StepsProducerBuilder() {
     fun alternative(init: StepsProducerBuilder.() -> Unit) {
         val alternative = StepsProducerBuilder()
         alternative.init()
-        alternatives.add(ContextSensitiveAlternative(alternative.stepsProducer, alternative.resourceData))
+        alternatives.add(ContextSensitiveAlternative(alternative.buildStepsProducer(), alternative.resourceData))
     }
 
     private fun wrapPlanExecutor(stepsProducer: StepsProducer): Plan {
@@ -181,25 +174,31 @@ class PlanBuilder : StepsProducerBuilder() {
     fun buildPlan(): Plan {
         require(this::explanationMaker.isInitialized)
         if (alternatives.isEmpty()) {
-            return wrapPlanExecutor(stepsProducer)
+            return wrapPlanExecutor(buildStepsProducer())
         }
         return wrapPlanExecutor(
             ContextSensitiveSelector(
-                default = ContextSensitiveAlternative(stepsProducer, resourceData),
+                default = ContextSensitiveAlternative(buildStepsProducer(), resourceData),
                 alternatives = alternatives,
             )
         )
     }
 }
 
+/**
+ * Type-safe builder to create [Plan] instance susing the [PlanBuilder] DSL.
+ */
 fun plan(init: PlanBuilder.() -> Unit): Plan {
     val planBuilder = PlanBuilder()
     planBuilder.init()
     return planBuilder.buildPlan()
 }
 
+/**
+ * Type-safe builder to create a [StepsProducer] using the [StepsProducerBuilder] DSL.
+ */
 fun steps(init: StepsProducerBuilder.() -> Unit): StepsProducer {
     val builder = StepsProducerBuilder()
     builder.init()
-    return builder.stepsProducer
+    return builder.buildStepsProducer()
 }

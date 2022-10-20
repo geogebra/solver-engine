@@ -57,17 +57,13 @@ val evaluateSignedIntegerPower = plan {
 
     firstOf {
         option {
-            pipeline {
-                steps(rewritePowerAsProduct)
-                steps(evaluateProductOfIntegers)
-            }
+            apply(rewritePowerAsProduct)
+            apply(evaluateProductOfIntegers)
         }
         option {
-            pipeline {
-                optionalSteps(simplifyEvenPowerOfNegative)
-                optionalSteps(simplifyOddPowerOfNegative)
-                steps(evaluateIntegerPowerDirectly)
-            }
+            optionally(simplifyEvenPowerOfNegative)
+            optionally(simplifyOddPowerOfNegative)
+            apply(evaluateIntegerPowerDirectly)
         }
     }
 }

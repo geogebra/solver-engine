@@ -62,10 +62,8 @@ val evaluateDecimalPower = plan {
         option(simplifyExpressionToThePowerOfOne)
         option(evaluateZeroToAPositivePower) // at this point the exponent is guaranteed to be > 0
         option {
-            pipeline {
-                steps(rewritePowerAsProduct)
-                steps(evaluateProductOfDecimals)
-            }
+            apply(rewritePowerAsProduct)
+            apply(evaluateProductOfDecimals)
         }
         option(evaluateDecimalPowerDirectly)
     }
@@ -74,34 +72,27 @@ val evaluateDecimalPower = plan {
 val convertTerminatingDecimalToFractionAndSimplify = plan {
     explanation(Explanation.ConvertTerminatingDecimalToFractionAndSimplify)
 
-    pipeline {
-        steps(convertTerminatingDecimalToFraction)
-        optionalSteps(simplifyFraction)
-    }
+    apply(convertTerminatingDecimalToFraction)
+    optionally(simplifyFraction)
 }
 
 val convertRecurringDecimalToFractionAndSimplify = plan {
     explanation(Explanation.ConvertRecurringDecimalToFractionAndSimplify)
 
     resourceData = ResourceData(curriculum = "EU")
-    pipeline {
-        steps(convertRecurringDecimalToFractionDirectly)
-        steps {
-            deeply(evaluateSignedIntegerAddition)
-        }
-        optionalSteps(simplifyFraction)
-    }
+
+    apply(convertRecurringDecimalToFractionDirectly)
+    deeply(evaluateSignedIntegerAddition)
+    optionally(simplifyFraction)
 
     alternative {
         resourceData = ResourceData(curriculum = "US")
 
-        pipeline {
-            steps(convertRecurringDecimalToEquation)
-            steps(makeEquationSystemForRecurringDecimal)
-            steps(simplifyEquationSystemForRecurringDecimal)
-            steps(solveLinearEquation)
-            optionalSteps(simplifyFraction)
-        }
+        apply(convertRecurringDecimalToEquation)
+        apply(makeEquationSystemForRecurringDecimal)
+        apply(simplifyEquationSystemForRecurringDecimal)
+        apply(solveLinearEquation)
+        optionally(simplifyFraction)
     }
 }
 
@@ -121,13 +112,9 @@ val simplifyDecimalsInProduct = plan {
 val normalizeFractionOfDecimals = plan {
     explanation(Explanation.NormalizeFractionOfDecimals)
 
-    pipeline {
-        steps(multiplyFractionOfDecimalsByPowerOfTen)
-        steps {
-            whilePossible {
-                deeply(simplifyDecimalsInProduct)
-            }
-        }
+    apply(multiplyFractionOfDecimalsByPowerOfTen)
+    whilePossible {
+        deeply(simplifyDecimalsInProduct)
     }
 }
 
@@ -138,16 +125,15 @@ val normalizeFractionOfDecimals = plan {
 val convertNiceFractionToDecimal = plan {
     explanation(Explanation.ConvertNiceFractionToDecimal)
     pattern = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
-    pipeline {
-        optionalSteps(expandFractionToPowerOfTenDenominator)
-        optionalSteps {
-            applyTo(evaluateDecimalProductAndDivision) { it.numerator() }
-        }
-        optionalSteps {
-            applyTo(evaluateDecimalProductAndDivision) { it.denominator() }
-        }
-        steps(convertFractionWithPowerOfTenDenominatorToDecimal)
+
+    optionally(expandFractionToPowerOfTenDenominator)
+    optionally {
+        applyTo(evaluateDecimalProductAndDivision) { it.numerator() }
     }
+    optionally {
+        applyTo(evaluateDecimalProductAndDivision) { it.denominator() }
+    }
+    apply(convertFractionWithPowerOfTenDenominatorToDecimal)
 }
 
 private val evaluationSteps = steps {

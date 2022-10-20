@@ -171,23 +171,8 @@ val simplifyConstantExpression = plan {
     pattern = condition(AnyPattern()) { it.isConstantExpression() }
     explanation(Explanation.SimplifyConstantExpression)
 
-    pipeline {
-        optionalSteps {
-            whilePossible {
-                deeply(simpleTidyUpSteps)
-            }
-        }
-
-        optionalSteps(normalizeExpression)
-
-        optionalSteps {
-            whilePossible {
-                deeply(simplifyConstantSubexpression, deepFirst = true)
-            }
-        }
-
-        optionalSteps {
-            whilePossible(simplificationSteps)
-        }
-    }
+    whilePossible { deeply(simpleTidyUpSteps) }
+    optionally(normalizeExpression)
+    whilePossible { deeply(simplifyConstantSubexpression, deepFirst = true) }
+    whilePossible(simplificationSteps)
 }

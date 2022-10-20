@@ -91,58 +91,42 @@ val evaluateFractionSum = plan {
 
     skill(Skill.AddFractions, move(f1), move(f2))
 
-    pipeline {
-        optionalSteps(bringToCommonDenominator)
-        optionalSteps {
-            plan {
-                explanation(Explanation.EvaluateProductsInNumeratorAndDenominator)
-                whilePossible {
-                    deeply(evaluateIntegerProductAndDivision)
-                }
+    optionally(bringToCommonDenominator)
+    optionally {
+        plan {
+            explanation(Explanation.EvaluateProductsInNumeratorAndDenominator)
+            whilePossible {
+                deeply(evaluateIntegerProductAndDivision)
             }
         }
-        steps(addLikeFractions)
-        steps {
-            plan {
-                explanation(Explanation.EvaluateSumInNumerator)
-                deeply(evaluateSignedIntegerAddition)
-            }
-        }
-        optionalSteps(normalizeSignsInFraction)
-        optionalSteps {
-            deeply(simplifyFraction)
-        }
+    }
+    apply(addLikeFractions)
+    plan {
+        explanation(Explanation.EvaluateSumInNumerator)
+        deeply(evaluateSignedIntegerAddition)
+    }
+    optionally(normalizeSignsInFraction)
+    optionally {
+        deeply(simplifyFraction)
     }
 }
 
 val evaluateSumOfFractionAndInteger = plan {
     explanation(Explanation.EvaluateSumOfFractionAndInteger)
 
-    pipeline {
-        steps(turnSumOfFractionAndIntegerToFractionSum)
-        steps {
-            deeply(simplifyIntegersInProduct)
-        }
-        steps(evaluateFractionSum)
-    }
+    apply(turnSumOfFractionAndIntegerToFractionSum)
+    deeply(simplifyIntegersInProduct)
+    apply(evaluateFractionSum)
 }
 
 val multiplyAndSimplifyFractions = plan {
     explanation(Explanation.MultiplyAndSimplifyFractions)
 
-    pipeline {
-        optionalSteps {
-            whilePossible(turnFactorIntoFractionInProduct)
-        }
-        steps {
-            whilePossible(multiplyFractions)
-        }
-        optionalSteps(simplifyFraction)
-        optionalSteps {
-            whilePossible {
-                deeply(simplifyIntegersInProduct)
-            }
-        }
+    whilePossible(turnFactorIntoFractionInProduct)
+    whilePossible(multiplyFractions)
+    optionally(simplifyFraction)
+    whilePossible {
+        deeply(simplifyIntegersInProduct)
     }
 }
 
@@ -154,12 +138,8 @@ val simplifyIntegerToNegativePower = steps {
             plan {
                 explanation(Explanation.EvaluateIntegerToNegativePower)
 
-                pipeline {
-                    steps(turnNegativePowerOfIntegerToFraction)
-                    steps {
-                        applyTo(evaluateSignedIntegerPower) { it.denominator() }
-                    }
-                }
+                apply(turnNegativePowerOfIntegerToFraction)
+                applyTo(evaluateSignedIntegerPower) { it.denominator() }
             }
         }
 
@@ -167,13 +147,9 @@ val simplifyIntegerToNegativePower = steps {
             plan {
                 explanation(Explanation.EvaluateIntegerToNegativePower)
 
-                pipeline {
-                    // [0 ^ -n] -> [[1 / 0] ^ n]
-                    steps(turnNegativePowerOfZeroToPowerOfFraction)
-                    steps {
-                        applyTo(simplifyZeroDenominatorFractionToUndefined) { it.base() }
-                    }
-                }
+                // [0 ^ -n] -> [[1 / 0] ^ n]
+                apply(turnNegativePowerOfZeroToPowerOfFraction)
+                applyTo(simplifyZeroDenominatorFractionToUndefined) { it.base() }
             }
         }
     }
