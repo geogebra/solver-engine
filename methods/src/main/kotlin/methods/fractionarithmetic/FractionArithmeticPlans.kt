@@ -1,6 +1,8 @@
 package methods.fractionarithmetic
 
 import engine.expressionmakers.move
+import engine.expressions.base
+import engine.expressions.denominator
 import engine.methods.plan
 import engine.methods.steps
 import engine.operators.BinaryExpressionOperator
@@ -17,6 +19,7 @@ import methods.general.normalizeNegativeSigns
 import methods.general.rewriteDivisionsAsFractions
 import methods.general.simplifyFractionWithOneDenominator
 import methods.general.simplifyUnitFractionToOne
+import methods.general.simplifyZeroDenominatorFractionToUndefined
 import methods.integerarithmetic.evaluateIntegerProductAndDivision
 import methods.integerarithmetic.evaluateSignedIntegerAddition
 import methods.integerarithmetic.evaluateSignedIntegerPower
@@ -143,17 +146,32 @@ val multiplyAndSimplifyFractions = plan {
     }
 }
 
-val evaluateIntegerToNegativePower = plan {
-    explanation(Explanation.EvaluateIntegerToNegativePower)
-
+val simplifyIntegerToNegativePower = steps {
     firstOf {
         option(turnIntegerToMinusOneToFraction)
+
         option {
-            pipeline {
-                steps(turnNegativePowerOfIntegerToFraction)
-                steps {
-                    whilePossible {
-                        deeply(evaluateSignedIntegerPower)
+            plan {
+                explanation(Explanation.EvaluateIntegerToNegativePower)
+
+                pipeline {
+                    steps(turnNegativePowerOfIntegerToFraction)
+                    steps {
+                        applyTo(evaluateSignedIntegerPower) { it.denominator() }
+                    }
+                }
+            }
+        }
+
+        option {
+            plan {
+                explanation(Explanation.EvaluateIntegerToNegativePower)
+
+                pipeline {
+                    // [0 ^ -n] -> [[1 / 0] ^ n]
+                    steps(turnNegativePowerOfZeroToPowerOfFraction)
+                    steps {
+                        applyTo(simplifyZeroDenominatorFractionToUndefined) { it.base() }
                     }
                 }
             }

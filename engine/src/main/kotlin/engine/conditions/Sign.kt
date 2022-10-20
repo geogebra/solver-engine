@@ -156,3 +156,5 @@ fun Expression.signOf(): Sign = when (operator) {
     }
     else -> Sign.NONE
 }
+
+fun Expression.isDefinitelyNotUndefined() = signOf() != Sign.NONE

@@ -74,7 +74,13 @@ enum class FractionArithmeticExplanation : CategorisedMetadataKey {
      *
      * E.g. [13 / 5] -> 2 + [3 / 5]
      */
-    ConvertImproperFractionToSumOfIntegerAndFraction;
+    ConvertImproperFractionToSumOfIntegerAndFraction,
+
+    /**
+     * Turns any negative power of zero into a fraction 1 / 0 to the negation of that power.
+     * E.g. [0 ^ -[2 / 3]] -> [(1 / 0) ^ [2 / 3]]
+     */
+    TurnNegativePowerOfZeroToPowerOfFraction;
 
     override val category = "FractionArithmetic"
 }

@@ -13,7 +13,6 @@ import methods.decimals.normalizeFractionOfDecimals
 import methods.fractionarithmetic.addLikeFractions
 import methods.fractionarithmetic.distributeFractionPositivePower
 import methods.fractionarithmetic.evaluateFractionSum
-import methods.fractionarithmetic.evaluateIntegerToNegativePower
 import methods.fractionarithmetic.evaluateSumOfFractionAndInteger
 import methods.fractionarithmetic.multiplyAndSimplifyFractions
 import methods.fractionarithmetic.normalizeFractions
@@ -21,13 +20,18 @@ import methods.fractionarithmetic.normalizeSignsInFraction
 import methods.fractionarithmetic.simplifyFraction
 import methods.fractionarithmetic.simplifyFractionNegativePower
 import methods.fractionarithmetic.simplifyFractionToMinusOne
+import methods.fractionarithmetic.simplifyIntegerToNegativePower
 import methods.fractionroots.distributeRadicalOverFraction
 import methods.fractionroots.rationalizeDenominators
 import methods.fractionroots.simplifyFractionOfRoots
 import methods.general.cancelAdditiveInverseElements
 import methods.general.distributeMultiplicationOverSum
 import methods.general.distributePowerOfProduct
+import methods.general.evaluateExpressionToThePowerOfZero
+import methods.general.evaluateOneToAnyPower
 import methods.general.evaluateProductContainingZero
+import methods.general.evaluateZeroToAPositivePower
+import methods.general.evaluateZeroToThePowerOfZero
 import methods.general.expandBinomialSquared
 import methods.general.normalizeExpression
 import methods.general.removeRedundantBrackets
@@ -59,13 +63,23 @@ val simplifyPowers = plan {
 
     whilePossible {
         firstOf {
+            // one as base or as exponent
+            option { deeply(evaluateOneToAnyPower) }
             option { deeply(simplifyExpressionToThePowerOfOne) }
+
+            // zero as base or as exponent
+            option { deeply(evaluateZeroToThePowerOfZero) }
+            option { deeply(evaluateZeroToAPositivePower) }
+            option { deeply(evaluateExpressionToThePowerOfZero) }
+
+            // minus one and other negative integer powers
+            option { deeply(simplifyIntegerToNegativePower) }
+            option { deeply(simplifyFractionToMinusOne) }
+            option { deeply(simplifyFractionNegativePower) }
+
+            option { deeply(distributeFractionPositivePower) }
             option { deeply(simplifyEvenPowerOfNegative) }
             option { deeply(simplifyOddPowerOfNegative) }
-            option { deeply(simplifyFractionToMinusOne) }
-            option { deeply(evaluateIntegerToNegativePower) }
-            option { deeply(simplifyFractionNegativePower) }
-            option { deeply(distributeFractionPositivePower) }
             option { deeply(distributePowerOfProduct) }
             option { deeply(expandBinomialSquared) }
             option { deeply(evaluateSignedIntegerPower) }

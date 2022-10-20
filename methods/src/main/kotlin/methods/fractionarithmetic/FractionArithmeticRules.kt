@@ -31,6 +31,7 @@ import engine.patterns.sumContaining
 import engine.steps.metadata.Skill
 import engine.steps.metadata.metadata
 import engine.utility.divides
+import engine.utility.isZero
 import java.math.BigInteger
 
 val convertIntegerToFraction = rule {
@@ -370,17 +371,33 @@ val turnIntegerToMinusOneToFraction = rule {
 }
 
 val turnNegativePowerOfIntegerToFraction = rule {
-    val base = UnsignedIntegerPattern()
+    val base = integerCondition(UnsignedIntegerPattern()) { !it.isZero() }
     val exponent = SignedIntegerPattern()
     val pattern = powerOf(base, integerCondition(exponent) { it < -BigInteger.ONE })
 
     onPattern(pattern) {
         TransformationResult(
-            fractionOf(
+            toExpr = fractionOf(
                 introduce(Constants.One),
                 powerOf(move(base), move(exponent.unsignedPattern)),
             ),
             explanation = metadata(Explanation.TurnNegativePowerOfIntegerToFraction, move(exponent.unsignedPattern))
+        )
+    }
+}
+
+val turnNegativePowerOfZeroToPowerOfFraction = rule {
+    val zero = FixedPattern(Constants.Zero)
+    val unsignedExponent = AnyPattern()
+    val power = powerOf(zero, negOf(unsignedExponent))
+
+    onPattern(power) {
+        TransformationResult(
+            toExpr = powerOf(
+                fractionOf(introduce(Constants.One), move(zero)),
+                move(unsignedExponent)
+            ),
+            explanation = metadata(Explanation.TurnNegativePowerOfZeroToPowerOfFraction)
         )
     }
 }

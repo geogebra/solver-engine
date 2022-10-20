@@ -1307,4 +1307,31 @@ class ExponentsTest {
             }
         }
     }
+
+    @Test
+    fun testZeroToNegativePower() = testMethod {
+        method = simplifyConstantExpression
+        inputExpr = "[0 ^ -[3 / 2]]"
+
+        check {
+            toExpr = "UNDEFINED"
+            explanation {
+                key = FractionArithmeticExplanation.EvaluateIntegerToNegativePower
+            }
+
+            step {
+                toExpr = "[([1 / 0]) ^ [3 / 2]]"
+                explanation {
+                    key = FractionArithmeticExplanation.TurnNegativePowerOfZeroToPowerOfFraction
+                }
+            }
+
+            step {
+                toExpr = "UNDEFINED"
+                explanation {
+                    key = GeneralExplanation.SimplifyZeroDenominatorFractionToUndefined
+                }
+            }
+        }
+    }
 }

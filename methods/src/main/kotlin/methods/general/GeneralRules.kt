@@ -1,6 +1,9 @@
 package methods.general
 
+import engine.conditions.Sign
+import engine.conditions.isDefinitelyNotUndefined
 import engine.conditions.isDefinitelyNotZero
+import engine.conditions.signOf
 import engine.expressions.Constants
 import engine.expressions.MappedExpression
 import engine.expressions.fractionOf
@@ -416,11 +419,12 @@ val rewritePowerAsProduct = rule {
 }
 
 /**
- * [expr ^ 1] --> expr, for any expression "expr"
+ * [a ^ 1] -> a, for any `a`
  */
 val simplifyExpressionToThePowerOfOne = rule {
     val base = AnyPattern()
-    val power = powerOf(base, FixedPattern(Constants.One))
+    val one = FixedPattern(Constants.One)
+    val power = powerOf(base, one)
 
     onPattern(power) {
         TransformationResult(
@@ -430,6 +434,25 @@ val simplifyExpressionToThePowerOfOne = rule {
     }
 }
 
+/**
+ * [1 ^ a] -> 1, for any defined `a`
+ */
+val evaluateOneToAnyPower = rule {
+    val one = FixedPattern(Constants.One)
+    val exponent = condition(AnyPattern()) { it.isDefinitelyNotUndefined() }
+    val power = powerOf(one, exponent)
+
+    onPattern(power) {
+        TransformationResult(
+            toExpr = move(one),
+            explanation = metadata(Explanation.EvaluateOneToAnyPower)
+        )
+    }
+}
+
+/**
+ * [0 ^ 0] -> undefined
+ */
 val evaluateZeroToThePowerOfZero = rule {
     val power = powerOf(FixedPattern(Constants.Zero), FixedPattern(Constants.Zero))
     onPattern(power) {
@@ -441,10 +464,10 @@ val evaluateZeroToThePowerOfZero = rule {
 }
 
 /**
- * This rule should only be used when it has been asserted that the base is not 0.
+ * [a ^ 0] -> 1, for any non-zero `a`
  */
 val evaluateExpressionToThePowerOfZero = rule {
-    val power = powerOf(AnyPattern(), FixedPattern(Constants.Zero))
+    val power = powerOf(condition(AnyPattern()) { it.isDefinitelyNotZero() }, FixedPattern(Constants.Zero))
     onPattern(power) {
         TransformationResult(
             toExpr = transformTo(power, Constants.One),
@@ -454,10 +477,10 @@ val evaluateExpressionToThePowerOfZero = rule {
 }
 
 /**
- * This rule should only be used when it has been asserted that the exponent is > 0.
+ * [0 ^ a] -> 0, for any positive a
  */
 val evaluateZeroToAPositivePower = rule {
-    val power = powerOf(FixedPattern(Constants.Zero), AnyPattern())
+    val power = powerOf(FixedPattern(Constants.Zero), condition(AnyPattern()) { it.signOf() == Sign.POSITIVE })
     onPattern(power) {
         TransformationResult(
             toExpr = transformTo(power, Constants.Zero),

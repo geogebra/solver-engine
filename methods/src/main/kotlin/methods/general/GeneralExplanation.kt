@@ -102,6 +102,13 @@ enum class GeneralExplanation : CategorisedMetadataKey {
     EvaluateZeroToAPositivePower,
 
     /**
+     * 1 to any power is 1
+     *
+     * E.g. [1 ^ [2 / 3]] -> 1
+     */
+    EvaluateOneToAnyPower,
+
+    /**
      * Convert [a ^ b] * [a ^ c] to [a ^ b + c]
      *
      * E.g. [3 ^ [1 / 2]] * [3 ^ [2 / 3]] -> [3 ^ [1 / 2] + [2 / 3]]

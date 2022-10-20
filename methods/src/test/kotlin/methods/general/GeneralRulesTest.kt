@@ -181,6 +181,24 @@ class GeneralRulesTest {
     }
 
     @Test
+    fun testEvaluateOneToAnyPower() {
+        testRule("[1 ^ sqrt[2] + 1]", evaluateOneToAnyPower, "1")
+        testRule("[1 ^ [1 / 1 - 1]]", evaluateOneToAnyPower, null)
+    }
+
+    @Test
+    fun testEvaluateExpressionToThePowerOfZero() {
+        testRule("[(sqrt[2] + 1) ^ 0]", evaluateExpressionToThePowerOfZero, "1")
+        testRule("[(1 - 1) ^ 0]", evaluateExpressionToThePowerOfZero, null)
+    }
+
+    @Test
+    fun testEvaluateZeroToAPositivePower() {
+        testRule("[0 ^ [3 / 2]]", evaluateZeroToAPositivePower, "0")
+        testRule("[0 ^ sqrt[3] - sqrt[5]]", evaluateZeroToAPositivePower, null)
+    }
+
+    @Test
     fun testSimplifyProductOfPowersSameBase() {
         testRule("[x^2]*[y^2]", rewriteProductOfPowersWithSameBase, null)
         testRule("[x^2]*[x^3]", rewriteProductOfPowersWithSameBase, "[x ^ 2 + 3]")

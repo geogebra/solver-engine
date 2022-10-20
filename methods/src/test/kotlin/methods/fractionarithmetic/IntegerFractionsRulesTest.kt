@@ -155,4 +155,11 @@ class IntegerFractionsRulesTest {
         testRule("[3 ^ -2]", turnNegativePowerOfIntegerToFraction, "[1 / [3 ^ 2]]")
         testRule("[5 ^ [. -6 .]]", turnNegativePowerOfIntegerToFraction, "[1 / [5 ^ 6]]")
     }
+
+    @Test
+    fun testTurnNegativePowerOfZeroToPowerOfFraction() {
+        testRule("[0 ^ -[3 / 2]]", turnNegativePowerOfZeroToPowerOfFraction, "[([1 / 0]) ^ [3 / 2]]")
+        // this case is not handled yet
+        testRule("[0 ^ sqrt[3] - sqrt[5]]", turnNegativePowerOfZeroToPowerOfFraction, null)
+    }
 }
