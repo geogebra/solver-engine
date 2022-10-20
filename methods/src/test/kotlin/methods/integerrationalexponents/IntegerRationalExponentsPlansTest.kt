@@ -1,6 +1,8 @@
 package methods.integerrationalexponents
 
 import method.integerrationalexponents.IntegerRationalExponentsExplanation
+import methods.constantexpressions.ConstantExpressionsExplanation
+import methods.constantexpressions.simplifyConstantExpression
 import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.general.GeneralExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
@@ -226,524 +228,115 @@ class SimplifyRationalExponents {
     }
 
     @Test
-    fun testSimplifyRationalExponentMoreThanOnePrimeFactor() = testMethod {
-        method = simplifyRationalExponentOfInteger
-        inputExpr = "[18 ^ [2 / 3]]"
+    fun testSimplifyUsingFactoringBeforeComputingProduct() = testMethod {
+        method = simplifyConstantExpression
+        inputExpr = "[8 ^ [2 / 3]] * [3 ^ [2 / 3]]"
 
         check {
-            fromExpr = "[18 ^ [2 / 3]]"
-            toExpr = "3 * [2 ^ [2 / 3]] * [3 ^ [1 / 3]]"
+            fromExpr = "[8 ^ [2 / 3]] * [3 ^ [2 / 3]]"
+            toExpr = "4 * [3 ^ [2 / 3]]"
             explanation {
                 key = IntegerRationalExponentsExplanation.SimplifyRationalExponentOfInteger
             }
 
             step {
-                fromExpr = "[18 ^ [2 / 3]]"
-                toExpr = "[(2 * [3 ^ 2]) ^ [2 / 3]]"
+                fromExpr = "[8 ^ [2 / 3]]"
+                toExpr = "[([2 ^ 3]) ^ [2 / 3]]"
                 explanation {
                     key = IntegerRationalExponentsExplanation.FactorizeIntegerUnderRationalExponent
                 }
             }
 
             step {
-                fromExpr = "[(2 * [3 ^ 2]) ^ [2 / 3]]"
-                toExpr = "[2 ^ [2 / 3]] * [([3 ^ 2]) ^ [2 / 3]]"
-                explanation {
-                    key = GeneralExplanation.DistributePowerOfProduct
-                }
-            }
-
-            step {
-                fromExpr = "[2 ^ [2 / 3]] * [([3 ^ 2]) ^ [2 / 3]]"
-                toExpr = "[2 ^ [2 / 3]] * [3 ^ [4 / 3]]"
+                fromExpr = "[([2 ^ 3]) ^ [2 / 3]]"
+                toExpr = "[2 ^ 2]"
                 explanation {
                     key = IntegerRationalExponentsExplanation.PowerRuleOfExponents
                 }
 
                 step {
-                    fromExpr = "[([3 ^ 2]) ^ [2 / 3]]"
-                    toExpr = "[3 ^ 2 * [2 / 3]]"
+                    fromExpr = "[([2 ^ 3]) ^ [2 / 3]]"
+                    toExpr = "[2 ^ 3 * [2 / 3]]"
                     explanation {
                         key = GeneralExplanation.MultiplyExponentsUsingPowerRule
                     }
                 }
 
                 step {
-                    fromExpr = "[3 ^ 2 * [2 / 3]]"
-                    toExpr = "[3 ^ [4 / 3]]"
-
-                    step {
-                        fromExpr = "2 * [2 / 3]"
-                        toExpr = "[2 / 1] * [2 / 3]"
-                        explanation {
-                            key = FractionArithmeticExplanation.TurnFactorIntoFractionInProduct
-                        }
-                    }
-
-                    step {
-                        fromExpr = "[2 / 1] * [2 / 3]"
-                        toExpr = "[2 * 2 / 1 * 3]"
-                        explanation {
-                            key = FractionArithmeticExplanation.MultiplyFractions
-                        }
-                    }
-
-                    step {
-                        fromExpr = "[2 * 2 / 1 * 3]"
-                        toExpr = "[4 / 1 * 3]"
-                        explanation {
-                            key = IntegerArithmeticExplanation.SimplifyIntegersInProduct
-                        }
-
-                        step {
-                            fromExpr = "2 * 2"
-                            toExpr = "4"
-                            explanation {
-                                key = IntegerArithmeticExplanation.EvaluateIntegerProduct
-                            }
-                        }
-                    }
-
-                    step {
-                        fromExpr = "[4 / 1 * 3]"
-                        toExpr = "[4 / 3]"
-                        explanation {
-                            key = IntegerArithmeticExplanation.SimplifyIntegersInProduct
-                        }
-
-                        step {
-                            fromExpr = "1 * 3"
-                            toExpr = "3"
-                            explanation {
-                                key = IntegerArithmeticExplanation.EvaluateIntegerProduct
-                            }
-                        }
-                    }
-                }
-            }
-
-            step {
-                fromExpr = "[2 ^ [2 / 3]] * [3 ^ [4 / 3]]"
-                toExpr = "[2 ^ [2 / 3]] * 3 * [3 ^ [1 / 3]]"
-
-                step {
-                    fromExpr = "[2 ^ [2 / 3]] * [3 ^ [4 / 3]]"
-                    toExpr = "[2 ^ [2 / 3]] * (3 * [3 ^ [1 / 3]])"
-
-                    step {
-                        fromExpr = "[3 ^ [4 / 3]]"
-                        toExpr = "[3 ^ 1 + [1 / 3]]"
-                        explanation {
-                            key = FractionArithmeticExplanation.ConvertImproperFractionToSumOfIntegerAndFraction
-                        }
-                    }
-
-                    step {
-                        fromExpr = "[3 ^ 1 + [1 / 3]]"
-                        toExpr = "3 * [3 ^ [1 / 3]]"
-                    }
-                }
-
-                step {
-                    fromExpr = "[2 ^ [2 / 3]] * (3 * [3 ^ [1 / 3]])"
-                    toExpr = "[2 ^ [2 / 3]] * 3 * [3 ^ [1 / 3]]"
+                    fromExpr = "[2 ^ 3 * [2 / 3]]"
+                    toExpr = "[2 ^ 2]"
                     explanation {
-                        key = GeneralExplanation.RemoveBracketProductInProduct
+                        key = FractionArithmeticExplanation.MultiplyAndSimplifyFractions
                     }
                 }
             }
 
             step {
-                fromExpr = "[2 ^ [2 / 3]] * 3 * [3 ^ [1 / 3]]"
-                toExpr = "3 * [2 ^ [2 / 3]] * [3 ^ [1 / 3]]"
+                fromExpr = "[2 ^ 2]"
+                toExpr = "4"
                 explanation {
-                    key = IntegerRationalExponentsExplanation.NormaliseProductWithRationalExponents
-                }
-            }
-        }
-    }
-}
-
-class SimplifyRationalExponentDifferentPrimeFactors {
-
-    @Test
-    fun testSimplifyRationalExponentDiffKindsOfPrimeFactor() = testMethod {
-        method = simplifyRationalExponentOfInteger
-        inputExpr = "[93750 ^ [1 / 5]]"
-
-        check {
-            fromExpr = "[93750 ^ [1 / 5]]"
-            toExpr = "5 * [2 ^ [1 / 5]] * [3 ^ [1 / 5]] * [5 ^ [1 / 5]]"
-            explanation {
-                key = IntegerRationalExponentsExplanation.SimplifyRationalExponentOfInteger
-            }
-
-            step {
-                fromExpr = "[93750 ^ [1 / 5]]"
-                toExpr = "[(2 * 3 * [5 ^ 6]) ^ [1 / 5]]"
-                explanation {
-                    key = IntegerRationalExponentsExplanation.FactorizeIntegerUnderRationalExponent
-                }
-            }
-
-            step {
-                fromExpr = "[(2 * 3 * [5 ^ 6]) ^ [1 / 5]]"
-                toExpr = "[2 ^ [1 / 5]] * [3 ^ [1 / 5]] * [([5 ^ 6]) ^ [1 / 5]]"
-                explanation {
-                    key = GeneralExplanation.DistributePowerOfProduct
-                }
-            }
-
-            step {
-                fromExpr = "[2 ^ [1 / 5]] * [3 ^ [1 / 5]] * [([5 ^ 6]) ^ [1 / 5]]"
-                toExpr = "[2 ^ [1 / 5]] * [3 ^ [1 / 5]] * [5 ^ [6 / 5]]"
-                explanation {
-                    key = IntegerRationalExponentsExplanation.PowerRuleOfExponents
-                }
-
-                step {
-                    fromExpr = "[([5 ^ 6]) ^ [1 / 5]]"
-                    toExpr = "[5 ^ 6 * [1 / 5]]"
-                    explanation {
-                        key = GeneralExplanation.MultiplyExponentsUsingPowerRule
-                    }
-                }
-
-                step {
-                    fromExpr = "[5 ^ 6 * [1 / 5]]"
-                    toExpr = "[5 ^ [6 / 5]]"
-
-                    step {
-                        fromExpr = "6 * [1 / 5]"
-                        toExpr = "[6 / 1] * [1 / 5]"
-                        explanation {
-                            key = FractionArithmeticExplanation.TurnFactorIntoFractionInProduct
-                        }
-                    }
-
-                    step {
-                        fromExpr = "[6 / 1] * [1 / 5]"
-                        toExpr = "[6 * 1 / 1 * 5]"
-                        explanation {
-                            key = FractionArithmeticExplanation.MultiplyFractions
-                        }
-                    }
-
-                    step {
-                        fromExpr = "[6 * 1 / 1 * 5]"
-                        toExpr = "[6 / 1 * 5]"
-                        explanation {
-                            key = IntegerArithmeticExplanation.SimplifyIntegersInProduct
-                        }
-
-                        step {
-                            fromExpr = "6 * 1"
-                            toExpr = "6"
-                            explanation {
-                                key = IntegerArithmeticExplanation.EvaluateIntegerProduct
-                            }
-                        }
-                    }
-
-                    step {
-                        fromExpr = "[6 / 1 * 5]"
-                        toExpr = "[6 / 5]"
-                        explanation {
-                            key = IntegerArithmeticExplanation.SimplifyIntegersInProduct
-                        }
-
-                        step {
-                            fromExpr = "1 * 5"
-                            toExpr = "5"
-                            explanation {
-                                key = IntegerArithmeticExplanation.EvaluateIntegerProduct
-                            }
-                        }
-                    }
-                }
-            }
-
-            step {
-                fromExpr = "[2 ^ [1 / 5]] * [3 ^ [1 / 5]] * [5 ^ [6 / 5]]"
-                toExpr = "[2 ^ [1 / 5]] * [3 ^ [1 / 5]] * 5 * [5 ^ [1 / 5]]"
-
-                step {
-                    fromExpr = "[2 ^ [1 / 5]] * [3 ^ [1 / 5]] * [5 ^ [6 / 5]]"
-                    toExpr = "[2 ^ [1 / 5]] * [3 ^ [1 / 5]] * (5 * [5 ^ [1 / 5]])"
-
-                    step {
-                        fromExpr = "[5 ^ [6 / 5]]"
-                        toExpr = "[5 ^ 1 + [1 / 5]]"
-                        explanation {
-                            key = FractionArithmeticExplanation.ConvertImproperFractionToSumOfIntegerAndFraction
-                        }
-                    }
-
-                    step {
-                        fromExpr = "[5 ^ 1 + [1 / 5]]"
-                        toExpr = "5 * [5 ^ [1 / 5]]"
-                    }
-                }
-
-                step {
-                    fromExpr = "[2 ^ [1 / 5]] * [3 ^ [1 / 5]] * (5 * [5 ^ [1 / 5]])"
-                    toExpr = "[2 ^ [1 / 5]] * [3 ^ [1 / 5]] * 5 * [5 ^ [1 / 5]]"
-                    explanation {
-                        key = GeneralExplanation.RemoveBracketProductInProduct
-                    }
-                }
-            }
-
-            step {
-                fromExpr = "[2 ^ [1 / 5]] * [3 ^ [1 / 5]] * 5 * [5 ^ [1 / 5]]"
-                toExpr = "5 * [2 ^ [1 / 5]] * [3 ^ [1 / 5]] * [5 ^ [1 / 5]]"
-                explanation {
-                    key = IntegerRationalExponentsExplanation.NormaliseProductWithRationalExponents
+                    key = IntegerArithmeticExplanation.EvaluateIntegerPowerDirectly
                 }
             }
         }
     }
 
     @Test
-    fun testSimplifyRationalExponentDiffKindsOfPrimeFactor2() = testMethod {
-        method = simplifyRationalExponentOfInteger
-        inputExpr = "[85050 ^ [2 / 3]]"
+    fun testMultiplySameExponentPowersBeforeSimplification() = testMethod {
+        method = simplifyConstantExpression
+        inputExpr = "[4 ^ [2 / 3]] * [6 ^ [2 / 3]]"
 
         check {
-            fromExpr = "[85050 ^ [2 / 3]]"
-            toExpr = "135 * [2 ^ [2 / 3]] * [3 ^ [1 / 3]] * [5 ^ [1 / 3]] * [7 ^ [2 / 3]]"
+            fromExpr = "[4 ^ [2 / 3]] * [6 ^ [2 / 3]]"
+            toExpr = "4 * [3 ^ [2 / 3]]"
             explanation {
-                key = IntegerRationalExponentsExplanation.SimplifyRationalExponentOfInteger
+                key = ConstantExpressionsExplanation.SimplifyConstantExpression
             }
 
             step {
-                fromExpr = "[85050 ^ [2 / 3]]"
-                toExpr = "[(2 * [3 ^ 5] * [5 ^ 2] * 7) ^ [2 / 3]]"
+                fromExpr = "[4 ^ [2 / 3]] * [6 ^ [2 / 3]]"
+                toExpr = "[24 ^ [2 / 3]]"
                 explanation {
-                    key = IntegerRationalExponentsExplanation.FactorizeIntegerUnderRationalExponent
+                    key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithSameExponent
                 }
             }
 
             step {
-                fromExpr = "[(2 * [3 ^ 5] * [5 ^ 2] * 7) ^ [2 / 3]]"
-                toExpr = "[2 ^ [2 / 3]] * [([3 ^ 5]) ^ [2 / 3]] * [([5 ^ 2]) ^ [2 / 3]] * [7 ^ [2 / 3]]"
+                fromExpr = "[24 ^ [2 / 3]]"
+                toExpr = "4 * [3 ^ [2 / 3]]"
                 explanation {
-                    key = GeneralExplanation.DistributePowerOfProduct
-                }
-            }
-
-            step {
-                fromExpr = "[2 ^ [2 / 3]] * [([3 ^ 5]) ^ [2 / 3]] * [([5 ^ 2]) ^ [2 / 3]] * [7 ^ [2 / 3]]"
-                toExpr = "[2 ^ [2 / 3]] * [3 ^ [10 / 3]] * [([5 ^ 2]) ^ [2 / 3]] * [7 ^ [2 / 3]]"
-                explanation {
-                    key = IntegerRationalExponentsExplanation.PowerRuleOfExponents
+                    key = IntegerRationalExponentsExplanation.SimplifyRationalExponentOfInteger
                 }
 
                 step {
-                    fromExpr = "[([3 ^ 5]) ^ [2 / 3]]"
-                    toExpr = "[3 ^ 5 * [2 / 3]]"
+                    fromExpr = "[24 ^ [2 / 3]]"
+                    toExpr = "[([2 ^ 3] * 3) ^ [2 / 3]]"
                     explanation {
-                        key = GeneralExplanation.MultiplyExponentsUsingPowerRule
+                        key = IntegerRationalExponentsExplanation.FactorizeIntegerUnderRationalExponent
                     }
                 }
 
                 step {
-                    fromExpr = "[3 ^ 5 * [2 / 3]]"
-                    toExpr = "[3 ^ [10 / 3]]"
-
-                    step {
-                        fromExpr = "5 * [2 / 3]"
-                        toExpr = "[5 / 1] * [2 / 3]"
-                        explanation {
-                            key = FractionArithmeticExplanation.TurnFactorIntoFractionInProduct
-                        }
-                    }
-
-                    step {
-                        fromExpr = "[5 / 1] * [2 / 3]"
-                        toExpr = "[5 * 2 / 1 * 3]"
-                        explanation {
-                            key = FractionArithmeticExplanation.MultiplyFractions
-                        }
-                    }
-
-                    step {
-                        fromExpr = "[5 * 2 / 1 * 3]"
-                        toExpr = "[10 / 1 * 3]"
-                        explanation {
-                            key = IntegerArithmeticExplanation.SimplifyIntegersInProduct
-                        }
-
-                        step {
-                            fromExpr = "5 * 2"
-                            toExpr = "10"
-                            explanation {
-                                key = IntegerArithmeticExplanation.EvaluateIntegerProduct
-                            }
-                        }
-                    }
-
-                    step {
-                        fromExpr = "[10 / 1 * 3]"
-                        toExpr = "[10 / 3]"
-                        explanation {
-                            key = IntegerArithmeticExplanation.SimplifyIntegersInProduct
-                        }
-
-                        step {
-                            fromExpr = "1 * 3"
-                            toExpr = "3"
-                            explanation {
-                                key = IntegerArithmeticExplanation.EvaluateIntegerProduct
-                            }
-                        }
-                    }
-                }
-            }
-
-            step {
-                fromExpr = "[2 ^ [2 / 3]] * [3 ^ [10 / 3]] * [([5 ^ 2]) ^ [2 / 3]] * [7 ^ [2 / 3]]"
-                toExpr = "[2 ^ [2 / 3]] * [3 ^ [10 / 3]] * [5 ^ [4 / 3]] * [7 ^ [2 / 3]]"
-                explanation {
-                    key = IntegerRationalExponentsExplanation.PowerRuleOfExponents
-                }
-
-                step {
-                    fromExpr = "[([5 ^ 2]) ^ [2 / 3]]"
-                    toExpr = "[5 ^ 2 * [2 / 3]]"
+                    fromExpr = "[([2 ^ 3] * 3) ^ [2 / 3]]"
+                    toExpr = "[([2 ^ 3]) ^ [2 / 3]] * [3 ^ [2 / 3]]"
                     explanation {
-                        key = GeneralExplanation.MultiplyExponentsUsingPowerRule
+                        key = GeneralExplanation.DistributePowerOfProduct
                     }
                 }
 
                 step {
-                    fromExpr = "[5 ^ 2 * [2 / 3]]"
-                    toExpr = "[5 ^ [4 / 3]]"
-
-                    step {
-                        fromExpr = "2 * [2 / 3]"
-                        toExpr = "[2 / 1] * [2 / 3]"
-                        explanation {
-                            key = FractionArithmeticExplanation.TurnFactorIntoFractionInProduct
-                        }
-                    }
-
-                    step {
-                        fromExpr = "[2 / 1] * [2 / 3]"
-                        toExpr = "[2 * 2 / 1 * 3]"
-                        explanation {
-                            key = FractionArithmeticExplanation.MultiplyFractions
-                        }
-                    }
-
-                    step {
-                        fromExpr = "[2 * 2 / 1 * 3]"
-                        toExpr = "[4 / 1 * 3]"
-                        explanation {
-                            key = IntegerArithmeticExplanation.SimplifyIntegersInProduct
-                        }
-
-                        step {
-                            fromExpr = "2 * 2"
-                            toExpr = "4"
-                            explanation {
-                                key = IntegerArithmeticExplanation.EvaluateIntegerProduct
-                            }
-                        }
-                    }
-
-                    step {
-                        fromExpr = "[4 / 1 * 3]"
-                        toExpr = "[4 / 3]"
-                        explanation {
-                            key = IntegerArithmeticExplanation.SimplifyIntegersInProduct
-                        }
-
-                        step {
-                            fromExpr = "1 * 3"
-                            toExpr = "3"
-                            explanation {
-                                key = IntegerArithmeticExplanation.EvaluateIntegerProduct
-                            }
-                        }
-                    }
-                }
-            }
-
-            step {
-                fromExpr = "[2 ^ [2 / 3]] * [3 ^ [10 / 3]] * [5 ^ [4 / 3]] * [7 ^ [2 / 3]]"
-                toExpr = "[2 ^ [2 / 3]] * [3 ^ 3] * [3 ^ [1 / 3]] * 5 * [5 ^ [1 / 3]] * [7 ^ [2 / 3]]"
-
-                step {
-                    fromExpr = "[2 ^ [2 / 3]] * [3 ^ [10 / 3]] * [5 ^ [4 / 3]] * [7 ^ [2 / 3]]"
-                    toExpr = "[2 ^ [2 / 3]] * ([3 ^ 3] * [3 ^ [1 / 3]]) * [5 ^ [4 / 3]] * [7 ^ [2 / 3]]"
-
-                    step {
-                        fromExpr = "[3 ^ [10 / 3]]"
-                        toExpr = "[3 ^ 3 + [1 / 3]]"
-                        explanation {
-                            key = FractionArithmeticExplanation.ConvertImproperFractionToSumOfIntegerAndFraction
-                        }
-                    }
-
-                    step {
-                        fromExpr = "[3 ^ 3 + [1 / 3]]"
-                        toExpr = "[3 ^ 3] * [3 ^ [1 / 3]]"
-                    }
-                }
-
-                step {
-                    fromExpr = "[2 ^ [2 / 3]] * ([3 ^ 3] * [3 ^ [1 / 3]]) * [5 ^ [4 / 3]] * [7 ^ [2 / 3]]"
-                    toExpr = "[2 ^ [2 / 3]] * ([3 ^ 3] * [3 ^ [1 / 3]]) * (5 * [5 ^ [1 / 3]]) * [7 ^ [2 / 3]]"
-
-                    step {
-                        fromExpr = "[5 ^ [4 / 3]]"
-                        toExpr = "[5 ^ 1 + [1 / 3]]"
-                        explanation {
-                            key = FractionArithmeticExplanation.ConvertImproperFractionToSumOfIntegerAndFraction
-                        }
-                    }
-
-                    step {
-                        fromExpr = "[5 ^ 1 + [1 / 3]]"
-                        toExpr = "5 * [5 ^ [1 / 3]]"
-                    }
-                }
-
-                step {
-                    fromExpr = "[2 ^ [2 / 3]] * ([3 ^ 3] * [3 ^ [1 / 3]]) * (5 * [5 ^ [1 / 3]]) * [7 ^ [2 / 3]]"
-                    toExpr = "[2 ^ [2 / 3]] * [3 ^ 3] * [3 ^ [1 / 3]] * 5 * [5 ^ [1 / 3]] * [7 ^ [2 / 3]]"
+                    fromExpr = "[([2 ^ 3]) ^ [2 / 3]] * [3 ^ [2 / 3]]"
+                    toExpr = "[2 ^ 2] * [3 ^ [2 / 3]]"
                     explanation {
-                        key = GeneralExplanation.RemoveBracketProductInProduct
-                    }
-                }
-            }
-
-            step {
-                fromExpr = "[2 ^ [2 / 3]] * [3 ^ 3] * [3 ^ [1 / 3]] * 5 * [5 ^ [1 / 3]] * [7 ^ [2 / 3]]"
-                toExpr = "135 * [2 ^ [2 / 3]] * [3 ^ [1 / 3]] * [5 ^ [1 / 3]] * [7 ^ [2 / 3]]"
-
-                step {
-                    fromExpr = "[2 ^ [2 / 3]] * [3 ^ 3] * [3 ^ [1 / 3]] * 5 * [5 ^ [1 / 3]] * [7 ^ [2 / 3]]"
-                    toExpr = "[3 ^ 3] * 5 * [2 ^ [2 / 3]] * [3 ^ [1 / 3]] * [5 ^ [1 / 3]] * [7 ^ [2 / 3]]"
-                    explanation {
-                        key = IntegerRationalExponentsExplanation.NormaliseProductWithRationalExponents
+                        key = IntegerRationalExponentsExplanation.PowerRuleOfExponents
                     }
                 }
 
                 step {
-                    fromExpr = "[3 ^ 3] * 5 * [2 ^ [2 / 3]] * [3 ^ [1 / 3]] * [5 ^ [1 / 3]] * [7 ^ [2 / 3]]"
-                    toExpr = "27 * 5 * [2 ^ [2 / 3]] * [3 ^ [1 / 3]] * [5 ^ [1 / 3]] * [7 ^ [2 / 3]]"
+                    fromExpr = "[2 ^ 2] * [3 ^ [2 / 3]]"
+                    toExpr = "4 * [3 ^ [2 / 3]]"
                     explanation {
                         key = IntegerArithmeticExplanation.EvaluateIntegerPowerDirectly
-                    }
-                }
-
-                step {
-                    fromExpr = "27 * 5 * [2 ^ [2 / 3]] * [3 ^ [1 / 3]] * [5 ^ [1 / 3]] * [7 ^ [2 / 3]]"
-                    toExpr = "135 * [2 ^ [2 / 3]] * [3 ^ [1 / 3]] * [5 ^ [1 / 3]] * [7 ^ [2 / 3]]"
-                    explanation {
-                        key = IntegerArithmeticExplanation.EvaluateIntegerProduct
                     }
                 }
             }

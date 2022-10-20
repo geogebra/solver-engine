@@ -33,19 +33,6 @@ object IntegerRationalExponentsRulesTest {
             null
         )
         testRule(
-            // 480 = [2 ^ 5] * 3 * 5
-            // since at-least one factor can be taken out as an integer
-            // we factorize it
-            "[480 ^ [2 / 7]]",
-            factorizeIntegerUnderRationalExponent,
-            "[([2^5] * 3 * 5) ^ [2/7] ]"
-        )
-        testRule(
-            "[1440 ^ [2 / 7]]",
-            factorizeIntegerUnderRationalExponent,
-            "[ ([2^5] * [3^2] * 5) ^ [2/7] ]"
-        )
-        testRule(
             "[9 ^ [1/6] ]",
             factorizeIntegerUnderRationalExponent,
             "[ ([3^2]) ^ [1/6] ]"
@@ -76,6 +63,34 @@ object IntegerRationalExponentsRulesTest {
             "[2 ^ [2 / 5]] * [3 ^ 2] * 5",
             normaliseProductWithRationalExponents,
             "[3 ^ 2] * 5 * [2 ^ [2 / 5]]"
+        )
+    }
+
+    @Test
+    fun testBringRationalExponentsToSameDenominator() {
+        testRule(
+            "[2 ^ [2 / 3]] * [3 ^ [1 / 2]]",
+            bringRationalExponentsToSameDenominator,
+            "[2 ^ [2 * 2 / 3 * 2]] * [3 ^ [1 * 3 / 2 * 3]]"
+        )
+        testRule(
+            "[2 ^ [2 / 3]] * [3 ^ [1 / 6]]",
+            bringRationalExponentsToSameDenominator,
+            "[2 ^ [2 * 2 / 3 * 2]] * [3 ^ [1 / 6]]"
+        )
+    }
+
+    @Test
+    fun testFactorDenominatorOfRationalExponents() {
+        testRule(
+            "[2 ^ [4 / 6]] * [3 ^ [3 / 6]]",
+            factorDenominatorOfRationalExponents,
+            "[([2 ^ 4] * [3 ^ 3]) ^ [1 / 6]]"
+        )
+        testRule(
+            "[2 ^ [4 / 6]] * [3 ^ [1 / 6]]",
+            factorDenominatorOfRationalExponents,
+            "[([2 ^ 4] * 3) ^ [1 / 6]]"
         )
     }
 }

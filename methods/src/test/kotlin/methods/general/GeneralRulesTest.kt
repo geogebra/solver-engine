@@ -179,4 +179,20 @@ class GeneralRulesTest {
         testRule("[ (sqrt[2] + 1) ^ 1]", simplifyExpressionToThePowerOfOne, "sqrt[2] + 1")
         testRule("[2 ^ 1]", simplifyExpressionToThePowerOfOne, "2")
     }
+
+    @Test
+    fun testSimplifyProductOfPowersSameBase() {
+        testRule("[x^2]*[y^2]", rewriteProductOfPowersWithSameBase, null)
+        testRule("[x^2]*[x^3]", rewriteProductOfPowersWithSameBase, "[x ^ 2 + 3]")
+        testRule("x*[3^4]*[3^-9]", rewriteProductOfPowersWithSameBase, "x*[3 ^ 4 - 9]")
+        testRule("y*[3^[1 / 2]]*z*[3^[2 / 3]]", rewriteProductOfPowersWithSameBase, "y*[3 ^ [1 / 2] + [2 / 3]]*z")
+    }
+
+    @Test
+    fun testSimplifyProductOfPowersSameExponent() {
+        testRule("[x^2]*[x^3]", rewriteProductOfPowersWithSameExponent, null)
+        testRule("[x^2]*[y^2]", rewriteProductOfPowersWithSameExponent, "[(x * y) ^ 2]")
+        testRule("x*[3^4]*[2^4]", rewriteProductOfPowersWithSameExponent, "x*[(3 * 2) ^ 4]")
+        testRule("y*[3^[2 / 3]]*z*[4^[2 / 3]]", rewriteProductOfPowersWithSameExponent, "y*[(3 * 4) ^ [2 / 3]]*z")
+    }
 }

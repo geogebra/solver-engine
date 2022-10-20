@@ -483,3 +483,43 @@ val cancelAdditiveInverseElements = rule {
         )
     }
 }
+
+val rewriteProductOfPowersWithSameBase = rule {
+    val base = AnyPattern()
+    val exponent1 = AnyPattern()
+    val exponent2 = AnyPattern()
+
+    val power1 = powerOf(base, exponent1)
+    val power2 = powerOf(base, exponent2)
+
+    val product = productContaining(power1, power2)
+
+    onPattern(product) {
+        TransformationResult(
+            toExpr = product.substitute(
+                powerOf(factor(base), sumOf(move(exponent1), move(exponent2)))
+            ),
+            explanation = metadata(Explanation.RewriteProductOfPowersWithSameBase)
+        )
+    }
+}
+
+val rewriteProductOfPowersWithSameExponent = rule {
+    val base1 = AnyPattern()
+    val base2 = AnyPattern()
+    val exponent = AnyPattern()
+
+    val power1 = powerOf(base1, exponent)
+    val power2 = powerOf(base2, exponent)
+
+    val product = productContaining(power1, power2)
+
+    onPattern(product) {
+        TransformationResult(
+            toExpr = product.substitute(
+                powerOf(productOf(move(base1), move(base2)), factor(exponent))
+            ),
+            explanation = metadata(Explanation.RewriteProductOfPowersWithSameExponent)
+        )
+    }
+}

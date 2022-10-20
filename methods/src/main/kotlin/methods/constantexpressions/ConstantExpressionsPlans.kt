@@ -40,6 +40,8 @@ import methods.integerarithmetic.simplifyEvenPowerOfNegative
 import methods.integerarithmetic.simplifyIntegersInProduct
 import methods.integerarithmetic.simplifyIntegersInSum
 import methods.integerarithmetic.simplifyOddPowerOfNegative
+import methods.integerrationalexponents.collectLikeRationalPowersAndSimplify
+import methods.integerrationalexponents.simplifyRationalExponentsInProduct
 import methods.integerroots.cancelPowerOfARoot
 import methods.integerroots.collectLikeRootsAndSimplify
 import methods.integerroots.simplifyIntegerRoot
@@ -105,7 +107,6 @@ val simplificationSteps = steps {
         option { deeply(removeRedundantBrackets, deepFirst = true) }
 
         option { deeply(simplifyPowers, deepFirst = true) }
-        option(simplifyRootsInExpression)
 
         option(normalizeFractions)
         option(normalizeSignsInFraction)
@@ -115,6 +116,12 @@ val simplificationSteps = steps {
         option { deeply(normalizeFractionOfDecimals, deepFirst = true) }
         option { deeply(convertTerminatingDecimalToFractionAndSimplify, deepFirst = true) }
         option { deeply(convertRecurringDecimalToFractionAndSimplify, deepFirst = true) }
+
+        option { deeply(collectLikeRootsAndSimplify, deepFirst = true) }
+        option { deeply(collectLikeRationalPowersAndSimplify, deepFirst = true) }
+
+        option(simplifyRootsInExpression)
+        option { deeply(simplifyRationalExponentsInProduct, deepFirst = true) }
 
         option { deeply(multiplyAndSimplifyFractions, deepFirst = true) }
         option { deeply(simplifyProductWithRoots, deepFirst = true) }
@@ -126,7 +133,6 @@ val simplificationSteps = steps {
         option { deeply(evaluateFractionSum, deepFirst = true) }
         option { deeply(evaluateSumOfFractionAndInteger, deepFirst = true) }
 
-        option { deeply(collectLikeRootsAndSimplify, deepFirst = true) }
         option { deeply(rationalizeDenominators, deepFirst = true) }
         option { deeply(distributeMultiplicationOverSum, deepFirst = true) }
     }

@@ -99,7 +99,21 @@ enum class GeneralExplanation : CategorisedMetadataKey {
      *
      * E.g. [0 ^ 3] -> 0
      */
-    EvaluateZeroToAPositivePower;
+    EvaluateZeroToAPositivePower,
+
+    /**
+     * Convert [a ^ b] * [a ^ c] to [a ^ b + c]
+     *
+     * E.g. [3 ^ [1 / 2]] * [3 ^ [2 / 3]] -> [3 ^ [1 / 2] + [2 / 3]]
+     */
+    RewriteProductOfPowersWithSameBase,
+
+    /**
+     * Convert [a ^ c] * [b ^ c] to [(a * b) ^ c]
+     *
+     * E.g. [3 ^ [2 / 3]] * [2 ^ [2 / 3]] -> [(3 * 2) ^ [2 / 3]]
+     */
+    RewriteProductOfPowersWithSameExponent;
 
     override val category = "General"
 }

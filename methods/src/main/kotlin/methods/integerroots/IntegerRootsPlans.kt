@@ -8,11 +8,8 @@ import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.integerCondition
 import engine.patterns.integerOrderRootOf
 import engine.utility.isPowerOfDegree
-import methods.fractionarithmetic.multiplyAndSimplifyFractions
-import methods.fractionarithmetic.simplifyFractionsInExpression
-import methods.general.moveSignOfNegativeFactorOutOfProduct
+import methods.general.collectLikeTermsAndSimplify
 import methods.general.removeBracketProductInProduct
-import methods.general.removeRedundantBrackets
 import methods.integerarithmetic.evaluateIntegerPowerDirectly
 import methods.integerarithmetic.evaluateProductOfIntegers
 import methods.integerarithmetic.simplifyIntegersInExpression
@@ -187,22 +184,12 @@ val simplifyIntegerRootToInteger = plan {
 }
 
 /**
- * Collects a set of like roots (square or higher) in a sum and simplifies the resulting expression
- *   E.g. 2 + sqrt[3] - [2/3]*sqrt[3]] + sqrt[5] + [sqrt[3]/2]
- * sqrt[3] is collected first
- *   2 + (1 - [2/3] + [1/2])*sqrt[3] + sqrt[5]
- * then the bracket is simplified
- *   2 + [5/6]*sqrt[3] + sqrt[5]
- * And the expression is written in a normalized way
- *   2 + [5*sqrt[3]/6] + sqrt[5]
+ * Use the method factory [collectLikeTermsAndSimplify] to collect
+ * and simplify all terms containing a root of an integer (with a
+ * rational coefficient)
  */
-val collectLikeRootsAndSimplify = plan {
-    explanation(Explanation.CollectLikeRootsAndSimplify)
-    pipeline {
-        steps(collectLikeRoots)
-        steps(simplifyFractionsInExpression)
-        optionalSteps { deeply(moveSignOfNegativeFactorOutOfProduct) }
-        optionalSteps { deeply(removeRedundantBrackets) }
-        optionalSteps { deeply(multiplyAndSimplifyFractions) }
-    }
-}
+val collectLikeRootsAndSimplify = collectLikeTermsAndSimplify(
+    integerOrderRootOf(UnsignedIntegerPattern()),
+    Explanation.CollectLikeRootsAndSimplify,
+    Explanation.CollectLikeRoots
+)

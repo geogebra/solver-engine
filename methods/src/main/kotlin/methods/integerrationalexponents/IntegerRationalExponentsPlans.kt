@@ -2,18 +2,25 @@ package methods.integerrationalexponents
 
 import engine.expressions.exponent
 import engine.methods.plan
+import engine.methods.steps
 import engine.patterns.IntegerFractionPattern
 import engine.patterns.UnsignedIntegerPattern
-import engine.patterns.fractionOf
 import engine.patterns.powerOf
 import method.integerrationalexponents.Explanation
 import methods.fractionarithmetic.convertImproperFractionToSumOfIntegerAndFraction
+import methods.fractionarithmetic.evaluateFractionSum
 import methods.fractionarithmetic.multiplyAndSimplifyFractions
+import methods.general.collectLikeTermsAndSimplify
 import methods.general.distributePowerOfProduct
 import methods.general.distributeSumOfPowers
 import methods.general.multiplyExponentsUsingPowerRule
 import methods.general.removeBracketProductInProduct
+import methods.general.rewriteProductOfPowersWithSameBase
+import methods.general.rewriteProductOfPowersWithSameExponent
+import methods.integerarithmetic.evaluateIntegerPowerDirectly
+import methods.integerarithmetic.evaluateIntegerProductAndDivision
 import methods.integerarithmetic.simplifyIntegersInExpression
+import methods.integerarithmetic.simplifyIntegersInProduct
 
 /**
  * [ ( [x^a] ) ^ b ] --> [x^ (ab)]
@@ -45,10 +52,7 @@ val splitRationalExponent = plan {
 }
 
 val simplifyRationalExponentOfInteger = plan {
-    pattern = powerOf(
-        UnsignedIntegerPattern(),
-        fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
-    )
+    pattern = powerOf(UnsignedIntegerPattern(), IntegerFractionPattern())
 
     explanation(Explanation.SimplifyRationalExponentOfInteger)
 
@@ -98,3 +102,70 @@ val simplifyRationalExponentOfInteger = plan {
         }
     }
 }
+
+val simplifyProductOfPowersWithSameBase = plan {
+    explanation(Explanation.SimplifyProductOfPowersWithSameBase)
+
+    pipeline {
+        steps(rewriteProductOfPowersWithSameBase)
+        steps { deeply(evaluateFractionSum) }
+    }
+}
+
+val simplifyProductOfPowersWithSameExponent = plan {
+    explanation(Explanation.SimplifyProductOfPowersWithSameExponent)
+
+    pipeline {
+        steps(rewriteProductOfPowersWithSameExponent)
+        steps {
+            whilePossible {
+                deeply(evaluateIntegerProductAndDivision)
+            }
+        }
+    }
+}
+
+val simplifyProductOfPowersWithRationalExponents = plan {
+    explanation(Explanation.SimplifyProductOfPowersWithRationalExponents)
+
+    pipeline {
+        steps(bringRationalExponentsToSameDenominator)
+        steps {
+            whilePossible {
+                deeply(evaluateIntegerProductAndDivision)
+            }
+        }
+        steps(factorDenominatorOfRationalExponents)
+        optionalSteps {
+            whilePossible {
+                deeply(evaluateIntegerPowerDirectly)
+            }
+        }
+        steps {
+            deeply(evaluateIntegerProductAndDivision)
+        }
+    }
+}
+
+val simplifyRationalExponentsInProduct = steps {
+    whilePossible {
+        firstOf {
+            option { deeply(simplifyIntegersInProduct) }
+            option { deeply(simplifyRationalExponentOfInteger) }
+            option { deeply(simplifyProductOfPowersWithSameBase) }
+            option { deeply(simplifyProductOfPowersWithSameExponent) }
+            option { deeply(simplifyProductOfPowersWithRationalExponents) }
+        }
+    }
+}
+
+/**
+ * Use the method factory [collectLikeTermsAndSimplify] to collect
+ * and simplify all terms containing a rational exponent of an integer
+ * (with a rational coefficient)
+ */
+val collectLikeRationalPowersAndSimplify = collectLikeTermsAndSimplify(
+    powerOf(UnsignedIntegerPattern(), IntegerFractionPattern()),
+    Explanation.CollectLikeRationalPowersAndSimplify,
+    Explanation.CollectLikeRationalPowers,
+)
