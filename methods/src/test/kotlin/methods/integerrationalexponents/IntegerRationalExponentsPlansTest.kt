@@ -480,6 +480,36 @@ class SimplifyRationalExponents {
             }
         }
     }
+
+    @Test
+    fun testPowerRuleOfExponents() = testMethod {
+        method = applyPowerRuleOfExponents
+        inputExpr = "[([(sqrt[5]) ^ [1 / 2]]) ^ [2 / 3]]"
+
+        check {
+            fromExpr = "[([(sqrt[5]) ^ [1 / 2]]) ^ [2 / 3]]"
+            toExpr = "[(sqrt[5]) ^ [1 / 3]]"
+            explanation {
+                key = IntegerRationalExponentsExplanation.PowerRuleOfExponents
+            }
+
+            step {
+                fromExpr = "[([(sqrt[5]) ^ [1 / 2]]) ^ [2 / 3]]"
+                toExpr = "[(sqrt[5]) ^ [1 / 2] * [2 / 3]]"
+                explanation {
+                    key = GeneralExplanation.MultiplyExponentsUsingPowerRule
+                }
+            }
+
+            step {
+                fromExpr = "[(sqrt[5]) ^ [1 / 2] * [2 / 3]]"
+                toExpr = "[(sqrt[5]) ^ [1 / 3]]"
+                explanation {
+                    key = FractionArithmeticExplanation.MultiplyAndSimplifyFractions
+                }
+            }
+        }
+    }
 }
 
 class SimplifyRationalExponentsDontApply {

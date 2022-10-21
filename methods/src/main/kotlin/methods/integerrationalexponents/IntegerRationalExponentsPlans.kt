@@ -26,16 +26,14 @@ import methods.integerarithmetic.evaluateIntegerProductAndDivision
 import methods.integerarithmetic.simplifyIntegersInExpression
 
 /**
- * [ ( [x^a] ) ^ b ] --> [x^ (ab)]
- * where `ab` is the simplified product of 'a' and 'b'
+ * Transform [([x ^ a]) ^ b] to [x ^ a * b] and simplify the
+ * product of exponents
  */
 val applyPowerRuleOfExponents = plan {
     explanation(Explanation.PowerRuleOfExponents)
 
-    optionally(multiplyExponentsUsingPowerRule)
-    optionally {
-        deeply(multiplyAndSimplifyFractions, deepFirst = true)
-    }
+    apply(multiplyExponentsUsingPowerRule)
+    applyTo(multiplyAndSimplifyFractions) { it.exponent() }
 }
 
 /**
@@ -143,6 +141,7 @@ val simplifyRationalExponentsInProduct = steps {
             option { deeply(simplifyProductOfPowersWithSameExponent) }
             option { deeply(simplifyProductOfPowersWithNegatedExponent) }
             option { deeply(flipFractionUnderNegativePower) }
+            option { deeply(applyPowerRuleOfExponents) }
             option { deeply(simplifyProductOfPowersWithRationalExponents) }
         }
     }
