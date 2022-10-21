@@ -99,7 +99,35 @@ enum class IntegerRationalExponentsExplanation : CategorisedMetadataKey {
      * then 2 + [5 / 6] * [3 ^ [1 / 2]] + [2 ^ [1 / 2]]
      * and finally 2 + [5 * [3 ^ [1 / 2]] / 6] + [2 ^ [1 / 2]]
      */
-    CollectLikeRationalPowersAndSimplify;
+    CollectLikeRationalPowersAndSimplify,
+
+    /**
+     * If in a product there are two powers whose exponents are the negations
+     * of each other, then inverts the base of the negated to get equal exponents
+     * and simplifies the result
+     *
+     * E.g. [2 ^ [1 / 2]] * [([4 / 3]) ^ -[1 / 2]] -> [([3 / 2]) ^ [1 / 2]]
+     * or [2 ^ [1 / 2]] * [3 ^ -[1 / 2]] -> [([2 / 3]) ^ [1 / 2]]
+     */
+    SimplifyProductOfPowersWithNegatedExponent,
+
+    /**
+     * If in a product there are two powers such that one of them is the reciprocal
+     * of the other, then it inverts that to get equal bases and then simplifies the
+     * result
+     *
+     * E.g. [2 ^ [1 / 2]] * [([1 / 2]) ^ [2 / 5]] -> [2 ^ [1 / 10]]
+     */
+    SimplifyProductOfPowersWithInverseBase,
+
+    /**
+     * If in a product there are two powers of fractions, such that one of the
+     * fractions is the inverse of the other, then it inverts one of them to get
+     * equal bases and simplifies the result
+     *
+     * E.g. [([2 / 3]) ^ [1 / 2]] * [([3 / 2]) ^ [2 / 5]] -> [([2 / 3]) ^ [1 / 10]]
+     */
+    SimplifyProductOfPowersWithInverseFractionBase;
 
     override val category = "IntegerRationalExponents"
 }

@@ -213,4 +213,77 @@ class GeneralRulesTest {
         testRule("x*[3^4]*[2^4]", rewriteProductOfPowersWithSameExponent, "x*[(3 * 2) ^ 4]")
         testRule("y*[3^[2 / 3]]*z*[4^[2 / 3]]", rewriteProductOfPowersWithSameExponent, "y*[(3 * 4) ^ [2 / 3]]*z")
     }
+
+    @Test
+    fun testFlipFractionUnderNegativePower() {
+        testRule("[([2 / 3]) ^ [4 / 5]]", flipFractionUnderNegativePower, null)
+        testRule("[([2 / 3]) ^ -[4 / 5]]", flipFractionUnderNegativePower, "[([3 / 2]) ^ [4 / 5]]")
+    }
+
+    @Test
+    fun testRewriteProductOfPowersWithNegatedExponent() {
+        testRule(
+            "[2 ^ [1 / 2]] * [3 ^ -[1 / 3]]",
+            rewriteProductOfPowersWithNegatedExponent,
+            null
+        )
+        testRule(
+            "[2 ^ [1 / 2]] * [([4 / 3]) ^ -[1 / 2]]",
+            rewriteProductOfPowersWithNegatedExponent,
+            "[2 ^ [1 / 2]] * [([3 / 4]) ^ [1 / 2]]"
+        )
+        testRule(
+            "[2 ^ [1 / 2]] * [3 ^ -[1 / 2]]",
+            rewriteProductOfPowersWithNegatedExponent,
+            "[2 ^ [1 / 2]] * [([1 / 3]) ^ [1 / 2]]"
+        )
+        testRule(
+            "[3 ^ -[1 / 2]] * [2 ^ [1 / 2]]",
+            rewriteProductOfPowersWithNegatedExponent,
+            "[([1 / 3]) ^ [1 / 2]] * [2 ^ [1 / 2]]"
+        )
+        testRule(
+            "[2 ^ [1 / 2]] * [([2 / 3]) ^ -[1 / 2]]",
+            rewriteProductOfPowersWithNegatedExponent,
+            "[2 ^ [1 / 2]] * [([3 / 2]) ^ [1 / 2]]"
+        )
+        testRule(
+            "[([2 / 3]) ^ -[1 / 2]] * [2 ^ [1 / 2]]",
+            rewriteProductOfPowersWithNegatedExponent,
+            "[([3 / 2]) ^ [1 / 2]] * [2 ^ [1 / 2]]"
+        )
+    }
+
+    @Test
+    fun testRewriteProductOfPowersWithInverseFractionBase() {
+        testRule(
+            "[([2 / 3]) ^ [1 / 2]] * [([2 / 3]) ^ [2 / 5]]",
+            rewriteProductOfPowersWithInverseFractionBase,
+            null
+        )
+        testRule(
+            "[([2 / 3]) ^ [1 / 2]] * [([3 / 2]) ^ [2 / 5]]",
+            rewriteProductOfPowersWithInverseFractionBase,
+            "[([2 / 3]) ^ [1 / 2]] * [([2 / 3]) ^ -[2 / 5]]"
+        )
+    }
+
+    @Test
+    fun testRewriteProductOfPowersWithInverseBase() {
+        testRule(
+            "[2 ^ [1 / 2]] * [([1 / 3]) ^ [2 / 5]]",
+            rewriteProductOfPowersWithInverseBase,
+            null
+        )
+        testRule(
+            "[2 ^ [1 / 2]] * [([1 / 2]) ^ [2 / 5]]",
+            rewriteProductOfPowersWithInverseBase,
+            "[2 ^ [1 / 2]] * [2 ^ -[2 / 5]]"
+        )
+        testRule(
+            "[([1 / 2]) ^ [2 / 5]] * [2 ^ [1 / 2]]",
+            rewriteProductOfPowersWithInverseBase,
+            "[2 ^ -[2 / 5]] * [2 ^ [1 / 2]]"
+        )
+    }
 }

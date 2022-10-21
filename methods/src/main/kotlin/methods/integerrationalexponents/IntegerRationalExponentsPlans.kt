@@ -13,14 +13,17 @@ import methods.fractionarithmetic.multiplyAndSimplifyFractions
 import methods.general.collectLikeTermsAndSimplify
 import methods.general.distributePowerOfProduct
 import methods.general.distributeSumOfPowers
+import methods.general.flipFractionUnderNegativePower
 import methods.general.multiplyExponentsUsingPowerRule
 import methods.general.removeBracketProductInProduct
+import methods.general.rewriteProductOfPowersWithInverseBase
+import methods.general.rewriteProductOfPowersWithInverseFractionBase
+import methods.general.rewriteProductOfPowersWithNegatedExponent
 import methods.general.rewriteProductOfPowersWithSameBase
 import methods.general.rewriteProductOfPowersWithSameExponent
 import methods.integerarithmetic.evaluateIntegerPowerDirectly
 import methods.integerarithmetic.evaluateIntegerProductAndDivision
 import methods.integerarithmetic.simplifyIntegersInExpression
-import methods.integerarithmetic.simplifyIntegersInProduct
 
 /**
  * [ ( [x^a] ) ^ b ] --> [x^ (ab)]
@@ -89,13 +92,35 @@ val simplifyProductOfPowersWithSameBase = plan {
     apply { deeply(evaluateFractionSum) }
 }
 
+val simplifyProductOfPowersWithInverseFractionBase = plan {
+    explanation(Explanation.SimplifyProductOfPowersWithInverseFractionBase)
+
+    apply(rewriteProductOfPowersWithInverseFractionBase)
+    apply(simplifyProductOfPowersWithSameBase)
+}
+
+val simplifyProductOfPowersWithInverseBase = plan {
+    explanation(Explanation.SimplifyProductOfPowersWithInverseBase)
+
+    apply(rewriteProductOfPowersWithInverseBase)
+    apply(simplifyProductOfPowersWithSameBase)
+}
+
 val simplifyProductOfPowersWithSameExponent = plan {
     explanation(Explanation.SimplifyProductOfPowersWithSameExponent)
 
     apply(rewriteProductOfPowersWithSameExponent)
-    whilePossible {
-        deeply(evaluateIntegerProductAndDivision)
+    firstOf {
+        option { deeply(evaluateIntegerProductAndDivision) }
+        option { deeply(multiplyAndSimplifyFractions) }
     }
+}
+
+val simplifyProductOfPowersWithNegatedExponent = plan {
+    explanation(Explanation.SimplifyProductOfPowersWithNegatedExponent)
+
+    apply(rewriteProductOfPowersWithNegatedExponent)
+    apply(simplifyProductOfPowersWithSameExponent)
 }
 
 val simplifyProductOfPowersWithRationalExponents = plan {
@@ -111,10 +136,13 @@ val simplifyProductOfPowersWithRationalExponents = plan {
 val simplifyRationalExponentsInProduct = steps {
     whilePossible {
         firstOf {
-            option { deeply(simplifyIntegersInProduct) }
             option { deeply(simplifyRationalExponentOfInteger) }
             option { deeply(simplifyProductOfPowersWithSameBase) }
+            option { deeply(simplifyProductOfPowersWithInverseFractionBase) }
+            option { deeply(simplifyProductOfPowersWithInverseBase) }
             option { deeply(simplifyProductOfPowersWithSameExponent) }
+            option { deeply(simplifyProductOfPowersWithNegatedExponent) }
+            option { deeply(flipFractionUnderNegativePower) }
             option { deeply(simplifyProductOfPowersWithRationalExponents) }
         }
     }

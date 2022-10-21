@@ -136,7 +136,7 @@ val simplificationSteps = steps {
         option { deeply(collectLikeRationalPowersAndSimplify, deepFirst = true) }
 
         option(simplifyRootsInExpression)
-        option { deeply(simplifyRationalExponentsInProduct, deepFirst = true) }
+        option(simplifyRationalExponentsInProduct)
 
         option { deeply(multiplyAndSimplifyFractions, deepFirst = true) }
         option { deeply(simplifyProductWithRoots, deepFirst = true) }

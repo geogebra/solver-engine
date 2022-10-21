@@ -18,6 +18,7 @@ import engine.methods.rule
 import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.FixedPattern
+import engine.patterns.FractionPattern
 import engine.patterns.SignedNumberPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.commutativeProductOf
@@ -28,6 +29,7 @@ import engine.patterns.fractionOf
 import engine.patterns.integerCondition
 import engine.patterns.negOf
 import engine.patterns.numericCondition
+import engine.patterns.oneOf
 import engine.patterns.oppositeSignPattern
 import engine.patterns.optionalDivideBy
 import engine.patterns.optionalNegOf
@@ -543,6 +545,107 @@ val rewriteProductOfPowersWithSameExponent = rule {
                 powerOf(productOf(move(base1), move(base2)), factor(exponent))
             ),
             explanation = metadata(Explanation.RewriteProductOfPowersWithSameExponent)
+        )
+    }
+}
+
+val flipFractionUnderNegativePower = rule {
+    val fraction = FractionPattern()
+    val exponent = AnyPattern()
+
+    val power = powerOf(fraction, negOf(exponent))
+
+    onPattern(power) {
+        TransformationResult(
+            toExpr = powerOf(
+                fractionOf(move(fraction.denominator), move(fraction.numerator)),
+                move(exponent)
+            ),
+            explanation = metadata(Explanation.FlipFractionUnderNegativePower)
+        )
+    }
+}
+
+val rewriteProductOfPowersWithNegatedExponent = rule {
+    val base1 = AnyPattern()
+
+    val fraction = FractionPattern()
+    val base2 = oneOf(fraction, AnyPattern())
+
+    val exponent = AnyPattern()
+
+    val power1 = powerOf(base1, exponent)
+    val power2 = powerOf(base2, negOf(exponent))
+
+    val product1 = productContaining(power1, power2)
+    val product2 = productContaining(power2, power1)
+
+    onPattern(oneOf(product1, product2)) {
+        val inverse = when {
+            isBound(fraction) -> fractionOf(move(fraction.denominator), move(fraction.numerator))
+            else -> fractionOf(introduce(Constants.One), move(base2))
+        }
+
+        val newProduct = when {
+            isBound(product1) -> product1.substitute(move(power1), powerOf(inverse, move(exponent)))
+            else -> product2.substitute(powerOf(inverse, move(exponent)), move(power1))
+        }
+
+        TransformationResult(
+            toExpr = newProduct,
+            explanation = metadata(Explanation.RewriteProductOfPowersWithNegatedExponent)
+        )
+    }
+}
+
+val rewriteProductOfPowersWithInverseFractionBase = rule {
+    val value1 = AnyPattern()
+    val value2 = AnyPattern()
+
+    val fraction1 = fractionOf(value1, value2)
+    val fraction2 = fractionOf(value2, value1)
+
+    val exponent1 = AnyPattern()
+    val exponent2 = AnyPattern()
+
+    val power1 = powerOf(fraction1, exponent1)
+    val power2 = powerOf(fraction2, exponent2)
+
+    val product = productContaining(power1, power2)
+
+    onPattern(product) {
+        TransformationResult(
+            toExpr = product.substitute(
+                move(power1),
+                powerOf(fractionOf(move(value1), move(value2)), negOf(move(exponent2)))
+            ),
+            explanation = metadata(Explanation.RewriteProductOfPowersWithInverseFractionBase)
+        )
+    }
+}
+
+val rewriteProductOfPowersWithInverseBase = rule {
+    val base1 = AnyPattern()
+    val base2 = fractionOf(FixedPattern(Constants.One), base1)
+
+    val exponent1 = AnyPattern()
+    val exponent2 = AnyPattern()
+
+    val power1 = powerOf(base1, exponent1)
+    val power2 = powerOf(base2, exponent2)
+
+    val product1 = productContaining(power1, power2)
+    val product2 = productContaining(power2, power1)
+
+    onPattern(oneOf(product1, product2)) {
+        val newProduct = when {
+            isBound(product1) -> product1.substitute(move(power1), powerOf(move(base1), negOf(move(exponent2))))
+            else -> product2.substitute(powerOf(move(base1), negOf(move(exponent2))), move(power1))
+        }
+
+        TransformationResult(
+            toExpr = newProduct,
+            explanation = metadata(Explanation.RewriteProductOfPowersWithInverseBase)
         )
     }
 }

@@ -342,6 +342,144 @@ class SimplifyRationalExponents {
             }
         }
     }
+
+    @Test
+    fun testSimplifyProductOfPowersWithNegatedExponent() = testMethod {
+        method = simplifyProductOfPowersWithNegatedExponent
+        inputExpr = "[2 ^ [1 / 2]] * [4 ^ -[1 / 2]]"
+
+        check {
+            fromExpr = "[2 ^ [1 / 2]] * [4 ^ -[1 / 2]]"
+            toExpr = "[([1 / 2]) ^ [1 / 2]]"
+            explanation {
+                key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithNegatedExponent
+            }
+
+            step {
+                fromExpr = "[2 ^ [1 / 2]] * [4 ^ -[1 / 2]]"
+                toExpr = "[2 ^ [1 / 2]] * [([1 / 4]) ^ [1 / 2]]"
+                explanation {
+                    key = GeneralExplanation.RewriteProductOfPowersWithNegatedExponent
+                }
+            }
+
+            step {
+                fromExpr = "[2 ^ [1 / 2]] * [([1 / 4]) ^ [1 / 2]]"
+                toExpr = "[([1 / 2]) ^ [1 / 2]]"
+                explanation {
+                    key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithSameExponent
+                }
+
+                step {
+                    fromExpr = "[2 ^ [1 / 2]] * [([1 / 4]) ^ [1 / 2]]"
+                    toExpr = "[(2 * [1 / 4]) ^ [1 / 2]]"
+                    explanation {
+                        key = GeneralExplanation.RewriteProductOfPowersWithSameExponent
+                    }
+                }
+
+                step {
+                    fromExpr = "[(2 * [1 / 4]) ^ [1 / 2]]"
+                    toExpr = "[([1 / 2]) ^ [1 / 2]]"
+                    explanation {
+                        key = FractionArithmeticExplanation.MultiplyAndSimplifyFractions
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testSimplifyProductOfPowersWithInverseFractionBase() = testMethod {
+        method = simplifyProductOfPowersWithInverseFractionBase
+        inputExpr = "[([2 / 3]) ^ [1 / 2]] * [([3 / 2]) ^ [2 / 5]]"
+
+        check {
+            fromExpr = "[([2 / 3]) ^ [1 / 2]] * [([3 / 2]) ^ [2 / 5]]"
+            toExpr = "[([2 / 3]) ^ [1 / 10]]"
+            explanation {
+                key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithInverseFractionBase
+            }
+
+            step {
+                fromExpr = "[([2 / 3]) ^ [1 / 2]] * [([3 / 2]) ^ [2 / 5]]"
+                toExpr = "[([2 / 3]) ^ [1 / 2]] * [([2 / 3]) ^ -[2 / 5]]"
+                explanation {
+                    key = GeneralExplanation.RewriteProductOfPowersWithInverseFractionBase
+                }
+            }
+
+            step {
+                fromExpr = "[([2 / 3]) ^ [1 / 2]] * [([2 / 3]) ^ -[2 / 5]]"
+                toExpr = "[([2 / 3]) ^ [1 / 10]]"
+                explanation {
+                    key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithSameBase
+                }
+
+                step {
+                    fromExpr = "[([2 / 3]) ^ [1 / 2]] * [([2 / 3]) ^ -[2 / 5]]"
+                    toExpr = "[([2 / 3]) ^ [1 / 2] - [2 / 5]]"
+                    explanation {
+                        key = GeneralExplanation.RewriteProductOfPowersWithSameBase
+                    }
+                }
+
+                step {
+                    fromExpr = "[([2 / 3]) ^ [1 / 2] - [2 / 5]]"
+                    toExpr = "[([2 / 3]) ^ [1 / 10]]"
+                    explanation {
+                        key = FractionArithmeticExplanation.EvaluateFractionSum
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testSimplifyProductOfPowersWithInverseBase() = testMethod {
+        method = simplifyProductOfPowersWithInverseBase
+        inputExpr = "[3 ^ [1 / 2]] * [([1 / 3]) ^ [2 / 5]]"
+
+        check {
+            fromExpr = "[3 ^ [1 / 2]] * [([1 / 3]) ^ [2 / 5]]"
+            toExpr = "[3 ^ [1 / 10]]"
+            explanation {
+                key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithInverseBase
+            }
+
+            step {
+                fromExpr = "[3 ^ [1 / 2]] * [([1 / 3]) ^ [2 / 5]]"
+                toExpr = "[3 ^ [1 / 2]] * [3 ^ -[2 / 5]]"
+                explanation {
+                    key = GeneralExplanation.RewriteProductOfPowersWithInverseBase
+                }
+            }
+
+            step {
+                fromExpr = "[3 ^ [1 / 2]] * [3 ^ -[2 / 5]]"
+                toExpr = "[3 ^ [1 / 10]]"
+                explanation {
+                    key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithSameBase
+                }
+
+                step {
+                    fromExpr = "[3 ^ [1 / 2]] * [3 ^ -[2 / 5]]"
+                    toExpr = "[3 ^ [1 / 2] - [2 / 5]]"
+                    explanation {
+                        key = GeneralExplanation.RewriteProductOfPowersWithSameBase
+                    }
+                }
+
+                step {
+                    fromExpr = "[3 ^ [1 / 2] - [2 / 5]]"
+                    toExpr = "[3 ^ [1 / 10]]"
+                    explanation {
+                        key = FractionArithmeticExplanation.EvaluateFractionSum
+                    }
+                }
+            }
+        }
+    }
 }
 
 class SimplifyRationalExponentsDontApply {
