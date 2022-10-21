@@ -20,6 +20,7 @@ import methods.general.eliminateOneInProduct
 import methods.general.eliminateZeroInSum
 import methods.general.evaluateProductContainingZero
 import methods.general.evaluateProductDividedByZeroAsUndefined
+import methods.general.evaluateZeroToThePowerOfZero
 import methods.general.removeOuterBracket
 import methods.general.removeRedundantBrackets
 import methods.general.rewritePowerAsProduct
@@ -56,6 +57,7 @@ val evaluateSignedIntegerPower = plan {
     explanation(Explanation.EvaluateIntegerPower, move(base), move(exponent))
 
     firstOf {
+        option(evaluateZeroToThePowerOfZero)
         option {
             apply(rewritePowerAsProduct)
             apply(evaluateProductOfIntegers)

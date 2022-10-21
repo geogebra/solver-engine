@@ -1,5 +1,6 @@
 package methods.integerarithmetic
 
+import methods.general.GeneralExplanation
 import methods.plans.testMethod
 import kotlin.test.Test
 
@@ -354,6 +355,20 @@ class IntegerArithmeticPlansTest {
 
             step {
                 toExpr = "32"
+            }
+        }
+    }
+
+    @Test
+    fun testZeroToThePowerZero() = testMethod {
+        method = evaluateArithmeticExpression
+        inputExpr = "[0 ^ 0]"
+
+        check {
+            fromExpr = "[0 ^ 0]"
+            toExpr = "UNDEFINED"
+            explanation {
+                key = GeneralExplanation.EvaluateZeroToThePowerOfZero
             }
         }
     }

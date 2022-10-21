@@ -2,6 +2,7 @@ package methods.approximation
 
 import engine.context.Context
 import methods.decimals.DecimalsExplanation
+import methods.general.GeneralExplanation
 import methods.plans.testMethod
 import org.junit.jupiter.api.Test
 import java.math.BigInteger
@@ -120,6 +121,20 @@ class ApproximationPlansTest {
 
         check {
             noTransformation()
+        }
+    }
+
+    @Test
+    fun testZeroToThePowerZero() = testMethod {
+        method = approximateExpression
+        inputExpr = "[0 ^ 0]"
+
+        check {
+            fromExpr = "[0 ^ 0]"
+            toExpr = "UNDEFINED"
+            explanation {
+                key = GeneralExplanation.EvaluateZeroToThePowerOfZero
+            }
         }
     }
 }

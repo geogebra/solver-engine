@@ -106,6 +106,7 @@ val simplifyRootsInExpression = plan {
 
 val simpleTidyUpSteps = steps {
     firstOf {
+        option { deeply(splitMixedNumber) }
         option { deeply(simplifyZeroDenominatorFractionToUndefined) }
         option { deeply(simplifyZeroNumeratorFractionToZero) }
         option { deeply(simplifyFractionWithOneDenominator) }
@@ -140,7 +141,6 @@ val simplificationSteps = steps {
         option { deeply(multiplyAndSimplifyFractions, deepFirst = true) }
         option { deeply(simplifyProductWithRoots, deepFirst = true) }
 
-        option { deeply(splitMixedNumber, deepFirst = true) }
         option { deeply(simplifyIntegersInProduct, deepFirst = true) }
 
         option { deeply(simplifyIntegersInSum, deepFirst = true) }

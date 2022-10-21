@@ -15,6 +15,7 @@ import engine.patterns.productContaining
 import methods.decimals.evaluateSumOfDecimals
 import methods.general.addClarifyingBrackets
 import methods.general.evaluateProductDividedByZeroAsUndefined
+import methods.general.evaluateZeroToThePowerOfZero
 import methods.general.removeOuterBracket
 import methods.general.removeRedundantBrackets
 import methods.general.simplifyDoubleMinus
@@ -47,6 +48,7 @@ val approximationSteps = steps {
         option { deeply(evaluateProductDividedByZeroAsUndefined, deepFirst = true) }
         option { deeply(removeRedundantBrackets, deepFirst = true) }
         option { deeply(simplifyDoubleMinus, deepFirst = true) }
+        option { deeply(evaluateZeroToThePowerOfZero, deepFirst = true) }
         option { deeply(approximateDecimalPower, deepFirst = true) }
         option { deeply(approximateProductAndDivisionOfDecimals, deepFirst = true) }
         option { deeply(evaluateSumOfDecimals, deepFirst = true) }
