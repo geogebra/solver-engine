@@ -70,13 +70,18 @@ object IntegerRationalExponentsRulesTest {
     fun testBringRationalExponentsToSameDenominator() {
         testRule(
             "[2 ^ [2 / 3]] * [3 ^ [1 / 2]]",
-            bringRationalExponentsToSameDenominator,
+            findCommonDenominatorOfRationalExponents,
             "[2 ^ [2 * 2 / 3 * 2]] * [3 ^ [1 * 3 / 2 * 3]]"
         )
         testRule(
             "[2 ^ [2 / 3]] * [3 ^ [1 / 6]]",
-            bringRationalExponentsToSameDenominator,
+            findCommonDenominatorOfRationalExponents,
             "[2 ^ [2 * 2 / 3 * 2]] * [3 ^ [1 / 6]]"
+        )
+        testRule(
+            "[[2 ^ [2 / 3]] / [3 ^ [1 / 2]]]",
+            findCommonDenominatorOfRationalExponents,
+            "[[2 ^ [2 * 2 / 3 * 2]] / [3 ^ [1 * 3 / 2 * 3]]]"
         )
     }
 

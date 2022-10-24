@@ -199,7 +199,7 @@ class GeneralRulesTest {
     }
 
     @Test
-    fun testSimplifyProductOfPowersSameBase() {
+    fun testRewriteProductOfPowersWithSameBase() {
         testRule("[x^2]*[y^2]", rewriteProductOfPowersWithSameBase, null)
         testRule("[x^2]*[x^3]", rewriteProductOfPowersWithSameBase, "[x ^ 2 + 3]")
         testRule("x*[3^4]*[3^-9]", rewriteProductOfPowersWithSameBase, "x*[3 ^ 4 - 9]")
@@ -207,11 +207,27 @@ class GeneralRulesTest {
     }
 
     @Test
-    fun testSimplifyProductOfPowersSameExponent() {
+    fun testRewriteProductOfPowersWithSameExponent() {
         testRule("[x^2]*[x^3]", rewriteProductOfPowersWithSameExponent, null)
         testRule("[x^2]*[y^2]", rewriteProductOfPowersWithSameExponent, "[(x * y) ^ 2]")
         testRule("x*[3^4]*[2^4]", rewriteProductOfPowersWithSameExponent, "x*[(3 * 2) ^ 4]")
         testRule("y*[3^[2 / 3]]*z*[4^[2 / 3]]", rewriteProductOfPowersWithSameExponent, "y*[(3 * 4) ^ [2 / 3]]*z")
+    }
+
+    @Test
+    fun testRewriteFractionOfPowersWithSameBase() {
+        testRule("[[x^2] / [y^2]]", rewriteFractionOfPowersWithSameBase, null)
+        testRule("[[x^2] / [x^3]]", rewriteFractionOfPowersWithSameBase, "[x ^ 2 - 3]")
+        testRule("[[3^4] / [3^-9]]", rewriteFractionOfPowersWithSameBase, "[3 ^ 4 -(- 9)]")
+        testRule("[[3^[1 / 2]] / [3^[2 / 3]]]", rewriteFractionOfPowersWithSameBase, "[3 ^ [1 / 2] - [2 / 3]]")
+    }
+
+    @Test
+    fun testRewriteFractionOfPowersWithSameExponent() {
+        testRule("[[x^2] / [x^3]]", rewriteFractionOfPowersWithSameExponent, null)
+        testRule("[[x^2] / [y^2]]", rewriteFractionOfPowersWithSameExponent, "[([x / y]) ^ 2]")
+        testRule("[[3^4] / [2^4]]", rewriteFractionOfPowersWithSameExponent, "[([3 / 2]) ^ 4]")
+        testRule("[[3^[2 / 3]] / [4^[2 / 3]]]", rewriteFractionOfPowersWithSameExponent, "[([3 / 4]) ^ [2 / 3]]")
     }
 
     @Test

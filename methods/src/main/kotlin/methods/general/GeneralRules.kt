@@ -549,6 +549,42 @@ val rewriteProductOfPowersWithSameExponent = rule {
     }
 }
 
+val rewriteFractionOfPowersWithSameBase = rule {
+    val base = AnyPattern()
+    val exponent1 = AnyPattern()
+    val exponent2 = AnyPattern()
+
+    val power1 = powerOf(base, exponent1)
+    val power2 = powerOf(base, exponent2)
+
+    val product = fractionOf(power1, power2)
+
+    onPattern(product) {
+        TransformationResult(
+            toExpr = powerOf(factor(base), sumOf(move(exponent1), negOf(move(exponent2)))),
+            explanation = metadata(Explanation.RewriteFractionOfPowersWithSameBase)
+        )
+    }
+}
+
+val rewriteFractionOfPowersWithSameExponent = rule {
+    val base1 = AnyPattern()
+    val base2 = AnyPattern()
+    val exponent = AnyPattern()
+
+    val power1 = powerOf(base1, exponent)
+    val power2 = powerOf(base2, exponent)
+
+    val product = fractionOf(power1, power2)
+
+    onPattern(product) {
+        TransformationResult(
+            toExpr = powerOf(fractionOf(move(base1), move(base2)), factor(exponent)),
+            explanation = metadata(Explanation.RewriteFractionOfPowersWithSameExponent)
+        )
+    }
+}
+
 val flipFractionUnderNegativePower = rule {
     val fraction = FractionPattern()
     val exponent = AnyPattern()

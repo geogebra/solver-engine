@@ -18,6 +18,7 @@ import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.condition
 import engine.patterns.fractionOf
 import engine.patterns.integerCondition
+import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
@@ -115,7 +116,7 @@ val normaliseProductWithRationalExponents = rule {
     }
 }
 
-val bringRationalExponentsToSameDenominator = rule {
+val findCommonDenominatorOfRationalExponents = rule {
     val base1 = AnyPattern()
     val base2 = AnyPattern()
 
@@ -126,8 +127,9 @@ val bringRationalExponentsToSameDenominator = rule {
     val power2 = powerOf(base2, exponent2)
 
     val product = productContaining(power1, power2)
+    val fraction = fractionOf(power1, power2)
 
-    onPattern(product) {
+    onPattern(oneOf(product, fraction)) {
         if (getValue(exponent1.denominator) == getValue(exponent2.denominator)) {
             null
         } else {
@@ -150,9 +152,14 @@ val bringRationalExponentsToSameDenominator = rule {
                 )
             }
 
+            val result = when {
+                isBound(product) -> product.substitute(powerOf(move(base1), fraction1), powerOf(move(base2), fraction2))
+                else -> fractionOf(powerOf(move(base1), fraction1), powerOf(move(base2), fraction2))
+            }
+
             TransformationResult(
-                toExpr = product.substitute(powerOf(move(base1), fraction1), powerOf(move(base2), fraction2)),
-                explanation = metadata(Explanation.BringRationalExponentsToSameDenominator)
+                toExpr = result,
+                explanation = metadata(Explanation.FindCommonDenominatorOfRationalExponents)
             )
         }
     }
@@ -174,18 +181,20 @@ val factorDenominatorOfRationalExponents = rule {
     val power2 = powerOf(base2, exponent2)
 
     val product = productContaining(power1, power2)
+    val fraction = fractionOf(power1, power2)
 
-    onPattern(product) {
+    onPattern(oneOf(product, fraction)) {
+        val newPower1 = simplifiedPowerOf(move(base1), move(numerator1))
+        val newPower2 = simplifiedPowerOf(move(base2), move(numerator2))
+        val newExponent = fractionOf(introduce(Constants.One), factor(denominator))
+
+        val result = when {
+            isBound(product) -> product.substitute(powerOf(productOf(newPower1, newPower2), newExponent))
+            else -> powerOf(fractionOf(newPower1, newPower2), newExponent)
+        }
+
         TransformationResult(
-            toExpr = product.substitute(
-                powerOf(
-                    productOf(
-                        simplifiedPowerOf(move(base1), move(numerator1)),
-                        simplifiedPowerOf(move(base2), move(numerator2))
-                    ),
-                    fractionOf(introduce(Constants.One), move(denominator))
-                )
-            ),
+            toExpr = result,
             explanation = metadata(Explanation.FactorDenominatorOfRationalExponents)
         )
     }

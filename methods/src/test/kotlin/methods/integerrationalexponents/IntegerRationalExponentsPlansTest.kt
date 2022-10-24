@@ -510,6 +510,66 @@ class SimplifyRationalExponents {
             }
         }
     }
+
+    @Test
+    fun testSimplifyFractionOfPowersWithSameBase() = testMethod {
+        method = simplifyFractionOfPowersWithSameBase
+        inputExpr = "[[2 ^ [1 / 2]] / [2 ^ [1 / 3]]]"
+
+        check {
+            fromExpr = "[[2 ^ [1 / 2]] / [2 ^ [1 / 3]]]"
+            toExpr = "[2 ^ [1 / 6]]"
+            explanation {
+                key = IntegerRationalExponentsExplanation.SimplifyFractionOfPowersWithSameBase
+            }
+
+            step {
+                fromExpr = "[[2 ^ [1 / 2]] / [2 ^ [1 / 3]]]"
+                toExpr = "[2 ^ [1 / 2] - [1 / 3]]"
+                explanation {
+                    key = GeneralExplanation.RewriteFractionOfPowersWithSameBase
+                }
+            }
+
+            step {
+                fromExpr = "[2 ^ [1 / 2] - [1 / 3]]"
+                toExpr = "[2 ^ [1 / 6]]"
+                explanation {
+                    key = FractionArithmeticExplanation.EvaluateFractionSum
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testSimplifyFractionOfPowersWithSameExponent() = testMethod {
+        method = simplifyFractionOfPowersWithSameExponent
+        inputExpr = "[[2 ^ [1 / 2]] / [6 ^ [1 / 2]]]"
+
+        check {
+            fromExpr = "[[2 ^ [1 / 2]] / [6 ^ [1 / 2]]]"
+            toExpr = "[([1 / 3]) ^ [1 / 2]]"
+            explanation {
+                key = IntegerRationalExponentsExplanation.SimplifyFractionOfPowersWithSameExponent
+            }
+
+            step {
+                fromExpr = "[[2 ^ [1 / 2]] / [6 ^ [1 / 2]]]"
+                toExpr = "[([2 / 6]) ^ [1 / 2]]"
+                explanation {
+                    key = GeneralExplanation.RewriteFractionOfPowersWithSameExponent
+                }
+            }
+
+            step {
+                fromExpr = "[([2 / 6]) ^ [1 / 2]]"
+                toExpr = "[([1 / 3]) ^ [1 / 2]]"
+                explanation {
+                    key = FractionArithmeticExplanation.SimplifyFraction
+                }
+            }
+        }
+    }
 }
 
 class SimplifyRationalExponentsDontApply {

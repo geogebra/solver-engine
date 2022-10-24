@@ -123,6 +123,20 @@ enum class GeneralExplanation : CategorisedMetadataKey {
     RewriteProductOfPowersWithSameExponent,
 
     /**
+     * Convert [[a ^ b] / [a ^ c]] to [a ^ b - c]
+     *
+     * E.g. [[3 ^ [1 / 2]] / [3 ^ [2 / 3]]] -> [3 ^ [1 / 2] - [2 / 3]]
+     */
+    RewriteFractionOfPowersWithSameBase,
+
+    /**
+     * Convert [[a ^ c] / [b ^ c]] to [([a / b]) ^ c]
+     *
+     * E.g. [[3 ^ [2 / 3]] / [2 ^ [2 / 3]]] -> [([3 / 2]) ^ [2 / 3]]
+     */
+    RewriteFractionOfPowersWithSameExponent,
+
+    /**
      * Flip a fraction under a negative power.
      *
      * E.g. [([2 / 3]) ^ -[4 / 5]] -> [([3 / 2]) ^ [4 / 5]]

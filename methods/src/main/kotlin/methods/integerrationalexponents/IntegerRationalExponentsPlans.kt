@@ -1,5 +1,6 @@
 package methods.integerrationalexponents
 
+import engine.expressions.base
 import engine.expressions.exponent
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
@@ -10,12 +11,15 @@ import method.integerrationalexponents.Explanation
 import methods.fractionarithmetic.convertImproperFractionToSumOfIntegerAndFraction
 import methods.fractionarithmetic.evaluateFractionSum
 import methods.fractionarithmetic.multiplyAndSimplifyFractions
+import methods.fractionarithmetic.simplifyFraction
 import methods.general.collectLikeTermsAndSimplify
 import methods.general.distributePowerOfProduct
 import methods.general.distributeSumOfPowers
 import methods.general.flipFractionUnderNegativePower
 import methods.general.multiplyExponentsUsingPowerRule
 import methods.general.removeBracketProductInProduct
+import methods.general.rewriteFractionOfPowersWithSameBase
+import methods.general.rewriteFractionOfPowersWithSameExponent
 import methods.general.rewriteProductOfPowersWithInverseBase
 import methods.general.rewriteProductOfPowersWithInverseFractionBase
 import methods.general.rewriteProductOfPowersWithNegatedExponent
@@ -141,15 +145,40 @@ val simplifyProductOfPowersWithNegatedExponent = plan {
     }
 }
 
+val simplifyFractionOfPowersWithSameBase = plan {
+    explanation(Explanation.SimplifyFractionOfPowersWithSameBase)
+
+    steps {
+        apply(rewriteFractionOfPowersWithSameBase)
+        applyTo(evaluateFractionSum) { it.exponent() }
+    }
+}
+
+val simplifyFractionOfPowersWithSameExponent = plan {
+    explanation(Explanation.SimplifyFractionOfPowersWithSameExponent)
+
+    steps {
+        apply(rewriteFractionOfPowersWithSameExponent)
+        optionally { applyTo(simplifyFraction) { it.base() } }
+    }
+}
+
 val simplifyProductOfPowersWithRationalExponents = plan {
     explanation(Explanation.SimplifyProductOfPowersWithRationalExponents)
 
     steps {
-        apply(bringRationalExponentsToSameDenominator)
-        whilePossible { deeply(evaluateIntegerProductAndDivision) }
+        plan {
+            explanation(Explanation.BringRationalExponentsToSameDenominator)
+
+            steps {
+                apply(findCommonDenominatorOfRationalExponents)
+                whilePossible { deeply(evaluateIntegerProductAndDivision) }
+            }
+        }
         apply(factorDenominatorOfRationalExponents)
         whilePossible { deeply(evaluateIntegerPowerDirectly) }
-        deeply(evaluateIntegerProductAndDivision)
+        optionally { deeply(evaluateIntegerProductAndDivision) }
+        optionally { deeply(simplifyFraction) }
     }
 }
 
@@ -162,6 +191,8 @@ val simplifyRationalExponentsInProduct = steps {
             option { deeply(simplifyProductOfPowersWithInverseBase) }
             option { deeply(simplifyProductOfPowersWithSameExponent) }
             option { deeply(simplifyProductOfPowersWithNegatedExponent) }
+            option { deeply(simplifyFractionOfPowersWithSameBase) }
+            option { deeply(simplifyFractionOfPowersWithSameExponent) }
             option { deeply(flipFractionUnderNegativePower) }
             option { deeply(applyPowerRuleOfExponents) }
             option { deeply(simplifyProductOfPowersWithRationalExponents) }

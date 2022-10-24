@@ -50,9 +50,18 @@ enum class IntegerRationalExponentsExplanation : CategorisedMetadataKey {
     SimplifyRationalExponentOfInteger,
 
     /**
-     * Transforms two powers with rational exponents in a product
-     * such that the exponents have the same denominator
+     * Transforms two powers with rational exponents in a product or fraction
+     * such that the exponents have the same denominator (without evaluating the
+     * products in the exponents)
      * E.g. [3 ^ [1 / 2]] * [5 ^ [2 / 3]] -> [3 ^ [3 * 1 / 3 * 2]] * [5 ^ [2 * 2 / 2 * 3]]
+     */
+    FindCommonDenominatorOfRationalExponents,
+
+    /**
+     * Transforms two powers with rational exponents in a product or fraction
+     * such that the exponents have the same denominator (and also evaluates the
+     * products in the new exponents)
+     * E.g. [3 ^ [1 / 2]] * [5 ^ [2 / 3]] -> [3 ^ [3 / 6]] * [5 ^ [4 / 6]]
      */
     BringRationalExponentsToSameDenominator,
 
@@ -65,15 +74,15 @@ enum class IntegerRationalExponentsExplanation : CategorisedMetadataKey {
 
     /**
      * Write the product of two powers with the same exponent
-     * as the power of the products
-     * E.g. [3 ^ [2 / 3]] * [5 ^ [2 / 3]] -> [(3 * 5) ^ [2 / 3]]
+     * as the power of the products and simplify the result
+     * E.g. [3 ^ [2 / 3]] * [5 ^ [2 / 3]] -> [15 ^ [2 / 3]]
      */
     SimplifyProductOfPowersWithSameExponent,
 
     /**
-     * Write the product of two powers with the same base
-     * as the power to the sum of the exponents
-     * E.g. [3 ^ [1 / 2]] * [3 ^ [2 / 3]] -> [3 ^ [1 / 2] + [2 / 3]]
+     * Write the product of two powers with the same base as the
+     * power to the sum of the exponents and simplify the result
+     * E.g. [3 ^ [1 / 2]] * [3 ^ [2 / 3]] -> [3 ^ [7 / 6]]
      */
     SimplifyProductOfPowersWithSameBase,
 
@@ -128,6 +137,20 @@ enum class IntegerRationalExponentsExplanation : CategorisedMetadataKey {
      * E.g. [([2 / 3]) ^ [1 / 2]] * [([3 / 2]) ^ [2 / 5]] -> [([2 / 3]) ^ [1 / 10]]
      */
     SimplifyProductOfPowersWithInverseFractionBase,
+
+    /**
+     * Write the fraction of two powers with the same base as the
+     * power to the difference of the exponents and simplify the result
+     * E.g. [[3 ^ [1 / 2]] / [3 ^ [2 / 3]]] -> [3 ^ -[1 / 6]]
+     */
+    SimplifyFractionOfPowersWithSameBase,
+
+    /**
+     * Write the fraction of two powers with the same exponent
+     * as the power of the fraction and simplify the result
+     * E.g. [[3 ^ [2 / 3]] / [6 ^ [2 / 3]]] -> [([1 / 2]) ^ [2 / 3]]
+     */
+    SimplifyFractionOfPowersWithSameExponent,
 
     /**
      * A negative value cannot be raised to a rational power.
