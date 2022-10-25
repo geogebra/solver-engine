@@ -73,10 +73,12 @@ val collectLikeTermsAndSimplify = { common: Pattern, planExplanation: MetadataKe
     plan {
         explanation(planExplanation)
 
-        apply(collectLikeTerms(common, ruleExplanation))
-        apply(simplifyFractionsInExpression)
-        optionally { deeply(moveSignOfNegativeFactorOutOfProduct) }
-        optionally { deeply(removeRedundantBrackets) }
-        optionally { deeply(multiplyAndSimplifyFractions) }
+        steps {
+            apply(collectLikeTerms(common, ruleExplanation))
+            apply(simplifyFractionsInExpression)
+            optionally { deeply(moveSignOfNegativeFactorOutOfProduct) }
+            optionally { deeply(removeRedundantBrackets) }
+            optionally { deeply(multiplyAndSimplifyFractions) }
+        }
     }
 }

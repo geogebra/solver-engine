@@ -29,6 +29,7 @@ assemble:
   script:
     - ./gradlew assemble
     - ./gradlew test --stacktrace
+    - SOLVER_STEPS_TYPE=data ./gradlew test --stacktrace
   artifacts:
     paths:
       - methods/build/generated/ksp/main/resources/TranslationKeys.json

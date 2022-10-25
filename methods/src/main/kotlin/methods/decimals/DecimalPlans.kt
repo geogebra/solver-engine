@@ -6,7 +6,7 @@ import engine.expressions.Expression
 import engine.expressions.denominator
 import engine.expressions.numerator
 import engine.methods.plan
-import engine.methods.steps
+import engine.methods.stepsproducers.steps
 import engine.operators.BinaryExpressionOperator
 import engine.operators.BracketOperator
 import engine.operators.DecimalOperator
@@ -41,13 +41,19 @@ import methods.integerarithmetic.evaluateSignedIntegerAddition
 val evaluateSumOfDecimals = plan {
     pattern = sumContaining()
     explanation(Explanation.EvaluateSumOfDecimals, move(pattern))
-    whilePossible(evaluateSignedDecimalAddition)
+
+    steps {
+        whilePossible(evaluateSignedDecimalAddition)
+    }
 }
 
 val evaluateProductOfDecimals = plan {
     pattern = productContaining()
     explanation(Explanation.EvaluateProductOfDecimals, move(pattern))
-    whilePossible(evaluateDecimalProductAndDivision)
+
+    steps {
+        whilePossible(evaluateDecimalProductAndDivision)
+    }
 }
 
 val evaluateDecimalPower = plan {
@@ -56,38 +62,40 @@ val evaluateDecimalPower = plan {
     pattern = powerOf(base, exponent)
     explanation(Explanation.EvaluateDecimalPower, move(base), move(exponent))
 
-    firstOf {
-        option(evaluateZeroToThePowerOfZero)
-        option(evaluateExpressionToThePowerOfZero) // at this point the base is guaranteed to be nonzero
-        option(simplifyExpressionToThePowerOfOne)
-        option(evaluateZeroToAPositivePower) // at this point the exponent is guaranteed to be > 0
-        option {
-            apply(rewritePowerAsProduct)
-            apply(evaluateProductOfDecimals)
+    steps {
+        firstOf {
+            option(evaluateZeroToThePowerOfZero)
+            option(evaluateExpressionToThePowerOfZero) // at this point the base is guaranteed to be nonzero
+            option(simplifyExpressionToThePowerOfOne)
+            option(evaluateZeroToAPositivePower) // at this point the exponent is guaranteed to be > 0
+            option {
+                apply(rewritePowerAsProduct)
+                apply(evaluateProductOfDecimals)
+            }
+            option(evaluateDecimalPowerDirectly)
         }
-        option(evaluateDecimalPowerDirectly)
     }
 }
 
 val convertTerminatingDecimalToFractionAndSimplify = plan {
     explanation(Explanation.ConvertTerminatingDecimalToFractionAndSimplify)
 
-    apply(convertTerminatingDecimalToFraction)
-    optionally(simplifyFraction)
+    steps {
+        apply(convertTerminatingDecimalToFraction)
+        optionally(simplifyFraction)
+    }
 }
 
 val convertRecurringDecimalToFractionAndSimplify = plan {
     explanation(Explanation.ConvertRecurringDecimalToFractionAndSimplify)
 
-    resourceData = ResourceData(curriculum = "EU")
+    steps(ResourceData(curriculum = "EU")) {
+        apply(convertRecurringDecimalToFractionDirectly)
+        deeply(evaluateSignedIntegerAddition)
+        optionally(simplifyFraction)
+    }
 
-    apply(convertRecurringDecimalToFractionDirectly)
-    deeply(evaluateSignedIntegerAddition)
-    optionally(simplifyFraction)
-
-    alternative {
-        resourceData = ResourceData(curriculum = "US")
-
+    alternative(ResourceData(curriculum = "US")) {
         apply(convertRecurringDecimalToEquation)
         apply(makeEquationSystemForRecurringDecimal)
         apply(simplifyEquationSystemForRecurringDecimal)
@@ -100,11 +108,13 @@ val simplifyDecimalsInProduct = plan {
     pattern = productContaining()
     explanation(Explanation.SimplifyDecimalsInProduct, move(pattern))
 
-    whilePossible {
-        firstOf {
-            option(evaluateProductContainingZero)
-            option(evaluateDecimalProductAndDivision)
-            option(eliminateOneInProduct)
+    steps {
+        whilePossible {
+            firstOf {
+                option(evaluateProductContainingZero)
+                option(evaluateDecimalProductAndDivision)
+                option(eliminateOneInProduct)
+            }
         }
     }
 }
@@ -112,9 +122,11 @@ val simplifyDecimalsInProduct = plan {
 val normalizeFractionOfDecimals = plan {
     explanation(Explanation.NormalizeFractionOfDecimals)
 
-    apply(multiplyFractionOfDecimalsByPowerOfTen)
-    whilePossible {
-        deeply(simplifyDecimalsInProduct)
+    steps {
+        apply(multiplyFractionOfDecimalsByPowerOfTen)
+        whilePossible {
+            deeply(simplifyDecimalsInProduct)
+        }
     }
 }
 
@@ -126,14 +138,16 @@ val convertNiceFractionToDecimal = plan {
     explanation(Explanation.ConvertNiceFractionToDecimal)
     pattern = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
 
-    optionally(expandFractionToPowerOfTenDenominator)
-    optionally {
-        applyTo(evaluateDecimalProductAndDivision) { it.numerator() }
+    steps {
+        optionally(expandFractionToPowerOfTenDenominator)
+        optionally {
+            applyTo(evaluateDecimalProductAndDivision) { it.numerator() }
+        }
+        optionally {
+            applyTo(evaluateDecimalProductAndDivision) { it.denominator() }
+        }
+        apply(convertFractionWithPowerOfTenDenominatorToDecimal)
     }
-    optionally {
-        applyTo(evaluateDecimalProductAndDivision) { it.denominator() }
-    }
-    apply(convertFractionWithPowerOfTenDenominatorToDecimal)
 }
 
 private val evaluationSteps = steps {
@@ -161,7 +175,10 @@ private val evaluationSteps = steps {
 val evaluateSubexpressionAsDecimal = plan {
     explanation(Explanation.EvaluateExpressionInBracketsAsDecimal)
     pattern = condition(AnyPattern()) { it.hasBracket() }
-    whilePossible(evaluationSteps)
+
+    steps {
+        whilePossible(evaluationSteps)
+    }
 }
 
 private fun Expression.isDecimalExpression(): Boolean {
@@ -178,17 +195,19 @@ val evaluateExpressionAsDecimal = plan {
 
     explanation(Explanation.EvaluateExpressionAsDecimal)
 
-    whilePossible {
-        firstOf {
-            option(addClarifyingBrackets)
-            option(removeOuterBracket)
+    steps {
+        whilePossible {
+            firstOf {
+                option(addClarifyingBrackets)
+                option(removeOuterBracket)
 
-            option {
-                deeply(evaluateSubexpressionAsDecimal, deepFirst = true)
-            }
+                option {
+                    deeply(evaluateSubexpressionAsDecimal, deepFirst = true)
+                }
 
-            option {
-                whilePossible(evaluationSteps)
+                option {
+                    whilePossible(evaluationSteps)
+                }
             }
         }
     }

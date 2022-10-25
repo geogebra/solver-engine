@@ -3,7 +3,7 @@ package methods.integerarithmetic
 import engine.expressionmakers.move
 import engine.expressions.Expression
 import engine.methods.plan
-import engine.methods.steps
+import engine.methods.stepsproducers.steps
 import engine.operators.BinaryExpressionOperator
 import engine.operators.BracketOperator
 import engine.operators.IntegerOperator
@@ -29,10 +29,13 @@ import methods.general.simplifyDoubleMinus
 val evaluateProductOfIntegers = plan {
     pattern = productContaining()
     explanation(Explanation.EvaluateProductOfIntegers, move(pattern))
-    whilePossible {
-        firstOf {
-            option(evaluateProductDividedByZeroAsUndefined)
-            option(evaluateIntegerProductAndDivision)
+
+    steps {
+        whilePossible {
+            firstOf {
+                option(evaluateProductDividedByZeroAsUndefined)
+                option(evaluateIntegerProductAndDivision)
+            }
         }
     }
 }
@@ -40,7 +43,10 @@ val evaluateProductOfIntegers = plan {
 val evaluateSumOfIntegers = plan {
     pattern = sumContaining()
     explanation(Explanation.EvaluateSumOfIntegers, move(pattern))
-    whilePossible(evaluateSignedIntegerAddition)
+
+    steps {
+        whilePossible(evaluateSignedIntegerAddition)
+    }
 }
 
 /**
@@ -56,16 +62,18 @@ val evaluateSignedIntegerPower = plan {
     pattern = powerOf(base, exponent)
     explanation(Explanation.EvaluateIntegerPower, move(base), move(exponent))
 
-    firstOf {
-        option(evaluateZeroToThePowerOfZero)
-        option {
-            apply(rewritePowerAsProduct)
-            apply(evaluateProductOfIntegers)
-        }
-        option {
-            optionally(simplifyEvenPowerOfNegative)
-            optionally(simplifyOddPowerOfNegative)
-            apply(evaluateIntegerPowerDirectly)
+    steps {
+        firstOf {
+            option(evaluateZeroToThePowerOfZero)
+            option {
+                apply(rewritePowerAsProduct)
+                apply(evaluateProductOfIntegers)
+            }
+            option {
+                optionally(simplifyEvenPowerOfNegative)
+                optionally(simplifyOddPowerOfNegative)
+                apply(evaluateIntegerPowerDirectly)
+            }
         }
     }
 }
@@ -74,12 +82,14 @@ val simplifyIntegersInProduct = plan {
     pattern = productContaining()
     explanation(Explanation.SimplifyIntegersInProduct, move(pattern))
 
-    whilePossible {
-        firstOf {
-            option(evaluateProductDividedByZeroAsUndefined)
-            option(evaluateProductContainingZero)
-            option(evaluateIntegerProductAndDivision)
-            option(eliminateOneInProduct)
+    steps {
+        whilePossible {
+            firstOf {
+                option(evaluateProductDividedByZeroAsUndefined)
+                option(evaluateProductContainingZero)
+                option(evaluateIntegerProductAndDivision)
+                option(eliminateOneInProduct)
+            }
         }
     }
 }
@@ -88,10 +98,12 @@ val simplifyIntegersInSum = plan {
     pattern = sumContaining()
     explanation(Explanation.SimplifyIntegersInSum, move(pattern))
 
-    whilePossible {
-        firstOf {
-            option(evaluateSignedIntegerAddition)
-            option(eliminateZeroInSum)
+    steps {
+        whilePossible {
+            firstOf {
+                option(evaluateSignedIntegerAddition)
+                option(eliminateZeroInSum)
+            }
         }
     }
 }
@@ -126,7 +138,10 @@ private val evaluationSteps = steps {
 val evaluateArithmeticSubexpression = plan {
     explanation(Explanation.SimplifyExpressionInBrackets)
     pattern = condition(AnyPattern()) { it.hasBracket() }
-    whilePossible(evaluationSteps)
+
+    steps {
+        whilePossible(evaluationSteps)
+    }
 }
 
 val evaluateArithmeticExpression = plan {
@@ -134,17 +149,19 @@ val evaluateArithmeticExpression = plan {
     pattern = condition(expression) { it.isArithmeticExpression() }
     explanation(Explanation.EvaluateArithmeticExpression, move(expression))
 
-    whilePossible {
-        firstOf {
-            option(addClarifyingBrackets)
-            option(removeOuterBracket)
+    steps {
+        whilePossible {
+            firstOf {
+                option(addClarifyingBrackets)
+                option(removeOuterBracket)
 
-            option {
-                deeply(evaluateArithmeticSubexpression, deepFirst = true)
-            }
+                option {
+                    deeply(evaluateArithmeticSubexpression, deepFirst = true)
+                }
 
-            option {
-                whilePossible(evaluationSteps)
+                option {
+                    whilePossible(evaluationSteps)
+                }
             }
         }
     }

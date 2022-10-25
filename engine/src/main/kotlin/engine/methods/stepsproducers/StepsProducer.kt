@@ -37,7 +37,7 @@ class StepsBuilder(sub: Subexpression) {
 
     fun undefined() = sub.expr.operator == UndefinedOperator
 
-    private fun add(step: Transformation) {
+    fun addStep(step: Transformation) {
         if (undefined()) {
             return
         }
@@ -74,7 +74,7 @@ class StepsBuilder(sub: Subexpression) {
      */
     fun addSteps(newSteps: List<Transformation>?) {
         if (!aborted) {
-            newSteps?.forEach { add(it) }
+            newSteps?.forEach { addStep(it) }
         }
     }
 

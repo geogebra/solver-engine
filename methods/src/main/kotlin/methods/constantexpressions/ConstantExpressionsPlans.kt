@@ -2,7 +2,7 @@ package methods.constantexpressions
 
 import engine.expressions.Expression
 import engine.methods.plan
-import engine.methods.steps
+import engine.methods.stepsproducers.steps
 import engine.operators.VariableOperator
 import engine.patterns.AnyPattern
 import engine.patterns.condition
@@ -61,45 +61,50 @@ val simplifyPowers = plan {
     pattern = powerOf(AnyPattern(), AnyPattern())
     explanation(Explanation.SimplifyPowers)
 
-    whilePossible {
-        firstOf {
-            // one as base or as exponent
-            option { deeply(evaluateOneToAnyPower) }
-            option { deeply(simplifyExpressionToThePowerOfOne) }
+    steps {
+        whilePossible {
+            firstOf {
+                // one as base or as exponent
+                option { deeply(evaluateOneToAnyPower) }
+                option { deeply(simplifyExpressionToThePowerOfOne) }
 
-            // zero as base or as exponent
-            option { deeply(evaluateZeroToThePowerOfZero) }
-            option { deeply(evaluateZeroToAPositivePower) }
-            option { deeply(evaluateExpressionToThePowerOfZero) }
+                // zero as base or as exponent
+                option { deeply(evaluateZeroToThePowerOfZero) }
+                option { deeply(evaluateZeroToAPositivePower) }
+                option { deeply(evaluateExpressionToThePowerOfZero) }
 
-            // minus one and other negative integer powers
-            option { deeply(simplifyIntegerToNegativePower) }
-            option { deeply(simplifyFractionToMinusOne) }
-            option { deeply(simplifyFractionNegativePower) }
+                // minus one and other negative integer powers
+                option { deeply(simplifyIntegerToNegativePower) }
+                option { deeply(simplifyFractionToMinusOne) }
+                option { deeply(simplifyFractionNegativePower) }
 
-            option { deeply(distributeFractionPositivePower) }
-            option { deeply(simplifyEvenPowerOfNegative) }
-            option { deeply(simplifyOddPowerOfNegative) }
-            option { deeply(distributePowerOfProduct) }
-            option { deeply(expandBinomialSquared) }
-            option { deeply(evaluateSignedIntegerPower) }
+                option { deeply(distributeFractionPositivePower) }
+                option { deeply(simplifyEvenPowerOfNegative) }
+                option { deeply(simplifyOddPowerOfNegative) }
+                option { deeply(distributePowerOfProduct) }
+                option { deeply(expandBinomialSquared) }
+                option { deeply(evaluateSignedIntegerPower) }
+            }
         }
     }
 }
 
 val simplifyRootsInExpression = plan {
     explanation(Explanation.SimplifyRootsInExpression)
-    whilePossible {
-        firstOf {
-            option { deeply(simplifyRootOfZero, deepFirst = true) }
-            option { deeply(simplifyRootOfOne, deepFirst = true) }
-            option { deeply(simplifyIntegerRootToInteger, deepFirst = true) }
-            option { deeply(cancelPowerOfARoot, deepFirst = true) }
-            option { deeply(simplifyRootOfRootWithCoefficient, deepFirst = true) }
-            option { deeply(simplifyIntegerRoot, deepFirst = true) }
-            option { deeply(turnPowerOfRootToRootOfPower, deepFirst = true) }
-            option { deeply(simplifyFractionOfRoots, deepFirst = true) }
-            option { deeply(distributeRadicalOverFraction, deepFirst = true) }
+
+    steps {
+        whilePossible {
+            firstOf {
+                option { deeply(simplifyRootOfZero, deepFirst = true) }
+                option { deeply(simplifyRootOfOne, deepFirst = true) }
+                option { deeply(simplifyIntegerRootToInteger, deepFirst = true) }
+                option { deeply(cancelPowerOfARoot, deepFirst = true) }
+                option { deeply(simplifyRootOfRootWithCoefficient, deepFirst = true) }
+                option { deeply(simplifyIntegerRoot, deepFirst = true) }
+                option { deeply(turnPowerOfRootToRootOfPower, deepFirst = true) }
+                option { deeply(simplifyFractionOfRoots, deepFirst = true) }
+                option { deeply(distributeRadicalOverFraction, deepFirst = true) }
+            }
         }
     }
 }
@@ -156,7 +161,9 @@ val simplifyConstantSubexpression = plan {
     explanation(Explanation.SimplifyExpressionInBrackets)
     pattern = condition(AnyPattern()) { it.hasBracket() }
 
-    whilePossible(simplificationSteps)
+    steps {
+        whilePossible(simplificationSteps)
+    }
 }
 
 private fun Expression.isConstantExpression(): Boolean {
@@ -171,8 +178,10 @@ val simplifyConstantExpression = plan {
     pattern = condition(AnyPattern()) { it.isConstantExpression() }
     explanation(Explanation.SimplifyConstantExpression)
 
-    whilePossible { deeply(simpleTidyUpSteps) }
-    optionally(normalizeExpression)
-    whilePossible { deeply(simplifyConstantSubexpression, deepFirst = true) }
-    whilePossible(simplificationSteps)
+    steps {
+        whilePossible { deeply(simpleTidyUpSteps) }
+        optionally(normalizeExpression)
+        whilePossible { deeply(simplifyConstantSubexpression, deepFirst = true) }
+        whilePossible(simplificationSteps)
+    }
 }

@@ -2,13 +2,13 @@ package methods.general
 
 import engine.expressions.Subexpression
 import engine.methods.plan
-import engine.methods.steps
+import engine.methods.stepsproducers.steps
 
 val addClarifyingBrackets = plan {
     explanation(Explanation.AddClarifyingBrackets)
 
-    whilePossible {
-        deeply(replaceInvisibleBrackets)
+    steps {
+        whilePossible { deeply(replaceInvisibleBrackets) }
     }
 }
 
@@ -38,12 +38,14 @@ val removeRedundantBrackets = steps {
 val normalizeExpression = plan {
     explanation(Explanation.NormalizeExpression)
 
-    whilePossible {
-        deeply {
-            firstOf {
-                option(addClarifyingBrackets)
-                option(removeRedundantBrackets)
-                option(removeRedundantPlusSign)
+    steps {
+        whilePossible {
+            deeply {
+                firstOf {
+                    option(addClarifyingBrackets)
+                    option(removeRedundantBrackets)
+                    option(removeRedundantPlusSign)
+                }
             }
         }
     }

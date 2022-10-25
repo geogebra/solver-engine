@@ -14,18 +14,20 @@ import methods.integerarithmetic.evaluateSignedIntegerAddition
 val convertMixedNumberToImproperFraction = plan {
     explanation(Explanation.ConvertMixedNumbersToImproperFraction)
 
-    applyToChildrenInStep {
-        step {
-            explanationKey = Explanation.ConvertMixedNumbersToSums
-            method = splitMixedNumber
-        }
-        step {
-            explanationKey = Explanation.ConvertIntegersToFractions
-            method = convertIntegerToFraction
-        }
-        step {
-            explanationKey = Explanation.AddFractions
-            method = evaluateFractionSum
+    steps {
+        applyToChildrenInStep {
+            step {
+                explanationKey = Explanation.ConvertMixedNumbersToSums
+                method = splitMixedNumber
+            }
+            step {
+                explanationKey = Explanation.ConvertIntegersToFractions
+                method = convertIntegerToFraction
+            }
+            step {
+                explanationKey = Explanation.AddFractions
+                method = evaluateFractionSum
+            }
         }
     }
 }
@@ -35,21 +37,21 @@ val addMixedNumbers = plan {
 
     explanation(Explanation.AddMixedNumbers)
 
-    resourceData = ResourceData(curriculum = "EU")
+    steps(ResourceData(curriculum = "EU")) {
+        apply(convertMixedNumberToImproperFraction)
+        apply(evaluateFractionSum)
+        // result might be integer or proper fraction after
+        // simplification, so this step is optional
+        optionally(fractionToMixedNumber)
+    }
 
-    apply(convertMixedNumberToImproperFraction)
-    apply(evaluateFractionSum)
-    // result might be integer or proper fraction after
-    // simplification, so this step is optional
-    optionally(fractionToMixedNumber)
-
-    alternative {
-        resourceData = ResourceData(curriculum = "US")
+    alternative(ResourceData(curriculum = "US")) {
 
         plan {
             explanation(Explanation.ConvertMixedNumbersToSums)
-            whilePossible {
-                deeply(splitMixedNumber)
+
+            steps {
+                whilePossible { deeply(splitMixedNumber) }
             }
         }
 
@@ -59,7 +61,10 @@ val addMixedNumbers = plan {
 
         plan {
             explanation(Explanation.RemoveAllBracketsInSum)
-            whilePossible(removeBracketSumInSum)
+
+            steps {
+                whilePossible(removeBracketSumInSum)
+            }
         }
 
         whilePossible {

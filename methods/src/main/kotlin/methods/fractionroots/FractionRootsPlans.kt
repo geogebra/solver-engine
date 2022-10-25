@@ -3,7 +3,7 @@ package methods.fractionroots
 import engine.expressions.denominator
 import engine.expressions.numerator
 import engine.methods.plan
-import engine.methods.steps
+import engine.methods.stepsproducers.steps
 import methods.fractionarithmetic.multiplyFractions
 import methods.fractionarithmetic.simplifyFractionToInteger
 import methods.general.removeBracketProductInProduct
@@ -24,12 +24,16 @@ import methods.integerroots.simplifyRootOfOne
 private val rationalizeHigherOrderRoot = plan {
     explanation(Explanation.RationalizeHigherOrderRoot)
 
-    apply(higherOrderRationalizingTerm)
-    plan {
-        explanation(Explanation.SimplifyRationalizingTerm)
+    steps {
+        apply(higherOrderRationalizingTerm)
+        plan {
+            explanation(Explanation.SimplifyRationalizingTerm)
 
-        whilePossible { deeply(evaluateSignedIntegerAddition) }
-        whilePossible { deeply(simplifyExpressionToThePowerOfOne) }
+            steps {
+                whilePossible { deeply(evaluateSignedIntegerAddition) }
+                whilePossible { deeply(simplifyExpressionToThePowerOfOne) }
+            }
+        }
     }
 }
 
@@ -49,10 +53,12 @@ val findRationalizingTerm = steps {
 val collectRationalizingRadicals = plan {
     explanation(Explanation.CollectRationalizingRadicals)
 
-    apply(multiplyNthRoots)
-    whilePossible {
-        deeply(collectPowersOfExponentsWithSameBase)
-        deeply(evaluateSignedIntegerAddition)
+    steps {
+        apply(multiplyNthRoots)
+        whilePossible {
+            deeply(collectPowersOfExponentsWithSameBase)
+            deeply(evaluateSignedIntegerAddition)
+        }
     }
 }
 
@@ -77,22 +83,30 @@ private val simplifyAfterRationalization = steps {
 val rationalizeDenominators = plan {
     explanation(Explanation.RationalizeDenominator)
 
-    optionally(flipRootsInDenominator)
-    optionally { deeply(simplifyRootOfOne) }
-    optionally { deeply(simplifyIntegerRoot) }
-    optionally { deeply(factorizeHigherOrderRadicand) }
-    apply(findRationalizingTerm)
-    apply(multiplyFractions)
-    optionally {
-        plan {
-            explanation(Explanation.SimplifyNumeratorAfterRationalization)
-            applyTo(simplifyAfterRationalization) { it.numerator() }
+    steps {
+        optionally(flipRootsInDenominator)
+        optionally { deeply(simplifyRootOfOne) }
+        optionally { deeply(simplifyIntegerRoot) }
+        optionally { deeply(factorizeHigherOrderRadicand) }
+        apply(findRationalizingTerm)
+        apply(multiplyFractions)
+        optionally {
+            plan {
+                explanation(Explanation.SimplifyNumeratorAfterRationalization)
+
+                steps {
+                    applyTo(simplifyAfterRationalization) { it.numerator() }
+                }
+            }
         }
-    }
-    optionally {
-        plan {
-            explanation(Explanation.SimplifyDenominatorAfterRationalization)
-            applyTo(simplifyAfterRationalization) { it.denominator() }
+        optionally {
+            plan {
+                explanation(Explanation.SimplifyDenominatorAfterRationalization)
+
+                steps {
+                    applyTo(simplifyAfterRationalization) { it.denominator() }
+                }
+            }
         }
     }
 }
@@ -100,9 +114,11 @@ val rationalizeDenominators = plan {
 val simplifyFractionOfRoots = plan {
     explanation(Explanation.SimplifyFractionOfRoots)
 
-    optionally(bringRootsToSameIndexInFraction)
-    whilePossible { deeply(evaluateIntegerPowerDirectly) }
-    apply(turnFractionOfRootsIntoRootOfFractions)
-    // apply to the fraction under the root
-    applyTo(simplifyFractionToInteger) { it.nthChild(0) }
+    steps {
+        optionally(bringRootsToSameIndexInFraction)
+        whilePossible { deeply(evaluateIntegerPowerDirectly) }
+        apply(turnFractionOfRootsIntoRootOfFractions)
+        // apply to the fraction under the root
+        applyTo(simplifyFractionToInteger) { it.nthChild(0) }
+    }
 }

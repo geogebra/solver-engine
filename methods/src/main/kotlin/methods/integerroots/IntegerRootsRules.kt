@@ -128,7 +128,6 @@ val simplifyMultiplicationOfSquareRoots = rule {
         TransformationResult(
             toExpr = product.substitute(move(radicand)),
             explanation = metadata(Explanation.SimplifyMultiplicationOfSquareRoots, move(radical), move(radical))
-
         )
     }
 }

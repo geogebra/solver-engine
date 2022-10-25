@@ -1,7 +1,7 @@
 package methods.general
 
 import engine.methods.plan
-import engine.methods.steps
+import engine.methods.stepsproducers.steps
 
 val normalizeNegativeSigns = steps {
     firstOf {
@@ -14,8 +14,8 @@ val normalizeNegativeSigns = steps {
 val rewriteDivisionsAsFractions = plan {
     explanation(Explanation.RewriteDivisionsAsFractionInExpression)
 
-    whilePossible {
-        deeply(rewriteDivisionAsFraction)
+    steps {
+        whilePossible { deeply(rewriteDivisionAsFraction) }
     }
 }
 

@@ -1,7 +1,7 @@
 package methods.integerroots
 
 import engine.methods.plan
-import engine.methods.steps
+import engine.methods.stepsproducers.steps
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.UnsignedIntegerPattern
@@ -18,22 +18,28 @@ import methods.integerarithmetic.simplifyIntegersInProduct
 val cancelPowerOfARoot = plan {
     explanation(Explanation.CancelPowerOfARoot)
 
-    optionally(prepareCancellingPowerOfARoot)
-    deeply(simplifyNthRootToThePowerOfN)
+    steps {
+        optionally(prepareCancellingPowerOfARoot)
+        deeply(simplifyNthRootToThePowerOfN)
+    }
 }
 
 val cancelRootOfAPower = plan {
     explanation(Explanation.CancelRootOfAPower)
 
-    optionally(prepareCancellingRootOfAPower)
-    deeply(simplifyNthRootOfNthPower)
+    steps {
+        optionally(prepareCancellingRootOfAPower)
+        deeply(simplifyNthRootOfNthPower)
+    }
 }
 
 val putRootCoefficientUnderRootAndSimplify = plan {
     explanation(Explanation.PutRootCoefficientUnderRootAndSimplify)
 
-    apply(putRootCoefficientUnderRoot)
-    apply(simplifyIntegersInExpression)
+    steps {
+        apply(putRootCoefficientUnderRoot)
+        apply(simplifyIntegersInExpression)
+    }
 }
 
 val simplifyRootOfRootWithCoefficient = plan {
@@ -41,12 +47,14 @@ val simplifyRootOfRootWithCoefficient = plan {
 
     explanation(Explanation.SimplifyRootOfRootWithCoefficient)
 
-    optionally {
-        applyTo(putRootCoefficientUnderRootAndSimplify) { it.nthChild(0) }
+    steps {
+        optionally {
+            applyTo(putRootCoefficientUnderRootAndSimplify) { it.nthChild(0) }
+        }
+        apply(simplifyRootOfRoot)
+        // evaluate the product in the index of the root
+        applyTo(evaluateProductOfIntegers) { it.nthChild(1) }
     }
-    apply(simplifyRootOfRoot)
-    // evaluate the product in the index of the root
-    applyTo(evaluateProductOfIntegers) { it.nthChild(1) }
 }
 
 /**
@@ -67,10 +75,12 @@ val simplifyProductOfRoots = steps {
 val simplifyProductWithRoots = plan {
     explanation(Explanation.SimplifyProductWithRoots)
 
-    optionally(normaliseProductWithRoots)
-    whilePossible { deeply(evaluateIntegerPowerDirectly) }
-    optionally(simplifyIntegersInProduct)
-    optionally(simplifyProductOfRoots)
+    steps {
+        optionally(normaliseProductWithRoots)
+        whilePossible { deeply(evaluateIntegerPowerDirectly) }
+        optionally(simplifyIntegersInProduct)
+        optionally(simplifyProductOfRoots)
+    }
 }
 
 /**
@@ -82,53 +92,63 @@ val simplifyIntegerRoot = plan {
 
     explanation(Explanation.SimplifyIntegerRoot)
 
-    firstOf {
+    steps {
+        firstOf {
 
-        // First try to do easy factorisation without prime factor decomposition
-        option {
-            optionally(writeRootAsRootProduct)
-            optionally(splitRootOfProduct)
+            // First try to do easy factorisation without prime factor decomposition
+            option {
+                optionally(writeRootAsRootProduct)
+                optionally(splitRootOfProduct)
+                plan {
+                    explanation(Explanation.WriteRootsAsRootPowers)
+
+                    steps {
+                        whilePossible {
+                            deeply(writeRootAsRootPower)
+                        }
+                    }
+                }
+            }
+
+            // If that fails try prime factor decomposition
+            option {
+                // root[2^3 * 5^2 * 7^5, 2]
+                apply(factorizeIntegerUnderRoot)
+
+                // root[2^3, 2] * root[5^2, 2] * root[7^5, 2]
+                optionally(splitRootOfProduct)
+            }
+        }
+
+        // root[2^2, 2] * root[2] * root[5^2, 2] * root[7^4, 2] * root[7, 2]
+        optionally {
             plan {
-                explanation(Explanation.WriteRootsAsRootPowers)
-                whilePossible {
-                    deeply(writeRootAsRootPower)
+                explanation(Explanation.SplitRootsInProduct)
+
+                steps {
+                    whilePossible { deeply(splitPowerUnderRoot) }
+                    whilePossible { deeply(splitRootOfProduct) }
+                    whilePossible(removeBracketProductInProduct)
                 }
             }
         }
 
-        // If that fails try prime factor decomposition
-        option {
-            // root[2^3 * 5^2 * 7^5, 2]
-            apply(factorizeIntegerUnderRoot)
+        // 2 * root[2] * 5 * 7^2 * root[7]
+        optionally {
+            plan {
+                explanation(Explanation.CancelAllRootsOfPowers)
 
-            // root[2^3, 2] * root[5^2, 2] * root[7^5, 2]
-            optionally(splitRootOfProduct)
-        }
-    }
-
-    // root[2^2, 2] * root[2] * root[5^2, 2] * root[7^4, 2] * root[7, 2]
-    optionally {
-        plan {
-            explanation(Explanation.SplitRootsInProduct)
-
-            whilePossible { deeply(splitPowerUnderRoot) }
-            whilePossible { deeply(splitRootOfProduct) }
-            whilePossible(removeBracketProductInProduct)
-        }
-    }
-
-    // 2 * root[2] * 5 * 7^2 * root[7]
-    optionally {
-        plan {
-            explanation(Explanation.CancelAllRootsOfPowers)
-            whilePossible {
-                deeply(cancelRootOfAPower)
+                steps {
+                    whilePossible {
+                        deeply(cancelRootOfAPower)
+                    }
+                }
             }
         }
-    }
 
-    // 490 * root[14]
-    optionally(simplifyProductWithRoots)
+        // 490 * root[14]
+        optionally(simplifyProductWithRoots)
+    }
 }
 
 val simplifyIntegerRootToInteger = plan {
@@ -140,7 +160,9 @@ val simplifyIntegerRootToInteger = plan {
         integerCondition(radicand, radical.order) { n, order -> n.isPowerOfDegree(order.toInt()) }
     )
 
-    applyTo(simplifyIntegerRoot) { it }
+    steps {
+        applyTo(simplifyIntegerRoot) { it }
+    }
 }
 
 /**

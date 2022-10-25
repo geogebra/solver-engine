@@ -3,7 +3,7 @@ package methods.approximation
 import engine.expressionmakers.move
 import engine.expressions.Expression
 import engine.methods.plan
-import engine.methods.steps
+import engine.methods.stepsproducers.steps
 import engine.operators.BracketOperator
 import engine.operators.DecimalOperator
 import engine.operators.IntegerOperator
@@ -32,15 +32,19 @@ private fun Expression.canBeApproximated(): Boolean {
 val expandAndRoundRecurringDecimal = plan {
     explanation(Explanation.ExpandAndRoundRecurringDecimal)
 
-    optionally(expandRecurringDecimal)
-    apply(roundRecurringDecimal)
+    steps {
+        optionally(expandRecurringDecimal)
+        apply(roundRecurringDecimal)
+    }
 }
 
 val approximateProductAndDivisionOfDecimals = plan {
     pattern = productContaining()
     explanation(Explanation.ApproximateProductAndDivisionOfDecimals, move(pattern))
 
-    whilePossible(approximateDecimalProductAndDivision)
+    steps {
+        whilePossible(approximateDecimalProductAndDivision)
+    }
 }
 
 val approximationSteps = steps {
@@ -58,7 +62,10 @@ val approximationSteps = steps {
 val approximateSubexpression = plan {
     explanation(Explanation.ApproximateExpressionInBrackets)
     pattern = condition(AnyPattern()) { it.hasBracket() }
-    whilePossible(approximationSteps)
+
+    steps {
+        whilePossible(approximationSteps)
+    }
 }
 
 val approximateExpression = plan {
@@ -67,26 +74,28 @@ val approximateExpression = plan {
 
     explanation(Explanation.ApproximateExpression, move(pattern))
 
-    whilePossible {
-        firstOf {
-            option(addClarifyingBrackets)
-            option(removeOuterBracket)
+    steps {
+        whilePossible {
+            firstOf {
+                option(addClarifyingBrackets)
+                option(removeOuterBracket)
 
-            option {
-                deeply {
-                    firstOf {
-                        option(roundTerminatingDecimal)
-                        option(expandAndRoundRecurringDecimal)
+                option {
+                    deeply {
+                        firstOf {
+                            option(roundTerminatingDecimal)
+                            option(expandAndRoundRecurringDecimal)
+                        }
                     }
                 }
-            }
 
-            option {
-                deeply(approximateSubexpression, deepFirst = true)
-            }
+                option {
+                    deeply(approximateSubexpression, deepFirst = true)
+                }
 
-            option {
-                whilePossible(approximationSteps)
+                option {
+                    whilePossible(approximationSteps)
+                }
             }
         }
     }
