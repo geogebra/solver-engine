@@ -127,7 +127,14 @@ enum class IntegerRationalExponentsExplanation : CategorisedMetadataKey {
      *
      * E.g. [([2 / 3]) ^ [1 / 2]] * [([3 / 2]) ^ [2 / 5]] -> [([2 / 3]) ^ [1 / 10]]
      */
-    SimplifyProductOfPowersWithInverseFractionBase;
+    SimplifyProductOfPowersWithInverseFractionBase,
+
+    /**
+     * A negative value cannot be raised to a rational power.
+     *
+     * E.g. [-1 ^ [1/3]] -> UNDEFINED
+     */
+    EvaluateNegativeToRationalExponentAsUndefined;
 
     override val category = "IntegerRationalExponents"
 }

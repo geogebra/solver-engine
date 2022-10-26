@@ -93,4 +93,28 @@ object IntegerRationalExponentsRulesTest {
             "[([2 ^ 4] * 3) ^ [1 / 6]]"
         )
     }
+
+    @Test
+    fun testEvaluateNegativeToRationalExponentAsUndefined() {
+        testRule(
+            "[(-1 - 2) ^ [1/6]]",
+            evaluateNegativeToRationalExponentAsUndefined,
+            "UNDEFINED"
+        )
+        testRule(
+            "[(-x) ^ [1/2]]",
+            evaluateNegativeToRationalExponentAsUndefined,
+            null
+        )
+        testRule(
+            "[(-1) ^ [6 / 3]]",
+            evaluateNegativeToRationalExponentAsUndefined,
+            null
+        )
+        testRule(
+            "[(-2) ^ -[1/2]]",
+            evaluateNegativeToRationalExponentAsUndefined,
+            "UNDEFINED"
+        )
+    }
 }

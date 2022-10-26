@@ -1,5 +1,7 @@
 package methods.integerrationalexponents
 
+import engine.conditions.Sign
+import engine.conditions.signOf
 import engine.expressions.Constants
 import engine.expressions.fractionOf
 import engine.expressions.powerOf
@@ -10,20 +12,43 @@ import engine.methods.TransformationResult
 import engine.methods.rule
 import engine.operators.BinaryExpressionOperator
 import engine.patterns.AnyPattern
+import engine.patterns.ConditionPattern
 import engine.patterns.IntegerFractionPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.condition
 import engine.patterns.fractionOf
 import engine.patterns.integerCondition
+import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.steps.metadata.Skill
 import engine.steps.metadata.metadata
+import engine.utility.divides
 import engine.utility.isPrime
 import engine.utility.isZero
 import engine.utility.primeFactorDecomposition
 import method.integerrationalexponents.Explanation
 import java.math.BigInteger
+
+val evaluateNegativeToRationalExponentAsUndefined = rule {
+    val base = AnyPattern()
+
+    val exponent = IntegerFractionPattern()
+    val pattern = powerOf(
+        condition(base) { it.signOf() == Sign.NEGATIVE },
+        ConditionPattern(
+            optionalNegOf(exponent),
+            integerCondition(exponent.numerator, exponent.denominator) { n, d -> !d.divides(n) }
+        )
+    )
+
+    onPattern(pattern) {
+        TransformationResult(
+            toExpr = transformTo(pattern, Constants.Undefined),
+            explanation = metadata(Explanation.EvaluateNegativeToRationalExponentAsUndefined),
+        )
+    }
+}
 
 val factorizeIntegerUnderRationalExponent = rule {
     val integer = integerCondition(UnsignedIntegerPattern()) { !it.isPrime() }

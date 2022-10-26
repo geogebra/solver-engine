@@ -45,6 +45,7 @@ import methods.integerarithmetic.simplifyIntegersInProduct
 import methods.integerarithmetic.simplifyIntegersInSum
 import methods.integerarithmetic.simplifyOddPowerOfNegative
 import methods.integerrationalexponents.collectLikeRationalPowersAndSimplify
+import methods.integerrationalexponents.evaluateNegativeToRationalExponentAsUndefined
 import methods.integerrationalexponents.simplifyRationalExponentsInProduct
 import methods.integerroots.cancelPowerOfARoot
 import methods.integerroots.collectLikeRootsAndSimplify
@@ -115,6 +116,7 @@ val simpleTidyUpSteps = steps {
         option { deeply(simplifyZeroDenominatorFractionToUndefined) }
         option { deeply(simplifyZeroNumeratorFractionToZero) }
         option { deeply(simplifyFractionWithOneDenominator) }
+        option { deeply(evaluateNegativeToRationalExponentAsUndefined) }
         option { deeply(evaluateProductContainingZero) }
         option { deeply(cancelAdditiveInverseElements) }
     }

@@ -1012,6 +1012,16 @@ class SimplifyToUndefinedTest {
             toExpr = "UNDEFINED"
         }
     }
+
+    @Test
+    fun testNegativeToRationalExponent() = testMethod {
+        method = simplifyConstantExpression
+        inputExpr = "1 + 3 * [(-1) ^ [6/5]]"
+
+        check {
+            toExpr = "UNDEFINED"
+        }
+    }
 }
 
 class CancelOppositeTermTest {
