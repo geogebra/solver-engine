@@ -1,5 +1,6 @@
 package engine.patterns
 
+import engine.context.Context
 import engine.context.emptyContext
 import engine.expressionmakers.MakerBuilder
 import engine.expressions.Constants
@@ -27,11 +28,11 @@ class IntegerCoefficientPattern(value: Pattern) : Pattern {
 
     val coefficient = IntegerProviderWithDefault(coefficientPattern, BigInteger.ONE)
 
-    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+    override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
         if (!checkPreviousMatch(subexpression.expr, match)) {
             return emptySequence()
         }
-        return options.findMatches(subexpression, match)
+        return options.findMatches(context, match, subexpression)
     }
 }
 
@@ -60,12 +61,8 @@ class RationalCoefficientPattern(value: Pattern) : Pattern {
 
     override val key = ptn.key
 
-    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
-        if (!checkPreviousMatch(subexpression.expr, match)) {
-            return emptySequence()
-        }
-        return ptn.findMatches(subexpression, match)
-    }
+    override fun findMatches(context: Context, match: Match, subexpression: Subexpression) =
+        ptn.findMatches(context, match, subexpression)
 
     /**
      * Given a match, returns the coefficient as an integer or fraction
@@ -86,13 +83,73 @@ class RationalCoefficientPattern(value: Pattern) : Pattern {
 }
 
 /**
+ * A pattern matching `value` multiplied by a constant (possibly rational) coefficient.
+ * Say `value` matches x, the pattern can then match:
+ *     sqrt[3] * x
+ *     [2/3 * root[5, 7]] * x
+ *     [4*sqrt[3]*x/5*root[3, 3] + 1]
+ *     [x/10 - sqrt[7]]
+ *     any of the above with a negative sign in front.
+ * But it will not match expression where the coefficient is not constant, such as:
+ *     y * x
+ *     [2/3 * y] * x
+ */
+class ConstantCoefficientPattern(variable: Pattern) : Pattern {
+
+    private val product = productContaining(variable)
+
+    private val numerator = oneOf(
+        variable,
+        ConditionPattern(product) { match ->
+            product.getRestSubexpressions(match).all { it.expr.isConstant() }
+        }
+    )
+    private val denominator = condition(AnyPattern()) { it.isConstant() }
+
+    private val options = oneOf(
+        numerator,
+        fractionOf(numerator, denominator)
+    )
+
+    private val ptn = optionalNegOf(options)
+
+    override val key = ptn.key
+
+    override fun findMatches(context: Context, match: Match, subexpression: Subexpression) =
+        ptn.findMatches(context, match, subexpression)
+
+    /**
+     * Given a match, returns the coefficient
+     */
+    fun coefficient(match: Match): MappedExpression = with(MakerBuilder(emptyContext /* TODO */, match)) {
+        val numeratorCoefficient = when {
+            match.isBound(product) -> restOf(product)
+            else -> introduce(Constants.One)
+        }
+
+        val coefficient = when {
+            match.isBound(denominator) -> fractionOf(numeratorCoefficient, move(denominator))
+            else -> numeratorCoefficient
+        }
+
+        copySign(ptn, coefficient)
+    }
+}
+
+/**
  * Creates a pattern for the given pattern optionally multiplied by an integer
- * coefficient. See IntegerCoefficientPattern for details.
+ * coefficient. See [IntegerCoefficientPattern] for details.
  */
 fun withOptionalIntegerCoefficient(pattern: Pattern) = IntegerCoefficientPattern(pattern)
 
 /**
  * Creates a pattern for the given pattern optionally multiplied by a rational
- * coefficient. See RationalCoefficientPattern for details.
+ * coefficient. See [RationalCoefficientPattern] for details.
  */
 fun withOptionalRationalCoefficient(pattern: Pattern) = RationalCoefficientPattern(pattern)
+
+/**
+ * Creates a pattern which matches the given variable optionally multiplied
+ * by a constant coefficient. See [ConstantCoefficientPattern] for details.
+ */
+fun withOptionalConstantCoefficient(variable: Pattern) = ConstantCoefficientPattern(variable)

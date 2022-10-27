@@ -1,5 +1,6 @@
 package engine.patterns
 
+import engine.context.Context
 import engine.expressions.Subexpression
 import engine.operators.BinaryExpressionOperator
 import engine.operators.MixedNumberOperator
@@ -17,7 +18,7 @@ data class OperatorPattern(val operator: Operator, val childPatterns: List<Patte
         require(childPatterns.size <= operator.maxChildCount())
     }
 
-    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+    override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
         if (!subexpression.expr.operator.equiv(operator) ||
             subexpression.expr.operands.size != childPatterns.size ||
             !checkPreviousMatch(subexpression.expr, match)
@@ -27,7 +28,7 @@ data class OperatorPattern(val operator: Operator, val childPatterns: List<Patte
 
         var matches = sequenceOf(match.newChild(this, subexpression))
         for ((index, op) in childPatterns.withIndex()) {
-            matches = matches.flatMap { op.findMatches(subexpression.nthChild(index), it) }
+            matches = matches.flatMap { op.findMatches(context, it, subexpression.nthChild(index)) }
         }
         return matches
     }

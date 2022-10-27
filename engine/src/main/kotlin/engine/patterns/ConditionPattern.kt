@@ -1,5 +1,6 @@
 package engine.patterns
 
+import engine.context.Context
 import engine.expressions.Expression
 import engine.expressions.Subexpression
 import java.math.BigDecimal
@@ -16,8 +17,8 @@ data class ConditionPattern(
 
     override val key = pattern.key
 
-    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
-        return pattern.findMatches(subexpression, match).filter { condition.checkMatch(it) }
+    override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
+        return pattern.findMatches(context, match, subexpression).filter { condition.checkMatch(it) }
     }
 }
 
@@ -28,8 +29,8 @@ data class IntegerConditionPattern(
 
     override val key = pattern.key
 
-    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
-        return pattern.findMatches(subexpression, match).filter { condition(pattern.getBoundInt(it)) }
+    override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
+        return pattern.findMatches(context, match, subexpression).filter { condition(pattern.getBoundInt(it)) }
     }
 }
 
@@ -40,8 +41,8 @@ data class NumericConditionPattern(
 
     override val key = pattern.key
 
-    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
-        return pattern.findMatches(subexpression, match).filter { condition(pattern.getBoundNumber(it)) }
+    override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
+        return pattern.findMatches(context, match, subexpression).filter { condition(pattern.getBoundNumber(it)) }
     }
 }
 
@@ -64,21 +65,6 @@ data class BinaryIntegerCondition(
     }
 }
 
-data class TernaryIntegerCondition(
-    val ptn1: IntegerProvider,
-    val ptn2: IntegerProvider,
-    val ptn3: IntegerProvider,
-    val condition: (BigInteger, BigInteger, BigInteger) -> Boolean
-) : MatchCondition {
-    override fun checkMatch(match: Match): Boolean {
-        return condition(
-            ptn1.getBoundInt(match),
-            ptn2.getBoundInt(match),
-            ptn3.getBoundInt(match)
-        )
-    }
-}
-
 data class BinaryNumericCondition(
     val ptn1: NumberProvider,
     val ptn2: NumberProvider,
@@ -98,13 +84,6 @@ fun integerCondition(
     ptn: IntegerPattern,
     condition: (BigInteger) -> Boolean,
 ) = IntegerConditionPattern(ptn, condition)
-
-fun integerCondition(
-    ptn1: IntegerProvider,
-    ptn2: IntegerProvider,
-    ptn3: IntegerProvider,
-    condition: (BigInteger, BigInteger, BigInteger) -> Boolean,
-) = TernaryIntegerCondition(ptn1, ptn2, ptn3, condition)
 
 fun integerCondition(
     ptn1: IntegerProvider,

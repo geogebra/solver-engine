@@ -1,5 +1,6 @@
 package engine.patterns
 
+import engine.context.Context
 import engine.expressions.Subexpression
 import java.math.BigInteger
 
@@ -11,7 +12,7 @@ import java.math.BigInteger
 data class IntegerOrderRootPattern(val radicand: Pattern) : Pattern {
 
     private val orderPtn = UnsignedIntegerPattern()
-    private val ptn = OneOfPattern(listOf(rootOf(radicand, orderPtn), squareRootOf(radicand)))
+    private val ptn = oneOf(rootOf(radicand, orderPtn), squareRootOf(radicand))
 
     /**
      * This is either the orderPtn or just a path provider that returns 2 if the pattern was a square root.
@@ -20,12 +21,8 @@ data class IntegerOrderRootPattern(val radicand: Pattern) : Pattern {
 
     override val key = ptn
 
-    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
-        if (!checkPreviousMatch(subexpression.expr, match)) {
-            return emptySequence()
-        }
-        return ptn.findMatches(subexpression, match)
-    }
+    override fun findMatches(context: Context, match: Match, subexpression: Subexpression) =
+        ptn.findMatches(context, match, subexpression)
 }
 
 fun integerOrderRootOf(radicand: Pattern) = IntegerOrderRootPattern(radicand)

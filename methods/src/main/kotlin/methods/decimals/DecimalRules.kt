@@ -9,13 +9,13 @@ import engine.expressions.sumOf
 import engine.expressions.xp
 import engine.methods.TransformationResult
 import engine.methods.rule
+import engine.patterns.ArbitraryVariablePattern
 import engine.patterns.ConditionPattern
 import engine.patterns.RecurringDecimalPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.SignedNumberPattern
 import engine.patterns.UnsignedDecimalPattern
 import engine.patterns.UnsignedIntegerPattern
-import engine.patterns.VariablePattern
 import engine.patterns.divideBy
 import engine.patterns.equationOf
 import engine.patterns.equationSystemOf
@@ -101,7 +101,7 @@ val convertRecurringDecimalToEquation = rule {
 }
 
 val makeEquationSystemForRecurringDecimal = rule {
-    val variable = VariablePattern()
+    val variable = ArbitraryVariablePattern()
     val decimal = RecurringDecimalPattern()
 
     val equation = equationOf(variable, decimal)
@@ -153,7 +153,7 @@ val makeEquationSystemForRecurringDecimal = rule {
 }
 
 val simplifyEquationSystemForRecurringDecimal = rule {
-    val variable = VariablePattern()
+    val variable = ArbitraryVariablePattern()
     val decimal1 = RecurringDecimalPattern()
     val decimal2 = RecurringDecimalPattern()
     val lhs1 = withOptionalIntegerCoefficient(variable)
@@ -183,7 +183,7 @@ val simplifyEquationSystemForRecurringDecimal = rule {
 }
 
 val solveLinearEquation = rule {
-    val variable = VariablePattern()
+    val variable = ArbitraryVariablePattern()
     val coefficient = SignedIntegerPattern()
     val rhs = SignedIntegerPattern()
 

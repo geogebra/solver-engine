@@ -1,5 +1,6 @@
 package engine.patterns
 
+import engine.context.emptyContext
 import engine.expressions.Subexpression
 import org.junit.jupiter.api.Test
 import parser.parseExpression
@@ -16,7 +17,7 @@ class FindPatternTest {
         val findPattern = FindPattern(intProd)
 
         val expr = parseExpression("2 + 3 * 5 + [5/3 * x * 3]")
-        val matches = findPattern.findMatches(Subexpression(expr))
+        val matches = findPattern.findMatches(emptyContext, RootMatch, Subexpression(expr))
         assertEquals(2, matches.count())
         assertContentEquals(
             listOf(15, 9).map { it.toBigInteger() },

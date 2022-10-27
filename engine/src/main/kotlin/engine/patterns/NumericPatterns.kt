@@ -1,5 +1,6 @@
 package engine.patterns
 
+import engine.context.Context
 import engine.expressions.Expression
 import engine.expressions.Path
 import engine.expressions.Subexpression
@@ -36,7 +37,7 @@ class UnsignedIntegerPattern : IntegerPattern {
         }
     }
 
-    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+    override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
         if (!checkPreviousMatch(subexpression.expr, match)) {
             return emptySequence()
         }
@@ -57,7 +58,7 @@ class UnsignedDecimalPattern : NumberPattern {
         }
     }
 
-    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+    override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
         if (!checkPreviousMatch(subexpression.expr, match)) {
             return emptySequence()
         }
@@ -77,7 +78,7 @@ class RecurringDecimalPattern : Pattern {
         }
     }
 
-    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+    override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
         if (!checkPreviousMatch(subexpression.expr, match)) {
             return emptySequence()
         }

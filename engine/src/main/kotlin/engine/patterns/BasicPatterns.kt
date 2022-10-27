@@ -1,8 +1,8 @@
 package engine.patterns
 
+import engine.context.Context
 import engine.expressions.Expression
 import engine.expressions.Subexpression
-import engine.operators.VariableOperator
 
 /**
  * A pattern which matches only the exact expression it was
@@ -10,7 +10,7 @@ import engine.operators.VariableOperator
  */
 data class FixedPattern(val expr: Expression) : Pattern {
 
-    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+    override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
         return when {
             subexpression.expr.equiv(expr) -> sequenceOf(match.newChild(this, subexpression))
             else -> emptySequence()
@@ -24,7 +24,7 @@ data class FixedPattern(val expr: Expression) : Pattern {
  */
 class AnyPattern : Pattern {
 
-    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+    override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
         if (!checkPreviousMatch(subexpression.expr, match)) {
             return emptySequence()
         }
@@ -40,39 +40,23 @@ open class OptionalNegPattern<T : Pattern>(val unsignedPattern: T) :
 
 data class SameSignPatten(val from: OptionalNegPattern<Pattern>, val to: Pattern) : Pattern {
 
-    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+    override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
         if (!checkPreviousMatch(subexpression.expr, match)) {
             return emptySequence()
         }
         val ptn = if (from.isNeg(match)) negOf(to) else to
-        return ptn.findMatches(subexpression, match).map { it.newChild(this, subexpression) }
+        return ptn.findMatches(context, match, subexpression).map { it.newChild(this, subexpression) }
     }
 }
 
 data class OppositeSignPatten(val from: OptionalNegPattern<Pattern>, val to: Pattern) : Pattern {
 
-    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+    override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
         if (!checkPreviousMatch(subexpression.expr, match)) {
             return emptySequence()
         }
         val ptn = if (from.isNeg(match)) to else negOf(to)
-        return ptn.findMatches(subexpression, match).map { it.newChild(this, subexpression) }
-    }
-}
-
-/**
- * A pattern to match with a variable (i.e. symbol)
- */
-class VariablePattern : Pattern {
-    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
-        if (!checkPreviousMatch(subexpression.expr, match)) {
-            return emptySequence()
-        }
-
-        return when (subexpression.expr.operator) {
-            is VariableOperator -> sequenceOf(match.newChild(this, subexpression))
-            else -> emptySequence()
-        }
+        return ptn.findMatches(context, match, subexpression).map { it.newChild(this, subexpression) }
     }
 }
 
@@ -85,11 +69,11 @@ open class OptionalWrappingPattern(val pattern: Pattern, wrapper: (Pattern) -> P
 
     fun isWrapping(m: Match) = m.getLastBinding(wrappingPattern) != null
 
-    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+    override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
         if (!checkPreviousMatch(subexpression.expr, match)) {
             return emptySequence()
         }
-        return ptn.findMatches(subexpression, match)
+        return ptn.findMatches(context, match, subexpression)
     }
 }
 

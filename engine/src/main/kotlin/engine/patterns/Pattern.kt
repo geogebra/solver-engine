@@ -1,5 +1,6 @@
 package engine.patterns
 
+import engine.context.Context
 import engine.expressions.Expression
 import engine.expressions.Path
 import engine.expressions.Subexpression
@@ -26,7 +27,7 @@ interface Pattern : PathProvider {
      * in the `subexpression` using the built-up `match` until the
      * `subexpression` and extending it
      */
-    fun findMatches(subexpression: Subexpression, match: Match = RootMatch): Sequence<Match>
+    fun findMatches(context: Context, match: Match = RootMatch, subexpression: Subexpression): Sequence<Match>
 
     /**
      * Returns a list of `Path` objects from the root of
@@ -37,8 +38,8 @@ interface Pattern : PathProvider {
 
     override fun getBoundExpr(m: Match) = m.getBoundExpr(this)
 
-    fun matches(expression: Expression): Boolean {
-        return findMatches(Subexpression(expression), RootMatch).any()
+    fun matches(context: Context, expression: Expression): Boolean {
+        return findMatches(context, RootMatch, Subexpression(expression)).any()
     }
 
     /**

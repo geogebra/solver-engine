@@ -15,7 +15,7 @@ private class Rule(
 ) : Method {
 
     override fun tryExecute(ctx: Context, sub: Subexpression): Transformation? {
-        for (match in pattern.findMatches(sub, RootMatch)) {
+        for (match in pattern.findMatches(ctx, RootMatch, sub)) {
             val builder = MakerBuilder(ctx, match)
             builder.transformation()?.let {
                 return Transformation(

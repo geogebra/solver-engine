@@ -16,7 +16,8 @@ private const val DEFAULT_PRECISION = 3 // 3 decimal places
 
 data class Context(
     val curriculum: String? = null,
-    val precision: Int? = null // decimal places
+    val precision: Int? = null, // decimal places
+    val solutionVariable: String? = null
 ) {
     val effectivePrecision = precision ?: DEFAULT_PRECISION
 

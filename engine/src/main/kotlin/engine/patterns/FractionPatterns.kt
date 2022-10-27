@@ -1,5 +1,6 @@
 package engine.patterns
 
+import engine.context.Context
 import engine.expressions.Subexpression
 
 class FractionPattern : Pattern {
@@ -9,9 +10,8 @@ class FractionPattern : Pattern {
 
     override val key = fraction.key
 
-    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
-        return fraction.findMatches(subexpression, match)
-    }
+    override fun findMatches(context: Context, match: Match, subexpression: Subexpression) =
+        fraction.findMatches(context, match, subexpression)
 }
 
 class IntegerFractionPattern : Pattern {
@@ -21,9 +21,8 @@ class IntegerFractionPattern : Pattern {
 
     override val key = fraction.key
 
-    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
-        return fraction.findMatches(subexpression, match)
-    }
+    override fun findMatches(context: Context, match: Match, subexpression: Subexpression) =
+        fraction.findMatches(context, match, subexpression)
 }
 
 class RationalPattern : Pattern {
@@ -40,10 +39,6 @@ class RationalPattern : Pattern {
 
     override val key = ptn.key
 
-    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
-        if (!checkPreviousMatch(subexpression.expr, match)) {
-            return emptySequence()
-        }
-        return ptn.findMatches(subexpression, match)
-    }
+    override fun findMatches(context: Context, match: Match, subexpression: Subexpression) =
+        ptn.findMatches(context, match, subexpression)
 }

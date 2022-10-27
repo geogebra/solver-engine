@@ -1,14 +1,15 @@
 package engine.patterns
 
+import engine.context.Context
 import engine.expressions.Subexpression
 
 data class FindPattern(val pattern: Pattern, val deepFirst: Boolean = false) : Pattern {
 
     override val key = pattern
 
-    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
-        val ownMatches = pattern.findMatches(subexpression, match)
-        val childMatches = subexpression.children().asSequence().flatMap { findMatches(it, match) }
+    override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
+        val ownMatches = pattern.findMatches(context, match, subexpression)
+        val childMatches = subexpression.children().asSequence().flatMap { findMatches(context, match, it) }
         return when {
             deepFirst -> childMatches + ownMatches
             else -> ownMatches + childMatches
@@ -21,10 +22,14 @@ data class FindPattern(val pattern: Pattern, val deepFirst: Boolean = false) : P
  * the given `Pattern`'s in the given order in the list `options`
  */
 data class OneOfPattern(val options: List<Pattern>) : Pattern {
-    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+    override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
+        if (!checkPreviousMatch(subexpression.expr, match)) {
+            return emptySequence()
+        }
+
         return sequence {
             for (option in options) {
-                for (m in option.findMatches(subexpression, match)) {
+                for (m in option.findMatches(context, match, subexpression)) {
                     yield(m.newChild(this@OneOfPattern, m.getLastBinding(option)!!))
                 }
             }
@@ -32,36 +37,4 @@ data class OneOfPattern(val options: List<Pattern>) : Pattern {
     }
 }
 
-/**
- * Used to find matches in a given `Subexpression` object, containing all
- * the `Pattern`'s in the given order in the list `patterns`.
- */
-data class AllOfPattern(val patterns: List<Pattern>) : Pattern {
-    init {
-        require(patterns.isNotEmpty())
-    }
-
-    override val key = patterns[0]
-
-    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
-        fun rec(i: Int, m: Match): Sequence<Match> {
-            if (i == patterns.size - 1) {
-                return patterns[i].findMatches(subexpression, m)
-            }
-            return patterns[i].findMatches(subexpression, m).flatMap { rec(i + 1, it) }
-        }
-
-        return rec(0, match)
-    }
-}
-
 fun oneOf(vararg options: Pattern) = OneOfPattern(options.asList())
-
-fun allOf(vararg patterns: Pattern?): Pattern {
-    val nonNullPatterns = patterns.filterNotNull()
-    return when (nonNullPatterns.size) {
-        0 -> throw java.lang.IllegalArgumentException("At least one non-null pattern should be specified in allOf")
-        1 -> nonNullPatterns[0]
-        else -> AllOfPattern(nonNullPatterns)
-    }
-}

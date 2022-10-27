@@ -19,6 +19,7 @@ import engine.operators.NaryOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
+import engine.patterns.RootMatch
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.fractionOf
@@ -329,7 +330,7 @@ val higherOrderRationalizingTerm = rule {
 
     onPattern(pattern) {
         val rationalizationFactors = mutableListOf<MappedExpression>()
-        val matchPatternRadical = radical.findMatches(get(radical)!!).firstOrNull()
+        val matchPatternRadical = radical.findMatches(context = context, subexpression = get(radical)!!).firstOrNull()
 
         val indexValue = matchPatternRadical?.let { index.getBoundExpr(it) }
 
@@ -338,8 +339,8 @@ val higherOrderRationalizingTerm = rule {
 
             if (primeFactorizedFormExpr.expr.operator == NaryOperator.Product) {
                 for (term in primeFactorizedFormExpr.children()) {
-                    val exponentFactorMatch = exponentFactorPtn.findMatches(term).firstOrNull()
-                    val integerFactorMatch = integerFactorPtn.findMatches(term).firstOrNull()
+                    val exponentFactorMatch = exponentFactorPtn.findMatches(context, RootMatch, term).firstOrNull()
+                    val integerFactorMatch = integerFactorPtn.findMatches(context, RootMatch, term).firstOrNull()
                     if (exponentFactorMatch != null) {
                         rationalizationFactors.add(
                             buildWith(exponentFactorMatch) {
@@ -361,7 +362,10 @@ val higherOrderRationalizingTerm = rule {
                     }
                 }
             } else if (primeFactorizedFormExpr.expr.operator == BinaryExpressionOperator.Power) {
-                val exponentFactorMatch = exponentFactorPtn.findMatches(primeFactorizedFormExpr).firstOrNull()
+                val exponentFactorMatch = exponentFactorPtn.findMatches(
+                    context = context,
+                    subexpression = primeFactorizedFormExpr
+                ).firstOrNull()
                 if (exponentFactorMatch != null) {
                     rationalizationFactors.add(
                         buildWith(exponentFactorMatch) {
@@ -373,7 +377,10 @@ val higherOrderRationalizingTerm = rule {
                     )
                 }
             } else {
-                val integerFactorMatch = integerFactorPtn.findMatches(primeFactorizedFormExpr).firstOrNull()
+                val integerFactorMatch = integerFactorPtn.findMatches(
+                    context = context,
+                    subexpression = primeFactorizedFormExpr
+                ).firstOrNull()
                 if (integerFactorMatch != null) {
                     rationalizationFactors.add(
                         buildWith(integerFactorMatch) {

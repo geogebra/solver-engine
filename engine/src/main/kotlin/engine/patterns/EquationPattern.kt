@@ -1,5 +1,6 @@
 package engine.patterns
 
+import engine.context.Context
 import engine.expressions.Subexpression
 import engine.operators.EquationOperator
 import engine.operators.EquationSystemOperator
@@ -8,7 +9,7 @@ data class EquationPattern(
     val lhs: Pattern,
     val rhs: Pattern,
 ) : Pattern {
-    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+    override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
         if (!subexpression.expr.operator.equiv(EquationOperator) ||
             !checkPreviousMatch(subexpression.expr, match)
         ) {
@@ -17,12 +18,12 @@ data class EquationPattern(
 
         val matchedEquation = match.newChild(this, subexpression)
         return sequence {
-            lhs.findMatches(subexpression.nthChild(0), matchedEquation).forEach {
-                yieldAll(rhs.findMatches(subexpression.nthChild(1), it))
+            lhs.findMatches(context, matchedEquation, subexpression.nthChild(0)).forEach {
+                yieldAll(rhs.findMatches(context, it, subexpression.nthChild(1)))
             }
 
-            lhs.findMatches(subexpression.nthChild(1), matchedEquation).forEach {
-                yieldAll(rhs.findMatches(subexpression.nthChild(0), it))
+            lhs.findMatches(context, matchedEquation, subexpression.nthChild(1)).forEach {
+                yieldAll(rhs.findMatches(context, it, subexpression.nthChild(0)))
             }
         }
     }

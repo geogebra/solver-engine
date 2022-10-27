@@ -21,18 +21,18 @@ data class Plan(
     val stepsProducer: StepsProducer,
 ) : Method {
 
-    private fun getMatch(sub: Subexpression): Match? {
-        return pattern.findMatches(sub, RootMatch).firstOrNull()
+    private fun getMatch(context: Context, sub: Subexpression): Match? {
+        return pattern.findMatches(context, RootMatch, sub).firstOrNull()
     }
 
     override fun tryExecute(ctx: Context, sub: Subexpression): Transformation? {
-        val match = getMatch(sub) ?: return null
+        val match = getMatch(ctx, sub) ?: return null
 
         return stepsProducer.produceSteps(ctx, sub)?.let { steps ->
             val toExpr = steps.last().toExpr
 
             when {
-                toExpr.expr == Constants.Undefined || resultPattern.matches(toExpr.expr) -> Transformation(
+                toExpr.expr == Constants.Undefined || resultPattern.matches(ctx, toExpr.expr) -> Transformation(
                     fromExpr = sub,
                     toExpr = toExpr,
                     steps = steps,

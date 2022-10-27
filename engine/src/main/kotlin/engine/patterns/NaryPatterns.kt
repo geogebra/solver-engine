@@ -1,5 +1,6 @@
 package engine.patterns
 
+import engine.context.Context
 import engine.expressions.ChildPath
 import engine.expressions.Path
 import engine.expressions.Subexpression
@@ -36,7 +37,7 @@ data class PartialNaryPattern(
     val minSize: Int = 0
 ) : NaryPatternBase {
 
-    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+    override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
         val childCount = subexpression.expr.operands.size
         if (subexpression.expr.operator != operator || childCount < operands.size || childCount < minSize) {
             return emptySequence()
@@ -47,7 +48,11 @@ data class PartialNaryPattern(
                 if (searchIndex < operands.size) {
                     val lastChildIndex = childCount - operands.count() + searchIndex
                     for (childIndex in initialChildIndex..lastChildIndex) {
-                        val childMatches = operands[searchIndex].findMatches(subexpression.nthChild(childIndex), match)
+                        val childMatches = operands[searchIndex].findMatches(
+                            context,
+                            match,
+                            subexpression.nthChild(childIndex)
+                        )
                         for (childMatch in childMatches) {
                             yieldAll(rec(childMatch, searchIndex + 1, childIndex + 1))
                         }
@@ -72,7 +77,7 @@ data class PartialNaryPattern(
 data class CommutativeNaryPattern(override val operator: NaryOperator, override val operands: List<Pattern>) :
     NaryPatternBase {
 
-    override fun findMatches(subexpression: Subexpression, match: Match): Sequence<Match> {
+    override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
         val childCount = subexpression.expr.operands.size
         if (subexpression.expr.operator != operator || childCount != operands.count()) {
             return emptySequence()
@@ -88,7 +93,11 @@ data class CommutativeNaryPattern(override val operator: NaryOperator, override 
                         }
 
                         usedValues[index] = true
-                        val childMatches = operands[searchIndex].findMatches(subexpression.nthChild(index), match)
+                        val childMatches = operands[searchIndex].findMatches(
+                            context,
+                            match,
+                            subexpression.nthChild(index)
+                        )
                         for (childMatch in childMatches) {
                             yieldAll(rec(childMatch, searchIndex + 1))
                         }
