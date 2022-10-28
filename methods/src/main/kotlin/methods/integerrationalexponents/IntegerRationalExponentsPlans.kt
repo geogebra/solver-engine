@@ -8,11 +8,11 @@ import engine.patterns.IntegerFractionPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.powerOf
 import method.integerrationalexponents.Explanation
+import methods.constantexpressions.simplifyAfterCollectingLikeTerms
 import methods.fractionarithmetic.convertImproperFractionToSumOfIntegerAndFraction
 import methods.fractionarithmetic.evaluateFractionSum
 import methods.fractionarithmetic.multiplyAndSimplifyFractions
 import methods.fractionarithmetic.simplifyFraction
-import methods.general.collectLikeTermsAndSimplify
 import methods.general.distributePowerOfProduct
 import methods.general.distributeSumOfPowers
 import methods.general.flipFractionUnderNegativePower
@@ -201,12 +201,14 @@ val simplifyRationalExponentsInProduct = steps {
 }
 
 /**
- * Use the method factory [collectLikeTermsAndSimplify] to collect
- * and simplify all terms containing a rational exponent of an integer
- * (with a rational coefficient)
+ * Collect and simplify all terms containing a rational exponent of an
+ * integer (with a rational coefficient)
  */
-val collectLikeRationalPowersAndSimplify = collectLikeTermsAndSimplify(
-    powerOf(UnsignedIntegerPattern(), IntegerFractionPattern()),
-    Explanation.CollectLikeRationalPowersAndSimplify,
-    Explanation.CollectLikeRationalPowers,
-)
+val collectLikeRationalPowersAndSimplify = plan {
+    explanation(Explanation.CollectLikeRationalPowersAndSimplify)
+
+    steps {
+        apply(collectLikeRationalPowers)
+        apply(simplifyAfterCollectingLikeTerms)
+    }
+}

@@ -22,6 +22,8 @@ import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
+import engine.patterns.sumContaining
+import engine.patterns.withOptionalRationalCoefficient
 import engine.steps.metadata.Skill
 import engine.steps.metadata.metadata
 import engine.utility.divides
@@ -196,6 +198,21 @@ val factorDenominatorOfRationalExponents = rule {
         TransformationResult(
             toExpr = result,
             explanation = metadata(Explanation.FactorDenominatorOfRationalExponents)
+        )
+    }
+}
+
+val collectLikeRationalPowers = rule {
+    val common = powerOf(UnsignedIntegerPattern(), IntegerFractionPattern())
+
+    val commonTerm1 = withOptionalRationalCoefficient(common)
+    val commonTerm2 = withOptionalRationalCoefficient(common)
+    val sum = sumContaining(commonTerm1, commonTerm2)
+
+    onPattern(sum) {
+        TransformationResult(
+            toExpr = collectLikeTermsInSum(get(sum)!!, withOptionalRationalCoefficient(common)),
+            explanation = metadata(Explanation.CollectLikeRationalPowers)
         )
     }
 }

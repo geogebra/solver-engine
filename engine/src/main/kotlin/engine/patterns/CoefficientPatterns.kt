@@ -9,6 +9,11 @@ import engine.expressions.Subexpression
 import engine.expressions.fractionOf
 import java.math.BigInteger
 
+interface CoefficientPattern : Pattern {
+    val value: Pattern
+    fun coefficient(match: Match): MappedExpression
+}
+
 /**
  * A pattern matching `value` multiplied by an integer coefficient.
  * Say `value` matches x, the pattern can then match
@@ -45,7 +50,7 @@ class IntegerCoefficientPattern(value: Pattern) : Pattern {
  *     [x/10]
  *     any of the above with a negative sign in front.
  */
-class RationalCoefficientPattern(value: Pattern) : Pattern {
+class RationalCoefficientPattern(override val value: Pattern) : CoefficientPattern {
 
     private val numerator = UnsignedIntegerPattern()
     private val denominator = UnsignedIntegerPattern()
@@ -67,7 +72,7 @@ class RationalCoefficientPattern(value: Pattern) : Pattern {
     /**
      * Given a match, returns the coefficient as an integer or fraction
      */
-    fun coefficient(match: Match): MappedExpression = with(MakerBuilder(emptyContext /* TODO */, match)) {
+    override fun coefficient(match: Match): MappedExpression = with(MakerBuilder(emptyContext /* TODO */, match)) {
         val numeratorCoefficient = when {
             match.isBound(numerator) -> move(numerator)
             else -> introduce(Constants.One)
@@ -94,12 +99,12 @@ class RationalCoefficientPattern(value: Pattern) : Pattern {
  *     y * x
  *     [2/3 * y] * x
  */
-class ConstantCoefficientPattern(variable: Pattern) : Pattern {
+class ConstantCoefficientPattern(override val value: Pattern) : CoefficientPattern {
 
-    private val product = productContaining(variable)
+    private val product = productContaining(value)
 
     private val numerator = oneOf(
-        variable,
+        value,
         ConditionPattern(product) { match ->
             product.getRestSubexpressions(match).all { it.expr.isConstant() }
         }
@@ -121,7 +126,7 @@ class ConstantCoefficientPattern(variable: Pattern) : Pattern {
     /**
      * Given a match, returns the coefficient
      */
-    fun coefficient(match: Match): MappedExpression = with(MakerBuilder(emptyContext /* TODO */, match)) {
+    override fun coefficient(match: Match): MappedExpression = with(MakerBuilder(emptyContext /* TODO */, match)) {
         val numeratorCoefficient = when {
             match.isBound(product) -> restOf(product)
             else -> introduce(Constants.One)

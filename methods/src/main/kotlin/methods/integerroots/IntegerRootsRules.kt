@@ -24,7 +24,9 @@ import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.productOf
 import engine.patterns.squareRootOf
+import engine.patterns.sumContaining
 import engine.patterns.withOptionalIntegerCoefficient
+import engine.patterns.withOptionalRationalCoefficient
 import engine.steps.metadata.Skill
 import engine.steps.metadata.metadata
 import engine.utility.asPowerForRoot
@@ -465,6 +467,21 @@ val collectPowersOfExponentsWithSameBase = rule {
                 powerOf(move(base), sumOf(exponentValue1, exponentValue2))
             ),
             explanation = metadata(Explanation.CollectPowersOfExponentsWithSameBase)
+        )
+    }
+}
+
+val collectLikeRoots = rule {
+    val common = integerOrderRootOf(UnsignedIntegerPattern())
+
+    val commonTerm1 = withOptionalRationalCoefficient(common)
+    val commonTerm2 = withOptionalRationalCoefficient(common)
+    val sum = sumContaining(commonTerm1, commonTerm2)
+
+    onPattern(sum) {
+        TransformationResult(
+            toExpr = collectLikeTermsInSum(get(sum)!!, withOptionalRationalCoefficient(common)),
+            explanation = metadata(Explanation.CollectLikeRoots)
         )
     }
 }

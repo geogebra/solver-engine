@@ -9,7 +9,10 @@ import engine.expressions.Subexpression
 import engine.expressions.divideBy
 import engine.expressions.flattenedNaryMappedExpression
 import engine.expressions.negOf
+import engine.expressions.productOf
+import engine.expressions.sumOf
 import engine.expressions.xp
+import engine.patterns.CoefficientPattern
 import engine.patterns.IntegerProvider
 import engine.patterns.Maker
 import engine.patterns.Match
@@ -198,6 +201,32 @@ class MakerBuilder(
             1 -> restChildren[0]
             else -> flattenedNaryMappedExpression(operator, restChildren)
         }
+    }
+
+    fun collectLikeTermsInSum(sub: Subexpression, commonTerm: CoefficientPattern): MappedExpression {
+        val coefficients = mutableListOf<MappedExpression>()
+
+        val otherTerms = mutableListOf<MappedExpression>()
+        var firstIndex: Int? = null
+
+        for (term in sub.children()) {
+            val m = matchPattern(commonTerm, term)
+            if (m != null) {
+                coefficients.add(commonTerm.coefficient(m))
+                if (firstIndex == null) {
+                    firstIndex = term.index()
+                }
+            } else {
+                otherTerms.add(move(term))
+            }
+        }
+
+        require(firstIndex != null)
+
+        val collectedRoots = productOf(sumOf(coefficients), move(commonTerm.value))
+        otherTerms.add(firstIndex, collectedRoots)
+
+        return sumOf(otherTerms)
     }
 
     fun OptionalWrappingPattern.isWrapping() = this.isWrapping(match)

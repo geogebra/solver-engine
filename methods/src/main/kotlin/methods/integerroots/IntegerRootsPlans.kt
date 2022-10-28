@@ -8,7 +8,7 @@ import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.integerCondition
 import engine.patterns.integerOrderRootOf
 import engine.utility.isPowerOfDegree
-import methods.general.collectLikeTermsAndSimplify
+import methods.constantexpressions.simplifyAfterCollectingLikeTerms
 import methods.general.removeBracketProductInProduct
 import methods.integerarithmetic.evaluateIntegerPowerDirectly
 import methods.integerarithmetic.evaluateProductOfIntegers
@@ -166,12 +166,14 @@ val simplifyIntegerRootToInteger = plan {
 }
 
 /**
- * Use the method factory [collectLikeTermsAndSimplify] to collect
- * and simplify all terms containing a root of an integer (with a
- * rational coefficient)
+ * Collect and simplify all terms containing a root of an integer
+ * (with a rational coefficient)
  */
-val collectLikeRootsAndSimplify = collectLikeTermsAndSimplify(
-    integerOrderRootOf(UnsignedIntegerPattern()),
-    Explanation.CollectLikeRootsAndSimplify,
-    Explanation.CollectLikeRoots
-)
+val collectLikeRootsAndSimplify = plan {
+    explanation(Explanation.CollectLikeRootsAndSimplify)
+
+    steps {
+        apply(collectLikeRoots)
+        apply(simplifyAfterCollectingLikeTerms)
+    }
+}

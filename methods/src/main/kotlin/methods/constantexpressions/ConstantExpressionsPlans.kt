@@ -20,6 +20,7 @@ import methods.fractionarithmetic.normalizeSignsInFraction
 import methods.fractionarithmetic.simplifyFraction
 import methods.fractionarithmetic.simplifyFractionNegativePower
 import methods.fractionarithmetic.simplifyFractionToMinusOne
+import methods.fractionarithmetic.simplifyFractionsInExpression
 import methods.fractionarithmetic.simplifyIntegerToNegativePower
 import methods.fractionroots.distributeRadicalOverFraction
 import methods.fractionroots.rationalizeDenominators
@@ -33,6 +34,7 @@ import methods.general.evaluateProductContainingZero
 import methods.general.evaluateZeroToAPositivePower
 import methods.general.evaluateZeroToThePowerOfZero
 import methods.general.expandBinomialSquared
+import methods.general.moveSignOfNegativeFactorOutOfProduct
 import methods.general.normalizeExpression
 import methods.general.removeRedundantBrackets
 import methods.general.simplifyExpressionToThePowerOfOne
@@ -120,6 +122,13 @@ val simpleTidyUpSteps = steps {
         option { deeply(evaluateProductContainingZero) }
         option { deeply(cancelAdditiveInverseElements) }
     }
+}
+
+val simplifyAfterCollectingLikeTerms = steps {
+    apply(simplifyFractionsInExpression)
+    optionally { deeply(moveSignOfNegativeFactorOutOfProduct) }
+    optionally { deeply(removeRedundantBrackets) }
+    optionally { deeply(multiplyAndSimplifyFractions) }
 }
 
 val simplificationSteps = steps {

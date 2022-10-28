@@ -217,7 +217,8 @@ val simplifyNegativeNumeratorAndDenominator = rule {
 }
 
 val turnFactorIntoFractionInProduct = rule {
-    val nonFractionFactor = condition(AnyPattern()) { it.operator != BinaryExpressionOperator.Fraction }
+    val nonFractionFactor =
+        condition(AnyPattern()) { it.isConstant() && it.operator != BinaryExpressionOperator.Fraction }
     val product = productContaining(nonFractionFactor)
 
     onPattern(
