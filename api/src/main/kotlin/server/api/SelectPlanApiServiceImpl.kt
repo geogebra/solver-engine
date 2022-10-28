@@ -3,9 +3,7 @@ package server.api
 import engine.expressions.Subexpression
 import methods.methodRegistry
 import org.antlr.v4.runtime.misc.ParseCancellationException
-import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
-import org.springframework.web.server.ResponseStatusException
 import parser.parseExpression
 import server.models.ApplyPlanRequest
 import server.models.PlanSelection
@@ -17,7 +15,7 @@ class SelectPlanApiServiceImpl : SelectPlansApiService {
         val expr = try {
             parseExpression(applyPlanRequest.input)
         } catch (e: ParseCancellationException) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid expression", e)
+            throw InvalidExpressionException(applyPlanRequest.input, e)
         }
         val modeller = TransformationModeller(applyPlanRequest.format)
         val selections = mutableListOf<PlanSelection>()
