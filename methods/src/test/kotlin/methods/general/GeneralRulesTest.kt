@@ -302,4 +302,10 @@ class GeneralRulesTest {
             "[2 ^ -[2 / 5]] * [2 ^ [1 / 2]]"
         )
     }
+
+    @Test
+    fun testRewriteIntegerOrderRootAsPower() {
+        testRule("root[5, 3]", rewriteIntegerOrderRootAsPower, "[5 ^ [1/3]]")
+        testRule("sqrt[x + 2]", rewriteIntegerOrderRootAsPower, "[(x + 2) ^ [1/2]]")
+    }
 }

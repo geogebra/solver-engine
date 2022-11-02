@@ -27,6 +27,7 @@ import engine.patterns.condition
 import engine.patterns.divideBy
 import engine.patterns.fractionOf
 import engine.patterns.integerCondition
+import engine.patterns.integerOrderRootOf
 import engine.patterns.negOf
 import engine.patterns.numericCondition
 import engine.patterns.oneOf
@@ -682,6 +683,17 @@ val rewriteProductOfPowersWithInverseBase = rule {
         TransformationResult(
             toExpr = newProduct,
             explanation = metadata(Explanation.RewriteProductOfPowersWithInverseBase)
+        )
+    }
+}
+
+val rewriteIntegerOrderRootAsPower = rule {
+    val root = integerOrderRootOf(AnyPattern())
+
+    onPattern(root) {
+        TransformationResult(
+            toExpr = powerOf(move(root.radicand), fractionOf(introduce(Constants.One), move(root.order))),
+            explanation = metadata(Explanation.RewriteIntegerOrderRootAsPower)
         )
     }
 }

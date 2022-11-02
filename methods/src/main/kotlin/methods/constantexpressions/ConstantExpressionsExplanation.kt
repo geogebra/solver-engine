@@ -21,6 +21,14 @@ enum class ConstantExpressionsExplanation : CategorisedMetadataKey {
     SimplifyPowers,
 
     /**
+     * Rewrite integer order roots as powers in an expression that also contains rational exponents.
+     * This is so that further simplifications of rational exponents can be performed
+     *
+     * E.g. 5 + sqrt[3] * [4 ^ [1/2]] ->  5 + [3 ^ [1/2]] * [4 ^ [1/2]]
+     */
+    RewriteIntegerOrderRootsAsPowers,
+
+    /**
      * Simplify an expression containing only constant terms (no variable)
      *
      * This is a public top-level transformation.

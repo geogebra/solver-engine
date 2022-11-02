@@ -167,7 +167,14 @@ enum class GeneralExplanation : CategorisedMetadataKey {
      *
      * E.g. [([2 / 3]) ^ [1 / 2]] * [([3 / 2]) ^ [2 / 5]] -> [([2 / 3]) ^ [1 / 2]] * [([2 / 3]) ^ -[2 / 5]]
      */
-    RewriteProductOfPowersWithInverseFractionBase;
+    RewriteProductOfPowersWithInverseFractionBase,
+
+    /**
+     * Rewrite an integer order root as a power.
+     *
+     * E.g. root[x + 2, 3] -> [(x + 2) ^ [1/3]]
+     */
+    RewriteIntegerOrderRootAsPower;
 
     override val category = "General"
 }

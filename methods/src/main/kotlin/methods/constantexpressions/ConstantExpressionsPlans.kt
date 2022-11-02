@@ -5,8 +5,14 @@ import engine.methods.plan
 import engine.methods.stepsproducers.steps
 import engine.operators.VariableOperator
 import engine.patterns.AnyPattern
+import engine.patterns.ConditionPattern
+import engine.patterns.FindPattern
+import engine.patterns.IntegerFractionPattern
 import engine.patterns.condition
+import engine.patterns.integerCondition
+import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
+import engine.utility.divides
 import methods.decimals.convertRecurringDecimalToFractionAndSimplify
 import methods.decimals.convertTerminatingDecimalToFractionAndSimplify
 import methods.decimals.normalizeFractionOfDecimals
@@ -37,6 +43,7 @@ import methods.general.expandBinomialSquared
 import methods.general.moveSignOfNegativeFactorOutOfProduct
 import methods.general.normalizeExpression
 import methods.general.removeRedundantBrackets
+import methods.general.rewriteIntegerOrderRootAsPower
 import methods.general.simplifyExpressionToThePowerOfOne
 import methods.general.simplifyFractionWithOneDenominator
 import methods.general.simplifyZeroDenominatorFractionToUndefined
@@ -121,6 +128,7 @@ val simpleTidyUpSteps = steps {
         option { deeply(evaluateNegativeToRationalExponentAsUndefined) }
         option { deeply(evaluateProductContainingZero) }
         option { deeply(cancelAdditiveInverseElements) }
+        option { deeply(simplifyRootOfOne) }
     }
 }
 
@@ -131,9 +139,29 @@ val simplifyAfterCollectingLikeTerms = steps {
     optionally { deeply(multiplyAndSimplifyFractions) }
 }
 
+val rewriteIntegerOrderRootsAsPowers = plan {
+    val exponent = IntegerFractionPattern()
+    pattern = FindPattern(
+        powerOf(
+            AnyPattern(),
+            ConditionPattern(
+                optionalNegOf(exponent),
+                integerCondition(exponent.numerator, exponent.denominator) { n, d -> !d.divides(n) }
+            )
+        )
+    )
+    explanation(Explanation.RewriteIntegerOrderRootsAsPowers)
+    steps {
+        whilePossible {
+            deeply(rewriteIntegerOrderRootAsPower)
+        }
+    }
+}
+
 val simplificationSteps = steps {
     firstOf {
         option(simpleTidyUpSteps)
+        option(rewriteIntegerOrderRootsAsPowers)
 
         option { deeply(removeRedundantBrackets, deepFirst = true) }
 
