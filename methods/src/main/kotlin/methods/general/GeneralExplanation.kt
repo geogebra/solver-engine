@@ -176,6 +176,13 @@ enum class GeneralExplanation : CategorisedMetadataKey {
     RewriteProductOfPowersWithInverseBase,
 
     /**
+     * Write the product of two powers with the same base as the
+     * power to the sum of the exponents and simplify the result
+     * E.g. [3 ^ [1 / 2]] * [3 ^ [2 / 3]] -> [3 ^ [7 / 6]]
+     */
+    SimplifyProductOfPowersWithSameBase,
+
+    /**
      * If in a product there are two powers of fractions, such that one of the
      * fractions is the inverse of the other, then it inverts one of them to get
      * equal bases.

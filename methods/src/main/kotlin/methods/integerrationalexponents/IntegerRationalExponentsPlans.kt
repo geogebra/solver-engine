@@ -23,8 +23,8 @@ import methods.general.rewriteFractionOfPowersWithSameExponent
 import methods.general.rewriteProductOfPowersWithInverseBase
 import methods.general.rewriteProductOfPowersWithInverseFractionBase
 import methods.general.rewriteProductOfPowersWithNegatedExponent
-import methods.general.rewriteProductOfPowersWithSameBase
 import methods.general.rewriteProductOfPowersWithSameExponent
+import methods.general.simplifyProductOfPowersWithSameBase
 import methods.integerarithmetic.evaluateIntegerPowerDirectly
 import methods.integerarithmetic.evaluateIntegerProductAndDivision
 import methods.integerarithmetic.simplifyIntegersInExpression
@@ -94,15 +94,6 @@ val simplifyRationalExponentOfInteger = plan {
                 }
             }
         }
-    }
-}
-
-val simplifyProductOfPowersWithSameBase = plan {
-    explanation(Explanation.SimplifyProductOfPowersWithSameBase)
-
-    steps {
-        apply(rewriteProductOfPowersWithSameBase)
-        apply { deeply(evaluateFractionSum) }
     }
 }
 
@@ -185,8 +176,8 @@ val simplifyProductOfPowersWithRationalExponents = plan {
 val simplifyRationalExponentsInProduct = steps {
     whilePossible {
         firstOf {
-            option { deeply(simplifyRationalExponentOfInteger) }
             option { deeply(simplifyProductOfPowersWithSameBase) }
+            option { deeply(simplifyRationalExponentOfInteger) }
             option { deeply(simplifyProductOfPowersWithInverseFractionBase) }
             option { deeply(simplifyProductOfPowersWithInverseBase) }
             option { deeply(simplifyProductOfPowersWithSameExponent) }

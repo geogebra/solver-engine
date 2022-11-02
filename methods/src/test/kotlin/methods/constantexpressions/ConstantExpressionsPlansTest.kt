@@ -268,6 +268,48 @@ class ConstantExpressionsPlansTest {
             step {}
         }
     }
+
+    @Test
+    fun testSumOfProductOfSameBaseRationalExponent1() = testMethod {
+        method = simplifyConstantExpression
+        inputExpr = "[12^[1/2]] * [12^[1/2]]"
+
+        check {
+            fromExpr = "[12 ^ [1 / 2]] * [12 ^ [1 / 2]]"
+            toExpr = "12"
+
+            step {
+                fromExpr = "[12 ^ [1 / 2]] * [12 ^ [1 / 2]]"
+                toExpr = "[12 ^ 1]"
+                explanation {
+                    key = GeneralExplanation.SimplifyProductOfPowersWithSameBase
+                }
+            }
+
+            step { toExpr = "12" }
+        }
+    }
+
+    @Test
+    fun testSumOfProductOfSameBaseRationalExponent2() = testMethod {
+        method = simplifyConstantExpression
+        inputExpr = "[12^[1/3]] * [12^[1/2]]"
+
+        check {
+            fromExpr = "[12 ^ [1 / 3]] * [12 ^ [1 / 2]]"
+            toExpr = "[12 ^ [5 / 6]]"
+
+            step {
+                fromExpr = "[12 ^ [1 / 3]] * [12 ^ [1 / 2]]"
+                toExpr = "[12 ^ [1 / 3] + [1 / 2]]"
+                explanation {
+                    key = GeneralExplanation.RewriteProductOfPowersWithSameBase
+                }
+            }
+
+            step { }
+        }
+    }
 }
 
 class ConstantExpressionSimpleOperationsTest {
@@ -1213,7 +1255,7 @@ class CancelOppositeTermTest {
             step {
                 toExpr = "[6 ^ [5 / 6]]"
                 explanation {
-                    key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithSameBase
+                    key = GeneralExplanation.SimplifyProductOfPowersWithSameBase
                 }
 
                 step {
@@ -1342,6 +1384,68 @@ class ExponentsTest {
                     key = GeneralExplanation.SimplifyZeroDenominatorFractionToUndefined
                 }
             }
+        }
+    }
+
+    @Test
+    fun testProductOfExponentsSameBase1() = testMethod {
+        method = simplifyConstantExpression
+        inputExpr = "[20 ^ 2] * [20 ^ -2]"
+
+        check {
+            toExpr = "1"
+
+            step {
+                fromExpr = "[20 ^ 2] * [20 ^ -2]"
+                toExpr = "[20 ^ 0]"
+                explanation {
+                    key = GeneralExplanation.SimplifyProductOfPowersWithSameBase
+                }
+
+                step {
+                    fromExpr = "[20 ^ 2] * [20 ^ -2]"
+                    toExpr = "[20 ^ 2 - 2]"
+                    explanation {
+                        key = GeneralExplanation.RewriteProductOfPowersWithSameBase
+                    }
+                }
+
+                step {
+                    fromExpr = "[20 ^ 2 - 2]"
+                    toExpr = "[20 ^ 0]"
+                    explanation {
+                        key = IntegerArithmeticExplanation.EvaluateSumOfIntegers
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "[20 ^ 0]"
+                toExpr = "1"
+                explanation {
+                    key = GeneralExplanation.EvaluateExpressionToThePowerOfZero
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testProductOfExponentsSameBase2() = testMethod {
+        method = simplifyConstantExpression
+        inputExpr = "[20 ^ 2] * [20 ^ -3]"
+
+        check {
+            toExpr = "[1 / 20]"
+
+            step {
+                fromExpr = "[20 ^ 2] * [20 ^ -3]"
+                toExpr = "[20 ^ -1]"
+                explanation {
+                    key = GeneralExplanation.SimplifyProductOfPowersWithSameBase
+                }
+            }
+
+            step { }
         }
     }
 }

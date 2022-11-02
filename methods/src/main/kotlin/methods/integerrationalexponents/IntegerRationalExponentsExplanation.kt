@@ -80,13 +80,6 @@ enum class IntegerRationalExponentsExplanation : CategorisedMetadataKey {
     SimplifyProductOfPowersWithSameExponent,
 
     /**
-     * Write the product of two powers with the same base as the
-     * power to the sum of the exponents and simplify the result
-     * E.g. [3 ^ [1 / 2]] * [3 ^ [2 / 3]] -> [3 ^ [7 / 6]]
-     */
-    SimplifyProductOfPowersWithSameBase,
-
-    /**
      * Do a series of transformations to convert a product of
      * two powers with different bases and different rational
      * exponents to a single power.

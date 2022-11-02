@@ -413,7 +413,7 @@ class SimplifyRationalExponents {
                 fromExpr = "[([2 / 3]) ^ [1 / 2]] * [([2 / 3]) ^ -[2 / 5]]"
                 toExpr = "[([2 / 3]) ^ [1 / 10]]"
                 explanation {
-                    key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithSameBase
+                    key = GeneralExplanation.SimplifyProductOfPowersWithSameBase
                 }
 
                 step {
@@ -459,7 +459,7 @@ class SimplifyRationalExponents {
                 fromExpr = "[3 ^ [1 / 2]] * [3 ^ -[2 / 5]]"
                 toExpr = "[3 ^ [1 / 10]]"
                 explanation {
-                    key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithSameBase
+                    key = GeneralExplanation.SimplifyProductOfPowersWithSameBase
                 }
 
                 step {

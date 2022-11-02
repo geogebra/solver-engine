@@ -46,6 +46,7 @@ import methods.general.removeRedundantBrackets
 import methods.general.rewriteIntegerOrderRootAsPower
 import methods.general.simplifyExpressionToThePowerOfOne
 import methods.general.simplifyFractionWithOneDenominator
+import methods.general.simplifyProductOfPowersWithSameBase
 import methods.general.simplifyZeroDenominatorFractionToUndefined
 import methods.general.simplifyZeroNumeratorFractionToZero
 import methods.integerarithmetic.evaluateSignedIntegerPower
@@ -167,6 +168,7 @@ val simplificationSteps = steps {
         option { deeply(removeRedundantBrackets, deepFirst = true) }
 
         option { deeply(simplifyPowerOfIntegerUnderRoot, deepFirst = true) }
+        option { deeply(simplifyProductOfPowersWithSameBase) }
         option { deeply(simplifyPowers, deepFirst = true) }
 
         option(normalizeFractions)
