@@ -9,10 +9,12 @@ import engine.expressions.Subexpression
 import engine.expressions.divideBy
 import engine.expressions.flattenedNaryMappedExpression
 import engine.expressions.negOf
+import engine.expressions.powerOf
 import engine.expressions.productOf
 import engine.expressions.sumOf
 import engine.expressions.xp
 import engine.patterns.CoefficientPattern
+import engine.patterns.IntegerPattern
 import engine.patterns.IntegerProvider
 import engine.patterns.Maker
 import engine.patterns.Match
@@ -25,6 +27,7 @@ import engine.patterns.PathProvider
 import engine.patterns.Pattern
 import engine.patterns.RecurringDecimalPattern
 import engine.utility.RecurringDecimal
+import engine.utility.primeFactorDecomposition
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.RoundingMode
@@ -235,6 +238,16 @@ class MakerBuilder(
         if (pattern.isWrapping()) wrapper(this) else this
 
     fun OptionalNegPattern<Pattern>.isNeg() = this.isNeg(match)
+
+    /**
+     * return a list of mapped expression of, prime factors of `integer`
+     * raised to the power of its multiplicity.
+     * for e.g. 63 --> listOf( xp(3^2), xp(7) )
+     */
+    fun productOfPrimeFactors(integer: IntegerPattern): List<MappedExpression> {
+        return getValue(integer).primeFactorDecomposition()
+            .map { (f, n) -> introduce(if (n == BigInteger.ONE) xp(f) else powerOf(xp(f), xp(n))) }
+    }
 
     fun optionalDivideBy(pattern: OptionalWrappingPattern, mappedExpression: MappedExpression) =
         mappedExpression.wrapIf(pattern, ::divideBy)

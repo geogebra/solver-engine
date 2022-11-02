@@ -20,7 +20,7 @@ class IntegerRootsRulesTest {
     }
 
     @Test
-    fun testFactorizeIntegerUnderSquareRoot() {
+    fun testFactorizeIntegerUnderRoot() {
         testRule("sqrt[1]", factorizeIntegerUnderRoot, null)
         testRule("sqrt[144]", factorizeIntegerUnderRoot, "sqrt[[2 ^ 4] * [3 ^ 2]]")
         testRule("sqrt[125]", factorizeIntegerUnderRoot, "sqrt[[5 ^ 3]]")
@@ -28,6 +28,13 @@ class IntegerRootsRulesTest {
         testRule("sqrt[32]", factorizeIntegerUnderRoot, "sqrt[[2 ^ 5]]")
         testRule("root[4, 3]", factorizeIntegerUnderRoot, null)
         testRule("root[24, 3]", factorizeIntegerUnderRoot, "root[[2 ^ 3] * 3, 3]")
+    }
+
+    @Test
+    fun testFactorizeIntegerPowerUnderRoot() {
+        testRule("root[ [12^4], 3]", factorizeIntegerPowerUnderRoot, "root[ [([2^2] * 3) ^ 4], 3]")
+        testRule("root[ [12^2], 5]", factorizeIntegerPowerUnderRoot, null)
+        testRule("root[ [24^2], 3]", factorizeIntegerPowerUnderRoot, "root[ [([2^3]*3) ^ 2], 3]")
     }
 
     @Test
@@ -56,6 +63,7 @@ class IntegerRootsRulesTest {
         testRule("sqrt[3]", splitPowerUnderRoot, null)
         testRule("root[[2^3], 4]", splitPowerUnderRoot, null)
         testRule("root[[3^5], 3]", splitPowerUnderRoot, "root[[3 ^ 3] * [3 ^ 2], 3]")
+        testRule("root[[12^5], 4]", splitPowerUnderRoot, "root[[12^4] * 12, 4]")
     }
 
     @Test

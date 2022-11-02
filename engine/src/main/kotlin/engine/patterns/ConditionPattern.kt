@@ -65,6 +65,21 @@ data class BinaryIntegerCondition(
     }
 }
 
+data class TernaryIntegerCondition(
+    val ptn1: IntegerProvider,
+    val ptn2: IntegerProvider,
+    val ptn3: IntegerProvider,
+    val condition: (BigInteger, BigInteger, BigInteger) -> Boolean
+) : MatchCondition {
+    override fun checkMatch(match: Match): Boolean {
+        return condition(
+            ptn1.getBoundInt(match),
+            ptn2.getBoundInt(match),
+            ptn3.getBoundInt(match)
+        )
+    }
+}
+
 data class BinaryNumericCondition(
     val ptn1: NumberProvider,
     val ptn2: NumberProvider,
@@ -90,6 +105,13 @@ fun integerCondition(
     ptn2: IntegerProvider,
     condition: (BigInteger, BigInteger) -> Boolean,
 ) = BinaryIntegerCondition(ptn1, ptn2, condition)
+
+fun integerCondition(
+    ptn1: IntegerProvider,
+    ptn2: IntegerProvider,
+    ptn3: IntegerProvider,
+    condition: (BigInteger, BigInteger, BigInteger) -> Boolean,
+) = TernaryIntegerCondition(ptn1, ptn2, ptn3, condition)
 
 fun numericCondition(
     ptn: NumberPattern,

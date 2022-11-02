@@ -39,7 +39,6 @@ import engine.patterns.withOptionalIntegerCoefficient
 import engine.steps.metadata.metadata
 import engine.utility.divides
 import engine.utility.isPrime
-import engine.utility.primeFactorDecomposition
 import java.math.BigInteger
 
 /**
@@ -423,9 +422,7 @@ val factorizeHigherOrderRadicand = rule {
     val pattern = fractionOf(numerator, denominator)
 
     onPattern(pattern) {
-        val factorized = getValue(radicand)
-            .primeFactorDecomposition()
-            .map { (f, n) -> introduce(if (n == BigInteger.ONE) xp(f) else powerOf(xp(f), xp(n))) }
+        val factorized = productOfPrimeFactors(radicand)
 
         TransformationResult(
             toExpr = fractionOf(

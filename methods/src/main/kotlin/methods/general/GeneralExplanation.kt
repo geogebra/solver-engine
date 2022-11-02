@@ -13,6 +13,21 @@ enum class GeneralExplanation : CategorisedMetadataKey {
     MultiplyExponentsUsingPowerRule,
 
     /**
+     * Rewrite power under root to enable it to cancel the common
+     * factor between root order and exponent,
+     * for e.g. root[ [7^6], 8] --> root[ [7^3*2], 4*2]
+     * as gcd(8, 6) = 2, its factored out from both rootIndex and exponent
+     */
+    RewritePowerUnderRoot,
+
+    /**
+     * Cancels the common factor between rootIndex and exponent
+     * of a power under root
+     * for e.g. root[ [7^3*2], 5*2 ] --> root[ [7^3], 5 ]
+     */
+    CancelRootIndexAndExponent,
+
+    /**
      * distribute sum of powers to a base as a product of exponents with same base,
      * i.e. [base ^ exp1 + ... + expN] --> [base ^ exp1] * ... * [base ^ expN]
      */

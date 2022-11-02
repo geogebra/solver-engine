@@ -33,8 +33,6 @@ import engine.utility.asPowerForRoot
 import engine.utility.asProductForRoot
 import engine.utility.divides
 import engine.utility.hasFactorOfDegree
-import engine.utility.primeFactorDecomposition
-import java.math.BigInteger
 
 val simplifyRootOfOne = rule {
     val one = FixedPattern(xp(1))
@@ -96,6 +94,28 @@ val writeRootAsRootPower = rule {
     }
 }
 
+val factorizeIntegerPowerUnderRoot = rule {
+    val integer = UnsignedIntegerPattern()
+    val exponent = UnsignedIntegerPattern()
+    val pow = powerOf(integer, exponent)
+    val root = integerOrderRootOf(pow)
+
+    onPattern(
+        ConditionPattern(
+            root,
+            integerCondition(root.order, integer, exponent) { p, n, q -> n.pow(q.toInt()).hasFactorOfDegree(p.toInt()) }
+        )
+    ) {
+        val factorized = productOfPrimeFactors(integer)
+
+        TransformationResult(
+            toExpr = rootOf(powerOf(transform(integer, productOf(factorized)), move(exponent)), move(root.order)),
+            explanation = metadata(Explanation.FactorizeIntegerPowerUnderRoot, move(integer)),
+            skills = listOf(metadata(Skill.FactorInteger, move(integer)))
+        )
+    }
+}
+
 val factorizeIntegerUnderRoot = rule {
     val integer = UnsignedIntegerPattern()
     val root = integerOrderRootOf(integer)
@@ -106,9 +126,7 @@ val factorizeIntegerUnderRoot = rule {
             integerCondition(root.order, integer) { p, n -> n.hasFactorOfDegree(p.toInt()) }
         )
     ) {
-        val factorized = getValue(integer)
-            .primeFactorDecomposition()
-            .map { (f, n) -> introduce(if (n == BigInteger.ONE) xp(f) else powerOf(xp(f), xp(n))) }
+        val factorized = productOfPrimeFactors(integer)
 
         TransformationResult(
             toExpr = rootOf(transform(integer, productOf(factorized)), move(root.order)),

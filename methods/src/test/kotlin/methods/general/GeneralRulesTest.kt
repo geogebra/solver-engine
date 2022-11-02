@@ -231,6 +231,12 @@ class GeneralRulesTest {
     }
 
     @Test
+    fun testSimplifyRootOfPower() {
+        testRule("root[ [7^6], 8]", rewritePowerUnderRoot, "root[ [7^3*2], 4*2]")
+        testRule("root[ [7^4], 8]", rewritePowerUnderRoot, "root[ [7^4], 2*4]")
+    }
+
+    @Test
     fun testFlipFractionUnderNegativePower() {
         testRule("[([2 / 3]) ^ [4 / 5]]", flipFractionUnderNegativePower, null)
         testRule("[([2 / 3]) ^ -[4 / 5]]", flipFractionUnderNegativePower, "[([3 / 2]) ^ [4 / 5]]")
@@ -307,5 +313,18 @@ class GeneralRulesTest {
     fun testRewriteIntegerOrderRootAsPower() {
         testRule("root[5, 3]", rewriteIntegerOrderRootAsPower, "[5 ^ [1/3]]")
         testRule("sqrt[x + 2]", rewriteIntegerOrderRootAsPower, "[(x + 2) ^ [1/2]]")
+    }
+
+    fun testCancelCommonPowers() {
+        testRule(
+            "root[ [7^2*2], 3*2 ]",
+            cancelRootIndexAndExponent,
+            "root[ [7^2], 3]"
+        )
+        testRule(
+            "root[[7^2], 3*2]",
+            cancelRootIndexAndExponent,
+            "root[7, 3]"
+        )
     }
 }

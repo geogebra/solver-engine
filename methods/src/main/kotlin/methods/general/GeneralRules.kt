@@ -10,13 +10,16 @@ import engine.expressions.fractionOf
 import engine.expressions.negOf
 import engine.expressions.powerOf
 import engine.expressions.productOf
+import engine.expressions.rootOf
 import engine.expressions.simplifiedPowerOf
+import engine.expressions.simplifiedProductOf
 import engine.expressions.sumOf
 import engine.expressions.xp
 import engine.methods.TransformationResult
 import engine.methods.rule
 import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
+import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
 import engine.patterns.FractionPattern
 import engine.patterns.SignedNumberPattern
@@ -36,6 +39,7 @@ import engine.patterns.optionalDivideBy
 import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
+import engine.patterns.rootOf
 import engine.patterns.sumContaining
 import engine.patterns.sumOf
 import engine.steps.metadata.metadata
@@ -694,6 +698,63 @@ val rewriteIntegerOrderRootAsPower = rule {
         TransformationResult(
             toExpr = powerOf(move(root.radicand), fractionOf(introduce(Constants.One), move(root.order))),
             explanation = metadata(Explanation.RewriteIntegerOrderRootAsPower)
+        )
+    }
+}
+
+/**
+ * rewrites the power under the root according to root index, to
+ * cancel out the common factor b/w root index and exponent
+ * for e.g. root[ [7^6], 8], rootIndex = 8, exponent = 6
+ * gcd(rootIndex, exponent) = 2, so the expression can be simplified
+ * and the rule does the preparation of that cancellation
+ * i.e. root[ [7^6], 8] --> root[ [7^3*2], 4*2]
+ */
+val rewritePowerUnderRoot = rule {
+    val base = AnyPattern()
+    val exponent = UnsignedIntegerPattern()
+    val pow = powerOf(base, exponent)
+    val root = integerOrderRootOf(pow)
+
+    onPattern(
+        ConditionPattern(root, integerCondition(root.order, exponent) { p, q -> p > q && p.gcd(q) != BigInteger.ONE })
+    ) {
+        val gcdExpRootOrder = integerOp(root.order, exponent) { p, q -> p.gcd(q) }
+        val newExp = integerOp(root.order, exponent) { p, q -> q.divide(p.gcd(q)) }
+        val newRootOrder = integerOp(root.order, exponent) { p, q -> p.divide(p.gcd(q)) }
+
+        TransformationResult(
+            toExpr = rootOf(
+                simplifiedPowerOf(move(base), simplifiedProductOf(newExp, gcdExpRootOrder)),
+                productOf(newRootOrder, gcdExpRootOrder)
+            ),
+            explanation = metadata(Explanation.RewritePowerUnderRoot)
+        )
+    }
+}
+
+/**
+ * root[ [7^3*2], 5*2 ] -> root[ [7^3], 5 ]
+ */
+val cancelRootIndexAndExponent = rule {
+    val base = AnyPattern()
+    val intExponent = UnsignedIntegerPattern()
+    val productExponent = productContaining(intExponent)
+    val exponent = oneOf(intExponent, productExponent)
+    val pow = powerOf(base, exponent)
+    val rootOrder = productContaining(intExponent)
+    val root = rootOf(pow, rootOrder)
+
+    onPattern(root) {
+        val newRootOrder = cancel(intExponent, restOf(rootOrder))
+        val newPow = when {
+            isBound(productExponent) -> powerOf(move(base), cancel(intExponent, restOf(productExponent)))
+            else -> move(base)
+        }
+
+        TransformationResult(
+            toExpr = rootOf(newPow, newRootOrder),
+            explanation = metadata(Explanation.CancelRootIndexAndExponent)
         )
     }
 }

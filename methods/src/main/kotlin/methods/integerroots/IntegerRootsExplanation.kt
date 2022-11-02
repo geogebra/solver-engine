@@ -9,12 +9,39 @@ enum class IntegerRootsExplanation : CategorisedMetadataKey {
     SimplifyRootOfZero,
 
     /**
+     * Rewrite and cancel the common factor between rootIndex and exponent
+     * of a power under root (does it in two steps)
+     * for e.g. root[[7^6], 8] --> root[[7^3*2], 4*2] --> root[[7^3], 4]
+     */
+    RewriteAndCancelPowerUnderRoot,
+
+    /**
+     * Simplify the power of an integer under root
+     * by either splitting or by factoring the base (or both)
+     * for e.g. root[ [12^4], 3 ] --> 12 * root[12, 3]
+     */
+    SimplifyPowerOfIntegerUnderRoot,
+
+    /**
+     * Factorize the integer present as base of a power under root and then
+     * apply the power rule to distribute the powers to its factors
+     * for e.g. root[ 24^2, 3] --> root[ 2^6 * 3^2, 3]
+     */
+    FactorizeAndDistributePowerUnderRoot,
+
+    /**
      * factorize the integer under the root term, if some special
      * factorization exists for the integer depending upon the order
      * of the root (for e.g. root[1000, 3] -> root[ [10^3], 3])
      * otherwise do the prime factor decomposition of the number
      */
     FactorizeIntegerUnderRoot,
+
+    /**
+     * Factorize the integer present as base of a power under a root
+     * for e.g. root[ [24^2], 3 ] --> root[ [([2^3] *3)^2], 3]
+     */
+    FactorizeIntegerPowerUnderRoot,
 
     SimplifyMultiplicationOfSquareRoots,
     SeparateSquaresUnderSquareRoot,
@@ -31,6 +58,7 @@ enum class IntegerRootsExplanation : CategorisedMetadataKey {
     SimplifyIntegerRootToInteger,
     CollectLikeRootsAndSimplify,
     MultiplyNthRoots,
+    SplitRootsAndCancelRootsOfPowers,
 
     /**
      * Write a root of an integer as a product of values whose root can easily be computed

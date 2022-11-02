@@ -60,6 +60,7 @@ import methods.integerroots.cancelPowerOfARoot
 import methods.integerroots.collectLikeRootsAndSimplify
 import methods.integerroots.simplifyIntegerRoot
 import methods.integerroots.simplifyIntegerRootToInteger
+import methods.integerroots.simplifyPowerOfIntegerUnderRoot
 import methods.integerroots.simplifyProductWithRoots
 import methods.integerroots.simplifyRootOfOne
 import methods.integerroots.simplifyRootOfRootWithCoefficient
@@ -165,6 +166,7 @@ val simplificationSteps = steps {
 
         option { deeply(removeRedundantBrackets, deepFirst = true) }
 
+        option { deeply(simplifyPowerOfIntegerUnderRoot, deepFirst = true) }
         option { deeply(simplifyPowers, deepFirst = true) }
 
         option(normalizeFractions)
