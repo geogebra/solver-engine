@@ -8,6 +8,8 @@ import engine.expressions.powerOf
 import engine.expressions.productOf
 import engine.expressions.simplifiedPowerOf
 import engine.expressions.xp
+import engine.methods.Rule
+import engine.methods.RunnerMethod
 import engine.methods.TransformationResult
 import engine.methods.rule
 import engine.operators.BinaryExpressionOperator
@@ -33,186 +35,207 @@ import engine.utility.primeFactorDecomposition
 import method.integerrationalexponents.Explanation
 import java.math.BigInteger
 
-val evaluateNegativeToRationalExponentAsUndefined = rule {
-    val base = AnyPattern()
+enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMethod {
+    EvaluateNegativeToRationalExponentAsUndefined(
+        rule {
+            val base = AnyPattern()
 
-    val exponent = IntegerFractionPattern()
-    val pattern = powerOf(
-        condition(base) { it.signOf() == Sign.NEGATIVE },
-        ConditionPattern(
-            optionalNegOf(exponent),
-            integerCondition(exponent.numerator, exponent.denominator) { n, d -> !d.divides(n) }
-        )
-    )
-
-    onPattern(pattern) {
-        TransformationResult(
-            toExpr = transformTo(pattern, Constants.Undefined),
-            explanation = metadata(Explanation.EvaluateNegativeToRationalExponentAsUndefined),
-        )
-    }
-}
-
-val factorizeIntegerUnderRationalExponent = rule {
-    val integer = integerCondition(UnsignedIntegerPattern()) { !it.isPrime() }
-    val numerator = UnsignedIntegerPattern()
-    val denominator = UnsignedIntegerPattern()
-    val exp = fractionOf(numerator, denominator)
-    val power = powerOf(integer, exp)
-
-    onPattern(power) {
-        val numeratorValue = getValue(numerator)
-        val denominatorValue = getValue(denominator)
-
-        val primeFactorization = getValue(integer).primeFactorDecomposition()
-
-        // when at-least one of the prime factor has degree
-        // greater than or equal to denominator of rational exponent
-        // or when the gcd of multiplicity of prime factors with
-        // denominator of rational exponent is not equal to 1
-        val canBeSimplified = primeFactorization.any { (_, p) -> (p * numeratorValue % denominatorValue).isZero() } ||
-            primeFactorization.fold(denominatorValue) { acc, f -> acc.gcd(f.second) } != BigInteger.ONE
-
-        if (canBeSimplified) {
-            val factorized = primeFactorization
-                .map { (f, n) -> introduce(if (n == BigInteger.ONE) xp(f) else powerOf(xp(f), xp(n))) }
-
-            TransformationResult(
-                toExpr = powerOf(productOf(factorized), move(exp)),
-                explanation = metadata(Explanation.FactorizeIntegerUnderRationalExponent),
-                skills = listOf(metadata(Skill.FactorInteger, move(integer)))
+            val exponent = IntegerFractionPattern()
+            val pattern = powerOf(
+                condition(base) { it.signOf() == Sign.NEGATIVE },
+                ConditionPattern(
+                    optionalNegOf(exponent),
+                    integerCondition(exponent.numerator, exponent.denominator) { n, d -> !d.divides(n) }
+                )
             )
-        } else {
-            null
-        }
-    }
-}
 
-/**
- * brings the "integers" or exponents with integral powers to the front
- * e.g. [2 ^ [2 / 5]] * [3 ^ 2] * 5 --> [3 ^ 2] * 5 * [2 ^ [2 / 5]]
- */
-val normaliseProductWithRationalExponents = rule {
-    val notRationalExponent =
-        condition(AnyPattern()) {
-            it.operator != BinaryExpressionOperator.Power ||
-                it.operands[1].operator != BinaryExpressionOperator.Fraction
-        }
-    val product = productContaining(
-        powerOf(UnsignedIntegerPattern(), fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())),
-        notRationalExponent
-    )
-    onPattern(product) {
-        val (rationalExponents, nonRationalExponents) = get(product)!!.children()
-            .partition {
-                it.expr.operator == BinaryExpressionOperator.Power &&
-                    it.expr.operands[1].operator == BinaryExpressionOperator.Fraction
-            }
-        TransformationResult(
-            toExpr = productOf(
-                productOf(nonRationalExponents.map { move(it) }),
-                productOf(rationalExponents.map { move(it) })
-            ),
-            explanation = metadata(Explanation.NormaliseProductWithRationalExponents)
-        )
-    }
-}
-
-val findCommonDenominatorOfRationalExponents = rule {
-    val base1 = AnyPattern()
-    val base2 = AnyPattern()
-
-    val exponent1 = IntegerFractionPattern()
-    val exponent2 = IntegerFractionPattern()
-
-    val power1 = powerOf(base1, exponent1)
-    val power2 = powerOf(base2, exponent2)
-
-    val product = productContaining(power1, power2)
-    val fraction = fractionOf(power1, power2)
-
-    onPattern(oneOf(product, fraction)) {
-        if (getValue(exponent1.denominator) == getValue(exponent2.denominator)) {
-            null
-        } else {
-            val expandingTerm1 = integerOp(exponent1.denominator, exponent2.denominator) { n1, n2 -> n2 / n1.gcd(n2) }
-            val expandingTerm2 = integerOp(exponent1.denominator, exponent2.denominator) { n1, n2 -> n1 / n1.gcd(n2) }
-
-            val fraction1 = when (expandingTerm1.expr) {
-                Constants.One -> move(exponent1)
-                else -> fractionOf(
-                    productOf(move(exponent1.numerator), expandingTerm1),
-                    productOf(move(exponent1.denominator), expandingTerm1)
+            onPattern(pattern) {
+                TransformationResult(
+                    toExpr = transformTo(pattern, Constants.Undefined),
+                    explanation = metadata(Explanation.EvaluateNegativeToRationalExponentAsUndefined),
                 )
             }
+        }
+    ),
 
-            val fraction2 = when (expandingTerm2.expr) {
-                Constants.One -> move(exponent2)
-                else -> fractionOf(
-                    productOf(move(exponent2.numerator), expandingTerm2),
-                    productOf(move(exponent2.denominator), expandingTerm2)
+    FactorizeIntegerUnderRationalExponent(
+        rule {
+            val integer = integerCondition(UnsignedIntegerPattern()) { !it.isPrime() }
+            val numerator = UnsignedIntegerPattern()
+            val denominator = UnsignedIntegerPattern()
+            val exp = fractionOf(numerator, denominator)
+            val power = powerOf(integer, exp)
+
+            onPattern(power) {
+                val numeratorValue = getValue(numerator)
+                val denominatorValue = getValue(denominator)
+
+                val primeFactorization = getValue(integer).primeFactorDecomposition()
+
+                // when at-least one of the prime factor has degree
+                // greater than or equal to denominator of rational exponent
+                // or when the gcd of multiplicity of prime factors with
+                // denominator of rational exponent is not equal to 1
+                val canBeSimplified =
+                    primeFactorization.any { (_, p) -> (p * numeratorValue % denominatorValue).isZero() } ||
+                        primeFactorization.fold(denominatorValue) { acc, f -> acc.gcd(f.second) } != BigInteger.ONE
+
+                if (canBeSimplified) {
+                    val factorized = primeFactorization
+                        .map { (f, n) -> introduce(if (n == BigInteger.ONE) xp(f) else powerOf(xp(f), xp(n))) }
+
+                    TransformationResult(
+                        toExpr = powerOf(productOf(factorized), move(exp)),
+                        explanation = metadata(Explanation.FactorizeIntegerUnderRationalExponent),
+                        skills = listOf(metadata(Skill.FactorInteger, move(integer)))
+                    )
+                } else {
+                    null
+                }
+            }
+        }
+    ),
+
+    /**
+     * brings the "integers" or exponents with integral powers to the front
+     * e.g. [2 ^ [2 / 5]] * [3 ^ 2] * 5 --> [3 ^ 2] * 5 * [2 ^ [2 / 5]]
+     */
+    NormaliseProductWithRationalExponents(
+        rule {
+            val notRationalExponent =
+                condition(AnyPattern()) {
+                    it.operator != BinaryExpressionOperator.Power ||
+                        it.operands[1].operator != BinaryExpressionOperator.Fraction
+                }
+            val product = productContaining(
+                powerOf(UnsignedIntegerPattern(), fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())),
+                notRationalExponent
+            )
+            onPattern(product) {
+                val (rationalExponents, nonRationalExponents) = get(product)!!.children()
+                    .partition {
+                        it.expr.operator == BinaryExpressionOperator.Power &&
+                            it.expr.operands[1].operator == BinaryExpressionOperator.Fraction
+                    }
+                TransformationResult(
+                    toExpr = productOf(
+                        productOf(nonRationalExponents.map { move(it) }),
+                        productOf(rationalExponents.map { move(it) })
+                    ),
+                    explanation = metadata(Explanation.NormaliseProductWithRationalExponents)
                 )
             }
+        }
+    ),
 
-            val result = when {
-                isBound(product) -> product.substitute(powerOf(move(base1), fraction1), powerOf(move(base2), fraction2))
-                else -> fractionOf(powerOf(move(base1), fraction1), powerOf(move(base2), fraction2))
+    FindCommonDenominatorOfRationalExponents(
+        rule {
+            val base1 = AnyPattern()
+            val base2 = AnyPattern()
+
+            val exponent1 = IntegerFractionPattern()
+            val exponent2 = IntegerFractionPattern()
+
+            val power1 = powerOf(base1, exponent1)
+            val power2 = powerOf(base2, exponent2)
+
+            val product = productContaining(power1, power2)
+            val fraction = fractionOf(power1, power2)
+
+            onPattern(oneOf(product, fraction)) {
+                if (getValue(exponent1.denominator) == getValue(exponent2.denominator)) {
+                    null
+                } else {
+                    val expandingTerm1 =
+                        integerOp(exponent1.denominator, exponent2.denominator) { n1, n2 -> n2 / n1.gcd(n2) }
+                    val expandingTerm2 =
+                        integerOp(exponent1.denominator, exponent2.denominator) { n1, n2 -> n1 / n1.gcd(n2) }
+
+                    val fraction1 = when (expandingTerm1.expr) {
+                        Constants.One -> move(exponent1)
+                        else -> fractionOf(
+                            productOf(move(exponent1.numerator), expandingTerm1),
+                            productOf(move(exponent1.denominator), expandingTerm1)
+                        )
+                    }
+
+                    val fraction2 = when (expandingTerm2.expr) {
+                        Constants.One -> move(exponent2)
+                        else -> fractionOf(
+                            productOf(move(exponent2.numerator), expandingTerm2),
+                            productOf(move(exponent2.denominator), expandingTerm2)
+                        )
+                    }
+
+                    val result = when {
+                        isBound(product) -> product.substitute(
+                            powerOf(move(base1), fraction1),
+                            powerOf(move(base2), fraction2)
+                        )
+
+                        else -> fractionOf(powerOf(move(base1), fraction1), powerOf(move(base2), fraction2))
+                    }
+
+                    TransformationResult(
+                        toExpr = result,
+                        explanation = metadata(Explanation.FindCommonDenominatorOfRationalExponents)
+                    )
+                }
             }
-
-            TransformationResult(
-                toExpr = result,
-                explanation = metadata(Explanation.FindCommonDenominatorOfRationalExponents)
-            )
         }
-    }
-}
+    ),
 
-val factorDenominatorOfRationalExponents = rule {
-    val base1 = AnyPattern()
-    val base2 = AnyPattern()
+    FactorDenominatorOfRationalExponents(
+        rule {
+            val base1 = AnyPattern()
+            val base2 = AnyPattern()
 
-    val numerator1 = UnsignedIntegerPattern()
-    val numerator2 = UnsignedIntegerPattern()
+            val numerator1 = UnsignedIntegerPattern()
+            val numerator2 = UnsignedIntegerPattern()
 
-    val denominator = UnsignedIntegerPattern()
+            val denominator = UnsignedIntegerPattern()
 
-    val exponent1 = fractionOf(numerator1, denominator)
-    val exponent2 = fractionOf(numerator2, denominator)
+            val exponent1 = fractionOf(numerator1, denominator)
+            val exponent2 = fractionOf(numerator2, denominator)
 
-    val power1 = powerOf(base1, exponent1)
-    val power2 = powerOf(base2, exponent2)
+            val power1 = powerOf(base1, exponent1)
+            val power2 = powerOf(base2, exponent2)
 
-    val product = productContaining(power1, power2)
-    val fraction = fractionOf(power1, power2)
+            val product = productContaining(power1, power2)
+            val fraction = fractionOf(power1, power2)
 
-    onPattern(oneOf(product, fraction)) {
-        val newPower1 = simplifiedPowerOf(move(base1), move(numerator1))
-        val newPower2 = simplifiedPowerOf(move(base2), move(numerator2))
-        val newExponent = fractionOf(introduce(Constants.One), factor(denominator))
+            onPattern(oneOf(product, fraction)) {
+                val newPower1 = simplifiedPowerOf(move(base1), move(numerator1))
+                val newPower2 = simplifiedPowerOf(move(base2), move(numerator2))
+                val newExponent = fractionOf(introduce(Constants.One), factor(denominator))
 
-        val result = when {
-            isBound(product) -> product.substitute(powerOf(productOf(newPower1, newPower2), newExponent))
-            else -> powerOf(fractionOf(newPower1, newPower2), newExponent)
+                val result = when {
+                    isBound(product) -> product.substitute(powerOf(productOf(newPower1, newPower2), newExponent))
+                    else -> powerOf(fractionOf(newPower1, newPower2), newExponent)
+                }
+
+                TransformationResult(
+                    toExpr = result,
+                    explanation = metadata(Explanation.FactorDenominatorOfRationalExponents)
+                )
+            }
         }
+    ),
 
-        TransformationResult(
-            toExpr = result,
-            explanation = metadata(Explanation.FactorDenominatorOfRationalExponents)
-        )
-    }
-}
+    CollectLikeRationalPowers(
+        rule {
+            val common = powerOf(UnsignedIntegerPattern(), IntegerFractionPattern())
 
-val collectLikeRationalPowers = rule {
-    val common = powerOf(UnsignedIntegerPattern(), IntegerFractionPattern())
+            val commonTerm1 = withOptionalRationalCoefficient(common)
+            val commonTerm2 = withOptionalRationalCoefficient(common)
+            val sum = sumContaining(commonTerm1, commonTerm2)
 
-    val commonTerm1 = withOptionalRationalCoefficient(common)
-    val commonTerm2 = withOptionalRationalCoefficient(common)
-    val sum = sumContaining(commonTerm1, commonTerm2)
-
-    onPattern(sum) {
-        TransformationResult(
-            toExpr = collectLikeTermsInSum(get(sum)!!, withOptionalRationalCoefficient(common)),
-            explanation = metadata(Explanation.CollectLikeRationalPowers)
-        )
-    }
+            onPattern(sum) {
+                TransformationResult(
+                    toExpr = collectLikeTermsInSum(get(sum)!!, withOptionalRationalCoefficient(common)),
+                    explanation = metadata(Explanation.CollectLikeRationalPowers)
+                )
+            }
+        }
+    )
 }

@@ -4,12 +4,12 @@ import engine.context.ResourceData
 import engine.methods.plan
 import engine.patterns.mixedNumberOf
 import engine.patterns.sumOf
-import methods.fractionarithmetic.convertIntegerToFraction
+import methods.fractionarithmetic.FractionArithmeticRules
 import methods.fractionarithmetic.evaluateFractionSum
 import methods.fractionarithmetic.simplifyFraction
-import methods.general.removeBracketSumInSum
-import methods.general.simplifyZeroDenominatorFractionToUndefined
-import methods.integerarithmetic.evaluateSignedIntegerAddition
+import methods.general.GeneralRules
+import methods.general.NormalizationRules
+import methods.integerarithmetic.IntegerArithmeticRules
 
 val convertMixedNumberToImproperFraction = plan {
     explanation(Explanation.ConvertMixedNumbersToImproperFraction)
@@ -18,11 +18,11 @@ val convertMixedNumberToImproperFraction = plan {
         applyToChildrenInStep {
             step {
                 explanationKey = Explanation.ConvertMixedNumbersToSums
-                method = splitMixedNumber
+                method = MixedNumbersRules.SplitMixedNumber
             }
             step {
                 explanationKey = Explanation.ConvertIntegersToFractions
-                method = convertIntegerToFraction
+                method = FractionArithmeticRules.ConvertIntegerToFraction
             }
             step {
                 explanationKey = Explanation.AddFractions
@@ -42,7 +42,7 @@ val addMixedNumbers = plan {
         apply(evaluateFractionSum)
         // result might be integer or proper fraction after
         // simplification, so this step is optional
-        optionally(fractionToMixedNumber)
+        optionally(MixedNumbersRules.FractionToMixedNumber)
     }
 
     alternative(ResourceData(curriculum = "US")) {
@@ -51,19 +51,19 @@ val addMixedNumbers = plan {
             explanation(Explanation.ConvertMixedNumbersToSums)
 
             steps {
-                whilePossible { deeply(splitMixedNumber) }
+                whilePossible { deeply(MixedNumbersRules.SplitMixedNumber) }
             }
         }
 
         whilePossible {
-            deeply(simplifyZeroDenominatorFractionToUndefined)
+            deeply(GeneralRules.SimplifyZeroDenominatorFractionToUndefined)
         }
 
         plan {
             explanation(Explanation.RemoveAllBracketsInSum)
 
             steps {
-                whilePossible(removeBracketSumInSum)
+                whilePossible(NormalizationRules.RemoveBracketSumInSum)
             }
         }
 
@@ -71,16 +71,16 @@ val addMixedNumbers = plan {
             deeply(simplifyFraction)
         }
 
-        apply(evaluateSignedIntegerAddition)
+        apply(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
         apply(evaluateFractionSum)
 
         firstOf {
-            option(evaluateSignedIntegerAddition)
-            option(convertSumOfIntegerAndProperFractionToMixedNumber)
+            option(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
+            option(MixedNumbersRules.ConvertSumOfIntegerAndProperFractionToMixedNumber)
             option {
-                apply(convertIntegerToFraction)
+                apply(FractionArithmeticRules.ConvertIntegerToFraction)
                 apply(evaluateFractionSum)
-                apply(fractionToMixedNumber)
+                apply(MixedNumbersRules.FractionToMixedNumber)
             }
         }
     }

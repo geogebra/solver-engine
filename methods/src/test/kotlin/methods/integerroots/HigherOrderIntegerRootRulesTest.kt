@@ -1,5 +1,8 @@
 package methods.integerroots
 
+import methods.integerroots.IntegerRootsRules.PutRootCoefficientUnderRoot
+import methods.integerroots.IntegerRootsRules.SimplifyRootOfRoot
+import methods.integerroots.IntegerRootsRules.TurnPowerOfRootToRootOfPower
 import methods.rules.testRule
 import org.junit.jupiter.api.Test
 
@@ -9,12 +12,12 @@ class HigherOrderIntegerRootRulesTest {
     fun testTurnPowerOfRootToRootOfPower() {
         testRule(
             "[(root[5, 4]) ^ 3]",
-            turnPowerOfRootToRootOfPower,
+            TurnPowerOfRootToRootOfPower,
             "root[[5 ^ 3], 4]"
         )
         testRule(
             "[(sqrt[3]) ^ 5]",
-            turnPowerOfRootToRootOfPower,
+            TurnPowerOfRootToRootOfPower,
             "sqrt[[3 ^ 5]]"
         )
     }
@@ -23,17 +26,17 @@ class HigherOrderIntegerRootRulesTest {
     fun testSimplifyRootOfRoot() {
         testRule(
             "root[root[5, 3], 4]",
-            simplifyRootOfRoot,
+            SimplifyRootOfRoot,
             "root[5, 4 * 3]"
         )
         testRule(
             "sqrt[sqrt[3]]",
-            simplifyRootOfRoot,
+            SimplifyRootOfRoot,
             "root[3, 2 * 2]"
         )
         testRule(
             "root[sqrt[6], 3]",
-            simplifyRootOfRoot,
+            SimplifyRootOfRoot,
             "root[6, 3 * 2]"
         )
     }
@@ -42,12 +45,12 @@ class HigherOrderIntegerRootRulesTest {
     fun testPutRootCoefficientUnderRoot() {
         testRule(
             "7 * root[20, 3]",
-            putRootCoefficientUnderRoot,
+            PutRootCoefficientUnderRoot,
             "root[[7 ^ 3] * 20, 3]"
         )
         testRule(
             "8 * sqrt[40]",
-            putRootCoefficientUnderRoot,
+            PutRootCoefficientUnderRoot,
             "sqrt[[8 ^ 2] * 40]"
         )
     }

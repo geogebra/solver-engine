@@ -1,5 +1,13 @@
 package methods.decimals
 
+import methods.decimals.DecimalRules.ConvertFractionWithPowerOfTenDenominatorToDecimal
+import methods.decimals.DecimalRules.ConvertRecurringDecimalToFractionDirectly
+import methods.decimals.DecimalRules.ConvertTerminatingDecimalToFraction
+import methods.decimals.DecimalRules.EvaluateDecimalProductAndDivision
+import methods.decimals.DecimalRules.ExpandFractionToPowerOfTenDenominator
+import methods.decimals.DecimalRules.MakeEquationSystemForRecurringDecimal
+import methods.decimals.DecimalRules.MultiplyFractionOfDecimalsByPowerOfTen
+import methods.decimals.DecimalRules.TurnDivisionOfDecimalsIntoFraction
 import methods.rules.testRule
 import org.junit.jupiter.api.Test
 
@@ -7,23 +15,23 @@ class DecimalsRulesTest {
 
     @Test
     fun testConvertTerminatingDecimalToFraction() {
-        testRule("0.567", convertTerminatingDecimalToFraction, "[567 / 1000]")
-        testRule("0.00567", convertTerminatingDecimalToFraction, "[567 / 100000]")
-        testRule("31.07", convertTerminatingDecimalToFraction, "[3107 / 100]")
-        testRule("31.0[7]", convertTerminatingDecimalToFraction, null)
+        testRule("0.567", ConvertTerminatingDecimalToFraction, "[567 / 1000]")
+        testRule("0.00567", ConvertTerminatingDecimalToFraction, "[567 / 100000]")
+        testRule("31.07", ConvertTerminatingDecimalToFraction, "[3107 / 100]")
+        testRule("31.0[7]", ConvertTerminatingDecimalToFraction, null)
     }
 
     @Test
     fun testConvertRecurringDecimalToFractionDirectly() {
-        testRule("0.34", convertRecurringDecimalToFractionDirectly, null)
+        testRule("0.34", ConvertRecurringDecimalToFractionDirectly, null)
         testRule(
             "3.14[15]",
-            convertRecurringDecimalToFractionDirectly,
+            ConvertRecurringDecimalToFractionDirectly,
             "[31415 - 314 / 9900]"
         )
         testRule(
             "3.[15]",
-            convertRecurringDecimalToFractionDirectly,
+            ConvertRecurringDecimalToFractionDirectly,
             "[315 - 3 / 99]"
         )
     }
@@ -32,46 +40,46 @@ class DecimalsRulesTest {
     fun testMakeEquationSystemForRecurringDecimal() {
         testRule(
             "x = 3.14[15]",
-            makeEquationSystemForRecurringDecimal,
+            MakeEquationSystemForRecurringDecimal,
             "100 * x = 314.[15], 10000 * x = 31415.[15]"
         )
     }
 
     @Test
     fun testMultiplyFractionOfDecimalsByPowerOfTen() {
-        testRule("[0.1/0.001]", multiplyFractionOfDecimalsByPowerOfTen, "[0.1*1000/0.001*1000]")
-        testRule("[0.02/4]", multiplyFractionOfDecimalsByPowerOfTen, "[0.02*100/4*100]")
-        testRule("[10/0.1]", multiplyFractionOfDecimalsByPowerOfTen, "[10*10/0.1*10]")
+        testRule("[0.1/0.001]", MultiplyFractionOfDecimalsByPowerOfTen, "[0.1*1000/0.001*1000]")
+        testRule("[0.02/4]", MultiplyFractionOfDecimalsByPowerOfTen, "[0.02*100/4*100]")
+        testRule("[10/0.1]", MultiplyFractionOfDecimalsByPowerOfTen, "[10*10/0.1*10]")
     }
 
     @Test
     fun testEvaluateDecimalProductAndDivision() {
-        testRule("0.2 * 0.1", evaluateDecimalProductAndDivision, "0.02")
-        testRule("2 * 0.4", evaluateDecimalProductAndDivision, "0.8")
-        testRule("0.002 * 3000", evaluateDecimalProductAndDivision, "6")
-        testRule("2 * 4", evaluateDecimalProductAndDivision, "8")
-        testRule("6 : 2", evaluateDecimalProductAndDivision, "3")
+        testRule("0.2 * 0.1", EvaluateDecimalProductAndDivision, "0.02")
+        testRule("2 * 0.4", EvaluateDecimalProductAndDivision, "0.8")
+        testRule("0.002 * 3000", EvaluateDecimalProductAndDivision, "6")
+        testRule("2 * 4", EvaluateDecimalProductAndDivision, "8")
+        testRule("6 : 2", EvaluateDecimalProductAndDivision, "3")
     }
 
     @Test
     fun testExpandFractionToPowerOfTenDenominator() {
-        testRule("[1 / 30]", expandFractionToPowerOfTenDenominator, null)
-        testRule("[1 / 20]", expandFractionToPowerOfTenDenominator, "[1 * 5 / 20 * 5]")
+        testRule("[1 / 30]", ExpandFractionToPowerOfTenDenominator, null)
+        testRule("[1 / 20]", ExpandFractionToPowerOfTenDenominator, "[1 * 5 / 20 * 5]")
     }
 
     @Test
     fun testConvertFractionWithPowerOfTenDenominatorToDecimal() {
-        testRule("[2/100]", convertFractionWithPowerOfTenDenominatorToDecimal, "0.02")
-        testRule("[1/5]", convertFractionWithPowerOfTenDenominatorToDecimal, null)
-        testRule("[12345/1000]", convertFractionWithPowerOfTenDenominatorToDecimal, "12.345")
-        testRule("[1000/100]", convertFractionWithPowerOfTenDenominatorToDecimal, "10.00")
+        testRule("[2/100]", ConvertFractionWithPowerOfTenDenominatorToDecimal, "0.02")
+        testRule("[1/5]", ConvertFractionWithPowerOfTenDenominatorToDecimal, null)
+        testRule("[12345/1000]", ConvertFractionWithPowerOfTenDenominatorToDecimal, "12.345")
+        testRule("[1000/100]", ConvertFractionWithPowerOfTenDenominatorToDecimal, "10.00")
     }
 
     @Test
     fun testTurnDivisionOfDecimalsIntoFraction() {
-        testRule("0.1 : 2", turnDivisionOfDecimalsIntoFraction, "[0.1 / 2]")
-        testRule("5 : 0.7 * 3", turnDivisionOfDecimalsIntoFraction, "[5 / 0.7] * 3")
-        testRule("3 : 5", turnDivisionOfDecimalsIntoFraction, "[3 / 5]")
-        testRule("1.25 : 120.77", turnDivisionOfDecimalsIntoFraction, "[1.25 / 120.77]")
+        testRule("0.1 : 2", TurnDivisionOfDecimalsIntoFraction, "[0.1 / 2]")
+        testRule("5 : 0.7 * 3", TurnDivisionOfDecimalsIntoFraction, "[5 / 0.7] * 3")
+        testRule("3 : 5", TurnDivisionOfDecimalsIntoFraction, "[3 / 5]")
+        testRule("1.25 : 120.77", TurnDivisionOfDecimalsIntoFraction, "[1.25 / 120.77]")
     }
 }

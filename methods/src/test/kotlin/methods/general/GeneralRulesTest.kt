@@ -1,5 +1,33 @@
 package methods.general
 
+import methods.general.GeneralRules.CancelAdditiveInverseElements
+import methods.general.GeneralRules.DistributeMultiplicationOverSum
+import methods.general.GeneralRules.DistributePowerOfProduct
+import methods.general.GeneralRules.EliminateOneInProduct
+import methods.general.GeneralRules.EliminateZeroInSum
+import methods.general.GeneralRules.EvaluateExpressionToThePowerOfZero
+import methods.general.GeneralRules.EvaluateOneToAnyPower
+import methods.general.GeneralRules.EvaluateProductContainingZero
+import methods.general.GeneralRules.EvaluateProductDividedByZeroAsUndefined
+import methods.general.GeneralRules.EvaluateZeroDividedByAnyValue
+import methods.general.GeneralRules.EvaluateZeroToAPositivePower
+import methods.general.GeneralRules.ExpandBinomialSquared
+import methods.general.GeneralRules.FlipFractionUnderNegativePower
+import methods.general.GeneralRules.MoveSignOfNegativeFactorOutOfProduct
+import methods.general.GeneralRules.RewriteDivisionAsFraction
+import methods.general.GeneralRules.RewriteFractionOfPowersWithSameBase
+import methods.general.GeneralRules.RewriteFractionOfPowersWithSameExponent
+import methods.general.GeneralRules.RewritePowerAsProduct
+import methods.general.GeneralRules.RewriteProductOfPowersWithInverseBase
+import methods.general.GeneralRules.RewriteProductOfPowersWithInverseFractionBase
+import methods.general.GeneralRules.RewriteProductOfPowersWithNegatedExponent
+import methods.general.GeneralRules.RewriteProductOfPowersWithSameBase
+import methods.general.GeneralRules.RewriteProductOfPowersWithSameExponent
+import methods.general.GeneralRules.SimplifyDoubleMinus
+import methods.general.GeneralRules.SimplifyExpressionToThePowerOfOne
+import methods.general.GeneralRules.SimplifyProductWithTwoNegativeFactors
+import methods.general.GeneralRules.SimplifyZeroDenominatorFractionToUndefined
+import methods.general.GeneralRules.SimplifyZeroNumeratorFractionToZero
 import methods.rules.testRule
 import org.junit.jupiter.api.Test
 
@@ -7,94 +35,92 @@ class GeneralRulesTest {
 
     @Test
     fun testEliminateOneInProduct() {
-        testRule("3*x*1*y*4", eliminateOneInProduct, "3*x*y*4")
-        testRule("3*x*1*y*4", eliminateOneInProduct, "3*x*y*4")
-        testRule("3*1*4", eliminateOneInProduct, "3*4")
-        testRule("1*x", eliminateOneInProduct, "x")
+        testRule("3*x*1*y*4", EliminateOneInProduct, "3*x*y*4")
+        testRule("3*x*1*y*4", EliminateOneInProduct, "3*x*y*4")
+        testRule("3*1*4", EliminateOneInProduct, "3*4")
+        testRule("1*x", EliminateOneInProduct, "x")
     }
 
     @Test
     fun testSimplifyProductWithTwoNegativeFactors() {
-        testRule("(-2) * (-3)", simplifyProductWithTwoNegativeFactors, "2 * 3")
-        testRule("(-x) * y * (-12) * 5", simplifyProductWithTwoNegativeFactors, "x * y * 12 * 5")
-        testRule("(-2):(-3)", simplifyProductWithTwoNegativeFactors, "2:3")
+        testRule("(-2) * (-3)", SimplifyProductWithTwoNegativeFactors, "2 * 3")
+        testRule("(-x) * y * (-12) * 5", SimplifyProductWithTwoNegativeFactors, "x * y * 12 * 5")
+        testRule("(-2):(-3)", SimplifyProductWithTwoNegativeFactors, "2:3")
     }
 
     @Test
     fun testMoveSignOfNegativeFactorOutOfProduct() {
-        testRule("3 * (-5)", moveSignOfNegativeFactorOutOfProduct, "- 3 * 5")
-        testRule("x * (-y) * z", moveSignOfNegativeFactorOutOfProduct, "-x * y * z")
-        testRule("x*3:(-5)", moveSignOfNegativeFactorOutOfProduct, "- x*3:5")
+        testRule("3 * (-5)", MoveSignOfNegativeFactorOutOfProduct, "- 3 * 5")
+        testRule("x * (-y) * z", MoveSignOfNegativeFactorOutOfProduct, "-x * y * z")
+        testRule("x*3:(-5)", MoveSignOfNegativeFactorOutOfProduct, "- x*3:5")
     }
 
     @Test
     fun testEliminateZeroInSum() {
-        testRule("0 + x + y", eliminateZeroInSum, "x + y")
-        testRule("0 + 1 + x", eliminateZeroInSum, "1 + x")
-        testRule("x + 0 + y", eliminateZeroInSum, "x + y")
-        testRule("x + 0", eliminateZeroInSum, "x")
-        testRule("1 + 0", eliminateZeroInSum, "1")
+        testRule("0 + x + y", EliminateZeroInSum, "x + y")
+        testRule("0 + 1 + x", EliminateZeroInSum, "1 + x")
+        testRule("x + 0 + y", EliminateZeroInSum, "x + y")
+        testRule("x + 0", EliminateZeroInSum, "x")
+        testRule("1 + 0", EliminateZeroInSum, "1")
     }
 
     @Test
     fun testEvaluateProductContainingZero() {
-        testRule("z*x*0", evaluateProductContainingZero, "0")
-        testRule("0*1", evaluateProductContainingZero, "0")
-        testRule("(-2)*0*x", evaluateProductContainingZero, "0")
-        testRule("0:1", evaluateProductContainingZero, null)
-        testRule("0:(1+1)", evaluateProductContainingZero, null)
-        testRule("0 * [1 / 1 + 1] * 3", evaluateProductContainingZero, "0")
-        // this test case doesn't pass right now
-        // testRule("0 * [1 / 1 - 1] * 3", evaluateProductContainingZero, null)
+        testRule("z*x*0", EvaluateProductContainingZero, "0")
+        testRule("0*1", EvaluateProductContainingZero, "0")
+        testRule("(-2)*0*x", EvaluateProductContainingZero, "0")
+        testRule("0:1", EvaluateProductContainingZero, null)
+        testRule("0:(1+1)", EvaluateProductContainingZero, null)
+        testRule("0 * [1 / 1 + 1] * 3", EvaluateProductContainingZero, "0")
+        testRule("0 * [1 / 1 - 1] * 3", EvaluateProductContainingZero, null)
     }
 
     @Test
     fun testEvaluateZeroDividedByAnyValue() {
-        testRule("0:1", evaluateZeroDividedByAnyValue, "0")
-        testRule("0:0", evaluateZeroDividedByAnyValue, null)
-        // the rule "can't see the future" right now that the denominator is non-zero
-        testRule("0:(1+1)", evaluateZeroDividedByAnyValue, null)
+        testRule("0:1", EvaluateZeroDividedByAnyValue, "0")
+        testRule("0:0", EvaluateZeroDividedByAnyValue, null)
+        testRule("0:(1+1)", EvaluateZeroDividedByAnyValue, null)
     }
 
     @Test
     fun testSimplifyZeroNumeratorFractionToZero() {
-        testRule("[0 / 2]", simplifyZeroNumeratorFractionToZero, "0")
-        testRule("[0 / -1]", simplifyZeroNumeratorFractionToZero, "0")
-        testRule("[0 / root[3, 3] + root[5, 3]]", simplifyZeroNumeratorFractionToZero, "0")
-        testRule("[0 / 3 * (sqrt[2] - 1)]", simplifyZeroNumeratorFractionToZero, "0")
-        testRule("[0 / 1 - 1]", simplifyZeroNumeratorFractionToZero, null)
+        testRule("[0 / 2]", SimplifyZeroNumeratorFractionToZero, "0")
+        testRule("[0 / -1]", SimplifyZeroNumeratorFractionToZero, "0")
+        testRule("[0 / root[3, 3] + root[5, 3]]", SimplifyZeroNumeratorFractionToZero, "0")
+        testRule("[0 / 3 * (sqrt[2] - 1)]", SimplifyZeroNumeratorFractionToZero, "0")
+        testRule("[0 / 1 - 1]", SimplifyZeroNumeratorFractionToZero, null)
 
         // This one works because the denominator is "obviously" positive
-        testRule("[0 / sqrt[2] + sqrt[2]]", simplifyZeroNumeratorFractionToZero, "0")
+        testRule("[0 / sqrt[2] + sqrt[2]]", SimplifyZeroNumeratorFractionToZero, "0")
     }
 
     @Test
     fun testSimplifyZeroDenominatorFractionToUndefined() {
-        testRule("[2 / 0]", simplifyZeroDenominatorFractionToUndefined, "UNDEFINED")
-        testRule("[sqrt[2] / 0]", simplifyZeroDenominatorFractionToUndefined, "UNDEFINED")
+        testRule("[2 / 0]", SimplifyZeroDenominatorFractionToUndefined, "UNDEFINED")
+        testRule("[sqrt[2] / 0]", SimplifyZeroDenominatorFractionToUndefined, "UNDEFINED")
     }
 
     @Test
     fun testSimplifyDoubleMinus() {
-        testRule("-(-5)", simplifyDoubleMinus, "5")
-        testRule("-(-x)", simplifyDoubleMinus, "x")
+        testRule("-(-5)", SimplifyDoubleMinus, "5")
+        testRule("-(-x)", SimplifyDoubleMinus, "x")
     }
 
     @Test
     fun testRewriteDivisionAsFraction() {
-        testRule("1:8", rewriteDivisionAsFraction, "[1 / 8]")
+        testRule("1:8", RewriteDivisionAsFraction, "[1 / 8]")
     }
 
     @Test
     fun testDistributePowerOfProduct() {
         testRule(
             "[(2 * x * y) ^ 5]",
-            distributePowerOfProduct,
+            DistributePowerOfProduct,
             "[2 ^ 5] * [x ^ 5] * [y ^ 5]"
         )
         testRule(
             "[(sqrt[3] * root[5, 2]) ^ n]",
-            distributePowerOfProduct,
+            DistributePowerOfProduct,
             "[(sqrt[3]) ^ n] * [(root[5, 2]) ^ n]"
         )
     }
@@ -103,17 +129,17 @@ class GeneralRulesTest {
     fun testExpandBinomialSquared() {
         testRule(
             "[(a + b) ^ 2]",
-            expandBinomialSquared,
+            ExpandBinomialSquared,
             "[a ^ 2] + 2 * a * b + [b ^ 2]"
         )
         testRule(
             "[(sqrt[2] + 1) ^ 2]",
-            expandBinomialSquared,
+            ExpandBinomialSquared,
             "[(sqrt[2]) ^ 2] + 2 * sqrt[2] * 1 + [1 ^ 2]"
         )
         testRule(
             "[(x - y) ^ 2]",
-            expandBinomialSquared,
+            ExpandBinomialSquared,
             "[x ^ 2] + 2 * x * (-y) + [(-y) ^ 2]"
         )
     }
@@ -122,156 +148,156 @@ class GeneralRulesTest {
     fun testExpandProductOfSingleTermAndSum() {
         testRule(
             "sqrt[2] * (3 + sqrt[4])",
-            distributeMultiplicationOverSum,
+            DistributeMultiplicationOverSum,
             "sqrt[2] * 3 + sqrt[2] * sqrt[4]"
         )
         testRule(
             "(3 + sqrt[4]) * sqrt[2]",
-            distributeMultiplicationOverSum,
+            DistributeMultiplicationOverSum,
             "3 * sqrt[2] + sqrt[4] * sqrt[2]"
         )
         testRule(
             "(3 - sqrt[4]) * sqrt[2]",
-            distributeMultiplicationOverSum,
+            DistributeMultiplicationOverSum,
             "3 * sqrt[2] - sqrt[4] * sqrt[2]"
         )
         testRule(
             "(3 + sqrt[4] + sqrt[5]) * sqrt[2]",
-            distributeMultiplicationOverSum,
+            DistributeMultiplicationOverSum,
             "3 * sqrt[2] + sqrt[4] * sqrt[2] + sqrt[5] * sqrt[2]"
         )
     }
 
     @Test
     fun testRewritePowerAsProduct() {
-        testRule("[3^3]", rewritePowerAsProduct, "3 * 3 * 3")
-        testRule("[0.3 ^ 2]", rewritePowerAsProduct, "0.3 * 0.3")
-        testRule("[(x + 1) ^ 2]", rewritePowerAsProduct, "(x + 1) * (x + 1)")
-        testRule("[x^5]", rewritePowerAsProduct, "x * x * x * x * x")
-        testRule("[x^6]", rewritePowerAsProduct, null)
-        testRule("[x^1]", rewritePowerAsProduct, null)
-        testRule("[x^0]", rewritePowerAsProduct, null)
-        testRule("[([1/2])^4]", rewritePowerAsProduct, "[1/2] * [1/2] * [1/2] * [1/2]")
+        testRule("[3^3]", RewritePowerAsProduct, "3 * 3 * 3")
+        testRule("[0.3 ^ 2]", RewritePowerAsProduct, "0.3 * 0.3")
+        testRule("[(x + 1) ^ 2]", RewritePowerAsProduct, "(x + 1) * (x + 1)")
+        testRule("[x^5]", RewritePowerAsProduct, "x * x * x * x * x")
+        testRule("[x^6]", RewritePowerAsProduct, null)
+        testRule("[x^1]", RewritePowerAsProduct, null)
+        testRule("[x^0]", RewritePowerAsProduct, null)
+        testRule("[([1/2])^4]", RewritePowerAsProduct, "[1/2] * [1/2] * [1/2] * [1/2]")
     }
 
     @Test
     fun testEvaluateProductDividedByZeroAsUndefined() {
-        testRule("3 * 5 : 0", evaluateProductDividedByZeroAsUndefined, "UNDEFINED")
-        testRule("7 : 0.00", evaluateProductDividedByZeroAsUndefined, "UNDEFINED")
-        testRule("x : 0 * y", evaluateProductDividedByZeroAsUndefined, "UNDEFINED")
+        testRule("3 * 5 : 0", EvaluateProductDividedByZeroAsUndefined, "UNDEFINED")
+        testRule("7 : 0.00", EvaluateProductDividedByZeroAsUndefined, "UNDEFINED")
+        testRule("x : 0 * y", EvaluateProductDividedByZeroAsUndefined, "UNDEFINED")
     }
 
     @Test
     fun testCancelAdditiveInverseElements() {
-        testRule("sqrt[12] - sqrt[12] + 1", cancelAdditiveInverseElements, "1")
+        testRule("sqrt[12] - sqrt[12] + 1", CancelAdditiveInverseElements, "1")
         testRule(
             "(sqrt[2] + root[3, 3])  + 1 - (sqrt[2] + root[3, 3]) + 2",
-            cancelAdditiveInverseElements,
+            CancelAdditiveInverseElements,
             "1 + 2"
         )
-        testRule("sqrt[12] - sqrt[12]", cancelAdditiveInverseElements, "0")
-        testRule("-sqrt[12] + sqrt[12]", cancelAdditiveInverseElements, "0")
-        testRule("(x + 1 - y) - (x + 1 - y)", cancelAdditiveInverseElements, "0")
+        testRule("sqrt[12] - sqrt[12]", CancelAdditiveInverseElements, "0")
+        testRule("-sqrt[12] + sqrt[12]", CancelAdditiveInverseElements, "0")
+        testRule("(x + 1 - y) - (x + 1 - y)", CancelAdditiveInverseElements, "0")
     }
 
     @Test
     fun testSimplifyExpressionToThePowerOfOne() {
-        testRule("[ (sqrt[2] + 1) ^ 1]", simplifyExpressionToThePowerOfOne, "sqrt[2] + 1")
-        testRule("[2 ^ 1]", simplifyExpressionToThePowerOfOne, "2")
+        testRule("[ (sqrt[2] + 1) ^ 1]", SimplifyExpressionToThePowerOfOne, "sqrt[2] + 1")
+        testRule("[2 ^ 1]", SimplifyExpressionToThePowerOfOne, "2")
     }
 
     @Test
     fun testEvaluateOneToAnyPower() {
-        testRule("[1 ^ sqrt[2] + 1]", evaluateOneToAnyPower, "1")
-        testRule("[1 ^ [1 / 1 - 1]]", evaluateOneToAnyPower, null)
+        testRule("[1 ^ sqrt[2] + 1]", EvaluateOneToAnyPower, "1")
+        testRule("[1 ^ [1 / 1 - 1]]", EvaluateOneToAnyPower, null)
     }
 
     @Test
     fun testEvaluateExpressionToThePowerOfZero() {
-        testRule("[(sqrt[2] + 1) ^ 0]", evaluateExpressionToThePowerOfZero, "1")
-        testRule("[(1 - 1) ^ 0]", evaluateExpressionToThePowerOfZero, null)
+        testRule("[(sqrt[2] + 1) ^ 0]", EvaluateExpressionToThePowerOfZero, "1")
+        testRule("[(1 - 1) ^ 0]", EvaluateExpressionToThePowerOfZero, null)
     }
 
     @Test
     fun testEvaluateZeroToAPositivePower() {
-        testRule("[0 ^ [3 / 2]]", evaluateZeroToAPositivePower, "0")
-        testRule("[0 ^ sqrt[3] - sqrt[5]]", evaluateZeroToAPositivePower, null)
+        testRule("[0 ^ [3 / 2]]", EvaluateZeroToAPositivePower, "0")
+        testRule("[0 ^ sqrt[3] - sqrt[5]]", EvaluateZeroToAPositivePower, null)
     }
 
     @Test
     fun testRewriteProductOfPowersWithSameBase() {
-        testRule("[x^2]*[y^2]", rewriteProductOfPowersWithSameBase, null)
-        testRule("[x^2]*[x^3]", rewriteProductOfPowersWithSameBase, "[x ^ 2 + 3]")
-        testRule("x*[3^4]*[3^-9]", rewriteProductOfPowersWithSameBase, "x*[3 ^ 4 - 9]")
-        testRule("y*[3^[1 / 2]]*z*[3^[2 / 3]]", rewriteProductOfPowersWithSameBase, "y*[3 ^ [1 / 2] + [2 / 3]]*z")
+        testRule("[x^2]*[y^2]", RewriteProductOfPowersWithSameBase, null)
+        testRule("[x^2]*[x^3]", RewriteProductOfPowersWithSameBase, "[x ^ 2 + 3]")
+        testRule("x*[3^4]*[3^-9]", RewriteProductOfPowersWithSameBase, "x*[3 ^ 4 - 9]")
+        testRule("y*[3^[1 / 2]]*z*[3^[2 / 3]]", RewriteProductOfPowersWithSameBase, "y*[3 ^ [1 / 2] + [2 / 3]]*z")
     }
 
     @Test
     fun testRewriteProductOfPowersWithSameExponent() {
-        testRule("[x^2]*[x^3]", rewriteProductOfPowersWithSameExponent, null)
-        testRule("[x^2]*[y^2]", rewriteProductOfPowersWithSameExponent, "[(x * y) ^ 2]")
-        testRule("x*[3^4]*[2^4]", rewriteProductOfPowersWithSameExponent, "x*[(3 * 2) ^ 4]")
-        testRule("y*[3^[2 / 3]]*z*[4^[2 / 3]]", rewriteProductOfPowersWithSameExponent, "y*[(3 * 4) ^ [2 / 3]]*z")
+        testRule("[x^2]*[x^3]", RewriteProductOfPowersWithSameExponent, null)
+        testRule("[x^2]*[y^2]", RewriteProductOfPowersWithSameExponent, "[(x * y) ^ 2]")
+        testRule("x*[3^4]*[2^4]", RewriteProductOfPowersWithSameExponent, "x*[(3 * 2) ^ 4]")
+        testRule("y*[3^[2 / 3]]*z*[4^[2 / 3]]", RewriteProductOfPowersWithSameExponent, "y*[(3 * 4) ^ [2 / 3]]*z")
     }
 
     @Test
     fun testRewriteFractionOfPowersWithSameBase() {
-        testRule("[[x^2] / [y^2]]", rewriteFractionOfPowersWithSameBase, null)
-        testRule("[[x^2] / [x^3]]", rewriteFractionOfPowersWithSameBase, "[x ^ 2 - 3]")
-        testRule("[[3^4] / [3^-9]]", rewriteFractionOfPowersWithSameBase, "[3 ^ 4 -(- 9)]")
-        testRule("[[3^[1 / 2]] / [3^[2 / 3]]]", rewriteFractionOfPowersWithSameBase, "[3 ^ [1 / 2] - [2 / 3]]")
+        testRule("[[x^2] / [y^2]]", RewriteFractionOfPowersWithSameBase, null)
+        testRule("[[x^2] / [x^3]]", RewriteFractionOfPowersWithSameBase, "[x ^ 2 - 3]")
+        testRule("[[3^4] / [3^-9]]", RewriteFractionOfPowersWithSameBase, "[3 ^ 4 -(- 9)]")
+        testRule("[[3^[1 / 2]] / [3^[2 / 3]]]", RewriteFractionOfPowersWithSameBase, "[3 ^ [1 / 2] - [2 / 3]]")
     }
 
     @Test
     fun testRewriteFractionOfPowersWithSameExponent() {
-        testRule("[[x^2] / [x^3]]", rewriteFractionOfPowersWithSameExponent, null)
-        testRule("[[x^2] / [y^2]]", rewriteFractionOfPowersWithSameExponent, "[([x / y]) ^ 2]")
-        testRule("[[3^4] / [2^4]]", rewriteFractionOfPowersWithSameExponent, "[([3 / 2]) ^ 4]")
-        testRule("[[3^[2 / 3]] / [4^[2 / 3]]]", rewriteFractionOfPowersWithSameExponent, "[([3 / 4]) ^ [2 / 3]]")
+        testRule("[[x^2] / [x^3]]", RewriteFractionOfPowersWithSameExponent, null)
+        testRule("[[x^2] / [y^2]]", RewriteFractionOfPowersWithSameExponent, "[([x / y]) ^ 2]")
+        testRule("[[3^4] / [2^4]]", RewriteFractionOfPowersWithSameExponent, "[([3 / 2]) ^ 4]")
+        testRule("[[3^[2 / 3]] / [4^[2 / 3]]]", RewriteFractionOfPowersWithSameExponent, "[([3 / 4]) ^ [2 / 3]]")
     }
 
     @Test
     fun testSimplifyRootOfPower() {
-        testRule("root[ [7^6], 8]", rewritePowerUnderRoot, "root[ [7^3*2], 4*2]")
-        testRule("root[ [7^4], 8]", rewritePowerUnderRoot, "root[ [7^4], 2*4]")
+        testRule("root[ [7^6], 8]", GeneralRules.RewritePowerUnderRoot, "root[ [7^3*2], 4*2]")
+        testRule("root[ [7^4], 8]", GeneralRules.RewritePowerUnderRoot, "root[ [7^4], 2*4]")
     }
 
     @Test
     fun testFlipFractionUnderNegativePower() {
-        testRule("[([2 / 3]) ^ [4 / 5]]", flipFractionUnderNegativePower, null)
-        testRule("[([2 / 3]) ^ -[4 / 5]]", flipFractionUnderNegativePower, "[([3 / 2]) ^ [4 / 5]]")
+        testRule("[([2 / 3]) ^ [4 / 5]]", FlipFractionUnderNegativePower, null)
+        testRule("[([2 / 3]) ^ -[4 / 5]]", FlipFractionUnderNegativePower, "[([3 / 2]) ^ [4 / 5]]")
     }
 
     @Test
     fun testRewriteProductOfPowersWithNegatedExponent() {
         testRule(
             "[2 ^ [1 / 2]] * [3 ^ -[1 / 3]]",
-            rewriteProductOfPowersWithNegatedExponent,
+            RewriteProductOfPowersWithNegatedExponent,
             null
         )
         testRule(
             "[2 ^ [1 / 2]] * [([4 / 3]) ^ -[1 / 2]]",
-            rewriteProductOfPowersWithNegatedExponent,
+            RewriteProductOfPowersWithNegatedExponent,
             "[2 ^ [1 / 2]] * [([3 / 4]) ^ [1 / 2]]"
         )
         testRule(
             "[2 ^ [1 / 2]] * [3 ^ -[1 / 2]]",
-            rewriteProductOfPowersWithNegatedExponent,
+            RewriteProductOfPowersWithNegatedExponent,
             "[2 ^ [1 / 2]] * [([1 / 3]) ^ [1 / 2]]"
         )
         testRule(
             "[3 ^ -[1 / 2]] * [2 ^ [1 / 2]]",
-            rewriteProductOfPowersWithNegatedExponent,
+            RewriteProductOfPowersWithNegatedExponent,
             "[([1 / 3]) ^ [1 / 2]] * [2 ^ [1 / 2]]"
         )
         testRule(
             "[2 ^ [1 / 2]] * [([2 / 3]) ^ -[1 / 2]]",
-            rewriteProductOfPowersWithNegatedExponent,
+            RewriteProductOfPowersWithNegatedExponent,
             "[2 ^ [1 / 2]] * [([3 / 2]) ^ [1 / 2]]"
         )
         testRule(
             "[([2 / 3]) ^ -[1 / 2]] * [2 ^ [1 / 2]]",
-            rewriteProductOfPowersWithNegatedExponent,
+            RewriteProductOfPowersWithNegatedExponent,
             "[([3 / 2]) ^ [1 / 2]] * [2 ^ [1 / 2]]"
         )
     }
@@ -280,12 +306,12 @@ class GeneralRulesTest {
     fun testRewriteProductOfPowersWithInverseFractionBase() {
         testRule(
             "[([2 / 3]) ^ [1 / 2]] * [([2 / 3]) ^ [2 / 5]]",
-            rewriteProductOfPowersWithInverseFractionBase,
+            RewriteProductOfPowersWithInverseFractionBase,
             null
         )
         testRule(
             "[([2 / 3]) ^ [1 / 2]] * [([3 / 2]) ^ [2 / 5]]",
-            rewriteProductOfPowersWithInverseFractionBase,
+            RewriteProductOfPowersWithInverseFractionBase,
             "[([2 / 3]) ^ [1 / 2]] * [([2 / 3]) ^ -[2 / 5]]"
         )
     }
@@ -294,36 +320,36 @@ class GeneralRulesTest {
     fun testRewriteProductOfPowersWithInverseBase() {
         testRule(
             "[2 ^ [1 / 2]] * [([1 / 3]) ^ [2 / 5]]",
-            rewriteProductOfPowersWithInverseBase,
+            RewriteProductOfPowersWithInverseBase,
             null
         )
         testRule(
             "[2 ^ [1 / 2]] * [([1 / 2]) ^ [2 / 5]]",
-            rewriteProductOfPowersWithInverseBase,
+            RewriteProductOfPowersWithInverseBase,
             "[2 ^ [1 / 2]] * [2 ^ -[2 / 5]]"
         )
         testRule(
             "[([1 / 2]) ^ [2 / 5]] * [2 ^ [1 / 2]]",
-            rewriteProductOfPowersWithInverseBase,
+            RewriteProductOfPowersWithInverseBase,
             "[2 ^ -[2 / 5]] * [2 ^ [1 / 2]]"
         )
     }
 
     @Test
     fun testRewriteIntegerOrderRootAsPower() {
-        testRule("root[5, 3]", rewriteIntegerOrderRootAsPower, "[5 ^ [1/3]]")
-        testRule("sqrt[x + 2]", rewriteIntegerOrderRootAsPower, "[(x + 2) ^ [1/2]]")
+        testRule("root[5, 3]", GeneralRules.RewriteIntegerOrderRootAsPower, "[5 ^ [1/3]]")
+        testRule("sqrt[x + 2]", GeneralRules.RewriteIntegerOrderRootAsPower, "[(x + 2) ^ [1/2]]")
     }
 
     fun testCancelCommonPowers() {
         testRule(
             "root[ [7^2*2], 3*2 ]",
-            cancelRootIndexAndExponent,
+            GeneralRules.CancelRootIndexAndExponent,
             "root[ [7^2], 3]"
         )
         testRule(
             "root[[7^2], 3*2]",
-            cancelRootIndexAndExponent,
+            GeneralRules.CancelRootIndexAndExponent,
             "root[7, 3]"
         )
     }

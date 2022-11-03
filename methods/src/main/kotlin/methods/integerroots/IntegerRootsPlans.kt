@@ -9,12 +9,9 @@ import engine.patterns.integerCondition
 import engine.patterns.integerOrderRootOf
 import engine.utility.isPowerOfDegree
 import methods.constantexpressions.simplifyAfterCollectingLikeTerms
-import methods.general.cancelRootIndexAndExponent
-import methods.general.distributePowerOfProduct
-import methods.general.multiplyExponentsUsingPowerRule
-import methods.general.removeBracketProductInProduct
-import methods.general.rewritePowerUnderRoot
-import methods.integerarithmetic.evaluateIntegerPowerDirectly
+import methods.general.GeneralRules
+import methods.general.NormalizationRules
+import methods.integerarithmetic.IntegerArithmeticRules
 import methods.integerarithmetic.evaluateProductOfIntegers
 import methods.integerarithmetic.simplifyIntegersInExpression
 import methods.integerarithmetic.simplifyIntegersInProduct
@@ -23,8 +20,8 @@ val cancelPowerOfARoot = plan {
     explanation(Explanation.CancelPowerOfARoot)
 
     steps {
-        optionally(prepareCancellingPowerOfARoot)
-        deeply(simplifyNthRootToThePowerOfN)
+        optionally(IntegerRootsRules.PrepareCancellingPowerOfARoot)
+        deeply(IntegerRootsRules.SimplifyNthRootToThePowerOfN)
     }
 }
 
@@ -32,8 +29,8 @@ val cancelRootOfAPower = plan {
     explanation(Explanation.CancelRootOfAPower)
 
     steps {
-        optionally(prepareCancellingRootOfAPower)
-        deeply(simplifyNthRootOfNthPower)
+        optionally(IntegerRootsRules.PrepareCancellingRootOfAPower)
+        deeply(IntegerRootsRules.SimplifyNthRootOfNthPower)
     }
 }
 
@@ -41,7 +38,7 @@ val putRootCoefficientUnderRootAndSimplify = plan {
     explanation(Explanation.PutRootCoefficientUnderRootAndSimplify)
 
     steps {
-        apply(putRootCoefficientUnderRoot)
+        apply(IntegerRootsRules.PutRootCoefficientUnderRoot)
         apply(simplifyIntegersInExpression)
     }
 }
@@ -55,7 +52,7 @@ val simplifyRootOfRootWithCoefficient = plan {
         optionally {
             applyTo(putRootCoefficientUnderRootAndSimplify) { it.nthChild(0) }
         }
-        apply(simplifyRootOfRoot)
+        apply(IntegerRootsRules.SimplifyRootOfRoot)
         // evaluate the product in the index of the root
         applyTo(evaluateProductOfIntegers) { it.nthChild(1) }
     }
@@ -65,10 +62,10 @@ val simplifyRootOfRootWithCoefficient = plan {
  * Turns a product of roots of integers into a root of a single integer (roots have different orders)
  */
 val simplifyProductOfRoots = steps {
-    whilePossible(bringRootsToSameIndexInProduct)
-    whilePossible { deeply(evaluateIntegerPowerDirectly) }
-    optionally(simplifyMultiplicationOfSquareRoots)
-    whilePossible(multiplyNthRoots)
+    whilePossible(IntegerRootsRules.BringRootsToSameIndexInProduct)
+    whilePossible { deeply(IntegerArithmeticRules.EvaluateIntegerPowerDirectly) }
+    optionally(IntegerRootsRules.SimplifyMultiplicationOfSquareRoots)
+    whilePossible(IntegerRootsRules.MultiplyNthRoots)
     whilePossible { deeply(simplifyIntegersInProduct) }
 }
 
@@ -80,8 +77,8 @@ val simplifyProductWithRoots = plan {
     explanation(Explanation.SimplifyProductWithRoots)
 
     steps {
-        optionally(normaliseProductWithRoots)
-        whilePossible { deeply(evaluateIntegerPowerDirectly) }
+        optionally(IntegerRootsRules.NormaliseProductWithRoots)
+        whilePossible { deeply(IntegerArithmeticRules.EvaluateIntegerPowerDirectly) }
         optionally(simplifyIntegersInProduct)
         optionally(simplifyProductOfRoots)
     }
@@ -91,9 +88,9 @@ val splitRootsInProduct = plan {
     explanation(Explanation.SplitRootsInProduct)
 
     steps {
-        whilePossible { deeply(splitPowerUnderRoot) }
-        whilePossible { deeply(splitRootOfProduct) }
-        whilePossible(removeBracketProductInProduct)
+        whilePossible { deeply(IntegerRootsRules.SplitPowerUnderRoot) }
+        whilePossible { deeply(IntegerRootsRules.SplitRootOfProduct) }
+        whilePossible(NormalizationRules.RemoveBracketProductInProduct)
     }
 }
 
@@ -120,11 +117,11 @@ val factorizeAndDistributePowerUnderRoot = plan {
 
     steps {
         // root[ 24^2, 3] --> root[ (2^3 * 3)^2, 3]
-        apply(factorizeIntegerPowerUnderRoot)
+        apply(IntegerRootsRules.FactorizeIntegerPowerUnderRoot)
         // (2^3 * 3)^2 --> (2^3)^2 * 3^2
-        deeply(distributePowerOfProduct, deepFirst = true)
+        deeply(GeneralRules.DistributePowerOfProduct, deepFirst = true)
         // (2^3)^2 * 3^2 --> 2^3*2  * 3^2
-        whilePossible { deeply(multiplyExponentsUsingPowerRule, deepFirst = true) }
+        whilePossible { deeply(GeneralRules.MultiplyExponentsUsingPowerRule, deepFirst = true) }
         // 2^6 * 3^2
         whilePossible { deeply(simplifyIntegersInProduct, deepFirst = true) }
     }
@@ -134,8 +131,8 @@ val rewriteAndCancelPowerUnderRoot = plan {
     explanation(Explanation.RewriteAndCancelPowerUnderRoot)
 
     steps {
-        deeply(rewritePowerUnderRoot, deepFirst = true)
-        deeply(cancelRootIndexAndExponent, deepFirst = true)
+        deeply(GeneralRules.RewritePowerUnderRoot, deepFirst = true)
+        deeply(GeneralRules.CancelRootIndexAndExponent, deepFirst = true)
     }
 }
 
@@ -168,14 +165,14 @@ val simplifyIntegerRoot = plan {
 
             // First try to do easy factorisation without prime factor decomposition
             option {
-                optionally(writeRootAsRootProduct)
-                optionally(splitRootOfProduct)
+                optionally(IntegerRootsRules.WriteRootAsRootProduct)
+                optionally(IntegerRootsRules.SplitRootOfProduct)
                 plan {
                     explanation(Explanation.WriteRootsAsRootPowers)
 
                     steps {
                         whilePossible {
-                            deeply(writeRootAsRootPower)
+                            deeply(IntegerRootsRules.WriteRootAsRootPower)
                         }
                     }
                 }
@@ -184,10 +181,10 @@ val simplifyIntegerRoot = plan {
             // If that fails try prime factor decomposition
             option {
                 // root[2^3 * 5^2 * 7^5, 2]
-                apply(factorizeIntegerUnderRoot)
+                apply(IntegerRootsRules.FactorizeIntegerUnderRoot)
 
                 // root[2^3, 2] * root[5^2, 2] * root[7^5, 2]
-                optionally(splitRootOfProduct)
+                optionally(IntegerRootsRules.SplitRootOfProduct)
             }
         }
 
@@ -221,7 +218,7 @@ val collectLikeRootsAndSimplify = plan {
     explanation(Explanation.CollectLikeRootsAndSimplify)
 
     steps {
-        apply(collectLikeRoots)
+        apply(IntegerRootsRules.CollectLikeRoots)
         apply(simplifyAfterCollectingLikeTerms)
     }
 }

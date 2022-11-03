@@ -7,9 +7,9 @@ import methods.integerarithmetic.evaluateSumOfIntegers
 
 val normalizeNegativeSigns = steps {
     firstOf {
-        option(simplifyDoubleMinus)
-        option(simplifyProductWithTwoNegativeFactors)
-        option(moveSignOfNegativeFactorOutOfProduct)
+        option(GeneralRules.SimplifyDoubleMinus)
+        option(GeneralRules.SimplifyProductWithTwoNegativeFactors)
+        option(GeneralRules.MoveSignOfNegativeFactorOutOfProduct)
     }
 }
 
@@ -17,14 +17,14 @@ val rewriteDivisionsAsFractions = plan {
     explanation(Explanation.RewriteDivisionsAsFractionInExpression)
 
     steps {
-        whilePossible { deeply(rewriteDivisionAsFraction) }
+        whilePossible { deeply(GeneralRules.RewriteDivisionAsFraction) }
     }
 }
 
 val evaluateOperationContainingZero = steps {
     firstOf {
-        option(evaluateZeroDividedByAnyValue)
-        option(evaluateProductContainingZero)
+        option(GeneralRules.EvaluateZeroDividedByAnyValue)
+        option(GeneralRules.EvaluateProductContainingZero)
     }
 }
 
@@ -32,7 +32,7 @@ val simplifyProductOfPowersWithSameBase = plan {
     explanation(Explanation.SimplifyProductOfPowersWithSameBase)
 
     steps {
-        apply(rewriteProductOfPowersWithSameBase)
+        apply(GeneralRules.RewriteProductOfPowersWithSameBase)
         firstOf {
             option { deeply(evaluateFractionSum) }
             option { deeply(evaluateSumOfIntegers) }

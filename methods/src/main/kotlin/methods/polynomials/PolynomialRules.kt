@@ -1,5 +1,7 @@
 package methods.polynomials
 
+import engine.methods.Rule
+import engine.methods.RunnerMethod
 import engine.methods.TransformationResult
 import engine.methods.rule
 import engine.patterns.ArbitraryVariablePattern
@@ -10,17 +12,24 @@ import engine.patterns.sumContaining
 import engine.patterns.withOptionalConstantCoefficient
 import engine.steps.metadata.metadata
 
-val collectLikeTerms = rule {
-    val common = oneOf(ArbitraryVariablePattern(), powerOf(ArbitraryVariablePattern(), UnsignedIntegerPattern()))
+enum class PolynomialRules(override val runner: Rule) : RunnerMethod {
+    CollectLikeTerms(
+        rule {
+            val common = oneOf(
+                ArbitraryVariablePattern(),
+                powerOf(ArbitraryVariablePattern(), UnsignedIntegerPattern())
+            )
 
-    val commonTerm1 = withOptionalConstantCoefficient(common)
-    val commonTerm2 = withOptionalConstantCoefficient(common)
-    val sum = sumContaining(commonTerm1, commonTerm2)
+            val commonTerm1 = withOptionalConstantCoefficient(common)
+            val commonTerm2 = withOptionalConstantCoefficient(common)
+            val sum = sumContaining(commonTerm1, commonTerm2)
 
-    onPattern(sum) {
-        TransformationResult(
-            toExpr = collectLikeTermsInSum(get(sum)!!, withOptionalConstantCoefficient(common)),
-            explanation = metadata(Explanation.CollectLikeTerms)
-        )
-    }
+            onPattern(sum) {
+                TransformationResult(
+                    toExpr = collectLikeTermsInSum(get(sum)!!, withOptionalConstantCoefficient(common)),
+                    explanation = metadata(Explanation.CollectLikeTerms)
+                )
+            }
+        }
+    )
 }

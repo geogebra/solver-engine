@@ -2,6 +2,7 @@ package methods.plans
 
 import engine.expressionmakers.move
 import engine.methods.Plan
+import engine.methods.RunnerMethod
 import engine.methods.TransformationResult
 import engine.methods.rule
 import engine.methods.stepsproducers.Pipeline
@@ -25,18 +26,21 @@ class MethodTestCaseTest {
     private val testRuleSkillMetadataKey2 = DummyKey()
     private val testRuleSkillMetadataKey3 = DummyKey()
 
-    private val testRule = rule {
-        val pattern = AnyPattern()
+    private val testRule = object : RunnerMethod {
+        override val name = "TestName"
+        override val runner = rule {
+            val pattern = AnyPattern()
 
-        onPattern(pattern) {
-            TransformationResult(
-                toExpr = move(pattern),
-                explanation = metadata(testRuleMetadataKey),
-                skills = listOf(
-                    metadata(testRuleSkillMetadataKey1, move(pattern)),
-                    metadata(testRuleSkillMetadataKey2),
+            onPattern(pattern) {
+                TransformationResult(
+                    toExpr = move(pattern),
+                    explanation = metadata(testRuleMetadataKey),
+                    skills = listOf(
+                        metadata(testRuleSkillMetadataKey1, move(pattern)),
+                        metadata(testRuleSkillMetadataKey2),
+                    )
                 )
-            )
+            }
         }
     }
 

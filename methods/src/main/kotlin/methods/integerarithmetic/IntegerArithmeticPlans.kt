@@ -15,16 +15,10 @@ import engine.patterns.condition
 import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
+import methods.general.GeneralRules
+import methods.general.NormalizationRules
 import methods.general.addClarifyingBrackets
-import methods.general.eliminateOneInProduct
-import methods.general.eliminateZeroInSum
-import methods.general.evaluateProductContainingZero
-import methods.general.evaluateProductDividedByZeroAsUndefined
-import methods.general.evaluateZeroToThePowerOfZero
-import methods.general.removeOuterBracket
 import methods.general.removeRedundantBrackets
-import methods.general.rewritePowerAsProduct
-import methods.general.simplifyDoubleMinus
 
 val evaluateProductOfIntegers = plan {
     pattern = productContaining()
@@ -33,8 +27,8 @@ val evaluateProductOfIntegers = plan {
     steps {
         whilePossible {
             firstOf {
-                option(evaluateProductDividedByZeroAsUndefined)
-                option(evaluateIntegerProductAndDivision)
+                option(GeneralRules.EvaluateProductDividedByZeroAsUndefined)
+                option(IntegerArithmeticRules.EvaluateIntegerProductAndDivision)
             }
         }
     }
@@ -45,7 +39,7 @@ val evaluateSumOfIntegers = plan {
     explanation(Explanation.EvaluateSumOfIntegers, move(pattern))
 
     steps {
-        whilePossible(evaluateSignedIntegerAddition)
+        whilePossible(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
     }
 }
 
@@ -64,15 +58,15 @@ val evaluateSignedIntegerPower = plan {
 
     steps {
         firstOf {
-            option(evaluateZeroToThePowerOfZero)
+            option(GeneralRules.EvaluateZeroToThePowerOfZero)
             option {
-                apply(rewritePowerAsProduct)
+                apply(GeneralRules.RewritePowerAsProduct)
                 apply(evaluateProductOfIntegers)
             }
             option {
-                optionally(simplifyEvenPowerOfNegative)
-                optionally(simplifyOddPowerOfNegative)
-                apply(evaluateIntegerPowerDirectly)
+                optionally(IntegerArithmeticRules.SimplifyEvenPowerOfNegative)
+                optionally(IntegerArithmeticRules.SimplifyOddPowerOfNegative)
+                apply(IntegerArithmeticRules.EvaluateIntegerPowerDirectly)
             }
         }
     }
@@ -85,10 +79,10 @@ val simplifyIntegersInProduct = plan {
     steps {
         whilePossible {
             firstOf {
-                option(evaluateProductDividedByZeroAsUndefined)
-                option(evaluateProductContainingZero)
-                option(evaluateIntegerProductAndDivision)
-                option(eliminateOneInProduct)
+                option(GeneralRules.EvaluateProductDividedByZeroAsUndefined)
+                option(GeneralRules.EvaluateProductContainingZero)
+                option(IntegerArithmeticRules.EvaluateIntegerProductAndDivision)
+                option(GeneralRules.EliminateOneInProduct)
             }
         }
     }
@@ -101,8 +95,8 @@ val simplifyIntegersInSum = plan {
     steps {
         whilePossible {
             firstOf {
-                option(evaluateSignedIntegerAddition)
-                option(eliminateZeroInSum)
+                option(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
+                option(GeneralRules.EliminateZeroInSum)
             }
         }
     }
@@ -128,7 +122,7 @@ private fun Expression.isArithmeticExpression(): Boolean {
 private val evaluationSteps = steps {
     firstOf {
         option { deeply(removeRedundantBrackets, deepFirst = true) }
-        option { deeply(simplifyDoubleMinus, deepFirst = true) }
+        option { deeply(GeneralRules.SimplifyDoubleMinus, deepFirst = true) }
         option { deeply(evaluateSignedIntegerPower, deepFirst = true) }
         option { deeply(evaluateProductOfIntegers, deepFirst = true) }
         option { deeply(evaluateSumOfIntegers, deepFirst = true) }
@@ -153,7 +147,7 @@ val evaluateArithmeticExpression = plan {
         whilePossible {
             firstOf {
                 option(addClarifyingBrackets)
-                option(removeOuterBracket)
+                option(NormalizationRules.RemoveOuterBracket)
 
                 option {
                     deeply(evaluateArithmeticSubexpression, deepFirst = true)
@@ -171,7 +165,7 @@ val evaluateArithmeticExpression = plan {
 val simplifyIntegersInExpression = steps {
     whilePossible {
         firstOf {
-            option { deeply(evaluateIntegerPowerDirectly) }
+            option { deeply(IntegerArithmeticRules.EvaluateIntegerPowerDirectly) }
             option { deeply(simplifyIntegersInProduct) }
             option { deeply(simplifyIntegersInSum) }
         }

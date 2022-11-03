@@ -18,6 +18,8 @@ data class OperatorPattern(val operator: Operator, val childPatterns: List<Patte
         require(childPatterns.size <= operator.maxChildCount())
     }
 
+    override fun toString() = operator.readableString(childPatterns.map { it.toString() })
+
     override fun doFindMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
         if (!subexpression.expr.operator.equiv(operator) || subexpression.expr.operands.size != childPatterns.size) {
             return emptySequence()

@@ -1,5 +1,9 @@
 package engine.context
 
+import engine.logger.createNewLogger
+import java.util.function.Supplier
+import java.util.logging.Level
+
 data class ResourceData(val curriculum: String?)
 
 val emptyResourceData = ResourceData(null)
@@ -20,6 +24,16 @@ data class Context(
     val solutionVariable: String? = null
 ) {
     val effectivePrecision = precision ?: DEFAULT_PRECISION
+
+    private val logger = createNewLogger(this)
+
+    fun log(level: Level, string: String) {
+        logger.log(level, string)
+    }
+
+    fun log(level: Level, stringSupplier: Supplier<String>) {
+        logger.log(level, stringSupplier)
+    }
 
     fun rateResourceData(resourceData: ResourceData): Double {
         return when (curriculum) {

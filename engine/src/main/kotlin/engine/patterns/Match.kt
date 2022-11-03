@@ -54,8 +54,7 @@ object RootMatch : Match {
     override fun getLastBinding(p: Pattern): Subexpression? = null
     override fun getBoundExpr(p: Pattern): Expression? = null
 
-    override fun accumulatePaths(p: Pattern, acc: MutableList<Path>) { /* do nothing */
-    }
+    override fun accumulatePaths(p: Pattern, acc: MutableList<Path>) { /* do nothing */ }
 
     override fun getBoundPaths(p: Pattern): List<Path> = emptyList()
 }

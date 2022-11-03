@@ -16,58 +16,38 @@ import engine.utility.divides
 import methods.decimals.convertRecurringDecimalToFractionAndSimplify
 import methods.decimals.convertTerminatingDecimalToFractionAndSimplify
 import methods.decimals.normalizeFractionOfDecimals
-import methods.fractionarithmetic.addLikeFractions
-import methods.fractionarithmetic.distributeFractionPositivePower
+import methods.fractionarithmetic.FractionArithmeticRules
 import methods.fractionarithmetic.evaluateFractionSum
 import methods.fractionarithmetic.evaluateSumOfFractionAndInteger
 import methods.fractionarithmetic.multiplyAndSimplifyFractions
 import methods.fractionarithmetic.normalizeFractions
 import methods.fractionarithmetic.normalizeSignsInFraction
 import methods.fractionarithmetic.simplifyFraction
-import methods.fractionarithmetic.simplifyFractionNegativePower
-import methods.fractionarithmetic.simplifyFractionToMinusOne
 import methods.fractionarithmetic.simplifyFractionsInExpression
 import methods.fractionarithmetic.simplifyIntegerToNegativePower
-import methods.fractionroots.distributeRadicalOverFraction
+import methods.fractionroots.FractionRootsRules
 import methods.fractionroots.rationalizeDenominators
 import methods.fractionroots.simplifyFractionOfRoots
-import methods.general.cancelAdditiveInverseElements
-import methods.general.distributeMultiplicationOverSum
-import methods.general.distributePowerOfProduct
-import methods.general.evaluateExpressionToThePowerOfZero
-import methods.general.evaluateOneToAnyPower
-import methods.general.evaluateProductContainingZero
-import methods.general.evaluateZeroToAPositivePower
-import methods.general.evaluateZeroToThePowerOfZero
-import methods.general.expandBinomialSquared
-import methods.general.moveSignOfNegativeFactorOutOfProduct
+import methods.general.GeneralRules
 import methods.general.normalizeExpression
 import methods.general.removeRedundantBrackets
-import methods.general.rewriteIntegerOrderRootAsPower
-import methods.general.simplifyExpressionToThePowerOfOne
-import methods.general.simplifyFractionWithOneDenominator
 import methods.general.simplifyProductOfPowersWithSameBase
-import methods.general.simplifyZeroDenominatorFractionToUndefined
-import methods.general.simplifyZeroNumeratorFractionToZero
+import methods.integerarithmetic.IntegerArithmeticRules
 import methods.integerarithmetic.evaluateSignedIntegerPower
-import methods.integerarithmetic.simplifyEvenPowerOfNegative
 import methods.integerarithmetic.simplifyIntegersInProduct
 import methods.integerarithmetic.simplifyIntegersInSum
-import methods.integerarithmetic.simplifyOddPowerOfNegative
+import methods.integerrationalexponents.IntegerRationalExponentsRules
 import methods.integerrationalexponents.collectLikeRationalPowersAndSimplify
-import methods.integerrationalexponents.evaluateNegativeToRationalExponentAsUndefined
 import methods.integerrationalexponents.simplifyRationalExponentsInProduct
+import methods.integerroots.IntegerRootsRules
 import methods.integerroots.cancelPowerOfARoot
 import methods.integerroots.collectLikeRootsAndSimplify
 import methods.integerroots.simplifyIntegerRoot
 import methods.integerroots.simplifyIntegerRootToInteger
 import methods.integerroots.simplifyPowerOfIntegerUnderRoot
 import methods.integerroots.simplifyProductWithRoots
-import methods.integerroots.simplifyRootOfOne
 import methods.integerroots.simplifyRootOfRootWithCoefficient
-import methods.integerroots.simplifyRootOfZero
-import methods.integerroots.turnPowerOfRootToRootOfPower
-import methods.mixednumbers.splitMixedNumber
+import methods.mixednumbers.MixedNumbersRules
 
 val simplifyPowers = plan {
     pattern = powerOf(AnyPattern(), AnyPattern())
@@ -77,24 +57,24 @@ val simplifyPowers = plan {
         whilePossible {
             firstOf {
                 // one as base or as exponent
-                option { deeply(evaluateOneToAnyPower) }
-                option { deeply(simplifyExpressionToThePowerOfOne) }
+                option { deeply(GeneralRules.EvaluateOneToAnyPower) }
+                option { deeply(GeneralRules.SimplifyExpressionToThePowerOfOne) }
 
                 // zero as base or as exponent
-                option { deeply(evaluateZeroToThePowerOfZero) }
-                option { deeply(evaluateZeroToAPositivePower) }
-                option { deeply(evaluateExpressionToThePowerOfZero) }
+                option { deeply(GeneralRules.EvaluateZeroToThePowerOfZero) }
+                option { deeply(GeneralRules.EvaluateZeroToAPositivePower) }
+                option { deeply(GeneralRules.EvaluateExpressionToThePowerOfZero) }
 
                 // minus one and other negative integer powers
                 option { deeply(simplifyIntegerToNegativePower) }
-                option { deeply(simplifyFractionToMinusOne) }
-                option { deeply(simplifyFractionNegativePower) }
+                option { deeply(FractionArithmeticRules.SimplifyFractionToMinusOne) }
+                option { deeply(FractionArithmeticRules.SimplifyFractionNegativePower) }
 
-                option { deeply(distributeFractionPositivePower) }
-                option { deeply(simplifyEvenPowerOfNegative) }
-                option { deeply(simplifyOddPowerOfNegative) }
-                option { deeply(distributePowerOfProduct) }
-                option { deeply(expandBinomialSquared) }
+                option { deeply(FractionArithmeticRules.DistributeFractionPositivePower) }
+                option { deeply(IntegerArithmeticRules.SimplifyEvenPowerOfNegative) }
+                option { deeply(IntegerArithmeticRules.SimplifyOddPowerOfNegative) }
+                option { deeply(GeneralRules.DistributePowerOfProduct) }
+                option { deeply(GeneralRules.ExpandBinomialSquared) }
                 option { deeply(evaluateSignedIntegerPower) }
             }
         }
@@ -107,15 +87,15 @@ val simplifyRootsInExpression = plan {
     steps {
         whilePossible {
             firstOf {
-                option { deeply(simplifyRootOfZero, deepFirst = true) }
-                option { deeply(simplifyRootOfOne, deepFirst = true) }
+                option { deeply(IntegerRootsRules.SimplifyRootOfZero, deepFirst = true) }
+                option { deeply(IntegerRootsRules.SimplifyRootOfOne, deepFirst = true) }
                 option { deeply(simplifyIntegerRootToInteger, deepFirst = true) }
                 option { deeply(cancelPowerOfARoot, deepFirst = true) }
                 option { deeply(simplifyRootOfRootWithCoefficient, deepFirst = true) }
                 option { deeply(simplifyIntegerRoot, deepFirst = true) }
-                option { deeply(turnPowerOfRootToRootOfPower, deepFirst = true) }
+                option { deeply(IntegerRootsRules.TurnPowerOfRootToRootOfPower, deepFirst = true) }
                 option { deeply(simplifyFractionOfRoots, deepFirst = true) }
-                option { deeply(distributeRadicalOverFraction, deepFirst = true) }
+                option { deeply(FractionRootsRules.DistributeRadicalOverFraction, deepFirst = true) }
             }
         }
     }
@@ -123,20 +103,20 @@ val simplifyRootsInExpression = plan {
 
 val simpleTidyUpSteps = steps {
     firstOf {
-        option { deeply(splitMixedNumber) }
-        option { deeply(simplifyZeroDenominatorFractionToUndefined) }
-        option { deeply(simplifyZeroNumeratorFractionToZero) }
-        option { deeply(simplifyFractionWithOneDenominator) }
-        option { deeply(evaluateNegativeToRationalExponentAsUndefined) }
-        option { deeply(evaluateProductContainingZero) }
-        option { deeply(cancelAdditiveInverseElements) }
-        option { deeply(simplifyRootOfOne) }
+        option { deeply(MixedNumbersRules.SplitMixedNumber) }
+        option { deeply(GeneralRules.SimplifyZeroDenominatorFractionToUndefined) }
+        option { deeply(GeneralRules.SimplifyZeroNumeratorFractionToZero) }
+        option { deeply(GeneralRules.SimplifyFractionWithOneDenominator) }
+        option { deeply(IntegerRationalExponentsRules.EvaluateNegativeToRationalExponentAsUndefined) }
+        option { deeply(GeneralRules.EvaluateProductContainingZero) }
+        option { deeply(GeneralRules.CancelAdditiveInverseElements) }
+        option { deeply(IntegerRootsRules.SimplifyRootOfOne) }
     }
 }
 
 val simplifyAfterCollectingLikeTerms = steps {
     apply(simplifyFractionsInExpression)
-    optionally { deeply(moveSignOfNegativeFactorOutOfProduct) }
+    optionally { deeply(GeneralRules.MoveSignOfNegativeFactorOutOfProduct) }
     optionally { deeply(removeRedundantBrackets) }
     optionally { deeply(multiplyAndSimplifyFractions) }
 }
@@ -155,7 +135,7 @@ val rewriteIntegerOrderRootsAsPowers = plan {
     explanation(Explanation.RewriteIntegerOrderRootsAsPowers)
     steps {
         whilePossible {
-            deeply(rewriteIntegerOrderRootAsPower)
+            deeply(GeneralRules.RewriteIntegerOrderRootAsPower)
         }
     }
 }
@@ -174,7 +154,7 @@ val simplificationSteps = steps {
         option(normalizeFractions)
         option(normalizeSignsInFraction)
 
-        option { deeply(addLikeFractions, deepFirst = true) }
+        option { deeply(FractionArithmeticRules.AddLikeFractions, deepFirst = true) }
         option { deeply(simplifyFraction, deepFirst = true) }
         option { deeply(normalizeFractionOfDecimals, deepFirst = true) }
         option { deeply(convertTerminatingDecimalToFractionAndSimplify, deepFirst = true) }
@@ -196,7 +176,7 @@ val simplificationSteps = steps {
         option { deeply(evaluateSumOfFractionAndInteger, deepFirst = true) }
 
         option { deeply(rationalizeDenominators, deepFirst = true) }
-        option { deeply(distributeMultiplicationOverSum, deepFirst = true) }
+        option { deeply(GeneralRules.DistributeMultiplicationOverSum, deepFirst = true) }
     }
 }
 

@@ -11,7 +11,7 @@ val collectLikeTermsAndSimplify = plan {
     explanation(Explanation.CollectLikeTermsAndSimplify)
 
     steps {
-        apply(collectLikeTerms)
+        apply(PolynomialRules.CollectLikeTerms)
         optionally {
             deeply(simplifyConstantSubexpression)
         }

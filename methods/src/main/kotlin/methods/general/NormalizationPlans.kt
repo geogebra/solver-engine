@@ -8,7 +8,7 @@ val addClarifyingBrackets = plan {
     explanation(Explanation.AddClarifyingBrackets)
 
     steps {
-        whilePossible { deeply(replaceInvisibleBrackets) }
+        whilePossible { deeply(NormalizationRules.ReplaceInvisibleBrackets) }
     }
 }
 
@@ -27,11 +27,11 @@ val redundantBracketChecker = { sub: Subexpression ->
 val removeRedundantBrackets = steps {
     firstOf {
         option {
-            applyTo(removeOuterBracket, redundantBracketChecker)
+            applyTo(NormalizationRules.RemoveOuterBracket, redundantBracketChecker)
         }
-        option(removeBracketSumInSum)
-        option(removeBracketProductInProduct)
-        option(removeBracketAroundSignedIntegerInSum)
+        option(NormalizationRules.RemoveBracketSumInSum)
+        option(NormalizationRules.RemoveBracketProductInProduct)
+        option(NormalizationRules.RemoveBracketAroundSignedIntegerInSum)
     }
 }
 
@@ -44,7 +44,7 @@ val normalizeExpression = plan {
                 firstOf {
                     option(addClarifyingBrackets)
                     option(removeRedundantBrackets)
-                    option(removeRedundantPlusSign)
+                    option(NormalizationRules.RemoveRedundantPlusSign)
                 }
             }
         }

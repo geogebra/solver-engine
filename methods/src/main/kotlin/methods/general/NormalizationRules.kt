@@ -3,6 +3,8 @@ package methods.general
 import engine.expressions.Decorator
 import engine.expressions.productOf
 import engine.expressions.sumOf
+import engine.methods.Rule
+import engine.methods.RunnerMethod
 import engine.methods.TransformationResult
 import engine.methods.rule
 import engine.patterns.AnyPattern
@@ -13,76 +15,90 @@ import engine.patterns.productContaining
 import engine.patterns.sumContaining
 import engine.steps.metadata.metadata
 
-val replaceInvisibleBrackets = rule {
-    val missingBracket = condition(AnyPattern()) { it.outerBracket() == Decorator.MissingBracket }
+enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
+    ReplaceInvisibleBrackets(
+        rule {
+            val missingBracket = condition(AnyPattern()) { it.outerBracket() == Decorator.MissingBracket }
 
-    onPattern(missingBracket) {
-        TransformationResult(
-            toExpr = transformTo(missingBracket) { it.removeBrackets().decorate(Decorator.RoundBracket) },
-            explanation = metadata(Explanation.ReplaceInvisibleBrackets),
-        )
-    }
-}
+            onPattern(missingBracket) {
+                TransformationResult(
+                    toExpr = transformTo(missingBracket) { it.removeBrackets().decorate(Decorator.RoundBracket) },
+                    explanation = metadata(Explanation.ReplaceInvisibleBrackets),
+                )
+            }
+        }
+    ),
 
-/**
- * Flatten a sum that has terms which are also sums.
- */
-val removeBracketSumInSum = rule {
-    val innerSum = sumContaining()
-    val pattern = sumContaining(innerSum)
+    /**
+     * Flatten a sum that has terms which are also sums.
+     */
+    RemoveBracketSumInSum(
+        rule {
+            val innerSum = sumContaining()
+            val pattern = sumContaining(innerSum)
 
-    onPattern(pattern) {
-        TransformationResult(
-            toExpr = sumOf(get(pattern)!!.children().map { move(it) }.toList()),
-            explanation = metadata(Explanation.RemoveBracketSumInSum)
-        )
-    }
-}
+            onPattern(pattern) {
+                TransformationResult(
+                    toExpr = sumOf(get(pattern)!!.children().map { move(it) }.toList()),
+                    explanation = metadata(Explanation.RemoveBracketSumInSum)
+                )
+            }
+        }
+    ),
 
-val removeBracketProductInProduct = rule {
-    val innerProduct = productContaining()
-    val pattern = productContaining(innerProduct)
+    RemoveBracketProductInProduct(
+        rule {
+            val innerProduct = productContaining()
+            val pattern = productContaining(innerProduct)
 
-    onPattern(pattern) {
-        TransformationResult(
-            toExpr = productOf(get(pattern)!!.children().map { move(it) }.toList()),
-            explanation = metadata(Explanation.RemoveBracketProductInProduct)
-        )
-    }
-}
+            onPattern(pattern) {
+                TransformationResult(
+                    toExpr = productOf(get(pattern)!!.children().map { move(it) }.toList()),
+                    explanation = metadata(Explanation.RemoveBracketProductInProduct)
+                )
+            }
+        }
+    ),
 
-val removeBracketAroundSignedIntegerInSum = rule {
-    val number = SignedIntegerPattern()
-    val bracket = condition(number) { it.hasBracket() }
-    val pattern = sumContaining(bracket)
+    RemoveBracketAroundSignedIntegerInSum(
+        rule {
+            val number = SignedIntegerPattern()
+            val bracket = condition(number) { it.hasBracket() }
+            val pattern = sumContaining(bracket)
 
-    onPattern(pattern) {
-        TransformationResult(
-            toExpr = pattern.substitute(transformTo(number) { it.removeBrackets() }),
-            explanation = metadata(Explanation.RemoveBracketAroundSignedIntegerInSum)
-        )
-    }
-}
+            onPattern(pattern) {
+                TransformationResult(
+                    toExpr = pattern.substitute(transformTo(number) { it.removeBrackets() }),
+                    explanation = metadata(Explanation.RemoveBracketAroundSignedIntegerInSum)
+                )
+            }
+        }
+    ),
 
-val removeOuterBracket = rule {
-    val pattern = condition(AnyPattern()) { it.hasBracket() }
+    RemoveOuterBracket(
+        rule {
+            val pattern = condition(AnyPattern()) { it.hasBracket() }
 
-    onPattern(pattern) {
-        TransformationResult(
-            toExpr = transformTo(pattern) { it.removeBrackets() },
-            explanation = metadata(Explanation.RemoveRedundantBracket)
-        )
-    }
-}
+            onPattern(pattern) {
+                TransformationResult(
+                    toExpr = transformTo(pattern) { it.removeBrackets() },
+                    explanation = metadata(Explanation.RemoveRedundantBracket)
+                )
+            }
+        }
+    ),
 
-val removeRedundantPlusSign = rule {
-    val value = AnyPattern()
-    val pattern = plusOf(value)
+    RemoveRedundantPlusSign(
+        rule {
+            val value = AnyPattern()
+            val pattern = plusOf(value)
 
-    onPattern(pattern) {
-        TransformationResult(
-            toExpr = move(value),
-            explanation = metadata(Explanation.RemoveRedundantPlusSign)
-        )
-    }
+            onPattern(pattern) {
+                TransformationResult(
+                    toExpr = move(value),
+                    explanation = metadata(Explanation.RemoveRedundantPlusSign)
+                )
+            }
+        }
+    )
 }

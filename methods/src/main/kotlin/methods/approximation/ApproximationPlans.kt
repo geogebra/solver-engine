@@ -13,12 +13,10 @@ import engine.patterns.SignedNumberPattern
 import engine.patterns.condition
 import engine.patterns.productContaining
 import methods.decimals.evaluateSumOfDecimals
+import methods.general.GeneralRules
+import methods.general.NormalizationRules
 import methods.general.addClarifyingBrackets
-import methods.general.evaluateProductDividedByZeroAsUndefined
-import methods.general.evaluateZeroToThePowerOfZero
-import methods.general.removeOuterBracket
 import methods.general.removeRedundantBrackets
-import methods.general.simplifyDoubleMinus
 import methods.integerarithmetic.arithmeticOperators
 
 private fun Expression.canBeApproximated(): Boolean {
@@ -33,8 +31,8 @@ val expandAndRoundRecurringDecimal = plan {
     explanation(Explanation.ExpandAndRoundRecurringDecimal)
 
     steps {
-        optionally(expandRecurringDecimal)
-        apply(roundRecurringDecimal)
+        optionally(ApproximationRules.ExpandRecurringDecimal)
+        apply(ApproximationRules.RoundRecurringDecimal)
     }
 }
 
@@ -43,17 +41,17 @@ val approximateProductAndDivisionOfDecimals = plan {
     explanation(Explanation.ApproximateProductAndDivisionOfDecimals, move(pattern))
 
     steps {
-        whilePossible(approximateDecimalProductAndDivision)
+        whilePossible(ApproximationRules.ApproximateDecimalProductAndDivision)
     }
 }
 
 val approximationSteps = steps {
     firstOf {
-        option { deeply(evaluateProductDividedByZeroAsUndefined, deepFirst = true) }
+        option { deeply(GeneralRules.EvaluateProductDividedByZeroAsUndefined, deepFirst = true) }
         option { deeply(removeRedundantBrackets, deepFirst = true) }
-        option { deeply(simplifyDoubleMinus, deepFirst = true) }
-        option { deeply(evaluateZeroToThePowerOfZero, deepFirst = true) }
-        option { deeply(approximateDecimalPower, deepFirst = true) }
+        option { deeply(GeneralRules.SimplifyDoubleMinus, deepFirst = true) }
+        option { deeply(GeneralRules.EvaluateZeroToThePowerOfZero, deepFirst = true) }
+        option { deeply(ApproximationRules.ApproximateDecimalPower, deepFirst = true) }
         option { deeply(approximateProductAndDivisionOfDecimals, deepFirst = true) }
         option { deeply(evaluateSumOfDecimals, deepFirst = true) }
     }
@@ -78,12 +76,12 @@ val approximateExpression = plan {
         whilePossible {
             firstOf {
                 option(addClarifyingBrackets)
-                option(removeOuterBracket)
+                option(NormalizationRules.RemoveOuterBracket)
 
                 option {
                     deeply {
                         firstOf {
-                            option(roundTerminatingDecimal)
+                            option(ApproximationRules.RoundTerminatingDecimal)
                             option(expandAndRoundRecurringDecimal)
                         }
                     }
