@@ -21,12 +21,8 @@ data class FindPattern(val pattern: Pattern, val deepFirst: Boolean = false) : P
  * Used to match in a given `Subexpression` object, containing any of
  * the given `Pattern`'s in the given order in the list `options`
  */
-data class OneOfPattern(val options: List<Pattern>) : Pattern {
-    override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
-        if (!checkPreviousMatch(subexpression.expr, match)) {
-            return emptySequence()
-        }
-
+data class OneOfPattern(val options: List<Pattern>) : BasePattern() {
+    override fun doFindMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
         return sequence {
             for (option in options) {
                 for (m in option.findMatches(context, match, subexpression)) {

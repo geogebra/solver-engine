@@ -12,17 +12,14 @@ import engine.operators.UnaryExpressionOperator
  * Produces a `Pattern` having a list of child patterns
  * `childPattern`'s connected by an operator `operator`.
  */
-data class OperatorPattern(val operator: Operator, val childPatterns: List<Pattern>) : Pattern {
+data class OperatorPattern(val operator: Operator, val childPatterns: List<Pattern>) : BasePattern() {
     init {
         require(childPatterns.size >= operator.minChildCount())
         require(childPatterns.size <= operator.maxChildCount())
     }
 
-    override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
-        if (!subexpression.expr.operator.equiv(operator) ||
-            subexpression.expr.operands.size != childPatterns.size ||
-            !checkPreviousMatch(subexpression.expr, match)
-        ) {
+    override fun doFindMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
+        if (!subexpression.expr.operator.equiv(operator) || subexpression.expr.operands.size != childPatterns.size) {
             return emptySequence()
         }
 

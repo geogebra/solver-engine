@@ -11,10 +11,7 @@ import engine.operators.NaryOperator
  * NaryOperator, with the operands provided as
  * list of `Pattern` objects
  */
-interface NaryPatternBase : Pattern {
-
-    val operator: NaryOperator
-    val operands: List<Pattern>
+abstract class NaryPatternBase(val operator: NaryOperator, val operands: List<Pattern>) : BasePattern() {
 
     fun getMatchIndexes(m: Match, path: Path): List<Int> {
         val matchIndexes = mutableListOf<Int>()
@@ -31,13 +28,13 @@ interface NaryPatternBase : Pattern {
     }
 }
 
-data class PartialNaryPattern(
-    override val operator: NaryOperator,
-    override val operands: List<Pattern>,
+class PartialNaryPattern(
+    operator: NaryOperator,
+    operands: List<Pattern>,
     val minSize: Int = 0
-) : NaryPatternBase {
+) : NaryPatternBase(operator, operands) {
 
-    override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
+    override fun doFindMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
         val childCount = subexpression.expr.operands.size
         if (subexpression.expr.operator != operator || childCount < operands.size || childCount < minSize) {
             return emptySequence()
@@ -74,10 +71,9 @@ data class PartialNaryPattern(
     }
 }
 
-data class CommutativeNaryPattern(override val operator: NaryOperator, override val operands: List<Pattern>) :
-    NaryPatternBase {
+class CommutativeNaryPattern(operator: NaryOperator, operands: List<Pattern>) : NaryPatternBase(operator, operands) {
 
-    override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
+    override fun doFindMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
         val childCount = subexpression.expr.operands.size
         if (subexpression.expr.operator != operator || childCount != operands.count()) {
             return emptySequence()

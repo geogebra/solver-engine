@@ -428,7 +428,7 @@ val factorizeHigherOrderRadicand = rule {
             toExpr = fractionOf(
                 move(numerator),
                 simplifiedProductOf(
-                    move(denominator.coefficient),
+                    move(denominator.integerCoefficient),
                     rootOf(transform(radicand, productOf(factorized)), move(rootOrder))
                 )
             ),

@@ -1,17 +1,14 @@
 package engine.patterns
 
-import engine.context.Context
 import engine.context.emptyContext
 import engine.expressionmakers.MakerBuilder
 import engine.expressions.Constants
 import engine.expressions.MappedExpression
-import engine.expressions.Subexpression
 import engine.expressions.fractionOf
 import java.math.BigInteger
 
-interface CoefficientPattern : Pattern {
-    val value: Pattern
-    fun coefficient(match: Match): MappedExpression
+abstract class CoefficientPattern(val value: Pattern) : KeyedPattern() {
+    abstract fun coefficient(match: Match): MappedExpression
 }
 
 /**
@@ -20,7 +17,7 @@ interface CoefficientPattern : Pattern {
  *      x
  *      3 * x
  */
-class IntegerCoefficientPattern(value: Pattern) : Pattern {
+class IntegerCoefficientPattern(value: Pattern) : CoefficientPattern(value) {
 
     private val coefficientPattern = UnsignedIntegerPattern()
 
@@ -31,14 +28,10 @@ class IntegerCoefficientPattern(value: Pattern) : Pattern {
 
     override val key = options
 
-    val coefficient = IntegerProviderWithDefault(coefficientPattern, BigInteger.ONE)
+    val integerCoefficient = IntegerProviderWithDefault(coefficientPattern, BigInteger.ONE)
 
-    override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
-        if (!checkPreviousMatch(subexpression.expr, match)) {
-            return emptySequence()
-        }
-        return options.findMatches(context, match, subexpression)
-    }
+    override fun coefficient(match: Match): MappedExpression =
+        with(MakerBuilder(emptyContext, match)) { move(integerCoefficient) }
 }
 
 /**
@@ -50,7 +43,7 @@ class IntegerCoefficientPattern(value: Pattern) : Pattern {
  *     [x/10]
  *     any of the above with a negative sign in front.
  */
-class RationalCoefficientPattern(override val value: Pattern) : CoefficientPattern {
+class RationalCoefficientPattern(value: Pattern) : CoefficientPattern(value) {
 
     private val numerator = UnsignedIntegerPattern()
     private val denominator = UnsignedIntegerPattern()
@@ -65,9 +58,6 @@ class RationalCoefficientPattern(override val value: Pattern) : CoefficientPatte
     private val ptn = optionalNegOf(options)
 
     override val key = ptn.key
-
-    override fun findMatches(context: Context, match: Match, subexpression: Subexpression) =
-        ptn.findMatches(context, match, subexpression)
 
     /**
      * Given a match, returns the coefficient as an integer or fraction
@@ -99,7 +89,7 @@ class RationalCoefficientPattern(override val value: Pattern) : CoefficientPatte
  *     y * x
  *     [2/3 * y] * x
  */
-class ConstantCoefficientPattern(override val value: Pattern) : CoefficientPattern {
+class ConstantCoefficientPattern(value: Pattern) : CoefficientPattern(value) {
 
     private val product = productContaining(value)
 
@@ -119,9 +109,6 @@ class ConstantCoefficientPattern(override val value: Pattern) : CoefficientPatte
     private val ptn = optionalNegOf(options)
 
     override val key = ptn.key
-
-    override fun findMatches(context: Context, match: Match, subexpression: Subexpression) =
-        ptn.findMatches(context, match, subexpression)
 
     /**
      * Given a match, returns the coefficient

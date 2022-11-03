@@ -171,7 +171,10 @@ val simplifyEquationSystemForRecurringDecimal = rule {
         when {
             d1.repetend == d2.repetend -> TransformationResult(
                 toExpr = equationOf(
-                    productOf(integerOp(lhs1.coefficient, lhs2.coefficient) { n1, n2 -> n2 - n1 }, move(variable)),
+                    productOf(
+                        integerOp(lhs1.integerCoefficient, lhs2.integerCoefficient) { n1, n2 -> n2 - n1 },
+                        move(variable)
+                    ),
                     combineTo(decimal1, decimal2, xp((d2.nonRepeatingValue - d1.nonRepeatingValue).toBigInteger()))
                 ),
                 explanation = metadata(Explanation.SimplifyEquationSystemForRecurringDecimal)

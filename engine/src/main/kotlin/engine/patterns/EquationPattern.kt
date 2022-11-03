@@ -8,11 +8,9 @@ import engine.operators.EquationSystemOperator
 data class EquationPattern(
     val lhs: Pattern,
     val rhs: Pattern,
-) : Pattern {
-    override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
-        if (!subexpression.expr.operator.equiv(EquationOperator) ||
-            !checkPreviousMatch(subexpression.expr, match)
-        ) {
+) : BasePattern() {
+    override fun doFindMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
+        if (!subexpression.expr.operator.equiv(EquationOperator)) {
             return emptySequence()
         }
 

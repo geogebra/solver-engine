@@ -28,7 +28,7 @@ interface NumberPattern : Pattern, NumberProvider
 
 interface IntegerPattern : Pattern, IntegerProvider
 
-class UnsignedIntegerPattern : IntegerPattern {
+class UnsignedIntegerPattern : IntegerPattern, BasePattern() {
 
     override fun getBoundInt(m: Match): BigInteger {
         return when (val operator = m.getBoundExpr(this)!!.operator) {
@@ -37,10 +37,7 @@ class UnsignedIntegerPattern : IntegerPattern {
         }
     }
 
-    override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
-        if (!checkPreviousMatch(subexpression.expr, match)) {
-            return emptySequence()
-        }
+    override fun doFindMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
         return when (subexpression.expr.operator) {
             is IntegerOperator -> sequenceOf(match.newChild(this, subexpression))
             else -> emptySequence()
@@ -48,7 +45,7 @@ class UnsignedIntegerPattern : IntegerPattern {
     }
 }
 
-class UnsignedDecimalPattern : NumberPattern {
+class UnsignedDecimalPattern : NumberPattern, BasePattern() {
 
     override fun getBoundNumber(m: Match): BigDecimal {
         return when (val operator = m.getBoundExpr(this)!!.operator) {
@@ -58,10 +55,7 @@ class UnsignedDecimalPattern : NumberPattern {
         }
     }
 
-    override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
-        if (!checkPreviousMatch(subexpression.expr, match)) {
-            return emptySequence()
-        }
+    override fun doFindMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
         return when (subexpression.expr.operator) {
             is IntegerOperator, is DecimalOperator -> sequenceOf(match.newChild(this, subexpression))
             else -> emptySequence()
@@ -69,7 +63,7 @@ class UnsignedDecimalPattern : NumberPattern {
     }
 }
 
-class RecurringDecimalPattern : Pattern {
+class RecurringDecimalPattern : BasePattern() {
 
     fun getBoundRecurringDecimal(m: Match): RecurringDecimal {
         return when (val operator = m.getBoundExpr(this)!!.operator) {
@@ -78,10 +72,7 @@ class RecurringDecimalPattern : Pattern {
         }
     }
 
-    override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
-        if (!checkPreviousMatch(subexpression.expr, match)) {
-            return emptySequence()
-        }
+    override fun doFindMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
         return when (subexpression.expr.operator) {
             is RecurringDecimalOperator -> sequenceOf(match.newChild(this, subexpression))
             else -> emptySequence()

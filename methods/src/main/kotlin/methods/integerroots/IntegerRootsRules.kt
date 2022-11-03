@@ -440,7 +440,7 @@ val combineProductOfSamePowerUnderHigherRoot = rule {
 
         TransformationResult(
             toExpr = simplifiedProductOf(
-                move(pattern.coefficient),
+                move(pattern.integerCoefficient),
                 rootOf(
                     powerOf(
                         productOf(product.children().map { move(it.nthChild(0)) }),
