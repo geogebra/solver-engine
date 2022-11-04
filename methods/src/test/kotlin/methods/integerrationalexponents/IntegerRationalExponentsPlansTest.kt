@@ -2,7 +2,7 @@ package methods.integerrationalexponents
 
 import method.integerrationalexponents.IntegerRationalExponentsExplanation
 import methods.constantexpressions.ConstantExpressionsExplanation
-import methods.constantexpressions.simplifyConstantExpression
+import methods.constantexpressions.ConstantExpressionsPlans
 import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.general.GeneralExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
@@ -13,7 +13,7 @@ class SimplifyRationalExponents {
 
     @Test
     fun testSimplifyRationalExponentOnePrimeFactorToInt() = testMethod {
-        method = simplifyRationalExponentOfInteger
+        method = IntegerRationalExponentsPlans.SimplifyRationalExponentOfInteger
         inputExpr = "[32 ^ [2 / 5]]"
 
         check {
@@ -104,7 +104,7 @@ class SimplifyRationalExponents {
 
     @Test
     fun testSimplifyRationalExponentOnePrimeFactorToProductWithInt() = testMethod {
-        method = simplifyRationalExponentOfInteger
+        method = IntegerRationalExponentsPlans.SimplifyRationalExponentOfInteger
         inputExpr = "[8 ^ [7 / 6] ]"
 
         check {
@@ -229,7 +229,7 @@ class SimplifyRationalExponents {
 
     @Test
     fun testSimplifyUsingFactoringBeforeComputingProduct() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[8 ^ [2 / 3]] * [3 ^ [2 / 3]]"
 
         check {
@@ -283,7 +283,7 @@ class SimplifyRationalExponents {
 
     @Test
     fun testMultiplySameExponentPowersBeforeSimplification() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[4 ^ [2 / 3]] * [6 ^ [2 / 3]]"
 
         check {
@@ -345,7 +345,7 @@ class SimplifyRationalExponents {
 
     @Test
     fun testSimplifyProductOfPowersWithNegatedExponent() = testMethod {
-        method = simplifyProductOfPowersWithNegatedExponent
+        method = IntegerRationalExponentsPlans.SimplifyProductOfPowersWithNegatedExponent
         inputExpr = "[2 ^ [1 / 2]] * [4 ^ -[1 / 2]]"
 
         check {
@@ -391,7 +391,7 @@ class SimplifyRationalExponents {
 
     @Test
     fun testSimplifyProductOfPowersWithInverseFractionBase() = testMethod {
-        method = simplifyProductOfPowersWithInverseFractionBase
+        method = IntegerRationalExponentsPlans.SimplifyProductOfPowersWithInverseFractionBase
         inputExpr = "[([2 / 3]) ^ [1 / 2]] * [([3 / 2]) ^ [2 / 5]]"
 
         check {
@@ -437,7 +437,7 @@ class SimplifyRationalExponents {
 
     @Test
     fun testSimplifyProductOfPowersWithInverseBase() = testMethod {
-        method = simplifyProductOfPowersWithInverseBase
+        method = IntegerRationalExponentsPlans.SimplifyProductOfPowersWithInverseBase
         inputExpr = "[3 ^ [1 / 2]] * [([1 / 3]) ^ [2 / 5]]"
 
         check {
@@ -483,7 +483,7 @@ class SimplifyRationalExponents {
 
     @Test
     fun testPowerRuleOfExponents() = testMethod {
-        method = applyPowerRuleOfExponents
+        method = IntegerRationalExponentsPlans.ApplyPowerRuleOfExponents
         inputExpr = "[([(sqrt[5]) ^ [1 / 2]]) ^ [2 / 3]]"
 
         check {
@@ -513,7 +513,7 @@ class SimplifyRationalExponents {
 
     @Test
     fun testSimplifyFractionOfPowersWithSameBase() = testMethod {
-        method = simplifyFractionOfPowersWithSameBase
+        method = IntegerRationalExponentsPlans.SimplifyFractionOfPowersWithSameBase
         inputExpr = "[[2 ^ [1 / 2]] / [2 ^ [1 / 3]]]"
 
         check {
@@ -543,7 +543,7 @@ class SimplifyRationalExponents {
 
     @Test
     fun testSimplifyFractionOfPowersWithSameExponent() = testMethod {
-        method = simplifyFractionOfPowersWithSameExponent
+        method = IntegerRationalExponentsPlans.SimplifyFractionOfPowersWithSameExponent
         inputExpr = "[[2 ^ [1 / 2]] / [6 ^ [1 / 2]]]"
 
         check {
@@ -575,7 +575,7 @@ class SimplifyRationalExponents {
 class SimplifyRationalExponentsDontApply {
     @Test
     fun testDontSimplifyMultipleFactors() = testMethod {
-        method = simplifyRationalExponentOfInteger
+        method = IntegerRationalExponentsPlans.SimplifyRationalExponentOfInteger
         inputExpr = "[480 ^ [1 / 6]]"
 
         check {

@@ -1,15 +1,38 @@
 package methods.general
 
 import engine.expressions.Subexpression
+import engine.methods.Plan
+import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
 
-val addClarifyingBrackets = plan {
-    explanation(Explanation.AddClarifyingBrackets)
+enum class NormalizationPlans(override val runner: Plan) : RunnerMethod {
+    AddClarifyingBrackets(
+        plan {
+            explanation(Explanation.AddClarifyingBrackets)
 
-    steps {
-        whilePossible { deeply(NormalizationRules.ReplaceInvisibleBrackets) }
-    }
+            steps {
+                whilePossible { deeply(NormalizationRules.ReplaceInvisibleBrackets) }
+            }
+        }
+    ),
+    NormalizeExpression(
+        plan {
+            explanation(Explanation.NormalizeExpression)
+
+            steps {
+                whilePossible {
+                    deeply {
+                        firstOf {
+                            option(NormalizationPlans.AddClarifyingBrackets)
+                            option(removeRedundantBrackets)
+                            option(NormalizationRules.RemoveRedundantPlusSign)
+                        }
+                    }
+                }
+            }
+        }
+    )
 }
 
 val redundantBracketChecker = { sub: Subexpression ->
@@ -32,21 +55,5 @@ val removeRedundantBrackets = steps {
         option(NormalizationRules.RemoveBracketSumInSum)
         option(NormalizationRules.RemoveBracketProductInProduct)
         option(NormalizationRules.RemoveBracketAroundSignedIntegerInSum)
-    }
-}
-
-val normalizeExpression = plan {
-    explanation(Explanation.NormalizeExpression)
-
-    steps {
-        whilePossible {
-            deeply {
-                firstOf {
-                    option(addClarifyingBrackets)
-                    option(removeRedundantBrackets)
-                    option(NormalizationRules.RemoveRedundantPlusSign)
-                }
-            }
-        }
     }
 }

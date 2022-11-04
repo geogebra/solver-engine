@@ -6,4 +6,4 @@ methods:
   SimplifyAlgebraicExpression:
     visibility: public
     description: ""
-    implementationName: simplifyAlgebraicExpression
+    implementationName: PolynomialPlans.SimplifyAlgebraicExpression

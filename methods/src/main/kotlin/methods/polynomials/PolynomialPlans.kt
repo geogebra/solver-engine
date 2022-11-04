@@ -1,36 +1,45 @@
 package methods.polynomials
 
+import engine.methods.Plan
+import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
+import methods.constantexpressions.ConstantExpressionsPlans
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.constantexpressions.simplificationSteps
-import methods.constantexpressions.simplifyConstantSubexpression
-import methods.general.normalizeExpression
+import methods.general.NormalizationPlans
 
-val collectLikeTermsAndSimplify = plan {
-    explanation(Explanation.CollectLikeTermsAndSimplify)
+enum class PolynomialPlans(override val runner: Plan) : RunnerMethod {
 
-    steps {
-        apply(PolynomialRules.CollectLikeTerms)
-        optionally {
-            deeply(simplifyConstantSubexpression)
+    CollectLikeTermsAndSimplify(
+        plan {
+            explanation(Explanation.CollectLikeTermsAndSimplify)
+
+            steps {
+                apply(PolynomialRules.CollectLikeTerms)
+                optionally {
+                    deeply(ConstantExpressionsPlans.SimplifyConstantSubexpression)
+                }
+            }
         }
-    }
+    ),
+
+    SimplifyAlgebraicExpression(
+        plan {
+            explanation(Explanation.SimplifyAlgebraicExpression)
+
+            steps {
+                whilePossible { deeply(simpleTidyUpSteps) }
+                optionally(NormalizationPlans.NormalizeExpression)
+                whilePossible(AlgebraicSimplificationSteps)
+            }
+        }
+    )
 }
 
-val algebraicSimplificationSteps = steps {
+val AlgebraicSimplificationSteps = steps {
     firstOf {
         option { deeply(simplificationSteps) }
-        option { deeply(collectLikeTermsAndSimplify) }
-    }
-}
-
-val simplifyAlgebraicExpression = plan {
-    explanation(Explanation.SimplifyAlgebraicExpression)
-
-    steps {
-        whilePossible { deeply(simpleTidyUpSteps) }
-        optionally(normalizeExpression)
-        whilePossible(algebraicSimplificationSteps)
+        option { deeply(PolynomialPlans.CollectLikeTermsAndSimplify) }
     }
 }

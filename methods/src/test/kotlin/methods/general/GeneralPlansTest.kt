@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 class GeneralPlansTest {
     @Test
     fun testSimplifyProductOfPowersWithSameBase() = testMethod {
-        method = simplifyProductOfPowersWithSameBase
+        method = GeneralPlans.SimplifyProductOfPowersWithSameBase
         inputExpr = "[20 ^ 2] * [20 ^ -3]"
 
         check {

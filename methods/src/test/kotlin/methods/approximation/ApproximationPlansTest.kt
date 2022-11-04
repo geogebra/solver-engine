@@ -20,7 +20,7 @@ class ApproximationPlansTest {
 
     @Test
     fun testRoundingTerminatingDecimals() = testMethod {
-        method = approximateExpression
+        method = ApproximationPlans.ApproximateExpression
         context = Context(precision = 2)
         inputExpr = "1.2345 + 2.324"
 
@@ -55,7 +55,7 @@ class ApproximationPlansTest {
 
     @Test
     fun testRoundingRecurringDecimals() = testMethod {
-        method = approximateExpression
+        method = ApproximationPlans.ApproximateExpression
         context = Context(precision = 5)
         inputExpr = "3.14[15] * 2.7[182]"
 
@@ -116,7 +116,7 @@ class ApproximationPlansTest {
 
     @Test
     fun testDecimalNumberInPower() = testMethod {
-        method = approximateExpression
+        method = ApproximationPlans.ApproximateExpression
         inputExpr = "[3.14[15]^1.2]"
 
         check {
@@ -126,7 +126,7 @@ class ApproximationPlansTest {
 
     @Test
     fun testZeroToThePowerZero() = testMethod {
-        method = approximateExpression
+        method = ApproximationPlans.ApproximateExpression
         inputExpr = "[0 ^ 0]"
 
         check {

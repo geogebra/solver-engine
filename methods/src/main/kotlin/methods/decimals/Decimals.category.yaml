@@ -5,4 +5,4 @@ methods:
   EvaluateExpressionAsDecimal:
     description: Evaluate an expression as a terminating decimal
     visibility: public
-    implementationName: evaluateExpressionAsDecimal
+    implementationName: DecimalPlans.EvaluateExpressionAsDecimal

@@ -10,7 +10,7 @@ class MixedNumbersPlansTest {
 
     @Test
     fun testAddMixedNumbersPlan() = testMethod {
-        method = addMixedNumbers
+        method = MixedNumbersPlans.AddMixedNumbers
         inputExpr = "[5 1/4] + [2 2/3]"
 
         check {
@@ -72,7 +72,7 @@ class MixedNumbersPlansTest {
 
     @Test
     fun testContextSensitivePlanEU() = testMethod {
-        method = addMixedNumbers
+        method = MixedNumbersPlans.AddMixedNumbers
         context = Context(curriculum = "EU")
         inputExpr = "[5 1/4] + [2 2/3]"
 
@@ -95,7 +95,7 @@ class MixedNumbersPlansTest {
 
     @Test
     fun testContextSensitivePlanUS() = testMethod {
-        method = addMixedNumbers
+        method = MixedNumbersPlans.AddMixedNumbers
         context = Context(curriculum = "US")
         inputExpr = "[5 3/4] + [2 2/3]"
 
@@ -153,7 +153,7 @@ class MixedNumbersPlansTest {
 
     @Test
     fun testUSStyleConversionWithShortcut() = testMethod {
-        method = addMixedNumbers
+        method = MixedNumbersPlans.AddMixedNumbers
         context = Context(curriculum = "US")
         inputExpr = "[1 1/2] + [2 1/3]"
 
@@ -197,7 +197,7 @@ class MixedNumbersPlansTest {
 
     @Test
     fun testUSStyleConversionResultingInInteger() = testMethod {
-        method = addMixedNumbers
+        method = MixedNumbersPlans.AddMixedNumbers
         context = Context(curriculum = "US")
         inputExpr = "[5 2/3] + [3 12/36]"
 

@@ -45,3 +45,5 @@ interface RunnerMethod : Method {
         }
     }
 }
+
+annotation class PublicMethod

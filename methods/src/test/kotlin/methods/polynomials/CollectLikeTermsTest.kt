@@ -9,7 +9,7 @@ class CollectLikeTermsTest {
 
     @Test
     fun testCollectSimpleLikeTerms() = testMethod {
-        method = simplifyAlgebraicExpression
+        method = PolynomialPlans.SimplifyAlgebraicExpression
         inputExpr = "2 * x + 3 * x + y - 5 * y"
 
         check {
@@ -79,7 +79,7 @@ class CollectLikeTermsTest {
 
     @Test
     fun testRationalCoefficients() = testMethod {
-        method = simplifyAlgebraicExpression
+        method = PolynomialPlans.SimplifyAlgebraicExpression
         inputExpr = "[z / 2] - [3 * z / 4] + 4 * z"
 
         check {
@@ -109,7 +109,7 @@ class CollectLikeTermsTest {
 
     @Test
     fun testSurdCoefficients() = testMethod {
-        method = simplifyAlgebraicExpression
+        method = PolynomialPlans.SimplifyAlgebraicExpression
         inputExpr = "2 * t * sqrt[3] + [t * sqrt[3] / 3]"
 
         check {

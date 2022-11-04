@@ -1,6 +1,6 @@
 package methods.integerroots
 
-import methods.constantexpressions.simplifyConstantExpression
+import methods.constantexpressions.ConstantExpressionsPlans
 import methods.general.GeneralExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
 import methods.plans.testMethod
@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 class IntegerRootsPlansTest {
     @Test
     fun testSimplifyIntegerRootsTest() = testMethod {
-        method = simplifyIntegerRoot
+        method = IntegerRootsPlans.SimplifyIntegerRoot
         inputExpr = "sqrt[113400]"
 
         check {
@@ -41,7 +41,7 @@ class IntegerRootsPlansTest {
 
     @Test
     fun testSimplifyIntegerRootsPerfectSquareSquareRoot() = testMethod {
-        method = simplifyIntegerRoot
+        method = IntegerRootsPlans.SimplifyIntegerRoot
         inputExpr = "sqrt[49]"
 
         check {
@@ -71,7 +71,7 @@ class IntegerRootsPlansTest {
 
     @Test
     fun testSimplifyIntegerRootsSquareRootPowerOfTenEven() = testMethod {
-        method = simplifyIntegerRoot
+        method = IntegerRootsPlans.SimplifyIntegerRoot
         inputExpr = "sqrt[100]"
 
         check {
@@ -85,7 +85,7 @@ class IntegerRootsPlansTest {
 
     @Test
     fun testSimplifyIntegerRootsSquareRootPowerOfTenOdd() = testMethod {
-        method = simplifyIntegerRoot
+        method = IntegerRootsPlans.SimplifyIntegerRoot
         inputExpr = "sqrt[1000]"
 
         check {
@@ -101,7 +101,7 @@ class IntegerRootsPlansTest {
 
     @Test
     fun testSimplifyIntegerRootsHigherOrderRootPowerOfHundredEven() = testMethod {
-        method = simplifyIntegerRoot
+        method = IntegerRootsPlans.SimplifyIntegerRoot
         inputExpr = "root[1000000, 3]"
 
         check {
@@ -115,7 +115,7 @@ class IntegerRootsPlansTest {
 
     @Test
     fun testSimplifyIntegerRootsHigherOrderRootPowerOfHundredOdd() = testMethod {
-        method = simplifyIntegerRoot
+        method = IntegerRootsPlans.SimplifyIntegerRoot
         inputExpr = "root[10000, 3]"
 
         check {
@@ -131,7 +131,7 @@ class IntegerRootsPlansTest {
 
     @Test
     fun testSimplifyIntegerRootNoSimplificationPowerOfTen() = testMethod {
-        method = simplifyIntegerRoot
+        method = IntegerRootsPlans.SimplifyIntegerRoot
         inputExpr = "root[1000, 4]"
 
         check { noTransformation() }
@@ -139,7 +139,7 @@ class IntegerRootsPlansTest {
 
     @Test
     fun testSimplifyIntegerRootsSquareRootPerfectSquare() = testMethod {
-        method = simplifyIntegerRoot
+        method = IntegerRootsPlans.SimplifyIntegerRoot
         inputExpr = "sqrt[144]"
 
         check {
@@ -153,7 +153,7 @@ class IntegerRootsPlansTest {
 
     @Test
     fun testSimplifyIntegerRootsCubeRootPerfectCube() = testMethod {
-        method = simplifyIntegerRoot
+        method = IntegerRootsPlans.SimplifyIntegerRoot
         inputExpr = "root[216, 3]"
 
         check {
@@ -183,7 +183,7 @@ class IntegerRootsPlansTest {
 
     @Test
     fun testSimplifyIntegerRootsSquareRootZerosAtEnd() = testMethod {
-        method = simplifyIntegerRoot
+        method = IntegerRootsPlans.SimplifyIntegerRoot
         inputExpr = "sqrt[8100]"
 
         check {
@@ -228,7 +228,7 @@ class IntegerRootsPlansTest {
 
     @Test
     fun testSimplifyIntegerRootsCubeRootZerosAtEnd() = testMethod {
-        method = simplifyIntegerRoot
+        method = IntegerRootsPlans.SimplifyIntegerRoot
         inputExpr = "root[27000, 3]"
 
         check {
@@ -272,7 +272,7 @@ class IntegerRootsPlansTest {
 
     @Test
     fun testSimplifyIntegerRootsCubeRootNonPerfectCube() = testMethod {
-        method = simplifyIntegerRoot
+        method = IntegerRootsPlans.SimplifyIntegerRoot
         inputExpr = "root[211, 3]"
 
         check { noTransformation() }
@@ -280,7 +280,7 @@ class IntegerRootsPlansTest {
 
     @Test
     fun testRootOfRootWithCoefficient() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "root[3 * sqrt[4], 3]"
 
         check {
@@ -303,7 +303,7 @@ class IntegerRootsPlansTest {
 
     @Test
     fun testCollectLikeRootsAndSimplify() = testMethod {
-        method = collectLikeRootsAndSimplify
+        method = IntegerRootsPlans.CollectLikeRootsAndSimplify
         inputExpr = "2 - 3 * sqrt[3] + root[3, 3] + [2 * sqrt[3] / 3] + 2 * sqrt[3]"
 
         check {
@@ -354,7 +354,7 @@ class SimplifyProductOfRootsTest {
 
     @Test
     fun testProductOfEqualSquareRoots() = testMethod {
-        method = simplifyProductWithRoots
+        method = IntegerRootsPlans.SimplifyProductWithRoots
         inputExpr = "sqrt[6] * sqrt[6]"
 
         check {
@@ -366,7 +366,7 @@ class SimplifyProductOfRootsTest {
 
     @Test
     fun testProductOfDifferentSquareRoots() = testMethod {
-        method = simplifyProductWithRoots
+        method = IntegerRootsPlans.SimplifyProductWithRoots
         inputExpr = "sqrt[6] * sqrt[3]"
 
         check {

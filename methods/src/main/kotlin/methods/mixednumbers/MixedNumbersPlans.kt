@@ -1,87 +1,97 @@
 package methods.mixednumbers
 
 import engine.context.ResourceData
+import engine.methods.Plan
+import engine.methods.PublicMethod
+import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.patterns.mixedNumberOf
 import engine.patterns.sumOf
+import methods.fractionarithmetic.FractionArithmeticPlans
 import methods.fractionarithmetic.FractionArithmeticRules
-import methods.fractionarithmetic.evaluateFractionSum
-import methods.fractionarithmetic.simplifyFraction
 import methods.general.GeneralRules
 import methods.general.NormalizationRules
 import methods.integerarithmetic.IntegerArithmeticRules
 
-val convertMixedNumberToImproperFraction = plan {
-    explanation(Explanation.ConvertMixedNumbersToImproperFraction)
+enum class MixedNumbersPlans(override val runner: Plan) : RunnerMethod {
 
-    steps {
-        applyToChildrenInStep {
-            step {
-                explanationKey = Explanation.ConvertMixedNumbersToSums
-                method = MixedNumbersRules.SplitMixedNumber
-            }
-            step {
-                explanationKey = Explanation.ConvertIntegersToFractions
-                method = FractionArithmeticRules.ConvertIntegerToFraction
-            }
-            step {
-                explanationKey = Explanation.AddFractions
-                method = evaluateFractionSum
-            }
-        }
-    }
-}
-
-val addMixedNumbers = plan {
-    pattern = sumOf(mixedNumberOf(), mixedNumberOf())
-
-    explanation(Explanation.AddMixedNumbers)
-
-    steps(ResourceData(curriculum = "EU")) {
-        apply(convertMixedNumberToImproperFraction)
-        apply(evaluateFractionSum)
-        // result might be integer or proper fraction after
-        // simplification, so this step is optional
-        optionally(MixedNumbersRules.FractionToMixedNumber)
-    }
-
-    alternative(ResourceData(curriculum = "US")) {
-
+    ConvertMixedNumberToImproperFraction(
         plan {
-            explanation(Explanation.ConvertMixedNumbersToSums)
+            explanation(Explanation.ConvertMixedNumbersToImproperFraction)
 
             steps {
-                whilePossible { deeply(MixedNumbersRules.SplitMixedNumber) }
+                applyToChildrenInStep {
+                    step {
+                        explanationKey = Explanation.ConvertMixedNumbersToSums
+                        method = MixedNumbersRules.SplitMixedNumber
+                    }
+                    step {
+                        explanationKey = Explanation.ConvertIntegersToFractions
+                        method = FractionArithmeticRules.ConvertIntegerToFraction
+                    }
+                    step {
+                        explanationKey = Explanation.AddFractions
+                        method = FractionArithmeticPlans.EvaluateFractionSum
+                    }
+                }
             }
         }
+    ),
 
-        whilePossible {
-            deeply(GeneralRules.SimplifyZeroDenominatorFractionToUndefined)
-        }
-
+    @PublicMethod
+    AddMixedNumbers(
         plan {
-            explanation(Explanation.RemoveAllBracketsInSum)
+            pattern = sumOf(mixedNumberOf(), mixedNumberOf())
 
-            steps {
-                whilePossible(NormalizationRules.RemoveBracketSumInSum)
+            explanation(Explanation.AddMixedNumbers)
+
+            steps(ResourceData(curriculum = "EU")) {
+                apply(ConvertMixedNumberToImproperFraction)
+                apply(FractionArithmeticPlans.EvaluateFractionSum)
+                // result might be integer or proper fraction after
+                // simplification, so this step is optional
+                optionally(MixedNumbersRules.FractionToMixedNumber)
+            }
+
+            alternative(ResourceData(curriculum = "US")) {
+
+                plan {
+                    explanation(Explanation.ConvertMixedNumbersToSums)
+
+                    steps {
+                        whilePossible { deeply(MixedNumbersRules.SplitMixedNumber) }
+                    }
+                }
+
+                whilePossible {
+                    deeply(GeneralRules.SimplifyZeroDenominatorFractionToUndefined)
+                }
+
+                plan {
+                    explanation(Explanation.RemoveAllBracketsInSum)
+
+                    steps {
+                        whilePossible(NormalizationRules.RemoveBracketSumInSum)
+                    }
+                }
+
+                whilePossible {
+                    deeply(FractionArithmeticPlans.SimplifyFraction)
+                }
+
+                apply(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
+                apply(FractionArithmeticPlans.EvaluateFractionSum)
+
+                firstOf {
+                    option(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
+                    option(MixedNumbersRules.ConvertSumOfIntegerAndProperFractionToMixedNumber)
+                    option {
+                        apply(FractionArithmeticRules.ConvertIntegerToFraction)
+                        apply(FractionArithmeticPlans.EvaluateFractionSum)
+                        apply(MixedNumbersRules.FractionToMixedNumber)
+                    }
+                }
             }
         }
-
-        whilePossible {
-            deeply(simplifyFraction)
-        }
-
-        apply(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
-        apply(evaluateFractionSum)
-
-        firstOf {
-            option(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
-            option(MixedNumbersRules.ConvertSumOfIntegerAndProperFractionToMixedNumber)
-            option {
-                apply(FractionArithmeticRules.ConvertIntegerToFraction)
-                apply(evaluateFractionSum)
-                apply(MixedNumbersRules.FractionToMixedNumber)
-            }
-        }
-    }
+    )
 }

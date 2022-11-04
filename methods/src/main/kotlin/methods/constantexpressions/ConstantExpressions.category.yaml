@@ -5,4 +5,4 @@ methods:
   SimplifyConstantExpression:
     description: Simplifies a constant expression, i.e. one containing no variables
     visibility: public
-    implementationName: simplifyConstantExpression
+    implementationName: ConstantExpressionsPlans.SimplifyConstantExpression

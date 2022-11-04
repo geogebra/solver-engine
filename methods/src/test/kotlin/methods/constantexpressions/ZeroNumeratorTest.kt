@@ -8,7 +8,7 @@ class ZeroNumeratorTest {
 
     @Test
     fun testSimpleRootDenominator() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[0 / sqrt[12]]"
 
         check {
@@ -22,7 +22,7 @@ class ZeroNumeratorTest {
 
     @Test
     fun testPositiveDenominator() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[0 / root[3, 3] + root[4, 3]]"
         check {
             fromExpr = "[0 / root[3, 3] + root[4, 3]]"
@@ -36,7 +36,7 @@ class ZeroNumeratorTest {
 
     @Test
     fun testDenominatorNotZeroBecauseOfIncommensurableTerms() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[0 / [sqrt[3]/3] - [sqrt[2]/2]]"
         check {
             toExpr = "0"
@@ -49,7 +49,7 @@ class ZeroNumeratorTest {
 
     @Test
     fun testDenominatorEventuallyNotZero() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[0 / 3 - 5]"
 
         check {

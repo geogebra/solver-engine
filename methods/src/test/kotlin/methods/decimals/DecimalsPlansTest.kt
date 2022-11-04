@@ -10,7 +10,7 @@ class DecimalsPlansTest {
 
     @Test
     fun testDirectConversionOfRecurringDecimalToFraction() = testMethod {
-        method = convertRecurringDecimalToFractionAndSimplify
+        method = DecimalPlans.ConvertRecurringDecimalToFractionAndSimplify
         context = Context(curriculum = "EU")
         inputExpr = "3.14[15]"
 
@@ -49,7 +49,7 @@ class DecimalsPlansTest {
 
     @Test
     fun testAlgorithmForConversionOfRecurringDecimalToFraction() = testMethod {
-        method = convertRecurringDecimalToFractionAndSimplify
+        method = DecimalPlans.ConvertRecurringDecimalToFractionAndSimplify
         context = Context(curriculum = "US")
         inputExpr = "3.14[15]"
 
@@ -120,7 +120,7 @@ class DecimalsPlansTest {
 
     @Test
     fun testSimplifyDecimalsInProduct() = testMethod {
-        method = simplifyDecimalsInProduct
+        method = DecimalPlans.SimplifyDecimalsInProduct
         inputExpr = "0.2 * 0.3 * 10"
 
         check {
@@ -133,7 +133,7 @@ class DecimalsPlansTest {
 
     @Test
     fun testNormalizeFractionOfDecimals() = testMethod {
-        method = normalizeFractionOfDecimals
+        method = DecimalPlans.NormalizeFractionOfDecimals
         inputExpr = "[0.24 / 0.002]"
 
         check {
@@ -171,7 +171,7 @@ class DecimalsPlansTest {
 
     @Test
     fun testNormalizeFractionOfDecimalsWithIntegerNumerator() = testMethod {
-        method = normalizeFractionOfDecimals
+        method = DecimalPlans.NormalizeFractionOfDecimals
         inputExpr = "[5 / 0.35]"
 
         check {
@@ -181,7 +181,7 @@ class DecimalsPlansTest {
 
     @Test
     fun testNormalizeFractionOfDecimalsWithIntegerDenominator() = testMethod {
-        method = normalizeFractionOfDecimals
+        method = DecimalPlans.NormalizeFractionOfDecimals
         inputExpr = "[0.006 / 2]"
 
         check {
@@ -191,7 +191,7 @@ class DecimalsPlansTest {
 
     @Test
     fun testConvertNiceFractionToDecimalSimple() = testMethod {
-        method = convertNiceFractionToDecimal
+        method = DecimalPlans.ConvertNiceFractionToDecimal
         inputExpr = "[2/5]"
 
         check {
@@ -206,7 +206,7 @@ class DecimalsPlansTest {
 
     @Test
     fun testConvertNiceFractionToDecimalAlreadyAPowerOfTen() = testMethod {
-        method = convertNiceFractionToDecimal
+        method = DecimalPlans.ConvertNiceFractionToDecimal
         inputExpr = "[2/100]"
 
         check {
@@ -218,7 +218,7 @@ class DecimalsPlansTest {
 
     @Test
     fun testConvertNiceFractionToDecimalHarder() = testMethod {
-        method = convertNiceFractionToDecimal
+        method = DecimalPlans.ConvertNiceFractionToDecimal
         inputExpr = "[7/40]"
 
         check {
@@ -233,7 +233,7 @@ class DecimalsPlansTest {
 
     @Test
     fun testConvertNiceFractionToDecimalWithDenominatorOne() = testMethod {
-        method = convertNiceFractionToDecimal
+        method = DecimalPlans.ConvertNiceFractionToDecimal
         inputExpr = "[8/1]"
 
         check { noTransformation() }
@@ -242,7 +242,7 @@ class DecimalsPlansTest {
     @Test
     fun testEvaluateDecimalPowers() {
         testMethod {
-            method = evaluateDecimalPower
+            method = DecimalPlans.EvaluateDecimalPower
             inputExpr = "[0.1 ^ 3]"
 
             check {
@@ -256,7 +256,7 @@ class DecimalsPlansTest {
             }
         }
         testMethod {
-            method = evaluateDecimalPower
+            method = DecimalPlans.EvaluateDecimalPower
             inputExpr = "[(-0.2) ^ 2]"
 
             check {
@@ -270,7 +270,7 @@ class DecimalsPlansTest {
             }
         }
         testMethod {
-            method = evaluateDecimalPower
+            method = DecimalPlans.EvaluateDecimalPower
             inputExpr = "[3 ^ 4]"
 
             check {
@@ -278,7 +278,7 @@ class DecimalsPlansTest {
             }
         }
         testMethod {
-            method = evaluateDecimalPower
+            method = DecimalPlans.EvaluateDecimalPower
             inputExpr = "[(-3.01) ^ 1]"
 
             check {
@@ -286,7 +286,7 @@ class DecimalsPlansTest {
             }
         }
         testMethod {
-            method = evaluateDecimalPower
+            method = DecimalPlans.EvaluateDecimalPower
             inputExpr = "[0.6 ^ 0]"
 
             check {
@@ -294,7 +294,7 @@ class DecimalsPlansTest {
             }
         }
         testMethod {
-            method = evaluateDecimalPower
+            method = DecimalPlans.EvaluateDecimalPower
             inputExpr = "[0 ^ 0]"
 
             check {
@@ -302,7 +302,7 @@ class DecimalsPlansTest {
             }
         }
         testMethod {
-            method = evaluateDecimalPower
+            method = DecimalPlans.EvaluateDecimalPower
             inputExpr = "[0.1 ^ 10]"
 
             check {
@@ -323,7 +323,7 @@ class EvaluatExpressionAsDecimalTest {
 
     @Test
     fun testArithmeticOps() = testMethod {
-        method = evaluateExpressionAsDecimal
+        method = DecimalPlans.EvaluateExpressionAsDecimal
         inputExpr = "0.2 + 0.6 * 0.1 + [0.2 ^ 3]"
 
         check {
@@ -343,7 +343,7 @@ class EvaluatExpressionAsDecimalTest {
 
     @Test
     fun testFractions() = testMethod {
-        method = evaluateExpressionAsDecimal
+        method = DecimalPlans.EvaluateExpressionAsDecimal
         inputExpr = "0.25 - [1 / 8]"
 
         check {
@@ -360,7 +360,7 @@ class EvaluatExpressionAsDecimalTest {
 
     @Test
     fun testDecimalDivision() = testMethod {
-        method = evaluateExpressionAsDecimal
+        method = DecimalPlans.EvaluateExpressionAsDecimal
         inputExpr = "0.03:0.015"
 
         check {

@@ -5,6 +5,9 @@ import engine.expressionmakers.move
 import engine.expressions.Expression
 import engine.expressions.denominator
 import engine.expressions.numerator
+import engine.methods.Plan
+import engine.methods.PublicMethod
+import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
 import engine.operators.BinaryExpressionOperator
@@ -19,128 +22,178 @@ import engine.patterns.fractionOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
-import methods.fractionarithmetic.multiplyAndSimplifyFractions
-import methods.fractionarithmetic.normalizeSignsInFraction
-import methods.fractionarithmetic.simplifyFraction
+import methods.fractionarithmetic.FractionArithmeticPlans
 import methods.general.GeneralRules
+import methods.general.NormalizationPlans
 import methods.general.NormalizationRules
-import methods.general.addClarifyingBrackets
 import methods.general.removeRedundantBrackets
 import methods.integerarithmetic.IntegerArithmeticRules
 import methods.integerarithmetic.arithmeticOperators
 
-val evaluateSumOfDecimals = plan {
-    pattern = sumContaining()
-    explanation(Explanation.EvaluateSumOfDecimals, move(pattern))
+enum class DecimalPlans(override val runner: Plan) : RunnerMethod {
+    EvaluateSumOfDecimals(
+        plan {
+            pattern = sumContaining()
+            explanation(Explanation.EvaluateSumOfDecimals, move(pattern))
 
-    steps {
-        whilePossible(DecimalRules.EvaluateSignedDecimalAddition)
-    }
-}
-
-val evaluateProductOfDecimals = plan {
-    pattern = productContaining()
-    explanation(Explanation.EvaluateProductOfDecimals, move(pattern))
-
-    steps {
-        whilePossible(DecimalRules.EvaluateDecimalProductAndDivision)
-    }
-}
-
-val evaluateDecimalPower = plan {
-    val base = SignedNumberPattern()
-    val exponent = UnsignedIntegerPattern()
-    pattern = powerOf(base, exponent)
-    explanation(Explanation.EvaluateDecimalPower, move(base), move(exponent))
-
-    steps {
-        firstOf {
-            option(GeneralRules.EvaluateZeroToThePowerOfZero)
-            // at this point the base is guaranteed to be nonzero
-            option(GeneralRules.EvaluateExpressionToThePowerOfZero)
-            option(GeneralRules.SimplifyExpressionToThePowerOfOne)
-            // at this point the exponent is guaranteed to be > 0
-            option(GeneralRules.EvaluateZeroToAPositivePower)
-            option {
-                apply(GeneralRules.RewritePowerAsProduct)
-                apply(evaluateProductOfDecimals)
-            }
-            option(DecimalRules.EvaluateDecimalPowerDirectly)
-        }
-    }
-}
-
-val convertTerminatingDecimalToFractionAndSimplify = plan {
-    explanation(Explanation.ConvertTerminatingDecimalToFractionAndSimplify)
-
-    steps {
-        apply(DecimalRules.ConvertTerminatingDecimalToFraction)
-        optionally(simplifyFraction)
-    }
-}
-
-val convertRecurringDecimalToFractionAndSimplify = plan {
-    explanation(Explanation.ConvertRecurringDecimalToFractionAndSimplify)
-
-    steps(ResourceData(curriculum = "EU")) {
-        apply(DecimalRules.ConvertRecurringDecimalToFractionDirectly)
-        deeply(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
-        optionally(simplifyFraction)
-    }
-
-    alternative(ResourceData(curriculum = "US")) {
-        apply(DecimalRules.ConvertRecurringDecimalToEquation)
-        apply(DecimalRules.MakeEquationSystemForRecurringDecimal)
-        apply(DecimalRules.SimplifyEquationSystemForRecurringDecimal)
-        apply(DecimalRules.SolveLinearEquation)
-        optionally(simplifyFraction)
-    }
-}
-
-val simplifyDecimalsInProduct = plan {
-    pattern = productContaining()
-    explanation(Explanation.SimplifyDecimalsInProduct, move(pattern))
-
-    steps {
-        whilePossible {
-            firstOf {
-                option(GeneralRules.EvaluateProductContainingZero)
-                option(DecimalRules.EvaluateDecimalProductAndDivision)
-                option(GeneralRules.EliminateOneInProduct)
+            steps {
+                whilePossible(DecimalRules.EvaluateSignedDecimalAddition)
             }
         }
-    }
-}
+    ),
+    EvaluateProductOfDecimals(
+        plan {
+            pattern = productContaining()
+            explanation(Explanation.EvaluateProductOfDecimals, move(pattern))
 
-val normalizeFractionOfDecimals = plan {
-    explanation(Explanation.NormalizeFractionOfDecimals)
-
-    steps {
-        apply(DecimalRules.MultiplyFractionOfDecimalsByPowerOfTen)
-        whilePossible {
-            deeply(simplifyDecimalsInProduct)
+            steps {
+                whilePossible(DecimalRules.EvaluateDecimalProductAndDivision)
+            }
         }
-    }
-}
+    ),
 
-/**
- * Convert a "nice" fraction to a decimal if possible.  A fraction is called "nice" if its denominator divides a power
- * of 10.
- */
-val convertNiceFractionToDecimal = plan {
-    explanation(Explanation.ConvertNiceFractionToDecimal)
-    pattern = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
+    EvaluateDecimalPower(
+        plan {
+            val base = SignedNumberPattern()
+            val exponent = UnsignedIntegerPattern()
+            pattern = powerOf(base, exponent)
+            explanation(Explanation.EvaluateDecimalPower, move(base), move(exponent))
 
-    steps {
-        optionally(DecimalRules.ExpandFractionToPowerOfTenDenominator)
-        optionally {
-            applyTo(DecimalRules.EvaluateDecimalProductAndDivision) { it.numerator() }
+            steps {
+                firstOf {
+                    option(GeneralRules.EvaluateZeroToThePowerOfZero)
+                    // at this point the base is guaranteed to be nonzero
+                    option(GeneralRules.EvaluateExpressionToThePowerOfZero)
+                    option(GeneralRules.SimplifyExpressionToThePowerOfOne)
+                    // at this point the exponent is guaranteed to be > 0
+                    option(GeneralRules.EvaluateZeroToAPositivePower)
+                    option {
+                        apply(GeneralRules.RewritePowerAsProduct)
+                        apply(DecimalPlans.EvaluateProductOfDecimals)
+                    }
+                    option(DecimalRules.EvaluateDecimalPowerDirectly)
+                }
+            }
         }
-        optionally {
-            applyTo(DecimalRules.EvaluateDecimalProductAndDivision) { it.denominator() }
+    ),
+    ConvertTerminatingDecimalToFractionAndSimplify(
+        plan {
+            explanation(Explanation.ConvertTerminatingDecimalToFractionAndSimplify)
+
+            steps {
+                apply(DecimalRules.ConvertTerminatingDecimalToFraction)
+                optionally(FractionArithmeticPlans.SimplifyFraction)
+            }
         }
-        apply(DecimalRules.ConvertFractionWithPowerOfTenDenominatorToDecimal)
-    }
+    ),
+    ConvertRecurringDecimalToFractionAndSimplify(
+        plan {
+            explanation(Explanation.ConvertRecurringDecimalToFractionAndSimplify)
+
+            steps(ResourceData(curriculum = "EU")) {
+                apply(DecimalRules.ConvertRecurringDecimalToFractionDirectly)
+                deeply(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
+                optionally(FractionArithmeticPlans.SimplifyFraction)
+            }
+
+            alternative(ResourceData(curriculum = "US")) {
+                apply(DecimalRules.ConvertRecurringDecimalToEquation)
+                apply(DecimalRules.MakeEquationSystemForRecurringDecimal)
+                apply(DecimalRules.SimplifyEquationSystemForRecurringDecimal)
+                apply(DecimalRules.SolveLinearEquation)
+                optionally(FractionArithmeticPlans.SimplifyFraction)
+            }
+        }
+    ),
+    SimplifyDecimalsInProduct(
+        plan {
+            pattern = productContaining()
+            explanation(Explanation.SimplifyDecimalsInProduct, move(pattern))
+
+            steps {
+                whilePossible {
+                    firstOf {
+                        option(GeneralRules.EvaluateProductContainingZero)
+                        option(DecimalRules.EvaluateDecimalProductAndDivision)
+                        option(GeneralRules.EliminateOneInProduct)
+                    }
+                }
+            }
+        }
+    ),
+    NormalizeFractionOfDecimals(
+        plan {
+            explanation(Explanation.NormalizeFractionOfDecimals)
+
+            steps {
+                apply(DecimalRules.MultiplyFractionOfDecimalsByPowerOfTen)
+                whilePossible {
+                    deeply(SimplifyDecimalsInProduct)
+                }
+            }
+        }
+    ),
+
+    /**
+     * Convert a "nice" fraction to a decimal if possible.  A fraction is called "nice" if its denominator divides a
+     * power of 10.
+     */
+    ConvertNiceFractionToDecimal(
+        plan {
+            explanation(Explanation.ConvertNiceFractionToDecimal)
+            pattern = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
+
+            steps {
+                optionally(DecimalRules.ExpandFractionToPowerOfTenDenominator)
+                optionally {
+                    applyTo(DecimalRules.EvaluateDecimalProductAndDivision) { it.numerator() }
+                }
+                optionally {
+                    applyTo(DecimalRules.EvaluateDecimalProductAndDivision) { it.denominator() }
+                }
+                apply(DecimalRules.ConvertFractionWithPowerOfTenDenominatorToDecimal)
+            }
+        }
+    ),
+
+    EvaluateSubexpressionAsDecimal(
+        plan {
+            explanation(Explanation.EvaluateExpressionInBracketsAsDecimal)
+            pattern = condition(AnyPattern()) { it.hasBracket() }
+
+            steps {
+                whilePossible(evaluationSteps)
+            }
+        }
+    ),
+
+    @PublicMethod
+    EvaluateExpressionAsDecimal(
+        plan {
+            val expression = AnyPattern()
+            pattern = condition(expression) { it.isDecimalExpression() }
+            resultPattern = SignedNumberPattern()
+
+            explanation(Explanation.EvaluateExpressionAsDecimal)
+
+            steps {
+                whilePossible {
+                    firstOf {
+                        option(NormalizationPlans.AddClarifyingBrackets)
+                        option(NormalizationRules.RemoveOuterBracket)
+
+                        option {
+                            deeply(DecimalPlans.EvaluateSubexpressionAsDecimal, deepFirst = true)
+                        }
+
+                        option {
+                            whilePossible(evaluationSteps)
+                        }
+                    }
+                }
+            }
+        }
+    )
 }
 
 private val evaluationSteps = steps {
@@ -150,27 +203,18 @@ private val evaluationSteps = steps {
             option { deeply(GeneralRules.SimplifyZeroDenominatorFractionToUndefined, deepFirst = true) }
             option { deeply(removeRedundantBrackets, deepFirst = true) }
 
-            option(normalizeSignsInFraction)
+            option(FractionArithmeticPlans.NormalizeSignsInFraction)
 
-            option { deeply(normalizeFractionOfDecimals, deepFirst = true) }
-            option { deeply(simplifyFraction, deepFirst = true) }
+            option { deeply(DecimalPlans.NormalizeFractionOfDecimals, deepFirst = true) }
+            option { deeply(FractionArithmeticPlans.SimplifyFraction, deepFirst = true) }
             option { deeply(GeneralRules.SimplifyDoubleMinus, deepFirst = true) }
-            option { deeply(convertNiceFractionToDecimal, deepFirst = true) }
-            option { deeply(evaluateDecimalPower, deepFirst = true) }
-            option { deeply(evaluateProductOfDecimals, deepFirst = true) }
-            option { deeply(evaluateSumOfDecimals, deepFirst = true) }
-            option { deeply(multiplyAndSimplifyFractions, deepFirst = true) }
+            option { deeply(DecimalPlans.ConvertNiceFractionToDecimal, deepFirst = true) }
+            option { deeply(DecimalPlans.EvaluateDecimalPower, deepFirst = true) }
+            option { deeply(DecimalPlans.EvaluateProductOfDecimals, deepFirst = true) }
+            option { deeply(DecimalPlans.EvaluateSumOfDecimals, deepFirst = true) }
+            option { deeply(FractionArithmeticPlans.MultiplyAndSimplifyFractions, deepFirst = true) }
             option { deeply(DecimalRules.TurnDivisionOfDecimalsIntoFraction, deepFirst = true) }
         }
-    }
-}
-
-val evaluateSubexpressionAsDecimal = plan {
-    explanation(Explanation.EvaluateExpressionInBracketsAsDecimal)
-    pattern = condition(AnyPattern()) { it.hasBracket() }
-
-    steps {
-        whilePossible(evaluationSteps)
     }
 }
 
@@ -179,29 +223,4 @@ private fun Expression.isDecimalExpression(): Boolean {
         arithmeticOperators.contains(operator) || operator == BinaryExpressionOperator.Fraction
 
     return validOperator && operands.all { it.isDecimalExpression() }
-}
-
-val evaluateExpressionAsDecimal = plan {
-    val expression = AnyPattern()
-    pattern = condition(expression) { it.isDecimalExpression() }
-    resultPattern = SignedNumberPattern()
-
-    explanation(Explanation.EvaluateExpressionAsDecimal)
-
-    steps {
-        whilePossible {
-            firstOf {
-                option(addClarifyingBrackets)
-                option(NormalizationRules.RemoveOuterBracket)
-
-                option {
-                    deeply(evaluateSubexpressionAsDecimal, deepFirst = true)
-                }
-
-                option {
-                    whilePossible(evaluationSteps)
-                }
-            }
-        }
-    }
 }

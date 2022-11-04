@@ -7,4 +7,4 @@ methods:
     visibility: public
     description: "Evaluate an arithmetic expression (i.e. an expression containing only
       integers and the operators +, -, *, :, ^ and brackets)"
-    implementationName: evaluateArithmeticExpression
+    implementationName: IntegerArithmeticPlans.EvaluateArithmeticExpression

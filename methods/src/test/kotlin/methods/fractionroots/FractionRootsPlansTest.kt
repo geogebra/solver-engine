@@ -1,7 +1,7 @@
 package methods.fractionroots
 
 import methods.constantexpressions.ConstantExpressionsExplanation
-import methods.constantexpressions.simplifyConstantExpression
+import methods.constantexpressions.ConstantExpressionsPlans
 import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.general.GeneralExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
@@ -13,7 +13,7 @@ class FractionRootsPlansTest {
 
     @Test
     fun testRootOfFraction() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "sqrt[[3 / 2]]"
 
         check {
@@ -51,7 +51,7 @@ class FractionRootsPlansTest {
 
     @Test
     fun testRationalizationRadicalWithCoefficient() = testMethod {
-        method = rationalizeDenominators
+        method = FractionRootsPlans.RationalizeDenominators
         inputExpr = "[sqrt[3] / 3 * sqrt[2]]"
 
         check {
@@ -80,7 +80,7 @@ class FractionRootsPlansTest {
 
     @Test
     fun testRationalizationWithSumOfRadicalsInNumerator() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[sqrt[2] + sqrt[3] / sqrt[2]]"
 
         check {
@@ -131,7 +131,7 @@ class FractionRootsPlansTest {
 
     @Test
     fun testRationalizeHigherOrderRoot() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[9 / 2 * root[18, 4]]"
 
         check {
@@ -354,7 +354,7 @@ class FractionRootsPlansTest {
 
     @Test
     fun testRationalizeHigherOrderRoot2() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[9 / 2 * root[9, 4]]"
 
         check {
@@ -539,7 +539,7 @@ class FractionRootsRationalization {
 
     @Test
     fun testRationalizeHigherOrderRootWithPrimeRadicand() = testMethod {
-        method = rationalizeDenominators
+        method = FractionRootsPlans.RationalizeDenominators
         inputExpr = "[1 / root[2, 3]]"
 
         check {
@@ -673,7 +673,7 @@ class FractionRootsRationalization {
 
     @Test
     fun testRationalizeHigherOrderRootWithPowerOfPrimeRadicand() = testMethod {
-        method = rationalizeDenominators
+        method = FractionRootsPlans.RationalizeDenominators
         inputExpr = "[1 / root[[13^2], 3]]"
 
         check {
@@ -818,7 +818,7 @@ class CollectRationalizingRadicalsTest {
 
     @Test
     fun testCollectRationalizingRadicalsTest1() = testMethod {
-        method = collectRationalizingRadicals
+        method = FractionRootsPlans.CollectRationalizingRadicals
         inputExpr = "root[2 * 19, 3] * root[ [2^2] * [19^2], 3]"
 
         check {
@@ -829,7 +829,7 @@ class CollectRationalizingRadicalsTest {
 
     @Test
     fun testCollectRationalizingRadicalsTest2() = testMethod {
-        method = collectRationalizingRadicals
+        method = FractionRootsPlans.CollectRationalizingRadicals
         inputExpr = "root[19, 3] * root[ [19^2], 3]"
 
         check {

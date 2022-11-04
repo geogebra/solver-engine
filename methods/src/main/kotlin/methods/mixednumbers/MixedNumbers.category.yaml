@@ -6,4 +6,4 @@ methods:
   AddMixedNumbers:
     visibility: public
     description: "Adds mixed number wow"
-    implementationName: addMixedNumbers
+    implementationName: MixedNumbersPlans.AddMixedNumbers

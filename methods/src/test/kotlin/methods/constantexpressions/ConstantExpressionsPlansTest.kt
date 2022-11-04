@@ -4,7 +4,7 @@ import method.integerrationalexponents.IntegerRationalExponentsExplanation
 import methods.decimals.DecimalsExplanation
 import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.fractionroots.FractionRootsExplanation
-import methods.fractionroots.rationalizeDenominators
+import methods.fractionroots.FractionRootsPlans
 import methods.general.GeneralExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
 import methods.integerroots.IntegerRootsExplanation
@@ -15,7 +15,7 @@ class ConstantExpressionsPlansTest {
 
     @Test
     fun simpleTest() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[1 / 3] + [2 / 3] * [1 / 2]"
 
         check {
@@ -27,7 +27,7 @@ class ConstantExpressionsPlansTest {
 
     @Test
     fun testMultiplyAndSimplify() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[14 / 4] * [4 / 21]"
 
         check {
@@ -47,7 +47,7 @@ class ConstantExpressionsPlansTest {
 
     @Test
     fun testWithNegativesInFractions() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[-1 / 6] * [2 / -5]"
 
         check {
@@ -62,7 +62,7 @@ class ConstantExpressionsPlansTest {
 
     @Test
     fun testWithMoreNegativesInFractions() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "(-[1 / 3]) * [-1 / 4] * [3 / -2]"
 
         check {
@@ -78,7 +78,7 @@ class ConstantExpressionsPlansTest {
 
     @Test
     fun testDividingTwice() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "3 : 4 : 5"
 
         check {
@@ -96,7 +96,7 @@ class ConstantExpressionsPlansTest {
 
     @Test
     fun testDividingFractions() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[5 / 6] : [3 / 4]"
 
         check {
@@ -110,7 +110,7 @@ class ConstantExpressionsPlansTest {
 
     @Test
     fun testDividingWithNegatives() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "3 : (-5)"
 
         check {
@@ -121,7 +121,7 @@ class ConstantExpressionsPlansTest {
 
     @Test
     fun testFractionExponent() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[(-[1 / 2]) ^ 3] + [([2 / 3]) ^ -2]"
 
         check {
@@ -133,7 +133,7 @@ class ConstantExpressionsPlansTest {
 
     @Test
     fun testNegativeExponentsOfIntegers() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[3 ^ -1] - [3 ^ -2]"
 
         check {
@@ -145,7 +145,7 @@ class ConstantExpressionsPlansTest {
 
     @Test
     fun testFractionToTheMinusOne() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[([1 / 3])^-1] * [2 ^ -2]"
 
         check {
@@ -163,7 +163,7 @@ class ConstantExpressionsPlansTest {
 
     @Test
     fun testResultSimplifyPowerOfRoot() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[(root[12, 5]) ^ 4]"
 
         check {
@@ -175,7 +175,7 @@ class ConstantExpressionsPlansTest {
     @Test
     fun testResultSimplifyPowerOfRootWithCoefficients() = testMethod {
         testMethod {
-            method = simplifyConstantExpression
+            method = ConstantExpressionsPlans.SimplifyConstantExpression
             inputExpr = "[(2 * sqrt[5]) ^ 3]"
 
             check {
@@ -187,7 +187,7 @@ class ConstantExpressionsPlansTest {
 
     @Test
     fun testResultPowerOfBinomialContainingRoots() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[(2 * sqrt[6] + 3 * sqrt[2]) ^ 2]"
 
         check {
@@ -200,7 +200,7 @@ class ConstantExpressionsPlansTest {
 
     @Test
     fun testSimplifyRootOfRoot() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "sqrt[root[12, 4]]"
 
         check {
@@ -221,7 +221,7 @@ class ConstantExpressionsPlansTest {
 
     @Test
     fun testSimplifyRootOfRootWithCoefficient() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "root[2 * sqrt[6], 3]"
 
         check {
@@ -258,7 +258,7 @@ class ConstantExpressionsPlansTest {
 
     @Test
     fun testFractionOverOnePriority() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[sqrt[12] / 1]"
 
         check {
@@ -271,7 +271,7 @@ class ConstantExpressionsPlansTest {
 
     @Test
     fun testSumOfProductOfSameBaseRationalExponent1() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[12^[1/2]] * [12^[1/2]]"
 
         check {
@@ -292,7 +292,7 @@ class ConstantExpressionsPlansTest {
 
     @Test
     fun testSumOfProductOfSameBaseRationalExponent2() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[12^[1/3]] * [12^[1/2]]"
 
         check {
@@ -315,7 +315,7 @@ class ConstantExpressionsPlansTest {
 class ConstantExpressionSimpleOperationsTest {
     @Test
     fun testAddLikeFractions() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[5/4]+[2/4]"
 
         check {
@@ -350,7 +350,7 @@ class ConstantExpressionSimpleOperationsTest {
 
     @Test
     fun testSubtractLikeFractions() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[5/4]-[2/4]"
 
         check {
@@ -385,7 +385,7 @@ class ConstantExpressionSimpleOperationsTest {
 
     @Test
     fun testSimplifyFractionsBeforeAdding() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[100/200] + [100/300]"
 
         check {
@@ -404,7 +404,7 @@ class ConstantExpressionRationalizationTest {
 
     @Test
     fun testSimplifyBeforeRationalizing() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[1 / sqrt[12] - sqrt[3]]"
 
         check {
@@ -439,7 +439,7 @@ class ConstantExpressionRationalizationTest {
 
     @Test
     fun testRationalizeCubeRootDenominator1() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[2 / root[5, 3] + root[3, 3]]"
 
         check {
@@ -481,7 +481,7 @@ class ConstantExpressionRationalizationTest {
 
     @Test
     fun testRationalizeCubeRootDenominator2() = testMethod {
-        method = rationalizeDenominators
+        method = FractionRootsPlans.RationalizeDenominators
         inputExpr = "[2 / -root[5, 3] + root[3, 3]]"
 
         @Suppress("MaxLineLength")
@@ -611,7 +611,7 @@ class ConstantExpressionRationalizationTest {
 
     @Test
     fun testRationalizeHigherOrderRoot1() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[2 / root[2, 3]]"
 
         check {
@@ -756,7 +756,7 @@ class TestNormalization {
 
     @Test
     fun testSimpleNormalization() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "(+1 + (3))"
 
         check {
@@ -777,7 +777,7 @@ class TestNormalization {
 
     @Test
     fun testNoNormalizationIfNotNeeded() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "0 * (1)"
 
         check {
@@ -794,7 +794,7 @@ class TestNormalization {
 class ConstantExpressionFractionHigherOrderRootTest {
     @Test
     fun testHigherOrderRootSimplify() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "root[[5 / 12], 4]"
 
         check {
@@ -846,7 +846,7 @@ class ConstantExpressionFractionHigherOrderRootTest {
 
     @Test
     fun testSimplifyConstantExpressionWithDivisionOfDecimals() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "1 + 0.002 : 0.6"
 
         check {
@@ -888,7 +888,7 @@ class ConstantExpressionFractionHigherOrderRootTest {
 class ConstantExpressionTest {
     @Test
     fun testCancelUnitaryDenominator() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[sqrt[8] / 2]"
 
         check {
@@ -898,7 +898,7 @@ class ConstantExpressionTest {
 
     @Test
     fun testRationalizationIntegerAndCubeRoot() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[2 / 2 - root[3, 3]]"
 
         check {
@@ -911,7 +911,7 @@ class SimplifyToZeroTest {
 
     @Test
     fun testZeroDivideByValue() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "0:(1+1)"
 
         check {
@@ -955,7 +955,7 @@ class SimplifyToZeroTest {
 class SimplifyToUndefinedTest {
     @Test
     fun testZeroDenominator1() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[5 - 4 / 1 - 1] + 2"
 
         check {
@@ -982,7 +982,7 @@ class SimplifyToUndefinedTest {
 
     @Test
     fun testDivisionByZero1() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "(5 - 4) : (1 - 1) + 2"
 
         check {
@@ -1036,7 +1036,7 @@ class SimplifyToUndefinedTest {
 
     @Test
     fun testZeroDenominator2() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[0 / 1 - 1]"
 
         check {
@@ -1047,7 +1047,7 @@ class SimplifyToUndefinedTest {
     // step-by-step of this needs to be improved
     @Test
     fun testDivisionByZero2() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "0:(1 - 1)"
 
         check {
@@ -1057,7 +1057,7 @@ class SimplifyToUndefinedTest {
 
     @Test
     fun testNegativeToRationalExponent() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "1 + 3 * [(-1) ^ [6/5]]"
 
         check {
@@ -1069,7 +1069,7 @@ class SimplifyToUndefinedTest {
 class CancelOppositeTermTest {
     @Test
     fun testCancelOppositeTerm() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "(sqrt[2] + root[3, 3]) + 1 - (sqrt[2] + root[3, 3]) - 2"
 
         check {
@@ -1096,7 +1096,7 @@ class CancelOppositeTermTest {
 
     @Test
     fun testCommutativeCancelAdditiveInverseElements() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "-(sqrt[2] + root[3, 3]) + 1 + (sqrt[2] + root[3, 3]) - 2"
 
         check {
@@ -1123,7 +1123,7 @@ class CancelOppositeTermTest {
 
     @Test
     fun testCommutativeAdditiveInverseElementsComplex() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "-1 + root[2, 3] + 2 - 1 - root[2, 3]"
 
         check {
@@ -1140,7 +1140,7 @@ class CancelOppositeTermTest {
 
     @Test
     fun testCancelAdditiveInverseElementsAfterSimplifying() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "-(root[3, 3] + 2 * root[3, 3] - 4 * root[3, 3]) - (-root[3, 3] - 3 * root[3, 3] + 5 * root[3, 3])"
 
         check {
@@ -1163,7 +1163,7 @@ class CancelOppositeTermTest {
 
     @Test
     fun testCancelTermsBeforeRationalization() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[1 / root[3, 3] - root[3, 3]]"
 
         check {
@@ -1187,7 +1187,7 @@ class CancelOppositeTermTest {
 
     @Test
     fun testCollectLikeRationalExponentsBeforeSimplification() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[12 ^ [1 / 2]] + [12 ^ [1 / 2]]"
 
         check {
@@ -1225,7 +1225,7 @@ class CancelOppositeTermTest {
 
     @Test
     fun testSimplifyRationalExponentsInProduct() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[2 ^ [1 / 3]] * [3 ^ [1 / 3]] * [6 ^ [1 / 2]]"
 
         check {
@@ -1279,7 +1279,7 @@ class CancelOppositeTermTest {
 class ExponentsTest {
     @Test
     fun testEvaluateExpressionToThePowerOfOneComplexExpression() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[ (sqrt[2] + 1) ^ [5 / 5]]  + 1"
 
         check {
@@ -1312,7 +1312,7 @@ class ExponentsTest {
 
     @Test
     fun testEvaluateExpressionToThePowerOfOneSimpleExpr() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[2 ^ 1] + [5 ^ 1]"
 
         check {
@@ -1362,7 +1362,7 @@ class ExponentsTest {
 
     @Test
     fun testZeroToNegativePower() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[0 ^ -[3 / 2]]"
 
         check {
@@ -1389,7 +1389,7 @@ class ExponentsTest {
 
     @Test
     fun testProductOfExponentsSameBase1() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[20 ^ 2] * [20 ^ -2]"
 
         check {
@@ -1431,7 +1431,7 @@ class ExponentsTest {
 
     @Test
     fun testProductOfExponentsSameBase2() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[20 ^ 2] * [20 ^ -3]"
 
         check {
@@ -1453,7 +1453,7 @@ class ExponentsTest {
 class SimplifyIntegerPowerUnderRoot {
     @Test
     fun testCancelPowersAndEvaluate1() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "root[ [7^4], 6]"
 
         check {
@@ -1479,7 +1479,7 @@ class SimplifyIntegerPowerUnderRoot {
 
     @Test
     fun testCancelPowersAndEvaluate2() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "root[ [7^6], 4]"
 
         check {
@@ -1557,7 +1557,7 @@ class SimplifyIntegerPowerUnderRoot {
 
     @Test
     fun testSplitIntegerPowerUnderRoot() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "root[ [12^4], 3]"
 
         check {
@@ -1603,7 +1603,7 @@ class SimplifyIntegerPowerUnderRoot {
 
     @Test
     fun testSplitAndSimplifyIntegerPowerUnderRoot() = testMethod {
-        method = simplifyConstantExpression
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "root[ [24^5], 3]"
 
         check {

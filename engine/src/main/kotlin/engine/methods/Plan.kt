@@ -19,7 +19,7 @@ data class Plan(
     val explanationMaker: MetadataMaker,
     val skillMakers: List<MetadataMaker> = emptyList(),
     val stepsProducer: StepsProducer,
-) : Method {
+) : Method, Runner {
 
     private fun getMatch(context: Context, sub: Subexpression): Match? {
         return pattern.findMatches(context, RootMatch, sub).firstOrNull()
@@ -34,6 +34,25 @@ data class Plan(
             when {
                 toExpr.expr == Constants.Undefined || resultPattern.matches(ctx, toExpr.expr) -> Transformation(
                     fromExpr = sub,
+                    toExpr = toExpr,
+                    steps = steps,
+                    explanation = explanationMaker.make(match),
+                    skills = skillMakers.map { it.make(match) }
+                )
+
+                else -> null
+            }
+        }
+    }
+
+    override fun run(ctx: Context, sub: Subexpression): TransformationResult? {
+        val match = getMatch(ctx, sub) ?: return null
+
+        return stepsProducer.produceSteps(ctx, sub)?.let { steps ->
+            val toExpr = steps.last().toExpr
+
+            when {
+                toExpr.expr == Constants.Undefined || resultPattern.matches(ctx, toExpr.expr) -> TransformationResult(
                     toExpr = toExpr,
                     steps = steps,
                     explanation = explanationMaker.make(match),
