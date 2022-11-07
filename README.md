@@ -25,18 +25,6 @@ The solver engine project is split into modules:
 - The `export` module is used only to upload the translation keys
   into GgbTrans. These are then translated and loaded by the poker.
 
-## Documentation
-
-We use [Dokka](https://kotlinlang.org/docs/kotlin-doc.html) to generate documentation.
-
-Simply run
-
-```shell
-./gradlew dokkaHtml
-```
-
-in command-line, which will generate html documentation in [documentation/html](documentation/html)
-
 ## Development
 
 ### IntelliJ IDEA

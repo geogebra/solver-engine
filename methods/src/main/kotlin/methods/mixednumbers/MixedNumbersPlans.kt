@@ -38,6 +38,9 @@ enum class MixedNumbersPlans(override val runner: Plan) : RunnerMethod {
         }
     ),
 
+    /**
+     * Adds two mixed numbers together
+     */
     @PublicMethod
     AddMixedNumbers(
         plan {

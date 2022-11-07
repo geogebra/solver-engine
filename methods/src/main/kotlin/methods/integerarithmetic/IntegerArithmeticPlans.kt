@@ -127,6 +127,10 @@ enum class IntegerArithmeticPlans(override val runner: Plan) : RunnerMethod {
         }
     ),
 
+    /**
+     * Evaluate an arithmetic expression (i.e. an expression containing only
+     * integers and the operators +, -, *, :, ^ and brackets)
+     */
     @PublicMethod
     EvaluateArithmeticExpression(
         plan {

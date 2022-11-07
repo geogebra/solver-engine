@@ -15,9 +15,13 @@ repositories {
 dependencies {
     implementation(project(":engine"))
     implementation(project(":export"))
+    implementation(project(":methodsProcessor"))
+
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")
+
     ksp(project(":export"))
+    ksp(project(":methodsProcessor"))
 }
 
 tasks.test {
@@ -26,17 +30,6 @@ tasks.test {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "17"
-
-    dependsOn("processCategories")
-}
-
-val generatedRoot = "$buildDir/generated-src"
-val translationsPath = "$rootDir/api/build/resources/main/static"
-val translationsFileName = "ExplanationKeyToDefaultTranslation.json"
-
-
-sourceSets["main"].java {
-    srcDirs("$generatedRoot/main/kotlin")
 }
 
 detekt {
@@ -44,15 +37,16 @@ detekt {
     config = files("$rootDir/config/detekt.yaml")
 }
 
-tasks.register<processor.ProcessCategoriesTask>("processCategories") {
-    categoriesRoot.set(file("$projectDir/src"))
-    outputRoot.set(file(generatedRoot))
-}
-
 ktlint {
     filter {
         exclude {
             it.file.path.contains("$buildDir")
         }
+    }
+}
+
+kotlin {
+    sourceSets.main {
+        kotlin.srcDir("build/generated/ksp/main/kotlin")
     }
 }

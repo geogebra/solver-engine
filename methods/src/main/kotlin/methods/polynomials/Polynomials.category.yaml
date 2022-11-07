@@ -1,9 +1,0 @@
-metadata:
-  name: Polynomials
-  title: Polynomials
-
-methods:
-  SimplifyAlgebraicExpression:
-    visibility: public
-    description: ""
-    implementationName: PolynomialPlans.SimplifyAlgebraicExpression

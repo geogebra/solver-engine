@@ -64,7 +64,7 @@ enum class ConstantExpressionsPlans(override val runner: Plan) : RunnerMethod {
                         option { deeply(IntegerArithmeticRules.SimplifyOddPowerOfNegative) }
                         option { deeply(GeneralRules.DistributePowerOfProduct) }
                         option { deeply(GeneralRules.ExpandBinomialSquared) }
-                        option { deeply(methods.integerarithmetic.IntegerArithmeticPlans.EvaluateSignedIntegerPower) }
+                        option { deeply(IntegerArithmeticPlans.EvaluateSignedIntegerPower) }
                     }
                 }
             }
@@ -123,6 +123,9 @@ enum class ConstantExpressionsPlans(override val runner: Plan) : RunnerMethod {
         }
     ),
 
+    /**
+     * Simplifies a constant expression, i.e. one containing no variables
+     */
     @PublicMethod
     SimplifyConstantExpression(
         plan {

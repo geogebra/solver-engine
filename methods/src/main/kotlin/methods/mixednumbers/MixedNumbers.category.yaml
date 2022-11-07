@@ -1,9 +1,0 @@
-metadata:
-  name: MixedNumbers
-  title: Mixed Numbers
-
-methods:
-  AddMixedNumbers:
-    visibility: public
-    description: "Adds mixed number wow"
-    implementationName: MixedNumbersPlans.AddMixedNumbers

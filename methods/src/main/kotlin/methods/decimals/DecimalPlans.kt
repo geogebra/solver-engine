@@ -167,6 +167,9 @@ enum class DecimalPlans(override val runner: Plan) : RunnerMethod {
         }
     ),
 
+    /**
+     * Evaluate an expression as a terminating decimal
+     */
     @PublicMethod
     EvaluateExpressionAsDecimal(
         plan {

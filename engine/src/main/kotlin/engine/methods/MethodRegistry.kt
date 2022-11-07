@@ -5,6 +5,11 @@ interface MethodId {
     val key get() = "$category.$this"
 }
 
+data class SimpleMethodId(override val category: String, val name: String) : MethodId {
+    override val key: String
+        get() = "$category.$name"
+}
+
 class MethodRegistry {
 
     data class EntryData(

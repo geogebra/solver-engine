@@ -1,8 +1,0 @@
-metadata:
-  name: Approximation
-  title: Approximation
-methods:
-  ApproximateExpression:
-    description: Approximates an expression to a given number of decimal places
-    visibility: public
-    implementationName: ApproximationPlans.ApproximateExpression

@@ -9,13 +9,12 @@ plugins {
     kotlin("plugin.jpa") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
 
-    id("org.openapi.generator") version "6.0.0"
+    id("org.openapi.generator") version "6.2.1"
     id("org.springframework.boot") version "2.7.1"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
 
     id("org.jlleitschuh.gradle.ktlint")
     id("io.gitlab.arturbosch.detekt")
-    id("org.jetbrains.dokka")
 }
 
 group = "org.geogebra.solver"
@@ -32,13 +31,11 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("jakarta.validation:jakarta.validation-api")
     implementation("jakarta.annotation:jakarta.annotation-api:2.1.1")
-    implementation("org.springdoc:springdoc-openapi-data-rest:1.6.9")
-    implementation("org.springdoc:springdoc-openapi-ui:1.6.9")
-    implementation("org.springdoc:springdoc-openapi-kotlin:1.6.9")
+    implementation("org.springdoc:springdoc-openapi-data-rest:1.6.12")
+    implementation("org.springdoc:springdoc-openapi-ui:1.6.12")
+    implementation("org.springdoc:springdoc-openapi-kotlin:1.6.12")
     implementation("javax.annotation:javax.annotation-api:1.3.2")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
-
-    dokkaHtmlPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:1.7.0")
 }
 
 tasks.withType<KotlinCompile> {

@@ -1,8 +1,0 @@
-metadata:
-  name: Decimals
-  title: Decimals
-methods:
-  EvaluateExpressionAsDecimal:
-    description: Evaluate an expression as a terminating decimal
-    visibility: public
-    implementationName: DecimalPlans.EvaluateExpressionAsDecimal

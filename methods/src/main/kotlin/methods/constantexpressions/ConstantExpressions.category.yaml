@@ -1,8 +1,0 @@
-metadata:
-  name: ConstantExpressions
-  title: Constant Expressions
-methods:
-  SimplifyConstantExpression:
-    description: Simplifies a constant expression, i.e. one containing no variables
-    visibility: public
-    implementationName: ConstantExpressionsPlans.SimplifyConstantExpression

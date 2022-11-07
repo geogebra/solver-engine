@@ -13,10 +13,10 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/api" />
-            <option value="$PROJECT_DIR$/buildSrc" />
             <option value="$PROJECT_DIR$/engine" />
             <option value="$PROJECT_DIR$/export" />
             <option value="$PROJECT_DIR$/methods" />
+            <option value="$PROJECT_DIR$/methodsProcessor" />
           </set>
         </option>
       </GradleProjectSettings>
