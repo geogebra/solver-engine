@@ -19,11 +19,9 @@ import engine.utility.divides
 import methods.decimals.DecimalPlans
 import methods.fractionarithmetic.FractionArithmeticPlans
 import methods.fractionarithmetic.FractionArithmeticRules
-import methods.fractionarithmetic.simplifyFractionsInExpression
 import methods.fractionarithmetic.simplifyIntegerToNegativePower
 import methods.fractionroots.FractionRootsPlans
 import methods.fractionroots.FractionRootsRules
-import methods.general.GeneralPlans
 import methods.general.GeneralRules
 import methods.general.NormalizationPlans
 import methods.general.removeRedundantBrackets
@@ -155,13 +153,6 @@ val simpleTidyUpSteps = steps {
     }
 }
 
-val simplifyAfterCollectingLikeTerms = steps {
-    apply(simplifyFractionsInExpression)
-    optionally { deeply(GeneralRules.MoveSignOfNegativeFactorOutOfProduct) }
-    optionally { deeply(removeRedundantBrackets) }
-    optionally { deeply(FractionArithmeticPlans.MultiplyAndSimplifyFractions) }
-}
-
 val simplificationSteps = steps {
     firstOf {
         option(simpleTidyUpSteps)
@@ -170,7 +161,7 @@ val simplificationSteps = steps {
         option { deeply(removeRedundantBrackets, deepFirst = true) }
 
         option { deeply(IntegerRootsPlans.SimplifyPowerOfIntegerUnderRoot, deepFirst = true) }
-        option { deeply(GeneralPlans.SimplifyProductOfPowersWithSameBase) }
+        option { deeply(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithSameBase) }
         option { deeply(ConstantExpressionsPlans.SimplifyPowers, deepFirst = true) }
 
         option(FractionArithmeticPlans.NormalizeFractions)

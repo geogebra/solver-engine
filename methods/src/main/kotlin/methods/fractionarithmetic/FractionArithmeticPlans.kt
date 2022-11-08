@@ -17,6 +17,7 @@ import engine.steps.metadata.Skill
 import methods.general.GeneralPlans
 import methods.general.GeneralRules
 import methods.general.normalizeNegativeSigns
+import methods.general.removeRedundantBrackets
 import methods.integerarithmetic.IntegerArithmeticPlans
 import methods.integerarithmetic.IntegerArithmeticRules
 import methods.integerarithmetic.simplifyIntegersInExpression
@@ -189,4 +190,11 @@ val simplifyFractionsInExpression = steps {
             option { deeply(FractionArithmeticPlans.EvaluateSumOfFractionAndInteger) }
         }
     }
+}
+
+val simplifyAfterCollectingLikeTerms = steps {
+    apply(simplifyFractionsInExpression)
+    optionally { deeply(GeneralRules.MoveSignOfNegativeFactorOutOfProduct) }
+    optionally { deeply(removeRedundantBrackets) }
+    optionally { deeply(FractionArithmeticPlans.MultiplyAndSimplifyFractions) }
 }

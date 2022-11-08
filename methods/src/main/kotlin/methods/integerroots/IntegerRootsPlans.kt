@@ -10,7 +10,7 @@ import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.integerCondition
 import engine.patterns.integerOrderRootOf
 import engine.utility.isPowerOfDegree
-import methods.constantexpressions.simplifyAfterCollectingLikeTerms
+import methods.fractionarithmetic.simplifyAfterCollectingLikeTerms
 import methods.general.GeneralRules
 import methods.general.NormalizationRules
 import methods.integerarithmetic.IntegerArithmeticPlans

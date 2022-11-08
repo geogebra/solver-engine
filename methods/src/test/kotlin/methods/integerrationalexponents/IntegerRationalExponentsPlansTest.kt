@@ -413,7 +413,7 @@ class SimplifyRationalExponents {
                 fromExpr = "[([2 / 3]) ^ [1 / 2]] * [([2 / 3]) ^ -[2 / 5]]"
                 toExpr = "[([2 / 3]) ^ [1 / 10]]"
                 explanation {
-                    key = GeneralExplanation.SimplifyProductOfPowersWithSameBase
+                    key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithSameBase
                 }
 
                 step {
@@ -459,7 +459,7 @@ class SimplifyRationalExponents {
                 fromExpr = "[3 ^ [1 / 2]] * [3 ^ -[2 / 5]]"
                 toExpr = "[3 ^ [1 / 10]]"
                 explanation {
-                    key = GeneralExplanation.SimplifyProductOfPowersWithSameBase
+                    key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithSameBase
                 }
 
                 step {
@@ -568,6 +568,19 @@ class SimplifyRationalExponents {
                     key = FractionArithmeticExplanation.SimplifyFraction
                 }
             }
+        }
+    }
+
+    @Test
+    fun testSimplifyProductOfPowersWithSameBase() = testMethod {
+        method = IntegerRationalExponentsPlans.SimplifyProductOfPowersWithSameBase
+        inputExpr = "[20 ^ 2] * [20 ^ -3]"
+
+        check {
+            toExpr = "[20 ^ -1]"
+
+            step { toExpr = "[20 ^ 2 - 3]" }
+            step { toExpr = "[20 ^ -1]" }
         }
     }
 }

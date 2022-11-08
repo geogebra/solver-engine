@@ -5,8 +5,8 @@ variables:
   GITLAB_CLUSTER: solver-v2
 
 stages:
-  - assemble
   - lint
+  - assemble
   - publish
   - deploy
   - before-undeploy
@@ -34,6 +34,11 @@ assemble:
     paths:
       - methods/build/generated/ksp/main/resources/TranslationKeys.json
     expire_in: 1 day
+
+check-circular-dependencies-in-methods:
+  stage: lint
+  script:
+    - ./scripts/check_method_dependencies.sh
 
 code_style:
   stage: lint

@@ -10,12 +10,12 @@ import engine.patterns.IntegerFractionPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.powerOf
 import method.integerrationalexponents.Explanation
-import methods.constantexpressions.simplifyAfterCollectingLikeTerms
 import methods.fractionarithmetic.FractionArithmeticPlans
 import methods.fractionarithmetic.FractionArithmeticRules
-import methods.general.GeneralPlans
+import methods.fractionarithmetic.simplifyAfterCollectingLikeTerms
 import methods.general.GeneralRules
 import methods.general.NormalizationRules
+import methods.integerarithmetic.IntegerArithmeticPlans
 import methods.integerarithmetic.IntegerArithmeticRules
 import methods.integerarithmetic.simplifyIntegersInExpression
 
@@ -94,13 +94,27 @@ enum class IntegerRationalExponentsPlans(override val runner: Plan) : RunnerMeth
         }
     ),
 
+    SimplifyProductOfPowersWithSameBase(
+        plan {
+            explanation(Explanation.SimplifyProductOfPowersWithSameBase)
+
+            steps {
+                apply(GeneralRules.RewriteProductOfPowersWithSameBase)
+                firstOf {
+                    option { deeply(FractionArithmeticPlans.EvaluateFractionSum) }
+                    option { deeply(IntegerArithmeticPlans.EvaluateSumOfIntegers) }
+                }
+            }
+        }
+    ),
+
     SimplifyProductOfPowersWithInverseFractionBase(
         plan {
             explanation(Explanation.SimplifyProductOfPowersWithInverseFractionBase)
 
             steps {
                 apply(GeneralRules.RewriteProductOfPowersWithInverseFractionBase)
-                apply(GeneralPlans.SimplifyProductOfPowersWithSameBase)
+                apply(SimplifyProductOfPowersWithSameBase)
             }
         }
     ),
@@ -111,7 +125,7 @@ enum class IntegerRationalExponentsPlans(override val runner: Plan) : RunnerMeth
 
             steps {
                 apply(GeneralRules.RewriteProductOfPowersWithInverseBase)
-                apply(GeneralPlans.SimplifyProductOfPowersWithSameBase)
+                apply(SimplifyProductOfPowersWithSameBase)
             }
         }
     ),
@@ -203,7 +217,7 @@ enum class IntegerRationalExponentsPlans(override val runner: Plan) : RunnerMeth
 val simplifyRationalExponentsInProduct = steps {
     whilePossible {
         firstOf {
-            option { deeply(GeneralPlans.SimplifyProductOfPowersWithSameBase) }
+            option { deeply(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithSameBase) }
             option { deeply(IntegerRationalExponentsPlans.SimplifyRationalExponentOfInteger) }
             option { deeply(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithInverseFractionBase) }
             option { deeply(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithInverseBase) }
@@ -223,6 +237,6 @@ val simplifyProductOfPowersWithInverseFractionBase = engine.methods.plan {
 
     steps {
         apply(GeneralRules.RewriteProductOfPowersWithInverseFractionBase)
-        apply(GeneralPlans.SimplifyProductOfPowersWithSameBase)
+        apply(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithSameBase)
     }
 }

@@ -114,6 +114,13 @@ enum class IntegerRationalExponentsExplanation : CategorisedMetadataKey {
     SimplifyProductOfPowersWithNegatedExponent,
 
     /**
+     * Write the product of two powers with the same base as the
+     * power to the sum of the exponents and simplify the result
+     * E.g. [3 ^ [1 / 2]] * [3 ^ [2 / 3]] -> [3 ^ [7 / 6]]
+     */
+    SimplifyProductOfPowersWithSameBase,
+
+    /**
      * If in a product there are two powers such that one of them is the reciprocal
      * of the other, then it inverts that to get equal bases and then simplifies the
      * result

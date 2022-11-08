@@ -282,7 +282,7 @@ class ConstantExpressionsPlansTest {
                 fromExpr = "[12 ^ [1 / 2]] * [12 ^ [1 / 2]]"
                 toExpr = "[12 ^ 1]"
                 explanation {
-                    key = GeneralExplanation.SimplifyProductOfPowersWithSameBase
+                    key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithSameBase
                 }
             }
 
@@ -1255,7 +1255,7 @@ class CancelOppositeTermTest {
             step {
                 toExpr = "[6 ^ [5 / 6]]"
                 explanation {
-                    key = GeneralExplanation.SimplifyProductOfPowersWithSameBase
+                    key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithSameBase
                 }
 
                 step {
@@ -1399,7 +1399,7 @@ class ExponentsTest {
                 fromExpr = "[20 ^ 2] * [20 ^ -2]"
                 toExpr = "[20 ^ 0]"
                 explanation {
-                    key = GeneralExplanation.SimplifyProductOfPowersWithSameBase
+                    key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithSameBase
                 }
 
                 step {
@@ -1441,7 +1441,7 @@ class ExponentsTest {
                 fromExpr = "[20 ^ 2] * [20 ^ -3]"
                 toExpr = "[20 ^ -1]"
                 explanation {
-                    key = GeneralExplanation.SimplifyProductOfPowersWithSameBase
+                    key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithSameBase
                 }
             }
 
