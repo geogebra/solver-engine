@@ -35,6 +35,7 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-ui:1.6.12")
     implementation("org.springdoc:springdoc-openapi-kotlin:1.6.12")
     implementation("javax.annotation:javax.annotation-api:1.3.2")
+    implementation("org.springframework.boot:spring-boot-starter-security")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 }
 
