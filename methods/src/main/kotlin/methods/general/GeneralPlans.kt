@@ -8,7 +8,7 @@ import engine.methods.stepsproducers.steps
 enum class GeneralPlans(override val runner: Plan) : RunnerMethod {
     RewriteDivisionsAsFractions(
         plan {
-            explanation(Explanation.RewriteDivisionsAsFractionInExpression)
+            explanation = Explanation.RewriteDivisionsAsFractionInExpression
 
             steps {
                 whilePossible { deeply(GeneralRules.RewriteDivisionAsFraction) }

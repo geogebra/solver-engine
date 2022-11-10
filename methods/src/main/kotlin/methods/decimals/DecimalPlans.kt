@@ -1,7 +1,6 @@
 package methods.decimals
 
 import engine.context.ResourceData
-import engine.expressionmakers.move
 import engine.expressions.Expression
 import engine.expressions.denominator
 import engine.expressions.numerator
@@ -34,7 +33,8 @@ enum class DecimalPlans(override val runner: Plan) : RunnerMethod {
     EvaluateSumOfDecimals(
         plan {
             pattern = sumContaining()
-            explanation(Explanation.EvaluateSumOfDecimals, move(pattern))
+            explanation = Explanation.EvaluateSumOfDecimals
+            explanationParameters(pattern)
 
             steps {
                 whilePossible(DecimalRules.EvaluateSignedDecimalAddition)
@@ -44,7 +44,8 @@ enum class DecimalPlans(override val runner: Plan) : RunnerMethod {
     EvaluateProductOfDecimals(
         plan {
             pattern = productContaining()
-            explanation(Explanation.EvaluateProductOfDecimals, move(pattern))
+            explanation = Explanation.EvaluateProductOfDecimals
+            explanationParameters(pattern)
 
             steps {
                 whilePossible(DecimalRules.EvaluateDecimalProductAndDivision)
@@ -57,7 +58,8 @@ enum class DecimalPlans(override val runner: Plan) : RunnerMethod {
             val base = SignedNumberPattern()
             val exponent = UnsignedIntegerPattern()
             pattern = powerOf(base, exponent)
-            explanation(Explanation.EvaluateDecimalPower, move(base), move(exponent))
+            explanation = Explanation.EvaluateDecimalPower
+            explanationParameters(base, exponent)
 
             steps {
                 firstOf {
@@ -78,7 +80,7 @@ enum class DecimalPlans(override val runner: Plan) : RunnerMethod {
     ),
     ConvertTerminatingDecimalToFractionAndSimplify(
         plan {
-            explanation(Explanation.ConvertTerminatingDecimalToFractionAndSimplify)
+            explanation = Explanation.ConvertTerminatingDecimalToFractionAndSimplify
 
             steps {
                 apply(DecimalRules.ConvertTerminatingDecimalToFraction)
@@ -88,7 +90,7 @@ enum class DecimalPlans(override val runner: Plan) : RunnerMethod {
     ),
     ConvertRecurringDecimalToFractionAndSimplify(
         plan {
-            explanation(Explanation.ConvertRecurringDecimalToFractionAndSimplify)
+            explanation = Explanation.ConvertRecurringDecimalToFractionAndSimplify
 
             steps(ResourceData(curriculum = "EU")) {
                 apply(DecimalRules.ConvertRecurringDecimalToFractionDirectly)
@@ -108,7 +110,8 @@ enum class DecimalPlans(override val runner: Plan) : RunnerMethod {
     SimplifyDecimalsInProduct(
         plan {
             pattern = productContaining()
-            explanation(Explanation.SimplifyDecimalsInProduct, move(pattern))
+            explanation = Explanation.SimplifyDecimalsInProduct
+            explanationParameters(pattern)
 
             steps {
                 whilePossible {
@@ -123,7 +126,7 @@ enum class DecimalPlans(override val runner: Plan) : RunnerMethod {
     ),
     NormalizeFractionOfDecimals(
         plan {
-            explanation(Explanation.NormalizeFractionOfDecimals)
+            explanation = Explanation.NormalizeFractionOfDecimals
 
             steps {
                 apply(DecimalRules.MultiplyFractionOfDecimalsByPowerOfTen)
@@ -140,7 +143,7 @@ enum class DecimalPlans(override val runner: Plan) : RunnerMethod {
      */
     ConvertNiceFractionToDecimal(
         plan {
-            explanation(Explanation.ConvertNiceFractionToDecimal)
+            explanation = Explanation.ConvertNiceFractionToDecimal
             pattern = fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())
 
             steps {
@@ -158,7 +161,7 @@ enum class DecimalPlans(override val runner: Plan) : RunnerMethod {
 
     EvaluateSubexpressionAsDecimal(
         plan {
-            explanation(Explanation.EvaluateExpressionInBracketsAsDecimal)
+            explanation = Explanation.EvaluateExpressionInBracketsAsDecimal
             pattern = condition(AnyPattern()) { it.hasBracket() }
 
             steps {
@@ -177,7 +180,7 @@ enum class DecimalPlans(override val runner: Plan) : RunnerMethod {
             pattern = condition(expression) { it.isDecimalExpression() }
             resultPattern = SignedNumberPattern()
 
-            explanation(Explanation.EvaluateExpressionAsDecimal)
+            explanation = Explanation.EvaluateExpressionAsDecimal
 
             steps {
                 whilePossible {

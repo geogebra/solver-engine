@@ -1,4 +1,4 @@
-package engine.expressionmakers
+package engine.expressionbuilder
 
 import engine.context.Context
 import engine.expressions.Expression
@@ -16,7 +16,6 @@ import engine.expressions.xp
 import engine.patterns.CoefficientPattern
 import engine.patterns.IntegerPattern
 import engine.patterns.IntegerProvider
-import engine.patterns.Maker
 import engine.patterns.Match
 import engine.patterns.NaryPatternBase
 import engine.patterns.NumberProvider
@@ -32,34 +31,40 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.RoundingMode
 
-typealias ExpressionMaker = Maker<MappedExpression>
-
 @Suppress("TooManyFunctions")
-class MakerBuilder(
+class MappedExpressionBuilder(
     val context: Context,
     private val match: Match,
 ) {
+    private fun unaryAnnotate(pathProvider: PathProvider, pathMappingType: PathMappingType) = MappedExpression(
+        pathProvider.getBoundExpr(match)!!,
+        PathMappingLeaf(pathProvider.getBoundPaths(match), pathMappingType)
+    )
+
+    @Suppress("UnusedPrivateMember")
+    private fun binaryAnnotate(
+        pathProvider: PathProvider,
+        pathMappingType: PathMappingType,
+        expression: MappedExpression
+    ) =
+        expression
 
     fun introduce(expression: Expression): MappedExpression =
         MappedExpression(expression, PathMappingLeaf(listOf(), PathMappingType.Introduce))
 
-    fun move(pathProvider: PathProvider) =
-        UnaryPathMappingAnnotator(PathMappingType.Move, pathProvider).make(match)
+    fun move(pathProvider: PathProvider) = unaryAnnotate(pathProvider, PathMappingType.Move)
 
-    fun transform(pathProvider: PathProvider): MappedExpression =
-        UnaryPathMappingAnnotator(PathMappingType.Transform, pathProvider).make(match)
+    fun transform(pathProvider: PathProvider) = unaryAnnotate(pathProvider, PathMappingType.Transform)
 
     fun transform(pathProvider: PathProvider, toExpression: MappedExpression): MappedExpression =
-        BinaryPathMappingAnnotator(PathMappingType.Transform, pathProvider, toExpression).make(match)
+        binaryAnnotate(pathProvider, PathMappingType.Transform, toExpression)
 
-    fun factor(pathProvider: PathProvider) =
-        UnaryPathMappingAnnotator(PathMappingType.Factor, pathProvider).make(match)
+    fun factor(pathProvider: PathProvider) = unaryAnnotate(pathProvider, PathMappingType.Factor)
 
-    fun distribute(pathProvider: PathProvider) =
-        UnaryPathMappingAnnotator(PathMappingType.Distribute, pathProvider).make(match)
+    fun distribute(pathProvider: PathProvider) = unaryAnnotate(pathProvider, PathMappingType.Distribute)
 
     fun cancel(pathProvider: PathProvider, inExpression: MappedExpression) =
-        BinaryPathMappingAnnotator(PathMappingType.Cancel, pathProvider, inExpression).make(match)
+        binaryAnnotate(pathProvider, PathMappingType.Cancel, inExpression)
 
     /**
      * Returns true if the given pattern is bound to a value in the match.
@@ -102,8 +107,8 @@ class MakerBuilder(
      * Creates a [MappedExpression] by applying a set of operations on an explicitly given match.
      * To be used together with [matchPattern].
      */
-    fun buildWith(match: Match, init: MakerBuilder.() -> MappedExpression): MappedExpression {
-        val builder = MakerBuilder(context, match)
+    fun buildWith(match: Match, init: MappedExpressionBuilder.() -> MappedExpression): MappedExpression {
+        val builder = MappedExpressionBuilder(context, match)
         return builder.init()
     }
 

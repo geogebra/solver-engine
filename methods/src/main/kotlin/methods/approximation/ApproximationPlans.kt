@@ -1,6 +1,5 @@
 package methods.approximation
 
-import engine.expressionmakers.move
 import engine.expressions.Expression
 import engine.methods.Plan
 import engine.methods.PublicMethod
@@ -33,7 +32,7 @@ private fun Expression.canBeApproximated(): Boolean {
 enum class ApproximationPlans(override val runner: Plan) : RunnerMethod {
     ExpandAndRoundRecurringDecimal(
         plan {
-            explanation(Explanation.ExpandAndRoundRecurringDecimal)
+            explanation = Explanation.ExpandAndRoundRecurringDecimal
 
             steps {
                 optionally(ApproximationRules.ExpandRecurringDecimal)
@@ -44,7 +43,9 @@ enum class ApproximationPlans(override val runner: Plan) : RunnerMethod {
     ApproximateProductAndDivisionOfDecimals(
         plan {
             pattern = productContaining()
-            explanation(Explanation.ApproximateProductAndDivisionOfDecimals, move(pattern))
+
+            explanation = Explanation.ApproximateProductAndDivisionOfDecimals
+            explanationParameters(pattern)
 
             steps {
                 whilePossible(ApproximationRules.ApproximateDecimalProductAndDivision)
@@ -53,7 +54,7 @@ enum class ApproximationPlans(override val runner: Plan) : RunnerMethod {
     ),
     ApproximateSubexpression(
         plan {
-            explanation(Explanation.ApproximateExpressionInBrackets)
+            explanation = Explanation.ApproximateExpressionInBrackets
             pattern = condition(AnyPattern()) { it.hasBracket() }
 
             steps {
@@ -68,7 +69,8 @@ enum class ApproximationPlans(override val runner: Plan) : RunnerMethod {
             pattern = condition(AnyPattern()) { it.canBeApproximated() }
             resultPattern = SignedNumberPattern()
 
-            explanation(Explanation.ApproximateExpression, move(pattern))
+            explanation = Explanation.ApproximateExpression
+            explanationParameters(pattern)
 
             steps {
                 whilePossible {

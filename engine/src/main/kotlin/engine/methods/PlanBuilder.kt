@@ -2,7 +2,8 @@ package engine.methods
 
 import engine.context.ResourceData
 import engine.context.emptyResourceData
-import engine.expressionmakers.ExpressionMaker
+import engine.expressionbuilder.MappedExpressionBuilder
+import engine.expressions.MappedExpression
 import engine.methods.stepsproducers.ContextSensitiveAlternative
 import engine.methods.stepsproducers.ContextSensitiveSelector
 import engine.methods.stepsproducers.PipelineBuilder
@@ -10,14 +11,13 @@ import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.StepsProducerBuilderMarker
 import engine.methods.stepsproducers.steps
 import engine.patterns.AnyPattern
+import engine.patterns.PathProvider
 import engine.patterns.Pattern
-import engine.steps.metadata.KeyExprsMetadataMaker
 import engine.steps.metadata.MetadataKey
 import engine.steps.metadata.MetadataMaker
 
 @StepsProducerBuilderMarker
 class PlanBuilder(private val stepsProducerFactory: StepsProducerFactory) {
-    private lateinit var explanationMaker: MetadataMaker
     private var skillMakers: MutableList<MetadataMaker> = mutableListOf()
     private var alternatives: MutableList<ContextSensitiveAlternative> = mutableListOf()
     private lateinit var defaultSteps: StepsProducer
@@ -26,12 +26,28 @@ class PlanBuilder(private val stepsProducerFactory: StepsProducerFactory) {
     var pattern: Pattern = AnyPattern()
     var resultPattern: Pattern = AnyPattern()
 
-    fun explanation(explanationKey: MetadataKey, vararg params: ExpressionMaker) {
-        explanationMaker = KeyExprsMetadataMaker(explanationKey, params.asList())
+    lateinit var explanation: MetadataKey
+    private var explanationParameters: MappedExpressionBuilder.() -> List<MappedExpression> = { emptyList() }
+
+    fun explanationParameters(parameters: MappedExpressionBuilder.() -> List<MappedExpression>) {
+        explanationParameters = parameters
     }
 
-    fun skill(skillKey: MetadataKey, vararg params: ExpressionMaker) {
-        skillMakers.add(KeyExprsMetadataMaker(skillKey, params.asList()))
+    fun explanationParameters(vararg params: PathProvider) {
+        explanationParameters = {
+            params.map { move(it) }
+        }
+    }
+
+    fun skill(
+        skillKey: MetadataKey,
+        skillParameters: MappedExpressionBuilder.() -> List<MappedExpression> = { emptyList() }
+    ) {
+        skillMakers.add(MetadataMaker(skillKey, skillParameters))
+    }
+
+    fun skill(skillKey: MetadataKey, vararg params: PathProvider) {
+        skillMakers.add(MetadataMaker(skillKey) { params.map { move(it) } })
     }
 
     fun steps(resourceData: ResourceData = emptyResourceData, init: PipelineBuilder.() -> Unit) {
@@ -49,7 +65,7 @@ class PlanBuilder(private val stepsProducerFactory: StepsProducerFactory) {
             pattern = pattern,
             resultPattern = resultPattern,
             stepsProducer = stepsProducer,
-            explanationMaker = explanationMaker,
+            explanationMaker = MetadataMaker(explanation, explanationParameters),
             skillMakers = skillMakers,
         )
     }

@@ -13,7 +13,7 @@ enum class PolynomialPlans(override val runner: Plan) : RunnerMethod {
 
     CollectLikeTermsAndSimplify(
         plan {
-            explanation(Explanation.CollectLikeTermsAndSimplify)
+            explanation = Explanation.CollectLikeTermsAndSimplify
 
             steps {
                 apply(PolynomialRules.CollectLikeTerms)
@@ -26,7 +26,7 @@ enum class PolynomialPlans(override val runner: Plan) : RunnerMethod {
 
     SimplifyAlgebraicExpression(
         plan {
-            explanation(Explanation.SimplifyAlgebraicExpression)
+            explanation = Explanation.SimplifyAlgebraicExpression
 
             steps {
                 whilePossible { deeply(simpleTidyUpSteps) }

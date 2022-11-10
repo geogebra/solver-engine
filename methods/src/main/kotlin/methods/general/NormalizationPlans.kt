@@ -9,7 +9,7 @@ import engine.methods.stepsproducers.steps
 enum class NormalizationPlans(override val runner: Plan) : RunnerMethod {
     AddClarifyingBrackets(
         plan {
-            explanation(Explanation.AddClarifyingBrackets)
+            explanation = Explanation.AddClarifyingBrackets
 
             steps {
                 whilePossible { deeply(NormalizationRules.ReplaceInvisibleBrackets) }
@@ -18,7 +18,7 @@ enum class NormalizationPlans(override val runner: Plan) : RunnerMethod {
     ),
     NormalizeExpression(
         plan {
-            explanation(Explanation.NormalizeExpression)
+            explanation = Explanation.NormalizeExpression
 
             steps {
                 whilePossible {

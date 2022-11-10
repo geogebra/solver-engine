@@ -1,7 +1,7 @@
 package engine.patterns
 
 import engine.context.emptyContext
-import engine.expressionmakers.MakerBuilder
+import engine.expressionbuilder.MappedExpressionBuilder
 import engine.expressions.Constants
 import engine.expressions.MappedExpression
 import engine.expressions.fractionOf
@@ -31,7 +31,7 @@ class IntegerCoefficientPattern(value: Pattern) : CoefficientPattern(value) {
     val integerCoefficient = IntegerProviderWithDefault(coefficientPattern, BigInteger.ONE)
 
     override fun coefficient(match: Match): MappedExpression =
-        with(MakerBuilder(emptyContext, match)) { move(integerCoefficient) }
+        with(MappedExpressionBuilder(emptyContext, match)) { move(integerCoefficient) }
 }
 
 /**
@@ -62,19 +62,20 @@ class RationalCoefficientPattern(value: Pattern) : CoefficientPattern(value) {
     /**
      * Given a match, returns the coefficient as an integer or fraction
      */
-    override fun coefficient(match: Match): MappedExpression = with(MakerBuilder(emptyContext /* TODO */, match)) {
-        val numeratorCoefficient = when {
-            match.isBound(numerator) -> move(numerator)
-            else -> introduce(Constants.One)
-        }
+    override fun coefficient(match: Match): MappedExpression =
+        with(MappedExpressionBuilder(emptyContext /* TODO */, match)) {
+            val numeratorCoefficient = when {
+                match.isBound(numerator) -> move(numerator)
+                else -> introduce(Constants.One)
+            }
 
-        val coefficient = when {
-            match.isBound(denominator) -> fractionOf(numeratorCoefficient, move(denominator))
-            else -> numeratorCoefficient
-        }
+            val coefficient = when {
+                match.isBound(denominator) -> fractionOf(numeratorCoefficient, move(denominator))
+                else -> numeratorCoefficient
+            }
 
-        copySign(ptn, coefficient)
-    }
+            copySign(ptn, coefficient)
+        }
 }
 
 /**
@@ -113,19 +114,20 @@ class ConstantCoefficientPattern(value: Pattern) : CoefficientPattern(value) {
     /**
      * Given a match, returns the coefficient
      */
-    override fun coefficient(match: Match): MappedExpression = with(MakerBuilder(emptyContext /* TODO */, match)) {
-        val numeratorCoefficient = when {
-            match.isBound(product) -> restOf(product)
-            else -> introduce(Constants.One)
-        }
+    override fun coefficient(match: Match): MappedExpression =
+        with(MappedExpressionBuilder(emptyContext /* TODO */, match)) {
+            val numeratorCoefficient = when {
+                match.isBound(product) -> restOf(product)
+                else -> introduce(Constants.One)
+            }
 
-        val coefficient = when {
-            match.isBound(denominator) -> fractionOf(numeratorCoefficient, move(denominator))
-            else -> numeratorCoefficient
-        }
+            val coefficient = when {
+                match.isBound(denominator) -> fractionOf(numeratorCoefficient, move(denominator))
+                else -> numeratorCoefficient
+            }
 
-        copySign(ptn, coefficient)
-    }
+            copySign(ptn, coefficient)
+        }
 }
 
 /**

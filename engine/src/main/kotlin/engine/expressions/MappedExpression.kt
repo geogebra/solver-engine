@@ -1,6 +1,5 @@
 package engine.expressions
 
-import engine.expressionmakers.ExpressionMaker
 import engine.operators.BinaryExpressionOperator
 import engine.operators.EquationOperator
 import engine.operators.EquationSystemOperator
@@ -8,11 +7,8 @@ import engine.operators.MixedNumberOperator
 import engine.operators.NaryOperator
 import engine.operators.Operator
 import engine.operators.UnaryExpressionOperator
-import engine.patterns.Match
 
-data class MappedExpression(val expr: Expression, val mappings: PathMappingTree) : ExpressionMaker {
-    override fun make(match: Match) = this
-
+data class MappedExpression(val expr: Expression, val mappings: PathMappingTree) {
     fun wrapInBracketsUnless(bracket: Decorator? = null, cond: (Operator) -> Boolean): MappedExpression = when {
         cond(expr.operator) -> MappedExpression(expr.removeBrackets(), mappings)
         expr.hasBracket() -> this

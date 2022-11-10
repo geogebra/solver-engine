@@ -1,6 +1,5 @@
 package methods.integerarithmetic
 
-import engine.expressionmakers.move
 import engine.expressions.Expression
 import engine.methods.Plan
 import engine.methods.PublicMethod
@@ -27,7 +26,8 @@ enum class IntegerArithmeticPlans(override val runner: Plan) : RunnerMethod {
     EvaluateProductOfIntegers(
         plan {
             pattern = productContaining()
-            explanation(Explanation.EvaluateProductOfIntegers, move(pattern))
+            explanation = Explanation.EvaluateProductOfIntegers
+            explanationParameters(pattern)
 
             steps {
                 whilePossible {
@@ -43,7 +43,8 @@ enum class IntegerArithmeticPlans(override val runner: Plan) : RunnerMethod {
     EvaluateSumOfIntegers(
         plan {
             pattern = sumContaining()
-            explanation(Explanation.EvaluateSumOfIntegers, move(pattern))
+            explanation = Explanation.EvaluateSumOfIntegers
+            explanationParameters(pattern)
 
             steps {
                 whilePossible(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
@@ -63,7 +64,8 @@ enum class IntegerArithmeticPlans(override val runner: Plan) : RunnerMethod {
             val base = SignedIntegerPattern()
             val exponent = SignedIntegerPattern()
             pattern = powerOf(base, exponent)
-            explanation(Explanation.EvaluateIntegerPower, move(base), move(exponent))
+            explanation = Explanation.EvaluateIntegerPower
+            explanationParameters(base, exponent)
 
             steps {
                 firstOf {
@@ -85,7 +87,8 @@ enum class IntegerArithmeticPlans(override val runner: Plan) : RunnerMethod {
     SimplifyIntegersInProduct(
         plan {
             pattern = productContaining()
-            explanation(Explanation.SimplifyIntegersInProduct, move(pattern))
+            explanation = Explanation.SimplifyIntegersInProduct
+            explanationParameters(pattern)
 
             steps {
                 whilePossible {
@@ -103,7 +106,8 @@ enum class IntegerArithmeticPlans(override val runner: Plan) : RunnerMethod {
     SimplifyIntegersInSum(
         plan {
             pattern = sumContaining()
-            explanation(Explanation.SimplifyIntegersInSum, move(pattern))
+            explanation = Explanation.SimplifyIntegersInSum
+            explanationParameters(pattern)
 
             steps {
                 whilePossible {
@@ -118,7 +122,7 @@ enum class IntegerArithmeticPlans(override val runner: Plan) : RunnerMethod {
 
     EvaluateArithmeticSubexpression(
         plan {
-            explanation(Explanation.SimplifyExpressionInBrackets)
+            explanation = Explanation.SimplifyExpressionInBrackets
             pattern = condition(AnyPattern()) { it.hasBracket() }
 
             steps {
@@ -136,7 +140,8 @@ enum class IntegerArithmeticPlans(override val runner: Plan) : RunnerMethod {
         plan {
             val expression = AnyPattern()
             pattern = condition(expression) { it.isArithmeticExpression() }
-            explanation(Explanation.EvaluateArithmeticExpression, move(expression))
+            explanation = Explanation.EvaluateArithmeticExpression
+            explanationParameters(expression)
 
             steps {
                 whilePossible {

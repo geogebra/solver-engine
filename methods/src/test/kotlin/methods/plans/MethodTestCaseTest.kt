@@ -1,6 +1,5 @@
 package methods.plans
 
-import engine.expressionmakers.move
 import engine.methods.Plan
 import engine.methods.RunnerMethod
 import engine.methods.TransformationResult
@@ -9,7 +8,7 @@ import engine.methods.stepsproducers.Pipeline
 import engine.methods.stepsproducers.PipelineItem
 import engine.patterns.AnyPattern
 import engine.steps.metadata.MetadataKey
-import engine.steps.metadata.makeMetadata
+import engine.steps.metadata.MetadataMaker
 import engine.steps.metadata.metadata
 import org.junit.jupiter.api.Test
 import kotlin.test.assertFails
@@ -51,7 +50,7 @@ class MethodTestCaseTest {
             pattern = pattern,
             resultPattern = AnyPattern(),
             stepsProducer = Pipeline((1..3).map { PipelineItem(testRule) }),
-            explanationMaker = makeMetadata(testPlanMetadataKey, move(pattern)),
+            explanationMaker = MetadataMaker(testPlanMetadataKey) { listOf(move(pattern)) }
         )
     }
 

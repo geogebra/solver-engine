@@ -18,12 +18,12 @@ enum class FractionRootsPlans(override val runner: Plan) : RunnerMethod {
 
     RationalizeHigherOrderRoot(
         plan {
-            explanation(Explanation.RationalizeHigherOrderRoot)
+            explanation = Explanation.RationalizeHigherOrderRoot
 
             steps {
                 apply(FractionRootsRules.HigherOrderRationalizingTerm)
                 plan {
-                    explanation(Explanation.SimplifyRationalizingTerm)
+                    explanation = Explanation.SimplifyRationalizingTerm
 
                     steps {
                         whilePossible { deeply(IntegerArithmeticRules.EvaluateSignedIntegerAddition) }
@@ -40,7 +40,7 @@ enum class FractionRootsPlans(override val runner: Plan) : RunnerMethod {
      */
     CollectRationalizingRadicals(
         plan {
-            explanation(Explanation.CollectRationalizingRadicals)
+            explanation = Explanation.CollectRationalizingRadicals
 
             steps {
                 apply(IntegerRootsRules.MultiplyNthRoots)
@@ -54,7 +54,7 @@ enum class FractionRootsPlans(override val runner: Plan) : RunnerMethod {
 
     RationalizeDenominators(
         plan {
-            explanation(Explanation.RationalizeDenominator)
+            explanation = Explanation.RationalizeDenominator
 
             steps {
                 optionally(FractionRootsRules.FlipRootsInDenominator)
@@ -65,7 +65,7 @@ enum class FractionRootsPlans(override val runner: Plan) : RunnerMethod {
                 apply(FractionArithmeticRules.MultiplyFractions)
                 optionally {
                     plan {
-                        explanation(Explanation.SimplifyNumeratorAfterRationalization)
+                        explanation = Explanation.SimplifyNumeratorAfterRationalization
 
                         steps {
                             applyTo(simplifyAfterRationalization) { it.numerator() }
@@ -74,7 +74,7 @@ enum class FractionRootsPlans(override val runner: Plan) : RunnerMethod {
                 }
                 optionally {
                     plan {
-                        explanation(Explanation.SimplifyDenominatorAfterRationalization)
+                        explanation = Explanation.SimplifyDenominatorAfterRationalization
 
                         steps {
                             applyTo(simplifyAfterRationalization) { it.denominator() }
@@ -86,7 +86,7 @@ enum class FractionRootsPlans(override val runner: Plan) : RunnerMethod {
     ),
     SimplifyFractionOfRoots(
         plan {
-            explanation(Explanation.SimplifyFractionOfRoots)
+            explanation = Explanation.SimplifyFractionOfRoots
 
             steps {
                 optionally(FractionRootsRules.BringRootsToSameIndexInFraction)

@@ -1,19 +1,19 @@
 package engine.methods
 
 import engine.context.Context
-import engine.expressionmakers.MakerBuilder
+import engine.expressionbuilder.MappedExpressionBuilder
 import engine.expressions.Subexpression
 import engine.patterns.Pattern
 import engine.patterns.RootMatch
 
 class Rule(
     val pattern: Pattern,
-    val transformation: MakerBuilder.() -> TransformationResult?
+    val transformation: MappedExpressionBuilder.() -> TransformationResult?
 ) : Runner {
 
     override fun run(ctx: Context, sub: Subexpression): TransformationResult? {
         for (match in pattern.findMatches(ctx, RootMatch, sub)) {
-            val builder = MakerBuilder(ctx, match)
+            val builder = MappedExpressionBuilder(ctx, match)
             builder.transformation()?.let {
                 return it
             }
@@ -23,7 +23,7 @@ class Rule(
 }
 
 class RuleBuilder {
-    fun onPattern(pattern: Pattern, result: MakerBuilder.() -> TransformationResult?): Rule =
+    fun onPattern(pattern: Pattern, result: MappedExpressionBuilder.() -> TransformationResult?): Rule =
         Rule(pattern, result)
 }
 

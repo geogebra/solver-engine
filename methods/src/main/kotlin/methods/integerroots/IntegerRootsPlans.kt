@@ -21,7 +21,7 @@ enum class IntegerRootsPlans(override val runner: Plan) : RunnerMethod {
 
     CancelPowerOfARoot(
         plan {
-            explanation(Explanation.CancelPowerOfARoot)
+            explanation = Explanation.CancelPowerOfARoot
 
             steps {
                 optionally(IntegerRootsRules.PrepareCancellingPowerOfARoot)
@@ -32,7 +32,7 @@ enum class IntegerRootsPlans(override val runner: Plan) : RunnerMethod {
 
     CancelRootOfAPower(
         plan {
-            explanation(Explanation.CancelRootOfAPower)
+            explanation = Explanation.CancelRootOfAPower
 
             steps {
                 optionally(IntegerRootsRules.PrepareCancellingRootOfAPower)
@@ -43,7 +43,7 @@ enum class IntegerRootsPlans(override val runner: Plan) : RunnerMethod {
 
     PutRootCoefficientUnderRootAndSimplify(
         plan {
-            explanation(Explanation.PutRootCoefficientUnderRootAndSimplify)
+            explanation = Explanation.PutRootCoefficientUnderRootAndSimplify
 
             steps {
                 apply(IntegerRootsRules.PutRootCoefficientUnderRoot)
@@ -56,7 +56,7 @@ enum class IntegerRootsPlans(override val runner: Plan) : RunnerMethod {
         plan {
             pattern = integerOrderRootOf(AnyPattern())
 
-            explanation(Explanation.SimplifyRootOfRootWithCoefficient)
+            explanation = Explanation.SimplifyRootOfRootWithCoefficient
 
             steps {
                 optionally {
@@ -76,7 +76,7 @@ enum class IntegerRootsPlans(override val runner: Plan) : RunnerMethod {
 
     SimplifyProductWithRoots(
         plan {
-            explanation(Explanation.SimplifyProductWithRoots)
+            explanation = Explanation.SimplifyProductWithRoots
 
             steps {
                 optionally(IntegerRootsRules.NormaliseProductWithRoots)
@@ -95,7 +95,7 @@ enum class IntegerRootsPlans(override val runner: Plan) : RunnerMethod {
         plan {
             pattern = integerOrderRootOf(UnsignedIntegerPattern())
 
-            explanation(Explanation.SimplifyIntegerRoot)
+            explanation = Explanation.SimplifyIntegerRoot
 
             steps {
                 firstOf {
@@ -105,7 +105,7 @@ enum class IntegerRootsPlans(override val runner: Plan) : RunnerMethod {
                         optionally(IntegerRootsRules.WriteRootAsRootProduct)
                         optionally(IntegerRootsRules.SplitRootOfProduct)
                         plan {
-                            explanation(Explanation.WriteRootsAsRootPowers)
+                            explanation = Explanation.WriteRootsAsRootPowers
 
                             steps {
                                 whilePossible {
@@ -136,7 +136,7 @@ enum class IntegerRootsPlans(override val runner: Plan) : RunnerMethod {
 
     SimplifyIntegerRootToInteger(
         plan {
-            explanation(Explanation.SimplifyIntegerRootToInteger)
+            explanation = Explanation.SimplifyIntegerRootToInteger
             val radicand = UnsignedIntegerPattern()
             val radical = integerOrderRootOf(radicand)
             pattern = ConditionPattern(
@@ -156,7 +156,7 @@ enum class IntegerRootsPlans(override val runner: Plan) : RunnerMethod {
      */
     CollectLikeRootsAndSimplify(
         plan {
-            explanation(Explanation.CollectLikeRootsAndSimplify)
+            explanation = Explanation.CollectLikeRootsAndSimplify
 
             steps {
                 apply(IntegerRootsRules.CollectLikeRoots)
@@ -167,7 +167,7 @@ enum class IntegerRootsPlans(override val runner: Plan) : RunnerMethod {
 
     SplitRootsInProduct(
         plan {
-            explanation(Explanation.SplitRootsInProduct)
+            explanation = Explanation.SplitRootsInProduct
 
             steps {
                 whilePossible { deeply(IntegerRootsRules.SplitPowerUnderRoot) }
@@ -179,11 +179,11 @@ enum class IntegerRootsPlans(override val runner: Plan) : RunnerMethod {
 
     CancelAllRootsOfPowers(
         plan {
-            explanation(Explanation.CancelAllRootsOfPowers)
+            explanation = Explanation.CancelAllRootsOfPowers
 
             steps {
                 whilePossible {
-                    deeply(IntegerRootsPlans.CancelRootOfAPower)
+                    deeply(CancelRootOfAPower)
                 }
             }
         }
@@ -191,7 +191,7 @@ enum class IntegerRootsPlans(override val runner: Plan) : RunnerMethod {
 
     SplitRootsAndCancelRootsOfPowers(
         plan {
-            explanation(Explanation.SplitRootsAndCancelRootsOfPowers)
+            explanation = Explanation.SplitRootsAndCancelRootsOfPowers
             steps {
                 apply(SplitRootsInProduct)
                 apply(CancelAllRootsOfPowers)
@@ -201,7 +201,7 @@ enum class IntegerRootsPlans(override val runner: Plan) : RunnerMethod {
 
     FactorizeAndDistributePowerUnderRoot(
         plan {
-            explanation(Explanation.FactorizeAndDistributePowerUnderRoot)
+            explanation = Explanation.FactorizeAndDistributePowerUnderRoot
 
             steps {
                 // root[ 24^2, 3] --> root[ (2^3 * 3)^2, 3]
@@ -218,7 +218,7 @@ enum class IntegerRootsPlans(override val runner: Plan) : RunnerMethod {
 
     RewriteAndCancelPowerUnderRoot(
         plan {
-            explanation(Explanation.RewriteAndCancelPowerUnderRoot)
+            explanation = Explanation.RewriteAndCancelPowerUnderRoot
 
             steps {
                 deeply(GeneralRules.RewritePowerUnderRoot, deepFirst = true)
@@ -229,7 +229,7 @@ enum class IntegerRootsPlans(override val runner: Plan) : RunnerMethod {
 
     SimplifyPowerOfIntegerUnderRoot(
         plan {
-            explanation(Explanation.SimplifyPowerOfIntegerUnderRoot)
+            explanation = Explanation.SimplifyPowerOfIntegerUnderRoot
 
             // root[ 24^5, 3] -> root[24^3, 3] * root[24^2, 3]
             steps {

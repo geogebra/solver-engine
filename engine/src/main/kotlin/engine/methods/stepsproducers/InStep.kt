@@ -3,16 +3,13 @@ package engine.methods.stepsproducers
 import engine.context.Context
 import engine.expressions.Subexpression
 import engine.methods.Method
-import engine.patterns.RootMatch
 import engine.steps.Transformation
 import engine.steps.metadata.Metadata
 import engine.steps.metadata.MetadataKey
-import engine.steps.metadata.MetadataMaker
-import engine.steps.metadata.makeMetadata
 
 data class InStepItem(
     val method: Method,
-    val explanation: MetadataMaker,
+    val explanation: MetadataKey,
     val optional: Boolean,
 )
 
@@ -45,7 +42,7 @@ interface InStep : StepsProducer {
 
             steps.add(
                 Transformation(
-                    explanation = explanation.make(RootMatch),
+                    explanation = Metadata(explanation, listOf()),
                     fromExpr = prevSub,
                     toExpr = lastSub.toMappedExpr(),
                     steps = nonNullTransformations
@@ -147,13 +144,13 @@ internal class ApplyToChildrenInStepDataBuilder : InStepBuilder {
     override fun step(init: InStepStepBuilder.() -> Unit) {
         val builder = InStepStepBuilder()
         builder.init()
-        steps.add(InStepItem(builder.method, makeMetadata(builder.explanationKey), false))
+        steps.add(InStepItem(builder.method, builder.explanationKey, false))
     }
 
     override fun optionalStep(init: InStepStepBuilder.() -> Unit) {
         val builder = InStepStepBuilder()
         builder.init()
-        steps.add(InStepItem(builder.method, makeMetadata(builder.explanationKey), true))
+        steps.add(InStepItem(builder.method, builder.explanationKey, true))
     }
 
     fun buildStepsProducer(): InStep {

@@ -1,6 +1,5 @@
 package methods.fractionarithmetic
 
-import engine.expressionmakers.move
 import engine.expressions.base
 import engine.expressions.denominator
 import engine.methods.Plan
@@ -26,7 +25,7 @@ enum class FractionArithmeticPlans(override val runner: Plan) : RunnerMethod {
 
     NormalizeSignsInFraction(
         plan {
-            explanation(Explanation.NormalizeSignsInFraction)
+            explanation = Explanation.NormalizeSignsInFraction
 
             steps {
                 whilePossible {
@@ -50,7 +49,7 @@ enum class FractionArithmeticPlans(override val runner: Plan) : RunnerMethod {
     NormalizeFractions(
         plan {
             // Normalize fractions within fractions
-            explanation(Explanation.NormalizeFractionsAndDivisions)
+            explanation = Explanation.NormalizeFractionsAndDivisions
 
             steps {
                 whilePossible {
@@ -70,9 +69,10 @@ enum class FractionArithmeticPlans(override val runner: Plan) : RunnerMethod {
             val f = fractionOf(AnyPattern(), AnyPattern())
             pattern = f
 
-            explanation(Explanation.SimplifyFraction, move(f))
+            explanation = Explanation.SimplifyFraction
+            explanationParameters(f)
 
-            skill(Skill.SimplifyNumericFraction, move(f))
+            skill(Skill.SimplifyNumericFraction, f)
 
             steps {
                 whilePossible {
@@ -95,15 +95,16 @@ enum class FractionArithmeticPlans(override val runner: Plan) : RunnerMethod {
 
             pattern = sumContaining(f1, f2)
 
-            explanation(Explanation.EvaluateFractionSum, move(f1), move(f2))
+            explanation = Explanation.EvaluateFractionSum
+            explanationParameters(f1, f2)
 
-            skill(Skill.AddFractions, move(f1), move(f2))
+            skill(Skill.AddFractions, f1, f2)
 
             steps {
                 optionally(FractionArithmeticRules.BringToCommonDenominator)
                 optionally {
                     plan {
-                        explanation(Explanation.EvaluateProductsInNumeratorAndDenominator)
+                        explanation = Explanation.EvaluateProductsInNumeratorAndDenominator
 
                         steps {
                             whilePossible { deeply(IntegerArithmeticRules.EvaluateIntegerProductAndDivision) }
@@ -112,7 +113,7 @@ enum class FractionArithmeticPlans(override val runner: Plan) : RunnerMethod {
                 }
                 apply(FractionArithmeticRules.AddLikeFractions)
                 plan {
-                    explanation(Explanation.EvaluateSumInNumerator)
+                    explanation = Explanation.EvaluateSumInNumerator
 
                     steps {
                         deeply(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
@@ -127,7 +128,7 @@ enum class FractionArithmeticPlans(override val runner: Plan) : RunnerMethod {
     ),
     EvaluateSumOfFractionAndInteger(
         plan {
-            explanation(Explanation.EvaluateSumOfFractionAndInteger)
+            explanation = Explanation.EvaluateSumOfFractionAndInteger
 
             steps {
                 apply(FractionArithmeticRules.TurnSumOfFractionAndIntegerToFractionSum)
@@ -138,7 +139,7 @@ enum class FractionArithmeticPlans(override val runner: Plan) : RunnerMethod {
     ),
     MultiplyAndSimplifyFractions(
         plan {
-            explanation(Explanation.MultiplyAndSimplifyFractions)
+            explanation = Explanation.MultiplyAndSimplifyFractions
 
             steps {
                 whilePossible(FractionArithmeticRules.TurnFactorIntoFractionInProduct)
@@ -158,7 +159,7 @@ val simplifyIntegerToNegativePower = steps {
 
         option {
             plan {
-                explanation(Explanation.EvaluateIntegerToNegativePower)
+                explanation = Explanation.EvaluateIntegerToNegativePower
 
                 steps {
                     apply(FractionArithmeticRules.TurnNegativePowerOfIntegerToFraction)
@@ -169,7 +170,7 @@ val simplifyIntegerToNegativePower = steps {
 
         option {
             plan {
-                explanation(Explanation.EvaluateIntegerToNegativePower)
+                explanation = Explanation.EvaluateIntegerToNegativePower
 
                 steps {
                     // [0 ^ -n] -> [[1 / 0] ^ n]

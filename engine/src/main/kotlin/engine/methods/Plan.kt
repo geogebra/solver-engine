@@ -36,8 +36,8 @@ data class Plan(
                     fromExpr = sub,
                     toExpr = toExpr,
                     steps = steps,
-                    explanation = explanationMaker.make(match),
-                    skills = skillMakers.map { it.make(match) }
+                    explanation = explanationMaker.make(ctx, match),
+                    skills = skillMakers.map { it.make(ctx, match) }
                 )
 
                 else -> null
@@ -55,8 +55,8 @@ data class Plan(
                 toExpr.expr == Constants.Undefined || resultPattern.matches(ctx, toExpr.expr) -> TransformationResult(
                     toExpr = toExpr,
                     steps = steps,
-                    explanation = explanationMaker.make(match),
-                    skills = skillMakers.map { it.make(match) }
+                    explanation = explanationMaker.make(ctx, match),
+                    skills = skillMakers.map { it.make(ctx, match) }
                 )
 
                 else -> null

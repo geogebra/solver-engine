@@ -17,7 +17,7 @@ enum class MixedNumbersPlans(override val runner: Plan) : RunnerMethod {
 
     ConvertMixedNumberToImproperFraction(
         plan {
-            explanation(Explanation.ConvertMixedNumbersToImproperFraction)
+            explanation = Explanation.ConvertMixedNumbersToImproperFraction
 
             steps {
                 applyToChildrenInStep {
@@ -46,7 +46,7 @@ enum class MixedNumbersPlans(override val runner: Plan) : RunnerMethod {
         plan {
             pattern = sumOf(mixedNumberOf(), mixedNumberOf())
 
-            explanation(Explanation.AddMixedNumbers)
+            explanation = Explanation.AddMixedNumbers
 
             steps(ResourceData(curriculum = "EU")) {
                 apply(ConvertMixedNumberToImproperFraction)
@@ -59,7 +59,7 @@ enum class MixedNumbersPlans(override val runner: Plan) : RunnerMethod {
             alternative(ResourceData(curriculum = "US")) {
 
                 plan {
-                    explanation(Explanation.ConvertMixedNumbersToSums)
+                    explanation = Explanation.ConvertMixedNumbersToSums
 
                     steps {
                         whilePossible { deeply(MixedNumbersRules.SplitMixedNumber) }
@@ -71,7 +71,7 @@ enum class MixedNumbersPlans(override val runner: Plan) : RunnerMethod {
                 }
 
                 plan {
-                    explanation(Explanation.RemoveAllBracketsInSum)
+                    explanation = Explanation.RemoveAllBracketsInSum
 
                     steps {
                         whilePossible(NormalizationRules.RemoveBracketSumInSum)
