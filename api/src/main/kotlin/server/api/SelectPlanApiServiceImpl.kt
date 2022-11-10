@@ -8,7 +8,9 @@ import parser.parseExpression
 import server.models.ApplyPlanRequest
 import server.models.PlanSelection
 import server.models.PlanSelectionMetadata
+import java.util.logging.Level
 
+@Suppress("TooGenericExceptionCaught", "SwallowedException")
 @Service
 class SelectPlanApiServiceImpl : SelectPlansApiService {
     override fun selectPlans(applyPlanRequest: ApplyPlanRequest): List<PlanSelection> {
@@ -22,7 +24,12 @@ class SelectPlanApiServiceImpl : SelectPlansApiService {
         val context = getContext(applyPlanRequest.context)
 
         for (entryData in methodRegistry.getPublicEntries()) {
-            val transformation = entryData.implementation.tryExecute(context, Subexpression(expr))
+            val transformation = try {
+                entryData.implementation.tryExecute(context, Subexpression(expr))
+            } catch (e: Exception) {
+                context.log(Level.SEVERE, "Exception caught: ${e.stackTraceToString()}")
+                null
+            }
             if (transformation != null) {
                 selections.add(
                     PlanSelection(
