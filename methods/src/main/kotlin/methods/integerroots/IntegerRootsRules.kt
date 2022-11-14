@@ -35,7 +35,6 @@ import engine.utility.asPowerForRoot
 import engine.utility.asProductForRoot
 import engine.utility.divides
 import engine.utility.hasFactorOfDegree
-import engine.utility.primeFactorDecomposition
 
 enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
     SimplifyRootOfOne(
@@ -120,9 +119,7 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
                     integerCondition(root.order, integer) { p, n -> n.hasFactorOfDegree(p.toInt()) }
                 )
             ) {
-                val factorized = getValue(integer)
-                    .primeFactorDecomposition()
-                    .map { (f, n) -> introduce(if (n == java.math.BigInteger.ONE) xp(f) else powerOf(xp(f), xp(n))) }
+                val factorized = productOfPrimeFactors(integer)
 
                 TransformationResult(
                     toExpr = rootOf(transform(integer, productOf(factorized)), move(root.order)),
@@ -245,7 +242,9 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(root) {
                 TransformationResult(
-                    toExpr = productOf(get(product)!!.children().map { rootOf(move(it), move(root.order)) }),
+                    toExpr = productOf(
+                        get(product)!!.children().map { rootOf(move(it), move(root.order)) }
+                    ),
                     explanation = metadata(Explanation.SplitRootOfProduct)
                 )
             }
@@ -262,12 +261,15 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
             onPattern(product) {
                 val (roots, nonRoots) = get(product)!!.children()
                     .partition {
-                        it.expr.operator == UnaryExpressionOperator.SquareRoot ||
-                            it.expr.operator == BinaryExpressionOperator.Root
+                        it.operator == UnaryExpressionOperator.SquareRoot ||
+                            it.operator == BinaryExpressionOperator.Root
                     }
 
                 TransformationResult(
-                    toExpr = productOf(productOf(nonRoots.map { move(it) }), productOf(roots.map { move(it) })),
+                    toExpr = productOf(
+                        productOf(nonRoots.map { move(it) }),
+                        productOf(roots.map { move(it) })
+                    ),
                     explanation = metadata(Explanation.NormaliseProductWithRoots)
                 )
             }

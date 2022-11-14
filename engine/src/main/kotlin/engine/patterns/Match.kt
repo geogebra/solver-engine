@@ -2,7 +2,6 @@ package engine.patterns
 
 import engine.expressions.Expression
 import engine.expressions.Path
-import engine.expressions.Subexpression
 
 /**
  * An interface for matching with a pattern. Can be
@@ -16,7 +15,7 @@ interface Match {
      * getBoundExpr as it returns the "Expression"
      * , i.e. value and the path
      */
-    fun getLastBinding(p: Pattern): Subexpression?
+    fun getLastBinding(p: Pattern): Expression?
 
     fun isBound(p: Pattern) = getLastBinding(p) != null
 
@@ -42,7 +41,7 @@ interface Match {
      */
     fun getBoundPaths(p: Pattern): List<Path>
 
-    fun newChild(key: Pattern, value: Subexpression): Match = ChildMatch(key, value, this)
+    fun newChild(key: Pattern, value: Expression): Match = ChildMatch(key, value, this)
 }
 
 /**
@@ -51,7 +50,7 @@ interface Match {
  */
 object RootMatch : Match {
 
-    override fun getLastBinding(p: Pattern): Subexpression? = null
+    override fun getLastBinding(p: Pattern): Expression? = null
     override fun getBoundExpr(p: Pattern): Expression? = null
 
     override fun accumulatePaths(p: Pattern, acc: MutableList<Path>) { /* do nothing */ }
@@ -69,11 +68,11 @@ object RootMatch : Match {
  */
 data class ChildMatch(
     private val key: Pattern,
-    private val value: Subexpression,
+    private val value: Expression,
     private val parent: Match
 ) : Match {
 
-    override fun getLastBinding(p: Pattern): Subexpression? {
+    override fun getLastBinding(p: Pattern): Expression? {
         return when {
             key === p.key -> value
             else -> parent.getLastBinding(p)
@@ -81,13 +80,13 @@ data class ChildMatch(
     }
 
     override fun getBoundExpr(p: Pattern): Expression? {
-        return if (key === p.key) value.expr else parent.getBoundExpr(p)
+        return if (key === p.key) value else parent.getBoundExpr(p)
     }
 
     override fun accumulatePaths(p: Pattern, acc: MutableList<Path>) {
         parent.accumulatePaths(p, acc)
-        if (key == p.key) {
-            acc.add(value.path)
+        if (key == p.key && value.origin.path != null) {
+            acc.add(value.origin.path)
         }
     }
 

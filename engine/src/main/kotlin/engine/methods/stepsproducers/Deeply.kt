@@ -1,7 +1,7 @@
 package engine.methods.stepsproducers
 
 import engine.context.Context
-import engine.expressions.Subexpression
+import engine.expressions.Expression
 import engine.steps.Transformation
 
 /**
@@ -10,17 +10,17 @@ import engine.steps.Transformation
  */
 data class Deeply(val stepsProducer: StepsProducer, val deepFirst: Boolean = false) : StepsProducer {
 
-    private fun visitPrefix(ctx: Context, sub: Subexpression): List<Transformation>? {
+    private fun visitPrefix(ctx: Context, sub: Expression): List<Transformation>? {
         return stepsProducer.produceSteps(ctx, sub)
             ?: sub.children().firstNotNullOfOrNull { visitPrefix(ctx, it) }
     }
 
-    private fun visitPostfix(ctx: Context, sub: Subexpression): List<Transformation>? {
+    private fun visitPostfix(ctx: Context, sub: Expression): List<Transformation>? {
         return sub.children().firstNotNullOfOrNull { visitPostfix(ctx, it) }
             ?: stepsProducer.produceSteps(ctx, sub)
     }
 
-    override fun produceSteps(ctx: Context, sub: Subexpression) = buildSteps(sub) {
+    override fun produceSteps(ctx: Context, sub: Expression) = buildSteps(sub) {
         addSteps(if (deepFirst) visitPostfix(ctx, sub) else visitPrefix(ctx, sub))
     }
 }

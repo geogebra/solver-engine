@@ -5,7 +5,7 @@ import engine.conditions.isDefinitelyNotUndefined
 import engine.conditions.isDefinitelyNotZero
 import engine.conditions.signOf
 import engine.expressions.Constants
-import engine.expressions.MappedExpression
+import engine.expressions.Expression
 import engine.expressions.fractionOf
 import engine.expressions.negOf
 import engine.expressions.powerOf
@@ -289,7 +289,7 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(sum) {
                 TransformationResult(
-                    toExpr = negOf(sumOf(get(sum)!!.children().map { move(it.children()[0]) })),
+                    toExpr = negOf(sumOf(get(sum)!!.children().map { it.nthChild(0) })),
                     explanation = metadata(Explanation.FactorMinusFromSum)
                 )
             }
@@ -359,9 +359,9 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(product) {
                 val factors = get(product)!!.children()
-                val division = factors.indexOfFirst { it.expr.operator == UnaryExpressionOperator.DivideBy }
+                val division = factors.indexOfFirst { it.operator == UnaryExpressionOperator.DivideBy }
 
-                val result = mutableListOf<MappedExpression>()
+                val result = mutableListOf<Expression>()
                 result.addAll(factors.subList(0, division - 1).map { move(it) })
 
                 val denominator = factors[division].nthChild(0)
@@ -443,7 +443,7 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
                 TransformationResult(
                     toExpr = sumOf(
                         terms.map {
-                            when (it.expr.operator) {
+                            when (it.operator) {
                                 UnaryExpressionOperator.Minus -> negOf(
                                     product.substitute(
                                         distribute(singleTerm),
@@ -637,7 +637,13 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(product) {
                 TransformationResult(
-                    toExpr = powerOf(factor(base), sumOf(move(exponent1), negOf(move(exponent2)))),
+                    toExpr = powerOf(
+                        factor(base),
+                        sumOf(
+                            move(exponent1),
+                            negOf(move(exponent2))
+                        )
+                    ),
                     explanation = metadata(Explanation.RewriteFractionOfPowersWithSameBase)
                 )
             }
@@ -705,7 +711,10 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
                 }
 
                 val newProduct = when {
-                    isBound(product1) -> product1.substitute(move(power1), powerOf(inverse, move(exponent)))
+                    isBound(product1) -> product1.substitute(
+                        move(power1),
+                        powerOf(inverse, move(exponent))
+                    )
                     else -> product2.substitute(powerOf(inverse, move(exponent)), move(power1))
                 }
 
@@ -737,7 +746,10 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
                 TransformationResult(
                     toExpr = product.substitute(
                         move(power1),
-                        powerOf(fractionOf(move(value1), move(value2)), negOf(move(exponent2)))
+                        powerOf(
+                            fractionOf(move(value1), move(value2)),
+                            negOf(move(exponent2))
+                        )
                     ),
                     explanation = metadata(Explanation.RewriteProductOfPowersWithInverseFractionBase)
                 )
@@ -761,7 +773,10 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(oneOf(product1, product2)) {
                 val newProduct = when {
-                    isBound(product1) -> product1.substitute(move(power1), powerOf(move(base1), negOf(move(exponent2))))
+                    isBound(product1) -> product1.substitute(
+                        move(power1),
+                        powerOf(move(base1), negOf(move(exponent2)))
+                    )
                     else -> product2.substitute(powerOf(move(base1), negOf(move(exponent2))), move(power1))
                 }
 
@@ -779,7 +794,10 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(root) {
                 TransformationResult(
-                    toExpr = powerOf(move(root.radicand), fractionOf(introduce(Constants.One), move(root.order))),
+                    toExpr = powerOf(
+                        move(root.radicand),
+                        fractionOf(introduce(Constants.One), move(root.order))
+                    ),
                     explanation = metadata(Explanation.RewriteIntegerOrderRootAsPower)
                 )
             }

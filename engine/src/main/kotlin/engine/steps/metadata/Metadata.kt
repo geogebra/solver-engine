@@ -2,7 +2,7 @@ package engine.steps.metadata
 
 import engine.context.Context
 import engine.expressionbuilder.MappedExpressionBuilder
-import engine.expressions.MappedExpression
+import engine.expressions.Expression
 import engine.patterns.Match
 
 /**
@@ -20,9 +20,9 @@ interface CategorisedMetadataKey : MetadataKey {
     override val keyName get() = "$category.$this"
 }
 
-data class Metadata(val key: MetadataKey, val mappedParams: List<MappedExpression>)
+data class Metadata(val key: MetadataKey, val mappedParams: List<Expression>)
 
-data class MetadataMaker(val key: MetadataKey, val parameters: MappedExpressionBuilder.() -> List<MappedExpression>) {
+data class MetadataMaker(val key: MetadataKey, val parameters: MappedExpressionBuilder.() -> List<Expression>) {
     fun make(context: Context, match: Match) =
         Metadata(
             key = key,
@@ -30,5 +30,5 @@ data class MetadataMaker(val key: MetadataKey, val parameters: MappedExpressionB
         )
 }
 
-fun metadata(key: MetadataKey, vararg parameters: MappedExpression) =
+fun metadata(key: MetadataKey, vararg parameters: Expression) =
     Metadata(key, parameters.asList())

@@ -2,13 +2,12 @@ package methods.plans
 
 import engine.context.Context
 import engine.context.emptyContext
-import engine.expressions.MappedExpression
+import engine.expressions.Expression
 import engine.expressions.Path
 import engine.expressions.PathMapping
-import engine.expressions.PathMappingTree
 import engine.expressions.PathMappingType
+import engine.expressions.Root
 import engine.expressions.RootPath
-import engine.expressions.Subexpression
 import engine.expressions.parsePath
 import engine.methods.Method
 import engine.steps.Transformation
@@ -41,9 +40,8 @@ data class PathMappingPathsBuilder(val type: PathMappingType) {
 }
 
 @TestCaseBuilderMarker
-open class PathMappingsCheck(mappings: PathMappingTree?, private val rootPath: Path) {
-    private val pathMappings: Sequence<PathMapping> =
-        mappings?.pathMappings(RootPath)?.map { it.relativeTo(rootPath) } ?: emptySequence()
+open class PathMappingsCheck(mappings: Sequence<PathMapping>, private val rootPath: Path) {
+    private val pathMappings: Sequence<PathMapping> = mappings.map { it.relativeTo(rootPath) }
 
     private var checkedMappings: Int? = null
 
@@ -77,20 +75,20 @@ open class PathMappingsCheck(mappings: PathMappingTree?, private val rootPath: P
     }
 }
 
-class MappedExpressionCheck(private val mappedExpression: MappedExpression, rootPath: Path) :
-    PathMappingsCheck(mappedExpression.mappings, rootPath) {
+class MappedExpressionCheck(private val mappedExpression: Expression, rootPath: Path) :
+    PathMappingsCheck(mappedExpression.pathMappings(), rootPath) {
 
     var expr: String?
         get() = null
         set(value) {
-            assertEquals(parseExpression(value!!), mappedExpression.expr)
+            assertEquals(parseExpression(value!!), mappedExpression)
         }
 }
 
 @TestCaseBuilderMarker
 class MetadataCheck(private val rootPath: Path, private val keyChecker: (MetadataKey) -> Metadata) {
     private var checkedParams: Int? = null
-    private var params: List<MappedExpression>? = null
+    private var params: List<Expression>? = null
 
     var key: MetadataKey?
         get() = null
@@ -116,19 +114,22 @@ class MetadataCheck(private val rootPath: Path, private val keyChecker: (Metadat
 }
 
 class TransformationCheck(private val trans: Transformation?) :
-    PathMappingsCheck(trans?.toExpr?.mappings, trans?.fromExpr?.path ?: RootPath) {
+    PathMappingsCheck(
+        trans?.toExpr?.pathMappings() ?: emptySequence(),
+        trans?.fromExpr?.origin?.path ?: RootPath
+    ) {
     var fromExpr: String?
         get() = null
         set(value) {
             assertNotNull(trans)
-            assertEquals(parseExpression(value!!), trans.fromExpr.expr)
+            assertEquals(parseExpression(value!!), trans.fromExpr)
         }
 
     var toExpr: String?
         get() = null
         set(value) {
             assertNotNull(trans)
-            assertEquals(parseExpression(value!!), trans.toExpr.expr)
+            assertEquals(parseExpression(value!!), trans.toExpr.removeBrackets())
         }
 
     private var checkedSkills: Int? = null
@@ -140,7 +141,7 @@ class TransformationCheck(private val trans: Transformation?) :
 
     fun explanation(init: MetadataCheck.() -> Unit) {
         assertNotNull(trans)
-        val explanationCheck = MetadataCheck(trans.fromExpr.path) {
+        val explanationCheck = MetadataCheck(trans.fromExpr.origin.path!!) {
             assertNotNull(trans.explanation, "Explanation is empty")
             assertEquals(
                 it,
@@ -157,7 +158,7 @@ class TransformationCheck(private val trans: Transformation?) :
     fun skill(init: MetadataCheck.() -> Unit) {
         assertNotNull(trans)
 
-        val skillCheck = MetadataCheck(trans.fromExpr.path) {
+        val skillCheck = MetadataCheck(trans.fromExpr.origin.path!!) {
             val skill = trans.skills.find { s -> s.key == it }
             assertNotNull(skill, "No skill with given key found")
             skill
@@ -202,13 +203,13 @@ class MethodTestCase {
 
     fun check(assert: TransformationCheck.() -> Unit) {
         val expr = parseExpression(inputExpr)
-        val trans = method.tryExecute(context, Subexpression(expr))
+        val trans = method.tryExecute(context, expr.withOrigin(Root()))
         checkTransformation(trans, assert)
     }
 }
 
 private fun Transformation.isThroughStep() =
-    steps?.let { it.size == 1 && it[0].fromExpr.expr == fromExpr.expr } ?: false
+    steps?.let { it.size == 1 && it[0].fromExpr == fromExpr } ?: false
 
 private fun checkTransformation(trans: Transformation?, assert: TransformationCheck.() -> Unit) {
     if (trans != null && trans.isThroughStep()) {

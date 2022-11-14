@@ -1,7 +1,7 @@
 package engine.patterns
 
 import engine.context.Context
-import engine.expressions.Subexpression
+import engine.expressions.Expression
 import engine.operators.EquationOperator
 import engine.operators.EquationSystemOperator
 
@@ -9,8 +9,8 @@ data class EquationPattern(
     val lhs: Pattern,
     val rhs: Pattern,
 ) : BasePattern() {
-    override fun doFindMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
-        if (!subexpression.expr.operator.equiv(EquationOperator)) {
+    override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
+        if (!subexpression.operator.equiv(EquationOperator)) {
             return emptySequence()
         }
 

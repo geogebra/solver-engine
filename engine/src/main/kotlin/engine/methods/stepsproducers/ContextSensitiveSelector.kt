@@ -3,7 +3,7 @@ package engine.methods.stepsproducers
 import engine.context.Context
 import engine.context.Resource
 import engine.context.ResourceData
-import engine.expressions.Subexpression
+import engine.expressions.Expression
 import engine.steps.Transformation
 
 /**
@@ -25,7 +25,7 @@ data class ContextSensitiveSelector(
     val alternatives: List<ContextSensitiveAlternative>
 ) : StepsProducer {
 
-    override fun produceSteps(ctx: Context, sub: Subexpression): List<Transformation>? {
+    override fun produceSteps(ctx: Context, sub: Expression): List<Transformation>? {
         val best = ctx.selectBestResource(default, alternatives).stepsProducer
         return best.produceSteps(ctx, sub)
     }

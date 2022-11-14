@@ -33,7 +33,7 @@ enum class FractionArithmeticPlans(override val runner: Plan) : RunnerMethod {
                         option {
                             deeply {
                                 applyTo(GeneralRules.FactorMinusFromSum) {
-                                    if (it.parent?.expr?.operator == BinaryExpressionOperator.Fraction) it else null
+                                    if (it.parent?.operator == BinaryExpressionOperator.Fraction) it else null
                                 }
                             }
                         }

@@ -1,7 +1,7 @@
 package engine.methods.stepsproducers
 
 import engine.context.Context
-import engine.expressions.Subexpression
+import engine.expressions.Expression
 import engine.methods.PlanBuilder
 import engine.steps.Transformation
 
@@ -16,7 +16,7 @@ data class PipelineItem(val stepsProducer: StepsProducer, val optional: Boolean 
  */
 data class Pipeline(val items: List<PipelineItem>) : StepsProducer {
 
-    override fun produceSteps(ctx: Context, sub: Subexpression) = buildSteps(sub) {
+    override fun produceSteps(ctx: Context, sub: Expression) = buildSteps(sub) {
         for (item in items) {
             val itemSteps = item.stepsProducer.produceSteps(ctx, lastSub)
 
@@ -33,7 +33,7 @@ data class Pipeline(val items: List<PipelineItem>) : StepsProducer {
 private class FailedStep : Exception()
 
 internal class ProceduralPipeline(val init: PipelineBuilder.() -> Unit) : StepsProducer {
-    override fun produceSteps(ctx: Context, sub: Subexpression): List<Transformation>? {
+    override fun produceSteps(ctx: Context, sub: Expression): List<Transformation>? {
         val builder = StepsBuilder(sub)
         val runner = PipelineRunner(builder, ctx)
         try {

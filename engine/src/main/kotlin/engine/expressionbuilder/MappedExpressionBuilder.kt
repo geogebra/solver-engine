@@ -1,16 +1,17 @@
 package engine.expressionbuilder
 
 import engine.context.Context
+import engine.expressions.Combine
+import engine.expressions.Distribute
 import engine.expressions.Expression
-import engine.expressions.MappedExpression
-import engine.expressions.PathMappingLeaf
-import engine.expressions.PathMappingType
-import engine.expressions.Subexpression
+import engine.expressions.Factor
+import engine.expressions.Move
+import engine.expressions.New
 import engine.expressions.divideBy
-import engine.expressions.flattenedNaryMappedExpression
+import engine.expressions.flattenedNaryExpression
 import engine.expressions.negOf
-import engine.expressions.powerOf
 import engine.expressions.productOf
+import engine.expressions.simplifiedPowerOf
 import engine.expressions.sumOf
 import engine.expressions.xp
 import engine.patterns.CoefficientPattern
@@ -36,35 +37,34 @@ class MappedExpressionBuilder(
     val context: Context,
     private val match: Match,
 ) {
-    private fun unaryAnnotate(pathProvider: PathProvider, pathMappingType: PathMappingType) = MappedExpression(
-        pathProvider.getBoundExpr(match)!!,
-        PathMappingLeaf(pathProvider.getBoundPaths(match), pathMappingType)
-    )
 
+    fun introduce(expression: Expression): Expression = expression.withOrigin(New)
+
+    fun move(pathProvider: PathProvider): Expression {
+        val boundPaths = pathProvider.getBoundPaths(match)
+        val expression = pathProvider.getBoundExpr(match)!!
+        return when (boundPaths.size) {
+            0 -> expression.withOrigin(New)
+            1 -> expression.withOrigin(Move(boundPaths[0]))
+            else -> expression.withOrigin(Factor(boundPaths))
+        }
+    }
+
+    fun transform(pathProvider: PathProvider) =
+        pathProvider.getBoundExpr(match)!!.withOrigin(Combine(pathProvider.getBoundPaths(match)))
+
+    fun transform(pathProvider: PathProvider, toExpression: Expression) =
+        toExpression.withOrigin(Combine(pathProvider.getBoundPaths(match)))
+
+    fun factor(pathProvider: PathProvider) =
+        pathProvider.getBoundExpr(match)!!.withOrigin(Factor(pathProvider.getBoundPaths(match)))
+
+    fun distribute(pathProvider: PathProvider) =
+        pathProvider.getBoundExpr(match)!!.withOrigin(Distribute(pathProvider.getBoundPaths(match)))
+
+    // TODO
     @Suppress("UnusedPrivateMember")
-    private fun binaryAnnotate(
-        pathProvider: PathProvider,
-        pathMappingType: PathMappingType,
-        expression: MappedExpression
-    ) =
-        expression
-
-    fun introduce(expression: Expression): MappedExpression =
-        MappedExpression(expression, PathMappingLeaf(listOf(), PathMappingType.Introduce))
-
-    fun move(pathProvider: PathProvider) = unaryAnnotate(pathProvider, PathMappingType.Move)
-
-    fun transform(pathProvider: PathProvider) = unaryAnnotate(pathProvider, PathMappingType.Transform)
-
-    fun transform(pathProvider: PathProvider, toExpression: MappedExpression): MappedExpression =
-        binaryAnnotate(pathProvider, PathMappingType.Transform, toExpression)
-
-    fun factor(pathProvider: PathProvider) = unaryAnnotate(pathProvider, PathMappingType.Factor)
-
-    fun distribute(pathProvider: PathProvider) = unaryAnnotate(pathProvider, PathMappingType.Distribute)
-
-    fun cancel(pathProvider: PathProvider, inExpression: MappedExpression) =
-        binaryAnnotate(pathProvider, PathMappingType.Cancel, inExpression)
+    fun cancel(pathProvider: PathProvider, inExpression: Expression) = inExpression
 
     /**
      * Returns true if the given pattern is bound to a value in the match.
@@ -76,7 +76,7 @@ class MappedExpressionBuilder(
     /**
      * Returns the last subexpression bound to pattern
      */
-    fun get(pattern: Pattern): Subexpression? = match.getLastBinding(pattern)
+    fun get(pattern: Pattern): Expression? = match.getLastBinding(pattern)
 
     /**
      * Returns the numeric value bound to the argument in the match.
@@ -99,7 +99,7 @@ class MappedExpressionBuilder(
     /**
      * Finds a match for the given pattern in the given subexpression in the context of the current match.
      */
-    fun matchPattern(pattern: Pattern, subexpression: Subexpression): Match? {
+    fun matchPattern(pattern: Pattern, subexpression: Expression): Match? {
         return pattern.findMatches(context, match, subexpression).firstOrNull()
     }
 
@@ -107,7 +107,7 @@ class MappedExpressionBuilder(
      * Creates a [MappedExpression] by applying a set of operations on an explicitly given match.
      * To be used together with [matchPattern].
      */
-    fun buildWith(match: Match, init: MappedExpressionBuilder.() -> MappedExpression): MappedExpression {
+    fun buildWith(match: Match, init: MappedExpressionBuilder.() -> Expression): Expression {
         val builder = MappedExpressionBuilder(context, match)
         return builder.init()
     }
@@ -115,31 +115,24 @@ class MappedExpressionBuilder(
     /**
      * Adds a negative sign to [to] if [from] matches a negative expression.
      */
-    fun <T : Pattern> copySign(from: OptionalNegPattern<T>, to: MappedExpression) =
+    fun <T : Pattern> copySign(from: OptionalNegPattern<T>, to: Expression) =
         if (from.isNeg(match)) negOf(to) else to
 
     /**
      * Adds a negative sign to [to] unless [from] matches a negative expression.
      */
-    fun <T : Pattern> copyFlippedSign(from: OptionalNegPattern<T>, to: MappedExpression) =
+    fun <T : Pattern> copyFlippedSign(from: OptionalNegPattern<T>, to: Expression) =
         if (from.isNeg(match)) to else negOf(to)
 
-    fun transformTo(ptn: PathProvider, value: Expression): MappedExpression {
-        return MappedExpression(
-            value,
-            PathMappingLeaf(ptn.getBoundPaths(match), PathMappingType.Transform),
-        )
-    }
+    fun transformTo(ptn: PathProvider, value: Expression) = value.withOrigin(
+        Combine(ptn.getBoundPaths(match))
+    )
 
     fun transformTo(ptn: PathProvider, transformer: (Expression) -> Expression) =
         transformTo(ptn, transformer(ptn.getBoundExpr(match)!!))
 
-    fun combineTo(ptn1: PathProvider, ptn2: PathProvider, value: Expression): MappedExpression {
-        return MappedExpression(
-            value,
-            PathMappingLeaf(ptn1.getBoundPaths(match) + ptn2.getBoundPaths(match), PathMappingType.Combine),
-        )
-    }
+    fun combineTo(ptn1: PathProvider, ptn2: PathProvider, value: Expression) =
+        value.withOrigin(Combine(ptn1.getBoundPaths(match) + ptn2.getBoundPaths(match)))
 
     /**
      * Transforms the integer provided by [ptn] according to the given [operation].
@@ -191,14 +184,14 @@ class MappedExpressionBuilder(
      * from the resulting expression. If [newVals] has more items than the number of matched operands, the extra items
      * are ignored.
      */
-    fun NaryPatternBase.substitute(vararg newVals: MappedExpression): MappedExpression {
+    fun NaryPatternBase.substitute(vararg newVals: Expression): Expression {
         val sub = match.getLastBinding(this)!!
-        val matchIndexes = this.getMatchIndexes(match, sub.path)
-        val restChildren = ArrayList<MappedExpression>()
-        for (child in sub.children()) {
-            val newValIndex = matchIndexes.indexOf(child.index())
+        val matchIndexes = this.getMatchIndexes(match, sub.origin.path!!)
+        val restChildren = ArrayList<Expression>()
+        for ((index, child) in sub.children().withIndex()) {
+            val newValIndex = matchIndexes.indexOf(index)
             when {
-                newValIndex == -1 -> restChildren.add(move(child))
+                newValIndex == -1 -> restChildren.add(child)
                 newValIndex < newVals.size -> restChildren.add(
                     newVals[newValIndex]
                 )
@@ -207,25 +200,25 @@ class MappedExpressionBuilder(
 
         return when (restChildren.size) {
             1 -> restChildren[0]
-            else -> flattenedNaryMappedExpression(operator, restChildren)
+            else -> flattenedNaryExpression(operator, restChildren)
         }
     }
 
-    fun collectLikeTermsInSum(sub: Subexpression, commonTerm: CoefficientPattern): MappedExpression {
-        val coefficients = mutableListOf<MappedExpression>()
+    fun collectLikeTermsInSum(sub: Expression, commonTerm: CoefficientPattern): Expression {
+        val coefficients = mutableListOf<Expression>()
 
-        val otherTerms = mutableListOf<MappedExpression>()
+        val otherTerms = mutableListOf<Expression>()
         var firstIndex: Int? = null
 
-        for (term in sub.children()) {
+        for ((index, term) in sub.children().withIndex()) {
             val m = matchPattern(commonTerm, term)
             if (m != null) {
                 coefficients.add(commonTerm.coefficient(m))
                 if (firstIndex == null) {
-                    firstIndex = term.index()
+                    firstIndex = index
                 }
             } else {
-                otherTerms.add(move(term))
+                otherTerms.add(term)
             }
         }
 
@@ -239,7 +232,7 @@ class MappedExpressionBuilder(
 
     fun OptionalWrappingPattern.isWrapping() = this.isWrapping(match)
 
-    fun MappedExpression.wrapIf(pattern: OptionalWrappingPattern, wrapper: (MappedExpression) -> MappedExpression) =
+    fun Expression.wrapIf(pattern: OptionalWrappingPattern, wrapper: (Expression) -> Expression) =
         if (pattern.isWrapping()) wrapper(this) else this
 
     fun OptionalNegPattern<Pattern>.isNeg() = this.isNeg(match)
@@ -249,11 +242,12 @@ class MappedExpressionBuilder(
      * raised to the power of its multiplicity.
      * for e.g. 63 --> listOf( xp(3^2), xp(7) )
      */
-    fun productOfPrimeFactors(integer: IntegerPattern): List<MappedExpression> {
-        return getValue(integer).primeFactorDecomposition()
-            .map { (f, n) -> introduce(if (n == BigInteger.ONE) xp(f) else powerOf(xp(f), xp(n))) }
+    fun productOfPrimeFactors(integer: IntegerPattern): List<Expression> {
+        return getValue(integer)
+            .primeFactorDecomposition()
+            .map { (f, n) -> introduce(simplifiedPowerOf(xp(f), xp(n))) }
     }
 
-    fun optionalDivideBy(pattern: OptionalWrappingPattern, mappedExpression: MappedExpression) =
+    fun optionalDivideBy(pattern: OptionalWrappingPattern, mappedExpression: Expression) =
         mappedExpression.wrapIf(pattern, ::divideBy)
 }

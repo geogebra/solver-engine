@@ -3,7 +3,7 @@ package engine.methods
 import engine.context.ResourceData
 import engine.context.emptyResourceData
 import engine.expressionbuilder.MappedExpressionBuilder
-import engine.expressions.MappedExpression
+import engine.expressions.Expression
 import engine.methods.stepsproducers.ContextSensitiveAlternative
 import engine.methods.stepsproducers.ContextSensitiveSelector
 import engine.methods.stepsproducers.PipelineBuilder
@@ -27,9 +27,9 @@ class PlanBuilder(private val stepsProducerFactory: StepsProducerFactory) {
     var resultPattern: Pattern = AnyPattern()
 
     lateinit var explanation: MetadataKey
-    private var explanationParameters: MappedExpressionBuilder.() -> List<MappedExpression> = { emptyList() }
+    private var explanationParameters: MappedExpressionBuilder.() -> List<Expression> = { emptyList() }
 
-    fun explanationParameters(parameters: MappedExpressionBuilder.() -> List<MappedExpression>) {
+    fun explanationParameters(parameters: MappedExpressionBuilder.() -> List<Expression>) {
         explanationParameters = parameters
     }
 
@@ -41,7 +41,7 @@ class PlanBuilder(private val stepsProducerFactory: StepsProducerFactory) {
 
     fun skill(
         skillKey: MetadataKey,
-        skillParameters: MappedExpressionBuilder.() -> List<MappedExpression> = { emptyList() }
+        skillParameters: MappedExpressionBuilder.() -> List<Expression> = { emptyList() }
     ) {
         skillMakers.add(MetadataMaker(skillKey, skillParameters))
     }

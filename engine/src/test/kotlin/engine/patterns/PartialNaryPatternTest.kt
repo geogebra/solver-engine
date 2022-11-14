@@ -1,7 +1,6 @@
 package engine.patterns
 
 import engine.context.emptyContext
-import engine.expressions.Subexpression
 import engine.expressions.xp
 import engine.operators.NaryOperator
 import org.junit.jupiter.api.Test
@@ -18,7 +17,7 @@ class PartialNaryPatternTest {
         val integerPattern = UnsignedIntegerPattern()
         val ptn = PartialNaryPattern(NaryOperator.Sum, listOf(integerPattern))
 
-        val matches = ptn.findMatches(emptyContext, RootMatch, Subexpression(expression))
+        val matches = ptn.findMatches(emptyContext, RootMatch, expression)
         assertEquals(terms.count(), matches.count())
 
         for ((index, match) in matches.withIndex()) {
@@ -31,7 +30,7 @@ class PartialNaryPatternTest {
         val expression = parseExpression("1 + 2 + 3")
         val ptn = PartialNaryPattern(NaryOperator.Sum, listOf(UnsignedIntegerPattern(), UnsignedIntegerPattern()))
 
-        val matches = ptn.findMatches(emptyContext, RootMatch, Subexpression(expression))
+        val matches = ptn.findMatches(emptyContext, RootMatch, expression)
         assertEquals(3, matches.count())
     }
 
@@ -40,7 +39,7 @@ class PartialNaryPatternTest {
         val expression = parseExpression("1 + 2 + 1 + 3")
         val intPtn = UnsignedIntegerPattern()
         val ptn = PartialNaryPattern(NaryOperator.Sum, listOf(intPtn, intPtn))
-        val matches = ptn.findMatches(emptyContext, RootMatch, Subexpression(expression))
+        val matches = ptn.findMatches(emptyContext, RootMatch, expression)
         assertEquals(1, matches.count())
     }
 
@@ -49,7 +48,7 @@ class PartialNaryPatternTest {
         val expression = parseExpression("1 + 2 + x + 3")
         val intPtn = UnsignedIntegerPattern()
         val ptn = PartialNaryPattern(NaryOperator.Sum, listOf(intPtn, intPtn))
-        val matches = ptn.findMatches(emptyContext, RootMatch, Subexpression(expression))
+        val matches = ptn.findMatches(emptyContext, RootMatch, expression)
         assertEquals(0, matches.count())
     }
 
@@ -61,7 +60,7 @@ class PartialNaryPatternTest {
             NaryOperator.Sum,
             listOf(intPtn, intPtn, ArbitraryVariablePattern(), UnsignedIntegerPattern())
         )
-        val matches = ptn.findMatches(emptyContext, RootMatch, Subexpression(expression))
+        val matches = ptn.findMatches(emptyContext, RootMatch, expression)
         assertEquals(6, matches.count())
     }
 
@@ -75,7 +74,7 @@ class PartialNaryPatternTest {
 
         val expression = parseExpression("[x*y*z/a*y*c]")
 
-        val matches = ptn.findMatches(emptyContext, RootMatch, Subexpression(expression))
+        val matches = ptn.findMatches(emptyContext, RootMatch, expression)
 
         assertEquals(1, matches.count())
         assertEquals(xp("y"), matches.first().getBoundExpr(common))
@@ -87,12 +86,12 @@ class PartialNaryPatternTest {
         val intPtn = UnsignedIntegerPattern()
         val ptn = PartialNaryPattern(NaryOperator.Sum, listOf(intPtn, intPtn))
 
-        val matches = ptn.findMatches(emptyContext, RootMatch, Subexpression(expression))
+        val matches = ptn.findMatches(emptyContext, RootMatch, expression)
         assertEquals(1, matches.count())
         val match = matches.elementAt(0)
         val rest = ptn.getRestSubexpressions(match)
         assertEquals(rest.size, 2)
-        assertEquals(xp(2), rest[0].expr)
-        assertEquals(xp(3), rest[1].expr)
+        assertEquals(xp(2), rest[0])
+        assertEquals(xp(3), rest[1])
     }
 }

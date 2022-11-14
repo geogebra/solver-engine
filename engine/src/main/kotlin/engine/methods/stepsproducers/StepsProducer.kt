@@ -1,8 +1,8 @@
 package engine.methods.stepsproducers
 
 import engine.context.Context
+import engine.expressions.Expression
 import engine.expressions.RootPath
-import engine.expressions.Subexpression
 import engine.operators.UndefinedOperator
 import engine.steps.Transformation
 
@@ -14,14 +14,14 @@ interface StepsProducer {
     /**
      * Produces non-empty list of `Transformation` instances or null.
      */
-    fun produceSteps(ctx: Context, sub: Subexpression): List<Transformation>?
+    fun produceSteps(ctx: Context, sub: Expression): List<Transformation>?
 }
 
 /**
- * This helps build a list of chained `Transformation` instances, starting from the given `Subexpression`.
+ * This helps build a list of chained `Transformation` instances, starting from the given Expression`.
  */
-class StepsBuilder(sub: Subexpression) {
-    private var sub: Subexpression
+class StepsBuilder(sub: Expression) {
+    private var sub: Expression
 
     private val steps = mutableListOf<Transformation>()
     private var aborted = false
@@ -29,13 +29,13 @@ class StepsBuilder(sub: Subexpression) {
     init {
         // Redundant brackets are removed because the outer brackets in the expression serve no
         // useful purpose
-        this.sub = when (sub.path) {
+        this.sub = when (sub.origin.path) {
             RootPath -> sub
-            else -> Subexpression(sub.expr.removeBrackets(), sub.parent, sub.path)
+            else -> sub.removeBrackets()
         }
     }
 
-    fun undefined() = sub.expr.operator == UndefinedOperator
+    fun undefined() = sub.operator == UndefinedOperator
 
     fun addStep(step: Transformation) {
         if (undefined()) {
@@ -51,9 +51,9 @@ class StepsBuilder(sub: Subexpression) {
          * --> [1 / 0] + 2
          * --> undefined ([1/ 0] is undefined)
          */
-        val (substitution, newSub) = when (step.toExpr.expr.operator) {
-            UndefinedOperator -> sub.substitute(sub.path, step.toExpr)
-            else -> sub.substitute(step.fromExpr.path, step.toExpr)
+        val substitution = when (step.toExpr.operator) {
+            UndefinedOperator -> sub.substitute(sub.origin.path!!, step.toExpr)
+            else -> sub.substitute(step.fromExpr.origin.path!!, step.toExpr)
         }
 
         steps.add(
@@ -66,7 +66,7 @@ class StepsBuilder(sub: Subexpression) {
             )
         )
 
-        sub = newSub
+        sub = substitution.withOrigin(sub.origin)
     }
 
     /**
@@ -101,7 +101,7 @@ class StepsBuilder(sub: Subexpression) {
 /**
  * Provides a convenient way to use a `StepsBuilder`.
  */
-fun buildSteps(sub: Subexpression, init: StepsBuilder.() -> Unit): List<Transformation>? {
+fun buildSteps(sub: Expression, init: StepsBuilder.() -> Unit): List<Transformation>? {
     val builder = StepsBuilder(sub)
     builder.init()
     return builder.getFinalSteps()

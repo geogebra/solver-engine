@@ -2,7 +2,7 @@ package server.api
 
 import engine.context.Context
 import engine.context.emptyContext
-import engine.expressions.Subexpression
+import engine.expressions.Root
 import methods.methodRegistry
 import org.antlr.v4.runtime.misc.ParseCancellationException
 import org.springframework.stereotype.Service
@@ -21,7 +21,7 @@ class PlanApiServiceImpl : PlansApiService {
             throw InvalidExpressionException(applyPlanRequest.input, e)
         }
         val context = getContext(applyPlanRequest.context)
-        val trans = plan.tryExecute(context, Subexpression(expr))
+        val trans = plan.tryExecute(context, expr.withOrigin(Root()))
             ?: throw PlanNotApplicableException(planId)
         val modeller = TransformationModeller(format = applyPlanRequest.format)
         return modeller.modelTransformation(trans)

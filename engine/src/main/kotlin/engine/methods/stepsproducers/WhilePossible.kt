@@ -1,7 +1,7 @@
 package engine.methods.stepsproducers
 
 import engine.context.Context
-import engine.expressions.Subexpression
+import engine.expressions.Expression
 
 /**
  * `WhilePossible` will fail if exceeding this number of iterations.
@@ -19,7 +19,7 @@ class TooManyIterationsException(msg: String) : RuntimeException(msg)
  */
 data class WhilePossible(val stepsProducer: StepsProducer) : StepsProducer {
 
-    override fun produceSteps(ctx: Context, sub: Subexpression) = buildSteps(sub) {
+    override fun produceSteps(ctx: Context, sub: Expression) = buildSteps(sub) {
 
         repeat(MAX_WHILE_POSSIBLE_ITERATIONS) {
             val iterationSteps = stepsProducer.produceSteps(ctx, lastSub) ?: return@buildSteps
@@ -30,7 +30,7 @@ data class WhilePossible(val stepsProducer: StepsProducer) : StepsProducer {
         }
 
         throw TooManyIterationsException(
-            "WhilePossible max iteration number ($MAX_WHILE_POSSIBLE_ITERATIONS) exceeded for expression ${sub.expr}"
+            "WhilePossible max iteration number ($MAX_WHILE_POSSIBLE_ITERATIONS) exceeded for expression $sub"
         )
     }
 }

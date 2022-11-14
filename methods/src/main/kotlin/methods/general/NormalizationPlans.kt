@@ -1,6 +1,7 @@
 package methods.general
 
-import engine.expressions.Subexpression
+import engine.expressions.Child
+import engine.expressions.Expression
 import engine.methods.Plan
 import engine.methods.RunnerMethod
 import engine.methods.plan
@@ -35,22 +36,20 @@ enum class NormalizationPlans(override val runner: Plan) : RunnerMethod {
     )
 }
 
-val redundantBracketChecker = { sub: Subexpression ->
-    if (sub.expr.hasBracket() && (
-        sub.parent == null ||
-            sub.parent!!.expr.operator.nthChildAllowed(sub.index(), sub.expr.operator)
-        )
-    ) {
-        sub
-    } else {
-        null
+fun redundantBracketChecker(sub: Expression): Expression? = when {
+    !sub.hasBracket() -> null
+    sub.parent == null -> sub
+    sub.origin is Child -> {
+        val origin = sub.origin as Child
+        if (origin.parent.operator.nthChildAllowed(origin.index, sub.operator)) sub else null
     }
+    else -> null
 }
 
 val removeRedundantBrackets = steps {
     firstOf {
         option {
-            applyTo(NormalizationRules.RemoveOuterBracket, redundantBracketChecker)
+            applyTo(NormalizationRules.RemoveOuterBracket, ::redundantBracketChecker)
         }
         option(NormalizationRules.RemoveBracketSumInSum)
         option(NormalizationRules.RemoveBracketProductInProduct)

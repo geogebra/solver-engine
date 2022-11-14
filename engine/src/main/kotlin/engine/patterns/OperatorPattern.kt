@@ -1,7 +1,7 @@
 package engine.patterns
 
 import engine.context.Context
-import engine.expressions.Subexpression
+import engine.expressions.Expression
 import engine.operators.BinaryExpressionOperator
 import engine.operators.MixedNumberOperator
 import engine.operators.NaryOperator
@@ -20,8 +20,8 @@ data class OperatorPattern(val operator: Operator, val childPatterns: List<Patte
 
     override fun toString() = operator.readableString(childPatterns.map { it.toString() })
 
-    override fun doFindMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
-        if (!subexpression.expr.operator.equiv(operator) || subexpression.expr.operands.size != childPatterns.size) {
+    override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
+        if (!subexpression.operator.equiv(operator) || subexpression.operands.size != childPatterns.size) {
             return emptySequence()
         }
 

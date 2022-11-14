@@ -2,7 +2,6 @@ package engine.patterns
 
 import engine.context.Context
 import engine.expressions.Expression
-import engine.expressions.Subexpression
 import java.math.BigDecimal
 import java.math.BigInteger
 
@@ -17,7 +16,7 @@ data class ConditionPattern(
 
     override val key = pattern.key
 
-    override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
+    override fun findMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
         return pattern.findMatches(context, match, subexpression).filter { condition.checkMatch(it) }
     }
 }
@@ -29,7 +28,7 @@ data class IntegerConditionPattern(
 
     override val key = pattern.key
 
-    override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
+    override fun findMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
         return pattern.findMatches(context, match, subexpression).filter { condition(pattern.getBoundInt(it)) }
     }
 }
@@ -41,7 +40,7 @@ data class NumericConditionPattern(
 
     override val key = pattern.key
 
-    override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
+    override fun findMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
         return pattern.findMatches(context, match, subexpression).filter { condition(pattern.getBoundNumber(it)) }
     }
 }

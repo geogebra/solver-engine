@@ -202,7 +202,7 @@ class GeneralRulesTest {
 
     @Test
     fun testSimplifyExpressionToThePowerOfOne() {
-        testRule("[ (sqrt[2] + 1) ^ 1]", SimplifyExpressionToThePowerOfOne, "sqrt[2] + 1")
+        testRule("[(sqrt[2] + 1) ^ 1]", SimplifyExpressionToThePowerOfOne, "sqrt[2] + 1")
         testRule("[2 ^ 1]", SimplifyExpressionToThePowerOfOne, "2")
     }
 

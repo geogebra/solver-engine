@@ -2,7 +2,7 @@ package engine.methods
 
 import engine.context.Context
 import engine.expressions.Constants
-import engine.expressions.Subexpression
+import engine.expressions.Expression
 import engine.methods.stepsproducers.StepsProducer
 import engine.patterns.Match
 import engine.patterns.Pattern
@@ -21,18 +21,18 @@ data class Plan(
     val stepsProducer: StepsProducer,
 ) : Method, Runner {
 
-    private fun getMatch(context: Context, sub: Subexpression): Match? {
+    private fun getMatch(context: Context, sub: Expression): Match? {
         return pattern.findMatches(context, RootMatch, sub).firstOrNull()
     }
 
-    override fun tryExecute(ctx: Context, sub: Subexpression): Transformation? {
+    override fun tryExecute(ctx: Context, sub: Expression): Transformation? {
         val match = getMatch(ctx, sub) ?: return null
 
         return stepsProducer.produceSteps(ctx, sub)?.let { steps ->
             val toExpr = steps.last().toExpr
 
             when {
-                toExpr.expr == Constants.Undefined || resultPattern.matches(ctx, toExpr.expr) -> Transformation(
+                toExpr == Constants.Undefined || resultPattern.matches(ctx, toExpr) -> Transformation(
                     fromExpr = sub,
                     toExpr = toExpr,
                     steps = steps,
@@ -45,14 +45,14 @@ data class Plan(
         }
     }
 
-    override fun run(ctx: Context, sub: Subexpression): TransformationResult? {
+    override fun run(ctx: Context, sub: Expression): TransformationResult? {
         val match = getMatch(ctx, sub) ?: return null
 
         return stepsProducer.produceSteps(ctx, sub)?.let { steps ->
             val toExpr = steps.last().toExpr
 
             when {
-                toExpr.expr == Constants.Undefined || resultPattern.matches(ctx, toExpr.expr) -> TransformationResult(
+                toExpr == Constants.Undefined || resultPattern.matches(ctx, toExpr) -> TransformationResult(
                     toExpr = toExpr,
                     steps = steps,
                     explanation = explanationMaker.make(ctx, match),

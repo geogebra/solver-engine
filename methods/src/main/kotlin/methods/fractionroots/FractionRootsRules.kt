@@ -1,9 +1,8 @@
 package methods.fractionroots
 
 import engine.expressions.Constants
-import engine.expressions.MappedExpression
+import engine.expressions.Expression
 import engine.expressions.fractionOf
-import engine.expressions.mappedExpression
 import engine.expressions.negOf
 import engine.expressions.powerOf
 import engine.expressions.productOf
@@ -244,7 +243,7 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
             )
 
             onPattern(pattern) {
-                val middleTermMatches = productOf(move(term1), move(term2)).expr.equiv(get(middleTerm)!!.expr)
+                val middleTermMatches = productOf(move(term1), move(term2)).equiv(get(middleTerm)!!)
 
                 when {
                     middleTermMatches -> TransformationResult(
@@ -359,7 +358,7 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
             val pattern = fractionOf(numerator, denominator)
 
             onPattern(pattern) {
-                val rationalizationFactors = mutableListOf<MappedExpression>()
+                val rationalizationFactors = mutableListOf<Expression>()
                 val matchPatternRadical =
                     radical.findMatches(context = context, subexpression = get(radical)!!).firstOrNull()
 
@@ -368,7 +367,7 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
                 if (indexValue != null) {
                     val primeFactorizedFormExpr = get(radical)!!.children()[0]
 
-                    if (primeFactorizedFormExpr.expr.operator == NaryOperator.Product) {
+                    if (primeFactorizedFormExpr.operator == NaryOperator.Product) {
                         for (term in primeFactorizedFormExpr.children()) {
                             val exponentFactorMatch = matchPattern(exponentFactorPtn, term)
                             val integerFactorMatch = matchPattern(integerFactorPtn, term)
@@ -385,14 +384,14 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
                                 rationalizationFactors.add(
                                     buildWith(integerFactorMatch) {
                                         powerOf(
-                                            introduce(term.expr),
+                                            introduce(term),
                                             sumOf(introduce(indexValue), introduce(xp(-1)))
                                         )
                                     }
                                 )
                             }
                         }
-                    } else if (primeFactorizedFormExpr.expr.operator == BinaryExpressionOperator.Power) {
+                    } else if (primeFactorizedFormExpr.operator == BinaryExpressionOperator.Power) {
                         val exponentFactorMatch = exponentFactorPtn.findMatches(
                             context = context,
                             subexpression = primeFactorizedFormExpr
@@ -416,7 +415,7 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
                             rationalizationFactors.add(
                                 buildWith(integerFactorMatch) {
                                     powerOf(
-                                        introduce(primeFactorizedFormExpr.expr),
+                                        introduce(primeFactorizedFormExpr),
                                         sumOf(introduce(indexValue), introduce(xp(-1)))
                                     )
                                 }
@@ -427,7 +426,7 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
 
                 val rationalizationTerm = rootOf(
                     if (rationalizationFactors.size == 1) rationalizationFactors[0]
-                    else mappedExpression(NaryOperator.Product, rationalizationFactors),
+                    else productOf(rationalizationFactors),
                     move(index)
                 )
 

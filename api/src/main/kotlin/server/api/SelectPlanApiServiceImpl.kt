@@ -1,6 +1,6 @@
 package server.api
 
-import engine.expressions.Subexpression
+import engine.expressions.Root
 import methods.methodRegistry
 import org.antlr.v4.runtime.misc.ParseCancellationException
 import org.springframework.stereotype.Service
@@ -25,7 +25,7 @@ class SelectPlanApiServiceImpl : SelectPlansApiService {
 
         for (entryData in methodRegistry.getPublicEntries()) {
             val transformation = try {
-                entryData.implementation.tryExecute(context, Subexpression(expr))
+                entryData.implementation.tryExecute(context, expr.withOrigin(Root()))
             } catch (e: Exception) {
                 context.log(Level.SEVERE, "Exception caught: ${e.stackTraceToString()}")
                 null

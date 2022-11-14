@@ -133,7 +133,7 @@ enum class ConstantExpressionsPlans(override val runner: Plan) : RunnerMethod {
             steps {
                 whilePossible { deeply(simpleTidyUpSteps) }
                 optionally(NormalizationPlans.NormalizeExpression)
-                whilePossible { deeply(SimplifyConstantSubexpression, deepFirst = true) }
+                whilePossible { deeply(ConstantExpressionsPlans.SimplifyConstantSubexpression, deepFirst = true) }
                 whilePossible(simplificationSteps)
             }
         }

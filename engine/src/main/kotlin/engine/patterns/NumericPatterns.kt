@@ -3,7 +3,6 @@ package engine.patterns
 import engine.context.Context
 import engine.expressions.Expression
 import engine.expressions.Path
-import engine.expressions.Subexpression
 import engine.expressions.xp
 import engine.operators.DecimalOperator
 import engine.operators.IntegerOperator
@@ -37,8 +36,8 @@ class UnsignedIntegerPattern : IntegerPattern, BasePattern() {
         }
     }
 
-    override fun doFindMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
-        return when (subexpression.expr.operator) {
+    override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
+        return when (subexpression.operator) {
             is IntegerOperator -> sequenceOf(match.newChild(this, subexpression))
             else -> emptySequence()
         }
@@ -55,8 +54,8 @@ class UnsignedDecimalPattern : NumberPattern, BasePattern() {
         }
     }
 
-    override fun doFindMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
-        return when (subexpression.expr.operator) {
+    override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
+        return when (subexpression.operator) {
             is IntegerOperator, is DecimalOperator -> sequenceOf(match.newChild(this, subexpression))
             else -> emptySequence()
         }
@@ -72,8 +71,8 @@ class RecurringDecimalPattern : BasePattern() {
         }
     }
 
-    override fun doFindMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
-        return when (subexpression.expr.operator) {
+    override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
+        return when (subexpression.operator) {
             is RecurringDecimalOperator -> sequenceOf(match.newChild(this, subexpression))
             else -> emptySequence()
         }

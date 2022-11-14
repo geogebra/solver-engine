@@ -1,7 +1,7 @@
 package engine.methods.stepsproducers
 
 import engine.context.Context
-import engine.expressions.Subexpression
+import engine.expressions.Expression
 import engine.methods.Method
 import engine.steps.Transformation
 import engine.steps.metadata.Metadata
@@ -16,9 +16,9 @@ data class InStepItem(
 interface InStep : StepsProducer {
 
     val inStepItems: List<InStepItem>
-    fun getSubexpressions(sub: Subexpression): List<Subexpression>
+    fun getSubexpressions(sub: Expression): List<Expression>
 
-    override fun produceSteps(ctx: Context, sub: Subexpression): List<Transformation>? {
+    override fun produceSteps(ctx: Context, sub: Expression): List<Transformation>? {
         val stepSubs = getSubexpressions(sub).toMutableList()
 
         val steps = mutableListOf<Transformation>()
@@ -36,23 +36,23 @@ interface InStep : StepsProducer {
 
             val prevSub = lastSub
             for (tr in nonNullTransformations) {
-                val (_, newSub) = lastSub.substitute(tr.fromExpr.path, tr.toExpr)
-                lastSub = newSub
+                val substitution = lastSub.substitute(tr.fromExpr.origin.path!!, tr.toExpr)
+                lastSub = substitution.withOrigin(lastSub.origin)
             }
 
             steps.add(
                 Transformation(
                     explanation = Metadata(explanation, listOf()),
                     fromExpr = prevSub,
-                    toExpr = lastSub.toMappedExpr(),
+                    toExpr = lastSub,
                     steps = nonNullTransformations
                 )
             )
 
             for ((i, tr) in stepTransformations.withIndex()) {
                 if (tr != null) {
-                    val (_, newSub) = tr.fromExpr.substitute(tr.fromExpr.path, tr.toExpr)
-                    stepSubs[i] = newSub
+                    val substitution = tr.fromExpr.substitute(tr.fromExpr.origin.path!!, tr.toExpr)
+                    stepSubs[i] = substitution.withOrigin(tr.fromExpr.origin)
                 }
             }
         }
@@ -63,7 +63,7 @@ interface InStep : StepsProducer {
 data class ApplyToChildrenInStep(
     override val inStepItems: List<InStepItem>
 ) : InStep {
-    override fun getSubexpressions(sub: Subexpression): List<Subexpression> {
+    override fun getSubexpressions(sub: Expression): List<Expression> {
         return sub.children()
     }
 }
@@ -77,7 +77,7 @@ class InStepStepBuilder {
 }
 
 internal class ProceduralApplyToChildrenInStep(val init: InStepBuilder.() -> Unit) : StepsProducer {
-    override fun produceSteps(ctx: Context, sub: Subexpression): List<Transformation>? {
+    override fun produceSteps(ctx: Context, sub: Expression): List<Transformation>? {
         val builder = StepsBuilder(sub)
         val runner = InStepRunner(builder, ctx, sub.children())
         try {
@@ -89,7 +89,7 @@ internal class ProceduralApplyToChildrenInStep(val init: InStepBuilder.() -> Uni
     }
 }
 
-private class InStepRunner(val builder: StepsBuilder, val ctx: Context, stepSubs: List<Subexpression>) :
+private class InStepRunner(val builder: StepsBuilder, val ctx: Context, stepSubs: List<Expression>) :
     InStepBuilder {
 
     private var lastStepSubs = stepSubs.toMutableList()
@@ -110,21 +110,22 @@ private class InStepRunner(val builder: StepsBuilder, val ctx: Context, stepSubs
         }
 
         val newSub = nonNullTransformations.fold(builder.lastSub) { acc, tr ->
-            acc.substitute(tr.fromExpr.path, tr.toExpr).second
+            acc.substitute(tr.fromExpr.origin.path!!, tr.toExpr).withOrigin(acc.origin)
         }
 
         builder.addStep(
             Transformation(
                 explanation = Metadata(stepBuilder.explanationKey, emptyList()),
                 fromExpr = builder.lastSub,
-                toExpr = newSub.toMappedExpr(),
+                toExpr = newSub,
                 steps = nonNullTransformations
             )
         )
 
         for ((i, tr) in stepTransformations.withIndex()) {
             if (tr != null) {
-                lastStepSubs[i] = tr.fromExpr.substitute(tr.fromExpr.path, tr.toExpr).second
+                lastStepSubs[i] =
+                    tr.fromExpr.substitute(tr.fromExpr.origin.path!!, tr.toExpr).withOrigin(tr.fromExpr.origin)
             }
         }
     }

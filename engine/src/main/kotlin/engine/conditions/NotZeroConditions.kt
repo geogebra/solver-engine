@@ -2,7 +2,6 @@ package engine.conditions
 
 import engine.context.emptyContext
 import engine.expressions.Expression
-import engine.expressions.Subexpression
 import engine.operators.BinaryExpressionOperator
 import engine.operators.NaryOperator
 import engine.operators.UnaryExpressionOperator
@@ -65,13 +64,13 @@ fun sumTermsAreIncommensurable(terms: List<Expression>): Boolean {
     val visited = mutableSetOf(invalidKey)
 
     for (operand in terms) {
-        val match = termPtn.findMatches(emptyContext, RootMatch, Subexpression(operand)).firstOrNull()
+        val match = termPtn.findMatches(emptyContext, RootMatch, operand).firstOrNull()
         val fraction = match?.getBoundExpr(fractionTermPtn)
         val key = when {
             match == null -> invalidKey
             fraction != null -> if (fraction.isDefinitelyNotZero()) rationalKey else invalidKey
             else -> {
-                val coeff = rootTermPtn.coefficient(match).expr
+                val coeff = rootTermPtn.coefficient(match)
                 val radicand = radicandPtn.getBoundInt(match)
                 val order = rootPtn.order.getBoundInt(match)
                 if (coeff.isDefinitelyNotZero() && order >= BigInteger.TWO && rootIsSimplified(radicand, order))

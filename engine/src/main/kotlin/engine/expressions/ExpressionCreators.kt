@@ -1,12 +1,15 @@
 @file:Suppress("TooManyFunctions")
+
 package engine.expressions
 
 import engine.operators.BinaryExpressionOperator
 import engine.operators.DecimalOperator
 import engine.operators.EquationOperator
+import engine.operators.EquationSystemOperator
 import engine.operators.IntegerOperator
 import engine.operators.MixedNumberOperator
 import engine.operators.NaryOperator
+import engine.operators.Operator
 import engine.operators.RecurringDecimalOperator
 import engine.operators.UnaryExpressionOperator
 import engine.operators.VariableOperator
@@ -14,50 +17,112 @@ import engine.utility.RecurringDecimal
 import java.math.BigDecimal
 import java.math.BigInteger
 
+fun buildExpression(operator: Operator, operands: List<Expression>, decorators: List<Decorator> = emptyList()) =
+    Expression(
+        operator,
+        operands.mapIndexed { index, operand ->
+            val bracketsRequired = !operator.nthChildAllowed(index, operand.operator)
+            when {
+                bracketsRequired && !operand.hasBracket() -> operand.decorate(Decorator.RoundBracket)
+                !bracketsRequired -> operand.removeBrackets()
+                else -> operand
+            }
+        },
+        decorators,
+        Build
+    )
+
+internal fun flattenedNaryExpression(operator: NaryOperator, operands: List<Expression>): Expression {
+    if (operands.size == 1) {
+        return operands[0]
+    }
+    val ops = mutableListOf<Expression>()
+    for (mappedExpr in operands) {
+        if (mappedExpr.operator == operator) {
+            ops.addAll(mappedExpr.children())
+        } else {
+            ops.add(mappedExpr)
+        }
+    }
+    return buildExpression(operator, ops)
+}
+
 fun xp(n: Int) = xp(n.toBigInteger())
 
 fun xp(n: BigInteger): Expression {
-    val posExpr = Expression(IntegerOperator(n.abs()), emptyList())
+    val posExpr = buildExpression(IntegerOperator(n.abs()), emptyList())
     return if (n.signum() >= 0) posExpr else negOf(posExpr)
 }
 
 fun xp(x: BigDecimal): Expression {
     val operator =
         if (x.scale() <= 0) IntegerOperator(x.abs().toBigInteger()) else DecimalOperator(x.abs())
-    val posExpr = Expression(operator, emptyList())
+    val posExpr = buildExpression(operator, emptyList())
     return if (x.signum() >= 0) posExpr else negOf(posExpr)
 }
 
 fun xp(x: RecurringDecimal): Expression {
-    return Expression(RecurringDecimalOperator(x), emptyList())
+    return buildExpression(RecurringDecimalOperator(x), emptyList())
 }
 
-fun xp(v: String) = Expression(VariableOperator(v), emptyList())
+fun xp(v: String) = buildExpression(VariableOperator(v), emptyList())
 
 fun mixedNumber(integer: BigInteger, numerator: BigInteger, denominator: BigInteger) =
-    Expression(MixedNumberOperator, listOf(xp(integer), xp(numerator), xp(denominator)))
+    buildExpression(MixedNumberOperator, listOf(xp(integer), xp(numerator), xp(denominator)))
+
+fun mixedNumberOf(integer: Expression, numerator: Expression, denominator: Expression) =
+    buildExpression(MixedNumberOperator, listOf(integer, numerator, denominator))
 
 fun bracketOf(expr: Expression, decorator: Decorator? = null) = expr.decorate(decorator ?: Decorator.RoundBracket)
 fun squareBracketOf(expr: Expression) = expr.decorate(Decorator.SquareBracket)
 fun curlyBracketOf(expr: Expression) = expr.decorate(Decorator.CurlyBracket)
 fun missingBracketOf(expr: Expression) = expr.decorate(Decorator.MissingBracket)
 
-fun negOf(expr: Expression) = Expression(UnaryExpressionOperator.Minus, listOf(expr))
-fun plusOf(expr: Expression) = Expression(UnaryExpressionOperator.Plus, listOf(expr))
+fun negOf(expr: Expression) = buildExpression(UnaryExpressionOperator.Minus, listOf(expr))
+fun plusOf(expr: Expression) = buildExpression(UnaryExpressionOperator.Plus, listOf(expr))
 
 fun fractionOf(numerator: Expression, denominator: Expression) =
-    Expression(BinaryExpressionOperator.Fraction, listOf(numerator, denominator))
+    buildExpression(BinaryExpressionOperator.Fraction, listOf(numerator, denominator))
 
-fun powerOf(base: Expression, exponent: Expression) = Expression(BinaryExpressionOperator.Power, listOf(base, exponent))
+fun powerOf(base: Expression, exponent: Expression) =
+    buildExpression(BinaryExpressionOperator.Power, listOf(base, exponent))
 
-fun squareRootOf(radicand: Expression) = Expression(UnaryExpressionOperator.SquareRoot, listOf(radicand))
+fun simplifiedPowerOf(base: Expression, exponent: Expression): Expression {
+    return if (exponent == Constants.One) base
+    else powerOf(base, exponent)
+}
 
-fun rootOf(radicand: Expression, order: Expression) = Expression(BinaryExpressionOperator.Root, listOf(radicand, order))
+fun squareRootOf(radicand: Expression) = buildExpression(UnaryExpressionOperator.SquareRoot, listOf(radicand))
 
-fun sumOf(vararg terms: Expression) = Expression(NaryOperator.Sum, terms.asList())
+fun rawRootOf(radicand: Expression, order: Expression) =
+    buildExpression(BinaryExpressionOperator.Root, listOf(radicand, order))
 
-fun productOf(vararg factors: Expression) = Expression(NaryOperator.Product, factors.asList())
+fun rootOf(radicand: Expression, order: Expression) =
+    if (order == Constants.Two) squareRootOf(radicand) else rawRootOf(radicand, order)
 
-fun implicitProductOf(vararg factors: Expression) = Expression(NaryOperator.ImplicitProduct, factors.asList())
+fun sumOf(vararg operands: Expression) = sumOf(operands.asList())
 
-fun equationOf(lhs: Expression, rhs: Expression) = Expression(EquationOperator, listOf(lhs, rhs))
+fun sumOf(operands: List<Expression>): Expression = flattenedNaryExpression(
+    NaryOperator.Sum, operands
+)
+
+fun productOf(vararg operands: Expression) = productOf(operands.asList())
+
+fun productOf(operands: List<Expression>) = flattenedNaryExpression(NaryOperator.Product, operands)
+
+fun simplifiedProductOf(vararg operands: Expression): Expression {
+    val nonOneFactors = operands.filter { it != Constants.One }
+    return when (nonOneFactors.size) {
+        1 -> nonOneFactors[0]
+        else -> flattenedNaryExpression(NaryOperator.Product, nonOneFactors)
+    }
+}
+
+fun divideBy(operand: Expression) = buildExpression(UnaryExpressionOperator.DivideBy, listOf(operand))
+
+fun implicitProductOf(vararg factors: Expression) = buildExpression(NaryOperator.ImplicitProduct, factors.asList())
+
+fun equationOf(lhs: Expression, rhs: Expression) = buildExpression(EquationOperator, listOf(lhs, rhs))
+
+fun equationSystemOf(vararg equations: Expression) =
+    buildExpression(EquationSystemOperator, equations.asList())

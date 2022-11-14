@@ -114,8 +114,8 @@ enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMeth
             onPattern(product) {
                 val (rationalExponents, nonRationalExponents) = get(product)!!.children()
                     .partition {
-                        it.expr.operator == BinaryExpressionOperator.Power &&
-                            it.expr.operands[1].operator == BinaryExpressionOperator.Fraction
+                        it.operator == BinaryExpressionOperator.Power &&
+                            it.operands[1].operator == BinaryExpressionOperator.Fraction
                     }
                 TransformationResult(
                     toExpr = productOf(
@@ -151,7 +151,7 @@ enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMeth
                     val expandingTerm2 =
                         integerOp(exponent1.denominator, exponent2.denominator) { n1, n2 -> n1 / n1.gcd(n2) }
 
-                    val fraction1 = when (expandingTerm1.expr) {
+                    val fraction1 = when (expandingTerm1) {
                         Constants.One -> move(exponent1)
                         else -> fractionOf(
                             productOf(move(exponent1.numerator), expandingTerm1),
@@ -159,7 +159,7 @@ enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMeth
                         )
                     }
 
-                    val fraction2 = when (expandingTerm2.expr) {
+                    val fraction2 = when (expandingTerm2) {
                         Constants.One -> move(exponent2)
                         else -> fractionOf(
                             productOf(move(exponent2.numerator), expandingTerm2),
@@ -173,7 +173,10 @@ enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMeth
                             powerOf(move(base2), fraction2)
                         )
 
-                        else -> fractionOf(powerOf(move(base1), fraction1), powerOf(move(base2), fraction2))
+                        else -> fractionOf(
+                            powerOf(move(base1), fraction1),
+                            powerOf(move(base2), fraction2)
+                        )
                     }
 
                     TransformationResult(
@@ -210,7 +213,12 @@ enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMeth
                 val newExponent = fractionOf(introduce(Constants.One), factor(denominator))
 
                 val result = when {
-                    isBound(product) -> product.substitute(powerOf(productOf(newPower1, newPower2), newExponent))
+                    isBound(product) -> product.substitute(
+                        powerOf(
+                            productOf(newPower1, newPower2),
+                            newExponent
+                        )
+                    )
                     else -> powerOf(fractionOf(newPower1, newPower2), newExponent)
                 }
 

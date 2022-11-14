@@ -3,7 +3,6 @@ package engine.patterns
 import engine.context.Context
 import engine.expressions.Expression
 import engine.expressions.Path
-import engine.expressions.Subexpression
 
 interface PathProvider {
 
@@ -29,7 +28,7 @@ interface Pattern : PathProvider {
      * Gives a [Sequence] of all possible matches of [Pattern] object
      * in the [subexpression] building on the provided [match].
      */
-    fun findMatches(context: Context, match: Match = RootMatch, subexpression: Subexpression): Sequence<Match>
+    fun findMatches(context: Context, match: Match = RootMatch, subexpression: Expression): Sequence<Match>
 
     /**
      * Returns a list of [Path] objects from the root of
@@ -41,7 +40,7 @@ interface Pattern : PathProvider {
     override fun getBoundExpr(m: Match) = m.getBoundExpr(this)
 
     fun matches(context: Context, expression: Expression): Boolean {
-        return findMatches(context, RootMatch, Subexpression(expression)).any()
+        return findMatches(context, RootMatch, expression).any()
     }
 
     val key: Pattern
@@ -52,14 +51,14 @@ interface Pattern : PathProvider {
  */
 abstract class BasePattern : Pattern {
 
-    internal abstract fun doFindMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match>
+    internal abstract fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match>
 
     /**
      * Checks any potential existing match for this pattern is equivalent to [subexpression] and then use the
      * [doFindMatches] function to return all possible matches.
      */
-    final override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
-        if (!this.checkPreviousMatch(subexpression.expr, match)) {
+    final override fun findMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
+        if (!this.checkPreviousMatch(subexpression, match)) {
             return emptySequence()
         }
         return doFindMatches(context, match, subexpression)
@@ -83,7 +82,7 @@ abstract class BasePattern : Pattern {
  * patterns and if we want to add extra behaviour (e.g. see [FractionPattern] and [IntegerOrderRootPattern]).
  */
 abstract class KeyedPattern : Pattern {
-    final override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
+    final override fun findMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
         return key.findMatches(context, match, subexpression)
     }
 }

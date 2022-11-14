@@ -1,7 +1,7 @@
 package engine.methods.stepsproducers
 
 import engine.context.Context
-import engine.expressions.Subexpression
+import engine.expressions.Expression
 import engine.steps.Transformation
 
 /**
@@ -9,7 +9,7 @@ import engine.steps.Transformation
  */
 data class FirstOf(val options: List<StepsProducer>) : StepsProducer {
 
-    override fun produceSteps(ctx: Context, sub: Subexpression): List<Transformation>? {
+    override fun produceSteps(ctx: Context, sub: Expression): List<Transformation>? {
         return options.firstNotNullOfOrNull { it.produceSteps(ctx, sub) }
     }
 }
@@ -17,7 +17,7 @@ data class FirstOf(val options: List<StepsProducer>) : StepsProducer {
 private class FoundOption : Exception()
 
 internal class ProceduralFirstOf(val init: FirstOfBuilder.() -> Unit) : StepsProducer {
-    override fun produceSteps(ctx: Context, sub: Subexpression): List<Transformation>? {
+    override fun produceSteps(ctx: Context, sub: Expression): List<Transformation>? {
         val builder = StepsBuilder(sub)
         val runner = FirstOfRunner(builder, ctx)
         try {

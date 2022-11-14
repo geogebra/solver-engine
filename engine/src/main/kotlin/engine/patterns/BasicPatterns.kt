@@ -2,7 +2,6 @@ package engine.patterns
 
 import engine.context.Context
 import engine.expressions.Expression
-import engine.expressions.Subexpression
 
 /**
  * A pattern which matches only the exact expression it was
@@ -10,9 +9,9 @@ import engine.expressions.Subexpression
  */
 data class FixedPattern(val expr: Expression) : BasePattern() {
 
-    override fun doFindMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
+    override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
         return when {
-            subexpression.expr.equiv(expr) -> sequenceOf(match.newChild(this, subexpression))
+            subexpression.equiv(expr) -> sequenceOf(match.newChild(this, subexpression))
             else -> emptySequence()
         }
     }
@@ -24,7 +23,7 @@ data class FixedPattern(val expr: Expression) : BasePattern() {
  */
 class AnyPattern : BasePattern() {
 
-    override fun doFindMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
+    override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
         return sequenceOf(match.newChild(this, subexpression))
     }
 }
@@ -37,7 +36,7 @@ open class OptionalNegPattern<T : Pattern>(val unsignedPattern: T) :
 
 data class SameSignPatten(val from: OptionalNegPattern<Pattern>, val to: Pattern) : BasePattern() {
 
-    override fun doFindMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
+    override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
         val ptn = if (from.isNeg(match)) negOf(to) else to
         return ptn.findMatches(context, match, subexpression).map { it.newChild(this, subexpression) }
     }
@@ -45,7 +44,7 @@ data class SameSignPatten(val from: OptionalNegPattern<Pattern>, val to: Pattern
 
 data class OppositeSignPatten(val from: OptionalNegPattern<Pattern>, val to: Pattern) : BasePattern() {
 
-    override fun doFindMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
+    override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
         val ptn = if (from.isNeg(match)) to else negOf(to)
         return ptn.findMatches(context, match, subexpression).map { it.newChild(this, subexpression) }
     }

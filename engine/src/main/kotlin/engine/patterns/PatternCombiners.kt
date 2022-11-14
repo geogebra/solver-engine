@@ -1,13 +1,13 @@
 package engine.patterns
 
 import engine.context.Context
-import engine.expressions.Subexpression
+import engine.expressions.Expression
 
 data class FindPattern(val pattern: Pattern, val deepFirst: Boolean = false) : Pattern {
 
     override val key = pattern
 
-    override fun findMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
+    override fun findMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
         val ownMatches = pattern.findMatches(context, match, subexpression)
         val childMatches = subexpression.children().asSequence().flatMap { findMatches(context, match, it) }
         return when {
@@ -22,7 +22,7 @@ data class FindPattern(val pattern: Pattern, val deepFirst: Boolean = false) : P
  * the given `Pattern`'s in the given order in the list `options`
  */
 data class OneOfPattern(val options: List<Pattern>) : BasePattern() {
-    override fun doFindMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
+    override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
         return sequence {
             for (option in options) {
                 for (m in option.findMatches(context, match, subexpression)) {

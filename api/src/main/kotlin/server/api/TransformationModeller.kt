@@ -11,10 +11,10 @@ data class TransformationModeller(val format: ApplyPlanRequest.Format) {
 
     fun modelTransformation(trans: engine.steps.Transformation): Transformation {
         return Transformation(
-            path = trans.fromExpr.path.toString(),
-            fromExpr = modelExpression(trans.fromExpr.expr),
-            toExpr = modelExpression(trans.toExpr.expr),
-            pathMappings = modelPathMappings(trans.toExpr.mappings.pathMappings(RootPath)),
+            path = trans.fromExpr.origin.path.toString(),
+            fromExpr = modelExpression(trans.fromExpr),
+            toExpr = modelExpression(trans.toExpr.removeBrackets()),
+            pathMappings = modelPathMappings(trans.toExpr.pathMappings(RootPath)),
             explanation = trans.explanation?.let { modelMetadata(it) },
             skills = trans.skills.map { modelMetadata(it) },
             steps = trans.steps?.let { step -> step.map { modelTransformation(it) } }
@@ -38,8 +38,8 @@ data class TransformationModeller(val format: ApplyPlanRequest.Format) {
             key = metadata.key.keyName,
             params = metadata.mappedParams.map {
                 MappedExpression(
-                    expression = modelExpression(it.expr),
-                    pathMappings = modelPathMappings(it.mappings.pathMappings(RootPath))
+                    expression = modelExpression(it),
+                    pathMappings = modelPathMappings(it.pathMappings(RootPath))
                 )
             }
         )

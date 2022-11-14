@@ -2,8 +2,8 @@ package engine.patterns
 
 import engine.context.Context
 import engine.expressions.ChildPath
+import engine.expressions.Expression
 import engine.expressions.Path
-import engine.expressions.Subexpression
 import engine.operators.NaryOperator
 
 /**
@@ -34,9 +34,9 @@ class PartialNaryPattern(
     val minSize: Int = 0
 ) : NaryPatternBase(operator, operands) {
 
-    override fun doFindMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
-        val childCount = subexpression.expr.operands.size
-        if (subexpression.expr.operator != operator || childCount < operands.size || childCount < minSize) {
+    override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
+        val childCount = subexpression.operands.size
+        if (subexpression.operator != operator || childCount < operands.size || childCount < minSize) {
             return emptySequence()
         }
 
@@ -63,19 +63,19 @@ class PartialNaryPattern(
         return rec(match.newChild(this, subexpression), 0, 0)
     }
 
-    fun getRestSubexpressions(m: Match): List<Subexpression> {
+    fun getRestSubexpressions(m: Match): List<Expression> {
         val sub = m.getLastBinding(this)!!
-        val matchIndexes = getMatchIndexes(m, sub.path)
+        val matchIndexes = getMatchIndexes(m, sub.origin.path!!)
 
-        return sub.children().filter { subexpression -> !matchIndexes.contains(subexpression.index()) }
+        return sub.children().filterIndexed { i, _ -> !matchIndexes.contains(i) }
     }
 }
 
 class CommutativeNaryPattern(operator: NaryOperator, operands: List<Pattern>) : NaryPatternBase(operator, operands) {
 
-    override fun doFindMatches(context: Context, match: Match, subexpression: Subexpression): Sequence<Match> {
-        val childCount = subexpression.expr.operands.size
-        if (subexpression.expr.operator != operator || childCount != operands.count()) {
+    override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
+        val childCount = subexpression.operands.size
+        if (subexpression.operator != operator || childCount != operands.count()) {
             return emptySequence()
         }
 
