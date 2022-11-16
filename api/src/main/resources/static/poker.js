@@ -435,12 +435,9 @@ window.onload = () => {
 
     el("showThroughSteps").onchange = (evt) => {
         showThroughSteps = evt.target.checked;
-        const planId = el("plansSelect").value;
-        const input = el("input").value;
-        const curriculum = el("curriculumSelect").value;
-        const precision = parseInt(el("precisionSelect").value);
-        if (input !== "") {
-            selectPlansOrApplyPlan(planId, input, { curriculum, precision });
+        const data = getRequestDataFromForm();
+        if (data.input !== "") {
+            selectPlansOrApplyPlan(data);
         }
     };
 };
