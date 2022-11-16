@@ -57,7 +57,9 @@ enum class ConstantExpressionsPlans(override val runner: Plan) : RunnerMethod {
                         option { deeply(FractionArithmeticRules.SimplifyFractionToMinusOne) }
                         option { deeply(FractionArithmeticRules.SimplifyFractionNegativePower) }
 
+                        option { deeply(FractionArithmeticPlans.SplitRationalExponent) }
                         option { deeply(FractionArithmeticRules.DistributeFractionPositivePower) }
+                        option { deeply(FractionArithmeticRules.DistributeFractionPositiveFractionPower) }
                         option { deeply(IntegerArithmeticRules.SimplifyEvenPowerOfNegative) }
                         option { deeply(IntegerArithmeticRules.SimplifyOddPowerOfNegative) }
                         option { deeply(GeneralRules.DistributePowerOfProduct) }

@@ -15,6 +15,13 @@ enum class FractionArithmeticExplanation : CategorisedMetadataKey {
     MultiplyFractions,
 
     /**
+     * Split improper fraction power to any base by converting the exponent to
+     * sum of an integer and proper fraction and then distribute sum of powers
+     * to its base
+     */
+    SplitRationalExponent,
+
+    /**
      * Add an integer to a fraction
      *
      * E.g. 3 + [2 / 3] -> [11 / 3]

@@ -29,8 +29,8 @@ import engine.patterns.withOptionalRationalCoefficient
 import engine.steps.metadata.Skill
 import engine.steps.metadata.metadata
 import engine.utility.divides
+import engine.utility.isFactorizableUnderRationalExponent
 import engine.utility.isPrime
-import engine.utility.isZero
 import engine.utility.primeFactorDecomposition
 import method.integerrationalexponents.Explanation
 import java.math.BigInteger
@@ -61,26 +61,15 @@ enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMeth
     FactorizeIntegerUnderRationalExponent(
         rule {
             val integer = integerCondition(UnsignedIntegerPattern()) { !it.isPrime() }
-            val numerator = UnsignedIntegerPattern()
-            val denominator = UnsignedIntegerPattern()
-            val exp = fractionOf(numerator, denominator)
+            val exp = IntegerFractionPattern()
             val power = powerOf(integer, exp)
 
             onPattern(power) {
-                val numeratorValue = getValue(numerator)
-                val denominatorValue = getValue(denominator)
-
-                val primeFactorization = getValue(integer).primeFactorDecomposition()
-
-                // when at-least one of the prime factor has degree
-                // greater than or equal to denominator of rational exponent
-                // or when the gcd of multiplicity of prime factors with
-                // denominator of rational exponent is not equal to 1
-                val canBeSimplified =
-                    primeFactorization.any { (_, p) -> (p * numeratorValue % denominatorValue).isZero() } ||
-                        primeFactorization.fold(denominatorValue) { acc, f -> acc.gcd(f.second) } != BigInteger.ONE
-
-                if (canBeSimplified) {
+                val integerValue = getValue(integer)
+                val expNum = getValue(exp.numerator)
+                val expDen = getValue(exp.denominator)
+                if (integerValue.isFactorizableUnderRationalExponent(expNum, expDen)) {
+                    val primeFactorization = getValue(integer).primeFactorDecomposition()
                     val factorized = primeFactorization
                         .map { (f, n) -> introduce(if (n == BigInteger.ONE) xp(f) else powerOf(xp(f), xp(n))) }
 

@@ -32,8 +32,6 @@ enum class IntegerRationalExponentsExplanation : CategorisedMetadataKey {
      */
     SplitProductOfExponentsWithImproperFractionPowers,
 
-    SplitRationalExponent,
-
     /**
      * evaluates product of integers, integer exponents
      * and simplifies the product to bring integer to the beginning

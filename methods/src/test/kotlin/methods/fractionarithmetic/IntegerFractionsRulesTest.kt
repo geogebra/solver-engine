@@ -3,6 +3,7 @@ package methods.fractionarithmetic
 import methods.fractionarithmetic.FractionArithmeticRules.AddLikeFractions
 import methods.fractionarithmetic.FractionArithmeticRules.BringToCommonDenominator
 import methods.fractionarithmetic.FractionArithmeticRules.ConvertIntegerToFraction
+import methods.fractionarithmetic.FractionArithmeticRules.DistributeFractionPositiveFractionPower
 import methods.fractionarithmetic.FractionArithmeticRules.DistributeFractionPositivePower
 import methods.fractionarithmetic.FractionArithmeticRules.FindCommonFactorInFraction
 import methods.fractionarithmetic.FractionArithmeticRules.MultiplyFractions
@@ -113,6 +114,11 @@ class IntegerFractionsRulesTest {
     fun testTurnFactorIntoFractionInProduct() {
         testRule("[2/5] * 3", TurnFactorIntoFractionInProduct, "[2/5] * [3/1]")
         testRule("[2/5] * (-3)", TurnFactorIntoFractionInProduct, "[2/5] * [-3/1]")
+        testRule("[2/5] * sqrt[3]", TurnFactorIntoFractionInProduct, "[2/5] * [sqrt[3]/1]")
+        testRule("[2/5] * [2/3]", TurnFactorIntoFractionInProduct, null)
+        testRule("[2/5] * (-[2/3])", TurnFactorIntoFractionInProduct, null)
+        testRule("[2/5] * [([3/5])^[2 / 3]]", TurnFactorIntoFractionInProduct, null)
+        testRule("[2/5] * -[([3/5])^[2 / 3]]", TurnFactorIntoFractionInProduct, null)
     }
 
     @Test
@@ -148,6 +154,15 @@ class IntegerFractionsRulesTest {
         testRule("[([2 / 3]) ^ 1]", DistributeFractionPositivePower, null)
         testRule("[([2 / 3]) ^ 0]", DistributeFractionPositivePower, null)
         testRule("[([2 / 3]) ^ -2]", DistributeFractionPositivePower, null)
+    }
+
+    @Test
+    fun testDistributeFractionPositiveFractionPower() {
+        testRule("[([2 / 3]) ^ [1 / 2]]", DistributeFractionPositiveFractionPower, null)
+        testRule("[([2 / 3]) ^ [4 / 3]]", DistributeFractionPositiveFractionPower, null)
+        testRule("[([4 / 9]) ^ [1 / 2]]", DistributeFractionPositiveFractionPower, "[[4 ^ [1 / 2]] / [9 ^ [1 / 2]]]")
+        testRule("[([4 / 5]) ^ [1 / 2]]", DistributeFractionPositiveFractionPower, "[[4 ^ [1 / 2]] / [5 ^ [1 / 2]]]")
+        testRule("[([2 / 9]) ^ [1 / 2]]", DistributeFractionPositiveFractionPower, "[[2 ^ [1 / 2]] / [9 ^ [1 / 2]]]")
     }
 
     @Test

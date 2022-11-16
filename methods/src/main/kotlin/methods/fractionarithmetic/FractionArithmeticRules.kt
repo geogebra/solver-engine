@@ -13,6 +13,7 @@ import engine.methods.RunnerMethod
 import engine.methods.TransformationResult
 import engine.methods.rule
 import engine.operators.BinaryExpressionOperator
+import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
@@ -33,6 +34,7 @@ import engine.patterns.sumContaining
 import engine.steps.metadata.Skill
 import engine.steps.metadata.metadata
 import engine.utility.divides
+import engine.utility.isFactorizableUnderRationalExponent
 import engine.utility.isZero
 import java.math.BigInteger
 
@@ -238,7 +240,30 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
     TurnFactorIntoFractionInProduct(
         rule {
             val nonFractionFactor =
-                condition(AnyPattern()) { it.isConstant() && it.operator != BinaryExpressionOperator.Fraction }
+                condition(AnyPattern()) {
+                    it.isConstant() &&
+                        it.operator != BinaryExpressionOperator.Fraction &&
+                        // neither a fraction nor an operator (like power, root, negation etc.) of a fraction
+                        // for e.g. sqrt[5], 1 + sqrt[5], x + 2 are all acceptable `nonFractionFactor`
+                        // while [2/3], -[2/3], [2/3]^[1/2], -[2/3]^[1/2] are not acceptable `nonFractionFactor`
+                        (
+                            // (1) start
+                            it.operands.isEmpty() || (
+                                it.operands[0].operator != BinaryExpressionOperator.Fraction &&
+                                    // (1) end
+                                    (
+                                        // same as (1) but with "-ve" sign around it
+                                        it.operands[0].operands.isEmpty() ||
+                                            (
+                                                it.operator == UnaryExpressionOperator.Minus &&
+                                                    it.operands[0].operands[0].operator !=
+                                                    BinaryExpressionOperator.Fraction
+                                                )
+                                        )
+                                )
+                            )
+                }
+            // TODO @Simona doesn't want:  `1 + [([2/5])^[2/3]]` to be a valid `nonFractionFactor`
             val product = productContaining(nonFractionFactor)
 
             onPattern(
@@ -344,6 +369,43 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
         }
     ),
 
+    DistributeFractionPositiveFractionPower(
+        rule {
+            val fraction = IntegerFractionPattern()
+            val exp = IntegerFractionPattern()
+            // we "split" an improper fraction power instead of distributing it
+            val expIsProperFraction = numericCondition(
+                exp.numerator, exp.denominator
+            ) { n1, n2 -> n1 < n2 }
+            val properFractionExponent = ConditionPattern(exp, expIsProperFraction)
+            val pattern = powerOf(fraction, properFractionExponent)
+
+            onPattern(pattern) {
+                val fracNum = getValue(fraction.numerator)
+                val fracDen = getValue(fraction.denominator)
+                val expNum = getValue(exp.numerator)
+                val expDen = getValue(exp.denominator)
+                if (fracNum.isFactorizableUnderRationalExponent(expNum, expDen) ||
+                    fracDen.isFactorizableUnderRationalExponent(expNum, expDen)
+                ) {
+                    TransformationResult(
+                        fractionOf(
+                            powerOf(move(fraction.numerator), move(exp)),
+                            powerOf(move(fraction.denominator), move(exp))
+                        ),
+                        explanation = metadata(
+                            Explanation.DistributeFractionPositivePower,
+                            move(fraction),
+                            move(exp)
+                        )
+                    )
+                } else {
+                    null
+                }
+            }
+        }
+    ),
+
     DistributeFractionPositivePower(
         rule {
             val fraction = IntegerFractionPattern()
@@ -356,7 +418,11 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                         powerOf(move(fraction.numerator), move(exponent)),
                         powerOf(move(fraction.denominator), move(exponent))
                     ),
-                    explanation = metadata(Explanation.DistributeFractionPositivePower, move(fraction), move(exponent))
+                    explanation = metadata(
+                        Explanation.DistributeFractionPositivePower,
+                        move(fraction),
+                        move(exponent)
+                    )
                 )
             }
         }

@@ -34,6 +34,24 @@ fun BigInteger.isEven() = this.lowestSetBit != 0
 
 fun BigInteger.divides(n: BigInteger) = !isZero() && n.mod(this) == BigInteger.ZERO
 
+/**
+ * when at-least one of the prime factor has degree
+ * greater than or equal to denominator of rational exponent
+ * or when the gcd of multiplicity of prime factors with
+ * denominator of rational exponent is not equal to 1
+ */
+fun BigInteger.isFactorizableUnderRationalExponent(numExp: BigInteger, denExp: BigInteger): Boolean {
+    val hasHigherOrderRoot = this.hasFactorOfDegree(denExp.toInt())
+    if (hasHigherOrderRoot) {
+        return true
+    }
+    val pfd = this.primeFactorDecomposition()
+    return (pfd.isNotEmpty()) && (
+        pfd.any { (_, p) -> (p * numExp % denExp).isZero() } ||
+            pfd.fold(denExp) { acc, f -> acc.gcd(f.second) } != BigInteger.ONE
+        )
+}
+
 fun BigInteger.hasFactorOfDegree(n: Int): Boolean {
     var factor = BigInteger.ONE
     do {

@@ -1776,3 +1776,279 @@ class SimplifyIntegerPowerUnderRoot {
         }
     }
 }
+
+class SimplifyRationalPowerOfFraction {
+    @Test
+    fun testRationalPowerFractionSplitPowerAndNoBaseSimplify() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "[([4 / 9]) ^ [11 / 3]]"
+
+        check {
+            toExpr = "[64 / 729] * [([4 / 9]) ^ [2 / 3]]"
+            explanation {
+                key = ConstantExpressionsExplanation.SimplifyPowers
+            }
+
+            step {
+                fromExpr = "[([4 / 9]) ^ [11 / 3]]"
+                toExpr = "[([4 / 9]) ^ 3] * [([4 / 9]) ^ [2 / 3]]"
+                explanation {
+                    key = FractionArithmeticExplanation.SplitRationalExponent
+                }
+            }
+
+            step {
+                fromExpr = "[([4 / 9]) ^ 3] * [([4 / 9]) ^ [2 / 3]]"
+                toExpr = "[[4 ^ 3] / [9 ^ 3]] * [([4 / 9]) ^ [2 / 3]]"
+                explanation {
+                    key = FractionArithmeticExplanation.DistributeFractionPositivePower
+                }
+            }
+
+            step {
+                fromExpr = "[[4 ^ 3] / [9 ^ 3]] * [([4 / 9]) ^ [2 / 3]]"
+                toExpr = "[64 / [9 ^ 3]] * [([4 / 9]) ^ [2 / 3]]"
+                explanation {
+                    key = IntegerArithmeticExplanation.EvaluateIntegerPower
+                }
+            }
+
+            step {
+                fromExpr = "[64 / [9 ^ 3]] * [([4 / 9]) ^ [2 / 3]]"
+                toExpr = "[64 / 729] * [([4 / 9]) ^ [2 / 3]]"
+                explanation {
+                    key = IntegerArithmeticExplanation.EvaluateIntegerPower
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testRationalPowerFractionNoSplitSimplifyToFraction() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "[([32 / 243]) ^ [2 / 5]]"
+
+        check {
+            toExpr = "[4 / 9]"
+            explanation {
+                key = ConstantExpressionsExplanation.SimplifyConstantExpression
+            }
+
+            step {
+                fromExpr = "[([32 / 243]) ^ [2 / 5]]"
+                toExpr = "[[32 ^ [2 / 5]] / [243 ^ [2 / 5]]]"
+                explanation {
+                    key = FractionArithmeticExplanation.DistributeFractionPositivePower
+                }
+            }
+
+            step {
+                fromExpr = "[[32 ^ [2 / 5]] / [243 ^ [2 / 5]]]"
+                toExpr = "[4 / [243 ^ [2 / 5]]]"
+                explanation {
+                    key = IntegerRationalExponentsExplanation.SimplifyRationalExponentOfInteger
+                }
+            }
+
+            step {
+                fromExpr = "[4 / [243 ^ [2 / 5]]]"
+                toExpr = "[4 / 9]"
+                explanation {
+                    key = IntegerRationalExponentsExplanation.SimplifyRationalExponentOfInteger
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testRationalPowerFractionNoTransformation() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "[([14 / 45]) ^ [2 / 3]]"
+
+        check {
+            noTransformation()
+        }
+    }
+
+    @Test
+    fun testRationalPowerFractionOnlyNumeratorSimplifiedToInt() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "[([4 / 3]) ^ [3 / 2]]"
+
+        check {
+            toExpr = "[8 / 3 * [3 ^ [1 / 2]]]"
+            explanation {
+                key = ConstantExpressionsExplanation.SimplifyConstantExpression
+            }
+
+            step {
+                fromExpr = "[([4 / 3]) ^ [3 / 2]]"
+                toExpr = "[4 / 3] * [[4 ^ [1 / 2]] / [3 ^ [1 / 2]]]"
+                explanation {
+                    key = ConstantExpressionsExplanation.SimplifyPowers
+                }
+            }
+
+            step {
+                fromExpr = "[4 / 3] * [[4 ^ [1 / 2]] / [3 ^ [1 / 2]]]"
+                toExpr = "[4 / 3] * [2 / [3 ^ [1 / 2]]]"
+                explanation {
+                    key = IntegerRationalExponentsExplanation.SimplifyRationalExponentOfInteger
+                }
+            }
+
+            step {
+                fromExpr = "[4 / 3] * [2 / [3 ^ [1 / 2]]]"
+                toExpr = "[8 / 3 * [3 ^ [1 / 2]]]"
+                explanation {
+                    key = FractionArithmeticExplanation.MultiplyAndSimplifyFractions
+                }
+            }
+        }
+    }
+}
+
+class SmartFactorizationUnderRoot {
+    @Test
+    fun testSimplifyPerfectSquareUnderEvenOrderHigherRoot() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "root[9, 4]"
+
+        check {
+            toExpr = "sqrt[3]"
+            explanation {
+                key = IntegerRootsExplanation.SimplifyIntegerRoot
+            }
+
+            step {
+                fromExpr = "root[9, 4]"
+                toExpr = "root[[3 ^ 2], 4]"
+                explanation {
+                    key = IntegerRootsExplanation.FactorizeIntegerUnderRoot
+                }
+            }
+
+            step {
+                fromExpr = "root[[3 ^ 2], 4]"
+                toExpr = "sqrt[3]"
+                explanation {
+                    key = IntegerRootsExplanation.RewriteAndCancelPowerUnderRoot
+                }
+
+                step {
+                    fromExpr = "root[[3 ^ 2], 4]"
+                    toExpr = "root[[3 ^ 2], 2 * 2]"
+                    explanation {
+                        key = GeneralExplanation.RewritePowerUnderRoot
+                    }
+                }
+
+                step {
+                    fromExpr = "root[[3 ^ 2], 2 * 2]"
+                    toExpr = "sqrt[3]"
+                    explanation {
+                        key = GeneralExplanation.CancelRootIndexAndExponent
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testSimplifyMultipleFactorsSamePowerUnderHigherOrderRoot() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "root[7776, 10]"
+
+        check {
+            toExpr = "sqrt[6]"
+            explanation {
+                key = IntegerRootsExplanation.SimplifyIntegerRoot
+            }
+
+            step {
+                fromExpr = "root[7776, 10]"
+                toExpr = "root[[2 ^ 5] * [3 ^ 5], 10]"
+                explanation {
+                    key = IntegerRootsExplanation.FactorizeIntegerUnderRoot
+                }
+            }
+
+            step {
+                fromExpr = "root[[2 ^ 5] * [3 ^ 5], 10]"
+                toExpr = "root[[2 ^ 5], 10] * root[[3 ^ 5], 10]"
+                explanation {
+                    key = IntegerRootsExplanation.SplitRootOfProduct
+                }
+            }
+
+            step {
+                fromExpr = "root[[2 ^ 5], 10] * root[[3 ^ 5], 10]"
+                toExpr = "sqrt[6]"
+                explanation {
+                    key = IntegerRootsExplanation.SimplifyProductWithRoots
+                }
+
+                step {
+                    fromExpr = "root[[2 ^ 5], 10] * root[[3 ^ 5], 10]"
+                    toExpr = "sqrt[2] * sqrt[3]"
+                    explanation {
+                        key = IntegerRootsExplanation.SimplifyPowerOfIntegerUnderRoot
+                    }
+                }
+
+                step {
+                    fromExpr = "sqrt[2] * sqrt[3]"
+                    toExpr = "sqrt[2 * 3]"
+                    explanation {
+                        key = IntegerRootsExplanation.MultiplyNthRoots
+                    }
+                }
+
+                step {
+                    fromExpr = "sqrt[2 * 3]"
+                    toExpr = "sqrt[6]"
+                    explanation {
+                        key = IntegerArithmeticExplanation.SimplifyIntegersInProduct
+                    }
+
+                    step {
+                        fromExpr = "2 * 3"
+                        toExpr = "6"
+                        explanation {
+                            key = IntegerArithmeticExplanation.EvaluateIntegerProduct
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testSimplifyCancellablePowerWithProductBaseUnderHigherOrderRoot() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "root[ [(2*3) ^ 5], 10]"
+
+        check {
+            toExpr = "sqrt[6]"
+            explanation {
+                key = ConstantExpressionsExplanation.SimplifyConstantExpression
+            }
+
+            step {
+                fromExpr = "root[[(2 * 3) ^ 5], 10]"
+                toExpr = "root[[6 ^ 5], 10]"
+                explanation {
+                    key = ConstantExpressionsExplanation.SimplifyExpressionInBrackets
+                }
+            }
+
+            step {
+                fromExpr = "root[[6 ^ 5], 10]"
+                toExpr = "sqrt[6]"
+                explanation {
+                    key = IntegerRootsExplanation.RewriteAndCancelPowerUnderRoot
+                }
+            }
+        }
+    }
+}

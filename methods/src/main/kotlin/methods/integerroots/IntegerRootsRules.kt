@@ -35,6 +35,9 @@ import engine.utility.asPowerForRoot
 import engine.utility.asProductForRoot
 import engine.utility.divides
 import engine.utility.hasFactorOfDegree
+import engine.utility.isFactorizableUnderRationalExponent
+import engine.utility.primeFactorDecomposition
+import java.math.BigInteger
 
 enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
     SimplifyRootOfOne(
@@ -113,19 +116,22 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
             val integer = UnsignedIntegerPattern()
             val root = integerOrderRootOf(integer)
 
-            onPattern(
-                ConditionPattern(
-                    root,
-                    integerCondition(root.order, integer) { p, n -> n.hasFactorOfDegree(p.toInt()) }
-                )
-            ) {
-                val factorized = productOfPrimeFactors(integer)
+            onPattern(root) {
+                val integerValue = getValue(integer)
+                val rootOrderValue = getValue(root.order)
+                if (integerValue.isFactorizableUnderRationalExponent(BigInteger.ONE, rootOrderValue)) {
+                    val factorized = getValue(integer)
+                        .primeFactorDecomposition()
+                        .map { (f, n) -> introduce(if (n == BigInteger.ONE) xp(f) else powerOf(xp(f), xp(n))) }
 
-                TransformationResult(
-                    toExpr = rootOf(transform(integer, productOf(factorized)), move(root.order)),
-                    explanation = metadata(Explanation.FactorizeIntegerUnderRoot, move(integer)),
-                    skills = listOf(metadata(Skill.FactorInteger, move(integer)))
-                )
+                    TransformationResult(
+                        toExpr = rootOf(transform(integer, productOf(factorized)), move(root.order)),
+                        explanation = metadata(Explanation.FactorizeIntegerUnderRoot, move(integer)),
+                        skills = listOf(metadata(Skill.FactorInteger, move(integer)))
+                    )
+                } else {
+                    null
+                }
             }
         }
     ),

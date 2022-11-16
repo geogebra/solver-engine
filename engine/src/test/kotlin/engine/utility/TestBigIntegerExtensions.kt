@@ -3,7 +3,9 @@ package engine.utility
 import org.junit.jupiter.api.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class TestBigIntegerExtensions {
 
@@ -13,15 +15,15 @@ class TestBigIntegerExtensions {
 
     @Test
     fun testIsPowerOfDegree() {
-        assert(i(1000000).isPowerOfDegree(2))
-        assert(i(1000000).isPowerOfDegree(3))
-        assert(!i(1000000).isPowerOfDegree(4))
-        assert(i(76543).isPowerOfDegree(1))
-        assert(i(1000).isPowerOfDegree(3))
-        assert(!i(125).isPowerOfDegree(2))
-        assert(i(1).isPowerOfDegree(6))
-        assert(i(0).isPowerOfDegree(10))
-        assert(i(11).isPrime())
+        assertTrue(i(1000000).isPowerOfDegree(2))
+        assertTrue(i(1000000).isPowerOfDegree(3))
+        assertFalse(i(1000000).isPowerOfDegree(4))
+        assertTrue(i(76543).isPowerOfDegree(1))
+        assertTrue(i(1000).isPowerOfDegree(3))
+        assertFalse(i(125).isPowerOfDegree(2))
+        assertTrue(i(1).isPowerOfDegree(6))
+        assertTrue(i(0).isPowerOfDegree(10))
+        assertTrue(i(11).isPrime())
     }
 
     @Test
@@ -66,5 +68,19 @@ class TestBigIntegerExtensions {
         assertNull(i(16).asPowerForRoot(i(4)))
         assertNull(i(10).asPowerForRoot(i(2)))
         assertNull(i(1000).asPowerForRoot(i(4)))
+    }
+
+    @Test
+    fun testIsFactorizableUnderRationalExponent() {
+        // root[9, 4]
+        assertTrue(i(9).isFactorizableUnderRationalExponent(i(1), i(4)))
+        // root[10, 4]
+        assertFalse(i(10).isFactorizableUnderRationalExponent(i(1), i(4)))
+        // 8 ^ [3 / 5] --> I don't think we should be simplifying this
+        // to 2 * 2^[1 / 5] -- thoughts?
+        assertFalse(i(8).isFactorizableUnderRationalExponent(i(3), i(5)))
+        // root[12, 2] --> 2 * sqrt[3]
+        assertTrue(i(12).isFactorizableUnderRationalExponent(i(1), i(2)))
+        assertFalse(i(1).isFactorizableUnderRationalExponent(i(1), i(2)))
     }
 }

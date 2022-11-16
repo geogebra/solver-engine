@@ -583,6 +583,43 @@ class SimplifyRationalExponents {
             step { toExpr = "[20 ^ -1]" }
         }
     }
+
+    @Test
+    fun testRationalExponentCoPrimeWithPowerOfPrimeFactorOfBase() = testMethod {
+        method = IntegerRationalExponentsPlans.SimplifyRationalExponentOfInteger
+        inputExpr = "[125 ^ [1 / 2]]"
+
+        check {
+            toExpr = "5 * [5 ^ [1 / 2]]"
+            explanation {
+                key = IntegerRationalExponentsExplanation.SimplifyRationalExponentOfInteger
+            }
+
+            step {
+                fromExpr = "[125 ^ [1 / 2]]"
+                toExpr = "[([5 ^ 3]) ^ [1 / 2]]"
+                explanation {
+                    key = IntegerRationalExponentsExplanation.FactorizeIntegerUnderRationalExponent
+                }
+            }
+
+            step {
+                fromExpr = "[([5 ^ 3]) ^ [1 / 2]]"
+                toExpr = "[5 ^ [3 / 2]]"
+                explanation {
+                    key = IntegerRationalExponentsExplanation.PowerRuleOfExponents
+                }
+            }
+
+            step {
+                fromExpr = "[5 ^ [3 / 2]]"
+                toExpr = "5 * [5 ^ [1 / 2]]"
+                explanation {
+                    key = FractionArithmeticExplanation.SplitRationalExponent
+                }
+            }
+        }
+    }
 }
 
 class SimplifyRationalExponentsDontApply {

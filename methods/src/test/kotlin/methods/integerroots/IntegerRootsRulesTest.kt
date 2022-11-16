@@ -34,6 +34,7 @@ class IntegerRootsRulesTest {
     @Test
     fun testFactorizeIntegerUnderRoot() {
         testRule("sqrt[1]", FactorizeIntegerUnderRoot, null)
+        testRule("root[9, 4]", FactorizeIntegerUnderRoot, "root[[3^2], 4]")
         testRule("sqrt[144]", FactorizeIntegerUnderRoot, "sqrt[[2 ^ 4] * [3 ^ 2]]")
         testRule("sqrt[125]", FactorizeIntegerUnderRoot, "sqrt[[5 ^ 3]]")
         testRule("sqrt[147]", FactorizeIntegerUnderRoot, "sqrt[3 * [7 ^ 2]]")

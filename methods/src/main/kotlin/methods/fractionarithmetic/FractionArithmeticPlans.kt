@@ -2,15 +2,18 @@ package methods.fractionarithmetic
 
 import engine.expressions.base
 import engine.expressions.denominator
+import engine.expressions.exponent
 import engine.methods.Plan
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
 import engine.operators.BinaryExpressionOperator
 import engine.patterns.AnyPattern
+import engine.patterns.IntegerFractionPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.fractionOf
 import engine.patterns.optionalNegOf
+import engine.patterns.powerOf
 import engine.patterns.sumContaining
 import engine.steps.metadata.Skill
 import methods.general.GeneralPlans
@@ -148,6 +151,22 @@ enum class FractionArithmeticPlans(override val runner: Plan) : RunnerMethod {
                 whilePossible {
                     deeply(IntegerArithmeticPlans.SimplifyIntegersInProduct)
                 }
+            }
+        }
+    ),
+
+    /**
+     * [2 ^ [11/3]] --> [2 ^ [3 2/3]] --> [2 ^ 3 + [2 / 3]]
+     * --> [2 ^ 3] * [2 ^ [2 / 3]]
+     */
+    SplitRationalExponent(
+        plan {
+            pattern = powerOf(AnyPattern(), IntegerFractionPattern())
+            explanation = Explanation.SplitRationalExponent
+
+            steps {
+                applyTo(FractionArithmeticRules.ConvertImproperFractionToSumOfIntegerAndFraction) { it.exponent() }
+                apply(GeneralRules.DistributeSumOfPowers)
             }
         }
     )

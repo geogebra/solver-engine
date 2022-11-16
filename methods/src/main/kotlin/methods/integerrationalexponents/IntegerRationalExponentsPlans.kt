@@ -11,7 +11,6 @@ import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.powerOf
 import method.integerrationalexponents.Explanation
 import methods.fractionarithmetic.FractionArithmeticPlans
-import methods.fractionarithmetic.FractionArithmeticRules
 import methods.fractionarithmetic.simplifyAfterCollectingLikeTerms
 import methods.general.GeneralRules
 import methods.general.NormalizationRules
@@ -36,21 +35,6 @@ enum class IntegerRationalExponentsPlans(override val runner: Plan) : RunnerMeth
         }
     ),
 
-    /**
-     * [2 ^ [11/3]] --> [2 ^ [3 2/3]] --> [2 ^ 3 + [2 / 3]]
-     * --> [2 ^ 3] * [2 ^ [2 / 3]]
-     */
-    SplitRationalExponent(
-        plan {
-            pattern = powerOf(UnsignedIntegerPattern(), IntegerFractionPattern())
-            explanation = Explanation.SplitRationalExponent
-
-            steps {
-                applyTo(FractionArithmeticRules.ConvertImproperFractionToSumOfIntegerAndFraction) { it.exponent() }
-                apply(GeneralRules.DistributeSumOfPowers)
-            }
-        }
-    ),
     SimplifyRationalExponentOfInteger(
         plan {
             pattern = powerOf(UnsignedIntegerPattern(), IntegerFractionPattern())
@@ -74,7 +58,7 @@ enum class IntegerRationalExponentsPlans(override val runner: Plan) : RunnerMeth
                         explanation = Explanation.SplitProductOfExponentsWithImproperFractionPowers
 
                         steps {
-                            whilePossible { deeply(SplitRationalExponent) }
+                            whilePossible { deeply(FractionArithmeticPlans.SplitRationalExponent) }
                             whilePossible { deeply(NormalizationRules.RemoveBracketProductInProduct) }
                         }
                     }
@@ -232,7 +216,7 @@ val simplifyRationalExponentsInProduct = steps {
     }
 }
 
-val simplifyProductOfPowersWithInverseFractionBase = engine.methods.plan {
+val simplifyProductOfPowersWithInverseFractionBase = plan {
     explanation = Explanation.SimplifyProductOfPowersWithInverseFractionBase
 
     steps {
