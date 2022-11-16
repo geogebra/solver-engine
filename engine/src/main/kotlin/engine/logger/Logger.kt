@@ -45,7 +45,7 @@ private val systemLogLevel = run {
 private val LogHandler: Handler = run {
     val handler = ConsoleHandler()
 
-    handler.level = systemLogLevel
+    handler.level = Level.ALL
     handler.formatter = SolverLogFormatter
 
     handler
@@ -53,7 +53,7 @@ private val LogHandler: Handler = run {
 
 fun createNewLogger(obj: Any): Logger {
     val logger = Logger.getLogger("solver.%1$08X".format(System.identityHashCode(obj)))
-    logger.level = Level.ALL
+    logger.level = systemLogLevel
     logger.addHandler(LogHandler)
 
     return logger
