@@ -2,6 +2,7 @@ package engine.expressions
 
 import engine.operators.BinaryExpressionOperator
 import engine.operators.LatexRenderable
+import engine.operators.NaryOperator
 import engine.operators.Operator
 import engine.operators.RenderContext
 import engine.operators.VariableOperator
@@ -39,7 +40,7 @@ class Expression internal constructor(
 ) : LatexRenderable, PathProvider {
 
     init {
-        operands.forEachIndexed { i, op -> op.hasBracket() || operator.nthChildAllowed(i, op.operator) }
+        operands.forEachIndexed { i, op -> require(op.hasBracket() || operator.nthChildAllowed(i, op.operator)) }
     }
 
     val parent = when (origin) {
@@ -52,7 +53,17 @@ class Expression internal constructor(
         else -> this.operands.flatMap { it.variables }.toSet()
     }
 
+    private fun withDecorators(newDecorators: List<Decorator>) = Expression(operator, operands, newDecorators, origin)
+
     fun children() = origin.computeChildrenOrigin(this)
+
+    fun flattenedProductChildren() = when (operator) {
+        NaryOperator.ImplicitProduct -> children()
+        NaryOperator.Product -> children().flatMap {
+            if (!it.hasBracket() && it.operator == NaryOperator.ImplicitProduct) it.children() else listOf(it)
+        }
+        else -> listOf(this)
+    }
 
     fun nthChild(n: Int) = origin.computeChildOrigin(this, n)
 
@@ -121,28 +132,54 @@ class Expression internal constructor(
         return result
     }
 
-    fun substitute(subPath: Path, newExpr: Expression): Expression = when (origin.path) {
-        subPath -> if (subPath == RootPath) newExpr.removeBrackets() else newExpr
-        else -> substituteKeepBrackets(subPath, newExpr)
-    }
-
-    private fun substituteKeepBrackets(subPath: Path, newExpr: Expression): Expression = when {
-        origin.path == null || !subPath.hasAncestor(origin.path) -> this
-        origin.path == subPath -> wrapInBracketsForParent(newExpr)
-        else -> mapChildren { it.substituteKeepBrackets(subPath, newExpr) }
+    /**
+     * Adjusts the presence or absence of brackets in the expression so that it can be the [index]th child of
+     * [operator]. Unnecessary brackets are removed, required brackets are added.
+     */
+    internal fun adjustBracketFor(operator: Operator, index: Int): Expression {
+        val bracketsRequired = !operator.nthChildAllowed(index, this.operator)
+        return when {
+            bracketsRequired && !hasBracket() -> decorate(Decorator.RoundBracket)
+            !bracketsRequired -> removeBrackets()
+            else -> this
+        }
     }
 
     /**
-     * Wrap [mappedExpr] in the correct bracket or absence of bracket so that it can correctly replace [this] in its
-     * parent.
+     * Substitutes [newExpr] into the expression at position [subPath] if possible, otherwise returns the expression
+     * unchanged with the exception that outer brackets are removed if it is the root expression.
      */
-    private fun wrapInBracketsForParent(mappedExpr: Expression): Expression {
-        return when {
-            origin !is Child -> mappedExpr.removeBrackets()
-            origin.parent.operator.nthChildAllowed(origin.index, mappedExpr.operator) -> mappedExpr.removeBrackets()
-            mappedExpr.hasBracket() -> mappedExpr
-            else -> bracketOf(mappedExpr, outerBracket())
+    fun substitute(subPath: Path, newExpr: Expression): Expression = when {
+        subPath == RootPath && origin.path != RootPath -> this
+        subPath == RootPath -> newExpr.removeBrackets()
+        subPath == origin.path -> newExpr
+        else -> substituteKeepBrackets(subPath as ChildPath, newExpr)
+    }
+
+    private fun substituteKeepBrackets(subPath: ChildPath, newExpr: Expression): Expression = when {
+        origin.path == null || !subPath.hasAncestor(origin.path) -> this
+        origin.path == subPath -> {
+            newExpr.adjustBracketFor((origin as Child).parent.operator, subPath.index)
         }
+        operator == NaryOperator.Product || operator == NaryOperator.ImplicitProduct -> {
+            val children = flattenedProductChildren()
+
+            val index = children.indexOfFirst { it.origin.path == subPath }
+            if (index != -1) {
+                productOf(
+                    children.mapIndexed { i, op ->
+                        if (i == index) {
+                            newExpr.adjustBracketFor(NaryOperator.Product, subPath.index)
+                        } else {
+                            op
+                        }
+                    }
+                ).withDecorators(decorators)
+            } else {
+                mapChildren { it.substituteKeepBrackets(subPath, newExpr) }
+            }
+        }
+        else -> mapChildren { it.substituteKeepBrackets(subPath, newExpr) }
     }
 
     private fun mapChildren(f: (Expression) -> Expression) = Expression(

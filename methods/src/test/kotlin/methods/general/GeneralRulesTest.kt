@@ -35,8 +35,8 @@ class GeneralRulesTest {
 
     @Test
     fun testEliminateOneInProduct() {
-        testRule("3*x*1*y*4", EliminateOneInProduct, "3*x*y*4")
-        testRule("3*x*1*y*4", EliminateOneInProduct, "3*x*y*4")
+        testRule("3*x*1*y*4", EliminateOneInProduct, "3xy*4")
+        testRule("3*x*1*y*4", EliminateOneInProduct, "3xy*4")
         testRule("3*1*4", EliminateOneInProduct, "3*4")
         testRule("1*x", EliminateOneInProduct, "x")
     }
@@ -44,14 +44,14 @@ class GeneralRulesTest {
     @Test
     fun testSimplifyProductWithTwoNegativeFactors() {
         testRule("(-2) * (-3)", SimplifyProductWithTwoNegativeFactors, "2 * 3")
-        testRule("(-x) * y * (-12) * 5", SimplifyProductWithTwoNegativeFactors, "x * y * 12 * 5")
+        testRule("(-x) * y * (-12) * 5", SimplifyProductWithTwoNegativeFactors, "x y * 12 * 5")
         testRule("(-2):(-3)", SimplifyProductWithTwoNegativeFactors, "2:3")
     }
 
     @Test
     fun testMoveSignOfNegativeFactorOutOfProduct() {
         testRule("3 * (-5)", MoveSignOfNegativeFactorOutOfProduct, "- 3 * 5")
-        testRule("x * (-y) * z", MoveSignOfNegativeFactorOutOfProduct, "-x * y * z")
+        testRule("x * (-y) * z", MoveSignOfNegativeFactorOutOfProduct, "-xyz")
         testRule("x*3:(-5)", MoveSignOfNegativeFactorOutOfProduct, "- x*3:5")
     }
 
@@ -116,7 +116,7 @@ class GeneralRulesTest {
         testRule(
             "[(2 * x * y) ^ 5]",
             DistributePowerOfProduct,
-            "[2 ^ 5] * [x ^ 5] * [y ^ 5]"
+            "[2 ^ 5] [x ^ 5] [y ^ 5]"
         )
         testRule(
             "[(sqrt[3] * root[5, 2]) ^ n]",
@@ -130,17 +130,17 @@ class GeneralRulesTest {
         testRule(
             "[(a + b) ^ 2]",
             ExpandBinomialSquared,
-            "[a ^ 2] + 2 * a * b + [b ^ 2]"
+            "[a ^ 2] + 2ab + [b ^ 2]"
         )
         testRule(
             "[(sqrt[2] + 1) ^ 2]",
             ExpandBinomialSquared,
-            "[(sqrt[2]) ^ 2] + 2 * sqrt[2] * 1 + [1 ^ 2]"
+            "[(sqrt[2]) ^ 2] + 2 sqrt[2] * 1 + [1 ^ 2]"
         )
         testRule(
             "[(x - y) ^ 2]",
             ExpandBinomialSquared,
-            "[x ^ 2] + 2 * x * (-y) + [(-y) ^ 2]"
+            "[x ^ 2] + 2 x (-y) + [(-y) ^ 2]"
         )
     }
 
@@ -154,17 +154,17 @@ class GeneralRulesTest {
         testRule(
             "(3 + sqrt[4]) * sqrt[2]",
             DistributeMultiplicationOverSum,
-            "3 * sqrt[2] + sqrt[4] * sqrt[2]"
+            "3 sqrt[2] + sqrt[4] * sqrt[2]"
         )
         testRule(
             "(3 - sqrt[4]) * sqrt[2]",
             DistributeMultiplicationOverSum,
-            "3 * sqrt[2] - sqrt[4] * sqrt[2]"
+            "3 sqrt[2] - sqrt[4] * sqrt[2]"
         )
         testRule(
             "(3 + sqrt[4] + sqrt[5]) * sqrt[2]",
             DistributeMultiplicationOverSum,
-            "3 * sqrt[2] + sqrt[4] * sqrt[2] + sqrt[5] * sqrt[2]"
+            "3 sqrt[2] + sqrt[4] * sqrt[2] + sqrt[5] * sqrt[2]"
         )
     }
 
@@ -172,7 +172,7 @@ class GeneralRulesTest {
     fun testRewritePowerAsProduct() {
         testRule("[3^3]", RewritePowerAsProduct, "3 * 3 * 3")
         testRule("[0.3 ^ 2]", RewritePowerAsProduct, "0.3 * 0.3")
-        testRule("[(x + 1) ^ 2]", RewritePowerAsProduct, "(x + 1) * (x + 1)")
+        testRule("[(x + 1) ^ 2]", RewritePowerAsProduct, "(x + 1) (x + 1)")
         testRule("[x^5]", RewritePowerAsProduct, "x * x * x * x * x")
         testRule("[x^6]", RewritePowerAsProduct, null)
         testRule("[x^1]", RewritePowerAsProduct, null)
@@ -229,13 +229,13 @@ class GeneralRulesTest {
         testRule("[x^2]*[y^2]", RewriteProductOfPowersWithSameBase, null)
         testRule("[x^2]*[x^3]", RewriteProductOfPowersWithSameBase, "[x ^ 2 + 3]")
         testRule("x*[3^4]*[3^-9]", RewriteProductOfPowersWithSameBase, "x*[3 ^ 4 - 9]")
-        testRule("y*[3^[1 / 2]]*z*[3^[2 / 3]]", RewriteProductOfPowersWithSameBase, "y*[3 ^ [1 / 2] + [2 / 3]]*z")
+        testRule("y*[3^[1 / 2]]*z*[3^[2 / 3]]", RewriteProductOfPowersWithSameBase, "y*[3 ^ [1 / 2] + [2 / 3]]z")
     }
 
     @Test
     fun testRewriteProductOfPowersWithSameExponent() {
         testRule("[x^2]*[x^3]", RewriteProductOfPowersWithSameExponent, null)
-        testRule("[x^2]*[y^2]", RewriteProductOfPowersWithSameExponent, "[(x * y) ^ 2]")
+        testRule("[x^2]*[y^2]", RewriteProductOfPowersWithSameExponent, "[(x y) ^ 2]")
         testRule("x*[3^4]*[2^4]", RewriteProductOfPowersWithSameExponent, "x*[(3 * 2) ^ 4]")
         testRule("y*[3^[2 / 3]]*z*[4^[2 / 3]]", RewriteProductOfPowersWithSameExponent, "y*[(3 * 4) ^ [2 / 3]]*z")
     }

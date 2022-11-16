@@ -39,7 +39,9 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(pattern) {
                 TransformationResult(
-                    toExpr = sumOf(get(pattern)!!.children().map { move(it) }.toList()),
+                    toExpr = sumOf(
+                        get(pattern)!!.children().map { child -> transformTo(child) { it.removeBrackets() } }
+                    ),
                     explanation = metadata(Explanation.RemoveBracketSumInSum)
                 )
             }
@@ -53,7 +55,10 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(pattern) {
                 TransformationResult(
-                    toExpr = productOf(get(pattern)!!.children().map { move(it) }.toList()),
+                    toExpr = productOf(
+                        get(pattern)!!.flattenedProductChildren()
+                            .map { child -> transformTo(child) { it.removeBrackets() } }
+                    ),
                     explanation = metadata(Explanation.RemoveBracketProductInProduct)
                 )
             }

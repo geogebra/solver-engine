@@ -243,7 +243,10 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
             )
 
             onPattern(pattern) {
-                val middleTermMatches = productOf(move(term1), move(term2)).equiv(get(middleTerm)!!)
+                val list1 = get(term1)!!.flattenedProductChildren() + get(term2)!!.flattenedProductChildren()
+                val list2 = get(middleTerm)!!.flattenedProductChildren()
+
+                val middleTermMatches = list1.size == list2.size && list1.zip(list2).all { (e1, e2) -> e1.equiv(e2) }
 
                 when {
                     middleTermMatches -> TransformationResult(

@@ -54,9 +54,8 @@ fun mixedNumberOf(
     denominator: UnsignedIntegerPattern = UnsignedIntegerPattern(),
 ) = OperatorPattern(MixedNumberOperator, listOf(integer, numerator, denominator))
 
-fun sumOf(vararg terms: Pattern) = OperatorPattern(NaryOperator.Sum, terms.asList())
-
 fun plusOf(operand: Pattern) = OperatorPattern(UnaryExpressionOperator.Plus, listOf(operand))
 fun negOf(operand: Pattern) = OperatorPattern(UnaryExpressionOperator.Minus, listOf(operand))
 
-fun productOf(vararg factors: Pattern) = OperatorPattern(NaryOperator.Product, factors.asList())
+fun explicitProductOf(vararg factors: Pattern) = OperatorPattern(NaryOperator.Product, factors.asList())
+fun implicitProductOf(vararg factors: Pattern) = OperatorPattern(NaryOperator.ImplicitProduct, factors.asList())

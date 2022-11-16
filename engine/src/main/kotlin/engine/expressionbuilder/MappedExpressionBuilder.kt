@@ -8,7 +8,6 @@ import engine.expressions.Factor
 import engine.expressions.Move
 import engine.expressions.New
 import engine.expressions.divideBy
-import engine.expressions.flattenedNaryExpression
 import engine.expressions.negOf
 import engine.expressions.productOf
 import engine.expressions.simplifiedPowerOf
@@ -18,11 +17,10 @@ import engine.patterns.CoefficientPattern
 import engine.patterns.IntegerPattern
 import engine.patterns.IntegerProvider
 import engine.patterns.Match
-import engine.patterns.NaryPatternBase
+import engine.patterns.NaryPattern
 import engine.patterns.NumberProvider
 import engine.patterns.OptionalNegPattern
 import engine.patterns.OptionalWrappingPattern
-import engine.patterns.PartialNaryPattern
 import engine.patterns.PathProvider
 import engine.patterns.Pattern
 import engine.patterns.RecurringDecimalPattern
@@ -177,32 +175,9 @@ class MappedExpressionBuilder(
      * Returns the "rest of" part of [pattern] which match some operands of an nary expression, i.e. the non-matched
      * operands.
      */
-    fun restOf(pattern: PartialNaryPattern) = pattern.substitute(/* nothing */)
+    fun restOf(pattern: NaryPattern) = pattern.substitute(match, arrayOf())
 
-    /**
-     * Substitutes the matched operands of [this] with [newVals]. If there are spare matched operands, they are removed
-     * from the resulting expression. If [newVals] has more items than the number of matched operands, the extra items
-     * are ignored.
-     */
-    fun NaryPatternBase.substitute(vararg newVals: Expression): Expression {
-        val sub = match.getLastBinding(this)!!
-        val matchIndexes = this.getMatchIndexes(match, sub.origin.path!!)
-        val restChildren = ArrayList<Expression>()
-        for ((index, child) in sub.children().withIndex()) {
-            val newValIndex = matchIndexes.indexOf(index)
-            when {
-                newValIndex == -1 -> restChildren.add(child)
-                newValIndex < newVals.size -> restChildren.add(
-                    newVals[newValIndex]
-                )
-            }
-        }
-
-        return when (restChildren.size) {
-            1 -> restChildren[0]
-            else -> flattenedNaryExpression(operator, restChildren)
-        }
-    }
+    fun NaryPattern.substitute(vararg newVals: Expression) = substitute(match, newVals)
 
     fun collectLikeTermsInSum(sub: Expression, commonTerm: CoefficientPattern): Expression {
         val coefficients = mutableListOf<Expression>()

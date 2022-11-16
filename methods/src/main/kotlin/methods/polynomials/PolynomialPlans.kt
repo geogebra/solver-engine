@@ -1,6 +1,7 @@
 package methods.polynomials
 
 import engine.methods.Plan
+import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
@@ -24,6 +25,7 @@ enum class PolynomialPlans(override val runner: Plan) : RunnerMethod {
         }
     ),
 
+    @PublicMethod
     SimplifyAlgebraicExpression(
         plan {
             explanation = Explanation.SimplifyAlgebraicExpression

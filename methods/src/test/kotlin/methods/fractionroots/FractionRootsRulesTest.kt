@@ -88,26 +88,26 @@ class FractionRootsRulesTest {
     @Test
     fun testRationalizeSumOfIntegerAndCubeRoot() {
         testRule(
-            "[2 / 2 * root[3, 3] + 3 * root[4, 3]]",
+            "[2 / 2 root[3, 3] + 3 root[4, 3]]",
             RationalizeSumOfIntegerAndCubeRoot,
-            "[2 / 2 * root[3, 3] + 3 * root[4, 3]] * " +
-                "[[(2 * root[3, 3]) ^ 2] - 2 * root[3, 3] * 3 * root[4, 3] + " +
-                "[(3 * root[4, 3]) ^ 2] / [(2 * root[3, 3]) ^ 2] - " +
-                "2 * root[3, 3] * 3 * root[4, 3] + [(3 * root[4, 3]) ^ 2]]"
+            "[2 / 2 root[3, 3] + 3 root[4, 3]] * " +
+                "[[(2 root[3, 3]) ^ 2] - 2 root[3, 3] * 3 root[4, 3] + " +
+                "[(3 root[4, 3]) ^ 2] / [(2 root[3, 3]) ^ 2] - " +
+                "2 root[3, 3] * 3 root[4, 3] + [(3 root[4, 3]) ^ 2]]"
         )
         testRule(
-            "[2 / 2 * root[3, 3] - 3 * root[4, 3]]",
+            "[2 / 2 root[3, 3] - 3 root[4, 3]]",
             RationalizeSumOfIntegerAndCubeRoot,
-            "[2 / 2 * root[3, 3] - 3 * root[4, 3]] * " +
-                "[[(2 * root[3, 3]) ^ 2] + 2 * root[3, 3] * 3 * root[4, 3] + " +
-                "[(3 * root[4, 3]) ^ 2] / [(2 * root[3, 3]) ^ 2] + " +
-                "2 * root[3, 3] * 3 * root[4, 3] + [(3 * root[4, 3]) ^ 2]]"
+            "[2 / 2 root[3, 3] - 3 root[4, 3]] * " +
+                "[[(2 root[3, 3]) ^ 2] + 2 root[3, 3] * 3 root[4, 3] + " +
+                "[(3 root[4, 3]) ^ 2] / [(2 root[3, 3]) ^ 2] + " +
+                "2 root[3, 3] * 3 root[4, 3] + [(3 root[4, 3]) ^ 2]]"
         )
         testRule(
             "[2 / 2 - root[3, 3]]",
             RationalizeSumOfIntegerAndCubeRoot,
             "[2 / 2 - root[3, 3]] * " +
-                "[ [2^2] + 2 * root[3, 3] + [(root[3, 3])^2] / [2^2] + 2 * root[3, 3] + [(root[3, 3])^2]]"
+                "[ [2^2] + 2 root[3, 3] + [(root[3, 3])^2] / [2^2] + 2 root[3, 3] + [(root[3, 3])^2]]"
         )
         testRule(
             "[2 / 3 + 2]",
@@ -224,9 +224,9 @@ class FractionRootsRulesTest {
             null
         )
         testRule(
-            "[9 / 2 * root[18, 4]]",
+            "[9 / 2 root[18, 4]]",
             FactorizeHigherOrderRadicand,
-            "[9 / 2 * root[2 * [3^2], 4]]"
+            "[9 / 2 root[2 * [3^2], 4]]"
         )
         testRule(
             "[9 / root[2, 3]]",

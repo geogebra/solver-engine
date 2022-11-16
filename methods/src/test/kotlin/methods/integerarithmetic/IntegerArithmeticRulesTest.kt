@@ -54,10 +54,10 @@ class IntegerArithmeticRulesTest {
 
     @Test
     fun testEvaluateIntegerProductAndDivision() {
-        testRule("z*2*x*3*y", EvaluateIntegerProductAndDivision, "z*6*x*y")
+        testRule("z*2*x*3*y", EvaluateIntegerProductAndDivision, "z*6xy")
         testRule("2*3", EvaluateIntegerProductAndDivision, "6")
         testRule("1 * (-2)", EvaluateIntegerProductAndDivision, "-2")
-        testRule("(-2) * x * 5", EvaluateIntegerProductAndDivision, "(-10) * x")
+        testRule("(-2) * x * 5", EvaluateIntegerProductAndDivision, "(-10) x")
         testRule("10:2", EvaluateIntegerProductAndDivision, "5")
         testRule("10:(-2)", EvaluateIntegerProductAndDivision, "-5")
         testRule("5:0", EvaluateIntegerProductAndDivision, null)

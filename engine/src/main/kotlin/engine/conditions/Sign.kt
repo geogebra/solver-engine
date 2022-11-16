@@ -2,7 +2,6 @@ package engine.conditions
 
 import engine.expressions.Expression
 import engine.operators.BinaryExpressionOperator
-import engine.operators.BracketOperator
 import engine.operators.DecimalOperator
 import engine.operators.IntegerOperator
 import engine.operators.MixedNumberOperator
@@ -147,7 +146,6 @@ fun Expression.signOf(): Sign = when (operator) {
     is RecurringDecimalOperator -> Sign.POSITIVE // If it was 0, it would not be recurring
     is VariableOperator -> Sign.UNKNOWN
     is MixedNumberOperator -> Sign.POSITIVE // If it was 0, it would not be a mixed number
-    is BracketOperator -> operands[0].signOf()
     is UnaryExpressionOperator -> operator.signOf(operands[0])
     is BinaryExpressionOperator -> operator.signOf(operands[0], operands[1])
     is NaryOperator -> when (operator) {

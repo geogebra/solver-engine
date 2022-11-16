@@ -7,7 +7,6 @@ import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
 import engine.operators.BinaryExpressionOperator
-import engine.operators.BracketOperator
 import engine.operators.IntegerOperator
 import engine.operators.NaryOperator
 import engine.operators.UnaryExpressionOperator
@@ -174,8 +173,7 @@ val arithmeticOperators = listOf(
 )
 
 private fun Expression.isArithmeticExpression(): Boolean {
-    val validOperator = operator is IntegerOperator || operator is BracketOperator ||
-        arithmeticOperators.contains(operator)
+    val validOperator = operator is IntegerOperator || arithmeticOperators.contains(operator)
 
     return validOperator && operands.all { it.isArithmeticExpression() }
 }

@@ -70,14 +70,14 @@ class DecimalsPlansTest {
 
             step {
                 fromExpr = "x = 3.14[15]"
-                toExpr = "100 * x = 314.[15], 10000 * x = 31415.[15]"
+                toExpr = "100 x = 314.[15], 10000 x = 31415.[15]"
                 explanation {
                     key = DecimalsExplanation.MakeEquationSystemForRecurringDecimal
                 }
 
                 step {
                     fromExpr = "x = 3.14[15]"
-                    toExpr = "100 * x = 314.[15]"
+                    toExpr = "100 x = 314.[15]"
                     explanation {
                         key = DecimalsExplanation.MultiplyRecurringDecimal
                     }
@@ -85,7 +85,7 @@ class DecimalsPlansTest {
 
                 step {
                     fromExpr = "x = 3.14[15]"
-                    toExpr = "10000 * x = 31415.[15]"
+                    toExpr = "10000 x = 31415.[15]"
                     explanation {
                         key = DecimalsExplanation.MultiplyRecurringDecimal
                     }
@@ -93,15 +93,15 @@ class DecimalsPlansTest {
             }
 
             step {
-                fromExpr = "100 * x = 314.[15], 10000 * x = 31415.[15]"
-                toExpr = "9900 * x = 31101"
+                fromExpr = "100 x = 314.[15], 10000 x = 31415.[15]"
+                toExpr = "9900 x = 31101"
                 explanation {
                     key = DecimalsExplanation.SimplifyEquationSystemForRecurringDecimal
                 }
             }
 
             step {
-                fromExpr = "9900 * x = 31101"
+                fromExpr = "9900 x = 31101"
                 toExpr = "[31101 / 9900]"
                 explanation {
                     key = DecimalsExplanation.SolveLinearEquation

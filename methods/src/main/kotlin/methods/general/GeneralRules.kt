@@ -26,6 +26,7 @@ import engine.patterns.FixedPattern
 import engine.patterns.FractionPattern
 import engine.patterns.SignedNumberPattern
 import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.commutativeProductContaining
 import engine.patterns.commutativeProductOf
 import engine.patterns.commutativeSumOf
 import engine.patterns.condition
@@ -253,7 +254,7 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     CancelDenominator(
         rule {
             val common = AnyPattern()
-            val numerator = productContaining(common, minSize = 2)
+            val numerator = productContaining(common)
             val pattern = fractionOf(numerator, common)
 
             onPattern(pattern) {
@@ -268,8 +269,8 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     CancelCommonTerms(
         rule {
             val common = condition(AnyPattern()) { it != Constants.One }
-            val numerator = productContaining(common, minSize = 2)
-            val denominator = productContaining(common, minSize = 2)
+            val numerator = productContaining(common)
+            val denominator = productContaining(common)
             val fraction = fractionOf(numerator, denominator)
 
             onPattern(fraction) {
@@ -768,20 +769,11 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
             val power1 = powerOf(base1, exponent1)
             val power2 = powerOf(base2, exponent2)
 
-            val product1 = productContaining(power1, power2)
-            val product2 = productContaining(power2, power1)
+            val product = commutativeProductContaining(power1, power2)
 
-            onPattern(oneOf(product1, product2)) {
-                val newProduct = when {
-                    isBound(product1) -> product1.substitute(
-                        move(power1),
-                        powerOf(move(base1), negOf(move(exponent2)))
-                    )
-                    else -> product2.substitute(powerOf(move(base1), negOf(move(exponent2))), move(power1))
-                }
-
+            onPattern(product) {
                 TransformationResult(
-                    toExpr = newProduct,
+                    toExpr = product.substitute(move(power1), powerOf(move(base1), negOf(move(exponent2)))),
                     explanation = metadata(Explanation.RewriteProductOfPowersWithInverseBase)
                 )
             }

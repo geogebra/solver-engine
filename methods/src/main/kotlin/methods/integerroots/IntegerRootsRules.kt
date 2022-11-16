@@ -177,11 +177,7 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
             onPattern(product) {
                 TransformationResult(
                     toExpr = product.substitute(move(radicand)),
-                    explanation = metadata(
-                        Explanation.SimplifyMultiplicationOfSquareRoots,
-                        move(radical),
-                        move(radical)
-                    )
+                    explanation = metadata(Explanation.SimplifyMultiplicationOfSquareRoots)
                 )
             }
         }

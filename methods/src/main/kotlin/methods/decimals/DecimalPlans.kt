@@ -10,7 +10,6 @@ import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
 import engine.operators.BinaryExpressionOperator
-import engine.operators.BracketOperator
 import engine.operators.DecimalOperator
 import engine.operators.IntegerOperator
 import engine.patterns.AnyPattern
@@ -225,7 +224,7 @@ private val evaluationSteps = steps {
 }
 
 private fun Expression.isDecimalExpression(): Boolean {
-    val validOperator = operator is IntegerOperator || operator is DecimalOperator || operator is BracketOperator ||
+    val validOperator = operator is IntegerOperator || operator is DecimalOperator ||
         arithmeticOperators.contains(operator) || operator == BinaryExpressionOperator.Fraction
 
     return validOperator && operands.all { it.isDecimalExpression() }

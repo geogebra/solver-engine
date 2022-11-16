@@ -6,7 +6,6 @@ import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
-import engine.operators.BracketOperator
 import engine.operators.DecimalOperator
 import engine.operators.IntegerOperator
 import engine.operators.RecurringDecimalOperator
@@ -23,8 +22,7 @@ import methods.integerarithmetic.arithmeticOperators
 
 private fun Expression.canBeApproximated(): Boolean {
     val validOperator = operator is IntegerOperator || operator is DecimalOperator ||
-        operator is RecurringDecimalOperator || operator is BracketOperator ||
-        arithmeticOperators.contains(operator)
+        operator is RecurringDecimalOperator || arithmeticOperators.contains(operator)
 
     return validOperator && operands.all { it.canBeApproximated() }
 }

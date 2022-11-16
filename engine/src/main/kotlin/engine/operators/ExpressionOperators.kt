@@ -115,39 +115,6 @@ object MixedNumberOperator : ExpressionOperator {
         "{${children[0].toLatexString(ctx)}\\frac${children[1].toLatexString(ctx)}${children[2].toLatexString(ctx)}}"
 }
 
-enum class BracketOperator(
-    private val opening: String,
-    private val closing: String,
-    private val latexOpening: String,
-    private val latexClosing: String
-) : ExpressionOperator {
-    Bracket("(", ")", "\\left(", "\\right)"),
-    SquareBracket("[.", ".]", "\\left[", "\\right]"),
-    CurlyBracket("{.", ".}", "\\left\\{", "\\right\\}");
-
-    override val precedence = MAX_PRECEDENCE
-    override val arity = ARITY_ONE
-
-    override fun nthChildAllowed(n: Int, op: Operator): Boolean {
-        require(n == 0)
-        return true
-    }
-
-    override fun <T> readableString(children: List<T>): String {
-        require(children.size == 1)
-        return opening + children[0] + closing
-    }
-
-    override fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String {
-        require(children.size == 1)
-        return "{$latexOpening ${children[0].toLatexString(ctx)} $latexClosing}"
-    }
-
-    override fun equiv(other: Operator): Boolean {
-        return other is BracketOperator
-    }
-}
-
 enum class UnaryExpressionOperator(override val precedence: Int) : UnaryOperator, ExpressionOperator {
     InvisibleBracket(MAX_PRECEDENCE) {
         override fun childAllowed(op: Operator) = true
@@ -189,8 +156,7 @@ enum class BinaryExpressionOperator(override val precedence: Int) : BinaryOperat
             "{\\frac${left.toLatexString(ctx)}${right.toLatexString(ctx)}}"
     },
     Power(POWER_PRECEDENCE) {
-        override fun leftChildAllowed(op: Operator) =
-            op.precedence >= BracketOperator.Bracket.precedence
+        override fun leftChildAllowed(op: Operator) = op.precedence == MAX_PRECEDENCE
 
         override fun rightChildAllowed(op: Operator) = true
 
@@ -277,4 +243,10 @@ enum class NaryOperator(override val precedence: Int) : ExpressionOperator {
 
     override val arity = ARITY_VARIABLE
     override fun nthChildAllowed(n: Int, op: Operator) = op.precedence > this.precedence
+
+    override fun equiv(other: Operator): Boolean {
+        return (this == other) ||
+            (this == Product && other == ImplicitProduct) ||
+            (this == ImplicitProduct && other == Product)
+    }
 }

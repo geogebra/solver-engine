@@ -8,8 +8,8 @@ object AlgebraicFractionsTest {
 
     @Test
     fun testCancelCommonTerms() {
-        testRule("[x*y*z/a*y*c]", CancelCommonTerms, "[x*z/a*c]")
-        testRule("[5*2/5*3]", CancelCommonTerms, "[2/3]")
-        testRule("[x*y/a*y]", CancelCommonTerms, "[x / a]")
+        testRule("[xyz/ayc]", CancelCommonTerms, "[x z / a c]")
+        testRule("[5*2/5*3]", CancelCommonTerms, "[2 / 3]")
+        testRule("[xy/ay]", CancelCommonTerms, "[x / a]")
     }
 }

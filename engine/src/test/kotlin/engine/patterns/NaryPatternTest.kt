@@ -2,12 +2,12 @@ package engine.patterns
 
 import engine.context.emptyContext
 import engine.expressions.xp
-import engine.operators.NaryOperator
 import org.junit.jupiter.api.Test
 import parser.parseExpression
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
-class PartialNaryPatternTest {
+class NaryPatternTest {
 
     @Test
     fun testSinglePattern() {
@@ -15,7 +15,7 @@ class PartialNaryPatternTest {
         val terms = expression.operands
 
         val integerPattern = UnsignedIntegerPattern()
-        val ptn = PartialNaryPattern(NaryOperator.Sum, listOf(integerPattern))
+        val ptn = sumContaining(integerPattern)
 
         val matches = ptn.findMatches(emptyContext, RootMatch, expression)
         assertEquals(terms.count(), matches.count())
@@ -28,7 +28,7 @@ class PartialNaryPatternTest {
     @Test
     fun testTwoPatterns() {
         val expression = parseExpression("1 + 2 + 3")
-        val ptn = PartialNaryPattern(NaryOperator.Sum, listOf(UnsignedIntegerPattern(), UnsignedIntegerPattern()))
+        val ptn = sumContaining(UnsignedIntegerPattern(), UnsignedIntegerPattern())
 
         val matches = ptn.findMatches(emptyContext, RootMatch, expression)
         assertEquals(3, matches.count())
@@ -38,7 +38,7 @@ class PartialNaryPatternTest {
     fun testTwoDependentPatterns() {
         val expression = parseExpression("1 + 2 + 1 + 3")
         val intPtn = UnsignedIntegerPattern()
-        val ptn = PartialNaryPattern(NaryOperator.Sum, listOf(intPtn, intPtn))
+        val ptn = sumContaining(intPtn, intPtn)
         val matches = ptn.findMatches(emptyContext, RootMatch, expression)
         assertEquals(1, matches.count())
     }
@@ -47,7 +47,7 @@ class PartialNaryPatternTest {
     fun testTwoDependentPatternsWithNoMatch() {
         val expression = parseExpression("1 + 2 + x + 3")
         val intPtn = UnsignedIntegerPattern()
-        val ptn = PartialNaryPattern(NaryOperator.Sum, listOf(intPtn, intPtn))
+        val ptn = sumContaining(intPtn, intPtn)
         val matches = ptn.findMatches(emptyContext, RootMatch, expression)
         assertEquals(0, matches.count())
     }
@@ -56,10 +56,7 @@ class PartialNaryPatternTest {
     fun testComplexPattern() {
         val expression = parseExpression("1 + 2 + 1 + 1 + x + 3 + 4")
         val intPtn = UnsignedIntegerPattern()
-        val ptn = PartialNaryPattern(
-            NaryOperator.Sum,
-            listOf(intPtn, intPtn, ArbitraryVariablePattern(), UnsignedIntegerPattern())
-        )
+        val ptn = sumContaining(intPtn, intPtn, ArbitraryVariablePattern(), UnsignedIntegerPattern())
         val matches = ptn.findMatches(emptyContext, RootMatch, expression)
         assertEquals(6, matches.count())
     }
@@ -67,8 +64,8 @@ class PartialNaryPatternTest {
     @Test
     fun testCommonExpressionInFraction() {
         val common = AnyPattern()
-        val numerator = PartialNaryPattern(NaryOperator.Product, listOf(common))
-        val denominator = PartialNaryPattern(NaryOperator.Product, listOf(common))
+        val numerator = productContaining(common)
+        val denominator = productContaining(common)
 
         val ptn = fractionOf(numerator, denominator)
 
@@ -81,10 +78,45 @@ class PartialNaryPatternTest {
     }
 
     @Test
+    fun testWithImplicitProducts() {
+        val radicand = UnsignedIntegerPattern()
+        val radical = squareRootOf(radicand)
+        val product = productContaining(radical, radical)
+
+        val expression = parseExpression("4 sqrt[2] * sqrt[2]")
+
+        assertTrue(product.matches(emptyContext, expression))
+    }
+
+    @Test
+    fun testSimpleProductPattern() {
+        val integer = UnsignedIntegerPattern()
+        val root = integerOrderRootOf(UnsignedIntegerPattern())
+        val product = productOf(integer, root)
+
+        val expression1 = parseExpression("3 * root[4, 5]")
+        assertTrue(product.matches(emptyContext, expression1))
+
+        val expression2 = parseExpression("3 root[4, 5]")
+        assertTrue(product.matches(emptyContext, expression2))
+    }
+
+    @Test
+    fun testNestedProductPattern() {
+        val integer = UnsignedIntegerPattern()
+        val variable1 = ArbitraryVariablePattern()
+        val variable2 = ArbitraryVariablePattern()
+        val product = productOf(integer, variable1, variable2)
+
+        val expression = parseExpression("3x * y")
+        assertTrue(product.matches(emptyContext, expression))
+    }
+
+    @Test
     fun getRest() {
         val expression = parseExpression("1 + 2 + 1 + 3")
         val intPtn = UnsignedIntegerPattern()
-        val ptn = PartialNaryPattern(NaryOperator.Sum, listOf(intPtn, intPtn))
+        val ptn = sumContaining(intPtn, intPtn)
 
         val matches = ptn.findMatches(emptyContext, RootMatch, expression)
         assertEquals(1, matches.count())
