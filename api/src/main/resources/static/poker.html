@@ -21,6 +21,10 @@
             color: #ac0000;
         }
 
+        .hidden {
+            display: none;
+        }
+
         /* Separations between plan steps / sub-steps */
 
         details.steps > ol {
@@ -130,6 +134,8 @@
 <form>
     <label for="showThroughSteps">Show through steps</label>
     <input id="showThroughSteps" type="checkbox" />
+    <label for="hideWarnings">Hide warnings</label>
+    <input id="hideWarnings" type="checkbox"/>
 </form>
 </p>
 <p id="result"></p>

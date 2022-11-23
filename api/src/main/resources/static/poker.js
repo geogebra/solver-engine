@@ -7,6 +7,9 @@ const mainPokerURL = "http://solver.geogebra.net/main/poker.html";
 // Globally changes the rendering of steps.
 let showThroughSteps = false;
 
+// Show / hide warnings
+let hideWarnings = false;
+
 // Holds all default translations as a key: translation map
 let translationData = {};
 
@@ -190,7 +193,8 @@ const renderSteps = (steps, depth = 0, open = false) => {
     </details>`;
 };
 
-const renderWarning = (content) => `<div class="warning">${content}</div>`;
+const renderWarning = (content) =>
+    `<div class="warning${hideWarnings ? " hidden" : ""}">${content}</div>`;
 
 const getExplanationString = (expl) => {
     let explanationString = translationData[expl.key];
@@ -438,6 +442,13 @@ window.onload = () => {
         const data = getRequestDataFromForm();
         if (data.input !== "") {
             selectPlansOrApplyPlan(data);
+        }
+    };
+
+    el("hideWarnings").onchange = (evt) => {
+        hideWarnings = evt.target.checked;
+        for (const el of document.getElementsByClassName("warning")) {
+            el.classList.toggle("hidden", hideWarnings);
         }
     };
 };
