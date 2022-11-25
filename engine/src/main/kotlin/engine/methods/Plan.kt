@@ -18,7 +18,8 @@ data class Plan(
     val resultPattern: Pattern,
     val explanationMaker: MetadataMaker,
     val skillMakers: List<MetadataMaker> = emptyList(),
-    val stepsProducer: StepsProducer,
+    val specificPlans: List<Method> = emptyList(),
+    val stepsProducer: StepsProducer
 ) : Method, Runner {
 
     private fun getMatch(context: Context, sub: Expression): Match? {

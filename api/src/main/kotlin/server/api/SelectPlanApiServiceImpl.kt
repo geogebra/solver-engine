@@ -1,6 +1,7 @@
 package server.api
 
 import engine.expressions.Root
+import engine.methods.MethodId
 import methods.methodRegistry
 import org.antlr.v4.runtime.misc.ParseCancellationException
 import org.springframework.stereotype.Service
@@ -23,20 +24,32 @@ class SelectPlanApiServiceImpl : SelectPlansApiService {
         val selections = mutableListOf<PlanSelection>()
         val context = getContext(applyPlanRequest.context)
 
-        for (entryData in methodRegistry.getPublicEntries()) {
+        val successfulPlansIds = mutableSetOf<MethodId>()
+
+        for (entryData in methodRegistry.publicEntries) {
+            if (methodRegistry.getMoreSpecificMethods(entryData.methodId).any { it in successfulPlansIds }) {
+                successfulPlansIds.add(entryData.methodId)
+                context.log(Level.FINE, "Skipping plan ID: ${entryData.methodId}")
+                continue
+            }
             val transformation = try {
                 entryData.implementation.tryExecute(context, expr.withOrigin(Root()))
             } catch (e: Exception) {
-                context.log(Level.SEVERE, "Exception caught: ${e.stackTraceToString()}")
+                context.log(Level.FINE, "Exception caught: ${e.stackTraceToString()}")
                 null
             }
             if (transformation != null) {
+                context.log(Level.FINE, "Success for plan ID: ${entryData.methodId}")
+                successfulPlansIds.add(entryData.methodId)
+
                 selections.add(
                     PlanSelection(
                         modeller.modelTransformation(transformation),
-                        PlanSelectionMetadata(entryData.methodId.key)
+                        PlanSelectionMetadata(entryData.methodId.toString())
                     )
                 )
+            } else {
+                context.log(Level.FINE, "Failure for plan ID: ${entryData.methodId}")
             }
         }
         return selections

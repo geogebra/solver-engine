@@ -25,6 +25,7 @@ import methods.general.GeneralRules
 import methods.general.NormalizationPlans
 import methods.general.NormalizationRules
 import methods.general.removeRedundantBrackets
+import methods.integerarithmetic.IntegerArithmeticPlans
 import methods.integerarithmetic.IntegerArithmeticRules
 import methods.integerarithmetic.arithmeticOperators
 
@@ -178,6 +179,8 @@ enum class DecimalPlans(override val runner: Plan) : RunnerMethod {
             val expression = AnyPattern()
             pattern = condition(expression) { it.isDecimalExpression() }
             resultPattern = SignedNumberPattern()
+
+            specificPlans(IntegerArithmeticPlans.EvaluateArithmeticExpression)
 
             explanation = Explanation.EvaluateExpressionAsDecimal
 

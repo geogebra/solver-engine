@@ -18,6 +18,7 @@ import methods.general.GeneralRules
 import methods.general.NormalizationPlans
 import methods.general.NormalizationRules
 import methods.general.removeRedundantBrackets
+import methods.integerarithmetic.IntegerArithmeticPlans
 import methods.integerarithmetic.arithmeticOperators
 
 private fun Expression.canBeApproximated(): Boolean {
@@ -66,6 +67,8 @@ enum class ApproximationPlans(override val runner: Plan) : RunnerMethod {
         plan {
             pattern = condition(AnyPattern()) { it.canBeApproximated() }
             resultPattern = SignedNumberPattern()
+
+            specificPlans(IntegerArithmeticPlans.EvaluateArithmeticExpression)
 
             explanation = Explanation.ApproximateExpression
             explanationParameters(pattern)

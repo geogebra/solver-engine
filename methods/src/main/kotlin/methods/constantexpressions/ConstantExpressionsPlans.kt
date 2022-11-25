@@ -32,6 +32,7 @@ import methods.integerrationalexponents.IntegerRationalExponentsRules
 import methods.integerrationalexponents.simplifyRationalExponentsInProduct
 import methods.integerroots.IntegerRootsPlans
 import methods.integerroots.IntegerRootsRules
+import methods.mixednumbers.MixedNumbersPlans
 import methods.mixednumbers.MixedNumbersRules
 
 enum class ConstantExpressionsPlans(override val runner: Plan) : RunnerMethod {
@@ -131,6 +132,11 @@ enum class ConstantExpressionsPlans(override val runner: Plan) : RunnerMethod {
         plan {
             pattern = condition(AnyPattern()) { it.isConstantExpression() }
             explanation = Explanation.SimplifyConstantExpression
+
+            specificPlans(
+                MixedNumbersPlans.AddMixedNumbers,
+                IntegerArithmeticPlans.EvaluateArithmeticExpression
+            )
 
             steps {
                 whilePossible { deeply(simpleTidyUpSteps) }

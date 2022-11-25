@@ -22,6 +22,7 @@ class PlanBuilder(private val stepsProducerFactory: StepsProducerFactory) {
     private var alternatives: MutableList<ContextSensitiveAlternative> = mutableListOf()
     private lateinit var defaultSteps: StepsProducer
     private lateinit var resourceData: ResourceData
+    private var specificPlansList: MutableList<Method> = mutableListOf()
 
     var pattern: Pattern = AnyPattern()
     var resultPattern: Pattern = AnyPattern()
@@ -31,6 +32,10 @@ class PlanBuilder(private val stepsProducerFactory: StepsProducerFactory) {
 
     fun explanationParameters(parameters: MappedExpressionBuilder.() -> List<Expression>) {
         explanationParameters = parameters
+    }
+
+    fun specificPlans(vararg plans: Method) {
+        specificPlansList.addAll(plans)
     }
 
     fun explanationParameters(vararg params: PathProvider) {
@@ -67,6 +72,7 @@ class PlanBuilder(private val stepsProducerFactory: StepsProducerFactory) {
             stepsProducer = stepsProducer,
             explanationMaker = MetadataMaker(explanation, explanationParameters),
             skillMakers = skillMakers,
+            specificPlans = specificPlansList
         )
     }
 
@@ -77,7 +83,7 @@ class PlanBuilder(private val stepsProducerFactory: StepsProducerFactory) {
         return wrapPlanExecutor(
             ContextSensitiveSelector(
                 default = ContextSensitiveAlternative(this.defaultSteps, resourceData),
-                alternatives = alternatives,
+                alternatives = alternatives
             )
         )
     }

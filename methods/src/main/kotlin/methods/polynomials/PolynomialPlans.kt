@@ -29,6 +29,7 @@ enum class PolynomialPlans(override val runner: Plan) : RunnerMethod {
     SimplifyAlgebraicExpression(
         plan {
             explanation = Explanation.SimplifyAlgebraicExpression
+            specificPlans(ConstantExpressionsPlans.SimplifyConstantExpression)
 
             steps {
                 whilePossible { deeply(simpleTidyUpSteps) }

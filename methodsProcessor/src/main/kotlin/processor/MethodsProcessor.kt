@@ -42,20 +42,21 @@ class MethodsProcessor(private val codeGenerator: CodeGenerator) : SymbolProcess
         with(writer) {
             appendLine("package methods\n")
             appendLine("import engine.methods.MethodRegistry")
-            appendLine("import engine.methods.SimpleMethodId\n")
+            appendLine("import engine.methods.MethodRegistryBuilder")
+            appendLine("import engine.methods.MethodId\n")
             appendLine("val methodRegistry = run {")
-            appendLine("    val registry = MethodRegistry()")
+            appendLine("    val builder = MethodRegistryBuilder()")
             for (item in symbols.filter { it.validate() }.map { it.accept(PublicMethodVisitor(), Unit) }) {
-                appendLine("    registry.registerEntry(")
+                appendLine("    builder.registerEntry(")
                 appendLine("        MethodRegistry.EntryData(")
-                appendLine("            SimpleMethodId(\"${item.category}\", \"${item.name}\"),")
+                appendLine("            MethodId(\"${item.category}\", \"${item.name}\"),")
                 appendLine("            true,")
                 appendLine("            \"\"\"${item.description.trim()}\"\"\",")
                 appendLine("            ${item.implementationName}")
                 appendLine("        )")
                 appendLine("    )")
             }
-            appendLine("    registry")
+            appendLine("    builder.buildRegistry()")
             appendLine("}")
         }
         writer.close()
