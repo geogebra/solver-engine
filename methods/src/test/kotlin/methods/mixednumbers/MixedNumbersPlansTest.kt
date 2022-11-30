@@ -1,9 +1,9 @@
 package methods.mixednumbers
 
 import engine.context.Context
+import engine.methods.testMethod
 import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
-import methods.plans.testMethod
 import kotlin.test.Test
 
 class MixedNumbersPlansTest {

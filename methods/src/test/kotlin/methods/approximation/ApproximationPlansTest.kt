@@ -1,9 +1,9 @@
 package methods.approximation
 
 import engine.context.Context
+import engine.methods.testMethod
 import methods.decimals.DecimalsExplanation
 import methods.general.GeneralExplanation
-import methods.plans.testMethod
 import org.junit.jupiter.api.Test
 import java.math.BigInteger
 

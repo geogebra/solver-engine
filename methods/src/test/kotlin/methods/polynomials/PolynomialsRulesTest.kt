@@ -1,7 +1,7 @@
 package methods.polynomials
 
+import engine.methods.testRule
 import methods.polynomials.PolynomialRules.CollectLikeTerms
-import methods.rules.testRule
 import org.junit.jupiter.api.Test
 
 class PolynomialsRulesTest {

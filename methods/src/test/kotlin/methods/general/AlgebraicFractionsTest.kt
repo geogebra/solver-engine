@@ -1,7 +1,7 @@
 package methods.general
 
+import engine.methods.testRule
 import methods.general.GeneralRules.CancelCommonTerms
-import methods.rules.testRule
 import org.junit.jupiter.api.Test
 
 object AlgebraicFractionsTest {

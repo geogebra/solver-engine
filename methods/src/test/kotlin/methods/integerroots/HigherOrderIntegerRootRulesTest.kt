@@ -1,9 +1,9 @@
 package methods.integerroots
 
+import engine.methods.testRule
 import methods.integerroots.IntegerRootsRules.PutRootCoefficientUnderRoot
 import methods.integerroots.IntegerRootsRules.SimplifyRootOfRoot
 import methods.integerroots.IntegerRootsRules.TurnPowerOfRootToRootOfPower
-import methods.rules.testRule
 import org.junit.jupiter.api.Test
 
 class HigherOrderIntegerRootRulesTest {

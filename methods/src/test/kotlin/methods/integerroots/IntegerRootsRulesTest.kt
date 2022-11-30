@@ -1,5 +1,6 @@
 package methods.integerroots
 
+import engine.methods.testRule
 import methods.integerroots.IntegerRootsRules.CollectLikeRoots
 import methods.integerroots.IntegerRootsRules.CollectPowersOfExponentsWithSameBase
 import methods.integerroots.IntegerRootsRules.CombineProductOfSamePowerUnderHigherRoot
@@ -12,7 +13,6 @@ import methods.integerroots.IntegerRootsRules.SimplifyRootOfOne
 import methods.integerroots.IntegerRootsRules.SimplifyRootOfZero
 import methods.integerroots.IntegerRootsRules.SplitPowerUnderRoot
 import methods.integerroots.IntegerRootsRules.SplitRootOfProduct
-import methods.rules.testRule
 import org.junit.jupiter.api.Test
 
 class IntegerRootsRulesTest {

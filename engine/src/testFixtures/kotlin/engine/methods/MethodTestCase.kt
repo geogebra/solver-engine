@@ -1,4 +1,4 @@
-package methods.plans
+package engine.methods
 
 import engine.context.Context
 import engine.context.emptyContext
@@ -9,7 +9,6 @@ import engine.expressions.PathMappingType
 import engine.expressions.Root
 import engine.expressions.RootPath
 import engine.expressions.parsePath
-import engine.methods.Method
 import engine.steps.Transformation
 import engine.steps.metadata.Metadata
 import engine.steps.metadata.MetadataKey

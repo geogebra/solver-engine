@@ -1,12 +1,12 @@
 package methods.integerarithmetic
 
+import engine.methods.testMethod
+import engine.methods.testRule
 import methods.integerarithmetic.IntegerArithmeticRules.EvaluateIntegerPowerDirectly
 import methods.integerarithmetic.IntegerArithmeticRules.EvaluateIntegerProductAndDivision
 import methods.integerarithmetic.IntegerArithmeticRules.EvaluateSignedIntegerAddition
 import methods.integerarithmetic.IntegerArithmeticRules.SimplifyEvenPowerOfNegative
 import methods.integerarithmetic.IntegerArithmeticRules.SimplifyOddPowerOfNegative
-import methods.plans.testMethod
-import methods.rules.testRule
 import org.junit.jupiter.api.Test
 
 class IntegerArithmeticRulesTest {

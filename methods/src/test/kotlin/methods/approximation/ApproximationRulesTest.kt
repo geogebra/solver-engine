@@ -1,10 +1,10 @@
 package methods.approximation
 
+import engine.methods.testRule
 import methods.approximation.ApproximationRules.ApproximateDecimalProductAndDivision
 import methods.approximation.ApproximationRules.ExpandRecurringDecimal
 import methods.approximation.ApproximationRules.RoundRecurringDecimal
 import methods.approximation.ApproximationRules.RoundTerminatingDecimal
-import methods.rules.testRule
 import org.junit.jupiter.api.Test
 
 class ApproximationRulesTest {

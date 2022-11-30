@@ -1,6 +1,6 @@
 package methods.general
 
-import methods.plans.testMethod
+import engine.methods.testMethod
 import org.junit.jupiter.api.Test
 
 class TestReplaceAllInvisibleBrackets {

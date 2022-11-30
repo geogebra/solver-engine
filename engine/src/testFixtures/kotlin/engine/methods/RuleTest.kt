@@ -1,8 +1,7 @@
-package methods.rules
+package engine.methods
 
 import engine.context.emptyContext
 import engine.expressions.Root
-import engine.methods.Method
 import parser.parseExpression
 import kotlin.test.assertEquals
 import kotlin.test.assertNull

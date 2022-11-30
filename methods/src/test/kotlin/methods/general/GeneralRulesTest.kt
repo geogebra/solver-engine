@@ -1,5 +1,6 @@
 package methods.general
 
+import engine.methods.testRule
 import methods.general.GeneralRules.CancelAdditiveInverseElements
 import methods.general.GeneralRules.DistributeMultiplicationOverSum
 import methods.general.GeneralRules.DistributePowerOfProduct
@@ -28,7 +29,6 @@ import methods.general.GeneralRules.SimplifyExpressionToThePowerOfOne
 import methods.general.GeneralRules.SimplifyProductWithTwoNegativeFactors
 import methods.general.GeneralRules.SimplifyZeroDenominatorFractionToUndefined
 import methods.general.GeneralRules.SimplifyZeroNumeratorFractionToZero
-import methods.rules.testRule
 import org.junit.jupiter.api.Test
 
 class GeneralRulesTest {

@@ -1,7 +1,7 @@
 package methods.constantexpressions
 
+import engine.methods.testMethod
 import methods.general.GeneralExplanation
-import methods.plans.testMethod
 import org.junit.jupiter.api.Test
 
 class ZeroNumeratorTest {

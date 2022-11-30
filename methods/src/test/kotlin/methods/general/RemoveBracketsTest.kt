@@ -1,9 +1,9 @@
 package methods.general
 
+import engine.methods.testRule
 import methods.general.NormalizationRules.RemoveBracketAroundSignedIntegerInSum
 import methods.general.NormalizationRules.RemoveBracketSumInSum
 import methods.general.NormalizationRules.RemoveOuterBracket
-import methods.rules.testRule
 import org.junit.jupiter.api.Test
 
 object RemoveBracketsTest {

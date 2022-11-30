@@ -1,5 +1,6 @@
 package methods.fractionroots
 
+import engine.methods.testRule
 import methods.fractionroots.FractionRootsRules.DistributeRadicalOverFraction
 import methods.fractionroots.FractionRootsRules.FactorizeHigherOrderRadicand
 import methods.fractionroots.FractionRootsRules.FlipRootsInDenominator
@@ -8,7 +9,6 @@ import methods.fractionroots.FractionRootsRules.IdentifyCubeSumDifference
 import methods.fractionroots.FractionRootsRules.RationalizeSimpleDenominator
 import methods.fractionroots.FractionRootsRules.RationalizeSumOfIntegerAndCubeRoot
 import methods.fractionroots.FractionRootsRules.RationalizeSumOfIntegerAndSquareRoot
-import methods.rules.testRule
 import org.junit.jupiter.api.Test
 
 class FractionRootsRulesTest {

@@ -1,9 +1,5 @@
-package methods.plans
+package engine.methods
 
-import engine.methods.Plan
-import engine.methods.RunnerMethod
-import engine.methods.TransformationResult
-import engine.methods.rule
 import engine.methods.stepsproducers.Pipeline
 import engine.methods.stepsproducers.PipelineItem
 import engine.patterns.AnyPattern

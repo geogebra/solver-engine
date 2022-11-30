@@ -1,9 +1,9 @@
 package methods.integerroots
 
+import engine.methods.testMethod
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.general.GeneralExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
-import methods.plans.testMethod
 import org.junit.jupiter.api.Test
 
 class IntegerRootsPlansTest {

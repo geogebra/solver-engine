@@ -1,12 +1,12 @@
 package methods.fractionroots
 
+import engine.methods.testMethod
 import methods.constantexpressions.ConstantExpressionsExplanation
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.general.GeneralExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
 import methods.integerroots.IntegerRootsExplanation
-import methods.plans.testMethod
 import org.junit.jupiter.api.Test
 
 class FractionRootsPlansTest {

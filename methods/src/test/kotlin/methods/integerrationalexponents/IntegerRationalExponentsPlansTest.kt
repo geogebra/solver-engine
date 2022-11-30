@@ -1,12 +1,12 @@
 package methods.integerrationalexponents
 
+import engine.methods.testMethod
 import method.integerrationalexponents.IntegerRationalExponentsExplanation
 import methods.constantexpressions.ConstantExpressionsExplanation
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.general.GeneralExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
-import methods.plans.testMethod
 import kotlin.test.Test
 
 class SimplifyRationalExponents {

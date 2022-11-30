@@ -18,6 +18,8 @@ dependencies {
     implementation(project(":methodsProcessor"))
 
     testImplementation(kotlin("test"))
+    testImplementation(testFixtures(project(":engine")))
+
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")
 
     ksp(project(":export"))

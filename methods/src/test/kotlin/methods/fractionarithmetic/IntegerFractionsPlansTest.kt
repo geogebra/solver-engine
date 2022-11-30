@@ -1,9 +1,9 @@
 package methods.fractionarithmetic
 
+import engine.methods.testMethod
 import engine.steps.metadata.Skill
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.integerarithmetic.IntegerArithmeticPlans
-import methods.plans.testMethod
 import org.junit.jupiter.api.Test
 
 class TestAddFractions {

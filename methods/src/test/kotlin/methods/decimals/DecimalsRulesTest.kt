@@ -1,5 +1,6 @@
 package methods.decimals
 
+import engine.methods.testRule
 import methods.decimals.DecimalRules.ConvertFractionWithPowerOfTenDenominatorToDecimal
 import methods.decimals.DecimalRules.ConvertRecurringDecimalToFractionDirectly
 import methods.decimals.DecimalRules.ConvertTerminatingDecimalToFraction
@@ -8,7 +9,6 @@ import methods.decimals.DecimalRules.ExpandFractionToPowerOfTenDenominator
 import methods.decimals.DecimalRules.MakeEquationSystemForRecurringDecimal
 import methods.decimals.DecimalRules.MultiplyFractionOfDecimalsByPowerOfTen
 import methods.decimals.DecimalRules.TurnDivisionOfDecimalsIntoFraction
-import methods.rules.testRule
 import org.junit.jupiter.api.Test
 
 class DecimalsRulesTest {

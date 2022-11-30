@@ -1,7 +1,7 @@
 package methods.integerarithmetic
 
+import engine.methods.testMethod
 import methods.general.GeneralExplanation
-import methods.plans.testMethod
 import kotlin.test.Test
 
 class IntegerArithmeticPlansTest {

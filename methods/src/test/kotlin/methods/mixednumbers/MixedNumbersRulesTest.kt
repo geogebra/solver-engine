@@ -1,9 +1,9 @@
 package methods.mixednumbers
 
+import engine.methods.testRule
 import methods.mixednumbers.MixedNumbersRules.ConvertSumOfIntegerAndProperFractionToMixedNumber
 import methods.mixednumbers.MixedNumbersRules.FractionToMixedNumber
 import methods.mixednumbers.MixedNumbersRules.SplitMixedNumber
-import methods.rules.testRule
 import org.junit.jupiter.api.Test
 
 class MixedNumbersRulesTest {

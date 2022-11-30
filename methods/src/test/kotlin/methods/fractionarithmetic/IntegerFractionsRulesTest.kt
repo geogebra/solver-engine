@@ -1,5 +1,7 @@
 package methods.fractionarithmetic
 
+import engine.methods.testMethod
+import engine.methods.testRule
 import methods.fractionarithmetic.FractionArithmeticRules.AddLikeFractions
 import methods.fractionarithmetic.FractionArithmeticRules.BringToCommonDenominator
 import methods.fractionarithmetic.FractionArithmeticRules.ConvertIntegerToFraction
@@ -20,8 +22,6 @@ import methods.fractionarithmetic.FractionArithmeticRules.TurnIntegerToMinusOneT
 import methods.fractionarithmetic.FractionArithmeticRules.TurnNegativePowerOfIntegerToFraction
 import methods.fractionarithmetic.FractionArithmeticRules.TurnNegativePowerOfZeroToPowerOfFraction
 import methods.fractionarithmetic.FractionArithmeticRules.TurnSumOfFractionAndIntegerToFractionSum
-import methods.plans.testMethod
-import methods.rules.testRule
 import org.junit.jupiter.api.Test
 
 class IntegerFractionsRulesTest {

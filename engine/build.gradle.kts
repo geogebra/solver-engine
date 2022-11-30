@@ -7,6 +7,7 @@ plugins {
 
     id("org.jlleitschuh.gradle.ktlint")
     id("io.gitlab.arturbosch.detekt")
+    id("java-test-fixtures")
 }
 
 repositories {
@@ -16,7 +17,9 @@ repositories {
 dependencies {
     antlr("org.antlr:antlr4:4.10.1")
 
+    testFixturesImplementation(kotlin("test"))
     testImplementation(kotlin("test"))
+    testFixturesImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")
 }
 
