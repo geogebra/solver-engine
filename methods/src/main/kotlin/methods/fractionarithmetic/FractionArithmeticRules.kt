@@ -268,7 +268,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(
                 condition(product) { expression ->
-                    expression.operands.any { it.operator == BinaryExpressionOperator.Fraction }
+                    expression.flattenedProductChildren().any { it.operator == BinaryExpressionOperator.Fraction }
                 }
             ) {
                 TransformationResult(

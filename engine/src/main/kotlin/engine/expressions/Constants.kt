@@ -8,5 +8,7 @@ object Constants {
     val Two = xp(2)
     val Three = xp(3)
 
-    val Undefined = Expression(UndefinedOperator, emptyList())
+    val Undefined = Expression(
+        UndefinedOperator, emptyList()
+    )
 }

@@ -45,7 +45,7 @@ enum class FractionRootsPlans(override val runner: Plan) : RunnerMethod {
             steps {
                 apply(IntegerRootsRules.MultiplyNthRoots)
                 whilePossible {
-                    deeply(IntegerRootsRules.CollectPowersOfExponentsWithSameBase)
+                    deeply(GeneralRules.RewriteProductOfPowersWithSameBase)
                     deeply(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
                 }
             }
@@ -121,6 +121,7 @@ private val simplifyAfterRationalization = steps {
             }
             option { deeply(IntegerRootsRules.SimplifyNthRootToThePowerOfN) }
             option { deeply(IntegerRootsPlans.SimplifyProductWithRoots) }
+            option { deeply(IntegerArithmeticPlans.SimplifyIntegersInProduct) }
             option { deeply(IntegerArithmeticPlans.SimplifyIntegersInSum) }
         }
     }

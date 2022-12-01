@@ -1,12 +1,10 @@
 package methods.constantexpressions
 
-import engine.expressions.Expression
 import engine.methods.Plan
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
-import engine.operators.VariableOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.FindPattern
@@ -130,7 +128,7 @@ enum class ConstantExpressionsPlans(override val runner: Plan) : RunnerMethod {
     @PublicMethod
     SimplifyConstantExpression(
         plan {
-            pattern = condition(AnyPattern()) { it.isConstantExpression() }
+            pattern = condition(AnyPattern()) { it.isConstant() }
             explanation = Explanation.SimplifyConstantExpression
 
             specificPlans(
@@ -156,6 +154,7 @@ val simpleTidyUpSteps = steps {
         option { deeply(GeneralRules.SimplifyFractionWithOneDenominator) }
         option { deeply(IntegerRationalExponentsRules.EvaluateNegativeToRationalExponentAsUndefined) }
         option { deeply(GeneralRules.EvaluateProductContainingZero) }
+        option { deeply(GeneralRules.EliminateZeroInSum) }
         option { deeply(GeneralRules.CancelAdditiveInverseElements) }
         option { deeply(IntegerRootsRules.SimplifyRootOfOne) }
     }
@@ -197,14 +196,13 @@ val simplificationSteps = steps {
         option { deeply(FractionArithmeticPlans.EvaluateSumOfFractionAndInteger, deepFirst = true) }
 
         option { deeply(FractionRootsPlans.RationalizeDenominators, deepFirst = true) }
-        option { deeply(GeneralRules.DistributeMultiplicationOverSum, deepFirst = true) }
+        option {
+            deeply(deepFirst = true) {
+                // We don't want to expand something like x(1 + sqrt[3]) because the algebra rules would factorise it
+                // back again! so restrict expansion to constant expressions. It might be better to have a finer
+                // condition depending on the factors that could be expanded.
+                applyTo(GeneralRules.DistributeMultiplicationOverSum) { if (it.isConstant()) it else null }
+            }
+        }
     }
-}
-
-private fun Expression.isConstantExpression(): Boolean {
-    for (operand in operands) {
-        if (!operand.isConstantExpression()) return false
-    }
-
-    return operator !is VariableOperator
 }

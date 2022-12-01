@@ -1,5 +1,6 @@
 package parser
 
+import engine.expressions.Constants
 import engine.expressions.Decorator
 import engine.expressions.Expression
 import engine.expressions.Root
@@ -11,7 +12,6 @@ import engine.operators.EquationSystemOperator
 import engine.operators.NaryOperator
 import engine.operators.Operator
 import engine.operators.UnaryExpressionOperator
-import engine.operators.UndefinedOperator
 import engine.utility.RecurringDecimal
 import org.antlr.v4.runtime.BailErrorStrategy
 import org.antlr.v4.runtime.CharStreams
@@ -184,6 +184,6 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
     }
 
     override fun visitUndefined(ctx: ExpressionParser.UndefinedContext?): Expression {
-        return Expression(UndefinedOperator, emptyList())
+        return Constants.Undefined
     }
 }

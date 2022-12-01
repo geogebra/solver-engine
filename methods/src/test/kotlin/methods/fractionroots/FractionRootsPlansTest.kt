@@ -263,7 +263,7 @@ class FractionRootsPlansTest {
                             fromExpr = "2 root[2 * [3 ^ 2] * [2 ^ 3] * [3 ^ 2], 4]"
                             toExpr = "2 root[[2 ^ 1 + 3] * [3 ^ 2] * [3 ^ 2], 4]"
                             explanation {
-                                key = IntegerRootsExplanation.CollectPowersOfExponentsWithSameBase
+                                key = GeneralExplanation.RewriteProductOfPowersWithSameBase
                             }
                         }
 
@@ -279,7 +279,7 @@ class FractionRootsPlansTest {
                             fromExpr = "2 root[[2 ^ 4] * [3 ^ 2] * [3 ^ 2], 4]"
                             toExpr = "2 root[[2 ^ 4] * [3 ^ 2 + 2], 4]"
                             explanation {
-                                key = IntegerRootsExplanation.CollectPowersOfExponentsWithSameBase
+                                key = GeneralExplanation.RewriteProductOfPowersWithSameBase
                             }
                         }
 
@@ -430,7 +430,7 @@ class FractionRootsPlansTest {
                         fromExpr = "2 root[11 * [11 ^ 3], 4]"
                         toExpr = "2 root[[11 ^ 1 + 3], 4]"
                         explanation {
-                            key = IntegerRootsExplanation.CollectPowersOfExponentsWithSameBase
+                            key = GeneralExplanation.RewriteProductOfPowersWithSameBase
                         }
                     }
 
@@ -575,7 +575,7 @@ class FractionRootsRationalization {
                         fromExpr = "root[2 * [2 ^ 2], 3]"
                         toExpr = "root[[2 ^ 1 + 2], 3]"
                         explanation {
-                            key = IntegerRootsExplanation.CollectPowersOfExponentsWithSameBase
+                            key = GeneralExplanation.RewriteProductOfPowersWithSameBase
                         }
                     }
 
@@ -717,7 +717,7 @@ class FractionRootsRationalization {
                         fromExpr = "root[[13 ^ 2] * 13, 3]"
                         toExpr = "root[[13 ^ 2 + 1], 3]"
                         explanation {
-                            key = IntegerRootsExplanation.CollectPowersOfExponentsWithSameBase
+                            key = GeneralExplanation.RewriteProductOfPowersWithSameBase
                         }
                     }
 

@@ -9,6 +9,10 @@ import engine.operators.VariableOperator
 import engine.patterns.Match
 import engine.patterns.PathProvider
 
+/**
+ * Decorators affect the visual appearance (and hence sometimes the transformations that can be applied to an expression
+ * node) but do not affect the tree structure of an expression.  A typical decorator is a bracket.
+ */
 enum class Decorator {
     RoundBracket {
         override fun decorateString(str: String) = "($str)"
@@ -22,22 +26,44 @@ enum class Decorator {
         override fun decorateString(str: String) = "{. $str .}"
         override fun decorateLatexString(str: String) = "{\\left\\{ $str \\right\\}}"
     },
-    MissingBracket {
-        override fun decorateString(str: String) = "{{ $str }}"
-        override fun decorateLatexString(str: String) = str
-    };
+    MissingBracket;
 
-    abstract fun decorateString(str: String): String
-    abstract fun decorateLatexString(str: String): String
+    open fun decorateString(str: String): String = str
+    open fun decorateLatexString(str: String): String = str
 }
 
+/**
+ * Each expression can have a [Label] attached to it.  As labels implement the [Extractor] interface, they can be used
+ * in a rule to tag some sub-expressions of the result for further processing.  It is possible for the same label to be
+ * present in more than one node of an expression.
+ */
+enum class Label : Extractor {
+    A,
+    B,
+    C;
+
+    override fun extract(sub: Expression) = sub.labelledPart(this)
+}
+
+/**
+ * A mathematical expression.  It is made of an [operator] which defines what type of expression it is, and of zero or
+ * more [operands] which are the children of the expression.
+ */
 @Suppress("TooManyFunctions")
 class Expression internal constructor(
     val operator: Operator,
     val operands: List<Expression>,
-    val decorators: List<Decorator> = emptyList(),
-    val origin: Origin = Build
+    val decorators: List<Decorator>,
+    val origin: Origin,
+    val label: Label?
 ) : LatexRenderable, PathProvider {
+
+    /**
+     * Create a new expression with [Build] origin and no label.  Operand brackets are not adjusted and if a required
+     * bracket is missing in an operand, an exception will be thrown.
+     */
+    constructor(operator: Operator, operands: List<Expression>, decorators: List<Decorator> = emptyList()) :
+        this(operator, operands, decorators, Build, null)
 
     init {
         operands.forEachIndexed { i, op -> require(op.hasBracket() || operator.nthChildAllowed(i, op.operator)) }
@@ -53,7 +79,32 @@ class Expression internal constructor(
         else -> this.operands.flatMap { it.variables }.toSet()
     }
 
-    private fun withDecorators(newDecorators: List<Decorator>) = Expression(operator, operands, newDecorators, origin)
+    private fun withDecorators(newDecorators: List<Decorator>) =
+        Expression(operator, operands, newDecorators, origin, label)
+
+    /**
+     * Returns true if the expression node is labelled (not if the children are labelled).
+     */
+    fun hasLabel() = label != null
+
+    /**
+     * Returns a copy labelled with [newLabel] instead of the existing label.
+     */
+    fun withLabel(newLabel: Label?) = Expression(operator, operands, decorators, origin, newLabel)
+
+    /**
+     * Returns a node in the expression tree labelled with [findLabel] if there is one, else null.
+     */
+    fun labelledPart(findLabel: Label = Label.A): Expression? = when (findLabel) {
+        label -> this
+        else -> children().firstNotNullOfOrNull { it.labelledPart(findLabel) }
+    }
+
+    /**
+     * Returns a copy of the expression with all labels cleared recursively.
+     */
+    fun clearLabels(): Expression =
+        Expression(operator, operands.map { it.clearLabels() }, decorators, origin, null)
 
     fun children() = origin.computeChildrenOrigin(this)
 
@@ -67,12 +118,15 @@ class Expression internal constructor(
 
     fun nthChild(n: Int) = origin.computeChildOrigin(this, n)
 
-    fun withOrigin(newOrigin: Origin) = Expression(operator, operands, decorators, newOrigin)
+    fun withOrigin(newOrigin: Origin) = Expression(operator, operands, decorators, newOrigin, label)
 
     fun pathMappings(rootPath: Path = RootPath) = origin.computePathMappings(rootPath, children())
 
     override fun toString(): String {
-        return decorators.fold(operator.readableString(operands)) { acc, dec -> dec.decorateString(acc) }
+        val s = decorators.fold(operator.readableString(operands)) { acc, dec -> dec.decorateString(acc) }
+        return s
+        // Return this instead to show labels in debug output:
+        // return if (label == null) s else "[ $label::$s ]"
     }
 
     /**
@@ -93,12 +147,12 @@ class Expression internal constructor(
             operands.zip(other.operands).all { (op1, op2) -> op1.equiv(op2) }
     }
 
-    fun decorate(decorator: Decorator) = Expression(operator, operands, decorators + decorator, origin)
+    fun decorate(decorator: Decorator) = Expression(operator, operands, decorators + decorator, origin, label)
 
     fun hasBracket() = decorators.isNotEmpty()
 
     fun removeBrackets() =
-        if (hasBracket()) Expression(operator, operands, emptyList(), origin) else this
+        if (hasBracket()) Expression(operator, operands, emptyList(), origin, label) else this
 
     fun outerBracket() = decorators.lastOrNull()
 
@@ -174,7 +228,7 @@ class Expression internal constructor(
                             op
                         }
                     }
-                ).withDecorators(decorators)
+                ).withDecorators(decorators).withLabel(label)
             } else {
                 mapChildren { it.substituteKeepBrackets(subPath, newExpr) }
             }
@@ -183,7 +237,7 @@ class Expression internal constructor(
     }
 
     private fun mapChildren(f: (Expression) -> Expression) = Expression(
-        operator, children().map(f), decorators, Build
+        operator, children().map(f), decorators, Build, label
     )
 
     override fun getBoundPaths(m: Match) = if (origin.path == null) emptyList() else listOf(origin.path)

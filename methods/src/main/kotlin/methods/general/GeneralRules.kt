@@ -20,6 +20,7 @@ import engine.methods.RunnerMethod
 import engine.methods.TransformationResult
 import engine.methods.rule
 import engine.operators.UnaryExpressionOperator
+import engine.operators.VariableOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
@@ -40,6 +41,7 @@ import engine.patterns.oneOf
 import engine.patterns.oppositeSignPattern
 import engine.patterns.optionalDivideBy
 import engine.patterns.optionalNegOf
+import engine.patterns.optionalPowerOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.rootOf
@@ -584,21 +586,27 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     RewriteProductOfPowersWithSameBase(
         rule {
             val base = AnyPattern()
-            val exponent1 = AnyPattern()
-            val exponent2 = AnyPattern()
 
-            val power1 = powerOf(base, exponent1)
-            val power2 = powerOf(base, exponent2)
+            val power1 = optionalPowerOf(base)
+            val power2 = optionalPowerOf(base)
 
             val product = productContaining(power1, power2)
 
             onPattern(product) {
-                TransformationResult(
-                    toExpr = product.substitute(
-                        powerOf(factor(base), sumOf(move(exponent1), move(exponent2)))
-                    ),
-                    explanation = metadata(Explanation.RewriteProductOfPowersWithSameBase)
-                )
+                if (get(base)?.operator is VariableOperator ||
+                    get(power1.exponent) != Constants.One ||
+                    get(power2.exponent) != Constants.One
+                ) {
+
+                    TransformationResult(
+                        toExpr = product.substitute(
+                            powerOf(factor(base), sumOf(move(power1.exponent), move(power2.exponent)))
+                        ),
+                        explanation = metadata(Explanation.RewriteProductOfPowersWithSameBase)
+                    )
+                } else {
+                    null
+                }
             }
         }
     ),
@@ -628,11 +636,9 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     RewriteFractionOfPowersWithSameBase(
         rule {
             val base = AnyPattern()
-            val exponent1 = AnyPattern()
-            val exponent2 = AnyPattern()
 
-            val power1 = powerOf(base, exponent1)
-            val power2 = powerOf(base, exponent2)
+            val power1 = optionalPowerOf(base)
+            val power2 = optionalPowerOf(base)
 
             val product = fractionOf(power1, power2)
 
@@ -641,8 +647,8 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
                     toExpr = powerOf(
                         factor(base),
                         sumOf(
-                            move(exponent1),
-                            negOf(move(exponent2))
+                            move(power1.exponent),
+                            negOf(move(power2.exponent))
                         )
                     ),
                     explanation = metadata(Explanation.RewriteFractionOfPowersWithSameBase)
@@ -735,11 +741,8 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
             val fraction1 = fractionOf(value1, value2)
             val fraction2 = fractionOf(value2, value1)
 
-            val exponent1 = AnyPattern()
-            val exponent2 = AnyPattern()
-
-            val power1 = powerOf(fraction1, exponent1)
-            val power2 = powerOf(fraction2, exponent2)
+            val power1 = optionalPowerOf(fraction1)
+            val power2 = optionalPowerOf(fraction2)
 
             val product = productContaining(power1, power2)
 
@@ -749,7 +752,7 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
                         move(power1),
                         powerOf(
                             fractionOf(move(value1), move(value2)),
-                            negOf(move(exponent2))
+                            negOf(move(power2.exponent))
                         )
                     ),
                     explanation = metadata(Explanation.RewriteProductOfPowersWithInverseFractionBase)

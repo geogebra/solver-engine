@@ -2,6 +2,7 @@ package engine.parser
 
 import engine.expressions.Expression
 import engine.expressions.bracketOf
+import engine.expressions.buildExpression
 import engine.expressions.curlyBracketOf
 import engine.expressions.equationOf
 import engine.expressions.fractionOf
@@ -23,8 +24,13 @@ import kotlin.test.assertFails
 
 class ParserTest {
 
-    private fun rawSumOf(vararg terms: Expression) = Expression(NaryOperator.Sum, terms.asList())
-    private fun rawProductOf(vararg factors: Expression) = Expression(NaryOperator.Product, factors.asList())
+    private fun rawSumOf(vararg terms: Expression) = Expression(
+        NaryOperator.Sum, terms.asList()
+    )
+
+    private fun rawProductOf(vararg factors: Expression) = Expression(
+        NaryOperator.Product, factors.asList()
+    )
 
     private fun parsingFails(input: String) {
         assertFails {
@@ -52,7 +58,7 @@ class ParserTest {
 
     @Test
     fun testUndefined() {
-        parsesTo("UNDEFINED", Expression(UndefinedOperator, emptyList()))
+        parsesTo("UNDEFINED", buildExpression(UndefinedOperator, emptyList()))
     }
 
     @Test

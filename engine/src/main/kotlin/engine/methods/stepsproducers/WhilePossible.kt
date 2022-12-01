@@ -4,17 +4,17 @@ import engine.context.Context
 import engine.expressions.Expression
 
 /**
- * `WhilePossible` will fail if exceeding this number of iterations.
+ * [WhilePossible] will fail if exceeding this number of iterations.
  */
 private const val MAX_WHILE_POSSIBLE_ITERATIONS = 100
 
 /**
- * Exception returned by `WhilePossible::produceSteps()` when it exceeds the maximum number of iterations.  It probably
+ * Exception returned by [WhilePossible]::produceSteps() when it exceeds the maximum number of iterations.  It probably
  * means that there is a buggy plan specification (or that the expression it is applied to is very large */
 class TooManyIterationsException(msg: String) : RuntimeException(msg)
 
 /**
- * A `StepsProducer` implementation that repeats the same `StepsProducer` instance until it fails and chains together
+ * A [StepsProducer] implementation that repeats the same [stepsProducer] until it fails and chains together
  * the results.
  */
 data class WhilePossible(val stepsProducer: StepsProducer) : StepsProducer {

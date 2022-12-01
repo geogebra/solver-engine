@@ -37,6 +37,11 @@ class StepsBuilder(sub: Expression) {
 
     fun undefined() = sub.operator == UndefinedOperator
 
+    internal fun clearLabels() {
+        sub = sub.clearLabels()
+        steps.replaceAll { it.clearLabels() }
+    }
+
     fun addStep(step: Transformation) {
         if (undefined()) {
             return

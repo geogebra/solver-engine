@@ -718,7 +718,7 @@ class ConstantExpressionRationalizationTest {
                             fromExpr = "root[2 * [2 ^ 2], 3]"
                             toExpr = "root[[2 ^ 1 + 2], 3]"
                             explanation {
-                                key = IntegerRootsExplanation.CollectPowersOfExponentsWithSameBase
+                                key = GeneralExplanation.RewriteProductOfPowersWithSameBase
                             }
                         }
 

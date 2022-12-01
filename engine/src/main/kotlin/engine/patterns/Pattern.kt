@@ -2,6 +2,7 @@ package engine.patterns
 
 import engine.context.Context
 import engine.expressions.Expression
+import engine.expressions.New
 import engine.expressions.Path
 
 interface PathProvider {
@@ -20,6 +21,27 @@ interface PathProvider {
     fun getBoundExpr(m: Match): Expression?
 }
 
+fun interface ExpressionProvider : PathProvider {
+
+    fun getExpression(m: Match): Expression?
+    override fun getBoundPaths(m: Match) = getExpression(m)?.getBoundPaths(m) ?: emptyList()
+
+    override fun getBoundExpr(m: Match) = getExpression(m)
+}
+
+open class ProviderWithDefault(
+    private val provider: PathProvider,
+    private val default: Expression
+) : PathProvider {
+    override fun getBoundPaths(m: Match): List<Path> {
+        return provider.getBoundPaths(m)
+    }
+
+    override fun getBoundExpr(m: Match): Expression {
+        return provider.getBoundExpr(m) ?: default.withOrigin(New)
+    }
+}
+
 /**
  * Patterns are used to detect certain shapes in a [Subexpression].
  */
@@ -35,9 +57,9 @@ interface Pattern : PathProvider {
      * the tree to the where the pattern is present in the
      * match [m].
      */
-    override fun getBoundPaths(m: Match) = m.getBoundPaths(this)
+    override fun getBoundPaths(m: Match) = m.getBoundPaths(this.key)
 
-    override fun getBoundExpr(m: Match) = m.getBoundExpr(this)
+    override fun getBoundExpr(m: Match) = m.getBoundExpr(this.key)
 
     fun matches(context: Context, expression: Expression): Boolean {
         return findMatches(context, RootMatch, expression).any()

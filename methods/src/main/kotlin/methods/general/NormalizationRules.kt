@@ -51,7 +51,7 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
     RemoveBracketProductInProduct(
         rule {
             val innerProduct = productContaining()
-            val pattern = productContaining(innerProduct)
+            val pattern = productContaining(condition(innerProduct) { it.hasBracket() })
 
             onPattern(pattern) {
                 TransformationResult(

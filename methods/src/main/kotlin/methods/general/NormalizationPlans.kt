@@ -25,7 +25,7 @@ enum class NormalizationPlans(override val runner: Plan) : RunnerMethod {
                 whilePossible {
                     deeply {
                         firstOf {
-                            option(NormalizationPlans.AddClarifyingBrackets)
+                            option(AddClarifyingBrackets)
                             option(removeRedundantBrackets)
                             option(NormalizationRules.RemoveRedundantPlusSign)
                         }

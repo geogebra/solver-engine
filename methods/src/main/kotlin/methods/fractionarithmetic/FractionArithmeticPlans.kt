@@ -146,7 +146,9 @@ enum class FractionArithmeticPlans(override val runner: Plan) : RunnerMethod {
 
             steps {
                 whilePossible(FractionArithmeticRules.TurnFactorIntoFractionInProduct)
-                whilePossible(FractionArithmeticRules.MultiplyFractions)
+                apply {
+                    whilePossible(FractionArithmeticRules.MultiplyFractions)
+                }
                 optionally(SimplifyFraction)
                 whilePossible {
                     deeply(IntegerArithmeticPlans.SimplifyIntegersInProduct)

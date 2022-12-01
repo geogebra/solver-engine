@@ -5,6 +5,7 @@ import engine.expressions.Combine
 import engine.expressions.Distribute
 import engine.expressions.Expression
 import engine.expressions.Factor
+import engine.expressions.Label
 import engine.expressions.Move
 import engine.expressions.New
 import engine.expressions.divideBy
@@ -74,7 +75,9 @@ class MappedExpressionBuilder(
     /**
      * Returns the last subexpression bound to pattern
      */
-    fun get(pattern: Pattern): Expression? = match.getLastBinding(pattern)
+    fun get(pattern: PathProvider): Expression? = pattern.getBoundExpr(match)
+
+    fun get(getExpression: (Match) -> Expression?) = getExpression(match)
 
     /**
      * Returns the numeric value bound to the argument in the match.
@@ -179,7 +182,11 @@ class MappedExpressionBuilder(
 
     fun NaryPattern.substitute(vararg newVals: Expression) = substitute(match, newVals)
 
-    fun collectLikeTermsInSum(sub: Expression, commonTerm: CoefficientPattern): Expression {
+    fun collectLikeTermsInSum(
+        sub: Expression,
+        commonTerm: CoefficientPattern,
+        labelForCollectedTerms: Label? = null
+    ): Expression {
         val coefficients = mutableListOf<Expression>()
 
         val otherTerms = mutableListOf<Expression>()
@@ -199,8 +206,8 @@ class MappedExpressionBuilder(
 
         require(firstIndex != null)
 
-        val collectedRoots = productOf(sumOf(coefficients), move(commonTerm.value))
-        otherTerms.add(firstIndex, collectedRoots)
+        val collectedTerms = productOf(sumOf(coefficients), move(commonTerm.value)).withLabel(labelForCollectedTerms)
+        otherTerms.add(firstIndex, collectedTerms)
 
         return sumOf(otherTerms)
     }

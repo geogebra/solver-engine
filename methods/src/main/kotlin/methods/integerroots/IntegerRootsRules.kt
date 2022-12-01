@@ -1,12 +1,11 @@
 package methods.integerroots
 
-import engine.expressions.Constants
+import engine.expressions.Expression
 import engine.expressions.powerOf
 import engine.expressions.productOf
 import engine.expressions.rootOf
 import engine.expressions.simplifiedPowerOf
 import engine.expressions.simplifiedProductOf
-import engine.expressions.sumOf
 import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
@@ -21,7 +20,6 @@ import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.condition
 import engine.patterns.integerCondition
 import engine.patterns.integerOrderRootOf
-import engine.patterns.oneOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.productOf
@@ -257,17 +255,14 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
 
     NormaliseProductWithRoots(
         rule {
-            val notRoot =
-                condition(AnyPattern()) {
-                    it.operator != UnaryExpressionOperator.SquareRoot && it.operator != BinaryExpressionOperator.Root
-                }
+            fun isRootOrNotConstant(e: Expression) = e.operator == UnaryExpressionOperator.SquareRoot ||
+                e.operator == BinaryExpressionOperator.Root ||
+                !e.isConstant()
+
+            val notRoot = condition(AnyPattern()) { !isRootOrNotConstant(it) }
             val product = productContaining(integerOrderRootOf(UnsignedIntegerPattern()), notRoot)
             onPattern(product) {
-                val (roots, nonRoots) = get(product)!!.children()
-                    .partition {
-                        it.operator == UnaryExpressionOperator.SquareRoot ||
-                            it.operator == BinaryExpressionOperator.Root
-                    }
+                val (roots, nonRoots) = get(product)!!.flattenedProductChildren().partition { isRootOrNotConstant(it) }
 
                 TransformationResult(
                     toExpr = productOf(
@@ -514,43 +509,6 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
                         )
                     ),
                     explanation = metadata(Explanation.CombineProductOfSamePowerUnderHigherRoot)
-                )
-            }
-        }
-    ),
-
-    /**
-     * collect the powers of two exponents with the same base
-     * 3^3 * 3^2 -> 3^(3 + 2)
-     */
-    CollectPowersOfExponentsWithSameBase(
-        rule {
-            val base = UnsignedIntegerPattern()
-            val exponent1 = UnsignedIntegerPattern()
-            val exponent2 = UnsignedIntegerPattern()
-            val term1ExpFactor = powerOf(base, exponent1)
-            val term2ExpFactor = powerOf(base, exponent2)
-            val term1 = oneOf(term1ExpFactor, base)
-            val term2 = oneOf(term2ExpFactor, base)
-
-            val prod = productContaining(term1, term2)
-
-            onPattern(prod) {
-                val exponentValue1 = when {
-                    isBound(term1ExpFactor) -> move(exponent1)
-                    else -> introduce(Constants.One)
-                }
-
-                val exponentValue2 = when {
-                    isBound(term2ExpFactor) -> move(exponent2)
-                    else -> introduce(Constants.One)
-                }
-
-                TransformationResult(
-                    toExpr = prod.substitute(
-                        powerOf(move(base), sumOf(exponentValue1, exponentValue2))
-                    ),
-                    explanation = metadata(Explanation.CollectPowersOfExponentsWithSameBase)
                 )
             }
         }

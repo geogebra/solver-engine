@@ -2,6 +2,7 @@ package engine.methods.stepsproducers
 
 import engine.context.Context
 import engine.expressions.Expression
+import engine.expressions.Extractor
 import engine.methods.PlanBuilder
 import engine.steps.Transformation
 
@@ -57,6 +58,12 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
         }
     }
 
+    override fun withNewLabels(init: PipelineBuilder.() -> Unit) {
+        builder.clearLabels()
+        apply(init)
+        builder.clearLabels()
+    }
+
     override fun optionally(steps: StepsProducer) {
         runProducer(steps, optional = true)
     }
@@ -75,6 +82,10 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
 
     override fun applyTo(steps: StepsProducer, extractor: Extractor) {
         runProducer(ApplyTo(extractor, steps))
+    }
+
+    override fun applyTo(extractor: Extractor, init: PipelineBuilder.() -> Unit) {
+        applyTo(ProceduralPipeline(init), extractor)
     }
 
     override fun applyToChildrenInStep(init: InStepBuilder.() -> Unit) {
@@ -121,6 +132,10 @@ private class PipelineDataBuilder : PipelineBuilder {
         }
     }
 
+    override fun withNewLabels(init: PipelineBuilder.() -> Unit) {
+        addItem(WithNewLabels(dataSteps(init)))
+    }
+
     override fun optionally(steps: StepsProducer) {
         addItem(steps, true)
     }
@@ -139,6 +154,10 @@ private class PipelineDataBuilder : PipelineBuilder {
 
     override fun applyTo(steps: StepsProducer, extractor: Extractor) {
         addItem(ApplyTo(extractor, steps))
+    }
+
+    override fun applyTo(extractor: Extractor, init: PipelineBuilder.() -> Unit) {
+        applyTo(dataSteps(init), extractor)
     }
 
     override fun applyToChildrenInStep(init: InStepBuilder.() -> Unit) {

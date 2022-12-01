@@ -73,7 +73,6 @@ enum class IntegerRootsPlans(override val runner: Plan) : RunnerMethod {
      * Simplifies a product with integer factors and root factors so that the roots are gathered together on the right
      * and the integer factors gathered on the left and multiplied out.
      */
-
     SimplifyProductWithRoots(
         plan {
             explanation = Explanation.SimplifyProductWithRoots

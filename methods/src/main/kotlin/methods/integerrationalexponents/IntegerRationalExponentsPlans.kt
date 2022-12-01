@@ -215,12 +215,3 @@ val simplifyRationalExponentsInProduct = steps {
         }
     }
 }
-
-val simplifyProductOfPowersWithInverseFractionBase = plan {
-    explanation = Explanation.SimplifyProductOfPowersWithInverseFractionBase
-
-    steps {
-        apply(GeneralRules.RewriteProductOfPowersWithInverseFractionBase)
-        apply(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithSameBase)
-    }
-}

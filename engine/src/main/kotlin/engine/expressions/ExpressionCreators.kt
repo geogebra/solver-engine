@@ -22,7 +22,6 @@ fun buildExpression(operator: Operator, operands: List<Expression>, decorators: 
         operator,
         operands.mapIndexed { index, operand -> operand.adjustBracketFor(operator, index) },
         decorators,
-        Build
     )
 
 fun xp(n: Int) = xp(n.toBigInteger())
@@ -110,8 +109,8 @@ fun productSignRequired(left: Expression, right: Expression): Boolean = when {
         val rightIsRootOrVariable = rightOp == UnaryExpressionOperator.SquareRoot ||
             rightOp == BinaryExpressionOperator.Root ||
             rightOp is VariableOperator
-        val differentVariables =
-            leftOp is VariableOperator && rightOp is VariableOperator && leftOp.name != rightOp.name
+        val differentVariables = leftOp is VariableOperator && rightOp is VariableOperator &&
+            leftOp.name != rightOp.name
 
         !(left.isNumbery() && rightIsRootOrVariable || differentVariables)
     }
@@ -121,7 +120,7 @@ fun productOf(operands: List<Expression>): Expression {
     if (operands.size == 1) {
         return operands[0]
     }
-    val flattenedOperands = operands.flatMap { it.flattenedProductChildren() }
+    val flattenedOperands = operands.flatMap { if (it.hasLabel()) listOf(it) else it.flattenedProductChildren() }
 
     var implicitFactors = mutableListOf<Expression>()
     val factors = mutableListOf<Expression>()

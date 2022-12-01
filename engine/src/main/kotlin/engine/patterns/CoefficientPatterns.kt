@@ -79,8 +79,8 @@ class RationalCoefficientPattern(value: Pattern) : CoefficientPattern(value) {
 }
 
 /**
- * A pattern matching `value` multiplied by a constant (possibly rational) coefficient.
- * Say `value` matches x, the pattern can then match:
+ * A pattern matching [value] multiplied by a constant (possibly rational) coefficient.
+ * Say [value] matches x, the pattern can then match:
  *     sqrt[3] * x
  *     [2/3 * root[5, 7]] * x
  *     [4*sqrt[3]*x/5*root[3, 3] + 1]
@@ -89,8 +89,14 @@ class RationalCoefficientPattern(value: Pattern) : CoefficientPattern(value) {
  * But it will not match expression where the coefficient is not constant, such as:
  *     y * x
  *     [2/3 * y] * x
+ *
+ *     It is possible to restrict matching to expressions not starting with a negative sign by setting [positiveOnly] to
+ *     true.
  */
-class ConstantCoefficientPattern(value: Pattern) : CoefficientPattern(value) {
+class ConstantCoefficientPattern(
+    value: Pattern,
+    private val positiveOnly: Boolean = false
+) : CoefficientPattern(value) {
 
     private val product = productContaining(value)
 
@@ -107,7 +113,8 @@ class ConstantCoefficientPattern(value: Pattern) : CoefficientPattern(value) {
         fractionOf(numerator, denominator)
     )
 
-    private val ptn = optionalNegOf(options)
+    private val optionalNegPtn = optionalNegOf(options)
+    private val ptn = if (positiveOnly) options else optionalNegPtn
 
     override val key = ptn.key
 
@@ -126,7 +133,7 @@ class ConstantCoefficientPattern(value: Pattern) : CoefficientPattern(value) {
                 else -> numeratorCoefficient
             }
 
-            copySign(ptn, coefficient)
+            if (!positiveOnly) copySign(optionalNegPtn, coefficient) else coefficient
         }
 }
 
@@ -146,4 +153,5 @@ fun withOptionalRationalCoefficient(pattern: Pattern) = RationalCoefficientPatte
  * Creates a pattern which matches the given variable optionally multiplied
  * by a constant coefficient. See [ConstantCoefficientPattern] for details.
  */
-fun withOptionalConstantCoefficient(variable: Pattern) = ConstantCoefficientPattern(variable)
+fun withOptionalConstantCoefficient(variable: Pattern, positiveOnly: Boolean = false) =
+    ConstantCoefficientPattern(variable, positiveOnly)

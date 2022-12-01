@@ -1,5 +1,6 @@
 package engine.methods.stepsproducers
 
+import engine.expressions.Extractor
 import engine.methods.PlanBuilder
 
 @DslMarker
@@ -48,6 +49,12 @@ interface PipelineBuilder {
     fun optionally(init: PipelineBuilder.() -> Unit)
 
     /**
+     * Wrap a pipeline that uses labels in this.  It makes sures labels are cleared at the end.  This is not a long-term
+     * solution but offers some safety while we look for a good solution.
+     */
+    fun withNewLabels(init: PipelineBuilder.() -> Unit)
+
+    /**
      * Apply the [steps].  The pipeline will fail if the steps can't be applied.
      */
     fun apply(steps: StepsProducer)
@@ -61,6 +68,8 @@ interface PipelineBuilder {
      * Apply the [steps] to a subexpression obtained by the [extractor]
      */
     fun applyTo(steps: StepsProducer, extractor: Extractor)
+
+    fun applyTo(extractor: Extractor, init: PipelineBuilder.() -> Unit)
 
     /**
      * Apply the recipe to the children of the expression in step.

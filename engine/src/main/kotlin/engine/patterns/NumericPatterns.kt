@@ -2,7 +2,6 @@ package engine.patterns
 
 import engine.context.Context
 import engine.expressions.Expression
-import engine.expressions.Path
 import engine.expressions.xp
 import engine.operators.DecimalOperator
 import engine.operators.IntegerOperator
@@ -99,7 +98,7 @@ class SignedNumberPattern : OptionalNegPattern<UnsignedDecimalPattern>(UnsignedD
 class IntegerProviderWithDefault(
     private val integerProvider: IntegerProvider,
     private val default: BigInteger
-) : IntegerProvider {
+) : ProviderWithDefault(integerProvider, xp(default)), IntegerProvider {
 
     override fun getBoundInt(m: Match): BigInteger {
         return if (integerProvider.getBoundExpr(m) != null) {
@@ -107,13 +106,5 @@ class IntegerProviderWithDefault(
         } else {
             default
         }
-    }
-
-    override fun getBoundPaths(m: Match): List<Path> {
-        return integerProvider.getBoundPaths(m)
-    }
-
-    override fun getBoundExpr(m: Match): Expression {
-        return integerProvider.getBoundExpr(m) ?: xp(default)
     }
 }

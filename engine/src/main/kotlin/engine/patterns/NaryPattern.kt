@@ -38,7 +38,7 @@ class NaryPattern(
         val sub = m.getLastBinding(this)!!
         val matchIndexes = getMatchedPaths(m, sub.origin.path!!)
 
-        return sub.children().filter { subexpression -> !matchIndexes.contains(subexpression.origin.path) }
+        return flattenOperands(sub).filter { subexpression -> !matchIndexes.contains(subexpression.origin.path) }
     }
 
     /**

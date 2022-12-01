@@ -2,7 +2,6 @@ package methods.integerroots
 
 import engine.methods.testRule
 import methods.integerroots.IntegerRootsRules.CollectLikeRoots
-import methods.integerroots.IntegerRootsRules.CollectPowersOfExponentsWithSameBase
 import methods.integerroots.IntegerRootsRules.CombineProductOfSamePowerUnderHigherRoot
 import methods.integerroots.IntegerRootsRules.FactorizeIntegerPowerUnderRoot
 import methods.integerroots.IntegerRootsRules.FactorizeIntegerUnderRoot
@@ -130,33 +129,6 @@ class IntegerRootsRulesTest {
             "root[ [2^3], 3]",
             SimplifyNthRootOfNthPower,
             "2"
-        )
-    }
-
-    @Test
-    fun testCollectPowersOfExponentsWithSameBase() {
-        testRule(
-            "4 * [3^3] * [3^2]",
-            CollectPowersOfExponentsWithSameBase,
-            "4 * [3^3 + 2]"
-        )
-
-        testRule(
-            "[3^3] * [5^2]",
-            CollectPowersOfExponentsWithSameBase,
-            null
-        )
-
-        testRule(
-            "[3^2] * 3",
-            CollectPowersOfExponentsWithSameBase,
-            "[3^2 + 1]"
-        )
-
-        testRule(
-            "3 * 3",
-            CollectPowersOfExponentsWithSameBase,
-            "[3^1 + 1]"
         )
     }
 
