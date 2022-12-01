@@ -52,7 +52,7 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
             val denominator = UnsignedIntegerPattern()
             val fraction = fractionOf(numerator, denominator)
 
-            val pattern = integerOrderRootOf(fraction)
+            val pattern = rootOf(fraction)
 
             onPattern(pattern) {
                 TransformationResult(
@@ -94,24 +94,20 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
             val radicand1 = SignedIntegerPattern()
             val radicand2 = SignedIntegerPattern()
 
-            val numerator = integerOrderRootOf(radicand1)
-            val denominator = integerOrderRootOf(radicand2)
+            val index = AnyPattern()
+            val numerator = rootOf(radicand1, index)
+            val denominator = rootOf(radicand2, index)
 
             val fraction = ConditionPattern(
                 fractionOf(numerator, denominator),
                 integerCondition(radicand1, radicand2) { n1, n2 -> n2.divides(n1) }
             )
 
-            onPattern(
-                ConditionPattern(
-                    fraction,
-                    integerCondition(numerator.order, denominator.order) { n1, n2 -> n1 == n2 }
-                )
-            ) {
+            onPattern(fraction) {
                 TransformationResult(
                     toExpr = rootOf(
                         fractionOf(move(radicand1), move(radicand2)),
-                        move(numerator.order)
+                        move(index)
                     ),
                     explanation = metadata(Explanation.TurnFractionOfRootsIntoRootOfFractions)
                 )

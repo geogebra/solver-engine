@@ -45,9 +45,6 @@ fun powerOf(base: Pattern, exponent: Pattern) =
 fun squareRootOf(radicand: Pattern) =
     OperatorPattern(UnaryExpressionOperator.SquareRoot, listOf(radicand))
 
-fun rootOf(radicand: Pattern, degree: Pattern) =
-    OperatorPattern(BinaryExpressionOperator.Root, listOf(radicand, degree))
-
 fun mixedNumberOf(
     integer: UnsignedIntegerPattern = UnsignedIntegerPattern(),
     numerator: UnsignedIntegerPattern = UnsignedIntegerPattern(),

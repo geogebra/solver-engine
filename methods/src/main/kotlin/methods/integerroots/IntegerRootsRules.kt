@@ -25,6 +25,7 @@ import engine.patterns.oneOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.productOf
+import engine.patterns.rootOf
 import engine.patterns.squareRootOf
 import engine.patterns.sumContaining
 import engine.patterns.withOptionalIntegerCoefficient
@@ -43,7 +44,7 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
     SimplifyRootOfOne(
         rule {
             val one = FixedPattern(xp(1))
-            val rootOfOne = integerOrderRootOf(one)
+            val rootOfOne = rootOf(one)
 
             onPattern(rootOfOne) {
                 TransformationResult(
@@ -57,7 +58,7 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
     SimplifyRootOfZero(
         rule {
             val zero = FixedPattern(xp(0))
-            val rootOfZero = integerOrderRootOf(zero)
+            val rootOfZero = rootOf(zero)
 
             onPattern(rootOfZero) {
                 TransformationResult(
@@ -217,16 +218,17 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
      */
     MultiplyNthRoots(
         rule {
+            val order = UnsignedIntegerPattern()
             val radicand1 = AnyPattern()
             val radicand2 = AnyPattern()
-            val root1 = integerOrderRootOf(radicand1)
-            val root2 = integerOrderRootOf(radicand2)
+            val root1 = rootOf(radicand1, order)
+            val root2 = rootOf(radicand2, order)
             val product = productContaining(root1, root2)
 
-            onPattern(ConditionPattern(product, integerCondition(root1.order, root2.order) { n1, n2 -> n1 == n2 })) {
+            onPattern(product) {
                 TransformationResult(
                     toExpr = product.substitute(
-                        rootOf(productOf(move(radicand1), move(radicand2)), move(root1.order))
+                        rootOf(productOf(move(radicand1), move(radicand2)), move(order))
                     ),
                     explanation = metadata(Explanation.MultiplyNthRoots)
                 )
@@ -240,7 +242,7 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
     SplitRootOfProduct(
         rule {
             val product = productContaining()
-            val root = integerOrderRootOf(product)
+            val root = rootOf(product)
 
             onPattern(root) {
                 TransformationResult(
@@ -283,13 +285,10 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
      */
     SimplifyNthRootToThePowerOfN(
         rule {
-            val radicand = AnyPattern()
-            val root = integerOrderRootOf(radicand)
             val exponent = UnsignedIntegerPattern()
-            val power = ConditionPattern(
-                powerOf(root, exponent),
-                integerCondition(root.order, exponent) { n1, n2 -> n1 == n2 }
-            )
+            val radicand = AnyPattern()
+            val root = rootOf(radicand, exponent)
+            val power = powerOf(root, exponent)
 
             onPattern(power) {
                 TransformationResult(
@@ -333,12 +332,12 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
      */
     SimplifyNthRootOfNthPower(
         rule {
-            val base = AnyPattern()
             val exponent = UnsignedIntegerPattern()
+            val base = AnyPattern()
             val power = powerOf(base, exponent)
-            val radical = integerOrderRootOf(power)
+            val radical = rootOf(power, exponent)
 
-            onPattern(ConditionPattern(radical, integerCondition(radical.order, exponent) { n1, n2 -> n1 == n2 })) {
+            onPattern(radical) {
                 TransformationResult(
                     toExpr = move(base),
                     explanation = metadata(Explanation.SimplifyNthRootOfNthPower)
@@ -402,8 +401,8 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
     SimplifyRootOfRoot(
         rule {
             val radicand = UnsignedIntegerPattern()
-            val innerRoot = integerOrderRootOf(radicand)
-            val outerRoot = integerOrderRootOf(innerRoot)
+            val innerRoot = rootOf(radicand)
+            val outerRoot = rootOf(innerRoot)
 
             onPattern(outerRoot) {
                 TransformationResult(
@@ -489,7 +488,7 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
     CombineProductOfSamePowerUnderHigherRoot(
         rule {
             val prod = productContaining()
-            val root = integerOrderRootOf(prod)
+            val root = rootOf(prod)
             val cond = ConditionPattern(root) { match ->
                 val order = root.order.getBoundExpr(match)!!
                 val product = prod.getBoundExpr(match)!!
@@ -559,7 +558,7 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
 
     CollectLikeRoots(
         rule {
-            val common = integerOrderRootOf(UnsignedIntegerPattern())
+            val common = rootOf(UnsignedIntegerPattern())
 
             val commonTerm1 = withOptionalRationalCoefficient(common)
             val commonTerm2 = withOptionalRationalCoefficient(common)
