@@ -7,7 +7,6 @@ import methods.integerroots.IntegerRootsRules.FactorizeIntegerPowerUnderRoot
 import methods.integerroots.IntegerRootsRules.FactorizeIntegerUnderRoot
 import methods.integerroots.IntegerRootsRules.MultiplyNthRoots
 import methods.integerroots.IntegerRootsRules.SimplifyMultiplicationOfSquareRoots
-import methods.integerroots.IntegerRootsRules.SimplifyNthRootOfNthPower
 import methods.integerroots.IntegerRootsRules.SimplifyRootOfOne
 import methods.integerroots.IntegerRootsRules.SimplifyRootOfZero
 import methods.integerroots.IntegerRootsRules.SplitPowerUnderRoot
@@ -120,15 +119,6 @@ class IntegerRootsRulesTest {
             "2 root[[2^4] * [3^4] * [5^4], 4]",
             CombineProductOfSamePowerUnderHigherRoot,
             "2 root[[(2 * 3 * 5) ^ 4], 4]"
-        )
-    }
-
-    @Test
-    fun testSimplifyNthRootOfNthPower() {
-        testRule(
-            "root[ [2^3], 3]",
-            SimplifyNthRootOfNthPower,
-            "2"
         )
     }
 

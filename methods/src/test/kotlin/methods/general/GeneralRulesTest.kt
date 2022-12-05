@@ -341,16 +341,27 @@ class GeneralRulesTest {
         testRule("sqrt[x + 2]", GeneralRules.RewriteIntegerOrderRootAsPower, "[(x + 2) ^ [1/2]]")
     }
 
+    @Test
     fun testCancelCommonPowers() {
         testRule(
-            "root[ [7^2*2], 3*2 ]",
+            "root[[7 ^ 2 * 2], 3 * 2]",
             GeneralRules.CancelRootIndexAndExponent,
-            "root[ [7^2], 3]"
+            "root[[7 ^ 2], 3]"
         )
         testRule(
-            "root[[7^2], 3*2]",
+            "root[[7 ^ 2], 3 * 2]",
             GeneralRules.CancelRootIndexAndExponent,
             "root[7, 3]"
+        )
+        testRule(
+            "root[[7 ^ 2 * 2], 2]",
+            GeneralRules.CancelRootIndexAndExponent,
+            "[7 ^ 2]"
+        )
+        testRule(
+            "root[[7 ^ 2], 2]",
+            GeneralRules.CancelRootIndexAndExponent,
+            "7"
         )
     }
 }

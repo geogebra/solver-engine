@@ -12,7 +12,6 @@ import engine.patterns.integerOrderRootOf
 import engine.utility.isPowerOfDegree
 import methods.fractionarithmetic.simplifyAfterCollectingLikeTerms
 import methods.general.GeneralRules
-import methods.general.NormalizationRules
 import methods.integerarithmetic.IntegerArithmeticPlans
 import methods.integerarithmetic.IntegerArithmeticRules
 import methods.integerarithmetic.simplifyIntegersInExpression
@@ -26,17 +25,6 @@ enum class IntegerRootsPlans(override val runner: Plan) : RunnerMethod {
             steps {
                 optionally(IntegerRootsRules.PrepareCancellingPowerOfARoot)
                 deeply(IntegerRootsRules.SimplifyNthRootToThePowerOfN)
-            }
-        }
-    ),
-
-    CancelRootOfAPower(
-        plan {
-            explanation = Explanation.CancelRootOfAPower
-
-            steps {
-                optionally(IntegerRootsRules.PrepareCancellingRootOfAPower)
-                deeply(IntegerRootsRules.SimplifyNthRootOfNthPower)
             }
         }
     ),
@@ -79,7 +67,6 @@ enum class IntegerRootsPlans(override val runner: Plan) : RunnerMethod {
 
             steps {
                 optionally(IntegerRootsRules.NormaliseProductWithRoots)
-                whilePossible { deeply(SimplifyPowerOfIntegerUnderRoot) }
                 whilePossible { deeply(IntegerArithmeticRules.EvaluateIntegerPowerDirectly) }
                 optionally(IntegerArithmeticPlans.SimplifyIntegersInProduct)
                 optionally(simplifyProductOfRoots)
@@ -172,19 +159,6 @@ enum class IntegerRootsPlans(override val runner: Plan) : RunnerMethod {
             steps {
                 whilePossible { deeply(IntegerRootsRules.SplitPowerUnderRoot) }
                 whilePossible { deeply(IntegerRootsRules.SplitRootOfProduct) }
-                whilePossible(NormalizationRules.RemoveBracketProductInProduct)
-            }
-        }
-    ),
-
-    CancelAllRootsOfPowers(
-        plan {
-            explanation = Explanation.CancelAllRootsOfPowers
-
-            steps {
-                whilePossible {
-                    deeply(CancelRootOfAPower)
-                }
             }
         }
     ),
@@ -204,25 +178,26 @@ enum class IntegerRootsPlans(override val runner: Plan) : RunnerMethod {
             explanation = Explanation.FactorizeAndDistributePowerUnderRoot
 
             steps {
-                // root[ 24^2, 3] --> root[ (2^3 * 3)^2, 3]
+                // root[24 ^ 2, 3] --> root[(2^3 * 3) ^ 2, 3]
                 apply(IntegerRootsRules.FactorizeIntegerPowerUnderRoot)
                 // (2^3 * 3)^2 --> (2^3)^2 * 3^2
-                deeply(GeneralRules.DistributePowerOfProduct, deepFirst = true)
+                deeply(GeneralRules.DistributePowerOfProduct)
                 // (2^3)^2 * 3^2 --> 2^3*2  * 3^2
-                whilePossible { deeply(GeneralRules.MultiplyExponentsUsingPowerRule, deepFirst = true) }
+                whilePossible { deeply(GeneralRules.MultiplyExponentsUsingPowerRule) }
                 // 2^6 * 3^2
-                whilePossible { deeply(IntegerArithmeticPlans.SimplifyIntegersInProduct, deepFirst = true) }
+                whilePossible { deeply(IntegerArithmeticPlans.SimplifyIntegersInProduct) }
             }
         }
     ),
 
-    RewriteAndCancelPowerUnderRoot(
+    CancelAllRootsOfPowers(
         plan {
-            explanation = Explanation.RewriteAndCancelPowerUnderRoot
+            explanation = Explanation.CancelAllRootsOfPowers
 
             steps {
-                deeply(GeneralRules.RewritePowerUnderRoot, deepFirst = true)
-                deeply(GeneralRules.CancelRootIndexAndExponent, deepFirst = true)
+                whilePossible {
+                    deeply(cancelRootOfPower)
+                }
             }
         }
     ),
@@ -231,18 +206,33 @@ enum class IntegerRootsPlans(override val runner: Plan) : RunnerMethod {
         plan {
             explanation = Explanation.SimplifyPowerOfIntegerUnderRoot
 
-            // root[ 24^5, 3] -> root[24^3, 3] * root[24^2, 3]
+            // root[[24 ^ 5], 3] -> root[[24 ^ 3], 3] * root[[24 ^ 2], 3]
             steps {
-                whilePossible {
-                    firstOf {
-                        option(SplitRootsAndCancelRootsOfPowers)
-                        option { deeply(FactorizeAndDistributePowerUnderRoot, deepFirst = true) }
-                        option { deeply(RewriteAndCancelPowerUnderRoot, deepFirst = true) }
-                    }
+                optionally(FactorizeAndDistributePowerUnderRoot)
+                optionally(IntegerRootsRules.SplitRootOfProduct)
+                apply {
+                    whilePossible { deeply(cancelRootOfPower) }
                 }
+                whilePossible { deeply(IntegerArithmeticRules.EvaluateIntegerPowerDirectly) }
             }
         }
     )
+}
+
+val cancelRootOfPower = steps {
+    firstOf {
+        option(IntegerRootsRules.SimplifyNthRootOfNthPower)
+        option {
+            plan {
+                explanation = Explanation.RewriteAndCancelPowerUnderRoot
+
+                steps {
+                    optionally(GeneralRules.RewritePowerUnderRoot)
+                    apply(GeneralRules.CancelRootIndexAndExponent)
+                }
+            }
+        }
+    }
 }
 
 /**

@@ -800,12 +800,10 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     ),
 
     /**
-     * rewrites the power under the root according to root index, to
-     * cancel out the common factor b/w root index and exponent
-     * for e.g. root[ [7^6], 8], rootIndex = 8, exponent = 6
-     * gcd(rootIndex, exponent) = 2, so the expression can be simplified
-     * and the rule does the preparation of that cancellation
-     * i.e. root[ [7^6], 8] --> root[ [7^3*2], 4*2]
+     * Rewrites the exponent of a power under a root and the index
+     * of a root as a product to cancel out the gcd between root
+     * index and exponent
+     * E.g. root[[7 ^ 6], 8] --> root[[7 ^ 3 * 2], 4 * 2]
      */
     RewritePowerUnderRoot(
         rule {
@@ -817,7 +815,7 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
             onPattern(
                 ConditionPattern(
                     root,
-                    integerCondition(root.order, exponent) { p, q -> p > q && p.gcd(q) != BigInteger.ONE }
+                    integerCondition(root.order, exponent) { p, q -> p != q && p.gcd(q) != BigInteger.ONE }
                 )
             ) {
                 val gcdExpRootOrder = integerOp(root.order, exponent) { p, q -> p.gcd(q) }
@@ -827,7 +825,7 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
                 TransformationResult(
                     toExpr = rootOf(
                         simplifiedPowerOf(move(base), simplifiedProductOf(newExp, gcdExpRootOrder)),
-                        productOf(newRootOrder, gcdExpRootOrder)
+                        simplifiedProductOf(newRootOrder, gcdExpRootOrder)
                     ),
                     explanation = metadata(Explanation.RewritePowerUnderRoot)
                 )
@@ -836,27 +834,35 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     ),
 
     /**
-     * root[ [7^3*2], 5*2 ] -> root[ [7^3], 5 ]
+     * root[[7 ^ 3 * 2], 5 * 2] -> root[[7 ^ 3], 5]
      */
     CancelRootIndexAndExponent(
         rule {
             val base = AnyPattern()
-            val intExponent = UnsignedIntegerPattern()
-            val productExponent = productContaining(intExponent)
-            val exponent = oneOf(intExponent, productExponent)
-            val pow = powerOf(base, exponent)
-            val rootOrder = productContaining(intExponent)
-            val root = rootOf(pow, rootOrder)
+
+            val commonExponent = AnyPattern()
+
+            val productExponent = productContaining(commonExponent)
+            val exponent = oneOf(commonExponent, productExponent)
+            val power = powerOf(base, exponent)
+
+            val productOrder = productContaining(commonExponent)
+            val order = oneOf(commonExponent, productOrder)
+            val root = rootOf(power, order)
 
             onPattern(root) {
-                val newRootOrder = cancel(intExponent, restOf(rootOrder))
-                val newPow = when {
-                    isBound(productExponent) -> powerOf(move(base), cancel(intExponent, restOf(productExponent)))
+                val newPower = when {
+                    isBound(productExponent) -> powerOf(move(base), cancel(commonExponent, restOf(productExponent)))
                     else -> move(base)
                 }
 
+                val newRoot = when {
+                    isBound(productOrder) -> rootOf(newPower, cancel(commonExponent, restOf(productOrder)))
+                    else -> newPower
+                }
+
                 TransformationResult(
-                    toExpr = rootOf(newPow, newRootOrder),
+                    toExpr = newRoot,
                     explanation = metadata(Explanation.CancelRootIndexAndExponent)
                 )
             }

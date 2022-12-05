@@ -342,36 +342,6 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
     ),
 
     /**
-     * root[[a ^ n], m] -> root[[[a ^ n/m] ^ m], m] when m divides n
-     */
-    PrepareCancellingRootOfAPower(
-        rule {
-            val base = AnyPattern()
-            val exponent = UnsignedIntegerPattern()
-            val power = powerOf(base, exponent)
-            val radical = integerOrderRootOf(power)
-
-            onPattern(
-                ConditionPattern(
-                    radical,
-                    integerCondition(radical.order, exponent) { n1, n2 -> n1.divides(n2) && n1 != n2 }
-                )
-            ) {
-                TransformationResult(
-                    toExpr = rootOf(
-                        powerOf(
-                            powerOf(move(base), integerOp(radical.order, exponent) { n1, n2 -> n2 / n1 }),
-                            move(radical.order)
-                        ),
-                        move(radical.order)
-                    ),
-                    explanation = metadata(Explanation.PrepareCancellingRootOfAPower)
-                )
-            }
-        }
-    ),
-
-    /**
      * [root[a, p] ^ n] -> root[[a ^ n], p]]
      */
     TurnPowerOfRootToRootOfPower(

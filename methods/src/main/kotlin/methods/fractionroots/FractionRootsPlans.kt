@@ -8,11 +8,11 @@ import engine.methods.plan
 import engine.methods.stepsproducers.steps
 import methods.fractionarithmetic.FractionArithmeticRules
 import methods.general.GeneralRules
-import methods.general.NormalizationRules
 import methods.integerarithmetic.IntegerArithmeticPlans
 import methods.integerarithmetic.IntegerArithmeticRules
 import methods.integerroots.IntegerRootsPlans
 import methods.integerroots.IntegerRootsRules
+import methods.integerroots.cancelRootOfPower
 
 enum class FractionRootsPlans(override val runner: Plan) : RunnerMethod {
 
@@ -116,8 +116,7 @@ private val simplifyAfterRationalization = steps {
             option {
                 apply(FractionRootsPlans.CollectRationalizingRadicals)
                 optionally(IntegerRootsRules.CombineProductOfSamePowerUnderHigherRoot)
-                deeply(IntegerRootsRules.SimplifyNthRootOfNthPower)
-                optionally(NormalizationRules.RemoveBracketProductInProduct)
+                deeply(cancelRootOfPower)
             }
             option { deeply(IntegerRootsRules.SimplifyNthRootToThePowerOfN) }
             option { deeply(IntegerRootsPlans.SimplifyProductWithRoots) }

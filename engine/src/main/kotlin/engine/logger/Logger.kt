@@ -52,7 +52,7 @@ private val LogHandler: Handler = run {
 }
 
 fun createNewLogger(obj: Any): Logger {
-    val logger = Logger.getLogger("solver.%1$08X".format(System.identityHashCode(obj)))
+    val logger = Logger.getLogger("solver|%1$08X".format(System.identityHashCode(obj)))
     logger.level = systemLogLevel
     logger.addHandler(LogHandler)
 
