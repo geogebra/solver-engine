@@ -4,8 +4,7 @@ required:
   - expression
   - pathMappings
 properties:
-  expression:
-    type: string
+  expression: { }
   pathMappings:
     type: array
     items:

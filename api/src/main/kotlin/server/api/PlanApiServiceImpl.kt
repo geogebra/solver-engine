@@ -7,23 +7,23 @@ import methods.methodRegistry
 import org.antlr.v4.runtime.misc.ParseCancellationException
 import org.springframework.stereotype.Service
 import parser.parseExpression
-import server.models.ApplyPlanRequest
+import server.models.SolveRequest
 import server.models.Transformation
 
 @Service
 class PlanApiServiceImpl : PlansApiService {
-    override fun applyPlan(planId: String, applyPlanRequest: ApplyPlanRequest): Transformation {
+    override fun applyPlan(planId: String, solveRequest: SolveRequest): Transformation {
         val plan =
             methodRegistry.getMethodByName(planId) ?: throw NotFoundException("plan not found")
         val expr = try {
-            parseExpression(applyPlanRequest.input)
+            parseExpression(solveRequest.input)
         } catch (e: ParseCancellationException) {
-            throw InvalidExpressionException(applyPlanRequest.input, e)
+            throw InvalidExpressionException(solveRequest.input, e)
         }
-        val context = getContext(applyPlanRequest.context)
+        val context = getContext(solveRequest.context)
         val trans = plan.tryExecute(context, expr.withOrigin(Root()))
             ?: throw PlanNotApplicableException(planId)
-        val modeller = TransformationModeller(format = applyPlanRequest.format)
+        val modeller = TransformationModeller(format = solveRequest.format)
         return modeller.modelTransformation(trans)
     }
 

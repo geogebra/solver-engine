@@ -1,13 +1,13 @@
 package server.api
 
 import engine.expressions.RootPath
-import server.models.ApplyPlanRequest
+import server.models.Format
 import server.models.MappedExpression
 import server.models.Metadata
 import server.models.PathMapping
 import server.models.Transformation
 
-data class TransformationModeller(val format: ApplyPlanRequest.Format) {
+data class TransformationModeller(val format: Format) {
 
     fun modelTransformation(trans: engine.steps.Transformation): Transformation {
         return Transformation(
@@ -45,10 +45,11 @@ data class TransformationModeller(val format: ApplyPlanRequest.Format) {
         )
     }
 
-    private fun modelExpression(expr: engine.expressions.Expression): String {
+    private fun modelExpression(expr: engine.expressions.Expression): Any {
         return when (format) {
-            ApplyPlanRequest.Format.Latex -> expr.toLatexString()
-            ApplyPlanRequest.Format.Solver -> expr.toString()
+            Format.Latex -> expr.toLatexString()
+            Format.Solver -> expr.toString()
+            Format.Json -> expr.toJson()
         }
     }
 }

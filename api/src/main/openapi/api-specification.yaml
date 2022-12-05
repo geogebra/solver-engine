@@ -72,19 +72,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - input
-                - format
-              properties:
-                input:
-                  type: string
-                context:
-                  $ref: 'Context.yaml'
-                format:
-                  type: string
-                  enum: [ latex, solver ]
-                  default: solver
+              $ref: '#/components/schemas/SolveRequest'
       responses:
         "200":
           description: "Plan applied successfully"
@@ -108,20 +96,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - input
-                - format
-              properties:
-                input:
-                  type: string
-                context:
-                  $ref: 'Context.yaml'
-                format:
-                  type: string
-                  enum: [ latex, solver ]
-                  default:
-                    solver
+              $ref: '#/components/schemas/SolveRequest'
       responses:
         "200":
           description: "Plans selected successfully"
@@ -137,3 +112,23 @@ paths:
             application/json:
               schema:
                 type: object
+components:
+  schemas:
+    Format:
+      type: string
+      enum: [ latex, solver, json ]
+      default: solver
+    SolveRequest:
+      type: object
+      required:
+        - input
+        - format
+      properties:
+        dummy:
+          type: string
+        input:
+          type: string
+        context:
+          $ref: 'Context.yaml'
+        format:
+          $ref: '#/components/schemas/Format'

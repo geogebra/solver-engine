@@ -6,23 +6,23 @@ import methods.methodRegistry
 import org.antlr.v4.runtime.misc.ParseCancellationException
 import org.springframework.stereotype.Service
 import parser.parseExpression
-import server.models.ApplyPlanRequest
 import server.models.PlanSelection
 import server.models.PlanSelectionMetadata
+import server.models.SolveRequest
 import java.util.logging.Level
 
 @Suppress("TooGenericExceptionCaught", "SwallowedException")
 @Service
 class SelectPlanApiServiceImpl : SelectPlansApiService {
-    override fun selectPlans(applyPlanRequest: ApplyPlanRequest): List<PlanSelection> {
+    override fun selectPlans(solveRequest: SolveRequest): List<PlanSelection> {
         val expr = try {
-            parseExpression(applyPlanRequest.input)
+            parseExpression(solveRequest.input)
         } catch (e: ParseCancellationException) {
-            throw InvalidExpressionException(applyPlanRequest.input, e)
+            throw InvalidExpressionException(solveRequest.input, e)
         }
-        val modeller = TransformationModeller(applyPlanRequest.format)
+        val modeller = TransformationModeller(solveRequest.format)
         val selections = mutableListOf<PlanSelection>()
-        val context = getContext(applyPlanRequest.context)
+        val context = getContext(solveRequest.context)
 
         val successfulPlansIds = mutableSetOf<MethodId>()
 

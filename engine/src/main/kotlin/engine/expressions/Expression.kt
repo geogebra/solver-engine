@@ -271,6 +271,15 @@ class Expression internal constructor(
     override fun isInlineDivideByTerm(): Boolean {
         return operator === UnaryExpressionOperator.DivideBy
     }
+
+    fun toJson(): List<Any> {
+        val serializedOperands = operands.map { it.toJson() }
+        return if (decorators.isEmpty()) {
+            listOf(operator.toString()) + serializedOperands
+        } else {
+            listOf(listOf(operator.toString()) + decorators.map { it.toString() }) + serializedOperands
+        }
+    }
 }
 
 fun Expression.numerator(): Expression {

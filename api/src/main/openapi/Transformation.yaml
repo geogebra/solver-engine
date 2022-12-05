@@ -10,10 +10,8 @@ properties:
     type: string
   path:
     type: string
-  fromExpr:
-    type: string
-  toExpr:
-    type: string
+  fromExpr: { }
+  toExpr: { }
   pathMappings:
     type: array
     items:
