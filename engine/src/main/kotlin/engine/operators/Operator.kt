@@ -16,6 +16,7 @@ data class RenderContext(val align: Boolean = false) {
 
 interface LatexRenderable {
     fun toLatexString(ctx: RenderContext = RenderContext.Default): String
+    fun hasBracket(): Boolean
 }
 
 enum class OperatorKind {
@@ -48,7 +49,7 @@ interface Operator {
 interface UnaryOperator : Operator {
 
     override val arity get() = ARITY_ONE
-    open fun childAllowed(op: Operator) = op.precedence > this.precedence
+    fun childAllowed(op: Operator) = op.precedence > this.precedence
 
     override fun nthChildAllowed(n: Int, op: Operator): Boolean {
         require(n == 0)

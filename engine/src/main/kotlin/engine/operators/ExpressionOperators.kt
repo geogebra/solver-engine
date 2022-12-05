@@ -78,7 +78,7 @@ data class DecimalOperator(val value: BigDecimal) : NullaryOperator() {
 
 /**
  * Operator representing an unsigned recurring decimal, e.g. 1.045454545... = 1.0[45]. The [value] must include the
- * occurrence of the repeating pattern and [repeatingDigits] is the length of the repeating pattern.
+ * occurrence of the repeating pattern and [RecurringDecimal.repeatingDigits] is the length of the repeating pattern.
  * Examples:
  * - 0.[6] is RecurringDecimalOperator(BigDecimal("0.6", 1)
  * - 1.0[45] is RecurringDecimalOperator(BigDecimal("1.045"), 2)
@@ -178,11 +178,16 @@ enum class NaryOperator(override val precedence: Int) : ExpressionOperator {
     Sum(SUM_PRECEDENCE) {
         override fun <T> readableString(children: List<T>): String {
             return buildString {
-                for ((i, child) in children.map { it.toString() }.withIndex()) {
+                for ((i, child) in children.withIndex()) {
+                    val childString = child.toString()
                     when {
-                        i == 0 -> append(child)
-                        child.startsWith("-") -> append(" - ", child.removePrefix("-"))
-                        else -> append(" + ", child)
+                        i == 0 -> append(childString)
+                        childString.startsWith("-") -> {
+                            if (child is LatexRenderable && child.hasBracket()) append(" + ", childString)
+                            else append(" - ", childString.removePrefix("-"))
+                        }
+
+                        else -> append(" + ", childString)
                     }
                 }
             }
@@ -195,7 +200,11 @@ enum class NaryOperator(override val precedence: Int) : ExpressionOperator {
                     val childLatex = child.toLatexString(ctx)
                     when {
                         i == 0 -> append(childLatex)
-                        childLatex.startsWith("{-") -> append(" {{} - ", childLatex.removePrefix("{-"))
+                        childLatex.startsWith("{-") -> {
+                            if (child.hasBracket()) append(" +")
+                            append(" {{} - " + childLatex.removePrefix("{-"))
+                        }
+
                         else -> append(" + ", childLatex)
                     }
                 }

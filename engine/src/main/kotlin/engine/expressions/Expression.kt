@@ -149,7 +149,7 @@ class Expression internal constructor(
 
     fun decorate(decorator: Decorator) = Expression(operator, operands, decorators + decorator, origin, label)
 
-    fun hasBracket() = decorators.isNotEmpty()
+    override fun hasBracket() = decorators.isNotEmpty()
 
     fun removeBrackets() =
         if (hasBracket()) Expression(operator, operands, emptyList(), origin, label) else this
@@ -213,8 +213,11 @@ class Expression internal constructor(
     private fun substituteKeepBrackets(subPath: ChildPath, newExpr: Expression): Expression = when {
         origin.path == null || !subPath.hasAncestor(origin.path) -> this
         origin.path == subPath -> {
-            newExpr.adjustBracketFor((origin as Child).parent.operator, subPath.index)
+            val bracketsRequired = !(origin as Child).parent.operator.nthChildAllowed(subPath.index, newExpr.operator)
+            if (bracketsRequired && !newExpr.hasBracket()) newExpr.decorate(Decorator.RoundBracket)
+            else newExpr
         }
+
         operator == NaryOperator.Product || operator == NaryOperator.ImplicitProduct -> {
             val children = flattenedProductChildren()
 

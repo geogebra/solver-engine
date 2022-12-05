@@ -113,6 +113,44 @@ class IntegerArithmeticPlansTest {
     }
 
     @Test
+    fun testPlusNegative() = testMethod {
+        method = IntegerArithmeticPlans.EvaluateArithmeticExpression
+        inputExpr = "1+-2"
+
+        check {
+            fromExpr = "1+-2"
+            toExpr = "-1"
+            explanation {
+                key = IntegerArithmeticExplanation.EvaluateArithmeticExpression
+            }
+
+            step {
+                fromExpr = "1+-2"
+                toExpr = "1 + (-2)"
+                explanation {
+                    key = GeneralExplanation.ReplaceInvisibleBrackets
+                }
+            }
+
+            step {
+                fromExpr = "1 + (-2)"
+                toExpr = "1 - 2"
+                explanation {
+                    key = GeneralExplanation.RemoveBracketAroundSignedIntegerInSum
+                }
+            }
+
+            step {
+                fromExpr = "1 - 2"
+                toExpr = "-1"
+                explanation {
+                    key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
+                }
+            }
+        }
+    }
+
+    @Test
     fun testSimplifyArithmeticExpressionAddMultiplyDivide() = testMethod {
         method = IntegerArithmeticPlans.EvaluateArithmeticExpression
         inputExpr = "3*4*5:6 + 6 + 7"

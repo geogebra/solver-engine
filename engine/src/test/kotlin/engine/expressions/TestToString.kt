@@ -43,7 +43,8 @@ class TestToString {
                 "{\\sqrt{{{b} ^ {2}} {{} - {{4} {a} {c}}}}}"
             ),
 
-            TestCase("x = y", "x = y", "{{x} = {y}}")
+            TestCase("x = y", "x = y", "{{x} = {y}}"),
+            TestCase("1+-2", "1 + -2", "{{1} + {{} - {2}}}"),
         )
     }
 }
