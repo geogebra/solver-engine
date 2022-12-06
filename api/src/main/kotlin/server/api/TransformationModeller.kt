@@ -14,7 +14,7 @@ data class TransformationModeller(val format: ApplyPlanRequest.Format) {
             path = trans.fromExpr.origin.path.toString(),
             fromExpr = modelExpression(trans.fromExpr),
             toExpr = modelExpression(trans.toExpr.removeBrackets()),
-            pathMappings = modelPathMappings(trans.toExpr.pathMappings(RootPath)),
+            pathMappings = modelPathMappings(trans.toExpr.pathMappings(trans.fromExpr.origin.path!!)),
             explanation = trans.explanation?.let { modelMetadata(it) },
             skills = trans.skills.map { modelMetadata(it) },
             steps = trans.steps?.let { step -> step.map { modelTransformation(it) } }

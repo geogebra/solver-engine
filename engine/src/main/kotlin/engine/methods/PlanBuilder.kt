@@ -11,7 +11,7 @@ import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.StepsProducerBuilderMarker
 import engine.methods.stepsproducers.steps
 import engine.patterns.AnyPattern
-import engine.patterns.PathProvider
+import engine.patterns.ExpressionProvider
 import engine.patterns.Pattern
 import engine.steps.metadata.MetadataKey
 import engine.steps.metadata.MetadataMaker
@@ -38,7 +38,7 @@ class PlanBuilder(private val stepsProducerFactory: StepsProducerFactory) {
         specificPlansList.addAll(plans)
     }
 
-    fun explanationParameters(vararg params: PathProvider) {
+    fun explanationParameters(vararg params: ExpressionProvider) {
         explanationParameters = {
             params.map { move(it) }
         }
@@ -51,7 +51,7 @@ class PlanBuilder(private val stepsProducerFactory: StepsProducerFactory) {
         skillMakers.add(MetadataMaker(skillKey, skillParameters))
     }
 
-    fun skill(skillKey: MetadataKey, vararg params: PathProvider) {
+    fun skill(skillKey: MetadataKey, vararg params: ExpressionProvider) {
         skillMakers.add(MetadataMaker(skillKey) { params.map { move(it) } })
     }
 

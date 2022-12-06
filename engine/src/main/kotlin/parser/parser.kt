@@ -3,7 +3,6 @@ package parser
 import engine.expressions.Constants
 import engine.expressions.Decorator
 import engine.expressions.Expression
-import engine.expressions.Root
 import engine.expressions.mixedNumber
 import engine.expressions.xp
 import engine.operators.BinaryExpressionOperator
@@ -26,7 +25,7 @@ fun parseExpression(text: String): Expression {
     val parser = ExpressionParser(CommonTokenStream(lexer))
     parser.errorHandler = BailErrorStrategy()
     val visitor = ExpressionVisitor()
-    return visitor.visit(parser.wholeInput()).withOrigin(Root())
+    return visitor.visit(parser.wholeInput())
 }
 
 private fun makeExpression(operator: Operator, operands: List<Expression>) = Expression(

@@ -48,11 +48,11 @@ enum class IntegerRootsPlans(override val runner: Plan) : RunnerMethod {
 
             steps {
                 optionally {
-                    applyTo(PutRootCoefficientUnderRootAndSimplify) { it.nthChild(0) }
+                    applyTo(PutRootCoefficientUnderRootAndSimplify) { it.firstChild }
                 }
                 apply(IntegerRootsRules.SimplifyRootOfRoot)
                 // evaluate the product in the index of the root
-                applyTo(IntegerArithmeticPlans.EvaluateProductOfIntegers) { it.nthChild(1) }
+                applyTo(IntegerArithmeticPlans.EvaluateProductOfIntegers) { it.secondChild }
             }
         }
     ),

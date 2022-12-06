@@ -230,5 +230,5 @@ private fun Expression.isDecimalExpression(): Boolean {
     val validOperator = operator is IntegerOperator || operator is DecimalOperator ||
         arithmeticOperators.contains(operator) || operator == BinaryExpressionOperator.Fraction
 
-    return validOperator && operands.all { it.isDecimalExpression() }
+    return validOperator && children().all { it.isDecimalExpression() }
 }

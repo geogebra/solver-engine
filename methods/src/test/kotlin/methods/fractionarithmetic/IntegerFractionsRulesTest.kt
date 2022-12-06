@@ -119,6 +119,10 @@ class IntegerFractionsRulesTest {
         testRule("[2/5] * (-[2/3])", TurnFactorIntoFractionInProduct, null)
         testRule("[2/5] * [([3/5])^[2 / 3]]", TurnFactorIntoFractionInProduct, null)
         testRule("[2/5] * -[([3/5])^[2 / 3]]", TurnFactorIntoFractionInProduct, null)
+        testRule("[1/2] * (1 + sqrt[3])", TurnFactorIntoFractionInProduct, "[1/2] * [1 + sqrt[3] / 1]")
+        testRule("[1/2] * (1 + [2 ^ [1/2]])", TurnFactorIntoFractionInProduct, "[1/2] * [1 + [2 ^ [1/2]] / 1]")
+        testRule("[2/3] * (5 + [([1/2]) ^ 2])", TurnFactorIntoFractionInProduct, null)
+        testRule("[2/3] * (1 - [1/3])", TurnFactorIntoFractionInProduct, null)
     }
 
     @Test

@@ -6,7 +6,6 @@ import engine.expressions.Distribute
 import engine.expressions.Expression
 import engine.expressions.Factor
 import engine.expressions.Label
-import engine.expressions.Move
 import engine.expressions.New
 import engine.expressions.divideBy
 import engine.expressions.negOf
@@ -15,6 +14,7 @@ import engine.expressions.simplifiedPowerOf
 import engine.expressions.sumOf
 import engine.expressions.xp
 import engine.patterns.CoefficientPattern
+import engine.patterns.ExpressionProvider
 import engine.patterns.IntegerPattern
 import engine.patterns.IntegerProvider
 import engine.patterns.Match
@@ -22,7 +22,6 @@ import engine.patterns.NaryPattern
 import engine.patterns.NumberProvider
 import engine.patterns.OptionalNegPattern
 import engine.patterns.OptionalWrappingPattern
-import engine.patterns.PathProvider
 import engine.patterns.Pattern
 import engine.patterns.RecurringDecimalPattern
 import engine.utility.RecurringDecimal
@@ -39,31 +38,30 @@ class MappedExpressionBuilder(
 
     fun introduce(expression: Expression): Expression = expression.withOrigin(New)
 
-    fun move(pathProvider: PathProvider): Expression {
-        val boundPaths = pathProvider.getBoundPaths(match)
-        val expression = pathProvider.getBoundExpr(match)!!
-        return when (boundPaths.size) {
-            0 -> expression.withOrigin(New)
-            1 -> expression.withOrigin(Move(boundPaths[0]))
-            else -> expression.withOrigin(Factor(boundPaths))
+    fun move(expressionProvider: ExpressionProvider): Expression {
+        val expressions = expressionProvider.getBoundExprs(match)
+        return when (expressions.size) {
+            0 -> throw MoveEmptyExpressionProviderException()
+            1 -> expressions[0]
+            else -> expressions[0].withOrigin(Factor(expressions))
         }
     }
 
-    fun transform(pathProvider: PathProvider) =
-        pathProvider.getBoundExpr(match)!!.withOrigin(Combine(pathProvider.getBoundPaths(match)))
+    fun transform(expressionProvider: ExpressionProvider) =
+        expressionProvider.getBoundExpr(match)!!.withOrigin(Combine(expressionProvider.getBoundExprs(match)))
 
-    fun transform(pathProvider: PathProvider, toExpression: Expression) =
-        toExpression.withOrigin(Combine(pathProvider.getBoundPaths(match)))
+    fun transform(expressionProvider: ExpressionProvider, toExpression: Expression) =
+        toExpression.withOrigin(Combine(expressionProvider.getBoundExprs(match)))
 
-    fun factor(pathProvider: PathProvider) =
-        pathProvider.getBoundExpr(match)!!.withOrigin(Factor(pathProvider.getBoundPaths(match)))
+    fun factor(expressionProvider: ExpressionProvider) =
+        expressionProvider.getBoundExpr(match)!!.withOrigin(Factor(expressionProvider.getBoundExprs(match)))
 
-    fun distribute(pathProvider: PathProvider) =
-        pathProvider.getBoundExpr(match)!!.withOrigin(Distribute(pathProvider.getBoundPaths(match)))
+    fun distribute(expressionProvider: ExpressionProvider) =
+        expressionProvider.getBoundExpr(match)!!.withOrigin(Distribute(expressionProvider.getBoundExprs(match)))
 
     // TODO
     @Suppress("UnusedPrivateMember")
-    fun cancel(pathProvider: PathProvider, inExpression: Expression) = inExpression
+    fun cancel(expressionProvider: ExpressionProvider, inExpression: Expression) = inExpression
 
     /**
      * Returns true if the given pattern is bound to a value in the match.
@@ -75,7 +73,7 @@ class MappedExpressionBuilder(
     /**
      * Returns the last subexpression bound to pattern
      */
-    fun get(pattern: PathProvider): Expression? = pattern.getBoundExpr(match)
+    fun get(pattern: ExpressionProvider): Expression? = pattern.getBoundExpr(match)
 
     fun get(getExpression: (Match) -> Expression?) = getExpression(match)
 
@@ -125,15 +123,15 @@ class MappedExpressionBuilder(
     fun <T : Pattern> copyFlippedSign(from: OptionalNegPattern<T>, to: Expression) =
         if (from.isNeg(match)) to else negOf(to)
 
-    fun transformTo(ptn: PathProvider, value: Expression) = value.withOrigin(
-        Combine(ptn.getBoundPaths(match))
+    fun transformTo(ptn: ExpressionProvider, value: Expression) = value.withOrigin(
+        Combine(ptn.getBoundExprs(match))
     )
 
-    fun transformTo(ptn: PathProvider, transformer: (Expression) -> Expression) =
+    fun transformTo(ptn: ExpressionProvider, transformer: (Expression) -> Expression) =
         transformTo(ptn, transformer(ptn.getBoundExpr(match)!!))
 
-    fun combineTo(ptn1: PathProvider, ptn2: PathProvider, value: Expression) =
-        value.withOrigin(Combine(ptn1.getBoundPaths(match) + ptn2.getBoundPaths(match)))
+    fun combineTo(ptn1: ExpressionProvider, ptn2: ExpressionProvider, value: Expression) =
+        value.withOrigin(Combine(ptn1.getBoundExprs(match) + ptn2.getBoundExprs(match)))
 
     /**
      * Transforms the integer provided by [ptn] according to the given [operation].
@@ -233,3 +231,5 @@ class MappedExpressionBuilder(
     fun optionalDivideBy(pattern: OptionalWrappingPattern, mappedExpression: Expression) =
         mappedExpression.wrapIf(pattern, ::divideBy)
 }
+
+class MoveEmptyExpressionProviderException : Exception("need at least one expression")

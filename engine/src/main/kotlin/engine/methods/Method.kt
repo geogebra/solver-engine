@@ -7,7 +7,7 @@ import engine.steps.Transformation
 import engine.steps.metadata.Metadata
 import java.util.logging.Level
 
-interface Method : StepsProducer {
+fun interface Method : StepsProducer {
     fun tryExecute(ctx: Context, sub: Expression): Transformation?
 
     override fun produceSteps(ctx: Context, sub: Expression): List<Transformation>? =

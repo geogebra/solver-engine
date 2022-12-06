@@ -17,12 +17,12 @@ class RootPattern<T : Pattern>(val radicand: Pattern, val order: T) : BasePatter
         return when (subexpression.operator) {
             BinaryExpressionOperator.Root -> {
                 val m = match.newChild(this, subexpression)
-                radicand.findMatches(context, m, subexpression.nthChild(0))
-                    .flatMap { order.findMatches(context, it, subexpression.nthChild(1)) }
+                radicand.findMatches(context, m, subexpression.firstChild)
+                    .flatMap { order.findMatches(context, it, subexpression.secondChild) }
             }
             UnaryExpressionOperator.SquareRoot -> {
                 val m = match.newChild(this, subexpression)
-                radicand.findMatches(context, m, subexpression.nthChild(0))
+                radicand.findMatches(context, m, subexpression.firstChild)
                     .flatMap { order.findMatches(context, it, Constants.Two) }
             }
             else -> emptySequence()

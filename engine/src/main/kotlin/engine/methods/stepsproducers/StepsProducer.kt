@@ -2,7 +2,7 @@ package engine.methods.stepsproducers
 
 import engine.context.Context
 import engine.expressions.Expression
-import engine.expressions.RootPath
+import engine.expressions.Root
 import engine.operators.UndefinedOperator
 import engine.steps.Transformation
 
@@ -29,8 +29,8 @@ class StepsBuilder(sub: Expression) {
     init {
         // Redundant brackets are removed because the outer brackets in the expression serve no
         // useful purpose
-        this.sub = when (sub.origin.path) {
-            RootPath -> sub
+        this.sub = when (sub.origin) {
+            is Root -> sub
             else -> sub.removeBrackets()
         }
     }
@@ -57,8 +57,8 @@ class StepsBuilder(sub: Expression) {
          * --> undefined ([1/ 0] is undefined)
          */
         val substitution = when (step.toExpr.operator) {
-            UndefinedOperator -> sub.substitute(sub.origin.path!!, step.toExpr)
-            else -> sub.substitute(step.fromExpr.origin.path!!, step.toExpr)
+            UndefinedOperator -> sub.substitute(sub, step.toExpr)
+            else -> sub.substitute(step.fromExpr, step.toExpr)
         }
 
         steps.add(

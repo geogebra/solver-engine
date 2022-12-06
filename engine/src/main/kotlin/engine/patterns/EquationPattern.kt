@@ -16,12 +16,12 @@ data class EquationPattern(
 
         val matchedEquation = match.newChild(this, subexpression)
         return sequence {
-            lhs.findMatches(context, matchedEquation, subexpression.nthChild(0)).forEach {
-                yieldAll(rhs.findMatches(context, it, subexpression.nthChild(1)))
+            lhs.findMatches(context, matchedEquation, subexpression.firstChild).forEach {
+                yieldAll(rhs.findMatches(context, it, subexpression.secondChild))
             }
 
-            lhs.findMatches(context, matchedEquation, subexpression.nthChild(1)).forEach {
-                yieldAll(rhs.findMatches(context, it, subexpression.nthChild(0)))
+            lhs.findMatches(context, matchedEquation, subexpression.secondChild).forEach {
+                yieldAll(rhs.findMatches(context, it, subexpression.firstChild))
             }
         }
     }

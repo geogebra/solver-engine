@@ -136,8 +136,8 @@ private val normalizeMonomial = rule {
                     coeff,
                     move(monomial.powerPattern)
                 )
-            coeff.nthChild(0) == Constants.One -> negOf(move(monomial.powerPattern))
-            else -> negOf(productOf(coeff.nthChild(0), move(monomial.powerPattern)))
+            coeff.firstChild == Constants.One -> negOf(move(monomial.powerPattern))
+            else -> negOf(productOf(coeff.firstChild, move(monomial.powerPattern)))
         }
         if (normalized == before)
             null

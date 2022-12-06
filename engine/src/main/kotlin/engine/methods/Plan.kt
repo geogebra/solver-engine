@@ -1,6 +1,7 @@
 package engine.methods
 
 import engine.context.Context
+import engine.expressions.Combine
 import engine.expressions.Constants
 import engine.expressions.Expression
 import engine.methods.stepsproducers.StepsProducer
@@ -30,7 +31,7 @@ data class Plan(
         val match = getMatch(ctx, sub) ?: return null
 
         return stepsProducer.produceSteps(ctx, sub)?.let { steps ->
-            val toExpr = steps.last().toExpr
+            val toExpr = steps.last().toExpr.withOrigin(Combine(listOf(sub)))
 
             when {
                 toExpr == Constants.Undefined || resultPattern.matches(ctx, toExpr) -> Transformation(
@@ -50,7 +51,7 @@ data class Plan(
         val match = getMatch(ctx, sub) ?: return null
 
         return stepsProducer.produceSteps(ctx, sub)?.let { steps ->
-            val toExpr = steps.last().toExpr
+            val toExpr = steps.last().toExpr.withOrigin(Combine(listOf(sub)))
 
             when {
                 toExpr == Constants.Undefined || resultPattern.matches(ctx, toExpr) -> TransformationResult(

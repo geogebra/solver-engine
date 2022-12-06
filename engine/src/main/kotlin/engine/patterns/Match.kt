@@ -1,7 +1,6 @@
 package engine.patterns
 
 import engine.expressions.Expression
-import engine.expressions.Path
 
 /**
  * An interface for matching with a pattern. Can be
@@ -30,16 +29,16 @@ interface Match {
      * root to the start of the pattern `p` in
      * a provided match
      *
-     * @see getBoundPaths
+     * @see getBoundExprs
      */
-    fun accumulatePaths(p: Pattern, acc: MutableList<Path>)
+    fun accumulateExprs(p: Pattern, acc: MutableList<Expression>)
 
     /**
      * Returns a list of `Path` objects from the root of
      * the tree to the where the pattern `p` is present
      * in a provided match object
      */
-    fun getBoundPaths(p: Pattern): List<Path>
+    fun getBoundExprs(p: Pattern): List<Expression>
 
     fun newChild(key: Pattern, value: Expression): Match = ChildMatch(key, value, this)
 }
@@ -53,9 +52,10 @@ object RootMatch : Match {
     override fun getLastBinding(p: Pattern): Expression? = null
     override fun getBoundExpr(p: Pattern): Expression? = null
 
-    override fun accumulatePaths(p: Pattern, acc: MutableList<Path>) { /* do nothing */ }
+    override fun accumulateExprs(p: Pattern, acc: MutableList<Expression>) { /* do nothing */
+    }
 
-    override fun getBoundPaths(p: Pattern): List<Path> = emptyList()
+    override fun getBoundExprs(p: Pattern): List<Expression> = emptyList()
 }
 
 /**
@@ -83,16 +83,16 @@ data class ChildMatch(
         return if (key === p.key) value else parent.getBoundExpr(p)
     }
 
-    override fun accumulatePaths(p: Pattern, acc: MutableList<Path>) {
-        parent.accumulatePaths(p, acc)
-        if (key == p.key && value.origin.path != null) {
-            acc.add(value.origin.path)
+    override fun accumulateExprs(p: Pattern, acc: MutableList<Expression>) {
+        parent.accumulateExprs(p, acc)
+        if (key == p.key) {
+            acc.add(value)
         }
     }
 
-    override fun getBoundPaths(p: Pattern): List<Path> {
-        val acc = mutableListOf<Path>()
-        accumulatePaths(p, acc)
+    override fun getBoundExprs(p: Pattern): List<Expression> {
+        val acc = mutableListOf<Expression>()
+        accumulateExprs(p, acc)
         return acc
     }
 }

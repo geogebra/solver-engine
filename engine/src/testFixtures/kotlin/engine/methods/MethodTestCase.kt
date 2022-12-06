@@ -40,14 +40,18 @@ data class PathMappingPathsBuilder(val type: PathMappingType) {
 
 @TestCaseBuilderMarker
 open class PathMappingsCheck(mappings: Sequence<PathMapping>, private val rootPath: Path) {
-    private val pathMappings: Sequence<PathMapping> = mappings.map { it.relativeTo(rootPath) }
+    private val pathMappings = mappings.map { it.relativeTo(rootPath) }.toList()
 
     private var checkedMappings: Int? = null
 
     private fun addPathMapping(type: PathMappingType, init: PathMappingPathsBuilder.() -> Unit) {
         val builder = PathMappingPathsBuilder(type)
         builder.init()
-        assert(pathMappings.contains(builder.getPathMapping())) { "No such path mapping found" }
+        addPathMapping(builder.getPathMapping())
+    }
+
+    private fun addPathMapping(pathMapping: PathMapping) {
+        assert(pathMappings.contains(pathMapping)) { "No such path mapping found: $pathMapping" }
         checkedMappings = (checkedMappings ?: 0) + 1
     }
 
@@ -59,12 +63,42 @@ open class PathMappingsCheck(mappings: Sequence<PathMapping>, private val rootPa
         addPathMapping(PathMappingType.Introduce, init)
     }
 
+    fun introduce(toPath: String) {
+        addPathMapping(PathMapping(emptyList(), PathMappingType.Introduce, listOf(parsePath(toPath))))
+    }
+
     fun combine(init: PathMappingPathsBuilder.() -> Unit) {
         addPathMapping(PathMappingType.Combine, init)
     }
 
     fun move(init: PathMappingPathsBuilder.() -> Unit) {
         addPathMapping(PathMappingType.Move, init)
+    }
+
+    fun move(fromPath: String, toPath: String) {
+        addPathMapping(PathMapping(listOf(parsePath(fromPath)), PathMappingType.Move, listOf(parsePath((toPath)))))
+    }
+
+    fun factor(init: PathMappingPathsBuilder.() -> Unit) {
+        addPathMapping(PathMappingType.Factor, init)
+    }
+
+    fun distribute(init: PathMappingPathsBuilder.() -> Unit) {
+        addPathMapping(PathMappingType.Distribute, init)
+    }
+
+    fun keep(vararg paths: String) {
+        for (path in paths) {
+            move(path, path)
+        }
+    }
+
+    fun transform(init: PathMappingPathsBuilder.() -> Unit) {
+        addPathMapping(PathMappingType.Transform, init)
+    }
+
+    fun transform(fromPath: String, toPath: String) {
+        addPathMapping(PathMapping(listOf(parsePath(fromPath)), PathMappingType.Transform, listOf(parsePath((toPath)))))
     }
 
     open fun finalize() {

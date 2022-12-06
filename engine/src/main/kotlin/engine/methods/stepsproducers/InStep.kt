@@ -36,7 +36,7 @@ interface InStep : StepsProducer {
 
             val prevSub = lastSub
             for (tr in nonNullTransformations) {
-                val substitution = lastSub.substitute(tr.fromExpr.origin.path!!, tr.toExpr)
+                val substitution = lastSub.substitute(tr.fromExpr.updateOrigin(lastSub), tr.toExpr)
                 lastSub = substitution.withOrigin(lastSub.origin)
             }
 
@@ -51,7 +51,7 @@ interface InStep : StepsProducer {
 
             for ((i, tr) in stepTransformations.withIndex()) {
                 if (tr != null) {
-                    val substitution = tr.fromExpr.substitute(tr.fromExpr.origin.path!!, tr.toExpr)
+                    val substitution = tr.fromExpr.substitute(tr.fromExpr, tr.toExpr)
                     stepSubs[i] = substitution.withOrigin(tr.fromExpr.origin)
                 }
             }
@@ -110,7 +110,7 @@ private class InStepRunner(val builder: StepsBuilder, val ctx: Context, stepSubs
         }
 
         val newSub = nonNullTransformations.fold(builder.lastSub) { acc, tr ->
-            acc.substitute(tr.fromExpr.origin.path!!, tr.toExpr).withOrigin(acc.origin)
+            acc.substitute(tr.fromExpr.updateOrigin(acc), tr.toExpr).withOrigin(acc.origin)
         }
 
         builder.addStep(
@@ -125,7 +125,7 @@ private class InStepRunner(val builder: StepsBuilder, val ctx: Context, stepSubs
         for ((i, tr) in stepTransformations.withIndex()) {
             if (tr != null) {
                 lastStepSubs[i] =
-                    tr.fromExpr.substitute(tr.fromExpr.origin.path!!, tr.toExpr).withOrigin(tr.fromExpr.origin)
+                    tr.fromExpr.substitute(tr.fromExpr, tr.toExpr).withOrigin(tr.fromExpr.origin)
             }
         }
     }

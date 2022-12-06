@@ -12,7 +12,7 @@ import java.math.BigInteger
 
 class InvalidMatch(message: String) : Exception(message)
 
-interface NumberProvider : PathProvider {
+interface NumberProvider : ExpressionProvider {
     fun getBoundNumber(m: Match): BigDecimal
 }
 

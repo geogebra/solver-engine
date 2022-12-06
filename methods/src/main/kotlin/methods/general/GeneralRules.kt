@@ -90,7 +90,7 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
             val zero = FixedPattern(Constants.Zero)
             val p = productContaining(zero)
             val pattern = condition(p) { expression ->
-                expression.operands.all {
+                expression.children().all {
                     it.operator != UnaryExpressionOperator.DivideBy && it.isDefinitelyNotUndefined()
                 }
             }
@@ -287,12 +287,12 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     FactorMinusFromSum(
         rule {
             val sum = condition(sumContaining()) { expression ->
-                expression.operands.all { it.operator == UnaryExpressionOperator.Minus }
+                expression.children().all { it.operator == UnaryExpressionOperator.Minus }
             }
 
             onPattern(sum) {
                 TransformationResult(
-                    toExpr = negOf(sumOf(get(sum)!!.children().map { it.nthChild(0) })),
+                    toExpr = negOf(sumOf(get(sum)!!.children().map { it.firstChild })),
                     explanation = metadata(Explanation.FactorMinusFromSum)
                 )
             }
@@ -367,7 +367,7 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
                 val result = mutableListOf<Expression>()
                 result.addAll(factors.subList(0, division - 1).map { move(it) })
 
-                val denominator = factors[division].nthChild(0)
+                val denominator = factors[division].firstChild
 
                 result.add(
                     fractionOf(
@@ -450,7 +450,7 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
                                 UnaryExpressionOperator.Minus -> negOf(
                                     product.substitute(
                                         distribute(singleTerm),
-                                        move(it.nthChild(0))
+                                        move(it.firstChild)
                                     )
                                 )
 

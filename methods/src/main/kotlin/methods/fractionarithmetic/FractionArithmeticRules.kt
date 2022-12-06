@@ -1,6 +1,7 @@
 package methods.fractionarithmetic
 
 import engine.expressions.Constants
+import engine.expressions.Expression
 import engine.expressions.fractionOf
 import engine.expressions.negOf
 import engine.expressions.powerOf
@@ -13,7 +14,7 @@ import engine.methods.RunnerMethod
 import engine.methods.TransformationResult
 import engine.methods.rule
 import engine.operators.BinaryExpressionOperator
-import engine.operators.UnaryExpressionOperator
+import engine.operators.NullaryOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
@@ -240,29 +241,8 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
     TurnFactorIntoFractionInProduct(
         rule {
             val nonFractionFactor =
-                condition(AnyPattern()) {
-                    it.isConstant() &&
-                        it.operator != BinaryExpressionOperator.Fraction &&
-                        // neither a fraction nor an operator (like power, root, negation etc.) of a fraction
-                        // for e.g. sqrt[5], 1 + sqrt[5], x + 2 are all acceptable `nonFractionFactor`
-                        // while [2/3], -[2/3], [2/3]^[1/2], -[2/3]^[1/2] are not acceptable `nonFractionFactor`
-                        (
-                            // (1) start
-                            it.operands.isEmpty() || (
-                                it.operands[0].operator != BinaryExpressionOperator.Fraction &&
-                                    // (1) end
-                                    (
-                                        // same as (1) but with "-ve" sign around it
-                                        it.operands[0].operands.isEmpty() ||
-                                            (
-                                                it.operator == UnaryExpressionOperator.Minus &&
-                                                    it.operands[0].operands[0].operator !=
-                                                    BinaryExpressionOperator.Fraction
-                                                )
-                                        )
-                                )
-                            )
-                }
+                condition(AnyPattern()) { it.isConstant() && it.canBeTurnedToFraction() }
+
             // TODO @Simona doesn't want:  `1 + [([2/5])^[2/3]]` to be a valid `nonFractionFactor`
             val product = productContaining(nonFractionFactor)
 
@@ -537,3 +517,11 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
         }
     )
 }
+
+private fun Expression.canBeTurnedToFraction(): Boolean =
+    when (operator) {
+        BinaryExpressionOperator.Fraction -> false
+        BinaryExpressionOperator.Power -> firstChild.canBeTurnedToFraction()
+        is NullaryOperator -> true
+        else -> children().all { it.canBeTurnedToFraction() }
+    }

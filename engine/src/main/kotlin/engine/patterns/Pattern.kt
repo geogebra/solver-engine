@@ -5,36 +5,28 @@ import engine.expressions.Expression
 import engine.expressions.New
 import engine.expressions.Path
 
-interface PathProvider {
+interface ExpressionProvider {
 
     /**
      * Returns a list of `Path` objects from the root of
      * the tree to the where the pattern is present in the
      * match `m`.
      */
-    fun getBoundPaths(m: Match): List<Path>
+    fun getBoundExprs(m: Match): List<Expression>
 
     /**
      * Returns the `Expression` value of the given pattern
      * with the provided `match` "m"
      */
-    fun getBoundExpr(m: Match): Expression?
-}
-
-fun interface ExpressionProvider : PathProvider {
-
-    fun getExpression(m: Match): Expression?
-    override fun getBoundPaths(m: Match) = getExpression(m)?.getBoundPaths(m) ?: emptyList()
-
-    override fun getBoundExpr(m: Match) = getExpression(m)
+    fun getBoundExpr(m: Match): Expression? = getBoundExprs(m).firstOrNull()
 }
 
 open class ProviderWithDefault(
-    private val provider: PathProvider,
+    private val provider: ExpressionProvider,
     private val default: Expression
-) : PathProvider {
-    override fun getBoundPaths(m: Match): List<Path> {
-        return provider.getBoundPaths(m)
+) : ExpressionProvider {
+    override fun getBoundExprs(m: Match): List<Expression> {
+        return provider.getBoundExprs(m).ifEmpty { listOf(default.withOrigin(New)) }
     }
 
     override fun getBoundExpr(m: Match): Expression {
@@ -45,7 +37,7 @@ open class ProviderWithDefault(
 /**
  * Patterns are used to detect certain shapes in a [Subexpression].
  */
-interface Pattern : PathProvider {
+interface Pattern : ExpressionProvider {
     /**
      * Gives a [Sequence] of all possible matches of [Pattern] object
      * in the [subexpression] building on the provided [match].
@@ -57,7 +49,7 @@ interface Pattern : PathProvider {
      * the tree to the where the pattern is present in the
      * match [m].
      */
-    override fun getBoundPaths(m: Match) = m.getBoundPaths(this.key)
+    override fun getBoundExprs(m: Match) = m.getBoundExprs(this.key)
 
     override fun getBoundExpr(m: Match) = m.getBoundExpr(this.key)
 

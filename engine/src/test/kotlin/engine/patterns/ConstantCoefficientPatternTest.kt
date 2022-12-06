@@ -1,6 +1,7 @@
 package engine.patterns
 
 import engine.context.Context
+import engine.expressions.Root
 import org.junit.jupiter.api.Test
 import parser.parseExpression
 import kotlin.test.assertEquals
@@ -11,7 +12,7 @@ class ConstantCoefficientPatternTest {
         val solutionVariablePattern = SolutionVariablePattern()
         val constantCoefficientPattern = withOptionalConstantCoefficient(solutionVariablePattern)
 
-        val exprValue = parseExpression(expr)
+        val exprValue = parseExpression(expr).withOrigin(Root())
 
         val matches = constantCoefficientPattern
             .findMatches(Context(solutionVariable = "x"), RootMatch, exprValue)

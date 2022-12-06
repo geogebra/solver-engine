@@ -19,7 +19,7 @@ class MixedNumbersPlansTest {
                 fromExpr = "[5 1/4] + [2 2/3]"
                 toExpr = "[21 / 4] + [8 / 3]"
 
-                move {
+                transform {
                     fromPaths(".")
                     toPaths(".")
                 }
@@ -29,14 +29,9 @@ class MixedNumbersPlansTest {
                 fromExpr = "[21 / 4] + [8 / 3]"
                 toExpr = "[95 / 12]"
 
-                combine {
-                    fromPaths("./0/0", "./0/1")
-                    toPaths("./0")
-                }
-
-                move {
-                    fromPaths("./1")
-                    toPaths("./1")
+                transform {
+                    fromPaths(".")
+                    toPaths(".")
                 }
 
                 explanation {
@@ -82,7 +77,7 @@ class MixedNumbersPlansTest {
                 fromExpr = "[5 1/4] + [2 2/3]"
                 toExpr = "[21 / 4] + [8 / 3]"
 
-                move {
+                transform {
                     fromPaths(".")
                     toPaths(".")
                 }

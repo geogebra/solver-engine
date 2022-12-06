@@ -6,8 +6,8 @@ import engine.operators.NaryOperator
 import engine.operators.Operator
 import engine.operators.RenderContext
 import engine.operators.VariableOperator
+import engine.patterns.ExpressionProvider
 import engine.patterns.Match
-import engine.patterns.PathProvider
 
 /**
  * Decorators affect the visual appearance (and hence sometimes the transformations that can be applied to an expression
@@ -52,11 +52,11 @@ enum class Label : Extractor {
 @Suppress("TooManyFunctions")
 class Expression internal constructor(
     val operator: Operator,
-    val operands: List<Expression>,
+    internal val operands: List<Expression>,
     val decorators: List<Decorator>,
     val origin: Origin,
     val label: Label?
-) : LatexRenderable, PathProvider {
+) : LatexRenderable, ExpressionProvider {
 
     /**
      * Create a new expression with [Build] origin and no label.  Operand brackets are not adjusted and if a required
@@ -115,6 +115,9 @@ class Expression internal constructor(
         }
         else -> listOf(this)
     }
+
+    val firstChild get() = nthChild(0)
+    val secondChild get() = nthChild(1)
 
     fun nthChild(n: Int) = origin.computeChildOrigin(this, n)
 
@@ -200,70 +203,83 @@ class Expression internal constructor(
     }
 
     /**
-     * Substitutes [newExpr] into the expression at position [subPath] if possible, otherwise returns the expression
-     * unchanged with the exception that outer brackets are removed if it is the root expression.
+     * Adds brackets if needed in the expression so that it can be the [index]th child of
+     * [operator].
      */
-    fun substitute(subPath: Path, newExpr: Expression): Expression = when {
-        subPath == RootPath && origin.path != RootPath -> this
-        subPath == RootPath -> newExpr.removeBrackets()
-        subPath == origin.path -> newExpr
-        else -> substituteKeepBrackets(subPath as ChildPath, newExpr)
+    internal fun addBracketIfNeededFor(operator: Operator, index: Int): Expression {
+        val bracketsRequired = !operator.nthChildAllowed(index, this.operator)
+        return when {
+            bracketsRequired && !hasBracket() -> decorate(Decorator.RoundBracket)
+            else -> this
+        }
     }
 
-    private fun substituteKeepBrackets(subPath: ChildPath, newExpr: Expression): Expression = when {
-        origin.path == null || !subPath.hasAncestor(origin.path) -> this
-        origin.path == subPath -> {
-            val bracketsRequired = !(origin as Child).parent.operator.nthChildAllowed(subPath.index, newExpr.operator)
-            if (bracketsRequired && !newExpr.hasBracket()) newExpr.decorate(Decorator.RoundBracket)
-            else newExpr
-        }
-
-        operator == NaryOperator.Product || operator == NaryOperator.ImplicitProduct -> {
-            val children = flattenedProductChildren()
-
-            val index = children.indexOfFirst { it.origin.path == subPath }
-            if (index != -1) {
-                productOf(
-                    children.mapIndexed { i, op ->
-                        if (i == index) {
-                            newExpr.adjustBracketFor(NaryOperator.Product, subPath.index)
-                        } else {
-                            op
-                        }
-                    }
-                ).withDecorators(decorators).withLabel(label)
-            } else {
-                mapChildren { it.substituteKeepBrackets(subPath, newExpr) }
-            }
-        }
-        else -> mapChildren { it.substituteKeepBrackets(subPath, newExpr) }
+    /**
+     * Updates the origin of the expression so that it now descends from [ancestor]
+     */
+    internal fun updateOrigin(ancestor: Expression): Expression = when (origin) {
+        ancestor.origin -> ancestor
+        is Child -> origin.parent.updateOrigin(ancestor).nthChild(origin.index)
+        else -> this
     }
 
-    private fun mapChildren(f: (Expression) -> Expression) = Expression(
-        operator, children().map(f), decorators, Build, label
+    /**
+     * Builds an expression that substitutes [newExpr] for [subExpr] in this expression if possible, otherwise returns
+     * the expression unchanged with the exception that outer brackets are removed if it is the root expression.
+     */
+    fun substitute(subExpr: Expression, newExpr: Expression): Expression = when {
+        subExpr.origin is Root && origin !is Root -> this
+        subExpr.origin is Root -> newExpr.removeBrackets()
+        else -> justSubstitute(subExpr.origin, newExpr)
+    }
+
+    /**
+     * Builds and expression that substitutes [newExpr] for the expression at [subOrigin] in this expression, flattening
+     * products as fit.
+     */
+    private fun justSubstitute(subOrigin: Origin, newExpr: Expression): Expression = when (subOrigin) {
+        origin -> newExpr
+        is Child -> justSubstitute(
+            subOrigin.parent.origin,
+            subOrigin.replaceInParent(newExpr).asFlattenedProduct()
+        )
+        else -> this
+    }
+
+    private fun asFlattenedProduct(): Expression = when (operator) {
+        NaryOperator.Product, NaryOperator.ImplicitProduct -> {
+            productOf(flattenedProductChildren()).withDecorators(decorators).withLabel(label)
+        }
+        else -> this
+    }
+
+    internal fun replaceNthChild(childIndex: Int, newChild: Expression) = Expression(
+        operator,
+        children().mapIndexed { i, op -> if (i == childIndex) newChild.addBracketIfNeededFor(operator, i) else op },
+        decorators, Build, label
     )
 
-    override fun getBoundPaths(m: Match) = if (origin.path == null) emptyList() else listOf(origin.path)
+    override fun getBoundExprs(m: Match) = listOf(this)
 
     override fun getBoundExpr(m: Match) = this
 }
 
 fun Expression.numerator(): Expression {
     require(operator == BinaryExpressionOperator.Fraction) { "Fraction expected, got: $operator" }
-    return nthChild(0)
+    return firstChild
 }
 
 fun Expression.denominator(): Expression {
     require(operator == BinaryExpressionOperator.Fraction) { "Fraction expected, got: $operator" }
-    return nthChild(1)
+    return secondChild
 }
 
 fun Expression.base(): Expression {
     require(operator == BinaryExpressionOperator.Power) { "Power expected, got: $operator" }
-    return nthChild(0)
+    return firstChild
 }
 
 fun Expression.exponent(): Expression {
     require(operator == BinaryExpressionOperator.Power) { "Power expected, got: $operator" }
-    return nthChild(1)
+    return secondChild
 }

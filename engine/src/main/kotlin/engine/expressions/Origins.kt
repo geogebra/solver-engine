@@ -16,6 +16,11 @@ class Root(private val rootPath: Path = RootPath) : Origin(rootPath) {
 
     override fun computePathMappings(rootPath: Path, children: List<Expression>) =
         sequenceOf(PathMapping(listOf(this.rootPath), PathMappingType.Move, listOf(rootPath)))
+
+    override fun equals(other: Any?) = this === other ||
+        other is Root && rootPath == other.rootPath
+
+    override fun hashCode() = rootPath.hashCode()
 }
 
 class Child(val parent: Expression, val index: Int) : Origin(parent.origin.path?.child(index)) {
@@ -27,14 +32,16 @@ class Child(val parent: Expression, val index: Int) : Origin(parent.origin.path?
         return parent.pathMappings(rootPath)
             .map { m -> PathMapping(m.fromPaths.map { it.child(index) }, m.type, m.toPaths) }
     }
-}
 
-class Move(private val from: Path) : Origin(from) {
-    override fun computeChildOrigin(expression: Expression, index: Int) =
-        expression.operands[index].withOrigin(Move(from.child(index)))
+    override fun equals(other: Any?) = this === other || (
+        other is Child &&
+            index == other.index &&
+            (parent === other.parent || parent.origin == other.parent.origin)
+        )
 
-    override fun computePathMappings(rootPath: Path, children: List<Expression>) =
-        sequenceOf(PathMapping(listOf(from), PathMappingType.Move, listOf(rootPath)))
+    override fun hashCode() = index.hashCode() * 31 + parent.origin.hashCode()
+
+    internal fun replaceInParent(newExpr: Expression) = parent.replaceNthChild(index, newExpr)
 }
 
 object New : Origin() {
@@ -52,8 +59,10 @@ object Build : Origin() {
 
     override fun computeChildrenOrigin(expression: Expression) = expression.operands
 
-    override fun computePathMappings(rootPath: Path, children: List<Expression>) =
-        children.mapIndexed { i, child -> child.pathMappings(rootPath.child(i)) }.asSequence().flatten()
+    override fun computePathMappings(rootPath: Path, children: List<Expression>) = when {
+        children.isEmpty() -> sequenceOf(PathMapping(emptyList(), PathMappingType.Introduce, listOf(rootPath)))
+        else -> children.mapIndexed { i, child -> child.pathMappings(rootPath.child(i)) }.asSequence().flatten()
+    }
 }
 
 object Unknown : Origin() {
@@ -61,38 +70,47 @@ object Unknown : Origin() {
     override fun computeChildOrigin(expression: Expression, index: Int) =
         expression.operands[index].withOrigin(Unknown)
 
-    override fun computePathMappings(rootPath: Path, children: List<Expression>) =
-        sequenceOf(PathMapping(emptyList(), PathMappingType.Introduce, listOf(rootPath)))
+    override fun computePathMappings(rootPath: Path, children: List<Expression>) = emptySequence<PathMapping>()
 }
 
-class Combine(val from: List<Path>) : Origin() {
+class Combine(val from: List<Expression>) : Origin() {
+
+    constructor(vararg fromExprs: Expression) : this(fromExprs.asList())
 
     override fun computeChildOrigin(expression: Expression, index: Int) =
         expression.operands[index].withOrigin(Unknown)
 
     override fun computePathMappings(rootPath: Path, children: List<Expression>) = sequenceOf(
         PathMapping(
-            from,
-            if (from.size == 1) PathMappingType.Transform else PathMappingType.Combine,
+            from.mapNotNull { it.origin.path },
+            when (from.size) {
+                0 -> PathMappingType.Introduce
+                1 -> PathMappingType.Transform
+                else -> PathMappingType.Combine
+            },
             listOf(rootPath)
         )
     )
 }
 
-class Factor(val from: List<Path>) : Origin() {
+class Factor(val from: List<Expression>) : Origin() {
+
+    constructor(vararg fromExprs: Expression) : this(fromExprs.asList())
 
     override fun computeChildOrigin(expression: Expression, index: Int) =
-        expression.operands[index].withOrigin(Factor(from.map { it.child(index) }))
+        expression.operands[index].withOrigin(Factor(from.map { it.nthChild(index) }))
 
     override fun computePathMappings(rootPath: Path, children: List<Expression>) =
-        sequenceOf(PathMapping(from, PathMappingType.Factor, listOf(rootPath)))
+        sequenceOf(PathMapping(from.mapNotNull { it.origin.path }, PathMappingType.Factor, listOf(rootPath)))
 }
 
-class Distribute(val from: List<Path>) : Origin() {
+class Distribute(val from: List<Expression>) : Origin() {
+
+    constructor(fromExpr: Expression) : this(listOf(fromExpr))
 
     override fun computeChildOrigin(expression: Expression, index: Int) =
-        expression.operands[index].withOrigin(Distribute(from.map { it.child(index) }))
+        expression.operands[index].withOrigin(Distribute(from.map { it.nthChild(index) }))
 
     override fun computePathMappings(rootPath: Path, children: List<Expression>) =
-        sequenceOf(PathMapping(from, PathMappingType.Distribute, listOf(rootPath)))
+        sequenceOf(PathMapping(from.mapNotNull { it.origin.path }, PathMappingType.Distribute, listOf(rootPath)))
 }

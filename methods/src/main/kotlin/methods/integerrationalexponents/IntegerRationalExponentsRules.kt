@@ -94,7 +94,7 @@ enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMeth
             val notRationalExponent =
                 condition(AnyPattern()) {
                     it.operator != BinaryExpressionOperator.Power ||
-                        it.operands[1].operator != BinaryExpressionOperator.Fraction
+                        it.secondChild.operator != BinaryExpressionOperator.Fraction
                 }
             val product = productContaining(
                 powerOf(UnsignedIntegerPattern(), fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())),
@@ -104,7 +104,7 @@ enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMeth
                 val (rationalExponents, nonRationalExponents) = get(product)!!.children()
                     .partition {
                         it.operator == BinaryExpressionOperator.Power &&
-                            it.operands[1].operator == BinaryExpressionOperator.Fraction
+                            it.secondChild.operator == BinaryExpressionOperator.Fraction
                     }
                 TransformationResult(
                     toExpr = productOf(

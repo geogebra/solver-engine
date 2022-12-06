@@ -458,21 +458,21 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
                 val order = root.order.getBoundExpr(match)!!
                 val product = prod.getBoundExpr(match)!!
 
-                product.operands.all { it.operator == BinaryExpressionOperator.Power && it.operands[1] == order }
+                product.children().all { it.operator == BinaryExpressionOperator.Power && it.secondChild == order }
             }
 
             val pattern = withOptionalIntegerCoefficient(cond)
 
             onPattern(pattern) {
                 val product = get(prod)!!
-                val order = product.nthChild(0).nthChild(1)
+                val order = product.firstChild.secondChild
 
                 TransformationResult(
                     toExpr = simplifiedProductOf(
                         move(pattern.integerCoefficient),
                         rootOf(
                             powerOf(
-                                productOf(product.children().map { move(it.nthChild(0)) }),
+                                productOf(product.children().map { move(it.firstChild) }),
                                 move(order)
                             ),
                             move(root.order)

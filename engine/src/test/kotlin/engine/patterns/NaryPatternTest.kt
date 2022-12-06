@@ -1,6 +1,7 @@
 package engine.patterns
 
 import engine.context.emptyContext
+import engine.expressions.Root
 import engine.expressions.xp
 import org.junit.jupiter.api.Test
 import parser.parseExpression
@@ -114,7 +115,7 @@ class NaryPatternTest {
 
     @Test
     fun getRest() {
-        val expression = parseExpression("1 + 2 + 1 + 3")
+        val expression = parseExpression("1 + 2 + 1 + 3").withOrigin(Root())
         val intPtn = UnsignedIntegerPattern()
         val ptn = sumContaining(intPtn, intPtn)
 
@@ -122,7 +123,7 @@ class NaryPatternTest {
         assertEquals(1, matches.count())
         val match = matches.elementAt(0)
         val rest = ptn.getRestSubexpressions(match)
-        assertEquals(rest.size, 2)
+        assertEquals(2, rest.size)
         assertEquals(xp(2), rest[0])
         assertEquals(xp(3), rest[1])
     }

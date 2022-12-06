@@ -175,7 +175,7 @@ val arithmeticOperators = listOf(
 private fun Expression.isArithmeticExpression(): Boolean {
     val validOperator = operator is IntegerOperator || arithmeticOperators.contains(operator)
 
-    return validOperator && operands.all { it.isArithmeticExpression() }
+    return validOperator && children().all { it.isArithmeticExpression() }
 }
 
 private val evaluationSteps = steps {

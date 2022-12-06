@@ -25,7 +25,7 @@ private fun Expression.canBeApproximated(): Boolean {
     val validOperator = operator is IntegerOperator || operator is DecimalOperator ||
         operator is RecurringDecimalOperator || arithmeticOperators.contains(operator)
 
-    return validOperator && operands.all { it.canBeApproximated() }
+    return validOperator && children().all { it.canBeApproximated() }
 }
 
 enum class ApproximationPlans(override val runner: Plan) : RunnerMethod {

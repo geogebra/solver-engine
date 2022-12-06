@@ -93,7 +93,7 @@ enum class FractionRootsPlans(override val runner: Plan) : RunnerMethod {
                 whilePossible { deeply(IntegerArithmeticRules.EvaluateIntegerPowerDirectly) }
                 apply(FractionRootsRules.TurnFractionOfRootsIntoRootOfFractions)
                 // apply to the fraction under the root
-                applyTo(FractionArithmeticRules.SimplifyFractionToInteger) { it.nthChild(0) }
+                applyTo(FractionArithmeticRules.SimplifyFractionToInteger) { it.firstChild }
             }
         }
     )

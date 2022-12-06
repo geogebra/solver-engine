@@ -100,6 +100,7 @@ private fun Expression.isNumbery(): Boolean = when (operator) {
 }
 
 fun productSignRequired(left: Expression, right: Expression): Boolean = when {
+    left.operator == UnaryExpressionOperator.DivideBy || right.operator == UnaryExpressionOperator.DivideBy -> true
     right.isNumbery() -> true
     left.hasBracket() || right.hasBracket() -> false
     else -> {

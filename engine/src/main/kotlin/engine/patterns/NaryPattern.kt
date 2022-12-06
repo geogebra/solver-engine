@@ -2,7 +2,6 @@ package engine.patterns
 
 import engine.context.Context
 import engine.expressions.Expression
-import engine.expressions.Path
 import engine.expressions.productOf
 import engine.expressions.sumOf
 import engine.operators.NaryOperator
@@ -36,9 +35,9 @@ class NaryPattern(
 
     fun getRestSubexpressions(m: Match): List<Expression> {
         val sub = m.getLastBinding(this)!!
-        val matchIndexes = getMatchedPaths(m, sub.origin.path!!)
+        val matchIndexes = getMatchedOrigins(m)
 
-        return flattenOperands(sub).filter { subexpression -> !matchIndexes.contains(subexpression.origin.path) }
+        return flattenOperands(sub).filter { subexpression -> !matchIndexes.contains(subexpression.origin) }
     }
 
     /**
@@ -48,13 +47,13 @@ class NaryPattern(
      */
     fun substitute(match: Match, newVals: Array<out Expression>): Expression {
         val sub = match.getLastBinding(this)!!
-        val matchedPaths = getMatchedPaths(match, sub.origin.path!!)
+        val matchedOrigins = getMatchedOrigins(match)
 
         val flattenedOperands = flattenOperands(sub)
 
         val restChildren = mutableListOf<Expression>()
         for (child in flattenedOperands) {
-            val newValIndex = matchedPaths.indexOf(child.origin.path)
+            val newValIndex = matchedOrigins.indexOf(child.origin)
             when {
                 newValIndex == -1 -> restChildren.add(child)
                 newValIndex < newVals.size -> restChildren.add(
@@ -74,18 +73,7 @@ class NaryPattern(
         else -> sub.flattenedProductChildren()
     }
 
-    private fun getMatchedPaths(m: Match, path: Path): List<Path> {
-        val matchedPaths = mutableListOf<Path>()
-        for (op in childPatterns) {
-            for (p in m.getBoundPaths(op)) {
-                if (p.hasAncestor(path)) {
-                    matchedPaths.add(p)
-                }
-            }
-        }
-
-        return matchedPaths
-    }
+    private fun getMatchedOrigins(m: Match) = childPatterns.flatMap { m.getBoundExprs(it) }.map { it.origin }
 }
 
 private data class RecursiveMatcher(
