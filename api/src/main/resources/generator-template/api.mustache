@@ -28,6 +28,7 @@ import org.springframework.validation.annotation.Validated
 {{/useBeanValidation}}
 import org.springframework.web.context.request.NativeWebRequest
 import org.springframework.beans.factory.annotation.Autowired
+import java.util.concurrent.Callable
 
 {{#useBeanValidation}}
 import javax.validation.Valid
@@ -87,8 +88,8 @@ class {{classname}}Controller({{#serviceInterface}}@Autowired(required = true) v
         produces = [{{#produces}}"{{{mediaType}}}"{{^-last}}, {{/-last}}{{/produces}}]{{/hasProduces}}{{#hasConsumes}},
         consumes = [{{#consumes}}"{{{mediaType}}}"{{^-last}}, {{/-last}}{{/consumes}}]{{/hasConsumes}}{{/singleContentTypes}}
     )
-    {{#reactive}}{{^isArray}}suspend {{/isArray}}{{/reactive}}fun {{operationId}}({{#allParams}}{{>queryParams}}{{>pathParams}}{{>headerParams}}{{>bodyParams}}{{>formParams}}{{^-last}},{{/-last}}{{/allParams}}): ResponseEntity<{{>returnTypes}}> {
-        return {{>returnValue}}
+    {{#reactive}}{{^isArray}}suspend {{/isArray}}{{/reactive}}fun {{operationId}}({{#allParams}}{{>queryParams}}{{>pathParams}}{{>headerParams}}{{>bodyParams}}{{>formParams}}{{^-last}},{{/-last}}{{/allParams}}): Callable<ResponseEntity<{{>returnTypes}}>> {
+        return Callable { {{>returnValue}} }
     }
 {{/operation}}
 }

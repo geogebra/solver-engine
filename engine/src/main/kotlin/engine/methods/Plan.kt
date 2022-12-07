@@ -50,6 +50,8 @@ data class Plan(
     override fun run(ctx: Context, sub: Expression): TransformationResult? {
         val match = getMatch(ctx, sub) ?: return null
 
+        ctx.requireActive()
+
         return stepsProducer.produceSteps(ctx, sub)?.let { steps ->
             val toExpr = steps.last().toExpr.withOrigin(Combine(listOf(sub)))
 

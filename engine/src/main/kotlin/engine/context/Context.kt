@@ -27,6 +27,17 @@ data class Context(
 
     private val logger = createNewLogger(this)
 
+    /**
+     * Checks whether the computation was interrupted from the outside and throws an exception
+     * if so. Should be called during more complex computations to allow for termination.
+     * Currently, it checks whether the thread was interrupted by a timeout.
+     */
+    fun requireActive() {
+        if (Thread.currentThread().isInterrupted) {
+            throw InterruptedException("Computation thread interrupted (probably by timeout)")
+        }
+    }
+
     fun log(level: Level, string: String) {
         logger.log(level, string)
     }

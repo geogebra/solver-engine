@@ -53,6 +53,7 @@ val generatedRoot: String = File(buildDir, "generated-src/openapi").absolutePath
 
 tasks.openApiGenerate {
     generatorName.set("kotlin-spring")
+    // currently we use our own generators to allow async request handling
     templateDir.set("$projectDir/src/main/resources/generator-template")
     inputSpec.set("$projectDir/src/main/openapi/api-specification.yaml")
     packageName.set("server.application")

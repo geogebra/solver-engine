@@ -32,6 +32,8 @@ interface RunnerMethod : Method {
     override fun tryExecute(ctx: Context, sub: Expression): Transformation? {
         ctx.log(Level.FINER) { "Entering $name with input $sub" }
 
+        ctx.requireActive()
+
         return runner.run(ctx, sub)?.let {
             ctx.log(Level.FINE) { "Changed at $name from $sub to ${it.toExpr}" }
             Transformation(
