@@ -17,6 +17,14 @@ data class RenderContext(val align: Boolean = false) {
 interface LatexRenderable {
     fun toLatexString(ctx: RenderContext = RenderContext.Default): String
     fun hasBracket(): Boolean
+
+    /** If this is true, then when this term is rendered/printed in a sum, a subtraction sign should be used instead of
+     * a negative sign in front of this term */
+    fun shouldBeRenderedWithASubtractionIfInASum(): Boolean
+
+    /** If this is true, then when this term is rendered/printed in a product, a ÷ sign should be used instead of a
+     * multiplication sign in front of this term */
+    fun isInlineDivideByTerm(): Boolean
 }
 
 enum class OperatorKind {

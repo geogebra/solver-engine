@@ -5,6 +5,7 @@ import engine.operators.LatexRenderable
 import engine.operators.NaryOperator
 import engine.operators.Operator
 import engine.operators.RenderContext
+import engine.operators.UnaryExpressionOperator
 import engine.operators.VariableOperator
 import engine.patterns.ExpressionProvider
 import engine.patterns.Match
@@ -16,15 +17,15 @@ import engine.patterns.Match
 enum class Decorator {
     RoundBracket {
         override fun decorateString(str: String) = "($str)"
-        override fun decorateLatexString(str: String) = "{\\left( $str \\right)}"
+        override fun decorateLatexString(str: String) = "\\left( $str \\right)"
     },
     SquareBracket {
         override fun decorateString(str: String) = "[. $str .]"
-        override fun decorateLatexString(str: String) = "{\\left[ $str \\right]}"
+        override fun decorateLatexString(str: String) = "\\left[ $str \\right]"
     },
     CurlyBracket {
         override fun decorateString(str: String) = "{. $str .}"
-        override fun decorateLatexString(str: String) = "{\\left\\{ $str \\right\\}}"
+        override fun decorateLatexString(str: String) = "\\left\\{ $str \\right\\}"
     },
     MissingBracket;
 
@@ -262,6 +263,14 @@ class Expression internal constructor(
     override fun getBoundExprs(m: Match) = listOf(this)
 
     override fun getBoundExpr(m: Match) = this
+
+    override fun shouldBeRenderedWithASubtractionIfInASum(): Boolean {
+        return operator === UnaryExpressionOperator.Minus && !hasBracket()
+    }
+
+    override fun isInlineDivideByTerm(): Boolean {
+        return operator === UnaryExpressionOperator.DivideBy
+    }
 }
 
 fun Expression.numerator(): Expression {

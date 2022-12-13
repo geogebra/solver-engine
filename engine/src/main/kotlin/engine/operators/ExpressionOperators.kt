@@ -37,7 +37,7 @@ abstract class NullaryOperator : ExpressionOperator {
 
     override fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String {
         require(children.isEmpty())
-        return "{${latexString(ctx)}}"
+        return latexString(ctx)
     }
 
     abstract fun latexString(ctx: RenderContext): String
@@ -112,7 +112,7 @@ object MixedNumberOperator : ExpressionOperator {
     override fun <T> readableString(children: List<T>) = "[${children[0]} ${children[1]}/${children[2]}]"
 
     override fun latexString(ctx: RenderContext, children: List<LatexRenderable>) =
-        "{${children[0].toLatexString(ctx)}\\frac${children[1].toLatexString(ctx)}${children[2].toLatexString(ctx)}}"
+        "${children[0].toLatexString(ctx)}\\frac${children[1].toLatexString(ctx)}${children[2].toLatexString(ctx)}"
 }
 
 enum class UnaryExpressionOperator(override val precedence: Int) : UnaryOperator, ExpressionOperator {
@@ -124,26 +124,26 @@ enum class UnaryExpressionOperator(override val precedence: Int) : UnaryOperator
     DivideBy(DIVIDE_BY_PRECEDENCE) {
         override fun childAllowed(op: Operator) = op.precedence > NaryOperator.Product.precedence
         override fun <T> readableString(child: T) = " : $child"
-        override fun latexString(ctx: RenderContext, child: LatexRenderable) = "{{} \\div ${child.toLatexString(ctx)}}"
+        override fun latexString(ctx: RenderContext, child: LatexRenderable) = "\\div ${child.toLatexString(ctx)}"
     },
     Plus(PLUS_MINUS_PRECEDENCE) {
         override fun <T> readableString(child: T) = "+$child"
-        override fun latexString(ctx: RenderContext, child: LatexRenderable) = "{+${child.toLatexString(ctx)}}"
+        override fun latexString(ctx: RenderContext, child: LatexRenderable) = "+${child.toLatexString(ctx)}"
     },
     Minus(PLUS_MINUS_PRECEDENCE) {
         override fun <T> readableString(child: T) = "-$child"
-        override fun latexString(ctx: RenderContext, child: LatexRenderable) = "{-${child.toLatexString(ctx)}}"
+        override fun latexString(ctx: RenderContext, child: LatexRenderable) = "-${child.toLatexString(ctx)}"
     },
     SquareRoot(ROOT_PRECEDENCE) {
         override fun childAllowed(op: Operator) = true
         override fun <T> readableString(child: T) = "sqrt[$child]"
-        override fun latexString(ctx: RenderContext, child: LatexRenderable) = "{\\sqrt${child.toLatexString(ctx)}}"
+        override fun latexString(ctx: RenderContext, child: LatexRenderable) = "\\sqrt{${child.toLatexString(ctx)}}"
     },
     NaturalLog(NATURAL_LOG_PRECEDENCE) {
         override fun childAllowed(op: Operator) =
             op.precedence >= BinaryExpressionOperator.Fraction.precedence
 
-        override fun latexString(ctx: RenderContext, child: LatexRenderable) = "{\\ln${child.toLatexString(ctx)}}"
+        override fun latexString(ctx: RenderContext, child: LatexRenderable) = "\\ln${child.toLatexString(ctx)}"
     };
 }
 
@@ -153,7 +153,7 @@ enum class BinaryExpressionOperator(override val precedence: Int) : BinaryOperat
         override fun rightChildAllowed(op: Operator) = true
         override fun <T> readableString(left: T, right: T) = "[$left / $right]"
         override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable) =
-            "{\\frac${left.toLatexString(ctx)}${right.toLatexString(ctx)}}"
+            "\\frac{${left.toLatexString(ctx)}}{${right.toLatexString(ctx)}}"
     },
     Power(POWER_PRECEDENCE) {
         override fun leftChildAllowed(op: Operator) = op.precedence == MAX_PRECEDENCE
@@ -163,14 +163,14 @@ enum class BinaryExpressionOperator(override val precedence: Int) : BinaryOperat
         override fun <T> readableString(left: T, right: T) = "[$left ^ $right]"
 
         override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable) =
-            "{${left.toLatexString(ctx)} ^ ${right.toLatexString(ctx)}}"
+            "${left.toLatexString(ctx)}^{${right.toLatexString(ctx)}}"
     },
     Root(ROOT_PRECEDENCE) {
         override fun leftChildAllowed(op: Operator) = true
         override fun rightChildAllowed(op: Operator) = true
         override fun <T> readableString(left: T, right: T) = "root[$left, $right]"
         override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable) =
-            "{\\sqrt[${right.toLatexString(ctx)}]${left.toLatexString(ctx)}}"
+            "\\sqrt[${right.toLatexString(ctx)}]{${left.toLatexString(ctx)}}"
     };
 }
 
@@ -182,11 +182,9 @@ enum class NaryOperator(override val precedence: Int) : ExpressionOperator {
                     val childString = child.toString()
                     when {
                         i == 0 -> append(childString)
-                        childString.startsWith("-") -> {
-                            if (child is LatexRenderable && child.hasBracket()) append(" + ", childString)
-                            else append(" - ", childString.removePrefix("-"))
+                        child is LatexRenderable && child.shouldBeRenderedWithASubtractionIfInASum() -> {
+                            append(" - ", childString.removePrefix("-"))
                         }
-
                         else -> append(" + ", childString)
                     }
                 }
@@ -195,20 +193,14 @@ enum class NaryOperator(override val precedence: Int) : ExpressionOperator {
 
         override fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String {
             return buildString {
-                append("{")
                 for ((i, child) in children.withIndex()) {
                     val childLatex = child.toLatexString(ctx)
                     when {
                         i == 0 -> append(childLatex)
-                        childLatex.startsWith("{-") -> {
-                            if (child.hasBracket()) append(" +")
-                            append(" {{} - " + childLatex.removePrefix("{-"))
-                        }
-
+                        child.shouldBeRenderedWithASubtractionIfInASum() -> append(" - ", childLatex.removePrefix("-"))
                         else -> append(" + ", childLatex)
                     }
                 }
-                append("}")
             }
         }
     },
@@ -227,16 +219,14 @@ enum class NaryOperator(override val precedence: Int) : ExpressionOperator {
 
         override fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String {
             return buildString {
-                append("{")
                 for ((i, child) in children.withIndex()) {
                     val childLatex = child.toLatexString(ctx)
                     when {
                         i == 0 -> append(childLatex)
-                        childLatex.startsWith("{{} \\div ") -> append(" ", childLatex)
+                        child.isInlineDivideByTerm() -> append(" ", childLatex)
                         else -> append(" \\times ", childLatex)
                     }
                 }
-                append("}")
             }
         }
     },
@@ -246,7 +236,7 @@ enum class NaryOperator(override val precedence: Int) : ExpressionOperator {
         }
 
         override fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String {
-            return children.joinToString(separator = " ", prefix = "{", postfix = "}") { it.toLatexString(ctx) }
+            return children.joinToString(" ") { it.toLatexString(ctx) }
         }
     };
 

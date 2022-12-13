@@ -25,7 +25,7 @@ object EquationOperator : BinaryOperator, StatementOperator {
             val innerCtx = ctx.copy(align = false)
             return "${left.toLatexString(innerCtx)} & = & ${right.toLatexString(innerCtx)}"
         } else {
-            return "{${left.toLatexString(ctx)} = ${right.toLatexString(ctx)}}"
+            return "${left.toLatexString(ctx)} = ${right.toLatexString(ctx)}"
         }
     }
 
