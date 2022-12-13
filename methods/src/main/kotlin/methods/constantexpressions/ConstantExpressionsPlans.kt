@@ -130,6 +130,7 @@ enum class ConstantExpressionsPlans(override val runner: Plan) : RunnerMethod {
 
             steps {
                 whilePossible { deeply(simpleTidyUpSteps) }
+                optionally(RewriteIntegerOrderRootsAsPowers)
                 optionally(NormalizationPlans.NormalizeExpression)
                 whilePossible { deeply(SimplifyConstantSubexpression, deepFirst = true) }
                 whilePossible(simplificationSteps)
@@ -139,60 +140,74 @@ enum class ConstantExpressionsPlans(override val runner: Plan) : RunnerMethod {
 }
 
 val simpleTidyUpSteps = steps {
-    firstOf {
-        // simplify to undefined
-        option { deeply(GeneralRules.SimplifyZeroDenominatorFractionToUndefined) }
-        option { deeply(GeneralRules.EvaluateZeroToThePowerOfZero) }
-        option { deeply(IntegerRationalExponentsRules.EvaluateNegativeToRationalExponentAsUndefined) }
+    deeply {
+        firstOf {
+            // simplify to undefined
+            option(GeneralRules.SimplifyZeroDenominatorFractionToUndefined)
+            option(GeneralRules.EvaluateZeroToThePowerOfZero)
+            option(IntegerRationalExponentsRules.EvaluateNegativeToRationalExponentAsUndefined)
 
-        // handle zeroes
-        option { deeply(GeneralRules.EvaluateProductContainingZero) }
-        option { deeply(GeneralRules.EliminateZeroInSum) }
-        option { deeply(GeneralRules.SimplifyZeroNumeratorFractionToZero) }
-        option { deeply(GeneralRules.EvaluateZeroToAPositivePower) }
-        option { deeply(GeneralRules.EvaluateExpressionToThePowerOfZero) }
-        option { deeply(IntegerRootsRules.SimplifyRootOfZero) }
+            // handle zeroes
+            option(GeneralRules.EvaluateProductContainingZero)
+            option(GeneralRules.EliminateZeroInSum)
+            option(GeneralRules.SimplifyZeroNumeratorFractionToZero)
+            option(GeneralRules.EvaluateZeroToAPositivePower)
+            option(GeneralRules.EvaluateExpressionToThePowerOfZero)
+            option(IntegerRootsRules.SimplifyRootOfZero)
 
-        // handle ones
-        option { deeply(GeneralRules.SimplifyFractionWithOneDenominator) }
-        option { deeply(GeneralRules.EvaluateOneToAnyPower) }
-        option { deeply(GeneralRules.SimplifyExpressionToThePowerOfOne) }
-        option { deeply(IntegerRootsRules.SimplifyRootOfOne) }
+            // handle ones
+            option(GeneralRules.SimplifyFractionWithOneDenominator)
+            option(GeneralRules.EvaluateOneToAnyPower)
+            option(GeneralRules.SimplifyExpressionToThePowerOfOne)
+            option(IntegerRootsRules.SimplifyRootOfOne)
 
-        // miscellaneous
-        option { deeply(MixedNumbersRules.SplitMixedNumber) }
-        option { deeply(GeneralRules.CancelAdditiveInverseElements) }
+            // miscellaneous
+            option(MixedNumbersRules.SplitMixedNumber)
+            option(GeneralRules.CancelAdditiveInverseElements)
+        }
     }
 }
 
 val trickySimplificationSteps = steps {
+    deeply {
+        firstOf {
+            option(cancelRootOfPower)
+            option(IntegerRootsPlans.SplitRootsAndCancelRootsOfPowers)
+            option(IntegerRootsPlans.SimplifyPowerOfIntegerUnderRoot)
+            option(FractionArithmeticRules.AddLikeFractions)
+        }
+    }
+}
+
+val fractionSimplificationSteps = steps {
     firstOf {
-        option { deeply(cancelRootOfPower) }
-        option { deeply(IntegerRootsPlans.SplitRootsAndCancelRootsOfPowers) }
-        option { deeply(IntegerRootsPlans.SimplifyPowerOfIntegerUnderRoot) }
+        option(FractionArithmeticPlans.NormalizeFractions)
+        option(FractionArithmeticPlans.NormalizeSignsInFraction)
+        option {
+            deeply {
+                firstOf {
+                    option(FractionArithmeticPlans.SimplifyFraction)
+                    option(DecimalPlans.NormalizeFractionOfDecimals)
+                    option(DecimalPlans.ConvertTerminatingDecimalToFractionAndSimplify)
+                    option(DecimalPlans.ConvertRecurringDecimalToFractionAndSimplify)
+                }
+            }
+        }
     }
 }
 
 val simplificationSteps = steps {
     firstOf {
         option(simpleTidyUpSteps)
-        option(ConstantExpressionsPlans.RewriteIntegerOrderRootsAsPowers)
 
         option { deeply(removeRedundantBrackets) }
 
         option(trickySimplificationSteps)
 
+        option(fractionSimplificationSteps)
+
         option { deeply(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithSameBase) }
         option { deeply(ConstantExpressionsPlans.SimplifyPowers) }
-
-        option(FractionArithmeticPlans.NormalizeFractions)
-        option(FractionArithmeticPlans.NormalizeSignsInFraction)
-
-        option { deeply(FractionArithmeticRules.AddLikeFractions) }
-        option { deeply(FractionArithmeticPlans.SimplifyFraction) }
-        option { deeply(DecimalPlans.NormalizeFractionOfDecimals) }
-        option { deeply(DecimalPlans.ConvertTerminatingDecimalToFractionAndSimplify) }
-        option { deeply(DecimalPlans.ConvertRecurringDecimalToFractionAndSimplify) }
 
         option { deeply(IntegerRootsPlans.CollectLikeRootsAndSimplify) }
         option { deeply(IntegerRationalExponentsPlans.CollectLikeRationalPowersAndSimplify) }
