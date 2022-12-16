@@ -81,7 +81,7 @@ private val collectUnitaryMonomialsInProduct = rule {
                 otherFactors.add(factor)
             } else {
                 monomialFactors.add(monomialFactorPattern.getPower(match)!!)
-                val coeff = monomialFactorPattern.coefficient(match)!!
+                val coeff = monomialFactorPattern.coefficient(match)
 
                 // It would be better to just know when there is no coefficient
                 if (coeff != Constants.One) {
@@ -139,13 +139,11 @@ private val normalizeMonomial = rule {
             coeff.firstChild == Constants.One -> negOf(move(monomial.powerPattern))
             else -> negOf(productOf(coeff.firstChild, move(monomial.powerPattern)))
         }
-        if (normalized == before)
-            null
-        else
-            TransformationResult(
-                toExpr = normalized,
-                explanation = metadata(Explanation.NormalizeMonomial),
-            )
+        if (normalized == before) null
+        else TransformationResult(
+            toExpr = normalized,
+            explanation = metadata(Explanation.NormalizeMonomial)
+        )
     }
 }
 

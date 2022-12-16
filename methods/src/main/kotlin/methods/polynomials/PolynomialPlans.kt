@@ -27,10 +27,10 @@ enum class PolynomialPlans(override val runner: Plan) : RunnerMethod {
     SimplifyPowerOfUnitaryMonomial(simplifyPowerOfUnitaryMonomial),
     DistributeProductToIntegerPowerAndSimplify(distributeProductToIntegerPowerAndSimplify),
 
-    @PublicMethod
     /**
      * Simplify an algebraic expression with one variable.
      */
+    @PublicMethod
     SimplifyAlgebraicExpressionInOneVariable(
         plan {
             explanation = Explanation.SimplifyAlgebraicExpression

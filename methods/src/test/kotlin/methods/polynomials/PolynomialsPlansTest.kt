@@ -568,4 +568,64 @@ class PolynomialsPlansTest {
             }
         }
     }
+
+    @Test
+    fun testDistributingNegativeIntoPositives() = testMethod {
+        method = PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable
+        inputExpr = "-(a+3)"
+
+        check {
+            fromExpr = "-(a + 3)"
+            toExpr = "-a - 3"
+            explanation {
+                key = GeneralExplanation.DistributeMultiplicationOverSum
+            }
+        }
+    }
+
+    @Test
+    fun testDistributingNegativeIntoNegatives() = testMethod {
+        method = PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable
+        inputExpr = "-(-a-3)"
+
+        check {
+            fromExpr = "-(-a - 3)"
+            toExpr = "a + 3"
+            explanation {
+                key = PolynomialsExplanation.SimplifyAlgebraicExpression
+            }
+
+            step {
+                fromExpr = "-(-a - 3)"
+                toExpr = "-(-a) - (-3)"
+                explanation {
+                    key = GeneralExplanation.DistributeMultiplicationOverSum
+                }
+            }
+
+            step {
+                fromExpr = "-(-a) - (-3)"
+                toExpr = "a + 3"
+                explanation {
+                    key = FractionArithmeticExplanation.NormalizeSignsInFraction
+                }
+
+                step {
+                    fromExpr = "-(-a) - (-3)"
+                    toExpr = "a - (-3)"
+                    explanation {
+                        key = GeneralExplanation.SimplifyDoubleMinus
+                    }
+                }
+
+                step {
+                    fromExpr = "a - (-3)"
+                    toExpr = "a + 3"
+                    explanation {
+                        key = GeneralExplanation.SimplifyDoubleMinus
+                    }
+                }
+            }
+        }
+    }
 }

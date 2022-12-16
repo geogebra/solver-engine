@@ -166,6 +166,27 @@ class GeneralRulesTest {
             DistributeMultiplicationOverSum,
             "3 sqrt[2] + sqrt[4] * sqrt[2] + sqrt[5] * sqrt[2]"
         )
+        testRule(
+            "(3 + sqrt[5]) * -2",
+            DistributeMultiplicationOverSum,
+            "3 * -2 + sqrt[5] * -2"
+        )
+        testRule(
+            "-sqrt[2] * (3 + sqrt[5])",
+            DistributeMultiplicationOverSum,
+            "-sqrt[2] * 3 - sqrt[2] * sqrt[5]"
+        )
+        testRule(
+            "-2 * (-3 - sqrt[5])",
+            DistributeMultiplicationOverSum,
+            // perhaps `"-2 *( -3) - 2 * (-sqrt[5])"` would be better
+            "-(-2 * 3) - (-2 sqrt[5])"
+        )
+        testRule(
+            "-(3 + sqrt[5])",
+            DistributeMultiplicationOverSum,
+            "-3 - sqrt[5]"
+        )
     }
 
     @Test

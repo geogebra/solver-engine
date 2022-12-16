@@ -257,7 +257,9 @@ class Expression internal constructor(
     internal fun replaceNthChild(childIndex: Int, newChild: Expression) = Expression(
         operator,
         children().mapIndexed { i, op -> if (i == childIndex) newChild.addBracketIfNeededFor(operator, i) else op },
-        decorators, Build, label
+        decorators,
+        Build,
+        label
     )
 
     override fun getBoundExprs(m: Match) = listOf(this)
@@ -270,6 +272,13 @@ class Expression internal constructor(
 
     override fun isInlineDivideByTerm(): Boolean {
         return operator === UnaryExpressionOperator.DivideBy
+    }
+
+    /** Returns true if [possibleAncestor] is `===` to `this` or an ancestor of `this` */
+    fun isChildOfOrSelf(possibleAncestor: Expression?): Boolean {
+        if (possibleAncestor === null) return false
+        if (possibleAncestor === this) return true
+        return parent?.isChildOfOrSelf(possibleAncestor) === true
     }
 
     fun toJson(): List<Any> {

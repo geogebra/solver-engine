@@ -1845,4 +1845,249 @@ class SmartFactorizationUnderRoot {
             }
         }
     }
+
+    @Test
+    fun testDistributingNegative() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "-2(sqrt[2]+1) - (sqrt[2] + 7)"
+        inputExpr = "-2 (sqrt[2] + 1) - (sqrt[2] + 7)"
+
+        check {
+            fromExpr = "-2 (sqrt[2] + 1) - (sqrt[2] + 7)"
+            toExpr = "-3 sqrt[2] - 9"
+            explanation {
+                key = ConstantExpressionsExplanation.SimplifyConstantExpression
+            }
+
+            step {
+                fromExpr = "-2 (sqrt[2] + 1) - (sqrt[2] + 7)"
+                toExpr = "(-2 sqrt[2] - 2 * 1) - (sqrt[2] + 7)"
+                explanation {
+                    key = GeneralExplanation.DistributeMultiplicationOverSum
+                }
+            }
+
+            step {
+                fromExpr = "(-2 sqrt[2] - 2 * 1) - (sqrt[2] + 7)"
+                toExpr = "-2 sqrt[2] - 2 * 1 - (sqrt[2] + 7)"
+                explanation {
+                    key = GeneralExplanation.RemoveBracketSumInSum
+                }
+            }
+
+            step {
+                fromExpr = "-2 sqrt[2] - 2 * 1 - (sqrt[2] + 7)"
+                toExpr = "-2 sqrt[2] - 2 - (sqrt[2] + 7)"
+                explanation {
+                    key = IntegerArithmeticExplanation.SimplifyIntegersInProduct
+                }
+
+                step {
+                    fromExpr = "2 * 1"
+                    toExpr = "2"
+                    explanation {
+                        key = IntegerArithmeticExplanation.EvaluateIntegerProduct
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "-2 sqrt[2] - 2 - (sqrt[2] + 7)"
+                toExpr = "-2 sqrt[2] - 2 + (-sqrt[2] - 7)"
+                explanation {
+                    key = GeneralExplanation.DistributeMultiplicationOverSum
+                }
+            }
+
+            step {
+                fromExpr = "-2 sqrt[2] - 2 + (-sqrt[2] - 7)"
+                toExpr = "-2 sqrt[2] - 2 - sqrt[2] - 7"
+                explanation {
+                    key = GeneralExplanation.RemoveBracketSumInSum
+                }
+            }
+
+            step {
+                fromExpr = "-2 sqrt[2] - 2 - sqrt[2] - 7"
+                toExpr = "-3 sqrt[2] - 9"
+                explanation {
+                    key = IntegerRootsExplanation.CollectLikeRootsAndSimplify
+                }
+
+                step {
+                    fromExpr = "-2 sqrt[2] - 2 - sqrt[2] - 7"
+                    toExpr = "(-2 - 1) sqrt[2] - 2 - 7"
+                    explanation {
+                        key = IntegerRootsExplanation.CollectLikeRoots
+                    }
+                }
+
+                step {
+                    fromExpr = "(-2 - 1) sqrt[2] - 2 - 7"
+                    toExpr = "(-2 - 1) sqrt[2] - 9"
+                    explanation {
+                        key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                    }
+                }
+
+                step {
+                    fromExpr = "(-2 - 1) sqrt[2] - 9"
+                    toExpr = "(-3) sqrt[2] - 9"
+                    explanation {
+                        key = IntegerArithmeticExplanation.SimplifyIntegersInSum
+                    }
+
+                    step {
+                        fromExpr = "-2 - 1"
+                        toExpr = "-3"
+                        explanation {
+                            key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                        }
+                    }
+                }
+
+                step {
+                    fromExpr = "(-3) sqrt[2] - 9"
+                    toExpr = "-3 sqrt[2] - 9"
+                    explanation {
+                        key = GeneralExplanation.MoveSignOfNegativeFactorOutOfProduct
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testSimplifyProductOfConjugates() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "[1 / 1 - sqrt[2]]"
+
+        check {
+            fromExpr = "[1 / 1 - sqrt[2]]"
+            toExpr = "-1 - sqrt[2]"
+            explanation {
+                key = ConstantExpressionsExplanation.SimplifyConstantExpression
+            }
+
+            step {
+                fromExpr = "[1 / 1 - sqrt[2]]"
+                toExpr = "[(1 + sqrt[2]) / -1]"
+                explanation {
+                    key = FractionRootsExplanation.RationalizeDenominator
+                }
+
+                step {
+                    fromExpr = "[1 / 1 - sqrt[2]]"
+                    toExpr = "[1 / 1 - sqrt[2]] * [1 + sqrt[2] / 1 + sqrt[2]]"
+                    explanation {
+                        key = FractionRootsExplanation.RationalizeSumOfIntegerAndSquareRoot
+                    }
+                }
+
+                step {
+                    fromExpr = "[1 / 1 - sqrt[2]] * [1 + sqrt[2] / 1 + sqrt[2]]"
+                    toExpr = "[1 (1 + sqrt[2]) / (1 - sqrt[2]) (1 + sqrt[2])]"
+                    explanation {
+                        key = FractionArithmeticExplanation.MultiplyFractions
+                    }
+                }
+
+                step {
+                    fromExpr = "[1 (1 + sqrt[2]) / (1 - sqrt[2]) (1 + sqrt[2])]"
+                    toExpr = "[(1 + sqrt[2]) / (1 - sqrt[2]) (1 + sqrt[2])]"
+                    explanation {
+                        key = IntegerRootsExplanation.SimplifyProductWithRoots
+                    }
+
+                    step {
+                        fromExpr = "1 (1 + sqrt[2])"
+                        toExpr = "1 + sqrt[2]"
+                        explanation {
+                            key = GeneralExplanation.EliminateOneInProduct
+                        }
+                    }
+                }
+
+                step {
+                    fromExpr = "[(1 + sqrt[2]) / (1 - sqrt[2]) (1 + sqrt[2])]"
+                    toExpr = "[(1 + sqrt[2]) / -1]"
+                    explanation {
+                        key = FractionRootsExplanation.SimplifyDenominatorAfterRationalization
+                    }
+
+                    step {
+                        fromExpr = "[(1 + sqrt[2]) / (1 - sqrt[2]) (1 + sqrt[2])]"
+                        toExpr = "[(1 + sqrt[2]) / [1 ^ 2] - [(sqrt[2]) ^ 2]]"
+                        explanation {
+                            key = GeneralExplanation.SimplifyProductOfConjugates
+                        }
+                    }
+
+                    step {
+                        fromExpr = "[(1 + sqrt[2]) / [1 ^ 2] - [(sqrt[2]) ^ 2]]"
+                        toExpr = "[(1 + sqrt[2]) / [1 ^ 2] - 2]"
+                        explanation {
+                            key = IntegerRootsExplanation.SimplifyNthRootToThePowerOfN
+                        }
+                    }
+
+                    step {
+                        fromExpr = "[(1 + sqrt[2]) / [1 ^ 2] - 2]"
+                        toExpr = "[(1 + sqrt[2]) / 1 - 2]"
+                        explanation {
+                            key = IntegerRootsExplanation.SimplifyProductWithRoots
+                        }
+
+                        step {
+                            fromExpr = "[1 ^ 2] - 2"
+                            toExpr = "1 - 2"
+                            explanation {
+                                key = IntegerArithmeticExplanation.EvaluateIntegerPowerDirectly
+                            }
+                        }
+                    }
+
+                    step {
+                        fromExpr = "[(1 + sqrt[2]) / 1 - 2]"
+                        toExpr = "[(1 + sqrt[2]) / -1]"
+                        explanation {
+                            key = IntegerArithmeticExplanation.SimplifyIntegersInSum
+                        }
+
+                        step {
+                            fromExpr = "1 - 2"
+                            toExpr = "-1"
+                            explanation {
+                                key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
+                            }
+                        }
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "[(1 + sqrt[2]) / -1]"
+                toExpr = "-[1 + sqrt[2] / 1]"
+                explanation {
+                    key = FractionArithmeticExplanation.SimplifyNegativeInDenominator
+                }
+            }
+
+            step {
+                fromExpr = "-[1 + sqrt[2] / 1]"
+                toExpr = "-(1 + sqrt[2])"
+                explanation {
+                    key = GeneralExplanation.SimplifyFractionWithOneDenominator
+                }
+            }
+
+            step {
+                fromExpr = "-(1 + sqrt[2])"
+                toExpr = "-1 - sqrt[2]"
+                explanation {
+                    key = GeneralExplanation.DistributeMultiplicationOverSum
+                }
+            }
+        }
+    }
 }
