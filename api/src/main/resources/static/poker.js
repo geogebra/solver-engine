@@ -244,7 +244,7 @@ const renderExplanation = (expl) => {
     </div>`;
 };
 
-const renderExpression = (expr) => `\\(\\displaystyle${expr}\\)`;
+const renderExpression = (expr) => `\\(\\displaystyle ${expr}\\)`;
 
 /******************************************
  * Rendering a plan test source code.
