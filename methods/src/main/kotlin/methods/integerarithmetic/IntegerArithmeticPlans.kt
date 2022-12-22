@@ -69,6 +69,7 @@ enum class IntegerArithmeticPlans(override val runner: Plan) : RunnerMethod {
             steps {
                 firstOf {
                     option(GeneralRules.EvaluateZeroToThePowerOfZero)
+                    option(GeneralRules.EvaluateZeroToAPositivePower)
                     option {
                         apply(GeneralRules.RewritePowerAsProduct)
                         apply(EvaluateProductOfIntegers)

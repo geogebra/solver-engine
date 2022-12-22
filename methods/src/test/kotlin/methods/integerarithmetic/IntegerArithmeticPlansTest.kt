@@ -410,4 +410,53 @@ class IntegerArithmeticPlansTest {
             }
         }
     }
+
+    @Test
+    fun testZeroToThePowerOfFour() = testMethod {
+        method = IntegerArithmeticPlans.EvaluateArithmeticExpression
+        inputExpr = "[12 ^ 3] + [0 ^ 4] - 16"
+
+        check {
+            fromExpr = "[12 ^ 3] + [0 ^ 4] - 16"
+            toExpr = "1712"
+            explanation {
+                key = IntegerArithmeticExplanation.EvaluateArithmeticExpression
+            }
+
+            step {
+                fromExpr = "[12 ^ 3] + [0 ^ 4] - 16"
+                toExpr = "1728 + [0 ^ 4] - 16"
+                explanation {
+                    key = IntegerArithmeticExplanation.EvaluateIntegerPower
+                }
+                // sub-steps omitted
+            }
+
+            step {
+                fromExpr = "1728 + [0 ^ 4] - 16"
+                toExpr = "1728 + 0 - 16"
+                explanation {
+                    key = IntegerArithmeticExplanation.EvaluateIntegerPower
+                }
+
+                // this sub-step is necessary for the test-case
+                step {
+                    fromExpr = "[0 ^ 4]"
+                    toExpr = "0"
+                    explanation {
+                        key = GeneralExplanation.EvaluateZeroToAPositivePower
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "1728 + 0 - 16"
+                toExpr = "1712"
+                explanation {
+                    key = IntegerArithmeticExplanation.EvaluateSumOfIntegers
+                }
+                // sub-steps omitted
+            }
+        }
+    }
 }
