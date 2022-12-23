@@ -14,6 +14,7 @@ import engine.patterns.powerOf
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.constantexpressions.simplificationSteps
+import methods.general.GeneralPlans
 import methods.general.GeneralRules
 import methods.general.NormalizationPlans
 
@@ -41,6 +42,48 @@ enum class PolynomialPlans(override val runner: Plan) : RunnerMethod {
                 whilePossible { deeply(simpleTidyUpSteps) }
                 optionally(NormalizationPlans.NormalizeExpression)
                 whilePossible(AlgebraicSimplificationSteps)
+            }
+        }
+    ),
+
+    @PublicMethod
+    ExpandPolynomialExpressionInOneVariable(
+        plan {
+            explanation = Explanation.ExpandPolynomialExpression
+            pattern = condition(AnyPattern()) { it.variables.size == 1 }
+
+            steps {
+                whilePossible { deeply(simpleTidyUpSteps) }
+                optionally(NormalizationPlans.NormalizeExpression)
+                optionally(SimplifyAlgebraicExpressionInOneVariable)
+                optionally {
+                    deeply(GeneralPlans.ExpandBinomialSquared)
+                }
+                optionally {
+                    deeply(GeneralPlans.ExpandBinomialCubed)
+                }
+                optionally {
+                    deeply(GeneralPlans.ExpandTrinomialSquared)
+                }
+                optionally {
+                    deeply(GeneralRules.ExpandProductOfSumAndDifference)
+                }
+                optionally {
+                    whilePossible {
+                        deeply(GeneralRules.ApplyFoilMethod)
+                        deeply(SimplifyAlgebraicExpressionInOneVariable)
+                    }
+                }
+                optionally {
+                    whilePossible {
+                        deeply(GeneralRules.ExpandDoubleBrackets)
+                        deeply(SimplifyAlgebraicExpressionInOneVariable)
+                    }
+                }
+                optionally {
+                    deeply(GeneralRules.DistributeMultiplicationOverSum)
+                }
+                optionally(SimplifyAlgebraicExpressionInOneVariable)
             }
         }
     )

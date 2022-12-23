@@ -2091,3 +2091,15 @@ class SmartFactorizationUnderRoot {
         }
     }
 }
+
+class MultiplyConstantTermWithSum {
+    @Test
+    fun testMultiplyConstantWithConstantSum() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "4 * (1 + sqrt[2])"
+
+        check {
+            toExpr = "4 + 4 sqrt[2]"
+        }
+    }
+}

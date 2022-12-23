@@ -237,7 +237,7 @@ private class MonomialPattern(val base: Pattern, positiveOnly: Boolean = false) 
 
     val exponent: IntegerProvider = IntegerProviderWithDefault(exponentPattern, BigInteger.ONE)
 
-    override val key = ptn
+    override val key = ptn.key
 
     fun getPower(match: Match) = powerPattern.getBoundExpr(match)
 

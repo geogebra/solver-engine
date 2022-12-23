@@ -1,9 +1,15 @@
 package methods.general
 
+import engine.context.ResourceData
+import engine.expressions.Constants
 import engine.methods.Plan
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
+import engine.patterns.AnyPattern
+import engine.patterns.FixedPattern
+import engine.patterns.powerOf
+import engine.patterns.sumOf
 
 enum class GeneralPlans(override val runner: Plan) : RunnerMethod {
     RewriteDivisionsAsFractions(
@@ -14,7 +20,11 @@ enum class GeneralPlans(override val runner: Plan) : RunnerMethod {
                 whilePossible { deeply(GeneralRules.RewriteDivisionAsFraction) }
             }
         }
-    )
+    ),
+
+    ExpandBinomialSquared(expandBinomialSquared),
+    ExpandBinomialCubed(expandBinomialCubed),
+    ExpandTrinomialSquared(expandTrinomialSquared)
 }
 
 val normalizeNegativeSigns = steps {
@@ -29,5 +39,44 @@ val evaluateOperationContainingZero = steps {
     firstOf {
         option(GeneralRules.EvaluateZeroDividedByAnyValue)
         option(GeneralRules.EvaluateProductContainingZero)
+    }
+}
+
+private val expandBinomialSquared = plan {
+    explanation = Explanation.ExpandBinomialSquared
+    pattern = powerOf(sumOf(AnyPattern(), AnyPattern()), FixedPattern(Constants.Two))
+
+    steps(ResourceData(curriculum = "EU")) {
+        apply(GeneralRules.ExpandBinomialSquaredUsingIdentity)
+    }
+    alternative(ResourceData(curriculum = "US")) {
+        apply(GeneralRules.RewritePowerAsProduct)
+    }
+}
+
+private val expandBinomialCubed = plan {
+    explanation = Explanation.ExpandBinomialCubed
+    pattern = powerOf(sumOf(AnyPattern(), AnyPattern()), FixedPattern(Constants.Three))
+
+    steps(ResourceData(curriculum = "EU")) {
+        apply(GeneralRules.ExpandBinomialCubedUsingIdentity)
+    }
+    alternative(ResourceData(curriculum = "US")) {
+        apply(GeneralRules.RewritePowerAsProduct)
+    }
+}
+
+private val expandTrinomialSquared = plan {
+    explanation = Explanation.ExpandTrinomialSquared
+    pattern = powerOf(
+        sumOf(AnyPattern(), AnyPattern(), AnyPattern()),
+        FixedPattern(Constants.Two)
+    )
+
+    steps(ResourceData(curriculum = "EU")) {
+        apply(GeneralRules.ExpandTrinomialSquaredUsingIdentity)
+    }
+    alternative(ResourceData(curriculum = "US")) {
+        apply(GeneralRules.RewritePowerAsProduct)
     }
 }

@@ -14,7 +14,6 @@ import engine.expressions.rootOf
 import engine.expressions.simplifiedPowerOf
 import engine.expressions.simplifiedProductOf
 import engine.expressions.sumOf
-import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.TransformationResult
@@ -71,7 +70,12 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     FactorMinusFromSum(factorMinusFromSum),
     SimplifyProductOfConjugates(simplifyProductOfConjugates),
     DistributePowerOfProduct(distributePowerOfProduct),
-    ExpandBinomialSquared(expandBinomialSquared),
+    ExpandBinomialSquaredUsingIdentity(expandBinomialSquaredUsingIdentity),
+    ExpandBinomialCubedUsingIdentity(expandBinomialCubedUsingIdentity),
+    ExpandTrinomialSquaredUsingIdentity(expandTrinomialSquaredUsingIdentity),
+    ApplyFoilMethod(applyFoilMethod),
+    ExpandDoubleBrackets(expandDoubleBrackets),
+    ExpandProductOfSumAndDifference(expandProductOfSumAndDifference),
     RewriteDivisionAsFraction(rewriteDivisionAsFraction),
     MultiplyExponentsUsingPowerRule(multiplyExponentsUsingPowerRule),
     DistributeSumOfPowers(distributeSumOfPowers),
@@ -362,11 +366,20 @@ private val distributePowerOfProduct =
         }
     }
 
-private val expandBinomialSquared =
+/**
+ * [(a + b)^2] --> [a^2] + 2ab + [b^2]
+ *
+ * NOTE: @Simona explicitly mentioned to not use the formula:
+ * [(a - b)^2] --> [a^2] - 2ab + [b^2]
+ */
+private val expandBinomialSquaredUsingIdentity =
     rule {
         val a = AnyPattern()
         val b = AnyPattern()
-        val pattern = powerOf(sumOf(a, b), FixedPattern(xp(2)))
+        val pattern = powerOf(
+            sumOf(a, b),
+            FixedPattern(Constants.Two)
+        )
 
         onPattern(pattern) {
             TransformationResult(
@@ -375,7 +388,149 @@ private val expandBinomialSquared =
                     productOf(introduce(Constants.Two), move(a), move(b)),
                     powerOf(move(b), introduce(Constants.Two))
                 ),
-                explanation = metadata(Explanation.ExpandBinomialSquared)
+                explanation = metadata(Explanation.ExpandBinomialSquaredUsingIdentity)
+            )
+        }
+    }
+
+/**
+ * [(a + b)^3] --> [a^3] + 3 [a^2] b + 3 a [b^2] + [b^3]
+ *
+ * NOTE: @Simona explicitly mentioned to not use the formula:
+ * [(a - b)^3] --> [a^3] - 3 [a^2] b + 3 a [b^2] - [b^3]
+ */
+private val expandBinomialCubedUsingIdentity =
+    rule {
+        val a = AnyPattern()
+        val b = AnyPattern()
+        val pattern = powerOf(
+            sumOf(a, b),
+            FixedPattern(Constants.Three)
+        )
+
+        onPattern(pattern) {
+            TransformationResult(
+                toExpr = sumOf(
+                    powerOf(move(a), introduce(Constants.Three)),
+                    productOf(
+                        introduce(Constants.Three),
+                        powerOf(move(a), introduce(Constants.Two)),
+                        move(b)
+                    ),
+                    productOf(
+                        introduce(Constants.Three),
+                        move(a),
+                        powerOf(move(b), introduce(Constants.Two))
+                    ),
+                    powerOf(move(b), introduce(Constants.Three))
+                ),
+                explanation = metadata(Explanation.ExpandBinomialCubedUsingIdentity)
+            )
+        }
+    }
+
+/**
+ * [(a + b + c)^2] --> [a^2] + [b^2] + [c^2] + 2ab + 2bc + 2ca
+ */
+private val expandTrinomialSquaredUsingIdentity =
+    rule {
+        val a = AnyPattern()
+        val b = AnyPattern()
+        val c = AnyPattern()
+
+        val sum = sumOf(a, b, c)
+        val trinomialSquared = powerOf(sum, FixedPattern(Constants.Two))
+
+        onPattern(trinomialSquared) {
+            TransformationResult(
+                toExpr = sumOf(
+                    powerOf(move(a), introduce(Constants.Two)),
+                    powerOf(move(b), introduce(Constants.Two)),
+                    powerOf(move(c), introduce(Constants.Two)),
+                    productOf(introduce(Constants.Two), move(a), move(b)),
+                    productOf(introduce(Constants.Two), move(b), move(c)),
+                    productOf(introduce(Constants.Two), move(c), move(a))
+                ),
+                explanation = metadata(Explanation.ExpandTrinomialSquaredUsingIdentity)
+            )
+        }
+    }
+
+/**
+ * (a +- b) * (a -+ b) --> [a^2] - [b^2]
+ */
+private val expandProductOfSumAndDifference =
+    rule {
+        val a = AnyPattern()
+        val b = condition(AnyPattern()) { it.operator != UnaryExpressionOperator.Minus }
+        val pattern = commutativeProductContaining(commutativeSumOf(a, b), commutativeSumOf(a, negOf(b)))
+
+        onPattern(pattern) {
+            TransformationResult(
+                toExpr = pattern.substitute(
+                    sumOf(
+                        powerOf(move(a), introduce(Constants.Two)),
+                        negOf(
+                            powerOf(move(b), introduce(Constants.Two))
+                        )
+                    )
+                ),
+                explanation = metadata(Explanation.ExpandProductOfSumAndDifference)
+            )
+        }
+    }
+
+/**
+ * (a + b) * (c + d) --> a*c + a*d + b*c + b*d
+ */
+private val applyFoilMethod =
+    rule {
+        val a = AnyPattern()
+        val b = AnyPattern()
+        val c = AnyPattern()
+        val d = AnyPattern()
+        val sum1 = sumOf(a, b)
+        val sum2 = sumOf(c, d)
+        val prod = productContaining(sum1, sum2)
+
+        onPattern(prod) {
+            val toExpr = sumOf(
+                productOf(move(a), move(c)),
+                productOf(move(a), move(d)),
+                productOf(move(b), move(c)),
+                productOf(move(b), move(d))
+            )
+
+            TransformationResult(
+                toExpr = prod.substitute(toExpr),
+                explanation = metadata(Explanation.ApplyFoilMethod)
+            )
+        }
+    }
+
+/**
+ * (a1 + a2 + ... + aj) * (b1 + b2 + ... + bk) -->
+ * a1*b1 + a1*b2 + ... + a1*bk   +   a2*b1 + a2*b2 + ... + a2*bk   + ... +   aj*bk
+ */
+private val expandDoubleBrackets =
+    rule {
+        val sum1 = sumContaining()
+        val sum2 = sumContaining()
+        val prod = productContaining(sum1, sum2)
+
+        onPattern(prod) {
+            val terms1 = get(sum1)!!.children()
+            val terms2 = get(sum2)!!.children()
+
+            val toExpr = sumOf(
+                terms1.map { term1 ->
+                    sumOf(terms2.map { term2 -> productOf(term1, term2) })
+                }
+            )
+
+            TransformationResult(
+                toExpr = prod.substitute(toExpr),
+                explanation = metadata(Explanation.ExpandDoubleBrackets)
             )
         }
     }

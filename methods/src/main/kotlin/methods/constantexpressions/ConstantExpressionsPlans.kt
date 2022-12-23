@@ -22,6 +22,7 @@ import methods.fractionarithmetic.FractionArithmeticRules
 import methods.fractionarithmetic.simplifyIntegerToNegativePower
 import methods.fractionroots.FractionRootsPlans
 import methods.fractionroots.FractionRootsRules
+import methods.general.GeneralPlans
 import methods.general.GeneralRules
 import methods.general.NormalizationPlans
 import methods.general.removeRedundantBrackets
@@ -56,7 +57,25 @@ enum class ConstantExpressionsPlans(override val runner: Plan) : RunnerMethod {
                         option { deeply(IntegerArithmeticRules.SimplifyEvenPowerOfNegative) }
                         option { deeply(IntegerArithmeticRules.SimplifyOddPowerOfNegative) }
                         option { deeply(GeneralRules.DistributePowerOfProduct) }
-                        option { deeply(GeneralRules.ExpandBinomialSquared) }
+
+                        // the "expand" plans should eventually be moved to a
+                        // new public plan for "expanding" constant expression
+                        option {
+                            deeply {
+                                applyTo(GeneralPlans.ExpandBinomialSquared) { if (it.isConstant()) it else null }
+                            }
+                        }
+                        option {
+                            deeply {
+                                applyTo(GeneralPlans.ExpandBinomialCubed) { if (it.isConstant()) it else null }
+                            }
+                        }
+                        option {
+                            deeply {
+                                applyTo(GeneralPlans.ExpandTrinomialSquared) { if (it.isConstant()) it else null }
+                            }
+                        }
+
                         option { deeply(IntegerArithmeticPlans.EvaluateSignedIntegerPower) }
                     }
                 }
@@ -227,6 +246,14 @@ val simplificationSteps = steps {
         option { deeply(FractionArithmeticPlans.EvaluateSumOfFractionAndInteger) }
 
         option { deeply(FractionRootsPlans.RationalizeDenominators) }
+
+        // the plan should eventually be moved to "expanding" constant expression
+        option {
+            deeply {
+                applyTo(GeneralRules.ExpandProductOfSumAndDifference) { if (it.isConstant()) it else null }
+            }
+        }
+
         option {
             deeply {
                 applyTo(GeneralRules.DistributeMultiplicationOverSum) {

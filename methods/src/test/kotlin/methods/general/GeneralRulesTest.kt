@@ -12,7 +12,9 @@ import methods.general.GeneralRules.EvaluateProductContainingZero
 import methods.general.GeneralRules.EvaluateProductDividedByZeroAsUndefined
 import methods.general.GeneralRules.EvaluateZeroDividedByAnyValue
 import methods.general.GeneralRules.EvaluateZeroToAPositivePower
-import methods.general.GeneralRules.ExpandBinomialSquared
+import methods.general.GeneralRules.ExpandBinomialCubedUsingIdentity
+import methods.general.GeneralRules.ExpandBinomialSquaredUsingIdentity
+import methods.general.GeneralRules.ExpandProductOfSumAndDifference
 import methods.general.GeneralRules.FlipFractionUnderNegativePower
 import methods.general.GeneralRules.MoveSignOfNegativeFactorOutOfProduct
 import methods.general.GeneralRules.RewriteDivisionAsFraction
@@ -129,18 +131,81 @@ class GeneralRulesTest {
     fun testExpandBinomialSquared() {
         testRule(
             "[(a + b) ^ 2]",
-            ExpandBinomialSquared,
+            ExpandBinomialSquaredUsingIdentity,
             "[a ^ 2] + 2ab + [b ^ 2]"
         )
         testRule(
             "[(sqrt[2] + 1) ^ 2]",
-            ExpandBinomialSquared,
+            ExpandBinomialSquaredUsingIdentity,
             "[(sqrt[2]) ^ 2] + 2 sqrt[2] * 1 + [1 ^ 2]"
         )
         testRule(
             "[(x - y) ^ 2]",
-            ExpandBinomialSquared,
+            ExpandBinomialSquaredUsingIdentity,
             "[x ^ 2] + 2 x (-y) + [(-y) ^ 2]"
+        )
+        testRule(
+            "[(2x - 3)^2]",
+            ExpandBinomialSquaredUsingIdentity,
+            "[(2 x) ^ 2] + 2 * 2 x * (-3) + [(-3) ^ 2]"
+        )
+    }
+
+    @Test
+    fun testExpandBinomialCubed() {
+        testRule(
+            "[(a + b) ^ 3]",
+            ExpandBinomialCubedUsingIdentity,
+            "[a^3] + 3[a^2]b + 3a[b^2] + [b^3]"
+        )
+        testRule(
+            "[(a - b)^3]",
+            ExpandBinomialCubedUsingIdentity,
+            "[a^3] + 3[a^2](-b) + 3a * [(-b)^2] + [(-b)^3]"
+        )
+        testRule(
+            "[(2x - 4) ^ 3]",
+            ExpandBinomialCubedUsingIdentity,
+            "[(2 x) ^ 3] + 3 * [(2 x) ^ 2] * (-4) + 3 * 2 x * [(-4) ^ 2] + [(-4) ^ 3]"
+        )
+        testRule(
+            "[(-1 + 2x) ^ 3]",
+            ExpandBinomialCubedUsingIdentity,
+            "[(-1) ^ 3] + 3 * [(-1) ^ 2] * 2 x + 3 * (-1) [(2 x) ^ 2] + [(2 x) ^ 3]"
+        )
+    }
+
+    @Test
+    fun testIdentityProductOfSumAndDifference() {
+        testRule(
+            "(1 + sqrt[2]) (1 - sqrt[2])",
+            ExpandProductOfSumAndDifference,
+            "[1^2] - [(sqrt[2]) ^ 2]"
+        )
+        testRule(
+            "(1 - sqrt[2]) (1 + sqrt[2])",
+            ExpandProductOfSumAndDifference,
+            "[1^2] - [(sqrt[2]) ^ 2]"
+        )
+        testRule(
+            "(sqrt[2] - 1) (1 + sqrt[2])",
+            ExpandProductOfSumAndDifference,
+            "[(sqrt[2]) ^ 2] - [1^2]"
+        )
+        testRule(
+            "(-1 + sqrt[2]) (sqrt[2] + 1)",
+            ExpandProductOfSumAndDifference,
+            "[(sqrt[2]) ^ 2] - [1^2]"
+        )
+        testRule(
+            "5*(1 + sqrt[2])*(1 - sqrt[2])",
+            ExpandProductOfSumAndDifference,
+            "5 ([1 ^ 2] - [(sqrt[2]) ^ 2])"
+        )
+        testRule(
+            "(2x - 3) * 5 * (2x + 3)",
+            ExpandProductOfSumAndDifference,
+            "5 ( [(2x)^2] - [3^2] )"
         )
     }
 
@@ -187,6 +252,11 @@ class GeneralRulesTest {
             DistributeMultiplicationOverSum,
             "-3 - sqrt[5]"
         )
+        testRule(
+            "2 (4x - 3)",
+            DistributeMultiplicationOverSum,
+            "2*4x - 2*3"
+        )
     }
 
     @Test
@@ -199,6 +269,11 @@ class GeneralRulesTest {
         testRule("[x^1]", RewritePowerAsProduct, null)
         testRule("[x^0]", RewritePowerAsProduct, null)
         testRule("[([1/2])^4]", RewritePowerAsProduct, "[1/2] * [1/2] * [1/2] * [1/2]")
+        testRule(
+            "[(4[x^2] - 3) ^ 3]",
+            RewritePowerAsProduct,
+            "(4[x^2] - 3) (4[x^2] - 3) (4[x^2] - 3)"
+        )
     }
 
     @Test
@@ -383,6 +458,70 @@ class GeneralRulesTest {
             "root[[7 ^ 2], 2]",
             GeneralRules.CancelRootIndexAndExponent,
             "7"
+        )
+    }
+
+    @Test
+    fun testApplyFoilMethod() {
+        testRule(
+            "(1 + sqrt[2]) * (1 + sqrt[2])",
+            GeneralRules.ApplyFoilMethod,
+            "1*1 + 1 sqrt[2] + sqrt[2]*1 + sqrt[2]*sqrt[2]"
+        )
+        testRule(
+            "(4x - 3) * (4x - 3)",
+            GeneralRules.ApplyFoilMethod,
+            "4x * 4x + 4x * (-3) + (-3) * 4x + (-3) * (-3)"
+        )
+        testRule(
+            "(4x - 5[x^3]) * (2[x^2] - 3x)",
+            GeneralRules.ApplyFoilMethod,
+            "4 x * 2 [x ^ 2] + 4 x (-3 x) + (-5 [x ^ 3]) * 2 [x ^ 2] + (-5 [x ^ 3]) (-3 x)"
+        )
+        testRule(
+            "(2x - 3)* 11 * (3x + 3)",
+            GeneralRules.ApplyFoilMethod,
+            "(2 x * 3 x + 2 x * 3 + (-3) * 3 x + (-3) * 3) * 11"
+        )
+        testRule(
+            "(x + [x^2]) (5x + [x^2])",
+            GeneralRules.ApplyFoilMethod,
+            "x * 5x + x * [x^2] + [x^2] * 5x + [x^2] * [x^2]"
+        )
+        testRule(
+            "(2x - 3) (2x - 3)",
+            GeneralRules.ApplyFoilMethod,
+            "2x * 2x + 2x * (-3) + (-3) * 2x + (-3) * (-3)"
+        )
+    }
+
+    @Test
+    fun testDistributeParentheses() {
+        testRule(
+            "([x^2] + 5x - 2) * (3x - 5)",
+            GeneralRules.ExpandDoubleBrackets,
+            "[x^2]*3x + [x^2]*(-5) + 5x * 3x + 5x * (-5) + (-2)*3x + (-2)*(-5)"
+        )
+    }
+
+    @Test
+    fun testExpandTrinomialSquared() {
+        testRule(
+            "[(1 + sqrt[2] + sqrt[3])^2]",
+            GeneralRules.ExpandTrinomialSquaredUsingIdentity,
+            "[1 ^ 2] + [(sqrt[2]) ^ 2] + [(sqrt[3]) ^ 2] + " +
+                "2 * 1 sqrt[2] + 2 sqrt[2] * sqrt[3] + 2 sqrt[3] * 1"
+        )
+        testRule(
+            "[(1 - sqrt[2] - sqrt[3])^2]",
+            GeneralRules.ExpandTrinomialSquaredUsingIdentity,
+            "[1 ^ 2] + [(-sqrt[2]) ^ 2] + [(-sqrt[3]) ^ 2] + " +
+                "2 * 1 (-sqrt[2]) + 2 (-sqrt[2]) (-sqrt[3]) + 2 (-sqrt[3]) * 1"
+        )
+        testRule(
+            "[(1 - x - y)^2]",
+            GeneralRules.ExpandTrinomialSquaredUsingIdentity,
+            "[1 ^ 2] + [(-x) ^ 2] + [(-y) ^ 2] + 2 * 1 (-x) + 2 (-x) (-y) + 2 (-y) * 1"
         )
     }
 }

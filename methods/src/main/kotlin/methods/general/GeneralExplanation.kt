@@ -64,8 +64,22 @@ enum class GeneralExplanation : CategorisedMetadataKey {
     FactorMinusFromSum,
     SimplifyProductOfConjugates,
     DistributePowerOfProduct,
-    ExpandBinomialSquared,
+
+    /**
+     * [(a +- b)^2] --> [a^2] +- 2ab + [b^2]
+     */
+    ExpandBinomialSquaredUsingIdentity,
+
+    /**
+     * [(a +- b)^3] --> [a^3] +- 3 [a^2] b + 3 a [b^2] +- [b^3]
+     */
+    ExpandBinomialCubedUsingIdentity,
     RewriteDivisionAsFraction,
+
+    /**
+     * identity: (a +- b) * (a -+ b) --> [a^2] - [b^2]
+     */
+    ExpandProductOfSumAndDifference,
 
     /**
      * Rewrite all divisions as fractions in an expression
@@ -189,7 +203,43 @@ enum class GeneralExplanation : CategorisedMetadataKey {
      *
      * E.g. root[x + 2, 3] -> [(x + 2) ^ [1/3]]
      */
-    RewriteIntegerOrderRootAsPower;
+    RewriteIntegerOrderRootAsPower,
+
+    /**
+     * apply the FOIL method, i.e. (a + b) * (c + d) -> a*c + a*d + b*c + b*d
+     */
+    ApplyFoilMethod,
+
+    /**
+     * expand the square of a binomial either by using the identity:
+     * [(a +- b)^2] --> [a^2] +- 2ab + [b^2]
+     * rewriting the square as a product of two binomials and then apply FOIL method
+     */
+    ExpandBinomialSquared,
+
+    /**
+     * expand the cube of a binomial either by using the identity:
+     * [(a +- b)^3] --> [a^3] +- 3 [a^2] b + 3 a [b^2] +- [b^3]
+     * rewriting the cube as a product of three binomials and then
+     * distribute the parentheses
+     */
+    ExpandBinomialCubed,
+
+    /**
+     * Expand (a + b + c) ^ 2
+     */
+    ExpandTrinomialSquared,
+
+    /**
+     * identity: [(a + b + c)^2] --> [a^2] + [b^2] + [c^2] + 2ab + 2bc + 2ca
+     */
+    ExpandTrinomialSquaredUsingIdentity,
+
+    /** Expand the product of two sums, i.e.
+     * (a1 + a2 + ... + aj) * (b1 + b2 + ... + bk) -->
+     * a1*b1 + a1*b2 + ... + a1*bk   +   a2*b1 + a2*b2 + ... + a2*bk   + ... +   aj*bk
+     */
+    ExpandDoubleBrackets;
 
     override val category = "General"
 }

@@ -155,7 +155,7 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
         return mixedNumber(
             ctx.integer.text.toBigInteger(),
             ctx.num.text.toBigInteger(),
-            ctx.den.text.toBigInteger(),
+            ctx.den.text.toBigInteger()
         )
     }
 
