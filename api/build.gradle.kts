@@ -4,7 +4,7 @@ import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 plugins {
     application
 
-    val kotlinVersion = "1.7.0"
+    val kotlinVersion = "1.7.10"
     kotlin("jvm")
     kotlin("plugin.jpa") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
