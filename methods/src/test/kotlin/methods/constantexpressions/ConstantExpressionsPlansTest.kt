@@ -1849,7 +1849,6 @@ class SmartFactorizationUnderRoot {
     @Test
     fun testDistributingNegative() = testMethod {
         method = ConstantExpressionsPlans.SimplifyConstantExpression
-        inputExpr = "-2(sqrt[2]+1) - (sqrt[2] + 7)"
         inputExpr = "-2 (sqrt[2] + 1) - (sqrt[2] + 7)"
 
         check {
@@ -1861,99 +1860,24 @@ class SmartFactorizationUnderRoot {
 
             step {
                 fromExpr = "-2 (sqrt[2] + 1) - (sqrt[2] + 7)"
-                toExpr = "(-2 sqrt[2] - 2 * 1) - (sqrt[2] + 7)"
+                toExpr = "-2 (sqrt[2] + 1) - sqrt[2] - 7"
+                explanation {
+                    key = GeneralExplanation.DistributeNegativeOverBracket
+                }
+            }
+
+            // no un-necessary brackets
+            // tests for PLUT-392
+            step {
+                fromExpr = "-2 (sqrt[2] + 1) - sqrt[2] - 7"
+                toExpr = "(-2) * sqrt[2] + (-2) * 1 - sqrt[2] - 7"
                 explanation {
                     key = GeneralExplanation.DistributeMultiplicationOverSum
                 }
             }
 
-            step {
-                fromExpr = "(-2 sqrt[2] - 2 * 1) - (sqrt[2] + 7)"
-                toExpr = "-2 sqrt[2] - 2 * 1 - (sqrt[2] + 7)"
-                explanation {
-                    key = GeneralExplanation.RemoveBracketSumInSum
-                }
-            }
-
-            step {
-                fromExpr = "-2 sqrt[2] - 2 * 1 - (sqrt[2] + 7)"
-                toExpr = "-2 sqrt[2] - 2 - (sqrt[2] + 7)"
-                explanation {
-                    key = IntegerArithmeticExplanation.SimplifyIntegersInProduct
-                }
-
-                step {
-                    fromExpr = "2 * 1"
-                    toExpr = "2"
-                    explanation {
-                        key = IntegerArithmeticExplanation.EvaluateIntegerProduct
-                    }
-                }
-            }
-
-            step {
-                fromExpr = "-2 sqrt[2] - 2 - (sqrt[2] + 7)"
-                toExpr = "-2 sqrt[2] - 2 + (-sqrt[2] - 7)"
-                explanation {
-                    key = GeneralExplanation.DistributeMultiplicationOverSum
-                }
-            }
-
-            step {
-                fromExpr = "-2 sqrt[2] - 2 + (-sqrt[2] - 7)"
-                toExpr = "-2 sqrt[2] - 2 - sqrt[2] - 7"
-                explanation {
-                    key = GeneralExplanation.RemoveBracketSumInSum
-                }
-            }
-
-            step {
-                fromExpr = "-2 sqrt[2] - 2 - sqrt[2] - 7"
-                toExpr = "-3 sqrt[2] - 9"
-                explanation {
-                    key = IntegerRootsExplanation.CollectLikeRootsAndSimplify
-                }
-
-                step {
-                    fromExpr = "-2 sqrt[2] - 2 - sqrt[2] - 7"
-                    toExpr = "(-2 - 1) sqrt[2] - 2 - 7"
-                    explanation {
-                        key = IntegerRootsExplanation.CollectLikeRoots
-                    }
-                }
-
-                step {
-                    fromExpr = "(-2 - 1) sqrt[2] - 2 - 7"
-                    toExpr = "(-2 - 1) sqrt[2] - 9"
-                    explanation {
-                        key = IntegerArithmeticExplanation.EvaluateIntegerAddition
-                    }
-                }
-
-                step {
-                    fromExpr = "(-2 - 1) sqrt[2] - 9"
-                    toExpr = "(-3) sqrt[2] - 9"
-                    explanation {
-                        key = IntegerArithmeticExplanation.SimplifyIntegersInSum
-                    }
-
-                    step {
-                        fromExpr = "-2 - 1"
-                        toExpr = "-3"
-                        explanation {
-                            key = IntegerArithmeticExplanation.EvaluateIntegerAddition
-                        }
-                    }
-                }
-
-                step {
-                    fromExpr = "(-3) sqrt[2] - 9"
-                    toExpr = "-3 sqrt[2] - 9"
-                    explanation {
-                        key = GeneralExplanation.MoveSignOfNegativeFactorOutOfProduct
-                    }
-                }
-            }
+            step { }
+            step { }
         }
     }
 
@@ -2085,21 +2009,136 @@ class SmartFactorizationUnderRoot {
                 fromExpr = "-(1 + sqrt[2])"
                 toExpr = "-1 - sqrt[2]"
                 explanation {
-                    key = GeneralExplanation.DistributeMultiplicationOverSum
+                    key = GeneralExplanation.DistributeNegativeOverBracket
                 }
             }
         }
     }
 }
 
-class MultiplyConstantTermWithSum {
+class Distribute {
     @Test
     fun testMultiplyConstantWithConstantSum() = testMethod {
         method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "4 * (1 + sqrt[2])"
 
         check {
+            fromExpr = "4 * (1 + sqrt[2])"
             toExpr = "4 + 4 sqrt[2]"
+            explanation {
+                key = ConstantExpressionsExplanation.SimplifyConstantExpression
+            }
+
+            step {
+                fromExpr = "4 * (1 + sqrt[2])"
+                toExpr = "4 * 1 + 4 * sqrt[2]"
+                explanation {
+                    key = GeneralExplanation.DistributeMultiplicationOverSum
+                }
+            }
+
+            step {
+                fromExpr = "4 * 1 + 4 * sqrt[2]"
+                toExpr = "4 + 4 * sqrt[2]"
+                explanation {
+                    key = IntegerArithmeticExplanation.SimplifyIntegersInProduct
+                }
+
+                step {
+                    fromExpr = "4 * 1"
+                    toExpr = "4"
+                    explanation {
+                        key = IntegerArithmeticExplanation.EvaluateIntegerProduct
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "4 + 4 * sqrt[2]"
+                toExpr = "4 + 4 sqrt[2]"
+                explanation {
+                    key = GeneralExplanation.NormaliseSimplifiedProduct
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testDistributeMultiplicationContainingRoot1() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "2*sqrt[2]*(1 + sqrt[3])"
+
+        check {
+            fromExpr = "2 * sqrt[2] * (1 + sqrt[3])"
+            toExpr = "2 sqrt[2] + 2 sqrt[6]"
+            explanation {
+                key = ConstantExpressionsExplanation.SimplifyConstantExpression
+            }
+
+            step {
+                fromExpr = "2 * sqrt[2] * (1 + sqrt[3])"
+                toExpr = "2 sqrt[2] * 1 + 2 sqrt[2] * sqrt[3]"
+                explanation {
+                    key = GeneralExplanation.DistributeMultiplicationOverSum
+                }
+            }
+
+            step {
+                fromExpr = "2 sqrt[2] * 1 + 2 sqrt[2] * sqrt[3]"
+                toExpr = "2 sqrt[2] + 2 sqrt[2] * sqrt[3]"
+                explanation {
+                    key = IntegerArithmeticExplanation.SimplifyIntegersInProduct
+                }
+            }
+
+            step {
+                fromExpr = "2 sqrt[2] + 2 sqrt[2] * sqrt[3]"
+                toExpr = "2 sqrt[2] + 2 sqrt[6]"
+                explanation {
+                    key = IntegerRootsExplanation.SimplifyProductWithRoots
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testDistributeMultiplicationContainingRoot2() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "2 * (1 + sqrt[3]) * sqrt[2]"
+
+        check {
+            fromExpr = "2 * (1 + sqrt[3]) * sqrt[2]"
+            toExpr = "2 sqrt[2] + 2 sqrt[6]"
+        }
+    }
+
+    @Test
+    fun testDistributeNegativeOverBracket() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "5 - (-sqrt[2] + 7)"
+
+        check {
+            fromExpr = "5 - (-sqrt[2] + 7)"
+            toExpr = "-2 + sqrt[2]"
+            explanation {
+                key = ConstantExpressionsExplanation.SimplifyConstantExpression
+            }
+
+            step {
+                fromExpr = "5 - (-sqrt[2] + 7)"
+                toExpr = "5 + sqrt[2] - 7"
+                explanation {
+                    key = GeneralExplanation.DistributeNegativeOverBracket
+                }
+            }
+
+            step {
+                fromExpr = "5 + sqrt[2] - 7"
+                toExpr = "-2 + sqrt[2]"
+                explanation {
+                    key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
+                }
+            }
         }
     }
 }

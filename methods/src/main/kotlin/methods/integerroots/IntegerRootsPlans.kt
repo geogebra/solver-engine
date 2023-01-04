@@ -66,7 +66,6 @@ enum class IntegerRootsPlans(override val runner: Plan) : RunnerMethod {
             explanation = Explanation.SimplifyProductWithRoots
 
             steps {
-                optionally(IntegerRootsRules.NormaliseProductWithRoots)
                 whilePossible { deeply(IntegerArithmeticRules.EvaluateIntegerPowerDirectly) }
                 optionally(IntegerArithmeticPlans.SimplifyIntegersInProduct)
                 optionally(simplifyProductOfRoots)

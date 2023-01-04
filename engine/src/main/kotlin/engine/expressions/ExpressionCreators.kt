@@ -139,7 +139,7 @@ fun productOf(operands: List<Expression>): Expression {
 }
 
 fun explicitProductOf(operands: List<Expression>) =
-    if (operands.size == 1) operands[0] else buildExpression(NaryOperator.Product, operands)
+    if (operands.size == 1) operands[0] else flattenedNaryExpression(NaryOperator.Product, operands)
 
 fun explicitProductOf(vararg operands: Expression) = explicitProductOf(operands.asList())
 

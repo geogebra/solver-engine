@@ -239,7 +239,25 @@ enum class GeneralExplanation : CategorisedMetadataKey {
      * (a1 + a2 + ... + aj) * (b1 + b2 + ... + bk) -->
      * a1*b1 + a1*b2 + ... + a1*bk   +   a2*b1 + a2*b2 + ... + a2*bk   + ... +   aj*bk
      */
-    ExpandDoubleBrackets;
+    ExpandDoubleBrackets,
+
+    /**
+     * distribute negative sign over a bracket to the terms,
+     * i.e. -(x + y) --> -x - y
+     */
+    DistributeNegativeOverBracket,
+
+    /**
+     * normalise the product of different kind of terms, which has already
+     * been simplified, the normalised order of terms in product looks like:
+     *
+     * numericConstants * constantRootsOrSquareRoots * constantSums *
+     * monomials * variableRootsOrSquareRoots * polynomials
+     *
+     * for e.g. sqrt[3] * (1 + sqrt[3]) * ([y^2] + 1) * y * 5 -->
+     * 5 * sqrt[3] * (1 + sqrt[3]) * y * ([y^2] + 1)
+     */
+    NormaliseSimplifiedProduct;
 
     override val category = "General"
 }

@@ -102,7 +102,6 @@ enum class IntegerRootsExplanation : CategorisedMetadataKey {
      */
     CancelAllRootsOfPowers,
     SplitRootOfProduct,
-    NormaliseProductWithRoots,
     SimplifyNthRootToThePowerOfN,
     PrepareCancellingPowerOfARoot,
     SimplifyNthRootOfNthPower,

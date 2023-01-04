@@ -1,6 +1,5 @@
 package methods.integerroots
 
-import engine.expressions.Expression
 import engine.expressions.powerOf
 import engine.expressions.productOf
 import engine.expressions.rootOf
@@ -12,12 +11,10 @@ import engine.methods.RunnerMethod
 import engine.methods.TransformationResult
 import engine.methods.rule
 import engine.operators.BinaryExpressionOperator
-import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
 import engine.patterns.UnsignedIntegerPattern
-import engine.patterns.condition
 import engine.patterns.integerCondition
 import engine.patterns.integerOrderRootOf
 import engine.patterns.powerOf
@@ -248,28 +245,6 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
                         get(product)!!.children().map { rootOf(move(it), move(root.order)) }
                     ),
                     explanation = metadata(Explanation.SplitRootOfProduct)
-                )
-            }
-        }
-    ),
-
-    NormaliseProductWithRoots(
-        rule {
-            fun isRootOrNotConstant(e: Expression) = e.operator == UnaryExpressionOperator.SquareRoot ||
-                e.operator == BinaryExpressionOperator.Root ||
-                !e.isConstant()
-
-            val notRoot = condition(AnyPattern()) { !isRootOrNotConstant(it) }
-            val product = productContaining(integerOrderRootOf(UnsignedIntegerPattern()), notRoot)
-            onPattern(product) {
-                val (roots, nonRoots) = get(product)!!.flattenedProductChildren().partition { isRootOrNotConstant(it) }
-
-                TransformationResult(
-                    toExpr = productOf(
-                        productOf(nonRoots.map { move(it) }),
-                        productOf(roots.map { move(it) })
-                    ),
-                    explanation = metadata(Explanation.NormaliseProductWithRoots)
                 )
             }
         }

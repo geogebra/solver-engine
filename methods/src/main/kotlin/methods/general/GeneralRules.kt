@@ -6,6 +6,7 @@ import engine.conditions.isDefinitelyNotZero
 import engine.conditions.signOf
 import engine.expressions.Constants
 import engine.expressions.Expression
+import engine.expressions.explicitProductOf
 import engine.expressions.fractionOf
 import engine.expressions.negOf
 import engine.expressions.powerOf
@@ -80,6 +81,7 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     MultiplyExponentsUsingPowerRule(multiplyExponentsUsingPowerRule),
     DistributeSumOfPowers(distributeSumOfPowers),
     DistributeMultiplicationOverSum(distributeMultiplicationOverSum),
+    DistributeNegativeOverBracket(distributeNegativeOverBracket),
     RewritePowerAsProduct(rewritePowerAsProduct),
     SimplifyExpressionToThePowerOfOne(simplifyExpressionToThePowerOfOne),
     EvaluateOneToAnyPower(evaluateOneToAnyPower),
@@ -612,30 +614,59 @@ private val distributeSumOfPowers =
  */
 private val distributeMultiplicationOverSum =
     rule {
-        val singleTerm = AnyPattern()
         val sum = sumContaining()
-        val product = commutativeProductOf(singleTerm, sum)
-        val negProduct = optionalNegOf(product)
-        val negSum = negOf(sum)
-        val parentPattern = oneOf(negProduct, negSum)
+        val product = commutativeProductContaining(sum)
+        val negProduct = negOf(product)
+        val optionalNegProduct = oneOf(negProduct, product)
+        val mainSum = sumContaining(optionalNegProduct)
+        val ptn = oneOf(mainSum, optionalNegProduct)
 
-        onPattern(parentPattern) {
+        onPattern(ptn) {
             val terms = get(sum)!!.children()
+            val distributeTerm = if (isBound(negProduct)) {
+                negOf(restOf(product))
+            } else {
+                restOf(product)
+            }
+
+            val distributedExpr = sumOf(
+                terms.map { explicitProductOf(distributeTerm, move(it)) }
+            )
+
+            val toExpr = if (isBound(mainSum)) {
+                mainSum.substitute(distributedExpr)
+            } else distributedExpr
 
             TransformationResult(
-                toExpr = sumOf(
-                    terms.map {
-                        if (isBound(negProduct)) copySign(
-                            negProduct,
-                            when (it.operator) {
-                                UnaryExpressionOperator.Minus ->
-                                    negOf(product.substitute(distribute(singleTerm), move(it.firstChild)))
-                                else -> product.substitute(distribute(singleTerm), move(it))
-                            }
-                        ) else negOf(move(it))
-                    }
-                ),
+                toExpr = toExpr,
                 explanation = metadata(Explanation.DistributeMultiplicationOverSum)
+            )
+        }
+    }
+
+/**
+ * -(x + y) --> -x - y
+ */
+private val distributeNegativeOverBracket =
+    rule {
+        val sumTerm = sumContaining()
+        val negSumTerm = negOf(sumTerm)
+        val sumContainingNegTerm = sumContaining(negSumTerm)
+        val sum = oneOf(sumContainingNegTerm, negSumTerm)
+
+        onPattern(sum) {
+            val terms = get(sumTerm)!!.children()
+            val negDistributedTerm = sumOf(
+                terms.map { if (it.operator == UnaryExpressionOperator.Minus) move(it.firstChild) else negOf(move(it)) }
+            )
+
+            val toExpr = if (isBound(sumContainingNegTerm)) {
+                sumContainingNegTerm.substitute(negDistributedTerm)
+            } else negDistributedTerm
+
+            TransformationResult(
+                toExpr = toExpr,
+                explanation = metadata(Explanation.DistributeNegativeOverBracket)
             )
         }
     }

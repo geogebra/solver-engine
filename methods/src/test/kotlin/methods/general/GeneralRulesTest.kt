@@ -217,45 +217,44 @@ class GeneralRulesTest {
             "sqrt[2] * 3 + sqrt[2] * sqrt[4]"
         )
         testRule(
-            "(3 + sqrt[4]) * sqrt[2]",
+            "sqrt[2] * (3 - sqrt[4])",
             DistributeMultiplicationOverSum,
-            "3 sqrt[2] + sqrt[4] * sqrt[2]"
+            "sqrt[2] * 3 + sqrt[2] * (-sqrt[4])"
         )
         testRule(
-            "(3 - sqrt[4]) * sqrt[2]",
+            "sqrt[2] * (3 + sqrt[4] + sqrt[5])",
             DistributeMultiplicationOverSum,
-            "3 sqrt[2] - sqrt[4] * sqrt[2]"
+            "sqrt[2] * 3 + sqrt[2] * sqrt[4] + sqrt[2] * sqrt[5]"
         )
         testRule(
-            "(3 + sqrt[4] + sqrt[5]) * sqrt[2]",
+            "-2 * (3 + sqrt[5])",
             DistributeMultiplicationOverSum,
-            "3 sqrt[2] + sqrt[4] * sqrt[2] + sqrt[5] * sqrt[2]"
-        )
-        testRule(
-            "(3 + sqrt[5]) * -2",
-            DistributeMultiplicationOverSum,
-            "3 * -2 + sqrt[5] * -2"
+            "(-2) * 3 + (-2) * sqrt[5]"
         )
         testRule(
             "-sqrt[2] * (3 + sqrt[5])",
             DistributeMultiplicationOverSum,
-            "-sqrt[2] * 3 - sqrt[2] * sqrt[5]"
+            "(-sqrt[2]) * 3 + (-sqrt[2]) * sqrt[5]"
         )
         testRule(
             "-2 * (-3 - sqrt[5])",
             DistributeMultiplicationOverSum,
-            // perhaps `"-2 *( -3) - 2 * (-sqrt[5])"` would be better
-            "-(-2 * 3) - (-2 sqrt[5])"
-        )
-        testRule(
-            "-(3 + sqrt[5])",
-            DistributeMultiplicationOverSum,
-            "-3 - sqrt[5]"
+            "(-2) *( -3) + (-2) * (-sqrt[5])"
         )
         testRule(
             "2 (4x - 3)",
             DistributeMultiplicationOverSum,
-            "2*4x - 2*3"
+            "2*4x + 2*(-3)"
+        )
+        testRule(
+            "2*sqrt[2]*(1 + sqrt[3])",
+            DistributeMultiplicationOverSum,
+            "2 sqrt[2]*1 + 2 sqrt[2]*sqrt[3]"
+        )
+        testRule(
+            "3 sqrt[2]*[x^2] * (2x - 7)",
+            DistributeMultiplicationOverSum,
+            "3 sqrt[2]*[x^2]*2x + 3 sqrt[2] * [x^2]*(-7)"
         )
     }
 
@@ -522,6 +521,94 @@ class GeneralRulesTest {
             "[(1 - x - y)^2]",
             GeneralRules.ExpandTrinomialSquaredUsingIdentity,
             "[1 ^ 2] + [(-x) ^ 2] + [(-y) ^ 2] + 2 * 1 (-x) + 2 (-x) (-y) + 2 (-y) * 1"
+        )
+    }
+
+    @Test
+    fun testDistributeNegativeOverBracket() {
+        testRule(
+            "-(sqrt[2]+7)",
+            GeneralRules.DistributeNegativeOverBracket,
+            "-sqrt[2] - 7"
+        )
+        testRule(
+            "5 - (sqrt[2] + 7)",
+            GeneralRules.DistributeNegativeOverBracket,
+            "5 - sqrt[2] - 7"
+        )
+        testRule(
+            "5 - (sqrt[2] - 7)",
+            GeneralRules.DistributeNegativeOverBracket,
+            "5 - sqrt[2] + 7"
+        )
+        testRule(
+            "5 - (-sqrt[2] + 7)",
+            GeneralRules.DistributeNegativeOverBracket,
+            "5 + sqrt[2] - 7"
+        )
+        testRule(
+            "5 - (-sqrt[2] - 7)",
+            GeneralRules.DistributeNegativeOverBracket,
+            "5 + sqrt[2] + 7"
+        )
+        testRule(
+            "-(-a - 2)",
+            GeneralRules.DistributeNegativeOverBracket,
+            "a + 2"
+        )
+        testRule(
+            "sqrt[2] - (-a + 2)",
+            GeneralRules.DistributeNegativeOverBracket,
+            "sqrt[2] + a - 2"
+        )
+        testRule(
+            "sqrt[2] - (a - 2)",
+            GeneralRules.DistributeNegativeOverBracket,
+            "sqrt[2] - a + 2"
+        )
+        testRule(
+            "sqrt[2] - (-5a - 7)",
+            GeneralRules.DistributeNegativeOverBracket,
+            "sqrt[2] + 5a + 7"
+        )
+    }
+
+    @Test
+    fun testNormaliseProduct() {
+        testRule(
+            "(x + 1)*5",
+            NormalizationRules.NormaliseSimplifiedProduct,
+            "5(x+1)"
+        )
+        testRule(
+            "(x + 1)*5x",
+            NormalizationRules.NormaliseSimplifiedProduct,
+            "5x(x+1)"
+        )
+        testRule(
+            "5*(x+1)*sqrt[2]",
+            NormalizationRules.NormaliseSimplifiedProduct,
+            "5 sqrt[2] (x+1)"
+        )
+        testRule(
+            "5x * sqrt[2]",
+            NormalizationRules.NormaliseSimplifiedProduct,
+            "5 sqrt[2] * x"
+        )
+        testRule(
+            "5(1 + sqrt[2])*sqrt[3]",
+            NormalizationRules.NormaliseSimplifiedProduct,
+            "5 sqrt[3] (1 + sqrt[2])"
+        )
+        testRule(
+            "sqrt[3] * (1 + sqrt[2]) * 5",
+            NormalizationRules.NormaliseSimplifiedProduct,
+            "5 sqrt[3] (1 + sqrt[2])"
+        )
+        testRule(
+            "2*sqrt[2]",
+            NormalizationRules.NormaliseSimplifiedProduct,
+            "2 sqrt[2]"
         )
     }
 }

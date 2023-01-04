@@ -1,12 +1,16 @@
 package methods.general
 
 import engine.expressions.Decorator
+import engine.expressions.Expression
 import engine.expressions.productOf
 import engine.expressions.sumOf
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.TransformationResult
 import engine.methods.rule
+import engine.operators.BinaryExpressionOperator
+import engine.operators.NaryOperator
+import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.condition
@@ -14,6 +18,8 @@ import engine.patterns.plusOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
 import engine.steps.metadata.metadata
+
+const val ORDER_CONSTANT_PRODUCT = 1
 
 enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
     ReplaceInvisibleBrackets(
@@ -105,5 +111,51 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
                 )
             }
         }
-    )
+    ),
+
+    NormaliseSimplifiedProduct(normaliseSimplifiedProduct)
 }
+
+/**
+ * normalise the product of different kind of terms, which has already
+ * been simplified, the normalised order of terms in product looks like:
+ *
+ * numericConstants * constantRootsOrSquareRoots * constantSums *
+ * monomials * variableRootsOrSquareRoots * polynomials
+ *
+ * for e.g. sqrt[3] * (1 + sqrt[3]) * ([y^2] + 1) * y * 5 -->
+ * 5 * sqrt[3] * (1 + sqrt[3]) * y * ([y^2] + 1)
+ */
+private val normaliseSimplifiedProduct =
+    rule {
+        fun orderInProduct(e: Expression): Int {
+            return when (e.operator) {
+                NaryOperator.Sum -> ORDER_CONSTANT_PRODUCT + 2
+                BinaryExpressionOperator.Root -> ORDER_CONSTANT_PRODUCT + 1
+                UnaryExpressionOperator.SquareRoot -> ORDER_CONSTANT_PRODUCT + 1
+                else -> ORDER_CONSTANT_PRODUCT
+            }
+        }
+
+        val product = productContaining()
+
+        onPattern(product) {
+            val getProd = get(product)!!
+            val getProdChildren = getProd.flattenedProductChildren()
+            val (constants, nonConstants) = getProdChildren.partition { it.isConstant() }
+
+            val sortedConstants = constants.sortedBy { orderInProduct(it) }
+            val sortedNonConstants = nonConstants.sortedBy { orderInProduct(it) }
+            val sortedProdChildren = mutableListOf<Expression>()
+            sortedProdChildren.addAll(sortedConstants)
+            sortedProdChildren.addAll(sortedNonConstants)
+
+            val toExpr = productOf(sortedProdChildren.map { move(it) })
+
+            if (toExpr == getProd) null
+            else TransformationResult(
+                toExpr = toExpr,
+                explanation = metadata(Explanation.NormaliseSimplifiedProduct)
+            )
+        }
+    }

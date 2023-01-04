@@ -5,8 +5,6 @@ import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
-import engine.operators.NaryOperator
-import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.FindPattern
@@ -25,6 +23,7 @@ import methods.fractionroots.FractionRootsRules
 import methods.general.GeneralPlans
 import methods.general.GeneralRules
 import methods.general.NormalizationPlans
+import methods.general.NormalizationRules
 import methods.general.removeRedundantBrackets
 import methods.integerarithmetic.IntegerArithmeticPlans
 import methods.integerarithmetic.IntegerArithmeticRules
@@ -255,17 +254,18 @@ val simplificationSteps = steps {
         }
 
         option {
+            deeply(GeneralRules.DistributeNegativeOverBracket)
+        }
+
+        // this rule eventually needs to be moved to "expand constant expression"
+        option {
             deeply {
-                applyTo(GeneralRules.DistributeMultiplicationOverSum) {
-                    // We don't want to expand something like x(1 + sqrt[3]) because the algebra rules would factorise
-                    // it back again! so restrict expansion to constant expressions. It might be better to have a finer
-                    // condition depending on the factors that could be expanded.
-                    if (it.isConstant() ||
-                        // Distribute the negative in expressions like `-(a + b)`
-                        it.operator === UnaryExpressionOperator.Minus && it.firstChild.operator === NaryOperator.Sum
-                    ) it else null
-                }
+                // We don't want to expand something like x(1 + sqrt[3]) because the algebra rules would factorise
+                // it back again! so restrict expansion to constant expressions. It might be better to have a finer
+                // condition depending on the factors that could be expanded.
+                applyTo(GeneralRules.DistributeMultiplicationOverSum) { if (it.isConstant()) it else null }
             }
         }
+        option { deeply(NormalizationRules.NormaliseSimplifiedProduct) }
     }
 }

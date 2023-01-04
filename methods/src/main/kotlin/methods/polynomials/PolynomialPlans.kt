@@ -17,6 +17,7 @@ import methods.constantexpressions.simplificationSteps
 import methods.general.GeneralPlans
 import methods.general.GeneralRules
 import methods.general.NormalizationPlans
+import methods.general.NormalizationRules
 
 enum class PolynomialPlans(override val runner: Plan) : RunnerMethod {
 
@@ -54,7 +55,7 @@ enum class PolynomialPlans(override val runner: Plan) : RunnerMethod {
 
             steps {
                 whilePossible { deeply(simpleTidyUpSteps) }
-                optionally(NormalizationPlans.NormalizeExpression)
+                optionally(NormalizationRules.NormaliseSimplifiedProduct)
                 optionally(SimplifyAlgebraicExpressionInOneVariable)
                 optionally {
                     deeply(GeneralPlans.ExpandBinomialSquared)
