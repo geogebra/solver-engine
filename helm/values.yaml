@@ -1,6 +1,7 @@
 branchName: dev
 LoadBalancerPath: /dev
 commitSha: latest
+springProfile: dev
 
 imageCredentials:
   registry: registry.git.geogebra.org

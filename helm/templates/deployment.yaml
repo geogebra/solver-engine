@@ -31,5 +31,7 @@ spec:
               value: "{{ .Values.commitSha }}"
             - name: DEPLOYMENT_NAME
               value: "{{ .Values.branchName }}"
+            - name: SPRING_PROFILES_ACTIVE
+              value: "{{ .Values.springProfile }}"
       imagePullSecrets:
         - name: ggb-registry-key
