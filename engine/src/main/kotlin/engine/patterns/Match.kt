@@ -8,25 +8,20 @@ import engine.expressions.Expression
  */
 interface Match {
 
-    /**
-     * Returns the `Expression` of the given pattern
-     * with the provided `match` "m". It differs from
-     * getBoundExpr as it returns the "Expression"
-     * , i.e. value and the path
-     */
+    /** This is redundant. It does the same as [getBoundExpr] */
     fun getLastBinding(p: Pattern): Expression?
 
     fun isBound(p: Pattern) = getLastBinding(p) != null
 
     /**
-     * Returns the `Expression` value of the given match
-     * with the provided `Pattern` "p".
+     * Returns the [Expression] value of the given match
+     * with the provided [Pattern] [p].
      */
     fun getBoundExpr(p: Pattern): Expression?
 
     /**
-     * Appends to the list `acc` the `Path`s from
-     * root to the start of the pattern `p` in
+     * Appends to the list `acc` the [Expression]s from
+     * root to the start of the pattern [p] in
      * a provided match
      *
      * @see getBoundExprs
@@ -34,8 +29,8 @@ interface Match {
     fun accumulateExprs(p: Pattern, acc: MutableList<Expression>)
 
     /**
-     * Returns a list of `Path` objects from the root of
-     * the tree to the where the pattern `p` is present
+     * Returns a list of [Expression]s from the root of
+     * the tree to the where the pattern [p] is present
      * in a provided match object
      */
     fun getBoundExprs(p: Pattern): List<Expression>

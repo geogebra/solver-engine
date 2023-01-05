@@ -3,19 +3,18 @@ package engine.patterns
 import engine.context.Context
 import engine.expressions.Expression
 import engine.expressions.New
-import engine.expressions.Path
 
 interface ExpressionProvider {
 
     /**
-     * Returns a list of `Path` objects from the root of
+     * Returns a list of [Expression] objects from the root of
      * the tree to the where the pattern is present in the
      * match `m`.
      */
     fun getBoundExprs(m: Match): List<Expression>
 
     /**
-     * Returns the `Expression` value of the given pattern
+     * Returns the [Expression] value of the given pattern
      * with the provided `match` "m"
      */
     fun getBoundExpr(m: Match): Expression? = getBoundExprs(m).firstOrNull()
@@ -35,7 +34,7 @@ open class ProviderWithDefault(
 }
 
 /**
- * Patterns are used to detect certain shapes in a [Subexpression].
+ * Patterns are used to detect certain shapes in an [Expression].
  */
 interface Pattern : ExpressionProvider {
     /**
@@ -45,7 +44,7 @@ interface Pattern : ExpressionProvider {
     fun findMatches(context: Context, match: Match = RootMatch, subexpression: Expression): Sequence<Match>
 
     /**
-     * Returns a list of [Path] objects from the root of
+     * Returns a list of [Expression] objects from the root of
      * the tree to the where the pattern is present in the
      * match [m].
      */
