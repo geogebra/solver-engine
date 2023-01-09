@@ -68,7 +68,11 @@ data class ApplyToChildrenInStep(
     }
 }
 
-private class FailedInStepStep : Exception()
+private class FailedInStepStep : Exception() {
+    override fun fillInStackTrace(): Throwable {
+        return this
+    }
+}
 
 @StepsProducerBuilderMarker
 class InStepStepBuilder {

@@ -14,7 +14,11 @@ data class FirstOf(val options: List<StepsProducer>) : StepsProducer {
     }
 }
 
-private class FoundOption : Exception()
+private class FoundOption : Exception() {
+    override fun fillInStackTrace(): Throwable {
+        return this
+    }
+}
 
 internal class ProceduralFirstOf(val init: FirstOfBuilder.() -> Unit) : StepsProducer {
     override fun produceSteps(ctx: Context, sub: Expression): List<Transformation>? {

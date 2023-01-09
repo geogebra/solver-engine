@@ -31,7 +31,11 @@ data class Pipeline(val items: List<PipelineItem>) : StepsProducer {
     }
 }
 
-private class FailedStep : Exception()
+private class FailedStep : Exception() {
+    override fun fillInStackTrace(): Throwable {
+        return this
+    }
+}
 
 internal class ProceduralPipeline(val init: PipelineBuilder.() -> Unit) : StepsProducer {
     override fun produceSteps(ctx: Context, sub: Expression): List<Transformation>? {
