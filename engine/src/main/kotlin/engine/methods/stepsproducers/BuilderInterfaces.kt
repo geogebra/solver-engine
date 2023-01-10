@@ -2,6 +2,7 @@ package engine.methods.stepsproducers
 
 import engine.expressions.Extractor
 import engine.methods.PlanBuilder
+import engine.patterns.Pattern
 
 @DslMarker
 annotation class StepsProducerBuilderMarker
@@ -105,4 +106,6 @@ interface PipelineBuilder {
      * Apply the following plan.
      */
     fun plan(init: PlanBuilder.() -> Unit)
+
+    fun checkForm(patternProvider: () -> Pattern)
 }

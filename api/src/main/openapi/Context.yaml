@@ -5,3 +5,5 @@ properties:
     type: string
   precision:
     type: number
+  solutionVariable:
+    type: string

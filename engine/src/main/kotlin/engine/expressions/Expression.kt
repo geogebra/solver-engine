@@ -168,7 +168,7 @@ class Expression internal constructor(
     /**
      * The expression does not depend on the specified symbol / variable
      */
-    fun isConstantIn(symbol: String) = !variables.contains(symbol)
+    fun isConstantIn(symbol: String?) = if (symbol == null) isConstant() else !variables.contains(symbol)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

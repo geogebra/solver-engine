@@ -349,6 +349,7 @@ const fetchPlansAndUpdatePage = () =>
         const input = url.searchParams.get("input");
         const curriculum = url.searchParams.get("curriculum");
         const precision = url.searchParams.get("precision");
+        const solutionVariable = url.searchParams.get("solutionVariable")
         if (planId) {
             el("plansSelect").value = planId;
         }
@@ -361,12 +362,16 @@ const fetchPlansAndUpdatePage = () =>
         if (precision) {
             el("precisionSelect").value = precision;
         }
+        if (solutionVariable) {
+            el("solutionVariable").value = solutionVariable;
+        }
         if (planId && input) {
             selectPlansOrApplyPlan({
                 planId,
                 input,
                 curriculum,
                 precision: parseInt(precision),
+                solutionVariable,
             });
         }
     });
@@ -376,6 +381,7 @@ const getRequestDataFromForm = () => ({
     input: el("input").value,
     curriculum: el("curriculumSelect").value,
     precision: parseInt(el("precisionSelect").value),
+    solutionVariable: el("solutionVariable").value,
 });
 
 const buildURLString = (startURL, data) => {
@@ -388,6 +394,7 @@ const buildURLString = (startURL, data) => {
         url.searchParams.delete("curriculum");
     }
     url.searchParams.set("precision", data.precision.toString());
+    url.searchParams.set("solutionVariable", data.solutionVariable)
     return url.toString();
 };
 

@@ -29,6 +29,7 @@ interface LatexRenderable {
 
 enum class OperatorKind {
     EXPRESSION,
+    SET,
     STATEMENT;
 }
 

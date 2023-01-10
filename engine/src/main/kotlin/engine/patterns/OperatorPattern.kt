@@ -3,6 +3,7 @@ package engine.patterns
 import engine.context.Context
 import engine.expressions.Expression
 import engine.operators.BinaryExpressionOperator
+import engine.operators.EquationOperator
 import engine.operators.MixedNumberOperator
 import engine.operators.NaryOperator
 import engine.operators.Operator
@@ -56,3 +57,5 @@ fun negOf(operand: Pattern) = OperatorPattern(UnaryExpressionOperator.Minus, lis
 
 fun explicitProductOf(vararg factors: Pattern) = OperatorPattern(NaryOperator.Product, factors.asList())
 fun implicitProductOf(vararg factors: Pattern) = OperatorPattern(NaryOperator.ImplicitProduct, factors.asList())
+
+fun equationOf(lhs: Pattern, rhs: Pattern) = OperatorPattern(EquationOperator, listOf(lhs, rhs))

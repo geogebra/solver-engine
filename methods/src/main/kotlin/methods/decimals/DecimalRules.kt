@@ -18,8 +18,8 @@ import engine.patterns.SignedIntegerPattern
 import engine.patterns.SignedNumberPattern
 import engine.patterns.UnsignedDecimalPattern
 import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.commutativeEquationOf
 import engine.patterns.divideBy
-import engine.patterns.equationOf
 import engine.patterns.equationSystemOf
 import engine.patterns.fractionOf
 import engine.patterns.integerCondition
@@ -119,7 +119,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
             val variable = ArbitraryVariablePattern()
             val decimal = RecurringDecimalPattern()
 
-            val equation = equationOf(variable, decimal)
+            val equation = commutativeEquationOf(variable, decimal)
 
             onPattern(equation) {
                 val recurringDecimalValue = getValue(decimal)
@@ -184,8 +184,8 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
             val lhs1 = withOptionalIntegerCoefficient(variable)
             val lhs2 = withOptionalIntegerCoefficient(variable)
 
-            val equation1 = equationOf(lhs1, decimal1)
-            val equation2 = equationOf(lhs2, decimal2)
+            val equation1 = commutativeEquationOf(lhs1, decimal1)
+            val equation2 = commutativeEquationOf(lhs2, decimal2)
 
             val equationSystem = equationSystemOf(equation1, equation2)
 
@@ -220,7 +220,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
             val coefficient = SignedIntegerPattern()
             val rhs = SignedIntegerPattern()
 
-            val equation = equationOf(productOf(coefficient, variable), rhs)
+            val equation = commutativeEquationOf(productOf(coefficient, variable), rhs)
 
             onPattern(equation) {
                 TransformationResult(

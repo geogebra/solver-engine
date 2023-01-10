@@ -4,6 +4,7 @@ import engine.context.Context
 import engine.expressions.Expression
 import engine.expressions.Extractor
 import engine.methods.PlanBuilder
+import engine.patterns.Pattern
 import engine.steps.Transformation
 
 /**
@@ -119,6 +120,10 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
     override fun plan(init: PlanBuilder.() -> Unit) {
         runProducer(engine.methods.plan(::proceduralSteps, init))
     }
+
+    override fun checkForm(patternProvider: () -> Pattern) {
+        runProducer(FormChecker(patternProvider()))
+    }
 }
 
 private class PipelineDataBuilder : PipelineBuilder {
@@ -194,6 +199,10 @@ private class PipelineDataBuilder : PipelineBuilder {
 
     override fun plan(init: PlanBuilder.() -> Unit) {
         addItem(engine.methods.plan(::dataSteps, init))
+    }
+
+    override fun checkForm(patternProvider: () -> Pattern) {
+        addItem(FormChecker(patternProvider()))
     }
 }
 

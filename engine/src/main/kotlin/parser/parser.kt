@@ -4,6 +4,8 @@ import engine.expressions.Constants
 import engine.expressions.Decorator
 import engine.expressions.Expression
 import engine.expressions.mixedNumber
+import engine.expressions.solutionOf
+import engine.expressions.solutionSetOf
 import engine.expressions.xp
 import engine.operators.BinaryExpressionOperator
 import engine.operators.EquationOperator
@@ -58,6 +60,22 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
 
     override fun visitExpr(ctx: ExpressionParser.ExprContext): Expression {
         return visit(ctx.getChild(0))
+    }
+
+    override fun visitSolution(ctx: ExpressionParser.SolutionContext): Expression {
+        return solutionOf(visit(ctx.variable()), visit(ctx.set()))
+    }
+
+    override fun visitEmptySet(ctx: ExpressionParser.EmptySetContext): Expression {
+        return Constants.EmptySet
+    }
+
+    override fun visitFiniteSet(ctx: ExpressionParser.FiniteSetContext): Expression {
+        return solutionSetOf(listOf(visit(ctx.first)) + ctx.rest.map { visit(it) })
+    }
+
+    override fun visitReals(ctx: ExpressionParser.RealsContext): Expression {
+        return Constants.Reals
     }
 
     override fun visitSum(ctx: ExpressionParser.SumContext): Expression {

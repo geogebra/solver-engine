@@ -11,6 +11,8 @@ import engine.operators.MixedNumberOperator
 import engine.operators.NaryOperator
 import engine.operators.Operator
 import engine.operators.RecurringDecimalOperator
+import engine.operators.SetOperators
+import engine.operators.SolutionOperator
 import engine.operators.UnaryExpressionOperator
 import engine.operators.VariableOperator
 import engine.utility.RecurringDecimal
@@ -56,6 +58,12 @@ fun curlyBracketOf(expr: Expression) = expr.decorate(Decorator.CurlyBracket)
 fun missingBracketOf(expr: Expression) = expr.decorate(Decorator.MissingBracket)
 
 fun negOf(expr: Expression) = buildExpression(UnaryExpressionOperator.Minus, listOf(expr))
+
+fun simplifiedNegOf(expr: Expression) = when (expr.operator) {
+    UnaryExpressionOperator.Minus -> expr.firstChild
+    else -> negOf(expr)
+}
+
 fun plusOf(expr: Expression) = buildExpression(UnaryExpressionOperator.Plus, listOf(expr))
 
 fun fractionOf(numerator: Expression, denominator: Expression) =
@@ -164,6 +172,12 @@ fun equationOf(lhs: Expression, rhs: Expression) = buildExpression(EquationOpera
 
 fun equationSystemOf(vararg equations: Expression) =
     buildExpression(EquationSystemOperator, equations.asList())
+
+fun solutionSetOf(elements: List<Expression>) = buildExpression(SetOperators.FiniteSet, elements)
+fun solutionSetOf(vararg elements: Expression) = buildExpression(SetOperators.FiniteSet, elements.asList())
+
+fun solutionOf(variable: Expression, solutionSet: Expression) =
+    buildExpression(SolutionOperator, listOf(variable, solutionSet))
 
 private fun flattenedNaryExpression(operator: NaryOperator, operands: List<Expression>): Expression {
     if (operands.size == 1) {

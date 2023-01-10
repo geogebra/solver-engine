@@ -34,6 +34,8 @@ fun BigInteger.isEven() = this.lowestSetBit != 0
 
 fun BigInteger.divides(n: BigInteger) = !isZero() && n.mod(this) == BigInteger.ZERO
 
+fun BigInteger.lcm(n: BigInteger) = if (n.isZero()) this else (this * n) / gcd(n)
+
 /**
  * when at-least one of the prime factor has degree
  * greater than or equal to denominator of rational exponent

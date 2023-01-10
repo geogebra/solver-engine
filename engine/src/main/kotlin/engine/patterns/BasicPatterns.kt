@@ -28,6 +28,24 @@ class AnyPattern : BasePattern() {
     }
 }
 
+class ConstantPattern : BasePattern() {
+    override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
+        return when {
+            subexpression.isConstant() -> sequenceOf(match.newChild(this, subexpression))
+            else -> emptySequence()
+        }
+    }
+}
+
+class ConstantInSolutionVariablePattern : BasePattern() {
+    override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
+        return when {
+            subexpression.isConstantIn(context.solutionVariable) -> sequenceOf(match.newChild(this, subexpression))
+            else -> emptySequence()
+        }
+    }
+}
+
 open class OptionalNegPattern<T : Pattern>(val unsignedPattern: T) :
     OptionalWrappingPattern(unsignedPattern, ::negOf) {
 

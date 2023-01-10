@@ -22,7 +22,7 @@ class SelectPlanApiServiceImpl : SelectPlansApiService {
         }
         val modeller = TransformationModeller(solveRequest.format)
         val selections = mutableListOf<PlanSelection>()
-        val context = getContext(solveRequest.context)
+        val context = getContext(solveRequest.context, expr.variables.firstOrNull())
 
         val successfulPlansIds = mutableSetOf<MethodId>()
 

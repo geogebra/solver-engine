@@ -1,6 +1,6 @@
 package engine.operators
 
-private const val EQUATION_PRECEDENCE = 0
+private const val PREDICATE_PRECEDENCE = 0
 private const val EQUATION_SYSTEM_PRECEDENCE = -10
 
 interface StatementOperator : Operator {
@@ -8,7 +8,7 @@ interface StatementOperator : Operator {
 }
 
 object EquationOperator : BinaryOperator, StatementOperator {
-    override val precedence = EQUATION_PRECEDENCE
+    override val precedence = PREDICATE_PRECEDENCE
 
     override fun leftChildAllowed(op: Operator): Boolean {
         require(op.kind == OperatorKind.EXPRESSION)
@@ -52,5 +52,27 @@ object EquationSystemOperator : StatementOperator {
             }
             append("\\end{array}\\right.")
         }
+    }
+}
+
+object SolutionOperator : BinaryOperator, StatementOperator {
+    override val precedence = PREDICATE_PRECEDENCE
+
+    override fun leftChildAllowed(op: Operator): Boolean {
+        require(op is VariableOperator)
+        return true
+    }
+
+    override fun rightChildAllowed(op: Operator): Boolean {
+        require(op.kind == OperatorKind.SET)
+        return true
+    }
+
+    override fun <T> readableString(left: T, right: T): String {
+        return "Solution[$left, $right]"
+    }
+
+    override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable): String {
+        return "${left.toLatexString(ctx)} \\in ${right.toLatexString(ctx)}"
     }
 }

@@ -27,6 +27,6 @@ data class EquationPattern(
     }
 }
 
-fun equationOf(lhs: Pattern, rhs: Pattern) = EquationPattern(lhs, rhs)
+fun commutativeEquationOf(lhs: Pattern, rhs: Pattern) = EquationPattern(lhs, rhs)
 
 fun equationSystemOf(eq1: Pattern, eq2: Pattern) = OperatorPattern(EquationSystemOperator, listOf(eq1, eq2))

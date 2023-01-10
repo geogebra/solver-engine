@@ -20,7 +20,7 @@ class PlanApiServiceImpl : PlansApiService {
         } catch (e: ParseCancellationException) {
             throw InvalidExpressionException(solveRequest.input, e)
         }
-        val context = getContext(solveRequest.context)
+        val context = getContext(solveRequest.context, expr.variables.firstOrNull())
         val trans = plan.tryExecute(context, expr.withOrigin(Root()))
             ?: throw PlanNotApplicableException(planId)
         val modeller = TransformationModeller(format = solveRequest.format)
@@ -36,9 +36,10 @@ class PlanApiServiceImpl : PlansApiService {
     }
 }
 
-fun getContext(apiCtx: server.models.Context?) = apiCtx?.let {
+fun getContext(apiCtx: server.models.Context?, defaultSolutionVariable: String?) = apiCtx?.let {
     Context(
         curriculum = apiCtx.curriculum,
-        precision = apiCtx.precision?.toInt()
+        precision = apiCtx.precision?.toInt(),
+        solutionVariable = apiCtx.solutionVariable ?: defaultSolutionVariable
     )
-} ?: emptyContext
+} ?: emptyContext.copy(solutionVariable = defaultSolutionVariable)

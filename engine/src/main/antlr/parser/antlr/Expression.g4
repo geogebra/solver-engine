@@ -4,11 +4,23 @@ grammar Expression;
     package parser.antlr;
 }
 
-wholeInput: equationSystem | equation | exprOrUndefined EOF;
+wholeInput: equationSystem | equation | solution  | exprOrUndefined EOF;
 
 equationSystem: equations += equation (',' equations += equation)+;
 
 equation: lhs=expr '=' rhs=expr;
+
+solution: 'Solution' '[' var=variable ',' solutionSet=set ']';
+
+set: emptySet | finiteSet | reals;
+
+emptySet: '{' '}';
+
+finiteSet: '{' first=expr (rest+=restElement)* '}';
+
+restElement: ',' expr;
+
+reals: REALS;
 
 exprOrUndefined: expr | undefined;
 
@@ -72,6 +84,7 @@ CLOSE_SQUARE: '.]';
 OPEN_CURLY: '{.';
 CLOSE_CURLY: '.}';
 
+REALS: 'REALS';
 UNDEFINED: 'UNDEFINED';
 
 VARIABLE: [a-z];

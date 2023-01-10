@@ -37,7 +37,6 @@ enum class PolynomialPlans(override val runner: Plan) : RunnerMethod {
         plan {
             explanation = Explanation.SimplifyAlgebraicExpression
             specificPlans(ConstantExpressionsPlans.SimplifyConstantExpression)
-            pattern = condition(AnyPattern()) { it.variables.size == 1 }
 
             steps {
                 whilePossible { deeply(simpleTidyUpSteps) }

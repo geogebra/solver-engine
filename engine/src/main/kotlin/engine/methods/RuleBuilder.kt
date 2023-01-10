@@ -5,6 +5,7 @@ import engine.expressionbuilder.MappedExpressionBuilder
 import engine.expressions.Expression
 import engine.patterns.Pattern
 import engine.patterns.RootMatch
+import engine.patterns.equationOf
 
 class Rule(
     val pattern: Pattern,
@@ -25,6 +26,9 @@ class Rule(
 class RuleBuilder {
     fun onPattern(pattern: Pattern, result: MappedExpressionBuilder.() -> TransformationResult?): Rule =
         Rule(pattern, result)
+
+    fun onEquation(lhs: Pattern, rhs: Pattern, result: MappedExpressionBuilder.() -> TransformationResult?): Rule =
+        Rule(equationOf(lhs, rhs), result)
 }
 
 fun rule(init: RuleBuilder.() -> Rule): Rule {
