@@ -18,6 +18,25 @@ interface ExpressionProvider {
      * with the provided `match` "m"
      */
     fun getBoundExpr(m: Match): Expression? = getBoundExprs(m).firstOrNull()
+
+    /** Returns an [ExpressionProvider] that works like `this` except that it only provides expressions that are
+     * descendents of the expression provided by [parent], or that are equal to [parent].
+     *
+     * Sometimes a pattern matches more than one expression. This is a tool to get a specific one. */
+    fun within(parent: ExpressionProvider): ExpressionProvider {
+        return WithinExpressionProvider(this, parent)
+    }
+}
+
+/** Only used by [ExpressionProvider.within]. See that. */
+private class WithinExpressionProvider(
+    val expressionsToFilter: ExpressionProvider,
+    val parent: ExpressionProvider
+) : ExpressionProvider {
+    override fun getBoundExprs(m: Match): List<Expression> {
+        val parentExpression = parent.getBoundExpr(m)
+        return expressionsToFilter.getBoundExprs(m).filter { it.isChildOfOrSelf(parentExpression) }
+    }
 }
 
 open class ProviderWithDefault(
