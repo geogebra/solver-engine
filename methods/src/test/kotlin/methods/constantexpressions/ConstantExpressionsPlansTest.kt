@@ -19,9 +19,27 @@ class ConstantExpressionsPlansTest {
         inputExpr = "[1 / 3] + [2 / 3] * [1 / 2]"
 
         check {
-            step { toExpr = "[1 / 3] + [1 / 3]" }
-            step { toExpr = "[1 + 1 / 3]" }
-            step { toExpr = "[2 / 3]" }
+            fromExpr = "[1 / 3] + [2 / 3] * [1 / 2]"
+            toExpr = "[2 / 3]"
+            explanation {
+                key = ConstantExpressionsExplanation.SimplifyConstantExpression
+            }
+
+            step {
+                fromExpr = "[1 / 3] + [2 / 3] * [1 / 2]"
+                toExpr = "[1 / 3] + [1 / 3]"
+                explanation {
+                    key = FractionArithmeticExplanation.MultiplyAndSimplifyFractions
+                }
+            }
+
+            step {
+                fromExpr = "[1 / 3] + [1 / 3]"
+                toExpr = "[2 / 3]"
+                explanation {
+                    key = FractionArithmeticExplanation.EvaluateFractionSum
+                }
+            }
         }
     }
 
@@ -316,11 +334,14 @@ class ConstantExpressionSimpleOperationsTest {
     @Test
     fun testAddLikeFractions() = testMethod {
         method = ConstantExpressionsPlans.SimplifyConstantExpression
-        inputExpr = "[5/4]+[2/4]"
+        inputExpr = "[5 / 4] + [2 / 4]"
 
         check {
             fromExpr = "[5 / 4] + [2 / 4]"
             toExpr = "[7 / 4]"
+            explanation {
+                key = FractionArithmeticExplanation.EvaluateFractionSum
+            }
 
             step {
                 fromExpr = "[5 / 4] + [2 / 4]"
@@ -334,15 +355,7 @@ class ConstantExpressionSimpleOperationsTest {
                 fromExpr = "[5 + 2 / 4]"
                 toExpr = "[7 / 4]"
                 explanation {
-                    key = IntegerArithmeticExplanation.SimplifyIntegersInSum
-                }
-
-                step {
-                    fromExpr = "5 + 2"
-                    toExpr = "7"
-                    explanation {
-                        key = IntegerArithmeticExplanation.EvaluateIntegerAddition
-                    }
+                    key = IntegerArithmeticExplanation.EvaluateIntegerAddition
                 }
             }
         }
@@ -351,11 +364,14 @@ class ConstantExpressionSimpleOperationsTest {
     @Test
     fun testSubtractLikeFractions() = testMethod {
         method = ConstantExpressionsPlans.SimplifyConstantExpression
-        inputExpr = "[5/4]-[2/4]"
+        inputExpr = "[5 / 4] - [2 / 4]"
 
         check {
             fromExpr = "[5 / 4] - [2 / 4]"
             toExpr = "[3 / 4]"
+            explanation {
+                key = FractionArithmeticExplanation.EvaluateFractionSum
+            }
 
             step {
                 fromExpr = "[5 / 4] - [2 / 4]"
@@ -369,15 +385,7 @@ class ConstantExpressionSimpleOperationsTest {
                 fromExpr = "[5 - 2 / 4]"
                 toExpr = "[3 / 4]"
                 explanation {
-                    key = IntegerArithmeticExplanation.SimplifyIntegersInSum
-                }
-
-                step {
-                    fromExpr = "5 - 2"
-                    toExpr = "3"
-                    explanation {
-                        key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
-                    }
+                    key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
                 }
             }
         }
@@ -396,6 +404,20 @@ class ConstantExpressionSimpleOperationsTest {
             step { toExpr = "[1 / 2] + [1 / 3]" }
 
             step { toExpr = "[5 / 6]" }
+        }
+    }
+
+    @Test
+    fun testAddingFractionWithoutUnnecessaryCanceling() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "[2 / 2 * 3] + [3 / 2 * 3] + [5 / 3 * 5]"
+
+        check {
+            toExpr = "[7 / 6]"
+
+            step { toExpr = "[5 / 6] + [5 / 3 * 5]" }
+            step { toExpr = "[5 / 6] + [1 / 3]" }
+            step { toExpr = "[7 / 6]" }
         }
     }
 }

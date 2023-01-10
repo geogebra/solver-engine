@@ -85,6 +85,13 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
         apply(ProceduralPipeline(init))
     }
 
+    override fun check(f: (Expression) -> Boolean) {
+        if (!f(builder.lastSub)) {
+            builder.abort()
+            throw FailedStep()
+        }
+    }
+
     override fun applyTo(steps: StepsProducer, extractor: Extractor) {
         runProducer(ApplyTo(extractor, steps))
     }
@@ -159,6 +166,10 @@ private class PipelineDataBuilder : PipelineBuilder {
 
     override fun apply(init: PipelineBuilder.() -> Unit) {
         apply(dataSteps(init))
+    }
+
+    override fun check(f: (Expression) -> Boolean) {
+        TODO("Not yet implemented")
     }
 
     override fun applyTo(steps: StepsProducer, extractor: Extractor) {

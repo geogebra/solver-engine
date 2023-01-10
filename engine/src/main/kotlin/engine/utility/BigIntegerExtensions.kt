@@ -188,3 +188,10 @@ class Factorizer(var n: BigInteger) {
         return multiplicity
     }
 }
+
+fun gcd(vararg values: BigInteger): BigInteger {
+    if (values.isEmpty()) {
+        return BigInteger.ZERO
+    }
+    return values.reduce { acc, n -> acc.gcd(n) }
+}

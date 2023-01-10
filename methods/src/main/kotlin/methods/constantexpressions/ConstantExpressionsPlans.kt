@@ -194,7 +194,7 @@ val trickySimplificationSteps = steps {
             option(cancelRootOfPower)
             option(IntegerRootsPlans.SplitRootsAndCancelRootsOfPowers)
             option(IntegerRootsPlans.SimplifyPowerOfIntegerUnderRoot)
-            option(FractionArithmeticRules.AddLikeFractions)
+            option(FractionArithmeticPlans.EvaluateFractionSum)
         }
     }
 }
@@ -241,7 +241,6 @@ val simplificationSteps = steps {
         option { deeply(IntegerArithmeticPlans.SimplifyIntegersInProduct) }
 
         option { deeply(IntegerArithmeticPlans.SimplifyIntegersInSum) }
-        option { deeply(FractionArithmeticPlans.EvaluateFractionSum) }
         option { deeply(FractionArithmeticPlans.EvaluateSumOfFractionAndInteger) }
 
         option { deeply(FractionRootsPlans.RationalizeDenominators) }

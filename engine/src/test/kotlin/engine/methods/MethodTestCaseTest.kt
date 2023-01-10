@@ -32,7 +32,7 @@ class MethodTestCaseTest {
                     explanation = metadata(testRuleMetadataKey),
                     skills = listOf(
                         metadata(testRuleSkillMetadataKey1, move(pattern)),
-                        metadata(testRuleSkillMetadataKey2),
+                        metadata(testRuleSkillMetadataKey2)
                     )
                 )
             }
@@ -42,7 +42,7 @@ class MethodTestCaseTest {
     private val testPlan = run {
         val pattern = AnyPattern()
 
-        Plan(
+        RegularPlan(
             pattern = pattern,
             resultPattern = AnyPattern(),
             stepsProducer = Pipeline((1..3).map { PipelineItem(testRule) }),

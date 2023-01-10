@@ -17,7 +17,8 @@ data class TransformationModeller(val format: Format) {
             pathMappings = modelPathMappings(trans.toExpr.pathMappings(trans.fromExpr.origin.path!!)),
             explanation = trans.explanation?.let { modelMetadata(it) },
             skills = trans.skills.map { modelMetadata(it) },
-            steps = trans.steps?.let { step -> step.map { modelTransformation(it) } }
+            steps = trans.steps?.let { step -> step.map { modelTransformation(it) } },
+            type = trans.type.toString()
         )
     }
 

@@ -27,7 +27,10 @@ enum class Decorator {
         override fun decorateString(str: String) = "{. $str .}"
         override fun decorateLatexString(str: String) = "\\left\\{ $str \\right\\}"
     },
-    MissingBracket;
+    MissingBracket,
+    PartialSumBracket {
+        override fun decorateString(str: String) = "<. $str .>"
+    };
 
     open fun decorateString(str: String): String = str
     open fun decorateLatexString(str: String): String = str
@@ -108,6 +111,8 @@ class Expression internal constructor(
         Expression(operator, operands.map { it.clearLabels() }, decorators, origin, null)
 
     fun children() = origin.computeChildrenOrigin(this)
+
+    val childCount get() = this.operands.size
 
     fun flattenedProductChildren() = when (operator) {
         NaryOperator.ImplicitProduct -> children()
@@ -204,18 +209,6 @@ class Expression internal constructor(
     }
 
     /**
-     * Adds brackets if needed in the expression so that it can be the [index]th child of
-     * [operator].
-     */
-    internal fun addBracketIfNeededFor(operator: Operator, index: Int): Expression {
-        val bracketsRequired = !operator.nthChildAllowed(index, this.operator)
-        return when {
-            bracketsRequired && !hasBracket() -> decorate(Decorator.RoundBracket)
-            else -> this
-        }
-    }
-
-    /**
      * Updates the origin of the expression so that it now descends from [ancestor]
      */
     internal fun updateOrigin(ancestor: Expression): Expression = when (origin) {
@@ -256,7 +249,13 @@ class Expression internal constructor(
 
     internal fun replaceNthChild(childIndex: Int, newChild: Expression) = Expression(
         operator,
-        children().mapIndexed { i, op -> if (i == childIndex) newChild.addBracketIfNeededFor(operator, i) else op },
+        children().mapIndexed { i, op ->
+            when {
+                i != childIndex -> op
+                newChild.hasBracket() || operator.nthChildAllowed(i, newChild.operator) -> newChild
+                else -> newChild.decorate(op.outerBracket() ?: Decorator.RoundBracket)
+            }
+        },
         decorators,
         Build,
         label
@@ -267,7 +266,12 @@ class Expression internal constructor(
     override fun getBoundExpr(m: Match) = this
 
     override fun shouldBeRenderedWithASubtractionIfInASum(): Boolean {
-        return operator === UnaryExpressionOperator.Minus && !hasBracket()
+        return when {
+            operator === UnaryExpressionOperator.Minus && !hasBracket() -> true
+            outerBracket() != Decorator.PartialSumBracket -> false
+            operator === NaryOperator.Sum -> operands[0].shouldBeRenderedWithASubtractionIfInASum()
+            else -> operator === UnaryExpressionOperator.Minus
+        }
     }
 
     override fun isInlineDivideByTerm(): Boolean {

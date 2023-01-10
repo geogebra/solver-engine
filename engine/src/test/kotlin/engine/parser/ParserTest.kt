@@ -1,5 +1,6 @@
 package engine.parser
 
+import engine.expressions.Decorator
 import engine.expressions.Expression
 import engine.expressions.bracketOf
 import engine.expressions.buildExpression
@@ -25,11 +26,15 @@ import kotlin.test.assertFails
 class ParserTest {
 
     private fun rawSumOf(vararg terms: Expression) = Expression(
-        NaryOperator.Sum, terms.asList()
+        NaryOperator.Sum,
+        terms.asList()
     )
 
+    private fun rawPartialSumOf(vararg terms: Expression) = rawSumOf(*terms).decorate(Decorator.PartialSumBracket)
+
     private fun rawProductOf(vararg factors: Expression) = Expression(
-        NaryOperator.Product, factors.asList()
+        NaryOperator.Product,
+        factors.asList()
     )
 
     private fun parsingFails(input: String) {
@@ -180,6 +185,22 @@ class ParserTest {
                 rawSumOf(implicitProductOf(xp(3), xp("x")), xp(4)),
                 rawSumOf(implicitProductOf(xp(4), xp("x")), negOf(xp(5)))
             )
+        )
+    }
+
+    @Test
+    fun testPartialSum() {
+        parsesTo(
+            "<. 1 + 2 .> + 3",
+            rawSumOf(rawPartialSumOf(xp(1), xp(2)), xp(3))
+        )
+        parsesTo(
+            "1 <. + 2 - 3 .>",
+            rawSumOf(xp(1), rawPartialSumOf(xp(2), negOf(xp(3))))
+        )
+        parsesTo(
+            "x <. -y + z .>",
+            rawSumOf(xp("x"), rawPartialSumOf(negOf(xp("y")), xp("z")))
         )
     }
 }

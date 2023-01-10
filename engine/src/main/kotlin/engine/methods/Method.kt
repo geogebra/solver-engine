@@ -22,7 +22,7 @@ data class TransformationResult(
     val toExpr: Expression,
     val steps: List<Transformation>? = null,
     val explanation: Metadata? = null,
-    val skills: List<Metadata> = emptyList(),
+    val skills: List<Metadata> = emptyList()
 )
 
 interface RunnerMethod : Method {
@@ -41,7 +41,7 @@ interface RunnerMethod : Method {
                 toExpr = it.toExpr,
                 steps = it.steps,
                 explanation = it.explanation,
-                skills = it.skills,
+                skills = it.skills
             )
         }
     }

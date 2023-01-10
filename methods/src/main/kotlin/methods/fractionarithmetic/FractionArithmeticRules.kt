@@ -31,7 +31,7 @@ import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
-import engine.patterns.sumContaining
+import engine.patterns.sumOf
 import engine.steps.metadata.Skill
 import engine.steps.metadata.metadata
 import engine.utility.divides
@@ -50,9 +50,9 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                 TransformationResult(
                     toExpr = sum.substitute(
                         fractionOf(move(integer), introduce(Constants.One)),
-                        move(fraction),
+                        move(fraction)
                     ),
-                    explanation = metadata(Explanation.ConvertIntegerToFraction, move(integer)),
+                    explanation = metadata(Explanation.ConvertIntegerToFraction, move(integer))
                 )
             }
         }
@@ -67,18 +67,16 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             val f2 = fractionOf(num2, denom)
             val nf1 = optionalNegOf(f1)
             val nf2 = optionalNegOf(f2)
-            val sum = sumContaining(nf1, nf2)
+            val sum = sumOf(nf1, nf2)
 
             onPattern(sum) {
                 TransformationResult(
-                    toExpr = sum.substitute(
-                        fractionOf(
-                            sumOf(
-                                copySign(nf1, move(num1)),
-                                copySign(nf2, move(num2))
-                            ),
-                            factor(denom)
-                        )
+                    toExpr = fractionOf(
+                        sumOf(
+                            copySign(nf1, move(num1)),
+                            copySign(nf2, move(num2))
+                        ),
+                        factor(denom)
                     ),
                     explanation = when {
                         !nf1.isNeg() && nf2.isNeg() -> metadata(Explanation.SubtractLikeFractions, move(f1), move(f2))
@@ -95,33 +93,31 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             val f2 = IntegerFractionPattern()
             val nf1 = optionalNegOf(f1)
             val nf2 = optionalNegOf(f2)
-            val sum = sumContaining(nf1, nf2)
+            val sum = sumOf(nf1, nf2)
 
             onPattern(ConditionPattern(sum, integerCondition(f1.denominator, f2.denominator) { n1, n2 -> n1 != n2 })) {
                 val factor1 = integerOp(f1.denominator, f2.denominator) { n1, n2 -> n2 / n1.gcd(n2) }
                 val factor2 = integerOp(f1.denominator, f2.denominator) { n1, n2 -> n1 / n1.gcd(n2) }
 
                 TransformationResult(
-                    toExpr = sum.substitute(
-                        sumOf(
-                            copySign(
-                                nf1,
-                                fractionOf(
-                                    productOf(move(f1.numerator), factor1),
-                                    productOf(move(f1.denominator), factor1)
-                                )
-                            ),
-                            copySign(
-                                nf2,
-                                fractionOf(
-                                    productOf(move(f2.numerator), factor2),
-                                    productOf(move(f2.denominator), factor2)
-                                )
-                            ),
+                    toExpr = sumOf(
+                        copySign(
+                            nf1,
+                            fractionOf(
+                                productOf(move(f1.numerator), factor1),
+                                productOf(move(f1.denominator), factor1)
+                            )
+                        ),
+                        copySign(
+                            nf2,
+                            fractionOf(
+                                productOf(move(f2.numerator), factor2),
+                                productOf(move(f2.denominator), factor2)
+                            )
                         )
                     ),
                     explanation = metadata(Explanation.BringToCommonDenominator, move(f1), move(f2)),
-                    skills = listOf(metadata(Skill.NumericLCM, move(f1.denominator), move(f2.denominator))),
+                    skills = listOf(metadata(Skill.NumericLCM, move(f1.denominator), move(f2.denominator)))
                 )
             }
         }
@@ -137,7 +133,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             onPattern(pattern) {
                 TransformationResult(
                     toExpr = negOf(fractionOf(move(numerator), move(denominator))),
-                    explanation = metadata(Explanation.SimplifyNegativeInDenominator, move(pattern)),
+                    explanation = metadata(Explanation.SimplifyNegativeInDenominator, move(pattern))
                 )
             }
         }
@@ -158,7 +154,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             ) {
                 TransformationResult(
                     toExpr = integerOp(numerator, denominator) { n, d -> n / d },
-                    explanation = metadata(Explanation.SimplifyFractionToInteger),
+                    explanation = metadata(Explanation.SimplifyFractionToInteger)
                 )
             }
         }
@@ -200,7 +196,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                             productOf(gcd, denominatorOverGcd)
                         }
                     ),
-                    explanation = metadata(Explanation.FindCommonFactorInFraction),
+                    explanation = metadata(Explanation.FindCommonFactorInFraction)
                 )
             }
         }
@@ -216,7 +212,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             onPattern(pattern) {
                 TransformationResult(
                     negOf(fractionOf(move(numerator), move(denominator))),
-                    explanation = metadata(Explanation.SimplifyNegativeInNumerator, move(pattern)),
+                    explanation = metadata(Explanation.SimplifyNegativeInNumerator, move(pattern))
                 )
             }
         }
@@ -232,7 +228,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             onPattern(pattern) {
                 TransformationResult(
                     fractionOf(move(numerator), move(denominator)),
-                    explanation = metadata(Explanation.SimplifyNegativeInNumeratorAndDenominator, move(pattern)),
+                    explanation = metadata(Explanation.SimplifyNegativeInNumeratorAndDenominator, move(pattern))
                 )
             }
         }
@@ -255,7 +251,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                     toExpr = product.substitute(
                         fractionOf(move(nonFractionFactor), introduce(Constants.One))
                     ),
-                    explanation = metadata(Explanation.TurnFactorIntoFractionInProduct, move(nonFractionFactor)),
+                    explanation = metadata(Explanation.TurnFactorIntoFractionInProduct, move(nonFractionFactor))
                 )
             }
         }
@@ -281,7 +277,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                             )
                         )
                     ),
-                    explanation = metadata(Explanation.BringToCommonDenominator, move(f), move(integerTerm)),
+                    explanation = metadata(Explanation.BringToCommonDenominator, move(f), move(integerTerm))
                 )
             }
         }
@@ -303,9 +299,9 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                         fractionOf(
                             productOf(move(num1), move(num2)),
                             productOf(move(denom1), move(denom2))
-                        ),
+                        )
                     ),
-                    explanation = metadata(Explanation.MultiplyFractions, move(f1), move(f2)),
+                    explanation = metadata(Explanation.MultiplyFractions, move(f1), move(f2))
                 )
             }
         }
@@ -323,7 +319,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                         move(numerator),
                         fractionOf(introduce(Constants.One), move(denominator))
                     ),
-                    explanation = metadata(Explanation.SimplifyFractionWithFractionNumerator, move(f)),
+                    explanation = metadata(Explanation.SimplifyFractionWithFractionNumerator, move(f))
                 )
             }
         }
@@ -343,7 +339,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                         move(outerNumerator),
                         fractionOf(move(denominator), move(numerator))
                     ),
-                    explanation = metadata(Explanation.SimplifyFractionWithFractionDenominator, move(outerFraction)),
+                    explanation = metadata(Explanation.SimplifyFractionWithFractionDenominator, move(outerFraction))
                 )
             }
         }
@@ -355,7 +351,8 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             val exp = IntegerFractionPattern()
             // we "split" an improper fraction power instead of distributing it
             val expIsProperFraction = numericCondition(
-                exp.numerator, exp.denominator
+                exp.numerator,
+                exp.denominator
             ) { n1, n2 -> n1 < n2 }
             val properFractionExponent = ConditionPattern(exp, expIsProperFraction)
             val pattern = powerOf(fraction, properFractionExponent)
@@ -434,7 +431,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             onPattern(pattern) {
                 TransformationResult(
                     fractionOf(move(fraction.denominator), move(fraction.numerator)),
-                    explanation = metadata(Explanation.SimplifyFractionToMinusOne, move(fraction)),
+                    explanation = metadata(Explanation.SimplifyFractionToMinusOne, move(fraction))
                 )
             }
         }
@@ -464,7 +461,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                 TransformationResult(
                     toExpr = fractionOf(
                         introduce(Constants.One),
-                        powerOf(move(base), move(exponent.unsignedPattern)),
+                        powerOf(move(base), move(exponent.unsignedPattern))
                     ),
                     explanation = metadata(
                         Explanation.TurnNegativePowerOfIntegerToFraction,
@@ -511,7 +508,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                     explanation = metadata(Explanation.ConvertImproperFractionToSumOfIntegerAndFraction),
                     skills = listOf(
                         metadata(Skill.DivisionWithRemainder, move(fraction.numerator), move(fraction.denominator))
-                    ),
+                    )
                 )
             }
         }

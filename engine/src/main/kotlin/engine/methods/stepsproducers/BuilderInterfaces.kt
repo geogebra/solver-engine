@@ -1,5 +1,6 @@
 package engine.methods.stepsproducers
 
+import engine.expressions.Expression
 import engine.expressions.Extractor
 import engine.methods.PlanBuilder
 import engine.patterns.Pattern
@@ -64,6 +65,8 @@ interface PipelineBuilder {
      * Follow the given steps.  The pipeline will fail if the steps can't be followed to completion.
      */
     fun apply(init: PipelineBuilder.() -> Unit)
+
+    fun check(f: (Expression) -> Boolean)
 
     /**
      * Apply the [steps] to a subexpression obtained by the [extractor]

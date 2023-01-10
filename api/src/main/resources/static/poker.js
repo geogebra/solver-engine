@@ -6,6 +6,7 @@ const mainPokerURL = "http://solver.geogebra.net/main/poker.html";
 
 // Globally changes the rendering of steps.
 let showThroughSteps = false;
+let showRearrangements = false;
 
 // Show / hide warnings
 let hideWarnings = false;
@@ -188,9 +189,30 @@ const renderSteps = (steps, depth = 0, open = false) => {
     <details class="steps" ${open ? "open" : ""}>
         <summary>${steps.length} ${steps.length === 1 ? "step" : "steps"}</summary>
         <ol>
-            ${steps.map((step) => `<li>${renderTransformation(step, depth - 1)}</li>`).join("")}
+            ${preprocessSteps(steps)
+                .map((step) => `<li>${renderTransformation(step, depth - 1)}</li>`)
+                .join("")}
         </ol>
     </details>`;
+};
+
+const preprocessSteps = (steps) => {
+    if (showRearrangements || !steps.some((step) => step.type === "Rearrangement")) {
+        return steps;
+    }
+    const processedSteps = [];
+    let fromExpr = null;
+    for (const step of steps) {
+        if (step.type === "Rearrangement") {
+            fromExpr = step.fromExpr;
+        } else if (!fromExpr) {
+            processedSteps.push(step);
+        } else {
+            processedSteps.push({ ...step, fromExpr });
+            fromExpr = null;
+        }
+    }
+    return processedSteps;
 };
 
 const renderWarning = (content) =>
@@ -446,6 +468,14 @@ window.onload = () => {
 
     el("showThroughSteps").onchange = (evt) => {
         showThroughSteps = evt.target.checked;
+        const data = getRequestDataFromForm();
+        if (data.input !== "") {
+            selectPlansOrApplyPlan(data);
+        }
+    };
+
+    el("showRearrangements").onchange = (evt) => {
+        showRearrangements = evt.target.checked;
         const data = getRequestDataFromForm();
         if (data.input !== "") {
             selectPlansOrApplyPlan(data);

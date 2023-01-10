@@ -132,6 +132,78 @@ class TestAddFractions {
             toExpr = "-[17 / 20]"
         }
     }
+
+    @Test
+    fun testSumWithMoreTerms() = testMethod {
+        method = FractionArithmeticPlans.EvaluateFractionSum
+        inputExpr = "[1/2] + 3 - [1/3]"
+
+        check {
+            toExpr = "[1/6] + 3"
+
+            step { toExpr = "<. [1/2] - [1/3] .> + 3" }
+            step { toExpr = "<. [1*3/2*3] - [1*2/3*2] .> + 3" }
+            step { toExpr = "<. [3/6] - [2/6] .> + 3" }
+            step { toExpr = "[3 - 2 / 6] + 3" }
+            step { toExpr = "[1/6] + 3" }
+        }
+    }
+
+    @Test
+    fun testSumWithMoreTermsAtStart() = testMethod {
+        method = FractionArithmeticPlans.EvaluateFractionSum
+        inputExpr = "5 + x + [1/2] + 3 - [1/3]"
+
+        check {
+            toExpr = "5 + x + [1/6] + 3"
+
+            step { toExpr = "5 + x <. + [1/2] - [1/3] .> + 3" }
+            step { toExpr = "5 + x <. + [1*3/2*3] - [1*2/3*2] .> + 3" }
+            step { toExpr = "5 + x <. + [3/6] - [2/6] .> + 3" }
+            step { toExpr = "5 + x + [3 - 2 / 6] + 3" }
+            step { toExpr = "5 + x + [1/6] + 3" }
+        }
+    }
+
+    @Test
+    fun testFractionNeedsCancelingFirst() = testMethod {
+        method = FractionArithmeticPlans.EvaluateFractionSum
+        inputExpr = "[1/3] + [4/8]"
+
+        check {
+            noTransformation()
+        }
+    }
+
+    @Test
+    fun testAvoidCancelingThatWouldBeUndone() = testMethod {
+        method = FractionArithmeticPlans.EvaluateFractionSum
+        inputExpr = "[2 / 2 * 3] + [1 / 6]"
+
+        check {
+            toExpr = "[1 / 2]"
+
+            step { toExpr = "[2 / 6] + [1 / 6]" }
+            step { toExpr = "[2 + 1 / 6]" }
+            step { toExpr = "[3 / 6]" }
+            step { toExpr = "[1 / 2]" }
+        }
+    }
+
+    @Test
+    fun testExplanationPointsAtCorrectTerms() = testMethod {
+        method = FractionArithmeticPlans.EvaluateFractionSum
+        inputExpr = "[4/8] + [1/2] + [1/3]"
+
+        check {
+            toExpr = "[4/8] + [5/6]"
+            explanation {
+                key = FractionArithmeticExplanation.EvaluateFractionSum
+                param { expr = "[1/2]" }
+                param { expr = "[1/3]" }
+            }
+        }
+    }
 }
 
 class TestSimplifyFraction {

@@ -10,8 +10,10 @@ import engine.methods.stepsproducers.PipelineBuilder
 import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.StepsProducerBuilderMarker
 import engine.methods.stepsproducers.steps
+import engine.operators.NaryOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ExpressionProvider
+import engine.patterns.NaryPattern
 import engine.patterns.Pattern
 import engine.steps.metadata.MetadataKey
 import engine.steps.metadata.MetadataMaker
@@ -20,6 +22,7 @@ import engine.steps.metadata.MetadataMaker
 class PlanBuilder(private val stepsProducerFactory: StepsProducerFactory) {
     private var skillMakers: MutableList<MetadataMaker> = mutableListOf()
     private var alternatives: MutableList<ContextSensitiveAlternative> = mutableListOf()
+    private var isPartialSum = false
     private lateinit var defaultSteps: StepsProducer
     private lateinit var resourceData: ResourceData
     private var specificPlansList: MutableList<Method> = mutableListOf()
@@ -55,6 +58,12 @@ class PlanBuilder(private val stepsProducerFactory: StepsProducerFactory) {
         skillMakers.add(MetadataMaker(skillKey) { params.map { move(it) } })
     }
 
+    fun partialSumSteps(resourceData: ResourceData = emptyResourceData, init: PipelineBuilder.() -> Unit) {
+        require(pattern.let { it is NaryPattern && it.operator === NaryOperator.Sum })
+        this.isPartialSum = true
+        steps(resourceData, init)
+    }
+
     fun steps(resourceData: ResourceData = emptyResourceData, init: PipelineBuilder.() -> Unit) {
         defaultSteps = stepsProducerFactory(init)
         this.resourceData = resourceData
@@ -66,7 +75,14 @@ class PlanBuilder(private val stepsProducerFactory: StepsProducerFactory) {
     }
 
     private fun wrapPlanExecutor(stepsProducer: StepsProducer): Plan {
-        return Plan(
+        return if (isPartialSum) PartialSumPlan(
+            pattern = pattern as NaryPattern,
+            stepsProducer = stepsProducer,
+            explanationMaker = MetadataMaker(explanation, explanationParameters),
+            skillMakers = skillMakers,
+            specificPlans = specificPlansList
+        )
+        else RegularPlan(
             pattern = pattern,
             resultPattern = resultPattern,
             stepsProducer = stepsProducer,
@@ -92,7 +108,7 @@ class PlanBuilder(private val stepsProducerFactory: StepsProducerFactory) {
 typealias StepsProducerFactory = (init: PipelineBuilder.() -> Unit) -> StepsProducer
 
 /**
- * Type-safe builder to create [Plan] instance susing the [PlanBuilder] DSL.
+ * Type-safe builder to create [RegularPlan] instance susing the [PlanBuilder] DSL.
  */
 fun plan(steps: StepsProducerFactory = ::steps, init: PlanBuilder.() -> Unit): Plan {
     val planBuilder = PlanBuilder(steps)

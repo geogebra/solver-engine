@@ -73,7 +73,7 @@ class NaryPattern(
         else -> sub.flattenedProductChildren()
     }
 
-    private fun getMatchedChildExpressions(match: Match) =
+    fun getMatchedChildExpressions(match: Match) =
         childPatterns.flatMap { match.getBoundExprs(it) }
             .filter { it.isChildOfOrSelf(match.getBoundExpr(this)) }
 

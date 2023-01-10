@@ -26,9 +26,17 @@ exprOrUndefined: expr | undefined;
 
 expr: sum;
 
-sum: sign=('+'|'-')? first=explicitProduct (rest+=otherTerm)*;
+sum: first=firstTerm (rest+=otherTerm)*;
 
-otherTerm: sign=('+'|'-') explicitProduct;
+firstTerm
+    : sign=('+'|'-')? explicitProduct       #realFirstTerm
+    | OPEN_PARTIALSUM sum CLOSE_PARTIALSUM  #firstPartialSum
+    ;
+
+otherTerm
+    : sign=('+'|'-') explicitProduct                       #realOtherTerm
+    | OPEN_PARTIALSUM (terms+=otherTerm)+ CLOSE_PARTIALSUM  #otherPartialSum
+    ;
 
 explicitProduct: first=implicitProduct (rest+=otherExplicitFactor)*;
 
@@ -83,6 +91,9 @@ CLOSE_SQUARE: '.]';
 
 OPEN_CURLY: '{.';
 CLOSE_CURLY: '.}';
+
+OPEN_PARTIALSUM: '<.';
+CLOSE_PARTIALSUM: '.>';
 
 REALS: 'REALS';
 UNDEFINED: 'UNDEFINED';

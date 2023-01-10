@@ -170,7 +170,7 @@ val arithmeticOperators = listOf(
     UnaryExpressionOperator.DivideBy,
     BinaryExpressionOperator.Power,
     NaryOperator.Sum,
-    NaryOperator.Product,
+    NaryOperator.Product
 )
 
 private fun Expression.isArithmeticExpression(): Boolean {

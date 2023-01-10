@@ -6,13 +6,20 @@ import engine.steps.metadata.Metadata
 /**
  * Contains the details of the transformation to a mathematical expression effected by a plan or rule.
  */
+
 data class Transformation(
     val fromExpr: Expression,
     val toExpr: Expression,
     val steps: List<Transformation>? = null,
     val explanation: Metadata? = null,
     val skills: List<Metadata> = emptyList(),
+    val type: Type = Type.Default
 ) {
+
+    enum class Type {
+        Default,
+        Rearrangement;
+    }
 
     /**
      * Clear all labels contained in the [fromExpr] or [toExpr] of the transformation.
@@ -23,5 +30,6 @@ data class Transformation(
         steps,
         explanation,
         skills,
+        type
     )
 }

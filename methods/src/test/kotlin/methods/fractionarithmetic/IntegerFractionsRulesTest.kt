@@ -34,7 +34,7 @@ class IntegerFractionsRulesTest {
 
     @Test
     fun testAddLikeFractions() {
-        testRule("1+[2/10]+z+[3/10]+x", AddLikeFractions, "1+[2+3/10]+z+x")
+        testRule("[2/10] + [3/10]", AddLikeFractions, "[2+3/10]")
         testRule("1+[2/10]-x", AddLikeFractions, null)
         testRule("[3/10] - [2/10]", AddLikeFractions, "[3 - 2 / 10]")
         testRule("-[3/10] - [2/10]", AddLikeFractions, "[-3 - 2 / 10]")

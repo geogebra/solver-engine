@@ -80,26 +80,38 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
 
     override fun visitSum(ctx: ExpressionParser.SumContext): Expression {
         val first = visit(ctx.first)
-        val signedFirst = if (ctx.sign == null) first else when (ctx.sign.text) {
-            "+" -> makeExpression(UnaryExpressionOperator.Plus, first)
-            else -> makeExpression(UnaryExpressionOperator.Minus, first)
-        }
         val rest = ctx.rest.map { visit(it) }
         if (rest.isEmpty()) {
-            return signedFirst
+            return first
         }
-        val terms = mutableListOf<Expression>(signedFirst)
+        val terms = mutableListOf<Expression>(first)
         terms.addAll(rest)
         return makeExpression(NaryOperator.Sum, terms)
     }
 
-    override fun visitOtherTerm(ctx: ExpressionParser.OtherTermContext): Expression {
+    override fun visitRealFirstTerm(ctx: ExpressionParser.RealFirstTermContext): Expression {
+        val p = visit(ctx.explicitProduct())
+        return if (ctx.sign == null) p else when (ctx.sign.text) {
+            "+" -> makeExpression(UnaryExpressionOperator.Plus, p)
+            else -> makeExpression(UnaryExpressionOperator.Minus, p)
+        }
+    }
+
+    override fun visitFirstPartialSum(ctx: ExpressionParser.FirstPartialSumContext): Expression {
+        return visit(ctx.sum()).decorate(Decorator.PartialSumBracket)
+    }
+
+    override fun visitRealOtherTerm(ctx: ExpressionParser.RealOtherTermContext): Expression {
         val p = visit(ctx.explicitProduct())
         return when {
             ctx.sign.text == "-" -> makeExpression(UnaryExpressionOperator.Minus, p)
             UnaryExpressionOperator.Plus.childAllowed(p.operator) || p.hasBracket() -> p
             else -> p.decorate(Decorator.MissingBracket)
         }
+    }
+
+    override fun visitOtherPartialSum(ctx: ExpressionParser.OtherPartialSumContext): Expression {
+        return makeExpression(NaryOperator.Sum, ctx.terms.map { visit(it) }).decorate(Decorator.PartialSumBracket)
     }
 
     override fun visitExplicitProduct(ctx: ExpressionParser.ExplicitProductContext): Expression {

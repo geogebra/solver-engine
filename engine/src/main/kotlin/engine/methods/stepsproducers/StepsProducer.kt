@@ -63,6 +63,7 @@ class StepsBuilder(sub: Expression) {
 
         steps.add(
             Transformation(
+                type = step.type,
                 fromExpr = sub,
                 toExpr = substitution,
                 explanation = step.explanation,
