@@ -2,16 +2,11 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm")
-
     antlr
 
     id("org.jlleitschuh.gradle.ktlint")
     id("io.gitlab.arturbosch.detekt")
     id("java-test-fixtures")
-}
-
-repositories {
-    mavenCentral()
 }
 
 dependencies {
@@ -32,8 +27,6 @@ tasks.withType<Jar> {
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "17"
-
     // The antlr plugin defines a dependency for java compilation but not Kotlin, so we do it manually here.
     dependsOn(tasks.generateGrammarSource)
 }

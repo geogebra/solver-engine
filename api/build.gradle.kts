@@ -4,10 +4,9 @@ import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 plugins {
     application
 
-    val kotlinVersion = "1.7.10"
     kotlin("jvm")
-    kotlin("plugin.jpa") version kotlinVersion
-    kotlin("plugin.spring") version kotlinVersion
+    kotlin("plugin.jpa")
+    kotlin("plugin.spring")
 
     id("org.openapi.generator") version "6.2.1"
     id("org.springframework.boot") version "2.7.7"
@@ -19,10 +18,6 @@ plugins {
 
 group = "org.geogebra.solver"
 version = "0.1"
-
-repositories {
-    mavenCentral()
-}
 
 dependencies {
     implementation(project(":engine"))
@@ -40,8 +35,6 @@ dependencies {
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "17"
-
     dependsOn(tasks.openApiGenerate)
 }
 

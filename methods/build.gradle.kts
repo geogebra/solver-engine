@@ -1,15 +1,11 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 
 plugins {
     kotlin("jvm")
 
     id("org.jlleitschuh.gradle.ktlint")
     id("io.gitlab.arturbosch.detekt")
-    id("com.google.devtools.ksp") version "1.7.10-1.0.6"
-}
-
-repositories {
-    mavenCentral()
+    id("com.google.devtools.ksp")
 }
 
 dependencies {
@@ -28,10 +24,6 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
-}
-
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "17"
 }
 
 detekt {
