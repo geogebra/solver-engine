@@ -1,0 +1,6 @@
+spring:
+  mvc:
+    async:
+      # It seems that there is a timeout which is set by default.  In development timeouts are a problem when a debug
+      # build is paused because of breakpoints.
+      request-timeout: -1

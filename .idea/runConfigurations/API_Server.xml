@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="API Server" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
-    <option name="ACTIVE_PROFILES" />
+    <option name="ACTIVE_PROFILES" value="development" />
     <envs>
       <env name="DEPLOYMENT_NAME" value="dev" />
       <env name="LOG_LEVEL" value="FINE" />
