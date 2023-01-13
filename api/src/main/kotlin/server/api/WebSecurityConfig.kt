@@ -1,5 +1,6 @@
 package server.api
 
+import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -7,17 +8,8 @@ import org.springframework.security.web.SecurityFilterChain
 import org.springframework.web.cors.CorsConfiguration
 
 @Configuration
-class WebSecurityConfig {
-
-    companion object {
-        val allowedOrigins = listOf(
-            "http://localhost:[*]",
-            "http://*.geogebra.net",
-            "https://*.geogebra.net",
-            "http://*.geogebra.org",
-            "https://*.geogebra.net"
-        )
-    }
+@ConfigurationProperties("api.web-security")
+data class WebSecurityConfig(var allowedOrigins: List<String> = emptyList()) {
 
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {

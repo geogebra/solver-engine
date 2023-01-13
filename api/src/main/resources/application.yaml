@@ -6,3 +6,8 @@ server:
   error:
     include-message: always
     include-stacktrace: never
+
+api:
+  web-security:
+    allowed-origins:
+      - "*"
