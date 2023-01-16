@@ -21,6 +21,7 @@ import engine.patterns.FixedPattern
 import engine.patterns.IntegerFractionPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.commutativeSumContaining
 import engine.patterns.commutativeSumOf
 import engine.patterns.condition
 import engine.patterns.fractionOf
@@ -263,7 +264,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             val nf = optionalNegOf(f)
             val integerTerm = SignedIntegerPattern()
 
-            val sum = commutativeSumOf(nf, integerTerm)
+            val sum = commutativeSumContaining(nf, integerTerm)
 
             onPattern(sum) {
                 TransformationResult(

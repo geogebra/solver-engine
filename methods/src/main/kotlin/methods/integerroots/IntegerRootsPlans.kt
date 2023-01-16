@@ -52,7 +52,7 @@ enum class IntegerRootsPlans(override val runner: Plan) : RunnerMethod {
                 }
                 apply(IntegerRootsRules.SimplifyRootOfRoot)
                 // evaluate the product in the index of the root
-                applyTo(IntegerArithmeticPlans.EvaluateProductOfIntegers) { it.secondChild }
+                applyTo(IntegerArithmeticRules.EvaluateIntegerProductAndDivision) { it.secondChild }
             }
         }
     ),

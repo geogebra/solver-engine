@@ -14,7 +14,6 @@ import methods.fractionarithmetic.FractionArithmeticPlans
 import methods.fractionarithmetic.simplifyAfterCollectingLikeTerms
 import methods.general.GeneralRules
 import methods.general.NormalizationRules
-import methods.integerarithmetic.IntegerArithmeticPlans
 import methods.integerarithmetic.IntegerArithmeticRules
 import methods.integerarithmetic.simplifyIntegersInExpression
 
@@ -86,7 +85,7 @@ enum class IntegerRationalExponentsPlans(override val runner: Plan) : RunnerMeth
                 apply(GeneralRules.RewriteProductOfPowersWithSameBase)
                 firstOf {
                     option { deeply(FractionArithmeticPlans.EvaluateFractionSum) }
-                    option { deeply(IntegerArithmeticPlans.EvaluateSumOfIntegers) }
+                    option { deeply(IntegerArithmeticRules.EvaluateSignedIntegerAddition) }
                 }
             }
         }

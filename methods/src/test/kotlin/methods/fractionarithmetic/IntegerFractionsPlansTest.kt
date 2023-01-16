@@ -3,7 +3,6 @@ package methods.fractionarithmetic
 import engine.methods.testMethod
 import engine.steps.metadata.Skill
 import methods.constantexpressions.ConstantExpressionsPlans
-import methods.integerarithmetic.IntegerArithmeticPlans
 import org.junit.jupiter.api.Test
 
 class TestAddFractions {
@@ -293,38 +292,6 @@ class TestSimplifyFraction {
 
         check {
             toExpr = "[4 / 9]"
-        }
-    }
-
-    @Test
-    fun testEvaluateSignedIntegerPower1() = testMethod {
-        method = IntegerArithmeticPlans.EvaluateSignedIntegerPower
-        inputExpr = "[2 ^ 6]"
-
-        check {
-            toExpr = "64"
-
-            step {
-                toExpr = "64"
-            }
-        }
-    }
-
-    @Test
-    fun testEvaluateSignedIntegerPower2() = testMethod {
-        method = IntegerArithmeticPlans.EvaluateSignedIntegerPower
-        inputExpr = "[2^5]"
-
-        check {
-            toExpr = "32"
-
-            step {
-                toExpr = "2 * 2 * 2 * 2 * 2"
-            }
-
-            step {
-                toExpr = "32"
-            }
         }
     }
 

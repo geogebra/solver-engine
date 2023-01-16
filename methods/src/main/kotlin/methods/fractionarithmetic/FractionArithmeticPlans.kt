@@ -223,7 +223,7 @@ private val evaluateSumOfFractionAndInteger = plan {
 
     partialSumSteps {
         apply(FractionArithmeticRules.TurnSumOfFractionAndIntegerToFractionSum)
-        deeply(IntegerArithmeticPlans.SimplifyIntegersInProduct)
+        deeply(IntegerArithmeticRules.EvaluateIntegerProductAndDivision)
         apply(FractionArithmeticPlans.EvaluateFractionSum)
     }
 }
@@ -238,7 +238,7 @@ val simplifyIntegerToNegativePower = steps {
 
                 steps {
                     apply(FractionArithmeticRules.TurnNegativePowerOfIntegerToFraction)
-                    applyTo(IntegerArithmeticPlans.EvaluateSignedIntegerPower) { it.denominator() }
+                    applyTo(IntegerArithmeticRules.EvaluateIntegerPowerDirectly) { it.denominator() }
                 }
             }
         }

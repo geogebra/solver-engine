@@ -306,28 +306,6 @@ class IntegerArithmeticPlansTest {
         }
     }
 
-    // @Test
-    fun testSimplifyRoots() = testMethod {
-        method = IntegerArithmeticPlans.EvaluateArithmeticExpression
-        inputExpr = "sqrt[63]"
-
-        check {
-            toExpr = "3 * sqrt[7]"
-
-            step {
-                toExpr = "sqrt[[3 ^ 2] * 7]"
-            }
-
-            step {
-                toExpr = "sqrt[[3 ^ 2]] * sqrt[7]"
-            }
-
-            step {
-                toExpr = "3 * sqrt[7]"
-            }
-        }
-    }
-
     @Test
     fun testDividingByZero() = testMethod {
         method = IntegerArithmeticPlans.EvaluateArithmeticExpression
@@ -348,7 +326,7 @@ class IntegerArithmeticPlansTest {
 
     @Test
     fun testEvaluateSignedIntegerPowerPlan() = testMethod {
-        method = IntegerArithmeticPlans.EvaluateSignedIntegerPower
+        method = IntegerArithmeticPlans.EvaluateArithmeticExpression
         inputExpr = "[4^2]"
 
         check {
@@ -367,7 +345,7 @@ class IntegerArithmeticPlansTest {
 
     @Test
     fun testEvaluateSignedIntegerPower1() = testMethod {
-        method = IntegerArithmeticPlans.EvaluateSignedIntegerPower
+        method = IntegerArithmeticPlans.EvaluateArithmeticExpression
         inputExpr = "[2 ^ 6]"
 
         check {
@@ -381,7 +359,7 @@ class IntegerArithmeticPlansTest {
 
     @Test
     fun testEvaluateSignedIntegerPower2() = testMethod {
-        method = IntegerArithmeticPlans.EvaluateSignedIntegerPower
+        method = IntegerArithmeticPlans.EvaluateArithmeticExpression
         inputExpr = "[2^5]"
 
         check {

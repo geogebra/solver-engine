@@ -45,6 +45,8 @@ enum class ConstantExpressionsPlans(override val runner: Plan) : RunnerMethod {
             steps {
                 whilePossible {
                     firstOf {
+                        option { deeply(GeneralRules.EvaluateZeroToAPositivePower) }
+
                         // minus one and other negative integer powers
                         option { deeply(simplifyIntegerToNegativePower) }
                         option { deeply(FractionArithmeticRules.SimplifyFractionToMinusOne) }
@@ -55,6 +57,7 @@ enum class ConstantExpressionsPlans(override val runner: Plan) : RunnerMethod {
                         option { deeply(FractionArithmeticRules.DistributeFractionPositiveFractionPower) }
                         option { deeply(IntegerArithmeticRules.SimplifyEvenPowerOfNegative) }
                         option { deeply(IntegerArithmeticRules.SimplifyOddPowerOfNegative) }
+                        option { deeply(IntegerArithmeticRules.EvaluateIntegerPowerDirectly) }
                         option { deeply(GeneralRules.DistributePowerOfProduct) }
 
                         // the "expand" plans should eventually be moved to a
@@ -74,8 +77,6 @@ enum class ConstantExpressionsPlans(override val runner: Plan) : RunnerMethod {
                                 applyTo(GeneralPlans.ExpandTrinomialSquared) { if (it.isConstant()) it else null }
                             }
                         }
-
-                        option { deeply(IntegerArithmeticPlans.EvaluateSignedIntegerPower) }
                     }
                 }
             }

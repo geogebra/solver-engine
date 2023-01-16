@@ -1405,7 +1405,7 @@ class ExponentsTest {
                     fromExpr = "[20 ^ 2 - 2]"
                     toExpr = "[20 ^ 0]"
                     explanation {
-                        key = IntegerArithmeticExplanation.EvaluateSumOfIntegers
+                        key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
                     }
                 }
             }
@@ -1572,7 +1572,7 @@ class SimplifyIntegerPowerUnderRoot {
                 fromExpr = "[24 ^ 2]"
                 toExpr = "576"
                 explanation {
-                    key = IntegerArithmeticExplanation.EvaluateIntegerPower
+                    key = IntegerArithmeticExplanation.EvaluateIntegerPowerDirectly
                 }
             }
         }
@@ -1649,7 +1649,7 @@ class SimplifyRationalPowerOfFraction {
                 fromExpr = "[[4 ^ 3] / [9 ^ 3]] * [([4 / 9]) ^ [2 / 3]]"
                 toExpr = "[64 / [9 ^ 3]] * [([4 / 9]) ^ [2 / 3]]"
                 explanation {
-                    key = IntegerArithmeticExplanation.EvaluateIntegerPower
+                    key = IntegerArithmeticExplanation.EvaluateIntegerPowerDirectly
                 }
             }
 
@@ -1657,7 +1657,7 @@ class SimplifyRationalPowerOfFraction {
                 fromExpr = "[64 / [9 ^ 3]] * [([4 / 9]) ^ [2 / 3]]"
                 toExpr = "[64 / 729] * [([4 / 9]) ^ [2 / 3]]"
                 explanation {
-                    key = IntegerArithmeticExplanation.EvaluateIntegerPower
+                    key = IntegerArithmeticExplanation.EvaluateIntegerPowerDirectly
                 }
             }
         }

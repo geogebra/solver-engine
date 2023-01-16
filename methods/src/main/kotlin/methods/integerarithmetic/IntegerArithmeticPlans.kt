@@ -21,7 +21,7 @@ import methods.general.NormalizationPlans
 import methods.general.NormalizationRules
 import methods.general.removeRedundantBrackets
 
-enum class IntegerArithmeticPlans(override val runner: Plan) : RunnerMethod {
+private enum class PrivateIntegerArithmeticPlans(override val runner: Plan) : RunnerMethod {
     EvaluateProductOfIntegers(
         plan {
             pattern = productContaining()
@@ -52,11 +52,8 @@ enum class IntegerArithmeticPlans(override val runner: Plan) : RunnerMethod {
     ),
 
     /**
-     * evaluates: [2^4] as:
-     *  1. [2^4] --> 2 * 2 * 2 * 2
-     *  2. 2 * 2 * 2 * 2 --> 16
-     * and evaluates: [2^6] as:
-     *  1. [2^6] --> 64
+     * Evaluates [2 ^ 3] as 2 * 2 * 2 -> 4 * 2 -> 8
+     * but evaluates [2 ^ 6] directly to 64
      */
     EvaluateSignedIntegerPower(
         plan {
@@ -84,25 +81,19 @@ enum class IntegerArithmeticPlans(override val runner: Plan) : RunnerMethod {
         }
     ),
 
-    SimplifyIntegersInProduct(
+    EvaluateArithmeticSubexpression(
         plan {
-            pattern = productContaining()
-            explanation = Explanation.SimplifyIntegersInProduct
-            explanationParameters(pattern)
+            explanation = Explanation.SimplifyExpressionInBrackets
+            pattern = condition(AnyPattern()) { it.hasBracket() }
 
             steps {
-                whilePossible {
-                    firstOf {
-                        option(GeneralRules.EvaluateProductDividedByZeroAsUndefined)
-                        option(GeneralRules.EvaluateProductContainingZero)
-                        option(IntegerArithmeticRules.EvaluateIntegerProductAndDivision)
-                        option(GeneralRules.EliminateOneInProduct)
-                    }
-                }
+                whilePossible(evaluationSteps)
             }
         }
     ),
+}
 
+enum class IntegerArithmeticPlans(override val runner: Plan) : RunnerMethod {
     SimplifyIntegersInSum(
         plan {
             pattern = sumContaining()
@@ -120,13 +111,21 @@ enum class IntegerArithmeticPlans(override val runner: Plan) : RunnerMethod {
         }
     ),
 
-    EvaluateArithmeticSubexpression(
+    SimplifyIntegersInProduct(
         plan {
-            explanation = Explanation.SimplifyExpressionInBrackets
-            pattern = condition(AnyPattern()) { it.hasBracket() }
+            pattern = productContaining()
+            explanation = Explanation.SimplifyIntegersInProduct
+            explanationParameters(pattern)
 
             steps {
-                whilePossible(evaluationSteps)
+                whilePossible {
+                    firstOf {
+                        option(GeneralRules.EvaluateProductDividedByZeroAsUndefined)
+                        option(GeneralRules.EvaluateProductContainingZero)
+                        option(IntegerArithmeticRules.EvaluateIntegerProductAndDivision)
+                        option(GeneralRules.EliminateOneInProduct)
+                    }
+                }
             }
         }
     ),
@@ -150,7 +149,7 @@ enum class IntegerArithmeticPlans(override val runner: Plan) : RunnerMethod {
                         option(NormalizationRules.RemoveOuterBracket)
 
                         option {
-                            deeply(EvaluateArithmeticSubexpression, deepFirst = true)
+                            deeply(PrivateIntegerArithmeticPlans.EvaluateArithmeticSubexpression, deepFirst = true)
                         }
 
                         option {
@@ -183,9 +182,9 @@ private val evaluationSteps = steps {
     firstOf {
         option { deeply(removeRedundantBrackets, deepFirst = true) }
         option { deeply(GeneralRules.SimplifyDoubleMinus, deepFirst = true) }
-        option { deeply(IntegerArithmeticPlans.EvaluateSignedIntegerPower, deepFirst = true) }
-        option { deeply(IntegerArithmeticPlans.EvaluateProductOfIntegers, deepFirst = true) }
-        option { deeply(IntegerArithmeticPlans.EvaluateSumOfIntegers, deepFirst = true) }
+        option { deeply(PrivateIntegerArithmeticPlans.EvaluateSignedIntegerPower, deepFirst = true) }
+        option { deeply(PrivateIntegerArithmeticPlans.EvaluateProductOfIntegers, deepFirst = true) }
+        option { deeply(PrivateIntegerArithmeticPlans.EvaluateSumOfIntegers, deepFirst = true) }
     }
 }
 
