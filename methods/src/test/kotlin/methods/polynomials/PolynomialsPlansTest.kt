@@ -1,6 +1,7 @@
 package methods.polynomials
 
 import engine.context.Context
+import engine.context.Curriculum
 import engine.methods.testMethod
 import methods.constantexpressions.ConstantExpressionsExplanation
 import methods.fractionarithmetic.FractionArithmeticExplanation
@@ -41,7 +42,7 @@ class PolynomialsPlansTest {
                     fromExpr = "(2 + 3) x + [x ^ 2] - 5 [x ^ 2]"
                     toExpr = "5 x + [x ^ 2] - 5 [x ^ 2]"
                     explanation {
-                        key = ConstantExpressionsExplanation.SimplifyExpressionInBrackets
+                        key = PolynomialsExplanation.SimplifyCoefficient
                     }
                 }
             }
@@ -65,7 +66,7 @@ class PolynomialsPlansTest {
                     fromExpr = "5 x + (1 - 5) [x ^ 2]"
                     toExpr = "5 x + (-4) [x ^ 2]"
                     explanation {
-                        key = ConstantExpressionsExplanation.SimplifyExpressionInBrackets
+                        key = PolynomialsExplanation.SimplifyCoefficient
                     }
                 }
 
@@ -119,7 +120,7 @@ class PolynomialsPlansTest {
                     fromExpr = "(3 + 2 - 5) [a ^ 2] - 3 a + 10 a"
                     toExpr = "0 [a ^ 2] - 3 a + 10 a"
                     explanation {
-                        key = ConstantExpressionsExplanation.SimplifyExpressionInBrackets
+                        key = PolynomialsExplanation.SimplifyCoefficient
                     }
                 }
 
@@ -174,7 +175,7 @@ class PolynomialsPlansTest {
                 fromExpr = "([1 / 2] - [3 / 4] + 4) z"
                 toExpr = "[15 / 4] z"
                 explanation {
-                    key = ConstantExpressionsExplanation.SimplifyExpressionInBrackets
+                    key = PolynomialsExplanation.SimplifyCoefficient
                 }
             }
         }
@@ -204,7 +205,7 @@ class PolynomialsPlansTest {
                 fromExpr = "(2 sqrt[3] + [sqrt[3] / 3]) t"
                 toExpr = "[7 sqrt[3] / 3] t"
                 explanation {
-                    key = ConstantExpressionsExplanation.SimplifyExpressionInBrackets
+                    key = PolynomialsExplanation.SimplifyCoefficient
                 }
             }
         }
@@ -564,7 +565,7 @@ class PolynomialsPlansTest {
                 fromExpr = "(2 + [1 / sqrt[3]]) t"
                 toExpr = "(2 + [sqrt[3] / 3]) t"
                 explanation {
-                    key = ConstantExpressionsExplanation.SimplifyExpressionInBrackets
+                    key = PolynomialsExplanation.SimplifyCoefficient
                 }
             }
         }
@@ -643,7 +644,7 @@ class ExpandPolynomial {
     fun testExpandSquareOfBinomialUS() = testMethod {
         method = PolynomialPlans.ExpandPolynomialExpressionInOneVariable
         inputExpr = "[(2x - 3) ^ 2]"
-        context = Context(curriculum = "US")
+        context = Context(curriculum = Curriculum.US)
 
         check {
             fromExpr = "[(2 x - 3) ^ 2]"
@@ -713,7 +714,7 @@ class ExpandPolynomial {
     fun testExpandCubeOfBinomialUS() = testMethod {
         method = PolynomialPlans.ExpandPolynomialExpressionInOneVariable
         inputExpr = "[(2x - 3) ^ 3]"
-        context = Context(curriculum = "US")
+        context = Context(curriculum = Curriculum.US)
 
         check {
             fromExpr = "[(2 x - 3) ^ 3]"

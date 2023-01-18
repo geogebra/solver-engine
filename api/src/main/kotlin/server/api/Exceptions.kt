@@ -8,10 +8,13 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import javax.servlet.http.HttpServletResponse
 
 class InvalidExpressionException(expression: String, val parseException: ParseCancellationException? = null) :
-    ApiException("invalid expression: $expression", HttpStatus.BAD_REQUEST.value())
+    ApiException("Invalid expression: $expression", HttpStatus.BAD_REQUEST.value())
+
+class InvalidCurriculumException(curriculum: String) :
+    ApiException("Invalid curriculum: $curriculum", HttpStatus.BAD_REQUEST.value())
 
 class PlanNotApplicableException(planId: String) :
-    ApiException("plan not applicable: $planId", HttpStatus.BAD_REQUEST.value())
+    ApiException("Plan not applicable: $planId", HttpStatus.BAD_REQUEST.value())
 
 @ControllerAdvice
 class FallbackExceptionHandler {

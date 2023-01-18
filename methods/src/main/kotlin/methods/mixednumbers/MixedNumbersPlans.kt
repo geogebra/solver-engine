@@ -1,5 +1,6 @@
 package methods.mixednumbers
 
+import engine.context.Curriculum
 import engine.context.ResourceData
 import engine.methods.Plan
 import engine.methods.PublicMethod
@@ -48,7 +49,7 @@ enum class MixedNumbersPlans(override val runner: Plan) : RunnerMethod {
 
             explanation = Explanation.AddMixedNumbers
 
-            steps(ResourceData(curriculum = "EU")) {
+            steps(ResourceData(curriculum = Curriculum.EU)) {
                 apply(ConvertMixedNumberToImproperFraction)
                 apply(FractionArithmeticPlans.EvaluateFractionSum)
                 // result might be integer or proper fraction after
@@ -56,7 +57,7 @@ enum class MixedNumbersPlans(override val runner: Plan) : RunnerMethod {
                 optionally(MixedNumbersRules.FractionToMixedNumber)
             }
 
-            alternative(ResourceData(curriculum = "US")) {
+            alternative(ResourceData(curriculum = Curriculum.US)) {
 
                 plan {
                     explanation = Explanation.ConvertMixedNumbersToSums

@@ -131,6 +131,10 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
     override fun checkForm(patternProvider: () -> Pattern) {
         runProducer(FormChecker(patternProvider()))
     }
+
+    override fun contextSensitive(init: ContextSensitiveBuilder.() -> Unit) {
+        runProducer(engine.methods.stepsproducers.contextSensitiveSteps(init))
+    }
 }
 
 private class PipelineDataBuilder : PipelineBuilder {
@@ -214,6 +218,10 @@ private class PipelineDataBuilder : PipelineBuilder {
 
     override fun checkForm(patternProvider: () -> Pattern) {
         addItem(FormChecker(patternProvider()))
+    }
+
+    override fun contextSensitive(init: ContextSensitiveBuilder.() -> Unit) {
+        TODO("Not yet implemented")
     }
 }
 

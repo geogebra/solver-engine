@@ -5,5 +5,7 @@ properties:
     type: string
   precision:
     type: number
+  preferDecimals:
+    type: boolean
   solutionVariable:
     type: string

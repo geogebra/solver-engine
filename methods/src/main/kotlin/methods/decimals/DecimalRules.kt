@@ -16,8 +16,8 @@ import engine.patterns.ConditionPattern
 import engine.patterns.RecurringDecimalPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.SignedNumberPattern
-import engine.patterns.UnsignedDecimalPattern
 import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.UnsignedNumberPattern
 import engine.patterns.commutativeEquationOf
 import engine.patterns.divideBy
 import engine.patterns.equationSystemOf
@@ -45,7 +45,7 @@ private val five = BigInteger.valueOf(5)
 enum class DecimalRules(override val runner: Rule) : RunnerMethod {
     ConvertTerminatingDecimalToFraction(
         rule {
-            val decimal = UnsignedDecimalPattern()
+            val decimal = UnsignedNumberPattern()
 
             onPattern(decimal) {
                 val decimalValue = getValue(decimal)
@@ -237,8 +237,8 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
      */
     MultiplyFractionOfDecimalsByPowerOfTen(
         rule {
-            val numerator = UnsignedDecimalPattern()
-            val denominator = UnsignedDecimalPattern()
+            val numerator = UnsignedNumberPattern()
+            val denominator = UnsignedNumberPattern()
 
             val fraction = fractionOf(numerator, denominator)
 

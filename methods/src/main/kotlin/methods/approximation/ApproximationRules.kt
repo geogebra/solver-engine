@@ -7,8 +7,8 @@ import engine.methods.TransformationResult
 import engine.methods.rule
 import engine.patterns.RecurringDecimalPattern
 import engine.patterns.SignedNumberPattern
-import engine.patterns.UnsignedDecimalPattern
 import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.UnsignedNumberPattern
 import engine.patterns.divideBy
 import engine.patterns.integerCondition
 import engine.patterns.numericCondition
@@ -22,7 +22,7 @@ private val MAX_POWER = 64.toBigInteger()
 enum class ApproximationRules(override val runner: Rule) : RunnerMethod {
     RoundTerminatingDecimal(
         rule {
-            val decimal = UnsignedDecimalPattern()
+            val decimal = UnsignedNumberPattern()
 
             onPattern(decimal) {
                 val value = getValue(decimal)

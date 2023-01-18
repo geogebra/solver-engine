@@ -4,9 +4,9 @@ import engine.logger.createNewLogger
 import java.util.function.Supplier
 import java.util.logging.Level
 
-data class ResourceData(val curriculum: String?)
+data class ResourceData(val curriculum: Curriculum? = null, val preferDecimals: Boolean? = null)
 
-val emptyResourceData = ResourceData(null)
+val emptyResourceData = ResourceData()
 
 interface Resource {
     val resourceData: ResourceData
@@ -19,8 +19,9 @@ private const val WORST_MATCH = 0.0
 private const val DEFAULT_PRECISION = 3 // 3 decimal places
 
 data class Context(
-    val curriculum: String? = null,
+    val curriculum: Curriculum? = null,
     val precision: Int? = null, // decimal places
+    val preferDecimals: Boolean? = null,
     val solutionVariable: String? = null
 ) {
     val effectivePrecision = precision ?: DEFAULT_PRECISION
@@ -47,11 +48,19 @@ data class Context(
     }
 
     fun rateResourceData(resourceData: ResourceData): Double {
-        return when (curriculum) {
+        val decimalRating = when (preferDecimals) {
+            resourceData.preferDecimals -> BEST_MATCH
+            null -> DEFAULT_MATCH
+            else -> WORST_MATCH
+        }
+
+        val curriculumRating = when (curriculum) {
             resourceData.curriculum -> BEST_MATCH
             null -> DEFAULT_MATCH
             else -> WORST_MATCH
         }
+
+        return decimalRating * curriculumRating
     }
 
     fun rateResource(resource: Resource): Double {

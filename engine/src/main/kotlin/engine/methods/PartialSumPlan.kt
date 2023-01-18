@@ -54,7 +54,7 @@ class PartialSumPlan(
                 )
             )
 
-            val firstChildIndex = (pattern.childPatterns[0].getBoundExpr(match)!!.origin as Child).index
+            val firstChildIndex = pattern.childPatterns.minOf { (it.getBoundExpr(match)!!.origin as Child).index }
             val steps = stepsProducer.produceSteps(ctx, builder.lastSub.nthChild(firstChildIndex))
 
             if (steps != null) {

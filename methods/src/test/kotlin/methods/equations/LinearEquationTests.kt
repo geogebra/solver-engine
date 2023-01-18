@@ -7,7 +7,7 @@ import methods.integerarithmetic.IntegerArithmeticExplanation
 import methods.polynomials.PolynomialsExplanation
 import org.junit.jupiter.api.Test
 
-class LinearEquationPlansTests {
+class LinearEquationTests {
 
     @Test
     fun `test ax = b linear equation`() = testMethod {

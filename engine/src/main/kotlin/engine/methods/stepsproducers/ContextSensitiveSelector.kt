@@ -30,3 +30,33 @@ data class ContextSensitiveSelector(
         return best.produceSteps(ctx, sub)
     }
 }
+
+class ContextSensitiveBuilder {
+
+    private lateinit var default: ContextSensitiveAlternative
+    private val alternatives = mutableListOf<ContextSensitiveAlternative>()
+
+    fun buildSelector() = ContextSensitiveSelector(default, alternatives)
+
+    fun default(resourceData: ResourceData, stepsProducer: StepsProducer) {
+        default = ContextSensitiveAlternative(stepsProducer, resourceData)
+    }
+
+    fun default(resourceData: ResourceData, steps: PipelineBuilder.() -> Unit) {
+        default(resourceData, ProceduralPipeline(steps))
+    }
+
+    fun alternative(resourceData: ResourceData, stepsProducer: StepsProducer) {
+        alternatives.add(ContextSensitiveAlternative(stepsProducer, resourceData))
+    }
+
+    fun alternative(resourceData: ResourceData, steps: PipelineBuilder.() -> Unit) {
+        alternative(resourceData, ProceduralPipeline(steps))
+    }
+}
+
+fun contextSensitiveSteps(init: ContextSensitiveBuilder.() -> Unit): ContextSensitiveSelector {
+    val builder = ContextSensitiveBuilder()
+    builder.init()
+    return builder.buildSelector()
+}

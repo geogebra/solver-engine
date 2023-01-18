@@ -51,12 +51,16 @@ data class IntegerOperator(val value: BigInteger) : NullaryOperator() {
         require(value.signum() >= 0)
     }
 
+    override val name = value.toString()
+
     override fun toString() = value.toString()
 
     override fun latexString(ctx: RenderContext) = value.toString()
 }
 
 object UndefinedOperator : NullaryOperator() {
+
+    override val name = "UNDEFINED"
 
     override fun toString() = "UNDEFINED"
 
@@ -70,6 +74,8 @@ data class DecimalOperator(val value: BigDecimal) : NullaryOperator() {
     init {
         require(value.signum() >= 0)
     }
+
+    override val name: String = value.toPlainString()
 
     override fun toString(): String = value.toPlainString()
 
@@ -85,6 +91,8 @@ data class DecimalOperator(val value: BigDecimal) : NullaryOperator() {
  */
 data class RecurringDecimalOperator(val value: RecurringDecimal) : NullaryOperator() {
 
+    override val name = value.toString()
+
     override fun toString() = value.toString()
 
     override fun latexString(ctx: RenderContext): String {
@@ -94,13 +102,15 @@ data class RecurringDecimalOperator(val value: RecurringDecimal) : NullaryOperat
     }
 }
 
-data class VariableOperator(val name: String) : NullaryOperator() {
+data class VariableOperator(override val name: String) : NullaryOperator() {
     override fun toString() = name
 
     override fun latexString(ctx: RenderContext) = name
 }
 
 object MixedNumberOperator : ExpressionOperator {
+    override val name = "MixedNumber"
+
     override val precedence = MAX_PRECEDENCE
     override val arity = ARITY_THREE
 

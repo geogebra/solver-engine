@@ -9,6 +9,8 @@ enum class SetOperators : Operator {
         override val kind = OperatorKind.SET
         override val precedence = SET_PRECEDENCE
 
+        override fun minChildCount() = 0
+
         override fun nthChildAllowed(n: Int, op: Operator): Boolean {
             require(op.kind == OperatorKind.EXPRESSION)
             return true

@@ -43,7 +43,7 @@ class UnsignedIntegerPattern : IntegerPattern, BasePattern() {
     }
 }
 
-class UnsignedDecimalPattern : NumberPattern, BasePattern() {
+class UnsignedNumberPattern : NumberPattern, BasePattern() {
 
     override fun getBoundNumber(m: Match): BigDecimal {
         return when (val operator = m.getBoundExpr(this)!!.operator) {
@@ -85,7 +85,7 @@ class SignedIntegerPattern : OptionalNegPattern<UnsignedIntegerPattern>(Unsigned
     }
 }
 
-class SignedNumberPattern : OptionalNegPattern<UnsignedDecimalPattern>(UnsignedDecimalPattern()), NumberPattern {
+class SignedNumberPattern : OptionalNegPattern<UnsignedNumberPattern>(UnsignedNumberPattern()), NumberPattern {
     override fun getBoundNumber(m: Match): BigDecimal {
         val value = unsignedPattern.getBoundNumber(m)
         return if (isNeg(m)) -value else value

@@ -1,5 +1,6 @@
 package methods.general
 
+import engine.context.Curriculum
 import engine.context.ResourceData
 import engine.expressions.Constants
 import engine.methods.Plan
@@ -46,10 +47,10 @@ private val expandBinomialSquared = plan {
     explanation = Explanation.ExpandBinomialSquared
     pattern = powerOf(sumOf(AnyPattern(), AnyPattern()), FixedPattern(Constants.Two))
 
-    steps(ResourceData(curriculum = "EU")) {
+    steps(ResourceData(curriculum = Curriculum.EU)) {
         apply(GeneralRules.ExpandBinomialSquaredUsingIdentity)
     }
-    alternative(ResourceData(curriculum = "US")) {
+    alternative(ResourceData(curriculum = Curriculum.US)) {
         apply(GeneralRules.RewritePowerAsProduct)
     }
 }
@@ -58,10 +59,10 @@ private val expandBinomialCubed = plan {
     explanation = Explanation.ExpandBinomialCubed
     pattern = powerOf(sumOf(AnyPattern(), AnyPattern()), FixedPattern(Constants.Three))
 
-    steps(ResourceData(curriculum = "EU")) {
+    steps(ResourceData(curriculum = Curriculum.EU)) {
         apply(GeneralRules.ExpandBinomialCubedUsingIdentity)
     }
-    alternative(ResourceData(curriculum = "US")) {
+    alternative(ResourceData(curriculum = Curriculum.US)) {
         apply(GeneralRules.RewritePowerAsProduct)
     }
 }
@@ -73,10 +74,10 @@ private val expandTrinomialSquared = plan {
         FixedPattern(Constants.Two)
     )
 
-    steps(ResourceData(curriculum = "EU")) {
+    steps(ResourceData(curriculum = Curriculum.EU)) {
         apply(GeneralRules.ExpandTrinomialSquaredUsingIdentity)
     }
-    alternative(ResourceData(curriculum = "US")) {
+    alternative(ResourceData(curriculum = Curriculum.US)) {
         apply(GeneralRules.RewritePowerAsProduct)
     }
 }

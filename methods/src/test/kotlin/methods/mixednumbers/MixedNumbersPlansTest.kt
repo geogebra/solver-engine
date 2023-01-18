@@ -1,6 +1,7 @@
 package methods.mixednumbers
 
 import engine.context.Context
+import engine.context.Curriculum
 import engine.methods.testMethod
 import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
@@ -68,7 +69,7 @@ class MixedNumbersPlansTest {
     @Test
     fun testContextSensitivePlanEU() = testMethod {
         method = MixedNumbersPlans.AddMixedNumbers
-        context = Context(curriculum = "EU")
+        context = Context(curriculum = Curriculum.EU)
         inputExpr = "[5 1/4] + [2 2/3]"
 
         check {
@@ -91,7 +92,7 @@ class MixedNumbersPlansTest {
     @Test
     fun testContextSensitivePlanUS() = testMethod {
         method = MixedNumbersPlans.AddMixedNumbers
-        context = Context(curriculum = "US")
+        context = Context(curriculum = Curriculum.US)
         inputExpr = "[5 3/4] + [2 2/3]"
 
         check {
@@ -149,7 +150,7 @@ class MixedNumbersPlansTest {
     @Test
     fun testUSStyleConversionWithShortcut() = testMethod {
         method = MixedNumbersPlans.AddMixedNumbers
-        context = Context(curriculum = "US")
+        context = Context(curriculum = Curriculum.US)
         inputExpr = "[1 1/2] + [2 1/3]"
 
         check {
@@ -193,7 +194,7 @@ class MixedNumbersPlansTest {
     @Test
     fun testUSStyleConversionResultingInInteger() = testMethod {
         method = MixedNumbersPlans.AddMixedNumbers
-        context = Context(curriculum = "US")
+        context = Context(curriculum = Curriculum.US)
         inputExpr = "[5 2/3] + [3 12/36]"
 
         check {

@@ -288,9 +288,9 @@ class Expression internal constructor(
     fun toJson(): List<Any> {
         val serializedOperands = operands.map { it.toJson() }
         return if (decorators.isEmpty()) {
-            listOf(operator.toString()) + serializedOperands
+            listOf(operator.name) + serializedOperands
         } else {
-            listOf(listOf(operator.toString()) + decorators.map { it.toString() }) + serializedOperands
+            listOf(listOf(operator.name) + decorators.map { it.toString() }) + serializedOperands
         }
     }
 }

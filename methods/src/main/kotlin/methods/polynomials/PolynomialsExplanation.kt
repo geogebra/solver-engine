@@ -14,6 +14,13 @@ enum class PolynomialsExplanation : CategorisedMetadataKey {
     CollectLikeTerms,
 
     /**
+     * Simplify the coefficient of a monomial after collecting like terms
+     *
+     * E.g. ([1 / 2] + 2)x^2 -> [5 / 2]x^2
+     */
+    SimplifyCoefficient,
+
+    /**
      * Collect like terms in a sum and simplify the collected coefficients
      *
      * E.g. [x^2] + 3 + x + 2[x^2] --> 3[x^2] + 3 + x

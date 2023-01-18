@@ -8,6 +8,8 @@ interface StatementOperator : Operator {
 }
 
 object EquationOperator : BinaryOperator, StatementOperator {
+    override val name = "Equation"
+
     override val precedence = PREDICATE_PRECEDENCE
 
     override fun leftChildAllowed(op: Operator): Boolean {
@@ -33,6 +35,8 @@ object EquationOperator : BinaryOperator, StatementOperator {
 }
 
 object EquationSystemOperator : StatementOperator {
+    override val name = "EquationSystem"
+
     override val precedence = EQUATION_SYSTEM_PRECEDENCE
     override val arity = ARITY_VARIABLE
 
@@ -56,6 +60,8 @@ object EquationSystemOperator : StatementOperator {
 }
 
 object SolutionOperator : BinaryOperator, StatementOperator {
+    override val name = "Solution"
+
     override val precedence = PREDICATE_PRECEDENCE
 
     override fun leftChildAllowed(op: Operator): Boolean {

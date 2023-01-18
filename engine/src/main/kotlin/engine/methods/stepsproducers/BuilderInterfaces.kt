@@ -111,4 +111,5 @@ interface PipelineBuilder {
     fun plan(init: PlanBuilder.() -> Unit)
 
     fun checkForm(patternProvider: () -> Pattern)
+    fun contextSensitive(init: ContextSensitiveBuilder.() -> Unit)
 }

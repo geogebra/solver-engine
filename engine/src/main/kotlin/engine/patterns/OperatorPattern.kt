@@ -7,6 +7,8 @@ import engine.operators.EquationOperator
 import engine.operators.MixedNumberOperator
 import engine.operators.NaryOperator
 import engine.operators.Operator
+import engine.operators.SetOperators
+import engine.operators.SolutionOperator
 import engine.operators.UnaryExpressionOperator
 
 /**
@@ -59,3 +61,7 @@ fun explicitProductOf(vararg factors: Pattern) = OperatorPattern(NaryOperator.Pr
 fun implicitProductOf(vararg factors: Pattern) = OperatorPattern(NaryOperator.ImplicitProduct, factors.asList())
 
 fun equationOf(lhs: Pattern, rhs: Pattern) = OperatorPattern(EquationOperator, listOf(lhs, rhs))
+
+fun solutionOf(variable: Pattern, solution: Pattern) = OperatorPattern(SolutionOperator, listOf(variable, solution))
+
+fun solutionSetOf(vararg elements: Pattern) = OperatorPattern(SetOperators.FiniteSet, elements.asList())

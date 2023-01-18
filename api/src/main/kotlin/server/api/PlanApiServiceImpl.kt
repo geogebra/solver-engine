@@ -1,6 +1,7 @@
 package server.api
 
 import engine.context.Context
+import engine.context.Curriculum
 import engine.context.emptyContext
 import engine.expressions.Root
 import methods.methodRegistry
@@ -37,9 +38,19 @@ class PlanApiServiceImpl : PlansApiService {
 }
 
 fun getContext(apiCtx: server.models.Context?, defaultSolutionVariable: String?) = apiCtx?.let {
+    val curriculum = when (apiCtx.curriculum) {
+        null, "" -> null
+        else -> try {
+            Curriculum.valueOf(apiCtx.curriculum)
+        } catch (_: IllegalArgumentException) {
+            throw InvalidCurriculumException(apiCtx.curriculum)
+        }
+    }
+
     Context(
-        curriculum = apiCtx.curriculum,
+        curriculum = curriculum,
         precision = apiCtx.precision?.toInt(),
+        preferDecimals = apiCtx.preferDecimals,
         solutionVariable = apiCtx.solutionVariable ?: defaultSolutionVariable
     )
 } ?: emptyContext.copy(solutionVariable = defaultSolutionVariable)

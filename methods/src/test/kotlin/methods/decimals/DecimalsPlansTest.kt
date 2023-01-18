@@ -1,6 +1,7 @@
 package methods.decimals
 
 import engine.context.Context
+import engine.context.Curriculum
 import engine.methods.testMethod
 import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
@@ -11,7 +12,7 @@ class DecimalsPlansTest {
     @Test
     fun testDirectConversionOfRecurringDecimalToFraction() = testMethod {
         method = DecimalPlans.ConvertRecurringDecimalToFractionAndSimplify
-        context = Context(curriculum = "EU")
+        context = Context(curriculum = Curriculum.EU)
         inputExpr = "3.14[15]"
 
         check {
@@ -50,7 +51,7 @@ class DecimalsPlansTest {
     @Test
     fun testAlgorithmForConversionOfRecurringDecimalToFraction() = testMethod {
         method = DecimalPlans.ConvertRecurringDecimalToFractionAndSimplify
-        context = Context(curriculum = "US")
+        context = Context(curriculum = Curriculum.US)
         inputExpr = "3.14[15]"
 
         check {

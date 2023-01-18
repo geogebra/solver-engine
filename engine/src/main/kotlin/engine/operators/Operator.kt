@@ -34,6 +34,8 @@ enum class OperatorKind {
 }
 
 interface Operator {
+    val name: String
+
     val precedence: Int
     val arity: Int
     val kind: OperatorKind

@@ -1,10 +1,12 @@
 package methods.polynomials
 
+import engine.context.ResourceData
 import engine.expressions.Label
 import engine.methods.Plan
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
+import engine.methods.stepsproducers.contextSensitiveSteps
 import engine.methods.stepsproducers.steps
 import engine.patterns.AnyPattern
 import engine.patterns.ArbitraryVariablePattern
@@ -12,8 +14,9 @@ import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.condition
 import engine.patterns.powerOf
 import methods.constantexpressions.ConstantExpressionsPlans
+import methods.constantexpressions.constantSimplificationSteps
 import methods.constantexpressions.simpleTidyUpSteps
-import methods.constantexpressions.simplificationSteps
+import methods.decimals.decimalEvaluationSteps
 import methods.general.GeneralPlans
 import methods.general.GeneralRules
 import methods.general.NormalizationPlans
@@ -21,8 +24,8 @@ import methods.general.NormalizationRules
 
 enum class PolynomialPlans(override val runner: Plan) : RunnerMethod {
 
+    SimplifyCoefficient(simplifyCoefficient),
     CollectLikeTermsAndSimplify(collectLikeTermsAndSimplify),
-
     MultiplyUnitaryMonomialsAndSimplify(multiplyUnitaryMonomialsAndSimplify),
     MultiplyMonomialsAndSimplify(multiplyMonomialsAndSimplify),
     NormalizeMonomialAndSimplify(normalizeMonomialAndSimplify),
@@ -89,6 +92,14 @@ enum class PolynomialPlans(override val runner: Plan) : RunnerMethod {
     )
 }
 
+private val simplifyCoefficient = plan {
+    explanation = Explanation.SimplifyCoefficient
+
+    steps {
+        whilePossible(simplificationSteps)
+    }
+}
+
 private val collectLikeTermsAndSimplify = plan {
     explanation = Explanation.CollectLikeTermsAndSimplify
 
@@ -97,7 +108,7 @@ private val collectLikeTermsAndSimplify = plan {
             apply(PolynomialRules.CollectLikeTerms)
             optionally {
                 applyTo(Label.A) {
-                    deeply(ConstantExpressionsPlans.SimplifyConstantSubexpression)
+                    applyTo(PolynomialPlans.SimplifyCoefficient) { it.firstChild }
                     optionally(PolynomialRules.NormalizeMonomial)
                 }
             }
@@ -192,4 +203,9 @@ val AlgebraicSimplificationSteps = steps {
         option(simplificationSteps)
         option { deeply(PolynomialRules.NormalizePolynomial) }
     }
+}
+
+private val simplificationSteps = contextSensitiveSteps {
+    default(ResourceData(preferDecimals = false), constantSimplificationSteps)
+    alternative(ResourceData(preferDecimals = true), decimalEvaluationSteps)
 }

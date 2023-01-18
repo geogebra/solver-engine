@@ -109,7 +109,7 @@ enum class ConstantExpressionsPlans(override val runner: Plan) : RunnerMethod {
             pattern = condition(AnyPattern()) { it.hasBracket() }
 
             steps {
-                whilePossible(simplificationSteps)
+                whilePossible(constantSimplificationSteps)
             }
         }
     ),
@@ -154,7 +154,7 @@ enum class ConstantExpressionsPlans(override val runner: Plan) : RunnerMethod {
                 optionally(RewriteIntegerOrderRootsAsPowers)
                 optionally(NormalizationPlans.NormalizeExpression)
                 whilePossible { deeply(SimplifyConstantSubexpression, deepFirst = true) }
-                whilePossible(simplificationSteps)
+                whilePossible(constantSimplificationSteps)
             }
         }
     )
@@ -217,7 +217,7 @@ val fractionSimplificationSteps = steps {
     }
 }
 
-val simplificationSteps = steps {
+val constantSimplificationSteps = steps {
     firstOf {
         option(simpleTidyUpSteps)
 

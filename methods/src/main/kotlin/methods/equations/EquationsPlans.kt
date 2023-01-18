@@ -1,19 +1,28 @@
 package methods.equations
 
+import engine.context.ResourceData
+import engine.expressions.Constants
 import engine.methods.Plan
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
-import engine.operators.SolutionOperator
+import engine.methods.stepsproducers.FormChecker
 import engine.patterns.AnyPattern
 import engine.patterns.FindPattern
+import engine.patterns.FixedPattern
+import engine.patterns.RecurringDecimalPattern
+import engine.patterns.SignedNumberPattern
 import engine.patterns.SolutionVariablePattern
 import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.UnsignedNumberPattern
 import engine.patterns.condition
 import engine.patterns.equationOf
 import engine.patterns.fractionOf
 import engine.patterns.oneOf
+import engine.patterns.optionalNegOf
 import engine.patterns.productContaining
+import engine.patterns.solutionOf
+import engine.patterns.solutionSetOf
 import engine.patterns.sumContaining
 import engine.patterns.withOptionalConstantCoefficient
 import methods.polynomials.PolynomialPlans
@@ -90,7 +99,6 @@ enum class EquationsPlans(override val runner: Plan) : RunnerMethod {
     SolveLinearEquation(
         plan {
             explanation = Explanation.SolveLinearEquation
-            resultPattern = condition(AnyPattern()) { it.operator == SolutionOperator }
 
             steps {
                 whilePossible {
@@ -153,6 +161,36 @@ enum class EquationsPlans(override val runner: Plan) : RunnerMethod {
                         option(MultiplyByInverseCoefficientOfVariableAndSimplify)
                         option(DivideByCoefficientOfVariableAndSimplify)
                     }
+                }
+
+                contextSensitive {
+                    default(
+                        ResourceData(preferDecimals = false),
+                        FormChecker(
+                            solutionOf(SolutionVariablePattern(), AnyPattern())
+                        )
+                    )
+                    alternative(
+                        ResourceData(preferDecimals = true),
+                        FormChecker(
+                            let {
+                                val acceptedSolutions = oneOf(
+                                    SignedNumberPattern(),
+                                    optionalNegOf(RecurringDecimalPattern()),
+                                    optionalNegOf(fractionOf(UnsignedNumberPattern(), UnsignedNumberPattern()))
+                                )
+
+                                solutionOf(
+                                    SolutionVariablePattern(),
+                                    oneOf(
+                                        FixedPattern(Constants.EmptySet),
+                                        FixedPattern(Constants.Reals),
+                                        solutionSetOf(acceptedSolutions)
+                                    )
+                                )
+                            }
+                        )
+                    )
                 }
             }
         }

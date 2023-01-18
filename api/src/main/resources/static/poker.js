@@ -371,7 +371,8 @@ const fetchPlansAndUpdatePage = () =>
         const input = url.searchParams.get("input");
         const curriculum = url.searchParams.get("curriculum");
         const precision = url.searchParams.get("precision");
-        const solutionVariable = url.searchParams.get("solutionVariable")
+        const preferDecimals = url.searchParams.get("preferDecimals");
+        const solutionVariable = url.searchParams.get("solutionVariable");
         if (planId) {
             el("plansSelect").value = planId;
         }
@@ -384,6 +385,9 @@ const fetchPlansAndUpdatePage = () =>
         if (precision) {
             el("precisionSelect").value = precision;
         }
+        if (preferDecimals) {
+            el("preferDecimals").checked = true
+        }
         if (solutionVariable) {
             el("solutionVariable").value = solutionVariable;
         }
@@ -393,6 +397,7 @@ const fetchPlansAndUpdatePage = () =>
                 input,
                 curriculum,
                 precision: parseInt(precision),
+                preferDecimals: preferDecimals === "true",
                 solutionVariable,
             });
         }
@@ -403,6 +408,7 @@ const getRequestDataFromForm = () => ({
     input: el("input").value,
     curriculum: el("curriculumSelect").value,
     precision: parseInt(el("precisionSelect").value),
+    preferDecimals: el("preferDecimals").checked,
     solutionVariable: el("solutionVariable").value,
 });
 
@@ -416,6 +422,11 @@ const buildURLString = (startURL, data) => {
         url.searchParams.delete("curriculum");
     }
     url.searchParams.set("precision", data.precision.toString());
+    if (data.preferDecimals) {
+        url.searchParams.set("preferDecimals", "true")
+    } else {
+        url.searchParams.delete("preferDecimals")
+    }
     url.searchParams.set("solutionVariable", data.solutionVariable)
     return url.toString();
 };

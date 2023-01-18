@@ -1,5 +1,6 @@
 package methods.decimals
 
+import engine.context.Curriculum
 import engine.context.ResourceData
 import engine.expressions.Expression
 import engine.expressions.denominator
@@ -92,13 +93,13 @@ enum class DecimalPlans(override val runner: Plan) : RunnerMethod {
         plan {
             explanation = Explanation.ConvertRecurringDecimalToFractionAndSimplify
 
-            steps(ResourceData(curriculum = "EU")) {
+            steps(ResourceData(curriculum = Curriculum.EU)) {
                 apply(DecimalRules.ConvertRecurringDecimalToFractionDirectly)
                 deeply(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
                 optionally(FractionArithmeticPlans.SimplifyFraction)
             }
 
-            alternative(ResourceData(curriculum = "US")) {
+            alternative(ResourceData(curriculum = Curriculum.US)) {
                 apply(DecimalRules.ConvertRecurringDecimalToEquation)
                 apply(DecimalRules.MakeEquationSystemForRecurringDecimal)
                 apply(DecimalRules.SimplifyEquationSystemForRecurringDecimal)
@@ -165,7 +166,7 @@ enum class DecimalPlans(override val runner: Plan) : RunnerMethod {
             pattern = condition(AnyPattern()) { it.hasBracket() }
 
             steps {
-                whilePossible(evaluationSteps)
+                whilePossible(decimalEvaluationSteps)
             }
         }
     ),
@@ -195,7 +196,7 @@ enum class DecimalPlans(override val runner: Plan) : RunnerMethod {
                         }
 
                         option {
-                            whilePossible(evaluationSteps)
+                            whilePossible(decimalEvaluationSteps)
                         }
                     }
                 }
@@ -204,7 +205,7 @@ enum class DecimalPlans(override val runner: Plan) : RunnerMethod {
     )
 }
 
-private val evaluationSteps = steps {
+val decimalEvaluationSteps = steps {
     whilePossible {
         firstOf {
             option { deeply(GeneralRules.EvaluateProductDividedByZeroAsUndefined, deepFirst = true) }
