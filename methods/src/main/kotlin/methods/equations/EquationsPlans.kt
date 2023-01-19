@@ -182,24 +182,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                     )
                     alternative(
                         ResourceData(preferDecimals = true),
-                        FormChecker(
-                            let {
-                                val acceptedSolutions = oneOf(
-                                    SignedNumberPattern(),
-                                    optionalNegOf(RecurringDecimalPattern()),
-                                    optionalNegOf(fractionOf(UnsignedNumberPattern(), UnsignedNumberPattern()))
-                                )
-
-                                solutionOf(
-                                    SolutionVariablePattern(),
-                                    oneOf(
-                                        FixedPattern(Constants.EmptySet),
-                                        FixedPattern(Constants.Reals),
-                                        solutionSetOf(acceptedSolutions)
-                                    )
-                                )
-                            }
-                        )
+                        decimalSolutionFormChecker
                     )
                 }
             }
@@ -253,4 +236,23 @@ private val solveFactorisedQuadratic = taskSet {
         )
         allTasks()
     }
+}
+
+private val decimalSolutionFormChecker = run {
+    val acceptedSolutions = oneOf(
+        SignedNumberPattern(),
+        optionalNegOf(RecurringDecimalPattern()),
+        optionalNegOf(fractionOf(UnsignedNumberPattern(), UnsignedNumberPattern()))
+    )
+
+    FormChecker(
+        solutionOf(
+            SolutionVariablePattern(),
+            oneOf(
+                FixedPattern(Constants.EmptySet),
+                FixedPattern(Constants.Reals),
+                solutionSetOf(acceptedSolutions)
+            )
+        )
+    )
 }

@@ -1,17 +1,28 @@
 package methods.inequalities
 
+import engine.context.ResourceData
+import engine.expressions.Constants
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
+import engine.methods.stepsproducers.FormChecker
 import engine.patterns.AnyPattern
 import engine.patterns.FindPattern
+import engine.patterns.FixedPattern
+import engine.patterns.RecurringDecimalPattern
+import engine.patterns.SignedNumberPattern
 import engine.patterns.SolutionVariablePattern
 import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.UnsignedNumberPattern
+import engine.patterns.closedOpenIntervalOf
 import engine.patterns.condition
 import engine.patterns.fractionOf
 import engine.patterns.inequalityOf
 import engine.patterns.oneOf
+import engine.patterns.openClosedIntervalOf
+import engine.patterns.openIntervalOf
+import engine.patterns.optionalNegOf
 import engine.patterns.productContaining
 import engine.patterns.solutionOf
 import engine.patterns.sumContaining
@@ -92,7 +103,6 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
         plan {
             explanation = Explanation.SolveLinearInequality
             pattern = inequalityOf(AnyPattern(), AnyPattern())
-            resultPattern = solutionOf(SolutionVariablePattern(), AnyPattern())
 
             steps {
                 whilePossible {
@@ -155,7 +165,42 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
                         option(DivideByCoefficientOfVariableAndSimplify)
                     }
                 }
+
+                contextSensitive {
+                    default(
+                        ResourceData(preferDecimals = false),
+                        FormChecker(
+                            solutionOf(SolutionVariablePattern(), AnyPattern())
+                        )
+                    )
+                    alternative(
+                        ResourceData(preferDecimals = true),
+                        decimalSolutionFormChecker
+                    )
+                }
             }
         }
+    )
+}
+
+private val decimalSolutionFormChecker = run {
+    val acceptedSolutions = oneOf(
+        SignedNumberPattern(),
+        optionalNegOf(RecurringDecimalPattern()),
+        optionalNegOf(fractionOf(UnsignedNumberPattern(), UnsignedNumberPattern()))
+    )
+
+    FormChecker(
+        solutionOf(
+            SolutionVariablePattern(),
+            oneOf(
+                FixedPattern(Constants.EmptySet),
+                FixedPattern(Constants.Reals),
+                openIntervalOf(FixedPattern(Constants.NegativeInfinity), acceptedSolutions),
+                openClosedIntervalOf(FixedPattern(Constants.NegativeInfinity), acceptedSolutions),
+                openIntervalOf(acceptedSolutions, FixedPattern(Constants.Infinity)),
+                closedOpenIntervalOf(acceptedSolutions, FixedPattern(Constants.Infinity))
+            )
+        )
     )
 }

@@ -4,6 +4,7 @@ import engine.context.Context
 import engine.expressions.Expression
 import engine.operators.BinaryExpressionOperator
 import engine.operators.EquationOperator
+import engine.operators.IntervalOperator
 import engine.operators.MixedNumberOperator
 import engine.operators.NaryOperator
 import engine.operators.Operator
@@ -65,3 +66,12 @@ fun equationOf(lhs: Pattern, rhs: Pattern) = OperatorPattern(EquationOperator, l
 fun solutionOf(variable: Pattern, solution: Pattern) = OperatorPattern(SolutionOperator, listOf(variable, solution))
 
 fun solutionSetOf(vararg elements: Pattern) = OperatorPattern(SetOperators.FiniteSet, elements.asList())
+
+fun openIntervalOf(lhs: Pattern, rhs: Pattern) =
+    OperatorPattern(IntervalOperator(closedLeft = false, closedRight = false), listOf(lhs, rhs))
+fun openClosedIntervalOf(lhs: Pattern, rhs: Pattern) =
+    OperatorPattern(IntervalOperator(closedLeft = false, closedRight = true), listOf(lhs, rhs))
+fun closedOpenIntervalOf(lhs: Pattern, rhs: Pattern) =
+    OperatorPattern(IntervalOperator(closedLeft = true, closedRight = false), listOf(lhs, rhs))
+fun closedIntervalOf(lhs: Pattern, rhs: Pattern) =
+    OperatorPattern(IntervalOperator(closedLeft = true, closedRight = true), listOf(lhs, rhs))

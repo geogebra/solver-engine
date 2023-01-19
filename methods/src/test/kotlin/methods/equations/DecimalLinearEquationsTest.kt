@@ -5,7 +5,7 @@ import engine.methods.testMethod
 import methods.decimals.DecimalsExplanation
 import org.junit.jupiter.api.Test
 
-class DecimalLinearEquationsTests {
+class DecimalLinearEquationsTest {
 
     @Test
     fun `test ax + b = cx + d decimal linear equation`() = testMethod {
