@@ -1888,18 +1888,37 @@ class SmartFactorizationUnderRoot {
                 }
             }
 
-            // no un-necessary brackets
-            // tests for PLUT-392
             step {
                 fromExpr = "-2 (sqrt[2] + 1) - sqrt[2] - 7"
-                toExpr = "(-2) * sqrt[2] + (-2) * 1 - sqrt[2] - 7"
+                toExpr = "((-2) * sqrt[2] + (-2) * 1) - sqrt[2] - 7"
                 explanation {
                     key = GeneralExplanation.DistributeMultiplicationOverSum
                 }
             }
 
-            step { }
-            step { }
+            step {
+                fromExpr = "((-2) * sqrt[2] + (-2) * 1) - sqrt[2] - 7"
+                toExpr = "(-2) * sqrt[2] + (-2) * 1 - sqrt[2] - 7"
+                explanation {
+                    key = GeneralExplanation.RemoveBracketSumInSum
+                }
+            }
+
+            step {
+                fromExpr = "(-2) * sqrt[2] + (-2) * 1 - sqrt[2] - 7"
+                toExpr = "-2 sqrt[2] - 2 * 1 - sqrt[2] - 7"
+                explanation {
+                    key = FractionArithmeticExplanation.NormalizeSignsInFraction
+                }
+            }
+
+            step {
+                fromExpr = "-2 sqrt[2] - 2 * 1 - sqrt[2] - 7"
+                toExpr = "-3 sqrt[2] - 9"
+                explanation {
+                    key = IntegerRootsExplanation.CollectLikeRootsAndSimplify
+                }
+            }
         }
     }
 

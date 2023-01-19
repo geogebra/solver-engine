@@ -618,27 +618,26 @@ private val distributeMultiplicationOverSum =
         val product = commutativeProductContaining(sum)
         val negProduct = negOf(product)
         val optionalNegProduct = oneOf(negProduct, product)
-        val mainSum = sumContaining(optionalNegProduct)
-        val ptn = oneOf(mainSum, optionalNegProduct)
 
-        onPattern(ptn) {
-            val terms = get(sum)!!.children()
+        onPattern(optionalNegProduct) {
+            val getSum = get(sum)!!
+            val terms = getSum.children()
+            val restOfProd = restOf(product)
+
+            // variableExpression * (c1 + c2 + ... + cn) --> shouldn't be expanded
+            if (getSum.isConstant() && !restOfProd.isConstant()) return@onPattern null
             val distributeTerm = if (isBound(negProduct)) {
-                negOf(restOf(product))
+                negOf(restOfProd)
             } else {
-                restOf(product)
+                restOfProd
             }
 
             val distributedExpr = sumOf(
                 terms.map { explicitProductOf(distributeTerm, move(it)) }
             )
 
-            val toExpr = if (isBound(mainSum)) {
-                mainSum.substitute(distributedExpr)
-            } else distributedExpr
-
             TransformationResult(
-                toExpr = toExpr,
+                toExpr = distributedExpr,
                 explanation = metadata(Explanation.DistributeMultiplicationOverSum)
             )
         }

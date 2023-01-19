@@ -100,7 +100,24 @@ enum class PolynomialsExplanation : CategorisedMetadataKey {
      */
     SimplifyAlgebraicExpression,
 
-    ExpandPolynomialExpression;
+    ExpandPolynomialExpression,
+
+    /**
+     * apply any of the possible expansions rule and then simplify
+     * for e.g.
+     *  [(2x - 3) ^ 2] -->
+     *      --> [(2x)^2] + 2 * (2x) * (-3) + [3^2]  (expansion step)
+     *      --> 4[x^2] - 12x + 9                    (simplification step)
+     *
+     * examples of possible expansion rule are:
+     * ExpandBinomialSquared,
+     * ExpandBinomialCubed,
+     * ExpandTrinomialSquared,
+     * ExpandProductOfSumAndDifference,
+     * ApplyFoilMethod,
+     * etc.
+     */
+    ApplyExpandRuleAndSimplify;
 
     override val category = "Polynomials"
 }

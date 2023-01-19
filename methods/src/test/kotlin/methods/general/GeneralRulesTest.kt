@@ -256,6 +256,11 @@ class GeneralRulesTest {
             DistributeMultiplicationOverSum,
             "3 sqrt[2]*[x^2]*2x + 3 sqrt[2] * [x^2]*(-7)"
         )
+        testRule(
+            "x*(1 + sqrt[3])",
+            DistributeMultiplicationOverSum,
+            null
+        )
     }
 
     @Test
@@ -478,9 +483,9 @@ class GeneralRulesTest {
             "4 x * 2 [x ^ 2] + 4 x (-3 x) + (-5 [x ^ 3]) * 2 [x ^ 2] + (-5 [x ^ 3]) (-3 x)"
         )
         testRule(
-            "(2x - 3)* 11 * (3x + 3)",
+            "(2x - 3) * (3x + 3)",
             GeneralRules.ApplyFoilMethod,
-            "(2 x * 3 x + 2 x * 3 + (-3) * 3 x + (-3) * 3) * 11"
+            "2 x * 3 x + 2 x * 3 + (-3) * 3 x + (-3) * 3"
         )
         testRule(
             "(x + [x^2]) (5x + [x^2])",

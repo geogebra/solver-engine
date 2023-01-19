@@ -31,6 +31,7 @@ enum class PolynomialPlans(override val runner: Plan) : RunnerMethod {
     NormalizeMonomialAndSimplify(normalizeMonomialAndSimplify),
     SimplifyPowerOfUnitaryMonomial(simplifyPowerOfUnitaryMonomial),
     DistributeProductToIntegerPowerAndSimplify(distributeProductToIntegerPowerAndSimplify),
+    ApplyExpandRuleAndSimplify(applyExpandRuleAndSimplify),
 
     /**
      * Simplify an algebraic expression with one variable.
@@ -56,37 +57,10 @@ enum class PolynomialPlans(override val runner: Plan) : RunnerMethod {
             pattern = condition(AnyPattern()) { it.variables.size == 1 }
 
             steps {
-                whilePossible { deeply(simpleTidyUpSteps) }
                 optionally(NormalizationRules.NormaliseSimplifiedProduct)
-                optionally(SimplifyAlgebraicExpressionInOneVariable)
-                optionally {
-                    deeply(GeneralPlans.ExpandBinomialSquared)
+                whilePossible {
+                    deeply(ApplyExpandRuleAndSimplify, deepFirst = true)
                 }
-                optionally {
-                    deeply(GeneralPlans.ExpandBinomialCubed)
-                }
-                optionally {
-                    deeply(GeneralPlans.ExpandTrinomialSquared)
-                }
-                optionally {
-                    deeply(GeneralRules.ExpandProductOfSumAndDifference)
-                }
-                optionally {
-                    whilePossible {
-                        deeply(GeneralRules.ApplyFoilMethod)
-                        deeply(SimplifyAlgebraicExpressionInOneVariable)
-                    }
-                }
-                optionally {
-                    whilePossible {
-                        deeply(GeneralRules.ExpandDoubleBrackets)
-                        deeply(SimplifyAlgebraicExpressionInOneVariable)
-                    }
-                }
-                optionally {
-                    deeply(GeneralRules.DistributeMultiplicationOverSum)
-                }
-                optionally(SimplifyAlgebraicExpressionInOneVariable)
             }
         }
     )
@@ -97,6 +71,25 @@ private val simplifyCoefficient = plan {
 
     steps {
         whilePossible(simplificationSteps)
+    }
+}
+
+private val applyExpandRuleAndSimplify = plan {
+    explanation = Explanation.ApplyExpandRuleAndSimplify
+
+    steps {
+        firstOf {
+            option(GeneralPlans.ExpandBinomialSquared)
+            option(GeneralPlans.ExpandBinomialCubed)
+            option(GeneralPlans.ExpandTrinomialSquared)
+            option(GeneralRules.ExpandProductOfSumAndDifference)
+            option(GeneralRules.ApplyFoilMethod)
+            option(GeneralRules.ExpandDoubleBrackets)
+            option(GeneralRules.DistributeNegativeOverBracket)
+            option(GeneralRules.DistributeMultiplicationOverSum)
+            option(NormalizationPlans.NormalizeExpression)
+        }
+        optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable)
     }
 }
 

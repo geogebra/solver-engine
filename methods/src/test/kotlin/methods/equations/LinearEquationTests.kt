@@ -348,14 +348,6 @@ class LinearEquationTests {
 
             step {
                 fromExpr = "3 (x + 1) - 2 (x - 6) = 0"
-                toExpr = "3 x + 3 - 2 (x - 6) = 0"
-                explanation {
-                    key = PolynomialsExplanation.ExpandPolynomialExpression
-                }
-            }
-
-            step {
-                fromExpr = "3 x + 3 - 2 (x - 6) = 0"
                 toExpr = "x + 15 = 0"
                 explanation {
                     key = PolynomialsExplanation.ExpandPolynomialExpression
