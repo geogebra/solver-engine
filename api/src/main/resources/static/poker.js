@@ -1,6 +1,14 @@
 /* global renderMathInElement */
+import * as ggbSolver from "./solver-sdk.es.js";
+// You may uncomment the line below during development to enable
+// typescript-powered intellisense, but the code will not run properly if it
+// remains uncommented.
+// import * as ggbSolver from "@geogebra/solver-sdk";
 
-const apiRoot = "./api/v1.0-alpha0";
+// just for debug convenience
+window.ggbSolver = ggbSolver;
+
+ggbSolver.api.baseUrl = "./api/v1.0-alpha0";
 const translationsRootURL = "https://export-solver.s3.eu-west-1.amazonaws.com";
 const mainPokerURL = "http://solver.geogebra.net/main/poker.html";
 
@@ -19,41 +27,11 @@ const el = (id) => document.getElementById(id);
 const isThroughStep = (trans) =>
     trans.steps && trans.steps.length === 1 && trans.steps[0].path === trans.path;
 
-/******************************************
- * API access
- ******************************************/
-
-const requestApplyPlan = async (planId, input, context, format = "latex") => {
-    const response = await fetch(`${apiRoot}/plans/${planId}/apply`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ input, format, context }),
-    });
-    return await response.json();
-};
-
-const requestSelectPlans = async (input, context, format = "latex") => {
-    const response = await fetch(`${apiRoot}/selectPlans`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ input, format, context }),
-    });
-    return await response.json();
-};
-
-const fetchPlans = () => fetch(`${apiRoot}/plans/`).then((response) => response.json());
-
 const fetchDefaultTranslations = () =>
     fetch(`${translationsRootURL}/en/method-translations.json`, {
         mode: "cors",
         cache: "no-cache",
     }).then((resp) => resp.json());
-
-const fetchVersionInfo = () => fetch(`${apiRoot}/versionInfo`).then((resp) => resp.json());
 
 /******************************************
  * Setting up
@@ -75,37 +53,26 @@ const initPlans = (plans) => {
  * Functions to execute plans and render the result
  *******************************************/
 
-const selectPlansOrApplyPlan = ({ planId, input, ...context }) => {
-    if (planId === "selectPlans") {
-        return selectPlans(input, context);
-    } else {
-        return applyPlan(planId, input, context);
-    }
-};
-
-const applyPlan = async (planId, input, context) => {
-    const result = await requestApplyPlan(planId, input, context);
-    el("source").innerHTML = JSON.stringify(result, null, 4);
-    if (result.error !== undefined) {
-        console.log(result);
-        el("result").innerHTML = /* HTML */ `Error: ${result.error}<b />Message: ${result.message}`;
-    } else {
-        const solverResult = await requestApplyPlan(planId, input, context, "solver");
-        el("result").innerHTML = renderTransformationAndTest(result, solverResult, 1);
-        renderMathInElement(el("result"));
-    }
-};
-
-const selectPlans = async (input, context) => {
-    const result = await requestSelectPlans(input, context);
-    el("source").innerHTML = JSON.stringify(result, null, 4);
+const selectPlansOrApplyPlan = async ({ planId, input, ...context }) => {
+    const [result, solverFormatResult] =
+        planId === "selectPlans"
+            ? await Promise.all([
+                  ggbSolver.api.selectPlans(input, "json", context),
+                  ggbSolver.api.selectPlans(input, "solver", context),
+              ])
+            : await Promise.all([
+                  ggbSolver.api.applyPlan(input, planId, "json", context),
+                  ggbSolver.api.applyPlan(input, planId, "solver", context),
+              ]);
+    el("source").innerHTML = JSON.stringify(solverFormatResult, null, 4);
     if (result.error !== undefined) {
         console.log(result);
         el("result").innerHTML = /* HTML */ `Error: ${result.error}<br />Message: ${result.message}`;
     } else {
-        console.log(result);
-        const testResult = await requestSelectPlans(input, context, "solver");
-        el("result").innerHTML = renderPlanSelections(result, testResult);
+        el("result").innerHTML =
+            planId === "selectPlans"
+                ? renderPlanSelections(result, solverFormatResult)
+                : renderTransformationAndTest(result, solverFormatResult, 1);
         renderMathInElement(el("result"));
     }
 };
@@ -133,26 +100,22 @@ const renderPlanSelections = (selections, testSelections) => {
                 ${selections
                     .map(
                         (selection) => /* HTML */ `<li>
-                            ${renderPlanSelection(
-                                selection,
-                                findTransformationInSelections(
-                                    testSelections,
-                                    selection.metadata.methodId
-                                )
-                            )}
+                            <div class="plan-selection">
+                                <div class="plan-id">${selection.metadata.methodId}</div>
+                                ${renderTransformationAndTest(
+                                    selection.transformation,
+                                    findTransformationInSelections(
+                                        testSelections,
+                                        selection.metadata.methodId
+                                    )
+                                )}
+                            </div>
                         </li>`
                     )
                     .join("")}
             </ol>
         </div>
     `;
-};
-
-const renderPlanSelection = (selection, testTransformation) => {
-    return /* HTML */ ` <div class="plan-selection">
-        <div class="plan-id">${selection.metadata.methodId}</div>
-        ${renderTransformationAndTest(selection.transformation, testTransformation)}
-    </div>`;
 };
 
 const renderTransformationAndTest = (trans, testTrans, depth = 0) => {
@@ -168,12 +131,25 @@ const renderTransformation = (trans, depth = 0) => {
     if (isThrough && !showThroughSteps) {
         return renderTransformation(trans.steps[0], depth);
     }
+    const colors = ["blue", "green", "purple", "red"];
+    const [fromColoring, toColoring] = trans.steps
+        ? [undefined, undefined]
+        : ggbSolver.createColorMaps(trans.pathMappings, colors).map(ggbSolver.coloringTransformer);
+    const latexSettings = {};
+    const render = (expr, coloring) =>
+        ggbSolver.treeToLatex(ggbSolver.jsonToTree(expr, trans.path), latexSettings, coloring);
     return /* HTML */ ` <div class="trans ${isThrough ? "through-step" : ""}">
         ${trans.planId ? `<div class="plan-id">${trans.planId}</div>` : ""}
         ${renderExplanation(trans.explanation)}
         <div class="expr">
             ${renderExpression(
-                `${trans.fromExpr} {\\color{#8888ff}\\thickspace\\longmapsto\\thickspace} ${trans.toExpr}`
+                `${render(
+                    trans.fromExpr,
+                    fromColoring
+                )} {\\color{#8888ff}\\thickspace\\longmapsto\\thickspace} ${render(
+                    trans.toExpr,
+                    toColoring
+                )}`
             )}
         </div>
         ${renderSteps(trans.steps, depth, depth >= 0 || isThrough)}
@@ -289,7 +265,8 @@ const renderExplanation = (expl) => {
     </div>`;
 };
 
-const renderExpression = (expr) => `\\(\\displaystyle ${expr}\\)`;
+const renderExpression = (expr) =>
+    `\\(\\displaystyle ${typeof expr === "string" ? expr : ggbSolver.jsonToLatex(expr)}\\)`;
 
 /******************************************
  * Rendering a plan test source code.
@@ -411,7 +388,7 @@ const buildExplanation = (step) => (builder) => {
  ******************************************/
 
 const fetchPlansAndUpdatePage = () =>
-    fetchPlans().then((plans) => {
+    ggbSolver.api.listPlans().then((plans) => {
         initPlans(plans);
         const url = new URL(window.location);
         const planId = url.searchParams.get("plan");
@@ -485,7 +462,7 @@ window.onload = () => {
         fetchPlansAndUpdatePage();
     });
 
-    fetchVersionInfo().then((info) => {
+    ggbSolver.api.versionInfo().then((info) => {
         el("version-info").innerHTML = info.commit
             ? /* HTML */ `commit
                   <a

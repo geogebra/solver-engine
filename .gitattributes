@@ -6,3 +6,8 @@
 
 # These are Windows script files and should use crlf
 *.bat           text eol=crlf
+
+# When this file is copied from the node_modules folder (which happens every
+# time `npm i` is run) it will have lf line endings, so let's just keep those
+# line endings.
+/api/src/main/resources/static/solver-sdk.es.js text eol=lf

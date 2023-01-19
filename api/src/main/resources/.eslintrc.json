@@ -10,5 +10,8 @@
   "rules": {
     "semi": "error",
     "eqeqeq": "error"
+  },
+  "parserOptions": {
+    "sourceType": "module"
   }
 }
