@@ -65,8 +65,7 @@ const initPlans = (plans) => {
         .map((plan) => /* HTML */ `<option value="${plan}">${plan}</option>`)
         .join("");
 
-    el("plansSelect").innerHTML = /* HTML */ `
-        <option value="selectPlans">Select Plans</option>
+    el("plansSelect").innerHTML = /* HTML */ ` <option value="selectPlans">Select Plans</option>
         ${options}`;
     // Default to something simple
     el("plansSelect").value = "selectPlans";
@@ -89,7 +88,7 @@ const applyPlan = async (planId, input, context) => {
     el("source").innerHTML = JSON.stringify(result, null, 4);
     if (result.error !== undefined) {
         console.log(result);
-        el("result").innerHTML = /* HTML */ `Error: ${result.error}<b/>Message: ${result.message}`;
+        el("result").innerHTML = /* HTML */ `Error: ${result.error}<b />Message: ${result.message}`;
     } else {
         const solverResult = await requestApplyPlan(planId, input, context, "solver");
         el("result").innerHTML = renderTransformationAndTest(result, solverResult, 1);
@@ -102,7 +101,7 @@ const selectPlans = async (input, context) => {
     el("source").innerHTML = JSON.stringify(result, null, 4);
     if (result.error !== undefined) {
         console.log(result);
-        el("result").innerHTML = /* HTML */ `Error: ${result.error}<br/>Message: ${result.message}`;
+        el("result").innerHTML = /* HTML */ `Error: ${result.error}<br />Message: ${result.message}`;
     } else {
         console.log(result);
         const testResult = await requestSelectPlans(input, context, "solver");
@@ -128,37 +127,36 @@ const renderPlanSelections = (selections, testSelections) => {
         return /* HTML */ `<div class="selections">No plans found</div>`;
     }
     return /* HTML */ `
-    <div class ="selections">${selections.length} plans found
-        <ol>
-            ${selections
-                .map(
-                    (selection) =>
-                        /* HTML */ `<li>${renderPlanSelection(
-                            selection,
-                            findTransformationInSelections(
-                                testSelections,
-                                selection.metadata.methodId
-                            )
-                        )}</li>`
-                )
-                .join("")}
-        </ol>
-    </div>
+        <div class="selections">
+            ${selections.length} plans found
+            <ol>
+                ${selections
+                    .map(
+                        (selection) => /* HTML */ `<li>
+                            ${renderPlanSelection(
+                                selection,
+                                findTransformationInSelections(
+                                    testSelections,
+                                    selection.metadata.methodId
+                                )
+                            )}
+                        </li>`
+                    )
+                    .join("")}
+            </ol>
+        </div>
     `;
 };
 
 const renderPlanSelection = (selection, testTransformation) => {
-    return /* HTML */ `
-    <div class="plan-selection">
+    return /* HTML */ ` <div class="plan-selection">
         <div class="plan-id">${selection.metadata.methodId}</div>
         ${renderTransformationAndTest(selection.transformation, testTransformation)}
     </div>`;
 };
 
 const renderTransformationAndTest = (trans, testTrans, depth = 0) => {
-    return /* HTML */ `
-    ${renderTransformation(trans, depth)}
-    ${renderTest(testTrans)}`;
+    return /* HTML */ ` ${renderTransformation(trans, depth)} ${renderTest(testTrans)}`;
 };
 
 /******************************************
@@ -170,13 +168,14 @@ const renderTransformation = (trans, depth = 0) => {
     if (isThrough && !showThroughSteps) {
         return renderTransformation(trans.steps[0], depth);
     }
-    return /* HTML */ `
-    <div class="trans ${isThrough ? "through-step" : ""}">
+    return /* HTML */ ` <div class="trans ${isThrough ? "through-step" : ""}">
         ${trans.planId ? `<div class="plan-id">${trans.planId}</div>` : ""}
         ${renderExplanation(trans.explanation)}
-        <div class="expr">${renderExpression(
-            `${trans.fromExpr} {\\color{#8888ff}\\thickspace\\longmapsto\\thickspace} ${trans.toExpr}`
-        )}</div>
+        <div class="expr">
+            ${renderExpression(
+                `${trans.fromExpr} {\\color{#8888ff}\\thickspace\\longmapsto\\thickspace} ${trans.toExpr}`
+            )}
+        </div>
         ${renderSteps(trans.steps, depth, depth >= 0 || isThrough)}
         ${renderTasks(trans.tasks, depth, depth >= 0)}
     </div>`;
@@ -187,11 +186,10 @@ const renderSteps = (steps, depth = 0, open = false) => {
         return "";
     }
     const processedSteps = preprocessSteps(steps);
-    return /* HTML */ `
-    <details class="steps" ${open ? "open" : ""}>
-        <summary>${processedSteps.length} ${
-        processedSteps.length === 1 ? "step" : "steps"
-    }</summary>
+    return /* HTML */ ` <details class="steps" ${open ? "open" : ""}>
+        <summary>
+            ${processedSteps.length} ${processedSteps.length === 1 ? "step" : "steps"}
+        </summary>
         <ol>
             ${processedSteps
                 .map((step) => /* HTML */ `<li>${renderTransformation(step, depth - 1)}</li>`)
@@ -204,25 +202,22 @@ const renderTasks = (tasks, depth = 0, open = false) => {
     if (tasks === null || tasks.length === 0) {
         return "";
     }
-    return /* HTML */ `
-    <details class="tasks" ${open ? "open" : ""}>
-       <summary>${tasks.length} ${tasks.length === 1 ? "task" : "tasks"}</summary>
-       <ol>
+    return /* HTML */ ` <details class="tasks" ${open ? "open" : ""}>
+        <summary>${tasks.length} ${tasks.length === 1 ? "task" : "tasks"}</summary>
+        <ol>
             ${tasks.map((task) => `<li>${renderTask(task, depth - 1)}</li>`).join("")}
-       </ol>
+        </ol>
     </details>`;
 };
 
 const renderTask = (task, depth = 0) => {
-    return /* HTML */ `<div class ="task">
+    return /* HTML */ `<div class="task">
         Task ${task.taskId}: ${renderExplanation(task.explanation)}
-        ${
-            !task.steps
-                ? renderExpression(task.startExpr)
-                : task.steps.length === 1
-                ? renderTransformation(task.steps[0], depth - 1, depth >= 0)
-                : renderSteps(task.steps, depth - 1, depth >= 0)
-        }
+        ${!task.steps
+            ? renderExpression(task.startExpr)
+            : task.steps.length === 1
+            ? renderTransformation(task.steps[0], depth - 1, depth >= 0)
+            : renderSteps(task.steps, depth - 1, depth >= 0)}
     </div>`;
 };
 
@@ -288,8 +283,7 @@ const renderExplanation = (expl) => {
 
     const { explanationString, warnings } = getExplanationString(expl);
 
-    return /* HTML */ `
-    <div class="plan-explanation">
+    return /* HTML */ ` <div class="plan-explanation">
         ${explanationString ? /* HTML */ `<div title="${expl.key}">${explanationString}</div>` : ""}
         ${warnings ? warnings.map(renderWarning).join("") : ""}
     </div>`;
@@ -345,10 +339,10 @@ const renderTest = (trans) => {
     const stringBuilder = new StringBuilder();
     new IndentBuilder(stringBuilder).do(buildTest(trans));
     return /* HTML */ `
-    <details>
-        <summary>Test Code</summary>
-        <pre>${stringBuilder}</pre>
-    </details>
+        <details>
+            <summary>Test Code</summary>
+            <pre>${stringBuilder}</pre>
+        </details>
     `;
 };
 
@@ -494,9 +488,10 @@ window.onload = () => {
     fetchVersionInfo().then((info) => {
         el("version-info").innerHTML = info.commit
             ? /* HTML */ `commit
-        <a href="https://git.geogebra.org/solver-team/solver-engine/-/commit/${info.commit}">${info.commit.substring(0, 8)}
-        </a>
-        `
+                  <a
+                      href="https://git.geogebra.org/solver-team/solver-engine/-/commit/${info.commit}"
+                      >${info.commit.substring(0, 8)}
+                  </a> `
             : "no commit info";
 
         if (info.deploymentName === "main") {
@@ -504,9 +499,12 @@ window.onload = () => {
         } else if (info.deploymentName) {
             if (/^PLUT-\d+$/i.test(info.deploymentName)) {
                 el("title").innerHTML = /* HTML */ `
-                Solver Poker
-                <a href="https://geogebra-jira.atlassian.net/browse/${info.deploymentName.toUpperCase()}">${info.deploymentName.toUpperCase()} </a>
-            `;
+                    Solver Poker
+                    <a
+                        href="https://geogebra-jira.atlassian.net/browse/${info.deploymentName.toUpperCase()}"
+                        >${info.deploymentName.toUpperCase()}
+                    </a>
+                `;
             } else {
                 el("title").innerHTML = `Solver Poker (${info.deploymentName})`;
             }
