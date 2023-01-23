@@ -1,33 +1,24 @@
-title: Transformation
+title: Task
 type: object
 required:
-  - path
-  - fromExpr
-  - toExpr
+  - taskId
+  - startExpr
   - pathMappings
 properties:
-  type:
+  taskId:
     type: string
-  path:
-    type: string
-
-  fromExpr: { }
-  toExpr: { }
+  startExpr: { }
   pathMappings:
     type: array
     items:
       $ref: 'PathMapping.yaml'
   explanation:
     $ref: 'Metadata.yaml'
-  skills:
-    type: array
-    items:
-      $ref: 'Metadata.yaml'
   steps:
     type: array
     items:
-      $recursiveRef: '#'
-  tasks:
+      $ref: 'Transformation.yaml'
+  dependsOn:
     type: array
     items:
-      $ref: 'Task.yaml'
+      type: string

@@ -58,7 +58,7 @@ class MethodRegistryBuilder {
         val method = entry.implementation
         if (method is RunnerMethod) {
             val runner = method.runner
-            if (runner is Plan) {
+            if (runner is CompositeMethod) {
                 return runner.specificPlans.mapNotNull { findMethodId(it)?.methodId }
             }
         }

@@ -2,12 +2,12 @@ package methods.general
 
 import engine.expressions.Child
 import engine.expressions.Expression
-import engine.methods.Plan
+import engine.methods.CompositeMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
 
-enum class NormalizationPlans(override val runner: Plan) : RunnerMethod {
+enum class NormalizationPlans(override val runner: CompositeMethod) : RunnerMethod {
     AddClarifyingBrackets(
         plan {
             explanation = Explanation.AddClarifyingBrackets

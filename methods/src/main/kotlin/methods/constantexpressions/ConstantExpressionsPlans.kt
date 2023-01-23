@@ -1,6 +1,6 @@
 package methods.constantexpressions
 
-import engine.methods.Plan
+import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
@@ -36,7 +36,7 @@ import methods.integerroots.cancelRootOfPower
 import methods.mixednumbers.MixedNumbersPlans
 import methods.mixednumbers.MixedNumbersRules
 
-enum class ConstantExpressionsPlans(override val runner: Plan) : RunnerMethod {
+enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : RunnerMethod {
     SimplifyPowers(
         plan {
             pattern = powerOf(AnyPattern(), AnyPattern())

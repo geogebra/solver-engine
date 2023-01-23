@@ -2,7 +2,7 @@ package methods.fractionroots
 
 import engine.expressions.denominator
 import engine.expressions.numerator
-import engine.methods.Plan
+import engine.methods.CompositeMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
@@ -14,7 +14,7 @@ import methods.integerroots.IntegerRootsPlans
 import methods.integerroots.IntegerRootsRules
 import methods.integerroots.cancelRootOfPower
 
-enum class FractionRootsPlans(override val runner: Plan) : RunnerMethod {
+enum class FractionRootsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
     RationalizeHigherOrderRoot(
         plan {

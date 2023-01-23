@@ -27,7 +27,7 @@ class MethodTestCaseTest {
             val pattern = AnyPattern()
 
             onPattern(pattern) {
-                TransformationResult(
+                ruleResult(
                     toExpr = move(pattern),
                     explanation = metadata(testRuleMetadataKey),
                     skills = listOf(
@@ -42,12 +42,33 @@ class MethodTestCaseTest {
     private val testPlan = run {
         val pattern = AnyPattern()
 
-        RegularPlan(
+        Plan(
             pattern = pattern,
             resultPattern = AnyPattern(),
             stepsProducer = Pipeline((1..3).map { PipelineItem(testRule) }),
             explanationMaker = MetadataMaker(testPlanMetadataKey) { listOf(move(pattern)) }
         )
+    }
+
+    private val testTaskSet = taskSet {
+        val ptn = AnyPattern()
+        pattern = ptn
+        explanation = testPlanMetadataKey
+
+        tasks {
+            val task1 = task(
+                startExpr = get(ptn)!!,
+                explanation = metadata(testPlanMetadataKey, get(ptn)!!)
+            ) ?: return@tasks null
+            task(
+                startExpr = task1.result,
+                explanation = metadata(testPlanMetadataKey, task1.result)
+            ) {
+                apply(testRule)
+                apply(testRule)
+            }
+            allTasks()
+        }
     }
 
     @Test
@@ -314,6 +335,51 @@ class MethodTestCaseTest {
 
                     step { }
                     step { }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testsTasksCorrectly() {
+        testMethod {
+            inputExpr = "1"
+            method = testTaskSet
+
+            check {
+                task {
+                    taskId = "#1"
+                    startExpr = "1"
+                    noStep()
+                }
+
+                task {
+                    taskId = "#2"
+                    startExpr = "1"
+
+                    step {}
+                    step {}
+                }
+            }
+        }
+
+        assertFails {
+            testMethod {
+                inputExpr = "1"
+                method = testTaskSet
+
+                check {
+                    task {
+                        startExpr = "1"
+                        noStep()
+                    }
+
+                    task {
+                        startExpr = "1"
+
+                        step {}
+                        // Missing: step {}
+                    }
                 }
             }
         }

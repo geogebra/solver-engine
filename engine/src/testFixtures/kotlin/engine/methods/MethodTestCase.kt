@@ -9,6 +9,7 @@ import engine.expressions.PathMappingType
 import engine.expressions.Root
 import engine.expressions.RootPath
 import engine.expressions.parsePath
+import engine.steps.Task
 import engine.steps.Transformation
 import engine.steps.metadata.Metadata
 import engine.steps.metadata.MetadataKey
@@ -146,10 +147,78 @@ class MetadataCheck(private val rootPath: Path, private val keyChecker: (Metadat
     }
 }
 
+@TestCaseBuilderMarker
+class TaskCheck(private val task: Task?) :
+    PathMappingsCheck(
+        task?.startExpr?.pathMappings() ?: emptySequence(),
+        task?.rootPath ?: RootPath()
+    ) {
+    var startExpr: String?
+        get() = null
+        set(value) {
+            assertNotNull(task)
+            assertEquals((parseExpression(value!!)), task.startExpr)
+        }
+
+    var taskId: String?
+        get() = null
+        set(value) {
+            assertNotNull(task)
+            assertEquals(value, task.taskId)
+        }
+
+    private var checkedSteps: Int? = null
+
+    fun explanation(init: MetadataCheck.() -> Unit) {
+        assertNotNull(task)
+        val explanationCheck = MetadataCheck(task.rootPath) {
+            assertNotNull(task.explanation, "Explanation is empty")
+            assertEquals(
+                it,
+                task.explanation!!.key,
+                "Explanation key does not match"
+            )
+            task.explanation!!
+        }
+
+        explanationCheck.init()
+        explanationCheck.finalize()
+    }
+
+    fun step(assert: TransformationCheck.() -> Unit) {
+        assertNotNull(task)
+
+        val currentStep = checkedSteps ?: 0
+        checkedSteps = currentStep + 1
+
+        assertNotNull(task.steps, "The tasks has no steps, even though some were specified")
+        assert(task.steps.size > currentStep) {
+            "$checkedSteps steps were specified, but the task only has ${task.steps.size}"
+        }
+
+        checkTransformation(task.steps[currentStep], assert)
+    }
+
+    fun noStep() {
+        assertNotNull(task)
+        assert(task.steps.isEmpty()) { "The tasks has ${task.steps.size} steps but should have none" }
+    }
+
+    override fun finalize() {
+        super.finalize()
+        if (checkedSteps != null) {
+            val transSteps = task!!.steps
+            assertNotNull(transSteps) // should fail already in `step` and never here
+            assertEquals(checkedSteps, transSteps.size, "Some steps have not been checked")
+        }
+    }
+}
+
+@TestCaseBuilderMarker
 class TransformationCheck(private val trans: Transformation?) :
     PathMappingsCheck(
         trans?.toExpr?.pathMappings() ?: emptySequence(),
-        trans?.fromExpr?.origin?.path ?: RootPath
+        trans?.fromExpr?.origin?.path ?: RootPath()
     ) {
     var fromExpr: String?
         get() = null
@@ -167,6 +236,7 @@ class TransformationCheck(private val trans: Transformation?) :
 
     private var checkedSkills: Int? = null
     private var checkedSteps: Int? = null
+    private var checkedTasks: Int? = null
 
     fun noTransformation() {
         assertNull(trans, "Transformation should not have been executed")
@@ -215,6 +285,22 @@ class TransformationCheck(private val trans: Transformation?) :
         checkTransformation(trans.steps!![currentStep], assert)
     }
 
+    fun task(assert: TaskCheck.() -> Unit) {
+        assertNotNull(trans)
+
+        val currentTask = checkedTasks ?: 0
+        checkedTasks = currentTask + 1
+
+        assertNotNull(trans.tasks, "The transformation has no tasks, even though some were specified")
+        assert(trans.tasks!!.size > currentTask) {
+            "$checkedTasks tasks were specified, but the transformation only has ${trans.tasks!!.size}"
+        }
+
+        val check = TaskCheck(trans.tasks!![currentTask])
+        check.assert()
+        check.finalize()
+    }
+
     override fun finalize() {
         super.finalize()
         if (checkedSkills != null) {
@@ -224,6 +310,11 @@ class TransformationCheck(private val trans: Transformation?) :
             val transSteps = trans!!.steps
             assertNotNull(transSteps) // should fail already in `step` and never here
             assertEquals(checkedSteps, transSteps.size, "Some steps have not been checked")
+        }
+        if (checkedTasks != null) {
+            val transTasks = trans!!.tasks
+            assertNotNull(transTasks)
+            assertEquals(checkedTasks, transTasks.size, "Some tasks have not been checked")
         }
     }
 }

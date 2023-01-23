@@ -3,7 +3,7 @@ package methods.general
 import engine.context.Curriculum
 import engine.context.ResourceData
 import engine.expressions.Constants
-import engine.methods.Plan
+import engine.methods.CompositeMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
@@ -12,7 +12,7 @@ import engine.patterns.FixedPattern
 import engine.patterns.powerOf
 import engine.patterns.sumOf
 
-enum class GeneralPlans(override val runner: Plan) : RunnerMethod {
+enum class GeneralPlans(override val runner: CompositeMethod) : RunnerMethod {
     RewriteDivisionsAsFractions(
         plan {
             explanation = Explanation.RewriteDivisionsAsFractionInExpression

@@ -10,7 +10,7 @@ abstract class Origin(val path: Path? = null) {
     abstract fun computePathMappings(rootPath: Path, children: List<Expression>): Sequence<PathMapping>
 }
 
-class Root(private val rootPath: Path = RootPath) : Origin(rootPath) {
+class Root(private val rootPath: Path = RootPath()) : Origin(rootPath) {
     override fun computeChildOrigin(expression: Expression, index: Int) =
         expression.operands[index].withOrigin(Child(expression, index))
 

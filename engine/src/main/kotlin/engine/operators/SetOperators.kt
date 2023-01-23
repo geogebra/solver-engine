@@ -17,14 +17,18 @@ enum class SetOperators : Operator {
         }
 
         override fun <T> readableString(children: List<T>): String {
-            return children.joinToString(prefix = "{", postfix = "}")
+            return children.joinToString(separator = ", ", prefix = "{", postfix = "}")
         }
 
         override fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String {
             return if (children.isEmpty()) {
                 "\\emptyset"
             } else {
-                children.joinToString(prefix = "\\left\\{", postfix = "\\right\\}") { it.toLatexString(ctx) }
+                children.joinToString(
+                    separator = ", ",
+                    prefix = "\\left\\{",
+                    postfix = "\\right\\}"
+                ) { it.toLatexString(ctx) }
             }
         }
     },

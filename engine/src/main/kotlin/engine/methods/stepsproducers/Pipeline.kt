@@ -4,6 +4,7 @@ import engine.context.Context
 import engine.expressions.Expression
 import engine.expressions.Extractor
 import engine.methods.PlanBuilder
+import engine.methods.TaskSetBuilder
 import engine.patterns.Pattern
 import engine.steps.Transformation
 
@@ -128,6 +129,10 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
         runProducer(engine.methods.plan(::proceduralSteps, init))
     }
 
+    override fun taskSet(init: TaskSetBuilder.() -> Unit) {
+        runProducer(engine.methods.taskSet(init))
+    }
+
     override fun checkForm(patternProvider: () -> Pattern) {
         runProducer(FormChecker(patternProvider()))
     }
@@ -137,6 +142,7 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
     }
 }
 
+@Suppress("TooManyFunctions")
 private class PipelineDataBuilder : PipelineBuilder {
     private var pipelineItems = mutableListOf<PipelineItem>()
 
@@ -214,6 +220,10 @@ private class PipelineDataBuilder : PipelineBuilder {
 
     override fun plan(init: PlanBuilder.() -> Unit) {
         addItem(engine.methods.plan(::dataSteps, init))
+    }
+
+    override fun taskSet(init: TaskSetBuilder.() -> Unit) {
+        TODO("Not yet implemented")
     }
 
     override fun checkForm(patternProvider: () -> Pattern) {

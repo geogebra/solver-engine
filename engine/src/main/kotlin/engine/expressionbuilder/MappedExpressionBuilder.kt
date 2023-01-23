@@ -31,9 +31,9 @@ import java.math.BigInteger
 import java.math.RoundingMode
 
 @Suppress("TooManyFunctions")
-class MappedExpressionBuilder(
+open class MappedExpressionBuilder(
     val context: Context,
-    private val match: Match,
+    private val match: Match
 ) {
 
     fun introduce(expression: Expression): Expression = expression.withOrigin(New)

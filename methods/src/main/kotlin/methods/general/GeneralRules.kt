@@ -17,8 +17,8 @@ import engine.expressions.simplifiedProductOf
 import engine.expressions.sumOf
 import engine.methods.Rule
 import engine.methods.RunnerMethod
-import engine.methods.TransformationResult
 import engine.methods.rule
+import engine.methods.ruleResult
 import engine.operators.UnaryExpressionOperator
 import engine.operators.VariableOperator
 import engine.patterns.AnyPattern
@@ -108,7 +108,7 @@ private val eliminateOneInProduct =
         val pattern = productContaining(one)
 
         onPattern(pattern) {
-            TransformationResult(
+            ruleResult(
                 toExpr = cancel(one, restOf(pattern)),
                 explanation = metadata(Explanation.EliminateOneInProduct, move(one))
             )
@@ -121,7 +121,7 @@ private val eliminateZeroInSum =
         val pattern = sumContaining(zero)
 
         onPattern(pattern) {
-            TransformationResult(
+            ruleResult(
                 toExpr = cancel(zero, restOf(pattern)),
                 explanation = metadata(Explanation.EliminateZeroInSum, move(zero))
             )
@@ -142,7 +142,7 @@ private val evaluateProductContainingZero =
         }
 
         onPattern(pattern) {
-            TransformationResult(
+            ruleResult(
                 toExpr = transform(zero),
                 explanation = metadata(Explanation.EvaluateProductContainingZero, move(zero))
             )
@@ -159,7 +159,7 @@ private val evaluateZeroDividedByAnyValue =
         val pattern = productContaining(zero, divideBy(divByPattern))
 
         onPattern(pattern) {
-            TransformationResult(
+            ruleResult(
                 toExpr = transform(zero),
                 explanation = metadata(Explanation.EvaluateZeroDividedByAnyValue, move(zero))
             )
@@ -175,7 +175,7 @@ private val evaluateProductDividedByZeroAsUndefined =
         val pattern = productContaining(divideBy(numericCondition(zero) { it.signum() == 0 }))
 
         onPattern(pattern) {
-            TransformationResult(
+            ruleResult(
                 toExpr = transformTo(pattern, Constants.Undefined),
                 explanation = metadata(Explanation.EvaluateProductDividedByZeroAsUndefined, move(zero))
             )
@@ -188,7 +188,7 @@ private val simplifyDoubleMinus =
         val pattern = negOf(negOf(value))
 
         onPattern(pattern) {
-            TransformationResult(
+            ruleResult(
                 toExpr = move(value),
                 explanation = metadata(Explanation.SimplifyDoubleMinus, move(value))
             )
@@ -204,7 +204,7 @@ private val simplifyProductWithTwoNegativeFactors =
         val product = productContaining(fd1, fd2)
 
         onPattern(product) {
-            TransformationResult(
+            ruleResult(
                 toExpr = product.substitute(
                     optionalDivideBy(fd1, move(f1)),
                     optionalDivideBy(fd2, move(f2))
@@ -221,7 +221,7 @@ private val moveSignOfNegativeFactorOutOfProduct =
         val product = productContaining(fd)
 
         onPattern(product) {
-            TransformationResult(
+            ruleResult(
                 toExpr = negOf(product.substitute(optionalDivideBy(fd, move(f)))),
                 explanation = metadata(Explanation.MoveSignOfNegativeFactorOutOfProduct)
             )
@@ -238,7 +238,7 @@ private val simplifyZeroDenominatorFractionToUndefined =
         val pattern = fractionOf(numerator, zero)
 
         onPattern(pattern) {
-            TransformationResult(
+            ruleResult(
                 toExpr = transformTo(pattern, Constants.Undefined),
                 explanation = metadata(Explanation.SimplifyZeroDenominatorFractionToUndefined, move(pattern))
             )
@@ -255,7 +255,7 @@ private val simplifyZeroNumeratorFractionToZero =
         val pattern = fractionOf(zero, denominator)
 
         onPattern(pattern) {
-            TransformationResult(
+            ruleResult(
                 toExpr = transform(zero),
                 explanation = metadata(Explanation.SimplifyZeroNumeratorFractionToZero, move(zero))
             )
@@ -268,7 +268,7 @@ private val simplifyUnitFractionToOne =
         val pattern = fractionOf(common, common)
 
         onPattern(pattern) {
-            TransformationResult(
+            ruleResult(
                 toExpr = cancel(common, introduce(Constants.One)),
                 explanation = metadata(Explanation.SimplifyUnitFractionToOne)
             )
@@ -282,7 +282,7 @@ private val simplifyFractionWithOneDenominator =
         val pattern = fractionOf(numerator, denominator)
 
         onPattern(pattern) {
-            TransformationResult(
+            ruleResult(
                 toExpr = cancel(denominator, move(numerator)),
                 explanation = metadata(Explanation.SimplifyFractionWithOneDenominator)
             )
@@ -296,7 +296,7 @@ private val cancelDenominator =
         val pattern = fractionOf(numerator, common)
 
         onPattern(pattern) {
-            TransformationResult(
+            ruleResult(
                 toExpr = cancel(common, restOf(numerator)),
                 explanation = metadata(Explanation.CancelDenominator)
             )
@@ -311,7 +311,7 @@ private val cancelCommonTerms =
         val fraction = fractionOf(numerator, denominator)
 
         onPattern(fraction) {
-            TransformationResult(
+            ruleResult(
                 toExpr = cancel(common, fractionOf(restOf(numerator), restOf(denominator))),
                 explanation = metadata(Explanation.CancelCommonTerms)
             )
@@ -325,7 +325,7 @@ private val factorMinusFromSum =
         }
 
         onPattern(sum) {
-            TransformationResult(
+            ruleResult(
                 toExpr = negOf(sumOf(get(sum)!!.children().map { it.firstChild })),
                 explanation = metadata(Explanation.FactorMinusFromSum)
             )
@@ -341,7 +341,7 @@ private val simplifyProductOfConjugates =
         val product = commutativeProductOf(sum1, sum2)
 
         onPattern(product) {
-            TransformationResult(
+            ruleResult(
                 toExpr = sum2.substitute(
                     powerOf(move(a), introduce(Constants.Two)),
                     negOf(powerOf(move(b), introduce(Constants.Two)))
@@ -361,7 +361,7 @@ private val distributePowerOfProduct =
         val pattern = powerOf(product, exponent)
 
         onPattern(pattern) {
-            TransformationResult(
+            ruleResult(
                 toExpr = productOf(get(product)!!.children().map { powerOf(move(it), move(exponent)) }),
                 explanation = metadata(Explanation.DistributePowerOfProduct)
             )
@@ -384,7 +384,7 @@ private val expandBinomialSquaredUsingIdentity =
         )
 
         onPattern(pattern) {
-            TransformationResult(
+            ruleResult(
                 toExpr = sumOf(
                     powerOf(move(a), introduce(Constants.Two)),
                     productOf(introduce(Constants.Two), move(a), move(b)),
@@ -411,7 +411,7 @@ private val expandBinomialCubedUsingIdentity =
         )
 
         onPattern(pattern) {
-            TransformationResult(
+            ruleResult(
                 toExpr = sumOf(
                     powerOf(move(a), introduce(Constants.Three)),
                     productOf(
@@ -444,7 +444,7 @@ private val expandTrinomialSquaredUsingIdentity =
         val trinomialSquared = powerOf(sum, FixedPattern(Constants.Two))
 
         onPattern(trinomialSquared) {
-            TransformationResult(
+            ruleResult(
                 toExpr = sumOf(
                     powerOf(move(a), introduce(Constants.Two)),
                     powerOf(move(b), introduce(Constants.Two)),
@@ -468,7 +468,7 @@ private val expandProductOfSumAndDifference =
         val pattern = commutativeProductContaining(commutativeSumOf(a, b), commutativeSumOf(a, negOf(b)))
 
         onPattern(pattern) {
-            TransformationResult(
+            ruleResult(
                 toExpr = pattern.substitute(
                     sumOf(
                         powerOf(move(a), introduce(Constants.Two)),
@@ -503,7 +503,7 @@ private val applyFoilMethod =
                 productOf(move(b), move(d))
             )
 
-            TransformationResult(
+            ruleResult(
                 toExpr = prod.substitute(toExpr),
                 explanation = metadata(Explanation.ApplyFoilMethod)
             )
@@ -530,7 +530,7 @@ private val expandDoubleBrackets =
                 }
             )
 
-            TransformationResult(
+            ruleResult(
                 toExpr = prod.substitute(toExpr),
                 explanation = metadata(Explanation.ExpandDoubleBrackets)
             )
@@ -558,7 +558,7 @@ private val rewriteDivisionAsFraction =
             )
             result.addAll(factors.subList(division + 1, factors.size).map { move(it) })
 
-            TransformationResult(
+            ruleResult(
                 toExpr = productOf(result),
                 explanation = metadata(Explanation.RewriteDivisionAsFraction)
             )
@@ -577,7 +577,7 @@ private val multiplyExponentsUsingPowerRule =
         val pattern = powerOf(powerOf(base, exp1), exp2)
 
         onPattern(pattern) {
-            TransformationResult(
+            ruleResult(
                 toExpr = powerOf(
                     move(base),
                     productOf(move(exp1), move(exp2))
@@ -597,7 +597,7 @@ private val distributeSumOfPowers =
         val pattern = powerOf(base, sumOfExponents)
 
         onPattern(pattern) {
-            TransformationResult(
+            ruleResult(
                 toExpr = productOf(
                     get(sumOfExponents)!!.children().map {
                         simplifiedPowerOf(move(base), move(it))
@@ -636,7 +636,7 @@ private val distributeMultiplicationOverSum =
                 terms.map { explicitProductOf(distributeTerm, move(it)) }
             )
 
-            TransformationResult(
+            ruleResult(
                 toExpr = distributedExpr,
                 explanation = metadata(Explanation.DistributeMultiplicationOverSum)
             )
@@ -663,7 +663,7 @@ private val distributeNegativeOverBracket =
                 sumContainingNegTerm.substitute(negDistributedTerm)
             } else negDistributedTerm
 
-            TransformationResult(
+            ruleResult(
                 toExpr = toExpr,
                 explanation = metadata(Explanation.DistributeNegativeOverBracket)
             )
@@ -680,7 +680,7 @@ private val rewritePowerAsProduct =
         val power = powerOf(base, exponent)
 
         onPattern(power) {
-            TransformationResult(
+            ruleResult(
                 toExpr = productOf(List(getValue(exponent).toInt()) { move(base) }),
                 explanation = metadata(Explanation.RewritePowerAsProduct, move(base), move(exponent))
             )
@@ -697,7 +697,7 @@ private val simplifyExpressionToThePowerOfOne =
         val power = powerOf(base, one)
 
         onPattern(power) {
-            TransformationResult(
+            ruleResult(
                 toExpr = move(base),
                 explanation = metadata(Explanation.SimplifyExpressionToThePowerOfOne)
             )
@@ -714,7 +714,7 @@ private val evaluateOneToAnyPower =
         val power = powerOf(one, exponent)
 
         onPattern(power) {
-            TransformationResult(
+            ruleResult(
                 toExpr = move(one),
                 explanation = metadata(Explanation.EvaluateOneToAnyPower)
             )
@@ -728,7 +728,7 @@ private val evaluateZeroToThePowerOfZero =
     rule {
         val power = powerOf(FixedPattern(Constants.Zero), FixedPattern(Constants.Zero))
         onPattern(power) {
-            TransformationResult(
+            ruleResult(
                 toExpr = transformTo(power, Constants.Undefined),
                 explanation = metadata(Explanation.EvaluateZeroToThePowerOfZero)
             )
@@ -742,7 +742,7 @@ private val evaluateExpressionToThePowerOfZero =
     rule {
         val power = powerOf(condition(AnyPattern()) { it.isDefinitelyNotZero() }, FixedPattern(Constants.Zero))
         onPattern(power) {
-            TransformationResult(
+            ruleResult(
                 toExpr = transformTo(power, Constants.One),
                 explanation = metadata(Explanation.EvaluateExpressionToThePowerOfZero)
             )
@@ -756,7 +756,7 @@ private val evaluateZeroToAPositivePower =
     rule {
         val power = powerOf(FixedPattern(Constants.Zero), condition(AnyPattern()) { it.signOf() == Sign.POSITIVE })
         onPattern(power) {
-            TransformationResult(
+            ruleResult(
                 toExpr = transformTo(power, Constants.Zero),
                 explanation = metadata(Explanation.EvaluateZeroToAPositivePower)
             )
@@ -775,7 +775,7 @@ private val cancelAdditiveInverseElements =
                 2 -> transformTo(pattern, Constants.Zero)
                 else -> cancel(term, restOf(pattern))
             }
-            TransformationResult(
+            ruleResult(
                 toExpr = toExpr,
                 explanation = metadata(Explanation.CancelAdditiveInverseElements, move(term))
             )
@@ -797,7 +797,7 @@ private val rewriteProductOfPowersWithSameBase =
                 get(power2.exponent) != Constants.One
             ) {
 
-                TransformationResult(
+                ruleResult(
                     toExpr = product.substitute(
                         powerOf(factor(base), sumOf(move(power1.exponent), move(power2.exponent)))
                     ),
@@ -821,7 +821,7 @@ private val rewriteProductOfPowersWithSameExponent =
         val product = productContaining(power1, power2)
 
         onPattern(product) {
-            TransformationResult(
+            ruleResult(
                 toExpr = product.substitute(
                     powerOf(productOf(move(base1), move(base2)), factor(exponent))
                 ),
@@ -840,7 +840,7 @@ private val rewriteFractionOfPowersWithSameBase =
         val product = fractionOf(power1, power2)
 
         onPattern(product) {
-            TransformationResult(
+            ruleResult(
                 toExpr = powerOf(
                     factor(base),
                     sumOf(
@@ -865,7 +865,7 @@ private val rewriteFractionOfPowersWithSameExponent =
         val product = fractionOf(power1, power2)
 
         onPattern(product) {
-            TransformationResult(
+            ruleResult(
                 toExpr = powerOf(fractionOf(move(base1), move(base2)), factor(exponent)),
                 explanation = metadata(Explanation.RewriteFractionOfPowersWithSameExponent)
             )
@@ -880,7 +880,7 @@ private val flipFractionUnderNegativePower =
         val power = powerOf(fraction, negOf(exponent))
 
         onPattern(power) {
-            TransformationResult(
+            ruleResult(
                 toExpr = powerOf(
                     fractionOf(move(fraction.denominator), move(fraction.numerator)),
                     move(exponent)
@@ -919,7 +919,7 @@ private val rewriteProductOfPowersWithNegatedExponent =
                 else -> product2.substitute(powerOf(inverse, move(exponent)), move(power1))
             }
 
-            TransformationResult(
+            ruleResult(
                 toExpr = newProduct,
                 explanation = metadata(Explanation.RewriteProductOfPowersWithNegatedExponent)
             )
@@ -940,7 +940,7 @@ private val rewriteProductOfPowersWithInverseFractionBase =
         val product = productContaining(power1, power2)
 
         onPattern(product) {
-            TransformationResult(
+            ruleResult(
                 toExpr = product.substitute(
                     move(power1),
                     powerOf(
@@ -967,7 +967,7 @@ private val rewriteProductOfPowersWithInverseBase =
         val product = commutativeProductContaining(power1, power2)
 
         onPattern(product) {
-            TransformationResult(
+            ruleResult(
                 toExpr = product.substitute(move(power1), powerOf(move(base1), negOf(move(exponent2)))),
                 explanation = metadata(Explanation.RewriteProductOfPowersWithInverseBase)
             )
@@ -979,7 +979,7 @@ private val rewriteIntegerOrderRootAsPower =
         val root = integerOrderRootOf(AnyPattern())
 
         onPattern(root) {
-            TransformationResult(
+            ruleResult(
                 toExpr = powerOf(
                     move(root.radicand),
                     fractionOf(introduce(Constants.One), move(root.order))
@@ -1012,7 +1012,7 @@ private val rewritePowerUnderRoot =
             val newExp = integerOp(root.order, exponent) { p, q -> q.divide(p.gcd(q)) }
             val newRootOrder = integerOp(root.order, exponent) { p, q -> p.divide(p.gcd(q)) }
 
-            TransformationResult(
+            ruleResult(
                 toExpr = rootOf(
                     simplifiedPowerOf(move(base), simplifiedProductOf(newExp, gcdExpRootOrder)),
                     simplifiedProductOf(newRootOrder, gcdExpRootOrder)
@@ -1050,7 +1050,7 @@ private val cancelRootIndexAndExponent =
                 else -> newPower
             }
 
-            TransformationResult(
+            ruleResult(
                 toExpr = newRoot,
                 explanation = metadata(Explanation.CancelRootIndexAndExponent)
             )

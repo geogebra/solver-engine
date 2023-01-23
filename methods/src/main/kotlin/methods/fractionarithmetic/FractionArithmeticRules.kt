@@ -11,8 +11,8 @@ import engine.expressions.sumOf
 import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
-import engine.methods.TransformationResult
 import engine.methods.rule
+import engine.methods.ruleResult
 import engine.operators.BinaryExpressionOperator
 import engine.operators.NullaryOperator
 import engine.patterns.AnyPattern
@@ -48,7 +48,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             val sum = commutativeSumOf(integer, fraction)
 
             onPattern(sum) {
-                TransformationResult(
+                ruleResult(
                     toExpr = sum.substitute(
                         fractionOf(move(integer), introduce(Constants.One)),
                         move(fraction)
@@ -71,7 +71,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             val sum = sumOf(nf1, nf2)
 
             onPattern(sum) {
-                TransformationResult(
+                ruleResult(
                     toExpr = fractionOf(
                         sumOf(
                             copySign(nf1, move(num1)),
@@ -100,7 +100,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                 val factor1 = integerOp(f1.denominator, f2.denominator) { n1, n2 -> n2 / n1.gcd(n2) }
                 val factor2 = integerOp(f1.denominator, f2.denominator) { n1, n2 -> n1 / n1.gcd(n2) }
 
-                TransformationResult(
+                ruleResult(
                     toExpr = sumOf(
                         copySign(
                             nf1,
@@ -132,7 +132,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             val pattern = fractionOf(numerator, negOf(denominator))
 
             onPattern(pattern) {
-                TransformationResult(
+                ruleResult(
                     toExpr = negOf(fractionOf(move(numerator), move(denominator))),
                     explanation = metadata(Explanation.SimplifyNegativeInDenominator, move(pattern))
                 )
@@ -153,7 +153,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                     integerCondition(numerator, denominator) { n, d -> d.divides(n) }
                 )
             ) {
-                TransformationResult(
+                ruleResult(
                     toExpr = integerOp(numerator, denominator) { n, d -> n / d },
                     explanation = metadata(Explanation.SimplifyFractionToInteger)
                 )
@@ -184,7 +184,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                 val numeratorOverGcd = integerOp(factorNumerator, factorDenominator) { n, d -> n / n.gcd(d) }
                 val denominatorOverGcd = integerOp(factorNumerator, factorDenominator) { n, d -> d / n.gcd(d) }
 
-                TransformationResult(
+                ruleResult(
                     toExpr = fractionOf(
                         if (isBound(productNumerator)) {
                             productNumerator.substitute(simplifiedProductOf(gcd, numeratorOverGcd))
@@ -211,7 +211,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             val pattern = fractionOf(negOf(numerator), denominator)
 
             onPattern(pattern) {
-                TransformationResult(
+                ruleResult(
                     negOf(fractionOf(move(numerator), move(denominator))),
                     explanation = metadata(Explanation.SimplifyNegativeInNumerator, move(pattern))
                 )
@@ -227,7 +227,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             val pattern = fractionOf(negOf(numerator), negOf(denominator))
 
             onPattern(pattern) {
-                TransformationResult(
+                ruleResult(
                     fractionOf(move(numerator), move(denominator)),
                     explanation = metadata(Explanation.SimplifyNegativeInNumeratorAndDenominator, move(pattern))
                 )
@@ -248,7 +248,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                     expression.flattenedProductChildren().any { it.operator == BinaryExpressionOperator.Fraction }
                 }
             ) {
-                TransformationResult(
+                ruleResult(
                     toExpr = product.substitute(
                         fractionOf(move(nonFractionFactor), introduce(Constants.One))
                     ),
@@ -267,7 +267,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             val sum = commutativeSumContaining(nf, integerTerm)
 
             onPattern(sum) {
-                TransformationResult(
+                ruleResult(
                     sum.substitute(
                         move(nf),
                         copySign(
@@ -295,7 +295,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             val product = productContaining(f1, f2)
 
             onPattern(product) {
-                TransformationResult(
+                ruleResult(
                     product.substitute(
                         fractionOf(
                             productOf(move(num1), move(num2)),
@@ -315,7 +315,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             val f = fractionOf(numerator, denominator)
 
             onPattern(f) {
-                TransformationResult(
+                ruleResult(
                     productOf(
                         move(numerator),
                         fractionOf(introduce(Constants.One), move(denominator))
@@ -335,7 +335,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             val outerFraction = fractionOf(outerNumerator, innerFraction)
 
             onPattern(outerFraction) {
-                TransformationResult(
+                ruleResult(
                     productOf(
                         move(outerNumerator),
                         fractionOf(move(denominator), move(numerator))
@@ -366,7 +366,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                 if (fracNum.isFactorizableUnderRationalExponent(expNum, expDen) ||
                     fracDen.isFactorizableUnderRationalExponent(expNum, expDen)
                 ) {
-                    TransformationResult(
+                    ruleResult(
                         fractionOf(
                             powerOf(move(fraction.numerator), move(exp)),
                             powerOf(move(fraction.denominator), move(exp))
@@ -391,7 +391,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             val pattern = powerOf(fraction, exponent)
 
             onPattern(pattern) {
-                TransformationResult(
+                ruleResult(
                     fractionOf(
                         powerOf(move(fraction.numerator), move(exponent)),
                         powerOf(move(fraction.denominator), move(exponent))
@@ -413,7 +413,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             val pattern = powerOf(fraction, integerCondition(exponent) { it < -BigInteger.ONE })
 
             onPattern(pattern) {
-                TransformationResult(
+                ruleResult(
                     powerOf(
                         fractionOf(move(fraction.denominator), move(fraction.numerator)),
                         move(exponent.unsignedPattern)
@@ -430,7 +430,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             val pattern = powerOf(fraction, FixedPattern(xp(-1)))
 
             onPattern(pattern) {
-                TransformationResult(
+                ruleResult(
                     fractionOf(move(fraction.denominator), move(fraction.numerator)),
                     explanation = metadata(Explanation.SimplifyFractionToMinusOne, move(fraction))
                 )
@@ -444,7 +444,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             val pattern = powerOf(base, FixedPattern(xp(-1)))
 
             onPattern(pattern) {
-                TransformationResult(
+                ruleResult(
                     fractionOf(introduce(Constants.One), move(base)),
                     explanation = metadata(Explanation.TurnIntegerToMinusOneToFraction, move(base))
                 )
@@ -459,7 +459,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             val pattern = powerOf(base, integerCondition(exponent) { it < -BigInteger.ONE })
 
             onPattern(pattern) {
-                TransformationResult(
+                ruleResult(
                     toExpr = fractionOf(
                         introduce(Constants.One),
                         powerOf(move(base), move(exponent.unsignedPattern))
@@ -480,7 +480,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             val power = powerOf(zero, negOf(unsignedExponent))
 
             onPattern(power) {
-                TransformationResult(
+                ruleResult(
                     toExpr = powerOf(
                         fractionOf(introduce(Constants.One), move(zero)),
                         move(unsignedExponent)
@@ -504,7 +504,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                 val quotient = integerOp(fraction.numerator, fraction.denominator) { n, d -> n / d }
                 val remainder = integerOp(fraction.numerator, fraction.denominator) { n, d -> n % d }
 
-                TransformationResult(
+                ruleResult(
                     toExpr = sumOf(quotient, fractionOf(remainder, move(fraction.denominator))),
                     explanation = metadata(Explanation.ConvertImproperFractionToSumOfIntegerAndFraction),
                     skills = listOf(

@@ -5,7 +5,7 @@ import engine.context.ResourceData
 import engine.expressions.Expression
 import engine.expressions.denominator
 import engine.expressions.numerator
-import engine.methods.Plan
+import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
@@ -30,7 +30,7 @@ import methods.integerarithmetic.IntegerArithmeticPlans
 import methods.integerarithmetic.IntegerArithmeticRules
 import methods.integerarithmetic.arithmeticOperators
 
-enum class DecimalPlans(override val runner: Plan) : RunnerMethod {
+enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
     EvaluateSumOfDecimals(
         plan {
             pattern = sumContaining()

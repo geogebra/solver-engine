@@ -12,6 +12,7 @@ class TestSubstituteMethod(val f: (Expression) -> Pair<Expression, Expression>) 
         val (subExpr, newExpr) = f(sub)
         val toExpr = sub.substitute(subExpr, newExpr)
         return Transformation(
+            type = Transformation.Type.Rule,
             fromExpr = sub,
             toExpr = toExpr
         )

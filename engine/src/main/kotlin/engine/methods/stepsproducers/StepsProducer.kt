@@ -68,7 +68,8 @@ class StepsBuilder(sub: Expression) {
                 toExpr = substitution,
                 explanation = step.explanation,
                 skills = step.skills,
-                steps = step.steps
+                steps = step.steps,
+                tasks = step.tasks
             )
         )
 

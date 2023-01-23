@@ -4,8 +4,8 @@ import engine.expressions.negOf
 import engine.expressions.powerOf
 import engine.methods.Rule
 import engine.methods.RunnerMethod
-import engine.methods.TransformationResult
 import engine.methods.rule
+import engine.methods.ruleResult
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.SignedIntegerPattern
@@ -40,7 +40,7 @@ enum class IntegerArithmeticRules(override val runner: Rule) : RunnerMethod {
                         metadata(Explanation.EvaluateIntegerAddition, move(term1), move(term2))
                 }
 
-                TransformationResult(
+                ruleResult(
                     toExpr = sum.substitute(integerOp(term1, term2) { n1, n2 -> n1 + n2 }),
                     explanation = explanation
                 )
@@ -66,12 +66,12 @@ enum class IntegerArithmeticRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(product) {
                 when {
-                    isBound(multiplier) -> TransformationResult(
+                    isBound(multiplier) -> ruleResult(
                         toExpr = product.substitute(integerOp(base, multiplier) { n1, n2 -> n1 * n2 }),
                         explanation = metadata(Explanation.EvaluateIntegerProduct, move(base), move(multiplier))
                     )
 
-                    else -> TransformationResult(
+                    else -> ruleResult(
                         toExpr = product.substitute(integerOp(base, divisor) { n1, n2 -> n1 / n2 }),
                         explanation = metadata(Explanation.EvaluateIntegerDivision, move(base), move(divisor))
                     )
@@ -87,7 +87,7 @@ enum class IntegerArithmeticRules(override val runner: Rule) : RunnerMethod {
             val power = powerOf(base, exponent)
 
             onPattern(power) {
-                TransformationResult(
+                ruleResult(
                     toExpr = integerOp(base, exponent) { n1, n2 -> n1.pow(n2.toInt()) },
                     explanation = metadata(Explanation.EvaluateIntegerPowerDirectly, move(base), move(exponent))
                 )
@@ -103,9 +103,9 @@ enum class IntegerArithmeticRules(override val runner: Rule) : RunnerMethod {
             val power = powerOf(base, exponent)
 
             onPattern(power) {
-                TransformationResult(
+                ruleResult(
                     toExpr = powerOf(move(positiveBase), move(exponent)),
-                    explanation = metadata(Explanation.SimplifyEvenPowerOfNegative),
+                    explanation = metadata(Explanation.SimplifyEvenPowerOfNegative)
                 )
             }
         }
@@ -119,9 +119,9 @@ enum class IntegerArithmeticRules(override val runner: Rule) : RunnerMethod {
             val power = powerOf(base, exponent)
 
             onPattern(power) {
-                TransformationResult(
+                ruleResult(
                     toExpr = negOf(powerOf(move(positiveBase), move(exponent))),
-                    explanation = metadata(Explanation.SimplifyOddPowerOfNegative),
+                    explanation = metadata(Explanation.SimplifyOddPowerOfNegative)
                 )
             }
         }

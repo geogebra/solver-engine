@@ -13,8 +13,8 @@ import engine.expressions.sumOf
 import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
-import engine.methods.TransformationResult
 import engine.methods.rule
+import engine.methods.ruleResult
 import engine.operators.BinaryExpressionOperator
 import engine.operators.NaryOperator
 import engine.patterns.AnyPattern
@@ -55,7 +55,7 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
             val pattern = rootOf(fraction)
 
             onPattern(pattern) {
-                TransformationResult(
+                ruleResult(
                     toExpr = fractionOf(
                         rootOf(move(numerator), move(pattern.order)),
                         rootOf(move(denominator), move(pattern.order))
@@ -78,7 +78,7 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
             val fraction = fractionOf(numerator, denominator)
 
             onPattern(fraction) {
-                TransformationResult(
+                ruleResult(
                     toExpr = productOf(
                         move(fraction),
                         fractionOf(move(radical), move(radical))
@@ -104,7 +104,7 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
             )
 
             onPattern(fraction) {
-                TransformationResult(
+                ruleResult(
                     toExpr = rootOf(
                         fractionOf(move(radicand1), move(radicand2)),
                         move(index)
@@ -133,7 +133,7 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
                     integerCondition(leftRoot.order, rightRoot.order) { n1, n2 -> n1 != n2 }
                 )
             ) {
-                TransformationResult(
+                ruleResult(
                     toExpr = fractionOf(
                         rootOf(
                             simplifiedPowerOf(
@@ -192,7 +192,7 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
                     ),
                     powerOf(move(term2), introduce(Constants.Two))
                 )
-                TransformationResult(
+                ruleResult(
                     toExpr = productOf(
                         move(fraction),
                         fractionOf(
@@ -245,7 +245,7 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
                 val middleTermMatches = list1.size == list2.size && list1.zip(list2).all { (e1, e2) -> e1.equiv(e2) }
 
                 when {
-                    middleTermMatches -> TransformationResult(
+                    middleTermMatches -> ruleResult(
                         toExpr = sumOf(
                             powerOf(move(term1), introduce(Constants.Three)),
                             copySign(opNegTerm2, powerOf(move(term2), introduce(Constants.Three)))
@@ -281,7 +281,7 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
             val fraction = fractionOf(numerator, denominator)
 
             onPattern(fraction) {
-                TransformationResult(
+                ruleResult(
                     toExpr = fractionOf(
                         move(numerator),
                         sumOf(move(term2), move(term1))
@@ -320,7 +320,7 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
             val fraction = fractionOf(numerator, denominator)
 
             onPattern(fraction) {
-                TransformationResult(
+                ruleResult(
                     toExpr = productOf(
                         move(fraction),
                         fractionOf(
@@ -429,7 +429,7 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
                     move(index)
                 )
 
-                TransformationResult(
+                ruleResult(
                     toExpr = productOf(
                         move(pattern),
                         fractionOf(rationalizationTerm, rationalizationTerm)
@@ -456,7 +456,7 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
             onPattern(pattern) {
                 val factorized = productOfPrimeFactors(radicand)
 
-                TransformationResult(
+                ruleResult(
                     toExpr = fractionOf(
                         move(numerator),
                         simplifiedProductOf(

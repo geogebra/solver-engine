@@ -3,6 +3,7 @@ package engine.methods.stepsproducers
 import engine.expressions.Expression
 import engine.expressions.Extractor
 import engine.methods.PlanBuilder
+import engine.methods.TaskSetBuilder
 import engine.patterns.Pattern
 
 @DslMarker
@@ -109,6 +110,11 @@ interface PipelineBuilder {
      * Apply the following plan.
      */
     fun plan(init: PlanBuilder.() -> Unit)
+
+    /**
+     * Apply the following task set
+     */
+    fun taskSet(init: TaskSetBuilder.() -> Unit)
 
     fun checkForm(patternProvider: () -> Pattern)
     fun contextSensitive(init: ContextSensitiveBuilder.() -> Unit)

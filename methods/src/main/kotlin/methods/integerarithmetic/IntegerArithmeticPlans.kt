@@ -1,7 +1,7 @@
 package methods.integerarithmetic
 
 import engine.expressions.Expression
-import engine.methods.Plan
+import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
@@ -21,7 +21,7 @@ import methods.general.NormalizationPlans
 import methods.general.NormalizationRules
 import methods.general.removeRedundantBrackets
 
-private enum class PrivateIntegerArithmeticPlans(override val runner: Plan) : RunnerMethod {
+private enum class PrivateIntegerArithmeticPlans(override val runner: CompositeMethod) : RunnerMethod {
     EvaluateProductOfIntegers(
         plan {
             pattern = productContaining()
@@ -93,7 +93,7 @@ private enum class PrivateIntegerArithmeticPlans(override val runner: Plan) : Ru
     ),
 }
 
-enum class IntegerArithmeticPlans(override val runner: Plan) : RunnerMethod {
+enum class IntegerArithmeticPlans(override val runner: CompositeMethod) : RunnerMethod {
     SimplifyIntegersInSum(
         plan {
             pattern = sumContaining()

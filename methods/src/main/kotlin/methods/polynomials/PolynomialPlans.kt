@@ -2,7 +2,7 @@ package methods.polynomials
 
 import engine.context.ResourceData
 import engine.expressions.Label
-import engine.methods.Plan
+import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
@@ -22,7 +22,7 @@ import methods.general.GeneralRules
 import methods.general.NormalizationPlans
 import methods.general.NormalizationRules
 
-enum class PolynomialPlans(override val runner: Plan) : RunnerMethod {
+enum class PolynomialPlans(override val runner: CompositeMethod) : RunnerMethod {
 
     SimplifyCoefficient(simplifyCoefficient),
     CollectLikeTermsAndSimplify(collectLikeTermsAndSimplify),

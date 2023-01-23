@@ -3,8 +3,8 @@ package methods.approximation
 import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
-import engine.methods.TransformationResult
 import engine.methods.rule
+import engine.methods.ruleResult
 import engine.patterns.RecurringDecimalPattern
 import engine.patterns.SignedNumberPattern
 import engine.patterns.UnsignedIntegerPattern
@@ -28,7 +28,7 @@ enum class ApproximationRules(override val runner: Rule) : RunnerMethod {
                 val value = getValue(decimal)
                 when {
                     value.scale() <= context.effectivePrecision -> null
-                    else -> TransformationResult(
+                    else -> ruleResult(
                         toExpr = numericOp(decimal) { round(it) },
                         explanation = metadata(
                             Explanation.RoundTerminatingDecimal,
@@ -50,7 +50,7 @@ enum class ApproximationRules(override val runner: Rule) : RunnerMethod {
                 when {
                     // we need at least one more decimal digit than what the precision requires
                     value.decimalDigits > context.effectivePrecision -> null
-                    else -> TransformationResult(
+                    else -> ruleResult(
                         toExpr = transformTo(recurringDecimal, xp(value.expand(context.effectivePrecision + 1))),
                         explanation = metadata(
                             Explanation.ExpandRecurringDecimal,
@@ -72,7 +72,7 @@ enum class ApproximationRules(override val runner: Rule) : RunnerMethod {
                 when {
                     // we need at least one more decimal digit than what the precision requires
                     value.decimalDigits <= context.effectivePrecision -> null
-                    else -> TransformationResult(
+                    else -> ruleResult(
                         toExpr = transformTo(
                             recurringDecimal,
                             xp(round(value.nonRepeatingValue))
@@ -99,29 +99,33 @@ enum class ApproximationRules(override val runner: Rule) : RunnerMethod {
                     multiplier,
                     divideBy(
                         numericCondition(divisor) { it.signum() != 0 }
-                    ),
+                    )
                 )
             )
 
             onPattern(product) {
                 when {
-                    isBound(multiplier) -> TransformationResult(
+                    isBound(multiplier) -> ruleResult(
                         toExpr = product.substitute(
                             numericOp(base, multiplier) { n1, n2 -> round(n1 * n2) }
                         ),
                         explanation = metadata(
                             Explanation.ApproximateDecimalProduct,
-                            move(base), move(multiplier), introduce(xp(context.effectivePrecision))
+                            move(base),
+                            move(multiplier),
+                            introduce(xp(context.effectivePrecision))
                         )
                     )
 
-                    else -> TransformationResult(
+                    else -> ruleResult(
                         toExpr = product.substitute(
                             numericOp(base, divisor) { n1, n2 -> round(n1) / n2 }
                         ),
                         explanation = metadata(
                             Explanation.ApproximateDecimalDivision,
-                            move(base), move(divisor), introduce(xp(context.effectivePrecision))
+                            move(base),
+                            move(divisor),
+                            introduce(xp(context.effectivePrecision))
                         )
                     )
                 }
@@ -136,11 +140,13 @@ enum class ApproximationRules(override val runner: Rule) : RunnerMethod {
             val power = powerOf(base, exponent)
 
             onPattern(power) {
-                TransformationResult(
+                ruleResult(
                     toExpr = numericOp(base, exponent) { n1, n2 -> round(n1.pow(n2.toInt())) },
                     explanation = metadata(
                         Explanation.ApproximateDecimalPower,
-                        move(base), move(exponent), introduce(xp(context.effectivePrecision))
+                        move(base),
+                        move(exponent),
+                        introduce(xp(context.effectivePrecision))
                     )
                 )
             }

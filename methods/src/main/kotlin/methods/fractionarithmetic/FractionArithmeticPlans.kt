@@ -4,7 +4,7 @@ import engine.expressions.Expression
 import engine.expressions.base
 import engine.expressions.denominator
 import engine.expressions.exponent
-import engine.methods.Plan
+import engine.methods.CompositeMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
@@ -30,7 +30,7 @@ import methods.integerarithmetic.IntegerArithmeticRules
 import methods.integerarithmetic.simplifyIntegersInExpression
 import java.math.BigInteger
 
-enum class FractionArithmeticPlans(override val runner: Plan) : RunnerMethod {
+enum class FractionArithmeticPlans(override val runner: CompositeMethod) : RunnerMethod {
 
     NormalizeSignsInFraction(
         plan {

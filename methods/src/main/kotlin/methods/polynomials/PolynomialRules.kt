@@ -10,8 +10,8 @@ import engine.expressions.productOf
 import engine.expressions.sumOf
 import engine.methods.Rule
 import engine.methods.RunnerMethod
-import engine.methods.TransformationResult
 import engine.methods.rule
+import engine.methods.ruleResult
 import engine.operators.UnaryExpressionOperator
 import engine.patterns.ArbitraryVariablePattern
 import engine.patterns.IntegerProvider
@@ -42,7 +42,7 @@ enum class PolynomialRules(override val runner: Rule) : RunnerMethod {
             val sum = sumContaining(commonTerm1, commonTerm2)
 
             onPattern(sum) {
-                TransformationResult(
+                ruleResult(
                     toExpr = collectLikeTermsInSum(
                         get(sum)!!,
                         withOptionalConstantCoefficient(common),
@@ -115,7 +115,7 @@ private val collectUnitaryMonomialsInProduct = rule {
             productOf(monomialProduct, productOf(otherFactors))
         }
 
-        TransformationResult(
+        ruleResult(
             toExpr = if (signCopied) result else copySign(negProduct, result),
             explanation = metadata(Explanation.CollectUnitaryMonomialsInProduct, move(commonVariable))
         )
@@ -140,7 +140,7 @@ private val normalizeMonomial = rule {
             else -> negOf(productOf(coeff.firstChild, move(monomial.powerPattern)))
         }
         if (normalized == before) null
-        else TransformationResult(
+        else ruleResult(
             toExpr = normalized,
             explanation = metadata(Explanation.NormalizeMonomial)
         )
@@ -155,7 +155,7 @@ private val distributeMonomialToIntegerPower = rule {
     onPattern(power) {
         val coeff = get(monomial::coefficient)!!
         if (coeff != Constants.One) {
-            TransformationResult(
+            ruleResult(
                 toExpr = productOf(
                     powerOf(coeff, move(exponent)).withLabel(Label.A),
                     powerOf(move(monomial.powerPattern), move(exponent))
@@ -182,7 +182,7 @@ private val distributeProductToIntegerPower = rule {
             factorPowers.add(powerOf(productOf(constantFactors), move(exponent)).withLabel(Label.A))
         }
         factorPowers.addAll(otherFactors.map { powerOf(it, move(exponent)) })
-        TransformationResult(
+        ruleResult(
             toExpr = productOf(factorPowers),
             explanation = metadata(Explanation.DistributeProductToIntegerPower)
         )
@@ -213,7 +213,7 @@ private val normalizePolynomial = rule {
             isNormalized -> null
             else -> {
                 val termsInDescendingOrder = termsWithDegree.sortedByDescending { it.second }.map { it.first }
-                TransformationResult(
+                ruleResult(
                     toExpr = sumOf(termsInDescendingOrder),
                     explanation = metadata(Explanation.NormalizePolynomial)
                 )

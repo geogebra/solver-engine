@@ -5,6 +5,7 @@ import server.models.Format
 import server.models.MappedExpression
 import server.models.Metadata
 import server.models.PathMapping
+import server.models.Task
 import server.models.Transformation
 
 data class TransformationModeller(val format: Format) {
@@ -17,8 +18,20 @@ data class TransformationModeller(val format: Format) {
             pathMappings = modelPathMappings(trans.toExpr.pathMappings(trans.fromExpr.origin.path!!)),
             explanation = trans.explanation?.let { modelMetadata(it) },
             skills = trans.skills.map { modelMetadata(it) },
-            steps = trans.steps?.let { step -> step.map { modelTransformation(it) } },
+            steps = trans.steps?.let { steps -> steps.map { modelTransformation(it) } },
+            tasks = trans.tasks?.let { tasks -> tasks.map { modelTask(it) } },
             type = trans.type.toString()
+        )
+    }
+
+    private fun modelTask(task: engine.steps.Task): Task {
+        return Task(
+            taskId = task.taskId,
+            startExpr = modelExpression(task.startExpr),
+            pathMappings = modelPathMappings(task.startExpr.pathMappings(RootPath(task.taskId))),
+            explanation = task.explanation?.let { modelMetadata(it) },
+            steps = if (task.steps.isEmpty()) null else task.steps.map { modelTransformation(it) },
+            dependsOn = task.dependsOn.ifEmpty { null }
         )
     }
 
@@ -40,7 +53,7 @@ data class TransformationModeller(val format: Format) {
             params = metadata.mappedParams.map {
                 MappedExpression(
                     expression = modelExpression(it),
-                    pathMappings = modelPathMappings(it.pathMappings(RootPath))
+                    pathMappings = modelPathMappings(it.pathMappings(RootPath()))
                 )
             }
         )

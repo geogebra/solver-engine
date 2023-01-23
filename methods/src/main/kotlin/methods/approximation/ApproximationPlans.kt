@@ -1,7 +1,7 @@
 package methods.approximation
 
 import engine.expressions.Expression
-import engine.methods.Plan
+import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
@@ -28,7 +28,7 @@ private fun Expression.canBeApproximated(): Boolean {
     return validOperator && children().all { it.canBeApproximated() }
 }
 
-enum class ApproximationPlans(override val runner: Plan) : RunnerMethod {
+enum class ApproximationPlans(override val runner: CompositeMethod) : RunnerMethod {
     ExpandAndRoundRecurringDecimal(
         plan {
             explanation = Explanation.ExpandAndRoundRecurringDecimal

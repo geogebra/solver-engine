@@ -22,11 +22,11 @@ class PartialSumPlan(
     val skillMakers: List<MetadataMaker> = emptyList(),
     specificPlans: List<Method> = emptyList(),
     val stepsProducer: StepsProducer
-) : Plan(specificPlans) {
+) : CompositeMethod(specificPlans) {
 
     // This plan is used when the whole sum is matched
-    private val regularPlan =
-        RegularPlan(pattern, AnyPattern(), explanationMaker, skillMakers, specificPlans, stepsProducer)
+    private val plan =
+        Plan(pattern, AnyPattern(), explanationMaker, skillMakers, specificPlans, stepsProducer)
 
     init {
         check(pattern.operator === NaryOperator.Sum)
@@ -34,7 +34,7 @@ class PartialSumPlan(
 
     override fun run(ctx: Context, sub: Expression): TransformationResult? {
         if (sub.childCount == pattern.childPatterns.size) {
-            return regularPlan.run(ctx, sub)
+            return plan.run(ctx, sub)
         }
         for (match in pattern.findMatches(ctx, RootMatch, sub)) {
             val partialSum = sumOf(pattern.getMatchedChildExpressions(match))
@@ -47,10 +47,10 @@ class PartialSumPlan(
 
             builder.addStep(
                 Transformation(
+                    type = Transformation.Type.Rearrangement,
                     fromExpr = sub,
                     toExpr = substitutedPartialSum,
-                    explanation = metadata(SolverEngineExplanation.ExtractPartialSum, partialSum),
-                    type = Transformation.Type.Rearrangement
+                    explanation = metadata(SolverEngineExplanation.ExtractPartialSum, partialSum)
                 )
             )
 
@@ -61,6 +61,7 @@ class PartialSumPlan(
                 builder.addSteps(steps)
 
                 return TransformationResult(
+                    type = Transformation.Type.Plan,
                     toExpr = builder.lastSub,
                     steps = builder.getFinalSteps(),
                     explanation = explanationMaker.make(ctx, match),

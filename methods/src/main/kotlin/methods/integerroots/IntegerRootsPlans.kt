@@ -1,6 +1,6 @@
 package methods.integerroots
 
-import engine.methods.Plan
+import engine.methods.CompositeMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
@@ -16,7 +16,7 @@ import methods.integerarithmetic.IntegerArithmeticPlans
 import methods.integerarithmetic.IntegerArithmeticRules
 import methods.integerarithmetic.simplifyIntegersInExpression
 
-enum class IntegerRootsPlans(override val runner: Plan) : RunnerMethod {
+enum class IntegerRootsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
     CancelPowerOfARoot(
         plan {

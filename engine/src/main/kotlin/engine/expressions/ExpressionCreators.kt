@@ -23,7 +23,7 @@ fun buildExpression(operator: Operator, operands: List<Expression>, decorators: 
     Expression(
         operator,
         operands.mapIndexed { index, operand -> operand.adjustBracketFor(operator, index) },
-        decorators,
+        decorators
     )
 
 fun xp(n: Int) = xp(n.toBigInteger())
@@ -88,7 +88,8 @@ fun rootOf(radicand: Expression, order: Expression) =
 fun sumOf(vararg operands: Expression) = sumOf(operands.asList())
 
 fun sumOf(operands: List<Expression>): Expression = flattenedNaryExpression(
-    NaryOperator.Sum, operands
+    NaryOperator.Sum,
+    operands
 )
 
 fun getBaseOfPower(expr: Expression): Expression = when (expr.operator) {

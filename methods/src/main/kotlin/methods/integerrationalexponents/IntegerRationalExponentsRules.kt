@@ -10,8 +10,8 @@ import engine.expressions.simplifiedPowerOf
 import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
-import engine.methods.TransformationResult
 import engine.methods.rule
+import engine.methods.ruleResult
 import engine.operators.BinaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
@@ -50,9 +50,9 @@ enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMeth
             )
 
             onPattern(pattern) {
-                TransformationResult(
+                ruleResult(
                     toExpr = transformTo(pattern, Constants.Undefined),
-                    explanation = metadata(Explanation.EvaluateNegativeToRationalExponentAsUndefined),
+                    explanation = metadata(Explanation.EvaluateNegativeToRationalExponentAsUndefined)
                 )
             }
         }
@@ -73,7 +73,7 @@ enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMeth
                     val factorized = primeFactorization
                         .map { (f, n) -> introduce(if (n == BigInteger.ONE) xp(f) else powerOf(xp(f), xp(n))) }
 
-                    TransformationResult(
+                    ruleResult(
                         toExpr = powerOf(productOf(factorized), move(exp)),
                         explanation = metadata(Explanation.FactorizeIntegerUnderRationalExponent),
                         skills = listOf(metadata(Skill.FactorInteger, move(integer)))
@@ -106,7 +106,7 @@ enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMeth
                         it.operator == BinaryExpressionOperator.Power &&
                             it.secondChild.operator == BinaryExpressionOperator.Fraction
                     }
-                TransformationResult(
+                ruleResult(
                     toExpr = productOf(
                         productOf(nonRationalExponents.map { move(it) }),
                         productOf(rationalExponents.map { move(it) })
@@ -168,7 +168,7 @@ enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMeth
                         )
                     }
 
-                    TransformationResult(
+                    ruleResult(
                         toExpr = result,
                         explanation = metadata(Explanation.FindCommonDenominatorOfRationalExponents)
                     )
@@ -211,7 +211,7 @@ enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMeth
                     else -> powerOf(fractionOf(newPower1, newPower2), newExponent)
                 }
 
-                TransformationResult(
+                ruleResult(
                     toExpr = result,
                     explanation = metadata(Explanation.FactorDenominatorOfRationalExponents)
                 )
@@ -228,7 +228,7 @@ enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMeth
             val sum = sumContaining(commonTerm1, commonTerm2)
 
             onPattern(sum) {
-                TransformationResult(
+                ruleResult(
                     toExpr = collectLikeTermsInSum(get(sum)!!, withOptionalRationalCoefficient(common)),
                     explanation = metadata(Explanation.CollectLikeRationalPowers)
                 )

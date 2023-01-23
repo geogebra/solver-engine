@@ -178,6 +178,7 @@ const renderTransformation = (trans, depth = 0) => {
             `${trans.fromExpr} {\\color{#8888ff}\\thickspace\\longmapsto\\thickspace} ${trans.toExpr}`
         )}</div>
         ${renderSteps(trans.steps, depth, depth >= 0 || isThrough)}
+        ${renderTasks(trans.tasks, depth, depth >= 0)}
     </div>`;
 };
 
@@ -194,6 +195,32 @@ const renderSteps = (steps, depth = 0, open = false) => {
                 .join("")}
         </ol>
     </details>`;
+};
+
+const renderTasks = (tasks, depth = 0, open = false) => {
+    if (tasks === null || tasks.length === 0) {
+        return "";
+    }
+    return `
+    <details class="tasks" ${open ? "open" : ""}>
+       <summary>${tasks.length} ${tasks.length === 1 ? "task" : "tasks"}</summary>
+       <ol>
+            ${tasks.map((task) => `<li>${renderTask(task, depth - 1)}</li>`).join("")}
+       </ol>
+    </details>`;
+};
+
+const renderTask = (task, depth = 0) => {
+    return `<div class ="task">
+        Task ${task.taskId}: ${renderExplanation(task.explanation)}
+        ${
+            !task.steps
+                ? renderExpression(task.startExpr)
+                : task.steps.length === 1
+                ? renderTransformation(task.steps[0], depth - 1, depth >= 0)
+                : renderSteps(task.steps, depth - 1, depth >= 0)
+        }
+    </div>`;
 };
 
 const preprocessSteps = (steps) => {
@@ -329,14 +356,14 @@ const buildTest = (trans) => (builder) => {
             .addLine(`method = FILL_ME_IN`)
             .addLine(`inputExpr = "${trans.fromExpr}"`)
             .addLine("")
-            .nest("check", buildTestBody(trans));
+            .nest("check", buildTestTransformation(trans));
     });
 };
 
-const buildTestBody = (trans) => (builder) => {
+const buildTestTransformation = (trans) => (builder) => {
     const throughStep = isThroughStep(trans);
     if (throughStep && !showThroughSteps) {
-        builder.do(buildTestBody(trans.steps[0]));
+        builder.do(buildTestTransformation(trans.steps[0]));
         return;
     }
     if (throughStep) {
@@ -344,18 +371,42 @@ const buildTestBody = (trans) => (builder) => {
     } else {
         builder.addLine(`fromExpr = "${trans.fromExpr}"`).addLine(`toExpr = "${trans.toExpr}"`);
         if (trans.explanation) {
-            builder.nest(`explanation`, (builder) => {
-                // By convention, the name of the explanation enum in the code is
-                // [category]Explanation.[name] given that the key is [category].[name]
-                const key = trans.explanation.key.replace(".", "Explanation.");
-                builder.addLine(`key = ${key}`);
-            });
+            builder.do(buildExplanation(trans));
         }
     }
     if (trans.steps) {
         for (let step of trans.steps) {
-            builder.addLine("").nest("step", buildTestBody(step));
+            builder.addLine("").nest("step", buildTestTransformation(step));
         }
+    }
+    if (trans.tasks) {
+        for (let task of trans.tasks) {
+            builder.addLine("").nest("task", buildTestTask(task));
+        }
+    }
+};
+
+const buildTestTask = (task) => (builder) => {
+    builder.addLine(`taskId = "${task.taskId}"`);
+    if (task.explanation) {
+        builder.do(buildExplanation(task));
+    }
+    if (task.steps) {
+        for (let step of task.steps) {
+            builder.addLine("").nest("step", buildTestTransformation(step));
+        }
+    }
+};
+
+const buildExplanation = (step) => (builder) => {
+    let explanation = step.explanation;
+    if (explanation) {
+        builder.nest(`explanation`, (builder) => {
+            // By convention, the name of the explanation enum in the code is
+            // [category]Explanation.[name] given that the key is [category].[name]
+            const key = explanation.key.replace(".", "Explanation.");
+            builder.addLine(`key = ${key}`);
+        });
     }
 };
 
@@ -423,11 +474,11 @@ const buildURLString = (startURL, data) => {
     }
     url.searchParams.set("precision", data.precision.toString());
     if (data.preferDecimals) {
-        url.searchParams.set("preferDecimals", "true")
+        url.searchParams.set("preferDecimals", "true");
     } else {
-        url.searchParams.delete("preferDecimals")
+        url.searchParams.delete("preferDecimals");
     }
-    url.searchParams.set("solutionVariable", data.solutionVariable)
+    url.searchParams.set("solutionVariable", data.solutionVariable);
     return url.toString();
 };
 

@@ -6,8 +6,8 @@ import engine.expressions.productOf
 import engine.expressions.sumOf
 import engine.methods.Rule
 import engine.methods.RunnerMethod
-import engine.methods.TransformationResult
 import engine.methods.rule
+import engine.methods.ruleResult
 import engine.operators.BinaryExpressionOperator
 import engine.operators.NaryOperator
 import engine.operators.UnaryExpressionOperator
@@ -27,9 +27,9 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
             val missingBracket = condition(AnyPattern()) { it.outerBracket() == Decorator.MissingBracket }
 
             onPattern(missingBracket) {
-                TransformationResult(
+                ruleResult(
                     toExpr = transformTo(missingBracket) { it.removeBrackets().decorate(Decorator.RoundBracket) },
-                    explanation = metadata(Explanation.ReplaceInvisibleBrackets),
+                    explanation = metadata(Explanation.ReplaceInvisibleBrackets)
                 )
             }
         }
@@ -44,7 +44,7 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
             val pattern = sumContaining(innerSum)
 
             onPattern(pattern) {
-                TransformationResult(
+                ruleResult(
                     toExpr = sumOf(
                         get(pattern)!!.children().map { child -> transformTo(child) { it.removeBrackets() } }
                     ),
@@ -60,7 +60,7 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
             val pattern = productContaining(condition(innerProduct) { it.hasBracket() })
 
             onPattern(pattern) {
-                TransformationResult(
+                ruleResult(
                     toExpr = productOf(
                         get(pattern)!!.flattenedProductChildren()
                             .map { child -> transformTo(child) { it.removeBrackets() } }
@@ -78,7 +78,7 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
             val pattern = sumContaining(bracket)
 
             onPattern(pattern) {
-                TransformationResult(
+                ruleResult(
                     toExpr = pattern.substitute(transformTo(number) { it.removeBrackets() }),
                     explanation = metadata(Explanation.RemoveBracketAroundSignedIntegerInSum)
                 )
@@ -91,7 +91,7 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
             val pattern = condition(AnyPattern()) { it.hasBracket() }
 
             onPattern(pattern) {
-                TransformationResult(
+                ruleResult(
                     toExpr = transformTo(pattern) { it.removeBrackets() },
                     explanation = metadata(Explanation.RemoveRedundantBracket)
                 )
@@ -105,7 +105,7 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
             val pattern = plusOf(value)
 
             onPattern(pattern) {
-                TransformationResult(
+                ruleResult(
                     toExpr = move(value),
                     explanation = metadata(Explanation.RemoveRedundantPlusSign)
                 )
@@ -153,7 +153,7 @@ private val normaliseSimplifiedProduct =
             val toExpr = productOf(sortedProdChildren.map { move(it) })
 
             if (toExpr == getProd) null
-            else TransformationResult(
+            else ruleResult(
                 toExpr = toExpr,
                 explanation = metadata(Explanation.NormaliseSimplifiedProduct)
             )

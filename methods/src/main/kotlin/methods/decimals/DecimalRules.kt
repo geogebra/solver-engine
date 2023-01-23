@@ -9,8 +9,8 @@ import engine.expressions.sumOf
 import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
-import engine.methods.TransformationResult
 import engine.methods.rule
+import engine.methods.ruleResult
 import engine.patterns.ArbitraryVariablePattern
 import engine.patterns.ConditionPattern
 import engine.patterns.RecurringDecimalPattern
@@ -57,7 +57,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
                         val entireNumber = decimalValue.scaleByPowerOfTen(scale).toBigInteger()
                         val denominator = BigInteger.TEN.pow(scale)
 
-                        TransformationResult(
+                        ruleResult(
                             toExpr = fractionOf(
                                 introduce(xp(entireNumber)),
                                 introduce(xp(denominator))
@@ -90,7 +90,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
 
                 val denominator = BigDecimal.ONE.scaleByPowerOfTen(scale1) - BigDecimal.ONE.scaleByPowerOfTen(scale2)
 
-                TransformationResult(
+                ruleResult(
                     toExpr = fractionOf(
                         sumOf(introduce(xp(entireNumber)), negOf(introduce(xp(nonRecurringPart)))),
                         introduce(xp(denominator))
@@ -106,7 +106,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
             val decimal = RecurringDecimalPattern()
 
             onPattern(decimal) {
-                TransformationResult(
+                ruleResult(
                     toExpr = equationOf(introduce(xp("x")), move(decimal)),
                     explanation = metadata(Explanation.ConvertRecurringDecimalToEquation)
                 )
@@ -145,6 +145,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
                 if (scale1 != 0) {
                     steps.add(
                         Transformation(
+                            type = Transformation.Type.Rule,
                             fromExpr = get(equation)!!,
                             toExpr = scaledEquation1,
                             explanation = metadata(
@@ -157,6 +158,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
                 }
                 steps.add(
                     Transformation(
+                        type = Transformation.Type.Rule,
                         fromExpr = get(equation)!!,
                         toExpr = scaledEquation2,
                         explanation = metadata(
@@ -167,7 +169,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
                     )
                 )
 
-                TransformationResult(
+                ruleResult(
                     toExpr = equationSystemOf(scaledEquation1, scaledEquation2),
                     explanation = metadata(Explanation.MakeEquationSystemForRecurringDecimal),
                     steps = steps
@@ -194,14 +196,15 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
                 val d2 = getValue(decimal2)
 
                 when {
-                    d1.repetend == d2.repetend -> TransformationResult(
+                    d1.repetend == d2.repetend -> ruleResult(
                         toExpr = equationOf(
                             productOf(
                                 integerOp(lhs1.integerCoefficient, lhs2.integerCoefficient) { n1, n2 -> n2 - n1 },
                                 move(variable)
                             ),
                             combineTo(
-                                decimal1, decimal2,
+                                decimal1,
+                                decimal2,
                                 xp((d2.nonRepeatingValue - d1.nonRepeatingValue).toBigInteger())
                             )
                         ),
@@ -223,7 +226,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
             val equation = commutativeEquationOf(productOf(coefficient, variable), rhs)
 
             onPattern(equation) {
-                TransformationResult(
+                ruleResult(
                     toExpr = fractionOf(move(rhs), move(coefficient)),
                     explanation = metadata(Explanation.SolveLinearEquation)
                 )
@@ -248,7 +251,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
                 val maxDecimalPlaces = max(numeratorValue.scale(), denominatorValue.scale())
                 val multiplier = introduce(xp(BigInteger.TEN.pow(maxDecimalPlaces)))
                 when {
-                    maxDecimalPlaces > 0 && numeratorValue != denominatorValue -> TransformationResult(
+                    maxDecimalPlaces > 0 && numeratorValue != denominatorValue -> ruleResult(
                         toExpr = fractionOf(
                             productOf(move(numerator), multiplier),
                             productOf(move(denominator), multiplier)
@@ -272,7 +275,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
             val product = productContaining(numerator, divideBy(denominator))
 
             onPattern(product) {
-                TransformationResult(
+                ruleResult(
                     toExpr = product.substitute(fractionOf(move(numerator), move(denominator))),
                     explanation = metadata(
                         Explanation.TurnDivisionOfDecimalsIntoFraction,
@@ -308,7 +311,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(product) {
                 when {
-                    isBound(multiplier) -> TransformationResult(
+                    isBound(multiplier) -> ruleResult(
                         toExpr = product.substitute(
                             numericOp(base, multiplier) { n1, n2 ->
                                 // stripTrailingZeros is required because otherwise integer result remain decimals
@@ -320,7 +323,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
                         explanation = metadata(Explanation.EvaluateDecimalProduct, move(base), move(multiplier))
                     )
 
-                    else -> TransformationResult(
+                    else -> ruleResult(
                         toExpr = product.substitute(
                             numericOp(base, divisor) { n1, n2 ->
                                 // See comment in previous case
@@ -349,7 +352,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
                         metadata(Explanation.EvaluateDecimalAddition, move(term1), move(term2))
                 }
 
-                TransformationResult(
+                ruleResult(
                     toExpr = sum.substitute(numericOp(term1, term2) { n1, n2 -> n1 + n2 }),
                     explanation = explanation
                 )
@@ -379,7 +382,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
                         five.pow(maxPower - powerOfFive)
                 )
 
-                TransformationResult(
+                ruleResult(
                     toExpr = fractionOf(
                         productOf(move(numerator), introduce(expandWith)),
                         productOf(move(denominator), introduce(expandWith))
@@ -405,7 +408,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
                     return@onPattern null
                 }
 
-                TransformationResult(
+                ruleResult(
                     toExpr = numericOp(numerator) { it.movePointLeft(powerOfTen) },
                     explanation = metadata(Explanation.ConvertFractionWithPowerOfTenDenominatorToDecimal)
                 )
@@ -420,7 +423,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
             val power = powerOf(base, exponent)
 
             onPattern(power) {
-                TransformationResult(
+                ruleResult(
                     toExpr = numericOp(base, exponent) { n1, n2 -> n1.pow(n2.toInt()) },
                     explanation = metadata(Explanation.EvaluateDecimalPowerDirectly, move(base), move(exponent))
                 )

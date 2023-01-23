@@ -2,7 +2,7 @@ package methods.integerrationalexponents
 
 import engine.expressions.base
 import engine.expressions.exponent
-import engine.methods.Plan
+import engine.methods.CompositeMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
@@ -17,7 +17,7 @@ import methods.general.NormalizationRules
 import methods.integerarithmetic.IntegerArithmeticRules
 import methods.integerarithmetic.simplifyIntegersInExpression
 
-enum class IntegerRationalExponentsPlans(override val runner: Plan) : RunnerMethod {
+enum class IntegerRationalExponentsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
     /**
      * Transform [([x ^ a]) ^ b] to [x ^ a * b] and simplify the

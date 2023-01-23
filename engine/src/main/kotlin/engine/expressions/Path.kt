@@ -31,32 +31,25 @@ data class ChildPath(val parent: Path, val index: Int) : Path {
 
     override fun relativeTo(path: Path) = when {
         path is RootPath -> this
-        this == path -> RootPath
+        this == path -> RootPath()
         this.length <= path.length -> this
         else -> parent.relativeTo(path).child(index)
     }
 }
 
-object RootPath : Path {
-    override fun toString() = "."
+data class RootPath(val rootId: String = ".") : Path {
+    override fun toString() = rootId
     override val length = 0
 
     override fun relativeTo(path: Path) = this
 }
 
-fun pathOf(vararg indexes: Int): Path {
-    var path: Path = RootPath
-    for (i in indexes) {
-        path = path.child(i)
-    }
-    return path
-}
-
 fun parsePath(s: String): Path {
     val pieces = s.split('/')
-    if (pieces[0] != ".") throw IllegalArgumentException("$s is not a valid path")
+    val rootId = pieces[0]
+    if (rootId != "." && !rootId.startsWith('#')) throw IllegalArgumentException("$s is not a valid path")
 
-    var path: Path = RootPath
+    var path: Path = RootPath(rootId)
     for (piece in pieces.drop(1)) {
         path = path.child(piece.toInt())
     }

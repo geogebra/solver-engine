@@ -2,7 +2,7 @@ package methods.mixednumbers
 
 import engine.context.Curriculum
 import engine.context.ResourceData
-import engine.methods.Plan
+import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
@@ -14,7 +14,7 @@ import methods.general.GeneralRules
 import methods.general.NormalizationRules
 import methods.integerarithmetic.IntegerArithmeticRules
 
-enum class MixedNumbersPlans(override val runner: Plan) : RunnerMethod {
+enum class MixedNumbersPlans(override val runner: CompositeMethod) : RunnerMethod {
 
     ConvertMixedNumberToImproperFraction(
         plan {

@@ -10,7 +10,7 @@ import engine.steps.metadata.MetadataKey
 data class InStepItem(
     val method: Method,
     val explanation: MetadataKey,
-    val optional: Boolean,
+    val optional: Boolean
 )
 
 interface InStep : StepsProducer {
@@ -42,6 +42,7 @@ interface InStep : StepsProducer {
 
             steps.add(
                 Transformation(
+                    type = Transformation.Type.Plan,
                     explanation = Metadata(explanation, listOf()),
                     fromExpr = prevSub,
                     toExpr = lastSub,
@@ -119,6 +120,7 @@ private class InStepRunner(val builder: StepsBuilder, val ctx: Context, stepSubs
 
         builder.addStep(
             Transformation(
+                type = Transformation.Type.Plan,
                 explanation = Metadata(stepBuilder.explanationKey, emptyList()),
                 fromExpr = builder.lastSub,
                 toExpr = newSub,

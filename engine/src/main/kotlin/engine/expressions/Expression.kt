@@ -129,7 +129,7 @@ class Expression internal constructor(
 
     fun withOrigin(newOrigin: Origin) = Expression(operator, operands, decorators, newOrigin, label)
 
-    fun pathMappings(rootPath: Path = RootPath) = origin.computePathMappings(rootPath, children())
+    fun pathMappings(rootPath: Path = RootPath()) = origin.computePathMappings(rootPath, children())
 
     override fun toString(): String {
         val s = decorators.fold(operator.readableString(operands)) { acc, dec -> dec.decorateString(acc) }

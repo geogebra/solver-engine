@@ -15,8 +15,8 @@ import engine.expressions.sumOf
 import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
-import engine.methods.TransformationResult
 import engine.methods.rule
+import engine.methods.ruleResult
 import engine.operators.BinaryExpressionOperator
 import engine.operators.NaryOperator
 import engine.patterns.AnyPattern
@@ -52,7 +52,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                 val restLeft = if (isBound(leftSum)) restOf(leftSum) else Constants.Zero
                 val restRight = if (isBound(rightSum)) restOf(rightSum) else Constants.Zero
 
-                TransformationResult(
+                ruleResult(
                     toExpr = equationOf(restLeft, restRight),
                     explanation = metadata(Explanation.CancelCommonTermsOnBothSides)
                 )
@@ -71,7 +71,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
                 val negatedConstants = simplifiedNegOf(constants)
 
-                TransformationResult(
+                ruleResult(
                     toExpr = equationOf(
                         sumOf(move(lhs), negatedConstants),
                         sumOf(move(rhs), negatedConstants)
@@ -93,7 +93,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
                 val negatedConstants = simplifiedNegOf(constants)
 
-                TransformationResult(
+                ruleResult(
                     toExpr = equationOf(
                         sumOf(move(lhs), negatedConstants),
                         sumOf(move(rhs), negatedConstants)
@@ -113,7 +113,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             onEquation(lhs, rhs) {
                 val negatedVariable = simplifiedNegOf(move(solutionVariable))
 
-                TransformationResult(
+                ruleResult(
                     toExpr = equationOf(
                         sumOf(move(lhs), negatedVariable),
                         sumOf(move(rhs), negatedVariable)
@@ -131,7 +131,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             val rhs = AnyPattern()
 
             onEquation(lhs, rhs) {
-                TransformationResult(
+                ruleResult(
                     toExpr = equationOf(move(variable), simplifiedNegOf(move(rhs))),
                     explanation = metadata(Explanation.NegateBothSides)
                 )
@@ -151,7 +151,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                     val inverse = if (coefficient.numerator() == Constants.One) coefficient.denominator()
                     else fractionOf(coefficient.denominator(), coefficient.numerator())
 
-                    TransformationResult(
+                    ruleResult(
                         toExpr = equationOf(
                             productOf(move(lhs), inverse),
                             productOf(move(rhs), inverse)
@@ -173,7 +173,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             onEquation(lhs, rhs) {
                 when (val coefficient = get(lhs::coefficient)!!) {
                     Constants.One -> null
-                    else -> TransformationResult(
+                    else -> ruleResult(
                         toExpr = equationOf(
                             fractionOf(move(lhs), coefficient),
                             fractionOf(move(rhs), coefficient)
@@ -191,7 +191,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             val rhs = AnyPattern()
 
             onEquation(lhs, rhs) {
-                TransformationResult(
+                ruleResult(
                     toExpr = equationOf(move(rhs), move(lhs)),
                     explanation = metadata(Explanation.FlipEquation)
                 )
@@ -204,7 +204,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             val value = ConstantInSolutionVariablePattern()
 
             onEquation(value, value) {
-                TransformationResult(
+                ruleResult(
                     toExpr = solutionOf(xp(context.solutionVariable!!), Constants.Reals),
                     explanation = metadata(Explanation.ExtractSolutionFromIdentity)
                 )
@@ -219,7 +219,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
             onEquation(lhs, rhs) {
                 if (get(lhs) != get(rhs)) {
-                    TransformationResult(
+                    ruleResult(
                         toExpr = solutionOf(xp(context.solutionVariable!!), solutionSetOf()),
                         explanation = metadata(Explanation.ExtractSolutionFromContradiction)
                     )
@@ -236,7 +236,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             val rhs = ConstantInSolutionVariablePattern()
 
             onEquation(lhs, rhs) {
-                TransformationResult(
+                ruleResult(
                     toExpr = solutionOf(move(lhs), solutionSetOf(move(rhs))),
                     explanation = metadata(Explanation.ExtractSolutionFromEquationInSolvedForm)
                 )
@@ -266,7 +266,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                     lcm.lcm(extractDenominator(rhsVal))
                 }
 
-                TransformationResult(
+                ruleResult(
                     toExpr = equationOf(
                         productOf(move(lhs), xp(lcm)),
                         productOf(move(rhs), xp(lcm))
@@ -297,6 +297,7 @@ private val denominatorDetectingPattern = optionalNegOf(
         integerDenominatorFraction
     )
 )
+
 private fun extractDenominator(expression: Expression): BigInteger {
     val match = denominatorDetectingPattern.findMatches(emptyContext, subexpression = expression).firstOrNull()
     return if (match != null) {
