@@ -121,7 +121,7 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
                         .map { (f, n) -> introduce(if (n == BigInteger.ONE) xp(f) else powerOf(xp(f), xp(n))) }
 
                     ruleResult(
-                        toExpr = rootOf(transform(integer, productOf(factorized)), move(root.order)),
+                        toExpr = rootOf(transform(integer, productOf(factorized)), get(root.order)),
                         explanation = metadata(Explanation.FactorizeIntegerUnderRoot, move(integer)),
                         skills = listOf(metadata(Skill.FactorInteger, move(integer)))
                     )
@@ -223,7 +223,7 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
             onPattern(product) {
                 ruleResult(
                     toExpr = product.substitute(
-                        rootOf(productOf(move(radicand1), move(radicand2)), move(order))
+                        rootOf(productOf(move(radicand1), move(radicand2)), factor(order))
                     ),
                     explanation = metadata(Explanation.MultiplyNthRoots)
                 )
@@ -242,7 +242,7 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
             onPattern(root) {
                 ruleResult(
                     toExpr = productOf(
-                        get(product)!!.children().map { rootOf(move(it), move(root.order)) }
+                        get(product).children().map { rootOf(move(it), move(root.order)) }
                     ),
                     explanation = metadata(Explanation.SplitRootOfProduct)
                 )
@@ -286,7 +286,7 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     toExpr = powerOf(
                         powerOf(
-                            rootOf(move(radicand), move(root.order)),
+                            rootOf(get(radicand), move(root.order)),
                             move(root.order)
                         ),
                         integerOp(root.order, exponent) { n1, n2 -> n2 / n1 }
@@ -328,7 +328,7 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(power) {
                 ruleResult(
-                    toExpr = rootOf(powerOf(move(radicand), move(exponent)), move(root.order)),
+                    toExpr = rootOf(powerOf(get(radicand), move(exponent)), move(root.order)),
                     explanation = metadata(Explanation.TurnPowerOfRootToRootOfPower, move(power))
                 )
             }
@@ -347,7 +347,7 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
             onPattern(outerRoot) {
                 ruleResult(
                     toExpr = rootOf(
-                        move(radicand),
+                        get(radicand),
                         productOf(move(outerRoot.order), move(innerRoot.order))
                     ),
                     explanation = metadata(Explanation.SimplifyRootOfRoot)
@@ -373,7 +373,7 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
                             powerOf(move(coefficient), move(root.order)),
                             move(radicand)
                         ),
-                        move(root.order)
+                        get(root.order)
                     ),
                     explanation = metadata(Explanation.PutRootCoefficientUnderRoot)
                 )
@@ -439,7 +439,7 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
             val pattern = withOptionalIntegerCoefficient(cond)
 
             onPattern(pattern) {
-                val product = get(prod)!!
+                val product = get(prod)
                 val order = product.firstChild.secondChild
 
                 ruleResult(
@@ -469,7 +469,7 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(sum) {
                 ruleResult(
-                    toExpr = collectLikeTermsInSum(get(sum)!!, withOptionalRationalCoefficient(common)),
+                    toExpr = collectLikeTermsInSum(get(sum), withOptionalRationalCoefficient(common)),
                     explanation = metadata(Explanation.CollectLikeRoots)
                 )
             }

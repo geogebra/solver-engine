@@ -12,6 +12,14 @@ data class PathMapping(
 
 enum class PathMappingType {
     /**
+     * Used when a subexpression of a sum or product shifts
+     * to the left or right because some terms to its left
+     * have been combined or expanded, e.g. the `x` in
+     * `1 + 2 + x -> 3 + x`.
+     */
+    Shift,
+
+    /**
      * Used when an expression stays the same, but moves to a
      * different position in the resulting expression, e.g.
      * `-3x + 2 + x^2 -> x^2 - 3x + 2` or the `x` and the `3`

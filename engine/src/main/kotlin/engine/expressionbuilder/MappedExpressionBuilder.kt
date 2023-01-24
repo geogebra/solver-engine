@@ -6,6 +6,7 @@ import engine.expressions.Distribute
 import engine.expressions.Expression
 import engine.expressions.Factor
 import engine.expressions.Label
+import engine.expressions.Move
 import engine.expressions.New
 import engine.expressions.divideBy
 import engine.expressions.negOf
@@ -38,11 +39,32 @@ open class MappedExpressionBuilder(
 
     fun introduce(expression: Expression): Expression = expression.withOrigin(New)
 
+    /**
+     * Returns true if the given pattern is bound to a value in the match.
+     */
+    fun isBound(pattern: Pattern): Boolean {
+        return match.getLastBinding(pattern) != null
+    }
+
+    /**
+     * Returns the last subexpression bound to pattern
+     */
+    fun get(expressionProvider: ExpressionProvider): Expression {
+        val expressions = expressionProvider.getBoundExprs(match)
+        return when (expressions.size) {
+            0 -> throw EmptyExpressionProviderException()
+            1 -> expressions[0]
+            else -> expressions[0].withOrigin(Factor(expressions))
+        }
+    }
+
+    fun get(getExpression: (Match) -> Expression?) = getExpression(match)
+
     fun move(expressionProvider: ExpressionProvider): Expression {
         val expressions = expressionProvider.getBoundExprs(match)
         return when (expressions.size) {
-            0 -> throw MoveEmptyExpressionProviderException()
-            1 -> expressions[0]
+            0 -> throw EmptyExpressionProviderException()
+            1 -> expressions[0].withOrigin(Move(expressions[0]))
             else -> expressions[0].withOrigin(Factor(expressions))
         }
     }
@@ -62,20 +84,6 @@ open class MappedExpressionBuilder(
     // TODO
     @Suppress("UnusedPrivateMember")
     fun cancel(expressionProvider: ExpressionProvider, inExpression: Expression) = inExpression
-
-    /**
-     * Returns true if the given pattern is bound to a value in the match.
-     */
-    fun isBound(pattern: Pattern): Boolean {
-        return match.getLastBinding(pattern) != null
-    }
-
-    /**
-     * Returns the last subexpression bound to pattern
-     */
-    fun get(pattern: ExpressionProvider): Expression? = pattern.getBoundExpr(match)
-
-    fun get(getExpression: (Match) -> Expression?) = getExpression(match)
 
     /**
      * Returns the numeric value bound to the argument in the match.
@@ -232,4 +240,4 @@ open class MappedExpressionBuilder(
         mappedExpression.wrapIf(pattern, ::divideBy)
 }
 
-class MoveEmptyExpressionProviderException : Exception("need at least one expression")
+class EmptyExpressionProviderException : Exception("No expressions were bound by the expression provider")

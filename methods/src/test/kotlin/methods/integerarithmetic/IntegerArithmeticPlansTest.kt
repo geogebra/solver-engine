@@ -24,7 +24,7 @@ class IntegerArithmeticPlansTest {
                         toPaths("./0")
                     }
 
-                    move {
+                    shift {
                         fromPaths("./2")
                         toPaths("./1")
                     }
@@ -225,7 +225,7 @@ class IntegerArithmeticPlansTest {
                             toPaths("./0")
                         }
 
-                        move {
+                        shift {
                             fromPaths("./2")
                             toPaths("./1")
                         }

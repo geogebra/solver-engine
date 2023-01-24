@@ -101,7 +101,7 @@ enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMeth
                 notRationalExponent
             )
             onPattern(product) {
-                val (rationalExponents, nonRationalExponents) = get(product)!!.children()
+                val (rationalExponents, nonRationalExponents) = get(product).children()
                     .partition {
                         it.operator == BinaryExpressionOperator.Power &&
                             it.secondChild.operator == BinaryExpressionOperator.Fraction
@@ -141,18 +141,18 @@ enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMeth
                         integerOp(exponent1.denominator, exponent2.denominator) { n1, n2 -> n1 / n1.gcd(n2) }
 
                     val fraction1 = when (expandingTerm1) {
-                        Constants.One -> move(exponent1)
+                        Constants.One -> get(exponent1)
                         else -> fractionOf(
-                            productOf(move(exponent1.numerator), expandingTerm1),
-                            productOf(move(exponent1.denominator), expandingTerm1)
+                            productOf(get(exponent1.numerator), expandingTerm1),
+                            productOf(get(exponent1.denominator), expandingTerm1)
                         )
                     }
 
                     val fraction2 = when (expandingTerm2) {
-                        Constants.One -> move(exponent2)
+                        Constants.One -> get(exponent2)
                         else -> fractionOf(
-                            productOf(move(exponent2.numerator), expandingTerm2),
-                            productOf(move(exponent2.denominator), expandingTerm2)
+                            productOf(get(exponent2.numerator), expandingTerm2),
+                            productOf(get(exponent2.denominator), expandingTerm2)
                         )
                     }
 
@@ -229,7 +229,7 @@ enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMeth
 
             onPattern(sum) {
                 ruleResult(
-                    toExpr = collectLikeTermsInSum(get(sum)!!, withOptionalRationalCoefficient(common)),
+                    toExpr = collectLikeTermsInSum(get(sum), withOptionalRationalCoefficient(common)),
                     explanation = metadata(Explanation.CollectLikeRationalPowers)
                 )
             }

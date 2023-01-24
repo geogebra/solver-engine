@@ -146,7 +146,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
                     steps.add(
                         Transformation(
                             type = Transformation.Type.Rule,
-                            fromExpr = get(equation)!!,
+                            fromExpr = get(equation),
                             toExpr = scaledEquation1,
                             explanation = metadata(
                                 Explanation.MultiplyRecurringDecimal,
@@ -159,7 +159,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
                 steps.add(
                     Transformation(
                         type = Transformation.Type.Rule,
-                        fromExpr = get(equation)!!,
+                        fromExpr = get(equation),
                         toExpr = scaledEquation2,
                         explanation = metadata(
                             Explanation.MultiplyRecurringDecimal,
@@ -253,8 +253,8 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
                 when {
                     maxDecimalPlaces > 0 && numeratorValue != denominatorValue -> ruleResult(
                         toExpr = fractionOf(
-                            productOf(move(numerator), multiplier),
-                            productOf(move(denominator), multiplier)
+                            productOf(get(numerator), multiplier),
+                            productOf(get(denominator), multiplier)
                         ),
                         explanation = metadata(
                             Explanation.MultiplyFractionOfDecimalsByPowerOfTen,
@@ -384,8 +384,8 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
 
                 ruleResult(
                     toExpr = fractionOf(
-                        productOf(move(numerator), introduce(expandWith)),
-                        productOf(move(denominator), introduce(expandWith))
+                        productOf(get(numerator), introduce(expandWith)),
+                        productOf(get(denominator), introduce(expandWith))
                     ),
                     explanation = metadata(Explanation.ExpandFractionToPowerOfTenDenominator)
                 )

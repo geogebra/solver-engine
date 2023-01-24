@@ -231,7 +231,7 @@ class ConstantExpressionsPlansTest {
             }
 
             step {
-                fromExpr = "root[12, 2* 4]"
+                fromExpr = "root[12, 2 * 4]"
                 toExpr = "root[12, 8]"
             }
         }

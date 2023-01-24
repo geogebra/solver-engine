@@ -72,6 +72,14 @@ open class PathMappingsCheck(mappings: Sequence<PathMapping>, private val rootPa
         addPathMapping(PathMappingType.Combine, init)
     }
 
+    fun shift(init: PathMappingPathsBuilder.() -> Unit) {
+        addPathMapping(PathMappingType.Shift, init)
+    }
+
+    fun shift(fromPath: String, toPath: String) {
+        addPathMapping(PathMapping(listOf(parsePath(fromPath)), PathMappingType.Shift, listOf(parsePath((toPath)))))
+    }
+
     fun move(init: PathMappingPathsBuilder.() -> Unit) {
         addPathMapping(PathMappingType.Move, init)
     }
@@ -80,18 +88,18 @@ open class PathMappingsCheck(mappings: Sequence<PathMapping>, private val rootPa
         addPathMapping(PathMapping(listOf(parsePath(fromPath)), PathMappingType.Move, listOf(parsePath((toPath)))))
     }
 
+    fun keep(vararg paths: String) {
+        for (path in paths) {
+            shift(path, path)
+        }
+    }
+
     fun factor(init: PathMappingPathsBuilder.() -> Unit) {
         addPathMapping(PathMappingType.Factor, init)
     }
 
     fun distribute(init: PathMappingPathsBuilder.() -> Unit) {
         addPathMapping(PathMappingType.Distribute, init)
-    }
-
-    fun keep(vararg paths: String) {
-        for (path in paths) {
-            move(path, path)
-        }
     }
 
     fun transform(init: PathMappingPathsBuilder.() -> Unit) {

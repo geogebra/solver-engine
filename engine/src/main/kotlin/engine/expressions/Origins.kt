@@ -15,7 +15,7 @@ class Root(private val rootPath: Path = RootPath()) : Origin(rootPath) {
         expression.operands[index].withOrigin(Child(expression, index))
 
     override fun computePathMappings(rootPath: Path, children: List<Expression>) =
-        sequenceOf(PathMapping(listOf(this.rootPath), PathMappingType.Move, listOf(rootPath)))
+        sequenceOf(PathMapping(listOf(this.rootPath), PathMappingType.Shift, listOf(rootPath)))
 
     override fun equals(other: Any?) = this === other ||
         other is Root && rootPath == other.rootPath
@@ -71,6 +71,21 @@ object Unknown : Origin() {
         expression.operands[index].withOrigin(Unknown)
 
     override fun computePathMappings(rootPath: Path, children: List<Expression>) = emptySequence<PathMapping>()
+}
+
+class Move(val from: Expression) : Origin() {
+
+    override fun computeChildOrigin(expression: Expression, index: Int) =
+        expression.operands[index].withOrigin(Move(from.nthChild(index)))
+
+    override fun computePathMappings(rootPath: Path, children: List<Expression>): Sequence<PathMapping> {
+        val fromPath = from.origin.path
+        return if (fromPath == null) {
+            sequenceOf(PathMapping(listOf(), PathMappingType.Introduce, listOf(rootPath)))
+        } else {
+            sequenceOf(PathMapping(listOf(fromPath), PathMappingType.Move, listOf(rootPath)))
+        }
+    }
 }
 
 class Combine(val from: List<Expression>) : Origin() {

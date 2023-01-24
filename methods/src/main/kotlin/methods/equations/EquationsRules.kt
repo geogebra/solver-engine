@@ -73,8 +73,8 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
                 ruleResult(
                     toExpr = equationOf(
-                        sumOf(move(lhs), negatedConstants),
-                        sumOf(move(rhs), negatedConstants)
+                        sumOf(get(lhs), negatedConstants),
+                        sumOf(get(rhs), negatedConstants)
                     ),
                     explanation = metadata(Explanation.MoveConstantsToTheLeft)
                 )
@@ -95,8 +95,8 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
                 ruleResult(
                     toExpr = equationOf(
-                        sumOf(move(lhs), negatedConstants),
-                        sumOf(move(rhs), negatedConstants)
+                        sumOf(get(lhs), negatedConstants),
+                        sumOf(get(rhs), negatedConstants)
                     ),
                     explanation = metadata(Explanation.MoveConstantsToTheRight)
                 )
@@ -115,8 +115,8 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
                 ruleResult(
                     toExpr = equationOf(
-                        sumOf(move(lhs), negatedVariable),
-                        sumOf(move(rhs), negatedVariable)
+                        sumOf(get(lhs), negatedVariable),
+                        sumOf(get(rhs), negatedVariable)
                     ),
                     explanation = metadata(Explanation.MoveVariablesToTheLeft)
                 )
@@ -132,7 +132,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
             onEquation(lhs, rhs) {
                 ruleResult(
-                    toExpr = equationOf(move(variable), simplifiedNegOf(move(rhs))),
+                    toExpr = equationOf(get(variable), simplifiedNegOf(move(rhs))),
                     explanation = metadata(Explanation.NegateBothSides)
                 )
             }
@@ -153,8 +153,8 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
                     ruleResult(
                         toExpr = equationOf(
-                            productOf(move(lhs), inverse),
-                            productOf(move(rhs), inverse)
+                            productOf(get(lhs), inverse),
+                            productOf(get(rhs), inverse)
                         ),
                         explanation = metadata(Explanation.MultiplyByInverseCoefficientOfVariable)
                     )
@@ -175,8 +175,8 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                     Constants.One -> null
                     else -> ruleResult(
                         toExpr = equationOf(
-                            fractionOf(move(lhs), coefficient),
-                            fractionOf(move(rhs), coefficient)
+                            fractionOf(get(lhs), coefficient),
+                            fractionOf(get(rhs), coefficient)
                         ),
                         explanation = metadata(Explanation.DivideByCoefficientOfVariable)
                     )
@@ -252,14 +252,14 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             onEquation(lhs, rhs) {
                 var lcm = BigInteger.ONE
 
-                val lhsVal = get(lhs)!!
+                val lhsVal = get(lhs)
                 lcm = if (lhsVal.operator == NaryOperator.Sum) {
                     lhsVal.children().map { extractDenominator(it) }.fold(lcm) { curr, new -> curr.lcm(new) }
                 } else {
                     lcm.lcm(extractDenominator(lhsVal))
                 }
 
-                val rhsVal = get(rhs)!!
+                val rhsVal = get(rhs)
                 lcm = if (rhsVal.operator == NaryOperator.Sum) {
                     rhsVal.children().map { extractDenominator(it) }.fold(lcm) { curr, new -> curr.lcm(new) }
                 } else {
@@ -268,8 +268,8 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
                 ruleResult(
                     toExpr = equationOf(
-                        productOf(move(lhs), xp(lcm)),
-                        productOf(move(rhs), xp(lcm))
+                        productOf(get(lhs), xp(lcm)),
+                        productOf(get(rhs), xp(lcm))
                     ),
                     explanation = metadata(Explanation.MultiplyEquationByLCD)
                 )

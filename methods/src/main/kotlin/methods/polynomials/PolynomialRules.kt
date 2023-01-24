@@ -44,7 +44,7 @@ enum class PolynomialRules(override val runner: Rule) : RunnerMethod {
             onPattern(sum) {
                 ruleResult(
                     toExpr = collectLikeTermsInSum(
-                        get(sum)!!,
+                        get(sum),
                         withOptionalConstantCoefficient(common),
                         Label.A
                     ),
@@ -66,7 +66,7 @@ private val collectUnitaryMonomialsInProduct = rule {
     val negProduct = optionalNegOf(product)
 
     onPattern(negProduct) {
-        val factors = get(product)!!.flattenedProductChildren()
+        val factors = get(product).flattenedProductChildren()
         val monomialFactorPattern = MonomialPattern(commonVariable)
         val monomialFactors = mutableListOf<Expression>()
         val constantFactors = mutableListOf<Expression>()
@@ -175,7 +175,7 @@ private val distributeProductToIntegerPower = rule {
     val power = powerOf(product, exponent)
 
     onPattern(power) {
-        val factors = get(product)!!.flattenedProductChildren()
+        val factors = get(product).flattenedProductChildren()
         val (constantFactors, otherFactors) = factors.partition { it.isConstant() }
         val factorPowers = mutableListOf<Expression>()
         if (constantFactors.isNotEmpty()) {
@@ -194,7 +194,7 @@ private val normalizePolynomial = rule {
     val sum = sumContaining(MonomialPattern(commonVariable))
 
     onPattern(sum) {
-        val terms = get(sum)!!.children()
+        val terms = get(sum).children()
         val monomialPattern = MonomialPattern(commonVariable)
 
         // Find the degree of each term so we can decide whether the sum is normalized already.

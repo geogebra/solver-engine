@@ -29,8 +29,8 @@ class SubstituteTest {
         check {
             toExpr = "y + 1"
 
-            introduce("./0")
             keep("./1")
+            introduce("./0")
         }
     }
 
@@ -42,8 +42,8 @@ class SubstituteTest {
         check {
             toExpr = "(x + 1)(x - y)(t - 1)"
 
-            introduce("./0/1")
             keep("./0/0", "./1", "./2")
+            introduce("./0/1")
         }
     }
 
@@ -51,7 +51,12 @@ class SubstituteTest {
     fun testSwap() = testMethod {
         method = TestSubstituteMethod {
             val second = it.secondChild
-            second to sumOf(second.secondChild, second.firstChild)
+            val swappedSum = sumOf(
+                second.secondChild.withOrigin(Move(second.secondChild)),
+                second.firstChild.withOrigin(Move(second.firstChild))
+            )
+
+            second to swappedSum
         }
         inputExpr = "2(5x + 2y)"
 
@@ -86,7 +91,10 @@ class SubstituteTest {
         method = TestSubstituteMethod {
             it to productOf(
                 it.firstChild.secondChild.withOrigin(Factor(it.firstChild.secondChild, it.secondChild.secondChild)),
-                sumOf(it.firstChild.firstChild, it.secondChild.firstChild)
+                sumOf(
+                    it.firstChild.firstChild.withOrigin(Move(it.firstChild.firstChild)),
+                    it.secondChild.firstChild.withOrigin(Move(it.secondChild.firstChild))
+                )
             )
         }
         inputExpr = "2x + [1/3]x"
@@ -109,7 +117,11 @@ class SubstituteTest {
             val product = it.firstChild
             val x = product.firstChild.withOrigin(Distribute(product.firstChild))
             val sum = product.secondChild
-            it to sumOf(productOf(x, sum.firstChild), productOf(sum.secondChild, x), it.secondChild)
+            it to sumOf(
+                productOf(x, sum.firstChild.withOrigin(Move(sum.firstChild))),
+                productOf(sum.secondChild.withOrigin(Move(sum.secondChild)), x),
+                it.secondChild
+            )
         }
         inputExpr = "x(sqrt[3] + 3) + 1"
 
@@ -128,7 +140,7 @@ class SubstituteTest {
                 toPaths("./1/1")
             }
 
-            move("./1", "./2")
+            shift("./1", "./2")
         }
     }
 
@@ -143,10 +155,9 @@ class SubstituteTest {
         check {
             toExpr = "[1/2x] + 2*2y"
 
-            keep("./0")
-            move("./1/0", "./1/0")
+            keep("./0", "./1/0")
             transform("./1/1", "./1/1/0")
-            move("./1/2", "./1/1/1")
+            shift("./1/2", "./1/1/1")
         }
     }
 
@@ -157,8 +168,6 @@ class SubstituteTest {
 
         check {
             toExpr = "x + 1"
-
-            keep(".")
         }
     }
 }

@@ -326,7 +326,7 @@ private val factorMinusFromSum =
 
         onPattern(sum) {
             ruleResult(
-                toExpr = negOf(sumOf(get(sum)!!.children().map { it.firstChild })),
+                toExpr = negOf(sumOf(get(sum).children().map { move(it.firstChild) })),
                 explanation = metadata(Explanation.FactorMinusFromSum)
             )
         }
@@ -362,7 +362,7 @@ private val distributePowerOfProduct =
 
         onPattern(pattern) {
             ruleResult(
-                toExpr = productOf(get(product)!!.children().map { powerOf(move(it), move(exponent)) }),
+                toExpr = productOf(get(product).children().map { powerOf(move(it), move(exponent)) }),
                 explanation = metadata(Explanation.DistributePowerOfProduct)
             )
         }
@@ -521,12 +521,12 @@ private val expandDoubleBrackets =
         val prod = productContaining(sum1, sum2)
 
         onPattern(prod) {
-            val terms1 = get(sum1)!!.children()
-            val terms2 = get(sum2)!!.children()
+            val terms1 = get(sum1).children()
+            val terms2 = get(sum2).children()
 
             val toExpr = sumOf(
                 terms1.map { term1 ->
-                    sumOf(terms2.map { term2 -> productOf(term1, term2) })
+                    sumOf(terms2.map { term2 -> productOf(move(term1), move(term2)) })
                 }
             )
 
@@ -542,11 +542,11 @@ private val rewriteDivisionAsFraction =
         val product = productContaining(divideBy(AnyPattern()))
 
         onPattern(product) {
-            val factors = get(product)!!.children()
+            val factors = get(product).children()
             val division = factors.indexOfFirst { it.operator == UnaryExpressionOperator.DivideBy }
 
             val result = mutableListOf<Expression>()
-            result.addAll(factors.subList(0, division - 1).map { move(it) })
+            result.addAll(factors.subList(0, division - 1))
 
             val denominator = factors[division].firstChild
 
@@ -556,7 +556,7 @@ private val rewriteDivisionAsFraction =
                     move(denominator)
                 )
             )
-            result.addAll(factors.subList(division + 1, factors.size).map { move(it) })
+            result.addAll(factors.subList(division + 1, factors.size))
 
             ruleResult(
                 toExpr = productOf(result),
@@ -579,7 +579,7 @@ private val multiplyExponentsUsingPowerRule =
         onPattern(pattern) {
             ruleResult(
                 toExpr = powerOf(
-                    move(base),
+                    get(base),
                     productOf(move(exp1), move(exp2))
                 ),
                 explanation = metadata(Explanation.MultiplyExponentsUsingPowerRule)
@@ -599,7 +599,7 @@ private val distributeSumOfPowers =
         onPattern(pattern) {
             ruleResult(
                 toExpr = productOf(
-                    get(sumOfExponents)!!.children().map {
+                    get(sumOfExponents).children().map {
                         simplifiedPowerOf(move(base), move(it))
                     }
                 ),
@@ -620,7 +620,7 @@ private val distributeMultiplicationOverSum =
         val optionalNegProduct = oneOf(negProduct, product)
 
         onPattern(optionalNegProduct) {
-            val getSum = get(sum)!!
+            val getSum = get(sum)
             val terms = getSum.children()
             val restOfProd = restOf(product)
 
@@ -654,7 +654,7 @@ private val distributeNegativeOverBracket =
         val sum = oneOf(sumContainingNegTerm, negSumTerm)
 
         onPattern(sum) {
-            val terms = get(sumTerm)!!.children()
+            val terms = get(sumTerm).children()
             val negDistributedTerm = sumOf(
                 terms.map { if (it.operator == UnaryExpressionOperator.Minus) move(it.firstChild) else negOf(move(it)) }
             )
@@ -771,7 +771,7 @@ private val cancelAdditiveInverseElements =
         val pattern = sumContaining(searchTerm, additiveInverseSearchTerm)
 
         onPattern(pattern) {
-            val toExpr = when (get(pattern)!!.children().size) {
+            val toExpr = when (get(pattern).children().size) {
                 2 -> transformTo(pattern, Constants.Zero)
                 else -> cancel(term, restOf(pattern))
             }
@@ -792,7 +792,7 @@ private val rewriteProductOfPowersWithSameBase =
         val product = productContaining(power1, power2)
 
         onPattern(product) {
-            if (get(base)?.operator is VariableOperator ||
+            if (get(base).operator is VariableOperator ||
                 get(power1.exponent) != Constants.One ||
                 get(power2.exponent) != Constants.One
             ) {
@@ -902,25 +902,16 @@ private val rewriteProductOfPowersWithNegatedExponent =
         val power1 = powerOf(base1, exponent)
         val power2 = powerOf(base2, negOf(exponent))
 
-        val product1 = productContaining(power1, power2)
-        val product2 = productContaining(power2, power1)
+        val product = commutativeProductContaining(power1, power2)
 
-        onPattern(oneOf(product1, product2)) {
+        onPattern(product) {
             val inverse = when {
                 isBound(fraction) -> fractionOf(move(fraction.denominator), move(fraction.numerator))
                 else -> fractionOf(introduce(Constants.One), move(base2))
             }
 
-            val newProduct = when {
-                isBound(product1) -> product1.substitute(
-                    move(power1),
-                    powerOf(inverse, move(exponent))
-                )
-                else -> product2.substitute(powerOf(inverse, move(exponent)), move(power1))
-            }
-
             ruleResult(
-                toExpr = newProduct,
+                toExpr = product.substitute(get(power1), powerOf(inverse, move(exponent))),
                 explanation = metadata(Explanation.RewriteProductOfPowersWithNegatedExponent)
             )
         }
@@ -942,7 +933,7 @@ private val rewriteProductOfPowersWithInverseFractionBase =
         onPattern(product) {
             ruleResult(
                 toExpr = product.substitute(
-                    move(power1),
+                    get(power1),
                     powerOf(
                         fractionOf(move(value1), move(value2)),
                         negOf(move(power2.exponent))
@@ -968,7 +959,7 @@ private val rewriteProductOfPowersWithInverseBase =
 
         onPattern(product) {
             ruleResult(
-                toExpr = product.substitute(move(power1), powerOf(move(base1), negOf(move(exponent2)))),
+                toExpr = product.substitute(get(power1), powerOf(move(base1), negOf(move(exponent2)))),
                 explanation = metadata(Explanation.RewriteProductOfPowersWithInverseBase)
             )
         }
@@ -1014,7 +1005,7 @@ private val rewritePowerUnderRoot =
 
             ruleResult(
                 toExpr = rootOf(
-                    simplifiedPowerOf(move(base), simplifiedProductOf(newExp, gcdExpRootOrder)),
+                    simplifiedPowerOf(get(base), simplifiedProductOf(newExp, gcdExpRootOrder)),
                     simplifiedProductOf(newRootOrder, gcdExpRootOrder)
                 ),
                 explanation = metadata(Explanation.RewritePowerUnderRoot)

@@ -51,7 +51,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     toExpr = sum.substitute(
                         fractionOf(move(integer), introduce(Constants.One)),
-                        move(fraction)
+                        get(fraction)
                     ),
                     explanation = metadata(Explanation.ConvertIntegerToFraction, move(integer))
                 )
@@ -105,15 +105,15 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                         copySign(
                             nf1,
                             fractionOf(
-                                productOf(move(f1.numerator), factor1),
-                                productOf(move(f1.denominator), factor1)
+                                productOf(get(f1.numerator), factor1),
+                                productOf(get(f1.denominator), factor1)
                             )
                         ),
                         copySign(
                             nf2,
                             fractionOf(
-                                productOf(move(f2.numerator), factor2),
-                                productOf(move(f2.denominator), factor2)
+                                productOf(get(f2.numerator), factor2),
+                                productOf(get(f2.denominator), factor2)
                             )
                         )
                     ),
@@ -133,7 +133,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(pattern) {
                 ruleResult(
-                    toExpr = negOf(fractionOf(move(numerator), move(denominator))),
+                    toExpr = negOf(fractionOf(get(numerator), move(denominator))),
                     explanation = metadata(Explanation.SimplifyNegativeInDenominator, move(pattern))
                 )
             }
@@ -269,7 +269,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             onPattern(sum) {
                 ruleResult(
                     sum.substitute(
-                        move(nf),
+                        get(nf),
                         copySign(
                             integerTerm,
                             fractionOf(
