@@ -7,7 +7,7 @@ import methods.integerarithmetic.IntegerArithmeticExplanation
 import methods.polynomials.PolynomialsExplanation
 import org.junit.jupiter.api.Test
 
-class LinearEquationTests {
+class LinearEquationsTest {
 
     @Test
     fun `test ax = b linear equation`() = testMethod {
@@ -120,7 +120,7 @@ class LinearEquationTests {
                     fromExpr = "x - 2 = 36"
                     toExpr = "x - 2 + 2 = 36 + 2"
                     explanation {
-                        key = EquationsExplanation.MoveConstantsToTheRight
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRight
                     }
                 }
 
@@ -397,7 +397,7 @@ class LinearEquationTests {
                 fromExpr = "-x - 40 = 16 x - 40"
                 toExpr = "-x = 16 x"
                 explanation {
-                    key = EquationsExplanation.CancelCommonTermsOnBothSides
+                    key = methods.solvable.EquationsExplanation.CancelCommonTermsOnBothSides
                 }
             }
 
@@ -444,7 +444,7 @@ class LinearEquationTests {
                 fromExpr = "6 x + 6 = 6 x - 5"
                 toExpr = "6 = -5"
                 explanation {
-                    key = EquationsExplanation.CancelCommonTermsOnBothSides
+                    key = methods.solvable.EquationsExplanation.CancelCommonTermsOnBothSides
                 }
             }
 
@@ -475,7 +475,7 @@ class LinearEquationTests {
                 fromExpr = "6 x + 6 = 6 x + 3 + 3"
                 toExpr = "6 = 3 + 3"
                 explanation {
-                    key = EquationsExplanation.CancelCommonTermsOnBothSides
+                    key = methods.solvable.EquationsExplanation.CancelCommonTermsOnBothSides
                 }
             }
 

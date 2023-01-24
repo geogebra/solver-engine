@@ -1,5 +1,12 @@
 package engine.operators
 
+import engine.expressions.Constants
+import engine.expressions.Expression
+import engine.expressions.closedOpenIntervalOf
+import engine.expressions.openClosedIntervalOf
+import engine.expressions.openIntervalOf
+import java.math.BigDecimal
+
 private const val PREDICATE_PRECEDENCE = 0
 private const val EQUATION_SYSTEM_PRECEDENCE = -10
 
@@ -32,6 +39,73 @@ object EquationOperator : BinaryOperator, StatementOperator {
     }
 
     override fun <T> readableString(left: T, right: T) = "$left = $right"
+}
+
+enum class InequalityOperators(
+    private val readableString: String,
+    private val latexString: String,
+) : BinaryOperator, StatementOperator {
+
+    LessThan("<", "<") {
+        override fun holdsFor(val1: BigDecimal, val2: BigDecimal) = val1 < val2
+
+        override fun toInterval(boundary: Expression) = openIntervalOf(Constants.NegativeInfinity, boundary)
+
+        override fun getDual() = GreaterThan
+    },
+
+    LessThanEqual("<=", "\\leq") {
+        override fun holdsFor(val1: BigDecimal, val2: BigDecimal) = val1 <= val2
+
+        override fun toInterval(boundary: Expression) = openClosedIntervalOf(Constants.NegativeInfinity, boundary)
+
+        override fun getDual() = GreaterThanEqual
+    },
+
+    GreaterThan(">", ">") {
+        override fun holdsFor(val1: BigDecimal, val2: BigDecimal) = val1 > val2
+
+        override fun toInterval(boundary: Expression) = openIntervalOf(boundary, Constants.Infinity)
+
+        override fun getDual() = LessThan
+    },
+
+    GreaterThanEqual(">=", "\\geq") {
+        override fun holdsFor(val1: BigDecimal, val2: BigDecimal) = val1 >= val2
+
+        override fun toInterval(boundary: Expression) = closedOpenIntervalOf(boundary, Constants.Infinity)
+
+        override fun getDual() = LessThanEqual
+    };
+
+    override val precedence = PREDICATE_PRECEDENCE
+
+    override fun leftChildAllowed(op: Operator): Boolean {
+        require(op.kind == OperatorKind.EXPRESSION)
+        return true
+    }
+
+    override fun rightChildAllowed(op: Operator): Boolean {
+        require(op.kind == OperatorKind.EXPRESSION)
+        return true
+    }
+
+    override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable): String {
+        if (ctx.align) {
+            val innerCtx = ctx.copy(align = false)
+            return "${left.toLatexString(innerCtx)} & $latexString & ${right.toLatexString(innerCtx)}"
+        } else {
+            return "${left.toLatexString(ctx)} $latexString ${right.toLatexString(ctx)}"
+        }
+    }
+
+    override fun <T> readableString(left: T, right: T) = "$left $readableString $right"
+
+    abstract fun holdsFor(val1: BigDecimal, val2: BigDecimal): Boolean
+
+    abstract fun toInterval(boundary: Expression): Expression
+
+    abstract fun getDual(): InequalityOperators
 }
 
 object EquationSystemOperator : StatementOperator {

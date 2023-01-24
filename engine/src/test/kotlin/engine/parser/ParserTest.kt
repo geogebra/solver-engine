@@ -7,7 +7,11 @@ import engine.expressions.buildExpression
 import engine.expressions.curlyBracketOf
 import engine.expressions.equationOf
 import engine.expressions.fractionOf
+import engine.expressions.greaterThanEqualOf
+import engine.expressions.greaterThanOf
 import engine.expressions.implicitProductOf
+import engine.expressions.lessThanEqualOf
+import engine.expressions.lessThanOf
 import engine.expressions.missingBracketOf
 import engine.expressions.negOf
 import engine.expressions.plusOf
@@ -15,6 +19,7 @@ import engine.expressions.powerOf
 import engine.expressions.rawRootOf
 import engine.expressions.squareBracketOf
 import engine.expressions.squareRootOf
+import engine.expressions.sumOf
 import engine.expressions.xp
 import engine.operators.NaryOperator
 import engine.operators.UndefinedOperator
@@ -184,6 +189,38 @@ class ParserTest {
             equationOf(
                 rawSumOf(implicitProductOf(xp(3), xp("x")), xp(4)),
                 rawSumOf(implicitProductOf(xp(4), xp("x")), negOf(xp(5)))
+            )
+        )
+    }
+
+    @Test
+    fun testInequalities() {
+        parsesTo(
+            "3x + 4 < 4x - 5",
+            lessThanOf(
+                rawSumOf(implicitProductOf(xp(3), xp("x")), xp(4)),
+                rawSumOf(implicitProductOf(xp(4), xp("x")), negOf(xp(5)))
+            )
+        )
+        parsesTo(
+            "sqrt[xy] <= [x + y / 2]",
+            lessThanEqualOf(
+                squareRootOf(implicitProductOf(xp("x"), xp("y"))),
+                fractionOf(sumOf(xp("x"), xp("y")), xp(2))
+            )
+        )
+        parsesTo(
+            "3x + 4 > 4x - 5",
+            greaterThanOf(
+                rawSumOf(implicitProductOf(xp(3), xp("x")), xp(4)),
+                rawSumOf(implicitProductOf(xp(4), xp("x")), negOf(xp(5)))
+            )
+        )
+        parsesTo(
+            "sqrt[xy] >= [2xy / x + y]",
+            greaterThanEqualOf(
+                squareRootOf(implicitProductOf(xp("x"), xp("y"))),
+                fractionOf(implicitProductOf(xp(2), xp("x"), xp("y")), sumOf(xp("x"), xp("y")))
             )
         )
     }

@@ -4,15 +4,17 @@ grammar Expression;
     package parser.antlr;
 }
 
-wholeInput: equationSystem | equation | solution  | exprOrUndefined EOF;
+wholeInput: equationSystem | equation | inequality | solution | exprOrUndefined EOF;
 
 equationSystem: equations += equation (',' equations += equation)+;
 
 equation: lhs=expr '=' rhs=expr;
 
+inequality: lhs=expr comparator=('<' | '<=' | '>' | '>=') rhs=expr;
+
 solution: 'Solution' '[' var=variable ',' solutionSet=set ']';
 
-set: emptySet | finiteSet | reals;
+set: emptySet | finiteSet | reals | interval;
 
 emptySet: '{' '}';
 
@@ -21,6 +23,10 @@ finiteSet: '{' first=expr (rest+=restElement)* '}';
 restElement: ',' expr;
 
 reals: REALS;
+
+interval: leftBracket=('(' | '[') left=exprOrInfinity ',' right=exprOrInfinity rightBracket=(')' | ']');
+
+exprOrInfinity: expr | infinity | minusInfinity;
 
 exprOrUndefined: expr | undefined;
 
@@ -73,6 +79,9 @@ mixedNumber: '[' integer=NATNUM num=NATNUM '/' den=NATNUM ']';
 
 naturalNumber: NATNUM;
 
+infinity: INFINITY;
+minusInfinity: '-' INFINITY;
+
 undefined: UNDEFINED;
 
 decimalNumber: DECNUM;
@@ -96,6 +105,7 @@ OPEN_PARTIALSUM: '<.';
 CLOSE_PARTIALSUM: '.>';
 
 REALS: 'REALS';
+INFINITY: 'INFINITY';
 UNDEFINED: 'UNDEFINED';
 
 VARIABLE: [a-z];

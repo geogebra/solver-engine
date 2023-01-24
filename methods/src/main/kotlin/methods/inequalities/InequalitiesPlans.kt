@@ -1,41 +1,25 @@
-package methods.equations
+package methods.inequalities
 
-import engine.context.ResourceData
-import engine.expressions.Constants
-import engine.expressions.equationOf
-import engine.expressions.solutionOf
-import engine.expressions.solutionSetOf
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
-import engine.methods.stepsproducers.FormChecker
-import engine.methods.taskSet
 import engine.patterns.AnyPattern
 import engine.patterns.FindPattern
-import engine.patterns.FixedPattern
-import engine.patterns.RecurringDecimalPattern
-import engine.patterns.SignedNumberPattern
 import engine.patterns.SolutionVariablePattern
 import engine.patterns.UnsignedIntegerPattern
-import engine.patterns.UnsignedNumberPattern
 import engine.patterns.condition
-import engine.patterns.equationOf
 import engine.patterns.fractionOf
+import engine.patterns.inequalityOf
 import engine.patterns.oneOf
-import engine.patterns.optionalNegOf
 import engine.patterns.productContaining
-import engine.patterns.productOf
 import engine.patterns.solutionOf
-import engine.patterns.solutionSetOf
 import engine.patterns.sumContaining
 import engine.patterns.withOptionalConstantCoefficient
-import engine.steps.metadata.CategorisedMetadataKey
-import engine.steps.metadata.metadata
 import methods.polynomials.PolynomialPlans
 import methods.solvable.SolvableRules
 
-enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
+enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMethod {
 
     MoveConstantsToTheLeftAndSimplify(
         plan {
@@ -75,7 +59,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
             explanation = Explanation.MultiplyByInverseCoefficientOfVariableAndSimplify
 
             steps {
-                apply(EquationsRules.MultiplyByInverseCoefficientOfVariable)
+                apply(InequalitiesRules.MultiplyByInverseCoefficientOfVariable)
                 optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable)
             }
         }
@@ -97,26 +81,28 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
             explanation = Explanation.DivideByCoefficientOfVariableAndSimplify
 
             steps {
-                apply(EquationsRules.DivideByCoefficientOfVariable)
+                apply(InequalitiesRules.DivideByCoefficientOfVariable)
                 optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable)
             }
         }
     ),
 
     @PublicMethod
-    SolveLinearEquation(
+    SolveLinearInequality(
         plan {
-            explanation = Explanation.SolveLinearEquation
-            pattern = equationOf(AnyPattern(), AnyPattern())
+            explanation = Explanation.SolveLinearInequality
+            pattern = inequalityOf(AnyPattern(), AnyPattern())
+            resultPattern = solutionOf(SolutionVariablePattern(), AnyPattern())
 
             steps {
                 whilePossible {
                     firstOf {
-                        // check if the equation is in one of the possible solved forms
-                        option(EquationsRules.ExtractSolutionFromIdentity)
-                        option(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
+                        // check if the inequality is in one of the possible solved forms
+                        option(InequalitiesRules.ExtractSolutionFromConstantInequality)
+                        option(InequalitiesRules.ExtractSolutionFromConstantInequalityBasedOnSign)
+                        option(InequalitiesRules.ExtractSolutionFromInequalityInSolvedForm)
 
-                        // normalize the equation
+                        // normalize the inequality
                         option(SolvableRules.CancelCommonTermsOnBothSides)
                         option(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable)
 
@@ -140,9 +126,6 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
                         option(PolynomialPlans.ExpandPolynomialExpressionInOneVariable)
 
-                        // we can only deduce that the sides are unequal if we have normalized the equation already
-                        option(EquationsRules.ExtractSolutionFromContradiction)
-
                         // two ways to reorganize the equation into ax = b form
                         option {
                             // if the equation is in the form `a = bx + c` with `b` non-negative, then
@@ -154,10 +137,10 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                                     positiveOnly = true
                                 )
                                 val rhs = oneOf(variableWithCoefficient, sumContaining(variableWithCoefficient))
-                                equationOf(lhs, rhs)
+                                inequalityOf(lhs, rhs)
                             }
                             optionally(MoveConstantsToTheLeftAndSimplify)
-                            apply(EquationsRules.FlipEquation)
+                            apply(InequalitiesRules.FlipInequality)
                         }
                         option {
                             // otherwise we first move variables to the left and then constants
@@ -167,90 +150,12 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                         }
 
                         // get rid of the coefficient of the variable
-                        option(EquationsRules.NegateBothSides)
+                        option(InequalitiesRules.NegateBothSides)
                         option(MultiplyByInverseCoefficientOfVariableAndSimplify)
                         option(DivideByCoefficientOfVariableAndSimplify)
                     }
                 }
-
-                contextSensitive {
-                    default(
-                        ResourceData(preferDecimals = false),
-                        FormChecker(
-                            solutionOf(SolutionVariablePattern(), AnyPattern())
-                        )
-                    )
-                    alternative(
-                        ResourceData(preferDecimals = true),
-                        FormChecker(
-                            let {
-                                val acceptedSolutions = oneOf(
-                                    SignedNumberPattern(),
-                                    optionalNegOf(RecurringDecimalPattern()),
-                                    optionalNegOf(fractionOf(UnsignedNumberPattern(), UnsignedNumberPattern()))
-                                )
-
-                                solutionOf(
-                                    SolutionVariablePattern(),
-                                    oneOf(
-                                        FixedPattern(Constants.EmptySet),
-                                        FixedPattern(Constants.Reals),
-                                        solutionSetOf(acceptedSolutions)
-                                    )
-                                )
-                            }
-                        )
-                    )
-                }
             }
         }
-    ),
-
-    @PublicMethod
-    SolveFactorisedQuadraticEquation(solveFactorisedQuadratic)
-}
-
-//
-// Below is an example of using a task set to perform a list of tasks (here solving a factorised quadratic equation).
-// This will need to be revisited when doing quadratic equations.
-//
-
-enum class ExperimentalExplanation : CategorisedMetadataKey {
-
-    SolveFactorisedQuadratic,
-    SolveFactorOfQuadratic,
-    CollectSolutions;
-
-    override val category = "Experimental"
-}
-
-private val solveFactorisedQuadratic = taskSet {
-    val factor1 = AnyPattern()
-    val factor2 = AnyPattern()
-    val zero = FixedPattern(Constants.Zero)
-    pattern = equationOf(productOf(factor1, factor2), zero)
-    explanation = ExperimentalExplanation.SolveFactorisedQuadratic
-
-    tasks {
-        val task1 = task(
-            startExpr = equationOf(get(factor1)!!, get(zero)!!),
-            explanation = metadata(ExperimentalExplanation.SolveFactorOfQuadratic, get(factor1)!!),
-            stepsProducer = EquationsPlans.SolveLinearEquation
-        )
-            ?: return@tasks null
-        val task2 = task(
-            startExpr = equationOf(get(factor2)!!, get(zero)!!),
-            explanation = metadata(ExperimentalExplanation.SolveFactorOfQuadratic, get(factor2)!!),
-            stepsProducer = EquationsPlans.SolveLinearEquation
-        )
-            ?: return@tasks null
-        val solution1 = task1.result.secondChild.firstChild
-        val solution2 = task2.result.secondChild.firstChild
-        task(
-            startExpr = solutionOf(task1.result.firstChild, solutionSetOf(solution1, solution2)),
-            explanation = metadata(ExperimentalExplanation.CollectSolutions),
-            dependsOn = listOf(task1, task2)
-        )
-        allTasks()
-    }
+    )
 }

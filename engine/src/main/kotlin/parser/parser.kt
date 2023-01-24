@@ -3,13 +3,19 @@ package parser
 import engine.expressions.Constants
 import engine.expressions.Decorator
 import engine.expressions.Expression
+import engine.expressions.greaterThanEqualOf
+import engine.expressions.greaterThanOf
+import engine.expressions.lessThanEqualOf
+import engine.expressions.lessThanOf
 import engine.expressions.mixedNumber
+import engine.expressions.negOf
 import engine.expressions.solutionOf
 import engine.expressions.solutionSetOf
 import engine.expressions.xp
 import engine.operators.BinaryExpressionOperator
 import engine.operators.EquationOperator
 import engine.operators.EquationSystemOperator
+import engine.operators.IntervalOperator
 import engine.operators.NaryOperator
 import engine.operators.Operator
 import engine.operators.UnaryExpressionOperator
@@ -21,6 +27,7 @@ import parser.antlr.ExpressionBaseVisitor
 import parser.antlr.ExpressionLexer
 import parser.antlr.ExpressionParser
 import java.math.BigDecimal
+import java.security.InvalidParameterException
 
 fun parseExpression(text: String): Expression {
     val lexer = ExpressionLexer(CharStreams.fromString(text))
@@ -58,6 +65,19 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
         return makeExpression(EquationOperator, visit(ctx.lhs), visit((ctx.rhs)))
     }
 
+    override fun visitInequality(ctx: ExpressionParser.InequalityContext): Expression {
+        val lhs = visit(ctx.lhs)
+        val rhs = visit(ctx.rhs)
+
+        return when (ctx.comparator.text) {
+            "<" -> lessThanOf(lhs, rhs)
+            "<=" -> lessThanEqualOf(lhs, rhs)
+            ">" -> greaterThanOf(lhs, rhs)
+            ">=" -> greaterThanEqualOf(lhs, rhs)
+            else -> throw InvalidParameterException("Comparator ${ctx.comparator.text} not recognized")
+        }
+    }
+
     override fun visitExpr(ctx: ExpressionParser.ExprContext): Expression {
         return visit(ctx.getChild(0))
     }
@@ -76,6 +96,20 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
 
     override fun visitReals(ctx: ExpressionParser.RealsContext): Expression {
         return Constants.Reals
+    }
+
+    override fun visitInterval(ctx: ExpressionParser.IntervalContext): Expression {
+        val leftClosed = ctx.leftBracket.text == "["
+        val rightClosed = ctx.rightBracket.text == "]"
+        return makeExpression(IntervalOperator(leftClosed, rightClosed), visit(ctx.left), visit(ctx.right))
+    }
+
+    override fun visitInfinity(ctx: ExpressionParser.InfinityContext?): Expression {
+        return Constants.Infinity
+    }
+
+    override fun visitMinusInfinity(ctx: ExpressionParser.MinusInfinityContext?): Expression {
+        return negOf(Constants.Infinity)
     }
 
     override fun visitSum(ctx: ExpressionParser.SumContext): Expression {

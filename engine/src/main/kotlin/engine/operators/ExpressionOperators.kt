@@ -58,6 +58,15 @@ data class IntegerOperator(val value: BigInteger) : NullaryOperator() {
     override fun latexString(ctx: RenderContext) = value.toString()
 }
 
+object InfinityOperator : NullaryOperator() {
+
+    override val name = "INFINITY"
+
+    override fun toString() = "INFINITY"
+
+    override fun latexString(ctx: RenderContext) = "\\infty"
+}
+
 object UndefinedOperator : NullaryOperator() {
 
     override val name = "UNDEFINED"

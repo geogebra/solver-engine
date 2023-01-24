@@ -46,7 +46,7 @@ class SolveFactorisedQuadraticPlanTest {
                             fromExpr = "3 x - 1 = 0"
                             toExpr = "3 x - 1 + 1 = 0 + 1"
                             explanation {
-                                key = EquationsExplanation.MoveConstantsToTheRight
+                                key = methods.solvable.EquationsExplanation.MoveConstantsToTheRight
                             }
                         }
 
@@ -181,7 +181,7 @@ class SolveFactorisedQuadraticPlanTest {
                             fromExpr = "x + 4 = 0"
                             toExpr = "x + 4 - 4 = 0 - 4"
                             explanation {
-                                key = EquationsExplanation.MoveConstantsToTheRight
+                                key = methods.solvable.EquationsExplanation.MoveConstantsToTheRight
                             }
                         }
 

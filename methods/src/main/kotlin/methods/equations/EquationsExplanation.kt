@@ -7,39 +7,6 @@ import engine.steps.metadata.TranslationKeys
 enum class EquationsExplanation : CategorisedMetadataKey {
 
     /**
-     * Cancel common terms on both sides of the equation.
-     *
-     * E.g. 2x + 3 + 4 sqrt[5] = 2 + 4 sqrt[5] -> 2x + 3 = 2
-     */
-    CancelCommonTermsOnBothSides,
-
-    /**
-     * Add the opposite of the constants appearing on the RHS
-     * of the equation to both sides.
-     *
-     * E.g. 1 = 2x + 2 -> 1 - 2 = 2x + 2 - 2
-     * 1 = 2x - 3 -> 1 + 3 = 2x - 3 + 3
-     */
-    MoveConstantsToTheLeft,
-
-    /**
-     * Add the opposite of the constants appearing on the LHS
-     * of the equation to both sides.
-     *
-     * E.g. 2x + 1 = 2 -> 2x + 1 - 1 = 2 - 1
-     * 2x - 1 = 3 -> 2x - 1 + 1 = 3 + 1
-     */
-    MoveConstantsToTheRight,
-
-    /**
-     * Add the opposite of the variables appearing on the RHS
-     * of the equation to both sides.
-     *
-     * E.g. 3x + 2 = 2x + 1 -> 3x + 2 - 2x = 2x + 1 - 2x
-     */
-    MoveVariablesToTheLeft,
-
-    /**
      * Negate both sides of the equation, i.e. turn an equation of
      * the form -x = a to x = -a.
      *
@@ -70,14 +37,6 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      * E.g. 7 = 3x -> 3x = 7
      */
     FlipEquation,
-
-    /**
-     * Multiply both sides of the equation by the least common denominator of
-     * all the fractions occurring in it.
-     *
-     * E.g. [2 + x / 6] + 5 = [4 - 2x / 4] -> ([2 + x / 6] + 5) * 12 = [4 - 2x / 4] * 12
-     */
-    MultiplyEquationByLCD,
 
     /**
      * Extract the solution of an equation from an identity.

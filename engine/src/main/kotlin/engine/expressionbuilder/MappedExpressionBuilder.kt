@@ -14,8 +14,11 @@ import engine.expressions.productOf
 import engine.expressions.simplifiedPowerOf
 import engine.expressions.sumOf
 import engine.expressions.xp
+import engine.operators.EquationOperator
+import engine.operators.InequalityOperators
 import engine.patterns.CoefficientPattern
 import engine.patterns.ExpressionProvider
+import engine.patterns.InequalityPattern
 import engine.patterns.IntegerPattern
 import engine.patterns.IntegerProvider
 import engine.patterns.Match
@@ -25,6 +28,7 @@ import engine.patterns.OptionalNegPattern
 import engine.patterns.OptionalWrappingPattern
 import engine.patterns.Pattern
 import engine.patterns.RecurringDecimalPattern
+import engine.patterns.SolvablePattern
 import engine.utility.RecurringDecimal
 import engine.utility.primeFactorDecomposition
 import java.math.BigDecimal
@@ -187,6 +191,33 @@ open class MappedExpressionBuilder(
     fun restOf(pattern: NaryPattern) = pattern.substitute(match, arrayOf())
 
     fun NaryPattern.substitute(vararg newVals: Expression) = substitute(match, newVals)
+
+    fun SolvablePattern.isEquation() = getBoundExpr(match)?.operator == EquationOperator
+
+    fun InequalityPattern.holdsFor(val1: BigDecimal, val2: BigDecimal): Boolean {
+        val operator = getBoundExpr(match)!!.operator as InequalityOperators
+        return operator.holdsFor(val1, val2)
+    }
+
+    fun InequalityPattern.toInterval(boundary: Expression): Expression {
+        val operator = getBoundExpr(match)!!.operator as InequalityOperators
+        return operator.toInterval(boundary)
+    }
+
+    fun InequalityPattern.sameInequality(lhs: Expression, rhs: Expression): Expression {
+        val operator = getBoundExpr(match)!!.operator as InequalityOperators
+        return Expression(operator, listOf(lhs, rhs))
+    }
+
+    fun InequalityPattern.dualInequality(lhs: Expression, rhs: Expression): Expression {
+        val operator = getBoundExpr(match)!!.operator as InequalityOperators
+        return Expression(operator.getDual(), listOf(lhs, rhs))
+    }
+
+    fun SolvablePattern.sameSolvable(lhs: Expression, rhs: Expression): Expression {
+        val operator = getBoundExpr(match)!!.operator
+        return Expression(operator, listOf(lhs, rhs))
+    }
 
     fun collectLikeTermsInSum(
         sub: Expression,

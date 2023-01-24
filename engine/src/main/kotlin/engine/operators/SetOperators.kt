@@ -49,3 +49,27 @@ enum class SetOperators : Operator {
         override fun latexString(ctx: RenderContext, children: List<LatexRenderable>) = "\\mathbb{R}"
     }
 }
+
+data class IntervalOperator(
+    private val closedLeft: Boolean,
+    private val closedRight: Boolean
+) : BinaryOperator {
+    override val name = when {
+        closedLeft && closedRight -> "ClosedInterval"
+        !closedLeft && closedRight -> "OpenClosedInterval"
+        closedLeft && !closedRight -> "ClosedOpenInterval"
+        else -> "OpenInterval"
+    }
+
+    override val kind = OperatorKind.SET
+    override val precedence = SET_PRECEDENCE
+
+    override fun <T> readableString(left: T, right: T): String {
+        return "${if (closedLeft) "[" else "("} $left, $right ${if (closedRight) "]" else ")"}"
+    }
+
+    override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable): String {
+        return "${if (closedLeft) "\\left[" else "\\left("} ${left.toLatexString(ctx)}, " +
+            "${right.toLatexString(ctx)} ${if (closedRight) "\\right]" else "\\right)"}"
+    }
+}

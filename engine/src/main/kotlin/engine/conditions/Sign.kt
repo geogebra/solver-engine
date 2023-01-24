@@ -17,7 +17,7 @@ private const val NOT_KNOWN_SIGNUM = 10
 /**
  * The sign of a mathematical expression
  */
-enum class Sign(private val signum: Int) {
+enum class Sign(val signum: Int) {
     /**
      * Negative and not zero
      */
