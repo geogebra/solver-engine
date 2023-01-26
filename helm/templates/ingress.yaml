@@ -17,6 +17,9 @@ metadata:
     alb.ingress.kubernetes.io/healthy-threshold-count: '2'
     alb.ingress.kubernetes.io/unhealthy-threshold-count: '2'
     alb.ingress.kubernetes.io/group.name: my-group
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:eu-west-1:955976199210:certificate/adffda50-6694-4616-93bf-df124e395981
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
 spec:
   rules:
     - http:
