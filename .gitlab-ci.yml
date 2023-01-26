@@ -16,6 +16,7 @@ before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
   - export SLUG=`echo $CI_COMMIT_REF_SLUG | sed 's/^\([a-z][a-z]*\-[0-9][0-9]*\).*/\1/'`
   - export REPO_FULL_NAME=`echo $CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME`
+  - export REPOSITORY_ID=4  # The gitlab ID of the repository where our container images are uploaded
 
 cache:
   paths:
@@ -114,6 +115,13 @@ undeploy:
   tags:
     - docker
   script:
+    - echo "Attempting do delete tag $SLUG..."
+    # Call the gitlab API to delete the image tag as it is no longer needed. This will allow the image
+    # to be garbage-collected, saving space on the container registry.
+    - |
+      curl --request DELETE \
+           --header "PRIVATE-TOKEN: $GITLAB_API_PRIVATE_TOKEN" \
+           "$CI_API_V4_URL/projects/$CI_PROJECT_ID/registry/repositories/$REPOSITORY_ID/tags/$SLUG"
     - kubectl config get-contexts
     - kubectl config use-context $REPO_FULL_NAME:$GITLAB_CLUSTER
     - helm uninstall $SLUG
