@@ -14,7 +14,7 @@ interface Resource {
 
 private const val BEST_MATCH = 1.0
 private const val DEFAULT_MATCH = 0.5
-private const val WORST_MATCH = 0.0
+private const val WORST_MATCH = 0.1
 
 private const val DEFAULT_PRECISION = 3 // 3 decimal places
 
@@ -48,15 +48,15 @@ data class Context(
     }
 
     fun rateResourceData(resourceData: ResourceData): Double {
-        val decimalRating = when (preferDecimals) {
-            resourceData.preferDecimals -> BEST_MATCH
+        val decimalRating = when (resourceData.preferDecimals) {
             null -> DEFAULT_MATCH
+            preferDecimals -> BEST_MATCH
             else -> WORST_MATCH
         }
 
-        val curriculumRating = when (curriculum) {
-            resourceData.curriculum -> BEST_MATCH
+        val curriculumRating = when (resourceData.curriculum) {
             null -> DEFAULT_MATCH
+            curriculum -> BEST_MATCH
             else -> WORST_MATCH
         }
 
