@@ -203,7 +203,7 @@ private val normalizePolynomial = rule {
         }
 
         // It's normalized if the degrees are in non-increasing order
-        val isNormalized = termsWithDegree.windowed(2).all { (t1, t2) -> t1.second >= t2.second }
+        val isNormalized = termsWithDegree.zipWithNext { t1, t2 -> t1.second >= t2.second }.all { it }
 
         when {
             isNormalized -> null

@@ -46,7 +46,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 apply(SolvableRules.MoveConstantsToTheLeft)
-                optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable)
+                optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
             }
         }
     ),
@@ -57,7 +57,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 apply(SolvableRules.MoveConstantsToTheRight)
-                optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable)
+                optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
             }
         }
     ),
@@ -68,7 +68,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 apply(SolvableRules.MoveVariablesToTheLeft)
-                optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable)
+                optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
             }
         }
     ),
@@ -79,7 +79,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 apply(EquationsRules.MultiplyByInverseCoefficientOfVariable)
-                optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable)
+                optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
             }
         }
     ),
@@ -90,7 +90,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 apply(SolvableRules.MultiplySolvableByLCD)
-                whilePossible(PolynomialPlans.ExpandPolynomialExpressionInOneVariable)
+                whilePossible(PolynomialPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
             }
         }
     ),
@@ -101,7 +101,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 apply(EquationsRules.DivideByCoefficientOfVariable)
-                optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable)
+                optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
             }
         }
     ),
@@ -133,7 +133,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                     apply(MultiplyByLCDAndSimplify)
                 }
 
-                optionally(PolynomialPlans.ExpandPolynomialExpressionInOneVariable)
+                optionally(PolynomialPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
                 optionally(equationSimplificationSteps)
 
                 optionally {
@@ -296,7 +296,7 @@ private val equationSimplificationSteps = steps {
             option(EquationsRules.ExtractSolutionFromIdentity)
             // normalize the equation
             option(SolvableRules.CancelCommonTermsOnBothSides)
-            option(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable)
+            option(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
             // after cancelling we have to check for contradiction
             option(EquationsRules.ExtractSolutionFromContradiction)
         }

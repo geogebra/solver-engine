@@ -156,25 +156,16 @@ class LinearEquationsTest {
                 key = EquationsExplanation.SolveLinearEquation
             }
 
-            // should not happen
             step {
                 fromExpr = "1 = [3 / 5] - x"
-                toExpr = "1 = -x + [3 / 5]"
-                explanation {
-                    key = PolynomialsExplanation.NormalizePolynomial
-                }
-            }
-
-            step {
-                fromExpr = "1 = -x + [3 / 5]"
-                toExpr = "x + 1 = [3 / 5]"
+                toExpr = "1 + x = [3 / 5]"
                 explanation {
                     key = EquationsExplanation.MoveVariablesToTheLeftAndSimplify
                 }
             }
 
             step {
-                fromExpr = "x + 1 = [3 / 5]"
+                fromExpr = "1 + x = [3 / 5]"
                 toExpr = "x = -[2 / 5]"
                 explanation {
                     key = EquationsExplanation.MoveConstantsToTheRightAndSimplify
@@ -245,14 +236,6 @@ class LinearEquationsTest {
 
             step {
                 fromExpr = "1 - 3 x = 0"
-                toExpr = "-3 x + 1 = 0"
-                explanation {
-                    key = PolynomialsExplanation.NormalizePolynomial
-                }
-            }
-
-            step {
-                fromExpr = "-3 x + 1 = 0"
                 toExpr = "-3 x = -1"
                 explanation {
                     key = EquationsExplanation.MoveConstantsToTheRightAndSimplify
@@ -293,14 +276,14 @@ class LinearEquationsTest {
             // should not happen
             step {
                 fromExpr = "4 = 11 + [x / 3]"
-                toExpr = "4 = [1 / 3] x + 11"
+                toExpr = "4 = 11 + [1 / 3] x"
                 explanation {
                     key = PolynomialsExplanation.SimplifyAlgebraicExpression
                 }
             }
 
             step {
-                fromExpr = "4 = [1 / 3] x + 11"
+                fromExpr = "4 = 11 + [1 / 3] x"
                 toExpr = "-7 = [1 / 3] x"
                 explanation {
                     key = EquationsExplanation.MoveConstantsToTheLeftAndSimplify

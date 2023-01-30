@@ -100,14 +100,14 @@ class LinearInequalitiesTest {
 
             step {
                 fromExpr = "4 > 11 + [x / 3]"
-                toExpr = "4 > [1 / 3] x + 11"
+                toExpr = "4 > 11 + [1 / 3] x"
                 explanation {
                     key = PolynomialsExplanation.SimplifyAlgebraicExpression
                 }
             }
 
             step {
-                fromExpr = "4 > [1 / 3] x + 11"
+                fromExpr = "4 > 11 + [1 / 3] x"
                 toExpr = "-7 > [1 / 3] x"
                 explanation {
                     key = InequalitiesExplanation.MoveConstantsToTheLeftAndSimplify

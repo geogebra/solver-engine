@@ -46,7 +46,21 @@ enum class PolynomialPlans(override val runner: CompositeMethod) : RunnerMethod 
             steps {
                 whilePossible { deeply(simpleTidyUpSteps) }
                 optionally(NormalizationPlans.NormalizeExpression)
-                whilePossible(AlgebraicSimplificationSteps)
+                whilePossible(algebraicSimplificationSteps)
+                whilePossible { deeply(PolynomialRules.NormalizePolynomial) }
+            }
+        }
+    ),
+
+    SimplifyAlgebraicExpressionInOneVariableWithoutNormalization(
+        plan {
+            explanation = Explanation.SimplifyAlgebraicExpression
+            specificPlans(ConstantExpressionsPlans.SimplifyConstantExpression)
+
+            steps {
+                whilePossible { deeply(simpleTidyUpSteps) }
+                optionally(NormalizationPlans.NormalizeExpression)
+                whilePossible(algebraicSimplificationSteps)
             }
         }
     ),
@@ -61,7 +75,25 @@ enum class PolynomialPlans(override val runner: CompositeMethod) : RunnerMethod 
                 optionally(NormalizationRules.NormaliseSimplifiedProduct)
                 whilePossible {
                     firstOf {
-                        option(AlgebraicSimplificationSteps)
+                        option(algebraicSimplificationSteps)
+                        option { deeply(expandAndSimplifySteps, deepFirst = true) }
+                    }
+                }
+                whilePossible { deeply(PolynomialRules.NormalizePolynomial) }
+            }
+        }
+    ),
+
+    ExpandPolynomialExpressionInOneVariableWithoutNormalization(
+        plan {
+            explanation = Explanation.ExpandPolynomialExpression
+            pattern = condition(AnyPattern()) { it.variables.size == 1 }
+
+            steps {
+                optionally(NormalizationRules.NormaliseSimplifiedProduct)
+                whilePossible {
+                    firstOf {
+                        option(algebraicSimplificationSteps)
                         option { deeply(expandAndSimplifySteps, deepFirst = true) }
                     }
                 }
@@ -219,7 +251,7 @@ private val distributeProductToIntegerPowerAndSimplify = plan {
     }
 }
 
-val AlgebraicSimplificationSteps = steps {
+val algebraicSimplificationSteps = steps {
     firstOf {
         option { deeply(simpleTidyUpSteps) }
         option { deeply(PolynomialPlans.MultiplyMonomialsAndSimplify) }
@@ -228,7 +260,6 @@ val AlgebraicSimplificationSteps = steps {
         option { deeply(PolynomialPlans.CollectLikeTermsAndSimplify) }
         option { deeply(PolynomialPlans.NormalizeMonomialAndSimplify) }
         option(simplificationSteps)
-        option { deeply(PolynomialRules.NormalizePolynomial) }
     }
 }
 
