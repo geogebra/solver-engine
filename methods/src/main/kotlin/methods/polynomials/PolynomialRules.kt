@@ -228,7 +228,7 @@ private val normalizePolynomial = rule {
  *
  * This pattern may be better off in the engine module if it proves widely useful.
  */
-private class MonomialPattern(val base: Pattern, positiveOnly: Boolean = false) : KeyedPattern() {
+private class MonomialPattern(val base: Pattern, positiveOnly: Boolean = false) : KeyedPattern {
     private val exponentPattern = UnsignedIntegerPattern()
 
     val powerPattern = oneOf(base, powerOf(base, exponentPattern))

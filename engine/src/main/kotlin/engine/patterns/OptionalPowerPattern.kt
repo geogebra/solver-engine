@@ -2,7 +2,7 @@ package engine.patterns
 
 import engine.expressions.Constants
 
-class OptionalPowerPattern(val base: Pattern) : KeyedPattern() {
+class OptionalPowerPattern(val base: Pattern) : KeyedPattern {
 
     private val _exponent = AnyPattern()
     private val ptn = oneOf(powerOf(base, _exponent), base)

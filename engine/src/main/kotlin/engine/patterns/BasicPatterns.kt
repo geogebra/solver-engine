@@ -2,6 +2,7 @@ package engine.patterns
 
 import engine.context.Context
 import engine.expressions.Expression
+import engine.operators.UnaryExpressionOperator
 
 /**
  * A pattern which matches only the exact expression it was
@@ -52,6 +53,20 @@ open class OptionalNegPattern<T : Pattern>(val unsignedPattern: T) :
     fun isNeg(m: Match) = isWrapping(m)
 }
 
+/**
+ * Like OptionalNegPattern but doesn't match if the parent would match because it adds a negative sign.
+ */
+class StickyOptionalNegPattern<T : Pattern>(unsignedPattern: T) : OptionalNegPattern<T>(unsignedPattern) {
+    override fun findMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
+        if (subexpression.operator != UnaryExpressionOperator.Minus &&
+            subexpression.parent?.operator == UnaryExpressionOperator.Minus
+        ) {
+            return emptySequence()
+        }
+        return super.findMatches(context, match, subexpression)
+    }
+}
+
 data class SameSignPatten(val from: OptionalNegPattern<Pattern>, val to: Pattern) : BasePattern() {
 
     override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
@@ -68,7 +83,7 @@ data class OppositeSignPatten(val from: OptionalNegPattern<Pattern>, val to: Pat
     }
 }
 
-open class OptionalWrappingPattern(val pattern: Pattern, wrapper: (Pattern) -> Pattern) : KeyedPattern() {
+open class OptionalWrappingPattern(val pattern: Pattern, wrapper: (Pattern) -> Pattern) : KeyedPattern {
 
     private val wrappingPattern = wrapper(pattern)
     private val ptn = oneOf(wrappingPattern, pattern)
@@ -81,6 +96,9 @@ open class OptionalWrappingPattern(val pattern: Pattern, wrapper: (Pattern) -> P
 fun optional(pattern: Pattern, wrapper: (Pattern) -> Pattern) = OptionalWrappingPattern(pattern, wrapper)
 
 fun optionalNegOf(operand: Pattern) = OptionalNegPattern(operand)
+
+fun stickyOptionalNegOf(operand: Pattern) = StickyOptionalNegPattern(operand)
+
 fun optionalDivideBy(pattern: Pattern) = OptionalWrappingPattern(pattern, ::divideBy)
 
 fun sameSignPattern(from: OptionalNegPattern<Pattern>, to: Pattern) = SameSignPatten(from, to)

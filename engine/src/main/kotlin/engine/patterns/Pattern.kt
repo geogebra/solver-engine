@@ -113,8 +113,8 @@ abstract class BasePattern : Pattern {
  * A type of pattern whose matching is defined by the value of [key].  It can be subclassed for commonly used non-basic
  * patterns and if we want to add extra behaviour (e.g. see [FractionPattern]).
  */
-abstract class KeyedPattern : Pattern {
-    final override fun findMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
+interface KeyedPattern : Pattern {
+    override fun findMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
         return key.findMatches(context, match, subexpression)
     }
 }

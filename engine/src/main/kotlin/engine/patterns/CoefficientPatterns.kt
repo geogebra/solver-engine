@@ -7,7 +7,7 @@ import engine.expressions.Expression
 import engine.expressions.fractionOf
 import java.math.BigInteger
 
-abstract class CoefficientPattern(val value: Pattern) : KeyedPattern() {
+abstract class CoefficientPattern(val value: Pattern) : KeyedPattern {
     abstract fun coefficient(match: Match): Expression
 }
 
@@ -23,7 +23,7 @@ class IntegerCoefficientPattern(value: Pattern) : CoefficientPattern(value) {
 
     private val options = oneOf(
         value,
-        productOf(coefficientPattern, value),
+        productOf(coefficientPattern, value)
     )
 
     override val key = options

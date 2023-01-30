@@ -46,6 +46,7 @@ import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.productOf
 import engine.patterns.rootOf
+import engine.patterns.stickyOptionalNegOf
 import engine.patterns.sumContaining
 import engine.patterns.sumOf
 import engine.steps.metadata.metadata
@@ -615,7 +616,7 @@ private val distributeMultiplicationOverSum =
     rule {
         val sum = sumContaining()
         val product = productContaining(sum)
-        val optionalNegProduct = optionalNegOf(product)
+        val optionalNegProduct = stickyOptionalNegOf(product)
 
         onPattern(optionalNegProduct) {
             val getSum = get(sum)

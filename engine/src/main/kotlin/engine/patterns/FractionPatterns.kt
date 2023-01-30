@@ -1,6 +1,6 @@
 package engine.patterns
 
-class FractionPattern : KeyedPattern() {
+class FractionPattern : KeyedPattern {
     val numerator = AnyPattern()
     val denominator = AnyPattern()
     val fraction = fractionOf(numerator, denominator)
@@ -8,7 +8,7 @@ class FractionPattern : KeyedPattern() {
     override val key = fraction.key
 }
 
-class IntegerFractionPattern : KeyedPattern() {
+class IntegerFractionPattern : KeyedPattern {
     val numerator = UnsignedIntegerPattern()
     val denominator = UnsignedIntegerPattern()
     val fraction = fractionOf(numerator, denominator)
@@ -16,7 +16,7 @@ class IntegerFractionPattern : KeyedPattern() {
     override val key = fraction.key
 }
 
-class RationalPattern : KeyedPattern() {
+class RationalPattern : KeyedPattern {
 
     private val numerator = UnsignedIntegerPattern()
     private val denominator = UnsignedIntegerPattern()

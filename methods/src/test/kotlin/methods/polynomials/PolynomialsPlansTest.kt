@@ -1461,22 +1461,22 @@ class ExpandAndSimplifyMultipleBrackets {
 
             step {
                 fromExpr = "3 x + 3 - 2(x + 6)"
-                toExpr = "3 x + 3 - (2 x + 12)"
+                toExpr = "3 x + 3 + (-2x - 12)"
                 explanation {
                     key = PolynomialsExplanation.ApplyExpandRuleAndSimplify
                 }
 
                 step {
-                    fromExpr = "2(x + 6)"
-                    toExpr = "2 * x + 2 * 6"
+                    fromExpr = "-2(x + 6)"
+                    toExpr = "(-2) * x + (-2) * 6"
                     explanation {
                         key = GeneralExplanation.DistributeMultiplicationOverSum
                     }
                 }
 
                 step {
-                    fromExpr = "2 * x + 2 * 6"
-                    toExpr = "2 x + 12"
+                    fromExpr = "(-2) * x + (-2) * 6"
+                    toExpr = "-2x - 12"
                     explanation {
                         key = PolynomialsExplanation.SimplifyAlgebraicExpression
                     }
@@ -1484,10 +1484,10 @@ class ExpandAndSimplifyMultipleBrackets {
             }
 
             step {
-                fromExpr = "3 x + 3 - (2 x + 12)"
+                fromExpr = "3 x + 3 + (-2 x - 12)"
                 toExpr = "3 x + 3 - 2 x - 12"
                 explanation {
-                    key = GeneralExplanation.DistributeNegativeOverBracket
+                    key = GeneralExplanation.RemoveBracketSumInSum
                 }
             }
 
