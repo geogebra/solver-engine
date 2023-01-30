@@ -16,6 +16,7 @@ import engine.expressions.sumOf
 import engine.expressions.xp
 import engine.operators.EquationOperator
 import engine.operators.InequalityOperators
+import engine.operators.NaryOperator
 import engine.patterns.CoefficientPattern
 import engine.patterns.ExpressionProvider
 import engine.patterns.InequalityPattern
@@ -29,6 +30,7 @@ import engine.patterns.OptionalWrappingPattern
 import engine.patterns.Pattern
 import engine.patterns.RecurringDecimalPattern
 import engine.patterns.SolvablePattern
+import engine.steps.metadata.MetadataMaker
 import engine.utility.RecurringDecimal
 import engine.utility.primeFactorDecomposition
 import java.math.BigDecimal
@@ -192,6 +194,15 @@ open class MappedExpressionBuilder(
 
     fun NaryPattern.substitute(vararg newVals: Expression) = substitute(match, newVals)
 
+    fun NaryPattern.extract(): Expression {
+        val matchedChildren = getMatchedChildExpressions(match)
+
+        return when (operator) {
+            NaryOperator.Sum -> sumOf(matchedChildren)
+            NaryOperator.Product, NaryOperator.ImplicitProduct -> productOf(matchedChildren)
+        }
+    }
+
     fun SolvablePattern.isEquation() = getBoundExpr(match)?.operator == EquationOperator
 
     fun InequalityPattern.holdsFor(val1: BigDecimal, val2: BigDecimal): Boolean {
@@ -269,6 +280,8 @@ open class MappedExpressionBuilder(
 
     fun optionalDivideBy(pattern: OptionalWrappingPattern, mappedExpression: Expression) =
         mappedExpression.wrapIf(pattern, ::divideBy)
+
+    fun MetadataMaker.make() = make(context, match)
 }
 
 class EmptyExpressionProviderException : Exception("No expressions were bound by the expression provider")

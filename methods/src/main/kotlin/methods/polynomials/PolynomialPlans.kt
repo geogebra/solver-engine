@@ -13,6 +13,8 @@ import engine.patterns.ArbitraryVariablePattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.condition
 import engine.patterns.powerOf
+import engine.patterns.productContaining
+import engine.patterns.sumContaining
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.constantexpressions.constantSimplificationSteps
 import methods.constantexpressions.simpleTidyUpSteps
@@ -31,7 +33,6 @@ enum class PolynomialPlans(override val runner: CompositeMethod) : RunnerMethod 
     NormalizeMonomialAndSimplify(normalizeMonomialAndSimplify),
     SimplifyPowerOfUnitaryMonomial(simplifyPowerOfUnitaryMonomial),
     DistributeProductToIntegerPowerAndSimplify(distributeProductToIntegerPowerAndSimplify),
-    ApplyExpandRuleAndSimplify(applyExpandRuleAndSimplify),
 
     /**
      * Simplify an algebraic expression with one variable.
@@ -59,7 +60,10 @@ enum class PolynomialPlans(override val runner: CompositeMethod) : RunnerMethod 
             steps {
                 optionally(NormalizationRules.NormaliseSimplifiedProduct)
                 whilePossible {
-                    deeply(ApplyExpandRuleAndSimplify, deepFirst = true)
+                    firstOf {
+                        option(AlgebraicSimplificationSteps)
+                        option { deeply(expandAndSimplifySteps, deepFirst = true) }
+                    }
                 }
             }
         }
@@ -74,7 +78,7 @@ private val simplifyCoefficient = plan {
     }
 }
 
-private val applyExpandRuleAndSimplify = plan {
+private val expandAndSimplifyBracketsToAPower = plan {
     explanation = Explanation.ApplyExpandRuleAndSimplify
 
     steps {
@@ -82,14 +86,44 @@ private val applyExpandRuleAndSimplify = plan {
             option(GeneralPlans.ExpandBinomialSquared)
             option(GeneralPlans.ExpandBinomialCubed)
             option(GeneralPlans.ExpandTrinomialSquared)
+        }
+        optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable)
+    }
+}
+
+private val expandAndSimplifyDoubleBrackets = plan {
+    explanation = Explanation.ApplyExpandRuleAndSimplify
+    val factor1 = sumContaining()
+    val factor2 = sumContaining()
+    pattern = productContaining(factor1, factor2)
+
+    partialExpressionSteps {
+        firstOf {
             option(GeneralRules.ExpandProductOfSumAndDifference)
             option(GeneralRules.ApplyFoilMethod)
             option(GeneralRules.ExpandDoubleBrackets)
-            option(GeneralRules.DistributeNegativeOverBracket)
-            option(GeneralRules.DistributeMultiplicationOverSum)
-            option(NormalizationPlans.NormalizeExpression)
         }
         optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable)
+    }
+}
+
+private val expandAndSimplifySingleBracket = plan {
+    explanation = Explanation.ApplyExpandRuleAndSimplify
+
+    steps {
+        firstOf {
+            option(GeneralRules.DistributeNegativeOverBracket)
+            option(GeneralRules.DistributeMultiplicationOverSum)
+        }
+        optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable)
+    }
+}
+
+private val expandAndSimplifySteps = steps {
+    firstOf {
+        option(expandAndSimplifyBracketsToAPower)
+        option(expandAndSimplifyDoubleBrackets)
+        option(expandAndSimplifySingleBracket)
     }
 }
 

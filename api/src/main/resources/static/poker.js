@@ -186,11 +186,14 @@ const renderSteps = (steps, depth = 0, open = false) => {
     if (steps === null || steps.length === 0) {
         return "";
     }
+    const processedSteps = preprocessSteps(steps);
     return `
     <details class="steps" ${open ? "open" : ""}>
-        <summary>${steps.length} ${steps.length === 1 ? "step" : "steps"}</summary>
+        <summary>${processedSteps.length} ${
+        processedSteps.length === 1 ? "step" : "steps"
+    }</summary>
         <ol>
-            ${preprocessSteps(steps)
+            ${processedSteps
                 .map((step) => `<li>${renderTransformation(step, depth - 1)}</li>`)
                 .join("")}
         </ol>
@@ -227,19 +230,7 @@ const preprocessSteps = (steps) => {
     if (showRearrangements || !steps.some((step) => step.type === "Rearrangement")) {
         return steps;
     }
-    const processedSteps = [];
-    let fromExpr = null;
-    for (const step of steps) {
-        if (step.type === "Rearrangement") {
-            fromExpr = step.fromExpr;
-        } else if (!fromExpr) {
-            processedSteps.push(step);
-        } else {
-            processedSteps.push({ ...step, fromExpr });
-            fromExpr = null;
-        }
-    }
-    return processedSteps;
+    return steps.filter((step) => step.type !== "Rearrangement");
 };
 
 const renderWarning = (content) =>
@@ -437,7 +428,7 @@ const fetchPlansAndUpdatePage = () =>
             el("precisionSelect").value = precision;
         }
         if (preferDecimals) {
-            el("preferDecimals").checked = true
+            el("preferDecimals").checked = true;
         }
         if (solutionVariable) {
             el("solutionVariable").value = solutionVariable;

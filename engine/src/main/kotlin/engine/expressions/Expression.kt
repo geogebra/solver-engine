@@ -112,7 +112,23 @@ class Expression internal constructor(
 
     fun children() = origin.computeChildrenOrigin(this)
 
+    /**
+     * Number of children of this expression.
+     */
     val childCount get() = this.operands.size
+
+    /**
+     * Number of children of this expression, where implicit and explicit products are flattened.
+     * E.g. 3x*5x has a flattenedChildCount of 4
+     * But (3x)(5x) has a flattenedChildCount of 2
+     */
+    val flattenedChildCount
+        get() = when (operator) {
+            NaryOperator.Product -> children().sumOf {
+                if (!it.hasBracket() && it.operator == NaryOperator.ImplicitProduct) it.childCount else 1
+            }
+            else -> childCount
+        }
 
     fun flattenedProductChildren() = when (operator) {
         NaryOperator.ImplicitProduct -> children()

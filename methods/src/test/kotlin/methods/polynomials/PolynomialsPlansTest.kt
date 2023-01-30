@@ -2,6 +2,7 @@ package methods.polynomials
 
 import engine.context.Context
 import engine.context.Curriculum
+import engine.methods.SolverEngineExplanation
 import engine.methods.testMethod
 import methods.constantexpressions.ConstantExpressionsExplanation
 import methods.fractionarithmetic.FractionArithmeticExplanation
@@ -724,9 +725,17 @@ class ExpandAndSimplifySquareOfBinomial {
 
             step {
                 fromExpr = "[(([x ^ 2] + 2 x + 1) + 2) ^ 2]"
+                toExpr = "[([x ^ 2] + 2 x + 1 + 2) ^ 2]"
+                explanation {
+                    key = GeneralExplanation.RemoveBracketSumInSum
+                }
+            }
+
+            step {
+                fromExpr = "[([x ^ 2] + 2 x + 1 + 2) ^ 2]"
                 toExpr = "[([x ^ 2] + 2 x + 3) ^ 2]"
                 explanation {
-                    key = PolynomialsExplanation.ApplyExpandRuleAndSimplify
+                    key = IntegerArithmeticExplanation.SimplifyIntegersInSum
                 }
             }
 
@@ -813,23 +822,26 @@ class ExpandAndSimplifyCubeOfBinomial {
                 fromExpr = "(2 x - 3) (2 x - 3) (2 x - 3)"
                 toExpr = "(4 [x ^ 2] - 12 x + 9) (2 x - 3)"
                 explanation {
-                    key = PolynomialsExplanation.ApplyExpandRuleAndSimplify
+                    key = SolverEngineExplanation.SimplifyPartialExpression
                 }
 
-                step {
-                    fromExpr = "(2 x - 3) (2 x - 3) (2 x - 3)"
-                    toExpr = "(2 x * 2 x + 2 x * (-3) + (-3) * 2 x + (-3) * (-3)) (2 x - 3)"
+                task {
+                    startExpr = "(2 x - 3) (2 x - 3)"
                     explanation {
-                        key = GeneralExplanation.ApplyFoilMethod
+                        key = PolynomialsExplanation.ApplyExpandRuleAndSimplify
+                    }
+
+                    step {
+                        toExpr = "2 x * 2 x + 2 x * (-3) + (-3) * 2 x + (-3) * (-3)"
+                    }
+
+                    step {
+                        toExpr = "4 [x ^ 2] - 12 x + 9"
                     }
                 }
 
-                step {
-                    fromExpr = "(2 x * 2 x + 2 x * (-3) + (-3) * 2 x + (-3) * (-3)) (2 x - 3)"
-                    toExpr = "(4 [x ^ 2] - 12 x + 9) (2 x - 3)"
-                    explanation {
-                        key = PolynomialsExplanation.SimplifyAlgebraicExpression
-                    }
+                task {
+                    startExpr = "(4 [x ^ 2] - 12 x + 9) (2 x - 3)"
                 }
             }
 
@@ -1074,23 +1086,35 @@ class ExpandAndSimplifyProductOfBrackets {
                 fromExpr = "11 (2 x - 3) (2 x + 3)"
                 toExpr = "11 (4 [x ^ 2] - 9)"
                 explanation {
-                    key = PolynomialsExplanation.ApplyExpandRuleAndSimplify
+                    key = SolverEngineExplanation.SimplifyPartialExpression
                 }
 
-                step {
-                    fromExpr = "11 (2 x - 3) (2 x + 3)"
-                    toExpr = "11 ([(2 x) ^ 2] - [3 ^ 2])"
+                task {
                     explanation {
-                        key = GeneralExplanation.ExpandProductOfSumAndDifference
+                        key = PolynomialsExplanation.ApplyExpandRuleAndSimplify
+                    }
+                    startExpr = "(2 x - 3) (2 x + 3)"
+
+                    step {
+                        explanation {
+                            key = GeneralExplanation.ExpandProductOfSumAndDifference
+                        }
+                        toExpr = "[(2 x) ^ 2] - [3 ^ 2]"
+                    }
+
+                    step {
+                        explanation {
+                            key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                        }
+                        toExpr = "4 [x ^ 2] - 9"
                     }
                 }
 
-                step {
-                    fromExpr = "11 ([(2 x) ^ 2] - [3 ^ 2])"
-                    toExpr = "11 (4 [x ^ 2] - 9)"
+                task {
                     explanation {
-                        key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                        key = SolverEngineExplanation.SubstitutePartialExpression
                     }
+                    startExpr = "11 (4 [x ^ 2] - 9)"
                 }
             }
 
@@ -1404,15 +1428,19 @@ class ExpandAndSimplifyMultipleBrackets {
                 key = PolynomialsExplanation.ExpandPolynomialExpression
             }
 
+            // Product normalizations
+            step { }
+            step { }
+
             step {
-                fromExpr = "3 * (x + 1) - 2 * (x + 6)"
-                toExpr = "(3 x + 3) - 2 * (x + 6)"
+                fromExpr = "3(x + 1) - 2(x + 6)"
+                toExpr = "(3 x + 3) - 2(x + 6)"
                 explanation {
                     key = PolynomialsExplanation.ApplyExpandRuleAndSimplify
                 }
 
                 step {
-                    fromExpr = "3 * (x + 1)"
+                    fromExpr = "3(x + 1)"
                     toExpr = "3 * x + 3 * 1"
                     explanation {
                         key = GeneralExplanation.DistributeMultiplicationOverSum
@@ -1428,15 +1456,18 @@ class ExpandAndSimplifyMultipleBrackets {
                 }
             }
 
+            // Remove bracket
+            step {}
+
             step {
-                fromExpr = "(3 x + 3) - 2 * (x + 6)"
-                toExpr = "(3 x + 3) - (2 x + 12)"
+                fromExpr = "3 x + 3 - 2(x + 6)"
+                toExpr = "3 x + 3 - (2 x + 12)"
                 explanation {
                     key = PolynomialsExplanation.ApplyExpandRuleAndSimplify
                 }
 
                 step {
-                    fromExpr = "2 * (x + 6)"
+                    fromExpr = "2(x + 6)"
                     toExpr = "2 * x + 2 * 6"
                     explanation {
                         key = GeneralExplanation.DistributeMultiplicationOverSum
@@ -1453,42 +1484,26 @@ class ExpandAndSimplifyMultipleBrackets {
             }
 
             step {
-                fromExpr = "(3 x + 3) - (2 x + 12)"
-                toExpr = "(3 x + 3) + (-2 x - 12)"
+                fromExpr = "3 x + 3 - (2 x + 12)"
+                toExpr = "3 x + 3 - 2 x - 12"
                 explanation {
-                    key = PolynomialsExplanation.ApplyExpandRuleAndSimplify
-                }
-
-                step {
-                    fromExpr = "-(2 x + 12)"
-                    toExpr = "-2 x - 12"
-                    explanation {
-                        key = GeneralExplanation.DistributeNegativeOverBracket
-                    }
+                    key = GeneralExplanation.DistributeNegativeOverBracket
                 }
             }
 
             step {
-                fromExpr = "(3 x + 3) + (-2 x - 12)"
+                fromExpr = "3 x + 3 - 2 x - 12"
+                toExpr = "x + 3 - 12"
+                explanation {
+                    key = PolynomialsExplanation.CollectLikeTermsAndSimplify
+                }
+            }
+
+            step {
+                fromExpr = "x + 3 - 12"
                 toExpr = "x - 9"
                 explanation {
-                    key = PolynomialsExplanation.ApplyExpandRuleAndSimplify
-                }
-
-                step {
-                    fromExpr = "(3 x + 3) + (-2 x - 12)"
-                    toExpr = "3 x + 3 - 2 x - 12"
-                    explanation {
-                        key = GeneralExplanation.RemoveBracketSumInSum
-                    }
-                }
-
-                step {
-                    fromExpr = "3 x + 3 - 2 x - 12"
-                    toExpr = "x - 9"
-                    explanation {
-                        key = PolynomialsExplanation.SimplifyAlgebraicExpression
-                    }
+                    key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
                 }
             }
         }

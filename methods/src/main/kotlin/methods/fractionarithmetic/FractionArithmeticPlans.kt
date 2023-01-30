@@ -146,7 +146,7 @@ private val evaluateFractionSum = plan {
 
     skill(Skill.AddFractions, f1, f2)
 
-    partialSumSteps {
+    partialExpressionSteps {
         optionally {
             plan {
                 explanation = Explanation.EvaluateProductsInNumeratorAndDenominator
@@ -221,7 +221,7 @@ private val evaluateSumOfFractionAndInteger = plan {
     val n = SignedIntegerPattern()
     pattern = commutativeSumContaining(f, n)
 
-    partialSumSteps {
+    partialExpressionSteps {
         apply(FractionArithmeticRules.TurnSumOfFractionAndIntegerToFractionSum)
         deeply(IntegerArithmeticRules.EvaluateIntegerProductAndDivision)
         apply(FractionArithmeticPlans.EvaluateFractionSum)

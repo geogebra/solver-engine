@@ -34,6 +34,7 @@ assemble:
   artifacts:
     paths:
       - methods/build/generated/ksp/main/resources/TranslationKeys.json
+      - engine/build/generated/ksp/main/resources/TranslationKeys.json
     expire_in: 1 day
 
 check-circular-dependencies-in-methods:
@@ -77,11 +78,19 @@ export-translation-keys:
   tags:
     - docker
   script:
+    # Translation keys from the methods module (most keys)
     - |
       curl -X POST 'https://dev.geogebra.org/ggbtrans/props/api/solver_import/?override_test=1' \
         --fail-with-body \
         --header "X-Token: $GGBTRANS_API_TOKEN" \
         --data @methods/build/generated/ksp/main/resources/TranslationKeys.json
+    # Generic translation keys from the engine module
+    - |
+      curl -X POST 'https://dev.geogebra.org/ggbtrans/props/api/solver_import/?override_test=1' \
+        --fail-with-body \
+        --header "X-Token: $GGBTRANS_API_TOKEN" \
+        --data @engine/build/generated/ksp/main/resources/TranslationKeys.json
+
   when: manual
 
 deploy:

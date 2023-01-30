@@ -7,6 +7,7 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint")
     id("io.gitlab.arturbosch.detekt")
     id("java-test-fixtures")
+    id("com.google.devtools.ksp")
 }
 
 dependencies {
@@ -16,6 +17,8 @@ dependencies {
     testImplementation(kotlin("test"))
     testFixturesImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")
+
+    ksp(project(":export"))
 }
 
 tasks.test {

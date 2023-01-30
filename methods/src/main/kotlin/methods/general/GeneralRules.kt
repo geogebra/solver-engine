@@ -44,6 +44,7 @@ import engine.patterns.optionalNegOf
 import engine.patterns.optionalPowerOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
+import engine.patterns.productOf
 import engine.patterns.rootOf
 import engine.patterns.sumContaining
 import engine.patterns.sumOf
@@ -465,16 +466,14 @@ private val expandProductOfSumAndDifference =
     rule {
         val a = AnyPattern()
         val b = condition(AnyPattern()) { it.operator != UnaryExpressionOperator.Minus }
-        val pattern = commutativeProductContaining(commutativeSumOf(a, b), commutativeSumOf(a, negOf(b)))
+        val pattern = commutativeProductOf(commutativeSumOf(a, b), commutativeSumOf(a, negOf(b)))
 
         onPattern(pattern) {
             ruleResult(
-                toExpr = pattern.substitute(
-                    sumOf(
-                        powerOf(move(a), introduce(Constants.Two)),
-                        negOf(
-                            powerOf(move(b), introduce(Constants.Two))
-                        )
+                toExpr = sumOf(
+                    powerOf(move(a), introduce(Constants.Two)),
+                    negOf(
+                        powerOf(move(b), introduce(Constants.Two))
                     )
                 ),
                 explanation = metadata(Explanation.ExpandProductOfSumAndDifference)
@@ -493,7 +492,7 @@ private val applyFoilMethod =
         val d = AnyPattern()
         val sum1 = sumOf(a, b)
         val sum2 = sumOf(c, d)
-        val prod = productContaining(sum1, sum2)
+        val prod = productOf(sum1, sum2)
 
         onPattern(prod) {
             val toExpr = sumOf(
@@ -504,7 +503,7 @@ private val applyFoilMethod =
             )
 
             ruleResult(
-                toExpr = prod.substitute(toExpr),
+                toExpr = toExpr,
                 explanation = metadata(Explanation.ApplyFoilMethod)
             )
         }
@@ -518,7 +517,7 @@ private val expandDoubleBrackets =
     rule {
         val sum1 = sumContaining()
         val sum2 = sumContaining()
-        val prod = productContaining(sum1, sum2)
+        val prod = productOf(sum1, sum2)
 
         onPattern(prod) {
             val terms1 = get(sum1).children()
@@ -531,7 +530,7 @@ private val expandDoubleBrackets =
             )
 
             ruleResult(
-                toExpr = prod.substitute(toExpr),
+                toExpr = toExpr,
                 explanation = metadata(Explanation.ExpandDoubleBrackets)
             )
         }
@@ -615,9 +614,8 @@ private val distributeSumOfPowers =
 private val distributeMultiplicationOverSum =
     rule {
         val sum = sumContaining()
-        val product = commutativeProductContaining(sum)
-        val negProduct = negOf(product)
-        val optionalNegProduct = oneOf(negProduct, product)
+        val product = productContaining(sum)
+        val optionalNegProduct = optionalNegOf(product)
 
         onPattern(optionalNegProduct) {
             val getSum = get(sum)
@@ -626,7 +624,7 @@ private val distributeMultiplicationOverSum =
 
             // variableExpression * (c1 + c2 + ... + cn) --> shouldn't be expanded
             if (getSum.isConstant() && !restOfProd.isConstant()) return@onPattern null
-            val distributeTerm = if (isBound(negProduct)) {
+            val distributeTerm = if (optionalNegProduct.isNeg()) {
                 negOf(restOfProd)
             } else {
                 restOfProd

@@ -198,14 +198,14 @@ class GeneralRulesTest {
             "[(sqrt[2]) ^ 2] - [1^2]"
         )
         testRule(
-            "5*(1 + sqrt[2])*(1 - sqrt[2])",
+            "(1 + sqrt[2])*(1 - sqrt[2])",
             ExpandProductOfSumAndDifference,
-            "5 ([1 ^ 2] - [(sqrt[2]) ^ 2])"
+            "[1 ^ 2] - [(sqrt[2]) ^ 2]"
         )
         testRule(
-            "(2x - 3) * 5 * (2x + 3)",
+            "(2x - 3) (2x + 3)",
             ExpandProductOfSumAndDifference,
-            "5 ( [(2x)^2] - [3^2] )"
+            "[(2x)^2] - [3^2]"
         )
     }
 

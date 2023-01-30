@@ -17,6 +17,7 @@ import engine.patterns.condition
 import engine.patterns.plusOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
+import engine.steps.Transformation
 import engine.steps.metadata.metadata
 
 const val ORDER_CONSTANT_PRODUCT = 1
@@ -154,6 +155,7 @@ private val normaliseSimplifiedProduct =
 
             if (toExpr == getProd) null
             else ruleResult(
+                type = Transformation.Type.Rearrangement,
                 toExpr = toExpr,
                 explanation = metadata(Explanation.NormaliseSimplifiedProduct)
             )

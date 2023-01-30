@@ -140,11 +140,16 @@ class TestAddFractions {
         check {
             toExpr = "[1/6] + 3"
 
-            step { toExpr = "<. [1/2] - [1/3] .> + 3" }
-            step { toExpr = "<. [1*3/2*3] - [1*2/3*2] .> + 3" }
-            step { toExpr = "<. [3/6] - [2/6] .> + 3" }
-            step { toExpr = "[3 - 2 / 6] + 3" }
-            step { toExpr = "[1/6] + 3" }
+            task {
+                startExpr = "[1/2] - [1/3]"
+
+                step { }
+                step { }
+                step { }
+                step { toExpr = "[1/6]" }
+            }
+
+            task { }
         }
     }
 
@@ -156,11 +161,19 @@ class TestAddFractions {
         check {
             toExpr = "5 + x + [1/6] + 3"
 
-            step { toExpr = "5 + x <. + [1/2] - [1/3] .> + 3" }
-            step { toExpr = "5 + x <. + [1*3/2*3] - [1*2/3*2] .> + 3" }
-            step { toExpr = "5 + x <. + [3/6] - [2/6] .> + 3" }
-            step { toExpr = "5 + x + [3 - 2 / 6] + 3" }
-            step { toExpr = "5 + x + [1/6] + 3" }
+            task {
+                startExpr = "[1/2] - [1/3]"
+
+                step { }
+                step { }
+                step { }
+                step {
+                    toExpr = "[1/6]"
+                }
+            }
+            task {
+                startExpr = "5 + x + [1/6] + 3"
+            }
         }
     }
 
@@ -196,11 +209,15 @@ class TestAddFractions {
 
         check {
             toExpr = "[4/8] + [5/6]"
-            explanation {
-                key = FractionArithmeticExplanation.EvaluateFractionSum
-                param { expr = "[1/2]" }
-                param { expr = "[1/3]" }
+
+            task {
+                explanation {
+                    key = FractionArithmeticExplanation.EvaluateFractionSum
+                    param { expr = "[1/2]" }
+                    param { expr = "[1/3]" }
+                }
             }
+            task { }
         }
     }
 }

@@ -28,13 +28,15 @@ data class TransformationResult(
     val skills: List<Metadata> = emptyList()
 )
 
+@Suppress("LongParameterList")
 fun ruleResult(
     toExpr: Expression,
     steps: List<Transformation>? = null,
     tasks: List<Task>? = null,
     explanation: Metadata? = null,
-    skills: List<Metadata> = emptyList()
-) = TransformationResult(Transformation.Type.Rule, toExpr, steps, tasks, explanation, skills)
+    skills: List<Metadata> = emptyList(),
+    type: Transformation.Type = Transformation.Type.Rule
+) = TransformationResult(type, toExpr, steps, tasks, explanation, skills)
 
 interface RunnerMethod : Method {
     val name: String

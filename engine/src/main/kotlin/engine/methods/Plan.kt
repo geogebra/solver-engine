@@ -11,7 +11,6 @@ import engine.methods.stepsproducers.ContextSensitiveSelector
 import engine.methods.stepsproducers.PipelineBuilder
 import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.steps
-import engine.operators.NaryOperator
 import engine.patterns.NaryPattern
 import engine.patterns.Pattern
 import engine.patterns.RootMatch
@@ -53,7 +52,7 @@ class Plan(
 
 class PlanBuilder(private val stepsProducerFactory: StepsProducerFactory) : CompositeMethodBuilder() {
 
-    private var isPartialSum = false
+    private var isPartialExpression = false
     private var alternatives: MutableList<ContextSensitiveAlternative> = mutableListOf()
     private lateinit var defaultSteps: StepsProducer
     private lateinit var resourceData: ResourceData
@@ -67,10 +66,10 @@ class PlanBuilder(private val stepsProducerFactory: StepsProducerFactory) : Comp
         check(!::defaultSteps.isInitialized)
     }
 
-    fun partialSumSteps(resourceData: ResourceData = emptyResourceData, init: PipelineBuilder.() -> Unit) {
+    fun partialExpressionSteps(resourceData: ResourceData = emptyResourceData, init: PipelineBuilder.() -> Unit) {
         checkNotInitialized()
-        require(pattern.let { it is NaryPattern && it.operator === NaryOperator.Sum })
-        this.isPartialSum = true
+        require(pattern is NaryPattern)
+        this.isPartialExpression = true
         steps(resourceData, init)
     }
 
@@ -87,8 +86,8 @@ class PlanBuilder(private val stepsProducerFactory: StepsProducerFactory) : Comp
 
     private fun wrapPlanExecutor(stepsProducer: StepsProducer): CompositeMethod {
         return when {
-            isPartialSum -> PartialSumPlan(
-                pattern = pattern as NaryPattern,
+            isPartialExpression -> PartialExpressionPlan(
+                naryPattern = pattern as NaryPattern,
                 stepsProducer = stepsProducer,
                 explanationMaker = MetadataMaker(explanation, explanationParameters),
                 skillMakers = skillMakers,
