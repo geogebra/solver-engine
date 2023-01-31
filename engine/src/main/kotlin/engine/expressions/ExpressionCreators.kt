@@ -68,6 +68,8 @@ fun simplifiedNegOf(expr: Expression) = when (expr.operator) {
 
 fun plusOf(expr: Expression) = buildExpression(UnaryExpressionOperator.Plus, listOf(expr))
 
+fun plusMinusOf(expr: Expression) = buildExpression(UnaryExpressionOperator.PlusMinus, listOf(expr))
+
 fun fractionOf(numerator: Expression, denominator: Expression) =
     buildExpression(BinaryExpressionOperator.Fraction, listOf(numerator, denominator))
 

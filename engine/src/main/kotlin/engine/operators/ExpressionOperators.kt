@@ -135,11 +135,6 @@ object MixedNumberOperator : ExpressionOperator {
 }
 
 enum class UnaryExpressionOperator(override val precedence: Int) : UnaryOperator, ExpressionOperator {
-    InvisibleBracket(MAX_PRECEDENCE) {
-        override fun childAllowed(op: Operator) = true
-        override fun <T> readableString(child: T) = "{$child}"
-        override fun latexString(ctx: RenderContext, child: LatexRenderable) = "{${child.toLatexString(ctx)}}"
-    },
     DivideBy(DIVIDE_BY_PRECEDENCE) {
         override fun childAllowed(op: Operator) = op.precedence > NaryOperator.Product.precedence
         override fun <T> readableString(child: T) = " : $child"
@@ -152,6 +147,10 @@ enum class UnaryExpressionOperator(override val precedence: Int) : UnaryOperator
     Minus(PLUS_MINUS_PRECEDENCE) {
         override fun <T> readableString(child: T) = "-$child"
         override fun latexString(ctx: RenderContext, child: LatexRenderable) = "-${child.toLatexString(ctx)}"
+    },
+    PlusMinus(PLUS_MINUS_PRECEDENCE) {
+        override fun <T> readableString(child: T) = "+/-$child"
+        override fun latexString(ctx: RenderContext, child: LatexRenderable) = "\\pm ${child.toLatexString(ctx)}"
     },
     SquareRoot(ROOT_PRECEDENCE) {
         override fun childAllowed(op: Operator) = true

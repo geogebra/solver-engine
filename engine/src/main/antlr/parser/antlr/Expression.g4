@@ -35,12 +35,12 @@ expr: sum;
 sum: first=firstTerm (rest+=otherTerm)*;
 
 firstTerm
-    : sign=('+'|'-')? explicitProduct       #realFirstTerm
+    : sign=('+'|'-'|PLUSMINUS)? explicitProduct       #realFirstTerm
     | OPEN_PARTIALSUM sum CLOSE_PARTIALSUM  #firstPartialSum
     ;
 
 otherTerm
-    : sign=('+'|'-') explicitProduct                       #realOtherTerm
+    : sign=('+'|'-'|PLUSMINUS) explicitProduct                       #realOtherTerm
     | OPEN_PARTIALSUM (terms+=otherTerm)+ CLOSE_PARTIALSUM  #otherPartialSum
     ;
 
@@ -103,6 +103,8 @@ CLOSE_CURLY: '.}';
 
 OPEN_PARTIALSUM: '<.';
 CLOSE_PARTIALSUM: '.>';
+
+PLUSMINUS: '+/-';
 
 REALS: 'REALS';
 INFINITY: 'INFINITY';

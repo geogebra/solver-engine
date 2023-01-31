@@ -26,7 +26,6 @@ fun Expression.isDefinitelyNotZero(): Boolean = when (signOf()) {
 @Suppress("ComplexMethod")
 fun Expression.isNotZeroNotBasedOnSign(): Boolean = when (operator) {
     is UnaryExpressionOperator -> when (operator) {
-        UnaryExpressionOperator.InvisibleBracket -> operands[0].isDefinitelyNotZero()
         UnaryExpressionOperator.DivideBy -> operands[0].isDefinitelyNotZero()
         UnaryExpressionOperator.Plus -> operands[0].isDefinitelyNotZero()
         UnaryExpressionOperator.Minus -> operands[0].isDefinitelyNotZero()

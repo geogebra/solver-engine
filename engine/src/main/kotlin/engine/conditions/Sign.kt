@@ -96,11 +96,11 @@ fun Expression.integerValue() = when (val op = operator) {
 }
 
 private fun UnaryExpressionOperator.signOf(operand: Expression) = when (this) {
-    UnaryExpressionOperator.InvisibleBracket -> operand.signOf()
     UnaryExpressionOperator.DivideBy -> operand.signOf().inverse()
     UnaryExpressionOperator.Plus -> operand.signOf()
     UnaryExpressionOperator.Minus -> -operand.signOf()
     UnaryExpressionOperator.SquareRoot -> operand.signOf().truncateToPositive()
+    UnaryExpressionOperator.PlusMinus -> Sign.UNKNOWN
     UnaryExpressionOperator.NaturalLog -> TODO()
 }
 

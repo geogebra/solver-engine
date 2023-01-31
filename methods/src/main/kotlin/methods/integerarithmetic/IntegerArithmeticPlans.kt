@@ -163,7 +163,6 @@ enum class IntegerArithmeticPlans(override val runner: CompositeMethod) : Runner
 }
 
 val arithmeticOperators = listOf(
-    UnaryExpressionOperator.InvisibleBracket,
     UnaryExpressionOperator.Minus,
     UnaryExpressionOperator.Plus,
     UnaryExpressionOperator.DivideBy,

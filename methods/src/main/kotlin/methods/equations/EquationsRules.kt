@@ -1,14 +1,19 @@
 package methods.equations
 
+import engine.conditions.Sign
+import engine.conditions.signOf
 import engine.expressions.Constants
 import engine.expressions.denominator
 import engine.expressions.equationOf
 import engine.expressions.fractionOf
+import engine.expressions.negOf
 import engine.expressions.numerator
+import engine.expressions.plusMinusOf
 import engine.expressions.productOf
 import engine.expressions.simplifiedNegOf
 import engine.expressions.solutionOf
 import engine.expressions.solutionSetOf
+import engine.expressions.squareRootOf
 import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
@@ -17,16 +22,21 @@ import engine.methods.ruleResult
 import engine.operators.BinaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ConstantInSolutionVariablePattern
+import engine.patterns.FixedPattern
+import engine.patterns.MonomialPattern
 import engine.patterns.SolutionVariablePattern
+import engine.patterns.condition
 import engine.patterns.negOf
-import engine.patterns.withOptionalConstantCoefficient
+import engine.patterns.oneOf
+import engine.patterns.plusMinusOf
+import engine.patterns.powerOf
 import engine.steps.metadata.metadata
 
 enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
     NegateBothSides(
         rule {
-            val variable = SolutionVariablePattern()
+            val variable = oneOf(SolutionVariablePattern(), powerOf(SolutionVariablePattern(), AnyPattern()))
             val lhs = negOf(variable)
             val rhs = AnyPattern()
 
@@ -41,7 +51,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
     MultiplyByInverseCoefficientOfVariable(
         rule {
-            val lhs = withOptionalConstantCoefficient(SolutionVariablePattern())
+            val lhs = MonomialPattern(SolutionVariablePattern())
             val rhs = AnyPattern()
 
             onEquation(lhs, rhs) {
@@ -67,7 +77,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
     DivideByCoefficientOfVariable(
         rule {
-            val lhs = withOptionalConstantCoefficient(SolutionVariablePattern())
+            val lhs = MonomialPattern(SolutionVariablePattern())
             val rhs = AnyPattern()
 
             onEquation(lhs, rhs) {
@@ -99,6 +109,36 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
         }
     ),
 
+    TakeSquareRootOfBothSides(
+        rule {
+            val solutionVariable = SolutionVariablePattern()
+            val lhs = powerOf(solutionVariable, FixedPattern(Constants.Two))
+            val rhs = condition(ConstantInSolutionVariablePattern()) { it.signOf() == Sign.POSITIVE }
+
+            onEquation(lhs, rhs) {
+                ruleResult(
+                    toExpr = equationOf(move(solutionVariable), plusMinusOf(squareRootOf(move(rhs)))),
+                    explanation = metadata(Explanation.TakeSquareRootOfBothSides)
+                )
+            }
+        }
+    ),
+
+    TakeSquareRootOfBothSidesRHSIsZero(
+        rule {
+            val solutionVariable = SolutionVariablePattern()
+            val lhs = powerOf(solutionVariable, FixedPattern(Constants.Two))
+            val rhs = FixedPattern(Constants.Zero)
+
+            onEquation(lhs, rhs) {
+                ruleResult(
+                    toExpr = equationOf(move(solutionVariable), move(rhs)),
+                    explanation = metadata(Explanation.TakeSquareRootOfBothSidesRHSIsZero)
+                )
+            }
+        }
+    ),
+
     ExtractSolutionFromIdentity(
         rule {
             val value = ConstantInSolutionVariablePattern()
@@ -120,12 +160,27 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             onEquation(lhs, rhs) {
                 if (get(lhs) != get(rhs)) {
                     ruleResult(
-                        toExpr = solutionOf(xp(context.solutionVariable!!), solutionSetOf()),
+                        toExpr = solutionOf(xp(context.solutionVariable!!), Constants.EmptySet),
                         explanation = metadata(Explanation.ExtractSolutionFromContradiction)
                     )
                 } else {
                     null
                 }
+            }
+        }
+    ),
+
+    ExtractSolutionFromSquareEqualsNegative(
+        rule {
+            val solutionVariable = SolutionVariablePattern()
+            val lhs = powerOf(solutionVariable, FixedPattern(Constants.Two))
+            val rhs = condition(ConstantInSolutionVariablePattern()) { it.signOf() == Sign.NEGATIVE }
+
+            onEquation(lhs, rhs) {
+                ruleResult(
+                    toExpr = solutionOf(move(solutionVariable), Constants.EmptySet),
+                    explanation = metadata(Explanation.ExtractSolutionFromSquareEqualsNegative)
+                )
             }
         }
     ),
@@ -139,6 +194,21 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     toExpr = solutionOf(move(lhs), solutionSetOf(move(rhs))),
                     explanation = metadata(Explanation.ExtractSolutionFromEquationInSolvedForm)
+                )
+            }
+        }
+    ),
+
+    ExtractSolutionFromEquationInPlusMinusForm(
+        rule {
+            val lhs = SolutionVariablePattern()
+            val absoluteValue = ConstantInSolutionVariablePattern()
+            val rhs = plusMinusOf(absoluteValue)
+
+            onEquation(lhs, rhs) {
+                ruleResult(
+                    toExpr = solutionOf(move(lhs), solutionSetOf(negOf(move(absoluteValue)), move(absoluteValue))),
+                    explanation = metadata(Explanation.ExtractSolutionFromEquationInPlusMinusForm)
                 )
             }
         }

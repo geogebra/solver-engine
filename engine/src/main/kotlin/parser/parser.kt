@@ -127,6 +127,7 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
         val p = visit(ctx.explicitProduct())
         return if (ctx.sign == null) p else when (ctx.sign.text) {
             "+" -> makeExpression(UnaryExpressionOperator.Plus, p)
+            "+/-" -> makeExpression(UnaryExpressionOperator.PlusMinus, p)
             else -> makeExpression(UnaryExpressionOperator.Minus, p)
         }
     }
@@ -139,6 +140,7 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
         val p = visit(ctx.explicitProduct())
         return when {
             ctx.sign.text == "-" -> makeExpression(UnaryExpressionOperator.Minus, p)
+            ctx.sign.text == "+/-" -> makeExpression(UnaryExpressionOperator.PlusMinus, p)
             UnaryExpressionOperator.Plus.childAllowed(p.operator) || p.hasBracket() -> p
             else -> p.decorate(Decorator.MissingBracket)
         }

@@ -57,6 +57,7 @@ fun mixedNumberOf(
 
 fun plusOf(operand: Pattern) = OperatorPattern(UnaryExpressionOperator.Plus, listOf(operand))
 fun negOf(operand: Pattern) = OperatorPattern(UnaryExpressionOperator.Minus, listOf(operand))
+fun plusMinusOf(operand: Pattern) = OperatorPattern(UnaryExpressionOperator.PlusMinus, listOf(operand))
 
 fun explicitProductOf(vararg factors: Pattern) = OperatorPattern(NaryOperator.Product, factors.asList())
 fun implicitProductOf(vararg factors: Pattern) = OperatorPattern(NaryOperator.ImplicitProduct, factors.asList())

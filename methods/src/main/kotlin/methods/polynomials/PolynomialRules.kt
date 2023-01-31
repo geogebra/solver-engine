@@ -14,11 +14,7 @@ import engine.methods.rule
 import engine.methods.ruleResult
 import engine.operators.UnaryExpressionOperator
 import engine.patterns.ArbitraryVariablePattern
-import engine.patterns.IntegerProvider
-import engine.patterns.IntegerProviderWithDefault
-import engine.patterns.KeyedPattern
-import engine.patterns.Match
-import engine.patterns.Pattern
+import engine.patterns.MonomialPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
@@ -220,26 +216,4 @@ private val normalizePolynomial = rule {
             }
         }
     }
-}
-
-/**
- * Monomial pattern, i.e. [x ^ n] for n non-negative integer or x where x is the [base], possibly with a constant
- * coefficient.
- *
- * This pattern may be better off in the engine module if it proves widely useful.
- */
-private class MonomialPattern(val base: Pattern, positiveOnly: Boolean = false) : KeyedPattern {
-    private val exponentPattern = UnsignedIntegerPattern()
-
-    val powerPattern = oneOf(base, powerOf(base, exponentPattern))
-
-    private val ptn = withOptionalConstantCoefficient(powerPattern, positiveOnly)
-
-    val exponent: IntegerProvider = IntegerProviderWithDefault(exponentPattern, BigInteger.ONE)
-
-    override val key = ptn.key
-
-    fun getPower(match: Match) = powerPattern.getBoundExpr(match)
-
-    fun coefficient(match: Match) = ptn.coefficient(match)
 }

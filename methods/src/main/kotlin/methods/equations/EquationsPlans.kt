@@ -10,6 +10,7 @@ import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.FormChecker
+import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
 import engine.patterns.AnyPattern
 import engine.patterns.FindPattern
@@ -32,6 +33,7 @@ import engine.patterns.sumContaining
 import engine.patterns.withOptionalConstantCoefficient
 import engine.steps.metadata.CategorisedMetadataKey
 import engine.steps.metadata.metadata
+import methods.constantexpressions.ConstantExpressionsPlans
 import methods.polynomials.PolynomialPlans
 import methods.solvable.SolvableRules
 
@@ -107,42 +109,34 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     SolveLinearEquation(
         plan {
             explanation = Explanation.SolveLinearEquation
-            pattern = equationOf(AnyPattern(), AnyPattern())
+            pattern = condition(equationOf(AnyPattern(), AnyPattern())) { it.variables.size == 1 }
 
             steps {
-                whilePossible {
-                    firstOf {
-                        // check if the equation is in one of the possible solved forms
-                        option(EquationsRules.ExtractSolutionFromIdentity)
-                        option(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
+                optionally(equationSimplificationSteps)
 
-                        // normalize the equation
-                        option(SolvableRules.CancelCommonTermsOnBothSides)
-                        option(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable)
-
-                        option {
-                            // multiply through with the LCD if the equation contains one fraction with a sum numerator
-                            // or a fraction multiplied by a sum
-                            checkForm {
-                                val nonConstantSum = condition(sumContaining()) { !it.isConstant() }
-                                oneOf(
-                                    FindPattern(fractionOf(nonConstantSum, UnsignedIntegerPattern())),
-                                    FindPattern(
-                                        productContaining(
-                                            fractionOf(AnyPattern(), UnsignedIntegerPattern()),
-                                            nonConstantSum
-                                        )
-                                    )
+                optionally {
+                    // multiply through with the LCD if the equation contains one fraction with a sum numerator
+                    // or a fraction multiplied by a sum
+                    checkForm {
+                        val nonConstantSum = condition(sumContaining()) { !it.isConstant() }
+                        oneOf(
+                            FindPattern(fractionOf(nonConstantSum, UnsignedIntegerPattern())),
+                            FindPattern(
+                                productContaining(
+                                    fractionOf(AnyPattern(), UnsignedIntegerPattern()),
+                                    nonConstantSum
                                 )
-                            }
-                            apply(MultiplyByLCDAndSimplify)
-                        }
+                            )
+                        )
+                    }
+                    apply(MultiplyByLCDAndSimplify)
+                }
 
-                        option(PolynomialPlans.ExpandPolynomialExpressionInOneVariable)
+                optionally(PolynomialPlans.ExpandPolynomialExpressionInOneVariable)
+                optionally(equationSimplificationSteps)
 
-                        // we can only deduce that the sides are unequal if we have normalized the equation already
-                        option(EquationsRules.ExtractSolutionFromContradiction)
-
+                optionally {
+                    firstOf {
                         // two ways to reorganize the equation into ax = b form
                         option {
                             // if the equation is in the form `a = bx + c` with `b` non-negative, then
@@ -165,11 +159,24 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                             optionally(MoveVariablesToTheLeftAndSimplify)
                             optionally(MoveConstantsToTheRightAndSimplify)
                         }
+                    }
+                }
 
+                optionally {
+                    firstOf {
                         // get rid of the coefficient of the variable
                         option(EquationsRules.NegateBothSides)
                         option(MultiplyByInverseCoefficientOfVariableAndSimplify)
                         option(DivideByCoefficientOfVariableAndSimplify)
+                    }
+                }
+
+                optionally {
+                    firstOf {
+                        // check if the equation is in one of the possible solved forms
+                        option(EquationsRules.ExtractSolutionFromContradiction)
+                        option(EquationsRules.ExtractSolutionFromIdentity)
+                        option(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
                     }
                 }
 
@@ -184,6 +191,49 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                         ResourceData(preferDecimals = true),
                         decimalSolutionFormChecker
                     )
+                }
+            }
+        }
+    ),
+
+    @PublicMethod
+    SolveQuadraticEquationUsingRootsMethod(
+        plan {
+            explanation = Explanation.SolveQuadraticEquationUsingRootsMethod
+            pattern = equationOf(AnyPattern(), AnyPattern())
+            resultPattern = solutionOf(SolutionVariablePattern(), AnyPattern())
+
+            steps {
+                optionally(equationSimplificationSteps)
+
+                optionally(MoveVariablesToTheLeftAndSimplify)
+                optionally(MoveConstantsToTheRightAndSimplify)
+
+                optionally {
+                    firstOf {
+                        // get rid of the coefficient of the variable
+                        option(EquationsRules.NegateBothSides)
+                        option(MultiplyByInverseCoefficientOfVariableAndSimplify)
+                        option(DivideByCoefficientOfVariableAndSimplify)
+                    }
+                }
+
+                firstOf {
+                    // x^2 = something negative
+                    option(EquationsRules.ExtractSolutionFromSquareEqualsNegative)
+
+                    option {
+                        apply(EquationsRules.TakeSquareRootOfBothSidesRHSIsZero)
+                        apply(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
+                    }
+
+                    option {
+                        apply(EquationsRules.TakeSquareRootOfBothSides)
+                        optionally {
+                            applyTo(ConstantExpressionsPlans.SimplifyConstantExpression) { it.secondChild }
+                        }
+                        apply(EquationsRules.ExtractSolutionFromEquationInPlusMinusForm)
+                    }
                 }
             }
         }
@@ -216,14 +266,14 @@ private val solveFactorisedQuadratic = taskSet {
 
     tasks {
         val task1 = task(
-            startExpr = equationOf(get(factor1)!!, get(zero)!!),
-            explanation = metadata(ExperimentalExplanation.SolveFactorOfQuadratic, get(factor1)!!),
+            startExpr = equationOf(get(factor1), get(zero)),
+            explanation = metadata(ExperimentalExplanation.SolveFactorOfQuadratic, get(factor1)),
             stepsProducer = EquationsPlans.SolveLinearEquation
         )
             ?: return@tasks null
         val task2 = task(
-            startExpr = equationOf(get(factor2)!!, get(zero)!!),
-            explanation = metadata(ExperimentalExplanation.SolveFactorOfQuadratic, get(factor2)!!),
+            startExpr = equationOf(get(factor2), get(zero)),
+            explanation = metadata(ExperimentalExplanation.SolveFactorOfQuadratic, get(factor2)),
             stepsProducer = EquationsPlans.SolveLinearEquation
         )
             ?: return@tasks null
@@ -235,6 +285,20 @@ private val solveFactorisedQuadratic = taskSet {
             dependsOn = listOf(task1, task2)
         )
         allTasks()
+    }
+}
+
+private val equationSimplificationSteps = steps {
+    whilePossible {
+        firstOf {
+            // before we cancel we always have to check for an identity
+            option(EquationsRules.ExtractSolutionFromIdentity)
+            // normalize the equation
+            option(SolvableRules.CancelCommonTermsOnBothSides)
+            option(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable)
+            // after cancelling we have to check for contradiction
+            option(EquationsRules.ExtractSolutionFromContradiction)
+        }
     }
 }
 

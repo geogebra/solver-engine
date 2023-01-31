@@ -13,7 +13,6 @@ import engine.methods.rule
 import engine.methods.ruleResult
 import engine.operators.NaryOperator
 import engine.patterns.AnyPattern
-import engine.patterns.SolutionVariablePattern
 import engine.patterns.SolvablePattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.condition
@@ -22,9 +21,9 @@ import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
-import engine.patterns.withOptionalConstantCoefficient
 import engine.steps.metadata.metadata
 import engine.utility.lcm
+import methods.solvable.DenominatorExtractor.extractDenominator
 import java.math.BigInteger
 
 enum class SolvableRules(override val runner: Rule) : RunnerMethod {
@@ -65,8 +64,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
             val solvable = SolvablePattern(lhs, rhs)
 
             onPattern(solvable) {
-                val constants = extractConstants(get(rhs)!!, context.solutionVariable)
-                if (constants == Constants.Zero) return@onPattern null
+                val constants = extractConstants(get(rhs), context.solutionVariable) ?: return@onPattern null
 
                 val negatedConstants = simplifiedNegOf(constants)
 
@@ -92,8 +90,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
             val solvable = SolvablePattern(lhs, rhs)
 
             onPattern(solvable) {
-                val constants = extractConstants(get(lhs)!!, context.solutionVariable)
-                if (constants == Constants.Zero) return@onPattern null
+                val constants = extractConstants(get(lhs), context.solutionVariable) ?: return@onPattern null
 
                 val negatedConstants = simplifiedNegOf(constants)
 
@@ -114,13 +111,14 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
     MoveVariablesToTheLeft(
         rule {
             val lhs = AnyPattern()
-            val solutionVariable = withOptionalConstantCoefficient(SolutionVariablePattern())
-            val rhs = oneOf(solutionVariable, sumContaining(solutionVariable))
+            val rhs = AnyPattern()
 
             val solvable = SolvablePattern(lhs, rhs)
 
             onPattern(solvable) {
-                val negatedVariable = simplifiedNegOf(move(solutionVariable))
+                val variables = extractVariableTerms(get(rhs), context.solutionVariable) ?: return@onPattern null
+
+                val negatedVariable = simplifiedNegOf(variables)
 
                 ruleResult(
                     toExpr = solvable.sameSolvable(
@@ -146,14 +144,14 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
             onPattern(solvable) {
                 var lcm = BigInteger.ONE
 
-                val lhsVal = get(lhs)!!
+                val lhsVal = get(lhs)
                 lcm = if (lhsVal.operator == NaryOperator.Sum) {
                     lhsVal.children().map { extractDenominator(it) }.fold(lcm) { curr, new -> curr.lcm(new) }
                 } else {
                     lcm.lcm(extractDenominator(lhsVal))
                 }
 
-                val rhsVal = get(rhs)!!
+                val rhsVal = get(rhs)
                 lcm = if (rhsVal.operator == NaryOperator.Sum) {
                     rhsVal.children().map { extractDenominator(it) }.fold(lcm) { curr, new -> curr.lcm(new) }
                 } else {
@@ -175,31 +173,44 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
     )
 }
 
-private fun extractConstants(expression: Expression, variable: String?): Expression {
+private fun extractVariableTerms(expression: Expression, variable: String?): Expression? {
     return when {
         expression.operator == NaryOperator.Sum -> {
-            val constantTerms = expression.children().filter { it.isConstantIn(variable) }
-            if (constantTerms.isEmpty()) Constants.Zero else sumOf(constantTerms)
+            val constantTerms = expression.children().filter { !it.isConstantIn(variable) }
+            if (constantTerms.isEmpty()) null else sumOf(constantTerms)
         }
-        expression.isConstantIn(variable) -> expression
-        else -> Constants.Zero
+        !expression.isConstantIn(variable) -> expression
+        else -> null
     }
 }
 
-private val integerDenominator = UnsignedIntegerPattern()
-private val integerDenominatorFraction = fractionOf(AnyPattern(), integerDenominator)
-private val denominatorDetectingPattern = optionalNegOf(
-    oneOf(
-        productContaining(integerDenominatorFraction),
-        integerDenominatorFraction
-    )
-)
+private fun extractConstants(expression: Expression, variable: String?): Expression? {
+    return when {
+        expression.operator == NaryOperator.Sum -> {
+            val constantTerms = expression.children().filter { it.isConstantIn(variable) }
+            if (constantTerms.isEmpty()) null else sumOf(constantTerms)
+        }
+        expression.isConstantIn(variable) -> expression
+        else -> null
+    }
+}
 
-private fun extractDenominator(expression: Expression): BigInteger {
-    val match = denominatorDetectingPattern.findMatches(emptyContext, subexpression = expression).firstOrNull()
-    return if (match != null) {
-        integerDenominator.getBoundInt(match)
-    } else {
-        return BigInteger.ONE
+private object DenominatorExtractor {
+    private val integerDenominator = UnsignedIntegerPattern()
+    private val integerDenominatorFraction = fractionOf(AnyPattern(), integerDenominator)
+    private val denominatorDetectingPattern = optionalNegOf(
+        oneOf(
+            productContaining(integerDenominatorFraction),
+            integerDenominatorFraction
+        )
+    )
+
+    fun extractDenominator(expression: Expression): BigInteger {
+        val match = denominatorDetectingPattern.findMatches(emptyContext, subexpression = expression).firstOrNull()
+        return if (match != null) {
+            integerDenominator.getBoundInt(match)
+        } else {
+            return BigInteger.ONE
+        }
     }
 }
