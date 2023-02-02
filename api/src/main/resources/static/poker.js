@@ -62,10 +62,10 @@ const fetchVersionInfo = () => fetch(`${apiRoot}/versionInfo`).then((resp) => re
 const initPlans = (plans) => {
     const options = plans
         .sort()
-        .map((plan) => `<option value="${plan}">${plan}</option>`)
+        .map((plan) => /* HTML */ `<option value="${plan}">${plan}</option>`)
         .join("");
 
-    el("plansSelect").innerHTML = `
+    el("plansSelect").innerHTML = /* HTML */ `
         <option value="selectPlans">Select Plans</option>
         ${options}`;
     // Default to something simple
@@ -89,7 +89,7 @@ const applyPlan = async (planId, input, context) => {
     el("source").innerHTML = JSON.stringify(result, null, 4);
     if (result.error !== undefined) {
         console.log(result);
-        el("result").innerHTML = `Error: ${result.error}<br/>Message: ${result.message}`;
+        el("result").innerHTML = /* HTML */ `Error: ${result.error}<b/>Message: ${result.message}`;
     } else {
         const solverResult = await requestApplyPlan(planId, input, context, "solver");
         el("result").innerHTML = renderTransformationAndTest(result, solverResult, 1);
@@ -102,7 +102,7 @@ const selectPlans = async (input, context) => {
     el("source").innerHTML = JSON.stringify(result, null, 4);
     if (result.error !== undefined) {
         console.log(result);
-        el("result").innerHTML = `Error: ${result.error}<br/>Message: ${result.message}`;
+        el("result").innerHTML = /* HTML */ `Error: ${result.error}<br/>Message: ${result.message}`;
     } else {
         console.log(result);
         const testResult = await requestSelectPlans(input, context, "solver");
@@ -125,15 +125,15 @@ const findTransformationInSelections = (selections, methodId) => {
 
 const renderPlanSelections = (selections, testSelections) => {
     if (!selections || selections.length === 0) {
-        return `<div class="selections">No plans found</div>`;
+        return /* HTML */ `<div class="selections">No plans found</div>`;
     }
-    return `
+    return /* HTML */ `
     <div class ="selections">${selections.length} plans found
         <ol>
             ${selections
                 .map(
                     (selection) =>
-                        `<li>${renderPlanSelection(
+                        /* HTML */ `<li>${renderPlanSelection(
                             selection,
                             findTransformationInSelections(
                                 testSelections,
@@ -148,7 +148,7 @@ const renderPlanSelections = (selections, testSelections) => {
 };
 
 const renderPlanSelection = (selection, testTransformation) => {
-    return `
+    return /* HTML */ `
     <div class="plan-selection">
         <div class="plan-id">${selection.metadata.methodId}</div>
         ${renderTransformationAndTest(selection.transformation, testTransformation)}
@@ -156,7 +156,7 @@ const renderPlanSelection = (selection, testTransformation) => {
 };
 
 const renderTransformationAndTest = (trans, testTrans, depth = 0) => {
-    return `
+    return /* HTML */ `
     ${renderTransformation(trans, depth)}
     ${renderTest(testTrans)}`;
 };
@@ -170,7 +170,7 @@ const renderTransformation = (trans, depth = 0) => {
     if (isThrough && !showThroughSteps) {
         return renderTransformation(trans.steps[0], depth);
     }
-    return `
+    return /* HTML */ `
     <div class="trans ${isThrough ? "through-step" : ""}">
         ${trans.planId ? `<div class="plan-id">${trans.planId}</div>` : ""}
         ${renderExplanation(trans.explanation)}
@@ -187,14 +187,14 @@ const renderSteps = (steps, depth = 0, open = false) => {
         return "";
     }
     const processedSteps = preprocessSteps(steps);
-    return `
+    return /* HTML */ `
     <details class="steps" ${open ? "open" : ""}>
         <summary>${processedSteps.length} ${
         processedSteps.length === 1 ? "step" : "steps"
     }</summary>
         <ol>
             ${processedSteps
-                .map((step) => `<li>${renderTransformation(step, depth - 1)}</li>`)
+                .map((step) => /* HTML */ `<li>${renderTransformation(step, depth - 1)}</li>`)
                 .join("")}
         </ol>
     </details>`;
@@ -204,7 +204,7 @@ const renderTasks = (tasks, depth = 0, open = false) => {
     if (tasks === null || tasks.length === 0) {
         return "";
     }
-    return `
+    return /* HTML */ `
     <details class="tasks" ${open ? "open" : ""}>
        <summary>${tasks.length} ${tasks.length === 1 ? "task" : "tasks"}</summary>
        <ol>
@@ -214,7 +214,7 @@ const renderTasks = (tasks, depth = 0, open = false) => {
 };
 
 const renderTask = (task, depth = 0) => {
-    return `<div class ="task">
+    return /* HTML */ `<div class ="task">
         Task ${task.taskId}: ${renderExplanation(task.explanation)}
         ${
             !task.steps
@@ -245,7 +245,7 @@ const preprocessSteps = (steps) => {
 };
 
 const renderWarning = (content) =>
-    `<div class="warning${hideWarnings ? " hidden" : ""}">${content}</div>`;
+    /* HTML */ `<div class="warning${hideWarnings ? " hidden" : ""}">${content}</div>`;
 
 const getExplanationString = (expl) => {
     let explanationString = translationData[expl.key];
@@ -288,9 +288,9 @@ const renderExplanation = (expl) => {
 
     const { explanationString, warnings } = getExplanationString(expl);
 
-    return `
+    return /* HTML */ `
     <div class="plan-explanation">
-        ${explanationString ? `<div title="${expl.key}">${explanationString}</div>` : ""}
+        ${explanationString ? /* HTML */ `<div title="${expl.key}">${explanationString}</div>` : ""}
         ${warnings ? warnings.map(renderWarning).join("") : ""}
     </div>`;
 };
@@ -344,7 +344,7 @@ class IndentBuilder {
 const renderTest = (trans) => {
     const stringBuilder = new StringBuilder();
     new IndentBuilder(stringBuilder).do(buildTest(trans));
-    return `
+    return /* HTML */ `
     <details>
         <summary>Test Code</summary>
         <pre>${stringBuilder}</pre>
@@ -493,9 +493,8 @@ window.onload = () => {
 
     fetchVersionInfo().then((info) => {
         el("version-info").innerHTML = info.commit
-            ? `commit
-        <a href="https://git.geogebra.org/solver-team/solver-engine/-/commit/${info.commit}">
-            ${info.commit.substring(0, 8)}
+            ? /* HTML */ `commit
+        <a href="https://git.geogebra.org/solver-team/solver-engine/-/commit/${info.commit}">${info.commit.substring(0, 8)}
         </a>
         `
             : "no commit info";
@@ -504,10 +503,9 @@ window.onload = () => {
             el("submitToMain").remove();
         } else if (info.deploymentName) {
             if (/^PLUT-\d+$/i.test(info.deploymentName)) {
-                el("title").innerHTML = `
+                el("title").innerHTML = /* HTML */ `
                 Solver Poker
-                <a href="https://geogebra-jira.atlassian.net/browse/${info.deploymentName.toUpperCase()}">
-                ${info.deploymentName.toUpperCase()}</a>
+                <a href="https://geogebra-jira.atlassian.net/browse/${info.deploymentName.toUpperCase()}">${info.deploymentName.toUpperCase()} </a>
             `;
             } else {
                 el("title").innerHTML = `Solver Poker (${info.deploymentName})`;

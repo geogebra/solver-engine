@@ -167,13 +167,13 @@ private val evaluateFractionSum = plan {
                 }
             }
             check {
-                val f1 = it.firstChild.asFraction()
-                val f2 = it.secondChild.asFraction()
-                f1 != null && f2 != null && gcd(
-                    f1.numerator,
-                    f1.denominator,
-                    f2.numerator,
-                    f2.denominator
+                val f11 = it.firstChild.asFraction()
+                val f22 = it.secondChild.asFraction()
+                f11 != null && f22 != null && gcd(
+                    f11.numerator,
+                    f11.denominator,
+                    f22.numerator,
+                    f22.denominator
                 ) == BigInteger.ONE
             }
         }
