@@ -29,6 +29,7 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(missingBracket) {
                 ruleResult(
+                    type = Transformation.Type.Rearrangement,
                     toExpr = transformTo(missingBracket) { it.removeBrackets().decorate(Decorator.RoundBracket) },
                     explanation = metadata(Explanation.ReplaceInvisibleBrackets)
                 )
@@ -46,6 +47,7 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(pattern) {
                 ruleResult(
+                    type = Transformation.Type.Rearrangement,
                     toExpr = sumOf(
                         get(pattern)!!.children().map { child -> transformTo(child) { it.removeBrackets() } }
                     ),
@@ -62,6 +64,7 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(pattern) {
                 ruleResult(
+                    type = Transformation.Type.Rearrangement,
                     toExpr = productOf(
                         get(pattern)!!.flattenedProductChildren()
                             .map { child -> transformTo(child) { it.removeBrackets() } }
@@ -93,6 +96,7 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(pattern) {
                 ruleResult(
+                    type = Transformation.Type.Rearrangement,
                     toExpr = transformTo(pattern) { it.removeBrackets() },
                     explanation = metadata(Explanation.RemoveRedundantBracket)
                 )
@@ -107,6 +111,7 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(pattern) {
                 ruleResult(
+                    type = Transformation.Type.Rearrangement,
                     toExpr = move(value),
                     explanation = metadata(Explanation.RemoveRedundantPlusSign)
                 )
@@ -141,7 +146,7 @@ private val normaliseSimplifiedProduct =
         val product = productContaining()
 
         onPattern(product) {
-            val getProd = get(product)!!
+            val getProd = get(product)
             val getProdChildren = getProd.flattenedProductChildren()
             val (constants, nonConstants) = getProdChildren.partition { it.isConstant() }
 

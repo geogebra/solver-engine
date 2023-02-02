@@ -230,7 +230,18 @@ const preprocessSteps = (steps) => {
     if (showRearrangements || !steps.some((step) => step.type === "Rearrangement")) {
         return steps;
     }
-    return steps.filter((step) => step.type !== "Rearrangement");
+    // Rearrangement steps are "collapsed" with the previous step if it exists
+    const processedSteps = [];
+    let lastStep = null;
+    for (const step of steps) {
+        if (lastStep !== null && step.type === "Rearrangement") {
+            lastStep.toExpr = step.toExpr;
+        } else {
+            lastStep = step;
+            processedSteps.push(step);
+        }
+    }
+    return processedSteps;
 };
 
 const renderWarning = (content) =>
