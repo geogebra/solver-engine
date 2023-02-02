@@ -102,20 +102,24 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
 
                 ruleResult(
                     toExpr = sumOf(
-                        copySign(
-                            nf1,
-                            fractionOf(
-                                productOf(get(f1.numerator), factor1),
-                                productOf(get(f1.denominator), factor1)
+                        if (factor1 == Constants.One) get(nf1) else {
+                            copySign(
+                                nf1,
+                                fractionOf(
+                                    productOf(get(f1.numerator), factor1),
+                                    productOf(get(f1.denominator), factor1)
+                                )
                             )
-                        ),
-                        copySign(
-                            nf2,
-                            fractionOf(
-                                productOf(get(f2.numerator), factor2),
-                                productOf(get(f2.denominator), factor2)
+                        },
+                        if (factor2 == Constants.One) get(nf2) else {
+                            copySign(
+                                nf2,
+                                fractionOf(
+                                    productOf(get(f2.numerator), factor2),
+                                    productOf(get(f2.denominator), factor2)
+                                )
                             )
-                        )
+                        }
                     ),
                     explanation = metadata(Explanation.BringToCommonDenominator, move(f1), move(f2)),
                     skills = listOf(metadata(Skill.NumericLCM, move(f1.denominator), move(f2.denominator)))

@@ -72,6 +72,8 @@ class IntegerFractionsRulesTest {
         testRule("[3/8] + [5/12]", BringToCommonDenominator, "[3 * 3/8 * 3] + [5 * 2/12 * 2]")
         testRule("[3/8] - [5/12]", BringToCommonDenominator, "[3 * 3/8 * 3] - [5 * 2/12 * 2]")
         testRule("-[3/8] + [5/12]", BringToCommonDenominator, "-[3 * 3/8 * 3] + [5 * 2/12 * 2]")
+        testRule("[1/2] + [1/4]", BringToCommonDenominator, "[1 * 2/2 * 2] + [1/4]")
+        testRule("[3/10] - [1/2]", BringToCommonDenominator, "[3/10] - [1 * 5/2 * 5]")
     }
 
     @Test
