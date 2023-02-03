@@ -131,7 +131,13 @@ const renderTransformation = (trans, depth = 0) => {
     if (isThrough && !showThroughSteps) {
         return renderTransformation(trans.steps[0], depth);
     }
-    const colors = ["blue", "green", "purple", "red"];
+    const colors = [
+        "green",
+        "purple",
+        'red',
+        // Orange
+        "#E07415",
+    ];
     const [fromColoring, toColoring] = trans.steps
         ? [undefined, undefined]
         : ggbSolver.createColorMaps(trans.pathMappings, colors).map(ggbSolver.coloringTransformer);
