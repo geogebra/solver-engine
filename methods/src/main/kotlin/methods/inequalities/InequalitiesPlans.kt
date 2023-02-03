@@ -18,6 +18,7 @@ import engine.patterns.UnsignedNumberPattern
 import engine.patterns.closedOpenIntervalOf
 import engine.patterns.condition
 import engine.patterns.fractionOf
+import engine.patterns.inSolutionVariable
 import engine.patterns.inequalityOf
 import engine.patterns.oneOf
 import engine.patterns.openClosedIntervalOf
@@ -102,7 +103,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
     SolveLinearInequality(
         plan {
             explanation = Explanation.SolveLinearInequality
-            pattern = inequalityOf(AnyPattern(), AnyPattern())
+            pattern = inequalityInOneVariable()
 
             steps {
                 whilePossible {
@@ -204,3 +205,5 @@ private val decimalSolutionFormChecker = run {
         )
     )
 }
+
+private fun inequalityInOneVariable() = inSolutionVariable(inequalityOf(AnyPattern(), AnyPattern()))

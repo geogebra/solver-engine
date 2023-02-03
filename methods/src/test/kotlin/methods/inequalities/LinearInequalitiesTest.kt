@@ -201,4 +201,37 @@ class LinearInequalitiesTest {
             }
         }
     }
+
+    @Test
+    fun `test linear inequality with no variable`() = testMethod {
+        context = Context(solutionVariable = "x")
+        method = InequalitiesPlans.SolveLinearInequality
+        inputExpr = "1 < 2"
+
+        check {
+            noTransformation()
+        }
+    }
+
+    @Test
+    fun `test linear inequality with two variables`() = testMethod {
+        context = Context(solutionVariable = "x")
+        method = InequalitiesPlans.SolveLinearInequality
+        inputExpr = "x < y"
+
+        check {
+            noTransformation()
+        }
+    }
+
+    @Test
+    fun `test linear inequality without solution variable`() = testMethod {
+        context = Context(solutionVariable = "x")
+        method = InequalitiesPlans.SolveLinearInequality
+        inputExpr = "y + 1 < 2y"
+
+        check {
+            noTransformation()
+        }
+    }
 }

@@ -86,8 +86,8 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
         apply(ProceduralPipeline(init))
     }
 
-    override fun check(f: (Expression) -> Boolean) {
-        if (!f(builder.lastSub)) {
+    override fun check(condition: Context.(Expression) -> Boolean) {
+        if (!ctx.condition(builder.lastSub)) {
             builder.abort()
             throw FailedStep()
         }
@@ -178,7 +178,7 @@ private class PipelineDataBuilder : PipelineBuilder {
         apply(dataSteps(init))
     }
 
-    override fun check(f: (Expression) -> Boolean) {
+    override fun check(condition: Context.(Expression) -> Boolean) {
         TODO("Not yet implemented")
     }
 

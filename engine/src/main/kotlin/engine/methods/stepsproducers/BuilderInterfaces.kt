@@ -1,5 +1,6 @@
 package engine.methods.stepsproducers
 
+import engine.context.Context
 import engine.expressions.Expression
 import engine.expressions.Extractor
 import engine.methods.PlanBuilder
@@ -67,7 +68,7 @@ interface PipelineBuilder {
      */
     fun apply(init: PipelineBuilder.() -> Unit)
 
-    fun check(f: (Expression) -> Boolean)
+    fun check(condition: Context.(Expression) -> Boolean)
 
     /**
      * Apply the [steps] to a subexpression obtained by the [extractor]

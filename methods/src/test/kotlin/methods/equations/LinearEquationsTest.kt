@@ -496,4 +496,37 @@ class LinearEquationsTest {
             }
         }
     }
+
+    @Test
+    fun `test linear equation with no variable`() = testMethod {
+        context = Context(solutionVariable = "x")
+        method = EquationsPlans.SolveLinearEquation
+        inputExpr = "1 = 2"
+
+        check {
+            noTransformation()
+        }
+    }
+
+    @Test
+    fun `test linear equation with two variables`() = testMethod {
+        context = Context(solutionVariable = "x")
+        method = EquationsPlans.SolveLinearEquation
+        inputExpr = "x + 1 = 2x + y - 2"
+
+        check {
+            noTransformation()
+        }
+    }
+
+    @Test
+    fun `test linear equation without solution variable`() = testMethod {
+        context = Context(solutionVariable = "x")
+        method = EquationsPlans.SolveLinearEquation
+        inputExpr = "y + 1 = 2y"
+
+        check {
+            noTransformation()
+        }
+    }
 }

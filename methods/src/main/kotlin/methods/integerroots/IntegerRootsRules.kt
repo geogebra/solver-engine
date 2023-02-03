@@ -429,7 +429,7 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
         rule {
             val prod = productContaining()
             val root = rootOf(prod)
-            val cond = ConditionPattern(root) { match ->
+            val cond = ConditionPattern(root) { _, match ->
                 val order = root.order.getBoundExpr(match)!!
                 val product = prod.getBoundExpr(match)!!
 

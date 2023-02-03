@@ -23,6 +23,7 @@ import engine.patterns.UnsignedNumberPattern
 import engine.patterns.condition
 import engine.patterns.equationOf
 import engine.patterns.fractionOf
+import engine.patterns.inSolutionVariable
 import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
 import engine.patterns.productContaining
@@ -109,7 +110,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     SolveLinearEquation(
         plan {
             explanation = Explanation.SolveLinearEquation
-            pattern = condition(equationOf(AnyPattern(), AnyPattern())) { it.variables.size == 1 }
+            pattern = equationInOneVariable()
 
             steps {
                 optionally(equationSimplificationSteps)
@@ -200,7 +201,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     SolveQuadraticEquationUsingRootsMethod(
         plan {
             explanation = Explanation.SolveQuadraticEquationUsingRootsMethod
-            pattern = equationOf(AnyPattern(), AnyPattern())
+            pattern = equationInOneVariable()
             resultPattern = solutionOf(SolutionVariablePattern(), AnyPattern())
 
             steps {
@@ -320,3 +321,5 @@ private val decimalSolutionFormChecker = run {
         )
     )
 }
+
+private fun equationInOneVariable() = inSolutionVariable(equationOf(AnyPattern(), AnyPattern()))

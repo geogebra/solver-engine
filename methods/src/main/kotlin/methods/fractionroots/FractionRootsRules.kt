@@ -176,9 +176,8 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
             val term2 = oneOf(integer2, radical2)
             // a * root[x, 3] + b * root[y, 3]
             val signedTerm2 = optionalNegOf(term2)
-            val denominator = ConditionPattern(sumOf(term1, signedTerm2)) {
-                it.isBound(radical1) ||
-                    it.isBound(radical2)
+            val denominator = ConditionPattern(sumOf(term1, signedTerm2)) { _, match ->
+                match.isBound(radical1) || match.isBound(radical2)
             }
 
             val fraction = fractionOf(numerator, denominator)
@@ -276,7 +275,9 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
             val radical2 = withOptionalIntegerCoefficient(integerOrderRootOf(UnsignedIntegerPattern()))
             val term2 = oneOf(integer2, radical2)
 
-            val denominator = ConditionPattern(sumOf(term1, term2)) { it.isBound(radical1) || it.isBound(radical2) }
+            val denominator = ConditionPattern(sumOf(term1, term2)) { _, match ->
+                match.isBound(radical1) || match.isBound(radical2)
+            }
 
             val fraction = fractionOf(numerator, denominator)
 
@@ -312,9 +313,8 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
             val term2 = oneOf(integer2, radical2)
 
             val signedTerm2 = optionalNegOf(term2)
-            val denominator = ConditionPattern(sumOf(term1, signedTerm2)) {
-                it.isBound(radical1) ||
-                    it.isBound(radical2)
+            val denominator = ConditionPattern(sumOf(term1, signedTerm2)) { _, match ->
+                match.isBound(radical1) || match.isBound(radical2)
             }
 
             val fraction = fractionOf(numerator, denominator)
