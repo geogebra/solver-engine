@@ -5,6 +5,7 @@ import engine.operators.LatexRenderable
 import engine.operators.NaryOperator
 import engine.operators.Operator
 import engine.operators.RenderContext
+import engine.operators.SumTermKind
 import engine.operators.UnaryExpressionOperator
 import engine.operators.VariableOperator
 import engine.patterns.ExpressionProvider
@@ -281,13 +282,11 @@ class Expression internal constructor(
 
     override fun getBoundExpr(m: Match) = this
 
-    override fun shouldBeRenderedWithASubtractionIfInASum(): Boolean {
-        return when {
-            operator === UnaryExpressionOperator.Minus && !hasBracket() -> true
-            outerBracket() != Decorator.PartialSumBracket -> false
-            operator === NaryOperator.Sum -> operands[0].shouldBeRenderedWithASubtractionIfInASum()
-            else -> operator === UnaryExpressionOperator.Minus
-        }
+    override fun asSumTerm(): Pair<SumTermKind, LatexRenderable> = when {
+        hasBracket() -> Pair(SumTermKind.PLUS, this)
+        operator === UnaryExpressionOperator.Minus -> Pair(SumTermKind.MINUS, firstChild)
+        operator === UnaryExpressionOperator.PlusMinus -> Pair(SumTermKind.PLUSMINUS, firstChild)
+        else -> Pair(SumTermKind.PLUS, this)
     }
 
     override fun isInlineDivideByTerm(): Boolean {

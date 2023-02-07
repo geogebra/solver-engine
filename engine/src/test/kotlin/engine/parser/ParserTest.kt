@@ -14,6 +14,7 @@ import engine.expressions.lessThanEqualOf
 import engine.expressions.lessThanOf
 import engine.expressions.missingBracketOf
 import engine.expressions.negOf
+import engine.expressions.plusMinusOf
 import engine.expressions.plusOf
 import engine.expressions.powerOf
 import engine.expressions.rawRootOf
@@ -238,6 +239,26 @@ class ParserTest {
         parsesTo(
             "x <. -y + z .>",
             rawSumOf(xp("x"), rawPartialSumOf(negOf(xp("y")), xp("z")))
+        )
+    }
+
+    @Test
+    fun testPlusMinus() {
+        parsesTo(
+            "+/-x",
+            plusMinusOf(xp("x"))
+        )
+        parsesTo(
+            "1 +/- 2",
+            rawSumOf(xp(1), plusMinusOf(xp(2)))
+        )
+        parsesTo(
+            "3 * +/-2",
+            rawProductOf(xp(3), missingBracketOf(plusMinusOf(xp(2))))
+        )
+        parsesTo(
+            "x + +/-y",
+            rawSumOf(xp("x"), missingBracketOf(plusMinusOf(xp("y"))))
         )
     }
 }

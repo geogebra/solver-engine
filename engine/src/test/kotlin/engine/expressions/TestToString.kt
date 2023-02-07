@@ -52,6 +52,10 @@ class TestToString {
             TestCase("1+-2", "1 + -2", "1 + -2"),
             TestCase("-1+2", "-1 + 2", "-1 + 2"),
             TestCase("+1-2", "+1 - 2", "+1 - 2"),
+            TestCase("+/- 2", "+/-2", "\\pm 2"),
+            TestCase("1+/-2", "1 +/- 2", "1 \\pm 2"),
+            TestCase("1 + +/-2", "1 + +/-2", "1 + \\pm 2"),
+            TestCase("1+(+/-2)", "1 + (+/-2)", "1 + \\left( \\pm 2 \\right)")
         )
     }
 }

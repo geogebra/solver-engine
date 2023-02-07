@@ -43,7 +43,7 @@ object EquationOperator : BinaryOperator, StatementOperator {
 
 enum class InequalityOperators(
     private val readableString: String,
-    private val latexString: String,
+    private val latexString: String
 ) : BinaryOperator, StatementOperator {
 
     LessThan("<", "<") {

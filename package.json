@@ -1,12 +1,12 @@
 {
   "devDependencies": {
-    "eslint": "^8.32.0",
+    "eslint": "^8.33.0",
     "eslint-config-prettier": "^8.6.0",
     "prettier": "2.8.3",
     "run-script-os": "^1.1.6"
   },
   "dependencies": {
-    "@geogebra/solver-sdk": "^3.3.0"
+    "@geogebra/solver-sdk": "^3.5.0"
   },
   "scripts": {
     "postinstall": "run-script-os",

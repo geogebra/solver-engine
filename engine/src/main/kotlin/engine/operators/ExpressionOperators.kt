@@ -197,13 +197,21 @@ enum class NaryOperator(override val precedence: Int) : ExpressionOperator {
         override fun <T> readableString(children: List<T>): String {
             return buildString {
                 for ((i, child) in children.withIndex()) {
-                    val childString = child.toString()
-                    when {
-                        i == 0 -> append(childString)
-                        child is LatexRenderable && child.shouldBeRenderedWithASubtractionIfInASum() -> {
-                            append(" - ", childString.removePrefix("-"))
+                    if (i == 0) {
+                        append(child.toString())
+                    } else {
+                        val (termKind, termBody) = when (child) {
+                            is LatexRenderable -> child.asSumTerm()
+                            else -> Pair(SumTermKind.PLUS, child)
                         }
-                        else -> append(" + ", childString)
+                        append(
+                            when (termKind) {
+                                SumTermKind.PLUS -> " + "
+                                SumTermKind.MINUS -> " - "
+                                SumTermKind.PLUSMINUS -> " +/- "
+                            },
+                            termBody.toString()
+                        )
                     }
                 }
             }
@@ -212,11 +220,21 @@ enum class NaryOperator(override val precedence: Int) : ExpressionOperator {
         override fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String {
             return buildString {
                 for ((i, child) in children.withIndex()) {
-                    val childLatex = child.toLatexString(ctx)
-                    when {
-                        i == 0 -> append(childLatex)
-                        child.shouldBeRenderedWithASubtractionIfInASum() -> append(" - ", childLatex.removePrefix("-"))
-                        else -> append(" + ", childLatex)
+                    if (i == 0) {
+                        append(child.toLatexString(ctx))
+                    } else {
+                        val (termKind, termBody) = when (child) {
+                            is LatexRenderable -> child.asSumTerm()
+                            else -> Pair(SumTermKind.PLUS, child)
+                        }
+                        append(
+                            when (termKind) {
+                                SumTermKind.PLUS -> " + "
+                                SumTermKind.MINUS -> " - "
+                                SumTermKind.PLUSMINUS -> " \\pm "
+                            },
+                            termBody.toLatexString(ctx)
+                        )
                     }
                 }
             }

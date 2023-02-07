@@ -23,6 +23,7 @@ import engine.utility.RecurringDecimal
 import org.antlr.v4.runtime.BailErrorStrategy
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
+import org.antlr.v4.runtime.Token
 import parser.antlr.ExpressionBaseVisitor
 import parser.antlr.ExpressionLexer
 import parser.antlr.ExpressionParser
@@ -125,11 +126,7 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
 
     override fun visitRealFirstTerm(ctx: ExpressionParser.RealFirstTermContext): Expression {
         val p = visit(ctx.explicitProduct())
-        return if (ctx.sign == null) p else when (ctx.sign.text) {
-            "+" -> makeExpression(UnaryExpressionOperator.Plus, p)
-            "+/-" -> makeExpression(UnaryExpressionOperator.PlusMinus, p)
-            else -> makeExpression(UnaryExpressionOperator.Minus, p)
-        }
+        return if (ctx.sign == null) p else makeExpression(getAdditiveOperator(ctx.sign), p)
     }
 
     override fun visitFirstPartialSum(ctx: ExpressionParser.FirstPartialSumContext): Expression {
@@ -138,11 +135,11 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
 
     override fun visitRealOtherTerm(ctx: ExpressionParser.RealOtherTermContext): Expression {
         val p = visit(ctx.explicitProduct())
-        return when {
-            ctx.sign.text == "-" -> makeExpression(UnaryExpressionOperator.Minus, p)
-            ctx.sign.text == "+/-" -> makeExpression(UnaryExpressionOperator.PlusMinus, p)
-            UnaryExpressionOperator.Plus.childAllowed(p.operator) || p.hasBracket() -> p
-            else -> p.decorate(Decorator.MissingBracket)
+        return when (val op = getAdditiveOperator(ctx.sign)) {
+            UnaryExpressionOperator.Plus -> if (op.childAllowed(p.operator) || p.hasBracket()) p else p.decorate(
+                Decorator.MissingBracket
+            )
+            else -> makeExpression(op, p)
         }
     }
 
@@ -182,11 +179,7 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
 
     override fun visitFirstFactorWithSign(ctx: ExpressionParser.FirstFactorWithSignContext): Expression {
         val factor = visit(ctx.factor)
-        val operator = when (ctx.sign.text) {
-            "+" -> UnaryExpressionOperator.Plus
-            else -> UnaryExpressionOperator.Minus
-        }
-        return makeExpression(operator, factor)
+        return makeExpression(getAdditiveOperator(ctx.sign), factor)
     }
 
     override fun visitFraction(ctx: ExpressionParser.FractionContext): Expression {
@@ -250,5 +243,12 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
 
     override fun visitUndefined(ctx: ExpressionParser.UndefinedContext?): Expression {
         return Constants.Undefined
+    }
+
+    private fun getAdditiveOperator(tok: Token): UnaryExpressionOperator = when (tok.text) {
+        "+" -> UnaryExpressionOperator.Plus
+        "-" -> UnaryExpressionOperator.Minus
+        "+/-" -> UnaryExpressionOperator.PlusMinus
+        else -> throw IllegalArgumentException(tok.text)
     }
 }

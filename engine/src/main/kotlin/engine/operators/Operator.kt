@@ -14,13 +14,20 @@ data class RenderContext(val align: Boolean = false) {
     }
 }
 
+enum class SumTermKind {
+    PLUS,
+    MINUS,
+    PLUSMINUS
+}
+
 interface LatexRenderable {
     fun toLatexString(ctx: RenderContext = RenderContext.Default): String
     fun hasBracket(): Boolean
 
-    /** If this is true, then when this term is rendered/printed in a sum, a subtraction sign should be used instead of
-     * a negative sign in front of this term */
-    fun shouldBeRenderedWithASubtractionIfInASum(): Boolean
+    /**
+     * Returns an operator kind and a [LatexRenderable] instance to render as a term in a sum.
+     */
+    fun asSumTerm(): Pair<SumTermKind, LatexRenderable>
 
     /** If this is true, then when this term is rendered/printed in a product, a ÷ sign should be used instead of a
      * multiplication sign in front of this term */

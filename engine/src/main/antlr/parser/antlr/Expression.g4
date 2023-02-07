@@ -35,13 +35,13 @@ expr: sum;
 sum: first=firstTerm (rest+=otherTerm)*;
 
 firstTerm
-    : sign=('+'|'-'|PLUSMINUS)? explicitProduct       #realFirstTerm
-    | OPEN_PARTIALSUM sum CLOSE_PARTIALSUM  #firstPartialSum
+    : sign=('+' | '-' | PLUSMINUS)? explicitProduct       #realFirstTerm
+    | OPEN_PARTIALSUM sum CLOSE_PARTIALSUM            #firstPartialSum
     ;
 
 otherTerm
-    : sign=('+'|'-'|PLUSMINUS) explicitProduct                       #realOtherTerm
-    | OPEN_PARTIALSUM (terms+=otherTerm)+ CLOSE_PARTIALSUM  #otherPartialSum
+    : sign=('+' | '-' | PLUSMINUS) explicitProduct                       #realOtherTerm
+    | OPEN_PARTIALSUM (terms+=otherTerm)+ CLOSE_PARTIALSUM           #otherPartialSum
     ;
 
 explicitProduct: first=implicitProduct (rest+=otherExplicitFactor)*;
@@ -51,7 +51,7 @@ otherExplicitFactor: op=('*'|':') implicitProduct;
 implicitProduct: first=firstFactor (others+=otherFactor)*;
 
 firstFactor
-    : sign=('+' | '-') factor=firstFactor           #firstFactorWithSign
+    : sign=('+' | '-' | PLUSMINUS) factor=firstFactor           #firstFactorWithSign
     | (mixedNumber | fraction | power | atom)       #firstFactorWithoutSign
     ;
 
