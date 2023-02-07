@@ -19,6 +19,21 @@ let showRearrangements = false;
 // Show / hide warnings
 let hideWarnings = false;
 
+const colorSchemes = {
+    default: [
+        "green",
+        "purple",
+        "red",
+        // Orange
+        "#E07415",
+    ],
+    none: null,
+    blue: ["blue"],
+    primary: ["red", "green", "blue"],
+};
+
+let colorScheme = "default";
+
 // Holds all default translations as a key: translation map
 let translationData = {};
 
@@ -131,16 +146,13 @@ const renderTransformation = (trans, depth = 0) => {
     if (isThrough && !showThroughSteps) {
         return renderTransformation(trans.steps[0], depth);
     }
-    const colors = [
-        "green",
-        "purple",
-        'red',
-        // Orange
-        "#E07415",
-    ];
-    const [fromColoring, toColoring] = trans.steps
-        ? [undefined, undefined]
-        : ggbSolver.createColorMaps(trans.pathMappings, colors).map(ggbSolver.coloringTransformer);
+    const colors = colorSchemes[colorScheme];
+    const [fromColoring, toColoring] =
+        trans.steps || !colors
+            ? [undefined, undefined]
+            : ggbSolver
+                  .createColorMaps(trans.pathMappings, colors)
+                  .map(ggbSolver.coloringTransformer);
     const latexSettings = {};
     const render = (expr, coloring) =>
         ggbSolver.treeToLatex(ggbSolver.jsonToTree(expr, trans.path), latexSettings, coloring);
@@ -529,6 +541,14 @@ window.onload = () => {
         hideWarnings = evt.target.checked;
         for (const el of document.getElementsByClassName("warning")) {
             el.classList.toggle("hidden", hideWarnings);
+        }
+    };
+
+    el("colorScheme").onchange = (evt) => {
+        colorScheme = evt.target.value;
+        const data = getRequestDataFromForm();
+        if (data.input !== "") {
+            selectPlansOrApplyPlan(data);
         }
     };
 };

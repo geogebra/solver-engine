@@ -35,6 +35,7 @@
                 border-left: thin solid lightgray;
                 padding-right: 0;
             }
+
             details.steps > ol > li {
                 border-bottom: thin solid lightgray;
                 padding: 3px 0;
@@ -150,6 +151,13 @@
             <input id="hideWarnings" type="checkbox" />
             <label for="showRearrangements">Show rearrangements</label>
             <input id="showRearrangements" type="checkbox" />
+            <label for="colorScheme">Colors</label>
+            <select id="colorScheme">
+                <option value="default">Default</option>
+                <option value="primary">Primary colors</option>
+                <option value="none">No coloring</option>
+                <option value="blue">Just blue</option>
+            </select>
         </form>
         <p id="result"></p>
         <details>
