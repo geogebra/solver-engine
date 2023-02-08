@@ -697,7 +697,7 @@ private val simplifyExpressionToThePowerOfOne =
 
         onPattern(power) {
             ruleResult(
-                toExpr = move(base),
+                toExpr = cancel(one, get(base)),
                 explanation = metadata(Explanation.SimplifyExpressionToThePowerOfOne)
             )
         }
@@ -1031,17 +1031,17 @@ private val cancelRootIndexAndExponent =
 
         onPattern(root) {
             val newPower = when {
-                isBound(productExponent) -> powerOf(move(base), cancel(commonExponent, restOf(productExponent)))
-                else -> move(base)
+                isBound(productExponent) -> powerOf(get(base), restOf(productExponent))
+                else -> get(base)
             }
 
             val newRoot = when {
-                isBound(productOrder) -> rootOf(newPower, cancel(commonExponent, restOf(productOrder)))
+                isBound(productOrder) -> rootOf(newPower, restOf(productOrder))
                 else -> newPower
             }
 
             ruleResult(
-                toExpr = newRoot,
+                toExpr = cancel(commonExponent, newRoot),
                 explanation = metadata(Explanation.CancelRootIndexAndExponent)
             )
         }

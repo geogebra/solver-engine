@@ -129,3 +129,14 @@ class Distribute(val from: List<Expression>) : Origin() {
     override fun computePathMappings(rootPath: Path, children: List<Expression>) =
         sequenceOf(PathMapping(from.mapNotNull { it.origin.path }, PathMappingType.Distribute, listOf(rootPath)))
 }
+
+class Cancel(val origin: Origin, val cancelParts: List<Expression>) : Origin(origin.path) {
+
+    override fun computeChildOrigin(expression: Expression, index: Int): Expression {
+        return origin.computeChildOrigin(expression, index)
+    }
+
+    override fun computePathMappings(rootPath: Path, children: List<Expression>) =
+        origin.computePathMappings(rootPath, children) +
+            sequenceOf(PathMapping(cancelParts.mapNotNull { it.origin.path }, PathMappingType.Cancel, emptyList()))
+}

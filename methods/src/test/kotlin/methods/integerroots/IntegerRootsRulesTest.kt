@@ -1,5 +1,6 @@
 package methods.integerroots
 
+import engine.methods.testMethod
 import engine.methods.testRule
 import methods.integerroots.IntegerRootsRules.CollectLikeRoots
 import methods.integerroots.IntegerRootsRules.CombineProductOfSamePowerUnderHigherRoot
@@ -7,6 +8,8 @@ import methods.integerroots.IntegerRootsRules.FactorizeIntegerPowerUnderRoot
 import methods.integerroots.IntegerRootsRules.FactorizeIntegerUnderRoot
 import methods.integerroots.IntegerRootsRules.MultiplyNthRoots
 import methods.integerroots.IntegerRootsRules.SimplifyMultiplicationOfSquareRoots
+import methods.integerroots.IntegerRootsRules.SimplifyNthRootOfNthPower
+import methods.integerroots.IntegerRootsRules.SimplifyNthRootToThePowerOfN
 import methods.integerroots.IntegerRootsRules.SimplifyRootOfOne
 import methods.integerroots.IntegerRootsRules.SimplifyRootOfZero
 import methods.integerroots.IntegerRootsRules.SplitPowerUnderRoot
@@ -65,6 +68,36 @@ class IntegerRootsRulesTest {
             SplitRootOfProduct,
             "sqrt[49] * sqrt[100]"
         )
+    }
+
+    @Test
+    fun testSimplifyNthRootToThePowerOfN() {
+        testMethod {
+            method = SimplifyNthRootToThePowerOfN
+            inputExpr = "[root[a, 5] ^ 5]"
+
+            check {
+                toExpr = "a"
+
+                shift("./0/0", ".")
+                cancel("./0/1", "./1")
+            }
+        }
+    }
+
+    @Test
+    fun testSimplifyNthRootOfNthPower() {
+        testMethod {
+            method = SimplifyNthRootOfNthPower
+            inputExpr = "root[[x ^ 8], 8]"
+
+            check {
+                toExpr = "x"
+
+                shift("./0/0", ".")
+                cancel("./0/1", "./1")
+            }
+        }
     }
 
     @Test

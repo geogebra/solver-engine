@@ -46,7 +46,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                 val restRight = if (isBound(rightSum)) restOf(rightSum) else Constants.Zero
 
                 ruleResult(
-                    toExpr = solvable.sameSolvable(restLeft, restRight),
+                    toExpr = cancel(common, solvable.sameSolvable(restLeft, restRight)),
                     explanation = metadata(
                         if (solvable.isEquation()) EquationsExplanation.CancelCommonTermsOnBothSides
                         else InequalitiesExplanation.CancelCommonTermsOnBothSides

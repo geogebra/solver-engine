@@ -262,7 +262,7 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(power) {
                 ruleResult(
-                    toExpr = move(radicand),
+                    toExpr = cancel(exponent, get(radicand)),
                     explanation = metadata(Explanation.SimplifyNthRootToThePowerOfN)
                 )
             }
@@ -309,7 +309,7 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(radical) {
                 ruleResult(
-                    toExpr = move(base),
+                    toExpr = cancel(exponent, get(base)),
                     explanation = metadata(Explanation.SimplifyNthRootOfNthPower)
                 )
             }

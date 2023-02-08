@@ -1,5 +1,6 @@
 package methods.general
 
+import engine.methods.testMethod
 import engine.methods.testRule
 import methods.general.GeneralRules.CancelAdditiveInverseElements
 import methods.general.GeneralRules.DistributeMultiplicationOverSum
@@ -41,6 +42,20 @@ class GeneralRulesTest {
         testRule("3*x*1*y*4", EliminateOneInProduct, "3xy*4")
         testRule("3*1*4", EliminateOneInProduct, "3*4")
         testRule("1*x", EliminateOneInProduct, "x")
+
+        testMethod {
+            method = EliminateOneInProduct
+            inputExpr = "3x*1*y"
+
+            check {
+                toExpr = "3xy"
+
+                shift("./0/0", "./0")
+                shift("./0/1", "./1")
+                cancel("./1")
+                shift("./2", "./2")
+            }
+        }
     }
 
     @Test
@@ -64,6 +79,18 @@ class GeneralRulesTest {
         testRule("x + 0 + y", EliminateZeroInSum, "x + y")
         testRule("x + 0", EliminateZeroInSum, "x")
         testRule("1 + 0", EliminateZeroInSum, "1")
+
+        testMethod {
+            method = EliminateZeroInSum
+            inputExpr = "x + y + 0"
+
+            check {
+                toExpr = "x + y"
+
+                keep("./0", "./1")
+                cancel("./2")
+            }
+        }
     }
 
     @Test
@@ -298,12 +325,35 @@ class GeneralRulesTest {
         testRule("sqrt[12] - sqrt[12]", CancelAdditiveInverseElements, "0")
         testRule("-sqrt[12] + sqrt[12]", CancelAdditiveInverseElements, "0")
         testRule("(x + 1 - y) - (x + 1 - y)", CancelAdditiveInverseElements, "0")
+
+        testMethod {
+            method = CancelAdditiveInverseElements
+            inputExpr = "2 + 1 - 2"
+
+            check {
+                toExpr = "1"
+
+                shift("./1", ".")
+                cancel("./0", "./2/0")
+            }
+        }
     }
 
     @Test
     fun testSimplifyExpressionToThePowerOfOne() {
         testRule("[(sqrt[2] + 1) ^ 1]", SimplifyExpressionToThePowerOfOne, "sqrt[2] + 1")
         testRule("[2 ^ 1]", SimplifyExpressionToThePowerOfOne, "2")
+        testMethod {
+            method = SimplifyExpressionToThePowerOfOne
+            inputExpr = "[x ^ 1]"
+
+            check {
+                toExpr = "x"
+
+                shift("./0", ".")
+                cancel("./1")
+            }
+        }
     }
 
     @Test
@@ -448,11 +498,18 @@ class GeneralRulesTest {
             GeneralRules.CancelRootIndexAndExponent,
             "root[[7 ^ 2], 3]"
         )
-        testRule(
-            "root[[7 ^ 2], 3 * 2]",
-            GeneralRules.CancelRootIndexAndExponent,
-            "root[7, 3]"
-        )
+        testMethod {
+            method = GeneralRules.CancelRootIndexAndExponent
+            inputExpr = "root[[7 ^ 2], 3 * 2]"
+
+            check {
+                toExpr = "root[7, 3]"
+
+                shift("./0/0", "./0")
+                shift("./1/0", "./1")
+                cancel("./0/1", "./1/1")
+            }
+        }
         testRule(
             "root[[7 ^ 2 * 2], 2]",
             GeneralRules.CancelRootIndexAndExponent,

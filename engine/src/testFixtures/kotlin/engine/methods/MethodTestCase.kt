@@ -110,6 +110,10 @@ open class PathMappingsCheck(mappings: Sequence<PathMapping>, private val rootPa
         addPathMapping(PathMapping(listOf(parsePath(fromPath)), PathMappingType.Transform, listOf(parsePath((toPath)))))
     }
 
+    fun cancel(vararg paths: String) {
+        addPathMapping(PathMapping(paths.toList().map { parsePath(it) }, PathMappingType.Cancel, emptyList()))
+    }
+
     open fun finalize() {
         if (checkedMappings != null) {
             assertEquals(pathMappings.count(), checkedMappings, "Some path mappings have not been checked")

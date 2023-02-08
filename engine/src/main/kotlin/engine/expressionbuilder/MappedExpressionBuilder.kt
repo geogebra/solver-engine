@@ -1,6 +1,7 @@
 package engine.expressionbuilder
 
 import engine.context.Context
+import engine.expressions.Cancel
 import engine.expressions.Combine
 import engine.expressions.Distribute
 import engine.expressions.Expression
@@ -87,9 +88,8 @@ open class MappedExpressionBuilder(
     fun distribute(expressionProvider: ExpressionProvider) =
         expressionProvider.getBoundExpr(match)!!.withOrigin(Distribute(expressionProvider.getBoundExprs(match)))
 
-    // TODO
-    @Suppress("UnusedPrivateMember")
-    fun cancel(expressionProvider: ExpressionProvider, inExpression: Expression) = inExpression
+    fun cancel(expressionProvider: ExpressionProvider, inExpression: Expression) =
+        inExpression.withOrigin(Cancel(inExpression.origin, expressionProvider.getBoundExprs(match)!!))
 
     /**
      * Returns the numeric value bound to the argument in the match.
