@@ -9,7 +9,6 @@ import engine.methods.stepsproducers.steps
 import engine.patterns.IntegerFractionPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.powerOf
-import method.integerrationalexponents.Explanation
 import methods.fractionarithmetic.FractionArithmeticPlans
 import methods.fractionarithmetic.simplifyAfterCollectingLikeTerms
 import methods.general.GeneralRules
@@ -31,7 +30,7 @@ enum class IntegerRationalExponentsPlans(override val runner: CompositeMethod) :
                 apply(GeneralRules.MultiplyExponentsUsingPowerRule)
                 applyTo(FractionArithmeticPlans.MultiplyAndSimplifyFractions) { it.exponent() }
             }
-        }
+        },
     ),
 
     SimplifyRationalExponentOfInteger(
@@ -74,7 +73,7 @@ enum class IntegerRationalExponentsPlans(override val runner: CompositeMethod) :
                     }
                 }
             }
-        }
+        },
     ),
 
     SimplifyProductOfPowersWithSameBase(
@@ -88,7 +87,7 @@ enum class IntegerRationalExponentsPlans(override val runner: CompositeMethod) :
                     option { deeply(IntegerArithmeticRules.EvaluateSignedIntegerAddition) }
                 }
             }
-        }
+        },
     ),
 
     SimplifyProductOfPowersWithInverseFractionBase(
@@ -99,7 +98,7 @@ enum class IntegerRationalExponentsPlans(override val runner: CompositeMethod) :
                 apply(GeneralRules.RewriteProductOfPowersWithInverseFractionBase)
                 apply(SimplifyProductOfPowersWithSameBase)
             }
-        }
+        },
     ),
 
     SimplifyProductOfPowersWithInverseBase(
@@ -110,7 +109,7 @@ enum class IntegerRationalExponentsPlans(override val runner: CompositeMethod) :
                 apply(GeneralRules.RewriteProductOfPowersWithInverseBase)
                 apply(SimplifyProductOfPowersWithSameBase)
             }
-        }
+        },
     ),
 
     SimplifyProductOfPowersWithSameExponent(
@@ -124,7 +123,7 @@ enum class IntegerRationalExponentsPlans(override val runner: CompositeMethod) :
                     option { deeply(FractionArithmeticPlans.MultiplyAndSimplifyFractions) }
                 }
             }
-        }
+        },
     ),
 
     SimplifyProductOfPowersWithNegatedExponent(
@@ -135,7 +134,7 @@ enum class IntegerRationalExponentsPlans(override val runner: CompositeMethod) :
                 apply(GeneralRules.RewriteProductOfPowersWithNegatedExponent)
                 apply(SimplifyProductOfPowersWithSameExponent)
             }
-        }
+        },
     ),
 
     SimplifyFractionOfPowersWithSameBase(
@@ -146,7 +145,7 @@ enum class IntegerRationalExponentsPlans(override val runner: CompositeMethod) :
                 apply(GeneralRules.RewriteFractionOfPowersWithSameBase)
                 applyTo(FractionArithmeticPlans.EvaluateFractionSum) { it.exponent() }
             }
-        }
+        },
     ),
 
     SimplifyFractionOfPowersWithSameExponent(
@@ -157,7 +156,7 @@ enum class IntegerRationalExponentsPlans(override val runner: CompositeMethod) :
                 apply(GeneralRules.RewriteFractionOfPowersWithSameExponent)
                 optionally { applyTo(FractionArithmeticPlans.SimplifyFraction) { it.base() } }
             }
-        }
+        },
     ),
 
     SimplifyProductOfPowersWithRationalExponents(
@@ -178,7 +177,7 @@ enum class IntegerRationalExponentsPlans(override val runner: CompositeMethod) :
                 optionally { deeply(IntegerArithmeticRules.EvaluateIntegerProductAndDivision) }
                 optionally { deeply(FractionArithmeticPlans.SimplifyFraction) }
             }
-        }
+        },
     ),
 
     /**
@@ -193,7 +192,7 @@ enum class IntegerRationalExponentsPlans(override val runner: CompositeMethod) :
                 apply(IntegerRationalExponentsRules.CollectLikeRationalPowers)
                 apply(simplifyAfterCollectingLikeTerms)
             }
-        }
+        },
     ),
 }
 

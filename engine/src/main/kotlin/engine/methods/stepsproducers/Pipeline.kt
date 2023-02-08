@@ -138,7 +138,7 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
     }
 
     override fun contextSensitive(init: ContextSensitiveBuilder.() -> Unit) {
-        runProducer(engine.methods.stepsproducers.contextSensitiveSteps(init))
+        runProducer(contextSensitiveSteps(init))
     }
 }
 
@@ -152,7 +152,7 @@ private class PipelineDataBuilder : PipelineBuilder {
 
     fun buildStepsProducer(): StepsProducer {
         return when (pipelineItems.size) {
-            0 -> throw IllegalStateException("steps producer produces no steps")
+            0 -> error("steps producer produces no steps")
             1 -> pipelineItems[0].stepsProducer
             else -> Pipeline(pipelineItems)
         }

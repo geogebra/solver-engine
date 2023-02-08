@@ -1,4 +1,4 @@
-package method.integerrationalexponents
+package methods.integerrationalexponents
 
 import engine.steps.metadata.CategorisedMetadataKey
 import engine.steps.metadata.TranslationKeys
@@ -155,7 +155,8 @@ enum class IntegerRationalExponentsExplanation : CategorisedMetadataKey {
      *
      * E.g. [-1 ^ [1/3]] -> UNDEFINED
      */
-    EvaluateNegativeToRationalExponentAsUndefined;
+    EvaluateNegativeToRationalExponentAsUndefined,
+    ;
 
     override val category = "IntegerRationalExponents"
 }

@@ -1,13 +1,13 @@
 package methods.constantexpressions
 
 import engine.methods.testMethod
-import method.integerrationalexponents.IntegerRationalExponentsExplanation
 import methods.decimals.DecimalsExplanation
 import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.fractionroots.FractionRootsExplanation
 import methods.fractionroots.FractionRootsPlans
 import methods.general.GeneralExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
+import methods.integerrationalexponents.IntegerRationalExponentsExplanation
 import methods.integerroots.IntegerRootsExplanation
 import org.junit.jupiter.api.Test
 

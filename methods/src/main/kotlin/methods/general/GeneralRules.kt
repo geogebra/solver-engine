@@ -664,7 +664,9 @@ private val distributeNegativeOverBracket =
             // itself
             val terms = get(sumTerm).children()
             val negDistributedTerm = sumOf(
-                terms.map { if (it.operator == UnaryExpressionOperator.Minus) move(it.firstChild) else negOf(move(it)) }
+                terms.map {
+                    if (it.operator == UnaryExpressionOperator.Minus) move(it.firstChild) else negOf(move(it))
+                },
             )
 
             val toExpr = if (isBound(sumContainingNegTerm)) {

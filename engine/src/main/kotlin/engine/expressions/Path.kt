@@ -47,7 +47,7 @@ data class RootPath(val rootId: String = ".") : Path {
 fun parsePath(s: String): Path {
     val pieces = s.split('/')
     val rootId = pieces[0]
-    if (rootId != "." && !rootId.startsWith('#')) throw IllegalArgumentException("$s is not a valid path")
+    require(rootId == "." || rootId.startsWith('#')) { "$s is not a valid path" }
 
     var path: Path = RootPath(rootId)
     for (piece in pieces.drop(1)) {

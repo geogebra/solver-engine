@@ -1,7 +1,6 @@
 package methods.integerrationalexponents
 
 import engine.methods.testMethod
-import method.integerrationalexponents.IntegerRationalExponentsExplanation
 import methods.constantexpressions.ConstantExpressionsExplanation
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.fractionarithmetic.FractionArithmeticExplanation

@@ -3,8 +3,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm")
 
-    id("org.jlleitschuh.gradle.ktlint") version "10.3.0" apply false
-    id("io.gitlab.arturbosch.detekt") version "1.20.0" apply false
+    id("org.jlleitschuh.gradle.ktlint") version "11.1.0" apply false
+    id("io.gitlab.arturbosch.detekt") version "1.22.0" apply false
 }
 
 group = "org.geogebra.solver"

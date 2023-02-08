@@ -32,7 +32,6 @@ import engine.utility.divides
 import engine.utility.isFactorizableUnderRationalExponent
 import engine.utility.isPrime
 import engine.utility.primeFactorDecomposition
-import method.integerrationalexponents.Explanation
 import java.math.BigInteger
 
 enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMethod {
@@ -45,17 +44,17 @@ enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMeth
                 condition(base) { it.signOf() == Sign.NEGATIVE },
                 ConditionPattern(
                     optionalNegOf(exponent),
-                    integerCondition(exponent.numerator, exponent.denominator) { n, d -> !d.divides(n) }
-                )
+                    integerCondition(exponent.numerator, exponent.denominator) { n, d -> !d.divides(n) },
+                ),
             )
 
             onPattern(pattern) {
                 ruleResult(
                     toExpr = transformTo(pattern, Constants.Undefined),
-                    explanation = metadata(Explanation.EvaluateNegativeToRationalExponentAsUndefined)
+                    explanation = metadata(Explanation.EvaluateNegativeToRationalExponentAsUndefined),
                 )
             }
-        }
+        },
     ),
 
     FactorizeIntegerUnderRationalExponent(
@@ -76,13 +75,13 @@ enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMeth
                     ruleResult(
                         toExpr = powerOf(productOf(factorized), move(exp)),
                         explanation = metadata(Explanation.FactorizeIntegerUnderRationalExponent),
-                        skills = listOf(metadata(Skill.FactorInteger, move(integer)))
+                        skills = listOf(metadata(Skill.FactorInteger, move(integer))),
                     )
                 } else {
                     null
                 }
             }
-        }
+        },
     ),
 
     /**
@@ -98,7 +97,7 @@ enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMeth
                 }
             val product = productContaining(
                 powerOf(UnsignedIntegerPattern(), fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())),
-                notRationalExponent
+                notRationalExponent,
             )
             onPattern(product) {
                 val (rationalExponents, nonRationalExponents) = get(product).children()
@@ -109,12 +108,12 @@ enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMeth
                 ruleResult(
                     toExpr = productOf(
                         productOf(nonRationalExponents.map { move(it) }),
-                        productOf(rationalExponents.map { move(it) })
+                        productOf(rationalExponents.map { move(it) }),
                     ),
-                    explanation = metadata(Explanation.NormaliseProductWithRationalExponents)
+                    explanation = metadata(Explanation.NormaliseProductWithRationalExponents),
                 )
             }
-        }
+        },
     ),
 
     FindCommonDenominatorOfRationalExponents(
@@ -144,7 +143,7 @@ enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMeth
                         Constants.One -> get(exponent1)
                         else -> fractionOf(
                             productOf(get(exponent1.numerator), expandingTerm1),
-                            productOf(get(exponent1.denominator), expandingTerm1)
+                            productOf(get(exponent1.denominator), expandingTerm1),
                         )
                     }
 
@@ -152,29 +151,29 @@ enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMeth
                         Constants.One -> get(exponent2)
                         else -> fractionOf(
                             productOf(get(exponent2.numerator), expandingTerm2),
-                            productOf(get(exponent2.denominator), expandingTerm2)
+                            productOf(get(exponent2.denominator), expandingTerm2),
                         )
                     }
 
                     val result = when {
                         isBound(product) -> product.substitute(
                             powerOf(move(base1), fraction1),
-                            powerOf(move(base2), fraction2)
+                            powerOf(move(base2), fraction2),
                         )
 
                         else -> fractionOf(
                             powerOf(move(base1), fraction1),
-                            powerOf(move(base2), fraction2)
+                            powerOf(move(base2), fraction2),
                         )
                     }
 
                     ruleResult(
                         toExpr = result,
-                        explanation = metadata(Explanation.FindCommonDenominatorOfRationalExponents)
+                        explanation = metadata(Explanation.FindCommonDenominatorOfRationalExponents),
                     )
                 }
             }
-        }
+        },
     ),
 
     FactorDenominatorOfRationalExponents(
@@ -205,18 +204,18 @@ enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMeth
                     isBound(product) -> product.substitute(
                         powerOf(
                             productOf(newPower1, newPower2),
-                            newExponent
-                        )
+                            newExponent,
+                        ),
                     )
                     else -> powerOf(fractionOf(newPower1, newPower2), newExponent)
                 }
 
                 ruleResult(
                     toExpr = result,
-                    explanation = metadata(Explanation.FactorDenominatorOfRationalExponents)
+                    explanation = metadata(Explanation.FactorDenominatorOfRationalExponents),
                 )
             }
-        }
+        },
     ),
 
     CollectLikeRationalPowers(
@@ -230,9 +229,9 @@ enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMeth
             onPattern(sum) {
                 ruleResult(
                     toExpr = collectLikeTermsInSum(get(sum), withOptionalRationalCoefficient(common)),
-                    explanation = metadata(Explanation.CollectLikeRationalPowers)
+                    explanation = metadata(Explanation.CollectLikeRationalPowers),
                 )
             }
-        }
-    )
+        },
+    ),
 }
