@@ -127,7 +127,11 @@ enum class DecimalsExplanation : CategorisedMetadataKey {
     /**
      * Evaluate the expression as a decimal
      */
-    EvaluateExpressionAsDecimal;
+    EvaluateExpressionAsDecimal,
+
+    StripTrailingZerosAfterDecimal,
+
+    StripTrailingZerosAfterDecimalOfAllDecimals;
 
     override val category = "Decimals"
 }

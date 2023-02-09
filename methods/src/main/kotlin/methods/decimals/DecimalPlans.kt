@@ -21,6 +21,7 @@ import engine.patterns.fractionOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
+import methods.decimals.DecimalRules.StripTrailingZerosAfterDecimal
 import methods.fractionarithmetic.FractionArithmeticPlans
 import methods.general.GeneralRules
 import methods.general.NormalizationPlans
@@ -79,6 +80,17 @@ enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
             }
         }
     ),
+
+    StripTrailingZerosAfterDecimalOfAllDecimals(
+        plan {
+            explanation = Explanation.StripTrailingZerosAfterDecimalOfAllDecimals
+
+            steps {
+                whilePossible { deeply(StripTrailingZerosAfterDecimal) }
+            }
+        }
+    ),
+
     ConvertTerminatingDecimalToFractionAndSimplify(
         plan {
             explanation = Explanation.ConvertTerminatingDecimalToFractionAndSimplify
@@ -186,6 +198,7 @@ enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
             explanation = Explanation.EvaluateExpressionAsDecimal
 
             steps {
+                optionally(StripTrailingZerosAfterDecimalOfAllDecimals)
                 whilePossible {
                     firstOf {
                         option(NormalizationPlans.AddClarifyingBrackets)

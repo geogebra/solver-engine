@@ -30,6 +30,7 @@ import methods.general.GeneralRules.RewriteProductOfPowersWithSameExponent
 import methods.general.GeneralRules.SimplifyDoubleMinus
 import methods.general.GeneralRules.SimplifyExpressionToThePowerOfOne
 import methods.general.GeneralRules.SimplifyProductWithTwoNegativeFactors
+import methods.general.GeneralRules.SimplifyUnitFractionToOne
 import methods.general.GeneralRules.SimplifyZeroDenominatorFractionToUndefined
 import methods.general.GeneralRules.SimplifyZeroNumeratorFractionToZero
 import org.junit.jupiter.api.Test
@@ -121,6 +122,12 @@ class GeneralRulesTest {
 
         // This one works because the denominator is "obviously" positive
         testRule("[0 / sqrt[2] + sqrt[2]]", SimplifyZeroNumeratorFractionToZero, "0")
+    }
+
+    @Test
+    fun testSimplifyUnitFractionToOne() {
+        testRule("[sqrt[2] + sqrt[3] / sqrt[2] + sqrt[3]]", SimplifyUnitFractionToOne, "1")
+        testRule("[2 - 2 / 2 - 2]", SimplifyUnitFractionToOne, null)
     }
 
     @Test

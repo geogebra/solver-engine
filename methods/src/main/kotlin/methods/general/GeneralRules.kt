@@ -264,9 +264,12 @@ private val simplifyZeroNumeratorFractionToZero =
         }
     }
 
+/**
+ * [expr / expr] = 0, given expr ≠ 0
+ */
 private val simplifyUnitFractionToOne =
     rule {
-        val common = AnyPattern()
+        val common = condition(AnyPattern()) { it.isDefinitelyNotZero() }
         val pattern = fractionOf(common, common)
 
         onPattern(pattern) {

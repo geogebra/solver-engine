@@ -22,6 +22,18 @@ class DecimalsRulesTest {
     }
 
     @Test
+    fun testStripTrailingZeros() {
+        testRule("1.100", DecimalRules.StripTrailingZerosAfterDecimal, "1.1")
+        testRule("1.1", DecimalRules.StripTrailingZerosAfterDecimal, null)
+    }
+
+    @Test
+    fun testEvaluateSignedDecimalAddition() {
+        testRule("1.1 - 1.1", DecimalRules.EvaluateSignedDecimalAddition, "0")
+        testRule("1.25 - 1.15", DecimalRules.EvaluateSignedDecimalAddition, "0.1")
+    }
+
+    @Test
     fun testConvertRecurringDecimalToFractionDirectly() {
         testRule("0.34", ConvertRecurringDecimalToFractionDirectly, null)
         testRule(

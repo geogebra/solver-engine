@@ -337,6 +337,22 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
         }
     ),
 
+    StripTrailingZerosAfterDecimal(
+        rule {
+            val num = SignedNumberPattern()
+
+            onPattern(num) {
+                val n = numericOp(num) { n -> n.stripTrailingZeros() }
+                if (get(num) == n) return@onPattern null
+
+                ruleResult(
+                    toExpr = transform(num, n),
+                    explanation = metadata(Explanation.StripTrailingZerosAfterDecimal)
+                )
+            }
+        }
+    ),
+
     EvaluateSignedDecimalAddition(
         rule {
             val term1 = SignedNumberPattern()
@@ -353,7 +369,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
                 }
 
                 ruleResult(
-                    toExpr = sum.substitute(numericOp(term1, term2) { n1, n2 -> n1 + n2 }),
+                    toExpr = sum.substitute(numericOp(term1, term2) { n1, n2 -> (n1 + n2).stripTrailingZeros() }),
                     explanation = explanation
                 )
             }

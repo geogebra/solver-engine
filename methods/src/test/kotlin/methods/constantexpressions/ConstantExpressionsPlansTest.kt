@@ -905,6 +905,36 @@ class ConstantExpressionFractionHigherOrderRootTest {
             }
         }
     }
+
+    @Test
+    fun testDivisionOfDecimalsWithTrailingZeros() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "[1.20000 / 1.2]"
+
+        check {
+            fromExpr = "[1.20000 / 1.2]"
+            toExpr = "1"
+            explanation {
+                key = ConstantExpressionsExplanation.SimplifyConstantExpression
+            }
+
+            step {
+                fromExpr = "[1.20000 / 1.2]"
+                toExpr = "[1.2 / 1.2]"
+                explanation {
+                    key = DecimalsExplanation.StripTrailingZerosAfterDecimal
+                }
+            }
+
+            step {
+                fromExpr = "[1.2 / 1.2]"
+                toExpr = "1"
+                explanation {
+                    key = GeneralExplanation.SimplifyUnitFractionToOne
+                }
+            }
+        }
+    }
 }
 
 class ConstantExpressionTest {

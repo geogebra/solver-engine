@@ -4,6 +4,7 @@ import engine.context.Context
 import engine.context.Curriculum
 import engine.methods.testMethod
 import methods.fractionarithmetic.FractionArithmeticExplanation
+import methods.general.GeneralExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
 import org.junit.jupiter.api.Test
 
@@ -375,6 +376,106 @@ class EvaluatExpressionAsDecimalTest {
             }
             step {
                 toExpr = "2"
+            }
+        }
+    }
+
+    @Test
+    fun `test fraction(a-a, a-a)`() = testMethod {
+        method = DecimalPlans.EvaluateExpressionAsDecimal
+        inputExpr = "[2.2 - 2.2 / 2.2 - 2.2]"
+
+        check {
+            fromExpr = "[2.2 - 2.2 / 2.2 - 2.2]"
+            toExpr = "UNDEFINED"
+            explanation {
+                key = DecimalsExplanation.EvaluateExpressionAsDecimal
+            }
+
+            step {
+                fromExpr = "[2.2 - 2.2 / 2.2 - 2.2]"
+                toExpr = "[0 / 2.2 - 2.2]"
+                explanation {
+                    key = DecimalsExplanation.EvaluateSumOfDecimals
+                }
+
+                step {
+                    fromExpr = "2.2 - 2.2"
+                    toExpr = "0"
+                    explanation {
+                        key = DecimalsExplanation.EvaluateDecimalSubtraction
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "[0 / 2.2 - 2.2]"
+                toExpr = "[0 / 0]"
+                explanation {
+                    key = DecimalsExplanation.EvaluateSumOfDecimals
+                }
+
+                step {
+                    fromExpr = "2.2 - 2.2"
+                    toExpr = "0"
+                    explanation {
+                        key = DecimalsExplanation.EvaluateDecimalSubtraction
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "[0 / 0]"
+                toExpr = "UNDEFINED"
+                explanation {
+                    key = GeneralExplanation.SimplifyZeroDenominatorFractionToUndefined
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testStripTrailingZeros() = testMethod {
+        method = DecimalPlans.EvaluateExpressionAsDecimal
+        inputExpr = "[1.200 / 1.20]"
+
+        check {
+            fromExpr = "[1.200 / 1.20]"
+            toExpr = "1"
+            explanation {
+                key = DecimalsExplanation.EvaluateExpressionAsDecimal
+            }
+
+            step {
+                fromExpr = "[1.200 / 1.20]"
+                toExpr = "[1.2 / 1.2]"
+                explanation {
+                    key = DecimalsExplanation.StripTrailingZerosAfterDecimalOfAllDecimals
+                }
+
+                step {
+                    fromExpr = "[1.200 / 1.20]"
+                    toExpr = "[1.2 / 1.20]"
+                    explanation {
+                        key = DecimalsExplanation.StripTrailingZerosAfterDecimal
+                    }
+                }
+
+                step {
+                    fromExpr = "[1.2 / 1.20]"
+                    toExpr = "[1.2 / 1.2]"
+                    explanation {
+                        key = DecimalsExplanation.StripTrailingZerosAfterDecimal
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "[1.2 / 1.2]"
+                toExpr = "1"
+                explanation {
+                    key = GeneralExplanation.SimplifyUnitFractionToOne
+                }
             }
         }
     }

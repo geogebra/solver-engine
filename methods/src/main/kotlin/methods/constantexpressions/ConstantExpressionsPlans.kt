@@ -15,6 +15,7 @@ import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.utility.divides
 import methods.decimals.DecimalPlans
+import methods.decimals.DecimalRules
 import methods.fractionarithmetic.FractionArithmeticPlans
 import methods.fractionarithmetic.FractionArithmeticRules
 import methods.fractionarithmetic.simplifyIntegerToNegativePower
@@ -167,6 +168,9 @@ val simpleTidyUpSteps = steps {
             option(GeneralRules.SimplifyZeroDenominatorFractionToUndefined)
             option(GeneralRules.EvaluateZeroToThePowerOfZero)
             option(IntegerRationalExponentsRules.EvaluateNegativeToRationalExponentAsUndefined)
+
+            // tidy up decimals
+            option(DecimalRules.StripTrailingZerosAfterDecimal)
 
             // handle zeroes
             option(GeneralRules.EvaluateProductContainingZero)

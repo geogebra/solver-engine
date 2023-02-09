@@ -135,14 +135,14 @@ class DecimalLinearEquationsTest {
 
             step {
                 fromExpr = "3.2 x + 2.2 = 1.2"
-                toExpr = "3.2 x = -1.0"
+                toExpr = "3.2 x = -1"
                 explanation {
                     key = EquationsExplanation.MoveConstantsToTheRightAndSimplify
                 }
             }
 
             step {
-                fromExpr = "3.2 x = -1.0"
+                fromExpr = "3.2 x = -1"
                 toExpr = "x = -0.3125"
                 explanation {
                     key = EquationsExplanation.DivideByCoefficientOfVariableAndSimplify
