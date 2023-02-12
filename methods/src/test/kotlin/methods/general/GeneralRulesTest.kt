@@ -5,6 +5,7 @@ import engine.methods.testRule
 import methods.general.GeneralRules.CancelAdditiveInverseElements
 import methods.general.GeneralRules.DistributeMultiplicationOverSum
 import methods.general.GeneralRules.DistributePowerOfProduct
+import methods.general.GeneralRules.DistributeSumOfPowers
 import methods.general.GeneralRules.EliminateOneInProduct
 import methods.general.GeneralRules.EliminateZeroInSum
 import methods.general.GeneralRules.EvaluateExpressionToThePowerOfZero
@@ -35,6 +36,7 @@ import methods.general.GeneralRules.SimplifyZeroDenominatorFractionToUndefined
 import methods.general.GeneralRules.SimplifyZeroNumeratorFractionToZero
 import org.junit.jupiter.api.Test
 
+@Suppress("LargeClass")
 class GeneralRulesTest {
 
     @Test
@@ -149,16 +151,47 @@ class GeneralRulesTest {
 
     @Test
     fun testDistributePowerOfProduct() {
-        testRule(
-            "[(2 * x * y) ^ 5]",
-            DistributePowerOfProduct,
-            "[2 ^ 5] [x ^ 5] [y ^ 5]"
-        )
+        testMethod {
+            method = DistributePowerOfProduct
+            inputExpr = "[(2 * x * y) ^ 5]"
+
+            check {
+                toExpr = "[2 ^ 5] [x ^ 5] [y ^ 5]"
+
+                distribute {
+                    fromPaths("./1")
+                    toPaths("./0/1", "./1/1", "./2/1")
+                }
+                move("./0/0", "./0/0")
+                move("./0/1", "./1/0")
+                move("./0/2", "./2/0")
+            }
+        }
         testRule(
             "[(sqrt[3] * root[5, 2]) ^ n]",
             DistributePowerOfProduct,
             "[(sqrt[3]) ^ n] * [(root[5, 2]) ^ n]"
         )
+    }
+
+    @Test
+    fun testDistributeSumOfPowers() {
+        testMethod {
+            method = DistributeSumOfPowers
+            inputExpr = "[2 ^ a + b + c]"
+
+            check {
+                toExpr = "[2^a] * [2^b] * [2^c]"
+
+                distribute {
+                    fromPaths("./0")
+                    toPaths("./0/0", "./1/0", "./2/0")
+                }
+                move("./1/0", "./0/1")
+                move("./1/1", "./1/1")
+                move("./1/2", "./2/1")
+            }
+        }
     }
 
     @Test
@@ -245,11 +278,20 @@ class GeneralRulesTest {
 
     @Test
     fun testExpandProductOfSingleTermAndSum() {
-        testRule(
-            "sqrt[2] * (3 + sqrt[4])",
-            DistributeMultiplicationOverSum,
-            "sqrt[2] * 3 + sqrt[2] * sqrt[4]"
-        )
+        testMethod {
+            method = DistributeMultiplicationOverSum
+            inputExpr = "sqrt[2] * (3 + sqrt[4])"
+            check {
+                toExpr = "sqrt[2] * 3 + sqrt[2] * sqrt[4]"
+
+                distribute {
+                    fromPaths("./0")
+                    toPaths("./0/0", "./1/0")
+                }
+                move("./1/0", "./0/1")
+                move("./1/1", "./1/1")
+            }
+        }
         testRule(
             "sqrt[2] * (3 - sqrt[4])",
             DistributeMultiplicationOverSum,
@@ -534,7 +576,7 @@ class GeneralRulesTest {
         testRule(
             "(1 + sqrt[2]) * (1 + sqrt[2])",
             GeneralRules.ApplyFoilMethod,
-            "1*1 + 1 sqrt[2] + sqrt[2]*1 + sqrt[2]*sqrt[2]"
+            "1*1 + 1*sqrt[2] + sqrt[2]*1 + sqrt[2]*sqrt[2]"
         )
         testRule(
             "(4x - 3) * (4x - 3)",
@@ -544,7 +586,7 @@ class GeneralRulesTest {
         testRule(
             "(4x - 5[x^3]) * (2[x^2] - 3x)",
             GeneralRules.ApplyFoilMethod,
-            "4 x * 2 [x ^ 2] + 4 x (-3 x) + (-5 [x ^ 3]) * 2 [x ^ 2] + (-5 [x ^ 3]) (-3 x)"
+            "4 x * 2 [x ^ 2] + 4 x * (-3 x) + (-5 [x ^ 3]) * 2 [x ^ 2] + (-5 [x ^ 3]) * (-3 x)"
         )
         testRule(
             "(2x - 3) * (3x + 3)",
@@ -561,6 +603,31 @@ class GeneralRulesTest {
             GeneralRules.ApplyFoilMethod,
             "2x * 2x + 2x * (-3) + (-3) * 2x + (-3) * (-3)"
         )
+        testMethod {
+            method = GeneralRules.ApplyFoilMethod
+            inputExpr = "(x + 2)(x + 3)"
+
+            check {
+                toExpr = "x*x + x*3 + 2*x + 2*3"
+
+                distribute {
+                    fromPaths("./0/0")
+                    toPaths("./0/0", "./1/0")
+                }
+                distribute {
+                    fromPaths("./0/1")
+                    toPaths("./2/0", "./3/0")
+                }
+                distribute {
+                    fromPaths("./1/0")
+                    toPaths("./0/1", "./2/1")
+                }
+                distribute {
+                    fromPaths("./1/1")
+                    toPaths("./1/1", "./3/1")
+                }
+            }
+        }
     }
 
     @Test
@@ -570,6 +637,35 @@ class GeneralRulesTest {
             GeneralRules.ExpandDoubleBrackets,
             "[x^2]*3x + [x^2]*(-5) + 5x * 3x + 5x * (-5) + (-2)*3x + (-2)*(-5)"
         )
+        testMethod {
+            method = GeneralRules.ExpandDoubleBrackets
+            inputExpr = "([x^2] + 5x - 2) * (3x - 5)"
+
+            check {
+                toExpr = "[x^2]*3x + [x^2]*(-5) + 5x * 3x + 5x * (-5) + (-2)*3x + (-2)*(-5)"
+
+                distribute {
+                    fromPaths("./0/0")
+                    toPaths("./0/0", "./1/0")
+                }
+                distribute {
+                    fromPaths("./0/1")
+                    toPaths("./2/0", "./3/0")
+                }
+                distribute {
+                    fromPaths("./0/2")
+                    toPaths("./4/0", "./5/0")
+                }
+                distribute {
+                    fromPaths("./1/0")
+                    toPaths("./0/1", "./2/1", "./4/1")
+                }
+                distribute {
+                    fromPaths("./1/1")
+                    toPaths("./1/1", "./3/1", "./5/1")
+                }
+            }
+        }
     }
 
     @Test

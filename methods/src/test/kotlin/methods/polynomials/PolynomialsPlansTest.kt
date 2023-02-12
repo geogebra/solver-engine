@@ -1554,14 +1554,14 @@ class ExpandAndSimplifyMultipleBrackets {
 
                 step {
                     fromExpr = "(4 [x ^ 2] + 12 x + 9) (x + 1)"
-                    toExpr = "4 [x ^ 2] * x + 4 [x ^ 2] * 1 + 12 x * x + 12 x * 1 + 9 x + 9 * 1"
+                    toExpr = "4 [x ^ 2] * x + 4 [x ^ 2] * 1 + 12 x * x + 12 x * 1 + 9 * x + 9 * 1"
                     explanation {
                         key = GeneralExplanation.ExpandDoubleBrackets
                     }
                 }
 
                 step {
-                    fromExpr = "4 [x ^ 2] * x + 4 [x ^ 2] * 1 + 12 x * x + 12 x * 1 + 9 x + 9 * 1"
+                    fromExpr = "4 [x ^ 2] * x + 4 [x ^ 2] * 1 + 12 x * x + 12 x * 1 + 9 * x + 9 * 1"
                     toExpr = "4 [x ^ 3] + 16 [x ^ 2] + 21 x + 9"
                     explanation {
                         key = PolynomialsExplanation.SimplifyAlgebraicExpression

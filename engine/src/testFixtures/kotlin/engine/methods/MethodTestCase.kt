@@ -40,7 +40,7 @@ data class PathMappingPathsBuilder(val type: PathMappingType) {
 }
 
 @TestCaseBuilderMarker
-open class PathMappingsCheck(mappings: Sequence<PathMapping>, private val rootPath: Path) {
+open class PathMappingsCheck(mappings: List<PathMapping>, private val rootPath: Path) {
     private val pathMappings = mappings.map { it.relativeTo(rootPath) }.toList()
 
     private var checkedMappings: Int? = null
@@ -122,7 +122,7 @@ open class PathMappingsCheck(mappings: Sequence<PathMapping>, private val rootPa
 }
 
 class MappedExpressionCheck(private val mappedExpression: Expression, rootPath: Path) :
-    PathMappingsCheck(mappedExpression.pathMappings(), rootPath) {
+    PathMappingsCheck(mappedExpression.mergedPathMappings(), rootPath) {
 
     var expr: String?
         get() = null
@@ -162,7 +162,7 @@ class MetadataCheck(private val rootPath: Path, private val keyChecker: (Metadat
 @TestCaseBuilderMarker
 class TaskCheck(private val task: Task?) :
     PathMappingsCheck(
-        task?.startExpr?.pathMappings() ?: emptySequence(),
+        task?.startExpr?.mergedPathMappings() ?: emptyList(),
         task?.rootPath ?: RootPath()
     ) {
     var startExpr: String?
@@ -229,7 +229,7 @@ class TaskCheck(private val task: Task?) :
 @TestCaseBuilderMarker
 class TransformationCheck(private val trans: Transformation?) :
     PathMappingsCheck(
-        trans?.toExpr?.pathMappings() ?: emptySequence(),
+        trans?.toExpr?.mergedPathMappings() ?: emptyList(),
         trans?.fromExpr?.origin?.path ?: RootPath()
     ) {
     var fromExpr: String?

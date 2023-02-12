@@ -146,8 +146,9 @@ class Expression internal constructor(
 
     fun withOrigin(newOrigin: Origin) = Expression(operator, operands, decorators, newOrigin, label)
 
-    fun pathMappings(rootPath: Path = RootPath()) = origin.computePathMappings(rootPath, children())
+    internal fun pathMappings(rootPath: Path = RootPath()) = origin.computePathMappings(rootPath, children())
 
+    fun mergedPathMappings(rootPath: Path = RootPath()) = mergePathMappings(pathMappings(rootPath))
     override fun toString(): String {
         val s = decorators.fold(operator.readableString(operands)) { acc, dec -> dec.decorateString(acc) }
         return s

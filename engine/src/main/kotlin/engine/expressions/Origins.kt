@@ -8,6 +8,8 @@ abstract class Origin(val path: Path? = null) {
         List(expression.operands.size) { i -> this.computeChildOrigin(expression, i) }
 
     abstract fun computePathMappings(rootPath: Path, children: List<Expression>): Sequence<PathMapping>
+
+    open fun fromPaths(children: List<Expression>): List<Path> = if (path == null) emptyList() else listOf(path)
 }
 
 class Root(private val rootPath: Path = RootPath()) : Origin(rootPath) {
@@ -63,6 +65,10 @@ object Build : Origin() {
         children.isEmpty() -> sequenceOf(PathMapping(emptyList(), PathMappingType.Introduce, listOf(rootPath)))
         else -> children.mapIndexed { i, child -> child.pathMappings(rootPath.child(i)) }.asSequence().flatten()
     }
+
+    override fun fromPaths(children: List<Expression>): List<Path> {
+        return children.flatMap { it.origin.fromPaths(it.children()) }
+    }
 }
 
 object Unknown : Origin() {
@@ -97,7 +103,7 @@ class Combine(val from: List<Expression>) : Origin() {
 
     override fun computePathMappings(rootPath: Path, children: List<Expression>) = sequenceOf(
         PathMapping(
-            from.mapNotNull { it.origin.path },
+            from.flatMap { it.origin.fromPaths(it.children()) },
             when (from.size) {
                 0 -> PathMappingType.Introduce
                 1 -> PathMappingType.Transform
@@ -116,7 +122,13 @@ class Factor(val from: List<Expression>) : Origin() {
         expression.operands[index].withOrigin(Factor(from.map { it.nthChild(index) }))
 
     override fun computePathMappings(rootPath: Path, children: List<Expression>) =
-        sequenceOf(PathMapping(from.mapNotNull { it.origin.path }, PathMappingType.Factor, listOf(rootPath)))
+        sequenceOf(
+            PathMapping(
+                from.flatMap { it.origin.fromPaths(it.children()) },
+                PathMappingType.Factor,
+                listOf(rootPath)
+            )
+        )
 }
 
 class Distribute(val from: List<Expression>) : Origin() {
@@ -127,7 +139,13 @@ class Distribute(val from: List<Expression>) : Origin() {
         expression.operands[index].withOrigin(Distribute(from.map { it.nthChild(index) }))
 
     override fun computePathMappings(rootPath: Path, children: List<Expression>) =
-        sequenceOf(PathMapping(from.mapNotNull { it.origin.path }, PathMappingType.Distribute, listOf(rootPath)))
+        sequenceOf(
+            PathMapping(
+                from.flatMap { it.origin.fromPaths(it.children()) },
+                PathMappingType.Distribute,
+                listOf(rootPath)
+            )
+        )
 }
 
 class Cancel(val origin: Origin, val cancelParts: List<Expression>) : Origin(origin.path) {

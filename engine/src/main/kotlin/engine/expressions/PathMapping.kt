@@ -1,5 +1,7 @@
 package engine.expressions
 
+class IncompatiblePathMappingsException : Exception()
+
 data class PathMapping(
     val fromPaths: List<Path>,
     val type: PathMappingType,
@@ -7,6 +9,16 @@ data class PathMapping(
 ) {
     fun relativeTo(fromRoot: Path = RootPath(), toRoot: Path = RootPath()): PathMapping {
         return PathMapping(fromPaths.map { it.relativeTo(fromRoot) }, type, toPaths.map { it.relativeTo(toRoot) })
+    }
+
+    fun mergeWith(other: PathMapping): PathMapping? {
+        if (this == other) {
+            return this
+        }
+        if (type == PathMappingType.Distribute && type == other.type && fromPaths == other.fromPaths) {
+            return copy(toPaths = toPaths.union(other.toPaths).toList())
+        }
+        return null
     }
 }
 
@@ -80,4 +92,19 @@ enum class PathMappingType {
      * to the `2` in the result.
      */
     Relate,
+}
+
+fun mergePathMappings(pathMappings: Sequence<PathMapping>): List<PathMapping> {
+    val mergedMappings = mutableListOf<PathMapping>()
+    loop@ for (newMapping in pathMappings) {
+        for ((i, existingMapping) in mergedMappings.withIndex()) {
+            val mergedMapping = existingMapping.mergeWith(newMapping)
+            if (mergedMapping != null) {
+                mergedMappings[i] = mergedMapping
+                continue@loop
+            }
+        }
+        mergedMappings.add(newMapping)
+    }
+    return mergedMappings
 }

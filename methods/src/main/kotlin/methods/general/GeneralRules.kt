@@ -357,7 +357,7 @@ private val simplifyProductOfConjugates =
     }
 
 /**
- * [ ( [x1^a1] * ... * [xn^an] ) ^ [ p/q ] ] --> [(x1^a1) ^ [p/q]] * ... * [(xn^an) ^ [p/q]]
+ * [(x1 * ... * xn) ^ a] --> [x1 ^ a] * ... * [xn ^ a]
  */
 private val distributePowerOfProduct =
     rule {
@@ -366,8 +366,10 @@ private val distributePowerOfProduct =
         val pattern = powerOf(product, exponent)
 
         onPattern(pattern) {
+            val distributedExponent = distribute(exponent)
+
             ruleResult(
-                toExpr = productOf(get(product).children().map { powerOf(move(it), move(exponent)) }),
+                toExpr = productOf(get(product).children().map { powerOf(move(it), distributedExponent) }),
                 explanation = metadata(Explanation.DistributePowerOfProduct)
             )
         }
@@ -383,17 +385,16 @@ private val expandBinomialSquaredUsingIdentity =
     rule {
         val a = AnyPattern()
         val b = AnyPattern()
-        val pattern = powerOf(
-            sumOf(a, b),
-            FixedPattern(Constants.Two)
-        )
+        val two = FixedPattern(Constants.Two)
+        val pattern = powerOf(sumOf(a, b), two)
 
         onPattern(pattern) {
+            val (da, db, dtwo) = distribute(a, b, two)
             ruleResult(
                 toExpr = sumOf(
-                    powerOf(move(a), introduce(Constants.Two)),
-                    productOf(introduce(Constants.Two), move(a), move(b)),
-                    powerOf(move(b), introduce(Constants.Two))
+                    powerOf(da, dtwo),
+                    productOf(dtwo, da, db),
+                    powerOf(db, dtwo)
                 ),
                 explanation = metadata(Explanation.ExpandBinomialSquaredUsingIdentity)
             )
@@ -499,11 +500,12 @@ private val applyFoilMethod =
         val prod = productOf(sum1, sum2)
 
         onPattern(prod) {
+            val (da, db, dc, dd) = distribute(a, b, c, d)
             val toExpr = sumOf(
-                productOf(move(a), move(c)),
-                productOf(move(a), move(d)),
-                productOf(move(b), move(c)),
-                productOf(move(b), move(d))
+                explicitProductOf(da, dc),
+                explicitProductOf(da, dd),
+                explicitProductOf(db, dc),
+                explicitProductOf(db, dd)
             )
 
             ruleResult(
@@ -524,12 +526,12 @@ private val expandDoubleBrackets =
         val prod = productOf(sum1, sum2)
 
         onPattern(prod) {
-            val terms1 = get(sum1).children()
-            val terms2 = get(sum2).children()
+            val terms1 = get(sum1).children().map { distribute(it) }
+            val terms2 = get(sum2).children().map { distribute(it) }
 
             val toExpr = sumOf(
                 terms1.map { term1 ->
-                    sumOf(terms2.map { term2 -> productOf(move(term1), move(term2)) })
+                    sumOf(terms2.map { term2 -> explicitProductOf(term1, term2) })
                 }
             )
 
@@ -600,10 +602,12 @@ private val distributeSumOfPowers =
         val pattern = powerOf(base, sumOfExponents)
 
         onPattern(pattern) {
+            val distributedBase = distribute(base)
+
             ruleResult(
                 toExpr = productOf(
                     get(sumOfExponents).children().map {
-                        simplifiedPowerOf(move(base), move(it))
+                        simplifiedPowerOf(distributedBase, move(it))
                     }
                 ),
                 explanation = metadata(Explanation.DistributeSumOfPowers)
@@ -624,7 +628,7 @@ private val distributeMultiplicationOverSum =
         onPattern(optionalNegProduct) {
             val getSum = get(sum)
             val terms = getSum.children()
-            val restOfProd = restOf(product)
+            val restOfProd = distribute(restOf(product))
 
             // variableExpression * (c1 + c2 + ... + cn) --> shouldn't be expanded
             if (getSum.isConstant() && !restOfProd.isConstant()) return@onPattern null
@@ -656,6 +660,8 @@ private val distributeNegativeOverBracket =
         val sum = oneOf(sumContainingNegTerm, negSumTerm)
 
         onPattern(sum) {
+            // Note: we can't have distribute path mappings for this as things are because there is no node for "-"
+            // itself
             val terms = get(sumTerm).children()
             val negDistributedTerm = sumOf(
                 terms.map { if (it.operator == UnaryExpressionOperator.Minus) move(it.firstChild) else negOf(move(it)) }

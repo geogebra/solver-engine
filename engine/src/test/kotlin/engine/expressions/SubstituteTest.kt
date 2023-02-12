@@ -130,15 +130,11 @@ class SubstituteTest {
 
             distribute {
                 fromPaths("./0/0")
-                toPaths("./0/0")
+                toPaths("./0/0", "./1/1")
             }
             move("./0/1/0", "./0/1")
 
             move("./0/1/1", "./1/0")
-            distribute {
-                fromPaths("./0/0")
-                toPaths("./1/1")
-            }
 
             shift("./1", "./2")
         }

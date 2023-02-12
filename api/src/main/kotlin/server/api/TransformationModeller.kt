@@ -15,7 +15,7 @@ data class TransformationModeller(val format: Format) {
             path = trans.fromExpr.origin.path.toString(),
             fromExpr = modelExpression(trans.fromExpr),
             toExpr = modelExpression(trans.toExpr.removeBrackets()),
-            pathMappings = modelPathMappings(trans.toExpr.pathMappings(trans.fromExpr.origin.path!!)),
+            pathMappings = modelPathMappings(trans.toExpr.mergedPathMappings(trans.fromExpr.origin.path!!)),
             explanation = trans.explanation?.let { modelMetadata(it) },
             skills = trans.skills.map { modelMetadata(it) },
             steps = trans.steps?.let { steps -> steps.map { modelTransformation(it) } },
@@ -28,15 +28,15 @@ data class TransformationModeller(val format: Format) {
         return Task(
             taskId = task.taskId,
             startExpr = modelExpression(task.startExpr),
-            pathMappings = modelPathMappings(task.startExpr.pathMappings(RootPath(task.taskId))),
+            pathMappings = modelPathMappings(task.startExpr.mergedPathMappings(RootPath(task.taskId))),
             explanation = task.explanation?.let { modelMetadata(it) },
             steps = if (task.steps.isEmpty()) null else task.steps.map { modelTransformation(it) },
             dependsOn = task.dependsOn.ifEmpty { null }
         )
     }
 
-    private fun modelPathMappings(mappings: Sequence<engine.expressions.PathMapping>): List<PathMapping> {
-        return mappings.map { modelPathMapping(it) }.toList()
+    private fun modelPathMappings(mappings: List<engine.expressions.PathMapping>): List<PathMapping> {
+        return mappings.map { modelPathMapping(it) }
     }
 
     private fun modelPathMapping(mapping: engine.expressions.PathMapping): PathMapping {
@@ -53,7 +53,7 @@ data class TransformationModeller(val format: Format) {
             params = metadata.mappedParams.map {
                 MappedExpression(
                     expression = modelExpression(it),
-                    pathMappings = modelPathMappings(it.pathMappings(RootPath()))
+                    pathMappings = modelPathMappings(it.mergedPathMappings(RootPath()))
                 )
             }
         )
