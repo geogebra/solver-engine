@@ -2,7 +2,7 @@
   "devDependencies": {
     "eslint": "^8.33.0",
     "eslint-config-prettier": "^8.6.0",
-    "prettier": "2.8.3",
+    "prettier": "2.8.4",
     "run-script-os": "^1.1.6"
   },
   "dependencies": {
@@ -12,6 +12,7 @@
     "postinstall": "run-script-os",
     "postinstall:darwin": "            cp ./node_modules/@geogebra/solver-sdk/dist/solver-sdk.es.js ./api/src/main/resources/static/solver-sdk.es.js",
     "postinstall:linux": "             cp ./node_modules/@geogebra/solver-sdk/dist/solver-sdk.es.js ./api/src/main/resources/static/solver-sdk.es.js",
-    "postinstall:win32": "powershell \"cp ./node_modules/@geogebra/solver-sdk/dist/solver-sdk.es.js ./api/src/main/resources/static/solver-sdk.es.js\""
+    "postinstall:win32": "powershell \"cp ./node_modules/@geogebra/solver-sdk/dist/solver-sdk.es.js ./api/src/main/resources/static/solver-sdk.es.js\"",
+    "prettier": "prettier . -w"
   }
 }

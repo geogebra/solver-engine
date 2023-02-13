@@ -1,1 +1,17 @@
-.gitignore
+# ignore all files
+*
+
+# include all folders
+!**/
+
+# whitelist certain folders
+!/*
+!/api/src/main/openapi/*
+!/api/src/main/resources/*
+!/api/src/main/resources/static/*
+!/config/*
+!/docs/*
+
+# Blacklist these
+/api/src/main/resources/static/solver-sdk.es.js
+/helm
