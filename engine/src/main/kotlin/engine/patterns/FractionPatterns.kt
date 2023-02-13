@@ -23,7 +23,7 @@ class RationalPattern : KeyedPattern {
 
     private val options = oneOf(
         numerator,
-        fractionOf(numerator, denominator)
+        fractionOf(numerator, denominator),
     )
 
     private val ptn = optionalNegOf(options)

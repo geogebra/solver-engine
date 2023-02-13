@@ -17,7 +17,7 @@ data class RenderContext(val align: Boolean = false) {
 enum class SumTermKind {
     PLUS,
     MINUS,
-    PLUSMINUS
+    PLUSMINUS,
 }
 
 interface LatexRenderable {
@@ -37,7 +37,7 @@ interface LatexRenderable {
 enum class OperatorKind {
     EXPRESSION,
     SET,
-    STATEMENT;
+    STATEMENT,
 }
 
 interface Operator {
@@ -103,7 +103,7 @@ interface BinaryOperator : Operator {
         1 -> rightChildAllowed(op)
         else -> throw IllegalArgumentException(
             "Binary operator ${this::class.simpleName} should have exactly two children. " +
-                "Child $op is invalid at position $n."
+                "Child $op is invalid at position $n.",
         )
     }
 

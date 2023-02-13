@@ -37,16 +37,16 @@ enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
                 if (inequality.holdsFor(getValue(lhs), getValue(rhs))) {
                     ruleResult(
                         toExpr = solutionOf(xp(context.solutionVariable!!), Constants.Reals),
-                        explanation = metadata(Explanation.ExtractSolutionFromTrueInequality)
+                        explanation = metadata(Explanation.ExtractSolutionFromTrueInequality),
                     )
                 } else {
                     ruleResult(
                         toExpr = solutionOf(xp(context.solutionVariable!!), Constants.EmptySet),
-                        explanation = metadata(Explanation.ExtractSolutionFromFalseInequality)
+                        explanation = metadata(Explanation.ExtractSolutionFromFalseInequality),
                     )
                 }
             }
-        }
+        },
     ),
 
     ExtractSolutionFromConstantInequalityBasedOnSign(
@@ -64,19 +64,19 @@ enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
                     if (inequality.holdsFor(lhsSign.signum.toBigDecimal(), rhsSign.signum.toBigDecimal())) {
                         ruleResult(
                             toExpr = solutionOf(xp(context.solutionVariable!!), Constants.Reals),
-                            explanation = metadata(Explanation.ExtractSolutionFromTrueInequality)
+                            explanation = metadata(Explanation.ExtractSolutionFromTrueInequality),
                         )
                     } else {
                         ruleResult(
                             toExpr = solutionOf(xp(context.solutionVariable!!), Constants.EmptySet),
-                            explanation = metadata(Explanation.ExtractSolutionFromFalseInequality)
+                            explanation = metadata(Explanation.ExtractSolutionFromFalseInequality),
                         )
                     }
                 } else {
                     null
                 }
             }
-        }
+        },
     ),
 
     ExtractSolutionFromInequalityInSolvedForm(
@@ -89,10 +89,10 @@ enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
             onPattern(inequality) {
                 ruleResult(
                     toExpr = solutionOf(move(lhs), inequality.toInterval(get(rhs)!!)),
-                    explanation = metadata(Explanation.ExtractSolutionFromInequalityInSolvedForm)
+                    explanation = metadata(Explanation.ExtractSolutionFromInequalityInSolvedForm),
                 )
             }
-        }
+        },
     ),
 
     FlipInequality(
@@ -105,10 +105,10 @@ enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
             onPattern(inequality) {
                 ruleResult(
                     toExpr = inequality.dualInequality(move(rhs), move(lhs)),
-                    explanation = metadata(Explanation.FlipInequality)
+                    explanation = metadata(Explanation.FlipInequality),
                 )
             }
-        }
+        },
     ),
 
     NegateBothSides(
@@ -123,12 +123,12 @@ enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     toExpr = inequality.dualInequality(
                         move(variable),
-                        simplifiedNegOf(move(rhs))
+                        simplifiedNegOf(move(rhs)),
                     ),
-                    explanation = metadata(Explanation.NegateBothSidesAndFlipTheSign)
+                    explanation = metadata(Explanation.NegateBothSidesAndFlipTheSign),
                 )
             }
-        }
+        },
     ),
 
     MultiplyByInverseCoefficientOfVariable(
@@ -142,23 +142,26 @@ enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
                 val coefficient = get(lhs::coefficient)!!
 
                 if (coefficient.operator == BinaryExpressionOperator.Fraction) {
-                    val inverse = if (coefficient.numerator() == Constants.One) coefficient.denominator()
-                    else fractionOf(coefficient.denominator(), coefficient.numerator())
+                    val inverse = if (coefficient.numerator() == Constants.One) {
+                        coefficient.denominator()
+                    } else {
+                        fractionOf(coefficient.denominator(), coefficient.numerator())
+                    }
 
                     when (inverse.signOf()) {
                         Sign.POSITIVE -> ruleResult(
                             toExpr = inequality.sameInequality(
                                 productOf(move(lhs), inverse),
-                                productOf(move(rhs), inverse)
+                                productOf(move(rhs), inverse),
                             ),
-                            explanation = metadata(Explanation.MultiplyByInverseCoefficientOfVariable)
+                            explanation = metadata(Explanation.MultiplyByInverseCoefficientOfVariable),
                         )
                         Sign.NEGATIVE -> ruleResult(
                             toExpr = inequality.dualInequality(
                                 productOf(move(lhs), inverse),
-                                productOf(move(rhs), inverse)
+                                productOf(move(rhs), inverse),
                             ),
-                            explanation = metadata(Explanation.MultiplyByInverseCoefficientOfVariableAndFlipTheSign)
+                            explanation = metadata(Explanation.MultiplyByInverseCoefficientOfVariableAndFlipTheSign),
                         )
                         else -> null
                     }
@@ -166,7 +169,7 @@ enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
                     null
                 }
             }
-        }
+        },
     ),
 
     DivideByCoefficientOfVariable(
@@ -184,20 +187,20 @@ enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
                     Sign.POSITIVE -> ruleResult(
                         toExpr = inequality.sameInequality(
                             fractionOf(move(lhs), coefficient),
-                            fractionOf(move(rhs), coefficient)
+                            fractionOf(move(rhs), coefficient),
                         ),
-                        explanation = metadata(Explanation.DivideByCoefficientOfVariable)
+                        explanation = metadata(Explanation.DivideByCoefficientOfVariable),
                     )
                     Sign.NEGATIVE -> ruleResult(
                         toExpr = inequality.dualInequality(
                             fractionOf(move(lhs), coefficient),
-                            fractionOf(move(rhs), coefficient)
+                            fractionOf(move(rhs), coefficient),
                         ),
-                        explanation = metadata(Explanation.DivideByCoefficientOfVariableAndFlipTheSign)
+                        explanation = metadata(Explanation.DivideByCoefficientOfVariableAndFlipTheSign),
                     )
                     else -> null
                 }
             }
-        }
-    )
+        },
+    ),
 }

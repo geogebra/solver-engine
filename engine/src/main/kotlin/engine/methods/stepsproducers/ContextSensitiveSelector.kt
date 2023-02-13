@@ -12,7 +12,7 @@ import engine.steps.Transformation
  */
 data class ContextSensitiveAlternative(
     val stepsProducer: StepsProducer,
-    override val resourceData: ResourceData
+    override val resourceData: ResourceData,
 ) : Resource
 
 /**
@@ -22,7 +22,7 @@ data class ContextSensitiveAlternative(
  */
 data class ContextSensitiveSelector(
     val default: ContextSensitiveAlternative,
-    val alternatives: List<ContextSensitiveAlternative>
+    val alternatives: List<ContextSensitiveAlternative>,
 ) : StepsProducer {
 
     override fun produceSteps(ctx: Context, sub: Expression): List<Transformation>? {

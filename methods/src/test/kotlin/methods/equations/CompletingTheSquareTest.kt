@@ -26,49 +26,49 @@ class CompletingTheSquareTest {
     @Test
     fun `short test integer solutions`() = shortTest(
         inputExpr = "[x ^ 2] + 2 x = 8",
-        toExpr = "Solution[x, {-4, 2}]"
+        toExpr = "Solution[x, {-4, 2}]",
     )
 
     @Test
     fun `short test surd solutions`() = shortTest(
         inputExpr = "[x ^ 2] = x + 3",
-        toExpr = "Solution[x, {-[sqrt[13] / 2] + [1 / 2], [sqrt[13] / 2] + [1 / 2]}]"
+        toExpr = "Solution[x, {-[sqrt[13] / 2] + [1 / 2], [sqrt[13] / 2] + [1 / 2]}]",
     )
 
     @Test
     fun `short test no constant term`() = shortTest(
         inputExpr = "x = [x ^ 2]",
-        toExpr = "Solution[x, {0, 1}]"
+        toExpr = "Solution[x, {0, 1}]",
     )
 
     @Test
     fun `short test single solution`() = shortTest(
         inputExpr = "[x ^ 2] - 10 x = -25",
-        toExpr = "Solution[x, {5}]"
+        toExpr = "Solution[x, {5}]",
     )
 
     @Test
     fun `short test no solution`() = shortTest(
         inputExpr = "[x ^ 2] + x + 10 = 0",
-        toExpr = "Solution[x, {}]"
+        toExpr = "Solution[x, {}]",
     )
 
     @Test
     fun `short test no linear term`() = shortTest(
         inputExpr = "[x ^ 2] = 100",
-        toExpr = null
+        toExpr = null,
     )
 
     @Test
     fun `short test quadratic coefficient not 1`() = shortTest(
         inputExpr = "2 [x ^ 2] - 45 = x",
-        toExpr = "Solution[x, {-[9 / 2], 5}]"
+        toExpr = "Solution[x, {-[9 / 2], 5}]",
     )
 
     @Test
     fun `short test with rational quadratic coefficient`() = shortTest(
         inputExpr = "[1/2][x^2] + x + [1/2] = 0",
-        toExpr = "Solution[x, {-1}]"
+        toExpr = "Solution[x, {-1}]",
     )
 
     @Test

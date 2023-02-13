@@ -31,10 +31,10 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     type = Transformation.Type.Rearrangement,
                     toExpr = transformTo(missingBracket) { it.removeBrackets().decorate(Decorator.RoundBracket) },
-                    explanation = metadata(Explanation.ReplaceInvisibleBrackets)
+                    explanation = metadata(Explanation.ReplaceInvisibleBrackets),
                 )
             }
-        }
+        },
     ),
 
     /**
@@ -49,12 +49,12 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     type = Transformation.Type.Rearrangement,
                     toExpr = sumOf(
-                        get(pattern)!!.children().map { child -> transformTo(child) { it.removeBrackets() } }
+                        get(pattern)!!.children().map { child -> transformTo(child) { it.removeBrackets() } },
                     ),
-                    explanation = metadata(Explanation.RemoveBracketSumInSum)
+                    explanation = metadata(Explanation.RemoveBracketSumInSum),
                 )
             }
-        }
+        },
     ),
 
     RemoveBracketProductInProduct(
@@ -67,12 +67,12 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
                     type = Transformation.Type.Rearrangement,
                     toExpr = productOf(
                         get(pattern)!!.flattenedProductChildren()
-                            .map { child -> transformTo(child) { it.removeBrackets() } }
+                            .map { child -> transformTo(child) { it.removeBrackets() } },
                     ),
-                    explanation = metadata(Explanation.RemoveBracketProductInProduct)
+                    explanation = metadata(Explanation.RemoveBracketProductInProduct),
                 )
             }
-        }
+        },
     ),
 
     RemoveBracketAroundSignedIntegerInSum(
@@ -84,10 +84,10 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
             onPattern(pattern) {
                 ruleResult(
                     toExpr = pattern.substitute(transformTo(number) { it.removeBrackets() }),
-                    explanation = metadata(Explanation.RemoveBracketAroundSignedIntegerInSum)
+                    explanation = metadata(Explanation.RemoveBracketAroundSignedIntegerInSum),
                 )
             }
-        }
+        },
     ),
 
     RemoveOuterBracket(
@@ -98,10 +98,10 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     type = Transformation.Type.Rearrangement,
                     toExpr = transformTo(pattern) { it.removeBrackets() },
-                    explanation = metadata(Explanation.RemoveRedundantBracket)
+                    explanation = metadata(Explanation.RemoveRedundantBracket),
                 )
             }
-        }
+        },
     ),
 
     RemoveRedundantPlusSign(
@@ -113,13 +113,13 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     type = Transformation.Type.Rearrangement,
                     toExpr = move(value),
-                    explanation = metadata(Explanation.RemoveRedundantPlusSign)
+                    explanation = metadata(Explanation.RemoveRedundantPlusSign),
                 )
             }
-        }
+        },
     ),
 
-    NormaliseSimplifiedProduct(normaliseSimplifiedProduct)
+    NormaliseSimplifiedProduct(normaliseSimplifiedProduct),
 }
 
 /**
@@ -158,11 +158,14 @@ private val normaliseSimplifiedProduct =
 
             val toExpr = productOf(sortedProdChildren.map { move(it) })
 
-            if (toExpr == getProd) null
-            else ruleResult(
-                type = Transformation.Type.Rearrangement,
-                toExpr = toExpr,
-                explanation = metadata(Explanation.NormaliseSimplifiedProduct)
-            )
+            if (toExpr == getProd) {
+                null
+            } else {
+                ruleResult(
+                    type = Transformation.Type.Rearrangement,
+                    toExpr = toExpr,
+                    explanation = metadata(Explanation.NormaliseSimplifiedProduct),
+                )
+            }
         }
     }

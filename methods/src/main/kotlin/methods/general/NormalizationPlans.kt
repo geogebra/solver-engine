@@ -15,7 +15,7 @@ enum class NormalizationPlans(override val runner: CompositeMethod) : RunnerMeth
             steps {
                 whilePossible { deeply(NormalizationRules.ReplaceInvisibleBrackets) }
             }
-        }
+        },
     ),
     NormalizeExpression(
         plan {
@@ -32,8 +32,8 @@ enum class NormalizationPlans(override val runner: CompositeMethod) : RunnerMeth
                     }
                 }
             }
-        }
-    )
+        },
+    ),
 }
 
 fun redundantBracketChecker(sub: Expression): Expression? = when {

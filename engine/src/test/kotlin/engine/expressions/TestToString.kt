@@ -35,12 +35,12 @@ class TestToString {
             TestCase(
                 "(3 + 2)*4:25",
                 "(3 + 2) * 4 : 25",
-                "\\left( 3 + 2 \\right) \\times 4 \\div 25"
+                "\\left( 3 + 2 \\right) \\times 4 \\div 25",
             ),
             TestCase(
                 "sqrt[[b^2] - 4ac]",
                 "sqrt[[b ^ 2] - 4 a c]",
-                "\\sqrt{b^{2} - 4 a c}"
+                "\\sqrt{b^{2} - 4 a c}",
             ),
             TestCase("root[5, 6]", "root[5, 6]", "\\sqrt[6]{5}"),
             TestCase("root[5, 2]", "root[5, 2]", "\\sqrt[2]{5}"),
@@ -55,7 +55,7 @@ class TestToString {
             TestCase("+/- 2", "+/-2", "\\pm 2"),
             TestCase("1+/-2", "1 +/- 2", "1 \\pm 2"),
             TestCase("1 + +/-2", "1 + +/-2", "1 + \\pm 2"),
-            TestCase("1+(+/-2)", "1 + (+/-2)", "1 + \\left( \\pm 2 \\right)")
+            TestCase("1+(+/-2)", "1 + (+/-2)", "1 + \\left( \\pm 2 \\right)"),
         )
     }
 }

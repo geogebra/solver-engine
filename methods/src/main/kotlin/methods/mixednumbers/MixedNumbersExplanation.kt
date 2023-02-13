@@ -52,7 +52,9 @@ enum class MixedNumbersExplanation : CategorisedMetadataKey {
     /**
      * Add mixed numbers
      */
-    AddMixedNumbers;
+    AddMixedNumbers,
+
+    ;
 
     override val category = "MixedNumbers"
 }

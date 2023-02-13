@@ -15,7 +15,7 @@ class TestExpression {
         assertEquals(listOf(e("[2 - 5/6]"), e("[2 + 5/6]")), e("[2 +/- 5/6]").splitPlusMinus())
         assertEquals(
             listOf(e("1 - 2 - 3"), e("1 - 2 + 3"), e("1 + 2 - 3"), e("1 + 2 + 3")),
-            e("1 +/- 2 +/- 3").splitPlusMinus()
+            e("1 +/- 2 +/- 3").splitPlusMinus(),
         )
     }
 }

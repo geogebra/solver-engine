@@ -57,10 +57,10 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             onEquation(lhs, rhs) {
                 ruleResult(
                     toExpr = equationOf(get(variable), simplifiedNegOf(move(rhs))),
-                    explanation = metadata(Explanation.NegateBothSides)
+                    explanation = metadata(Explanation.NegateBothSides),
                 )
             }
-        }
+        },
     ),
 
     MultiplyByInverseOfLeadingCoefficient(
@@ -99,12 +99,12 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     toExpr = equationOf(
                         productOf(get(lhs), inverse),
-                        productOf(get(rhs), inverse)
+                        productOf(get(rhs), inverse),
                     ),
-                    explanation = metadata(Explanation.MultiplyByInverseOfLeadingCoefficient)
+                    explanation = metadata(Explanation.MultiplyByInverseOfLeadingCoefficient),
                 )
             }
-        }
+        },
     ),
 
     MultiplyByInverseCoefficientOfVariable(
@@ -116,21 +116,24 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                 val coefficient = get(lhs::coefficient)!!
 
                 if (coefficient.operator == BinaryExpressionOperator.Fraction) {
-                    val inverse = if (coefficient.numerator() == Constants.One) coefficient.denominator()
-                    else fractionOf(coefficient.denominator(), coefficient.numerator())
+                    val inverse = if (coefficient.numerator() == Constants.One) {
+                        coefficient.denominator()
+                    } else {
+                        fractionOf(coefficient.denominator(), coefficient.numerator())
+                    }
 
                     ruleResult(
                         toExpr = equationOf(
                             productOf(get(lhs), inverse),
-                            productOf(get(rhs), inverse)
+                            productOf(get(rhs), inverse),
                         ),
-                        explanation = metadata(Explanation.MultiplyByInverseCoefficientOfVariable)
+                        explanation = metadata(Explanation.MultiplyByInverseCoefficientOfVariable),
                     )
                 } else {
                     null
                 }
             }
-        }
+        },
     ),
 
     CompleteTheSquare(
@@ -143,7 +146,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
             val lhs = ConditionPattern(
                 sumOf(squaredTerm, baseTerm),
-                integerCondition(squaredOrder, baseTerm.exponent) { a, b -> a == BigInteger.TWO * b }
+                integerCondition(squaredOrder, baseTerm.exponent) { a, b -> a == BigInteger.TWO * b },
             )
 
             val rhs = AnyPattern()
@@ -152,15 +155,15 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                 val linearCoefficient = get(baseTerm::coefficient)!!
                 val missingTerm = powerOf(
                     fractionOf(linearCoefficient, Constants.Two),
-                    Constants.Two
+                    Constants.Two,
                 )
 
                 ruleResult(
                     toExpr = equationOf(sumOf(get(lhs), missingTerm), sumOf(get(rhs), missingTerm)),
-                    explanation = metadata(Explanation.CompleteTheSquare)
+                    explanation = metadata(Explanation.CompleteTheSquare),
                 )
             }
-        }
+        },
     ),
 
     DivideByCoefficientOfVariable(
@@ -174,13 +177,13 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                     else -> ruleResult(
                         toExpr = equationOf(
                             fractionOf(get(lhs), coefficient),
-                            fractionOf(get(rhs), coefficient)
+                            fractionOf(get(rhs), coefficient),
                         ),
-                        explanation = metadata(Explanation.DivideByCoefficientOfVariable)
+                        explanation = metadata(Explanation.DivideByCoefficientOfVariable),
                     )
                 }
             }
-        }
+        },
     ),
 
     FlipEquation(
@@ -191,17 +194,17 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             onEquation(lhs, rhs) {
                 ruleResult(
                     toExpr = equationOf(move(rhs), move(lhs)),
-                    explanation = metadata(Explanation.FlipEquation)
+                    explanation = metadata(Explanation.FlipEquation),
                 )
             }
-        }
+        },
     ),
 
     TakeSquareRootOfBothSides(
         rule {
             val termInSquare = oneOf(
                 SolutionVariablePattern(),
-                commutativeSumOf(SolutionVariablePattern(), ConstantPattern())
+                commutativeSumOf(SolutionVariablePattern(), ConstantPattern()),
             )
             val lhs = powerOf(termInSquare, FixedPattern(Constants.Two))
             val rhs = condition(ConstantInSolutionVariablePattern()) { it.signOf() == Sign.POSITIVE }
@@ -209,10 +212,10 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             onEquation(lhs, rhs) {
                 ruleResult(
                     toExpr = equationOf(get(termInSquare), plusMinusOf(squareRootOf(move(rhs)))),
-                    explanation = metadata(Explanation.TakeSquareRootOfBothSides)
+                    explanation = metadata(Explanation.TakeSquareRootOfBothSides),
                 )
             }
-        }
+        },
     ),
 
     TakeSquareRootOfBothSidesRHSIsZero(
@@ -224,10 +227,10 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             onEquation(lhs, rhs) {
                 ruleResult(
                     toExpr = equationOf(move(variableTerm), move(rhs)),
-                    explanation = metadata(Explanation.TakeSquareRootOfBothSidesRHSIsZero)
+                    explanation = metadata(Explanation.TakeSquareRootOfBothSidesRHSIsZero),
                 )
             }
-        }
+        },
     ),
 
     ExtractSolutionFromIdentity(
@@ -237,10 +240,10 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             onEquation(value, value) {
                 ruleResult(
                     toExpr = solutionOf(xp(context.solutionVariable!!), Constants.Reals),
-                    explanation = metadata(Explanation.ExtractSolutionFromIdentity)
+                    explanation = metadata(Explanation.ExtractSolutionFromIdentity),
                 )
             }
-        }
+        },
     ),
 
     ExtractSolutionFromContradiction(
@@ -252,13 +255,13 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                 if (get(lhs) != get(rhs)) {
                     ruleResult(
                         toExpr = solutionOf(xp(context.solutionVariable!!), Constants.EmptySet),
-                        explanation = metadata(Explanation.ExtractSolutionFromContradiction)
+                        explanation = metadata(Explanation.ExtractSolutionFromContradiction),
                     )
                 } else {
                     null
                 }
             }
-        }
+        },
     ),
 
     ExtractSolutionFromSquareEqualsNegative(
@@ -270,10 +273,10 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             onEquation(lhs, rhs) {
                 ruleResult(
                     toExpr = solutionOf(xp(context.solutionVariable!!), Constants.EmptySet),
-                    explanation = metadata(Explanation.ExtractSolutionFromSquareEqualsNegative)
+                    explanation = metadata(Explanation.ExtractSolutionFromSquareEqualsNegative),
                 )
             }
-        }
+        },
     ),
 
     ExtractSolutionFromEquationInSolvedForm(
@@ -284,10 +287,10 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             onEquation(lhs, rhs) {
                 ruleResult(
                     toExpr = solutionOf(move(lhs), solutionSetOf(move(rhs))),
-                    explanation = metadata(Explanation.ExtractSolutionFromEquationInSolvedForm)
+                    explanation = metadata(Explanation.ExtractSolutionFromEquationInSolvedForm),
                 )
             }
-        }
+        },
     ),
 
     ExtractSolutionFromEquationInPlusMinusForm(
@@ -299,10 +302,10 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                 val splitRhs = get(rhs).splitPlusMinus()
                 ruleResult(
                     toExpr = solutionOf(move(lhs), solutionSetOf(splitRhs)),
-                    explanation = metadata(Explanation.ExtractSolutionFromEquationInPlusMinusForm)
+                    explanation = metadata(Explanation.ExtractSolutionFromEquationInPlusMinusForm),
                 )
             }
-        }
+        },
     ),
 }
 

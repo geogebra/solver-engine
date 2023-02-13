@@ -64,7 +64,7 @@ object RootMatch : Match {
 data class ChildMatch(
     private val key: Pattern,
     private val value: Expression,
-    private val parent: Match
+    private val parent: Match,
 ) : Match {
 
     override fun getLastBinding(p: Pattern): Expression? {

@@ -23,7 +23,7 @@ class IntegerCoefficientPattern(value: Pattern) : CoefficientPattern(value) {
 
     private val options = oneOf(
         value,
-        productOf(coefficientPattern, value)
+        productOf(coefficientPattern, value),
     )
 
     override val key = options
@@ -52,7 +52,7 @@ class RationalCoefficientPattern(value: Pattern) : CoefficientPattern(value) {
         value,
         productOf(numerator, value),
         fractionOf(oneOf(value, productOf(numerator, value)), denominator),
-        productOf(fractionOf(numerator, denominator), value)
+        productOf(fractionOf(numerator, denominator), value),
     )
 
     private val ptn = optionalNegOf(options)
@@ -95,7 +95,7 @@ class RationalCoefficientPattern(value: Pattern) : CoefficientPattern(value) {
  */
 class ConstantCoefficientPattern(
     value: Pattern,
-    private val positiveOnly: Boolean = false
+    private val positiveOnly: Boolean = false,
 ) : CoefficientPattern(value) {
 
     private val product = productContaining(value)
@@ -104,13 +104,13 @@ class ConstantCoefficientPattern(
         value,
         ConditionPattern(product) { _, match ->
             product.getRestSubexpressions(match).all { it.isConstant() }
-        }
+        },
     )
     private val denominator = condition(AnyPattern()) { it.isConstant() }
 
     private val options = oneOf(
         numerator,
-        fractionOf(numerator, denominator)
+        fractionOf(numerator, denominator),
     )
 
     private val optionalNegPtn = optionalNegOf(options)

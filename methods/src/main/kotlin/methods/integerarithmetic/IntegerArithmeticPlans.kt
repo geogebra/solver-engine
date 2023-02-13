@@ -36,7 +36,7 @@ private enum class PrivateIntegerArithmeticPlans(override val runner: CompositeM
                     }
                 }
             }
-        }
+        },
     ),
 
     EvaluateSumOfIntegers(
@@ -48,7 +48,7 @@ private enum class PrivateIntegerArithmeticPlans(override val runner: CompositeM
             steps {
                 whilePossible(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
             }
-        }
+        },
     ),
 
     /**
@@ -78,7 +78,7 @@ private enum class PrivateIntegerArithmeticPlans(override val runner: CompositeM
                     }
                 }
             }
-        }
+        },
     ),
 
     EvaluateArithmeticSubexpression(
@@ -89,7 +89,7 @@ private enum class PrivateIntegerArithmeticPlans(override val runner: CompositeM
             steps {
                 whilePossible(evaluationSteps)
             }
-        }
+        },
     ),
 }
 
@@ -108,7 +108,7 @@ enum class IntegerArithmeticPlans(override val runner: CompositeMethod) : Runner
                     }
                 }
             }
-        }
+        },
     ),
 
     SimplifyIntegersInProduct(
@@ -127,7 +127,7 @@ enum class IntegerArithmeticPlans(override val runner: CompositeMethod) : Runner
                     }
                 }
             }
-        }
+        },
     ),
 
     /**
@@ -158,8 +158,8 @@ enum class IntegerArithmeticPlans(override val runner: CompositeMethod) : Runner
                     }
                 }
             }
-        }
-    )
+        },
+    ),
 }
 
 val arithmeticOperators = listOf(
@@ -168,7 +168,7 @@ val arithmeticOperators = listOf(
     UnaryExpressionOperator.DivideBy,
     BinaryExpressionOperator.Power,
     NaryOperator.Sum,
-    NaryOperator.Product
+    NaryOperator.Product,
 )
 
 private fun Expression.isArithmeticExpression(): Boolean {

@@ -10,7 +10,7 @@ import engine.steps.metadata.MetadataKey
 data class InStepItem(
     val method: Method,
     val explanation: MetadataKey,
-    val optional: Boolean
+    val optional: Boolean,
 )
 
 interface InStep : StepsProducer {
@@ -46,8 +46,8 @@ interface InStep : StepsProducer {
                     explanation = Metadata(explanation, listOf()),
                     fromExpr = prevSub,
                     toExpr = lastSub,
-                    steps = nonNullTransformations
-                )
+                    steps = nonNullTransformations,
+                ),
             )
 
             for ((i, tr) in stepTransformations.withIndex()) {
@@ -62,7 +62,7 @@ interface InStep : StepsProducer {
 }
 
 data class ApplyToChildrenInStep(
-    override val inStepItems: List<InStepItem>
+    override val inStepItems: List<InStepItem>,
 ) : InStep {
     override fun getSubexpressions(sub: Expression): List<Expression> {
         return sub.children()
@@ -124,8 +124,8 @@ private class InStepRunner(val builder: StepsBuilder, val ctx: Context, stepSubs
                 explanation = Metadata(stepBuilder.explanationKey, emptyList()),
                 fromExpr = builder.lastSub,
                 toExpr = newSub,
-                steps = nonNullTransformations
-            )
+                steps = nonNullTransformations,
+            ),
         )
 
         for ((i, tr) in stepTransformations.withIndex()) {

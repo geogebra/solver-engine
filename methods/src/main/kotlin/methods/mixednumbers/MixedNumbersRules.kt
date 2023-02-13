@@ -33,25 +33,25 @@ enum class MixedNumbersRules(override val runner: Rule) : RunnerMethod {
                         toExpr = transformTo(mixedNumber, Constants.Undefined),
                         explanation = metadata(
                             GeneralExplanation.SimplifyZeroDenominatorFractionToUndefined,
-                            fractionOf(move(numerator), move(denominator))
-                        )
+                            fractionOf(move(numerator), move(denominator)),
+                        ),
                     )
 
                     getValue(numerator) == BigInteger.ZERO -> ruleResult(
                         toExpr = move(integer),
-                        explanation = metadata(GeneralExplanation.SimplifyZeroNumeratorFractionToZero)
+                        explanation = metadata(GeneralExplanation.SimplifyZeroNumeratorFractionToZero),
                     )
 
                     else -> ruleResult(
                         toExpr = sumOf(
                             move(integer),
-                            fractionOf(move(numerator), move(denominator))
+                            fractionOf(move(numerator), move(denominator)),
                         ),
-                        explanation = metadata(Explanation.ConvertMixedNumberToSum, move(mixedNumber))
+                        explanation = metadata(Explanation.ConvertMixedNumberToSum, move(mixedNumber)),
                     )
                 }
             }
-        }
+        },
     ),
 
     ConvertSumOfIntegerAndProperFractionToMixedNumber(
@@ -69,15 +69,15 @@ enum class MixedNumbersRules(override val runner: Rule) : RunnerMethod {
                         toExpr = mixedNumberOf(
                             move(integer),
                             move(fraction.numerator),
-                            move(fraction.denominator)
+                            move(fraction.denominator),
                         ),
-                        explanation = metadata(Explanation.ConvertSumOfIntegerAndProperFractionToMixedNumber)
+                        explanation = metadata(Explanation.ConvertSumOfIntegerAndProperFractionToMixedNumber),
                     )
 
                     else -> null
                 }
             }
-        }
+        },
     ),
 
     FractionToMixedNumber(
@@ -85,7 +85,7 @@ enum class MixedNumbersRules(override val runner: Rule) : RunnerMethod {
             val fraction = IntegerFractionPattern()
             val improperFractionCondition = numericCondition(
                 fraction.numerator,
-                fraction.denominator
+                fraction.denominator,
             ) { n1, n2 -> n1 > n2 }
             val improperFraction = ConditionPattern(fraction, improperFractionCondition)
 
@@ -97,10 +97,10 @@ enum class MixedNumbersRules(override val runner: Rule) : RunnerMethod {
                     toExpr = mixedNumberOf(quotient, remainder, move(fraction.denominator)),
                     explanation = metadata(Explanation.ConvertFractionToMixedNumber),
                     skills = listOf(
-                        metadata(Skill.DivisionWithRemainder, move(fraction.numerator), move(fraction.denominator))
-                    )
+                        metadata(Skill.DivisionWithRemainder, move(fraction.numerator), move(fraction.denominator)),
+                    ),
                 )
             }
-        }
-    )
+        },
+    ),
 }

@@ -56,17 +56,17 @@ class IntegerRootsRulesTest {
         testRule(
             "sqrt[[2^3] * 5]",
             SplitRootOfProduct,
-            "sqrt[[2^3]] * sqrt[5]"
+            "sqrt[[2^3]] * sqrt[5]",
         )
         testRule(
             "sqrt[[2^3] * 5 * [7^2]]",
             SplitRootOfProduct,
-            "sqrt[[2^3]] * sqrt[5] * sqrt[[7^2]]"
+            "sqrt[[2^3]] * sqrt[5] * sqrt[[7^2]]",
         )
         testRule(
             "sqrt[49 * 100]",
             SplitRootOfProduct,
-            "sqrt[49] * sqrt[100]"
+            "sqrt[49] * sqrt[100]",
         )
     }
 
@@ -122,7 +122,7 @@ class IntegerRootsRulesTest {
         testRule(
             "sqrt[3] * sqrt[3]",
             SimplifyMultiplicationOfSquareRoots,
-            "3"
+            "3",
         )
     }
 
@@ -131,27 +131,27 @@ class IntegerRootsRulesTest {
         testRule(
             "root[[2^4] * [3^4], 5]",
             CombineProductOfSamePowerUnderHigherRoot,
-            null
+            null,
         )
         testRule(
             "root[[2^4] * [3^5], 4]",
             CombineProductOfSamePowerUnderHigherRoot,
-            null
+            null,
         )
         testRule(
             "root[[2^4] * [3^4], 4]",
             CombineProductOfSamePowerUnderHigherRoot,
-            "root[[(2 * 3) ^ 4], 4]"
+            "root[[(2 * 3) ^ 4], 4]",
         )
         testRule(
             "root[[2^4] * [3^4] * [5^4], 4]",
             CombineProductOfSamePowerUnderHigherRoot,
-            "root[[(2 * 3 * 5) ^ 4], 4]"
+            "root[[(2 * 3 * 5) ^ 4], 4]",
         )
         testRule(
             "2 root[[2^4] * [3^4] * [5^4], 4]",
             CombineProductOfSamePowerUnderHigherRoot,
-            "2 root[[(2 * 3 * 5) ^ 4], 4]"
+            "2 root[[(2 * 3 * 5) ^ 4], 4]",
         )
     }
 
@@ -162,22 +162,22 @@ class IntegerRootsRulesTest {
         testRule(
             "sqrt[3] + sqrt[7] + sqrt[3] + sqrt[5]",
             CollectLikeRoots,
-            "(1 + 1)  sqrt[3] + sqrt[7] + sqrt[5]"
+            "(1 + 1)  sqrt[3] + sqrt[7] + sqrt[5]",
         )
         testRule(
             "sqrt[7] + sqrt[3] + sqrt[3] + sqrt[5]",
             CollectLikeRoots,
-            "sqrt[7] + (1 + 1)  sqrt[3] + sqrt[5]"
+            "sqrt[7] + (1 + 1)  sqrt[3] + sqrt[5]",
         )
         testRule(
             "sqrt[7] + root[5, 3] + sqrt[5] + root[5, 3]",
             CollectLikeRoots,
-            "sqrt[7] + (1 + 1)  root[5, 3] + sqrt[5]"
+            "sqrt[7] + (1 + 1)  root[5, 3] + sqrt[5]",
         )
         testRule(
             "[2 * sqrt[2] / 3] + [1 / 5] * sqrt[2] - 4 * sqrt[2]",
             CollectLikeRoots,
-            "([2 / 3] + [1 / 5] - 4)  sqrt[2]"
+            "([2 / 3] + [1 / 5] - 4)  sqrt[2]",
         )
     }
 }

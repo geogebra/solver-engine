@@ -26,7 +26,7 @@ data class MetadataMaker(val key: MetadataKey, val parameters: MappedExpressionB
     fun make(context: Context, match: Match) =
         Metadata(
             key = key,
-            mappedParams = with(MappedExpressionBuilder(context, match)) { parameters() }
+            mappedParams = with(MappedExpressionBuilder(context, match)) { parameters() },
         )
 }
 

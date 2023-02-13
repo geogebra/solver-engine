@@ -26,7 +26,7 @@ class Plan(
     private val explanationMaker: MetadataMaker,
     private val skillMakers: List<MetadataMaker> = emptyList(),
     specificPlans: List<Method> = emptyList(),
-    private val stepsProducer: StepsProducer
+    private val stepsProducer: StepsProducer,
 ) : CompositeMethod(specificPlans) {
 
     override fun run(ctx: Context, sub: Expression): TransformationResult? {
@@ -41,7 +41,7 @@ class Plan(
                     toExpr = toExpr,
                     steps = steps,
                     explanation = explanationMaker.make(ctx, match),
-                    skills = skillMakers.map { it.make(ctx, match) }
+                    skills = skillMakers.map { it.make(ctx, match) },
                 )
 
                 else -> null
@@ -91,7 +91,7 @@ class PlanBuilder(private val stepsProducerFactory: StepsProducerFactory) : Comp
                 stepsProducer = stepsProducer,
                 explanationMaker = MetadataMaker(explanation, explanationParameters),
                 skillMakers = skillMakers,
-                specificPlans = specificPlansList
+                specificPlans = specificPlansList,
             )
             else -> Plan(
                 pattern = pattern,
@@ -99,7 +99,7 @@ class PlanBuilder(private val stepsProducerFactory: StepsProducerFactory) : Comp
                 stepsProducer = stepsProducer,
                 explanationMaker = MetadataMaker(explanation, explanationParameters),
                 skillMakers = skillMakers,
-                specificPlans = specificPlansList
+                specificPlans = specificPlansList,
             )
         }
     }
@@ -110,8 +110,8 @@ class PlanBuilder(private val stepsProducerFactory: StepsProducerFactory) : Comp
             else -> wrapPlanExecutor(
                 ContextSensitiveSelector(
                     default = ContextSensitiveAlternative(defaultSteps, resourceData),
-                    alternatives = alternatives
-                )
+                    alternatives = alternatives,
+                ),
             )
         }
     }

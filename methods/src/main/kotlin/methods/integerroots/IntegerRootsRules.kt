@@ -44,10 +44,10 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
             onPattern(rootOfOne) {
                 ruleResult(
                     toExpr = move(one),
-                    explanation = metadata(Explanation.SimplifyRootOfOne, move(one))
+                    explanation = metadata(Explanation.SimplifyRootOfOne, move(one)),
                 )
             }
-        }
+        },
     ),
 
     SimplifyRootOfZero(
@@ -58,10 +58,10 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
             onPattern(rootOfZero) {
                 ruleResult(
                     toExpr = move(zero),
-                    explanation = metadata(Explanation.SimplifyRootOfZero, move(zero))
+                    explanation = metadata(Explanation.SimplifyRootOfZero, move(zero)),
                 )
             }
-        }
+        },
     ),
 
     WriteRootAsRootProduct(
@@ -75,13 +75,13 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
                     ruleResult(
                         toExpr = rootOf(
                             transform(radicand, productOf(asProduct.map { introduce(xp(it)) })),
-                            move(root.order)
+                            move(root.order),
                         ),
-                        explanation = metadata(Explanation.WriteRootAsRootProduct, move(radicand))
+                        explanation = metadata(Explanation.WriteRootAsRootProduct, move(radicand)),
                     )
                 }
             }
-        }
+        },
     ),
 
     WriteRootAsRootPower(
@@ -96,15 +96,15 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
                         toExpr = rootOf(
                             transform(
                                 radicand,
-                                powerOf(introduce(xp(asPower.first)), introduce(xp(asPower.second)))
+                                powerOf(introduce(xp(asPower.first)), introduce(xp(asPower.second))),
                             ),
-                            move(root.order)
+                            move(root.order),
                         ),
-                        explanation = metadata(Explanation.WriteRootAsRootPower, move(radicand))
+                        explanation = metadata(Explanation.WriteRootAsRootPower, move(radicand)),
                     )
                 }
             }
-        }
+        },
     ),
 
     FactorizeIntegerUnderRoot(
@@ -123,13 +123,13 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
                     ruleResult(
                         toExpr = rootOf(transform(integer, productOf(factorized)), get(root.order)),
                         explanation = metadata(Explanation.FactorizeIntegerUnderRoot, move(integer)),
-                        skills = listOf(metadata(Skill.FactorInteger, move(integer)))
+                        skills = listOf(metadata(Skill.FactorInteger, move(integer))),
                     )
                 } else {
                     null
                 }
             }
-        }
+        },
     ),
 
     FactorizeIntegerPowerUnderRoot(
@@ -144,21 +144,21 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
                     root,
                     integerCondition(root.order, integer, exponent) { p, n, q ->
                         n.pow(q.toInt()).hasFactorOfDegree(p.toInt())
-                    }
-                )
+                    },
+                ),
             ) {
                 val factorized = productOfPrimeFactors(integer)
 
                 ruleResult(
                     toExpr = rootOf(
                         powerOf(transform(integer, productOf(factorized)), move(exponent)),
-                        move(root.order)
+                        move(root.order),
                     ),
                     explanation = metadata(Explanation.FactorizeIntegerPowerUnderRoot, move(integer)),
-                    skills = listOf(metadata(Skill.FactorInteger, move(integer)))
+                    skills = listOf(metadata(Skill.FactorInteger, move(integer))),
                 )
             }
-        }
+        },
     ),
 
     /**
@@ -173,10 +173,10 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
             onPattern(product) {
                 ruleResult(
                     toExpr = product.substitute(move(radicand)),
-                    explanation = metadata(Explanation.SimplifyMultiplicationOfSquareRoots)
+                    explanation = metadata(Explanation.SimplifyMultiplicationOfSquareRoots),
                 )
             }
-        }
+        },
     ),
 
     /**
@@ -190,7 +190,7 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
             val root = integerOrderRootOf(power)
             val pattern = ConditionPattern(
                 root,
-                integerCondition(root.order, exponent) { p, n -> p < n && !p.divides(n) }
+                integerCondition(root.order, exponent) { p, n -> p < n && !p.divides(n) },
             )
 
             onPattern(pattern) {
@@ -198,14 +198,14 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
                     toExpr = rootOf(
                         productOf(
                             powerOf(move(base), integerOp(root.order, exponent) { n1, n2 -> n2 - n2 % n1 }),
-                            simplifiedPowerOf(move(base), integerOp(root.order, exponent) { p, n -> n % p })
+                            simplifiedPowerOf(move(base), integerOp(root.order, exponent) { p, n -> n % p }),
                         ),
-                        move(root.order)
+                        move(root.order),
                     ),
-                    explanation = metadata(Explanation.SeparateSquaresUnderSquareRoot, move(base), move(exponent))
+                    explanation = metadata(Explanation.SeparateSquaresUnderSquareRoot, move(base), move(exponent)),
                 )
             }
-        }
+        },
     ),
 
     /**
@@ -223,12 +223,12 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
             onPattern(product) {
                 ruleResult(
                     toExpr = product.substitute(
-                        rootOf(productOf(move(radicand1), move(radicand2)), factor(order))
+                        rootOf(productOf(move(radicand1), move(radicand2)), factor(order)),
                     ),
-                    explanation = metadata(Explanation.MultiplyNthRoots)
+                    explanation = metadata(Explanation.MultiplyNthRoots),
                 )
             }
-        }
+        },
     ),
 
     /**
@@ -242,12 +242,12 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
             onPattern(root) {
                 ruleResult(
                     toExpr = productOf(
-                        get(product).children().map { rootOf(move(it), move(root.order)) }
+                        get(product).children().map { rootOf(move(it), move(root.order)) },
                     ),
-                    explanation = metadata(Explanation.SplitRootOfProduct)
+                    explanation = metadata(Explanation.SplitRootOfProduct),
                 )
             }
-        }
+        },
     ),
 
     /**
@@ -263,10 +263,10 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
             onPattern(power) {
                 ruleResult(
                     toExpr = cancel(exponent, get(radicand)),
-                    explanation = metadata(Explanation.SimplifyNthRootToThePowerOfN)
+                    explanation = metadata(Explanation.SimplifyNthRootToThePowerOfN),
                 )
             }
-        }
+        },
     ),
 
     /**
@@ -279,7 +279,7 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
             val exponent = UnsignedIntegerPattern()
             val power = ConditionPattern(
                 powerOf(root, exponent),
-                integerCondition(root.order, exponent) { n1, n2 -> n1.divides(n2) && n1 != n2 }
+                integerCondition(root.order, exponent) { n1, n2 -> n1.divides(n2) && n1 != n2 },
             )
 
             onPattern(power) {
@@ -287,14 +287,14 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
                     toExpr = powerOf(
                         powerOf(
                             rootOf(get(radicand), move(root.order)),
-                            move(root.order)
+                            move(root.order),
                         ),
-                        integerOp(root.order, exponent) { n1, n2 -> n2 / n1 }
+                        integerOp(root.order, exponent) { n1, n2 -> n2 / n1 },
                     ),
-                    explanation = metadata(Explanation.PrepareCancellingPowerOfARoot)
+                    explanation = metadata(Explanation.PrepareCancellingPowerOfARoot),
                 )
             }
-        }
+        },
     ),
 
     /**
@@ -310,10 +310,10 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
             onPattern(radical) {
                 ruleResult(
                     toExpr = cancel(exponent, get(base)),
-                    explanation = metadata(Explanation.SimplifyNthRootOfNthPower)
+                    explanation = metadata(Explanation.SimplifyNthRootOfNthPower),
                 )
             }
-        }
+        },
     ),
 
     /**
@@ -329,10 +329,10 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
             onPattern(power) {
                 ruleResult(
                     toExpr = rootOf(powerOf(get(radicand), move(exponent)), move(root.order)),
-                    explanation = metadata(Explanation.TurnPowerOfRootToRootOfPower, move(power))
+                    explanation = metadata(Explanation.TurnPowerOfRootToRootOfPower, move(power)),
                 )
             }
-        }
+        },
     ),
 
     /**
@@ -348,12 +348,12 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     toExpr = rootOf(
                         get(radicand),
-                        productOf(move(outerRoot.order), move(innerRoot.order))
+                        productOf(move(outerRoot.order), move(innerRoot.order)),
                     ),
-                    explanation = metadata(Explanation.SimplifyRootOfRoot)
+                    explanation = metadata(Explanation.SimplifyRootOfRoot),
                 )
             }
-        }
+        },
     ),
 
     /**
@@ -371,14 +371,14 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
                     toExpr = rootOf(
                         productOf(
                             powerOf(move(coefficient), move(root.order)),
-                            move(radicand)
+                            move(radicand),
                         ),
-                        get(root.order)
+                        get(root.order),
                     ),
-                    explanation = metadata(Explanation.PutRootCoefficientUnderRoot)
+                    explanation = metadata(Explanation.PutRootCoefficientUnderRoot),
                 )
             }
-        }
+        },
     ),
 
     /**
@@ -396,30 +396,30 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
             onPattern(
                 ConditionPattern(
                     product,
-                    integerCondition(leftRoot.order, rightRoot.order) { n1, n2 -> n1 != n2 }
-                )
+                    integerCondition(leftRoot.order, rightRoot.order) { n1, n2 -> n1 != n2 },
+                ),
             ) {
                 ruleResult(
                     toExpr = product.substitute(
                         rootOf(
                             simplifiedPowerOf(
                                 move(leftRadicand),
-                                integerOp(leftRoot.order, rightRoot.order) { n1, n2 -> n2 / n1.gcd(n2) }
+                                integerOp(leftRoot.order, rightRoot.order) { n1, n2 -> n2 / n1.gcd(n2) },
                             ),
-                            integerOp(leftRoot.order, rightRoot.order) { n1, n2 -> n1 * n2 / n1.gcd(n2) }
+                            integerOp(leftRoot.order, rightRoot.order) { n1, n2 -> n1 * n2 / n1.gcd(n2) },
                         ),
                         rootOf(
                             simplifiedPowerOf(
                                 move(rightRadicand),
-                                integerOp(leftRoot.order, rightRoot.order) { n1, n2 -> n1 / n1.gcd(n2) }
+                                integerOp(leftRoot.order, rightRoot.order) { n1, n2 -> n1 / n1.gcd(n2) },
                             ),
-                            integerOp(leftRoot.order, rightRoot.order) { n1, n2 -> n1 * n2 / n1.gcd(n2) }
-                        )
+                            integerOp(leftRoot.order, rightRoot.order) { n1, n2 -> n1 * n2 / n1.gcd(n2) },
+                        ),
                     ),
-                    explanation = metadata(Explanation.BringRootsToSameIndexInProduct)
+                    explanation = metadata(Explanation.BringRootsToSameIndexInProduct),
                 )
             }
-        }
+        },
     ),
 
     /**
@@ -448,15 +448,15 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
                         rootOf(
                             powerOf(
                                 productOf(product.children().map { move(it.firstChild) }),
-                                move(order)
+                                move(order),
                             ),
-                            move(root.order)
-                        )
+                            move(root.order),
+                        ),
                     ),
-                    explanation = metadata(Explanation.CombineProductOfSamePowerUnderHigherRoot)
+                    explanation = metadata(Explanation.CombineProductOfSamePowerUnderHigherRoot),
                 )
             }
-        }
+        },
     ),
 
     CollectLikeRoots(
@@ -470,9 +470,9 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
             onPattern(sum) {
                 ruleResult(
                     toExpr = collectLikeTermsInSum(get(sum), withOptionalRationalCoefficient(common)),
-                    explanation = metadata(Explanation.CollectLikeRoots)
+                    explanation = metadata(Explanation.CollectLikeRoots),
                 )
             }
-        }
-    )
+        },
+    ),
 }

@@ -25,7 +25,7 @@ fun buildExpression(operator: Operator, operands: List<Expression>, decorators: 
     Expression(
         operator,
         operands.mapIndexed { index, operand -> operand.adjustBracketFor(operator, index) },
-        decorators
+        decorators,
     )
 
 fun xp(n: Int) = xp(n.toBigInteger())
@@ -82,8 +82,11 @@ fun powerOf(base: Expression, exponent: Expression) =
     buildExpression(BinaryExpressionOperator.Power, listOf(base, exponent))
 
 fun simplifiedPowerOf(base: Expression, exponent: Expression): Expression {
-    return if (exponent == Constants.One) base
-    else powerOf(base, exponent)
+    return if (exponent == Constants.One) {
+        base
+    } else {
+        powerOf(base, exponent)
+    }
 }
 
 fun squareRootOf(radicand: Expression) = buildExpression(UnaryExpressionOperator.SquareRoot, listOf(radicand))
@@ -98,7 +101,7 @@ fun sumOf(vararg operands: Expression) = sumOf(operands.asList())
 
 fun sumOf(operands: List<Expression>): Expression = flattenedNaryExpression(
     NaryOperator.Sum,
-    operands
+    operands,
 )
 
 fun getBaseOfPower(expr: Expression): Expression = when (expr.operator) {

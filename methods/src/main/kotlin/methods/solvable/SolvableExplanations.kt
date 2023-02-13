@@ -45,7 +45,9 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      *
      * E.g. [2 + x / 6] + 5 = [4 - 2x / 4] -> ([2 + x / 6] + 5) * 12 = [4 - 2x / 4] * 12
      */
-    MultiplyEquationByLCD;
+    MultiplyEquationByLCD,
+
+    ;
 
     override val category = "Equations"
 }
@@ -92,7 +94,9 @@ enum class InequalitiesExplanation : CategorisedMetadataKey {
      *
      * E.g. [2 + x / 6] + 5 <= [4 - 2x / 4] -> ([2 + x / 6] + 5) * 12 <= [4 - 2x / 4] * 12
      */
-    MultiplyInequalityByLCD;
+    MultiplyInequalityByLCD,
+
+    ;
 
     override val category = "Inequalities"
 }

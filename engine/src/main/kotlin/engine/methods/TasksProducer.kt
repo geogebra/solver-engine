@@ -26,7 +26,7 @@ class TasksBuilder(context: Context, match: Match) : MappedExpressionBuilder(con
         startExpr: Expression,
         explanation: Metadata,
         dependsOn: List<Task> = emptyList(),
-        stepsProducer: StepsProducer = EmptyStepsProducer
+        stepsProducer: StepsProducer = EmptyStepsProducer,
     ): Task? {
         val taskId = nextTaskId()
         val steps = stepsProducer.produceSteps(context, startExpr.withOrigin(Root())) ?: return null
@@ -35,7 +35,7 @@ class TasksBuilder(context: Context, match: Match) : MappedExpressionBuilder(con
             startExpr = startExpr,
             explanation = explanation,
             steps = steps,
-            dependsOn = dependsOn.map { it.taskId }
+            dependsOn = dependsOn.map { it.taskId },
         )
         tasks.add(task)
         return task
@@ -45,7 +45,7 @@ class TasksBuilder(context: Context, match: Match) : MappedExpressionBuilder(con
         startExpr: Expression,
         explanation: Metadata,
         dependsOn: List<Task> = emptyList(),
-        init: PipelineBuilder.() -> Unit
+        init: PipelineBuilder.() -> Unit,
     ): Task? = task(startExpr, explanation, dependsOn, proceduralSteps(init))
 
     fun allTasks(): List<Task>? = if (tasks.isEmpty()) null else tasks

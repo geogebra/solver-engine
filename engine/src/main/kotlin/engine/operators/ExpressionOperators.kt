@@ -26,7 +26,7 @@ abstract class NullaryOperator : ExpressionOperator {
     override fun nthChildAllowed(n: Int, op: Operator): Boolean {
         throw IllegalArgumentException(
             "Nullary operator ${this::class.simpleName} should have no children. " +
-                "Child $op is invalid at position $n."
+                "Child $op is invalid at position $n.",
         )
     }
 
@@ -162,7 +162,7 @@ enum class UnaryExpressionOperator(override val precedence: Int) : UnaryOperator
             op.precedence >= BinaryExpressionOperator.Fraction.precedence
 
         override fun latexString(ctx: RenderContext, child: LatexRenderable) = "\\ln${child.toLatexString(ctx)}"
-    };
+    },
 }
 
 enum class BinaryExpressionOperator(override val precedence: Int) : BinaryOperator, ExpressionOperator {
@@ -189,7 +189,7 @@ enum class BinaryExpressionOperator(override val precedence: Int) : BinaryOperat
         override fun <T> readableString(left: T, right: T) = "root[$left, $right]"
         override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable) =
             "\\sqrt[${right.toLatexString(ctx)}]{${left.toLatexString(ctx)}}"
-    };
+    },
 }
 
 enum class NaryOperator(override val precedence: Int) : ExpressionOperator {
@@ -210,7 +210,7 @@ enum class NaryOperator(override val precedence: Int) : ExpressionOperator {
                                 SumTermKind.MINUS -> " - "
                                 SumTermKind.PLUSMINUS -> " +/- "
                             },
-                            termBody.toString()
+                            termBody.toString(),
                         )
                     }
                 }
@@ -233,7 +233,7 @@ enum class NaryOperator(override val precedence: Int) : ExpressionOperator {
                                 SumTermKind.MINUS -> " - "
                                 SumTermKind.PLUSMINUS -> " \\pm "
                             },
-                            termBody.toLatexString(ctx)
+                            termBody.toLatexString(ctx),
                         )
                     }
                 }
@@ -274,7 +274,7 @@ enum class NaryOperator(override val precedence: Int) : ExpressionOperator {
         override fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String {
             return children.joinToString(" ") { it.toLatexString(ctx) }
         }
-    };
+    }, ;
 
     override val arity = ARITY_VARIABLE
     override fun nthChildAllowed(n: Int, op: Operator) = op.precedence > this.precedence

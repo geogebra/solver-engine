@@ -37,7 +37,7 @@ enum class PolynomialRules(override val runner: Rule) : RunnerMethod {
         rule {
             val common = oneOf(
                 ArbitraryVariablePattern(),
-                powerOf(ArbitraryVariablePattern(), UnsignedIntegerPattern())
+                powerOf(ArbitraryVariablePattern(), UnsignedIntegerPattern()),
             )
 
             val commonTerm1 = withOptionalConstantCoefficient(common)
@@ -49,12 +49,12 @@ enum class PolynomialRules(override val runner: Rule) : RunnerMethod {
                     toExpr = collectLikeTermsInSum(
                         get(sum),
                         withOptionalConstantCoefficient(common),
-                        Label.A
+                        Label.A,
                     ),
-                    explanation = metadata(Explanation.CollectLikeTerms)
+                    explanation = metadata(Explanation.CollectLikeTerms),
                 )
             }
-        }
+        },
     ),
     CollectUnitaryMonomialsInProduct(collectUnitaryMonomialsInProduct),
     NormalizeMonomial(normalizeMonomial),
@@ -62,7 +62,7 @@ enum class PolynomialRules(override val runner: Rule) : RunnerMethod {
     DistributeProductToIntegerPower(distributeProductToIntegerPower),
     NormalizePolynomial(normalizePolynomial),
 
-    FactorTrinomialToSquare(factorTrinomialToSquare)
+    FactorTrinomialToSquare(factorTrinomialToSquare),
 }
 
 private val collectUnitaryMonomialsInProduct = rule {
@@ -110,7 +110,7 @@ private val collectUnitaryMonomialsInProduct = rule {
             }
             implicitProductOf(
                 productOf(constantFactors).withLabel(Label.A),
-                productOf(monomialFactors).withLabel(Label.B)
+                productOf(monomialFactors).withLabel(Label.B),
             )
         }
 
@@ -122,7 +122,7 @@ private val collectUnitaryMonomialsInProduct = rule {
 
         ruleResult(
             toExpr = if (signCopied) result else copySign(negProduct, result),
-            explanation = metadata(Explanation.CollectUnitaryMonomialsInProduct, move(commonVariable))
+            explanation = metadata(Explanation.CollectUnitaryMonomialsInProduct, move(commonVariable)),
         )
     }
 }
@@ -139,16 +139,19 @@ private val normalizeMonomial = rule {
             coeff.operator != UnaryExpressionOperator.Minus ->
                 productOf(
                     coeff,
-                    move(monomial.powerPattern)
+                    move(monomial.powerPattern),
                 )
             coeff.firstChild == Constants.One -> negOf(move(monomial.powerPattern))
             else -> negOf(productOf(coeff.firstChild, move(monomial.powerPattern)))
         }
-        if (normalized == before) null
-        else ruleResult(
-            toExpr = normalized,
-            explanation = metadata(Explanation.NormalizeMonomial)
-        )
+        if (normalized == before) {
+            null
+        } else {
+            ruleResult(
+                toExpr = normalized,
+                explanation = metadata(Explanation.NormalizeMonomial),
+            )
+        }
     }
 }
 
@@ -163,9 +166,9 @@ private val distributeMonomialToIntegerPower = rule {
             ruleResult(
                 toExpr = productOf(
                     powerOf(coeff, move(exponent)).withLabel(Label.A),
-                    powerOf(move(monomial.powerPattern), move(exponent))
+                    powerOf(move(monomial.powerPattern), move(exponent)),
                 ),
-                explanation = metadata(Explanation.DistributeProductToIntegerPower)
+                explanation = metadata(Explanation.DistributeProductToIntegerPower),
             )
         } else {
             null
@@ -189,7 +192,7 @@ private val distributeProductToIntegerPower = rule {
         factorPowers.addAll(otherFactors.map { powerOf(it, move(exponent)) })
         ruleResult(
             toExpr = productOf(factorPowers),
-            explanation = metadata(Explanation.DistributeProductToIntegerPower)
+            explanation = metadata(Explanation.DistributeProductToIntegerPower),
         )
     }
 }
@@ -220,7 +223,7 @@ private val normalizePolynomial = rule {
                 val termsInDescendingOrder = termsWithDegree.sortedByDescending { it.second }.map { it.first }
                 ruleResult(
                     toExpr = sumOf(termsInDescendingOrder),
-                    explanation = metadata(Explanation.NormalizePolynomial)
+                    explanation = metadata(Explanation.NormalizePolynomial),
                 )
             }
         }
@@ -237,7 +240,7 @@ private val factorTrinomialToSquare = rule {
 
     val trinomial = ConditionPattern(
         commutativeSumOf(squaredTerm, baseTerm, constantTerm),
-        integerCondition(squaredOrder, baseTerm.exponent) { a, b -> a == BigInteger.TWO * b }
+        integerCondition(squaredOrder, baseTerm.exponent) { a, b -> a == BigInteger.TWO * b },
     )
 
     onPattern(trinomial) {
@@ -252,11 +255,11 @@ private val factorTrinomialToSquare = rule {
                 toExpr = powerOf(
                     sumOf(
                         simplifiedPowerOf(factor(variable), move(baseTerm.exponent)),
-                        productOf(Constants.OneHalf, get(baseTerm::coefficient)!!)
+                        productOf(Constants.OneHalf, get(baseTerm::coefficient)!!),
                     ),
-                    introduce(Constants.Two)
+                    introduce(Constants.Two),
                 ),
-                explanation = metadata(Explanation.FactorTrinomialToSquare)
+                explanation = metadata(Explanation.FactorTrinomialToSquare),
             )
         } else {
             null

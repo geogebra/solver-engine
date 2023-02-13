@@ -20,7 +20,6 @@ class TooManyIterationsException(msg: String) : RuntimeException(msg)
 data class WhilePossible(val stepsProducer: StepsProducer) : StepsProducer {
 
     override fun produceSteps(ctx: Context, sub: Expression) = buildSteps(sub) {
-
         repeat(MAX_WHILE_POSSIBLE_ITERATIONS) {
             val iterationSteps = stepsProducer.produceSteps(ctx, lastSub) ?: return@buildSteps
             addSteps(iterationSteps)
@@ -30,7 +29,7 @@ data class WhilePossible(val stepsProducer: StepsProducer) : StepsProducer {
         }
 
         throw TooManyIterationsException(
-            "WhilePossible max iteration number ($MAX_WHILE_POSSIBLE_ITERATIONS) exceeded for expression $sub"
+            "WhilePossible max iteration number ($MAX_WHILE_POSSIBLE_ITERATIONS) exceeded for expression $sub",
         )
     }
 }

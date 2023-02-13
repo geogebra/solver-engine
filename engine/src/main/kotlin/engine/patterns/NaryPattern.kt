@@ -16,7 +16,7 @@ class NaryPattern(
     val operator: NaryOperator,
     val childPatterns: List<Pattern>,
     val partial: Boolean,
-    val commutative: Boolean
+    val commutative: Boolean,
 ) : BasePattern() {
 
     override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
@@ -57,7 +57,7 @@ class NaryPattern(
             when {
                 newValIndex == -1 -> restChildren.add(child)
                 newValIndex < newVals.size -> restChildren.add(
-                    newVals[newValIndex]
+                    newVals[newValIndex],
                 )
             }
         }
@@ -85,7 +85,7 @@ private data class RecursiveMatcher(
     val childPatterns: List<Pattern>,
     val children: List<Expression>,
     val partial: Boolean,
-    val commutative: Boolean
+    val commutative: Boolean,
 ) {
 
     fun recursiveMatch(match: Match): Sequence<Match> {
@@ -96,7 +96,7 @@ private data class RecursiveMatcher(
     private fun doRecursiveMatch(
         match: Match,
         searchIndex: Int,
-        usedValues: MutableList<Boolean>
+        usedValues: MutableList<Boolean>,
     ): Sequence<Match> {
         return sequence {
             if (searchIndex < childPatterns.size) {
@@ -106,7 +106,7 @@ private data class RecursiveMatcher(
                     val childMatches = childPatterns[searchIndex].findMatches(
                         context,
                         match,
-                        children[index]
+                        children[index],
                     )
 
                     usedValues[index] = true

@@ -42,7 +42,7 @@ enum class PolynomialPlans(override val runner: CompositeMethod) : RunnerMethod 
                 apply(PolynomialRules.FactorTrinomialToSquare)
                 optionally(SimplifyAlgebraicExpressionInOneVariable)
             }
-        }
+        },
     ),
 
     /**
@@ -60,7 +60,7 @@ enum class PolynomialPlans(override val runner: CompositeMethod) : RunnerMethod 
                 whilePossible(algebraicSimplificationSteps)
                 whilePossible { deeply(PolynomialRules.NormalizePolynomial) }
             }
-        }
+        },
     ),
 
     SimplifyAlgebraicExpressionInOneVariableWithoutNormalization(
@@ -73,7 +73,7 @@ enum class PolynomialPlans(override val runner: CompositeMethod) : RunnerMethod 
                 optionally(NormalizationPlans.NormalizeExpression)
                 whilePossible(algebraicSimplificationSteps)
             }
-        }
+        },
     ),
 
     @PublicMethod
@@ -92,7 +92,7 @@ enum class PolynomialPlans(override val runner: CompositeMethod) : RunnerMethod 
                 }
                 whilePossible { deeply(PolynomialRules.NormalizePolynomial) }
             }
-        }
+        },
     ),
 
     ExpandPolynomialExpressionInOneVariableWithoutNormalization(
@@ -109,8 +109,8 @@ enum class PolynomialPlans(override val runner: CompositeMethod) : RunnerMethod 
                     }
                 }
             }
-        }
-    )
+        },
+    ),
 }
 
 private val simplifyCoefficient = plan {

@@ -109,8 +109,8 @@ class Combine(val from: List<Expression>) : Origin() {
                 1 -> PathMappingType.Transform
                 else -> PathMappingType.Combine
             },
-            listOf(rootPath)
-        )
+            listOf(rootPath),
+        ),
     )
 }
 
@@ -126,8 +126,8 @@ class Factor(val from: List<Expression>) : Origin() {
             PathMapping(
                 from.flatMap { it.origin.fromPaths(it.children()) },
                 PathMappingType.Factor,
-                listOf(rootPath)
-            )
+                listOf(rootPath),
+            ),
         )
 }
 
@@ -143,8 +143,8 @@ class Distribute(val from: List<Expression>) : Origin() {
             PathMapping(
                 from.flatMap { it.origin.fromPaths(it.children()) },
                 PathMappingType.Distribute,
-                listOf(rootPath)
-            )
+                listOf(rootPath),
+            ),
         )
 }
 

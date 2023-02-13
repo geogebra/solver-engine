@@ -41,7 +41,8 @@ enum class Sign(val signum: Int) {
     /**
      * No sign (e.g. undefined values have no sign)
      */
-    NONE(NOT_KNOWN_SIGNUM);
+    NONE(NOT_KNOWN_SIGNUM),
+    ;
 
     fun isKnown() = signum != NOT_KNOWN_SIGNUM
 

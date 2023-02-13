@@ -13,7 +13,7 @@ class PartialExpressionPlan(
     val explanationMaker: MetadataMaker,
     val skillMakers: List<MetadataMaker> = emptyList(),
     specificPlans: List<Method> = emptyList(),
-    val stepsProducer: StepsProducer
+    val stepsProducer: StepsProducer,
 ) : CompositeMethod(specificPlans) {
 
     // This plan is used when the whole sum is matched
@@ -29,12 +29,12 @@ class PartialExpressionPlan(
             val task1 = task(
                 startExpr = partialSum,
                 explanation = explanationMaker.make(),
-                stepsProducer = stepsProducer
+                stepsProducer = stepsProducer,
             ) ?: return@tasks null
 
             task(
                 naryPattern.substitute(task1.result),
-                metadata(SolverEngineExplanation.SubstitutePartialExpression)
+                metadata(SolverEngineExplanation.SubstitutePartialExpression),
             )
 
             allTasks()

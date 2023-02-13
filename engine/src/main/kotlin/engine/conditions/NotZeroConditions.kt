@@ -46,7 +46,6 @@ fun Expression.isNotZeroNotBasedOnSign(): Boolean = when (operator) {
  * Returns true if the [terms] are rational or integer roots (of any order) and are all incommensurable
  */
 fun sumTermsAreIncommensurable(terms: List<Expression>): Boolean {
-
     // Define the pattern for acceptable terms
     val radicandPtn = UnsignedIntegerPattern()
     val rootPtn = integerOrderRootOf(radicandPtn)
@@ -72,8 +71,11 @@ fun sumTermsAreIncommensurable(terms: List<Expression>): Boolean {
                 val coeff = rootTermPtn.coefficient(match)
                 val radicand = radicandPtn.getBoundInt(match)
                 val order = rootPtn.order.getBoundInt(match)
-                if (coeff.isDefinitelyNotZero() && order >= BigInteger.TWO && rootIsSimplified(radicand, order))
-                    Pair(radicand, order) else invalidKey
+                if (coeff.isDefinitelyNotZero() && order >= BigInteger.TWO && rootIsSimplified(radicand, order)) {
+                    Pair(radicand, order)
+                } else {
+                    invalidKey
+                }
             }
         }
         if (key in visited) {

@@ -42,7 +42,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
                 apply(SolvableRules.MoveConstantsToTheLeft)
                 optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
             }
-        }
+        },
     ),
 
     MoveConstantsToTheRightAndSimplify(
@@ -53,7 +53,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
                 apply(SolvableRules.MoveConstantsToTheRight)
                 optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
             }
-        }
+        },
     ),
 
     MoveVariablesToTheLeftAndSimplify(
@@ -64,7 +64,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
                 apply(SolvableRules.MoveVariablesToTheLeft)
                 optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
             }
-        }
+        },
     ),
 
     MultiplyByInverseCoefficientOfVariableAndSimplify(
@@ -75,7 +75,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
                 apply(InequalitiesRules.MultiplyByInverseCoefficientOfVariable)
                 optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
             }
-        }
+        },
     ),
 
     MultiplyByLCDAndSimplify(
@@ -86,7 +86,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
                 apply(SolvableRules.MultiplySolvableByLCD)
                 whilePossible(PolynomialPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
             }
-        }
+        },
     ),
 
     DivideByCoefficientOfVariableAndSimplify(
@@ -97,7 +97,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
                 apply(InequalitiesRules.DivideByCoefficientOfVariable)
                 optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
             }
-        }
+        },
     ),
 
     @PublicMethod
@@ -119,9 +119,9 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
                             FindPattern(
                                 productContaining(
                                     fractionOf(AnyPattern(), UnsignedIntegerPattern()),
-                                    nonConstantSum
-                                )
-                            )
+                                    nonConstantSum,
+                                ),
+                            ),
                         )
                     }
                     apply(MultiplyByLCDAndSimplify)
@@ -140,7 +140,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
                                 val lhs = condition(AnyPattern()) { it.isConstant() }
                                 val variableWithCoefficient = withOptionalConstantCoefficient(
                                     SolutionVariablePattern(),
-                                    positiveOnly = true
+                                    positiveOnly = true,
                                 )
                                 val rhs = oneOf(variableWithCoefficient, sumContaining(variableWithCoefficient))
                                 inequalityOf(lhs, rhs)
@@ -178,17 +178,17 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
                     default(
                         ResourceData(preferDecimals = false),
                         FormChecker(
-                            solutionOf(SolutionVariablePattern(), AnyPattern())
-                        )
+                            solutionOf(SolutionVariablePattern(), AnyPattern()),
+                        ),
                     )
                     alternative(
                         ResourceData(preferDecimals = true),
-                        decimalSolutionFormChecker
+                        decimalSolutionFormChecker,
                     )
                 }
             }
-        }
-    )
+        },
+    ),
 }
 
 private val inequalitySimplificationSteps = steps {
@@ -207,7 +207,7 @@ private val decimalSolutionFormChecker = run {
     val acceptedSolutions = oneOf(
         SignedNumberPattern(),
         optionalNegOf(RecurringDecimalPattern()),
-        optionalNegOf(fractionOf(UnsignedNumberPattern(), UnsignedNumberPattern()))
+        optionalNegOf(fractionOf(UnsignedNumberPattern(), UnsignedNumberPattern())),
     )
 
     FormChecker(
@@ -219,9 +219,9 @@ private val decimalSolutionFormChecker = run {
                 openIntervalOf(FixedPattern(Constants.NegativeInfinity), acceptedSolutions),
                 openClosedIntervalOf(FixedPattern(Constants.NegativeInfinity), acceptedSolutions),
                 openIntervalOf(acceptedSolutions, FixedPattern(Constants.Infinity)),
-                closedOpenIntervalOf(acceptedSolutions, FixedPattern(Constants.Infinity))
-            )
-        )
+                closedOpenIntervalOf(acceptedSolutions, FixedPattern(Constants.Infinity)),
+            ),
+        ),
     )
 }
 

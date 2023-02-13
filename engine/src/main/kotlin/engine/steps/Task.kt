@@ -28,7 +28,7 @@ data class Task(
     /**
      * Possibly empty list of ids of other tasks in the same task set this task depends on
      */
-    val dependsOn: List<String> = emptyList()
+    val dependsOn: List<String> = emptyList(),
 ) {
     /**
      * Thinking of the task as a transformation, this would be its toExpr.  Only for internal use.

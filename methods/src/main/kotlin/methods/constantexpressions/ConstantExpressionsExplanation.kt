@@ -33,7 +33,9 @@ enum class ConstantExpressionsExplanation : CategorisedMetadataKey {
      *
      * This is a public top-level transformation.
      */
-    SimplifyConstantExpression;
+    SimplifyConstantExpression,
+
+    ;
 
     override val category = "ConstantExpressions"
 }

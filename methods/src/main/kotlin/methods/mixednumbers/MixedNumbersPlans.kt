@@ -36,7 +36,7 @@ enum class MixedNumbersPlans(override val runner: CompositeMethod) : RunnerMetho
                     }
                 }
             }
-        }
+        },
     ),
 
     /**
@@ -96,6 +96,6 @@ enum class MixedNumbersPlans(override val runner: CompositeMethod) : RunnerMetho
                     }
                 }
             }
-        }
-    )
+        },
+    ),
 }

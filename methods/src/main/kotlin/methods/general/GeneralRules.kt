@@ -112,7 +112,7 @@ private val eliminateOneInProduct =
         onPattern(pattern) {
             ruleResult(
                 toExpr = cancel(one, restOf(pattern)),
-                explanation = metadata(Explanation.EliminateOneInProduct, move(one))
+                explanation = metadata(Explanation.EliminateOneInProduct, move(one)),
             )
         }
     }
@@ -125,7 +125,7 @@ private val eliminateZeroInSum =
         onPattern(pattern) {
             ruleResult(
                 toExpr = cancel(zero, restOf(pattern)),
-                explanation = metadata(Explanation.EliminateZeroInSum, move(zero))
+                explanation = metadata(Explanation.EliminateZeroInSum, move(zero)),
             )
         }
     }
@@ -146,7 +146,7 @@ private val evaluateProductContainingZero =
         onPattern(pattern) {
             ruleResult(
                 toExpr = transform(zero),
-                explanation = metadata(Explanation.EvaluateProductContainingZero, move(zero))
+                explanation = metadata(Explanation.EvaluateProductContainingZero, move(zero)),
             )
         }
     }
@@ -163,7 +163,7 @@ private val evaluateZeroDividedByAnyValue =
         onPattern(pattern) {
             ruleResult(
                 toExpr = transform(zero),
-                explanation = metadata(Explanation.EvaluateZeroDividedByAnyValue, move(zero))
+                explanation = metadata(Explanation.EvaluateZeroDividedByAnyValue, move(zero)),
             )
         }
     }
@@ -179,7 +179,7 @@ private val evaluateProductDividedByZeroAsUndefined =
         onPattern(pattern) {
             ruleResult(
                 toExpr = transformTo(pattern, Constants.Undefined),
-                explanation = metadata(Explanation.EvaluateProductDividedByZeroAsUndefined, move(zero))
+                explanation = metadata(Explanation.EvaluateProductDividedByZeroAsUndefined, move(zero)),
             )
         }
     }
@@ -192,7 +192,7 @@ private val simplifyDoubleMinus =
         onPattern(pattern) {
             ruleResult(
                 toExpr = move(value),
-                explanation = metadata(Explanation.SimplifyDoubleMinus, move(value))
+                explanation = metadata(Explanation.SimplifyDoubleMinus, move(value)),
             )
         }
     }
@@ -209,9 +209,9 @@ private val simplifyProductWithTwoNegativeFactors =
             ruleResult(
                 toExpr = product.substitute(
                     optionalDivideBy(fd1, move(f1)),
-                    optionalDivideBy(fd2, move(f2))
+                    optionalDivideBy(fd2, move(f2)),
                 ),
-                explanation = metadata(Explanation.SimplifyProductWithTwoNegativeFactors)
+                explanation = metadata(Explanation.SimplifyProductWithTwoNegativeFactors),
             )
         }
     }
@@ -225,7 +225,7 @@ private val moveSignOfNegativeFactorOutOfProduct =
         onPattern(product) {
             ruleResult(
                 toExpr = negOf(product.substitute(optionalDivideBy(fd, move(f)))),
-                explanation = metadata(Explanation.MoveSignOfNegativeFactorOutOfProduct)
+                explanation = metadata(Explanation.MoveSignOfNegativeFactorOutOfProduct),
             )
         }
     }
@@ -242,7 +242,7 @@ private val simplifyZeroDenominatorFractionToUndefined =
         onPattern(pattern) {
             ruleResult(
                 toExpr = transformTo(pattern, Constants.Undefined),
-                explanation = metadata(Explanation.SimplifyZeroDenominatorFractionToUndefined, move(pattern))
+                explanation = metadata(Explanation.SimplifyZeroDenominatorFractionToUndefined, move(pattern)),
             )
         }
     }
@@ -259,7 +259,7 @@ private val simplifyZeroNumeratorFractionToZero =
         onPattern(pattern) {
             ruleResult(
                 toExpr = transform(zero),
-                explanation = metadata(Explanation.SimplifyZeroNumeratorFractionToZero, move(zero))
+                explanation = metadata(Explanation.SimplifyZeroNumeratorFractionToZero, move(zero)),
             )
         }
     }
@@ -275,7 +275,7 @@ private val simplifyUnitFractionToOne =
         onPattern(pattern) {
             ruleResult(
                 toExpr = cancel(common, introduce(Constants.One)),
-                explanation = metadata(Explanation.SimplifyUnitFractionToOne)
+                explanation = metadata(Explanation.SimplifyUnitFractionToOne),
             )
         }
     }
@@ -289,7 +289,7 @@ private val simplifyFractionWithOneDenominator =
         onPattern(pattern) {
             ruleResult(
                 toExpr = cancel(denominator, move(numerator)),
-                explanation = metadata(Explanation.SimplifyFractionWithOneDenominator)
+                explanation = metadata(Explanation.SimplifyFractionWithOneDenominator),
             )
         }
     }
@@ -303,7 +303,7 @@ private val cancelDenominator =
         onPattern(pattern) {
             ruleResult(
                 toExpr = cancel(common, restOf(numerator)),
-                explanation = metadata(Explanation.CancelDenominator)
+                explanation = metadata(Explanation.CancelDenominator),
             )
         }
     }
@@ -318,7 +318,7 @@ private val cancelCommonTerms =
         onPattern(fraction) {
             ruleResult(
                 toExpr = cancel(common, fractionOf(restOf(numerator), restOf(denominator))),
-                explanation = metadata(Explanation.CancelCommonTerms)
+                explanation = metadata(Explanation.CancelCommonTerms),
             )
         }
     }
@@ -332,7 +332,7 @@ private val factorMinusFromSum =
         onPattern(sum) {
             ruleResult(
                 toExpr = negOf(sumOf(get(sum).children().map { move(it.firstChild) })),
-                explanation = metadata(Explanation.FactorMinusFromSum)
+                explanation = metadata(Explanation.FactorMinusFromSum),
             )
         }
     }
@@ -349,9 +349,9 @@ private val simplifyProductOfConjugates =
             ruleResult(
                 toExpr = sum2.substitute(
                     powerOf(move(a), introduce(Constants.Two)),
-                    negOf(powerOf(move(b), introduce(Constants.Two)))
+                    negOf(powerOf(move(b), introduce(Constants.Two))),
                 ),
-                explanation = metadata(Explanation.SimplifyProductOfConjugates)
+                explanation = metadata(Explanation.SimplifyProductOfConjugates),
             )
         }
     }
@@ -370,7 +370,7 @@ private val distributePowerOfProduct =
 
             ruleResult(
                 toExpr = productOf(get(product).children().map { powerOf(move(it), distributedExponent) }),
-                explanation = metadata(Explanation.DistributePowerOfProduct)
+                explanation = metadata(Explanation.DistributePowerOfProduct),
             )
         }
     }
@@ -396,9 +396,9 @@ private val expandBinomialSquaredUsingIdentity =
                 toExpr = sumOf(
                     powerOf(da, dtwo),
                     productOf(dtwo, da, db),
-                    powerOf(db, dtwo)
+                    powerOf(db, dtwo),
                 ),
-                explanation = metadata(Explanation.ExpandBinomialSquaredUsingIdentity)
+                explanation = metadata(Explanation.ExpandBinomialSquaredUsingIdentity),
             )
         }
     }
@@ -415,7 +415,7 @@ private val expandBinomialCubedUsingIdentity =
         val b = AnyPattern()
         val pattern = powerOf(
             sumOf(a, b),
-            FixedPattern(Constants.Three)
+            FixedPattern(Constants.Three),
         )
 
         onPattern(pattern) {
@@ -425,16 +425,16 @@ private val expandBinomialCubedUsingIdentity =
                     productOf(
                         introduce(Constants.Three),
                         powerOf(move(a), introduce(Constants.Two)),
-                        move(b)
+                        move(b),
                     ),
                     productOf(
                         introduce(Constants.Three),
                         move(a),
-                        powerOf(move(b), introduce(Constants.Two))
+                        powerOf(move(b), introduce(Constants.Two)),
                     ),
-                    powerOf(move(b), introduce(Constants.Three))
+                    powerOf(move(b), introduce(Constants.Three)),
                 ),
-                explanation = metadata(Explanation.ExpandBinomialCubedUsingIdentity)
+                explanation = metadata(Explanation.ExpandBinomialCubedUsingIdentity),
             )
         }
     }
@@ -459,9 +459,9 @@ private val expandTrinomialSquaredUsingIdentity =
                     powerOf(move(c), introduce(Constants.Two)),
                     productOf(introduce(Constants.Two), move(a), move(b)),
                     productOf(introduce(Constants.Two), move(b), move(c)),
-                    productOf(introduce(Constants.Two), move(c), move(a))
+                    productOf(introduce(Constants.Two), move(c), move(a)),
                 ),
-                explanation = metadata(Explanation.ExpandTrinomialSquaredUsingIdentity)
+                explanation = metadata(Explanation.ExpandTrinomialSquaredUsingIdentity),
             )
         }
     }
@@ -480,10 +480,10 @@ private val expandProductOfSumAndDifference =
                 toExpr = sumOf(
                     powerOf(move(a), introduce(Constants.Two)),
                     negOf(
-                        powerOf(move(b), introduce(Constants.Two))
-                    )
+                        powerOf(move(b), introduce(Constants.Two)),
+                    ),
                 ),
-                explanation = metadata(Explanation.ExpandProductOfSumAndDifference)
+                explanation = metadata(Explanation.ExpandProductOfSumAndDifference),
             )
         }
     }
@@ -510,12 +510,12 @@ private val applyFoilMethod =
                 explicitProductOf(da, dc),
                 explicitProductOf(da, dd),
                 explicitProductOf(db, dc),
-                explicitProductOf(db, dd)
+                explicitProductOf(db, dd),
             )
 
             ruleResult(
                 toExpr = toExpr,
-                explanation = metadata(Explanation.ApplyFoilMethod)
+                explanation = metadata(Explanation.ApplyFoilMethod),
             )
         }
     }
@@ -537,12 +537,12 @@ private val expandDoubleBrackets =
             val toExpr = sumOf(
                 terms1.map { term1 ->
                     sumOf(terms2.map { term2 -> explicitProductOf(term1, term2) })
-                }
+                },
             )
 
             ruleResult(
                 toExpr = toExpr,
-                explanation = metadata(Explanation.ExpandDoubleBrackets)
+                explanation = metadata(Explanation.ExpandDoubleBrackets),
             )
         }
     }
@@ -563,14 +563,14 @@ private val rewriteDivisionAsFraction =
             result.add(
                 fractionOf(
                     move(factors[division - 1]),
-                    move(denominator)
-                )
+                    move(denominator),
+                ),
             )
             result.addAll(factors.subList(division + 1, factors.size))
 
             ruleResult(
                 toExpr = productOf(result),
-                explanation = metadata(Explanation.RewriteDivisionAsFraction)
+                explanation = metadata(Explanation.RewriteDivisionAsFraction),
             )
         }
     }
@@ -590,9 +590,9 @@ private val multiplyExponentsUsingPowerRule =
             ruleResult(
                 toExpr = powerOf(
                     get(base),
-                    productOf(move(exp1), move(exp2))
+                    productOf(move(exp1), move(exp2)),
                 ),
-                explanation = metadata(Explanation.MultiplyExponentsUsingPowerRule)
+                explanation = metadata(Explanation.MultiplyExponentsUsingPowerRule),
             )
         }
     }
@@ -613,9 +613,9 @@ private val distributeSumOfPowers =
                 toExpr = productOf(
                     get(sumOfExponents).children().map {
                         simplifiedPowerOf(distributedBase, move(it))
-                    }
+                    },
                 ),
-                explanation = metadata(Explanation.DistributeSumOfPowers)
+                explanation = metadata(Explanation.DistributeSumOfPowers),
             )
         }
     }
@@ -644,12 +644,12 @@ private val distributeMultiplicationOverSum =
             }
 
             val distributedExpr = sumOf(
-                terms.map { explicitProductOf(distributeTerm, move(it)) }
+                terms.map { explicitProductOf(distributeTerm, move(it)) },
             )
 
             ruleResult(
                 toExpr = distributedExpr,
-                explanation = metadata(Explanation.DistributeMultiplicationOverSum)
+                explanation = metadata(Explanation.DistributeMultiplicationOverSum),
             )
         }
     }
@@ -676,11 +676,13 @@ private val distributeNegativeOverBracket =
 
             val toExpr = if (isBound(sumContainingNegTerm)) {
                 sumContainingNegTerm.substitute(negDistributedTerm)
-            } else negDistributedTerm
+            } else {
+                negDistributedTerm
+            }
 
             ruleResult(
                 toExpr = toExpr,
-                explanation = metadata(Explanation.DistributeNegativeOverBracket)
+                explanation = metadata(Explanation.DistributeNegativeOverBracket),
             )
         }
     }
@@ -697,7 +699,7 @@ private val rewritePowerAsProduct =
         onPattern(power) {
             ruleResult(
                 toExpr = productOf(List(getValue(exponent).toInt()) { move(base) }),
-                explanation = metadata(Explanation.RewritePowerAsProduct, move(base), move(exponent))
+                explanation = metadata(Explanation.RewritePowerAsProduct, move(base), move(exponent)),
             )
         }
     }
@@ -714,7 +716,7 @@ private val simplifyExpressionToThePowerOfOne =
         onPattern(power) {
             ruleResult(
                 toExpr = cancel(one, get(base)),
-                explanation = metadata(Explanation.SimplifyExpressionToThePowerOfOne)
+                explanation = metadata(Explanation.SimplifyExpressionToThePowerOfOne),
             )
         }
     }
@@ -731,7 +733,7 @@ private val evaluateOneToAnyPower =
         onPattern(power) {
             ruleResult(
                 toExpr = move(one),
-                explanation = metadata(Explanation.EvaluateOneToAnyPower)
+                explanation = metadata(Explanation.EvaluateOneToAnyPower),
             )
         }
     }
@@ -745,7 +747,7 @@ private val evaluateZeroToThePowerOfZero =
         onPattern(power) {
             ruleResult(
                 toExpr = transformTo(power, Constants.Undefined),
-                explanation = metadata(Explanation.EvaluateZeroToThePowerOfZero)
+                explanation = metadata(Explanation.EvaluateZeroToThePowerOfZero),
             )
         }
     }
@@ -759,7 +761,7 @@ private val evaluateExpressionToThePowerOfZero =
         onPattern(power) {
             ruleResult(
                 toExpr = transformTo(power, Constants.One),
-                explanation = metadata(Explanation.EvaluateExpressionToThePowerOfZero)
+                explanation = metadata(Explanation.EvaluateExpressionToThePowerOfZero),
             )
         }
     }
@@ -773,7 +775,7 @@ private val evaluateZeroToAPositivePower =
         onPattern(power) {
             ruleResult(
                 toExpr = transformTo(power, Constants.Zero),
-                explanation = metadata(Explanation.EvaluateZeroToAPositivePower)
+                explanation = metadata(Explanation.EvaluateZeroToAPositivePower),
             )
         }
     }
@@ -792,7 +794,7 @@ private val cancelAdditiveInverseElements =
             }
             ruleResult(
                 toExpr = toExpr,
-                explanation = metadata(Explanation.CancelAdditiveInverseElements, move(term))
+                explanation = metadata(Explanation.CancelAdditiveInverseElements, move(term)),
             )
         }
     }
@@ -814,9 +816,9 @@ private val rewriteProductOfPowersWithSameBase =
 
                 ruleResult(
                     toExpr = product.substitute(
-                        powerOf(factor(base), sumOf(move(power1.exponent), move(power2.exponent)))
+                        powerOf(factor(base), sumOf(move(power1.exponent), move(power2.exponent))),
                     ),
-                    explanation = metadata(Explanation.RewriteProductOfPowersWithSameBase)
+                    explanation = metadata(Explanation.RewriteProductOfPowersWithSameBase),
                 )
             } else {
                 null
@@ -838,9 +840,9 @@ private val rewriteProductOfPowersWithSameExponent =
         onPattern(product) {
             ruleResult(
                 toExpr = product.substitute(
-                    powerOf(productOf(move(base1), move(base2)), factor(exponent))
+                    powerOf(productOf(move(base1), move(base2)), factor(exponent)),
                 ),
-                explanation = metadata(Explanation.RewriteProductOfPowersWithSameExponent)
+                explanation = metadata(Explanation.RewriteProductOfPowersWithSameExponent),
             )
         }
     }
@@ -860,10 +862,10 @@ private val rewriteFractionOfPowersWithSameBase =
                     factor(base),
                     sumOf(
                         move(power1.exponent),
-                        negOf(move(power2.exponent))
-                    )
+                        negOf(move(power2.exponent)),
+                    ),
                 ),
-                explanation = metadata(Explanation.RewriteFractionOfPowersWithSameBase)
+                explanation = metadata(Explanation.RewriteFractionOfPowersWithSameBase),
             )
         }
     }
@@ -882,7 +884,7 @@ private val rewriteFractionOfPowersWithSameExponent =
         onPattern(product) {
             ruleResult(
                 toExpr = powerOf(fractionOf(move(base1), move(base2)), factor(exponent)),
-                explanation = metadata(Explanation.RewriteFractionOfPowersWithSameExponent)
+                explanation = metadata(Explanation.RewriteFractionOfPowersWithSameExponent),
             )
         }
     }
@@ -898,9 +900,9 @@ private val flipFractionUnderNegativePower =
             ruleResult(
                 toExpr = powerOf(
                     fractionOf(move(fraction.denominator), move(fraction.numerator)),
-                    move(exponent)
+                    move(exponent),
                 ),
-                explanation = metadata(Explanation.FlipFractionUnderNegativePower)
+                explanation = metadata(Explanation.FlipFractionUnderNegativePower),
             )
         }
     }
@@ -927,7 +929,7 @@ private val rewriteProductOfPowersWithNegatedExponent =
 
             ruleResult(
                 toExpr = product.substitute(get(power1), powerOf(inverse, move(exponent))),
-                explanation = metadata(Explanation.RewriteProductOfPowersWithNegatedExponent)
+                explanation = metadata(Explanation.RewriteProductOfPowersWithNegatedExponent),
             )
         }
     }
@@ -951,10 +953,10 @@ private val rewriteProductOfPowersWithInverseFractionBase =
                     get(power1),
                     powerOf(
                         fractionOf(move(value1), move(value2)),
-                        negOf(move(power2.exponent))
-                    )
+                        negOf(move(power2.exponent)),
+                    ),
                 ),
-                explanation = metadata(Explanation.RewriteProductOfPowersWithInverseFractionBase)
+                explanation = metadata(Explanation.RewriteProductOfPowersWithInverseFractionBase),
             )
         }
     }
@@ -975,7 +977,7 @@ private val rewriteProductOfPowersWithInverseBase =
         onPattern(product) {
             ruleResult(
                 toExpr = product.substitute(get(power1), powerOf(move(base1), negOf(move(exponent2)))),
-                explanation = metadata(Explanation.RewriteProductOfPowersWithInverseBase)
+                explanation = metadata(Explanation.RewriteProductOfPowersWithInverseBase),
             )
         }
     }
@@ -988,9 +990,9 @@ private val rewriteIntegerOrderRootAsPower =
             ruleResult(
                 toExpr = powerOf(
                     move(root.radicand),
-                    fractionOf(introduce(Constants.One), move(root.order))
+                    fractionOf(introduce(Constants.One), move(root.order)),
                 ),
-                explanation = metadata(Explanation.RewriteIntegerOrderRootAsPower)
+                explanation = metadata(Explanation.RewriteIntegerOrderRootAsPower),
             )
         }
     }
@@ -1011,8 +1013,8 @@ private val rewritePowerUnderRoot =
         onPattern(
             ConditionPattern(
                 root,
-                integerCondition(root.order, exponent) { p, q -> p != q && p.gcd(q) != BigInteger.ONE }
-            )
+                integerCondition(root.order, exponent) { p, q -> p != q && p.gcd(q) != BigInteger.ONE },
+            ),
         ) {
             val gcdExpRootOrder = integerOp(root.order, exponent) { p, q -> p.gcd(q) }
             val newExp = integerOp(root.order, exponent) { p, q -> q.divide(p.gcd(q)) }
@@ -1021,9 +1023,9 @@ private val rewritePowerUnderRoot =
             ruleResult(
                 toExpr = rootOf(
                     simplifiedPowerOf(get(base), simplifiedProductOf(newExp, gcdExpRootOrder)),
-                    simplifiedProductOf(newRootOrder, gcdExpRootOrder)
+                    simplifiedProductOf(newRootOrder, gcdExpRootOrder),
                 ),
-                explanation = metadata(Explanation.RewritePowerUnderRoot)
+                explanation = metadata(Explanation.RewritePowerUnderRoot),
             )
         }
     }
@@ -1058,7 +1060,7 @@ private val cancelRootIndexAndExponent =
 
             ruleResult(
                 toExpr = cancel(commonExponent, newRoot),
-                explanation = metadata(Explanation.CancelRootIndexAndExponent)
+                explanation = metadata(Explanation.CancelRootIndexAndExponent),
             )
         }
     }

@@ -57,8 +57,8 @@ tasks.openApiGenerate {
         mapOf(
             "serviceInterface" to "true",
             "basePackage" to "server",
-            "enumPropertyNaming" to "PascalCase"
-        )
+            "enumPropertyNaming" to "PascalCase",
+        ),
     )
 }
 

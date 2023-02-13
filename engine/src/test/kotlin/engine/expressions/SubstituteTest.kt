@@ -14,7 +14,7 @@ class TestSubstituteMethod(val f: (Expression) -> Pair<Expression, Expression>) 
         return Transformation(
             type = Transformation.Type.Rule,
             fromExpr = sub,
-            toExpr = toExpr
+            toExpr = toExpr,
         )
     }
 }
@@ -53,7 +53,7 @@ class SubstituteTest {
             val second = it.secondChild
             val swappedSum = sumOf(
                 second.secondChild.withOrigin(Move(second.secondChild)),
-                second.firstChild.withOrigin(Move(second.firstChild))
+                second.firstChild.withOrigin(Move(second.firstChild)),
             )
 
             second to swappedSum
@@ -93,8 +93,8 @@ class SubstituteTest {
                 it.firstChild.secondChild.withOrigin(Factor(it.firstChild.secondChild, it.secondChild.secondChild)),
                 sumOf(
                     it.firstChild.firstChild.withOrigin(Move(it.firstChild.firstChild)),
-                    it.secondChild.firstChild.withOrigin(Move(it.secondChild.firstChild))
-                )
+                    it.secondChild.firstChild.withOrigin(Move(it.secondChild.firstChild)),
+                ),
             )
         }
         inputExpr = "2x + [1/3]x"
@@ -120,7 +120,7 @@ class SubstituteTest {
             it to sumOf(
                 productOf(x, sum.firstChild.withOrigin(Move(sum.firstChild))),
                 productOf(sum.secondChild.withOrigin(Move(sum.secondChild)), x),
-                it.secondChild
+                it.secondChild,
             )
         }
         inputExpr = "x(sqrt[3] + 3) + 1"

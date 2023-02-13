@@ -11,7 +11,7 @@ fun interface MatchCondition {
 
 data class ConditionPattern(
     private val pattern: Pattern,
-    private val condition: MatchCondition
+    private val condition: MatchCondition,
 ) : Pattern {
 
     override val key = pattern.key
@@ -23,7 +23,7 @@ data class ConditionPattern(
 
 data class IntegerConditionPattern(
     private val pattern: IntegerPattern,
-    private val condition: (BigInteger) -> Boolean
+    private val condition: (BigInteger) -> Boolean,
 ) : IntegerPattern by pattern {
 
     override val key = pattern.key
@@ -35,7 +35,7 @@ data class IntegerConditionPattern(
 
 data class NumericConditionPattern(
     private val pattern: NumberPattern,
-    private val condition: (BigDecimal) -> Boolean
+    private val condition: (BigDecimal) -> Boolean,
 ) : NumberPattern by pattern {
 
     override val key = pattern.key
@@ -47,7 +47,7 @@ data class NumericConditionPattern(
 
 data class UnaryCondition(
     val ptn: Pattern,
-    val condition: Context.(Expression) -> Boolean
+    val condition: Context.(Expression) -> Boolean,
 ) : MatchCondition {
     override fun checkMatch(context: Context, match: Match): Boolean {
         return context.condition(ptn.getBoundExpr(match)!!)
@@ -57,7 +57,7 @@ data class UnaryCondition(
 data class BinaryIntegerCondition(
     val ptn1: IntegerProvider,
     val ptn2: IntegerProvider,
-    val condition: Context.(BigInteger, BigInteger) -> Boolean
+    val condition: Context.(BigInteger, BigInteger) -> Boolean,
 ) : MatchCondition {
     override fun checkMatch(context: Context, match: Match): Boolean {
         return context.condition(ptn1.getBoundInt(match), ptn2.getBoundInt(match))
@@ -68,13 +68,13 @@ data class TernaryIntegerCondition(
     val ptn1: IntegerProvider,
     val ptn2: IntegerProvider,
     val ptn3: IntegerProvider,
-    val condition: Context.(BigInteger, BigInteger, BigInteger) -> Boolean
+    val condition: Context.(BigInteger, BigInteger, BigInteger) -> Boolean,
 ) : MatchCondition {
     override fun checkMatch(context: Context, match: Match): Boolean {
         return context.condition(
             ptn1.getBoundInt(match),
             ptn2.getBoundInt(match),
-            ptn3.getBoundInt(match)
+            ptn3.getBoundInt(match),
         )
     }
 }
@@ -82,7 +82,7 @@ data class TernaryIntegerCondition(
 data class BinaryNumericCondition(
     val ptn1: NumberProvider,
     val ptn2: NumberProvider,
-    val condition: Context.(BigDecimal, BigDecimal) -> Boolean
+    val condition: Context.(BigDecimal, BigDecimal) -> Boolean,
 ) : MatchCondition {
     override fun checkMatch(context: Context, match: Match): Boolean {
         return context.condition(ptn1.getBoundNumber(match), ptn2.getBoundNumber(match))
@@ -91,36 +91,36 @@ data class BinaryNumericCondition(
 
 fun condition(
     ptn: Pattern,
-    condition: Context.(Expression) -> Boolean
+    condition: Context.(Expression) -> Boolean,
 ) = ConditionPattern(ptn, UnaryCondition(ptn, condition))
 
 fun integerCondition(
     ptn: IntegerPattern,
-    condition: (BigInteger) -> Boolean
+    condition: (BigInteger) -> Boolean,
 ) = IntegerConditionPattern(ptn, condition)
 
 fun integerCondition(
     ptn1: IntegerProvider,
     ptn2: IntegerProvider,
-    condition: Context.(BigInteger, BigInteger) -> Boolean
+    condition: Context.(BigInteger, BigInteger) -> Boolean,
 ) = BinaryIntegerCondition(ptn1, ptn2, condition)
 
 fun integerCondition(
     ptn1: IntegerProvider,
     ptn2: IntegerProvider,
     ptn3: IntegerProvider,
-    condition: Context.(BigInteger, BigInteger, BigInteger) -> Boolean
+    condition: Context.(BigInteger, BigInteger, BigInteger) -> Boolean,
 ) = TernaryIntegerCondition(ptn1, ptn2, ptn3, condition)
 
 fun numericCondition(
     ptn: NumberPattern,
-    condition: (BigDecimal) -> Boolean
+    condition: (BigDecimal) -> Boolean,
 ) = NumericConditionPattern(ptn, condition)
 
 fun numericCondition(
     ptn1: NumberProvider,
     ptn2: NumberProvider,
-    condition: Context.(BigDecimal, BigDecimal) -> Boolean
+    condition: Context.(BigDecimal, BigDecimal) -> Boolean,
 ) = BinaryNumericCondition(ptn1, ptn2, condition)
 
 /**

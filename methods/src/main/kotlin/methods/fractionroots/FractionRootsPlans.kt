@@ -31,7 +31,7 @@ enum class FractionRootsPlans(override val runner: CompositeMethod) : RunnerMeth
                     }
                 }
             }
-        }
+        },
     ),
 
     /**
@@ -49,7 +49,7 @@ enum class FractionRootsPlans(override val runner: CompositeMethod) : RunnerMeth
                     deeply(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
                 }
             }
-        }
+        },
     ),
 
     RationalizeDenominators(
@@ -82,7 +82,7 @@ enum class FractionRootsPlans(override val runner: CompositeMethod) : RunnerMeth
                     }
                 }
             }
-        }
+        },
     ),
     SimplifyFractionOfRoots(
         plan {
@@ -95,8 +95,8 @@ enum class FractionRootsPlans(override val runner: CompositeMethod) : RunnerMeth
                 // apply to the fraction under the root
                 applyTo(FractionArithmeticRules.SimplifyFractionToInteger) { it.firstChild }
             }
-        }
-    )
+        },
+    ),
 }
 
 val findRationalizingTerm = steps {

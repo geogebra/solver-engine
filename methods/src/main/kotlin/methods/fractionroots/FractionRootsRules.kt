@@ -58,12 +58,12 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     toExpr = fractionOf(
                         rootOf(move(numerator), move(pattern.order)),
-                        rootOf(move(denominator), move(pattern.order))
+                        rootOf(move(denominator), move(pattern.order)),
                     ),
-                    explanation = metadata(Explanation.DistributeRadicalOverFraction)
+                    explanation = metadata(Explanation.DistributeRadicalOverFraction),
                 )
             }
-        }
+        },
     ),
 
     /**
@@ -81,12 +81,12 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     toExpr = productOf(
                         get(fraction),
-                        fractionOf(move(radical), move(radical))
+                        fractionOf(move(radical), move(radical)),
                     ),
-                    explanation = metadata(Explanation.RationalizeSimpleDenominator)
+                    explanation = metadata(Explanation.RationalizeSimpleDenominator),
                 )
             }
-        }
+        },
     ),
 
     TurnFractionOfRootsIntoRootOfFractions(
@@ -100,19 +100,19 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
 
             val fraction = ConditionPattern(
                 fractionOf(numerator, denominator),
-                integerCondition(radicand1, radicand2) { n1, n2 -> n2.divides(n1) }
+                integerCondition(radicand1, radicand2) { n1, n2 -> n2.divides(n1) },
             )
 
             onPattern(fraction) {
                 ruleResult(
                     toExpr = rootOf(
                         fractionOf(move(radicand1), move(radicand2)),
-                        move(index)
+                        move(index),
                     ),
-                    explanation = metadata(Explanation.TurnFractionOfRootsIntoRootOfFractions)
+                    explanation = metadata(Explanation.TurnFractionOfRootsIntoRootOfFractions),
                 )
             }
-        }
+        },
     ),
 
     /**
@@ -130,30 +130,30 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
             onPattern(
                 ConditionPattern(
                     product,
-                    integerCondition(leftRoot.order, rightRoot.order) { n1, n2 -> n1 != n2 }
-                )
+                    integerCondition(leftRoot.order, rightRoot.order) { n1, n2 -> n1 != n2 },
+                ),
             ) {
                 ruleResult(
                     toExpr = fractionOf(
                         rootOf(
                             simplifiedPowerOf(
                                 get(leftRadicand),
-                                integerOp(leftRoot.order, rightRoot.order) { n1, n2 -> n2 / n1.gcd(n2) }
+                                integerOp(leftRoot.order, rightRoot.order) { n1, n2 -> n2 / n1.gcd(n2) },
                             ),
-                            integerOp(leftRoot.order, rightRoot.order) { n1, n2 -> n1 * n2 / n1.gcd(n2) }
+                            integerOp(leftRoot.order, rightRoot.order) { n1, n2 -> n1 * n2 / n1.gcd(n2) },
                         ),
                         rootOf(
                             simplifiedPowerOf(
                                 get(rightRadicand),
-                                integerOp(leftRoot.order, rightRoot.order) { n1, n2 -> n1 / n1.gcd(n2) }
+                                integerOp(leftRoot.order, rightRoot.order) { n1, n2 -> n1 / n1.gcd(n2) },
                             ),
-                            integerOp(leftRoot.order, rightRoot.order) { n1, n2 -> n1 * n2 / n1.gcd(n2) }
-                        )
+                            integerOp(leftRoot.order, rightRoot.order) { n1, n2 -> n1 * n2 / n1.gcd(n2) },
+                        ),
                     ),
-                    explanation = metadata(Explanation.BringRootsToSameIndexInFraction)
+                    explanation = metadata(Explanation.BringRootsToSameIndexInFraction),
                 )
             }
-        }
+        },
     ),
 
     /**
@@ -187,22 +187,22 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
                     powerOf(move(term1), introduce(Constants.Two)),
                     copyFlippedSign(
                         signedTerm2,
-                        productOf(move(term1), move(term2))
+                        productOf(move(term1), move(term2)),
                     ),
-                    powerOf(move(term2), introduce(Constants.Two))
+                    powerOf(move(term2), introduce(Constants.Two)),
                 )
                 ruleResult(
                     toExpr = productOf(
                         get(fraction),
                         fractionOf(
                             rationalizationTerm,
-                            rationalizationTerm
-                        )
+                            rationalizationTerm,
+                        ),
                     ),
-                    explanation = metadata(Explanation.RationalizeSumOfIntegerAndCubeRoot)
+                    explanation = metadata(Explanation.RationalizeSumOfIntegerAndCubeRoot),
                 )
             }
-        }
+        },
     ),
 
     /**
@@ -214,13 +214,13 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
         rule {
             val integer1 = UnsignedIntegerPattern()
             val radical1 = withOptionalIntegerCoefficient(
-                rootOf(UnsignedIntegerPattern(), FixedPattern(Constants.Three))
+                rootOf(UnsignedIntegerPattern(), FixedPattern(Constants.Three)),
             )
             val term1 = oneOf(integer1, radical1)
 
             val integer2 = UnsignedIntegerPattern()
             val radical2 = withOptionalIntegerCoefficient(
-                rootOf(UnsignedIntegerPattern(), FixedPattern(Constants.Three))
+                rootOf(UnsignedIntegerPattern(), FixedPattern(Constants.Three)),
             )
             val term2 = oneOf(integer2, radical2)
 
@@ -233,8 +233,8 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
                 sumOf(
                     powerOf(term1, FixedPattern(Constants.Two)),
                     oppositeSignPattern(opNegTerm2, middleTerm),
-                    powerOf(term2, FixedPattern(Constants.Two))
-                )
+                    powerOf(term2, FixedPattern(Constants.Two)),
+                ),
             )
 
             onPattern(pattern) {
@@ -247,15 +247,15 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
                     middleTermMatches -> ruleResult(
                         toExpr = sumOf(
                             powerOf(move(term1), introduce(Constants.Three)),
-                            copySign(opNegTerm2, powerOf(move(term2), introduce(Constants.Three)))
+                            copySign(opNegTerm2, powerOf(move(term2), introduce(Constants.Three))),
                         ),
-                        explanation = metadata(Explanation.IdentityCubeSumDifference)
+                        explanation = metadata(Explanation.IdentityCubeSumDifference),
                     )
 
                     else -> null
                 }
             }
-        }
+        },
     ),
 
     /**
@@ -285,12 +285,12 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     toExpr = fractionOf(
                         get(numerator),
-                        sumOf(move(term2), move(term1))
+                        sumOf(move(term2), move(term1)),
                     ),
-                    explanation = metadata(Explanation.FlipRootsInDenominator)
+                    explanation = metadata(Explanation.FlipRootsInDenominator),
                 )
             }
-        }
+        },
     ),
 
     /**
@@ -325,13 +325,13 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
                         get(fraction),
                         fractionOf(
                             sumOf(move(term1), copyFlippedSign(signedTerm2, move(term2))),
-                            sumOf(move(term1), copyFlippedSign(signedTerm2, move(term2)))
-                        )
+                            sumOf(move(term1), copyFlippedSign(signedTerm2, move(term2))),
+                        ),
                     ),
-                    explanation = metadata(Explanation.RationalizeSumOfIntegerAndSquareRoot)
+                    explanation = metadata(Explanation.RationalizeSumOfIntegerAndSquareRoot),
                 )
             }
-        }
+        },
     ),
 
     /**
@@ -349,7 +349,7 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
             val radicand = oneOf(
                 productContaining(),
                 exponentFactorPtn,
-                integerFactorPtn
+                integerFactorPtn,
             )
             val radical = rootOf(radicand, index)
             val denominator = withOptionalIntegerCoefficient(radical)
@@ -375,69 +375,72 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
                                     buildWith(exponentFactorMatch) {
                                         powerOf(
                                             move(base),
-                                            sumOf(introduce(indexValue), negOf(move(exponent)))
+                                            sumOf(introduce(indexValue), negOf(move(exponent))),
                                         )
-                                    }
+                                    },
                                 )
                             } else if (integerFactorMatch != null) {
                                 rationalizationFactors.add(
                                     buildWith(integerFactorMatch) {
                                         powerOf(
                                             introduce(term),
-                                            sumOf(introduce(indexValue), introduce(xp(-1)))
+                                            sumOf(introduce(indexValue), introduce(xp(-1))),
                                         )
-                                    }
+                                    },
                                 )
                             }
                         }
                     } else if (primeFactorizedFormExpr.operator == BinaryExpressionOperator.Power) {
                         val exponentFactorMatch = exponentFactorPtn.findMatches(
                             context = context,
-                            subexpression = primeFactorizedFormExpr
+                            subexpression = primeFactorizedFormExpr,
                         ).firstOrNull()
                         if (exponentFactorMatch != null) {
                             rationalizationFactors.add(
                                 buildWith(exponentFactorMatch) {
                                     powerOf(
                                         move(base),
-                                        sumOf(introduce(indexValue), negOf(move(exponent)))
+                                        sumOf(introduce(indexValue), negOf(move(exponent))),
                                     )
-                                }
+                                },
                             )
                         }
                     } else {
                         val integerFactorMatch = integerFactorPtn.findMatches(
                             context = context,
-                            subexpression = primeFactorizedFormExpr
+                            subexpression = primeFactorizedFormExpr,
                         ).firstOrNull()
                         if (integerFactorMatch != null) {
                             rationalizationFactors.add(
                                 buildWith(integerFactorMatch) {
                                     powerOf(
                                         introduce(primeFactorizedFormExpr),
-                                        sumOf(introduce(indexValue), introduce(xp(-1)))
+                                        sumOf(introduce(indexValue), introduce(xp(-1))),
                                     )
-                                }
+                                },
                             )
                         }
                     }
                 }
 
                 val rationalizationTerm = rootOf(
-                    if (rationalizationFactors.size == 1) rationalizationFactors[0]
-                    else productOf(rationalizationFactors),
-                    move(index)
+                    if (rationalizationFactors.size == 1) {
+                        rationalizationFactors[0]
+                    } else {
+                        productOf(rationalizationFactors)
+                    },
+                    move(index),
                 )
 
                 ruleResult(
                     toExpr = productOf(
                         get(pattern),
-                        fractionOf(rationalizationTerm, rationalizationTerm)
+                        fractionOf(rationalizationTerm, rationalizationTerm),
                     ),
-                    explanation = metadata(Explanation.HigherOrderRationalizingTerm)
+                    explanation = metadata(Explanation.HigherOrderRationalizingTerm),
                 )
             }
-        }
+        },
     ),
 
     /**
@@ -461,12 +464,12 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
                         get(numerator),
                         simplifiedProductOf(
                             move(denominator.integerCoefficient),
-                            rootOf(transform(radicand, productOf(factorized)), move(rootOrder))
-                        )
+                            rootOf(transform(radicand, productOf(factorized)), move(rootOrder)),
+                        ),
                     ),
-                    explanation = metadata(Explanation.FactorizeHigherOrderRadicand)
+                    explanation = metadata(Explanation.FactorizeHigherOrderRadicand),
                 )
             }
-        }
-    )
+        },
+    ),
 }

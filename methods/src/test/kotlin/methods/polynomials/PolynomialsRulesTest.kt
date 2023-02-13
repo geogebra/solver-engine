@@ -80,12 +80,12 @@ class PolynomialsRulesTest {
         testRule(
             "[x^2] + [1/2]x + [1 / 16]",
             PolynomialRules.FactorTrinomialToSquare,
-            "[(x + [1 / 2] * [1 / 2]) ^ 2]"
+            "[(x + [1 / 2] * [1 / 2]) ^ 2]",
         )
         testRule(
             "[x ^ 6] + 2[x^3] + 1",
             PolynomialRules.FactorTrinomialToSquare,
-            "[([x^3] + [1/2]*2) ^ 2]"
+            "[([x^3] + [1/2]*2) ^ 2]",
         )
     }
 }

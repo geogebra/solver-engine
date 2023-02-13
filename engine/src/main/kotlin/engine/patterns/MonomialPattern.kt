@@ -8,7 +8,7 @@ import java.math.BigInteger
  */
 class MonomialPattern<T : CoefficientPattern> internal constructor(
     val base: Pattern,
-    withCoefficient: (Pattern) -> T
+    withCoefficient: (Pattern) -> T,
 ) : KeyedPattern {
     private val exponentPattern = UnsignedIntegerPattern()
 

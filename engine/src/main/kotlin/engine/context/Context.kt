@@ -22,7 +22,7 @@ data class Context(
     val curriculum: Curriculum? = null,
     val precision: Int? = null, // decimal places
     val preferDecimals: Boolean? = null,
-    val solutionVariable: String? = null
+    val solutionVariable: String? = null,
 ) {
     val effectivePrecision = precision ?: DEFAULT_PRECISION
 

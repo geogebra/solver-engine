@@ -69,7 +69,9 @@ enum class ApproximationExplanation : CategorisedMetadataKey {
     /**
      * Approximate a numeric expression to given number of decimal places
      */
-    ApproximateExpression;
+    ApproximateExpression,
+
+    ;
 
     override val category = "Approximation"
 }

@@ -141,11 +141,11 @@ fun BigInteger.asPowerForRoot(rootOrder: BigInteger): Pair<BigInteger, BigIntege
         multiplicityOfTen == 1 || !factorizer.fullyFactorized() -> null
         rootOrder.divides(multiplicityOfTen.toBigInteger()) -> Pair(
             BigInteger.TEN.pow(multiplicityOfTen / rootOrder.toInt()),
-            rootOrder
+            rootOrder,
         )
         rootOrder < multiplicityOfTen.toBigInteger() -> Pair(
             BigInteger.TEN,
-            multiplicityOfTen.toBigInteger()
+            multiplicityOfTen.toBigInteger(),
         )
         else -> null
     }

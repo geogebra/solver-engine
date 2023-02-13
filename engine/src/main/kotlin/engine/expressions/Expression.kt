@@ -35,7 +35,7 @@ enum class Decorator {
     MissingBracket,
     PartialSumBracket {
         override fun decorateString(str: String) = "<. $str .>"
-    };
+    }, ;
 
     open fun decorateString(str: String): String = str
     open fun decorateLatexString(str: String): String = str
@@ -49,7 +49,8 @@ enum class Decorator {
 enum class Label : Extractor {
     A,
     B,
-    C;
+    C,
+    ;
 
     override fun extract(sub: Expression) = sub.labelledPart(this)
 }
@@ -64,7 +65,7 @@ class Expression internal constructor(
     internal val operands: List<Expression>,
     val decorators: List<Decorator>,
     val origin: Origin,
-    val label: Label?
+    val label: Label?,
 ) : LatexRenderable, ExpressionProvider {
 
     /**
@@ -257,7 +258,7 @@ class Expression internal constructor(
         origin -> newExpr
         is Child -> justSubstitute(
             subOrigin.parent.origin,
-            subOrigin.replaceInParent(newExpr).asFlattenedProduct()
+            subOrigin.replaceInParent(newExpr).asFlattenedProduct(),
         )
         else -> this
     }
@@ -277,7 +278,7 @@ class Expression internal constructor(
                     newChild.hasBracket() || operator.nthChildAllowed(i, newChild.operator) -> newChild
                     else -> newChild.decorate(op.outerBracket() ?: Decorator.RoundBracket)
                 }
-            }
+            },
         )
 
     internal fun replaceChildren(newChildren: List<Expression>) = Expression(
@@ -285,7 +286,7 @@ class Expression internal constructor(
         newChildren,
         decorators,
         Build,
-        label
+        label,
     )
 
     override fun getBoundExprs(m: Match) = listOf(this)

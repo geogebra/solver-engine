@@ -163,7 +163,7 @@ class MetadataCheck(private val rootPath: Path, private val keyChecker: (Metadat
 class TaskCheck(private val task: Task?) :
     PathMappingsCheck(
         task?.startExpr?.mergedPathMappings() ?: emptyList(),
-        task?.rootPath ?: RootPath()
+        task?.rootPath ?: RootPath(),
     ) {
     var startExpr: String?
         get() = null
@@ -188,7 +188,7 @@ class TaskCheck(private val task: Task?) :
             assertEquals(
                 it,
                 task.explanation!!.key,
-                "Explanation key does not match"
+                "Explanation key does not match",
             )
             task.explanation!!
         }
@@ -230,7 +230,7 @@ class TaskCheck(private val task: Task?) :
 class TransformationCheck(private val trans: Transformation?) :
     PathMappingsCheck(
         trans?.toExpr?.mergedPathMappings() ?: emptyList(),
-        trans?.fromExpr?.origin?.path ?: RootPath()
+        trans?.fromExpr?.origin?.path ?: RootPath(),
     ) {
     var fromExpr: String?
         get() = null
@@ -261,7 +261,7 @@ class TransformationCheck(private val trans: Transformation?) :
             assertEquals(
                 it,
                 trans.explanation!!.key,
-                "Explanation key does not match"
+                "Explanation key does not match",
             )
             trans.explanation!!
         }

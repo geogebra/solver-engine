@@ -24,7 +24,7 @@ import java.io.OutputStream
  */
 class TranslationKeysProcessor(
     private val codeGenerator: CodeGenerator,
-    val logger: KSPLogger
+    val logger: KSPLogger,
 ) : SymbolProcessor {
 
     private lateinit var file: OutputStream
@@ -42,7 +42,7 @@ class TranslationKeysProcessor(
             Dependencies(true, *symbols.map { it.containingFile!! }.toTypedArray()),
             "",
             "TranslationKeys",
-            "json"
+            "json",
         )
         val entries = symbols
             .filter { it.validate() }
@@ -79,7 +79,7 @@ class TranslationKeysProcessor(
 
 class TranslationKeysProcessorProvider : SymbolProcessorProvider {
     override fun create(
-        environment: SymbolProcessorEnvironment
+        environment: SymbolProcessorEnvironment,
     ): SymbolProcessor {
         return TranslationKeysProcessor(environment.codeGenerator, environment.logger)
     }

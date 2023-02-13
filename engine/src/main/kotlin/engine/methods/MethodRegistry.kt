@@ -23,7 +23,7 @@ class MethodRegistryBuilder {
         return MethodRegistry(
             registeredEntries.associateBy({ it.methodId }, { it }),
             moreSpecificMethods,
-            buildPublicEntries(moreSpecificMethods)
+            buildPublicEntries(moreSpecificMethods),
         )
     }
 
@@ -80,14 +80,14 @@ class MethodRegistry internal constructor(
     /**
      * List of public method entries, guaranteed to be ordered such that more specific methods come first.
      */
-    val publicEntries: List<EntryData>
+    val publicEntries: List<EntryData>,
 ) {
 
     data class EntryData(
         val methodId: MethodId,
         val isPublic: Boolean,
         val description: String,
-        val implementation: Method
+        val implementation: Method,
     )
 
     /**

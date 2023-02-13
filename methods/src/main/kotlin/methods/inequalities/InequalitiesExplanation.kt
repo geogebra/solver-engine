@@ -149,7 +149,9 @@ enum class InequalitiesExplanation : CategorisedMetadataKey {
      *      -> 2x < 4
      *      -> x < 2
      */
-    SolveLinearInequality;
+    SolveLinearInequality,
+
+    ;
 
     override val category = "Inequalities"
 }

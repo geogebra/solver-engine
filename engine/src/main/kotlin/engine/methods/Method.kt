@@ -25,7 +25,7 @@ data class TransformationResult(
     val steps: List<Transformation>? = null,
     val tasks: List<Task>? = null,
     val explanation: Metadata? = null,
-    val skills: List<Metadata> = emptyList()
+    val skills: List<Metadata> = emptyList(),
 )
 
 @Suppress("LongParameterList")
@@ -35,7 +35,7 @@ fun ruleResult(
     tasks: List<Task>? = null,
     explanation: Metadata? = null,
     skills: List<Metadata> = emptyList(),
-    type: Transformation.Type = Transformation.Type.Rule
+    type: Transformation.Type = Transformation.Type.Rule,
 ) = TransformationResult(type, toExpr, steps, tasks, explanation, skills)
 
 interface RunnerMethod : Method {
@@ -56,7 +56,7 @@ interface RunnerMethod : Method {
                 steps = it.steps,
                 tasks = it.tasks,
                 explanation = it.explanation,
-                skills = it.skills
+                skills = it.skills,
             )
         }
     }

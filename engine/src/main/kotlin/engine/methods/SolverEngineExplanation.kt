@@ -20,7 +20,8 @@ enum class SolverEngineExplanation : CategorisedMetadataKey {
      * - In a previous task the partial expression 1 + 2 is simplified to 3;
      * - now 3 is substituted back into the expression, resulting in x + 3 + y.
      */
-    SubstitutePartialExpression
+    SubstitutePartialExpression,
+
     ;
 
     override val category = "SolverEngine"

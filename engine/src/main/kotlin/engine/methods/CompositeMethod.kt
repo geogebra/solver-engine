@@ -12,7 +12,7 @@ import engine.steps.metadata.MetadataKey
 import engine.steps.metadata.MetadataMaker
 
 abstract class CompositeMethod(
-    val specificPlans: List<Method> = emptyList()
+    val specificPlans: List<Method> = emptyList(),
 ) : Method, Runner {
 
     override fun tryExecute(ctx: Context, sub: Expression): Transformation? {
@@ -26,7 +26,7 @@ abstract class CompositeMethod(
                 steps = it.steps,
                 tasks = it.tasks,
                 explanation = it.explanation,
-                skills = it.skills
+                skills = it.skills,
             )
         }
     }
@@ -53,7 +53,7 @@ open class CompositeMethodBuilder {
 
     fun skill(
         skillKey: MetadataKey,
-        skillParameters: MappedExpressionBuilder.() -> List<Expression> = { emptyList() }
+        skillParameters: MappedExpressionBuilder.() -> List<Expression> = { emptyList() },
     ) {
         skillMakers.add(MetadataMaker(skillKey, skillParameters))
     }

@@ -5,7 +5,7 @@ class IncompatiblePathMappingsException : Exception()
 data class PathMapping(
     val fromPaths: List<Path>,
     val type: PathMappingType,
-    val toPaths: List<Path>
+    val toPaths: List<Path>,
 ) {
     fun relativeTo(fromRoot: Path = RootPath(), toRoot: Path = RootPath()): PathMapping {
         return PathMapping(fromPaths.map { it.relativeTo(fromRoot) }, type, toPaths.map { it.relativeTo(toRoot) })

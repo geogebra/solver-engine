@@ -51,7 +51,7 @@ enum class FractionArithmeticPlans(override val runner: CompositeMethod) : Runne
                     }
                 }
             }
-        }
+        },
     ),
     NormalizeFractions(
         plan {
@@ -69,7 +69,7 @@ enum class FractionArithmeticPlans(override val runner: CompositeMethod) : Runne
                     }
                 }
             }
-        }
+        },
     ),
     SimplifyFraction(
         plan {
@@ -93,7 +93,7 @@ enum class FractionArithmeticPlans(override val runner: CompositeMethod) : Runne
                     }
                 }
             }
-        }
+        },
     ),
 
     EvaluateFractionSum(evaluateFractionSum),
@@ -113,7 +113,7 @@ enum class FractionArithmeticPlans(override val runner: CompositeMethod) : Runne
                     deeply(IntegerArithmeticPlans.SimplifyIntegersInProduct)
                 }
             }
-        }
+        },
     ),
 
     /**
@@ -129,8 +129,8 @@ enum class FractionArithmeticPlans(override val runner: CompositeMethod) : Runne
                 applyTo(FractionArithmeticRules.ConvertImproperFractionToSumOfIntegerAndFraction) { it.exponent() }
                 apply(GeneralRules.DistributeSumOfPowers)
             }
-        }
-    )
+        },
+    ),
 }
 
 private val evaluateFractionSum = plan {
@@ -171,7 +171,7 @@ private val evaluateFractionSum = plan {
                     f11.numerator,
                     f11.denominator,
                     f22.numerator,
-                    f22.denominator
+                    f22.denominator,
                 ) == BigInteger.ONE
             }
         }

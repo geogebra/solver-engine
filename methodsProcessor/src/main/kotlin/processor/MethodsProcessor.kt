@@ -35,7 +35,7 @@ class MethodsProcessor(private val codeGenerator: CodeGenerator) : SymbolProcess
             Dependencies(true, *symbols.map { it.containingFile!! }.toTypedArray()),
             "methods",
             "PublicMethods",
-            "kt"
+            "kt",
         )
 
         val writer = file.writer()
@@ -78,7 +78,7 @@ class MethodsProcessor(private val codeGenerator: CodeGenerator) : SymbolProcess
                 category = category,
                 name = qname.getShortName(),
                 implementationName = qname.asString(),
-                description = classDeclaration.docString ?: ""
+                description = classDeclaration.docString ?: "",
             )
         }
 
@@ -88,7 +88,7 @@ class MethodsProcessor(private val codeGenerator: CodeGenerator) : SymbolProcess
 
         private fun invalidNodeError(node: KSNode) = InvalidPublicMethodException(
             "The object at ${node.location} is not a valid target for @PublicMethod. " +
-                "Annotated object must be an enum entry."
+                "Annotated object must be an enum entry.",
         )
     }
 }
@@ -97,14 +97,14 @@ private data class Entry(
     val category: String,
     val name: String,
     val implementationName: String,
-    val description: String
+    val description: String,
 )
 
 class InvalidPublicMethodException(msg: String) : Exception(msg)
 
 class MethodsProcessorProvider : SymbolProcessorProvider {
     override fun create(
-        environment: SymbolProcessorEnvironment
+        environment: SymbolProcessorEnvironment,
     ): SymbolProcessor {
         return MethodsProcessor(environment.codeGenerator)
     }

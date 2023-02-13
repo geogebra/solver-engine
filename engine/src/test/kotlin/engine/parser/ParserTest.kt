@@ -33,14 +33,14 @@ class ParserTest {
 
     private fun rawSumOf(vararg terms: Expression) = Expression(
         NaryOperator.Sum,
-        terms.asList()
+        terms.asList(),
     )
 
     private fun rawPartialSumOf(vararg terms: Expression) = rawSumOf(*terms).decorate(Decorator.PartialSumBracket)
 
     private fun rawProductOf(vararg factors: Expression) = Expression(
         NaryOperator.Product,
-        factors.asList()
+        factors.asList(),
     )
 
     private fun parsingFails(input: String) {
@@ -80,38 +80,38 @@ class ParserTest {
             "(-5+2)*7",
             rawProductOf(
                 bracketOf(rawSumOf(negOf(xp(5)), xp(2))),
-                xp(7)
-            )
+                xp(7),
+            ),
         )
         parsesTo(
             "[[1/2]/[3/4]]",
             fractionOf(
                 fractionOf(xp(1), xp(2)),
-                fractionOf(xp(3), xp(4))
-            )
+                fractionOf(xp(3), xp(4)),
+            ),
         )
         parsesTo(
             "2[x^3][y^5]",
             implicitProductOf(
                 xp(2),
                 powerOf(xp("x"), xp(3)),
-                powerOf(xp("y"), xp(5))
-            )
+                powerOf(xp("y"), xp(5)),
+            ),
         )
         parsesTo(
             "[1/2][x^3]",
             implicitProductOf(
                 fractionOf(xp(1), xp(2)),
-                powerOf(xp("x"), xp(3))
-            )
+                powerOf(xp("x"), xp(3)),
+            ),
         )
         parsesTo(
             "xyz",
-            implicitProductOf(xp("x"), xp("y"), xp("z"))
+            implicitProductOf(xp("x"), xp("y"), xp("z")),
         )
         parsesTo(
             "[(x+1)^2]",
-            powerOf(bracketOf(rawSumOf(xp("x"), xp(1))), xp(2))
+            powerOf(bracketOf(rawSumOf(xp("x"), xp(1))), xp(2)),
         )
         parsesTo("2[2^2]", implicitProductOf(xp(2), powerOf(xp(2), xp(2)))) // Should that be correct?
     }
@@ -126,8 +126,8 @@ class ParserTest {
             "3*+-+2",
             rawProductOf(
                 xp(3),
-                missingBracketOf(plusOf(missingBracketOf(negOf(missingBracketOf(plusOf(xp(2)))))))
-            )
+                missingBracketOf(plusOf(missingBracketOf(negOf(missingBracketOf(plusOf(xp(2))))))),
+            ),
         )
     }
 
@@ -135,7 +135,7 @@ class ParserTest {
     fun testBrackets() {
         parsesTo(
             "(+1 + (3))",
-            bracketOf(rawSumOf(plusOf(xp(1)), bracketOf(xp(3))))
+            bracketOf(rawSumOf(plusOf(xp(1)), bracketOf(xp(3)))),
         )
     }
 
@@ -150,12 +150,12 @@ class ParserTest {
                         rawProductOf(
                             xp(2),
                             bracketOf(
-                                rawSumOf(xp(3), negOf(xp(6)))
-                            )
-                        )
-                    )
-                )
-            )
+                                rawSumOf(xp(3), negOf(xp(6))),
+                            ),
+                        ),
+                    ),
+                ),
+            ),
         )
     }
 
@@ -163,23 +163,23 @@ class ParserTest {
     fun testRoots() {
         parsesTo(
             "sqrt[2] * sqrt[3]",
-            rawProductOf(squareRootOf(xp(2)), squareRootOf(xp(3)))
+            rawProductOf(squareRootOf(xp(2)), squareRootOf(xp(3))),
         )
         parsesTo(
             "[root[2, 3] / root[4, 5]]",
-            fractionOf(rawRootOf(xp(2), xp(3)), rawRootOf(xp(4), xp(5)))
+            fractionOf(rawRootOf(xp(2), xp(3)), rawRootOf(xp(4), xp(5))),
         )
         parsesTo(
             "[sqrt[3] ^ 2]",
-            powerOf(missingBracketOf(squareRootOf(xp(3))), xp(2))
+            powerOf(missingBracketOf(squareRootOf(xp(3))), xp(2)),
         )
         parsesTo(
             "root[2, 3] * [sqrt[3] ^ 2] * [root[4, 5] ^ x]",
             rawProductOf(
                 rawRootOf(xp(2), xp(3)),
                 powerOf(missingBracketOf(squareRootOf(xp(3))), xp(2)),
-                powerOf(missingBracketOf(rawRootOf(xp(4), xp(5))), xp("x"))
-            )
+                powerOf(missingBracketOf(rawRootOf(xp(4), xp(5))), xp("x")),
+            ),
         )
     }
 
@@ -189,8 +189,8 @@ class ParserTest {
             "3x + 4 = 4x - 5",
             equationOf(
                 rawSumOf(implicitProductOf(xp(3), xp("x")), xp(4)),
-                rawSumOf(implicitProductOf(xp(4), xp("x")), negOf(xp(5)))
-            )
+                rawSumOf(implicitProductOf(xp(4), xp("x")), negOf(xp(5))),
+            ),
         )
     }
 
@@ -200,29 +200,29 @@ class ParserTest {
             "3x + 4 < 4x - 5",
             lessThanOf(
                 rawSumOf(implicitProductOf(xp(3), xp("x")), xp(4)),
-                rawSumOf(implicitProductOf(xp(4), xp("x")), negOf(xp(5)))
-            )
+                rawSumOf(implicitProductOf(xp(4), xp("x")), negOf(xp(5))),
+            ),
         )
         parsesTo(
             "sqrt[xy] <= [x + y / 2]",
             lessThanEqualOf(
                 squareRootOf(implicitProductOf(xp("x"), xp("y"))),
-                fractionOf(sumOf(xp("x"), xp("y")), xp(2))
-            )
+                fractionOf(sumOf(xp("x"), xp("y")), xp(2)),
+            ),
         )
         parsesTo(
             "3x + 4 > 4x - 5",
             greaterThanOf(
                 rawSumOf(implicitProductOf(xp(3), xp("x")), xp(4)),
-                rawSumOf(implicitProductOf(xp(4), xp("x")), negOf(xp(5)))
-            )
+                rawSumOf(implicitProductOf(xp(4), xp("x")), negOf(xp(5))),
+            ),
         )
         parsesTo(
             "sqrt[xy] >= [2xy / x + y]",
             greaterThanEqualOf(
                 squareRootOf(implicitProductOf(xp("x"), xp("y"))),
-                fractionOf(implicitProductOf(xp(2), xp("x"), xp("y")), sumOf(xp("x"), xp("y")))
-            )
+                fractionOf(implicitProductOf(xp(2), xp("x"), xp("y")), sumOf(xp("x"), xp("y"))),
+            ),
         )
     }
 
@@ -230,15 +230,15 @@ class ParserTest {
     fun testPartialSum() {
         parsesTo(
             "<. 1 + 2 .> + 3",
-            rawSumOf(rawPartialSumOf(xp(1), xp(2)), xp(3))
+            rawSumOf(rawPartialSumOf(xp(1), xp(2)), xp(3)),
         )
         parsesTo(
             "1 <. + 2 - 3 .>",
-            rawSumOf(xp(1), rawPartialSumOf(xp(2), negOf(xp(3))))
+            rawSumOf(xp(1), rawPartialSumOf(xp(2), negOf(xp(3)))),
         )
         parsesTo(
             "x <. -y + z .>",
-            rawSumOf(xp("x"), rawPartialSumOf(negOf(xp("y")), xp("z")))
+            rawSumOf(xp("x"), rawPartialSumOf(negOf(xp("y")), xp("z"))),
         )
     }
 
@@ -246,19 +246,19 @@ class ParserTest {
     fun testPlusMinus() {
         parsesTo(
             "+/-x",
-            plusMinusOf(xp("x"))
+            plusMinusOf(xp("x")),
         )
         parsesTo(
             "1 +/- 2",
-            rawSumOf(xp(1), plusMinusOf(xp(2)))
+            rawSumOf(xp(1), plusMinusOf(xp(2))),
         )
         parsesTo(
             "3 * +/-2",
-            rawProductOf(xp(3), missingBracketOf(plusMinusOf(xp(2))))
+            rawProductOf(xp(3), missingBracketOf(plusMinusOf(xp(2)))),
         )
         parsesTo(
             "x + +/-y",
-            rawSumOf(xp("x"), missingBracketOf(plusMinusOf(xp("y"))))
+            rawSumOf(xp("x"), missingBracketOf(plusMinusOf(xp("y")))),
         )
     }
 }

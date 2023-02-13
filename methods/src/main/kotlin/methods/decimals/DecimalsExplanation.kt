@@ -131,7 +131,9 @@ enum class DecimalsExplanation : CategorisedMetadataKey {
 
     StripTrailingZerosAfterDecimal,
 
-    StripTrailingZerosAfterDecimalOfAllDecimals;
+    StripTrailingZerosAfterDecimalOfAllDecimals,
+
+    ;
 
     override val category = "Decimals"
 }

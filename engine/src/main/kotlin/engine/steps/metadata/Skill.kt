@@ -6,7 +6,8 @@ enum class Skill : MetadataKey {
     FactorInteger,
     AddFractions,
     MultiplyFractions,
-    SimplifyNumericFraction;
+    SimplifyNumericFraction,
+    ;
 
     override val keyName = name
 }

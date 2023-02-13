@@ -45,8 +45,8 @@ class SelectPlanApiServiceImpl : SelectPlansApiService {
                 selections.add(
                     PlanSelection(
                         modeller.modelTransformation(transformation),
-                        PlanSelectionMetadata(entryData.methodId.toString())
-                    )
+                        PlanSelectionMetadata(entryData.methodId.toString()),
+                    ),
                 )
             } else {
                 context.log(Level.FINE, "Failure for plan ID: ${entryData.methodId}")

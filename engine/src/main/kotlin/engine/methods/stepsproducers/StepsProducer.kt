@@ -69,8 +69,8 @@ class StepsBuilder(sub: Expression) {
                 explanation = step.explanation,
                 skills = step.skills,
                 steps = step.steps,
-                tasks = step.tasks
-            )
+                tasks = step.tasks,
+            ),
         )
 
         sub = substitution.withOrigin(sub.origin)

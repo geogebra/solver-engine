@@ -233,7 +233,9 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      * equations).
      * This will be the last task in a task set.
      */
-    CollectSolutions;
+    CollectSolutions,
+
+    ;
 
     override val category = "Equations"
 }

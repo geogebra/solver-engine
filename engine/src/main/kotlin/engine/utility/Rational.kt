@@ -18,13 +18,13 @@ data class Rational(val numerator: BigInteger, val denominator: BigInteger = Big
     operator fun plus(other: Rational) =
         Rational(
             numerator * other.denominator + denominator * other.numerator,
-            denominator * other.denominator
+            denominator * other.denominator,
         ).simplify()
 
     operator fun minus(other: Rational) =
         Rational(
             numerator * other.denominator - denominator * other.numerator,
-            denominator * other.denominator
+            denominator * other.denominator,
         ).simplify()
 
     operator fun times(other: Rational) =

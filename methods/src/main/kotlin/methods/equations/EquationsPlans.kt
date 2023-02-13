@@ -50,7 +50,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                 apply(SolvableRules.MoveConstantsToTheLeft)
                 optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
             }
-        }
+        },
     ),
 
     MoveConstantsToTheRightAndSimplify(
@@ -61,7 +61,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                 apply(SolvableRules.MoveConstantsToTheRight)
                 optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
             }
-        }
+        },
     ),
 
     MoveVariablesToTheLeftAndSimplify(
@@ -72,7 +72,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                 apply(SolvableRules.MoveVariablesToTheLeft)
                 optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
             }
-        }
+        },
     ),
 
     MultiplyByInverseCoefficientOfVariableAndSimplify(
@@ -83,7 +83,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                 apply(EquationsRules.MultiplyByInverseCoefficientOfVariable)
                 optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
             }
-        }
+        },
     ),
 
     MultiplyByLCDAndSimplify(
@@ -94,7 +94,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                 apply(SolvableRules.MultiplySolvableByLCD)
                 whilePossible(PolynomialPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
             }
-        }
+        },
     ),
 
     DivideByCoefficientOfVariableAndSimplify(
@@ -105,7 +105,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                 apply(EquationsRules.DivideByCoefficientOfVariable)
                 optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
             }
-        }
+        },
     ),
 
     CompleteTheSquareAndSimplify(
@@ -116,7 +116,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                 apply(EquationsRules.CompleteTheSquare)
                 optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable)
             }
-        }
+        },
     ),
 
     MultiplyByInverseOfLeadingCoefficientAndSimplify(
@@ -127,7 +127,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                 apply(EquationsRules.MultiplyByInverseOfLeadingCoefficient)
                 apply(PolynomialPlans.ExpandPolynomialExpressionInOneVariable)
             }
-        }
+        },
     ),
 
     ExtractSolutionAndSimplifyFromEquationInPlusMinusForm(extractSolutionAndSimplifyFromEquationInPlusMinusForm),
@@ -151,9 +151,9 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                             FindPattern(
                                 productContaining(
                                     fractionOf(AnyPattern(), UnsignedIntegerPattern()),
-                                    nonConstantSum
-                                )
-                            )
+                                    nonConstantSum,
+                                ),
+                            ),
                         )
                     }
                     apply(MultiplyByLCDAndSimplify)
@@ -172,7 +172,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                                 val lhs = condition(AnyPattern()) { it.isConstant() }
                                 val variableWithCoefficient = withOptionalConstantCoefficient(
                                     SolutionVariablePattern(),
-                                    positiveOnly = true
+                                    positiveOnly = true,
                                 )
                                 val rhs = oneOf(variableWithCoefficient, sumContaining(variableWithCoefficient))
                                 equationOf(lhs, rhs)
@@ -211,16 +211,16 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                     default(
                         ResourceData(preferDecimals = false),
                         FormChecker(
-                            solutionOf(SolutionVariablePattern(), AnyPattern())
-                        )
+                            solutionOf(SolutionVariablePattern(), AnyPattern()),
+                        ),
                     )
                     alternative(
                         ResourceData(preferDecimals = true),
-                        decimalSolutionFormChecker
+                        decimalSolutionFormChecker,
                     )
                 }
             }
-        }
+        },
     ),
 
     @PublicMethod
@@ -263,7 +263,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                     }
                 }
             }
-        }
+        },
     ),
 
     @PublicMethod
@@ -320,11 +320,11 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                     }
                 }
             }
-        }
+        },
     ),
 
     @PublicMethod
-    SolveFactorisedQuadraticEquation(solveFactorisedQuadratic)
+    SolveFactorisedQuadraticEquation(solveFactorisedQuadratic),
 }
 
 private val extractSolutionAndSimplifyFromEquationInPlusMinusForm = taskSet {
@@ -346,7 +346,7 @@ private val extractSolutionAndSimplifyFromEquationInPlusMinusForm = taskSet {
                 explanation = metadata(Explanation.SimplifyExtractedSolution),
                 stepsProducer = steps {
                     applyTo(ConstantExpressionsPlans.SimplifyConstantExpression) { it.secondChild }
-                }
+                },
             ) ?: return@tasks null
         }
 
@@ -354,9 +354,9 @@ private val extractSolutionAndSimplifyFromEquationInPlusMinusForm = taskSet {
         task(
             startExpr = solutionOf(
                 splitTasks[0].result.firstChild,
-                solutionSetOf(splitTasks.map { it.result.secondChild })
+                solutionSetOf(splitTasks.map { it.result.secondChild }),
             ),
-            explanation = metadata(Explanation.CollectSolutions)
+            explanation = metadata(Explanation.CollectSolutions),
         )
         allTasks()
     }
@@ -370,7 +370,8 @@ enum class ExperimentalExplanation : CategorisedMetadataKey {
 
     SolveFactorisedQuadratic,
     SolveFactorOfQuadratic,
-    CollectSolutions;
+    CollectSolutions,
+    ;
 
     override val category = "Experimental"
 }
@@ -386,13 +387,13 @@ private val solveFactorisedQuadratic = taskSet {
         val task1 = task(
             startExpr = equationOf(get(factor1), get(zero)),
             explanation = metadata(ExperimentalExplanation.SolveFactorOfQuadratic, get(factor1)),
-            stepsProducer = EquationsPlans.SolveLinearEquation
+            stepsProducer = EquationsPlans.SolveLinearEquation,
         )
             ?: return@tasks null
         val task2 = task(
             startExpr = equationOf(get(factor2), get(zero)),
             explanation = metadata(ExperimentalExplanation.SolveFactorOfQuadratic, get(factor2)),
-            stepsProducer = EquationsPlans.SolveLinearEquation
+            stepsProducer = EquationsPlans.SolveLinearEquation,
         )
             ?: return@tasks null
         val solution1 = task1.result.secondChild.firstChild
@@ -400,7 +401,7 @@ private val solveFactorisedQuadratic = taskSet {
         task(
             startExpr = solutionOf(task1.result.firstChild, solutionSetOf(solution1, solution2)),
             explanation = metadata(ExperimentalExplanation.CollectSolutions),
-            dependsOn = listOf(task1, task2)
+            dependsOn = listOf(task1, task2),
         )
         allTasks()
     }
@@ -424,7 +425,7 @@ private val decimalSolutionFormChecker = run {
     val acceptedSolutions = oneOf(
         SignedNumberPattern(),
         optionalNegOf(RecurringDecimalPattern()),
-        optionalNegOf(fractionOf(UnsignedNumberPattern(), UnsignedNumberPattern()))
+        optionalNegOf(fractionOf(UnsignedNumberPattern(), UnsignedNumberPattern())),
     )
 
     FormChecker(
@@ -433,9 +434,9 @@ private val decimalSolutionFormChecker = run {
             oneOf(
                 FixedPattern(Constants.EmptySet),
                 FixedPattern(Constants.Reals),
-                solutionSetOf(acceptedSolutions)
-            )
-        )
+                solutionSetOf(acceptedSolutions),
+            ),
+        ),
     )
 }
 

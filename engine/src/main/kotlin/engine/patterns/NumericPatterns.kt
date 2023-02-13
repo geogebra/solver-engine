@@ -97,7 +97,7 @@ class SignedNumberPattern : OptionalNegPattern<UnsignedNumberPattern>(UnsignedNu
  */
 class IntegerProviderWithDefault(
     private val integerProvider: IntegerProvider,
-    private val default: BigInteger
+    private val default: BigInteger,
 ) : ProviderWithDefault(integerProvider, xp(default)), IntegerProvider {
 
     override fun getBoundInt(m: Match): BigInteger {

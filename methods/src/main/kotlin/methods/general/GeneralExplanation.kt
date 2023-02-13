@@ -257,7 +257,9 @@ enum class GeneralExplanation : CategorisedMetadataKey {
      * for e.g. sqrt[3] * (1 + sqrt[3]) * ([y^2] + 1) * y * 5 -->
      * 5 * sqrt[3] * (1 + sqrt[3]) * y * ([y^2] + 1)
      */
-    NormaliseSimplifiedProduct;
+    NormaliseSimplifiedProduct,
+
+    ;
 
     override val category = "General"
 }

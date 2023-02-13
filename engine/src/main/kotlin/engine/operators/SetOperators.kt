@@ -27,7 +27,7 @@ enum class SetOperators : Operator {
                 children.joinToString(
                     separator = ", ",
                     prefix = "\\left\\{",
-                    postfix = "\\right\\}"
+                    postfix = "\\right\\}",
                 ) { it.toLatexString(ctx) }
             }
         }
@@ -41,18 +41,18 @@ enum class SetOperators : Operator {
         override fun nthChildAllowed(n: Int, op: Operator): Boolean {
             throw IllegalArgumentException(
                 "Nullary operator ${this::class.simpleName} should have no children. " +
-                    "Child $op is invalid at position $n."
+                    "Child $op is invalid at position $n.",
             )
         }
 
         override fun <T> readableString(children: List<T>) = "REALS"
         override fun latexString(ctx: RenderContext, children: List<LatexRenderable>) = "\\mathbb{R}"
-    }
+    },
 }
 
 data class IntervalOperator(
     private val closedLeft: Boolean,
-    private val closedRight: Boolean
+    private val closedRight: Boolean,
 ) : BinaryOperator {
     override val name = when {
         closedLeft && closedRight -> "ClosedInterval"

@@ -20,7 +20,7 @@ class FindPatternTest {
         assertEquals(2, matches.count())
         assertContentEquals(
             listOf(15, 9).map { it.toBigInteger() },
-            matches.map { n1.getBoundInt(it) * n2.getBoundInt(it) }.toList()
+            matches.map { n1.getBoundInt(it) * n2.getBoundInt(it) }.toList(),
         )
     }
 }

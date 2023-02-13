@@ -51,6 +51,6 @@ fun getContext(apiCtx: server.models.Context?, defaultSolutionVariable: String?)
         curriculum = curriculum,
         precision = apiCtx.precision?.toInt(),
         preferDecimals = apiCtx.preferDecimals,
-        solutionVariable = apiCtx.solutionVariable ?: defaultSolutionVariable
+        solutionVariable = apiCtx.solutionVariable ?: defaultSolutionVariable,
     )
 } ?: emptyContext.copy(solutionVariable = defaultSolutionVariable)

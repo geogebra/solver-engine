@@ -13,12 +13,12 @@ class HigherOrderIntegerRootRulesTest {
         testRule(
             "[(root[5, 4]) ^ 3]",
             TurnPowerOfRootToRootOfPower,
-            "root[[5 ^ 3], 4]"
+            "root[[5 ^ 3], 4]",
         )
         testRule(
             "[(sqrt[3]) ^ 5]",
             TurnPowerOfRootToRootOfPower,
-            "sqrt[[3 ^ 5]]"
+            "sqrt[[3 ^ 5]]",
         )
     }
 
@@ -27,17 +27,17 @@ class HigherOrderIntegerRootRulesTest {
         testRule(
             "root[root[5, 3], 4]",
             SimplifyRootOfRoot,
-            "root[5, 4 * 3]"
+            "root[5, 4 * 3]",
         )
         testRule(
             "sqrt[sqrt[3]]",
             SimplifyRootOfRoot,
-            "root[3, 2 * 2]"
+            "root[3, 2 * 2]",
         )
         testRule(
             "root[sqrt[6], 3]",
             SimplifyRootOfRoot,
-            "root[6, 3 * 2]"
+            "root[6, 3 * 2]",
         )
     }
 
@@ -46,12 +46,12 @@ class HigherOrderIntegerRootRulesTest {
         testRule(
             "7 * root[20, 3]",
             PutRootCoefficientUnderRoot,
-            "root[[7 ^ 3] * 20, 3]"
+            "root[[7 ^ 3] * 20, 3]",
         )
         testRule(
             "8 * sqrt[40]",
             PutRootCoefficientUnderRoot,
-            "sqrt[[8 ^ 2] * 40]"
+            "sqrt[[8 ^ 2] * 40]",
         )
     }
 }

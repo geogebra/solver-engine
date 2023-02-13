@@ -31,7 +31,7 @@ interface ExpressionProvider {
 /** Only used by [ExpressionProvider.within]. See that. */
 private class WithinExpressionProvider(
     val expressionsToFilter: ExpressionProvider,
-    val parent: ExpressionProvider
+    val parent: ExpressionProvider,
 ) : ExpressionProvider {
     override fun getBoundExprs(m: Match): List<Expression> {
         val parentExpression = parent.getBoundExpr(m)
@@ -41,7 +41,7 @@ private class WithinExpressionProvider(
 
 open class ProviderWithDefault(
     private val provider: ExpressionProvider,
-    private val default: Expression
+    private val default: Expression,
 ) : ExpressionProvider {
     override fun getBoundExprs(m: Match): List<Expression> {
         return provider.getBoundExprs(m).ifEmpty { listOf(default.withOrigin(New)) }

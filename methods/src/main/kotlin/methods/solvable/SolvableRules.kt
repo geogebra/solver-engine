@@ -48,12 +48,15 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     toExpr = cancel(common, solvable.sameSolvable(restLeft, restRight)),
                     explanation = metadata(
-                        if (solvable.isEquation()) EquationsExplanation.CancelCommonTermsOnBothSides
-                        else InequalitiesExplanation.CancelCommonTermsOnBothSides
-                    )
+                        if (solvable.isEquation()) {
+                            EquationsExplanation.CancelCommonTermsOnBothSides
+                        } else {
+                            InequalitiesExplanation.CancelCommonTermsOnBothSides
+                        },
+                    ),
                 )
             }
-        }
+        },
     ),
 
     MoveConstantsToTheLeft(
@@ -71,15 +74,18 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     toExpr = solvable.sameSolvable(
                         sumOf(move(lhs), negatedConstants),
-                        sumOf(move(rhs), negatedConstants)
+                        sumOf(move(rhs), negatedConstants),
                     ),
                     explanation = metadata(
-                        if (solvable.isEquation()) EquationsExplanation.MoveConstantsToTheLeft
-                        else InequalitiesExplanation.MoveConstantsToTheLeft
-                    )
+                        if (solvable.isEquation()) {
+                            EquationsExplanation.MoveConstantsToTheLeft
+                        } else {
+                            InequalitiesExplanation.MoveConstantsToTheLeft
+                        },
+                    ),
                 )
             }
-        }
+        },
     ),
 
     MoveConstantsToTheRight(
@@ -97,15 +103,18 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     toExpr = solvable.sameSolvable(
                         sumOf(move(lhs), negatedConstants),
-                        sumOf(move(rhs), negatedConstants)
+                        sumOf(move(rhs), negatedConstants),
                     ),
                     explanation = metadata(
-                        if (solvable.isEquation()) EquationsExplanation.MoveConstantsToTheRight
-                        else InequalitiesExplanation.MoveConstantsToTheRight
-                    )
+                        if (solvable.isEquation()) {
+                            EquationsExplanation.MoveConstantsToTheRight
+                        } else {
+                            InequalitiesExplanation.MoveConstantsToTheRight
+                        },
+                    ),
                 )
             }
-        }
+        },
     ),
 
     MoveVariablesToTheLeft(
@@ -123,15 +132,18 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     toExpr = solvable.sameSolvable(
                         sumOf(move(lhs), negatedVariable),
-                        sumOf(move(rhs), negatedVariable)
+                        sumOf(move(rhs), negatedVariable),
                     ),
                     explanation = metadata(
-                        if (solvable.isEquation()) EquationsExplanation.MoveVariablesToTheLeft
-                        else InequalitiesExplanation.MoveVariablesToTheLeft
-                    )
+                        if (solvable.isEquation()) {
+                            EquationsExplanation.MoveVariablesToTheLeft
+                        } else {
+                            InequalitiesExplanation.MoveVariablesToTheLeft
+                        },
+                    ),
                 )
             }
-        }
+        },
     ),
 
     MultiplySolvableByLCD(
@@ -161,16 +173,19 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     toExpr = solvable.sameSolvable(
                         productOf(move(lhs), xp(lcm)),
-                        productOf(move(rhs), xp(lcm))
+                        productOf(move(rhs), xp(lcm)),
                     ),
                     explanation = metadata(
-                        if (solvable.isEquation()) EquationsExplanation.MultiplyEquationByLCD
-                        else InequalitiesExplanation.MultiplyInequalityByLCD
-                    )
+                        if (solvable.isEquation()) {
+                            EquationsExplanation.MultiplyEquationByLCD
+                        } else {
+                            InequalitiesExplanation.MultiplyInequalityByLCD
+                        },
+                    ),
                 )
             }
-        }
-    )
+        },
+    ),
 }
 
 private fun extractVariableTerms(expression: Expression, variable: String?): Expression? {
@@ -201,8 +216,8 @@ private object DenominatorExtractor {
     private val denominatorDetectingPattern = optionalNegOf(
         oneOf(
             productContaining(integerDenominatorFraction),
-            integerDenominatorFraction
-        )
+            integerDenominatorFraction,
+        ),
     )
 
     fun extractDenominator(expression: Expression): BigInteger {

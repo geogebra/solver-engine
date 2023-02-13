@@ -81,7 +81,7 @@ enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : Runn
                     }
                 }
             }
-        }
+        },
     ),
 
     SimplifyRootsInExpression(
@@ -101,7 +101,7 @@ enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : Runn
                     }
                 }
             }
-        }
+        },
     ),
 
     SimplifyConstantSubexpression(
@@ -112,7 +112,7 @@ enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : Runn
             steps {
                 whilePossible(constantSimplificationSteps)
             }
-        }
+        },
     ),
 
     RewriteIntegerOrderRootsAsPowers(
@@ -123,9 +123,9 @@ enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : Runn
                     AnyPattern(),
                     ConditionPattern(
                         optionalNegOf(exponent),
-                        integerCondition(exponent.numerator, exponent.denominator) { n, d -> !d.divides(n) }
-                    )
-                )
+                        integerCondition(exponent.numerator, exponent.denominator) { n, d -> !d.divides(n) },
+                    ),
+                ),
             )
             explanation = Explanation.RewriteIntegerOrderRootsAsPowers
             steps {
@@ -133,7 +133,7 @@ enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : Runn
                     deeply(GeneralRules.RewriteIntegerOrderRootAsPower)
                 }
             }
-        }
+        },
     ),
 
     /**
@@ -147,7 +147,7 @@ enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : Runn
 
             specificPlans(
                 MixedNumbersPlans.AddMixedNumbers,
-                IntegerArithmeticPlans.EvaluateArithmeticExpression
+                IntegerArithmeticPlans.EvaluateArithmeticExpression,
             )
 
             steps {
@@ -157,8 +157,8 @@ enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : Runn
                 whilePossible { deeply(SimplifyConstantSubexpression, deepFirst = true) }
                 whilePossible(constantSimplificationSteps)
             }
-        }
-    )
+        },
+    ),
 }
 
 val simpleTidyUpSteps = steps {

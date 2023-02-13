@@ -39,12 +39,12 @@ class DecimalsRulesTest {
         testRule(
             "3.14[15]",
             ConvertRecurringDecimalToFractionDirectly,
-            "[31415 - 314 / 9900]"
+            "[31415 - 314 / 9900]",
         )
         testRule(
             "3.[15]",
             ConvertRecurringDecimalToFractionDirectly,
-            "[315 - 3 / 99]"
+            "[315 - 3 / 99]",
         )
     }
 
@@ -53,7 +53,7 @@ class DecimalsRulesTest {
         testRule(
             "x = 3.14[15]",
             MakeEquationSystemForRecurringDecimal,
-            "100 x = 314.[15], 10000 x = 31415.[15]"
+            "100 x = 314.[15], 10000 x = 31415.[15]",
         )
     }
 

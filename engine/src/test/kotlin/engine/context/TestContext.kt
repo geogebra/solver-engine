@@ -9,8 +9,8 @@ class TestContext {
         constructor(curriculum: Curriculum? = null, preferDecimals: Boolean? = null) : this(
             ResourceData(
                 curriculum = curriculum,
-                preferDecimals = preferDecimals
-            )
+                preferDecimals = preferDecimals,
+            ),
         )
     }
 
@@ -56,7 +56,7 @@ class TestContext {
         assertEquals(ctx.selectBestResource(noDecResource, listOf(decResource)), noDecResource)
         assertEquals(
             ctx.selectBestResource(noDecResource, listOf(euResource, euNoDecResource, usResource)),
-            euNoDecResource
+            euNoDecResource,
         )
     }
 }

@@ -14,38 +14,38 @@ object IntegerRationalExponentsRulesTest {
         testRule(
             "[ 360 ^ [1 / 3] ]",
             FactorizeIntegerUnderRationalExponent,
-            "[ ([2^3] * [3^2] * 5) ^ [1 / 3] ]"
+            "[ ([2^3] * [3^2] * 5) ^ [1 / 3] ]",
         )
         testRule(
             "[9 ^ [1 / 6]]",
             FactorizeIntegerUnderRationalExponent,
-            "[ ([3 ^ 2]) ^ [ 1 / 6]]"
+            "[ ([3 ^ 2]) ^ [ 1 / 6]]",
         )
         testRule(
             "[6 ^ [2 / 5]]",
             FactorizeIntegerUnderRationalExponent,
-            null
+            null,
         )
         testRule(
             "[32 ^ [2/5]]",
             FactorizeIntegerUnderRationalExponent,
-            "[ ([2^5]) ^ [2/5] ]"
+            "[ ([2^5]) ^ [2/5] ]",
         )
         testRule(
             // 480 = [2 ^ 5] * 3 * 5
             "[480 ^ [1 / 6]]",
             FactorizeIntegerUnderRationalExponent,
-            null
+            null,
         )
         testRule(
             "[9 ^ [1/6] ]",
             FactorizeIntegerUnderRationalExponent,
-            "[ ([3^2]) ^ [1/6] ]"
+            "[ ([3^2]) ^ [1/6] ]",
         )
         testRule(
             "[100 ^ [1/6] ]",
             FactorizeIntegerUnderRationalExponent,
-            "[ ([2^2] * [5^2]) ^ [1/6] ]"
+            "[ ([2^2] * [5^2]) ^ [1/6] ]",
         )
         testRule(
             "[250000 ^ [1 / 8]]",
@@ -53,7 +53,7 @@ object IntegerRationalExponentsRulesTest {
             // since there is something common b/w
             // prime factor powers and denominator of
             // rational power
-            "[ ([2^4] * [5^6]) ^ [1/8] ]"
+            "[ ([2^4] * [5^6]) ^ [1/8] ]",
         )
     }
 
@@ -62,12 +62,12 @@ object IntegerRationalExponentsRulesTest {
         testRule(
             "[2 ^ [2 / 5]] * [3 ^ 2] * [5 ^ [4 / 5]] * [7 ^ [2 / 5]]",
             NormaliseProductWithRationalExponents,
-            "[3 ^ 2] * [2 ^ [2 / 5]] * [5 ^ [4 / 5]] * [7 ^ [2 / 5]]"
+            "[3 ^ 2] * [2 ^ [2 / 5]] * [5 ^ [4 / 5]] * [7 ^ [2 / 5]]",
         )
         testRule(
             "[2 ^ [2 / 5]] * [3 ^ 2] * 5",
             NormaliseProductWithRationalExponents,
-            "[3 ^ 2] * 5 * [2 ^ [2 / 5]]"
+            "[3 ^ 2] * 5 * [2 ^ [2 / 5]]",
         )
     }
 
@@ -76,17 +76,17 @@ object IntegerRationalExponentsRulesTest {
         testRule(
             "[2 ^ [2 / 3]] * [3 ^ [1 / 2]]",
             FindCommonDenominatorOfRationalExponents,
-            "[2 ^ [2 * 2 / 3 * 2]] * [3 ^ [1 * 3 / 2 * 3]]"
+            "[2 ^ [2 * 2 / 3 * 2]] * [3 ^ [1 * 3 / 2 * 3]]",
         )
         testRule(
             "[2 ^ [2 / 3]] * [3 ^ [1 / 6]]",
             FindCommonDenominatorOfRationalExponents,
-            "[2 ^ [2 * 2 / 3 * 2]] * [3 ^ [1 / 6]]"
+            "[2 ^ [2 * 2 / 3 * 2]] * [3 ^ [1 / 6]]",
         )
         testRule(
             "[[2 ^ [2 / 3]] / [3 ^ [1 / 2]]]",
             FindCommonDenominatorOfRationalExponents,
-            "[[2 ^ [2 * 2 / 3 * 2]] / [3 ^ [1 * 3 / 2 * 3]]]"
+            "[[2 ^ [2 * 2 / 3 * 2]] / [3 ^ [1 * 3 / 2 * 3]]]",
         )
     }
 
@@ -95,12 +95,12 @@ object IntegerRationalExponentsRulesTest {
         testRule(
             "[2 ^ [4 / 6]] * [3 ^ [3 / 6]]",
             FactorDenominatorOfRationalExponents,
-            "[([2 ^ 4] * [3 ^ 3]) ^ [1 / 6]]"
+            "[([2 ^ 4] * [3 ^ 3]) ^ [1 / 6]]",
         )
         testRule(
             "[2 ^ [4 / 6]] * [3 ^ [1 / 6]]",
             FactorDenominatorOfRationalExponents,
-            "[([2 ^ 4] * 3) ^ [1 / 6]]"
+            "[([2 ^ 4] * 3) ^ [1 / 6]]",
         )
     }
 
@@ -109,22 +109,22 @@ object IntegerRationalExponentsRulesTest {
         testRule(
             "[(-1 - 2) ^ [1/6]]",
             EvaluateNegativeToRationalExponentAsUndefined,
-            "UNDEFINED"
+            "UNDEFINED",
         )
         testRule(
             "[(-x) ^ [1/2]]",
             EvaluateNegativeToRationalExponentAsUndefined,
-            null
+            null,
         )
         testRule(
             "[(-1) ^ [6 / 3]]",
             EvaluateNegativeToRationalExponentAsUndefined,
-            null
+            null,
         )
         testRule(
             "[(-2) ^ -[1/2]]",
             EvaluateNegativeToRationalExponentAsUndefined,
-            "UNDEFINED"
+            "UNDEFINED",
         )
     }
 }

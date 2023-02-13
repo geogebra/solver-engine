@@ -13,7 +13,7 @@ data class Transformation(
     val steps: List<Transformation>? = null,
     val tasks: List<Task>? = null,
     val explanation: Metadata? = null,
-    val skills: List<Metadata> = emptyList()
+    val skills: List<Metadata> = emptyList(),
 ) {
 
     enum class Type {
@@ -37,7 +37,7 @@ data class Transformation(
          * A transformation that consists of a rearrangement of the expression tree but is not really a mathematical
          * representation.  Such a transformation can be hidden from the user but its path mappings may be useful.
          */
-        Rearrangement;
+        Rearrangement,
     }
 
     /**

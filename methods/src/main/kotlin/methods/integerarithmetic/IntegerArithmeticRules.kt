@@ -42,10 +42,10 @@ enum class IntegerArithmeticRules(override val runner: Rule) : RunnerMethod {
 
                 ruleResult(
                     toExpr = sum.substitute(integerOp(term1, term2) { n1, n2 -> n1 + n2 }),
-                    explanation = explanation
+                    explanation = explanation,
                 )
             }
-        }
+        },
     ),
 
     EvaluateIntegerProductAndDivision(
@@ -59,25 +59,25 @@ enum class IntegerArithmeticRules(override val runner: Rule) : RunnerMethod {
                     multiplier,
                     ConditionPattern(
                         divideBy(divisor),
-                        integerCondition(base, divisor) { n1, n2 -> n2.signum() != 0 && (n1 % n2).signum() == 0 }
-                    )
-                )
+                        integerCondition(base, divisor) { n1, n2 -> n2.signum() != 0 && (n1 % n2).signum() == 0 },
+                    ),
+                ),
             )
 
             onPattern(product) {
                 when {
                     isBound(multiplier) -> ruleResult(
                         toExpr = product.substitute(integerOp(base, multiplier) { n1, n2 -> n1 * n2 }),
-                        explanation = metadata(Explanation.EvaluateIntegerProduct, move(base), move(multiplier))
+                        explanation = metadata(Explanation.EvaluateIntegerProduct, move(base), move(multiplier)),
                     )
 
                     else -> ruleResult(
                         toExpr = product.substitute(integerOp(base, divisor) { n1, n2 -> n1 / n2 }),
-                        explanation = metadata(Explanation.EvaluateIntegerDivision, move(base), move(divisor))
+                        explanation = metadata(Explanation.EvaluateIntegerDivision, move(base), move(divisor)),
                     )
                 }
             }
-        }
+        },
     ),
 
     EvaluateIntegerPowerDirectly(
@@ -89,10 +89,10 @@ enum class IntegerArithmeticRules(override val runner: Rule) : RunnerMethod {
             onPattern(power) {
                 ruleResult(
                     toExpr = integerOp(base, exponent) { n1, n2 -> n1.pow(n2.toInt()) },
-                    explanation = metadata(Explanation.EvaluateIntegerPowerDirectly, move(base), move(exponent))
+                    explanation = metadata(Explanation.EvaluateIntegerPowerDirectly, move(base), move(exponent)),
                 )
             }
-        }
+        },
     ),
 
     SimplifyEvenPowerOfNegative(
@@ -105,10 +105,10 @@ enum class IntegerArithmeticRules(override val runner: Rule) : RunnerMethod {
             onPattern(power) {
                 ruleResult(
                     toExpr = powerOf(move(positiveBase), move(exponent)),
-                    explanation = metadata(Explanation.SimplifyEvenPowerOfNegative)
+                    explanation = metadata(Explanation.SimplifyEvenPowerOfNegative),
                 )
             }
-        }
+        },
     ),
 
     SimplifyOddPowerOfNegative(
@@ -121,9 +121,9 @@ enum class IntegerArithmeticRules(override val runner: Rule) : RunnerMethod {
             onPattern(power) {
                 ruleResult(
                     toExpr = negOf(powerOf(move(positiveBase), move(exponent))),
-                    explanation = metadata(Explanation.SimplifyOddPowerOfNegative)
+                    explanation = metadata(Explanation.SimplifyOddPowerOfNegative),
                 )
             }
-        }
-    )
+        },
+    ),
 }

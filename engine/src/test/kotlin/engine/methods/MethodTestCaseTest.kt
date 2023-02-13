@@ -32,8 +32,8 @@ class MethodTestCaseTest {
                     explanation = metadata(testRuleMetadataKey),
                     skills = listOf(
                         metadata(testRuleSkillMetadataKey1, move(pattern)),
-                        metadata(testRuleSkillMetadataKey2)
-                    )
+                        metadata(testRuleSkillMetadataKey2),
+                    ),
                 )
             }
         }
@@ -46,7 +46,7 @@ class MethodTestCaseTest {
             pattern = pattern,
             resultPattern = AnyPattern(),
             stepsProducer = Pipeline((1..3).map { PipelineItem(testRule) }),
-            explanationMaker = MetadataMaker(testPlanMetadataKey) { listOf(move(pattern)) }
+            explanationMaker = MetadataMaker(testPlanMetadataKey) { listOf(move(pattern)) },
         )
     }
 
@@ -58,11 +58,11 @@ class MethodTestCaseTest {
         tasks {
             val task1 = task(
                 startExpr = get(ptn)!!,
-                explanation = metadata(testPlanMetadataKey, get(ptn)!!)
+                explanation = metadata(testPlanMetadataKey, get(ptn)!!),
             ) ?: return@tasks null
             task(
                 startExpr = task1.result,
-                explanation = metadata(testPlanMetadataKey, task1.result)
+                explanation = metadata(testPlanMetadataKey, task1.result),
             ) {
                 apply(testRule)
                 apply(testRule)

@@ -41,7 +41,7 @@ enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
             steps {
                 whilePossible(DecimalRules.EvaluateSignedDecimalAddition)
             }
-        }
+        },
     ),
     EvaluateProductOfDecimals(
         plan {
@@ -52,7 +52,7 @@ enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
             steps {
                 whilePossible(DecimalRules.EvaluateDecimalProductAndDivision)
             }
-        }
+        },
     ),
 
     EvaluateDecimalPower(
@@ -78,7 +78,7 @@ enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
                     option(DecimalRules.EvaluateDecimalPowerDirectly)
                 }
             }
-        }
+        },
     ),
 
     StripTrailingZerosAfterDecimalOfAllDecimals(
@@ -88,7 +88,7 @@ enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
             steps {
                 whilePossible { deeply(StripTrailingZerosAfterDecimal) }
             }
-        }
+        },
     ),
 
     ConvertTerminatingDecimalToFractionAndSimplify(
@@ -99,7 +99,7 @@ enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
                 apply(DecimalRules.ConvertTerminatingDecimalToFraction)
                 optionally(FractionArithmeticPlans.SimplifyFraction)
             }
-        }
+        },
     ),
     ConvertRecurringDecimalToFractionAndSimplify(
         plan {
@@ -118,7 +118,7 @@ enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
                 apply(DecimalRules.SolveLinearEquation)
                 optionally(FractionArithmeticPlans.SimplifyFraction)
             }
-        }
+        },
     ),
     SimplifyDecimalsInProduct(
         plan {
@@ -135,7 +135,7 @@ enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
                     }
                 }
             }
-        }
+        },
     ),
     NormalizeFractionOfDecimals(
         plan {
@@ -147,7 +147,7 @@ enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
                     deeply(SimplifyDecimalsInProduct)
                 }
             }
-        }
+        },
     ),
 
     /**
@@ -169,7 +169,7 @@ enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
                 }
                 apply(DecimalRules.ConvertFractionWithPowerOfTenDenominatorToDecimal)
             }
-        }
+        },
     ),
 
     EvaluateSubexpressionAsDecimal(
@@ -180,7 +180,7 @@ enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
             steps {
                 whilePossible(decimalEvaluationSteps)
             }
-        }
+        },
     ),
 
     /**
@@ -214,8 +214,8 @@ enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
                     }
                 }
             }
-        }
-    )
+        },
+    ),
 }
 
 val decimalEvaluationSteps = steps {

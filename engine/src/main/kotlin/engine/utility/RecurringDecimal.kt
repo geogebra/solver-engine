@@ -4,7 +4,7 @@ import java.math.BigDecimal
 
 data class RecurringDecimal(
     val nonRepeatingValue: BigDecimal,
-    val repeatingDigits: Int
+    val repeatingDigits: Int,
 ) {
     init {
         require(nonRepeatingValue.signum() > 0)
@@ -43,7 +43,7 @@ data class RecurringDecimal(
         return when {
             n <= decimalDigits - repeatingDigits -> RecurringDecimal(
                 nonRepeatingValue.movePointRight(n),
-                repeatingDigits
+                repeatingDigits,
             )
 
             else -> expand(n + repeatingDigits).movePointRight(n)

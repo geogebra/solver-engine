@@ -26,7 +26,7 @@ enum class IntegerRootsPlans(override val runner: CompositeMethod) : RunnerMetho
                 optionally(IntegerRootsRules.PrepareCancellingPowerOfARoot)
                 deeply(IntegerRootsRules.SimplifyNthRootToThePowerOfN)
             }
-        }
+        },
     ),
 
     PutRootCoefficientUnderRootAndSimplify(
@@ -37,7 +37,7 @@ enum class IntegerRootsPlans(override val runner: CompositeMethod) : RunnerMetho
                 apply(IntegerRootsRules.PutRootCoefficientUnderRoot)
                 apply(simplifyIntegersInExpression)
             }
-        }
+        },
     ),
 
     SimplifyRootOfRootWithCoefficient(
@@ -54,7 +54,7 @@ enum class IntegerRootsPlans(override val runner: CompositeMethod) : RunnerMetho
                 // evaluate the product in the index of the root
                 applyTo(IntegerArithmeticRules.EvaluateIntegerProductAndDivision) { it.secondChild }
             }
-        }
+        },
     ),
 
     /**
@@ -70,7 +70,7 @@ enum class IntegerRootsPlans(override val runner: CompositeMethod) : RunnerMetho
                 optionally(IntegerArithmeticPlans.SimplifyIntegersInProduct)
                 optionally(simplifyProductOfRoots)
             }
-        }
+        },
     ),
 
     /**
@@ -117,7 +117,7 @@ enum class IntegerRootsPlans(override val runner: CompositeMethod) : RunnerMetho
                 // 490 * root[14]
                 optionally(SimplifyProductWithRoots)
             }
-        }
+        },
     ),
 
     SimplifyIntegerRootToInteger(
@@ -127,13 +127,13 @@ enum class IntegerRootsPlans(override val runner: CompositeMethod) : RunnerMetho
             val radical = integerOrderRootOf(radicand)
             pattern = ConditionPattern(
                 radical,
-                integerCondition(radicand, radical.order) { n, order -> n.isPowerOfDegree(order.toInt()) }
+                integerCondition(radicand, radical.order) { n, order -> n.isPowerOfDegree(order.toInt()) },
             )
 
             steps {
                 applyTo(SimplifyIntegerRoot) { it }
             }
-        }
+        },
     ),
 
     /**
@@ -148,7 +148,7 @@ enum class IntegerRootsPlans(override val runner: CompositeMethod) : RunnerMetho
                 apply(IntegerRootsRules.CollectLikeRoots)
                 apply(simplifyAfterCollectingLikeTerms)
             }
-        }
+        },
     ),
 
     SplitRootsInProduct(
@@ -159,7 +159,7 @@ enum class IntegerRootsPlans(override val runner: CompositeMethod) : RunnerMetho
                 whilePossible { deeply(IntegerRootsRules.SplitPowerUnderRoot) }
                 whilePossible { deeply(IntegerRootsRules.SplitRootOfProduct) }
             }
-        }
+        },
     ),
 
     SplitRootsAndCancelRootsOfPowers(
@@ -169,7 +169,7 @@ enum class IntegerRootsPlans(override val runner: CompositeMethod) : RunnerMetho
                 apply(SplitRootsInProduct)
                 apply(CancelAllRootsOfPowers)
             }
-        }
+        },
     ),
 
     FactorizeAndDistributePowerUnderRoot(
@@ -186,7 +186,7 @@ enum class IntegerRootsPlans(override val runner: CompositeMethod) : RunnerMetho
                 // 2^6 * 3^2
                 whilePossible { deeply(IntegerArithmeticPlans.SimplifyIntegersInProduct) }
             }
-        }
+        },
     ),
 
     CancelAllRootsOfPowers(
@@ -198,7 +198,7 @@ enum class IntegerRootsPlans(override val runner: CompositeMethod) : RunnerMetho
                     deeply(cancelRootOfPower)
                 }
             }
-        }
+        },
     ),
 
     SimplifyPowerOfIntegerUnderRoot(
@@ -214,8 +214,8 @@ enum class IntegerRootsPlans(override val runner: CompositeMethod) : RunnerMetho
                 }
                 whilePossible { deeply(IntegerArithmeticRules.EvaluateIntegerPowerDirectly) }
             }
-        }
-    )
+        },
+    ),
 }
 
 val cancelRootOfPower = steps {

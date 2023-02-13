@@ -20,7 +20,7 @@ data class TransformationModeller(val format: Format) {
             skills = trans.skills.map { modelMetadata(it) },
             steps = trans.steps?.let { steps -> steps.map { modelTransformation(it) } },
             tasks = trans.tasks?.let { tasks -> tasks.map { modelTask(it) } },
-            type = trans.type.toString()
+            type = trans.type.toString(),
         )
     }
 
@@ -31,7 +31,7 @@ data class TransformationModeller(val format: Format) {
             pathMappings = modelPathMappings(task.startExpr.mergedPathMappings(RootPath(task.taskId))),
             explanation = task.explanation?.let { modelMetadata(it) },
             steps = if (task.steps.isEmpty()) null else task.steps.map { modelTransformation(it) },
-            dependsOn = task.dependsOn.ifEmpty { null }
+            dependsOn = task.dependsOn.ifEmpty { null },
         )
     }
 
@@ -43,7 +43,7 @@ data class TransformationModeller(val format: Format) {
         return PathMapping(
             type = mapping.type.toString(),
             fromPaths = mapping.fromPaths.map { it.toString() },
-            toPaths = mapping.toPaths.map { it.toString() }
+            toPaths = mapping.toPaths.map { it.toString() },
         )
     }
 
@@ -53,9 +53,9 @@ data class TransformationModeller(val format: Format) {
             params = metadata.mappedParams.map {
                 MappedExpression(
                     expression = modelExpression(it),
-                    pathMappings = modelPathMappings(it.mergedPathMappings(RootPath()))
+                    pathMappings = modelPathMappings(it.mergedPathMappings(RootPath())),
                 )
-            }
+            },
         )
     }
 

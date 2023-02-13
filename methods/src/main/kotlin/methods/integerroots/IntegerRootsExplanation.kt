@@ -113,7 +113,8 @@ enum class IntegerRootsExplanation : CategorisedMetadataKey {
     PutRootCoefficientUnderRootAndSimplify,
     SimplifyRootOfRootWithCoefficient,
     CollectLikeRoots,
-    CombineProductOfSamePowerUnderHigherRoot;
+    CombineProductOfSamePowerUnderHigherRoot,
+    ;
 
     override val category = "IntegerRoots"
 }

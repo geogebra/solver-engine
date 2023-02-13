@@ -45,7 +45,7 @@ private fun makeExpression(operator: Operator, operands: List<Expression>) = Exp
             operand.hasBracket() || operator.nthChildAllowed(i, operand.operator) -> operand
             else -> operand.decorate(Decorator.MissingBracket)
         }
-    }
+    },
 )
 
 private fun makeExpression(operator: Operator, vararg operands: Expression) =
@@ -136,9 +136,13 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
     override fun visitRealOtherTerm(ctx: ExpressionParser.RealOtherTermContext): Expression {
         val p = visit(ctx.explicitProduct())
         return when (val op = getAdditiveOperator(ctx.sign)) {
-            UnaryExpressionOperator.Plus -> if (op.childAllowed(p.operator) || p.hasBracket()) p else p.decorate(
-                Decorator.MissingBracket
-            )
+            UnaryExpressionOperator.Plus -> if (op.childAllowed(p.operator) || p.hasBracket()) {
+                p
+            } else {
+                p.decorate(
+                    Decorator.MissingBracket,
+                )
+            }
             else -> makeExpression(op, p)
         }
     }
@@ -214,7 +218,7 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
         return mixedNumber(
             ctx.integer.text.toBigInteger(),
             ctx.num.text.toBigInteger(),
-            ctx.den.text.toBigInteger()
+            ctx.den.text.toBigInteger(),
         )
     }
 
@@ -232,7 +236,7 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
         val endRep = text.indexOf(']')
         val decimal = BigDecimal(
             text.substring(0 until startRep) +
-                text.substring(startRep + 1 until endRep)
+                text.substring(startRep + 1 until endRep),
         )
         return xp(RecurringDecimal(decimal, endRep - startRep - 1))
     }

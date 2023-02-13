@@ -43,7 +43,7 @@ object EquationOperator : BinaryOperator, StatementOperator {
 
 enum class InequalityOperators(
     private val readableString: String,
-    private val latexString: String
+    private val latexString: String,
 ) : BinaryOperator, StatementOperator {
 
     LessThan("<", "<") {
@@ -76,7 +76,7 @@ enum class InequalityOperators(
         override fun toInterval(boundary: Expression) = closedOpenIntervalOf(boundary, Constants.Infinity)
 
         override fun getDual() = LessThanEqual
-    };
+    }, ;
 
     override val precedence = PREDICATE_PRECEDENCE
 

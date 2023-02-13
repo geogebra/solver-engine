@@ -170,7 +170,7 @@ class GeneralRulesTest {
         testRule(
             "[(sqrt[3] * root[5, 2]) ^ n]",
             DistributePowerOfProduct,
-            "[(sqrt[3]) ^ n] * [(root[5, 2]) ^ n]"
+            "[(sqrt[3]) ^ n] * [(root[5, 2]) ^ n]",
         )
     }
 
@@ -199,22 +199,22 @@ class GeneralRulesTest {
         testRule(
             "[(a + b) ^ 2]",
             ExpandBinomialSquaredUsingIdentity,
-            "[a ^ 2] + 2ab + [b ^ 2]"
+            "[a ^ 2] + 2ab + [b ^ 2]",
         )
         testRule(
             "[(sqrt[2] + 1) ^ 2]",
             ExpandBinomialSquaredUsingIdentity,
-            "[(sqrt[2]) ^ 2] + 2 sqrt[2] * 1 + [1 ^ 2]"
+            "[(sqrt[2]) ^ 2] + 2 sqrt[2] * 1 + [1 ^ 2]",
         )
         testRule(
             "[(x - y) ^ 2]",
             ExpandBinomialSquaredUsingIdentity,
-            "[x ^ 2] + 2 x (-y) + [(-y) ^ 2]"
+            "[x ^ 2] + 2 x (-y) + [(-y) ^ 2]",
         )
         testRule(
             "[(2x - 3)^2]",
             ExpandBinomialSquaredUsingIdentity,
-            "[(2 x) ^ 2] + 2 * 2 x * (-3) + [(-3) ^ 2]"
+            "[(2 x) ^ 2] + 2 * 2 x * (-3) + [(-3) ^ 2]",
         )
     }
 
@@ -223,22 +223,22 @@ class GeneralRulesTest {
         testRule(
             "[(a + b) ^ 3]",
             ExpandBinomialCubedUsingIdentity,
-            "[a^3] + 3[a^2]b + 3a[b^2] + [b^3]"
+            "[a^3] + 3[a^2]b + 3a[b^2] + [b^3]",
         )
         testRule(
             "[(a - b)^3]",
             ExpandBinomialCubedUsingIdentity,
-            "[a^3] + 3[a^2](-b) + 3a * [(-b)^2] + [(-b)^3]"
+            "[a^3] + 3[a^2](-b) + 3a * [(-b)^2] + [(-b)^3]",
         )
         testRule(
             "[(2x - 4) ^ 3]",
             ExpandBinomialCubedUsingIdentity,
-            "[(2 x) ^ 3] + 3 * [(2 x) ^ 2] * (-4) + 3 * 2 x * [(-4) ^ 2] + [(-4) ^ 3]"
+            "[(2 x) ^ 3] + 3 * [(2 x) ^ 2] * (-4) + 3 * 2 x * [(-4) ^ 2] + [(-4) ^ 3]",
         )
         testRule(
             "[(-1 + 2x) ^ 3]",
             ExpandBinomialCubedUsingIdentity,
-            "[(-1) ^ 3] + 3 * [(-1) ^ 2] * 2 x + 3 * (-1) [(2 x) ^ 2] + [(2 x) ^ 3]"
+            "[(-1) ^ 3] + 3 * [(-1) ^ 2] * 2 x + 3 * (-1) [(2 x) ^ 2] + [(2 x) ^ 3]",
         )
     }
 
@@ -247,32 +247,32 @@ class GeneralRulesTest {
         testRule(
             "(1 + sqrt[2]) (1 - sqrt[2])",
             ExpandProductOfSumAndDifference,
-            "[1^2] - [(sqrt[2]) ^ 2]"
+            "[1^2] - [(sqrt[2]) ^ 2]",
         )
         testRule(
             "(1 - sqrt[2]) (1 + sqrt[2])",
             ExpandProductOfSumAndDifference,
-            "[1^2] - [(sqrt[2]) ^ 2]"
+            "[1^2] - [(sqrt[2]) ^ 2]",
         )
         testRule(
             "(sqrt[2] - 1) (1 + sqrt[2])",
             ExpandProductOfSumAndDifference,
-            "[(sqrt[2]) ^ 2] - [1^2]"
+            "[(sqrt[2]) ^ 2] - [1^2]",
         )
         testRule(
             "(-1 + sqrt[2]) (sqrt[2] + 1)",
             ExpandProductOfSumAndDifference,
-            "[(sqrt[2]) ^ 2] - [1^2]"
+            "[(sqrt[2]) ^ 2] - [1^2]",
         )
         testRule(
             "(1 + sqrt[2])*(1 - sqrt[2])",
             ExpandProductOfSumAndDifference,
-            "[1 ^ 2] - [(sqrt[2]) ^ 2]"
+            "[1 ^ 2] - [(sqrt[2]) ^ 2]",
         )
         testRule(
             "(2x - 3) (2x + 3)",
             ExpandProductOfSumAndDifference,
-            "[(2x)^2] - [3^2]"
+            "[(2x)^2] - [3^2]",
         )
     }
 
@@ -295,47 +295,47 @@ class GeneralRulesTest {
         testRule(
             "sqrt[2] * (3 - sqrt[4])",
             DistributeMultiplicationOverSum,
-            "sqrt[2] * 3 + sqrt[2] * (-sqrt[4])"
+            "sqrt[2] * 3 + sqrt[2] * (-sqrt[4])",
         )
         testRule(
             "sqrt[2] * (3 + sqrt[4] + sqrt[5])",
             DistributeMultiplicationOverSum,
-            "sqrt[2] * 3 + sqrt[2] * sqrt[4] + sqrt[2] * sqrt[5]"
+            "sqrt[2] * 3 + sqrt[2] * sqrt[4] + sqrt[2] * sqrt[5]",
         )
         testRule(
             "-2 * (3 + sqrt[5])",
             DistributeMultiplicationOverSum,
-            "(-2) * 3 + (-2) * sqrt[5]"
+            "(-2) * 3 + (-2) * sqrt[5]",
         )
         testRule(
             "-sqrt[2] * (3 + sqrt[5])",
             DistributeMultiplicationOverSum,
-            "(-sqrt[2]) * 3 + (-sqrt[2]) * sqrt[5]"
+            "(-sqrt[2]) * 3 + (-sqrt[2]) * sqrt[5]",
         )
         testRule(
             "-2 * (-3 - sqrt[5])",
             DistributeMultiplicationOverSum,
-            "(-2) *( -3) + (-2) * (-sqrt[5])"
+            "(-2) *( -3) + (-2) * (-sqrt[5])",
         )
         testRule(
             "2 (4x - 3)",
             DistributeMultiplicationOverSum,
-            "2*4x + 2*(-3)"
+            "2*4x + 2*(-3)",
         )
         testRule(
             "2*sqrt[2]*(1 + sqrt[3])",
             DistributeMultiplicationOverSum,
-            "2 sqrt[2]*1 + 2 sqrt[2]*sqrt[3]"
+            "2 sqrt[2]*1 + 2 sqrt[2]*sqrt[3]",
         )
         testRule(
             "3 sqrt[2]*[x^2] * (2x - 7)",
             DistributeMultiplicationOverSum,
-            "3 sqrt[2]*[x^2]*2x + 3 sqrt[2] * [x^2]*(-7)"
+            "3 sqrt[2]*[x^2]*2x + 3 sqrt[2] * [x^2]*(-7)",
         )
         testRule(
             "x*(1 + sqrt[3])",
             DistributeMultiplicationOverSum,
-            null
+            null,
         )
     }
 
@@ -352,7 +352,7 @@ class GeneralRulesTest {
         testRule(
             "[(4[x^2] - 3) ^ 3]",
             RewritePowerAsProduct,
-            "(4[x^2] - 3) (4[x^2] - 3) (4[x^2] - 3)"
+            "(4[x^2] - 3) (4[x^2] - 3) (4[x^2] - 3)",
         )
     }
 
@@ -369,7 +369,7 @@ class GeneralRulesTest {
         testRule(
             "(sqrt[2] + root[3, 3])  + 1 - (sqrt[2] + root[3, 3]) + 2",
             CancelAdditiveInverseElements,
-            "1 + 2"
+            "1 + 2",
         )
         testRule("sqrt[12] - sqrt[12]", CancelAdditiveInverseElements, "0")
         testRule("-sqrt[12] + sqrt[12]", CancelAdditiveInverseElements, "0")
@@ -472,32 +472,32 @@ class GeneralRulesTest {
         testRule(
             "[2 ^ [1 / 2]] * [3 ^ -[1 / 3]]",
             RewriteProductOfPowersWithNegatedExponent,
-            null
+            null,
         )
         testRule(
             "[2 ^ [1 / 2]] * [([4 / 3]) ^ -[1 / 2]]",
             RewriteProductOfPowersWithNegatedExponent,
-            "[2 ^ [1 / 2]] * [([3 / 4]) ^ [1 / 2]]"
+            "[2 ^ [1 / 2]] * [([3 / 4]) ^ [1 / 2]]",
         )
         testRule(
             "[2 ^ [1 / 2]] * [3 ^ -[1 / 2]]",
             RewriteProductOfPowersWithNegatedExponent,
-            "[2 ^ [1 / 2]] * [([1 / 3]) ^ [1 / 2]]"
+            "[2 ^ [1 / 2]] * [([1 / 3]) ^ [1 / 2]]",
         )
         testRule(
             "[3 ^ -[1 / 2]] * [2 ^ [1 / 2]]",
             RewriteProductOfPowersWithNegatedExponent,
-            "[([1 / 3]) ^ [1 / 2]] * [2 ^ [1 / 2]]"
+            "[([1 / 3]) ^ [1 / 2]] * [2 ^ [1 / 2]]",
         )
         testRule(
             "[2 ^ [1 / 2]] * [([2 / 3]) ^ -[1 / 2]]",
             RewriteProductOfPowersWithNegatedExponent,
-            "[2 ^ [1 / 2]] * [([3 / 2]) ^ [1 / 2]]"
+            "[2 ^ [1 / 2]] * [([3 / 2]) ^ [1 / 2]]",
         )
         testRule(
             "[([2 / 3]) ^ -[1 / 2]] * [2 ^ [1 / 2]]",
             RewriteProductOfPowersWithNegatedExponent,
-            "[([3 / 2]) ^ [1 / 2]] * [2 ^ [1 / 2]]"
+            "[([3 / 2]) ^ [1 / 2]] * [2 ^ [1 / 2]]",
         )
     }
 
@@ -506,12 +506,12 @@ class GeneralRulesTest {
         testRule(
             "[([2 / 3]) ^ [1 / 2]] * [([2 / 3]) ^ [2 / 5]]",
             RewriteProductOfPowersWithInverseFractionBase,
-            null
+            null,
         )
         testRule(
             "[([2 / 3]) ^ [1 / 2]] * [([3 / 2]) ^ [2 / 5]]",
             RewriteProductOfPowersWithInverseFractionBase,
-            "[([2 / 3]) ^ [1 / 2]] * [([2 / 3]) ^ -[2 / 5]]"
+            "[([2 / 3]) ^ [1 / 2]] * [([2 / 3]) ^ -[2 / 5]]",
         )
     }
 
@@ -520,17 +520,17 @@ class GeneralRulesTest {
         testRule(
             "[2 ^ [1 / 2]] * [([1 / 3]) ^ [2 / 5]]",
             RewriteProductOfPowersWithInverseBase,
-            null
+            null,
         )
         testRule(
             "[2 ^ [1 / 2]] * [([1 / 2]) ^ [2 / 5]]",
             RewriteProductOfPowersWithInverseBase,
-            "[2 ^ [1 / 2]] * [2 ^ -[2 / 5]]"
+            "[2 ^ [1 / 2]] * [2 ^ -[2 / 5]]",
         )
         testRule(
             "[([1 / 2]) ^ [2 / 5]] * [2 ^ [1 / 2]]",
             RewriteProductOfPowersWithInverseBase,
-            "[2 ^ -[2 / 5]] * [2 ^ [1 / 2]]"
+            "[2 ^ -[2 / 5]] * [2 ^ [1 / 2]]",
         )
     }
 
@@ -545,7 +545,7 @@ class GeneralRulesTest {
         testRule(
             "root[[7 ^ 2 * 2], 3 * 2]",
             GeneralRules.CancelRootIndexAndExponent,
-            "root[[7 ^ 2], 3]"
+            "root[[7 ^ 2], 3]",
         )
         testMethod {
             method = GeneralRules.CancelRootIndexAndExponent
@@ -562,12 +562,12 @@ class GeneralRulesTest {
         testRule(
             "root[[7 ^ 2 * 2], 2]",
             GeneralRules.CancelRootIndexAndExponent,
-            "[7 ^ 2]"
+            "[7 ^ 2]",
         )
         testRule(
             "root[[7 ^ 2], 2]",
             GeneralRules.CancelRootIndexAndExponent,
-            "7"
+            "7",
         )
     }
 
@@ -576,32 +576,32 @@ class GeneralRulesTest {
         testRule(
             "(1 + sqrt[2]) * (1 + sqrt[2])",
             GeneralRules.ApplyFoilMethod,
-            "1*1 + 1*sqrt[2] + sqrt[2]*1 + sqrt[2]*sqrt[2]"
+            "1*1 + 1*sqrt[2] + sqrt[2]*1 + sqrt[2]*sqrt[2]",
         )
         testRule(
             "(4x - 3) * (4x - 3)",
             GeneralRules.ApplyFoilMethod,
-            "4x * 4x + 4x * (-3) + (-3) * 4x + (-3) * (-3)"
+            "4x * 4x + 4x * (-3) + (-3) * 4x + (-3) * (-3)",
         )
         testRule(
             "(4x - 5[x^3]) * (2[x^2] - 3x)",
             GeneralRules.ApplyFoilMethod,
-            "4 x * 2 [x ^ 2] + 4 x * (-3 x) + (-5 [x ^ 3]) * 2 [x ^ 2] + (-5 [x ^ 3]) * (-3 x)"
+            "4 x * 2 [x ^ 2] + 4 x * (-3 x) + (-5 [x ^ 3]) * 2 [x ^ 2] + (-5 [x ^ 3]) * (-3 x)",
         )
         testRule(
             "(2x - 3) * (3x + 3)",
             GeneralRules.ApplyFoilMethod,
-            "2 x * 3 x + 2 x * 3 + (-3) * 3 x + (-3) * 3"
+            "2 x * 3 x + 2 x * 3 + (-3) * 3 x + (-3) * 3",
         )
         testRule(
             "(x + [x^2]) (5x + [x^2])",
             GeneralRules.ApplyFoilMethod,
-            "x * 5x + x * [x^2] + [x^2] * 5x + [x^2] * [x^2]"
+            "x * 5x + x * [x^2] + [x^2] * 5x + [x^2] * [x^2]",
         )
         testRule(
             "(2x - 3) (2x - 3)",
             GeneralRules.ApplyFoilMethod,
-            "2x * 2x + 2x * (-3) + (-3) * 2x + (-3) * (-3)"
+            "2x * 2x + 2x * (-3) + (-3) * 2x + (-3) * (-3)",
         )
         testMethod {
             method = GeneralRules.ApplyFoilMethod
@@ -635,7 +635,7 @@ class GeneralRulesTest {
         testRule(
             "([x^2] + 5x - 2) * (3x - 5)",
             GeneralRules.ExpandDoubleBrackets,
-            "[x^2]*3x + [x^2]*(-5) + 5x * 3x + 5x * (-5) + (-2)*3x + (-2)*(-5)"
+            "[x^2]*3x + [x^2]*(-5) + 5x * 3x + 5x * (-5) + (-2)*3x + (-2)*(-5)",
         )
         testMethod {
             method = GeneralRules.ExpandDoubleBrackets
@@ -674,18 +674,18 @@ class GeneralRulesTest {
             "[(1 + sqrt[2] + sqrt[3])^2]",
             GeneralRules.ExpandTrinomialSquaredUsingIdentity,
             "[1 ^ 2] + [(sqrt[2]) ^ 2] + [(sqrt[3]) ^ 2] + " +
-                "2 * 1 sqrt[2] + 2 sqrt[2] * sqrt[3] + 2 sqrt[3] * 1"
+                "2 * 1 sqrt[2] + 2 sqrt[2] * sqrt[3] + 2 sqrt[3] * 1",
         )
         testRule(
             "[(1 - sqrt[2] - sqrt[3])^2]",
             GeneralRules.ExpandTrinomialSquaredUsingIdentity,
             "[1 ^ 2] + [(-sqrt[2]) ^ 2] + [(-sqrt[3]) ^ 2] + " +
-                "2 * 1 (-sqrt[2]) + 2 (-sqrt[2]) (-sqrt[3]) + 2 (-sqrt[3]) * 1"
+                "2 * 1 (-sqrt[2]) + 2 (-sqrt[2]) (-sqrt[3]) + 2 (-sqrt[3]) * 1",
         )
         testRule(
             "[(1 - x - y)^2]",
             GeneralRules.ExpandTrinomialSquaredUsingIdentity,
-            "[1 ^ 2] + [(-x) ^ 2] + [(-y) ^ 2] + 2 * 1 (-x) + 2 (-x) (-y) + 2 (-y) * 1"
+            "[1 ^ 2] + [(-x) ^ 2] + [(-y) ^ 2] + 2 * 1 (-x) + 2 (-x) (-y) + 2 (-y) * 1",
         )
     }
 
@@ -694,47 +694,47 @@ class GeneralRulesTest {
         testRule(
             "-(sqrt[2]+7)",
             GeneralRules.DistributeNegativeOverBracket,
-            "-sqrt[2] - 7"
+            "-sqrt[2] - 7",
         )
         testRule(
             "5 - (sqrt[2] + 7)",
             GeneralRules.DistributeNegativeOverBracket,
-            "5 - sqrt[2] - 7"
+            "5 - sqrt[2] - 7",
         )
         testRule(
             "5 - (sqrt[2] - 7)",
             GeneralRules.DistributeNegativeOverBracket,
-            "5 - sqrt[2] + 7"
+            "5 - sqrt[2] + 7",
         )
         testRule(
             "5 - (-sqrt[2] + 7)",
             GeneralRules.DistributeNegativeOverBracket,
-            "5 + sqrt[2] - 7"
+            "5 + sqrt[2] - 7",
         )
         testRule(
             "5 - (-sqrt[2] - 7)",
             GeneralRules.DistributeNegativeOverBracket,
-            "5 + sqrt[2] + 7"
+            "5 + sqrt[2] + 7",
         )
         testRule(
             "-(-a - 2)",
             GeneralRules.DistributeNegativeOverBracket,
-            "a + 2"
+            "a + 2",
         )
         testRule(
             "sqrt[2] - (-a + 2)",
             GeneralRules.DistributeNegativeOverBracket,
-            "sqrt[2] + a - 2"
+            "sqrt[2] + a - 2",
         )
         testRule(
             "sqrt[2] - (a - 2)",
             GeneralRules.DistributeNegativeOverBracket,
-            "sqrt[2] - a + 2"
+            "sqrt[2] - a + 2",
         )
         testRule(
             "sqrt[2] - (-5a - 7)",
             GeneralRules.DistributeNegativeOverBracket,
-            "sqrt[2] + 5a + 7"
+            "sqrt[2] + 5a + 7",
         )
     }
 
@@ -743,37 +743,37 @@ class GeneralRulesTest {
         testRule(
             "(x + 1)*5",
             NormalizationRules.NormaliseSimplifiedProduct,
-            "5(x+1)"
+            "5(x+1)",
         )
         testRule(
             "(x + 1)*5x",
             NormalizationRules.NormaliseSimplifiedProduct,
-            "5x(x+1)"
+            "5x(x+1)",
         )
         testRule(
             "5*(x+1)*sqrt[2]",
             NormalizationRules.NormaliseSimplifiedProduct,
-            "5 sqrt[2] (x+1)"
+            "5 sqrt[2] (x+1)",
         )
         testRule(
             "5x * sqrt[2]",
             NormalizationRules.NormaliseSimplifiedProduct,
-            "5 sqrt[2] * x"
+            "5 sqrt[2] * x",
         )
         testRule(
             "5(1 + sqrt[2])*sqrt[3]",
             NormalizationRules.NormaliseSimplifiedProduct,
-            "5 sqrt[3] (1 + sqrt[2])"
+            "5 sqrt[3] (1 + sqrt[2])",
         )
         testRule(
             "sqrt[3] * (1 + sqrt[2]) * 5",
             NormalizationRules.NormaliseSimplifiedProduct,
-            "5 sqrt[3] (1 + sqrt[2])"
+            "5 sqrt[3] (1 + sqrt[2])",
         )
         testRule(
             "2*sqrt[2]",
             NormalizationRules.NormaliseSimplifiedProduct,
-            "2 sqrt[2]"
+            "2 sqrt[2]",
         )
     }
 }

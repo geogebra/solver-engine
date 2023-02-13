@@ -133,7 +133,9 @@ enum class PolynomialsExplanation : CategorisedMetadataKey {
      *
      * E.g. x^2 + 6x + 9 --> (x + 3)^2
      */
-    FactorTrinomialToSquareAndSimplify;
+    FactorTrinomialToSquareAndSimplify,
+
+    ;
 
     override val category = "Polynomials"
 }

@@ -44,7 +44,7 @@ import java.math.RoundingMode
 @Suppress("TooManyFunctions")
 open class MappedExpressionBuilder(
     val context: Context,
-    private val match: Match
+    private val match: Match,
 ) {
 
     fun introduce(expression: Expression): Expression = expression.withOrigin(New)
@@ -145,7 +145,7 @@ open class MappedExpressionBuilder(
         if (from.isNeg(match)) to else negOf(to)
 
     fun transformTo(ptn: ExpressionProvider, value: Expression) = value.withOrigin(
-        Combine(ptn.getBoundExprs(match))
+        Combine(ptn.getBoundExprs(match)),
     )
 
     fun transformTo(ptn: ExpressionProvider, transformer: (Expression) -> Expression) =
@@ -159,7 +159,7 @@ open class MappedExpressionBuilder(
      */
     fun integerOp(
         ptn: IntegerProvider,
-        operation: (BigInteger) -> BigInteger
+        operation: (BigInteger) -> BigInteger,
     ) = transformTo(ptn, xp(operation(ptn.getBoundInt(match))))
 
     /**
@@ -168,7 +168,7 @@ open class MappedExpressionBuilder(
     fun integerOp(
         ptn1: IntegerProvider,
         ptn2: IntegerProvider,
-        operation: (BigInteger, BigInteger) -> BigInteger
+        operation: (BigInteger, BigInteger) -> BigInteger,
     ) = combineTo(ptn1, ptn2, xp(operation(ptn1.getBoundInt(match), ptn2.getBoundInt(match))))
 
     /**
@@ -176,7 +176,7 @@ open class MappedExpressionBuilder(
      */
     fun numericOp(
         ptn: NumberProvider,
-        operation: (BigDecimal) -> BigDecimal
+        operation: (BigDecimal) -> BigDecimal,
     ) = transformTo(ptn, xp(operation(ptn.getBoundNumber(match))))
 
     /**
@@ -185,7 +185,7 @@ open class MappedExpressionBuilder(
     fun numericOp(
         ptn1: NumberProvider,
         ptn2: NumberProvider,
-        operation: (BigDecimal, BigDecimal) -> BigDecimal
+        operation: (BigDecimal, BigDecimal) -> BigDecimal,
     ) = combineTo(ptn1, ptn2, xp(operation(ptn1.getBoundNumber(match), ptn2.getBoundNumber(match))))
 
     /**
@@ -240,7 +240,7 @@ open class MappedExpressionBuilder(
     fun collectLikeTermsInSum(
         sub: Expression,
         commonTerm: CoefficientPattern,
-        labelForCollectedTerms: Label? = null
+        labelForCollectedTerms: Label? = null,
     ): Expression {
         val coefficients = mutableListOf<Expression>()
 

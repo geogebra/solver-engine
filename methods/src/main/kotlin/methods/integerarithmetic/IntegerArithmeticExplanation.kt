@@ -18,7 +18,8 @@ enum class IntegerArithmeticExplanation : CategorisedMetadataKey {
     EvaluateSumOfIntegers,
     SimplifyIntegersInSum,
     SimplifyIntegersInProduct,
-    SimplifyExpressionInBrackets;
+    SimplifyExpressionInBrackets,
+    ;
 
     override val category = "IntegerArithmetic"
 }

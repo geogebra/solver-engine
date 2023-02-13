@@ -33,12 +33,12 @@ enum class ApproximationRules(override val runner: Rule) : RunnerMethod {
                         explanation = metadata(
                             Explanation.RoundTerminatingDecimal,
                             move(decimal),
-                            introduce(xp(context.effectivePrecision))
-                        )
+                            introduce(xp(context.effectivePrecision)),
+                        ),
                     )
                 }
             }
-        }
+        },
     ),
 
     ExpandRecurringDecimal(
@@ -55,12 +55,12 @@ enum class ApproximationRules(override val runner: Rule) : RunnerMethod {
                         explanation = metadata(
                             Explanation.ExpandRecurringDecimal,
                             move(recurringDecimal),
-                            introduce(xp(context.effectivePrecision))
-                        )
+                            introduce(xp(context.effectivePrecision)),
+                        ),
                     )
                 }
             }
-        }
+        },
     ),
 
     RoundRecurringDecimal(
@@ -75,17 +75,17 @@ enum class ApproximationRules(override val runner: Rule) : RunnerMethod {
                     else -> ruleResult(
                         toExpr = transformTo(
                             recurringDecimal,
-                            xp(round(value.nonRepeatingValue))
+                            xp(round(value.nonRepeatingValue)),
                         ),
                         explanation = metadata(
                             Explanation.RoundRecurringDecimal,
                             move(recurringDecimal),
-                            introduce(xp(context.effectivePrecision))
-                        )
+                            introduce(xp(context.effectivePrecision)),
+                        ),
                     )
                 }
             }
-        }
+        },
     ),
 
     ApproximateDecimalProductAndDivision(
@@ -98,39 +98,39 @@ enum class ApproximationRules(override val runner: Rule) : RunnerMethod {
                 oneOf(
                     multiplier,
                     divideBy(
-                        numericCondition(divisor) { it.signum() != 0 }
-                    )
-                )
+                        numericCondition(divisor) { it.signum() != 0 },
+                    ),
+                ),
             )
 
             onPattern(product) {
                 when {
                     isBound(multiplier) -> ruleResult(
                         toExpr = product.substitute(
-                            numericOp(base, multiplier) { n1, n2 -> round(n1 * n2) }
+                            numericOp(base, multiplier) { n1, n2 -> round(n1 * n2) },
                         ),
                         explanation = metadata(
                             Explanation.ApproximateDecimalProduct,
                             move(base),
                             move(multiplier),
-                            introduce(xp(context.effectivePrecision))
-                        )
+                            introduce(xp(context.effectivePrecision)),
+                        ),
                     )
 
                     else -> ruleResult(
                         toExpr = product.substitute(
-                            numericOp(base, divisor) { n1, n2 -> round(n1) / n2 }
+                            numericOp(base, divisor) { n1, n2 -> round(n1) / n2 },
                         ),
                         explanation = metadata(
                             Explanation.ApproximateDecimalDivision,
                             move(base),
                             move(divisor),
-                            introduce(xp(context.effectivePrecision))
-                        )
+                            introduce(xp(context.effectivePrecision)),
+                        ),
                     )
                 }
             }
-        }
+        },
     ),
 
     ApproximateDecimalPower(
@@ -146,10 +146,10 @@ enum class ApproximationRules(override val runner: Rule) : RunnerMethod {
                         Explanation.ApproximateDecimalPower,
                         move(base),
                         move(exponent),
-                        introduce(xp(context.effectivePrecision))
-                    )
+                        introduce(xp(context.effectivePrecision)),
+                    ),
                 )
             }
-        }
-    )
+        },
+    ),
 }

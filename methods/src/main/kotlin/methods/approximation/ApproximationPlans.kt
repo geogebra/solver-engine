@@ -37,7 +37,7 @@ enum class ApproximationPlans(override val runner: CompositeMethod) : RunnerMeth
                 optionally(ApproximationRules.ExpandRecurringDecimal)
                 apply(ApproximationRules.RoundRecurringDecimal)
             }
-        }
+        },
     ),
     ApproximateProductAndDivisionOfDecimals(
         plan {
@@ -49,7 +49,7 @@ enum class ApproximationPlans(override val runner: CompositeMethod) : RunnerMeth
             steps {
                 whilePossible(ApproximationRules.ApproximateDecimalProductAndDivision)
             }
-        }
+        },
     ),
     ApproximateSubexpression(
         plan {
@@ -59,7 +59,7 @@ enum class ApproximationPlans(override val runner: CompositeMethod) : RunnerMeth
             steps {
                 whilePossible(approximationSteps)
             }
-        }
+        },
     ),
 
     @PublicMethod
@@ -98,8 +98,8 @@ enum class ApproximationPlans(override val runner: CompositeMethod) : RunnerMeth
                     }
                 }
             }
-        }
-    )
+        },
+    ),
 }
 
 val approximationSteps = steps {

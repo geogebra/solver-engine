@@ -9,7 +9,7 @@ import engine.patterns.equationOf
 
 class Rule(
     val pattern: Pattern,
-    val transformation: MappedExpressionBuilder.() -> TransformationResult?
+    val transformation: MappedExpressionBuilder.() -> TransformationResult?,
 ) : Runner {
 
     override fun run(ctx: Context, sub: Expression): TransformationResult? {

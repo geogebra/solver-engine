@@ -30,11 +30,11 @@ class TestBigIntegerExtensions {
     fun testPrimeFactorDecomposition() {
         assertContentEquals(
             listOf(p(2, 1), p(3, 2)),
-            i(18).primeFactorDecomposition()
+            i(18).primeFactorDecomposition(),
         )
         assertContentEquals(
             listOf(p(2, 8), p(5, 8), p(7, 1)),
-            i(700000000).primeFactorDecomposition()
+            i(700000000).primeFactorDecomposition(),
         )
         assertContentEquals(listOf(p(23, 1)), i(23).primeFactorDecomposition())
     }
@@ -43,15 +43,15 @@ class TestBigIntegerExtensions {
     fun testAsProductForRoot() {
         assertContentEquals(
             listOf(i(36), i(100)),
-            i(3600).asProductForRoot(i(2))
+            i(3600).asProductForRoot(i(2)),
         )
         assertContentEquals(
             listOf(i(8), i(10)),
-            i(80).asProductForRoot(i(3))
+            i(80).asProductForRoot(i(3)),
         )
         assertContentEquals(
             listOf(i(49), i(1000)),
-            i(49000).asProductForRoot(i(2))
+            i(49000).asProductForRoot(i(2)),
         )
         assertNull(i(700).asProductForRoot(i(2)))
         assertNull(i(100).asProductForRoot(i(3)))

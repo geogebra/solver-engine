@@ -87,7 +87,9 @@ enum class FractionArithmeticExplanation : CategorisedMetadataKey {
      * Turns any negative power of zero into a fraction 1 / 0 to the negation of that power.
      * E.g. [0 ^ -[2 / 3]] -> [(1 / 0) ^ [2 / 3]]
      */
-    TurnNegativePowerOfZeroToPowerOfFraction;
+    TurnNegativePowerOfZeroToPowerOfFraction,
+
+    ;
 
     override val category = "FractionArithmetic"
 }

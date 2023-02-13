@@ -56,7 +56,8 @@ enum class FractionRootsExplanation : CategorisedMetadataKey {
     SimplifyFractionOfRoots,
     HigherOrderRationalizingTerm,
     SimplifyNthRootOfNthPower,
-    FactorizeHigherOrderRadicand;
+    FactorizeHigherOrderRadicand,
+    ;
 
     override val category = "FractionRoots"
 }

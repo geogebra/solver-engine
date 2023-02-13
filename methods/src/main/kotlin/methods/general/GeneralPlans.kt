@@ -20,12 +20,12 @@ enum class GeneralPlans(override val runner: CompositeMethod) : RunnerMethod {
             steps {
                 whilePossible { deeply(GeneralRules.RewriteDivisionAsFraction) }
             }
-        }
+        },
     ),
 
     ExpandBinomialSquared(expandBinomialSquared),
     ExpandBinomialCubed(expandBinomialCubed),
-    ExpandTrinomialSquared(expandTrinomialSquared)
+    ExpandTrinomialSquared(expandTrinomialSquared),
 }
 
 val normalizeNegativeSigns = steps {
@@ -71,7 +71,7 @@ private val expandTrinomialSquared = plan {
     explanation = Explanation.ExpandTrinomialSquared
     pattern = powerOf(
         sumOf(AnyPattern(), AnyPattern(), AnyPattern()),
-        FixedPattern(Constants.Two)
+        FixedPattern(Constants.Two),
     )
 
     steps(ResourceData(curriculum = Curriculum.EU)) {
