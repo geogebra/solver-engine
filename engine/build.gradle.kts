@@ -4,7 +4,6 @@ plugins {
     kotlin("jvm")
     antlr
 
-    id("org.jlleitschuh.gradle.ktlint")
     id("io.gitlab.arturbosch.detekt")
     id("java-test-fixtures")
     id("com.google.devtools.ksp")

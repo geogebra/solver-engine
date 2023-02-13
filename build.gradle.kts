@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jlleitschuh.gradle.ktlint.KtlintExtension
 
 plugins {
     kotlin("jvm")
@@ -18,5 +19,10 @@ subprojects {
     val jvmTarget: String by project
     tasks.withType<KotlinCompile> {
         kotlinOptions.jvmTarget = jvmTarget
+    }
+
+    apply(plugin = "org.jlleitschuh.gradle.ktlint")
+    configure<KtlintExtension> {
+        version.set("0.48.2")
     }
 }

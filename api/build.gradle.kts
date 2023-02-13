@@ -12,7 +12,6 @@ plugins {
     id("org.springframework.boot") version "2.7.7"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
 
-    id("org.jlleitschuh.gradle.ktlint")
     id("io.gitlab.arturbosch.detekt")
 }
 
