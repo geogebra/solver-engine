@@ -389,7 +389,9 @@ private val expandBinomialSquaredUsingIdentity =
         val pattern = powerOf(sumOf(a, b), two)
 
         onPattern(pattern) {
-            val (da, db, dtwo) = distribute(a, b, two)
+            val da = distribute(a)
+            val db = distribute(b)
+            val dtwo = distribute(two)
             ruleResult(
                 toExpr = sumOf(
                     powerOf(da, dtwo),
@@ -500,7 +502,10 @@ private val applyFoilMethod =
         val prod = productOf(sum1, sum2)
 
         onPattern(prod) {
-            val (da, db, dc, dd) = distribute(a, b, c, d)
+            val da = distribute(a)
+            val db = distribute(b)
+            val dc = distribute(c)
+            val dd = distribute(d)
             val toExpr = sumOf(
                 explicitProductOf(da, dc),
                 explicitProductOf(da, dd),
