@@ -16,3 +16,35 @@ class TestListExtensions {
         assertEquals(listOf<BigInteger>().gcd(), i(0))
     }
 }
+
+class TestProduct {
+
+    private fun <T> p(vararg lists: List<T>) = product(lists.toList()).toList()
+
+    @Test
+    fun testEmptyProduct() {
+        assertEquals(listOf(emptyList()), p<Int>())
+    }
+
+    @Test
+    fun testProductOfOneList() {
+        assertEquals(emptyList(), p<Int>(emptyList()))
+        assertEquals(listOf(listOf(1)), p(listOf(1)))
+        assertEquals(listOf(listOf(1), listOf(2)), p(listOf(1, 2)))
+        assertEquals(listOf(listOf(1), listOf(2), listOf(3)), p(listOf(1, 2, 3)))
+    }
+
+    @Test
+    fun testProductOfTwoLists() {
+        assertEquals(listOf(listOf(1, 3), listOf(2, 3)), p(listOf(1, 2), listOf(3)))
+        assertEquals(emptyList(), p(listOf(1, 2, 3), emptyList()))
+        assertEquals(listOf(listOf(1, 3), listOf(1, 4), listOf(2, 3), listOf(2, 4)), p(listOf(1, 2), listOf(3, 4)))
+    }
+
+    @Test
+    fun testProductOfThreeLists() {
+        assertEquals(listOf(listOf(1, 2, 3)), p(listOf(1), listOf(2), listOf(3)))
+        assertEquals(emptyList(), p(listOf(1), listOf(3), emptyList()))
+        assertEquals(listOf(listOf(1, 2, 4), listOf(1, 3, 4)), p(listOf(1), listOf(2, 3), listOf(4)))
+    }
+}

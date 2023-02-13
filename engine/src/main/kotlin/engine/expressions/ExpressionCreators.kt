@@ -73,6 +73,11 @@ fun plusMinusOf(expr: Expression) = buildExpression(UnaryExpressionOperator.Plus
 fun fractionOf(numerator: Expression, denominator: Expression) =
     buildExpression(BinaryExpressionOperator.Fraction, listOf(numerator, denominator))
 
+fun simplifiedFractionOf(numerator: Expression, denominator: Expression) = when {
+    denominator == Constants.One -> numerator
+    else -> fractionOf(numerator, denominator)
+}
+
 fun powerOf(base: Expression, exponent: Expression) =
     buildExpression(BinaryExpressionOperator.Power, listOf(base, exponent))
 
@@ -177,19 +182,25 @@ fun equationOf(lhs: Expression, rhs: Expression) = buildExpression(EquationOpera
 
 fun lessThanOf(lhs: Expression, rhs: Expression) =
     buildExpression(InequalityOperators.LessThan, listOf(lhs, rhs))
+
 fun lessThanEqualOf(lhs: Expression, rhs: Expression) =
     buildExpression(InequalityOperators.LessThanEqual, listOf(lhs, rhs))
+
 fun greaterThanOf(lhs: Expression, rhs: Expression) =
     buildExpression(InequalityOperators.GreaterThan, listOf(lhs, rhs))
+
 fun greaterThanEqualOf(lhs: Expression, rhs: Expression) =
     buildExpression(InequalityOperators.GreaterThanEqual, listOf(lhs, rhs))
 
 fun openIntervalOf(lhs: Expression, rhs: Expression) =
     buildExpression(IntervalOperator(closedLeft = false, closedRight = false), listOf(lhs, rhs))
+
 fun openClosedIntervalOf(lhs: Expression, rhs: Expression) =
     buildExpression(IntervalOperator(closedLeft = false, closedRight = true), listOf(lhs, rhs))
+
 fun closedOpenIntervalOf(lhs: Expression, rhs: Expression) =
     buildExpression(IntervalOperator(closedLeft = true, closedRight = false), listOf(lhs, rhs))
+
 fun closedIntervalOf(lhs: Expression, rhs: Expression) =
     buildExpression(IntervalOperator(closedLeft = true, closedRight = true), listOf(lhs, rhs))
 

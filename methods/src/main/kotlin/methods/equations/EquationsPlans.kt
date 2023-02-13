@@ -5,6 +5,7 @@ import engine.expressions.Constants
 import engine.expressions.equationOf
 import engine.expressions.solutionOf
 import engine.expressions.solutionSetOf
+import engine.expressions.splitPlusMinus
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
@@ -13,6 +14,7 @@ import engine.methods.stepsproducers.FormChecker
 import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
 import engine.patterns.AnyPattern
+import engine.patterns.ConstantPattern
 import engine.patterns.FindPattern
 import engine.patterns.FixedPattern
 import engine.patterns.RecurringDecimalPattern
@@ -105,6 +107,30 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
             }
         }
     ),
+
+    CompleteTheSquareAndSimplify(
+        plan {
+            explanation = Explanation.CompleteTheSquareAndSimplify
+
+            steps {
+                apply(EquationsRules.CompleteTheSquare)
+                optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable)
+            }
+        }
+    ),
+
+    MultiplyByInverseOfLeadingCoefficientAndSimplify(
+        plan {
+            explanation = Explanation.MultiplyByInverseOfLeadingCoefficientAndSimplify
+
+            steps {
+                apply(EquationsRules.MultiplyByInverseOfLeadingCoefficient)
+                apply(PolynomialPlans.ExpandPolynomialExpressionInOneVariable)
+            }
+        }
+    ),
+
+    ExtractSolutionAndSimplifyFromEquationInPlusMinusForm(extractSolutionAndSimplifyFromEquationInPlusMinusForm),
 
     @PublicMethod
     SolveLinearEquation(
@@ -241,9 +267,100 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     ),
 
     @PublicMethod
+    SolveQuadraticEquationByCompletingTheSquare(
+        plan {
+            explanation = Explanation.SolveQuadraticEquationByCompletingTheSquare
+            pattern = equationOf(AnyPattern(), AnyPattern())
+            resultPattern = solutionOf(SolutionVariablePattern(), AnyPattern())
+
+            steps {
+
+                // Simplify the equation and move variables to the left
+                optionally(equationSimplificationSteps)
+                optionally(MoveVariablesToTheLeftAndSimplify)
+                optionally(MultiplyByInverseOfLeadingCoefficientAndSimplify)
+
+                // Complete the square
+                firstOf {
+                    option {
+                        // See if we can complete the square straight away
+                        applyTo(PolynomialPlans.FactorTrinomialToSquareAndSimplify) { it.firstChild }
+                    }
+                    option {
+                        // Else rearrange to put constants on the right and complete the square
+                        optionally(MoveConstantsToTheRightAndSimplify)
+                        apply(CompleteTheSquareAndSimplify)
+                        applyTo(PolynomialPlans.FactorTrinomialToSquareAndSimplify) { it.firstChild }
+                    }
+                }
+
+                // Solve the equation
+                firstOf {
+                    // (...)^2 = something negative
+                    option(EquationsRules.ExtractSolutionFromSquareEqualsNegative)
+
+                    // (...)^2 = 0
+                    option {
+                        apply(EquationsRules.TakeSquareRootOfBothSidesRHSIsZero)
+                        apply(MoveConstantsToTheRightAndSimplify)
+                        apply(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
+                    }
+
+                    // (...)^2 = something positive
+                    option {
+                        apply(EquationsRules.TakeSquareRootOfBothSides)
+                        optionally {
+                            applyTo(ConstantExpressionsPlans.SimplifyConstantExpression) { it.secondChild }
+                        }
+                        apply(MoveConstantsToTheRightAndSimplify)
+                        firstOf {
+                            option(ExtractSolutionAndSimplifyFromEquationInPlusMinusForm)
+                            option(EquationsRules.ExtractSolutionFromEquationInPlusMinusForm)
+                        }
+                    }
+                }
+            }
+        }
+    ),
+
+    @PublicMethod
     SolveFactorisedQuadraticEquation(solveFactorisedQuadratic)
 }
 
+private val extractSolutionAndSimplifyFromEquationInPlusMinusForm = taskSet {
+    val equation = equationOf(SolutionVariablePattern(), ConstantPattern())
+    pattern = equation
+    explanation = Explanation.ExtractSolutionAndSimplifyFromEquationInPlusMinusForm
+
+    tasks {
+        // Get all the equations with +/- expanded
+        val splitEquations = get(equation).splitPlusMinus()
+        if (splitEquations.size <= 1) {
+            return@tasks null
+        }
+
+        // Create a task for each to simplify it
+        val splitTasks = splitEquations.map {
+            task(
+                startExpr = it,
+                explanation = metadata(Explanation.SimplifyExtractedSolution),
+                stepsProducer = steps {
+                    applyTo(ConstantExpressionsPlans.SimplifyConstantExpression) { it.secondChild }
+                }
+            ) ?: return@tasks null
+        }
+
+        // Gather all solutions together in a single solution set.
+        task(
+            startExpr = solutionOf(
+                splitTasks[0].result.firstChild,
+                solutionSetOf(splitTasks.map { it.result.secondChild })
+            ),
+            explanation = metadata(Explanation.CollectSolutions)
+        )
+        allTasks()
+    }
+}
 //
 // Below is an example of using a task set to perform a list of tasks (here solving a factorised quadratic equation).
 // This will need to be revisited when doing quadratic equations.

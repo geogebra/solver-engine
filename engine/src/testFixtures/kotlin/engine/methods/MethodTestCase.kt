@@ -366,3 +366,12 @@ fun testMethod(init: MethodTestCase.() -> Unit) {
     val testCase = MethodTestCase()
     testCase.init()
 }
+
+/**
+ * Test a method with a context set up with solutionVariable equal to "x"
+ */
+fun testMethodInX(init: MethodTestCase.() -> Unit) {
+    val testCase = MethodTestCase()
+    testCase.context = Context(solutionVariable = "x")
+    testCase.init()
+}

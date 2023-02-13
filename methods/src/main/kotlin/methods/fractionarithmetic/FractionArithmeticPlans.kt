@@ -1,6 +1,6 @@
 package methods.fractionarithmetic
 
-import engine.expressions.Expression
+import engine.expressions.asRational
 import engine.expressions.base
 import engine.expressions.denominator
 import engine.expressions.exponent
@@ -9,8 +9,6 @@ import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
 import engine.operators.BinaryExpressionOperator
-import engine.operators.IntegerOperator
-import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.IntegerFractionPattern
 import engine.patterns.SignedIntegerPattern
@@ -167,8 +165,8 @@ private val evaluateFractionSum = plan {
                 }
             }
             check {
-                val f11 = it.firstChild.asFraction()
-                val f22 = it.secondChild.asFraction()
+                val f11 = it.firstChild.asRational()
+                val f22 = it.secondChild.asRational()
                 f11 != null && f22 != null && gcd(
                     f11.numerator,
                     f11.denominator,
@@ -188,31 +186,6 @@ private val evaluateFractionSum = plan {
         optionally(FractionArithmeticPlans.NormalizeSignsInFraction)
         optionally(FractionArithmeticPlans.SimplifyFraction)
     }
-}
-
-private data class NumericFraction(val numerator: BigInteger, val denominator: BigInteger) {
-    fun neg() = NumericFraction(-numerator, denominator)
-}
-
-private fun numericFraction(numerator: BigInteger?, denominator: BigInteger?) =
-    numerator?.let { n -> denominator?.let { d -> NumericFraction(n, d) } }
-
-private fun Expression.asFraction(): NumericFraction? = when (operator) {
-    UnaryExpressionOperator.Minus -> firstChild.asPositiveIntegerFraction()?.neg()
-    else -> asPositiveIntegerFraction()
-}
-
-private fun Expression.asPositiveIntegerFraction(): NumericFraction? = when (operator) {
-    BinaryExpressionOperator.Fraction -> numericFraction(
-        firstChild.asPositiveInteger(),
-        secondChild.asPositiveInteger()
-    )
-    else -> null
-}
-
-private fun Expression.asPositiveInteger(): BigInteger? = when (val op = operator) {
-    is IntegerOperator -> op.value
-    else -> null
 }
 
 private val evaluateSumOfFractionAndInteger = plan {

@@ -10,8 +10,10 @@ object Constants {
     val Two = xp(2)
     val Three = xp(3)
 
+    val OneHalf = fractionOf(One, Two)
+
     val Infinity = Expression(InfinityOperator, emptyList())
-    val NegativeInfinity = negOf(Expression(InfinityOperator, emptyList()))
+    val NegativeInfinity = negOf(Infinity)
 
     val Undefined = Expression(UndefinedOperator, emptyList())
 

@@ -7,6 +7,7 @@ import engine.expressions.implicitProductOf
 import engine.expressions.negOf
 import engine.expressions.powerOf
 import engine.expressions.productOf
+import engine.expressions.simplifiedPowerOf
 import engine.expressions.sumOf
 import engine.methods.Rule
 import engine.methods.RunnerMethod
@@ -14,15 +15,21 @@ import engine.methods.rule
 import engine.methods.ruleResult
 import engine.operators.UnaryExpressionOperator
 import engine.patterns.ArbitraryVariablePattern
-import engine.patterns.MonomialPattern
+import engine.patterns.ConditionPattern
+import engine.patterns.RationalPattern
 import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.commutativeSumOf
+import engine.patterns.integerCondition
+import engine.patterns.monomialPattern
 import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
+import engine.patterns.rationalMonomialPattern
 import engine.patterns.sumContaining
 import engine.patterns.withOptionalConstantCoefficient
 import engine.steps.metadata.metadata
+import engine.utility.times
 import java.math.BigInteger
 
 enum class PolynomialRules(override val runner: Rule) : RunnerMethod {
@@ -53,17 +60,19 @@ enum class PolynomialRules(override val runner: Rule) : RunnerMethod {
     NormalizeMonomial(normalizeMonomial),
     DistributeMonomialToIntegerPower(distributeMonomialToIntegerPower),
     DistributeProductToIntegerPower(distributeProductToIntegerPower),
-    NormalizePolynomial(normalizePolynomial)
+    NormalizePolynomial(normalizePolynomial),
+
+    FactorTrinomialToSquare(factorTrinomialToSquare)
 }
 
 private val collectUnitaryMonomialsInProduct = rule {
     val commonVariable = ArbitraryVariablePattern()
-    val product = productContaining(MonomialPattern(commonVariable), MonomialPattern(commonVariable))
+    val product = productContaining(monomialPattern(commonVariable), monomialPattern(commonVariable))
     val negProduct = optionalNegOf(product)
 
     onPattern(negProduct) {
         val factors = get(product).flattenedProductChildren()
-        val monomialFactorPattern = MonomialPattern(commonVariable)
+        val monomialFactorPattern = monomialPattern(commonVariable)
         val monomialFactors = mutableListOf<Expression>()
         val constantFactors = mutableListOf<Expression>()
         val otherFactors = mutableListOf<Expression>()
@@ -119,7 +128,7 @@ private val collectUnitaryMonomialsInProduct = rule {
 }
 
 private val normalizeMonomial = rule {
-    val monomial = MonomialPattern(ArbitraryVariablePattern(), positiveOnly = true)
+    val monomial = monomialPattern(ArbitraryVariablePattern(), positiveOnly = true)
 
     onPattern(monomial) {
         val before = get(monomial.key)
@@ -144,7 +153,7 @@ private val normalizeMonomial = rule {
 }
 
 private val distributeMonomialToIntegerPower = rule {
-    val monomial = MonomialPattern(ArbitraryVariablePattern())
+    val monomial = monomialPattern(ArbitraryVariablePattern())
     val exponent = UnsignedIntegerPattern()
     val power = powerOf(monomial, exponent)
 
@@ -165,7 +174,7 @@ private val distributeMonomialToIntegerPower = rule {
 }
 
 private val distributeProductToIntegerPower = rule {
-    val testMonomialFactor = MonomialPattern(ArbitraryVariablePattern())
+    val testMonomialFactor = monomialPattern(ArbitraryVariablePattern())
     val product = productContaining(testMonomialFactor)
     val exponent = UnsignedIntegerPattern()
     val power = powerOf(product, exponent)
@@ -187,11 +196,11 @@ private val distributeProductToIntegerPower = rule {
 
 private val normalizePolynomial = rule {
     val commonVariable = ArbitraryVariablePattern()
-    val sum = sumContaining(MonomialPattern(commonVariable))
+    val sum = sumContaining(monomialPattern(commonVariable))
 
     onPattern(sum) {
         val terms = get(sum).children()
-        val monomialPattern = MonomialPattern(commonVariable)
+        val monomialPattern = monomialPattern(commonVariable)
 
         // Find the degree of each term so we can decide whether the sum is normalized already.
         val termsWithDegree = terms.map { term ->
@@ -214,6 +223,43 @@ private val normalizePolynomial = rule {
                     explanation = metadata(Explanation.NormalizePolynomial)
                 )
             }
+        }
+    }
+}
+
+private val factorTrinomialToSquare = rule {
+    val variable = ArbitraryVariablePattern()
+
+    val squaredOrder = UnsignedIntegerPattern()
+    val squaredTerm = powerOf(variable, squaredOrder)
+    val baseTerm = rationalMonomialPattern(variable)
+    val constantTerm = RationalPattern() // c
+
+    val trinomial = ConditionPattern(
+        commutativeSumOf(squaredTerm, baseTerm, constantTerm),
+        integerCondition(squaredOrder, baseTerm.exponent) { a, b -> a == BigInteger.TWO * b }
+    )
+
+    onPattern(trinomial) {
+        val baseCoefficient = getCoefficientValue(baseTerm.ptn)!!
+        val constant = getValue(constantTerm)!!
+
+        @Suppress("MagicNumber")
+        val delta = baseCoefficient.squared() - 4 * constant
+
+        if (delta.isZero()) {
+            ruleResult(
+                toExpr = powerOf(
+                    sumOf(
+                        simplifiedPowerOf(factor(variable), move(baseTerm.exponent)),
+                        productOf(Constants.OneHalf, get(baseTerm::coefficient)!!)
+                    ),
+                    introduce(Constants.Two)
+                ),
+                explanation = metadata(Explanation.FactorTrinomialToSquare)
+            )
+        } else {
+            null
         }
     }
 }

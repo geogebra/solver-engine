@@ -32,6 +32,14 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     DivideByCoefficientOfVariable,
 
     /**
+     * Multiply both sides of an equation by the inverse of the leading coefficient
+     * on the LHS.  When simplified this will lead to a monic polynomial on the left.
+     *
+     * E.g. 2[x ^ 2] + 1 = 7 --> (2[x ^ 2] + 1)*[1 / 2] = 7 * [1 / 2]
+     */
+    MultiplyByInverseOfLeadingCoefficient,
+
+    /**
      * Flip the equation.
      *
      * E.g. 7 = 3x -> 3x = 7
@@ -83,11 +91,24 @@ enum class EquationsExplanation : CategorisedMetadataKey {
 
     /**
      * Extract the solution set from an equation of the form
-     * x^2 = +/-constant
+     * x = +/-constant
      *
      * E.g. x = +/-3 -> x \in { 3, -3 }
      */
     ExtractSolutionFromEquationInPlusMinusForm,
+
+    /**
+     * Extract the solution set from an equation of the form x = <constant expression containing +/->,
+     * simplifying each solution (the simplifications occur in tasks)
+     *
+     * E.g. x = 1 +/- 5 -> x \in { -4, 6 }
+     */
+    ExtractSolutionAndSimplifyFromEquationInPlusMinusForm,
+
+    /**
+     * Simplify an extracted solution
+     */
+    SimplifyExtractedSolution,
 
     /**
      * Multiply both sides of the equation by the least common denominator
@@ -140,6 +161,28 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     MultiplyByInverseCoefficientOfVariableAndSimplify,
 
     /**
+     * Complete a binomial so that the LHS can be factorised to a square
+     *
+     * E.g. [x ^ 2] + 6x = 3 -> [x ^ 2] + 6x + [([6 / 2] ^ 2] = 3 + [([6 / 2] ^ 2]
+     */
+    CompleteTheSquare,
+
+    /**
+     * Complete the square on the LHS then simplify the equation
+     *
+     * E.g. [x ^ 2] + 6x = 3 -> [x ^ 2] + 6x + 9 = 3 + 9
+     */
+    CompleteTheSquareAndSimplify,
+
+    /**
+     * Multiply both sides of an equation by the inverse of the leading coefficient
+     * on the LHS, the resulting polynomial on the left is monic.
+     *
+     * E.g. 2[x ^ 2] + 1 = 7 --> [x ^ 2] + [1 / 2] = [7 / 2]
+     */
+    MultiplyByInverseOfLeadingCoefficientAndSimplify,
+
+    /**
      * Divide both sides of the equation by the coefficient of the variable
      * and simplify.
      *
@@ -172,7 +215,25 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      *      -> x^2 = 1
      *      -> x = +/-1
      */
-    SolveQuadraticEquationUsingRootsMethod;
+    SolveQuadraticEquationUsingRootsMethod,
+
+    /**
+     * Solve a quadratic equation by completing the square
+     *
+     * E.g.  [x ^ 2] + 4x = 10
+     *       --> [x ^ 2] + 4x + 4 = 10 + 4
+     *       --> [(x + 2) ^ 2] = 14
+     *       ...
+     */
+    SolveQuadraticEquationByCompletingTheSquare,
+
+    /**
+     * Collect solutions from several equations (e.g. when solving a quadratic
+     * equation by factorisation, collect the solutions after solving two linear
+     * equations).
+     * This will be the last task in a task set.
+     */
+    CollectSolutions;
 
     override val category = "Equations"
 }

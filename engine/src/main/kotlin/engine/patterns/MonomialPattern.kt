@@ -6,12 +6,15 @@ import java.math.BigInteger
  * Monomial pattern, i.e. [x ^ n] for n non-negative integer or x where x is the [base],
  * possibly with a constant coefficient.
  */
-class MonomialPattern(val base: Pattern, positiveOnly: Boolean = false) : KeyedPattern {
+class MonomialPattern<T : CoefficientPattern> internal constructor(
+    val base: Pattern,
+    withCoefficient: (Pattern) -> T
+) : KeyedPattern {
     private val exponentPattern = UnsignedIntegerPattern()
 
     val powerPattern = oneOf(base, powerOf(base, exponentPattern))
 
-    private val ptn = withOptionalConstantCoefficient(powerPattern, positiveOnly)
+    val ptn = withCoefficient(powerPattern)
 
     val exponent: IntegerProvider = IntegerProviderWithDefault(exponentPattern, BigInteger.ONE)
 
@@ -21,3 +24,8 @@ class MonomialPattern(val base: Pattern, positiveOnly: Boolean = false) : KeyedP
 
     fun coefficient(match: Match) = ptn.coefficient(match)
 }
+
+fun monomialPattern(base: Pattern, positiveOnly: Boolean = false) =
+    MonomialPattern(base) { withOptionalConstantCoefficient(it, positiveOnly) }
+
+fun rationalMonomialPattern(base: Pattern) = MonomialPattern(base) { withOptionalRationalCoefficient(it) }

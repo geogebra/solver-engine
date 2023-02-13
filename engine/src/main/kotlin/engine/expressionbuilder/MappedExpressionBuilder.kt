@@ -9,6 +9,7 @@ import engine.expressions.Factor
 import engine.expressions.Label
 import engine.expressions.Move
 import engine.expressions.New
+import engine.expressions.asRational
 import engine.expressions.divideBy
 import engine.expressions.negOf
 import engine.expressions.productOf
@@ -29,6 +30,8 @@ import engine.patterns.NumberProvider
 import engine.patterns.OptionalNegPattern
 import engine.patterns.OptionalWrappingPattern
 import engine.patterns.Pattern
+import engine.patterns.RationalCoefficientPattern
+import engine.patterns.RationalPattern
 import engine.patterns.RecurringDecimalPattern
 import engine.patterns.SolvablePattern
 import engine.steps.metadata.MetadataMaker
@@ -110,6 +113,10 @@ open class MappedExpressionBuilder(
     fun getValue(pattern: RecurringDecimalPattern): RecurringDecimal {
         return pattern.getBoundRecurringDecimal(match)
     }
+
+    fun getValue(pattern: RationalPattern) = get(pattern).asRational()
+
+    fun getCoefficientValue(pattern: RationalCoefficientPattern) = get(pattern::coefficient)!!.asRational()
 
     /**
      * Finds a match for the given pattern in the given subexpression in the context of the current match.

@@ -117,7 +117,23 @@ enum class PolynomialsExplanation : CategorisedMetadataKey {
      * ApplyFoilMethod,
      * etc.
      */
-    ApplyExpandRuleAndSimplify;
+    ApplyExpandRuleAndSimplify,
+
+    /**
+     * Factor a trinomial of the form x^2 + ax + b to (x + a/2)^2 if possible
+     * (i.e. if (a/2)^2 == b).  The constant in the bracket is not simplified
+     *
+     * E.g. x^2 + 6x + 9 --> (x + 6/2)^2
+     */
+    FactorTrinomialToSquare,
+
+    /**
+     * Factor a trinomial of the form x^2 + ax + b to (x + k)^2 if possible
+     * (i.e. if (a/2)^2 == b).  The constant in the bracket is simplified
+     *
+     * E.g. x^2 + 6x + 9 --> (x + 3)^2
+     */
+    FactorTrinomialToSquareAndSimplify;
 
     override val category = "Polynomials"
 }

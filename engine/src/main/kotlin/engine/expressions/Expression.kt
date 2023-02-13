@@ -1,6 +1,7 @@
 package engine.expressions
 
 import engine.operators.BinaryExpressionOperator
+import engine.operators.IntegerOperator
 import engine.operators.LatexRenderable
 import engine.operators.NaryOperator
 import engine.operators.Operator
@@ -10,6 +11,9 @@ import engine.operators.UnaryExpressionOperator
 import engine.operators.VariableOperator
 import engine.patterns.ExpressionProvider
 import engine.patterns.Match
+import engine.utility.Rational
+import engine.utility.product
+import java.math.BigInteger
 
 /**
  * Decorators affect the visual appearance (and hence sometimes the transformations that can be applied to an expression
@@ -265,15 +269,20 @@ class Expression internal constructor(
         else -> this
     }
 
-    internal fun replaceNthChild(childIndex: Int, newChild: Expression) = Expression(
-        operator,
-        children().mapIndexed { i, op ->
-            when {
-                i != childIndex -> op
-                newChild.hasBracket() || operator.nthChildAllowed(i, newChild.operator) -> newChild
-                else -> newChild.decorate(op.outerBracket() ?: Decorator.RoundBracket)
+    internal fun replaceNthChild(childIndex: Int, newChild: Expression) =
+        replaceChildren(
+            children().mapIndexed { i, op ->
+                when {
+                    i != childIndex -> op
+                    newChild.hasBracket() || operator.nthChildAllowed(i, newChild.operator) -> newChild
+                    else -> newChild.decorate(op.outerBracket() ?: Decorator.RoundBracket)
+                }
             }
-        },
+        )
+
+    internal fun replaceChildren(newChildren: List<Expression>) = Expression(
+        operator,
+        newChildren,
         decorators,
         Build,
         label
@@ -311,6 +320,18 @@ class Expression internal constructor(
     }
 }
 
+fun Expression.splitPlusMinus(): List<Expression> {
+    if (operator == UnaryExpressionOperator.PlusMinus) {
+        val splitChild = firstChild.splitPlusMinus()
+        return splitChild.map { simplifiedNegOf(it) } + splitChild
+    }
+    if (childCount == 0) {
+        return listOf(this)
+    }
+    val splitChildren = children().map { it.splitPlusMinus() }
+    return product(splitChildren).map { replaceChildren(it) }.toList()
+}
+
 fun Expression.numerator(): Expression {
     require(operator == BinaryExpressionOperator.Fraction) { "Fraction expected, got: $operator" }
     return firstChild
@@ -329,4 +350,22 @@ fun Expression.base(): Expression {
 fun Expression.exponent(): Expression {
     require(operator == BinaryExpressionOperator.Power) { "Power expected, got: $operator" }
     return secondChild
+}
+
+fun Expression.asRational(): Rational? = when (operator) {
+    UnaryExpressionOperator.Minus -> firstChild.asPositiveRational()?.let { -it }
+    else -> asPositiveRational()
+}
+
+fun Expression.asPositiveRational(): Rational? = when (operator) {
+    BinaryExpressionOperator.Fraction -> firstChild.asPositiveInteger()?.let { num ->
+        secondChild.asPositiveInteger()?.let { den -> Rational(num, den) }
+    }
+    is IntegerOperator -> Rational(operator.value)
+    else -> null
+}
+
+fun Expression.asPositiveInteger(): BigInteger? = when (val op = operator) {
+    is IntegerOperator -> op.value
+    else -> null
 }

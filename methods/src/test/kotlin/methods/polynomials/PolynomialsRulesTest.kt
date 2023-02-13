@@ -72,4 +72,20 @@ class PolynomialsRulesTest {
         testRule("[t^10] + 2[t^3] + sqrt[3] + 1", NormalizePolynomial, null)
         testRule("1 + [t^10] + 2[t^3] + sqrt[3]", NormalizePolynomial, "[t^10] + 2[t^3] + 1 + sqrt[3]")
     }
+
+    @Test
+    fun testFactorTrinomialToSquare() {
+        testRule("[x^2] + 2x + 1", PolynomialRules.FactorTrinomialToSquare, "[(x + [1/2]*2) ^ 2]")
+        testRule("[x^2] - 4x + 4", PolynomialRules.FactorTrinomialToSquare, "[(x + [1/2]*(-4)) ^ 2]")
+        testRule(
+            "[x^2] + [1/2]x + [1 / 16]",
+            PolynomialRules.FactorTrinomialToSquare,
+            "[(x + [1 / 2] * [1 / 2]) ^ 2]"
+        )
+        testRule(
+            "[x ^ 6] + 2[x^3] + 1",
+            PolynomialRules.FactorTrinomialToSquare,
+            "[([x^3] + [1/2]*2) ^ 2]"
+        )
+    }
 }

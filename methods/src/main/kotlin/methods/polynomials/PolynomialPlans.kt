@@ -34,6 +34,17 @@ enum class PolynomialPlans(override val runner: CompositeMethod) : RunnerMethod 
     SimplifyPowerOfUnitaryMonomial(simplifyPowerOfUnitaryMonomial),
     DistributeProductToIntegerPowerAndSimplify(distributeProductToIntegerPowerAndSimplify),
 
+    FactorTrinomialToSquareAndSimplify(
+        plan {
+            explanation = Explanation.FactorTrinomialToSquareAndSimplify
+
+            steps {
+                apply(PolynomialRules.FactorTrinomialToSquare)
+                optionally(SimplifyAlgebraicExpressionInOneVariable)
+            }
+        }
+    ),
+
     /**
      * Simplify an algebraic expression with one variable.
      */
