@@ -4,3 +4,9 @@ spring:
       # It seems that there is a timeout which is set by default.  In development timeouts are a problem when a debug
       # build is paused because of breakpoints.
       request-timeout: -1
+  web:
+    resources:
+      # In development, we want changes to static resources to be reflected straight away, without having to rebuild.
+      static-locations: file:api/src/main/resources/static
+      cache:
+        period: 0
