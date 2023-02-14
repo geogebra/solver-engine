@@ -11,12 +11,12 @@ import engine.expressions.numerator
 import engine.expressions.plusMinusOf
 import engine.expressions.powerOf
 import engine.expressions.productOf
+import engine.expressions.rootOf
 import engine.expressions.simplifiedFractionOf
 import engine.expressions.simplifiedNegOf
 import engine.expressions.solutionOf
 import engine.expressions.solutionSetOf
 import engine.expressions.splitPlusMinus
-import engine.expressions.squareRootOf
 import engine.expressions.sumOf
 import engine.expressions.xp
 import engine.methods.Rule
@@ -28,11 +28,9 @@ import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.ConstantInSolutionVariablePattern
-import engine.patterns.ConstantPattern
 import engine.patterns.FixedPattern
 import engine.patterns.SolutionVariablePattern
 import engine.patterns.UnsignedIntegerPattern
-import engine.patterns.commutativeSumOf
 import engine.patterns.condition
 import engine.patterns.inSolutionVariable
 import engine.patterns.integerCondition
@@ -44,6 +42,8 @@ import engine.patterns.rationalMonomialPattern
 import engine.patterns.sumContaining
 import engine.patterns.sumOf
 import engine.steps.metadata.metadata
+import engine.utility.isEven
+import engine.utility.isOdd
 import java.math.BigInteger
 
 enum class EquationsRules(override val runner: Rule) : RunnerMethod {
@@ -200,34 +200,46 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
         },
     ),
 
-    TakeSquareRootOfBothSides(
+    TakeRootOfBothSides(
         rule {
-            val termInSquare = oneOf(
-                SolutionVariablePattern(),
-                commutativeSumOf(SolutionVariablePattern(), ConstantPattern()),
-            )
-            val lhs = powerOf(termInSquare, FixedPattern(Constants.Two))
-            val rhs = condition(ConstantInSolutionVariablePattern()) { it.signOf() == Sign.POSITIVE }
+            val variableTerm = condition(AnyPattern()) { !it.isConstantIn(solutionVariable) }
+            val exponent = UnsignedIntegerPattern()
+            val lhs = powerOf(variableTerm, integerCondition(exponent) { it >= BigInteger.TWO })
+            val rhs = ConstantInSolutionVariablePattern()
 
             onEquation(lhs, rhs) {
+                val signOfRHS = get(rhs).signOf()
+                val exponentValue = getValue(exponent)
+                val newRHS = when {
+                    signOfRHS == Sign.POSITIVE && exponentValue.isEven() ->
+                        plusMinusOf(rootOf(move(rhs), move(exponent)))
+                    exponentValue.isOdd() ->
+                        rootOf(move(rhs), move(exponent))
+                    // This case is actually handled in another rule... but it could be here?
+                    signOfRHS == Sign.ZERO ->
+                        move(rhs)
+                    // In other cases (e.g. the RHS is negative and the power is even, the rule cannot apply
+                    else -> return@onEquation null
+                }
                 ruleResult(
-                    toExpr = equationOf(get(termInSquare), plusMinusOf(squareRootOf(move(rhs)))),
-                    explanation = metadata(Explanation.TakeSquareRootOfBothSides),
+                    toExpr = equationOf(move(variableTerm), newRHS),
+                    explanation = metadata(Explanation.TakeRootOfBothSides),
                 )
             }
         },
     ),
 
-    TakeSquareRootOfBothSidesRHSIsZero(
+    TakeRootOfBothSidesRHSIsZero(
         rule {
             val variableTerm = condition(AnyPattern()) { !it.isConstantIn(solutionVariable) }
-            val lhs = powerOf(variableTerm, FixedPattern(Constants.Two))
+            val exponent = UnsignedIntegerPattern()
+            val lhs = powerOf(variableTerm, integerCondition(exponent) { it >= BigInteger.TWO })
             val rhs = FixedPattern(Constants.Zero)
 
             onEquation(lhs, rhs) {
                 ruleResult(
                     toExpr = equationOf(move(variableTerm), move(rhs)),
-                    explanation = metadata(Explanation.TakeSquareRootOfBothSidesRHSIsZero),
+                    explanation = metadata(Explanation.TakeRootOfBothSidesRHSIsZero),
                 )
             }
         },
@@ -264,16 +276,17 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
         },
     ),
 
-    ExtractSolutionFromSquareEqualsNegative(
+    ExtractSolutionFromEvenPowerEqualsNegative(
         rule {
             val variableTerm = condition(AnyPattern()) { !it.isConstantIn(solutionVariable) }
-            val lhs = powerOf(variableTerm, FixedPattern(Constants.Two))
+            val exponent = UnsignedIntegerPattern()
+            val lhs = powerOf(variableTerm, integerCondition(exponent) { it.isEven() })
             val rhs = condition(ConstantInSolutionVariablePattern()) { it.signOf() == Sign.NEGATIVE }
 
             onEquation(lhs, rhs) {
                 ruleResult(
                     toExpr = solutionOf(xp(context.solutionVariable!!), Constants.EmptySet),
-                    explanation = metadata(Explanation.ExtractSolutionFromSquareEqualsNegative),
+                    explanation = metadata(Explanation.ExtractSolutionFromEvenPowerEqualsNegative),
                 )
             }
         },

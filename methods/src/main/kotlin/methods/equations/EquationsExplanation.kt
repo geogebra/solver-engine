@@ -48,16 +48,18 @@ enum class EquationsExplanation : CategorisedMetadataKey {
 
     /**
      * Take the square root of both sides of an equation of the form
-     * x^2 = non-zero constant.
+     * x^n = non-zero constant.
      *
      * E.g. x^2 = 9 -> x = +/-sqrt[9]
+     *      x^3 = 5 -> x = root[5, 3]
+     *      x^5 = -2 -> x = root[-2, 5]
      */
-    TakeSquareRootOfBothSides,
+    TakeRootOfBothSides,
 
     /**
-     * Transform the equation x^2 = 0 into x = 0.
+     * Transform the equation x^n = 0 into x = 0 (with n > 0).
      */
-    TakeSquareRootOfBothSidesRHSIsZero,
+    TakeRootOfBothSidesRHSIsZero,
 
     /**
      * Extract the solution of an equation from an identity.
@@ -75,11 +77,12 @@ enum class EquationsExplanation : CategorisedMetadataKey {
 
     /**
      * Extract the solution from an equation of the form
-     * x^2 = negative constant.
+     * x^n = negative constant, when n is even.
      *
      * E.g. x^2 = -9 -> x \in \emptyset
+     *      x^6 = -1 -> x \in \emptyset
      */
-    ExtractSolutionFromSquareEqualsNegative,
+    ExtractSolutionFromEvenPowerEqualsNegative,
 
     /**
      * Extract the solution of an equation from an equation which is in
@@ -205,17 +208,17 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     SolveLinearEquation,
 
     /**
-     * Solve a quadratic equation without a linear term by moving the
-     * quadratic term to the left hand side, the constants to the right
+     * Solve an equation with a single monomial and  without a linear term by
+     * moving the monomial to the left hand side, the constants to the right
      * hand side and taking the square root.
      *
-     * E.g. 3x^2 + 2 = x^2 + 4
-     *      -> 2x^2 + 2 = 4
-     *      -> 2x^2 = 2
-     *      -> x^2 = 1
+     * E.g. 3x^4 + 2 = x^4 + 4
+     *      -> 2x^4 + 2 = 4
+     *      -> 2x^4 = 2
+     *      -> x^4 = 1
      *      -> x = +/-1
      */
-    SolveQuadraticEquationUsingRootsMethod,
+    SolveEquationUsingRootsMethod,
 
     /**
      * Solve a quadratic equation by completing the square

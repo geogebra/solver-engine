@@ -98,6 +98,7 @@ enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : Runn
                         option { deeply(IntegerRootsRules.TurnPowerOfRootToRootOfPower) }
                         option { deeply(FractionRootsPlans.SimplifyFractionOfRoots) }
                         option { deeply(FractionRootsRules.DistributeRadicalOverFraction) }
+                        option { deeply(GeneralRules.RewriteOddRootOfNegative) }
                     }
                 }
             }

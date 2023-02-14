@@ -143,7 +143,7 @@ class CompletingTheSquareTest {
                 fromExpr = "[(x - 3) ^ 2] = 14"
                 toExpr = "x - 3 = +/-sqrt[14]"
                 explanation {
-                    key = EquationsExplanation.TakeSquareRootOfBothSides
+                    key = EquationsExplanation.TakeRootOfBothSides
                 }
             }
 
@@ -237,7 +237,7 @@ class CompletingTheSquareTest {
                 fromExpr = "[(x + [5 / 4]) ^ 2] = [81 / 16]"
                 toExpr = "x + [5 / 4] = +/-sqrt[[81 / 16]]"
                 explanation {
-                    key = EquationsExplanation.TakeSquareRootOfBothSides
+                    key = EquationsExplanation.TakeRootOfBothSides
                 }
             }
 

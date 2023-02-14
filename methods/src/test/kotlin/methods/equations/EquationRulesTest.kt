@@ -38,4 +38,12 @@ class EquationRulesTest {
             "[x^2] + [1/2]x + [([[1/2]/2])^2] = 10 + [([[1/2]/2])^2]",
         )
     }
+
+    fun testTakeRootOfBothSides() {
+        testRuleInX("[x ^ 2] = 4", EquationsRules.TakeRootOfBothSides, "x = +/-sqrt[4]")
+        testRuleInX("[x ^ 3] = 2", EquationsRules.TakeRootOfBothSides, "x = root[2, 3]")
+        testRuleInX("[x ^ 5] = -8", EquationsRules.TakeRootOfBothSides, "x = root[-8, 5]")
+        testRuleInX("[x ^ 4] = 0", EquationsRules.TakeRootOfBothSides, "x = 0")
+        testRuleInX("[x ^ 2] = -1", EquationsRules.TakeRootOfBothSides, null)
+    }
 }

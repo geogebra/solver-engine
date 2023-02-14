@@ -50,6 +50,7 @@ import engine.patterns.stickyOptionalNegOf
 import engine.patterns.sumContaining
 import engine.patterns.sumOf
 import engine.steps.metadata.metadata
+import engine.utility.isOdd
 import java.math.BigDecimal
 import java.math.BigInteger
 
@@ -99,6 +100,7 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     RewriteProductOfPowersWithNegatedExponent(rewriteProductOfPowersWithNegatedExponent),
     RewriteProductOfPowersWithInverseFractionBase(rewriteProductOfPowersWithInverseFractionBase),
     RewriteProductOfPowersWithInverseBase(rewriteProductOfPowersWithInverseBase),
+    RewriteOddRootOfNegative(rewriteOddRootOfNegative),
     RewriteIntegerOrderRootAsPower(rewriteIntegerOrderRootAsPower),
     RewritePowerUnderRoot(rewritePowerUnderRoot),
     CancelRootIndexAndExponent(cancelRootIndexAndExponent),
@@ -981,6 +983,18 @@ private val rewriteProductOfPowersWithInverseBase =
             )
         }
     }
+
+private val rewriteOddRootOfNegative = rule {
+    val radicand = AnyPattern()
+    val order = integerCondition(UnsignedIntegerPattern()) { it.isOdd() }
+
+    onPattern(rootOf(negOf(radicand), order)) {
+        ruleResult(
+            toExpr = negOf(rootOf(move(radicand), get(order))),
+            explanation = metadata(Explanation.RewriteOddRootOfNegative),
+        )
+    }
+}
 
 private val rewriteIntegerOrderRootAsPower =
     rule {

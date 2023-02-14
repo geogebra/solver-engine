@@ -11,14 +11,14 @@ class QuadraticEquationsWithRootsMethodTest {
     @Test
     fun `test square equals negative quadratic equation`() = testMethod {
         context = Context(solutionVariable = "x")
-        method = EquationsPlans.SolveQuadraticEquationUsingRootsMethod
+        method = EquationsPlans.SolveEquationUsingRootsMethod
         inputExpr = "2 [x ^ 2] - 3 = 3 [x ^ 2] + 4"
 
         check {
             fromExpr = "2 [x ^ 2] - 3 = 3 [x ^ 2] + 4"
             toExpr = "Solution[x, {}]"
             explanation {
-                key = EquationsExplanation.SolveQuadraticEquationUsingRootsMethod
+                key = EquationsExplanation.SolveEquationUsingRootsMethod
             }
 
             step {
@@ -49,7 +49,7 @@ class QuadraticEquationsWithRootsMethodTest {
                 fromExpr = "[x ^ 2] = -7"
                 toExpr = "Solution[x, {}]"
                 explanation {
-                    key = EquationsExplanation.ExtractSolutionFromSquareEqualsNegative
+                    key = EquationsExplanation.ExtractSolutionFromEvenPowerEqualsNegative
                 }
             }
         }
@@ -58,14 +58,14 @@ class QuadraticEquationsWithRootsMethodTest {
     @Test
     fun `test square equals zero quadratic equation`() = testMethod {
         context = Context(solutionVariable = "x")
-        method = EquationsPlans.SolveQuadraticEquationUsingRootsMethod
+        method = EquationsPlans.SolveEquationUsingRootsMethod
         inputExpr = "[5 / 2] [x ^ 2] + 5 = [x ^ 2] + 5"
 
         check {
             fromExpr = "[5 / 2] [x ^ 2] + 5 = [x ^ 2] + 5"
             toExpr = "Solution[x, {0}]"
             explanation {
-                key = EquationsExplanation.SolveQuadraticEquationUsingRootsMethod
+                key = EquationsExplanation.SolveEquationUsingRootsMethod
             }
 
             step {
@@ -96,7 +96,7 @@ class QuadraticEquationsWithRootsMethodTest {
                 fromExpr = "[x ^ 2] = 0"
                 toExpr = "x = 0"
                 explanation {
-                    key = EquationsExplanation.TakeSquareRootOfBothSidesRHSIsZero
+                    key = EquationsExplanation.TakeRootOfBothSidesRHSIsZero
                 }
             }
 
@@ -113,14 +113,14 @@ class QuadraticEquationsWithRootsMethodTest {
     @Test
     fun `test square equals positive number quadratic equation`() = testMethod {
         context = Context(solutionVariable = "x")
-        method = EquationsPlans.SolveQuadraticEquationUsingRootsMethod
+        method = EquationsPlans.SolveEquationUsingRootsMethod
         inputExpr = "4 [x ^ 2] + 5 = 2 [x ^ 2] + 8"
 
         check {
             fromExpr = "4 [x ^ 2] + 5 = 2 [x ^ 2] + 8"
             toExpr = "Solution[x, {-[sqrt[6] / 2], [sqrt[6] / 2]}]"
             explanation {
-                key = EquationsExplanation.SolveQuadraticEquationUsingRootsMethod
+                key = EquationsExplanation.SolveEquationUsingRootsMethod
             }
 
             step {
@@ -151,7 +151,7 @@ class QuadraticEquationsWithRootsMethodTest {
                 fromExpr = "[x ^ 2] = [3 / 2]"
                 toExpr = "x = +/-sqrt[[3 / 2]]"
                 explanation {
-                    key = EquationsExplanation.TakeSquareRootOfBothSides
+                    key = EquationsExplanation.TakeRootOfBothSides
                 }
             }
 
@@ -176,14 +176,14 @@ class QuadraticEquationsWithRootsMethodTest {
     @Test
     fun `test quadratic equation containing linear terms that can be eliminated`() = testMethod {
         context = Context(solutionVariable = "y")
-        method = EquationsPlans.SolveQuadraticEquationUsingRootsMethod
+        method = EquationsPlans.SolveEquationUsingRootsMethod
         inputExpr = "2[y^2] + 2y - 3 = y + y + 4"
 
         check {
             fromExpr = "2 [y ^ 2] + 2 y - 3 = y + y + 4"
             toExpr = "Solution[y, {-[sqrt[14] / 2], [sqrt[14] / 2]}]"
             explanation {
-                key = EquationsExplanation.SolveQuadraticEquationUsingRootsMethod
+                key = EquationsExplanation.SolveEquationUsingRootsMethod
             }
 
             step {
@@ -222,7 +222,7 @@ class QuadraticEquationsWithRootsMethodTest {
                 fromExpr = "[y ^ 2] = [7 / 2]"
                 toExpr = "y = +/-sqrt[[7 / 2]]"
                 explanation {
-                    key = EquationsExplanation.TakeSquareRootOfBothSides
+                    key = EquationsExplanation.TakeRootOfBothSides
                 }
             }
 
@@ -247,7 +247,7 @@ class QuadraticEquationsWithRootsMethodTest {
     @Test
     fun `test quadratic equation containing linear terms that cannot be eliminated fails`() = testMethod {
         context = Context(solutionVariable = "y")
-        method = EquationsPlans.SolveQuadraticEquationUsingRootsMethod
+        method = EquationsPlans.SolveEquationUsingRootsMethod
         inputExpr = "2[y^2] + 2y - 3 = y + 4"
 
         check {

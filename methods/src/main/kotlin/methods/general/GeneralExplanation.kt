@@ -199,6 +199,13 @@ enum class GeneralExplanation : CategorisedMetadataKey {
     RewriteProductOfPowersWithInverseFractionBase,
 
     /**
+     * Move sign out of odd root of negative
+     *
+     * E.g. root[-6, 3] -> -root[6, 3]
+     */
+    RewriteOddRootOfNegative,
+
+    /**
      * Rewrite an integer order root as a power.
      *
      * E.g. root[x + 2, 3] -> [(x + 2) ^ [1/3]]

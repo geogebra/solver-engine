@@ -535,6 +535,13 @@ class GeneralRulesTest {
     }
 
     @Test
+    fun testRewriteOddRootOfNegative() {
+        testRule("root[-8, 3]", GeneralRules.RewriteOddRootOfNegative, "-root[8, 3]")
+        testRule("root[8, 3]", GeneralRules.RewriteOddRootOfNegative, null)
+        testRule("root[-8, 4]", GeneralRules.RewriteOddRootOfNegative, null)
+    }
+
+    @Test
     fun testRewriteIntegerOrderRootAsPower() {
         testRule("root[5, 3]", GeneralRules.RewriteIntegerOrderRootAsPower, "[5 ^ [1/3]]")
         testRule("sqrt[x + 2]", GeneralRules.RewriteIntegerOrderRootAsPower, "[(x + 2) ^ [1/2]]")

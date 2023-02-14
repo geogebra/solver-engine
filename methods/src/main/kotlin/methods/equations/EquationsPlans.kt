@@ -224,9 +224,9 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     ),
 
     @PublicMethod
-    SolveQuadraticEquationUsingRootsMethod(
+    SolveEquationUsingRootsMethod(
         plan {
-            explanation = Explanation.SolveQuadraticEquationUsingRootsMethod
+            explanation = Explanation.SolveEquationUsingRootsMethod
             pattern = equationInOneVariable()
             resultPattern = solutionOf(SolutionVariablePattern(), AnyPattern())
 
@@ -246,20 +246,23 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                 }
 
                 firstOf {
-                    // x^2 = something negative
-                    option(EquationsRules.ExtractSolutionFromSquareEqualsNegative)
+                    // x^2n = something negative
+                    option(EquationsRules.ExtractSolutionFromEvenPowerEqualsNegative)
 
                     option {
-                        apply(EquationsRules.TakeSquareRootOfBothSidesRHSIsZero)
+                        apply(EquationsRules.TakeRootOfBothSidesRHSIsZero)
                         apply(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
                     }
 
                     option {
-                        apply(EquationsRules.TakeSquareRootOfBothSides)
+                        apply(EquationsRules.TakeRootOfBothSides)
                         optionally {
                             applyTo(ConstantExpressionsPlans.SimplifyConstantExpression) { it.secondChild }
                         }
-                        apply(EquationsRules.ExtractSolutionFromEquationInPlusMinusForm)
+                        firstOf {
+                            option(EquationsRules.ExtractSolutionFromEquationInPlusMinusForm)
+                            option(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
+                        }
                     }
                 }
             }
@@ -297,18 +300,18 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                 // Solve the equation
                 firstOf {
                     // (...)^2 = something negative
-                    option(EquationsRules.ExtractSolutionFromSquareEqualsNegative)
+                    option(EquationsRules.ExtractSolutionFromEvenPowerEqualsNegative)
 
                     // (...)^2 = 0
                     option {
-                        apply(EquationsRules.TakeSquareRootOfBothSidesRHSIsZero)
+                        apply(EquationsRules.TakeRootOfBothSidesRHSIsZero)
                         apply(MoveConstantsToTheRightAndSimplify)
                         apply(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
                     }
 
                     // (...)^2 = something positive
                     option {
-                        apply(EquationsRules.TakeSquareRootOfBothSides)
+                        apply(EquationsRules.TakeRootOfBothSides)
                         optionally {
                             applyTo(ConstantExpressionsPlans.SimplifyConstantExpression) { it.secondChild }
                         }
