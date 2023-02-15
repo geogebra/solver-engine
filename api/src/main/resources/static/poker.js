@@ -8,7 +8,7 @@ import * as ggbSolver from "./solver-sdk.es.js";
 // just for debug convenience
 window.ggbSolver = ggbSolver;
 
-ggbSolver.api.baseUrl = "./api/v1.0-alpha0";
+ggbSolver.api.baseUrl = "./api/v1";
 const translationsRootURL = "https://export-solver.s3.eu-west-1.amazonaws.com";
 const mainPokerURL = "http://solver.geogebra.net/main/poker.html";
 
