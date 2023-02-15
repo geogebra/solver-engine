@@ -3,9 +3,10 @@ package methods.inequalities
 import engine.conditions.Sign
 import engine.conditions.signOf
 import engine.expressions.Constants
-import engine.expressions.denominator
 import engine.expressions.fractionOf
-import engine.expressions.numerator
+import engine.expressions.inverse
+import engine.expressions.isFraction
+import engine.expressions.isNeg
 import engine.expressions.productOf
 import engine.expressions.simplifiedNegOf
 import engine.expressions.solutionOf
@@ -14,7 +15,6 @@ import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
 import engine.methods.ruleResult
-import engine.operators.BinaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ConstantInSolutionVariablePattern
 import engine.patterns.SolutionVariablePattern
@@ -141,12 +141,8 @@ enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
             onPattern(inequality) {
                 val coefficient = get(lhs::coefficient)!!
 
-                if (coefficient.operator == BinaryExpressionOperator.Fraction) {
-                    val inverse = if (coefficient.numerator() == Constants.One) {
-                        coefficient.denominator()
-                    } else {
-                        fractionOf(coefficient.denominator(), coefficient.numerator())
-                    }
+                if (coefficient.isFraction() || (coefficient.isNeg() && coefficient.firstChild.isFraction())) {
+                    val inverse = coefficient.inverse()
 
                     when (inverse.signOf()) {
                         Sign.POSITIVE -> ruleResult(

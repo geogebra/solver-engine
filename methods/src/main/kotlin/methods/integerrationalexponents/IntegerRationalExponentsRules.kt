@@ -3,7 +3,9 @@ package methods.integerrationalexponents
 import engine.conditions.Sign
 import engine.conditions.signOf
 import engine.expressions.Constants
+import engine.expressions.exponent
 import engine.expressions.fractionOf
+import engine.expressions.isFraction
 import engine.expressions.powerOf
 import engine.expressions.productOf
 import engine.expressions.simplifiedPowerOf
@@ -92,8 +94,7 @@ enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMeth
         rule {
             val notRationalExponent =
                 condition(AnyPattern()) {
-                    it.operator != BinaryExpressionOperator.Power ||
-                        it.secondChild.operator != BinaryExpressionOperator.Fraction
+                    it.operator != BinaryExpressionOperator.Power || !it.exponent().isFraction()
                 }
             val product = productContaining(
                 powerOf(UnsignedIntegerPattern(), fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())),
@@ -102,8 +103,7 @@ enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMeth
             onPattern(product) {
                 val (rationalExponents, nonRationalExponents) = get(product).children()
                     .partition {
-                        it.operator == BinaryExpressionOperator.Power &&
-                            it.secondChild.operator == BinaryExpressionOperator.Fraction
+                        it.operator == BinaryExpressionOperator.Power && it.exponent().isFraction()
                     }
                 ruleResult(
                     toExpr = productOf(

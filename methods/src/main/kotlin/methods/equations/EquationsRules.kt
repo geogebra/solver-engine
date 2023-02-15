@@ -4,16 +4,16 @@ import engine.conditions.Sign
 import engine.conditions.signOf
 import engine.expressions.Constants
 import engine.expressions.Expression
-import engine.expressions.denominator
 import engine.expressions.equationOf
 import engine.expressions.fractionOf
+import engine.expressions.inverse
+import engine.expressions.isFraction
+import engine.expressions.isNeg
 import engine.expressions.negOf
-import engine.expressions.numerator
 import engine.expressions.plusMinusOf
 import engine.expressions.powerOf
 import engine.expressions.productOf
 import engine.expressions.rootOf
-import engine.expressions.simplifiedFractionOf
 import engine.expressions.simplifiedNegOf
 import engine.expressions.solutionOf
 import engine.expressions.solutionSetOf
@@ -24,8 +24,6 @@ import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
 import engine.methods.ruleResult
-import engine.operators.BinaryExpressionOperator
-import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.ConstantInSolutionVariablePattern
@@ -133,12 +131,8 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             onEquation(lhs, rhs) {
                 val coefficient = get(lhs::coefficient)!!
 
-                if (coefficient.operator == BinaryExpressionOperator.Fraction) {
-                    val inverse = if (coefficient.numerator() == Constants.One) {
-                        coefficient.denominator()
-                    } else {
-                        fractionOf(coefficient.denominator(), coefficient.numerator())
-                    }
+                if (coefficient.isFraction() || (coefficient.isNeg() && coefficient.firstChild.isFraction())) {
+                    val inverse = coefficient.inverse()
 
                     ruleResult(
                         toExpr = equationOf(
@@ -338,17 +332,4 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             }
         },
     ),
-}
-
-/**
- * Perhaps those can be promoted to the engine if we have other use-cases
- */
-private fun Expression.isNeg() = operator == UnaryExpressionOperator.Minus
-private fun Expression.isFraction() = operator == BinaryExpressionOperator.Fraction
-
-private fun Expression.inverse(): Expression = when {
-    this == Constants.One -> this
-    isNeg() -> simplifiedNegOf(firstChild.inverse())
-    isFraction() -> simplifiedFractionOf(secondChild, firstChild)
-    else -> fractionOf(Constants.One, this)
 }

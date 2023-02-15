@@ -3,6 +3,7 @@ package methods.fractionarithmetic
 import engine.expressions.Constants
 import engine.expressions.Expression
 import engine.expressions.fractionOf
+import engine.expressions.isFraction
 import engine.expressions.negOf
 import engine.expressions.powerOf
 import engine.expressions.productOf
@@ -265,7 +266,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(
                 condition(product) { expression ->
-                    expression.flattenedProductChildren().any { it.operator == BinaryExpressionOperator.Fraction }
+                    expression.flattenedProductChildren().any { it.isFraction() }
                 },
             ) {
                 ruleResult(

@@ -353,6 +353,16 @@ fun Expression.exponent(): Expression {
     return secondChild
 }
 
+fun Expression.isNeg() = operator == UnaryExpressionOperator.Minus
+fun Expression.isFraction() = operator == BinaryExpressionOperator.Fraction
+
+fun Expression.inverse(): Expression = when {
+    this == Constants.One -> this
+    isNeg() -> simplifiedNegOf(firstChild.inverse())
+    isFraction() -> simplifiedFractionOf(secondChild, firstChild)
+    else -> fractionOf(Constants.One, this)
+}
+
 fun Expression.asRational(): Rational? = when (operator) {
     UnaryExpressionOperator.Minus -> firstChild.asPositiveRational()?.let { -it }
     else -> asPositiveRational()
