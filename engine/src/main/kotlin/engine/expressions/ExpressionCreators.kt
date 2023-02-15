@@ -174,6 +174,7 @@ fun productOf(vararg operands: Expression) = productOf(operands.asList())
 fun simplifiedProductOf(vararg operands: Expression): Expression {
     val nonOneFactors = operands.filter { it != Constants.One }
     return when (nonOneFactors.size) {
+        0 -> operands[0]
         1 -> nonOneFactors[0]
         else -> productOf(nonOneFactors)
     }

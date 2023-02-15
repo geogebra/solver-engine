@@ -36,6 +36,12 @@ fun BigInteger.divides(n: BigInteger) = !isZero() && n.mod(this) == BigInteger.Z
 
 fun BigInteger.lcm(n: BigInteger) = if (n.isZero()) this else (this * n) / gcd(n)
 
+fun BigInteger.isSquare(): Boolean {
+    if (signum() < 0) return false
+    val sqrt = this.sqrt()
+    return sqrt * sqrt == this
+}
+
 /**
  * when at-least one of the prime factor has degree
  * greater than or equal to denominator of rational exponent

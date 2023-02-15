@@ -220,6 +220,8 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      */
     SolveEquationUsingRootsMethod,
 
+    SolveEquationByFactoring,
+
     /**
      * Solve a quadratic equation by completing the square
      *

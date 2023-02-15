@@ -17,7 +17,7 @@ abstract class CoefficientPattern(val value: Pattern) : KeyedPattern {
  *      x
  *      3 * x
  */
-class IntegerCoefficientPattern(value: Pattern) : CoefficientPattern(value) {
+class IntegerCoefficientPattern(value: Pattern, private val positiveOnly: Boolean) : CoefficientPattern(value) {
 
     private val coefficientPattern = UnsignedIntegerPattern()
 
@@ -26,12 +26,16 @@ class IntegerCoefficientPattern(value: Pattern) : CoefficientPattern(value) {
         productOf(coefficientPattern, value),
     )
 
-    override val key = options
+    private val optionalNegPattern = optionalNegOf(options)
+    private val ptn = if (positiveOnly) options else optionalNegPattern
+
+    override val key = ptn.key
 
     val integerCoefficient = IntegerProviderWithDefault(coefficientPattern, BigInteger.ONE)
 
-    override fun coefficient(match: Match): Expression =
-        with(MappedExpressionBuilder(emptyContext, match)) { move(integerCoefficient) }
+    override fun coefficient(match: Match): Expression = with(MappedExpressionBuilder(emptyContext, match)) {
+        if (positiveOnly) get(integerCoefficient) else copySign(optionalNegPattern, get(integerCoefficient))
+    }
 }
 
 /**
@@ -141,7 +145,8 @@ class ConstantCoefficientPattern(
  * Creates a pattern for the given pattern optionally multiplied by an integer
  * coefficient. See [IntegerCoefficientPattern] for details.
  */
-fun withOptionalIntegerCoefficient(pattern: Pattern) = IntegerCoefficientPattern(pattern)
+fun withOptionalIntegerCoefficient(pattern: Pattern, positiveOnly: Boolean = true) =
+    IntegerCoefficientPattern(pattern, positiveOnly)
 
 /**
  * Creates a pattern for the given pattern optionally multiplied by a rational

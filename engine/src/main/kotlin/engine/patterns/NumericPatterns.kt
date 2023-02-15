@@ -28,6 +28,14 @@ interface IntegerPattern : Pattern, IntegerProvider
 
 class UnsignedIntegerPattern : IntegerPattern, BasePattern() {
 
+    fun getBoundInt(m: Match, default: BigInteger): BigInteger {
+        return when (val operator = m.getBoundExpr(this)?.operator) {
+            null -> default
+            is IntegerOperator -> operator.value
+            else -> throw InvalidMatch("Unsigned integer matched to $operator")
+        }
+    }
+
     override fun getBoundInt(m: Match): BigInteger {
         return when (val operator = m.getBoundExpr(this)!!.operator) {
             is IntegerOperator -> operator.value

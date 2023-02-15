@@ -1,12 +1,18 @@
 package methods.polynomials
 
 import engine.methods.testRule
+import methods.polynomials.PolynomialRules.ApplyDifferenceOfSquaresFormula
 import methods.polynomials.PolynomialRules.CollectLikeTerms
 import methods.polynomials.PolynomialRules.CollectUnitaryMonomialsInProduct
 import methods.polynomials.PolynomialRules.DistributeMonomialToIntegerPower
 import methods.polynomials.PolynomialRules.DistributeProductToIntegerPower
+import methods.polynomials.PolynomialRules.ExtractCommonTerms
 import methods.polynomials.PolynomialRules.NormalizeMonomial
 import methods.polynomials.PolynomialRules.NormalizePolynomial
+import methods.polynomials.PolynomialRules.RewriteDifferenceOfSquares
+import methods.polynomials.PolynomialRules.SolveSumProductDiophantineEquationSystemByGuessing
+import methods.polynomials.PolynomialRules.SplitIntegersInMonomialsBeforeFactoring
+import methods.polynomials.PolynomialRules.SplitVariablePowersInMonomialsBeforeFactoring
 import org.junit.jupiter.api.Test
 
 class PolynomialsRulesTest {
@@ -71,6 +77,74 @@ class PolynomialsRulesTest {
         testRule("1 + 2y + [[y^2]/2]", NormalizePolynomial, "[[y^2]/2] + 2y + 1")
         testRule("[t^10] + 2[t^3] + sqrt[3] + 1", NormalizePolynomial, null)
         testRule("1 + [t^10] + 2[t^3] + sqrt[3]", NormalizePolynomial, "[t^10] + 2[t^3] + 1 + sqrt[3]")
+    }
+
+    @Test
+    fun testSplitIntegersInMonomialsBeforeFactoring() {
+        testRule("13 + 4[x^2]", SplitIntegersInMonomialsBeforeFactoring, null)
+        testRule("3x + 9", SplitIntegersInMonomialsBeforeFactoring, "3x + 3*3")
+        testRule("3[x^2] + 12x", SplitIntegersInMonomialsBeforeFactoring, "3 [x^2] + 3 * 4x")
+        testRule("3[y^2] + 12x", SplitIntegersInMonomialsBeforeFactoring, "3 [y^2] + 3 * 4x")
+    }
+
+    @Test
+    fun testSplitVariablePowersInMonomialsBeforeFactoring() {
+        testRule("3[y^2] + 12x", SplitVariablePowersInMonomialsBeforeFactoring, null)
+        testRule("3[x^2] + 12x", SplitVariablePowersInMonomialsBeforeFactoring, "3 x * x + 12 x")
+        testRule(
+            "3 sqrt[2] [x^2] + 12 [x^3] + 9 [x^5]",
+            SplitVariablePowersInMonomialsBeforeFactoring,
+            "3 sqrt[2] * [x^2] + 12 [x^2] * x + 9 [x^2] * [x^3]",
+        )
+    }
+
+    @Test
+    fun testExtractCommonTerms() {
+        testRule("3x * 2 + 3x * 3x + 4[x^2]", ExtractCommonTerms, null)
+        testRule("3x * 2 + 3x * 3x + 3x * 4[x^2]", ExtractCommonTerms, "3x (2 + 3x + 4[x ^ 2])")
+        testRule("2 sqrt[2] + 2 * 2sqrt[2] x", ExtractCommonTerms, "2 sqrt[2](1 + 2x)")
+        testRule("2 sqrt[2] - 2 * 2sqrt[2] x", ExtractCommonTerms, "2 sqrt[2](1 - 2x)")
+    }
+
+    @Test
+    fun testRewriteDifferenceOfSquares() {
+        testRule("9[x^4] - 15[y^2]", RewriteDifferenceOfSquares, null)
+        testRule("9[x^4] + 16[y^2]", RewriteDifferenceOfSquares, null)
+        testRule("9[x^4] - 16", RewriteDifferenceOfSquares, "[(3[x^2]) ^ 2] - [4 ^ 2]")
+        testRule("1 - 16[x^4]", RewriteDifferenceOfSquares, "[1 ^ 2] - [(4[x^2]) ^ 2]")
+        testRule("9[x^4] - 16[y^2]", RewriteDifferenceOfSquares, "[(3[x^2]) ^ 2] - [(4y) ^ 2]")
+    }
+
+    @Test
+    fun testApplyDifferenceOfSquaresFormula() {
+        testRule("[(3[x^2]) ^ 2] - [4 ^ 4]", ApplyDifferenceOfSquaresFormula, null)
+        testRule("[(3[x^2]) ^ 2] - [4 ^ 2]", ApplyDifferenceOfSquaresFormula, "(3[x^2] - 4) (3[x^2] + 4)")
+        testRule("[1 ^ 2] - [(4[x^2]) ^ 2]", ApplyDifferenceOfSquaresFormula, "(1 - 4[x^2]) (1 + 4[x^2])")
+        testRule("[(3[x^2]) ^ 2] - [(4y) ^ 2]", ApplyDifferenceOfSquaresFormula, "(3[x^2] - 4y) (3[x^2] + 4y)")
+    }
+
+    @Test
+    fun testSolveSumProductDiophantineEquationSystemByGuessing() {
+        testRule(
+            "a + b = 7, a * b = 9",
+            SolveSumProductDiophantineEquationSystemByGuessing,
+            null,
+        )
+        testRule(
+            "a + b = 5, a * b = 6",
+            SolveSumProductDiophantineEquationSystemByGuessing,
+            "a = 2, b = 3",
+        )
+        testRule(
+            "a + b = 6, a * b = 5",
+            SolveSumProductDiophantineEquationSystemByGuessing,
+            "a = 1, b = 5",
+        )
+        testRule(
+            "a + b = -2, a * b = -15",
+            SolveSumProductDiophantineEquationSystemByGuessing,
+            "a = -5, b = 3",
+        )
     }
 
     @Test

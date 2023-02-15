@@ -7,25 +7,25 @@ import methods.general.GeneralExplanation
 import methods.polynomials.PolynomialsExplanation
 import org.junit.jupiter.api.Test
 
-class SolveFactorisedQuadraticPlanTest {
+class EquationsByFactoringTest {
 
     @Test
     fun `solve experimental task-based plan`() = testMethod {
         context = Context(solutionVariable = "x")
-        method = EquationsPlans.SolveFactorisedQuadraticEquation
+        method = EquationsPlans.SolveEquationByFactoring
         inputExpr = "(3 x - 1) (x + 4) = 0"
 
         check {
             fromExpr = "(3 x - 1) (x + 4) = 0"
             toExpr = "Solution[x, {[1 / 3], -4}]"
             explanation {
-                key = ExperimentalExplanation.SolveFactorisedQuadratic
+                key = ExperimentalExplanation.SolveFactorisedEquation
             }
 
             task {
                 taskId = "#1"
                 explanation {
-                    key = ExperimentalExplanation.SolveFactorOfQuadratic
+                    key = ExperimentalExplanation.SolveFactorOfEquation
                 }
 
                 step {
@@ -160,7 +160,7 @@ class SolveFactorisedQuadraticPlanTest {
             task {
                 taskId = "#2"
                 explanation {
-                    key = ExperimentalExplanation.SolveFactorOfQuadratic
+                    key = ExperimentalExplanation.SolveFactorOfEquation
                 }
 
                 step {
