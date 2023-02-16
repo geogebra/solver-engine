@@ -1,6 +1,7 @@
 package engine.steps
 
 import engine.expressions.Expression
+import engine.steps.metadata.GmAction
 import engine.steps.metadata.Metadata
 
 /**
@@ -14,6 +15,7 @@ data class Transformation(
     val tasks: List<Task>? = null,
     val explanation: Metadata? = null,
     val skills: List<Metadata> = emptyList(),
+    val gmAction: GmAction? = null,
 ) {
 
     enum class Type {

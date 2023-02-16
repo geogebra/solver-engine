@@ -31,6 +31,7 @@ import engine.patterns.productOf
 import engine.patterns.sumContaining
 import engine.patterns.withOptionalIntegerCoefficient
 import engine.steps.Transformation
+import engine.steps.metadata.DragTargetPosition
 import engine.steps.metadata.metadata
 import engine.utility.Factorizer
 import java.math.BigDecimal
@@ -62,6 +63,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
                                 introduce(xp(entireNumber)),
                                 introduce(xp(denominator)),
                             ),
+                            gmAction = edit(decimal),
                             explanation = metadata(Explanation.ConvertTerminatingDecimalToFraction),
                         )
                     }
@@ -95,6 +97,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
                         sumOf(introduce(xp(entireNumber)), negOf(introduce(xp(nonRecurringPart)))),
                         introduce(xp(denominator)),
                     ),
+                    gmAction = edit(decimal),
                     explanation = metadata(Explanation.ConvertRecurringDecimalToFractionDirectly),
                 )
             }
@@ -108,6 +111,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
             onPattern(decimal) {
                 ruleResult(
                     toExpr = equationOf(introduce(xp("x")), move(decimal)),
+                    gmAction = edit(decimal),
                     explanation = metadata(Explanation.ConvertRecurringDecimalToEquation),
                 )
             }
@@ -187,8 +191,8 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
             val variable = ArbitraryVariablePattern()
             val decimal1 = RecurringDecimalPattern()
             val decimal2 = RecurringDecimalPattern()
-            val lhs1 = withOptionalIntegerCoefficient(variable)
-            val lhs2 = withOptionalIntegerCoefficient(variable)
+            val lhs1 = withOptionalIntegerCoefficient(variable, true)
+            val lhs2 = withOptionalIntegerCoefficient(variable, true)
 
             val equation1 = commutativeEquationOf(lhs1, decimal1)
             val equation2 = commutativeEquationOf(lhs2, decimal2)
@@ -232,6 +236,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
             onPattern(equation) {
                 ruleResult(
                     toExpr = fractionOf(move(rhs), move(coefficient)),
+                    gmAction = drag(coefficient, rhs),
                     explanation = metadata(Explanation.SolveLinearEquation),
                 )
             }
@@ -260,6 +265,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
                             productOf(get(numerator), multiplier),
                             productOf(get(denominator), multiplier),
                         ),
+                        gmAction = edit(fraction),
                         explanation = metadata(
                             Explanation.MultiplyFractionOfDecimalsByPowerOfTen,
                             move(fraction),
@@ -281,6 +287,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
             onPattern(product) {
                 ruleResult(
                     toExpr = product.substitute(fractionOf(move(numerator), move(denominator))),
+                    gmAction = drag(denominator, numerator, dragToPosition = DragTargetPosition.Below),
                     explanation = metadata(
                         Explanation.TurnDivisionOfDecimalsIntoFraction,
                         move(numerator),
@@ -324,6 +331,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
                                 (n1 * n2).stripTrailingZeros()
                             },
                         ),
+                        gmAction = drag(multiplier, base),
                         explanation = metadata(Explanation.EvaluateDecimalProduct, move(base), move(multiplier)),
                     )
 
@@ -334,6 +342,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
                                 (n1 / n2).stripTrailingZeros()
                             },
                         ),
+                        gmAction = drag(divisor, base),
                         explanation = metadata(Explanation.EvaluateDecimalDivision, move(base), move(divisor)),
                     )
                 }
@@ -374,6 +383,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
 
                 ruleResult(
                     toExpr = sum.substitute(numericOp(term1, term2) { n1, n2 -> (n1 + n2).stripTrailingZeros() }),
+                    gmAction = drag(term2, term1),
                     explanation = explanation,
                 )
             }
@@ -407,6 +417,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
                         productOf(get(numerator), introduce(expandWith)),
                         productOf(get(denominator), introduce(expandWith)),
                     ),
+                    gmAction = edit(fraction),
                     explanation = metadata(Explanation.ExpandFractionToPowerOfTenDenominator),
                 )
             }
@@ -430,6 +441,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
 
                 ruleResult(
                     toExpr = numericOp(numerator) { it.movePointLeft(powerOfTen) },
+                    gmAction = tapOp(fraction),
                     explanation = metadata(Explanation.ConvertFractionWithPowerOfTenDenominatorToDecimal),
                 )
             }
@@ -445,6 +457,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
             onPattern(power) {
                 ruleResult(
                     toExpr = numericOp(base, exponent) { n1, n2 -> n1.pow(n2.toInt()) },
+                    gmAction = tap(exponent),
                     explanation = metadata(Explanation.EvaluateDecimalPowerDirectly, move(base), move(exponent)),
                 )
             }

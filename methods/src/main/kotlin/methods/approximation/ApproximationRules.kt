@@ -30,6 +30,7 @@ enum class ApproximationRules(override val runner: Rule) : RunnerMethod {
                     value.scale() <= context.effectivePrecision -> null
                     else -> ruleResult(
                         toExpr = numericOp(decimal) { round(it) },
+                        gmAction = edit(decimal),
                         explanation = metadata(
                             Explanation.RoundTerminatingDecimal,
                             move(decimal),
@@ -52,6 +53,7 @@ enum class ApproximationRules(override val runner: Rule) : RunnerMethod {
                     value.decimalDigits > context.effectivePrecision -> null
                     else -> ruleResult(
                         toExpr = transformTo(recurringDecimal, xp(value.expand(context.effectivePrecision + 1))),
+                        gmAction = edit(recurringDecimal),
                         explanation = metadata(
                             Explanation.ExpandRecurringDecimal,
                             move(recurringDecimal),
@@ -77,6 +79,7 @@ enum class ApproximationRules(override val runner: Rule) : RunnerMethod {
                             recurringDecimal,
                             xp(round(value.nonRepeatingValue)),
                         ),
+                        gmAction = edit(recurringDecimal),
                         explanation = metadata(
                             Explanation.RoundRecurringDecimal,
                             move(recurringDecimal),
@@ -109,6 +112,7 @@ enum class ApproximationRules(override val runner: Rule) : RunnerMethod {
                         toExpr = product.substitute(
                             numericOp(base, multiplier) { n1, n2 -> round(n1 * n2) },
                         ),
+                        gmAction = drag(multiplier, base),
                         explanation = metadata(
                             Explanation.ApproximateDecimalProduct,
                             move(base),
@@ -121,6 +125,7 @@ enum class ApproximationRules(override val runner: Rule) : RunnerMethod {
                         toExpr = product.substitute(
                             numericOp(base, divisor) { n1, n2 -> round(n1) / n2 },
                         ),
+                        gmAction = drag(divisor, base),
                         explanation = metadata(
                             Explanation.ApproximateDecimalDivision,
                             move(base),
@@ -142,6 +147,7 @@ enum class ApproximationRules(override val runner: Rule) : RunnerMethod {
             onPattern(power) {
                 ruleResult(
                     toExpr = numericOp(base, exponent) { n1, n2 -> round(n1.pow(n2.toInt())) },
+                    gmAction = tap(exponent),
                     explanation = metadata(
                         Explanation.ApproximateDecimalPower,
                         move(base),

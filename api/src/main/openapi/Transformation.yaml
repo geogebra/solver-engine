@@ -19,6 +19,8 @@ properties:
       $ref: 'PathMapping.yaml'
   explanation:
     $ref: 'Metadata.yaml'
+  gmAction:
+    $ref: 'GmAction.yaml'
   skills:
     type: array
     items:

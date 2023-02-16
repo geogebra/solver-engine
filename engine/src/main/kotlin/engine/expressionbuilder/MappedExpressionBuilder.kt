@@ -34,6 +34,11 @@ import engine.patterns.RationalCoefficientPattern
 import engine.patterns.RationalPattern
 import engine.patterns.RecurringDecimalPattern
 import engine.patterns.SolvablePattern
+import engine.steps.metadata.DragTargetPosition
+import engine.steps.metadata.GmAction
+import engine.steps.metadata.GmActionType
+import engine.steps.metadata.GmDragToInfo
+import engine.steps.metadata.GmPathModifier
 import engine.steps.metadata.MetadataMaker
 import engine.utility.RecurringDecimal
 import engine.utility.primeFactorDecomposition
@@ -124,8 +129,8 @@ open class MappedExpressionBuilder(
     }
 
     /**
-     * Creates a [MappedExpression] by applying a set of operations on an explicitly given match.
-     * To be used together with [matchPattern].
+     Creates a [MappedExpression] by applying a set of operations on an explicitly given
+     match. To be used together with [matchPattern].
      */
     fun buildWith(match: Match, init: MappedExpressionBuilder.() -> Expression): Expression {
         val builder = MappedExpressionBuilder(context, match)
@@ -133,13 +138,13 @@ open class MappedExpressionBuilder(
     }
 
     /**
-     * Adds a negative sign to [to] if [from] matches a negative expression.
+     Adds a negative sign to [to] if [from] matches a negative expression.
      */
     fun <T : Pattern> copySign(from: OptionalNegPattern<T>, to: Expression) =
         if (from.isNeg(match)) negOf(to) else to
 
     /**
-     * Adds a negative sign to [to] unless [from] matches a negative expression.
+     Adds a negative sign to [to] unless [from] matches a negative expression.
      */
     fun <T : Pattern> copyFlippedSign(from: OptionalNegPattern<T>, to: Expression) =
         if (from.isNeg(match)) to else negOf(to)
@@ -194,7 +199,7 @@ open class MappedExpressionBuilder(
     fun round(n: BigDecimal): BigDecimal = n.setScale(context.effectivePrecision, RoundingMode.HALF_UP)
 
     /**
-     * Returns the "rest of" part of [pattern] which match some operands of an nary expression, i.e. the non-matched
+     * Returns the "rest of" part of [pattern] which match some operands of an n-ary expression, i.e. the non-matched
      * operands.
      */
     fun restOf(pattern: NaryPattern) = pattern.substitute(match, arrayOf())
@@ -289,6 +294,98 @@ open class MappedExpressionBuilder(
         mappedExpression.wrapIf(pattern, ::divideBy)
 
     fun MetadataMaker.make() = make(context, match)
+
+    /** Returns a [GmAction] that represents a tap/click user interaction on the passed expression to
+     * trigger the transformation in Graspable Math (GM). */
+    fun tap(expressionProvider: ExpressionProvider, pathModifier: GmPathModifier? = null): GmAction {
+        return GmAction(GmActionType.Tap, listOf(get(expressionProvider)), pathModifier = pathModifier)
+    }
+
+    /** Returns a [GmAction] that represents a double tap/click user interaction on the passed expression to
+     * trigger the transformation in Graspable Math (GM). */
+    fun doubleTap(expressionProvider: ExpressionProvider, pathModifier: GmPathModifier? = null): GmAction {
+        return GmAction(GmActionType.DoubleTap, listOf(get(expressionProvider)), pathModifier = pathModifier)
+    }
+
+    /**
+     * Stands for "tap on operator". It represents the type of transformation that
+     * you would do by tapping an operator in Graspable Math.
+     */
+    fun tapOp(expressionProvider: ExpressionProvider): GmAction {
+        return GmAction(GmActionType.Tap, listOf(get(expressionProvider)), pathModifier = GmPathModifier.Operator)
+    }
+
+    /**
+     * Returns a [GmAction] indicating a user interaction of applying the
+     * Graspable Math (GM) formula with given id to the given expression.
+     */
+    fun applyFormula(expressionProvider: ExpressionProvider, formulaId: String): GmAction {
+        return GmAction(GmActionType.Formula, listOf(get(expressionProvider)), formulaId = formulaId)
+    }
+
+    /**
+     * Returns a [GmAction] indicating a user needs to manually edit the
+     * provided expression in Graspable Math (GM). This is a good fallback
+     * action when no gesture is available in GM to perform the transformation.
+     */
+    fun edit(expressionProvider: ExpressionProvider): GmAction {
+        return GmAction(GmActionType.Edit, listOf(get(expressionProvider)))
+    }
+
+    /**
+     * Returns a [GmAction] indicating a user needs to drag the specified
+     * expression to the specified "dragTo" expression and relative position in
+     * Graspable Math (GM) to perform the transformation.
+     */
+    fun drag(
+        expressionProvider: ExpressionProvider,
+        dragToExpressionProvider: ExpressionProvider,
+        dragToPosition: DragTargetPosition = DragTargetPosition.Onto,
+    ): GmAction {
+        return GmAction(
+            GmActionType.Drag,
+            expressions = listOf(get(expressionProvider)),
+            dragTo = GmDragToInfo(get(dragToExpressionProvider), dragToPosition),
+        )
+    }
+
+    fun drag(
+        expressionProvider: ExpressionProvider,
+        pathModifier: GmPathModifier,
+        dragToExpressionProvider: ExpressionProvider,
+        dragToPathModifier: GmPathModifier? = null,
+        dragToPosition: DragTargetPosition = DragTargetPosition.Onto,
+    ): GmAction {
+        return GmAction(
+            GmActionType.Drag,
+            expressions = listOf(get(expressionProvider)),
+            pathModifier = pathModifier,
+            dragTo = GmDragToInfo(get(dragToExpressionProvider), dragToPosition, dragToPathModifier),
+        )
+    }
+
+    /**
+     * Returns a [GmAction] indicating a user needs to pick up several
+     * expressions by dragging the first one over the others and then drag all of
+     * them to the specified "dragTo" expression and relative position in
+     * Graspable Math (GM) to perform the transformation.
+     */
+    fun dragCollect(
+        expressionProviders: List<ExpressionProvider>,
+        dragToExpressionProvider: ExpressionProvider,
+        dragToPathModifier: GmPathModifier? = null,
+        dragToPosition: DragTargetPosition = DragTargetPosition.Onto,
+    ): GmAction {
+        return GmAction(
+            GmActionType.DragCollect,
+            expressions = expressionProviders.map { get(it) },
+            dragTo = GmDragToInfo(get(dragToExpressionProvider), dragToPosition, dragToPathModifier),
+        )
+    }
+
+    fun noGmSupport(): GmAction {
+        return GmAction(GmActionType.NotSupported)
+    }
 }
 
 class EmptyExpressionProviderException : Exception("No expressions were bound by the expression provider")

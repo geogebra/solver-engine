@@ -436,7 +436,7 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
                 product.children().all { it.operator == BinaryExpressionOperator.Power && it.secondChild == order }
             }
 
-            val pattern = withOptionalIntegerCoefficient(cond)
+            val pattern = withOptionalIntegerCoefficient(cond, true)
 
             onPattern(pattern) {
                 val product = get(prod)

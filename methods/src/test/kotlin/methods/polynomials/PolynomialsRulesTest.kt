@@ -1,9 +1,12 @@
 package methods.polynomials
 
+import engine.context.Context
+import engine.context.Curriculum
 import engine.methods.testRule
 import methods.polynomials.PolynomialRules.ApplyDifferenceOfSquaresFormula
 import methods.polynomials.PolynomialRules.CollectLikeTerms
 import methods.polynomials.PolynomialRules.CollectUnitaryMonomialsInProduct
+import methods.polynomials.PolynomialRules.CombineTwoSimpleLikeTerms
 import methods.polynomials.PolynomialRules.DistributeMonomialToIntegerPower
 import methods.polynomials.PolynomialRules.DistributeProductToIntegerPower
 import methods.polynomials.PolynomialRules.ExtractCommonTerms
@@ -23,6 +26,24 @@ class PolynomialsRulesTest {
         testRule("2*y - 3*y", CollectLikeTerms, "(2 - 3) y")
         testRule("z + [1/2]*z + [z / 2] - z*3", CollectLikeTerms, "(1 + [1/2] + [1/2] - 3) z")
         testRule("t*sqrt[3] + 2*t - [t*sqrt[2]/2]", CollectLikeTerms, "(sqrt[3] + 2 - [sqrt[2]/2]) t")
+    }
+
+    @Test
+    fun testCombineTwoSimpleLikeTerms() {
+        fun t(input: String, output: String?) =
+            testRule(input, CombineTwoSimpleLikeTerms, output, null, Context(curriculum = Curriculum.GM))
+        t("x + x", "2x")
+        t("x - x", "0x") // cancel opposite terms will overrule this with a result of 0
+        t("4x - 4x", "0x") // cancel opposite terms will overrule this with a result of 0
+        t("1+2x-3+5x", "1+7x-3")
+        t("2*y+y", "3y")
+        t("1+2a-3a+1", "1-a+1")
+        t("1-2a-3a+1", "1-5a+1")
+        t("1-2a+3a+1", "1+a+1")
+        t("z + [1/2]*z + [z / 2] - 3z", "-2z + [1/2]*z + [z/2]")
+        // Someday come back to this example, it should work
+        t("z + [1/2]*z + [z / 2] - z*3", /*"-2z + [1/2]*z + [z/2]"*/ null)
+        t("t*sqrt[3] + 2*t - [t*sqrt[2]/2]", null)
     }
 
     @Test

@@ -5,6 +5,12 @@ import engine.steps.metadata.TranslationKeys
 
 @TranslationKeys
 enum class PolynomialsExplanation : CategorisedMetadataKey {
+    /**
+     * Add the first two addends that are in the form of an integer times a variable (that have the same variable)
+     *
+     * E.g. 2x + 3 + x + 2[x^2] --> 3x + 3 + 2[x^2]
+     */
+    CombineTwoSimpleLikeTerms,
 
     /**
      * Collect like terms of the form a[x^n] in a sum

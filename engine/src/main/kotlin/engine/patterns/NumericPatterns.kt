@@ -106,13 +106,15 @@ class SignedNumberPattern : OptionalNegPattern<UnsignedNumberPattern>(UnsignedNu
 class IntegerProviderWithDefault(
     private val integerProvider: IntegerProvider,
     private val default: BigInteger,
+    private val optionalSign: OptionalNegPattern<*>? = null,
 ) : ProviderWithDefault(integerProvider, xp(default)), IntegerProvider {
 
     override fun getBoundInt(m: Match): BigInteger {
         return if (integerProvider.getBoundExpr(m) != null) {
-            integerProvider.getBoundInt(m)
+            val int = integerProvider.getBoundInt(m)
+            if (optionalSign != null && optionalSign.isNeg(m)) int.negate() else int
         } else {
-            default
+            if (optionalSign != null && optionalSign.isNeg(m)) default.negate() else default
         }
     }
 }

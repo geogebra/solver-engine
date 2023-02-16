@@ -1,0 +1,20 @@
+title: GmAction
+type: object
+required:
+  - type
+properties:
+  type:
+    type: string
+  expressions:
+    type: array
+    items:
+      type: string
+  dragTo:
+    type: object
+    properties:
+      expression:
+        type: string
+      position:
+        type: string
+  formulaId:
+    type: string

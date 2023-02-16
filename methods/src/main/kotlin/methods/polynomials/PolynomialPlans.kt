@@ -1,5 +1,6 @@
 package methods.polynomials
 
+import engine.context.Curriculum
 import engine.context.ResourceData
 import engine.expressions.Constants
 import engine.expressions.Label
@@ -35,6 +36,7 @@ import methods.general.GeneralPlans
 import methods.general.GeneralRules
 import methods.general.NormalizationPlans
 import methods.general.NormalizationRules
+import methods.integerarithmetic.IntegerArithmeticPlans
 
 enum class PolynomialPlans(override val runner: CompositeMethod) : RunnerMethod {
 
@@ -125,11 +127,17 @@ enum class PolynomialPlans(override val runner: CompositeMethod) : RunnerMethod 
             explanation = Explanation.SimplifyAlgebraicExpression
             specificPlans(ConstantExpressionsPlans.SimplifyConstantExpression)
 
-            steps {
+            steps() {
                 whilePossible { deeply(simpleTidyUpSteps) }
                 optionally(NormalizationPlans.NormalizeExpression)
                 whilePossible(algebraicSimplificationSteps)
                 whilePossible { deeply(PolynomialRules.NormalizePolynomial) }
+            }
+            alternative(ResourceData(curriculum = Curriculum.GM)) {
+                whilePossible { deeply(simpleTidyUpSteps) }
+                whilePossible { deeply(simplificationSteps) }
+                optionally(NormalizationPlans.NormalizeExpression)
+                whilePossible(algebraicSimplificationSteps)
             }
         },
     ),
@@ -266,7 +274,10 @@ private val collectLikeTermsAndSimplify = plan {
 
     steps {
         withNewLabels {
-            apply(PolynomialRules.CollectLikeTerms)
+            firstOf {
+                option(PolynomialRules.CombineTwoSimpleLikeTerms)
+                option(PolynomialRules.CollectLikeTerms)
+            }
             optionally {
                 applyTo(Label.A) {
                     applyTo(PolynomialPlans.SimplifyCoefficient) { it.firstChild }
@@ -281,7 +292,7 @@ private val collectLikeTermsAndSimplify = plan {
 private val multiplyMonomialsAndSimplify = plan {
     explanation = Explanation.MultiplyMonomialsAndSimplify
 
-    steps {
+    steps() {
         firstOf {
             option {
                 withNewLabels {
@@ -297,6 +308,10 @@ private val multiplyMonomialsAndSimplify = plan {
             }
             option(PolynomialPlans.MultiplyUnitaryMonomialsAndSimplify)
         }
+    }
+    alternative(ResourceData(curriculum = Curriculum.GM)) {
+        whilePossible { deeply(IntegerArithmeticPlans.SimplifyIntegersInProduct) }
+        apply(PolynomialPlans.MultiplyUnitaryMonomialsAndSimplify)
     }
 }
 

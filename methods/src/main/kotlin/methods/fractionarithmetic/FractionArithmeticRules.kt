@@ -53,6 +53,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                         fractionOf(move(integer), introduce(Constants.One)),
                         get(fraction),
                     ),
+                    gmAction = edit(integer),
                     explanation = metadata(Explanation.ConvertIntegerToFraction, move(integer)),
                 )
             }
@@ -79,6 +80,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                         ),
                         factor(denom),
                     ),
+                    gmAction = drag(nf2, nf1),
                     explanation = when {
                         !nf1.isNeg() && nf2.isNeg() -> metadata(Explanation.SubtractLikeFractions, move(f1), move(f2))
                         else -> metadata(Explanation.AddLikeFractions, move(nf1), move(nf2))
@@ -125,6 +127,15 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                             )
                         },
                     ),
+                    // REVISIT: no clear actor / not aligned with GM's approach
+                    gmAction = if (get(factor1) == Constants.One) {
+                        drag(
+                            f2.denominator,
+                            f1,
+                        )
+                    } else {
+                        drag(f1.denominator, f2)
+                    },
                     explanation = metadata(Explanation.BringToCommonDenominator, move(f1), move(f2)),
                     skills = listOf(metadata(Skill.NumericLCM, move(f1.denominator), move(f2.denominator))),
                 )
@@ -163,6 +174,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             ) {
                 ruleResult(
                     toExpr = integerOp(numerator, denominator) { n, d -> n / d },
+                    gmAction = tapOp(frac),
                     explanation = metadata(Explanation.SimplifyFractionToInteger),
                 )
             }

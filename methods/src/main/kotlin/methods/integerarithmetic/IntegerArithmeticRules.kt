@@ -42,6 +42,7 @@ enum class IntegerArithmeticRules(override val runner: Rule) : RunnerMethod {
 
                 ruleResult(
                     toExpr = sum.substitute(integerOp(term1, term2) { n1, n2 -> n1 + n2 }),
+                    gmAction = drag(term2, term1),
                     explanation = explanation,
                 )
             }
@@ -68,11 +69,13 @@ enum class IntegerArithmeticRules(override val runner: Rule) : RunnerMethod {
                 when {
                     isBound(multiplier) -> ruleResult(
                         toExpr = product.substitute(integerOp(base, multiplier) { n1, n2 -> n1 * n2 }),
+                        gmAction = drag(multiplier, base),
                         explanation = metadata(Explanation.EvaluateIntegerProduct, move(base), move(multiplier)),
                     )
 
                     else -> ruleResult(
                         toExpr = product.substitute(integerOp(base, divisor) { n1, n2 -> n1 / n2 }),
+                        gmAction = drag(divisor, base),
                         explanation = metadata(Explanation.EvaluateIntegerDivision, move(base), move(divisor)),
                     )
                 }
@@ -89,6 +92,7 @@ enum class IntegerArithmeticRules(override val runner: Rule) : RunnerMethod {
             onPattern(power) {
                 ruleResult(
                     toExpr = integerOp(base, exponent) { n1, n2 -> n1.pow(n2.toInt()) },
+                    gmAction = tap(exponent),
                     explanation = metadata(Explanation.EvaluateIntegerPowerDirectly, move(base), move(exponent)),
                 )
             }
@@ -105,6 +109,7 @@ enum class IntegerArithmeticRules(override val runner: Rule) : RunnerMethod {
             onPattern(power) {
                 ruleResult(
                     toExpr = powerOf(move(positiveBase), move(exponent)),
+                    gmAction = tapOp(base),
                     explanation = metadata(Explanation.SimplifyEvenPowerOfNegative),
                 )
             }
@@ -121,6 +126,7 @@ enum class IntegerArithmeticRules(override val runner: Rule) : RunnerMethod {
             onPattern(power) {
                 ruleResult(
                     toExpr = negOf(powerOf(move(positiveBase), move(exponent))),
+                    gmAction = drag(exponent, positiveBase),
                     explanation = metadata(Explanation.SimplifyOddPowerOfNegative),
                 )
             }

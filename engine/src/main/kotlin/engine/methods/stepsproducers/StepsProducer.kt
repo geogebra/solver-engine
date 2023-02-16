@@ -69,6 +69,7 @@ class StepsBuilder(sub: Expression) {
                 explanation = step.explanation,
                 skills = step.skills,
                 steps = step.steps,
+                gmAction = step.gmAction,
                 tasks = step.tasks,
             ),
         )

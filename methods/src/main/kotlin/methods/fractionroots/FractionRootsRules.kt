@@ -74,7 +74,7 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
         rule {
             val numerator = AnyPattern()
             val radical = squareRootOf(UnsignedIntegerPattern())
-            val denominator = withOptionalIntegerCoefficient(radical)
+            val denominator = withOptionalIntegerCoefficient(radical, true)
             val fraction = fractionOf(numerator, denominator)
 
             onPattern(fraction) {
@@ -168,11 +168,11 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
             val numerator = AnyPattern()
             val cubePattern = FixedPattern(Constants.Three)
             val integer1 = UnsignedIntegerPattern()
-            val radical1 = withOptionalIntegerCoefficient(rootOf(UnsignedIntegerPattern(), cubePattern))
+            val radical1 = withOptionalIntegerCoefficient(rootOf(UnsignedIntegerPattern(), cubePattern), true)
             val term1 = oneOf(integer1, radical1)
 
             val integer2 = UnsignedIntegerPattern()
-            val radical2 = withOptionalIntegerCoefficient(rootOf(UnsignedIntegerPattern(), cubePattern))
+            val radical2 = withOptionalIntegerCoefficient(rootOf(UnsignedIntegerPattern(), cubePattern), true)
             val term2 = oneOf(integer2, radical2)
             // a * root[x, 3] + b * root[y, 3]
             val signedTerm2 = optionalNegOf(term2)
@@ -215,12 +215,14 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
             val integer1 = UnsignedIntegerPattern()
             val radical1 = withOptionalIntegerCoefficient(
                 rootOf(UnsignedIntegerPattern(), FixedPattern(Constants.Three)),
+                true,
             )
             val term1 = oneOf(integer1, radical1)
 
             val integer2 = UnsignedIntegerPattern()
             val radical2 = withOptionalIntegerCoefficient(
                 rootOf(UnsignedIntegerPattern(), FixedPattern(Constants.Three)),
+                true,
             )
             val term2 = oneOf(integer2, radical2)
 
@@ -268,11 +270,11 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
             val numerator = AnyPattern()
 
             val integer1 = UnsignedIntegerPattern()
-            val radical1 = withOptionalIntegerCoefficient(integerOrderRootOf(UnsignedIntegerPattern()))
+            val radical1 = withOptionalIntegerCoefficient(integerOrderRootOf(UnsignedIntegerPattern()), true)
             val term1 = negOf(oneOf(integer1, radical1))
 
             val integer2 = UnsignedIntegerPattern()
-            val radical2 = withOptionalIntegerCoefficient(integerOrderRootOf(UnsignedIntegerPattern()))
+            val radical2 = withOptionalIntegerCoefficient(integerOrderRootOf(UnsignedIntegerPattern()), true)
             val term2 = oneOf(integer2, radical2)
 
             val denominator = ConditionPattern(sumOf(term1, term2)) { _, match ->
@@ -305,11 +307,11 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
             val numerator = AnyPattern()
 
             val integer1 = UnsignedIntegerPattern()
-            val radical1 = withOptionalIntegerCoefficient(squareRootOf(UnsignedIntegerPattern()))
+            val radical1 = withOptionalIntegerCoefficient(squareRootOf(UnsignedIntegerPattern()), true)
             val term1 = oneOf(integer1, radical1)
 
             val integer2 = UnsignedIntegerPattern()
-            val radical2 = withOptionalIntegerCoefficient(squareRootOf(UnsignedIntegerPattern()))
+            val radical2 = withOptionalIntegerCoefficient(squareRootOf(UnsignedIntegerPattern()), true)
             val term2 = oneOf(integer2, radical2)
 
             val signedTerm2 = optionalNegOf(term2)
@@ -352,7 +354,7 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
                 integerFactorPtn,
             )
             val radical = rootOf(radicand, index)
-            val denominator = withOptionalIntegerCoefficient(radical)
+            val denominator = withOptionalIntegerCoefficient(radical, true)
 
             val pattern = fractionOf(numerator, denominator)
 
@@ -453,7 +455,7 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
             val radicand = integerCondition(UnsignedIntegerPattern()) { !it.isPrime() }
             val rootOrder = integerCondition(UnsignedIntegerPattern()) { it > BigInteger.TWO }
             val root = rootOf(radicand, rootOrder)
-            val denominator = withOptionalIntegerCoefficient(root)
+            val denominator = withOptionalIntegerCoefficient(root, true)
             val pattern = fractionOf(numerator, denominator)
 
             onPattern(pattern) {

@@ -19,6 +19,7 @@ import engine.patterns.productContaining
 import engine.patterns.sumContaining
 import engine.steps.Transformation
 import engine.steps.metadata.metadata
+import engine.steps.metadata.GmPathModifier as PM
 
 const val ORDER_CONSTANT_PRODUCT = 1
 
@@ -31,6 +32,7 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     type = Transformation.Type.Rearrangement,
                     toExpr = transformTo(missingBracket) { it.removeBrackets().decorate(Decorator.RoundBracket) },
+                    gmAction = edit(missingBracket),
                     explanation = metadata(Explanation.ReplaceInvisibleBrackets),
                 )
             }
@@ -49,8 +51,9 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     type = Transformation.Type.Rearrangement,
                     toExpr = sumOf(
-                        get(pattern)!!.children().map { child -> transformTo(child) { it.removeBrackets() } },
+                        get(pattern).children().map { child -> transformTo(child) { it.removeBrackets() } },
                     ),
+                    gmAction = tap(innerSum, PM.OpenParens),
                     explanation = metadata(Explanation.RemoveBracketSumInSum),
                 )
             }
@@ -66,9 +69,10 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     type = Transformation.Type.Rearrangement,
                     toExpr = productOf(
-                        get(pattern)!!.flattenedProductChildren()
+                        get(pattern).flattenedProductChildren()
                             .map { child -> transformTo(child) { it.removeBrackets() } },
                     ),
+                    gmAction = tap(innerProduct, PM.OpenParens),
                     explanation = metadata(Explanation.RemoveBracketProductInProduct),
                 )
             }
@@ -84,6 +88,7 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
             onPattern(pattern) {
                 ruleResult(
                     toExpr = pattern.substitute(transformTo(number) { it.removeBrackets() }),
+                    gmAction = tap(bracket, PM.OuterOperator),
                     explanation = metadata(Explanation.RemoveBracketAroundSignedIntegerInSum),
                 )
             }
@@ -98,6 +103,7 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     type = Transformation.Type.Rearrangement,
                     toExpr = transformTo(pattern) { it.removeBrackets() },
+                    gmAction = tap(pattern, PM.OpenParens),
                     explanation = metadata(Explanation.RemoveRedundantBracket),
                 )
             }
@@ -113,6 +119,9 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     type = Transformation.Type.Rearrangement,
                     toExpr = move(value),
+                    // NOTE: GM doesn't support leading pluses & this will only work for
+                    // removing brackets around 1+(+2)
+                    gmAction = tap(pattern, PM.OuterOperator),
                     explanation = metadata(Explanation.RemoveRedundantPlusSign),
                 )
             }

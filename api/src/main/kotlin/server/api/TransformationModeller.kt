@@ -2,6 +2,8 @@ package server.api
 
 import engine.expressions.RootPath
 import server.models.Format
+import server.models.GmAction
+import server.models.GmActionDragTo
 import server.models.MappedExpression
 import server.models.Metadata
 import server.models.PathMapping
@@ -18,6 +20,7 @@ data class TransformationModeller(val format: Format) {
             pathMappings = modelPathMappings(trans.toExpr.mergedPathMappings(trans.fromExpr.origin.path!!)),
             explanation = trans.explanation?.let { modelMetadata(it) },
             skills = trans.skills.map { modelMetadata(it) },
+            gmAction = trans.gmAction?.let { modelGmAction(it) },
             steps = trans.steps?.let { steps -> steps.map { modelTransformation(it) } },
             tasks = trans.tasks?.let { tasks -> tasks.map { modelTask(it) } },
             type = trans.type.toString(),
@@ -56,6 +59,19 @@ data class TransformationModeller(val format: Format) {
                     pathMappings = modelPathMappings(it.mergedPathMappings(RootPath())),
                 )
             },
+        )
+    }
+
+    private fun modelGmAction(gmAction: engine.steps.metadata.GmAction): GmAction {
+        return GmAction(
+            type = gmAction.type.name,
+            expressions = gmAction.expressionsAsPathStrings(),
+            dragTo = if (gmAction.dragTo == null) {
+                null
+            } else {
+                GmActionDragTo(gmAction.dragToExpressionAsPathString(), gmAction.dragTo?.position?.name)
+            },
+            formulaId = gmAction.formulaId,
         )
     }
 

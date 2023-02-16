@@ -5,6 +5,7 @@ import engine.expressions.Expression
 import engine.methods.stepsproducers.StepsProducer
 import engine.steps.Task
 import engine.steps.Transformation
+import engine.steps.metadata.GmAction
 import engine.steps.metadata.Metadata
 import java.util.logging.Level
 
@@ -26,6 +27,7 @@ data class TransformationResult(
     val tasks: List<Task>? = null,
     val explanation: Metadata? = null,
     val skills: List<Metadata> = emptyList(),
+    val gmAction: GmAction? = null,
 )
 
 @Suppress("LongParameterList")
@@ -35,8 +37,9 @@ fun ruleResult(
     tasks: List<Task>? = null,
     explanation: Metadata? = null,
     skills: List<Metadata> = emptyList(),
+    gmAction: GmAction? = null,
     type: Transformation.Type = Transformation.Type.Rule,
-) = TransformationResult(type, toExpr, steps, tasks, explanation, skills)
+) = TransformationResult(type, toExpr, steps, tasks, explanation, skills, gmAction)
 
 interface RunnerMethod : Method {
     val name: String
@@ -57,6 +60,7 @@ interface RunnerMethod : Method {
                 tasks = it.tasks,
                 explanation = it.explanation,
                 skills = it.skills,
+                gmAction = it.gmAction,
             )
         }
     }

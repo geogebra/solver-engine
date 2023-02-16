@@ -35,13 +35,14 @@ import methods.general.GeneralRules.SimplifyUnitFractionToOne
 import methods.general.GeneralRules.SimplifyZeroDenominatorFractionToUndefined
 import methods.general.GeneralRules.SimplifyZeroNumeratorFractionToZero
 import org.junit.jupiter.api.Test
+import engine.methods.SerializedGmAction as GmAction
 
 @Suppress("LargeClass")
 class GeneralRulesTest {
 
     @Test
     fun testEliminateOneInProduct() {
-        testRule("3*x*1*y*4", EliminateOneInProduct, "3xy*4")
+        testRule("3*x*1*y*4", EliminateOneInProduct, "3xy*4", GmAction("Tap", "./2"))
         testRule("3*x*1*y*4", EliminateOneInProduct, "3xy*4")
         testRule("3*1*4", EliminateOneInProduct, "3*4")
         testRule("1*x", EliminateOneInProduct, "x")
@@ -63,7 +64,12 @@ class GeneralRulesTest {
 
     @Test
     fun testSimplifyProductWithTwoNegativeFactors() {
-        testRule("(-2) * (-3)", SimplifyProductWithTwoNegativeFactors, "2 * 3")
+        testRule(
+            "(-2) * (-3)",
+            SimplifyProductWithTwoNegativeFactors,
+            "2 * 3",
+            GmAction("Drag", "./1/0:op", "./0/0:op"),
+        )
         testRule("(-x) * y * (-12) * 5", SimplifyProductWithTwoNegativeFactors, "x y * 12 * 5")
         testRule("(-2):(-3)", SimplifyProductWithTwoNegativeFactors, "2:3")
     }
