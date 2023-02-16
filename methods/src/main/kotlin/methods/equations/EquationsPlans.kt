@@ -34,7 +34,6 @@ import engine.patterns.solutionOf
 import engine.patterns.solutionSetOf
 import engine.patterns.sumContaining
 import engine.patterns.withOptionalConstantCoefficient
-import engine.steps.metadata.CategorisedMetadataKey
 import engine.steps.metadata.metadata
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.polynomials.PolynomialPlans
@@ -70,6 +69,17 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 apply(SolvableRules.MoveVariablesToTheLeft)
+                optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
+            }
+        },
+    ),
+
+    MoveEverythingToTheLeftAndSimplify(
+        plan {
+            explanation = Explanation.MoveEverythingToTheLeftAndSimplify
+
+            steps {
+                apply(EquationsRules.MoveEverythingToTheLeft)
                 optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
             }
         },
@@ -131,6 +141,38 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     ),
 
     ExtractSolutionAndSimplifyFromEquationInPlusMinusForm(extractSolutionAndSimplifyFromEquationInPlusMinusForm),
+
+    SolveFactorisedEquation(
+        taskSet {
+            val product = productContaining()
+            val zero = FixedPattern(Constants.Zero)
+            pattern = equationOf(product, zero)
+            explanation = Explanation.SolveFactorisedEquation
+
+            tasks {
+                val tasks = get(product).children().mapNotNull {
+                    if (!it.isConstantIn(context.solutionVariable)) {
+                        task(
+                            startExpr = equationOf(it, get(zero)),
+                            explanation = metadata(Explanation.SolveFactorOfEquation, it),
+                            stepsProducer = optimalEquationSolvingSteps,
+                        ) ?: return@tasks null
+                    } else {
+                        null
+                    }
+                }
+
+                val solutions = solutionSetOf(tasks.flatMap { it.result.secondChild.children() })
+
+                task(
+                    startExpr = solutionOf(xp(context.solutionVariable!!), solutions),
+                    explanation = metadata(Explanation.CollectSolutions),
+                    dependsOn = tasks,
+                )
+                allTasks()
+            }
+        },
+    ),
 
     @PublicMethod
     SolveLinearEquation(
@@ -332,10 +374,11 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
             explanation = Explanation.SolveEquationByFactoring
 
             steps {
+                optionally(MoveEverythingToTheLeftAndSimplify)
                 optionally {
                     applyTo(PolynomialPlans.FactorPolynomialInOneVariable) { it.firstChild }
                 }
-                apply(solveFactorisedEquation)
+                apply(SolveFactorisedEquation)
             }
         },
     ),
@@ -375,52 +418,12 @@ private val extractSolutionAndSimplifyFromEquationInPlusMinusForm = taskSet {
         allTasks()
     }
 }
-//
-// Below is an example of using a task set to perform a list of tasks (here solving a factorised quadratic equation).
-// This will need to be revisited when doing quadratic equations.
-//
 
-enum class ExperimentalExplanation : CategorisedMetadataKey {
-
-    SolveFactorisedEquation,
-    SolveFactorOfEquation,
-    CollectSolutions,
-    ;
-
-    override val category = "Experimental"
-}
-
-private val solveFactorisedEquation = taskSet {
-    val product = productContaining()
-    val zero = FixedPattern(Constants.Zero)
-    pattern = equationOf(product, zero)
-    explanation = ExperimentalExplanation.SolveFactorisedEquation
-
-    tasks {
-        val tasks = get(product).children().mapNotNull {
-            if (!it.isConstantIn(context.solutionVariable)) {
-                task(
-                    startExpr = equationOf(it, get(zero)),
-                    explanation = metadata(ExperimentalExplanation.SolveFactorOfEquation, it),
-                    stepsProducer = EquationsPlans.SolveLinearEquation,
-                ) ?: task(
-                    startExpr = equationOf(it, get(zero)),
-                    explanation = metadata(ExperimentalExplanation.SolveFactorOfEquation, it),
-                    stepsProducer = EquationsPlans.SolveEquationUsingRootsMethod,
-                ) ?: return@tasks null
-            } else {
-                null
-            }
-        }
-
-        val solutions = solutionSetOf(tasks.flatMap { it.result.secondChild.children() })
-
-        task(
-            startExpr = solutionOf(xp(context.solutionVariable!!), solutions),
-            explanation = metadata(ExperimentalExplanation.CollectSolutions),
-            dependsOn = tasks,
-        )
-        allTasks()
+private val optimalEquationSolvingSteps = steps {
+    firstOf {
+        option(EquationsPlans.SolveLinearEquation)
+        option(EquationsPlans.SolveEquationUsingRootsMethod)
+        option(EquationsPlans.SolveQuadraticEquationByCompletingTheSquare)
     }
 }
 

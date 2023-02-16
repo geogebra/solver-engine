@@ -1,7 +1,6 @@
-package solvable
+package methods.solvable
 
 import engine.methods.testMethod
-import methods.solvable.SolvableRules
 import org.junit.jupiter.api.Test
 
 class SolvableRulesTest {

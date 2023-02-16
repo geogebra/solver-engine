@@ -154,6 +154,24 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     MoveVariablesToTheLeftAndSimplify,
 
     /**
+     * Add the opposite of everything on the LHS to both sides
+     * of the equation.
+     *
+     * E.g. 4x - 3 = 2x + 1 -> 4x - 3 - (2x + 1) = 2x + 1 - (2x + 1)
+     */
+    MoveEverythingToTheLeft,
+
+    /**
+     * Add the opposite of everything on the LHS to both sides
+     * of the equation and simplify.
+     *
+     * E.g. 4x - 3 = 2x + 1
+     *      -> 4x - 3 - (2x + 1) = 2x + 1 - (2x + 1)
+     *      -> 2x - 4 = 0
+     */
+    MoveEverythingToTheLeftAndSimplify,
+
+    /**
      * Multiply both sides of the equation by the inverse of the coefficient
      * of the variable and simplify.
      *
@@ -220,8 +238,6 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      */
     SolveEquationUsingRootsMethod,
 
-    SolveEquationByFactoring,
-
     /**
      * Solve a quadratic equation by completing the square
      *
@@ -237,8 +253,40 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      * equation by factorisation, collect the solutions after solving two linear
      * equations).
      * This will be the last task in a task set.
+     *
+     * E.g. when solving (x − 1)(x + 1) = 0 the system solves
+     *      x - 1 = 0 -> x \in { 1 } and
+     *      x + 1 = 0 -> x \in { -1 } and
+     *      collects the solutions as x \in { 1, -1}
      */
     CollectSolutions,
+
+    /**
+     * Solve an equation of the form "product = 0"
+     */
+    SolveFactorisedEquation,
+
+    /**
+     * Given an equation of the form "product = 0", solve for one
+     * of the terms of the product being equal to zero.
+     *
+     * E.g. when solving (x − 1)(x + 1) = 0 the system introduces
+     *      solving the equation x - 1 = 0 using this translation key.
+     */
+    SolveFactorOfEquation,
+
+    /**
+     * Solve a polynomial equation (of arbitrary degree) by moving everything
+     * to the left hand side, factoring it, then setting each of the terms equal
+     * to zero.
+     *
+     * E.g. x^6 = x^2
+     *      -> x^6 - x^2 = 0
+     *      -> x^2(x − 1)(x + 1)(x^2 + 1) = 0
+     *      solve x^2 = 0, x - 1 = 0, x + 1 = 0 and x^2 + 1 = 0
+     *      -> x \in {0, 1, -1}
+     */
+    SolveEquationByFactoring,
 
     ;
 

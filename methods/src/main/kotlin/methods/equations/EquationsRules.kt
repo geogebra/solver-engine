@@ -7,6 +7,7 @@ import engine.expressions.Expression
 import engine.expressions.denominator
 import engine.expressions.equationOf
 import engine.expressions.fractionOf
+import engine.expressions.negOf
 import engine.expressions.numerator
 import engine.expressions.plusMinusOf
 import engine.expressions.powerOf
@@ -47,6 +48,23 @@ import engine.utility.isOdd
 import java.math.BigInteger
 
 enum class EquationsRules(override val runner: Rule) : RunnerMethod {
+
+    MoveEverythingToTheLeft(
+        rule {
+            val lhs = AnyPattern()
+            val rhs = condition(AnyPattern()) { it != Constants.Zero }
+
+            onEquation(lhs, rhs) {
+                ruleResult(
+                    toExpr = equationOf(
+                        sumOf(get(lhs), negOf(move(rhs))),
+                        sumOf(get(rhs), negOf(move(rhs))),
+                    ),
+                    explanation = metadata(Explanation.MoveEverythingToTheLeft),
+                )
+            }
+        },
+    ),
 
     NegateBothSides(
         rule {
