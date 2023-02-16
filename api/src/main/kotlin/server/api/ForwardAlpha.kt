@@ -15,7 +15,7 @@ class ForwardAlpha {
     /**
      * Forward all requests to /api/v1-alpha1 to /api/v1
      */
-    @RequestMapping("\${api.base-path:/api/v1-alpha1/**}")
+    @RequestMapping("\${api.base-path:/api/v1.0-alpha0/**}")
     fun redirect(request: HttpServletRequest): String {
         val forwardPath = request.servletPath.replace("/v1.0-alpha0/", "/v1/")
         return "forward:$forwardPath"
