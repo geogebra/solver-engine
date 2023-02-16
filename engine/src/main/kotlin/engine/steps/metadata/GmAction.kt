@@ -33,7 +33,22 @@ data class GmAction(
 
     companion object {
         fun serializeExpression(expr: Expression, modifier: GmPathModifier? = null): String {
-            return expr.mergedPathMappings().first().fromPaths.first().toString() +
+            val pathMapping = expr.mergedPathMappings().firstOrNull()
+            if (pathMapping === null) {
+                // This should never happen when used correctly. If it does, it means that
+                // the gmAction was created with a pattern that didn't get bound to an
+                // expression, such as the minus in an opional negative pattern.
+                throw NoPathException("Trying to turn an unbound pattern into an expression path.")
+            }
+            val path = pathMapping.fromPaths.firstOrNull()
+            if (path === null) {
+                // This should never happen when used correctly. If it does, it means that
+                // a gmAction was created with a pattern that didn't exist in the
+                // fromExpr, such as the 0 in x-x → 0. Since gmActions describe the user's
+                // actions on the fromExpr, this is not allowed.
+                throw NoPathException("Trying to turn an expression that doesn't exist on the fromExpr into an expression path.")
+            }
+            return path.toString() +
                 if (modifier != null) {
                     ":${modifier.value}"
                 } else {
@@ -42,6 +57,8 @@ data class GmAction(
         }
     }
 }
+
+class NoPathException(message: String) : Exception(message)
 
 /** Graspable Math (GM) */
 data class GmDragToInfo(
@@ -57,7 +74,13 @@ data class GmDragToInfo(
  * serialized JSON of the canvas.
  */
 enum class DragTargetPosition {
-    Onto, Above, Below, LeftOf, RightOf, OutsideOf
+    Onto, Above, Below, LeftOf, RightOf,
+
+    /**
+     Drag an expression far enough away from the dragTo expression. Only used in very few
+     actions, such as factoring out exponents of powers with matching bases.
+     */
+    OutsideOf,
 }
 
 /** Path modifiers for expressions and `dragTo.expression` allow referring to parts
