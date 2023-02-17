@@ -46,7 +46,9 @@ data class GmAction(
                 // a gmAction was created with a pattern that didn't exist in the
                 // fromExpr, such as the 0 in x-x → 0. Since gmActions describe the user's
                 // actions on the fromExpr, this is not allowed.
-                throw NoPathException("Trying to turn an expression that doesn't exist on the fromExpr into an expression path.")
+                throw NoPathException(
+                    "Trying to turn an expression that doesn't exist on the fromExpr into an expression path.",
+                )
             }
             return path.toString() +
                 if (modifier != null) {
