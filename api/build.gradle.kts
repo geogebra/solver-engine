@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jlleitschuh.gradle.ktlint.tasks.KtLintCheckTask
 import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 
 plugins {
@@ -89,4 +90,10 @@ ktlint {
             it.file.path.contains(generatedRoot)
         }
     }
+}
+
+tasks.withType<KtLintCheckTask> {
+    // It looks like gradle cannot figure out that ktlint doesn't depend on openApiGenerate and complains if we don't
+    // declare this dependency
+    mustRunAfter(tasks.openApiGenerate)
 }

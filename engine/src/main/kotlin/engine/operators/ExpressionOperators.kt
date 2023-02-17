@@ -223,10 +223,7 @@ enum class NaryOperator(override val precedence: Int) : ExpressionOperator {
                     if (i == 0) {
                         append(child.toLatexString(ctx))
                     } else {
-                        val (termKind, termBody) = when (child) {
-                            is LatexRenderable -> child.asSumTerm()
-                            else -> Pair(SumTermKind.PLUS, child)
-                        }
+                        val (termKind, termBody) = child.asSumTerm()
                         append(
                             when (termKind) {
                                 SumTermKind.PLUS -> " + "

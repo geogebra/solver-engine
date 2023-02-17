@@ -1,5 +1,5 @@
 default:
-  image: gradle:jdk17-alpine
+  image: gradle:jdk19-alpine
 
 variables:
   GITLAB_CLUSTER: solver-v2

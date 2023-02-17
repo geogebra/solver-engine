@@ -57,8 +57,8 @@ enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
             val inequality = inequalityOf(lhs, rhs)
 
             onPattern(inequality) {
-                val lhsSign = get(lhs)!!.signOf()
-                val rhsSign = get(rhs)!!.signOf()
+                val lhsSign = get(lhs).signOf()
+                val rhsSign = get(rhs).signOf()
 
                 if (lhsSign.isKnown() && rhsSign.isKnown()) {
                     if (inequality.holdsFor(lhsSign.signum.toBigDecimal(), rhsSign.signum.toBigDecimal())) {
@@ -88,7 +88,7 @@ enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(inequality) {
                 ruleResult(
-                    toExpr = solutionOf(move(lhs), inequality.toInterval(get(rhs)!!)),
+                    toExpr = solutionOf(move(lhs), inequality.toInterval(get(rhs))),
                     explanation = metadata(Explanation.ExtractSolutionFromInequalityInSolvedForm),
                 )
             }

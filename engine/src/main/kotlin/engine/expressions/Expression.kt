@@ -308,7 +308,7 @@ class Expression internal constructor(
     fun isChildOfOrSelf(possibleAncestor: Expression?): Boolean {
         if (possibleAncestor === null) return false
         if (possibleAncestor === this) return true
-        return parent?.isChildOfOrSelf(possibleAncestor) === true
+        return parent?.isChildOfOrSelf(possibleAncestor) == true
     }
 
     fun toJson(): List<Any> {

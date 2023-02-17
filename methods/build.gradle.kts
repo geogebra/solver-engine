@@ -1,4 +1,4 @@
-
+import org.jlleitschuh.gradle.ktlint.tasks.KtLintCheckTask
 
 plugins {
     kotlin("jvm")
@@ -36,6 +36,12 @@ ktlint {
             it.file.path.contains("$buildDir")
         }
     }
+}
+
+tasks.withType<KtLintCheckTask> {
+    // It looks like gradle cannot figure out that ktlint doesn't depend on kspKotlin and complains if we don't
+    // declare this dependency
+    mustRunAfter("kspKotlin")
 }
 
 kotlin {

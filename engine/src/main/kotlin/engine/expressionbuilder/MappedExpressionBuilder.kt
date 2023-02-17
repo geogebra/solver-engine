@@ -97,7 +97,7 @@ open class MappedExpressionBuilder(
         expressionProvider.getBoundExpr(match)!!.withOrigin(Distribute(expressionProvider.getBoundExprs(match)))
 
     fun cancel(expressionProvider: ExpressionProvider, inExpression: Expression) =
-        inExpression.withOrigin(Cancel(inExpression.origin, expressionProvider.getBoundExprs(match)!!))
+        inExpression.withOrigin(Cancel(inExpression.origin, expressionProvider.getBoundExprs(match)))
 
     /**
      * Returns the numeric value bound to the argument in the match.
