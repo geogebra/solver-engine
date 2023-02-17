@@ -1,8 +1,8 @@
 # Engine
 
-**Expression**s are the objects the system manipulates. They represent 
-mathematical constructs such as numeric values, variables, sums, 
-fractions, equations, etc.  The `engine.expressions` package contains
+**Expression**s are the objects the system manipulates. They represent
+mathematical constructs such as numeric values, variables, sums,
+fractions, equations, etc. The `engine.expressions` package contains
 the definition of the `Expression` type and a number of convenience
 methods to create a variety of expressions.
 
@@ -19,10 +19,10 @@ list.
 
 **Mapped Expression**s represent the result of a transformation.
 They contain the data of an expression together with information about
-the origin of the different parts of that expression.  For example,
+the origin of the different parts of that expression. For example,
 in the transformation `1 + 2 * 3 -> 1 + 6`, the value `6` in the
 result expression is obtained by combining the `2` and the `3` from the
-initial expression.  This can be represented in the mapped expression
+initial expression. This can be represented in the mapped expression
 with a **path mapping** `(./1/0, ./1/1) -> ./1` (`./1/0` being the path
 of `2`, `./1/1` the path of `3` in the initial expression and `./1` the
 path of `6` in the resulting expression).

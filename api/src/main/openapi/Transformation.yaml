@@ -11,8 +11,8 @@ properties:
   path:
     type: string
 
-  fromExpr: { }
-  toExpr: { }
+  fromExpr: {}
+  toExpr: {}
   pathMappings:
     type: array
     items:

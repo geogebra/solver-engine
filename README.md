@@ -13,14 +13,14 @@ The solver engine project is split into modules:
   [More about the engine](docs/engine.md).
 - The `methods` module contains the concrete descriptions of the
   possible transformations. These methods are organized into categories
-  and each category contains a number of rules and plans. 
+  and each category contains a number of rules and plans.
   [More about implementing methods](/docs/methods.md).
 - The `api` module is how our system communicates with the outside
   world. It uses Spring Boot for the server and Openapi Generator
   to create the endpoints and DTOs from formal specification files.
   It also hosts the "Solver Poker" (the name coming from the iron
   rod as opposed to the card game), which is a static HTML page and
-  some Javascript which connects to the API, and it is the quickest 
+  some Javascript which connects to the API, and it is the quickest
   way to check your newly written solution.
 - The `export` module is used only to upload the translation keys
   into GgbTrans. These are then translated and loaded by the poker.
@@ -96,16 +96,16 @@ to the public. These are the actions it performs:
 2. Install the package using `helm`.
 3. Provide a path-base (branch) name in the load balancer url.
 
-Example: 
-  Branch name: plut-254-example
-  Solver URL: http://solver.geogebra.net/plut-254 (http://solver.geogebra.net/{branch-name})
+Example:
+Branch name: plut-254-example
+Solver URL: http://solver.geogebra.net/plut-254 (http://solver.geogebra.net/{branch-name})
 
-  * If it's a number after the first hyphen (-) just the '{string}-{number}' is put for the route-path. 
+- If it's a number after the first hyphen (-) just the '{string}-{number}' is put for the route-path.
 
-  Branch name: plut-string-example
-  Solver URL: http://solver.geogebra.net/plut-string-example (http://solver.geogebra.net/{branch-name})
-  
-  * If it's a string after the first hyphen (-) the whole branch name is put for route-path. 
+Branch name: plut-string-example
+Solver URL: http://solver.geogebra.net/plut-string-example (http://solver.geogebra.net/{branch-name})
+
+- If it's a string after the first hyphen (-) the whole branch name is put for route-path.
 
 It uses a [Gitlab cluster agent](https://docs.gitlab.com/ee/user/clusters/agent/install/)
 to communicate to the cluster.

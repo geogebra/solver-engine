@@ -3,10 +3,9 @@ complexity:
     thresholdInFiles: 20
     thresholdInClasses: 20
   LongMethod:
-    excludes: [ '**/test/**' ]
+    excludes: ['**/test/**']
 style:
   ReturnCount:
     max: 3
   MagicNumber:
-    excludes: [ '**/test/**', '**/engine/expressions/Constants.kt' ]
-
+    excludes: ['**/test/**', '**/engine/expressions/Constants.kt']

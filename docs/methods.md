@@ -13,21 +13,21 @@ Whenever you want to add a new rule or plan, make sure you follow
 the checklist below:
 
 1. [ ] check if a method which does the transformation you want
-   already exists (or one which can be generalized to achieve it).
+       already exists (or one which can be generalized to achieve it).
 2. [ ] decide on which category the new method fits into.
 3. [ ] choose a good descriptive name for the new method (each method
-   describes an action, so the name should start with a verb).
+       describes an action, so the name should start with a verb).
 4. [ ] add the explanation key to the explanation enum, for rules make
-   the convention is that the name of the rule and the enum match. 
+       the convention is that the name of the rule and the enum match.
 5. [ ] implement the method!
 
 The conventional way to create a new instance of a `Rule` object is
 to do so in a `rule` block. First you set up the pattern in successive
-variable declarations, then you use the `onPattern` method of the 
+variable declarations, then you use the `onPattern` method of the
 RuleBuilder to describe the transformation. You can do computations inside
 the code block, and in the end you have to return either `null`, if the
 rule does not apply despite the pattern matching, or a `TransformationResult`
-(with the resulting mapped expression, explanation, and skills) if it 
+(with the resulting mapped expression, explanation, and skills) if it
 does apply.
 
 Example:
@@ -42,7 +42,7 @@ val exampleRule = rule {
           toExpr = productOf(
              bracketOf(introduce(xp(-1))),
              move(innerPattern),
-          ), 
+          ),
           explanation = metadata(
             Explanation.ExampleRule,
             move(innerPattern),
@@ -60,15 +60,16 @@ val exampleRule = rule {
 
 The above rule transforms any given expression of the form `-a` into
 `(-1) * a`. The reason for extracting the declaration of the inner
-pattern (instead of writing `negOf(AnyPattern())`) is so that it is 
-possible to refer to the expression matched by the inner pattern 
+pattern (instead of writing `negOf(AnyPattern())`) is so that it is
+possible to refer to the expression matched by the inner pattern
 (in our case `a`) independently.
 
 Plans are created using the `plan` block, they may have a pattern
 to check that the input expression is of the right form, a result
-pattern to check that the required output form was achieved, 
-explanation, and skills, just like Rules. The real work inside a plan 
+pattern to check that the required output form was achieved,
+explanation, and skills, just like Rules. The real work inside a plan
 is done by one of the many plan executors:
+
 - **FirstOf**: given a list of transformation producers it
   executes the first one which applies
 - **Pipeline**: given a list of transformation producers it

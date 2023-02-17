@@ -1,169 +1,169 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <title>Solver Poker</title>
-        <link
-            rel="stylesheet"
-            href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css"
-            integrity="sha384-Xi8rHCmBmhbuyyhbI88391ZKP2dmfnOl4rT9ZfRI7mLTdk1wblIUnrIq35nqwEvC"
-            crossorigin="anonymous"
-        />
+  <head>
+    <meta charset="UTF-8" />
+    <title>Solver Poker</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css"
+      integrity="sha384-Xi8rHCmBmhbuyyhbI88391ZKP2dmfnOl4rT9ZfRI7mLTdk1wblIUnrIq35nqwEvC"
+      crossorigin="anonymous"
+    />
 
-        <style>
-            .plan-id {
-                color: gray;
-                font-family: monospace;
-            }
+    <style>
+      .plan-id {
+        color: gray;
+        font-family: monospace;
+      }
 
-            .plan-selection > .plan-id {
-                color: blue;
-            }
+      .plan-selection > .plan-id {
+        color: blue;
+      }
 
-            .warning {
-                color: #ac0000;
-            }
+      .warning {
+        color: #ac0000;
+      }
 
-            .hidden {
-                display: none;
-            }
+      .hidden {
+        display: none;
+      }
 
-            /* Separations between plan steps / sub-steps */
+      /* Separations between plan steps / sub-steps */
 
-            details.steps > ol {
-                margin: 0 0 0 0;
-                border-left: thin solid lightgray;
-                padding-right: 0;
-            }
+      details.steps > ol {
+        margin: 0 0 0 0;
+        border-left: thin solid lightgray;
+        padding-right: 0;
+      }
 
-            details.steps > ol > li {
-                border-bottom: thin solid lightgray;
-                padding: 3px 0;
-                margin: 3px 0;
-            }
+      details.steps > ol > li {
+        border-bottom: thin solid lightgray;
+        padding: 3px 0;
+        margin: 3px 0;
+      }
 
-            details.steps > ol > li:last-child {
-                border-bottom: 0;
-                padding-bottom: 0;
-                margin-bottom: 0;
-            }
+      details.steps > ol > li:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+        margin-bottom: 0;
+      }
 
-            /* Separations between selected plans */
-            .selections > ol > li {
-                border-bottom: thin solid black;
-                padding: 6px 0;
-                margin: 6px 0;
-            }
+      /* Separations between selected plans */
+      .selections > ol > li {
+        border-bottom: thin solid black;
+        padding: 6px 0;
+        margin: 6px 0;
+      }
 
-            .selections > ol > li:last-child {
-                border-bottom: 0;
-                padding-bottom: 0;
-                margin-bottom: 0;
-            }
+      .selections > ol > li:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+        margin-bottom: 0;
+      }
 
-            .through-step > .expr,
-            .through-step > .plan-id,
-            .through-step > .plan-explanation {
-                color: lightgray;
-            }
+      .through-step > .expr,
+      .through-step > .plan-id,
+      .through-step > .plan-explanation {
+        color: lightgray;
+      }
 
-            .version-info {
-                position: fixed;
-                bottom: 0;
-                right: 0;
-                background-color: white;
-                color: dimgrey;
-                padding: 4px;
-                font-family: monospace;
-                font-size: small;
-            }
-        </style>
+      .version-info {
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        background-color: white;
+        color: dimgrey;
+        padding: 4px;
+        font-family: monospace;
+        font-size: small;
+      }
+    </style>
 
-        <!-- The loading of KaTeX is deferred to speed up page rendering -->
-        <script
-            defer
-            src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.js"
-            integrity="sha384-X/XCfMm41VSsqRNQgDerQczD69XqmjOOOwYQvr/uuC+j4OPoNhVgjdGFwhvN02Ja"
-            crossorigin="anonymous"
-        ></script>
+    <!-- The loading of KaTeX is deferred to speed up page rendering -->
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.js"
+      integrity="sha384-X/XCfMm41VSsqRNQgDerQczD69XqmjOOOwYQvr/uuC+j4OPoNhVgjdGFwhvN02Ja"
+      crossorigin="anonymous"
+    ></script>
 
-        <!-- To automatically render math in text elements, include the auto-render extension: -->
-        <script
-            defer
-            src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/contrib/auto-render.min.js"
-            integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR"
-            crossorigin="anonymous"
-            onload="renderMathInElement(document.body);"
-        ></script>
+    <!-- To automatically render math in text elements, include the auto-render extension: -->
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/contrib/auto-render.min.js"
+      integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR"
+      crossorigin="anonymous"
+      onload="renderMathInElement(document.body);"
+    ></script>
 
-        <script type="module" src="./poker.js"></script>
-    </head>
-    <body>
-        <div id="version-info" class="version-info">fetching commit...</div>
-        <h1 id="title">Solver Poker</h1>
-        <details>
-            <summary>Input syntax</summary>
-            <ul>
-                <li>recurring decimals: \(10.3\overline{401}\) is <code>10.3[401]</code>,</li>
-                <li>arithmetic operators \(+, -, \times, \div\) are <code>+, -, *, :</code>,</li>
-                <li>\(x^y\) is <code>[x ^ y]</code>,</li>
-                <li>\(\frac{x}{y}\) is <code>[x / y]</code>,</li>
-                <li>\(2\frac{1}{3}\) is <code>[2 1/3]</code>,</li>
-                <li>\(\sqrt{x}\) is <code>sqrt[x]</code>,</li>
-                <li>\(\sqrt[3]{12}\) is <code>root[12, 3]</code>.</li>
-            </ul>
-            <p>Example: \(\frac{1}{\sqrt{1 - x^2}}\) is <code>[1 / sqrt[1 - [x^2]]]</code>.</p>
-        </details>
+    <script type="module" src="./poker.js"></script>
+  </head>
+  <body>
+    <div id="version-info" class="version-info">fetching commit...</div>
+    <h1 id="title">Solver Poker</h1>
+    <details>
+      <summary>Input syntax</summary>
+      <ul>
+        <li>recurring decimals: \(10.3\overline{401}\) is <code>10.3[401]</code>,</li>
+        <li>arithmetic operators \(+, -, \times, \div\) are <code>+, -, *, :</code>,</li>
+        <li>\(x^y\) is <code>[x ^ y]</code>,</li>
+        <li>\(\frac{x}{y}\) is <code>[x / y]</code>,</li>
+        <li>\(2\frac{1}{3}\) is <code>[2 1/3]</code>,</li>
+        <li>\(\sqrt{x}\) is <code>sqrt[x]</code>,</li>
+        <li>\(\sqrt[3]{12}\) is <code>root[12, 3]</code>.</li>
+      </ul>
+      <p>Example: \(\frac{1}{\sqrt{1 - x^2}}\) is <code>[1 / sqrt[1 - [x^2]]]</code>.</p>
+    </details>
 
-        <form id="form">
-            <label for="curriculumSelect">Curriculum</label>
-            <select id="curriculumSelect">
-                <option value="" selected>Default</option>
-                <option value="GM">GM</option>
-                <option value="US">US</option>
-                <option value="EU">EU</option>
-            </select>
-            <label for="precisionSelect">Precision</label>
-            <select id="precisionSelect">
-                <option value="2">2 d.p.</option>
-                <option value="3" selected>3 d.p.</option>
-                <option value="4">4 d.p.</option>
-                <option value="5">5 d.p.</option>
-                <option value="6">6 d.p.</option>
-            </select>
-            <label for="preferDecimals">Prefer decimals</label>
-            <input id="preferDecimals" type="checkbox" />
-            <label for="solutionVariable">Solution variable</label>
-            <input type="text" id="solutionVariable" value="x" size="1" />
+    <form id="form">
+      <label for="curriculumSelect">Curriculum</label>
+      <select id="curriculumSelect">
+        <option value="" selected>Default</option>
+        <option value="GM">GM</option>
+        <option value="US">US</option>
+        <option value="EU">EU</option>
+      </select>
+      <label for="precisionSelect">Precision</label>
+      <select id="precisionSelect">
+        <option value="2">2 d.p.</option>
+        <option value="3" selected>3 d.p.</option>
+        <option value="4">4 d.p.</option>
+        <option value="5">5 d.p.</option>
+        <option value="6">6 d.p.</option>
+      </select>
+      <label for="preferDecimals">Prefer decimals</label>
+      <input id="preferDecimals" type="checkbox" />
+      <label for="solutionVariable">Solution variable</label>
+      <input type="text" id="solutionVariable" value="x" size="1" />
 
-            <br />
+      <br />
 
-            <label for="plansSelect">Plan</label>
-            <select id="plansSelect"></select>
-            <label for="input">Input</label>
-            <input type="text" id="input" placeholder="Expression" size="30" />
-            <input type="submit" id="submit" value="Submit" />
-            <input type="button" id="submitToMain" value="Submit to main" />
-        </form>
-        <form>
-            <label for="showThroughSteps">Show through steps</label>
-            <input id="showThroughSteps" type="checkbox" />
-            <label for="hideWarnings">Hide warnings</label>
-            <input id="hideWarnings" type="checkbox" />
-            <label for="showRearrangements">Show rearrangements</label>
-            <input id="showRearrangements" type="checkbox" />
-            <label for="colorScheme">Colors</label>
-            <select id="colorScheme">
-                <option value="default">Default</option>
-                <option value="primary">Primary colors</option>
-                <option value="none">No coloring</option>
-                <option value="blue">Just blue</option>
-            </select>
-        </form>
-        <p id="result"></p>
-        <details>
-            <summary>Response Source</summary>
-            <pre id="source"></pre>
-        </details>
-    </body>
+      <label for="plansSelect">Plan</label>
+      <select id="plansSelect"></select>
+      <label for="input">Input</label>
+      <input type="text" id="input" placeholder="Expression" size="30" />
+      <input type="submit" id="submit" value="Submit" />
+      <input type="button" id="submitToMain" value="Submit to main" />
+    </form>
+    <form>
+      <label for="showThroughSteps">Show through steps</label>
+      <input id="showThroughSteps" type="checkbox" />
+      <label for="hideWarnings">Hide warnings</label>
+      <input id="hideWarnings" type="checkbox" />
+      <label for="showRearrangements">Show rearrangements</label>
+      <input id="showRearrangements" type="checkbox" />
+      <label for="colorScheme">Colors</label>
+      <select id="colorScheme">
+        <option value="default">Default</option>
+        <option value="primary">Primary colors</option>
+        <option value="none">No coloring</option>
+        <option value="blue">Just blue</option>
+      </select>
+    </form>
+    <p id="result"></p>
+    <details>
+      <summary>Response Source</summary>
+      <pre id="source"></pre>
+    </details>
+  </body>
 </html>

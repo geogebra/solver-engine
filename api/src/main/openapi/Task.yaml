@@ -7,7 +7,7 @@ required:
 properties:
   taskId:
     type: string
-  startExpr: { }
+  startExpr: {}
   pathMappings:
     type: array
     items:

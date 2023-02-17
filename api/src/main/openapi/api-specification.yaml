@@ -1,8 +1,8 @@
 openapi: 3.0.3
 
 info:
-  title: "GeoGebra Solver API"
-  version: "1.0"
+  title: 'GeoGebra Solver API'
+  version: '1.0'
 servers:
   - url: http://localhost:8080/api/v1/
 
@@ -10,10 +10,10 @@ paths:
   /versionInfo:
     get:
       operationId: getVersionInfo
-      description: "Get solver version info"
+      description: 'Get solver version info'
       responses:
-        "200":
-          description: "Successfully returned version info"
+        '200':
+          description: 'Successfully returned version info'
           content:
             application/json:
               schema:
@@ -22,10 +22,10 @@ paths:
   /plans:
     get:
       operationId: listPlans
-      description: "List all available plan IDs"
+      description: 'List all available plan IDs'
       responses:
-        "200":
-          description: "Successfully listed plans"
+        '200':
+          description: 'Successfully listed plans'
           content:
             application/json:
               schema:
@@ -36,7 +36,7 @@ paths:
   /plans/{planId}:
     get:
       operationId: getPlan
-      description: "Get the details of a plan"
+      description: 'Get the details of a plan'
       parameters:
         - name: planId
           in: path
@@ -44,14 +44,14 @@ paths:
           schema:
             type: string
       responses:
-        "200":
-          description: "Successfully returned plan details"
+        '200':
+          description: 'Successfully returned plan details'
           content:
             application/json:
               schema:
                 type: object
-        "400":
-          description: "Invalid request"
+        '400':
+          description: 'Invalid request'
           content:
             application/json:
               schema:
@@ -60,7 +60,7 @@ paths:
   /plans/{planId}/apply:
     post:
       operationId: applyPlan
-      description: "Apply plan to input and return the transformation"
+      description: 'Apply plan to input and return the transformation'
       parameters:
         - name: planId
           in: path
@@ -74,13 +74,13 @@ paths:
             schema:
               $ref: '#/components/schemas/SolveRequest'
       responses:
-        "200":
-          description: "Plan applied successfully"
+        '200':
+          description: 'Plan applied successfully'
           content:
             application/json:
               schema:
                 $ref: 'Transformation.yaml'
-        "400":
+        '400':
           description: Invalid request
           content:
             application/json:
@@ -90,7 +90,7 @@ paths:
   /selectPlans:
     post:
       operationId: selectPlans
-      description: "Select appropriate plans for given expression"
+      description: 'Select appropriate plans for given expression'
       requestBody:
         required: true
         content:
@@ -98,15 +98,15 @@ paths:
             schema:
               $ref: '#/components/schemas/SolveRequest'
       responses:
-        "200":
-          description: "Plans selected successfully"
+        '200':
+          description: 'Plans selected successfully'
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: 'PlanSelection.yaml'
-        "400":
+        '400':
           description: Invalid request
           content:
             application/json:
@@ -116,7 +116,7 @@ components:
   schemas:
     Format:
       type: string
-      enum: [ latex, solver, json ]
+      enum: [latex, solver, json]
       default: solver
     SolveRequest:
       type: object

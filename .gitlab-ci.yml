@@ -16,7 +16,7 @@ before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
   - export SLUG=`echo $CI_COMMIT_REF_SLUG | sed 's/^\([a-z][a-z]*\-[0-9][0-9]*\).*/\1/'`
   - export REPO_FULL_NAME=`echo $CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME`
-  - export REPOSITORY_ID=4  # The gitlab ID of the repository where our container images are uploaded
+  - export REPOSITORY_ID=4 # The gitlab ID of the repository where our container images are uploaded
 
 cache:
   paths:
