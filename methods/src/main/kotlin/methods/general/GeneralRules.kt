@@ -1,6 +1,7 @@
 package methods.general
 
 import engine.conditions.Sign
+import engine.conditions.integerValue
 import engine.conditions.isDefinitelyNotUndefined
 import engine.conditions.isDefinitelyNotZero
 import engine.conditions.signOf
@@ -27,6 +28,7 @@ import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
 import engine.patterns.FractionPattern
+import engine.patterns.SignedIntegerPattern
 import engine.patterns.SignedNumberPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.commutativeProductContaining
@@ -52,6 +54,7 @@ import engine.patterns.stickyOptionalNegOf
 import engine.patterns.sumContaining
 import engine.patterns.sumOf
 import engine.steps.metadata.metadata
+import engine.utility.isEven
 import engine.utility.isOdd
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -1145,7 +1148,7 @@ private val cancelRootIndexAndExponent =
     rule {
         val base = AnyPattern()
 
-        val commonExponent = AnyPattern()
+        val commonExponent = SignedIntegerPattern()
 
         val productExponent = productContaining(commonExponent)
         val exponent = oneOf(commonExponent, productExponent)
@@ -1156,6 +1159,12 @@ private val cancelRootIndexAndExponent =
         val root = rootOf(power, order)
 
         onPattern(root) {
+            if (get(commonExponent).integerValue()!!.isEven() &&
+                get(base).signOf() != Sign.POSITIVE
+            ) {
+                return@onPattern null
+            }
+
             val newPower = when {
                 isBound(productExponent) -> powerOf(get(base), restOf(productExponent))
                 else -> get(base)

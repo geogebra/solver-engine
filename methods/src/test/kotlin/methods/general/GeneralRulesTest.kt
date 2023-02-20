@@ -560,6 +560,16 @@ class GeneralRulesTest {
             GeneralRules.CancelRootIndexAndExponent,
             "root[[7 ^ 2], 3]",
         )
+        testRule(
+            "root[[(-7) ^ 5 * 2], 3 * 2]",
+            GeneralRules.CancelRootIndexAndExponent,
+            null,
+        )
+        testRule(
+            "root[[(-7) ^ 2 * 3], 4 * 3]",
+            GeneralRules.CancelRootIndexAndExponent,
+            "root[[(-7) ^ 2], 4]",
+        )
         testMethod {
             method = GeneralRules.CancelRootIndexAndExponent
             inputExpr = "root[[7 ^ 2], 3 * 2]"

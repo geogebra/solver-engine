@@ -87,9 +87,21 @@ class IntegerRootsRulesTest {
 
     @Test
     fun testSimplifyNthRootOfNthPower() {
+        // exponent is an odd integer
+        testRule("root[ [7^3], 3 ]", SimplifyNthRootOfNthPower, "7")
+        testRule("root[ [(-7)^5], 5 ]", SimplifyNthRootOfNthPower, "-7")
+        testRule("root[ [a^5], 5 ]", SimplifyNthRootOfNthPower, "a")
+
+        // exponent is an even integer
+        testRule("root[ [7^4], 4 ]", SimplifyNthRootOfNthPower, "7")
+        testRule("root[ [(-7)^4], 4 ]", SimplifyNthRootOfNthPower, null)
+        testRule("root[ [a^4], 4 ]", SimplifyNthRootOfNthPower, null)
+        testRule("root[ [(2 + sqrt[2])^4], 4 ]", SimplifyNthRootOfNthPower, "2 + sqrt[2]")
+        testRule("root[ [(-2 - sqrt[2])^4], 4 ]", SimplifyNthRootOfNthPower, null)
+
         testMethod {
             method = SimplifyNthRootOfNthPower
-            inputExpr = "root[[x ^ 8], 8]"
+            inputExpr = "root[[x ^ 7], 7]"
 
             check {
                 toExpr = "x"

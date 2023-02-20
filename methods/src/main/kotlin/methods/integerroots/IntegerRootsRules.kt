@@ -1,5 +1,8 @@
 package methods.integerroots
 
+import engine.conditions.Sign
+import engine.conditions.signOf
+import engine.expressions.asPositiveInteger
 import engine.expressions.powerOf
 import engine.expressions.productOf
 import engine.expressions.rootOf
@@ -31,6 +34,7 @@ import engine.utility.asPowerForRoot
 import engine.utility.asProductForRoot
 import engine.utility.divides
 import engine.utility.hasFactorOfDegree
+import engine.utility.isEven
 import engine.utility.isFactorizableUnderRationalExponent
 import engine.utility.primeFactorDecomposition
 import java.math.BigInteger
@@ -308,6 +312,12 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
             val radical = rootOf(power, exponent)
 
             onPattern(radical) {
+                // e.g. root[ [a^4], 4 ] = a, only when a > 0
+                if (
+                    get(exponent).asPositiveInteger()!!.isEven() &&
+                    get(base).signOf() != Sign.POSITIVE
+                ) { return@onPattern null }
+
                 ruleResult(
                     toExpr = cancel(exponent, get(base)),
                     explanation = metadata(Explanation.SimplifyNthRootOfNthPower),

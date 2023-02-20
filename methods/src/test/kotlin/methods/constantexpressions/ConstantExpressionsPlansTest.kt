@@ -1541,6 +1541,116 @@ class SimplifyIntegerPowerUnderRoot {
     }
 
     @Test
+    fun `test nthRoot of (-a)^n, where n is even`() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "root[ [(-2)^4], 4]"
+
+        check {
+            fromExpr = "root[[(-2) ^ 4], 4]"
+            toExpr = "2"
+            explanation {
+                key = ConstantExpressionsExplanation.SimplifyConstantExpression
+            }
+
+            step {
+                fromExpr = "root[[(-2) ^ 4], 4]"
+                toExpr = "root[[2 ^ 4], 4]"
+                explanation {
+                    key = IntegerArithmeticExplanation.SimplifyEvenPowerOfNegative
+                }
+            }
+
+            step {
+                fromExpr = "root[[2 ^ 4], 4]"
+                toExpr = "2"
+                explanation {
+                    key = IntegerRootsExplanation.SimplifyNthRootOfNthPower
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test nthRoot of (-1)^n, where n is even`() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "root[ [(-1)^4], 4]"
+
+        check {
+            fromExpr = "root[[(-1) ^ 4], 4]"
+            toExpr = "1"
+            explanation {
+                key = ConstantExpressionsExplanation.SimplifyConstantExpression
+            }
+
+            step {
+                fromExpr = "root[[(-1) ^ 4], 4]"
+                toExpr = "root[[1 ^ 4], 4]"
+                explanation {
+                    key = IntegerArithmeticExplanation.SimplifyEvenPowerOfNegative
+                }
+            }
+
+            step { }
+
+            step { }
+        }
+    }
+
+    @Test
+    fun `test don't cancel even root index & base negative`() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "root[ [(-2)^5*2], 3*2]"
+
+        check {
+            fromExpr = "root[[(-2) ^ 5 * 2], 3 * 2]"
+            toExpr = "2 root[4, 3]"
+            explanation {
+                key = ConstantExpressionsExplanation.SimplifyConstantExpression
+            }
+
+            step {
+                fromExpr = "root[[(-2) ^ 5 * 2], 3 * 2]"
+                toExpr = "root[[(-2) ^ 10], 6]"
+                explanation {
+                    key = IntegerRootsExplanation.SimplifyProductWithRoots
+                }
+            }
+
+            step {
+                fromExpr = "root[[(-2) ^ 10], 6]"
+                toExpr = "root[[2 ^ 10], 6]"
+                explanation {
+                    key = IntegerArithmeticExplanation.SimplifyEvenPowerOfNegative
+                }
+            }
+
+            step {
+                fromExpr = "root[[2 ^ 10], 6]"
+                toExpr = "root[[2 ^ 5], 3]"
+                explanation {
+                    key = IntegerRootsExplanation.RewriteAndCancelPowerUnderRoot
+                }
+            }
+
+            step {
+                fromExpr = "root[[2 ^ 5], 3]"
+                toExpr = "2 root[[2 ^ 2], 3]"
+                explanation {
+                    key = IntegerRootsExplanation.SplitRootsAndCancelRootsOfPowers
+                }
+            }
+
+            step {
+                fromExpr = "2 root[[2 ^ 2], 3]"
+                toExpr = "2 root[4, 3]"
+                explanation {
+                    key = ConstantExpressionsExplanation.SimplifyPowers
+                }
+            }
+        }
+    }
+
+    @Test
     fun testSplitAndSimplifyIntegerPowerUnderRoot() = testMethod {
         method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "root[[24^5], 3]"

@@ -197,6 +197,7 @@ val simpleTidyUpSteps = steps {
 val trickySimplificationSteps = steps {
     deeply {
         firstOf {
+            option(IntegerArithmeticRules.SimplifyEvenPowerOfNegative)
             option(cancelRootOfPower)
             option(IntegerRootsPlans.SplitRootsAndCancelRootsOfPowers)
             option(IntegerRootsPlans.SimplifyPowerOfIntegerUnderRoot)
