@@ -9,12 +9,10 @@ import engine.methods.plan
 import engine.methods.stepsproducers.FormChecker
 import engine.methods.stepsproducers.steps
 import engine.patterns.AnyPattern
-import engine.patterns.FindPattern
 import engine.patterns.FixedPattern
 import engine.patterns.RecurringDecimalPattern
 import engine.patterns.SignedNumberPattern
 import engine.patterns.SolutionVariablePattern
-import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.UnsignedNumberPattern
 import engine.patterns.closedOpenIntervalOf
 import engine.patterns.condition
@@ -25,7 +23,6 @@ import engine.patterns.oneOf
 import engine.patterns.openClosedIntervalOf
 import engine.patterns.openIntervalOf
 import engine.patterns.optionalNegOf
-import engine.patterns.productContaining
 import engine.patterns.solutionOf
 import engine.patterns.sumContaining
 import engine.patterns.withOptionalConstantCoefficient
@@ -110,28 +107,13 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
             pattern = inequalityInOneVariable()
 
             steps {
-                optionally(inequalitySimplificationSteps)
-
-                optionally {
-                    // multiply through with the LCD if the equation contains one fraction with a sum numerator
-                    // or a fraction multiplied by a sum
-                    checkForm {
-                        val nonConstantSum = condition(sumContaining()) { !it.isConstant() }
-                        oneOf(
-                            FindPattern(fractionOf(nonConstantSum, UnsignedIntegerPattern())),
-                            FindPattern(
-                                productContaining(
-                                    fractionOf(AnyPattern(), UnsignedIntegerPattern()),
-                                    nonConstantSum,
-                                ),
-                            ),
-                        )
+                whilePossible {
+                    firstOf {
+                        option(inequalitySimplificationSteps)
+                        option(MultiplyByLCDAndSimplify)
+                        option(PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
                     }
-                    apply(MultiplyByLCDAndSimplify)
                 }
-
-                optionally(PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
-                optionally(inequalitySimplificationSteps)
 
                 optionally {
                     firstOf {

@@ -1,6 +1,8 @@
 package methods.solvable
 
 import engine.methods.testMethod
+import engine.methods.testRuleInX
+import methods.solvable.SolvableRules.MultiplySolvableByLCD
 import org.junit.jupiter.api.Test
 
 class SolvableRulesTest {
@@ -19,5 +21,29 @@ class SolvableRulesTest {
                 cancel("./0/0", "./1/2")
             }
         }
+    }
+
+    @Test
+    fun testMultiplySolvableByLCD() {
+        testRuleInX(
+            "10 ([x / 2] + [x / 3]) = 3",
+            MultiplySolvableByLCD,
+            null,
+        )
+        testRuleInX(
+            "[x / 2] + [x / 3] = 3",
+            MultiplySolvableByLCD,
+            "([x / 2] + [x / 3]) * 6 = 3 * 6",
+        )
+        testRuleInX(
+            "[x / 2] = [x / 3]",
+            MultiplySolvableByLCD,
+            "[x / 2] * 6 = [x / 3] * 6",
+        )
+        testRuleInX(
+            "[x / 2] + [x / 5] = [x / 3]",
+            MultiplySolvableByLCD,
+            "([x / 2] + [x / 5]) * 30 = [x / 3] * 30",
+        )
     }
 }

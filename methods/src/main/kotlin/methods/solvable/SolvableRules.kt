@@ -11,6 +11,7 @@ import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
 import engine.methods.ruleResult
+import engine.operators.BinaryExpressionOperator
 import engine.operators.NaryOperator
 import engine.patterns.AnyPattern
 import engine.patterns.SolvablePattern
@@ -146,43 +147,57 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
         },
     ),
 
+    /**
+     * Multiply through with the LCD if the equation contains one fraction with a sum numerator
+     * OR a fraction multiplied by a sum OR at least two fractions
+     */
     MultiplySolvableByLCD(
         rule {
+            val nonConstantSum = condition(sumContaining()) { !it.isConstantIn(solutionVariable) }
+            val fractionRequiringMultiplication = oneOf(
+                fractionOf(nonConstantSum, UnsignedIntegerPattern()),
+                productContaining(
+                    fractionOf(AnyPattern(), UnsignedIntegerPattern()),
+                    nonConstantSum,
+                ),
+            )
+
             val lhs = AnyPattern()
             val rhs = AnyPattern()
 
             val solvable = SolvablePattern(lhs, rhs)
 
             onPattern(solvable) {
-                var lcm = BigInteger.ONE
-
-                val lhsVal = get(lhs)
-                lcm = if (lhsVal.operator == NaryOperator.Sum) {
-                    lhsVal.children().map { extractDenominator(it) }.fold(lcm) { curr, new -> curr.lcm(new) }
-                } else {
-                    lcm.lcm(extractDenominator(lhsVal))
+                fun extractSumTerms(expr: Expression) = when (expr.operator) {
+                    NaryOperator.Sum -> expr.children()
+                    else -> listOf(expr)
                 }
 
-                val rhsVal = get(rhs)
-                lcm = if (rhsVal.operator == NaryOperator.Sum) {
-                    rhsVal.children().map { extractDenominator(it) }.fold(lcm) { curr, new -> curr.lcm(new) }
-                } else {
-                    lcm.lcm(extractDenominator(rhsVal))
+                val terms = extractSumTerms(get(lhs)) + extractSumTerms(get(rhs))
+
+                if (terms.count { it.operator == BinaryExpressionOperator.Fraction } < 2 &&
+                    terms.none { fractionRequiringMultiplication.matches(context, it) }
+                ) {
+                    return@onPattern null
                 }
 
-                ruleResult(
-                    toExpr = solvable.sameSolvable(
-                        productOf(move(lhs), xp(lcm)),
-                        productOf(move(rhs), xp(lcm)),
-                    ),
-                    explanation = metadata(
-                        if (solvable.isEquation()) {
-                            EquationsExplanation.MultiplyEquationByLCD
-                        } else {
-                            InequalitiesExplanation.MultiplyInequalityByLCD
-                        },
-                    ),
-                )
+                val lcm = terms.map { extractDenominator(it) }.fold(BigInteger.ONE) { curr, new -> curr.lcm(new) }
+                when (lcm) {
+                    BigInteger.ONE -> null
+                    else -> ruleResult(
+                        toExpr = solvable.sameSolvable(
+                            productOf(move(lhs), xp(lcm)),
+                            productOf(move(rhs), xp(lcm)),
+                        ),
+                        explanation = metadata(
+                            if (solvable.isEquation()) {
+                                EquationsExplanation.MultiplyEquationByLCD
+                            } else {
+                                InequalitiesExplanation.MultiplyInequalityByLCD
+                            },
+                        ),
+                    )
+                }
             }
         },
     ),

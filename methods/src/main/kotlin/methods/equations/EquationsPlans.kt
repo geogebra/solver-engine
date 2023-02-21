@@ -16,12 +16,10 @@ import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
 import engine.patterns.AnyPattern
 import engine.patterns.ConstantPattern
-import engine.patterns.FindPattern
 import engine.patterns.FixedPattern
 import engine.patterns.RecurringDecimalPattern
 import engine.patterns.SignedNumberPattern
 import engine.patterns.SolutionVariablePattern
-import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.UnsignedNumberPattern
 import engine.patterns.condition
 import engine.patterns.equationOf
@@ -184,28 +182,13 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
             pattern = equationInOneVariable()
 
             steps {
-                optionally(equationSimplificationSteps)
-
-                optionally {
-                    // multiply through with the LCD if the equation contains one fraction with a sum numerator
-                    // or a fraction multiplied by a sum
-                    checkForm {
-                        val nonConstantSum = condition(sumContaining()) { !it.isConstant() }
-                        oneOf(
-                            FindPattern(fractionOf(nonConstantSum, UnsignedIntegerPattern())),
-                            FindPattern(
-                                productContaining(
-                                    fractionOf(AnyPattern(), UnsignedIntegerPattern()),
-                                    nonConstantSum,
-                                ),
-                            ),
-                        )
+                whilePossible {
+                    firstOf {
+                        option(equationSimplificationSteps)
+                        option(MultiplyByLCDAndSimplify)
+                        option(PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
                     }
-                    apply(MultiplyByLCDAndSimplify)
                 }
-
-                optionally(PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
-                optionally(equationSimplificationSteps)
 
                 optionally {
                     firstOf {

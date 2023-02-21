@@ -2,6 +2,7 @@ package methods.equations
 
 import engine.context.Context
 import engine.methods.testMethod
+import engine.methods.testMethodInX
 import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
 import methods.polynomials.PolynomialsExplanation
@@ -403,6 +404,52 @@ class LinearEquationsTest {
             step {
                 fromExpr = "x = 0"
                 toExpr = "Solution[x, {0}]"
+                explanation {
+                    key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test no multiplication by the lcd when the equation has to be expanded first`() = testMethodInX {
+        method = EquationsPlans.SolveLinearEquation
+        inputExpr = "180 ([x - 14 / 12] - [2 x - 1 / 10]) = 1"
+
+        check {
+            fromExpr = "180 ([x - 14 / 12] - [2 x - 1 / 10]) = 1"
+            toExpr = "Solution[x, {-[193 / 21]}]"
+            explanation {
+                key = EquationsExplanation.SolveLinearEquation
+            }
+
+            step {
+                fromExpr = "180 ([x - 14 / 12] - [2 x - 1 / 10]) = 1"
+                toExpr = "-21 x - 192 = 1"
+                explanation {
+                    key = PolynomialsExplanation.ExpandPolynomialExpression
+                }
+            }
+
+            step {
+                fromExpr = "-21 x - 192 = 1"
+                toExpr = "-21 x = 193"
+                explanation {
+                    key = EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                }
+            }
+
+            step {
+                fromExpr = "-21 x = 193"
+                toExpr = "x = -[193 / 21]"
+                explanation {
+                    key = EquationsExplanation.DivideByCoefficientOfVariableAndSimplify
+                }
+            }
+
+            step {
+                fromExpr = "x = -[193 / 21]"
+                toExpr = "Solution[x, {-[193 / 21]}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                 }
