@@ -62,6 +62,9 @@ enum class ApproximationPlans(override val runner: CompositeMethod) : RunnerMeth
         },
     ),
 
+    /**
+     * Approximate an expression to a given number of decimal places.
+     */
     @PublicMethod
     ApproximateExpression(
         plan {

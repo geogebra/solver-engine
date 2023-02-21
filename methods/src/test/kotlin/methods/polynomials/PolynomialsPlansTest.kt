@@ -14,7 +14,7 @@ class PolynomialsPlansTest {
 
     @Test
     fun testCollectSimpleLikeTerms() = testMethod {
-        method = PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
         inputExpr = "2 x + 3 x + [x ^ 2] - 5 [x ^ 2]"
 
         check {
@@ -92,7 +92,7 @@ class PolynomialsPlansTest {
 
     @Test
     fun testMonomialWithZeroCoefficientEliminated() = testMethod {
-        method = PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
         inputExpr = "3 [a ^ 2] + 2 [a ^ 2] - 3 a - 5 [a ^ 2] + 10 a"
 
         check {
@@ -154,7 +154,7 @@ class PolynomialsPlansTest {
 
     @Test
     fun testRationalCoefficients() = testMethod {
-        method = PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
         inputExpr = "[z / 2] - [3 z / 4] + 4 z"
 
         check {
@@ -184,7 +184,7 @@ class PolynomialsPlansTest {
 
     @Test
     fun testSurdCoefficients() = testMethod {
-        method = PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
         inputExpr = "2 t sqrt[3] + [t sqrt[3] / 3]"
 
         check {
@@ -214,7 +214,7 @@ class PolynomialsPlansTest {
 
     @Test
     fun testMultiplyUnitaryMonomials() = testMethod {
-        method = PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
         inputExpr = "t * [t ^ 2] * [t ^ 3]"
 
         check {
@@ -252,7 +252,7 @@ class PolynomialsPlansTest {
 
     @Test
     fun testMultiplyMonomials() = testMethod {
-        method = PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
         inputExpr = "3 [x ^ 2] * 4 [x ^ 3]"
 
         check {
@@ -306,7 +306,7 @@ class PolynomialsPlansTest {
 
     @Test
     fun testMultiplyMonomialsWithRationalCoefficients() = testMethod {
-        method = PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
         inputExpr = "2 y * [1 / 3] [y ^ 2]"
 
         check {
@@ -368,7 +368,7 @@ class PolynomialsPlansTest {
 
     @Test
     fun testNegatedProductContainingMonomialsNoNegativeFactors() = testMethod {
-        method = PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
         inputExpr = "1 - 2 x * 3 [x ^ 2]"
 
         check {
@@ -422,7 +422,7 @@ class PolynomialsPlansTest {
 
     @Test
     fun testNegatedProductContainingMonomialsWithNegativeFactors() = testMethod {
-        method = PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
         inputExpr = "1 - 2 x * [(-x) ^ 3]"
 
         check {
@@ -484,7 +484,7 @@ class PolynomialsPlansTest {
 
     @Test
     fun testPowerOfUnitaryMonomial() = testMethod {
-        method = PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
         inputExpr = "[([x ^ 2]) ^ 3]"
 
         check {
@@ -494,7 +494,7 @@ class PolynomialsPlansTest {
 
     @Test
     fun testCombiningSimplifyingAndNormalizing() = testMethod {
-        method = PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
         inputExpr = "sqrt[3] + [x ^ 3] + 2 x * 5 x + [(2 x) ^ 3] + 1"
 
         check {
@@ -544,7 +544,7 @@ class PolynomialsPlansTest {
      */
     @Test
     fun testMonomialWithSumCoefficient() = testMethod {
-        method = PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
         inputExpr = "2 t + [t / sqrt[3]]"
 
         check {
@@ -574,7 +574,7 @@ class PolynomialsPlansTest {
 
     @Test
     fun testDistributingNegativeIntoPositives() = testMethod {
-        method = PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
         inputExpr = "-(a+3)"
 
         check {
@@ -588,7 +588,7 @@ class PolynomialsPlansTest {
 
     @Test
     fun testDistributingNegativeIntoNegatives() = testMethod {
-        method = PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
         inputExpr = "-(-a-3)"
 
         check {
@@ -612,7 +612,7 @@ class PolynomialsPlansTest {
 class ExpandAndSimplifySquareOfBinomial {
     @Test
     fun testExpandSquareOfBinomialEU() = testMethod {
-        method = PolynomialPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
         inputExpr = "[(2x - 3) ^ 2]"
 
         check {
@@ -642,7 +642,7 @@ class ExpandAndSimplifySquareOfBinomial {
 
     @Test
     fun testExpandSquareOfBinomialUS() = testMethod {
-        method = PolynomialPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
         inputExpr = "[(2x - 3) ^ 2]"
         context = Context(curriculum = Curriculum.US)
 
@@ -689,7 +689,7 @@ class ExpandAndSimplifySquareOfBinomial {
 
     @Test
     fun `test inner square first outer square later`() = testMethod {
-        method = PolynomialPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
         inputExpr = "[( [(x + 1)^2] + 2 ) ^2]"
 
         check {
@@ -769,7 +769,7 @@ class ExpandAndSimplifySquareOfBinomial {
 class ExpandAndSimplifyCubeOfBinomial {
     @Test
     fun testExpandCubeOfBinomialEU() = testMethod {
-        method = PolynomialPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
         inputExpr = "[(2x - 3) ^ 3]"
 
         check {
@@ -799,7 +799,7 @@ class ExpandAndSimplifyCubeOfBinomial {
 
     @Test
     fun testExpandCubeOfBinomialUS() = testMethod {
-        method = PolynomialPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
         inputExpr = "[(2x - 3) ^ 3]"
         context = Context(curriculum = Curriculum.US)
 
@@ -874,7 +874,7 @@ class ExpandAndSimplifyCubeOfBinomial {
 
     @Test
     fun testExpandCubeOfBinomialWithConstantMul() = testMethod {
-        method = PolynomialPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
         inputExpr = "5 * [(2x - 3) ^ 3]"
 
         check {
@@ -938,7 +938,7 @@ class ExpandAndSimplifyCubeOfBinomial {
 class ExpandAndSimplifySquareOfTrinomial {
     @Test
     fun testExpandSquareOfTrinomialEU() = testMethod {
-        method = PolynomialPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
         inputExpr = "[(2x + 1 + sqrt[3]) ^ 2]"
 
         check {
@@ -969,7 +969,7 @@ class ExpandAndSimplifySquareOfTrinomial {
 
     @Test
     fun testExpandSquareOfTrinomialUS() = testMethod {
-        method = PolynomialPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
         context = Context(curriculum = Curriculum.US)
         inputExpr = "[(2x + 1 + sqrt[3]) ^ 2]"
 
@@ -1000,7 +1000,7 @@ class ExpandAndSimplifySquareOfTrinomial {
 
     @Test
     fun testTrinomialSquared() = testMethod {
-        method = PolynomialPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
         inputExpr = "[( 2[x ^ 2] + x - 3 ) ^ 2]"
 
         check {
@@ -1034,7 +1034,7 @@ class ExpandAndSimplifySquareOfTrinomial {
 class ExpandAndSimplifyProductOfBrackets {
     @Test
     fun testIdentifyProductOfSumAndDifference1() = testMethod {
-        method = PolynomialPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
         inputExpr = "(2x - 3) (2x + 3)"
 
         check {
@@ -1064,7 +1064,7 @@ class ExpandAndSimplifyProductOfBrackets {
 
     @Test
     fun testIdentifyProductOfSumAndDifference2() = testMethod {
-        method = PolynomialPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
         inputExpr = "(2x - 3)*(2x + 3) * 11"
 
         check {
@@ -1146,7 +1146,7 @@ class ExpandAndSimplifyProductOfBrackets {
 
     @Test
     fun testMultiplyBinomials1() = testMethod {
-        method = PolynomialPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
         inputExpr = "(2x + 3) * (3x - 2)"
 
         check {
@@ -1192,7 +1192,7 @@ class ExpandAndSimplifyProductOfBrackets {
 
     @Test
     fun testProductOfTrinomialAndBinomial() = testMethod {
-        method = PolynomialPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
         inputExpr = "([x^2] + 5x - 2) (3x - 5)"
 
         check {
@@ -1224,7 +1224,7 @@ class ExpandAndSimplifyProductOfBrackets {
 class ExpandAndSimplifyUsingDistributiveProperty {
     @Test
     fun testDistributeConstantFromRhs() = testMethod {
-        method = PolynomialPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
         inputExpr = "(x + 1)*5"
 
         check {
@@ -1270,7 +1270,7 @@ class ExpandAndSimplifyUsingDistributiveProperty {
 
     @Test
     fun testDistributeMonomialFromRhs() = testMethod {
-        method = PolynomialPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
         inputExpr = "(x + 1)*5[x^2]"
 
         check {
@@ -1316,7 +1316,7 @@ class ExpandAndSimplifyUsingDistributiveProperty {
 
     @Test
     fun testDistributeMonomialFromLhs() = testMethod {
-        method = PolynomialPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
         inputExpr = "3[x^2] (2x - 7)"
 
         check {
@@ -1346,7 +1346,7 @@ class ExpandAndSimplifyUsingDistributiveProperty {
 
     @Test
     fun testDistributeMonomiaFromLhsAndConstantFromRhs() = testMethod {
-        method = PolynomialPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
         inputExpr = "3 [x^2] * (2x - 7) sqrt[2]"
 
         check {
@@ -1418,7 +1418,7 @@ class ExpandAndSimplifyUsingDistributiveProperty {
 class ExpandAndSimplifyMultipleBrackets {
     @Test
     fun testRepeatedExpandAndSimplify() = testMethod {
-        method = PolynomialPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
         inputExpr = "3*(x+1)-2*(x+6)"
 
         check {
@@ -1511,7 +1511,7 @@ class ExpandAndSimplifyMultipleBrackets {
 
     @Test
     fun `expand (ax + b)^2 (cx + d)`() = testMethod {
-        method = PolynomialPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
         inputExpr = "[(2x + 3)^2] (x + 1)"
 
         check {

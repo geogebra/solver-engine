@@ -13,7 +13,7 @@ class PolynomialsPlansTestActivePracticeCurriculum {
 
     @Test
     fun testCollectSimpleLikeTerms() = testMethod {
-        method = PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
         context = Context(curriculum = Curriculum.GM)
         inputExpr = "2 x + [x ^ 2] + 3 x - 5 [x ^ 2]"
 
@@ -44,7 +44,7 @@ class PolynomialsPlansTestActivePracticeCurriculum {
 
     @Test
     fun testMultiplyMonomials() = testMethod {
-        method = PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
         context = Context(curriculum = Curriculum.GM)
         inputExpr = "3[x^2]*4[x^3]x + 5*7[x^6]"
 
@@ -155,7 +155,7 @@ class PolynomialsPlansTestActivePracticeCurriculum {
 
     @Test
     fun testMonomialWithZeroCoefficientEliminated() = testMethod {
-        method = PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
         context = Context(curriculum = Curriculum.GM)
         inputExpr = "3 [a ^ 2] + 2 [a ^ 2] - 3 a - 5 [a ^ 2] + 10 a"
 

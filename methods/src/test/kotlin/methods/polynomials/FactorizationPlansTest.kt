@@ -7,7 +7,7 @@ class FactorizationPlansTest {
 
     @Test
     fun `test extracting the common integer factor`() = testMethod {
-        method = PolynomialPlans.FactorPolynomialInOneVariable
+        method = PolynomialsPlans.FactorPolynomialInOneVariable
         inputExpr = "16 [x ^ 5] - 32"
 
         check {
@@ -37,7 +37,7 @@ class FactorizationPlansTest {
 
     @Test
     fun `test extracting the common monomial factor`() = testMethod {
-        method = PolynomialPlans.FactorPolynomialInOneVariable
+        method = PolynomialsPlans.FactorPolynomialInOneVariable
         inputExpr = "15 [x ^ 5] - 33 [x ^ 2]"
 
         check {
@@ -75,7 +75,7 @@ class FactorizationPlansTest {
 
     @Test
     fun `test factoring trinomial by guessing`() = testMethod {
-        method = PolynomialPlans.FactorPolynomialInOneVariable
+        method = PolynomialsPlans.FactorPolynomialInOneVariable
         inputExpr = "[x ^ 2] - 5 x + 6"
 
         check {
@@ -113,7 +113,7 @@ class FactorizationPlansTest {
 
     @Test
     fun `test factoring using the difference of squares formula`() = testMethod {
-        method = PolynomialPlans.FactorPolynomialInOneVariable
+        method = PolynomialsPlans.FactorPolynomialInOneVariable
         inputExpr = "121 [x ^ 4] - 9"
 
         check {
@@ -143,7 +143,7 @@ class FactorizationPlansTest {
 
     @Test
     fun `test factoring by first extracting the gcf then applying difference of squares`() = testMethod {
-        method = PolynomialPlans.FactorPolynomialInOneVariable
+        method = PolynomialsPlans.FactorPolynomialInOneVariable
         inputExpr = "18 [x ^ 6] - 32 [x ^ 2]"
 
         check {
@@ -213,7 +213,7 @@ class FactorizationPlansTest {
 
     @Test
     fun `test factoring by first extracting the gcf then applying difference of squares twice`() = testMethod {
-        method = PolynomialPlans.FactorPolynomialInOneVariable
+        method = PolynomialsPlans.FactorPolynomialInOneVariable
         inputExpr = "162 [x ^ 6] - 32 [x ^ 2]"
 
         check {

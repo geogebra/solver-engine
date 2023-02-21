@@ -12,6 +12,8 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSNode
 import com.google.devtools.ksp.validate
 import com.google.devtools.ksp.visitor.KSDefaultVisitor
+import translationkeys.TranslationKey
+import translationkeys.writeTranslationKeys
 import java.io.OutputStream
 
 /**
@@ -38,6 +40,7 @@ class MethodsProcessor(private val codeGenerator: CodeGenerator) : SymbolProcess
             "kt",
         )
 
+        val entries = symbols.filter { it.validate() }.map { it.accept(PublicMethodVisitor(), Unit) }
         val writer = file.writer()
         with(writer) {
             appendLine("package methods\n")
@@ -46,13 +49,13 @@ class MethodsProcessor(private val codeGenerator: CodeGenerator) : SymbolProcess
             appendLine("import engine.methods.MethodId\n")
             appendLine("val methodRegistry = run {")
             appendLine("    val builder = MethodRegistryBuilder()")
-            for (item in symbols.filter { it.validate() }.map { it.accept(PublicMethodVisitor(), Unit) }) {
+            for (entry in entries) {
                 appendLine("    builder.registerEntry(")
                 appendLine("        MethodRegistry.EntryData(")
-                appendLine("            MethodId(\"${item.category}\", \"${item.name}\"),")
+                appendLine("            MethodId(\"${entry.category}\", \"${entry.name}\"),")
                 appendLine("            true,")
-                appendLine("            \"\"\"${item.description.trim()}\"\"\",")
-                appendLine("            ${item.implementationName}")
+                appendLine("            \"\"\"${entry.description}\"\"\",")
+                appendLine("            ${entry.implementationName}")
                 appendLine("        )")
                 appendLine("    )")
             }
@@ -61,6 +64,13 @@ class MethodsProcessor(private val codeGenerator: CodeGenerator) : SymbolProcess
         }
         writer.close()
 
+        val keysFile = codeGenerator.createNewFile(
+            Dependencies(true, *symbols.map { it.containingFile!! }.toTypedArray()),
+            "",
+            "Method.TranslationKeys",
+            "json",
+        )
+        writeTranslationKeys(keysFile, entries.map { it.getTranslationKey() })
         invoked = true
         return ret
     }
@@ -78,7 +88,7 @@ class MethodsProcessor(private val codeGenerator: CodeGenerator) : SymbolProcess
                 category = category,
                 name = qname.getShortName(),
                 implementationName = qname.asString(),
-                description = classDeclaration.docString ?: "",
+                description = classDeclaration.docString?.trim() ?: "",
             )
         }
 
@@ -98,7 +108,12 @@ private data class Entry(
     val name: String,
     val implementationName: String,
     val description: String,
-)
+) {
+    fun getTranslationKey() = TranslationKey(
+        key = "Method.$category.$name",
+        comment = if (description == "") null else description,
+    )
+}
 
 class InvalidPublicMethodException(msg: String) : Exception(msg)
 

@@ -29,7 +29,7 @@ import engine.patterns.productContaining
 import engine.patterns.solutionOf
 import engine.patterns.sumContaining
 import engine.patterns.withOptionalConstantCoefficient
-import methods.polynomials.PolynomialPlans
+import methods.polynomials.PolynomialsPlans
 import methods.solvable.SolvableRules
 
 enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMethod {
@@ -40,7 +40,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
 
             steps {
                 apply(SolvableRules.MoveConstantsToTheLeft)
-                optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
+                optionally(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
             }
         },
     ),
@@ -51,7 +51,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
 
             steps {
                 apply(SolvableRules.MoveConstantsToTheRight)
-                optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
+                optionally(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
             }
         },
     ),
@@ -62,7 +62,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
 
             steps {
                 apply(SolvableRules.MoveVariablesToTheLeft)
-                optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
+                optionally(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
             }
         },
     ),
@@ -73,7 +73,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
 
             steps {
                 apply(InequalitiesRules.MultiplyByInverseCoefficientOfVariable)
-                optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
+                optionally(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
             }
         },
     ),
@@ -84,7 +84,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
 
             steps {
                 apply(SolvableRules.MultiplySolvableByLCD)
-                whilePossible(PolynomialPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
+                whilePossible(PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
             }
         },
     ),
@@ -95,11 +95,14 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
 
             steps {
                 apply(InequalitiesRules.DivideByCoefficientOfVariable)
-                optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
+                optionally(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
             }
         },
     ),
 
+    /**
+     * Solve a linear inequality in one variable
+     */
     @PublicMethod
     SolveLinearInequality(
         plan {
@@ -127,7 +130,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
                     apply(MultiplyByLCDAndSimplify)
                 }
 
-                optionally(PolynomialPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
+                optionally(PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
                 optionally(inequalitySimplificationSteps)
 
                 optionally {
@@ -198,7 +201,7 @@ private val inequalitySimplificationSteps = steps {
             option(InequalitiesRules.ExtractSolutionFromConstantInequalityBasedOnSign)
             // normalize the inequality
             option(SolvableRules.CancelCommonTermsOnBothSides)
-            option(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
+            option(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
         }
     }
 }

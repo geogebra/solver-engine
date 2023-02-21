@@ -38,7 +38,7 @@ import methods.general.NormalizationPlans
 import methods.general.NormalizationRules
 import methods.integerarithmetic.IntegerArithmeticPlans
 
-enum class PolynomialPlans(override val runner: CompositeMethod) : RunnerMethod {
+enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
     SimplifyCoefficient(simplifyCoefficient),
     CollectLikeTermsAndSimplify(collectLikeTermsAndSimplify),
@@ -155,6 +155,9 @@ enum class PolynomialPlans(override val runner: CompositeMethod) : RunnerMethod 
         },
     ),
 
+    /**
+     * Expand and simplify an expression containing a product or a power of polynomials in one variable.
+     */
     @PublicMethod
     ExpandPolynomialExpressionInOneVariable(
         plan {
@@ -191,6 +194,9 @@ enum class PolynomialPlans(override val runner: CompositeMethod) : RunnerMethod 
         },
     ),
 
+    /**
+     * Factor a polynomial in one variable.
+     */
     @PublicMethod
     FactorPolynomialInOneVariable(
         plan {
@@ -229,7 +235,7 @@ private val expandAndSimplifyBracketsToAPower = plan {
             option(GeneralPlans.ExpandBinomialCubed)
             option(GeneralPlans.ExpandTrinomialSquared)
         }
-        optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable)
+        optionally(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable)
     }
 }
 
@@ -245,7 +251,7 @@ private val expandAndSimplifyDoubleBrackets = plan {
             option(GeneralRules.ApplyFoilMethod)
             option(GeneralRules.ExpandDoubleBrackets)
         }
-        optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable)
+        optionally(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable)
     }
 }
 
@@ -257,7 +263,7 @@ private val expandAndSimplifySingleBracket = plan {
             option(GeneralRules.DistributeNegativeOverBracket)
             option(GeneralRules.DistributeMultiplicationOverSum)
         }
-        optionally(PolynomialPlans.SimplifyAlgebraicExpressionInOneVariable)
+        optionally(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable)
     }
 }
 
@@ -280,7 +286,7 @@ private val collectLikeTermsAndSimplify = plan {
             }
             optionally {
                 applyTo(Label.A) {
-                    applyTo(PolynomialPlans.SimplifyCoefficient) { it.firstChild }
+                    applyTo(PolynomialsPlans.SimplifyCoefficient) { it.firstChild }
                     optionally(PolynomialRules.NormalizeMonomial)
                 }
             }
@@ -301,17 +307,17 @@ private val multiplyMonomialsAndSimplify = plan {
                         applyTo(ConstantExpressionsPlans.SimplifyConstantSubexpression, Label.A)
                     }
                     optionally {
-                        applyTo(PolynomialPlans.MultiplyUnitaryMonomialsAndSimplify, Label.B)
+                        applyTo(PolynomialsPlans.MultiplyUnitaryMonomialsAndSimplify, Label.B)
                     }
                     optionally(PolynomialRules.NormalizeMonomial)
                 }
             }
-            option(PolynomialPlans.MultiplyUnitaryMonomialsAndSimplify)
+            option(PolynomialsPlans.MultiplyUnitaryMonomialsAndSimplify)
         }
     }
     alternative(ResourceData(curriculum = Curriculum.GM)) {
         whilePossible { deeply(IntegerArithmeticPlans.SimplifyIntegersInProduct) }
-        apply(PolynomialPlans.MultiplyUnitaryMonomialsAndSimplify)
+        apply(PolynomialsPlans.MultiplyUnitaryMonomialsAndSimplify)
     }
 }
 
@@ -371,11 +377,11 @@ private val distributeProductToIntegerPowerAndSimplify = plan {
 val algebraicSimplificationSteps = steps {
     firstOf {
         option { deeply(simpleTidyUpSteps) }
-        option { deeply(PolynomialPlans.MultiplyMonomialsAndSimplify) }
-        option { deeply(PolynomialPlans.DistributeProductToIntegerPowerAndSimplify) }
-        option { deeply(PolynomialPlans.SimplifyPowerOfUnitaryMonomial) }
-        option { deeply(PolynomialPlans.CollectLikeTermsAndSimplify) }
-        option { deeply(PolynomialPlans.NormalizeMonomialAndSimplify) }
+        option { deeply(PolynomialsPlans.MultiplyMonomialsAndSimplify) }
+        option { deeply(PolynomialsPlans.DistributeProductToIntegerPowerAndSimplify) }
+        option { deeply(PolynomialsPlans.SimplifyPowerOfUnitaryMonomial) }
+        option { deeply(PolynomialsPlans.CollectLikeTermsAndSimplify) }
+        option { deeply(PolynomialsPlans.NormalizeMonomialAndSimplify) }
         option(simplificationSteps)
     }
 }

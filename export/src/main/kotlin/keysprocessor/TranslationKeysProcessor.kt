@@ -1,6 +1,5 @@
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+package keysprocessor
+
 import com.google.devtools.ksp.containingFile
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
@@ -15,6 +14,8 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSNode
 import com.google.devtools.ksp.validate
 import com.google.devtools.ksp.visitor.KSDefaultVisitor
+import translationkeys.TranslationKey
+import translationkeys.writeTranslationKeys
 import java.io.OutputStream
 
 /**
@@ -47,17 +48,15 @@ class TranslationKeysProcessor(
         val entries = symbols
             .filter { it.validate() }
             .flatMap { it.accept(TranslationKeysVisitor(), Unit) }
-        val mapper = jacksonObjectMapper()
-            .enable(SerializationFeature.INDENT_OUTPUT)
-            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-        mapper.writeValue(file, entries)
+
+        writeTranslationKeys(file, entries)
 
         invoked = true
         return ret
     }
 
-    inner class TranslationKeysVisitor : KSDefaultVisitor<Unit, Sequence<Entry>>() {
-        override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit): Sequence<Entry> {
+    inner class TranslationKeysVisitor : KSDefaultVisitor<Unit, Sequence<TranslationKey>>() {
+        override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit): Sequence<TranslationKey> {
             if (classDeclaration.classKind != ClassKind.ENUM_CLASS) {
                 logger.error("Cannot get translation keys from non-enum class", classDeclaration)
                 return emptySequence()
@@ -66,11 +65,11 @@ class TranslationKeysProcessor(
             return classDeclaration.declarations
                 .filter { it is KSClassDeclaration && it.classKind == ClassKind.ENUM_ENTRY }
                 .map {
-                    Entry("$prefix.$it", it.docString?.trim())
+                    TranslationKey("$prefix.$it", it.docString?.trim())
                 }
         }
 
-        override fun defaultHandler(node: KSNode, data: Unit): Sequence<Entry> {
+        override fun defaultHandler(node: KSNode, data: Unit): Sequence<TranslationKey> {
             logger.error("Translation keys can only be obtained from enum classes", node)
             return emptySequence()
         }
@@ -84,8 +83,3 @@ class TranslationKeysProcessorProvider : SymbolProcessorProvider {
         return TranslationKeysProcessor(environment.codeGenerator, environment.logger)
     }
 }
-
-/**
- * This represents a translation key definition as the ggbtrans solver_import API expects it.
- */
-data class Entry(val key: String, val comment: String?)

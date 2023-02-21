@@ -10,7 +10,7 @@ class MultiplyMonomialsAndSimplifyTest {
 
     @Test
     fun simpleTest() = testMethod {
-        method = PolynomialPlans.MultiplyMonomialsAndSimplify
+        method = PolynomialsPlans.MultiplyMonomialsAndSimplify
         inputExpr = "2 x * 3 [x ^ 2]"
 
         check {
