@@ -1,7 +1,7 @@
 var F = Object.defineProperty;
 var L = (e, t, s) => t in e ? F(e, t, { enumerable: !0, configurable: !0, writable: !0, value: s }) : e[t] = s;
 var g = (e, t, s) => (L(e, typeof t != "symbol" ? t + "" : t, s), s);
-const B = "https://solver.geogebra.net/main/api/v1.0-alpha0", M = {
+const B = "https://solver.geogebra.net/main/api/v1", M = {
   headers: { "Content-Type": "application/json" }
 }, j = {
   curriculum: "",
@@ -28,7 +28,7 @@ class C {
       ...this.defaultHeaders,
       method: "POST",
       body: JSON.stringify({ input: t, format: r, context: n })
-    }).then((i) => i.json());
+    }).then((u) => u.json());
   }
   /** Get a list of all available plans. */
   async listPlans() {
@@ -42,21 +42,21 @@ class C {
   }
 }
 const te = new C();
-function D(e, t = ".") {
+function U(e, t = ".") {
   const [s, ...r] = e;
-  let n, i = [];
-  typeof s == "string" ? n = s : [n, ...i] = s;
-  let o;
+  let n, u = [];
+  typeof s == "string" ? n = s : [n, ...u] = s;
+  let i;
   if (r.length === 0 && n !== "FiniteSet") {
-    const u = n;
-    u.match(/^[+\-0-9]/) ? o = { type: "Number", value: u, path: t } : u === "UNDEFINED" ? o = { type: "UNDEFINED", path: t } : u === "INFINITY" ? o = { type: "INFINITY", path: t } : u === "REALS" ? o = { type: "REALS", path: t } : o = { type: "Variable", value: u, path: t };
+    const a = n;
+    a.match(/^[+\-0-9]/) ? i = { type: "Number", value: a, path: t } : a === "UNDEFINED" ? i = { type: "UNDEFINED", path: t } : a === "INFINITY" ? i = { type: "INFINITY", path: t } : a === "REALS" ? i = { type: "REALS", path: t } : i = { type: "Variable", value: a, path: t };
   } else
-    o = {
+    i = {
       type: n,
-      args: r.map((u, c) => D(u, `${t}/${c}`)),
+      args: r.map((a, c) => U(a, `${t}/${c}`)),
       path: t
     };
-  return i.length && (o.decorators = i), o;
+  return u.length && (i.decorators = u), i;
 }
 function O(e) {
   var t, s;
@@ -70,33 +70,33 @@ const A = {
   divSymbol: " \\div "
 };
 function G(e, t, s) {
-  return T(
+  return $(
     e,
     { ...A, ...t },
     s || ((r, n) => n)
   );
 }
-function T(e, t, s) {
-  const r = (i) => T(i, t, s), n = (i) => s(e, x(i, e.decorators));
+function $(e, t, s) {
+  const r = (u) => $(u, t, s), n = (u) => s(e, E(u, e.decorators));
   switch (e.type) {
     case "Number":
-      return s(e, x(Y(e), e.decorators));
+      return s(e, E(Y(e), e.decorators));
     case "Variable":
-      return s(e, x(e.value, e.decorators));
+      return s(e, E(e.value, e.decorators));
     case "Sum":
       return n(
         e.args.map(
-          (o, u) => {
-            var c, d;
-            return o.type === "Minus" && !((c = o.decorators) != null && c.length) ? (
+          (a, c) => {
+            var d, p;
+            return a.type === "Minus" && !((d = a.decorators) != null && d.length) ? (
               // binary minus
-              `-${r(o.args[0])}`
-            ) : o.type === "PlusMinus" && !((d = o.decorators) != null && d.length) ? (
+              `-${r(a.args[0])}`
+            ) : a.type === "PlusMinus" && !((p = a.decorators) != null && p.length) ? (
               // binary ±
-              `\\pm ${r(o.args[0])}`
+              `\\pm ${r(a.args[0])}`
             ) : (
               // binary plus
-              u === 0 ? r(o) : `+${r(o)}`
+              c === 0 ? r(a) : `+${r(a)}`
             );
           }
         ).join("")
@@ -110,11 +110,11 @@ function T(e, t, s) {
     case "Product":
       return n(
         e.args.map(
-          (o, u) => u == 0 || o.type === "DivideBy" ? r(o) : `${t.mulSymbol}${r(o)}`
+          (a, c) => c == 0 || a.type === "DivideBy" ? r(a) : `${t.mulSymbol}${r(a)}`
         ).join("")
       );
     case "ImplicitProduct":
-      return n(e.args.map((o) => r(o)).join(""));
+      return n(e.args.map((a) => r(a)).join(""));
     case "DivideBy":
       return `${t.divSymbol}${r(e.args[0])}`;
     case "Fraction":
@@ -130,11 +130,16 @@ function T(e, t, s) {
     case "Equation":
       return t.align ? n(`${r(e.args[0])} & = & ${r(e.args[1])}`) : n(`${r(e.args[0])} = ${r(e.args[1])}`);
     case "EquationSystem":
-      const i = { ...t, align: !0 };
+      const u = { ...t, align: !0 };
       return n(
         `\\left\\{\\begin{array}{rcl}
-` + e.args.map((o) => "  " + T(o, i, s) + `\\\\
+` + e.args.map((a) => "  " + $(a, u, s) + `\\\\
 `).join("") + "\\end{array}\\right."
+      );
+    case "EquationUnion":
+      const i = { ...t, align: !1 };
+      return n(
+        e.args.map((a) => $(a, i, s)).join(", ")
       );
     case "UNDEFINED":
       return n("\\text{undefined}");
@@ -154,7 +159,7 @@ function T(e, t, s) {
       return n(`${r(e.args[0])} \\in ${r(e.args[1])}`);
     case "FiniteSet":
       return n(
-        e.args.length === 0 ? "\\emptyset" : `\\left\\{${e.args.map((o) => r(o)).join(", ")}\\right\\}`
+        e.args.length === 0 ? "\\emptyset" : `\\left\\{${e.args.map((a) => r(a)).join(", ")}\\right\\}`
       );
     case "OpenInterval":
       return `\\left( ${r(e.args[0])}, ${r(e.args[1])} \\right)`;
@@ -170,89 +175,89 @@ function Y(e) {
   const [t, s] = e.value.split("[");
   return s !== void 0 ? `${t}\\overline{${s.slice(0, -1)}}` : t;
 }
-function x(e, t) {
+function E(e, t) {
   return t ? t.reduce((s, r) => r === "RoundBracket" ? `\\left(${s}\\right)` : r === "SquareBracket" ? `\\left[${s}\\right]` : r === "CurlyBracket" ? `\\left\\{${s}\\right\\}` : s, e) : e;
 }
 function H(e) {
-  const t = /^\s*(UNDEFINED|REALS|\\text\{[Uu]ndefined\}|\\mathbb\{R\})/, s = /^\s*((([0-9]*(\.[0-9]*|[0-9]+))([eE][-+]?[0-9]+)?)|∞|Infinity)/, r = new RegExp("^\\s*\\{(\\??[A-Za-z0-9_]*)\\:"), n = new RegExp("^\\s*([a-zA-Z₀₁₂₃₄₅₆₇₈₉⬚])"), i = new RegExp("^\\s*(sqrt|root|Solution)"), o = new RegExp("^\\s*([α-ωΑ-Ω])"), u = new RegExp('^\\s*"([^"]+)"'), c = new RegExp("^\\s*\\\\text{(.*?)}"), d = /^\s*(\[\.|\.\]|\{\.|\.\}|>=|<=|\*\*|[-–+×*/÷=><();,^{}[\]|_±⁰¹²³⁴⁵⁶⁷⁸⁹ⁿ:≥≤√])/, b = new RegExp("^\\s*(\\\\[^A-Za-z0-9\\s]|\\\\[A-Za-z]+)"), v = new RegExp("^(\\s+)"), f = [], w = e.length;
+  const t = /^\s*(UNDEFINED|REALS|\\text\{[Uu]ndefined\}|\\mathbb\{R\})/, s = /^\s*((([0-9]*(\.[0-9]*|[0-9]+))([eE][-+]?[0-9]+)?)|∞|Infinity)/, r = new RegExp("^\\s*\\{(\\??[A-Za-z0-9_]*)\\:"), n = new RegExp("^\\s*([a-zA-Z₀₁₂₃₄₅₆₇₈₉⬚])"), u = new RegExp("^\\s*(sqrt|root|Solution)"), i = new RegExp("^\\s*([α-ωΑ-Ω])"), a = new RegExp('^\\s*"([^"]+)"'), c = new RegExp("^\\s*\\\\text{(.*?)}"), d = /^\s*(\[\.|\.\]|\{\.|\.\}|>=|<=|\*\*|[-–+×*/÷=><();,^{}[\]|_±⁰¹²³⁴⁵⁶⁷⁸⁹ⁿ:≥≤√])/, p = new RegExp("^\\s*(\\\\[^A-Za-z0-9\\s]|\\\\[A-Za-z]+)"), x = new RegExp("^(\\s+)"), f = [], w = e.length;
   for (let l = 0; l < w; ) {
     const h = e.substring(l);
-    let a;
-    if (a = v.exec(h))
-      l += a[0].length;
-    else if (a = t.exec(h))
+    let o;
+    if (o = x.exec(h))
+      l += o[0].length;
+    else if (o = t.exec(h))
       f.push({
         type: "symbol",
-        value: a[1].replace(/\\text\{[Uu]ndefined\}/, "UNDEFINED"),
-        from: l + (a[0].length - a[1].length),
-        to: l + a[0].length
-      }), l += a[0].length;
-    else if (a = s.exec(h))
+        value: o[1].replace(/\\text\{[Uu]ndefined\}/, "UNDEFINED"),
+        from: l + (o[0].length - o[1].length),
+        to: l + o[0].length
+      }), l += o[0].length;
+    else if (o = s.exec(h))
       f.push({
         type: "number",
-        value: a[1].replace("∞", "Infinity"),
-        from: l + (a[0].length - a[1].length),
-        to: l + a[0].length
-      }), l += a[0].length;
-    else if (a = r.exec(h))
-      f.push({ type: "operator", value: "{", from: l, to: l + 1 }), f.push({ type: "name", value: a[1], from: l + 1, to: l + a[1].length + 1 }), f.push({
+        value: o[1].replace("∞", "Infinity"),
+        from: l + (o[0].length - o[1].length),
+        to: l + o[0].length
+      }), l += o[0].length;
+    else if (o = r.exec(h))
+      f.push({ type: "operator", value: "{", from: l, to: l + 1 }), f.push({ type: "name", value: o[1], from: l + 1, to: l + o[1].length + 1 }), f.push({
         type: "operator",
         value: ":",
-        from: l + a[0].length - 1,
-        to: l + a[0].length
-      }), l += a[0].length;
-    else if (a = i.exec(h))
+        from: l + o[0].length - 1,
+        to: l + o[0].length
+      }), l += o[0].length;
+    else if (o = u.exec(h))
       f.push({
         type: "operator",
-        value: a[1],
+        value: o[1],
         // will be something like "sin"
-        from: l + (a[0].length - a[1].length),
-        to: l + a[0].length
-      }), l += a[0].length;
-    else if (a = n.exec(h))
+        from: l + (o[0].length - o[1].length),
+        to: l + o[0].length
+      }), l += o[0].length;
+    else if (o = n.exec(h))
       f.push({
         type: "name",
-        value: a[1],
-        from: l + (a[0].length - a[1].length),
-        to: l + a[0].length
-      }), l += a[0].length;
-    else if (a = o.exec(h))
+        value: o[1],
+        from: l + (o[0].length - o[1].length),
+        to: l + o[0].length
+      }), l += o[0].length;
+    else if (o = i.exec(h))
       f.push({
         type: "name",
-        value: a[1],
-        from: l + (a[0].length - a[1].length),
-        to: l + a[0].length
-      }), l += a[0].length;
-    else if (a = u.exec(h))
+        value: o[1],
+        from: l + (o[0].length - o[1].length),
+        to: l + o[0].length
+      }), l += o[0].length;
+    else if (o = a.exec(h))
       f.push({
         type: "name",
-        value: a[1],
-        from: l + (a[0].length - a[1].length),
-        to: l + a[0].length
-      }), l += a[0].length;
-    else if (a = c.exec(h)) {
-      const N = l + a.index + a[0].indexOf(a[1]);
-      f.push({ type: "name", value: a[1], from: N, to: N + a[1].length }), l += a[0].length;
-    } else if (a = d.exec(h))
+        value: o[1],
+        from: l + (o[0].length - o[1].length),
+        to: l + o[0].length
+      }), l += o[0].length;
+    else if (o = c.exec(h)) {
+      const N = l + o.index + o[0].indexOf(o[1]);
+      f.push({ type: "name", value: o[1], from: N, to: N + o[1].length }), l += o[0].length;
+    } else if (o = d.exec(h))
       f.push({
         type: "operator",
-        value: a[1],
-        from: l + (a[0].length - a[1].length),
-        to: l + a[0].length
-      }), l += a[0].length;
-    else if (a = b.exec(h))
+        value: o[1],
+        from: l + (o[0].length - o[1].length),
+        to: l + o[0].length
+      }), l += o[0].length;
+    else if (o = p.exec(h))
       f.push({
         type: "latex",
-        value: a[1],
-        from: l + (a[0].length - a[1].length),
-        to: l + a[0].length
-      }), l += a[0].length;
+        value: o[1],
+        from: l + (o[0].length - o[1].length),
+        to: l + o[0].length
+      }), l += o[0].length;
     else
       throw "can't tokenize '" + h + "'";
   }
   return f.filter((l) => l.value !== "\\left" && l.value !== "\\right");
 }
-function p(e, t) {
+function b(e, t) {
   throw { name: "SyntaxError", message: e, object: t };
 }
 class z {
@@ -266,8 +271,8 @@ class z {
 class V extends z {
   constructor() {
     super(...arguments);
-    g(this, "nud", () => p(`Undefined nud for ${this.id}`, this));
-    g(this, "led", () => p(`Undefined led for ${this.id}`, this));
+    g(this, "nud", () => b(`Undefined nud for ${this.id}`, this));
+    g(this, "led", () => b(`Undefined led for ${this.id}`, this));
   }
 }
 class P {
@@ -301,7 +306,7 @@ class Z {
     if (t && ((c = this.token) == null ? void 0 : c.id) !== t) {
       if (s)
         return;
-      p("Expected '" + t + "'.", this.token);
+      b("Expected '" + t + "'.", this.token);
     }
     if (this.token_nr >= this.tokens.length) {
       this.token = this.symbolTable["(end)"];
@@ -309,11 +314,11 @@ class Z {
     }
     const r = this.tokens[this.token_nr];
     this.token_nr += 1;
-    const n = r.value, i = r.type;
-    let o;
-    i === "name" ? o = this.scope.find_or_define(r) : i === "operator" ? (o = this.symbolTable[n], o || p(`Unknown operator "${n}".`, r)) : i === "latex" ? (o = this.symbolTable[n], o || p(`Unknown latex command "${n}".`, r)) : i === "number" ? o = this.symbolTable["(number)"] : i === "symbol" ? o = this.symbolTable[n] ?? this.symbolTable["(symbol)"] : p("Unexpected token.", r), o || p("Couldn't find token.", r);
-    const u = Object.create(o);
-    return u.from = r.from, u.to = r.to, u.value = n, u.type = i, this.token = u, this.token;
+    const n = r.value, u = r.type;
+    let i;
+    u === "name" ? i = this.scope.find_or_define(r) : u === "operator" ? (i = this.symbolTable[n], i || b(`Unknown operator "${n}".`, r)) : u === "latex" ? (i = this.symbolTable[n], i || b(`Unknown latex command "${n}".`, r)) : u === "number" ? i = this.symbolTable["(number)"] : u === "symbol" ? i = this.symbolTable[n] ?? this.symbolTable["(symbol)"] : b("Unexpected token.", r), i || b("Couldn't find token.", r);
+    const a = Object.create(i);
+    return a.from = r.from, a.to = r.to, a.value = n, a.type = u, this.token = a, this.token;
   }
   /// If a token is passed as second parameter, no initial advance() is called.
   expression(t, s = null) {
@@ -339,33 +344,33 @@ class Z {
     return this.advance("(end)"), s;
   }
 }
-const k = 5, J = 6, $ = 10, S = 20, y = 25, E = 30, _ = 40, W = {
+const k = 5, J = 6, S = 10, v = 20, y = 25, T = 30, _ = 40, W = {
   registerSum(e) {
-    const t = e.registerSymbol("+", $);
+    const t = e.registerSymbol("+", S);
     t.nud = () => ({
       type: "Plus",
-      args: [e.expression(E)]
+      args: [e.expression(T)]
     }), t.led = m(e, "Sum");
     for (const s of ["-", "–"]) {
-      const r = e.registerSymbol(s, $);
+      const r = e.registerSymbol(s, S);
       r.nud = () => ({
         type: "Minus",
-        args: [e.expression(E)]
+        args: [e.expression(T)]
       }), r.led = m(e, "Sum", "Minus");
     }
     for (const s of ["\\pm", "±"]) {
-      const r = e.registerSymbol(s, $);
+      const r = e.registerSymbol(s, S);
       r.nud = () => ({
         type: "PlusMinus",
-        args: [e.expression(E)]
+        args: [e.expression(T)]
       }), r.led = m(e, "Sum", "PlusMinus");
     }
   },
   registerTimes(e) {
     for (const t of ["*", "\\cdot", "\\times", "×"])
-      e.registerSymbol(t, S).led = m(e, "Product");
+      e.registerSymbol(t, v).led = m(e, "Product");
     for (const t of [":", "\\div", "/"])
-      e.registerSymbol(t, S).led = m(
+      e.registerSymbol(t, v).led = m(
         e,
         "Product",
         "DivideBy"
@@ -423,14 +428,14 @@ const k = 5, J = 6, $ = 10, S = 20, y = 25, E = 30, _ = 40, W = {
       e.registerSymbol(t, k).led = (r) => ({ type: s, args: [r, e.expression(k)] });
   },
   registerBrackets(e) {
-    function t(s, r, n, i = !1) {
-      const o = e.registerSymbol(s, y);
-      e.registerSymbol(r), o.nud = () => {
-        if (i && e.advance(r, !0))
+    function t(s, r, n, u = !1) {
+      const i = e.registerSymbol(s, y);
+      e.registerSymbol(r), i.nud = () => {
+        if (u && e.advance(r, !0))
           return e.expression(0);
-        const u = e.expression(0);
-        return e.advance(r), n && (u.decorators ? u.decorators.push(n) : u.decorators = [n]), u;
-      }, o.led = m(e, "ImplicitProduct");
+        const a = e.expression(0);
+        return e.advance(r), n && (a.decorators ? a.decorators.push(n) : a.decorators = [n]), a;
+      }, i.led = m(e, "ImplicitProduct");
     }
     t("\\{", "\\}", "CurlyBracket"), t("[", "]", "SquareBracket"), t("(", ")", "RoundBracket"), t("{", "}", void 0, !0);
   },
@@ -452,18 +457,18 @@ const k = 5, J = 6, $ = 10, S = 20, y = 25, E = 30, _ = 40, W = {
   // },
   registerFraction(e) {
     const t = () => {
-      const n = e.expression(100), i = e.expression(100);
-      return { type: "Fraction", args: [n, i] };
+      const n = e.expression(100), u = e.expression(100);
+      return { type: "Fraction", args: [n, u] };
     }, s = (n) => {
-      const i = e.expression(100), o = e.expression(100);
-      return n.type === "Number" && Number.isInteger(+n.value) && i.type === "Number" && Number.isInteger(+i.value) && o.type === "Number" && Number.isInteger(+o.value) ? { type: "MixedNumber", args: [n, i, o] } : {
+      const u = e.expression(100), i = e.expression(100);
+      return n.type === "Number" && Number.isInteger(+n.value) && u.type === "Number" && Number.isInteger(+u.value) && i.type === "Number" && Number.isInteger(+i.value) ? { type: "MixedNumber", args: [n, u, i] } : {
         type: "ImplicitProduct",
-        args: [n, { type: "Fraction", args: [i, o] }]
+        args: [n, { type: "Fraction", args: [u, i] }]
       };
     };
     ["\\frac", "\\dfrac", "\\tfrac"].forEach((n) => {
-      const i = e.registerSymbol(n, S);
-      i.nud = t, i.led = s;
+      const u = e.registerSymbol(n, v);
+      u.nud = t, u.led = s;
     });
   },
   registerExponent(e) {
@@ -489,30 +494,30 @@ const k = 5, J = 6, $ = 10, S = 20, y = 25, E = 30, _ = 40, W = {
 };
 function m(e, t, s, r) {
   return function(n) {
-    var u, c;
-    const i = t === "Sum" ? $ : t === "ImplicitProduct" ? y : S;
-    let o = t === "ImplicitProduct" ? e.expression(i, this) : e.expression(i);
-    if (s && (o = { type: s, args: [o] }), r) {
-      const d = r(n, o);
+    var a, c;
+    const u = t === "Sum" ? S : t === "ImplicitProduct" ? y : v;
+    let i = t === "ImplicitProduct" ? e.expression(u, this) : e.expression(u);
+    if (s && (i = { type: s, args: [i] }), r) {
+      const d = r(n, i);
       if (d)
         return d;
     }
-    return t === "Sum" && !s && !((u = o.decorators) != null && u.length) && (o.type === "Minus" || o.type === "PlusMinus") && (o.decorators = ["MissingBracket"]), n.type === t && !((c = n.decorators) != null && c.length) ? { type: t, args: [...n.args || [], o] } : { type: t, args: [n, o] };
+    return t === "Sum" && !s && !((a = i.decorators) != null && a.length) && (i.type === "Minus" || i.type === "PlusMinus") && (i.decorators = ["MissingBracket"]), n.type === t && !((c = n.decorators) != null && c.length) ? { type: t, args: [...n.args || [], i] } : { type: t, args: [n, i] };
   };
 }
-function U(e, t = ".") {
+function q(e, t = ".") {
   return "args" in e ? {
     ...e,
     path: t,
-    args: e.args.map((s, r) => U(s, `${t}/${r}`))
+    args: e.args.map((s, r) => q(s, `${t}/${r}`))
   } : { ...e, path: t };
 }
 const Q = new Z(Object.values(W));
 function X(e) {
-  return U(Q.parse(e));
+  return q(Q.parse(e));
 }
-function q(e) {
-  const t = (r) => q(r), s = (r) => K(r, e.decorators);
+function D(e) {
+  const t = (r) => D(r), s = (r) => K(r, e.decorators);
   switch (e.type) {
     case "Number":
       return s(e.value);
@@ -522,11 +527,11 @@ function q(e) {
       return s(
         e.args.map(
           (r, n) => {
-            var i, o;
-            return r.type === "Minus" && !((i = r.decorators) != null && i.length) ? (
+            var u, i;
+            return r.type === "Minus" && !((u = r.decorators) != null && u.length) ? (
               // binary minus
               `-${t(r.args[0])}`
-            ) : r.type === "PlusMinus" && !((o = r.decorators) != null && o.length) ? (
+            ) : r.type === "PlusMinus" && !((i = r.decorators) != null && i.length) ? (
               // binary ±
               `+/-${t(r.args[0])}`
             ) : (
@@ -564,6 +569,8 @@ function q(e) {
       return s(`${t(e.args[0])} = ${t(e.args[1])}`);
     case "EquationSystem":
       return s(e.args.map((r) => t(r)).join(", "));
+    case "EquationUnion":
+      return s(e.args.map((r) => t(r)).join(" OR "));
     case "UNDEFINED":
       return s("UNDEFINED");
     case "INFINITY":
@@ -603,21 +610,21 @@ function re(e) {
 }
 function se(e, t, s = !0) {
   const r = {}, n = {};
-  s && (e = e.filter((i) => i.type !== "Shift"));
-  for (const [i, o] of e.entries()) {
-    const u = t[i % t.length];
-    for (const c of o.fromPaths)
-      r[c] = u;
-    for (const c of o.toPaths)
-      n[c] = u;
+  s && (e = e.filter((u) => u.type !== "Shift"));
+  for (const [u, i] of e.entries()) {
+    const a = t[u % t.length];
+    for (const c of i.fromPaths)
+      r[c] = a;
+    for (const c of i.toPaths)
+      n[c] = a;
   }
   return [r, n];
 }
 function ne(e, t) {
-  return G(D(e), t);
+  return G(U(e), t);
 }
 function oe(e) {
-  return q(X(e));
+  return D(X(e));
 }
 function R(e) {
   return e.length === 0 ? "." : `./${e.join("/")}`;
@@ -626,19 +633,19 @@ function ae(e) {
   return e === "." ? [] : (e.startsWith("./") && (e = e.substring(2)), e.split("/").map((t) => +t));
 }
 function ie(e, t, s, r = !0) {
-  function n(i, o, u = 0) {
+  function n(u, i, a = 0) {
     var d;
-    if (s.length === u)
+    if (s.length === a)
       return r ? {
-        ...I(o, R(s)),
-        ...(d = i.decorators) != null && d.length ? { decorators: i.decorators.slice() } : null
-      } : I(o, R(s));
-    const c = s[u];
-    if (!("args" in i) || c >= i.args.length)
+        ...I(i, R(s)),
+        ...(d = u.decorators) != null && d.length ? { decorators: u.decorators.slice() } : null
+      } : I(i, R(s));
+    const c = s[a];
+    if (!("args" in u) || c >= u.args.length)
       throw new Error("Invalid path");
     return {
-      ...i,
-      args: i.args.map((b, v) => v === c ? n(b, o, u + 1) : b)
+      ...u,
+      args: u.args.map((p, x) => x === c ? n(p, i, a + 1) : p)
     };
   }
   return n(e, t);
@@ -656,12 +663,12 @@ export {
   re as coloringTransformer,
   se as createColorMaps,
   ne as jsonToLatex,
-  D as jsonToTree,
+  U as jsonToTree,
   oe as latexToSolver,
   X as latexToTree,
   ae as pathToArray,
   ie as substituteTree,
   O as treeToJson,
   G as treeToLatex,
-  q as treeToSolver
+  D as treeToSolver
 };
