@@ -153,8 +153,8 @@ enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : Runn
 
             steps {
                 whilePossible { deeply(simpleTidyUpSteps) }
-                optionally(RewriteIntegerOrderRootsAsPowers)
                 optionally(NormalizationPlans.NormalizeExpression)
+                optionally(RewriteIntegerOrderRootsAsPowers)
                 whilePossible { deeply(SimplifyConstantSubexpression, deepFirst = true) }
                 whilePossible(constantSimplificationSteps)
             }

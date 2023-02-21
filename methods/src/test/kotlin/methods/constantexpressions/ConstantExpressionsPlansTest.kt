@@ -811,6 +811,35 @@ class TestNormalization {
             }
         }
     }
+
+    @Test
+    fun testAddBracketsBeforeWritingRootAsPower() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "[sqrt[2]^[1/2]]"
+
+        check {
+            fromExpr = "[sqrt[2] ^ [1 / 2]]"
+            toExpr = "[2 ^ [1 / 4]]"
+
+            step {
+                fromExpr = "[sqrt[2] ^ [1 / 2]]"
+                toExpr = "[(sqrt[2]) ^ [1 / 2]]"
+                explanation {
+                    key = GeneralExplanation.ReplaceInvisibleBrackets
+                }
+            }
+
+            step {
+                fromExpr = "[(sqrt[2]) ^ [1 / 2]]"
+                toExpr = "[([2 ^ [1 / 2]]) ^ [1 / 2]]"
+                explanation {
+                    key = GeneralExplanation.RewriteIntegerOrderRootAsPower
+                }
+            }
+
+            step { }
+        }
+    }
 }
 
 class ConstantExpressionFractionHigherOrderRootTest {
