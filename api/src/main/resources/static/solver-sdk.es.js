@@ -126,7 +126,7 @@ function $(e, t, s) {
     case "SquareRoot":
       return n(`\\sqrt{${r(e.args[0])}}`);
     case "Root":
-      return n(`\\sqrt[${r(e.args[1])}]{${r(e.args[0])}}`);
+      return n(`\\sqrt[{${r(e.args[1])}}]{${r(e.args[0])}}`);
     case "Equation":
       return t.align ? n(`${r(e.args[0])} & = & ${r(e.args[1])}`) : n(`${r(e.args[0])} = ${r(e.args[1])}`);
     case "EquationSystem":
