@@ -1,7 +1,6 @@
 package methods.polynomials
 
 import engine.context.Context
-import engine.context.Curriculum
 import engine.methods.testRule
 import methods.polynomials.PolynomialRules.ApplyDifferenceOfSquaresFormula
 import methods.polynomials.PolynomialRules.CollectLikeTerms
@@ -31,7 +30,7 @@ class PolynomialsRulesTest {
     @Test
     fun testCombineTwoSimpleLikeTerms() {
         fun t(input: String, output: String?) =
-            testRule(input, CombineTwoSimpleLikeTerms, output, null, Context(curriculum = Curriculum.GM))
+            testRule(input, CombineTwoSimpleLikeTerms, output, null, Context(gmFriendly = true))
         t("x + x", "2x")
         t("x - x", "0x") // cancel opposite terms will overrule this with a result of 0
         t("4x - 4x", "0x") // cancel opposite terms will overrule this with a result of 0

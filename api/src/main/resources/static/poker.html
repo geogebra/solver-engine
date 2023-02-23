@@ -119,7 +119,6 @@
       <label for="curriculumSelect">Curriculum</label>
       <select id="curriculumSelect">
         <option value="" selected>Default</option>
-        <option value="GM">GM</option>
         <option value="US">US</option>
         <option value="EU">EU</option>
       </select>
@@ -131,10 +130,13 @@
         <option value="5">5 d.p.</option>
         <option value="6">6 d.p.</option>
       </select>
-      <label for="preferDecimals">Prefer decimals</label>
-      <input id="preferDecimals" type="checkbox" />
       <label for="solutionVariable">Solution variable</label>
       <input type="text" id="solutionVariable" value="x" size="1" />
+      <input id="preferDecimals" type="checkbox" />
+      <label for="preferDecimals">Prefer decimals</label>
+      <!-- GM stands for Graspable Math -->
+      <input id="gmFriendlyCheckbox" type="checkbox" />
+      <label for="gmFriendlyCheckbox">GM friendly</label>
 
       <br />
 
@@ -146,12 +148,6 @@
       <input type="button" id="submitToMain" value="Submit to main" />
     </form>
     <form>
-      <label for="showThroughSteps">Show through steps</label>
-      <input id="showThroughSteps" type="checkbox" />
-      <label for="hideWarnings">Hide warnings</label>
-      <input id="hideWarnings" type="checkbox" />
-      <label for="showRearrangements">Show rearrangements</label>
-      <input id="showRearrangements" type="checkbox" />
       <label for="colorScheme">Colors</label>
       <select id="colorScheme">
         <option value="default">Default</option>
@@ -159,6 +155,12 @@
         <option value="none">No coloring</option>
         <option value="blue">Just blue</option>
       </select>
+      <input id="showThroughSteps" type="checkbox" />
+      <label for="showThroughSteps">Show through steps</label>
+      <input id="hideWarnings" type="checkbox" />
+      <label for="hideWarnings">Hide warnings</label>
+      <input id="showRearrangements" type="checkbox" />
+      <label for="showRearrangements">Show rearrangements</label>
     </form>
     <p id="result"></p>
     <details>

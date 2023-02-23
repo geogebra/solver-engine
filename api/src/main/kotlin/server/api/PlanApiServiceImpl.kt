@@ -49,6 +49,7 @@ fun getContext(apiCtx: server.models.Context?, defaultSolutionVariable: String?)
 
     Context(
         curriculum = curriculum,
+        gmFriendly = apiCtx.gmFriendly == true,
         precision = apiCtx.precision?.toInt(),
         preferDecimals = apiCtx.preferDecimals,
         solutionVariable = apiCtx.solutionVariable ?: defaultSolutionVariable,

@@ -1,6 +1,5 @@
 package methods.polynomials
 
-import engine.context.Curriculum
 import engine.context.ResourceData
 import engine.expressions.Constants
 import engine.expressions.Label
@@ -134,11 +133,12 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
                 optionally(NormalizeAllMonomials)
                 whilePossible { deeply(PolynomialRules.NormalizePolynomial) }
             }
-            alternative(ResourceData(curriculum = Curriculum.GM)) {
+            alternative(ResourceData(gmFriendly = true)) {
                 whilePossible { deeply(simpleTidyUpSteps) }
                 whilePossible { deeply(simplificationSteps) }
                 optionally(NormalizationPlans.NormalizeExpression)
                 whilePossible(algebraicSimplificationSteps)
+                optionally(NormalizeAllMonomials)
             }
         },
     ),
@@ -270,7 +270,7 @@ private val multiplyMonomialsAndSimplify = plan {
             option(PolynomialsPlans.MultiplyUnitaryMonomialsAndSimplify)
         }
     }
-    alternative(ResourceData(curriculum = Curriculum.GM)) {
+    alternative(ResourceData(gmFriendly = true)) {
         whilePossible { deeply(IntegerArithmeticPlans.SimplifyIntegersInProduct) }
         apply(PolynomialsPlans.MultiplyUnitaryMonomialsAndSimplify)
     }

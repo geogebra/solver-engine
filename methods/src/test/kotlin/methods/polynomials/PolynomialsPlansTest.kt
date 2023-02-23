@@ -649,6 +649,20 @@ class PolynomialsPlansTest {
     }
 
     @Test
+    fun `Cancel negatives on different factors of product`() = testMethod {
+        method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
+        inputExpr = "-3 * (-a)"
+
+        check {
+            fromExpr = "-3 * (-a)"
+            toExpr = "3 a"
+            explanation {
+                key = GeneralExplanation.SimplifyProductWithTwoNegativeFactors
+            }
+        }
+    }
+
+    @Test
     fun `test simplification left to right`() = testMethod {
         method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
         inputExpr = "2 x * x + [(2 x) ^ 2] - 3 x * 2 x + 3 * 10 - [([x ^ 2]) ^ 3] + x * x"

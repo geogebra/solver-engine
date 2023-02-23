@@ -3,6 +3,9 @@ type: object
 properties:
   curriculum:
     type: string
+  gmFriendly:
+    type: boolean
+    description: Give steps that are good for when you want to do your math on a Graspable Math (GM) canvas. (See graspablemath.com). Default is false.
   precision:
     type: number
   preferDecimals:

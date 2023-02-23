@@ -432,8 +432,12 @@ const fetchPlansAndUpdatePage = () =>
     const planId = url.searchParams.get('plan');
     const input = url.searchParams.get('input');
     const curriculum = url.searchParams.get('curriculum');
+    const gmFriendly = url.searchParams.get('gmFriendly') === '1';
     const precision = url.searchParams.get('precision');
-    const preferDecimals = url.searchParams.get('preferDecimals');
+    // Before 2/23/2023, `preferDecimals` may have been set to "true" instead of "1", so
+    // we should keep this backwards-compatibility logic here, for a while.
+    const temp = url.searchParams.get('preferDecimals');
+    const preferDecimals = temp === '1' || temp === 'true';
     const solutionVariable = url.searchParams.get('solutionVariable');
     if (planId) {
       el('plansSelect').value = planId;
@@ -444,12 +448,11 @@ const fetchPlansAndUpdatePage = () =>
     if (curriculum) {
       el('curriculumSelect').value = curriculum;
     }
+    el('gmFriendlyCheckbox').checked = gmFriendly;
     if (precision) {
       el('precisionSelect').value = precision;
     }
-    if (preferDecimals) {
-      el('preferDecimals').checked = true;
-    }
+    el('preferDecimals').checked = preferDecimals;
     if (solutionVariable) {
       el('solutionVariable').value = solutionVariable;
     }
@@ -458,8 +461,9 @@ const fetchPlansAndUpdatePage = () =>
         planId,
         input,
         curriculum,
+        gmFriendly,
         precision: parseInt(precision),
-        preferDecimals: preferDecimals === 'true',
+        preferDecimals,
         solutionVariable,
       });
     }
@@ -469,6 +473,8 @@ const getRequestDataFromForm = () => ({
   planId: el('plansSelect').value,
   input: el('input').value,
   curriculum: el('curriculumSelect').value,
+  /** GM stands for Graspable Math */
+  gmFriendly: el('gmFriendlyCheckbox').checked,
   precision: parseInt(el('precisionSelect').value),
   preferDecimals: el('preferDecimals').checked,
   solutionVariable: el('solutionVariable').value,
@@ -483,9 +489,14 @@ const buildURLString = (startURL, data) => {
   } else {
     url.searchParams.delete('curriculum');
   }
+  if (data.gmFriendly) {
+    url.searchParams.set('gmFriendly', '1');
+  } else {
+    url.searchParams.delete('gmFriendly');
+  }
   url.searchParams.set('precision', data.precision.toString());
   if (data.preferDecimals) {
-    url.searchParams.set('preferDecimals', 'true');
+    url.searchParams.set('preferDecimals', '1');
   } else {
     url.searchParams.delete('preferDecimals');
   }
@@ -539,34 +550,31 @@ window.onload = () => {
     window.open(urlString, '_blank');
   };
 
-  el('showThroughSteps').onchange = (evt) => {
-    showThroughSteps = evt.target.checked;
+  const optionsChanged = () => {
+    showThroughSteps = el('showThroughSteps').checked;
+    showRearrangements = el('showRearrangements').checked;
+    colorScheme = el('colorScheme').value;
+
     const data = getRequestDataFromForm();
+    const urlString = buildURLString(window.location, data);
+    history.replaceState({ url: urlString }, null, urlString);
     if (data.input !== '') {
       selectPlansOrApplyPlan(data);
     }
   };
 
-  el('showRearrangements').onchange = (evt) => {
-    showRearrangements = evt.target.checked;
-    const data = getRequestDataFromForm();
-    if (data.input !== '') {
-      selectPlansOrApplyPlan(data);
-    }
-  };
+  el('curriculumSelect').onchange = optionsChanged;
+  el('precisionSelect').onchange = optionsChanged;
+  el('preferDecimals').onchange = optionsChanged;
+  el('gmFriendlyCheckbox').onchange = optionsChanged;
+  el('showThroughSteps').onchange = optionsChanged;
+  el('showRearrangements').onchange = optionsChanged;
+  el('colorScheme').onchange = optionsChanged;
 
   el('hideWarnings').onchange = (evt) => {
     hideWarnings = evt.target.checked;
     for (const el of document.getElementsByClassName('warning')) {
       el.classList.toggle('hidden', hideWarnings);
-    }
-  };
-
-  el('colorScheme').onchange = (evt) => {
-    colorScheme = evt.target.value;
-    const data = getRequestDataFromForm();
-    if (data.input !== '') {
-      selectPlansOrApplyPlan(data);
     }
   };
 };

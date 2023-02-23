@@ -5,7 +5,6 @@ import engine.conditions.integerValue
 import engine.conditions.isDefinitelyNotUndefined
 import engine.conditions.isDefinitelyNotZero
 import engine.conditions.signOf
-import engine.context.Curriculum
 import engine.expressions.Constants
 import engine.expressions.Expression
 import engine.expressions.fractionOf
@@ -57,7 +56,7 @@ import java.math.BigInteger
 import engine.steps.metadata.DragTargetPosition as Position
 import engine.steps.metadata.GmPathModifier as PM
 
-private val MAX_POWER_AS_PRODUCT = 5.toBigInteger()
+private val maxPowerAsProduct = 5.toBigInteger()
 
 enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     EliminateOneInProduct(eliminateOneInProduct),
@@ -209,13 +208,32 @@ private val simplifyProductWithTwoNegativeFactors =
         val fd2 = optionalDivideBy(negOf(f2))
         val product = productContaining(fd1, fd2)
 
-        onPattern(product) {
+        // Alternative pattern, to cover the situation where the negative is in front of
+        // the product
+
+        val fd1Positive = optionalDivideBy(f1)
+        val productInNeg = productContaining(fd1Positive, fd2)
+        val negProduct = negOf(productInNeg)
+
+        onPattern(oneOf(product, negProduct)) {
+            val negIsOnProduct = isBound(negProduct)
             ruleResult(
-                toExpr = product.substitute(
-                    optionalDivideBy(fd1, move(f1)),
-                    optionalDivideBy(fd2, move(f2)),
-                ),
-                gmAction = drag(f2, PM.Operator, f1, PM.Operator, Position.Onto),
+                toExpr = if (negIsOnProduct) {
+                    productInNeg.substitute(
+                        optionalDivideBy(fd1Positive, move(fd1Positive)),
+                        optionalDivideBy(fd2, move(f2)),
+                    )
+                } else {
+                    product.substitute(
+                        optionalDivideBy(fd1, move(f1)),
+                        optionalDivideBy(fd2, move(f2)),
+                    )
+                },
+                gmAction = if (negIsOnProduct) {
+                    drag(f2, PM.Operator, negProduct, PM.Operator, Position.Onto)
+                } else {
+                    drag(f2, PM.Operator, f1, PM.Operator, Position.Onto)
+                },
                 explanation = metadata(Explanation.SimplifyProductWithTwoNegativeFactors),
             )
         }
@@ -229,6 +247,7 @@ private val moveSignOfNegativeFactorOutOfProduct =
         val product = productContaining(fd)
 
         onPattern(product) {
+            if (context.gmFriendly) return@onPattern null
             ruleResult(
                 toExpr = negOf(product.substitute(optionalDivideBy(fd, move(f)))),
                 gmAction = drag(negf, PM.Operator, product, null, Position.LeftOf),
@@ -398,7 +417,9 @@ private val distributePowerOfProduct =
             val distributedExponent = distribute(exponent)
 
             ruleResult(
-                toExpr = productOf(get(product).children().map { powerOf(move(it), distributedExponent) }),
+                toExpr = productOf(
+                    get(product).flattenedProductChildren().map { powerOf(move(it), distributedExponent) },
+                ),
                 gmAction = drag(exponent, product),
                 explanation = metadata(Explanation.DistributePowerOfProduct),
             )
@@ -484,23 +505,19 @@ private val distributeSumOfPowers =
 
 private val rewritePowerAsProduct =
     rule {
-        val integerBase = SignedNumberPattern()
-        val base = oneOf(
-            integerBase,
-            AnyPattern(),
-        )
+        val base = AnyPattern()
         val exponent = integerCondition(UnsignedIntegerPattern()) {
-            it <= MAX_POWER_AS_PRODUCT &&
+            it <= maxPowerAsProduct &&
                 it >= BigInteger.TWO
         }
         val power = powerOf(base, exponent)
 
         onPattern(power) {
-            // we want to prefer direct evaluation over 2^3 ==> 2*2*2. Is there a better way to do that?
-            if (context.curriculum == Curriculum.GM) return@onPattern null
+            // We want to prefer direct evaluation over 2^3 ==> 2*2*2
+            if (context.gmFriendly) return@onPattern null
             ruleResult(
                 toExpr = productOf(List(getValue(exponent).toInt()) { move(base) }),
-                gmAction = if (isBound(integerBase)) tap(exponent) else edit(power),
+                gmAction = edit(power),
                 explanation = metadata(Explanation.RewritePowerAsProduct, move(base), move(exponent)),
             )
         }
@@ -839,7 +856,7 @@ private val rewriteIntegerOrderRootAsPower =
                     UnaryExpressionOperator.SquareRoot -> {
                         drag(root, PM.RootIndex, root, null, Position.RightOf)
                     }
-                    else -> { noGmSupport() }
+                    else -> noGmSupport()
                 },
                 explanation = metadata(Explanation.RewriteIntegerOrderRootAsPower),
             )

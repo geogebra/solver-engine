@@ -5,20 +5,28 @@ import kotlin.test.assertEquals
 
 class TestContext {
 
-    private class TestResource(override val resourceData: ResourceData) : Resource {
-        constructor(curriculum: Curriculum? = null, preferDecimals: Boolean? = null) : this(
+    private data class TestResource(override val resourceData: ResourceData) : Resource {
+        constructor(
+            curriculum: Curriculum? = null,
+            gmFriendly: Boolean = false,
+            preferDecimals: Boolean? = null,
+        ) : this(
             ResourceData(
                 curriculum = curriculum,
+                gmFriendly = gmFriendly,
                 preferDecimals = preferDecimals,
             ),
         )
     }
 
+    private val neutralResource = TestResource()
     private val usResource = TestResource(curriculum = Curriculum.US)
     private val euResource = TestResource(curriculum = Curriculum.EU)
+    private val gmResource = TestResource(gmFriendly = true)
     private val decResource = TestResource(preferDecimals = true)
     private val noDecResource = TestResource(preferDecimals = false)
     private val euNoDecResource = TestResource(curriculum = Curriculum.EU, preferDecimals = false)
+    private val usDecGmResource = TestResource(curriculum = Curriculum.US, preferDecimals = true, gmFriendly = true)
 
     @Test
     fun testNullContextSelectsDefaultResource() {
@@ -57,6 +65,17 @@ class TestContext {
         assertEquals(
             ctx.selectBestResource(noDecResource, listOf(euResource, euNoDecResource, usResource)),
             euNoDecResource,
+        )
+    }
+
+    @Test
+    fun testGmFriendlyContextTrumping() {
+        var ctx = Context(gmFriendly = true)
+        assertEquals(gmResource, ctx.selectBestResource(neutralResource, listOf(gmResource)))
+        ctx = Context(Curriculum.EU, preferDecimals = false, gmFriendly = true)
+        assertEquals(
+            usDecGmResource,
+            ctx.selectBestResource(euNoDecResource, listOf(euResource, euNoDecResource, usDecGmResource)),
         )
     }
 }

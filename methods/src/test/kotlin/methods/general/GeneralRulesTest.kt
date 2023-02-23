@@ -66,8 +66,17 @@ class GeneralRulesTest {
             "2 * 3",
             GmAction("Drag", "./1/0:op", "./0/0:op"),
         )
+        testRule(
+            "-3*(-a)",
+            SimplifyProductWithTwoNegativeFactors,
+            "3 a",
+            GmAction("Drag", "./0/1/0:op", ".:op"),
+        )
         testRule("(-x) * y * (-12) * 5", SimplifyProductWithTwoNegativeFactors, "x y * 12 * 5")
+        testRule("-x * y * (-12) * 5", SimplifyProductWithTwoNegativeFactors, "x y * 12 * 5")
         testRule("(-2):(-3)", SimplifyProductWithTwoNegativeFactors, "2:3")
+        testRule("-2:(-3)", SimplifyProductWithTwoNegativeFactors, "2:3")
+        testRule("-2:-3", SimplifyProductWithTwoNegativeFactors, "2:3")
     }
 
     @Test
@@ -173,6 +182,11 @@ class GeneralRulesTest {
             "[(sqrt[3] * root[5, 2]) ^ n]",
             DistributePowerOfProduct,
             "[(sqrt[3]) ^ n] * [(root[5, 2]) ^ n]",
+        )
+        testRule(
+            "[([(sqrt[2]) ^ 3] * 9 [a ^ 2]) ^ [1 / 2]]",
+            DistributePowerOfProduct,
+            "[([(sqrt[2]) ^ 3]) ^ [1 / 2]] * [9 ^ [1 / 2]] [([a ^ 2]) ^ [1 / 2]]",
         )
     }
 

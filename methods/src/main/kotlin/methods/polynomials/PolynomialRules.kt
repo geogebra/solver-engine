@@ -1,6 +1,5 @@
 package methods.polynomials
 
-import engine.context.Curriculum
 import engine.expressions.Constants
 import engine.expressions.Expression
 import engine.expressions.Label
@@ -262,7 +261,7 @@ private var combineTwoSimpleLikeTerms = rule {
     val sum = sumContaining(t1, t2)
 
     onPattern(sum) {
-        if (context.curriculum != Curriculum.GM) return@onPattern null
+        if (!context.gmFriendly) return@onPattern null
         val newCoef =
             integerOp(t1.integerCoefficient, t2.integerCoefficient) { n1, n2 -> (n1 + n2).abs() }
         val newCoefValue = getValue(t1.integerCoefficient) + getValue(t2.integerCoefficient)

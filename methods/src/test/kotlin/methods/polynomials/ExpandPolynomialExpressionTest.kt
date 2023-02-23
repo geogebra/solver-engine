@@ -13,30 +13,35 @@ import org.junit.jupiter.api.Test
 class ExpandPolynomialExpressionTest {
 
     @Test
-    fun `test expand square of binomial, default curriculum`() = testMethod {
-        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
-        inputExpr = "[(2x - 3) ^ 2]"
+    fun `test expand square of binomial, GM or default curriculum`() {
+        for (testContext in arrayOf(Context(), Context(curriculum = Curriculum.US, gmFriendly = true))) {
+            testMethod {
+                method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
+                context = testContext
+                inputExpr = "[(2x - 3) ^ 2]"
 
-        check {
-            fromExpr = "[(2 x - 3) ^ 2]"
-            toExpr = "4 [x ^ 2] - 12 x + 9"
-            explanation {
-                key = ExpandExplanation.ExpandBinomialSquaredAndSimplify
-            }
+                check {
+                    fromExpr = "[(2 x - 3) ^ 2]"
+                    toExpr = "4 [x ^ 2] - 12 x + 9"
+                    explanation {
+                        key = ExpandExplanation.ExpandBinomialSquaredAndSimplify
+                    }
 
-            step {
-                fromExpr = "[(2 x - 3) ^ 2]"
-                toExpr = "[(2 x) ^ 2] + 2 * 2 x * (-3) + [(-3) ^ 2]"
-                explanation {
-                    key = ExpandExplanation.ExpandBinomialSquaredUsingIdentity
-                }
-            }
+                    step {
+                        fromExpr = "[(2 x - 3) ^ 2]"
+                        toExpr = "[(2 x) ^ 2] + 2 * 2 x * (-3) + [(-3) ^ 2]"
+                        explanation {
+                            key = ExpandExplanation.ExpandBinomialSquaredUsingIdentity
+                        }
+                    }
 
-            step {
-                fromExpr = "[(2 x) ^ 2] + 2 * 2 x * (-3) + [(-3) ^ 2]"
-                toExpr = "4 [x ^ 2] - 12 x + 9"
-                explanation {
-                    key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                    step {
+                        fromExpr = "[(2 x) ^ 2] + 2 * 2 x * (-3) + [(-3) ^ 2]"
+                        toExpr = "4 [x ^ 2] - 12 x + 9"
+                        explanation {
+                            key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                        }
+                    }
                 }
             }
         }
@@ -128,30 +133,35 @@ class ExpandPolynomialExpressionTest {
     }
 
     @Test
-    fun `test expand cube of binomial, default curriculum`() = testMethod {
-        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
-        inputExpr = "[(2x - 3) ^ 3]"
+    fun `test expand cube of binomial, GM or default curriculum`() {
+        for (testContext in arrayOf(Context(), Context(curriculum = Curriculum.US, gmFriendly = true))) {
+            testMethod {
+                method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
+                context = testContext
+                inputExpr = "[(2x - 3) ^ 3]"
 
-        check {
-            fromExpr = "[(2 x - 3) ^ 3]"
-            toExpr = "8 [x ^ 3] - 36 [x ^ 2] + 54 x - 27"
-            explanation {
-                key = ExpandExplanation.ExpandBinomialCubedAndSimplify
-            }
+                check {
+                    fromExpr = "[(2 x - 3) ^ 3]"
+                    toExpr = "8 [x ^ 3] - 36 [x ^ 2] + 54 x - 27"
+                    explanation {
+                        key = ExpandExplanation.ExpandBinomialCubedAndSimplify
+                    }
 
-            step {
-                fromExpr = "[(2 x - 3) ^ 3]"
-                toExpr = "[(2 x) ^ 3] + 3 * [(2 x) ^ 2] * (-3) + 3 * 2 x * [(-3) ^ 2] + [(-3) ^ 3]"
-                explanation {
-                    key = ExpandExplanation.ExpandBinomialCubedUsingIdentity
-                }
-            }
+                    step {
+                        fromExpr = "[(2 x - 3) ^ 3]"
+                        toExpr = "[(2 x) ^ 3] + 3 * [(2 x) ^ 2] * (-3) + 3 * 2 x * [(-3) ^ 2] + [(-3) ^ 3]"
+                        explanation {
+                            key = ExpandExplanation.ExpandBinomialCubedUsingIdentity
+                        }
+                    }
 
-            step {
-                fromExpr = "[(2 x) ^ 3] + 3 * [(2 x) ^ 2] * (-3) + 3 * 2 x * [(-3) ^ 2] + [(-3) ^ 3]"
-                toExpr = "8 [x ^ 3] - 36 [x ^ 2] + 54 x - 27"
-                explanation {
-                    key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                    step {
+                        fromExpr = "[(2 x) ^ 3] + 3 * [(2 x) ^ 2] * (-3) + 3 * 2 x * [(-3) ^ 2] + [(-3) ^ 3]"
+                        toExpr = "8 [x ^ 3] - 36 [x ^ 2] + 54 x - 27"
+                        explanation {
+                            key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                        }
+                    }
                 }
             }
         }

@@ -1,7 +1,6 @@
 package methods.polynomials
 
 import engine.context.Context
-import engine.context.Curriculum
 import engine.methods.testMethod
 import methods.general.GeneralExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
@@ -14,7 +13,7 @@ class PolynomialsPlansTestActivePracticeCurriculum {
     @Test
     fun testCollectSimpleLikeTerms() = testMethod {
         method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
-        context = Context(curriculum = Curriculum.GM)
+        context = Context(gmFriendly = true)
         inputExpr = "2 x + [x ^ 2] + 3 x - 5 [x ^ 2]"
 
         check {
@@ -45,7 +44,7 @@ class PolynomialsPlansTestActivePracticeCurriculum {
     @Test
     fun testMultiplyMonomials() = testMethod {
         method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
-        context = Context(curriculum = Curriculum.GM)
+        context = Context(gmFriendly = true)
         inputExpr = "3[x^2]*4[x^3]x + 5*7[x^6]"
 
         check {
@@ -156,7 +155,7 @@ class PolynomialsPlansTestActivePracticeCurriculum {
     @Test
     fun testMonomialWithZeroCoefficientEliminated() = testMethod {
         method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
-        context = Context(curriculum = Curriculum.GM)
+        context = Context(gmFriendly = true)
         inputExpr = "3 [a ^ 2] + 2 [a ^ 2] - 3 a - 5 [a ^ 2] + 10 a"
 
         check {

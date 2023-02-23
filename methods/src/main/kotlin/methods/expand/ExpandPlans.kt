@@ -57,6 +57,9 @@ fun expandBinomialSquaredAndSimplify(simplificationSteps: StepsProducer): Method
                     ResourceData(curriculum = Curriculum.EU),
                     ExpandRules.ExpandBinomialSquaredUsingIdentity,
                 )
+                alternative(ResourceData(gmFriendly = true)) {
+                    apply(ExpandRules.ExpandBinomialSquaredUsingIdentity)
+                }
                 alternative(ResourceData(curriculum = Curriculum.US)) {
                     apply(GeneralRules.RewritePowerAsProduct)
                     apply(ExpandRules.ApplyFoilMethod)
@@ -76,7 +79,10 @@ fun expandBinomialCubedAndSimplify(simplificationSteps: StepsProducer): Method {
             apply(ExpandRules.ExpandBinomialCubedUsingIdentity)
             optionally(simplificationSteps)
         }
-
+        alternative(ResourceData(gmFriendly = true)) {
+            apply(ExpandRules.ExpandBinomialCubedUsingIdentity)
+            optionally(simplificationSteps)
+        }
         alternative(ResourceData(curriculum = Curriculum.US)) {
             apply(GeneralRules.RewritePowerAsProduct)
             apply(expandDoubleBracketsAndSimplify(simplificationSteps))

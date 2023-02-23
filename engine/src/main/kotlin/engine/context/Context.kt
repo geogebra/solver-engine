@@ -4,7 +4,11 @@ import engine.logger.createNewLogger
 import java.util.function.Supplier
 import java.util.logging.Level
 
-data class ResourceData(val curriculum: Curriculum? = null, val preferDecimals: Boolean? = null)
+data class ResourceData(
+    val curriculum: Curriculum? = null,
+    val gmFriendly: Boolean? = null,
+    val preferDecimals: Boolean? = null,
+)
 
 val emptyResourceData = ResourceData()
 
@@ -20,6 +24,9 @@ private const val DEFAULT_PRECISION = 3 // 3 decimal places
 
 data class Context(
     val curriculum: Curriculum? = null,
+    /** GM stands for Graspable Math. `gmFriendly` set to `true` will yield math steps that
+     * are like what you would do if you were doing your work on graspablemath.com. */
+    val gmFriendly: Boolean = false,
     val precision: Int? = null, // decimal places
     val preferDecimals: Boolean? = null,
     val solutionVariable: String? = null,
@@ -47,7 +54,11 @@ data class Context(
         logger.log(level, stringSupplier)
     }
 
-    fun rateResourceData(resourceData: ResourceData): Double {
+    private fun rateResourceData(resourceData: ResourceData): Double {
+        // `gmFriendly` can only be `true` or `false`. It can't be `null` like the other
+        // settings can.
+        val gmFriendlyRating = if (resourceData.gmFriendly == gmFriendly) DEFAULT_MATCH else WORST_MATCH
+
         val decimalRating = when (resourceData.preferDecimals) {
             null -> DEFAULT_MATCH
             preferDecimals -> BEST_MATCH
@@ -60,10 +71,15 @@ data class Context(
             else -> WORST_MATCH
         }
 
-        return decimalRating * curriculumRating
+        @Suppress("MagicNumber")
+        // We multiply the `gmFriendlyRating` by `1000` so that it trumps the other
+        // ratings, and so that, when we look at the score returned by this function, we
+        // can see what the `gmFriendlyRating` was by looking at the thousands digit of
+        // the score.
+        return 1000 * gmFriendlyRating + decimalRating * curriculumRating
     }
 
-    fun rateResource(resource: Resource): Double {
+    private fun rateResource(resource: Resource): Double {
         return rateResourceData(resource.resourceData)
     }
 
