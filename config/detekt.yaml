@@ -5,6 +5,8 @@ complexity:
   LongMethod:
     excludes: ['**/test/**']
 style:
+  DestructuringDeclarationWithTooManyEntries:
+    maxDestructuringEntries: 4
   ReturnCount:
     max: 3
   MagicNumber:

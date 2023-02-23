@@ -3,6 +3,7 @@ package methods.fractionroots
 import engine.methods.testMethod
 import methods.constantexpressions.ConstantExpressionsExplanation
 import methods.constantexpressions.ConstantExpressionsPlans
+import methods.expand.ExpandExplanation
 import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.general.GeneralExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
@@ -86,6 +87,9 @@ class FractionRootsPlansTest {
         check {
             fromExpr = "[sqrt[2] + sqrt[3] / sqrt[2]]"
             toExpr = "[2 + sqrt[6] / 2]"
+            explanation {
+                key = ConstantExpressionsExplanation.SimplifyConstantExpression
+            }
 
             step {
                 fromExpr = "[sqrt[2] + sqrt[3] / sqrt[2]]"
@@ -95,46 +99,13 @@ class FractionRootsPlansTest {
                 }
             }
 
-            // this fails because `(sqrt[2] + sqrt[3]) sqrt[2]`
-            // needs to be normalized to `sqrt[2] (sqrt[2] + sqrt[3])`
-            // before actually "distributing" it
-            // these below currently failing "steps" will be
-            // made to succeed after completion of "product normalization"
-            // implemented in PLUT-394
-            step { }
-            // step {
-            //     fromExpr = "[(sqrt[2] + sqrt[3]) sqrt[2] / 2]"
-            //     toExpr = "[sqrt[2] * sqrt[2] + sqrt[3] * sqrt[2] / 2]"
-            //     explanation {
-            //         key = GeneralExplanation.DistributeMultiplicationOverSum
-            //     }
-            // }
-
-            step { }
-            // step {
-            //     fromExpr = "[sqrt[2] * sqrt[2] + sqrt[3] * sqrt[2] / 2]"
-            //     toExpr = "[2 + sqrt[3] * sqrt[2] / 2]"
-            //     explanation {
-            //         key = IntegerRootsExplanation.SimplifyProductWithRoots
-            //     }
-            //
-            //     step {
-            //         fromExpr = "sqrt[2] * sqrt[2]"
-            //         toExpr = "2"
-            //         explanation {
-            //             key = IntegerRootsExplanation.SimplifyMultiplicationOfSquareRoots
-            //         }
-            //     }
-            // }
-
-            step { }
-            // step {
-            //     fromExpr = "[2 + sqrt[3] * sqrt[2] / 2]"
-            //     toExpr = "[2 + sqrt[6] / 2]"
-            //     explanation {
-            //         key = IntegerRootsExplanation.SimplifyProductWithRoots
-            //     }
-            // }
+            step {
+                fromExpr = "[(sqrt[2] + sqrt[3]) sqrt[2] / 2]"
+                toExpr = "[2 + sqrt[6] / 2]"
+                explanation {
+                    key = ExpandExplanation.ExpandSingleBracketAndSimplify
+                }
+            }
         }
     }
 

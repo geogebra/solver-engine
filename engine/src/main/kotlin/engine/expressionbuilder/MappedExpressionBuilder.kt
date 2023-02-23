@@ -96,6 +96,9 @@ open class MappedExpressionBuilder(
     fun distribute(expressionProvider: ExpressionProvider) =
         expressionProvider.getBoundExpr(match)!!.withOrigin(Distribute(expressionProvider.getBoundExprs(match)))
 
+    fun distribute(vararg expressionProviders: ExpressionProvider) =
+        expressionProviders.map { distribute(it) }
+
     fun cancel(expressionProvider: ExpressionProvider, inExpression: Expression) =
         inExpression.withOrigin(Cancel(inExpression.origin, expressionProvider.getBoundExprs(match)))
 

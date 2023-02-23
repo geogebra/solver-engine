@@ -16,12 +16,13 @@ import engine.patterns.powerOf
 import engine.utility.divides
 import methods.decimals.DecimalPlans
 import methods.decimals.DecimalRules
+import methods.expand.ExpandRules
+import methods.expand.expandAndSimplifySteps
 import methods.fractionarithmetic.FractionArithmeticPlans
 import methods.fractionarithmetic.FractionArithmeticRules
 import methods.fractionarithmetic.simplifyIntegerToNegativePower
 import methods.fractionroots.FractionRootsPlans
 import methods.fractionroots.FractionRootsRules
-import methods.general.GeneralPlans
 import methods.general.GeneralRules
 import methods.general.NormalizationPlans
 import methods.general.NormalizationRules
@@ -60,24 +61,6 @@ enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : Runn
                         option { deeply(IntegerArithmeticRules.SimplifyOddPowerOfNegative) }
                         option { deeply(IntegerArithmeticRules.EvaluateIntegerPowerDirectly) }
                         option { deeply(GeneralRules.DistributePowerOfProduct) }
-
-                        // the "expand" plans should eventually be moved to a
-                        // new public plan for "expanding" constant expression
-                        option {
-                            deeply {
-                                applyTo(GeneralPlans.ExpandBinomialSquared) { if (it.isConstant()) it else null }
-                            }
-                        }
-                        option {
-                            deeply {
-                                applyTo(GeneralPlans.ExpandBinomialCubed) { if (it.isConstant()) it else null }
-                            }
-                        }
-                        option {
-                            deeply {
-                                applyTo(GeneralPlans.ExpandTrinomialSquared) { if (it.isConstant()) it else null }
-                            }
-                        }
                     }
                 }
             }
@@ -252,26 +235,11 @@ val constantSimplificationSteps = steps {
 
         option { deeply(FractionRootsPlans.RationalizeDenominators) }
 
-        // the plan should eventually be moved to "expanding" constant expression
-        option {
-            deeply {
-                applyTo(GeneralRules.ExpandProductOfSumAndDifference) { if (it.isConstant()) it else null }
-            }
-        }
+        option { deeply(ExpandRules.DistributeNegativeOverBracket) }
+        option { deeply { applyTo(expandConstantExpressionSteps) { if (it.isConstant()) it else null } } }
 
-        option {
-            deeply(GeneralRules.DistributeNegativeOverBracket)
-        }
-
-        // this rule eventually needs to be moved to "expand constant expression"
-        option {
-            deeply {
-                // We don't want to expand something like x(1 + sqrt[3]) because the algebra rules would factorise
-                // it back again! so restrict expansion to constant expressions. It might be better to have a finer
-                // condition depending on the factors that could be expanded.
-                applyTo(GeneralRules.DistributeMultiplicationOverSum) { if (it.isConstant()) it else null }
-            }
-        }
         option { deeply(NormalizationRules.NormaliseSimplifiedProduct) }
     }
 }
+
+val expandConstantExpressionSteps = expandAndSimplifySteps(ConstantExpressionsPlans.SimplifyConstantExpression)

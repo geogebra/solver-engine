@@ -23,8 +23,6 @@ import engine.patterns.SignedIntegerPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.condition
 import engine.patterns.powerOf
-import engine.patterns.productContaining
-import engine.patterns.sumContaining
 import engine.patterns.sumOf
 import engine.patterns.withOptionalIntegerCoefficient
 import engine.steps.metadata.metadata
@@ -32,7 +30,7 @@ import methods.constantexpressions.ConstantExpressionsPlans
 import methods.constantexpressions.constantSimplificationSteps
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.decimals.decimalEvaluationSteps
-import methods.general.GeneralPlans
+import methods.expand.expandAndSimplifySteps
 import methods.general.GeneralRules
 import methods.general.NormalizationPlans
 import methods.general.NormalizationRules
@@ -127,7 +125,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
             explanation = Explanation.SimplifyAlgebraicExpression
             specificPlans(ConstantExpressionsPlans.SimplifyConstantExpression)
 
-            steps() {
+            steps {
                 whilePossible { deeply(simpleTidyUpSteps) }
                 optionally(NormalizationPlans.NormalizeExpression)
                 whilePossible(algebraicSimplificationSteps)
@@ -169,7 +167,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
                 whilePossible {
                     firstOf {
                         option(algebraicSimplificationSteps)
-                        option { deeply(expandAndSimplifySteps, deepFirst = true) }
+                        option { deeply(expandAndSimplifySteps.value, deepFirst = true) }
                     }
                 }
                 whilePossible { deeply(PolynomialRules.NormalizePolynomial) }
@@ -187,7 +185,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
                 whilePossible {
                     firstOf {
                         option(algebraicSimplificationSteps)
-                        option { deeply(expandAndSimplifySteps, deepFirst = true) }
+                        option { deeply(expandAndSimplifySteps.value, deepFirst = true) }
                     }
                 }
             }
@@ -226,53 +224,8 @@ private val simplifyCoefficient = plan {
     }
 }
 
-private val expandAndSimplifyBracketsToAPower = plan {
-    explanation = Explanation.ApplyExpandRuleAndSimplify
-
-    steps {
-        firstOf {
-            option(GeneralPlans.ExpandBinomialSquared)
-            option(GeneralPlans.ExpandBinomialCubed)
-            option(GeneralPlans.ExpandTrinomialSquared)
-        }
-        optionally(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable)
-    }
-}
-
-private val expandAndSimplifyDoubleBrackets = plan {
-    explanation = Explanation.ApplyExpandRuleAndSimplify
-    val factor1 = sumContaining()
-    val factor2 = sumContaining()
-    pattern = productContaining(factor1, factor2)
-
-    partialExpressionSteps {
-        firstOf {
-            option(GeneralRules.ExpandProductOfSumAndDifference)
-            option(GeneralRules.ApplyFoilMethod)
-            option(GeneralRules.ExpandDoubleBrackets)
-        }
-        optionally(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable)
-    }
-}
-
-private val expandAndSimplifySingleBracket = plan {
-    explanation = Explanation.ApplyExpandRuleAndSimplify
-
-    steps {
-        firstOf {
-            option(GeneralRules.DistributeNegativeOverBracket)
-            option(GeneralRules.DistributeMultiplicationOverSum)
-        }
-        optionally(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable)
-    }
-}
-
-private val expandAndSimplifySteps = steps {
-    firstOf {
-        option(expandAndSimplifyBracketsToAPower)
-        option(expandAndSimplifyDoubleBrackets)
-        option(expandAndSimplifySingleBracket)
-    }
+private val expandAndSimplifySteps = lazy {
+    expandAndSimplifySteps(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable)
 }
 
 private val collectLikeTermsAndSimplify = plan {
@@ -298,7 +251,7 @@ private val collectLikeTermsAndSimplify = plan {
 private val multiplyMonomialsAndSimplify = plan {
     explanation = Explanation.MultiplyMonomialsAndSimplify
 
-    steps() {
+    steps {
         firstOf {
             option {
                 withNewLabels {
