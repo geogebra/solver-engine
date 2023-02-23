@@ -96,30 +96,22 @@ class LinearInequalitiesTest {
 
             step {
                 fromExpr = "4 > 11 + [x / 3]"
-                toExpr = "4 > 11 + [1 / 3] x"
-                explanation {
-                    key = PolynomialsExplanation.SimplifyAlgebraicExpression
-                }
-            }
-
-            step {
-                fromExpr = "4 > 11 + [1 / 3] x"
-                toExpr = "-7 > [1 / 3] x"
+                toExpr = "-7 > [x / 3]"
                 explanation {
                     key = InequalitiesExplanation.MoveConstantsToTheLeftAndSimplify
                 }
             }
 
             step {
-                fromExpr = "-7 > [1 / 3] x"
-                toExpr = "[1 / 3] x < -7"
+                fromExpr = "-7 > [x / 3]"
+                toExpr = "[x / 3] < -7"
                 explanation {
                     key = InequalitiesExplanation.FlipInequality
                 }
             }
 
             step {
-                fromExpr = "[1 / 3] x < -7"
+                fromExpr = "[x / 3] < -7"
                 toExpr = "x < -21"
                 explanation {
                     key = InequalitiesExplanation.MultiplyByInverseCoefficientOfVariableAndSimplify

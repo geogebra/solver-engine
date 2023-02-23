@@ -22,6 +22,7 @@ import engine.patterns.FixedPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.condition
+import engine.patterns.monomialPattern
 import engine.patterns.powerOf
 import engine.patterns.sumOf
 import engine.patterns.withOptionalIntegerCoefficient
@@ -42,9 +43,10 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
     CollectLikeTermsAndSimplify(collectLikeTermsAndSimplify),
     MultiplyUnitaryMonomialsAndSimplify(multiplyUnitaryMonomialsAndSimplify),
     MultiplyMonomialsAndSimplify(multiplyMonomialsAndSimplify),
-    NormalizeMonomialAndSimplify(normalizeMonomialAndSimplify),
+    SimplifyMonomial(simplifyMonomial),
     SimplifyPowerOfUnitaryMonomial(simplifyPowerOfUnitaryMonomial),
     DistributeProductToIntegerPowerAndSimplify(distributeProductToIntegerPowerAndSimplify),
+    NormalizeAllMonomials(normalizeAllMonomials),
 
     FactorGreatestCommonFactor(
         plan {
@@ -129,6 +131,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
                 whilePossible { deeply(simpleTidyUpSteps) }
                 optionally(NormalizationPlans.NormalizeExpression)
                 whilePossible(algebraicSimplificationSteps)
+                optionally(NormalizeAllMonomials)
                 whilePossible { deeply(PolynomialRules.NormalizePolynomial) }
             }
             alternative(ResourceData(curriculum = Curriculum.GM)) {
@@ -262,7 +265,6 @@ private val multiplyMonomialsAndSimplify = plan {
                     optionally {
                         applyTo(PolynomialsPlans.MultiplyUnitaryMonomialsAndSimplify, Label.B)
                     }
-                    optionally(PolynomialRules.NormalizeMonomial)
                 }
             }
             option(PolynomialsPlans.MultiplyUnitaryMonomialsAndSimplify)
@@ -285,12 +287,12 @@ private val multiplyUnitaryMonomialsAndSimplify = plan {
     }
 }
 
-private val normalizeMonomialAndSimplify = plan {
-    explanation = Explanation.NormalizeMonomialAndSimplify
+private val simplifyMonomial = plan {
+    explanation = Explanation.SimplifyMonomial
 
     steps {
-        apply(PolynomialRules.NormalizeMonomial)
-        optionally(simplificationSteps)
+        checkForm { monomialPattern(ArbitraryVariablePattern()) }
+        whilePossible(simplificationSteps)
     }
 }
 
@@ -323,18 +325,27 @@ private val distributeProductToIntegerPowerAndSimplify = plan {
                 apply(simplificationSteps)
             }
         }
-        optionally { deeply(PolynomialRules.NormalizeMonomial) }
     }
 }
 
 val algebraicSimplificationSteps = steps {
     firstOf {
         option { deeply(simpleTidyUpSteps) }
-        option { deeply(PolynomialsPlans.MultiplyMonomialsAndSimplify) }
-        option { deeply(PolynomialsPlans.DistributeProductToIntegerPowerAndSimplify) }
-        option { deeply(PolynomialsPlans.SimplifyPowerOfUnitaryMonomial) }
+        option {
+            deeply {
+                firstOf {
+                    option(PolynomialsPlans.MultiplyMonomialsAndSimplify)
+                    option(PolynomialsPlans.DistributeProductToIntegerPowerAndSimplify)
+                    option(PolynomialsPlans.SimplifyPowerOfUnitaryMonomial)
+                    option(PolynomialsPlans.SimplifyMonomial)
+                    option {
+                        check { it.isConstant() }
+                        apply(simplificationSteps)
+                    }
+                }
+            }
+        }
         option { deeply(PolynomialsPlans.CollectLikeTermsAndSimplify) }
-        option { deeply(PolynomialsPlans.NormalizeMonomialAndSimplify) }
         option(simplificationSteps)
     }
 }
@@ -342,4 +353,13 @@ val algebraicSimplificationSteps = steps {
 private val simplificationSteps = contextSensitiveSteps {
     default(ResourceData(preferDecimals = false), constantSimplificationSteps)
     alternative(ResourceData(preferDecimals = true), decimalEvaluationSteps)
+}
+
+private val normalizeAllMonomials = plan {
+    explanation = Explanation.NormalizeAllMonomials
+
+    steps {
+
+        whilePossible { deeply(PolynomialRules.NormalizeMonomial) }
+    }
 }

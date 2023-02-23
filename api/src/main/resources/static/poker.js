@@ -3,7 +3,7 @@ import * as ggbSolver from './solver-sdk.es.js';
 // You may uncomment the line below during development to enable
 // typescript-powered intellisense, but the code will not run properly if it
 // remains uncommented.
-// import * as ggbSolver from "@geogebra/solver-sdk";
+// import * as ggbSolver from '@geogebra/solver-sdk';
 
 // just for debug convenience
 window.ggbSolver = ggbSolver;
@@ -104,6 +104,10 @@ const findTransformationInSelections = (selections, methodId) => {
   }
 };
 
+/**
+ * @param {ggbSolver.API_SELECT_PLANS_RESPONSE} selections
+ * @param {ggbSolver.API_SELECT_PLANS_RESPONSE} testSelections
+ */
 const renderPlanSelections = (selections, testSelections) => {
   if (!selections || selections.length === 0) {
     return /* HTML */ `<div class="selections">No plans found</div>`;
@@ -130,6 +134,11 @@ const renderPlanSelections = (selections, testSelections) => {
   `;
 };
 
+/**
+ * @param {ggbSolver.Transformation} trans
+ * @param {ggbSolver.Transformation} testTrans
+ * @param {number} depth
+ */
 const renderTransformationAndTest = (trans, testTrans, depth = 0) => {
   return /* HTML */ ` ${renderTransformation(trans, depth)} ${renderTest(testTrans)}`;
 };
@@ -138,17 +147,18 @@ const renderTransformationAndTest = (trans, testTrans, depth = 0) => {
  * Rendering a transformation
  ******************************************/
 
+/**
+ * @param {ggbSolver.Transformation} trans
+ * @param {number} depth
+ */
 const renderTransformation = (trans, depth = 0) => {
   const isThrough = isThroughStep(trans);
   if (isThrough && !showThroughSteps) {
     return renderTransformation(trans.steps[0], depth);
   }
-  const colors = colorSchemes[colorScheme];
-  const [fromColoring, toColoring] =
-    trans.steps || !colors
-      ? [undefined, undefined]
-      : ggbSolver.createColorMaps(trans.pathMappings, colors).map(ggbSolver.coloringTransformer);
+
   const latexSettings = {};
+  const [fromColoring, toColoring] = createColorMaps(trans);
   const render = (expr, coloring) =>
     ggbSolver.treeToLatex(ggbSolver.jsonToTree(expr, trans.path), latexSettings, coloring);
   return /* HTML */ ` <div class="trans ${isThrough ? 'through-step' : ''}">
@@ -168,6 +178,25 @@ const renderTransformation = (trans, depth = 0) => {
     ${renderSteps(trans.steps, depth, depth >= 0 || isThrough)}
     ${renderTasks(trans.tasks, depth, depth >= 0)}
   </div>`;
+};
+
+/**
+ * @param {ggbSolver.Transformation} trans
+ */
+const createColorMaps = (trans) => {
+  // First deal with the special case that the whole expression is transformed.  In this case there is no need to color
+  // the path mapping.
+  if (trans.pathMappings.length === 1) {
+    const mapping = trans.pathMappings[0];
+    if (mapping.type === 'Transform' && mapping.fromPaths[0] === trans.path) {
+      return [undefined, undefined];
+    }
+  }
+  // Else proceed with finding appropriate colors for the path mappings.
+  const colors = colorSchemes[colorScheme];
+  return !colors
+    ? [undefined, undefined]
+    : ggbSolver.createColorMaps(trans.pathMappings, colors).map(ggbSolver.coloringTransformer);
 };
 
 const renderSteps = (steps, depth = 0, open = false) => {

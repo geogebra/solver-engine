@@ -4,10 +4,13 @@ import engine.methods.testMethod
 import methods.constantexpressions.ConstantExpressionsExplanation
 import methods.expand.ExpandExplanation
 import methods.fractionarithmetic.FractionArithmeticExplanation
+import methods.fractionroots.FractionRootsExplanation
 import methods.general.GeneralExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
+import methods.integerroots.IntegerRootsExplanation
 import org.junit.jupiter.api.Test
 
+@Suppress("LargeClass")
 class PolynomialsPlansTest {
 
     @Test
@@ -189,22 +192,45 @@ class PolynomialsPlansTest {
             fromExpr = "2 t sqrt[3] + [t sqrt[3] / 3]"
             toExpr = "[7 sqrt[3] / 3] t"
             explanation {
-                key = PolynomialsExplanation.CollectLikeTermsAndSimplify
+                key = PolynomialsExplanation.SimplifyAlgebraicExpression
             }
 
             step {
                 fromExpr = "2 t sqrt[3] + [t sqrt[3] / 3]"
-                toExpr = "(2 sqrt[3] + [sqrt[3] / 3]) t"
+                toExpr = "2 sqrt[3] * t + [t sqrt[3] / 3]"
                 explanation {
-                    key = PolynomialsExplanation.CollectLikeTerms
+                    key = PolynomialsExplanation.SimplifyMonomial
                 }
             }
 
             step {
-                fromExpr = "(2 sqrt[3] + [sqrt[3] / 3]) t"
+                fromExpr = "2 sqrt[3] * t + [t sqrt[3] / 3]"
+                toExpr = "2 sqrt[3] * t + [sqrt[3] * t / 3]"
+                explanation {
+                    key = PolynomialsExplanation.SimplifyMonomial
+                }
+            }
+
+            step {
+                fromExpr = "2 sqrt[3] * t + [sqrt[3] * t / 3]"
                 toExpr = "[7 sqrt[3] / 3] t"
                 explanation {
-                    key = PolynomialsExplanation.SimplifyCoefficient
+                    key = PolynomialsExplanation.CollectLikeTermsAndSimplify
+                }
+                step {
+                    fromExpr = "2 sqrt[3] * t + [sqrt[3] * t / 3]"
+                    toExpr = "(2 sqrt[3] + [sqrt[3] / 3]) t"
+                    explanation {
+                        key = PolynomialsExplanation.CollectLikeTerms
+                    }
+                }
+
+                step {
+                    fromExpr = "(2 sqrt[3] + [sqrt[3] / 3]) t"
+                    toExpr = "[7 sqrt[3] / 3] t"
+                    explanation {
+                        key = PolynomialsExplanation.SimplifyCoefficient
+                    }
                 }
             }
         }
@@ -432,21 +458,21 @@ class PolynomialsPlansTest {
 
             step {
                 fromExpr = "1 - 2 x * [(-x) ^ 3]"
-                toExpr = "1 - 2 x (-[x ^ 3])"
+                toExpr = "1 - 2 x * (-1)[x ^ 3]"
                 explanation {
                     key = PolynomialsExplanation.DistributeProductToIntegerPowerAndSimplify
                 }
             }
 
             step {
-                fromExpr = "1 - 2 x (-[x ^ 3])"
+                fromExpr = "1 - 2 x * (-1)[x ^ 3]"
                 toExpr = "1 + 2 [x ^ 4]"
                 explanation {
                     key = PolynomialsExplanation.MultiplyMonomialsAndSimplify
                 }
 
                 step {
-                    fromExpr = "-2 x (-[x ^ 3])"
+                    fromExpr = "-2 x * (-1)[x ^ 3]"
                     toExpr = "((-2) * (-1)) (x * [x ^ 3])"
                     explanation {
                         key = PolynomialsExplanation.CollectUnitaryMonomialsInProduct
@@ -549,22 +575,38 @@ class PolynomialsPlansTest {
             fromExpr = "2 t + [t / sqrt[3]]"
             toExpr = "(2 + [sqrt[3] / 3]) t"
             explanation {
-                key = PolynomialsExplanation.CollectLikeTermsAndSimplify
+                key = PolynomialsExplanation.SimplifyAlgebraicExpression
             }
 
             step {
                 fromExpr = "2 t + [t / sqrt[3]]"
-                toExpr = "(2 + [1 / sqrt[3]]) t"
+                toExpr = "2 t + [sqrt[3] * t / 3]"
                 explanation {
-                    key = PolynomialsExplanation.CollectLikeTerms
+                    key = PolynomialsExplanation.SimplifyMonomial
+                }
+
+                step {
+                    fromExpr = "[t / sqrt[3]]"
+                    toExpr = "[t * sqrt[3] / 3]"
+                    explanation {
+                        key = FractionRootsExplanation.RationalizeDenominator
+                    }
+                }
+
+                step {
+                    fromExpr = "[t * sqrt[3] / 3]"
+                    toExpr = "[sqrt[3] * t / 3]"
+                    explanation {
+                        key = GeneralExplanation.NormaliseSimplifiedProduct
+                    }
                 }
             }
 
             step {
-                fromExpr = "(2 + [1 / sqrt[3]]) t"
+                fromExpr = "2 t + [sqrt[3] * t / 3]"
                 toExpr = "(2 + [sqrt[3] / 3]) t"
                 explanation {
-                    key = PolynomialsExplanation.SimplifyCoefficient
+                    key = PolynomialsExplanation.CollectLikeTerms
                 }
             }
         }
@@ -601,6 +643,85 @@ class PolynomialsPlansTest {
                 toExpr = "a + 3"
                 explanation {
                     key = ExpandExplanation.DistributeNegativeOverBracket
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test simplification left to right`() = testMethod {
+        method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
+        inputExpr = "2 x * x + [(2 x) ^ 2] - 3 x * 2 x + 3 * 10 - [([x ^ 2]) ^ 3] + x * x"
+
+        check {
+            fromExpr = "2 x * x + [(2 x) ^ 2] - 3 x * 2 x + 3 * 10 - [([x ^ 2]) ^ 3] + x * x"
+            toExpr = "-[x ^ 6] + [x ^ 2] + 30"
+            explanation {
+                key = PolynomialsExplanation.SimplifyAlgebraicExpression
+            }
+
+            step {
+                fromExpr = "2 x * x + [(2 x) ^ 2] - 3 x * 2 x + 3 * 10 - [([x ^ 2]) ^ 3] + x * x"
+                toExpr = "2 [x ^ 2] + [(2 x) ^ 2] - 3 x * 2 x + 3 * 10 - [([x ^ 2]) ^ 3] + x * x"
+                explanation {
+                    key = PolynomialsExplanation.MultiplyMonomialsAndSimplify
+                }
+            }
+
+            step {
+                fromExpr = "2 [x ^ 2] + [(2 x) ^ 2] - 3 x * 2 x + 3 * 10 - [([x ^ 2]) ^ 3] + x * x"
+                toExpr = "2 [x ^ 2] + 4 [x ^ 2] - 3 x * 2 x + 3 * 10 - [([x ^ 2]) ^ 3] + x * x"
+                explanation {
+                    key = PolynomialsExplanation.DistributeProductToIntegerPowerAndSimplify
+                }
+            }
+
+            step {
+                fromExpr = "2 [x ^ 2] + 4 [x ^ 2] - 3 x * 2 x + 3 * 10 - [([x ^ 2]) ^ 3] + x * x"
+                toExpr = "2 [x ^ 2] + 4 [x ^ 2] - 6 [x ^ 2] + 3 * 10 - [([x ^ 2]) ^ 3] + x * x"
+                explanation {
+                    key = PolynomialsExplanation.MultiplyMonomialsAndSimplify
+                }
+            }
+
+            step {
+                fromExpr = "2 [x ^ 2] + 4 [x ^ 2] - 6 [x ^ 2] + 3 * 10 - [([x ^ 2]) ^ 3] + x * x"
+                toExpr = "2 [x ^ 2] + 4 [x ^ 2] - 6 [x ^ 2] + 30 - [([x ^ 2]) ^ 3] + x * x"
+                explanation {
+                    // This is a strange explanation!
+                    key = IntegerRootsExplanation.SimplifyProductWithRoots
+                }
+            }
+
+            step {
+                fromExpr = "2 [x ^ 2] + 4 [x ^ 2] - 6 [x ^ 2] + 30 - [([x ^ 2]) ^ 3] + x * x"
+                toExpr = "2 [x ^ 2] + 4 [x ^ 2] - 6 [x ^ 2] + 30 - [x ^ 6] + x * x"
+                explanation {
+                    key = PolynomialsExplanation.SimplifyPowerOfUnitaryMonomial
+                }
+            }
+
+            step {
+                fromExpr = "2 [x ^ 2] + 4 [x ^ 2] - 6 [x ^ 2] + 30 - [x ^ 6] + x * x"
+                toExpr = "2 [x ^ 2] + 4 [x ^ 2] - 6 [x ^ 2] + 30 - [x ^ 6] + [x ^ 2]"
+                explanation {
+                    key = PolynomialsExplanation.MultiplyMonomialsAndSimplify
+                }
+            }
+
+            step {
+                fromExpr = "2 [x ^ 2] + 4 [x ^ 2] - 6 [x ^ 2] + 30 - [x ^ 6] + [x ^ 2]"
+                toExpr = "[x ^ 2] + 30 - [x ^ 6]"
+                explanation {
+                    key = PolynomialsExplanation.CollectLikeTermsAndSimplify
+                }
+            }
+
+            step {
+                fromExpr = "[x ^ 2] + 30 - [x ^ 6]"
+                toExpr = "-[x ^ 6] + [x ^ 2] + 30"
+                explanation {
+                    key = PolynomialsExplanation.NormalizePolynomial
                 }
             }
         }

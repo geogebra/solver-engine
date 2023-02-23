@@ -73,14 +73,6 @@ class LinearEquationsTest {
             // should not happen
             step {
                 fromExpr = "[x / 9] = -1"
-                toExpr = "[1 / 9] x = -1"
-                explanation {
-                    key = PolynomialsExplanation.NormalizeMonomialAndSimplify
-                }
-            }
-
-            step {
-                fromExpr = "[1 / 9] x = -1"
                 toExpr = "x = -9"
                 explanation {
                     key = EquationsExplanation.MultiplyByInverseCoefficientOfVariableAndSimplify
@@ -274,33 +266,24 @@ class LinearEquationsTest {
                 key = EquationsExplanation.SolveLinearEquation
             }
 
-            // should not happen
             step {
                 fromExpr = "4 = 11 + [x / 3]"
-                toExpr = "4 = 11 + [1 / 3] x"
-                explanation {
-                    key = PolynomialsExplanation.SimplifyAlgebraicExpression
-                }
-            }
-
-            step {
-                fromExpr = "4 = 11 + [1 / 3] x"
-                toExpr = "-7 = [1 / 3] x"
+                toExpr = "-7 = [x / 3]"
                 explanation {
                     key = EquationsExplanation.MoveConstantsToTheLeftAndSimplify
                 }
             }
 
             step {
-                fromExpr = "-7 = [1 / 3] x"
-                toExpr = "[1 / 3] x = -7"
+                fromExpr = "-7 = [x / 3]"
+                toExpr = "[x / 3] = -7"
                 explanation {
                     key = EquationsExplanation.FlipEquation
                 }
             }
 
             step {
-                fromExpr = "[1 / 3] x = -7"
+                fromExpr = "[x / 3] = -7"
                 toExpr = "x = -21"
                 explanation {
                     key = EquationsExplanation.MultiplyByInverseCoefficientOfVariableAndSimplify

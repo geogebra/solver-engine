@@ -34,5 +34,6 @@ class ConstantCoefficientPatternTest {
         assertCoefficientEquals("[3 * x / 2 * sqrt[3]]", "[3 / 2 * sqrt[3]]")
         assertCoefficientEquals("[x / 2 * sqrt[3]]", "[1 / 2 * sqrt[3]]")
         assertCoefficientEquals("[x / 2 * y]", null)
+        assertCoefficientEquals("2x * 3", "2 * 3")
     }
 }

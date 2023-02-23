@@ -64,13 +64,18 @@ enum class PolynomialsExplanation : CategorisedMetadataKey {
     NormalizeMonomial,
 
     /**
-     * Normalize a monomial and simplify the result
+     * Normalize all monomials in an expression
+     */
+    NormalizeAllMonomials,
+
+    /**
+     * Simplify the coefficient of a monomial
      *
      * E.g. x * 2     --> 2x
      *      3x * 5    --> 15x
      *      [x/2] * 3 --> [3/2]x
      */
-    NormalizeMonomialAndSimplify,
+    SimplifyMonomial,
 
     /**
      * Distribute a product raised to an integer power

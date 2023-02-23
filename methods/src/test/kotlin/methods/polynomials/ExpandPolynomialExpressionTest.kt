@@ -737,19 +737,11 @@ class ExpandPolynomialExpressionTest {
                         fromExpr = "5 [x ^ 3] + 5 [x ^ 2] * 1"
                         toExpr = "5 [x ^ 3] + 5 [x ^ 2]"
                         explanation {
-                            key = PolynomialsExplanation.NormalizeMonomialAndSimplify
+                            key = PolynomialsExplanation.SimplifyMonomial
                         }
 
                         step {
                             fromExpr = "5 [x ^ 2] * 1"
-                            toExpr = "5 * 1 [x ^ 2]"
-                            explanation {
-                                key = PolynomialsExplanation.NormalizeMonomial
-                            }
-                        }
-
-                        step {
-                            fromExpr = "5 * 1 [x ^ 2]"
                             toExpr = "5 [x ^ 2]"
                             explanation {
                                 key = IntegerArithmeticExplanation.EvaluateIntegerProduct
