@@ -11,6 +11,7 @@ import engine.operators.UnaryExpressionOperator
 import engine.operators.UndefinedOperator
 import engine.operators.VariableOperator
 import engine.utility.isEven
+import java.math.BigInteger
 
 private const val NOT_KNOWN_SIGNUM = 10
 
@@ -91,8 +92,9 @@ enum class Sign(val signum: Int) {
     }
 }
 
-fun Expression.integerValue() = when (val op = operator) {
-    is IntegerOperator -> op.value
+fun Expression.integerValue(): BigInteger? = when (operator) {
+    is IntegerOperator -> operator.value
+    UnaryExpressionOperator.Minus -> -this.firstChild.integerValue()!!
     else -> null
 }
 

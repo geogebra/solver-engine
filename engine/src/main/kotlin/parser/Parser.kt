@@ -15,6 +15,7 @@ import engine.expressions.xp
 import engine.operators.BinaryExpressionOperator
 import engine.operators.EquationOperator
 import engine.operators.EquationSystemOperator
+import engine.operators.EquationUnionOperator
 import engine.operators.IntervalOperator
 import engine.operators.NaryOperator
 import engine.operators.Operator
@@ -60,6 +61,10 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
 
     override fun visitEquationSystem(ctx: ExpressionParser.EquationSystemContext): Expression {
         return makeExpression(EquationSystemOperator, ctx.equations.map { visit(it) })
+    }
+
+    override fun visitEquationUnion(ctx: ExpressionParser.EquationUnionContext): Expression {
+        return makeExpression(EquationUnionOperator, ctx.equations.map { visit(it) })
     }
 
     override fun visitEquation(ctx: ExpressionParser.EquationContext): Expression {

@@ -6,6 +6,7 @@ import engine.operators.BinaryExpressionOperator
 import engine.operators.DecimalOperator
 import engine.operators.EquationOperator
 import engine.operators.EquationSystemOperator
+import engine.operators.EquationUnionOperator
 import engine.operators.InequalityOperators
 import engine.operators.IntegerOperator
 import engine.operators.IntervalOperator
@@ -210,6 +211,12 @@ fun closedIntervalOf(lhs: Expression, rhs: Expression) =
 
 fun equationSystemOf(vararg equations: Expression) =
     buildExpression(EquationSystemOperator, equations.asList())
+
+fun equationUnionOf(vararg equations: Expression) =
+    buildExpression(EquationUnionOperator, equations.asList())
+
+fun equationUnionOf(equations: List<Expression>) =
+    buildExpression(EquationUnionOperator, equations)
 
 fun solutionSetOf(elements: List<Expression>) = buildExpression(SetOperators.FiniteSet, elements)
 fun solutionSetOf(vararg elements: Expression) = buildExpression(SetOperators.FiniteSet, elements.asList())

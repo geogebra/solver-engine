@@ -5,6 +5,7 @@ import engine.conditions.signOf
 import engine.expressions.Constants
 import engine.expressions.Expression
 import engine.expressions.equationOf
+import engine.expressions.equationUnionOf
 import engine.expressions.fractionOf
 import engine.expressions.inverse
 import engine.expressions.isFraction
@@ -18,19 +19,29 @@ import engine.expressions.simplifiedNegOf
 import engine.expressions.solutionOf
 import engine.expressions.solutionSetOf
 import engine.expressions.splitPlusMinus
+import engine.expressions.squareRootOf
 import engine.expressions.sumOf
 import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
 import engine.methods.ruleResult
+import engine.operators.NaryOperator
+import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.ConstantInSolutionVariablePattern
+import engine.patterns.ConstantPattern
 import engine.patterns.FixedPattern
+import engine.patterns.KeyedPattern
+import engine.patterns.Match
+import engine.patterns.Pattern
 import engine.patterns.SolutionVariablePattern
 import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.commutativeProductOf
+import engine.patterns.commutativeSumOf
 import engine.patterns.condition
+import engine.patterns.equationOf
 import engine.patterns.inSolutionVariable
 import engine.patterns.integerCondition
 import engine.patterns.monomialPattern
@@ -40,6 +51,7 @@ import engine.patterns.powerOf
 import engine.patterns.rationalMonomialPattern
 import engine.patterns.sumContaining
 import engine.patterns.sumOf
+import engine.patterns.withOptionalConstantCoefficient
 import engine.steps.metadata.metadata
 import engine.utility.isEven
 import engine.utility.isOdd
@@ -86,31 +98,11 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
             onEquation(lhs, rhs) {
                 val lhsExpr = get(lhs)
-                val monomial = monomialPattern(SolutionVariablePattern())
-                var degree = BigInteger.ZERO
-                var leadingCoefficient: Expression? = null
-                for (term in lhsExpr.children()) {
-                    if (!term.isConstant()) {
-                        val monomialMatch = matchPattern(monomial, term)
-                        if (monomialMatch != null) {
-                            val monomialDegree = monomial.exponent.getBoundInt(monomialMatch)
-                            when {
-                                monomialDegree > degree -> {
-                                    leadingCoefficient = monomial.coefficient(monomialMatch)
-                                    degree = monomialDegree
-                                }
-                                monomialDegree == degree -> {
-                                    // The polynomial is not normalised
-                                    return@onEquation null
-                                }
-                            }
-                        }
-                    }
-                }
+                val leadingCoefficient = leadingCoefficientOfPolynomial(lhsExpr)
                 if (leadingCoefficient == null || leadingCoefficient == Constants.One) {
                     return@onEquation null
                 }
-                val inverse = leadingCoefficient!!.inverse()
+                val inverse = leadingCoefficient.inverse()
 
                 ruleResult(
                     toExpr = equationOf(
@@ -144,6 +136,39 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                 } else {
                     null
                 }
+            }
+        },
+    ),
+
+    FactorNegativeSignOfLeadingCoefficient(
+        rule {
+            val lhs = inSolutionVariable(sumContaining())
+            val rhs = FixedPattern(Constants.Zero)
+
+            onEquation(lhs, rhs) {
+                val lhsExpr = get(lhs)
+                val leadingCoefficient = leadingCoefficientOfPolynomial(lhsExpr)
+                if ((leadingCoefficient == null) || (leadingCoefficient.signOf() == Sign.POSITIVE)) {
+                    return@onEquation null
+                }
+
+                fun additiveInverseOfPolynomial(expr: Expression): Expression {
+                    return when (expr.operator) {
+                        UnaryExpressionOperator.Minus -> expr.firstChild
+                        NaryOperator.Sum -> sumOf(expr.children().map { additiveInverseOfPolynomial(it) })
+                        else -> negOf(expr)
+                    }
+                }
+
+                val additiveInverseLhsExpr = additiveInverseOfPolynomial(lhsExpr)
+
+                ruleResult(
+                    toExpr = equationOf(
+                        productOf(negOf(Constants.One), additiveInverseLhsExpr),
+                        get(rhs),
+                    ),
+                    explanation = metadata(Explanation.FactorNegativeSignOfLeadingCoefficient),
+                )
             }
         },
     ),
@@ -288,6 +313,24 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
         },
     ),
 
+    ExtractSolutionFromNegativeUnderSquareRootInRealDomain(
+        rule {
+            val lhs = SolutionVariablePattern()
+            val rhs = condition(ConstantPattern()) {
+                // if any of the '+' or '-' term has non-real term in it
+                // for e.g. if the expression contains `sqrt[-3]`
+                it.splitPlusMinus().any { child -> child.signOf() == Sign.NONE }
+            }
+
+            onEquation(lhs, rhs) {
+                ruleResult(
+                    toExpr = solutionOf(get(lhs), Constants.EmptySet),
+                    explanation = metadata(Explanation.ExtractSolutionFromNegativeUnderSquareRootInRealDomain),
+                )
+            }
+        },
+    ),
+
     ExtractSolutionFromEvenPowerEqualsNegative(
         rule {
             val variableTerm = condition(AnyPattern()) { !it.isConstantIn(solutionVariable) }
@@ -307,7 +350,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
     ExtractSolutionFromEquationInSolvedForm(
         rule {
             val lhs = SolutionVariablePattern()
-            val rhs = ConstantInSolutionVariablePattern()
+            val rhs = condition(ConstantInSolutionVariablePattern()) { it.signOf().isKnown() }
 
             onEquation(lhs, rhs) {
                 ruleResult(
@@ -332,4 +375,132 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             }
         },
     ),
+
+    ExtractSolutionFromEquationInUnionForm(
+        rule {
+            val lhs = SolutionVariablePattern()
+            val rhs1 = ConstantPattern()
+            val rhs2 = ConstantPattern()
+            val eq1 = equationOf(lhs, rhs1)
+            val eq2 = equationOf(lhs, rhs2)
+            val pattern = engine.patterns.equationUnionOf(eq1, eq2)
+
+            onPattern(pattern) {
+                ruleResult(
+                    toExpr = solutionOf(move(lhs), solutionSetOf(get(rhs1), get(rhs2))),
+                    explanation = metadata(Explanation.ExtractSolutionFromEquationInUnionForm),
+                )
+            }
+        },
+    ),
+
+    ApplyQuadraticFormula(applyQuadraticFormula),
+
+    SeparatePlusMinusQuadraticSolutions(separatePlusMinusQuadraticSolutions),
+
+    EliminateConstantFactorOfLhsWithZeroRhs(eliminateConstantFactorOfLhsWithZeroRhs),
+}
+
+private val applyQuadraticFormula = rule {
+    val solutionVariable = SolutionVariablePattern()
+    val quadraticPolynomial = QuadraticPolynomialPattern(solutionVariable)
+    val rhs = FixedPattern(Constants.Zero)
+
+    onEquation(quadraticPolynomial, rhs) {
+        val a = get(quadraticPolynomial::quadraticCoefficient)!!
+        val b = get(quadraticPolynomial::linearCoefficient)!!
+        val c = get(quadraticPolynomial::constantCoefficient)!!
+
+        val discriminant = sumOf(
+            powerOf(b, Constants.Two),
+            negOf(
+                productOf(Constants.Four, a, c),
+            ),
+        )
+        val sol = fractionOf(
+            sumOf(
+                negOf(b),
+                plusMinusOf(
+                    squareRootOf(discriminant),
+                ),
+            ),
+            productOf(
+                Constants.Two,
+                a,
+            ),
+        )
+
+        ruleResult(
+            toExpr = equationOf(get(solutionVariable), sol),
+            explanation = metadata(Explanation.ApplyQuadraticFormula),
+        )
+    }
+}
+
+private val separatePlusMinusQuadraticSolutions = rule {
+    val eq = equationOf(SolutionVariablePattern(), ConstantPattern())
+
+    onPattern(eq) {
+        val splitEquations = get(eq).splitPlusMinus()
+
+        ruleResult(
+            toExpr = equationUnionOf(splitEquations),
+            explanation = metadata(Explanation.SeparatePlusMinusQuadraticSolutions),
+        )
+    }
+}
+
+private val eliminateConstantFactorOfLhsWithZeroRhs = rule {
+    val factor = ConstantPattern()
+    val polynomial = inSolutionVariable(sumContaining())
+    val lhs = commutativeProductOf(factor, polynomial)
+    val rhs = FixedPattern(Constants.Zero)
+
+    onEquation(lhs, rhs) {
+        val newLhs = cancel(factor, get(polynomial))
+
+        ruleResult(
+            toExpr = equationOf(newLhs, get(rhs)),
+            explanation = metadata(Explanation.EliminateConstantFactorOfLhsWithZeroRhs),
+        )
+    }
+}
+
+class QuadraticPolynomialPattern(val variable: Pattern) : KeyedPattern {
+
+    private val quadraticTerm = withOptionalConstantCoefficient(powerOf(variable, FixedPattern(Constants.Two)))
+
+    private val linearTerm = withOptionalConstantCoefficient(variable)
+
+    private val constantTerm = ConstantPattern()
+
+    private val pureQuadraticPolynomial = commutativeSumOf(quadraticTerm, constantTerm)
+
+    private val incompleteQuadraticPolynomial = commutativeSumOf(quadraticTerm, linearTerm)
+
+    private val completeQuadraticPolynomial = commutativeSumOf(quadraticTerm, linearTerm, constantTerm)
+
+    private val ptn = oneOf(
+        pureQuadraticPolynomial,
+        incompleteQuadraticPolynomial,
+        completeQuadraticPolynomial,
+    )
+
+    override val key = ptn.key
+
+    fun quadraticCoefficient(match: Match) = quadraticTerm.coefficient(match)
+
+    fun linearCoefficient(match: Match): Expression {
+        return when (pureQuadraticPolynomial.getBoundExpr(match)) {
+            null -> linearTerm.coefficient(match)
+            else -> Constants.Zero
+        }
+    }
+
+    fun constantCoefficient(match: Match): Expression {
+        return when (incompleteQuadraticPolynomial.getBoundExpr(match)) {
+            null -> constantTerm.getBoundExpr(match)!!
+            else -> Constants.Zero
+        }
+    }
 }

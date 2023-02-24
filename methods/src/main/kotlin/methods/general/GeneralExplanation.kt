@@ -40,6 +40,14 @@ enum class GeneralExplanation : CategorisedMetadataKey {
     RemoveRedundantPlusSign,
     EliminateOneInProduct,
     EliminateZeroInSum,
+
+    /**
+     * eliminate +/-0 from a sum expression
+     *
+     * E.g. [2 +/- 0 / 2] --> [2 / 2]
+     */
+    EliminatePlusMinusZeroInSum,
+
     EvaluateProductContainingZero,
     EvaluateZeroDividedByAnyValue,
 
@@ -53,6 +61,7 @@ enum class GeneralExplanation : CategorisedMetadataKey {
     EvaluateProductDividedByZeroAsUndefined,
     SimplifyDoubleMinus,
     SimplifyProductWithTwoNegativeFactors,
+
     MoveSignOfNegativeFactorOutOfProduct,
     CancelCommonTerms,
     SimplifyZeroNumeratorFractionToZero,

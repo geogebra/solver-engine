@@ -44,6 +44,7 @@ import engine.patterns.oppositeSignPattern
 import engine.patterns.optionalDivideBy
 import engine.patterns.optionalNegOf
 import engine.patterns.optionalPowerOf
+import engine.patterns.plusMinusOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.rootOf
@@ -61,6 +62,7 @@ private val maxPowerAsProduct = 5.toBigInteger()
 enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     EliminateOneInProduct(eliminateOneInProduct),
     EliminateZeroInSum(eliminateZeroInSum),
+    EliminatePlusMinusZeroInSum(eliminatePlusMinusZeroInSum),
     EvaluateProductContainingZero(evaluateProductContainingZero),
     EvaluateZeroDividedByAnyValue(evaluateZeroDividedByAnyValue),
     EvaluateProductDividedByZeroAsUndefined(evaluateProductDividedByZeroAsUndefined),
@@ -124,6 +126,19 @@ private val eliminateZeroInSum =
                 toExpr = cancel(zero, restOf(pattern)),
                 gmAction = tap(zero),
                 explanation = metadata(Explanation.EliminateZeroInSum, move(zero)),
+            )
+        }
+    }
+
+private val eliminatePlusMinusZeroInSum =
+    rule {
+        val plusMinusZero = plusMinusOf(FixedPattern(Constants.Zero))
+        val pattern = sumContaining(plusMinusZero)
+
+        onPattern(pattern) {
+            ruleResult(
+                toExpr = cancel(plusMinusZero, restOf(pattern)),
+                explanation = metadata(Explanation.EliminatePlusMinusZeroInSum, move(plusMinusZero)),
             )
         }
     }

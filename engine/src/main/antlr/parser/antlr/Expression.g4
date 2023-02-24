@@ -4,9 +4,11 @@ grammar Expression;
     package parser.antlr;
 }
 
-wholeInput: equationSystem | equation | inequality | solution | exprOrUndefined EOF;
+wholeInput: equationSystem | equationUnion | equation | inequality | solution | exprOrUndefined EOF;
 
 equationSystem: equations += equation (',' equations += equation)+;
+
+equationUnion: equations += equation ('OR' equations += equation)+;
 
 equation: lhs=expr '=' rhs=expr;
 

@@ -9,6 +9,7 @@ import java.math.BigDecimal
 
 private const val PREDICATE_PRECEDENCE = 0
 private const val EQUATION_SYSTEM_PRECEDENCE = -10
+private const val EQUATION_UNION_PRECEDENCE = -20
 
 interface StatementOperator : Operator {
     override val kind get() = OperatorKind.STATEMENT
@@ -130,6 +131,24 @@ object EquationSystemOperator : StatementOperator {
             }
             append("\\end{array}\\right.")
         }
+    }
+}
+
+object EquationUnionOperator : StatementOperator {
+    override val name = "EquationUnion"
+
+    override val precedence = EQUATION_UNION_PRECEDENCE
+    override val arity = ARITY_VARIABLE
+
+    override fun nthChildAllowed(n: Int, op: Operator): Boolean {
+        require(op is EquationOperator)
+        return true
+    }
+
+    override fun <T> readableString(children: List<T>) = children.joinToString(" OR ")
+
+    override fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String {
+        return "${children[0].toLatexString(ctx)}, ${children[1].toLatexString(ctx)}"
     }
 }
 

@@ -1,8 +1,11 @@
 package methods.equations
 
 import engine.methods.testRuleInX
+import methods.equations.EquationsRules.ApplyQuadraticFormula
+import methods.equations.EquationsRules.EliminateConstantFactorOfLhsWithZeroRhs
 import methods.equations.EquationsRules.MultiplyByInverseCoefficientOfVariable
 import methods.equations.EquationsRules.MultiplyByInverseOfLeadingCoefficient
+import methods.equations.EquationsRules.SeparatePlusMinusQuadraticSolutions
 import methods.equations.EquationsRules.TakeRootOfBothSides
 import org.junit.jupiter.api.Test
 
@@ -82,5 +85,61 @@ class EquationRulesTest {
         testRuleInX("[x ^ 5] = -8", TakeRootOfBothSides, "x = root[-8, 5]")
         testRuleInX("[x ^ 4] = 0", TakeRootOfBothSides, "x = 0")
         testRuleInX("[x ^ 2] = -1", TakeRootOfBothSides, null)
+    }
+
+    @Test
+    fun testCancelGcfOfCoefficients() {
+        testRuleInX(
+            "2 ([x^2] + x + 1) = 0",
+            EliminateConstantFactorOfLhsWithZeroRhs,
+            "[x^2] + x + 1 = 0",
+        )
+    }
+
+    @Test
+    fun testApplyQuadraticFormula() {
+        testRuleInX(
+            "[x^2] + 2x + 1 = 0",
+            ApplyQuadraticFormula,
+            "x = [-2 +/- sqrt[[2 ^ 2] - 4 * 1 * 1] / 2 * 1]",
+        )
+    }
+
+    @Test
+    fun testSeparatePlusMinusQuadraticSolutions() {
+        testRuleInX(
+            "x = [-2 +/- sqrt[[2 ^ 2] - 4 * 1 * 1] / 2 * 1]",
+            SeparatePlusMinusQuadraticSolutions,
+            "x = [-2 - sqrt[[2 ^ 2] - 4 * 1 * 1] / 2 * 1] OR " +
+                "x = [-2 + sqrt[[2 ^ 2] - 4 * 1 * 1] / 2 * 1]]",
+        )
+    }
+
+    @Test
+    fun testFactorNegativeSign() {
+        testRuleInX(
+            "-[x^2] - 2x + 1 = 0",
+            EquationsRules.FactorNegativeSignOfLeadingCoefficient,
+            "(-1) ([x^2] + 2x - 1) = 0",
+        )
+        testRuleInX(
+            "[x^2] + 2x - 1 = 0",
+            EquationsRules.FactorNegativeSignOfLeadingCoefficient,
+            null,
+        )
+        testRuleInX(
+            "-[x^2] + 2x + 2 = 0",
+            EquationsRules.FactorNegativeSignOfLeadingCoefficient,
+            "(-1)([x^2] - 2x - 2) = 0",
+        )
+    }
+
+    @Test
+    fun testExtractSolutionFromEquationInUnionForm() {
+        testRuleInX(
+            "x = [-1 + sqrt[11] / 2] OR x = [-1 - sqrt[11] / 2]",
+            EquationsRules.ExtractSolutionFromEquationInUnionForm,
+            "Solution[x, {[-1 + sqrt[11] / 2], [-1 - sqrt[11] / 2]}]",
+        )
     }
 }

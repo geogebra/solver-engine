@@ -288,6 +288,112 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      */
     SolveEquationByFactoring,
 
+    /**
+     * factor out the negative sign from the leading coefficient term
+     * of the polynomial equation
+     *
+     * E.g. -[x^2] + 2x - 1 = 0
+     *      --> (-1) ([x^2] - 2x + 1) = 0
+     */
+    FactorNegativeSignOfLeadingCoefficient,
+
+    /**
+     * Applies the quadratic formula i.e. x = [ -b +/- sqrt[b^2 - 4ac] / 2a ]
+     * to a quadratic equation in standard form: a[x^2] + bx + c = 0
+     *
+     * E.g.  [x^2] + 4x + 3 = 0
+     *      --> x = [-4 +/- sqrt[[4 ^ 2] - 4 * 1 * 3] / 2 * 1]
+     */
+    ApplyQuadraticFormula,
+
+    /**
+     * Separates the two distinct quadratic equation solutions with +/- sign
+     * to an `Equation Union` of two separate equations, i.e.
+     * one containing the '+' sign and the other containing
+     * the '-' sign
+     *
+     * E.g.  x = [-4 +/- 2 sqrt[2] / 2 * 1]
+     *      --> x = [-4 + 2 sqrt[2] / 2 * 1]
+     */
+    SeparatePlusMinusQuadraticSolutions,
+
+    /**
+     * Cancel the common numerator and denominator terms on both the sides
+     * of an equation, to get the equation into a standard form, i.e.
+     *  a[x^2] + bx + c = 0, where a > 0 and gcd(a, b, c) = 1
+     *
+     * E.g.  [ 2([x^2] - 2x + 1) / 2] = [0 / 2]
+     *      --> [x^2] - 2x + 1 = 0
+     */
+    EliminateConstantFactorOfLhsWithZeroRhs,
+
+    /**
+     * Simplify a quadratic equation by standardizing the quadratic equation to
+     * the form, a[x^2] + bx + c = 0, where a > 0
+     *
+     * E.g. -2[x^2] + 4x - 2 = 0
+     *      --> (-1)(2[x^2] - 4x + 2) = 0
+     *      --> 2[x^2] - 4x + 2 = 0
+     */
+    SimplifyByFactoringNegativeSignOfLeadingCoefficient,
+
+    /**
+     * Simplify a quadratic equation by standardizing the quadratic equation to
+     * the form, a[x^2] + bx + c = 0, where gcd(a, b, c) = 1
+     *
+     * E.g.  2[x^2] - 4x + 2 = 0
+     *      --> 2([x^2] - 2x + 1) = 0
+     *      --> [x^2] - 2x + 1 = 0
+     */
+    SimplifyByDividingByGcfOfCoefficients,
+
+    /**
+     * Extract solution for an equation, which has a negative value
+     * under square root
+     *
+     * E.g. x = [-4 +/- sqrt[-5] / 2] --> x \in emptySet if x \in R
+     */
+    ExtractSolutionFromNegativeUnderSquareRootInRealDomain,
+
+    /**
+     * Extract the solution set from an equation union of the form:
+     *
+     * x = constantExpr1, x = real conjugate of constantExpr1
+     * E.g. x = [-1 - sqrt[2] / 2], x = [-1 + sqrt[2] / 2]
+     *      --> x \in { [-1 - sqrt[2] / 2], [-1 + sqrt[2] / 2] }
+     */
+    ExtractSolutionFromEquationInUnionForm,
+
+    /**
+     * Extract the solution set from an equation union of the form:
+     *
+     * x = constantExpr1, x = real conjugate of constantExpr1
+     *
+     * simplifying each solution (the simplifications occur in tasks)
+     *
+     * E.g. x = [-4 - 2 / 2 * 1], x = [-4 + 2 / 2 * 1]
+     *      --> task # 1:
+     *          x = -3
+     *
+     *      --> task # 2:
+     *          x = -1
+     *
+     *      --> task # 3:
+     *          x \in {-3, -1}
+     */
+    ExtractSolutionAndSimplifyFromEquationInUnionForm,
+
+    /**
+     * Solve any quadratic equation (complete or incomplete) by the method of quadratic formula
+     *
+     * E.g. [x^2] + 4x = -3
+     *      --> [x^2] + 4x + 3 = 0
+     *      --> x = [-4 +/- sqrt[[4 ^ 2] - 4 * 1 * 3] / 2 * 1]
+     *      --> x = [-4 +/- 2 / 2 * 1]
+     *      --> x = [-4 - 2 / 2 * 1], x = [-4 + 2 / 2 * 1]
+     *      --> x \in {-3, -1}
+     */
+    SolveQuadraticEquationUsingQuadraticFormula,
     ;
 
     override val category = "Equations"

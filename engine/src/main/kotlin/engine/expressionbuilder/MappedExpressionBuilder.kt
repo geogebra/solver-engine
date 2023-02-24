@@ -33,7 +33,9 @@ import engine.patterns.Pattern
 import engine.patterns.RationalCoefficientPattern
 import engine.patterns.RationalPattern
 import engine.patterns.RecurringDecimalPattern
+import engine.patterns.SolutionVariablePattern
 import engine.patterns.SolvablePattern
+import engine.patterns.monomialPattern
 import engine.steps.metadata.DragTargetPosition
 import engine.steps.metadata.GmAction
 import engine.steps.metadata.GmActionType
@@ -243,6 +245,29 @@ open class MappedExpressionBuilder(
     fun SolvablePattern.sameSolvable(lhs: Expression, rhs: Expression): Expression {
         val operator = getBoundExpr(match)!!.operator
         return Expression(operator, listOf(lhs, rhs))
+    }
+
+    fun leadingCoefficientOfPolynomial(polynomialExpr: Expression): Expression? {
+        val monomial = monomialPattern(SolutionVariablePattern())
+        var degree = BigInteger.ZERO
+        var leadingCoefficient: Expression? = null
+        for (term in polynomialExpr.children()) {
+            if (!term.isConstant()) {
+                val monomialMatch = matchPattern(monomial, term) ?: continue
+                val monomialDegree = monomial.exponent.getBoundInt(monomialMatch)
+                when {
+                    monomialDegree > degree -> {
+                        leadingCoefficient = monomial.coefficient(monomialMatch)
+                        degree = monomialDegree
+                    }
+                    monomialDegree == degree -> {
+                        // The polynomial is not normalised
+                        return null
+                    }
+                }
+            }
+        }
+        return leadingCoefficient
     }
 
     fun collectLikeTermsInSum(

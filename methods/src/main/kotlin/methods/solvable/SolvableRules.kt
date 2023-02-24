@@ -68,7 +68,8 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
             val solvable = SolvablePattern(lhs, rhs)
 
             onPattern(solvable) {
-                val constants = extractConstants(get(rhs), context.solutionVariable) ?: return@onPattern null
+                val constants = extractConstants(get(rhs), context.solutionVariable)
+                if (constants == Constants.Zero || constants == null) return@onPattern null
 
                 val negatedConstants = simplifiedNegOf(constants)
 
@@ -97,7 +98,8 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
             val solvable = SolvablePattern(lhs, rhs)
 
             onPattern(solvable) {
-                val constants = extractConstants(get(lhs), context.solutionVariable) ?: return@onPattern null
+                val constants = extractConstants(get(lhs), context.solutionVariable)
+                if (constants == Constants.Zero || constants == null) return@onPattern null
 
                 val negatedConstants = simplifiedNegOf(constants)
 
