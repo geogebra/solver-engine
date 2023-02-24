@@ -6,6 +6,7 @@ import engine.expressions.Combine
 import engine.expressions.Distribute
 import engine.expressions.Expression
 import engine.expressions.Factor
+import engine.expressions.Introduce
 import engine.expressions.Label
 import engine.expressions.Move
 import engine.expressions.New
@@ -53,6 +54,9 @@ open class MappedExpressionBuilder(
     val context: Context,
     private val match: Match,
 ) {
+
+    fun introduce(expressionProvider: ExpressionProvider, toExpression: Expression) =
+        toExpression.withOrigin(Introduce(expressionProvider.getBoundExprs(match)))
 
     fun introduce(expression: Expression): Expression = expression.withOrigin(New)
 

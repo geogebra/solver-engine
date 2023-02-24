@@ -35,10 +35,13 @@ import engine.patterns.sumContaining
 import engine.patterns.withOptionalConstantCoefficient
 import engine.steps.metadata.metadata
 import methods.constantexpressions.ConstantExpressionsPlans
+import methods.constantexpressions.simpleTidyUpSteps
 import methods.equations.EquationsRules.FactorNegativeSignOfLeadingCoefficient
 import methods.general.GeneralRules
+import methods.general.NormalizationPlans
 import methods.polynomials.PolynomialsPlans
 import methods.polynomials.PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
+import methods.polynomials.algebraicSimplificationSteps
 import methods.solvable.SolvableRules
 
 enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
@@ -71,7 +74,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 apply(SolvableRules.MoveConstantsToTheLeft)
-                optionally(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
+                optionally(simplifyEquation)
             }
         },
     ),
@@ -82,7 +85,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 apply(SolvableRules.MoveConstantsToTheRight)
-                optionally(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
+                optionally(simplifyEquation)
             }
         },
     ),
@@ -93,7 +96,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 apply(SolvableRules.MoveVariablesToTheLeft)
-                optionally(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
+                optionally(simplifyEquation)
             }
         },
     ),
@@ -104,7 +107,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 apply(EquationsRules.MoveEverythingToTheLeft)
-                optionally(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
+                optionally(simplifyEquation)
             }
         },
     ),
@@ -115,7 +118,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 apply(EquationsRules.MultiplyByInverseCoefficientOfVariable)
-                optionally(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
+                optionally(simplifyEquation)
             }
         },
     ),
@@ -137,7 +140,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 apply(EquationsRules.DivideByCoefficientOfVariable)
-                optionally(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
+                optionally(simplifyEquation)
             }
         },
     ),
@@ -548,14 +551,25 @@ private val optimalEquationSolvingSteps = steps {
     }
 }
 
+private val simplifyEquation = plan {
+    explanation = Explanation.SimplifyEquation
+    specificPlans(ConstantExpressionsPlans.SimplifyConstantExpression)
+
+    steps {
+        whilePossible { deeply(simpleTidyUpSteps) }
+        optionally(NormalizationPlans.NormalizeExpression)
+        whilePossible(SolvableRules.CancelCommonTermsOnBothSides)
+        whilePossible(algebraicSimplificationSteps)
+    }
+}
+
 private val equationSimplificationSteps = steps {
     whilePossible {
         firstOf {
             // before we cancel we always have to check for an identity
             option(EquationsRules.ExtractSolutionFromIdentity)
             // normalize the equation
-            option(SolvableRules.CancelCommonTermsOnBothSides)
-            option(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
+            option(simplifyEquation)
             // after cancelling we have to check for contradiction
             option(EquationsRules.ExtractSolutionFromContradiction)
         }

@@ -7,6 +7,18 @@ import engine.steps.metadata.TranslationKeys
 enum class InequalitiesExplanation : CategorisedMetadataKey {
 
     /**
+     * Simplify an inequality so that
+     * - opposite terms on the same side are cancelled first
+     * - equal terms on both sides are cancelled next
+     * - each side is simplified last
+     *
+     * E.g. x + 3 - 3 < 5x - 3 --> x < 5x - 3
+     *      x - 4 >= 2x - 4 --> x >= 2x
+     *      x + 2x <= 5 + 1 --> 3x <= 6
+     */
+    SimplifyInequality,
+
+    /**
      * Extract the solution from a true inequality.
      *
      * E.g. -3 < 7 -> x \in R

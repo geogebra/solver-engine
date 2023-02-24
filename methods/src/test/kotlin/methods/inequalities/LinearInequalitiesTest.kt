@@ -1,7 +1,6 @@
 package methods.inequalities
 
 import engine.methods.testMethodInX
-import methods.polynomials.PolynomialsExplanation
 import org.junit.jupiter.api.Test
 
 class LinearInequalitiesTest {
@@ -67,7 +66,7 @@ class LinearInequalitiesTest {
                     fromExpr = "[-3 x / -3] >= [1 / -3]"
                     toExpr = "x >= -[1 / 3]"
                     explanation {
-                        key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                        key = InequalitiesExplanation.SimplifyInequality
                     }
                 }
             }
@@ -159,7 +158,7 @@ class LinearInequalitiesTest {
                     fromExpr = "(-[1 / 3] x) * (-3) < 7 * (-3)"
                     toExpr = "x < -21"
                     explanation {
-                        key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                        key = InequalitiesExplanation.SimplifyInequality
                     }
                 }
             }

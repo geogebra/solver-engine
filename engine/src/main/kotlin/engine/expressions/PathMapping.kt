@@ -11,11 +11,18 @@ data class PathMapping(
         return PathMapping(fromPaths.map { it.relativeTo(fromRoot) }, type, toPaths.map { it.relativeTo(toRoot) })
     }
 
+    private fun mergeableWith(other: PathMapping): Boolean {
+        val isMergeableType = type == PathMappingType.Distribute ||
+            (type == PathMappingType.Introduce && fromPaths.isNotEmpty())
+
+        return isMergeableType && type == other.type && fromPaths == other.fromPaths
+    }
+
     fun mergeWith(other: PathMapping): PathMapping? {
         if (this == other) {
             return this
         }
-        if (type == PathMappingType.Distribute && type == other.type && fromPaths == other.fromPaths) {
+        if (mergeableWith(other)) {
             return copy(toPaths = toPaths.union(other.toPaths).toList())
         }
         return null

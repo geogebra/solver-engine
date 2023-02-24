@@ -94,6 +94,21 @@ class Move(val from: Expression) : Origin() {
     }
 }
 
+class Introduce(val from: List<Expression>) : Origin() {
+
+    override fun computeChildOrigin(expression: Expression, index: Int) =
+        expression.operands[index].withOrigin(Introduce(from))
+
+    override fun computePathMappings(rootPath: Path, children: List<Expression>) =
+        sequenceOf(
+            PathMapping(
+                from.flatMap { it.origin.fromPaths(it.children()) },
+                PathMappingType.Introduce,
+                listOf(rootPath),
+            ),
+        )
+}
+
 class Combine(val from: List<Expression>) : Origin() {
 
     constructor(vararg fromExprs: Expression) : this(fromExprs.asList())

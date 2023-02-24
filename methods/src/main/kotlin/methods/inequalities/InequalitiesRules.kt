@@ -142,20 +142,20 @@ enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
                 val coefficient = get(lhs::coefficient)!!
 
                 if (coefficient.isFraction() || (coefficient.isNeg() && coefficient.firstChild.isFraction())) {
-                    val inverse = coefficient.inverse()
+                    val inverse = introduce(coefficient, coefficient.inverse())
 
                     when (inverse.signOf()) {
                         Sign.POSITIVE -> ruleResult(
                             toExpr = inequality.sameInequality(
-                                productOf(move(lhs), inverse),
-                                productOf(move(rhs), inverse),
+                                productOf(get(lhs), inverse),
+                                productOf(get(rhs), inverse),
                             ),
                             explanation = metadata(Explanation.MultiplyByInverseCoefficientOfVariable),
                         )
                         Sign.NEGATIVE -> ruleResult(
                             toExpr = inequality.dualInequality(
-                                productOf(move(lhs), inverse),
-                                productOf(move(rhs), inverse),
+                                productOf(get(lhs), inverse),
+                                productOf(get(rhs), inverse),
                             ),
                             explanation = metadata(Explanation.MultiplyByInverseCoefficientOfVariableAndFlipTheSign),
                         )
@@ -176,21 +176,23 @@ enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
             val inequality = inequalityOf(lhs, rhs)
 
             onPattern(inequality) {
-                val coefficient = get(lhs::coefficient)!!
-                if (coefficient == Constants.One) return@onPattern null
+                val coefficientValue = get(lhs::coefficient)!!
+                if (coefficientValue == Constants.One) return@onPattern null
+
+                val coefficient = introduce(coefficientValue, coefficientValue)
 
                 when (coefficient.signOf()) {
                     Sign.POSITIVE -> ruleResult(
                         toExpr = inequality.sameInequality(
-                            fractionOf(move(lhs), coefficient),
-                            fractionOf(move(rhs), coefficient),
+                            fractionOf(get(lhs), coefficient),
+                            fractionOf(get(rhs), coefficient),
                         ),
                         explanation = metadata(Explanation.DivideByCoefficientOfVariable),
                     )
                     Sign.NEGATIVE -> ruleResult(
                         toExpr = inequality.dualInequality(
-                            fractionOf(move(lhs), coefficient),
-                            fractionOf(move(rhs), coefficient),
+                            fractionOf(get(lhs), coefficient),
+                            fractionOf(get(rhs), coefficient),
                         ),
                         explanation = metadata(Explanation.DivideByCoefficientOfVariableAndFlipTheSign),
                     )

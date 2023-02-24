@@ -143,19 +143,6 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
         },
     ),
 
-    SimplifyAlgebraicExpressionInOneVariableWithoutNormalization(
-        plan {
-            explanation = Explanation.SimplifyAlgebraicExpression
-            specificPlans(ConstantExpressionsPlans.SimplifyConstantExpression)
-
-            steps {
-                whilePossible { deeply(simpleTidyUpSteps) }
-                optionally(NormalizationPlans.NormalizeExpression)
-                whilePossible(algebraicSimplificationSteps)
-            }
-        },
-    ),
-
     /**
      * Expand and simplify an expression containing a product or a power of polynomials in one variable.
      */

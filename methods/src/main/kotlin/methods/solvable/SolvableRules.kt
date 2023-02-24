@@ -71,12 +71,12 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                 val constants = extractConstants(get(rhs), context.solutionVariable)
                 if (constants == Constants.Zero || constants == null) return@onPattern null
 
-                val negatedConstants = simplifiedNegOf(constants)
+                val negatedConstants = introduce(constants, simplifiedNegOf(constants))
 
                 ruleResult(
                     toExpr = solvable.sameSolvable(
-                        sumOf(move(lhs), negatedConstants),
-                        sumOf(move(rhs), negatedConstants),
+                        sumOf(get(lhs), negatedConstants),
+                        sumOf(get(rhs), negatedConstants),
                     ),
                     explanation = metadata(
                         if (solvable.isEquation()) {
@@ -101,12 +101,12 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                 val constants = extractConstants(get(lhs), context.solutionVariable)
                 if (constants == Constants.Zero || constants == null) return@onPattern null
 
-                val negatedConstants = simplifiedNegOf(constants)
+                val negatedConstants = introduce(constants, simplifiedNegOf(constants))
 
                 ruleResult(
                     toExpr = solvable.sameSolvable(
-                        sumOf(move(lhs), negatedConstants),
-                        sumOf(move(rhs), negatedConstants),
+                        sumOf(get(lhs), negatedConstants),
+                        sumOf(get(rhs), negatedConstants),
                     ),
                     explanation = metadata(
                         if (solvable.isEquation()) {
@@ -130,12 +130,12 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
             onPattern(solvable) {
                 val variables = extractVariableTerms(get(rhs), context.solutionVariable) ?: return@onPattern null
 
-                val negatedVariable = simplifiedNegOf(variables)
+                val negatedVariable = introduce(variables, simplifiedNegOf(variables))
 
                 ruleResult(
                     toExpr = solvable.sameSolvable(
-                        sumOf(move(lhs), negatedVariable),
-                        sumOf(move(rhs), negatedVariable),
+                        sumOf(get(lhs), negatedVariable),
+                        sumOf(get(rhs), negatedVariable),
                     ),
                     explanation = metadata(
                         if (solvable.isEquation()) {
@@ -188,8 +188,8 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                     BigInteger.ONE -> null
                     else -> ruleResult(
                         toExpr = solvable.sameSolvable(
-                            productOf(move(lhs), xp(lcm)),
-                            productOf(move(rhs), xp(lcm)),
+                            productOf(get(lhs), xp(lcm)),
+                            productOf(get(rhs), xp(lcm)),
                         ),
                         explanation = metadata(
                             if (solvable.isEquation()) {

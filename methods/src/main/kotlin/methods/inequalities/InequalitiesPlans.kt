@@ -26,7 +26,11 @@ import engine.patterns.optionalNegOf
 import engine.patterns.solutionOf
 import engine.patterns.sumContaining
 import engine.patterns.withOptionalConstantCoefficient
+import methods.constantexpressions.ConstantExpressionsPlans
+import methods.constantexpressions.simpleTidyUpSteps
+import methods.general.NormalizationPlans
 import methods.polynomials.PolynomialsPlans
+import methods.polynomials.algebraicSimplificationSteps
 import methods.solvable.SolvableRules
 
 enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMethod {
@@ -37,7 +41,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
 
             steps {
                 apply(SolvableRules.MoveConstantsToTheLeft)
-                optionally(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
+                optionally(inequalitySimplificationSteps)
             }
         },
     ),
@@ -48,7 +52,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
 
             steps {
                 apply(SolvableRules.MoveConstantsToTheRight)
-                optionally(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
+                optionally(inequalitySimplificationSteps)
             }
         },
     ),
@@ -59,7 +63,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
 
             steps {
                 apply(SolvableRules.MoveVariablesToTheLeft)
-                optionally(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
+                optionally(inequalitySimplificationSteps)
             }
         },
     ),
@@ -70,7 +74,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
 
             steps {
                 apply(InequalitiesRules.MultiplyByInverseCoefficientOfVariable)
-                optionally(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
+                optionally(inequalitySimplificationSteps)
             }
         },
     ),
@@ -92,7 +96,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
 
             steps {
                 apply(InequalitiesRules.DivideByCoefficientOfVariable)
-                optionally(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
+                optionally(inequalitySimplificationSteps)
             }
         },
     ),
@@ -176,14 +180,25 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
     ),
 }
 
+private val simplifyInequality = plan {
+    explanation = Explanation.SimplifyInequality
+    specificPlans(ConstantExpressionsPlans.SimplifyConstantExpression)
+
+    steps {
+        whilePossible { deeply(simpleTidyUpSteps) }
+        optionally(NormalizationPlans.NormalizeExpression)
+        whilePossible(SolvableRules.CancelCommonTermsOnBothSides)
+        whilePossible(algebraicSimplificationSteps)
+    }
+}
+
 private val inequalitySimplificationSteps = steps {
     whilePossible {
         firstOf {
             option(InequalitiesRules.ExtractSolutionFromConstantInequality)
             option(InequalitiesRules.ExtractSolutionFromConstantInequalityBasedOnSign)
             // normalize the inequality
-            option(SolvableRules.CancelCommonTermsOnBothSides)
-            option(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariableWithoutNormalization)
+            option(simplifyInequality)
         }
     }
 }

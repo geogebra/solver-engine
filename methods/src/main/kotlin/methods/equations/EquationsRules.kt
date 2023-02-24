@@ -1,6 +1,7 @@
 package methods.equations
 
 import engine.conditions.Sign
+import engine.conditions.isDefinitelyNotUndefined
 import engine.conditions.signOf
 import engine.expressions.Constants
 import engine.expressions.Expression
@@ -65,10 +66,16 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             val rhs = condition(AnyPattern()) { it != Constants.Zero }
 
             onEquation(lhs, rhs) {
+                val rhsVal = get(rhs)
+                val negatedRhs = when (rhsVal.operator) {
+                    NaryOperator.Sum -> sumOf(rhsVal.children().map { introduce(it, simplifiedNegOf(it)) })
+                    else -> introduce(rhsVal, simplifiedNegOf(rhsVal))
+                }
+
                 ruleResult(
                     toExpr = equationOf(
-                        sumOf(get(lhs), negOf(move(rhs))),
-                        sumOf(get(rhs), negOf(move(rhs))),
+                        sumOf(get(lhs), negatedRhs),
+                        sumOf(get(rhs), negatedRhs),
                     ),
                     explanation = metadata(Explanation.MoveEverythingToTheLeft),
                 )
@@ -102,7 +109,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                 if (leadingCoefficient == null || leadingCoefficient == Constants.One) {
                     return@onEquation null
                 }
-                val inverse = leadingCoefficient.inverse()
+                val inverse = introduce(leadingCoefficient, leadingCoefficient.inverse())
 
                 ruleResult(
                     toExpr = equationOf(
@@ -124,7 +131,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                 val coefficient = get(lhs::coefficient)!!
 
                 if (coefficient.isFraction() || (coefficient.isNeg() && coefficient.firstChild.isFraction())) {
-                    val inverse = coefficient.inverse()
+                    val inverse = introduce(coefficient, coefficient.inverse())
 
                     ruleResult(
                         toExpr = equationOf(
@@ -209,7 +216,9 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             val rhs = AnyPattern()
 
             onEquation(lhs, rhs) {
-                when (val coefficient = get(lhs::coefficient)!!) {
+                val coefficientValue = get(lhs::coefficient)!!
+
+                when (val coefficient = introduce(coefficientValue, coefficientValue)) {
                     Constants.One -> null
                     else -> ruleResult(
                         toExpr = equationOf(
@@ -284,7 +293,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
     ExtractSolutionFromIdentity(
         rule {
-            val value = ConstantInSolutionVariablePattern()
+            val value = condition(ConstantInSolutionVariablePattern()) { it.isDefinitelyNotUndefined() }
 
             onEquation(value, value) {
                 ruleResult(

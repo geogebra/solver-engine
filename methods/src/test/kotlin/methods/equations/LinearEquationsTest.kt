@@ -4,6 +4,7 @@ import engine.context.Context
 import engine.methods.testMethod
 import engine.methods.testMethodInX
 import methods.fractionarithmetic.FractionArithmeticExplanation
+import methods.general.GeneralExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
 import methods.polynomials.PolynomialsExplanation
 import org.junit.jupiter.api.Test
@@ -42,7 +43,7 @@ class LinearEquationsTest {
                     fromExpr = "[3 x / 3] = [1 / 3]"
                     toExpr = "x = [1 / 3]"
                     explanation {
-                        key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                        key = EquationsExplanation.SimplifyEquation
                     }
                 }
             }
@@ -121,7 +122,7 @@ class LinearEquationsTest {
                     fromExpr = "x - 2 + 2 = 36 + 2"
                     toExpr = "x = 38"
                     explanation {
-                        key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                        key = EquationsExplanation.SimplifyEquation
                     }
                 }
             }
@@ -441,6 +442,92 @@ class LinearEquationsTest {
     }
 
     @Test
+    fun `test cancellation of opposites happens on one side before it happens on both sides`() = testMethodInX {
+        method = EquationsPlans.SolveLinearEquation
+        inputExpr = "2 x + x + 5 - 5 = x + 9 - 5"
+
+        check {
+            fromExpr = "2 x + x + 5 - 5 = x + 9 - 5"
+            toExpr = "Solution[x, {2}]"
+            explanation {
+                key = EquationsExplanation.SolveLinearEquation
+            }
+
+            step {
+                fromExpr = "2 x + x + 5 - 5 = x + 9 - 5"
+                toExpr = "2 x = 4"
+                explanation {
+                    key = EquationsExplanation.SimplifyEquation
+                }
+
+                step {
+                    fromExpr = "2 x + x + 5 - 5 = x + 9 - 5"
+                    toExpr = "2 x + x = x + 9 - 5"
+                    explanation {
+                        key = GeneralExplanation.CancelAdditiveInverseElements
+                    }
+                }
+
+                step {
+                    fromExpr = "2 x + x = x + 9 - 5"
+                    toExpr = "2 x = 9 - 5"
+                    explanation {
+                        key = methods.solvable.EquationsExplanation.CancelCommonTermsOnBothSides
+                    }
+                }
+
+                step {
+                    fromExpr = "2 x = 9 - 5"
+                    toExpr = "2 x = 4"
+                    explanation {
+                        key = IntegerArithmeticExplanation.SimplifyIntegersInSum
+                    }
+
+                    step {
+                        fromExpr = "9 - 5"
+                        toExpr = "4"
+                        explanation {
+                            key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
+                        }
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "2 x = 4"
+                toExpr = "x = 2"
+                explanation {
+                    key = EquationsExplanation.DivideByCoefficientOfVariableAndSimplify
+                }
+
+                step {
+                    fromExpr = "2 x = 4"
+                    toExpr = "[2 x / 2] = [4 / 2]"
+                    explanation {
+                        key = EquationsExplanation.DivideByCoefficientOfVariable
+                    }
+                }
+
+                step {
+                    fromExpr = "[2 x / 2] = [4 / 2]"
+                    toExpr = "x = 2"
+                    explanation {
+                        key = EquationsExplanation.SimplifyEquation
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "x = 2"
+                toExpr = "Solution[x, {2}]"
+                explanation {
+                    key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
+                }
+            }
+        }
+    }
+
+    @Test
     fun `test linear equations with no solutions`() = testMethod {
         context = Context(solutionVariable = "x")
         method = EquationsPlans.SolveLinearEquation
@@ -486,17 +573,26 @@ class LinearEquationsTest {
 
             step {
                 fromExpr = "6 x + 6 = 6 x + 3 + 3"
-                toExpr = "6 = 3 + 3"
-                explanation {
-                    key = methods.solvable.EquationsExplanation.CancelCommonTermsOnBothSides
-                }
-            }
-
-            step {
-                fromExpr = "6 = 3 + 3"
                 toExpr = "6 = 6"
+
                 explanation {
-                    key = IntegerArithmeticExplanation.SimplifyIntegersInSum
+                    key = EquationsExplanation.SimplifyEquation
+                }
+
+                step {
+                    fromExpr = "6 x + 6 = 6 x + 3 + 3"
+                    toExpr = "6 = 3 + 3"
+                    explanation {
+                        key = methods.solvable.EquationsExplanation.CancelCommonTermsOnBothSides
+                    }
+                }
+
+                step {
+                    fromExpr = "6 = 3 + 3"
+                    toExpr = "6 = 6"
+                    explanation {
+                        key = IntegerArithmeticExplanation.SimplifyIntegersInSum
+                    }
                 }
             }
 
