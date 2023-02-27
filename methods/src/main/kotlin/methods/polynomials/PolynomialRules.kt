@@ -15,7 +15,6 @@ import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
-import engine.methods.ruleResult
 import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ArbitraryVariablePattern
@@ -61,7 +60,7 @@ enum class PolynomialRules(override val runner: Rule) : RunnerMethod {
             val sum = condition(sumContaining()) { !it.isConstant() }
 
             onPattern(sum) {
-                val splitMonomials = MonomialGCF.splitIntegersInMonomials(get(sum).children())
+                val splitMonomials = MonomialGCF.splitIntegersInMonomials(get(sum).children)
                     ?: return@onPattern null
 
                 ruleResult(
@@ -82,7 +81,7 @@ enum class PolynomialRules(override val runner: Rule) : RunnerMethod {
                 if (sumValue.variables.size != 1) return@onPattern null
 
                 val splitMonomials = MonomialGCF.splitVariablePowersInMonomials(
-                    sumValue.children(),
+                    sumValue.children,
                     sumValue.variables.first(),
                 ) ?: return@onPattern null
 
@@ -99,7 +98,7 @@ enum class PolynomialRules(override val runner: Rule) : RunnerMethod {
             val sum = sumContaining()
 
             onPattern(sum) {
-                val terms = get(sum).children().map {
+                val terms = get(sum).children.map {
                     if (it.operator == UnaryExpressionOperator.Minus) {
                         Pair(true, it.firstChild.flattenedProductChildren())
                     } else {
@@ -437,7 +436,7 @@ private val normalizePolynomial = rule {
     val sum = sumContaining(monomialPattern(commonVariable))
 
     onPattern(sum) {
-        val terms = get(sum).children()
+        val terms = get(sum).children
         val monomialPattern = monomialPattern(commonVariable)
 
         // Find the degree of each term so we can decide whether the sum is normalized already.

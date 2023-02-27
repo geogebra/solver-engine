@@ -26,7 +26,6 @@ import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
-import engine.methods.ruleResult
 import engine.operators.NaryOperator
 import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
@@ -68,7 +67,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             onEquation(lhs, rhs) {
                 val rhsVal = get(rhs)
                 val negatedRhs = when (rhsVal.operator) {
-                    NaryOperator.Sum -> sumOf(rhsVal.children().map { introduce(it, simplifiedNegOf(it)) })
+                    NaryOperator.Sum -> sumOf(rhsVal.children.map { introduce(it, simplifiedNegOf(it)) })
                     else -> introduce(rhsVal, simplifiedNegOf(rhsVal))
                 }
 
@@ -162,7 +161,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                 fun additiveInverseOfPolynomial(expr: Expression): Expression {
                     return when (expr.operator) {
                         UnaryExpressionOperator.Minus -> expr.firstChild
-                        NaryOperator.Sum -> sumOf(expr.children().map { additiveInverseOfPolynomial(it) })
+                        NaryOperator.Sum -> sumOf(expr.children.map { additiveInverseOfPolynomial(it) })
                         else -> negOf(expr)
                     }
                 }

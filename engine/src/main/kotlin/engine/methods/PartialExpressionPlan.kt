@@ -5,6 +5,7 @@ import engine.expressions.Expression
 import engine.methods.stepsproducers.StepsProducer
 import engine.patterns.AnyPattern
 import engine.patterns.NaryPattern
+import engine.steps.Transformation
 import engine.steps.metadata.MetadataMaker
 import engine.steps.metadata.metadata
 
@@ -41,7 +42,7 @@ class PartialExpressionPlan(
         }
     }
 
-    override fun run(ctx: Context, sub: Expression): TransformationResult? {
+    override fun run(ctx: Context, sub: Expression): Transformation? {
         return if (sub.flattenedChildCount == naryPattern.childPatterns.size) {
             plan.run(ctx, sub)
         } else {

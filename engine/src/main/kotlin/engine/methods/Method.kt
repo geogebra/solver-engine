@@ -3,10 +3,7 @@ package engine.methods
 import engine.context.Context
 import engine.expressions.Expression
 import engine.methods.stepsproducers.StepsProducer
-import engine.steps.Task
 import engine.steps.Transformation
-import engine.steps.metadata.GmAction
-import engine.steps.metadata.Metadata
 import java.util.logging.Level
 
 fun interface Method : StepsProducer {
@@ -17,29 +14,8 @@ fun interface Method : StepsProducer {
 }
 
 fun interface Runner {
-    fun run(ctx: Context, sub: Expression): TransformationResult?
+    fun run(ctx: Context, sub: Expression): Transformation?
 }
-
-data class TransformationResult(
-    val type: Transformation.Type,
-    val toExpr: Expression,
-    val steps: List<Transformation>? = null,
-    val tasks: List<Task>? = null,
-    val explanation: Metadata? = null,
-    val skills: List<Metadata> = emptyList(),
-    val gmAction: GmAction? = null,
-)
-
-@Suppress("LongParameterList")
-fun ruleResult(
-    toExpr: Expression,
-    steps: List<Transformation>? = null,
-    tasks: List<Task>? = null,
-    explanation: Metadata? = null,
-    skills: List<Metadata> = emptyList(),
-    gmAction: GmAction? = null,
-    type: Transformation.Type = Transformation.Type.Rule,
-) = TransformationResult(type, toExpr, steps, tasks, explanation, skills, gmAction)
 
 interface RunnerMethod : Method {
     val name: String
@@ -52,16 +28,7 @@ interface RunnerMethod : Method {
 
         return runner.run(ctx, sub)?.let {
             ctx.log(Level.FINE) { "Changed at $name from $sub to ${it.toExpr}" }
-            Transformation(
-                type = it.type,
-                fromExpr = sub,
-                toExpr = it.toExpr,
-                steps = it.steps,
-                tasks = it.tasks,
-                explanation = it.explanation,
-                skills = it.skills,
-                gmAction = it.gmAction,
-            )
+            it
         }
     }
 }

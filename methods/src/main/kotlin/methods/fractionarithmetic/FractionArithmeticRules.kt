@@ -13,7 +13,6 @@ import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
-import engine.methods.ruleResult
 import engine.operators.BinaryExpressionOperator
 import engine.operators.NullaryOperator
 import engine.patterns.AnyPattern
@@ -542,5 +541,5 @@ private fun Expression.canBeTurnedToFraction(): Boolean =
         BinaryExpressionOperator.Fraction -> false
         BinaryExpressionOperator.Power -> firstChild.canBeTurnedToFraction()
         is NullaryOperator -> true
-        else -> children().all { it.canBeTurnedToFraction() }
+        else -> children.all { it.canBeTurnedToFraction() }
     }

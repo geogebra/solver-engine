@@ -231,7 +231,7 @@ private fun flattenedNaryExpression(operator: NaryOperator, operands: List<Expre
     val ops = mutableListOf<Expression>()
     for (mappedExpr in operands) {
         if (!mappedExpr.hasBracket() && mappedExpr.operator == operator) {
-            ops.addAll(mappedExpr.children())
+            ops.addAll(mappedExpr.children)
         } else {
             ops.add(mappedExpr)
         }

@@ -177,7 +177,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
             explanation = Explanation.SolveFactorisedEquation
 
             tasks {
-                val tasks = get(product).children().mapNotNull {
+                val tasks = get(product).children.mapNotNull {
                     if (!it.isConstantIn(context.solutionVariable)) {
                         task(
                             startExpr = equationOf(it, get(zero)),
@@ -189,7 +189,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                     }
                 }
 
-                val solutions = solutionSetOf(tasks.flatMap { it.result.secondChild.children() })
+                val solutions = solutionSetOf(tasks.flatMap { it.result.secondChild.children })
 
                 task(
                     startExpr = solutionOf(xp(context.solutionVariable!!), solutions),

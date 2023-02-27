@@ -67,7 +67,7 @@ object Build : Origin() {
     }
 
     override fun fromPaths(children: List<Expression>): List<Path> {
-        return children.flatMap { it.origin.fromPaths(it.children()) }
+        return children.flatMap { it.origin.fromPaths(it.children) }
     }
 }
 
@@ -102,7 +102,7 @@ class Introduce(val from: List<Expression>) : Origin() {
     override fun computePathMappings(rootPath: Path, children: List<Expression>) =
         sequenceOf(
             PathMapping(
-                from.flatMap { it.origin.fromPaths(it.children()) },
+                from.flatMap { it.origin.fromPaths(it.children) },
                 PathMappingType.Introduce,
                 listOf(rootPath),
             ),
@@ -118,7 +118,7 @@ class Combine(val from: List<Expression>) : Origin() {
 
     override fun computePathMappings(rootPath: Path, children: List<Expression>) = sequenceOf(
         PathMapping(
-            from.flatMap { it.origin.fromPaths(it.children()) },
+            from.flatMap { it.origin.fromPaths(it.children) },
             when (from.size) {
                 0 -> PathMappingType.Introduce
                 1 -> PathMappingType.Transform
@@ -139,7 +139,7 @@ class Factor(val from: List<Expression>) : Origin() {
     override fun computePathMappings(rootPath: Path, children: List<Expression>) =
         sequenceOf(
             PathMapping(
-                from.flatMap { it.origin.fromPaths(it.children()) },
+                from.flatMap { it.origin.fromPaths(it.children) },
                 PathMappingType.Factor,
                 listOf(rootPath),
             ),
@@ -156,7 +156,7 @@ class Distribute(val from: List<Expression>) : Origin() {
     override fun computePathMappings(rootPath: Path, children: List<Expression>) =
         sequenceOf(
             PathMapping(
-                from.flatMap { it.origin.fromPaths(it.children()) },
+                from.flatMap { it.origin.fromPaths(it.children) },
                 PathMappingType.Distribute,
                 listOf(rootPath),
             ),

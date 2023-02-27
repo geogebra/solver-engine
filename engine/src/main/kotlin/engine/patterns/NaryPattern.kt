@@ -69,7 +69,7 @@ class NaryPattern(
     }
 
     private fun flattenOperands(sub: Expression) = when (sub.operator) {
-        NaryOperator.Sum -> sub.children()
+        NaryOperator.Sum -> sub.children
         else -> sub.flattenedProductChildren()
     }
 

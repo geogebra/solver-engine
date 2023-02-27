@@ -255,7 +255,7 @@ open class MappedExpressionBuilder(
         val monomial = monomialPattern(SolutionVariablePattern())
         var degree = BigInteger.ZERO
         var leadingCoefficient: Expression? = null
-        for (term in polynomialExpr.children()) {
+        for (term in polynomialExpr.children) {
             if (!term.isConstant()) {
                 val monomialMatch = matchPattern(monomial, term) ?: continue
                 val monomialDegree = monomial.exponent.getBoundInt(monomialMatch)
@@ -284,7 +284,7 @@ open class MappedExpressionBuilder(
         val otherTerms = mutableListOf<Expression>()
         var firstIndex: Int? = null
 
-        for ((index, term) in sub.children().withIndex()) {
+        for ((index, term) in sub.children.withIndex()) {
             val m = matchPattern(commonTerm, term)
             if (m != null) {
                 coefficients.add(commonTerm.coefficient(m))

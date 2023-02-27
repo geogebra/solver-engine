@@ -9,253 +9,181 @@ import engine.patterns.Pattern
 import engine.steps.Transformation
 
 /**
- * Item for a `Pipeline`, specifying which `StepsProducer` to apply and whether it is optional.
+ * [ProceduralPipeline.whilePossible] will fail if exceeding this number of iterations.
  */
-data class PipelineItem(val stepsProducer: StepsProducer, val optional: Boolean = false)
+private const val MAX_WHILE_POSSIBLE_ITERATIONS = 100
 
 /**
- * A `StepsProducer` implementation that chains together a set of `StepsProducer` instances.  Each pipeline item can be
- * optional, in which case they can be skipped if unsuccessfull.  Non-optional items make `produceSteps()` return null.
+ * Exception returned by [ProceduralPipeline.whilePossible] when it exceeds the maximum number of iterations.
+ * It probably means that there is a buggy plan specification (or that the expression it is applied to is very large)
  */
-data class Pipeline(val items: List<PipelineItem>) : StepsProducer {
-
-    override fun produceSteps(ctx: Context, sub: Expression) = buildSteps(ctx, sub) {
-        for (item in items) {
-            val itemSteps = item.stepsProducer.produceSteps(ctx, lastSub)
-
-            if (itemSteps != null) {
-                addSteps(itemSteps)
-            } else if (!item.optional) {
-                abort()
-                break
-            }
-        }
-    }
-}
-
-private class FailedStep : Exception() {
-    override fun fillInStackTrace(): Throwable {
-        return this
-    }
-}
+class TooManyIterationsException(msg: String) : RuntimeException(msg)
 
 internal class ProceduralPipeline(val init: PipelineBuilder.() -> Unit) : StepsProducer {
     override fun produceSteps(ctx: Context, sub: Expression): List<Transformation>? {
         val builder = StepsBuilder(ctx, sub)
         val runner = PipelineRunner(builder, ctx)
-        try {
-            runner.init()
-        } catch (_: FailedStep) {
-            return null
-        }
+        runner.init()
         return builder.getFinalSteps()
     }
 }
 
 private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : PipelineBuilder {
 
-    private fun runProducer(prod: StepsProducer, optional: Boolean = false) {
-        val steps = prod.produceSteps(ctx, builder.lastSub)
+    private fun addSteps(steps: List<Transformation>?) {
         if (steps != null) {
             builder.addSteps(steps)
-        } else if (!optional) {
+        } else {
             builder.abort()
-            throw FailedStep()
         }
     }
 
     override fun withNewLabels(init: PipelineBuilder.() -> Unit) {
+        if (builder.aborted) return
+
         builder.clearLabels()
         apply(init)
         builder.clearLabels()
     }
 
     override fun optionally(steps: StepsProducer) {
-        runProducer(steps, optional = true)
+        if (builder.aborted) return
+
+        steps.produceSteps(ctx, builder.lastSub)
+            ?.let { builder.addSteps(it) }
     }
 
     override fun optionally(init: PipelineBuilder.() -> Unit) {
+        if (builder.aborted) return
+
         optionally(ProceduralPipeline(init))
     }
 
     override fun apply(steps: StepsProducer) {
-        runProducer(steps)
+        if (builder.aborted) return
+
+        addSteps(steps.produceSteps(ctx, builder.lastSub))
     }
 
     override fun apply(init: PipelineBuilder.() -> Unit) {
+        if (builder.aborted) return
+
         apply(ProceduralPipeline(init))
     }
 
     override fun check(condition: Context.(Expression) -> Boolean) {
+        if (builder.aborted) return
+
         if (!ctx.condition(builder.lastSub)) {
             builder.abort()
-            throw FailedStep()
         }
     }
 
-    override fun applyTo(steps: StepsProducer, extractor: Extractor) {
-        runProducer(ApplyTo(extractor, steps))
+    override fun applyTo(stepsProducer: StepsProducer, extractor: Extractor) {
+        if (builder.aborted) return
+
+        addSteps(
+            extractor.extract(builder.lastSub)?.let {
+                stepsProducer.produceSteps(ctx, it)
+            },
+        )
     }
 
     override fun applyTo(extractor: Extractor, init: PipelineBuilder.() -> Unit) {
+        if (builder.aborted) return
+
         applyTo(ProceduralPipeline(init), extractor)
     }
 
     override fun applyToChildrenInStep(init: InStepBuilder.() -> Unit) {
-        runProducer(ProceduralApplyToChildrenInStep(init))
+        if (builder.aborted) return
+
+        addSteps(ProceduralApplyToChildrenInStep(init).produceSteps(ctx, builder.lastSub))
     }
 
     override fun firstOf(init: FirstOfBuilder.() -> Unit) {
-        runProducer(ProceduralFirstOf(init))
+        if (builder.aborted) return
+
+        addSteps(FirstOf(init).produceSteps(ctx, builder.lastSub))
     }
 
-    override fun whilePossible(steps: StepsProducer) {
-        runProducer(WhilePossible(steps), optional = true)
+    override fun whilePossible(stepsProducer: StepsProducer) {
+        if (builder.aborted) return
+
+        repeat(MAX_WHILE_POSSIBLE_ITERATIONS) {
+            val iterationSteps = stepsProducer.produceSteps(ctx, builder.lastSub) ?: return
+            builder.addSteps(iterationSteps)
+            if (builder.undefined()) {
+                return
+            }
+        }
+
+        throw TooManyIterationsException(
+            "WhilePossible max iteration number ($MAX_WHILE_POSSIBLE_ITERATIONS) " +
+                "exceeded for expression ${builder.lastSub}",
+        )
     }
 
     override fun whilePossible(init: PipelineBuilder.() -> Unit) {
+        if (builder.aborted) return
+
         whilePossible(ProceduralPipeline(init))
     }
 
-    override fun deeply(steps: StepsProducer, deepFirst: Boolean) {
-        runProducer(Deeply(steps, deepFirst))
+    override fun deeply(stepsProducer: StepsProducer, deepFirst: Boolean) {
+        if (builder.aborted) return
+
+        fun visitPrefix(sub: Expression): List<Transformation>? =
+            stepsProducer.produceSteps(ctx, sub)
+                ?: sub.children.firstNotNullOfOrNull { visitPrefix(it) }
+
+        fun visitPostfix(sub: Expression): List<Transformation>? =
+            sub.children.firstNotNullOfOrNull { visitPostfix(it) }
+                ?: stepsProducer.produceSteps(ctx, sub)
+
+        addSteps(
+            when {
+                deepFirst -> visitPostfix(builder.lastSub)
+                else -> visitPrefix(builder.lastSub)
+            },
+        )
     }
 
     override fun deeply(deepFirst: Boolean, init: PipelineBuilder.() -> Unit) {
+        if (builder.aborted) return
+
         deeply(ProceduralPipeline(init), deepFirst)
     }
 
     override fun plan(init: PlanBuilder.() -> Unit) {
-        runProducer(engine.methods.plan(::proceduralSteps, init))
+        if (builder.aborted) return
+
+        addSteps(engine.methods.plan(init).produceSteps(ctx, builder.lastSub))
     }
 
     override fun taskSet(init: TaskSetBuilder.() -> Unit) {
-        runProducer(engine.methods.taskSet(init))
+        if (builder.aborted) return
+
+        addSteps(engine.methods.taskSet(init).produceSteps(ctx, builder.lastSub))
     }
 
     override fun checkForm(patternProvider: () -> Pattern) {
-        runProducer(FormChecker(patternProvider()))
-    }
+        if (builder.aborted) return
 
-    override fun contextSensitive(init: ContextSensitiveBuilder.() -> Unit) {
-        runProducer(contextSensitiveSteps(init))
-    }
-}
-
-@Suppress("TooManyFunctions")
-private class PipelineDataBuilder : PipelineBuilder {
-    private var pipelineItems = mutableListOf<PipelineItem>()
-
-    private fun addItem(stepsProducer: StepsProducer, optional: Boolean = false) {
-        pipelineItems.add(PipelineItem(stepsProducer, optional))
-    }
-
-    fun buildStepsProducer(): StepsProducer {
-        return when (pipelineItems.size) {
-            0 -> error("steps producer produces no steps")
-            1 -> pipelineItems[0].stepsProducer
-            else -> Pipeline(pipelineItems)
+        val pattern = patternProvider()
+        if (!pattern.matches(ctx, builder.lastSub)) {
+            builder.abort()
         }
     }
 
-    override fun withNewLabels(init: PipelineBuilder.() -> Unit) {
-        addItem(WithNewLabels(dataSteps(init)))
-    }
-
-    override fun optionally(steps: StepsProducer) {
-        addItem(steps, true)
-    }
-
-    override fun optionally(init: PipelineBuilder.() -> Unit) {
-        optionally(dataSteps(init))
-    }
-
-    override fun apply(steps: StepsProducer) {
-        addItem(steps)
-    }
-
-    override fun apply(init: PipelineBuilder.() -> Unit) {
-        apply(dataSteps(init))
-    }
-
-    override fun check(condition: Context.(Expression) -> Boolean) {
-        TODO("Not yet implemented")
-    }
-
-    override fun applyTo(steps: StepsProducer, extractor: Extractor) {
-        addItem(ApplyTo(extractor, steps))
-    }
-
-    override fun applyTo(extractor: Extractor, init: PipelineBuilder.() -> Unit) {
-        applyTo(dataSteps(init), extractor)
-    }
-
-    override fun applyToChildrenInStep(init: InStepBuilder.() -> Unit) {
-        val builder = ApplyToChildrenInStepDataBuilder()
-        builder.init()
-        addItem(builder.buildStepsProducer())
-    }
-
-    override fun firstOf(init: FirstOfBuilder.() -> Unit) {
-        val builder = FirstOfDataBuilder()
-        builder.init()
-        addItem(builder.buildStepsProducer())
-    }
-
-    override fun whilePossible(steps: StepsProducer) {
-        addItem(WhilePossible(steps), true)
-    }
-
-    override fun whilePossible(init: PipelineBuilder.() -> Unit) {
-        whilePossible(dataSteps(init))
-    }
-
-    override fun deeply(steps: StepsProducer, deepFirst: Boolean) {
-        addItem(Deeply(steps, deepFirst))
-    }
-
-    override fun deeply(deepFirst: Boolean, init: PipelineBuilder.() -> Unit) {
-        deeply(dataSteps(init), deepFirst)
-    }
-
-    override fun plan(init: PlanBuilder.() -> Unit) {
-        addItem(engine.methods.plan(::dataSteps, init))
-    }
-
-    override fun taskSet(init: TaskSetBuilder.() -> Unit) {
-        TODO("Not yet implemented")
-    }
-
-    override fun checkForm(patternProvider: () -> Pattern) {
-        addItem(FormChecker(patternProvider()))
-    }
-
     override fun contextSensitive(init: ContextSensitiveBuilder.() -> Unit) {
-        TODO("Not yet implemented")
+        if (builder.aborted) return
+
+        addSteps(contextSensitiveSteps(init).produceSteps(ctx, builder.lastSub))
     }
 }
-
-/**
- * Type-safe builder to create a data [StepsProducer] using the [PipelineBuilder] DSL.
- */
-internal fun dataSteps(init: PipelineBuilder.() -> Unit): StepsProducer {
-    val builder = PipelineDataBuilder()
-    builder.init()
-    return builder.buildStepsProducer()
-}
-
-/**
- * Type-safe builder to create a procedural [StepsProducer] using the [PipelineBuilder] DSL.
- */
-internal fun proceduralSteps(init: PipelineBuilder.() -> Unit): StepsProducer = ProceduralPipeline(init)
-
-/**
- * The step type can be configured
- */
-private val useDataSteps = System.getenv("SOLVER_STEPS_TYPE") == "data"
 
 /**
  * Type-safe builder to create a [StepsProducer] using the [PipelineBuilder] DSL.
  */
-fun steps(init: PipelineBuilder.() -> Unit): StepsProducer =
-    if (useDataSteps) dataSteps(init) else proceduralSteps(init)
+fun steps(init: PipelineBuilder.() -> Unit): StepsProducer = ProceduralPipeline(init)

@@ -10,7 +10,6 @@ import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
-import engine.methods.ruleResult
 import engine.operators.BinaryExpressionOperator
 import engine.operators.NaryOperator
 import engine.patterns.AnyPattern
@@ -171,7 +170,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(solvable) {
                 fun extractSumTerms(expr: Expression) = when (expr.operator) {
-                    NaryOperator.Sum -> expr.children()
+                    NaryOperator.Sum -> expr.children
                     else -> listOf(expr)
                 }
 
@@ -208,7 +207,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
 private fun extractVariableTerms(expression: Expression, variable: String?): Expression? {
     return when {
         expression.operator == NaryOperator.Sum -> {
-            val constantTerms = expression.children().filter { !it.isConstantIn(variable) }
+            val constantTerms = expression.children.filter { !it.isConstantIn(variable) }
             if (constantTerms.isEmpty()) null else sumOf(constantTerms)
         }
         !expression.isConstantIn(variable) -> expression
@@ -219,7 +218,7 @@ private fun extractVariableTerms(expression: Expression, variable: String?): Exp
 private fun extractConstants(expression: Expression, variable: String?): Expression? {
     return when {
         expression.operator == NaryOperator.Sum -> {
-            val constantTerms = expression.children().filter { it.isConstantIn(variable) }
+            val constantTerms = expression.children.filter { it.isConstantIn(variable) }
             if (constantTerms.isEmpty()) null else sumOf(constantTerms)
         }
         expression.isConstantIn(variable) -> expression

@@ -1,7 +1,6 @@
 package engine.methods
 
-import engine.methods.stepsproducers.Pipeline
-import engine.methods.stepsproducers.PipelineItem
+import engine.methods.stepsproducers.steps
 import engine.patterns.AnyPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.steps.metadata.MetadataKey
@@ -46,7 +45,7 @@ class MethodTestCaseTest {
         Plan(
             pattern = pattern,
             resultPattern = AnyPattern(),
-            stepsProducer = Pipeline((1..3).map { PipelineItem(testRule) }),
+            stepsProducer = steps { repeat(3) { apply(testRule) } },
             explanationMaker = MetadataMaker(testPlanMetadataKey) { listOf(move(pattern)) },
         )
     }

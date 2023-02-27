@@ -7,7 +7,6 @@ import engine.expressions.sumOf
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
-import engine.methods.ruleResult
 import engine.operators.BinaryExpressionOperator
 import engine.operators.NaryOperator
 import engine.operators.UnaryExpressionOperator
@@ -51,7 +50,7 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     type = Transformation.Type.Rearrangement,
                     toExpr = sumOf(
-                        get(pattern).children().map { child -> transformTo(child) { it.removeBrackets() } },
+                        get(pattern).children.map { child -> transformTo(child) { it.removeBrackets() } },
                     ),
                     gmAction = tap(innerSum, PM.OpenParens),
                     explanation = metadata(Explanation.RemoveBracketSumInSum),

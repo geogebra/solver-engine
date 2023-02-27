@@ -71,9 +71,9 @@ interface PipelineBuilder {
     fun check(condition: Context.(Expression) -> Boolean)
 
     /**
-     * Apply the [steps] to a subexpression obtained by the [extractor]
+     * Apply the [stepsProducer] to a subexpression obtained by the [extractor]
      */
-    fun applyTo(steps: StepsProducer, extractor: Extractor)
+    fun applyTo(stepsProducer: StepsProducer, extractor: Extractor)
 
     fun applyTo(extractor: Extractor, init: PipelineBuilder.() -> Unit)
 
@@ -88,9 +88,9 @@ interface PipelineBuilder {
     fun firstOf(init: FirstOfBuilder.() -> Unit)
 
     /**
-     * Apply the [steps] as many times as possible.  They are not required to be applied at least once.
+     * Apply the [stepsProducer] as many times as possible.  They are not required to be applied at least once.
      */
-    fun whilePossible(steps: StepsProducer)
+    fun whilePossible(stepsProducer: StepsProducer)
 
     /**
      * Apply the following steps as many times as possible. They are not required to be applied at least once.
@@ -100,7 +100,7 @@ interface PipelineBuilder {
     /**
      * Apply [steps] deeply ([deepFirst] controls whether it is depth first or breadth first).
      */
-    fun deeply(steps: StepsProducer, deepFirst: Boolean = false)
+    fun deeply(stepsProducer: StepsProducer, deepFirst: Boolean = false)
 
     /**
      * Apply the following steps deeply ([deepFirst] controls whether it is depth first or breadth first).

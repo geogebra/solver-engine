@@ -9,7 +9,7 @@ data class FindPattern(val pattern: Pattern, val deepFirst: Boolean = false) : P
 
     override fun findMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
         val ownMatches = pattern.findMatches(context, match, subexpression)
-        val childMatches = subexpression.children().asSequence().flatMap { findMatches(context, match, it) }
+        val childMatches = subexpression.children.asSequence().flatMap { findMatches(context, match, it) }
         return when {
             deepFirst -> childMatches + ownMatches
             else -> ownMatches + childMatches
@@ -23,13 +23,8 @@ data class FindPattern(val pattern: Pattern, val deepFirst: Boolean = false) : P
  */
 data class OneOfPattern(val options: List<Pattern>) : BasePattern() {
     override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
-        return sequence {
-            for (option in options) {
-                for (m in option.findMatches(context, match, subexpression)) {
-                    yield(m.newChild(this@OneOfPattern, m.getLastBinding(option)!!))
-                }
-            }
-        }
+        val m = match.newChild(this, subexpression)
+        return options.asSequence().flatMap { option -> option.findMatches(context, m, subexpression) }
     }
 }
 

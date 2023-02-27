@@ -15,13 +15,14 @@ class TaskSet(
     private val skillMakers: List<MetadataMaker> = emptyList(),
     private val tasksProducer: TasksProducer,
 ) : CompositeMethod() {
-    override fun run(ctx: Context, sub: Expression): TransformationResult? {
+    override fun run(ctx: Context, sub: Expression): Transformation? {
         for (match in pattern.findMatches(ctx, RootMatch, sub)) {
             val tasks = tasksProducer.produceTasks(ctx, match)
             if (tasks != null) {
                 val toExpr = tasks.last().toExpr.withOrigin(Combine(listOf(sub)))
-                return TransformationResult(
+                return Transformation(
                     type = Transformation.Type.TaskSet,
+                    fromExpr = sub,
                     toExpr = toExpr,
                     tasks = tasks,
                     explanation = explanationMaker.make(ctx, match),

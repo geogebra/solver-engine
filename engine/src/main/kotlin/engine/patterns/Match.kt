@@ -80,7 +80,7 @@ data class ChildMatch(
 
     override fun accumulateExprs(p: Pattern, acc: MutableList<Expression>) {
         parent.accumulateExprs(p, acc)
-        if (key == p.key) {
+        if (key === p.key) {
             acc.add(value)
         }
     }

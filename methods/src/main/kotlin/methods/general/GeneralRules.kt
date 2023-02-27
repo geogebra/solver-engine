@@ -18,7 +18,6 @@ import engine.expressions.sumOf
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
-import engine.methods.ruleResult
 import engine.operators.BinaryExpressionOperator
 import engine.operators.UnaryExpressionOperator
 import engine.operators.VariableOperator
@@ -151,7 +150,7 @@ private val evaluateProductContainingZero =
         val zero = FixedPattern(Constants.Zero)
         val p = productContaining(zero)
         val pattern = condition(p) { expression ->
-            expression.children().all {
+            expression.children.all {
                 it.operator != UnaryExpressionOperator.DivideBy && it.isDefinitelyNotUndefined()
             }
         }
@@ -378,13 +377,13 @@ private val cancelCommonTerms =
 private val factorMinusFromSum =
     rule {
         val sum = condition(sumContaining()) { expression ->
-            expression.children().all { it.operator == UnaryExpressionOperator.Minus }
+            expression.children.all { it.operator == UnaryExpressionOperator.Minus }
         }
 
         onPattern(sum) {
-            val firstAddend = get(sum).children()[0]
+            val firstAddend = get(sum).children[0]
             ruleResult(
-                toExpr = negOf(sumOf(get(sum).children().map { move(it.firstChild) })),
+                toExpr = negOf(sumOf(get(sum).children.map { move(it.firstChild) })),
                 // NOTE: this will only work if there are brackets around the sum
                 gmAction = drag(
                     firstAddend,
@@ -446,7 +445,7 @@ private val rewriteDivisionAsFraction =
         val product = productContaining(divideBy(AnyPattern()))
 
         onPattern(product) {
-            val factors = get(product).children()
+            val factors = get(product).children
             val division = factors.indexOfFirst { it.operator == UnaryExpressionOperator.DivideBy }
 
             val result = mutableListOf<Expression>()
@@ -508,11 +507,11 @@ private val distributeSumOfPowers =
 
             ruleResult(
                 toExpr = productOf(
-                    get(sumOfExponents).children().map {
+                    get(sumOfExponents).children.map {
                         simplifiedPowerOf(distributedBase, move(it))
                     },
                 ),
-                gmAction = drag(get(sumOfExponents).children().last(), pattern, Position.RightOf),
+                gmAction = drag(get(sumOfExponents).children.last(), pattern, Position.RightOf),
                 explanation = metadata(Explanation.DistributeSumOfPowers),
             )
         }
@@ -629,7 +628,7 @@ private val cancelAdditiveInverseElements =
         val pattern = sumContaining(searchTerm, additiveInverseSearchTerm)
 
         onPattern(pattern) {
-            val toExpr = when (get(pattern).children().size) {
+            val toExpr = when (get(pattern).children.size) {
                 2 -> transformTo(pattern, Constants.Zero)
                 else -> cancel(term, restOf(pattern))
             }

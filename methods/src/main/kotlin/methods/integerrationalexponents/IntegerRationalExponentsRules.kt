@@ -13,7 +13,6 @@ import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
-import engine.methods.ruleResult
 import engine.operators.BinaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
@@ -101,7 +100,7 @@ enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMeth
                 notRationalExponent,
             )
             onPattern(product) {
-                val (rationalExponents, nonRationalExponents) = get(product).children()
+                val (rationalExponents, nonRationalExponents) = get(product).children
                     .partition {
                         it.operator == BinaryExpressionOperator.Power && it.exponent().isFraction()
                     }

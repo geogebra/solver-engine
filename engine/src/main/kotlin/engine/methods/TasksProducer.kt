@@ -6,7 +6,7 @@ import engine.expressions.Expression
 import engine.expressions.Root
 import engine.methods.stepsproducers.PipelineBuilder
 import engine.methods.stepsproducers.StepsProducer
-import engine.methods.stepsproducers.proceduralSteps
+import engine.methods.stepsproducers.steps
 import engine.patterns.Match
 import engine.steps.Task
 import engine.steps.Transformation
@@ -46,7 +46,7 @@ class TasksBuilder(context: Context, match: Match) : MappedExpressionBuilder(con
         explanation: Metadata,
         dependsOn: List<Task> = emptyList(),
         init: PipelineBuilder.() -> Unit,
-    ): Task? = task(startExpr, explanation, dependsOn, proceduralSteps(init))
+    ): Task? = task(startExpr, explanation, dependsOn, steps(init))
 
     fun allTasks(): List<Task>? = if (tasks.isEmpty()) null else tasks
 }

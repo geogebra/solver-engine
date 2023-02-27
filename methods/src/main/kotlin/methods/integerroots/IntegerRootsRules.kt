@@ -12,7 +12,6 @@ import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
-import engine.methods.ruleResult
 import engine.operators.BinaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
@@ -246,7 +245,7 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
             onPattern(root) {
                 ruleResult(
                     toExpr = productOf(
-                        get(product).children().map { rootOf(move(it), move(root.order)) },
+                        get(product).children.map { rootOf(move(it), move(root.order)) },
                     ),
                     explanation = metadata(Explanation.SplitRootOfProduct),
                 )
@@ -443,7 +442,7 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
                 val order = root.order.getBoundExpr(match)!!
                 val product = prod.getBoundExpr(match)!!
 
-                product.children().all { it.operator == BinaryExpressionOperator.Power && it.secondChild == order }
+                product.children.all { it.operator == BinaryExpressionOperator.Power && it.secondChild == order }
             }
 
             val pattern = withOptionalIntegerCoefficient(cond, true)
@@ -457,7 +456,7 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
                         move(pattern.integerCoefficient),
                         rootOf(
                             powerOf(
-                                productOf(product.children().map { move(it.firstChild) }),
+                                productOf(product.children.map { move(it.firstChild) }),
                                 move(order),
                             ),
                             move(root.order),

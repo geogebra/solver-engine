@@ -107,7 +107,7 @@ class Expression internal constructor(
      */
     fun labelledPart(findLabel: Label = Label.A): Expression? = when (findLabel) {
         label -> this
-        else -> children().firstNotNullOfOrNull { it.labelledPart(findLabel) }
+        else -> children.firstNotNullOfOrNull { it.labelledPart(findLabel) }
     }
 
     /**
@@ -116,7 +116,7 @@ class Expression internal constructor(
     fun clearLabels(): Expression =
         Expression(operator, operands.map { it.clearLabels() }, decorators, origin, null)
 
-    fun children() = origin.computeChildrenOrigin(this)
+    val children by lazy { origin.computeChildrenOrigin(this) }
 
     /**
      * Number of children of this expression.
@@ -130,16 +130,16 @@ class Expression internal constructor(
      */
     val flattenedChildCount
         get() = when (operator) {
-            NaryOperator.Product -> children().sumOf {
+            NaryOperator.Product -> children.sumOf {
                 if (!it.hasBracket() && it.operator == NaryOperator.ImplicitProduct) it.childCount else 1
             }
             else -> childCount
         }
 
     fun flattenedProductChildren() = when (operator) {
-        NaryOperator.ImplicitProduct -> children()
-        NaryOperator.Product -> children().flatMap {
-            if (!it.hasBracket() && it.operator == NaryOperator.ImplicitProduct) it.children() else listOf(it)
+        NaryOperator.ImplicitProduct -> children
+        NaryOperator.Product -> children.flatMap {
+            if (!it.hasBracket() && it.operator == NaryOperator.ImplicitProduct) it.children else listOf(it)
         }
         else -> listOf(this)
     }
@@ -147,11 +147,11 @@ class Expression internal constructor(
     val firstChild get() = nthChild(0)
     val secondChild get() = nthChild(1)
 
-    fun nthChild(n: Int) = origin.computeChildOrigin(this, n)
+    fun nthChild(n: Int) = children[n]
 
     fun withOrigin(newOrigin: Origin) = Expression(operator, operands, decorators, newOrigin, label)
 
-    internal fun pathMappings(rootPath: Path = RootPath()) = origin.computePathMappings(rootPath, children())
+    internal fun pathMappings(rootPath: Path = RootPath()) = origin.computePathMappings(rootPath, children)
 
     fun mergedPathMappings(rootPath: Path = RootPath()) = mergePathMappings(pathMappings(rootPath))
     override fun toString(): String {
@@ -272,7 +272,7 @@ class Expression internal constructor(
 
     internal fun replaceNthChild(childIndex: Int, newChild: Expression) =
         replaceChildren(
-            children().mapIndexed { i, op ->
+            children.mapIndexed { i, op ->
                 when {
                     i != childIndex -> op
                     newChild.hasBracket() || operator.nthChildAllowed(i, newChild.operator) -> newChild
@@ -329,7 +329,7 @@ fun Expression.splitPlusMinus(): List<Expression> {
     if (childCount == 0) {
         return listOf(this)
     }
-    val splitChildren = children().map { it.splitPlusMinus() }
+    val splitChildren = children.map { it.splitPlusMinus() }
     return product(splitChildren).map { replaceChildren(it) }.toList()
 }
 

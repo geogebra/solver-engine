@@ -14,7 +14,6 @@ import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
-import engine.methods.ruleResult
 import engine.patterns.AnyPattern
 import engine.patterns.ConstantInSolutionVariablePattern
 import engine.patterns.SolutionVariablePattern

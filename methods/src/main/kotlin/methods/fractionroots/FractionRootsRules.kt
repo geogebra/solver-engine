@@ -14,7 +14,6 @@ import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
-import engine.methods.ruleResult
 import engine.operators.BinaryExpressionOperator
 import engine.operators.NaryOperator
 import engine.patterns.AnyPattern
@@ -366,10 +365,10 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
                 val indexValue = matchPatternRadical?.let { index.getBoundExpr(it) }
 
                 if (indexValue != null) {
-                    val primeFactorizedFormExpr = get(radical).children()[0]
+                    val primeFactorizedFormExpr = get(radical).children[0]
 
                     if (primeFactorizedFormExpr.operator == NaryOperator.Product) {
-                        for (term in primeFactorizedFormExpr.children()) {
+                        for (term in primeFactorizedFormExpr.children) {
                             val exponentFactorMatch = matchPattern(exponentFactorPtn, term)
                             val integerFactorMatch = matchPattern(integerFactorPtn, term)
                             if (exponentFactorMatch != null) {

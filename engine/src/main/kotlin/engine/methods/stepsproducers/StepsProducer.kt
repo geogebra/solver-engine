@@ -25,7 +25,7 @@ class StepsBuilder(val context: Context, sub: Expression) {
     private var sub: Expression
 
     private var steps = mutableListOf<Transformation>()
-    private var aborted = false
+    var aborted = false
 
     init {
         // Redundant brackets are removed because the outer brackets in the expression serve no
@@ -63,16 +63,14 @@ class StepsBuilder(val context: Context, sub: Expression) {
         }
 
         steps.add(
-            Transformation(
-                type = step.type,
-                fromExpr = sub,
-                toExpr = substitution,
-                explanation = step.explanation,
-                skills = step.skills,
-                steps = step.steps,
-                gmAction = step.gmAction,
-                tasks = step.tasks,
-            ),
+            when {
+                substitution === step.toExpr && step.toExpr.operator != UndefinedOperator -> {
+                    step
+                }
+                else -> {
+                    step.copy(fromExpr = sub, toExpr = substitution)
+                }
+            },
         )
 
         val prevIndex = steps.indexOfFirst { it.fromExpr == substitution }
@@ -93,9 +91,9 @@ class StepsBuilder(val context: Context, sub: Expression) {
     /**
      * Adds a list of `Transformation` instances to the `Transformation` chain.
      */
-    fun addSteps(newSteps: List<Transformation>?) {
+    fun addSteps(newSteps: List<Transformation>) {
         if (!aborted) {
-            newSteps?.forEach { addStep(it) }
+            newSteps.forEach { addStep(it) }
         }
     }
 
@@ -116,7 +114,7 @@ class StepsBuilder(val context: Context, sub: Expression) {
     /**
      * Returns the list of steps added to the builder, or null if `abort()` was called at least once.
      */
-    fun getFinalSteps() = if (aborted || steps.isEmpty()) null else steps.toList()
+    fun getFinalSteps(): List<Transformation>? = if (aborted || steps.isEmpty()) null else steps
 }
 
 /**

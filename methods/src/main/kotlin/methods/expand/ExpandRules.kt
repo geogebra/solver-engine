@@ -8,7 +8,6 @@ import engine.expressions.sumOf
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
-import engine.methods.ruleResult
 import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.FixedPattern
@@ -50,7 +49,7 @@ private val distributeMultiplicationOverSum =
 
         onPattern(optionalNegProduct) {
             val getSum = get(sum)
-            val terms = getSum.children()
+            val terms = getSum.children
             val restOfProd = distribute(restOf(product))
 
             // variableExpression * (c1 + c2 + ... + cn) --> shouldn't be expanded
@@ -86,7 +85,7 @@ private val distributeNegativeOverBracket =
         onPattern(sum) {
             // Note: we can't have distribute path mappings for this as things are because there is no node for "-"
             // itself
-            val terms = get(sumTerm).children()
+            val terms = get(sumTerm).children
             val negDistributedTerm = sumOf(
                 terms.map {
                     if (it.operator == UnaryExpressionOperator.Minus) move(it.firstChild) else negOf(move(it))
@@ -268,8 +267,8 @@ private val expandDoubleBrackets =
         val prod = productOf(sum1, sum2)
 
         onPattern(prod) {
-            val terms1 = get(sum1).children().map { distribute(it) }
-            val terms2 = get(sum2).children().map { distribute(it) }
+            val terms1 = get(sum1).children.map { distribute(it) }
+            val terms2 = get(sum2).children.map { distribute(it) }
 
             val toExpr = sumOf(
                 terms1.map { term1 ->

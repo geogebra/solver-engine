@@ -29,15 +29,16 @@ class Plan(
     private val stepsProducer: StepsProducer,
 ) : CompositeMethod(specificPlans) {
 
-    override fun run(ctx: Context, sub: Expression): TransformationResult? {
+    override fun run(ctx: Context, sub: Expression): Transformation? {
         val match = pattern.findMatches(ctx, RootMatch, sub).firstOrNull() ?: return null
 
         return stepsProducer.produceSteps(ctx, sub)?.let { steps ->
             val toExpr = steps.last().toExpr.withOrigin(Combine(listOf(sub)))
 
             when {
-                toExpr == Constants.Undefined || resultPattern.matches(ctx, toExpr) -> TransformationResult(
+                toExpr == Constants.Undefined || resultPattern.matches(ctx, toExpr) -> Transformation(
                     type = Transformation.Type.Plan,
+                    fromExpr = sub,
                     toExpr = toExpr,
                     steps = steps,
                     explanation = explanationMaker.make(ctx, match),
@@ -50,7 +51,7 @@ class Plan(
     }
 }
 
-class PlanBuilder(private val stepsProducerFactory: StepsProducerFactory) : CompositeMethodBuilder() {
+class PlanBuilder : CompositeMethodBuilder() {
 
     private var isPartialExpression = false
     private var alternatives: MutableList<ContextSensitiveAlternative> = mutableListOf()
@@ -75,12 +76,12 @@ class PlanBuilder(private val stepsProducerFactory: StepsProducerFactory) : Comp
 
     fun steps(resourceData: ResourceData = emptyResourceData, init: PipelineBuilder.() -> Unit) {
         checkNotInitialized()
-        defaultSteps = stepsProducerFactory(init)
+        defaultSteps = steps(init)
         this.resourceData = resourceData
     }
 
     fun alternative(resourceData: ResourceData, init: PipelineBuilder.() -> Unit) {
-        val alternative = stepsProducerFactory(init)
+        val alternative = steps(init)
         alternatives.add(ContextSensitiveAlternative(alternative, resourceData))
     }
 
@@ -117,13 +118,11 @@ class PlanBuilder(private val stepsProducerFactory: StepsProducerFactory) : Comp
     }
 }
 
-typealias StepsProducerFactory = (init: PipelineBuilder.() -> Unit) -> StepsProducer
-
 /**
  * Type-safe builder to create [CompositeMethod] instance using the [PlanBuilder] DSL.
  */
-fun plan(steps: StepsProducerFactory = ::steps, init: PlanBuilder.() -> Unit): CompositeMethod {
-    val planBuilder = PlanBuilder(steps)
+fun plan(init: PlanBuilder.() -> Unit): CompositeMethod {
+    val planBuilder = PlanBuilder()
     planBuilder.init()
     return planBuilder.buildPlan()
 }
