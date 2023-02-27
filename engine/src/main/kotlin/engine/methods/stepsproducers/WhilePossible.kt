@@ -19,7 +19,7 @@ class TooManyIterationsException(msg: String) : RuntimeException(msg)
  */
 data class WhilePossible(val stepsProducer: StepsProducer) : StepsProducer {
 
-    override fun produceSteps(ctx: Context, sub: Expression) = buildSteps(sub) {
+    override fun produceSteps(ctx: Context, sub: Expression) = buildSteps(ctx, sub) {
         repeat(MAX_WHILE_POSSIBLE_ITERATIONS) {
             val iterationSteps = stepsProducer.produceSteps(ctx, lastSub) ?: return@buildSteps
             addSteps(iterationSteps)

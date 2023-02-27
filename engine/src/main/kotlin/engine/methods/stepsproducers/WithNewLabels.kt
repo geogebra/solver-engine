@@ -9,7 +9,7 @@ import engine.expressions.Expression
  */
 data class WithNewLabels(val stepsProducer: StepsProducer) : StepsProducer {
 
-    override fun produceSteps(ctx: Context, sub: Expression) = buildSteps(sub) {
+    override fun produceSteps(ctx: Context, sub: Expression) = buildSteps(ctx, sub) {
         clearLabels()
         addSteps(stepsProducer.produceSteps(ctx, lastSub))
         clearLabels()

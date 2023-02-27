@@ -20,7 +20,7 @@ data class Deeply(val stepsProducer: StepsProducer, val deepFirst: Boolean = fal
             ?: stepsProducer.produceSteps(ctx, sub)
     }
 
-    override fun produceSteps(ctx: Context, sub: Expression) = buildSteps(sub) {
+    override fun produceSteps(ctx: Context, sub: Expression) = buildSteps(ctx, sub) {
         addSteps(if (deepFirst) visitPostfix(ctx, sub) else visitPrefix(ctx, sub))
     }
 }

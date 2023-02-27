@@ -3,6 +3,7 @@ package engine.methods
 import engine.methods.stepsproducers.Pipeline
 import engine.methods.stepsproducers.PipelineItem
 import engine.patterns.AnyPattern
+import engine.patterns.UnsignedIntegerPattern
 import engine.steps.metadata.MetadataKey
 import engine.steps.metadata.MetadataMaker
 import engine.steps.metadata.metadata
@@ -24,11 +25,11 @@ class MethodTestCaseTest {
     private val testRule = object : RunnerMethod {
         override val name = "TestName"
         override val runner = rule {
-            val pattern = AnyPattern()
+            val pattern = UnsignedIntegerPattern()
 
             onPattern(pattern) {
                 ruleResult(
-                    toExpr = move(pattern),
+                    toExpr = transformTo(pattern, integerOp(pattern) { it + it }),
                     explanation = metadata(testRuleMetadataKey),
                     skills = listOf(
                         metadata(testRuleSkillMetadataKey1, move(pattern)),
@@ -79,7 +80,7 @@ class MethodTestCaseTest {
 
             check {
                 step { }
-                step { fromExpr = "1" }
+                step { fromExpr = "2" }
                 step { }
             }
         }
@@ -91,7 +92,7 @@ class MethodTestCaseTest {
 
                 check {
                     step { }
-                    step { toExpr = "2" }
+                    step { fromExpr = "3" }
                     step { }
                 }
             }
@@ -106,7 +107,7 @@ class MethodTestCaseTest {
 
             check {
                 step { }
-                step { toExpr = "1" }
+                step { toExpr = "4" }
                 step { }
             }
         }
@@ -118,7 +119,7 @@ class MethodTestCaseTest {
 
                 check {
                     step { }
-                    step { toExpr = "2" }
+                    step { toExpr = "3" }
                     step { }
                 }
             }
@@ -173,7 +174,7 @@ class MethodTestCaseTest {
 
             check {
                 step {
-                    move {
+                    transform {
                         fromPaths(".")
                         toPaths(".")
                     }
@@ -336,6 +337,18 @@ class MethodTestCaseTest {
                     step { }
                     step { }
                 }
+            }
+        }
+    }
+
+    @Test
+    fun testCircularSteps() {
+        testMethod {
+            inputExpr = "0"
+            method = testPlan
+
+            check {
+                noTransformation()
             }
         }
     }

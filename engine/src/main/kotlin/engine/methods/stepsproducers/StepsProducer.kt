@@ -5,6 +5,7 @@ import engine.expressions.Expression
 import engine.expressions.Root
 import engine.operators.UndefinedOperator
 import engine.steps.Transformation
+import java.util.logging.Level
 
 /**
  * This is used by plans to provide them with a list of steps.  There are a number of standard `StepsProducer` in this
@@ -20,10 +21,10 @@ interface StepsProducer {
 /**
  * This helps build a list of chained `Transformation` instances, starting from the given Expression`.
  */
-class StepsBuilder(sub: Expression) {
+class StepsBuilder(val context: Context, sub: Expression) {
     private var sub: Expression
 
-    private val steps = mutableListOf<Transformation>()
+    private var steps = mutableListOf<Transformation>()
     private var aborted = false
 
     init {
@@ -74,6 +75,18 @@ class StepsBuilder(sub: Expression) {
             ),
         )
 
+        val prevIndex = steps.indexOfFirst { it.fromExpr == substitution }
+        if (prevIndex != -1) {
+            context.log(Level.WARNING, "Circular steps detected (see details below)")
+            for (prevStep in steps.subList(prevIndex, steps.size)) {
+                context.log(
+                    Level.INFO,
+                    "${prevStep.explanation?.key?.keyName}: ${prevStep.fromExpr} --> ${prevStep.toExpr}",
+                )
+            }
+            steps = steps.subList(0, prevIndex)
+        }
+
         sub = substitution.withOrigin(sub.origin)
     }
 
@@ -109,8 +122,8 @@ class StepsBuilder(sub: Expression) {
 /**
  * Provides a convenient way to use a `StepsBuilder`.
  */
-fun buildSteps(sub: Expression, init: StepsBuilder.() -> Unit): List<Transformation>? {
-    val builder = StepsBuilder(sub)
+fun buildSteps(ctx: Context, sub: Expression, init: StepsBuilder.() -> Unit): List<Transformation>? {
+    val builder = StepsBuilder(ctx, sub)
     builder.init()
     return builder.getFinalSteps()
 }

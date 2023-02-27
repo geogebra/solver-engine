@@ -22,7 +22,7 @@ private class FoundOption : Exception() {
 
 internal class ProceduralFirstOf(val init: FirstOfBuilder.() -> Unit) : StepsProducer {
     override fun produceSteps(ctx: Context, sub: Expression): List<Transformation>? {
-        val builder = StepsBuilder(sub)
+        val builder = StepsBuilder(ctx, sub)
         val runner = FirstOfRunner(builder, ctx)
         try {
             runner.init()

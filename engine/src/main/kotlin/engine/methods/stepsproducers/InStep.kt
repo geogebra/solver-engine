@@ -83,7 +83,7 @@ class InStepStepBuilder {
 
 internal class ProceduralApplyToChildrenInStep(val init: InStepBuilder.() -> Unit) : StepsProducer {
     override fun produceSteps(ctx: Context, sub: Expression): List<Transformation>? {
-        val builder = StepsBuilder(sub)
+        val builder = StepsBuilder(ctx, sub)
         val runner = InStepRunner(builder, ctx, sub.children())
         try {
             runner.init()

@@ -11,7 +11,7 @@ data class ApplyTo(
     val extractor: Extractor,
     val stepsProducer: StepsProducer,
 ) : StepsProducer {
-    override fun produceSteps(ctx: Context, sub: Expression) = buildSteps(sub) {
+    override fun produceSteps(ctx: Context, sub: Expression) = buildSteps(ctx, sub) {
         extractor.extract(sub)?.let { extracted ->
             addSteps(stepsProducer.produceSteps(ctx, extracted))
         }

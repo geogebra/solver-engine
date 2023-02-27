@@ -19,7 +19,7 @@ data class PipelineItem(val stepsProducer: StepsProducer, val optional: Boolean 
  */
 data class Pipeline(val items: List<PipelineItem>) : StepsProducer {
 
-    override fun produceSteps(ctx: Context, sub: Expression) = buildSteps(sub) {
+    override fun produceSteps(ctx: Context, sub: Expression) = buildSteps(ctx, sub) {
         for (item in items) {
             val itemSteps = item.stepsProducer.produceSteps(ctx, lastSub)
 
@@ -41,7 +41,7 @@ private class FailedStep : Exception() {
 
 internal class ProceduralPipeline(val init: PipelineBuilder.() -> Unit) : StepsProducer {
     override fun produceSteps(ctx: Context, sub: Expression): List<Transformation>? {
-        val builder = StepsBuilder(sub)
+        val builder = StepsBuilder(ctx, sub)
         val runner = PipelineRunner(builder, ctx)
         try {
             runner.init()
