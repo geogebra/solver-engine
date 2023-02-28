@@ -23,4 +23,19 @@
   <component name="ProjectRootManager" version="2" languageLevel="JDK_19" default="true" project-jdk-name="openjdk-19" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/out" />
   </component>
+  <component name="SwUserDefinedSpecifications">
+    <option name="specTypeByUrl">
+      <map>
+        <entry key="file://$PROJECT_DIR$/api/src/main/openapi/Context.yaml" value="openapi30" />
+        <entry key="file://$PROJECT_DIR$/api/src/main/openapi/GmAction.yaml" value="openapi30" />
+        <entry key="file://$PROJECT_DIR$/api/src/main/openapi/MappedExpression.yaml" value="openapi30" />
+        <entry key="file://$PROJECT_DIR$/api/src/main/openapi/Metadata.yaml" value="openapi30" />
+        <entry key="file://$PROJECT_DIR$/api/src/main/openapi/PathMapping.yaml" value="openapi30" />
+        <entry key="file://$PROJECT_DIR$/api/src/main/openapi/PlanSelection.yaml" value="openapi30" />
+        <entry key="file://$PROJECT_DIR$/api/src/main/openapi/Task.yaml" value="openapi30" />
+        <entry key="file://$PROJECT_DIR$/api/src/main/openapi/Transformation.yaml" value="openapi30" />
+        <entry key="file://$PROJECT_DIR$/api/src/main/openapi/VersionInfo.yaml" value="openapi30" />
+      </map>
+    </option>
+  </component>
 </project>

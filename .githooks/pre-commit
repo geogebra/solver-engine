@@ -1,4 +1,7 @@
 #!/bin/sh
 
 .githooks/pre-commit.d/ktlint-hook &&
-.githooks/pre-commit.d/detekt-hook
+.githooks/pre-commit.d/detekt-hook &&
+# If it breaks here, saying that 'pretty-quick' is not a valid command, then you need to
+# run `npm i`.
+npm exec -c 'pretty-quick --check --staged'

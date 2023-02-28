@@ -47,15 +47,16 @@ directory. To activate them in your repository you can do:
 git config --local core.hooksPath .githooks/
 ```
 
-Currently, there is a pre-commit hook that runs the `ktlintCheck`
-and `detekt` tasks.
+Currently, there is a pre-commit hook that runs the `ktlintCheck`, `detekt`, and
+Prettier tasks.
 
 ### Javascript
 
-The project configures IntelliJ to use eslint and prettier for
-formatting and linting javascript code. If you want to use this,
-make sure you have node.js installed and run `npm i` at the root
-of the project.
+The project configures IntelliJ to use Prettier for formatting and .js, .html,
+.md, .json, and .yaml files. It uses eslint for linting .js files.
+[Volta](https://volta.sh/) is a superior way to install node.js, but using volta
+isn't required. Make sure you have node.js installed and run `npm i` at the root
+of this project, so that Prettier and eslint can work.
 
 ## Deployment
 

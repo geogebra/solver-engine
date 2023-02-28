@@ -44,6 +44,15 @@ check-circular-dependencies-in-methods:
   script:
     - ./scripts/check_method_dependencies.sh
 
+code_style_prettier:
+  stage: lint
+  image: node
+  tags:
+    - docker
+  script:
+    - npm install
+    - npm exec -c "prettier . -c"
+
 code_style:
   stage: lint
   tags:
