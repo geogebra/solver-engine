@@ -51,7 +51,7 @@ class SignOfTest {
 
     private fun assertSign(exprString: String, sign: Sign) {
         val expr = parseExpression(exprString)
-        assertEquals(expr.signOf(), sign)
+        assertEquals(sign, expr.signOf())
     }
 
     @Test
@@ -71,5 +71,6 @@ class SignOfTest {
         assertSign("sqrt[3] - sqrt[4]", Sign.UNKNOWN)
         assertSign("[1 / 0]", Sign.NONE)
         assertSign("-[(2 - sqrt[5]) ^ 2]", Sign.NEGATIVE)
+        assertSign("sqrt[2*sqrt[3] - 2]", Sign.UNKNOWN)
     }
 }

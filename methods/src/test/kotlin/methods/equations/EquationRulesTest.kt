@@ -142,4 +142,13 @@ class EquationRulesTest {
             "Solution[x, {[-1 + sqrt[11] / 2], [-1 - sqrt[11] / 2]}]",
         )
     }
+
+    @Test
+    fun testExtractSolutionFromNegativeUnderSquareRootInRealDomain() {
+        testRuleInX(
+            "x = [2 +/- sqrt[-28] / 2]",
+            EquationsRules.ExtractSolutionFromNegativeUnderSquareRootInRealDomain,
+            "Solution[x, {}]",
+        )
+    }
 }

@@ -9,8 +9,7 @@ import engine.expressions.equationOf
 import engine.expressions.equationUnionOf
 import engine.expressions.fractionOf
 import engine.expressions.inverse
-import engine.expressions.isFraction
-import engine.expressions.isNeg
+import engine.expressions.isSignedFraction
 import engine.expressions.negOf
 import engine.expressions.plusMinusOf
 import engine.expressions.powerOf
@@ -129,8 +128,8 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             onEquation(lhs, rhs) {
                 val coefficient = get(lhs::coefficient)!!
 
-                if (coefficient.isFraction() || (coefficient.isNeg() && coefficient.firstChild.isFraction())) {
-                    val inverse = introduce(coefficient, coefficient.inverse())
+                if (coefficient.isSignedFraction()) {
+                    val inverse = coefficient.inverse()
 
                     ruleResult(
                         toExpr = equationOf(

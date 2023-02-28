@@ -3,6 +3,7 @@ package methods.solvable
 import engine.context.emptyContext
 import engine.expressions.Constants
 import engine.expressions.Expression
+import engine.expressions.isSignedFraction
 import engine.expressions.productOf
 import engine.expressions.simplifiedNegOf
 import engine.expressions.sumOf
@@ -10,7 +11,6 @@ import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
-import engine.operators.BinaryExpressionOperator
 import engine.operators.NaryOperator
 import engine.patterns.AnyPattern
 import engine.patterns.SolvablePattern
@@ -176,14 +176,13 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
 
                 val terms = extractSumTerms(get(lhs)) + extractSumTerms(get(rhs))
 
-                if (terms.count { it.operator == BinaryExpressionOperator.Fraction } < 2 &&
+                if ((terms.count { it.isSignedFraction() } < 2) &&
                     terms.none { fractionRequiringMultiplication.matches(context, it) }
                 ) {
                     return@onPattern null
                 }
 
-                val lcm = terms.map { extractDenominator(it) }.fold(BigInteger.ONE) { curr, new -> curr.lcm(new) }
-                when (lcm) {
+                when (val lcm = terms.map { extractDenominator(it) }.lcm()) {
                     BigInteger.ONE -> null
                     else -> ruleResult(
                         toExpr = solvable.sameSolvable(

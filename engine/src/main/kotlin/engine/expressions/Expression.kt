@@ -354,7 +354,10 @@ fun Expression.exponent(): Expression {
 }
 
 fun Expression.isNeg() = operator == UnaryExpressionOperator.Minus
+
 fun Expression.isFraction() = operator == BinaryExpressionOperator.Fraction
+
+fun Expression.isSignedFraction() = this.isFraction() || (this.isNeg() && firstChild.isFraction())
 
 fun Expression.inverse(): Expression = when {
     this == Constants.One -> this

@@ -15,6 +15,13 @@ class TestListExtensions {
         assertEquals(listOf(i(2), i(1)).gcd(), i(1))
         assertEquals(listOf<BigInteger>().gcd(), i(0))
     }
+
+    @Test
+    fun testLcm() {
+        assertEquals(listOf(i(1), i(2)).lcm(), i(2))
+        assertEquals(listOf(i(2), i(4), i(6)).lcm(), i(12))
+        assertEquals(listOf(i(12), i(10), i(22)).lcm(), i(660))
+    }
 }
 
 class TestProduct {

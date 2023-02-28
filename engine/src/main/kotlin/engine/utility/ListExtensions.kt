@@ -4,6 +4,10 @@ import java.math.BigInteger
 
 fun List<BigInteger>.gcd(): BigInteger = this.fold(BigInteger.ZERO, BigInteger::gcd)
 
+fun List<BigInteger>.lcm(): BigInteger = this.fold(BigInteger.ONE) { acc, number ->
+    acc.multiply(number).divide(acc.gcd(number))
+}
+
 /**
  * Generates the cartesian product of a number of lists.
  */

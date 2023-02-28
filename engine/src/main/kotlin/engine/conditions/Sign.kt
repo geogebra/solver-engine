@@ -60,9 +60,8 @@ enum class Sign(val signum: Int) {
     }
 
     fun truncateToPositive() = when (this) {
-        POSITIVE -> POSITIVE
-        ZERO -> ZERO
-        else -> NONE
+        NEGATIVE -> NONE
+        else -> this
     }
 
     operator fun times(other: Sign) = when {

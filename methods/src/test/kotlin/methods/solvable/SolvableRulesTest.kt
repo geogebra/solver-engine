@@ -45,5 +45,25 @@ class SolvableRulesTest {
             MultiplySolvableByLCD,
             "([x / 2] + [x / 5]) * 30 = [x / 3] * 30",
         )
+        testRuleInX(
+            "[[x^2] / 2] + [x / 5] = [x / 3]",
+            MultiplySolvableByLCD,
+            "([[x^2] / 2] + [x / 5])*30 = [x / 3] * 30",
+        )
+        testRuleInX(
+            "[[x^2] / 6] + [x / 3] + [1 / 8] = 0",
+            MultiplySolvableByLCD,
+            "([[x ^ 2] / 6] + [x / 3] + [1 / 8]) * 24 = 0 * 24",
+        )
+        testRuleInX(
+            "[x / 2] - [1 / 3] = 2",
+            MultiplySolvableByLCD,
+            "([x / 2] - [1 / 3]) * 6 = 2 * 6",
+        )
+        testRuleInX(
+            "[x^2] - [x/6] - [1/3] = 0",
+            MultiplySolvableByLCD,
+            "([x^2] - [x/6] - [1/3]) * 6 = 0 * 6",
+        )
     }
 }

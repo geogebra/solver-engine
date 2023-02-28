@@ -40,6 +40,7 @@ import methods.equations.EquationsRules.FactorNegativeSignOfLeadingCoefficient
 import methods.general.GeneralRules
 import methods.general.NormalizationPlans
 import methods.polynomials.PolynomialsPlans
+import methods.polynomials.PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization
 import methods.polynomials.PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
 import methods.polynomials.algebraicSimplificationSteps
 import methods.solvable.SolvableRules
@@ -129,7 +130,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 apply(SolvableRules.MultiplySolvableByLCD)
-                whilePossible(PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
+                whilePossible(ExpandPolynomialExpressionInOneVariableWithoutNormalization)
             }
         },
     ),
@@ -215,7 +216,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                     firstOf {
                         option(equationSimplificationSteps)
                         option(MultiplyByLCDAndSimplify)
-                        option(PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
+                        option(ExpandPolynomialExpressionInOneVariableWithoutNormalization)
                     }
                 }
 
@@ -296,7 +297,6 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 optionally(equationSimplificationSteps)
-
                 optionally(MoveVariablesToTheLeftAndSimplify)
                 optionally(MoveConstantsToTheRightAndSimplify)
 
@@ -427,11 +427,12 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                 optionally(equationSimplificationSteps)
 
                 optionally {
-                    applyTo(PolynomialsPlans.ExpandPolynomialExpressionInOneVariable) { it.firstChild }
+                    applyTo(ExpandPolynomialExpressionInOneVariableWithoutNormalization) { it.firstChild }
                 }
                 optionally {
-                    applyTo(PolynomialsPlans.ExpandPolynomialExpressionInOneVariable) { it.secondChild }
+                    applyTo(ExpandPolynomialExpressionInOneVariableWithoutNormalization) { it.secondChild }
                 }
+                optionally(MultiplyByLCDAndSimplify)
                 optionally(MoveVariablesToTheLeftAndSimplify)
                 optionally(MoveConstantsToTheLeftAndSimplify)
 
