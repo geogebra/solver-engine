@@ -268,9 +268,11 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                 contextSensitive {
                     default(
                         ResourceData(preferDecimals = false),
-                        FormChecker(
-                            solutionOf(SolutionVariablePattern(), AnyPattern()),
-                        ),
+                        FormChecker(solutionOf(SolutionVariablePattern(), AnyPattern())),
+                    )
+                    alternative(
+                        ResourceData(preferDecimals = false, gmFriendly = true),
+                        FormChecker(equationOf(SolutionVariablePattern(), AnyPattern())),
                     )
                     alternative(
                         ResourceData(preferDecimals = true),

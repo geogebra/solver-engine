@@ -31,6 +31,7 @@ import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.ConstantInSolutionVariablePattern
 import engine.patterns.ConstantPattern
+import engine.patterns.EquationPattern
 import engine.patterns.FixedPattern
 import engine.patterns.KeyedPattern
 import engine.patterns.Match
@@ -46,6 +47,7 @@ import engine.patterns.integerCondition
 import engine.patterns.monomialPattern
 import engine.patterns.negOf
 import engine.patterns.oneOf
+import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.rationalMonomialPattern
 import engine.patterns.sumContaining
@@ -55,6 +57,8 @@ import engine.steps.metadata.metadata
 import engine.utility.isEven
 import engine.utility.isOdd
 import java.math.BigInteger
+import engine.steps.metadata.DragTargetPosition as Position
+import engine.steps.metadata.GmPathModifier as PM
 
 enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
@@ -85,11 +89,15 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
         rule {
             val variable = oneOf(SolutionVariablePattern(), powerOf(SolutionVariablePattern(), AnyPattern()))
             val lhs = negOf(variable)
-            val rhs = AnyPattern()
+            val rhs = optionalNegOf(AnyPattern())
 
             onEquation(lhs, rhs) {
                 ruleResult(
                     toExpr = equationOf(get(variable), simplifiedNegOf(move(rhs))),
+                    gmAction = when {
+                        rhs.isNeg() -> drag(lhs, PM.Operator, rhs, PM.Operator)
+                        else -> drag(lhs, PM.Operator, rhs, null, Position.LeftOf)
+                    },
                     explanation = metadata(Explanation.NegateBothSides),
                 )
             }
@@ -136,6 +144,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                             productOf(get(lhs), inverse),
                             productOf(get(rhs), inverse),
                         ),
+                        gmAction = drag(coefficient, rhs, Position.LeftOf),
                         explanation = metadata(Explanation.MultiplyByInverseCoefficientOfVariable),
                     )
                 } else {
@@ -223,6 +232,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                             fractionOf(get(lhs), coefficient),
                             fractionOf(get(rhs), coefficient),
                         ),
+                        gmAction = drag(coefficient, rhs, Position.Below),
                         explanation = metadata(Explanation.DivideByCoefficientOfVariable),
                     )
                 }
@@ -234,10 +244,12 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
         rule {
             val lhs = AnyPattern()
             val rhs = AnyPattern()
+            val eq = EquationPattern(lhs, rhs)
 
-            onEquation(lhs, rhs) {
+            onPattern(eq) {
                 ruleResult(
                     toExpr = equationOf(move(rhs), move(lhs)),
+                    gmAction = drag(lhs, null, eq, PM.Operator, Position.Above),
                     explanation = metadata(Explanation.FlipEquation),
                 )
             }
@@ -267,6 +279,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                 }
                 ruleResult(
                     toExpr = equationOf(move(variableTerm), newRHS),
+                    gmAction = drag(exponent, rhs),
                     explanation = metadata(Explanation.TakeRootOfBothSides),
                 )
             }
@@ -283,6 +296,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             onEquation(lhs, rhs) {
                 ruleResult(
                     toExpr = equationOf(move(variableTerm), move(rhs)),
+                    gmAction = drag(exponent, rhs),
                     explanation = metadata(Explanation.TakeRootOfBothSidesRHSIsZero),
                 )
             }
@@ -360,6 +374,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             val rhs = condition(ConstantInSolutionVariablePattern()) { it.signOf().isKnown() }
 
             onEquation(lhs, rhs) {
+                if (context.gmFriendly) return@onEquation null
                 ruleResult(
                     toExpr = solutionOf(move(lhs), solutionSetOf(move(rhs))),
                     explanation = metadata(Explanation.ExtractSolutionFromEquationInSolvedForm),

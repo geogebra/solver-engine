@@ -25,6 +25,7 @@ import engine.steps.metadata.metadata
 import engine.utility.lcm
 import methods.solvable.DenominatorExtractor.extractDenominator
 import java.math.BigInteger
+import engine.steps.metadata.DragTargetPosition as Position
 
 enum class SolvableRules(override val runner: Rule) : RunnerMethod {
 
@@ -47,6 +48,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
 
                 ruleResult(
                     toExpr = cancel(common, solvable.sameSolvable(restLeft, restRight)),
+                    gmAction = drag(common.within(lhs), common.within(rhs)),
                     explanation = metadata(
                         if (solvable.isEquation()) {
                             EquationsExplanation.CancelCommonTermsOnBothSides
@@ -77,6 +79,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                         sumOf(get(lhs), negatedConstants),
                         sumOf(get(rhs), negatedConstants),
                     ),
+                    gmAction = drag(constants, lhs, Position.RightOf),
                     explanation = metadata(
                         if (solvable.isEquation()) {
                             EquationsExplanation.MoveConstantsToTheLeft
@@ -107,6 +110,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                         sumOf(get(lhs), negatedConstants),
                         sumOf(get(rhs), negatedConstants),
                     ),
+                    gmAction = drag(constants, rhs, Position.RightOf),
                     explanation = metadata(
                         if (solvable.isEquation()) {
                             EquationsExplanation.MoveConstantsToTheRight
@@ -136,6 +140,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                         sumOf(get(lhs), negatedVariable),
                         sumOf(get(rhs), negatedVariable),
                     ),
+                    gmAction = drag(variables, lhs, Position.RightOf),
                     explanation = metadata(
                         if (solvable.isEquation()) {
                             EquationsExplanation.MoveVariablesToTheLeft
@@ -189,6 +194,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                             productOf(get(lhs), xp(lcm)),
                             productOf(get(rhs), xp(lcm)),
                         ),
+                        gmAction = editOp(solvable),
                         explanation = metadata(
                             if (solvable.isEquation()) {
                                 EquationsExplanation.MultiplyEquationByLCD

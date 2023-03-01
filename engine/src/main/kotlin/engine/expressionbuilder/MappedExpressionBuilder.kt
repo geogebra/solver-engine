@@ -364,6 +364,10 @@ open class MappedExpressionBuilder(
         return GmAction(GmActionType.Edit, listOf(get(expressionProvider)))
     }
 
+    fun editOp(expressionProvider: ExpressionProvider): GmAction {
+        return GmAction(GmActionType.Edit, listOf(get(expressionProvider)), GmPathModifier.Operator)
+    }
+
     /**
      * Returns a [GmAction] indicating a user needs to drag the specified
      * expression to the specified "dragTo" expression and relative position in
@@ -383,7 +387,7 @@ open class MappedExpressionBuilder(
 
     fun drag(
         expressionProvider: ExpressionProvider,
-        pathModifier: GmPathModifier,
+        pathModifier: GmPathModifier?,
         dragToExpressionProvider: ExpressionProvider,
         dragToPathModifier: GmPathModifier? = null,
         dragToPosition: DragTargetPosition = DragTargetPosition.Onto,

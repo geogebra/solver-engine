@@ -154,6 +154,7 @@ private val normaliseSimplifiedProduct =
         val product = productContaining()
 
         onPattern(product) {
+            if (context.gmFriendly) return@onPattern null
             val getProd = get(product)
             val getProdChildren = getProd.flattenedProductChildren()
             val (constants, nonConstants) = getProdChildren.partition { it.isConstant() }

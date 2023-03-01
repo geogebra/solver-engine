@@ -74,7 +74,7 @@ enum class IntegerArithmeticRules(override val runner: Rule) : RunnerMethod {
 
                     else -> ruleResult(
                         toExpr = product.substitute(integerOp(base, divisor) { n1, n2 -> n1 / n2 }),
-                        gmAction = drag(divisor, base),
+                        gmAction = noGmSupport(),
                         explanation = metadata(Explanation.EvaluateIntegerDivision, move(base), move(divisor)),
                     )
                 }
