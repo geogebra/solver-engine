@@ -4,34 +4,34 @@ default:
 variables:
   GITLAB_CLUSTER: solver-v2
   GGBTRANS_SOLVER_IMPORT_URL: https://dev.geogebra.org/ggbtrans/props/api/solver_import
+  GRADLE: './gradlew --no-daemon --stacktrace --build-cache --gradle-user-home cache/.gradle'
 
 stages:
   - lint
-  - assemble
+  - build
   - publish
   - deploy
-  - before-undeploy
-  - undeploy
 
 before_script:
-  - export GRADLE_USER_HOME=`pwd`/.gradle
   - export SLUG=`echo $CI_COMMIT_REF_SLUG | sed 's/^\([a-z][a-z]*\-[0-9][0-9]*\).*/\1/'`
   - export REPO_FULL_NAME=`echo $CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME`
   - export REPOSITORY_ID=4 # The gitlab ID of the repository where our container images are uploaded
 
 cache:
+  key:
+    files:
+      - gradle/wrapper/gradle-wrapper.properties
   paths:
-    - .gradle/wrapper
-    - .gradle/caches
+    - cache/.gradle/wrapper
+    - cache/.gradle/caches
+    - cache/.gradle/notifications
 
-assemble:
-  stage: assemble
+build:
+  stage: build
   tags:
     - docker
   script:
-    - ./gradlew assemble
-    - ./gradlew test --stacktrace
-    - SOLVER_STEPS_TYPE=data ./gradlew test --stacktrace
+    - $GRADLE build
   artifacts:
     paths:
       - methods/build/generated/ksp/main/resources/TranslationKeys.json
@@ -41,53 +41,44 @@ assemble:
 
 check-circular-dependencies-in-methods:
   stage: lint
+  cache: []
   script:
     - ./scripts/check_method_dependencies.sh
-
-code_style_prettier:
-  stage: lint
-  image: node
-  tags:
-    - docker
-  script:
-    - npm install
-    - npm exec -c "prettier . -c"
-
-code_style:
-  stage: lint
-  tags:
-    - docker
-  script:
-    - ./gradlew ktlintCheck
-  artifacts:
-    paths:
-      - build/reports/ktlint
-    expire_in: 1 day
 
 static_analysis:
   stage: lint
   tags:
     - docker
   script:
-    - ./gradlew detekt
+    - $GRADLE ktlintCheck detekt
   artifacts:
     paths:
+      - build/reports/ktlint
       - build/reports/detekt
     expire_in: 1 day
-  allow_failure: true
+
+code_style_prettier:
+  stage: lint
+  image: node:19-alpine
+  tags:
+    - docker
+  script:
+    - npm install
+    - npm exec -c "prettier . -c"
 
 package:
   stage: publish
   tags:
     - docker
   script:
-    - ./gradlew bootBuildImage --imageName="registry.git.geogebra.org/solver-team/solver-engine/api:$SLUG"
+    - $GRADLE bootBuildImage --imageName="registry.git.geogebra.org/solver-team/solver-engine/api:$SLUG"
 
 export-translation-keys:
   stage: publish
   image: curlimages/curl
   tags:
     - docker
+  cache: []
   script:
     # Translation keys from the methods module (most keys)
     - |
@@ -113,8 +104,16 @@ export-translation-keys:
 deploy:
   stage: deploy
   image: alpine/k8s:1.23.7
+  environment:
+    name: solver/$CI_COMMIT_REF_SLUG
+    url: $DYNAMIC_ENVIRONMENT_URL
+    on_stop: undeploy
   tags:
     - docker
+  cache: []
+  artifacts:
+    reports:
+      dotenv: deploy.env
   script:
     - kubectl config get-contexts
     - kubectl config use-context $REPO_FULL_NAME:$GITLAB_CLUSTER
@@ -126,20 +125,21 @@ deploy:
           --set imageCredentials.username=$CI_REGISTRY_USER \
           --set imageCredentials.password=$CI_REGISTRY_PASSWORD \
           --set springProfile=production
+    - echo "DYNAMIC_ENVIRONMENT_URL=https://solver.geogebra.net/$SLUG/poker.html" >> deploy.env
 
-# Merge-request pipeline jobs
-wait:
-  stage: before-undeploy
-  script:
-    - echo "Block the pipeline until the next job (undeploy) run"
-  only:
-    - merge_requests
-
+# Remove kubernetes deployment.  This job is automatically triggered when the feature branch is deleted.
 undeploy:
-  stage: undeploy
+  stage: deploy
   image: alpine/k8s:1.23.7
+  variables:
+    # As the branch is deleted at this point we can't fetch the repo (and we don't need to)
+    GIT_STRATEGY: none
+  environment:
+    name: solver/$CI_COMMIT_REF_SLUG
+    action: stop
   tags:
     - docker
+  cache: []
   script:
     - echo "Attempting do delete tag $SLUG..."
     # Call the gitlab API to delete the image tag as it is no longer needed. This will allow the image
@@ -152,6 +152,5 @@ undeploy:
     - kubectl config use-context $REPO_FULL_NAME:$GITLAB_CLUSTER
     - helm uninstall $SLUG
   when: manual
-  allow_failure: false
-  only:
-    - merge_requests
+  except:
+    - main

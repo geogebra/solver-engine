@@ -111,5 +111,5 @@ Solver URL: http://solver.geogebra.net/plut-string-example (http://solver.geogeb
 It uses a [Gitlab cluster agent](https://docs.gitlab.com/ee/user/clusters/agent/install/)
 to communicate to the cluster.
 
-The second job in this stage is `undeploy`. It can only be triggered
-manually and will undo the above steps in reverse order.
+The second job in this stage is `undeploy`. It is automatically triggered when the feature branch is deleted so should
+not need to be triggered manually.
