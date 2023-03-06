@@ -1,11 +1,5 @@
 <component name="ProjectCodeStyleConfiguration">
   <code_scheme name="Project" version="173">
-    <option name="DO_NOT_FORMAT">
-      <list>
-        <!-- Don't run IntelliJ's built in formatter on files that should, instead, be handled by prettier and eslint. -->
-        <fileSet type="globPattern" pattern="{**/*,*}.{html,js,json,jsx,md,ts,tsx,vue,yaml,yml}" />
-      </list>
-    </option>
     <HTMLCodeStyleSettings>
       <option name="HTML_SPACE_INSIDE_EMPTY_TAG" value="true" />
       <option name="HTML_QUOTE_STYLE" value="Single" />

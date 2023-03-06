@@ -1,5 +1,6 @@
 package methods.general
 
+import engine.context.ResourceData
 import engine.expressions.Child
 import engine.expressions.Expression
 import engine.methods.CompositeMethod
@@ -34,6 +35,17 @@ enum class NormalizationPlans(override val runner: CompositeMethod) : RunnerMeth
             }
         },
     ),
+    NormaliseSimplifiedProduct(normaliseSimplifiedProduct),
+}
+
+private val normaliseSimplifiedProduct = plan {
+    explanation = Explanation.NormaliseSimplifiedProduct
+
+    steps { optionally(NormalizationRules.NormaliseSimplifiedProductRule) }
+    alternative(ResourceData(gmFriendly = true)) {
+        whilePossible(NormalizationRules.NormaliseSimplifiedProductSingleStep)
+        optionally(NormalizationRules.NormalizeTheImplicitnessAndExplicitnessOfMultiplication)
+    }
 }
 
 fun redundantBracketChecker(sub: Expression): Expression? = when {

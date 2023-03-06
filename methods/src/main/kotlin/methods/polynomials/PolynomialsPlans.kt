@@ -34,7 +34,6 @@ import methods.decimals.decimalEvaluationSteps
 import methods.expand.createExpandAndSimplifySteps
 import methods.general.GeneralRules
 import methods.general.NormalizationPlans
-import methods.general.NormalizationRules
 import methods.integerarithmetic.IntegerArithmeticPlans
 
 enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod {
@@ -152,7 +151,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
             pattern = condition(AnyPattern()) { it.variables.size == 1 }
 
             steps {
-                optionally(NormalizationRules.NormaliseSimplifiedProduct)
+                optionally(NormalizationPlans.NormaliseSimplifiedProduct)
                 whilePossible {
                     firstOf {
                         option(algebraicSimplificationSteps)
@@ -170,7 +169,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
             pattern = condition(AnyPattern()) { it.variables.size == 1 }
 
             steps {
-                optionally(NormalizationRules.NormaliseSimplifiedProduct)
+                optionally(NormalizationPlans.NormaliseSimplifiedProduct)
                 whilePossible {
                     firstOf {
                         option(algebraicSimplificationSteps)
@@ -191,7 +190,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
             pattern = condition(AnyPattern()) { it.variables.size == 1 }
 
             steps {
-                optionally(NormalizationRules.NormaliseSimplifiedProduct)
+                optionally(NormalizationPlans.NormaliseSimplifiedProduct)
                 whilePossible {
                     firstOf {
                         option(algebraicSimplificationSteps)

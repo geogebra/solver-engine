@@ -1,5 +1,6 @@
 package methods.general
 
+import engine.context.Context
 import engine.methods.testMethod
 import org.junit.jupiter.api.Test
 
@@ -15,6 +16,16 @@ class TestReplaceAllInvisibleBrackets {
             explanation {
                 key = Explanation.AddClarifyingBrackets
             }
+        }
+    }
+
+    @Test
+    fun testReplaceAllInvisibleBracketsSimpleGm() = testMethod {
+        method = NormalizationPlans.AddClarifyingBrackets
+        inputExpr = "3*-4"
+        context = Context(gmFriendly = true)
+        check {
+            noTransformation()
         }
     }
 
@@ -39,6 +50,16 @@ class TestReplaceAllInvisibleBrackets {
             explanation {
                 key = Explanation.AddClarifyingBrackets
             }
+        }
+    }
+
+    @Test
+    fun testReplaceAllInvisibleBracketsNestedGm() = testMethod {
+        method = NormalizationPlans.AddClarifyingBrackets
+        inputExpr = "[3 * -4/1 --+-2]"
+        context = Context(gmFriendly = true)
+        check {
+            noTransformation()
         }
     }
 }

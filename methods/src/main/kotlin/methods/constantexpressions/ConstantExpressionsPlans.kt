@@ -34,7 +34,6 @@ import methods.fractionroots.FractionRootsRules
 import methods.general.GeneralPlans
 import methods.general.GeneralRules
 import methods.general.NormalizationPlans
-import methods.general.NormalizationRules
 import methods.general.removeRedundantBrackets
 import methods.integerarithmetic.IntegerArithmeticPlans
 import methods.integerarithmetic.IntegerArithmeticRules
@@ -249,7 +248,7 @@ val constantSimplificationSteps: StepsProducer = steps {
         option { deeply(ExpandRules.DistributeNegativeOverBracket) }
         option { deeply(expandConstantExpression) }
 
-        option { deeply(NormalizationRules.NormaliseSimplifiedProduct) }
+        option { deeply(NormalizationPlans.NormaliseSimplifiedProduct) }
     }
 }
 

@@ -58,6 +58,10 @@ The project configures IntelliJ to use Prettier for formatting and .js, .html,
 isn't required. Make sure you have node.js installed and run `npm i` at the root
 of this project, so that Prettier and eslint can work.
 
+In IntelliJ, go to "Settings" > "Actions on Save" and disable "Reformat code". If you
+don't do that, then IntelliJ will reformat your code using its own internal formatter,
+which we don't want, because we are using prettier and ktlint instead.
+
 ## Deployment
 
 The project can be deployed to a Kubernetes cluster. The configured

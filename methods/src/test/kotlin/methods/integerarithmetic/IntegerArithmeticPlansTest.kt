@@ -1,5 +1,6 @@
 package methods.integerarithmetic
 
+import engine.context.Context
 import engine.methods.testMethod
 import methods.general.GeneralExplanation
 import kotlin.test.Test
@@ -147,6 +148,30 @@ class IntegerArithmeticPlansTest {
                     key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
                 }
             }
+        }
+    }
+
+    @Test
+    fun testPlusNegativeGm() = testMethod {
+        method = IntegerArithmeticPlans.EvaluateArithmeticExpression
+        inputExpr = "1+-2"
+        context = Context(gmFriendly = true)
+
+        check {
+            fromExpr = "1+-2"
+            toExpr = "-1"
+            explanation {
+                key = IntegerArithmeticExplanation.EvaluateArithmeticExpression
+            }
+
+            step {
+                fromExpr = "1+-2"
+                toExpr = "1 - 2"
+                explanation {
+                    key = GeneralExplanation.RemoveBracketAroundSignedIntegerInSum
+                }
+            }
+            step { toExpr = "-1" }
         }
     }
 

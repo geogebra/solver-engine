@@ -567,6 +567,7 @@ window.onload = () => {
   };
 
   el('curriculumSelect').onchange = optionsChanged;
+  el('plansSelect').onchange = optionsChanged;
   el('precisionSelect').onchange = optionsChanged;
   el('preferDecimals').onchange = optionsChanged;
   el('gmFriendlyCheckbox').onchange = optionsChanged;

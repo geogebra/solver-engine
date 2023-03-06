@@ -17,10 +17,9 @@ import engine.patterns.plusOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
 import engine.steps.Transformation
+import engine.steps.metadata.DragTargetPosition
 import engine.steps.metadata.metadata
 import engine.steps.metadata.GmPathModifier as PM
-
-const val ORDER_CONSTANT_PRODUCT = 1
 
 enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
     ReplaceInvisibleBrackets(
@@ -28,6 +27,7 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
             val missingBracket = condition(AnyPattern()) { it.outerBracket() == Decorator.MissingBracket }
 
             onPattern(missingBracket) {
+                if (context.gmFriendly) return@onPattern null
                 ruleResult(
                     type = Transformation.Type.Rearrangement,
                     toExpr = transformTo(missingBracket) { it.removeBrackets().decorate(Decorator.RoundBracket) },
@@ -127,7 +127,9 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
         },
     ),
 
-    NormaliseSimplifiedProduct(normaliseSimplifiedProduct),
+    NormaliseSimplifiedProductRule(normaliseSimplifiedProductRule),
+    NormaliseSimplifiedProductSingleStep(normaliseSimplifiedProductSingleStep),
+    NormalizeTheImplicitnessAndExplicitnessOfMultiplication(normalizeTheImplicitnessAndExplicitnessOfMultiplication),
 }
 
 /**
@@ -140,33 +142,15 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
  * for e.g. sqrt[3] * (1 + sqrt[3]) * ([y^2] + 1) * y * 5 -->
  * 5 * sqrt[3] * (1 + sqrt[3]) * y * ([y^2] + 1)
  */
-private val normaliseSimplifiedProduct =
+private val normaliseSimplifiedProductRule =
     rule {
-        fun orderInProduct(e: Expression): Int {
-            return when (e.operator) {
-                NaryOperator.Sum -> ORDER_CONSTANT_PRODUCT + 2
-                BinaryExpressionOperator.Root -> ORDER_CONSTANT_PRODUCT + 1
-                UnaryExpressionOperator.SquareRoot -> ORDER_CONSTANT_PRODUCT + 1
-                else -> ORDER_CONSTANT_PRODUCT
-            }
-        }
-
         val product = productContaining()
 
         onPattern(product) {
-            if (context.gmFriendly) return@onPattern null
             val getProd = get(product)
             val getProdChildren = getProd.flattenedProductChildren()
-            val (constants, nonConstants) = getProdChildren.partition { it.isConstant() }
-
-            val sortedConstants = constants.sortedBy { orderInProduct(it) }
-            val sortedNonConstants = nonConstants.sortedBy { orderInProduct(it) }
-            val sortedProdChildren = mutableListOf<Expression>()
-            sortedProdChildren.addAll(sortedConstants)
-            sortedProdChildren.addAll(sortedNonConstants)
-
+            val sortedProdChildren = getProdChildren.sortedBy { orderInProduct(it) }
             val toExpr = productOf(sortedProdChildren.map { move(it) })
-
             if (toExpr == getProd) {
                 null
             } else {
@@ -174,7 +158,76 @@ private val normaliseSimplifiedProduct =
                     type = Transformation.Type.Rearrangement,
                     toExpr = toExpr,
                     explanation = metadata(Explanation.NormaliseSimplifiedProduct),
+                    gmAction = edit(product),
                 )
             }
         }
     }
+
+/** Like [normaliseSimplifiedProductRule], but only rearranges one term. It sorts via
+ * insertion sort. */
+private val normaliseSimplifiedProductSingleStep =
+    rule {
+        val product = productContaining()
+
+        onPattern(product) {
+            val productChildren = get(product).flattenedProductChildren()
+            for (i in 1 until productChildren.size) {
+                val current = productChildren[i]
+                val currentOrder = orderInProduct(current)
+                val previous = productChildren[i - 1]
+                val previousOrder = orderInProduct(previous)
+                if (currentOrder < previousOrder) {
+                    val movedCurrent = move(current)
+                    val sortedFirstPartOfProductChildren =
+                        (productChildren.take(i) + movedCurrent).sortedBy { orderInProduct(it) }
+                    val toExpr = productOf(sortedFirstPartOfProductChildren + productChildren.drop(i + 1))
+                    return@onPattern ruleResult(
+                        type = Transformation.Type.Rearrangement,
+                        toExpr = toExpr,
+                        explanation = metadata(Explanation.NormaliseSimplifiedProduct),
+                        gmAction = drag(
+                            current,
+                            productChildren[sortedFirstPartOfProductChildren.indexOf(movedCurrent)],
+                            DragTargetPosition.LeftOf,
+                        ),
+                    )
+                }
+            }
+            null
+        }
+    }
+
+/** Make multiplication implicit or explicit, to make the product end up written in the
+ * most standard form */
+private val normalizeTheImplicitnessAndExplicitnessOfMultiplication =
+    rule {
+        val product = productContaining()
+
+        onPattern(product) {
+            val getProd = get(product)
+            val getProdChildren = getProd.flattenedProductChildren()
+            val toExpr = productOf(getProdChildren)
+            if (toExpr == getProd) {
+                null
+            } else {
+                ruleResult(
+                    type = Transformation.Type.Rearrangement,
+                    toExpr = toExpr,
+                    explanation = metadata(Explanation.NormaliseSimplifiedProduct),
+                    // gmAction = do nothing, because it happens automatically
+                )
+            }
+        }
+    }
+
+@Suppress("MagicNumber")
+private fun orderInProduct(e: Expression): Int {
+    val isConstantAdjuster = if (e.isConstant()) 0 else 10
+    return isConstantAdjuster + when (e.operator) {
+        NaryOperator.Sum -> 3
+        BinaryExpressionOperator.Root -> 2
+        UnaryExpressionOperator.SquareRoot -> 2
+        else -> 1
+    }
+}
