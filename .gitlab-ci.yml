@@ -7,7 +7,7 @@ variables:
   GRADLE: './gradlew --no-daemon --stacktrace --build-cache --gradle-user-home cache/.gradle'
 
 stages:
-  - lint
+  - checks
   - build
   - publish
   - deploy
@@ -26,39 +26,15 @@ cache:
     - cache/.gradle/caches
     - cache/.gradle/notifications
 
-build:
-  stage: build
-  tags:
-    - docker
-  script:
-    - $GRADLE build
-  artifacts:
-    paths:
-      - methods/build/generated/ksp/main/resources/TranslationKeys.json
-      - methods/build/generated/ksp/main/resources/Method.TranslationKeys.json
-      - engine/build/generated/ksp/main/resources/TranslationKeys.json
-    expire_in: 1 day
-
 check-circular-dependencies-in-methods:
-  stage: lint
+  stage: checks
   cache: []
   script:
     - ./scripts/check_method_dependencies.sh
 
-static_analysis:
-  stage: lint
-  tags:
-    - docker
-  script:
-    - $GRADLE ktlintCheck detekt
-  artifacts:
-    paths:
-      - build/reports/ktlint
-      - build/reports/detekt
-    expire_in: 1 day
-
 code_style_prettier:
-  stage: lint
+  stage: checks
+  cache: []
   image: node:19-alpine
   tags:
     - docker
@@ -66,8 +42,27 @@ code_style_prettier:
     - npm install
     - npm exec -c "prettier . -c"
 
+# The gradle 'build' includes running detekt, ktlint, runnings tests.
+build:
+  stage: build
+  needs: []
+  tags:
+    - docker
+  script:
+    - $GRADLE build
+  artifacts:
+    paths:
+      - build/reports/ktlint
+      - build/reports/detekt
+      - methods/build/generated/ksp/main/resources/TranslationKeys.json
+      - methods/build/generated/ksp/main/resources/Method.TranslationKeys.json
+      - engine/build/generated/ksp/main/resources/TranslationKeys.json
+    expire_in: 1 day
+
 package:
   stage: publish
+  needs:
+    - build
   tags:
     - docker
   script:
@@ -75,6 +70,8 @@ package:
 
 export-translation-keys:
   stage: publish
+  needs:
+    - build
   image: curlimages/curl
   tags:
     - docker
@@ -98,11 +95,12 @@ export-translation-keys:
         --fail-with-body \
         --header "X-Token: $GGBTRANS_API_TOKEN" \
         --data @engine/build/generated/ksp/main/resources/TranslationKeys.json
-
   when: manual
 
 deploy:
   stage: deploy
+  needs:
+    - package
   image: alpine/k8s:1.23.7
   environment:
     name: solver/$CI_COMMIT_REF_SLUG
@@ -130,6 +128,7 @@ deploy:
 # Remove kubernetes deployment.  This job is automatically triggered when the feature branch is deleted.
 undeploy:
   stage: deploy
+  dependencies: []
   image: alpine/k8s:1.23.7
   variables:
     # As the branch is deleted at this point we can't fetch the repo (and we don't need to)
