@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GGB Solver SDK</title>
+    <style>
+      .code {
+        font-family: monospace;
+      }
+      .step {
+        padding-left: 20px;
+      }
+    </style>
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css"
+      integrity="sha384-vKruj+a13U8yHIkAyGgK1J3ArTLzrFGBbBc0tDp4ad/EyewESeXE/Iv67Aj8gKZ0"
+      crossorigin="anonymous"
+    />
+
+    <!-- The loading of KaTeX is deferred to speed up page rendering -->
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"
+      integrity="sha384-PwRUT/YqbnEjkZO0zZxNqcxACrXe+j766U2amXcgMg5457rve2Y7I6ZJSm2A0mS4"
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- To automatically render math in text elements, include the auto-render extension: -->
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js"
+      integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05"
+      crossorigin="anonymous"
+      onload="renderMathInElement(document.body);"
+    ></script>
+  </head>
+
+  <body style="max-width: 800px; margin: auto">
+    <h1>GGB Solver SDK</h1>
+    <p>
+      This library can be included in a project as an npm package, or by hosting the
+      minified library files and including them in a webpage.
+    </p>
+    <p>
+      We'll use the API to request the version of the solver api. First, we'll directly
+      import the code from the source file – this will live-update during development when
+      running 'npm start'.
+      <br />
+      <span id="version" class="code">querying...</span>
+      <script type="module">
+        import { api } from '/src/index.ts';
+        api.versionInfo().then((version) => {
+          document.getElementById('version').innerText = JSON.stringify(version);
+        });
+      </script>
+    </p>
+    <p>
+      Now we'll do the same using the web module built by running 'npm run build-for-web',
+      just to show how it works.
+      <br />
+      <span id="version2" class="code">querying...</span>
+      <script src="/dist/solver-sdk.umd.js"></script>
+      <script type="module">
+        ggbSolver.api.versionInfo().then((version) => {
+          document.getElementById('version2').innerText = JSON.stringify(version);
+        });
+      </script>
+    </p>
+    <p>
+      Let's ask the solver to solve a simplify the LaTeX expression
+      <span class="code">\frac{1}{2} + 3</span>:
+      <br />
+      The solver format for the latex is:
+      <span id="solverFormat" class="code">...</span>
+      <br />
+      The solver found these solutions: <span id="simplify" class="code">...</span>
+      <script type="module">
+        import { api, latexToSolver } from '/src/index.ts';
+        const solverMathString = latexToSolver('\\frac{1}{2} + 3');
+        document.getElementById('solverFormat').innerText = solverMathString;
+        api.selectPlans(solverMathString).then((result) => {
+          document.getElementById('simplify').innerText = result
+            .map((res) => res.transformation.toExpr)
+            .join(' and ');
+        });
+      </script>
+    </p>
+    <p>
+      <span id="solution" class="code">...</span>
+      <script type="module">
+        import {
+          api,
+          latexToSolver,
+          jsonToTree,
+          treeToLatex,
+          createColorMaps,
+          coloringTransformer,
+        } from '/src/index.ts';
+
+        const latexSettings = {};
+        const colors = ['red', 'green', 'blue', 'purple'];
+
+        function renderTransformation(trans) {
+          const [fromColoring, toColoring] = trans.steps
+            ? [undefined, undefined]
+            : createColorMaps(trans.pathMappings, colors).map(coloringTransformer);
+          const render = (expr, coloring) =>
+            treeToLatex(jsonToTree(expr, trans.path), latexSettings, coloring);
+
+          return /* HTML */ ` <div class="step">
+            <div class="expr">
+              \\(${render(trans.fromExpr, fromColoring)}
+              {\\color{#8888ff}\\thickspace\\longmapsto\\thickspace}
+              ${render(trans.toExpr, toColoring)}\\)
+            </div>
+            ${trans.steps ? trans.steps.map(renderTransformation).join('<br>') : ''}
+          </div>`;
+        }
+
+        api
+          .applyPlan(
+            '[1 / 2] + 3',
+            'ConstantExpressions.SimplifyConstantExpression',
+            'json',
+          )
+          .then((result) => {
+            document.getElementById('solution').innerHTML = renderTransformation(result);
+            renderMathInElement(document.body);
+          });
+      </script>
+    </p>
+  </body>
+</html>

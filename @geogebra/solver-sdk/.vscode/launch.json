@@ -1,0 +1,37 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Mocha Tests",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/mocha.js",
+      "args": [
+        "--timeout",
+        "999999",
+        "--colors",
+        "--reporter",
+        "spec",
+        "./test/**/*.test.ts",
+      ],
+      "internalConsoleOptions": "openOnSessionStart",
+      "sourceMaps": true,
+      "skipFiles": [],
+      "smartStep": true,
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Mocha Tests Current File",
+      "program": "${workspaceFolder}/node_modules/.bin/_mocha",
+      "args": ["--timeout", "999999", "--colors", "${file}"],
+      "internalConsoleOptions": "openOnSessionStart",
+      "sourceMaps": true,
+      "skipFiles": [],
+      "smartStep": true,
+    },
+  ],
+}

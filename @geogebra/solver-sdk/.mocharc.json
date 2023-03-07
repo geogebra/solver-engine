@@ -1,0 +1,4 @@
+{
+  "reporter": "dot",
+  "require": "./ts-test-hook.mjs"
+}

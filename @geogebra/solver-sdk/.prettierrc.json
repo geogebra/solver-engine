@@ -1,0 +1,23 @@
+{
+  "trailingComma": "all",
+  "tabWidth": 2,
+  "semi": true,
+  "singleQuote": true,
+  "printWidth": 90,
+  "overrides": [
+    {
+      "files": [
+        "**/.vscode/extensions.json",
+        "**/.vscode/launch.json",
+        "**/.vscode/settings.json",
+        "**/tsconfig*.json"
+      ],
+      "options": {
+        "parser": "json5",
+        "quoteProps": "preserve",
+        "singleQuote": false,
+        "trailingComma": "all"
+      }
+    }
+  ]
+}
