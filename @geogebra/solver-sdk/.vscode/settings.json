@@ -68,6 +68,7 @@
     "editor.insertSpaces": true,
     "editor.tabSize": 2,
   },
+  "git.openRepositoryInParentFolders": "always",
   "vetur.validation.template": false,
   "vetur.validation.script": false,
   "vetur.validation.style": false,

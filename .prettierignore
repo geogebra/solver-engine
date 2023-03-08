@@ -9,9 +9,17 @@
 !/api/src/main/openapi/*
 !/api/src/main/resources/*
 !/api/src/main/resources/static/*
+!/@geogebra/**
 !/config/*
 !/docs/*
 
 # Blacklist these
+node_modules
 /api/src/main/resources/static/solver-sdk.es.js
 /helm
+/@geogebra/**/dist
+/@geogebra/**/lib
+/@geogebra/**/coverage
+/@geogebra/**/.nyc_output
+/@geogebra/**/node_modules
+/@geogebra/**/.npm

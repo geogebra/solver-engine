@@ -36,7 +36,7 @@ export function treeToSolver(n: ExpressionTree): string {
     case 'Product':
       return dec(
         n.args
-          .map((el, i) => (i == 0 || el.type === 'DivideBy' ? rec(el) : `*${rec(el)}`))
+          .map((el, i) => (i === 0 || el.type === 'DivideBy' ? rec(el) : `*${rec(el)}`))
           .join(''),
       );
     case 'ImplicitProduct':

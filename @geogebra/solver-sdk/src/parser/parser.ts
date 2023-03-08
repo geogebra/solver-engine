@@ -140,7 +140,7 @@ export class Parser<T> {
 
   parse(source: string) {
     this.tokens = tokenize(source);
-    if (this.tokens.length == 0) throw 'Error: No tokens to parse.';
+    if (this.tokens.length === 0) throw 'Error: No tokens to parse.';
     this.scope = new Scope(this.symbolTable);
     this.token_nr = 0;
     this.advance();

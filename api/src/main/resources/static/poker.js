@@ -1,4 +1,5 @@
 /* global renderMathInElement */
+// If this fails to resolve or is out of date, then run `npm i`.
 import * as ggbSolver from './solver-sdk.es.js';
 // You may uncomment the line below during development to enable
 // typescript-powered intellisense, but the code will not run properly if it

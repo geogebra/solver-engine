@@ -41,12 +41,10 @@ describe('Aligned equations in system', () => {
 
 describe('Aligned equations in union', () => {
   const union = [
-      'EquationUnion',
-      ['Equation', ['x'], ['1']],
-      ['Equation', ['x'], ['2']],
+    'EquationUnion',
+    ['Equation', ['x'], ['1']],
+    ['Equation', ['x'], ['2']],
   ] as MathJson;
 
-  expect(jsonToLatex(union)).to.equal(
-      'x = 1, x = 2',
-  );
+  expect(jsonToLatex(union)).to.equal('x = 1, x = 2');
 });
