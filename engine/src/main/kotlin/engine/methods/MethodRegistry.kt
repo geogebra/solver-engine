@@ -1,5 +1,11 @@
 package engine.methods
 
+import engine.context.Context
+import engine.expressions.Expression
+import engine.expressions.Root
+import engine.steps.Transformation
+import java.util.logging.Level
+
 /**
  * Builder class for creating a [MethodRegistry] instance.
  */
@@ -101,6 +107,36 @@ class MethodRegistry internal constructor(
     fun getMethodByName(name: String): Method? {
         val methodId = methodIdFromName(name) ?: return null
         return entries[methodId]?.implementation
+    }
+
+    @Suppress("TooGenericExceptionCaught")
+    fun selectSuccessfulPlansMethodIdAndTransformation(expr: Expression, context: Context):
+        List<Pair<MethodId, Transformation>> {
+        val successfulPlansIds = mutableSetOf<MethodId>()
+        val selections = mutableListOf<Pair<MethodId, Transformation>>()
+
+        for (entryData in this.publicEntries) {
+            if (this.getMoreSpecificMethods(entryData.methodId).any { it in successfulPlansIds }) {
+                successfulPlansIds.add(entryData.methodId)
+                context.log(Level.FINE, "Skipping plan ID: ${entryData.methodId}")
+                continue
+            }
+            val transformation = try {
+                entryData.implementation.tryExecute(context, expr.withOrigin(Root()))
+            } catch (e: Exception) {
+                context.log(Level.FINE, "Exception caught: ${e.stackTraceToString()}")
+                null
+            }
+            transformation?.let {
+                context.log(Level.FINE, "Success for plan ID: ${entryData.methodId}")
+                successfulPlansIds.add(entryData.methodId)
+                selections.add(entryData.methodId to transformation)
+            } ?: run {
+                context.log(Level.FINE, "Failure for plan ID: ${entryData.methodId}")
+            }
+        }
+
+        return selections
     }
 }
 
