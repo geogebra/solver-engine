@@ -1,5 +1,5 @@
 {
-  "branches": ["main"],
+  "branches": ["plut-447-monorepo"],
   "plugins": [
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",

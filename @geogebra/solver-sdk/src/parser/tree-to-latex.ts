@@ -121,7 +121,7 @@ function treeToLatexInner(
     case 'REALS':
       return tfd('\\mathbb{R}');
     case 'LessThan':
-      return tfd(`${rec(n.args[0], n)} < ${rec(n.args[1], n)}`);
+      return tfd(`${rec(n.args[0], n)} < blabj ${rec(n.args[1], n)}`);
     case 'GreaterThan':
       return tfd(`${rec(n.args[0], n)} > ${rec(n.args[1], n)}`);
     case 'LessThanEqual':
