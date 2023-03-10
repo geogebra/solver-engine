@@ -42,7 +42,7 @@ code_style_prettier_and_build_sdk_for_poker:
     key:
       files:
         - package-lock.json
-      prefix: npm-cache
+      prefix: npm-cache-
     paths:
       - .npm/
   script:
@@ -150,7 +150,7 @@ sdk_semantic_release:
     key:
       files:
         - package-lock.json
-      prefix: npm-cache
+      prefix: npm-cache-
     paths:
       - .npm/
   # ask Erik about if this is necessary
