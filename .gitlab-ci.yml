@@ -15,6 +15,7 @@ variables:
   GGBTRANS_SOLVER_IMPORT_URL: https://dev.geogebra.org/ggbtrans/props/api/solver_import
   GRADLE: './gradlew --no-daemon --stacktrace --build-cache --gradle-user-home cache/.gradle'
   NPM_TOKEN: ${CI_JOB_TOKEN}
+  GITLAB_TOKEN: ${CI_JOB_TOKEN}
 
 stages:
   - checks
