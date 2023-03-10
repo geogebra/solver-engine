@@ -167,6 +167,7 @@ sdk_semantic_release:
       } | tee -a .npmrc
     - npm run build
     - ls
+    - cat .npmrc
     - npm run semantic-release --dry-run
   # rules:
   #   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
