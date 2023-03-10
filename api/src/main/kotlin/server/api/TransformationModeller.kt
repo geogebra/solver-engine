@@ -1,6 +1,7 @@
 package server.api
 
 import engine.expressions.RootPath
+import methods.KeyNameRegistry
 import server.models.Format
 import server.models.GmAction
 import server.models.GmActionDragTo
@@ -52,7 +53,7 @@ data class TransformationModeller(val format: Format) {
 
     private fun modelMetadata(metadata: engine.steps.metadata.Metadata): Metadata {
         return Metadata(
-            key = metadata.key.keyName,
+            key = KeyNameRegistry.getKeyName(metadata.key),
             params = metadata.mappedParams.map {
                 MappedExpression(
                     expression = modelExpression(it),

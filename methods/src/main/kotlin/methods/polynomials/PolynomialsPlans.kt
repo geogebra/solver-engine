@@ -26,6 +26,7 @@ import engine.patterns.powerOf
 import engine.patterns.sumOf
 import engine.patterns.withOptionalIntegerCoefficient
 import engine.steps.metadata.metadata
+import methods.collecting.createCollectLikeTermsAndSimplifyPlan
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.constantexpressions.constantSimplificationSteps
 import methods.constantexpressions.simpleTidyUpSteps
@@ -38,8 +39,6 @@ import methods.integerarithmetic.IntegerArithmeticPlans
 
 enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
-    SimplifyCoefficient(simplifyCoefficient),
-    CollectLikeTermsAndSimplify(collectLikeTermsAndSimplify),
     MultiplyUnitaryMonomialsAndSimplify(multiplyUnitaryMonomialsAndSimplify),
     MultiplyMonomialsAndSimplify(multiplyMonomialsAndSimplify),
     SimplifyMonomial(simplifyMonomial),
@@ -206,36 +205,8 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
     ),
 }
 
-private val simplifyCoefficient = plan {
-    explanation = Explanation.SimplifyCoefficient
-
-    steps {
-        whilePossible(simplificationSteps)
-    }
-}
-
 private val expandAndSimplifySteps = lazy {
     expandAndSimplifySteps(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable)
-}
-
-private val collectLikeTermsAndSimplify = plan {
-    explanation = Explanation.CollectLikeTermsAndSimplify
-
-    steps {
-        withNewLabels {
-            firstOf {
-                option(PolynomialRules.CombineTwoSimpleLikeTerms)
-                option(PolynomialRules.CollectLikeTerms)
-            }
-            optionally {
-                applyTo(Label.A) {
-                    applyTo(PolynomialsPlans.SimplifyCoefficient) { it.firstChild }
-                    optionally(PolynomialRules.NormalizeMonomial)
-                }
-            }
-            optionally(GeneralRules.EliminateZeroInSum)
-        }
-    }
 }
 
 private val multiplyMonomialsAndSimplify = plan {
@@ -332,7 +303,7 @@ val algebraicSimplificationSteps = steps {
                 }
             }
         }
-        option { deeply(PolynomialsPlans.CollectLikeTermsAndSimplify) }
+        option { deeply(collectLikeTermsSteps) }
         option(simplificationSteps)
     }
 }
@@ -341,6 +312,8 @@ private val simplificationSteps = contextSensitiveSteps {
     default(ResourceData(preferDecimals = false), constantSimplificationSteps)
     alternative(ResourceData(preferDecimals = true), decimalEvaluationSteps)
 }
+
+private val collectLikeTermsSteps = createCollectLikeTermsAndSimplifyPlan(simplificationSteps)
 
 private val normalizeAllMonomials = plan {
     explanation = Explanation.NormalizeAllMonomials

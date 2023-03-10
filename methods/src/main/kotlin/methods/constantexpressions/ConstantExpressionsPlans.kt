@@ -4,6 +4,7 @@ import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
+import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.steps
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
@@ -14,6 +15,8 @@ import engine.patterns.integerCondition
 import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.utility.divides
+import methods.collecting.createCollectLikeRationalPowersAndSimplifyPlan
+import methods.collecting.createCollectLikeRootsAndSimplifyPlan
 import methods.decimals.DecimalPlans
 import methods.decimals.DecimalRules
 import methods.expand.ExpandRules
@@ -206,7 +209,7 @@ val fractionSimplificationSteps = steps {
     }
 }
 
-val constantSimplificationSteps = steps {
+val constantSimplificationSteps: StepsProducer = steps {
     firstOf {
         option(simpleTidyUpSteps)
 
@@ -219,8 +222,8 @@ val constantSimplificationSteps = steps {
         option { deeply(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithSameBase) }
         option { deeply(ConstantExpressionsPlans.SimplifyPowers) }
 
-        option { deeply(IntegerRootsPlans.CollectLikeRootsAndSimplify) }
-        option { deeply(IntegerRationalExponentsPlans.CollectLikeRationalPowersAndSimplify) }
+        option { deeply(collectLikeRootsAndSimplify) }
+        option { deeply(collectLikeRationalPowersAndSimplify) }
 
         option(ConstantExpressionsPlans.SimplifyRootsInExpression)
         option(simplifyRationalExponentsInProduct)
@@ -241,5 +244,10 @@ val constantSimplificationSteps = steps {
         option { deeply(NormalizationRules.NormaliseSimplifiedProduct) }
     }
 }
+
+private val collectLikeRootsAndSimplify =
+    createCollectLikeRootsAndSimplifyPlan(constantSimplificationSteps)
+private val collectLikeRationalPowersAndSimplify =
+    createCollectLikeRationalPowersAndSimplifyPlan(constantSimplificationSteps)
 
 val expandConstantExpressionSteps = expandAndSimplifySteps(ConstantExpressionsPlans.SimplifyConstantExpression)

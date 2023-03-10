@@ -56,7 +56,6 @@ enum class IntegerRootsExplanation : CategorisedMetadataKey {
     SimplifyProductWithRoots,
     SimplifyIntegerRoot,
     SimplifyIntegerRootToInteger,
-    CollectLikeRootsAndSimplify,
     MultiplyNthRoots,
     SplitRootsAndCancelRootsOfPowers,
 
@@ -112,7 +111,6 @@ enum class IntegerRootsExplanation : CategorisedMetadataKey {
     CancelPowerOfARoot,
     PutRootCoefficientUnderRootAndSimplify,
     SimplifyRootOfRootWithCoefficient,
-    CollectLikeRoots,
     CombineProductOfSamePowerUnderHigherRoot,
     ;
 

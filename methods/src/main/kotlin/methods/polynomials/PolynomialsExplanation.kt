@@ -5,33 +5,6 @@ import engine.steps.metadata.TranslationKeys
 
 @TranslationKeys
 enum class PolynomialsExplanation : CategorisedMetadataKey {
-    /**
-     * Add the first two addends that are in the form of an integer times a variable (that have the same variable)
-     *
-     * E.g. 2x + 3 + x + 2[x^2] --> 3x + 3 + 2[x^2]
-     */
-    CombineTwoSimpleLikeTerms,
-
-    /**
-     * Collect like terms of the form a[x^n] in a sum
-     *
-     * E.g. [x^2] + 3 + x + 2[x^2] --> (1 + 2)[x^2] + 3 + x
-     */
-    CollectLikeTerms,
-
-    /**
-     * Simplify the coefficient of a monomial after collecting like terms
-     *
-     * E.g. ([1 / 2] + 2)x^2 -> [5 / 2]x^2
-     */
-    SimplifyCoefficient,
-
-    /**
-     * Collect like terms in a sum and simplify the collected coefficients
-     *
-     * E.g. [x^2] + 3 + x + 2[x^2] --> 3[x^2] + 3 + x
-     */
-    CollectLikeTermsAndSimplify,
 
     /**
      * Collect powers of the same variable in a product

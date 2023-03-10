@@ -10,7 +10,6 @@ import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.integerCondition
 import engine.patterns.integerOrderRootOf
 import engine.utility.isPowerOfDegree
-import methods.fractionarithmetic.simplifyAfterCollectingLikeTerms
 import methods.general.GeneralRules
 import methods.integerarithmetic.IntegerArithmeticPlans
 import methods.integerarithmetic.IntegerArithmeticRules
@@ -132,21 +131,6 @@ enum class IntegerRootsPlans(override val runner: CompositeMethod) : RunnerMetho
 
             steps {
                 applyTo(SimplifyIntegerRoot) { it }
-            }
-        },
-    ),
-
-    /**
-     * Collect and simplify all terms containing a root of an integer
-     * (with a rational coefficient)
-     */
-    CollectLikeRootsAndSimplify(
-        plan {
-            explanation = Explanation.CollectLikeRootsAndSimplify
-
-            steps {
-                apply(IntegerRootsRules.CollectLikeRoots)
-                apply(simplifyAfterCollectingLikeTerms)
             }
         },
     ),

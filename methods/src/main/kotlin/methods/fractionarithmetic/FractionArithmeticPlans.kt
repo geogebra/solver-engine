@@ -22,10 +22,8 @@ import engine.utility.gcd
 import methods.general.GeneralPlans
 import methods.general.GeneralRules
 import methods.general.normalizeNegativeSigns
-import methods.general.removeRedundantBrackets
 import methods.integerarithmetic.IntegerArithmeticPlans
 import methods.integerarithmetic.IntegerArithmeticRules
-import methods.integerarithmetic.simplifyIntegersInExpression
 import java.math.BigInteger
 
 enum class FractionArithmeticPlans(override val runner: CompositeMethod) : RunnerMethod {
@@ -228,22 +226,4 @@ val simplifyIntegerToNegativePower = steps {
             }
         }
     }
-}
-
-// Auxiliary steps used in several plans
-val simplifyFractionsInExpression = steps {
-    whilePossible {
-        firstOf {
-            option { deeply(simplifyIntegersInExpression) }
-            option { deeply(FractionArithmeticPlans.EvaluateFractionSum) }
-            option { deeply(FractionArithmeticPlans.EvaluateSumOfFractionAndInteger) }
-        }
-    }
-}
-
-val simplifyAfterCollectingLikeTerms = steps {
-    apply(simplifyFractionsInExpression)
-    optionally { deeply(GeneralRules.MoveSignOfNegativeFactorOutOfProduct) }
-    optionally { deeply(removeRedundantBrackets) }
-    optionally { deeply(FractionArithmeticPlans.MultiplyAndSimplifyFractions) }
 }

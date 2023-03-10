@@ -2,8 +2,8 @@ package methods.equations
 
 import engine.context.Context
 import engine.methods.testMethod
+import methods.collecting.CollectingExplanation
 import methods.constantexpressions.ConstantExpressionsExplanation
-import methods.polynomials.PolynomialsExplanation
 import org.junit.jupiter.api.Test
 
 class QuadraticEquationsWithRootsMethodTest {
@@ -190,7 +190,7 @@ class QuadraticEquationsWithRootsMethodTest {
                 fromExpr = "2 [y ^ 2] + 2 y - 3 = y + y + 4"
                 toExpr = "2 [y ^ 2] + 2 y - 3 = 2 y + 4"
                 explanation {
-                    key = PolynomialsExplanation.CollectLikeTermsAndSimplify
+                    key = CollectingExplanation.CollectLikeTermsAndSimplify
                 }
             }
 

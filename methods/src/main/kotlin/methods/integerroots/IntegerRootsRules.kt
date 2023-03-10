@@ -24,9 +24,7 @@ import engine.patterns.productContaining
 import engine.patterns.productOf
 import engine.patterns.rootOf
 import engine.patterns.squareRootOf
-import engine.patterns.sumContaining
 import engine.patterns.withOptionalIntegerCoefficient
-import engine.patterns.withOptionalRationalCoefficient
 import engine.steps.metadata.Skill
 import engine.steps.metadata.metadata
 import engine.utility.asPowerForRoot
@@ -463,23 +461,6 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
                         ),
                     ),
                     explanation = metadata(Explanation.CombineProductOfSamePowerUnderHigherRoot),
-                )
-            }
-        },
-    ),
-
-    CollectLikeRoots(
-        rule {
-            val common = rootOf(UnsignedIntegerPattern())
-
-            val commonTerm1 = withOptionalRationalCoefficient(common)
-            val commonTerm2 = withOptionalRationalCoefficient(common)
-            val sum = sumContaining(commonTerm1, commonTerm2)
-
-            onPattern(sum) {
-                ruleResult(
-                    toExpr = collectLikeTermsInSum(get(sum), withOptionalRationalCoefficient(common)),
-                    explanation = metadata(Explanation.CollectLikeRoots),
                 )
             }
         },

@@ -1,6 +1,7 @@
 package methods.constantexpressions
 
 import engine.methods.testMethod
+import methods.collecting.CollectingExplanation
 import methods.decimals.DecimalsExplanation
 import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.fractionroots.FractionRootsExplanation
@@ -328,6 +329,52 @@ class ConstantExpressionsPlansTest {
             step { }
         }
     }
+
+    @Test
+    fun testCollectLikeRootsAndSimplify() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "2 - 3 * sqrt[3] + root[3, 3] + [2 * sqrt[3] / 3] + 2 * sqrt[3]"
+
+        check {
+            fromExpr = "2 - 3 * sqrt[3] + root[3, 3] + [2 * sqrt[3] / 3] + 2 * sqrt[3]"
+            toExpr = "2 - [sqrt[3] / 3] + root[3, 3]"
+            explanation {
+                key = CollectingExplanation.CollectLikeRootsAndSimplify
+            }
+
+            step {
+                fromExpr = "2 - 3 * sqrt[3] + root[3, 3] + [2 * sqrt[3] / 3] + 2 * sqrt[3]"
+                toExpr = "2 + (-3 + [2 / 3] + 2) sqrt[3] + root[3, 3]"
+                explanation {
+                    key = CollectingExplanation.CollectLikeRoots
+                }
+            }
+
+            step {
+                fromExpr = "2 + (-3 + [2 / 3] + 2) sqrt[3] + root[3, 3]"
+                toExpr = "2 + (-[1 / 3]) sqrt[3] + root[3, 3]"
+                explanation {
+                    key = CollectingExplanation.SimplifyCoefficient
+                }
+            }
+
+            step {
+                fromExpr = "2 + (-[1 / 3]) sqrt[3] + root[3, 3]"
+                toExpr = "2 - [1 / 3] sqrt[3] + root[3, 3]"
+                explanation {
+                    key = GeneralExplanation.MoveSignOfNegativeFactorOutOfProduct
+                }
+            }
+
+            step {
+                fromExpr = "2 - [1 / 3] sqrt[3] + root[3, 3]"
+                toExpr = "2 - [sqrt[3] / 3] + root[3, 3]"
+                explanation {
+                    key = FractionArithmeticExplanation.MultiplyAndSimplifyFractions
+                }
+            }
+        }
+    }
 }
 
 class ConstantExpressionSimpleOperationsTest {
@@ -445,7 +492,7 @@ class ConstantExpressionRationalizationTest {
                 fromExpr = "[1 / 2 sqrt[3] - sqrt[3]]"
                 toExpr = "[1 / sqrt[3]]"
                 explanation {
-                    key = IntegerRootsExplanation.CollectLikeRootsAndSimplify
+                    key = CollectingExplanation.CollectLikeRootsAndSimplify
                 }
             }
 
@@ -1248,7 +1295,7 @@ class CancelOppositeTermTest {
             step {
                 toExpr = "2 * [12 ^ [1 / 2]]"
                 explanation {
-                    key = IntegerRationalExponentsExplanation.CollectLikeRationalPowersAndSimplify
+                    key = CollectingExplanation.CollectLikeRationalPowersAndSimplify
                 }
             }
 

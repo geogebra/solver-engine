@@ -524,7 +524,7 @@ class FractionRootsRationalization {
                     fromExpr = "1 root[4, 3]"
                     toExpr = "root[4, 3]"
                     explanation {
-                        key = GeneralExplanation.EliminateOneInProduct
+                        key = GeneralExplanation.RemoveUnitaryCoefficient
                     }
                 }
             }
@@ -666,7 +666,7 @@ class FractionRootsRationalization {
                     fromExpr = "1 root[13, 3]"
                     toExpr = "root[13, 3]"
                     explanation {
-                        key = GeneralExplanation.EliminateOneInProduct
+                        key = GeneralExplanation.RemoveUnitaryCoefficient
                     }
                 }
             }

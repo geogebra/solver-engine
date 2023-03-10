@@ -1,6 +1,7 @@
 package methods.polynomials
 
 import engine.methods.testMethod
+import methods.collecting.CollectingExplanation
 import methods.constantexpressions.ConstantExpressionsExplanation
 import methods.expand.ExpandExplanation
 import methods.fractionarithmetic.FractionArithmeticExplanation
@@ -29,14 +30,14 @@ class PolynomialsPlansTest {
                 fromExpr = "2 x + 3 x + [x ^ 2] - 5 [x ^ 2]"
                 toExpr = "5 x + [x ^ 2] - 5 [x ^ 2]"
                 explanation {
-                    key = PolynomialsExplanation.CollectLikeTermsAndSimplify
+                    key = CollectingExplanation.CollectLikeTermsAndSimplify
                 }
 
                 step {
                     fromExpr = "2 x + 3 x + [x ^ 2] - 5 [x ^ 2]"
                     toExpr = "(2 + 3) x + [x ^ 2] - 5 [x ^ 2]"
                     explanation {
-                        key = PolynomialsExplanation.CollectLikeTerms
+                        key = CollectingExplanation.CollectLikeTerms
                     }
                 }
 
@@ -44,7 +45,7 @@ class PolynomialsPlansTest {
                     fromExpr = "(2 + 3) x + [x ^ 2] - 5 [x ^ 2]"
                     toExpr = "5 x + [x ^ 2] - 5 [x ^ 2]"
                     explanation {
-                        key = PolynomialsExplanation.SimplifyCoefficient
+                        key = CollectingExplanation.SimplifyCoefficient
                     }
                 }
             }
@@ -53,14 +54,14 @@ class PolynomialsPlansTest {
                 fromExpr = "5 x + [x ^ 2] - 5 [x ^ 2]"
                 toExpr = "5 x - 4 [x ^ 2]"
                 explanation {
-                    key = PolynomialsExplanation.CollectLikeTermsAndSimplify
+                    key = CollectingExplanation.CollectLikeTermsAndSimplify
                 }
 
                 step {
                     fromExpr = "5 x + [x ^ 2] - 5 [x ^ 2]"
                     toExpr = "5 x + (1 - 5) [x ^ 2]"
                     explanation {
-                        key = PolynomialsExplanation.CollectLikeTerms
+                        key = CollectingExplanation.CollectLikeTerms
                     }
                 }
 
@@ -68,7 +69,7 @@ class PolynomialsPlansTest {
                     fromExpr = "5 x + (1 - 5) [x ^ 2]"
                     toExpr = "5 x + (-4) [x ^ 2]"
                     explanation {
-                        key = PolynomialsExplanation.SimplifyCoefficient
+                        key = CollectingExplanation.SimplifyCoefficient
                     }
                 }
 
@@ -76,7 +77,7 @@ class PolynomialsPlansTest {
                     fromExpr = "5 x + (-4) [x ^ 2]"
                     toExpr = "5 x - 4 [x ^ 2]"
                     explanation {
-                        key = PolynomialsExplanation.NormalizeMonomial
+                        key = GeneralExplanation.MoveSignOfNegativeFactorOutOfProduct
                     }
                 }
             }
@@ -107,14 +108,14 @@ class PolynomialsPlansTest {
                 fromExpr = "3 [a ^ 2] + 2 [a ^ 2] - 3 a - 5 [a ^ 2] + 10 a"
                 toExpr = "-3 a + 10 a"
                 explanation {
-                    key = PolynomialsExplanation.CollectLikeTermsAndSimplify
+                    key = CollectingExplanation.CollectLikeTermsAndSimplify
                 }
 
                 step {
                     fromExpr = "3 [a ^ 2] + 2 [a ^ 2] - 3 a - 5 [a ^ 2] + 10 a"
                     toExpr = "(3 + 2 - 5) [a ^ 2] - 3 a + 10 a"
                     explanation {
-                        key = PolynomialsExplanation.CollectLikeTerms
+                        key = CollectingExplanation.CollectLikeTerms
                     }
                 }
 
@@ -122,7 +123,7 @@ class PolynomialsPlansTest {
                     fromExpr = "(3 + 2 - 5) [a ^ 2] - 3 a + 10 a"
                     toExpr = "0 [a ^ 2] - 3 a + 10 a"
                     explanation {
-                        key = PolynomialsExplanation.SimplifyCoefficient
+                        key = CollectingExplanation.SimplifyCoefficient
                     }
                 }
 
@@ -130,7 +131,7 @@ class PolynomialsPlansTest {
                     fromExpr = "0 [a ^ 2] - 3 a + 10 a"
                     toExpr = "0 - 3 a + 10 a"
                     explanation {
-                        key = PolynomialsExplanation.NormalizeMonomial
+                        key = GeneralExplanation.EvaluateProductContainingZero
                     }
                 }
 
@@ -147,7 +148,7 @@ class PolynomialsPlansTest {
                 fromExpr = "-3 a + 10 a"
                 toExpr = "7 a"
                 explanation {
-                    key = PolynomialsExplanation.CollectLikeTermsAndSimplify
+                    key = CollectingExplanation.CollectLikeTermsAndSimplify
                 }
             }
         }
@@ -162,14 +163,14 @@ class PolynomialsPlansTest {
             fromExpr = "[z / 2] - [3 z / 4] + 4 z"
             toExpr = "[15 / 4] z"
             explanation {
-                key = PolynomialsExplanation.CollectLikeTermsAndSimplify
+                key = CollectingExplanation.CollectLikeTermsAndSimplify
             }
 
             step {
                 fromExpr = "[z / 2] - [3 z / 4] + 4 z"
                 toExpr = "([1 / 2] - [3 / 4] + 4) z"
                 explanation {
-                    key = PolynomialsExplanation.CollectLikeTerms
+                    key = CollectingExplanation.CollectLikeTerms
                 }
             }
 
@@ -177,7 +178,7 @@ class PolynomialsPlansTest {
                 fromExpr = "([1 / 2] - [3 / 4] + 4) z"
                 toExpr = "[15 / 4] z"
                 explanation {
-                    key = PolynomialsExplanation.SimplifyCoefficient
+                    key = CollectingExplanation.SimplifyCoefficient
                 }
             }
         }
@@ -215,13 +216,13 @@ class PolynomialsPlansTest {
                 fromExpr = "2 sqrt[3] * t + [sqrt[3] * t / 3]"
                 toExpr = "[7 sqrt[3] / 3] t"
                 explanation {
-                    key = PolynomialsExplanation.CollectLikeTermsAndSimplify
+                    key = CollectingExplanation.CollectLikeTermsAndSimplify
                 }
                 step {
                     fromExpr = "2 sqrt[3] * t + [sqrt[3] * t / 3]"
                     toExpr = "(2 sqrt[3] + [sqrt[3] / 3]) t"
                     explanation {
-                        key = PolynomialsExplanation.CollectLikeTerms
+                        key = CollectingExplanation.CollectLikeTerms
                     }
                 }
 
@@ -229,7 +230,7 @@ class PolynomialsPlansTest {
                     fromExpr = "(2 sqrt[3] + [sqrt[3] / 3]) t"
                     toExpr = "[7 sqrt[3] / 3] t"
                     explanation {
-                        key = PolynomialsExplanation.SimplifyCoefficient
+                        key = CollectingExplanation.SimplifyCoefficient
                     }
                 }
             }
@@ -548,7 +549,7 @@ class PolynomialsPlansTest {
                 fromExpr = "sqrt[3] + [x ^ 3] + 10 [x ^ 2] + 8 [x ^ 3] + 1"
                 toExpr = "sqrt[3] + 9 [x ^ 3] + 10 [x ^ 2] + 1"
                 explanation {
-                    key = PolynomialsExplanation.CollectLikeTermsAndSimplify
+                    key = CollectingExplanation.CollectLikeTermsAndSimplify
                 }
             }
 
@@ -606,7 +607,7 @@ class PolynomialsPlansTest {
                 fromExpr = "2 t + [sqrt[3] * t / 3]"
                 toExpr = "(2 + [sqrt[3] / 3]) t"
                 explanation {
-                    key = PolynomialsExplanation.CollectLikeTerms
+                    key = CollectingExplanation.CollectLikeTerms
                 }
             }
         }
@@ -727,7 +728,7 @@ class PolynomialsPlansTest {
                 fromExpr = "2 [x ^ 2] + 4 [x ^ 2] - 6 [x ^ 2] + 30 - [x ^ 6] + [x ^ 2]"
                 toExpr = "[x ^ 2] + 30 - [x ^ 6]"
                 explanation {
-                    key = PolynomialsExplanation.CollectLikeTermsAndSimplify
+                    key = CollectingExplanation.CollectLikeTermsAndSimplify
                 }
             }
 

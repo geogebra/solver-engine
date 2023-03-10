@@ -19,6 +19,7 @@ import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
 import engine.operators.BinaryExpressionOperator
+import engine.operators.IntegerOperator
 import engine.operators.UnaryExpressionOperator
 import engine.operators.VariableOperator
 import engine.patterns.AnyPattern
@@ -46,6 +47,7 @@ import engine.patterns.optionalPowerOf
 import engine.patterns.plusMinusOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
+import engine.patterns.productOf
 import engine.patterns.rootOf
 import engine.patterns.sumContaining
 import engine.steps.metadata.metadata
@@ -59,6 +61,7 @@ import engine.steps.metadata.GmPathModifier as PM
 private val maxPowerAsProduct = 5.toBigInteger()
 
 enum class GeneralRules(override val runner: Rule) : RunnerMethod {
+    RemoveUnitaryCoefficient(removeUnitaryCoefficient),
     EliminateOneInProduct(eliminateOneInProduct),
     EliminateZeroInSum(eliminateZeroInSum),
     EliminatePlusMinusZeroInSum(eliminatePlusMinusZeroInSum),
@@ -100,6 +103,21 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     RewritePowerUnderRoot(rewritePowerUnderRoot),
     CancelRootIndexAndExponent(cancelRootIndexAndExponent),
 }
+
+private val removeUnitaryCoefficient =
+    rule {
+        val one = FixedPattern(Constants.One)
+        val otherTerm = condition(AnyPattern()) { it.operator !is IntegerOperator }
+        val pattern = productOf(one, otherTerm)
+
+        onPattern(pattern) {
+            ruleResult(
+                toExpr = cancel(one, get(otherTerm)),
+                gmAction = tap(one),
+                explanation = metadata(Explanation.RemoveUnitaryCoefficient),
+            )
+        }
+    }
 
 private val eliminateOneInProduct =
     rule {

@@ -4,6 +4,7 @@ import engine.context.Context
 import engine.context.Curriculum
 import engine.methods.SolverEngineExplanation
 import engine.methods.testMethod
+import methods.collecting.CollectingExplanation
 import methods.expand.ExpandExplanation
 import methods.general.GeneralExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
@@ -881,7 +882,7 @@ class ExpandPolynomialExpressionTest {
                 fromExpr = "3 x + 3 - 2 x - 12"
                 toExpr = "x + 3 - 12"
                 explanation {
-                    key = PolynomialsExplanation.CollectLikeTermsAndSimplify
+                    key = CollectingExplanation.CollectLikeTermsAndSimplify
                 }
             }
 

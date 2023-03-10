@@ -7,7 +7,6 @@ import engine.expressions.Distribute
 import engine.expressions.Expression
 import engine.expressions.Factor
 import engine.expressions.Introduce
-import engine.expressions.Label
 import engine.expressions.Move
 import engine.expressions.New
 import engine.expressions.asRational
@@ -20,7 +19,6 @@ import engine.expressions.xp
 import engine.operators.EquationOperator
 import engine.operators.InequalityOperators
 import engine.operators.NaryOperator
-import engine.patterns.CoefficientPattern
 import engine.patterns.ExpressionProvider
 import engine.patterns.InequalityPattern
 import engine.patterns.IntegerPattern
@@ -272,36 +270,6 @@ open class MappedExpressionBuilder(
             }
         }
         return leadingCoefficient
-    }
-
-    fun collectLikeTermsInSum(
-        sub: Expression,
-        commonTerm: CoefficientPattern,
-        labelForCollectedTerms: Label? = null,
-    ): Expression {
-        val coefficients = mutableListOf<Expression>()
-
-        val otherTerms = mutableListOf<Expression>()
-        var firstIndex: Int? = null
-
-        for ((index, term) in sub.children.withIndex()) {
-            val m = matchPattern(commonTerm, term)
-            if (m != null) {
-                coefficients.add(commonTerm.coefficient(m))
-                if (firstIndex == null) {
-                    firstIndex = index
-                }
-            } else {
-                otherTerms.add(term)
-            }
-        }
-
-        require(firstIndex != null)
-
-        val collectedTerms = productOf(sumOf(coefficients), move(commonTerm.value)).withLabel(labelForCollectedTerms)
-        otherTerms.add(firstIndex, collectedTerms)
-
-        return sumOf(otherTerms)
     }
 
     fun OptionalWrappingPattern.isWrapping() = this.isWrapping(match)

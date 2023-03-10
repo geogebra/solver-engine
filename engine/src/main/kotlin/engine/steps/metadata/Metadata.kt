@@ -11,6 +11,9 @@ import engine.patterns.Match
 @Target(AnnotationTarget.CLASS)
 annotation class TranslationKeys
 
+@Target(AnnotationTarget.FIELD)
+annotation class LegacyKeyName(val name: String)
+
 interface MetadataKey {
     val keyName: String
 }

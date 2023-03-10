@@ -38,8 +38,6 @@ import engine.patterns.productOf
 import engine.patterns.rationalMonomialPattern
 import engine.patterns.sumContaining
 import engine.patterns.sumOf
-import engine.patterns.withOptionalConstantCoefficient
-import engine.patterns.withOptionalIntegerCoefficient
 import engine.steps.metadata.metadata
 import engine.utility.isEven
 import engine.utility.isSquare
@@ -47,8 +45,6 @@ import engine.utility.times
 import java.math.BigInteger
 
 enum class PolynomialRules(override val runner: Rule) : RunnerMethod {
-    CombineTwoSimpleLikeTerms(combineTwoSimpleLikeTerms),
-    CollectLikeTerms(collectLikeTerms),
     CollectUnitaryMonomialsInProduct(collectUnitaryMonomialsInProduct),
     NormalizeMonomial(normalizeMonomial),
     DistributeMonomialToIntegerPower(distributeMonomialToIntegerPower),
@@ -246,55 +242,6 @@ enum class PolynomialRules(override val runner: Rule) : RunnerMethod {
     ),
 
     FactorTrinomialToSquare(factorTrinomialToSquare),
-}
-
-// 1-3a+1-2a+a+2 ==> 1-5a+1+a+2
-private var combineTwoSimpleLikeTerms = rule {
-    val common = oneOf(
-        ArbitraryVariablePattern(),
-        powerOf(ArbitraryVariablePattern(), UnsignedIntegerPattern()),
-    )
-
-    val t1 = withOptionalIntegerCoefficient(common, false)
-    val t2 = withOptionalIntegerCoefficient(common, false)
-    val sum = sumContaining(t1, t2)
-
-    onPattern(sum) {
-        if (!context.gmFriendly) return@onPattern null
-        val newCoef =
-            integerOp(t1.integerCoefficient, t2.integerCoefficient) { n1, n2 -> (n1 + n2).abs() }
-        val newCoefValue = getValue(t1.integerCoefficient) + getValue(t2.integerCoefficient)
-        val newTermAbs = simplifiedProductOf(newCoef, move(common))
-        val newTerm = if (newCoefValue < BigInteger.ZERO) negOf(newTermAbs) else newTermAbs
-
-        ruleResult(
-            toExpr = sum.substitute(newTerm),
-            gmAction = drag(t2, t1),
-            explanation = metadata(Explanation.CombineTwoSimpleLikeTerms, move(t1), move(t2)),
-        )
-    }
-}
-
-private var collectLikeTerms = rule {
-    val common = oneOf(
-        ArbitraryVariablePattern(),
-        powerOf(ArbitraryVariablePattern(), UnsignedIntegerPattern()),
-    )
-
-    val commonTerm1 = withOptionalConstantCoefficient(common)
-    val commonTerm2 = withOptionalConstantCoefficient(common)
-    val sum = sumContaining(commonTerm1, commonTerm2)
-
-    onPattern(sum) {
-        ruleResult(
-            toExpr = collectLikeTermsInSum(
-                get(sum),
-                withOptionalConstantCoefficient(common),
-                Label.A,
-            ),
-            explanation = metadata(Explanation.CollectLikeTerms),
-        )
-    }
 }
 
 private val collectUnitaryMonomialsInProduct = rule {

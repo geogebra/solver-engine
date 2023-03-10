@@ -1,1 +1,2 @@
 keysprocessor.TranslationKeysProcessorProvider
+keysprocessor.LegacyKeyNameProcessorProvider

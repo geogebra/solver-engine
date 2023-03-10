@@ -86,22 +86,6 @@ enum class IntegerRationalExponentsExplanation : CategorisedMetadataKey {
     SimplifyProductOfPowersWithRationalExponents,
 
     /**
-     * Collect like rational powers in a sum
-     * E.g. 2 + [3 ^ [1 / 2]] - [2 / 3]*[3 ^ [1 / 2]] + [2 ^ [1 / 2]] + [[3 ^ [1 / 2]] / 2]
-     *  -> 2 + (1 - [2 / 3] + [1 / 2]) * [3 ^ [1 / 2]] + [2 ^ [1 / 2]]
-     */
-    CollectLikeRationalPowers,
-
-    /**
-     * Collect like rational powers in a sum and simplify the resulting coefficient.
-     * E.g. for the input 2 + [3 ^ [1 / 2]] - [2 / 3]*[3 ^ [1 / 2]] + [2 ^ [1 / 2]] + [[3 ^ [1 / 2]] / 2]
-     * we get first 2 + (1 - [2 / 3] + [1 / 2]) * [3 ^ [1 / 2]] + [2 ^ [1 / 2]]
-     * then 2 + [5 / 6] * [3 ^ [1 / 2]] + [2 ^ [1 / 2]]
-     * and finally 2 + [5 * [3 ^ [1 / 2]] / 6] + [2 ^ [1 / 2]]
-     */
-    CollectLikeRationalPowersAndSimplify,
-
-    /**
      * If in a product there are two powers whose exponents are the negations
      * of each other, then inverts the base of the negated to get equal exponents
      * and simplifies the result

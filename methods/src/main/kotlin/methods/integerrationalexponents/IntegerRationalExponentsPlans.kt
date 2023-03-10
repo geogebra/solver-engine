@@ -10,7 +10,6 @@ import engine.patterns.IntegerFractionPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.powerOf
 import methods.fractionarithmetic.FractionArithmeticPlans
-import methods.fractionarithmetic.simplifyAfterCollectingLikeTerms
 import methods.general.GeneralRules
 import methods.general.NormalizationRules
 import methods.integerarithmetic.IntegerArithmeticRules
@@ -176,21 +175,6 @@ enum class IntegerRationalExponentsPlans(override val runner: CompositeMethod) :
                 whilePossible { deeply(IntegerArithmeticRules.EvaluateIntegerPowerDirectly) }
                 optionally { deeply(IntegerArithmeticRules.EvaluateIntegerProductAndDivision) }
                 optionally { deeply(FractionArithmeticPlans.SimplifyFraction) }
-            }
-        },
-    ),
-
-    /**
-     * Collect and simplify all terms containing a rational exponent of an
-     * integer (with a rational coefficient)
-     */
-    CollectLikeRationalPowersAndSimplify(
-        plan {
-            explanation = Explanation.CollectLikeRationalPowersAndSimplify
-
-            steps {
-                apply(IntegerRationalExponentsRules.CollectLikeRationalPowers)
-                apply(simplifyAfterCollectingLikeTerms)
             }
         },
     ),

@@ -65,7 +65,16 @@ class TranslationKeysProcessor(
             return classDeclaration.declarations
                 .filter { it is KSClassDeclaration && it.classKind == ClassKind.ENUM_ENTRY }
                 .map {
-                    TranslationKey("$prefix.$it", it.docString?.trim())
+                    val nameAnnotation = it.annotations.firstOrNull { annotation ->
+                        annotation.shortName.getShortName() == "LegacyKeyName"
+                    }
+                    val name = if (nameAnnotation == null) {
+                        "$prefix.$it"
+                    } else {
+                        val arg = nameAnnotation.arguments.first()
+                        "${arg.value}"
+                    }
+                    TranslationKey(name, it.docString?.trim())
                 }
         }
 

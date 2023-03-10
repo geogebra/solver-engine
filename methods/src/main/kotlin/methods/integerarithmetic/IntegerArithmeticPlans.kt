@@ -123,6 +123,7 @@ enum class IntegerArithmeticPlans(override val runner: CompositeMethod) : Runner
                         option(GeneralRules.EvaluateProductDividedByZeroAsUndefined)
                         option(GeneralRules.EvaluateProductContainingZero)
                         option(IntegerArithmeticRules.EvaluateIntegerProductAndDivision)
+                        option(GeneralRules.RemoveUnitaryCoefficient)
                         option(GeneralRules.EliminateOneInProduct)
                     }
                 }

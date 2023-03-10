@@ -38,7 +38,11 @@ enum class GeneralExplanation : CategorisedMetadataKey {
     RemoveBracketAroundSignedIntegerInSum,
     RemoveRedundantBracket,
     RemoveRedundantPlusSign,
+
+    RemoveUnitaryCoefficient,
+
     EliminateOneInProduct,
+
     EliminateZeroInSum,
 
     /**
