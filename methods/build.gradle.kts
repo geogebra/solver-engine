@@ -49,3 +49,12 @@ kotlin {
         kotlin.srcDir("build/generated/ksp/main/kotlin")
     }
 }
+
+// This task depends on the results of the evaluation phase, as Gradle needs to complete
+// checking which tasks are defined and configured before we can disable `kspTestKotlin`
+// to not generate test directory from KSP
+afterEvaluate {
+    tasks.named("kspTestKotlin") {
+        enabled = false
+    }
+}

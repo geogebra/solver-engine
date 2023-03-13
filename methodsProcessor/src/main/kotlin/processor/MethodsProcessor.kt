@@ -32,10 +32,9 @@ class MethodsProcessor(private val codeGenerator: CodeGenerator) : SymbolProcess
 
         val symbols = resolver.getSymbolsWithAnnotation("engine.methods.PublicMethod").toList()
 
-        // hopefully this is a temporary solution to not create un-necessary
-        // PublicMethod.kt file in test directory until we receive response on
-        // the question asked from KSP team: https://github.com/google/ksp/issues/1341
-        if (symbols.isEmpty()) return emptyList()
+        // skip directory if no symbols annotations (no PublicMethod).
+        val hasPublicMethods = symbols.isEmpty()
+        if (hasPublicMethods) return emptyList()
 
         val ret = symbols.filter { !it.validate() }.toList()
 
