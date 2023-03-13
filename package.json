@@ -1,19 +1,23 @@
 {
   "devDependencies": {
     "eslint": "^8.35.0",
-    "eslint-config-prettier": "^8.6.0",
+    "eslint-config-prettier": "^8.7.0",
     "prettier": "2.8.4",
-    "pretty-quick": "^3.1.3",
-    "run-script-os": "^1.1.6"
+    "pretty-quick": "^3.1.3"
   },
   "dependencies": {
-    "@geogebra/solver-sdk": "^3.7.3"
+    "@geogebra/solver-sdk": "^3.7.4"
   },
   "scripts": {
-    "postinstall": "run-script-os",
-    "postinstall:darwin": "            cp ./node_modules/@geogebra/solver-sdk/dist/solver-sdk.es.js ./api/src/main/resources/static/solver-sdk.es.js",
-    "postinstall:linux": "             cp ./node_modules/@geogebra/solver-sdk/dist/solver-sdk.es.js ./api/src/main/resources/static/solver-sdk.es.js",
-    "postinstall:win32": "powershell \"cp ./node_modules/@geogebra/solver-sdk/dist/solver-sdk.es.js ./api/src/main/resources/static/solver-sdk.es.js\"",
-    "prettier": "prettier . -w"
+    "postinstall": "cd ./@geogebra/solver-sdk && npm run build:web",
+    "prettier": "prettier . -w",
+    "eslint": "eslint . --fix",
+    "poker-dev": "cd ./@geogebra/solver-sdk && npm run build:web && cd ../../api/src/main/resources/static && vite . --port 4173 --open poker.html"
+  },
+  "workspaces": [
+    "@geogebra/solver-sdk"
+  ],
+  "volta": {
+    "node": "18.15.0"
   }
 }

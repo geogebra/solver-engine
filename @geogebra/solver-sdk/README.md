@@ -93,7 +93,7 @@ you can simply use the following project-scoped registry read-only token:
 To use without a build system, use the files that `npm run build:web` puts into
 the dist folder. See `index.html` for an example. You can also get the `/dist`
 files by downloading the published package from
-[gitlab](https://git.geogebra.org/solver-team/solver-sdk/-/packages/3).
+[gitlab](https://git.geogebra.org/solver-team/solver-sdk/-/packages/).
 
 ## Development
 
@@ -116,6 +116,9 @@ Scripts:
 - Run `npm start` to host a demo page `index.html` for manual testing. in a
   browser environment
 - `npm test` will run the test suite
+- `npm run test-watch-full` is like `npm test` except also reruns it when a file changes.
+- `npm run test-watch` is like `npm test-watch-full` except it skips code coverage
+  reporting.
 - `npm run build:esm` compiles the typescripts files into `js` and `.d.ts` files
   in the `lib/esm` folder, using modern javascript modules
 - `npm run build:cjs` compiles the sources into `lib/cjs` in the old commonjs
@@ -142,6 +145,9 @@ code.
 
 ## Deployment
 
+To develop solver-sdk, we lightly recommend opening the folder that this readme is in
+inside of vscode.
+
 We use
 [semantic-release](https://git.geogebra.org/help/ci/examples/semantic-release.md)
 to automatically increase the version numbers and to publish this package to the
@@ -158,3 +164,13 @@ Commit messages with the following prefixes will cause increments in the version
 
 See [semantic-release](https://github.com/semantic-release/semantic-release) for
 details.
+
+### Development with respect to Solver Poker
+
+After making changes to this project, rebuild to update the bundled version of this
+project that Poker in the solver-engine project uses. There are several commands that you
+could use to do this
+
+- `npm run build`
+- `npm run build:web`
+- `npm run build:web -- --watch`

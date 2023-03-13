@@ -3,6 +3,7 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
+/api/src/main/resources/static/solver-sdk.es.js
 
 documentation
 
@@ -38,6 +39,12 @@ bin/
 /.nb-gradle/
 
 ### VS Code ###
+.vscode/*
+!.vscode/*.code-snippets
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/settings.json
+!.vscode/tasks.json
 /.vscode/
 
 ### Mac OS ###

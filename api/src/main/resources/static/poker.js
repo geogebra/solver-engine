@@ -1,4 +1,5 @@
 /* global renderMathInElement */
+// If this fails to resolve or is out of date, then run `npm i`.
 import * as ggbSolver from './solver-sdk.es.js';
 // You may uncomment the line below during development to enable
 // typescript-powered intellisense, but the code will not run properly if it
@@ -8,7 +9,9 @@ import * as ggbSolver from './solver-sdk.es.js';
 // just for debug convenience
 window.ggbSolver = ggbSolver;
 
-ggbSolver.api.baseUrl = './api/v1';
+// This magic number for the port is dictated in the `poker-dev` script in package.json.
+const runningLocallyViaVite = location.port === '4173';
+ggbSolver.api.baseUrl = runningLocallyViaVite ? 'http://localhost:8080/api/v1' : './api/v1';
 const translationsRootURL = 'https://export-solver.s3.eu-west-1.amazonaws.com';
 const mainPokerURL = 'http://solver.geogebra.net/main/poker.html';
 

@@ -1,5 +1,14 @@
 default:
   image: gradle:jdk19-alpine
+  cache:
+    key:
+      files:
+        - gradle/wrapper/gradle-wrapper.properties
+      prefix: gradle-cache-
+    paths:
+      - cache/.gradle/wrapper
+      - cache/.gradle/caches
+      - cache/.gradle/notifications
 
 variables:
   GITLAB_CLUSTER: solver-v2
@@ -17,30 +26,33 @@ before_script:
   - export REPO_FULL_NAME=`echo $CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME`
   - export REPOSITORY_ID=4 # The gitlab ID of the repository where our container images are uploaded
 
-cache:
-  key:
-    files:
-      - gradle/wrapper/gradle-wrapper.properties
-  paths:
-    - cache/.gradle/wrapper
-    - cache/.gradle/caches
-    - cache/.gradle/notifications
-
 check-circular-dependencies-in-methods:
   stage: checks
   cache: []
   script:
     - ./scripts/check_method_dependencies.sh
 
-code_style_prettier:
+code_style_prettier_and_build_sdk_for_poker:
   stage: checks
-  cache: []
-  image: node:19-alpine
+  image: node:18-alpine
   tags:
     - docker
+  cache:
+    key:
+      files:
+        - package-lock.json
+      prefix: npm-cache-
+    paths:
+      - .npm/
   script:
-    - npm install
+    - node -v
+    - npm ci --cache .npm --prefer-offline
     - npm exec -c "prettier . -c"
+  artifacts:
+    paths:
+      - api/src/main/resources/static/solver-sdk.es.js
+    # Arnaud is this what we want?????????????????????????
+    expire_in: 1 day
 
 # The gradle 'build' includes running detekt, ktlint, runnings tests.
 build:
@@ -63,6 +75,7 @@ package:
   stage: publish
   needs:
     - build
+    - code_style_prettier_and_build_sdk_for_poker
   tags:
     - docker
   script:
@@ -97,7 +110,7 @@ export-translation-keys:
         --data @engine/build/generated/ksp/main/resources/TranslationKeys.json
   when: manual
 
-deploy:
+deploy_solver_engine:
   stage: deploy
   needs:
     - package
@@ -124,6 +137,37 @@ deploy:
           --set imageCredentials.password=$CI_REGISTRY_PASSWORD \
           --set springProfile=production
     - echo "DYNAMIC_ENVIRONMENT_URL=https://solver.geogebra.net/$SLUG/poker.html" >> deploy.env
+
+sdk_semantic_release:
+  stage: deploy
+  # We would normally use "node:18-alpine" instead of "node:18" because it is smaller, but
+  # we need git installed in order for semantic-release to work.
+  image: node:18
+  tags:
+    - docker
+  cache:
+    key:
+      files:
+        - package-lock.json
+      prefix: npm-cache-
+    paths:
+      - .npm/
+  # ask Erik about if this is necessary
+  variables:
+    NPM_TOKEN: ${CI_JOB_TOKEN}
+  script:
+    - node -v
+    - npm ci --cache .npm --prefer-offline
+    - cd ./@geogebra/solver-sdk
+    - |
+      {
+        echo "@${CI_PROJECT_ROOT_NAMESPACE}:registry=${CI_API_V4_URL}/projects/126/packages/npm/"
+        echo "${CI_API_V4_URL#https?}/projects/126/packages/npm/:_authToken=\${CI_JOB_TOKEN}"
+      } | tee -a .npmrc
+    - npm run build
+    - npm run semantic-release
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 # Remove kubernetes deployment.  This job is automatically triggered when the feature branch is deleted.
 undeploy:
