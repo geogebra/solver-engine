@@ -45,13 +45,6 @@ enum class GeneralExplanation : CategorisedMetadataKey {
 
     EliminateZeroInSum,
 
-    /**
-     * eliminate +/-0 from a sum expression
-     *
-     * E.g. [2 +/- 0 / 2] --> [2 / 2]
-     */
-    EliminatePlusMinusZeroInSum,
-
     EvaluateProductContainingZero,
     EvaluateZeroDividedByAnyValue,
 

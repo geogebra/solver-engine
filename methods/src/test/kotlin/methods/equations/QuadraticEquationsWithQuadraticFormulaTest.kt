@@ -1,7 +1,7 @@
 package methods.equations
 
 import engine.methods.testMethodInX
-import methods.general.GeneralExplanation
+import methods.constantexpressions.ConstantExpressionsExplanation
 import methods.polynomials.PolynomialsExplanation
 import org.junit.jupiter.api.Test
 
@@ -39,7 +39,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
                 fromExpr = "x = [-(-7) +/- sqrt[[(-7) ^ 2] - 4 * 2 * 3] / 2 * 2]"
                 toExpr = "x = [7 +/- 5 / 4]"
                 explanation {
-                    key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                    key = ConstantExpressionsExplanation.SimplifyConstantExpression
                 }
             }
 
@@ -55,20 +55,24 @@ class QuadraticEquationsWithQuadraticFormulaTest {
                 fromExpr = "x = [7 - 5 / 4] OR x = [7 + 5 / 4]"
                 toExpr = "Solution[x, {[1 / 2], 3}]"
                 explanation {
-                    key = EquationsExplanation.ExtractSolutionAndSimplifyFromEquationInUnionForm
+                    key = EquationsExplanation.SolveEquationUnion
                 }
 
                 task {
                     taskId = "#1"
                     explanation {
-                        key = EquationsExplanation.SimplifyExtractedSolution
+                        key = EquationsExplanation.SolveEquationInEquationUnion
                     }
 
                     step {
                         fromExpr = "x = [7 - 5 / 4]"
                         toExpr = "x = [1 / 2]"
+                    }
+
+                    step {
+                        toExpr = "Solution[x, {[1 / 2]}]"
                         explanation {
-                            key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                            key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                         }
                     }
                 }
@@ -76,14 +80,18 @@ class QuadraticEquationsWithQuadraticFormulaTest {
                 task {
                     taskId = "#2"
                     explanation {
-                        key = EquationsExplanation.SimplifyExtractedSolution
+                        key = EquationsExplanation.SolveEquationInEquationUnion
                     }
 
                     step {
                         fromExpr = "x = [7 + 5 / 4]"
                         toExpr = "x = 3"
+                    }
+
+                    step {
+                        toExpr = "Solution[x, {3}]"
                         explanation {
-                            key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                            key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                         }
                     }
                 }
@@ -122,7 +130,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
                 fromExpr = "x = [-(-7) +/- sqrt[[(-7) ^ 2] - 4 * 2 * 3] / 2 * 2]"
                 toExpr = "x = [7 +/- 5 / 4]"
                 explanation {
-                    key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                    key = ConstantExpressionsExplanation.SimplifyConstantExpression
                 }
             }
 
@@ -138,7 +146,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
                 fromExpr = "x = [7 - 5 / 4] OR x = [7 + 5 / 4]"
                 toExpr = "Solution[x, {[1 / 2], 3}]"
                 explanation {
-                    key = EquationsExplanation.ExtractSolutionAndSimplifyFromEquationInUnionForm
+                    key = EquationsExplanation.SolveEquationUnion
                 }
             }
         }
@@ -166,25 +174,9 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
             step {
                 fromExpr = "x = [-4 +/- sqrt[[4 ^ 2] - 4 * 1 * 4] / 2 * 1]"
-                toExpr = "x = [-4 +/- 0 / 2]"
-                explanation {
-                    key = PolynomialsExplanation.SimplifyAlgebraicExpression
-                }
-            }
-
-            step {
-                fromExpr = "x = [-4 +/- 0 / 2]"
-                toExpr = "x = [-4 / 2]"
-                explanation {
-                    key = GeneralExplanation.EliminatePlusMinusZeroInSum
-                }
-            }
-
-            step {
-                fromExpr = "x = [-4 / 2]"
                 toExpr = "x = -2"
                 explanation {
-                    key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                    key = ConstantExpressionsExplanation.SimplifyConstantExpression
                 }
             }
 
@@ -222,7 +214,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
                 fromExpr = "x = [-4 +/- sqrt[[4 ^ 2] - 4 * 1 * 9] / 2 * 1]"
                 toExpr = "x = [-4 +/- sqrt[-20] / 2]"
                 explanation {
-                    key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                    key = ConstantExpressionsExplanation.SimplifyConstantExpression
                 }
             }
 
@@ -268,7 +260,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
                 fromExpr = "x = [-(-2) +/- sqrt[[(-2) ^ 2] - 4 * 1 * 8] / 2 * 1]"
                 toExpr = "x = [2 +/- sqrt[-28] / 2]"
                 explanation {
-                    key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                    key = ConstantExpressionsExplanation.SimplifyConstantExpression
                 }
             }
 
@@ -328,25 +320,9 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
             step {
                 fromExpr = "x = [-2 +/- sqrt[[2 ^ 2] - 4 * 1 * 1] / 2 * 1]"
-                toExpr = "x = [-2 +/- 0 / 2]"
-                explanation {
-                    key = PolynomialsExplanation.SimplifyAlgebraicExpression
-                }
-            }
-
-            step {
-                fromExpr = "x = [-2 +/- 0 / 2]"
-                toExpr = "x = [-2 / 2]"
-                explanation {
-                    key = GeneralExplanation.EliminatePlusMinusZeroInSum
-                }
-            }
-
-            step {
-                fromExpr = "x = [-2 / 2]"
                 toExpr = "x = -1"
                 explanation {
-                    key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                    key = ConstantExpressionsExplanation.SimplifyConstantExpression
                 }
             }
 
@@ -390,25 +366,9 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
             step {
                 fromExpr = "x = [-(-2) +/- sqrt[[(-2) ^ 2] - 4 * 1 * 1] / 2 * 1]"
-                toExpr = "x = [2 +/- 0 / 2]"
-                explanation {
-                    key = PolynomialsExplanation.SimplifyAlgebraicExpression
-                }
-            }
-
-            step {
-                fromExpr = "x = [2 +/- 0 / 2]"
-                toExpr = "x = [2 / 2]"
-                explanation {
-                    key = GeneralExplanation.EliminatePlusMinusZeroInSum
-                }
-            }
-
-            step {
-                fromExpr = "x = [2 / 2]"
                 toExpr = "x = 1"
                 explanation {
-                    key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                    key = ConstantExpressionsExplanation.SimplifyConstantExpression
                 }
             }
 
@@ -454,7 +414,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
                 fromExpr = "x = [-0 +/- sqrt[[0 ^ 2] - 4 * 1 * (-4)] / 2 * 1]"
                 toExpr = "x = [+/- 4 / 2]"
                 explanation {
-                    key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                    key = ConstantExpressionsExplanation.SimplifyConstantExpression
                 }
             }
 
@@ -470,7 +430,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
                 fromExpr = "x = [- 4 / 2] OR x = [4 / 2]"
                 toExpr = "Solution[x, {-2, 2}]"
                 explanation {
-                    key = EquationsExplanation.ExtractSolutionAndSimplifyFromEquationInUnionForm
+                    key = EquationsExplanation.SolveEquationUnion
                 }
             }
         }
@@ -508,7 +468,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
                 fromExpr = "x = [-7 +/- sqrt[[7 ^ 2] - 4 * 1 * 0] / 2 * 1]"
                 toExpr = "x = [-7 +/- 7 / 2]"
                 explanation {
-                    key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                    key = ConstantExpressionsExplanation.SimplifyConstantExpression
                 }
             }
 
@@ -524,7 +484,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
                 fromExpr = "x = [-7 - 7 / 2] OR x = [-7 + 7 / 2]"
                 toExpr = "Solution[x, {-7, 0}]"
                 explanation {
-                    key = EquationsExplanation.ExtractSolutionAndSimplifyFromEquationInUnionForm
+                    key = EquationsExplanation.SolveEquationUnion
                 }
             }
         }
@@ -554,23 +514,15 @@ class QuadraticEquationsWithQuadraticFormulaTest {
                 fromExpr = "x = [-7 +/- sqrt[[7 ^ 2] - 4 * 1 * (-1)] / 2 * 1]"
                 toExpr = "x = [-7 +/- sqrt[53] / 2]"
                 explanation {
-                    key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                    key = ConstantExpressionsExplanation.SimplifyConstantExpression
                 }
             }
 
             step {
                 fromExpr = "x = [-7 +/- sqrt[53] / 2]"
-                toExpr = "x = [-7 - sqrt[53] / 2] OR x = [-7 + sqrt[53] / 2]"
-                explanation {
-                    key = EquationsExplanation.SeparatePlusMinusQuadraticSolutions
-                }
-            }
-
-            step {
-                fromExpr = "x = [-7 - sqrt[53] / 2] OR x = [-7 + sqrt[53] / 2]"
                 toExpr = "Solution[x, {[-7 - sqrt[53] / 2], [-7 + sqrt[53] / 2]}]"
                 explanation {
-                    key = EquationsExplanation.ExtractSolutionFromEquationInUnionForm
+                    key = EquationsExplanation.ExtractSolutionFromEquationInPlusMinusForm
                 }
             }
         }

@@ -26,7 +26,15 @@ class TasksBuilder(context: Context, match: Match) : MappedExpressionBuilder(con
         startExpr: Expression,
         explanation: Metadata,
         dependsOn: List<Task> = emptyList(),
-        stepsProducer: StepsProducer = EmptyStepsProducer,
+    ): Task {
+        return task(startExpr, explanation, dependsOn, EmptyStepsProducer)!!
+    }
+
+    fun task(
+        startExpr: Expression,
+        explanation: Metadata,
+        dependsOn: List<Task> = emptyList(),
+        stepsProducer: StepsProducer,
     ): Task? {
         val taskId = nextTaskId()
         val steps = stepsProducer.produceSteps(context, startExpr.withOrigin(Root())) ?: return null

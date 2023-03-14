@@ -3,6 +3,7 @@ package methods.solvable
 import engine.context.emptyContext
 import engine.expressions.Constants
 import engine.expressions.Expression
+import engine.expressions.Introduce
 import engine.expressions.isSignedFraction
 import engine.expressions.productOf
 import engine.expressions.simplifiedNegOf
@@ -72,7 +73,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                 val constants = extractConstants(get(rhs), context.solutionVariable)
                 if (constants == Constants.Zero || constants == null) return@onPattern null
 
-                val negatedConstants = introduce(constants, simplifiedNegOf(constants))
+                val negatedConstants = simplifiedNegOfSum(constants)
 
                 ruleResult(
                     toExpr = solvable.sameSolvable(
@@ -103,7 +104,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                 val constants = extractConstants(get(lhs), context.solutionVariable)
                 if (constants == Constants.Zero || constants == null) return@onPattern null
 
-                val negatedConstants = introduce(constants, simplifiedNegOf(constants))
+                val negatedConstants = simplifiedNegOfSum(constants)
 
                 ruleResult(
                     toExpr = solvable.sameSolvable(
@@ -133,7 +134,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
             onPattern(solvable) {
                 val variables = extractVariableTerms(get(rhs), context.solutionVariable) ?: return@onPattern null
 
-                val negatedVariable = introduce(variables, simplifiedNegOf(variables))
+                val negatedVariable = simplifiedNegOfSum(variables)
 
                 ruleResult(
                     toExpr = solvable.sameSolvable(
@@ -229,6 +230,18 @@ private fun extractConstants(expression: Expression, variable: String?): Express
         expression.isConstantIn(variable) -> expression
         else -> null
     }
+}
+
+/**
+ * The simplified negation of an expression, but if [expr] is a sum then each of its terms is negated.  So
+ *
+ *     x - 2 --> -x + 2
+ *
+ * Note: it remains to be determined what a good origin would be for the terms in the result.
+ */
+fun simplifiedNegOfSum(expr: Expression) = when (expr.operator) {
+    NaryOperator.Sum -> sumOf(expr.children.map { simplifiedNegOf(it).withOrigin(Introduce(listOf(it))) })
+    else -> simplifiedNegOf(expr).withOrigin(Introduce(listOf(expr)))
 }
 
 private object DenominatorExtractor {

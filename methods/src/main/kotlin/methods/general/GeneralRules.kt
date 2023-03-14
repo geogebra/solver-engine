@@ -64,7 +64,6 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     RemoveUnitaryCoefficient(removeUnitaryCoefficient),
     EliminateOneInProduct(eliminateOneInProduct),
     EliminateZeroInSum(eliminateZeroInSum),
-    EliminatePlusMinusZeroInSum(eliminatePlusMinusZeroInSum),
     EvaluateProductContainingZero(evaluateProductContainingZero),
     EvaluateZeroDividedByAnyValue(evaluateZeroDividedByAnyValue),
     EvaluateProductDividedByZeroAsUndefined(evaluateProductDividedByZeroAsUndefined),
@@ -136,26 +135,14 @@ private val eliminateOneInProduct =
 private val eliminateZeroInSum =
     rule {
         val zero = FixedPattern(Constants.Zero)
-        val pattern = sumContaining(zero)
+        val plusMinusZero = oneOf(zero, negOf(zero), plusMinusOf(zero))
+        val pattern = sumContaining(plusMinusZero)
 
         onPattern(pattern) {
             ruleResult(
                 toExpr = cancel(zero, restOf(pattern)),
                 gmAction = tap(zero),
                 explanation = metadata(Explanation.EliminateZeroInSum, move(zero)),
-            )
-        }
-    }
-
-private val eliminatePlusMinusZeroInSum =
-    rule {
-        val plusMinusZero = plusMinusOf(FixedPattern(Constants.Zero))
-        val pattern = sumContaining(plusMinusZero)
-
-        onPattern(pattern) {
-            ruleResult(
-                toExpr = cancel(plusMinusZero, restOf(pattern)),
-                explanation = metadata(Explanation.EliminatePlusMinusZeroInSum, move(plusMinusZero)),
             )
         }
     }

@@ -1,6 +1,7 @@
 package engine.expressions
 
 import engine.operators.BinaryExpressionOperator
+import engine.operators.ExpressionOperator
 import engine.operators.IntegerOperator
 import engine.operators.LatexRenderable
 import engine.operators.NaryOperator
@@ -317,6 +318,13 @@ class Expression internal constructor(
             listOf(operator.name) + serializedOperands
         } else {
             listOf(listOf(operator.name) + decorators.map { it.toString() }) + serializedOperands
+        }
+    }
+
+    val doubleValue: Double by lazy {
+        when (operator) {
+            is ExpressionOperator -> operator.eval(children.map { it.doubleValue })
+            else -> Double.NaN
         }
     }
 }

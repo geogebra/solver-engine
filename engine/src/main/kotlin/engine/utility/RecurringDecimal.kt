@@ -2,6 +2,8 @@ package engine.utility
 
 import java.math.BigDecimal
 
+private const val SIGNIFICANT_DIGITS_IN_DOUBLE = 15
+
 data class RecurringDecimal(
     val nonRepeatingValue: BigDecimal,
     val repeatingDigits: Int,
@@ -19,11 +21,7 @@ data class RecurringDecimal(
 
     constructor(s: String, repeatingDigits: Int) : this(BigDecimal(s), repeatingDigits)
 
-    /**
-     * Returns a RecurringDecimal equivalent to the current such that
-     * its [decimalDigits] are at least [n]
-     */
-    fun expand(n: Int): RecurringDecimal {
+    private fun expandToDecimal(n: Int): BigDecimal {
         var decimal = nonRepeatingValue
         // E.g. 0.065 for 3.5[65]
         var repetend = repetend
@@ -32,9 +30,14 @@ data class RecurringDecimal(
             repetend = repetend.movePointLeft(repeatingDigits)
             decimal += repetend
         }
-
-        return RecurringDecimal(decimal, repeatingDigits)
+        return decimal
     }
+
+    /**
+     * Returns a RecurringDecimal equivalent to the current such that
+     * its [decimalDigits] are at least [n]
+     */
+    fun expand(n: Int) = RecurringDecimal(expandToDecimal(n), repeatingDigits)
 
     /**
      * Moves the decimal point [n] places to the right, expanding the recurring decimal as necessary.
@@ -55,4 +58,9 @@ data class RecurringDecimal(
         val repeatingStartIndex = s.length - repeatingDigits
         return "${s.substring(0, repeatingStartIndex)}[${s.substring(repeatingStartIndex)}]"
     }
+
+    /**
+     * Convert to a Double
+     */
+    fun toDouble() = expandToDecimal(SIGNIFICANT_DIGITS_IN_DOUBLE).toDouble()
 }

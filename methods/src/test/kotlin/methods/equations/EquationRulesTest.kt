@@ -5,7 +5,7 @@ import methods.equations.EquationsRules.ApplyQuadraticFormula
 import methods.equations.EquationsRules.EliminateConstantFactorOfLhsWithZeroRhs
 import methods.equations.EquationsRules.MultiplyByInverseCoefficientOfVariable
 import methods.equations.EquationsRules.MultiplyByInverseOfLeadingCoefficient
-import methods.equations.EquationsRules.SeparatePlusMinusQuadraticSolutions
+import methods.equations.EquationsRules.SeparateEquationInPlusMinusForm
 import methods.equations.EquationsRules.TakeRootOfBothSides
 import org.junit.jupiter.api.Test
 
@@ -109,7 +109,7 @@ class EquationRulesTest {
     fun testSeparatePlusMinusQuadraticSolutions() {
         testRuleInX(
             "x = [-2 +/- sqrt[[2 ^ 2] - 4 * 1 * 1] / 2 * 1]",
-            SeparatePlusMinusQuadraticSolutions,
+            SeparateEquationInPlusMinusForm,
             "x = [-2 - sqrt[[2 ^ 2] - 4 * 1 * 1] / 2 * 1] OR " +
                 "x = [-2 + sqrt[[2 ^ 2] - 4 * 1 * 1] / 2 * 1]]",
         )

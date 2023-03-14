@@ -113,17 +113,9 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     ExtractSolutionFromEquationInPlusMinusForm,
 
     /**
-     * Extract the solution set from an equation of the form x = <constant expression containing +/->,
-     * simplifying each solution (the simplifications occur in tasks)
-     *
-     * E.g. x = 1 +/- 5 -> x \in { -4, 6 }
+     * Solve a single equation in an equation union.
      */
-    ExtractSolutionAndSimplifyFromEquationInPlusMinusForm,
-
-    /**
-     * Simplify an extracted solution
-     */
-    SimplifyExtractedSolution,
+    SolveEquationInEquationUnion,
 
     /**
      * Multiply both sides of the equation by the least common denominator
@@ -251,14 +243,17 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     SolveEquationUsingRootsMethod,
 
     /**
-     * Solve a quadratic equation by completing the square
+     * Solve an equation by completing the square
      *
      * E.g.  [x ^ 2] + 4x = 10
      *       --> [x ^ 2] + 4x + 4 = 10 + 4
      *       --> [(x + 2) ^ 2] = 14
      *       ...
+     *  Note that the equation does not have to be quadratic, e.g. it could be
+     *
+     *       [x ^ 4] + 2[x ^2] = 6
      */
-    SolveQuadraticEquationByCompletingTheSquare,
+    SolveByCompletingTheSquare,
 
     /**
      * Collect solutions from several equations (e.g. when solving a quadratic
@@ -272,20 +267,6 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      *      collects the solutions as x \in { 1, -1}
      */
     CollectSolutions,
-
-    /**
-     * Solve an equation of the form "product = 0"
-     */
-    SolveFactorisedEquation,
-
-    /**
-     * Given an equation of the form "product = 0", solve for one
-     * of the terms of the product being equal to zero.
-     *
-     * E.g. when solving (x − 1)(x + 1) = 0 the system introduces
-     *      solving the equation x - 1 = 0 using this translation key.
-     */
-    SolveFactorOfEquation,
 
     /**
      * Solve a polynomial equation (of arbitrary degree) by moving everything
@@ -328,6 +309,13 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      *      --> x = [-4 + 2 sqrt[2] / 2 * 1]
      */
     SeparatePlusMinusQuadraticSolutions,
+
+    /**
+     * Split a factored equation = 0 to several smaller equations
+     *
+     * E.g. (x + 1)(2x - 2) = 0 --> x + 1 = 0 OR 2x - 2 = 0
+     */
+    SeparateFactoredEquation,
 
     /**
      * Cancel the common numerator and denominator terms on both the sides
@@ -377,11 +365,8 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     ExtractSolutionFromEquationInUnionForm,
 
     /**
-     * Extract the solution set from an equation union of the form:
-     *
-     * x = constantExpr1, x = real conjugate of constantExpr1
-     *
-     * simplifying each solution (the simplifications occur in tasks)
+     * Given an equation union: e.g. x + 2 = 3 OR 2x = 5, solve each equation and
+     * gather the solutions together.
      *
      * E.g. x = [-4 - 2 / 2 * 1], x = [-4 + 2 / 2 * 1]
      *      --> task # 1:
@@ -393,7 +378,7 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      *      --> task # 3:
      *          x \in {-3, -1}
      */
-    ExtractSolutionAndSimplifyFromEquationInUnionForm,
+    SolveEquationUnion,
 
     /**
      * Solve any quadratic equation (complete or incomplete) by the method of quadratic formula
@@ -406,6 +391,11 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      *      --> x \in {-3, -1}
      */
     SolveQuadraticEquationUsingQuadraticFormula,
+
+    /**
+     * Solve equation in one variable, trying to apply the most relevant method.
+     */
+    SolveEquationInOneVariable,
     ;
 
     override val category = "Equations"

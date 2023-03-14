@@ -2,11 +2,8 @@ package methods.equations
 
 import engine.context.ResourceData
 import engine.expressions.Constants
-import engine.expressions.equationOf
 import engine.expressions.solutionOf
 import engine.expressions.solutionSetOf
-import engine.expressions.splitPlusMinus
-import engine.expressions.xp
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
@@ -14,8 +11,8 @@ import engine.methods.plan
 import engine.methods.stepsproducers.FormChecker
 import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
+import engine.operators.EquationUnionOperator
 import engine.patterns.AnyPattern
-import engine.patterns.ConstantPattern
 import engine.patterns.FixedPattern
 import engine.patterns.RecurringDecimalPattern
 import engine.patterns.SignedNumberPattern
@@ -23,12 +20,10 @@ import engine.patterns.SolutionVariablePattern
 import engine.patterns.UnsignedNumberPattern
 import engine.patterns.condition
 import engine.patterns.equationOf
-import engine.patterns.equationUnionOf
 import engine.patterns.fractionOf
 import engine.patterns.inSolutionVariable
 import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
-import engine.patterns.productContaining
 import engine.patterns.solutionOf
 import engine.patterns.solutionSetOf
 import engine.patterns.sumContaining
@@ -37,7 +32,6 @@ import engine.steps.metadata.metadata
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.equations.EquationsRules.FactorNegativeSignOfLeadingCoefficient
-import methods.general.GeneralRules
 import methods.general.NormalizationPlans
 import methods.polynomials.PolynomialsPlans
 import methods.polynomials.PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization
@@ -168,39 +162,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
         },
     ),
 
-    ExtractSolutionAndSimplifyFromEquationInPlusMinusForm(extractSolutionAndSimplifyFromEquationInPlusMinusForm),
-
-    SolveFactorisedEquation(
-        taskSet {
-            val product = productContaining()
-            val zero = FixedPattern(Constants.Zero)
-            pattern = equationOf(product, zero)
-            explanation = Explanation.SolveFactorisedEquation
-
-            tasks {
-                val tasks = get(product).children.mapNotNull {
-                    if (!it.isConstantIn(context.solutionVariable)) {
-                        task(
-                            startExpr = equationOf(it, get(zero)),
-                            explanation = metadata(Explanation.SolveFactorOfEquation, it),
-                            stepsProducer = optimalEquationSolvingSteps,
-                        ) ?: return@tasks null
-                    } else {
-                        null
-                    }
-                }
-
-                val solutions = solutionSetOf(tasks.flatMap { it.result.secondChild.children })
-
-                task(
-                    startExpr = solutionOf(xp(context.solutionVariable!!), solutions),
-                    explanation = metadata(Explanation.CollectSolutions),
-                    dependsOn = tasks,
-                )
-                allTasks()
-            }
-        },
-    ),
+    SolveEquationUnion(solveEquationUnion),
 
     /**
      * Solve a linear equation in one variable
@@ -335,15 +297,14 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
         },
     ),
 
-    ExtractSolutionAndSimplifyFromEquationInUnionForm(extractSolutionAndSimplifyFromEquationInUnionForm),
-
     /**
-     * Solve a quadratic equation by completing the square.
+     * Solve an equation by completing the square.  The equation can by of higher order than 2 as long
+     * as completing the square is possible.
      */
     @PublicMethod
-    SolveQuadraticEquationByCompletingTheSquare(
+    SolveByCompletingTheSquare(
         plan {
-            explanation = Explanation.SolveQuadraticEquationByCompletingTheSquare
+            explanation = Explanation.SolveByCompletingTheSquare
             pattern = equationOf(AnyPattern(), AnyPattern())
             resultPattern = solutionOf(SolutionVariablePattern(), AnyPattern())
 
@@ -387,10 +348,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                             applyTo(ConstantExpressionsPlans.SimplifyConstantExpression) { it.secondChild }
                         }
                         apply(MoveConstantsToTheRightAndSimplify)
-                        firstOf {
-                            option(ExtractSolutionAndSimplifyFromEquationInPlusMinusForm)
-                            option(EquationsRules.ExtractSolutionFromEquationInPlusMinusForm)
-                        }
+                        apply(extractSolutionFromEquationPossiblyInPlusMinusForm)
                     }
                 }
             }
@@ -411,7 +369,8 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                 optionally {
                     applyTo(PolynomialsPlans.FactorPolynomialInOneVariable) { it.firstChild }
                 }
-                apply(SolveFactorisedEquation)
+                apply(EquationsRules.SeparateFactoredEquation)
+                apply(solveEquationUnion)
             }
         },
     ),
@@ -446,91 +405,66 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
                 apply(EquationsRules.ApplyQuadraticFormula)
                 optionally {
-                    applyTo(SimplifyAlgebraicExpressionInOneVariable) { it.secondChild }
+                    applyTo(ConstantExpressionsPlans.SimplifyConstantExpression) { it.secondChild }
                 }
 
                 // Δ
                 firstOf {
-                    // Δ = 0
-                    option {
-                        // x = [4 +/- 0 / 2] --> x = [4 / 2]
-                        apply { deeply(GeneralRules.EliminatePlusMinusZeroInSum) }
-                        // [4 / 2] --> 2
-                        optionally {
-                            applyTo(SimplifyAlgebraicExpressionInOneVariable) { it.secondChild }
-                        }
-                        apply(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
-                    }
                     // Δ < 0
                     option { deeply(EquationsRules.ExtractSolutionFromNegativeUnderSquareRootInRealDomain) }
-                    // Δ > 0
-                    option {
-                        apply(EquationsRules.SeparatePlusMinusQuadraticSolutions)
-                        firstOf {
-                            option(ExtractSolutionAndSimplifyFromEquationInUnionForm)
-                            option(EquationsRules.ExtractSolutionFromEquationInUnionForm)
-                        }
-                    }
+                    // Δ >= 0
+                    option(extractSolutionFromEquationPossiblyInPlusMinusForm)
                 }
+            }
+        },
+    ),
+
+    @PublicMethod
+    SolveEquationInOneVariable(
+        plan {
+            explanation = Explanation.SolveEquationInOneVariable
+            pattern = inSolutionVariable(equationOf(AnyPattern(), AnyPattern()))
+
+            specificPlans(
+                SolveLinearEquation,
+                SolveEquationUsingRootsMethod,
+                SolveEquationByFactoring,
+                SolveQuadraticEquationUsingQuadraticFormula,
+                SolveByCompletingTheSquare,
+            )
+            steps {
+                apply(optimalEquationSolvingSteps)
             }
         },
     ),
 }
 
-private val extractSolutionAndSimplifyFromEquationInUnionForm = taskSet {
-    val lhs = SolutionVariablePattern()
-    val rhs1 = ConstantPattern()
-    val rhs2 = ConstantPattern()
-    val eq1 = equationOf(lhs, rhs1)
-    val eq2 = equationOf(lhs, rhs2)
-
-    pattern = equationUnionOf(eq1, eq2)
-    explanation = Explanation.ExtractSolutionAndSimplifyFromEquationInUnionForm
-
-    tasks {
-        val task1 = task(
-            startExpr = get(eq1),
-            explanation = metadata(Explanation.SimplifyExtractedSolution),
-            stepsProducer = SimplifyAlgebraicExpressionInOneVariable,
-        )
-            ?: return@tasks null
-        val task2 = task(
-            startExpr = get(eq2),
-            explanation = metadata(Explanation.SimplifyExtractedSolution),
-            stepsProducer = SimplifyAlgebraicExpressionInOneVariable,
-        )
-            ?: return@tasks null
-        val solution1 = task1.result.secondChild
-        val solution2 = task2.result.secondChild
-        task(
-            startExpr = solutionOf(task1.result.firstChild, solutionSetOf(solution1, solution2)),
-            explanation = metadata(Explanation.CollectSolutions),
-            dependsOn = listOf(task1, task2),
-        )
-        allTasks()
+private val extractSolutionFromEquationPossiblyInPlusMinusForm = steps {
+    firstOf {
+        option {
+            apply(EquationsRules.SeparateEquationInPlusMinusForm)
+            firstOf {
+                option(EquationsPlans.SolveEquationUnion)
+            }
+        }
+        option(EquationsRules.ExtractSolutionFromEquationInPlusMinusForm)
+        option(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
     }
 }
 
-private val extractSolutionAndSimplifyFromEquationInPlusMinusForm = taskSet {
-    val equation = equationOf(SolutionVariablePattern(), ConstantPattern())
-    pattern = equation
-    explanation = Explanation.ExtractSolutionAndSimplifyFromEquationInPlusMinusForm
+private val solveEquationUnion = taskSet {
+    val equationUnion = condition(AnyPattern()) { it.operator == EquationUnionOperator }
+    pattern = equationUnion
+    explanation = Explanation.SolveEquationUnion
 
     tasks {
-        // Get all the equations with +/- expanded
-        val splitEquations = get(equation).splitPlusMinus()
-        if (splitEquations.size <= 1) {
-            return@tasks null
-        }
 
         // Create a task for each to simplify it
-        val splitTasks = splitEquations.map {
+        val splitTasks = get(equationUnion).children.map {
             task(
                 startExpr = it,
-                explanation = metadata(Explanation.SimplifyExtractedSolution),
-                stepsProducer = steps {
-                    applyTo(ConstantExpressionsPlans.SimplifyConstantExpression) { it.secondChild }
-                },
+                explanation = metadata(Explanation.SolveEquationInEquationUnion),
+                stepsProducer = optimalEquationSolvingSteps,
             ) ?: return@tasks null
         }
 
@@ -538,7 +472,7 @@ private val extractSolutionAndSimplifyFromEquationInPlusMinusForm = taskSet {
         task(
             startExpr = solutionOf(
                 splitTasks[0].result.firstChild,
-                solutionSetOf(splitTasks.map { it.result.secondChild }),
+                solutionSetOf(splitTasks.flatMap { it.result.secondChild.children }.sortedBy { it.doubleValue }),
             ),
             explanation = metadata(Explanation.CollectSolutions),
         )
@@ -548,9 +482,15 @@ private val extractSolutionAndSimplifyFromEquationInPlusMinusForm = taskSet {
 
 private val optimalEquationSolvingSteps = steps {
     firstOf {
+        option {
+            optionally(simplifyEquation)
+            apply(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
+        }
         option(EquationsPlans.SolveLinearEquation)
         option(EquationsPlans.SolveEquationUsingRootsMethod)
-        option(EquationsPlans.SolveQuadraticEquationByCompletingTheSquare)
+        option(EquationsPlans.SolveEquationByFactoring)
+        option(EquationsPlans.SolveQuadraticEquationUsingQuadraticFormula)
+        option(EquationsPlans.SolveByCompletingTheSquare)
     }
 }
 

@@ -3,6 +3,9 @@ package engine.operators
 import engine.utility.RecurringDecimal
 import java.math.BigDecimal
 import java.math.BigInteger
+import kotlin.math.ln
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 private const val SUM_PRECEDENCE = 10
 private const val PLUS_MINUS_PRECEDENCE = 15
@@ -17,6 +20,8 @@ private const val MAX_PRECEDENCE = 100
 
 interface ExpressionOperator : Operator {
     override val kind get() = OperatorKind.EXPRESSION
+
+    fun eval(children: List<Double>): Double
 }
 
 abstract class NullaryOperator : ExpressionOperator {
@@ -56,6 +61,8 @@ data class IntegerOperator(val value: BigInteger) : NullaryOperator() {
     override fun toString() = value.toString()
 
     override fun latexString(ctx: RenderContext) = value.toString()
+
+    override fun eval(children: List<Double>) = value.toDouble()
 }
 
 object InfinityOperator : NullaryOperator() {
@@ -65,6 +72,8 @@ object InfinityOperator : NullaryOperator() {
     override fun toString() = "INFINITY"
 
     override fun latexString(ctx: RenderContext) = "\\infty"
+
+    override fun eval(children: List<Double>) = Double.POSITIVE_INFINITY
 }
 
 object UndefinedOperator : NullaryOperator() {
@@ -74,6 +83,8 @@ object UndefinedOperator : NullaryOperator() {
     override fun toString() = "UNDEFINED"
 
     override fun latexString(ctx: RenderContext) = "\\text{undefined}"
+
+    override fun eval(children: List<Double>) = Double.NaN
 }
 
 /**
@@ -89,6 +100,8 @@ data class DecimalOperator(val value: BigDecimal) : NullaryOperator() {
     override fun toString(): String = value.toPlainString()
 
     override fun latexString(ctx: RenderContext): String = value.toPlainString()
+
+    override fun eval(children: List<Double>) = value.toDouble()
 }
 
 /**
@@ -109,12 +122,16 @@ data class RecurringDecimalOperator(val value: RecurringDecimal) : NullaryOperat
         val repeatingStartIndex = s.length - value.repeatingDigits
         return "${s.substring(0, repeatingStartIndex)}\\overline{${s.substring(repeatingStartIndex)}}"
     }
+
+    override fun eval(children: List<Double>) = value.toDouble()
 }
 
 data class VariableOperator(override val name: String) : NullaryOperator() {
     override fun toString() = name
 
     override fun latexString(ctx: RenderContext) = name
+
+    override fun eval(children: List<Double>) = Double.NaN
 }
 
 object MixedNumberOperator : ExpressionOperator {
@@ -132,6 +149,8 @@ object MixedNumberOperator : ExpressionOperator {
 
     override fun latexString(ctx: RenderContext, children: List<LatexRenderable>) =
         "${children[0].toLatexString(ctx)}\\frac${children[1].toLatexString(ctx)}${children[2].toLatexString(ctx)}"
+
+    override fun eval(children: List<Double>) = children[0] + children[1] / children[2]
 }
 
 enum class UnaryExpressionOperator(override val precedence: Int) : UnaryOperator, ExpressionOperator {
@@ -139,30 +158,40 @@ enum class UnaryExpressionOperator(override val precedence: Int) : UnaryOperator
         override fun childAllowed(op: Operator) = op.precedence > NaryOperator.Product.precedence
         override fun <T> readableString(child: T) = " : $child"
         override fun latexString(ctx: RenderContext, child: LatexRenderable) = "\\div ${child.toLatexString(ctx)}"
+        override fun eval(operand: Double) = 1.0 / operand
     },
     Plus(PLUS_MINUS_PRECEDENCE) {
         override fun <T> readableString(child: T) = "+$child"
         override fun latexString(ctx: RenderContext, child: LatexRenderable) = "+${child.toLatexString(ctx)}"
+        override fun eval(operand: Double) = operand
     },
     Minus(PLUS_MINUS_PRECEDENCE) {
         override fun <T> readableString(child: T) = "-$child"
         override fun latexString(ctx: RenderContext, child: LatexRenderable) = "-${child.toLatexString(ctx)}"
+        override fun eval(operand: Double) = -operand
     },
     PlusMinus(PLUS_MINUS_PRECEDENCE) {
         override fun <T> readableString(child: T) = "+/-$child"
         override fun latexString(ctx: RenderContext, child: LatexRenderable) = "\\pm ${child.toLatexString(ctx)}"
+        override fun eval(operand: Double) = if (operand == 0.0) operand else Double.NaN
     },
     SquareRoot(ROOT_PRECEDENCE) {
         override fun childAllowed(op: Operator) = true
         override fun <T> readableString(child: T) = "sqrt[$child]"
         override fun latexString(ctx: RenderContext, child: LatexRenderable) = "\\sqrt{${child.toLatexString(ctx)}}"
+        override fun eval(operand: Double) = sqrt(operand)
     },
     NaturalLog(NATURAL_LOG_PRECEDENCE) {
         override fun childAllowed(op: Operator) =
             op.precedence >= BinaryExpressionOperator.Fraction.precedence
 
         override fun latexString(ctx: RenderContext, child: LatexRenderable) = "\\ln${child.toLatexString(ctx)}"
-    },
+        override fun eval(operand: Double) = ln(operand)
+    }, ;
+
+    protected abstract fun eval(operand: Double): Double
+
+    override fun eval(children: List<Double>) = eval(children[0])
 }
 
 enum class BinaryExpressionOperator(override val precedence: Int) : BinaryOperator, ExpressionOperator {
@@ -172,6 +201,8 @@ enum class BinaryExpressionOperator(override val precedence: Int) : BinaryOperat
         override fun <T> readableString(left: T, right: T) = "[$left / $right]"
         override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable) =
             "\\frac{${left.toLatexString(ctx)}}{${right.toLatexString(ctx)}}"
+
+        override fun eval(first: Double, second: Double) = first / second
     },
     Power(POWER_PRECEDENCE) {
         override fun leftChildAllowed(op: Operator) = op.precedence == MAX_PRECEDENCE
@@ -182,6 +213,8 @@ enum class BinaryExpressionOperator(override val precedence: Int) : BinaryOperat
 
         override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable) =
             "${left.toLatexString(ctx)}^{${right.toLatexString(ctx)}}"
+
+        override fun eval(first: Double, second: Double) = first.pow(second)
     },
     Root(ROOT_PRECEDENCE) {
         override fun leftChildAllowed(op: Operator) = true
@@ -189,7 +222,28 @@ enum class BinaryExpressionOperator(override val precedence: Int) : BinaryOperat
         override fun <T> readableString(left: T, right: T) = "root[$left, $right]"
         override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable) =
             "\\sqrt[${right.toLatexString(ctx)}]{${left.toLatexString(ctx)}}"
+
+        override fun eval(first: Double, second: Double): Double {
+            val exp = 1.0 / second
+            val pow = first.pow(exp)
+            if (!pow.isNaN()) {
+                return pow
+            }
+            // Try to deal with odd roots of negatives as a special case
+            if (first < 0) {
+                val n = second.toInt()
+                if (n.toDouble() == second && n % 2 != 0) {
+                    return -(-first).pow(1.0 / second)
+                }
+            }
+            return Double.NaN
+        }
     },
+
+    ;
+    protected abstract fun eval(first: Double, second: Double): Double
+
+    override fun eval(children: List<Double>) = eval(children[0], children[1])
 }
 
 enum class NaryOperator(override val precedence: Int) : ExpressionOperator {
@@ -236,6 +290,8 @@ enum class NaryOperator(override val precedence: Int) : ExpressionOperator {
                 }
             }
         }
+
+        override fun eval(children: List<Double>) = children.sum()
     },
     Product(PRODUCT_PRECEDENCE) {
         override fun <T> readableString(children: List<T>): String {
@@ -262,6 +318,8 @@ enum class NaryOperator(override val precedence: Int) : ExpressionOperator {
                 }
             }
         }
+
+        override fun eval(children: List<Double>) = children.reduce { x, y -> x * y }
     },
     ImplicitProduct(IMPLICIT_PRODUCT_PRECEDENCE) {
         override fun <T> readableString(children: List<T>): String {
@@ -271,6 +329,8 @@ enum class NaryOperator(override val precedence: Int) : ExpressionOperator {
         override fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String {
             return children.joinToString(" ") { it.toLatexString(ctx) }
         }
+
+        override fun eval(children: List<Double>) = children.reduce { x, y -> x * y }
     }, ;
 
     override val arity = ARITY_VARIABLE

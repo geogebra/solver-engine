@@ -23,7 +23,7 @@ class EquationsByFactoringTest {
 
         check {
             fromExpr = "[x ^ 2] + 5 x + 6 = 0"
-            toExpr = "Solution[x, {-2, -3}]"
+            toExpr = "Solution[x, {-3, -2}]"
             explanation {
                 key = EquationsExplanation.SolveEquationByFactoring
             }
@@ -38,16 +38,23 @@ class EquationsByFactoringTest {
 
             step {
                 fromExpr = "(x + 2) (x + 3) = 0"
-                toExpr = "Solution[x, {-2, -3}]"
+                toExpr = "x + 2 = 0 OR x + 3 = 0"
                 explanation {
-                    key = EquationsExplanation.SolveFactorisedEquation
+                    key = EquationsExplanation.SeparateFactoredEquation
+                }
+            }
+
+            step {
+                toExpr = "Solution[x, {-3, -2}]"
+                explanation {
+                    key = EquationsExplanation.SolveEquationUnion
                 }
 
                 task {
                     taskId = "#1"
                     startExpr = "x + 2 = 0"
                     explanation {
-                        key = EquationsExplanation.SolveFactorOfEquation
+                        key = EquationsExplanation.SolveEquationInEquationUnion
                     }
 
                     step {
@@ -63,7 +70,7 @@ class EquationsByFactoringTest {
                     taskId = "#2"
                     startExpr = "x + 3 = 0"
                     explanation {
-                        key = EquationsExplanation.SolveFactorOfEquation
+                        key = EquationsExplanation.SolveEquationInEquationUnion
                     }
 
                     step {
@@ -77,7 +84,7 @@ class EquationsByFactoringTest {
 
                 task {
                     taskId = "#3"
-                    startExpr = "Solution[x, {-2, -3}]"
+                    startExpr = "Solution[x, {-3, -2}]"
                     explanation {
                         key = EquationsExplanation.CollectSolutions
                     }
@@ -93,7 +100,7 @@ class EquationsByFactoringTest {
 
         check {
             fromExpr = "[x ^ 2] - 4 = 0"
-            toExpr = "Solution[x, {2, -2}]"
+            toExpr = "Solution[x, {-2, 2}]"
             explanation {
                 key = EquationsExplanation.SolveEquationByFactoring
             }
@@ -108,16 +115,24 @@ class EquationsByFactoringTest {
 
             step {
                 fromExpr = "(x - 2) (x + 2) = 0"
-                toExpr = "Solution[x, {2, -2}]"
+                toExpr = "x - 2 = 0 OR x + 2 = 0"
                 explanation {
-                    key = EquationsExplanation.SolveFactorisedEquation
+                    key = EquationsExplanation.SeparateFactoredEquation
+                }
+            }
+
+            step {
+                fromExpr = "x - 2 = 0 OR x + 2 = 0"
+                toExpr = "Solution[x, {-2, 2}]"
+                explanation {
+                    key = EquationsExplanation.SolveEquationUnion
                 }
 
                 task {
                     taskId = "#1"
                     startExpr = "x - 2 = 0"
                     explanation {
-                        key = EquationsExplanation.SolveFactorOfEquation
+                        key = EquationsExplanation.SolveEquationInEquationUnion
                     }
 
                     step {
@@ -133,7 +148,7 @@ class EquationsByFactoringTest {
                     taskId = "#2"
                     startExpr = "x + 2 = 0"
                     explanation {
-                        key = EquationsExplanation.SolveFactorOfEquation
+                        key = EquationsExplanation.SolveEquationInEquationUnion
                     }
 
                     step {
@@ -147,7 +162,7 @@ class EquationsByFactoringTest {
 
                 task {
                     taskId = "#3"
-                    startExpr = "Solution[x, {2, -2}]"
+                    startExpr = "Solution[x, {-2, 2}]"
                     explanation {
                         key = EquationsExplanation.CollectSolutions
                     }
@@ -163,7 +178,7 @@ class EquationsByFactoringTest {
 
         check {
             fromExpr = "[x ^ 6] = 5 [x ^ 5] - 3 [x ^ 4]"
-            toExpr = "Solution[x, {0, -[sqrt[13] / 2] + [5 / 2], [sqrt[13] / 2] + [5 / 2]}]"
+            toExpr = "Solution[x, {0, [5 - sqrt[13] / 2], [5 + sqrt[13] / 2]}]"
             explanation {
                 key = EquationsExplanation.SolveEquationByFactoring
             }
@@ -186,16 +201,23 @@ class EquationsByFactoringTest {
 
             step {
                 fromExpr = "[x ^ 4] ([x ^ 2] - 5 x + 3) = 0"
-                toExpr = "Solution[x, {0, -[sqrt[13] / 2] + [5 / 2], [sqrt[13] / 2] + [5 / 2]}]"
+                toExpr = "[x ^ 4] = 0 OR [x ^ 2] - 5 x + 3 = 0"
                 explanation {
-                    key = EquationsExplanation.SolveFactorisedEquation
+                    key = EquationsExplanation.SeparateFactoredEquation
+                }
+            }
+
+            step {
+                toExpr = "Solution[x, {0, [5 - sqrt[13] / 2], [5 + sqrt[13] / 2]}]"
+                explanation {
+                    key = EquationsExplanation.SolveEquationUnion
                 }
 
                 task {
                     taskId = "#1"
                     startExpr = "[x ^ 4] = 0"
                     explanation {
-                        key = EquationsExplanation.SolveFactorOfEquation
+                        key = EquationsExplanation.SolveEquationInEquationUnion
                     }
 
                     step {
@@ -211,21 +233,21 @@ class EquationsByFactoringTest {
                     taskId = "#2"
                     startExpr = "[x ^ 2] - 5 x + 3 = 0"
                     explanation {
-                        key = EquationsExplanation.SolveFactorOfEquation
+                        key = EquationsExplanation.SolveEquationInEquationUnion
                     }
 
                     step {
                         fromExpr = "[x ^ 2] - 5 x + 3 = 0"
-                        toExpr = "Solution[x, {-[sqrt[13] / 2] + [5 / 2], [sqrt[13] / 2] + [5 / 2]}]"
+                        toExpr = "Solution[x, {[5 - sqrt[13] / 2], [5 + sqrt[13] / 2]}]"
                         explanation {
-                            key = EquationsExplanation.SolveQuadraticEquationByCompletingTheSquare
+                            key = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula
                         }
                     }
                 }
 
                 task {
                     taskId = "#3"
-                    startExpr = "Solution[x, {0, -[sqrt[13] / 2] + [5 / 2], [sqrt[13] / 2] + [5 / 2]}]"
+                    startExpr = "Solution[x, {0, [5 - sqrt[13] / 2], [5 + sqrt[13] / 2]}]"
                     explanation {
                         key = EquationsExplanation.CollectSolutions
                     }
@@ -241,7 +263,7 @@ class EquationsByFactoringTest {
 
         check {
             fromExpr = "[x ^ 6] - [x ^ 2] = 0"
-            toExpr = "Solution[x, {0, 1, -1}]"
+            toExpr = "Solution[x, {-1, 0, 1}]"
             explanation {
                 key = EquationsExplanation.SolveEquationByFactoring
             }
@@ -256,16 +278,23 @@ class EquationsByFactoringTest {
 
             step {
                 fromExpr = "[x ^ 2] (x - 1) (x + 1) ([x ^ 2] + 1) = 0"
-                toExpr = "Solution[x, {0, 1, -1}]"
+                toExpr = "[x ^ 2] = 0 OR x - 1 = 0 OR x + 1 = 0 OR [x ^ 2] + 1 = 0"
                 explanation {
-                    key = EquationsExplanation.SolveFactorisedEquation
+                    key = EquationsExplanation.SeparateFactoredEquation
+                }
+            }
+
+            step {
+                toExpr = "Solution[x, {-1, 0, 1}]"
+                explanation {
+                    key = EquationsExplanation.SolveEquationUnion
                 }
 
                 task {
                     taskId = "#1"
                     startExpr = "[x ^ 2] = 0"
                     explanation {
-                        key = EquationsExplanation.SolveFactorOfEquation
+                        key = EquationsExplanation.SolveEquationInEquationUnion
                     }
 
                     step {
@@ -281,7 +310,7 @@ class EquationsByFactoringTest {
                     taskId = "#2"
                     startExpr = "x - 1 = 0"
                     explanation {
-                        key = EquationsExplanation.SolveFactorOfEquation
+                        key = EquationsExplanation.SolveEquationInEquationUnion
                     }
 
                     step {
@@ -297,7 +326,7 @@ class EquationsByFactoringTest {
                     taskId = "#3"
                     startExpr = "x + 1 = 0"
                     explanation {
-                        key = EquationsExplanation.SolveFactorOfEquation
+                        key = EquationsExplanation.SolveEquationInEquationUnion
                     }
 
                     step {
@@ -313,7 +342,7 @@ class EquationsByFactoringTest {
                     taskId = "#4"
                     startExpr = "[x ^ 2] + 1 = 0"
                     explanation {
-                        key = EquationsExplanation.SolveFactorOfEquation
+                        key = EquationsExplanation.SolveEquationInEquationUnion
                     }
 
                     step {
@@ -327,7 +356,7 @@ class EquationsByFactoringTest {
 
                 task {
                     taskId = "#5"
-                    startExpr = "Solution[x, {0, 1, -1}]"
+                    startExpr = "Solution[x, {-1, 0, 1}]"
                     explanation {
                         key = EquationsExplanation.CollectSolutions
                     }

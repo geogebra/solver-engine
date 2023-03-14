@@ -25,8 +25,6 @@ import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
-import engine.operators.NaryOperator
-import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.ConstantInSolutionVariablePattern
@@ -49,6 +47,7 @@ import engine.patterns.negOf
 import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
+import engine.patterns.productContaining
 import engine.patterns.rationalMonomialPattern
 import engine.patterns.sumContaining
 import engine.patterns.sumOf
@@ -56,6 +55,8 @@ import engine.patterns.withOptionalConstantCoefficient
 import engine.steps.metadata.metadata
 import engine.utility.isEven
 import engine.utility.isOdd
+import engine.utility.withMaxDP
+import methods.solvable.simplifiedNegOfSum
 import java.math.BigInteger
 import engine.steps.metadata.DragTargetPosition as Position
 import engine.steps.metadata.GmPathModifier as PM
@@ -68,11 +69,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             val rhs = condition(AnyPattern()) { it != Constants.Zero }
 
             onEquation(lhs, rhs) {
-                val rhsVal = get(rhs)
-                val negatedRhs = when (rhsVal.operator) {
-                    NaryOperator.Sum -> sumOf(rhsVal.children.map { introduce(it, simplifiedNegOf(it)) })
-                    else -> introduce(rhsVal, simplifiedNegOf(rhsVal))
-                }
+                val negatedRhs = simplifiedNegOfSum(get(rhs))
 
                 ruleResult(
                     toExpr = equationOf(
@@ -166,15 +163,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                     return@onEquation null
                 }
 
-                fun additiveInverseOfPolynomial(expr: Expression): Expression {
-                    return when (expr.operator) {
-                        UnaryExpressionOperator.Minus -> expr.firstChild
-                        NaryOperator.Sum -> sumOf(expr.children.map { additiveInverseOfPolynomial(it) })
-                        else -> negOf(expr)
-                    }
-                }
-
-                val additiveInverseLhsExpr = additiveInverseOfPolynomial(lhsExpr)
+                val additiveInverseLhsExpr = simplifiedNegOfSum(lhsExpr)
 
                 ruleResult(
                     toExpr = equationOf(
@@ -264,10 +253,11 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             val rhs = ConstantInSolutionVariablePattern()
 
             onEquation(lhs, rhs) {
-                val signOfRHS = get(rhs).signOf()
+                val rhsValue = get(rhs)
+                val signOfRHS = rhsValue.signOf()
                 val exponentValue = getValue(exponent)
                 val newRHS = when {
-                    signOfRHS == Sign.POSITIVE && exponentValue.isEven() ->
+                    exponentValue.isEven() && (signOfRHS == Sign.POSITIVE || rhsValue.doubleValue > 0) ->
                         plusMinusOf(rootOf(move(rhs), move(exponent)))
                     exponentValue.isOdd() ->
                         rootOf(move(rhs), move(exponent))
@@ -357,12 +347,19 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             val variableTerm = condition(AnyPattern()) { !it.isConstantIn(solutionVariable) }
             val exponent = UnsignedIntegerPattern()
             val lhs = powerOf(variableTerm, integerCondition(exponent) { it.isEven() })
-            val rhs = condition(ConstantInSolutionVariablePattern()) { it.signOf() == Sign.NEGATIVE }
+            val rhs = condition(ConstantInSolutionVariablePattern()) { it.doubleValue < 0 }
 
             onEquation(lhs, rhs) {
+                val rhsVal = get(rhs)
+                val explanationArgument = if (rhsVal.signOf() == engine.conditions.Sign.NEGATIVE) {
+                    rhsVal
+                } else {
+                    @Suppress("MagicNumber")
+                    equationOf(rhsVal, xp(rhsVal.doubleValue.toBigDecimal().withMaxDP(3)))
+                }
                 ruleResult(
                     toExpr = solutionOf(xp(context.solutionVariable!!), Constants.EmptySet),
-                    explanation = metadata(Explanation.ExtractSolutionFromEvenPowerEqualsNegative),
+                    explanation = metadata(Explanation.ExtractSolutionFromEvenPowerEqualsNegative, explanationArgument),
                 )
             }
         },
@@ -390,6 +387,9 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
             onEquation(lhs, rhs) {
                 val splitRhs = get(rhs).splitPlusMinus()
+                if (splitRhs.size < 2) {
+                    return@onEquation null
+                }
                 ruleResult(
                     toExpr = solutionOf(move(lhs), solutionSetOf(splitRhs)),
                     explanation = metadata(Explanation.ExtractSolutionFromEquationInPlusMinusForm),
@@ -418,7 +418,9 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
     ApplyQuadraticFormula(applyQuadraticFormula),
 
-    SeparatePlusMinusQuadraticSolutions(separatePlusMinusQuadraticSolutions),
+    SeparateEquationInPlusMinusForm(separateEquationInPlusMinusForm),
+
+    SeparateFactoredEquation(separateFactoredEquation),
 
     EliminateConstantFactorOfLhsWithZeroRhs(eliminateConstantFactorOfLhsWithZeroRhs),
 }
@@ -459,12 +461,26 @@ private val applyQuadraticFormula = rule {
     }
 }
 
-private val separatePlusMinusQuadraticSolutions = rule {
-    val eq = equationOf(SolutionVariablePattern(), ConstantPattern())
+private val separateFactoredEquation = rule {
+    val product = productContaining()
+
+    onEquation(product, FixedPattern(Constants.Zero)) {
+        val factors = get(product).children
+        ruleResult(
+            toExpr = equationUnionOf(factors.map { equationOf(it, Constants.Zero) }),
+            explanation = metadata(Explanation.SeparateFactoredEquation),
+        )
+    }
+}
+
+private val separateEquationInPlusMinusForm = rule {
+    val eq = inSolutionVariable(equationOf(AnyPattern(), AnyPattern()))
 
     onPattern(eq) {
         val splitEquations = get(eq).splitPlusMinus()
-
+        if (splitEquations.size <= 1) {
+            return@onPattern null
+        }
         ruleResult(
             toExpr = equationUnionOf(splitEquations),
             explanation = metadata(Explanation.SeparatePlusMinusQuadraticSolutions),

@@ -18,4 +18,25 @@ class TestExpression {
             e("1 +/- 2 +/- 3").splitPlusMinus(),
         )
     }
+
+    private fun assertDoubleValue(v: Double, s: String) {
+        assertEquals(v, e(s).doubleValue)
+    }
+
+    @Test
+    fun testDoubleValue() {
+        assertDoubleValue(25.0, "25")
+        assertDoubleValue(2.5, "[2*3*2 + 8 / 7 - 2 + 3]")
+        assertDoubleValue(4.0, "[(-sqrt[4]) ^ 2]")
+        assertDoubleValue(Double.NaN, "x")
+        assertDoubleValue(Double.NaN, "1 +/- 2")
+        assertDoubleValue(2.0, "2 +/- 0")
+        assertDoubleValue(Double.NaN, "UNDEFINED")
+        assertDoubleValue(Double.NaN, "sqrt[-2]")
+        assertDoubleValue(-2.0, "root[-8, 3]")
+        assertDoubleValue(1.2, "[1 1/5]")
+        assertDoubleValue(Double.POSITIVE_INFINITY, "1 : 0")
+        assertDoubleValue(Double.NEGATIVE_INFINITY, "-[1/0]")
+        assertDoubleValue(1.121212121212121, "1.[12]")
+    }
 }

@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test
 class CompletingTheSquareTest {
 
     private fun shortTest(inputExpr: String, toExpr: String?) = testMethodInX {
-        method = EquationsPlans.SolveQuadraticEquationByCompletingTheSquare
+        method = EquationsPlans.SolveByCompletingTheSquare
         this.inputExpr = inputExpr
 
         check {
@@ -17,7 +17,7 @@ class CompletingTheSquareTest {
             } else {
                 this.toExpr = toExpr
                 explanation {
-                    key = EquationsExplanation.SolveQuadraticEquationByCompletingTheSquare
+                    key = EquationsExplanation.SolveByCompletingTheSquare
                 }
             }
         }
@@ -72,15 +72,33 @@ class CompletingTheSquareTest {
     )
 
     @Test
+    fun `short test with rearranging first`() = shortTest(
+        inputExpr = "[x^2] = 1 - x - [x^2]",
+        toExpr = "Solution[x, {-1, [1/2]}]",
+    )
+
+    @Test
+    fun `short test with biquadratic equation`() = shortTest(
+        inputExpr = "[x^4] - 3[x^2] + 2 = 0",
+        toExpr = "Solution[x, {-sqrt[2], -1, 1, sqrt[2]}]",
+    )
+
+    @Test
+    fun `short test 6th power`() = shortTest(
+        inputExpr = "[x^6] + 2 = 3[x^3]",
+        toExpr = "Solution[x, {1, root[2, 3]}]",
+    )
+
+    @Test
     fun `test simple case in details`() = testMethodInX {
-        method = EquationsPlans.SolveQuadraticEquationByCompletingTheSquare
+        method = EquationsPlans.SolveByCompletingTheSquare
         inputExpr = "[x ^ 2] = 6 x + 5"
 
         check {
             fromExpr = "[x ^ 2] = 6 x + 5"
             toExpr = "Solution[x, {-sqrt[14] + 3, sqrt[14] + 3}]"
             explanation {
-                key = EquationsExplanation.SolveQuadraticEquationByCompletingTheSquare
+                key = EquationsExplanation.SolveByCompletingTheSquare
             }
 
             step {
@@ -167,14 +185,14 @@ class CompletingTheSquareTest {
 
     @Test
     fun `test complex case in details`() = testMethodInX {
-        method = EquationsPlans.SolveQuadraticEquationByCompletingTheSquare
+        method = EquationsPlans.SolveByCompletingTheSquare
         inputExpr = "2 [x ^ 2] + 5 x = 7"
 
         check {
             fromExpr = "2 [x ^ 2] + 5 x = 7"
             toExpr = "Solution[x, {-[7 / 2], 1}]"
             explanation {
-                key = EquationsExplanation.SolveQuadraticEquationByCompletingTheSquare
+                key = EquationsExplanation.SolveByCompletingTheSquare
             }
 
             step {
@@ -259,22 +277,34 @@ class CompletingTheSquareTest {
 
             step {
                 fromExpr = "x = +/-[9 / 4] - [5 / 4]"
+                toExpr = "x = -[9 / 4] - [5 / 4] OR x = [9 / 4] - [5 / 4]"
+                explanation {
+                    key = EquationsExplanation.SeparatePlusMinusQuadraticSolutions
+                }
+            }
+
+            step {
+                fromExpr = "x = -[9 / 4] - [5 / 4] OR x = [9 / 4] - [5 / 4]"
                 toExpr = "Solution[x, {-[7 / 2], 1}]"
                 explanation {
-                    key = EquationsExplanation.ExtractSolutionAndSimplifyFromEquationInPlusMinusForm
+                    key = EquationsExplanation.SolveEquationUnion
                 }
 
                 task {
                     taskId = "#1"
                     explanation {
-                        key = EquationsExplanation.SimplifyExtractedSolution
+                        key = EquationsExplanation.SolveEquationInEquationUnion
                     }
 
                     step {
                         fromExpr = "x = -[9 / 4] - [5 / 4]"
                         toExpr = "x = -[7 / 2]"
+                    }
+
+                    step {
+                        toExpr = "Solution[x, {-[7 / 2]}]"
                         explanation {
-                            key = ConstantExpressionsExplanation.SimplifyConstantExpression
+                            key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                         }
                     }
                 }
@@ -282,14 +312,18 @@ class CompletingTheSquareTest {
                 task {
                     taskId = "#2"
                     explanation {
-                        key = EquationsExplanation.SimplifyExtractedSolution
+                        key = EquationsExplanation.SolveEquationInEquationUnion
                     }
 
                     step {
                         fromExpr = "x = [9 / 4] - [5 / 4]"
                         toExpr = "x = 1"
+                    }
+
+                    step {
+                        toExpr = "Solution[x, {1}]"
                         explanation {
-                            key = ConstantExpressionsExplanation.SimplifyConstantExpression
+                            key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                         }
                     }
                 }

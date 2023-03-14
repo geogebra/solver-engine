@@ -6,7 +6,6 @@ import methods.general.GeneralRules.CancelAdditiveInverseElements
 import methods.general.GeneralRules.DistributePowerOfProduct
 import methods.general.GeneralRules.DistributeSumOfPowers
 import methods.general.GeneralRules.EliminateOneInProduct
-import methods.general.GeneralRules.EliminatePlusMinusZeroInSum
 import methods.general.GeneralRules.EliminateZeroInSum
 import methods.general.GeneralRules.EvaluateExpressionToThePowerOfZero
 import methods.general.GeneralRules.EvaluateOneToAnyPower
@@ -94,6 +93,10 @@ class GeneralRulesTest {
         testRule("x + 0 + y", EliminateZeroInSum, "x + y")
         testRule("x + 0", EliminateZeroInSum, "x")
         testRule("1 + 0", EliminateZeroInSum, "1")
+        testRule("1 - 0", EliminateZeroInSum, "1")
+        testRule("-0 - x + y", EliminateZeroInSum, "-x + y")
+        testRule("z +/- 0", EliminateZeroInSum, "z")
+        testRule("+/-0 + 1 + 2", EliminateZeroInSum, "1 + 2")
 
         testMethod {
             method = EliminateZeroInSum
@@ -106,11 +109,6 @@ class GeneralRulesTest {
                 cancel("./2")
             }
         }
-    }
-
-    @Test
-    fun testEliminatePlusMinusZeroInSum() {
-        testRule("2 +/- 0", EliminatePlusMinusZeroInSum, "2")
     }
 
     @Test

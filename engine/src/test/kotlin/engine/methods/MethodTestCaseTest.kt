@@ -59,7 +59,7 @@ class MethodTestCaseTest {
             val task1 = task(
                 startExpr = get(ptn),
                 explanation = metadata(testPlanMetadataKey, get(ptn)),
-            ) ?: return@tasks null
+            )
             task(
                 startExpr = task1.result,
                 explanation = metadata(testPlanMetadataKey, task1.result),
