@@ -329,6 +329,17 @@ class Expression internal constructor(
     }
 }
 
+/**
+ * Returns true if the expression can only have a single value.
+ * Some expression can have multiple values, such as 1 +/- 2
+ */
+fun Expression.hasSingleValue(): Boolean {
+    if (operator == UnaryExpressionOperator.PlusMinus) {
+        return false
+    }
+    return children.all { it.hasSingleValue() }
+}
+
 fun Expression.splitPlusMinus(): List<Expression> {
     if (operator == UnaryExpressionOperator.PlusMinus) {
         val splitChild = firstChild.splitPlusMinus()

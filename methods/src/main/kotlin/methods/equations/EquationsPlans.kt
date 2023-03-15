@@ -443,11 +443,9 @@ private val extractSolutionFromEquationPossiblyInPlusMinusForm = steps {
     firstOf {
         option {
             apply(EquationsRules.SeparateEquationInPlusMinusForm)
-            firstOf {
-                option(EquationsPlans.SolveEquationUnion)
-            }
+            apply(EquationsPlans.SolveEquationUnion)
         }
-        option(EquationsRules.ExtractSolutionFromEquationInPlusMinusForm)
+        shortOption(EquationsRules.ExtractSolutionFromEquationInPlusMinusForm)
         option(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
     }
 }
@@ -458,7 +456,6 @@ private val solveEquationUnion = taskSet {
     explanation = Explanation.SolveEquationUnion
 
     tasks {
-
         // Create a task for each to simplify it
         val splitTasks = get(equationUnion).children.map {
             task(
@@ -496,7 +493,6 @@ private val optimalEquationSolvingSteps = steps {
 
 private val simplifyEquation = plan {
     explanation = Explanation.SimplifyEquation
-    specificPlans(ConstantExpressionsPlans.SimplifyConstantExpression)
 
     steps {
         whilePossible { deeply(simpleTidyUpSteps) }

@@ -10,6 +10,7 @@ import engine.patterns.IntegerFractionPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.powerOf
 import methods.fractionarithmetic.FractionArithmeticPlans
+import methods.fractionarithmetic.addIntegerFractions
 import methods.general.GeneralRules
 import methods.general.NormalizationRules
 import methods.integerarithmetic.IntegerArithmeticRules
@@ -82,7 +83,7 @@ enum class IntegerRationalExponentsPlans(override val runner: CompositeMethod) :
             steps {
                 apply(GeneralRules.RewriteProductOfPowersWithSameBase)
                 firstOf {
-                    option { deeply(FractionArithmeticPlans.EvaluateFractionSum) }
+                    option { deeply(addIntegerFractions) }
                     option { deeply(IntegerArithmeticRules.EvaluateSignedIntegerAddition) }
                 }
             }
@@ -142,7 +143,7 @@ enum class IntegerRationalExponentsPlans(override val runner: CompositeMethod) :
 
             steps {
                 apply(GeneralRules.RewriteFractionOfPowersWithSameBase)
-                applyTo(FractionArithmeticPlans.EvaluateFractionSum) { it.exponent() }
+                applyTo(addIntegerFractions) { it.exponent() }
             }
         },
     ),

@@ -6,7 +6,6 @@ import engine.conditions.isDefinitelyNotUndefined
 import engine.conditions.isDefinitelyNotZero
 import engine.conditions.signOf
 import engine.expressions.Constants
-import engine.expressions.Expression
 import engine.expressions.fractionOf
 import engine.expressions.negOf
 import engine.expressions.powerOf
@@ -79,7 +78,6 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     FactorMinusFromSum(factorMinusFromSum),
     SimplifyProductOfConjugates(simplifyProductOfConjugates),
     DistributePowerOfProduct(distributePowerOfProduct),
-    RewriteDivisionAsFraction(rewriteDivisionAsFraction),
     MultiplyExponentsUsingPowerRule(multiplyExponentsUsingPowerRule),
     DistributeSumOfPowers(distributeSumOfPowers),
     RewritePowerAsProduct(rewritePowerAsProduct),
@@ -441,35 +439,6 @@ private val distributePowerOfProduct =
                 ),
                 gmAction = drag(exponent, product),
                 explanation = metadata(Explanation.DistributePowerOfProduct),
-            )
-        }
-    }
-
-private val rewriteDivisionAsFraction =
-    rule {
-        val product = productContaining(divideBy(AnyPattern()))
-
-        onPattern(product) {
-            val factors = get(product).children
-            val division = factors.indexOfFirst { it.operator == UnaryExpressionOperator.DivideBy }
-
-            val result = mutableListOf<Expression>()
-            result.addAll(factors.subList(0, division - 1))
-
-            val denominator = factors[division].firstChild
-
-            result.add(
-                fractionOf(
-                    move(factors[division - 1]),
-                    move(denominator),
-                ),
-            )
-            result.addAll(factors.subList(division + 1, factors.size))
-
-            ruleResult(
-                toExpr = productOf(result),
-                gmAction = noGmSupport(),
-                explanation = metadata(Explanation.RewriteDivisionAsFraction),
             )
         }
     }

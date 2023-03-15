@@ -37,7 +37,7 @@ class MixedNumbersPlansTest {
                 }
 
                 explanation {
-                    key = methods.fractionarithmetic.Explanation.EvaluateFractionSum
+                    key = methods.fractionarithmetic.Explanation.AddFractions
                 }
             }
 
@@ -135,7 +135,7 @@ class MixedNumbersPlansTest {
             step {
                 toExpr = "[101 / 12]"
                 explanation {
-                    key = FractionArithmeticExplanation.EvaluateFractionSum
+                    key = FractionArithmeticExplanation.AddFractions
                 }
             }
 

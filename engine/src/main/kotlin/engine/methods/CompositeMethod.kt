@@ -17,18 +17,7 @@ abstract class CompositeMethod(
 
     override fun tryExecute(ctx: Context, sub: Expression): Transformation? {
         ctx.requireActive()
-
-        return run(ctx, sub)?.let {
-            Transformation(
-                type = it.type,
-                fromExpr = sub,
-                toExpr = it.toExpr,
-                steps = it.steps,
-                tasks = it.tasks,
-                explanation = it.explanation,
-                skills = it.skills,
-            )
-        }
+        return run(ctx, sub)
     }
 }
 

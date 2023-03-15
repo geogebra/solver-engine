@@ -36,6 +36,11 @@ interface FirstOfBuilder {
      * Try the following option and stop here if it is valid.
      */
     fun option(init: PipelineBuilder.() -> Unit)
+
+    /**
+     * Overrides the previous option if it produces the same result.
+     */
+    fun shortOption(opt: StepsProducer)
 }
 
 @Suppress("TooManyFunctions")

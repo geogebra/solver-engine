@@ -15,7 +15,7 @@ import engine.patterns.sumContaining
 import engine.patterns.sumOf
 import methods.general.GeneralRules
 
-fun expandSingleBracketAndSimplify(simplificationSteps: StepsProducer): Method {
+private fun createExpandSingleBracketAndSimplifyPlan(simplificationSteps: StepsProducer): Method {
     return plan {
         explanation = Explanation.ExpandSingleBracketAndSimplify
 
@@ -28,7 +28,7 @@ fun expandSingleBracketAndSimplify(simplificationSteps: StepsProducer): Method {
     }
 }
 
-fun expandDoubleBracketsAndSimplify(simplificationSteps: StepsProducer): Method {
+private fun createExpandDoubleBracketsAndSimplifyPlan(simplificationSteps: StepsProducer): Method {
     return plan {
         explanation = Explanation.ExpandDoubleBracketsAndSimplify
         val factor1 = sumContaining()
@@ -46,7 +46,7 @@ fun expandDoubleBracketsAndSimplify(simplificationSteps: StepsProducer): Method 
     }
 }
 
-fun expandBinomialSquaredAndSimplify(simplificationSteps: StepsProducer): Method {
+private fun createExpandBinomialSquaredAndSimplifyPlan(simplificationSteps: StepsProducer): Method {
     return plan {
         explanation = Explanation.ExpandBinomialSquaredAndSimplify
         pattern = powerOf(sumOf(AnyPattern(), AnyPattern()), FixedPattern(Constants.Two))
@@ -70,7 +70,7 @@ fun expandBinomialSquaredAndSimplify(simplificationSteps: StepsProducer): Method
     }
 }
 
-fun expandBinomialCubedAndSimplify(simplificationSteps: StepsProducer): Method {
+private fun createExpandBinomialCubedAndSimplifyPlan(simplificationSteps: StepsProducer): Method {
     return plan {
         explanation = Explanation.ExpandBinomialCubedAndSimplify
         pattern = powerOf(sumOf(AnyPattern(), AnyPattern()), FixedPattern(Constants.Three))
@@ -85,13 +85,13 @@ fun expandBinomialCubedAndSimplify(simplificationSteps: StepsProducer): Method {
         }
         alternative(ResourceData(curriculum = Curriculum.US)) {
             apply(GeneralRules.RewritePowerAsProduct)
-            apply(expandDoubleBracketsAndSimplify(simplificationSteps))
-            apply(expandDoubleBracketsAndSimplify(simplificationSteps))
+            apply(createExpandDoubleBracketsAndSimplifyPlan(simplificationSteps))
+            apply(createExpandDoubleBracketsAndSimplifyPlan(simplificationSteps))
         }
     }
 }
 
-fun expandTrinomialSquaredAndSimplify(simplificationSteps: StepsProducer): Method {
+private fun createExpandTrinomialSquaredAndSimplifyPlan(simplificationSteps: StepsProducer): Method {
     return plan {
         explanation = Explanation.ExpandTrinomialSquaredAndSimplify
         pattern = powerOf(
@@ -115,13 +115,13 @@ fun expandTrinomialSquaredAndSimplify(simplificationSteps: StepsProducer): Metho
     }
 }
 
-fun expandAndSimplifySteps(simplificationSteps: StepsProducer): StepsProducer {
+fun createExpandAndSimplifySteps(simplificationSteps: StepsProducer): StepsProducer {
     // making sure these plans are only created once
-    val expandDoubleBrackets = expandDoubleBracketsAndSimplify(simplificationSteps)
-    val expandSingleBracket = expandSingleBracketAndSimplify(simplificationSteps)
-    val expandBinomialsSquared = expandBinomialSquaredAndSimplify(simplificationSteps)
-    val expandBinomialCubed = expandBinomialCubedAndSimplify(simplificationSteps)
-    val expandTrinomialSquared = expandTrinomialSquaredAndSimplify(simplificationSteps)
+    val expandDoubleBrackets = createExpandDoubleBracketsAndSimplifyPlan(simplificationSteps)
+    val expandSingleBracket = createExpandSingleBracketAndSimplifyPlan(simplificationSteps)
+    val expandBinomialsSquared = createExpandBinomialSquaredAndSimplifyPlan(simplificationSteps)
+    val expandBinomialCubed = createExpandBinomialCubedAndSimplifyPlan(simplificationSteps)
+    val expandTrinomialSquared = createExpandTrinomialSquaredAndSimplifyPlan(simplificationSteps)
 
     return steps {
         firstOf {

@@ -23,6 +23,7 @@ import engine.patterns.productContaining
 import engine.patterns.sumContaining
 import methods.decimals.DecimalRules.StripTrailingZerosAfterDecimal
 import methods.fractionarithmetic.FractionArithmeticPlans
+import methods.fractionarithmetic.normalizeNegativeSignsInFraction
 import methods.general.GeneralRules
 import methods.general.NormalizationPlans
 import methods.general.NormalizationRules
@@ -225,7 +226,7 @@ val decimalEvaluationSteps = steps {
             option { deeply(GeneralRules.SimplifyZeroDenominatorFractionToUndefined, deepFirst = true) }
             option { deeply(removeRedundantBrackets, deepFirst = true) }
 
-            option(FractionArithmeticPlans.NormalizeSignsInFraction)
+            option { deeply(normalizeNegativeSignsInFraction) }
 
             option { deeply(DecimalPlans.NormalizeFractionOfDecimals, deepFirst = true) }
             option { deeply(FractionArithmeticPlans.SimplifyFraction, deepFirst = true) }

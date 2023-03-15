@@ -427,7 +427,7 @@ class SimplifyRationalExponents {
                     fromExpr = "[([2 / 3]) ^ [1 / 2] - [2 / 5]]"
                     toExpr = "[([2 / 3]) ^ [1 / 10]]"
                     explanation {
-                        key = FractionArithmeticExplanation.EvaluateFractionSum
+                        key = FractionArithmeticExplanation.AddFractions
                     }
                 }
             }
@@ -473,7 +473,7 @@ class SimplifyRationalExponents {
                     fromExpr = "[3 ^ [1 / 2] - [2 / 5]]"
                     toExpr = "[3 ^ [1 / 10]]"
                     explanation {
-                        key = FractionArithmeticExplanation.EvaluateFractionSum
+                        key = FractionArithmeticExplanation.AddFractions
                     }
                 }
             }
@@ -534,7 +534,7 @@ class SimplifyRationalExponents {
                 fromExpr = "[2 ^ [1 / 2] - [1 / 3]]"
                 toExpr = "[2 ^ [1 / 6]]"
                 explanation {
-                    key = FractionArithmeticExplanation.EvaluateFractionSum
+                    key = FractionArithmeticExplanation.AddFractions
                 }
             }
         }

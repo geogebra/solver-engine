@@ -193,7 +193,7 @@ class LinearEquationsTest {
                 fromExpr = "1 + [2 / 3] = x"
                 toExpr = "[5 / 3] = x"
                 explanation {
-                    key = FractionArithmeticExplanation.EvaluateSumOfFractionAndInteger
+                    key = FractionArithmeticExplanation.AddIntegerAndFraction
                 }
             }
 

@@ -71,14 +71,6 @@ enum class GeneralExplanation : CategorisedMetadataKey {
     SimplifyProductOfConjugates,
     DistributePowerOfProduct,
 
-    RewriteDivisionAsFraction,
-
-    /**
-     * Rewrite all divisions as fractions in an expression
-     *
-     * E.g. 3 : 4 + 4 * ( 2 - 1 : 2) -> [3 / 4] + 4 * (2 - [1 / 2])
-     */
-    RewriteDivisionsAsFractionInExpression,
     NormalizeExpression,
 
     /**
@@ -215,6 +207,13 @@ enum class GeneralExplanation : CategorisedMetadataKey {
      */
     NormaliseSimplifiedProduct,
 
+    /**
+     * Normalize all the negative signs in a product (i.e. cancel pairs of
+     * negative signs and potentially bring the remaining sign to the front)
+     *
+     * E.g. (-x)*(-y)*(-z) -> x*y*(-z) -> -x*y*z
+     */
+    NormalizeNegativeSignsInProduct,
     ;
 
     override val category = "General"

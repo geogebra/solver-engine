@@ -10,6 +10,7 @@ import engine.patterns.mixedNumberOf
 import engine.patterns.sumOf
 import methods.fractionarithmetic.FractionArithmeticPlans
 import methods.fractionarithmetic.FractionArithmeticRules
+import methods.fractionarithmetic.addIntegerFractions
 import methods.general.GeneralRules
 import methods.general.NormalizationRules
 import methods.integerarithmetic.IntegerArithmeticRules
@@ -32,7 +33,7 @@ enum class MixedNumbersPlans(override val runner: CompositeMethod) : RunnerMetho
                     }
                     step {
                         explanationKey = Explanation.AddFractions
-                        method = FractionArithmeticPlans.EvaluateFractionSum
+                        method = addIntegerFractions
                     }
                 }
             }
@@ -51,7 +52,7 @@ enum class MixedNumbersPlans(override val runner: CompositeMethod) : RunnerMetho
 
             steps(ResourceData(curriculum = Curriculum.EU)) {
                 apply(ConvertMixedNumberToImproperFraction)
-                apply(FractionArithmeticPlans.EvaluateFractionSum)
+                apply(addIntegerFractions)
                 // result might be integer or proper fraction after
                 // simplification, so this step is optional
                 optionally(MixedNumbersRules.FractionToMixedNumber)
@@ -84,14 +85,14 @@ enum class MixedNumbersPlans(override val runner: CompositeMethod) : RunnerMetho
                 }
 
                 apply(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
-                apply(FractionArithmeticPlans.EvaluateFractionSum)
+                apply(addIntegerFractions)
 
                 firstOf {
                     option(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
                     option(MixedNumbersRules.ConvertSumOfIntegerAndProperFractionToMixedNumber)
                     option {
                         apply(FractionArithmeticRules.ConvertIntegerToFraction)
-                        apply(FractionArithmeticPlans.EvaluateFractionSum)
+                        apply(addIntegerFractions)
                         apply(MixedNumbersRules.FractionToMixedNumber)
                     }
                 }

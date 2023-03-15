@@ -3,24 +3,23 @@ package methods.general
 import engine.methods.CompositeMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
-import engine.methods.stepsproducers.steps
+import engine.patterns.productContaining
+import engine.patterns.stickyOptionalNegOf
 
 enum class GeneralPlans(override val runner: CompositeMethod) : RunnerMethod {
-    RewriteDivisionsAsFractions(
+    NormalizeNegativeSignsInProduct(
         plan {
-            explanation = Explanation.RewriteDivisionsAsFractionInExpression
+            pattern = stickyOptionalNegOf(productContaining())
+            explanation = Explanation.NormalizeNegativeSignsInProduct
 
             steps {
-                whilePossible { deeply(GeneralRules.RewriteDivisionAsFraction) }
+                whilePossible {
+                    firstOf {
+                        option(GeneralRules.SimplifyProductWithTwoNegativeFactors)
+                        option(GeneralRules.MoveSignOfNegativeFactorOutOfProduct)
+                    }
+                }
             }
         },
     ),
-}
-
-val normalizeNegativeSigns = steps {
-    firstOf {
-        option(GeneralRules.SimplifyDoubleMinus)
-        option(GeneralRules.SimplifyProductWithTwoNegativeFactors)
-        option(GeneralRules.MoveSignOfNegativeFactorOutOfProduct)
-    }
 }

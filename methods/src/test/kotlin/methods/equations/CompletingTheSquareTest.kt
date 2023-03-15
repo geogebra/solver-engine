@@ -32,7 +32,7 @@ class CompletingTheSquareTest {
     @Test
     fun `short test surd solutions`() = shortTest(
         inputExpr = "[x ^ 2] = x + 3",
-        toExpr = "Solution[x, {-[sqrt[13] / 2] + [1 / 2], [sqrt[13] / 2] + [1 / 2]}]",
+        toExpr = "Solution[x, {[-sqrt[13] + 1 / 2], [sqrt[13] + 1 / 2]}]",
     )
 
     @Test

@@ -1,10 +1,31 @@
 package methods.fractionarithmetic
 
 import engine.steps.metadata.CategorisedMetadataKey
+import engine.steps.metadata.LegacyKeyName
 import engine.steps.metadata.TranslationKeys
 
 @TranslationKeys
 enum class FractionArithmeticExplanation : CategorisedMetadataKey {
+
+    /**
+     * Rewrite a : (b / c) as a * (c / b)
+     */
+    RewriteDivisionByFractionAsProduct,
+
+    /**
+     * Rewrite a * b : c as a * (b / c)
+     */
+    @LegacyKeyName("General.RewriteDivisionAsFraction")
+    RewriteDivisionAsFraction,
+
+    /**
+     * Rewrite all divisions as fractions in an expression
+     *
+     * E.g. 3 : 4 + 4 * (2 - 1 : 2) -> 3 / 4 + 4 * (2 - 1 / 2)
+     */
+    @LegacyKeyName("General.RewriteDivisionsAsFractionInExpression")
+    RewriteDivisionsAsFractionInExpression,
+
     SimplifyNegativeInDenominator,
     SimplifyNegativeInNumerator,
     SimplifyNegativeInNumeratorAndDenominator,
@@ -22,18 +43,9 @@ enum class FractionArithmeticExplanation : CategorisedMetadataKey {
     SplitRationalExponent,
 
     /**
-     * Add an integer to a fraction
-     *
-     * E.g. 3 + [2 / 3] -> [11 / 3]
-     */
-    EvaluateSumOfFractionAndInteger,
-
-    /**
-     * Turn a non-fractional factor in a product containing fractions into a fraction
+     * Turn a non-fraction factor in a product containing fractions into a fraction
      *
      * E.g. 3 * [1 / 2] -> [3 / 1] * [1 / 2]
-     *
-     * This is vith a view to multiplying out the fractions.
      */
     TurnFactorIntoFractionInProduct,
 
@@ -62,18 +74,32 @@ enum class FractionArithmeticExplanation : CategorisedMetadataKey {
     TurnIntegerToMinusOneToFraction,
     TurnNegativePowerOfIntegerToFraction,
     SimplifyFraction,
-    EvaluateFractionSum,
+
+    @LegacyKeyName("FractionArithmetic.EvaluateFractionSum")
+    AddFractions,
     EvaluateProductsInNumeratorAndDenominator,
-    EvaluateSumInNumerator,
-    NormalizeSignsInFraction,
 
     /**
-     * Normalize fractions and divisions in an expression by turning divisions into fractions
-     * and simplifying nested fractions
+     * After the addition of two fractions simplify the numerator of the resulting fraction.
      *
-     * E.g. 5 : [2 / 3] -> 5 * [3 / 2]
+     * E.g. ((1 + 4 sqrt(2)) + (2 + sqrt(2))) / 4 -> (3 + 5 sqrt(2)) / 4
      */
-    NormalizeFractionsAndDivisions,
+    SimplifyNumerator,
+
+    /**
+     * Add an integer to a fraction
+     *
+     * E.g. 3 + 2 / 3 -> 11 / 3
+     */
+    @LegacyKeyName("FractionArithmetic.EvaluateSumOfFractionAndInteger")
+    AddIntegerAndFraction,
+
+    /**
+     * Add a root to a fraction
+     *
+     * E.g. sqrt(2) + (3 + 2 sqrt(2)) / 5 -> (3 + 7 sqrt(2)) / 5
+     */
+    AddRootAndFraction,
 
     /**
      * Convert an improper fraction (one with a greater numerator than denominator) to the sum

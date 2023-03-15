@@ -38,7 +38,7 @@ class ConstantExpressionsPlansTest {
                 fromExpr = "[1 / 3] + [1 / 3]"
                 toExpr = "[2 / 3]"
                 explanation {
-                    key = FractionArithmeticExplanation.EvaluateFractionSum
+                    key = FractionArithmeticExplanation.AddFractions
                 }
             }
         }
@@ -70,11 +70,9 @@ class ConstantExpressionsPlansTest {
         inputExpr = "[-1 / 6] * [2 / -5]"
 
         check {
-            step {
-                step { toExpr = "(-[1 / 6]) * [2 / -5]" }
-                step { toExpr = "(-[1 / 6]) (-[2 / 5])" }
-                step { toExpr = "[1 / 6] * [2 / 5]" }
-            }
+            step { toExpr = "(-[1 / 6]) * [2 / -5]" }
+            step { toExpr = "(-[1 / 6]) (-[2 / 5])" }
+            step { toExpr = "[1 / 6] * [2 / 5]" }
             step { toExpr = "[1 / 15]" }
         }
     }
@@ -85,9 +83,9 @@ class ConstantExpressionsPlansTest {
         inputExpr = "(-[1 / 3]) * [-1 / 4] * [3 / -2]"
 
         check {
+            step { toExpr = "(-[1 / 3]) (-[1 / 4]) * [3 / -2]" }
+            step { toExpr = "(-[1 / 3]) (-[1 / 4]) (-[3 / 2])" }
             step {
-                step { toExpr = "(-[1 / 3]) (-[1 / 4]) * [3 / -2]" }
-                step { toExpr = "(-[1 / 3]) (-[1 / 4]) (-[3 / 2])" }
                 step { toExpr = "[1 / 3] * [1 / 4] (-[3 / 2])" }
                 step { toExpr = "-[1 / 3] * [1 / 4] * [3 / 2]" }
             }
@@ -102,10 +100,7 @@ class ConstantExpressionsPlansTest {
 
         check {
             step {
-                step {
-                    step { toExpr = "[3 / 4] : 5" }
-                    step { toExpr = "[[3 / 4] / 5]" }
-                }
+                step { toExpr = "[3 / 4] : 5" }
                 step { toExpr = "[3 / 4] * [1 / 5]" }
             }
 
@@ -119,10 +114,7 @@ class ConstantExpressionsPlansTest {
         inputExpr = "[5 / 6] : [3 / 4]"
 
         check {
-            step {
-                step { toExpr = "[[5 / 6] / [3 / 4]]" }
-                step { toExpr = "[5 / 6] * [4 / 3]" }
-            }
+            step { toExpr = "[5 / 6] * [4 / 3]" }
             step { toExpr = "[10 / 9]" }
         }
     }
@@ -373,98 +365,6 @@ class ConstantExpressionsPlansTest {
                     key = FractionArithmeticExplanation.MultiplyAndSimplifyFractions
                 }
             }
-        }
-    }
-}
-
-class ConstantExpressionSimpleOperationsTest {
-    @Test
-    fun testAddLikeFractions() = testMethod {
-        method = ConstantExpressionsPlans.SimplifyConstantExpression
-        inputExpr = "[5 / 4] + [2 / 4]"
-
-        check {
-            fromExpr = "[5 / 4] + [2 / 4]"
-            toExpr = "[7 / 4]"
-            explanation {
-                key = FractionArithmeticExplanation.EvaluateFractionSum
-            }
-
-            step {
-                fromExpr = "[5 / 4] + [2 / 4]"
-                toExpr = "[5 + 2 / 4]"
-                explanation {
-                    key = FractionArithmeticExplanation.AddLikeFractions
-                }
-            }
-
-            step {
-                fromExpr = "[5 + 2 / 4]"
-                toExpr = "[7 / 4]"
-                explanation {
-                    key = IntegerArithmeticExplanation.EvaluateIntegerAddition
-                }
-            }
-        }
-    }
-
-    @Test
-    fun testSubtractLikeFractions() = testMethod {
-        method = ConstantExpressionsPlans.SimplifyConstantExpression
-        inputExpr = "[5 / 4] - [2 / 4]"
-
-        check {
-            fromExpr = "[5 / 4] - [2 / 4]"
-            toExpr = "[3 / 4]"
-            explanation {
-                key = FractionArithmeticExplanation.EvaluateFractionSum
-            }
-
-            step {
-                fromExpr = "[5 / 4] - [2 / 4]"
-                toExpr = "[5 - 2 / 4]"
-                explanation {
-                    key = FractionArithmeticExplanation.SubtractLikeFractions
-                }
-            }
-
-            step {
-                fromExpr = "[5 - 2 / 4]"
-                toExpr = "[3 / 4]"
-                explanation {
-                    key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
-                }
-            }
-        }
-    }
-
-    @Test
-    fun testSimplifyFractionsBeforeAdding() = testMethod {
-        method = ConstantExpressionsPlans.SimplifyConstantExpression
-        inputExpr = "[100/200] + [100/300]"
-
-        check {
-            toExpr = "[5 / 6]"
-
-            step { toExpr = "[1 / 2] + [100 / 300]" }
-
-            step { toExpr = "[1 / 2] + [1 / 3]" }
-
-            step { toExpr = "[5 / 6]" }
-        }
-    }
-
-    @Test
-    fun testAddingFractionWithoutUnnecessaryCanceling() = testMethod {
-        method = ConstantExpressionsPlans.SimplifyConstantExpression
-        inputExpr = "[2 / 2 * 3] + [3 / 2 * 3] + [5 / 3 * 5]"
-
-        check {
-            toExpr = "[7 / 6]"
-
-            step { toExpr = "[5 / 6] + [5 / 3 * 5]" }
-            step { toExpr = "[5 / 6] + [1 / 3]" }
-            step { toExpr = "[7 / 6]" }
         }
     }
 }
@@ -926,7 +826,7 @@ class ConstantExpressionFractionHigherOrderRootTest {
                 fromExpr = "1 + 0.002 : 0.6"
                 toExpr = "1 + [0.002 / 0.6]"
                 explanation {
-                    key = GeneralExplanation.RewriteDivisionAsFraction
+                    key = FractionArithmeticExplanation.RewriteDivisionAsFraction
                 }
             }
 
@@ -1036,7 +936,7 @@ class SimplifyToZeroTest {
                 fromExpr = "0 : 2"
                 toExpr = "[0 / 2]"
                 explanation {
-                    key = GeneralExplanation.RewriteDivisionAsFraction
+                    key = FractionArithmeticExplanation.RewriteDivisionAsFraction
                 }
             }
 
@@ -1119,7 +1019,7 @@ class SimplifyToUndefinedTest {
                 fromExpr = "1 : 0 + 2"
                 toExpr = "[1 / 0] + 2"
                 explanation {
-                    key = GeneralExplanation.RewriteDivisionAsFraction
+                    key = FractionArithmeticExplanation.RewriteDivisionAsFraction
                 }
             }
 
@@ -1360,7 +1260,7 @@ class CancelOppositeTermTest {
                 step {
                     toExpr = "[6 ^ [5 / 6]]"
                     explanation {
-                        key = FractionArithmeticExplanation.EvaluateFractionSum
+                        key = FractionArithmeticExplanation.AddFractions
                     }
                 }
             }

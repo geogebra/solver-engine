@@ -4,11 +4,13 @@ import engine.methods.testMethod
 import engine.methods.testRule
 import methods.fractionarithmetic.FractionArithmeticRules.AddLikeFractions
 import methods.fractionarithmetic.FractionArithmeticRules.BringToCommonDenominator
+import methods.fractionarithmetic.FractionArithmeticRules.BringToCommonDenominatorWithNonFractionalTerm
 import methods.fractionarithmetic.FractionArithmeticRules.ConvertIntegerToFraction
 import methods.fractionarithmetic.FractionArithmeticRules.DistributeFractionPositiveFractionPower
 import methods.fractionarithmetic.FractionArithmeticRules.DistributeFractionPositivePower
 import methods.fractionarithmetic.FractionArithmeticRules.FindCommonFactorInFraction
 import methods.fractionarithmetic.FractionArithmeticRules.MultiplyFractions
+import methods.fractionarithmetic.FractionArithmeticRules.RewriteDivisionAsFraction
 import methods.fractionarithmetic.FractionArithmeticRules.SimplifyFractionNegativePower
 import methods.fractionarithmetic.FractionArithmeticRules.SimplifyFractionToInteger
 import methods.fractionarithmetic.FractionArithmeticRules.SimplifyFractionToMinusOne
@@ -21,10 +23,14 @@ import methods.fractionarithmetic.FractionArithmeticRules.TurnFactorIntoFraction
 import methods.fractionarithmetic.FractionArithmeticRules.TurnIntegerToMinusOneToFraction
 import methods.fractionarithmetic.FractionArithmeticRules.TurnNegativePowerOfIntegerToFraction
 import methods.fractionarithmetic.FractionArithmeticRules.TurnNegativePowerOfZeroToPowerOfFraction
-import methods.fractionarithmetic.FractionArithmeticRules.TurnSumOfFractionAndIntegerToFractionSum
 import org.junit.jupiter.api.Test
 
 class IntegerFractionsRulesTest {
+
+    @Test
+    fun testRewriteDivisionAsFraction() {
+        testRule("1:8", RewriteDivisionAsFraction, "[1 / 8]")
+    }
 
     @Test
     fun testConvertIntegerToFraction() {
@@ -129,9 +135,9 @@ class IntegerFractionsRulesTest {
 
     @Test
     fun testTurnSumOfFractionAndIntegerToFractionSum() {
-        testRule("[1/3] + 2", TurnSumOfFractionAndIntegerToFractionSum, "[1/3] + [2 * 3/3]")
-        testRule("[1/2] - 2", TurnSumOfFractionAndIntegerToFractionSum, "[1/2] - [2 * 2/2]")
-        testRule("3 - [1/4]", TurnSumOfFractionAndIntegerToFractionSum, "[3 * 4/4] - [1/4]")
+        testRule("[1/3] + 2", BringToCommonDenominatorWithNonFractionalTerm, "[1/3] + [2 * 3/3]")
+        testRule("[1/2] - 2", BringToCommonDenominatorWithNonFractionalTerm, "[1/2] - [2 * 2/2]")
+        testRule("3 - [1/4]", BringToCommonDenominatorWithNonFractionalTerm, "[3 * 4/4] - [1/4]")
     }
 
     @Test

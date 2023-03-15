@@ -30,4 +30,12 @@ private class FirstOfRunner(val sub: Expression, val ctx: Context) : FirstOfBuil
             option(ProceduralPipeline(init))
         }
     }
+
+    override fun shortOption(opt: StepsProducer) {
+        val currentSteps = opt.produceSteps(ctx, sub)
+        val steps = steps
+        if (steps == null || currentSteps != null && steps.last().toExpr == currentSteps.last().toExpr) {
+            this.steps = currentSteps
+        }
+    }
 }

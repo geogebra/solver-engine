@@ -493,34 +493,34 @@ class QuadraticEquationsWithQuadraticFormulaTest {
     @Test
     fun `test non simplifiable distinct roots`() = testMethodInX {
         method = EquationsPlans.SolveQuadraticEquationUsingQuadraticFormula
-        inputExpr = "[x^2] + 7x - 1 = 0"
+        inputExpr = "[x^2] - 7x - 1 = 0"
 
         check {
-            fromExpr = "[x ^ 2] + 7 x - 1 = 0"
-            toExpr = "Solution[x, {[-7 - sqrt[53] / 2], [-7 + sqrt[53] / 2]}]"
+            fromExpr = "[x ^ 2] - 7 x - 1 = 0"
+            toExpr = "Solution[x, {[7 - sqrt[53] / 2], [7 + sqrt[53] / 2]}]"
             explanation {
                 key = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula
             }
 
             step {
-                fromExpr = "[x ^ 2] + 7 x - 1 = 0"
-                toExpr = "x = [-7 +/- sqrt[[7 ^ 2] - 4 * 1 * (-1)] / 2 * 1]"
+                fromExpr = "[x ^ 2] - 7 x - 1 = 0"
+                toExpr = "x = [-(-7) +/- sqrt[[(-7) ^ 2] - 4 * 1 * (-1)] / 2 * 1]"
                 explanation {
                     key = EquationsExplanation.ApplyQuadraticFormula
                 }
             }
 
             step {
-                fromExpr = "x = [-7 +/- sqrt[[7 ^ 2] - 4 * 1 * (-1)] / 2 * 1]"
-                toExpr = "x = [-7 +/- sqrt[53] / 2]"
+                fromExpr = "x = [-(-7) +/- sqrt[[(-7) ^ 2] - 4 * 1 * (-1)] / 2 * 1]"
+                toExpr = "x = [7 +/- sqrt[53] / 2]"
                 explanation {
                     key = ConstantExpressionsExplanation.SimplifyConstantExpression
                 }
             }
 
             step {
-                fromExpr = "x = [-7 +/- sqrt[53] / 2]"
-                toExpr = "Solution[x, {[-7 - sqrt[53] / 2], [-7 + sqrt[53] / 2]}]"
+                fromExpr = "x = [7 +/- sqrt[53] / 2]"
+                toExpr = "Solution[x, {[7 - sqrt[53] / 2], [7 + sqrt[53] / 2]}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEquationInPlusMinusForm
                 }

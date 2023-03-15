@@ -31,7 +31,7 @@ import methods.constantexpressions.ConstantExpressionsPlans
 import methods.constantexpressions.constantSimplificationSteps
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.decimals.decimalEvaluationSteps
-import methods.expand.expandAndSimplifySteps
+import methods.expand.createExpandAndSimplifySteps
 import methods.general.GeneralRules
 import methods.general.NormalizationPlans
 import methods.general.NormalizationRules
@@ -206,7 +206,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
 }
 
 private val expandAndSimplifySteps = lazy {
-    expandAndSimplifySteps(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable)
+    createExpandAndSimplifySteps(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable)
 }
 
 private val multiplyMonomialsAndSimplify = plan {

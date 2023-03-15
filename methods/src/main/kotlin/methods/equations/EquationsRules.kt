@@ -8,6 +8,7 @@ import engine.expressions.Expression
 import engine.expressions.equationOf
 import engine.expressions.equationUnionOf
 import engine.expressions.fractionOf
+import engine.expressions.hasSingleValue
 import engine.expressions.inverse
 import engine.expressions.isSignedFraction
 import engine.expressions.negOf
@@ -368,7 +369,10 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
     ExtractSolutionFromEquationInSolvedForm(
         rule {
             val lhs = SolutionVariablePattern()
-            val rhs = condition(ConstantInSolutionVariablePattern()) { it.signOf().isKnown() }
+            val rhs = condition(ConstantInSolutionVariablePattern()) {
+                // excluding values containing +/-
+                it.hasSingleValue()
+            }
 
             onEquation(lhs, rhs) {
                 if (context.gmFriendly) return@onEquation null

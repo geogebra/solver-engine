@@ -4,71 +4,52 @@ import engine.expressions.asRational
 import engine.expressions.base
 import engine.expressions.denominator
 import engine.expressions.exponent
+import engine.expressions.isFraction
+import engine.expressions.numerator
 import engine.methods.CompositeMethod
+import engine.methods.Method
 import engine.methods.RunnerMethod
 import engine.methods.plan
+import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.steps
-import engine.operators.BinaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.IntegerFractionPattern
 import engine.patterns.SignedIntegerPattern
+import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.commutativeSumContaining
 import engine.patterns.fractionOf
+import engine.patterns.integerOrderRootOf
+import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.sumContaining
+import engine.patterns.withOptionalIntegerCoefficient
 import engine.steps.metadata.Skill
 import engine.utility.gcd
-import methods.general.GeneralPlans
 import methods.general.GeneralRules
-import methods.general.normalizeNegativeSigns
 import methods.integerarithmetic.IntegerArithmeticPlans
 import methods.integerarithmetic.IntegerArithmeticRules
 import java.math.BigInteger
 
 enum class FractionArithmeticPlans(override val runner: CompositeMethod) : RunnerMethod {
 
-    NormalizeSignsInFraction(
+    RewriteDivisionsAsFractions(
         plan {
-            explanation = Explanation.NormalizeSignsInFraction
-
-            steps {
-                whilePossible {
-                    firstOf {
-                        option {
-                            deeply {
-                                applyTo(GeneralRules.FactorMinusFromSum) {
-                                    if (it.parent?.operator == BinaryExpressionOperator.Fraction) it else null
-                                }
-                            }
-                        }
-                        option { deeply(FractionArithmeticRules.SimplifyNegativeNumeratorAndDenominator) }
-                        option { deeply(FractionArithmeticRules.SimplifyNegativeInNumerator) }
-                        option { deeply(FractionArithmeticRules.SimplifyNegativeInDenominator) }
-                        option { deeply(normalizeNegativeSigns) }
-                    }
-                }
-            }
-        },
-    ),
-    NormalizeFractions(
-        plan {
-            // Normalize fractions within fractions
-            explanation = Explanation.NormalizeFractionsAndDivisions
+            explanation = Explanation.RewriteDivisionsAsFractionInExpression
 
             steps {
                 whilePossible {
                     deeply {
                         firstOf {
-                            option(GeneralPlans.RewriteDivisionsAsFractions)
-                            option(FractionArithmeticRules.SimplifyFractionWithFractionDenominator)
-                            option(FractionArithmeticRules.SimplifyFractionWithFractionNumerator)
+                            option(FractionArithmeticRules.RewriteDivisionByFractionAsProduct)
+                            option(FractionArithmeticRules.RewriteDivisionAsFraction)
                         }
                     }
                 }
             }
         },
     ),
+
     SimplifyFraction(
         plan {
             val f = fractionOf(AnyPattern(), AnyPattern())
@@ -93,9 +74,6 @@ enum class FractionArithmeticPlans(override val runner: CompositeMethod) : Runne
             }
         },
     ),
-
-    EvaluateFractionSum(evaluateFractionSum),
-    EvaluateSumOfFractionAndInteger(evaluateSumOfFractionAndInteger),
 
     MultiplyAndSimplifyFractions(
         plan {
@@ -131,71 +109,143 @@ enum class FractionArithmeticPlans(override val runner: CompositeMethod) : Runne
     ),
 }
 
-private val evaluateFractionSum = plan {
-    val f1 = optionalNegOf(fractionOf(AnyPattern(), AnyPattern()))
-    val f2 = optionalNegOf(fractionOf(AnyPattern(), AnyPattern()))
-
-    pattern = sumContaining(f1, f2)
-
-    explanation = Explanation.EvaluateFractionSum
-    explanationParameters(f1, f2)
-
-    skill(Skill.AddFractions, f1, f2)
-
-    partialExpressionSteps {
-        optionally {
-            plan {
-                explanation = Explanation.EvaluateProductsInNumeratorAndDenominator
-                steps {
-                    whilePossible {
-                        deeply(IntegerArithmeticRules.EvaluateIntegerProductAndDivision)
-                    }
-                }
-            }
-        }
-        optionally(FractionArithmeticRules.BringToCommonDenominator)
-        optionally {
-            plan {
-                explanation = Explanation.EvaluateProductsInNumeratorAndDenominator
-
-                steps {
-                    whilePossible { deeply(IntegerArithmeticRules.EvaluateIntegerProductAndDivision) }
-                }
-            }
-            check {
-                val f11 = it.firstChild.asRational()
-                val f22 = it.secondChild.asRational()
-                f11 != null && f22 != null && gcd(
-                    f11.numerator,
-                    f11.denominator,
-                    f22.numerator,
-                    f22.denominator,
-                ) == BigInteger.ONE
-            }
-        }
-        apply(FractionArithmeticRules.AddLikeFractions)
+private fun createAddFractionsSteps(numeratorSimplificationSteps: StepsProducer) = steps {
+    optionally {
         plan {
-            explanation = Explanation.EvaluateSumInNumerator
+            explanation = Explanation.EvaluateProductsInNumeratorAndDenominator
+            steps {
+                whilePossible {
+                    deeply(IntegerArithmeticRules.EvaluateIntegerProductAndDivision)
+                }
+            }
+        }
+    }
+    optionally(FractionArithmeticRules.BringToCommonDenominator)
+    optionally {
+        plan {
+            explanation = Explanation.EvaluateProductsInNumeratorAndDenominator
 
             steps {
-                deeply(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
+                whilePossible { deeply(IntegerArithmeticRules.EvaluateIntegerProductAndDivision) }
             }
         }
-        optionally(FractionArithmeticPlans.NormalizeSignsInFraction)
-        optionally(FractionArithmeticPlans.SimplifyFraction)
+        check {
+            val f11 = it.firstChild.asRational()
+            val f22 = it.secondChild.asRational()
+            f11 == null || f22 == null || gcd(
+                f11.numerator,
+                f11.denominator,
+                f22.numerator,
+                f22.denominator,
+            ) == BigInteger.ONE
+        }
+    }
+    apply(FractionArithmeticRules.AddLikeFractions)
+    optionally {
+        plan {
+            explanation = Explanation.SimplifyNumerator
+
+            steps {
+                applyTo(numeratorSimplificationSteps) { it.numerator() }
+            }
+        }
+    }
+    optionally(normalizeNegativeSignsInFraction)
+    optionally(FractionArithmeticPlans.SimplifyFraction)
+}
+
+fun createAddFractionsPlan(numeratorSimplificationSteps: StepsProducer): Method {
+    val addFractionSteps = createAddFractionsSteps(numeratorSimplificationSteps)
+
+    return plan {
+        val f1 = optionalNegOf(fractionOf(AnyPattern(), AnyPattern()))
+        val f2 = optionalNegOf(fractionOf(AnyPattern(), AnyPattern()))
+
+        pattern = sumContaining(f1, f2)
+
+        explanation = Explanation.AddFractions
+        explanationParameters(f1, f2)
+
+        skill(Skill.AddFractions, f1, f2)
+
+        partialExpressionSteps {
+            apply(addFractionSteps)
+        }
     }
 }
 
-private val evaluateSumOfFractionAndInteger = plan {
-    explanation = Explanation.EvaluateSumOfFractionAndInteger
-    val f = optionalNegOf(IntegerFractionPattern())
-    val n = SignedIntegerPattern()
-    pattern = commutativeSumContaining(f, n)
+/**
+ * Only add an integer to a fraction if that fraction already contains an integer
+ * in its numerator (i.e. don't add 3 and [sqrt[2] / 2] but do add 3 and [1 + sqrt[2] / 2])
+ */
+fun createAddIntegerAndFractionPlan(numeratorSimplificationSteps: StepsProducer): CompositeMethod {
+    val addFractionSteps = createAddFractionsSteps(numeratorSimplificationSteps)
 
-    partialExpressionSteps {
-        apply(FractionArithmeticRules.TurnSumOfFractionAndIntegerToFractionSum)
-        deeply(IntegerArithmeticRules.EvaluateIntegerProductAndDivision)
-        apply(FractionArithmeticPlans.EvaluateFractionSum)
+    return plan {
+        explanation = Explanation.AddIntegerAndFraction
+
+        val integer = SignedIntegerPattern()
+        val numerator = oneOf(SignedIntegerPattern(), sumContaining(SignedIntegerPattern()))
+        val fraction = optionalNegOf(fractionOf(numerator, UnsignedIntegerPattern()))
+        pattern = commutativeSumContaining(integer, fraction)
+
+        partialExpressionSteps {
+            apply(FractionArithmeticRules.BringToCommonDenominatorWithNonFractionalTerm)
+            deeply(IntegerArithmeticRules.EvaluateIntegerProductAndDivision)
+            apply(addFractionSteps)
+        }
+    }
+}
+
+/**
+ * Only add a root to a fraction if that fraction already contains the same root in
+ * its numerator (i.e. don't add sqrt[2] and [1 / 2] but do add sqrt[2] and [1 + sqrt[2] / 2])
+ */
+fun createAddRootAndFractionPlan(numeratorSimplificationSteps: StepsProducer): CompositeMethod {
+    val addFractionSteps = createAddFractionsSteps(numeratorSimplificationSteps)
+
+    return plan {
+        explanation = Explanation.AddRootAndFraction
+
+        val root = integerOrderRootOf(AnyPattern())
+        val rootWithCoefficient = withOptionalIntegerCoefficient(root)
+        val numerator = oneOf(
+            withOptionalIntegerCoefficient(root),
+            sumContaining(withOptionalIntegerCoefficient(root)),
+        )
+        val fraction = optionalNegOf(fractionOf(numerator, UnsignedIntegerPattern()))
+        pattern = commutativeSumContaining(rootWithCoefficient, fraction)
+
+        partialExpressionSteps {
+            apply(FractionArithmeticRules.BringToCommonDenominatorWithNonFractionalTerm)
+            apply(addFractionSteps)
+        }
+    }
+}
+
+val addIntegerFractions = createAddFractionsPlan(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
+
+val normalizeFractionsWithinFractions = steps {
+    firstOf {
+        option(FractionArithmeticRules.SimplifyFractionWithFractionDenominator)
+        option(FractionArithmeticRules.SimplifyFractionWithFractionNumerator)
+    }
+}
+
+val normalizeNegativeSignsInFraction = steps {
+    check { it.isFraction() }
+
+    optionally {
+        applyTo(GeneralRules.FactorMinusFromSum) { it.numerator() }
+    }
+    optionally {
+        applyTo(GeneralRules.FactorMinusFromSum) { it.denominator() }
+    }
+
+    firstOf {
+        option(FractionArithmeticRules.SimplifyNegativeNumeratorAndDenominator)
+        option(FractionArithmeticRules.SimplifyNegativeInNumerator)
+        option(FractionArithmeticRules.SimplifyNegativeInDenominator)
     }
 }
 

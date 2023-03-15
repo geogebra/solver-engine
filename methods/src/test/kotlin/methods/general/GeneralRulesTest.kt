@@ -15,7 +15,6 @@ import methods.general.GeneralRules.EvaluateZeroDividedByAnyValue
 import methods.general.GeneralRules.EvaluateZeroToAPositivePower
 import methods.general.GeneralRules.FlipFractionUnderNegativePower
 import methods.general.GeneralRules.MoveSignOfNegativeFactorOutOfProduct
-import methods.general.GeneralRules.RewriteDivisionAsFraction
 import methods.general.GeneralRules.RewriteFractionOfPowersWithSameBase
 import methods.general.GeneralRules.RewriteFractionOfPowersWithSameExponent
 import methods.general.GeneralRules.RewritePowerAsProduct
@@ -157,11 +156,6 @@ class GeneralRulesTest {
     fun testSimplifyDoubleMinus() {
         testRule("-(-5)", SimplifyDoubleMinus, "5")
         testRule("-(-x)", SimplifyDoubleMinus, "x")
-    }
-
-    @Test
-    fun testRewriteDivisionAsFraction() {
-        testRule("1:8", RewriteDivisionAsFraction, "[1 / 8]")
     }
 
     @Test

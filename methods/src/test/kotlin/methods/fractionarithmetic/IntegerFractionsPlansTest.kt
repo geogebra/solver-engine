@@ -9,14 +9,14 @@ class TestAddFractions {
 
     @Test
     fun addLikeFractionsTest() = testMethod {
-        method = FractionArithmeticPlans.EvaluateFractionSum
+        method = addIntegerFractions
         inputExpr = "[1/5] + [2/5]"
 
         check {
             toExpr = "[3/5]"
 
             explanation {
-                key = Explanation.EvaluateFractionSum
+                key = Explanation.AddFractions
 
                 param {
                     expr = "[1/5]"
@@ -54,7 +54,7 @@ class TestAddFractions {
 
     @Test
     fun addUnlikeFractionsTest() = testMethod {
-        method = FractionArithmeticPlans.EvaluateFractionSum
+        method = addIntegerFractions
         inputExpr = "[1/3] + [2/5]"
 
         check {
@@ -67,7 +67,7 @@ class TestAddFractions {
 
     @Test
     fun testAddFractionsWithCommonFactor() = testMethod {
-        method = FractionArithmeticPlans.EvaluateFractionSum
+        method = addIntegerFractions
         inputExpr = "[1 / 4] + [1 / 4]"
 
         check {
@@ -77,7 +77,7 @@ class TestAddFractions {
 
     @Test
     fun testSumSimplifies() = testMethod {
-        method = FractionArithmeticPlans.EvaluateFractionSum
+        method = addIntegerFractions
         inputExpr = "[1 / 4] + [1 / 4]"
 
         check {
@@ -89,7 +89,7 @@ class TestAddFractions {
 
     @Test
     fun testSumIsInteger() = testMethod {
-        method = FractionArithmeticPlans.EvaluateFractionSum
+        method = addIntegerFractions
         inputExpr = "[3 / 5] + [7 / 5]"
 
         check {
@@ -101,7 +101,7 @@ class TestAddFractions {
 
     @Test
     fun testSumDoesNotSimplify() = testMethod {
-        method = FractionArithmeticPlans.EvaluateFractionSum
+        method = addIntegerFractions
         inputExpr = "[2 / 5] + [1 / 3]"
 
         check {
@@ -114,7 +114,7 @@ class TestAddFractions {
 
     @Test
     fun testSubtract() = testMethod {
-        method = FractionArithmeticPlans.EvaluateFractionSum
+        method = addIntegerFractions
         inputExpr = "[3 / 5] - [1 / 4]"
 
         check {
@@ -124,7 +124,7 @@ class TestAddFractions {
 
     @Test
     fun testAddNegatives() = testMethod {
-        method = FractionArithmeticPlans.EvaluateFractionSum
+        method = addIntegerFractions
         inputExpr = "- [3 / 5] - [1 / 4]"
 
         check {
@@ -134,7 +134,7 @@ class TestAddFractions {
 
     @Test
     fun testSumWithMoreTerms() = testMethod {
-        method = FractionArithmeticPlans.EvaluateFractionSum
+        method = addIntegerFractions
         inputExpr = "[1/2] + 3 - [1/3]"
 
         check {
@@ -155,7 +155,7 @@ class TestAddFractions {
 
     @Test
     fun testSumWithMoreTermsAtStart() = testMethod {
-        method = FractionArithmeticPlans.EvaluateFractionSum
+        method = addIntegerFractions
         inputExpr = "5 + x + [1/2] + 3 - [1/3]"
 
         check {
@@ -179,7 +179,7 @@ class TestAddFractions {
 
     @Test
     fun testFractionNeedsCancelingFirst() = testMethod {
-        method = FractionArithmeticPlans.EvaluateFractionSum
+        method = addIntegerFractions
         inputExpr = "[1/3] + [4/8]"
 
         check {
@@ -189,7 +189,7 @@ class TestAddFractions {
 
     @Test
     fun testAvoidCancelingThatWouldBeUndone() = testMethod {
-        method = FractionArithmeticPlans.EvaluateFractionSum
+        method = addIntegerFractions
         inputExpr = "[2 / 2 * 3] + [1 / 6]"
 
         check {
@@ -204,7 +204,7 @@ class TestAddFractions {
 
     @Test
     fun testExplanationPointsAtCorrectTerms() = testMethod {
-        method = FractionArithmeticPlans.EvaluateFractionSum
+        method = addIntegerFractions
         inputExpr = "[4/8] + [1/2] + [1/3]"
 
         check {
@@ -212,7 +212,7 @@ class TestAddFractions {
 
             task {
                 explanation {
-                    key = FractionArithmeticExplanation.EvaluateFractionSum
+                    key = FractionArithmeticExplanation.AddFractions
                     param { expr = "[1/2]" }
                     param { expr = "[1/3]" }
                 }
@@ -309,16 +309,6 @@ class TestSimplifyFraction {
 
         check {
             toExpr = "[4 / 9]"
-        }
-    }
-
-    @Test
-    fun testEvaluateSumOfFractionAnInteger() = testMethod {
-        method = FractionArithmeticPlans.EvaluateSumOfFractionAndInteger
-        inputExpr = "[2/5] + 3"
-
-        check {
-            toExpr = "[17/5]"
         }
     }
 }

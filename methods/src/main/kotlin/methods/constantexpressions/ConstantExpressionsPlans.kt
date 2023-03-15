@@ -20,12 +20,18 @@ import methods.collecting.createCollectLikeRootsAndSimplifyPlan
 import methods.decimals.DecimalPlans
 import methods.decimals.DecimalRules
 import methods.expand.ExpandRules
-import methods.expand.expandAndSimplifySteps
+import methods.expand.createExpandAndSimplifySteps
 import methods.fractionarithmetic.FractionArithmeticPlans
 import methods.fractionarithmetic.FractionArithmeticRules
+import methods.fractionarithmetic.createAddFractionsPlan
+import methods.fractionarithmetic.createAddIntegerAndFractionPlan
+import methods.fractionarithmetic.createAddRootAndFractionPlan
+import methods.fractionarithmetic.normalizeFractionsWithinFractions
+import methods.fractionarithmetic.normalizeNegativeSignsInFraction
 import methods.fractionarithmetic.simplifyIntegerToNegativePower
 import methods.fractionroots.FractionRootsPlans
 import methods.fractionroots.FractionRootsRules
+import methods.general.GeneralPlans
 import methods.general.GeneralRules
 import methods.general.NormalizationPlans
 import methods.general.NormalizationRules
@@ -174,37 +180,34 @@ val simpleTidyUpSteps = steps {
             option(IntegerRootsRules.SimplifyRootOfOne)
 
             // miscellaneous
+            option(GeneralRules.SimplifyDoubleMinus)
             option(MixedNumbersRules.SplitMixedNumber)
             option(GeneralRules.CancelAdditiveInverseElements)
         }
     }
 }
 
-val trickySimplificationSteps = steps {
+private val trickySimplificationSteps = steps {
     deeply {
         firstOf {
             option(IntegerArithmeticRules.SimplifyEvenPowerOfNegative)
             option(cancelRootOfPower)
             option(IntegerRootsPlans.SplitRootsAndCancelRootsOfPowers)
             option(IntegerRootsPlans.SimplifyPowerOfIntegerUnderRoot)
-            option(FractionArithmeticPlans.EvaluateFractionSum)
+            option(addConstantFractions)
         }
     }
 }
 
-val fractionSimplificationSteps = steps {
-    firstOf {
-        option(FractionArithmeticPlans.NormalizeFractions)
-        option(FractionArithmeticPlans.NormalizeSignsInFraction)
-        option {
-            deeply {
-                firstOf {
-                    option(FractionArithmeticPlans.SimplifyFraction)
-                    option(DecimalPlans.NormalizeFractionOfDecimals)
-                    option(DecimalPlans.ConvertTerminatingDecimalToFractionAndSimplify)
-                    option(DecimalPlans.ConvertRecurringDecimalToFractionAndSimplify)
-                }
-            }
+private val fractionSimplificationSteps = steps {
+    deeply {
+        firstOf {
+            option(normalizeFractionsWithinFractions)
+            option(normalizeNegativeSignsInFraction)
+            option(FractionArithmeticPlans.SimplifyFraction)
+            option(DecimalPlans.NormalizeFractionOfDecimals)
+            option(DecimalPlans.ConvertTerminatingDecimalToFractionAndSimplify)
+            option(DecimalPlans.ConvertRecurringDecimalToFractionAndSimplify)
         }
     }
 }
@@ -217,7 +220,11 @@ val constantSimplificationSteps: StepsProducer = steps {
 
         option(trickySimplificationSteps)
 
+        option(FractionArithmeticPlans.RewriteDivisionsAsFractions)
+
         option(fractionSimplificationSteps)
+
+        option { deeply(GeneralPlans.NormalizeNegativeSignsInProduct) }
 
         option { deeply(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithSameBase) }
         option { deeply(ConstantExpressionsPlans.SimplifyPowers) }
@@ -234,12 +241,13 @@ val constantSimplificationSteps: StepsProducer = steps {
         option { deeply(IntegerArithmeticPlans.SimplifyIntegersInProduct) }
 
         option { deeply(IntegerArithmeticPlans.SimplifyIntegersInSum) }
-        option { deeply(FractionArithmeticPlans.EvaluateSumOfFractionAndInteger) }
+        option { deeply(addIntegerAndFraction) }
+        option { deeply(addRootAndFraction) }
 
         option { deeply(FractionRootsPlans.RationalizeDenominators) }
 
         option { deeply(ExpandRules.DistributeNegativeOverBracket) }
-        option { deeply { applyTo(expandConstantExpressionSteps) { if (it.isConstant()) it else null } } }
+        option { deeply(expandConstantExpression) }
 
         option { deeply(NormalizationRules.NormaliseSimplifiedProduct) }
     }
@@ -250,4 +258,24 @@ private val collectLikeRootsAndSimplify =
 private val collectLikeRationalPowersAndSimplify =
     createCollectLikeRationalPowersAndSimplifyPlan(constantSimplificationSteps)
 
-val expandConstantExpressionSteps = expandAndSimplifySteps(ConstantExpressionsPlans.SimplifyConstantExpression)
+private val expandConstantExpression = run {
+    val constantExpansionSteps = createExpandAndSimplifySteps(ConstantExpressionsPlans.SimplifyConstantExpression)
+
+    steps {
+        applyTo(constantExpansionSteps) { if (it.isConstant()) it else null }
+    }
+}
+
+private val addConstantFractions = run {
+    val fractionAdditionSteps = createAddFractionsPlan(steps { whilePossible(constantSimplificationSteps) })
+
+    steps {
+        applyTo(fractionAdditionSteps) { if (it.isConstant()) it else null }
+    }
+}
+
+private val addIntegerAndFraction =
+    createAddIntegerAndFractionPlan(steps { whilePossible(constantSimplificationSteps) })
+
+private val addRootAndFraction =
+    createAddRootAndFractionPlan(steps { whilePossible(constantSimplificationSteps) })
