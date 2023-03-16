@@ -16,26 +16,31 @@ metadata:
     alb.ingress.kubernetes.io/success-codes: '200'
     alb.ingress.kubernetes.io/healthy-threshold-count: '2'
     alb.ingress.kubernetes.io/unhealthy-threshold-count: '2'
+    {{ if eq .Values.branchName "release" }}
+    alb.ingress.kubernetes.io/group.name: solver-engine-release
+    {{ else }}
     alb.ingress.kubernetes.io/group.name: my-group
+    {{ end }}
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
     alb.ingress.kubernetes.io/ssl-redirect: '443'
 spec:
   rules:
-    - host: solver.geogebra.net
+    {{ if eq .Values.branchName "release" }}
+    - host: solver-api.geogebra.org
       http:
         paths:
-          - path: "/{{ .Values.branchName }}"
+          - path: /
             pathType: Prefix
             backend:
               service:
                 name: {{ .Values.branchName }}-service
                 port:
                   number: 80
-    {{ if eq .Values.branchName "main" }}
-    - host: solver-api.geogebra.org
+    {{else}}
+    - host: solver.geogebra.net
       http:
         paths:
-          - path: /
+          - path: "/{{ .Values.branchName }}"
             pathType: Prefix
             backend:
               service:
