@@ -25,8 +25,13 @@ spec:
           ports:
             - containerPort: 8080
           env:
+            {{ if eq .Values.branchName "release" }}
+            - name: SERVER_SERVLET_CONTEXT_PATH
+              value: "/"
+            {{ else }}
             - name: SERVER_SERVLET_CONTEXT_PATH
               value: "/{{ .Values.branchName }}"
+            {{ end }}
             - name: SOLVER_COMMIT_SHA
               value: "{{ .Values.commitSha }}"
             - name: DEPLOYMENT_NAME
