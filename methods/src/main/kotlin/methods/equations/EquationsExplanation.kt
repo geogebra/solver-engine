@@ -158,6 +158,16 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     MoveVariablesToTheLeftAndSimplify,
 
     /**
+     * Add the opposite of the variables appearing on the LHS
+     * of the equation to both sides and simplify
+     *
+     * E.g. 2x + 2 = 3x + 1
+     *      -> 2x + 2 - 2x = 3x + 1 - 2x
+     *      -> 2 = x + 1
+     */
+    MoveVariablesToTheRightAndSimplify,
+
+    /**
      * Add the opposite of everything on the LHS to both sides
      * of the equation.
      *

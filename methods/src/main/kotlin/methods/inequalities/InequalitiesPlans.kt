@@ -9,6 +9,8 @@ import engine.methods.plan
 import engine.methods.stepsproducers.FormChecker
 import engine.methods.stepsproducers.steps
 import engine.patterns.AnyPattern
+import engine.patterns.BinaryIntegerCondition
+import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
 import engine.patterns.RecurringDecimalPattern
 import engine.patterns.SignedNumberPattern
@@ -26,6 +28,7 @@ import engine.patterns.optionalNegOf
 import engine.patterns.solutionOf
 import engine.patterns.sumContaining
 import engine.patterns.withOptionalConstantCoefficient
+import engine.patterns.withOptionalIntegerCoefficient
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.general.NormalizationPlans
@@ -63,6 +66,17 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
 
             steps {
                 apply(SolvableRules.MoveVariablesToTheLeft)
+                optionally(inequalitySimplificationSteps)
+            }
+        },
+    ),
+
+    MoveVariablesToTheRightAndSimplify(
+        plan {
+            explanation = Explanation.MoveVariablesToTheRightAndSimplify
+
+            steps {
+                apply(SolvableRules.MoveVariablesToTheRight)
                 optionally(inequalitySimplificationSteps)
             }
         },
@@ -121,9 +135,9 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
 
                 optionally {
                     firstOf {
-                        // two ways to reorganize the equation into ax = b form
+                        // three ways to reorganize the inequality into ax </> b form
                         option {
-                            // if the equation is in the form `a = bx + c` with `b` non-negative, then
+                            // if the inequality is in the form `a </> bx + c` with `b` non-negative, then
                             // we move `c` to the left hand side and flip the equation
                             checkForm {
                                 val lhs = condition(AnyPattern()) { it.isConstant() }
@@ -134,6 +148,31 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
                                 val rhs = oneOf(variableWithCoefficient, sumContaining(variableWithCoefficient))
                                 inequalityOf(lhs, rhs)
                             }
+                            optionally(MoveConstantsToTheLeftAndSimplify)
+                            apply(InequalitiesRules.FlipInequality)
+                        }
+                        option {
+                            // if the inequality is in the form ax + b = cx + d with a an integer and c a
+                            // positive integer such that c > a we move ax to the right hand side, d to
+                            // the left hand side and flip the inequality
+                            checkForm {
+                                val variable = SolutionVariablePattern()
+                                val lhsVariable = withOptionalIntegerCoefficient(variable, false)
+                                val rhsVariable = withOptionalIntegerCoefficient(variable, true)
+
+                                val lhs = oneOf(lhsVariable, sumContaining(lhsVariable))
+                                val rhs = oneOf(rhsVariable, sumContaining(rhsVariable))
+
+                                ConditionPattern(
+                                    inequalityOf(lhs, rhs),
+                                    BinaryIntegerCondition(
+                                        lhsVariable.integerCoefficient,
+                                        rhsVariable.integerCoefficient,
+                                    ) { n1, n2 -> n2 > n1 },
+                                )
+                            }
+
+                            apply(MoveVariablesToTheRightAndSimplify)
                             optionally(MoveConstantsToTheLeftAndSimplify)
                             apply(InequalitiesRules.FlipInequality)
                         }

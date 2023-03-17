@@ -13,6 +13,8 @@ import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
 import engine.operators.EquationUnionOperator
 import engine.patterns.AnyPattern
+import engine.patterns.BinaryIntegerCondition
+import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
 import engine.patterns.RecurringDecimalPattern
 import engine.patterns.SignedNumberPattern
@@ -28,6 +30,7 @@ import engine.patterns.solutionOf
 import engine.patterns.solutionSetOf
 import engine.patterns.sumContaining
 import engine.patterns.withOptionalConstantCoefficient
+import engine.patterns.withOptionalIntegerCoefficient
 import engine.steps.metadata.metadata
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.constantexpressions.simpleTidyUpSteps
@@ -91,6 +94,17 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 apply(SolvableRules.MoveVariablesToTheLeft)
+                optionally(simplifyEquation)
+            }
+        },
+    ),
+
+    MoveVariablesToTheRightAndSimplify(
+        plan {
+            explanation = Explanation.MoveVariablesToTheRightAndSimplify
+
+            steps {
+                apply(SolvableRules.MoveVariablesToTheRight)
                 optionally(simplifyEquation)
             }
         },
@@ -184,7 +198,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
                 optionally {
                     firstOf {
-                        // two ways to reorganize the equation into ax = b form
+                        // three ways to reorganize the equation into ax = b form
                         option {
                             // if the equation is in the form `a = bx + c` with `b` non-negative, then
                             // we move `c` to the left hand side and flip the equation
@@ -197,6 +211,31 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                                 val rhs = oneOf(variableWithCoefficient, sumContaining(variableWithCoefficient))
                                 equationOf(lhs, rhs)
                             }
+                            optionally(MoveConstantsToTheLeftAndSimplify)
+                            apply(EquationsRules.FlipEquation)
+                        }
+                        option {
+                            // if the equation is in the form ax + b = cx + d with a an integer and c a
+                            // positive integer such that c > a we move ax to the right hand side, d to
+                            // the left hand side and flip the equation
+                            checkForm {
+                                val variable = SolutionVariablePattern()
+                                val lhsVariable = withOptionalIntegerCoefficient(variable, false)
+                                val rhsVariable = withOptionalIntegerCoefficient(variable, true)
+
+                                val lhs = oneOf(lhsVariable, sumContaining(lhsVariable))
+                                val rhs = oneOf(rhsVariable, sumContaining(rhsVariable))
+
+                                ConditionPattern(
+                                    equationOf(lhs, rhs),
+                                    BinaryIntegerCondition(
+                                        lhsVariable.integerCoefficient,
+                                        rhsVariable.integerCoefficient,
+                                    ) { n1, n2 -> n2 > n1 },
+                                )
+                            }
+
+                            apply(MoveVariablesToTheRightAndSimplify)
                             optionally(MoveConstantsToTheLeftAndSimplify)
                             apply(EquationsRules.FlipEquation)
                         }

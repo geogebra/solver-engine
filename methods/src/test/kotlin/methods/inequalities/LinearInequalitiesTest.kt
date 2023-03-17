@@ -128,6 +128,52 @@ class LinearInequalitiesTest {
     }
 
     @Test
+    fun `test ax + b less than cx + d linear equation with c larger than a`() = testMethodInX {
+        method = InequalitiesPlans.SolveLinearInequality
+        inputExpr = "x + 1 < 2 x + 3"
+
+        check {
+            fromExpr = "x + 1 < 2 x + 3"
+            toExpr = "Solution[x, ( -2, INFINITY )]"
+            explanation {
+                key = InequalitiesExplanation.SolveLinearInequality
+            }
+
+            step {
+                fromExpr = "x + 1 < 2 x + 3"
+                toExpr = "1 < x + 3"
+                explanation {
+                    key = InequalitiesExplanation.MoveVariablesToTheRightAndSimplify
+                }
+            }
+
+            step {
+                fromExpr = "1 < x + 3"
+                toExpr = "-2 < x"
+                explanation {
+                    key = InequalitiesExplanation.MoveConstantsToTheLeftAndSimplify
+                }
+            }
+
+            step {
+                fromExpr = "-2 < x"
+                toExpr = "x > -2"
+                explanation {
+                    key = InequalitiesExplanation.FlipInequality
+                }
+            }
+
+            step {
+                fromExpr = "x > -2"
+                toExpr = "Solution[x, ( -2, INFINITY )]"
+                explanation {
+                    key = InequalitiesExplanation.ExtractSolutionFromInequalityInSolvedForm
+                }
+            }
+        }
+    }
+
+    @Test
     fun `test ax greater than b linear inequality with a a negative fraction`() = testMethodInX {
         method = InequalitiesPlans.SolveLinearInequality
         inputExpr = "-[1 / 3] x > 7"

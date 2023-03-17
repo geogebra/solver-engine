@@ -40,6 +40,14 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     MoveVariablesToTheLeft,
 
     /**
+     * Add the opposite of the variables appearing on the LHS
+     * of the equation to both sides.
+     *
+     * E.g. 2x + 2 = 3x + 1 -> 2x + 2 - 2x = 3x + 1 - 2x
+     */
+    MoveVariablesToTheRight,
+
+    /**
      * Multiply both sides of the equation by the least common denominator of
      * all the fractions occurring in it.
      *
@@ -87,6 +95,14 @@ enum class InequalitiesExplanation : CategorisedMetadataKey {
      * E.g. 3x + 2 > 2x + 1 -> 3x + 2 - 2x > 2x + 1 - 2x
      */
     MoveVariablesToTheLeft,
+
+    /**
+     * Add the opposite of the variables appearing on the LHS
+     * of the inequality to both sides.
+     *
+     * E.g. 2x + 2 > 3x + 1 -> 2x + 2 - 2x > 3x + 1 - 2x
+     */
+    MoveVariablesToTheRight,
 
     /**
      * Multiply both sides of the inequality by the least common denominator of

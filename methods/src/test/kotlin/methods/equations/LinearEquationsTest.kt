@@ -302,6 +302,52 @@ class LinearEquationsTest {
     }
 
     @Test
+    fun `test ax + b = cx + d linear equation with c larger than a`() = testMethodInX {
+        method = EquationsPlans.SolveLinearEquation
+        inputExpr = "x + 1 = 2 x + 3"
+
+        check {
+            fromExpr = "x + 1 = 2 x + 3"
+            toExpr = "Solution[x, {-2}]"
+            explanation {
+                key = EquationsExplanation.SolveLinearEquation
+            }
+
+            step {
+                fromExpr = "x + 1 = 2 x + 3"
+                toExpr = "1 = x + 3"
+                explanation {
+                    key = EquationsExplanation.MoveVariablesToTheRightAndSimplify
+                }
+            }
+
+            step {
+                fromExpr = "1 = x + 3"
+                toExpr = "-2 = x"
+                explanation {
+                    key = EquationsExplanation.MoveConstantsToTheLeftAndSimplify
+                }
+            }
+
+            step {
+                fromExpr = "-2 = x"
+                toExpr = "x = -2"
+                explanation {
+                    key = EquationsExplanation.FlipEquation
+                }
+            }
+
+            step {
+                fromExpr = "x = -2"
+                toExpr = "Solution[x, {-2}]"
+                explanation {
+                    key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
+                }
+            }
+        }
+    }
+
+    @Test
     fun `test expanding brackets in linear equation`() = testMethod {
         context = Context(solutionVariable = "x")
         method = EquationsPlans.SolveLinearEquation
@@ -371,14 +417,22 @@ class LinearEquationsTest {
 
             step {
                 fromExpr = "-x = 16 x"
-                toExpr = "-17 x = 0"
+                toExpr = "0 = 17 x"
                 explanation {
-                    key = EquationsExplanation.MoveVariablesToTheLeftAndSimplify
+                    key = EquationsExplanation.MoveVariablesToTheRightAndSimplify
                 }
             }
 
             step {
-                fromExpr = "-17 x = 0"
+                fromExpr = "0 = 17 x"
+                toExpr = "17 x = 0"
+                explanation {
+                    key = EquationsExplanation.FlipEquation
+                }
+            }
+
+            step {
+                fromExpr = "17 x = 0"
                 toExpr = "x = 0"
                 explanation {
                     key = EquationsExplanation.DivideByCoefficientOfVariableAndSimplify

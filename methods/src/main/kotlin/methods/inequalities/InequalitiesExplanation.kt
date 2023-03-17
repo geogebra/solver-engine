@@ -132,6 +132,16 @@ enum class InequalitiesExplanation : CategorisedMetadataKey {
     MoveVariablesToTheLeftAndSimplify,
 
     /**
+     * Add the opposite of the variables appearing on the LHS
+     * of the inequality to both sides and simplify
+     *
+     * E.g. 2x + 2 > 3x + 1
+     *      -> 2x + 2 - 2x > 3x + 1 - 2x
+     *      -> 2 > x + 1
+     */
+    MoveVariablesToTheRightAndSimplify,
+
+    /**
      * Multiply both sides of the inequality by the inverse of the coefficient
      * of the variable and simplify.
      *

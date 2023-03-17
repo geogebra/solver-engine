@@ -154,6 +154,36 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
         },
     ),
 
+    MoveVariablesToTheRight(
+        rule {
+            val lhs = AnyPattern()
+            val rhs = AnyPattern()
+
+            val solvable = SolvablePattern(lhs, rhs)
+
+            onPattern(solvable) {
+                val variables = extractVariableTerms(get(lhs), context.solutionVariable) ?: return@onPattern null
+
+                val negatedVariable = simplifiedNegOfSum(variables)
+
+                ruleResult(
+                    toExpr = solvable.sameSolvable(
+                        sumOf(get(lhs), negatedVariable),
+                        sumOf(get(rhs), negatedVariable),
+                    ),
+                    gmAction = drag(variables, rhs, Position.RightOf),
+                    explanation = metadata(
+                        if (solvable.isEquation()) {
+                            EquationsExplanation.MoveVariablesToTheRight
+                        } else {
+                            InequalitiesExplanation.MoveVariablesToTheRight
+                        },
+                    ),
+                )
+            }
+        },
+    ),
+
     /**
      * Multiply through with the LCD if the equation contains one fraction with a sum numerator
      * OR a fraction multiplied by a sum OR at least two fractions
