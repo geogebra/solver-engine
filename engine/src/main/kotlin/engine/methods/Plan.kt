@@ -41,8 +41,8 @@ class Plan(
                     fromExpr = sub,
                     toExpr = toExpr,
                     steps = steps,
-                    explanation = explanationMaker.make(ctx, match),
-                    skills = skillMakers.map { it.make(ctx, match) },
+                    explanation = explanationMaker.make(ctx, sub, match),
+                    skills = skillMakers.map { it.make(ctx, sub, match) },
                 )
 
                 else -> null
@@ -90,7 +90,7 @@ class PlanBuilder : CompositeMethodBuilder() {
             isPartialExpression -> PartialExpressionPlan(
                 naryPattern = pattern as NaryPattern,
                 stepsProducer = stepsProducer,
-                explanationMaker = MetadataMaker(explanation, explanationParameters),
+                explanationMaker = explanationMaker,
                 skillMakers = skillMakers,
                 specificPlans = specificPlansList,
             )
@@ -98,7 +98,7 @@ class PlanBuilder : CompositeMethodBuilder() {
                 pattern = pattern,
                 resultPattern = resultPattern,
                 stepsProducer = stepsProducer,
-                explanationMaker = MetadataMaker(explanation, explanationParameters),
+                explanationMaker = explanationMaker,
                 skillMakers = skillMakers,
                 specificPlans = specificPlansList,
             )

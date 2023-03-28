@@ -15,7 +15,7 @@ class ConstantCoefficientPatternTest {
         val exprValue = parseExpression(expr).withOrigin(Root())
 
         val matches = constantCoefficientPattern
-            .findMatches(Context(solutionVariable = "x"), RootMatch, exprValue)
+            .findMatches(Context(solutionVariables = listOf("x")), RootMatch, exprValue)
 
         if (coefficient == null) {
             assertEquals(0, matches.count())

@@ -1,6 +1,7 @@
 package methods.solvable
 
 import engine.context.emptyContext
+import engine.expressionbuilder.MappedExpressionBuilder
 import engine.expressions.Constants
 import engine.expressions.Expression
 import engine.expressions.Introduce
@@ -11,7 +12,10 @@ import engine.expressions.sumOf
 import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
+import engine.methods.plan
 import engine.methods.rule
+import engine.methods.stepsproducers.StepsProducer
+import engine.operators.EquationOperator
 import engine.operators.NaryOperator
 import engine.patterns.AnyPattern
 import engine.patterns.SolvablePattern
@@ -22,6 +26,7 @@ import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
+import engine.steps.metadata.Metadata
 import engine.steps.metadata.metadata
 import engine.utility.lcm
 import methods.solvable.DenominatorExtractor.extractDenominator
@@ -50,13 +55,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     toExpr = cancel(common, solvable.sameSolvable(restLeft, restRight)),
                     gmAction = drag(common.within(lhs), common.within(rhs)),
-                    explanation = metadata(
-                        if (solvable.isEquation()) {
-                            EquationsExplanation.CancelCommonTermsOnBothSides
-                        } else {
-                            InequalitiesExplanation.CancelCommonTermsOnBothSides
-                        },
-                    ),
+                    explanation = solvableExplanation(SolvableKey.CancelCommonTermsOnBothSides),
                 )
             }
         },
@@ -70,7 +69,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
             val solvable = SolvablePattern(lhs, rhs)
 
             onPattern(solvable) {
-                val constants = extractConstants(get(rhs), context.solutionVariable)
+                val constants = extractConstants(get(rhs), context.solutionVariables)
                 if (constants == Constants.Zero || constants == null) return@onPattern null
 
                 val negatedConstants = simplifiedNegOfSum(constants)
@@ -81,13 +80,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                         sumOf(get(rhs), negatedConstants),
                     ),
                     gmAction = drag(constants, lhs, Position.RightOf),
-                    explanation = metadata(
-                        if (solvable.isEquation()) {
-                            EquationsExplanation.MoveConstantsToTheLeft
-                        } else {
-                            InequalitiesExplanation.MoveConstantsToTheLeft
-                        },
-                    ),
+                    explanation = solvableExplanation(SolvableKey.MoveConstantsToTheLeft),
                 )
             }
         },
@@ -101,7 +94,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
             val solvable = SolvablePattern(lhs, rhs)
 
             onPattern(solvable) {
-                val constants = extractConstants(get(lhs), context.solutionVariable)
+                val constants = extractConstants(get(lhs), context.solutionVariables)
                 if (constants == Constants.Zero || constants == null) return@onPattern null
 
                 val negatedConstants = simplifiedNegOfSum(constants)
@@ -112,13 +105,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                         sumOf(get(rhs), negatedConstants),
                     ),
                     gmAction = drag(constants, rhs, Position.RightOf),
-                    explanation = metadata(
-                        if (solvable.isEquation()) {
-                            EquationsExplanation.MoveConstantsToTheRight
-                        } else {
-                            InequalitiesExplanation.MoveConstantsToTheRight
-                        },
-                    ),
+                    explanation = solvableExplanation(SolvableKey.MoveConstantsToTheRight),
                 )
             }
         },
@@ -132,7 +119,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
             val solvable = SolvablePattern(lhs, rhs)
 
             onPattern(solvable) {
-                val variables = extractVariableTerms(get(rhs), context.solutionVariable) ?: return@onPattern null
+                val variables = extractVariableTerms(get(rhs), context.solutionVariables) ?: return@onPattern null
 
                 val negatedVariable = simplifiedNegOfSum(variables)
 
@@ -142,13 +129,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                         sumOf(get(rhs), negatedVariable),
                     ),
                     gmAction = drag(variables, lhs, Position.RightOf),
-                    explanation = metadata(
-                        if (solvable.isEquation()) {
-                            EquationsExplanation.MoveVariablesToTheLeft
-                        } else {
-                            InequalitiesExplanation.MoveVariablesToTheLeft
-                        },
-                    ),
+                    explanation = solvableExplanation(SolvableKey.MoveVariablesToTheLeft),
                 )
             }
         },
@@ -162,7 +143,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
             val solvable = SolvablePattern(lhs, rhs)
 
             onPattern(solvable) {
-                val variables = extractVariableTerms(get(lhs), context.solutionVariable) ?: return@onPattern null
+                val variables = extractVariableTerms(get(lhs), context.solutionVariables) ?: return@onPattern null
 
                 val negatedVariable = simplifiedNegOfSum(variables)
 
@@ -172,13 +153,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                         sumOf(get(rhs), negatedVariable),
                     ),
                     gmAction = drag(variables, rhs, Position.RightOf),
-                    explanation = metadata(
-                        if (solvable.isEquation()) {
-                            EquationsExplanation.MoveVariablesToTheRight
-                        } else {
-                            InequalitiesExplanation.MoveVariablesToTheRight
-                        },
-                    ),
+                    explanation = solvableExplanation(SolvableKey.MoveVariablesToTheRight),
                 )
             }
         },
@@ -190,12 +165,14 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
      */
     MultiplySolvableByLCD(
         rule {
-            val nonConstantSum = condition(sumContaining()) { !it.isConstantIn(solutionVariable) }
-            val fractionRequiringMultiplication = oneOf(
-                fractionOf(nonConstantSum, UnsignedIntegerPattern()),
-                productContaining(
-                    fractionOf(AnyPattern(), UnsignedIntegerPattern()),
-                    nonConstantSum,
+            val nonConstantSum = condition(sumContaining()) { !it.isConstantIn(solutionVariables) }
+            val fractionRequiringMultiplication = optionalNegOf(
+                oneOf(
+                    fractionOf(nonConstantSum, UnsignedIntegerPattern()),
+                    productContaining(
+                        fractionOf(AnyPattern(), UnsignedIntegerPattern()),
+                        nonConstantSum,
+                    ),
                 ),
             )
 
@@ -226,13 +203,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                             productOf(get(rhs), xp(lcm)),
                         ),
                         gmAction = editOp(solvable),
-                        explanation = metadata(
-                            if (solvable.isEquation()) {
-                                EquationsExplanation.MultiplyEquationByLCD
-                            } else {
-                                InequalitiesExplanation.MultiplyInequalityByLCD
-                            },
-                        ),
+                        explanation = solvableExplanation(SolvableKey.MultiplyBothSidesByLCD),
                     )
                 }
             }
@@ -240,24 +211,24 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
     ),
 }
 
-private fun extractVariableTerms(expression: Expression, variable: String?): Expression? {
+private fun extractVariableTerms(expression: Expression, variables: List<String>): Expression? {
     return when {
         expression.operator == NaryOperator.Sum -> {
-            val constantTerms = expression.children.filter { !it.isConstantIn(variable) }
+            val constantTerms = expression.children.filter { !it.isConstantIn(variables) }
             if (constantTerms.isEmpty()) null else sumOf(constantTerms)
         }
-        !expression.isConstantIn(variable) -> expression
+        !expression.isConstantIn(variables) -> expression
         else -> null
     }
 }
 
-private fun extractConstants(expression: Expression, variable: String?): Expression? {
+private fun extractConstants(expression: Expression, variables: List<String>): Expression? {
     return when {
         expression.operator == NaryOperator.Sum -> {
-            val constantTerms = expression.children.filter { it.isConstantIn(variable) }
+            val constantTerms = expression.children.filter { it.isConstantIn(variables) }
             if (constantTerms.isEmpty()) null else sumOf(constantTerms)
         }
-        expression.isConstantIn(variable) -> expression
+        expression.isConstantIn(variables) -> expression
         else -> null
     }
 }
@@ -291,5 +262,32 @@ private object DenominatorExtractor {
         } else {
             return BigInteger.ONE
         }
+    }
+}
+
+class ApplySolvableRuleAndSimplify(private val simplifySteps: StepsProducer) {
+    fun getPlan(solvableKey: SolvableKey, rule: SolvableRules) = plan {
+        explanation {
+            solvableExplanation(solvableKey, simplify = true)
+        }
+
+        steps {
+            apply(rule)
+            optionally(simplifySteps)
+        }
+    }
+}
+
+private fun MappedExpressionBuilder.solvableExplanation(solvableKey: SolvableKey, simplify: Boolean = false): Metadata {
+    val explicitVariables = context.solutionVariables.size < expression.variables.size
+    val key = if (expression.operator == EquationOperator) {
+        EquationsExplanation.getKey(solvableKey, explicitVariables, simplify)
+    } else {
+        InequalitiesExplanation.getKey(solvableKey, explicitVariables, simplify)
+    }
+    return if (explicitVariables) {
+        metadata(key, listOfsolutionVariables())
+    } else {
+        metadata(key)
     }
 }

@@ -29,7 +29,7 @@ data class Context(
     val gmFriendly: Boolean = false,
     val precision: Int? = null, // decimal places
     val preferDecimals: Boolean? = null,
-    val solutionVariable: String? = null,
+    val solutionVariables: List<String> = emptyList(),
 ) {
     val effectivePrecision = precision ?: DEFAULT_PRECISION
 

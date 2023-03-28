@@ -15,6 +15,7 @@ import engine.expressions.negOf
 import engine.expressions.productOf
 import engine.expressions.simplifiedPowerOf
 import engine.expressions.sumOf
+import engine.expressions.variableListOf
 import engine.expressions.xp
 import engine.operators.EquationOperator
 import engine.operators.InequalityOperators
@@ -50,6 +51,7 @@ import java.math.RoundingMode
 @Suppress("TooManyFunctions")
 open class MappedExpressionBuilder(
     val context: Context,
+    val expression: Expression,
     private val match: Match,
 ) {
 
@@ -140,7 +142,7 @@ open class MappedExpressionBuilder(
      match. To be used together with [matchPattern].
      */
     fun buildWith(match: Match, init: MappedExpressionBuilder.() -> Expression): Expression {
-        val builder = MappedExpressionBuilder(context, match)
+        val builder = MappedExpressionBuilder(context, expression, match)
         return builder.init()
     }
 
@@ -293,7 +295,7 @@ open class MappedExpressionBuilder(
     fun optionalDivideBy(pattern: OptionalWrappingPattern, mappedExpression: Expression) =
         mappedExpression.wrapIf(pattern, ::divideBy)
 
-    fun MetadataMaker.make() = make(context, match)
+    fun MetadataMaker.make() = make(context, expression, match)
 
     /** Returns a [GmAction] that represents a tap/click user interaction on the passed expression to
      * trigger the transformation in Graspable Math (GM). */
@@ -389,6 +391,15 @@ open class MappedExpressionBuilder(
 
     fun noGmSupport(): GmAction {
         return GmAction(GmActionType.NotSupported)
+    }
+
+    /**
+     * List all solution variables, useful in explanations
+     */
+    fun listOfsolutionVariables() = if (context.solutionVariables.size == 1) {
+        xp(context.solutionVariables[0])
+    } else {
+        variableListOf(context.solutionVariables)
     }
 }
 

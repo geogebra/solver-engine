@@ -1,16 +1,15 @@
 package methods.inequalities
 
-import engine.context.Context
-import engine.methods.testMethod
+import engine.methods.testMethodInX
 import methods.polynomials.PolynomialsExplanation
 import org.junit.jupiter.api.Test
 
 class DecimalLinearInequalitiesTest {
 
     @Test
-    fun `test ax + b less than cx + d decimal linear inequality`() = testMethod {
+    fun `test ax + b less than cx + d decimal linear inequality`() = testMethodInX {
         method = InequalitiesPlans.SolveLinearInequality
-        context = Context(solutionVariable = "x", preferDecimals = true)
+        context = context.copy(preferDecimals = true)
         inputExpr = "3.1 x + 2.2 < 2.9 x - 9.34"
 
         check {
@@ -24,7 +23,7 @@ class DecimalLinearInequalitiesTest {
                 fromExpr = "3.1 x + 2.2 < 2.9 x - 9.34"
                 toExpr = "0.2 x + 2.2 < -9.34"
                 explanation {
-                    key = InequalitiesExplanation.MoveVariablesToTheLeftAndSimplify
+                    key = methods.solvable.InequalitiesExplanation.MoveVariablesToTheLeftAndSimplify
                 }
             }
 
@@ -32,7 +31,7 @@ class DecimalLinearInequalitiesTest {
                 fromExpr = "0.2 x + 2.2 < -9.34"
                 toExpr = "0.2 x < -11.54"
                 explanation {
-                    key = InequalitiesExplanation.MoveConstantsToTheRightAndSimplify
+                    key = methods.solvable.InequalitiesExplanation.MoveConstantsToTheRightAndSimplify
                 }
             }
 
@@ -55,9 +54,9 @@ class DecimalLinearInequalitiesTest {
     }
 
     @Test
-    fun `test decimal linear inequality with solution not expressible as terminating decimal`() = testMethod {
+    fun `test decimal linear inequality with solution not expressible as terminating decimal`() = testMethodInX {
         method = InequalitiesPlans.SolveLinearInequality
-        context = Context(solutionVariable = "x", preferDecimals = true)
+        context = context.copy(preferDecimals = true)
         inputExpr = "3.1 x + 2.2 >= 1.21"
 
         check {
@@ -71,7 +70,7 @@ class DecimalLinearInequalitiesTest {
                 fromExpr = "3.1 x + 2.2 >= 1.21"
                 toExpr = "3.1 x >= -0.99"
                 explanation {
-                    key = InequalitiesExplanation.MoveConstantsToTheRightAndSimplify
+                    key = methods.solvable.InequalitiesExplanation.MoveConstantsToTheRightAndSimplify
                 }
             }
 
@@ -94,9 +93,9 @@ class DecimalLinearInequalitiesTest {
     }
 
     @Test
-    fun `test decimal linear inequality fails for recurring decimal in solution`() = testMethod {
+    fun `test decimal linear inequality fails for recurring decimal in solution`() = testMethodInX {
         method = InequalitiesPlans.SolveLinearInequality
-        context = Context(solutionVariable = "x", preferDecimals = true)
+        context = context.copy(preferDecimals = true)
         inputExpr = "3.1x + 2.2[3] > 1.21"
 
         check {
@@ -105,9 +104,9 @@ class DecimalLinearInequalitiesTest {
     }
 
     @Test
-    fun `test decimal linear inequality with fractions in the initial expression`() = testMethod {
+    fun `test decimal linear inequality with fractions in the initial expression`() = testMethodInX {
         method = InequalitiesPlans.SolveLinearInequality
-        context = Context(solutionVariable = "x", preferDecimals = true)
+        context = context.copy(preferDecimals = true)
         inputExpr = "3.6 x + 2.2 <= [2 / 5] x + 1.2"
 
         check {
@@ -129,7 +128,7 @@ class DecimalLinearInequalitiesTest {
                 fromExpr = "3.6 x + 2.2 <= 0.4 x + 1.2"
                 toExpr = "3.2 x + 2.2 <= 1.2"
                 explanation {
-                    key = InequalitiesExplanation.MoveVariablesToTheLeftAndSimplify
+                    key = methods.solvable.InequalitiesExplanation.MoveVariablesToTheLeftAndSimplify
                 }
             }
 
@@ -137,7 +136,7 @@ class DecimalLinearInequalitiesTest {
                 fromExpr = "3.2 x + 2.2 <= 1.2"
                 toExpr = "3.2 x <= -1"
                 explanation {
-                    key = InequalitiesExplanation.MoveConstantsToTheRightAndSimplify
+                    key = methods.solvable.InequalitiesExplanation.MoveConstantsToTheRightAndSimplify
                 }
             }
 

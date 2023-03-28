@@ -116,7 +116,7 @@ object EquationSystemOperator : StatementOperator {
     override val arity = ARITY_VARIABLE
 
     override fun nthChildAllowed(n: Int, op: Operator): Boolean {
-        require(op is EquationOperator)
+        require(op is EquationOperator || op is SolutionOperator)
         return true
     }
 
@@ -152,13 +152,17 @@ object EquationUnionOperator : StatementOperator {
     }
 }
 
-object SolutionOperator : BinaryOperator, StatementOperator {
+interface Solution {
+    fun variables(children: List<Expression>): List<String>
+}
+
+object SolutionOperator : BinaryOperator, StatementOperator, Solution {
     override val name = "Solution"
 
     override val precedence = PREDICATE_PRECEDENCE
 
     override fun leftChildAllowed(op: Operator): Boolean {
-        require(op is VariableOperator)
+        require(op is VariableOperator || op is TupleOperator)
         return true
     }
 
@@ -173,5 +177,85 @@ object SolutionOperator : BinaryOperator, StatementOperator {
 
     override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable): String {
         return "${left.toLatexString(ctx)} \\in ${right.toLatexString(ctx)}"
+    }
+
+    override fun variables(children: List<Expression>): List<String> {
+        return listOf(children[0].operator.name)
+    }
+}
+
+enum class MultiVariateSolutionOperator : BinaryOperator, StatementOperator, Solution {
+
+    Identity {
+        override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable): String {
+            return "${left.toLatexString(ctx)} \\in \\emptyset"
+        }
+    },
+    Contradiction {
+        override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable): String {
+            return "${left.toLatexString(ctx)} \\in \\mathbb{R}"
+        }
+    },
+    ImplicitSolution {
+        override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable): String {
+            return "${left.toLatexString(ctx)} \\in \\mathbb{R} : ${right.toLatexString(ctx)}"
+        }
+    },
+
+    SetSolution {
+        override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable): String {
+            return "${left.toLatexString(ctx)} \\in ${right.toLatexString(ctx)}"
+        }
+    },
+
+    ;
+
+    override val precedence = PREDICATE_PRECEDENCE
+
+    override fun leftChildAllowed(op: Operator): Boolean {
+        check(op == VariableListOperator)
+        return true
+    }
+
+    override fun rightChildAllowed(op: Operator) = true
+
+    override fun <T> readableString(left: T, right: T): String {
+        return "$name[$left: $right]"
+    }
+
+    override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable): String {
+        return "${left.toLatexString(ctx)} \\in \\emptyset"
+    }
+
+    override fun variables(children: List<Expression>): List<String> {
+        return children[0].children.map { it.operator.name }
+    }
+}
+
+object VariableListOperator : Operator {
+    override val name = "VariableList"
+    override val precedence = 0
+    override val arity = ARITY_VARIABLE_FROM_ZERO
+    override val kind = OperatorKind.INNER
+    override fun nthChildAllowed(n: Int, op: Operator): Boolean {
+        check(op is VariableOperator)
+        return true
+    }
+
+    override fun <T> readableString(children: List<T>): String {
+        if (children.size == 1) {
+            return children[0].toString()
+        }
+        return children.joinToString(", ")
+    }
+    override fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String {
+        if (children.size == 1) {
+            return children[0].toLatexString(ctx)
+        }
+        return children.map { it.toLatexString(ctx) }.joinToString(", ")
+    }
+
+    fun variables(children: List<Expression>): List<String> {
+        return children.map { it.operator.name }
     }
 }

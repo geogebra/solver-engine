@@ -8,6 +8,9 @@ import engine.patterns.AnyPattern
 import engine.patterns.ExpressionProvider
 import engine.patterns.Pattern
 import engine.steps.Transformation
+import engine.steps.metadata.FixedKeyMetadataMaker
+import engine.steps.metadata.GeneralMetadataMaker
+import engine.steps.metadata.Metadata
 import engine.steps.metadata.MetadataKey
 import engine.steps.metadata.MetadataMaker
 
@@ -28,26 +31,34 @@ open class CompositeMethodBuilder {
     var resultPattern: Pattern = AnyPattern()
 
     lateinit var explanation: MetadataKey
-    protected var explanationParameters: MappedExpressionBuilder.() -> List<Expression> = { emptyList() }
+
+    private lateinit var explicitExplanationMaker: MetadataMaker
 
     fun explanationParameters(parameters: MappedExpressionBuilder.() -> List<Expression>) {
-        explanationParameters = parameters
+        explicitExplanationMaker = FixedKeyMetadataMaker(explanation, parameters)
     }
 
     fun explanationParameters(vararg params: ExpressionProvider) {
-        explanationParameters = {
-            params.map { move(it) }
-        }
+        explanationParameters { params.map { move(it) } }
+    }
+
+    fun explanation(init: MappedExpressionBuilder.() -> Metadata) {
+        explicitExplanationMaker = GeneralMetadataMaker(init)
     }
 
     fun skill(
         skillKey: MetadataKey,
         skillParameters: MappedExpressionBuilder.() -> List<Expression> = { emptyList() },
     ) {
-        skillMakers.add(MetadataMaker(skillKey, skillParameters))
+        skillMakers.add(FixedKeyMetadataMaker(skillKey, skillParameters))
     }
 
     fun skill(skillKey: MetadataKey, vararg params: ExpressionProvider) {
-        skillMakers.add(MetadataMaker(skillKey) { params.map { move(it) } })
+        skillMakers.add(FixedKeyMetadataMaker(skillKey) { params.map { move(it) } })
+    }
+
+    protected val explanationMaker get() = when {
+        ::explicitExplanationMaker.isInitialized -> explicitExplanationMaker
+        else -> FixedKeyMetadataMaker(explanation) { emptyList() }
     }
 }

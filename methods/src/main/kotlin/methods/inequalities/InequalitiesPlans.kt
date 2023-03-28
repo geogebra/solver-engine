@@ -19,7 +19,7 @@ import engine.patterns.UnsignedNumberPattern
 import engine.patterns.closedOpenIntervalOf
 import engine.patterns.condition
 import engine.patterns.fractionOf
-import engine.patterns.inSolutionVariable
+import engine.patterns.inSolutionVariables
 import engine.patterns.inequalityOf
 import engine.patterns.oneOf
 import engine.patterns.openClosedIntervalOf
@@ -34,52 +34,26 @@ import methods.constantexpressions.simpleTidyUpSteps
 import methods.general.NormalizationPlans
 import methods.polynomials.PolynomialsPlans
 import methods.polynomials.algebraicSimplificationSteps
+import methods.solvable.ApplySolvableRuleAndSimplify
+import methods.solvable.SolvableKey
 import methods.solvable.SolvableRules
 
 enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMethod {
 
     MoveConstantsToTheLeftAndSimplify(
-        plan {
-            explanation = Explanation.MoveConstantsToTheLeftAndSimplify
-
-            steps {
-                apply(SolvableRules.MoveConstantsToTheLeft)
-                optionally(inequalitySimplificationSteps)
-            }
-        },
+        applySolvableRuleAndSimplify(SolvableKey.MoveConstantsToTheLeft, SolvableRules.MoveConstantsToTheLeft),
     ),
 
     MoveConstantsToTheRightAndSimplify(
-        plan {
-            explanation = Explanation.MoveConstantsToTheRightAndSimplify
-
-            steps {
-                apply(SolvableRules.MoveConstantsToTheRight)
-                optionally(inequalitySimplificationSteps)
-            }
-        },
+        applySolvableRuleAndSimplify(SolvableKey.MoveConstantsToTheRight, SolvableRules.MoveConstantsToTheRight),
     ),
 
     MoveVariablesToTheLeftAndSimplify(
-        plan {
-            explanation = Explanation.MoveVariablesToTheLeftAndSimplify
-
-            steps {
-                apply(SolvableRules.MoveVariablesToTheLeft)
-                optionally(inequalitySimplificationSteps)
-            }
-        },
+        applySolvableRuleAndSimplify(SolvableKey.MoveVariablesToTheLeft, SolvableRules.MoveVariablesToTheLeft),
     ),
 
     MoveVariablesToTheRightAndSimplify(
-        plan {
-            explanation = Explanation.MoveVariablesToTheRightAndSimplify
-
-            steps {
-                apply(SolvableRules.MoveVariablesToTheRight)
-                optionally(inequalitySimplificationSteps)
-            }
-        },
+        applySolvableRuleAndSimplify(SolvableKey.MoveVariablesToTheRight, SolvableRules.MoveVariablesToTheRight),
     ),
 
     MultiplyByInverseCoefficientOfVariableAndSimplify(
@@ -95,7 +69,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
 
     MultiplyByLCDAndSimplify(
         plan {
-            explanation = Explanation.MultiplyByLCDAndSimplify
+            explanation = methods.solvable.InequalitiesExplanation.MultiplyByLCDAndSimplify
 
             steps {
                 apply(SolvableRules.MultiplySolvableByLCD)
@@ -242,6 +216,8 @@ private val inequalitySimplificationSteps = steps {
     }
 }
 
+private val applySolvableRuleAndSimplify = ApplySolvableRuleAndSimplify(inequalitySimplificationSteps)::getPlan
+
 private val decimalSolutionFormChecker = run {
     val acceptedSolutions = oneOf(
         SignedNumberPattern(),
@@ -264,4 +240,4 @@ private val decimalSolutionFormChecker = run {
     )
 }
 
-private fun inequalityInOneVariable() = inSolutionVariable(inequalityOf(AnyPattern(), AnyPattern()))
+private fun inequalityInOneVariable() = inSolutionVariables(inequalityOf(AnyPattern(), AnyPattern()))

@@ -1,4 +1,4 @@
-import type { ExpressionTree, NestedExpression, DecoratorType } from './types';
+import type { DecoratorType, ExpressionTree, NestedExpression } from './types';
 
 export type TransformerFunction = (node: ExpressionTree, defaultResult: string) => string;
 
@@ -63,7 +63,7 @@ export function treeToSolver(n: ExpressionTree): string {
       return dec('UNDEFINED');
     case 'INFINITY':
       return dec('INFINITY');
-    case 'REALS':
+    case 'Reals':
       return dec('REALS');
     case 'LessThan':
       return dec(`${rec(n.args[0])} < ${rec(n.args[1])}`);
@@ -75,6 +75,11 @@ export function treeToSolver(n: ExpressionTree): string {
       return dec(`${rec(n.args[0])} >= ${rec(n.args[1])}`);
     case 'Solution':
       return dec(`Solution[${rec(n.args[0])}, ${rec(n.args[1])}]`);
+    case 'SetSolution':
+    case 'ImplicitSolution':
+    case 'Contradiction':
+    case 'Identity':
+      return dec(`${n.type}[${rec(n.args[0]).replace(/\(\)/, '')}: ${rec(n.args[1])})}]`);
     case 'FiniteSet':
       return dec(`{${n.args.map((el) => rec(el)).join(', ')}}`);
     case 'OpenInterval':

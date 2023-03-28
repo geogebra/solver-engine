@@ -35,12 +35,12 @@ enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
             onPattern(inequality) {
                 if (inequality.holdsFor(getValue(lhs), getValue(rhs))) {
                     ruleResult(
-                        toExpr = solutionOf(xp(context.solutionVariable!!), Constants.Reals),
+                        toExpr = solutionOf(xp(context.solutionVariables.first()), Constants.Reals),
                         explanation = metadata(Explanation.ExtractSolutionFromTrueInequality),
                     )
                 } else {
                     ruleResult(
-                        toExpr = solutionOf(xp(context.solutionVariable!!), Constants.EmptySet),
+                        toExpr = solutionOf(xp(context.solutionVariables.first()), Constants.EmptySet),
                         explanation = metadata(Explanation.ExtractSolutionFromFalseInequality),
                     )
                 }
@@ -62,12 +62,12 @@ enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
                 if (lhsSign.isKnown() && rhsSign.isKnown()) {
                     if (inequality.holdsFor(lhsSign.signum.toBigDecimal(), rhsSign.signum.toBigDecimal())) {
                         ruleResult(
-                            toExpr = solutionOf(xp(context.solutionVariable!!), Constants.Reals),
+                            toExpr = solutionOf(xp(context.solutionVariables.first()), Constants.Reals),
                             explanation = metadata(Explanation.ExtractSolutionFromTrueInequality),
                         )
                     } else {
                         ruleResult(
-                            toExpr = solutionOf(xp(context.solutionVariable!!), Constants.EmptySet),
+                            toExpr = solutionOf(xp(context.solutionVariables.first()), Constants.EmptySet),
                             explanation = metadata(Explanation.ExtractSolutionFromFalseInequality),
                         )
                     }

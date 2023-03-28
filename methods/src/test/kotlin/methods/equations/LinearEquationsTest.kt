@@ -1,7 +1,5 @@
 package methods.equations
 
-import engine.context.Context
-import engine.methods.testMethod
 import engine.methods.testMethodInX
 import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.general.GeneralExplanation
@@ -12,8 +10,7 @@ import org.junit.jupiter.api.Test
 class LinearEquationsTest {
 
     @Test
-    fun `test ax = b linear equation`() = testMethod {
-        context = Context(solutionVariable = "x")
+    fun `test ax = b linear equation`() = testMethodInX {
         method = EquationsPlans.SolveLinearEquation
         inputExpr = "3 x = 1"
 
@@ -59,8 +56,7 @@ class LinearEquationsTest {
     }
 
     @Test
-    fun `test x div a = b linear equation`() = testMethod {
-        context = Context(solutionVariable = "x")
+    fun `test x div a = b linear equation`() = testMethodInX {
         method = EquationsPlans.SolveLinearEquation
         inputExpr = "[x / 9] = -1"
 
@@ -91,8 +87,7 @@ class LinearEquationsTest {
     }
 
     @Test
-    fun `test x - a = b linear equation`() = testMethod {
-        context = Context(solutionVariable = "x")
+    fun `test x - a = b linear equation`() = testMethodInX {
         method = EquationsPlans.SolveLinearEquation
         inputExpr = "x - 2 = 36"
 
@@ -107,7 +102,7 @@ class LinearEquationsTest {
                 fromExpr = "x - 2 = 36"
                 toExpr = "x = 38"
                 explanation {
-                    key = EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                    key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
                 }
 
                 step {
@@ -138,8 +133,7 @@ class LinearEquationsTest {
     }
 
     @Test
-    fun `test a = b - cx linear equation`() = testMethod {
-        context = Context(solutionVariable = "x")
+    fun `test a = b - cx linear equation`() = testMethodInX {
         method = EquationsPlans.SolveLinearEquation
         inputExpr = "1 = [3 / 5] - x"
 
@@ -154,7 +148,7 @@ class LinearEquationsTest {
                 fromExpr = "1 = [3 / 5] - x"
                 toExpr = "1 + x = [3 / 5]"
                 explanation {
-                    key = EquationsExplanation.MoveVariablesToTheLeftAndSimplify
+                    key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeftAndSimplify
                 }
             }
 
@@ -162,7 +156,7 @@ class LinearEquationsTest {
                 fromExpr = "1 + x = [3 / 5]"
                 toExpr = "x = -[2 / 5]"
                 explanation {
-                    key = EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                    key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
                 }
             }
 
@@ -177,8 +171,7 @@ class LinearEquationsTest {
     }
 
     @Test
-    fun `test a = x equation`() = testMethod {
-        context = Context(solutionVariable = "x")
+    fun `test a = x equation`() = testMethodInX {
         method = EquationsPlans.SolveLinearEquation
         inputExpr = "1 + [2 / 3] = x"
 
@@ -216,8 +209,7 @@ class LinearEquationsTest {
     }
 
     @Test
-    fun `test a - bx = 0 linear equation`() = testMethod {
-        context = Context(solutionVariable = "x")
+    fun `test a - bx = 0 linear equation`() = testMethodInX {
         method = EquationsPlans.SolveLinearEquation
         inputExpr = "1 - 3 x = 0"
 
@@ -232,7 +224,7 @@ class LinearEquationsTest {
                 fromExpr = "1 - 3 x = 0"
                 toExpr = "-3 x = -1"
                 explanation {
-                    key = EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                    key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
                 }
             }
 
@@ -255,8 +247,7 @@ class LinearEquationsTest {
     }
 
     @Test
-    fun `test a = b + cx linear equation`() = testMethod {
-        context = Context(solutionVariable = "x")
+    fun `test a = b + cx linear equation`() = testMethodInX {
         method = EquationsPlans.SolveLinearEquation
         inputExpr = "4 = 11 + [x / 3]"
 
@@ -271,7 +262,7 @@ class LinearEquationsTest {
                 fromExpr = "4 = 11 + [x / 3]"
                 toExpr = "-7 = [x / 3]"
                 explanation {
-                    key = EquationsExplanation.MoveConstantsToTheLeftAndSimplify
+                    key = methods.solvable.EquationsExplanation.MoveConstantsToTheLeftAndSimplify
                 }
             }
 
@@ -317,7 +308,7 @@ class LinearEquationsTest {
                 fromExpr = "x + 1 = 2 x + 3"
                 toExpr = "1 = x + 3"
                 explanation {
-                    key = EquationsExplanation.MoveVariablesToTheRightAndSimplify
+                    key = methods.solvable.EquationsExplanation.MoveVariablesToTheRightAndSimplify
                 }
             }
 
@@ -325,7 +316,7 @@ class LinearEquationsTest {
                 fromExpr = "1 = x + 3"
                 toExpr = "-2 = x"
                 explanation {
-                    key = EquationsExplanation.MoveConstantsToTheLeftAndSimplify
+                    key = methods.solvable.EquationsExplanation.MoveConstantsToTheLeftAndSimplify
                 }
             }
 
@@ -348,8 +339,7 @@ class LinearEquationsTest {
     }
 
     @Test
-    fun `test expanding brackets in linear equation`() = testMethod {
-        context = Context(solutionVariable = "x")
+    fun `test expanding brackets in linear equation`() = testMethodInX {
         method = EquationsPlans.SolveLinearEquation
         inputExpr = "3 (x + 1) - 2 (x - 6) = 0"
 
@@ -372,7 +362,7 @@ class LinearEquationsTest {
                 fromExpr = "x + 15 = 0"
                 toExpr = "x = -15"
                 explanation {
-                    key = EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                    key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
                 }
             }
 
@@ -387,8 +377,7 @@ class LinearEquationsTest {
     }
 
     @Test
-    fun `test multiplying through by the LCD in linear equations`() = testMethod {
-        context = Context(solutionVariable = "x")
+    fun `test multiplying through by the LCD in linear equations`() = testMethodInX {
         method = EquationsPlans.SolveLinearEquation
         inputExpr = "[x - 14 / 12] - [2 x - 1 / 18] = [2 / 9] (2 x - 5)"
 
@@ -403,7 +392,7 @@ class LinearEquationsTest {
                 fromExpr = "[x - 14 / 12] - [2 x - 1 / 18] = [2 / 9] (2 x - 5)"
                 toExpr = "-x - 40 = 16 x - 40"
                 explanation {
-                    key = EquationsExplanation.MultiplyByLCDAndSimplify
+                    key = methods.solvable.EquationsExplanation.MultiplyByLCDAndSimplify
                 }
             }
 
@@ -419,7 +408,7 @@ class LinearEquationsTest {
                 fromExpr = "-x = 16 x"
                 toExpr = "0 = 17 x"
                 explanation {
-                    key = EquationsExplanation.MoveVariablesToTheRightAndSimplify
+                    key = methods.solvable.EquationsExplanation.MoveVariablesToTheRightAndSimplify
                 }
             }
 
@@ -473,7 +462,7 @@ class LinearEquationsTest {
                 fromExpr = "-21 x - 192 = 1"
                 toExpr = "-21 x = 193"
                 explanation {
-                    key = EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                    key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
                 }
             }
 
@@ -582,14 +571,13 @@ class LinearEquationsTest {
     }
 
     @Test
-    fun `test linear equations with no solutions`() = testMethod {
-        context = Context(solutionVariable = "x")
+    fun `test linear equations with no solutions`() = testMethodInX {
         method = EquationsPlans.SolveLinearEquation
         inputExpr = "6 x + 6 = 6 x - 5"
 
         check {
             fromExpr = "6 x + 6 = 6 x - 5"
-            toExpr = "Solution[x, {}]"
+            toExpr = "Contradiction[x: 6 = -5]"
             explanation {
                 key = EquationsExplanation.SolveLinearEquation
             }
@@ -604,7 +592,7 @@ class LinearEquationsTest {
 
             step {
                 fromExpr = "6 = -5"
-                toExpr = "Solution[x, {}]"
+                toExpr = "Contradiction[x: 6 = -5]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromContradiction
                 }
@@ -613,14 +601,13 @@ class LinearEquationsTest {
     }
 
     @Test
-    fun `test linear equation with infinitely many solutions`() = testMethod {
-        context = Context(solutionVariable = "x")
+    fun `test linear equation with infinitely many solutions`() = testMethodInX {
         method = EquationsPlans.SolveLinearEquation
         inputExpr = "6 x + 6 = 6 x + 3 + 3"
 
         check {
             fromExpr = "6 x + 6 = 6 x + 3 + 3"
-            toExpr = "Solution[x, REALS]"
+            toExpr = "Identity[x: 6 = 6]"
             explanation {
                 key = EquationsExplanation.SolveLinearEquation
             }
@@ -652,7 +639,7 @@ class LinearEquationsTest {
 
             step {
                 fromExpr = "6 = 6"
-                toExpr = "Solution[x, REALS]"
+                toExpr = "Identity[x: 6 = 6]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromIdentity
                 }
@@ -661,8 +648,7 @@ class LinearEquationsTest {
     }
 
     @Test
-    fun `test linear equation with no variable`() = testMethod {
-        context = Context(solutionVariable = "x")
+    fun `test linear equation with no variable`() = testMethodInX {
         method = EquationsPlans.SolveLinearEquation
         inputExpr = "1 = 2"
 
@@ -672,8 +658,7 @@ class LinearEquationsTest {
     }
 
     @Test
-    fun `test linear equation with two variables`() = testMethod {
-        context = Context(solutionVariable = "x")
+    fun `test linear equation with two variables`() = testMethodInX {
         method = EquationsPlans.SolveLinearEquation
         inputExpr = "x + 1 = 2x + y - 2"
 
@@ -683,8 +668,7 @@ class LinearEquationsTest {
     }
 
     @Test
-    fun `test linear equation without solution variable`() = testMethod {
-        context = Context(solutionVariable = "x")
+    fun `test linear equation without solution variable`() = testMethodInX {
         method = EquationsPlans.SolveLinearEquation
         inputExpr = "y + 1 = 2y"
 

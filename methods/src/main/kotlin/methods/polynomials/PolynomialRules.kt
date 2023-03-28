@@ -380,7 +380,7 @@ private val distributeProductToIntegerPower = rule {
 
 private val normalizePolynomial = rule {
     val commonVariable = ArbitraryVariablePattern()
-    val sum = sumContaining(monomialPattern(commonVariable))
+    val sum = condition(sumContaining(monomialPattern(commonVariable))) { it.variables.size == 1 }
 
     onPattern(sum) {
         val terms = get(sum).children

@@ -17,7 +17,7 @@ class TaskSet(
 ) : CompositeMethod() {
     override fun run(ctx: Context, sub: Expression): Transformation? {
         for (match in pattern.findMatches(ctx, RootMatch, sub)) {
-            val tasks = tasksProducer.produceTasks(ctx, match)
+            val tasks = tasksProducer.produceTasks(ctx, sub, match)
             if (tasks != null) {
                 val toExpr = tasks.last().toExpr.withOrigin(Combine(listOf(sub)))
                 return Transformation(
@@ -25,8 +25,8 @@ class TaskSet(
                     fromExpr = sub,
                     toExpr = toExpr,
                     tasks = tasks,
-                    explanation = explanationMaker.make(ctx, match),
-                    skills = skillMakers.map { it.make(ctx, match) },
+                    explanation = explanationMaker.make(ctx, sub, match),
+                    skills = skillMakers.map { it.make(ctx, sub, match) },
                 )
             }
         }
@@ -49,7 +49,7 @@ class TaskSetBuilder : CompositeMethodBuilder() {
     fun buildTaskSet(): TaskSet {
         return TaskSet(
             pattern = pattern,
-            explanationMaker = MetadataMaker(explanation, explanationParameters),
+            explanationMaker = explanationMaker,
             skillMakers = skillMakers,
             tasksProducer = tasksProducer,
         )

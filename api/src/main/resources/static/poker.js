@@ -34,8 +34,15 @@ const colorSchemes = {
   blue: ['blue'],
   primary: ['red', 'green', 'blue'],
 };
-
 let colorScheme = 'default';
+
+const solutionFormatters = {
+  sets: ggbSolver.setsSolutionFormatter,
+  simple: ggbSolver.simpleSolutionFormatter,
+};
+let latexSettings = {
+  solutionFormatter: solutionFormatters.sets,
+};
 
 // Holds all default translations as a key: translation map
 let translationData = {};
@@ -160,7 +167,6 @@ const renderTransformation = (trans, depth = 0) => {
     return renderTransformation(trans.steps[0], depth);
   }
 
-  const latexSettings = {};
   const [fromColoring, toColoring] = createColorMaps(trans);
   const render = (expr, coloring) =>
     ggbSolver.treeToLatex(ggbSolver.jsonToTree(expr, trans.path), latexSettings, coloring);
@@ -231,7 +237,7 @@ const renderTasks = (tasks, depth = 0, open = false) => {
 
 const renderTask = (task, depth = 0) => {
   return /* HTML */ `<div class="task">
-    Task ${task.taskId}: ${renderExplanation(task.explanation)}
+    ${renderExplanation(task.explanation)}
     ${!task.steps
       ? renderExpression(task.startExpr)
       : task.steps.length === 1
@@ -307,7 +313,9 @@ const renderExplanation = (expl) => {
 };
 
 const renderExpression = (expr) =>
-  `\\(\\displaystyle ${typeof expr === 'string' ? expr : ggbSolver.jsonToLatex(expr)}\\)`;
+  `\\(\\displaystyle ${
+    typeof expr === 'string' ? expr : ggbSolver.jsonToLatex(expr, latexSettings)
+  }\\)`;
 
 /******************************************
  * Rendering a plan test source code.
@@ -402,6 +410,7 @@ const buildTestTransformation = (trans) => (builder) => {
 
 const buildTestTask = (task) => (builder) => {
   builder.addLine(`taskId = "${task.taskId}"`);
+  builder.addLine(`startExpr = "${task.startExpr}"`);
   if (task.explanation) {
     builder.do(buildExplanation(task));
   }
@@ -557,6 +566,7 @@ window.onload = () => {
     showThroughSteps = el('showThroughSteps').checked;
     showRearrangements = el('showRearrangements').checked;
     colorScheme = el('colorScheme').value;
+    latexSettings.solutionFormatter = solutionFormatters[el('solutionFormat').value];
 
     const data = getRequestDataFromForm();
     const urlString = buildURLString(window.location, data);
@@ -574,6 +584,7 @@ window.onload = () => {
   el('showThroughSteps').onchange = optionsChanged;
   el('showRearrangements').onchange = optionsChanged;
   el('colorScheme').onchange = optionsChanged;
+  el('solutionFormat').onchange = optionsChanged;
 
   el('hideWarnings').onchange = (evt) => {
     hideWarnings = evt.target.checked;

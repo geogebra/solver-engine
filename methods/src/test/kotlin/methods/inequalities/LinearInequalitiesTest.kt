@@ -97,7 +97,7 @@ class LinearInequalitiesTest {
                 fromExpr = "4 > 11 + [x / 3]"
                 toExpr = "-7 > [x / 3]"
                 explanation {
-                    key = InequalitiesExplanation.MoveConstantsToTheLeftAndSimplify
+                    key = methods.solvable.InequalitiesExplanation.MoveConstantsToTheLeftAndSimplify
                 }
             }
 
@@ -143,7 +143,7 @@ class LinearInequalitiesTest {
                 fromExpr = "x + 1 < 2 x + 3"
                 toExpr = "1 < x + 3"
                 explanation {
-                    key = InequalitiesExplanation.MoveVariablesToTheRightAndSimplify
+                    key = methods.solvable.InequalitiesExplanation.MoveVariablesToTheRightAndSimplify
                 }
             }
 
@@ -151,7 +151,7 @@ class LinearInequalitiesTest {
                 fromExpr = "1 < x + 3"
                 toExpr = "-2 < x"
                 explanation {
-                    key = InequalitiesExplanation.MoveConstantsToTheLeftAndSimplify
+                    key = methods.solvable.InequalitiesExplanation.MoveConstantsToTheLeftAndSimplify
                 }
             }
 

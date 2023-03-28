@@ -1,7 +1,6 @@
 package methods.equations
 
 import engine.context.ResourceData
-import engine.expressions.Constants
 import engine.expressions.solutionOf
 import engine.expressions.solutionSetOf
 import engine.methods.CompositeMethod
@@ -15,20 +14,23 @@ import engine.operators.EquationUnionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.BinaryIntegerCondition
 import engine.patterns.ConditionPattern
-import engine.patterns.FixedPattern
+import engine.patterns.Pattern
 import engine.patterns.RecurringDecimalPattern
 import engine.patterns.SignedNumberPattern
 import engine.patterns.SolutionVariablePattern
 import engine.patterns.UnsignedNumberPattern
 import engine.patterns.condition
+import engine.patterns.contradictionOf
 import engine.patterns.equationOf
 import engine.patterns.fractionOf
-import engine.patterns.inSolutionVariable
+import engine.patterns.identityOf
+import engine.patterns.inSolutionVariables
 import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
 import engine.patterns.solutionOf
 import engine.patterns.solutionSetOf
 import engine.patterns.sumContaining
+import engine.patterns.variableListOf
 import engine.patterns.withOptionalConstantCoefficient
 import engine.patterns.withOptionalIntegerCoefficient
 import engine.steps.metadata.metadata
@@ -40,6 +42,8 @@ import methods.polynomials.PolynomialsPlans
 import methods.polynomials.PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization
 import methods.polynomials.PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
 import methods.polynomials.algebraicSimplificationSteps
+import methods.solvable.ApplySolvableRuleAndSimplify
+import methods.solvable.SolvableKey
 import methods.solvable.SolvableRules
 
 enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
@@ -67,47 +71,30 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     ),
 
     MoveConstantsToTheLeftAndSimplify(
+        applySolvableRuleAndSimplify(SolvableKey.MoveConstantsToTheLeft, SolvableRules.MoveConstantsToTheLeft),
+    ),
+
+    CollectLikeTermsToTheLeftAndSimplify(
         plan {
-            explanation = Explanation.MoveConstantsToTheLeftAndSimplify
+            explanation = Explanation.CollectLikeTermsToTheLeftAndSimplify
 
             steps {
-                apply(SolvableRules.MoveConstantsToTheLeft)
+                apply(EquationsRules.CollectLikeTermsToTheLeft)
                 optionally(simplifyEquation)
             }
         },
     ),
 
     MoveConstantsToTheRightAndSimplify(
-        plan {
-            explanation = Explanation.MoveConstantsToTheRightAndSimplify
-
-            steps {
-                apply(SolvableRules.MoveConstantsToTheRight)
-                optionally(simplifyEquation)
-            }
-        },
+        applySolvableRuleAndSimplify(SolvableKey.MoveConstantsToTheRight, SolvableRules.MoveConstantsToTheRight),
     ),
 
     MoveVariablesToTheLeftAndSimplify(
-        plan {
-            explanation = Explanation.MoveVariablesToTheLeftAndSimplify
-
-            steps {
-                apply(SolvableRules.MoveVariablesToTheLeft)
-                optionally(simplifyEquation)
-            }
-        },
+        applySolvableRuleAndSimplify(SolvableKey.MoveVariablesToTheLeft, SolvableRules.MoveVariablesToTheLeft),
     ),
 
     MoveVariablesToTheRightAndSimplify(
-        plan {
-            explanation = Explanation.MoveVariablesToTheRightAndSimplify
-
-            steps {
-                apply(SolvableRules.MoveVariablesToTheRight)
-                optionally(simplifyEquation)
-            }
-        },
+        applySolvableRuleAndSimplify(SolvableKey.MoveVariablesToTheRight, SolvableRules.MoveVariablesToTheRight),
     ),
 
     MoveEverythingToTheLeftAndSimplify(
@@ -134,7 +121,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
     MultiplyByLCDAndSimplify(
         plan {
-            explanation = Explanation.MultiplyByLCDAndSimplify
+            explanation = methods.solvable.EquationsExplanation.MultiplyByLCDAndSimplify
 
             steps {
                 apply(SolvableRules.MultiplySolvableByLCD)
@@ -188,74 +175,8 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
             pattern = equationInOneVariable()
 
             steps {
-                whilePossible {
-                    firstOf {
-                        option(equationSimplificationSteps)
-                        option(MultiplyByLCDAndSimplify)
-                        option(ExpandPolynomialExpressionInOneVariableWithoutNormalization)
-                    }
-                }
 
-                optionally {
-                    firstOf {
-                        // three ways to reorganize the equation into ax = b form
-                        option {
-                            // if the equation is in the form `a = bx + c` with `b` non-negative, then
-                            // we move `c` to the left hand side and flip the equation
-                            checkForm {
-                                val lhs = condition(AnyPattern()) { it.isConstant() }
-                                val variableWithCoefficient = withOptionalConstantCoefficient(
-                                    SolutionVariablePattern(),
-                                    positiveOnly = true,
-                                )
-                                val rhs = oneOf(variableWithCoefficient, sumContaining(variableWithCoefficient))
-                                equationOf(lhs, rhs)
-                            }
-                            optionally(MoveConstantsToTheLeftAndSimplify)
-                            apply(EquationsRules.FlipEquation)
-                        }
-                        option {
-                            // if the equation is in the form ax + b = cx + d with a an integer and c a
-                            // positive integer such that c > a we move ax to the right hand side, d to
-                            // the left hand side and flip the equation
-                            checkForm {
-                                val variable = SolutionVariablePattern()
-                                val lhsVariable = withOptionalIntegerCoefficient(variable, false)
-                                val rhsVariable = withOptionalIntegerCoefficient(variable, true)
-
-                                val lhs = oneOf(lhsVariable, sumContaining(lhsVariable))
-                                val rhs = oneOf(rhsVariable, sumContaining(rhsVariable))
-
-                                ConditionPattern(
-                                    equationOf(lhs, rhs),
-                                    BinaryIntegerCondition(
-                                        lhsVariable.integerCoefficient,
-                                        rhsVariable.integerCoefficient,
-                                    ) { n1, n2 -> n2 > n1 },
-                                )
-                            }
-
-                            apply(MoveVariablesToTheRightAndSimplify)
-                            optionally(MoveConstantsToTheLeftAndSimplify)
-                            apply(EquationsRules.FlipEquation)
-                        }
-                        option {
-                            // otherwise we first move variables to the left and then constants
-                            // to the right
-                            optionally(MoveVariablesToTheLeftAndSimplify)
-                            optionally(MoveConstantsToTheRightAndSimplify)
-                        }
-                    }
-                }
-
-                optionally {
-                    firstOf {
-                        // get rid of the coefficient of the variable
-                        option(EquationsRules.NegateBothSides)
-                        option(MultiplyByInverseCoefficientOfVariableAndSimplify)
-                        option(DivideByCoefficientOfVariableAndSimplify)
-                    }
-                }
+                optionally(rearrangeLinearEquationSteps)
 
                 optionally {
                     firstOf {
@@ -269,7 +190,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                 contextSensitive {
                     default(
                         ResourceData(preferDecimals = false),
-                        FormChecker(solutionOf(SolutionVariablePattern(), AnyPattern())),
+                        FormChecker(solutionPattern()),
                     )
                     alternative(
                         ResourceData(preferDecimals = false, gmFriendly = true),
@@ -462,7 +383,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     SolveEquationInOneVariable(
         plan {
             explanation = Explanation.SolveEquationInOneVariable
-            pattern = inSolutionVariable(equationOf(AnyPattern(), AnyPattern()))
+            pattern = inSolutionVariables(equationOf(AnyPattern(), AnyPattern()))
 
             specificPlans(
                 SolveLinearEquation,
@@ -541,7 +462,9 @@ private val simplifyEquation = plan {
     }
 }
 
-private val equationSimplificationSteps = steps {
+private val applySolvableRuleAndSimplify = ApplySolvableRuleAndSimplify(simplifyEquation)::getPlan
+
+val equationSimplificationSteps = steps {
     whilePossible {
         firstOf {
             // before we cancel we always have to check for an identity
@@ -561,16 +484,84 @@ private val decimalSolutionFormChecker = run {
         optionalNegOf(fractionOf(UnsignedNumberPattern(), UnsignedNumberPattern())),
     )
 
-    FormChecker(
-        solutionOf(
-            SolutionVariablePattern(),
-            oneOf(
-                FixedPattern(Constants.EmptySet),
-                FixedPattern(Constants.Reals),
-                solutionSetOf(acceptedSolutions),
-            ),
-        ),
-    )
+    FormChecker(solutionPattern(acceptedSolutions))
 }
 
-private fun equationInOneVariable() = inSolutionVariable(equationOf(AnyPattern(), AnyPattern()))
+val rearrangeLinearEquationSteps = steps {
+    whilePossible {
+        firstOf {
+            option(equationSimplificationSteps)
+            option(EquationsPlans.MultiplyByLCDAndSimplify)
+            option(ExpandPolynomialExpressionInOneVariableWithoutNormalization)
+        }
+    }
+
+    optionally {
+        firstOf {
+            // three ways to reorganize the equation into ax = b form
+            option {
+                // if the equation is in the form `a = bx + c` with `b` non-negative, then
+                // we move `c` to the left hand side and flip the equation
+                checkForm {
+                    val lhs = condition(AnyPattern()) { it.isConstant() }
+                    val variableWithCoefficient = withOptionalConstantCoefficient(
+                        SolutionVariablePattern(),
+                        positiveOnly = true,
+                    )
+                    val rhs = oneOf(variableWithCoefficient, sumContaining(variableWithCoefficient))
+                    equationOf(lhs, rhs)
+                }
+                optionally(EquationsPlans.MoveConstantsToTheLeftAndSimplify)
+                apply(EquationsRules.FlipEquation)
+            }
+            option {
+                // if the equation is in the form ax + b = cx + d with a an integer and c a
+                // positive integer such that c > a we move ax to the right hand side, d to
+                // the left hand side and flip the equation
+                checkForm {
+                    val variable = SolutionVariablePattern()
+                    val lhsVariable = withOptionalIntegerCoefficient(variable, false)
+                    val rhsVariable = withOptionalIntegerCoefficient(variable, true)
+
+                    val lhs = oneOf(lhsVariable, sumContaining(lhsVariable))
+                    val rhs = oneOf(rhsVariable, sumContaining(rhsVariable))
+
+                    ConditionPattern(
+                        equationOf(lhs, rhs),
+                        BinaryIntegerCondition(
+                            lhsVariable.integerCoefficient,
+                            rhsVariable.integerCoefficient,
+                        ) { n1, n2 -> n2 > n1 },
+                    )
+                }
+
+                apply(EquationsPlans.MoveVariablesToTheRightAndSimplify)
+                optionally(EquationsPlans.MoveConstantsToTheLeftAndSimplify)
+                apply(EquationsRules.FlipEquation)
+            }
+            option {
+                // otherwise we first move variables to the left and then constants
+                // to the right
+                optionally(EquationsPlans.MoveVariablesToTheLeftAndSimplify)
+                optionally(EquationsPlans.MoveConstantsToTheRightAndSimplify)
+            }
+        }
+    }
+
+    optionally {
+        firstOf {
+            // get rid of the coefficient of the variable
+            option(EquationsRules.NegateBothSides)
+            option(EquationsPlans.MultiplyByInverseCoefficientOfVariableAndSimplify)
+            option(EquationsPlans.DivideByCoefficientOfVariableAndSimplify)
+        }
+    }
+}
+
+private fun equationInOneVariable() = inSolutionVariables(equationOf(AnyPattern(), AnyPattern()))
+
+private fun solutionPattern(solutionValuePattern: Pattern = AnyPattern()) = oneOf(
+    solutionOf(SolutionVariablePattern(), solutionSetOf(solutionValuePattern)),
+    contradictionOf(variableListOf(SolutionVariablePattern())),
+    identityOf(variableListOf(SolutionVariablePattern())),
+)

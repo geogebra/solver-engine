@@ -52,6 +52,6 @@ fun getContext(apiCtx: server.models.Context?, defaultSolutionVariable: String?)
         gmFriendly = apiCtx.gmFriendly == true,
         precision = apiCtx.precision?.toInt(),
         preferDecimals = apiCtx.preferDecimals,
-        solutionVariable = apiCtx.solutionVariable ?: defaultSolutionVariable,
+        solutionVariables = listOfNotNull(apiCtx.solutionVariable ?: defaultSolutionVariable),
     )
-} ?: emptyContext.copy(solutionVariable = defaultSolutionVariable)
+} ?: emptyContext.copy(solutionVariables = listOfNotNull(defaultSolutionVariable))

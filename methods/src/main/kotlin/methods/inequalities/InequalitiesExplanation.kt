@@ -92,56 +92,6 @@ enum class InequalitiesExplanation : CategorisedMetadataKey {
     FlipInequality,
 
     /**
-     * Multiply both sides of the inequality by the least common denominator
-     * of all the fractions occurring in it and then simplify
-     *
-     * E.g. [2 + x / 6] + 5 < [4 - 2x / 4]
-     *      -> ([2 + x / 6] + 5) * 12 < [4 - 2x / 4] * 12
-     *      -> 2x + 64 < 12 - 6x
-     */
-    MultiplyByLCDAndSimplify,
-
-    /**
-     * Add the opposite of the constants appearing on the RHS
-     * of the inequality to both sides and simplify.
-     *
-     * E.g. 1 >= 2x + 2
-     *      -> 1 - 2 >= 2x + 2 - 2
-     *      -> -1 >= 2x
-     */
-    MoveConstantsToTheLeftAndSimplify,
-
-    /**
-     * Add the opposite of the constants appearing on the LHS
-     * of the inequality to both sides and simplify.
-     *
-     * E.g. 2x + 1 <= 2
-     *      -> 2x + 1 - 1 <= 2 - 1
-     *      -> 2x <= 1
-     */
-    MoveConstantsToTheRightAndSimplify,
-
-    /**
-     * Add the opposite of the variables appearing on the RHS
-     * of the inequality to both sides and simplify
-     *
-     * E.g. 3x + 2 > 2x + 1
-     *      -> 3x + 2 - 2x > 2x + 1 - 2x
-     *      -> x + 2 > 1
-     */
-    MoveVariablesToTheLeftAndSimplify,
-
-    /**
-     * Add the opposite of the variables appearing on the LHS
-     * of the inequality to both sides and simplify
-     *
-     * E.g. 2x + 2 > 3x + 1
-     *      -> 2x + 2 - 2x > 3x + 1 - 2x
-     *      -> 2 > x + 1
-     */
-    MoveVariablesToTheRightAndSimplify,
-
-    /**
      * Multiply both sides of the inequality by the inverse of the coefficient
      * of the variable and simplify.
      *

@@ -49,4 +49,4 @@ fun testRule(
 }
 
 fun testRuleInX(inputExpr: String, rule: Method, outputExpr: String?) =
-    testRule(inputExpr, rule, outputExpr, null, Context(solutionVariable = "x"))
+    testRule(inputExpr, rule, outputExpr, null, Context(solutionVariables = listOf("x")))

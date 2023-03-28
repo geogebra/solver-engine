@@ -372,6 +372,6 @@ fun testMethod(init: MethodTestCase.() -> Unit) {
  */
 fun testMethodInX(init: MethodTestCase.() -> Unit) {
     val testCase = MethodTestCase()
-    testCase.context = Context(solutionVariable = "x")
+    testCase.context = Context(solutionVariables = listOf("x"))
     testCase.init()
 }

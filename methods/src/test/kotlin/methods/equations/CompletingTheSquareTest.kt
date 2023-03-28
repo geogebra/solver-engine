@@ -105,7 +105,7 @@ class CompletingTheSquareTest {
                 fromExpr = "[x ^ 2] = 6 x + 5"
                 toExpr = "[x ^ 2] - 6 x = 5"
                 explanation {
-                    key = EquationsExplanation.MoveVariablesToTheLeftAndSimplify
+                    key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeftAndSimplify
                 }
             }
 
@@ -169,7 +169,7 @@ class CompletingTheSquareTest {
                 fromExpr = "x - 3 = +/-sqrt[14]"
                 toExpr = "x = +/-sqrt[14] + 3"
                 explanation {
-                    key = EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                    key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
                 }
             }
 
@@ -271,7 +271,7 @@ class CompletingTheSquareTest {
                 fromExpr = "x + [5 / 4] = +/-[9 / 4]"
                 toExpr = "x = +/-[9 / 4] - [5 / 4]"
                 explanation {
-                    key = EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                    key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
                 }
             }
 

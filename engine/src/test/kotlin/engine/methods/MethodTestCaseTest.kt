@@ -3,8 +3,8 @@ package engine.methods
 import engine.methods.stepsproducers.steps
 import engine.patterns.AnyPattern
 import engine.patterns.UnsignedIntegerPattern
+import engine.steps.metadata.FixedKeyMetadataMaker
 import engine.steps.metadata.MetadataKey
-import engine.steps.metadata.MetadataMaker
 import engine.steps.metadata.metadata
 import org.junit.jupiter.api.Test
 import kotlin.test.assertFails
@@ -46,7 +46,7 @@ class MethodTestCaseTest {
             pattern = pattern,
             resultPattern = AnyPattern(),
             stepsProducer = steps { repeat(3) { apply(testRule) } },
-            explanationMaker = MetadataMaker(testPlanMetadataKey) { listOf(move(pattern)) },
+            explanationMaker = FixedKeyMetadataMaker(testPlanMetadataKey) { listOf(move(pattern)) },
         )
     }
 

@@ -3,7 +3,11 @@ package engine.patterns
 import engine.context.Context
 import engine.expressions.Expression
 
-data class FindPattern(val pattern: Pattern, val deepFirst: Boolean = false) : Pattern {
+data class FindPattern(
+    val pattern: Pattern,
+    val deepFirst: Boolean = false,
+    val stopWhenFound: Boolean = false,
+) : Pattern {
 
     override val key = pattern
 
@@ -12,6 +16,7 @@ data class FindPattern(val pattern: Pattern, val deepFirst: Boolean = false) : P
         val childMatches = subexpression.children.asSequence().flatMap { findMatches(context, match, it) }
         return when {
             deepFirst -> childMatches + ownMatches
+            stopWhenFound -> ownMatches.ifEmpty { childMatches }
             else -> ownMatches + childMatches
         }
     }

@@ -20,7 +20,14 @@ export type NestedExpressionType =
   | 'GreaterThanEqual' // binary
   /** 'Solution' just means the "element of" operator (∈) */
   | 'Solution' // binary
+  | 'Identity'
+  | 'Contradiction'
+  | 'ImplicitSolution'
+  | 'SetSolution'
+  | 'VariableList'
+  | 'Tuple'
   | 'FiniteSet' // n-ary
+  | 'CartesianProduct' // n-ary
   | 'OpenInterval' // binary
   | 'ClosedInterval' // binary
   | 'OpenClosedInterval' // binary
@@ -51,7 +58,7 @@ export type ExpressionTreeBase<T> = { decorators?: DecoratorType[] } & (
   | NestedExpressionBase<T>
   | NumberExpression
   | VariableExpression
-  | { type: 'UNDEFINED' | 'INFINITY' | 'REALS' }
+  | { type: 'UNDEFINED' | 'INFINITY' | 'Reals' }
 ) &
   T;
 

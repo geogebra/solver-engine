@@ -124,4 +124,6 @@ interface PipelineBuilder {
 
     fun checkForm(patternProvider: () -> Pattern)
     fun contextSensitive(init: ContextSensitiveBuilder.() -> Unit)
+
+    fun inContext(contextFactory: Context.(Expression) -> Context, init: PipelineBuilder.() -> Unit)
 }

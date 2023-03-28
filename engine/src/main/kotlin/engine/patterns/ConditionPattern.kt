@@ -127,5 +127,5 @@ fun numericCondition(
  * Wraps [ptn] in a condition which is only true when the expression matching [ptn] contains exactly one variable and
  * that is the context's solution variable.
  */
-fun inSolutionVariable(ptn: Pattern) =
-    condition(ptn) { it.variables.size == 1 && it.variables.contains(solutionVariable) }
+fun inSolutionVariables(ptn: Pattern) =
+    condition(ptn) { it.variables.size == solutionVariables.size && it.variables.containsAll(solutionVariables) }

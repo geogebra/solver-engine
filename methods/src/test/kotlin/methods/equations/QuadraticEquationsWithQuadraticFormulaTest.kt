@@ -23,7 +23,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
                 fromExpr = "2 [x ^ 2] - 7 x + 4 = 1"
                 toExpr = "2 [x ^ 2] - 7 x + 3 = 0"
                 explanation {
-                    key = EquationsExplanation.MoveConstantsToTheLeftAndSimplify
+                    key = methods.solvable.EquationsExplanation.MoveConstantsToTheLeftAndSimplify
                 }
             }
 
@@ -544,7 +544,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
                 fromExpr = "[[x ^ 2] / 6] + [x / 3] + [1 / 8] = 0"
                 toExpr = "4 [x ^ 2] + 8 x + 3 = 0"
                 explanation {
-                    key = EquationsExplanation.MultiplyByLCDAndSimplify
+                    key = methods.solvable.EquationsExplanation.MultiplyByLCDAndSimplify
                 }
 
                 step {
@@ -584,7 +584,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
                 fromExpr = "[[x ^ 2] + 1 / 2] + [x / 2] = [x + 1 / 3]"
                 toExpr = "3 x + 3 [x ^ 2] + 3 = 2 x + 2"
                 explanation {
-                    key = EquationsExplanation.MultiplyByLCDAndSimplify
+                    key = methods.solvable.EquationsExplanation.MultiplyByLCDAndSimplify
                 }
             }
 
@@ -592,7 +592,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
                 fromExpr = "3 x + 3 [x ^ 2] + 3 = 2 x + 2"
                 toExpr = "x + 3 [x ^ 2] + 3 = 2"
                 explanation {
-                    key = EquationsExplanation.MoveVariablesToTheLeftAndSimplify
+                    key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeftAndSimplify
                 }
             }
 
@@ -600,7 +600,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
                 fromExpr = "x + 3 [x ^ 2] + 3 = 2"
                 toExpr = "x + 3 [x ^ 2] + 1 = 0"
                 explanation {
-                    key = EquationsExplanation.MoveConstantsToTheLeftAndSimplify
+                    key = methods.solvable.EquationsExplanation.MoveConstantsToTheLeftAndSimplify
                 }
             }
 

@@ -118,62 +118,24 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     SolveEquationInEquationUnion,
 
     /**
-     * Multiply both sides of the equation by the least common denominator
-     * of all the fractions occurring in it and then simplify
-     *
-     * E.g. [2 + x / 6] + 5 = [4 - 2x / 4]
-     *      -> ([2 + x / 6] + 5) * 12 = [4 - 2x / 4] * 12
-     *      -> 2x + 64 = 12 - 6x
-     */
-    MultiplyByLCDAndSimplify,
-
-    /**
-     * Add the opposite of the constants appearing on the RHS
-     * of the equation to both sides and simplify.
-     *
-     * E.g. 1 = 2x + 2
-     *      -> 1 - 2 = 2x + 2 - 2
-     *      -> -1 = 2x
-     */
-    MoveConstantsToTheLeftAndSimplify,
-
-    /**
-     * Add the opposite of the constants appearing on the LHS
-     * of the equation to both sides and simplify.
-     *
-     * E.g. 2x + 1 = 2
-     *      -> 2x + 1 - 1 = 2 - 1
-     *      -> 2x = 1
-     */
-    MoveConstantsToTheRightAndSimplify,
-
-    /**
-     * Add the opposite of the variables appearing on the RHS
-     * of the equation to both sides and simplify
-     *
-     * E.g. 3x + 2 = 2x + 1
-     *      -> 3x + 2 - 2x = 2x + 1 - 2x
-     *      -> x + 2 = 1
-     */
-    MoveVariablesToTheLeftAndSimplify,
-
-    /**
-     * Add the opposite of the variables appearing on the LHS
-     * of the equation to both sides and simplify
-     *
-     * E.g. 2x + 2 = 3x + 1
-     *      -> 2x + 2 - 2x = 3x + 1 - 2x
-     *      -> 2 = x + 1
-     */
-    MoveVariablesToTheRightAndSimplify,
-
-    /**
      * Add the opposite of everything on the LHS to both sides
      * of the equation.
      *
      * E.g. 4x - 3 = 2x + 1 -> 4x - 3 - (2x + 1) = 2x + 1 - (2x + 1)
      */
     MoveEverythingToTheLeft,
+
+    /**
+     * Collect like terms to the left
+     *
+     * %1: "like" variable
+     */
+    CollectLikeTermsToTheLeft,
+
+    /**
+     * Collect like terms to the left and simplify
+     */
+    CollectLikeTermsToTheLeftAndSimplify,
 
     /**
      * Add the opposite of everything on the LHS to both sides

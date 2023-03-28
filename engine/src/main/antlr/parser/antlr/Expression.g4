@@ -4,7 +4,9 @@ grammar Expression;
     package parser.antlr;
 }
 
-wholeInput: equationSystem | equationUnion | equation | inequality | solution | exprOrUndefined EOF;
+wholeInput: statement | solution | exprOrUndefined EOF;
+
+statement: equationSystem | equationUnion | equation | inequality;
 
 equationSystem: equations += equation (',' equations += equation)+;
 
@@ -14,15 +16,23 @@ equation: lhs=expr '=' rhs=expr;
 
 inequality: lhs=expr comparator=('<' | '<=' | '>' | '>=') rhs=expr;
 
-solution: 'Solution' '[' var=variable ',' solutionSet=set ']';
+solution
+    : 'Solution' '[' var=variable ',' solutionSet=set ']'       #legacySolution
+    | 'Identity' '[' vars=variables ':' statement ']'           #identity
+    | 'Contradiction' '[' vars=variables ':' statement ']'      #contradiction
+    | 'ImplicitSolution' '[' vars=variables ':' statement ']'   #implicitSolution
+    | 'SetSolution' '[' vars=variables ':' solutionSet=set ']'  #setSolution
+    ;
 
-set: emptySet | finiteSet | reals | interval;
+set: cartesianProduct;
+
+cartesianProduct: first=simpleSet ('*' rest+=simpleSet)*;
+
+simpleSet: emptySet | finiteSet | reals | interval;
 
 emptySet: '{' '}';
 
-finiteSet: '{' first=expr (rest+=restElement)* '}';
-
-restElement: ',' expr;
+finiteSet: '{' first=element (',' rest+=element)* '}';
 
 reals: REALS;
 
@@ -32,18 +42,22 @@ exprOrInfinity: expr | infinity | minusInfinity;
 
 exprOrUndefined: expr | undefined;
 
+element: tuple | expr;
+
+tuple: '(' first=element (',' rest+=element)+ ')';
+
 expr: sum;
 
 sum: first=firstTerm (rest+=otherTerm)*;
 
 firstTerm
-    : sign=('+' | '-' | PLUSMINUS)? explicitProduct       #realFirstTerm
-    | OPEN_PARTIALSUM sum CLOSE_PARTIALSUM            #firstPartialSum
+    : sign=('+' | '-' | PLUSMINUS)? explicitProduct  #realFirstTerm
+    | OPEN_PARTIALSUM sum CLOSE_PARTIALSUM           #firstPartialSum
     ;
 
 otherTerm
-    : sign=('+' | '-' | PLUSMINUS) explicitProduct                       #realOtherTerm
-    | OPEN_PARTIALSUM (terms+=otherTerm)+ CLOSE_PARTIALSUM           #otherPartialSum
+    : sign=('+' | '-' | PLUSMINUS) explicitProduct          #realOtherTerm
+    | OPEN_PARTIALSUM (terms+=otherTerm)+ CLOSE_PARTIALSUM  #otherPartialSum
     ;
 
 explicitProduct: first=implicitProduct (rest+=otherExplicitFactor)*;
@@ -53,8 +67,8 @@ otherExplicitFactor: op=('*'|':') implicitProduct;
 implicitProduct: first=firstFactor (others+=otherFactor)*;
 
 firstFactor
-    : sign=('+' | '-' | PLUSMINUS) factor=firstFactor           #firstFactorWithSign
-    | (mixedNumber | fraction | power | atom)       #firstFactorWithoutSign
+    : sign=('+' | '-' | PLUSMINUS) factor=firstFactor  #firstFactorWithSign
+    | (mixedNumber | fraction | power | atom)          #firstFactorWithoutSign
     ;
 
 otherFactor: power | nonNumericAtom;
@@ -68,9 +82,9 @@ sqrt: 'sqrt[' radicand=expr ']';
 root: 'root[' radicand=expr ',' order=expr ']';
 
 bracket
-    :'(' expr ')' #roundBracket
+    :'(' expr ')'                   #roundBracket
     | OPEN_SQUARE expr CLOSE_SQUARE #squareBracket
-    | OPEN_CURLY expr CLOSE_CURLY #curlyBracket
+    | OPEN_CURLY expr CLOSE_CURLY   #curlyBracket
     ;
 
 atom: nonNumericAtom | naturalNumber | decimalNumber | recurringDecimalNumber;
@@ -89,6 +103,8 @@ undefined: UNDEFINED;
 decimalNumber: DECNUM;
 
 recurringDecimalNumber: RECURRING_DECNUM;
+
+variables: first=variable (',' rest+=variable)*;
 
 variable: VARIABLE;
 

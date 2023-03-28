@@ -195,9 +195,9 @@ class Expression internal constructor(
     fun isConstant() = variables.isEmpty()
 
     /**
-     * The expression does not depend on the specified symbol / variable
+     * The expression does not depend on the specified symbols
      */
-    fun isConstantIn(symbol: String?) = if (symbol == null) isConstant() else !variables.contains(symbol)
+    fun isConstantIn(symbols: List<String>) = variables.all { !symbols.contains(it) }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -262,6 +262,23 @@ class Expression internal constructor(
             subOrigin.replaceInParent(newExpr).asFlattenedProduct(),
         )
         else -> this
+    }
+
+    /**
+     * Substitutes all occurrences of [oldValue] with [newValue]
+     */
+    fun substituteAllOccurrences(oldValue: Expression, newValue: Expression): Expression {
+        if (this == oldValue) {
+            return newValue
+        }
+        var newExpr = this
+        for ((i, child) in children.withIndex()) {
+            val newChild = child.substituteAllOccurrences(oldValue, newValue)
+            if (newChild != child) {
+                newExpr = newExpr.replaceNthChild(i, newChild)
+            }
+        }
+        return newExpr.asFlattenedProduct()
     }
 
     private fun asFlattenedProduct(): Expression = when (operator) {

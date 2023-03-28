@@ -29,7 +29,7 @@ class SolutionVariablePattern : VariablePattern() {
     override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
         val operator = subexpression.operator
 
-        return if (operator is VariableOperator && operator.name == context.solutionVariable) {
+        return if (operator is VariableOperator && operator.name in context.solutionVariables) {
             sequenceOf(match.newChild(this, subexpression))
         } else {
             emptySequence()

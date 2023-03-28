@@ -5,6 +5,7 @@ const val ARITY_ONE = 1
 const val ARITY_TWO = 2
 const val ARITY_THREE = 3
 const val ARITY_VARIABLE = -1
+const val ARITY_VARIABLE_FROM_ZERO = -2
 
 const val MAX_CHILD_COUNT = 1000
 
@@ -38,6 +39,8 @@ enum class OperatorKind {
     EXPRESSION,
     SET,
     STATEMENT,
+    SET_ELEMENT,
+    INNER,
 }
 
 interface Operator {
@@ -54,8 +57,13 @@ interface Operator {
         return ops.withIndex().all { (i, op) -> nthChildAllowed(i, op) }
     }
 
-    fun minChildCount(): Int = if (arity == ARITY_VARIABLE) 2 else arity
-    fun maxChildCount(): Int = if (arity == ARITY_VARIABLE) MAX_CHILD_COUNT else arity
+    fun minChildCount(): Int = when (arity) {
+        ARITY_VARIABLE -> 2
+        ARITY_VARIABLE_FROM_ZERO -> 0
+        else -> arity
+    }
+
+    fun maxChildCount(): Int = if (arity <= ARITY_VARIABLE) MAX_CHILD_COUNT else arity
 
     fun <T> readableString(children: List<T>): String {
         return "${toString()}(${children.joinToString(", ")})"

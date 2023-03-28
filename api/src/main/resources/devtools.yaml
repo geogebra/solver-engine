@@ -1,0 +1,5 @@
+spring:
+  devtools:
+    restart:
+      trigger-file: .triggerFile
+      additional-paths: build

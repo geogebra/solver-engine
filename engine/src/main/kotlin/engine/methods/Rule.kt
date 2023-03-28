@@ -36,7 +36,7 @@ class RuleBuilder {
         Rule(equationOf(lhs, rhs), result)
 }
 
-class RuleResultBuilder(val sub: Expression, ctx: Context, match: Match) : MappedExpressionBuilder(ctx, match) {
+class RuleResultBuilder(val sub: Expression, ctx: Context, match: Match) : MappedExpressionBuilder(ctx, sub, match) {
 
     @Suppress("LongParameterList")
     fun ruleResult(

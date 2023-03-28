@@ -28,7 +28,14 @@ internal class ProceduralPipeline(val init: PipelineBuilder.() -> Unit) : StepsP
     }
 }
 
+@Suppress("TooManyFunctions")
 private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : PipelineBuilder {
+
+    private val expression get() = builder.lastSub
+
+    override fun inContext(contextFactory: Context.(Expression) -> Context, init: PipelineBuilder.() -> Unit) {
+        PipelineRunner(builder, ctx.contextFactory(expression)).init()
+    }
 
     private fun addSteps(steps: List<Transformation>?) {
         if (steps != null) {

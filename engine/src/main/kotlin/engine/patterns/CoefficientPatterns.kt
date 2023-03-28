@@ -34,9 +34,10 @@ class IntegerCoefficientPattern(value: Pattern, private val positiveOnly: Boolea
 
     override val key = pattern.key
 
-    override fun coefficient(match: Match): Expression = with(MappedExpressionBuilder(emptyContext, match)) {
-        if (positiveOnly) get(integerCoefficient) else copySign(optionalNegPattern, get(integerCoefficient))
-    }
+    override fun coefficient(match: Match): Expression =
+        with(MappedExpressionBuilder(emptyContext, match.getBoundExpr(key)!!, match)) {
+            if (positiveOnly) get(integerCoefficient) else copySign(optionalNegPattern, get(integerCoefficient))
+        }
 }
 
 /**
@@ -68,7 +69,7 @@ class RationalCoefficientPattern(value: Pattern) : CoefficientPattern(value) {
      * Given a match, returns the coefficient as an integer or fraction
      */
     override fun coefficient(match: Match): Expression =
-        with(MappedExpressionBuilder(emptyContext /* TODO */, match)) {
+        with(MappedExpressionBuilder(emptyContext /* TODO */, match.getBoundExpr(key)!!, match)) {
             val numeratorCoefficient = when {
                 match.isBound(numerator) -> move(numerator)
                 else -> introduce(Constants.One)
@@ -127,7 +128,7 @@ class ConstantCoefficientPattern(
      * Given a match, returns the coefficient
      */
     override fun coefficient(match: Match): Expression =
-        with(MappedExpressionBuilder(emptyContext /* TODO */, match)) {
+        with(MappedExpressionBuilder(emptyContext /* TODO */, match.getBoundExpr(key)!!, match)) {
             val numeratorCoefficient = when {
                 match.isBound(product) -> restOf(product)
                 else -> introduce(Constants.One)

@@ -41,7 +41,7 @@ class ConstantPattern : BasePattern() {
 class ConstantInSolutionVariablePattern : BasePattern() {
     override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
         return when {
-            subexpression.isConstantIn(context.solutionVariable) -> sequenceOf(match.newChild(this, subexpression))
+            subexpression.isConstantIn(context.solutionVariables) -> sequenceOf(match.newChild(this, subexpression))
             else -> emptySequence()
         }
     }

@@ -13,10 +13,14 @@ import engine.steps.Transformation
 import engine.steps.metadata.Metadata
 
 interface TasksProducer {
-    fun produceTasks(ctx: Context, match: Match): List<Task>?
+    fun produceTasks(ctx: Context, expression: Expression, match: Match): List<Task>?
 }
 
-class TasksBuilder(context: Context, match: Match) : MappedExpressionBuilder(context, match) {
+class TasksBuilder(
+    context: Context,
+    expression: Expression,
+    match: Match,
+) : MappedExpressionBuilder(context, expression, match) {
 
     private val tasks = mutableListOf<Task>()
 
@@ -26,14 +30,16 @@ class TasksBuilder(context: Context, match: Match) : MappedExpressionBuilder(con
         startExpr: Expression,
         explanation: Metadata,
         dependsOn: List<Task> = emptyList(),
+        context: Context = this.context,
     ): Task {
-        return task(startExpr, explanation, dependsOn, EmptyStepsProducer)!!
+        return task(startExpr, explanation, dependsOn, context, EmptyStepsProducer)!!
     }
 
     fun task(
         startExpr: Expression,
         explanation: Metadata,
         dependsOn: List<Task> = emptyList(),
+        context: Context = this.context,
         stepsProducer: StepsProducer,
     ): Task? {
         val taskId = nextTaskId()
@@ -53,15 +59,17 @@ class TasksBuilder(context: Context, match: Match) : MappedExpressionBuilder(con
         startExpr: Expression,
         explanation: Metadata,
         dependsOn: List<Task> = emptyList(),
+        context: Context = this.context,
         init: PipelineBuilder.() -> Unit,
-    ): Task? = task(startExpr, explanation, dependsOn, steps(init))
+    ): Task? = task(startExpr, explanation, dependsOn, context, steps(init))
 
     fun allTasks(): List<Task>? = if (tasks.isEmpty()) null else tasks
 }
 
 class ProceduralTasksProducer(val produceTasks: TasksBuilder.() -> List<Task>?) : TasksProducer {
 
-    override fun produceTasks(ctx: Context, match: Match) = TasksBuilder(ctx, match).produceTasks()
+    override fun produceTasks(ctx: Context, expression: Expression, match: Match) =
+        TasksBuilder(ctx, expression, match).produceTasks()
 }
 
 private object EmptyStepsProducer : StepsProducer {

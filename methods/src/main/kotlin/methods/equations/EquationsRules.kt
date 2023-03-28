@@ -5,10 +5,12 @@ import engine.conditions.isDefinitelyNotUndefined
 import engine.conditions.signOf
 import engine.expressions.Constants
 import engine.expressions.Expression
+import engine.expressions.contradictionOf
 import engine.expressions.equationOf
 import engine.expressions.equationUnionOf
 import engine.expressions.fractionOf
 import engine.expressions.hasSingleValue
+import engine.expressions.identityOf
 import engine.expressions.inverse
 import engine.expressions.isSignedFraction
 import engine.expressions.negOf
@@ -22,11 +24,13 @@ import engine.expressions.solutionSetOf
 import engine.expressions.splitPlusMinus
 import engine.expressions.squareRootOf
 import engine.expressions.sumOf
+import engine.expressions.variableListOf
 import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
 import engine.patterns.AnyPattern
+import engine.patterns.ArbitraryVariablePattern
 import engine.patterns.ConditionPattern
 import engine.patterns.ConstantInSolutionVariablePattern
 import engine.patterns.ConstantPattern
@@ -41,7 +45,7 @@ import engine.patterns.commutativeProductOf
 import engine.patterns.commutativeSumOf
 import engine.patterns.condition
 import engine.patterns.equationOf
-import engine.patterns.inSolutionVariable
+import engine.patterns.inSolutionVariables
 import engine.patterns.integerCondition
 import engine.patterns.monomialPattern
 import engine.patterns.negOf
@@ -63,6 +67,27 @@ import engine.steps.metadata.DragTargetPosition as Position
 import engine.steps.metadata.GmPathModifier as PM
 
 enum class EquationsRules(override val runner: Rule) : RunnerMethod {
+
+    CollectLikeTermsToTheLeft(
+        rule {
+            val variable = ArbitraryVariablePattern()
+            val lhsTerm = withOptionalConstantCoefficient(variable)
+            val rhsTerm = withOptionalConstantCoefficient(variable)
+            val lhs = oneOf(lhsTerm, sumContaining(lhsTerm))
+            val rhs = oneOf(rhsTerm, sumContaining(rhsTerm))
+
+            onEquation(lhs, rhs) {
+                val negatedRhsTerm = simplifiedNegOf(get(rhsTerm))
+                ruleResult(
+                    toExpr = equationOf(
+                        sumOf(get(lhs), negatedRhsTerm),
+                        sumOf(get(rhs), negatedRhsTerm),
+                    ),
+                    explanation = metadata(Explanation.CollectLikeTermsToTheLeft, get(variable)),
+                )
+            }
+        },
+    ),
 
     MoveEverythingToTheLeft(
         rule {
@@ -104,7 +129,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
     MultiplyByInverseOfLeadingCoefficient(
         rule {
-            val lhs = inSolutionVariable(sumContaining())
+            val lhs = inSolutionVariables(sumContaining())
             val rhs = AnyPattern()
 
             onEquation(lhs, rhs) {
@@ -154,7 +179,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
     FactorNegativeSignOfLeadingCoefficient(
         rule {
-            val lhs = inSolutionVariable(sumContaining())
+            val lhs = inSolutionVariables(sumContaining())
             val rhs = FixedPattern(Constants.Zero)
 
             onEquation(lhs, rhs) {
@@ -248,7 +273,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
     TakeRootOfBothSides(
         rule {
-            val variableTerm = condition(AnyPattern()) { !it.isConstantIn(solutionVariable) }
+            val variableTerm = condition(AnyPattern()) { !it.isConstantIn(solutionVariables) }
             val exponent = UnsignedIntegerPattern()
             val lhs = powerOf(variableTerm, integerCondition(exponent) { it >= BigInteger.TWO })
             val rhs = ConstantInSolutionVariablePattern()
@@ -279,7 +304,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
     TakeRootOfBothSidesRHSIsZero(
         rule {
-            val variableTerm = condition(AnyPattern()) { !it.isConstantIn(solutionVariable) }
+            val variableTerm = condition(AnyPattern()) { !it.isConstantIn(solutionVariables) }
             val exponent = UnsignedIntegerPattern()
             val lhs = powerOf(variableTerm, integerCondition(exponent) { it >= BigInteger.TWO })
             val rhs = FixedPattern(Constants.Zero)
@@ -297,10 +322,10 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
     ExtractSolutionFromIdentity(
         rule {
             val value = condition(ConstantInSolutionVariablePattern()) { it.isDefinitelyNotUndefined() }
-
-            onEquation(value, value) {
+            val eqn = equationOf(value, value)
+            onPattern(eqn) {
                 ruleResult(
-                    toExpr = solutionOf(xp(context.solutionVariable!!), Constants.Reals),
+                    toExpr = identityOf(variableListOf(context.solutionVariables), get(eqn)),
                     explanation = metadata(Explanation.ExtractSolutionFromIdentity),
                 )
             }
@@ -311,11 +336,11 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
         rule {
             val lhs = ConstantInSolutionVariablePattern()
             val rhs = ConstantInSolutionVariablePattern()
-
-            onEquation(lhs, rhs) {
+            val eqn = equationOf(lhs, rhs)
+            onPattern(eqn) {
                 if (get(lhs) != get(rhs)) {
                     ruleResult(
-                        toExpr = solutionOf(xp(context.solutionVariable!!), Constants.EmptySet),
+                        toExpr = contradictionOf(variableListOf(context.solutionVariables), get(eqn)),
                         explanation = metadata(Explanation.ExtractSolutionFromContradiction),
                     )
                 } else {
@@ -345,7 +370,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
     ExtractSolutionFromEvenPowerEqualsNegative(
         rule {
-            val variableTerm = condition(AnyPattern()) { !it.isConstantIn(solutionVariable) }
+            val variableTerm = condition(AnyPattern()) { !it.isConstantIn(solutionVariables) }
             val exponent = UnsignedIntegerPattern()
             val lhs = powerOf(variableTerm, integerCondition(exponent) { it.isEven() })
             val rhs = condition(ConstantInSolutionVariablePattern()) { it.doubleValue < 0 }
@@ -359,7 +384,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                     equationOf(rhsVal, xp(rhsVal.doubleValue.toBigDecimal().withMaxDP(3)))
                 }
                 ruleResult(
-                    toExpr = solutionOf(xp(context.solutionVariable!!), Constants.EmptySet),
+                    toExpr = solutionOf(xp(context.solutionVariables.first()), Constants.EmptySet),
                     explanation = metadata(Explanation.ExtractSolutionFromEvenPowerEqualsNegative, explanationArgument),
                 )
             }
@@ -478,7 +503,7 @@ private val separateFactoredEquation = rule {
 }
 
 private val separateEquationInPlusMinusForm = rule {
-    val eq = inSolutionVariable(equationOf(AnyPattern(), AnyPattern()))
+    val eq = inSolutionVariables(equationOf(AnyPattern(), AnyPattern()))
 
     onPattern(eq) {
         val splitEquations = get(eq).splitPlusMinus()
@@ -494,7 +519,7 @@ private val separateEquationInPlusMinusForm = rule {
 
 private val eliminateConstantFactorOfLhsWithZeroRhs = rule {
     val factor = ConstantPattern()
-    val polynomial = inSolutionVariable(sumContaining())
+    val polynomial = inSolutionVariables(sumContaining())
     val lhs = commutativeProductOf(factor, polynomial)
     val rhs = FixedPattern(Constants.Zero)
 

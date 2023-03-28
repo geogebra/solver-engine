@@ -1,7 +1,7 @@
 import { MathJson } from '../types';
 import {
-  ExpressionTree,
   DecoratorType,
+  ExpressionTree,
   NestedExpression,
   NestedExpressionType,
 } from './types';
@@ -19,7 +19,7 @@ export function jsonToTree(json: MathJson, path = '.'): ExpressionTree {
     if (str.match(/^[+\-0-9]/)) result = { type: 'Number', value: str, path };
     else if (str === 'UNDEFINED') result = { type: 'UNDEFINED', path };
     else if (str === 'INFINITY') result = { type: 'INFINITY', path };
-    else if (str === 'REALS') result = { type: 'REALS', path };
+    else if (str === 'Reals') result = { type: 'Reals', path };
     else result = { type: 'Variable', value: str, path };
   } else {
     // nested expression
@@ -34,7 +34,7 @@ export function jsonToTree(json: MathJson, path = '.'): ExpressionTree {
 }
 
 export function treeToJson(tree: ExpressionTree): MathJson {
-  if (tree.type === 'UNDEFINED' || tree.type === 'INFINITY' || tree.type === 'REALS') {
+  if (tree.type === 'UNDEFINED' || tree.type === 'INFINITY' || tree.type === 'Reals') {
     if (tree.decorators?.length) return [[tree.type, ...tree.decorators]];
     else return [tree.type];
   }

@@ -13,4 +13,4 @@ fun testSelectPlanApi(
 ) = testSelectSuccessfulPlans(inputExpr, expectedMethodSelections, methodRegistry, context)
 
 fun testSelectPlanApiInX(inputExpr: String, expectedMethodSelections: Set<Method>) =
-    testSelectPlanApi(inputExpr, expectedMethodSelections, Context(solutionVariable = "x"))
+    testSelectPlanApi(inputExpr, expectedMethodSelections, Context(solutionVariables = listOf("x")))

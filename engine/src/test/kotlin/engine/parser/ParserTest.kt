@@ -1,15 +1,20 @@
 package engine.parser
 
+import engine.expressions.Constants
 import engine.expressions.Decorator
 import engine.expressions.Expression
 import engine.expressions.bracketOf
 import engine.expressions.buildExpression
+import engine.expressions.cartesianProductOf
+import engine.expressions.contradictionOf
 import engine.expressions.curlyBracketOf
 import engine.expressions.equationOf
 import engine.expressions.fractionOf
 import engine.expressions.greaterThanEqualOf
 import engine.expressions.greaterThanOf
+import engine.expressions.identityOf
 import engine.expressions.implicitProductOf
+import engine.expressions.implicitSolutionOf
 import engine.expressions.lessThanEqualOf
 import engine.expressions.lessThanOf
 import engine.expressions.missingBracketOf
@@ -18,9 +23,13 @@ import engine.expressions.plusMinusOf
 import engine.expressions.plusOf
 import engine.expressions.powerOf
 import engine.expressions.rawRootOf
+import engine.expressions.setSolutionOf
+import engine.expressions.solutionSetOf
 import engine.expressions.squareBracketOf
 import engine.expressions.squareRootOf
 import engine.expressions.sumOf
+import engine.expressions.tupleOf
+import engine.expressions.variableListOf
 import engine.expressions.xp
 import engine.operators.NaryOperator
 import engine.operators.UndefinedOperator
@@ -259,6 +268,34 @@ class ParserTest {
         parsesTo(
             "x + +/-y",
             rawSumOf(xp("x"), missingBracketOf(plusMinusOf(xp("y")))),
+        )
+    }
+
+    @Test
+    fun testSolutions() {
+        parsesTo(
+            "Identity[x, y : 1 = 1]",
+            identityOf(variableListOf("x", "y"), equationOf(xp(1), xp(1))),
+        )
+        parsesTo(
+            "Contradiction[z : 1 = 0]",
+            contradictionOf(variableListOf("z"), equationOf(xp(1), xp(0))),
+        )
+        parsesTo(
+            "ImplicitSolution[x, y, z : x + y = z]",
+            implicitSolutionOf(variableListOf("x", "y", "z"), equationOf(sumOf(xp("x"), xp("y")), xp("z"))),
+        )
+        parsesTo(
+            "SetSolution[x : {1}]",
+            setSolutionOf(variableListOf("x"), solutionSetOf(xp(1))),
+        )
+        parsesTo(
+            "SetSolution[x, y : {(1, 2)}]",
+            setSolutionOf(variableListOf("x", "y"), solutionSetOf(tupleOf(xp(1), xp(2)))),
+        )
+        parsesTo(
+            "SetSolution[x, y : {1} * REALS]",
+            setSolutionOf(variableListOf("x", "y"), cartesianProductOf(solutionSetOf(xp(1)), Constants.Reals)),
         )
     }
 }

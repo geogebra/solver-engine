@@ -1,20 +1,24 @@
 import {
-  ExpressionTree,
   DecoratorType,
+  ExpressionTree,
   NumberExpression,
   TransformerFunction,
 } from './types';
+import { setsSolutionFormatter, SolutionFormatter } from './solution-formatter'; // Make sure to put a space after a latex command to avoid, e.g., "2\\cdotx"
 
 // Make sure to put a space after a latex command to avoid, e.g., "2\\cdotx"
 export type LatexSettings = {
   mulSymbol?: ' \\cdot ' | ' \\times ' | string;
   divSymbol?: ' \\div ' | ':' | string;
   align?: boolean;
+
+  solutionFormatter: SolutionFormatter;
 };
 
 const DefaultSettings: LatexSettings = {
   mulSymbol: ' \\cdot ',
   divSymbol: ' \\div ',
+  solutionFormatter: setsSolutionFormatter,
 };
 
 export function treeToLatex(
@@ -116,7 +120,7 @@ function treeToLatexInner(
       return tfd('\\text{undefined}');
     case 'INFINITY':
       return tfd('\\infty');
-    case 'REALS':
+    case 'Reals':
       return tfd('\\mathbb{R}');
     case 'LessThan':
       return tfd(`${rec(n.args[0], n)} < ${rec(n.args[1], n)}`);
@@ -127,12 +131,30 @@ function treeToLatexInner(
     case 'GreaterThanEqual':
       return tfd(`${rec(n.args[0], n)} \\geq ${rec(n.args[1], n)}`);
     case 'Solution':
-      return tfd(`${rec(n.args[0], n)} \\in ${rec(n.args[1], n)}`);
+    case 'SetSolution':
+    case 'Identity':
+    case 'Contradiction':
+    case 'ImplicitSolution':
+      return tfd(s.solutionFormatter.formatSolution(n, rec));
+    case 'VariableList':
+      return tfd(`${n.args.map((x) => rec(x, n)).join(', ')}`);
+    case 'Tuple':
+      if (n.args.length === 1) {
+        return tfd(rec(n.args[0], n));
+      } else {
+        return tfd(`\\left( ${n.args.map((x) => rec(x, n)).join(', ')}\\right)`);
+      }
     case 'FiniteSet':
       return tfd(
         n.args.length === 0
           ? '\\emptyset'
           : `\\left\\{${n.args.map((el) => rec(el, n)).join(', ')}\\right\\}`,
+      );
+    case 'CartesianProduct':
+      return tfd(
+        n.args.length === 0
+          ? '\\emptyset'
+          : `${n.args.map((el) => rec(el, n)).join(' \\times ')}`,
       );
     case 'OpenInterval':
       return `\\left( ${rec(n.args[0], n)}, ${rec(n.args[1], n)} \\right)`;
