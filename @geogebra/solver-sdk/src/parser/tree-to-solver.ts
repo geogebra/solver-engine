@@ -90,6 +90,16 @@ export function treeToSolver(n: ExpressionTree): string {
       return `(${rec(n.args[0])}, ${rec(n.args[1])}]`;
     case 'ClosedOpenInterval':
       return `[${rec(n.args[0])}, ${rec(n.args[1])})`;
+    case 'CartesianProduct':
+      return n.args.map(rec).join(' * ');
+    case 'Tuple':
+      if (n.args.length === 1) {
+        return rec(n.args[0]);
+      } else {
+        return `(${n.args.map(rec).join(', ')})`;
+      }
+    case 'VariableList':
+      return n.args.map(rec).join(', ');
   }
 }
 

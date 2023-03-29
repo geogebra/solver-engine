@@ -4,7 +4,7 @@ import {
   NumberExpression,
   TransformerFunction,
 } from './types';
-import { setsSolutionFormatter, SolutionFormatter } from './solution-formatter'; // Make sure to put a space after a latex command to avoid, e.g., "2\\cdotx"
+import { setsSolutionFormatter, SolutionFormatter } from './solution-formatter';
 
 // Make sure to put a space after a latex command to avoid, e.g., "2\\cdotx"
 export type LatexSettings = {

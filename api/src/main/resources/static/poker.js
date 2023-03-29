@@ -171,7 +171,7 @@ const renderTransformation = (trans, depth = 0) => {
   const render = (expr, coloring) =>
     ggbSolver.treeToLatex(ggbSolver.jsonToTree(expr, trans.path), latexSettings, coloring);
   return /* HTML */ ` <div class="trans ${isThrough ? 'through-step' : ''}">
-    ${trans.planId ? `<div class="plan-id">${trans.planId}</div>` : ''}
+    ${trans.planId ? `<div class='plan-id'>${trans.planId}</div>` : ''}
     ${renderExplanation(trans.explanation)}
     <div class="expr">
       ${renderExpression(

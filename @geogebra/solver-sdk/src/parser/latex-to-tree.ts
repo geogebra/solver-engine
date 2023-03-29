@@ -98,7 +98,7 @@ const latexSymbolDefinitions = {
       type: 'INFINITY',
     });
     parser.registerSymbol('\\mathbb{R}', BP_IMPLICIT_MUL).nud = () => ({
-      type: 'REALS',
+      type: 'Reals',
     });
     parser.registerSymbol('\\emptyset', BP_IMPLICIT_MUL).nud = () => ({
       type: 'FiniteSet',
