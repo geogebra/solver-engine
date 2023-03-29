@@ -44,8 +44,11 @@ import methods.polynomials.PolynomialsPlans.ExpandPolynomialExpressionInOneVaria
 import methods.polynomials.PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
 import methods.polynomials.algebraicSimplificationSteps
 import methods.solvable.ApplySolvableRuleAndSimplify
+import methods.solvable.DenominatorExtractor.extractDenominator
 import methods.solvable.SolvableKey
 import methods.solvable.SolvableRules
+import methods.solvable.extractSumTermsFromSolvable
+import methods.solvable.fractionRequiringMultiplication
 
 enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
@@ -176,7 +179,6 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
             pattern = equationInOneVariable()
 
             steps {
-
                 optionally(rearrangeLinearEquationSteps)
 
                 optionally {
@@ -495,7 +497,17 @@ val rearrangeLinearEquationSteps = steps {
     whilePossible {
         firstOf {
             option(equationSimplificationSteps)
-            option(EquationsPlans.MultiplyByLCDAndSimplify)
+            option {
+                check {
+                    val sumTerms = extractSumTermsFromSolvable(it)
+                    val denominators = sumTerms.mapNotNull { term -> extractDenominator(term) }
+
+                    denominators.size >= 2 || sumTerms.any { term ->
+                        fractionRequiringMultiplication.matches(this, term)
+                    }
+                }
+                apply(EquationsPlans.MultiplyByLCDAndSimplify)
+            }
             option(ExpandPolynomialExpressionInOneVariableWithoutNormalization)
         }
     }

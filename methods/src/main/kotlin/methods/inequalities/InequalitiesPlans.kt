@@ -35,8 +35,11 @@ import methods.general.NormalizationPlans
 import methods.polynomials.PolynomialsPlans
 import methods.polynomials.algebraicSimplificationSteps
 import methods.solvable.ApplySolvableRuleAndSimplify
+import methods.solvable.DenominatorExtractor.extractDenominator
 import methods.solvable.SolvableKey
 import methods.solvable.SolvableRules
+import methods.solvable.extractSumTermsFromSolvable
+import methods.solvable.fractionRequiringMultiplication
 
 enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMethod {
 
@@ -102,7 +105,17 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
                 whilePossible {
                     firstOf {
                         option(inequalitySimplificationSteps)
-                        option(MultiplyByLCDAndSimplify)
+                        option {
+                            check {
+                                val sumTerms = extractSumTermsFromSolvable(it)
+                                val denominators = sumTerms.mapNotNull { term -> extractDenominator(term) }
+
+                                denominators.size >= 2 || sumTerms.any { term ->
+                                    fractionRequiringMultiplication.matches(this, term)
+                                }
+                            }
+                            apply(MultiplyByLCDAndSimplify)
+                        }
                         option(PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
                     }
                 }

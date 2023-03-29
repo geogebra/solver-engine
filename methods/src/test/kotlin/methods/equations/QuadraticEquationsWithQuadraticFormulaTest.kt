@@ -529,7 +529,33 @@ class QuadraticEquationsWithQuadraticFormulaTest {
     }
 
     @Test
-    fun `test fractional coefficients`() = testMethodInX {
+    fun `test multiplying through by the LCD 1`() = testMethodInX {
+        method = EquationsPlans.SolveQuadraticEquationUsingQuadraticFormula
+        inputExpr = "[x ^ 2] + [x / 6] + 1 = 0"
+
+        check {
+            fromExpr = "[x ^ 2] + [x / 6] + 1 = 0"
+            toExpr = "Solution[x, {}]"
+            explanation {
+                key = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula
+            }
+
+            step {
+                fromExpr = "[x ^ 2] + [x / 6] + 1 = 0"
+                toExpr = "6 [x ^ 2] + x + 6 = 0"
+                explanation {
+                    key = methods.solvable.EquationsExplanation.MultiplyByLCDAndSimplify
+                }
+            }
+
+            step { }
+            step { }
+            step { }
+        }
+    }
+
+    @Test
+    fun `test multiplying through by the LCD 2`() = testMethodInX {
         method = EquationsPlans.SolveQuadraticEquationUsingQuadraticFormula
         inputExpr = "[[x^2] / 6] + [x / 3] + [1 / 8] = 0"
 
@@ -546,19 +572,6 @@ class QuadraticEquationsWithQuadraticFormulaTest {
                 explanation {
                     key = methods.solvable.EquationsExplanation.MultiplyByLCDAndSimplify
                 }
-
-                step {
-                    fromExpr = "[[x ^ 2] / 6] + [x / 3] + [1 / 8] = 0"
-                    toExpr = "([[x ^ 2] / 6] + [x / 3] + [1 / 8]) * 24 = 0 * 24"
-                }
-
-                step {
-                    fromExpr = "([[x ^ 2] / 6] + [x / 3] + [1 / 8]) * 24 = 0 * 24"
-                    toExpr = "4 [x ^ 2] + 8 x + 3 = 0"
-                    explanation {
-                        key = PolynomialsExplanation.ExpandPolynomialExpression
-                    }
-                }
             }
 
             step { }
@@ -569,7 +582,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
     }
 
     @Test
-    fun `test solve (x^2 + a) by b + x by c = (x + d) by e`() = testMethodInX {
+    fun `test multiplying through by the LCD 3`() = testMethodInX {
         method = EquationsPlans.SolveQuadraticEquationUsingQuadraticFormula
         inputExpr = "[[x^2] + 1 / 2] + [x / 2] = [x + 1 / 3]"
 
@@ -604,6 +617,41 @@ class QuadraticEquationsWithQuadraticFormulaTest {
                 }
             }
 
+            step { }
+            step { }
+            step { }
+        }
+    }
+
+    @Test
+    fun `test multiplying through by the LCD 4`() = testMethodInX {
+        method = EquationsPlans.SolveQuadraticEquationUsingQuadraticFormula
+        inputExpr = "[1 / 5] * [x ^ 2] - [2 / 3] x - [1 / 6] x - [5 / 6] = 0"
+
+        check {
+            fromExpr = "[1 / 5] * [x ^ 2] - [2 / 3] x - [1 / 6] x - [5 / 6] = 0"
+            toExpr = "Solution[x, {-[5 / 6], 5}]"
+            explanation {
+                key = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula
+            }
+
+            step {
+                fromExpr = "[1 / 5] * [x ^ 2] - [2 / 3] x - [1 / 6] x - [5 / 6] = 0"
+                toExpr = "[1 / 5] [x ^ 2] - [5 / 6] x - [5 / 6] = 0"
+                explanation {
+                    key = EquationsExplanation.SimplifyEquation
+                }
+            }
+
+            step {
+                fromExpr = "[1 / 5] [x ^ 2] - [5 / 6] x - [5 / 6] = 0"
+                toExpr = "6 [x ^ 2] - 25 x - 25 = 0"
+                explanation {
+                    key = methods.solvable.EquationsExplanation.MultiplyByLCDAndSimplify
+                }
+            }
+
+            step { }
             step { }
             step { }
             step { }

@@ -5,7 +5,6 @@ import engine.expressionbuilder.MappedExpressionBuilder
 import engine.expressions.Constants
 import engine.expressions.Expression
 import engine.expressions.Introduce
-import engine.expressions.isSignedFraction
 import engine.expressions.productOf
 import engine.expressions.simplifiedNegOf
 import engine.expressions.sumOf
@@ -165,37 +164,20 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
      */
     MultiplySolvableByLCD(
         rule {
-            val nonConstantSum = condition(sumContaining()) { !it.isConstantIn(solutionVariables) }
-            val fractionRequiringMultiplication = optionalNegOf(
-                oneOf(
-                    fractionOf(nonConstantSum, UnsignedIntegerPattern()),
-                    productContaining(
-                        fractionOf(AnyPattern(), UnsignedIntegerPattern()),
-                        nonConstantSum,
-                    ),
-                ),
-            )
-
             val lhs = AnyPattern()
             val rhs = AnyPattern()
 
             val solvable = SolvablePattern(lhs, rhs)
 
             onPattern(solvable) {
-                fun extractSumTerms(expr: Expression) = when (expr.operator) {
-                    NaryOperator.Sum -> expr.children
-                    else -> listOf(expr)
-                }
+                val terms = extractSumTermsFromSolvable(get(solvable))
+                val denominators = terms.mapNotNull { extractDenominator(it) }
 
-                val terms = extractSumTerms(get(lhs)) + extractSumTerms(get(rhs))
-
-                if ((terms.count { it.isSignedFraction() } < 2) &&
-                    terms.none { fractionRequiringMultiplication.matches(context, it) }
-                ) {
+                if (denominators.isEmpty()) {
                     return@onPattern null
                 }
 
-                when (val lcm = terms.map { extractDenominator(it) }.lcm()) {
+                when (val lcm = denominators.lcm()) {
                     BigInteger.ONE -> null
                     else -> ruleResult(
                         toExpr = solvable.sameSolvable(
@@ -245,7 +227,27 @@ fun simplifiedNegOfSum(expr: Expression) = when (expr.operator) {
     else -> simplifiedNegOf(expr).withOrigin(Introduce(listOf(expr)))
 }
 
-private object DenominatorExtractor {
+private val nonConstantSum = condition(sumContaining()) { !it.isConstantIn(solutionVariables) }
+val fractionRequiringMultiplication = optionalNegOf(
+    oneOf(
+        fractionOf(nonConstantSum, UnsignedIntegerPattern()),
+        productContaining(
+            fractionOf(AnyPattern(), UnsignedIntegerPattern()),
+            nonConstantSum,
+        ),
+    ),
+)
+
+fun extractSumTermsFromSolvable(equation: Expression): List<Expression> {
+    return equation.children.flatMap {
+        when (it.operator) {
+            NaryOperator.Sum -> it.children
+            else -> listOf(it)
+        }
+    }
+}
+
+object DenominatorExtractor {
     private val integerDenominator = UnsignedIntegerPattern()
     private val integerDenominatorFraction = fractionOf(AnyPattern(), integerDenominator)
     private val denominatorDetectingPattern = optionalNegOf(
@@ -255,13 +257,9 @@ private object DenominatorExtractor {
         ),
     )
 
-    fun extractDenominator(expression: Expression): BigInteger {
+    fun extractDenominator(expression: Expression): BigInteger? {
         val match = denominatorDetectingPattern.findMatches(emptyContext, subexpression = expression).firstOrNull()
-        return if (match != null) {
-            integerDenominator.getBoundInt(match)
-        } else {
-            return BigInteger.ONE
-        }
+        return match?.let { integerDenominator.getBoundInt(it) }
     }
 }
 
