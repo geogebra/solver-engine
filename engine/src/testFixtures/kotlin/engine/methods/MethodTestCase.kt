@@ -274,7 +274,7 @@ class TransformationCheck(private val trans: Transformation?) :
         assertNotNull(trans)
 
         val skillCheck = MetadataCheck(trans.fromExpr.origin.path!!) {
-            val skill = trans.skills.find { s -> s.key == it }
+            val skill = trans.skills?.find { s -> s.key == it }
             assertNotNull(skill, "No skill with given key found")
             skill
         }
@@ -316,7 +316,7 @@ class TransformationCheck(private val trans: Transformation?) :
     override fun finalize() {
         super.finalize()
         if (checkedSkills != null) {
-            assertEquals(checkedSkills, trans!!.skills.size, "Some skills have not been checked")
+            assertEquals(checkedSkills, trans!!.skills?.size, "Some skills have not been checked")
         }
         if (checkedSteps != null) {
             val transSteps = trans!!.steps

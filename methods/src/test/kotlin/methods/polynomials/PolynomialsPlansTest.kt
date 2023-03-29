@@ -616,7 +616,7 @@ class PolynomialsPlansTest {
     @Test
     fun testDistributingNegativeIntoPositives() = testMethod {
         method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
-        inputExpr = "-(a+3)"
+        inputExpr = "-(a + 3)"
 
         check {
             fromExpr = "-(a + 3)"
@@ -630,21 +630,13 @@ class PolynomialsPlansTest {
     @Test
     fun testDistributingNegativeIntoNegatives() = testMethod {
         method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
-        inputExpr = "-(-a-3)"
+        inputExpr = "-(-a - 3)"
 
         check {
             fromExpr = "-(-a - 3)"
             toExpr = "a + 3"
             explanation {
-                key = PolynomialsExplanation.SimplifyAlgebraicExpression
-            }
-
-            step {
-                fromExpr = "-(-a - 3)"
-                toExpr = "a + 3"
-                explanation {
-                    key = ExpandExplanation.DistributeNegativeOverBracket
-                }
+                key = ExpandExplanation.DistributeNegativeOverBracket
             }
         }
     }

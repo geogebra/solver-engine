@@ -24,7 +24,7 @@ class Plan(
     private val pattern: Pattern,
     private val resultPattern: Pattern,
     private val explanationMaker: MetadataMaker,
-    private val skillMakers: List<MetadataMaker> = emptyList(),
+    private val skillMakers: List<MetadataMaker>? = null,
     specificPlans: List<Method> = emptyList(),
     private val stepsProducer: StepsProducer,
 ) : CompositeMethod(specificPlans) {
@@ -42,7 +42,7 @@ class Plan(
                     toExpr = toExpr,
                     steps = steps,
                     explanation = explanationMaker.make(ctx, sub, match),
-                    skills = skillMakers.map { it.make(ctx, sub, match) },
+                    skills = skillMakers?.map { it.make(ctx, sub, match) },
                 )
 
                 else -> null

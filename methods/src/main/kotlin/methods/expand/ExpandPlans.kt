@@ -20,9 +20,7 @@ private fun createExpandSingleBracketAndSimplifyPlan(simplificationSteps: StepsP
         explanation = Explanation.ExpandSingleBracketAndSimplify
 
         steps {
-            firstOf {
-                option(ExpandRules.DistributeMultiplicationOverSum)
-            }
+            apply(ExpandRules.DistributeMultiplicationOverSum)
             optionally(simplificationSteps)
         }
     }

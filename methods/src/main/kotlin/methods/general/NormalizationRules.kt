@@ -29,7 +29,7 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
             onPattern(missingBracket) {
                 if (context.gmFriendly) return@onPattern null
                 ruleResult(
-                    type = Transformation.Type.Rearrangement,
+                    tags = listOf(Transformation.Tag.Cosmetic),
                     toExpr = transformTo(missingBracket) { it.removeBrackets().decorate(Decorator.RoundBracket) },
                     gmAction = edit(missingBracket),
                     explanation = metadata(Explanation.ReplaceInvisibleBrackets),
@@ -48,7 +48,7 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(pattern) {
                 ruleResult(
-                    type = Transformation.Type.Rearrangement,
+                    tags = listOf(Transformation.Tag.Rearrangement),
                     toExpr = sumOf(
                         get(pattern).children.map { child -> transformTo(child) { it.removeBrackets() } },
                     ),
@@ -66,7 +66,7 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(pattern) {
                 ruleResult(
-                    type = Transformation.Type.Rearrangement,
+                    tags = listOf(Transformation.Tag.Rearrangement),
                     toExpr = productOf(
                         get(pattern).flattenedProductChildren()
                             .map { child -> transformTo(child) { it.removeBrackets() } },
@@ -100,7 +100,7 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(pattern) {
                 ruleResult(
-                    type = Transformation.Type.Rearrangement,
+                    tags = listOf(Transformation.Tag.Cosmetic),
                     toExpr = transformTo(pattern) { it.removeBrackets() },
                     gmAction = tap(pattern, PM.OpenParens),
                     explanation = metadata(Explanation.RemoveRedundantBracket),
@@ -116,7 +116,7 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(pattern) {
                 ruleResult(
-                    type = Transformation.Type.Rearrangement,
+                    tags = listOf(Transformation.Tag.Cosmetic),
                     toExpr = move(value),
                     // NOTE: GM doesn't support leading pluses & this will only work for
                     // removing brackets around 1+(+2)
@@ -155,7 +155,7 @@ private val normaliseSimplifiedProductRule =
                 null
             } else {
                 ruleResult(
-                    type = Transformation.Type.Rearrangement,
+                    tags = listOf(Transformation.Tag.Rearrangement),
                     toExpr = toExpr,
                     explanation = metadata(Explanation.NormaliseSimplifiedProduct),
                     gmAction = edit(product),
@@ -183,7 +183,7 @@ private val normaliseSimplifiedProductSingleStep =
                         (productChildren.take(i) + movedCurrent).sortedBy { orderInProduct(it) }
                     val toExpr = productOf(sortedFirstPartOfProductChildren + productChildren.drop(i + 1))
                     return@onPattern ruleResult(
-                        type = Transformation.Type.Rearrangement,
+                        tags = listOf(Transformation.Tag.Rearrangement),
                         toExpr = toExpr,
                         explanation = metadata(Explanation.NormaliseSimplifiedProduct),
                         gmAction = drag(
@@ -212,7 +212,7 @@ private val normalizeTheImplicitnessAndExplicitnessOfMultiplication =
                 null
             } else {
                 ruleResult(
-                    type = Transformation.Type.Rearrangement,
+                    tags = listOf(Transformation.Tag.Cosmetic),
                     toExpr = toExpr,
                     explanation = metadata(Explanation.NormaliseSimplifiedProduct),
                     // gmAction = do nothing, because it happens automatically

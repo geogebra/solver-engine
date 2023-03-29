@@ -57,6 +57,7 @@ import engine.patterns.rationalMonomialPattern
 import engine.patterns.sumContaining
 import engine.patterns.sumOf
 import engine.patterns.withOptionalConstantCoefficient
+import engine.steps.Transformation
 import engine.steps.metadata.metadata
 import engine.utility.isEven
 import engine.utility.isOdd
@@ -402,6 +403,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             onEquation(lhs, rhs) {
                 if (context.gmFriendly) return@onEquation null
                 ruleResult(
+                    tags = listOf(Transformation.Tag.Pedantic),
                     toExpr = solutionOf(move(lhs), solutionSetOf(move(rhs))),
                     explanation = metadata(Explanation.ExtractSolutionFromEquationInSolvedForm),
                 )

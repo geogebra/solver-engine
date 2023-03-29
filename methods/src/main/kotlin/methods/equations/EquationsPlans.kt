@@ -38,6 +38,7 @@ import methods.constantexpressions.ConstantExpressionsPlans
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.equations.EquationsRules.FactorNegativeSignOfLeadingCoefficient
 import methods.general.NormalizationPlans
+import methods.polynomials.PolynomialRules
 import methods.polynomials.PolynomialsPlans
 import methods.polynomials.PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization
 import methods.polynomials.PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
@@ -158,7 +159,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 apply(EquationsRules.MultiplyByInverseOfLeadingCoefficient)
-                apply(PolynomialsPlans.ExpandPolynomialExpressionInOneVariable)
+                apply(ExpandPolynomialExpressionInOneVariableWithoutNormalization)
             }
         },
     ),
@@ -274,6 +275,9 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                 optionally(equationSimplificationSteps)
                 optionally(MoveVariablesToTheLeftAndSimplify)
                 optionally(MultiplyByInverseOfLeadingCoefficientAndSimplify)
+                optionally {
+                    applyTo(PolynomialRules.NormalizePolynomial) { it.firstChild }
+                }
 
                 // Complete the square
                 firstOf {

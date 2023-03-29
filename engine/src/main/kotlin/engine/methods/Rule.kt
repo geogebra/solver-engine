@@ -44,10 +44,10 @@ class RuleResultBuilder(val sub: Expression, ctx: Context, match: Match) : Mappe
         steps: List<Transformation>? = null,
         tasks: List<Task>? = null,
         explanation: Metadata? = null,
-        skills: List<Metadata> = emptyList(),
+        skills: List<Metadata>? = null,
         gmAction: GmAction? = null,
-        type: Transformation.Type = Transformation.Type.Rule,
-    ) = Transformation(type, sub, toExpr, steps, tasks, explanation, skills, gmAction)
+        tags: List<Transformation.Tag>? = null,
+    ) = Transformation(Transformation.Type.Rule, tags, sub, toExpr, steps, tasks, explanation, skills, gmAction)
 }
 
 fun rule(init: RuleBuilder.() -> Rule): Rule {

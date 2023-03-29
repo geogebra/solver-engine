@@ -9,12 +9,13 @@ import engine.steps.metadata.Metadata
  */
 data class Transformation(
     val type: Type,
+    val tags: List<Tag>? = null,
     val fromExpr: Expression,
     val toExpr: Expression,
     val steps: List<Transformation>? = null,
     val tasks: List<Task>? = null,
     val explanation: Metadata? = null,
-    val skills: List<Metadata> = emptyList(),
+    val skills: List<Metadata>? = null,
     val gmAction: GmAction? = null,
 ) {
 
@@ -30,16 +31,30 @@ data class Transformation(
         Rule,
 
         /**
-         * A transformation made of different tasks, each working on their own expression.  The last task gives the
-         * result of the overall transformation.
+         * A transformation made of different tasks, each working on their own expression.
+         * The last task gives the result of the overall transformation.
          */
         TaskSet,
+    }
 
+    enum class Tag {
         /**
-         * A transformation that consists of a rearrangement of the expression tree but is not really a mathematical
-         * representation.  Such a transformation can be hidden from the user but its path mappings may be useful.
+         * A transformation that consists only of the rearrangement of the operands of some
+         * commutative operator.
          */
         Rearrangement,
+
+        /**
+         * A transformation that changes only the appearance of the expression, e.g. by adding
+         * clarifying brackets or explicit product signs.
+         */
+        Cosmetic,
+
+        /**
+         * A transformation with the only purpose to make the solver output more consistent,
+         * e.g. by transforming the equation x = 3 into a solution operator.
+         */
+        Pedantic,
     }
 
     /**

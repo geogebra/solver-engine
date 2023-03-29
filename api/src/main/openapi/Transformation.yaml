@@ -8,9 +8,12 @@ required:
 properties:
   type:
     type: string
+  tags:
+    type: array
+    items:
+      type: string
   path:
     type: string
-
   fromExpr: {}
   toExpr: {}
   pathMappings:

@@ -38,6 +38,7 @@ import engine.patterns.productOf
 import engine.patterns.rationalMonomialPattern
 import engine.patterns.sumContaining
 import engine.patterns.sumOf
+import engine.steps.Transformation
 import engine.steps.metadata.metadata
 import engine.utility.isEven
 import engine.utility.isSquare
@@ -387,9 +388,11 @@ private val normalizePolynomial = rule {
         val monomialPattern = monomialPattern(commonVariable)
 
         // Find the degree of each term so we can decide whether the sum is normalized already.
+        // If we find a non-monomial non-constant term, we don't have a polynomial, so we cannot
+        // normalize it
         val termsWithDegree = terms.map { term ->
             val termOrder = when (val match = matchPattern(monomialPattern, term)) {
-                null -> BigInteger.ZERO
+                null -> if (term.isConstant()) BigInteger.ZERO else return@onPattern null
                 else -> monomialPattern.exponent.getBoundInt(match)
             }
             Pair(term, termOrder)
@@ -405,6 +408,7 @@ private val normalizePolynomial = rule {
                 ruleResult(
                     toExpr = sumOf(termsInDescendingOrder),
                     explanation = metadata(Explanation.NormalizePolynomial),
+                    tags = listOf(Transformation.Tag.Rearrangement),
                 )
             }
         }

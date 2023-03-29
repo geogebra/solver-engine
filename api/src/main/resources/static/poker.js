@@ -17,7 +17,7 @@ const mainPokerURL = 'http://solver.geogebra.net/main/poker.html';
 
 // Globally changes the rendering of steps.
 let showThroughSteps = false;
-let showRearrangements = false;
+let showTrivialSteps = false;
 
 // Show / hide warnings
 let hideWarnings = false;
@@ -41,7 +41,7 @@ const solutionFormatters = {
   simple: ggbSolver.simpleSolutionFormatter,
 };
 let latexSettings = {
-  solutionFormatter: solutionFormatters.sets,
+  solutionFormatter: solutionFormatters.simple,
 };
 
 // Holds all default translations as a key: translation map
@@ -114,11 +114,29 @@ const findTransformationInSelections = (selections, methodId) => {
   }
 };
 
+const isTrivialStep = (transformation) => {
+  // currently every tagged step is considered trivial -- subject to change
+  return !!transformation.tags;
+};
+
+const containsNonTrivialStep = (transformation) => {
+  if (!transformation.steps || !transformation.steps.length) {
+    return !isTrivialStep(transformation);
+  }
+
+  return transformation.steps.some(containsNonTrivialStep);
+};
+
 /**
  * @param {ggbSolver.API_SELECT_PLANS_RESPONSE} selections
  * @param {ggbSolver.API_SELECT_PLANS_RESPONSE} testSelections
  */
 const renderPlanSelections = (selections, testSelections) => {
+  if (!showTrivialSteps && selections) {
+    selections = (selections || []).filter((selection) =>
+      containsNonTrivialStep(selection.transformation),
+    );
+  }
   if (!selections || selections.length === 0) {
     return /* HTML */ `<div class="selections">No plans found</div>`;
   }
@@ -247,14 +265,14 @@ const renderTask = (task, depth = 0) => {
 };
 
 const preprocessSteps = (steps) => {
-  if (showRearrangements || !steps.some((step) => step.type === 'Rearrangement')) {
+  if (showTrivialSteps || !steps.some((step) => isTrivialStep(step))) {
     return steps;
   }
-  // Rearrangement steps are "collapsed" with the previous step if it exists
+  // Trivial steps steps are "collapsed" with the previous step if it exists
   const processedSteps = [];
   let lastStep = null;
   for (const step of steps) {
-    if (lastStep !== null && step.type === 'Rearrangement') {
+    if (lastStep !== null && isTrivialStep(step)) {
       lastStep.toExpr = step.toExpr;
     } else {
       lastStep = step;
@@ -564,7 +582,7 @@ window.onload = () => {
 
   const optionsChanged = () => {
     showThroughSteps = el('showThroughSteps').checked;
-    showRearrangements = el('showRearrangements').checked;
+    showTrivialSteps = el('showTrivialSteps').checked;
     colorScheme = el('colorScheme').value;
     latexSettings.solutionFormatter = solutionFormatters[el('solutionFormat').value];
 
@@ -582,7 +600,7 @@ window.onload = () => {
   el('preferDecimals').onchange = optionsChanged;
   el('gmFriendlyCheckbox').onchange = optionsChanged;
   el('showThroughSteps').onchange = optionsChanged;
-  el('showRearrangements').onchange = optionsChanged;
+  el('showTrivialSteps').onchange = optionsChanged;
   el('colorScheme').onchange = optionsChanged;
   el('solutionFormat').onchange = optionsChanged;
 

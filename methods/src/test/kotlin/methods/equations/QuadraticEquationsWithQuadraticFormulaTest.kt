@@ -582,23 +582,23 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
             step {
                 fromExpr = "[[x ^ 2] + 1 / 2] + [x / 2] = [x + 1 / 3]"
-                toExpr = "3 x + 3 [x ^ 2] + 3 = 2 x + 2"
+                toExpr = "3 [x ^ 2] + 3 + 3 x = 2 x + 2"
                 explanation {
                     key = methods.solvable.EquationsExplanation.MultiplyByLCDAndSimplify
                 }
             }
 
             step {
-                fromExpr = "3 x + 3 [x ^ 2] + 3 = 2 x + 2"
-                toExpr = "x + 3 [x ^ 2] + 3 = 2"
+                fromExpr = "3 [x ^ 2] + 3 + 3 x = 2 x + 2"
+                toExpr = "3 [x ^ 2] + 3 + x = 2"
                 explanation {
                     key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeftAndSimplify
                 }
             }
 
             step {
-                fromExpr = "x + 3 [x ^ 2] + 3 = 2"
-                toExpr = "x + 3 [x ^ 2] + 1 = 0"
+                fromExpr = "3 [x ^ 2] + 3 + x = 2"
+                toExpr = "3 [x ^ 2] + 1 + x = 0"
                 explanation {
                     key = methods.solvable.EquationsExplanation.MoveConstantsToTheLeftAndSimplify
                 }

@@ -129,7 +129,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
                 optionally(NormalizationPlans.NormalizeExpression)
                 whilePossible(algebraicSimplificationSteps)
                 optionally(NormalizeAllMonomials)
-                whilePossible { deeply(PolynomialRules.NormalizePolynomial) }
+                optionally(PolynomialRules.NormalizePolynomial)
             }
             alternative(ResourceData(gmFriendly = true)) {
                 whilePossible { deeply(simpleTidyUpSteps) }
@@ -152,13 +152,16 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
 
             steps {
                 optionally(NormalizationPlans.NormaliseSimplifiedProduct)
-                whilePossible {
-                    firstOf {
-                        option(algebraicSimplificationSteps)
-                        option { deeply(expandAndSimplifySteps.value, deepFirst = true) }
+
+                whilePossible(algebraicSimplificationSteps)
+                apply {
+                    whilePossible {
+                        deeply(expandAndSimplifySteps.value, deepFirst = true)
+                        whilePossible(algebraicSimplificationSteps)
                     }
                 }
-                whilePossible { deeply(PolynomialRules.NormalizePolynomial) }
+
+                optionally(PolynomialRules.NormalizePolynomial)
             }
         },
     ),
@@ -170,6 +173,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
 
             steps {
                 optionally(NormalizationPlans.NormaliseSimplifiedProduct)
+
                 whilePossible {
                     firstOf {
                         option(algebraicSimplificationSteps)
@@ -191,12 +195,16 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
 
             steps {
                 optionally(NormalizationPlans.NormaliseSimplifiedProduct)
-                whilePossible {
-                    firstOf {
-                        option(algebraicSimplificationSteps)
-                        option { deeply(FactorGreatestCommonFactor) }
-                        option { deeply(FactorDifferenceOfSquares) }
-                        option { deeply(FactorTrinomialByGuessing) }
+
+                whilePossible(algebraicSimplificationSteps)
+                apply {
+                    whilePossible {
+                        firstOf {
+                            option { deeply(FactorGreatestCommonFactor) }
+                            option { deeply(FactorDifferenceOfSquares) }
+                            option { deeply(FactorTrinomialByGuessing) }
+                        }
+                        whilePossible(algebraicSimplificationSteps)
                     }
                 }
             }
