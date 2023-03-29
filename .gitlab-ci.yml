@@ -32,8 +32,10 @@ check-circular-dependencies-in-methods:
   script:
     - ./scripts/check_method_dependencies.sh
 
-code_style_prettier_and_build_sdk_for_poker:
-  stage: checks
+# Test SDK and build all artifacts from SDK for the poker and for possible release
+build-sdk:
+  stage: build
+  needs: []
   image: node:18-alpine
   tags:
     - docker
@@ -48,14 +50,18 @@ code_style_prettier_and_build_sdk_for_poker:
     - node -v
     - npm ci --cache .npm --prefer-offline
     - npm exec -c "prettier . -c"
+    - cd @geogebra/solver-sdk
+    - npm run test
+    - npm run build
   artifacts:
     paths:
       - api/src/main/resources/static/solver-sdk.es.js
-    # Arnaud is this what we want?????????????????????????
+      - '@geogebra/solver-sdk/lib'
+      - '@geogebra/solver-sdk/dist'
     expire_in: 1 day
 
 # The gradle 'build' includes running detekt, ktlint, runnings tests.
-build:
+build-engine:
   stage: build
   needs: []
   tags:
@@ -71,11 +77,12 @@ build:
       - engine/build/generated/ksp/main/resources/TranslationKeys.json
     expire_in: 1 day
 
-package:
+# Package the engine into a docker image
+package-engine:
   stage: publish
   needs:
-    - build
-    - code_style_prettier_and_build_sdk_for_poker
+    - build-engine
+    - build-sdk
   tags:
     - docker
   script:
@@ -84,7 +91,7 @@ package:
 export-translation-keys:
   stage: publish
   needs:
-    - build
+    - build-engine
   image: curlimages/curl
   tags:
     - docker
@@ -110,15 +117,16 @@ export-translation-keys:
         --data @engine/build/generated/ksp/main/resources/TranslationKeys.json
   when: manual
 
-deploy_solver_engine:
+# Deploy the engine to k8s
+deploy-engine:
   stage: deploy
   needs:
-    - package
+    - package-engine
   image: alpine/k8s:1.23.7
   environment:
     name: solver/$CI_COMMIT_REF_SLUG
     url: $DYNAMIC_ENVIRONMENT_URL
-    on_stop: undeploy
+    on_stop: undeploy-engine
   tags:
     - docker
   cache: []
@@ -138,8 +146,11 @@ deploy_solver_engine:
           --set springProfile=production
     - echo "DYNAMIC_ENVIRONMENT_URL=https://solver.geogebra.net/$SLUG/poker.html" >> deploy.env
 
-sdk_semantic_release:
+# Make an SDK release
+sdk-semantic-release:
   stage: deploy
+  needs:
+    - build-sdk
   # We would normally use "node:18-alpine" instead of "node:18" because it is smaller, but
   # we need git installed in order for semantic-release to work.
   image: node:18
@@ -152,7 +163,6 @@ sdk_semantic_release:
       prefix: npm-cache-
     paths:
       - .npm/
-  # ask Erik about if this is necessary
   variables:
     NPM_TOKEN: ${CI_JOB_TOKEN}
   script:
@@ -164,13 +174,12 @@ sdk_semantic_release:
         echo "@${CI_PROJECT_ROOT_NAMESPACE}:registry=${CI_API_V4_URL}/projects/126/packages/npm/"
         echo "${CI_API_V4_URL#https?}/projects/126/packages/npm/:_authToken=\${CI_JOB_TOKEN}"
       } | tee -a .npmrc
-    - npm run build
     - npm run semantic-release
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 # Remove kubernetes deployment.  This job is automatically triggered when the feature branch is deleted.
-undeploy:
+undeploy-engine:
   stage: deploy
   dependencies: []
   image: alpine/k8s:1.23.7

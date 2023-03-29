@@ -1,15 +1,15 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
+import type { ExpressionTree } from '../src/parser';
 import {
   jsonToLatex,
-  latexToSolver,
-  treeToJson,
   jsonToTree,
-  treeToLatex,
+  latexToSolver,
   latexToTree,
+  treeToJson,
+  treeToLatex,
   treeToSolver,
 } from '../src/parser';
-import type { ExpressionTree } from '../src/parser';
 import { MathJson } from '../src/types';
 
 const latexToJson = (latex) => treeToJson(latexToTree(latex));
@@ -558,7 +558,7 @@ describe('Solver Parser Unit Tests', () => {
       },
       {
         solver: 'Solution[x, REALS]',
-        json: ['Solution', ['x'], ['REALS']],
+        json: ['Solution', ['x'], ['Reals']],
         latex: 'x \\in \\mathbb{R}',
       },
       {
