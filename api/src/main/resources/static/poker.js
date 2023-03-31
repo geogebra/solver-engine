@@ -18,6 +18,7 @@ const mainPokerURL = 'http://solver.geogebra.net/main/poker.html';
 // Globally changes the rendering of steps.
 let showThroughSteps = false;
 let showTrivialSteps = false;
+let showTranslationKeys = false;
 
 // Show / hide warnings
 let hideWarnings = false;
@@ -78,6 +79,23 @@ const initPlans = (plans) => {
  * Functions to execute plans and render the result
  *******************************************/
 
+const copyTranslationKeysToClipboardOnClick = () => {
+  const copyToClipboard = (evt) => {
+    console.log('writing to clipboard', evt.target.textContent);
+    navigator.clipboard.writeText(evt.target.textContent).then(
+      () => {
+        console.log('done :)');
+      },
+      () => {
+        console.log('not done :(');
+      },
+    );
+  };
+  for (const el of document.getElementsByClassName('translation-key')) {
+    el.onclick = copyToClipboard;
+  }
+};
+
 const selectPlansOrApplyPlan = async ({ planId, input, ...context }) => {
   const [result, solverFormatResult] =
     planId === 'selectPlans'
@@ -99,6 +117,7 @@ const selectPlansOrApplyPlan = async ({ planId, input, ...context }) => {
         ? renderPlanSelections(result, solverFormatResult)
         : renderTransformationAndTest(result, solverFormatResult, 1);
     renderMathInElement(el('result'));
+    copyTranslationKeysToClipboardOnClick();
   }
 };
 
@@ -325,6 +344,7 @@ const renderExplanation = (expl) => {
   const { explanationString, warnings } = getExplanationString(expl);
 
   return /* HTML */ ` <div class="plan-explanation">
+    <div class="translation-key${!showTranslationKeys ? ' hidden' : ''}">${expl.key}</div>
     ${explanationString ? /* HTML */ `<div title="${expl.key}">${explanationString}</div>` : ''}
     ${warnings ? warnings.map(renderWarning).join('') : ''}
   </div>`;
@@ -584,6 +604,7 @@ window.onload = () => {
     showThroughSteps = el('showThroughSteps').checked;
     showTrivialSteps = el('showTrivialSteps').checked;
     colorScheme = el('colorScheme').value;
+    showTranslationKeys = el('showTranslationKeys').checked;
     latexSettings.solutionFormatter = solutionFormatters[el('solutionFormat').value];
 
     const data = getRequestDataFromForm();
@@ -603,6 +624,13 @@ window.onload = () => {
   el('showTrivialSteps').onchange = optionsChanged;
   el('colorScheme').onchange = optionsChanged;
   el('solutionFormat').onchange = optionsChanged;
+
+  el('showTranslationKeys').onchange = (evt) => {
+    showTranslationKeys = evt.target.checked;
+    for (const el of document.getElementsByClassName('translation-key')) {
+      el.classList.toggle('hidden', !showTranslationKeys);
+    }
+  };
 
   el('hideWarnings').onchange = (evt) => {
     hideWarnings = evt.target.checked;

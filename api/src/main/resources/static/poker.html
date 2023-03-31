@@ -16,8 +16,18 @@
         font-family: monospace;
       }
 
+      .display-options {
+        float: right;
+      }
+
       .plan-selection > .plan-id {
         color: blue;
+      }
+
+      .translation-key {
+        font-family: monospace;
+        color: darkgreen;
+        cursor: copy;
       }
 
       .warning {
@@ -99,6 +109,35 @@
     <script type="module" src="./poker.js"></script>
   </head>
   <body>
+    <form class="display-options">
+      <h3>Display Options</h3>
+      <label for="colorScheme">Colors</label>
+      <select id="colorScheme">
+        <option value="default">Default</option>
+        <option value="primary">Primary colors</option>
+        <option value="none">No coloring</option>
+        <option value="blue">Just blue</option>
+      </select>
+      <br />
+      <label for="solutionFormat">Solution format</label>
+      <select id="solutionFormat">
+        <option value="simple">Simple</option>
+        <option value="sets">Sets</option>
+      </select>
+      <br />
+      <input id="showThroughSteps" type="checkbox" />
+      <label for="showThroughSteps">Show through steps</label>
+      <br />
+      <input id="hideWarnings" type="checkbox" />
+      <label for="hideWarnings">Hide warnings</label>
+      <br />
+      <input id="showTrivialSteps" type="checkbox" />
+      <label for="showTrivialSteps">Show trivial steps</label>
+      <br />
+      <input id="showTranslationKeys" type="checkbox" />
+      <label for="showTranslationKeys">Show translation keys</label>
+    </form>
+
     <div id="version-info" class="version-info">fetching commit...</div>
     <h1 id="title">Solver Poker</h1>
     <details>
@@ -116,57 +155,41 @@
     </details>
 
     <form id="form">
-      <label for="curriculumSelect">Curriculum</label>
-      <select id="curriculumSelect">
-        <option value="" selected>Default</option>
-        <option value="US">US</option>
-        <option value="EU">EU</option>
-      </select>
-      <label for="precisionSelect">Precision</label>
-      <select id="precisionSelect">
-        <option value="2">2 d.p.</option>
-        <option value="3" selected>3 d.p.</option>
-        <option value="4">4 d.p.</option>
-        <option value="5">5 d.p.</option>
-        <option value="6">6 d.p.</option>
-      </select>
-      <label for="solutionVariable">Solution variable</label>
-      <input type="text" id="solutionVariable" value="x" size="1" />
-      <input id="preferDecimals" type="checkbox" />
-      <label for="preferDecimals">Prefer decimals</label>
-      <!-- GM stands for Graspable Math -->
-      <input id="gmFriendlyCheckbox" type="checkbox" />
-      <label for="gmFriendlyCheckbox">GM friendly</label>
-
-      <br />
-
-      <label for="plansSelect">Plan</label>
-      <select id="plansSelect"></select>
-      <label for="input">Input</label>
-      <input type="text" id="input" placeholder="Expression" size="30" />
-      <input type="submit" id="submit" value="Submit" />
-      <input type="button" id="submitToMain" value="Submit to main" />
+      <p>
+        <label for="curriculumSelect">Curriculum</label>
+        <select id="curriculumSelect">
+          <option value="" selected>Default</option>
+          <option value="US">US</option>
+          <option value="EU">EU</option>
+        </select>
+        <label for="precisionSelect">Precision</label>
+        <select id="precisionSelect">
+          <option value="2">2 d.p.</option>
+          <option value="3" selected>3 d.p.</option>
+          <option value="4">4 d.p.</option>
+          <option value="5">5 d.p.</option>
+          <option value="6">6 d.p.</option>
+        </select>
+        <label for="solutionVariable">Solution variable</label>
+        <input type="text" id="solutionVariable" value="x" size="1" />
+        <input id="preferDecimals" type="checkbox" />
+        <label for="preferDecimals">Prefer decimals</label>
+        <!-- GM stands for Graspable Math -->
+        <input id="gmFriendlyCheckbox" type="checkbox" />
+        <label for="gmFriendlyCheckbox">GM friendly</label>
+      </p>
+      <p>
+        <label for="plansSelect">Plan</label>
+        <select id="plansSelect"></select>
+      </p>
+      <p>
+        <label for="input">Input</label>
+        <input type="text" id="input" placeholder="Expression" size="30" />
+        <input type="submit" id="submit" value="Submit" />
+        <input type="button" id="submitToMain" value="Submit to main" />
+      </p>
     </form>
-    <form>
-      <label for="colorScheme">Colors</label>
-      <select id="colorScheme">
-        <option value="default">Default</option>
-        <option value="primary">Primary colors</option>
-        <option value="none">No coloring</option>
-        <option value="blue">Just blue</option>
-      </select>
-      <label for="solutionFormat">Solution format</label>
-      <select id="solutionFormat">
-        <option value="simple">Simple</option>
-        <option value="sets">Sets</option>
-      </select>
-      <input id="showThroughSteps" type="checkbox" />
-      <label for="showThroughSteps">Show through steps</label>
-      <input id="hideWarnings" type="checkbox" />
-      <label for="hideWarnings">Hide warnings</label>
-      <input id="showTrivialSteps" type="checkbox" />
-      <label for="showTrivialSteps">Show trivial steps</label>
-    </form>
+
     <p id="result"></p>
     <details>
       <summary>Response Source</summary>
