@@ -13,6 +13,8 @@ export type NestedExpressionType =
   | 'Root' // binary
   | 'Equation' // binary
   | 'EquationSystem' // n-ary
+  | 'AddEquations' // binary
+  | 'SubtractEquations' // binary
   | 'EquationUnion' // n-ary
   | 'LessThan' // binary
   | 'GreaterThan' // binary

@@ -457,7 +457,7 @@ private val optimalEquationSolvingSteps = steps {
     }
 }
 
-private val simplifyEquation = plan {
+val simplifyEquation = plan {
     explanation = Explanation.SimplifyEquation
 
     steps {

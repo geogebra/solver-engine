@@ -42,6 +42,46 @@ object EquationOperator : BinaryOperator, StatementOperator {
     override fun <T> readableString(left: T, right: T) = "$left = $right"
 }
 
+sealed interface EquationOperation
+
+object AddEquationsOperator : BinaryOperator, StatementOperator, EquationOperation {
+    override fun <T> readableString(left: T, right: T): String {
+        return "$left /+/ $right"
+    }
+
+    override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable): String {
+        val alignCtx = ctx.copy(align = true)
+        return buildString {
+            append("\\begin{array}{rcl}")
+            append(left.toLatexString(alignCtx), " & + \\\\ ")
+            append(right.toLatexString(alignCtx), " & \\\\ ")
+            append("\\end{array}")
+        }
+    }
+
+    override val name = "AddEquations"
+    override val precedence = EQUATION_SYSTEM_PRECEDENCE
+}
+
+object SubtractEquationsOperator : BinaryOperator, StatementOperator, EquationOperation {
+    override fun <T> readableString(left: T, right: T): String {
+        return "$left /-/ $right"
+    }
+
+    override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable): String {
+        val alignCtx = ctx.copy(align = true)
+        return buildString {
+            append("\\begin{array}{rcl}")
+            append(left.toLatexString(alignCtx), " & - \\\\ ")
+            append(right.toLatexString(alignCtx), " & \\\\ ")
+            append("\\end{array}")
+        }
+    }
+
+    override val name = "SubtractEquations"
+    override val precedence = EQUATION_SYSTEM_PRECEDENCE
+}
+
 enum class InequalityOperators(
     private val readableString: String,
     private val latexString: String,

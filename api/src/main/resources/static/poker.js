@@ -279,7 +279,44 @@ const renderTask = (task, depth = 0) => {
       ? renderExpression(task.startExpr)
       : task.steps.length === 1
       ? renderTransformation(task.steps[0], depth - 1, depth >= 0)
-      : renderSteps(task.steps, depth - 1, depth >= 0)}
+      : renderTaskTransformation(task) + renderSteps(task.steps, depth - 1, depth >= 0)}
+  </div>`;
+};
+
+const renderTaskTransformation = (task) => {
+  const fromExpr = task.startExpr;
+  const toExpr = task.steps[task.steps.length - 1].toExpr;
+
+  if (fromExpr[0] === 'AddEquations' || fromExpr[0] === 'SubtractEquations') {
+    const eq1 = fromExpr[1];
+    const eq2 = fromExpr[2];
+
+    const alignSetting = { ...latexSettings, align: true };
+    return /* HTML */ `<div className="expr">
+      ${renderExpression(
+        '\\begin{array}{rcl|l}\n' +
+          '  ' +
+          ggbSolver.jsonToLatex(eq1, alignSetting) +
+          ' & ' +
+          (fromExpr[0] === 'AddEquations' ? '+' : '-') +
+          ' \\\\\n' +
+          '  ' +
+          ggbSolver.jsonToLatex(eq2, alignSetting) +
+          ' & \\\\ \\hline \n' +
+          '  ' +
+          ggbSolver.jsonToLatex(toExpr, alignSetting) +
+          ' \\\\\n' +
+          '\\end{array}',
+      )}
+    </div>`;
+  }
+
+  return /* HTML */ `<div className="expr">
+    ${renderExpression(
+      `${ggbSolver.jsonToLatex(fromExpr, latexSettings)} 
+      {\\color{#8888ff}\\thickspace\\longmapsto\\thickspace} 
+      ${ggbSolver.jsonToLatex(toExpr, latexSettings)}`,
+    )}
   </div>`;
 };
 

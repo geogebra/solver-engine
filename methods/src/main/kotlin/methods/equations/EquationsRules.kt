@@ -327,7 +327,10 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             onPattern(eqn) {
                 ruleResult(
                     toExpr = identityOf(variableListOf(context.solutionVariables), get(eqn)),
-                    explanation = metadata(Explanation.ExtractSolutionFromIdentity),
+                    explanation = metadata(
+                        Explanation.ExtractSolutionFromIdentity,
+                        variableListOf(context.solutionVariables),
+                    ),
                 )
             }
         },
@@ -342,7 +345,10 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                 if (get(lhs) != get(rhs)) {
                     ruleResult(
                         toExpr = contradictionOf(variableListOf(context.solutionVariables), get(eqn)),
-                        explanation = metadata(Explanation.ExtractSolutionFromContradiction),
+                        explanation = metadata(
+                            Explanation.ExtractSolutionFromContradiction,
+                            variableListOf(context.solutionVariables),
+                        ),
                     )
                 } else {
                     null

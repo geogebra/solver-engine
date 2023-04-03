@@ -6,11 +6,14 @@ grammar Expression;
 
 wholeInput: statement | solution | exprOrUndefined EOF;
 
-statement: equationSystem | equationUnion | equation | inequality;
+statement: equationSystem | equationUnion | equationAddition | equationSubtraction | equation | inequality;
 
 equationSystem: equations += equation (',' equations += equation)+;
 
 equationUnion: equations += equation ('OR' equations += equation)+;
+
+equationAddition: eq1=equation '/+/' eq2=equation;
+equationSubtraction: eq1=equation '/-/' eq2=equation;
 
 equation: lhs=expr '=' rhs=expr;
 

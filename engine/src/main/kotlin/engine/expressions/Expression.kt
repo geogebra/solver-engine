@@ -415,6 +415,12 @@ fun Expression.asPositiveRational(): Rational? = when (operator) {
     else -> null
 }
 
+fun Expression.asInteger(): BigInteger? = when (val op = operator) {
+    is IntegerOperator -> op.value
+    UnaryExpressionOperator.Minus -> firstChild.asPositiveInteger()?.negate()
+    else -> null
+}
+
 fun Expression.asPositiveInteger(): BigInteger? = when (val op = operator) {
     is IntegerOperator -> op.value
     else -> null

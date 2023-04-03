@@ -148,6 +148,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
     ExpandPolynomialExpressionInOneVariable(
         plan {
             explanation = Explanation.ExpandPolynomialExpression
+            pattern = AnyPattern()
             pattern = condition(AnyPattern()) { it.variables.size == 1 }
 
             steps {
@@ -169,7 +170,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
     ExpandPolynomialExpressionInOneVariableWithoutNormalization(
         plan {
             explanation = Explanation.ExpandPolynomialExpression
-            pattern = condition(AnyPattern()) { it.variables.size == 1 }
+            // pattern = condition(AnyPattern()) { it.variables.size == 1 }
 
             steps {
                 optionally(NormalizationPlans.NormaliseSimplifiedProduct)
@@ -212,7 +213,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
     ),
 }
 
-private val expandAndSimplifySteps = lazy {
+val expandAndSimplifySteps = lazy {
     createExpandAndSimplifySteps(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable)
 }
 

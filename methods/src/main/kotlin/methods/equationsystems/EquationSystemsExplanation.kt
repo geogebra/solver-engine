@@ -82,7 +82,54 @@ enum class EquationSystemsExplanation : CategorisedMetadataKey {
     SolveEquationSystemBySubstitution,
 
     /**
-     *
+     * Rewrite the addition of two equations, e.g.
+     * 2x + 3y = 2 +
+     * 3x - 3y = 1
+     * as single equation e.g. 2x + 3y + (3x - 3y) = 2 + 1
+     */
+    RewriteEquationAddition,
+
+    /**
+     * Rewrite the subtraction of two equations, e.g.
+     * 3x + 4y = 2 -
+     * 3x +  y = 1
+     * as single equation e.g. 3x + 4y - (3x + y) = 2 - 1
+     */
+    RewriteEquationSubtraction,
+
+    /**
+     * Evaluate the addition of two equations, e.g.
+     * 2x + 3y = 2 +
+     * 3x - 3y = 1
+     * would be first transformed to 2x + 3y + (3x - 3y) = 2 + 1
+     * then simplified to 5x = 3
+     */
+    AddEquations,
+
+    /**
+     * Evaluate the subtraction of two equations, e.g.
+     * 3x + 4y = 2 -
+     * 3x +  y = 1
+     * would be first transformed to 3x + 4y - (3x + y) = 2 - 1
+     * then simplified to 3y = 1
+     */
+    SubtractEquations,
+
+    /**
+     * Multiply both sides of an equation by a value.
+     * %1: factor the equation is multiplied by
+     */
+    MultiplyEquation,
+
+    /**
+     * Solve the univariate equation obtained by adding or
+     * subtracting the two equations in a system when solving
+     * it using elimination.
+     */
+    SolveEliminatedEquation,
+
+    /**
+     * Solve a system of two equations by elimination.
      */
     SolveEquationSystemByElimination,
 

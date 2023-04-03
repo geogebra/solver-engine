@@ -13,6 +13,7 @@ import engine.expressions.negOf
 import engine.expressions.solutionOf
 import engine.expressions.solutionSetOf
 import engine.expressions.xp
+import engine.operators.AddEquationsOperator
 import engine.operators.BinaryExpressionOperator
 import engine.operators.EquationOperator
 import engine.operators.EquationSystemOperator
@@ -21,6 +22,7 @@ import engine.operators.IntervalOperator
 import engine.operators.MultiVariateSolutionOperator
 import engine.operators.NaryOperator
 import engine.operators.Operator
+import engine.operators.SubtractEquationsOperator
 import engine.operators.TupleOperator
 import engine.operators.UnaryExpressionOperator
 import engine.operators.VariableListOperator
@@ -69,6 +71,14 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
 
     override fun visitEquationUnion(ctx: ExpressionParser.EquationUnionContext): Expression {
         return makeExpression(EquationUnionOperator, ctx.equations.map { visit(it) })
+    }
+
+    override fun visitEquationAddition(ctx: ExpressionParser.EquationAdditionContext): Expression {
+        return makeExpression(AddEquationsOperator, listOf(visit(ctx.eq1), visit(ctx.eq2)))
+    }
+
+    override fun visitEquationSubtraction(ctx: ExpressionParser.EquationSubtractionContext): Expression {
+        return makeExpression(SubtractEquationsOperator, listOf(visit(ctx.eq1), visit(ctx.eq2)))
     }
 
     override fun visitEquation(ctx: ExpressionParser.EquationContext): Expression {

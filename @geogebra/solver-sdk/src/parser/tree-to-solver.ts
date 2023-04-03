@@ -57,6 +57,10 @@ export function treeToSolver(n: ExpressionTree): string {
       return dec(`${rec(n.args[0])} = ${rec(n.args[1])}`);
     case 'EquationSystem':
       return dec(n.args.map((el) => rec(el)).join(', '));
+    case 'AddEquations':
+      return dec(n.args.map((el) => rec(el)).join(' /+/ '));
+    case 'SubtractEquations':
+      return dec(n.args.map((el) => rec(el)).join(' /-/ '));
     case 'EquationUnion':
       return dec(n.args.map((el) => rec(el)).join(' OR '));
     case 'UNDEFINED':

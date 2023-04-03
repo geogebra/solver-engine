@@ -3,6 +3,8 @@ package methods.equationsystems
 import engine.context.emptyContext
 import engine.expressions.Constants
 import engine.expressions.Expression
+import engine.expressions.addEquationsOf
+import engine.expressions.asInteger
 import engine.expressions.cartesianProductOf
 import engine.expressions.contradictionOf
 import engine.expressions.equationOf
@@ -10,8 +12,11 @@ import engine.expressions.equationSystemOf
 import engine.expressions.identityOf
 import engine.expressions.implicitSolutionOf
 import engine.expressions.negOf
+import engine.expressions.productOf
 import engine.expressions.setSolutionOf
+import engine.expressions.simplifiedNegOf
 import engine.expressions.solutionSetOf
+import engine.expressions.subtractEquationsOf
 import engine.expressions.tupleOf
 import engine.expressions.variableListOf
 import engine.expressions.xp
@@ -37,8 +42,10 @@ import engine.steps.Task
 import engine.steps.metadata.MetadataKey
 import engine.steps.metadata.metadata
 import methods.equations.EquationsPlans
+import methods.equations.EquationsRules
 import methods.equations.equationSimplificationSteps
 import methods.equations.rearrangeLinearEquationSteps
+import methods.equations.simplifyEquation
 import methods.polynomials.PolynomialsPlans
 
 enum class EquationSystemsPlans(override val runner: CompositeMethod) : RunnerMethod {
@@ -52,6 +59,9 @@ enum class EquationSystemsPlans(override val runner: CompositeMethod) : RunnerMe
      */
     @PublicMethod
     SolveEquationSystemBySubstitution(SystemSolverBySubstitution.taskSet()),
+
+    @PublicMethod
+    SolveEquationSystemByElimination(SystemSolverByElimination.taskSet()),
 }
 
 /**
@@ -421,6 +431,154 @@ private object SystemSolverBySubstitution : SystemSolver() {
         }
         // No obvious order, so just return the default one
         return SolutionOrder(eq1, x, eq2, y)
+    }
+}
+
+private object SystemSolverByElimination : SystemSolver() {
+    override val explanation = Explanation.SolveEquationSystemByElimination
+
+    override val prearrangeLinearEquationSteps = steps {
+        whilePossible {
+            firstOf {
+                option(equationSimplificationSteps)
+                option(EquationsPlans.MultiplyByLCDAndSimplify)
+                option(PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
+                option(EquationsPlans.MoveConstantsToTheRightAndSimplify)
+                option(EquationsPlans.MoveVariablesToTheLeftAndSimplify)
+            }
+        }
+        optionally {
+            check { it.variables.size == 1 }
+            inContext(contextFactory = { copy(solutionVariables = it.variables.toList()) }) {
+                apply(EquationsPlans.SolveLinearEquation)
+            }
+        }
+    }
+
+    private fun TasksBuilder.multiplyEquation(eq: Expression, factor: Expression): Expression {
+        return if (factor != Constants.One) {
+            task(
+                startExpr = equationOf(productOf(factor, eq.firstChild), productOf(factor, eq.secondChild)),
+                explanation = metadata(Explanation.MultiplyEquation, factor),
+                stepsProducer = PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization,
+            )!!.result
+        } else {
+            eq
+        }
+    }
+
+    override fun TasksBuilder.solveIndependentEquations(
+        firstEq: Expression,
+        secondEq: Expression,
+        variables: List<String>,
+    ): Pair<Expression, Expression>? {
+        val (f1, f2, eliminatedVariable, remainingVariable) =
+            getEquationFactors(firstEq, secondEq, variables) ?: return null
+
+        val scaledEq1 = multiplyEquation(firstEq, f1)
+        val scaledEq2 = multiplyEquation(secondEq, f2)
+
+        val eliminatedVariableCoeff1 = scaledEq1.coefficientOf(eliminatedVariable)!!
+        val eliminatedVariableCoeff2 = scaledEq2.coefficientOf(eliminatedVariable)!!
+
+        val univariateEquation = when {
+            eliminatedVariableCoeff1 == simplifiedNegOf(eliminatedVariableCoeff2) -> {
+                val eqSum = addEquationsOf(scaledEq1, scaledEq2)
+
+                task(
+                    startExpr = eqSum,
+                    explanation = metadata(Explanation.AddEquations),
+                ) {
+                    apply(EquationSystemsRules.RewriteEquationAddition)
+                    whilePossible(simplifyEquation)
+                }!!
+            }
+
+            eliminatedVariableCoeff1 == eliminatedVariableCoeff2 -> {
+                val eqSum = subtractEquationsOf(scaledEq1, scaledEq2)
+
+                task(
+                    startExpr = eqSum,
+                    explanation = metadata(Explanation.SubtractEquations),
+                ) {
+                    apply(EquationSystemsRules.RewriteEquationSubtraction)
+                    whilePossible(simplifyEquation)
+                }!!
+            }
+
+            else -> return null
+        }
+
+        return task(
+            startExpr = univariateEquation.result,
+            explanation = metadata(Explanation.SolveEliminatedEquation),
+            context = context.copy(solutionVariables = listOf(remainingVariable)),
+        ) {
+            firstOf {
+                option(EquationsRules.ExtractSolutionFromContradiction)
+                option(EquationsRules.ExtractSolutionFromIdentity)
+                option(EquationsPlans.SolveLinearEquation)
+            }
+        }?.let { solvedUnivariateEquation ->
+            val reorganizedFirstEq = if (solvedUnivariateEquation.result.operator
+                == MultiVariateSolutionOperator.Identity
+            ) {
+                task(
+                    startExpr = firstEq,
+                    stepsProducer = rearrangeLinearEquationSteps,
+                    explanation = metadata(Explanation.ExpressInTermsOf, xp(variables[0]), xp(variables[1])),
+                    context = context.copy(solutionVariables = listOf(variables[0])),
+                )!!.result
+            } else {
+                firstEq
+            }
+
+            Pair(reorganizedFirstEq, solvedUnivariateEquation.result)
+        }
+    }
+
+    private data class EquationFactors(
+        val firstFactor: Expression,
+        val secondFactor: Expression,
+        val eliminatedVariable: String,
+        val remainingVariable: String,
+    )
+
+    @Suppress("ReturnCount")
+    private fun getEquationFactors(
+        eq1: Expression,
+        eq2: Expression,
+        variables: List<String>,
+    ): EquationFactors? {
+        val x = variables[0]
+        val y = variables[1]
+
+        val xCoeffInEq1 = eq1.coefficientOf(x) ?: return null
+        val yCoeffInEq1 = eq1.coefficientOf(y) ?: return null
+        val xCoeffInEq2 = eq2.coefficientOf(x) ?: return null
+        val yCoeffInEq2 = eq2.coefficientOf(y) ?: return null
+
+        // First check if the coefficients are equal or opposite
+        when {
+            xCoeffInEq1 == xCoeffInEq2 || xCoeffInEq1 == simplifiedNegOf(xCoeffInEq2) ->
+                return EquationFactors(Constants.One, Constants.One, x, y)
+            yCoeffInEq1 == yCoeffInEq2 || yCoeffInEq1 == simplifiedNegOf(yCoeffInEq2) ->
+                return EquationFactors(Constants.One, Constants.One, y, x)
+        }
+
+        val coeffVal1 = xCoeffInEq1.asInteger()
+        val coeffVal2 = xCoeffInEq2.asInteger()
+
+        if (coeffVal1 != null && coeffVal2 != null) {
+            val gcd = coeffVal1.gcd(coeffVal2)
+            val factor1 = xp((coeffVal2 / gcd).abs())
+            val factor2 = xp((coeffVal1 / gcd).abs())
+
+            return EquationFactors(factor1, factor2, x, y)
+        }
+
+        // We're out of ideas, so do something that will work
+        return EquationFactors(xCoeffInEq2, xCoeffInEq1, x, y)
     }
 }
 

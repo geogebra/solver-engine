@@ -2,6 +2,7 @@
 
 package engine.expressions
 
+import engine.operators.AddEquationsOperator
 import engine.operators.BinaryExpressionOperator
 import engine.operators.DecimalOperator
 import engine.operators.EquationOperator
@@ -17,6 +18,7 @@ import engine.operators.Operator
 import engine.operators.RecurringDecimalOperator
 import engine.operators.SetOperators
 import engine.operators.SolutionOperator
+import engine.operators.SubtractEquationsOperator
 import engine.operators.TupleOperator
 import engine.operators.UnaryExpressionOperator
 import engine.operators.VariableListOperator
@@ -187,6 +189,11 @@ fun simplifiedProductOf(vararg operands: Expression): Expression {
 fun divideBy(operand: Expression) = buildExpression(UnaryExpressionOperator.DivideBy, listOf(operand))
 
 fun equationOf(lhs: Expression, rhs: Expression) = buildExpression(EquationOperator, listOf(lhs, rhs))
+
+fun addEquationsOf(eq1: Expression, eq2: Expression) =
+    buildExpression(AddEquationsOperator, listOf(eq1, eq2))
+fun subtractEquationsOf(eq1: Expression, eq2: Expression) =
+    buildExpression(SubtractEquationsOperator, listOf(eq1, eq2))
 
 fun lessThanOf(lhs: Expression, rhs: Expression) =
     buildExpression(InequalityOperators.LessThan, listOf(lhs, rhs))

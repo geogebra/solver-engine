@@ -1,7 +1,10 @@
+@file:Suppress("TooManyFunctions")
+
 package engine.patterns
 
 import engine.context.Context
 import engine.expressions.Expression
+import engine.operators.AddEquationsOperator
 import engine.operators.BinaryExpressionOperator
 import engine.operators.EquationOperator
 import engine.operators.IntervalOperator
@@ -10,6 +13,7 @@ import engine.operators.MultiVariateSolutionOperator
 import engine.operators.Operator
 import engine.operators.SetOperators
 import engine.operators.SolutionOperator
+import engine.operators.SubtractEquationsOperator
 import engine.operators.UnaryExpressionOperator
 import engine.operators.VariableListOperator
 
@@ -61,6 +65,9 @@ fun negOf(operand: Pattern) = OperatorPattern(UnaryExpressionOperator.Minus, lis
 fun plusMinusOf(operand: Pattern) = OperatorPattern(UnaryExpressionOperator.PlusMinus, listOf(operand))
 
 fun equationOf(lhs: Pattern, rhs: Pattern) = OperatorPattern(EquationOperator, listOf(lhs, rhs))
+
+fun addEquationsOf(eq1: Pattern, eq2: Pattern) = OperatorPattern(AddEquationsOperator, listOf(eq1, eq2))
+fun subtractEquationsOf(eq1: Pattern, eq2: Pattern) = OperatorPattern(SubtractEquationsOperator, listOf(eq1, eq2))
 
 fun solutionOf(variable: Pattern, solution: Pattern) = OperatorPattern(SolutionOperator, listOf(variable, solution))
 

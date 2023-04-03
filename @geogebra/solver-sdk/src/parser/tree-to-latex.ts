@@ -110,6 +110,32 @@ function treeToLatexInner(
           '\\end{array}\\right.',
       );
     }
+    case 'AddEquations': {
+      const alignSetting = { ...s, align: true };
+      return tfd(
+        '\\begin{array}{rcl|l}\n' +
+          '  ' +
+          treeToLatexInner(n.args[0], n, alignSetting, tf) +
+          ' & + \\\\\n' +
+          '  ' +
+          treeToLatexInner(n.args[1], n, alignSetting, tf) +
+          ' & \\\\\n' +
+          '\\end{array}',
+      );
+    }
+    case 'SubtractEquations': {
+      const alignSetting = { ...s, align: true };
+      return tfd(
+        '\\begin{array}{rcl|l}\n' +
+          '  ' +
+          treeToLatexInner(n.args[0], n, alignSetting, tf) +
+          ' & - \\\\\n' +
+          '  ' +
+          treeToLatexInner(n.args[1], n, alignSetting, tf) +
+          ' & \\\\\n' +
+          '\\end{array}',
+      );
+    }
     case 'EquationUnion': {
       const alignSetting = { ...s, align: false };
       return tfd(

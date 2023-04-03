@@ -75,6 +75,7 @@ enum class EquationsExplanation : CategorisedMetadataKey {
 
     /**
      * Extract the solution of an equation from an identity.
+     * %1: solution variable
      *
      * E.g. 3x + 1 = 3x + 1 -> x \in R
      */
@@ -82,6 +83,7 @@ enum class EquationsExplanation : CategorisedMetadataKey {
 
     /**
      * Extract the solution of an equation from a contradiction.
+     * %1: solution variable
      *
      * E.g. 3 = 4 -> x \in \emptyset
      */
