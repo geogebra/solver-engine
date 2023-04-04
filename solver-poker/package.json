@@ -1,0 +1,17 @@
+{
+  "devDependencies": {
+    "typescript": "^4.9.5",
+    "vite": "^4.1.4"
+  },
+  "dependencies": {
+    "@geogebra/solver-sdk": "^3.7.4"
+  },
+  "scripts": {
+    "build": "tsc --noEmit && vite build",
+    "test": "echo no tests yet for poker",
+    "poker-dev": "vite --port 4173"
+  },
+  "volta": {
+    "node": "18.15.0"
+  }
+}

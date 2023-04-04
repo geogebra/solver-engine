@@ -12,10 +12,10 @@
 !/@geogebra/**
 !/config/*
 !/docs/*
+!/solver-poker/**
 
 # Blacklist these
 node_modules
-/api/src/main/resources/static/solver-sdk.es.js
 /helm
 /@geogebra/**/dist
 /@geogebra/**/lib

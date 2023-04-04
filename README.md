@@ -34,9 +34,10 @@ There are two run configurations that can be used out of the box.
 - `All Tests`: runs all the unit tests
 - `API Server`: runs the API Server on local machine on port 8080
 
-When the API server runs, you can inspect the API by navigating to
-http://localhost:8080 and access the _Solver Poker_ at
-http://localhost:8080/poker.html.
+When the API server runs, you can inspect the API by navigating to http://localhost:8080
+and access the _Solver Poker_ at http://localhost:8080/poker, but that will not work
+until you follow the instructions in [the Typescript section of this
+document](#Typescript)
 
 ### Commit hooks
 
@@ -50,7 +51,7 @@ git config --local core.hooksPath .githooks/
 Currently, there is a pre-commit hook that runs the `ktlintCheck`, `detekt`, and
 Prettier tasks.
 
-### Javascript
+### Typescript
 
 The project configures IntelliJ to use Prettier for formatting and .js, .html,
 .md, .json, and .yaml files. It uses eslint for linting .js files.
@@ -61,6 +62,24 @@ of this project, so that Prettier and eslint can work.
 In IntelliJ, go to "Settings" > "Actions on Save" and disable "Reformat code". If you
 don't do that, then IntelliJ will reformat your code using its own internal formatter,
 which we don't want, because we are using prettier and ktlint instead.
+
+To develop the poker, you can go to `solver-poker` and run
+
+```
+npm run poker-dev
+```
+
+Then go to the specified URL. Changes to the poker code will be automatically built
+and seen in the browser.
+
+If you make changes to the SDK, you can go to `@geogebra/solver-sdk` and run
+
+```
+npm run watch
+```
+
+This will also automatically rebuild the SDK when changes are made to the source, in
+turn triggering a rebuild of the poker if you are running `npm run poker-dev`.
 
 ## Deployment
 

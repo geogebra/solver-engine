@@ -5,17 +5,14 @@
     "prettier": "2.8.4",
     "pretty-quick": "^3.1.3"
   },
-  "dependencies": {
-    "@geogebra/solver-sdk": "^3.7.4"
-  },
   "scripts": {
-    "postinstall": "cd ./@geogebra/solver-sdk && npm run build:web",
+    "postinstall": "npm run build -ws",
     "prettier": "prettier . -w",
-    "eslint": "eslint . --fix",
-    "poker-dev": "cd ./@geogebra/solver-sdk && npm run build:web && cd ../../api/src/main/resources/static && vite . --port 4173 --open poker.html"
+    "eslint": "eslint . --fix"
   },
   "workspaces": [
-    "@geogebra/solver-sdk"
+    "@geogebra/solver-sdk",
+    "solver-poker"
   ],
   "volta": {
     "node": "18.15.0"

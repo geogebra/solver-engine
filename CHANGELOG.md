@@ -17,6 +17,8 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Changed
 
+- Converted the poker to TypeScript (PLUT-565)
+
 ### Removed
 
 ### [0.x] - 2023-04-03

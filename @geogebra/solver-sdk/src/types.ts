@@ -23,6 +23,8 @@ export type SolverContext = {
   curriculum?: string;
   gmFriendly?: boolean;
   precision?: number;
+  preferDecimals?: boolean;
+  solutionVariable?: string;
 };
 
 export type API_VERSION_INFO_RESPONSE = {
@@ -32,12 +34,20 @@ export type API_VERSION_INFO_RESPONSE = {
 
 export type API_PLANS_RESPONSE = PlanId[];
 export type API_APPLY_PLAN_RESPONSE = Transformation;
-export type API_SELECT_PLANS_RESPONSE = {
-  transformation: Transformation;
+
+type PlanSelectionBase<MathFormat> = {
+  transformation: TransformationBase<MathFormat>;
   metadata: {
     methodId: PlanId;
   };
-}[];
+};
+
+export type PlanSelectionSolver = PlanSelectionBase<string>;
+export type PlanSelectionLatex = PlanSelectionBase<string>;
+export type PlanSelectionJson = PlanSelectionBase<MathJson>;
+export type PlanSelection = PlanSelectionSolver | PlanSelectionLatex | PlanSelectionJson;
+
+export type API_SELECT_PLANS_RESPONSE = PlanSelection[];
 
 export type PathMapping = {
   type:
@@ -78,31 +88,35 @@ export type GmAction = {
   formulaId?: string;
 };
 
-type Metadata<MathFormat> = {
+type MetadataBase<MathFormat> = {
   key: string;
   params: { expression: MathFormat; pathMappings: PathMapping[] }[];
 };
 
+export type Tag = 'Rearrangement' | 'Cosmetic' | 'Pedantic';
+
 type TransformationBase<MathFormat> = {
-  type: 'Plan' | 'Rule' | 'TaskSet' | 'Rearrangement';
+  type: 'Plan' | 'Rule' | 'TaskSet';
+  tags: Tag[];
+
   path: string;
   fromExpr: MathFormat;
   toExpr: MathFormat;
   pathMappings: PathMapping[];
-  explanation: Metadata<MathFormat>;
+  explanation: MetadataBase<MathFormat>;
   gmAction: null | GmAction;
-  skills: Metadata<MathFormat>[];
+  skills: MetadataBase<MathFormat>[];
   steps: null | TransformationBase<MathFormat>[];
-  tasks:
-    | null
-    | {
-        taskId: string;
-        startExpr: MathFormat;
-        pathMappings: PathMapping[];
-        explanation: null | Metadata<MathFormat>;
-        steps: null | Transformation[];
-        dependsOn: null | string[];
-      }[];
+  tasks: null | TaskBase<MathFormat>[];
+};
+
+export type TaskBase<MathFormat> = {
+  taskId: string;
+  startExpr: MathFormat;
+  pathMappings: PathMapping[];
+  explanation: null | MetadataBase<MathFormat>;
+  steps: null | TransformationBase<MathFormat>[];
+  dependsOn: null | string[];
 };
 
 export type TransformationSolver = TransformationBase<string>;
@@ -112,3 +126,13 @@ export type Transformation =
   | TransformationSolver
   | TransformationLatex
   | TransformationJson;
+
+export type TaskSolver = TaskBase<string>;
+export type TaskLatex = TaskBase<string>;
+export type TaskJson = TaskBase<MathJson>;
+export type Task = TaskSolver | TaskLatex | TaskJson;
+
+export type MetadataSolver = MetadataBase<string>;
+export type MetadataLatex = MetadataBase<string>;
+export type MetadataJson = MetadataBase<MathJson>;
+export type Metadata = MetadataSolver | MetadataLatex | MetadataJson;

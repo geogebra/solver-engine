@@ -16,6 +16,7 @@
     "build:esm": "tsc",
     "build:cjs": "tsc -p ./tsconfig-cjs.json",
     "build:web": "vite build",
+    "watch": "tsc --watch",
     "start": "vite --host",
     "test": "nyc ../../node_modules/.bin/_mocha 'test/**/*.test.ts'",
     "test-watch": "nodemon -e * --exec ../../node_modules/.bin/_mocha 'test/**/*.test.ts'",
@@ -52,7 +53,6 @@
     "chai": "^4.3.7",
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
-    "ts-node": "^10.9.1",
-    "vite-plugin-static-copy": "^0.13.1"
+    "ts-node": "^10.9.1"
   }
 }

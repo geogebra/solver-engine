@@ -8,13 +8,11 @@ dns.setDefaultResultOrder('verbatim');
 
 export default defineConfig({
   build: {
-    lib: {
-      entry: toAbsolutePath('src/index.ts'),
-      name: 'ggbSolver',
-      fileName: (format) => `solver-sdk.${format}.js`,
-    },
-    outDir: 'dist',
+    outDir: toAbsolutePath('../api/src/main/resources/static/poker'),
+    assetsDir: '.',
+    emptyOutDir: true,
   },
+  base: './',
 });
 
 function toAbsolutePath(relativePath: string) {

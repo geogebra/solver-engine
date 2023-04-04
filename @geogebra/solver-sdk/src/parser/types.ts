@@ -1,3 +1,5 @@
+export type { LatexSettings } from './tree-to-latex';
+
 export type NestedExpressionType =
   | 'Sum' // n-ary
   | 'Plus' // unary

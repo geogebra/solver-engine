@@ -33,7 +33,7 @@ check-circular-dependencies-in-methods:
     - ./scripts/check_method_dependencies.sh
 
 # Test SDK and build all artifacts from SDK for the poker and for possible release
-build-sdk:
+build-sdk-and-poker:
   stage: build
   needs: []
   image: node:18-alpine
@@ -50,14 +50,12 @@ build-sdk:
     - node -v
     - npm ci --cache .npm --prefer-offline
     - npm exec -c "prettier . -c"
-    - cd @geogebra/solver-sdk
-    - npm run test
-    - npm run build
+    - npm test -ws
   artifacts:
     paths:
-      - api/src/main/resources/static/solver-sdk.es.js
       - '@geogebra/solver-sdk/lib'
       - '@geogebra/solver-sdk/dist'
+      - 'api/src/main/resources/static/poker'
     expire_in: 1 day
 
 # The gradle 'build' includes running detekt, ktlint, runnings tests.
@@ -82,7 +80,7 @@ package-engine:
   stage: publish
   needs:
     - build-engine
-    - build-sdk
+    - build-sdk-and-poker
   tags:
     - docker
   script:
@@ -150,7 +148,7 @@ deploy-engine:
 sdk-semantic-release:
   stage: deploy
   needs:
-    - build-sdk
+    - build-sdk-and-poker
   # We would normally use "node:18-alpine" instead of "node:18" because it is smaller, but
   # we need git installed in order for semantic-release to work.
   image: node:18
