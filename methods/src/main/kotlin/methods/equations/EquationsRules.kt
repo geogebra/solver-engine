@@ -6,12 +6,14 @@ import engine.conditions.signOf
 import engine.expressions.Constants
 import engine.expressions.Expression
 import engine.expressions.contradictionOf
+import engine.expressions.denominator
 import engine.expressions.equationOf
 import engine.expressions.equationUnionOf
 import engine.expressions.fractionOf
 import engine.expressions.hasSingleValue
 import engine.expressions.identityOf
 import engine.expressions.inverse
+import engine.expressions.isNeg
 import engine.expressions.isSignedFraction
 import engine.expressions.negOf
 import engine.expressions.plusMinusOf
@@ -25,6 +27,7 @@ import engine.expressions.splitPlusMinus
 import engine.expressions.squareRootOf
 import engine.expressions.sumOf
 import engine.expressions.variableListOf
+import engine.expressions.withoutNegOrPlus
 import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
@@ -162,13 +165,34 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
                 if (coefficient.isSignedFraction()) {
                     val inverse = coefficient.inverse()
-
+                    val dragTarget = if (coefficient.parent !== null) {
+                        coefficient
+                    } else {
+                        // We can't use `coefficient` as the drag target because it
+                        // doesn't have a parent chain. We need a parent chain in order to
+                        // create a path mapping to the drag target. This might happen in
+                        // a situation like `[-x/3]` where `coefficient` would be the
+                        // artificially created expression [-1/3]. The `3` in that
+                        // example, however, does have a parent chain to the root of the
+                        // "from expression" so we can use that.
+                        val positiveCoefficient = coefficient.withoutNegOrPlus()
+                        if (positiveCoefficient.parent !== null) {
+                            positiveCoefficient
+                        } else {
+                            // TODO What should we do in situations like `[2x/5]`? In
+                            // that, this logic would only provide a drag target of `5` so
+                            // the `2` would still be left behind. It's not ideal that GM
+                            // would require two steps to move the `[2/3]`, while Solver
+                            // would take only one step.
+                            positiveCoefficient.denominator()
+                        }
+                    }
                     ruleResult(
                         toExpr = equationOf(
                             productOf(get(lhs), inverse),
                             productOf(get(rhs), inverse),
                         ),
-                        gmAction = drag(coefficient, rhs, Position.LeftOf),
+                        gmAction = drag(dragTarget, rhs, Position.LeftOf),
                         explanation = metadata(Explanation.MultiplyByInverseCoefficientOfVariable),
                     )
                 } else {

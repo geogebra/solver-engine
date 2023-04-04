@@ -45,6 +45,11 @@ fun testRule(
         assertEquals(gmAction.dragToExpressionPath, step?.gmAction?.dragToExpressionAsPathString())
         assertEquals(gmAction.dragToPosition, step?.gmAction?.dragTo?.position?.name)
         assertEquals(gmAction.formulaId, step?.gmAction?.formulaId)
+    } else {
+        // Assert that the gmAction will probably not cause problems when being
+        // serialized, like in PLUT-567
+        step?.gmAction?.expressionsAsPathStrings()
+        step?.gmAction?.dragToExpressionAsPathString()
     }
 }
 

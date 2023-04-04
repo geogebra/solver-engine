@@ -37,7 +37,7 @@ data class GmAction(
             if (pathMapping === null) {
                 // This should never happen when used correctly. If it does, it means that
                 // the gmAction was created with a pattern that didn't get bound to an
-                // expression, such as the minus in an opional negative pattern.
+                // expression, such as the minus in an optional negative pattern.
                 throw NoPathException("Trying to turn an unbound pattern into an expression path.")
             }
             val path = pathMapping.fromPaths.firstOrNull()

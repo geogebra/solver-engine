@@ -207,9 +207,7 @@ class Expression internal constructor(
 
         if (operator != other.operator) return false
         if (decorators != other.decorators) return false
-        if (operands != other.operands) return false
-
-        return true
+        return operands == other.operands
     }
 
     override fun hashCode(): Int {
@@ -387,6 +385,13 @@ fun Expression.base(): Expression {
 fun Expression.exponent(): Expression {
     require(operator == BinaryExpressionOperator.Power) { "Power expected, got: $operator" }
     return secondChild
+}
+
+/** Returns `this` or a subexpression without any outer `-`, `±`, and unary `+` */
+fun Expression.withoutNegOrPlus(): Expression = when (operator) {
+    UnaryExpressionOperator.Minus, UnaryExpressionOperator.Plus, UnaryExpressionOperator.PlusMinus ->
+        firstChild.withoutNegOrPlus()
+    else -> this
 }
 
 fun Expression.isNeg() = operator == UnaryExpressionOperator.Minus

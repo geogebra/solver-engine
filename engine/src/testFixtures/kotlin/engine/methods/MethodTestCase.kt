@@ -328,6 +328,10 @@ class TransformationCheck(private val trans: Transformation?) :
             assertNotNull(transTasks)
             assertEquals(checkedTasks, transTasks.size, "Some tasks have not been checked")
         }
+        // Assert that the gmAction will probably not cause problems when being
+        // serialized, like in PLUT-567
+        trans?.gmAction?.expressionsAsPathStrings()
+        trans?.gmAction?.dragToExpressionAsPathString()
     }
 }
 
