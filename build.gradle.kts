@@ -21,7 +21,7 @@ subprojects {
     // that work.
     apply(plugin = "kotlin")
     configure<KotlinJvmProjectExtension> {
-        jvmToolchain(19)
+        jvmToolchain(17)
     }
     tasks.withType<KotlinCompile> {
         kotlinOptions.allWarningsAsErrors = true
