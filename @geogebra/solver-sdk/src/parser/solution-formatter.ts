@@ -64,7 +64,7 @@ export const simpleSolutionFormatter = {
           case 'FiniteSet':
             switch (set.args.length) {
               case 0:
-                return `${vs} \\in \\emptyset}`;
+                return `${vs} \\in \\emptyset`;
               case 1:
                 return `${vs} = ${rec(set.args[0], null)}`;
               default:

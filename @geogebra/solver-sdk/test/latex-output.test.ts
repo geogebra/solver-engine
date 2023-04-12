@@ -1,6 +1,6 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
-import { latexToTree, treeToLatex, jsonToLatex } from '../src/parser';
+import { jsonToLatex, latexToTree, treeToLatex } from '../src/parser';
 import type { LatexSettings } from '../src/parser/tree-to-latex';
 import { MathJson } from '../src/types';
 
