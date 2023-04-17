@@ -233,14 +233,14 @@ class ConstantExpressionsPlansTest {
     @Test
     fun testSimplifyRootOfRootWithCoefficient() = testMethod {
         method = ConstantExpressionsPlans.SimplifyConstantExpression
-        inputExpr = "root[2 * sqrt[6], 3]"
+        inputExpr = "root[2 sqrt[6], 3]"
 
         check {
             step {
                 toExpr = "root[sqrt[24], 3]"
 
                 step {
-                    fromExpr = "2 * sqrt[6]"
+                    fromExpr = "2 sqrt[6]"
                     toExpr = "sqrt[[2 ^ 2] * 6]"
                 }
 
@@ -325,17 +325,17 @@ class ConstantExpressionsPlansTest {
     @Test
     fun testCollectLikeRootsAndSimplify() = testMethod {
         method = ConstantExpressionsPlans.SimplifyConstantExpression
-        inputExpr = "2 - 3 * sqrt[3] + root[3, 3] + [2 * sqrt[3] / 3] + 2 * sqrt[3]"
+        inputExpr = "2 - 3 sqrt[3] + root[3, 3] + [2 sqrt[3] / 3] + 2 sqrt[3]"
 
         check {
-            fromExpr = "2 - 3 * sqrt[3] + root[3, 3] + [2 * sqrt[3] / 3] + 2 * sqrt[3]"
+            fromExpr = "2 - 3 sqrt[3] + root[3, 3] + [2 sqrt[3] / 3] + 2 sqrt[3]"
             toExpr = "2 - [sqrt[3] / 3] + root[3, 3]"
             explanation {
                 key = CollectingExplanation.CollectLikeRootsAndSimplify
             }
 
             step {
-                fromExpr = "2 - 3 * sqrt[3] + root[3, 3] + [2 * sqrt[3] / 3] + 2 * sqrt[3]"
+                fromExpr = "2 - 3 sqrt[3] + root[3, 3] + [2 sqrt[3] / 3] + 2 sqrt[3]"
                 toExpr = "2 + (-3 + [2 / 3] + 2) sqrt[3] + root[3, 3]"
                 explanation {
                     key = CollectingExplanation.CollectLikeRoots
@@ -1140,7 +1140,7 @@ class CancelOppositeTermTest {
     @Test
     fun testCancelAdditiveInverseElementsAfterSimplifying() = testMethod {
         method = ConstantExpressionsPlans.SimplifyConstantExpression
-        inputExpr = "-(root[3, 3] + 2 * root[3, 3] - 4 * root[3, 3]) - (-root[3, 3] - 3 * root[3, 3] + 5 * root[3, 3])"
+        inputExpr = "-(root[3, 3] + 2 root[3, 3] - 4 root[3, 3]) - (-root[3, 3] - 3 root[3, 3] + 5 root[3, 3])"
 
         check {
             toExpr = "0"

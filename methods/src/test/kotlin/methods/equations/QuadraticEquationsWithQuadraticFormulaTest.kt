@@ -626,17 +626,17 @@ class QuadraticEquationsWithQuadraticFormulaTest {
     @Test
     fun `test multiplying through by the LCD 4`() = testMethodInX {
         method = EquationsPlans.SolveQuadraticEquationUsingQuadraticFormula
-        inputExpr = "[1 / 5] * [x ^ 2] - [2 / 3] x - [1 / 6] x - [5 / 6] = 0"
+        inputExpr = "[1 / 5] [x ^ 2] - [2 / 3] x - [1 / 6] x - [5 / 6] = 0"
 
         check {
-            fromExpr = "[1 / 5] * [x ^ 2] - [2 / 3] x - [1 / 6] x - [5 / 6] = 0"
+            fromExpr = "[1 / 5] [x ^ 2] - [2 / 3] x - [1 / 6] x - [5 / 6] = 0"
             toExpr = "Solution[x, {-[5 / 6], 5}]"
             explanation {
                 key = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula
             }
 
             step {
-                fromExpr = "[1 / 5] * [x ^ 2] - [2 / 3] x - [1 / 6] x - [5 / 6] = 0"
+                fromExpr = "[1 / 5] [x ^ 2] - [2 / 3] x - [1 / 6] x - [5 / 6] = 0"
                 toExpr = "[1 / 5] [x ^ 2] - [5 / 6] x - [5 / 6] = 0"
                 explanation {
                     key = EquationsExplanation.SimplifyEquation

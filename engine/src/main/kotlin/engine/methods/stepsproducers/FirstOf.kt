@@ -38,4 +38,8 @@ private class FirstOfRunner(val sub: Expression, val ctx: Context) : FirstOfBuil
             this.steps = currentSteps
         }
     }
+
+    override fun shortOption(init: PipelineBuilder.() -> Unit) {
+        shortOption(ProceduralPipeline(init))
+    }
 }

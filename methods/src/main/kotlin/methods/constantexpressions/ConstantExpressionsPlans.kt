@@ -34,7 +34,8 @@ import methods.fractionroots.FractionRootsRules
 import methods.general.GeneralPlans
 import methods.general.GeneralRules
 import methods.general.NormalizationPlans
-import methods.general.removeRedundantBrackets
+import methods.general.inlineSumsAndProducts
+import methods.general.reorderProductSteps
 import methods.integerarithmetic.IntegerArithmeticPlans
 import methods.integerarithmetic.IntegerArithmeticRules
 import methods.integerrationalexponents.IntegerRationalExponentsPlans
@@ -143,11 +144,19 @@ enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : Runn
             )
 
             steps {
-                whilePossible { deeply(simpleTidyUpSteps) }
-                optionally(NormalizationPlans.NormalizeExpression)
-                optionally(RewriteIntegerOrderRootsAsPowers)
-                whilePossible { deeply(SimplifyConstantSubexpression, deepFirst = true) }
-                whilePossible(constantSimplificationSteps)
+                firstOf {
+                    option {
+                        optionally(NormalizationPlans.NormalizeExpression)
+                        whilePossible { deeply(simpleTidyUpSteps) }
+                        optionally(RewriteIntegerOrderRootsAsPowers)
+                        whilePossible { deeply(SimplifyConstantSubexpression, deepFirst = true) }
+                        whilePossible(constantSimplificationSteps)
+                    }
+                    shortOption {
+                        // to avoid rewriting things like 0 * (x)
+                        whilePossible { deeply(simpleTidyUpSteps) }
+                    }
+                }
             }
         },
     ),
@@ -215,7 +224,7 @@ val constantSimplificationSteps: StepsProducer = steps {
     firstOf {
         option(simpleTidyUpSteps)
 
-        option { deeply(removeRedundantBrackets) }
+        option { deeply(inlineSumsAndProducts) }
 
         option(trickySimplificationSteps)
 
@@ -248,7 +257,7 @@ val constantSimplificationSteps: StepsProducer = steps {
         option { deeply(ExpandRules.DistributeNegativeOverBracket) }
         option { deeply(expandConstantExpression) }
 
-        option { deeply(NormalizationPlans.NormaliseSimplifiedProduct) }
+        option { deeply(reorderProductSteps) }
     }
 }
 

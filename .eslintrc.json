@@ -1,5 +1,12 @@
 {
-  "extends": ["eslint:recommended", "prettier"],
+  "plugins": ["@typescript-eslint"],
+  "parser": "@typescript-eslint/parser",
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
+    "prettier"
+  ],
   "env": {
     "browser": true,
     "es2022": true

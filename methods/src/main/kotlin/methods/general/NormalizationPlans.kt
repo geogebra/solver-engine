@@ -1,70 +1,53 @@
 package methods.general
 
 import engine.context.ResourceData
-import engine.expressions.Child
-import engine.expressions.Expression
 import engine.methods.CompositeMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
+import engine.methods.stepsproducers.contextSensitiveSteps
 import engine.methods.stepsproducers.steps
 
 enum class NormalizationPlans(override val runner: CompositeMethod) : RunnerMethod {
-    AddClarifyingBrackets(
-        plan {
-            explanation = Explanation.AddClarifyingBrackets
-
-            steps {
-                whilePossible { deeply(NormalizationRules.ReplaceInvisibleBrackets) }
-            }
-        },
-    ),
     NormalizeExpression(
         plan {
             explanation = Explanation.NormalizeExpression
 
             steps {
+                // Temporary workaround. Changing the order of the `deeply` and the
+                //  `firstOf` does not currently work because of the removal of the outer
+                //  brackets in StepsBuilder
                 whilePossible {
-                    deeply {
-                        firstOf {
-                            option(AddClarifyingBrackets)
-                            option(removeRedundantBrackets)
-                            option(NormalizationRules.RemoveRedundantPlusSign)
-                        }
+                    firstOf {
+                        option { deeply(NormalizationRules.NormalizeNegativeSignOfIntegerInSum) }
+                        option { deeply(NormalizationRules.AddClarifyingBracket) }
+                        option { deeply(NormalizationRules.RemoveRedundantBracket) }
+                        option { deeply(NormalizationRules.RemoveRedundantPlusSign) }
+                        option { deeply(NormalizationRules.NormalizeProductSigns) }
                     }
                 }
             }
         },
     ),
-    NormaliseSimplifiedProduct(normaliseSimplifiedProduct),
+
+    ReorderProductInSteps(
+        plan {
+            explanation = Explanation.ReorderProduct
+
+            steps {
+                whilePossible(NormalizationRules.ReorderProductSingleStep)
+            }
+        },
+    ),
 }
 
-private val normaliseSimplifiedProduct = plan {
-    explanation = Explanation.NormaliseSimplifiedProduct
-
-    steps { optionally(NormalizationRules.NormaliseSimplifiedProductRule) }
-    alternative(ResourceData(gmFriendly = true)) {
-        whilePossible(NormalizationRules.NormaliseSimplifiedProductSingleStep)
-        optionally(NormalizationRules.NormalizeTheImplicitnessAndExplicitnessOfMultiplication)
-    }
+val reorderProductSteps = contextSensitiveSteps {
+    default(ResourceData(), NormalizationRules.ReorderProduct)
+    alternative(ResourceData(gmFriendly = true), NormalizationPlans.ReorderProductInSteps)
 }
 
-fun redundantBracketChecker(sub: Expression): Expression? = when {
-    !sub.hasBracket() -> null
-    sub.parent == null -> sub
-    sub.origin is Child -> {
-        val origin = sub.origin as Child
-        if (origin.parent.operator.nthChildAllowed(origin.index, sub.operator)) sub else null
-    }
-    else -> null
-}
-
-val removeRedundantBrackets = steps {
+val inlineSumsAndProducts = steps {
     firstOf {
-        option {
-            applyTo(NormalizationRules.RemoveOuterBracket, ::redundantBracketChecker)
-        }
         option(NormalizationRules.RemoveBracketSumInSum)
         option(NormalizationRules.RemoveBracketProductInProduct)
-        option(NormalizationRules.RemoveBracketAroundSignedIntegerInSum)
     }
 }

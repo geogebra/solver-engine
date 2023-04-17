@@ -1,6 +1,7 @@
 package methods.general
 
 import engine.steps.metadata.CategorisedMetadataKey
+import engine.steps.metadata.LegacyKeyName
 import engine.steps.metadata.TranslationKeys
 
 @TranslationKeys
@@ -32,10 +33,23 @@ enum class GeneralExplanation : CategorisedMetadataKey {
      * i.e. [base ^ exp1 + ... + expN] --> [base ^ exp1] * ... * [base ^ expN]
      */
     DistributeSumOfPowers,
-    ReplaceInvisibleBrackets,
+
+    /**
+     * Add a bracket to make the expression clearer
+     * E.g. sqrt(2)^2 -> (sqrt(2))^2
+     */
+    @LegacyKeyName("General.ReplaceInvisibleBrackets")
+    AddClarifyingBracket,
     RemoveBracketSumInSum,
     RemoveBracketProductInProduct,
-    RemoveBracketAroundSignedIntegerInSum,
+
+    /**
+     * E.g. 1 + (-2) -> 1 - 2
+     *  1 + -2 -> 1 - 2
+     */
+    @LegacyKeyName("General.RemoveBracketAroundSignedIntegerInSum")
+    NormalizeNegativeSignOfIntegerInSum,
+
     RemoveRedundantBracket,
     RemoveRedundantPlusSign,
 
@@ -66,7 +80,6 @@ enum class GeneralExplanation : CategorisedMetadataKey {
     SimplifyUnitFractionToOne,
     SimplifyFractionWithOneDenominator,
     CancelDenominator,
-    AddClarifyingBrackets,
     FactorMinusFromSum,
     SimplifyProductOfConjugates,
     DistributePowerOfProduct,
@@ -196,16 +209,29 @@ enum class GeneralExplanation : CategorisedMetadataKey {
     RewriteIntegerOrderRootAsPower,
 
     /**
-     * normalise the product of different kind of terms, which has already
-     * been simplified, the normalised order of terms in product looks like:
+     * Reorder a product in a canonical form:
+     * 1. numeric constants
+     * 2. constant roots
+     * 3. constant sums
+     * 4. variables or variable powers
+     * 5. variable roots
+     * 6. polynomials (i.e. non-constant sums)
      *
-     * numericConstants * constantRootsOrSquareRoots * constantSums *
-     * monomials * variableRootsOrSquareRoots * polynomials
-     *
-     * for e.g. sqrt[3] * (1 + sqrt[3]) * ([y^2] + 1) * y * 5 -->
-     * 5 * sqrt[3] * (1 + sqrt[3]) * y * ([y^2] + 1)
+     * E.g. sqrt(3) * (1 + sqrt(3)) * (y^2 + 1) * y * 5 ->
+     *  5 sqrt(3) (1 + sqrt(3)) y (y^2 + 1)
      */
-    NormaliseSimplifiedProduct,
+    ReorderProduct,
+
+    /**
+     * Normalize product signs: remove redundant ones and add
+     * clarifying signs.
+     *
+     * E.g. 3 * sqrt(2) -> 3 sqrt(2)
+     *  3 x * y -> 3 x y
+     *  sqrt(2) y -> sqrt(2) * y
+     */
+    @LegacyKeyName("General.NormaliseSimplifiedProduct")
+    NormalizeProductSigns,
 
     /**
      * Normalize all the negative signs in a product (i.e. cancel pairs of

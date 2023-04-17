@@ -1,9 +1,9 @@
 package methods.general
 
 import engine.methods.testRule
-import methods.general.NormalizationRules.RemoveBracketAroundSignedIntegerInSum
+import methods.general.NormalizationRules.NormalizeNegativeSignOfIntegerInSum
 import methods.general.NormalizationRules.RemoveBracketSumInSum
-import methods.general.NormalizationRules.RemoveOuterBracket
+import methods.general.NormalizationRules.RemoveRedundantBracket
 import org.junit.jupiter.api.Test
 
 object RemoveBracketsTest {
@@ -17,15 +17,15 @@ object RemoveBracketsTest {
 
     @Test
     fun testRemoveBracketAroundSignedIntegerInSum() {
-        testRule("1 + (-1)", RemoveBracketAroundSignedIntegerInSum, "1 - 1")
-        testRule("{.-4.} - 3", RemoveBracketAroundSignedIntegerInSum, "-4 - 3")
-        testRule("x + (-2)", RemoveBracketAroundSignedIntegerInSum, "x - 2")
-        testRule("{.((-5)).} + u", RemoveBracketAroundSignedIntegerInSum, "-5 + u")
+        testRule("1 + (-1)", NormalizeNegativeSignOfIntegerInSum, "1 - 1")
+        testRule("{.-4.} - 3", NormalizeNegativeSignOfIntegerInSum, "-4 - 3")
+        testRule("x + (-2)", NormalizeNegativeSignOfIntegerInSum, "x - 2")
+        testRule("{.((-5)).} + u", NormalizeNegativeSignOfIntegerInSum, "-5 + u")
     }
 
     @Test
     fun testRemoveOuterBrackets() {
-        testRule("(1)", RemoveOuterBracket, "1")
-        testRule("(x + y)", RemoveOuterBracket, "x + y")
+        testRule("(1)", RemoveRedundantBracket, "1")
+        testRule("(x + y)", RemoveRedundantBracket, "x + y")
     }
 }

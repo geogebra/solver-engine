@@ -1,5 +1,6 @@
 package methods.general
 
+import engine.expressions.Child
 import engine.expressions.Decorator
 import engine.expressions.Expression
 import engine.expressions.productOf
@@ -11,8 +12,9 @@ import engine.operators.BinaryExpressionOperator
 import engine.operators.NaryOperator
 import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
-import engine.patterns.SignedIntegerPattern
+import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.condition
+import engine.patterns.negOf
 import engine.patterns.plusOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
@@ -22,7 +24,7 @@ import engine.steps.metadata.metadata
 import engine.steps.metadata.GmPathModifier as PM
 
 enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
-    ReplaceInvisibleBrackets(
+    AddClarifyingBracket(
         rule {
             val missingBracket = condition(AnyPattern()) { it.outerBracket() == Decorator.MissingBracket }
 
@@ -32,7 +34,7 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
                     tags = listOf(Transformation.Tag.Cosmetic),
                     toExpr = transformTo(missingBracket) { it.removeBrackets().decorate(Decorator.RoundBracket) },
                     gmAction = edit(missingBracket),
-                    explanation = metadata(Explanation.ReplaceInvisibleBrackets),
+                    explanation = metadata(Explanation.AddClarifyingBracket),
                 )
             }
         },
@@ -78,25 +80,32 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
         },
     ),
 
-    RemoveBracketAroundSignedIntegerInSum(
+    NormalizeNegativeSignOfIntegerInSum(
         rule {
-            val number = SignedIntegerPattern()
-            val bracket = condition(number) { it.hasBracket() }
-            val pattern = sumContaining(bracket)
+            val number = condition(negOf(UnsignedIntegerPattern())) { it.hasBracket() }
+            val pattern = sumContaining(number)
 
             onPattern(pattern) {
                 ruleResult(
+                    tags = listOf(Transformation.Tag.Cosmetic),
                     toExpr = pattern.substitute(transformTo(number) { it.removeBrackets() }),
-                    gmAction = tap(bracket, PM.OuterOperator),
-                    explanation = metadata(Explanation.RemoveBracketAroundSignedIntegerInSum),
+                    gmAction = tap(number, PM.OuterOperator),
+                    explanation = metadata(Explanation.NormalizeNegativeSignOfIntegerInSum),
                 )
             }
         },
     ),
 
-    RemoveOuterBracket(
+    RemoveRedundantBracket(
         rule {
-            val pattern = condition(AnyPattern()) { it.hasBracket() }
+            val pattern = condition(AnyPattern()) {
+                it.hasBracket() && it.outerBracket() != Decorator.MissingBracket && if (it.parent == null) {
+                    true
+                } else {
+                    val origin = it.origin as Child
+                    origin.parent.operator.nthChildAllowed(origin.index, it.operator)
+                }
+            }
 
             onPattern(pattern) {
                 ruleResult(
@@ -127,46 +136,35 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
         },
     ),
 
-    NormaliseSimplifiedProductRule(normaliseSimplifiedProductRule),
-    NormaliseSimplifiedProductSingleStep(normaliseSimplifiedProductSingleStep),
-    NormalizeTheImplicitnessAndExplicitnessOfMultiplication(normalizeTheImplicitnessAndExplicitnessOfMultiplication),
+    ReorderProduct(reorderProduct),
+    ReorderProductSingleStep(reorderProductSingleStep),
+    NormalizeProductSigns(normalizeProductSigns),
 }
 
-/**
- * normalise the product of different kind of terms, which has already
- * been simplified, the normalised order of terms in product looks like:
- *
- * numericConstants * constantRootsOrSquareRoots * constantSums *
- * monomials * variableRootsOrSquareRoots * polynomials
- *
- * for e.g. sqrt[3] * (1 + sqrt[3]) * ([y^2] + 1) * y * 5 -->
- * 5 * sqrt[3] * (1 + sqrt[3]) * y * ([y^2] + 1)
- */
-private val normaliseSimplifiedProductRule =
+private val reorderProduct =
     rule {
         val product = productContaining()
 
         onPattern(product) {
-            val getProd = get(product)
-            val getProdChildren = getProd.flattenedProductChildren()
-            val sortedProdChildren = getProdChildren.sortedBy { orderInProduct(it) }
-            val toExpr = productOf(sortedProdChildren.map { move(it) })
-            if (toExpr == getProd) {
+            val productChildren = get(product).flattenedProductChildren()
+            val sortedProdChildren = productChildren.sortedBy { orderInProduct(it) }
+            if (productChildren == sortedProdChildren) {
                 null
             } else {
+                val toExpr = productOf(sortedProdChildren.map { move(it) })
                 ruleResult(
                     tags = listOf(Transformation.Tag.Rearrangement),
                     toExpr = toExpr,
-                    explanation = metadata(Explanation.NormaliseSimplifiedProduct),
+                    explanation = metadata(Explanation.ReorderProduct),
                     gmAction = edit(product),
                 )
             }
         }
     }
 
-/** Like [normaliseSimplifiedProductRule], but only rearranges one term. It sorts via
+/** Like [reorderProduct], but only rearranges one term. It sorts via
  * insertion sort. */
-private val normaliseSimplifiedProductSingleStep =
+private val reorderProductSingleStep =
     rule {
         val product = productContaining()
 
@@ -185,7 +183,7 @@ private val normaliseSimplifiedProductSingleStep =
                     return@onPattern ruleResult(
                         tags = listOf(Transformation.Tag.Rearrangement),
                         toExpr = toExpr,
-                        explanation = metadata(Explanation.NormaliseSimplifiedProduct),
+                        explanation = metadata(Explanation.ReorderProduct),
                         gmAction = drag(
                             current,
                             productChildren[sortedFirstPartOfProductChildren.indexOf(movedCurrent)],
@@ -200,21 +198,21 @@ private val normaliseSimplifiedProductSingleStep =
 
 /** Make multiplication implicit or explicit, to make the product end up written in the
  * most standard form */
-private val normalizeTheImplicitnessAndExplicitnessOfMultiplication =
+private val normalizeProductSigns =
     rule {
         val product = productContaining()
 
         onPattern(product) {
-            val getProd = get(product)
-            val getProdChildren = getProd.flattenedProductChildren()
-            val toExpr = productOf(getProdChildren)
-            if (toExpr == getProd) {
+            val productValue = get(product)
+            val productChildren = productValue.flattenedProductChildren()
+            val toExpr = productOf(productChildren)
+            if (toExpr == productValue) {
                 null
             } else {
                 ruleResult(
                     tags = listOf(Transformation.Tag.Cosmetic),
                     toExpr = toExpr,
-                    explanation = metadata(Explanation.NormaliseSimplifiedProduct),
+                    explanation = metadata(Explanation.NormalizeProductSigns),
                     // gmAction = do nothing, because it happens automatically
                 )
             }

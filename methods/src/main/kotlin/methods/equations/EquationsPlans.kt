@@ -473,6 +473,7 @@ private val applySolvableRuleAndSimplify = ApplySolvableRuleAndSimplify(simplify
 val equationSimplificationSteps = steps {
     whilePossible {
         firstOf {
+            option(NormalizationPlans.NormalizeExpression)
             // before we cancel we always have to check for an identity
             option(EquationsRules.ExtractSolutionFromIdentity)
             // normalize the equation

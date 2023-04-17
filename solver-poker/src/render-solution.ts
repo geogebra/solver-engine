@@ -15,12 +15,18 @@ import {
   TransformerFunction,
 } from '@geogebra/solver-sdk';
 import { settings, colorSchemes } from './settings';
-import { containsNonTrivialStep, isThroughStep, isTrivialStep } from './util';
+import {
+  containsNonTrivialStep,
+  isCosmeticTransformation,
+  isPedanticStep,
+  isRearrangementStep,
+  isThroughStep,
+} from './util';
 import { renderTest } from './render-test';
 import { translationData } from './translations';
 
 const findTransformationInSelections = (selections: PlanSelection[], methodId: string) => {
-  for (let selection of selections) {
+  for (const selection of selections) {
     if (selection.metadata.methodId === methodId) {
       return selection.transformation;
     }
@@ -31,10 +37,8 @@ export const renderPlanSelections = (
   selections: PlanSelectionJson[],
   testSelections: PlanSelectionSolver[],
 ) => {
-  if (!settings.showTrivialSteps && selections) {
-    selections = (selections || []).filter((selection) =>
-      containsNonTrivialStep(selection.transformation),
-    );
+  if (selections) {
+    selections = selections.filter((selection) => containsNonTrivialStep(selection.transformation));
   }
   if (!selections || selections.length === 0) {
     return /* HTML */ `<div class="selections">No plans found</div>`;
@@ -76,7 +80,7 @@ export const renderTransformationAndTest = (
 
 const renderTransformation = (trans: TransformationJson, depth = 0): string => {
   const isThrough = isThroughStep(trans);
-  if (isThrough && !settings.showThroughSteps) {
+  if (!settings.showThroughSteps && isThrough) {
     return renderTransformation(trans.steps![0], depth);
   }
 
@@ -126,13 +130,25 @@ const renderSteps = (steps: TransformationJson[] | null, depth = 0, open = false
   if (steps === null || steps.length === 0) {
     return '';
   }
-  const processedSteps = preprocessSteps(steps);
+
+  const renderedSteps = preprocessSteps(steps)
+    .map((step) => {
+      if (!settings.showPedanticSteps && isPedanticStep(step)) {
+        return null;
+      } else if (!settings.showCosmeticSteps && isCosmeticTransformation(step)) {
+        return /* HTML */ `<span class="note">
+          The expression has been rewritten in a normalized form
+        </span>`;
+      } else {
+        return /* HTML */ `<li>${renderTransformation(step, depth - 1)}</li>`;
+      }
+    })
+    .filter((step) => !!step);
+
   return /* HTML */ ` <details class="steps" ${open ? 'open' : ''}>
-    <summary>${processedSteps.length} ${processedSteps.length === 1 ? 'step' : 'steps'}</summary>
+    <summary>${renderedSteps.length} ${renderedSteps.length === 1 ? 'step' : 'steps'}</summary>
     <ol>
-      ${processedSteps
-        .map((step) => /* HTML */ `<li>${renderTransformation(step, depth - 1)}</li>`)
-        .join('')}
+      ${renderedSteps.join('')}
     </ol>
   </details>`;
 };
@@ -204,14 +220,14 @@ const renderTaskTransformation = (task: TaskJson) => {
 };
 
 const preprocessSteps = (steps: TransformationJson[]) => {
-  if (settings.showTrivialSteps || !steps.some((step) => isTrivialStep(step))) {
+  if (settings.showRearrangementSteps || !steps.some((step) => isRearrangementStep(step))) {
     return steps;
   }
-  // Trivial steps are "collapsed" with the previous step if it exists
+  // Rearrangement steps are "collapsed" with the previous step if it exists
   const processedSteps = [];
   let lastStep = null;
   for (const step of steps) {
-    if (lastStep !== null && isTrivialStep(step)) {
+    if (lastStep !== null && isRearrangementStep(step)) {
       lastStep.toExpr = step.toExpr;
     } else {
       lastStep = step;
@@ -226,13 +242,13 @@ const renderWarning = (content: string) =>
 
 const getExplanationString = (expl: Metadata) => {
   let explanationString = translationData[expl.key];
-  let warnings = [];
+  const warnings = [];
   if (!explanationString) {
     warnings.push(`Missing default translation for ${expl.key}`);
     explanationString = `${expl.key}(${[...expl.params.keys()].map((i) => `%${i + 1}`).join()})`;
   }
 
-  for (let [i, param] of expl.params.entries()) {
+  for (const [i, param] of expl.params.entries()) {
     // replacing "%1", "%2", ... with the respective rendered expression
     if (explanationString.includes('%' + (i + 1))) {
       explanationString = explanationString.replaceAll(
@@ -247,9 +263,9 @@ const getExplanationString = (expl: Metadata) => {
       );
     }
   }
-  let unusedPlaceholders = explanationString.match(/%[1-9]/g);
+  const unusedPlaceholders = explanationString.match(/%[1-9]/g);
   if (unusedPlaceholders) {
-    for (let placeholder of unusedPlaceholders) {
+    for (const placeholder of unusedPlaceholders) {
       warnings.push(`Missing parameter for placeholder ${placeholder}`);
     }
   }

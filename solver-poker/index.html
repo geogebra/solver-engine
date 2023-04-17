@@ -12,7 +12,7 @@
 
     <style>
       .plan-id {
-        color: gray;
+        color: blue;
         font-family: monospace;
       }
 
@@ -20,14 +20,15 @@
         float: right;
       }
 
-      .plan-selection > .plan-id {
-        color: blue;
-      }
-
       .translation-key {
         font-family: monospace;
         color: darkgreen;
         cursor: copy;
+      }
+
+      .note {
+        color: gray;
+        font-size: small;
       }
 
       .warning {
@@ -131,8 +132,14 @@
       <input id="hideWarnings" type="checkbox" />
       <label for="hideWarnings">Hide warnings</label>
       <br />
-      <input id="showTrivialSteps" type="checkbox" />
-      <label for="showTrivialSteps">Show trivial steps</label>
+      <input id="showRearrangementSteps" type="checkbox" />
+      <label for="showRearrangementSteps">Show rearrangement steps</label>
+      <br />
+      <input id="showPedanticSteps" type="checkbox" />
+      <label for="showPedanticSteps">Show pedantic steps</label>
+      <br />
+      <input id="showCosmeticSteps" type="checkbox" />
+      <label for="showCosmeticSteps">Show cosmetic steps</label>
       <br />
       <input id="showTranslationKeys" type="checkbox" />
       <label for="showTranslationKeys">Show translation keys</label>

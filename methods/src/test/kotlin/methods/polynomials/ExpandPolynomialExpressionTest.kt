@@ -465,7 +465,7 @@ class ExpandPolynomialExpressionTest {
                 fromExpr = "(2 x - 3) * (2 x + 3) * 11"
                 toExpr = "11 (2 x - 3) (2 x + 3)"
                 explanation {
-                    key = GeneralExplanation.NormaliseSimplifiedProduct
+                    key = GeneralExplanation.ReorderProduct
                 }
             }
 
@@ -640,7 +640,7 @@ class ExpandPolynomialExpressionTest {
                 fromExpr = "(x + 1) * 5"
                 toExpr = "5 (x + 1)"
                 explanation {
-                    key = GeneralExplanation.NormaliseSimplifiedProduct
+                    key = GeneralExplanation.ReorderProduct
                 }
             }
 
@@ -670,7 +670,7 @@ class ExpandPolynomialExpressionTest {
                 fromExpr = "(x + 1) * 5 [x ^ 2]"
                 toExpr = "5 [x ^ 2] (x + 1)"
                 explanation {
-                    key = GeneralExplanation.NormaliseSimplifiedProduct
+                    key = GeneralExplanation.ReorderProduct
                 }
             }
 
@@ -780,7 +780,7 @@ class ExpandPolynomialExpressionTest {
                 fromExpr = "3 [x ^ 2] * (2 x - 7) sqrt[2]"
                 toExpr = "3 sqrt[2] * [x ^ 2] (2 x - 7)"
                 explanation {
-                    key = GeneralExplanation.NormaliseSimplifiedProduct
+                    key = GeneralExplanation.ReorderProduct
                 }
             }
 

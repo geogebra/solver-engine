@@ -4,7 +4,9 @@ import { LatexSettings } from '@geogebra/solver-sdk';
 
 export interface Settings {
   showThroughSteps: boolean;
-  showTrivialSteps: boolean;
+  showRearrangementSteps: boolean;
+  showPedanticSteps: boolean;
+  showCosmeticSteps: boolean;
   showTranslationKeys: boolean;
   hideWarnings: boolean;
 
@@ -37,7 +39,9 @@ export type SolutionFormat = keyof typeof solutionFormatters;
 
 export const settings: Settings = {
   showThroughSteps: false,
-  showTrivialSteps: false,
+  showRearrangementSteps: false,
+  showPedanticSteps: false,
+  showCosmeticSteps: false,
   showTranslationKeys: false,
   hideWarnings: false,
   selectedColorScheme: 'default',

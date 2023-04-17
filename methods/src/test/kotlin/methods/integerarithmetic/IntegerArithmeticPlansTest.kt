@@ -126,18 +126,10 @@ class IntegerArithmeticPlansTest {
             }
 
             step {
-                fromExpr = "1+-2"
-                toExpr = "1 + (-2)"
-                explanation {
-                    key = GeneralExplanation.ReplaceInvisibleBrackets
-                }
-            }
-
-            step {
-                fromExpr = "1 + (-2)"
+                fromExpr = "1 + -2"
                 toExpr = "1 - 2"
                 explanation {
-                    key = GeneralExplanation.RemoveBracketAroundSignedIntegerInSum
+                    key = GeneralExplanation.NormalizeNegativeSignOfIntegerInSum
                 }
             }
 
@@ -168,7 +160,7 @@ class IntegerArithmeticPlansTest {
                 fromExpr = "1+-2"
                 toExpr = "1 - 2"
                 explanation {
-                    key = GeneralExplanation.RemoveBracketAroundSignedIntegerInSum
+                    key = GeneralExplanation.NormalizeNegativeSignOfIntegerInSum
                 }
             }
             step { toExpr = "-1" }

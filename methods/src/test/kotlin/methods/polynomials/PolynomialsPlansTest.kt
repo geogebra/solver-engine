@@ -588,17 +588,17 @@ class PolynomialsPlansTest {
 
                 step {
                     fromExpr = "[t / sqrt[3]]"
-                    toExpr = "[t * sqrt[3] / 3]"
+                    toExpr = "[t sqrt[3] / 3]"
                     explanation {
                         key = FractionRootsExplanation.RationalizeDenominator
                     }
                 }
 
                 step {
-                    fromExpr = "[t * sqrt[3] / 3]"
+                    fromExpr = "[t sqrt[3] / 3]"
                     toExpr = "[sqrt[3] * t / 3]"
                     explanation {
-                        key = GeneralExplanation.NormaliseSimplifiedProduct
+                        key = GeneralExplanation.ReorderProduct
                     }
                 }
             }
@@ -644,10 +644,10 @@ class PolynomialsPlansTest {
     @Test
     fun `Cancel negatives on different factors of product`() = testMethod {
         method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
-        inputExpr = "-3 * (-a)"
+        inputExpr = "-3 (-a)"
 
         check {
-            fromExpr = "-3 * (-a)"
+            fromExpr = "-3 (-a)"
             toExpr = "3 a"
             explanation {
                 key = GeneralExplanation.SimplifyProductWithTwoNegativeFactors

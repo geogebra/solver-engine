@@ -280,7 +280,7 @@ class IntegerRootsPlansTest {
     @Test
     fun testRootOfRootWithCoefficient() = testMethod {
         method = ConstantExpressionsPlans.SimplifyConstantExpression
-        inputExpr = "root[3 * sqrt[4], 3]"
+        inputExpr = "root[3 sqrt[4], 3]"
 
         check {
             toExpr = "root[6, 3]"

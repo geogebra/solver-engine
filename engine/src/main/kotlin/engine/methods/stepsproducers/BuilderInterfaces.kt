@@ -41,6 +41,11 @@ interface FirstOfBuilder {
      * Overrides the previous option if it produces the same result.
      */
     fun shortOption(opt: StepsProducer)
+
+    /**
+     * Overrides the previous option if it produces the same result.
+     */
+    fun shortOption(init: PipelineBuilder.() -> Unit)
 }
 
 @Suppress("TooManyFunctions")

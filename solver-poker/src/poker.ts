@@ -141,7 +141,9 @@ window.onload = () => {
   const submitToMainButton = el('submitToMain') as HTMLButtonElement;
 
   const showThroughStepsCheckbox = el('showThroughSteps') as HTMLInputElement;
-  const showTrivialStepsCheckbox = el('showTrivialSteps') as HTMLInputElement;
+  const showRearrangementStepsCheckbox = el('showRearrangementSteps') as HTMLInputElement;
+  const showPedanticStepsCheckbox = el('showPedanticSteps') as HTMLInputElement;
+  const showCosmeticStepsCheckbox = el('showCosmeticSteps') as HTMLInputElement;
   const colorSchemeSelect = el('colorScheme') as HTMLSelectElement;
   const solutionFormatSelect = el('solutionFormat') as HTMLSelectElement;
   const showTranslationKeysCheckbox = el('showTranslationKeys') as HTMLInputElement;
@@ -277,7 +279,9 @@ window.onload = () => {
   const displayOptionsChanged = () => {
     Object.assign(settings, {
       showThroughSteps: showThroughStepsCheckbox.checked,
-      showTrivialSteps: showTrivialStepsCheckbox.checked,
+      showRearrangementSteps: showRearrangementStepsCheckbox.checked,
+      showPedanticSteps: showPedanticStepsCheckbox.checked,
+      showCosmeticSteps: showCosmeticStepsCheckbox.checked,
       selectedColorScheme: colorSchemeSelect.value as ColorScheme,
       showTranslationKeys: showTranslationKeysCheckbox.checked,
       latexSettings: {
@@ -296,7 +300,9 @@ window.onload = () => {
   gmFriendlyCheckbox.onchange = optionsChanged;
 
   showThroughStepsCheckbox.onchange = displayOptionsChanged;
-  showTrivialStepsCheckbox.onchange = displayOptionsChanged;
+  showRearrangementStepsCheckbox.onchange = displayOptionsChanged;
+  showPedanticStepsCheckbox.onchange = displayOptionsChanged;
+  showCosmeticStepsCheckbox.onchange = displayOptionsChanged;
   colorSchemeSelect.onchange = displayOptionsChanged;
   solutionFormatSelect.onchange = displayOptionsChanged;
 

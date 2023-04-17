@@ -18,8 +18,7 @@ import engine.patterns.productContaining
 import engine.patterns.sumContaining
 import methods.general.GeneralRules
 import methods.general.NormalizationPlans
-import methods.general.NormalizationRules
-import methods.general.removeRedundantBrackets
+import methods.general.inlineSumsAndProducts
 
 private enum class PrivateIntegerArithmeticPlans(override val runner: CompositeMethod) : RunnerMethod {
     EvaluateProductOfIntegers(
@@ -146,8 +145,7 @@ enum class IntegerArithmeticPlans(override val runner: CompositeMethod) : Runner
             steps {
                 whilePossible {
                     firstOf {
-                        option(NormalizationPlans.AddClarifyingBrackets)
-                        option(NormalizationRules.RemoveOuterBracket)
+                        option(NormalizationPlans.NormalizeExpression)
 
                         option {
                             deeply(PrivateIntegerArithmeticPlans.EvaluateArithmeticSubexpression, deepFirst = true)
@@ -180,7 +178,7 @@ private fun Expression.isArithmeticExpression(): Boolean {
 
 private val evaluationSteps = steps {
     firstOf {
-        option { deeply(removeRedundantBrackets, deepFirst = true) }
+        option { deeply(inlineSumsAndProducts, deepFirst = true) }
         option { deeply(GeneralRules.SimplifyDoubleMinus, deepFirst = true) }
         option { deeply(PrivateIntegerArithmeticPlans.EvaluateSignedIntegerPower, deepFirst = true) }
         option { deeply(PrivateIntegerArithmeticPlans.EvaluateProductOfIntegers, deepFirst = true) }

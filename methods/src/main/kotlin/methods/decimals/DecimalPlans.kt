@@ -26,8 +26,7 @@ import methods.fractionarithmetic.FractionArithmeticPlans
 import methods.fractionarithmetic.normalizeNegativeSignsInFraction
 import methods.general.GeneralRules
 import methods.general.NormalizationPlans
-import methods.general.NormalizationRules
-import methods.general.removeRedundantBrackets
+import methods.general.inlineSumsAndProducts
 import methods.integerarithmetic.IntegerArithmeticPlans
 import methods.integerarithmetic.IntegerArithmeticRules
 import methods.integerarithmetic.arithmeticOperators
@@ -202,8 +201,7 @@ enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
                 optionally(StripTrailingZerosAfterDecimalOfAllDecimals)
                 whilePossible {
                     firstOf {
-                        option(NormalizationPlans.AddClarifyingBrackets)
-                        option(NormalizationRules.RemoveOuterBracket)
+                        option(NormalizationPlans.NormalizeExpression)
 
                         option {
                             deeply(DecimalPlans.EvaluateSubexpressionAsDecimal, deepFirst = true)
@@ -224,7 +222,7 @@ val decimalEvaluationSteps = steps {
         firstOf {
             option { deeply(GeneralRules.EvaluateProductDividedByZeroAsUndefined, deepFirst = true) }
             option { deeply(GeneralRules.SimplifyZeroDenominatorFractionToUndefined, deepFirst = true) }
-            option { deeply(removeRedundantBrackets, deepFirst = true) }
+            option { deeply(inlineSumsAndProducts, deepFirst = true) }
 
             option { deeply(normalizeNegativeSignsInFraction) }
 

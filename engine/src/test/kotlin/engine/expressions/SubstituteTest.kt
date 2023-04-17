@@ -126,7 +126,7 @@ class SubstituteTest {
         inputExpr = "x(sqrt[3] + 3) + 1"
 
         check {
-            toExpr = "x*sqrt[3] + 3x + 1"
+            toExpr = "x sqrt[3] + 3x + 1"
 
             distribute {
                 fromPaths("./0/0")

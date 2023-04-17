@@ -461,38 +461,38 @@ class GeneralRulesTest {
     fun testNormaliseProduct() {
         testRule(
             "(x + 1)*5",
-            NormalizationRules.NormaliseSimplifiedProductRule,
+            NormalizationRules.ReorderProduct,
             "5(x+1)",
         )
         testRule(
             "(x + 1)*5x",
-            NormalizationRules.NormaliseSimplifiedProductRule,
+            NormalizationRules.ReorderProduct,
             "5x(x+1)",
         )
         testRule(
             "5*(x+1)*sqrt[2]",
-            NormalizationRules.NormaliseSimplifiedProductRule,
+            NormalizationRules.ReorderProduct,
             "5 sqrt[2] (x+1)",
         )
         testRule(
             "5x * sqrt[2]",
-            NormalizationRules.NormaliseSimplifiedProductRule,
+            NormalizationRules.ReorderProduct,
             "5 sqrt[2] * x",
         )
         testRule(
             "5(1 + sqrt[2])*sqrt[3]",
-            NormalizationRules.NormaliseSimplifiedProductRule,
+            NormalizationRules.ReorderProduct,
             "5 sqrt[3] (1 + sqrt[2])",
         )
         testRule(
             "sqrt[3] * (1 + sqrt[2]) * 5",
-            NormalizationRules.NormaliseSimplifiedProductRule,
+            NormalizationRules.ReorderProduct,
             "5 sqrt[3] (1 + sqrt[2])",
         )
         testRule(
             "2*sqrt[2]",
-            NormalizationRules.NormaliseSimplifiedProductRule,
-            "2 sqrt[2]",
+            NormalizationRules.ReorderProduct,
+            null,
         )
     }
 }

@@ -126,6 +126,8 @@ private fun Expression.isNumbery(): Boolean = when (operator) {
     else -> false
 }
 
+// couldn't come up with a good way of splitting or simplifying this method
+@Suppress("CyclomaticComplexMethod")
 fun productSignRequired(left: Expression, right: Expression): Boolean = when {
     left.operator == UnaryExpressionOperator.DivideBy || right.operator == UnaryExpressionOperator.DivideBy -> true
     right.isNumbery() -> true
@@ -134,13 +136,14 @@ fun productSignRequired(left: Expression, right: Expression): Boolean = when {
         val rightOp = getBaseOfPower(right).operator
         val leftOp = getBaseOfPower(left).operator
 
-        val rightIsRootOrVariable = rightOp == UnaryExpressionOperator.SquareRoot ||
-            rightOp == BinaryExpressionOperator.Root ||
-            rightOp is VariableOperator
+        val leftIsVariable = leftOp is VariableOperator
+        val rightIsRoot = rightOp == UnaryExpressionOperator.SquareRoot ||
+            rightOp == BinaryExpressionOperator.Root
+        val rightIsRootOrVariable = rightIsRoot || rightOp is VariableOperator
         val differentVariables = leftOp is VariableOperator && rightOp is VariableOperator &&
             leftOp.name != rightOp.name
 
-        !(left.isNumbery() && rightIsRootOrVariable || differentVariables)
+        !(left.isNumbery() && rightIsRootOrVariable || leftIsVariable && rightIsRoot || differentVariables)
     }
 }
 

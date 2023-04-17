@@ -16,8 +16,7 @@ import engine.patterns.productContaining
 import methods.decimals.DecimalPlans
 import methods.general.GeneralRules
 import methods.general.NormalizationPlans
-import methods.general.NormalizationRules
-import methods.general.removeRedundantBrackets
+import methods.general.inlineSumsAndProducts
 import methods.integerarithmetic.IntegerArithmeticPlans
 import methods.integerarithmetic.arithmeticOperators
 
@@ -79,8 +78,7 @@ enum class ApproximationPlans(override val runner: CompositeMethod) : RunnerMeth
             steps {
                 whilePossible {
                     firstOf {
-                        option(NormalizationPlans.AddClarifyingBrackets)
-                        option(NormalizationRules.RemoveOuterBracket)
+                        option(NormalizationPlans.NormalizeExpression)
 
                         option {
                             deeply {
@@ -108,7 +106,7 @@ enum class ApproximationPlans(override val runner: CompositeMethod) : RunnerMeth
 val approximationSteps = steps {
     firstOf {
         option { deeply(GeneralRules.EvaluateProductDividedByZeroAsUndefined, deepFirst = true) }
-        option { deeply(removeRedundantBrackets, deepFirst = true) }
+        option { deeply(inlineSumsAndProducts, deepFirst = true) }
         option { deeply(GeneralRules.SimplifyDoubleMinus, deepFirst = true) }
         option { deeply(GeneralRules.EvaluateZeroToThePowerOfZero, deepFirst = true) }
         option { deeply(ApproximationRules.ApproximateDecimalPower, deepFirst = true) }

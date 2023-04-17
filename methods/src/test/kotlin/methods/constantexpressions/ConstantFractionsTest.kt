@@ -258,7 +258,7 @@ class ConstantFractionsTest {
                     fromExpr = "[sqrt[5] * 2 + 3 + sqrt[5] / 2]"
                     toExpr = "[2 sqrt[5] + 3 + sqrt[5] / 2]"
                     explanation {
-                        key = GeneralExplanation.NormaliseSimplifiedProduct
+                        key = GeneralExplanation.ReorderProduct
                     }
                 }
 

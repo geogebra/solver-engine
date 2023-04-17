@@ -151,8 +151,6 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
             pattern = condition(AnyPattern()) { it.variables.size == 1 }
 
             steps {
-                optionally(NormalizationPlans.NormaliseSimplifiedProduct)
-
                 whilePossible(algebraicSimplificationSteps)
                 apply {
                     whilePossible {
@@ -171,8 +169,6 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
             explanation = Explanation.ExpandPolynomialExpression
 
             steps {
-                optionally(NormalizationPlans.NormaliseSimplifiedProduct)
-
                 whilePossible {
                     firstOf {
                         option(algebraicSimplificationSteps)
@@ -193,8 +189,6 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
             pattern = condition(AnyPattern()) { it.variables.size == 1 }
 
             steps {
-                optionally(NormalizationPlans.NormaliseSimplifiedProduct)
-
                 whilePossible(algebraicSimplificationSteps)
                 apply {
                     whilePossible {
