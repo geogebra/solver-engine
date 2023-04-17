@@ -6,6 +6,18 @@ import sys
 from urllib import request
 from urllib.error import HTTPError
 
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+TRANSLATION_KEYS_PATH = os.path.join(PROJECT_ROOT, "methods/build/generated/ksp/main/resources/TranslationKeys.json")
+
+with open(TRANSLATION_KEYS_PATH) as f:
+    key2comment = {entry["key"]: entry.get("comment", "NO COMMENT") for entry in json.load(f)}
+
+
+def merge_keys(key2comment, key2translation):
+    all_keys = set(key2comment) | set(key2translation)
+    for key in sorted(all_keys):
+        yield key, key2comment.get(key, "REMOVED"), key2translation.get(key, "NO TRANSLATION")
+
 
 def fail(msg):
     print(msg, file=sys.stderr)
@@ -38,12 +50,12 @@ req = request.Request(
     headers={"X-Token": args.api_token}
 )
 try:
-    keys_dict = json.load(request.urlopen(req))
+    key2translation = json.load(request.urlopen(req))
 except HTTPError as e:
     fail("Invalid API token" if e.code == 401 else e)
 
 # 3. Output data in CSV format
 writer = csv.writer(args.output)
-writer.writerow(["Key", "Translation"])
-for row in sorted(list(keys_dict.items())):
+writer.writerow(["Key", "Comment", "Translation"])
+for row in merge_keys(key2comment, key2translation):
     writer.writerow(row)

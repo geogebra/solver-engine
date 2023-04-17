@@ -344,8 +344,25 @@ class MethodTestCase {
     fun check(assert: TransformationCheck.() -> Unit) {
         val expr = parseExpression(inputExpr)
         val trans = method.tryExecute(context, expr.withOrigin(Root()))
+
+        for (processor in solutionProcessors) {
+            processor.processSolution(inputExpr, method, trans)
+        }
+
         checkTransformation(trans, assert)
     }
+
+    companion object {
+        private val solutionProcessors = mutableListOf<SolutionProcessor>()
+
+        fun addSolutionProcessor(processor: SolutionProcessor) {
+            solutionProcessors.add(processor)
+        }
+    }
+}
+
+fun interface SolutionProcessor {
+    fun processSolution(input: String, method: Method, solution: Transformation?)
 }
 
 private fun Transformation.isThroughStep() =

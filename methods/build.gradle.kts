@@ -16,7 +16,7 @@ dependencies {
     testImplementation(testFixtures(project(":engine")))
 
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")
-
+    testImplementation("org.junit.platform:junit-platform-launcher:1.7.0")
     ksp(project(":export"))
     ksp(project(":methodsProcessor"))
 }

@@ -109,6 +109,10 @@ class MethodRegistry internal constructor(
         return entries[methodId]?.implementation
     }
 
+    fun methodIsPublic(methodId: MethodId): Boolean {
+        return entries[methodId]?.isPublic ?: false
+    }
+
     @Suppress("TooGenericExceptionCaught")
     fun selectSuccessfulPlansMethodIdAndTransformation(expr: Expression, context: Context):
         List<Pair<MethodId, Transformation>> {
