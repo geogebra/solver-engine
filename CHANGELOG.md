@@ -12,12 +12,18 @@ contents to a new release section (e.g. _[0.x]_).
 ### Added
 
 - Added CHANGELOG.md (this file) (PLUT-555).
+- Ability to collect example inputs for a given explanation key (PLUT-569)
+- All requests for a solution are logged, together with solution and timing (PLUT-548)
 
 ### Fixed
+
+- Fixed typo in simple solution rendering (PLUT-568)
+- Fixed package CI job by setting JVM back to 17 (PLUT-570)
 
 ### Changed
 
 - Converted the poker to TypeScript (PLUT-565)
+- Reworked/improved rules and plans to normalize expressions (PLUT-551)
 
 ### Removed
 
