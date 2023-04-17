@@ -23,7 +23,9 @@ dependencies {
     implementation(project(":engine"))
     implementation(project(":methods"))
 
-    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-web") {
+        exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
+    }
     implementation("jakarta.validation:jakarta.validation-api")
     implementation("jakarta.annotation:jakarta.annotation-api:2.1.1")
     implementation("org.springdoc:springdoc-openapi-data-rest:1.6.12")
@@ -31,8 +33,13 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-kotlin:1.6.12")
     implementation("javax.annotation:javax.annotation-api:1.3.2")
     implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-log4j2")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+}
+
+configurations.implementation {
+    exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
 }
 
 tasks.withType<KotlinCompile> {

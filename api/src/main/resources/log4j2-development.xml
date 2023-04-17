@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="10">
+    <Properties>
+        <Property name="CLR">
+            <![CDATA[{FATAL=bright red, ERROR=red, WARN=bright yellow, INFO=Normal, DEBUG=white, TRACE=black}]]>
+        </Property>
+        <Property name="LOG_PATTERN">
+            <![CDATA[%highlight{%5p- %d{yy-MM-dd HH:mm:ss.SSS}}${CLR} %clr{${sys:PID}}{magenta}%clr{-}{faint}%clr{[%15.15t]}{faint} %clr{%-40.40c{1.}}{cyan} %highlight{: %m%n%xwEx}${CLR}]]>
+        </Property>
+        <Property name="LOG_PATTERN_WITH_CONTEXT">
+            <![CDATA[%highlight{%5p- %d{yy-MM-dd HH:mm:ss.SSS}}${CLR} %clr{${sys:PID}}{magenta}%clr{-}{faint}%clr{[%15.15t]}{faint} %clr{%-40.40c{1.}}{cyan} %highlight{: %X %m%n%xwEx}${CLR}]]>
+        </Property>
+    </Properties>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${LOG_PATTERN}" disableAnsi="false"/>
+        </Console>
+        <Console name="ConsoleWithContext" target="SYSTEM_OUT">
+            <PatternLayout pattern="${LOG_PATTERN_WITH_CONTEXT}" disableAnsi="false"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+        </Root>
+        <Logger name="engine" level="debug" additivity="false">
+            <AppenderRef ref="ConsoleWithContext"/>
+        </Logger>
+    </Loggers>
+</Configuration>

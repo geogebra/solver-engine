@@ -1,8 +1,7 @@
 package engine.context
 
-import engine.logger.createNewLogger
-import java.util.function.Supplier
-import java.util.logging.Level
+import engine.logger.DefaultLogger
+import engine.logger.Logger
 
 data class ResourceData(
     val curriculum: Curriculum? = null,
@@ -30,10 +29,9 @@ data class Context(
     val precision: Int? = null, // decimal places
     val preferDecimals: Boolean? = null,
     val solutionVariables: List<String> = emptyList(),
-) {
+    val logger: Logger = DefaultLogger,
+) : Logger by logger {
     val effectivePrecision = precision ?: DEFAULT_PRECISION
-
-    private val logger = createNewLogger(this)
 
     /**
      * Checks whether the computation was interrupted from the outside and throws an exception
@@ -44,14 +42,6 @@ data class Context(
         if (Thread.currentThread().isInterrupted) {
             throw InterruptedException("Computation thread interrupted (probably by timeout)")
         }
-    }
-
-    fun log(level: Level, string: String) {
-        logger.log(level, string)
-    }
-
-    fun log(level: Level, stringSupplier: Supplier<String>) {
-        logger.log(level, stringSupplier)
     }
 
     private fun rateResourceData(resourceData: ResourceData): Double {

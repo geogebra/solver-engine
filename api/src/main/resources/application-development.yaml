@@ -10,3 +10,5 @@ spring:
       static-locations: file:api/src/main/resources/static
       cache:
         period: 0
+logging:
+  config: classpath:log4j2-development.xml

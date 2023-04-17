@@ -128,7 +128,7 @@ class MethodRegistry internal constructor(
             val transformation = try {
                 entryData.implementation.tryExecute(context, expr.withOrigin(Root()))
             } catch (e: Exception) {
-                context.log(Level.FINE, "Exception caught: ${e.stackTraceToString()}")
+                context.log(Level.SEVERE, "Exception caught: ${e.stackTraceToString()}")
                 null
             }
             transformation?.let {

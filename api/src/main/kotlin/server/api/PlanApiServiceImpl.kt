@@ -1,18 +1,23 @@
 package server.api
 
-import engine.context.Context
-import engine.context.Curriculum
-import engine.context.emptyContext
 import engine.expressions.Root
 import methods.methodRegistry
 import org.antlr.v4.runtime.misc.ParseCancellationException
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.ThreadContext
 import org.springframework.stereotype.Service
 import parser.parseExpression
 import server.models.SolveRequest
 import server.models.Transformation
+import java.util.UUID
+import java.util.logging.Level
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTimedValue
 
 @Service
 class PlanApiServiceImpl : PlansApiService {
+
+    @OptIn(ExperimentalTime::class)
     override fun applyPlan(planId: String, solveRequest: SolveRequest): Transformation {
         val plan =
             methodRegistry.getMethodByName(planId) ?: throw NotFoundException("plan not found")
@@ -21,11 +26,44 @@ class PlanApiServiceImpl : PlansApiService {
         } catch (e: ParseCancellationException) {
             throw InvalidExpressionException(solveRequest.input, e)
         }
-        val context = getContext(solveRequest.context, expr.variables.firstOrNull())
-        val trans = plan.tryExecute(context, expr.withOrigin(Root()))
-            ?: throw PlanNotApplicableException(planId)
-        val modeller = TransformationModeller(format = solveRequest.format)
-        return modeller.modelTransformation(trans)
+        val context = getContext(solveRequest.context, expr.variables.firstOrNull(), logger)
+        try {
+            ThreadContext.put("traceId", UUID.randomUUID().toString())
+            context.log(Level.INFO) {
+                mapOf(
+                    "type" to "requestData",
+                    "requestType" to "applyPlan",
+                    "requestParams" to mapOf(
+                        "input" to solveRequest.input,
+                        "planId" to planId,
+                    ),
+                )
+            }
+            val (trans, duration) = measureTimedValue {
+                plan.tryExecute(context, expr.withOrigin(Root()))
+            }
+            context.log(Level.INFO) {
+                mapOf(
+                    "type" to "resultData",
+                    "methodId" to planId,
+                    "result" to (trans?.toExpr.toString()),
+                )
+            }
+            context.log(Level.INFO) {
+                mapOf(
+                    "type" to "timing",
+                    "ms" to duration.inWholeMilliseconds,
+                )
+            }
+            if (trans != null) {
+                val modeller = TransformationModeller(format = solveRequest.format)
+                return modeller.modelTransformation(trans)
+            } else {
+                throw PlanNotApplicableException(planId)
+            }
+        } finally {
+            ThreadContext.clearMap()
+        }
     }
 
     override fun getPlan(planId: String): Any {
@@ -35,23 +73,8 @@ class PlanApiServiceImpl : PlansApiService {
     override fun listPlans(): List<String> {
         return methodRegistry.publicEntries.map { it.methodId.toString() }.toList()
     }
-}
 
-fun getContext(apiCtx: server.models.Context?, defaultSolutionVariable: String?) = apiCtx?.let {
-    val curriculum = when (apiCtx.curriculum) {
-        null, "" -> null
-        else -> try {
-            Curriculum.valueOf(apiCtx.curriculum)
-        } catch (_: IllegalArgumentException) {
-            throw InvalidCurriculumException(apiCtx.curriculum)
-        }
+    companion object {
+        private val logger = LogManager.getLogger("engine")
     }
-
-    Context(
-        curriculum = curriculum,
-        gmFriendly = apiCtx.gmFriendly == true,
-        precision = apiCtx.precision?.toInt(),
-        preferDecimals = apiCtx.preferDecimals,
-        solutionVariables = listOfNotNull(apiCtx.solutionVariable ?: defaultSolutionVariable),
-    )
-} ?: emptyContext.copy(solutionVariables = listOfNotNull(defaultSolutionVariable))
+}
