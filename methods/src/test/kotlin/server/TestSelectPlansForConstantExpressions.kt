@@ -1,5 +1,6 @@
 package server
 
+import methods.approximation.ApproximationPlans
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.decimals.DecimalPlans
 import methods.integerarithmetic.IntegerArithmeticPlans
@@ -23,6 +24,18 @@ class TestSelectPlansForConstantExpressions {
             setOf(
                 ConstantExpressionsPlans.SimplifyConstantExpression,
                 DecimalPlans.EvaluateExpressionAsDecimal,
+            ),
+        )
+    }
+
+    @Test
+    fun testDivisionResultNonInteger() {
+        testSelectPlanApi(
+            "5 + 6*3:5",
+            setOf(
+                ApproximationPlans.ApproximateExpression,
+                DecimalPlans.EvaluateExpressionAsDecimal,
+                ConstantExpressionsPlans.SimplifyConstantExpression,
             ),
         )
     }

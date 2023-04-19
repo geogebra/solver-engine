@@ -454,4 +454,14 @@ class IntegerArithmeticPlansTest {
             }
         }
     }
+
+    @Test
+    fun testNoTransformationNonDivisible() = testMethod {
+        method = IntegerArithmeticPlans.EvaluateArithmeticExpression
+        inputExpr = "5 + 6*3:5"
+
+        check {
+            noTransformation()
+        }
+    }
 }

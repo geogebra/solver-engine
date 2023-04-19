@@ -140,6 +140,7 @@ enum class IntegerArithmeticPlans(override val runner: CompositeMethod) : Runner
             val expression = AnyPattern()
             pattern = condition(expression) { it.isArithmeticExpression() }
             explanation = Explanation.EvaluateArithmeticExpression
+            resultPattern = SignedIntegerPattern()
             explanationParameters(expression)
 
             steps {
