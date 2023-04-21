@@ -257,7 +257,8 @@ open class MappedExpressionBuilder(
         var leadingCoefficient: Expression? = null
         for (term in polynomialExpr.children) {
             if (!term.isConstant()) {
-                val monomialMatch = matchPattern(monomial, term) ?: continue
+                // If it isn't a monomial, `polynomialExpr` isn't a polynomial or a polynomial not expanded
+                val monomialMatch = matchPattern(monomial, term) ?: return null
                 val monomialDegree = monomial.exponent.getBoundInt(monomialMatch)
                 when {
                     monomialDegree > degree -> {

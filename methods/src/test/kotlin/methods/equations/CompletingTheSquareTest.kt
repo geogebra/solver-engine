@@ -2,6 +2,7 @@ package methods.equations
 
 import engine.methods.testMethodInX
 import methods.constantexpressions.ConstantExpressionsExplanation
+import methods.general.GeneralExplanation
 import methods.polynomials.PolynomialsExplanation
 import org.junit.jupiter.api.Test
 
@@ -111,48 +112,56 @@ class CompletingTheSquareTest {
 
             step {
                 fromExpr = "[x ^ 2] - 6 x = 5"
-                toExpr = "[x ^ 2] - 6 x + 9 = 14"
+                toExpr = "[(x - 3) ^ 2] = 14"
                 explanation {
-                    key = EquationsExplanation.CompleteTheSquareAndSimplify
+                    key = EquationsExplanation.RewriteToXPLusASquareEqualsBForm
                 }
 
                 step {
                     fromExpr = "[x ^ 2] - 6 x = 5"
-                    toExpr = "[x ^ 2] - 6 x + [([-6 / 2]) ^ 2] = 5 + [([-6 / 2]) ^ 2]"
-                    explanation {
-                        key = EquationsExplanation.CompleteTheSquare
-                    }
-                }
-
-                step {
-                    fromExpr = "[x ^ 2] - 6 x + [([-6 / 2]) ^ 2] = 5 + [([-6 / 2]) ^ 2]"
                     toExpr = "[x ^ 2] - 6 x + 9 = 14"
                     explanation {
-                        key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                        key = EquationsExplanation.CompleteTheSquareAndSimplify
                     }
-                }
-            }
 
-            step {
-                fromExpr = "[x ^ 2] - 6 x + 9 = 14"
-                toExpr = "[(x - 3) ^ 2] = 14"
-                explanation {
-                    key = PolynomialsExplanation.FactorTrinomialToSquareAndSimplify
+                    step {
+                        fromExpr = "[x ^ 2] - 6 x = 5"
+                        toExpr = "[x ^ 2] - 6 x + [([-6 / 2]) ^ 2] = 5 + [([-6 / 2]) ^ 2]"
+                        explanation {
+                            key = EquationsExplanation.CompleteTheSquare
+                        }
+                    }
+
+                    step {
+                        fromExpr = "[x ^ 2] - 6 x + [([-6 / 2]) ^ 2] = 5 + [([-6 / 2]) ^ 2]"
+                        toExpr = "[x ^ 2] - 6 x + 9 = 14"
+                        explanation {
+                            key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                        }
+                    }
                 }
 
                 step {
-                    fromExpr = "[x ^ 2] - 6 x + 9"
-                    toExpr = "[(x + [1 / 2] * (-6)) ^ 2]"
+                    fromExpr = "[x ^ 2] - 6 x + 9 = 14"
+                    toExpr = "[(x - 3) ^ 2] = 14"
                     explanation {
-                        key = PolynomialsExplanation.FactorTrinomialToSquare
+                        key = PolynomialsExplanation.FactorTrinomialToSquareAndSimplify
                     }
-                }
 
-                step {
-                    fromExpr = "[(x + [1 / 2] * (-6)) ^ 2]"
-                    toExpr = "[(x - 3) ^ 2]"
-                    explanation {
-                        key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                    step {
+                        fromExpr = "[x ^ 2] - 6 x + 9"
+                        toExpr = "[(x + [1 / 2] * (-6)) ^ 2]"
+                        explanation {
+                            key = PolynomialsExplanation.FactorTrinomialToSquare
+                        }
+                    }
+
+                    step {
+                        fromExpr = "[(x + [1 / 2] * (-6)) ^ 2]"
+                        toExpr = "[(x - 3) ^ 2]"
+                        explanation {
+                            key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                        }
                     }
                 }
             }
@@ -221,33 +230,41 @@ class CompletingTheSquareTest {
 
             step {
                 fromExpr = "[x ^ 2] + [5 / 2] x = [7 / 2]"
-                toExpr = "[x ^ 2] + [5 / 2] x + [25 / 16] = [81 / 16]"
+                toExpr = "[(x + [5 / 4]) ^ 2] = [81 / 16]"
                 explanation {
-                    key = EquationsExplanation.CompleteTheSquareAndSimplify
+                    key = EquationsExplanation.RewriteToXPLusASquareEqualsBForm
                 }
 
                 step {
                     fromExpr = "[x ^ 2] + [5 / 2] x = [7 / 2]"
-                    toExpr = "[x ^ 2] + [5 / 2] x + [([[5 / 2] / 2]) ^ 2] = [7 / 2] + [([[5 / 2] / 2]) ^ 2]"
+                    toExpr = "[x ^ 2] + [5 / 2] x + [25 / 16] = [81 / 16]"
                     explanation {
-                        key = EquationsExplanation.CompleteTheSquare
+                        key = EquationsExplanation.CompleteTheSquareAndSimplify
+                    }
+
+                    step {
+                        fromExpr = "[x ^ 2] + [5 / 2] x = [7 / 2]"
+                        toExpr = "[x ^ 2] + [5 / 2] x + [([[5 / 2] / 2]) ^ 2] = [7 / 2] + [([[5 / 2] / 2]) ^ 2]"
+                        explanation {
+                            key = EquationsExplanation.CompleteTheSquare
+                        }
+                    }
+
+                    step {
+                        fromExpr = "[x ^ 2] + [5 / 2] x + [([[5 / 2] / 2]) ^ 2] = [7 / 2] + [([[5 / 2] / 2]) ^ 2]"
+                        toExpr = "[x ^ 2] + [5 / 2] x + [25 / 16] = [81 / 16]"
+                        explanation {
+                            key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                        }
                     }
                 }
 
                 step {
-                    fromExpr = "[x ^ 2] + [5 / 2] x + [([[5 / 2] / 2]) ^ 2] = [7 / 2] + [([[5 / 2] / 2]) ^ 2]"
-                    toExpr = "[x ^ 2] + [5 / 2] x + [25 / 16] = [81 / 16]"
+                    fromExpr = "[x ^ 2] + [5 / 2] x + [25 / 16] = [81 / 16]"
+                    toExpr = "[(x + [5 / 4]) ^ 2] = [81 / 16]"
                     explanation {
-                        key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                        key = PolynomialsExplanation.FactorTrinomialToSquareAndSimplify
                     }
-                }
-            }
-
-            step {
-                fromExpr = "[x ^ 2] + [5 / 2] x + [25 / 16] = [81 / 16]"
-                toExpr = "[(x + [5 / 4]) ^ 2] = [81 / 16]"
-                explanation {
-                    key = PolynomialsExplanation.FactorTrinomialToSquareAndSimplify
                 }
             }
 
@@ -335,6 +352,60 @@ class CompletingTheSquareTest {
                     }
                 }
             }
+        }
+    }
+
+    @Test
+    fun `test expand before multiplying by leading coefficient inverse`() = testMethodInX {
+        method = EquationsPlans.SolveByCompletingTheSquare
+        inputExpr = "3x+(-x-1)+2x*(x+2)=[11/4]"
+
+        check {
+            fromExpr = "3 x + (-x - 1) + 2 x * (x + 2) = [11 / 4]"
+            toExpr = "Solution[x, {-[sqrt[66] + 6 / 4], [sqrt[66] - 6 / 4]}]"
+            explanation {
+                key = EquationsExplanation.SolveByCompletingTheSquare
+            }
+
+            step {
+                fromExpr = "3 x + (-x - 1) + 2 x * (x + 2) = [11 / 4]"
+                toExpr = "3 x + (-x - 1) + 2 x (x + 2) = [11 / 4]"
+                explanation {
+                    key = GeneralExplanation.NormalizeProductSigns
+                }
+            }
+
+            step {
+                fromExpr = "3 x + (-x - 1) + 2 x (x + 2) = [11 / 4]"
+                toExpr = "2 x - 1 + 2 x (x + 2) = [11 / 4]"
+                explanation {
+                    key = EquationsExplanation.SimplifyEquation
+                }
+            }
+
+            step {
+                fromExpr = "2 x - 1 + 2 x (x + 2) = [11 / 4]"
+                toExpr = "6 x - 1 + 2 [x ^ 2] = [11 / 4]"
+                explanation {
+                    key = PolynomialsExplanation.ExpandPolynomialExpression
+                }
+            }
+
+            step {
+                fromExpr = "6 x - 1 + 2 [x ^ 2] = [11 / 4]"
+                toExpr = "6 x + 2 [x ^ 2] = [15 / 4]"
+                explanation {
+                    key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                }
+            }
+
+            step { }
+            step { }
+            step { }
+            step { }
+            step { }
+            step { }
+            step { }
         }
     }
 }

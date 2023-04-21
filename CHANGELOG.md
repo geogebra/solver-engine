@@ -20,6 +20,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Fixed typo in simple solution rendering (PLUT-568)
 - Fixed package CI job by setting JVM back to 17 (PLUT-570)
 - Set output of `EvaluateArithmeticExpression` plan to be an integer (PLUT-550)
+- Solving by completing the square works on unexpanded equations (PLUT-571)
 
 ### Changed
 

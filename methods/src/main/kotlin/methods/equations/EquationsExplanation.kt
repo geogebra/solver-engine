@@ -174,6 +174,13 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     CompleteTheSquareAndSimplify,
 
     /**
+     * Rewrite a quadratic equation to the form [(x + a)^2] = b
+     *
+     * E.g. [x^2] + 3x = [15 / 8] -> [(x + [3/2])^2] = [33 / 8]
+     */
+    RewriteToXPLusASquareEqualsBForm,
+
+    /**
      * Multiply both sides of an equation by the inverse of the leading coefficient
      * on the LHS, the resulting polynomial on the left is monic.
      *

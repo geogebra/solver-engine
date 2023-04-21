@@ -123,6 +123,21 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
         },
     ),
 
+    /**
+     * rewrite a simplified quadratic equation to [(x + a)^2] = b form
+     */
+    RewriteToXPLusASquareEqualsBForm(
+        plan {
+            explanation = Explanation.RewriteToXPLusASquareEqualsBForm
+            pattern = equationInOneVariable()
+
+            steps {
+                apply(CompleteTheSquareAndSimplify)
+                applyTo(PolynomialsPlans.FactorTrinomialToSquareAndSimplify) { it.firstChild }
+            }
+        },
+    ),
+
     MultiplyByLCDAndSimplify(
         plan {
             explanation = methods.solvable.EquationsExplanation.MultiplyByLCDAndSimplify
@@ -275,23 +290,32 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
                 // Simplify the equation and move variables to the left
                 optionally(equationSimplificationSteps)
-                optionally(MoveVariablesToTheLeftAndSimplify)
-                optionally(MultiplyByInverseOfLeadingCoefficientAndSimplify)
                 optionally {
-                    applyTo(PolynomialRules.NormalizePolynomial) { it.firstChild }
+                    applyTo(ExpandPolynomialExpressionInOneVariableWithoutNormalization) { it.firstChild }
                 }
+                optionally {
+                    applyTo(ExpandPolynomialExpressionInOneVariableWithoutNormalization) { it.secondChild }
+                }
+                optionally(MoveVariablesToTheLeftAndSimplify)
 
                 // Complete the square
                 firstOf {
                     option {
                         // See if we can complete the square straight away
+                        optionally(MultiplyByInverseOfLeadingCoefficientAndSimplify)
+                        optionally {
+                            applyTo(PolynomialRules.NormalizePolynomial) { it.firstChild }
+                        }
                         applyTo(PolynomialsPlans.FactorTrinomialToSquareAndSimplify) { it.firstChild }
                     }
                     option {
                         // Else rearrange to put constants on the right and complete the square
                         optionally(MoveConstantsToTheRightAndSimplify)
-                        apply(CompleteTheSquareAndSimplify)
-                        applyTo(PolynomialsPlans.FactorTrinomialToSquareAndSimplify) { it.firstChild }
+                        optionally(MultiplyByInverseOfLeadingCoefficientAndSimplify)
+                        optionally {
+                            applyTo(PolynomialRules.NormalizePolynomial) { it.firstChild }
+                        }
+                        apply(RewriteToXPLusASquareEqualsBForm)
                     }
                 }
 
@@ -532,8 +556,8 @@ val rearrangeLinearEquationSteps = steps {
                 apply(EquationsRules.FlipEquation)
             }
             option {
-                // if the equation is in the form ax + b = cx + d with a an integer and c a
-                // positive integer such that c > a we move ax to the right hand side, d to
+                // if the equation is in the form `ax + b = cx + d` with an integer and `c` a
+                // positive integer such that `c > a`, we move `ax` to the right hand side, `d` to
                 // the left hand side and flip the equation
                 checkForm {
                     val variable = SolutionVariablePattern()
