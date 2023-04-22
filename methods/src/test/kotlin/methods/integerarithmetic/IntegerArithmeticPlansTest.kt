@@ -464,4 +464,34 @@ class IntegerArithmeticPlansTest {
             noTransformation()
         }
     }
+
+    @Test
+    fun `test x - (+y)`() = testMethod {
+        method = IntegerArithmeticPlans.EvaluateArithmeticExpression
+        inputExpr = "1 + 2 - (+2)"
+
+        check {
+            fromExpr = "1 + 2 - (+2)"
+            toExpr = "1"
+            explanation {
+                key = IntegerArithmeticExplanation.EvaluateArithmeticExpression
+            }
+
+            step {
+                fromExpr = "1 + 2 - (+2)"
+                toExpr = "1 + 2 - 2"
+                explanation {
+                    key = GeneralExplanation.RemoveRedundantPlusSign
+                }
+            }
+
+            step {
+                fromExpr = "1 + 2 - 2"
+                toExpr = "1"
+                explanation {
+                    key = IntegerArithmeticExplanation.EvaluateSumOfIntegers
+                }
+            }
+        }
+    }
 }
