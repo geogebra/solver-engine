@@ -23,11 +23,13 @@ import engine.operators.UnaryExpressionOperator
 import engine.operators.VariableOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
+import engine.patterns.ConstantPattern
 import engine.patterns.FixedPattern
 import engine.patterns.FractionPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.SignedNumberPattern
 import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.absoluteValueOf
 import engine.patterns.commutativeProductContaining
 import engine.patterns.commutativeProductOf
 import engine.patterns.commutativeSumOf
@@ -99,6 +101,9 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     RewriteIntegerOrderRootAsPower(rewriteIntegerOrderRootAsPower),
     RewritePowerUnderRoot(rewritePowerUnderRoot),
     CancelRootIndexAndExponent(cancelRootIndexAndExponent),
+    ResolveAbsoluteValueOfPositiveValue(resolveAbsoluteValueOfPositiveValue),
+    ResolveAbsoluteValueOfNegativeValue(resolveAbsoluteValueOfNegativeValue),
+    ResolveAbsoluteValueOfZero(resolveAbsoluteValueOfZero),
 }
 
 private val removeUnitaryCoefficient =
@@ -926,3 +931,40 @@ private val cancelRootIndexAndExponent =
             )
         }
     }
+
+private val resolveAbsoluteValueOfPositiveValue = rule {
+    val argument = condition(ConstantPattern()) { it.signOf() == Sign.POSITIVE }
+    val absoluteValue = absoluteValueOf(argument)
+
+    onPattern(absoluteValue) {
+        ruleResult(
+            toExpr = move(argument),
+            explanation = metadata(Explanation.ResolveAbsoluteValueOfPositiveValue),
+        )
+    }
+}
+
+private val resolveAbsoluteValueOfNegativeValue = rule {
+    val argument = condition(ConstantPattern()) { it.signOf() == Sign.POSITIVE }
+    val negatedArgument = negOf(argument)
+    val absoluteValue = absoluteValueOf(negatedArgument)
+
+    onPattern(absoluteValue) {
+        ruleResult(
+            toExpr = move(argument),
+            explanation = metadata(Explanation.ResolveAbsoluteValueOfNegativeValue),
+        )
+    }
+}
+
+private val resolveAbsoluteValueOfZero = rule {
+    val argument = FixedPattern(Constants.Zero)
+    val absoluteValue = absoluteValueOf(argument)
+
+    onPattern(absoluteValue) {
+        ruleResult(
+            toExpr = move(argument),
+            explanation = metadata(Explanation.ResolveAbsoluteValueOfZero),
+        )
+    }
+}

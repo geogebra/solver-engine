@@ -84,6 +84,8 @@ sqrt: 'sqrt[' radicand=expr ']';
 
 root: 'root[' radicand=expr ',' order=expr ']';
 
+absoluteValue: 'abs[' argument=expr ']';
+
 bracket
     :'(' expr ')'                   #roundBracket
     | OPEN_SQUARE expr CLOSE_SQUARE #squareBracket
@@ -92,7 +94,7 @@ bracket
 
 atom: nonNumericAtom | naturalNumber | decimalNumber | recurringDecimalNumber;
 
-nonNumericAtom: sqrt | root | bracket | variable;
+nonNumericAtom: sqrt | root | absoluteValue | bracket | variable;
 
 mixedNumber: '[' integer=NATNUM num=NATNUM '/' den=NATNUM ']';
 

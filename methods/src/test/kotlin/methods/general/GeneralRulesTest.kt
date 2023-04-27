@@ -495,4 +495,23 @@ class GeneralRulesTest {
             null,
         )
     }
+
+    @Test
+    fun testResolveAbsoluteValue() {
+        testRule("abs[0]", GeneralRules.ResolveAbsoluteValueOfPositiveValue, null)
+        testRule("abs[0]", GeneralRules.ResolveAbsoluteValueOfNegativeValue, null)
+        testRule("abs[0]", GeneralRules.ResolveAbsoluteValueOfZero, "0")
+
+        testRule("abs[3]", GeneralRules.ResolveAbsoluteValueOfPositiveValue, "3")
+        testRule("abs[3]", GeneralRules.ResolveAbsoluteValueOfNegativeValue, null)
+
+        testRule("abs[-3]", GeneralRules.ResolveAbsoluteValueOfPositiveValue, null)
+        testRule("abs[-3]", GeneralRules.ResolveAbsoluteValueOfNegativeValue, "3")
+
+        testRule("abs[[3 / 2]]", GeneralRules.ResolveAbsoluteValueOfPositiveValue, "[3 / 2]")
+        testRule("abs[-[3 / 2]]", GeneralRules.ResolveAbsoluteValueOfNegativeValue, "[3 / 2]")
+
+        testRule("abs[sqrt[2] + sqrt[3]]", GeneralRules.ResolveAbsoluteValueOfPositiveValue, "sqrt[2] + sqrt[3]")
+        testRule("abs[-(sqrt[2] + sqrt[3])]", GeneralRules.ResolveAbsoluteValueOfNegativeValue, "sqrt[2] + sqrt[3]")
+    }
 }

@@ -240,6 +240,41 @@ enum class GeneralExplanation : CategorisedMetadataKey {
      * E.g. (-x)*(-y)*(-z) -> x*y*(-z) -> -x*y*z
      */
     NormalizeNegativeSignsInProduct,
+
+    /**
+     * Turn |x| to x when x is clearly positive (e.g. integer, fraction,
+     * sum of square roots).
+     *
+     * E.g. |3| -> 3
+     *   |4/5| -> 4/5
+     *   |sqrt(2) + sqrt(3)| -> sqrt(2) + sqrt(3)
+     */
+    ResolveAbsoluteValueOfPositiveValue,
+
+    /**
+     * Turn |-x| to x when x is clearly positive (e.g. integer, fraction,
+     * sum of square roots).
+     *
+     * E.g. |-3| -> 3
+     *   |-4/5| -> 4/5
+     *   |-(sqrt(2) + sqrt(3))| -> sqrt(2) + sqrt(3)
+     */
+    ResolveAbsoluteValueOfNegativeValue,
+
+    /**
+     * Turn |0| into 0.
+     */
+    ResolveAbsoluteValueOfZero,
+
+    /**
+     * Simplify the argument of an absolute value then resolve the
+     * absolute value.
+     *
+     * E.g. |3 - 9/2| -> |-3/2| -> 3/2
+     *   |5 * 4 - 11| -> |9| -> 9
+     *   |2 - 1 - 1| -> |0| -> 0
+     */
+    EvaluateAbsoluteValue,
     ;
 
     override val category = "General"

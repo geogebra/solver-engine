@@ -9,10 +9,12 @@ import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
+import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.steps
 import engine.operators.BinaryExpressionOperator
 import engine.operators.DecimalOperator
 import engine.operators.IntegerOperator
+import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.SignedNumberPattern
 import engine.patterns.UnsignedIntegerPattern
@@ -26,6 +28,7 @@ import methods.fractionarithmetic.FractionArithmeticPlans
 import methods.fractionarithmetic.normalizeNegativeSignsInFraction
 import methods.general.GeneralRules
 import methods.general.NormalizationPlans
+import methods.general.createEvaluateAbsoluteValuePlan
 import methods.general.inlineSumsAndProducts
 import methods.integerarithmetic.IntegerArithmeticPlans
 import methods.integerarithmetic.IntegerArithmeticRules
@@ -217,12 +220,14 @@ enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
     ),
 }
 
-val decimalEvaluationSteps = steps {
+val decimalEvaluationSteps: StepsProducer = steps {
     whilePossible {
         firstOf {
             option { deeply(GeneralRules.EvaluateProductDividedByZeroAsUndefined, deepFirst = true) }
             option { deeply(GeneralRules.SimplifyZeroDenominatorFractionToUndefined, deepFirst = true) }
             option { deeply(inlineSumsAndProducts, deepFirst = true) }
+
+            option { deeply(evaluateDecimalAbsoluteValue) }
 
             option { deeply(normalizeNegativeSignsInFraction) }
 
@@ -239,9 +244,13 @@ val decimalEvaluationSteps = steps {
     }
 }
 
+private val evaluateDecimalAbsoluteValue =
+    createEvaluateAbsoluteValuePlan(decimalEvaluationSteps)
+
 private fun Expression.isDecimalExpression(): Boolean {
     val validOperator = operator is IntegerOperator || operator is DecimalOperator ||
-        arithmeticOperators.contains(operator) || operator == BinaryExpressionOperator.Fraction
+        arithmeticOperators.contains(operator) || operator == BinaryExpressionOperator.Fraction ||
+        operator == UnaryExpressionOperator.AbsoluteValue
 
     return validOperator && children.all { it.isDecimalExpression() }
 }

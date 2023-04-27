@@ -103,6 +103,8 @@ fun rawRootOf(radicand: Expression, order: Expression) =
 fun rootOf(radicand: Expression, order: Expression) =
     if (order == Constants.Two) squareRootOf(radicand) else rawRootOf(radicand, order)
 
+fun absoluteValueOf(argument: Expression) = buildExpression(UnaryExpressionOperator.AbsoluteValue, listOf(argument))
+
 fun sumOf(vararg operands: Expression) = sumOf(operands.asList())
 
 fun sumOf(operands: List<Expression>): Expression = flattenedNaryExpression(

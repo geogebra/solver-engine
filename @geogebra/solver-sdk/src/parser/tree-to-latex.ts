@@ -94,6 +94,8 @@ function treeToLatexInner(
       return tfd(`\\sqrt{${rec(n.args[0], n)}}`);
     case 'Root':
       return tfd(`\\sqrt[{${rec(n.args[1], n)}}]{${rec(n.args[0], n)}}`);
+    case 'AbsoluteValue':
+      return tfd(`\\left|${rec(n.args[0], n)}\\right|`);
     case 'Equation':
       if (s.align) {
         return tfd(`${rec(n.args[0], n)} & = & ${rec(n.args[1], n)}`);

@@ -250,6 +250,10 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
         return makeExpression(BinaryExpressionOperator.Root, visit(ctx.radicand), visit(ctx.order))
     }
 
+    override fun visitAbsoluteValue(ctx: ExpressionParser.AbsoluteValueContext): Expression {
+        return makeExpression(UnaryExpressionOperator.AbsoluteValue, visit(ctx.argument))
+    }
+
     override fun visitRoundBracket(ctx: ExpressionParser.RoundBracketContext): Expression {
         return visit(ctx.expr()).decorate(Decorator.RoundBracket)
     }

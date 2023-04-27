@@ -904,6 +904,116 @@ class ConstantExpressionTest {
             toExpr = "[8 + 4 root[3, 3] + 2 root[9, 3] / 5]"
         }
     }
+
+    @Test
+    fun `test constant expression containing absolute values`() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "abs[3 * 2 - 4] - abs[1 - [6 / 5]] + abs[2 - 1 - 1]"
+
+        check {
+            fromExpr = "abs[3 * 2 - 4] - abs[1 - [6 / 5]] + abs[2 - 1 - 1]"
+            toExpr = "[9 / 5]"
+            explanation {
+                key = ConstantExpressionsExplanation.SimplifyConstantExpression
+            }
+
+            step {
+                fromExpr = "abs[3 * 2 - 4] - abs[1 - [6 / 5]] + abs[2 - 1 - 1]"
+                toExpr = "2 - abs[1 - [6 / 5]] + abs[2 - 1 - 1]"
+                explanation {
+                    key = GeneralExplanation.EvaluateAbsoluteValue
+                }
+
+                step {
+                    fromExpr = "abs[3 * 2 - 4]"
+                    toExpr = "abs[6 - 4]"
+                    explanation {
+                        key = IntegerRootsExplanation.SimplifyProductWithRoots
+                    }
+                }
+
+                step {
+                    fromExpr = "abs[6 - 4]"
+                    toExpr = "abs[2]"
+                    explanation {
+                        key = IntegerArithmeticExplanation.SimplifyIntegersInSum
+                    }
+                }
+
+                step {
+                    fromExpr = "abs[2]"
+                    toExpr = "2"
+                    explanation {
+                        key = GeneralExplanation.ResolveAbsoluteValueOfPositiveValue
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "2 - abs[1 - [6 / 5]] + abs[2 - 1 - 1]"
+                toExpr = "2 - [1 / 5] + abs[2 - 1 - 1]"
+                explanation {
+                    key = GeneralExplanation.EvaluateAbsoluteValue
+                }
+
+                step {
+                    fromExpr = "abs[1 - [6 / 5]]"
+                    toExpr = "abs[-[1 / 5]]"
+                    explanation {
+                        key = FractionArithmeticExplanation.AddIntegerAndFraction
+                    }
+                }
+
+                step {
+                    fromExpr = "abs[-[1 / 5]]"
+                    toExpr = "[1 / 5]"
+                    explanation {
+                        key = GeneralExplanation.ResolveAbsoluteValueOfNegativeValue
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "2 - [1 / 5] + abs[2 - 1 - 1]"
+                toExpr = "2 - [1 / 5] + 0"
+                explanation {
+                    key = GeneralExplanation.EvaluateAbsoluteValue
+                }
+
+                step {
+                    fromExpr = "abs[2 - 1 - 1]"
+                    toExpr = "abs[0]"
+                    explanation {
+                        key = IntegerArithmeticExplanation.SimplifyIntegersInSum
+                    }
+                }
+
+                step {
+                    fromExpr = "abs[0]"
+                    toExpr = "0"
+                    explanation {
+                        key = GeneralExplanation.ResolveAbsoluteValueOfZero
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "2 - [1 / 5] + 0"
+                toExpr = "2 - [1 / 5]"
+                explanation {
+                    key = GeneralExplanation.EliminateZeroInSum
+                }
+            }
+
+            step {
+                fromExpr = "2 - [1 / 5]"
+                toExpr = "[9 / 5]"
+                explanation {
+                    key = FractionArithmeticExplanation.AddIntegerAndFraction
+                }
+            }
+        }
+    }
 }
 
 class SimplifyToZeroTest {

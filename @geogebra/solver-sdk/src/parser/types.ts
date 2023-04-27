@@ -13,6 +13,7 @@ export type NestedExpressionType =
   | 'Power' // binary
   | 'SquareRoot' // unary
   | 'Root' // binary
+  | 'AbsoluteValue' // unary
   | 'Equation' // binary
   | 'EquationSystem' // n-ary
   | 'AddEquations' // binary

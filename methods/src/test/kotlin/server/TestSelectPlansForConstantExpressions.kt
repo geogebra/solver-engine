@@ -39,4 +39,15 @@ class TestSelectPlansForConstantExpressions {
             ),
         )
     }
+
+    @Test
+    fun testConstantAbsoluteValues() {
+        testSelectPlanApi(
+            "abs[-4] + abs[-1.4 + 3.2]",
+            setOf(
+                ConstantExpressionsPlans.SimplifyConstantExpression,
+                DecimalPlans.EvaluateExpressionAsDecimal,
+            ),
+        )
+    }
 }

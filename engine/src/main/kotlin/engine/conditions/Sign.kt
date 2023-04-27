@@ -103,6 +103,10 @@ private fun UnaryExpressionOperator.signOf(operand: Expression) = when (this) {
     UnaryExpressionOperator.Minus -> -operand.signOf()
     UnaryExpressionOperator.SquareRoot -> operand.signOf().truncateToPositive()
     UnaryExpressionOperator.PlusMinus -> Sign.UNKNOWN
+    UnaryExpressionOperator.AbsoluteValue -> when (val sign = operand.signOf()) {
+        Sign.NEGATIVE -> Sign.POSITIVE
+        else -> sign // zero for zero, undefined for undefined etc.
+    }
     UnaryExpressionOperator.NaturalLog -> TODO()
 }
 

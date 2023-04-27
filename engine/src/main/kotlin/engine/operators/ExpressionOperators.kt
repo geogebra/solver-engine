@@ -3,6 +3,7 @@ package engine.operators
 import engine.utility.RecurringDecimal
 import java.math.BigDecimal
 import java.math.BigInteger
+import kotlin.math.abs
 import kotlin.math.ln
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -15,7 +16,7 @@ private const val FRACTION_PRECEDENCE = 50
 private const val POWER_PRECEDENCE = 60
 private const val NATURAL_LOG_PRECEDENCE = 50
 private const val DIVIDE_BY_PRECEDENCE = 90
-private const val ROOT_PRECEDENCE = 95
+private const val FUNCTION_LIKE_PRECEDENCE = 95
 private const val MAX_PRECEDENCE = 100
 
 interface ExpressionOperator : Operator {
@@ -175,7 +176,7 @@ enum class UnaryExpressionOperator(override val precedence: Int) : UnaryOperator
         override fun latexString(ctx: RenderContext, child: LatexRenderable) = "\\pm ${child.toLatexString(ctx)}"
         override fun eval(operand: Double) = if (operand == 0.0) operand else Double.NaN
     },
-    SquareRoot(ROOT_PRECEDENCE) {
+    SquareRoot(FUNCTION_LIKE_PRECEDENCE) {
         override fun childAllowed(op: Operator) = true
         override fun <T> readableString(child: T) = "sqrt[$child]"
         override fun latexString(ctx: RenderContext, child: LatexRenderable) = "\\sqrt{${child.toLatexString(ctx)}}"
@@ -187,7 +188,16 @@ enum class UnaryExpressionOperator(override val precedence: Int) : UnaryOperator
 
         override fun latexString(ctx: RenderContext, child: LatexRenderable) = "\\ln${child.toLatexString(ctx)}"
         override fun eval(operand: Double) = ln(operand)
-    }, ;
+    },
+    AbsoluteValue(FUNCTION_LIKE_PRECEDENCE) {
+        override fun childAllowed(op: Operator) = true
+        override fun <T> readableString(child: T) = "abs[$child]"
+        override fun latexString(ctx: RenderContext, child: LatexRenderable) =
+            "\\left|${child.toLatexString(ctx)}\\right|"
+        override fun eval(operand: Double) = abs(operand)
+    },
+
+    ;
 
     protected abstract fun eval(operand: Double): Double
 
@@ -216,7 +226,7 @@ enum class BinaryExpressionOperator(override val precedence: Int) : BinaryOperat
 
         override fun eval(first: Double, second: Double) = first.pow(second)
     },
-    Root(ROOT_PRECEDENCE) {
+    Root(FUNCTION_LIKE_PRECEDENCE) {
         override fun leftChildAllowed(op: Operator) = true
         override fun rightChildAllowed(op: Operator) = true
         override fun <T> readableString(left: T, right: T) = "root[$left, $right]"

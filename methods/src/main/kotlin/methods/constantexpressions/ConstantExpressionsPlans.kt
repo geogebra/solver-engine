@@ -34,6 +34,7 @@ import methods.fractionroots.FractionRootsRules
 import methods.general.GeneralPlans
 import methods.general.GeneralRules
 import methods.general.NormalizationPlans
+import methods.general.createEvaluateAbsoluteValuePlan
 import methods.general.inlineSumsAndProducts
 import methods.general.reorderProductSteps
 import methods.integerarithmetic.IntegerArithmeticPlans
@@ -230,6 +231,8 @@ val constantSimplificationSteps: StepsProducer = steps {
 
         option(FractionArithmeticPlans.RewriteDivisionsAsFractions)
 
+        option { deeply(evaluateConstantAbsoluteValue) }
+
         option(fractionSimplificationSteps)
 
         option { deeply(GeneralPlans.NormalizeNegativeSignsInProduct) }
@@ -260,6 +263,9 @@ val constantSimplificationSteps: StepsProducer = steps {
         option { deeply(reorderProductSteps) }
     }
 }
+
+private val evaluateConstantAbsoluteValue =
+    createEvaluateAbsoluteValuePlan(constantSimplificationSteps)
 
 private val collectLikeRootsAndSimplify =
     createCollectLikeRootsAndSimplifyPlan(constantSimplificationSteps)
