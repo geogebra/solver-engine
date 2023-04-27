@@ -39,6 +39,7 @@ import engine.utility.divides
 import engine.utility.isFactorizableUnderRationalExponent
 import engine.utility.isZero
 import java.math.BigInteger
+import engine.steps.metadata.GmPathModifier as PM
 
 enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
 
@@ -242,7 +243,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             ) {
                 ruleResult(
                     toExpr = integerOp(numerator, denominator) { n, d -> n / d },
-                    gmAction = tapOp(frac),
+                    gmAction = tap(frac, PM.FractionBar),
                     explanation = metadata(Explanation.SimplifyFractionToInteger),
                 )
             }

@@ -98,11 +98,14 @@ enum class GmPathModifier(val value: String) {
     /** select '(-2)' in *(-2) */
     Parens("()"),
 
-    /** select '-' in *(-2) */
+    /** select inner '-', '+', '*', or '÷', e.g. select '-' in *(-2) */
     Operator("op"),
 
-    /** select '*' in *(-2) */
+    /** select outer '-', '+', '*', or '÷', e.g. select '*' in *(-2) */
     OuterOperator("op()"),
+
+    /** select fraction bar in [1/2] */
+    FractionBar("/"),
 
     /** select the invisible '2' in ```sqrt[x]```
      */

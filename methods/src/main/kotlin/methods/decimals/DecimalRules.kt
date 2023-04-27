@@ -36,6 +36,7 @@ import engine.utility.Factorizer
 import java.math.BigDecimal
 import java.math.BigInteger
 import kotlin.math.max
+import engine.steps.metadata.GmPathModifier as PM
 
 private val MAX_POWER = 64.toBigInteger()
 
@@ -440,7 +441,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
 
                 ruleResult(
                     toExpr = numericOp(numerator) { it.movePointLeft(powerOfTen) },
-                    gmAction = tapOp(fraction),
+                    gmAction = tap(fraction, PM.FractionBar),
                     explanation = metadata(Explanation.ConvertFractionWithPowerOfTenDenominatorToDecimal),
                 )
             }

@@ -325,7 +325,7 @@ private val simplifyUnitFractionToOne =
         onPattern(pattern) {
             ruleResult(
                 toExpr = cancel(common, introduce(Constants.One)),
-                gmAction = tapOp(pattern),
+                gmAction = tap(pattern, PM.FractionBar),
                 explanation = metadata(Explanation.SimplifyUnitFractionToOne),
             )
         }

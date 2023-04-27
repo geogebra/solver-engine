@@ -27,6 +27,8 @@ contents to a new release section (e.g. _[0.x]_).
 
 - Converted the poker to TypeScript (PLUT-565)
 - Reworked/improved rules and plans to normalize expressions (PLUT-551)
+- Use GmPathModifier.FractionBar instead of GmPathModifier.Operator to
+  select fraction bars in GmActions.
 
 ### Removed
 
