@@ -163,6 +163,9 @@ sdk-semantic-release:
       - .npm/
   variables:
     NPM_TOKEN: ${CI_JOB_TOKEN}
+    # The default (fetch) strategy does not remove deleted tags, so they can be out of date
+    # when running semantic release causing all kinds of issues
+    GIT_STRATEGY: clone
   script:
     - node -v
     - npm ci --cache .npm --prefer-offline
