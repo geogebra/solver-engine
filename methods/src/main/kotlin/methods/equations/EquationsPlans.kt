@@ -387,9 +387,12 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                 optionally(MoveVariablesToTheLeftAndSimplify)
                 optionally(MoveConstantsToTheLeftAndSimplify)
 
+                // rearrange LHS to the form: a[x^2] + bx + c
+                optionally {
+                    applyTo(PolynomialRules.NormalizePolynomial) { it.firstChild }
+                }
                 // normalize to the form: a[x^2] + bx + c = 0, where a > 0
                 optionally(SimplifyByFactoringNegativeSignOfLeadingCoefficient)
-
                 // normalize to the form: a[x^2] + bx + c = 0, where gcd(a,b,c) = 1
                 optionally(SimplifyByDividingByGcfOfCoefficients)
 

@@ -2,13 +2,76 @@ package methods.equations
 
 import engine.methods.testMethodInX
 import methods.constantexpressions.ConstantExpressionsExplanation
+import methods.integerarithmetic.IntegerArithmeticExplanation
 import methods.polynomials.PolynomialsExplanation
 import org.junit.jupiter.api.Test
 
 @Suppress("LargeClass")
 class QuadraticEquationsWithQuadraticFormulaTest {
     @Test
-    fun `test ax^2 + bx + c = d rational solutions`() = testMethodInX {
+    fun `test quadratic equation is normalized before applying the formula`() = testMethodInX {
+        method = EquationsPlans.SolveQuadraticEquationUsingQuadraticFormula
+        inputExpr = "[x^2] + 5 + 1 + 5x = 0"
+
+        check {
+            fromExpr = "[x ^ 2] + 5 + 1 + 5 x = 0"
+            toExpr = "Solution[x, {-3, -2}]"
+            explanation {
+                key = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula
+            }
+
+            step {
+                fromExpr = "[x ^ 2] + 5 + 1 + 5 x = 0"
+                toExpr = "[x ^ 2] + 6 + 5 x = 0"
+                explanation {
+                    key = IntegerArithmeticExplanation.SimplifyIntegersInSum
+                }
+            }
+
+            step {
+                fromExpr = "[x ^ 2] + 6 + 5 x = 0"
+                toExpr = "[x ^ 2] + 5 x + 6 = 0"
+                explanation {
+                    key = PolynomialsExplanation.NormalizePolynomial
+                }
+            }
+
+            step {
+                fromExpr = "[x ^ 2] + 5 x + 6 = 0"
+                toExpr = "x = [-5 +/- sqrt[[5 ^ 2] - 4 * 1 * 6] / 2 * 1]"
+                explanation {
+                    key = EquationsExplanation.ApplyQuadraticFormula
+                }
+            }
+
+            step {
+                fromExpr = "x = [-5 +/- sqrt[[5 ^ 2] - 4 * 1 * 6] / 2 * 1]"
+                toExpr = "x = [-5 +/- 1 / 2]"
+                explanation {
+                    key = ConstantExpressionsExplanation.SimplifyConstantExpression
+                }
+            }
+
+            step {
+                fromExpr = "x = [-5 +/- 1 / 2]"
+                toExpr = "x = [-5 - 1 / 2] OR x = [-5 + 1 / 2]"
+                explanation {
+                    key = EquationsExplanation.SeparatePlusMinusQuadraticSolutions
+                }
+            }
+
+            step {
+                fromExpr = "x = [-5 - 1 / 2] OR x = [-5 + 1 / 2]"
+                toExpr = "Solution[x, {-3, -2}]"
+                explanation {
+                    key = EquationsExplanation.SolveEquationUnion
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test quadratic equation with rational solutions`() = testMethodInX {
         method = EquationsPlans.SolveQuadraticEquationUsingQuadraticFormula
         inputExpr = "2[x^2] - 7x + 4 = 1"
 
@@ -107,7 +170,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
     }
 
     @Test
-    fun `test ax^2 + bx + c = 0 rational solutions`() = testMethodInX {
+    fun `test quadratic equation with rational solutions 2`() = testMethodInX {
         method = EquationsPlans.SolveQuadraticEquationUsingQuadraticFormula
         inputExpr = "2[x^2] - 7x + 3 = 0"
 
@@ -153,7 +216,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
     }
 
     @Test
-    fun `test quadraticEquation with discriminant = 0`() = testMethodInX {
+    fun `test quadratic equation with discriminant = 0`() = testMethodInX {
         method = EquationsPlans.SolveQuadraticEquationUsingQuadraticFormula
         inputExpr = "[x^2] + 4x + 4 = 0"
 
@@ -191,7 +254,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
     }
 
     @Test
-    fun `test quadraticEquation with discriminant less than 0`() = testMethodInX {
+    fun `test quadratic equation with discriminant less than 0`() = testMethodInX {
         method = EquationsPlans.SolveQuadraticEquationUsingQuadraticFormula
         inputExpr = "[x^2] + 4x + 9 = 0"
 
@@ -229,7 +292,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
     }
 
     @Test
-    fun `test negative unitary quadraticCoefficient`() = testMethodInX {
+    fun `test quadratic equation with leading coefficient -1`() = testMethodInX {
         method = EquationsPlans.SolveQuadraticEquationUsingQuadraticFormula
         inputExpr = "-[x^2] + 2x - 8 = 0"
 
@@ -275,7 +338,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
     }
 
     @Test
-    fun `test gcd(quadraticCoeff, linearCoeff, constantCoeff) != 1`() = testMethodInX {
+    fun `test ax^2 + bx + c = 0 with gcd(a, b, c) != 1`() = testMethodInX {
         method = EquationsPlans.SolveQuadraticEquationUsingQuadraticFormula
         inputExpr = "2[x^2] + 4x + 2 = 0"
 
@@ -337,7 +400,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
     }
 
     @Test
-    fun `test gcd(quadCoeff, linearCoeff, constantCoeff) != 1`() = testMethodInX {
+    fun `test ax^2 + bx + c = 0 with gcd(a, b, c) != 1 with some negative coefficients`() = testMethodInX {
         method = EquationsPlans.SolveQuadraticEquationUsingQuadraticFormula
         inputExpr = "2[x^2] - 4x + 2 = 0"
 
@@ -614,6 +677,14 @@ class QuadraticEquationsWithQuadraticFormulaTest {
                 toExpr = "3 [x ^ 2] + 1 + x = 0"
                 explanation {
                     key = methods.solvable.EquationsExplanation.MoveConstantsToTheLeftAndSimplify
+                }
+            }
+
+            step {
+                fromExpr = "3 [x ^ 2] + 1 + x = 0"
+                toExpr = "3 [x^2] + x + 1 = 0"
+                explanation {
+                    key = PolynomialsExplanation.NormalizePolynomial
                 }
             }
 

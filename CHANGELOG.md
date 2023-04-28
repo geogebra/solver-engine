@@ -27,6 +27,7 @@ contents to a new release section (e.g. _[0.x]_).
   in `Expression::replaceChildren` (PLUT-572)
 - Fixed quadratic equations with constant term consisting of a sum by strengthening
   `QuadraticPolynomialPattern` (PLUT-572)
+- Normalize quadratic equation before solving by quadratic formula (PLUT-579)
 
 ### Changed
 
