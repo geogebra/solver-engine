@@ -15,6 +15,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Ability to collect example inputs for a given explanation key (PLUT-569)
 - All requests for a solution are logged, together with solution and timing (PLUT-548)
 - Added support for the absolute value operator and rules for resolving it in simple cases (PLUT-557)
+- Referring to operators and decorators in path mappings (PLUT-539)
 
 ### Fixed
 

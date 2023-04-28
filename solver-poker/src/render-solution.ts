@@ -12,9 +12,8 @@ import {
   TaskJson,
   Transformation,
   TransformationJson,
-  TransformerFunction,
 } from '@geogebra/solver-sdk';
-import { settings, colorSchemes } from './settings';
+import { colorSchemes, settings } from './settings';
 import {
   containsNonTrivialStep,
   isCosmeticTransformation,
@@ -24,6 +23,7 @@ import {
 } from './util';
 import { renderTest } from './render-test';
 import { translationData } from './translations';
+import { LatexTransformer } from '@geogebra/solver-sdk/lib/esm/parser/tree-to-latex';
 
 const findTransformationInSelections = (selections: PlanSelection[], methodId: string) => {
   for (const selection of selections) {
@@ -85,7 +85,7 @@ const renderTransformation = (trans: TransformationJson, depth = 0): string => {
   }
 
   const [fromColoring, toColoring] = createColorMaps(trans);
-  const render = (expr: MathJson, coloring?: TransformerFunction) =>
+  const render = (expr: MathJson, coloring?: LatexTransformer) =>
     solverSDK.treeToLatex(solverSDK.jsonToTree(expr, trans.path), settings.latexSettings, coloring);
   return /* HTML */ ` <div class="trans ${isThrough ? 'through-step' : ''}">
     ${renderExplanation(trans.explanation)}
@@ -107,7 +107,7 @@ const renderTransformation = (trans: TransformationJson, depth = 0): string => {
 
 const createColorMaps = (
   trans: Transformation,
-): [TransformerFunction | undefined, TransformerFunction | undefined] => {
+): [LatexTransformer | undefined, LatexTransformer | undefined] => {
   // First deal with the special case that the whole expression is transformed.  In this case there is no need to color
   // the path mapping.
   if (trans.pathMappings.length === 1) {

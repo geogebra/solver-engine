@@ -12,7 +12,7 @@ import methods.fractionarithmetic.FractionArithmeticPlans
 import methods.fractionarithmetic.FractionArithmeticRules
 import methods.fractionarithmetic.addIntegerFractions
 import methods.general.GeneralRules
-import methods.general.NormalizationRules
+import methods.general.NormalizationPlans
 import methods.integerarithmetic.IntegerArithmeticRules
 
 enum class MixedNumbersPlans(override val runner: CompositeMethod) : RunnerMethod {
@@ -72,13 +72,7 @@ enum class MixedNumbersPlans(override val runner: CompositeMethod) : RunnerMetho
                     deeply(GeneralRules.SimplifyZeroDenominatorFractionToUndefined)
                 }
 
-                plan {
-                    explanation = Explanation.RemoveAllBracketsInSum
-
-                    steps {
-                        whilePossible(NormalizationRules.RemoveBracketSumInSum)
-                    }
-                }
+                apply(NormalizationPlans.RemoveAllBracketSumInSum)
 
                 whilePossible {
                     deeply(FractionArithmeticPlans.SimplifyFraction)

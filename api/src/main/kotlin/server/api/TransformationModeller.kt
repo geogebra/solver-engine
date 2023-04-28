@@ -47,8 +47,20 @@ data class TransformationModeller(val format: Format) {
     private fun modelPathMapping(mapping: engine.expressions.PathMapping): PathMapping {
         return PathMapping(
             type = mapping.type.toString(),
-            fromPaths = mapping.fromPaths.map { it.toString() },
-            toPaths = mapping.toPaths.map { it.toString() },
+            fromPaths = mapping.fromPaths.map {
+                if (it.second.toString().isNotEmpty()) {
+                    "${it.first}:${it.second}"
+                } else {
+                    it.first.toString()
+                }
+            },
+            toPaths = mapping.toPaths.map {
+                if (it.second.toString().isNotEmpty()) {
+                    "${it.first}:${it.second}"
+                } else {
+                    it.first.toString()
+                }
+            },
         )
     }
 

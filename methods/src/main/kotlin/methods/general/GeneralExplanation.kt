@@ -41,6 +41,7 @@ enum class GeneralExplanation : CategorisedMetadataKey {
     @LegacyKeyName("General.ReplaceInvisibleBrackets")
     AddClarifyingBracket,
     RemoveBracketSumInSum,
+    RemoveAllBracketSumInSum,
     RemoveBracketProductInProduct,
 
     /**
@@ -60,7 +61,6 @@ enum class GeneralExplanation : CategorisedMetadataKey {
     EliminateZeroInSum,
 
     EvaluateProductContainingZero,
-    EvaluateZeroDividedByAnyValue,
 
     /**
      * Dividing by %1 is undefined

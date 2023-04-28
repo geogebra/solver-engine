@@ -47,8 +47,6 @@ enum class MixedNumbersExplanation : CategorisedMetadataKey {
      */
     ConvertFractionToMixedNumber,
 
-    RemoveAllBracketsInSum,
-
     /**
      * Add mixed numbers
      */

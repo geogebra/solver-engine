@@ -111,7 +111,7 @@ class ExpandPolynomialExpressionTest {
                 fromExpr = "[(([x ^ 2] + 2 x + 1) + 2) ^ 2]"
                 toExpr = "[([x ^ 2] + 2 x + 1 + 2) ^ 2]"
                 explanation {
-                    key = GeneralExplanation.RemoveBracketSumInSum
+                    key = GeneralExplanation.RemoveAllBracketSumInSum
                 }
             }
 

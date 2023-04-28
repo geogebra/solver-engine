@@ -40,7 +40,7 @@ data class GmAction(
                 // expression, such as the minus in an optional negative pattern.
                 throw NoPathException("Trying to turn an unbound pattern into an expression path.")
             }
-            val path = pathMapping.fromPaths.firstOrNull()
+            val path = pathMapping.fromPaths.firstOrNull()?.first
             if (path === null) {
                 // This should never happen when used correctly. If it does, it means that
                 // a gmAction was created with a pattern that didn't exist in the

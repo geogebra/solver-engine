@@ -12,7 +12,6 @@ object RemoveBracketsTest {
     fun testRemoveBracketsSumInSum() {
         testRule("1 + 2", RemoveBracketSumInSum, null)
         testRule("1 + (2 + 3) + 4", RemoveBracketSumInSum, "1 + 2 + 3 + 4")
-        testRule("(x - y) + (z + t) - 3", RemoveBracketSumInSum, "x - y + z + t - 3")
     }
 
     @Test

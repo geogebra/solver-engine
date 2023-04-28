@@ -1,34 +1,30 @@
 import { PathMapping } from '../types';
-import { ExpressionTree, TransformerFunction } from './types';
+import { ColorLatexTransformer, LatexTransformer } from './tree-to-latex';
 
+/**
+ * An object that maps path strings to color values. The ColorMap
+ * type is a dictionary where keys are path strings and values
+ * are color strings.
+ */
 export type ColorMap = { [path: string]: string };
 
 /**
- * Create a ColoringFunction out of a ColorMap, which is a mapping from
- * PathMappings to colors.
+ * This function creates and returns an instance of the ColorLatexTransformer
+ * class, which implements the LatexTransformer interface. The `colorMap`
+ * parameter is an object that maps path strings to color values. The resulting
+ * LatexTransformer object can be used to transform expressions in an
+ * expression tree by applying colors to specific nodes in the tree.
  *
- * @param colorMap the ColorMap to create a ColoringFunction out of
- * @returns a TransformerFunction that can be used in treeToLatex
+ * @param colorMap (required): A ColorMap object
+ * @param defaultTextColor (optional, default="black"): default text color to use
+ * @returns A LatexTransformer object that can be used to transform
+ * expression trees with colors applied to specific nodes.
  */
-export function coloringTransformer(colorMap: ColorMap): TransformerFunction {
-  return (
-    node: ExpressionTree,
-    originalLatex: string,
-    parent: ExpressionTree | null = null,
-  ) => {
-    const color = colorMap[node.path];
-    if (!color) return originalLatex;
-    let layoutCorrection = '';
-    if (
-      (parent?.type === 'Sum' || parent?.type === 'Product') &&
-      parent?.args[0] !== node
-    ) {
-      // need this so that binary operators are shown with correct spacing:
-      // Example: 1-2 ==> 1{\color{red}{}-2}
-      layoutCorrection = '{}';
-    }
-    return `{\\color{${color}}${layoutCorrection}${originalLatex}}`;
-  };
+export function coloringTransformer(
+  colorMap: ColorMap,
+  defaultTextColor = 'black',
+): LatexTransformer {
+  return new ColorLatexTransformer(colorMap, defaultTextColor);
 }
 
 /**

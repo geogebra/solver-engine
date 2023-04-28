@@ -54,8 +54,8 @@ import engine.patterns.sumContaining
 import engine.steps.metadata.metadata
 import engine.utility.isEven
 import engine.utility.isOdd
-import java.math.BigDecimal
 import java.math.BigInteger
+import engine.expressions.PathScope as Scope
 import engine.steps.metadata.DragTargetPosition as Position
 import engine.steps.metadata.GmPathModifier as PM
 
@@ -66,7 +66,6 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     EliminateOneInProduct(eliminateOneInProduct),
     EliminateZeroInSum(eliminateZeroInSum),
     EvaluateProductContainingZero(evaluateProductContainingZero),
-    EvaluateZeroDividedByAnyValue(evaluateZeroDividedByAnyValue),
     EvaluateProductDividedByZeroAsUndefined(evaluateProductDividedByZeroAsUndefined),
     SimplifyDoubleMinus(simplifyDoubleMinus),
     SimplifyProductWithTwoNegativeFactors(simplifyProductWithTwoNegativeFactors),
@@ -128,7 +127,10 @@ private val eliminateOneInProduct =
 
         onPattern(pattern) {
             ruleResult(
-                toExpr = cancel(one, restOf(pattern)),
+                toExpr = cancel(
+                    mapOf(one to listOf(Scope.Expression, Scope.OuterOperator)),
+                    restOf(pattern),
+                ),
                 gmAction = tap(one),
                 explanation = metadata(Explanation.EliminateOneInProduct, move(one)),
             )
@@ -143,7 +145,10 @@ private val eliminateZeroInSum =
 
         onPattern(pattern) {
             ruleResult(
-                toExpr = cancel(zero, restOf(pattern)),
+                toExpr = cancel(
+                    mapOf(zero to listOf(Scope.Expression, Scope.OuterOperator)),
+                    restOf(pattern),
+                ),
                 gmAction = tap(zero),
                 explanation = metadata(Explanation.EliminateZeroInSum, move(zero)),
             )
@@ -165,27 +170,9 @@ private val evaluateProductContainingZero =
 
         onPattern(pattern) {
             ruleResult(
-                toExpr = transform(zero),
+                toExpr = transformTo(pattern, Constants.Zero),
                 gmAction = tap(zero),
                 explanation = metadata(Explanation.EvaluateProductContainingZero, move(zero)),
-            )
-        }
-    }
-
-/**
- * 0:anyX && anyX != 0 --> 0
- */
-private val evaluateZeroDividedByAnyValue =
-    rule {
-        val zero = FixedPattern(Constants.Zero)
-        val divByPattern = numericCondition(SignedNumberPattern()) { it != BigDecimal.ZERO }
-        val pattern = productContaining(zero, divideBy(divByPattern))
-
-        onPattern(pattern) {
-            ruleResult(
-                toExpr = transform(zero),
-                gmAction = tap(zero),
-                explanation = metadata(Explanation.EvaluateZeroDividedByAnyValue, move(zero)),
             )
         }
     }
@@ -215,7 +202,13 @@ private val simplifyDoubleMinus =
 
         onPattern(pattern) {
             ruleResult(
-                toExpr = move(value),
+                toExpr = cancel(
+                    mapOf(
+                        pattern to listOf(Scope.Operator),
+                        innerNeg to listOf(Scope.Operator),
+                    ),
+                    get(value),
+                ),
                 gmAction = drag(innerNeg, PM.Operator, pattern, PM.Operator, Position.Onto),
                 explanation = metadata(Explanation.SimplifyDoubleMinus, move(value)),
             )
@@ -261,6 +254,10 @@ private val simplifyProductWithTwoNegativeFactors =
         }
     }
 
+/**
+ * 2*(-x) -> - 2x
+ * negative sign has a "move" path mapping, rest have a "shift"
+ */
 private val moveSignOfNegativeFactorOutOfProduct =
     rule {
         val f = AnyPattern()
@@ -271,7 +268,10 @@ private val moveSignOfNegativeFactorOutOfProduct =
         onPattern(product) {
             if (context.gmFriendly) return@onPattern null
             ruleResult(
-                toExpr = negOf(product.substitute(optionalDivideBy(fd, move(f)))),
+                toExpr = moveUnaryOperator(
+                    negf, // -x
+                    negOf(product.substitute(optionalDivideBy(fd, get(f)))), // -2x
+                ),
                 gmAction = drag(negf, PM.Operator, product, null, Position.LeftOf),
                 explanation = metadata(Explanation.MoveSignOfNegativeFactorOutOfProduct),
             )
@@ -307,7 +307,7 @@ private val simplifyZeroNumeratorFractionToZero =
 
         onPattern(pattern) {
             ruleResult(
-                toExpr = transform(zero),
+                toExpr = transformTo(pattern, Constants.Zero),
                 gmAction = tap(zero),
                 explanation = metadata(Explanation.SimplifyZeroNumeratorFractionToZero, move(zero)),
             )
@@ -324,7 +324,7 @@ private val simplifyUnitFractionToOne =
 
         onPattern(pattern) {
             ruleResult(
-                toExpr = cancel(common, introduce(Constants.One)),
+                toExpr = transform(pattern, introduce(Constants.One)),
                 gmAction = tap(pattern, PM.FractionBar),
                 explanation = metadata(Explanation.SimplifyUnitFractionToOne),
             )
@@ -340,7 +340,7 @@ private val simplifyFractionWithOneDenominator =
 
         onPattern(pattern) {
             ruleResult(
-                toExpr = cancel(denominator, move(numerator)),
+                toExpr = cancel(denominator, get(numerator)),
                 gmAction = tap(denominator),
                 explanation = metadata(Explanation.SimplifyFractionWithOneDenominator),
             )
@@ -527,7 +527,7 @@ private val simplifyExpressionToThePowerOfOne =
 
         onPattern(power) {
             ruleResult(
-                toExpr = cancel(one, get(base)),
+                toExpr = transformTo(power, move(base)),
                 gmAction = tap(one),
                 explanation = metadata(Explanation.SimplifyExpressionToThePowerOfOne),
             )
@@ -545,7 +545,7 @@ private val evaluateOneToAnyPower =
 
         onPattern(power) {
             ruleResult(
-                toExpr = move(one),
+                toExpr = transformTo(power, move(one)),
                 gmAction = tap(one),
                 explanation = metadata(Explanation.EvaluateOneToAnyPower),
             )
@@ -609,7 +609,10 @@ private val cancelAdditiveInverseElements =
         onPattern(pattern) {
             val toExpr = when (get(pattern).children.size) {
                 2 -> transformTo(pattern, Constants.Zero)
-                else -> cancel(term, restOf(pattern))
+                else -> cancel(
+                    mapOf(term to listOf(Scope.Expression, Scope.OuterOperator)),
+                    restOf(pattern),
+                )
             }
             ruleResult(
                 toExpr = toExpr,

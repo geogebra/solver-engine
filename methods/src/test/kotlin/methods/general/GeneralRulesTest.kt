@@ -11,7 +11,6 @@ import methods.general.GeneralRules.EvaluateExpressionToThePowerOfZero
 import methods.general.GeneralRules.EvaluateOneToAnyPower
 import methods.general.GeneralRules.EvaluateProductContainingZero
 import methods.general.GeneralRules.EvaluateProductDividedByZeroAsUndefined
-import methods.general.GeneralRules.EvaluateZeroDividedByAnyValue
 import methods.general.GeneralRules.EvaluateZeroToAPositivePower
 import methods.general.GeneralRules.FlipFractionUnderNegativePower
 import methods.general.GeneralRules.MoveSignOfNegativeFactorOutOfProduct
@@ -51,7 +50,7 @@ class GeneralRulesTest {
 
                 shift("./0/0", "./0")
                 shift("./0/1", "./1")
-                cancel("./1")
+                cancel("./1:exp", "./1:outerOp")
                 shift("./2", "./2")
             }
         }
@@ -80,9 +79,21 @@ class GeneralRulesTest {
 
     @Test
     fun testMoveSignOfNegativeFactorOutOfProduct() {
-        testRule("3 * (-5)", MoveSignOfNegativeFactorOutOfProduct, "- 3 * 5")
         testRule("x * (-y) * z", MoveSignOfNegativeFactorOutOfProduct, "-xyz")
         testRule("x*3:(-5)", MoveSignOfNegativeFactorOutOfProduct, "- x*3:5")
+
+        testMethod {
+            method = MoveSignOfNegativeFactorOutOfProduct
+            inputExpr = "3 * (-5)"
+
+            check {
+                toExpr = "- 3 * 5"
+
+                move("./1:op", ".:op")
+                shift("./0", "./0/0")
+                shift("./1/0", "./0/1")
+            }
+        }
     }
 
     @Test
@@ -105,7 +116,7 @@ class GeneralRulesTest {
                 toExpr = "x + y"
 
                 keep("./0", "./1")
-                cancel("./2")
+                cancel("./2", "./2:outerOp")
             }
         }
     }
@@ -119,18 +130,21 @@ class GeneralRulesTest {
         testRule("0:(1+1)", EvaluateProductContainingZero, null)
         testRule("0 * [1 / 1 + 1] * 3", EvaluateProductContainingZero, "0")
         testRule("0 * [1 / 1 - 1] * 3", EvaluateProductContainingZero, null)
-    }
 
-    @Test
-    fun testEvaluateZeroDividedByAnyValue() {
-        testRule("0:1", EvaluateZeroDividedByAnyValue, "0")
-        testRule("0:0", EvaluateZeroDividedByAnyValue, null)
-        testRule("0:(1+1)", EvaluateZeroDividedByAnyValue, null)
+        testMethod {
+            method = EvaluateProductContainingZero
+            inputExpr = "sqrt[2]*0*x*11"
+
+            check {
+                toExpr = "0"
+
+                transform(".", ".")
+            }
+        }
     }
 
     @Test
     fun testSimplifyZeroNumeratorFractionToZero() {
-        testRule("[0 / 2]", SimplifyZeroNumeratorFractionToZero, "0")
         testRule("[0 / -1]", SimplifyZeroNumeratorFractionToZero, "0")
         testRule("[0 / root[3, 3] + root[5, 3]]", SimplifyZeroNumeratorFractionToZero, "0")
         testRule("[0 / 3 * (sqrt[2] - 1)]", SimplifyZeroNumeratorFractionToZero, "0")
@@ -138,12 +152,33 @@ class GeneralRulesTest {
 
         // This one works because the denominator is "obviously" positive
         testRule("[0 / sqrt[2] + sqrt[2]]", SimplifyZeroNumeratorFractionToZero, "0")
+
+        testMethod {
+            method = SimplifyZeroNumeratorFractionToZero
+            inputExpr = "[0 / 2]"
+
+            check {
+                toExpr = "0"
+
+                transform(".", ".")
+            }
+        }
     }
 
     @Test
     fun testSimplifyUnitFractionToOne() {
-        testRule("[sqrt[2] + sqrt[3] / sqrt[2] + sqrt[3]]", SimplifyUnitFractionToOne, "1")
         testRule("[2 - 2 / 2 - 2]", SimplifyUnitFractionToOne, null)
+
+        testMethod {
+            method = SimplifyUnitFractionToOne
+            inputExpr = "[sqrt[2] + sqrt[3] / sqrt[2] + sqrt[3]]"
+
+            check {
+                toExpr = "1"
+
+                transform(".", ".")
+            }
+        }
     }
 
     @Test
@@ -155,7 +190,18 @@ class GeneralRulesTest {
     @Test
     fun testSimplifyDoubleMinus() {
         testRule("-(-5)", SimplifyDoubleMinus, "5")
-        testRule("-(-x)", SimplifyDoubleMinus, "x")
+
+        testMethod {
+            method = SimplifyDoubleMinus
+            inputExpr = "-(-x)"
+
+            check {
+                toExpr = "x"
+
+                shift("./0/0", ".")
+                cancel(".:op", "./0:op")
+            }
+        }
     }
 
     @Test
@@ -252,7 +298,7 @@ class GeneralRulesTest {
                 toExpr = "1"
 
                 shift("./1", ".")
-                cancel("./0", "./2/0")
+                cancel("./0", "./0:outerOp", "./2/0", "./2/0:outerOp")
             }
         }
     }
@@ -268,16 +314,25 @@ class GeneralRulesTest {
             check {
                 toExpr = "x"
 
-                shift("./0", ".")
-                cancel("./1")
+                transform(".", ".")
             }
         }
     }
 
     @Test
     fun testEvaluateOneToAnyPower() {
-        testRule("[1 ^ sqrt[2] + 1]", EvaluateOneToAnyPower, "1")
         testRule("[1 ^ [1 / 1 - 1]]", EvaluateOneToAnyPower, null)
+
+        testMethod {
+            method = EvaluateOneToAnyPower
+            inputExpr = "[1 ^ sqrt[2] + 1]"
+
+            check {
+                toExpr = "1"
+
+                transform(".", ".")
+            }
+        }
     }
 
     @Test

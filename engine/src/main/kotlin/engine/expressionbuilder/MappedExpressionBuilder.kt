@@ -8,7 +8,9 @@ import engine.expressions.Expression
 import engine.expressions.Factor
 import engine.expressions.Introduce
 import engine.expressions.Move
+import engine.expressions.MoveUnaryOperator
 import engine.expressions.New
+import engine.expressions.PathScope
 import engine.expressions.asRational
 import engine.expressions.divideBy
 import engine.expressions.negOf
@@ -105,8 +107,44 @@ open class MappedExpressionBuilder(
     fun distribute(vararg expressionProviders: ExpressionProvider) =
         expressionProviders.map { distribute(it) }
 
-    fun cancel(expressionProvider: ExpressionProvider, inExpression: Expression) =
-        inExpression.withOrigin(Cancel(inExpression.origin, expressionProvider.getBoundExprs(match)))
+    fun cancel(expressionProvider: ExpressionProvider, inExpression: Expression): Expression {
+        val boundExpressions = expressionProvider.getBoundExprs(match)
+        return inExpression.withOrigin(
+            Cancel(inExpression.origin, boundExpressions.map { Pair(it, PathScope.default) }),
+        )
+    }
+
+    fun cancel(
+        expressionProviderWithScopes: Map<ExpressionProvider, List<PathScope>>,
+        inExpression: Expression,
+    ): Expression {
+        val expressionToScope = mutableListOf<Pair<Expression, PathScope>>()
+        expressionProviderWithScopes.forEach { (expressionProvider, scopeList) ->
+            val boundExpressions = expressionProvider.getBoundExprs(match)
+            boundExpressions.forEach { boundExpr ->
+                scopeList.forEach { scope ->
+                    val pair = Pair(boundExpr, scope)
+                    expressionToScope.add(pair)
+                }
+            }
+        }
+        return inExpression.withOrigin(Cancel(inExpression.origin, expressionToScope))
+    }
+
+    /**
+     * [from] : the original expression containing a decorated UnaryOperator
+     *
+     * [to]   : output expression decorated with UnaryOperator which needs
+     *          to be described as a "move" path-mapping of root of [from]
+     *          to [to]
+     *
+     * For e.g. in 2*(negOp(x)) -> negOp(2*x)
+     * here [from] = negOp(x); [to] = negOp(2*x)
+     */
+    fun moveUnaryOperator(from: ExpressionProvider, to: Expression): Expression {
+        val fromExprList = from.getBoundExprs(match)
+        return to.withOrigin(MoveUnaryOperator(fromExprList[0].origin))
+    }
 
     /**
      * Returns the numeric value bound to the argument in the match.

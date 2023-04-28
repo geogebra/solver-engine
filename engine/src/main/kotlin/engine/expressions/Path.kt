@@ -44,15 +44,29 @@ data class RootPath(val rootId: String = ".") : Path {
     override fun relativeTo(path: Path) = this
 }
 
-fun parsePath(s: String): Path {
-    val pieces = s.split('/')
-    val rootId = pieces[0]
-    require(rootId == "." || rootId.startsWith('#')) { "$s is not a valid path" }
+fun parsePath(pathString: String): Path {
+    val pathPieces = pathString.split('/')
+    val rootId = pathPieces[0]
+    require(rootId == "." || rootId.startsWith('#')) { "$pathString is not a valid path" }
 
     var path: Path = RootPath(rootId)
-    for (piece in pieces.drop(1)) {
+    for (piece in pathPieces.drop(1)) {
         path = path.child(piece.toInt())
     }
 
     return path
+}
+
+fun parsePathAndScope(s: String): Pair<Path, PathScope> {
+    val pieces = s.split(':')
+
+    val pathString = pieces[0]
+    val scopeString = if (pieces.size == 2) pieces[1] else ""
+    val path = parsePath(pathString)
+    val scope = when (scopeString) {
+        "" -> PathScope.default
+        else -> PathScope.fromString(scopeString)
+    }
+
+    return Pair(path, scope)
 }

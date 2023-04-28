@@ -1,10 +1,6 @@
-import {
-  DecoratorType,
-  ExpressionTree,
-  NumberExpression,
-  TransformerFunction,
-} from './types';
+import { ExpressionTree, NumberExpression } from './types';
 import { setsSolutionFormatter, SolutionFormatter } from './solution-formatter';
+import { ColorMap } from './coloring';
 
 // Make sure to put a space after a latex command to avoid, e.g., "2\\cdotx"
 export type LatexSettings = {
@@ -21,16 +17,147 @@ const DefaultSettings: LatexSettings = {
   solutionFormatter: setsSolutionFormatter,
 };
 
+/**
+ * Enables customization of node transformations within an expression tree or decorators around
+ * expressions in the tree. It provides methods for transforming the tree based on the specified
+ * path-scope.
+ */
+export interface LatexTransformer {
+  defaultTextColor: string;
+
+  /**
+   * Returns a transformed LaTeX representation by treating the node to be transformed with a
+   * path-scope "Expression" i.e. the whole expression created from current node needs to be
+   * transformed.
+   */
+  transformNode(
+    node: ExpressionTree,
+    originalLatex: string,
+    parent: ExpressionTree | null,
+  ): string;
+
+  /**
+   * Returns a transformed LaTeX representation by treating the node to be transformed with a
+   * path-scope "operator", meaning the current node has an operator that needs to be transformed.
+   */
+  transformOperator(
+    node: ExpressionTree,
+    originalLatex: string,
+    parent: ExpressionTree | null,
+  ): string | null;
+
+  /**
+   * Returns a transformed LaTeX representation. by treating the node to be transformed with a
+   * path-scope "outerOperator" i.e. the `parent` (left) adjacent to `node` needs to be transformed.
+   */
+  transformOuterOperator(
+    node: ExpressionTree,
+    originalLatex: string,
+    parent: ExpressionTree | null,
+  ): string | null;
+
+  /**
+   * Returns a transformed LaTeX representation by treating the node to be transformed with a
+   * path-scope "decorator", meaning only the decorator(s) of the expression represented by the
+   * current node need to be transformed.
+   */
+  transformDecorator(
+    node: ExpressionTree,
+    originalLatex: string,
+    parent: ExpressionTree | null,
+  ): string;
+}
+
+export class ColorLatexTransformer implements LatexTransformer {
+  constructor(
+    private readonly colorMap: ColorMap,
+    public readonly defaultTextColor: string,
+  ) {}
+
+  private applyColorAndLayout(
+    color: string,
+    node: ExpressionTree,
+    originalLatex: string,
+    parent: ExpressionTree | null,
+  ): string {
+    let layoutCorrection = '';
+    if (
+      (parent?.type === 'Sum' || parent?.type === 'Product') &&
+      parent?.args[0] !== node
+    ) {
+      // need this so that binary operators are shown with correct spacing:
+      // Example: 1-2 ==> 1{\color{red}{}-2}
+      layoutCorrection = '{}';
+    }
+    // 1. We can't have opening and closing parentheses (i.e. `{` and `}`) around the whole
+    //    colored latex string below, since otherwise size aligned decorators
+    //    (i.e. `\left(` and `\right)`) around an expression wouldn't be possible to be colored
+    //    for e.g. '{\\color{red}\left(} x {\\color{red}\right(}` isn't a valid LaTeX string as
+    //    `\left(` and `\right)` need to be in the same scope.
+    // 2. We necessarily need colored LaTeX string to end with `\\color{${this.defaultTextColor}}`
+    //    otherwise, the current LaTeX color would spread to unintended path-scope(s).
+    return `\\color{${color}}${layoutCorrection}${originalLatex}\\color{${this.defaultTextColor}}`;
+  }
+
+  transformNode(
+    node: ExpressionTree,
+    originalLatex: string,
+    parent: ExpressionTree | null,
+  ): string {
+    const color = this.colorMap[node.path];
+    if (!color) return originalLatex;
+    return this.applyColorAndLayout(color, node, originalLatex, parent);
+  }
+
+  transformDecorator(
+    node: ExpressionTree,
+    originalLatex: string,
+    parent: ExpressionTree | null,
+  ): string {
+    const color = this.colorMap[`${node.path}:decorator`];
+    if (!color) return originalLatex;
+    return this.applyColorAndLayout(color, node, originalLatex, parent);
+  }
+
+  transformOperator(
+    node: ExpressionTree,
+    originalLatex: string,
+    parent: ExpressionTree | null,
+  ): string | null {
+    const color = this.colorMap[`${node.path}:op`];
+    if (!color) return color;
+    return this.applyColorAndLayout(color, node, originalLatex, parent);
+  }
+
+  transformOuterOperator(
+    node: ExpressionTree,
+    originalLatex: string,
+    parent: ExpressionTree | null,
+  ): string | null {
+    const color = this.colorMap[`${node.path}:outerOp`];
+    if (!color) return color;
+    return this.applyColorAndLayout(color, node, originalLatex, parent);
+  }
+}
+
+const defaultTransformer: LatexTransformer = {
+  defaultTextColor: 'black',
+  transformNode: (node, originalLatex) => originalLatex,
+  transformOperator: () => null,
+  transformOuterOperator: () => null,
+  transformDecorator: (node, originalLatex) => originalLatex,
+};
+
 export function treeToLatex(
   n: ExpressionTree,
   settings?: LatexSettings,
-  transformerFunction?: TransformerFunction,
+  transformer?: LatexTransformer,
 ): string {
   return treeToLatexInner(
     n,
     null,
     { ...DefaultSettings, ...settings },
-    transformerFunction ? transformerFunction : (_, latex) => latex,
+    transformer || defaultTransformer,
   );
 }
 
@@ -40,11 +167,24 @@ function treeToLatexInner(
   /** Parent of `n` */
   p: ExpressionTree | null,
   s: LatexSettings,
-  tf: TransformerFunction,
+  t: LatexTransformer,
 ): string {
   const rec = (n: ExpressionTree, p: ExpressionTree | null): string =>
-    treeToLatexInner(n, p, s, tf);
-  const tfd = (latex: string): string => tf(n, decorate(latex, n.decorators), p);
+    treeToLatexInner(n, p, s, t);
+  const tfd = (latex: string): string => t.transformNode(n, decorate(latex, n, t, p), p);
+
+  const colorOp = (operator: string): string => {
+    return t.transformOperator(n, operator, p) || operator;
+  };
+
+  const outerColorOp = (node: ExpressionTree, operator: string): string => {
+    return (
+      t.transformOuterOperator(node, operator, p) ||
+      t.transformOperator(n, operator, p) ||
+      operator
+    );
+  };
+
   switch (n.type) {
     case 'Number':
       return tfd(numberToLatex(n));
@@ -54,34 +194,39 @@ function treeToLatexInner(
       return tfd(
         n.args
           .map((el, i) => {
-            return i !== 0 &&
+            if (
+              i !== 0 &&
               (el.decorators?.length || !['Minus', 'PlusMinus'].includes(el.type))
-              ? // non-leading "+" or bracketed expression, need to fill in the "+" manually
-                `+${rec(el, n)}`
-              : rec(el, n);
+            ) {
+              return outerColorOp(el, '+') + rec(el, n);
+            } else {
+              return rec(el, n);
+            }
           })
           .join(''),
       );
     case 'Plus':
-      return tfd(`+${rec(n.args[0], n)}`);
+      return tfd(`${outerColorOp(n.args[0], '+')}${rec(n.args[0], n)}`);
     case 'Minus':
-      return tfd(`-${rec(n.args[0], n)}`);
+      return tfd(`${outerColorOp(n.args[0], '-')}${rec(n.args[0], n)}`);
     case 'PlusMinus':
       return tfd(`\\pm ${rec(n.args[0], n)}`);
     case 'Product':
       return tfd(
         n.args
           .map((el, i) => {
-            return i === 0 || el.type === 'DivideBy'
-              ? rec(el, n)
-              : `${s.mulSymbol}${rec(el, n)}`;
+            if (i === 0 || el.type === 'DivideBy') {
+              return rec(el, n);
+            } else {
+              return outerColorOp(el, `${s.mulSymbol}`) + rec(el, n);
+            }
           })
           .join(''),
       );
     case 'ImplicitProduct':
       return tfd(n.args.map((el) => rec(el, n)).join(''));
     case 'DivideBy':
-      return tfd(`${s.divSymbol}${rec(n.args[0], n)}`);
+      return tfd(outerColorOp(n.args[0], `${s.divSymbol}`) + `${rec(n.args[0], n)}`);
     case 'Fraction':
       return tfd(`\\frac{${rec(n.args[0], n)}}{${rec(n.args[1], n)}}`);
     case 'MixedNumber':
@@ -107,7 +252,7 @@ function treeToLatexInner(
       return tfd(
         '\\left\\{\\begin{array}{rcl}\n' +
           n.args
-            .map((el) => '  ' + treeToLatexInner(el, n, alignSetting, tf) + '\\\\\n')
+            .map((el) => '  ' + treeToLatexInner(el, n, alignSetting, t) + '\\\\\n')
             .join('') +
           '\\end{array}\\right.',
       );
@@ -117,10 +262,10 @@ function treeToLatexInner(
       return tfd(
         '\\begin{array}{rcl|l}\n' +
           '  ' +
-          treeToLatexInner(n.args[0], n, alignSetting, tf) +
+          treeToLatexInner(n.args[0], n, alignSetting, t) +
           ' & + \\\\\n' +
           '  ' +
-          treeToLatexInner(n.args[1], n, alignSetting, tf) +
+          treeToLatexInner(n.args[1], n, alignSetting, t) +
           ' & \\\\\n' +
           '\\end{array}',
       );
@@ -130,19 +275,17 @@ function treeToLatexInner(
       return tfd(
         '\\begin{array}{rcl|l}\n' +
           '  ' +
-          treeToLatexInner(n.args[0], n, alignSetting, tf) +
+          treeToLatexInner(n.args[0], n, alignSetting, t) +
           ' & - \\\\\n' +
           '  ' +
-          treeToLatexInner(n.args[1], n, alignSetting, tf) +
+          treeToLatexInner(n.args[1], n, alignSetting, t) +
           ' & \\\\\n' +
           '\\end{array}',
       );
     }
     case 'EquationUnion': {
       const alignSetting = { ...s, align: false };
-      return tfd(
-        n.args.map((el) => treeToLatexInner(el, n, alignSetting, tf)).join(', '),
-      );
+      return tfd(n.args.map((el) => treeToLatexInner(el, n, alignSetting, t)).join(', '));
     }
     case 'UNDEFINED':
       return tfd('\\text{undefined}');
@@ -151,13 +294,13 @@ function treeToLatexInner(
     case 'Reals':
       return tfd('\\mathbb{R}');
     case 'LessThan':
-      return tfd(`${rec(n.args[0], n)} < ${rec(n.args[1], n)}`);
+      return tfd(`${rec(n.args[0], n)} ${colorOp('<')} ${rec(n.args[1], n)}`);
     case 'GreaterThan':
-      return tfd(`${rec(n.args[0], n)} > ${rec(n.args[1], n)}`);
+      return tfd(`${rec(n.args[0], n)} ${colorOp('>')} ${rec(n.args[1], n)}`);
     case 'LessThanEqual':
-      return tfd(`${rec(n.args[0], n)} \\leq ${rec(n.args[1], n)}`);
+      return tfd(`${rec(n.args[0], n)} ${colorOp('\\leq')} ${rec(n.args[1], n)}`);
     case 'GreaterThanEqual':
-      return tfd(`${rec(n.args[0], n)} \\geq ${rec(n.args[1], n)}`);
+      return tfd(`${rec(n.args[0], n)} ${colorOp('\\geq')} ${rec(n.args[1], n)}`);
     case 'Solution':
     case 'SetSolution':
     case 'Identity':
@@ -203,12 +346,24 @@ function numberToLatex(n: NumberExpression): string {
     : value;
 }
 
-function decorate(value: string, decorators?: DecoratorType[]): string {
-  if (!decorators) return value;
-  return decorators.reduce((res, dec) => {
-    if (dec === 'RoundBracket') return `\\left(${res}\\right)`;
-    if (dec === 'SquareBracket') return `\\left[${res}\\right]`;
-    if (dec === 'CurlyBracket') return `\\left\\{${res}\\right\\}`;
-    return res;
-  }, value);
+const decorators: Record<string, { left: string; right: string }> = {
+  RoundBracket: { left: '\\left(', right: '\\right)' },
+  SquareBracket: { left: '\\left[', right: '\\right]' },
+  CurlyBracket: { left: '\\left\\{', right: '\\right\\}' },
+};
+
+function decorate(
+  value: string,
+  node: ExpressionTree,
+  t: LatexTransformer,
+  parent: ExpressionTree | null,
+): string {
+  if (!node.decorators) return value;
+  const leftDecorators = node.decorators.map((d) => decorators[d]?.left || '').reverse();
+  const rightDecorators = node.decorators.map((d) => decorators[d]?.right || '');
+  return (
+    t.transformDecorator(node, leftDecorators.join(''), parent) +
+    value +
+    t.transformDecorator(node, rightDecorators.join(''), parent)
+  );
 }

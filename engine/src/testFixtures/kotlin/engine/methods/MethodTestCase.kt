@@ -6,9 +6,10 @@ import engine.expressions.Expression
 import engine.expressions.Path
 import engine.expressions.PathMapping
 import engine.expressions.PathMappingType
+import engine.expressions.PathScope
 import engine.expressions.Root
 import engine.expressions.RootPath
-import engine.expressions.parsePath
+import engine.expressions.parsePathAndScope
 import engine.steps.Task
 import engine.steps.Transformation
 import engine.steps.metadata.Metadata
@@ -23,15 +24,15 @@ import kotlin.test.assertNull
 annotation class TestCaseBuilderMarker
 
 data class PathMappingPathsBuilder(val type: PathMappingType) {
-    private var _fromPaths: List<Path> = emptyList()
-    private var _toPaths: List<Path> = emptyList()
+    private var _fromPaths: List<Pair<Path, PathScope>> = emptyList()
+    private var _toPaths: List<Pair<Path, PathScope>> = emptyList()
 
     fun fromPaths(vararg pathStrings: String) {
-        _fromPaths = pathStrings.map { parsePath(it) }
+        _fromPaths = pathStrings.map { parsePathAndScope(it) }
     }
 
     fun toPaths(vararg pathStrings: String) {
-        _toPaths = pathStrings.map { parsePath(it) }
+        _toPaths = pathStrings.map { parsePathAndScope(it) }
     }
 
     fun getPathMapping(): PathMapping {
@@ -65,7 +66,7 @@ open class PathMappingsCheck(mappings: List<PathMapping>, private val rootPath: 
     }
 
     fun introduce(toPath: String) {
-        addPathMapping(PathMapping(emptyList(), PathMappingType.Introduce, listOf(parsePath(toPath))))
+        addPathMapping(PathMapping(emptyList(), PathMappingType.Introduce, listOf(parsePathAndScope(toPath))))
     }
 
     fun combine(init: PathMappingPathsBuilder.() -> Unit) {
@@ -77,7 +78,7 @@ open class PathMappingsCheck(mappings: List<PathMapping>, private val rootPath: 
     }
 
     fun shift(fromPath: String, toPath: String) {
-        addPathMapping(PathMapping(listOf(parsePath(fromPath)), PathMappingType.Shift, listOf(parsePath((toPath)))))
+        addPathMapping(PathMapping(listOf(parsePathAndScope(fromPath)), PathMappingType.Shift, listOf(parsePathAndScope((toPath)))))
     }
 
     fun move(init: PathMappingPathsBuilder.() -> Unit) {
@@ -85,7 +86,7 @@ open class PathMappingsCheck(mappings: List<PathMapping>, private val rootPath: 
     }
 
     fun move(fromPath: String, toPath: String) {
-        addPathMapping(PathMapping(listOf(parsePath(fromPath)), PathMappingType.Move, listOf(parsePath((toPath)))))
+        addPathMapping(PathMapping(listOf(parsePathAndScope(fromPath)), PathMappingType.Move, listOf(parsePathAndScope((toPath)))))
     }
 
     fun keep(vararg paths: String) {
@@ -107,11 +108,21 @@ open class PathMappingsCheck(mappings: List<PathMapping>, private val rootPath: 
     }
 
     fun transform(fromPath: String, toPath: String) {
-        addPathMapping(PathMapping(listOf(parsePath(fromPath)), PathMappingType.Transform, listOf(parsePath((toPath)))))
+        addPathMapping(PathMapping(listOf(parsePathAndScope(fromPath)), PathMappingType.Transform, listOf(parsePathAndScope((toPath)))))
     }
 
     fun cancel(vararg paths: String) {
-        addPathMapping(PathMapping(paths.toList().map { parsePath(it) }, PathMappingType.Cancel, emptyList()))
+        addPathMapping(PathMapping(paths.toList().map { parsePathAndScope(it) }, PathMappingType.Cancel, emptyList()))
+    }
+
+    fun cancel(paths: Map<String, List<PathScope>>) {
+        addPathMapping(
+            PathMapping(
+                paths.toList().map { parsePathAndScope(it.first) },
+                PathMappingType.Cancel,
+                emptyList(),
+            ),
+        )
     }
 
     open fun finalize() {

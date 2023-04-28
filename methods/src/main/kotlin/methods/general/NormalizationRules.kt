@@ -3,8 +3,8 @@ package methods.general
 import engine.expressions.Child
 import engine.expressions.Decorator
 import engine.expressions.Expression
+import engine.expressions.PathScope
 import engine.expressions.productOf
-import engine.expressions.sumOf
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
@@ -49,10 +49,15 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
             val pattern = sumContaining(innerSum)
 
             onPattern(pattern) {
+                val idxOfFirstChildWithBracket = get(pattern).children.indexOfFirst { child -> child.hasBracket() }
+                val sumChildren = get(pattern).children.toMutableList()
+                // Remove brackets from the first sum having brackets
+                sumChildren[idxOfFirstChildWithBracket] = sumChildren[idxOfFirstChildWithBracket].removeBrackets()
                 ruleResult(
                     tags = listOf(Transformation.Tag.Rearrangement),
-                    toExpr = sumOf(
-                        get(pattern).children.map { child -> transformTo(child) { it.removeBrackets() } },
+                    toExpr = cancel(
+                        mapOf(innerSum to listOf(PathScope.Decorator)),
+                        engine.expressions.sumOf(sumChildren),
                     ),
                     gmAction = tap(innerSum, PM.OpenParens),
                     explanation = metadata(Explanation.RemoveBracketSumInSum),

@@ -80,7 +80,7 @@ class SubstituteTest {
             toExpr = "2"
 
             combine {
-                fromPaths("./0", "./1")
+                fromPaths("./0", "./1", "./1:outerOp")
                 toPaths(".")
             }
         }

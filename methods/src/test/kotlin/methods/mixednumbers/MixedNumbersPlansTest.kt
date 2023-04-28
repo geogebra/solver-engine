@@ -41,17 +41,19 @@ class MixedNumbersPlansTest {
                 }
             }
 
+            // the path mappings of this aren't probably correct
+            // it should be [95 / 12] -> [7 11/12] (as a transformation)
             step {
                 fromExpr = "[95 / 12]"
                 toExpr = "[7 11/12]"
 
                 combine {
-                    fromPaths("./0", "./1")
+                    fromPaths("./0", "./1", "./1:outerOp")
                     toPaths("./0")
                 }
 
                 combine {
-                    fromPaths("./0", "./1")
+                    fromPaths("./0", "./1", "./1:outerOp")
                     toPaths("./1")
                 }
 

@@ -8,6 +8,7 @@
       .code {
         font-family: monospace;
       }
+
       .step {
         padding-left: 20px;
       }
@@ -52,6 +53,7 @@
       <span id="version" class="code">querying...</span>
       <script type="module">
         import { api } from '/src/index.ts';
+
         api.versionInfo().then((version) => {
           document.getElementById('version').innerText = JSON.stringify(version);
         });
@@ -79,6 +81,7 @@
       The solver found these solutions: <span id="simplify" class="code">...</span>
       <script type="module">
         import { api, latexToSolver } from '/src/index.ts';
+
         const solverMathString = latexToSolver('\\frac{1}{2} + 3');
         document.getElementById('solverFormat').innerText = solverMathString;
         api.selectPlans(solverMathString).then((result) => {

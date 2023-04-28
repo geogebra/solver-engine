@@ -1,5 +1,6 @@
 package methods.integerarithmetic
 
+import engine.expressions.PathScope
 import engine.expressions.negOf
 import engine.expressions.powerOf
 import engine.methods.Rule
@@ -107,7 +108,13 @@ enum class IntegerArithmeticRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(power) {
                 ruleResult(
-                    toExpr = powerOf(move(positiveBase), move(exponent)),
+                    toExpr = cancel(
+                        mapOf(
+                            base to listOf(engine.expressions.PathScope.Operator),
+                            exponent to listOf(PathScope.Expression),
+                        ),
+                        powerOf(get(positiveBase), get(exponent)),
+                    ),
                     gmAction = tapOp(base),
                     explanation = metadata(Explanation.SimplifyEvenPowerOfNegative),
                 )
@@ -124,7 +131,7 @@ enum class IntegerArithmeticRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(power) {
                 ruleResult(
-                    toExpr = negOf(powerOf(move(positiveBase), move(exponent))),
+                    toExpr = transform(power, negOf(powerOf(move(positiveBase), move(exponent)))),
                     gmAction = drag(exponent, positiveBase),
                     explanation = metadata(Explanation.SimplifyOddPowerOfNegative),
                 )

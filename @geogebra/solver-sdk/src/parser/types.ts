@@ -69,10 +69,3 @@ export type ExpressionTreeBase<T> = { decorators?: DecoratorType[] } & (
 
 export type ExpressionTree = ExpressionTreeBase<{ path: string }>;
 export type NestedExpression = NestedExpressionBase<{ path: string }>;
-
-export type TransformerFunction = (
-  node: ExpressionTree,
-  defaultResult: string,
-  /** Parent of node. */
-  parent: ExpressionTree | null,
-) => string;

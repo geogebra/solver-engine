@@ -21,7 +21,7 @@ class IntegerArithmeticPlansTest {
                     toExpr = "3 + 3"
 
                     combine {
-                        fromPaths("./0", "./1")
+                        fromPaths("./0", "./1", "./1:outerOp")
                         toPaths("./0")
                     }
 
@@ -35,7 +35,7 @@ class IntegerArithmeticPlansTest {
                     toExpr = "6"
 
                     combine {
-                        fromPaths("./0", "./1")
+                        fromPaths("./0", "./1", "./1:outerOp")
                         toPaths(".")
                     }
                 }
@@ -238,7 +238,7 @@ class IntegerArithmeticPlansTest {
                         toExpr = "15 * (-2)"
 
                         combine {
-                            fromPaths("./0", "./1")
+                            fromPaths("./0", "./1", "./1:outerOp")
                             toPaths("./0")
                         }
 
