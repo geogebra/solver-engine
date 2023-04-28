@@ -115,6 +115,7 @@ function decorate(value: string, decorators?: DecoratorType[]): string {
     if (dec === 'RoundBracket') return `(${res})`;
     if (dec === 'SquareBracket') return `[.${res}.]`;
     if (dec === 'CurlyBracket') return `{.${res}.}`;
+    if (dec === 'PartialSumBracket') return `<.${res}.>`;
     return res;
   }, value);
 }

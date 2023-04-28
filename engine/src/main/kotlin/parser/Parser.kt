@@ -196,7 +196,7 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
     }
 
     override fun visitOtherPartialSum(ctx: ExpressionParser.OtherPartialSumContext): Expression {
-        return makeExpression(NaryOperator.Sum, ctx.terms.map { visit(it) }).decorate(Decorator.PartialSumBracket)
+        return visit(ctx.sum()).decorate(Decorator.PartialSumBracket)
     }
 
     override fun visitExplicitProduct(ctx: ExpressionParser.ExplicitProductContext): Expression {

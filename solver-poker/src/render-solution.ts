@@ -15,10 +15,12 @@ import {
 } from '@geogebra/solver-sdk';
 import { colorSchemes, settings } from './settings';
 import {
+  clone,
   containsNonTrivialStep,
   isCosmeticTransformation,
   isPedanticStep,
   isRearrangementStep,
+  isInvisibleChangeStep,
   isThroughStep,
 } from './util';
 import { renderTest } from './render-test';
@@ -220,7 +222,9 @@ const renderTaskTransformation = (task: TaskJson) => {
 };
 
 const preprocessSteps = (steps: TransformationJson[]) => {
-  if (settings.showRearrangementSteps || !steps.some((step) => isRearrangementStep(step))) {
+  // We clone because we may edit the objects
+  steps = preprocessInvisibleChangeSteps(clone(steps));
+  if (settings.showRearrangementSteps || steps.every((step) => isRearrangementStep(step))) {
     return steps;
   }
   // Rearrangement steps are "collapsed" with the previous step if it exists
@@ -235,6 +239,24 @@ const preprocessSteps = (steps: TransformationJson[]) => {
     }
   }
   return processedSteps;
+};
+
+const preprocessInvisibleChangeSteps = (steps: TransformationJson[]) => {
+  if (settings.showInvisibleChangeSteps || steps.every((step) => isInvisibleChangeStep(step))) {
+    return steps;
+  }
+  // InvisibleChange steps are "collapsed" with the next step if it exists
+  const processedStepsReversed = [];
+  let lastProcessedStep = null;
+  for (const step of steps.reverse()) {
+    if (lastProcessedStep !== null && isInvisibleChangeStep(step)) {
+      lastProcessedStep.fromExpr = step.fromExpr;
+    } else {
+      lastProcessedStep = step;
+      processedStepsReversed.push(step);
+    }
+  }
+  return processedStepsReversed.reverse();
 };
 
 const renderWarning = (content: string) =>

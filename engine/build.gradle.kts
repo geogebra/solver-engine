@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jlleitschuh.gradle.ktlint.tasks.KtLintCheckTask
+import org.jlleitschuh.gradle.ktlint.tasks.KtLintFormatTask
 
 plugins {
     kotlin("jvm")
@@ -35,6 +36,12 @@ tasks.withType<KotlinCompile> {
 }
 
 tasks.withType<KtLintCheckTask> {
+    // It looks like gradle cannot figure out that ktlint doesn't depend on the antlr task and complains if we don't
+    // declare this dependency
+    mustRunAfter(tasks.withType<AntlrTask>())
+}
+
+tasks.withType<KtLintFormatTask> {
     // It looks like gradle cannot figure out that ktlint doesn't depend on the antlr task and complains if we don't
     // declare this dependency
     mustRunAfter(tasks.withType<AntlrTask>())

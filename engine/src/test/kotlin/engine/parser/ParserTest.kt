@@ -74,6 +74,8 @@ class ParserTest {
         parsingFails("[1/2")
         parsingFails("?x")
         parsingFails("[1/3]??")
+        parsingFails("1-<.2+3.>")
+        parsingFails("1 <. +2+3 .>")
     }
 
     @Test
@@ -242,11 +244,11 @@ class ParserTest {
             rawSumOf(rawPartialSumOf(xp(1), xp(2)), xp(3)),
         )
         parsesTo(
-            "1 <. + 2 - 3 .>",
+            "1 + <. 2 - 3 .>",
             rawSumOf(xp(1), rawPartialSumOf(xp(2), negOf(xp(3)))),
         )
         parsesTo(
-            "x <. -y + z .>",
+            "x + <. -y + z .>",
             rawSumOf(xp("x"), rawPartialSumOf(negOf(xp("y")), xp("z"))),
         )
     }

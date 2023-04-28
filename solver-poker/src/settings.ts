@@ -7,6 +7,7 @@ export interface Settings {
   showRearrangementSteps: boolean;
   showPedanticSteps: boolean;
   showCosmeticSteps: boolean;
+  showInvisibleChangeSteps: boolean;
   showTranslationKeys: boolean;
   hideWarnings: boolean;
 
@@ -43,6 +44,7 @@ export const settings: Settings = {
   showPedanticSteps: false,
   showCosmeticSteps: false,
   showTranslationKeys: false,
+  showInvisibleChangeSteps: false,
   hideWarnings: false,
   selectedColorScheme: 'default',
   latexSettings: {

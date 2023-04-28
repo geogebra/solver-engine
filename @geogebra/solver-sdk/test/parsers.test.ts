@@ -1,6 +1,6 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
-import type { ExpressionTree } from '../src/parser';
+import type { ExpressionTree } from '../src';
 import {
   jsonToLatex,
   jsonToTree,
@@ -9,8 +9,8 @@ import {
   treeToJson,
   treeToLatex,
   treeToSolver,
-} from '../src/parser';
-import { MathJson } from '../src/types';
+} from '../src';
+import { MathJson } from '../src';
 
 const latexToJson = (latex) => treeToJson(latexToTree(latex));
 const jsonToSolver = (json) => treeToSolver(jsonToTree(json));
@@ -356,6 +356,37 @@ describe('Solver Parser Unit Tests', () => {
         solver: '{.[.(x).].}',
       },
       { latex: '2 (a)', solver: '2 (a)' },
+    ]);
+  });
+
+  describe('Partial Sums', () => {
+    testCases([
+      {
+        solver: '1+<.-[1 / 2]+[1 / 3].>',
+        json: [
+          'Sum',
+          ['1'],
+          [
+            ['Sum', 'PartialSumBracket'],
+            ['Minus', ['Fraction', ['1'], ['2']]],
+            ['Fraction', ['1'], ['3']],
+          ],
+        ],
+        latex: '1-\\frac{1}{2}+\\frac{1}{3}',
+        dontParseLatex: true,
+      },
+      {
+        solver: '1+<.1+2.>+3',
+        json: ['Sum', ['1'], [['Sum', 'PartialSumBracket'], ['1'], ['2']], ['3']],
+        latex: '1+1+2+3',
+        dontParseLatex: true,
+      },
+      {
+        solver: '<.1+2.>+3',
+        json: ['Sum', [['Sum', 'PartialSumBracket'], ['1'], ['2']], ['3']],
+        latex: '1+2+3',
+        dontParseLatex: true,
+      },
     ]);
   });
 

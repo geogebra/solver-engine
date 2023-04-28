@@ -88,6 +88,13 @@
         font-family: monospace;
         font-size: small;
       }
+
+      details {
+        /* This is not necessary. It just makes it so, when David Ludlow occasionally,
+        accidentally clicks on the white space to the right of a details section, then it
+        will not expand, which accidental expansion slightly irritated David. */
+        display: inline-block;
+      }
     </style>
 
     <!-- The loading of KaTeX is deferred to speed up page rendering -->
@@ -141,6 +148,9 @@
       <input id="showCosmeticSteps" type="checkbox" />
       <label for="showCosmeticSteps">Show cosmetic steps</label>
       <br />
+      <input id="showInvisibleChangeSteps" type="checkbox" />
+      <label for="showInvisibleChangeSteps">Show InvisibleChange steps</label>
+      <br />
       <input id="showTranslationKeys" type="checkbox" />
       <label for="showTranslationKeys">Show translation keys</label>
     </form>
@@ -157,6 +167,11 @@
         <li>\(2\frac{1}{3}\) is <code>[2 1/3]</code>,</li>
         <li>\(\sqrt{x}\) is <code>sqrt[x]</code>,</li>
         <li>\(\sqrt[3]{12}\) is <code>root[12, 3]</code>.</li>
+        <li>
+          <code>x + &lt;. -y + z .&gt;</code> is another way of writing \(x-y+z\), but it separates
+          the \(-y+z\) into a subexpression called a partial sum. You should never need to input
+          partial sums, possibly unless you are trying to test the back end.
+        </li>
       </ul>
       <p>Example: \(\frac{1}{\sqrt{1 - x^2}}\) is <code>[1 / sqrt[1 - [x^2]]]</code>.</p>
     </details>

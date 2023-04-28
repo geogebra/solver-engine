@@ -93,7 +93,7 @@ type MetadataBase<MathFormat> = {
   params: { expression: MathFormat; pathMappings: PathMapping[] }[];
 };
 
-export type Tag = 'Rearrangement' | 'Cosmetic' | 'Pedantic';
+export type Tag = 'Rearrangement' | 'Cosmetic' | 'Pedantic' | 'InvisibleChange';
 
 type TransformationBase<MathFormat> = {
   type: 'Plan' | 'Rule' | 'TaskSet';

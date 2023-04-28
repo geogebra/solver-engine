@@ -3,6 +3,7 @@ import { SolverContext } from '@geogebra/solver-sdk';
 import { ColorScheme, settings, SolutionFormat, solutionFormatters } from './settings';
 import { renderPlanSelections, renderTransformationAndTest } from './render-solution';
 import { fetchDefaultTranslations } from './translations';
+import { clone } from './util';
 
 declare global {
   interface Window {
@@ -144,6 +145,7 @@ window.onload = () => {
   const showRearrangementStepsCheckbox = el('showRearrangementSteps') as HTMLInputElement;
   const showPedanticStepsCheckbox = el('showPedanticSteps') as HTMLInputElement;
   const showCosmeticStepsCheckbox = el('showCosmeticSteps') as HTMLInputElement;
+  const showInvisibleChangeStepsCheckbox = el('showInvisibleChangeSteps') as HTMLInputElement;
   const colorSchemeSelect = el('colorScheme') as HTMLSelectElement;
   const solutionFormatSelect = el('solutionFormat') as HTMLSelectElement;
   const showTranslationKeysCheckbox = el('showTranslationKeys') as HTMLInputElement;
@@ -153,7 +155,9 @@ window.onload = () => {
   const sourceElement = el('source') as HTMLElement;
 
   const displayLastResult = () => {
-    const { planId, result, solverFormatResult } = lastResult;
+    // We clone just in case we get sloppy and mutate the object. I don't think it is
+    // actually necessary, right now.
+    const { planId, result, solverFormatResult } = clone(lastResult);
     sourceElement.innerHTML = JSON.stringify(solverFormatResult, null, 4);
     console.log({ planId, result, solverFormatResult });
     if (planId === undefined) {
@@ -282,6 +286,7 @@ window.onload = () => {
       showRearrangementSteps: showRearrangementStepsCheckbox.checked,
       showPedanticSteps: showPedanticStepsCheckbox.checked,
       showCosmeticSteps: showCosmeticStepsCheckbox.checked,
+      showInvisibleChangeSteps: showInvisibleChangeStepsCheckbox.checked,
       selectedColorScheme: colorSchemeSelect.value as ColorScheme,
       showTranslationKeys: showTranslationKeysCheckbox.checked,
       latexSettings: {
@@ -303,6 +308,7 @@ window.onload = () => {
   showRearrangementStepsCheckbox.onchange = displayOptionsChanged;
   showPedanticStepsCheckbox.onchange = displayOptionsChanged;
   showCosmeticStepsCheckbox.onchange = displayOptionsChanged;
+  showInvisibleChangeStepsCheckbox.onchange = displayOptionsChanged;
   colorSchemeSelect.onchange = displayOptionsChanged;
   solutionFormatSelect.onchange = displayOptionsChanged;
 

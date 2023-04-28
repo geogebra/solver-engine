@@ -7,7 +7,6 @@ import engine.operators.LatexRenderable
 import engine.operators.NaryOperator
 import engine.operators.Operator
 import engine.operators.RenderContext
-import engine.operators.SumTermKind
 import engine.operators.UnaryExpressionOperator
 import engine.operators.VariableOperator
 import engine.patterns.ExpressionProvider
@@ -182,7 +181,9 @@ class Expression internal constructor(
 
     fun decorate(decorator: Decorator) = Expression(operator, operands, decorators + decorator, origin, label)
 
-    override fun hasBracket() = decorators.isNotEmpty()
+    fun hasBracket() = decorators.isNotEmpty()
+
+    fun isPartialSum() = decorators.getOrNull(0) === Decorator.PartialSumBracket
 
     fun removeBrackets() =
         if (hasBracket()) Expression(operator, operands, emptyList(), origin, label) else this
@@ -309,11 +310,22 @@ class Expression internal constructor(
 
     override fun getBoundExpr(m: Match) = this
 
-    override fun asSumTerm(): Pair<SumTermKind, LatexRenderable> = when {
-        hasBracket() -> Pair(SumTermKind.PLUS, this)
-        operator === UnaryExpressionOperator.Minus -> Pair(SumTermKind.MINUS, firstChild)
-        operator === UnaryExpressionOperator.PlusMinus -> Pair(SumTermKind.PLUSMINUS, firstChild)
-        else -> Pair(SumTermKind.PLUS, this)
+    override fun toReadableStringAsSecondTermInASum(): String {
+        if (!hasBracket()) {
+            if (operator === UnaryExpressionOperator.Minus) return " - ${this.firstChild}"
+            if (operator === UnaryExpressionOperator.PlusMinus) return " +/- ${this.firstChild}"
+        }
+        return " + $this"
+    }
+
+    @Suppress("ReturnCount")
+    override fun toLatexStringAsSecondTermInASum(ctx: RenderContext): String {
+        if (isPartialSum()) return children.joinToString("") { it.toLatexStringAsSecondTermInASum(ctx) }
+        if (!hasBracket()) {
+            if (operator === UnaryExpressionOperator.Minus) return " - ${firstChild.toLatexString(ctx)}"
+            if (operator === UnaryExpressionOperator.PlusMinus) return " \\pm ${firstChild.toLatexString(ctx)}"
+        }
+        return " + ${toLatexString(ctx)}"
     }
 
     override fun isInlineDivideByTerm(): Boolean {

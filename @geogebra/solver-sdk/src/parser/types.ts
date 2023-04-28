@@ -57,7 +57,8 @@ export type DecoratorType =
   | 'RoundBracket'
   | 'SquareBracket'
   | 'CurlyBracket'
-  | 'MissingBracket';
+  | 'MissingBracket'
+  | 'PartialSumBracket';
 
 export type ExpressionTreeBase<T> = { decorators?: DecoratorType[] } & (
   | NestedExpressionBase<T>

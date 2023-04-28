@@ -14,6 +14,15 @@ export const isCosmeticStep = (transformation: Transformation) => {
   return transformation.tags && transformation.tags.includes('Cosmetic');
 };
 
+export function isInvisibleChangeStep(transformation: Transformation): boolean {
+  return (
+    (transformation.tags && transformation.tags.includes('InvisibleChange')) ||
+    (!transformation.tasks?.length &&
+      transformation.steps?.length === 1 &&
+      isInvisibleChangeStep(transformation.steps[0]))
+  );
+}
+
 export const isCosmeticTransformation = (transformation: Transformation): boolean => {
   if (!transformation.steps || !transformation.steps.length) {
     return isCosmeticStep(transformation);
@@ -31,7 +40,8 @@ const isTrivialStep = (transformation: Transformation) => {
   return (
     (!settings.showRearrangementSteps && isRearrangementStep(transformation)) ||
     (!settings.showPedanticSteps && isPedanticStep(transformation)) ||
-    (!settings.showCosmeticSteps && isCosmeticStep(transformation))
+    (!settings.showCosmeticSteps && isCosmeticStep(transformation)) ||
+    (!settings.showInvisibleChangeSteps && isInvisibleChangeStep(transformation))
   );
 };
 
@@ -45,3 +55,10 @@ export const containsNonTrivialStep = (transformation: Transformation): boolean 
 
 export const isThroughStep = (trans: Transformation) =>
   !!trans.steps && trans.steps.length === 1 && trans.steps[0].path === trans.path;
+
+// If we end up using this more, then we can change to a library that has a faster cloning
+// solution (the clone in jsondiffpatch), but for now it is probably faster to not have an
+// extra dependency just for this.
+export const clone = (obj: ParsedJson) => JSON.parse(JSON.stringify(obj));
+
+type ParsedJson = string | number | boolean | null | ParsedJson[] | { [key: string]: ParsedJson };

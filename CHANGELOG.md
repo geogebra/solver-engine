@@ -16,6 +16,7 @@ contents to a new release section (e.g. _[0.x]_).
 - All requests for a solution are logged, together with solution and timing (PLUT-548)
 - Added support for the absolute value operator and rules for resolving it in simple cases (PLUT-557)
 - Referring to operators and decorators in path mappings (PLUT-539)
+- Now some steps may have the "InvisibleChange" tag, such as the step to turn `[1/2] + [1/3] + 7` into `<. [1/2] + [1/3] .> + 7` (PLUT-577)
 
 ### Fixed
 
@@ -35,6 +36,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Reworked/improved rules and plans to normalize expressions (PLUT-551)
 - Use GmPathModifier.FractionBar instead of GmPathModifier.Operator to
   select fraction bars in GmActions.
+- We no longer use task sets focus on adding just the two fractions in a situation like `[1/2] + 4 + [1/3]`. Instead we use partial sums. When writing partial sums in solver notation, they are written with the `<.` and `.>` brackets. "Partial sum brackets" are invisible in LaTeX and invisible to the user. (PLUT-577)
 
 ### Removed
 

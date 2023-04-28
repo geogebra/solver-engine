@@ -55,6 +55,11 @@ data class Transformation(
          * e.g. by transforming the equation x = 3 into a solution operator.
          */
         Pedantic,
+
+        /** A transformation that doesn't make any visible change to the LaTeX. Such
+         * transformations are not intended to be shown to the user, under any
+         * circumstance. It should always be squashed with the next step. */
+        InvisibleChange,
     }
 
     /**

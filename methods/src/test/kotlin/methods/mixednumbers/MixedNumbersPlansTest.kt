@@ -2,7 +2,6 @@ package methods.mixednumbers
 
 import engine.context.Context
 import engine.context.Curriculum
-import engine.methods.SolverEngineExplanation
 import engine.methods.testMethod
 import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
@@ -123,7 +122,7 @@ class MixedNumbersPlansTest {
             step {
                 toExpr = "7 + [17 / 12]"
                 explanation {
-                    key = SolverEngineExplanation.SimplifyPartialExpression
+                    key = FractionArithmeticExplanation.AddFractions
                 }
             }
 
@@ -181,7 +180,7 @@ class MixedNumbersPlansTest {
             step {
                 toExpr = "3 + [5 / 6]"
                 explanation {
-                    key = SolverEngineExplanation.SimplifyPartialExpression
+                    key = FractionArithmeticExplanation.AddFractions
                 }
             }
 
@@ -232,7 +231,7 @@ class MixedNumbersPlansTest {
             step {
                 toExpr = "8 + 1"
                 explanation {
-                    key = SolverEngineExplanation.SimplifyPartialExpression
+                    key = FractionArithmeticExplanation.AddFractions
                 }
             }
 

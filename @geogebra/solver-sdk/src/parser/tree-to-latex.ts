@@ -1,4 +1,9 @@
-import { ExpressionTree, NumberExpression } from './types';
+import {
+  ExpressionTree,
+  ExpressionTreeBase,
+  NestedExpression,
+  NumberExpression,
+} from './types';
 import { setsSolutionFormatter, SolutionFormatter } from './solution-formatter';
 import { ColorMap } from './coloring';
 
@@ -194,10 +199,7 @@ function treeToLatexInner(
       return tfd(
         n.args
           .map((el, i) => {
-            if (
-              i !== 0 &&
-              (el.decorators?.length || !['Minus', 'PlusMinus'].includes(el.type))
-            ) {
+            if (addendNeedsPlusInFront(el, i)) {
               return outerColorOp(el, '+') + rec(el, n);
             } else {
               return rec(el, n);
@@ -336,6 +338,26 @@ function treeToLatexInner(
     case 'ClosedOpenInterval':
       return `\\left[ ${rec(n.args[0], n)}, ${rec(n.args[1], n)} \\right)`;
   }
+}
+
+function addendNeedsPlusInFront(
+  addend: ExpressionTreeBase<{ path: string }>,
+  indexOfAddend: number,
+) {
+  // the first addend in a sum doesn't need a leading plus
+  if (indexOfAddend === 0) return false;
+  // if we have a - or ± addend, we don't need a plus if there aren't any brackets
+  if (!addend.decorators?.length && ['Minus', 'PlusMinus'].includes(addend.type))
+    return false;
+  // if the addend is a partial sum and starts with a - or ± addend, we don't
+  // need to put a plus around the whole partial sum
+  if (
+    addend.decorators?.[0] === 'PartialSumBracket' &&
+    ['Minus', 'PlusMinus'].includes((addend as NestedExpression).args[0].type)
+  ) {
+    return false;
+  }
+  return true;
 }
 
 function numberToLatex(n: NumberExpression): string {

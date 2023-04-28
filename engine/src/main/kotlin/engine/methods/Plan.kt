@@ -54,6 +54,7 @@ class Plan(
 class PlanBuilder : CompositeMethodBuilder() {
 
     private var isPartialExpression = false
+    private var isPartialSum = false
     private var alternatives: MutableList<ContextSensitiveAlternative> = mutableListOf()
     private lateinit var defaultSteps: StepsProducer
     private lateinit var resourceData: ResourceData
@@ -74,6 +75,13 @@ class PlanBuilder : CompositeMethodBuilder() {
         steps(resourceData, init)
     }
 
+    fun partialSumSteps(resourceData: ResourceData = emptyResourceData, init: PipelineBuilder.() -> Unit) {
+        checkNotInitialized()
+        require(pattern is NaryPattern)
+        this.isPartialSum = true
+        steps(resourceData, init)
+    }
+
     fun steps(resourceData: ResourceData = emptyResourceData, init: PipelineBuilder.() -> Unit) {
         checkNotInitialized()
         defaultSteps = steps(init)
@@ -87,6 +95,13 @@ class PlanBuilder : CompositeMethodBuilder() {
 
     private fun wrapPlanExecutor(stepsProducer: StepsProducer): CompositeMethod {
         return when {
+            isPartialSum -> PartialSumPlan(
+                pattern = pattern as NaryPattern,
+                stepsProducer = stepsProducer,
+                explanationMaker = explanationMaker,
+                skillMakers = skillMakers,
+                specificPlans = specificPlansList,
+            )
             isPartialExpression -> PartialExpressionPlan(
                 naryPattern = pattern as NaryPattern,
                 stepsProducer = stepsProducer,

@@ -263,19 +263,10 @@ enum class NaryOperator(override val precedence: Int) : ExpressionOperator {
                 for ((i, child) in children.withIndex()) {
                     if (i == 0) {
                         append(child.toString())
+                    } else if (child is LatexRenderable) {
+                        append(child.toReadableStringAsSecondTermInASum())
                     } else {
-                        val (termKind, termBody) = when (child) {
-                            is LatexRenderable -> child.asSumTerm()
-                            else -> Pair(SumTermKind.PLUS, child)
-                        }
-                        append(
-                            when (termKind) {
-                                SumTermKind.PLUS -> " + "
-                                SumTermKind.MINUS -> " - "
-                                SumTermKind.PLUSMINUS -> " +/- "
-                            },
-                            termBody.toString(),
-                        )
+                        append(" + $child")
                     }
                 }
             }
@@ -287,15 +278,7 @@ enum class NaryOperator(override val precedence: Int) : ExpressionOperator {
                     if (i == 0) {
                         append(child.toLatexString(ctx))
                     } else {
-                        val (termKind, termBody) = child.asSumTerm()
-                        append(
-                            when (termKind) {
-                                SumTermKind.PLUS -> " + "
-                                SumTermKind.MINUS -> " - "
-                                SumTermKind.PLUSMINUS -> " \\pm "
-                            },
-                            termBody.toLatexString(ctx),
-                        )
+                        append(child.toLatexStringAsSecondTermInASum(ctx))
                     }
                 }
             }

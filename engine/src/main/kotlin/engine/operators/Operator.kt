@@ -15,20 +15,16 @@ data class RenderContext(val align: Boolean = false) {
     }
 }
 
-enum class SumTermKind {
-    PLUS,
-    MINUS,
-    PLUSMINUS,
-}
-
 interface LatexRenderable {
     fun toLatexString(ctx: RenderContext = RenderContext.Default): String
-    fun hasBracket(): Boolean
 
-    /**
-     * Returns an operator kind and a [LatexRenderable] instance to render as a term in a sum.
-     */
-    fun asSumTerm(): Pair<SumTermKind, LatexRenderable>
+    /** Generates the LaTeX of this, prepended with a plus sign, if it would need a plus sign in front of it in the
+     * situation where it was the second term in a sum/difference. */
+    fun toLatexStringAsSecondTermInASum(ctx: RenderContext): String
+
+    /** Generates a string representation of this, prepended with a plus sign, if it would need a plus sign in front
+     * of it in the situation where it was the second term in a sum/difference. */
+    fun toReadableStringAsSecondTermInASum(): String
 
     /** If this is true, then when this term is rendered/printed in a product, a ÷ sign should be used instead of a
      * multiplication sign in front of this term */

@@ -22,6 +22,15 @@ enum class SolverEngineExplanation : CategorisedMetadataKey {
      */
     SubstitutePartialExpression,
 
+    /** This should never be shown to the user, because it should only be on hidden steps.
+     * It is used when we extract part of a sum to focus on just one part of it. */
+    ExtractPartialSum,
+
+    /** Commute one of the fractions so that it is close to the other fraction that we will
+     * soon add it to.
+     * E.g. [1/3] + 3 + [1/2] -> [1/3] + [1/2] + 3
+     */
+    CommuteFractionNextToTheOtherFraction,
     ;
 
     override val category = "SolverEngine"

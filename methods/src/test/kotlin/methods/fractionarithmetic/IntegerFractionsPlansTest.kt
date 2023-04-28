@@ -1,5 +1,6 @@
 package methods.fractionarithmetic
 
+import engine.methods.SolverEngineExplanation
 import engine.methods.testMethod
 import engine.steps.metadata.Skill
 import methods.constantexpressions.ConstantExpressionsPlans
@@ -138,18 +139,31 @@ class TestAddFractions {
         inputExpr = "[1/2] + 3 - [1/3]"
 
         check {
-            toExpr = "[1/6] + 3"
-
-            task {
-                startExpr = "[1/2] - [1/3]"
-
-                step { }
-                step { }
-                step { }
-                step { toExpr = "[1/6]" }
+            step {
+                explanation { key = SolverEngineExplanation.CommuteFractionNextToTheOtherFraction }
+                toExpr = "<. [1/2] - [1/3] .> + 3"
             }
+            step { toExpr = "<. [1*3/2*3] - [1*2/3*2] .> + 3" }
+            step { toExpr = "<. [3/6] - [2/6] .> + 3" }
+            step { toExpr = "[3 - 2 / 6] + 3" }
+            step { toExpr = "[1/6] + 3" }
+        }
+    }
 
-            task { }
+    @Test
+    fun `test fraction sum with more terms at end`() = testMethod {
+        method = addIntegerFractions
+        inputExpr = "[1/2] + [1/3] + 3"
+
+        check {
+            step {
+                explanation { key = SolverEngineExplanation.ExtractPartialSum }
+                toExpr = "<. [1/2] + [1/3] .> + 3"
+            }
+            step { toExpr = "<. [1*3/2*3] + [1*2/3*2] .> + 3" }
+            step { toExpr = "<. [3/6] + [2/6] .> + 3" }
+            step { toExpr = "[3 + 2 / 6] + 3" }
+            step { toExpr = "[5/6] + 3" }
         }
     }
 
@@ -159,21 +173,11 @@ class TestAddFractions {
         inputExpr = "5 + x + [1/2] + 3 - [1/3]"
 
         check {
-            toExpr = "5 + x + [1/6] + 3"
-
-            task {
-                startExpr = "[1/2] - [1/3]"
-
-                step { }
-                step { }
-                step { }
-                step {
-                    toExpr = "[1/6]"
-                }
-            }
-            task {
-                startExpr = "5 + x + [1/6] + 3"
-            }
+            step { toExpr = "5 + x + <. [1/2] - [1/3] .> + 3" }
+            step { toExpr = "5 + x + <. [1*3/2*3] - [1*2/3*2] .> + 3" }
+            step { toExpr = "5 + x + <. [3/6] - [2/6] .> + 3" }
+            step { toExpr = "5 + x + [3 - 2 / 6] + 3" }
+            step { toExpr = "5 + x + [1/6] + 3" }
         }
     }
 
@@ -210,14 +214,11 @@ class TestAddFractions {
         check {
             toExpr = "[4/8] + [5/6]"
 
-            task {
-                explanation {
-                    key = FractionArithmeticExplanation.AddFractions
-                    param { expr = "[1/2]" }
-                    param { expr = "[1/3]" }
-                }
+            explanation {
+                key = FractionArithmeticExplanation.AddFractions
+                param { expr = "[1/2]" }
+                param { expr = "[1/3]" }
             }
-            task { }
         }
     }
 }

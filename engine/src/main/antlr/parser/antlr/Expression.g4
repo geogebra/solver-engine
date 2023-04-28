@@ -59,8 +59,8 @@ firstTerm
     ;
 
 otherTerm
-    : sign=('+' | '-' | PLUSMINUS) explicitProduct          #realOtherTerm
-    | OPEN_PARTIALSUM (terms+=otherTerm)+ CLOSE_PARTIALSUM  #otherPartialSum
+    : sign=('+' | '-' | PLUSMINUS) explicitProduct   #realOtherTerm
+    | '+' OPEN_PARTIALSUM sum CLOSE_PARTIALSUM       #otherPartialSum
     ;
 
 explicitProduct: first=implicitProduct (rest+=otherExplicitFactor)*;
