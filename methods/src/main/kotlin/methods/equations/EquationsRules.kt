@@ -4,7 +4,6 @@ import engine.conditions.Sign
 import engine.conditions.isDefinitelyNotUndefined
 import engine.conditions.signOf
 import engine.expressions.Constants
-import engine.expressions.Expression
 import engine.expressions.contradictionOf
 import engine.expressions.denominator
 import engine.expressions.equationOf
@@ -13,7 +12,6 @@ import engine.expressions.fractionOf
 import engine.expressions.hasSingleValue
 import engine.expressions.identityOf
 import engine.expressions.inverse
-import engine.expressions.isNeg
 import engine.expressions.isSignedFraction
 import engine.expressions.negOf
 import engine.expressions.plusMinusOf
@@ -39,13 +37,10 @@ import engine.patterns.ConstantInSolutionVariablePattern
 import engine.patterns.ConstantPattern
 import engine.patterns.EquationPattern
 import engine.patterns.FixedPattern
-import engine.patterns.KeyedPattern
-import engine.patterns.Match
-import engine.patterns.Pattern
+import engine.patterns.QuadraticPolynomialPattern
 import engine.patterns.SolutionVariablePattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.commutativeProductOf
-import engine.patterns.commutativeSumOf
 import engine.patterns.condition
 import engine.patterns.equationOf
 import engine.patterns.inSolutionVariables
@@ -494,7 +489,7 @@ private val applyQuadraticFormula = rule {
     onEquation(quadraticPolynomial, rhs) {
         val a = get(quadraticPolynomial::quadraticCoefficient)!!
         val b = get(quadraticPolynomial::linearCoefficient)!!
-        val c = get(quadraticPolynomial::constantCoefficient)!!
+        val c = get(quadraticPolynomial::constantTerm)!!
 
         val discriminant = sumOf(
             powerOf(b, Constants.Two),
@@ -562,44 +557,5 @@ private val eliminateConstantFactorOfLhsWithZeroRhs = rule {
             toExpr = equationOf(newLhs, get(rhs)),
             explanation = metadata(Explanation.EliminateConstantFactorOfLhsWithZeroRhs),
         )
-    }
-}
-
-class QuadraticPolynomialPattern(val variable: Pattern) : KeyedPattern {
-
-    private val quadraticTerm = withOptionalConstantCoefficient(powerOf(variable, FixedPattern(Constants.Two)))
-
-    private val linearTerm = withOptionalConstantCoefficient(variable)
-
-    private val constantTerm = ConstantPattern()
-
-    private val pureQuadraticPolynomial = commutativeSumOf(quadraticTerm, constantTerm)
-
-    private val incompleteQuadraticPolynomial = commutativeSumOf(quadraticTerm, linearTerm)
-
-    private val completeQuadraticPolynomial = commutativeSumOf(quadraticTerm, linearTerm, constantTerm)
-
-    private val ptn = oneOf(
-        pureQuadraticPolynomial,
-        incompleteQuadraticPolynomial,
-        completeQuadraticPolynomial,
-    )
-
-    override val key = ptn.key
-
-    fun quadraticCoefficient(match: Match) = quadraticTerm.coefficient(match)
-
-    fun linearCoefficient(match: Match): Expression {
-        return when (pureQuadraticPolynomial.getBoundExpr(match)) {
-            null -> linearTerm.coefficient(match)
-            else -> Constants.Zero
-        }
-    }
-
-    fun constantCoefficient(match: Match): Expression {
-        return when (incompleteQuadraticPolynomial.getBoundExpr(match)) {
-            null -> constantTerm.getBoundExpr(match)!!
-            else -> Constants.Zero
-        }
     }
 }

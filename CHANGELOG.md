@@ -23,6 +23,10 @@ contents to a new release section (e.g. _[0.x]_).
 - Fixed package CI job by setting JVM back to 17 (PLUT-570)
 - Set output of `EvaluateArithmeticExpression` plan to be an integer (PLUT-550)
 - Solving by completing the square works on unexpanded equations (PLUT-571)
+- Fixed quadratic equations with root coefficients by adjusting brackets
+  in `Expression::replaceChildren` (PLUT-572)
+- Fixed quadratic equations with constant term consisting of a sum by strengthening
+  `QuadraticPolynomialPattern` (PLUT-572)
 
 ### Changed
 

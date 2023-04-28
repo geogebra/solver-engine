@@ -1,6 +1,7 @@
 package engine.patterns
 
 import engine.context.Context
+import engine.expressions.Constants
 import engine.expressions.Expression
 import engine.expressions.productOf
 import engine.expressions.sumOf
@@ -62,9 +63,17 @@ class NaryPattern(
             }
         }
 
-        return when (restChildren.size) {
-            1 -> restChildren[0]
-            else -> if (operator == NaryOperator.Product) productOf(restChildren) else sumOf(restChildren)
+        return when (operator) {
+            NaryOperator.Sum -> when (restChildren.size) {
+                0 -> Constants.Zero
+                1 -> restChildren[0]
+                else -> sumOf(restChildren)
+            }
+            else -> when (restChildren.size) {
+                0 -> Constants.One
+                1 -> restChildren[0]
+                else -> productOf(restChildren)
+            }
         }
     }
 

@@ -299,7 +299,7 @@ class Expression internal constructor(
 
     internal fun replaceChildren(newChildren: List<Expression>) = Expression(
         operator,
-        newChildren,
+        newChildren.mapIndexed { index, child -> child.adjustBracketFor(operator, index) },
         decorators,
         Build,
         label,

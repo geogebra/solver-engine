@@ -14,6 +14,10 @@ class TestExpression {
         assertEquals(listOf(e("4 - 1"), e("4 + 1")), e("4 +/- 1").splitPlusMinus())
         assertEquals(listOf(e("[2 - 5/6]"), e("[2 + 5/6]")), e("[2 +/- 5/6]").splitPlusMinus())
         assertEquals(
+            listOf(e("(-4 sqrt[2]) sqrt[3]"), e("(4 sqrt[2]) sqrt[3]")),
+            e("(+/-4 sqrt[2]) sqrt[3]").splitPlusMinus(),
+        )
+        assertEquals(
             listOf(e("1 - 2 - 3"), e("1 - 2 + 3"), e("1 + 2 - 3"), e("1 + 2 + 3")),
             e("1 +/- 2 +/- 3").splitPlusMinus(),
         )

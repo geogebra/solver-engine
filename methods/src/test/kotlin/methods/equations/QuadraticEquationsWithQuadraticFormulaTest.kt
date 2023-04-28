@@ -657,4 +657,50 @@ class QuadraticEquationsWithQuadraticFormulaTest {
             step { }
         }
     }
+
+    @Test
+    fun `test quadratic equation with the constant term being a sum of an integer and a root`() = testMethodInX {
+        method = EquationsPlans.SolveQuadraticEquationUsingQuadraticFormula
+        inputExpr = "3 [x ^ 2] + 6 x + 3 - sqrt[2] = 0"
+
+        check {
+            fromExpr = "3 [x ^ 2] + 6 x + 3 - sqrt[2] = 0"
+            toExpr = "Solution[x, {-[6 + 2 root[18, 4] / 6], [-6 + 2 root[18, 4] / 6]}]"
+            explanation {
+                key = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula
+            }
+
+            step {
+                fromExpr = "3 [x ^ 2] + 6 x + 3 - sqrt[2] = 0"
+                toExpr = "x = [-6 +/- sqrt[[6 ^ 2] - 4 * 3 (3 - sqrt[2])] / 2 * 3]"
+                explanation {
+                    key = EquationsExplanation.ApplyQuadraticFormula
+                }
+            }
+
+            step {
+                fromExpr = "x = [-6 +/- sqrt[[6 ^ 2] - 4 * 3 (3 - sqrt[2])] / 2 * 3]"
+                toExpr = "x = [-6 +/- 2 root[18, 4] / 6]"
+                explanation {
+                    key = ConstantExpressionsExplanation.SimplifyConstantExpression
+                }
+            }
+
+            step {
+                fromExpr = "x = [-6 +/- 2 root[18, 4] / 6]"
+                toExpr = "x = [-6 - 2 root[18, 4] / 6] OR x = [-6 + 2 root[18, 4] / 6]"
+                explanation {
+                    key = EquationsExplanation.SeparatePlusMinusQuadraticSolutions
+                }
+            }
+
+            step {
+                fromExpr = "x = [-6 - 2 root[18, 4] / 6] OR x = [-6 + 2 root[18, 4] / 6]"
+                toExpr = "Solution[x, {-[6 + 2 root[18, 4] / 6], [-6 + 2 root[18, 4] / 6]}]"
+                explanation {
+                    key = EquationsExplanation.SolveEquationUnion
+                }
+            }
+        }
+    }
 }
