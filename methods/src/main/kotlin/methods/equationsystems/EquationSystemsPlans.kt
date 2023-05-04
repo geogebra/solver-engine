@@ -1,5 +1,6 @@
 package methods.equationsystems
 
+import engine.context.Context
 import engine.context.emptyContext
 import engine.expressions.Constants
 import engine.expressions.Expression
@@ -11,6 +12,7 @@ import engine.expressions.equationOf
 import engine.expressions.equationSystemOf
 import engine.expressions.identityOf
 import engine.expressions.implicitSolutionOf
+import engine.expressions.isEquationSystem
 import engine.expressions.negOf
 import engine.expressions.productOf
 import engine.expressions.setSolutionOf
@@ -39,6 +41,7 @@ import engine.patterns.equationOf
 import engine.patterns.equationSystemOf
 import engine.patterns.withOptionalConstantCoefficient
 import engine.steps.Task
+import engine.steps.Transformation
 import engine.steps.metadata.MetadataKey
 import engine.steps.metadata.metadata
 import methods.equations.EquationsPlans
@@ -58,16 +61,26 @@ enum class EquationSystemsPlans(override val runner: CompositeMethod) : RunnerMe
      * 5. Substitute y = ... back into equation (1')
      */
     @PublicMethod
-    SolveEquationSystemBySubstitution(SystemSolverBySubstitution.taskSet()),
+    SolveEquationSystemBySubstitution(SystemSolverBySubstitution),
 
     @PublicMethod
-    SolveEquationSystemByElimination(SystemSolverByElimination.taskSet()),
+    SolveEquationSystemByElimination(SystemSolverByElimination),
 }
 
 /**
  * This is meant to be a parent class for both solving equation systems by substitution and elimination.
  */
-private abstract class SystemSolver {
+private abstract class SystemSolver : CompositeMethod() {
+
+    override fun run(ctx: Context, sub: Expression): Transformation? {
+        if (sub.isEquationSystem()) {
+            val namedSystem = equationSystemOf(
+                sub.children.mapIndexed { i, eq -> eq.withName(label(i + 1)) },
+            ).withOrigin(sub.origin)
+            return taskSet().run(ctx, namedSystem)
+        }
+        return null
+    }
 
     /**
      * The explanation key for the produced task set.
@@ -139,16 +152,18 @@ private abstract class SystemSolver {
         variables: List<String>,
     ): Pair<Expression, Expression> {
         val firstEq = task(
-            startExpr = system.firstChild,
+            startExpr = system.firstChild.withoutName(),
             explanation = metadata(Explanation.PrepareEquation),
             stepsProducer = this@SystemSolver.prearrangeLinearEquationSteps,
+            resultLabel = system.firstChild.name,
             context = context.copy(solutionVariables = variables),
         )?.result ?: system.firstChild
 
         val secondEq = task(
-            startExpr = system.secondChild,
+            startExpr = system.secondChild.withoutName(),
             explanation = metadata(Explanation.PrepareEquation),
             stepsProducer = this@SystemSolver.prearrangeLinearEquationSteps,
+            resultLabel = system.secondChild.name,
             context = context.copy(solutionVariables = variables),
         )?.result ?: system.secondChild
 
@@ -330,16 +345,19 @@ private abstract class SystemSolver {
         )
         val var1 = substitutedBackSolution.variables.first()
         return task(
-            startExpr = substitutedBackSolution,
+            startExpr = substitutedBackSolution.withoutName(),
             explanation = metadata(
                 Explanation.SubstituteAndSolveIn,
                 solutionAsEquation,
                 xp(var1),
+                equation.byName(),
             ),
             stepsProducer = EquationsPlans.SolveLinearEquation,
             context = context.copy(solutionVariables = listOf(var1)),
         )
     }
+
+    protected fun label(i: Int) = "($i)"
 }
 
 /**
@@ -373,9 +391,11 @@ private object SystemSolverBySubstitution : SystemSolver() {
         val (eq1, var1, eq2, var2) = chooseSolutionOrder(firstEq, secondEq, variables) ?: return null
 
         // Try to rearrange eq1 to express x in terms of y
+        @Suppress("MagicNumber")
         val expressVar1InTermsOfVar2 = task(
-            startExpr = eq1,
-            explanation = metadata(Explanation.ExpressInTermsOf, xp(var1), xp(var2)),
+            startExpr = eq1.withoutName(),
+            explanation = metadata(Explanation.ExpressInTermsOf, xp(var1), xp(var2), eq1.byName()),
+            resultLabel = label(3),
             context = context.copy(solutionVariables = listOf(var1)),
         ) {
             apply(rearrangeLinearEquationSteps)
@@ -396,8 +416,13 @@ private object SystemSolverBySubstitution : SystemSolver() {
             val eq2InTermsOfVar2 = eq2.substituteAllOccurrences(xp(var1), var1InTermsOfVar2.secondChild)
 
             task(
-                startExpr = eq2InTermsOfVar2,
-                explanation = metadata(Explanation.SubstituteAndSolveIn, var1InTermsOfVar2, xp(var2)),
+                startExpr = eq2InTermsOfVar2.withoutName(),
+                explanation = metadata(
+                    Explanation.SubstituteAndSolveIn,
+                    var1InTermsOfVar2.withoutName(),
+                    xp(var2),
+                    eq2InTermsOfVar2.byName(),
+                ),
                 stepsProducer = EquationsPlans.SolveLinearEquation,
                 context = context.copy(solutionVariables = listOf(var2)),
             )?.let { solveEq2 ->
@@ -459,7 +484,8 @@ private object SystemSolverByElimination : SystemSolver() {
         return if (factor != Constants.One) {
             task(
                 startExpr = equationOf(productOf(factor, eq.firstChild), productOf(factor, eq.secondChild)),
-                explanation = metadata(Explanation.MultiplyEquation, factor),
+                explanation = metadata(Explanation.MultiplyEquation, factor, eq.byName()),
+                resultLabel = eq.name,
                 stepsProducer = PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization,
             )!!.result
         } else {
@@ -478,40 +504,11 @@ private object SystemSolverByElimination : SystemSolver() {
         val scaledEq1 = multiplyEquation(firstEq, f1)
         val scaledEq2 = multiplyEquation(secondEq, f2)
 
-        val eliminatedVariableCoeff1 = scaledEq1.coefficientOf(eliminatedVariable)!!
-        val eliminatedVariableCoeff2 = scaledEq2.coefficientOf(eliminatedVariable)!!
-
-        val univariateEquation = when {
-            eliminatedVariableCoeff1 == simplifiedNegOf(eliminatedVariableCoeff2) -> {
-                val eqSum = addEquationsOf(scaledEq1, scaledEq2)
-
-                task(
-                    startExpr = eqSum,
-                    explanation = metadata(Explanation.AddEquations),
-                ) {
-                    apply(EquationSystemsRules.RewriteEquationAddition)
-                    whilePossible(simplifyEquation)
-                }!!
-            }
-
-            eliminatedVariableCoeff1 == eliminatedVariableCoeff2 -> {
-                val eqSum = subtractEquationsOf(scaledEq1, scaledEq2)
-
-                task(
-                    startExpr = eqSum,
-                    explanation = metadata(Explanation.SubtractEquations),
-                ) {
-                    apply(EquationSystemsRules.RewriteEquationSubtraction)
-                    whilePossible(simplifyEquation)
-                }!!
-            }
-
-            else -> return null
-        }
+        val univariateEquation = eliminateVariable(scaledEq1, scaledEq2, eliminatedVariable) ?: return null
 
         return task(
-            startExpr = univariateEquation.result,
-            explanation = metadata(Explanation.SolveEliminatedEquation),
+            startExpr = univariateEquation,
+            explanation = metadata(Explanation.SolveEliminatedEquation, univariateEquation.byName()),
             context = context.copy(solutionVariables = listOf(remainingVariable)),
         ) {
             firstOf {
@@ -526,7 +523,12 @@ private object SystemSolverByElimination : SystemSolver() {
                 task(
                     startExpr = firstEq,
                     stepsProducer = rearrangeLinearEquationSteps,
-                    explanation = metadata(Explanation.ExpressInTermsOf, xp(variables[0]), xp(variables[1])),
+                    explanation = metadata(
+                        Explanation.ExpressInTermsOf,
+                        xp(variables[0]),
+                        xp(variables[1]),
+                        firstEq.byName(),
+                    ),
                     context = context.copy(solutionVariables = listOf(variables[0])),
                 )!!.result
             } else {
@@ -534,6 +536,46 @@ private object SystemSolverByElimination : SystemSolver() {
             }
 
             Pair(reorganizedFirstEq, solvedUnivariateEquation.result)
+        }
+    }
+
+    /**
+     * Add or subtract [eq1] and [eq2] to eliminate the variable [variable]
+     */
+    private fun TasksBuilder.eliminateVariable(eq1: Expression, eq2: Expression, variable: String): Expression? {
+        val coeff1 = eq1.coefficientOf(variable)!!
+        val coeff2 = eq2.coefficientOf(variable)!!
+
+        return when {
+            coeff1 == simplifiedNegOf(coeff2) -> {
+                val eqSum = addEquationsOf(eq1, eq2)
+
+                @Suppress("MagicNumber")
+                task(
+                    startExpr = eqSum,
+                    explanation = metadata(Explanation.AddEquations),
+                    resultLabel = label(3),
+                ) {
+                    apply(EquationSystemsRules.RewriteEquationAddition)
+                    whilePossible(simplifyEquation)
+                }?.result
+            }
+
+            coeff1 == coeff2 -> {
+                val eqSum = subtractEquationsOf(eq1, eq2)
+
+                @Suppress("MagicNumber")
+                task(
+                    startExpr = eqSum,
+                    explanation = metadata(Explanation.SubtractEquations),
+                    resultLabel = label(3),
+                ) {
+                    apply(EquationSystemsRules.RewriteEquationSubtraction)
+                    whilePossible(simplifyEquation)
+                }?.result
+            }
+
+            else -> null
         }
     }
 

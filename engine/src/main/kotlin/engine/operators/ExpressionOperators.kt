@@ -49,6 +49,17 @@ abstract class NullaryOperator : ExpressionOperator {
     abstract fun latexString(ctx: RenderContext): String
 }
 
+data class NameOperator(val value: String) : NullaryOperator() {
+
+    override val name = toString()
+
+    override fun toString() = "\"${value}\""
+
+    override fun latexString(ctx: RenderContext) = "\\textrm{$value}"
+
+    override fun eval(children: List<Double>) = Double.NaN
+}
+
 /**
  * Operator representing an unsigned integer.
  */
@@ -149,7 +160,7 @@ object MixedNumberOperator : ExpressionOperator {
     override fun <T> readableString(children: List<T>) = "[${children[0]} ${children[1]}/${children[2]}]"
 
     override fun latexString(ctx: RenderContext, children: List<LatexRenderable>) =
-        "${children[0].toLatexString(ctx)}\\frac${children[1].toLatexString(ctx)}${children[2].toLatexString(ctx)}"
+        "${children[0].toLatexString(ctx)}\\frac{${children[1].toLatexString(ctx)}}{${children[2].toLatexString(ctx)}}"
 
     override fun eval(children: List<Double>) = children[0] + children[1] / children[2]
 }
@@ -186,7 +197,7 @@ enum class UnaryExpressionOperator(override val precedence: Int) : UnaryOperator
         override fun childAllowed(op: Operator) =
             op.precedence >= BinaryExpressionOperator.Fraction.precedence
 
-        override fun latexString(ctx: RenderContext, child: LatexRenderable) = "\\ln${child.toLatexString(ctx)}"
+        override fun latexString(ctx: RenderContext, child: LatexRenderable) = "\\ln ${child.toLatexString(ctx)}"
         override fun eval(operand: Double) = ln(operand)
     },
     AbsoluteValue(FUNCTION_LIKE_PRECEDENCE) {

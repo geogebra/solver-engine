@@ -31,19 +31,27 @@ class TasksBuilder(
         explanation: Metadata,
         dependsOn: List<Task> = emptyList(),
         context: Context = this.context,
+        resultLabel: String? = null,
     ): Task {
-        return task(startExpr, explanation, dependsOn, context, EmptyStepsProducer)!!
+        return task(startExpr, explanation, dependsOn, context, resultLabel, EmptyStepsProducer)!!
     }
 
+    @Suppress("LongParameterList")
     fun task(
         startExpr: Expression,
         explanation: Metadata,
         dependsOn: List<Task> = emptyList(),
         context: Context = this.context,
+        resultLabel: String? = null,
         stepsProducer: StepsProducer,
     ): Task? {
         val taskId = nextTaskId()
-        val steps = stepsProducer.produceSteps(context, startExpr.withOrigin(Root())) ?: return null
+        var steps = stepsProducer.produceSteps(context, startExpr.withOrigin(Root())) ?: return null
+        if (resultLabel != null) {
+            steps = steps.mapIndexed { i, trans ->
+                if (i + 1 == steps.size) trans.copy(toExpr = trans.toExpr.withName(resultLabel)) else trans
+            }
+        }
         val task = Task(
             taskId = taskId,
             startExpr = startExpr,
@@ -55,13 +63,15 @@ class TasksBuilder(
         return task
     }
 
+    @Suppress("LongParameterList")
     fun task(
         startExpr: Expression,
         explanation: Metadata,
         dependsOn: List<Task> = emptyList(),
         context: Context = this.context,
+        resultLabel: String? = null,
         init: PipelineBuilder.() -> Unit,
-    ): Task? = task(startExpr, explanation, dependsOn, context, steps(init))
+    ): Task? = task(startExpr, explanation, dependsOn, context, resultLabel, steps(init))
 
     fun allTasks(): List<Task>? = if (tasks.isEmpty()) null else tasks
 }

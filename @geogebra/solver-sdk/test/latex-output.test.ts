@@ -1,8 +1,13 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
-import { jsonToLatex, latexToTree, treeToLatex } from '../src/parser';
-import type { LatexSettings } from '../src/parser/tree-to-latex';
-import { MathJson } from '../src/types';
+import type { LatexSettings } from '../src';
+import {
+  jsonToLatex,
+  latexToTree,
+  MathJson,
+  simpleSolutionFormatter,
+  treeToLatex,
+} from '../src';
 
 function testCasesWithLatexSettings(
   cases: { input: string; output: string }[],
@@ -20,9 +25,11 @@ describe('Custom LaTeX output', () => {
     testCasesWithLatexSettings([{ input: '1*2:3', output: '1\\cdot 2:3' }], {
       mulSymbol: '\\cdot ',
       divSymbol: ':',
+      solutionFormatter: simpleSolutionFormatter,
     });
     testCasesWithLatexSettings([{ input: '1*2:3', output: '1 \\cdot 2:3' }], {
       divSymbol: ':',
+      solutionFormatter: simpleSolutionFormatter,
     });
   });
 });

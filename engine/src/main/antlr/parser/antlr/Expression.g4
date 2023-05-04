@@ -4,7 +4,7 @@ grammar Expression;
     package parser.antlr;
 }
 
-wholeInput: statement | solution | exprOrUndefined EOF;
+wholeInput: (statement | solution | expr | undefined | name) EOF;
 
 statement: equationSystem | equationUnion | equationAddition | equationSubtraction | equation | inequality;
 
@@ -42,8 +42,6 @@ reals: REALS;
 interval: leftBracket=('(' | '[') left=exprOrInfinity ',' right=exprOrInfinity rightBracket=(')' | ']');
 
 exprOrInfinity: expr | infinity | minusInfinity;
-
-exprOrUndefined: expr | undefined;
 
 element: tuple | expr;
 
@@ -113,6 +111,8 @@ variables: first=variable (',' rest+=variable)*;
 
 variable: VARIABLE;
 
+name: NAME;
+
 fragment DIGIT: [0-9];
 NATNUM: DIGIT+;
 DECNUM: NATNUM '.' NATNUM;
@@ -135,5 +135,7 @@ UNDEFINED: 'UNDEFINED';
 
 VARIABLE: [a-z];
 WHITESPACE: [ \t] -> skip;
+
+NAME: '"' (~ '"')+ '"';
 
 UNKNOWN: .;

@@ -153,6 +153,8 @@ class SolveByEliminationTest {
                 startExpr = "5 y = 1"
                 explanation {
                     key = EquationSystemsExplanation.SolveEliminatedEquation
+
+                    param { expr = "\"(3)\"" }
                 }
 
                 step {
@@ -169,6 +171,10 @@ class SolveByEliminationTest {
                 startExpr = "2 x + 3 * [1 / 5] = 5"
                 explanation {
                     key = EquationSystemsExplanation.SubstituteAndSolveIn
+
+                    param { expr = "y = [1 / 5]" }
+                    param { expr = "x" }
+                    param { expr = "\"(1)\"" }
                 }
 
                 step {
@@ -231,6 +237,8 @@ class SolveByEliminationTest {
                 startExpr = "3 x = 7"
                 explanation {
                     key = EquationSystemsExplanation.SolveEliminatedEquation
+
+                    param { expr = "\"(3)\"" }
                 }
 
                 step {
@@ -247,6 +255,10 @@ class SolveByEliminationTest {
                 startExpr = "2 * [7 / 3] + 3 y = 5"
                 explanation {
                     key = EquationSystemsExplanation.SubstituteAndSolveIn
+
+                    param { expr = "x = [7 / 3]" }
+                    param { expr = "y" }
+                    param { expr = "\"(1)\"" }
                 }
 
                 step {
@@ -325,6 +337,8 @@ class SolveByEliminationTest {
                 startExpr = "0 = 0"
                 explanation {
                     key = EquationSystemsExplanation.SolveEliminatedEquation
+
+                    param { expr = "\"(3)\"" }
                 }
 
                 step {
@@ -341,6 +355,10 @@ class SolveByEliminationTest {
                 startExpr = "x + y = 3"
                 explanation {
                     key = EquationSystemsExplanation.ExpressInTermsOf
+
+                    param { expr = "x" }
+                    param { expr = "y" }
+                    param { expr = "\"(1)\"" }
                 }
 
                 step {

@@ -111,7 +111,7 @@ class EquationRulesTest {
             "x = [-2 +/- sqrt[[2 ^ 2] - 4 * 1 * 1] / 2 * 1]",
             SeparateEquationInPlusMinusForm,
             "x = [-2 - sqrt[[2 ^ 2] - 4 * 1 * 1] / 2 * 1] OR " +
-                "x = [-2 + sqrt[[2 ^ 2] - 4 * 1 * 1] / 2 * 1]]",
+                "x = [-2 + sqrt[[2 ^ 2] - 4 * 1 * 1] / 2 * 1]",
         )
     }
 

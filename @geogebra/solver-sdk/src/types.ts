@@ -66,9 +66,13 @@ export type PathMapping = {
 
 export type MathJson =
   | [string] // variable, number, undefined, infinity, or reals
-  | [[string, ...DecoratorType[]]] // variable or number
+  | [[string, ...(DecoratorType | string)[]]] // variable or number
   | [NestedExpressionType, ...MathJson[]]
-  | [[NestedExpressionType, ...DecoratorType[]], ...MathJson[]];
+  | [[NestedExpressionType, ...(DecoratorType | string)[]], ...MathJson[]]
+  | ['SmartProduct', ...SmartProductOperandJson[]]
+  | [['SmartProduct', ...(DecoratorType | string)[]], ...SmartProductOperandJson[]];
+
+export type SmartProductOperandJson = [boolean, MathJson];
 
 export type GmAction = {
   type:

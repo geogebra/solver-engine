@@ -13,6 +13,7 @@ import engine.operators.IntegerOperator
 import engine.operators.IntervalOperator
 import engine.operators.MixedNumberOperator
 import engine.operators.MultiVariateSolutionOperator
+import engine.operators.NameOperator
 import engine.operators.NaryOperator
 import engine.operators.Operator
 import engine.operators.RecurringDecimalOperator
@@ -224,8 +225,8 @@ fun closedOpenIntervalOf(lhs: Expression, rhs: Expression) =
 fun closedIntervalOf(lhs: Expression, rhs: Expression) =
     buildExpression(IntervalOperator(closedLeft = true, closedRight = true), listOf(lhs, rhs))
 
-fun equationSystemOf(vararg equations: Expression) =
-    buildExpression(EquationSystemOperator, equations.asList())
+fun equationSystemOf(equations: List<Expression>) = buildExpression(EquationSystemOperator, equations)
+fun equationSystemOf(vararg equations: Expression) = equationSystemOf(equations.asList())
 
 fun equationUnionOf(vararg equations: Expression) =
     buildExpression(EquationUnionOperator, equations.asList())
@@ -277,3 +278,5 @@ private fun flattenedNaryExpression(operator: NaryOperator, operands: List<Expre
     }
     return buildExpression(operator, ops)
 }
+
+fun nameXp(value: String) = buildExpression(NameOperator(value), emptyList())

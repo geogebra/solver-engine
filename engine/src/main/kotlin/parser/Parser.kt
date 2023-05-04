@@ -9,6 +9,7 @@ import engine.expressions.greaterThanOf
 import engine.expressions.lessThanEqualOf
 import engine.expressions.lessThanOf
 import engine.expressions.mixedNumber
+import engine.expressions.nameXp
 import engine.expressions.negOf
 import engine.expressions.solutionOf
 import engine.expressions.solutionSetOf
@@ -298,6 +299,11 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
     }
     override fun visitVariable(ctx: ExpressionParser.VariableContext): Expression {
         return xp(ctx.VARIABLE().text)
+    }
+
+    override fun visitName(ctx: ExpressionParser.NameContext): Expression {
+        val text = ctx.NAME().text
+        return nameXp(ctx.NAME().text.substring(1, text.length - 1))
     }
 
     override fun visitUndefined(ctx: ExpressionParser.UndefinedContext?): Expression {

@@ -18,6 +18,7 @@ import engine.expressions.implicitSolutionOf
 import engine.expressions.lessThanEqualOf
 import engine.expressions.lessThanOf
 import engine.expressions.missingBracketOf
+import engine.expressions.nameXp
 import engine.expressions.negOf
 import engine.expressions.plusMinusOf
 import engine.expressions.plusOf
@@ -81,6 +82,12 @@ class ParserTest {
     @Test
     fun testUndefined() {
         parsesTo("UNDEFINED", buildExpression(UndefinedOperator, emptyList()))
+    }
+
+    @Test
+    fun testName() {
+        parsesTo("\"xx\"", nameXp("xx"))
+        parsesTo("\"(eq1)\"", nameXp("(eq1)"))
     }
 
     @Test

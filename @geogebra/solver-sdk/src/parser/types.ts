@@ -43,6 +43,10 @@ export type NestedExpressionBase<T> = {
   args: ExpressionTreeBase<T>[];
 };
 
+export type NameExpression = {
+  type: 'Name';
+  value: string;
+};
 export type NumberExpression = {
   type: 'Number';
   value: string;
@@ -53,19 +57,40 @@ export type VariableExpression = {
   value: string;
 };
 
-export type DecoratorType =
-  | 'RoundBracket'
-  | 'SquareBracket'
-  | 'CurlyBracket'
-  | 'MissingBracket'
-  | 'PartialSumBracket';
+export type SmartProductExpression<T> = {
+  type: 'SmartProduct';
+  args: ExpressionTreeBase<T>[];
+  signs: boolean[];
+};
 
-export type ExpressionTreeBase<T> = { decorators?: DecoratorType[] } & (
-  | NestedExpressionBase<T>
-  | NumberExpression
-  | VariableExpression
-  | { type: 'UNDEFINED' | 'INFINITY' | 'Reals' }
-) &
+export const bracketTypes = [
+  'RoundBracket',
+  'SquareBracket',
+  'CurlyBracket',
+  'MissingBracket',
+  'PartialSumBracket',
+] as const;
+
+export type DecoratorType = (typeof bracketTypes)[number];
+
+export function isDecorator(decoration: any): decoration is DecoratorType {
+  return bracketTypes.includes(decoration);
+}
+
+export type ExpressionDecorations = {
+  decorators?: DecoratorType[];
+  name?: string;
+};
+
+export type ExpressionTreeBase<T> = ExpressionDecorations &
+  (
+    | NestedExpressionBase<T>
+    | SmartProductExpression<T>
+    | NumberExpression
+    | VariableExpression
+    | NameExpression
+    | { type: 'UNDEFINED' | 'INFINITY' | 'Reals' }
+  ) &
   T;
 
 export type ExpressionTree = ExpressionTreeBase<{ path: string }>;

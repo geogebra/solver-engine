@@ -12,6 +12,7 @@ export type LatexSettings = {
   mulSymbol?: ' \\cdot ' | ' \\times ' | string;
   divSymbol?: ' \\div ' | ':' | string;
   align?: boolean;
+  displayNames?: boolean;
 
   solutionFormatter: SolutionFormatter;
 };
@@ -19,6 +20,7 @@ export type LatexSettings = {
 const DefaultSettings: LatexSettings = {
   mulSymbol: ' \\cdot ',
   divSymbol: ' \\div ',
+  displayNames: true,
   solutionFormatter: setsSolutionFormatter,
 };
 
@@ -176,7 +178,18 @@ function treeToLatexInner(
 ): string {
   const rec = (n: ExpressionTree, p: ExpressionTree | null): string =>
     treeToLatexInner(n, p, s, t);
-  const tfd = (latex: string): string => t.transformNode(n, decorate(latex, n, t, p), p);
+
+  const tfd = (latex: string): string => {
+    const transformed = t.transformNode(n, decorate(latex, n, t, p), p);
+    if (!s.displayNames || !n.name) {
+      return transformed;
+    }
+    if (s.align) {
+      return transformed + ` & \\textrm{${n.name}}`;
+    } else {
+      return transformed + ` \\qquad \\textrm{${n.name}}`;
+    }
+  };
 
   const colorOp = (operator: string): string => {
     return t.transformOperator(n, operator, p) || operator;
@@ -195,6 +208,8 @@ function treeToLatexInner(
       return tfd(numberToLatex(n));
     case 'Variable':
       return tfd(n.value);
+    case 'Name':
+      return tfd(`\\textrm{${n.value}}`);
     case 'Sum':
       return tfd(
         n.args
@@ -227,6 +242,18 @@ function treeToLatexInner(
       );
     case 'ImplicitProduct':
       return tfd(n.args.map((el) => rec(el, n)).join(''));
+    case 'SmartProduct':
+      return tfd(
+        n.args
+          .map((el, i) => {
+            if (i === 0 || el.type === 'DivideBy') {
+              return rec(el, n);
+            } else {
+              return outerColorOp(el, `${n.signs[i] ? s.mulSymbol : ''}`) + rec(el, n);
+            }
+          })
+          .join(''),
+      );
     case 'DivideBy':
       return tfd(outerColorOp(n.args[0], `${s.divSymbol}`) + `${rec(n.args[0], n)}`);
     case 'Fraction':

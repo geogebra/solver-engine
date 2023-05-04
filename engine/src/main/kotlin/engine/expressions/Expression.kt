@@ -1,6 +1,7 @@
 package engine.expressions
 
 import engine.operators.BinaryExpressionOperator
+import engine.operators.EquationSystemOperator
 import engine.operators.ExpressionOperator
 import engine.operators.IntegerOperator
 import engine.operators.LatexRenderable
@@ -60,12 +61,13 @@ enum class Label : Extractor {
  * more [operands] which are the children of the expression.
  */
 @Suppress("TooManyFunctions")
-class Expression internal constructor(
+class Expression private constructor(
     val operator: Operator,
     internal val operands: List<Expression>,
     val decorators: List<Decorator>,
     val origin: Origin,
-    val label: Label?,
+    private val label: Label?,
+    val name: String?,
 ) : LatexRenderable, ExpressionProvider {
 
     /**
@@ -73,7 +75,7 @@ class Expression internal constructor(
      * bracket is missing in an operand, an exception will be thrown.
      */
     constructor(operator: Operator, operands: List<Expression>, decorators: List<Decorator> = emptyList()) :
-        this(operator, operands, decorators, Build, null)
+        this(operator, operands, decorators, Build, null, null)
 
     init {
         operands.forEachIndexed { i, op -> require(op.hasBracket() || operator.nthChildAllowed(i, op.operator)) }
@@ -90,7 +92,7 @@ class Expression internal constructor(
     }
 
     private fun withDecorators(newDecorators: List<Decorator>) =
-        Expression(operator, operands, newDecorators, origin, label)
+        Expression(operator, operands, newDecorators, origin, label, name)
 
     /**
      * Returns true if the expression node is labelled (not if the children are labelled).
@@ -100,7 +102,13 @@ class Expression internal constructor(
     /**
      * Returns a copy labelled with [newLabel] instead of the existing label.
      */
-    fun withLabel(newLabel: Label?) = Expression(operator, operands, decorators, origin, newLabel)
+    fun withLabel(newLabel: Label?) = Expression(operator, operands, decorators, origin, newLabel, name)
+
+    fun byName() = if (name != null) nameXp(name) else this
+
+    fun withName(newName: String?) = Expression(operator, operands, decorators, origin, label, newName)
+
+    fun withoutName() = withName(null)
 
     /**
      * Returns a node in the expression tree labelled with [findLabel] if there is one, else null.
@@ -114,7 +122,7 @@ class Expression internal constructor(
      * Returns a copy of the expression with all labels cleared recursively.
      */
     fun clearLabels(): Expression =
-        Expression(operator, operands.map { it.clearLabels() }, decorators, origin, null)
+        Expression(operator, operands.map { it.clearLabels() }, decorators, origin, null, name)
 
     val children by lazy { origin.computeChildrenOrigin(this) }
 
@@ -149,7 +157,7 @@ class Expression internal constructor(
 
     fun nthChild(n: Int) = children[n]
 
-    fun withOrigin(newOrigin: Origin) = Expression(operator, operands, decorators, newOrigin, label)
+    fun withOrigin(newOrigin: Origin) = Expression(operator, operands, decorators, newOrigin, label, name)
 
     internal fun pathMappings(rootPath: Path = RootPath()) = origin.computePathMappings(rootPath, children)
 
@@ -179,14 +187,14 @@ class Expression internal constructor(
             operands.zip(other.operands).all { (op1, op2) -> op1.equiv(op2) }
     }
 
-    fun decorate(decorator: Decorator) = Expression(operator, operands, decorators + decorator, origin, label)
+    fun decorate(decorator: Decorator) = Expression(operator, operands, decorators + decorator, origin, label, name)
 
     fun hasBracket() = decorators.isNotEmpty()
 
     fun isPartialSum() = decorators.getOrNull(0) === Decorator.PartialSumBracket
 
     fun removeBrackets() =
-        if (hasBracket()) Expression(operator, operands, emptyList(), origin, label) else this
+        if (hasBracket()) Expression(operator, operands, emptyList(), origin, label, name) else this
 
     fun outerBracket() = decorators.lastOrNull()
 
@@ -304,6 +312,7 @@ class Expression internal constructor(
         decorators,
         Build,
         label,
+        name,
     )
 
     override fun getBoundExprs(m: Match) = listOf(this)
@@ -341,10 +350,14 @@ class Expression internal constructor(
 
     fun toJson(): List<Any> {
         val serializedOperands = operands.map { it.toJson() }
-        return if (decorators.isEmpty()) {
+        return if (decorators.isEmpty() && name == null) {
             listOf(operator.name) + serializedOperands
         } else {
-            listOf(listOf(operator.name) + decorators.map { it.toString() }) + serializedOperands
+            listOf(
+                listOf(operator.name) +
+                    (if (name == null) listOf() else listOf(name)) +
+                    decorators.map { it.toString() },
+            ) + serializedOperands
         }
     }
 
@@ -442,3 +455,5 @@ fun Expression.asPositiveInteger(): BigInteger? = when (val op = operator) {
     is IntegerOperator -> op.value
     else -> null
 }
+
+fun Expression.isEquationSystem(): Boolean = operator is EquationSystemOperator

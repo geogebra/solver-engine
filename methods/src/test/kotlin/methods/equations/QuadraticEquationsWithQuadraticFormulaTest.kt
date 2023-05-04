@@ -108,7 +108,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
             step {
                 fromExpr = "x = [7 +/- 5 / 4]"
-                toExpr = "x = [7 - 5 / 4] OR x = [7 + 5 / 4]]"
+                toExpr = "x = [7 - 5 / 4] OR x = [7 + 5 / 4]"
                 explanation {
                     key = EquationsExplanation.SeparatePlusMinusQuadraticSolutions
                 }

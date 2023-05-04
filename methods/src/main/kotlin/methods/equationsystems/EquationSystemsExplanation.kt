@@ -16,6 +16,7 @@ enum class EquationSystemsExplanation : CategorisedMetadataKey {
      *
      * %1: variable to make the subject of the equations (on the LHS)
      * %2: variable to put on the RHS.
+     * %3: name of the equation to rearrange
      */
     ExpressInTermsOf,
 
@@ -24,6 +25,7 @@ enum class EquationSystemsExplanation : CategorisedMetadataKey {
      *
      * %1: variable and value to substitute (e.g. y = x + 1)
      * %2: variable to solve in (e.g. x)
+     * %3: the name of the equation to substitute into
      */
     SubstituteAndSolveIn,
 
@@ -117,7 +119,9 @@ enum class EquationSystemsExplanation : CategorisedMetadataKey {
 
     /**
      * Multiply both sides of an equation by a value.
+     *
      * %1: factor the equation is multiplied by
+     * %2: the name of the equation to multiply
      */
     MultiplyEquation,
 
@@ -125,6 +129,8 @@ enum class EquationSystemsExplanation : CategorisedMetadataKey {
      * Solve the univariate equation obtained by adding or
      * subtracting the two equations in a system when solving
      * it using elimination.
+     *
+     * %1: the name of the equation to solve
      */
     SolveEliminatedEquation,
 

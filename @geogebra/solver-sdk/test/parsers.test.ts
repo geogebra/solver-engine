@@ -6,11 +6,11 @@ import {
   jsonToTree,
   latexToSolver,
   latexToTree,
+  MathJson,
   treeToJson,
   treeToLatex,
   treeToSolver,
 } from '../src';
-import { MathJson } from '../src';
 
 const latexToJson = (latex) => treeToJson(latexToTree(latex));
 const jsonToSolver = (json) => treeToSolver(jsonToTree(json));

@@ -41,6 +41,8 @@ export function treeToSolver(n: ExpressionTree): string {
       );
     case 'ImplicitProduct':
       return dec(n.args.map((el) => rec(el)).join(' '));
+    case 'SmartProduct':
+      return 'TODO';
     case 'DivideBy':
       return `:${rec(n.args[0])}`;
     case 'Fraction':
@@ -106,16 +108,25 @@ export function treeToSolver(n: ExpressionTree): string {
       }
     case 'VariableList':
       return n.args.map(rec).join(', ');
+    case 'Name':
+      return `"${n.value}"`;
   }
 }
 
 function decorate(value: string, decorators?: DecoratorType[]): string {
   if (!decorators) return value;
   return decorators.reduce((res, dec) => {
-    if (dec === 'RoundBracket') return `(${res})`;
-    if (dec === 'SquareBracket') return `[.${res}.]`;
-    if (dec === 'CurlyBracket') return `{.${res}.}`;
-    if (dec === 'PartialSumBracket') return `<.${res}.>`;
-    return res;
+    switch (dec) {
+      case 'RoundBracket':
+        return `(${res})`;
+      case 'CurlyBracket':
+        return `{.${res}.}`;
+      case 'SquareBracket':
+        return `[.${res}.]`;
+      case 'PartialSumBracket':
+        return `<.${res}.>`;
+      case 'MissingBracket':
+        return res;
+    }
   }, value);
 }

@@ -114,6 +114,7 @@ class SolveBySubstitutionTest {
                     key = EquationSystemsExplanation.ExpressInTermsOf
                     param { expr = "x" }
                     param { expr = "y" }
+                    param { expr = "\"(2)\"" }
                 }
 
                 step {
@@ -133,6 +134,7 @@ class SolveBySubstitutionTest {
                     key = EquationSystemsExplanation.SubstituteAndSolveIn
                     param { expr = "x = 2 + y" }
                     param { expr = "y" }
+                    param { expr = "\"(1)\"" }
                 }
 
                 step {
@@ -151,6 +153,7 @@ class SolveBySubstitutionTest {
                     key = EquationSystemsExplanation.SubstituteAndSolveIn
                     param { expr = "y = [1 / 5]" }
                     param { expr = "x" }
+                    param { expr = "\"(3)\"" }
                 }
 
                 step {
@@ -193,6 +196,7 @@ class SolveBySubstitutionTest {
                     key = EquationSystemsExplanation.ExpressInTermsOf
                     param { expr = "x" }
                     param { expr = "y" }
+                    param { expr = "\"(1)\"" }
                 }
 
                 step {
@@ -212,6 +216,7 @@ class SolveBySubstitutionTest {
                     key = EquationSystemsExplanation.SubstituteAndSolveIn
                     param { expr = "x = 3 - y" }
                     param { expr = "y" }
+                    param { expr = "\"(2)\"" }
                 }
 
                 step {
