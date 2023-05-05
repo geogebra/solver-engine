@@ -3,9 +3,9 @@ package methods.inequalities
 import engine.conditions.Sign
 import engine.conditions.signOf
 import engine.expressions.Constants
+import engine.expressions.Fraction
 import engine.expressions.fractionOf
 import engine.expressions.inverse
-import engine.expressions.isFraction
 import engine.expressions.isNeg
 import engine.expressions.productOf
 import engine.expressions.simplifiedNegOf
@@ -140,7 +140,7 @@ enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
             onPattern(inequality) {
                 val coefficient = get(lhs::coefficient)!!
 
-                if (coefficient.isFraction() || (coefficient.isNeg() && coefficient.firstChild.isFraction())) {
+                if (coefficient is Fraction || (coefficient.isNeg() && coefficient.firstChild is Fraction)) {
                     val inverse = introduce(coefficient, coefficient.inverse())
 
                     when (inverse.signOf()) {

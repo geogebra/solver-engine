@@ -3,7 +3,8 @@ package engine.conditions
 import engine.context.emptyContext
 import engine.expressions.Expression
 import engine.operators.BinaryExpressionOperator
-import engine.operators.NaryOperator
+import engine.operators.ProductOperator
+import engine.operators.SumOperator
 import engine.operators.UnaryExpressionOperator
 import engine.patterns.RationalPattern
 import engine.patterns.RootMatch
@@ -35,10 +36,8 @@ fun Expression.isNotZeroNotBasedOnSign(): Boolean = when (operator) {
         BinaryExpressionOperator.Fraction -> operands[0].isDefinitelyNotZero() && operands[1].isDefinitelyNotZero()
         else -> false
     }
-    is NaryOperator -> when (operator) {
-        NaryOperator.Sum -> sumTermsAreIncommensurable(operands)
-        NaryOperator.Product, NaryOperator.ImplicitProduct -> operands.all { it.isDefinitelyNotZero() }
-    }
+    is SumOperator -> sumTermsAreIncommensurable(operands)
+    is ProductOperator -> operands.all { it.isDefinitelyNotZero() }
     else -> false
 }
 

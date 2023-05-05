@@ -371,7 +371,7 @@ class CompletingTheSquareTest {
                 fromExpr = "3 x + (-x - 1) + 2 x * (x + 2) = [11 / 4]"
                 toExpr = "3 x + (-x - 1) + 2 x (x + 2) = [11 / 4]"
                 explanation {
-                    key = GeneralExplanation.NormalizeProductSigns
+                    key = GeneralExplanation.NormalizeProducts
                 }
             }
 

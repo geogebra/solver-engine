@@ -1,6 +1,7 @@
 package methods.mixednumbers
 
 import engine.expressions.Constants
+import engine.expressions.IntegerExpression
 import engine.expressions.fractionOf
 import engine.expressions.mixedNumberOf
 import engine.expressions.sumOf
@@ -66,9 +67,9 @@ enum class MixedNumbersRules(override val runner: Rule) : RunnerMethod {
                 when {
                     numeratorValue < denominatorValue -> ruleResult(
                         toExpr = mixedNumberOf(
-                            move(integer),
-                            move(fraction.numerator),
-                            move(fraction.denominator),
+                            move(integer) as IntegerExpression,
+                            move(fraction.numerator) as IntegerExpression,
+                            move(fraction.denominator) as IntegerExpression,
                         ),
                         explanation = metadata(Explanation.ConvertSumOfIntegerAndProperFractionToMixedNumber),
                     )
@@ -93,7 +94,11 @@ enum class MixedNumbersRules(override val runner: Rule) : RunnerMethod {
                 val remainder = integerOp(fraction.numerator, fraction.denominator) { n, d -> n % d }
 
                 ruleResult(
-                    toExpr = mixedNumberOf(quotient, remainder, move(fraction.denominator)),
+                    toExpr = mixedNumberOf(
+                        quotient as IntegerExpression,
+                        remainder as IntegerExpression,
+                        move(fraction.denominator) as IntegerExpression,
+                    ),
                     explanation = metadata(Explanation.ConvertFractionToMixedNumber),
                     skills = listOf(
                         metadata(Skill.DivisionWithRemainder, move(fraction.numerator), move(fraction.denominator)),

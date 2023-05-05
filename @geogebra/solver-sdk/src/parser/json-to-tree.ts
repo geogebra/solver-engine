@@ -13,7 +13,7 @@ export function jsonToTree(json: MathJson, path = '.'): ExpressionTree {
   let value: string;
   let decorators: (DecoratorType | string)[] = [];
   if (typeof head === 'string') value = head;
-  else [value, ...decorators] = head;
+  else [value, ...decorators] = head as [string, DecoratorType];
   let result: ExpressionTree;
 
   if (args.length === 0 && value !== 'FiniteSet') {

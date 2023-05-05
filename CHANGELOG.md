@@ -19,6 +19,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Now some steps may have the "InvisibleChange" tag, such as the step to turn `[1/2] + [1/3] + 7`
   into `<. [1/2] + [1/3] .> + 7` (PLUT-577)
 - Expressions can now have a label (called "name" internally) - used in equation systems (PLUT-566)
+- Added partial products, similar to partial sums. (PLUT-581)
 
 ### Fixed
 
@@ -41,6 +42,8 @@ contents to a new release section (e.g. _[0.x]_).
 - We no longer use task sets focus on adding just the two fractions in a situation like `[1/2] + 4 + [1/3]`. Instead we
   use partial sums. When writing partial sums in solver notation, they are written with the `<.` and `.>` brackets. "
   Partial sum brackets" are invisible in LaTeX and invisible to the user. (PLUT-577)
+- Introduce typed expressions such as Fraction and Power (PLUT-581)
+- Change the representation of products to flat instead of the explicit / implicit structure we had before. (PLUT-581)
 
 ### Removed
 

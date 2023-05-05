@@ -171,10 +171,11 @@ class Combine(val from: List<Expression>) : Origin() {
     override fun computePathMappings(rootPath: Path, children: List<Expression>): Sequence<PathMapping> {
         val fromPaths = from.flatMapIndexed { idx, expr ->
             val paths = expr.origin.fromPaths(expr.children).map { path -> path to PathScope.default }
-            if (idx == 0 || expr.origin.path == null) {
+            val path = expr.origin.path
+            if (idx == 0 || path == null) {
                 paths
             } else {
-                paths + listOf(Pair(expr.origin.path, PathScope.OuterOperator))
+                paths + listOf(Pair(path, PathScope.OuterOperator))
             }
         }
         return sequenceOf(

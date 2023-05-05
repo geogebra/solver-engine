@@ -15,7 +15,7 @@ import engine.methods.plan
 import engine.methods.rule
 import engine.methods.stepsproducers.StepsProducer
 import engine.operators.EquationOperator
-import engine.operators.NaryOperator
+import engine.operators.SumOperator
 import engine.patterns.AnyPattern
 import engine.patterns.SolvablePattern
 import engine.patterns.UnsignedIntegerPattern
@@ -195,7 +195,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
 
 private fun extractVariableTerms(expression: Expression, variables: List<String>): Expression? {
     return when {
-        expression.operator == NaryOperator.Sum -> {
+        expression.operator == SumOperator -> {
             val constantTerms = expression.children.filter { !it.isConstantIn(variables) }
             if (constantTerms.isEmpty()) null else sumOf(constantTerms)
         }
@@ -206,7 +206,7 @@ private fun extractVariableTerms(expression: Expression, variables: List<String>
 
 private fun extractConstants(expression: Expression, variables: List<String>): Expression? {
     return when {
-        expression.operator == NaryOperator.Sum -> {
+        expression.operator == SumOperator -> {
             val constantTerms = expression.children.filter { it.isConstantIn(variables) }
             if (constantTerms.isEmpty()) null else sumOf(constantTerms)
         }
@@ -223,7 +223,7 @@ private fun extractConstants(expression: Expression, variables: List<String>): E
  * Note: it remains to be determined what a good origin would be for the terms in the result.
  */
 fun simplifiedNegOfSum(expr: Expression) = when (expr.operator) {
-    NaryOperator.Sum -> sumOf(expr.children.map { simplifiedNegOf(it).withOrigin(Introduce(listOf(it))) })
+    SumOperator -> sumOf(expr.children.map { simplifiedNegOf(it).withOrigin(Introduce(listOf(it))) })
     else -> simplifiedNegOf(expr).withOrigin(Introduce(listOf(expr)))
 }
 
@@ -241,7 +241,7 @@ val fractionRequiringMultiplication = optionalNegOf(
 fun extractSumTermsFromSolvable(equation: Expression): List<Expression> {
     return equation.children.flatMap {
         when (it.operator) {
-            NaryOperator.Sum -> it.children
+            SumOperator -> it.children
             else -> listOf(it)
         }
     }

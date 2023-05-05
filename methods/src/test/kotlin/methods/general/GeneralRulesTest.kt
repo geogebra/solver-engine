@@ -48,10 +48,10 @@ class GeneralRulesTest {
             check {
                 toExpr = "3xy"
 
-                shift("./0/0", "./0")
-                shift("./0/1", "./1")
-                cancel("./1:exp", "./1:outerOp")
-                shift("./2", "./2")
+                shift("./0", "./0")
+                shift("./1", "./1")
+                cancel("./2:exp", "./2:outerOp")
+                shift("./3", "./2")
             }
         }
     }

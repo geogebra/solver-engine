@@ -34,7 +34,7 @@ class ExpandRulesTest {
         testRule(
             "[(2x - 3)^2]",
             ExpandBinomialSquaredUsingIdentity,
-            "[(2 x) ^ 2] + 2 * 2 x * (-3) + [(-3) ^ 2]",
+            "[(2 x) ^ 2] + 2 * <. 2 x .> * (-3) + [(-3) ^ 2]",
         )
     }
 
@@ -53,12 +53,12 @@ class ExpandRulesTest {
         testRule(
             "[(2x - 4) ^ 3]",
             ExpandBinomialCubedUsingIdentity,
-            "[(2 x) ^ 3] + 3 * [(2 x) ^ 2] * (-4) + 3 * 2 x * [(-4) ^ 2] + [(-4) ^ 3]",
+            "[(2 x) ^ 3] + 3 * [(2 x) ^ 2] * (-4) + 3 * <. 2 x .> * [(-4) ^ 2] + [(-4) ^ 3]",
         )
         testRule(
             "[(-1 + 2x) ^ 3]",
             ExpandBinomialCubedUsingIdentity,
-            "[(-1) ^ 3] + 3 * [(-1) ^ 2] * 2 x + 3 * (-1) * [(2 x) ^ 2] + [(2 x) ^ 3]",
+            "[(-1) ^ 3] + 3 * [(-1) ^ 2] * <. 2 x .> + 3 * (-1) * [(2 x) ^ 2] + [(2 x) ^ 3]",
         )
     }
 
@@ -140,17 +140,17 @@ class ExpandRulesTest {
         testRule(
             "2 (4x - 3)",
             DistributeMultiplicationOverSum,
-            "2*4x + 2*(-3)",
+            "2 * <. 4x .> + 2 * (-3)",
         )
         testRule(
             "2*sqrt[2]*(1 + sqrt[3])",
             DistributeMultiplicationOverSum,
-            "2 sqrt[2]*1 + 2 sqrt[2]*sqrt[3]",
+            "<. 2 sqrt[2] .> * 1 + <. 2 sqrt[2] .> * sqrt[3]",
         )
         testRule(
-            "3 sqrt[2]*[x^2] * (2x - 7)",
+            "3 sqrt[2] * [x^2] * (2x - 7)",
             DistributeMultiplicationOverSum,
-            "3 sqrt[2]*[x^2]*2x + 3 sqrt[2] * [x^2]*(-7)",
+            "<. 3 sqrt[2] * [x ^ 2] .> * <. 2 x .> + <. 3 sqrt[2] * [x ^ 2] .> * (-7)",
         )
         testRule(
             "x*(1 + sqrt[3])",
@@ -169,27 +169,28 @@ class ExpandRulesTest {
         testRule(
             "(4x - 3) * (4x - 3)",
             ApplyFoilMethod,
-            "4x * 4x + 4x * (-3) + (-3) * 4x + (-3) * (-3)",
+            "<. 4 x .> * <. 4 x .> + <. 4 x .> * (-3) + (-3) * <. 4 x .> + (-3) * (-3)",
         )
         testRule(
             "(4x - 5[x^3]) * (2[x^2] - 3x)",
             ApplyFoilMethod,
-            "4 x * 2 [x ^ 2] + 4 x * (-3 x) + (-5 [x ^ 3]) * 2 [x ^ 2] + (-5 [x ^ 3]) * (-3 x)",
+            "<. 4 x .> * <. 2 [x ^ 2] .> + <. 4 x .> * (-3 x) " +
+                "+ (-5 [x ^ 3]) * <. 2 [x ^ 2] .> + (-5 [x ^ 3]) * (-3 x)",
         )
         testRule(
             "(2x - 3) * (3x + 3)",
             ApplyFoilMethod,
-            "2 x * 3 x + 2 x * 3 + (-3) * 3 x + (-3) * 3",
+            "<. 2 x .> * <. 3 x .> + <. 2 x .> * 3 + (-3) * <. 3 x .> + (-3) * 3",
         )
         testRule(
             "(x + [x^2]) (5x + [x^2])",
             ApplyFoilMethod,
-            "x * 5x + x * [x^2] + [x^2] * 5x + [x^2] * [x^2]",
+            "x * <. 5 x .> + x * [x ^ 2] + [x ^ 2] * <. 5 x .> + [x ^ 2] * [x ^ 2]",
         )
         testRule(
             "(2x - 3) (2x - 3)",
             ApplyFoilMethod,
-            "2x * 2x + 2x * (-3) + (-3) * 2x + (-3) * (-3)",
+            "<. 2 x .> * <. 2 x .> + <. 2 x .> * (-3) + (-3) * <. 2 x .> + (-3) * (-3)",
         )
         testMethod {
             method = ApplyFoilMethod
@@ -220,17 +221,13 @@ class ExpandRulesTest {
 
     @Test
     fun testExpandDoubleBrackets() {
-        testRule(
-            "([x^2] + 5x - 2) * (3x - 5)",
-            ExpandDoubleBrackets,
-            "[x^2]*3x + [x^2]*(-5) + 5x * 3x + 5x * (-5) + (-2)*3x + (-2)*(-5)",
-        )
         testMethod {
             method = ExpandDoubleBrackets
             inputExpr = "([x^2] + 5x - 2) * (3x - 5)"
 
             check {
-                toExpr = "[x^2]*3x + [x^2]*(-5) + 5x * 3x + 5x * (-5) + (-2)*3x + (-2)*(-5)"
+                toExpr = "[x ^ 2] * <. 3 x .> + [x ^ 2] * (-5) + <. 5 x .> * <. 3 x .> " +
+                    "+ <. 5 x .> * (-5) + (-2) * <. 3 x .> + (-2) * (-5)"
 
                 distribute {
                     fromPaths("./0/0")

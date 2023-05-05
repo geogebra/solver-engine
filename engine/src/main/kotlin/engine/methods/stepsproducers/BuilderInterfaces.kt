@@ -83,9 +83,11 @@ interface PipelineBuilder {
     /**
      * Apply the [stepsProducer] to a subexpression obtained by the [extractor]
      */
-    fun applyTo(stepsProducer: StepsProducer, extractor: Extractor)
+    fun applyTo(stepsProducer: StepsProducer, extractor: Extractor<Expression>)
 
-    fun applyTo(extractor: Extractor, init: PipelineBuilder.() -> Unit)
+    fun <T : Expression> applyToKind(stepsProducer: StepsProducer, extractor: Extractor<T>)
+
+    fun applyTo(extractor: Extractor<Expression>, init: PipelineBuilder.() -> Unit)
 
     /**
      * Apply the recipe to the children of the expression in step.

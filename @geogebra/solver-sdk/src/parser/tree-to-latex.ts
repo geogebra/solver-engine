@@ -379,7 +379,7 @@ function addendNeedsPlusInFront(
   // if the addend is a partial sum and starts with a - or ± addend, we don't
   // need to put a plus around the whole partial sum
   if (
-    addend.decorators?.[0] === 'PartialSumBracket' &&
+    addend.decorators?.[0] === 'PartialBracket' &&
     ['Minus', 'PlusMinus'].includes((addend as NestedExpression).args[0].type)
   ) {
     return false;

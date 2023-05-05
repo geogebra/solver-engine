@@ -156,7 +156,7 @@ class TestAddFractions {
         inputExpr = "[1/2] + [1/3] + 3"
 
         check {
-            step {
+            invisibleStep {
                 explanation { key = SolverEngineExplanation.ExtractPartialSum }
                 toExpr = "<. [1/2] + [1/3] .> + 3"
             }

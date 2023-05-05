@@ -4,12 +4,13 @@ import engine.expressions.Child
 import engine.expressions.Decorator
 import engine.expressions.Expression
 import engine.expressions.PathScope
+import engine.expressions.Product
 import engine.expressions.productOf
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
 import engine.operators.BinaryExpressionOperator
-import engine.operators.NaryOperator
+import engine.operators.SumOperator
 import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.UnsignedIntegerPattern
@@ -75,8 +76,7 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     tags = listOf(Transformation.Tag.Rearrangement),
                     toExpr = productOf(
-                        get(pattern).flattenedProductChildren()
-                            .map { child -> transformTo(child) { it.removeBrackets() } },
+                        get(pattern).children.map { child -> transformTo(child) { it.removeBrackets() } },
                     ),
                     gmAction = tap(innerProduct, PM.OpenParens),
                     explanation = metadata(Explanation.RemoveBracketProductInProduct),
@@ -143,7 +143,7 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
 
     ReorderProduct(reorderProduct),
     ReorderProductSingleStep(reorderProductSingleStep),
-    NormalizeProductSigns(normalizeProductSigns),
+    NormalizeProducts(normalizeProducts),
 }
 
 private val reorderProduct =
@@ -151,7 +151,7 @@ private val reorderProduct =
         val product = productContaining()
 
         onPattern(product) {
-            val productChildren = get(product).flattenedProductChildren()
+            val productChildren = get(product).children
             val sortedProdChildren = productChildren.sortedBy { orderInProduct(it) }
             if (productChildren == sortedProdChildren) {
                 null
@@ -174,7 +174,7 @@ private val reorderProductSingleStep =
         val product = productContaining()
 
         onPattern(product) {
-            val productChildren = get(product).flattenedProductChildren()
+            val productChildren = get(product).children
             for (i in 1 until productChildren.size) {
                 val current = productChildren[i]
                 val currentOrder = orderInProduct(current)
@@ -203,24 +203,29 @@ private val reorderProductSingleStep =
 
 /** Make multiplication implicit or explicit, to make the product end up written in the
  * most standard form */
-private val normalizeProductSigns =
+private val normalizeProducts =
     rule {
         val product = productContaining()
 
         onPattern(product) {
-            val productValue = get(product)
-            val productChildren = productValue.flattenedProductChildren()
-            val toExpr = productOf(productChildren)
-            if (toExpr == productValue) {
-                null
-            } else {
-                ruleResult(
-                    tags = listOf(Transformation.Tag.Cosmetic),
-                    toExpr = toExpr,
-                    explanation = metadata(Explanation.NormalizeProductSigns),
-                    // gmAction = do nothing, because it happens automatically
-                )
+            val productValue = get(product) as Product
+            if (productValue.children.none { it.isPartialProduct() } && productValue.forcedSigns.isEmpty()) {
+                return@onPattern null
             }
+
+            val productChildren = productValue.children.flatMap {
+                if (it.isPartialProduct()) it.children else listOf(it)
+            }
+            ruleResult(
+                tags = if (productValue.forcedSigns.isNotEmpty()) {
+                    listOf(Transformation.Tag.Cosmetic)
+                } else {
+                    listOf(Transformation.Tag.InvisibleChange)
+                },
+                toExpr = productOf(productChildren),
+                explanation = metadata(Explanation.NormalizeProducts),
+                // gmAction = do nothing, because it happens automatically
+            )
         }
     }
 
@@ -228,7 +233,7 @@ private val normalizeProductSigns =
 private fun orderInProduct(e: Expression): Int {
     val isConstantAdjuster = if (e.isConstant()) 0 else 10
     return isConstantAdjuster + when (e.operator) {
-        NaryOperator.Sum -> 3
+        SumOperator -> 3
         BinaryExpressionOperator.Root -> 2
         UnaryExpressionOperator.SquareRoot -> 2
         else -> 1

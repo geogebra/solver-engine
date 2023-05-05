@@ -1,11 +1,12 @@
 package methods.general
 
 import engine.conditions.Sign
-import engine.conditions.integerValue
 import engine.conditions.isDefinitelyNotUndefined
 import engine.conditions.isDefinitelyNotZero
 import engine.conditions.signOf
 import engine.expressions.Constants
+import engine.expressions.IntegerExpression
+import engine.expressions.asInteger
 import engine.expressions.fractionOf
 import engine.expressions.negOf
 import engine.expressions.powerOf
@@ -18,7 +19,6 @@ import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
 import engine.operators.BinaryExpressionOperator
-import engine.operators.IntegerOperator
 import engine.operators.UnaryExpressionOperator
 import engine.operators.VariableOperator
 import engine.patterns.AnyPattern
@@ -108,7 +108,7 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
 private val removeUnitaryCoefficient =
     rule {
         val one = FixedPattern(Constants.One)
-        val otherTerm = condition(AnyPattern()) { it.operator !is IntegerOperator }
+        val otherTerm = condition(AnyPattern()) { it !is IntegerExpression }
         val pattern = productOf(one, otherTerm)
 
         onPattern(pattern) {
@@ -440,7 +440,7 @@ private val distributePowerOfProduct =
 
             ruleResult(
                 toExpr = productOf(
-                    get(product).flattenedProductChildren().map { powerOf(move(it), distributedExponent) },
+                    get(product).children.map { powerOf(move(it), distributedExponent) },
                 ),
                 gmAction = drag(exponent, product),
                 explanation = metadata(Explanation.DistributePowerOfProduct),
@@ -911,7 +911,7 @@ private val cancelRootIndexAndExponent =
         val root = rootOf(power, order)
 
         onPattern(root) {
-            if (get(commonExponent).integerValue()!!.isEven() &&
+            if (get(commonExponent).asInteger()!!.isEven() &&
                 get(base).signOf() != Sign.POSITIVE
             ) {
                 return@onPattern null

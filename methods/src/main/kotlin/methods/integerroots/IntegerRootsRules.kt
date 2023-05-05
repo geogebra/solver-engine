@@ -2,7 +2,6 @@ package methods.integerroots
 
 import engine.conditions.Sign
 import engine.conditions.signOf
-import engine.expressions.asPositiveInteger
 import engine.expressions.powerOf
 import engine.expressions.productOf
 import engine.expressions.rootOf
@@ -310,10 +309,9 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(radical) {
                 // e.g. root[ [a^4], 4 ] = a, only when a > 0
-                if (
-                    get(exponent).asPositiveInteger()!!.isEven() &&
-                    get(base).signOf() != Sign.POSITIVE
-                ) { return@onPattern null }
+                if (getValue(exponent).isEven() && get(base).signOf() != Sign.POSITIVE) {
+                    return@onPattern null
+                }
 
                 ruleResult(
                     toExpr = cancel(exponent, get(base)),

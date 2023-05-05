@@ -1,11 +1,8 @@
 package methods.fractionarithmetic
 
+import engine.expressions.Fraction
+import engine.expressions.Power
 import engine.expressions.asRational
-import engine.expressions.base
-import engine.expressions.denominator
-import engine.expressions.exponent
-import engine.expressions.isFraction
-import engine.expressions.numerator
 import engine.methods.CompositeMethod
 import engine.methods.Method
 import engine.methods.RunnerMethod
@@ -102,7 +99,9 @@ enum class FractionArithmeticPlans(override val runner: CompositeMethod) : Runne
             explanation = Explanation.SplitRationalExponent
 
             steps {
-                applyTo(FractionArithmeticRules.ConvertImproperFractionToSumOfIntegerAndFraction) { it.exponent() }
+                applyToKind<Power>(FractionArithmeticRules.ConvertImproperFractionToSumOfIntegerAndFraction) {
+                    it.exponent
+                }
                 apply(GeneralRules.DistributeSumOfPowers)
             }
         },
@@ -146,7 +145,7 @@ private fun createAddFractionsSteps(numeratorSimplificationSteps: StepsProducer)
             explanation = Explanation.SimplifyNumerator
 
             steps {
-                applyTo(numeratorSimplificationSteps) { it.numerator() }
+                applyToKind<Fraction>(numeratorSimplificationSteps) { it.numerator }
             }
         }
     }
@@ -233,13 +232,13 @@ val normalizeFractionsWithinFractions = steps {
 }
 
 val normalizeNegativeSignsInFraction = steps {
-    check { it.isFraction() }
+    check { it is Fraction }
 
     optionally {
-        applyTo(GeneralRules.FactorMinusFromSum) { it.numerator() }
+        applyToKind<Fraction>(GeneralRules.FactorMinusFromSum) { it.numerator }
     }
     optionally {
-        applyTo(GeneralRules.FactorMinusFromSum) { it.denominator() }
+        applyToKind<Fraction>(GeneralRules.FactorMinusFromSum) { it.denominator }
     }
 
     firstOf {
@@ -259,7 +258,7 @@ val simplifyIntegerToNegativePower = steps {
 
                 steps {
                     apply(FractionArithmeticRules.TurnNegativePowerOfIntegerToFraction)
-                    applyTo(IntegerArithmeticRules.EvaluateIntegerPowerDirectly) { it.denominator() }
+                    applyToKind<Fraction>(IntegerArithmeticRules.EvaluateIntegerPowerDirectly) { it.denominator }
                 }
             }
         }
@@ -271,7 +270,7 @@ val simplifyIntegerToNegativePower = steps {
                 steps {
                     // [0 ^ -n] -> [[1 / 0] ^ n]
                     apply(FractionArithmeticRules.TurnNegativePowerOfZeroToPowerOfFraction)
-                    applyTo(GeneralRules.SimplifyZeroDenominatorFractionToUndefined) { it.base() }
+                    applyToKind<Power>(GeneralRules.SimplifyZeroDenominatorFractionToUndefined) { it.base }
                 }
             }
         }

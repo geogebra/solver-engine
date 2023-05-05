@@ -1,14 +1,15 @@
 package methods.integerarithmetic
 
 import engine.expressions.Expression
+import engine.expressions.IntegerExpression
+import engine.expressions.Power
+import engine.expressions.Product
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
-import engine.operators.BinaryExpressionOperator
-import engine.operators.IntegerOperator
-import engine.operators.NaryOperator
+import engine.operators.SumOperator
 import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.SignedIntegerPattern
@@ -162,19 +163,19 @@ enum class IntegerArithmeticPlans(override val runner: CompositeMethod) : Runner
     ),
 }
 
-val arithmeticOperators = listOf(
-    UnaryExpressionOperator.Minus,
-    UnaryExpressionOperator.Plus,
-    UnaryExpressionOperator.DivideBy,
-    BinaryExpressionOperator.Power,
-    NaryOperator.Sum,
-    NaryOperator.Product,
-)
+fun Expression.hasArithmeticOperation() = when {
+    operator == UnaryExpressionOperator.Minus -> true
+    operator == UnaryExpressionOperator.Plus -> true
+    operator == UnaryExpressionOperator.DivideBy -> true
+    operator == SumOperator -> true
+    this is IntegerExpression -> true
+    this is Power -> true
+    this is Product -> true
+    else -> false
+}
 
 private fun Expression.isArithmeticExpression(): Boolean {
-    val validOperator = operator is IntegerOperator || arithmeticOperators.contains(operator)
-
-    return validOperator && children.all { it.isArithmeticExpression() }
+    return hasArithmeticOperation() && children.all { it.isArithmeticExpression() }
 }
 
 private val evaluationSteps = steps {

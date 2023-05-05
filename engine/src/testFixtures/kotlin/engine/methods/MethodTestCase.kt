@@ -208,7 +208,7 @@ class TaskCheck(private val task: Task?) :
         explanationCheck.finalize()
     }
 
-    fun step(assert: TransformationCheck.() -> Unit) {
+    private fun getCurrentStep(): Transformation {
         assertNotNull(task)
 
         val currentStep = checkedSteps ?: 0
@@ -219,7 +219,18 @@ class TaskCheck(private val task: Task?) :
             "$checkedSteps steps were specified, but the task only has ${task.steps.size}"
         }
 
-        checkTransformation(task.steps[currentStep], assert)
+        return task.steps[currentStep]
+    }
+
+    fun step(assert: TransformationCheck.() -> Unit) {
+        val currentStep = getCurrentStep()
+
+        if (currentStep.tags?.contains(Transformation.Tag.InvisibleChange) == true) {
+            // if this is an invisible step, check the next one instead
+            step(assert)
+        } else {
+            checkTransformation(currentStep, assert)
+        }
     }
 
     fun noStep() {
@@ -294,7 +305,7 @@ class TransformationCheck(private val trans: Transformation?) :
         checkedSkills = (checkedSkills ?: 0) + 1
     }
 
-    fun step(assert: TransformationCheck.() -> Unit) {
+    fun getCurrentStep(): Transformation {
         assertNotNull(trans)
 
         val currentStep = checkedSteps ?: 0
@@ -305,7 +316,25 @@ class TransformationCheck(private val trans: Transformation?) :
             "$checkedSteps steps were specified, but the transformation only has ${trans.steps!!.size}"
         }
 
-        checkTransformation(trans.steps!![currentStep], assert)
+        return trans.steps!![currentStep]
+    }
+
+    fun invisibleStep(assert: TransformationCheck.() -> Unit) {
+        val currentStep = getCurrentStep()
+
+        assert(currentStep.tags?.contains(Transformation.Tag.InvisibleChange) == true)
+        checkTransformation(currentStep, assert)
+    }
+
+    fun step(assert: TransformationCheck.() -> Unit) {
+        val currentStep = getCurrentStep()
+
+        if (currentStep.tags?.contains(Transformation.Tag.InvisibleChange) == true) {
+            // if this is an invisible step, check the next one instead
+            step(assert)
+        } else {
+            checkTransformation(currentStep, assert)
+        }
     }
 
     fun task(assert: TaskCheck.() -> Unit) {

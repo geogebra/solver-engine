@@ -1,13 +1,17 @@
 package engine.expressions
 
 import engine.operators.BinaryExpressionOperator
+import engine.operators.DecimalOperator
 import engine.operators.EquationSystemOperator
 import engine.operators.ExpressionOperator
 import engine.operators.IntegerOperator
 import engine.operators.LatexRenderable
-import engine.operators.NaryOperator
+import engine.operators.MixedNumberOperator
 import engine.operators.Operator
+import engine.operators.ProductOperator
+import engine.operators.RecurringDecimalOperator
 import engine.operators.RenderContext
+import engine.operators.SumOperator
 import engine.operators.UnaryExpressionOperator
 import engine.operators.VariableOperator
 import engine.patterns.ExpressionProvider
@@ -34,7 +38,7 @@ enum class Decorator {
         override fun decorateLatexString(str: String) = "\\left\\{ $str \\right\\}"
     },
     MissingBracket,
-    PartialSumBracket {
+    PartialBracket {
         override fun decorateString(str: String) = "<. $str .>"
     }, ;
 
@@ -47,7 +51,7 @@ enum class Decorator {
  * in a rule to tag some sub-expressions of the result for further processing.  It is possible for the same label to be
  * present in more than one node of an expression.
  */
-enum class Label : Extractor {
+enum class Label : Extractor<Expression> {
     A,
     B,
     C,
@@ -57,31 +61,75 @@ enum class Label : Extractor {
 }
 
 /**
+ * Metadata about a node, that is managed in the same way by all types.  This interface is not strictly needed
+ * now as all instances are of type [BasicMeta]
+ */
+interface NodeMeta {
+    /**
+     * The [decorators] list contains all the decorators (mainly enclosing brackets) that the node is wrapped in.
+     */
+    val decorators: List<Decorator>
+
+    /**
+     * The [origin] of the node is where it came from, used to build path mappings. The default value [Build] means
+     * that it is a new node not taken from another expression.
+     */
+    val origin: Origin
+
+    /**
+     * A [label] can be attached to a node so it can be retrieved later independently of its position in a larger
+     * node.
+     */
+    val label: Label?
+
+    /**
+     * A [name] can be attached to a node - this can be displayed next to the expression
+     * to make references to it easier
+     *
+     * E.g. here the name is "(1)"
+     *     x + 5 = 3x    (1)
+     */
+    val name: String?
+
+    fun copyMeta(
+        decorators: List<Decorator> = this.decorators,
+        origin: Origin = this.origin,
+        label: Label? = this.label,
+        name: String? = this.name,
+    ): NodeMeta
+}
+
+data class BasicMeta(
+    override val decorators: List<Decorator> = emptyList(),
+    override val origin: Origin = Build,
+    override val label: Label? = null,
+    override val name: String? = null,
+) : NodeMeta {
+    override fun copyMeta(decorators: List<Decorator>, origin: Origin, label: Label?, name: String?) =
+        copy(decorators, origin, label, name)
+}
+
+/**
  * A mathematical expression.  It is made of an [operator] which defines what type of expression it is, and of zero or
  * more [operands] which are the children of the expression.
  */
 @Suppress("TooManyFunctions")
-class Expression private constructor(
+open class Expression internal constructor(
     val operator: Operator,
     internal val operands: List<Expression>,
-    val decorators: List<Decorator>,
-    val origin: Origin,
-    private val label: Label?,
-    val name: String?,
+    private val meta: NodeMeta,
 ) : LatexRenderable, ExpressionProvider {
 
-    /**
-     * Create a new expression with [Build] origin and no label.  Operand brackets are not adjusted and if a required
-     * bracket is missing in an operand, an exception will be thrown.
-     */
-    constructor(operator: Operator, operands: List<Expression>, decorators: List<Decorator> = emptyList()) :
-        this(operator, operands, decorators, Build, null, null)
+    internal val decorators get() = meta.decorators
+    val origin get() = meta.origin
+    private val label get() = meta.label
+    val name get() = meta.name
 
     init {
         operands.forEachIndexed { i, op -> require(op.hasBracket() || operator.nthChildAllowed(i, op.operator)) }
     }
 
-    val parent = when (origin) {
+    val parent = when (val origin = origin) {
         is Child -> origin.parent
         else -> null
     }
@@ -91,9 +139,6 @@ class Expression private constructor(
         else -> this.operands.flatMap { it.variables }.toSet()
     }
 
-    private fun withDecorators(newDecorators: List<Decorator>) =
-        Expression(operator, operands, newDecorators, origin, label, name)
-
     /**
      * Returns true if the expression node is labelled (not if the children are labelled).
      */
@@ -102,11 +147,11 @@ class Expression private constructor(
     /**
      * Returns a copy labelled with [newLabel] instead of the existing label.
      */
-    fun withLabel(newLabel: Label?) = Expression(operator, operands, decorators, origin, newLabel, name)
+    fun withLabel(newLabel: Label?) = expressionOf(operator, operands, meta.copyMeta(label = newLabel))
 
-    fun byName() = if (name != null) nameXp(name) else this
+    fun byName() = if (name != null) nameXp(name!!) else this
 
-    fun withName(newName: String?) = Expression(operator, operands, decorators, origin, label, newName)
+    fun withName(newName: String?) = expressionOf(operator, operands, meta.copyMeta(name = newName))
 
     fun withoutName() = withName(null)
 
@@ -122,7 +167,7 @@ class Expression private constructor(
      * Returns a copy of the expression with all labels cleared recursively.
      */
     fun clearLabels(): Expression =
-        Expression(operator, operands.map { it.clearLabels() }, decorators, origin, null, name)
+        expressionOf(operator, operands.map { it.clearLabels() }, meta.copyMeta(label = null))
 
     val children by lazy { origin.computeChildrenOrigin(this) }
 
@@ -131,24 +176,8 @@ class Expression private constructor(
      */
     val childCount get() = this.operands.size
 
-    /**
-     * Number of children of this expression, where implicit and explicit products are flattened.
-     * E.g. 3x*5x has a flattenedChildCount of 4
-     * But (3x)(5x) has a flattenedChildCount of 2
-     */
-    val flattenedChildCount
-        get() = when (operator) {
-            NaryOperator.Product -> children.sumOf {
-                if (!it.hasBracket() && it.operator == NaryOperator.ImplicitProduct) it.childCount else 1
-            }
-            else -> childCount
-        }
-
-    fun flattenedProductChildren() = when (operator) {
-        NaryOperator.ImplicitProduct -> children
-        NaryOperator.Product -> children.flatMap {
-            if (!it.hasBracket() && it.operator == NaryOperator.ImplicitProduct) it.children else listOf(it)
-        }
+    fun factors() = when (operator) {
+        is ProductOperator -> children
         else -> listOf(this)
     }
 
@@ -157,7 +186,7 @@ class Expression private constructor(
 
     fun nthChild(n: Int) = children[n]
 
-    fun withOrigin(newOrigin: Origin) = Expression(operator, operands, decorators, newOrigin, label, name)
+    fun withOrigin(newOrigin: Origin) = expressionOf(operator, operands, meta.copyMeta(origin = newOrigin))
 
     internal fun pathMappings(rootPath: Path = RootPath()) = origin.computePathMappings(rootPath, children)
 
@@ -182,19 +211,21 @@ class Expression private constructor(
     }
 
     fun equiv(other: Expression): Boolean {
-        return operator.equiv(other.operator) &&
+        return operator == other.operator &&
             operands.size == other.operands.size &&
             operands.zip(other.operands).all { (op1, op2) -> op1.equiv(op2) }
     }
 
-    fun decorate(decorator: Decorator) = Expression(operator, operands, decorators + decorator, origin, label, name)
+    fun decorate(decorator: Decorator) =
+        expressionOf(operator, operands, meta.copyMeta(decorators = decorators + decorator))
 
     fun hasBracket() = decorators.isNotEmpty()
 
-    fun isPartialSum() = decorators.getOrNull(0) === Decorator.PartialSumBracket
+    fun isPartialSum() = operator is SumOperator && decorators.getOrNull(0) === Decorator.PartialBracket
+    fun isPartialProduct() = this is Product && decorators.getOrNull(0) === Decorator.PartialBracket
 
     fun removeBrackets() =
-        if (hasBracket()) Expression(operator, operands, emptyList(), origin, label, name) else this
+        if (hasBracket()) expressionOf(operator, operands, meta.copyMeta(decorators = emptyList())) else this
 
     fun outerBracket() = decorators.lastOrNull()
 
@@ -242,7 +273,7 @@ class Expression private constructor(
     /**
      * Updates the origin of the expression so that it now descends from [ancestor]
      */
-    internal fun updateOrigin(ancestor: Expression): Expression = when (origin) {
+    internal fun updateOrigin(ancestor: Expression): Expression = when (val origin = origin) {
         ancestor.origin -> ancestor
         is Child -> origin.parent.updateOrigin(ancestor).nthChild(origin.index)
         else -> this
@@ -288,11 +319,29 @@ class Expression private constructor(
         return newExpr.asFlattenedProduct()
     }
 
-    private fun asFlattenedProduct(): Expression = when (operator) {
-        NaryOperator.Product, NaryOperator.ImplicitProduct -> {
-            productOf(flattenedProductChildren()).withDecorators(decorators).withLabel(label)
+    // it's really strange how we only flatten products and not sums
+    private fun asFlattenedProduct(): Expression = when {
+        this !is Product -> this
+        operands.all { it.hasLabel() || it !is Product } -> this
+        else -> {
+            val flatOperands = mutableListOf<Expression>()
+            val flatForcedSigns = mutableListOf<Int>()
+            var flatIndex = 0
+            for ((i, op) in operands.withIndex()) {
+                if (i in forcedSigns) {
+                    flatForcedSigns.add(flatIndex)
+                }
+                if (op is Product && !op.hasLabel()) {
+                    flatOperands.addAll(op.children)
+                    flatForcedSigns.addAll(op.forcedSigns.map { flatIndex + it })
+                    flatIndex += op.children.size
+                } else {
+                    flatOperands.add(op)
+                    flatIndex++
+                }
+            }
+            Product(flatOperands, flatForcedSigns, meta)
         }
-        else -> this
     }
 
     internal fun replaceNthChild(childIndex: Int, newChild: Expression) =
@@ -306,13 +355,10 @@ class Expression private constructor(
             },
         )
 
-    internal fun replaceChildren(newChildren: List<Expression>) = Expression(
+    internal fun replaceChildren(newChildren: List<Expression>) = expressionOf(
         operator,
         newChildren.mapIndexed { index, child -> child.adjustBracketFor(operator, index) },
-        decorators,
-        Build,
-        label,
-        name,
+        meta.copyMeta(origin = Build),
     )
 
     override fun getBoundExprs(m: Match) = listOf(this)
@@ -348,7 +394,7 @@ class Expression private constructor(
         return parent?.isChildOfOrSelf(possibleAncestor) == true
     }
 
-    fun toJson(): List<Any> {
+    open fun toJson(): List<Any> {
         val serializedOperands = operands.map { it.toJson() }
         return if (decorators.isEmpty() && name == null) {
             listOf(operator.name) + serializedOperands
@@ -392,26 +438,6 @@ fun Expression.splitPlusMinus(): List<Expression> {
     return product(splitChildren).map { replaceChildren(it) }.toList()
 }
 
-fun Expression.numerator(): Expression {
-    require(operator == BinaryExpressionOperator.Fraction) { "Fraction expected, got: $operator" }
-    return firstChild
-}
-
-fun Expression.denominator(): Expression {
-    require(operator == BinaryExpressionOperator.Fraction) { "Fraction expected, got: $operator" }
-    return secondChild
-}
-
-fun Expression.base(): Expression {
-    require(operator == BinaryExpressionOperator.Power) { "Power expected, got: $operator" }
-    return firstChild
-}
-
-fun Expression.exponent(): Expression {
-    require(operator == BinaryExpressionOperator.Power) { "Power expected, got: $operator" }
-    return secondChild
-}
-
 /** Returns `this` or a subexpression without any outer `-`, `±`, and unary `+` */
 fun Expression.withoutNegOrPlus(): Expression = when (operator) {
     UnaryExpressionOperator.Minus, UnaryExpressionOperator.Plus, UnaryExpressionOperator.PlusMinus ->
@@ -421,14 +447,12 @@ fun Expression.withoutNegOrPlus(): Expression = when (operator) {
 
 fun Expression.isNeg() = operator == UnaryExpressionOperator.Minus
 
-fun Expression.isFraction() = operator == BinaryExpressionOperator.Fraction
-
-fun Expression.isSignedFraction() = this.isFraction() || (this.isNeg() && firstChild.isFraction())
+fun Expression.isSignedFraction() = this is Fraction || (this.isNeg() && firstChild is Fraction)
 
 fun Expression.inverse(): Expression = when {
     this == Constants.One -> this
     isNeg() -> simplifiedNegOf(firstChild.inverse())
-    isFraction() -> simplifiedFractionOf(secondChild, firstChild)
+    this is Fraction -> simplifiedFractionOf(denominator, numerator)
     else -> fractionOf(Constants.One, this)
 }
 
@@ -437,23 +461,53 @@ fun Expression.asRational(): Rational? = when (operator) {
     else -> asPositiveRational()
 }
 
-fun Expression.asPositiveRational(): Rational? = when (operator) {
-    BinaryExpressionOperator.Fraction -> firstChild.asPositiveInteger()?.let { num ->
-        secondChild.asPositiveInteger()?.let { den -> Rational(num, den) }
+fun Expression.asPositiveRational(): Rational? = when (this) {
+    is Fraction -> numerator.asPositiveInteger()?.let { num ->
+        denominator.asPositiveInteger()?.let { den -> Rational(num, den) }
     }
-    is IntegerOperator -> Rational(operator.value)
+    is IntegerExpression -> Rational(value)
     else -> null
 }
 
-fun Expression.asInteger(): BigInteger? = when (val op = operator) {
-    is IntegerOperator -> op.value
-    UnaryExpressionOperator.Minus -> firstChild.asPositiveInteger()?.negate()
+fun Expression.asInteger(): BigInteger? = when {
+    this is IntegerExpression -> value
+    operator == UnaryExpressionOperator.Minus -> firstChild.asPositiveInteger()?.negate()
     else -> null
 }
 
-fun Expression.asPositiveInteger(): BigInteger? = when (val op = operator) {
-    is IntegerOperator -> op.value
+fun Expression.asPositiveInteger(): BigInteger? = when (this) {
+    is IntegerExpression -> value
     else -> null
 }
 
 fun Expression.isEquationSystem(): Boolean = operator is EquationSystemOperator
+
+fun expressionOf(operator: Operator, operands: List<Expression>): Expression {
+    return expressionOf(operator, operands, BasicMeta())
+}
+
+private fun expressionOf(
+    operator: Operator,
+    operands: List<Expression>,
+    meta: NodeMeta,
+): Expression {
+    return when (operator) {
+        is IntegerOperator -> IntegerExpression(operator.value, meta)
+        is DecimalOperator -> DecimalExpression(operator.value, meta)
+        is RecurringDecimalOperator -> RecurringDecimalExpression(operator.value, meta)
+        is MixedNumberOperator -> {
+            @Suppress("MagicNumber")
+            assert(operands.size == 3)
+            MixedNumberExpression(
+                operands[0] as IntegerExpression,
+                operands[1] as IntegerExpression,
+                operands[2] as IntegerExpression,
+                meta,
+            )
+        }
+        is ProductOperator -> Product(operands, operator.forcedSigns, meta)
+        BinaryExpressionOperator.Fraction -> Fraction(operands[0], operands[1], meta)
+        BinaryExpressionOperator.Power -> Power(operands[0], operands[1], meta)
+        else -> Expression(operator, operands, meta)
+    }
+}

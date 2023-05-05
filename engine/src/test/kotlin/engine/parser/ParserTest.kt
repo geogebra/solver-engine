@@ -3,17 +3,19 @@ package engine.parser
 import engine.expressions.Constants
 import engine.expressions.Decorator
 import engine.expressions.Expression
+import engine.expressions.Product
 import engine.expressions.bracketOf
 import engine.expressions.buildExpression
 import engine.expressions.cartesianProductOf
 import engine.expressions.contradictionOf
 import engine.expressions.curlyBracketOf
 import engine.expressions.equationOf
+import engine.expressions.explicitProductOf
+import engine.expressions.expressionOf
 import engine.expressions.fractionOf
 import engine.expressions.greaterThanEqualOf
 import engine.expressions.greaterThanOf
 import engine.expressions.identityOf
-import engine.expressions.implicitProductOf
 import engine.expressions.implicitSolutionOf
 import engine.expressions.lessThanEqualOf
 import engine.expressions.lessThanOf
@@ -23,6 +25,7 @@ import engine.expressions.negOf
 import engine.expressions.plusMinusOf
 import engine.expressions.plusOf
 import engine.expressions.powerOf
+import engine.expressions.productOf
 import engine.expressions.rawRootOf
 import engine.expressions.setSolutionOf
 import engine.expressions.solutionSetOf
@@ -32,7 +35,7 @@ import engine.expressions.sumOf
 import engine.expressions.tupleOf
 import engine.expressions.variableListOf
 import engine.expressions.xp
-import engine.operators.NaryOperator
+import engine.operators.SumOperator
 import engine.operators.UndefinedOperator
 import parser.parseExpression
 import kotlin.test.Test
@@ -41,17 +44,14 @@ import kotlin.test.assertFails
 
 class ParserTest {
 
-    private fun rawSumOf(vararg terms: Expression) = Expression(
-        NaryOperator.Sum,
+    private fun rawSumOf(vararg terms: Expression) = expressionOf(
+        SumOperator,
         terms.asList(),
     )
 
-    private fun rawPartialSumOf(vararg terms: Expression) = rawSumOf(*terms).decorate(Decorator.PartialSumBracket)
+    private fun rawPartialSumOf(vararg terms: Expression) = rawSumOf(*terms).decorate(Decorator.PartialBracket)
 
-    private fun rawProductOf(vararg factors: Expression) = Expression(
-        NaryOperator.Product,
-        factors.asList(),
-    )
+    private fun rawProductOf(vararg factors: Expression) = Product(factors.asList())
 
     private fun parsingFails(input: String) {
         assertFails {
@@ -110,7 +110,7 @@ class ParserTest {
         )
         parsesTo(
             "2[x^3][y^5]",
-            implicitProductOf(
+            rawProductOf(
                 xp(2),
                 powerOf(xp("x"), xp(3)),
                 powerOf(xp("y"), xp(5)),
@@ -118,20 +118,27 @@ class ParserTest {
         )
         parsesTo(
             "[1/2][x^3]",
-            implicitProductOf(
+            rawProductOf(
                 fractionOf(xp(1), xp(2)),
                 powerOf(xp("x"), xp(3)),
             ),
         )
         parsesTo(
             "xyz",
-            implicitProductOf(xp("x"), xp("y"), xp("z")),
+            rawProductOf(xp("x"), xp("y"), xp("z")),
         )
         parsesTo(
             "[(x+1)^2]",
             powerOf(bracketOf(rawSumOf(xp("x"), xp(1))), xp(2)),
         )
-        parsesTo("2[2^2]", implicitProductOf(xp(2), powerOf(xp(2), xp(2)))) // Should that be correct?
+    }
+
+    @Test
+    fun testProducts() {
+        // Should fail
+        parsesTo("2[2^2]", rawProductOf(xp(2), powerOf(xp(2), xp(2))))
+        // Should give warning but be accepted
+        parsesTo("2[1 / 3]", rawProductOf(xp(2), fractionOf(xp(1), xp(3))))
     }
 
     @Test
@@ -165,7 +172,7 @@ class ParserTest {
                 rawSumOf(
                     xp(1),
                     squareBracketOf(
-                        rawProductOf(
+                        explicitProductOf(
                             xp(2),
                             bracketOf(
                                 rawSumOf(xp(3), negOf(xp(6))),
@@ -181,7 +188,7 @@ class ParserTest {
     fun testRoots() {
         parsesTo(
             "sqrt[2] * sqrt[3]",
-            rawProductOf(squareRootOf(xp(2)), squareRootOf(xp(3))),
+            productOf(squareRootOf(xp(2)), squareRootOf(xp(3))),
         )
         parsesTo(
             "[root[2, 3] / root[4, 5]]",
@@ -206,8 +213,8 @@ class ParserTest {
         parsesTo(
             "3x + 4 = 4x - 5",
             equationOf(
-                rawSumOf(implicitProductOf(xp(3), xp("x")), xp(4)),
-                rawSumOf(implicitProductOf(xp(4), xp("x")), negOf(xp(5))),
+                rawSumOf(rawProductOf(xp(3), xp("x")), xp(4)),
+                rawSumOf(rawProductOf(xp(4), xp("x")), negOf(xp(5))),
             ),
         )
     }
@@ -217,29 +224,29 @@ class ParserTest {
         parsesTo(
             "3x + 4 < 4x - 5",
             lessThanOf(
-                rawSumOf(implicitProductOf(xp(3), xp("x")), xp(4)),
-                rawSumOf(implicitProductOf(xp(4), xp("x")), negOf(xp(5))),
+                rawSumOf(rawProductOf(xp(3), xp("x")), xp(4)),
+                rawSumOf(rawProductOf(xp(4), xp("x")), negOf(xp(5))),
             ),
         )
         parsesTo(
             "sqrt[xy] <= [x + y / 2]",
             lessThanEqualOf(
-                squareRootOf(implicitProductOf(xp("x"), xp("y"))),
+                squareRootOf(rawProductOf(xp("x"), xp("y"))),
                 fractionOf(sumOf(xp("x"), xp("y")), xp(2)),
             ),
         )
         parsesTo(
             "3x + 4 > 4x - 5",
             greaterThanOf(
-                rawSumOf(implicitProductOf(xp(3), xp("x")), xp(4)),
-                rawSumOf(implicitProductOf(xp(4), xp("x")), negOf(xp(5))),
+                rawSumOf(rawProductOf(xp(3), xp("x")), xp(4)),
+                rawSumOf(rawProductOf(xp(4), xp("x")), negOf(xp(5))),
             ),
         )
         parsesTo(
             "sqrt[xy] >= [2xy / x + y]",
             greaterThanEqualOf(
-                squareRootOf(implicitProductOf(xp("x"), xp("y"))),
-                fractionOf(implicitProductOf(xp(2), xp("x"), xp("y")), sumOf(xp("x"), xp("y"))),
+                squareRootOf(rawProductOf(xp("x"), xp("y"))),
+                fractionOf(rawProductOf(xp(2), xp("x"), xp("y")), sumOf(xp("x"), xp("y"))),
             ),
         )
     }

@@ -22,7 +22,7 @@ enum class NormalizationPlans(override val runner: CompositeMethod) : RunnerMeth
                         option { deeply(NormalizationRules.AddClarifyingBracket) }
                         option { deeply(NormalizationRules.RemoveRedundantBracket) }
                         option { deeply(NormalizationRules.RemoveRedundantPlusSign) }
-                        option { deeply(NormalizationRules.NormalizeProductSigns) }
+                        option { deeply(NormalizationRules.NormalizeProducts) }
                     }
                 }
             }

@@ -11,7 +11,7 @@ data class EquationPattern(
     val rhs: Pattern,
 ) : BasePattern() {
     override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
-        if (!subexpression.operator.equiv(EquationOperator)) {
+        if (subexpression.operator != EquationOperator) {
             return emptySequence()
         }
 

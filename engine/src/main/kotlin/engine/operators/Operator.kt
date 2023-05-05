@@ -46,7 +46,6 @@ interface Operator {
     val arity: Int
     val kind: OperatorKind
 
-    fun equiv(other: Operator) = this == other
     fun nthChildAllowed(n: Int, op: Operator): Boolean
 
     fun childrenAllowed(ops: Iterable<Operator>): Boolean {

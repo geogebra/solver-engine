@@ -2,18 +2,15 @@ package methods.decimals
 
 import engine.context.Curriculum
 import engine.context.ResourceData
+import engine.expressions.DecimalExpression
 import engine.expressions.Expression
-import engine.expressions.denominator
-import engine.expressions.numerator
+import engine.expressions.Fraction
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.steps
-import engine.operators.BinaryExpressionOperator
-import engine.operators.DecimalOperator
-import engine.operators.IntegerOperator
 import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.SignedNumberPattern
@@ -32,7 +29,7 @@ import methods.general.createEvaluateAbsoluteValuePlan
 import methods.general.inlineSumsAndProducts
 import methods.integerarithmetic.IntegerArithmeticPlans
 import methods.integerarithmetic.IntegerArithmeticRules
-import methods.integerarithmetic.arithmeticOperators
+import methods.integerarithmetic.hasArithmeticOperation
 
 enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
     EvaluateSumOfDecimals(
@@ -165,10 +162,10 @@ enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
             steps {
                 optionally(DecimalRules.ExpandFractionToPowerOfTenDenominator)
                 optionally {
-                    applyTo(DecimalRules.EvaluateDecimalProductAndDivision) { it.numerator() }
+                    applyToKind<Fraction>(DecimalRules.EvaluateDecimalProductAndDivision) { it.numerator }
                 }
                 optionally {
-                    applyTo(DecimalRules.EvaluateDecimalProductAndDivision) { it.denominator() }
+                    applyToKind<Fraction>(DecimalRules.EvaluateDecimalProductAndDivision) { it.denominator }
                 }
                 apply(DecimalRules.ConvertFractionWithPowerOfTenDenominatorToDecimal)
             }
@@ -248,8 +245,8 @@ private val evaluateDecimalAbsoluteValue =
     createEvaluateAbsoluteValuePlan(decimalEvaluationSteps)
 
 private fun Expression.isDecimalExpression(): Boolean {
-    val validOperator = operator is IntegerOperator || operator is DecimalOperator ||
-        arithmeticOperators.contains(operator) || operator == BinaryExpressionOperator.Fraction ||
+    val validOperator = this is DecimalExpression ||
+        hasArithmeticOperation() || this is Fraction ||
         operator == UnaryExpressionOperator.AbsoluteValue
 
     return validOperator && children.all { it.isDecimalExpression() }

@@ -231,7 +231,7 @@ enum class GeneralExplanation : CategorisedMetadataKey {
      *  sqrt(2) y -> sqrt(2) * y
      */
     @LegacyKeyName("General.NormaliseSimplifiedProduct")
-    NormalizeProductSigns,
+    NormalizeProducts,
 
     /**
      * Normalize all the negative signs in a product (i.e. cancel pairs of

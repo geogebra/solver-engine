@@ -152,8 +152,8 @@ class SubstituteTest {
             toExpr = "[1/2x] + 2*2y"
 
             keep("./0", "./1/0")
-            transform("./1/1", "./1/1/0")
-            shift("./1/2", "./1/1/1")
+            transform("./1/1", "./1/1")
+            shift("./1/2", "./1/2")
         }
     }
 

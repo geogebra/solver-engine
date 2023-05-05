@@ -4,8 +4,8 @@ import engine.conditions.Sign
 import engine.conditions.isDefinitelyNotUndefined
 import engine.conditions.signOf
 import engine.expressions.Constants
+import engine.expressions.Fraction
 import engine.expressions.contradictionOf
-import engine.expressions.denominator
 import engine.expressions.equationOf
 import engine.expressions.equationUnionOf
 import engine.expressions.fractionOf
@@ -170,7 +170,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                         // artificially created expression [-1/3]. The `3` in that
                         // example, however, does have a parent chain to the root of the
                         // "from expression" so we can use that.
-                        val positiveCoefficient = coefficient.withoutNegOrPlus()
+                        val positiveCoefficient = coefficient.withoutNegOrPlus() as Fraction
                         if (positiveCoefficient.parent !== null) {
                             positiveCoefficient
                         } else {
@@ -179,7 +179,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                             // the `2` would still be left behind. It's not ideal that GM
                             // would require two steps to move the `[2/3]`, while Solver
                             // would take only one step.
-                            positiveCoefficient.denominator()
+                            positiveCoefficient.denominator
                         }
                     }
                     ruleResult(

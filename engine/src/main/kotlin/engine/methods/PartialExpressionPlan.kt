@@ -7,7 +7,7 @@ import engine.expressions.Expression
 import engine.expressions.sumOf
 import engine.methods.stepsproducers.StepsBuilder
 import engine.methods.stepsproducers.StepsProducer
-import engine.operators.NaryOperator
+import engine.operators.SumOperator
 import engine.patterns.AnyPattern
 import engine.patterns.NaryPattern
 import engine.patterns.RootMatch
@@ -49,7 +49,7 @@ class PartialExpressionPlan(
     }
 
     override fun run(ctx: Context, sub: Expression): Transformation? {
-        return if (sub.flattenedChildCount == naryPattern.childPatterns.size) {
+        return if (sub.childCount == naryPattern.childPatterns.size) {
             plan.run(ctx, sub)
         } else {
             task.run(ctx, sub)
@@ -66,7 +66,7 @@ class PartialSumPlan(
 ) : CompositeMethod(specificPlans) {
 
     init {
-        check(pattern.operator === NaryOperator.Sum)
+        check(pattern.operator === SumOperator)
     }
 
     override fun run(ctx: Context, sub: Expression): Transformation? {
@@ -80,7 +80,7 @@ class PartialSumPlan(
             val partialSum = sumOf(matchedChildExpressions)
             val substitutedPartialSum = pattern.substitute(
                 match,
-                arrayOf(partialSum.decorate(Decorator.PartialSumBracket)),
+                arrayOf(partialSum.decorate(Decorator.PartialBracket)),
             )
 
             val builder = StepsBuilder(ctx, sub)

@@ -34,7 +34,7 @@ object MonomialGCF {
         } else {
             exp
         }
-        return product.flattenedProductChildren().toMutableList()
+        return product.factors().toMutableList()
     }
 
     /**

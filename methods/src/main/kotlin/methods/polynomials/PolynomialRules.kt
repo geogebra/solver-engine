@@ -4,7 +4,6 @@ import engine.expressions.Constants
 import engine.expressions.Expression
 import engine.expressions.Label
 import engine.expressions.equationOf
-import engine.expressions.implicitProductOf
 import engine.expressions.negOf
 import engine.expressions.powerOf
 import engine.expressions.productOf
@@ -97,9 +96,9 @@ enum class PolynomialRules(override val runner: Rule) : RunnerMethod {
             onPattern(sum) {
                 val terms = get(sum).children.map {
                     if (it.operator == UnaryExpressionOperator.Minus) {
-                        Pair(true, it.firstChild.flattenedProductChildren())
+                        Pair(true, it.firstChild.factors())
                     } else {
-                        Pair(false, it.flattenedProductChildren())
+                        Pair(false, it.factors())
                     }
                 }
 
@@ -251,12 +250,11 @@ private val collectUnitaryMonomialsInProduct = rule {
     val negProduct = optionalNegOf(product)
 
     onPattern(negProduct) {
-        val factors = get(product).flattenedProductChildren()
         val monomialFactorPattern = monomialPattern(commonVariable)
         val monomialFactors = mutableListOf<Expression>()
         val constantFactors = mutableListOf<Expression>()
         val otherFactors = mutableListOf<Expression>()
-        for (factor in factors) {
+        for (factor in get(product).children) {
             if (factor.isConstant()) {
                 constantFactors.add(factor)
                 continue
@@ -288,7 +286,7 @@ private val collectUnitaryMonomialsInProduct = rule {
                 constantFactors[0] = copySign(negProduct, constantFactors[0])
                 signCopied = true
             }
-            implicitProductOf(
+            productOf(
                 productOf(constantFactors).withLabel(Label.A),
                 productOf(monomialFactors).withLabel(Label.B),
             )
@@ -364,8 +362,7 @@ private val distributeProductToIntegerPower = rule {
     val power = powerOf(product, exponent)
 
     onPattern(power) {
-        val factors = get(product).flattenedProductChildren()
-        val (constantFactors, otherFactors) = factors.partition { it.isConstant() }
+        val (constantFactors, otherFactors) = get(product).children.partition { it.isConstant() }
         val factorPowers = mutableListOf<Expression>()
         if (constantFactors.isNotEmpty()) {
             factorPowers.add(powerOf(productOf(constantFactors), move(exponent)).withLabel(Label.A))

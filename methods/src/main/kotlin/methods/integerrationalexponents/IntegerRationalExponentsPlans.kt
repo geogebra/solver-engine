@@ -1,7 +1,6 @@
 package methods.integerrationalexponents
 
-import engine.expressions.base
-import engine.expressions.exponent
+import engine.expressions.Power
 import engine.methods.CompositeMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
@@ -28,7 +27,7 @@ enum class IntegerRationalExponentsPlans(override val runner: CompositeMethod) :
 
             steps {
                 apply(GeneralRules.MultiplyExponentsUsingPowerRule)
-                applyTo(FractionArithmeticPlans.MultiplyAndSimplifyFractions) { it.exponent() }
+                applyToKind<Power>(FractionArithmeticPlans.MultiplyAndSimplifyFractions) { it.exponent }
             }
         },
     ),
@@ -143,7 +142,7 @@ enum class IntegerRationalExponentsPlans(override val runner: CompositeMethod) :
 
             steps {
                 apply(GeneralRules.RewriteFractionOfPowersWithSameBase)
-                applyTo(addIntegerFractions) { it.exponent() }
+                applyToKind<Power>(addIntegerFractions) { it.exponent }
             }
         },
     ),
@@ -154,7 +153,7 @@ enum class IntegerRationalExponentsPlans(override val runner: CompositeMethod) :
 
             steps {
                 apply(GeneralRules.RewriteFractionOfPowersWithSameExponent)
-                optionally { applyTo(FractionArithmeticPlans.SimplifyFraction) { it.base() } }
+                optionally { applyToKind<Power>(FractionArithmeticPlans.SimplifyFraction) { it.base } }
             }
         },
     ),

@@ -3,7 +3,9 @@ package parser
 import engine.expressions.Constants
 import engine.expressions.Decorator
 import engine.expressions.Expression
+import engine.expressions.Product
 import engine.expressions.cartesianProductOf
+import engine.expressions.expressionOf
 import engine.expressions.greaterThanEqualOf
 import engine.expressions.greaterThanOf
 import engine.expressions.lessThanEqualOf
@@ -11,19 +13,21 @@ import engine.expressions.lessThanOf
 import engine.expressions.mixedNumber
 import engine.expressions.nameXp
 import engine.expressions.negOf
+import engine.expressions.productSignRequired
 import engine.expressions.solutionOf
 import engine.expressions.solutionSetOf
 import engine.expressions.xp
 import engine.operators.AddEquationsOperator
 import engine.operators.BinaryExpressionOperator
+import engine.operators.DefaultProductOperator
 import engine.operators.EquationOperator
 import engine.operators.EquationSystemOperator
 import engine.operators.EquationUnionOperator
 import engine.operators.IntervalOperator
 import engine.operators.MultiVariateSolutionOperator
-import engine.operators.NaryOperator
 import engine.operators.Operator
 import engine.operators.SubtractEquationsOperator
+import engine.operators.SumOperator
 import engine.operators.TupleOperator
 import engine.operators.UnaryExpressionOperator
 import engine.operators.VariableListOperator
@@ -46,14 +50,14 @@ fun parseExpression(text: String): Expression {
     return visitor.visit(parser.wholeInput())
 }
 
-private fun makeExpression(operator: Operator, operands: List<Expression>) = Expression(
+private fun adjustBracket(operator: Operator, i: Int, operand: Expression) = when {
+    operand.hasBracket() || operator.nthChildAllowed(i, operand.operator) -> operand
+    else -> operand.decorate(Decorator.MissingBracket)
+}
+
+private fun makeExpression(operator: Operator, operands: List<Expression>) = expressionOf(
     operator,
-    operands.mapIndexed { i, operand ->
-        when {
-            operand.hasBracket() || operator.nthChildAllowed(i, operand.operator) -> operand
-            else -> operand.decorate(Decorator.MissingBracket)
-        }
-    },
+    operands.mapIndexed { i, operand -> adjustBracket(operator, i, operand) },
 )
 
 private fun makeExpression(operator: Operator, vararg operands: Expression) =
@@ -170,20 +174,20 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
         }
         val terms = mutableListOf<Expression>(first)
         terms.addAll(rest)
-        return makeExpression(NaryOperator.Sum, terms)
+        return makeExpression(SumOperator, terms)
     }
 
     override fun visitRealFirstTerm(ctx: ExpressionParser.RealFirstTermContext): Expression {
-        val p = visit(ctx.explicitProduct())
+        val p = visit(ctx.product())
         return if (ctx.sign == null) p else makeExpression(getAdditiveOperator(ctx.sign), p)
     }
 
     override fun visitFirstPartialSum(ctx: ExpressionParser.FirstPartialSumContext): Expression {
-        return visit(ctx.sum()).decorate(Decorator.PartialSumBracket)
+        return visit(ctx.sum()).decorate(Decorator.PartialBracket)
     }
 
     override fun visitRealOtherTerm(ctx: ExpressionParser.RealOtherTermContext): Expression {
-        val p = visit(ctx.explicitProduct())
+        val p = visit(ctx.product())
         return when (val op = getAdditiveOperator(ctx.sign)) {
             UnaryExpressionOperator.Plus -> if (op.childAllowed(p.operator) || p.hasBracket()) {
                 p
@@ -197,26 +201,53 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
     }
 
     override fun visitOtherPartialSum(ctx: ExpressionParser.OtherPartialSumContext): Expression {
-        return visit(ctx.sum()).decorate(Decorator.PartialSumBracket)
+        return visit(ctx.sum()).decorate(Decorator.PartialBracket)
     }
 
-    override fun visitExplicitProduct(ctx: ExpressionParser.ExplicitProductContext): Expression {
-        val first = visit(ctx.first)
-        val rest = ctx.rest.map { visit(it) }
-        if (rest.isEmpty()) {
-            return first
+    override fun visitProduct(ctx: ExpressionParser.ProductContext): Expression {
+        val factors = mutableListOf<Expression>(visit(ctx.first))
+        val forcedSigns = mutableListOf<Int>()
+
+        for (otherFactor in ctx.rest) {
+            val (factor, hasSign) = when (otherFactor) {
+                is ExpressionParser.FactorWithNoOperatorContext -> Pair(visit(otherFactor.factor()), false)
+                is ExpressionParser.FactorWithProductOperatorContext -> Pair(visit(otherFactor.signedFactor()), true)
+                is ExpressionParser.FactorWithDivisionOperatorContext -> {
+                    val implicitProduct = visit(otherFactor.implicitProduct())
+                    val divisor = makeExpression(UnaryExpressionOperator.DivideBy, implicitProduct)
+                    Pair(divisor, false)
+                }
+                is ExpressionParser.PartialProductWithNoOperatorContext ->
+                    Pair(visit(otherFactor.product()).decorate(Decorator.PartialBracket), false)
+                is ExpressionParser.PartialProductWithProductOperatorContext ->
+                    Pair(visit(otherFactor.product()).decorate(Decorator.PartialBracket), true)
+                else -> throw IllegalArgumentException("Invalid factor $otherFactor in product")
+            }
+
+            val productSignRequired = productSignRequired(factors.last(), factor)
+
+            when {
+                productSignRequired && !hasSign ->
+                    println("Warning: product sign needed between ${factors.last()} and $factor")
+                !productSignRequired && hasSign ->
+                    forcedSigns.add(factors.size)
+            }
+
+            factors.add(factor)
         }
-        val factors = mutableListOf<Expression>(first)
-        factors.addAll(rest)
-        return makeExpression(NaryOperator.Product, factors)
+
+        if (factors.size == 1) {
+            return factors[0]
+        }
+
+        return Product(
+            factors.mapIndexed { i, op -> adjustBracket(DefaultProductOperator, i, op) },
+            forcedSigns,
+        )
     }
 
-    override fun visitOtherExplicitFactor(ctx: ExpressionParser.OtherExplicitFactorContext): Expression {
-        val p = visit(ctx.implicitProduct())
-        return when (ctx.op.text) {
-            "*" -> p
-            else -> makeExpression(UnaryExpressionOperator.DivideBy, p)
-        }
+    override fun visitPartialFirstFactor(ctx: ExpressionParser.PartialFirstFactorContext): Expression {
+        return visit(ctx.product()).decorate(Decorator.PartialBracket)
     }
 
     override fun visitImplicitProduct(ctx: ExpressionParser.ImplicitProductContext): Expression {
@@ -227,12 +258,14 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
         }
         val factors = mutableListOf<Expression>(first)
         factors.addAll(rest)
-        return makeExpression(NaryOperator.ImplicitProduct, factors)
+        return Product(factors.mapIndexed { i, op -> adjustBracket(DefaultProductOperator, i, op) })
     }
 
-    override fun visitFirstFactorWithSign(ctx: ExpressionParser.FirstFactorWithSignContext): Expression {
-        val factor = visit(ctx.factor)
-        return makeExpression(getAdditiveOperator(ctx.sign), factor)
+    override fun visitSignedFactor(ctx: ExpressionParser.SignedFactorContext): Expression {
+        return ctx.signs.foldRight(visit(ctx.factor())) {
+                sign, acc ->
+            makeExpression(getAdditiveOperator(sign), acc)
+        }
     }
 
     override fun visitFraction(ctx: ExpressionParser.FractionContext): Expression {

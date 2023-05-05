@@ -1,11 +1,11 @@
 package engine.patterns
 
 import engine.context.Context
+import engine.expressions.DecimalExpression
 import engine.expressions.Expression
+import engine.expressions.IntegerExpression
+import engine.expressions.RecurringDecimalExpression
 import engine.expressions.xp
-import engine.operators.DecimalOperator
-import engine.operators.IntegerOperator
-import engine.operators.RecurringDecimalOperator
 import engine.utility.RecurringDecimal
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -29,23 +29,23 @@ interface IntegerPattern : Pattern, IntegerProvider
 class UnsignedIntegerPattern : IntegerPattern, BasePattern() {
 
     fun getBoundInt(m: Match, default: BigInteger): BigInteger {
-        return when (val operator = m.getBoundExpr(this)?.operator) {
+        return when (val expr = m.getBoundExpr(this)) {
             null -> default
-            is IntegerOperator -> operator.value
-            else -> throw InvalidMatch("Unsigned integer matched to $operator")
+            is IntegerExpression -> expr.value
+            else -> throw InvalidMatch("Unsigned integer matched to $expr")
         }
     }
 
     override fun getBoundInt(m: Match): BigInteger {
-        return when (val operator = m.getBoundExpr(this)!!.operator) {
-            is IntegerOperator -> operator.value
-            else -> throw InvalidMatch("Unsigned integer matched to $operator")
+        return when (val expr = m.getBoundExpr(this)!!) {
+            is IntegerExpression -> expr.value
+            else -> throw InvalidMatch("Unsigned integer matched to $expr")
         }
     }
 
     override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
-        return when (subexpression.operator) {
-            is IntegerOperator -> sequenceOf(match.newChild(this, subexpression))
+        return when (subexpression) {
+            is IntegerExpression -> sequenceOf(match.newChild(this, subexpression))
             else -> emptySequence()
         }
     }
@@ -54,16 +54,17 @@ class UnsignedIntegerPattern : IntegerPattern, BasePattern() {
 class UnsignedNumberPattern : NumberPattern, BasePattern() {
 
     override fun getBoundNumber(m: Match): BigDecimal {
-        return when (val operator = m.getBoundExpr(this)!!.operator) {
-            is DecimalOperator -> operator.value
-            is IntegerOperator -> operator.value.toBigDecimal()
-            else -> throw InvalidMatch("Unsigned decimal matched $operator")
+        return when (val expr = m.getBoundExpr(this)!!) {
+            is DecimalExpression -> expr.value
+            is IntegerExpression -> expr.value.toBigDecimal()
+            else -> throw InvalidMatch("Unsigned decimal matched ${expr.operator}")
         }
     }
 
     override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
-        return when (subexpression.operator) {
-            is IntegerOperator, is DecimalOperator -> sequenceOf(match.newChild(this, subexpression))
+        return when (subexpression) {
+            is IntegerExpression, is DecimalExpression ->
+                sequenceOf(match.newChild(this, subexpression))
             else -> emptySequence()
         }
     }
@@ -72,15 +73,15 @@ class UnsignedNumberPattern : NumberPattern, BasePattern() {
 class RecurringDecimalPattern : BasePattern() {
 
     fun getBoundRecurringDecimal(m: Match): RecurringDecimal {
-        return when (val operator = m.getBoundExpr(this)!!.operator) {
-            is RecurringDecimalOperator -> operator.value
-            else -> throw InvalidMatch("Recurring decimal matched to $operator")
+        return when (val expr = m.getBoundExpr(this)!!) {
+            is RecurringDecimalExpression -> expr.value
+            else -> throw InvalidMatch("Recurring decimal matched to $expr")
         }
     }
 
     override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
-        return when (subexpression.operator) {
-            is RecurringDecimalOperator -> sequenceOf(match.newChild(this, subexpression))
+        return when (subexpression) {
+            is RecurringDecimalExpression -> sequenceOf(match.newChild(this, subexpression))
             else -> emptySequence()
         }
     }

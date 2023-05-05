@@ -1,6 +1,6 @@
 package engine.conditions
 
-import engine.operators.NaryOperator
+import engine.operators.SumOperator
 import org.junit.jupiter.api.Test
 import parser.parseExpression
 import kotlin.test.assertEquals
@@ -11,7 +11,7 @@ class SumTermsAreIncommensurableTest {
 
     private fun testSum(exprString: String, incommensurable: Boolean) {
         val expr = parseExpression(exprString)
-        assertEquals(NaryOperator.Sum, expr.operator)
+        assertEquals(SumOperator, expr.operator)
         assertEquals(incommensurable, sumTermsAreIncommensurable(expr.operands))
     }
 

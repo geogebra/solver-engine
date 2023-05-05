@@ -30,7 +30,7 @@ data class OperatorPattern(val operator: Operator, val childPatterns: List<Patte
     override fun toString() = operator.readableString(childPatterns.map { it.toString() })
 
     override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
-        if (!subexpression.operator.equiv(operator) || subexpression.operands.size != childPatterns.size) {
+        if (subexpression.operator != operator || subexpression.operands.size != childPatterns.size) {
             return emptySequence()
         }
 

@@ -123,7 +123,7 @@ function decorate(value: string, decorators?: DecoratorType[]): string {
         return `{.${res}.}`;
       case 'SquareBracket':
         return `[.${res}.]`;
-      case 'PartialSumBracket':
+      case 'PartialBracket':
         return `<.${res}.>`;
       case 'MissingBracket':
         return res;

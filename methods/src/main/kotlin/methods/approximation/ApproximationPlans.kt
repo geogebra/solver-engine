@@ -1,14 +1,13 @@
 package methods.approximation
 
+import engine.expressions.DecimalExpression
 import engine.expressions.Expression
+import engine.expressions.RecurringDecimalExpression
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
-import engine.operators.DecimalOperator
-import engine.operators.IntegerOperator
-import engine.operators.RecurringDecimalOperator
 import engine.patterns.AnyPattern
 import engine.patterns.SignedNumberPattern
 import engine.patterns.condition
@@ -18,11 +17,11 @@ import methods.general.GeneralRules
 import methods.general.NormalizationPlans
 import methods.general.inlineSumsAndProducts
 import methods.integerarithmetic.IntegerArithmeticPlans
-import methods.integerarithmetic.arithmeticOperators
+import methods.integerarithmetic.hasArithmeticOperation
 
 private fun Expression.canBeApproximated(): Boolean {
-    val validOperator = operator is IntegerOperator || operator is DecimalOperator ||
-        operator is RecurringDecimalOperator || arithmeticOperators.contains(operator)
+    val validOperator = this is DecimalExpression ||
+        this is RecurringDecimalExpression || hasArithmeticOperation()
 
     return validOperator && children.all { it.canBeApproximated() }
 }

@@ -1,7 +1,6 @@
 package methods.fractionroots
 
-import engine.expressions.denominator
-import engine.expressions.numerator
+import engine.expressions.Fraction
 import engine.methods.CompositeMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
@@ -68,7 +67,7 @@ enum class FractionRootsPlans(override val runner: CompositeMethod) : RunnerMeth
                         explanation = Explanation.SimplifyNumeratorAfterRationalization
 
                         steps {
-                            applyTo(simplifyAfterRationalization) { it.numerator() }
+                            applyToKind<Fraction>(simplifyAfterRationalization) { it.numerator }
                         }
                     }
                 }
@@ -77,7 +76,7 @@ enum class FractionRootsPlans(override val runner: CompositeMethod) : RunnerMeth
                         explanation = Explanation.SimplifyDenominatorAfterRationalization
 
                         steps {
-                            applyTo(simplifyAfterRationalization) { it.denominator() }
+                            applyToKind<Fraction>(simplifyAfterRationalization) { it.denominator }
                         }
                     }
                 }

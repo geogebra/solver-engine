@@ -11,7 +11,6 @@ import kotlin.math.sqrt
 private const val SUM_PRECEDENCE = 10
 private const val PLUS_MINUS_PRECEDENCE = 15
 private const val PRODUCT_PRECEDENCE = 20
-private const val IMPLICIT_PRODUCT_PRECEDENCE = 40
 private const val FRACTION_PRECEDENCE = 50
 private const val POWER_PRECEDENCE = 60
 private const val NATURAL_LOG_PRECEDENCE = 50
@@ -63,7 +62,7 @@ data class NameOperator(val value: String) : NullaryOperator() {
 /**
  * Operator representing an unsigned integer.
  */
-data class IntegerOperator(val value: BigInteger) : NullaryOperator() {
+internal data class IntegerOperator(val value: BigInteger) : NullaryOperator() {
     init {
         require(value.signum() >= 0)
     }
@@ -102,7 +101,7 @@ object UndefinedOperator : NullaryOperator() {
 /**
  * Operator representing an unsigned terminating decimal.
  */
-data class DecimalOperator(val value: BigDecimal) : NullaryOperator() {
+internal data class DecimalOperator(val value: BigDecimal) : NullaryOperator() {
     init {
         require(value.signum() >= 0)
     }
@@ -123,7 +122,7 @@ data class DecimalOperator(val value: BigDecimal) : NullaryOperator() {
  * - 0.[6] is RecurringDecimalOperator(BigDecimal("0.6", 1)
  * - 1.0[45] is RecurringDecimalOperator(BigDecimal("1.045"), 2)
  */
-data class RecurringDecimalOperator(val value: RecurringDecimal) : NullaryOperator() {
+internal data class RecurringDecimalOperator(val value: RecurringDecimal) : NullaryOperator() {
 
     override val name = value.toString()
 
@@ -167,8 +166,8 @@ object MixedNumberOperator : ExpressionOperator {
 
 enum class UnaryExpressionOperator(override val precedence: Int) : UnaryOperator, ExpressionOperator {
     DivideBy(DIVIDE_BY_PRECEDENCE) {
-        override fun childAllowed(op: Operator) = op.precedence > NaryOperator.Product.precedence
-        override fun <T> readableString(child: T) = " : $child"
+        override fun childAllowed(op: Operator) = op.precedence > PRODUCT_PRECEDENCE
+        override fun <T> readableString(child: T) = ": $child"
         override fun latexString(ctx: RenderContext, child: LatexRenderable) = "\\div ${child.toLatexString(ctx)}"
         override fun eval(operand: Double) = 1.0 / operand
     },
@@ -267,82 +266,78 @@ enum class BinaryExpressionOperator(override val precedence: Int) : BinaryOperat
     override fun eval(children: List<Double>) = eval(children[0], children[1])
 }
 
-enum class NaryOperator(override val precedence: Int) : ExpressionOperator {
-    Sum(SUM_PRECEDENCE) {
-        override fun <T> readableString(children: List<T>): String {
-            return buildString {
-                for ((i, child) in children.withIndex()) {
-                    if (i == 0) {
-                        append(child.toString())
-                    } else if (child is LatexRenderable) {
-                        append(child.toReadableStringAsSecondTermInASum())
-                    } else {
-                        append(" + $child")
-                    }
-                }
-            }
-        }
-
-        override fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String {
-            return buildString {
-                for ((i, child) in children.withIndex()) {
-                    if (i == 0) {
-                        append(child.toLatexString(ctx))
-                    } else {
-                        append(child.toLatexStringAsSecondTermInASum(ctx))
-                    }
-                }
-            }
-        }
-
-        override fun eval(children: List<Double>) = children.sum()
-    },
-    Product(PRODUCT_PRECEDENCE) {
-        override fun <T> readableString(children: List<T>): String {
-            return buildString {
-                for ((i, child) in children.map { it.toString() }.withIndex()) {
-                    when {
-                        i == 0 -> append(child)
-                        child.startsWith(" : ") -> append(child)
-                        else -> append(" * ", child)
-                    }
-                }
-            }
-        }
-
-        override fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String {
-            return buildString {
-                for ((i, child) in children.withIndex()) {
-                    val childLatex = child.toLatexString(ctx)
-                    when {
-                        i == 0 -> append(childLatex)
-                        child.isInlineDivideByTerm() -> append(" ", childLatex)
-                        else -> append(" \\times ", childLatex)
-                    }
-                }
-            }
-        }
-
-        override fun eval(children: List<Double>) = children.reduce { x, y -> x * y }
-    },
-    ImplicitProduct(IMPLICIT_PRODUCT_PRECEDENCE) {
-        override fun <T> readableString(children: List<T>): String {
-            return children.joinToString(" ")
-        }
-
-        override fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String {
-            return children.joinToString(" ") { it.toLatexString(ctx) }
-        }
-
-        override fun eval(children: List<Double>) = children.reduce { x, y -> x * y }
-    }, ;
+abstract class NaryOperator(override val precedence: Int) : ExpressionOperator {
 
     override val arity = ARITY_VARIABLE
     override fun nthChildAllowed(n: Int, op: Operator) = op.precedence > this.precedence
 
-    override fun equiv(other: Operator): Boolean {
-        return (this == other) ||
-            (this == Product && other == ImplicitProduct) ||
-            (this == ImplicitProduct && other == Product)
-    }
+    open fun matches(operator: Operator) = operator == this
 }
+
+object SumOperator : NaryOperator(SUM_PRECEDENCE) {
+
+    override val name = "Sum"
+    override fun <T> readableString(children: List<T>): String {
+        return buildString {
+            for ((i, child) in children.withIndex()) {
+                if (i == 0) {
+                    append(child.toString())
+                } else if (child is LatexRenderable) {
+                    append(child.toReadableStringAsSecondTermInASum())
+                } else {
+                    append(" + $child")
+                }
+            }
+        }
+    }
+
+    override fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String {
+        return buildString {
+            for ((i, child) in children.withIndex()) {
+                if (i == 0) {
+                    append(child.toLatexString(ctx))
+                } else {
+                    append(child.toLatexStringAsSecondTermInASum(ctx))
+                }
+            }
+        }
+    }
+
+    override fun eval(children: List<Double>) = children.sum()
+}
+
+data class ProductOperator(val forcedSigns: List<Int>) : NaryOperator(PRODUCT_PRECEDENCE) {
+
+    override val name = "Product"
+
+    override fun <T> readableString(children: List<T>): String {
+        return buildString {
+            for ((i, child) in children.map { it.toString() }.withIndex()) {
+                when {
+                    i == 0 -> append(child)
+                    child.startsWith(" : ") -> append(child)
+                    else -> append(" * ", child)
+                }
+            }
+        }
+    }
+
+    override fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String {
+        return buildString {
+            for ((i, child) in children.withIndex()) {
+                val childLatex = child.toLatexString(ctx)
+                when {
+                    i == 0 -> append(childLatex)
+                    child.isInlineDivideByTerm() -> append(" ", childLatex)
+                    else -> append(" \\times ", childLatex)
+                }
+            }
+        }
+    }
+
+    override fun eval(children: List<Double>) = children.reduce { x, y -> x * y }
+
+    override fun matches(operator: Operator) = operator is ProductOperator
+}
+
+val DefaultProductOperator = ProductOperator(forcedSigns = emptyList())

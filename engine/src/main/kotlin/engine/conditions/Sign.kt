@@ -1,17 +1,18 @@
 package engine.conditions
 
+import engine.expressions.DecimalExpression
 import engine.expressions.Expression
+import engine.expressions.IntegerExpression
+import engine.expressions.MixedNumberExpression
+import engine.expressions.Product
+import engine.expressions.RecurringDecimalExpression
+import engine.expressions.asInteger
 import engine.operators.BinaryExpressionOperator
-import engine.operators.DecimalOperator
-import engine.operators.IntegerOperator
-import engine.operators.MixedNumberOperator
-import engine.operators.NaryOperator
-import engine.operators.RecurringDecimalOperator
+import engine.operators.SumOperator
 import engine.operators.UnaryExpressionOperator
 import engine.operators.UndefinedOperator
 import engine.operators.VariableOperator
 import engine.utility.isEven
-import java.math.BigInteger
 
 private const val NOT_KNOWN_SIGNUM = 10
 
@@ -91,12 +92,6 @@ enum class Sign(val signum: Int) {
     }
 }
 
-fun Expression.integerValue(): BigInteger? = when (operator) {
-    is IntegerOperator -> operator.value
-    UnaryExpressionOperator.Minus -> -this.firstChild.integerValue()!!
-    else -> null
-}
-
 private fun UnaryExpressionOperator.signOf(operand: Expression) = when (this) {
     UnaryExpressionOperator.DivideBy -> operand.signOf().inverse()
     UnaryExpressionOperator.Plus -> operand.signOf()
@@ -123,7 +118,7 @@ private fun signOfPowerExpression(base: Expression, exponent: Expression) = when
     Sign.POSITIVE -> Sign.POSITIVE
     Sign.ZERO -> if (exponent.signOf() == Sign.POSITIVE) Sign.ZERO else Sign.NONE
     Sign.NEGATIVE -> {
-        val intExp = exponent.integerValue()
+        val intExp = exponent.asInteger()
         when {
             intExp == null -> Sign.NONE
             intExp.isEven() -> Sign.POSITIVE
@@ -131,7 +126,7 @@ private fun signOfPowerExpression(base: Expression, exponent: Expression) = when
         }
     }
     Sign.UNKNOWN -> {
-        val intExp = exponent.integerValue()
+        val intExp = exponent.asInteger()
         when {
             intExp == null -> Sign.NONE
             intExp.isEven() && base.isNotZeroNotBasedOnSign() -> Sign.POSITIVE
@@ -145,19 +140,17 @@ private fun signOfPowerExpression(base: Expression, exponent: Expression) = when
  * Returns the sign of the expression if it can definitely be ascertained. [Sign.NONE] is returned if the expression
  * could be undefined, [Sign.UNKNOWN] is returned if the expression has a value but its sign could not be narrowed down.
  */
-fun Expression.signOf(): Sign = when (operator) {
-    is IntegerOperator -> Sign.fromInt(operator.value.signum())
-    is UndefinedOperator -> Sign.UNKNOWN
-    is DecimalOperator -> Sign.fromInt(operator.value.signum())
-    is RecurringDecimalOperator -> Sign.POSITIVE // If it was 0, it would not be recurring
-    is VariableOperator -> Sign.UNKNOWN
-    is MixedNumberOperator -> Sign.POSITIVE // If it was 0, it would not be a mixed number
-    is UnaryExpressionOperator -> operator.signOf(operands[0])
-    is BinaryExpressionOperator -> operator.signOf(operands[0], operands[1])
-    is NaryOperator -> when (operator) {
-        NaryOperator.Sum -> operands.map { it.signOf() }.reduce(Sign::plus)
-        NaryOperator.Product, NaryOperator.ImplicitProduct -> operands.map { it.signOf() }.reduce(Sign::times)
-    }
+fun Expression.signOf(): Sign = when {
+    this is IntegerExpression -> Sign.fromInt(value.signum())
+    this is DecimalExpression -> Sign.fromInt(value.signum())
+    this is RecurringDecimalExpression -> Sign.POSITIVE // If it was 0, it would not be recurring
+    this is MixedNumberExpression -> Sign.POSITIVE // If it was 0, it would not be a mixed number
+    this is Product -> operands.map { it.signOf() }.reduce(Sign::times)
+    operator is UndefinedOperator -> Sign.UNKNOWN
+    operator is VariableOperator -> Sign.UNKNOWN
+    operator is UnaryExpressionOperator -> operator.signOf(operands[0])
+    operator is BinaryExpressionOperator -> operator.signOf(operands[0], operands[1])
+    operator is SumOperator -> operands.map { it.signOf() }.reduce(Sign::plus)
     else -> Sign.NONE
 }
 

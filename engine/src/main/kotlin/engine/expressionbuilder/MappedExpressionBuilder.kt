@@ -13,6 +13,7 @@ import engine.expressions.New
 import engine.expressions.PathScope
 import engine.expressions.asRational
 import engine.expressions.divideBy
+import engine.expressions.expressionOf
 import engine.expressions.negOf
 import engine.expressions.productOf
 import engine.expressions.simplifiedPowerOf
@@ -21,7 +22,7 @@ import engine.expressions.variableListOf
 import engine.expressions.xp
 import engine.operators.EquationOperator
 import engine.operators.InequalityOperators
-import engine.operators.NaryOperator
+import engine.operators.SumOperator
 import engine.patterns.ExpressionProvider
 import engine.patterns.InequalityPattern
 import engine.patterns.IntegerPattern
@@ -257,8 +258,8 @@ open class MappedExpressionBuilder(
         val matchedChildren = getMatchedChildExpressions(match)
 
         return when (operator) {
-            NaryOperator.Sum -> sumOf(matchedChildren)
-            NaryOperator.Product, NaryOperator.ImplicitProduct -> productOf(matchedChildren)
+            SumOperator -> sumOf(matchedChildren)
+            else -> productOf(matchedChildren)
         }
     }
 
@@ -276,17 +277,17 @@ open class MappedExpressionBuilder(
 
     fun InequalityPattern.sameInequality(lhs: Expression, rhs: Expression): Expression {
         val operator = getBoundExpr(match)!!.operator as InequalityOperators
-        return Expression(operator, listOf(lhs, rhs))
+        return expressionOf(operator, listOf(lhs, rhs))
     }
 
     fun InequalityPattern.dualInequality(lhs: Expression, rhs: Expression): Expression {
         val operator = getBoundExpr(match)!!.operator as InequalityOperators
-        return Expression(operator.getDual(), listOf(lhs, rhs))
+        return expressionOf(operator.getDual(), listOf(lhs, rhs))
     }
 
     fun SolvablePattern.sameSolvable(lhs: Expression, rhs: Expression): Expression {
         val operator = getBoundExpr(match)!!.operator
-        return Expression(operator, listOf(lhs, rhs))
+        return expressionOf(operator, listOf(lhs, rhs))
     }
 
     fun leadingCoefficientOfPolynomial(polynomialExpr: Expression): Expression? {

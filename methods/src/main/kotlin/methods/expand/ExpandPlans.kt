@@ -14,6 +14,7 @@ import engine.patterns.productContaining
 import engine.patterns.sumContaining
 import engine.patterns.sumOf
 import methods.general.GeneralRules
+import methods.general.NormalizationRules
 
 private fun createExpandSingleBracketAndSimplifyPlan(simplificationSteps: StepsProducer): Method {
     return plan {
@@ -114,12 +115,17 @@ private fun createExpandTrinomialSquaredAndSimplifyPlan(simplificationSteps: Ste
 }
 
 fun createExpandAndSimplifySteps(simplificationSteps: StepsProducer): StepsProducer {
+    val simplificationWithCleanup = steps {
+        whilePossible { deeply(NormalizationRules.NormalizeProducts) }
+        optionally(simplificationSteps)
+    }
+
     // making sure these plans are only created once
-    val expandDoubleBrackets = createExpandDoubleBracketsAndSimplifyPlan(simplificationSteps)
-    val expandSingleBracket = createExpandSingleBracketAndSimplifyPlan(simplificationSteps)
-    val expandBinomialsSquared = createExpandBinomialSquaredAndSimplifyPlan(simplificationSteps)
-    val expandBinomialCubed = createExpandBinomialCubedAndSimplifyPlan(simplificationSteps)
-    val expandTrinomialSquared = createExpandTrinomialSquaredAndSimplifyPlan(simplificationSteps)
+    val expandDoubleBrackets = createExpandDoubleBracketsAndSimplifyPlan(simplificationWithCleanup)
+    val expandSingleBracket = createExpandSingleBracketAndSimplifyPlan(simplificationWithCleanup)
+    val expandBinomialsSquared = createExpandBinomialSquaredAndSimplifyPlan(simplificationWithCleanup)
+    val expandBinomialCubed = createExpandBinomialCubedAndSimplifyPlan(simplificationWithCleanup)
+    val expandTrinomialSquared = createExpandTrinomialSquaredAndSimplifyPlan(simplificationWithCleanup)
 
     return steps {
         firstOf {

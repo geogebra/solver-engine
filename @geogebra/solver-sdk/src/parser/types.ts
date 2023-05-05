@@ -68,7 +68,7 @@ export const bracketTypes = [
   'SquareBracket',
   'CurlyBracket',
   'MissingBracket',
-  'PartialSumBracket',
+  'PartialBracket',
 ] as const;
 
 export type DecoratorType = (typeof bracketTypes)[number];

@@ -2,9 +2,9 @@ package methods.fractionarithmetic
 
 import engine.expressions.Constants
 import engine.expressions.Expression
+import engine.expressions.Fraction
 import engine.expressions.fractionOf
 import engine.expressions.inverse
-import engine.expressions.isFraction
 import engine.expressions.negOf
 import engine.expressions.powerOf
 import engine.expressions.productOf
@@ -55,7 +55,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                 val denominator = factors[division].firstChild
 
                 when {
-                    !numerator.isFraction() -> null
+                    numerator !is Fraction -> null
                     else -> {
                         val result = mutableListOf<Expression>()
                         result.addAll(factors.subList(0, division))
@@ -85,7 +85,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                 val denominator = factors[division].firstChild
 
                 when {
-                    numerator.isFraction() -> null
+                    numerator is Fraction -> null
                     else -> {
                         val result = mutableListOf<Expression>()
                         result.addAll(factors.subList(0, division - 1))
@@ -333,9 +333,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             val product = productContaining(nonFractionFactor)
 
             onPattern(
-                condition(product) { expression ->
-                    expression.flattenedProductChildren().any { it.isFraction() }
-                },
+                condition(product) { expression -> expression.children.any { it is Fraction } },
             ) {
                 ruleResult(
                     toExpr = product.substitute(
@@ -351,7 +349,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
         rule {
             val denominator = AnyPattern()
             val fraction = optionalNegOf(fractionOf(AnyPattern(), denominator))
-            val nonFractionalTerm = optionalNegOf(condition(AnyPattern()) { !it.isFraction() })
+            val nonFractionalTerm = optionalNegOf(condition(AnyPattern()) { it !is Fraction })
 
             val sum = commutativeSumOf(fraction, nonFractionalTerm)
 

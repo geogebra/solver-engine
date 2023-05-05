@@ -5,7 +5,9 @@ import engine.expressions.Constants
 import engine.expressions.Expression
 import engine.expressions.productOf
 import engine.expressions.sumOf
+import engine.operators.DefaultProductOperator
 import engine.operators.NaryOperator
+import engine.operators.SumOperator
 
 /**
  * Since the n-ary operators sum and product are both commutative
@@ -21,16 +23,16 @@ class NaryPattern(
 ) : BasePattern() {
 
     override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
-        if (!operator.equiv(subexpression.operator)) {
+        if (!operator.matches(subexpression.operator)) {
             return emptySequence()
         }
 
-        val flattenedOperands = flattenOperands(subexpression)
-        if (flattenedOperands.size < childPatterns.size || (!partial && flattenedOperands.size > childPatterns.size)) {
+        val operands = subexpression.children
+        if (operands.size < childPatterns.size || (!partial && operands.size > childPatterns.size)) {
             return emptySequence()
         }
 
-        return RecursiveMatcher(context, childPatterns, flattenedOperands, partial, commutative)
+        return RecursiveMatcher(context, childPatterns, operands, partial, commutative)
             .recursiveMatch(match.newChild(this, subexpression))
     }
 
@@ -38,7 +40,7 @@ class NaryPattern(
         val sub = m.getLastBinding(this)!!
         val matchIndexes = getMatchedOrigins(m)
 
-        return flattenOperands(sub).filter { subexpression -> !matchIndexes.contains(subexpression.origin) }
+        return sub.children.filter { subexpression -> !matchIndexes.contains(subexpression.origin) }
     }
 
     /**
@@ -50,10 +52,8 @@ class NaryPattern(
         val sub = match.getLastBinding(this)!!
         val matchedOrigins = getMatchedOrigins(match)
 
-        val flattenedOperands = flattenOperands(sub)
-
         val restChildren = mutableListOf<Expression>()
-        for (child in flattenedOperands) {
+        for (child in sub.children) {
             val newValIndex = matchedOrigins.indexOf(child.origin)
             when {
                 newValIndex == -1 -> restChildren.add(child)
@@ -64,7 +64,7 @@ class NaryPattern(
         }
 
         return when (operator) {
-            NaryOperator.Sum -> when (restChildren.size) {
+            SumOperator -> when (restChildren.size) {
                 0 -> Constants.Zero
                 1 -> restChildren[0]
                 else -> sumOf(restChildren)
@@ -75,11 +75,6 @@ class NaryPattern(
                 else -> productOf(restChildren)
             }
         }
-    }
-
-    private fun flattenOperands(sub: Expression) = when (sub.operator) {
-        NaryOperator.Sum -> sub.children
-        else -> sub.flattenedProductChildren()
     }
 
     fun getMatchedChildExpressions(match: Match) =
@@ -142,25 +137,25 @@ private data class RecursiveMatcher(
 }
 
 fun productOf(vararg factors: Pattern) =
-    NaryPattern(NaryOperator.Product, factors.asList(), commutative = false, partial = false)
+    NaryPattern(DefaultProductOperator, factors.asList(), commutative = false, partial = false)
 
 fun productContaining(vararg factors: Pattern) =
-    NaryPattern(NaryOperator.Product, factors.asList(), commutative = false, partial = true)
+    NaryPattern(DefaultProductOperator, factors.asList(), commutative = false, partial = true)
 
 fun commutativeProductOf(vararg factors: Pattern) =
-    NaryPattern(NaryOperator.Product, factors.asList(), commutative = true, partial = false)
+    NaryPattern(DefaultProductOperator, factors.asList(), commutative = true, partial = false)
 
 fun commutativeProductContaining(vararg factors: Pattern) =
-    NaryPattern(NaryOperator.Product, factors.asList(), commutative = true, partial = true)
+    NaryPattern(DefaultProductOperator, factors.asList(), commutative = true, partial = true)
 
 fun sumOf(vararg factors: Pattern) =
-    NaryPattern(NaryOperator.Sum, factors.asList(), commutative = false, partial = false)
+    NaryPattern(SumOperator, factors.asList(), commutative = false, partial = false)
 
 fun sumContaining(vararg factors: Pattern) =
-    NaryPattern(NaryOperator.Sum, factors.asList(), commutative = false, partial = true)
+    NaryPattern(SumOperator, factors.asList(), commutative = false, partial = true)
 
 fun commutativeSumOf(vararg factors: Pattern) =
-    NaryPattern(NaryOperator.Sum, factors.asList(), commutative = true, partial = false)
+    NaryPattern(SumOperator, factors.asList(), commutative = true, partial = false)
 
 fun commutativeSumContaining(vararg factors: Pattern) =
-    NaryPattern(NaryOperator.Sum, factors.asList(), commutative = true, partial = true)
+    NaryPattern(SumOperator, factors.asList(), commutative = true, partial = true)

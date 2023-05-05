@@ -367,7 +367,7 @@ describe('Solver Parser Unit Tests', () => {
           'Sum',
           ['1'],
           [
-            ['Sum', 'PartialSumBracket'],
+            ['Sum', 'PartialBracket'],
             ['Minus', ['Fraction', ['1'], ['2']]],
             ['Fraction', ['1'], ['3']],
           ],
@@ -377,13 +377,13 @@ describe('Solver Parser Unit Tests', () => {
       },
       {
         solver: '1+<.1+2.>+3',
-        json: ['Sum', ['1'], [['Sum', 'PartialSumBracket'], ['1'], ['2']], ['3']],
+        json: ['Sum', ['1'], [['Sum', 'PartialBracket'], ['1'], ['2']], ['3']],
         latex: '1+1+2+3',
         dontParseLatex: true,
       },
       {
         solver: '<.1+2.>+3',
-        json: ['Sum', [['Sum', 'PartialSumBracket'], ['1'], ['2']], ['3']],
+        json: ['Sum', [['Sum', 'PartialBracket'], ['1'], ['2']], ['3']],
         latex: '1+2+3',
         dontParseLatex: true,
       },

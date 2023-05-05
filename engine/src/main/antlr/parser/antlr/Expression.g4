@@ -52,27 +52,35 @@ expr: sum;
 sum: first=firstTerm (rest+=otherTerm)*;
 
 firstTerm
-    : sign=('+' | '-' | PLUSMINUS)? explicitProduct  #realFirstTerm
-    | OPEN_PARTIALSUM sum CLOSE_PARTIALSUM           #firstPartialSum
+    : sign=('+' | '-' | PLUSMINUS)? product          #realFirstTerm
+    | OPEN_PARTIAL sum CLOSE_PARTIAL                 #firstPartialSum
     ;
 
 otherTerm
-    : sign=('+' | '-' | PLUSMINUS) explicitProduct   #realOtherTerm
-    | '+' OPEN_PARTIALSUM sum CLOSE_PARTIALSUM       #otherPartialSum
+    : sign=('+' | '-' | PLUSMINUS) product           #realOtherTerm
+    | '+' OPEN_PARTIAL sum CLOSE_PARTIAL             #otherPartialSum
     ;
 
-explicitProduct: first=implicitProduct (rest+=otherExplicitFactor)*;
-
-otherExplicitFactor: op=('*'|':') implicitProduct;
-
-implicitProduct: first=firstFactor (others+=otherFactor)*;
+product: first=firstFactor (rest+=factorWithOperator)*;
 
 firstFactor
-    : sign=('+' | '-' | PLUSMINUS) factor=firstFactor  #firstFactorWithSign
-    | (mixedNumber | fraction | power | atom)          #firstFactorWithoutSign
+    : signedFactor                              #realFirstFactor
+    | OPEN_PARTIAL product CLOSE_PARTIAL        #partialFirstFactor
     ;
 
-otherFactor: power | nonNumericAtom;
+factorWithOperator
+    : factor                                                    #factorWithNoOperator
+    | '*' signedFactor                                          #factorWithProductOperator
+    | ':' implicitProduct                                       #factorWithDivisionOperator
+    | OPEN_PARTIAL product CLOSE_PARTIAL                        #partialProductWithNoOperator
+    | '*' OPEN_PARTIAL product CLOSE_PARTIAL                    #partialProductWithProductOperator
+    ;
+
+implicitProduct: first=signedFactor (others+=factor)*;
+
+signedFactor: (signs+=('+' | '-' | PLUSMINUS))* factor;
+
+factor: mixedNumber | fraction | power | atom;
 
 fraction: '[' num=expr '/' den=expr ']';
 
@@ -124,8 +132,8 @@ CLOSE_SQUARE: '.]';
 OPEN_CURLY: '{.';
 CLOSE_CURLY: '.}';
 
-OPEN_PARTIALSUM: '<.';
-CLOSE_PARTIALSUM: '.>';
+OPEN_PARTIAL: '<.';
+CLOSE_PARTIAL: '.>';
 
 PLUSMINUS: '+/-';
 

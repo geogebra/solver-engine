@@ -4,22 +4,20 @@ package engine.expressions
 
 import engine.operators.AddEquationsOperator
 import engine.operators.BinaryExpressionOperator
-import engine.operators.DecimalOperator
+import engine.operators.DefaultProductOperator
 import engine.operators.EquationOperator
 import engine.operators.EquationSystemOperator
 import engine.operators.EquationUnionOperator
 import engine.operators.InequalityOperators
-import engine.operators.IntegerOperator
 import engine.operators.IntervalOperator
-import engine.operators.MixedNumberOperator
 import engine.operators.MultiVariateSolutionOperator
 import engine.operators.NameOperator
 import engine.operators.NaryOperator
 import engine.operators.Operator
-import engine.operators.RecurringDecimalOperator
 import engine.operators.SetOperators
 import engine.operators.SolutionOperator
 import engine.operators.SubtractEquationsOperator
+import engine.operators.SumOperator
 import engine.operators.TupleOperator
 import engine.operators.UnaryExpressionOperator
 import engine.operators.VariableListOperator
@@ -28,38 +26,38 @@ import engine.utility.RecurringDecimal
 import java.math.BigDecimal
 import java.math.BigInteger
 
-fun buildExpression(operator: Operator, operands: List<Expression>, decorators: List<Decorator> = emptyList()) =
-    Expression(
+fun buildExpression(operator: Operator, operands: List<Expression>) =
+    expressionOf(
         operator,
         operands.mapIndexed { index, operand -> operand.adjustBracketFor(operator, index) },
-        decorators,
     )
 
 fun xp(n: Int) = xp(n.toBigInteger())
 
 fun xp(n: BigInteger): Expression {
-    val posExpr = buildExpression(IntegerOperator(n.abs()), emptyList())
+    val posExpr = IntegerExpression(n.abs())
     return if (n.signum() >= 0) posExpr else negOf(posExpr)
 }
 
 fun xp(x: BigDecimal): Expression {
-    val operator =
-        if (x.scale() <= 0) IntegerOperator(x.abs().toBigInteger()) else DecimalOperator(x.abs())
-    val posExpr = buildExpression(operator, emptyList())
+    if (x.scale() <= 0) {
+        return xp(x.toBigInteger())
+    }
+    val posExpr = DecimalExpression(x.abs())
     return if (x.signum() >= 0) posExpr else negOf(posExpr)
 }
 
 fun xp(x: RecurringDecimal): Expression {
-    return buildExpression(RecurringDecimalOperator(x), emptyList())
+    return RecurringDecimalExpression(x)
 }
 
 fun xp(v: String) = buildExpression(VariableOperator(v), emptyList())
 
 fun mixedNumber(integer: BigInteger, numerator: BigInteger, denominator: BigInteger) =
-    buildExpression(MixedNumberOperator, listOf(xp(integer), xp(numerator), xp(denominator)))
+    MixedNumberExpression(IntegerExpression(integer), IntegerExpression(numerator), IntegerExpression(denominator))
 
-fun mixedNumberOf(integer: Expression, numerator: Expression, denominator: Expression) =
-    buildExpression(MixedNumberOperator, listOf(integer, numerator, denominator))
+fun mixedNumberOf(integer: IntegerExpression, numerator: IntegerExpression, denominator: IntegerExpression) =
+    MixedNumberExpression(integer, numerator, denominator)
 
 fun bracketOf(expr: Expression, decorator: Decorator? = null) = expr.decorate(decorator ?: Decorator.RoundBracket)
 fun squareBracketOf(expr: Expression) = expr.decorate(Decorator.SquareBracket)
@@ -109,77 +107,33 @@ fun absoluteValueOf(argument: Expression) = buildExpression(UnaryExpressionOpera
 fun sumOf(vararg operands: Expression) = sumOf(operands.asList())
 
 fun sumOf(operands: List<Expression>): Expression = flattenedNaryExpression(
-    NaryOperator.Sum,
+    SumOperator,
     operands,
 )
-
-fun getBaseOfPower(expr: Expression): Expression = when (expr.operator) {
-    BinaryExpressionOperator.Power -> getBaseOfPower(expr.operands[0])
-    else -> expr
-}
-
-private fun Expression.isNumbery(): Boolean = when (operator) {
-    BinaryExpressionOperator.Power -> getBaseOfPower(this).isNumbery()
-    BinaryExpressionOperator.Fraction -> true
-    is IntegerOperator, is DecimalOperator, is RecurringDecimalOperator -> true
-    UnaryExpressionOperator.Minus -> {
-        val op = operands[0].operator
-        op is IntegerOperator || op is DecimalOperator || op is RecurringDecimalOperator
-    }
-    else -> false
-}
-
-// couldn't come up with a good way of splitting or simplifying this method
-@Suppress("CyclomaticComplexMethod")
-fun productSignRequired(left: Expression, right: Expression): Boolean = when {
-    left.operator == UnaryExpressionOperator.DivideBy || right.operator == UnaryExpressionOperator.DivideBy -> true
-    right.isNumbery() -> true
-    left.hasBracket() || right.hasBracket() -> false
-    else -> {
-        val rightOp = getBaseOfPower(right).operator
-        val leftOp = getBaseOfPower(left).operator
-
-        val leftIsVariable = leftOp is VariableOperator
-        val rightIsRoot = rightOp == UnaryExpressionOperator.SquareRoot ||
-            rightOp == BinaryExpressionOperator.Root
-        val rightIsRootOrVariable = rightIsRoot || rightOp is VariableOperator
-        val differentVariables = leftOp is VariableOperator && rightOp is VariableOperator &&
-            leftOp.name != rightOp.name
-
-        !(left.isNumbery() && rightIsRootOrVariable || leftIsVariable && rightIsRoot || differentVariables)
-    }
-}
 
 fun productOf(operands: List<Expression>): Expression {
     if (operands.size == 1) {
         return operands[0]
     }
-    val flattenedOperands = operands.flatMap { if (it.hasLabel()) listOf(it) else it.flattenedProductChildren() }
-
-    var implicitFactors = mutableListOf<Expression>()
-    val factors = mutableListOf<Expression>()
-    for ((i, op) in flattenedOperands.withIndex()) {
-        val op1 = op.adjustBracketFor(NaryOperator.ImplicitProduct, i)
-
-        if (i > 0 && productSignRequired(implicitFactors.last(), op1)) {
-            factors.add(implicitProductOf(implicitFactors))
-            implicitFactors = mutableListOf()
-        }
-        implicitFactors.add(op1)
-    }
-    factors.add(implicitProductOf(implicitFactors))
-    return explicitProductOf(factors)
+    val flattenedOperands = operands
+        .flatMap { if (!it.hasLabel() && it is Product) it.children else listOf(it) }
+        .mapIndexed { index, operand -> operand.adjustBracketFor(DefaultProductOperator, index) }
+    return Product(flattenedOperands)
 }
 
-fun explicitProductOf(operands: List<Expression>) =
-    if (operands.size == 1) operands[0] else flattenedNaryExpression(NaryOperator.Product, operands)
+fun explicitProductOf(operands: List<Expression>): Expression {
+    if (operands.size == 1) {
+        return operands[0]
+    }
+    val flattenedOperands = operands
+        .map { if (it is Product) it.decorate(Decorator.PartialBracket) else it }
+        .mapIndexed { index, operand -> operand.adjustBracketFor(DefaultProductOperator, index) }
+    val forcedSigns = (1 until flattenedOperands.size)
+        .filter { !productSignRequired(flattenedOperands[it - 1], flattenedOperands[it]) }
+    return Product(flattenedOperands, forcedSigns)
+}
 
 fun explicitProductOf(vararg operands: Expression) = explicitProductOf(operands.asList())
-
-fun implicitProductOf(operands: List<Expression>) =
-    if (operands.size == 1) operands[0] else buildExpression(NaryOperator.ImplicitProduct, operands)
-
-fun implicitProductOf(vararg operands: Expression) = implicitProductOf(operands.asList())
 
 fun productOf(vararg operands: Expression) = productOf(operands.asList())
 

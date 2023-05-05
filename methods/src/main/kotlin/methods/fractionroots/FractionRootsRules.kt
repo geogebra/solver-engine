@@ -2,6 +2,8 @@ package methods.fractionroots
 
 import engine.expressions.Constants
 import engine.expressions.Expression
+import engine.expressions.Power
+import engine.expressions.Product
 import engine.expressions.fractionOf
 import engine.expressions.negOf
 import engine.expressions.powerOf
@@ -14,8 +16,6 @@ import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
-import engine.operators.BinaryExpressionOperator
-import engine.operators.NaryOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
@@ -239,8 +239,8 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
             )
 
             onPattern(pattern) {
-                val list1 = get(term1).flattenedProductChildren() + get(term2).flattenedProductChildren()
-                val list2 = get(middleTerm).flattenedProductChildren()
+                val list1 = get(term1).factors() + get(term2).factors()
+                val list2 = get(middleTerm).factors()
 
                 val middleTermMatches = list1.size == list2.size && list1.zip(list2).all { (e1, e2) -> e1.equiv(e2) }
 
@@ -367,7 +367,7 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
                 if (indexValue != null) {
                     val primeFactorizedFormExpr = get(radical).children[0]
 
-                    if (primeFactorizedFormExpr.operator == NaryOperator.Product) {
+                    if (primeFactorizedFormExpr is Product) {
                         for (term in primeFactorizedFormExpr.children) {
                             val exponentFactorMatch = matchPattern(exponentFactorPtn, term)
                             val integerFactorMatch = matchPattern(integerFactorPtn, term)
@@ -391,7 +391,7 @@ enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
                                 )
                             }
                         }
-                    } else if (primeFactorizedFormExpr.operator == BinaryExpressionOperator.Power) {
+                    } else if (primeFactorizedFormExpr is Power) {
                         val exponentFactorMatch = exponentFactorPtn.findMatches(
                             context = context,
                             subexpression = primeFactorizedFormExpr,

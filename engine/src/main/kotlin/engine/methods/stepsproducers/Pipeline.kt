@@ -86,7 +86,18 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
         }
     }
 
-    override fun applyTo(stepsProducer: StepsProducer, extractor: Extractor) {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : Expression>applyToKind(stepsProducer: StepsProducer, extractor: Extractor<T>) {
+        if (builder.aborted) return
+
+        addSteps(
+            extractor.extract(builder.lastSub as T)?.let {
+                stepsProducer.produceSteps(ctx, it)
+            },
+        )
+    }
+
+    override fun applyTo(stepsProducer: StepsProducer, extractor: Extractor<Expression>) {
         if (builder.aborted) return
 
         addSteps(
@@ -96,7 +107,7 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
         )
     }
 
-    override fun applyTo(extractor: Extractor, init: PipelineBuilder.() -> Unit) {
+    override fun applyTo(extractor: Extractor<Expression>, init: PipelineBuilder.() -> Unit) {
         if (builder.aborted) return
 
         applyTo(ProceduralPipeline(init), extractor)
