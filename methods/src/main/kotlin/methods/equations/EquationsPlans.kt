@@ -211,10 +211,6 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                         FormChecker(solutionPattern()),
                     )
                     alternative(
-                        ResourceData(preferDecimals = false, gmFriendly = true),
-                        FormChecker(equationOf(SolutionVariablePattern(), AnyPattern())),
-                    )
-                    alternative(
                         ResourceData(preferDecimals = true),
                         decimalSolutionFormChecker,
                     )

@@ -426,7 +426,6 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             }
 
             onEquation(lhs, rhs) {
-                if (context.gmFriendly) return@onEquation null
                 ruleResult(
                     tags = listOf(Transformation.Tag.Pedantic),
                     toExpr = solutionOf(move(lhs), solutionSetOf(move(rhs))),

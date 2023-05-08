@@ -9,10 +9,10 @@ export type NestedExpressionType =
   | 'ImplicitProduct' // n-ary
   | 'DivideBy' // unary
   | 'Fraction' // binary
-  | 'MixedNumber' // ternary
-  | 'Power' // binary
+  | 'MixedNumber' // (number, number, number)
+  | 'Power' // (base, power)
   | 'SquareRoot' // unary
-  | 'Root' // binary
+  | 'Root' // (degree, radicand)
   | 'AbsoluteValue' // unary
   | 'Equation' // binary
   | 'EquationSystem' // n-ary
@@ -23,13 +23,12 @@ export type NestedExpressionType =
   | 'GreaterThan' // binary
   | 'LessThanEqual' // binary
   | 'GreaterThanEqual' // binary
-  /** 'Solution' just means the "element of" operator (∈) */
-  | 'Solution' // binary
-  | 'Identity'
-  | 'Contradiction'
-  | 'ImplicitSolution'
-  | 'SetSolution'
-  | 'VariableList'
+  | 'Solution' // (VariableList, FiniteSet | Interval)
+  | 'Identity' // (VariableList)
+  | 'Contradiction' // (VariableList)
+  | 'ImplicitSolution' // (VariableList, Equation)
+  | 'SetSolution' // (VariableList, FiniteSet | CartesianProduct)
+  | 'VariableList' // n-ary list of variables
   | 'Tuple'
   | 'FiniteSet' // n-ary
   | 'CartesianProduct' // n-ary
