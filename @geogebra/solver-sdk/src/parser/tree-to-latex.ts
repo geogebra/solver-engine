@@ -5,7 +5,7 @@ import {
   NumberExpression,
 } from './types';
 import { setsSolutionFormatter, SolutionFormatter } from './solution-formatter';
-import { ColorMap } from './coloring';
+import { ColorMap } from '../solutions/coloring';
 
 // Make sure to put a space after a latex command to avoid, e.g., "2\\cdotx"
 export type LatexSettings = {

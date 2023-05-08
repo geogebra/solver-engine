@@ -8,7 +8,6 @@ import { treeToSolver } from './tree-to-solver';
 export * from './types';
 export { jsonToTree, treeToJson } from './json-to-tree';
 export { treeToLatex } from './tree-to-latex';
-export { coloringTransformer, createColorMaps } from './coloring';
 export { latexToTree } from './latex-to-tree';
 export { treeToSolver } from './tree-to-solver';
 export { setsSolutionFormatter, simpleSolutionFormatter } from './solution-formatter';

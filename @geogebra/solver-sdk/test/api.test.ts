@@ -51,7 +51,7 @@ describe('APIUnitTests', () => {
     expect(transformation).to.have.property('fromExpr');
     expect(transformation.fromExpr).to.deep.equal([
       'Sum',
-      ['Product', ['2'], ['3']],
+      ['SmartProduct', [false, ['2']], [true, ['3']]],
       ['Minus', [['4', 'RoundBracket']]],
     ]);
     expect(transformation).to.have.property('toExpr');

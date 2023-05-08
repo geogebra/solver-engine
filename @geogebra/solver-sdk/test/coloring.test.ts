@@ -8,7 +8,7 @@ import {
   PathMapping,
   treeToLatex,
 } from '../src';
-import { ColorMap } from '../src/parser/coloring';
+import { ColorMap } from '../src/solutions/coloring';
 
 function checkColorMaps({
   pathMappings,
