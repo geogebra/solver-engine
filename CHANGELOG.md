@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 An entry should be added to the _[Unreleased]_ section when committing to main. When a release is made we move its
 contents to a new release section (e.g. _[0.x]_).
 
-### [Unreleased]
+## [1.1] - 2023-05-10
 
 ### Added
 
@@ -46,9 +46,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Change the representation of products to flat instead of the explicit / implicit structure we had before. (PLUT-581)
 - Handle partial products without tasks, same as partial sums (PLUT-585)
 
-### Removed
-
-### [0.x] - 2023-04-03
+## [0.x] - 2023-04-03
 
 This is a template for a release section.
 
