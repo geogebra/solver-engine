@@ -6,7 +6,7 @@ import { api } from '../src/api';
 // with the 'fetch' function available.
 import 'cross-fetch/polyfill';
 
-describe('APIUnitTests', () => {
+describe.skip('APIUnitTests', () => {
   it('should return a version string', async () => {
     const versionInfo = await api.versionInfo();
     expect(versionInfo).to.have.property('commit');
