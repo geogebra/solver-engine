@@ -14,7 +14,7 @@ class DecimalLinearEquationsTest {
 
         check {
             fromExpr = "3.1 x + 2.2 = 2.9 x - 9.34"
-            toExpr = "Solution[x, {-57.7}]"
+            toExpr = "SetSolution[x: {-57.7}]"
             explanation {
                 key = EquationsExplanation.SolveLinearEquation
             }
@@ -45,7 +45,7 @@ class DecimalLinearEquationsTest {
 
             step {
                 fromExpr = "x = -57.7"
-                toExpr = "Solution[x, {-57.7}]"
+                toExpr = "SetSolution[x: {-57.7}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                 }
@@ -61,7 +61,7 @@ class DecimalLinearEquationsTest {
 
         check {
             fromExpr = "3.1 x + 2.2 = 1.21"
-            toExpr = "Solution[x, {-[99 / 310]}]"
+            toExpr = "SetSolution[x: {-[99 / 310]}]"
             explanation {
                 key = EquationsExplanation.SolveLinearEquation
             }
@@ -84,7 +84,7 @@ class DecimalLinearEquationsTest {
 
             step {
                 fromExpr = "x = -[99 / 310]"
-                toExpr = "Solution[x, {-[99 / 310]}]"
+                toExpr = "SetSolution[x: {-[99 / 310]}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                 }
@@ -111,7 +111,7 @@ class DecimalLinearEquationsTest {
 
         check {
             fromExpr = "3.6 x + 2.2 = [2 / 5] x + 1.2"
-            toExpr = "Solution[x, {-0.3125}]"
+            toExpr = "SetSolution[x: {-0.3125}]"
             explanation {
                 key = EquationsExplanation.SolveLinearEquation
             }
@@ -150,7 +150,7 @@ class DecimalLinearEquationsTest {
 
             step {
                 fromExpr = "x = -0.3125"
-                toExpr = "Solution[x, {-0.3125}]"
+                toExpr = "SetSolution[x: {-0.3125}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                 }

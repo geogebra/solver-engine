@@ -3,7 +3,10 @@ package methods.equationsystems
 import engine.context.Context
 import engine.context.emptyContext
 import engine.expressions.Constants
+import engine.expressions.Contradiction
 import engine.expressions.Expression
+import engine.expressions.Identity
+import engine.expressions.SetSolution
 import engine.expressions.addEquationsOf
 import engine.expressions.asInteger
 import engine.expressions.cartesianProductOf
@@ -29,9 +32,6 @@ import engine.methods.TasksBuilder
 import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
-import engine.operators.MultiVariateSolutionOperator
-import engine.operators.SetOperators
-import engine.operators.SolutionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.FindPattern
 import engine.patterns.FixedPattern
@@ -129,16 +129,16 @@ private abstract class SystemSolver : CompositeMethod() {
             val (firstEq, secondEq) = prearrangeEquations(system, variables)
 
             // Now deal with them according to the outcomes
-            when {
-                firstEq.isContradiction() -> {
+            when (firstEq) {
+                is Contradiction -> {
                     task(
                         startExpr = contradictionOf(variableListOf(variables), firstEq.secondChild),
                         explanation = metadata(Explanation.BuildSolutionContradiction),
                     )
                 }
-                firstEq.isIdentity() -> solveSystemContainingIdentity(firstEq, secondEq, variables)
-                firstEq.isSolved() -> when {
-                    secondEq.isSolved() -> solveSystemWithBothEquationsSolved(firstEq, secondEq, variables)
+                is Identity -> solveSystemContainingIdentity(firstEq, secondEq, variables)
+                is SetSolution -> when {
+                    secondEq is SetSolution -> solveSystemWithBothEquationsSolved(firstEq, secondEq, variables)
                     else -> solveSystemWithOneEquationSolved(firstEq, secondEq)
                 }
                 else -> solveSystemWithTwoEquationsInBothVariables(firstEq, secondEq, variables)
@@ -168,27 +168,27 @@ private abstract class SystemSolver : CompositeMethod() {
         )?.result ?: system.secondChild
 
         return when {
-            firstEq.isContradiction() -> Pair(firstEq, secondEq)
-            secondEq.isContradiction() -> Pair(secondEq, firstEq)
-            firstEq.isIdentity() -> Pair(firstEq, secondEq)
-            secondEq.isIdentity() -> Pair(secondEq, firstEq)
-            firstEq.isSolved() -> Pair(firstEq, secondEq)
-            secondEq.isSolved() -> Pair(secondEq, firstEq)
+            firstEq is Contradiction -> Pair(firstEq, secondEq)
+            secondEq is Contradiction -> Pair(secondEq, firstEq)
+            firstEq is Identity -> Pair(firstEq, secondEq)
+            secondEq is Identity -> Pair(secondEq, firstEq)
+            firstEq is SetSolution -> Pair(firstEq, secondEq)
+            secondEq is SetSolution -> Pair(secondEq, firstEq)
             else -> Pair(firstEq, secondEq)
         }
     }
 
     private fun TasksBuilder.solveSystemContainingIdentity(
-        firstEq: Expression,
+        firstEq: Identity,
         secondEq: Expression,
         variables: List<String>,
     ): Task {
-        return when {
-            secondEq.isIdentity() -> {
+        return when (secondEq) {
+            is Identity -> {
                 task(
                     startExpr = identityOf(
                         variableListOf(variables),
-                        equationSystemOf(firstEq.secondChild, secondEq.secondChild),
+                        equationSystemOf(firstEq.identityExpression, secondEq.identityExpression),
                     ),
                     explanation = metadata(
                         Explanation.BuildSolutionIdentities,
@@ -197,18 +197,18 @@ private abstract class SystemSolver : CompositeMethod() {
                     ),
                 )
             }
-            secondEq.isSolved() -> {
-                val secondEqVar = secondEq.firstChild
-                val otherVar = variables.first { it != secondEqVar.operator.name }
+            is SetSolution -> {
+                val secondEqVar = secondEq.solutionVariable
+                val otherVar = variables.first { it != secondEqVar }
 
                 task(
                     startExpr = combineSolutions(
                         secondEqVar,
                         secondEq.secondChild,
-                        xp(otherVar),
+                        otherVar,
                         Constants.Reals,
                     ),
-                    explanation = metadata(Explanation.BuildSolutionOneVariableFixed, secondEqVar),
+                    explanation = metadata(Explanation.BuildSolutionOneVariableFixed, xp(secondEqVar)),
                 )
             }
             else -> {
@@ -221,18 +221,18 @@ private abstract class SystemSolver : CompositeMethod() {
     }
 
     private fun TasksBuilder.solveSystemWithBothEquationsSolved(
-        firstEq: Expression,
-        secondEq: Expression,
+        firstEq: SetSolution,
+        secondEq: SetSolution,
         variables: List<String>,
     ) {
-        val firstEqVar = firstEq.firstChild
-        val secondEqVar = secondEq.firstChild
+        val firstEqVar = firstEq.solutionVariable
+        val secondEqVar = secondEq.solutionVariable
         if (firstEqVar != secondEqVar) {
             val solution = combineSolutions(
                 firstEqVar,
-                firstEq.secondChild,
+                firstEq.solutionSet,
                 secondEqVar,
-                secondEq.secondChild,
+                secondEq.solutionSet,
             )
             task(
                 startExpr = solution,
@@ -242,20 +242,20 @@ private abstract class SystemSolver : CompositeMethod() {
                 ),
             )
         } else {
-            val firstEqValue = firstEq.secondChild.firstChild
-            val secondEqValue = secondEq.secondChild.firstChild
+            val firstEqValue = firstEq.solution
+            val secondEqValue = secondEq.solution
             if (firstEqValue == secondEqValue) {
-                val otherVar = variables.first { it != firstEqVar.operator.name }
+                val otherVar = variables.first { it != firstEqVar }
                 task(
                     startExpr = combineSolutions(
-                        firstEq.firstChild,
-                        firstEq.secondChild,
-                        xp(otherVar),
+                        firstEqVar,
+                        firstEq.solutionSet,
+                        otherVar,
                         Constants.Reals,
                     ),
                     explanation = metadata(
                         Explanation.BuildSolutionSameSolutionInOneVariable,
-                        firstEq.firstChild,
+                        firstEq.solutionVariables.firstChild,
                         firstEqValue,
                     ),
                 )
@@ -267,7 +267,7 @@ private abstract class SystemSolver : CompositeMethod() {
                     ),
                     explanation = metadata(
                         Explanation.BuildSolutionDifferentSolutionsInOneVariable,
-                        firstEq.firstChild,
+                        firstEq.solutionVariables.firstChild,
                         firstEqValue,
                         secondEqValue,
                     ),
@@ -277,15 +277,15 @@ private abstract class SystemSolver : CompositeMethod() {
     }
 
     private fun TasksBuilder.solveSystemWithOneEquationSolved(
-        firstEq: Expression,
+        firstEq: SetSolution,
         secondEq: Expression,
     ): Task? {
-        val solveSecondEq = substituteAndSolveIn(secondEq, firstEq) ?: return null
+        val solveSecondEq = substituteAndSolveIn(secondEq, firstEq)?.result as? SetSolution ?: return null
         val solution = combineSolutions(
-            firstEq.firstChild,
-            firstEq.secondChild,
-            solveSecondEq.result.firstChild,
-            solveSecondEq.result.secondChild,
+            firstEq.solutionVariable,
+            firstEq.solutionSet,
+            solveSecondEq.solutionVariable,
+            solveSecondEq.solutionSet,
         )
         return task(
             startExpr = solution,
@@ -304,27 +304,27 @@ private abstract class SystemSolver : CompositeMethod() {
         val (eq1, eq2Solution) = solveIndependentEquations(firstEq, secondEq, variables)
             ?: return null
 
-        return when (eq2Solution.operator) {
-            MultiVariateSolutionOperator.Contradiction -> {
+        return when (eq2Solution) {
+            is Contradiction -> {
                 task(
                     startExpr = contradictionOf(variableListOf(variables), eq2Solution.secondChild),
                     explanation = metadata(Explanation.BuildSolutionContradiction),
                 )
             }
-            MultiVariateSolutionOperator.Identity -> {
+            is Identity -> {
                 task(
                     startExpr = implicitSolutionOf(variableListOf(variables), eq1),
                     explanation = metadata(Explanation.BuildSolutionIdentityAndEquation),
                 )
             }
-            else -> {
-                val solveEq1 = substituteAndSolveIn(eq1, eq2Solution) ?: return null
+            is SetSolution -> {
+                val solveEq1 = substituteAndSolveIn(eq1, eq2Solution)?.result as? SetSolution ?: return null
 
                 val solution = combineSolutions(
-                    solveEq1.result.firstChild,
-                    solveEq1.result.secondChild,
-                    eq2Solution.firstChild,
-                    eq2Solution.secondChild,
+                    solveEq1.solutionVariable,
+                    solveEq1.solutionSet,
+                    eq2Solution.solutionVariable,
+                    eq2Solution.solutionSet,
                 )
                 task(
                     startExpr = solution,
@@ -334,10 +334,11 @@ private abstract class SystemSolver : CompositeMethod() {
                     ),
                 )
             }
+            else -> null
         }
     }
 
-    private fun TasksBuilder.substituteAndSolveIn(equation: Expression, solution: Expression): Task? {
+    private fun TasksBuilder.substituteAndSolveIn(equation: Expression, solution: SetSolution): Task? {
         val solutionAsEquation = solution.asEquation() ?: return null
         val substitutedBackSolution = equation.substituteAllOccurrences(
             solutionAsEquation.firstChild,
@@ -517,9 +518,7 @@ private object SystemSolverByElimination : SystemSolver() {
                 option(EquationsPlans.SolveLinearEquation)
             }
         }?.let { solvedUnivariateEquation ->
-            val reorganizedFirstEq = if (solvedUnivariateEquation.result.operator
-                == MultiVariateSolutionOperator.Identity
-            ) {
+            val reorganizedFirstEq = if (solvedUnivariateEquation.result is Identity) {
                 task(
                     startExpr = firstEq,
                     stepsProducer = rearrangeLinearEquationSteps,
@@ -627,8 +626,8 @@ private object SystemSolverByElimination : SystemSolver() {
 /**
  * Combines two solutions in one variable each into one solution in two variables.
  */
-private fun combineSolutions(var1: Expression, sol1: Expression, var2: Expression, sol2: Expression): Expression {
-    if (var1.operator.name > var2.operator.name) {
+private fun combineSolutions(var1: String, sol1: Expression, var2: String, sol2: Expression): Expression {
+    if (var1 > var2) {
         return combineSolutions(var2, sol2, var1, sol1)
     }
     return setSolutionOf(
@@ -648,25 +647,3 @@ private fun Expression.coefficientOf(x: String): Expression? {
     val matches = FindPattern(ptn, stopWhenFound = true).findMatches(emptyContext, RootMatch, this).toList()
     return if (matches.size == 1) ptn.coefficient(matches[0]) else null
 }
-
-/**
- * Turn a unique solution into an equation x = k
- */
-private fun Expression.asEquation(): Expression? {
-    return when (operator) {
-        SolutionOperator -> {
-            when (secondChild.operator) {
-                SetOperators.Reals -> equationOf(firstChild, firstChild)
-                SetOperators.FiniteSet -> {
-                    if (secondChild.childCount == 1) equationOf(firstChild, secondChild.firstChild) else null
-                }
-                else -> null
-            }
-        }
-        else -> null
-    }
-}
-
-private fun Expression.isIdentity() = operator == MultiVariateSolutionOperator.Identity
-private fun Expression.isContradiction() = operator == MultiVariateSolutionOperator.Contradiction
-private fun Expression.isSolved() = operator == SolutionOperator

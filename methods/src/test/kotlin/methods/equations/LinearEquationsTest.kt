@@ -16,7 +16,7 @@ class LinearEquationsTest {
 
         check {
             fromExpr = "3 x = 1"
-            toExpr = "Solution[x, {[1 / 3]}]"
+            toExpr = "SetSolution[x: {[1 / 3]}]"
             explanation {
                 key = EquationsExplanation.SolveLinearEquation
             }
@@ -47,7 +47,7 @@ class LinearEquationsTest {
 
             step {
                 fromExpr = "x = [1 / 3]"
-                toExpr = "Solution[x, {[1 / 3]}]"
+                toExpr = "SetSolution[x: {[1 / 3]}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                 }
@@ -62,7 +62,7 @@ class LinearEquationsTest {
 
         check {
             fromExpr = "[x / 9] = -1"
-            toExpr = "Solution[x, {-9}]"
+            toExpr = "SetSolution[x: {-9}]"
             explanation {
                 key = EquationsExplanation.SolveLinearEquation
             }
@@ -78,7 +78,7 @@ class LinearEquationsTest {
 
             step {
                 fromExpr = "x = -9"
-                toExpr = "Solution[x, {-9}]"
+                toExpr = "SetSolution[x: {-9}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                 }
@@ -93,7 +93,7 @@ class LinearEquationsTest {
 
         check {
             fromExpr = "x - 2 = 36"
-            toExpr = "Solution[x, {38}]"
+            toExpr = "SetSolution[x: {38}]"
             explanation {
                 key = EquationsExplanation.SolveLinearEquation
             }
@@ -124,7 +124,7 @@ class LinearEquationsTest {
 
             step {
                 fromExpr = "x = 38"
-                toExpr = "Solution[x, {38}]"
+                toExpr = "SetSolution[x: {38}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                 }
@@ -139,7 +139,7 @@ class LinearEquationsTest {
 
         check {
             fromExpr = "1 = [3 / 5] - x"
-            toExpr = "Solution[x, {-[2 / 5]}]"
+            toExpr = "SetSolution[x: {-[2 / 5]}]"
             explanation {
                 key = EquationsExplanation.SolveLinearEquation
             }
@@ -162,7 +162,7 @@ class LinearEquationsTest {
 
             step {
                 fromExpr = "x = -[2 / 5]"
-                toExpr = "Solution[x, {-[2 / 5]}]"
+                toExpr = "SetSolution[x: {-[2 / 5]}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                 }
@@ -177,7 +177,7 @@ class LinearEquationsTest {
 
         check {
             fromExpr = "1 + [2 / 3] = x"
-            toExpr = "Solution[x, {[5 / 3]}]"
+            toExpr = "SetSolution[x: {[5 / 3]}]"
             explanation {
                 key = EquationsExplanation.SolveLinearEquation
             }
@@ -200,7 +200,7 @@ class LinearEquationsTest {
 
             step {
                 fromExpr = "x = [5 / 3]"
-                toExpr = "Solution[x, {[5 / 3]}]"
+                toExpr = "SetSolution[x: {[5 / 3]}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                 }
@@ -215,7 +215,7 @@ class LinearEquationsTest {
 
         check {
             fromExpr = "1 - 3 x = 0"
-            toExpr = "Solution[x, {[1 / 3]}]"
+            toExpr = "SetSolution[x: {[1 / 3]}]"
             explanation {
                 key = EquationsExplanation.SolveLinearEquation
             }
@@ -238,7 +238,7 @@ class LinearEquationsTest {
 
             step {
                 fromExpr = "x = [1 / 3]"
-                toExpr = "Solution[x, {[1 / 3]}]"
+                toExpr = "SetSolution[x: {[1 / 3]}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                 }
@@ -253,7 +253,7 @@ class LinearEquationsTest {
 
         check {
             fromExpr = "4 = 11 + [x / 3]"
-            toExpr = "Solution[x, {-21}]"
+            toExpr = "SetSolution[x: {-21}]"
             explanation {
                 key = EquationsExplanation.SolveLinearEquation
             }
@@ -284,7 +284,7 @@ class LinearEquationsTest {
 
             step {
                 fromExpr = "x = -21"
-                toExpr = "Solution[x, {-21}]"
+                toExpr = "SetSolution[x: {-21}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                 }
@@ -299,7 +299,7 @@ class LinearEquationsTest {
 
         check {
             fromExpr = "x + 1 = 2 x + 3"
-            toExpr = "Solution[x, {-2}]"
+            toExpr = "SetSolution[x: {-2}]"
             explanation {
                 key = EquationsExplanation.SolveLinearEquation
             }
@@ -330,7 +330,7 @@ class LinearEquationsTest {
 
             step {
                 fromExpr = "x = -2"
-                toExpr = "Solution[x, {-2}]"
+                toExpr = "SetSolution[x: {-2}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                 }
@@ -345,7 +345,7 @@ class LinearEquationsTest {
 
         check {
             fromExpr = "3 (x + 1) - 2 (x - 6) = 0"
-            toExpr = "Solution[x, {-15}]"
+            toExpr = "SetSolution[x: {-15}]"
             explanation {
                 key = EquationsExplanation.SolveLinearEquation
             }
@@ -368,7 +368,7 @@ class LinearEquationsTest {
 
             step {
                 fromExpr = "x = -15"
-                toExpr = "Solution[x, {-15}]"
+                toExpr = "SetSolution[x: {-15}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                 }
@@ -383,7 +383,7 @@ class LinearEquationsTest {
 
         check {
             fromExpr = "2 x + x + 5 - 5 = x + 9 - 5"
-            toExpr = "Solution[x, {2}]"
+            toExpr = "SetSolution[x: {2}]"
             explanation {
                 key = EquationsExplanation.SolveLinearEquation
             }
@@ -454,7 +454,7 @@ class LinearEquationsTest {
 
             step {
                 fromExpr = "x = 2"
-                toExpr = "Solution[x, {2}]"
+                toExpr = "SetSolution[x: {2}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                 }

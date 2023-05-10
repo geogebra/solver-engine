@@ -6,6 +6,7 @@ import engine.conditions.isDefinitelyNotZero
 import engine.conditions.signOf
 import engine.expressions.Constants
 import engine.expressions.IntegerExpression
+import engine.expressions.Variable
 import engine.expressions.asInteger
 import engine.expressions.fractionOf
 import engine.expressions.negOf
@@ -20,7 +21,6 @@ import engine.methods.RunnerMethod
 import engine.methods.rule
 import engine.operators.BinaryExpressionOperator
 import engine.operators.UnaryExpressionOperator
-import engine.operators.VariableOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.ConstantPattern
@@ -632,7 +632,7 @@ private val rewriteProductOfPowersWithSameBase =
         val product = productContaining(power1, power2)
 
         onPattern(product) {
-            if (get(base).operator is VariableOperator ||
+            if (get(base) is Variable ||
                 get(power1.exponent) != Constants.One ||
                 get(power2.exponent) != Constants.One
             ) {

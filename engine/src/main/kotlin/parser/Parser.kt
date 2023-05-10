@@ -1,9 +1,15 @@
 package parser
 
 import engine.expressions.Constants
+import engine.expressions.Contradiction
 import engine.expressions.Decorator
 import engine.expressions.Expression
+import engine.expressions.Identity
+import engine.expressions.ImplicitSolution
 import engine.expressions.Product
+import engine.expressions.SetSolution
+import engine.expressions.Variable
+import engine.expressions.VariableList
 import engine.expressions.cartesianProductOf
 import engine.expressions.expressionOf
 import engine.expressions.greaterThanEqualOf
@@ -14,7 +20,6 @@ import engine.expressions.mixedNumber
 import engine.expressions.nameXp
 import engine.expressions.negOf
 import engine.expressions.productSignRequired
-import engine.expressions.solutionOf
 import engine.expressions.solutionSetOf
 import engine.expressions.xp
 import engine.operators.AddEquationsOperator
@@ -24,13 +29,11 @@ import engine.operators.EquationOperator
 import engine.operators.EquationSystemOperator
 import engine.operators.EquationUnionOperator
 import engine.operators.IntervalOperator
-import engine.operators.MultiVariateSolutionOperator
 import engine.operators.Operator
 import engine.operators.SubtractEquationsOperator
 import engine.operators.SumOperator
 import engine.operators.TupleOperator
 import engine.operators.UnaryExpressionOperator
-import engine.operators.VariableListOperator
 import engine.utility.RecurringDecimal
 import org.antlr.v4.runtime.BailErrorStrategy
 import org.antlr.v4.runtime.CharStreams
@@ -111,24 +114,20 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
         return visit(ctx.getChild(0))
     }
 
-    override fun visitLegacySolution(ctx: ExpressionParser.LegacySolutionContext): Expression {
-        return solutionOf(visit(ctx.variable()), visit(ctx.solutionSet))
-    }
-
     override fun visitIdentity(ctx: ExpressionParser.IdentityContext): Expression {
-        return makeExpression(MultiVariateSolutionOperator.Identity, visit(ctx.vars), visit(ctx.statement()))
+        return Identity(visitVariables(ctx.vars), visit(ctx.statement()))
     }
 
     override fun visitContradiction(ctx: ExpressionParser.ContradictionContext): Expression {
-        return makeExpression(MultiVariateSolutionOperator.Contradiction, visit(ctx.vars), visit(ctx.statement()))
+        return Contradiction(visitVariables(ctx.vars), visit(ctx.statement()))
     }
 
     override fun visitImplicitSolution(ctx: ExpressionParser.ImplicitSolutionContext): Expression {
-        return makeExpression(MultiVariateSolutionOperator.ImplicitSolution, visit(ctx.vars), visit(ctx.statement()))
+        return ImplicitSolution(visitVariables(ctx.vars), visit(ctx.statement()))
     }
 
     override fun visitSetSolution(ctx: ExpressionParser.SetSolutionContext): Expression {
-        return makeExpression(MultiVariateSolutionOperator.SetSolution, visit(ctx.vars), visit(ctx.solutionSet))
+        return SetSolution(visitVariables(ctx.vars), visit(ctx.solutionSet))
     }
 
     override fun visitCartesianProduct(ctx: ExpressionParser.CartesianProductContext): Expression {
@@ -327,10 +326,11 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
         return xp(RecurringDecimal(decimal, endRep - startRep - 1))
     }
 
-    override fun visitVariables(ctx: ExpressionParser.VariablesContext): Expression {
-        return makeExpression(VariableListOperator, listOf(visit(ctx.first)) + ctx.rest.map { visit(it) })
+    override fun visitVariables(ctx: ExpressionParser.VariablesContext): VariableList {
+        return VariableList(listOf(visitVariable(ctx.first)) + ctx.rest.map { visitVariable(it) })
     }
-    override fun visitVariable(ctx: ExpressionParser.VariableContext): Expression {
+
+    override fun visitVariable(ctx: ExpressionParser.VariableContext): Variable {
         return xp(ctx.VARIABLE().text)
     }
 

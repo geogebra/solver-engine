@@ -7,6 +7,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 An entry should be added to the _[Unreleased]_ section when committing to main. When a release is made we move its
 contents to a new release section (e.g. _[0.x]_).
 
+## Unreleased
+
+### Added
+
+### Fixed
+
+### Changed
+
+### Removed
+
+- The legacy Solution operator was replaced by the more descriptive SetSolution, Contradiction and
+  Identity operators (PLUT-587)
+
 ## [1.1] - 2023-05-10
 
 ### Added

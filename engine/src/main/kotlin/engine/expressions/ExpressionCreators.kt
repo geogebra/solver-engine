@@ -10,7 +10,6 @@ import engine.operators.EquationSystemOperator
 import engine.operators.EquationUnionOperator
 import engine.operators.InequalityOperators
 import engine.operators.IntervalOperator
-import engine.operators.MultiVariateSolutionOperator
 import engine.operators.NameOperator
 import engine.operators.NaryOperator
 import engine.operators.Operator
@@ -20,8 +19,6 @@ import engine.operators.SubtractEquationsOperator
 import engine.operators.SumOperator
 import engine.operators.TupleOperator
 import engine.operators.UnaryExpressionOperator
-import engine.operators.VariableListOperator
-import engine.operators.VariableOperator
 import engine.utility.RecurringDecimal
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -51,7 +48,7 @@ fun xp(x: RecurringDecimal): Expression {
     return RecurringDecimalExpression(x)
 }
 
-fun xp(v: String) = buildExpression(VariableOperator(v), emptyList())
+fun xp(v: String) = Variable(v)
 
 fun mixedNumber(integer: BigInteger, numerator: BigInteger, denominator: BigInteger) =
     MixedNumberExpression(IntegerExpression(integer), IntegerExpression(numerator), IntegerExpression(denominator))
@@ -194,29 +191,25 @@ fun solutionSetOf(vararg elements: Expression) = buildExpression(SetOperators.Fi
 fun cartesianProductOf(sets: List<Expression>) = buildExpression(SetOperators.CartesianProduct, sets)
 fun cartesianProductOf(vararg sets: Expression) = cartesianProductOf(sets.asList())
 
-fun solutionOf(variable: Expression, solutionSet: Expression) =
-    buildExpression(SolutionOperator, listOf(variable, solutionSet))
-
 fun tupleOf(variables: List<Expression>) = buildExpression(TupleOperator, variables)
 
 fun tupleOf(vararg variables: Expression) = tupleOf(variables.asList())
 
-fun variableListOf(variables: List<String>) = buildExpression(VariableListOperator, variables.map { xp(it) })
+fun variableListOf(variables: List<String>) = VariableList(variables.map { xp(it) })
 fun variableListOf(vararg variables: String) = variableListOf(variables.asList())
+fun variableListOf(vararg variables: Variable) = VariableList(variables.asList())
 
-fun variableListOf(vararg variables: Expression) = buildExpression(VariableListOperator, variables.asList())
+fun identityOf(variables: VariableList, expr: Expression) =
+    buildExpression(SolutionOperator.Identity, listOf(variables, expr))
 
-fun identityOf(variables: Expression, expr: Expression) =
-    buildExpression(MultiVariateSolutionOperator.Identity, listOf(variables, expr))
+fun contradictionOf(variables: VariableList, expr: Expression) =
+    buildExpression(SolutionOperator.Contradiction, listOf(variables, expr))
 
-fun contradictionOf(variables: Expression, expr: Expression) =
-    buildExpression(MultiVariateSolutionOperator.Contradiction, listOf(variables, expr))
+fun implicitSolutionOf(variables: VariableList, expr: Expression) =
+    buildExpression(SolutionOperator.ImplicitSolution, listOf(variables, expr))
 
-fun implicitSolutionOf(variables: Expression, expr: Expression) =
-    buildExpression(MultiVariateSolutionOperator.ImplicitSolution, listOf(variables, expr))
-
-fun setSolutionOf(variables: Expression, set: Expression) =
-    buildExpression(MultiVariateSolutionOperator.SetSolution, listOf(variables, set))
+fun setSolutionOf(variables: VariableList, set: Expression) =
+    buildExpression(SolutionOperator.SetSolution, listOf(variables, set))
 
 private fun flattenedNaryExpression(operator: NaryOperator, operands: List<Expression>): Expression {
     if (operands.size == 1) {

@@ -14,7 +14,7 @@ class DecimalLinearInequalitiesTest {
 
         check {
             fromExpr = "3.1 x + 2.2 < 2.9 x - 9.34"
-            toExpr = "Solution[x, ( -INFINITY, -57.7 )]"
+            toExpr = "SetSolution[x: ( -INFINITY, -57.7 )]"
             explanation {
                 key = InequalitiesExplanation.SolveLinearInequality
             }
@@ -45,7 +45,7 @@ class DecimalLinearInequalitiesTest {
 
             step {
                 fromExpr = "x < -57.7"
-                toExpr = "Solution[x, ( -INFINITY, -57.7 )]"
+                toExpr = "SetSolution[x: ( -INFINITY, -57.7 )]"
                 explanation {
                     key = InequalitiesExplanation.ExtractSolutionFromInequalityInSolvedForm
                 }
@@ -61,7 +61,7 @@ class DecimalLinearInequalitiesTest {
 
         check {
             fromExpr = "3.1 x + 2.2 >= 1.21"
-            toExpr = "Solution[x, [ -[99 / 310], INFINITY )]"
+            toExpr = "SetSolution[x: [ -[99 / 310], INFINITY )]"
             explanation {
                 key = InequalitiesExplanation.SolveLinearInequality
             }
@@ -84,7 +84,7 @@ class DecimalLinearInequalitiesTest {
 
             step {
                 fromExpr = "x >= -[99 / 310]"
-                toExpr = "Solution[x, [ -[99 / 310], INFINITY )]"
+                toExpr = "SetSolution[x: [ -[99 / 310], INFINITY )]"
                 explanation {
                     key = InequalitiesExplanation.ExtractSolutionFromInequalityInSolvedForm
                 }
@@ -111,7 +111,7 @@ class DecimalLinearInequalitiesTest {
 
         check {
             fromExpr = "3.6 x + 2.2 <= [2 / 5] x + 1.2"
-            toExpr = "Solution[x, ( -INFINITY, -0.3125 ]]"
+            toExpr = "SetSolution[x: ( -INFINITY, -0.3125 ]]"
             explanation {
                 key = InequalitiesExplanation.SolveLinearInequality
             }
@@ -150,7 +150,7 @@ class DecimalLinearInequalitiesTest {
 
             step {
                 fromExpr = "x <= -0.3125"
-                toExpr = "Solution[x, ( -INFINITY, -0.3125 ]]"
+                toExpr = "SetSolution[x: ( -INFINITY, -0.3125 ]]"
                 explanation {
                     key = InequalitiesExplanation.ExtractSolutionFromInequalityInSolvedForm
                 }

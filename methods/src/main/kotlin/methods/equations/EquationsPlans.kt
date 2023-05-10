@@ -1,7 +1,10 @@
 package methods.equations
 
 import engine.context.ResourceData
-import engine.expressions.solutionOf
+import engine.expressions.Contradiction
+import engine.expressions.SetSolution
+import engine.expressions.VariableList
+import engine.expressions.setSolutionOf
 import engine.expressions.solutionSetOf
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
@@ -27,7 +30,7 @@ import engine.patterns.identityOf
 import engine.patterns.inSolutionVariables
 import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
-import engine.patterns.solutionOf
+import engine.patterns.setSolutionOf
 import engine.patterns.solutionSetOf
 import engine.patterns.sumContaining
 import engine.patterns.variableListOf
@@ -231,7 +234,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
         plan {
             explanation = Explanation.SolveEquationUsingRootsMethod
             pattern = equationInOneVariable()
-            resultPattern = solutionOf(SolutionVariablePattern(), AnyPattern())
+            resultPattern = setSolutionOf(variableListOf(SolutionVariablePattern()), AnyPattern())
 
             steps {
                 optionally(equationSimplificationSteps)
@@ -280,7 +283,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
         plan {
             explanation = Explanation.SolveByCompletingTheSquare
             pattern = equationOf(AnyPattern(), AnyPattern())
-            resultPattern = solutionOf(SolutionVariablePattern(), AnyPattern())
+            resultPattern = setSolutionOf(variableListOf(SolutionVariablePattern()), AnyPattern())
 
             steps {
 
@@ -455,10 +458,17 @@ private val solveEquationUnion = taskSet {
         }
 
         // Gather all solutions together in a single solution set.
+        val solutions = splitTasks.flatMap {
+            when (val result = it.result) {
+                is SetSolution -> result.solutionSet.children
+                is Contradiction -> listOf()
+                else -> return@tasks null
+            }
+        }
         task(
-            startExpr = solutionOf(
-                splitTasks[0].result.firstChild,
-                solutionSetOf(splitTasks.flatMap { it.result.secondChild.children }.sortedBy { it.doubleValue }),
+            startExpr = setSolutionOf(
+                splitTasks[0].result.firstChild as VariableList,
+                solutionSetOf(solutions.sortedBy { it.doubleValue }),
             ),
             explanation = metadata(Explanation.CollectSolutions),
         )
@@ -601,7 +611,7 @@ val rearrangeLinearEquationSteps = steps {
 private fun equationInOneVariable() = inSolutionVariables(equationOf(AnyPattern(), AnyPattern()))
 
 private fun solutionPattern(solutionValuePattern: Pattern = AnyPattern()) = oneOf(
-    solutionOf(SolutionVariablePattern(), solutionSetOf(solutionValuePattern)),
+    setSolutionOf(variableListOf(SolutionVariablePattern()), solutionSetOf(solutionValuePattern)),
     contradictionOf(variableListOf(SolutionVariablePattern())),
     identityOf(variableListOf(SolutionVariablePattern())),
 )

@@ -9,7 +9,6 @@ import engine.operators.BinaryExpressionOperator
 import engine.operators.EquationOperator
 import engine.operators.IntervalOperator
 import engine.operators.MixedNumberOperator
-import engine.operators.MultiVariateSolutionOperator
 import engine.operators.Operator
 import engine.operators.SetOperators
 import engine.operators.SolutionOperator
@@ -72,13 +71,14 @@ fun equationOf(lhs: Pattern, rhs: Pattern) = OperatorPattern(EquationOperator, l
 fun addEquationsOf(eq1: Pattern, eq2: Pattern) = OperatorPattern(AddEquationsOperator, listOf(eq1, eq2))
 fun subtractEquationsOf(eq1: Pattern, eq2: Pattern) = OperatorPattern(SubtractEquationsOperator, listOf(eq1, eq2))
 
-fun solutionOf(variable: Pattern, solution: Pattern) = OperatorPattern(SolutionOperator, listOf(variable, solution))
+fun setSolutionOf(variable: Pattern, solution: Pattern) =
+    OperatorPattern(SolutionOperator.SetSolution, listOf(variable, solution))
 
 fun contradictionOf(variables: Pattern, expr: Pattern = AnyPattern()) =
-    OperatorPattern(MultiVariateSolutionOperator.Contradiction, listOf(variables, expr))
+    OperatorPattern(SolutionOperator.Contradiction, listOf(variables, expr))
 
 fun identityOf(variables: Pattern, expr: Pattern = AnyPattern()) =
-    OperatorPattern(MultiVariateSolutionOperator.Identity, listOf(variables, expr))
+    OperatorPattern(SolutionOperator.Identity, listOf(variables, expr))
 
 fun variableListOf(items: List<Pattern>) = OperatorPattern(VariableListOperator, items)
 fun variableListOf(vararg items: Pattern) = variableListOf(items.asList())
