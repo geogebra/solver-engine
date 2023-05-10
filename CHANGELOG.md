@@ -44,6 +44,7 @@ contents to a new release section (e.g. _[0.x]_).
   Partial sum brackets" are invisible in LaTeX and invisible to the user. (PLUT-577)
 - Introduce typed expressions such as Fraction and Power (PLUT-581)
 - Change the representation of products to flat instead of the explicit / implicit structure we had before. (PLUT-581)
+- Handle partial products without tasks, same as partial sums (PLUT-585)
 
 ### Removed
 

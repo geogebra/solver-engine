@@ -15,14 +15,11 @@ import engine.expressions.asRational
 import engine.expressions.divideBy
 import engine.expressions.expressionOf
 import engine.expressions.negOf
-import engine.expressions.productOf
 import engine.expressions.simplifiedPowerOf
-import engine.expressions.sumOf
 import engine.expressions.variableListOf
 import engine.expressions.xp
 import engine.operators.EquationOperator
 import engine.operators.InequalityOperators
-import engine.operators.SumOperator
 import engine.patterns.ExpressionProvider
 import engine.patterns.InequalityPattern
 import engine.patterns.IntegerPattern
@@ -253,15 +250,6 @@ open class MappedExpressionBuilder(
     fun restOf(pattern: NaryPattern) = pattern.substitute(match, arrayOf())
 
     fun NaryPattern.substitute(vararg newVals: Expression) = substitute(match, newVals)
-
-    fun NaryPattern.extract(): Expression {
-        val matchedChildren = getMatchedChildExpressions(match)
-
-        return when (operator) {
-            SumOperator -> sumOf(matchedChildren)
-            else -> productOf(matchedChildren)
-        }
-    }
 
     fun SolvablePattern.isEquation() = getBoundExpr(match)?.operator == EquationOperator
 

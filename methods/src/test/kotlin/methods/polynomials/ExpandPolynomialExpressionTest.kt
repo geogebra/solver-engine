@@ -193,37 +193,28 @@ class ExpandPolynomialExpressionTest {
             step {
                 fromExpr = "(2 x - 3) (2 x - 3) (2 x - 3)"
                 toExpr = "(4 [x ^ 2] - 12 x + 9) (2 x - 3)"
-                explanation {
-                    key = SolverEngineExplanation.SimplifyPartialExpression
-                }
 
-                task {
-                    taskId = "#1"
-                    startExpr = "(2 x - 3) (2 x - 3)"
+                invisibleStep {
+                    fromExpr = "(2 x - 3) (2 x - 3) (2 x - 3)"
+                    toExpr = "<. (2 x - 3) (2 x - 3) .> (2 x - 3)"
                     explanation {
-                        key = ExpandExplanation.ExpandDoubleBracketsAndSimplify
-                    }
-
-                    step {
-                        toExpr = "<. 2 x .> * <. 2 x .> + <. 2 x .> * (-3) + (-3) * <. 2 x .> + (-3) * (-3)"
-                        explanation {
-                            key = ExpandExplanation.ApplyFoilMethod
-                        }
-                    }
-
-                    step {
-                        fromExpr = "2 x * 2 x + 2 x * (-3) + (-3) * 2 x + (-3) * (-3)"
-                        toExpr = "4 [x ^ 2] - 12 x + 9"
-                        explanation {
-                            key = PolynomialsExplanation.SimplifyAlgebraicExpression
-                        }
+                        key = SolverEngineExplanation.ExtractPartialExpression
                     }
                 }
 
-                task {
-                    taskId = "#2"
+                step {
+                    fromExpr = "<. (2 x - 3) (2 x - 3) .> (2 x - 3)"
+                    toExpr = "(<. 2 x .> * <. 2 x .> + <. 2 x .> * (-3) + (-3) * <. 2 x .> + (-3) * (-3)) (2 x - 3)"
                     explanation {
-                        key = SolverEngineExplanation.SubstitutePartialExpression
+                        key = ExpandExplanation.ApplyFoilMethod
+                    }
+                }
+
+                step {
+                    fromExpr = "(2 x * 2 x + 2 x * (-3) + (-3) * 2 x + (-3) * (-3)) (2 x - 3)"
+                    toExpr = "(4 [x ^ 2] - 12 x + 9)(2 x - 3)"
+                    explanation {
+                        key = PolynomialsExplanation.SimplifyAlgebraicExpression
                     }
                 }
             }
@@ -484,38 +475,28 @@ class ExpandPolynomialExpressionTest {
             step {
                 fromExpr = "11 (2 x - 3) (2 x + 3)"
                 toExpr = "11 (4 [x ^ 2] - 9)"
-                explanation {
-                    key = SolverEngineExplanation.SimplifyPartialExpression
-                }
 
-                task {
-                    taskId = "#1"
-                    startExpr = "(2 x - 3) (2 x + 3)"
+                invisibleStep {
+                    fromExpr = "11 (2 x - 3) (2 x + 3)"
+                    toExpr = "11 <. (2 x - 3) (2 x + 3) .>"
                     explanation {
-                        key = ExpandExplanation.ExpandDoubleBracketsAndSimplify
-                    }
-
-                    step {
-                        fromExpr = "(2 x - 3) (2 x + 3)"
-                        toExpr = "[(2 x) ^ 2] - [3 ^ 2]"
-                        explanation {
-                            key = ExpandExplanation.ExpandProductOfSumAndDifference
-                        }
-                    }
-
-                    step {
-                        fromExpr = "[(2 x) ^ 2] - [3 ^ 2]"
-                        toExpr = "4 [x ^ 2] - 9"
-                        explanation {
-                            key = PolynomialsExplanation.SimplifyAlgebraicExpression
-                        }
+                        key = SolverEngineExplanation.ExtractPartialExpression
                     }
                 }
 
-                task {
-                    taskId = "#2"
+                step {
+                    fromExpr = "11 <. (2 x - 3) (2 x + 3) .>"
+                    toExpr = "11 ([(2 x) ^ 2] - [3 ^ 2])"
                     explanation {
-                        key = SolverEngineExplanation.SubstitutePartialExpression
+                        key = ExpandExplanation.ExpandProductOfSumAndDifference
+                    }
+                }
+
+                step {
+                    fromExpr = "11 ([(2 x) ^ 2] - [3 ^ 2])"
+                    toExpr = "11 (4 [x ^ 2] - 9)"
+                    explanation {
+                        key = PolynomialsExplanation.SimplifyAlgebraicExpression
                     }
                 }
             }

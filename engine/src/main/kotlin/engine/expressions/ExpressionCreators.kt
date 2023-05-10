@@ -116,7 +116,7 @@ fun productOf(operands: List<Expression>): Expression {
         return operands[0]
     }
     val flattenedOperands = operands
-        .flatMap { if (!it.hasLabel() && it is Product) it.children else listOf(it) }
+        .flatMap { if (!it.hasLabel() && !it.isPartialProduct() && it is Product) it.children else listOf(it) }
         .mapIndexed { index, operand -> operand.adjustBracketFor(DefaultProductOperator, index) }
     return Product(flattenedOperands)
 }

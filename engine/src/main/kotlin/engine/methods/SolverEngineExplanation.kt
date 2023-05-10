@@ -6,31 +6,22 @@ import engine.steps.metadata.TranslationKeys
 @TranslationKeys
 enum class SolverEngineExplanation : CategorisedMetadataKey {
     /**
-     * Simplify part of an expression, e.g. add the integers together in a sum
-     * E.g. x + 1 + 2 + y -> x + 3 + y
-     *
-     * This doesn't have to apply to sums, it could be a product as well
-     * E.g. 3*7*x -> 21*x
+     * Internal step for extracting neighbouring terms or factors into a partial sum or product
+     * for further simplifications focusing on them.
      */
-    SimplifyPartialExpression,
+    ExtractPartialExpression,
 
     /**
-     * As the last step of simplifying a partial expression, substitute the result back into the parent expression.
-     * E.g. x + 1 + 2 + y.
-     * - In a previous task the partial expression 1 + 2 is simplified to 3;
-     * - now 3 is substituted back into the expression, resulting in x + 3 + y.
+     * Rearrange a product so that certain factors (on which the system is going to focus) are next to each other.
+     * E.g. 3^(1/2) * 2 * 3^(3/2) -> 3^(1/2) * 3^(3/2) * 2
      */
-    SubstitutePartialExpression,
+    RearrangeProduct,
 
-    /** This should never be shown to the user, because it should only be on hidden steps.
-     * It is used when we extract part of a sum to focus on just one part of it. */
-    ExtractPartialSum,
-
-    /** Commute one of the fractions so that it is close to the other fraction that we will
-     * soon add it to.
-     * E.g. [1/3] + 3 + [1/2] -> [1/3] + [1/2] + 3
+    /**
+     * Rearrange a sum so that certain terms (on which the system is going to focus) are next to each other.
+     * E.g. 1/4 + 2 + 3/2 -> 1/4 + 3/2 + 2
      */
-    CommuteFractionNextToTheOtherFraction,
+    RearrangeSum,
     ;
 
     override val category = "SolverEngine"

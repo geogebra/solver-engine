@@ -4,11 +4,12 @@ import engine.context.Context
 import engine.expressions.Child
 import engine.expressions.Decorator
 import engine.expressions.Expression
-import engine.expressions.sumOf
 import engine.methods.stepsproducers.StepsBuilder
 import engine.methods.stepsproducers.StepsProducer
+import engine.operators.ProductOperator
 import engine.operators.SumOperator
 import engine.patterns.AnyPattern
+import engine.patterns.Match
 import engine.patterns.NaryPattern
 import engine.patterns.RootMatch
 import engine.steps.Transformation
@@ -16,58 +17,12 @@ import engine.steps.metadata.MetadataMaker
 import engine.steps.metadata.metadata
 
 class PartialExpressionPlan(
-    val naryPattern: NaryPattern,
-    val explanationMaker: MetadataMaker,
-    val skillMakers: List<MetadataMaker> = emptyList(),
-    specificPlans: List<Method> = emptyList(),
-    val stepsProducer: StepsProducer,
-) : CompositeMethod(specificPlans) {
-
-    // This plan is used when the whole sum is matched
-    private val plan =
-        Plan(naryPattern, AnyPattern(), explanationMaker, skillMakers, specificPlans, stepsProducer)
-
-    private val task = taskSet {
-        pattern = naryPattern
-        explanation = SolverEngineExplanation.SimplifyPartialExpression
-
-        tasks {
-            val partialSum = naryPattern.extract()
-            val task1 = task(
-                startExpr = partialSum,
-                explanation = explanationMaker.make(),
-                stepsProducer = stepsProducer,
-            ) ?: return@tasks null
-
-            task(
-                naryPattern.substitute(task1.result),
-                metadata(SolverEngineExplanation.SubstitutePartialExpression),
-            )
-
-            allTasks()
-        }
-    }
-
-    override fun run(ctx: Context, sub: Expression): Transformation? {
-        return if (sub.childCount == naryPattern.childPatterns.size) {
-            plan.run(ctx, sub)
-        } else {
-            task.run(ctx, sub)
-        }
-    }
-}
-
-class PartialSumPlan(
     val pattern: NaryPattern,
     val explanationMaker: MetadataMaker,
     val skillMakers: List<MetadataMaker> = emptyList(),
     specificPlans: List<Method> = emptyList(),
     val stepsProducer: StepsProducer,
 ) : CompositeMethod(specificPlans) {
-
-    init {
-        check(pattern.operator === SumOperator)
-    }
 
     override fun run(ctx: Context, sub: Expression): Transformation? {
         if (sub.childCount == pattern.childPatterns.size) {
@@ -76,29 +31,35 @@ class PartialSumPlan(
         }
 
         for (match in pattern.findMatches(ctx, RootMatch, sub)) {
-            val matchedChildExpressions = pattern.getMatchedChildExpressions(match)
-            val partialSum = sumOf(matchedChildExpressions)
-            val substitutedPartialSum = pattern.substitute(
+            val partialExpression = pattern.extract(match)
+            val substitutedPartialExpression = pattern.substitute(
                 match,
-                arrayOf(partialSum.decorate(Decorator.PartialBracket)),
+                arrayOf(partialExpression.decorate(Decorator.PartialBracket)),
             )
 
             val builder = StepsBuilder(ctx, sub)
 
-            val extractedAddendsWereNextToEachOther = areNextToEachOther(matchedChildExpressions)
             builder.addStep(
-                Transformation(
-                    fromExpr = sub,
-                    toExpr = substitutedPartialSum,
-                    explanation = if (extractedAddendsWereNextToEachOther) {
-                        metadata(SolverEngineExplanation.ExtractPartialSum, partialSum)
-                    } else {
-                        metadata(SolverEngineExplanation.CommuteFractionNextToTheOtherFraction, partialSum)
-                    },
-                    type = Transformation.Type.Rule,
-                    tags = if (extractedAddendsWereNextToEachOther) { listOf(Transformation.Tag.InvisibleChange)
-                    } else { listOf(Transformation.Tag.Rearrangement) },
-                ),
+                if (matchedTermsAreNextToEachOther(pattern, match)) {
+                    Transformation(
+                        fromExpr = sub,
+                        toExpr = substitutedPartialExpression,
+                        explanation = metadata(SolverEngineExplanation.ExtractPartialExpression),
+                        type = Transformation.Type.Rule,
+                        tags = listOf(Transformation.Tag.InvisibleChange),
+                    )
+                } else {
+                    Transformation(
+                        fromExpr = sub,
+                        toExpr = substitutedPartialExpression,
+                        explanation = when (pattern.operator) {
+                            is ProductOperator -> metadata(SolverEngineExplanation.RearrangeProduct, partialExpression)
+                            is SumOperator -> metadata(SolverEngineExplanation.RearrangeSum, partialExpression)
+                        },
+                        type = Transformation.Type.Rule,
+                        tags = listOf(Transformation.Tag.Rearrangement),
+                    )
+                },
             )
 
             val firstChildIndex = (pattern.childPatterns[0].getBoundExpr(match)!!.origin as Child).index
@@ -117,11 +78,12 @@ class PartialSumPlan(
                 )
             }
         }
+
         return null
     }
 }
 
-private fun areNextToEachOther(expressions: List<Expression>): Boolean {
-    val indices = expressions.map { (it.origin as Child).index }
+private fun matchedTermsAreNextToEachOther(pattern: NaryPattern, match: Match): Boolean {
+    val indices = pattern.getMatchedOrigins(match).map { (it as Child).index }
     return indices == (indices.first()..indices.last()).toList()
 }

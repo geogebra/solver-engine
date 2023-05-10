@@ -81,7 +81,16 @@ class NaryPattern(
         childPatterns.flatMap { match.getBoundExprs(it) }
             .filter { it.isChildOfOrSelf(match.getBoundExpr(this)) }
 
-    private fun getMatchedOrigins(m: Match) = getMatchedChildExpressions(m).map { it.origin }
+    fun extract(match: Match): Expression {
+        val matchedChildren = getMatchedChildExpressions(match)
+
+        return when (operator) {
+            SumOperator -> sumOf(matchedChildren)
+            else -> productOf(matchedChildren)
+        }
+    }
+
+    fun getMatchedOrigins(m: Match) = getMatchedChildExpressions(m).map { it.origin }
 }
 
 private data class RecursiveMatcher(

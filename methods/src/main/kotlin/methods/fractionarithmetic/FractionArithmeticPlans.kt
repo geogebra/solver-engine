@@ -167,7 +167,7 @@ fun createAddFractionsPlan(numeratorSimplificationSteps: StepsProducer): Method 
 
         skill(Skill.AddFractions, f1, f2)
 
-        partialSumSteps {
+        partialExpressionSteps {
             apply(addFractionSteps)
         }
     }
@@ -188,7 +188,7 @@ fun createAddIntegerAndFractionPlan(numeratorSimplificationSteps: StepsProducer)
         val fraction = optionalNegOf(fractionOf(numerator, UnsignedIntegerPattern()))
         pattern = commutativeSumContaining(integer, fraction)
 
-        partialSumSteps {
+        partialExpressionSteps {
             apply(FractionArithmeticRules.BringToCommonDenominatorWithNonFractionalTerm)
             deeply(IntegerArithmeticRules.EvaluateIntegerProductAndDivision)
             apply(addFractionSteps)
@@ -215,7 +215,7 @@ fun createAddRootAndFractionPlan(numeratorSimplificationSteps: StepsProducer): C
         val fraction = optionalNegOf(fractionOf(numerator, UnsignedIntegerPattern()))
         pattern = commutativeSumContaining(rootWithCoefficient, fraction)
 
-        partialSumSteps {
+        partialExpressionSteps {
             apply(FractionArithmeticRules.BringToCommonDenominatorWithNonFractionalTerm)
             apply(addFractionSteps)
         }

@@ -140,7 +140,7 @@ class TestAddFractions {
 
         check {
             step {
-                explanation { key = SolverEngineExplanation.CommuteFractionNextToTheOtherFraction }
+                explanation { key = SolverEngineExplanation.RearrangeSum }
                 toExpr = "<. [1/2] - [1/3] .> + 3"
             }
             step { toExpr = "<. [1*3/2*3] - [1*2/3*2] .> + 3" }
@@ -157,7 +157,7 @@ class TestAddFractions {
 
         check {
             invisibleStep {
-                explanation { key = SolverEngineExplanation.ExtractPartialSum }
+                explanation { key = SolverEngineExplanation.ExtractPartialExpression }
                 toExpr = "<. [1/2] + [1/3] .> + 3"
             }
             step { toExpr = "<. [1*3/2*3] + [1*2/3*2] .> + 3" }
@@ -173,7 +173,10 @@ class TestAddFractions {
         inputExpr = "5 + x + [1/2] + 3 - [1/3]"
 
         check {
-            step { toExpr = "5 + x + <. [1/2] - [1/3] .> + 3" }
+            step {
+                explanation { key = SolverEngineExplanation.RearrangeSum }
+                toExpr = "5 + x + <. [1/2] - [1/3] .> + 3"
+            }
             step { toExpr = "5 + x + <. [1*3/2*3] - [1*2/3*2] .> + 3" }
             step { toExpr = "5 + x + <. [3/6] - [2/6] .> + 3" }
             step { toExpr = "5 + x + [3 - 2 / 6] + 3" }

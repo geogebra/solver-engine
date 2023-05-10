@@ -266,7 +266,7 @@ enum class BinaryExpressionOperator(override val precedence: Int) : BinaryOperat
     override fun eval(children: List<Double>) = eval(children[0], children[1])
 }
 
-abstract class NaryOperator(override val precedence: Int) : ExpressionOperator {
+sealed class NaryOperator(override val precedence: Int) : ExpressionOperator {
 
     override val arity = ARITY_VARIABLE
     override fun nthChildAllowed(n: Int, op: Operator) = op.precedence > this.precedence

@@ -350,7 +350,16 @@ open class Expression internal constructor(
                 when {
                     i != childIndex -> op
                     newChild.hasBracket() || operator.nthChildAllowed(i, newChild.operator) -> newChild
-                    else -> newChild.decorate(op.outerBracket() ?: Decorator.RoundBracket)
+                    else -> {
+                        val outerBracket = op.outerBracket()
+                        val newBracket = when {
+                            outerBracket == null -> Decorator.RoundBracket
+                            outerBracket == Decorator.PartialBracket && newChild.operator != op.operator ->
+                                Decorator.RoundBracket
+                            else -> outerBracket
+                        }
+                        newChild.decorate(newBracket)
+                    }
                 }
             },
         )
