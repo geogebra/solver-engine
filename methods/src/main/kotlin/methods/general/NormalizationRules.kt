@@ -50,12 +50,14 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
             val pattern = sumContaining(innerSum)
 
             onPattern(pattern) {
-                val idxOfFirstChildWithBracket = get(pattern).children.indexOfFirst { child -> child.hasBracket() }
+                val idxOfFirstChildWithBracket = get(pattern).children.indexOfFirst { child ->
+                    child.operator is SumOperator && child.hasBracket()
+                }
                 val sumChildren = get(pattern).children.toMutableList()
                 // Remove brackets from the first sum having brackets
                 sumChildren[idxOfFirstChildWithBracket] = sumChildren[idxOfFirstChildWithBracket].removeBrackets()
                 ruleResult(
-                    tags = listOf(Transformation.Tag.Rearrangement),
+                    tags = listOf(Transformation.Tag.Cosmetic),
                     toExpr = cancel(
                         mapOf(innerSum to listOf(PathScope.Decorator)),
                         engine.expressions.sumOf(sumChildren),
@@ -67,16 +69,29 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
         },
     ),
 
+    // NOTE: there should just be one rule "RemoveRedundantBracket"
+    // that should handle removal of brackets
     RemoveBracketProductInProduct(
         rule {
             val innerProduct = productContaining()
             val pattern = productContaining(condition(innerProduct) { it.hasBracket() })
 
             onPattern(pattern) {
+                val idxOfFirstProdChildWithBracket = get(pattern).children.indexOfFirst { child ->
+                    child is Product && child.hasBracket()
+                }
+                val prodList = get(pattern).children.toMutableList()
+                // Remove brackets from the first product having brackets
+                prodList[idxOfFirstProdChildWithBracket] = prodList[idxOfFirstProdChildWithBracket].removeBrackets()
+                val flattenedProduct = prodList.flatMap {
+                    if (isNonPartialProductWithoutLabelAndBracket(it)) it.children else listOf(it)
+                }
+
                 ruleResult(
-                    tags = listOf(Transformation.Tag.Rearrangement),
-                    toExpr = productOf(
-                        get(pattern).children.map { child -> transformTo(child) { it.removeBrackets() } },
+                    tags = listOf(Transformation.Tag.Cosmetic),
+                    toExpr = cancel(
+                        mapOf(innerProduct to listOf(PathScope.Decorator)),
+                        Product(flattenedProduct),
                     ),
                     gmAction = tap(innerProduct, PM.OpenParens),
                     explanation = metadata(Explanation.RemoveBracketProductInProduct),
@@ -93,7 +108,10 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
             onPattern(pattern) {
                 ruleResult(
                     tags = listOf(Transformation.Tag.Cosmetic),
-                    toExpr = pattern.substitute(transformTo(number) { it.removeBrackets() }),
+                    toExpr = cancel(
+                        mapOf(number to listOf(PathScope.Decorator, PathScope.OuterOperator)),
+                        pattern.substitute(get(number).removeBrackets()),
+                    ),
                     gmAction = tap(number, PM.OuterOperator),
                     explanation = metadata(Explanation.NormalizeNegativeSignOfIntegerInSum),
                 )
@@ -115,7 +133,10 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
             onPattern(pattern) {
                 ruleResult(
                     tags = listOf(Transformation.Tag.Cosmetic),
-                    toExpr = transformTo(pattern) { it.removeBrackets() },
+                    toExpr = cancel(
+                        mapOf(pattern to listOf(PathScope.Decorator)),
+                        get(pattern).removeBrackets(),
+                    ),
                     gmAction = tap(pattern, PM.OpenParens),
                     explanation = metadata(Explanation.RemoveRedundantBracket),
                 )
@@ -131,7 +152,10 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
             onPattern(pattern) {
                 ruleResult(
                     tags = listOf(Transformation.Tag.Cosmetic),
-                    toExpr = move(value),
+                    toExpr = cancel(
+                        mapOf(pattern to listOf(PathScope.Operator)),
+                        get(value),
+                    ),
                     // NOTE: GM doesn't support leading pluses & this will only work for
                     // removing brackets around 1+(+2)
                     gmAction = tap(pattern, PM.OuterOperator),
@@ -238,4 +262,8 @@ private fun orderInProduct(e: Expression): Int {
         UnaryExpressionOperator.SquareRoot -> 2
         else -> 1
     }
+}
+
+private fun isNonPartialProductWithoutLabelAndBracket(expr: Expression): Boolean {
+    return expr is Product && !expr.isPartialProduct() && !expr.hasLabel() && !expr.hasBracket()
 }

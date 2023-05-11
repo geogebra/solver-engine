@@ -2,6 +2,7 @@ package engine.methods
 
 import engine.context.Context
 import engine.context.emptyContext
+import engine.expressions.Expression
 import engine.expressions.Root
 import parser.parseExpression
 import kotlin.test.assertEquals
@@ -31,13 +32,29 @@ fun testRule(
     outputExpr: String?,
     gmAction: SerializedGmAction? = null,
     context: Context = emptyContext,
+    testWithoutBrackets: Boolean = true,
 ) {
     val expression = parseExpression(inputExpr)
-    val step = rule.tryExecute(context, expression.withOrigin(Root()))
+    return testRule(expression, rule, outputExpr, gmAction, context, testWithoutBrackets)
+}
+
+fun testRule(
+    inputExpr: Expression,
+    rule: Method,
+    outputExpr: String?,
+    gmAction: SerializedGmAction? = null,
+    context: Context = emptyContext,
+    testWithoutBrackets: Boolean = true,
+) {
+    val step = rule.tryExecute(context, inputExpr.withOrigin(Root()))
     if (outputExpr == null) {
         assertNull(step)
     } else {
-        assertEquals(parseExpression(outputExpr), step?.toExpr?.removeBrackets())
+        if (testWithoutBrackets) {
+            assertEquals(parseExpression(outputExpr), step?.toExpr?.removeBrackets())
+        } else {
+            assertEquals(parseExpression(outputExpr), step?.toExpr)
+        }
     }
     if (gmAction != null) {
         assertEquals(gmAction.type, step?.gmAction?.type?.name)

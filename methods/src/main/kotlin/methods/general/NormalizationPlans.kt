@@ -48,6 +48,16 @@ enum class NormalizationPlans(override val runner: CompositeMethod) : RunnerMeth
             }
         },
     ),
+
+    RemoveAllBracketProductInProduct(
+        plan {
+            explanation = Explanation.RemoveAllBracketProductInProduct
+
+            steps {
+                whilePossible(NormalizationRules.RemoveBracketProductInProduct)
+            }
+        },
+    ),
 }
 
 val reorderProductSteps = contextSensitiveSteps {
@@ -58,6 +68,6 @@ val reorderProductSteps = contextSensitiveSteps {
 val inlineSumsAndProducts = steps {
     firstOf {
         option(NormalizationPlans.RemoveAllBracketSumInSum)
-        option(NormalizationRules.RemoveBracketProductInProduct)
+        option(NormalizationPlans.RemoveAllBracketProductInProduct)
     }
 }

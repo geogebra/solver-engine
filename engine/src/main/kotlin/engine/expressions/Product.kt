@@ -38,6 +38,29 @@ class Product(
         return decorators.fold(str) { acc, dec -> dec.decorateLatexString(acc) }
     }
 
+    override fun replaceNthChild(childIndex: Int, newChild: Expression): Expression {
+        if (newChild !is Product || newChild.hasLabel()) {
+            return super.replaceNthChild(childIndex, newChild)
+        }
+        val flatOperands = mutableListOf<Expression>()
+        val flatForcedSigns = mutableListOf<Int>()
+        var flatIndex = 0
+        for ((i, child) in children.withIndex()) {
+            if (i in forcedSigns) {
+                flatForcedSigns.add(flatIndex)
+            }
+            if (i != childIndex) {
+                flatOperands.add(child)
+                flatIndex++
+            } else {
+                flatOperands.addAll(newChild.children)
+                flatForcedSigns.addAll(newChild.forcedSigns.map { it + flatIndex })
+                flatIndex += newChild.childCount
+            }
+        }
+        return Product(flatOperands, flatForcedSigns, meta.copyMeta(origin = Build))
+    }
+
     override fun toJson(): List<Any> {
         val serializedOperands = operands.map { it.toJson() }
         val initial = if (decorators.isEmpty()) {

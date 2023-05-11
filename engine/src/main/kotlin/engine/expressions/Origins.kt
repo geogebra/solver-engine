@@ -54,8 +54,6 @@ class Child(val parent: Expression, val index: Int) : Origin(parent.origin.path?
         )
 
     override fun hashCode() = index.hashCode() * 31 + parent.origin.hashCode()
-
-    internal fun replaceInParent(newExpr: Expression) = parent.replaceNthChild(index, newExpr)
 }
 
 object New : Origin() {

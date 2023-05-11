@@ -513,7 +513,21 @@ class GeneralRulesTest {
     }
 
     @Test
-    fun testNormaliseProduct() {
+    fun testReorderProduct() {
+        testMethod {
+            method = NormalizationRules.ReorderProduct
+            inputExpr = "(x + 1)*5x*sqrt[2]"
+
+            check {
+                toExpr = "5 sqrt[2] * x (x + 1)"
+
+                move("./1", "./0")
+                move("./3", "./1")
+                move("./2", "./2")
+                move("./0", "./3")
+            }
+        }
+
         testRule(
             "(x + 1)*5",
             NormalizationRules.ReorderProduct,
@@ -549,6 +563,23 @@ class GeneralRulesTest {
             NormalizationRules.ReorderProduct,
             null,
         )
+    }
+
+    @Test
+    fun testReorderProductSingleStep() {
+        testMethod {
+            method = NormalizationRules.ReorderProductSingleStep
+            inputExpr = "(x + 1)*5x*sqrt[2]"
+
+            check {
+                toExpr = "5 (x+1) x sqrt[2]"
+
+                move("./1", "./0")
+                shift("./0", "./1")
+                shift("./2", "./2")
+                shift("./3", "./3")
+            }
+        }
     }
 
     @Test

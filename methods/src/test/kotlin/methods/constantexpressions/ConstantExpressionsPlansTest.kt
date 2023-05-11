@@ -758,6 +758,94 @@ class TestNormalization {
             }
         }
     }
+
+    @Test
+    fun `test remove brackets and simplify a (bc) (de)`() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "sqrt[2] (2 sqrt[2]) (3 sqrt[2])"
+
+        check {
+            fromExpr = "sqrt[2] (2 sqrt[2]) (3 sqrt[2])"
+            toExpr = "12 sqrt[2]"
+            explanation {
+                key = ConstantExpressionsExplanation.SimplifyConstantExpression
+            }
+
+            step {
+                fromExpr = "sqrt[2] (2 sqrt[2]) (3 sqrt[2])"
+                toExpr = "sqrt[2] * 2 sqrt[2] * 3 sqrt[2]"
+                explanation {
+                    key = GeneralExplanation.RemoveAllBracketProductInProduct
+                }
+
+                step {
+                    fromExpr = "sqrt[2] (2 sqrt[2]) (3 sqrt[2])"
+                    toExpr = "sqrt[2] * 2 sqrt[2] (3 sqrt[2])"
+                    explanation {
+                        key = GeneralExplanation.RemoveBracketProductInProduct
+                    }
+                }
+
+                step {
+                    fromExpr = "sqrt[2] * 2 sqrt[2] (3 sqrt[2])"
+                    toExpr = "sqrt[2] * 2 sqrt[2] * 3 sqrt[2]"
+                    explanation {
+                        key = GeneralExplanation.RemoveBracketProductInProduct
+                    }
+                }
+            }
+
+            step { }
+        }
+    }
+
+    @Test
+    fun `test remove brackets and simplify (a) (bc) (de)`() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "(sqrt[2]) (2 sqrt[2]) (3 sqrt[2])"
+
+        check {
+            fromExpr = "(sqrt[2]) (2 sqrt[2]) (3 sqrt[2])"
+            toExpr = "12 sqrt[2]"
+            explanation {
+                key = ConstantExpressionsExplanation.SimplifyConstantExpression
+            }
+
+            step {
+                fromExpr = "(sqrt[2]) (2 sqrt[2]) (3 sqrt[2])"
+                toExpr = "sqrt[2] (2 sqrt[2]) (3 sqrt[2])"
+                explanation {
+                    key = GeneralExplanation.RemoveRedundantBracket
+                }
+            }
+
+            step {
+                fromExpr = "sqrt[2] (2 sqrt[2]) (3 sqrt[2])"
+                toExpr = "sqrt[2] * 2 sqrt[2] * 3 sqrt[2]"
+                explanation {
+                    key = GeneralExplanation.RemoveAllBracketProductInProduct
+                }
+
+                step {
+                    fromExpr = "sqrt[2] (2 sqrt[2]) (3 sqrt[2])"
+                    toExpr = "sqrt[2] * 2 sqrt[2] (3 sqrt[2])"
+                    explanation {
+                        key = GeneralExplanation.RemoveBracketProductInProduct
+                    }
+                }
+
+                step {
+                    fromExpr = "sqrt[2] * 2 sqrt[2] (3 sqrt[2])"
+                    toExpr = "sqrt[2] * 2 sqrt[2] * 3 sqrt[2]"
+                    explanation {
+                        key = GeneralExplanation.RemoveBracketProductInProduct
+                    }
+                }
+            }
+
+            step { }
+        }
+    }
 }
 
 class ConstantExpressionFractionHigherOrderRootTest {

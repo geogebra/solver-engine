@@ -105,4 +105,17 @@ class NormalizationPlansTests {
             step { toExpr = "5 sqrt[3] (1 + sqrt[3]) y sqrt[y] ([y ^ 2] + 1)" }
         }
     }
+
+    @Test
+    fun testRemoveAllBracketProductInProduct() = testMethod {
+        method = NormalizationPlans.RemoveAllBracketProductInProduct
+        inputExpr = "sqrt[2] (2 sqrt[2]) (3 sqrt[2])"
+
+        check {
+            toExpr = "sqrt[2] * 2 sqrt[2] * 3 sqrt[2]"
+
+            step { toExpr = "sqrt[2] * 2 sqrt[2] (3 sqrt[2])" }
+            step { toExpr = "sqrt[2] * 2 sqrt[2] * 3 sqrt[2]" }
+        }
+    }
 }

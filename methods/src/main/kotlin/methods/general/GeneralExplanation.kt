@@ -43,6 +43,7 @@ enum class GeneralExplanation : CategorisedMetadataKey {
     RemoveBracketSumInSum,
     RemoveAllBracketSumInSum,
     RemoveBracketProductInProduct,
+    RemoveAllBracketProductInProduct,
 
     /**
      * E.g. 1 + (-2) -> 1 - 2

@@ -117,7 +117,7 @@ data class BasicMeta(
 open class Expression internal constructor(
     val operator: Operator,
     internal val operands: List<Expression>,
-    private val meta: NodeMeta,
+    protected val meta: NodeMeta,
 ) : LatexRenderable, ExpressionProvider {
 
     internal val decorators get() = meta.decorators
@@ -216,8 +216,11 @@ open class Expression internal constructor(
             operands.zip(other.operands).all { (op1, op2) -> op1.equiv(op2) }
     }
 
-    fun decorate(decorator: Decorator) =
+    fun decorate(decorator: Decorator?) = if (decorator == null) {
+        this
+    } else {
         expressionOf(operator, operands, meta.copyMeta(decorators = decorators + decorator))
+    }
 
     fun hasBracket() = decorators.isNotEmpty()
 
@@ -297,7 +300,7 @@ open class Expression internal constructor(
         origin -> newExpr
         is Child -> justSubstitute(
             subOrigin.parent.origin,
-            subOrigin.replaceInParent(newExpr).asFlattenedProduct(),
+            subOrigin.parent.replaceNthChild(subOrigin.index, newExpr),
         )
         else -> this
     }
@@ -316,35 +319,10 @@ open class Expression internal constructor(
                 newExpr = newExpr.replaceNthChild(i, newChild)
             }
         }
-        return newExpr.asFlattenedProduct()
+        return newExpr
     }
 
-    // it's really strange how we only flatten products and not sums
-    private fun asFlattenedProduct(): Expression = when {
-        this !is Product -> this
-        operands.all { it.hasLabel() || it !is Product } -> this
-        else -> {
-            val flatOperands = mutableListOf<Expression>()
-            val flatForcedSigns = mutableListOf<Int>()
-            var flatIndex = 0
-            for ((i, op) in operands.withIndex()) {
-                if (i in forcedSigns) {
-                    flatForcedSigns.add(flatIndex)
-                }
-                if (op is Product && !op.hasLabel()) {
-                    flatOperands.addAll(op.children)
-                    flatForcedSigns.addAll(op.forcedSigns.map { flatIndex + it })
-                    flatIndex += op.children.size
-                } else {
-                    flatOperands.add(op)
-                    flatIndex++
-                }
-            }
-            Product(flatOperands, flatForcedSigns, meta)
-        }
-    }
-
-    internal fun replaceNthChild(childIndex: Int, newChild: Expression) =
+    protected open fun replaceNthChild(childIndex: Int, newChild: Expression) =
         replaceChildren(
             children.mapIndexed { i, op ->
                 when {
@@ -366,7 +344,7 @@ open class Expression internal constructor(
 
     internal fun replaceChildren(newChildren: List<Expression>) = expressionOf(
         operator,
-        newChildren.mapIndexed { index, child -> child.adjustBracketFor(operator, index) },
+        newChildren,
         meta.copyMeta(origin = Build),
     )
 
@@ -438,7 +416,8 @@ fun Expression.hasSingleValue(): Boolean {
 fun Expression.splitPlusMinus(): List<Expression> {
     if (operator == UnaryExpressionOperator.PlusMinus) {
         val splitChild = firstChild.splitPlusMinus()
-        return splitChild.map { simplifiedNegOf(it) } + splitChild
+        return splitChild.map { simplifiedNegOf(it).decorate(outerBracket()) } +
+            splitChild.map { it.decorate(outerBracket()) }
     }
     if (childCount == 0) {
         return listOf(this)
