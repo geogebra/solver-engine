@@ -19,7 +19,7 @@ metadata:
     {{ if eq .Values.branchName "release" }}
     alb.ingress.kubernetes.io/group.name: solver-engine-release
     {{ else }}
-    alb.ingress.kubernetes.io/group.name: my-group
+    alb.ingress.kubernetes.io/group.name: solver-engine
     {{ end }}
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
     alb.ingress.kubernetes.io/ssl-redirect: '443'
