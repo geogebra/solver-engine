@@ -18,18 +18,15 @@ import engine.patterns.SolutionVariablePattern
 import engine.patterns.UnsignedNumberPattern
 import engine.patterns.closedOpenIntervalOf
 import engine.patterns.condition
-import engine.patterns.contradictionOf
 import engine.patterns.fractionOf
-import engine.patterns.identityOf
 import engine.patterns.inSolutionVariables
 import engine.patterns.inequalityOf
 import engine.patterns.oneOf
 import engine.patterns.openClosedIntervalOf
 import engine.patterns.openIntervalOf
 import engine.patterns.optionalNegOf
-import engine.patterns.setSolutionOf
+import engine.patterns.solutionOf
 import engine.patterns.sumContaining
-import engine.patterns.variableListOf
 import engine.patterns.withOptionalConstantCoefficient
 import engine.patterns.withOptionalIntegerCoefficient
 import methods.constantexpressions.ConstantExpressionsPlans
@@ -196,11 +193,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
                     default(
                         ResourceData(preferDecimals = false),
                         FormChecker(
-                            oneOf(
-                                contradictionOf(variableListOf(SolutionVariablePattern())),
-                                identityOf(variableListOf(SolutionVariablePattern())),
-                                setSolutionOf(variableListOf(SolutionVariablePattern()), AnyPattern()),
-                            ),
+                            solutionOf(SolutionVariablePattern(), AnyPattern()),
                         ),
                     )
                     alternative(
@@ -246,17 +239,15 @@ private val decimalSolutionFormChecker = run {
     )
 
     FormChecker(
-        oneOf(
-            identityOf(variableListOf(SolutionVariablePattern())),
-            contradictionOf(variableListOf(SolutionVariablePattern())),
-            setSolutionOf(
-                variableListOf(SolutionVariablePattern()),
-                oneOf(
-                    openIntervalOf(FixedPattern(Constants.NegativeInfinity), acceptedSolutions),
-                    openClosedIntervalOf(FixedPattern(Constants.NegativeInfinity), acceptedSolutions),
-                    openIntervalOf(acceptedSolutions, FixedPattern(Constants.Infinity)),
-                    closedOpenIntervalOf(acceptedSolutions, FixedPattern(Constants.Infinity)),
-                ),
+        solutionOf(
+            SolutionVariablePattern(),
+            oneOf(
+                FixedPattern(Constants.EmptySet),
+                FixedPattern(Constants.Reals),
+                openIntervalOf(FixedPattern(Constants.NegativeInfinity), acceptedSolutions),
+                openClosedIntervalOf(FixedPattern(Constants.NegativeInfinity), acceptedSolutions),
+                openIntervalOf(acceptedSolutions, FixedPattern(Constants.Infinity)),
+                closedOpenIntervalOf(acceptedSolutions, FixedPattern(Constants.Infinity)),
             ),
         ),
     )

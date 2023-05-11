@@ -27,31 +27,31 @@ class CompletingTheSquareTest {
     @Test
     fun `short test integer solutions`() = shortTest(
         inputExpr = "[x ^ 2] + 2 x = 8",
-        toExpr = "SetSolution[x: {-4, 2}]",
+        toExpr = "Solution[x, {-4, 2}]",
     )
 
     @Test
     fun `short test surd solutions`() = shortTest(
         inputExpr = "[x ^ 2] = x + 3",
-        toExpr = "SetSolution[x: {[-sqrt[13] + 1 / 2], [sqrt[13] + 1 / 2]}]",
+        toExpr = "Solution[x, {[-sqrt[13] + 1 / 2], [sqrt[13] + 1 / 2]}]",
     )
 
     @Test
     fun `short test no constant term`() = shortTest(
         inputExpr = "x = [x ^ 2]",
-        toExpr = "SetSolution[x: {0, 1}]",
+        toExpr = "Solution[x, {0, 1}]",
     )
 
     @Test
     fun `short test single solution`() = shortTest(
         inputExpr = "[x ^ 2] - 10 x = -25",
-        toExpr = "SetSolution[x: {5}]",
+        toExpr = "Solution[x, {5}]",
     )
 
     @Test
     fun `short test no solution`() = shortTest(
         inputExpr = "[x ^ 2] + x + 10 = 0",
-        toExpr = "SetSolution[x: {}]",
+        toExpr = "Solution[x, {}]",
     )
 
     @Test
@@ -63,31 +63,31 @@ class CompletingTheSquareTest {
     @Test
     fun `short test quadratic coefficient not 1`() = shortTest(
         inputExpr = "2 [x ^ 2] - 45 = x",
-        toExpr = "SetSolution[x: {-[9 / 2], 5}]",
+        toExpr = "Solution[x, {-[9 / 2], 5}]",
     )
 
     @Test
     fun `short test with rational quadratic coefficient`() = shortTest(
         inputExpr = "[1/2][x^2] + x + [1/2] = 0",
-        toExpr = "SetSolution[x: {-1}]",
+        toExpr = "Solution[x, {-1}]",
     )
 
     @Test
     fun `short test with rearranging first`() = shortTest(
         inputExpr = "[x^2] = 1 - x - [x^2]",
-        toExpr = "SetSolution[x: {-1, [1/2]}]",
+        toExpr = "Solution[x, {-1, [1/2]}]",
     )
 
     @Test
     fun `short test with biquadratic equation`() = shortTest(
         inputExpr = "[x^4] - 3[x^2] + 2 = 0",
-        toExpr = "SetSolution[x: {-sqrt[2], -1, 1, sqrt[2]}]",
+        toExpr = "Solution[x, {-sqrt[2], -1, 1, sqrt[2]}]",
     )
 
     @Test
     fun `short test 6th power`() = shortTest(
         inputExpr = "[x^6] + 2 = 3[x^3]",
-        toExpr = "SetSolution[x: {1, root[2, 3]}]",
+        toExpr = "Solution[x, {1, root[2, 3]}]",
     )
 
     @Test
@@ -97,7 +97,7 @@ class CompletingTheSquareTest {
 
         check {
             fromExpr = "[x ^ 2] = 6 x + 5"
-            toExpr = "SetSolution[x: {-sqrt[14] + 3, sqrt[14] + 3}]"
+            toExpr = "Solution[x, {-sqrt[14] + 3, sqrt[14] + 3}]"
             explanation {
                 key = EquationsExplanation.SolveByCompletingTheSquare
             }
@@ -184,7 +184,7 @@ class CompletingTheSquareTest {
 
             step {
                 fromExpr = "x = +/-sqrt[14] + 3"
-                toExpr = "SetSolution[x: {-sqrt[14] + 3, sqrt[14] + 3}]"
+                toExpr = "Solution[x, {-sqrt[14] + 3, sqrt[14] + 3}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEquationInPlusMinusForm
                 }
@@ -199,7 +199,7 @@ class CompletingTheSquareTest {
 
         check {
             fromExpr = "2 [x ^ 2] + 5 x = 7"
-            toExpr = "SetSolution[x: {-[7 / 2], 1}]"
+            toExpr = "Solution[x, {-[7 / 2], 1}]"
             explanation {
                 key = EquationsExplanation.SolveByCompletingTheSquare
             }
@@ -302,7 +302,7 @@ class CompletingTheSquareTest {
 
             step {
                 fromExpr = "x = -[9 / 4] - [5 / 4] OR x = [9 / 4] - [5 / 4]"
-                toExpr = "SetSolution[x: {-[7 / 2], 1}]"
+                toExpr = "Solution[x, {-[7 / 2], 1}]"
                 explanation {
                     key = EquationsExplanation.SolveEquationUnion
                 }
@@ -319,7 +319,7 @@ class CompletingTheSquareTest {
                     }
 
                     step {
-                        toExpr = "SetSolution[x: {-[7 / 2]}]"
+                        toExpr = "Solution[x, {-[7 / 2]}]"
                         explanation {
                             key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                         }
@@ -338,7 +338,7 @@ class CompletingTheSquareTest {
                     }
 
                     step {
-                        toExpr = "SetSolution[x: {1}]"
+                        toExpr = "Solution[x, {1}]"
                         explanation {
                             key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                         }
@@ -362,7 +362,7 @@ class CompletingTheSquareTest {
 
         check {
             fromExpr = "3 x + (-x - 1) + 2 x * (x + 2) = [11 / 4]"
-            toExpr = "SetSolution[x: {-[sqrt[66] + 6 / 4], [sqrt[66] - 6 / 4]}]"
+            toExpr = "Solution[x, {-[sqrt[66] + 6 / 4], [sqrt[66] - 6 / 4]}]"
             explanation {
                 key = EquationsExplanation.SolveByCompletingTheSquare
             }

@@ -159,7 +159,7 @@ class SolveByEliminationTest {
 
                 step {
                     fromExpr = "5 y = 1"
-                    toExpr = "SetSolution[y: {[1 / 5]}]"
+                    toExpr = "Solution[y, {[1 / 5]}]"
                     explanation {
                         key = EquationsExplanation.SolveLinearEquation
                     }
@@ -179,7 +179,7 @@ class SolveByEliminationTest {
 
                 step {
                     fromExpr = "2 x + 3 * [1 / 5] = 5"
-                    toExpr = "SetSolution[x: {[11 / 5]}]"
+                    toExpr = "Solution[x, {[11 / 5]}]"
                     explanation {
                         key = EquationsExplanation.SolveLinearEquation
                     }
@@ -243,7 +243,7 @@ class SolveByEliminationTest {
 
                 step {
                     fromExpr = "3 x = 7"
-                    toExpr = "SetSolution[x: {[7 / 3]}]"
+                    toExpr = "Solution[x, {[7 / 3]}]"
                     explanation {
                         key = EquationsExplanation.SolveLinearEquation
                     }
@@ -263,7 +263,7 @@ class SolveByEliminationTest {
 
                 step {
                     fromExpr = "2 * [7 / 3] + 3 y = 5"
-                    toExpr = "SetSolution[y: {[1 / 9]}]"
+                    toExpr = "Solution[y, {[1 / 9]}]"
                     explanation {
                         key = EquationsExplanation.SolveLinearEquation
                     }
@@ -406,7 +406,7 @@ class SolveByEliminationTest {
 
                 step {
                     fromExpr = "2 x = 2"
-                    toExpr = "SetSolution[x: {1}]"
+                    toExpr = "Solution[x, {1}]"
                     explanation {
                         key = EquationsExplanation.SolveLinearEquation
                     }
@@ -427,7 +427,7 @@ class SolveByEliminationTest {
 
                 step {
                     fromExpr = "x = 1"
-                    toExpr = "SetSolution[x: {1}]"
+                    toExpr = "Solution[x, {1}]"
                     explanation {
                         key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                     }
@@ -467,7 +467,7 @@ class SolveByEliminationTest {
 
                 step {
                     fromExpr = "x = 2"
-                    toExpr = "SetSolution[x: {2}]"
+                    toExpr = "Solution[x, {2}]"
                     explanation {
                         key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                     }
@@ -488,7 +488,7 @@ class SolveByEliminationTest {
 
                 step {
                     fromExpr = "x = 1"
-                    toExpr = "SetSolution[x: {1}]"
+                    toExpr = "Solution[x, {1}]"
                     explanation {
                         key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                     }

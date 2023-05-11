@@ -13,7 +13,7 @@ class LinearEquationsWithFractionsTest {
 
         check {
             fromExpr = "[x - 14 / 12] - [2 x - 1 / 18] = [2 / 9] (2 x - 5)"
-            toExpr = "SetSolution[x: {0}]"
+            toExpr = "Solution[x, {0}]"
             explanation {
                 key = EquationsExplanation.SolveLinearEquation
             }
@@ -60,7 +60,7 @@ class LinearEquationsWithFractionsTest {
 
             step {
                 fromExpr = "x = 0"
-                toExpr = "SetSolution[x: {0}]"
+                toExpr = "Solution[x, {0}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                 }
@@ -75,7 +75,7 @@ class LinearEquationsWithFractionsTest {
 
         check {
             fromExpr = "[x / 2] + [11 / 3] = 0"
-            toExpr = "SetSolution[x: {-[22 / 3]}]"
+            toExpr = "Solution[x, {-[22 / 3]}]"
             explanation {
                 key = EquationsExplanation.SolveLinearEquation
             }
@@ -106,7 +106,7 @@ class LinearEquationsWithFractionsTest {
 
             step {
                 fromExpr = "x = -[22 / 3]"
-                toExpr = "SetSolution[x: {-[22 / 3]}]"
+                toExpr = "Solution[x, {-[22 / 3]}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                 }
@@ -121,7 +121,7 @@ class LinearEquationsWithFractionsTest {
 
         check {
             fromExpr = "[1 / 2]x + [11 / 3] = 0"
-            toExpr = "SetSolution[x: {-[22 / 3]}]"
+            toExpr = "Solution[x, {-[22 / 3]}]"
             explanation {
                 key = EquationsExplanation.SolveLinearEquation
             }
@@ -152,7 +152,7 @@ class LinearEquationsWithFractionsTest {
 
             step {
                 fromExpr = "x = -[22 / 3]"
-                toExpr = "SetSolution[x: {-[22 / 3]}]"
+                toExpr = "Solution[x, {-[22 / 3]}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                 }
@@ -167,7 +167,7 @@ class LinearEquationsWithFractionsTest {
 
         check {
             fromExpr = "180 ([x - 14 / 12] - [2 x - 1 / 10]) = 1"
-            toExpr = "SetSolution[x: {-[193 / 21]}]"
+            toExpr = "Solution[x, {-[193 / 21]}]"
             explanation {
                 key = EquationsExplanation.SolveLinearEquation
             }
@@ -198,7 +198,7 @@ class LinearEquationsWithFractionsTest {
 
             step {
                 fromExpr = "x = -[193 / 21]"
-                toExpr = "SetSolution[x: {-[193 / 21]}]"
+                toExpr = "Solution[x, {-[193 / 21]}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                 }

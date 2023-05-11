@@ -139,7 +139,7 @@ class EquationRulesTest {
         testRuleInX(
             "x = [-1 + sqrt[11] / 2] OR x = [-1 - sqrt[11] / 2]",
             EquationsRules.ExtractSolutionFromEquationInUnionForm,
-            "SetSolution[x: {[-1 + sqrt[11] / 2], [-1 - sqrt[11] / 2]}]",
+            "Solution[x, {[-1 + sqrt[11] / 2], [-1 - sqrt[11] / 2]}]",
         )
     }
 
@@ -148,7 +148,7 @@ class EquationRulesTest {
         testRuleInX(
             "x = [2 +/- sqrt[-28] / 2]",
             EquationsRules.ExtractSolutionFromNegativeUnderSquareRootInRealDomain,
-            "Contradiction[x: x = [2 +/- sqrt[-28] / 2]]",
+            "Solution[x, {}]",
         )
     }
 }

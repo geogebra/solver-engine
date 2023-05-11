@@ -15,7 +15,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
         check {
             fromExpr = "[x ^ 2] + 5 + 1 + 5 x = 0"
-            toExpr = "SetSolution[x: {-3, -2}]"
+            toExpr = "Solution[x, {-3, -2}]"
             explanation {
                 key = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula
             }
@@ -62,7 +62,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
             step {
                 fromExpr = "x = [-5 - 1 / 2] OR x = [-5 + 1 / 2]"
-                toExpr = "SetSolution[x: {-3, -2}]"
+                toExpr = "Solution[x, {-3, -2}]"
                 explanation {
                     key = EquationsExplanation.SolveEquationUnion
                 }
@@ -77,7 +77,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
         check {
             fromExpr = "2 [x ^ 2] - 7 x + 4 = 1"
-            toExpr = "SetSolution[x: {[1 / 2], 3}]"
+            toExpr = "Solution[x, {[1 / 2], 3}]"
             explanation {
                 key = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula
             }
@@ -116,7 +116,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
             step {
                 fromExpr = "x = [7 - 5 / 4] OR x = [7 + 5 / 4]"
-                toExpr = "SetSolution[x: {[1 / 2], 3}]"
+                toExpr = "Solution[x, {[1 / 2], 3}]"
                 explanation {
                     key = EquationsExplanation.SolveEquationUnion
                 }
@@ -133,7 +133,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
                     }
 
                     step {
-                        toExpr = "SetSolution[x: {[1 / 2]}]"
+                        toExpr = "Solution[x, {[1 / 2]}]"
                         explanation {
                             key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                         }
@@ -152,7 +152,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
                     }
 
                     step {
-                        toExpr = "SetSolution[x: {3}]"
+                        toExpr = "Solution[x, {3}]"
                         explanation {
                             key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                         }
@@ -176,7 +176,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
         check {
             fromExpr = "2 [x ^ 2] - 7 x + 3 = 0"
-            toExpr = "SetSolution[x: {[1 / 2], 3}]"
+            toExpr = "Solution[x, {[1 / 2], 3}]"
             explanation {
                 key = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula
             }
@@ -207,7 +207,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
             step {
                 fromExpr = "x = [7 - 5 / 4] OR x = [7 + 5 / 4]"
-                toExpr = "SetSolution[x: {[1 / 2], 3}]"
+                toExpr = "Solution[x, {[1 / 2], 3}]"
                 explanation {
                     key = EquationsExplanation.SolveEquationUnion
                 }
@@ -222,7 +222,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
         check {
             fromExpr = "[x ^ 2] + 4 x + 4 = 0"
-            toExpr = "SetSolution[x: {-2}]"
+            toExpr = "Solution[x, {-2}]"
             explanation {
                 key = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula
             }
@@ -245,7 +245,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
             step {
                 fromExpr = "x = -2"
-                toExpr = "SetSolution[x: {-2}]"
+                toExpr = "Solution[x, {-2}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                 }
@@ -260,7 +260,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
         check {
             fromExpr = "[x ^ 2] + 4 x + 9 = 0"
-            toExpr = "Contradiction[x: x = [-4 +/- sqrt[-20] / 2]]"
+            toExpr = "Solution[x, {}]"
             explanation {
                 key = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula
             }
@@ -283,7 +283,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
             step {
                 fromExpr = "x = [-4 +/- sqrt[-20] / 2]"
-                toExpr = "Contradiction[x: x = [-4 +/- sqrt[-20] / 2]]"
+                toExpr = "Solution[x, {}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromNegativeUnderSquareRootInRealDomain
                 }
@@ -298,7 +298,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
         check {
             fromExpr = "-[x ^ 2] + 2 x - 8 = 0"
-            toExpr = "Contradiction[x: x = [2 +/- sqrt[-28] / 2]]"
+            toExpr = "Solution[x, {}]"
             explanation {
                 key = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula
             }
@@ -329,7 +329,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
             step {
                 fromExpr = "x = [2 +/- sqrt[-28] / 2]"
-                toExpr = "Contradiction[x: x = [2 +/- sqrt[-28] / 2]]"
+                toExpr = "Solution[x, {}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromNegativeUnderSquareRootInRealDomain
                 }
@@ -344,7 +344,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
         check {
             fromExpr = "2 [x ^ 2] + 4 x + 2 = 0"
-            toExpr = "SetSolution[x: {-1}]"
+            toExpr = "Solution[x, {-1}]"
             explanation {
                 key = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula
             }
@@ -391,7 +391,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
             step {
                 fromExpr = "x = -1"
-                toExpr = "SetSolution[x: {-1}]"
+                toExpr = "Solution[x, {-1}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                 }
@@ -406,7 +406,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
         check {
             fromExpr = "2 [x ^ 2] - 4 x + 2 = 0"
-            toExpr = "SetSolution[x: {1}]"
+            toExpr = "Solution[x, {1}]"
             explanation {
                 key = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula
             }
@@ -437,7 +437,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
             step {
                 fromExpr = "x = 1"
-                toExpr = "SetSolution[x: {1}]"
+                toExpr = "Solution[x, {1}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                 }
@@ -452,7 +452,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
         check {
             fromExpr = "(x + 1) (x + 2) - 3 x - 6 = 0"
-            toExpr = "SetSolution[x: {-2, 2}]"
+            toExpr = "Solution[x, {-2, 2}]"
             explanation {
                 key = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula
             }
@@ -491,7 +491,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
             step {
                 fromExpr = "x = [- 4 / 2] OR x = [4 / 2]"
-                toExpr = "SetSolution[x: {-2, 2}]"
+                toExpr = "Solution[x, {-2, 2}]"
                 explanation {
                     key = EquationsExplanation.SolveEquationUnion
                 }
@@ -506,7 +506,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
         check {
             fromExpr = "(x + 1) (x + 2) + 4 x - 2 = 0"
-            toExpr = "SetSolution[x: {-7, 0}]"
+            toExpr = "Solution[x, {-7, 0}]"
             explanation {
                 key = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula
             }
@@ -545,7 +545,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
             step {
                 fromExpr = "x = [-7 - 7 / 2] OR x = [-7 + 7 / 2]"
-                toExpr = "SetSolution[x: {-7, 0}]"
+                toExpr = "Solution[x, {-7, 0}]"
                 explanation {
                     key = EquationsExplanation.SolveEquationUnion
                 }
@@ -560,7 +560,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
         check {
             fromExpr = "[x ^ 2] - 7 x - 1 = 0"
-            toExpr = "SetSolution[x: {[7 - sqrt[53] / 2], [7 + sqrt[53] / 2]}]"
+            toExpr = "Solution[x, {[7 - sqrt[53] / 2], [7 + sqrt[53] / 2]}]"
             explanation {
                 key = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula
             }
@@ -583,7 +583,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
             step {
                 fromExpr = "x = [7 +/- sqrt[53] / 2]"
-                toExpr = "SetSolution[x: {[7 - sqrt[53] / 2], [7 + sqrt[53] / 2]}]"
+                toExpr = "Solution[x, {[7 - sqrt[53] / 2], [7 + sqrt[53] / 2]}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEquationInPlusMinusForm
                 }
@@ -598,7 +598,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
         check {
             fromExpr = "[x ^ 2] + [x / 6] + 1 = 0"
-            toExpr = "Contradiction[x: x = [-1 +/- sqrt[-143] / 12]]"
+            toExpr = "Solution[x, {}]"
             explanation {
                 key = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula
             }
@@ -624,7 +624,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
         check {
             fromExpr = "[[x ^ 2] / 6] + [x / 3] + [1 / 8] = 0"
-            toExpr = "SetSolution[x: {-[3 / 2], -[1 / 2]}]"
+            toExpr = "Solution[x, {-[3 / 2], -[1 / 2]}]"
             explanation {
                 key = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula
             }
@@ -651,7 +651,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
         check {
             fromExpr = "[[x ^ 2] + 1 / 2] + [x / 2] = [x + 1 / 3]"
-            toExpr = "Contradiction[x: x = [-1 +/- sqrt[-11] / 6]]"
+            toExpr = "Solution[x, {}]"
             explanation {
                 key = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula
             }
@@ -701,7 +701,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
         check {
             fromExpr = "[1 / 5] [x ^ 2] - [2 / 3] x - [1 / 6] x - [5 / 6] = 0"
-            toExpr = "SetSolution[x: {-[5 / 6], 5}]"
+            toExpr = "Solution[x, {-[5 / 6], 5}]"
             explanation {
                 key = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula
             }
@@ -736,7 +736,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
         check {
             fromExpr = "3 [x ^ 2] + 6 x + 3 - sqrt[2] = 0"
-            toExpr = "SetSolution[x: {-[6 + 2 root[18, 4] / 6], [-6 + 2 root[18, 4] / 6]}]"
+            toExpr = "Solution[x, {-[6 + 2 root[18, 4] / 6], [-6 + 2 root[18, 4] / 6]}]"
             explanation {
                 key = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula
             }
@@ -767,7 +767,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
 
             step {
                 fromExpr = "x = [-6 - 2 root[18, 4] / 6] OR x = [-6 + 2 root[18, 4] / 6]"
-                toExpr = "SetSolution[x: {-[6 + 2 root[18, 4] / 6], [-6 + 2 root[18, 4] / 6]}]"
+                toExpr = "Solution[x, {-[6 + 2 root[18, 4] / 6], [-6 + 2 root[18, 4] / 6]}]"
                 explanation {
                     key = EquationsExplanation.SolveEquationUnion
                 }

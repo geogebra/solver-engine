@@ -302,7 +302,7 @@ class ParserTest {
             implicitSolutionOf(variableListOf("x", "y", "z"), equationOf(sumOf(xp("x"), xp("y")), xp("z"))),
         )
         parsesTo(
-            "SetSolution[x: {1}]",
+            "SetSolution[x : {1}]",
             setSolutionOf(variableListOf("x"), solutionSetOf(xp(1))),
         )
         parsesTo(

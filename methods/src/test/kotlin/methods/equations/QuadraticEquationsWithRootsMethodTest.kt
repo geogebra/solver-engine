@@ -16,7 +16,7 @@ class QuadraticEquationsWithRootsMethodTest {
 
         check {
             fromExpr = "2 [x ^ 2] - 3 = 3 [x ^ 2] + 4"
-            toExpr = "SetSolution[x: {}]"
+            toExpr = "Solution[x, {}]"
             explanation {
                 key = EquationsExplanation.SolveEquationUsingRootsMethod
             }
@@ -47,7 +47,7 @@ class QuadraticEquationsWithRootsMethodTest {
 
             step {
                 fromExpr = "[x ^ 2] = -7"
-                toExpr = "SetSolution[x: {}]"
+                toExpr = "Solution[x, {}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEvenPowerEqualsNegative
                 }
@@ -62,7 +62,7 @@ class QuadraticEquationsWithRootsMethodTest {
 
         check {
             fromExpr = "[5 / 2] [x ^ 2] + 5 = [x ^ 2] + 5"
-            toExpr = "SetSolution[x: {0}]"
+            toExpr = "Solution[x, {0}]"
             explanation {
                 key = EquationsExplanation.SolveEquationUsingRootsMethod
             }
@@ -101,7 +101,7 @@ class QuadraticEquationsWithRootsMethodTest {
 
             step {
                 fromExpr = "x = 0"
-                toExpr = "SetSolution[x: {0}]"
+                toExpr = "Solution[x, {0}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                 }
@@ -116,7 +116,7 @@ class QuadraticEquationsWithRootsMethodTest {
 
         check {
             fromExpr = "4 [x ^ 2] + 5 = 2 [x ^ 2] + 8"
-            toExpr = "SetSolution[x: {-[sqrt[6] / 2], [sqrt[6] / 2]}]"
+            toExpr = "Solution[x, {-[sqrt[6] / 2], [sqrt[6] / 2]}]"
             explanation {
                 key = EquationsExplanation.SolveEquationUsingRootsMethod
             }
@@ -163,7 +163,7 @@ class QuadraticEquationsWithRootsMethodTest {
 
             step {
                 fromExpr = "x = +/-[sqrt[6] / 2]"
-                toExpr = "SetSolution[x: {-[sqrt[6] / 2], [sqrt[6] / 2]}]"
+                toExpr = "Solution[x, {-[sqrt[6] / 2], [sqrt[6] / 2]}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEquationInPlusMinusForm
                 }
@@ -179,7 +179,7 @@ class QuadraticEquationsWithRootsMethodTest {
 
         check {
             fromExpr = "2 [y ^ 2] + 2 y - 3 = y + y + 4"
-            toExpr = "SetSolution[y: {-[sqrt[14] / 2], [sqrt[14] / 2]}]"
+            toExpr = "Solution[y, {-[sqrt[14] / 2], [sqrt[14] / 2]}]"
             explanation {
                 key = EquationsExplanation.SolveEquationUsingRootsMethod
             }
@@ -234,7 +234,7 @@ class QuadraticEquationsWithRootsMethodTest {
 
             step {
                 fromExpr = "y = +/-[sqrt[14] / 2]"
-                toExpr = "SetSolution[y: {-[sqrt[14] / 2], [sqrt[14] / 2]}]"
+                toExpr = "Solution[y, {-[sqrt[14] / 2], [sqrt[14] / 2]}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEquationInPlusMinusForm
                 }

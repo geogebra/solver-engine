@@ -6,12 +6,12 @@ import engine.expressions.IntegerExpression
 import engine.expressions.MixedNumberExpression
 import engine.expressions.Product
 import engine.expressions.RecurringDecimalExpression
-import engine.expressions.Variable
 import engine.expressions.asInteger
 import engine.operators.BinaryExpressionOperator
 import engine.operators.SumOperator
 import engine.operators.UnaryExpressionOperator
 import engine.operators.UndefinedOperator
+import engine.operators.VariableOperator
 import engine.utility.isEven
 
 private const val NOT_KNOWN_SIGNUM = 10
@@ -146,8 +146,8 @@ fun Expression.signOf(): Sign = when {
     this is RecurringDecimalExpression -> Sign.POSITIVE // If it was 0, it would not be recurring
     this is MixedNumberExpression -> Sign.POSITIVE // If it was 0, it would not be a mixed number
     this is Product -> operands.map { it.signOf() }.reduce(Sign::times)
-    this is Variable -> Sign.UNKNOWN
     operator is UndefinedOperator -> Sign.UNKNOWN
+    operator is VariableOperator -> Sign.UNKNOWN
     operator is UnaryExpressionOperator -> operator.signOf(operands[0])
     operator is BinaryExpressionOperator -> operator.signOf(operands[0], operands[1])
     operator is SumOperator -> operands.map { it.signOf() }.reduce(Sign::plus)

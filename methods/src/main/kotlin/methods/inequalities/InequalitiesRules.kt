@@ -4,16 +4,13 @@ import engine.conditions.Sign
 import engine.conditions.signOf
 import engine.expressions.Constants
 import engine.expressions.Fraction
-import engine.expressions.Variable
-import engine.expressions.contradictionOf
 import engine.expressions.fractionOf
-import engine.expressions.identityOf
 import engine.expressions.inverse
 import engine.expressions.isNeg
 import engine.expressions.productOf
-import engine.expressions.setSolutionOf
 import engine.expressions.simplifiedNegOf
-import engine.expressions.variableListOf
+import engine.expressions.solutionOf
+import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
@@ -38,12 +35,12 @@ enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
             onPattern(inequality) {
                 if (inequality.holdsFor(getValue(lhs), getValue(rhs))) {
                     ruleResult(
-                        toExpr = identityOf(variableListOf(context.solutionVariables), get(inequality)),
+                        toExpr = solutionOf(xp(context.solutionVariables.first()), Constants.Reals),
                         explanation = metadata(Explanation.ExtractSolutionFromTrueInequality),
                     )
                 } else {
                     ruleResult(
-                        toExpr = contradictionOf(variableListOf(context.solutionVariables), get(inequality)),
+                        toExpr = solutionOf(xp(context.solutionVariables.first()), Constants.EmptySet),
                         explanation = metadata(Explanation.ExtractSolutionFromFalseInequality),
                     )
                 }
@@ -65,12 +62,12 @@ enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
                 if (lhsSign.isKnown() && rhsSign.isKnown()) {
                     if (inequality.holdsFor(lhsSign.signum.toBigDecimal(), rhsSign.signum.toBigDecimal())) {
                         ruleResult(
-                            toExpr = identityOf(variableListOf(context.solutionVariables), get(inequality)),
+                            toExpr = solutionOf(xp(context.solutionVariables.first()), Constants.Reals),
                             explanation = metadata(Explanation.ExtractSolutionFromTrueInequality),
                         )
                     } else {
                         ruleResult(
-                            toExpr = contradictionOf(variableListOf(context.solutionVariables), get(inequality)),
+                            toExpr = solutionOf(xp(context.solutionVariables.first()), Constants.EmptySet),
                             explanation = metadata(Explanation.ExtractSolutionFromFalseInequality),
                         )
                     }
@@ -90,7 +87,7 @@ enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(inequality) {
                 ruleResult(
-                    toExpr = setSolutionOf(variableListOf(move(lhs) as Variable), inequality.toInterval(get(rhs))),
+                    toExpr = solutionOf(move(lhs), inequality.toInterval(get(rhs))),
                     explanation = metadata(Explanation.ExtractSolutionFromInequalityInSolvedForm),
                 )
             }

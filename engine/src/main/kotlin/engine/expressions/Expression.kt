@@ -11,10 +11,8 @@ import engine.operators.Operator
 import engine.operators.ProductOperator
 import engine.operators.RecurringDecimalOperator
 import engine.operators.RenderContext
-import engine.operators.SolutionOperator
 import engine.operators.SumOperator
 import engine.operators.UnaryExpressionOperator
-import engine.operators.VariableListOperator
 import engine.operators.VariableOperator
 import engine.patterns.ExpressionProvider
 import engine.patterns.Match
@@ -136,8 +134,8 @@ open class Expression internal constructor(
         else -> null
     }
 
-    val variables: Set<String> get() = when (this) {
-        is Variable -> setOf(variableName)
+    val variables: Set<String> = when (operator) {
+        is VariableOperator -> setOf(operator.name)
         else -> this.operands.flatMap { it.variables }.toSet()
     }
 
@@ -497,14 +495,12 @@ fun expressionOf(operator: Operator, operands: List<Expression>): Expression {
     return expressionOf(operator, operands, BasicMeta())
 }
 
-@Suppress("CyclomaticComplexMethod")
 private fun expressionOf(
     operator: Operator,
     operands: List<Expression>,
     meta: NodeMeta,
 ): Expression {
     return when (operator) {
-        is VariableOperator -> Variable(operator.name, meta)
         is IntegerOperator -> IntegerExpression(operator.value, meta)
         is DecimalOperator -> DecimalExpression(operator.value, meta)
         is RecurringDecimalOperator -> RecurringDecimalExpression(operator.value, meta)
@@ -521,11 +517,6 @@ private fun expressionOf(
         is ProductOperator -> Product(operands, operator.forcedSigns, meta)
         BinaryExpressionOperator.Fraction -> Fraction(operands[0], operands[1], meta)
         BinaryExpressionOperator.Power -> Power(operands[0], operands[1], meta)
-        VariableListOperator -> VariableList(operands.map { it as Variable }, meta)
-        SolutionOperator.Identity -> Identity(operands[0] as VariableList, operands[1], meta)
-        SolutionOperator.Contradiction -> Contradiction(operands[0] as VariableList, operands[1], meta)
-        SolutionOperator.ImplicitSolution -> ImplicitSolution(operands[0] as VariableList, operands[1], meta)
-        SolutionOperator.SetSolution -> SetSolution(operands[0] as VariableList, operands[1], meta)
         else -> Expression(operator, operands, meta)
     }
 }

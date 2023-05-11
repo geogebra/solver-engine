@@ -156,7 +156,7 @@ object EquationSystemOperator : StatementOperator {
     override val arity = ARITY_VARIABLE
 
     override fun nthChildAllowed(n: Int, op: Operator): Boolean {
-        require(op is EquationOperator)
+        require(op is EquationOperator || op is SolutionOperator)
         return true
     }
 
@@ -192,7 +192,39 @@ object EquationUnionOperator : StatementOperator {
     }
 }
 
-enum class SolutionOperator : BinaryOperator, StatementOperator {
+interface Solution {
+    fun variables(children: List<Expression>): List<String>
+}
+
+object SolutionOperator : BinaryOperator, StatementOperator, Solution {
+    override val name = "Solution"
+
+    override val precedence = PREDICATE_PRECEDENCE
+
+    override fun leftChildAllowed(op: Operator): Boolean {
+        require(op is VariableOperator || op is TupleOperator)
+        return true
+    }
+
+    override fun rightChildAllowed(op: Operator): Boolean {
+        require(op.kind == OperatorKind.SET)
+        return true
+    }
+
+    override fun <T> readableString(left: T, right: T): String {
+        return "Solution[$left, $right]"
+    }
+
+    override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable): String {
+        return "${left.toLatexString(ctx)} \\in ${right.toLatexString(ctx)}"
+    }
+
+    override fun variables(children: List<Expression>): List<String> {
+        return listOf(children[0].operator.name)
+    }
+}
+
+enum class MultiVariateSolutionOperator : BinaryOperator, StatementOperator, Solution {
 
     Identity {
         override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable): String {
@@ -209,11 +241,13 @@ enum class SolutionOperator : BinaryOperator, StatementOperator {
             return "${left.toLatexString(ctx)} \\in \\mathbb{R} : ${right.toLatexString(ctx)}"
         }
     },
+
     SetSolution {
         override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable): String {
             return "${left.toLatexString(ctx)} \\in ${right.toLatexString(ctx)}"
         }
     },
+
     ;
 
     override val precedence = PREDICATE_PRECEDENCE
@@ -233,7 +267,7 @@ enum class SolutionOperator : BinaryOperator, StatementOperator {
         return "${left.toLatexString(ctx)} \\in \\emptyset"
     }
 
-    fun variables(children: List<Expression>): List<String> {
+    override fun variables(children: List<Expression>): List<String> {
         return children[0].children.map { it.operator.name }
     }
 }

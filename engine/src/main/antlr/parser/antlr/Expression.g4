@@ -20,7 +20,8 @@ equation: lhs=expr '=' rhs=expr;
 inequality: lhs=expr comparator=('<' | '<=' | '>' | '>=') rhs=expr;
 
 solution
-    : 'Identity' '[' vars=variables ':' statement ']'           #identity
+    : 'Solution' '[' var=variable ',' solutionSet=set ']'       #legacySolution
+    | 'Identity' '[' vars=variables ':' statement ']'           #identity
     | 'Contradiction' '[' vars=variables ':' statement ']'      #contradiction
     | 'ImplicitSolution' '[' vars=variables ':' statement ']'   #implicitSolution
     | 'SetSolution' '[' vars=variables ':' solutionSet=set ']'  #setSolution
