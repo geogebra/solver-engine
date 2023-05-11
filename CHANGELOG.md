@@ -7,9 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 An entry should be added to the _[Unreleased]_ section when committing to main. When a release is made we move its
 contents to a new release section (e.g. _[0.x]_).
 
-## Unreleased
+## [Unreleased]
 
 ### Added
+
+- Added a way to view some of the test results via the browser (PLUT-506)
 
 ### Fixed
 

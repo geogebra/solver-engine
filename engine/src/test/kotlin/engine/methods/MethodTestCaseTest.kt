@@ -9,17 +9,15 @@ import engine.steps.metadata.metadata
 import org.junit.jupiter.api.Test
 import kotlin.test.assertFails
 
-class DummyKey : MetadataKey {
-    override val keyName = "dummy"
-}
+class DummyKey(override val keyName: String) : MetadataKey
 
 class MethodTestCaseTest {
 
-    private val testRuleMetadataKey = DummyKey()
-    private val testPlanMetadataKey = DummyKey()
-    private val testRuleSkillMetadataKey1 = DummyKey()
-    private val testRuleSkillMetadataKey2 = DummyKey()
-    private val testRuleSkillMetadataKey3 = DummyKey()
+    private val testRuleMetadataKey = DummyKey("Dummy.rule")
+    private val testPlanMetadataKey = DummyKey("Dummy.plan")
+    private val testRuleSkillMetadataKey1 = DummyKey("Dummy.skill1")
+    private val testRuleSkillMetadataKey2 = DummyKey("Dummy.skill2")
+    private val testRuleSkillMetadataKey3 = DummyKey("Dummy.skill3")
 
     private val testRule = object : RunnerMethod {
         override val name = "TestName"

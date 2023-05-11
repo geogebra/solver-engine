@@ -1,14 +1,16 @@
 import * as solverSDK from '@geogebra/solver-sdk';
-import { SolverContext } from '@geogebra/solver-sdk';
-import { ColorScheme, settings, SolutionFormat, solutionFormatters } from './settings';
+import type { SolverContext } from '@geogebra/solver-sdk';
+import { settings, solutionFormatters } from './settings';
+import type { ColorScheme, SolutionFormat } from './settings';
 import { renderPlanSelections, renderTransformationAndTest } from './render-solution';
 import { fetchDefaultTranslations } from './translations';
 import { clone } from './util';
+import type renderMathInElement from 'katex/contrib/auto-render';
 
 declare global {
   interface Window {
-    ggbSolver: any;
-    renderMathInElement: any;
+    ggbSolver: typeof solverSDK;
+    renderMathInElement: typeof renderMathInElement;
   }
 }
 // just for debug convenience

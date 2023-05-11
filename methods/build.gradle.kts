@@ -3,6 +3,7 @@ import org.jlleitschuh.gradle.ktlint.tasks.KtLintFormatTask
 
 plugins {
     kotlin("jvm")
+    kotlin("plugin.serialization") version "1.8.20"
 
     id("io.gitlab.arturbosch.detekt")
     id("com.google.devtools.ksp")
@@ -18,12 +19,15 @@ dependencies {
 
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")
     testImplementation("org.junit.platform:junit-platform-launcher:1.7.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
     ksp(project(":export"))
     ksp(project(":methodsProcessor"))
 }
 
 tasks.test {
     useJUnitPlatform()
+    outputs.file("../solver-poker/test-results-src/test-results.json")
+    outputs.file("../solver-poker/test-results-src/tests-running.json")
 }
 
 detekt {

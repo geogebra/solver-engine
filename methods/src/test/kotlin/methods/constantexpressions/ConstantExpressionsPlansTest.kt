@@ -185,14 +185,12 @@ class ConstantExpressionsPlansTest {
 
     @Test
     fun testResultSimplifyPowerOfRootWithCoefficients() = testMethod {
-        testMethod {
-            method = ConstantExpressionsPlans.SimplifyConstantExpression
-            inputExpr = "[(2 sqrt[5]) ^ 3]"
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "[(2 sqrt[5]) ^ 3]"
 
-            check {
-                fromExpr = "[(2 sqrt[5]) ^ 3]"
-                toExpr = "40 sqrt[5]"
-            }
+        check {
+            fromExpr = "[(2 sqrt[5]) ^ 3]"
+            toExpr = "40 sqrt[5]"
         }
     }
 

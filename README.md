@@ -63,23 +63,37 @@ In IntelliJ, go to "Settings" > "Actions on Save" and disable "Reformat code". I
 don't do that, then IntelliJ will reformat your code using its own internal formatter,
 which we don't want, because we are using prettier and ktlint instead.
 
-To develop the poker, you can go to `solver-poker` and run
+To develop the poker, you can run
 
 ```
 npm run poker-dev
 ```
 
-Then go to the specified URL. Changes to the poker code will be automatically built
-and seen in the browser.
+Then go to http://localhost:4173/. Vite will watch the poker and solver-sdk code for
+changes and automatically reflect those changes in the browser. The console output may
+look funny because it is showing the output of both `tsc` and `vite` at the same time, but
+that saves having to open two different terminals.
 
-If you make changes to the SDK, you can go to `@geogebra/solver-sdk` and run
+### Extra Help Testing
 
-```
-npm run watch
-```
+Looking at the test results for bigger tests can be difficult. To make it easier, we made
+a fancy reporter for some of the bigger tests. To use it:
 
-This will also automatically rebuild the SDK when changes are made to the source, in
-turn triggering a rebuild of the poker if you are running `npm run poker-dev`.
+1. Follow the instructions in the [Typescript section of this document](#Typescript).
+2. Run the kotlin tests. This can be done by either:
+   - Running the `All Tests` run configuration in IntelliJ
+   - Running `./gradlew methods:test --continuous` so that it will watch for changes and
+     rerun only the the tests in the `methods` module, which is nice because tests outside
+     that module can't use the fancy reporter (and even then it is only some of the tests
+     in that module).
+   - Running `./gradlew test` in the terminal
+3. Run `npm run vite`
+4. Go to http://localhost:4173/test-results.html
+
+The page should automatically update when you rerun the tests. There have been issues with
+that, however, requiring you to restart `npm run vite`. Please pay attention to that so
+that we can figure out some steps to reproduce the issue of needing to restart to restart
+`npm run vite`.
 
 ## Deployment
 

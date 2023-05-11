@@ -5,6 +5,7 @@ import org.jlleitschuh.gradle.ktlint.tasks.KtLintFormatTask
 plugins {
     kotlin("jvm")
     antlr
+    kotlin("plugin.serialization") version "1.8.20"
 
     id("io.gitlab.arturbosch.detekt")
     id("java-test-fixtures")
@@ -18,6 +19,8 @@ dependencies {
     testImplementation(kotlin("test"))
     testFixturesImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
+    testFixturesImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
 
     ksp(project(":export"))
 }

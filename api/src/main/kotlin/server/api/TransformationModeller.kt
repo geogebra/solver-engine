@@ -11,7 +11,7 @@ import server.models.PathMapping
 import server.models.Task
 import server.models.Transformation
 
-data class TransformationModeller(val format: Format) {
+class TransformationModeller(val format: Format) {
 
     fun modelTransformation(trans: engine.steps.Transformation): Transformation {
         return Transformation(

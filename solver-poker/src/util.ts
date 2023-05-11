@@ -1,6 +1,5 @@
 import { Transformation } from '@geogebra/solver-sdk';
 import { settings } from './settings';
-import * as assert from 'assert';
 
 export const isRearrangementStep = (transformation: Transformation) => {
   return transformation.tags && transformation.tags.includes('Rearrangement');
@@ -53,8 +52,15 @@ export const containsNonTrivialStep = (transformation: Transformation): boolean 
   return transformation.steps.some(containsNonTrivialStep);
 };
 
-export const isThroughStep = (trans: Transformation) =>
-  !!trans.steps && trans.steps.length === 1 && trans.steps[0].path === trans.path;
+export function isThroughStep(
+  trans: Transformation,
+  // The complicated line below is to tell TS that, if the return value is `true`, then
+  // we can assume `trans.steps != null`. See
+  // https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates
+  // for documentation on this language feature.
+): trans is Transformation & { steps: NonNullable<Transformation['steps']> } {
+  return !!trans.steps && trans.steps.length === 1 && trans.steps[0].path === trans.path;
+}
 
 // If we end up using this more, then we can change to a library that has a faster cloning
 // solution (the clone in jsondiffpatch), but for now it is probably faster to not have an
