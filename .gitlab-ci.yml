@@ -131,13 +131,6 @@ deploy-engine:
   artifacts:
     reports:
       dotenv: deploy.env
-  rules:
-    - if: $CI_COMMIT_REF_NAME == "release"
-      variables:
-        ENVIRONMENT_URL: 'https://solver-api.geogebra.net/poker.html'
-    - if: $CI_COMMIT_REF_NAME != "release"
-      variables:
-        ENVIRONMENT_URL: 'https://solver.geogebra.net/$SLUG/poker.html'
   script:
     - kubectl config get-contexts
     - kubectl config use-context $REPO_FULL_NAME:$GITLAB_CLUSTER
@@ -149,7 +142,12 @@ deploy-engine:
           --set imageCredentials.username=$CI_REGISTRY_USER \
           --set imageCredentials.password=$CI_REGISTRY_PASSWORD \
           --set springProfile=production
-    - echo "DYNAMIC_ENVIRONMENT_URL=$ENVIRONMENT_URL" >> deploy.env
+    - |
+      if [[ $CI_COMMIT_REF_NAME == "release" ]]; then
+        echo "DYNAMIC_ENVIRONMENT_URL=https://solver-api.geogebra.net/poker.html" >> deploy.env
+      else
+        echo "DYNAMIC_ENVIRONMENT_URL=https://solver.geogebra.net/$SLUG/poker.html" >> deploy.env
+      fi
 
 # Make an SDK release
 sdk-semantic-release:
