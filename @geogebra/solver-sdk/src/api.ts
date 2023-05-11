@@ -1,14 +1,14 @@
 import {
-  SolverExpr,
-  SolverContext,
-  API_SELECT_PLANS_RESPONSE,
-  PlanId,
   API_APPLY_PLAN_RESPONSE,
   API_PLANS_RESPONSE,
+  API_SELECT_PLANS_RESPONSE,
   API_VERSION_INFO_RESPONSE,
+  PlanId,
+  SolverContext,
+  SolverExpr,
 } from './types';
 
-const BASE_URL = 'https://solver.geogebra.net/main/api/v1';
+const BASE_URL = 'https://solver-api.geogebra.org/api/v1';
 const DEFAULT_HEADERS = {
   headers: { 'Content-Type': 'application/json' },
 };
@@ -45,6 +45,7 @@ class Api {
       body: JSON.stringify({ input, format, context }),
     }).then((res) => res.json());
   }
+
   /* Apply plan to input and return the transformation. */
   async applyPlan(
     input: SolverExpr,
@@ -58,10 +59,12 @@ class Api {
       body: JSON.stringify({ input, format, context }),
     }).then((res) => res.json());
   }
+
   /** Get a list of all available plans. */
   async listPlans(): Promise<API_PLANS_RESPONSE> {
     return fetch(`${this.baseUrl}/plans`, this.defaultHeaders).then((res) => res.json());
   }
+
   /** Get solver version info. */
   async versionInfo(): Promise<API_VERSION_INFO_RESPONSE> {
     return fetch(`${this.baseUrl}/versionInfo`, this.defaultHeaders).then((res) =>
