@@ -55,3 +55,99 @@ describe('Aligned equations in union', () => {
 
   expect(jsonToLatex(union)).to.equal('x = 1, x = 2');
 });
+
+describe('Univariate finite set solution', () => {
+  const solution = [
+    'SetSolution',
+    ['VariableList', ['x']],
+    ['FiniteSet', ['Fraction', ['1'], ['2']]],
+  ] as MathJson;
+
+  expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
+    'x = \\frac{1}{2}',
+  );
+});
+
+describe('Multivariate finite set solution', () => {
+  const solution = [
+    'SetSolution',
+    ['VariableList', ['x'], ['y']],
+    ['FiniteSet', ['Tuple', ['Fraction', ['1'], ['2']], ['SquareRoot', ['3']]]],
+  ] as MathJson;
+
+  expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
+    'x = \\frac{1}{2}, y = \\sqrt{3}',
+  );
+});
+
+describe('Multivariate cartesian product solution', () => {
+  const solution = [
+    'SetSolution',
+    ['VariableList', ['x'], ['y']],
+    ['CartesianProduct', ['Reals'], ['FiniteSet', ['SquareRoot', ['3']]]],
+  ] as MathJson;
+
+  expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
+    'x \\in \\mathbb{R}, y = \\sqrt{3}',
+  );
+});
+
+describe('Univariate identity solution', () => {
+  const solution = [
+    'Identity',
+    ['VariableList', ['x']],
+    ['Equation', ['x'], ['x']],
+  ] as MathJson;
+
+  expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
+    'x \\in \\mathbb{R}',
+  );
+});
+
+describe('Multivariate identity solution', () => {
+  const solution = [
+    'Identity',
+    ['VariableList', ['x'], ['y']],
+    ['Equation', ['1'], ['1']],
+  ] as MathJson;
+
+  expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
+    'x, y \\in \\mathbb{R}',
+  );
+});
+
+describe('Univariate contradiction solution', () => {
+  const solution = [
+    'Contradiction',
+    ['VariableList', 'x'],
+    ['Equation', ['1'], ['2']],
+  ] as MathJson;
+
+  expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
+    'x \\in \\emptyset',
+  );
+});
+
+describe('Multivariate contradiction solution', () => {
+  const solution = [
+    'Contradiction',
+    ['VariableList', 'x', 'y'],
+    ['GreaterThan', ['1'], ['2']],
+  ] as MathJson;
+
+  expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
+    'x, y \\in \\emptyset',
+  );
+});
+
+describe('ImplicitSolution', () => {
+  const solution = [
+    'ImplicitSolution',
+    ['VariableList', ['x'], ['y']],
+    ['Equation', ['x'], ['Sum', ['SmartProduct', [false, ['2']], [false, ['y']]], ['3']]],
+  ] as MathJson;
+
+  expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
+    'x, y \\in \\mathbb{R} : x = 2y+3',
+  );
+});

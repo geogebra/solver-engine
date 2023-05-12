@@ -139,7 +139,7 @@ class SolveBySubstitutionTest {
 
                 step {
                     fromExpr = "2 (2 + y) + 3 y = 5"
-                    toExpr = "Solution[y, {[1 / 5]}]"
+                    toExpr = "SetSolution[y: {[1 / 5]}]"
                     explanation {
                         key = EquationsExplanation.SolveLinearEquation
                     }
@@ -158,7 +158,7 @@ class SolveBySubstitutionTest {
 
                 step {
                     fromExpr = "x = 2 + [1 / 5]"
-                    toExpr = "Solution[x, {[11 / 5]}]"
+                    toExpr = "SetSolution[x: {[11 / 5]}]"
                     explanation {
                         key = EquationsExplanation.SolveLinearEquation
                     }
@@ -264,7 +264,7 @@ class SolveBySubstitutionTest {
 
                 step {
                     fromExpr = "2 x = 2"
-                    toExpr = "Solution[x, {1}]"
+                    toExpr = "SetSolution[x: {1}]"
                     explanation {
                         key = EquationsExplanation.SolveLinearEquation
                     }
@@ -285,7 +285,7 @@ class SolveBySubstitutionTest {
 
                 step {
                     fromExpr = "x = 1"
-                    toExpr = "Solution[x, {1}]"
+                    toExpr = "SetSolution[x: {1}]"
                     explanation {
                         key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                     }
@@ -325,7 +325,7 @@ class SolveBySubstitutionTest {
 
                 step {
                     fromExpr = "x = 2"
-                    toExpr = "Solution[x, {2}]"
+                    toExpr = "SetSolution[x: {2}]"
                     explanation {
                         key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                     }
@@ -346,7 +346,7 @@ class SolveBySubstitutionTest {
 
                 step {
                     fromExpr = "x = 1"
-                    toExpr = "Solution[x, {1}]"
+                    toExpr = "SetSolution[x: {1}]"
                     explanation {
                         key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                     }

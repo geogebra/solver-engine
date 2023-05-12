@@ -2,13 +2,13 @@ package engine.patterns
 
 import engine.context.Context
 import engine.expressions.Expression
-import engine.operators.VariableOperator
+import engine.expressions.Variable
 
 abstract class VariablePattern : BasePattern() {
     fun getBoundSymbol(m: Match): String {
-        return when (val operator = m.getBoundExpr(this)!!.operator) {
-            is VariableOperator -> operator.name
-            else -> throw InvalidMatch("Variable matched to $operator")
+        return when (val expression = m.getBoundExpr(this)) {
+            is Variable -> expression.variableName
+            else -> throw InvalidMatch("Variable pattern matched to $expression")
         }
     }
 }
@@ -18,8 +18,8 @@ abstract class VariablePattern : BasePattern() {
  */
 class ArbitraryVariablePattern : VariablePattern() {
     override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
-        return when (subexpression.operator) {
-            is VariableOperator -> sequenceOf(match.newChild(this, subexpression))
+        return when (subexpression) {
+            is Variable -> sequenceOf(match.newChild(this, subexpression))
             else -> emptySequence()
         }
     }
@@ -27,9 +27,7 @@ class ArbitraryVariablePattern : VariablePattern() {
 
 class SolutionVariablePattern : VariablePattern() {
     override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
-        val operator = subexpression.operator
-
-        return if (operator is VariableOperator && operator.name in context.solutionVariables) {
+        return if (subexpression is Variable && subexpression.variableName in context.solutionVariables) {
             sequenceOf(match.newChild(this, subexpression))
         } else {
             emptySequence()

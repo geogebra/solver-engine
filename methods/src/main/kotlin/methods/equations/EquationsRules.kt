@@ -5,6 +5,7 @@ import engine.conditions.isDefinitelyNotUndefined
 import engine.conditions.signOf
 import engine.expressions.Constants
 import engine.expressions.Fraction
+import engine.expressions.Variable
 import engine.expressions.contradictionOf
 import engine.expressions.equationOf
 import engine.expressions.equationUnionOf
@@ -18,8 +19,8 @@ import engine.expressions.plusMinusOf
 import engine.expressions.powerOf
 import engine.expressions.productOf
 import engine.expressions.rootOf
+import engine.expressions.setSolutionOf
 import engine.expressions.simplifiedNegOf
-import engine.expressions.solutionOf
 import engine.expressions.solutionSetOf
 import engine.expressions.splitPlusMinus
 import engine.expressions.squareRootOf
@@ -385,10 +386,11 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                 // for e.g. if the expression contains `sqrt[-3]`
                 it.splitPlusMinus().any { child -> child.signOf() == Sign.NONE }
             }
+            val equation = equationOf(lhs, rhs)
 
-            onEquation(lhs, rhs) {
+            onPattern(equation) {
                 ruleResult(
-                    toExpr = solutionOf(get(lhs), Constants.EmptySet),
+                    toExpr = contradictionOf(variableListOf(get(lhs) as Variable), get(equation)),
                     explanation = metadata(Explanation.ExtractSolutionFromNegativeUnderSquareRootInRealDomain),
                 )
             }
@@ -411,7 +413,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                     equationOf(rhsVal, xp(rhsVal.doubleValue.toBigDecimal().withMaxDP(3)))
                 }
                 ruleResult(
-                    toExpr = solutionOf(xp(context.solutionVariables.first()), Constants.EmptySet),
+                    toExpr = setSolutionOf(variableListOf(context.solutionVariables), Constants.EmptySet),
                     explanation = metadata(Explanation.ExtractSolutionFromEvenPowerEqualsNegative, explanationArgument),
                 )
             }
@@ -429,7 +431,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             onEquation(lhs, rhs) {
                 ruleResult(
                     tags = listOf(Transformation.Tag.Pedantic),
-                    toExpr = solutionOf(move(lhs), solutionSetOf(move(rhs))),
+                    toExpr = setSolutionOf(variableListOf(move(lhs) as Variable), solutionSetOf(move(rhs))),
                     explanation = metadata(Explanation.ExtractSolutionFromEquationInSolvedForm),
                 )
             }
@@ -447,7 +449,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                     return@onEquation null
                 }
                 ruleResult(
-                    toExpr = solutionOf(move(lhs), solutionSetOf(splitRhs)),
+                    toExpr = setSolutionOf(variableListOf(move(lhs) as Variable), solutionSetOf(splitRhs)),
                     explanation = metadata(Explanation.ExtractSolutionFromEquationInPlusMinusForm),
                 )
             }
@@ -465,7 +467,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(pattern) {
                 ruleResult(
-                    toExpr = solutionOf(move(lhs), solutionSetOf(get(rhs1), get(rhs2))),
+                    toExpr = setSolutionOf(variableListOf(move(lhs) as Variable), solutionSetOf(get(rhs1), get(rhs2))),
                     explanation = metadata(Explanation.ExtractSolutionFromEquationInUnionForm),
                 )
             }

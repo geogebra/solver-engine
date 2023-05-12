@@ -11,7 +11,7 @@ class EquationsWithOneAbsoluteValueTest {
 
         check {
             fromExpr = "abs[2 x - 1] = 3"
-            toExpr = "Solution[x, {-1, 2}]"
+            toExpr = "SetSolution[x : {-1, 2}]"
             explanation {
                 key = EquationsExplanation.SolveEquationWithVariablesInOneAbsoluteValue
             }
@@ -26,7 +26,7 @@ class EquationsWithOneAbsoluteValueTest {
 
             step {
                 fromExpr = "2 x - 1 = 3 OR 2 x - 1 = -3"
-                toExpr = "Solution[x, {-1, 2}]"
+                toExpr = "SetSolution[x : {-1, 2}]"
                 explanation {
                     key = EquationsExplanation.SolveEquationUnion
                 }
@@ -40,7 +40,7 @@ class EquationsWithOneAbsoluteValueTest {
 
                     step {
                         fromExpr = "2 x - 1 = 3"
-                        toExpr = "Solution[x, {2}]"
+                        toExpr = "SetSolution[x : {2}]"
                         explanation {
                             key = EquationsExplanation.SolveLinearEquation
                         }
@@ -56,7 +56,7 @@ class EquationsWithOneAbsoluteValueTest {
 
                     step {
                         fromExpr = "2 x - 1 = -3"
-                        toExpr = "Solution[x, {-1}]"
+                        toExpr = "SetSolution[x : {-1}]"
                         explanation {
                             key = EquationsExplanation.SolveLinearEquation
                         }
@@ -65,7 +65,7 @@ class EquationsWithOneAbsoluteValueTest {
 
                 task {
                     taskId = "#3"
-                    startExpr = "Solution[x, {-1, 2}]"
+                    startExpr = "SetSolution[x : {-1, 2}]"
                     explanation {
                         key = EquationsExplanation.CollectSolutions
                     }
@@ -81,7 +81,7 @@ class EquationsWithOneAbsoluteValueTest {
 
         check {
             fromExpr = "3 * abs[1 - x] + 2 = 10"
-            toExpr = "Solution[x, {-[5 / 3], [11 / 3]}]"
+            toExpr = "SetSolution[x : {-[5 / 3], [11 / 3]}]"
             explanation {
                 key = EquationsExplanation.SolveEquationWithVariablesInOneAbsoluteValue
             }
@@ -104,7 +104,7 @@ class EquationsWithOneAbsoluteValueTest {
 
             step {
                 fromExpr = "3 (1 - x) = 8 OR 3 (1 - x) = -8"
-                toExpr = "Solution[x, {-[5 / 3], [11 / 3]}]"
+                toExpr = "SetSolution[x : {-[5 / 3], [11 / 3]}]"
                 explanation {
                     key = EquationsExplanation.SolveEquationUnion
                 }
@@ -118,7 +118,7 @@ class EquationsWithOneAbsoluteValueTest {
 
                     step {
                         fromExpr = "3 (1 - x) = 8"
-                        toExpr = "Solution[x, {-[5 / 3]}]"
+                        toExpr = "SetSolution[x : {-[5 / 3]}]"
                         explanation {
                             key = EquationsExplanation.SolveLinearEquation
                         }
@@ -134,7 +134,7 @@ class EquationsWithOneAbsoluteValueTest {
 
                     step {
                         fromExpr = "3 (1 - x) = -8"
-                        toExpr = "Solution[x, {[11 / 3]}]"
+                        toExpr = "SetSolution[x : {[11 / 3]}]"
                         explanation {
                             key = EquationsExplanation.SolveLinearEquation
                         }
@@ -143,7 +143,7 @@ class EquationsWithOneAbsoluteValueTest {
 
                 task {
                     taskId = "#3"
-                    startExpr = "Solution[x, {-[5 / 3], [11 / 3]}]"
+                    startExpr = "SetSolution[x : {-[5 / 3], [11 / 3]}]"
                     explanation {
                         key = EquationsExplanation.CollectSolutions
                     }
@@ -159,7 +159,7 @@ class EquationsWithOneAbsoluteValueTest {
 
         check {
             fromExpr = "10 - [abs[1 - x] / 5] = 2"
-            toExpr = "Solution[x, {-39, 41}]"
+            toExpr = "SetSolution[x : {-39, 41}]"
             explanation {
                 key = EquationsExplanation.SolveEquationWithVariablesInOneAbsoluteValue
             }
@@ -190,7 +190,7 @@ class EquationsWithOneAbsoluteValueTest {
 
             step {
                 fromExpr = "[1 / 5] (1 - x) = 8 OR [1 / 5] (1 - x) = -8"
-                toExpr = "Solution[x, {-39, 41}]"
+                toExpr = "SetSolution[x : {-39, 41}]"
                 explanation {
                     key = EquationsExplanation.SolveEquationUnion
                 }
@@ -235,7 +235,7 @@ class EquationsWithOneAbsoluteValueTest {
 
         check {
             fromExpr = "abs[[x ^ 2] - 3] + 2 = 2"
-            toExpr = "Solution[x, {-sqrt[3], sqrt[3]}]"
+            toExpr = "SetSolution[x : {-sqrt[3], sqrt[3]}]"
             explanation {
                 key = EquationsExplanation.SolveEquationWithVariablesInOneAbsoluteValue
             }
@@ -258,7 +258,7 @@ class EquationsWithOneAbsoluteValueTest {
 
             step {
                 fromExpr = "[x ^ 2] - 3 = 0"
-                toExpr = "Solution[x, {-sqrt[3], sqrt[3]}]"
+                toExpr = "SetSolution[x : {-sqrt[3], sqrt[3]}]"
                 explanation {
                     key = EquationsExplanation.SolveEquationUsingRootsMethod
                 }

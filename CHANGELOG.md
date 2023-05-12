@@ -19,6 +19,9 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Removed
 
+- The legacy Solution operator was replaced by the more descriptive SetSolution, Contradiction and
+  Identity operators (PLUT-587)
+
 ## [1.1] - 2023-05-10
 
 ### Added

@@ -12,7 +12,7 @@ class LinearInequalitiesTest {
 
         check {
             fromExpr = "3 x > 1"
-            toExpr = "Solution[x, ( [1 / 3], INFINITY )]"
+            toExpr = "SetSolution[x: ( [1 / 3], INFINITY )]"
             explanation {
                 key = InequalitiesExplanation.SolveLinearInequality
             }
@@ -27,7 +27,7 @@ class LinearInequalitiesTest {
 
             step {
                 fromExpr = "x > [1 / 3]"
-                toExpr = "Solution[x, ( [1 / 3], INFINITY )]"
+                toExpr = "SetSolution[x: ( [1 / 3], INFINITY )]"
                 explanation {
                     key = InequalitiesExplanation.ExtractSolutionFromInequalityInSolvedForm
                 }
@@ -42,7 +42,7 @@ class LinearInequalitiesTest {
 
         check {
             fromExpr = "-3 x <= 1"
-            toExpr = "Solution[x, [ -[1 / 3], INFINITY )]"
+            toExpr = "SetSolution[x: [ -[1 / 3], INFINITY )]"
             explanation {
                 key = InequalitiesExplanation.SolveLinearInequality
             }
@@ -73,7 +73,7 @@ class LinearInequalitiesTest {
 
             step {
                 fromExpr = "x >= -[1 / 3]"
-                toExpr = "Solution[x, [ -[1 / 3], INFINITY )]"
+                toExpr = "SetSolution[x: [ -[1 / 3], INFINITY )]"
                 explanation {
                     key = InequalitiesExplanation.ExtractSolutionFromInequalityInSolvedForm
                 }
@@ -88,7 +88,7 @@ class LinearInequalitiesTest {
 
         check {
             fromExpr = "4 > 11 + [x / 3]"
-            toExpr = "Solution[x, ( -INFINITY, -21 )]"
+            toExpr = "SetSolution[x: ( -INFINITY, -21 )]"
             explanation {
                 key = InequalitiesExplanation.SolveLinearInequality
             }
@@ -119,7 +119,7 @@ class LinearInequalitiesTest {
 
             step {
                 fromExpr = "x < -21"
-                toExpr = "Solution[x, ( -INFINITY, -21 )]"
+                toExpr = "SetSolution[x: ( -INFINITY, -21 )]"
                 explanation {
                     key = InequalitiesExplanation.ExtractSolutionFromInequalityInSolvedForm
                 }
@@ -134,7 +134,7 @@ class LinearInequalitiesTest {
 
         check {
             fromExpr = "x + 1 < 2 x + 3"
-            toExpr = "Solution[x, ( -2, INFINITY )]"
+            toExpr = "SetSolution[x: ( -2, INFINITY )]"
             explanation {
                 key = InequalitiesExplanation.SolveLinearInequality
             }
@@ -165,7 +165,7 @@ class LinearInequalitiesTest {
 
             step {
                 fromExpr = "x > -2"
-                toExpr = "Solution[x, ( -2, INFINITY )]"
+                toExpr = "SetSolution[x: ( -2, INFINITY )]"
                 explanation {
                     key = InequalitiesExplanation.ExtractSolutionFromInequalityInSolvedForm
                 }
@@ -180,7 +180,7 @@ class LinearInequalitiesTest {
 
         check {
             fromExpr = "-[1 / 3] x > 7"
-            toExpr = "Solution[x, ( -INFINITY, -21 )]"
+            toExpr = "SetSolution[x: ( -INFINITY, -21 )]"
             explanation {
                 key = InequalitiesExplanation.SolveLinearInequality
             }
@@ -211,7 +211,7 @@ class LinearInequalitiesTest {
 
             step {
                 fromExpr = "x < -21"
-                toExpr = "Solution[x, ( -INFINITY, -21 )]"
+                toExpr = "SetSolution[x: ( -INFINITY, -21 )]"
                 explanation {
                     key = InequalitiesExplanation.ExtractSolutionFromInequalityInSolvedForm
                 }
@@ -226,7 +226,7 @@ class LinearInequalitiesTest {
 
         check {
             fromExpr = "3 x - 2 > 3 x + 3"
-            toExpr = "Solution[x, {}]"
+            toExpr = "Contradiction[x: -2 > 3]"
             explanation {
                 key = InequalitiesExplanation.SolveLinearInequality
             }
@@ -241,7 +241,7 @@ class LinearInequalitiesTest {
 
             step {
                 fromExpr = "-2 > 3"
-                toExpr = "Solution[x, {}]"
+                toExpr = "Contradiction[x: -2 > 3]"
                 explanation {
                     key = InequalitiesExplanation.ExtractSolutionFromFalseInequality
                 }
@@ -256,7 +256,7 @@ class LinearInequalitiesTest {
 
         check {
             fromExpr = "3 x - 2 <= 3 x + 3"
-            toExpr = "Solution[x, REALS]"
+            toExpr = "Identity[x: -2 <= 3]"
             explanation {
                 key = InequalitiesExplanation.SolveLinearInequality
             }
@@ -271,7 +271,7 @@ class LinearInequalitiesTest {
 
             step {
                 fromExpr = "-2 <= 3"
-                toExpr = "Solution[x, REALS]"
+                toExpr = "Identity[x: -2 <= 3]"
                 explanation {
                     key = InequalitiesExplanation.ExtractSolutionFromTrueInequality
                 }

@@ -4,7 +4,6 @@ import engine.operators.BinaryExpressionOperator
 import engine.operators.ProductOperator
 import engine.operators.RenderContext
 import engine.operators.UnaryExpressionOperator
-import engine.operators.VariableOperator
 
 class Product(
     factors: List<Expression>,
@@ -102,15 +101,15 @@ fun productSignRequired(left: Expression, right: Expression): Boolean = when {
     right.isNumbery() -> true
     left.hasBracket() || right.hasBracket() -> false
     else -> {
-        val rightOp = getBaseOfPower(right).operator
-        val leftOp = getBaseOfPower(left).operator
+        val rightOp = getBaseOfPower(right)
+        val leftOp = getBaseOfPower(left)
 
-        val leftIsVariable = leftOp is VariableOperator
-        val rightIsRoot = rightOp == UnaryExpressionOperator.SquareRoot ||
-            rightOp == BinaryExpressionOperator.Root
-        val rightIsRootOrVariable = rightIsRoot || rightOp is VariableOperator
-        val differentVariables = leftOp is VariableOperator && rightOp is VariableOperator &&
-            leftOp.name != rightOp.name
+        val leftIsVariable = leftOp is Variable
+        val rightIsRoot = rightOp.operator == UnaryExpressionOperator.SquareRoot ||
+            rightOp.operator == BinaryExpressionOperator.Root
+        val rightIsRootOrVariable = rightIsRoot || rightOp is Variable
+        val differentVariables = leftOp is Variable && rightOp is Variable &&
+            leftOp.variableName != rightOp.variableName
 
         !(left.isNumbery() && rightIsRootOrVariable || leftIsVariable && rightIsRoot || differentVariables)
     }

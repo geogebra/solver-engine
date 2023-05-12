@@ -84,10 +84,14 @@ export const simpleSolutionFormatter = {
               }
               case 1: {
                 const varList = vars as VariableListTree;
-                const tuple = set.args[0] as TupleTree;
-                return varList.args
-                  .map((v, i) => `${rec(v, null)} = ${rec(tuple.args[i], null)}`)
-                  .join(', ');
+                if (varList.args.length > 1) {
+                  const tuple = set.args[0] as TupleTree;
+                  return varList.args
+                    .map((v, i) => `${rec(v, null)} = ${rec(tuple.args[i], null)}`)
+                    .join(', ');
+                } else {
+                  return `${rec(varList.args[0], null)} = ${rec(set.args[0], null)}`;
+                }
               }
               default: {
                 const [varsTuple, _] = variableListToLatexTuple(vars, rec);
