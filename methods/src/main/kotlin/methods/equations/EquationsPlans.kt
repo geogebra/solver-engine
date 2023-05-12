@@ -1,6 +1,7 @@
 package methods.equations
 
 import engine.context.ResourceData
+import engine.expressions.Expression
 import engine.expressions.solutionOf
 import engine.expressions.solutionSetOf
 import engine.methods.CompositeMethod
@@ -11,6 +12,8 @@ import engine.methods.stepsproducers.FormChecker
 import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
 import engine.operators.EquationUnionOperator
+import engine.operators.MultiVariateSolutionOperator
+import engine.operators.SolutionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.BinaryIntegerCondition
 import engine.patterns.ConditionPattern
@@ -25,8 +28,10 @@ import engine.patterns.equationOf
 import engine.patterns.fractionOf
 import engine.patterns.identityOf
 import engine.patterns.inSolutionVariables
+import engine.patterns.negOf
 import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
+import engine.patterns.powerOf
 import engine.patterns.solutionOf
 import engine.patterns.solutionSetOf
 import engine.patterns.sumContaining
@@ -241,7 +246,12 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                 optionally {
                     firstOf {
                         // get rid of the coefficient of the variable
-                        option(EquationsRules.NegateBothSides)
+                        option {
+                            checkForm {
+                                equationOf(negOf(powerOf(SolutionVariablePattern(), AnyPattern())), AnyPattern())
+                            }
+                            apply(EquationsRules.NegateBothSides)
+                        }
                         option(MultiplyByInverseCoefficientOfVariableAndSimplify)
                         option(DivideByCoefficientOfVariableAndSimplify)
                     }
@@ -409,6 +419,40 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     ),
 
     @PublicMethod
+    SolveEquationWithVariablesInOneAbsoluteValue(
+        plan {
+            explanation = Explanation.SolveEquationWithVariablesInOneAbsoluteValue
+            pattern = equationInOneVariable()
+
+            steps {
+                optionally(equationSimplificationSteps)
+
+                optionally {
+                    check { it.firstChild.isConstant() }
+                    apply(EquationsRules.FlipEquation)
+                }
+
+                optionally(MoveConstantsToTheRightAndSimplify)
+                optionally(EquationsRules.NegateBothSides)
+
+                optionally {
+                    firstOf {
+                        option {
+                            apply(EquationsRules.SeparateModulusEqualsPositiveConstant)
+                            apply(solveEquationUnion)
+                        }
+                        option {
+                            apply(EquationsRules.ResolveModulusEqualsZero)
+                            apply(SolveEquationInOneVariable)
+                        }
+                        option(EquationsRules.ExtractSolutionFromModulusEqualsNegativeConstant)
+                    }
+                }
+            }
+        },
+    ),
+
+    @PublicMethod
     SolveEquationInOneVariable(
         plan {
             explanation = Explanation.SolveEquationInOneVariable
@@ -420,6 +464,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                 SolveEquationByFactoring,
                 SolveQuadraticEquationUsingQuadraticFormula,
                 SolveByCompletingTheSquare,
+                SolveEquationWithVariablesInOneAbsoluteValue,
             )
             steps {
                 apply(optimalEquationSolvingSteps)
@@ -458,11 +503,19 @@ private val solveEquationUnion = taskSet {
         task(
             startExpr = solutionOf(
                 splitTasks[0].result.firstChild,
-                solutionSetOf(splitTasks.flatMap { it.result.secondChild.children }.sortedBy { it.doubleValue }),
+                solutionSetOf(splitTasks.flatMap { extractSolutions(it.result) }.sortedBy { it.doubleValue }),
             ),
             explanation = metadata(Explanation.CollectSolutions),
         )
         allTasks()
+    }
+}
+
+private fun extractSolutions(solution: Expression): List<Expression> {
+    return when (solution.operator) {
+        SolutionOperator -> solution.secondChild.children
+        MultiVariateSolutionOperator.Contradiction -> emptyList()
+        else -> error("unsupported solution - cannot extract")
     }
 }
 
@@ -477,6 +530,7 @@ private val optimalEquationSolvingSteps = steps {
         option(EquationsPlans.SolveEquationByFactoring)
         option(EquationsPlans.SolveQuadraticEquationUsingQuadraticFormula)
         option(EquationsPlans.SolveByCompletingTheSquare)
+        option(EquationsPlans.SolveEquationWithVariablesInOneAbsoluteValue)
     }
 }
 
@@ -591,7 +645,12 @@ val rearrangeLinearEquationSteps = steps {
     optionally {
         firstOf {
             // get rid of the coefficient of the variable
-            option(EquationsRules.NegateBothSides)
+            option {
+                checkForm {
+                    equationOf(negOf(SolutionVariablePattern()), AnyPattern())
+                }
+                apply(EquationsRules.NegateBothSides)
+            }
             option(EquationsPlans.MultiplyByInverseCoefficientOfVariableAndSimplify)
             option(EquationsPlans.DivideByCoefficientOfVariableAndSimplify)
         }

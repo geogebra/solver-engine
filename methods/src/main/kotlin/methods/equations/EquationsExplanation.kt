@@ -377,6 +377,40 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      * Solve equation in one variable, trying to apply the most relevant method.
      */
     SolveEquationInOneVariable,
+
+    /**
+     * Separate an equation of the form |f(x)| = K (positive constant) into two equations,
+     * f(x) = K and f(x) = -K so that they can then be solved.
+     *
+     * E.g. 2abs[x - 1] = 3 --> 2(x - 1) = 3 OR 2(x - 1) = -3
+     *      abs[x - 3] = 5  --> x - 3 = 5 OR x - 3 = -5
+     */
+    SeparateModulusEqualsPositiveConstant,
+
+    /**
+     * Remove the modulus sign from an equation of the form K|f(x)| = 0
+     *
+     * E.g. abs[2x + 1] = 0 --> 2x + 1
+     *      2abs[x - 3] = 0 --> 2(x - 3) = 0
+     */
+    ResolveModulusEqualsZero,
+
+    /**
+     * Deduce a contradiction from an equation of the form K_1|f(x)| = K_2 where K_1 > 0 and K_2 < 0.
+     *
+     * E.g. abs[x + 1] = -2        --> Contradiction
+     *      5abs[x + 2] = -3       --> Contradiction
+     *      [abs[x + 4] / 2] = -10 --> Contradiction
+     */
+    ExtractSolutionFromModulusEqualsNegativeConstant,
+
+    /**
+     * Solve an equation with one absolute value containing the variable
+     *
+     * It solves e.g. abs[2x + 3] = 10
+     *                5 = 3 - 2abs[[x^2] - x]
+     */
+    SolveEquationWithVariablesInOneAbsoluteValue,
     ;
 
     override val category = "Equations"

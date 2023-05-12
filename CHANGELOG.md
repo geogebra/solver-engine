@@ -11,18 +11,13 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Added
 
-- Added a way to view some of the test results via the browser (PLUT-506)
+- Added support for solving modulus equations of the form |f(x)| = k and derived (PLUT-589)
 
 ### Fixed
-
-- Improve path mappings for better visualization (using colors) in normalization rules (PLUT-520)
 
 ### Changed
 
 ### Removed
-
-- The legacy Solution operator was replaced by the more descriptive SetSolution, Contradiction and
-  Identity operators (PLUT-587)
 
 ## [1.1] - 2023-05-10
 

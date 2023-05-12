@@ -40,6 +40,7 @@ import engine.patterns.FixedPattern
 import engine.patterns.QuadraticPolynomialPattern
 import engine.patterns.SolutionVariablePattern
 import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.absoluteValueOf
 import engine.patterns.commutativeProductOf
 import engine.patterns.condition
 import engine.patterns.equationOf
@@ -109,13 +110,13 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
     NegateBothSides(
         rule {
-            val variable = oneOf(SolutionVariablePattern(), powerOf(SolutionVariablePattern(), AnyPattern()))
-            val lhs = negOf(variable)
+            val unsignedLhs = AnyPattern()
+            val lhs = negOf(unsignedLhs)
             val rhs = optionalNegOf(AnyPattern())
 
             onEquation(lhs, rhs) {
                 ruleResult(
-                    toExpr = equationOf(get(variable), simplifiedNegOf(move(rhs))),
+                    toExpr = equationOf(get(unsignedLhs), simplifiedNegOf(move(rhs))),
                     gmAction = when {
                         rhs.isNeg() -> drag(lhs, PM.Operator, rhs, PM.Operator)
                         else -> drag(lhs, PM.Operator, rhs, null, Position.LeftOf)
@@ -478,6 +479,10 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
     SeparateFactoredEquation(separateFactoredEquation),
 
     EliminateConstantFactorOfLhsWithZeroRhs(eliminateConstantFactorOfLhsWithZeroRhs),
+
+    SeparateModulusEqualsPositiveConstant(separateModulusEqualsPositiveConstant),
+    ResolveModulusEqualsZero(resolveModulusEqualsZero),
+    ExtractSolutionFromModulusEqualsNegativeConstant(extractSolutionFromModulusEqualsNegativeConstant),
 }
 
 private val applyQuadraticFormula = rule {
@@ -555,6 +560,56 @@ private val eliminateConstantFactorOfLhsWithZeroRhs = rule {
         ruleResult(
             toExpr = equationOf(newLhs, get(rhs)),
             explanation = metadata(Explanation.EliminateConstantFactorOfLhsWithZeroRhs),
+        )
+    }
+}
+
+private val separateModulusEqualsPositiveConstant = rule {
+    val signedLHS = AnyPattern()
+    val absoluteValue = absoluteValueOf(signedLHS)
+    val lhs = withOptionalConstantCoefficient(absoluteValue, positiveOnly = true)
+    val rhs = condition(ConstantInSolutionVariablePattern()) { it.signOf() == Sign.POSITIVE }
+
+    onEquation(lhs, rhs) {
+        val coeff = get(lhs::coefficient)!!
+        val newLHS = if (coeff == Constants.One) get(signedLHS) else productOf(coeff, get(signedLHS))
+        ruleResult(
+            toExpr = equationUnionOf(
+                equationOf(newLHS, get(rhs)),
+                equationOf(newLHS, negOf(get(rhs))),
+            ),
+            explanation = metadata(Explanation.SeparateModulusEqualsPositiveConstant),
+        )
+    }
+}
+
+private val resolveModulusEqualsZero = rule {
+    val signedLHS = AnyPattern()
+    val absoluteValue = absoluteValueOf(signedLHS)
+    val lhs = withOptionalConstantCoefficient(absoluteValue, positiveOnly = true)
+    val rhs = FixedPattern(Constants.Zero)
+
+    onEquation(lhs, rhs) {
+        val coeff = get(lhs::coefficient)!!
+        val newLHS = if (coeff == Constants.One) get(signedLHS) else productOf(coeff, get(signedLHS))
+        ruleResult(
+            toExpr = equationOf(newLHS, get(rhs)),
+            explanation = metadata(Explanation.ResolveModulusEqualsZero),
+        )
+    }
+}
+
+private val extractSolutionFromModulusEqualsNegativeConstant = rule {
+    val signedLHS = AnyPattern()
+    val absoluteValue = absoluteValueOf(signedLHS)
+    val lhs = withOptionalConstantCoefficient(absoluteValue, positiveOnly = true)
+    val rhs = condition(ConstantInSolutionVariablePattern()) { it.signOf() == Sign.NEGATIVE }
+    val equation = equationOf(lhs, rhs)
+
+    onPattern(equation) {
+        ruleResult(
+            toExpr = contradictionOf(variableListOf(context.solutionVariables), get(equation)),
+            explanation = metadata(Explanation.ExtractSolutionFromModulusEqualsNegativeConstant),
         )
     }
 }

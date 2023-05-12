@@ -151,4 +151,81 @@ class EquationRulesTest {
             "Solution[x, {}]",
         )
     }
+
+    @Test
+    fun testSeparateModulusEqualsPositiveConstant() {
+        testRuleInX(
+            "abs[x - 2] = 3",
+            EquationsRules.SeparateModulusEqualsPositiveConstant,
+            "x - 2 = 3 OR x - 2 = -3",
+        )
+        testRuleInX(
+            "3abs[1 - x] = 6",
+            EquationsRules.SeparateModulusEqualsPositiveConstant,
+            "3(1 - x) = 6 OR 3(1 - x) = -6",
+        )
+        testRuleInX(
+            "[abs[2x + 1] / 5] = 8",
+            EquationsRules.SeparateModulusEqualsPositiveConstant,
+            "[1 / 5](2x + 1) = 8 OR [1 / 5](2x + 1) = -8",
+        )
+        testRuleInX(
+            "-3abs[x + 1] = 5",
+            EquationsRules.SeparateModulusEqualsPositiveConstant,
+            null,
+        )
+        testRuleInX(
+            "abs[x + 2] = -10",
+            EquationsRules.SeparateModulusEqualsPositiveConstant,
+            null,
+        )
+    }
+
+    @Test
+    fun testResolveModulusEqualsZero() {
+        testRuleInX(
+            "abs[x - 2] = 0",
+            EquationsRules.ResolveModulusEqualsZero,
+            "x - 2 = 0",
+        )
+        testRuleInX(
+            "3abs[1 - x] = 0",
+            EquationsRules.ResolveModulusEqualsZero,
+            "3(1 - x) = 0",
+        )
+        testRuleInX(
+            "[abs[2x + 1] / 5] = 0",
+            EquationsRules.ResolveModulusEqualsZero,
+            "[1 / 5](2x + 1) = 0",
+        )
+    }
+
+    @Test
+    fun testExtractSolutionFromModulusEqualsNegativeConstant() {
+        testRuleInX(
+            "abs[x - 2] = -3",
+            EquationsRules.ExtractSolutionFromModulusEqualsNegativeConstant,
+            "Contradiction[x : abs[x - 2] = -3]",
+        )
+        testRuleInX(
+            "3abs[1 - x] = -1",
+            EquationsRules.ExtractSolutionFromModulusEqualsNegativeConstant,
+            "Contradiction[x : 3abs[1 - x] = -1]",
+        )
+        testRuleInX(
+            "[abs[2x + 1] / 5] = -10",
+            EquationsRules.ExtractSolutionFromModulusEqualsNegativeConstant,
+            "Contradiction[x : [abs[2x + 1] / 5] = -10]",
+        )
+        testRuleInX(
+            "2abs[x - 2] = 5",
+            EquationsRules.ResolveModulusEqualsZero,
+            null,
+        )
+        testRuleInX(
+            "-2abs[x - 2] = -5",
+            EquationsRules.ResolveModulusEqualsZero,
+            null,
+        )
+    }
 }

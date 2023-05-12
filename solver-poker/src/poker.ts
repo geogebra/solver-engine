@@ -75,6 +75,14 @@ const copyTranslationKeysToClipboardOnClick = () => {
   }
 };
 
+const copyTestCodeToClipboardOnClick = () => {
+  const copyToClipboard = () => {
+    const textContent = document.getElementById('test-code')!.textContent!;
+    navigator.clipboard.writeText(textContent);
+  };
+  document.getElementById('copy-test-code')!.onclick = copyToClipboard;
+};
+
 const selectPlansOrApplyPlan = async ({
   planId,
   input,
@@ -174,6 +182,7 @@ window.onload = () => {
           : renderTransformationAndTest(result, solverFormatResult, 1);
       window.renderMathInElement(resultElement);
       copyTranslationKeysToClipboardOnClick();
+      copyTestCodeToClipboardOnClick();
     }
   };
 
