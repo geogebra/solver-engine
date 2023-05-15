@@ -1,6 +1,7 @@
 {
   "devDependencies": {
     "@types/katex": "^0.16.0",
+    "concurrently": "^8.0.1",
     "eslint": "^8.39.0",
     "eslint-config-prettier": "^8.8.0",
     "prettier": "2.8.8",
@@ -10,7 +11,7 @@
     "postinstall": "npm run build -ws",
     "prettier": "prettier . -w",
     "eslint": "eslint . --fix",
-    "poker-dev": "cd ./solver-poker && npm run poker-dev"
+    "poker-dev": "concurrently -k -c auto -n sdk,poker \"npm -w @geogebra/solver-sdk run watch\" \"npm -w solver-poker run poker-dev\""
   },
   "workspaces": [
     "@geogebra/solver-sdk",

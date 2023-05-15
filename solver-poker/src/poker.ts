@@ -1,11 +1,12 @@
-import * as solverSDK from '@geogebra/solver-sdk';
 import type { SolverContext } from '@geogebra/solver-sdk';
-import { settings, solutionFormatters } from './settings';
+import * as solverSDK from '@geogebra/solver-sdk';
 import type { ColorScheme, SolutionFormat } from './settings';
+import { settings, solutionFormatters } from './settings';
 import { renderPlanSelections, renderTransformationAndTest } from './render-solution';
 import { fetchDefaultTranslations } from './translations';
 import { clone } from './util';
 import type renderMathInElement from 'katex/contrib/auto-render';
+import { copyTestCodeToClipboardOnClick } from './render-test';
 
 declare global {
   interface Window {
@@ -58,29 +59,13 @@ const initPlans = (plans: string[]) => {
  *******************************************/
 
 const copyTranslationKeysToClipboardOnClick = () => {
-  const copyToClipboard = (evt: Event) => {
+  const copyToClipboard = async (evt: Event) => {
     const textContent = (evt.target as HTMLElement).textContent!;
-    console.log('writing to clipboard', textContent);
-    navigator.clipboard.writeText(textContent).then(
-      () => {
-        console.log('done :)');
-      },
-      () => {
-        console.log('not done :(');
-      },
-    );
+    await navigator.clipboard.writeText(textContent);
   };
   for (const el of document.querySelectorAll<HTMLElement>('.translation-key')) {
     el.onclick = copyToClipboard;
   }
-};
-
-const copyTestCodeToClipboardOnClick = () => {
-  const copyToClipboard = () => {
-    const textContent = document.getElementById('test-code')!.textContent!;
-    navigator.clipboard.writeText(textContent);
-  };
-  document.getElementById('copy-test-code')!.onclick = copyToClipboard;
 };
 
 const selectPlansOrApplyPlan = async ({

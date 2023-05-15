@@ -39,7 +39,7 @@ export const solutionFormatters = {
 export type SolutionFormat = keyof typeof solutionFormatters;
 
 export const settings: Settings = {
-  showThroughSteps: true,
+  showThroughSteps: false,
   showRearrangementSteps: false,
   showPedanticSteps: false,
   showCosmeticSteps: false,

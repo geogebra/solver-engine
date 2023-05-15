@@ -4,10 +4,22 @@ import { settings } from './settings';
 
 export const renderTest = (trans: Transformation) => /* HTML */ `
   <details>
-    <summary>Test Code</summary>
+    <summary>Test Code <button class="copy-test-code-button">Copy</button></summary>
     <pre>${generateTestSuggestion(trans)}</pre>
   </details>
 `;
+
+export const copyTestCodeToClipboardOnClick = () => {
+  const copyToClipboard = async (evt: Event) => {
+    const testCode = (evt.target as HTMLElement)?.parentElement?.nextElementSibling?.textContent;
+    if (testCode) {
+      await navigator.clipboard.writeText(testCode);
+    }
+  };
+  for (const el of document.querySelectorAll<HTMLElement>('.copy-test-code-button')) {
+    el.onclick = copyToClipboard;
+  }
+};
 
 export function generateTestSuggestion(trans: Transformation, methodId = 'FILL_ME_IN'): string {
   lastExpressionPrinted = '';
