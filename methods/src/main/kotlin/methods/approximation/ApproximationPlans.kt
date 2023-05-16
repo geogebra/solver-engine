@@ -1,8 +1,10 @@
 package methods.approximation
 
+import engine.context.Context
 import engine.expressions.DecimalExpression
 import engine.expressions.Expression
 import engine.expressions.RecurringDecimalExpression
+import engine.expressions.xp
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
@@ -12,12 +14,16 @@ import engine.patterns.AnyPattern
 import engine.patterns.SignedNumberPattern
 import engine.patterns.condition
 import engine.patterns.productContaining
+import engine.steps.Transformation
+import engine.steps.metadata.Metadata
+import methods.constantexpressions.ConstantExpressionsPlans
 import methods.decimals.DecimalPlans
 import methods.general.GeneralRules
 import methods.general.NormalizationPlans
 import methods.general.inlineSumsAndProducts
 import methods.integerarithmetic.IntegerArithmeticPlans
 import methods.integerarithmetic.hasArithmeticOperation
+import java.math.RoundingMode
 
 private fun Expression.canBeApproximated(): Boolean {
     val validOperator = this is DecimalExpression ||
@@ -97,6 +103,23 @@ enum class ApproximationPlans(override val runner: CompositeMethod) : RunnerMeth
                         }
                     }
                 }
+            }
+        },
+    ),
+
+    @PublicMethod
+    EvaluateExpressionNumerically(
+        object : CompositeMethod(specificPlans = listOf(ConstantExpressionsPlans.SimplifyConstantExpression)) {
+            override fun run(ctx: Context, sub: Expression): Transformation? {
+                val numericValue = sub.doubleValue
+                if (!numericValue.isFinite()) return null
+
+                return Transformation(
+                    type = Transformation.Type.Rule,
+                    fromExpr = sub,
+                    toExpr = xp(numericValue.toBigDecimal().setScale(ctx.effectivePrecision, RoundingMode.HALF_UP)),
+                    explanation = Metadata(Explanation.EvaluateExpressionNumerically, listOf(sub)),
+                )
             }
         },
     ),

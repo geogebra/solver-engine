@@ -8,6 +8,7 @@ import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.steps
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
+import engine.patterns.ConstantPattern
 import engine.patterns.FindPattern
 import engine.patterns.IntegerFractionPattern
 import engine.patterns.condition
@@ -136,7 +137,7 @@ enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : Runn
     @PublicMethod
     SimplifyConstantExpression(
         plan {
-            pattern = condition(AnyPattern()) { it.isConstant() }
+            pattern = ConstantPattern()
             explanation = Explanation.SimplifyConstantExpression
 
             specificPlans(

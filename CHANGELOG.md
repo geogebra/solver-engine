@@ -12,6 +12,7 @@ contents to a new release section (e.g. _[0.x]_).
 ### Added
 
 - Added support for solving modulus equations of the form |f(x)| = k and derived (PLUT-589)
+- Added numerical evaluation for constant expressions if symbolic simplification fails (PLUT-597)
 
 ### Fixed
 

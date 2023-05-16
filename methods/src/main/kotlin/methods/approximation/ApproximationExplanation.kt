@@ -71,6 +71,12 @@ enum class ApproximationExplanation : CategorisedMetadataKey {
      */
     ApproximateExpression,
 
+    /**
+     * Evaluate a constant expression numerically, with all computations done in
+     * the background.
+     */
+    EvaluateExpressionNumerically,
+
     ;
 
     override val category = "Approximation"

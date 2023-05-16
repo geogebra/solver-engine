@@ -36,6 +36,8 @@ fun xp(n: BigInteger): Expression {
     return if (n.signum() >= 0) posExpr else negOf(posExpr)
 }
 
+fun xp(x: Double) = xp(x.toBigDecimal())
+
 fun xp(x: BigDecimal): Expression {
     if (x.scale() <= 0) {
         return xp(x.toBigInteger())

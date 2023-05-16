@@ -7,7 +7,7 @@ import org.jlleitschuh.gradle.ktlint.KtlintExtension
 plugins {
     kotlin("jvm")
 
-    id("org.jlleitschuh.gradle.ktlint") version "11.2.0" apply false
+    id("org.jlleitschuh.gradle.ktlint") version "11.3.2" apply false
     id("io.gitlab.arturbosch.detekt") version "1.22.0" apply false
 }
 

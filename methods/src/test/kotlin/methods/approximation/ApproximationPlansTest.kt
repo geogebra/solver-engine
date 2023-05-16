@@ -137,4 +137,31 @@ class ApproximationPlansTest {
             }
         }
     }
+
+    @Test
+    fun testNumericEvaluation() = testMethod {
+        method = ApproximationPlans.EvaluateExpressionNumerically
+        inputExpr = "sqrt[2] + sqrt[3] + [1 / 2]"
+
+        check {
+            explanation {
+                key = ApproximationExplanation.EvaluateExpressionNumerically
+            }
+            toExpr = "3.646"
+        }
+    }
+
+    @Test
+    fun testNumericEvaluationWithHigherPrecision() = testMethod {
+        context = Context(precision = 6)
+        method = ApproximationPlans.EvaluateExpressionNumerically
+        inputExpr = "sqrt[2] + sqrt[3] + [1 / 2]"
+
+        check {
+            explanation {
+                key = ApproximationExplanation.EvaluateExpressionNumerically
+            }
+            toExpr = "3.646264"
+        }
+    }
 }
