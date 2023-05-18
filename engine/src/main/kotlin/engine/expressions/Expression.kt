@@ -2,6 +2,7 @@ package engine.expressions
 
 import engine.operators.BinaryExpressionOperator
 import engine.operators.DecimalOperator
+import engine.operators.EquationOperator
 import engine.operators.EquationSystemOperator
 import engine.operators.ExpressionOperator
 import engine.operators.IntegerOperator
@@ -12,6 +13,7 @@ import engine.operators.ProductOperator
 import engine.operators.RecurringDecimalOperator
 import engine.operators.RenderContext
 import engine.operators.SolutionOperator
+import engine.operators.StatementWithConstraintOperator
 import engine.operators.SumOperator
 import engine.operators.UnaryExpressionOperator
 import engine.operators.VariableListOperator
@@ -500,11 +502,17 @@ private fun expressionOf(
         is ProductOperator -> Product(operands, operator.forcedSigns, meta)
         BinaryExpressionOperator.Fraction -> Fraction(operands[0], operands[1], meta)
         BinaryExpressionOperator.Power -> Power(operands[0], operands[1], meta)
+
         VariableListOperator -> VariableList(operands.map { it as Variable }, meta)
+
         SolutionOperator.Identity -> Identity(operands[0] as VariableList, operands[1], meta)
         SolutionOperator.Contradiction -> Contradiction(operands[0] as VariableList, operands[1], meta)
         SolutionOperator.ImplicitSolution -> ImplicitSolution(operands[0] as VariableList, operands[1], meta)
         SolutionOperator.SetSolution -> SetSolution(operands[0] as VariableList, operands[1], meta)
+
+        EquationOperator -> Equation(operands[0], operands[1], meta)
+        StatementWithConstraintOperator -> StatementWithConstraint(operands[0], operands[1], meta)
+
         else -> Expression(operator, operands, meta)
     }
 }

@@ -5,16 +5,19 @@ import engine.conditions.isDefinitelyNotUndefined
 import engine.conditions.signOf
 import engine.expressions.Constants
 import engine.expressions.Fraction
+import engine.expressions.StatementWithConstraint
 import engine.expressions.Variable
 import engine.expressions.contradictionOf
 import engine.expressions.equationOf
 import engine.expressions.equationSystemOf
 import engine.expressions.equationUnionOf
 import engine.expressions.fractionOf
+import engine.expressions.greaterThanEqualOf
 import engine.expressions.hasSingleValue
 import engine.expressions.identityOf
 import engine.expressions.inverse
 import engine.expressions.isSignedFraction
+import engine.expressions.lessThanOf
 import engine.expressions.negOf
 import engine.expressions.plusMinusOf
 import engine.expressions.powerOf
@@ -492,6 +495,8 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
     MoveSecondModulusToLhs(moveSecondModulusToLhs),
     SeparateModulusEqualsModulus(separateModulusEqualsModulus),
     ResolveModulusEqualsNegativeModulus(resolveModulusEqualsNegativeModulus),
+
+    SeparateModulusEqualsExpression(separateModulusEqualsExpression),
 }
 
 private val applyQuadraticFormula = rule {
@@ -706,6 +711,30 @@ private val resolveModulusEqualsNegativeModulus = rule {
                 equationOf(newRHS, Constants.Zero),
             ),
             explanation = metadata(Explanation.ResolveModulusEqualsNegativeModulus),
+        )
+    }
+}
+
+private val separateModulusEqualsExpression = rule {
+    val signedLHS = AnyPattern()
+    val absoluteValue = absoluteValueOf(signedLHS)
+    val lhs = withOptionalConstantCoefficient(absoluteValue, positiveOnly = true)
+    val rhs = AnyPattern()
+
+    onEquation(lhs, rhs) {
+        val lhsValue = get(signedLHS)
+        val rhsValue = get(rhs)
+        ruleResult(
+            toExpr = equationUnionOf(
+                StatementWithConstraint(
+                    equationOf(lhsValue, rhsValue),
+                    greaterThanEqualOf(lhsValue, Constants.Zero),
+                ),
+                StatementWithConstraint(
+                    equationOf(negOf(lhsValue), rhsValue),
+                    lessThanOf(lhsValue, Constants.Zero),
+                ),
+            ),
         )
     }
 }

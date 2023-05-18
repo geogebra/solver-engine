@@ -4,7 +4,9 @@ grammar Expression;
     package parser.antlr;
 }
 
-wholeInput: (statement | solution | set | expr | undefined | name) EOF;
+wholeInput: (statement | statementWithConstraint | solution | set | expr | undefined | name) EOF;
+
+statementWithConstraint: stmt=statement 'GIVEN' constraint=statement;
 
 statement: equationSystem | equationUnion | equationAddition | equationSubtraction | equation | inequality;
 

@@ -34,6 +34,7 @@ import engine.operators.EquationUnionOperator
 import engine.operators.IndefiniteIntegralOperator
 import engine.operators.IntervalOperator
 import engine.operators.Operator
+import engine.operators.StatementWithConstraintOperator
 import engine.operators.SubtractEquationsOperator
 import engine.operators.SumOperator
 import engine.operators.TrigonometricFunctionOperator
@@ -77,6 +78,10 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
 
     override fun visitWholeInput(ctx: ExpressionParser.WholeInputContext): Expression {
         return visit(ctx.getChild(0))
+    }
+
+    override fun visitStatementWithConstraint(ctx: ExpressionParser.StatementWithConstraintContext): Expression {
+        return makeExpression(StatementWithConstraintOperator, listOf(visit(ctx.stmt), visit(ctx.constraint)))
     }
 
     override fun visitEquationSystem(ctx: ExpressionParser.EquationSystemContext): Expression {

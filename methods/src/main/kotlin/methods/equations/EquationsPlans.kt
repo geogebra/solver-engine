@@ -455,6 +455,18 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     ),
 
     @PublicMethod
+    SolveEquationWihtOneAbsoluteValue(
+        plan {
+            explanation = Explanation.SolveEquationWithVariablesInOneAbsoluteValue
+            pattern = equationInOneVariable()
+
+            steps {
+                apply(EquationsRules.SeparateModulusEqualsExpression)
+            }
+        },
+    ),
+
+    @PublicMethod
     SolveEquationWithTwoAbsoluteValues(solveEquationWithTwoAbsoluteValues),
 
     @PublicMethod
