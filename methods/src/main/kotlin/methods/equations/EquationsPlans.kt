@@ -11,11 +11,14 @@ import engine.expressions.solutionSetOf
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
+import engine.methods.TasksBuilder
 import engine.methods.plan
 import engine.methods.stepsproducers.FormChecker
 import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
 import engine.operators.EquationUnionOperator
+import engine.operators.IntervalOperator
+import engine.operators.SetOperators
 import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.BinaryIntegerCondition
@@ -37,16 +40,20 @@ import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.setSolutionOf
 import engine.patterns.solutionSetOf
+import engine.patterns.statementWithConstraintOf
 import engine.patterns.sumContaining
 import engine.patterns.variableListOf
 import engine.patterns.withOptionalConstantCoefficient
 import engine.patterns.withOptionalIntegerCoefficient
+import engine.steps.Task
 import engine.steps.metadata.metadata
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.equations.EquationsRules.FactorNegativeSignOfLeadingCoefficient
 import methods.equationsystems.EquationSystemsPlans
 import methods.general.NormalizationPlans
+import methods.inequalities.InequalitiesPlans
+import methods.inequalities.simplifyInequality
 import methods.polynomials.PolynomialRules
 import methods.polynomials.PolynomialsPlans
 import methods.polynomials.PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization
@@ -454,14 +461,43 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
         },
     ),
 
+    IsolateAbsoluteValue(
+        plan {
+            explanation = Explanation.IsolateAbsoluteValue
+            pattern = equationInOneVariable()
+
+            steps {
+                firstOf {
+                    option(EquationsRules.MoveTermsNotContainingModulusToTheRight)
+                    option(EquationsRules.MoveTermsNotContainingModulusToTheLeft)
+                }
+                apply(simplifyEquation)
+            }
+        },
+    ),
+
     @PublicMethod
-    SolveEquationWihtOneAbsoluteValue(
+    SolveEquationWithOneAbsoluteValue(
         plan {
             explanation = Explanation.SolveEquationWithVariablesInOneAbsoluteValue
             pattern = equationInOneVariable()
 
             steps {
+                optionally(equationSimplificationSteps)
+
+                optionally(IsolateAbsoluteValue)
+                optionally {
+                    checkForm {
+                        equationOf(
+                            AnyPattern(),
+                            condition(AnyPattern()) { it.countAbsoluteValues(solutionVariables) > 0 },
+                        )
+                    }
+                    apply(EquationsRules.FlipEquation)
+                }
+
                 apply(EquationsRules.SeparateModulusEqualsExpression)
+                apply(solveEquationUnion)
             }
         },
     ),
@@ -488,6 +524,89 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
             }
         },
     ),
+
+    SolveEquationWithConstraint(
+        taskSet {
+            explanation = Explanation.SolveEquationInOneVariable
+            pattern = inSolutionVariables(
+                statementWithConstraintOf(
+                    equationOf(
+                        AnyPattern(),
+                        AnyPattern(),
+                    ),
+                    AnyPattern(),
+                ),
+            )
+
+            tasks {
+                val simplifyConstraint = task(
+                    startExpr = expression.secondChild,
+                    explanation = metadata(Explanation.SimplifyConstraint),
+                ) {
+                    firstOf {
+                        option(InequalitiesPlans.SolveLinearInequality)
+                        option(simplifyInequality)
+                    }
+                }
+
+                val solveEquation = task(
+                    startExpr = expression.firstChild,
+                    explanation = metadata(Explanation.SolveEquationWithoutConstraint),
+                    stepsProducer = optimalEquationSolvingSteps,
+                ) ?: return@tasks null
+
+                val solution = solveEquation.result
+                val constraint = simplifyConstraint?.result ?: expression.secondChild
+
+                checkSolutionsAgainstConstraint(solution, constraint) ?: return@tasks null
+
+                allTasks()
+            }
+        },
+    ),
+}
+
+private fun TasksBuilder.checkSolutionsAgainstConstraint(solution: Expression, constraint: Expression): Task? {
+    return when {
+        constraint is Identity || solution is Contradiction -> {
+            task(
+                startExpr = solution,
+                explanation = metadata(Explanation.Dummy),
+            )
+        }
+        solution is Identity || constraint is Contradiction -> { // todo move contradiction up
+            task(
+                startExpr = constraint,
+                explanation = metadata(Explanation.Dummy),
+            )
+        }
+        constraint is SetSolution -> {
+            val constraintSet = constraint.solutionSet
+            when (val op = constraintSet.operator) {
+                is IntervalOperator -> {
+                    if (solution is SetSolution && solution.solutionSet.operator == SetOperators.FiniteSet) {
+                        val solutions = solution.solutionSet.children
+                        val validSolutions = solutions.filter {
+                            val x = it.doubleValue
+                            val x0 = constraintSet.firstChild.doubleValue
+                            val x1 = constraintSet.secondChild.doubleValue
+                            if (op.closedLeft) { x0 <= x } else { x0 < x } &&
+                                if (op.closedRight) { x <= x1 } else { x < x1 }
+                        }
+
+                        task(
+                            startExpr = setSolutionOf(solution.solutionVariables, solutionSetOf(validSolutions)),
+                            explanation = metadata(Explanation.Dummy),
+                        )
+                    } else {
+                        null
+                    }
+                }
+                else -> null
+            }
+        }
+        else -> null
+    }
 }
 
 private val extractSolutionFromEquationPossiblyInPlusMinusForm = steps {
@@ -555,6 +674,7 @@ private val optimalEquationSolvingSteps = steps {
         option(EquationsPlans.SolveQuadraticEquationUsingQuadraticFormula)
         option(EquationsPlans.SolveByCompletingTheSquare)
         option(EquationsPlans.SolveEquationWithVariablesInOneAbsoluteValue)
+        option(EquationsPlans.SolveEquationWithConstraint)
     }
 }
 

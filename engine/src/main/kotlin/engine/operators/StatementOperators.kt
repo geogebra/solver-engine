@@ -212,7 +212,7 @@ object EquationUnionOperator : StatementOperator {
     override val arity = ARITY_VARIABLE
 
     override fun nthChildAllowed(n: Int, op: Operator): Boolean {
-        // require(op is EquationOperator)
+        require(op is StatementOperator)
         return true
     }
 

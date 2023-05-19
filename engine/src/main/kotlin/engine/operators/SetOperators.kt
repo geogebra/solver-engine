@@ -78,8 +78,8 @@ enum class SetOperators : Operator {
 }
 
 data class IntervalOperator(
-    private val closedLeft: Boolean,
-    private val closedRight: Boolean,
+    val closedLeft: Boolean,
+    val closedRight: Boolean,
 ) : BinaryOperator {
     override val name = when {
         closedLeft && closedRight -> "ClosedInterval"

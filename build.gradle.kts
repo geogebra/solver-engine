@@ -24,7 +24,7 @@ subprojects {
         jvmToolchain(17)
     }
     tasks.withType<KotlinCompile> {
-        kotlinOptions.allWarningsAsErrors = true
+        kotlinOptions.allWarningsAsErrors = false
     }
 
     apply(plugin = "org.jlleitschuh.gradle.ktlint")

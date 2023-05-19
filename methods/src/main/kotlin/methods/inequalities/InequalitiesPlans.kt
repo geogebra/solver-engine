@@ -213,7 +213,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
     ),
 }
 
-private val simplifyInequality = plan {
+val simplifyInequality = plan {
     explanation = Explanation.SimplifyInequality
     specificPlans(ConstantExpressionsPlans.SimplifyConstantExpression)
 

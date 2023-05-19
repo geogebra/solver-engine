@@ -452,6 +452,18 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      *      abs[2x + 1] + 5abs[x] = 0
      */
     SolveEquationWithTwoAbsoluteValues,
+
+    MoveTermsNotContainingModulusToTheRight,
+
+    MoveTermsNotContainingModulusToTheLeft,
+
+    SimplifyConstraint,
+
+    SolveEquationWithoutConstraint,
+
+    IsolateAbsoluteValue,
+
+    Dummy,
     ;
 
     override val category = "Equations"
