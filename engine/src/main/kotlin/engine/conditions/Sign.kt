@@ -103,6 +103,8 @@ private fun UnaryExpressionOperator.signOf(operand: Expression) = when (this) {
         else -> sign // zero for zero, undefined for undefined etc.
     }
     UnaryExpressionOperator.NaturalLog -> TODO()
+    UnaryExpressionOperator.LogBase10 -> TODO()
+    UnaryExpressionOperator.Percentage -> operand.signOf()
 }
 
 private fun BinaryExpressionOperator.signOf(left: Expression, right: Expression) = when (this) {
@@ -112,6 +114,8 @@ private fun BinaryExpressionOperator.signOf(left: Expression, right: Expression)
         // This is not quite right because we should check the order as well.
         left.signOf().truncateToPositive()
     }
+    BinaryExpressionOperator.Log -> TODO()
+    BinaryExpressionOperator.PercentageOf -> left.signOf() * right.signOf()
 }
 
 private fun signOfPowerExpression(base: Expression, exponent: Expression) = when (base.signOf()) {

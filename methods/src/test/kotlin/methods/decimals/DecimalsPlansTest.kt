@@ -300,7 +300,7 @@ class DecimalsPlansTest {
             inputExpr = "[0 ^ 0]"
 
             check {
-                toExpr = "UNDEFINED"
+                toExpr = "/undefined/"
             }
         }
         testMethod {
@@ -387,7 +387,7 @@ class EvaluatExpressionAsDecimalTest {
 
         check {
             fromExpr = "[2.2 - 2.2 / 2.2 - 2.2]"
-            toExpr = "UNDEFINED"
+            toExpr = "/undefined/"
             explanation {
                 key = DecimalsExplanation.EvaluateExpressionAsDecimal
             }
@@ -426,7 +426,7 @@ class EvaluatExpressionAsDecimalTest {
 
             step {
                 fromExpr = "[0 / 0]"
-                toExpr = "UNDEFINED"
+                toExpr = "/undefined/"
                 explanation {
                     key = GeneralExplanation.SimplifyZeroDenominatorFractionToUndefined
                 }

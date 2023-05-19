@@ -35,7 +35,7 @@ class TestExpression {
         assertDoubleValue(Double.NaN, "x")
         assertDoubleValue(Double.NaN, "1 +/- 2")
         assertDoubleValue(2.0, "2 +/- 0")
-        assertDoubleValue(Double.NaN, "UNDEFINED")
+        assertDoubleValue(Double.NaN, "/undefined/")
         assertDoubleValue(Double.NaN, "sqrt[-2]")
         assertDoubleValue(-2.0, "root[-8, 3]")
         assertDoubleValue(1.2, "[1 1/5]")

@@ -14,6 +14,8 @@ contents to a new release section (e.g. _[0.x]_).
 - Added support for solving modulus equations of the form |f(x)| = k and derived (PLUT-589)
 - Added numerical evaluation for constant expressions if symbolic simplification fails (PLUT-597)
 - Added support for solving modulus equations that reduce to the form |f(x)| = k|g(x)| (PLUT-599)
+- Added new syntaxes to the parser (mathematical constants, Greek letter variables,
+  trigonometric functions, percentages, derivatives, integrals, vectors, matrices) (PLUT-288)
 
 ### Fixed
 

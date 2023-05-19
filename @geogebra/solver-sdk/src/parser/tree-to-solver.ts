@@ -67,12 +67,12 @@ export function treeToSolver(n: ExpressionTree): string {
       return dec(n.args.map((el) => rec(el)).join(' /-/ '));
     case 'EquationUnion':
       return dec(n.args.map((el) => rec(el)).join(' OR '));
-    case 'UNDEFINED':
-      return dec('UNDEFINED');
-    case 'INFINITY':
-      return dec('INFINITY');
-    case 'Reals':
-      return dec('REALS');
+    case '/undefined/':
+      return dec('/undefined/');
+    case '/infinity/':
+      return dec('/infinity/');
+    case '/reals/':
+      return dec('/reals/');
     case 'LessThan':
       return dec(`${rec(n.args[0])} < ${rec(n.args[1])}`);
     case 'GreaterThan':

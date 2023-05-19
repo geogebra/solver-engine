@@ -588,13 +588,13 @@ describe('Solver Parser Unit Tests', () => {
         dontParseLatex: true,
       },
       {
-        solver: 'Solution[x, REALS]',
-        json: ['Solution', ['x'], ['Reals']],
+        solver: 'Solution[x, /reals/]',
+        json: ['Solution', ['x'], ['/reals/']],
         latex: 'x \\in \\mathbb{R}',
       },
       {
-        solver: 'Solution[x, (-INFINITY, 5)]',
-        json: ['Solution', ['x'], ['OpenInterval', ['Minus', ['INFINITY']], ['5']]],
+        solver: 'Solution[x, (-/infinity/, 5)]',
+        json: ['Solution', ['x'], ['OpenInterval', ['Minus', ['/infinity/']], ['5']]],
         latex: 'x \\in \\left( -\\infty, 5 \\right)',
         dontParseLatex: true,
       },
@@ -605,14 +605,18 @@ describe('Solver Parser Unit Tests', () => {
         dontParseLatex: true,
       },
       {
-        solver: 'Solution[x, (-INFINITY, 5]]',
-        json: ['Solution', ['x'], ['OpenClosedInterval', ['Minus', ['INFINITY']], ['5']]],
+        solver: 'Solution[x, (-/infinity/, 5]]',
+        json: [
+          'Solution',
+          ['x'],
+          ['OpenClosedInterval', ['Minus', ['/infinity/']], ['5']],
+        ],
         latex: 'x \\in \\left( -\\infty, 5 \\right]',
         dontParseLatex: true,
       },
       {
-        solver: 'Solution[x, [5, INFINITY)]',
-        json: ['Solution', ['x'], ['ClosedOpenInterval', ['5'], ['INFINITY']]],
+        solver: 'Solution[x, [5, /infinity/)]',
+        json: ['Solution', ['x'], ['ClosedOpenInterval', ['5'], ['/infinity/']]],
         latex: 'x \\in \\left[ 5, \\infty \\right)',
         dontParseLatex: true,
       },
@@ -622,10 +626,10 @@ describe('Solver Parser Unit Tests', () => {
   describe('Undefined', async () => {
     testCases([
       {
-        solver: 'UNDEFINED',
-        json: ['UNDEFINED'],
+        solver: '/undefined/',
+        json: ['/undefined/'],
         latex: '\\text{undefined}',
-        tree: { type: 'UNDEFINED', path: '.' },
+        tree: { type: '/undefined/', path: '.' },
       },
     ]);
   });

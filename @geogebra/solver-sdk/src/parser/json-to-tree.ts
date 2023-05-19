@@ -21,9 +21,9 @@ export function jsonToTree(json: MathJson, path = '.'): ExpressionTree {
     if (str.match(/^[+\-0-9]/)) result = { type: 'Number', value: str, path };
     else if (str.match(/^".*"$/))
       result = { type: 'Name', value: str.substring(1, str.length - 1), path };
-    else if (str === 'UNDEFINED') result = { type: 'UNDEFINED', path };
-    else if (str === 'INFINITY') result = { type: 'INFINITY', path };
-    else if (str === 'Reals') result = { type: 'Reals', path };
+    else if (str === '/undefined/') result = { type: '/undefined/', path };
+    else if (str === '/infinity/') result = { type: '/infinity/', path };
+    else if (str === '/reals/') result = { type: '/reals/', path };
     else result = { type: 'Variable', value: str, path };
   } else if (value === 'SmartProduct') {
     result = {
@@ -50,7 +50,11 @@ export function jsonToTree(json: MathJson, path = '.'): ExpressionTree {
 
 export function treeToJson(tree: ExpressionTree): MathJson {
   const decorators = extractJsonDecorators(tree);
-  if (tree.type === 'UNDEFINED' || tree.type === 'INFINITY' || tree.type === 'Reals') {
+  if (
+    tree.type === '/undefined/' ||
+    tree.type === '/infinity/' ||
+    tree.type === '/reals/'
+  ) {
     if (decorators?.length) return [[tree.type, ...decorators]];
     else return [tree.type];
   }

@@ -316,11 +316,11 @@ function treeToLatexInner(
       const alignSetting = { ...s, align: false };
       return tfd(n.args.map((el) => treeToLatexInner(el, n, alignSetting, t)).join(', '));
     }
-    case 'UNDEFINED':
+    case '/undefined/':
       return tfd('\\text{undefined}');
-    case 'INFINITY':
+    case '/infinity/':
       return tfd('\\infty');
-    case 'Reals':
+    case '/reals/':
       return tfd('\\mathbb{R}');
     case 'LessThan':
       return tfd(`${rec(n.args[0], n)} ${colorOp('<')} ${rec(n.args[1], n)}`);

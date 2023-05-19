@@ -88,7 +88,7 @@ export type ExpressionTreeBase<T> = ExpressionDecorations &
     | NumberExpression
     | VariableExpression
     | NameExpression
-    | { type: 'UNDEFINED' | 'INFINITY' | 'Reals' }
+    | { type: '/undefined/' | '/infinity/' | '/reals/' }
   ) &
   T;
 

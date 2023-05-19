@@ -183,8 +183,8 @@ class GeneralRulesTest {
 
     @Test
     fun testSimplifyZeroDenominatorFractionToUndefined() {
-        testRule("[2 / 0]", SimplifyZeroDenominatorFractionToUndefined, "UNDEFINED")
-        testRule("[sqrt[2] / 0]", SimplifyZeroDenominatorFractionToUndefined, "UNDEFINED")
+        testRule("[2 / 0]", SimplifyZeroDenominatorFractionToUndefined, "/undefined/")
+        testRule("[sqrt[2] / 0]", SimplifyZeroDenominatorFractionToUndefined, "/undefined/")
     }
 
     @Test
@@ -273,9 +273,9 @@ class GeneralRulesTest {
 
     @Test
     fun testEvaluateProductDividedByZeroAsUndefined() {
-        testRule("3 * 5 : 0", EvaluateProductDividedByZeroAsUndefined, "UNDEFINED")
-        testRule("7 : 0.00", EvaluateProductDividedByZeroAsUndefined, "UNDEFINED")
-        testRule("x : 0 * y", EvaluateProductDividedByZeroAsUndefined, "UNDEFINED")
+        testRule("3 * 5 : 0", EvaluateProductDividedByZeroAsUndefined, "/undefined/")
+        testRule("7 : 0.00", EvaluateProductDividedByZeroAsUndefined, "/undefined/")
+        testRule("x : 0 * y", EvaluateProductDividedByZeroAsUndefined, "/undefined/")
     }
 
     @Test

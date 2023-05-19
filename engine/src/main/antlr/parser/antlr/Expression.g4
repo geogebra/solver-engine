@@ -4,7 +4,7 @@ grammar Expression;
     package parser.antlr;
 }
 
-wholeInput: (statement | solution | expr | undefined | name) EOF;
+wholeInput: (statement | solution | set | expr | undefined | name) EOF;
 
 statement: equationSystem | equationUnion | equationAddition | equationSubtraction | equation | inequality;
 
@@ -38,27 +38,27 @@ finiteSet: '{' first=element (',' rest+=element)* '}';
 
 reals: REALS;
 
-interval: leftBracket=('(' | '[') left=exprOrInfinity ',' right=exprOrInfinity rightBracket=(')' | ']');
-
-exprOrInfinity: expr | infinity | minusInfinity;
+interval: leftBracket=('(' | '[') left=expr ',' right=expr rightBracket=(')' | ']');
 
 element: tuple | expr;
 
 tuple: '(' first=element (',' rest+=element)+ ')';
 
-expr: sum;
+expr: sum | infinity | minusInfinity;
 
 sum: first=firstTerm (rest+=otherTerm)*;
 
 firstTerm
-    : sign=('+' | '-' | PLUSMINUS)? product          #realFirstTerm
+    : sign=('+' | '-' | PLUSMINUS)? term             #realFirstTerm
     | OPEN_PARTIAL sum CLOSE_PARTIAL                 #firstPartialSum
     ;
 
 otherTerm
-    : sign=('+' | '-' | PLUSMINUS) product           #realOtherTerm
+    : sign=('+' | '-' | PLUSMINUS) term              #realOtherTerm
     | '+' OPEN_PARTIAL sum CLOSE_PARTIAL             #otherPartialSum
     ;
+
+term: product | percentage | percentageOf;
 
 product: first=firstFactor (rest+=factorWithOperator)*;
 
@@ -83,6 +83,9 @@ factor: mixedNumber | fraction | power | atom;
 
 fraction: '[' num=expr '/' den=expr ']';
 
+percentage: atom '%';
+percentageOf: part=atom '%of' base=atom;
+
 power: '[' base=atom '^' exp=expr ']';
 
 sqrt: 'sqrt[' radicand=expr ']';
@@ -91,15 +94,47 @@ root: 'root[' radicand=expr ',' order=expr ']';
 
 absoluteValue: 'abs[' argument=expr ']';
 
+logarithm
+    : 'ln' argument=implicitProduct                     #naturalLog
+    | 'log' argument=implicitProduct                    #logBase10
+    | 'log[' base=expr ']' argument=implicitProduct     #log
+    ;
+
+trigFunction: function=TRIG_FUNCTION argument=implicitProduct;
+
 bracket
-    :'(' expr ')'                   #roundBracket
+    : '(' expr ')'                  #roundBracket
     | OPEN_SQUARE expr CLOSE_SQUARE #squareBracket
     | OPEN_CURLY expr CLOSE_CURLY   #curlyBracket
     ;
 
-atom: nonNumericAtom | naturalNumber | decimalNumber | recurringDecimalNumber;
+atom: bracket
+    | sqrt | root | absoluteValue | logarithm | trigFunction
+    | derivative | indefiniteIntegral | definiteIntegral
+    | vector | matrix
+    | variable | constant | naturalNumber | decimalNumber | recurringDecimalNumber
+    ;
 
-nonNumericAtom: sqrt | root | absoluteValue | bracket | variable;
+derivative
+    : 'diff' '[' product '/' 'd' variable ']'                              #firstDerivative
+    | '[' 'diff' '^' order=expr ']' '[' product '/' ('d' vars+=atom)+ ']'  #nthDerivative
+    ;
+
+indefiniteIntegral: 'prim' '[' function=expr ',' variable ']';
+
+definiteIntegral: 'int' '[' lowerBound=expr ',' upperBound=expr ',' function=expr ',' variable ']';
+
+vector: 'vec' '[' expr (',' expr)* ']';
+
+matrix: 'mat' '[' matrixRow (';' matrixRow)* ']';
+
+matrixRow: expr (',' expr)*;
+
+constant
+    : PI                            #pi
+    | E                             #e
+    | I                             #imaginaryUnit
+    ;
 
 mixedNumber: '[' integer=NATNUM num=NATNUM '/' den=NATNUM ']';
 
@@ -116,7 +151,7 @@ recurringDecimalNumber: RECURRING_DECNUM;
 
 variables: first=variable (',' rest+=variable)*;
 
-variable: VARIABLE;
+variable: LETTER | GREEK_LETTER;
 
 name: NAME;
 
@@ -136,12 +171,23 @@ CLOSE_PARTIAL: '.>';
 
 PLUSMINUS: '+/-';
 
-REALS: 'REALS';
-INFINITY: 'INFINITY';
-UNDEFINED: 'UNDEFINED';
+PI: '/pi/';
+E: '/e/';
+I: '/i/';
+REALS: '/reals/';
+INFINITY: '/infinity/';
+UNDEFINED: '/undefined/';
 
-VARIABLE: [a-z];
+LETTER: [a-z];
+GREEK_LETTER: '\\' ('alpha' | 'beta' | 'gamma' | 'delta' | 'epsilon' | 'zeta' | 'eta' | 'theta' | 'iota' | 'kappa' | 'lambda' | 'mu' | 'nu' | 'xi' | 'omicron' | 'pi' | 'rho' | 'sigma' | 'tau' | 'upsilon' | 'phi' | 'chi' | 'psi' | 'omega'
+          | 'Alpha' | 'Beta' | 'Gamma' | 'Delta' | 'Epsilon' | 'Zeta' | 'Eta' | 'Theta' | 'Iota' | 'Kappa' | 'Lambda' | 'Mu' | 'Nu' | 'Xi' | 'Omicron' | 'Pi' | 'Rho' | 'Sigma' | 'Tau' | 'Upsilon' | 'Phi' | 'Chi' | 'Psi' | 'Omega');
 WHITESPACE: [ \t] -> skip;
+
+TRIG_FUNCTION: 'sin' | 'cos' | 'tan' | 'arcsin' | 'arccos' | 'arctan'
+             | 'sec' | 'csc' | 'cot' | 'arcsec' | 'arccsc' | 'arccot'
+             | 'sinh' | 'cosh' | 'tanh' | 'arsinh' | 'arcosh' | 'artanh'
+             | 'sech' | 'csch' | 'coth' | 'arsech' | 'arcsch' | 'arcoth'
+             ;
 
 NAME: '"' (~ '"')+ '"';
 

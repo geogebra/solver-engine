@@ -329,14 +329,14 @@ class IntegerArithmeticPlansTest {
         inputExpr = "5 : (4 - 4)"
 
         check {
-            toExpr = "UNDEFINED"
+            toExpr = "/undefined/"
 
             step {
                 toExpr = "5 : 0"
             }
 
             step {
-                toExpr = "UNDEFINED"
+                toExpr = "/undefined/"
             }
         }
     }
@@ -399,7 +399,7 @@ class IntegerArithmeticPlansTest {
 
         check {
             fromExpr = "[0 ^ 0]"
-            toExpr = "UNDEFINED"
+            toExpr = "/undefined/"
             explanation {
                 key = GeneralExplanation.EvaluateZeroToThePowerOfZero
             }

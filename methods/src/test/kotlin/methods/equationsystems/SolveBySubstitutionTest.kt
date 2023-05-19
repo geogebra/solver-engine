@@ -56,13 +56,13 @@ class SolveBySubstitutionTest {
     @Test
     fun shortTestOneEquationIsIdentity() = shortTest(
         "x + y = y + 2, y + y = 2y",
-        "SetSolution[x, y: {2}*REALS]",
+        "SetSolution[x, y: {2}*/reals/]",
     )
 
     @Test
     fun shortTestAnotherEquationIsIdentity() = shortTest(
         "x + y - x = 5, x + y = y + x",
-        "SetSolution[x, y: REALS*{5}]",
+        "SetSolution[x, y: /reals/*{5}]",
     )
 
     @Test
@@ -86,7 +86,7 @@ class SolveBySubstitutionTest {
     @Test
     fun testSameXInBoth() = shortTest(
         "x + y = y + 10, x + 2 = 12",
-        "SetSolution[x, y: {10}*REALS]",
+        "SetSolution[x, y: {10}*/reals/]",
     )
 
     @Test
@@ -245,7 +245,7 @@ class SolveBySubstitutionTest {
 
         check {
             fromExpr = "x + x = 2, x + y = y + 1"
-            toExpr = "SetSolution[x, y: {1}*REALS]"
+            toExpr = "SetSolution[x, y: {1}*/reals/]"
             explanation {
                 key = EquationSystemsExplanation.SolveEquationSystemBySubstitution
             }
@@ -294,7 +294,7 @@ class SolveBySubstitutionTest {
 
             task {
                 taskId = "#3"
-                startExpr = "SetSolution[x, y: {1}*REALS]"
+                startExpr = "SetSolution[x, y: {1}*/reals/]"
                 explanation {
                     key = EquationSystemsExplanation.BuildSolutionSameSolutionInOneVariable
                     param { expr = "x" }

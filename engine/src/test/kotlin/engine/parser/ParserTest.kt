@@ -4,11 +4,13 @@ import engine.expressions.Constants
 import engine.expressions.Decorator
 import engine.expressions.Expression
 import engine.expressions.Product
+import engine.expressions.arsinhOf
 import engine.expressions.bracketOf
-import engine.expressions.buildExpression
 import engine.expressions.cartesianProductOf
 import engine.expressions.contradictionOf
 import engine.expressions.curlyBracketOf
+import engine.expressions.definiteIntegralOf
+import engine.expressions.derivativeOf
 import engine.expressions.equationOf
 import engine.expressions.explicitProductOf
 import engine.expressions.expressionOf
@@ -17,26 +19,34 @@ import engine.expressions.greaterThanEqualOf
 import engine.expressions.greaterThanOf
 import engine.expressions.identityOf
 import engine.expressions.implicitSolutionOf
+import engine.expressions.indefiniteIntegralOf
 import engine.expressions.lessThanEqualOf
 import engine.expressions.lessThanOf
+import engine.expressions.logBase10Of
+import engine.expressions.logOf
+import engine.expressions.matrixOf
 import engine.expressions.missingBracketOf
 import engine.expressions.nameXp
+import engine.expressions.naturalLogOf
 import engine.expressions.negOf
+import engine.expressions.percentageOf
+import engine.expressions.percentageOfOf
 import engine.expressions.plusMinusOf
 import engine.expressions.plusOf
 import engine.expressions.powerOf
 import engine.expressions.productOf
 import engine.expressions.rawRootOf
 import engine.expressions.setSolutionOf
+import engine.expressions.sinOf
 import engine.expressions.solutionSetOf
 import engine.expressions.squareBracketOf
 import engine.expressions.squareRootOf
 import engine.expressions.sumOf
 import engine.expressions.tupleOf
 import engine.expressions.variableListOf
+import engine.expressions.vectorOf
 import engine.expressions.xp
 import engine.operators.SumOperator
-import engine.operators.UndefinedOperator
 import parser.parseExpression
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -64,11 +74,6 @@ class ParserTest {
         assertEquals(expr, parsed, input)
     }
 
-    private fun parsesTo(input: String, exprString: String) {
-        val parsed = parseExpression(input)
-        assertEquals(exprString, parsed.toString())
-    }
-
     @Test
     fun testInvalidInput() {
         parsingFails("1+")
@@ -77,11 +82,16 @@ class ParserTest {
         parsingFails("[1/3]??")
         parsingFails("1-<.2+3.>")
         parsingFails("1 <. +2+3 .>")
+        parsingFails("mat[1, 2 // 3, 4, 5]")
     }
 
     @Test
-    fun testUndefined() {
-        parsesTo("UNDEFINED", buildExpression(UndefinedOperator, emptyList()))
+    fun testConstants() {
+        parsesTo("/undefined/", Constants.Undefined)
+        parsesTo("/infinity/", Constants.Infinity)
+        parsesTo("/pi/", Constants.Pi)
+        parsesTo("/e/", Constants.E)
+        parsesTo("/i/", Constants.ImaginaryUnit)
     }
 
     @Test
@@ -209,6 +219,62 @@ class ParserTest {
     }
 
     @Test
+    fun testLogarithms() {
+        parsesTo("ln 3x", naturalLogOf(productOf(xp(3), xp("x"))))
+        parsesTo("log 9 - 12", sumOf(logBase10Of(xp(9)), negOf(xp(12))))
+        parsesTo(
+            "1 + 4 log[5] [3 / 2]",
+            sumOf(xp(1), productOf(xp(4), logOf(xp(5), fractionOf(xp(3), xp(2))))),
+        )
+    }
+
+    @Test
+    fun testTrigonometricFunctions() {
+        parsesTo("sin /pi/x", sinOf(productOf(Constants.Pi, xp("x"))))
+        parsesTo(
+            "x arsinh [3 /pi/ / 2] + 1",
+            sumOf(productOf(xp("x"), arsinhOf(fractionOf(productOf(xp(3), Constants.Pi), xp(2)))), xp(1)),
+        )
+    }
+
+    @Test
+    fun testPercentages() {
+        parsesTo("3.14%", percentageOf(xp(3.14)))
+        parsesTo(
+            "10 %of 50 + 25 %of 100",
+            sumOf(percentageOfOf(xp(10), xp(50)), percentageOfOf(xp(25), xp(100))),
+        )
+    }
+
+    @Test
+    fun testCalculus() {
+        parsesTo("diff[sin x / dx]", derivativeOf(sinOf(xp("x")), xp("x")))
+        parsesTo(
+            "[diff ^ 2][sin x * sin y / dx dy]",
+            derivativeOf(Constants.Two, productOf(sinOf(xp("x")), sinOf(xp("y"))), xp("x"), xp("y")),
+        )
+        parsesTo(
+            "prim[arsinh(x + 1), x]",
+            indefiniteIntegralOf(arsinhOf(sumOf(xp("x"), xp(1))), xp("x")),
+        )
+        parsesTo(
+            "int[-/infinity/, /pi/, 3x + 1, x]",
+            definiteIntegralOf(
+                Constants.NegativeInfinity,
+                Constants.Pi,
+                sumOf(productOf(xp(3), xp("x")), xp(1)),
+                xp("x"),
+            ),
+        )
+    }
+
+    @Test
+    fun testLinearAlgebra() {
+        parsesTo("vec[1, 2, 3]", vectorOf(xp(1), xp(2), xp(3)))
+        parsesTo("mat[1, 2; 3, 4]", matrixOf(listOf(xp(1), xp(2)), listOf(xp(3), xp(4))))
+    }
+
+    @Test
     fun testEquations() {
         parsesTo(
             "3x + 4 = 4x - 5",
@@ -288,6 +354,11 @@ class ParserTest {
     }
 
     @Test
+    fun testSets() {
+        parsesTo("/reals/", Constants.Reals)
+    }
+
+    @Test
     fun testSolutions() {
         parsesTo(
             "Identity[x, y : 1 = 1]",
@@ -310,7 +381,7 @@ class ParserTest {
             setSolutionOf(variableListOf("x", "y"), solutionSetOf(tupleOf(xp(1), xp(2)))),
         )
         parsesTo(
-            "SetSolution[x, y : {1} * REALS]",
+            "SetSolution[x, y : {1} * /reals/]",
             setSolutionOf(variableListOf("x", "y"), cartesianProductOf(solutionSetOf(xp(1)), Constants.Reals)),
         )
     }

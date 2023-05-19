@@ -17,8 +17,8 @@ class MixedNumbersRulesTest {
     @Test
     fun testSplitMixedNumber() {
         testRule("[2 3/4]", SplitMixedNumber, "2 + [3/4]")
-        testRule("[2 1/0]", SplitMixedNumber, "UNDEFINED")
-        testRule("[2 0/0]", SplitMixedNumber, "UNDEFINED")
+        testRule("[2 1/0]", SplitMixedNumber, "/undefined/")
+        testRule("[2 0/0]", SplitMixedNumber, "/undefined/")
         testRule("[5 0/5]", SplitMixedNumber, "5")
     }
 

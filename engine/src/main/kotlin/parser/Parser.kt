@@ -16,6 +16,7 @@ import engine.expressions.greaterThanEqualOf
 import engine.expressions.greaterThanOf
 import engine.expressions.lessThanEqualOf
 import engine.expressions.lessThanOf
+import engine.expressions.matrixOf
 import engine.expressions.mixedNumber
 import engine.expressions.nameXp
 import engine.expressions.negOf
@@ -25,15 +26,20 @@ import engine.expressions.xp
 import engine.operators.AddEquationsOperator
 import engine.operators.BinaryExpressionOperator
 import engine.operators.DefaultProductOperator
+import engine.operators.DefiniteIntegralOperator
+import engine.operators.DerivativeOperator
 import engine.operators.EquationOperator
 import engine.operators.EquationSystemOperator
 import engine.operators.EquationUnionOperator
+import engine.operators.IndefiniteIntegralOperator
 import engine.operators.IntervalOperator
 import engine.operators.Operator
 import engine.operators.SubtractEquationsOperator
 import engine.operators.SumOperator
+import engine.operators.TrigonometricFunctionOperator
 import engine.operators.TupleOperator
 import engine.operators.UnaryExpressionOperator
+import engine.operators.VectorOperator
 import engine.utility.RecurringDecimal
 import org.antlr.v4.runtime.BailErrorStrategy
 import org.antlr.v4.runtime.CharStreams
@@ -177,7 +183,7 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
     }
 
     override fun visitRealFirstTerm(ctx: ExpressionParser.RealFirstTermContext): Expression {
-        val p = visit(ctx.product())
+        val p = visit(ctx.term())
         return if (ctx.sign == null) p else makeExpression(getAdditiveOperator(ctx.sign), p)
     }
 
@@ -186,7 +192,7 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
     }
 
     override fun visitRealOtherTerm(ctx: ExpressionParser.RealOtherTermContext): Expression {
-        val p = visit(ctx.product())
+        val p = visit(ctx.term())
         return when (val op = getAdditiveOperator(ctx.sign)) {
             UnaryExpressionOperator.Plus -> if (op.childAllowed(p.operator) || p.hasBracket()) {
                 p
@@ -267,6 +273,14 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
         }
     }
 
+    override fun visitPercentage(ctx: ExpressionParser.PercentageContext): Expression {
+        return makeExpression(UnaryExpressionOperator.Percentage, visit(ctx.atom()))
+    }
+
+    override fun visitPercentageOf(ctx: ExpressionParser.PercentageOfContext): Expression {
+        return makeExpression(BinaryExpressionOperator.PercentageOf, visit(ctx.part), visit(ctx.base))
+    }
+
     override fun visitFraction(ctx: ExpressionParser.FractionContext): Expression {
         return makeExpression(BinaryExpressionOperator.Fraction, visit(ctx.num), visit(ctx.den))
     }
@@ -281,6 +295,56 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
 
     override fun visitRoot(ctx: ExpressionParser.RootContext): Expression {
         return makeExpression(BinaryExpressionOperator.Root, visit(ctx.radicand), visit(ctx.order))
+    }
+
+    override fun visitNaturalLog(ctx: ExpressionParser.NaturalLogContext): Expression {
+        return makeExpression(UnaryExpressionOperator.NaturalLog, visit(ctx.argument))
+    }
+
+    override fun visitLogBase10(ctx: ExpressionParser.LogBase10Context): Expression {
+        return makeExpression(UnaryExpressionOperator.LogBase10, visit(ctx.argument))
+    }
+
+    override fun visitLog(ctx: ExpressionParser.LogContext): Expression {
+        return makeExpression(BinaryExpressionOperator.Log, visit(ctx.base), visit(ctx.argument))
+    }
+
+    override fun visitTrigFunction(ctx: ExpressionParser.TrigFunctionContext): Expression {
+        val functionName = ctx.TRIG_FUNCTION().text.replaceFirstChar { it.uppercase() }
+        val function = TrigonometricFunctionOperator.valueOf(functionName)
+        return makeExpression(function, visit(ctx.argument))
+    }
+
+    override fun visitFirstDerivative(ctx: ExpressionParser.FirstDerivativeContext): Expression {
+        return makeExpression(DerivativeOperator, Constants.One, visit(ctx.product()), visit(ctx.variable()))
+    }
+
+    override fun visitNthDerivative(ctx: ExpressionParser.NthDerivativeContext): Expression {
+        val arguments = listOf(visit(ctx.order), visit(ctx.product())) + ctx.vars.map { visit(it) }
+        return makeExpression(DerivativeOperator, arguments)
+    }
+
+    override fun visitIndefiniteIntegral(ctx: ExpressionParser.IndefiniteIntegralContext): Expression {
+        return makeExpression(IndefiniteIntegralOperator, visit(ctx.function), visit(ctx.variable()))
+    }
+
+    override fun visitDefiniteIntegral(ctx: ExpressionParser.DefiniteIntegralContext): Expression {
+        return makeExpression(
+            DefiniteIntegralOperator,
+            visit(ctx.lowerBound),
+            visit(ctx.upperBound),
+            visit(ctx.function),
+            visit(ctx.variable()),
+        )
+    }
+
+    override fun visitVector(ctx: ExpressionParser.VectorContext): Expression {
+        return makeExpression(VectorOperator, ctx.expr().map { visit(it) })
+    }
+
+    override fun visitMatrix(ctx: ExpressionParser.MatrixContext): Expression {
+        val matrixRows = ctx.matrixRow().map { row -> row.expr().map { visit(it) } }
+        return matrixOf(matrixRows)
     }
 
     override fun visitAbsoluteValue(ctx: ExpressionParser.AbsoluteValueContext): Expression {
@@ -331,7 +395,19 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
     }
 
     override fun visitVariable(ctx: ExpressionParser.VariableContext): Variable {
-        return xp(ctx.VARIABLE().text)
+        return xp(ctx.text)
+    }
+
+    override fun visitPi(ctx: ExpressionParser.PiContext?): Expression {
+        return Constants.Pi
+    }
+
+    override fun visitE(ctx: ExpressionParser.EContext?): Expression {
+        return Constants.E
+    }
+
+    override fun visitImaginaryUnit(ctx: ExpressionParser.ImaginaryUnitContext?): Expression {
+        return Constants.ImaginaryUnit
     }
 
     override fun visitName(ctx: ExpressionParser.NameContext): Expression {

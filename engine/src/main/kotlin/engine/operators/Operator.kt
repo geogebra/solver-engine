@@ -4,6 +4,7 @@ const val ARITY_NULL = 0
 const val ARITY_ONE = 1
 const val ARITY_TWO = 2
 const val ARITY_THREE = 3
+const val ARITY_FOUR = 4
 const val ARITY_VARIABLE = -1
 const val ARITY_VARIABLE_FROM_ZERO = -2
 

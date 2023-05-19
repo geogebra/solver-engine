@@ -5,11 +5,15 @@ package engine.expressions
 import engine.operators.AddEquationsOperator
 import engine.operators.BinaryExpressionOperator
 import engine.operators.DefaultProductOperator
+import engine.operators.DefiniteIntegralOperator
+import engine.operators.DerivativeOperator
 import engine.operators.EquationOperator
 import engine.operators.EquationSystemOperator
 import engine.operators.EquationUnionOperator
+import engine.operators.IndefiniteIntegralOperator
 import engine.operators.InequalityOperators
 import engine.operators.IntervalOperator
+import engine.operators.MatrixOperator
 import engine.operators.NameOperator
 import engine.operators.NaryOperator
 import engine.operators.Operator
@@ -17,8 +21,10 @@ import engine.operators.SetOperators
 import engine.operators.SolutionOperator
 import engine.operators.SubtractEquationsOperator
 import engine.operators.SumOperator
+import engine.operators.TrigonometricFunctionOperator
 import engine.operators.TupleOperator
 import engine.operators.UnaryExpressionOperator
+import engine.operators.VectorOperator
 import engine.utility.RecurringDecimal
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -101,6 +107,14 @@ fun rawRootOf(radicand: Expression, order: Expression) =
 fun rootOf(radicand: Expression, order: Expression) =
     if (order == Constants.Two) squareRootOf(radicand) else rawRootOf(radicand, order)
 
+fun naturalLogOf(argument: Expression) = buildExpression(UnaryExpressionOperator.NaturalLog, listOf(argument))
+fun logBase10Of(argument: Expression) = buildExpression(UnaryExpressionOperator.LogBase10, listOf(argument))
+fun logOf(base: Expression, argument: Expression) =
+    buildExpression(BinaryExpressionOperator.Log, listOf(base, argument))
+
+fun sinOf(argument: Expression) = buildExpression(TrigonometricFunctionOperator.Sin, listOf(argument))
+fun arsinhOf(argument: Expression) = buildExpression(TrigonometricFunctionOperator.Arsinh, listOf(argument))
+
 fun absoluteValueOf(argument: Expression) = buildExpression(UnaryExpressionOperator.AbsoluteValue, listOf(argument))
 
 fun sumOf(vararg operands: Expression) = sumOf(operands.asList())
@@ -147,6 +161,35 @@ fun simplifiedProductOf(vararg operands: Expression): Expression {
 }
 
 fun divideBy(operand: Expression) = buildExpression(UnaryExpressionOperator.DivideBy, listOf(operand))
+
+fun percentageOf(operand: Expression) = buildExpression(UnaryExpressionOperator.Percentage, listOf(operand))
+
+fun percentageOfOf(part: Expression, base: Expression) =
+    buildExpression(BinaryExpressionOperator.PercentageOf, listOf(part, base))
+
+fun derivativeOf(function: Expression, variable: Expression) =
+    buildExpression(DerivativeOperator, listOf(Constants.One, function, variable))
+
+fun derivativeOf(degree: Expression, function: Expression, vararg variables: Expression) =
+    buildExpression(DerivativeOperator, listOf(degree, function) + variables)
+
+fun indefiniteIntegralOf(function: Expression, variable: Expression) =
+    buildExpression(IndefiniteIntegralOperator, listOf(function, variable))
+
+fun definiteIntegralOf(lowerBound: Expression, upperBound: Expression, function: Expression, variable: Expression) =
+    buildExpression(DefiniteIntegralOperator, listOf(lowerBound, upperBound, function, variable))
+
+fun vectorOf(vararg elements: Expression) = buildExpression(VectorOperator, elements.asList())
+
+fun matrixOf(matrixRows: List<List<Expression>>): Expression {
+    val rows = matrixRows.size
+    val cols = matrixRows[0].size
+    assert(matrixRows.all { it.size == cols })
+
+    return buildExpression(MatrixOperator(rows, cols), matrixRows.flatten())
+}
+
+fun matrixOf(vararg matrixRows: List<Expression>) = matrixOf(matrixRows.asList())
 
 fun equationOf(lhs: Expression, rhs: Expression) = buildExpression(EquationOperator, listOf(lhs, rhs))
 

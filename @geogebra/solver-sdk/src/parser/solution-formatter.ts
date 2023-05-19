@@ -102,14 +102,14 @@ export const simpleSolutionFormatter = {
             if (
               set.args.every(
                 (s) =>
-                  s.type === 'Reals' || (s.type === 'FiniteSet' && s.args.length === 1),
+                  s.type === '/reals/' || (s.type === 'FiniteSet' && s.args.length === 1),
               )
             ) {
               return set.args
                 .map((s, i) => {
                   const v = rec((vars as VariableListTree).args[i], null);
                   switch (s.type) {
-                    case 'Reals':
+                    case '/reals/':
                       return `${v} \\in \\mathbb{R}`;
                     case 'FiniteSet':
                       return `${v} = ${rec(s.args[0], null)}`;

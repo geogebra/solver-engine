@@ -109,7 +109,7 @@ object IntegerRationalExponentsRulesTest {
         testRule(
             "[(-1 - 2) ^ [1/6]]",
             EvaluateNegativeToRationalExponentAsUndefined,
-            "UNDEFINED",
+            "/undefined/",
         )
         testRule(
             "[(-x) ^ [1/2]]",
@@ -124,7 +124,7 @@ object IntegerRationalExponentsRulesTest {
         testRule(
             "[(-2) ^ -[1/2]]",
             EvaluateNegativeToRationalExponentAsUndefined,
-            "UNDEFINED",
+            "/undefined/",
         )
     }
 }

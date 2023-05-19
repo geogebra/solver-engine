@@ -1,21 +1,25 @@
 package engine.expressions
 
+import engine.operators.EulerEOperator
+import engine.operators.ImaginaryUnitOperator
 import engine.operators.InfinityOperator
+import engine.operators.PiOperator
 import engine.operators.SetOperators
 import engine.operators.UndefinedOperator
 
+@Suppress("MagicNumber")
 object Constants {
     val Zero = xp(0)
     val One = xp(1)
     val Two = xp(2)
-
-    @Suppress("MagicNumber")
     val Three = xp(3)
-
-    @Suppress("MagicNumber")
     val Four = xp(4)
 
     val OneHalf = fractionOf(One, Two)
+
+    val Pi = expressionOf(PiOperator, emptyList())
+    val E = expressionOf(EulerEOperator, emptyList())
+    val ImaginaryUnit = expressionOf(ImaginaryUnitOperator, emptyList())
 
     val Infinity = expressionOf(InfinityOperator, emptyList())
     val NegativeInfinity = negOf(Infinity)

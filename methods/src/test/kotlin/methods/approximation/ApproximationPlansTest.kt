@@ -121,7 +121,7 @@ class ApproximationPlansTest {
 
         check {
             fromExpr = "[0 ^ 0]"
-            toExpr = "UNDEFINED"
+            toExpr = "/undefined/"
             explanation {
                 key = GeneralExplanation.EvaluateZeroToThePowerOfZero
             }

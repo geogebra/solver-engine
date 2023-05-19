@@ -91,14 +91,14 @@ const latexSymbolDefinitions = {
 
   registerSymbols(parser: Parser<ExprTree>) {
     parser.registerSymbol('(symbol)');
-    parser.registerSymbol('UNDEFINED', BP_IMPLICIT_MUL).nud = () => ({
-      type: 'UNDEFINED',
+    parser.registerSymbol('/undefined/', BP_IMPLICIT_MUL).nud = () => ({
+      type: '/undefined/',
     });
     parser.registerSymbol('\\infty', BP_IMPLICIT_MUL).nud = () => ({
-      type: 'INFINITY',
+      type: '/infinity/',
     });
     parser.registerSymbol('\\mathbb{R}', BP_IMPLICIT_MUL).nud = () => ({
-      type: 'Reals',
+      type: '/reals/',
     });
     parser.registerSymbol('\\emptyset', BP_IMPLICIT_MUL).nud = () => ({
       type: 'FiniteSet',

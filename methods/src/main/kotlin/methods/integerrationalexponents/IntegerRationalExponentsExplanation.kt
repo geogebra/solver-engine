@@ -137,7 +137,7 @@ enum class IntegerRationalExponentsExplanation : CategorisedMetadataKey {
     /**
      * A negative value cannot be raised to a rational power.
      *
-     * E.g. [-1 ^ [1/3]] -> UNDEFINED
+     * E.g. [-1 ^ [1/3]] -> /undefined/
      */
     EvaluateNegativeToRationalExponentAsUndefined,
     ;

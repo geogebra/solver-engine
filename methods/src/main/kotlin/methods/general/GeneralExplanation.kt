@@ -68,7 +68,7 @@ enum class GeneralExplanation : CategorisedMetadataKey {
      *
      * %1 is the instance of 0 that the expression is divided by
      *
-     * E.g. 3 * 5 : 0 -> UNDEFINED
+     * E.g. 3 * 5 : 0 -> /undefined/
      */
     EvaluateProductDividedByZeroAsUndefined,
     SimplifyDoubleMinus,

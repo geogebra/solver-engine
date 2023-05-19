@@ -84,7 +84,7 @@ describe('Multivariate cartesian product solution', () => {
   const solution = [
     'SetSolution',
     ['VariableList', ['x'], ['y']],
-    ['CartesianProduct', ['Reals'], ['FiniteSet', ['SquareRoot', ['3']]]],
+    ['CartesianProduct', ['/reals/'], ['FiniteSet', ['SquareRoot', ['3']]]],
   ] as MathJson;
 
   expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(

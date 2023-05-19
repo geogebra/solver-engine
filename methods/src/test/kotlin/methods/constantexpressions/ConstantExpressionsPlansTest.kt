@@ -1155,7 +1155,7 @@ class SimplifyToUndefinedTest {
 
         check {
             fromExpr = "[5 - 4 / 1 - 1] + 2"
-            toExpr = "UNDEFINED"
+            toExpr = "/undefined/"
 
             step {
                 fromExpr = "[5 - 4 / 1 - 1] + 2"
@@ -1167,7 +1167,7 @@ class SimplifyToUndefinedTest {
 
             step {
                 fromExpr = "[5 - 4 / 0] + 2"
-                toExpr = "UNDEFINED"
+                toExpr = "/undefined/"
                 explanation {
                     key = GeneralExplanation.SimplifyZeroDenominatorFractionToUndefined
                 }
@@ -1182,7 +1182,7 @@ class SimplifyToUndefinedTest {
 
         check {
             fromExpr = "(5 - 4) : (1 - 1) + 2"
-            toExpr = "UNDEFINED"
+            toExpr = "/undefined/"
             explanation {
                 key = ConstantExpressionsExplanation.SimplifyConstantExpression
             }
@@ -1221,7 +1221,7 @@ class SimplifyToUndefinedTest {
 
             step {
                 fromExpr = "[1 / 0] + 2"
-                toExpr = "UNDEFINED"
+                toExpr = "/undefined/"
                 explanation {
                     key = GeneralExplanation.SimplifyZeroDenominatorFractionToUndefined
                 }
@@ -1235,7 +1235,7 @@ class SimplifyToUndefinedTest {
         inputExpr = "[0 / 1 - 1]"
 
         check {
-            toExpr = "UNDEFINED"
+            toExpr = "/undefined/"
         }
     }
 
@@ -1246,7 +1246,7 @@ class SimplifyToUndefinedTest {
         inputExpr = "0:(1 - 1)"
 
         check {
-            toExpr = "UNDEFINED"
+            toExpr = "/undefined/"
         }
     }
 
@@ -1256,7 +1256,7 @@ class SimplifyToUndefinedTest {
         inputExpr = "1 + 3 * [(-1) ^ [6/5]]"
 
         check {
-            toExpr = "UNDEFINED"
+            toExpr = "/undefined/"
         }
     }
 }
@@ -1362,7 +1362,7 @@ class CancelOppositeTermTest {
         inputExpr = "[1 / root[3, 3] - root[3, 3]]"
 
         check {
-            toExpr = "UNDEFINED"
+            toExpr = "/undefined/"
 
             step {
                 toExpr = "[1 / 0]"
@@ -1372,7 +1372,7 @@ class CancelOppositeTermTest {
             }
 
             step {
-                toExpr = "UNDEFINED"
+                toExpr = "/undefined/"
                 explanation {
                     key = GeneralExplanation.SimplifyZeroDenominatorFractionToUndefined
                 }
@@ -1530,7 +1530,7 @@ class ExponentsTest {
         inputExpr = "[0 ^ -[3 / 2]]"
 
         check {
-            toExpr = "UNDEFINED"
+            toExpr = "/undefined/"
             explanation {
                 key = FractionArithmeticExplanation.EvaluateIntegerToNegativePower
             }
@@ -1543,7 +1543,7 @@ class ExponentsTest {
             }
 
             step {
-                toExpr = "UNDEFINED"
+                toExpr = "/undefined/"
                 explanation {
                     key = GeneralExplanation.SimplifyZeroDenominatorFractionToUndefined
                 }
