@@ -19,7 +19,6 @@ import engine.methods.taskSet
 import engine.operators.EquationUnionOperator
 import engine.operators.IntervalOperator
 import engine.operators.SetOperators
-import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.BinaryIntegerCondition
 import engine.patterns.ConditionPattern
@@ -846,10 +845,4 @@ private val solveEquationWithTwoAbsoluteValues = plan {
             }
         }
     }
-}
-
-private fun Expression.countAbsoluteValues(solutionVariables: List<String>): Int = when {
-    childCount == 0 -> 0
-    operator == UnaryExpressionOperator.AbsoluteValue && !isConstantIn(solutionVariables) -> 1
-    else -> children.sumOf { it.countAbsoluteValues(solutionVariables) }
 }
