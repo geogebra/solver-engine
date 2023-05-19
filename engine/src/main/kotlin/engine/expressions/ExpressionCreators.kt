@@ -9,7 +9,6 @@ import engine.operators.DefiniteIntegralOperator
 import engine.operators.DerivativeOperator
 import engine.operators.EquationOperator
 import engine.operators.EquationSystemOperator
-import engine.operators.EquationUnionOperator
 import engine.operators.IndefiniteIntegralOperator
 import engine.operators.InequalityOperators
 import engine.operators.IntervalOperator
@@ -19,6 +18,7 @@ import engine.operators.NaryOperator
 import engine.operators.Operator
 import engine.operators.SetOperators
 import engine.operators.SolutionOperator
+import engine.operators.StatementUnionOperator
 import engine.operators.SubtractEquationsOperator
 import engine.operators.SumOperator
 import engine.operators.TrigonometricFunctionOperator
@@ -225,11 +225,11 @@ fun closedIntervalOf(lhs: Expression, rhs: Expression) =
 fun equationSystemOf(equations: List<Expression>) = buildExpression(EquationSystemOperator, equations)
 fun equationSystemOf(vararg equations: Expression) = equationSystemOf(equations.asList())
 
-fun equationUnionOf(vararg equations: Expression) =
-    buildExpression(EquationUnionOperator, equations.asList())
+fun statementUnionOf(vararg equations: Expression) =
+    buildExpression(StatementUnionOperator, equations.asList())
 
-fun equationUnionOf(equations: List<Expression>) =
-    buildExpression(EquationUnionOperator, equations)
+fun statementUnionOf(equations: List<Expression>) =
+    buildExpression(StatementUnionOperator, equations)
 
 fun solutionSetOf(elements: List<Expression>) = buildExpression(SetOperators.FiniteSet, elements)
 fun solutionSetOf(vararg elements: Expression) = buildExpression(SetOperators.FiniteSet, elements.asList())

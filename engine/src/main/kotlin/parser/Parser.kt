@@ -30,10 +30,10 @@ import engine.operators.DefiniteIntegralOperator
 import engine.operators.DerivativeOperator
 import engine.operators.EquationOperator
 import engine.operators.EquationSystemOperator
-import engine.operators.EquationUnionOperator
 import engine.operators.IndefiniteIntegralOperator
 import engine.operators.IntervalOperator
 import engine.operators.Operator
+import engine.operators.StatementUnionOperator
 import engine.operators.StatementWithConstraintOperator
 import engine.operators.SubtractEquationsOperator
 import engine.operators.SumOperator
@@ -80,16 +80,25 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
         return visit(ctx.getChild(0))
     }
 
+    override fun visitStatementUnion(ctx: ExpressionParser.StatementUnionContext): Expression {
+        val statements = ctx.stmts.map { visit(it) }
+        return if (statements.size == 1) {
+            statements[0]
+        } else {
+            makeExpression(StatementUnionOperator, statements)
+        }
+    }
+
     override fun visitStatementWithConstraint(ctx: ExpressionParser.StatementWithConstraintContext): Expression {
-        return makeExpression(StatementWithConstraintOperator, listOf(visit(ctx.stmt), visit(ctx.constraint)))
+        return if (ctx.constraint == null) {
+            visit(ctx.stmt)
+        } else {
+            makeExpression(StatementWithConstraintOperator, listOf(visit(ctx.stmt), visit(ctx.constraint)))
+        }
     }
 
     override fun visitEquationSystem(ctx: ExpressionParser.EquationSystemContext): Expression {
         return makeExpression(EquationSystemOperator, ctx.equations.map { visit(it) })
-    }
-
-    override fun visitEquationUnion(ctx: ExpressionParser.EquationUnionContext): Expression {
-        return makeExpression(EquationUnionOperator, ctx.equations.map { visit(it) })
     }
 
     override fun visitEquationAddition(ctx: ExpressionParser.EquationAdditionContext): Expression {
@@ -126,15 +135,15 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
     }
 
     override fun visitIdentity(ctx: ExpressionParser.IdentityContext): Expression {
-        return Identity(visitVariables(ctx.vars), visit(ctx.statement()))
+        return Identity(visitVariables(ctx.vars), visit(ctx.stmt))
     }
 
     override fun visitContradiction(ctx: ExpressionParser.ContradictionContext): Expression {
-        return Contradiction(visitVariables(ctx.vars), visit(ctx.statement()))
+        return Contradiction(visitVariables(ctx.vars), visit(ctx.stmt))
     }
 
     override fun visitImplicitSolution(ctx: ExpressionParser.ImplicitSolutionContext): Expression {
-        return ImplicitSolution(visitVariables(ctx.vars), visit(ctx.statement()))
+        return ImplicitSolution(visitVariables(ctx.vars), visit(ctx.stmt))
     }
 
     override fun visitSetSolution(ctx: ExpressionParser.SetSolutionContext): Expression {

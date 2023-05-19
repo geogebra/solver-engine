@@ -4,15 +4,15 @@ grammar Expression;
     package parser.antlr;
 }
 
-wholeInput: (statement | statementWithConstraint | solution | set | expr | undefined | name) EOF;
+wholeInput: (statementUnion | solution | set | expr | undefined | name) EOF;
 
-statementWithConstraint: stmt=statement 'GIVEN' constraint=statement;
+statementUnion: stmts += statementWithConstraint ('OR' stmts += statementWithConstraint)*;
 
-statement: equationSystem | equationUnion | equationAddition | equationSubtraction | equation | inequality;
+statementWithConstraint: stmt=simpleStatement ('GIVEN' constraint=simpleStatement)?;
+
+simpleStatement: equationSystem | equationAddition | equationSubtraction | equation | inequality;
 
 equationSystem: equations += equation (',' equations += equation)+;
-
-equationUnion: equations += equation ('OR' equations += equation)+;
 
 equationAddition: eq1=equation '/+/' eq2=equation;
 equationSubtraction: eq1=equation '/-/' eq2=equation;
@@ -22,10 +22,10 @@ equation: lhs=expr '=' rhs=expr;
 inequality: lhs=expr comparator=('<' | '<=' | '>' | '>=') rhs=expr;
 
 solution
-    : 'Identity' '[' vars=variables ':' statement ']'           #identity
-    | 'Contradiction' '[' vars=variables ':' statement ']'      #contradiction
-    | 'ImplicitSolution' '[' vars=variables ':' statement ']'   #implicitSolution
-    | 'SetSolution' '[' vars=variables ':' solutionSet=set ']'  #setSolution
+    : 'Identity' '[' vars=variables ':' stmt=statementUnion ']'           #identity
+    | 'Contradiction' '[' vars=variables ':' stmt=statementUnion ']'      #contradiction
+    | 'ImplicitSolution' '[' vars=variables ':' stmt=statementUnion ']'   #implicitSolution
+    | 'SetSolution' '[' vars=variables ':' solutionSet=set ']'            #setSolution
     ;
 
 set: cartesianProduct;

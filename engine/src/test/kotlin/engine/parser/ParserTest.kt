@@ -4,6 +4,7 @@ import engine.expressions.Constants
 import engine.expressions.Decorator
 import engine.expressions.Expression
 import engine.expressions.Product
+import engine.expressions.StatementWithConstraint
 import engine.expressions.arsinhOf
 import engine.expressions.bracketOf
 import engine.expressions.cartesianProductOf
@@ -41,6 +42,7 @@ import engine.expressions.sinOf
 import engine.expressions.solutionSetOf
 import engine.expressions.squareBracketOf
 import engine.expressions.squareRootOf
+import engine.expressions.statementUnionOf
 import engine.expressions.sumOf
 import engine.expressions.tupleOf
 import engine.expressions.variableListOf
@@ -383,6 +385,17 @@ class ParserTest {
         parsesTo(
             "SetSolution[x, y : {1} * /reals/]",
             setSolutionOf(variableListOf("x", "y"), cartesianProductOf(solutionSetOf(xp(1)), Constants.Reals)),
+        )
+    }
+
+    @Test
+    fun testStatements() {
+        parsesTo(
+            "x=1 GIVEN x<0 OR x=2",
+            statementUnionOf(
+                StatementWithConstraint(equationOf(xp("x"), xp(1)), lessThanOf(xp("x"), xp(0))),
+                equationOf(xp("x"), xp(2)),
+            ),
         )
     }
 }

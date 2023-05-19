@@ -11,7 +11,6 @@ import engine.expressions.Variable
 import engine.expressions.contradictionOf
 import engine.expressions.equationOf
 import engine.expressions.equationSystemOf
-import engine.expressions.equationUnionOf
 import engine.expressions.fractionOf
 import engine.expressions.greaterThanEqualOf
 import engine.expressions.hasSingleValue
@@ -30,6 +29,7 @@ import engine.expressions.simplifiedProductOf
 import engine.expressions.solutionSetOf
 import engine.expressions.splitPlusMinus
 import engine.expressions.squareRootOf
+import engine.expressions.statementUnionOf
 import engine.expressions.sumOf
 import engine.expressions.variableListOf
 import engine.expressions.withoutNegOrPlus
@@ -547,7 +547,7 @@ private val separateFactoredEquation = rule {
     onEquation(product, FixedPattern(Constants.Zero)) {
         val factors = get(product).children
         ruleResult(
-            toExpr = equationUnionOf(factors.map { equationOf(it, Constants.Zero) }),
+            toExpr = statementUnionOf(factors.map { equationOf(it, Constants.Zero) }),
             explanation = metadata(Explanation.SeparateFactoredEquation),
         )
     }
@@ -562,7 +562,7 @@ private val separateEquationInPlusMinusForm = rule {
             return@onPattern null
         }
         ruleResult(
-            toExpr = equationUnionOf(splitEquations),
+            toExpr = statementUnionOf(splitEquations),
             explanation = metadata(Explanation.SeparatePlusMinusQuadraticSolutions),
         )
     }
@@ -593,7 +593,7 @@ private val separateModulusEqualsPositiveConstant = rule {
     onEquation(lhs, rhs) {
         val newLHS = simplifiedProductOf(lhs.getCoefficient(), get(signedLHS))
         ruleResult(
-            toExpr = equationUnionOf(
+            toExpr = statementUnionOf(
                 equationOf(newLHS, get(rhs)),
                 equationOf(newLHS, negOf(get(rhs))),
             ),
@@ -688,7 +688,7 @@ private val separateModulusEqualsModulus = rule {
         val newLHS = simplifiedProductOf(lhs.getCoefficient(), get(innerLHS))
         val newRHS = simplifiedProductOf(rhs.getCoefficient(), get(innerRHS))
         ruleResult(
-            toExpr = equationUnionOf(
+            toExpr = statementUnionOf(
                 equationOf(newLHS, newRHS),
                 equationOf(newLHS, negOf(newRHS)),
             ),
@@ -731,7 +731,7 @@ private val separateModulusEqualsExpression = rule {
         val lhsValue = get(signedLHS)
         val rhsValue = get(rhs)
         ruleResult(
-            toExpr = equationUnionOf(
+            toExpr = statementUnionOf(
                 StatementWithConstraint(
                     equationOf(lhsValue, rhsValue),
                     greaterThanEqualOf(lhsValue, Constants.Zero),

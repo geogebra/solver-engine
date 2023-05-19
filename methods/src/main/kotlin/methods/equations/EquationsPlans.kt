@@ -16,9 +16,9 @@ import engine.methods.plan
 import engine.methods.stepsproducers.FormChecker
 import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
-import engine.operators.EquationUnionOperator
 import engine.operators.IntervalOperator
 import engine.operators.SetOperators
+import engine.operators.StatementUnionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.BinaryIntegerCondition
 import engine.patterns.ConditionPattern
@@ -620,7 +620,7 @@ private val extractSolutionFromEquationPossiblyInPlusMinusForm = steps {
 }
 
 private val solveEquationUnion = taskSet {
-    val equationUnion = condition(AnyPattern()) { it.operator == EquationUnionOperator }
+    val equationUnion = condition(AnyPattern()) { it.operator == StatementUnionOperator }
     pattern = equationUnion
     explanation = Explanation.SolveEquationUnion
 

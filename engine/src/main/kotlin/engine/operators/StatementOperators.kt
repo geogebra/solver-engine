@@ -205,7 +205,7 @@ object EquationSystemOperator : StatementOperator {
     }
 }
 
-object EquationUnionOperator : StatementOperator {
+object StatementUnionOperator : StatementOperator {
     override val name = "EquationUnion"
 
     override val precedence = EQUATION_UNION_PRECEDENCE
