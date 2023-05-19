@@ -18,6 +18,8 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Changed
 
+- Limit precision to be between 2 and 10 decimal places (PLUT-605)
+
 ### Removed
 
 - The legacy Solution operator was replaced by the more descriptive SetSolution, Contradiction and

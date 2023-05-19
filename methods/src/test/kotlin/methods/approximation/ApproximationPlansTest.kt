@@ -5,18 +5,8 @@ import engine.methods.testMethod
 import methods.decimals.DecimalsExplanation
 import methods.general.GeneralExplanation
 import org.junit.jupiter.api.Test
-import java.math.BigInteger
-
-fun List<BigInteger>.gcd() = this.fold(BigInteger.ZERO, BigInteger::gcd)
 
 class ApproximationPlansTest {
-
-    @Test
-    fun testGcd() {
-        assert(BigInteger.ZERO.gcd(BigInteger.TWO) == BigInteger.TWO)
-        val numbers = listOf(BigInteger.TWO, BigInteger.ONE)
-        assert(numbers.gcd() == BigInteger.ONE)
-    }
 
     @Test
     fun testRoundingTerminatingDecimals() = testMethod {
@@ -144,10 +134,10 @@ class ApproximationPlansTest {
         inputExpr = "sqrt[2] + sqrt[3] + [1 / 2]"
 
         check {
+            toExpr = "3.646"
             explanation {
                 key = ApproximationExplanation.EvaluateExpressionNumerically
             }
-            toExpr = "3.646"
         }
     }
 
@@ -158,10 +148,40 @@ class ApproximationPlansTest {
         inputExpr = "sqrt[2] + sqrt[3] + [1 / 2]"
 
         check {
+            toExpr = "3.646264"
             explanation {
                 key = ApproximationExplanation.EvaluateExpressionNumerically
             }
-            toExpr = "3.646264"
+        }
+    }
+
+    @Test
+    fun testNumericEvaluationFailsForInteger() = testMethod {
+        method = ApproximationPlans.EvaluateExpressionNumerically
+        inputExpr = "42"
+
+        check {
+            noTransformation()
+        }
+    }
+
+    @Test
+    fun testNumericEvaluationFailsForDecimal() = testMethod {
+        method = ApproximationPlans.EvaluateExpressionNumerically
+        inputExpr = "3.14"
+
+        check {
+            noTransformation()
+        }
+    }
+
+    @Test
+    fun testNumericEvaluationFailsForNegativeDecimal() = testMethod {
+        method = ApproximationPlans.EvaluateExpressionNumerically
+        inputExpr = "-3.14"
+
+        check {
+            noTransformation()
         }
     }
 }

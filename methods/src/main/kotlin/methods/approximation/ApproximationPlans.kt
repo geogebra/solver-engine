@@ -110,7 +110,11 @@ enum class ApproximationPlans(override val runner: CompositeMethod) : RunnerMeth
     @PublicMethod
     EvaluateExpressionNumerically(
         object : CompositeMethod(specificPlans = listOf(ConstantExpressionsPlans.SimplifyConstantExpression)) {
+            private val numberPattern = SignedNumberPattern()
+
             override fun run(ctx: Context, sub: Expression): Transformation? {
+                if (numberPattern.matches(ctx, sub)) return null
+
                 val numericValue = sub.doubleValue
                 if (!numericValue.isFinite()) return null
 

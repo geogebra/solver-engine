@@ -19,19 +19,22 @@ private const val BEST_MATCH = 1.0
 private const val DEFAULT_MATCH = 0.5
 private const val WORST_MATCH = 0.1
 
-private const val DEFAULT_PRECISION = 3 // 3 decimal places
+// precisions in decimal places
+private const val MINIMUM_PRECISION = 2
+private const val DEFAULT_PRECISION = 3
+private const val MAXIMUM_PRECISION = 10
 
 data class Context(
     val curriculum: Curriculum? = null,
     /** GM stands for Graspable Math. `gmFriendly` set to `true` will yield math steps that
      * are like what you would do if you were doing your work on graspablemath.com. */
     val gmFriendly: Boolean = false,
-    val precision: Int? = null, // decimal places
+    private val precision: Int? = null, // decimal places
     val preferDecimals: Boolean? = null,
     val solutionVariables: List<String> = emptyList(),
     val logger: Logger = DefaultLogger,
 ) : Logger by logger {
-    val effectivePrecision = precision ?: DEFAULT_PRECISION
+    val effectivePrecision = (precision ?: DEFAULT_PRECISION).coerceIn(MINIMUM_PRECISION, MAXIMUM_PRECISION)
 
     /**
      * Checks whether the computation was interrupted from the outside and throws an exception
