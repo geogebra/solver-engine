@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
 import type { Ref } from 'vue';
+import { computed, ref } from 'vue';
 // We would use `jsondiffpatch` instead of `jsondiffpatch-rc` but that has a problem with
 // Vite right now. See https://github.com/vitejs/vite/issues/11986#issuecomment-1494484353
 import * as jsondiffpatch from 'jsondiffpatch-rc';
@@ -8,18 +8,18 @@ import '../json-diff-patch-with-dark-mode.css';
 import DiffMatchPatch from 'diff-match-patch';
 import stringify from 'json-stable-stringify';
 import {
-  TestResult_trimTransformation,
-  TestResult_showLeftAndRightSeparately,
+  App_showHelp,
+  TestResult_cutThroughStepsFromDiff,
+  TestResult_cutThroughStepsFromTransformationSection,
+  TestResult_diffLineMode,
+  TestResult_diffTheTestSyntax,
+  TestResult_diffUsingMergely,
+  TestResult_experimentalView1,
   TestResult_greenIsActual,
+  TestResult_showLeftAndRightSeparately,
   TestResult_showNonAssertedPropertiesInDiff,
   TestResult_showNonAssertedPropertiesInDiffInLineMode,
-  TestResult_experimentalView1,
-  TestResult_diffUsingMergely,
-  TestResult_diffTheTestSyntax,
-  TestResult_cutThroughStepsFromDiff,
-  TestResult_diffLineMode,
-  TestResult_cutThroughStepsFromTransformationSection,
-  App_showHelp,
+  TestResult_trimTransformation,
 } from '../local-storage-store';
 import type { testResults } from '../test-results.json';
 import { generateTestSuggestion } from '../../src/render-test';
@@ -50,12 +50,12 @@ const assertionTreeTrimmed = computed(() =>
   JSON.parse(props.testResult.assertionTree, jsonTrimmer),
 );
 const whatTheTestProbablySaid = computed(() =>
-  generateTestSuggestion(JSON.parse(props.testResult.assertionTree)),
+  generateTestSuggestion(JSON.parse(props.testResult.assertionTree), true),
 );
 const testSuggestion = computed(() => {
   const transformation = JSON.parse(props.testResult.transformation);
   if (transformation === null) return null;
-  return generateTestSuggestion(transformation);
+  return generateTestSuggestion(transformation, true);
 });
 const parsedTransformation = computed(
   () => sortedTransformationJson.value && JSON.parse(sortedTransformationJson.value),
@@ -295,7 +295,8 @@ const assertionTreeOpen = ref(false);
     <details @toggle="suggestionOpen = !suggestionOpen">
       <summary>Test Code Suggestion</summary>
       <pre v-if="suggestionOpen">{{
-        parsedTransformation && generateTestSuggestion(parsedTransformation, testResult.methodId)
+        parsedTransformation &&
+        generateTestSuggestion(parsedTransformation, true, testResult.methodId)
       }}</pre>
       <hr class="minor" />
     </details>
@@ -351,35 +352,42 @@ const assertionTreeOpen = ref(false);
 details {
   display: inline;
 }
+
 :deep(del) {
   text-decoration: none;
   background-color: var(--highlight-red);
 }
+
 :deep(ins) {
   text-decoration: none;
   background-color: var(--highlight-green);
 }
+
 .green {
   background-color: var(--highlight-green);
 }
+
 .red {
   background-color: var(--highlight-red);
 }
+
 .card {
   border-width: 2px;
   border-style: solid;
   padding: 0.5rem;
   border-radius: 0.5rem;
 }
+
 .monospace {
   /* font-family: Consolas, 'Courier New', monospace; */
   font-family: 'Bitstream Vera Sans Mono', 'DejaVu Sans Mono', Monaco, Courier, monospace;
   font-size: 14px;
   white-space: pre;
   /* This is was set so that the │ character would match tip to tip with another one that
-  is on the next line without gap│. (That is not a normal pipe character.) */
+    is on the next line without gap│. (That is not a normal pipe character.) */
   line-height: 1.21;
 }
+
 hr.minor {
   border: 0;
   border-top: 1px solid;
@@ -388,6 +396,7 @@ hr.minor {
   max-width: 100%;
   margin-left: 0;
 }
+
 :deep(.mergely-editor .mergely.ch.d.lhs) {
   text-decoration: none;
 }

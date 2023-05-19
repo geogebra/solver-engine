@@ -322,5 +322,13 @@ window.onload = () => {
     }
   };
 
+  document.onkeydown = (evt) => {
+    if (evt.ctrlKey && evt.code === 'KeyD') {
+      for (const el of document.getElementsByClassName('hide-in-demo-mode')) {
+        el.classList.toggle('hidden');
+      }
+    }
+  };
+
   window.onpopstate = fetchPlansAndUpdatePage;
 };

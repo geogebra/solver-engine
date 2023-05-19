@@ -3,7 +3,7 @@ import { isThroughStep } from './util';
 import { settings } from './settings';
 
 export const renderTest = (trans: Transformation) => /* HTML */ `
-  <details>
+  <details class="hide-in-demo-mode">
     <summary>Test Code <button class="copy-test-code-button">Copy</button></summary>
     <pre>${generateTestSuggestion(trans)}</pre>
   </details>
@@ -21,10 +21,14 @@ export const copyTestCodeToClipboardOnClick = () => {
   }
 };
 
-export function generateTestSuggestion(trans: Transformation, methodId = 'FILL_ME_IN'): string {
+export function generateTestSuggestion(
+  trans: Transformation,
+  omitRepeatedExprs = false,
+  methodId = 'FILL_ME_IN',
+): string {
   lastExpressionPrinted = '';
   const stringBuilder = new StringBuilder();
-  new IndentBuilder(stringBuilder).do(buildTest(trans, methodId));
+  new IndentBuilder(stringBuilder, omitRepeatedExprs).do(buildTest(trans, methodId));
   return stringBuilder.toString();
 }
 
@@ -49,14 +53,16 @@ let lastExpressionPrinted = '';
 class IndentBuilder {
   parent: StringBuilder | IndentBuilder;
   indent: string;
+  omitRepeatedExprs: boolean;
 
-  constructor(parent: StringBuilder | IndentBuilder, indent = '') {
+  constructor(parent: StringBuilder | IndentBuilder, omitRepeatedExprs = false, indent = '') {
+    this.omitRepeatedExprs = omitRepeatedExprs;
     this.parent = parent;
     this.indent = indent;
   }
 
   child(indent = '    ') {
-    return new IndentBuilder(this, indent);
+    return new IndentBuilder(this, this.omitRepeatedExprs, indent);
   }
 
   addLine(line: string) {
@@ -96,12 +102,19 @@ const buildTestTransformation = (trans: Transformation) => (builder: IndentBuild
     builder.addLine('// Through step');
   } else {
     const fromExpr = trans.fromExpr?.toString();
-    if (fromExpr !== lastExpressionPrinted && fromExpr !== undefined) {
+    if (
+      (!builder.omitRepeatedExprs || fromExpr !== lastExpressionPrinted) &&
+      fromExpr !== undefined
+    ) {
       builder.addLine(`fromExpr = "${fromExpr}"`);
       lastExpressionPrinted = fromExpr;
     }
     if (trans.explanation) {
       builder.do(buildExplanation(trans.explanation));
+    }
+    const toExpr = trans.toExpr?.toString();
+    if (!builder.omitRepeatedExprs && toExpr !== undefined) {
+      builder.addLine(`toExpr = "${toExpr}"`);
     }
   }
   if (trans.steps) {
@@ -109,7 +122,7 @@ const buildTestTransformation = (trans: Transformation) => (builder: IndentBuild
       builder.nest('step', buildTestTransformation(step));
     }
   }
-  if (!throughStep) {
+  if (!throughStep && builder.omitRepeatedExprs) {
     const toExpr = trans.toExpr?.toString();
     if (toExpr !== lastExpressionPrinted && toExpr !== undefined) {
       builder.addLine(`toExpr = "${toExpr}"`);

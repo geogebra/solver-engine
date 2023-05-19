@@ -25,6 +25,7 @@ CIRC_DEPS=$WORK_DIR/circ_deps
 grep -r '^import methods\.' methods |
   sed -n 's_methods/src/main/kotlin/methods/\([a-z]*\)/.*:import methods.\([a-z]*\).*_\1 \2_p' |
   grep -v '^\([a-z]*\) \1$' | # imports from the same package are allowed
+  grep -v -x -f methods/src/main/kotlin/methods/allowed_dependencies | # some circular dependenices are allowed...
   sort -u > "$DEPS"
 
 # Create a file reversing the order of the dependencies

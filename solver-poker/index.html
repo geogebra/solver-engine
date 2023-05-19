@@ -91,8 +91,8 @@
 
       details {
         /* This is not necessary. It just makes it so, when David Ludlow occasionally,
-        accidentally clicks on the white space to the right of a details section, then it
-        will not expand, which accidental expansion slightly irritated David. */
+          accidentally clicks on the white space to the right of a details section, then it
+          will not expand, which accidental expansion slightly irritated David. */
         display: inline-block;
       }
     </style>
@@ -117,7 +117,7 @@
     <script type="module" src="./src/poker.ts"></script>
   </head>
   <body>
-    <form class="display-options">
+    <form class="display-options hide-in-demo-mode">
       <h3>Display Options</h3>
       <label for="colorScheme">Colors</label>
       <select id="colorScheme">
@@ -156,8 +156,8 @@
     </form>
 
     <div id="version-info" class="version-info">fetching commit...</div>
-    <h1 id="title">Solver Poker</h1>
-    <details>
+    <h1 contenteditable="true" id="title">Solver Poker</h1>
+    <details class="hide-in-demo-mode">
       <summary>Input syntax</summary>
       <ul>
         <li>recurring decimals: \(10.3\overline{401}\) is <code>10.3[401]</code>,</li>
@@ -176,7 +176,7 @@
       <p>Example: \(\frac{1}{\sqrt{1 - x^2}}\) is <code>[1 / sqrt[1 - [x^2]]]</code>.</p>
     </details>
 
-    <form id="form">
+    <form id="form" class="hide-in-demo-mode">
       <p>
         <label for="curriculumSelect">Curriculum</label>
         <select id="curriculumSelect">
@@ -213,7 +213,7 @@
     </form>
 
     <p id="result"></p>
-    <details>
+    <details class="hide-in-demo-mode">
       <summary>Response Source</summary>
       <pre id="source"></pre>
     </details>

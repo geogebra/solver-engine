@@ -2,6 +2,8 @@ package methods.equations
 
 import engine.context.ResourceData
 import engine.expressions.Contradiction
+import engine.expressions.Expression
+import engine.expressions.Identity
 import engine.expressions.SetSolution
 import engine.expressions.VariableList
 import engine.expressions.setSolutionOf
@@ -14,6 +16,7 @@ import engine.methods.stepsproducers.FormChecker
 import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
 import engine.operators.EquationUnionOperator
+import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.BinaryIntegerCondition
 import engine.patterns.ConditionPattern
@@ -42,6 +45,7 @@ import engine.steps.metadata.metadata
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.equations.EquationsRules.FactorNegativeSignOfLeadingCoefficient
+import methods.equationsystems.EquationSystemsPlans
 import methods.general.NormalizationPlans
 import methods.polynomials.PolynomialRules
 import methods.polynomials.PolynomialsPlans
@@ -451,6 +455,9 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     ),
 
     @PublicMethod
+    SolveEquationWithTwoAbsoluteValues(solveEquationWithTwoAbsoluteValues),
+
+    @PublicMethod
     SolveEquationInOneVariable(
         plan {
             explanation = Explanation.SolveEquationInOneVariable
@@ -497,19 +504,27 @@ private val solveEquationUnion = taskSet {
             ) ?: return@tasks null
         }
 
-        // Gather all solutions together in a single solution set.
-        val solutions = splitTasks.flatMap {
-            when (val result = it.result) {
-                is SetSolution -> result.solutionSet.children
-                is Contradiction -> listOf()
-                else -> return@tasks null
-            }
-        }
-        task(
-            startExpr = setSolutionOf(
+        // If one of the equations results in an identity, then the overall solution is also an identity
+        // Else combine the solutions together
+        val identity = splitTasks.firstOrNull { it.result is Identity }
+        val overallSolution = if (identity != null) {
+            identity.result
+        } else {
+            // Gather all solutions together in a single solution set.
+            val solutions = splitTasks.flatMap {
+                when (val result = it.result) {
+                    is SetSolution -> result.solutionSet.children
+                    is Contradiction -> listOf()
+                    else -> return@tasks null
+                }
+            }.toSet()
+            setSolutionOf(
                 splitTasks[0].result.firstChild as VariableList,
                 solutionSetOf(solutions.sortedBy { it.doubleValue }),
-            ),
+            )
+        }
+        task(
+            startExpr = overallSolution,
             explanation = metadata(Explanation.CollectSolutions),
         )
         allTasks()
@@ -661,3 +676,48 @@ private fun solutionPattern(solutionValuePattern: Pattern = AnyPattern()) = oneO
     contradictionOf(variableListOf(SolutionVariablePattern())),
     identityOf(variableListOf(SolutionVariablePattern())),
 )
+
+private val solveEquationWithTwoAbsoluteValues = plan {
+    explanation = Explanation.SolveEquationWithTwoAbsoluteValues
+    pattern = equationInOneVariable()
+
+    steps {
+        optionally(equationSimplificationSteps)
+
+        check {
+            it.countAbsoluteValues(solutionVariables) == 2
+        }
+
+        optionally {
+            plan {
+                explanation = Explanation.MoveOneModulusToOtherSideAndSimplify
+                steps {
+                    firstOf {
+                        option(EquationsRules.MoveSecondModulusToRhs)
+                        option(EquationsRules.MoveSecondModulusToLhs)
+                    }
+                    optionally(equationSimplificationSteps)
+                }
+            }
+        }
+
+        optionally(EquationsRules.NegateBothSides)
+
+        firstOf {
+            option {
+                apply(EquationsRules.SeparateModulusEqualsModulus)
+                apply(solveEquationUnion)
+            }
+            option {
+                apply(EquationsRules.ResolveModulusEqualsNegativeModulus)
+                apply(EquationSystemsPlans.SolveEquationSystemInOneVariable)
+            }
+        }
+    }
+}
+
+private fun Expression.countAbsoluteValues(solutionVariables: List<String>): Int = when {
+    childCount == 0 -> 0
+    operator == UnaryExpressionOperator.AbsoluteValue && !isConstantIn(solutionVariables) -> 1
+    else -> children.sumOf { it.countAbsoluteValues(solutionVariables) }
+}

@@ -65,6 +65,13 @@ enum class EquationSystemsPlans(override val runner: CompositeMethod) : RunnerMe
 
     @PublicMethod
     SolveEquationSystemByElimination(SystemSolverByElimination),
+
+    /**
+     * Solve a system of two equations in one variable by solving each equation individually and keeping
+     * only the common solutions.
+     */
+    @PublicMethod
+    SolveEquationSystemInOneVariable(solveEquationSystemInOneVariable),
 }
 
 /**
@@ -646,4 +653,69 @@ private fun Expression.coefficientOf(x: String): Expression? {
     val ptn = withOptionalConstantCoefficient(FixedPattern(xp(x)))
     val matches = FindPattern(ptn, stopWhenFound = true).findMatches(emptyContext, RootMatch, this).toList()
     return if (matches.size == 1) ptn.coefficient(matches[0]) else null
+}
+
+private val solveEquationSystemInOneVariable = taskSet {
+    val systemPtn = equationSystemOf(
+        equationOf(AnyPattern(), AnyPattern()),
+        equationOf(AnyPattern(), AnyPattern()),
+    )
+    explanation = Explanation.SolveEquationSystemInOneVariable
+
+    pattern = condition(systemPtn) { it.variables.size == 1 }
+
+    tasks {
+
+        val system = get(systemPtn)
+
+        val solveFirstEq = task(
+            startExpr = get(system.firstChild),
+            stepsProducer = EquationsPlans.SolveEquationInOneVariable,
+            context = context.copy(solutionVariables = system.variables.toList()),
+            explanation = metadata(Explanation.SolveEquationInSystem),
+        ) ?: return@tasks null
+
+        if (solveFirstEq.result !is Contradiction) {
+            val solveSecondEq = task(
+                startExpr = get(system.secondChild),
+                stepsProducer = EquationsPlans.SolveEquationInOneVariable,
+                context = context.copy(solutionVariables = system.variables.toList()),
+                explanation = metadata(Explanation.SolveEquationInSystem),
+            ) ?: return@tasks null
+
+            val firstSolution = solveFirstEq.result
+            val secondSolution = solveSecondEq.result
+
+            when {
+                secondSolution is Contradiction -> task(
+                    startExpr = secondSolution,
+                    explanation = metadata(Explanation.ComputeOverallSolution),
+                )
+                secondSolution is Identity -> task(
+                    startExpr = solveFirstEq.result,
+                    explanation = metadata(Explanation.ComputeOverallSolution),
+                )
+                firstSolution is Identity -> task(
+                    startExpr = secondSolution,
+                    explanation = metadata(Explanation.ComputeOverallSolution),
+                )
+                firstSolution is SetSolution && secondSolution is SetSolution -> {
+                    val firstEqSolutions = firstSolution.solutionSet.children
+                    val secondEqSolutions = secondSolution.solutionSet.children
+                    val commonSolutions = firstEqSolutions.filter { secondEqSolutions.contains(it) }
+                    val overallSolution = if (commonSolutions.isEmpty()) {
+                        Contradiction(firstSolution.solutionVariables, system)
+                    } else {
+                        SetSolution(firstSolution.solutionVariables, solutionSetOf(commonSolutions))
+                    }
+                    task(
+                        startExpr = overallSolution,
+                        explanation = metadata(Explanation.ComputeOverallSolution),
+                    )
+                }
+                else -> return@tasks null
+            }
+        }
+        allTasks()
+    }
 }

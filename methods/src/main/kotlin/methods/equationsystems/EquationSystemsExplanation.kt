@@ -139,6 +139,28 @@ enum class EquationSystemsExplanation : CategorisedMetadataKey {
      */
     SolveEquationSystemByElimination,
 
+    /**
+     * Put the solutions of two individual equations together
+     *
+     * E.g. x = 1, x = 2            --> Contradiction
+     *      x = 1 or 2, x = 2, or 3 -->  x = 2
+     *      Etc
+     */
+    ComputeOverallSolution,
+
+    /**
+     * Solve an individual equation (with only one variable) in the system
+     */
+    SolveEquationInSystem,
+
+    /**
+     * Solve a system of two equations in only one variable
+     *
+     * E.g.
+     *     2x + 1 = 5, [x ^ 2] = 2x --> x = 2
+     */
+    SolveEquationSystemInOneVariable,
+
     ;
 
     override val category = "EquationSystems"

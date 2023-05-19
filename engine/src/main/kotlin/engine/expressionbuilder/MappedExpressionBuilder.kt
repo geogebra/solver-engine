@@ -20,6 +20,7 @@ import engine.expressions.variableListOf
 import engine.expressions.xp
 import engine.operators.EquationOperator
 import engine.operators.InequalityOperators
+import engine.patterns.CoefficientPattern
 import engine.patterns.ExpressionProvider
 import engine.patterns.InequalityPattern
 import engine.patterns.IntegerPattern
@@ -429,6 +430,8 @@ open class MappedExpressionBuilder(
     } else {
         variableListOf(context.solutionVariables)
     }
+
+    fun CoefficientPattern.getCoefficient() = coefficient(match)
 }
 
 class EmptyExpressionProviderException : Exception("No expressions were bound by the expression provider")

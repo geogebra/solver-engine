@@ -1,5 +1,6 @@
 package methods.equations
 
+import engine.methods.testRule
 import engine.methods.testRuleInX
 import methods.equations.EquationsRules.ApplyQuadraticFormula
 import methods.equations.EquationsRules.EliminateConstantFactorOfLhsWithZeroRhs
@@ -225,6 +226,97 @@ class EquationRulesTest {
         testRuleInX(
             "-2abs[x - 2] = -5",
             EquationsRules.ResolveModulusEqualsZero,
+            null,
+        )
+    }
+
+    @Test
+    fun testMoveSecondModulusToRhs() {
+        testRule(
+            "abs[x + 1] + abs[x - 2] = 0",
+            EquationsRules.MoveSecondModulusToRhs,
+            "abs[x + 1] + abs[x - 2] - abs[x - 2] = -abs[x - 2]",
+        )
+        testRule(
+            "-abs[x] + abs[2x] = 0",
+            EquationsRules.MoveSecondModulusToRhs,
+            "-abs[x] + abs[2x] + abs[x] = abs[x]",
+        )
+        testRule(
+            "abs[2x] - 3abs[x] = 0",
+            EquationsRules.MoveSecondModulusToRhs,
+            "abs[2x] - 3abs[x] + 3abs[x] = 3abs[x]",
+        )
+        testRule(
+            "-2abs[x + 1] - 3abs[x - 2] = 0",
+            EquationsRules.MoveSecondModulusToRhs,
+            "-2abs[x + 1] - 3abs[x - 2] + 3abs[x - 2] = 3abs[x - 2]",
+        )
+    }
+
+    @Test
+    fun testMoveSecondModulusToLhs() {
+        testRule(
+            "0 = abs[x + 1] + abs[x - 2]",
+            EquationsRules.MoveSecondModulusToLhs,
+            "-abs[x - 2] = abs[x + 1] + abs[x - 2] - abs[x - 2]",
+        )
+        testRule(
+            "0 = -abs[x] + abs[2x]",
+            EquationsRules.MoveSecondModulusToLhs,
+            "abs[x] = -abs[x] + abs[2x] + abs[x]",
+        )
+        testRule(
+            "0 = abs[2x] - 3abs[x]",
+            EquationsRules.MoveSecondModulusToLhs,
+            "3abs[x] = abs[2x] - 3abs[x] + 3abs[x]",
+        )
+        testRule(
+            "0 = -2abs[x + 1] - 3abs[x - 2]",
+            EquationsRules.MoveSecondModulusToLhs,
+            "3abs[x - 2] = -2abs[x + 1] - 3abs[x - 2] + 3abs[x - 2]",
+        )
+    }
+
+    @Test
+    fun testSeparateModulusEqualsModulus() {
+        testRule(
+            "abs[x + 1] = abs[3x]",
+            EquationsRules.SeparateModulusEqualsModulus,
+            "x + 1 = 3x OR x + 1 = -3x",
+        )
+        testRule(
+            "3abs[x] = 5abs[x + 1]",
+            EquationsRules.SeparateModulusEqualsModulus,
+            "3x = 5(x + 1) OR 3x = -5(x + 1)",
+        )
+        testRule(
+            "abs[2x] = -abs[x + 1]",
+            EquationsRules.SeparateModulusEqualsModulus,
+            null,
+        )
+    }
+
+    @Test
+    fun testResolveModulusEqualsNegativeModulus() {
+        testRule(
+            "abs[x + 2] = -abs[x - 1]",
+            EquationsRules.ResolveModulusEqualsNegativeModulus,
+            "x + 2 = 0, x - 1 = 0",
+        )
+        testRule(
+            "3abs[x] = -2abs[x + 2]",
+            EquationsRules.ResolveModulusEqualsNegativeModulus,
+            "3x = 0, 2(x + 2) = 0",
+        )
+        testRule(
+            "5abs[x] = -2x",
+            EquationsRules.ResolveModulusEqualsNegativeModulus,
+            null,
+        )
+        testRule(
+            "abs[x] = abs[2x]",
+            EquationsRules.ResolveModulusEqualsNegativeModulus,
             null,
         )
     }

@@ -411,6 +411,47 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      *                5 = 3 - 2abs[[x^2] - x]
      */
     SolveEquationWithVariablesInOneAbsoluteValue,
+
+    /**
+     * Subtract a modulus from both sides of an equation so there is a modulus on each side,
+     * in an equation with two moduli on the LHS.
+     *
+     * E.g. abs[x + 1] - abs[x - 2] = 0 --> abs[x + 1] - abs[x - 2] + abs[x - 2] = abs[x - 2]
+     *
+     */
+    MoveSecondModulusToRhs,
+
+    /**
+     * Subtract a modulus from both sides of an equation so there is a modulus on each side,
+     * in an equation with two moduli on the RHS.
+     *
+     * E.g. 0 = abs[x + 1] - abs[x - 2] --> abs[x - 2] = abs[x + 1] - abs[x - 2] + abs[x - 2]
+     *
+     */
+    MoveSecondModulusToLhs,
+
+    /**
+     * Rewrite an equation with two moduli on the same side to an equation with one on each side.
+     *
+     * E.g. abs[ x ] + abs[x - 1] = 0 --> abs[ x ] = abs[x - 1]
+     */
+    MoveOneModulusToOtherSideAndSimplify,
+
+    /**
+     * Turn an equation of the form |f(x)| = -|g(x)| into a system of two equations
+     *      f(x) = 0, g(x) = 0
+     *
+     * E.g. abs[[x^2] - x] = -abs[x - 1] --> [x^2] - x = 0, x - 1 = 0
+     */
+    ResolveModulusEqualsNegativeModulus,
+
+    /**
+     * Solve an equation containing two moduli and nothing else
+     *
+     * E.g. abs[[x^3]] - abs[ x ] = 0
+     *      abs[2x + 1] + 5abs[x] = 0
+     */
+    SolveEquationWithTwoAbsoluteValues,
     ;
 
     override val category = "Equations"

@@ -8,6 +8,7 @@ import engine.expressions.Fraction
 import engine.expressions.Variable
 import engine.expressions.contradictionOf
 import engine.expressions.equationOf
+import engine.expressions.equationSystemOf
 import engine.expressions.equationUnionOf
 import engine.expressions.fractionOf
 import engine.expressions.hasSingleValue
@@ -21,6 +22,7 @@ import engine.expressions.productOf
 import engine.expressions.rootOf
 import engine.expressions.setSolutionOf
 import engine.expressions.simplifiedNegOf
+import engine.expressions.simplifiedProductOf
 import engine.expressions.solutionSetOf
 import engine.expressions.splitPlusMinus
 import engine.expressions.squareRootOf
@@ -485,6 +487,11 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
     SeparateModulusEqualsPositiveConstant(separateModulusEqualsPositiveConstant),
     ResolveModulusEqualsZero(resolveModulusEqualsZero),
     ExtractSolutionFromModulusEqualsNegativeConstant(extractSolutionFromModulusEqualsNegativeConstant),
+
+    MoveSecondModulusToRhs(moveSecondModulusToRhs),
+    MoveSecondModulusToLhs(moveSecondModulusToLhs),
+    SeparateModulusEqualsModulus(separateModulusEqualsModulus),
+    ResolveModulusEqualsNegativeModulus(resolveModulusEqualsNegativeModulus),
 }
 
 private val applyQuadraticFormula = rule {
@@ -573,8 +580,7 @@ private val separateModulusEqualsPositiveConstant = rule {
     val rhs = condition(ConstantInSolutionVariablePattern()) { it.signOf() == Sign.POSITIVE }
 
     onEquation(lhs, rhs) {
-        val coeff = get(lhs::coefficient)!!
-        val newLHS = if (coeff == Constants.One) get(signedLHS) else productOf(coeff, get(signedLHS))
+        val newLHS = simplifiedProductOf(lhs.getCoefficient(), get(signedLHS))
         ruleResult(
             toExpr = equationUnionOf(
                 equationOf(newLHS, get(rhs)),
@@ -592,8 +598,7 @@ private val resolveModulusEqualsZero = rule {
     val rhs = FixedPattern(Constants.Zero)
 
     onEquation(lhs, rhs) {
-        val coeff = get(lhs::coefficient)!!
-        val newLHS = if (coeff == Constants.One) get(signedLHS) else productOf(coeff, get(signedLHS))
+        val newLHS = simplifiedProductOf(lhs.getCoefficient(), get(signedLHS))
         ruleResult(
             toExpr = equationOf(newLHS, get(rhs)),
             explanation = metadata(Explanation.ResolveModulusEqualsZero),
@@ -612,6 +617,95 @@ private val extractSolutionFromModulusEqualsNegativeConstant = rule {
         ruleResult(
             toExpr = contradictionOf(variableListOf(context.solutionVariables), get(equation)),
             explanation = metadata(Explanation.ExtractSolutionFromModulusEqualsNegativeConstant),
+        )
+    }
+}
+
+private val moveSecondModulusToRhs = rule {
+    val firstModulus = withOptionalConstantCoefficient(absoluteValueOf(AnyPattern()))
+    val secondModulus = withOptionalConstantCoefficient(absoluteValueOf(AnyPattern()))
+    val lhs = sumOf(firstModulus, secondModulus)
+    val rhs = FixedPattern(Constants.Zero)
+
+    onEquation(lhs, rhs) {
+        val firstModulusSign = firstModulus.getCoefficient().signOf()
+        val secondModulusSign = secondModulus.getCoefficient().signOf()
+        val termToSubtract = simplifiedNegOf(
+            if (firstModulusSign == Sign.POSITIVE || secondModulusSign != Sign.POSITIVE) {
+                get(secondModulus)
+            } else {
+                get(firstModulus)
+            },
+        )
+        ruleResult(
+            toExpr = equationOf(sumOf(get(lhs), termToSubtract), termToSubtract),
+            explanation = metadata(Explanation.MoveSecondModulusToRhs),
+        )
+    }
+}
+
+private val moveSecondModulusToLhs = rule {
+    val firstModulus = withOptionalConstantCoefficient(absoluteValueOf(AnyPattern()))
+    val secondModulus = withOptionalConstantCoefficient(absoluteValueOf(AnyPattern()))
+    val rhs = sumOf(firstModulus, secondModulus)
+    val lhs = FixedPattern(Constants.Zero)
+
+    onEquation(lhs, rhs) {
+        val firstModulusSign = firstModulus.getCoefficient().signOf()
+        val secondModulusSign = secondModulus.getCoefficient().signOf()
+        val termToSubtract = simplifiedNegOf(
+            if (firstModulusSign == Sign.POSITIVE || secondModulusSign != Sign.POSITIVE) {
+                get(secondModulus)
+            } else {
+                get(firstModulus)
+            },
+        )
+        ruleResult(
+            toExpr = equationOf(termToSubtract, sumOf(get(rhs), termToSubtract)),
+            explanation = metadata(Explanation.MoveSecondModulusToLhs),
+        )
+    }
+}
+
+private val separateModulusEqualsModulus = rule {
+    val innerLHS = AnyPattern()
+    val innerRHS = AnyPattern()
+    val lhs = withOptionalConstantCoefficient(absoluteValueOf(innerLHS), positiveOnly = true)
+    val rhs = withOptionalConstantCoefficient(absoluteValueOf(innerRHS), positiveOnly = true)
+
+    onEquation(lhs, rhs) {
+        val newLHS = simplifiedProductOf(lhs.getCoefficient(), get(innerLHS))
+        val newRHS = simplifiedProductOf(rhs.getCoefficient(), get(innerRHS))
+        ruleResult(
+            toExpr = equationUnionOf(
+                equationOf(newLHS, newRHS),
+                equationOf(newLHS, negOf(newRHS)),
+            ),
+            explanation = metadata(Explanation.SeparateModulusEqualsPositiveConstant),
+        )
+    }
+}
+
+private val resolveModulusEqualsNegativeModulus = rule {
+    val innerLHS = AnyPattern()
+    val innerRHS = AnyPattern()
+    val lhs = withOptionalConstantCoefficient(absoluteValueOf(innerLHS), positiveOnly = true)
+    val rhs = withOptionalConstantCoefficient(absoluteValueOf(innerRHS))
+
+    onEquation(lhs, rhs) {
+        val lhsCoeff = lhs.getCoefficient()
+        val rhsCoeff = simplifiedNegOf(rhs.getCoefficient())
+        if (rhsCoeff.signOf() != Sign.POSITIVE) {
+            return@onEquation null
+        }
+        val newLHS = simplifiedProductOf(lhsCoeff, get(innerLHS))
+        val newRHS = simplifiedProductOf(rhsCoeff, get(innerRHS))
+        ruleResult(
+            toExpr = equationSystemOf(
+                equationOf(newLHS, Constants.Zero),
+                equationOf(newRHS, Constants.Zero),
+            ),
+            explanation = metadata(Explanation.ResolveModulusEqualsNegativeModulus),
         )
     }
 }
