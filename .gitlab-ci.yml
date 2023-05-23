@@ -181,8 +181,6 @@ sdk-semantic-release:
         echo "${CI_API_V4_URL#https?}/projects/126/packages/npm/:_authToken=\${CI_JOB_TOKEN}"
       } | tee -a .npmrc
     - npm run semantic-release
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 # Remove kubernetes deployment.  This job is automatically triggered when the feature branch is deleted.
 undeploy-engine:
