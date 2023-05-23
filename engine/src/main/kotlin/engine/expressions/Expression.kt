@@ -5,13 +5,16 @@ import engine.operators.DecimalOperator
 import engine.operators.EquationOperator
 import engine.operators.EquationSystemOperator
 import engine.operators.ExpressionOperator
+import engine.operators.InequalityOperators
 import engine.operators.IntegerOperator
+import engine.operators.IntervalOperator
 import engine.operators.LatexRenderable
 import engine.operators.MixedNumberOperator
 import engine.operators.Operator
 import engine.operators.ProductOperator
 import engine.operators.RecurringDecimalOperator
 import engine.operators.RenderContext
+import engine.operators.SetOperators
 import engine.operators.SolutionOperator
 import engine.operators.StatementWithConstraintOperator
 import engine.operators.SumOperator
@@ -510,7 +513,11 @@ private fun expressionOf(
         SolutionOperator.ImplicitSolution -> ImplicitSolution(operands[0] as VariableList, operands[1], meta)
         SolutionOperator.SetSolution -> SetSolution(operands[0] as VariableList, operands[1], meta)
 
+        is IntervalOperator -> Interval(operands[0], operands[1], operator.closedLeft, operator.closedRight)
+        SetOperators.FiniteSet -> FiniteSet(operands)
+
         EquationOperator -> Equation(operands[0], operands[1], meta)
+        is InequalityOperators -> Inequality(operands[0], operands[1], operator, meta)
         StatementWithConstraintOperator -> StatementWithConstraint(operands[0], operands[1], meta)
 
         else -> Expression(operator, operands, meta)

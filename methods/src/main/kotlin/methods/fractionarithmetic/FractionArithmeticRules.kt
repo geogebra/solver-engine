@@ -345,37 +345,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
         },
     ),
 
-    BringToCommonDenominatorWithNonFractionalTerm(
-        rule {
-            val denominator = AnyPattern()
-            val fraction = optionalNegOf(fractionOf(AnyPattern(), denominator))
-            val nonFractionalTerm = optionalNegOf(condition(AnyPattern()) { it !is Fraction })
-
-            val sum = commutativeSumOf(fraction, nonFractionalTerm)
-
-            onPattern(sum) {
-                val expandedDenominator = distribute(denominator)
-
-                ruleResult(
-                    sum.substitute(
-                        get(fraction),
-                        copySign(
-                            nonFractionalTerm,
-                            fractionOf(
-                                productOf(move(nonFractionalTerm.unsignedPattern), expandedDenominator),
-                                expandedDenominator,
-                            ),
-                        ),
-                    ),
-                    explanation = metadata(
-                        Explanation.BringToCommonDenominator,
-                        move(fraction.unsignedPattern),
-                        move(nonFractionalTerm.unsignedPattern),
-                    ),
-                )
-            }
-        },
-    ),
+    BringToCommonDenominatorWithNonFractionalTerm(bringToCommonDenominatorWithNonFractionalTerm),
 
     MultiplyFractions(
         rule {
@@ -616,3 +586,32 @@ private fun Expression.canBeTurnedToFraction(): Boolean =
         is NullaryOperator -> true
         else -> children.all { it.canBeTurnedToFraction() }
     }
+
+private val bringToCommonDenominatorWithNonFractionalTerm = rule {
+    val denominator = AnyPattern()
+    val fraction = optionalNegOf(fractionOf(AnyPattern(), denominator))
+    val nonFractionalTerm = optionalNegOf(condition(AnyPattern()) { it !is Fraction })
+
+    val sum = commutativeSumOf(fraction, nonFractionalTerm)
+
+    onPattern(sum) {
+        val expandedDenominator = distribute(denominator)
+
+        val nonFractionalTermWithDenominator = copySign(
+            nonFractionalTerm,
+            fractionOf(
+                productOf(move(nonFractionalTerm.unsignedPattern), expandedDenominator),
+                expandedDenominator,
+            ),
+        )
+        val newSum = sum.substitute(get(fraction), nonFractionalTermWithDenominator)
+        ruleResult(
+            toExpr = newSum,
+            explanation = metadata(
+                Explanation.BringToCommonDenominator,
+                move(fraction.unsignedPattern),
+                move(nonFractionalTerm.unsignedPattern),
+            ),
+        )
+    }
+}

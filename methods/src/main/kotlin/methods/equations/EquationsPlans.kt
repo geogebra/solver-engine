@@ -1,13 +1,26 @@
 package methods.equations
 
+import engine.conditions.Sign
+import engine.conditions.signOf
 import engine.context.ResourceData
+import engine.context.emptyContext
+import engine.expressions.Constants
 import engine.expressions.Contradiction
 import engine.expressions.Expression
+import engine.expressions.ExpressionComparator
+import engine.expressions.FiniteSet
 import engine.expressions.Identity
+import engine.expressions.Inequality
+import engine.expressions.Root
+import engine.expressions.SetExpression
 import engine.expressions.SetSolution
+import engine.expressions.StatementWithConstraint
+import engine.expressions.Variable
 import engine.expressions.VariableList
+import engine.expressions.negOf
 import engine.expressions.setSolutionOf
 import engine.expressions.solutionSetOf
+import engine.expressions.sumOf
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
@@ -16,8 +29,6 @@ import engine.methods.plan
 import engine.methods.stepsproducers.FormChecker
 import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
-import engine.operators.IntervalOperator
-import engine.operators.SetOperators
 import engine.operators.StatementUnionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.BinaryIntegerCondition
@@ -46,12 +57,15 @@ import engine.patterns.withOptionalConstantCoefficient
 import engine.patterns.withOptionalIntegerCoefficient
 import engine.steps.Task
 import engine.steps.metadata.metadata
+import methods.approximation.ApproximationPlans
 import methods.constantexpressions.ConstantExpressionsPlans
+import methods.constantexpressions.constantSimplificationSteps
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.equations.EquationsRules.FactorNegativeSignOfLeadingCoefficient
 import methods.equationsystems.EquationSystemsPlans
 import methods.general.NormalizationPlans
 import methods.inequalities.InequalitiesPlans
+import methods.inequalities.inequalitySimplificationSteps
 import methods.inequalities.simplifyInequality
 import methods.polynomials.PolynomialRules
 import methods.polynomials.PolynomialsPlans
@@ -565,46 +579,138 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     ),
 }
 
+@Suppress("CyclomaticComplexMethod", "NestedBlockDepth")
 private fun TasksBuilder.checkSolutionsAgainstConstraint(solution: Expression, constraint: Expression): Task? {
     return when {
         constraint is Identity || solution is Contradiction -> {
             task(
                 startExpr = solution,
-                explanation = metadata(Explanation.Dummy),
+                explanation = metadata(Explanation.GatherSolutionsAndConstraint),
             )
         }
         solution is Identity || constraint is Contradiction -> { // todo move contradiction up
             task(
                 startExpr = constraint,
-                explanation = metadata(Explanation.Dummy),
+                explanation = metadata(Explanation.GatherSolutionsAndConstraint),
             )
         }
-        constraint is SetSolution -> {
-            val constraintSet = constraint.solutionSet
-            when (val op = constraintSet.operator) {
-                is IntervalOperator -> {
-                    if (solution is SetSolution && solution.solutionSet.operator == SetOperators.FiniteSet) {
-                        val solutions = solution.solutionSet.children
-                        val validSolutions = solutions.filter {
-                            val x = it.doubleValue
-                            val x0 = constraintSet.firstChild.doubleValue
-                            val x1 = constraintSet.secondChild.doubleValue
-                            if (op.closedLeft) { x0 <= x } else { x0 < x } &&
-                                if (op.closedRight) { x <= x1 } else { x < x1 }
+        solution is SetSolution -> {
+            when (val solutionSet = solution.solutionSet) {
+                is FiniteSet -> {
+                    when (constraint) {
+                        is SetSolution -> {
+                            when (val constraintSolutionSet = constraint.solutionSet) {
+                                is SetExpression -> {
+                                    val validSolutions = solutionSet.intersect(
+                                        constraintSolutionSet,
+                                        expressionComparator,
+                                    )
+                                        ?: return null
+                                    gatherValidSolutions(solution, constraint, validSolutions)
+                                }
+                                else -> null
+                            }
                         }
-
-                        task(
-                            startExpr = setSolutionOf(solution.solutionVariables, solutionSetOf(validSolutions)),
-                            explanation = metadata(Explanation.Dummy),
-                        )
-                    } else {
-                        null
+                        is Inequality -> {
+                            val validSolutions = checkSolutionsAgainstInequality(solution, constraint) ?: return null
+                            gatherValidSolutions(solution, constraint, validSolutions)
+                        }
+                        else -> null
                     }
                 }
                 else -> null
             }
         }
         else -> null
+    }
+}
+
+private fun TasksBuilder.checkSolutionsAgainstInequality(
+    solution: SetSolution,
+    constraint: Inequality,
+): SetExpression? {
+    val validSolutions = mutableListOf<Expression>()
+    val solutionSet = solution.solutionSet
+    if (solutionSet !is FiniteSet) {
+        return null
+    }
+    val variable = Variable(solution.solutionVariable)
+    for (element in solutionSet.elements) {
+        val constraintForElement = constraint.substituteAllOccurrences(variable, element)
+        val simplifyConstraint = task(
+            startExpr = constraintForElement,
+            explanation = metadata(Explanation.CheckIfSolutionSatisfiesConstraint, element),
+            context = context.copy(precision = 10),
+        ) {
+            optionally(constantSimplificationSteps)
+            optionally(inequalitySimplificationSteps)
+            optionally {
+                applyTo(ApproximationPlans.EvaluateExpressionNumerically) { it.firstChild }
+            }
+            optionally {
+                applyTo(ApproximationPlans.EvaluateExpressionNumerically) { it.secondChild }
+            }
+        } ?: return null
+        if ((simplifyConstraint.result as Inequality).holds()) {
+            validSolutions.add(element)
+        }
+    }
+    return FiniteSet(validSolutions)
+}
+
+private fun TasksBuilder.gatherValidSolutions(
+    solution: SetSolution,
+    constraint: Expression,
+    validSolutions: SetExpression,
+): Task? {
+    val solutionSet = solution.solutionSet
+    return when {
+        solutionSet !is SetExpression -> null
+        validSolutions.isEmpty(expressionComparator) ?: return null -> {
+            task(
+                startExpr = Contradiction(solution.solutionVariables, StatementWithConstraint(solution, constraint)),
+                explanation = metadata(Explanation.NoSolutionSatisfiesConstraint),
+            )
+        }
+        solution.solutionSet == validSolutions -> {
+            task(
+                startExpr = solution,
+                explanation = metadata(Explanation.AllSolutionsSatisfyConstraint),
+            )
+        }
+        else -> {
+            task(
+                startExpr = setSolutionOf(solution.solutionVariables, validSolutions),
+                explanation = metadata(Explanation.SomeSolutionsDoNotSatisfyConstraint),
+            )
+        }
+    }
+}
+
+private val expressionComparator = ExpressionComparator { e1: Expression, e2: Expression ->
+    when {
+        e1 == Constants.Infinity -> Sign.POSITIVE
+        e1 == Constants.NegativeInfinity -> Sign.NEGATIVE
+        e2 == Constants.NegativeInfinity -> Sign.POSITIVE
+        e2 == Constants.Infinity -> Sign.NEGATIVE
+        else -> {
+            val diff = sumOf(e1, negOf(e2)).withOrigin(Root())
+            val result = ConstantExpressionsPlans.SimplifyConstantExpression.tryExecute(emptyContext, diff)
+                ?: return@ExpressionComparator Sign.UNKNOWN
+            val simplifiedDiff = result.toExpr
+            val signOfDiff = simplifiedDiff.signOf()
+            if (signOfDiff != Sign.UNKNOWN) {
+                signOfDiff
+            } else {
+                val d = simplifiedDiff.doubleValue
+                when {
+                    d > 0 -> Sign.POSITIVE
+                    d < 0 -> Sign.NEGATIVE
+                    d.isNaN() -> Sign.NONE
+                    else -> Sign.UNKNOWN
+                }
+            }
+        }
     }
 }
 

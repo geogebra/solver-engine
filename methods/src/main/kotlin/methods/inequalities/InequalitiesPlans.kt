@@ -225,7 +225,7 @@ val simplifyInequality = plan {
     }
 }
 
-private val inequalitySimplificationSteps = steps {
+val inequalitySimplificationSteps = steps {
     whilePossible {
         firstOf {
             option(InequalitiesRules.ExtractSolutionFromConstantInequality)

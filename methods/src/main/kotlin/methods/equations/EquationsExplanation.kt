@@ -463,7 +463,16 @@ enum class EquationsExplanation : CategorisedMetadataKey {
 
     IsolateAbsoluteValue,
 
-    Dummy,
+    AllSolutionsSatisfyConstraint,
+    NoSolutionSatisfiesConstraint,
+    SomeSolutionsDoNotSatisfyConstraint,
+
+    /**
+     * A generic explanation
+     */
+    GatherSolutionsAndConstraint,
+
+    CheckIfSolutionSatisfiesConstraint,
     ;
 
     override val category = "Equations"
