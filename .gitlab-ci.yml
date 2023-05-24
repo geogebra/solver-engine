@@ -48,7 +48,6 @@ build-sdk-and-poker:
       - .npm/
   script:
     - node -v
-    # need to register this so we can install the dependency of solver-poker on the sdk
     - |
       {
         echo "@${CI_PROJECT_ROOT_NAMESPACE}:registry=${CI_API_V4_URL}/projects/126/packages/npm/"
