@@ -4,13 +4,13 @@ grammar Expression;
     package parser.antlr;
 }
 
-wholeInput: (statementUnion | solution | set | expr | undefined | name) EOF;
+wholeInput: (statementUnion | set | expr | undefined | name) EOF;
 
 statementUnion: stmts += statementWithConstraint ('OR' stmts += statementWithConstraint)*;
 
 statementWithConstraint: stmt=simpleStatement ('GIVEN' constraint=simpleStatement)?;
 
-simpleStatement: equationSystem | equationAddition | equationSubtraction | equation | inequality;
+simpleStatement: equationSystem | equationAddition | equationSubtraction | equation | inequality | solution;
 
 equationSystem: equations += equation (',' equations += equation)+;
 
@@ -22,8 +22,8 @@ equation: lhs=expr '=' rhs=expr;
 inequality: lhs=expr comparator=('<' | '<=' | '>' | '>=') rhs=expr;
 
 solution
-    : 'Identity' '[' vars=variables ':' stmt=statementUnion ']'           #identity
-    | 'Contradiction' '[' vars=variables ':' stmt=statementUnion ']'      #contradiction
+    : 'Identity' '[' (vars=variables ':')? stmt=statementUnion ']'        #identity
+    | 'Contradiction' '[' (vars=variables ':')? stmt=statementUnion ']'   #contradiction
     | 'ImplicitSolution' '[' vars=variables ':' stmt=statementUnion ']'   #implicitSolution
     | 'SetSolution' '[' vars=variables ':' solutionSet=set ']'            #setSolution
     ;

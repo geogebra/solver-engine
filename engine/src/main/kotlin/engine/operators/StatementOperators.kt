@@ -268,7 +268,9 @@ enum class SolutionOperator : BinaryOperator, StatementOperator {
     override fun rightChildAllowed(op: Operator) = true
 
     override fun <T> readableString(left: T, right: T): String {
-        return "$name[$left: $right]"
+        val leftString = left.toString()
+        val leftWithSeparator = if (leftString == "") "" else "$leftString : "
+        return "$name[$leftWithSeparator$right]"
     }
 
     override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable): String {

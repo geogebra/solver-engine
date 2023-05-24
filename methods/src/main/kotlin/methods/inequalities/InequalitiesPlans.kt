@@ -215,6 +215,8 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
 
 internal val simplifyInequality = plan {
     explanation = Explanation.SimplifyInequality
+    pattern = inequalityOf(AnyPattern(), AnyPattern())
+
     specificPlans(ConstantExpressionsPlans.SimplifyConstantExpression)
 
     steps {

@@ -516,6 +516,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
         },
     ),
 
+    @PublicMethod
     SolveEquationWithConstraint(solveEquationWithConstraint),
 }
 

@@ -135,11 +135,13 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
     }
 
     override fun visitIdentity(ctx: ExpressionParser.IdentityContext): Expression {
-        return Identity(visitVariables(ctx.vars), visit(ctx.stmt))
+        val vars = if (ctx.vars == null) VariableList(emptyList()) else visitVariables(ctx.vars)
+        return Identity(vars, visit(ctx.stmt))
     }
 
     override fun visitContradiction(ctx: ExpressionParser.ContradictionContext): Expression {
-        return Contradiction(visitVariables(ctx.vars), visit(ctx.stmt))
+        val vars = if (ctx.vars == null) VariableList(emptyList()) else visitVariables(ctx.vars)
+        return Contradiction(vars, visit(ctx.stmt))
     }
 
     override fun visitImplicitSolution(ctx: ExpressionParser.ImplicitSolutionContext): Expression {
