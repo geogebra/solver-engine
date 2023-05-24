@@ -728,17 +728,18 @@ private val separateModulusEqualsExpression = rule {
     val rhs = AnyPattern()
 
     onEquation(lhs, rhs) {
-        val lhsValue = get(signedLHS)
+        val signedLHSValue = get(signedLHS)
+        val newLHS = simplifiedProductOf(lhs.getCoefficient(), signedLHSValue)
         val rhsValue = get(rhs)
         ruleResult(
             toExpr = statementUnionOf(
                 StatementWithConstraint(
-                    equationOf(lhsValue, rhsValue),
-                    greaterThanEqualOf(lhsValue, Constants.Zero),
+                    equationOf(newLHS, rhsValue),
+                    greaterThanEqualOf(signedLHSValue, Constants.Zero),
                 ),
                 StatementWithConstraint(
-                    equationOf(negOf(lhsValue), rhsValue),
-                    lessThanOf(lhsValue, Constants.Zero),
+                    equationOf(negOf(newLHS), rhsValue),
+                    lessThanOf(signedLHSValue, Constants.Zero),
                 ),
             ),
         )
