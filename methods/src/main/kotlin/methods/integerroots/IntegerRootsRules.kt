@@ -1,6 +1,5 @@
 package methods.integerroots
 
-import engine.conditions.Sign
 import engine.conditions.signOf
 import engine.expressions.powerOf
 import engine.expressions.productOf
@@ -24,6 +23,7 @@ import engine.patterns.productOf
 import engine.patterns.rootOf
 import engine.patterns.squareRootOf
 import engine.patterns.withOptionalIntegerCoefficient
+import engine.sign.Sign
 import engine.steps.metadata.Skill
 import engine.steps.metadata.metadata
 import engine.utility.asPowerForRoot

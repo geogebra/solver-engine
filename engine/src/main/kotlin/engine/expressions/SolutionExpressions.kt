@@ -42,7 +42,7 @@ class SetSolution(
 ) : Solution, Expression(SolutionOperator.SetSolution, listOf(solutionVariables, solutionSet), meta) {
     override val solutionVariables = firstChild as VariableList
 
-    val solutionSet = secondChild
+    val solutionSet = secondChild as SetExpression
     val solution get() = secondChild.children.single()
 
     /**

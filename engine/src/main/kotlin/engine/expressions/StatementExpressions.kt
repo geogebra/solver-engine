@@ -32,6 +32,10 @@ class Inequality(
             rhs.doubleValue.toBigDecimal(),
         )
     }
+
+    fun holds(comparator: ExpressionComparator): Boolean? {
+        return (operator as InequalityOperators).holdsFor(comparator.compare(lhs, rhs))
+    }
 }
 
 class StatementWithConstraint(statement: Expression, constraint: Expression, meta: NodeMeta = BasicMeta()) : Expression(

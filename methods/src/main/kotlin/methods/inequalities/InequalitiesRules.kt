@@ -1,6 +1,5 @@
 package methods.inequalities
 
-import engine.conditions.Sign
 import engine.conditions.signOf
 import engine.expressions.Constants
 import engine.expressions.Fraction
@@ -24,6 +23,7 @@ import engine.patterns.UnsignedNumberPattern
 import engine.patterns.inequalityOf
 import engine.patterns.negOf
 import engine.patterns.withOptionalConstantCoefficient
+import engine.sign.Sign
 import engine.steps.metadata.metadata
 
 enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {

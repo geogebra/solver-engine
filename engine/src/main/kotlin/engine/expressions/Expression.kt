@@ -515,6 +515,7 @@ private fun expressionOf(
 
         is IntervalOperator -> Interval(operands[0], operands[1], operator.closedLeft, operator.closedRight)
         SetOperators.FiniteSet -> FiniteSet(operands)
+        SetOperators.CartesianProduct -> CartesianProduct(operands)
 
         EquationOperator -> Equation(operands[0], operands[1], meta)
         is InequalityOperators -> Inequality(operands[0], operands[1], operator, meta)

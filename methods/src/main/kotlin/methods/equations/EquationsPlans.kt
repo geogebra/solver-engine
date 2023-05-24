@@ -1,6 +1,5 @@
 package methods.equations
 
-import engine.conditions.Sign
 import engine.conditions.signOf
 import engine.context.ResourceData
 import engine.context.emptyContext
@@ -55,6 +54,7 @@ import engine.patterns.sumContaining
 import engine.patterns.variableListOf
 import engine.patterns.withOptionalConstantCoefficient
 import engine.patterns.withOptionalIntegerCoefficient
+import engine.sign.Sign
 import engine.steps.Task
 import engine.steps.metadata.metadata
 import methods.approximation.ApproximationPlans
@@ -579,7 +579,6 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     ),
 }
 
-@Suppress("CyclomaticComplexMethod", "NestedBlockDepth")
 private fun TasksBuilder.checkSolutionsAgainstConstraint(solution: Expression, constraint: Expression): Task? {
     return when {
         constraint is Identity || solution is Contradiction -> {
@@ -595,77 +594,92 @@ private fun TasksBuilder.checkSolutionsAgainstConstraint(solution: Expression, c
             )
         }
         solution is SetSolution -> {
-            when (val solutionSet = solution.solutionSet) {
-                is FiniteSet -> {
-                    when (constraint) {
-                        is SetSolution -> {
-                            when (val constraintSolutionSet = constraint.solutionSet) {
-                                is SetExpression -> {
-                                    val validSolutions = solutionSet.intersect(
-                                        constraintSolutionSet,
-                                        expressionComparator,
-                                    )
-                                        ?: return null
-                                    gatherValidSolutions(solution, constraint, validSolutions)
-                                }
-                                else -> null
-                            }
-                        }
-                        is Inequality -> {
-                            val validSolutions = checkSolutionsAgainstInequality(solution, constraint) ?: return null
-                            gatherValidSolutions(solution, constraint, validSolutions)
-                        }
-                        else -> null
-                    }
-                }
-                else -> null
-            }
+            computeValidSetSolution(solution, constraint)?.let { reportValidSolutions(solution, constraint, it) }
         }
         else -> null
     }
 }
 
-private fun TasksBuilder.checkSolutionsAgainstInequality(
+/**
+ * Given a [solution] which is a set, compute the valid solution (restricted by the [constraint] which can be any
+ * expression) and return it.  If it cannot be computed, null is returned.
+ *
+ * This is only partially implemented but covered the currently needed cases.  It can be extended in the future.
+ */
+private fun TasksBuilder.computeValidSetSolution(solution: SetSolution, constraint: Expression): SetExpression? {
+    return when (constraint) {
+        is SetSolution -> {
+            solution.solutionSet.intersect(constraint.solutionSet, expressionComparator)
+        }
+        is Inequality -> {
+            computeValidSetSolutionForInequalityConstraint(solution, constraint)
+        }
+        else -> null
+    }
+}
+
+/**
+ * Given a [solution] which is a set, computes the valid solutions (restricted by the [constraint] which is an
+ * inequality) by substituting them into the inequality and evaluating the inequality. If it cannot be computed, null is
+ * returned.
+ *
+ * Currently, it only supports a solution which is a [FiniteSet].  This can be extended in the future although that
+ * seems hard.
+ */
+private fun TasksBuilder.computeValidSetSolutionForInequalityConstraint(
     solution: SetSolution,
     constraint: Inequality,
 ): SetExpression? {
-    val validSolutions = mutableListOf<Expression>()
-    val solutionSet = solution.solutionSet
-    if (solutionSet !is FiniteSet) {
-        return null
-    }
-    val variable = Variable(solution.solutionVariable)
-    for (element in solutionSet.elements) {
-        val constraintForElement = constraint.substituteAllOccurrences(variable, element)
-        val simplifyConstraint = task(
-            startExpr = constraintForElement,
-            explanation = metadata(Explanation.CheckIfSolutionSatisfiesConstraint, element),
-            context = context.copy(precision = 10),
-        ) {
-            optionally(constantSimplificationSteps)
-            optionally(inequalitySimplificationSteps)
-            optionally {
-                applyTo(ApproximationPlans.EvaluateExpressionNumerically) { it.firstChild }
+    return when (val solutionSet = solution.solutionSet) {
+        is FiniteSet -> {
+            val validSolutions = mutableListOf<Expression>()
+            val variable = Variable(solution.solutionVariable)
+            for (element in solutionSet.elements) {
+                val constraintForElement = constraint.substituteAllOccurrences(variable, element)
+                val simplifyConstraint = task(
+                    startExpr = constraintForElement,
+                    explanation = metadata(Explanation.CheckIfSolutionSatisfiesConstraint, element),
+                    stepsProducer = evaluateConstantInequalitySteps,
+                    context = context.copy(precision = 10),
+                ) ?: return null
+                if ((simplifyConstraint.result as Inequality).holds(expressionComparator) ?: return null) {
+                    validSolutions.add(element)
+                }
             }
-            optionally {
-                applyTo(ApproximationPlans.EvaluateExpressionNumerically) { it.secondChild }
-            }
-        } ?: return null
-        if ((simplifyConstraint.result as Inequality).holds()) {
-            validSolutions.add(element)
+            FiniteSet(validSolutions)
         }
+        else -> null
     }
-    return FiniteSet(validSolutions)
 }
 
-private fun TasksBuilder.gatherValidSolutions(
+/**
+ * Steps to evaluate a constant inequality so it can be determined whether it holds or not.
+ * This can be improved a lot.
+ *
+ * We could instead turn the result into a [Contradiction] or an [Identity] with no variables.  This is
+ * something to do for the future.
+ */
+private val evaluateConstantInequalitySteps = steps {
+    optionally(constantSimplificationSteps)
+    optionally(inequalitySimplificationSteps)
+    optionally {
+        applyTo(ApproximationPlans.EvaluateExpressionNumerically) { it.firstChild }
+    }
+    optionally {
+        applyTo(ApproximationPlans.EvaluateExpressionNumerically) { it.secondChild }
+    }
+}
+
+/**
+ * Creates a task to report the [validSolutions] inferred from [solution] and [constraint].  Returns null if that
+ * cannot be done.
+ */
+private fun TasksBuilder.reportValidSolutions(
     solution: SetSolution,
     constraint: Expression,
     validSolutions: SetExpression,
 ): Task? {
-    val solutionSet = solution.solutionSet
     return when {
-        solutionSet !is SetExpression -> null
         validSolutions.isEmpty(expressionComparator) ?: return null -> {
             task(
                 startExpr = Contradiction(solution.solutionVariables, StatementWithConstraint(solution, constraint)),
@@ -687,6 +701,10 @@ private fun TasksBuilder.gatherValidSolutions(
     }
 }
 
+/**
+ * An implementation of [ExpressionComparator] used for checking constraints when solving an equation with
+ * constraints.
+ */
 private val expressionComparator = ExpressionComparator { e1: Expression, e2: Expression ->
     when {
         e1 == Constants.Infinity -> Sign.POSITIVE

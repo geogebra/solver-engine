@@ -1,6 +1,5 @@
 package methods.equations
 
-import engine.conditions.Sign
 import engine.conditions.isDefinitelyNotUndefined
 import engine.conditions.signOf
 import engine.expressions.Constants
@@ -65,6 +64,7 @@ import engine.patterns.rationalMonomialPattern
 import engine.patterns.sumContaining
 import engine.patterns.sumOf
 import engine.patterns.withOptionalConstantCoefficient
+import engine.sign.Sign
 import engine.steps.Transformation
 import engine.steps.metadata.metadata
 import engine.utility.isEven
@@ -414,7 +414,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
             onEquation(lhs, rhs) {
                 val rhsVal = get(rhs)
-                val explanationArgument = if (rhsVal.signOf() == engine.conditions.Sign.NEGATIVE) {
+                val explanationArgument = if (rhsVal.signOf() == Sign.NEGATIVE) {
                     rhsVal
                 } else {
                     @Suppress("MagicNumber")

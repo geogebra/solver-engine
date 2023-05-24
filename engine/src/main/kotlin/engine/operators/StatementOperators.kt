@@ -5,6 +5,7 @@ import engine.expressions.Expression
 import engine.expressions.closedOpenIntervalOf
 import engine.expressions.openClosedIntervalOf
 import engine.expressions.openIntervalOf
+import engine.sign.Sign
 import java.math.BigDecimal
 
 private const val PREDICATE_PRECEDENCE = 0
@@ -121,6 +122,8 @@ enum class InequalityOperators(
     LessThan("<", "<") {
         override fun holdsFor(val1: BigDecimal, val2: BigDecimal) = val1 < val2
 
+        override fun holdsFor(sign: Sign) = sign == Sign.NEGATIVE
+
         override fun toInterval(boundary: Expression) = openIntervalOf(Constants.NegativeInfinity, boundary)
 
         override fun getDual() = GreaterThan
@@ -128,6 +131,8 @@ enum class InequalityOperators(
 
     LessThanEqual("<=", "\\leq") {
         override fun holdsFor(val1: BigDecimal, val2: BigDecimal) = val1 <= val2
+
+        override fun holdsFor(sign: Sign) = sign == Sign.NEGATIVE || sign == Sign.ZERO
 
         override fun toInterval(boundary: Expression) = openClosedIntervalOf(Constants.NegativeInfinity, boundary)
 
@@ -137,6 +142,8 @@ enum class InequalityOperators(
     GreaterThan(">", ">") {
         override fun holdsFor(val1: BigDecimal, val2: BigDecimal) = val1 > val2
 
+        override fun holdsFor(sign: Sign) = sign == Sign.POSITIVE
+
         override fun toInterval(boundary: Expression) = openIntervalOf(boundary, Constants.Infinity)
 
         override fun getDual() = LessThan
@@ -144,6 +151,8 @@ enum class InequalityOperators(
 
     GreaterThanEqual(">=", "\\geq") {
         override fun holdsFor(val1: BigDecimal, val2: BigDecimal) = val1 >= val2
+
+        override fun holdsFor(sign: Sign) = sign == Sign.POSITIVE || sign == Sign.ZERO
 
         override fun toInterval(boundary: Expression) = closedOpenIntervalOf(boundary, Constants.Infinity)
 
@@ -174,6 +183,8 @@ enum class InequalityOperators(
     override fun <T> readableString(left: T, right: T) = "$left $readableString $right"
 
     abstract fun holdsFor(val1: BigDecimal, val2: BigDecimal): Boolean
+
+    abstract fun holdsFor(sign: Sign): Boolean?
 
     abstract fun toInterval(boundary: Expression): Expression
 
