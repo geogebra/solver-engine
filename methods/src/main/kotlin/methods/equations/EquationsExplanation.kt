@@ -453,25 +453,74 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      */
     SolveEquationWithTwoAbsoluteValues,
 
-    MoveTermsNotContainingModulusToTheRight,
-
-    MoveTermsNotContainingModulusToTheLeft,
-
-    SimplifyConstraint,
-
-    SolveEquationWithoutConstraint,
-
+    /**
+     * In an equation with an absolute value, ensure the absolute value is on its own
+     * on one side of the equation.
+     *
+     * E.g. 3x + 2abs[x-1] - 2 = 1 - x --> 2abs[x - 1] = 3 - 4x
+     */
     IsolateAbsoluteValue,
 
+    /**
+     * In an equation an absolute value, move terms without an absolute value to the right
+     *
+     * E.g. abs[x] + x - 1 = 2 --> abs[x] + x - 1 - x + 1 = 2 - x + 1
+     */
+    MoveTermsNotContainingModulusToTheRight,
+
+    /**
+     * In an equation with an absolute value, move terms without an absolute value to the left
+     *
+     * E.g. x = 2x - abs[x] + 3 --> x - 2x - 3 = 2x - abs[x] + 3 - 2x - 3
+     */
+    MoveTermsNotContainingModulusToTheLeft,
+
+    /**
+     * Simplify a constraint as much as possible
+     *
+     * E.g. 2x > 4 -> x \in (2, \Infty)
+     *
+     * Sometimes the constraint cannot be solved so we end up with an inequality!
+     */
+    SimplifyConstraint,
+
+    /**
+     * In the context of solving an equation with a constraint, solve the equation
+     * ignoring the constraint.  At a later stage the solutions will be checked against
+     * the constraint.
+     */
+    SolveEquationWithoutConstraint,
+
+    /**
+     * Write the final solution of an equation with a constraint, in the case that all
+     * solutions satisfy the constraint.
+     */
     AllSolutionsSatisfyConstraint,
+
+    /**
+     * Write the final solution of an equation with a constraint, in the case that none
+     * of the solutions satisfy the constraint.
+     */
     NoSolutionSatisfiesConstraint,
+
+    /**
+     * Write the final solution of an equation with a constraint, in the case that some
+     * solutions do not satisfy the constraint.
+     */
     SomeSolutionsDoNotSatisfyConstraint,
 
     /**
-     * A generic explanation
+     * Write the final solution of an equation with a constraint, in the case that the result
+     * is obvious because e.g. the equation has no solution or the constraint is a contradiction.
      */
     GatherSolutionsAndConstraint,
 
+    /**
+     * In the context of solving an equation with a constraint, check if an individual
+     * solution satisfies the constraint
+     *
+     * %1: the solution to check
+     */
     CheckIfSolutionSatisfiesConstraint,
     ;
 
