@@ -16,6 +16,7 @@
     "build:esm": "tsc",
     "build:cjs": "tsc -p ./tsconfig-cjs.json",
     "build:web": "vite build",
+    "setBaseUrl": "if [[ -z \"$SDK_BASE_URL\" ]]; then echo 'Error: SDK_BASE_URL not specified.'; else echo \"Setting SDK base url to '$SDK_BASE_URL'\" && sed -i '' \"s|^const BASE_URL = .*|const BASE_URL = '$SDK_BASE_URL';|\" ./src/api.ts ; fi",
     "watch": "tsc --watch",
     "start": "vite --host",
     "test": "nyc ../../node_modules/.bin/_mocha 'test/**/*.test.ts'",

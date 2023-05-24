@@ -173,6 +173,7 @@ sdk-semantic-release:
     GIT_STRATEGY: clone
   script:
     - node -v
+    - SDK_BASE_PATH="$DYNAMIC_ENVIRONMENT_URL" npm run setBaseUrl -w @geogebra/solver-sdk
     - npm ci --cache .npm --prefer-offline
     - cd ./@geogebra/solver-sdk
     - |
