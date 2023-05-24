@@ -213,7 +213,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
     ),
 }
 
-val simplifyInequality = plan {
+internal val simplifyInequality = plan {
     explanation = Explanation.SimplifyInequality
     specificPlans(ConstantExpressionsPlans.SimplifyConstantExpression)
 
@@ -225,7 +225,7 @@ val simplifyInequality = plan {
     }
 }
 
-val inequalitySimplificationSteps = steps {
+internal val inequalitySimplificationSteps = steps {
     whilePossible {
         firstOf {
             option(InequalitiesRules.ExtractSolutionFromConstantInequality)
