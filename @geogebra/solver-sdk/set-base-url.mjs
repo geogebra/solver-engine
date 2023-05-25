@@ -10,6 +10,7 @@ console.log('CI_COMMIT_REF_NAME', process.env.CI_COMMIT_REF_NAME);
 if (!baseUrl) {
   console.error('Error: Need to pass API url for the SDK as an argument to this script.');
 } else {
+  console.log('Setting API url to', baseUrl);
   const __dirname = fileURLToPath(path.dirname(import.meta.url));
   // do this, but use node instead
   const apiPath = path.join(__dirname, './src/api.ts');
