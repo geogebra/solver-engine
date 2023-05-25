@@ -136,7 +136,14 @@ export const simpleSolutionFormatter = {
           return `${rec(n.args[0], null)} \\in \\mathbb{R}`;
         }
       }
+      case 'Contradiction': {
+        const vars = (n as VariableListTree).args;
+        if (vars !== undefined && vars.length > 0) {
+          return `${rec(n.args[0], null)} \\in \\emptyset`;
+        }
+      }
     }
+
     return setsSolutionFormatter.formatSolution(n, rec);
   },
 };
