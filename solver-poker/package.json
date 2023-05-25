@@ -5,7 +5,7 @@
     "vite": "^4.1.4"
   },
   "dependencies": {
-    "@geogebra/solver-sdk": "../../@geogebra/sdk",
+    "@geogebra/solver-sdk": "../@geogebra/sdk",
     "@vueuse/core": "^10.0.2",
     "diff-match-patch": "^1.0.5",
     "json-stable-stringify": "^1.0.2",
