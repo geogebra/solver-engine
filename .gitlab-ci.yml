@@ -23,7 +23,8 @@ stages:
 
 before_script:
   - export SLUG=`echo $CI_COMMIT_REF_SLUG | sed 's/^\([a-z][a-z]*\-[0-9][0-9]*\).*/\1/'`
-  - export API_URL=`if [[ $CI_COMMIT_REF_NAME == "release" ]]; then echo "https://solver-api.geogebra.net/poker"; else echo "https://solver-api.geogebra.net/$SLUG/poker"; fi`
+  - export API_URL=`if [[ $CI_COMMIT_REF_NAME == "release" ]]; then echo "https://solver-api.geogebra.net/api/v1"; else echo "https://solver-api.geogebra.net/$SLUG/api/v1"; fi`
+  - export POKER_URL=`if [[ $CI_COMMIT_REF_NAME == "release" ]]; then echo "https://solver-api.geogebra.net/poker"; else echo "https://solver-api.geogebra.net/$SLUG/poker"; fi`
   - export REPO_FULL_NAME=`echo $CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME`
   - export REPOSITORY_ID=4 # The gitlab ID of the repository where our container images are uploaded
 
