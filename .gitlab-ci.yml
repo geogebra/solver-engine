@@ -127,7 +127,7 @@ deploy-engine:
   image: alpine/k8s:1.23.7
   environment:
     name: solver/$CI_COMMIT_REF_SLUG
-    url: $POKER_URL
+    url: $DYNAMIC_ENVIRONMENT_URL
     on_stop: undeploy-engine
   tags:
     - docker
@@ -146,6 +146,7 @@ deploy-engine:
           --set imageCredentials.username=$CI_REGISTRY_USER \
           --set imageCredentials.password=$CI_REGISTRY_PASSWORD \
           --set springProfile=production
+    - echo "DYNAMIC_ENVIRONMENT_URL=$POKER_URL" >> deploy.env
 
 # Make an SDK release
 sdk-semantic-release:
