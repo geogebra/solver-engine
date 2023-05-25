@@ -28,7 +28,7 @@ export const setsSolutionFormatter = {
       case 'Identity': {
         const [varTuple, size] = variableListToLatexTuple(n.args[0], rec);
         if (size === 0) {
-          return '\\textrm{True}';
+          return '\\top';
         } else if (size === 1) {
           return `${varTuple} \\in \\mathbb{R}`;
         } else {
@@ -38,7 +38,7 @@ export const setsSolutionFormatter = {
       case 'Contradiction': {
         const [varTuple, size] = variableListToLatexTuple(n.args[0], rec);
         if (size === 0) {
-          return '\\textrm{False}';
+          return '\\bot';
         } else {
           return `${varTuple} \\in \\emptyset`;
         }
@@ -130,11 +130,12 @@ export const simpleSolutionFormatter = {
       }
       case 'ImplicitSolution':
         return `${rec(n.args[0], null)} \\in \\mathbb{R} : ${rec(n.args[1], n)}`;
-      case 'Identity':
+      case 'Identity': {
         const vars = (n as VariableListTree).args;
         if (vars !== undefined && vars.length > 0) {
           return `${rec(n.args[0], null)} \\in \\mathbb{R}`;
         }
+      }
     }
     return setsSolutionFormatter.formatSolution(n, rec);
   },

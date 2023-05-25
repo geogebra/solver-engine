@@ -159,7 +159,7 @@ class SolveEquationWithConstraintTest {
                 step {
                     fromExpr = "[1 ^ 2] < 0"
                     explanation {
-                        key = InequalitiesExplanation.ExtractSolutionFromFalseInequality
+                        key = InequalitiesExplanation.ExtractFalsehoodFromFalseInequality
                     }
                     toExpr = "Contradiction[[1 ^ 2] < 0]"
                 }
@@ -183,7 +183,7 @@ class SolveEquationWithConstraintTest {
                 step {
                     fromExpr = "1 < 0"
                     explanation {
-                        key = InequalitiesExplanation.ExtractSolutionFromFalseInequality
+                        key = InequalitiesExplanation.ExtractFalsehoodFromFalseInequality
                     }
                     toExpr = "Contradiction[1 < 0]"
                 }

@@ -14,16 +14,19 @@ import engine.expressions.setSolutionOf
 import engine.expressions.simplifiedNegOf
 import engine.expressions.variableListOf
 import engine.methods.Rule
+import engine.methods.RuleResultBuilder
 import engine.methods.RunnerMethod
 import engine.methods.rule
 import engine.patterns.AnyPattern
 import engine.patterns.ConstantInSolutionVariablePattern
+import engine.patterns.Pattern
 import engine.patterns.SolutionVariablePattern
 import engine.patterns.UnsignedNumberPattern
 import engine.patterns.inequalityOf
 import engine.patterns.negOf
 import engine.patterns.withOptionalConstantCoefficient
 import engine.sign.Sign
+import engine.steps.Transformation
 import engine.steps.metadata.metadata
 
 enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
@@ -36,17 +39,7 @@ enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
             val inequality = inequalityOf(lhs, rhs)
 
             onPattern(inequality) {
-                if (inequality.holdsFor(getValue(lhs), getValue(rhs))) {
-                    ruleResult(
-                        toExpr = identityOf(variableListOf(context.solutionVariables), get(inequality)),
-                        explanation = metadata(Explanation.ExtractSolutionFromTrueInequality),
-                    )
-                } else {
-                    ruleResult(
-                        toExpr = contradictionOf(variableListOf(context.solutionVariables), get(inequality)),
-                        explanation = metadata(Explanation.ExtractSolutionFromFalseInequality),
-                    )
-                }
+                trueOrFalseRuleResult(inequality, inequality.holdsFor(getValue(lhs), getValue(rhs)))
             }
         },
     ),
@@ -63,17 +56,8 @@ enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
                 val rhsSign = get(rhs).signOf()
 
                 if (lhsSign.isKnown() && rhsSign.isKnown()) {
-                    if (inequality.holdsFor(lhsSign.signum.toBigDecimal(), rhsSign.signum.toBigDecimal())) {
-                        ruleResult(
-                            toExpr = identityOf(variableListOf(context.solutionVariables), get(inequality)),
-                            explanation = metadata(Explanation.ExtractSolutionFromTrueInequality),
-                        )
-                    } else {
-                        ruleResult(
-                            toExpr = contradictionOf(variableListOf(context.solutionVariables), get(inequality)),
-                            explanation = metadata(Explanation.ExtractSolutionFromFalseInequality),
-                        )
-                    }
+                    val isSatisfied = inequality.holdsFor(lhsSign.signum.toBigDecimal(), rhsSign.signum.toBigDecimal())
+                    trueOrFalseRuleResult(inequality, isSatisfied)
                 } else {
                     null
                 }
@@ -203,4 +187,29 @@ enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
             }
         },
     ),
+}
+
+private fun RuleResultBuilder.trueOrFalseRuleResult(inequality: Pattern, isSatisfied: Boolean): Transformation {
+    val noVariable = context.solutionVariables.isEmpty()
+    return if (isSatisfied) {
+        val key = if (noVariable) {
+            Explanation.ExtractTruthFromTrueInequality
+        } else {
+            Explanation.ExtractSolutionFromTrueInequality
+        }
+        ruleResult(
+            toExpr = identityOf(variableListOf(context.solutionVariables), get(inequality)),
+            explanation = metadata(key),
+        )
+    } else {
+        val key = if (noVariable) {
+            Explanation.ExtractFalsehoodFromFalseInequality
+        } else {
+            Explanation.ExtractSolutionFromFalseInequality
+        }
+        ruleResult(
+            toExpr = contradictionOf(variableListOf(context.solutionVariables), get(inequality)),
+            explanation = metadata(key),
+        )
+    }
 }
