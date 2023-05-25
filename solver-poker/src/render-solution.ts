@@ -18,14 +18,14 @@ import {
   clone,
   containsNonTrivialStep,
   isCosmeticTransformation,
+  isInvisibleChangeStep,
   isPedanticStep,
   isRearrangementStep,
-  isInvisibleChangeStep,
   isThroughStep,
 } from './util';
 import { renderTest } from './render-test';
 import { translationData } from './translations';
-import { LatexTransformer } from '@geogebra/solver-sdk/lib/esm/parser/tree-to-latex';
+import { LatexTransformer } from '@geogebra/solver-sdk/src/renderer/tree-to-latex';
 
 const findTransformationInSelections = (selections: PlanSelection[], methodId: string) => {
   for (const selection of selections) {

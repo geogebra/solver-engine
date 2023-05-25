@@ -1,4 +1,4 @@
-import { ExpressionTree } from './types';
+import { ExpressionTree } from '../parser';
 
 export interface SolutionFormatter {
   formatSolution(

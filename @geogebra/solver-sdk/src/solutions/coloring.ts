@@ -1,5 +1,5 @@
 import { PathMapping } from '../types';
-import { ColorLatexTransformer, LatexTransformer } from '../parser/tree-to-latex';
+import { ColorLatexTransformer, LatexTransformer } from '../renderer/tree-to-latex';
 
 /**
  * An object that maps path strings to color values. The ColorMap
