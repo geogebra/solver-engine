@@ -5,6 +5,8 @@ import { argv } from 'node:process';
 
 const baseUrl = argv[2];
 
+console.log('CI_COMMIT_REF_NAME', process.env.CI_COMMIT_REF_NAME);
+
 if (!baseUrl) {
   console.error('Error: Need to pass API url for the SDK as an argument to this script.');
 } else {
