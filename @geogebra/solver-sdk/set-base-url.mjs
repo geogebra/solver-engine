@@ -12,9 +12,6 @@ if (!baseUrl) {
   // do this, but use node instead
   const apiPath = path.join(__dirname, './src/api.ts');
   const api = fs.readFileSync(apiPath, 'utf8');
-  const newApi = api.replace(
-    /const BASE_URL = .*/,
-    `const BASE_URL = '${baseUrl}';`,
-  );
+  const newApi = api.replace(/const BASE_URL = .*/, `const BASE_URL = '${baseUrl}';`);
   fs.writeFileSync(apiPath, newApi, 'utf8');
 }
