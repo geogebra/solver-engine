@@ -16,7 +16,6 @@
     "build:esm": "tsc",
     "build:cjs": "tsc -p ./tsconfig-cjs.json",
     "build:web": "vite build",
-    "set-base-url": "node ./set-base-url.mjs $SDK_BASE_URL",
     "watch": "tsc --watch",
     "start": "vite --host",
     "test": "nyc ../../node_modules/.bin/_mocha 'test/**/*.test.ts'",
