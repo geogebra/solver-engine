@@ -8,7 +8,13 @@ import {
   SolverExpr,
 } from './types';
 
+/**
+ * This is the URL the SDK uses to connect to the Solver API. The CI script will
+ * automatically adjust it via the `set-base-url.mjs` script to point to the
+ * correct version of the API during deployment.
+ */
 const BASE_URL = 'https://solver-api.geogebra.org/api/v1';
+
 const DEFAULT_HEADERS = {
   headers: { 'Content-Type': 'application/json' },
 };
