@@ -268,6 +268,13 @@ enum class GeneralExplanation : CategorisedMetadataKey {
     ResolveAbsoluteValueOfZero,
 
     /**
+     * Turn |-x| to |x| for any x
+     *
+     * E.g. |-(x + y)| = |x + y|, for any x and y
+     */
+    SimplifyAbsoluteValueOfNegatedExpression,
+
+    /**
      * Simplify the argument of an absolute value then resolve the
      * absolute value.
      *

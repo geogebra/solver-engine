@@ -568,4 +568,109 @@ class LinearEquationsTest {
             noTransformation()
         }
     }
+
+    @Test
+    fun `test abs(-x) - abs(x) = 0`() = testMethodInX {
+        method = EquationsPlans.SolveLinearEquation
+        inputExpr = "abs[-x] - abs[x] = 0"
+
+        check {
+            fromExpr = "abs[-x] - abs[x] = 0"
+            explanation {
+                key = EquationsExplanation.SolveLinearEquation
+            }
+            toExpr = "Identity[x: 0 = 0]"
+
+            step {
+                fromExpr = "abs[-x] - abs[x] = 0"
+                toExpr = "0 = 0"
+                explanation {
+                    key = EquationsExplanation.SimplifyEquation
+                }
+
+                step {
+                    fromExpr = "abs[-x] - abs[x] = 0"
+                    toExpr = "abs[x] - abs[x] = 0"
+                    explanation {
+                        key = GeneralExplanation.EvaluateAbsoluteValue
+                    }
+
+                    step {
+                        fromExpr = "abs[-x]"
+                        toExpr = "abs[x]"
+                        explanation {
+                            key = GeneralExplanation.SimplifyAbsoluteValueOfNegatedExpression
+                        }
+                    }
+                }
+
+                step {
+                    fromExpr = "abs[x] - abs[x] = 0"
+                    toExpr = "0 = 0"
+                    explanation {
+                        key = GeneralExplanation.CancelAdditiveInverseElements
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "0 = 0"
+                toExpr = "Identity[x: 0 = 0]"
+                explanation {
+                    key = EquationsExplanation.ExtractSolutionFromIdentity
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test abs(-x - sqrt(2)) - abs(x + sqrt(2)) = 0`() = testMethodInX {
+        method = EquationsPlans.SolveLinearEquation
+        inputExpr = "abs[-x - sqrt[2]] - abs[x + sqrt[2]] = 0"
+        check {
+            fromExpr = "abs[-x - sqrt[2]] - abs[x + sqrt[2]] = 0"
+            toExpr = "Identity[x: 0 = 0]"
+            explanation {
+                key = EquationsExplanation.SolveLinearEquation
+            }
+
+            step {
+                fromExpr = "abs[-x - sqrt[2]] - abs[x + sqrt[2]] = 0"
+                toExpr = "0 = 0"
+                explanation {
+                    key = EquationsExplanation.SimplifyEquation
+                }
+                step {
+                    fromExpr = "abs[-x - sqrt[2]] - abs[x + sqrt[2]] = 0"
+                    toExpr = "abs[x + sqrt[2]] - abs[x + sqrt[2]] = 0"
+                    explanation {
+                        key = GeneralExplanation.EvaluateAbsoluteValue
+                    }
+                    step {
+                        fromExpr = "abs[-x - sqrt[2]]"
+                        toExpr = "abs[-(x + sqrt[2])]"
+                        explanation {
+                            key = GeneralExplanation.FactorMinusFromSum
+                        }
+                    }
+                    step {
+                        fromExpr = "abs[-(x + sqrt[2])]"
+                        toExpr = "abs[x + sqrt[2]]"
+                        explanation {
+                            key = GeneralExplanation.SimplifyAbsoluteValueOfNegatedExpression
+                        }
+                    }
+                }
+                step {
+                    fromExpr = "abs[x + sqrt[2]] - abs[x + sqrt[2]] = 0"
+                    toExpr = "0 = 0"
+                    explanation {
+                        key = GeneralExplanation.CancelAdditiveInverseElements
+                    }
+                }
+            }
+
+            step { }
+        }
+    }
 }

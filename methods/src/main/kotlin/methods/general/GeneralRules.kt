@@ -8,6 +8,7 @@ import engine.expressions.Constants
 import engine.expressions.IntegerExpression
 import engine.expressions.PathScope
 import engine.expressions.Variable
+import engine.expressions.absoluteValueOf
 import engine.expressions.asInteger
 import engine.expressions.fractionOf
 import engine.expressions.negOf
@@ -104,6 +105,7 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     ResolveAbsoluteValueOfPositiveValue(resolveAbsoluteValueOfPositiveValue),
     ResolveAbsoluteValueOfNegativeValue(resolveAbsoluteValueOfNegativeValue),
     ResolveAbsoluteValueOfZero(resolveAbsoluteValueOfZero),
+    SimplifyAbsoluteValueOfNegatedExpression(simplifyAbsoluteValueOfNegatedExpression),
 }
 
 private val removeUnitaryCoefficient =
@@ -997,6 +999,25 @@ private val resolveAbsoluteValueOfZero = rule {
         ruleResult(
             toExpr = transformTo(absoluteValue, get(argument)),
             explanation = metadata(Explanation.ResolveAbsoluteValueOfZero),
+        )
+    }
+}
+
+/**
+ * abs(-x) --> abs(x) for any x
+ */
+private val simplifyAbsoluteValueOfNegatedExpression = rule {
+    val expr = AnyPattern()
+    val negExpr = negOf(expr)
+    val absoluteValue = absoluteValueOf(negExpr)
+
+    onPattern(absoluteValue) {
+        ruleResult(
+            toExpr = cancel(
+                mapOf(negExpr to listOf(PathScope.Operator)),
+                absoluteValueOf(get(expr)),
+            ),
+            explanation = metadata(Explanation.SimplifyAbsoluteValueOfNegatedExpression),
         )
     }
 }

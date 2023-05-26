@@ -913,7 +913,7 @@ class GeneralRulesTest {
     }
 
     @Test
-    fun testResolveAbsoluteValue() {
+    fun testResolveOrSimplifyAbsoluteValue() {
         testRule("abs[0]", GeneralRules.ResolveAbsoluteValueOfPositiveValue, null)
         testRule("abs[0]", GeneralRules.ResolveAbsoluteValueOfNegativeValue, null)
         testMethod {
@@ -953,5 +953,8 @@ class GeneralRulesTest {
 
         testRule("abs[sqrt[2] + sqrt[3]]", GeneralRules.ResolveAbsoluteValueOfPositiveValue, "sqrt[2] + sqrt[3]")
         testRule("abs[-(sqrt[2] + sqrt[3])]", GeneralRules.ResolveAbsoluteValueOfNegativeValue, "sqrt[2] + sqrt[3]")
+
+        testRule("abs[-x]", GeneralRules.SimplifyAbsoluteValueOfNegatedExpression, "abs[x]")
+        testRule("abs[-(x + y)]", GeneralRules.SimplifyAbsoluteValueOfNegatedExpression, "abs[x + y]")
     }
 }
