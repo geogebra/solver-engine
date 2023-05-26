@@ -169,8 +169,8 @@ We use the following versioning strategy:
 
 - feature branches (plut-???-\*): deploys package with pre-release version
   x.y.z-plut-???.1 and @plut-??? tag.
-- main development branch (main): deploys package as x.y.z with @alpha tag
-- staging (staging): deploys package as x.y.z with @beta tag
+- main development branch (main): deploys package as x.y.z-main with @alpha tag
+- staging (staging): deploys package as x.y.z-staging with @beta tag
 - production (release): deploys package as x.y.z with @latest tag
 
 The CI will automatically adjust the SDK to point to the right API URL depending
