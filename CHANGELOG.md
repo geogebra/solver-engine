@@ -17,13 +17,16 @@ contents to a new release section (e.g. _[0.x]_).
 - Added new syntaxes to the parser (mathematical constants, Greek letter variables,
   trigonometric functions, percentages, derivatives, integrals, vectors, matrices) (PLUT-288)
 - Add rule `|-x| = |x|` for any `x` (PLUT-607)
+- New test reporter to see global effect of code changes on test output (PLUT-506)
 
 ### Fixed
 
 - Improve path mappings for better visualization (using colors) in GeneralRules.kt (PLUT-514)
+- Improve path mappings for better visualization (using colors) in normalization rules (PLUT-520)
 
 ### Changed
 
+- SDK: Changed default API URL to production engine (PLUT-590)
 - Limit precision to be between 2 and 10 decimal places (PLUT-605)
 
 ### Removed
