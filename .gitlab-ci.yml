@@ -33,8 +33,6 @@ check-circular-dependencies-in-methods:
   cache: []
   script:
     - ./scripts/check_method_dependencies.sh
-  when:
-    never
 
 # Test SDK and build all artifacts from SDK for the poker and for possible release
 build-sdk-and-poker:
@@ -80,7 +78,6 @@ build-engine:
       - methods/build/generated/ksp/main/resources/Method.TranslationKeys.json
       - engine/build/generated/ksp/main/resources/TranslationKeys.json
     expire_in: 1 day
-  when: never
 
 # Package the engine into a docker image
 package-engine:
@@ -92,7 +89,6 @@ package-engine:
     - docker
   script:
     - $GRADLE bootBuildImage --imageName="registry.git.geogebra.org/solver-team/solver-engine/api:$SLUG"
-  when: never
 
 export-translation-keys:
   stage: publish
@@ -151,7 +147,6 @@ deploy-engine:
           --set imageCredentials.password=$CI_REGISTRY_PASSWORD \
           --set springProfile=production
     - echo "DYNAMIC_ENVIRONMENT_URL=$POKER_URL" >> deploy.env
-  when: never
 
 # Make an SDK release
 sdk-semantic-release:
