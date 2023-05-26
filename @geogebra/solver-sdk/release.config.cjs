@@ -10,7 +10,7 @@ module.exports = {
     {
       // this uses [glob notation](https://github.com/micromatch/micromatch#matching-features)
       name: 'plut-+([0-9])-*',
-      // version a.b.c-plut-xyz.0
+      // version a.b.c-plut-xyz.1
       // this uses [lodash template notation](https://lodash.com/docs/4.17.15#template)
       prerelease: "${name.replace(/(plut-[0-9]+).*/, '$1')}",
       // @plut-xyz tag
