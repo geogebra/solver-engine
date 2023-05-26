@@ -3,9 +3,9 @@ module.exports = {
     // release new SDK package with @latest when on "release" branch
     'release',
     // release new SDK package with @beta tag when on "staging" branch
-    { name: 'staging', channel: 'beta' },
+    { name: 'staging', prerelease: 'staging', channel: 'beta' },
     // release new SDK package with @alpha tag when on "main" branch
-    { name: 'testing', channel: 'alpha' },
+    { name: 'main', prerelease: 'main', channel: 'alpha' },
     // do a pre-release of SDK package with @plut-xyz tag on "plut-xyz-*" branches
     {
       // this uses [glob notation](https://github.com/micromatch/micromatch#matching-features)
@@ -20,7 +20,6 @@ module.exports = {
   ],
   plugins: [
     '@semantic-release/commit-analyzer',
-    '@semantic-release/release-notes-generator',
     '@semantic-release/gitlab',
     '@semantic-release/npm',
     [
@@ -28,7 +27,7 @@ module.exports = {
       {
         assets: ['package.json'],
         message:
-          'chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}',
+          'chore(release): ${nextRelease.version} [skip ci]',
       },
     ],
   ],
