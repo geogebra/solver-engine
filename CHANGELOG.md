@@ -19,6 +19,8 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Fixed
 
+- Improve path mappings for better visualization (using colors) in GeneralRules.kt (PLUT-514)
+
 ### Changed
 
 - Limit precision to be between 2 and 10 decimal places (PLUT-605)

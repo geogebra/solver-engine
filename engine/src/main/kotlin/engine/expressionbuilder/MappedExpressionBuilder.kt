@@ -100,6 +100,10 @@ open class MappedExpressionBuilder(
     fun factor(expressionProvider: ExpressionProvider) =
         expressionProvider.getBoundExpr(match)!!.withOrigin(Factor(expressionProvider.getBoundExprs(match)))
 
+    fun factorOp(from: List<Expression>, to: Expression): Expression {
+        return to.withOrigin(Factor(from, PathScope.Operator))
+    }
+
     fun distribute(expressionProvider: ExpressionProvider) =
         expressionProvider.getBoundExpr(match)!!.withOrigin(Distribute(expressionProvider.getBoundExprs(match)))
 

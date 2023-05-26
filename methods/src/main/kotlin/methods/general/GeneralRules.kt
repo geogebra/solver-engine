@@ -6,6 +6,7 @@ import engine.conditions.isDefinitelyNotZero
 import engine.conditions.signOf
 import engine.expressions.Constants
 import engine.expressions.IntegerExpression
+import engine.expressions.PathScope
 import engine.expressions.Variable
 import engine.expressions.asInteger
 import engine.expressions.fractionOf
@@ -170,7 +171,7 @@ private val evaluateProductContainingZero =
 
         onPattern(pattern) {
             ruleResult(
-                toExpr = transformTo(pattern, Constants.Zero),
+                toExpr = move(zero),
                 gmAction = tap(zero),
                 explanation = metadata(Explanation.EvaluateProductContainingZero, move(zero)),
             )
@@ -219,8 +220,10 @@ private val simplifyProductWithTwoNegativeFactors =
     rule {
         val f1 = AnyPattern()
         val f2 = AnyPattern()
-        val fd1 = optionalDivideBy(negOf(f1))
-        val fd2 = optionalDivideBy(negOf(f2))
+        val f1Negative = negOf(f1)
+        val f2Negative = negOf(f2)
+        val fd1 = optionalDivideBy(f1Negative)
+        val fd2 = optionalDivideBy(f2Negative)
         val product = productContaining(fd1, fd2)
 
         // Alternative pattern, to cover the situation where the negative is in front of
@@ -234,14 +237,26 @@ private val simplifyProductWithTwoNegativeFactors =
             val negIsOnProduct = isBound(negProduct)
             ruleResult(
                 toExpr = if (negIsOnProduct) {
-                    productInNeg.substitute(
-                        optionalDivideBy(fd1Positive, move(fd1Positive)),
-                        optionalDivideBy(fd2, move(f2)),
+                    cancel(
+                        mapOf(
+                            negProduct to listOf(Scope.Operator),
+                            f2Negative to listOf(Scope.Operator),
+                        ),
+                        productInNeg.substitute(
+                            optionalDivideBy(fd1Positive, get(fd1Positive)),
+                            optionalDivideBy(fd2, get(f2)),
+                        ),
                     )
                 } else {
-                    product.substitute(
-                        optionalDivideBy(fd1, move(f1)),
-                        optionalDivideBy(fd2, move(f2)),
+                    cancel(
+                        mapOf(
+                            f1Negative to listOf(Scope.Operator),
+                            f2Negative to listOf(Scope.Operator),
+                        ),
+                        product.substitute(
+                            optionalDivideBy(fd1, get(f1)),
+                            optionalDivideBy(fd2, get(f2)),
+                        ),
                     )
                 },
                 gmAction = if (negIsOnProduct) {
@@ -390,8 +405,9 @@ private val factorMinusFromSum =
 
         onPattern(sum) {
             val firstAddend = get(sum).children[0]
+            val toExpr = negOf(sumOf(get(sum).children.map { it.firstChild }))
             ruleResult(
-                toExpr = negOf(sumOf(get(sum).children.map { move(it.firstChild) })),
+                toExpr = factorOp(get(sum).children, toExpr),
                 // NOTE: this will only work if there are brackets around the sum
                 gmAction = drag(
                     firstAddend,
@@ -416,9 +432,12 @@ private val simplifyProductOfConjugates =
 
         onPattern(product) {
             ruleResult(
-                toExpr = sum2.substitute(
-                    powerOf(move(a), introduce(Constants.Two)),
-                    negOf(powerOf(move(b), introduce(Constants.Two))),
+                toExpr = transform(
+                    product,
+                    sum2.substitute(
+                        powerOf(get(a), Constants.Two),
+                        negOf(powerOf(get(b), Constants.Two)),
+                    ),
                 ),
                 gmAction = applyFormula(product, "Difference of Squares"),
                 explanation = metadata(Explanation.SimplifyProductOfConjugates),
@@ -509,7 +528,10 @@ private val rewritePowerAsProduct =
             // We want to prefer direct evaluation over 2^3 ==> 2*2*2
             if (context.gmFriendly) return@onPattern null
             ruleResult(
-                toExpr = productOf(List(getValue(exponent).toInt()) { move(base) }),
+                toExpr = transform(
+                    power,
+                    productOf(List(getValue(exponent).toInt()) { get(base) }),
+                ),
                 gmAction = edit(power),
                 explanation = metadata(Explanation.RewritePowerAsProduct, move(base), move(exponent)),
             )
@@ -527,7 +549,10 @@ private val simplifyExpressionToThePowerOfOne =
 
         onPattern(power) {
             ruleResult(
-                toExpr = transformTo(power, move(base)),
+                toExpr = cancel(
+                    mapOf(one to listOf(PathScope.Expression)),
+                    get(base),
+                ),
                 gmAction = tap(one),
                 explanation = metadata(Explanation.SimplifyExpressionToThePowerOfOne),
             )
@@ -545,7 +570,7 @@ private val evaluateOneToAnyPower =
 
         onPattern(power) {
             ruleResult(
-                toExpr = transformTo(power, move(one)),
+                toExpr = move(one),
                 gmAction = tap(one),
                 explanation = metadata(Explanation.EvaluateOneToAnyPower),
             )
@@ -592,7 +617,7 @@ private val evaluateZeroToAPositivePower =
         val power = powerOf(zero, condition(AnyPattern()) { it.signOf() == Sign.POSITIVE })
         onPattern(power) {
             ruleResult(
-                toExpr = transformTo(power, Constants.Zero),
+                toExpr = move(zero),
                 gmAction = tap(zero),
                 explanation = metadata(Explanation.EvaluateZeroToAPositivePower),
             )
@@ -826,10 +851,14 @@ private val rewriteProductOfPowersWithInverseBase =
 private val rewriteOddRootOfNegative = rule {
     val radicand = AnyPattern()
     val order = integerCondition(UnsignedIntegerPattern()) { it.isOdd() }
+    val pattern = rootOf(negOf(radicand), order)
 
-    onPattern(rootOf(negOf(radicand), order)) {
+    onPattern(pattern) {
         ruleResult(
-            toExpr = negOf(rootOf(move(radicand), get(order))),
+            toExpr = transformTo(
+                pattern,
+                negOf(rootOf(get(radicand), get(order))),
+            ),
             explanation = metadata(Explanation.RewriteOddRootOfNegative),
         )
     }
@@ -941,7 +970,7 @@ private val resolveAbsoluteValueOfPositiveValue = rule {
 
     onPattern(absoluteValue) {
         ruleResult(
-            toExpr = move(argument),
+            toExpr = transformTo(absoluteValue, get(argument)),
             explanation = metadata(Explanation.ResolveAbsoluteValueOfPositiveValue),
         )
     }
@@ -954,7 +983,7 @@ private val resolveAbsoluteValueOfNegativeValue = rule {
 
     onPattern(absoluteValue) {
         ruleResult(
-            toExpr = move(argument),
+            toExpr = transformTo(absoluteValue, get(argument)),
             explanation = metadata(Explanation.ResolveAbsoluteValueOfNegativeValue),
         )
     }
@@ -966,7 +995,7 @@ private val resolveAbsoluteValueOfZero = rule {
 
     onPattern(absoluteValue) {
         ruleResult(
-            toExpr = move(argument),
+            toExpr = transformTo(absoluteValue, get(argument)),
             explanation = metadata(Explanation.ResolveAbsoluteValueOfZero),
         )
     }

@@ -190,7 +190,7 @@ class Combine(val from: List<Expression>) : Origin() {
     }
 }
 
-class Factor(val from: List<Expression>) : Origin() {
+class Factor(val from: List<Expression>, val pathScope: PathScope = PathScope.default) : Origin() {
 
     constructor(vararg fromExprs: Expression) : this(fromExprs.asList())
 
@@ -202,11 +202,11 @@ class Factor(val from: List<Expression>) : Origin() {
             PathMapping(
                 from.flatMap {
                     it.origin.fromPaths(it.children).map { path ->
-                        path to PathScope.default
+                        path to pathScope
                     }
                 },
                 PathMappingType.Factor,
-                listOf(Pair(rootPath, PathScope.default)),
+                listOf(Pair(rootPath, pathScope)),
             ),
         )
 }
