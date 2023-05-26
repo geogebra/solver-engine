@@ -94,6 +94,27 @@ class NormalizationPlansTests {
     }
 
     @Test
+    fun testDoRemoveBracketInSumWithRedundantUnaryPlusInFirstPosition() = testMethod {
+        method = NormalizationPlans.NormalizeExpression
+        inputExpr = "+1 + 2"
+        check {
+            toExpr = "1 + 2"
+            step { toExpr = "1 + 2" }
+        }
+    }
+
+    @Test
+    fun testDoNotRemoveBracketInSumWithRedundantUnaryPlusInSecondPosition() = testMethod {
+        method = NormalizationPlans.NormalizeExpression
+        inputExpr = "1 + +2"
+        check {
+            toExpr = "1 + 2"
+            step { toExpr = "1 + (+2)" }
+            step { toExpr = "1 + 2" }
+        }
+    }
+
+    @Test
     fun testRearrangeTermsInAProductGm() = testMethod {
         method = NormalizationPlans.ReorderProductInSteps
         inputExpr = "sqrt[3] * 5 * ([y ^ 2] + 1) * (1 + sqrt[3]) * sqrt[y] * y"
