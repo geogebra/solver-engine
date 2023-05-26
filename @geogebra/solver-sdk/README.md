@@ -165,6 +165,17 @@ Commit messages with the following prefixes will cause increments in the version
 See [semantic-release](https://github.com/semantic-release/semantic-release) for
 details.
 
+We use the following versioning strategy:
+
+- feature branches (plut-???-\*): deploys package with pre-release version
+  x.y.z-plut-???.1 and @plut-??? tag.
+- main development branch (main): deploys package as x.y.z with @alpha tag
+- staging (staging): deploys package as x.y.z with @beta tag
+- production (release): deploys package as x.y.z with @latest tag
+
+The CI will automatically adjust the SDK to point to the right API URL depending
+on which branch it is on.
+
 ### Development with respect to Solver Poker
 
 After making changes to this project, rebuild to update the bundled version of this

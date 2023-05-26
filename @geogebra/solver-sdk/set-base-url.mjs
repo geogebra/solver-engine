@@ -1,3 +1,6 @@
+/** This script is called by the CI script to adjust the API base URL the SDK is
+ * using. To use this script, pass the new URL as the first argument. */
+
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
