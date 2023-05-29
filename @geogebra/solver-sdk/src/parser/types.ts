@@ -1,4 +1,4 @@
-export type { LatexSettings, LatexTransformer } from './tree-to-latex';
+export type { LatexSettings, LatexTransformer } from '../renderer/tree-to-latex';
 
 export type NestedExpressionType =
   | 'Sum' // n-ary

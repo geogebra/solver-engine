@@ -3,7 +3,7 @@ import {
   ExpressionTreeBase,
   NestedExpression,
   NumberExpression,
-} from './types';
+} from '../parser';
 import { setsSolutionFormatter, SolutionFormatter } from './solution-formatter';
 import { ColorMap } from '../solutions/coloring';
 
@@ -286,26 +286,15 @@ function treeToLatexInner(
           '\\end{array}\\right.',
       );
     }
-    case 'AddEquations': {
-      const alignSetting = { ...s, align: true };
-      return tfd(
-        '\\begin{array}{rcl|l}\n' +
-          '  ' +
-          treeToLatexInner(n.args[0], n, alignSetting, t) +
-          ' & + \\\\\n' +
-          '  ' +
-          treeToLatexInner(n.args[1], n, alignSetting, t) +
-          ' & \\\\\n' +
-          '\\end{array}',
-      );
-    }
+    case 'AddEquations':
     case 'SubtractEquations': {
       const alignSetting = { ...s, align: true };
+      const operation = n.type === 'AddEquations' ? '+' : '-';
       return tfd(
         '\\begin{array}{rcl|l}\n' +
           '  ' +
           treeToLatexInner(n.args[0], n, alignSetting, t) +
-          ' & - \\\\\n' +
+          ` & ${operation} \\\\\n` +
           '  ' +
           treeToLatexInner(n.args[1], n, alignSetting, t) +
           ' & \\\\\n' +

@@ -3,9 +3,9 @@
  *******************************************/
 import * as solverSDK from '@geogebra/solver-sdk';
 import {
+  jsonToTree,
   MathJson,
   Metadata,
-  NestedExpressionType,
   PlanSelection,
   PlanSelectionJson,
   PlanSelectionSolver,
@@ -18,14 +18,14 @@ import {
   clone,
   containsNonTrivialStep,
   isCosmeticTransformation,
+  isInvisibleChangeStep,
   isPedanticStep,
   isRearrangementStep,
-  isInvisibleChangeStep,
   isThroughStep,
 } from './util';
 import { renderTest } from './render-test';
 import { translationData } from './translations';
-import { LatexTransformer } from '@geogebra/solver-sdk/lib/esm/parser/tree-to-latex';
+import { LatexTransformer } from '@geogebra/solver-sdk/src/renderer/tree-to-latex';
 
 const findTransformationInSelections = (selections: PlanSelection[], methodId: string) => {
   for (const selection of selections) {
@@ -179,46 +179,19 @@ const renderTask = (task: TaskJson, depth = 0): string => {
 };
 
 const renderTaskTransformation = (task: TaskJson) => {
-  const fromExpr = task.startExpr;
   if (task.steps === null) {
     return '';
   }
-  const toExpr = task.steps[task.steps.length - 1].toExpr;
+  const fromExpr = jsonToTree(task.startExpr);
+  const toExpr = jsonToTree(task.steps[task.steps.length - 1].toExpr);
 
-  if (
-    fromExpr[0] === ('AddEquations' as NestedExpressionType) ||
-    fromExpr[0] === ('SubtractEquations' as NestedExpressionType)
-  ) {
-    const eq1 = fromExpr[1]!;
-    const eq2 = fromExpr[2]!;
-
-    const alignSetting = { ...settings.latexSettings, align: true };
-    return /* HTML */ `<div className="expr">
-      ${renderExpression(
-        '\\begin{array}{rcl|l}\n' +
-          '  ' +
-          solverSDK.jsonToLatex(eq1, alignSetting) +
-          ' & ' +
-          (fromExpr[0] === ('AddEquations' as NestedExpressionType) ? '+' : '-') +
-          ' \\\\\n' +
-          '  ' +
-          solverSDK.jsonToLatex(eq2, alignSetting) +
-          ' & \\\\ \\hline \n' +
-          '  ' +
-          solverSDK.jsonToLatex(toExpr, alignSetting) +
-          ' \\\\\n' +
-          '\\end{array}',
-      )}
-    </div>`;
-  }
-
-  return /* HTML */ `<div className="expr">
-    ${renderExpression(
-      `${solverSDK.jsonToLatex(fromExpr, settings.latexSettings)} 
+  const rendering =
+    solverSDK.specialTransformationLatex(fromExpr, toExpr, settings.latexSettings) ||
+    `${solverSDK.treeToLatex(fromExpr, settings.latexSettings)} 
       {\\color{#8888ff}\\thickspace\\longmapsto\\thickspace} 
-      ${solverSDK.jsonToLatex(toExpr, settings.latexSettings)}`,
-    )}
-  </div>`;
+      ${solverSDK.treeToLatex(toExpr, settings.latexSettings)}`;
+
+  return `<div className='expr'>${renderExpression(rendering)}</div>`;
 };
 
 const preprocessSteps = (steps: TransformationJson[]) => {

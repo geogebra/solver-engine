@@ -1,4 +1,4 @@
-import type { DecoratorType, ExpressionTree, NestedExpression } from './types';
+import type { DecoratorType, ExpressionTree, NestedExpression } from '../parser/types';
 
 export type TransformerFunction = (node: ExpressionTree, defaultResult: string) => string;
 
