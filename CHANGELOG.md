@@ -23,6 +23,7 @@ contents to a new release section (e.g. _[0.x]_).
 
 - Improve path mappings for better visualization (using colors) in GeneralRules.kt (PLUT-514)
 - Improve path mappings for better visualization (using colors) in normalization rules (PLUT-520)
+- Fixed the simplification of `sqrt[2] + [7 / 2] - 1` (index bug in partial expression plan) (PLUT-613)
 
 ### Changed
 
