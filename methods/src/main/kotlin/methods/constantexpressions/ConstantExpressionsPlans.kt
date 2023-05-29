@@ -277,7 +277,8 @@ private val expandConstantExpression = run {
     val constantExpansionSteps = createExpandAndSimplifySteps(ConstantExpressionsPlans.SimplifyConstantExpression)
 
     steps {
-        applyTo(constantExpansionSteps) { if (it.isConstant()) it else null }
+        check { it.isConstant() }
+        apply(constantExpansionSteps)
     }
 }
 
@@ -285,7 +286,8 @@ private val addConstantFractions = run {
     val fractionAdditionSteps = createAddFractionsPlan(steps { whilePossible(constantSimplificationSteps) })
 
     steps {
-        applyTo(fractionAdditionSteps) { if (it.isConstant()) it else null }
+        check { it.isConstant() }
+        apply(fractionAdditionSteps)
     }
 }
 

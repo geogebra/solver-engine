@@ -428,6 +428,10 @@ object SumOperator : NaryOperator(SUM_PRECEDENCE) {
         }
     }
 
+    override fun nthChildAllowed(n: Int, op: Operator): Boolean {
+        return (n == 0 || op != UnaryExpressionOperator.Plus) && super.nthChildAllowed(n, op)
+    }
+
     override fun eval(children: List<Double>) = children.sum()
 }
 
