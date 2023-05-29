@@ -65,16 +65,18 @@ enum class IntegerArithmeticRules(override val runner: Rule) : RunnerMethod {
                 ),
             )
 
-            onPattern(product) {
+            val optionalNegProduct = engine.patterns.stickyOptionalNegOf(product)
+
+            onPattern(optionalNegProduct) {
                 when {
                     isBound(multiplier) -> ruleResult(
-                        toExpr = product.substitute(integerOp(base, multiplier) { n1, n2 -> n1 * n2 }),
+                        toExpr = copySign(optionalNegProduct, product.substitute(integerOp(base, multiplier) { n1, n2 -> n1 * n2 })),
                         gmAction = drag(multiplier, base),
                         explanation = metadata(Explanation.EvaluateIntegerProduct, move(base), move(multiplier)),
                     )
 
                     else -> ruleResult(
-                        toExpr = product.substitute(integerOp(base, divisor) { n1, n2 -> n1 / n2 }),
+                        toExpr = copySign(optionalNegProduct, product.substitute(integerOp(base, divisor) { n1, n2 -> n1 / n2 })),
                         gmAction = noGmSupport(),
                         explanation = metadata(Explanation.EvaluateIntegerDivision, move(base), move(divisor)),
                     )
