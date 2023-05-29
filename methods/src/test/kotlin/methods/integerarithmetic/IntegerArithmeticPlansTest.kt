@@ -494,4 +494,89 @@ class IntegerArithmeticPlansTest {
             }
         }
     }
+
+    @Test
+    fun `test -x times ZERO + y`() = testMethod {
+        method = IntegerArithmeticPlans.EvaluateArithmeticExpression
+        inputExpr = "-4*0 + 1"
+
+        check {
+            fromExpr = "-4 * 0 + 1"
+            toExpr = "1"
+            explanation {
+                key = IntegerArithmeticExplanation.EvaluateArithmeticExpression
+            }
+            step {
+                fromExpr = "-4 * 0 + 1"
+                toExpr = "0 + 1"
+                explanation {
+                    key = IntegerArithmeticExplanation.EvaluateProductOfIntegers
+                }
+                step {
+                    fromExpr = "-4 * 0"
+                    toExpr = "0"
+                    explanation {
+                        key = IntegerArithmeticExplanation.EvaluateIntegerProduct
+                    }
+                }
+            }
+            step { }
+        }
+    }
+
+    @Test
+    fun `test z - x times ZERO`() = testMethod {
+        method = IntegerArithmeticPlans.EvaluateArithmeticExpression
+        inputExpr = "1 - 4*0"
+        check {
+            fromExpr = "1 - 4 * 0"
+            toExpr = "1"
+            explanation {
+                key = IntegerArithmeticExplanation.EvaluateArithmeticExpression
+            }
+            step {
+                fromExpr = "1 - 4 * 0"
+                toExpr = "1 - 0"
+                explanation {
+                    key = IntegerArithmeticExplanation.EvaluateProductOfIntegers
+                }
+                step {
+                    fromExpr = "4 * 0"
+                    toExpr = "0"
+                    explanation {
+                        key = IntegerArithmeticExplanation.EvaluateIntegerProduct
+                    }
+                }
+            }
+            step { }
+        }
+    }
+
+    @Test
+    fun `test -xy + z`() = testMethod {
+        method = IntegerArithmeticPlans.EvaluateArithmeticExpression
+        inputExpr = "-4*3 + 1"
+        check {
+            fromExpr = "-4 * 3 + 1"
+            toExpr = "-11"
+            explanation {
+                key = IntegerArithmeticExplanation.EvaluateArithmeticExpression
+            }
+            step {
+                fromExpr = "-4 * 3 + 1"
+                toExpr = "-12 + 1"
+                explanation {
+                    key = IntegerArithmeticExplanation.EvaluateProductOfIntegers
+                }
+                step {
+                    fromExpr = "-4 * 3"
+                    toExpr = "-12"
+                    explanation {
+                        key = IntegerArithmeticExplanation.EvaluateIntegerProduct
+                    }
+                }
+            }
+            step { }
+        }
+    }
 }

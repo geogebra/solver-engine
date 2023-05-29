@@ -52,6 +52,7 @@ import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.productOf
 import engine.patterns.rootOf
+import engine.patterns.stickyPositionalOptionalNegOf
 import engine.patterns.sumContaining
 import engine.steps.metadata.metadata
 import engine.utility.isEven
@@ -171,7 +172,9 @@ private val evaluateProductContainingZero =
             }
         }
 
-        onPattern(pattern) {
+        val optionalNegProduct = stickyPositionalOptionalNegOf(pattern)
+
+        onPattern(optionalNegProduct) {
             ruleResult(
                 toExpr = move(zero),
                 gmAction = tap(zero),

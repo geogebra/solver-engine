@@ -1,5 +1,6 @@
 package methods.integerarithmetic
 
+import engine.expressions.Constants
 import engine.expressions.PathScope
 import engine.expressions.negOf
 import engine.expressions.powerOf
@@ -65,22 +66,39 @@ enum class IntegerArithmeticRules(override val runner: Rule) : RunnerMethod {
                 ),
             )
 
-            val optionalNegProduct = engine.patterns.stickyOptionalNegOf(product)
+            val optionalNegProduct = engine.patterns.stickyPositionalOptionalNegOf(product)
 
             onPattern(optionalNegProduct) {
-                when {
-                    isBound(multiplier) -> ruleResult(
-                        toExpr = copySign(optionalNegProduct, product.substitute(integerOp(base, multiplier) { n1, n2 -> n1 * n2 })),
-                        gmAction = drag(multiplier, base),
-                        explanation = metadata(Explanation.EvaluateIntegerProduct, move(base), move(multiplier)),
-                    )
-
-                    else -> ruleResult(
-                        toExpr = copySign(optionalNegProduct, product.substitute(integerOp(base, divisor) { n1, n2 -> n1 / n2 })),
-                        gmAction = noGmSupport(),
-                        explanation = metadata(Explanation.EvaluateIntegerDivision, move(base), move(divisor)),
-                    )
+                val res = if (isBound(multiplier)) {
+                    integerOp(base, multiplier) { n1, n2 -> n1 * n2 }
+                } else {
+                    integerOp(base, divisor) { n1, n2 -> n1 / n2 }
                 }
+
+                // if the result is 0, then no need for the sign
+                val toExpr = if (res == Constants.Zero) {
+                    product.substitute(res)
+                } else {
+                    copySign(optionalNegProduct, product.substitute(res))
+                }
+
+                val gmAction = if (isBound(multiplier)) {
+                    drag(multiplier, base)
+                } else {
+                    noGmSupport()
+                }
+
+                val explanation = if (isBound(multiplier)) {
+                    metadata(Explanation.EvaluateIntegerProduct, move(base), move(multiplier))
+                } else {
+                    metadata(Explanation.EvaluateIntegerDivision, move(base), move(divisor))
+                }
+
+                ruleResult(
+                    toExpr = toExpr,
+                    gmAction = gmAction,
+                    explanation = explanation,
+                )
             }
         },
     ),
