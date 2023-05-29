@@ -16,7 +16,7 @@ class QuadraticEquationsWithRootsMethodTest {
 
         check {
             fromExpr = "2 [x ^ 2] - 3 = 3 [x ^ 2] + 4"
-            toExpr = "SetSolution[x: {}]"
+            toExpr = "Contradiction[x: [x ^ 2] = -7]"
             explanation {
                 key = EquationsExplanation.SolveEquationUsingRootsMethod
             }
@@ -47,7 +47,7 @@ class QuadraticEquationsWithRootsMethodTest {
 
             step {
                 fromExpr = "[x ^ 2] = -7"
-                toExpr = "SetSolution[x: {}]"
+                toExpr = "Contradiction[x: [x ^ 2] = -7]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEvenPowerEqualsNegative
                 }

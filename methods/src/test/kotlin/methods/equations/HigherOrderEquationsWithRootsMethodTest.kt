@@ -42,6 +42,6 @@ class HigherOrderEquationsWithRootsMethodTest {
     @Test
     fun testSquareOfSquareEqualsNegative() = shortTest(
         inputExpr = "[([x ^ 2]) ^ 2] + 1 = 0",
-        toExpr = "SetSolution[x: {}]",
+        toExpr = "Contradiction[x: [x ^ 4] = -1]",
     )
 }

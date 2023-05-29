@@ -51,7 +51,7 @@ class CompletingTheSquareTest {
     @Test
     fun `short test no solution`() = shortTest(
         inputExpr = "[x ^ 2] + x + 10 = 0",
-        toExpr = "SetSolution[x: {}]",
+        toExpr = "Contradiction[x: [(x + [1 / 2]) ^ 2] = -[39 / 4]]",
     )
 
     @Test

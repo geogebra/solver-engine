@@ -5,6 +5,7 @@ import engine.expressions.Contradiction
 import engine.expressions.Expression
 import engine.expressions.Identity
 import engine.expressions.SetSolution
+import engine.expressions.Solution
 import engine.expressions.VariableList
 import engine.expressions.setSolutionOf
 import engine.expressions.solutionSetOf
@@ -240,7 +241,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
         plan {
             explanation = Explanation.SolveEquationUsingRootsMethod
             pattern = equationInOneVariable()
-            resultPattern = setSolutionOf(variableListOf(SolutionVariablePattern()), AnyPattern())
+            resultPattern = condition(AnyPattern()) { it is Solution }
 
             steps {
                 optionally(equationSimplificationSteps)
@@ -294,7 +295,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
         plan {
             explanation = Explanation.SolveByCompletingTheSquare
             pattern = equationOf(AnyPattern(), AnyPattern())
-            resultPattern = setSolutionOf(variableListOf(SolutionVariablePattern()), AnyPattern())
+            resultPattern = condition(AnyPattern()) { it is Solution }
 
             steps {
 

@@ -347,7 +347,7 @@ class EquationsByFactoringTest {
 
                     step {
                         fromExpr = "[x ^ 2] + 1 = 0"
-                        toExpr = "SetSolution[x: {}]"
+                        toExpr = "Contradiction[x: [x ^ 2] = -1]"
                         explanation {
                             key = EquationsExplanation.SolveEquationUsingRootsMethod
                         }

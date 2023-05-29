@@ -38,7 +38,6 @@ import engine.patterns.ArbitraryVariablePattern
 import engine.patterns.ConditionPattern
 import engine.patterns.ConstantInSolutionVariablePattern
 import engine.patterns.ConstantPattern
-import engine.patterns.EquationPattern
 import engine.patterns.FixedPattern
 import engine.patterns.QuadraticPolynomialPattern
 import engine.patterns.SolutionVariablePattern
@@ -283,12 +282,11 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
         rule {
             val lhs = AnyPattern()
             val rhs = AnyPattern()
-            val eq = EquationPattern(lhs, rhs)
 
-            onPattern(eq) {
+            onEquation(lhs, rhs) {
                 ruleResult(
                     toExpr = equationOf(move(rhs), move(lhs)),
-                    gmAction = drag(lhs, null, eq, PM.Operator, Position.Above),
+                    gmAction = drag(lhs, null, expression, PM.Operator, Position.Above),
                     explanation = metadata(Explanation.FlipEquation),
                 )
             }
@@ -346,10 +344,10 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
     ExtractSolutionFromIdentity(
         rule {
             val value = condition(ConstantInSolutionVariablePattern()) { it.isDefinitelyNotUndefined() }
-            val eqn = equationOf(value, value)
-            onPattern(eqn) {
+
+            onEquation(value, value) {
                 ruleResult(
-                    toExpr = identityOf(variableListOf(context.solutionVariables), get(eqn)),
+                    toExpr = identityOf(variableListOf(context.solutionVariables), expression),
                     explanation = metadata(
                         Explanation.ExtractSolutionFromIdentity,
                         variableListOf(context.solutionVariables),
@@ -363,11 +361,11 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
         rule {
             val lhs = ConstantInSolutionVariablePattern()
             val rhs = ConstantInSolutionVariablePattern()
-            val eqn = equationOf(lhs, rhs)
-            onPattern(eqn) {
+
+            onEquation(lhs, rhs) {
                 if (get(lhs) != get(rhs)) {
                     ruleResult(
-                        toExpr = contradictionOf(variableListOf(context.solutionVariables), get(eqn)),
+                        toExpr = contradictionOf(variableListOf(context.solutionVariables), expression),
                         explanation = metadata(
                             Explanation.ExtractSolutionFromContradiction,
                             variableListOf(context.solutionVariables),
@@ -388,11 +386,10 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                 // for e.g. if the expression contains `sqrt[-3]`
                 it.splitPlusMinus().any { child -> child.signOf() == Sign.NONE }
             }
-            val equation = equationOf(lhs, rhs)
 
-            onPattern(equation) {
+            onEquation(lhs, rhs) {
                 ruleResult(
-                    toExpr = contradictionOf(variableListOf(get(lhs) as Variable), get(equation)),
+                    toExpr = contradictionOf(variableListOf(get(lhs) as Variable), expression),
                     explanation = metadata(Explanation.ExtractSolutionFromNegativeUnderSquareRootInRealDomain),
                 )
             }
@@ -415,7 +412,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                     equationOf(rhsVal, xp(rhsVal.doubleValue.toBigDecimal().withMaxDP(3)))
                 }
                 ruleResult(
-                    toExpr = setSolutionOf(variableListOf(context.solutionVariables), Constants.EmptySet),
+                    toExpr = contradictionOf(variableListOf(context.solutionVariables), expression),
                     explanation = metadata(Explanation.ExtractSolutionFromEvenPowerEqualsNegative, explanationArgument),
                 )
             }
@@ -611,11 +608,10 @@ private val extractSolutionFromModulusEqualsNegativeConstant = rule {
     val absoluteValue = absoluteValueOf(signedLHS)
     val lhs = withOptionalConstantCoefficient(absoluteValue, positiveOnly = true)
     val rhs = condition(ConstantInSolutionVariablePattern()) { it.signOf() == Sign.NEGATIVE }
-    val equation = equationOf(lhs, rhs)
 
-    onPattern(equation) {
+    onEquation(lhs, rhs) {
         ruleResult(
-            toExpr = contradictionOf(variableListOf(context.solutionVariables), get(equation)),
+            toExpr = contradictionOf(variableListOf(context.solutionVariables), expression),
             explanation = metadata(Explanation.ExtractSolutionFromModulusEqualsNegativeConstant),
         )
     }
