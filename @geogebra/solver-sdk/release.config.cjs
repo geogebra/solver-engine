@@ -3,9 +3,9 @@ module.exports = {
     // release new SDK package with @latest when on "release" branch
     'release',
     // release new SDK package with @beta tag when on "staging" branch
-    { name: 'staging', prerelease: 'staging', channel: 'beta' },
+    { name: 'staging', channel: 'beta' },
     // release new SDK package with @alpha tag when on "main" branch
-    { name: 'main', prerelease: 'main', channel: 'alpha' },
+    { name: 'main', channel: 'alpha' },
     // do a pre-release of SDK package with @plut-xyz tag on "plut-xyz-*" branches
     {
       // this uses [glob notation](https://github.com/micromatch/micromatch#matching-features)

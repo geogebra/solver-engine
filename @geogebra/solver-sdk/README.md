@@ -169,12 +169,18 @@ We use the following versioning strategy:
 
 - feature branches (plut-???-\*): deploys package with pre-release version
   x.y.z-plut-???.1 and @plut-??? tag.
-- main development branch (main): deploys package as x.y.z-main with @alpha tag
-- staging (staging): deploys package as x.y.z-staging with @beta tag
+- main development branch (main): deploys package as x.y.z with @alpha tag
+- staging (staging): deploys package as x.y.z with @beta tag
 - production (release): deploys package as x.y.z with @latest tag
 
 The CI will automatically adjust the SDK to point to the right API URL depending
 on which branch it is on.
+
+For feature branches, you should only trigger an SDK package deployment if
+specifically needed by a frontend for development / testing. When merging into
+`main`, the squashed commit message should contain a `fix:` or `feat:` message
+if and only if the SDK was changed. Merging `main` into `staging` or `release`
+will automatically trigger SDK releases if no squashing is used.
 
 ### Development with respect to Solver Poker
 
