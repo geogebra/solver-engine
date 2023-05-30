@@ -18,6 +18,7 @@ contents to a new release section (e.g. _[0.x]_).
   trigonometric functions, percentages, derivatives, integrals, vectors, matrices) (PLUT-288)
 - Add rule `|-x| = |x|` for any `x` (PLUT-607)
 - New test reporter to see global effect of code changes on test output (PLUT-506)
+- Add equation addition and subtraction support in SDK (PLUT-561)
 
 ### Fixed
 
