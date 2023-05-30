@@ -482,6 +482,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                     }
                     apply(EquationsRules.FlipEquation)
                 }
+                optionally(EquationsRules.NegateBothSides)
 
                 apply(EquationsRules.SeparateModulusEqualsExpression)
                 apply(solveEquationUnion)
