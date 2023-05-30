@@ -469,6 +469,8 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 optionally(equationSimplificationSteps)
+                // TODO this is not good, it should only expand things OUTSIDE the absolute value
+                optionally(ExpandPolynomialExpressionInOneVariableWithoutNormalization)
 
                 optionally(IsolateAbsoluteValue)
                 optionally {
