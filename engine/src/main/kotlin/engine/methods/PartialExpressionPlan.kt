@@ -62,7 +62,7 @@ class PartialExpressionPlan(
                 },
             )
 
-            val firstChildIndex = (pattern.childPatterns[0].getBoundExpr(match)!!.origin as Child).index
+            val firstChildIndex = pattern.getMatchedOrigins(match).minOf { (it as Child).index }
             val steps = stepsProducer.produceSteps(ctx, builder.lastSub.nthChild(firstChildIndex))
 
             if (steps != null) {
@@ -84,6 +84,6 @@ class PartialExpressionPlan(
 }
 
 private fun matchedTermsAreNextToEachOther(pattern: NaryPattern, match: Match): Boolean {
-    val indices = pattern.getMatchedOrigins(match).map { (it as Child).index }
+    val indices = pattern.getMatchedOrigins(match).map { (it as Child).index }.sorted()
     return indices == (indices.first()..indices.last()).toList()
 }

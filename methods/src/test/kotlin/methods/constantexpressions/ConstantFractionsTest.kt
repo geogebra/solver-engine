@@ -1,5 +1,6 @@
 package methods.constantexpressions
 
+import engine.methods.SolverEngineExplanation
 import engine.methods.testMethod
 import methods.collecting.CollectingExplanation
 import methods.fractionarithmetic.FractionArithmeticExplanation
@@ -138,6 +139,60 @@ class ConstantFractionsTest {
                 toExpr = "[7 / 2]"
                 explanation {
                     key = IntegerArithmeticExplanation.SimplifyIntegersInSum
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test subtracting integer from fraction (match in the opposite order)`() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "sqrt[2] + [7 / 2] - 1"
+
+        check {
+            fromExpr = "sqrt[2] + [7 / 2] - 1"
+            toExpr = "sqrt[2] + [5 / 2]"
+            explanation {
+                key = FractionArithmeticExplanation.AddIntegerAndFraction
+            }
+
+            invisibleStep {
+                fromExpr = "sqrt[2] + [7 / 2] - 1"
+                toExpr = "sqrt[2] + <. [7 / 2] - 1 .>"
+                explanation {
+                    key = SolverEngineExplanation.ExtractPartialExpression
+                }
+            }
+
+            step {
+                fromExpr = "sqrt[2] + <. [7 / 2] - 1 .>"
+                toExpr = "sqrt[2] + <. [7 / 2] - [1 * 2 / 2] .>"
+                explanation {
+                    key = FractionArithmeticExplanation.BringToCommonDenominator
+                }
+            }
+
+            step {
+                fromExpr = "sqrt[2] + <. [7 / 2] - [1 * 2 / 2] .>"
+                toExpr = "sqrt[2] + <. [7 / 2] - [2 / 2] .>"
+                explanation {
+                    key = IntegerArithmeticExplanation.EvaluateIntegerProduct
+                }
+            }
+
+            step {
+                fromExpr = "sqrt[2] + <. [7 / 2] - [2 / 2] .>"
+                toExpr = "sqrt[2] + [7 - 2 / 2]"
+                explanation {
+                    key = FractionArithmeticExplanation.SubtractLikeFractions
+                }
+            }
+
+            step {
+                fromExpr = "sqrt[2] + [7 - 2 / 2]"
+                toExpr = "sqrt[2] + [5 / 2]"
+                explanation {
+                    key = FractionArithmeticExplanation.SimplifyNumerator
                 }
             }
         }

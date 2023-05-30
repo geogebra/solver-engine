@@ -1,6 +1,7 @@
 package engine.patterns
 
 import engine.context.Context
+import engine.expressions.Child
 import engine.expressions.Constants
 import engine.expressions.Expression
 import engine.expressions.productOf
@@ -77,12 +78,12 @@ class NaryPattern(
         }
     }
 
-    fun getMatchedChildExpressions(match: Match) =
+    private fun getMatchedChildExpressions(match: Match) =
         childPatterns.flatMap { match.getBoundExprs(it) }
             .filter { it.isChildOfOrSelf(match.getBoundExpr(this)) }
 
     fun extract(match: Match): Expression {
-        val matchedChildren = getMatchedChildExpressions(match)
+        val matchedChildren = getMatchedChildExpressions(match).sortedBy { (it.origin as Child).index }
 
         return when (operator) {
             SumOperator -> sumOf(matchedChildren)
