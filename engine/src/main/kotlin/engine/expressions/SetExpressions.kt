@@ -10,8 +10,8 @@ abstract class SetExpression(
     operator: Operator,
     operands: List<Expression>,
     meta: NodeMeta,
-) :
-    Expression(operator, operands, meta) {
+) : Expression(operator, operands, meta) {
+
     abstract fun contains(element: Expression, comparator: ExpressionComparator): Boolean?
 
     abstract fun isEmpty(comparator: ExpressionComparator): Boolean?
@@ -49,6 +49,9 @@ class Interval(
 ) {
     val leftBound get() = firstChild
     val rightBound get() = secondChild
+
+    fun leftClosed() = Interval(leftBound, rightBound, true, closedRight, meta)
+    fun rightClosed() = Interval(leftBound, rightBound, closedLeft, true, meta)
 
     override fun isEmpty(comparator: ExpressionComparator): Boolean? {
         return false

@@ -1,12 +1,6 @@
 package methods.equations
 
 import engine.context.ResourceData
-import engine.expressions.Contradiction
-import engine.expressions.Identity
-import engine.expressions.SetSolution
-import engine.expressions.VariableList
-import engine.expressions.setSolutionOf
-import engine.expressions.solutionSetOf
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
@@ -545,25 +539,8 @@ private val solveEquationUnion = taskSet {
             ) ?: return@tasks null
         }
 
-        // If one of the equations results in an identity, then the overall solution is also an identity
         // Else combine the solutions together
-        val identity = splitTasks.firstOrNull { it.result is Identity }
-        val overallSolution = if (identity != null) {
-            identity.result
-        } else {
-            // Gather all solutions together in a single solution set.
-            val solutions = splitTasks.flatMap {
-                when (val result = it.result) {
-                    is SetSolution -> result.solutionSet.children
-                    is Contradiction -> listOf()
-                    else -> return@tasks null
-                }
-            }.toSet()
-            setSolutionOf(
-                splitTasks[0].result.firstChild as VariableList,
-                solutionSetOf(solutions.sortedBy { it.doubleValue }),
-            )
-        }
+        val overallSolution = computeOverallSolution(splitTasks.map { it.result }) ?: return@tasks null
         task(
             startExpr = overallSolution,
             explanation = metadata(Explanation.CollectSolutions),
