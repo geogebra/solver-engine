@@ -196,8 +196,8 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
 private fun extractVariableTerms(expression: Expression, variables: List<String>): Expression? {
     return when {
         expression.operator == SumOperator -> {
-            val constantTerms = expression.children.filter { !it.isConstantIn(variables) }
-            if (constantTerms.isEmpty()) null else sumOf(constantTerms)
+            val variableTerms = expression.children.filter { !it.isConstantIn(variables) }
+            if (variableTerms.isEmpty()) null else sumOf(variableTerms)
         }
         !expression.isConstantIn(variables) -> expression
         else -> null

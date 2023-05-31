@@ -12,6 +12,7 @@ import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.integerOrderRootOf
 import engine.patterns.oneOf
 import engine.patterns.withOptionalRationalCoefficient
+import engine.sign.Sign
 import engine.utility.hasFactorOfDegree
 import java.math.BigInteger
 

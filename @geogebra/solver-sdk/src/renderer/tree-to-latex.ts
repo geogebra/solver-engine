@@ -305,6 +305,16 @@ function treeToLatexInner(
       const alignSetting = { ...s, align: false };
       return tfd(n.args.map((el) => treeToLatexInner(el, n, alignSetting, t)).join(', '));
     }
+    case 'StatementWithConstraint': {
+      const alignSetting = { ...s, align: false };
+      return tfd(
+        '\\left\\{\\begin{array}{l}\n' +
+          n.args
+            .map((el) => '  ' + treeToLatexInner(el, n, alignSetting, t) + '\\\\\n')
+            .join('') +
+          '\\end{array}\\right.',
+      );
+    }
     case '/undefined/':
       return tfd('\\text{undefined}');
     case '/infinity/':

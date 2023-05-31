@@ -19,11 +19,25 @@ enum class InequalitiesExplanation : CategorisedMetadataKey {
     SimplifyInequality,
 
     /**
+     * Extract a truth from a true inequality that has no variables
+     *
+     * E.g. 1 < 2 -> Truth
+     */
+    ExtractTruthFromTrueInequality,
+
+    /**
      * Extract the solution from a true inequality.
      *
      * E.g. -3 < 7 -> x \in R
      */
     ExtractSolutionFromTrueInequality,
+
+    /**
+     * Extract a falsehood from a false inequality that has no variables
+     *
+     * E.g. 3 < 5 -> Falsehood
+     */
+    ExtractFalsehoodFromFalseInequality,
 
     /**
      * Extract the solution from a false inequality.

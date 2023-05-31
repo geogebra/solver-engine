@@ -1,13 +1,6 @@
 package methods.equations
 
 import engine.context.ResourceData
-import engine.expressions.Contradiction
-import engine.expressions.Expression
-import engine.expressions.Identity
-import engine.expressions.SetSolution
-import engine.expressions.VariableList
-import engine.expressions.setSolutionOf
-import engine.expressions.solutionSetOf
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
@@ -15,8 +8,7 @@ import engine.methods.plan
 import engine.methods.stepsproducers.FormChecker
 import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
-import engine.operators.EquationUnionOperator
-import engine.operators.UnaryExpressionOperator
+import engine.operators.StatementUnionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.BinaryIntegerCondition
 import engine.patterns.ConditionPattern
@@ -454,6 +446,50 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
         },
     ),
 
+    IsolateAbsoluteValue(
+        plan {
+            explanation = Explanation.IsolateAbsoluteValue
+            pattern = equationInOneVariable()
+
+            steps {
+                firstOf {
+                    option(EquationsRules.MoveTermsNotContainingModulusToTheRight)
+                    option(EquationsRules.MoveTermsNotContainingModulusToTheLeft)
+                }
+                apply(simplifyEquation)
+            }
+        },
+    ),
+
+    @PublicMethod
+    SolveEquationWithOneAbsoluteValue(
+        plan {
+            explanation = Explanation.SolveEquationWithVariablesInOneAbsoluteValue
+            pattern = equationInOneVariable()
+
+            steps {
+                optionally(equationSimplificationSteps)
+                // TODO this is not good, it should only expand things OUTSIDE the absolute value
+                optionally(ExpandPolynomialExpressionInOneVariableWithoutNormalization)
+
+                optionally(IsolateAbsoluteValue)
+                optionally {
+                    checkForm {
+                        equationOf(
+                            AnyPattern(),
+                            condition(AnyPattern()) { it.countAbsoluteValues(solutionVariables) > 0 },
+                        )
+                    }
+                    apply(EquationsRules.FlipEquation)
+                }
+                optionally(EquationsRules.NegateBothSides)
+
+                apply(EquationsRules.SeparateModulusEqualsExpression)
+                apply(solveEquationUnion)
+            }
+        },
+    ),
+
     @PublicMethod
     SolveEquationWithTwoAbsoluteValues(solveEquationWithTwoAbsoluteValues),
 
@@ -476,6 +512,8 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
             }
         },
     ),
+
+    SolveEquationWithConstraint(solveEquationWithConstraint),
 }
 
 private val extractSolutionFromEquationPossiblyInPlusMinusForm = steps {
@@ -490,7 +528,7 @@ private val extractSolutionFromEquationPossiblyInPlusMinusForm = steps {
 }
 
 private val solveEquationUnion = taskSet {
-    val equationUnion = condition(AnyPattern()) { it.operator == EquationUnionOperator }
+    val equationUnion = condition(AnyPattern()) { it.operator == StatementUnionOperator }
     pattern = equationUnion
     explanation = Explanation.SolveEquationUnion
 
@@ -504,25 +542,8 @@ private val solveEquationUnion = taskSet {
             ) ?: return@tasks null
         }
 
-        // If one of the equations results in an identity, then the overall solution is also an identity
         // Else combine the solutions together
-        val identity = splitTasks.firstOrNull { it.result is Identity }
-        val overallSolution = if (identity != null) {
-            identity.result
-        } else {
-            // Gather all solutions together in a single solution set.
-            val solutions = splitTasks.flatMap {
-                when (val result = it.result) {
-                    is SetSolution -> result.solutionSet.children
-                    is Contradiction -> listOf()
-                    else -> return@tasks null
-                }
-            }.toSet()
-            setSolutionOf(
-                splitTasks[0].result.firstChild as VariableList,
-                solutionSetOf(solutions.sortedBy { it.doubleValue }),
-            )
-        }
+        val overallSolution = computeOverallSolution(splitTasks.map { it.result }) ?: return@tasks null
         task(
             startExpr = overallSolution,
             explanation = metadata(Explanation.CollectSolutions),
@@ -531,7 +552,7 @@ private val solveEquationUnion = taskSet {
     }
 }
 
-private val optimalEquationSolvingSteps = steps {
+internal val optimalEquationSolvingSteps = steps {
     firstOf {
         option {
             optionally(simplifyEquation)
@@ -543,6 +564,7 @@ private val optimalEquationSolvingSteps = steps {
         option(EquationsPlans.SolveQuadraticEquationUsingQuadraticFormula)
         option(EquationsPlans.SolveByCompletingTheSquare)
         option(EquationsPlans.SolveEquationWithVariablesInOneAbsoluteValue)
+        option(EquationsPlans.SolveEquationWithConstraint)
     }
 }
 
@@ -714,10 +736,4 @@ private val solveEquationWithTwoAbsoluteValues = plan {
             }
         }
     }
-}
-
-private fun Expression.countAbsoluteValues(solutionVariables: List<String>): Int = when {
-    childCount == 0 -> 0
-    operator == UnaryExpressionOperator.AbsoluteValue && !isConstantIn(solutionVariables) -> 1
-    else -> children.sumOf { it.countAbsoluteValues(solutionVariables) }
 }

@@ -1,20 +1,22 @@
 package methods.equations
 
-import engine.conditions.Sign
 import engine.conditions.isDefinitelyNotUndefined
 import engine.conditions.signOf
 import engine.expressions.Constants
+import engine.expressions.Expression
 import engine.expressions.Fraction
+import engine.expressions.StatementWithConstraint
 import engine.expressions.Variable
 import engine.expressions.contradictionOf
 import engine.expressions.equationOf
 import engine.expressions.equationSystemOf
-import engine.expressions.equationUnionOf
 import engine.expressions.fractionOf
+import engine.expressions.greaterThanEqualOf
 import engine.expressions.hasSingleValue
 import engine.expressions.identityOf
 import engine.expressions.inverse
 import engine.expressions.isSignedFraction
+import engine.expressions.lessThanOf
 import engine.expressions.negOf
 import engine.expressions.plusMinusOf
 import engine.expressions.powerOf
@@ -26,6 +28,7 @@ import engine.expressions.simplifiedProductOf
 import engine.expressions.solutionSetOf
 import engine.expressions.splitPlusMinus
 import engine.expressions.squareRootOf
+import engine.expressions.statementUnionOf
 import engine.expressions.sumOf
 import engine.expressions.variableListOf
 import engine.expressions.withoutNegOrPlus
@@ -33,6 +36,8 @@ import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
+import engine.operators.SumOperator
+import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ArbitraryVariablePattern
 import engine.patterns.ConditionPattern
@@ -59,6 +64,7 @@ import engine.patterns.rationalMonomialPattern
 import engine.patterns.sumContaining
 import engine.patterns.sumOf
 import engine.patterns.withOptionalConstantCoefficient
+import engine.sign.Sign
 import engine.steps.Transformation
 import engine.steps.metadata.metadata
 import engine.utility.isEven
@@ -408,7 +414,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
             onEquation(lhs, rhs) {
                 val rhsVal = get(rhs)
-                val explanationArgument = if (rhsVal.signOf() == engine.conditions.Sign.NEGATIVE) {
+                val explanationArgument = if (rhsVal.signOf() == Sign.NEGATIVE) {
                     rhsVal
                 } else {
                     @Suppress("MagicNumber")
@@ -492,6 +498,11 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
     MoveSecondModulusToLhs(moveSecondModulusToLhs),
     SeparateModulusEqualsModulus(separateModulusEqualsModulus),
     ResolveModulusEqualsNegativeModulus(resolveModulusEqualsNegativeModulus),
+
+    SeparateModulusEqualsExpression(separateModulusEqualsExpression),
+
+    MoveTermsNotContainingModulusToTheRight(moveTermsNotContainingModulusToTheRight),
+    MoveTermsNotContainingModulusToTheLeft(moveTermsNotContainingModulusToTheLeft),
 }
 
 private val applyQuadraticFormula = rule {
@@ -536,7 +547,7 @@ private val separateFactoredEquation = rule {
     onEquation(product, FixedPattern(Constants.Zero)) {
         val factors = get(product).children
         ruleResult(
-            toExpr = equationUnionOf(factors.map { equationOf(it, Constants.Zero) }),
+            toExpr = statementUnionOf(factors.map { equationOf(it, Constants.Zero) }),
             explanation = metadata(Explanation.SeparateFactoredEquation),
         )
     }
@@ -551,7 +562,7 @@ private val separateEquationInPlusMinusForm = rule {
             return@onPattern null
         }
         ruleResult(
-            toExpr = equationUnionOf(splitEquations),
+            toExpr = statementUnionOf(splitEquations),
             explanation = metadata(Explanation.SeparatePlusMinusQuadraticSolutions),
         )
     }
@@ -582,7 +593,7 @@ private val separateModulusEqualsPositiveConstant = rule {
     onEquation(lhs, rhs) {
         val newLHS = simplifiedProductOf(lhs.getCoefficient(), get(signedLHS))
         ruleResult(
-            toExpr = equationUnionOf(
+            toExpr = statementUnionOf(
                 equationOf(newLHS, get(rhs)),
                 equationOf(newLHS, negOf(get(rhs))),
             ),
@@ -677,7 +688,7 @@ private val separateModulusEqualsModulus = rule {
         val newLHS = simplifiedProductOf(lhs.getCoefficient(), get(innerLHS))
         val newRHS = simplifiedProductOf(rhs.getCoefficient(), get(innerRHS))
         ruleResult(
-            toExpr = equationUnionOf(
+            toExpr = statementUnionOf(
                 equationOf(newLHS, newRHS),
                 equationOf(newLHS, negOf(newRHS)),
             ),
@@ -708,4 +719,80 @@ private val resolveModulusEqualsNegativeModulus = rule {
             explanation = metadata(Explanation.ResolveModulusEqualsNegativeModulus),
         )
     }
+}
+
+private val separateModulusEqualsExpression = rule {
+    val signedLHS = AnyPattern()
+    val absoluteValue = absoluteValueOf(signedLHS)
+    val lhs = withOptionalConstantCoefficient(absoluteValue, positiveOnly = true)
+    val rhs = AnyPattern()
+
+    onEquation(lhs, rhs) {
+        val signedLHSValue = get(signedLHS)
+        val newLHS = simplifiedProductOf(lhs.getCoefficient(), signedLHSValue)
+        val rhsValue = get(rhs)
+        ruleResult(
+            toExpr = statementUnionOf(
+                StatementWithConstraint(
+                    equationOf(newLHS, rhsValue),
+                    greaterThanEqualOf(signedLHSValue, Constants.Zero),
+                ),
+                StatementWithConstraint(
+                    equationOf(negOf(newLHS), rhsValue),
+                    lessThanOf(signedLHSValue, Constants.Zero),
+                ),
+            ),
+        )
+    }
+}
+
+private val moveTermsNotContainingModulusToTheRight = rule {
+    val lhs = condition(sumContaining()) { it.countAbsoluteValues(solutionVariables) > 0 }
+    val rhs = condition(AnyPattern()) { it.countAbsoluteValues(solutionVariables) == 0 }
+
+    onEquation(lhs, rhs) {
+        val termsNotContainingModulus = extractTermsNotContainingModulus(get(lhs), context.solutionVariables)
+            ?: return@onEquation null
+
+        val negatedTerms = simplifiedNegOfSum(termsNotContainingModulus)
+
+        ruleResult(
+            toExpr = equationOf(sumOf(get(lhs), negatedTerms), sumOf(get(rhs), negatedTerms)),
+            explanation = metadata(Explanation.MoveTermsNotContainingModulusToTheRight),
+        )
+    }
+}
+
+private val moveTermsNotContainingModulusToTheLeft = rule {
+    val lhs = condition(AnyPattern()) { it.countAbsoluteValues(solutionVariables) == 0 }
+    val rhs = condition(sumContaining()) { it.countAbsoluteValues(solutionVariables) > 0 }
+
+    onEquation(lhs, rhs) {
+        val termsNotContainingModulus = extractTermsNotContainingModulus(get(rhs), context.solutionVariables)
+            ?: return@onEquation null
+
+        val negatedTerms = simplifiedNegOfSum(termsNotContainingModulus)
+
+        ruleResult(
+            toExpr = equationOf(sumOf(get(lhs), negatedTerms), sumOf(get(rhs), negatedTerms)),
+            explanation = metadata(Explanation.MoveTermsNotContainingModulusToTheLeft),
+        )
+    }
+}
+
+private fun extractTermsNotContainingModulus(expression: Expression, variables: List<String>): Expression? {
+    return when {
+        expression.operator == SumOperator -> {
+            val termsWithoutModulus = expression.children.filter { it.countAbsoluteValues(variables) == 0 }
+            if (termsWithoutModulus.isEmpty()) null else sumOf(termsWithoutModulus)
+        }
+        expression.countAbsoluteValues(variables) == 0 -> expression
+        else -> null
+    }
+}
+
+internal fun Expression.countAbsoluteValues(solutionVariables: List<String>): Int = when {
+    childCount == 0 -> 0
+    operator == UnaryExpressionOperator.AbsoluteValue && !isConstantIn(solutionVariables) -> 1
+    else -> children.sumOf { it.countAbsoluteValues(solutionVariables) }
 }

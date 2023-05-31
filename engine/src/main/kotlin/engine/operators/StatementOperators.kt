@@ -5,14 +5,46 @@ import engine.expressions.Expression
 import engine.expressions.closedOpenIntervalOf
 import engine.expressions.openClosedIntervalOf
 import engine.expressions.openIntervalOf
+import engine.sign.Sign
 import java.math.BigDecimal
 
 private const val PREDICATE_PRECEDENCE = 0
 private const val EQUATION_SYSTEM_PRECEDENCE = -10
 private const val EQUATION_UNION_PRECEDENCE = -20
+private const val STATEMENT_WITH_CONSTRAINT_PRECEDENCE = -15
 
 interface StatementOperator : Operator {
     override val kind get() = OperatorKind.STATEMENT
+}
+
+object StatementWithConstraintOperator : BinaryOperator, StatementOperator {
+    override val name = "StatementWithConstraint"
+
+    override val precedence = STATEMENT_WITH_CONSTRAINT_PRECEDENCE
+
+    override fun leftChildAllowed(op: Operator): Boolean {
+        require(op.kind == OperatorKind.STATEMENT)
+        return true
+    }
+
+    override fun rightChildAllowed(op: Operator): Boolean {
+        require(op.kind == OperatorKind.STATEMENT)
+        return true
+    }
+
+    override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable): String {
+        val innerCtx = ctx.copy(align = false)
+        return buildString {
+            append("\\left\\{\\begin{array}{l}")
+            append(left.toLatexString(innerCtx), " \\\\")
+            append(right.toLatexString(innerCtx), " \\\\")
+            append("\\end{array}\\right.")
+        }
+    }
+
+    override fun <T> readableString(left: T, right: T): String {
+        return "$left GIVEN $right"
+    }
 }
 
 object EquationOperator : BinaryOperator, StatementOperator {
@@ -90,6 +122,8 @@ enum class InequalityOperators(
     LessThan("<", "<") {
         override fun holdsFor(val1: BigDecimal, val2: BigDecimal) = val1 < val2
 
+        override fun holdsFor(sign: Sign) = sign == Sign.NEGATIVE
+
         override fun toInterval(boundary: Expression) = openIntervalOf(Constants.NegativeInfinity, boundary)
 
         override fun getDual() = GreaterThan
@@ -97,6 +131,8 @@ enum class InequalityOperators(
 
     LessThanEqual("<=", "\\leq") {
         override fun holdsFor(val1: BigDecimal, val2: BigDecimal) = val1 <= val2
+
+        override fun holdsFor(sign: Sign) = sign == Sign.NEGATIVE || sign == Sign.ZERO
 
         override fun toInterval(boundary: Expression) = openClosedIntervalOf(Constants.NegativeInfinity, boundary)
 
@@ -106,6 +142,8 @@ enum class InequalityOperators(
     GreaterThan(">", ">") {
         override fun holdsFor(val1: BigDecimal, val2: BigDecimal) = val1 > val2
 
+        override fun holdsFor(sign: Sign) = sign == Sign.POSITIVE
+
         override fun toInterval(boundary: Expression) = openIntervalOf(boundary, Constants.Infinity)
 
         override fun getDual() = LessThan
@@ -113,6 +151,8 @@ enum class InequalityOperators(
 
     GreaterThanEqual(">=", "\\geq") {
         override fun holdsFor(val1: BigDecimal, val2: BigDecimal) = val1 >= val2
+
+        override fun holdsFor(sign: Sign) = sign == Sign.POSITIVE || sign == Sign.ZERO
 
         override fun toInterval(boundary: Expression) = closedOpenIntervalOf(boundary, Constants.Infinity)
 
@@ -144,6 +184,8 @@ enum class InequalityOperators(
 
     abstract fun holdsFor(val1: BigDecimal, val2: BigDecimal): Boolean
 
+    abstract fun holdsFor(sign: Sign): Boolean?
+
     abstract fun toInterval(boundary: Expression): Expression
 
     abstract fun getDual(): InequalityOperators
@@ -174,14 +216,14 @@ object EquationSystemOperator : StatementOperator {
     }
 }
 
-object EquationUnionOperator : StatementOperator {
+object StatementUnionOperator : StatementOperator {
     override val name = "EquationUnion"
 
     override val precedence = EQUATION_UNION_PRECEDENCE
     override val arity = ARITY_VARIABLE
 
     override fun nthChildAllowed(n: Int, op: Operator): Boolean {
-        require(op is EquationOperator)
+        require(op is StatementOperator)
         return true
     }
 
@@ -226,7 +268,9 @@ enum class SolutionOperator : BinaryOperator, StatementOperator {
     override fun rightChildAllowed(op: Operator) = true
 
     override fun <T> readableString(left: T, right: T): String {
-        return "$name[$left: $right]"
+        val leftString = left.toString()
+        val leftWithSeparator = if (leftString == "") "" else "$leftString : "
+        return "$name[$leftWithSeparator$right]"
     }
 
     override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable): String {

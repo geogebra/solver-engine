@@ -67,6 +67,8 @@ export function treeToSolver(n: ExpressionTree): string {
       return dec(n.args.map((el) => rec(el)).join(' /-/ '));
     case 'EquationUnion':
       return dec(n.args.map((el) => rec(el)).join(' OR '));
+    case 'StatementWithConstraint':
+      return dec(`${rec(n.args[0])} GIVEN ${rec(n.args[1])}`);
     case '/undefined/':
       return dec('/undefined/');
     case '/infinity/':
@@ -86,8 +88,10 @@ export function treeToSolver(n: ExpressionTree): string {
     case 'SetSolution':
     case 'ImplicitSolution':
     case 'Contradiction':
-    case 'Identity':
-      return dec(`${n.type}[${rec(n.args[0]).replace(/\(\)/, '')}: ${rec(n.args[1])})}]`);
+    case 'Identity': {
+      const varList = rec(n.args[0]).replace(/\(\)/, '');
+      return dec(`${n.type}[${varList ? varList + '//' : ''} ${rec(n.args[1])})}]`);
+    }
     case 'FiniteSet':
       return dec(`{${n.args.map((el) => rec(el)).join(', ')}}`);
     case 'OpenInterval':

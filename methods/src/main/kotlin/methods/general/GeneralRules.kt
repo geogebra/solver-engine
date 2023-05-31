@@ -1,6 +1,5 @@
 package methods.general
 
-import engine.conditions.Sign
 import engine.conditions.isDefinitelyNotUndefined
 import engine.conditions.isDefinitelyNotZero
 import engine.conditions.signOf
@@ -53,6 +52,7 @@ import engine.patterns.productContaining
 import engine.patterns.productOf
 import engine.patterns.rootOf
 import engine.patterns.sumContaining
+import engine.sign.Sign
 import engine.steps.metadata.metadata
 import engine.utility.isEven
 import engine.utility.isOdd

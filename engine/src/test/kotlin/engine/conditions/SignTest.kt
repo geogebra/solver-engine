@@ -1,5 +1,6 @@
 package engine.conditions
 
+import engine.sign.Sign
 import org.junit.jupiter.api.Test
 import parser.parseExpression
 import kotlin.test.assertEquals

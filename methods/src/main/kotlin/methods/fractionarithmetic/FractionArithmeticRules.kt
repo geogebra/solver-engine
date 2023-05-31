@@ -356,17 +356,16 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             onPattern(sum) {
                 val expandedDenominator = distribute(denominator)
 
-                ruleResult(
-                    sum.substitute(
-                        get(fraction),
-                        copySign(
-                            nonFractionalTerm,
-                            fractionOf(
-                                productOf(move(nonFractionalTerm.unsignedPattern), expandedDenominator),
-                                expandedDenominator,
-                            ),
-                        ),
+                val nonFractionalTermWithDenominator = copySign(
+                    nonFractionalTerm,
+                    fractionOf(
+                        productOf(move(nonFractionalTerm.unsignedPattern), expandedDenominator),
+                        expandedDenominator,
                     ),
+                )
+                val newSum = sum.substitute(get(fraction), nonFractionalTermWithDenominator)
+                ruleResult(
+                    toExpr = newSum,
                     explanation = metadata(
                         Explanation.BringToCommonDenominator,
                         move(fraction.unsignedPattern),

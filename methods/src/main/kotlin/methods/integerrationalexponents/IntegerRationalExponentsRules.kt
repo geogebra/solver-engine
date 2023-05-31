@@ -1,6 +1,5 @@
 package methods.integerrationalexponents
 
-import engine.conditions.Sign
 import engine.conditions.signOf
 import engine.expressions.Constants
 import engine.expressions.Fraction
@@ -24,6 +23,7 @@ import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
+import engine.sign.Sign
 import engine.steps.metadata.Skill
 import engine.steps.metadata.metadata
 import engine.utility.divides
