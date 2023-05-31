@@ -14,6 +14,7 @@ import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.condition
+import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
@@ -24,7 +25,7 @@ import methods.general.inlineSumsAndProducts
 private enum class PrivateIntegerArithmeticPlans(override val runner: CompositeMethod) : RunnerMethod {
     EvaluateProductOfIntegers(
         plan {
-            pattern = productContaining()
+            pattern = optionalNegOf(productContaining())
             explanation = Explanation.EvaluateProductOfIntegers
             explanationParameters(pattern)
 
@@ -113,7 +114,7 @@ enum class IntegerArithmeticPlans(override val runner: CompositeMethod) : Runner
 
     SimplifyIntegersInProduct(
         plan {
-            pattern = productContaining()
+            pattern = optionalNegOf(productContaining())
             explanation = Explanation.SimplifyIntegersInProduct
             explanationParameters(pattern)
 

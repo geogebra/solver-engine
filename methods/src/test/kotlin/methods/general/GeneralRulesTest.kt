@@ -178,6 +178,7 @@ class GeneralRulesTest {
         testRule("0:1", EvaluateProductContainingZero, null)
         testRule("0:(1+1)", EvaluateProductContainingZero, null)
         testRule("0 * [1 / 1 + 1] * 3", EvaluateProductContainingZero, "0")
+        testRule("-4*sqrt[3]*0", EvaluateProductContainingZero, "0")
         testRule("0 * [1 / 1 - 1] * 3", EvaluateProductContainingZero, null)
 
         testMethod {

@@ -61,7 +61,10 @@ class IntegerArithmeticRulesTest {
         testRule("(-2) * x * 5", EvaluateIntegerProductAndDivision, "(-10) x")
         testRule("10:2", EvaluateIntegerProductAndDivision, "5", GmAction("NotSupported"))
         testRule("10:(-2)", EvaluateIntegerProductAndDivision, "-5")
+        testRule("-2*0", EvaluateIntegerProductAndDivision, "0")
+        testRule("-2*3", EvaluateIntegerProductAndDivision, "-6")
         testRule("5:0", EvaluateIntegerProductAndDivision, null)
+
         testMethod {
             method = EvaluateIntegerProductAndDivision
             inputExpr = "6 : 6"

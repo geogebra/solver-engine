@@ -54,16 +54,34 @@ open class OptionalNegPattern<T : Pattern>(val unsignedPattern: T) :
 }
 
 /**
- * Like OptionalNegPattern but doesn't match if the parent would match because it adds a negative sign.
+ * Like [OptionalNegPattern] but doesn't match if the parent would match because it adds a negative sign.
+ * Additionally, with [stickAtInitialPositionOnly] gives control over whether we stick the negative sign
+ * only when "-subexpression" is at the initial position. For e.g. `-Subexpression + rest` would stick
+ * the "-" sign with "subexpression" (it's in initial position and the pattern wouldn't match),
+ * while for `rest - subexpression` wouldn't stick the negative sign with "subexpression" (this pattern
+ * would match)
  */
-class StickyOptionalNegPattern<T : Pattern>(unsignedPattern: T) : OptionalNegPattern<T>(unsignedPattern) {
+class StickyOptionalNegPattern<T : Pattern>(unsignedPattern: T, private val stickAtInitialPositionOnly: Boolean) :
+    OptionalNegPattern<T>(unsignedPattern) {
     override fun findMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
-        if (subexpression.operator != UnaryExpressionOperator.Minus &&
+        // does the subexpression have a Minus operator parent
+        val subExpressionHasMinusParent = subexpression.operator != UnaryExpressionOperator.Minus &&
             subexpression.parent?.operator == UnaryExpressionOperator.Minus
+        // return true when parent subexpression is present as: "-Subexpression + rest" or "-SubExpression"
+        // else false (i.e. when present as: "rest - SubExpression")
+        val negatedSubexpressionIsFirstChildOrWithoutParent = subexpression.parent?.parent == null ||
+            subexpression.parent.parent.children[0] == subexpression.parent
+
+        return if (
+            subExpressionHasMinusParent && (
+                !stickAtInitialPositionOnly ||
+                    negatedSubexpressionIsFirstChildOrWithoutParent
+                )
         ) {
-            return emptySequence()
+            emptySequence()
+        } else {
+            super.findMatches(context, match, subexpression)
         }
-        return super.findMatches(context, match, subexpression)
     }
 }
 
@@ -97,7 +115,8 @@ fun optional(pattern: Pattern, wrapper: (Pattern) -> Pattern) = OptionalWrapping
 
 fun optionalNegOf(operand: Pattern) = OptionalNegPattern(operand)
 
-fun stickyOptionalNegOf(operand: Pattern) = StickyOptionalNegPattern(operand)
+fun stickyOptionalNegOf(operand: Pattern, initialPositionOnly: Boolean = false) =
+    StickyOptionalNegPattern(operand, initialPositionOnly)
 
 fun optionalDivideBy(pattern: Pattern) = OptionalWrappingPattern(pattern, ::divideBy)
 
