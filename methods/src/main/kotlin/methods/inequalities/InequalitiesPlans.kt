@@ -2,6 +2,7 @@ package methods.inequalities
 
 import engine.context.ResourceData
 import engine.expressions.Constants
+import engine.expressions.Solution
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
@@ -195,13 +196,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
                 contextSensitive {
                     default(
                         ResourceData(preferDecimals = false),
-                        FormChecker(
-                            oneOf(
-                                contradictionOf(variableListOf(SolutionVariablePattern())),
-                                identityOf(variableListOf(SolutionVariablePattern())),
-                                setSolutionOf(variableListOf(SolutionVariablePattern()), AnyPattern()),
-                            ),
-                        ),
+                        FormChecker(condition(AnyPattern()) { it is Solution }),
                     )
                     alternative(
                         ResourceData(preferDecimals = true),

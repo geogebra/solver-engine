@@ -1,6 +1,7 @@
 package methods.equations
 
 import engine.context.ResourceData
+import engine.expressions.Solution
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
@@ -12,7 +13,6 @@ import engine.operators.StatementUnionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.BinaryIntegerCondition
 import engine.patterns.ConditionPattern
-import engine.patterns.Pattern
 import engine.patterns.RecurringDecimalPattern
 import engine.patterns.SignedNumberPattern
 import engine.patterns.SolutionVariablePattern
@@ -209,7 +209,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                 contextSensitive {
                     default(
                         ResourceData(preferDecimals = false),
-                        FormChecker(solutionPattern()),
+                        FormChecker(condition(AnyPattern()) { it is Solution }),
                     )
                     alternative(
                         ResourceData(preferDecimals = true),
@@ -232,7 +232,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
         plan {
             explanation = Explanation.SolveEquationUsingRootsMethod
             pattern = equationInOneVariable()
-            resultPattern = setSolutionOf(variableListOf(SolutionVariablePattern()), AnyPattern())
+            resultPattern = condition(AnyPattern()) { it is Solution }
 
             steps {
                 optionally(equationSimplificationSteps)
@@ -285,8 +285,8 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     SolveByCompletingTheSquare(
         plan {
             explanation = Explanation.SolveByCompletingTheSquare
-            pattern = equationOf(AnyPattern(), AnyPattern())
-            resultPattern = setSolutionOf(variableListOf(SolutionVariablePattern()), AnyPattern())
+            pattern = equationInOneVariable()
+            resultPattern = condition(AnyPattern()) { it is Solution }
 
             steps {
 
@@ -374,7 +374,8 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     SolveQuadraticEquationUsingQuadraticFormula(
         plan {
             explanation = Explanation.SolveQuadraticEquationUsingQuadraticFormula
-            pattern = equationOf(AnyPattern(), AnyPattern())
+            pattern = equationInOneVariable()
+            resultPattern = condition(AnyPattern()) { it is Solution }
 
             steps {
                 optionally(equationSimplificationSteps)
@@ -419,6 +420,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
         plan {
             explanation = Explanation.SolveEquationWithVariablesInOneAbsoluteValue
             pattern = equationInOneVariable()
+            resultPattern = condition(AnyPattern()) { it is Solution }
 
             steps {
                 optionally(equationSimplificationSteps)
@@ -497,7 +499,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     SolveEquationInOneVariable(
         plan {
             explanation = Explanation.SolveEquationInOneVariable
-            pattern = inSolutionVariables(equationOf(AnyPattern(), AnyPattern()))
+            pattern = equationInOneVariable()
 
             specificPlans(
                 SolveLinearEquation,
@@ -602,7 +604,13 @@ private val decimalSolutionFormChecker = run {
         optionalNegOf(fractionOf(UnsignedNumberPattern(), UnsignedNumberPattern())),
     )
 
-    FormChecker(solutionPattern(acceptedSolutions))
+    FormChecker(
+        oneOf(
+            setSolutionOf(variableListOf(SolutionVariablePattern()), solutionSetOf(acceptedSolutions)),
+            contradictionOf(variableListOf(SolutionVariablePattern())),
+            identityOf(variableListOf(SolutionVariablePattern())),
+        ),
+    )
 }
 
 val rearrangeLinearEquationSteps = steps {
@@ -693,15 +701,10 @@ val rearrangeLinearEquationSteps = steps {
 
 private fun equationInOneVariable() = inSolutionVariables(equationOf(AnyPattern(), AnyPattern()))
 
-private fun solutionPattern(solutionValuePattern: Pattern = AnyPattern()) = oneOf(
-    setSolutionOf(variableListOf(SolutionVariablePattern()), solutionSetOf(solutionValuePattern)),
-    contradictionOf(variableListOf(SolutionVariablePattern())),
-    identityOf(variableListOf(SolutionVariablePattern())),
-)
-
 private val solveEquationWithTwoAbsoluteValues = plan {
     explanation = Explanation.SolveEquationWithTwoAbsoluteValues
     pattern = equationInOneVariable()
+    resultPattern = condition(AnyPattern()) { it is Solution }
 
     steps {
         optionally(equationSimplificationSteps)
