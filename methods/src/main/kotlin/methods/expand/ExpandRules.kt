@@ -208,7 +208,7 @@ private val expandTrinomialSquaredUsingIdentity =
 private val expandProductOfSumAndDifference =
     rule {
         val a = AnyPattern()
-        val b = condition(AnyPattern()) { it.operator != UnaryExpressionOperator.Minus }
+        val b = condition { it.operator != UnaryExpressionOperator.Minus }
         val pattern = commutativeProductOf(commutativeSumOf(a, b), commutativeSumOf(a, negOf(b)))
 
         onPattern(pattern) {

@@ -10,7 +10,6 @@ import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
-import engine.patterns.AnyPattern
 import engine.patterns.SignedNumberPattern
 import engine.patterns.condition
 import engine.patterns.productContaining
@@ -58,7 +57,7 @@ enum class ApproximationPlans(override val runner: CompositeMethod) : RunnerMeth
     ApproximateSubexpression(
         plan {
             explanation = Explanation.ApproximateExpressionInBrackets
-            pattern = condition(AnyPattern()) { it.hasBracket() }
+            pattern = condition { it.hasBracket() }
 
             steps {
                 whilePossible(approximationSteps)
@@ -72,7 +71,7 @@ enum class ApproximationPlans(override val runner: CompositeMethod) : RunnerMeth
     @PublicMethod
     ApproximateExpression(
         plan {
-            pattern = condition(AnyPattern()) { it.canBeApproximated() }
+            pattern = condition { it.canBeApproximated() }
             resultPattern = SignedNumberPattern()
 
             specificPlans(IntegerArithmeticPlans.EvaluateArithmeticExpression)

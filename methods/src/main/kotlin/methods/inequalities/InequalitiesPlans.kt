@@ -131,7 +131,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
                             // if the inequality is in the form `a </> bx + c` with `b` non-negative, then
                             // we move `c` to the left hand side and flip the equation
                             checkForm {
-                                val lhs = condition(AnyPattern()) { it.isConstant() }
+                                val lhs = condition { it.isConstant() }
                                 val variableWithCoefficient = withOptionalConstantCoefficient(
                                     SolutionVariablePattern(),
                                     positiveOnly = true,
@@ -196,7 +196,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
                 contextSensitive {
                     default(
                         ResourceData(preferDecimals = false),
-                        FormChecker(condition(AnyPattern()) { it is Solution }),
+                        FormChecker(condition { it is Solution }),
                     )
                     alternative(
                         ResourceData(preferDecimals = true),

@@ -100,7 +100,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
     MoveEverythingToTheLeft(
         rule {
             val lhs = AnyPattern()
-            val rhs = condition(AnyPattern()) { it != Constants.Zero }
+            val rhs = condition { it != Constants.Zero }
 
             onEquation(lhs, rhs) {
                 val negatedRhs = simplifiedNegOfSum(get(rhs))
@@ -301,7 +301,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
     TakeRootOfBothSides(
         rule {
-            val variableTerm = condition(AnyPattern()) { !it.isConstantIn(solutionVariables) }
+            val variableTerm = condition { !it.isConstantIn(solutionVariables) }
             val exponent = UnsignedIntegerPattern()
             val lhs = powerOf(variableTerm, integerCondition(exponent) { it >= BigInteger.TWO })
             val rhs = ConstantInSolutionVariablePattern()
@@ -332,7 +332,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
     TakeRootOfBothSidesRHSIsZero(
         rule {
-            val variableTerm = condition(AnyPattern()) { !it.isConstantIn(solutionVariables) }
+            val variableTerm = condition { !it.isConstantIn(solutionVariables) }
             val exponent = UnsignedIntegerPattern()
             val lhs = powerOf(variableTerm, integerCondition(exponent) { it >= BigInteger.TWO })
             val rhs = FixedPattern(Constants.Zero)
@@ -349,7 +349,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
     ExtractSolutionFromIdentity(
         rule {
-            val value = condition(ConstantInSolutionVariablePattern()) { it.isDefinitelyNotUndefined() }
+            val value = condition { it.isConstantIn(solutionVariables) && it.isDefinitelyNotUndefined() }
 
             onEquation(value, value) {
                 ruleResult(
@@ -387,10 +387,10 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
     ExtractSolutionFromNegativeUnderSquareRootInRealDomain(
         rule {
             val lhs = SolutionVariablePattern()
-            val rhs = condition(ConstantPattern()) {
+            val rhs = condition {
                 // if any of the '+' or '-' term has non-real term in it
                 // for e.g. if the expression contains `sqrt[-3]`
-                it.splitPlusMinus().any { child -> child.signOf() == Sign.NONE }
+                it.isConstant() && it.splitPlusMinus().any { child -> child.signOf() == Sign.NONE }
             }
 
             onEquation(lhs, rhs) {
@@ -404,10 +404,10 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
     ExtractSolutionFromEvenPowerEqualsNegative(
         rule {
-            val variableTerm = condition(AnyPattern()) { !it.isConstantIn(solutionVariables) }
+            val variableTerm = condition { !it.isConstantIn(solutionVariables) }
             val exponent = UnsignedIntegerPattern()
             val lhs = powerOf(variableTerm, integerCondition(exponent) { it.isEven() })
-            val rhs = condition(ConstantInSolutionVariablePattern()) { it.doubleValue < 0 }
+            val rhs = condition { it.isConstant() && it.doubleValue < 0 }
 
             onEquation(lhs, rhs) {
                 val rhsVal = get(rhs)
@@ -428,9 +428,9 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
     ExtractSolutionFromEquationInSolvedForm(
         rule {
             val lhs = SolutionVariablePattern()
-            val rhs = condition(ConstantInSolutionVariablePattern()) {
+            val rhs = condition {
                 // excluding values containing +/-
-                it.hasSingleValue()
+                it.isConstantIn(solutionVariables) && it.hasSingleValue()
             }
 
             onEquation(lhs, rhs) {
@@ -585,7 +585,7 @@ private val separateModulusEqualsPositiveConstant = rule {
     val signedLHS = AnyPattern()
     val absoluteValue = absoluteValueOf(signedLHS)
     val lhs = withOptionalConstantCoefficient(absoluteValue, positiveOnly = true)
-    val rhs = condition(ConstantInSolutionVariablePattern()) { it.signOf() == Sign.POSITIVE }
+    val rhs = condition { it.isConstantIn(solutionVariables) && it.signOf() == Sign.POSITIVE }
 
     onEquation(lhs, rhs) {
         val newLHS = simplifiedProductOf(lhs.getCoefficient(), get(signedLHS))
@@ -618,7 +618,7 @@ private val extractSolutionFromModulusEqualsNegativeConstant = rule {
     val signedLHS = AnyPattern()
     val absoluteValue = absoluteValueOf(signedLHS)
     val lhs = withOptionalConstantCoefficient(absoluteValue, positiveOnly = true)
-    val rhs = condition(ConstantInSolutionVariablePattern()) { it.signOf() == Sign.NEGATIVE }
+    val rhs = condition { it.isConstantIn(solutionVariables) && it.signOf() == Sign.NEGATIVE }
 
     onEquation(lhs, rhs) {
         ruleResult(
@@ -744,7 +744,7 @@ private val separateModulusEqualsExpression = rule {
 
 private val moveTermsNotContainingModulusToTheRight = rule {
     val lhs = condition(sumContaining()) { it.countAbsoluteValues(solutionVariables) > 0 }
-    val rhs = condition(AnyPattern()) { it.countAbsoluteValues(solutionVariables) == 0 }
+    val rhs = condition { it.countAbsoluteValues(solutionVariables) == 0 }
 
     onEquation(lhs, rhs) {
         val termsNotContainingModulus = extractTermsNotContainingModulus(get(lhs), context.solutionVariables)
@@ -760,7 +760,7 @@ private val moveTermsNotContainingModulusToTheRight = rule {
 }
 
 private val moveTermsNotContainingModulusToTheLeft = rule {
-    val lhs = condition(AnyPattern()) { it.countAbsoluteValues(solutionVariables) == 0 }
+    val lhs = condition { it.countAbsoluteValues(solutionVariables) == 0 }
     val rhs = condition(sumContaining()) { it.countAbsoluteValues(solutionVariables) > 0 }
 
     onEquation(lhs, rhs) {

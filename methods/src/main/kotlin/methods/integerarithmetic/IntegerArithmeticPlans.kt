@@ -11,7 +11,6 @@ import engine.methods.plan
 import engine.methods.stepsproducers.steps
 import engine.operators.SumOperator
 import engine.operators.UnaryExpressionOperator
-import engine.patterns.AnyPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.condition
 import engine.patterns.optionalNegOf
@@ -85,7 +84,7 @@ private enum class PrivateIntegerArithmeticPlans(override val runner: CompositeM
     EvaluateArithmeticSubexpression(
         plan {
             explanation = Explanation.SimplifyExpressionInBrackets
-            pattern = condition(AnyPattern()) { it.hasBracket() }
+            pattern = condition { it.hasBracket() }
 
             steps {
                 whilePossible(evaluationSteps)
@@ -139,11 +138,10 @@ enum class IntegerArithmeticPlans(override val runner: CompositeMethod) : Runner
     @PublicMethod
     EvaluateArithmeticExpression(
         plan {
-            val expression = AnyPattern()
-            pattern = condition(expression) { it.isArithmeticExpression() }
+            pattern = condition { it.isArithmeticExpression() }
             explanation = Explanation.EvaluateArithmeticExpression
             resultPattern = SignedIntegerPattern()
-            explanationParameters(expression)
+            explanationParameters(pattern)
 
             steps {
                 whilePossible {

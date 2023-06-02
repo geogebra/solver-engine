@@ -112,7 +112,7 @@ class ConstantCoefficientPattern(
             product.getRestSubexpressions(match).all { it.isConstant() }
         },
     )
-    private val denominator = condition(AnyPattern()) { it.isConstant() }
+    private val denominator = condition { it.isConstant() }
 
     private val options = oneOf(
         numerator,

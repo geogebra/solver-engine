@@ -209,7 +209,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                 contextSensitive {
                     default(
                         ResourceData(preferDecimals = false),
-                        FormChecker(condition(AnyPattern()) { it is Solution }),
+                        FormChecker(condition { it is Solution }),
                     )
                     alternative(
                         ResourceData(preferDecimals = true),
@@ -232,7 +232,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
         plan {
             explanation = Explanation.SolveEquationUsingRootsMethod
             pattern = equationInOneVariable()
-            resultPattern = condition(AnyPattern()) { it is Solution }
+            resultPattern = condition { it is Solution }
 
             steps {
                 optionally(equationSimplificationSteps)
@@ -286,7 +286,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
         plan {
             explanation = Explanation.SolveByCompletingTheSquare
             pattern = equationInOneVariable()
-            resultPattern = condition(AnyPattern()) { it is Solution }
+            resultPattern = condition { it is Solution }
 
             steps {
 
@@ -375,7 +375,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
         plan {
             explanation = Explanation.SolveQuadraticEquationUsingQuadraticFormula
             pattern = equationInOneVariable()
-            resultPattern = condition(AnyPattern()) { it is Solution }
+            resultPattern = condition { it is Solution }
 
             steps {
                 optionally(equationSimplificationSteps)
@@ -420,7 +420,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
         plan {
             explanation = Explanation.SolveEquationWithVariablesInOneAbsoluteValue
             pattern = equationInOneVariable()
-            resultPattern = condition(AnyPattern()) { it is Solution }
+            resultPattern = condition { it is Solution }
 
             steps {
                 optionally(equationSimplificationSteps)
@@ -479,7 +479,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                     checkForm {
                         equationOf(
                             AnyPattern(),
-                            condition(AnyPattern()) { it.countAbsoluteValues(solutionVariables) > 0 },
+                            condition { it.countAbsoluteValues(solutionVariables) > 0 },
                         )
                     }
                     apply(EquationsRules.FlipEquation)
@@ -530,7 +530,7 @@ private val extractSolutionFromEquationPossiblyInPlusMinusForm = steps {
 }
 
 private val solveEquationUnion = taskSet {
-    val equationUnion = condition(AnyPattern()) { it.operator == StatementUnionOperator }
+    val equationUnion = condition { it.operator == StatementUnionOperator }
     pattern = equationUnion
     explanation = Explanation.SolveEquationUnion
 
@@ -639,7 +639,7 @@ val rearrangeLinearEquationSteps = steps {
                 // if the equation is in the form `a = bx + c` with `b` non-negative, then
                 // we move `c` to the left hand side and flip the equation
                 checkForm {
-                    val lhs = condition(AnyPattern()) { it.isConstant() }
+                    val lhs = condition { it.isConstant() }
                     val variableWithCoefficient = withOptionalConstantCoefficient(
                         SolutionVariablePattern(),
                         positiveOnly = true,
@@ -704,7 +704,7 @@ private fun equationInOneVariable() = inSolutionVariables(equationOf(AnyPattern(
 private val solveEquationWithTwoAbsoluteValues = plan {
     explanation = Explanation.SolveEquationWithTwoAbsoluteValues
     pattern = equationInOneVariable()
-    resultPattern = condition(AnyPattern()) { it is Solution }
+    resultPattern = condition { it is Solution }
 
     steps {
         optionally(equationSimplificationSteps)

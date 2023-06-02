@@ -24,7 +24,6 @@ import engine.operators.BinaryExpressionOperator
 import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
-import engine.patterns.ConstantPattern
 import engine.patterns.FixedPattern
 import engine.patterns.FractionPattern
 import engine.patterns.SignedIntegerPattern
@@ -112,7 +111,7 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
 private val removeUnitaryCoefficient =
     rule {
         val one = FixedPattern(Constants.One)
-        val otherTerm = condition(AnyPattern()) { it !is IntegerExpression }
+        val otherTerm = condition { it !is IntegerExpression }
         val pattern = productOf(one, otherTerm)
 
         onPattern(pattern) {
@@ -322,7 +321,7 @@ private val simplifyZeroDenominatorFractionToUndefined =
 private val simplifyZeroNumeratorFractionToZero =
     rule {
         val zero = FixedPattern(Constants.Zero)
-        val denominator = condition(AnyPattern()) { it.isDefinitelyNotZero() }
+        val denominator = condition { it.isDefinitelyNotZero() }
         val pattern = fractionOf(zero, denominator)
 
         onPattern(pattern) {
@@ -339,7 +338,7 @@ private val simplifyZeroNumeratorFractionToZero =
  */
 private val simplifyUnitFractionToOne =
     rule {
-        val common = condition(AnyPattern()) { it.isDefinitelyNotZero() }
+        val common = condition { it.isDefinitelyNotZero() }
         val pattern = fractionOf(common, common)
 
         onPattern(pattern) {
@@ -387,7 +386,7 @@ private val cancelDenominator =
 /** [any1 * any2 / any1 * any3] --> [any2 / any3] */
 private val cancelCommonTerms =
     rule {
-        val common = condition(AnyPattern()) { it != Constants.One }
+        val common = condition { it != Constants.One }
         val numerator = productContaining(common)
         val denominator = productContaining(common)
         val fraction = fractionOf(numerator, denominator)
@@ -570,7 +569,7 @@ private val simplifyExpressionToThePowerOfOne =
 private val evaluateOneToAnyPower =
     rule {
         val one = FixedPattern(Constants.One)
-        val exponent = condition(AnyPattern()) { it.isDefinitelyNotUndefined() }
+        val exponent = condition { it.isDefinitelyNotUndefined() }
         val power = powerOf(one, exponent)
 
         onPattern(power) {
@@ -603,7 +602,7 @@ private val evaluateZeroToThePowerOfZero =
 private val evaluateExpressionToThePowerOfZero =
     rule {
         val zero = FixedPattern(Constants.Zero)
-        val power = powerOf(condition(AnyPattern()) { it.isDefinitelyNotZero() }, zero)
+        val power = powerOf(condition { it.isDefinitelyNotZero() }, zero)
         onPattern(power) {
             ruleResult(
                 toExpr = transformTo(power, Constants.One),
@@ -619,7 +618,7 @@ private val evaluateExpressionToThePowerOfZero =
 private val evaluateZeroToAPositivePower =
     rule {
         val zero = FixedPattern(Constants.Zero)
-        val power = powerOf(zero, condition(AnyPattern()) { it.signOf() == Sign.POSITIVE })
+        val power = powerOf(zero, condition { it.signOf() == Sign.POSITIVE })
         onPattern(power) {
             ruleResult(
                 toExpr = move(zero),
@@ -970,7 +969,7 @@ private val cancelRootIndexAndExponent =
     }
 
 private val resolveAbsoluteValueOfPositiveValue = rule {
-    val argument = condition(ConstantPattern()) { it.signOf() == Sign.POSITIVE }
+    val argument = condition { it.isConstant() && it.signOf() == Sign.POSITIVE }
     val absoluteValue = absoluteValueOf(argument)
 
     onPattern(absoluteValue) {
@@ -982,7 +981,7 @@ private val resolveAbsoluteValueOfPositiveValue = rule {
 }
 
 private val resolveAbsoluteValueOfNegativeValue = rule {
-    val argument = condition(ConstantPattern()) { it.signOf() == Sign.POSITIVE }
+    val argument = condition { it.isConstant() && it.signOf() == Sign.POSITIVE }
     val negatedArgument = negOf(argument)
     val absoluteValue = absoluteValueOf(negatedArgument)
 

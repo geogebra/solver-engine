@@ -36,7 +36,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
 
     CancelCommonTermsOnBothSides(
         rule {
-            val common = condition(AnyPattern()) { it != Constants.Zero }
+            val common = condition { it != Constants.Zero }
 
             // intentionally matching members of the sum first, to avoid cancelling an
             // entire sum at once

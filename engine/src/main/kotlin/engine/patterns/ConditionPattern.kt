@@ -5,6 +5,11 @@ import engine.expressions.Expression
 import java.math.BigDecimal
 import java.math.BigInteger
 
+data class PureConditionPattern(private val condition: Context.(Expression) -> Boolean) : BasePattern() {
+    override fun doFindMatches(context: Context, match: Match, subexpression: Expression) =
+        if (context.condition(subexpression)) sequenceOf(match.newChild(this, subexpression)) else sequenceOf()
+}
+
 fun interface MatchCondition {
     fun checkMatch(context: Context, match: Match): Boolean
 }
@@ -88,6 +93,8 @@ data class BinaryNumericCondition(
         return context.condition(ptn1.getBoundNumber(match), ptn2.getBoundNumber(match))
     }
 }
+
+fun condition(condition: Context.(Expression) -> Boolean) = PureConditionPattern(condition)
 
 fun condition(
     ptn: Pattern,

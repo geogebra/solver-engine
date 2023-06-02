@@ -88,10 +88,7 @@ enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMeth
      */
     NormaliseProductWithRationalExponents(
         rule {
-            val notRationalExponent =
-                condition(AnyPattern()) {
-                    it !is Power || it.exponent !is Fraction
-                }
+            val notRationalExponent = condition { it !is Power || it.exponent !is Fraction }
             val product = productContaining(
                 powerOf(UnsignedIntegerPattern(), fractionOf(UnsignedIntegerPattern(), UnsignedIntegerPattern())),
                 notRationalExponent,

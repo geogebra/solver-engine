@@ -15,7 +15,6 @@ import engine.methods.plan
 import engine.methods.stepsproducers.contextSensitiveSteps
 import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
-import engine.patterns.AnyPattern
 import engine.patterns.ArbitraryVariablePattern
 import engine.patterns.FixedPattern
 import engine.patterns.SignedIntegerPattern
@@ -148,7 +147,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
     ExpandPolynomialExpressionInOneVariable(
         plan {
             explanation = Explanation.ExpandPolynomialExpression
-            pattern = condition(AnyPattern()) { it.variables.size == 1 }
+            pattern = condition { it.variables.size == 1 }
 
             steps {
                 whilePossible(algebraicSimplificationSteps)
@@ -186,7 +185,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
     FactorPolynomialInOneVariable(
         plan {
             explanation = Explanation.FactorPolynomial
-            pattern = condition(AnyPattern()) { it.variables.size == 1 }
+            pattern = condition { it.variables.size == 1 }
 
             steps {
                 whilePossible(algebraicSimplificationSteps)

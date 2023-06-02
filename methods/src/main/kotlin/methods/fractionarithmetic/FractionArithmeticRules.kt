@@ -327,7 +327,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
     TurnFactorIntoFractionInProduct(
         rule {
             val nonFractionFactor =
-                condition(AnyPattern()) { it.isConstant() && it.canBeTurnedToFraction() }
+                condition { it.isConstant() && it.canBeTurnedToFraction() }
 
             // TODO @Simona doesn't want:  `1 + [([2/5])^[2/3]]` to be a valid `nonFractionFactor`
             val product = productContaining(nonFractionFactor)
@@ -349,7 +349,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
         rule {
             val denominator = AnyPattern()
             val fraction = optionalNegOf(fractionOf(AnyPattern(), denominator))
-            val nonFractionalTerm = optionalNegOf(condition(AnyPattern()) { it !is Fraction })
+            val nonFractionalTerm = optionalNegOf(condition { it !is Fraction })
 
             val sum = commutativeSumOf(fraction, nonFractionalTerm)
 

@@ -27,7 +27,7 @@ import engine.steps.metadata.GmPathModifier as PM
 enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
     AddClarifyingBracket(
         rule {
-            val missingBracket = condition(AnyPattern()) { it.outerBracket() == Decorator.MissingBracket }
+            val missingBracket = condition { it.outerBracket() == Decorator.MissingBracket }
 
             onPattern(missingBracket) {
                 if (context.gmFriendly) return@onPattern null
@@ -121,7 +121,7 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
 
     RemoveRedundantBracket(
         rule {
-            val pattern = condition(AnyPattern()) {
+            val pattern = condition {
                 it.hasBracket() && it.outerBracket() != Decorator.MissingBracket && if (it.parent == null) {
                     true
                 } else {

@@ -12,7 +12,6 @@ import engine.methods.plan
 import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.steps
 import engine.operators.UnaryExpressionOperator
-import engine.patterns.AnyPattern
 import engine.patterns.SignedNumberPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.condition
@@ -175,7 +174,7 @@ enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
     EvaluateSubexpressionAsDecimal(
         plan {
             explanation = Explanation.EvaluateExpressionInBracketsAsDecimal
-            pattern = condition(AnyPattern()) { it.hasBracket() }
+            pattern = condition { it.hasBracket() }
 
             steps {
                 whilePossible(decimalEvaluationSteps)
@@ -189,8 +188,7 @@ enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
     @PublicMethod
     EvaluateExpressionAsDecimal(
         plan {
-            val expression = AnyPattern()
-            pattern = condition(expression) { it.isDecimalExpression() }
+            pattern = condition { it.isDecimalExpression() }
             resultPattern = SignedNumberPattern()
 
             specificPlans(IntegerArithmeticPlans.EvaluateArithmeticExpression)
