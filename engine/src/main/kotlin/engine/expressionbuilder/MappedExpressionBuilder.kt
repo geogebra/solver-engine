@@ -20,6 +20,7 @@ import engine.expressions.variableListOf
 import engine.expressions.xp
 import engine.operators.EquationOperator
 import engine.operators.InequalityOperators
+import engine.patterns.ArbitraryVariablePattern
 import engine.patterns.CoefficientPattern
 import engine.patterns.ExpressionProvider
 import engine.patterns.InequalityPattern
@@ -34,7 +35,6 @@ import engine.patterns.Pattern
 import engine.patterns.RationalCoefficientPattern
 import engine.patterns.RationalPattern
 import engine.patterns.RecurringDecimalPattern
-import engine.patterns.SolutionVariablePattern
 import engine.patterns.SolvablePattern
 import engine.patterns.monomialPattern
 import engine.steps.metadata.DragTargetPosition
@@ -283,8 +283,12 @@ open class MappedExpressionBuilder(
         return expressionOf(operator, listOf(lhs, rhs))
     }
 
+    @Suppress("ReturnCount")
     fun leadingCoefficientOfPolynomial(polynomialExpr: Expression): Expression? {
-        val monomial = monomialPattern(SolutionVariablePattern())
+        val variables = polynomialExpr.variables
+        if (variables.size != 1) return null
+
+        val monomial = monomialPattern(ArbitraryVariablePattern())
         var degree = BigInteger.ZERO
         var leadingCoefficient: Expression? = null
         for (term in polynomialExpr.children) {

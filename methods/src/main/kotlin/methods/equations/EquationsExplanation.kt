@@ -263,15 +263,6 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     SolveEquationByFactoring,
 
     /**
-     * factor out the negative sign from the leading coefficient term
-     * of the polynomial equation
-     *
-     * E.g. -[x^2] + 2x - 1 = 0
-     *      --> (-1) ([x^2] - 2x + 1) = 0
-     */
-    FactorNegativeSignOfLeadingCoefficient,
-
-    /**
      * Applies the quadratic formula i.e. x = [ -b +/- sqrt[b^2 - 4ac] / 2a ]
      * to a quadratic equation in standard form: a[x^2] + bx + c = 0
      *

@@ -34,12 +34,37 @@ fun BigInteger.isEven() = this.lowestSetBit != 0
 
 fun BigInteger.divides(n: BigInteger) = !isZero() && n.mod(this) == BigInteger.ZERO
 
+fun BigInteger.divisibleBy(n: Int): Boolean {
+    return n != 0 && this.mod(n.toBigInteger()) == BigInteger.ZERO
+}
+
 fun BigInteger.lcm(n: BigInteger) = if (n.isZero()) this else (this * n) / gcd(n)
+
+/**
+ * Newton's method for finding the largest integer `s` such that `s ^ 3 <= this`
+ */
+fun BigInteger.nthRoot(n: Int): BigInteger {
+    val n1 = n - 1
+    var s = this + BigInteger.ONE
+    var u = this
+    while (u < s) {
+        s = u
+        u = (u * n1.toBigInteger() + this / u.pow(n1)) / n.toBigInteger()
+    }
+    return s
+}
+
+fun BigInteger.cbrt() = this.nthRoot(3)
 
 fun BigInteger.isSquare(): Boolean {
     if (signum() < 0) return false
     val sqrt = this.sqrt()
     return sqrt * sqrt == this
+}
+
+fun BigInteger.isCube(): Boolean {
+    val cbrt = this.cbrt()
+    return cbrt * cbrt * cbrt == this
 }
 
 /**

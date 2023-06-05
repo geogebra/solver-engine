@@ -206,31 +206,6 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
         },
     ),
 
-    FactorNegativeSignOfLeadingCoefficient(
-        rule {
-            val lhs = inSolutionVariables(sumContaining())
-            val rhs = FixedPattern(Constants.Zero)
-
-            onEquation(lhs, rhs) {
-                val lhsExpr = get(lhs)
-                val leadingCoefficient = leadingCoefficientOfPolynomial(lhsExpr)
-                if ((leadingCoefficient == null) || (leadingCoefficient.signOf() == Sign.POSITIVE)) {
-                    return@onEquation null
-                }
-
-                val additiveInverseLhsExpr = simplifiedNegOfSum(lhsExpr)
-
-                ruleResult(
-                    toExpr = equationOf(
-                        productOf(negOf(Constants.One), additiveInverseLhsExpr),
-                        get(rhs),
-                    ),
-                    explanation = metadata(Explanation.FactorNegativeSignOfLeadingCoefficient),
-                )
-            }
-        },
-    ),
-
     CompleteTheSquare(
         rule {
             val variable = SolutionVariablePattern()

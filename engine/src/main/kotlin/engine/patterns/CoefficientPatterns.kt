@@ -29,10 +29,10 @@ class IntegerCoefficientPattern(value: Pattern, private val positiveOnly: Boolea
     )
 
     private val optionalNegPattern = optionalNegOf(options)
-    val integerCoefficient = IntegerProviderWithDefault(unsignedIntegerCoefficient, BigInteger.ONE, optionalNegPattern)
     private val pattern = if (positiveOnly) options else optionalNegPattern
-
     override val key = pattern.key
+
+    val integerCoefficient = IntegerProviderWithDefault(unsignedIntegerCoefficient, BigInteger.ONE, optionalNegPattern)
 
     override fun coefficient(match: Match): Expression =
         with(MappedExpressionBuilder(emptyContext, match.getBoundExpr(key)!!, match)) {
@@ -49,7 +49,7 @@ class IntegerCoefficientPattern(value: Pattern, private val positiveOnly: Boolea
  *     [x/10]
  *     any of the above with a negative sign in front.
  */
-class RationalCoefficientPattern(value: Pattern) : CoefficientPattern(value) {
+class RationalCoefficientPattern(value: Pattern, private val positiveOnly: Boolean) : CoefficientPattern(value) {
 
     private val numerator = UnsignedIntegerPattern()
     private val denominator = UnsignedIntegerPattern()
@@ -61,9 +61,9 @@ class RationalCoefficientPattern(value: Pattern) : CoefficientPattern(value) {
         productOf(fractionOf(numerator, denominator), value),
     )
 
-    private val ptn = optionalNegOf(options)
-
-    override val key = ptn.key
+    private val optionalNegPattern = optionalNegOf(options)
+    private val pattern = if (positiveOnly) options else optionalNegPattern
+    override val key = pattern.key
 
     /**
      * Given a match, returns the coefficient as an integer or fraction
@@ -80,7 +80,7 @@ class RationalCoefficientPattern(value: Pattern) : CoefficientPattern(value) {
                 else -> numeratorCoefficient
             }
 
-            copySign(ptn, coefficient)
+            if (positiveOnly) coefficient else copySign(optionalNegPattern, coefficient)
         }
 }
 
@@ -154,7 +154,8 @@ fun withOptionalIntegerCoefficient(pattern: Pattern, positiveOnly: Boolean = fal
  * Creates a pattern for the given pattern optionally multiplied by a rational
  * coefficient. See [RationalCoefficientPattern] for details.
  */
-fun withOptionalRationalCoefficient(pattern: Pattern) = RationalCoefficientPattern(pattern)
+fun withOptionalRationalCoefficient(pattern: Pattern, positiveOnly: Boolean = false) =
+    RationalCoefficientPattern(pattern, positiveOnly)
 
 /**
  * Creates a pattern which matches the given variable optionally multiplied

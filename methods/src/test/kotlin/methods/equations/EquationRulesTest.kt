@@ -117,25 +117,6 @@ class EquationRulesTest {
     }
 
     @Test
-    fun testFactorNegativeSign() {
-        testRuleInX(
-            "-[x^2] - 2x + 1 = 0",
-            EquationsRules.FactorNegativeSignOfLeadingCoefficient,
-            "(-1) ([x^2] + 2x - 1) = 0",
-        )
-        testRuleInX(
-            "[x^2] + 2x - 1 = 0",
-            EquationsRules.FactorNegativeSignOfLeadingCoefficient,
-            null,
-        )
-        testRuleInX(
-            "-[x^2] + 2x + 2 = 0",
-            EquationsRules.FactorNegativeSignOfLeadingCoefficient,
-            "(-1)([x^2] - 2x - 2) = 0",
-        )
-    }
-
-    @Test
     fun testExtractSolutionFromEquationInUnionForm() {
         testRuleInX(
             "x = [-1 + sqrt[11] / 2] OR x = [-1 - sqrt[11] / 2]",

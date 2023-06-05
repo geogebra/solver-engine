@@ -1,0 +1,694 @@
+package methods.factor
+
+import engine.methods.testMethod
+import methods.constantexpressions.ConstantExpressionsExplanation
+import methods.expand.ExpandExplanation
+import methods.general.GeneralExplanation
+import methods.integerarithmetic.IntegerArithmeticExplanation
+import methods.polynomials.PolynomialsExplanation
+import org.junit.jupiter.api.Test
+
+class FactorPlansTest {
+
+    @Test
+    fun `test extracting the common integer factor`() = testMethod {
+        method = FactorPlans.FactorPolynomialInOneVariable
+        inputExpr = "16 [x ^ 5] - 32"
+
+        check {
+            fromExpr = "16 [x ^ 5] - 32"
+            toExpr = "16 ([x ^ 5] - 2)"
+            explanation {
+                key = FactorExplanation.FactorGreatestCommonFactor
+            }
+
+            step {
+                fromExpr = "16 [x ^ 5] - 32"
+                toExpr = "16 [x ^ 5] - 16 * 2"
+                explanation {
+                    key = FactorExplanation.SplitIntegersInMonomialsBeforeFactoring
+                }
+            }
+
+            step {
+                fromExpr = "16 [x ^ 5] - 16 * 2"
+                toExpr = "16 ([x ^ 5] - 2)"
+                explanation {
+                    key = FactorExplanation.ExtractCommonTerms
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test extracting the common monomial factor`() = testMethod {
+        method = FactorPlans.FactorPolynomialInOneVariable
+        inputExpr = "15 [x ^ 5] - 33 [x ^ 2]"
+
+        check {
+            fromExpr = "15 [x ^ 5] - 33 [x ^ 2]"
+            toExpr = "3 [x ^ 2] (5 [x ^ 3] - 11)"
+            explanation {
+                key = FactorExplanation.FactorGreatestCommonFactor
+            }
+
+            step {
+                fromExpr = "15 [x ^ 5] - 33 [x ^ 2]"
+                toExpr = "3 * 5 [x ^ 5] - 3 * 11 [x ^ 2]"
+                explanation {
+                    key = FactorExplanation.SplitIntegersInMonomialsBeforeFactoring
+                }
+            }
+
+            step {
+                fromExpr = "3 * 5 [x ^ 5] - 3 * 11 [x ^ 2]"
+                toExpr = "3 * 5 [x ^ 2] * [x ^ 3] - 3 * 11 [x ^ 2]"
+                explanation {
+                    key = FactorExplanation.SplitVariablePowersInMonomialsBeforeFactoring
+                }
+            }
+
+            step {
+                fromExpr = "3 * 5 [x ^ 2] * [x ^ 3] - 3 * 11 [x ^ 2]"
+                toExpr = "3 [x ^ 2] (5 [x ^ 3] - 11)"
+                explanation {
+                    key = FactorExplanation.ExtractCommonTerms
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test factoring monic perfect square`() = testMethod {
+        method = FactorPlans.FactorPolynomialInOneVariable
+        inputExpr = "[x ^ 2] + 14 x + 49"
+
+        check {
+            fromExpr = "[x ^ 2] + 14 x + 49"
+            toExpr = "[(x + 7) ^ 2]"
+            explanation {
+                key = FactorExplanation.FactorSquareOfBinomial
+            }
+
+            step {
+                fromExpr = "[x ^ 2] + 14 x + 49"
+                toExpr = "[x ^ 2] + 2 * 7 * x + [7 ^ 2]"
+                explanation {
+                    key = FactorExplanation.RewriteSquareOfBinomial
+                }
+            }
+
+            step {
+                fromExpr = "[x ^ 2] + 2 * 7 * x + [7 ^ 2]"
+                toExpr = "[(x + 7) ^ 2]"
+                explanation {
+                    key = FactorExplanation.ApplySquareOfBinomialFormula
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test factoring non-monic perfect square`() = testMethod {
+        method = FactorPlans.FactorPolynomialInOneVariable
+        inputExpr = "4 [x ^ 2] + 12 x + 9"
+
+        check {
+            fromExpr = "4 [x ^ 2] + 12 x + 9"
+            toExpr = "[(2 x + 3) ^ 2]"
+            explanation {
+                key = FactorExplanation.FactorSquareOfBinomial
+            }
+
+            step {
+                fromExpr = "4 [x ^ 2] + 12 x + 9"
+                toExpr = "[(2 x) ^ 2] + 2 * 3 * <. 2 x .> + [3 ^ 2]"
+                explanation {
+                    key = FactorExplanation.RewriteSquareOfBinomial
+                }
+            }
+
+            step {
+                fromExpr = "[(2 x) ^ 2] + 2 * 3 * <. 2 x .> + [3 ^ 2]"
+                toExpr = "[(2 x + 3) ^ 2]"
+                explanation {
+                    key = FactorExplanation.ApplySquareOfBinomialFormula
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test factoring perfect square with negative mixed term`() = testMethod {
+        method = FactorPlans.FactorPolynomialInOneVariable
+        inputExpr = "4 [x ^ 2] - 12 x + 9"
+
+        check {
+            fromExpr = "4 [x ^ 2] - 12 x + 9"
+            toExpr = "[(2 x - 3) ^ 2]"
+            explanation {
+                key = FactorExplanation.FactorSquareOfBinomial
+            }
+
+            step {
+                fromExpr = "4 [x ^ 2] - 12 x + 9"
+                toExpr = "[(2 x) ^ 2] + 2 * (-3) * <. 2 x .> + [(-3) ^ 2]"
+                explanation {
+                    key = FactorExplanation.RewriteSquareOfBinomial
+                }
+            }
+
+            step {
+                fromExpr = "[(2 x) ^ 2] + 2 * (-3) * <. 2 x .> + [(-3) ^ 2]"
+                toExpr = "[(2 x - 3) ^ 2]"
+                explanation {
+                    key = FactorExplanation.ApplySquareOfBinomialFormula
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test factoring perfect cube`() = testMethod {
+        method = FactorPlans.FactorPolynomialInOneVariable
+        inputExpr = "[x ^ 3] + 1 + 3 [x ^ 2] + 3 x"
+
+        check {
+            fromExpr = "[x ^ 3] + 1 + 3 [x ^ 2] + 3 x"
+            toExpr = "[(x + 1) ^ 3]"
+            explanation {
+                key = FactorExplanation.FactorCubeOfBinomial
+            }
+
+            step {
+                fromExpr = "[x ^ 3] + 1 + 3 [x ^ 2] + 3 x"
+                toExpr = "[x ^ 3] + 3 [x ^ 2] + 3 x + 1"
+                explanation {
+                    key = PolynomialsExplanation.NormalizePolynomial
+                }
+            }
+
+            step {
+                fromExpr = "[x ^ 3] + 3 [x ^ 2] + 3 x + 1"
+                toExpr = "[x ^ 3] + 3 * [x ^ 2] * 1 + 3 * x * [1 ^ 2] + [1 ^ 3]"
+                explanation {
+                    key = FactorExplanation.RewriteCubeOfBinomial
+                }
+            }
+
+            step {
+                fromExpr = "[x ^ 3] + 3 * [x ^ 2] * 1 + 3 * x * [1 ^ 2] + [1 ^ 3]"
+                toExpr = "[(x + 1) ^ 3]"
+                explanation {
+                    key = FactorExplanation.ApplyCubeOfBinomialFormula
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test factoring using the difference of squares formula`() = testMethod {
+        method = FactorPlans.FactorPolynomialInOneVariable
+        inputExpr = "121 [x ^ 4] - 9"
+
+        check {
+            fromExpr = "121 [x ^ 4] - 9"
+            toExpr = "(11 [x ^ 2] - 3) (11 [x ^ 2] + 3)"
+            explanation {
+                key = FactorExplanation.FactorDifferenceOfSquares
+            }
+
+            step {
+                fromExpr = "121 [x ^ 4] - 9"
+                toExpr = "[(11 [x ^ 2]) ^ 2] - [3 ^ 2]"
+                explanation {
+                    key = FactorExplanation.RewriteDifferenceOfSquares
+                }
+            }
+
+            step {
+                fromExpr = "[(11 [x ^ 2]) ^ 2] - [3 ^ 2]"
+                toExpr = "(11 [x ^ 2] - 3) (11 [x ^ 2] + 3)"
+                explanation {
+                    key = FactorExplanation.ApplyDifferenceOfSquaresFormula
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test factoring using the difference of cubes formula`() = testMethod {
+        method = FactorPlans.FactorPolynomialInOneVariable
+        inputExpr = "64 - [x ^ 3]"
+
+        check {
+            fromExpr = "64 - [x ^ 3]"
+            toExpr = "(4 - x) (16 + 4 x + [x ^ 2])"
+            explanation {
+                key = FactorExplanation.FactorDifferenceOfCubes
+            }
+
+            step {
+                fromExpr = "64 - [x ^ 3]"
+                toExpr = "[4 ^ 3] - [x ^ 3]"
+                explanation {
+                    key = FactorExplanation.RewriteDifferenceOfCubes
+                }
+            }
+
+            step {
+                fromExpr = "[4 ^ 3] - [x ^ 3]"
+                toExpr = "(4 - x) ([4 ^ 2] + 4 x + [x ^ 2])"
+                explanation {
+                    key = FactorExplanation.ApplyDifferenceOfCubesFormula
+                }
+            }
+
+            step {
+                fromExpr = "(4 - x) ([4 ^ 2] + 4 x + [x ^ 2])"
+                toExpr = "(4 - x) (16 + 4 x + [x ^ 2])"
+                explanation {
+                    key = ConstantExpressionsExplanation.SimplifyPowers
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test factoring using the sum of cubes formula`() = testMethod {
+        method = FactorPlans.FactorPolynomialInOneVariable
+        inputExpr = "125 + 8 [x ^ 6]"
+
+        check {
+            fromExpr = "125 + 8 [x ^ 6]"
+            toExpr = "(5 + 2 [x ^ 2]) (25 - 10 [x ^ 2] + 4 [x ^ 4])"
+            explanation {
+                key = FactorExplanation.FactorSumOfCubes
+            }
+
+            step {
+                fromExpr = "125 + 8 [x ^ 6]"
+                toExpr = "[5 ^ 3] + [(2 [x ^ 2]) ^ 3]"
+                explanation {
+                    key = FactorExplanation.RewriteSumOfCubes
+                }
+            }
+
+            step {
+                fromExpr = "[5 ^ 3] + [(2 [x ^ 2]) ^ 3]"
+                toExpr = "(5 + 2 [x ^ 2]) ([5 ^ 2] - 5 * 2 [x ^ 2] + [(2 [x ^ 2]) ^ 2])"
+                explanation {
+                    key = FactorExplanation.ApplySumOfCubesFormula
+                }
+            }
+
+            step {
+                fromExpr = "(5 + 2 [x ^ 2]) ([5 ^ 2] - 5 * 2 [x ^ 2] + [(2 [x ^ 2]) ^ 2])"
+                toExpr = "(5 + 2 [x ^ 2]) (25 - 5 * 2 [x ^ 2] + [(2 [x ^ 2]) ^ 2])"
+                explanation {
+                    key = ConstantExpressionsExplanation.SimplifyPowers
+                }
+            }
+
+            step {
+                fromExpr = "(5 + 2 [x ^ 2]) (25 - 5 * 2 [x ^ 2] + [(2 [x ^ 2]) ^ 2])"
+                toExpr = "(5 + 2 [x ^ 2]) (25 - 10 [x ^ 2] + [(2 [x ^ 2]) ^ 2])"
+                explanation {
+                    key = PolynomialsExplanation.SimplifyMonomial
+                }
+            }
+
+            step {
+                fromExpr = "(5 + 2 [x ^ 2]) (25 - 10 [x ^ 2] + [(2 [x ^ 2]) ^ 2])"
+                toExpr = "(5 + 2 [x ^ 2]) (25 - 10 [x ^ 2] + 4 [x ^ 4])"
+                explanation {
+                    key = PolynomialsExplanation.DistributeProductToIntegerPowerAndSimplify
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test factoring monic trinomial by guessing`() = testMethod {
+        method = FactorPlans.FactorPolynomialInOneVariable
+        inputExpr = "[x ^ 2] - 5 x + 6"
+
+        check {
+            fromExpr = "[x ^ 2] - 5 x + 6"
+            toExpr = "(x - 3) (x - 2)"
+            explanation {
+                key = FactorExplanation.FactorTrinomialByGuessing
+            }
+
+            task {
+                taskId = "#1"
+                startExpr = "a + b = -5, a b = 6"
+                explanation {
+                    key = FactorExplanation.SetUpAndSolveEquationSystemForMonicTrinomial
+                }
+
+                step {
+                    fromExpr = "a + b = -5, a b = 6"
+                    toExpr = "a = -3, b = -2"
+                    explanation {
+                        key = FactorExplanation.SolveSumProductDiophantineEquationSystemByGuessing
+                    }
+                }
+            }
+
+            task {
+                taskId = "#2"
+                startExpr = "(x - 3) (x - 2)"
+                explanation {
+                    key = FactorExplanation.FactorTrinomialUsingTheSolutionsOfTheSumAndProductSystem
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test factoring non-monic trinomial by grouping`() = testMethod {
+        method = FactorPlans.FactorPolynomialInOneVariable
+        inputExpr = "6 [x ^ 2] + 11 x + 4"
+
+        check {
+            fromExpr = "6 [x ^ 2] + 11 x + 4"
+            toExpr = "(2 x + 1) (3 x + 4)"
+            explanation {
+                key = FactorExplanation.FactorNonMonicTrinomial
+            }
+
+            step {
+                fromExpr = "6 [x ^ 2] + 11 x + 4"
+                toExpr = "6 [x ^ 2] + 3 x + 8 x + 4"
+                explanation {
+                    key = FactorExplanation.SplitNonMonicTrinomial
+                }
+
+                task {
+                    taskId = "#1"
+                    startExpr = "a + b = 11, a b = 6 * 4"
+                    explanation {
+                        key = FactorExplanation.SetUpAndSolveEquationSystemForNonMonicTrinomial
+                    }
+
+                    step {
+                        fromExpr = "a + b = 11, a b = 6 * 4"
+                        toExpr = "a + b = 11, a b = 24"
+                        explanation {
+                            key = IntegerArithmeticExplanation.EvaluateIntegerProduct
+                        }
+                    }
+
+                    step {
+                        fromExpr = "a + b = 11, a b = 24"
+                        toExpr = "a = 3, b = 8"
+                        explanation {
+                            key = FactorExplanation.SolveSumProductDiophantineEquationSystemByGuessing
+                        }
+                    }
+                }
+
+                task {
+                    taskId = "#2"
+                    startExpr = "6 [x ^ 2] + 3 x + 8 x + 4"
+                    explanation {
+                        key = FactorExplanation.SplitTrinomialUsingTheSolutionsOfTheSumAndProductSystem
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "6 [x ^ 2] + 3 x + 8 x + 4"
+                toExpr = "(2 x + 1) (3 x + 4)"
+                explanation {
+                    key = FactorExplanation.FactorByGrouping
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test factoring by grouping into 2 + 2 terms`() = testMethod {
+        method = FactorPlans.FactorPolynomialInOneVariable
+        inputExpr = "6 [x ^ 3] + 8 [x ^ 2] + 9 x + 12"
+
+        check {
+            fromExpr = "6 [x ^ 3] + 8 [x ^ 2] + 9 x + 12"
+            toExpr = "(3 x + 4) (2 [x ^ 2] + 3)"
+            explanation {
+                key = FactorExplanation.FactorByGrouping
+            }
+
+            step {
+                fromExpr = "6 [x ^ 3] + 8 [x ^ 2] + 9 x + 12"
+                toExpr = "(6 [x ^ 3] + 8 [x ^ 2]) + (9 x + 12)"
+                explanation {
+                    key = FactorExplanation.GroupPolynomial
+                }
+            }
+
+            step {
+                fromExpr = "(6 [x ^ 3] + 8 [x ^ 2]) + (9 x + 12)"
+                toExpr = "2 [x ^ 2] (3 x + 4) + (9 x + 12)"
+                explanation {
+                    key = FactorExplanation.FactorGreatestCommonFactor
+                }
+            }
+
+            step {
+                fromExpr = "2 [x ^ 2] (3 x + 4) + (9 x + 12)"
+                toExpr = "2 [x ^ 2] (3 x + 4) + 3 (3 x + 4)"
+                explanation {
+                    key = FactorExplanation.FactorGreatestCommonFactor
+                }
+            }
+
+            step {
+                fromExpr = "2 [x ^ 2] (3 x + 4) + 3 (3 x + 4)"
+                toExpr = "(3 x + 4) (2 [x ^ 2] + 3)"
+                explanation {
+                    key = FactorExplanation.ExtractCommonTerms
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test factoring by grouping into 1 + 3 terms`() = testMethod {
+        method = FactorPlans.FactorPolynomialInOneVariable
+        inputExpr = "[x ^ 4] - [x ^ 2] + 2 x - 1"
+
+        check {
+            fromExpr = "[x ^ 4] - [x ^ 2] + 2 x - 1"
+            toExpr = "([x ^ 2] - x + 1) ([x ^ 2] + x - 1)"
+            explanation {
+                key = FactorExplanation.FactorByGrouping
+            }
+
+            step {
+                fromExpr = "[x ^ 4] - [x ^ 2] + 2 x - 1"
+                toExpr = "[x ^ 4] + (-[x ^ 2] + 2 x - 1)"
+                explanation {
+                    key = FactorExplanation.GroupPolynomial
+                }
+            }
+
+            step {
+                fromExpr = "[x ^ 4] + (-[x ^ 2] + 2 x - 1)"
+                toExpr = "[x ^ 4] - [(x - 1) ^ 2]"
+                explanation {
+                    key = FactorExplanation.FactorSquareOfBinomial
+                }
+            }
+
+            step {
+                fromExpr = "[x ^ 4] - [(x - 1) ^ 2]"
+                toExpr = "([x ^ 2] - (x - 1)) ([x ^ 2] + (x - 1))"
+                explanation {
+                    key = FactorExplanation.FactorDifferenceOfSquares
+                }
+            }
+
+            step {
+                fromExpr = "([x ^ 2] - (x - 1)) ([x ^ 2] + (x - 1))"
+                toExpr = "([x ^ 2] - (x - 1)) ([x ^ 2] + x - 1)"
+                explanation {
+                    key = GeneralExplanation.RemoveAllBracketSumInSum
+                }
+            }
+
+            step {
+                fromExpr = "([x ^ 2] - (x - 1)) ([x ^ 2] + x - 1)"
+                toExpr = "([x ^ 2] - x + 1) ([x ^ 2] + x - 1)"
+                explanation {
+                    key = ExpandExplanation.DistributeNegativeOverBracket
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test factoring by first extracting the gcf then applying difference of squares`() = testMethod {
+        method = FactorPlans.FactorPolynomialInOneVariable
+        inputExpr = "18 [x ^ 6] - 32 [x ^ 2]"
+
+        check {
+            fromExpr = "18 [x ^ 6] - 32 [x ^ 2]"
+            toExpr = "2 [x ^ 2] (3 [x ^ 2] - 4) (3 [x ^ 2] + 4)"
+            explanation {
+                key = FactorExplanation.FactorPolynomial
+            }
+
+            step {
+                fromExpr = "18 [x ^ 6] - 32 [x ^ 2]"
+                toExpr = "2 [x ^ 2] (9 [x ^ 4] - 16)"
+                explanation {
+                    key = FactorExplanation.FactorGreatestCommonFactor
+                }
+
+                step {
+                    fromExpr = "18 [x ^ 6] - 32 [x ^ 2]"
+                    toExpr = "2 * 9 [x ^ 6] - 2 * 16 [x ^ 2]"
+                    explanation {
+                        key = FactorExplanation.SplitIntegersInMonomialsBeforeFactoring
+                    }
+                }
+
+                step {
+                    fromExpr = "2 * 9 [x ^ 6] - 2 * 16 [x ^ 2]"
+                    toExpr = "2 * 9 [x ^ 2] * [x ^ 4] - 2 * 16 [x ^ 2]"
+                    explanation {
+                        key = FactorExplanation.SplitVariablePowersInMonomialsBeforeFactoring
+                    }
+                }
+
+                step {
+                    fromExpr = "2 * 9 [x ^ 2] * [x ^ 4] - 2 * 16 [x ^ 2]"
+                    toExpr = "2 [x ^ 2] (9 [x ^ 4] - 16)"
+                    explanation {
+                        key = FactorExplanation.ExtractCommonTerms
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "2 [x ^ 2] (9 [x ^ 4] - 16)"
+                toExpr = "2 [x ^ 2] (3 [x ^ 2] - 4) (3 [x ^ 2] + 4)"
+                explanation {
+                    key = FactorExplanation.FactorDifferenceOfSquares
+                }
+
+                step {
+                    fromExpr = "9 [x ^ 4] - 16"
+                    toExpr = "[(3 [x ^ 2]) ^ 2] - [4 ^ 2]"
+                    explanation {
+                        key = FactorExplanation.RewriteDifferenceOfSquares
+                    }
+                }
+
+                step {
+                    fromExpr = "[(3 [x ^ 2]) ^ 2] - [4 ^ 2]"
+                    toExpr = "(3 [x ^ 2] - 4) (3 [x ^ 2] + 4)"
+                    explanation {
+                        key = FactorExplanation.ApplyDifferenceOfSquaresFormula
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test factoring by first extracting the gcf then applying difference of squares twice`() = testMethod {
+        method = FactorPlans.FactorPolynomialInOneVariable
+        inputExpr = "162 [x ^ 6] - 32 [x ^ 2]"
+
+        check {
+            fromExpr = "162 [x ^ 6] - 32 [x ^ 2]"
+            toExpr = "2 [x ^ 2] (3 x - 2) (3 x + 2) (9 [x ^ 2] + 4)"
+            explanation {
+                key = FactorExplanation.FactorPolynomial
+            }
+
+            step {
+                fromExpr = "162 [x ^ 6] - 32 [x ^ 2]"
+                toExpr = "2 [x ^ 2] (81 [x ^ 4] - 16)"
+                explanation {
+                    key = FactorExplanation.FactorGreatestCommonFactor
+                }
+
+                step {
+                    fromExpr = "162 [x ^ 6] - 32 [x ^ 2]"
+                    toExpr = "2 * 81 [x ^ 6] - 2 * 16 [x ^ 2]"
+                    explanation {
+                        key = FactorExplanation.SplitIntegersInMonomialsBeforeFactoring
+                    }
+                }
+
+                step {
+                    fromExpr = "2 * 81 [x ^ 6] - 2 * 16 [x ^ 2]"
+                    toExpr = "2 * 81 [x ^ 2] * [x ^ 4] - 2 * 16 [x ^ 2]"
+                    explanation {
+                        key = FactorExplanation.SplitVariablePowersInMonomialsBeforeFactoring
+                    }
+                }
+
+                step {
+                    fromExpr = "2 * 81 [x ^ 2] * [x ^ 4] - 2 * 16 [x ^ 2]"
+                    toExpr = "2 [x ^ 2] (81 [x ^ 4] - 16)"
+                    explanation {
+                        key = FactorExplanation.ExtractCommonTerms
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "2 [x ^ 2] (81 [x ^ 4] - 16)"
+                toExpr = "2 [x ^ 2] (9 [x ^ 2] - 4) (9 [x ^ 2] + 4)"
+                explanation {
+                    key = FactorExplanation.FactorDifferenceOfSquares
+                }
+
+                step {
+                    fromExpr = "81 [x ^ 4] - 16"
+                    toExpr = "[(9 [x ^ 2]) ^ 2] - [4 ^ 2]"
+                    explanation {
+                        key = FactorExplanation.RewriteDifferenceOfSquares
+                    }
+                }
+
+                step {
+                    fromExpr = "[(9 [x ^ 2]) ^ 2] - [4 ^ 2]"
+                    toExpr = "(9 [x ^ 2] - 4) (9 [x ^ 2] + 4)"
+                    explanation {
+                        key = FactorExplanation.ApplyDifferenceOfSquaresFormula
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "2 [x ^ 2] (9 [x ^ 2] - 4) (9 [x ^ 2] + 4)"
+                toExpr = "2 [x ^ 2] (3 x - 2) (3 x + 2) (9 [x ^ 2] + 4)"
+                explanation {
+                    key = FactorExplanation.FactorDifferenceOfSquares
+                }
+
+                step {
+                    fromExpr = "9 [x ^ 2] - 4"
+                    toExpr = "[(3 x) ^ 2] - [2 ^ 2]"
+                    explanation {
+                        key = FactorExplanation.RewriteDifferenceOfSquares
+                    }
+                }
+
+                step {
+                    fromExpr = "[(3 x) ^ 2] - [2 ^ 2]"
+                    toExpr = "(3 x - 2) (3 x + 2)"
+                    explanation {
+                        key = FactorExplanation.ApplyDifferenceOfSquaresFormula
+                    }
+                }
+            }
+        }
+    }
+}

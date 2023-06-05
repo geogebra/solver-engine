@@ -2,6 +2,7 @@ package methods.equations
 
 import engine.methods.testMethodInX
 import methods.constantexpressions.ConstantExpressionsExplanation
+import methods.factor.FactorExplanation
 import methods.general.GeneralExplanation
 import methods.polynomials.PolynomialsExplanation
 import org.junit.jupiter.api.Test
@@ -145,22 +146,22 @@ class CompletingTheSquareTest {
                     fromExpr = "[x ^ 2] - 6 x + 9 = 14"
                     toExpr = "[(x - 3) ^ 2] = 14"
                     explanation {
-                        key = PolynomialsExplanation.FactorTrinomialToSquareAndSimplify
+                        key = FactorExplanation.FactorSquareOfBinomial
                     }
 
                     step {
                         fromExpr = "[x ^ 2] - 6 x + 9"
-                        toExpr = "[(x + [1 / 2] * (-6)) ^ 2]"
+                        toExpr = "[x ^ 2] + 2 * (-3) * x + [(-3) ^ 2]"
                         explanation {
-                            key = PolynomialsExplanation.FactorTrinomialToSquare
+                            key = FactorExplanation.RewriteSquareOfBinomial
                         }
                     }
 
                     step {
-                        fromExpr = "[(x + [1 / 2] * (-6)) ^ 2]"
+                        fromExpr = "[x ^ 2] + 2 * (-3) * x + [(-3) ^ 2]"
                         toExpr = "[(x - 3) ^ 2]"
                         explanation {
-                            key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                            key = FactorExplanation.ApplySquareOfBinomialFormula
                         }
                     }
                 }
@@ -263,7 +264,23 @@ class CompletingTheSquareTest {
                     fromExpr = "[x ^ 2] + [5 / 2] x + [25 / 16] = [81 / 16]"
                     toExpr = "[(x + [5 / 4]) ^ 2] = [81 / 16]"
                     explanation {
-                        key = PolynomialsExplanation.FactorTrinomialToSquareAndSimplify
+                        key = FactorExplanation.FactorSquareOfBinomial
+                    }
+
+                    step {
+                        fromExpr = "[x ^ 2] + [5 / 2] x + [25 / 16]"
+                        toExpr = "[x ^ 2] + 2 * [5 / 4] * x + [([5 / 4]) ^ 2]"
+                        explanation {
+                            key = FactorExplanation.RewriteSquareOfBinomial
+                        }
+                    }
+
+                    step {
+                        fromExpr = "[x ^ 2] + 2 * [5 / 4] * x + [([5 / 4]) ^ 2]"
+                        toExpr = "[(x + [5 / 4]) ^ 2]"
+                        explanation {
+                            key = FactorExplanation.ApplySquareOfBinomialFormula
+                        }
                     }
                 }
             }

@@ -109,12 +109,12 @@ const buildTestTransformation = (trans: Transformation) => (builder: IndentBuild
       builder.addLine(`fromExpr = "${fromExpr}"`);
       lastExpressionPrinted = fromExpr;
     }
-    if (trans.explanation) {
-      builder.do(buildExplanation(trans.explanation));
-    }
     const toExpr = trans.toExpr?.toString();
     if (!builder.omitRepeatedExprs && toExpr !== undefined) {
       builder.addLine(`toExpr = "${toExpr}"`);
+    }
+    if (trans.explanation) {
+      builder.do(buildExplanation(trans.explanation));
     }
   }
   if (trans.steps) {

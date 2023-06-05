@@ -46,6 +46,11 @@ interface FirstOfBuilder {
      * Overrides the previous option if it produces the same result.
      */
     fun shortOption(init: PipelineBuilder.() -> Unit)
+
+    /**
+     * Generates options using the [optionGenerator] from the sequence produced by the [sequenceGenerator]
+     */
+    fun <T> optionsFor(sequenceGenerator: (Expression) -> Iterable<T>, optionGenerator: PipelineBuilder.(T) -> Unit)
 }
 
 @Suppress("TooManyFunctions")

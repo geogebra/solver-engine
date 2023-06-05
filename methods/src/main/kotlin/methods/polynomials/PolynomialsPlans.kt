@@ -1,30 +1,18 @@
 package methods.polynomials
 
 import engine.context.ResourceData
-import engine.expressions.Constants
 import engine.expressions.Label
-import engine.expressions.equationOf
-import engine.expressions.equationSystemOf
-import engine.expressions.productOf
-import engine.expressions.sumOf
-import engine.expressions.xp
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.contextSensitiveSteps
 import engine.methods.stepsproducers.steps
-import engine.methods.taskSet
 import engine.patterns.ArbitraryVariablePattern
-import engine.patterns.FixedPattern
-import engine.patterns.SignedIntegerPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.condition
 import engine.patterns.monomialPattern
 import engine.patterns.powerOf
-import engine.patterns.sumOf
-import engine.patterns.withOptionalIntegerCoefficient
-import engine.steps.metadata.metadata
 import methods.collecting.createCollectLikeTermsAndSimplifyPlan
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.constantexpressions.constantSimplificationSteps
@@ -43,76 +31,6 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
     SimplifyPowerOfUnitaryMonomial(simplifyPowerOfUnitaryMonomial),
     DistributeProductToIntegerPowerAndSimplify(distributeProductToIntegerPowerAndSimplify),
     NormalizeAllMonomials(normalizeAllMonomials),
-
-    FactorGreatestCommonFactor(
-        plan {
-            explanation = Explanation.FactorGreatestCommonFactor
-
-            steps {
-                optionally(PolynomialRules.SplitIntegersInMonomialsBeforeFactoring)
-                optionally(PolynomialRules.SplitVariablePowersInMonomialsBeforeFactoring)
-                apply(PolynomialRules.ExtractCommonTerms)
-            }
-        },
-    ),
-
-    FactorDifferenceOfSquares(
-        plan {
-            explanation = Explanation.FactorDifferenceOfSquares
-
-            steps {
-                optionally(PolynomialRules.RewriteDifferenceOfSquares)
-                apply(PolynomialRules.ApplyDifferenceOfSquaresFormula)
-            }
-        },
-    ),
-
-    FactorTrinomialByGuessing(
-        taskSet {
-            explanation = Explanation.FactorTrinomialByGuessing
-
-            val variable = ArbitraryVariablePattern()
-
-            val quadraticTerm = powerOf(variable, FixedPattern(Constants.Two))
-            val linearTerm = withOptionalIntegerCoefficient(variable, positiveOnly = false)
-            val constantTerm = SignedIntegerPattern()
-
-            pattern = sumOf(quadraticTerm, linearTerm, constantTerm)
-
-            tasks {
-                val solvedSystem = task(
-                    startExpr = equationSystemOf(
-                        equationOf(sumOf(xp("a"), xp("b")), get(linearTerm::coefficient)!!),
-                        equationOf(productOf(xp("a"), xp("b")), move(constantTerm)),
-                    ),
-                    explanation = metadata(Explanation.SetUpAndSolveEquationSystemForTrinomial),
-                    stepsProducer = PolynomialRules.SolveSumProductDiophantineEquationSystemByGuessing,
-                ) ?: return@tasks null
-
-                val solution1 = solvedSystem.result.firstChild.secondChild
-                val solution2 = solvedSystem.result.secondChild.secondChild
-
-                task(
-                    startExpr = productOf(sumOf(move(variable), solution1), sumOf(move(variable), solution2)),
-                    explanation = metadata(Explanation.FactorTrinomialUsingTheSolutionsOfTheSumAndProductSystem),
-                    dependsOn = listOf(solvedSystem),
-                )
-
-                allTasks()
-            }
-        },
-    ),
-
-    FactorTrinomialToSquareAndSimplify(
-        plan {
-            explanation = Explanation.FactorTrinomialToSquareAndSimplify
-
-            steps {
-                apply(PolynomialRules.FactorTrinomialToSquare)
-                optionally(SimplifyAlgebraicExpressionInOneVariable)
-            }
-        },
-    ),
 
     /**
      * Simplify an algebraic expression with one variable.
@@ -172,31 +90,6 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
                     firstOf {
                         option(algebraicSimplificationSteps)
                         option { deeply(expandAndSimplifySteps.value, deepFirst = true) }
-                    }
-                }
-            }
-        },
-    ),
-
-    /**
-     * Factor a polynomial in one variable.
-     */
-    @PublicMethod
-    FactorPolynomialInOneVariable(
-        plan {
-            explanation = Explanation.FactorPolynomial
-            pattern = condition { it.variables.size == 1 }
-
-            steps {
-                whilePossible(algebraicSimplificationSteps)
-                apply {
-                    whilePossible {
-                        firstOf {
-                            option { deeply(FactorGreatestCommonFactor) }
-                            option { deeply(FactorDifferenceOfSquares) }
-                            option { deeply(FactorTrinomialByGuessing) }
-                        }
-                        whilePossible(algebraicSimplificationSteps)
                     }
                 }
             }

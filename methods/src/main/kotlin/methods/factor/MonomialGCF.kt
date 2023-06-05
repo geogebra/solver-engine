@@ -1,4 +1,4 @@
-package methods.polynomials
+package methods.factor
 
 import engine.context.emptyContext
 import engine.expressions.Distribute

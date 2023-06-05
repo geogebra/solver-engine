@@ -502,6 +502,9 @@ private fun expressionOf(
                 meta,
             )
         }
+        UnaryExpressionOperator.Minus -> Minus(operands[0], meta)
+        UnaryExpressionOperator.Plus -> Plus(operands[0], meta)
+        UnaryExpressionOperator.PlusMinus -> PlusMinus(operands[0], meta)
         is ProductOperator -> Product(operands, operator.forcedSigns, meta)
         BinaryExpressionOperator.Fraction -> Fraction(operands[0], operands[1], meta)
         BinaryExpressionOperator.Power -> Power(operands[0], operands[1], meta)

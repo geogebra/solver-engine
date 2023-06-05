@@ -71,8 +71,9 @@ fun missingBracketOf(expr: Expression) = expr.decorate(Decorator.MissingBracket)
 
 fun negOf(expr: Expression) = buildExpression(UnaryExpressionOperator.Minus, listOf(expr))
 
-fun simplifiedNegOf(expr: Expression) = when (expr.operator) {
-    UnaryExpressionOperator.Minus -> expr.firstChild
+fun simplifiedNegOf(expr: Expression) = when (expr) {
+    Constants.Zero -> expr
+    is Minus -> expr.argument
     else -> negOf(expr)
 }
 
@@ -151,12 +152,18 @@ fun explicitProductOf(vararg operands: Expression) = explicitProductOf(operands.
 
 fun productOf(vararg operands: Expression) = productOf(operands.asList())
 
-fun simplifiedProductOf(vararg operands: Expression): Expression {
-    val nonOneFactors = operands.filter { it != Constants.One }
-    return when (nonOneFactors.size) {
-        0 -> operands[0]
-        1 -> nonOneFactors[0]
-        else -> productOf(nonOneFactors)
+/**
+ * Move the negative sign of the first factor in front of the product and remove factors
+ * equal to one
+ */
+fun simplifiedProductOf(firstFactor: Expression, secondFactor: Expression): Expression {
+    if (secondFactor == Constants.One) return firstFactor
+
+    return when (firstFactor) {
+        Constants.One -> secondFactor
+        Constants.MinusOne -> negOf(secondFactor)
+        is Minus -> negOf(productOf(firstFactor.argument, secondFactor))
+        else -> productOf(firstFactor, secondFactor)
     }
 }
 

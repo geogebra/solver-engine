@@ -9,6 +9,7 @@ import engine.operators.UndefinedOperator
 
 @Suppress("MagicNumber")
 object Constants {
+    val MinusOne = xp(-1)
     val Zero = xp(0)
     val One = xp(1)
     val Two = xp(2)

@@ -1,6 +1,7 @@
 package methods.equations
 
 import engine.context.ResourceData
+import engine.expressions.Constants
 import engine.expressions.Solution
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
@@ -36,11 +37,11 @@ import engine.patterns.withOptionalIntegerCoefficient
 import engine.steps.metadata.metadata
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.constantexpressions.simpleTidyUpSteps
-import methods.equations.EquationsRules.FactorNegativeSignOfLeadingCoefficient
 import methods.equationsystems.EquationSystemsPlans
+import methods.factor.FactorPlans
+import methods.factor.FactorRules
 import methods.general.NormalizationPlans
 import methods.polynomials.PolynomialRules
-import methods.polynomials.PolynomialsPlans
 import methods.polynomials.PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization
 import methods.polynomials.PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
 import methods.polynomials.algebraicSimplificationSteps
@@ -58,8 +59,9 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
             explanation = Explanation.SimplifyByFactoringNegativeSignOfLeadingCoefficient
 
             steps {
-                apply(FactorNegativeSignOfLeadingCoefficient)
-                apply(EquationsRules.EliminateConstantFactorOfLhsWithZeroRhs)
+                check { it.secondChild == Constants.Zero }
+                applyTo(FactorRules.FactorNegativeSignOfLeadingCoefficient) { it.firstChild }
+                apply(EquationsRules.NegateBothSides)
             }
         },
     ),
@@ -69,7 +71,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
             explanation = Explanation.SimplifyByDividingByGcfOfCoefficients
 
             steps {
-                applyTo(PolynomialsPlans.FactorGreatestCommonFactor) { it.firstChild }
+                applyTo(FactorPlans.FactorGreatestCommonFactor) { it.firstChild }
                 apply(EquationsRules.EliminateConstantFactorOfLhsWithZeroRhs)
             }
         },
@@ -134,7 +136,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 apply(CompleteTheSquareAndSimplify)
-                applyTo(PolynomialsPlans.FactorTrinomialToSquareAndSimplify) { it.firstChild }
+                applyTo(FactorPlans.FactorSquareOfBinomial) { it.firstChild }
             }
         },
     ),
@@ -308,7 +310,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                         optionally {
                             applyTo(PolynomialRules.NormalizePolynomial) { it.firstChild }
                         }
-                        applyTo(PolynomialsPlans.FactorTrinomialToSquareAndSimplify) { it.firstChild }
+                        applyTo(FactorPlans.FactorSquareOfBinomial) { it.firstChild }
                     }
                     option {
                         // Else rearrange to put constants on the right and complete the square
@@ -359,7 +361,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
             steps {
                 optionally(MoveEverythingToTheLeftAndSimplify)
                 optionally {
-                    applyTo(PolynomialsPlans.FactorPolynomialInOneVariable) { it.firstChild }
+                    applyTo(FactorPlans.FactorPolynomialInOneVariable) { it.firstChild }
                 }
                 apply(EquationsRules.SeparateFactoredEquation)
                 apply(solveEquationUnion)

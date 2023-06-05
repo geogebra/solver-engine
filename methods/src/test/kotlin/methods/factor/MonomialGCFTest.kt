@@ -1,4 +1,4 @@
-package methods.polynomials
+package methods.factor
 
 import engine.expressions.Expression
 import org.junit.jupiter.api.Test

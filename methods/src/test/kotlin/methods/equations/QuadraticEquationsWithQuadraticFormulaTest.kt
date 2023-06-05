@@ -2,6 +2,7 @@ package methods.equations
 
 import engine.methods.testMethodInX
 import methods.constantexpressions.ConstantExpressionsExplanation
+import methods.factor.FactorExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
 import methods.polynomials.PolynomialsExplanation
 import org.junit.jupiter.api.Test
@@ -360,7 +361,7 @@ class QuadraticEquationsWithQuadraticFormulaTest {
                     fromExpr = "2 [x ^ 2] + 4 x + 2 = 0"
                     toExpr = "2 ([x ^ 2] + 2 x + 1) = 0"
                     explanation {
-                        key = PolynomialsExplanation.FactorGreatestCommonFactor
+                        key = FactorExplanation.FactorGreatestCommonFactor
                     }
                 }
 

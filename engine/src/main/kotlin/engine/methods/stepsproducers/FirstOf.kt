@@ -42,4 +42,20 @@ private class FirstOfRunner(val sub: Expression, val ctx: Context) : FirstOfBuil
     override fun shortOption(init: PipelineBuilder.() -> Unit) {
         shortOption(ProceduralPipeline(init))
     }
+
+    override fun <T> optionsFor(
+        sequenceGenerator: (Expression) -> Iterable<T>,
+        optionGenerator: PipelineBuilder.(T) -> Unit,
+    ) {
+        if (steps != null) return
+
+        val sequence = sequenceGenerator(sub)
+        for (elem in sequence) {
+            val currentSteps = ProceduralPipeline { optionGenerator(elem) }.produceSteps(ctx, sub)
+            if (currentSteps != null) {
+                steps = currentSteps
+                break
+            }
+        }
+    }
 }

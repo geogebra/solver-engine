@@ -1,10 +1,11 @@
 package methods.equations
 
 import engine.methods.testMethodInX
-import methods.polynomials.PolynomialsExplanation
+import methods.factor.FactorExplanation
 import org.junit.jupiter.api.Test
 
 class EquationsPlansTest {
+
     @Test
     fun testSimplifyByFactoringNegativeSignOfLeadingCoefficient() = testMethodInX {
         method = EquationsPlans.SimplifyByFactoringNegativeSignOfLeadingCoefficient
@@ -19,17 +20,17 @@ class EquationsPlansTest {
 
             step {
                 fromExpr = "-2 [x ^ 2] + 4 x - 2 = 0"
-                toExpr = "(-1) (2 [x ^ 2] - 4 x + 2) = 0"
+                toExpr = "-(2 [x ^ 2] - 4 x + 2) = 0"
                 explanation {
-                    key = EquationsExplanation.FactorNegativeSignOfLeadingCoefficient
+                    key = FactorExplanation.FactorNegativeSignOfLeadingCoefficient
                 }
             }
 
             step {
-                fromExpr = "(-1) (2 [x ^ 2] - 4 x + 2) = 0"
+                fromExpr = "-(2 [x ^ 2] - 4 x + 2) = 0"
                 toExpr = "2 [x ^ 2] - 4 x + 2 = 0"
                 explanation {
-                    key = EquationsExplanation.EliminateConstantFactorOfLhsWithZeroRhs
+                    key = EquationsExplanation.NegateBothSides
                 }
             }
         }
@@ -51,7 +52,7 @@ class EquationsPlansTest {
                 fromExpr = "2 [x ^ 2] - 4 x + 2 = 0"
                 toExpr = "2 ([x ^ 2] - 2 x + 1) = 0"
                 explanation {
-                    key = PolynomialsExplanation.FactorGreatestCommonFactor
+                    key = FactorExplanation.FactorGreatestCommonFactor
                 }
             }
 

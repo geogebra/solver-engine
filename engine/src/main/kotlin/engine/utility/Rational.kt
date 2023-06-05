@@ -42,8 +42,10 @@ data class Rational(val numerator: BigInteger, val denominator: BigInteger = Big
     }
 
     fun squared() = this * this
+    fun cubed() = this * this * this
 
     fun isZero() = numerator.isZero()
+    fun isNeg() = numerator * denominator < BigInteger.ZERO
 
     fun sameNumber(other: BigInteger) = numerator == denominator * other
     fun sameNumber(other: Int) = numerator == denominator * other.toBigInteger()

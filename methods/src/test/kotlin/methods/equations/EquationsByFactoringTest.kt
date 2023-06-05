@@ -1,7 +1,7 @@
 package methods.equations
 
 import engine.methods.testMethodInX
-import methods.polynomials.PolynomialsExplanation
+import methods.factor.FactorExplanation
 import org.junit.jupiter.api.Test
 
 class EquationsByFactoringTest {
@@ -32,7 +32,7 @@ class EquationsByFactoringTest {
                 fromExpr = "[x ^ 2] + 5 x + 6 = 0"
                 toExpr = "(x + 2) (x + 3) = 0"
                 explanation {
-                    key = PolynomialsExplanation.FactorPolynomial
+                    key = FactorExplanation.FactorPolynomial
                 }
             }
 
@@ -109,7 +109,7 @@ class EquationsByFactoringTest {
                 fromExpr = "[x ^ 2] - 4 = 0"
                 toExpr = "(x - 2) (x + 2) = 0"
                 explanation {
-                    key = PolynomialsExplanation.FactorPolynomial
+                    key = FactorExplanation.FactorPolynomial
                 }
             }
 
@@ -195,7 +195,7 @@ class EquationsByFactoringTest {
                 fromExpr = "[x ^ 6] - 5 [x ^ 5] + 3 [x ^ 4] = 0"
                 toExpr = "[x ^ 4] ([x ^ 2] - 5 x + 3) = 0"
                 explanation {
-                    key = PolynomialsExplanation.FactorPolynomial
+                    key = FactorExplanation.FactorPolynomial
                 }
             }
 
@@ -272,7 +272,7 @@ class EquationsByFactoringTest {
                 fromExpr = "[x ^ 6] - [x ^ 2] = 0"
                 toExpr = "[x ^ 2] (x - 1) (x + 1) ([x ^ 2] + 1) = 0"
                 explanation {
-                    key = PolynomialsExplanation.FactorPolynomial
+                    key = FactorExplanation.FactorPolynomial
                 }
             }
 
