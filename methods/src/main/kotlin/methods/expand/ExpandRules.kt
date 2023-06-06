@@ -67,7 +67,7 @@ private val distributeMultiplicationOverSum =
             ruleResult(
                 toExpr = distributedExpr,
                 gmAction = drag(restOf(product), sum),
-                explanation = metadata(Explanation.DistributeMultiplicationOverSum),
+                explanation = metadata(Explanation.DistributeMultiplicationOverSum, distributeTerm),
             )
         }
     }

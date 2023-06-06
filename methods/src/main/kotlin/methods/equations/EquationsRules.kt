@@ -252,7 +252,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                             fractionOf(get(rhs), coefficient),
                         ),
                         gmAction = drag(coefficient, rhs, Position.Below),
-                        explanation = metadata(Explanation.DivideByCoefficientOfVariable),
+                        explanation = metadata(Explanation.DivideByCoefficientOfVariable, coefficientValue),
                     )
                 }
             }
@@ -551,7 +551,7 @@ private val eliminateConstantFactorOfLhsWithZeroRhs = rule {
 
         ruleResult(
             toExpr = equationOf(newLhs, get(rhs)),
-            explanation = metadata(Explanation.EliminateConstantFactorOfLhsWithZeroRhs),
+            explanation = metadata(Explanation.EliminateConstantFactorOfLhsWithZeroRhs, get(factor)),
         )
     }
 }

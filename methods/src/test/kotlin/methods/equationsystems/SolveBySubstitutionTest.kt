@@ -122,7 +122,8 @@ class SolveBySubstitutionTest {
                     toExpr = "x = 2 + y"
                     explanation {
                         key = methods.solvable.EquationsExplanation.MoveConstantsInVariablesToTheRightAndSimplify
-                        param { expr = "x" }
+                        param { expr = "x" } // solution variable
+                        param { expr = "-y" } // expression to be moved
                     }
                 }
             }
@@ -204,7 +205,8 @@ class SolveBySubstitutionTest {
                     toExpr = "x = 3 - y"
                     explanation {
                         key = methods.solvable.EquationsExplanation.MoveConstantsInVariablesToTheRightAndSimplify
-                        param { expr = "x" }
+                        param { expr = "x" } // solution variable
+                        param { expr = "y" } // expression to be moved
                     }
                 }
             }

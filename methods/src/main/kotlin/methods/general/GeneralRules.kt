@@ -215,7 +215,7 @@ private val simplifyDoubleMinus =
                     get(value),
                 ),
                 gmAction = drag(innerNeg, PM.Operator, pattern, PM.Operator, Position.Onto),
-                explanation = metadata(Explanation.SimplifyDoubleMinus, move(value)),
+                explanation = metadata(Explanation.SimplifyDoubleMinus, move(innerNeg)),
             )
         }
     }
@@ -532,12 +532,9 @@ private val rewritePowerAsProduct =
             // We want to prefer direct evaluation over 2^3 ==> 2*2*2
             if (context.gmFriendly) return@onPattern null
             ruleResult(
-                toExpr = transform(
-                    power,
-                    productOf(List(getValue(exponent).toInt()) { get(base) }),
-                ),
+                toExpr = productOf(List(getValue(exponent).toInt()) { distribute(base) }),
                 gmAction = edit(power),
-                explanation = metadata(Explanation.RewritePowerAsProduct, move(base), move(exponent)),
+                explanation = metadata(Explanation.RewritePowerAsProduct, get(power)),
             )
         }
     }

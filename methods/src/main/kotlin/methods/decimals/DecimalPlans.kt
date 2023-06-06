@@ -60,7 +60,6 @@ enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
             val exponent = UnsignedIntegerPattern()
             pattern = powerOf(base, exponent)
             explanation = Explanation.EvaluateDecimalPower
-            explanationParameters(base, exponent)
 
             steps {
                 firstOf {

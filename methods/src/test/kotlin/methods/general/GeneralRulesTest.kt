@@ -407,7 +407,10 @@ class GeneralRulesTest {
 
             check {
                 toExpr = "2 * 2 * 2"
-                transform(".", ".")
+                distribute {
+                    fromPaths("./0")
+                    toPaths("./0", "./1", "./2")
+                }
             }
         }
 

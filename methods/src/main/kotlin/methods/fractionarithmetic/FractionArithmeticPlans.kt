@@ -181,12 +181,13 @@ fun createAddIntegerAndFractionPlan(numeratorSimplificationSteps: StepsProducer)
     val addFractionSteps = createAddFractionsSteps(numeratorSimplificationSteps)
 
     return plan {
-        explanation = Explanation.AddIntegerAndFraction
-
         val integer = SignedIntegerPattern()
         val numerator = oneOf(SignedIntegerPattern(), sumContaining(SignedIntegerPattern()))
         val fraction = optionalNegOf(fractionOf(numerator, UnsignedIntegerPattern()))
         pattern = commutativeSumContaining(integer, fraction)
+
+        explanation = Explanation.AddIntegerAndFraction
+        explanationParameters(integer, fraction)
 
         partialExpressionSteps {
             apply(FractionArithmeticRules.BringToCommonDenominatorWithNonFractionalTerm)

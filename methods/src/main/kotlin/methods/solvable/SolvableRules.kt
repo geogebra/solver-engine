@@ -1,5 +1,6 @@
 package methods.solvable
 
+import engine.context.Context
 import engine.context.emptyContext
 import engine.expressionbuilder.MappedExpressionBuilder
 import engine.expressions.Constants
@@ -9,10 +10,11 @@ import engine.expressions.productOf
 import engine.expressions.simplifiedNegOf
 import engine.expressions.sumOf
 import engine.expressions.xp
+import engine.methods.CompositeMethod
 import engine.methods.Rule
 import engine.methods.RunnerMethod
-import engine.methods.plan
 import engine.methods.rule
+import engine.methods.stepsproducers.StepsBuilder
 import engine.methods.stepsproducers.StepsProducer
 import engine.operators.EquationOperator
 import engine.operators.SumOperator
@@ -25,8 +27,8 @@ import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
+import engine.steps.Transformation
 import engine.steps.metadata.Metadata
-import engine.steps.metadata.metadata
 import engine.utility.lcm
 import methods.solvable.DenominatorExtractor.extractDenominator
 import java.math.BigInteger
@@ -79,7 +81,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                         sumOf(get(rhs), negatedConstants),
                     ),
                     gmAction = drag(constants, lhs, Position.RightOf),
-                    explanation = solvableExplanation(SolvableKey.MoveConstantsToTheLeft),
+                    explanation = solvableExplanation(SolvableKey.MoveConstantsToTheLeft, constants),
                 )
             }
         },
@@ -104,7 +106,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                         sumOf(get(rhs), negatedConstants),
                     ),
                     gmAction = drag(constants, rhs, Position.RightOf),
-                    explanation = solvableExplanation(SolvableKey.MoveConstantsToTheRight),
+                    explanation = solvableExplanation(SolvableKey.MoveConstantsToTheRight, constants),
                 )
             }
         },
@@ -128,7 +130,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                         sumOf(get(rhs), negatedVariable),
                     ),
                     gmAction = drag(variables, lhs, Position.RightOf),
-                    explanation = solvableExplanation(SolvableKey.MoveVariablesToTheLeft),
+                    explanation = solvableExplanation(SolvableKey.MoveVariablesToTheLeft, variables),
                 )
             }
         },
@@ -152,7 +154,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                         sumOf(get(rhs), negatedVariable),
                     ),
                     gmAction = drag(variables, rhs, Position.RightOf),
-                    explanation = solvableExplanation(SolvableKey.MoveVariablesToTheRight),
+                    explanation = solvableExplanation(SolvableKey.MoveVariablesToTheRight, variables),
                 )
             }
         },
@@ -264,28 +266,46 @@ object DenominatorExtractor {
 }
 
 class ApplySolvableRuleAndSimplify(private val simplifySteps: StepsProducer) {
-    fun getPlan(solvableKey: SolvableKey, rule: SolvableRules) = plan {
-        explanation {
-            solvableExplanation(solvableKey, simplify = true)
-        }
+    fun getPlan(solvableKey: SolvableKey, rule: RunnerMethod) = object : CompositeMethod() {
 
-        steps {
-            apply(rule)
-            optionally(simplifySteps)
+        override fun run(ctx: Context, sub: Expression): Transformation? {
+            val initialStep = rule.tryExecute(ctx, sub) ?: return null
+
+            val builder = StepsBuilder(ctx, sub)
+            builder.addStep(initialStep)
+            simplifySteps.produceSteps(ctx, builder.lastSub)?.let { builder.addSteps(it) }
+
+            val explicitVariables = ctx.solutionVariables.size < sub.variables.size
+            val key = if (sub.operator == EquationOperator) {
+                EquationsExplanation.getKey(solvableKey, explicitVariables, true)
+            } else {
+                InequalitiesExplanation.getKey(solvableKey, explicitVariables, true)
+            }
+
+            return Transformation(
+                type = Transformation.Type.Plan,
+                fromExpr = sub,
+                toExpr = builder.lastSub,
+                steps = builder.getFinalSteps(),
+                explanation = Metadata(key, initialStep.explanation!!.mappedParams),
+            )
         }
     }
 }
 
-private fun MappedExpressionBuilder.solvableExplanation(solvableKey: SolvableKey, simplify: Boolean = false): Metadata {
+private fun MappedExpressionBuilder.solvableExplanation(
+    solvableKey: SolvableKey,
+    vararg parameters: Expression,
+): Metadata {
     val explicitVariables = context.solutionVariables.size < expression.variables.size
     val key = if (expression.operator == EquationOperator) {
-        EquationsExplanation.getKey(solvableKey, explicitVariables, simplify)
+        EquationsExplanation.getKey(solvableKey, explicitVariables, false)
     } else {
-        InequalitiesExplanation.getKey(solvableKey, explicitVariables, simplify)
+        InequalitiesExplanation.getKey(solvableKey, explicitVariables, false)
     }
     return if (explicitVariables) {
-        metadata(key, listOfsolutionVariables())
+        Metadata(key, listOf(listOfsolutionVariables()) + parameters)
     } else {
-        metadata(key)
+        Metadata(key, parameters.asList())
     }
 }

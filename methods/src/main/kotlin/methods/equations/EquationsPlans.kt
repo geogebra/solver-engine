@@ -24,6 +24,7 @@ import engine.patterns.equationOf
 import engine.patterns.fractionOf
 import engine.patterns.identityOf
 import engine.patterns.inSolutionVariables
+import engine.patterns.monomialPattern
 import engine.patterns.negOf
 import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
@@ -154,7 +155,12 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
     DivideByCoefficientOfVariableAndSimplify(
         plan {
+            val lhs = monomialPattern(SolutionVariablePattern())
+            val rhs = AnyPattern()
+            pattern = equationOf(lhs, rhs)
+
             explanation = Explanation.DivideByCoefficientOfVariableAndSimplify
+            explanationParameters { listOf(get(lhs::coefficient)!!) }
 
             steps {
                 apply(EquationsRules.DivideByCoefficientOfVariable)
