@@ -104,6 +104,8 @@ export function treeToSolver(n: ExpressionTree): string {
       return `[${rec(n.args[0])}, ${rec(n.args[1])})`;
     case 'CartesianProduct':
       return n.args.map(rec).join(' * ');
+    case 'SetUnion':
+      return dec(`SetUnion[${n.args.map(rec).join(', ')}]`);
     case 'Tuple':
       if (n.args.length === 1) {
         return rec(n.args[0]);

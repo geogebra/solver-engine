@@ -60,6 +60,31 @@ enum class SetOperators : Operator {
         }
     },
 
+    SetUnion {
+        override val arity = ARITY_VARIABLE
+        override val kind = OperatorKind.SET
+        override val precedence = SET_PRECEDENCE
+
+        override fun minChildCount() = 0
+
+        override fun nthChildAllowed(n: Int, op: Operator): Boolean {
+            require(op.kind == OperatorKind.SET)
+            return true
+        }
+
+        override fun <T> readableString(children: List<T>): String {
+            return children.joinToString(separator = ",")
+        }
+
+        override fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String {
+            return if (children.isEmpty()) {
+                "\\emptyset"
+            } else {
+                children.joinToString(", ") { it.toLatexString(ctx) }
+            }
+        }
+    },
+
     Reals {
         override val arity = ARITY_NULL
         override val kind = OperatorKind.SET

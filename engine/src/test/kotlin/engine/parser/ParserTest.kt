@@ -30,6 +30,7 @@ import engine.expressions.missingBracketOf
 import engine.expressions.nameXp
 import engine.expressions.naturalLogOf
 import engine.expressions.negOf
+import engine.expressions.openIntervalOf
 import engine.expressions.percentageOf
 import engine.expressions.percentageOfOf
 import engine.expressions.plusMinusOf
@@ -38,6 +39,7 @@ import engine.expressions.powerOf
 import engine.expressions.productOf
 import engine.expressions.rawRootOf
 import engine.expressions.setSolutionOf
+import engine.expressions.setUnionOf
 import engine.expressions.sinOf
 import engine.expressions.solutionSetOf
 import engine.expressions.squareBracketOf
@@ -385,6 +387,10 @@ class ParserTest {
         parsesTo(
             "SetSolution[x, y : {1} * /reals/]",
             setSolutionOf(variableListOf("x", "y"), cartesianProductOf(solutionSetOf(xp(1)), Constants.Reals)),
+        )
+        parsesTo(
+            "SetSolution[x : SetUnion[{1}, (2, 3)]]",
+            setSolutionOf(variableListOf("x"), setUnionOf(solutionSetOf(xp(1)), openIntervalOf(xp(2), xp(3)))),
         )
     }
 

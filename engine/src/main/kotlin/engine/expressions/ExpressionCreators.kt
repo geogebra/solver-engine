@@ -244,6 +244,9 @@ fun solutionSetOf(vararg elements: Expression) = buildExpression(SetOperators.Fi
 fun cartesianProductOf(sets: List<Expression>) = buildExpression(SetOperators.CartesianProduct, sets)
 fun cartesianProductOf(vararg sets: Expression) = cartesianProductOf(sets.asList())
 
+fun setUnionOf(sets: List<Expression>) = buildExpression(SetOperators.SetUnion, sets)
+fun setUnionOf(vararg sets: Expression) = setUnionOf(sets.asList())
+
 fun tupleOf(variables: List<Expression>) = buildExpression(TupleOperator, variables)
 
 fun tupleOf(vararg variables: Expression) = tupleOf(variables.asList())

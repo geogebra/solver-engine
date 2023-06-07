@@ -21,6 +21,7 @@ import engine.expressions.mixedNumber
 import engine.expressions.nameXp
 import engine.expressions.negOf
 import engine.expressions.productSignRequired
+import engine.expressions.setUnionOf
 import engine.expressions.solutionSetOf
 import engine.expressions.xp
 import engine.operators.AddEquationsOperator
@@ -159,6 +160,15 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
             return first
         }
         return cartesianProductOf(listOf(first) + rest)
+    }
+
+    override fun visitSetUnion(ctx: ExpressionParser.SetUnionContext): Expression {
+        val first = visit(ctx.first)
+        val rest = ctx.rest.map { visit(it) }
+        if (rest.isEmpty()) {
+            return first
+        }
+        return setUnionOf(listOf(first) + rest)
     }
 
     override fun visitEmptySet(ctx: ExpressionParser.EmptySetContext): Expression {

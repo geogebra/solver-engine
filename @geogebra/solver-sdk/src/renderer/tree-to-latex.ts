@@ -355,6 +355,12 @@ function treeToLatexInner(
           ? '\\emptyset'
           : `${n.args.map((el) => rec(el, n)).join(' \\times ')}`,
       );
+    case 'SetUnion':
+      return tfd(
+        n.args.length === 0
+          ? '\\emptyset'
+          : `${n.args.map((el) => rec(el, n)).join(' \\cup ')}`,
+      );
     case 'OpenInterval':
       return `\\left( ${rec(n.args[0], n)}, ${rec(n.args[1], n)} \\right)`;
     case 'ClosedInterval':

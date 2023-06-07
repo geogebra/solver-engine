@@ -28,9 +28,11 @@ solution
     | 'SetSolution' '[' vars=variables ':' solutionSet=set ']'            #setSolution
     ;
 
-set: cartesianProduct;
+set: cartesianProduct | setUnion;
 
 cartesianProduct: first=simpleSet ('*' rest+=simpleSet)*;
+
+setUnion: 'SetUnion' '[' first=simpleSet (',' rest+=simpleSet)+ ']';
 
 simpleSet: emptySet | finiteSet | reals | interval;
 

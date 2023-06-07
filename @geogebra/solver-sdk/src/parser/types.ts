@@ -33,6 +33,7 @@ export type NestedExpressionType =
   | 'Tuple'
   | 'FiniteSet' // n-ary
   | 'CartesianProduct' // n-ary
+  | 'SetUnion' // n-ary
   | 'OpenInterval' // binary
   | 'ClosedInterval' // binary
   | 'OpenClosedInterval' // binary
