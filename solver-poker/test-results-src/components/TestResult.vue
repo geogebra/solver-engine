@@ -21,10 +21,10 @@ import {
   TestResult_showNonAssertedPropertiesInDiffInLineMode,
   TestResult_trimTransformation,
 } from '../local-storage-store';
-import type { testResults } from '../test-results.json';
+import type { testResults } from '../test-results';
 import { generateTestSuggestion } from '../../src/render-test';
 import { isThroughStep } from '../../src/util';
-import MergelyComponent from '../MergelyComponent.vue';
+import MergelyComponent from './MergelyComponent.vue';
 
 const props = defineProps<{ testResult: (typeof testResults)[0] }>();
 

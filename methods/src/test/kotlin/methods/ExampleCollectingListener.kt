@@ -1,6 +1,7 @@
 package methods
 
 import engine.methods.AssertionCollector
+import engine.methods.Format
 import engine.methods.Method
 import engine.methods.MethodId
 import engine.methods.MethodTestCase
@@ -72,13 +73,12 @@ ${throwable.cause ?: ""}""".trimEnd()
     }
 
     private fun writeReport() {
-        File("../solver-poker/test-results-src/test-results.json").writeText(
-            """{
-  "dateGenerated": "${Date()}",
-  "testResults": [
+        File("../solver-poker/test-results-src/test-results.ts").writeText(
+            """export const dateGenerated = "${Date()}";
+export const testResults = [
 ${testReports.sortedBy { !it.passed }.joinToString(",\n", transform = ::generateReport)}
-  ]
-}""",
+];
+""",
         )
     }
 
@@ -124,7 +124,7 @@ fun generateReport(test: MethodTestCase): String {
     // because if `noSteps` is true then the transformation should be null.
     if (newCollector.noSteps == true) newCollector = null
 
-    val transformationString = encodeTransformationToString(transformation)
+    val transformationString = encodeTransformationToString(transformation, Format.Solver)
     return """    {
       "testClassName": ${stringToJson(test.testClassName)},
       "testName": ${stringToJson(test.testName)},
@@ -132,6 +132,7 @@ fun generateReport(test: MethodTestCase): String {
       "methodId": ${stringToJson(getMethodId(test.method))},
       "assertionTree": ${stringToJson(newCollector?.toJsonString() ?: "null")},
       "transformation": ${stringToJson(transformationString)},
+      "transformationJsonMath": ${stringToJson(encodeTransformationToString(transformation, Format.Json))},
       "passed": ${test.passed},
       "failureMessage": ${if (failureMessage === null) null else stringToJson(failureMessage)}
     }"""

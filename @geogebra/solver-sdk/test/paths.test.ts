@@ -1,5 +1,4 @@
-import { describe, it } from 'mocha';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import { substituteTree, pathToArray, arrayToPath } from '../src/paths';
 import { latexToTree, treeToJson } from '../src/parser';
 

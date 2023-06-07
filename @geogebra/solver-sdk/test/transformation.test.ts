@@ -1,5 +1,4 @@
-import { describe, it } from 'mocha';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import { isTrivialStep, isThroughStep } from '../src';
 import {
   planSelectionWithTrivialMember,

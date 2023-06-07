@@ -8,7 +8,8 @@ import type { Token } from './tokenizer';
 //   2010-06-26
 
 function error(message: string, object: any): never {
-  throw { name: 'SyntaxError', message, object };
+  throw new Error(`SyntaxError: ${message}
+${JSON.stringify(object, null, 2)}`);
 }
 
 export abstract class ParserSymbol<T> {

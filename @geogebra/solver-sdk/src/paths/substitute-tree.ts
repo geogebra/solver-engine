@@ -25,7 +25,19 @@ export function substituteTree(
     pathIdx = 0,
   ): ExpressionTree {
     if (pathArray.length === pathIdx) {
-      if (!useParentDecorators) return prefixPaths(child, arrayToPath(pathArray));
+      if (!useParentDecorators) {
+        const prefixedChild = prefixPaths(child, arrayToPath(pathArray));
+        if (
+          parent.type === child.type &&
+          ['SmartProduct', 'Sum'].includes(parent.type) &&
+          !parent.decorators?.length
+        ) {
+          // Todo: after almost every test is not skipped, try removing this `if` and see
+          // if it breaks anything.
+          return { ...prefixedChild, decorators: ['PartialBracket'] };
+        }
+        return prefixedChild;
+      }
       return {
         ...prefixPaths(child, arrayToPath(pathArray)),
         ...(parent.decorators?.length ? { decorators: parent.decorators.slice() } : null),

@@ -8,7 +8,7 @@ import take from 'lodash/take';
 import { useTimeAgo } from '@vueuse/core';
 import TestResult from './components/TestResult.vue';
 // These .json files are generated when you run the tests.
-import { testResults, dateGenerated } from './test-results.json';
+import { testResults, dateGenerated } from './test-results';
 import testsRunning from './tests-running.json';
 import {
   App_countOfTestsToRender,

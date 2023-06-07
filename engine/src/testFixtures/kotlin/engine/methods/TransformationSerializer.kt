@@ -4,6 +4,9 @@ import engine.expressions.Expression
 import engine.expressions.RootPath
 import engine.steps.metadata.MetadataKey
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.MapSerializer
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -11,10 +14,12 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
-import parser.parseExpression
+import kotlinx.serialization.json.JsonEncoder
+import kotlinx.serialization.json.encodeToJsonElement
+import java.lang.UnsupportedOperationException
 
 @Serializable
-private enum class Format(val value: String) {
+enum class Format(val value: String) {
     Latex("latex"),
     Solver("solver"),
     Json("json"),
@@ -93,18 +98,29 @@ private class KeyNameRegistry {
 private class ExpressionSerializer : kotlinx.serialization.KSerializer<Any> {
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("Expression", PrimitiveKind.STRING)
 
+    @Suppress("UNCHECKED_CAST")
     override fun serialize(encoder: Encoder, value: Any) {
-        encoder.encodeString(value.toString())
+        val jsonElement = when (value) {
+            is String -> Json.encodeToJsonElement(value)
+            is Boolean -> Json.encodeToJsonElement(value)
+            is List<*> -> Json.encodeToJsonElement(ListSerializer(this), value as List<Any>)
+            is Map<*, *> -> Json.encodeToJsonElement(
+                MapSerializer(String.serializer(), this),
+                value as Map<String, Any>,
+            )
+            else -> throw Exception("Unexpected type: ${value::class}")
+        }
+        (encoder as JsonEncoder).encodeJsonElement(jsonElement)
     }
 
     override fun deserialize(decoder: Decoder): Any {
-        return parseExpression(decoder.decodeString())
+        throw UnsupportedOperationException()
     }
 }
 
-fun encodeTransformationToString(trans: engine.steps.Transformation?): String {
+fun encodeTransformationToString(trans: engine.steps.Transformation?, format: Format): String {
     if (trans === null) return "null"
-    val surrogate = TransformationModeller(Format.Solver).modelTransformation(trans)
+    val surrogate = TransformationModeller(format).modelTransformation(trans)
     return Json.encodeToString(surrogate)
 }
 private class TransformationModeller(val format: Format) {

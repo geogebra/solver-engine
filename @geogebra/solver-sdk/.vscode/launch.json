@@ -4,34 +4,39 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
+    // For help debugging vitest tests via IntelliJ or vscode, see
+    // https://vitest.dev/guide/debugging.html
     {
       "type": "node",
       "request": "launch",
-      "name": "Mocha Tests",
-      "program": "${workspaceFolder}/../../node_modules/mocha/bin/mocha.js",
-      "args": [
-        "--timeout",
-        "999999",
-        "--colors",
-        "--reporter",
-        "spec",
-        "./test/**/*.test.ts",
-      ],
-      "internalConsoleOptions": "openOnSessionStart",
-      "sourceMaps": true,
-      "skipFiles": [],
+      "name": "Vitest Tests",
+      "autoAttachChildProcesses": true,
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**", "VM*"],
+      "program": "${workspaceRoot}/../../node_modules/vitest/vitest.mjs",
+      // You could go without setting --threads to false, but then you may get
+      // multiple threads stopping on the same brakepoint at about the same
+      // time, and that can be confusing.
+      //
+      // The `--environment jsdom` is redundant, unless you are running in a
+      // different root project directory.
+      "args": ["run", "--threads", "false", "--environment", "jsdom"],
       "smartStep": true,
+      "console": "integratedTerminal",
     },
     {
       "type": "node",
       "request": "launch",
-      "name": "Mocha Tests Current File",
-      "program": "${workspaceFolder}/../../node_modules/.bin/_mocha",
-      "args": ["--timeout", "999999", "--colors", "${file}"],
-      "internalConsoleOptions": "openOnSessionStart",
-      "sourceMaps": true,
-      "skipFiles": [],
+      "name": "Vitest Current Test File",
+      "autoAttachChildProcesses": true,
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**", "VM*"],
+      "program": "${workspaceRoot}/../../node_modules/vitest/vitest.mjs",
+      // `${relativeFile}` will be whatever file you are looking at in vscode.
+      // You may find it convenient to to replace temporarily replace
+      // `${relativeFile}` with the hardcoded path to the test file, so that you
+      // can start the debugger from any file in the project.
+      "args": ["run", "--environment", "jsdom", "${relativeFile}"],
       "smartStep": true,
+      "console": "integratedTerminal",
     },
   ],
 }

@@ -4,7 +4,7 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 /api/src/main/resources/static/poker
-/solver-poker/test-results-src/test-results.json
+/solver-poker/test-results-src/test-results.ts
 /solver-poker/test-results-src/tests-running.json
 
 documentation

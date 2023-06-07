@@ -1,5 +1,4 @@
-import { describe, it } from 'mocha';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import type { LatexSettings } from '../src';
 import {
   jsonToLatex,
@@ -34,118 +33,118 @@ describe('Custom LaTeX output', () => {
   });
 });
 
-describe('Aligned equations in system', () => {
-  const system = [
+it('Aligned equations in system', () => {
+  const system: MathJson = [
     'EquationSystem',
     ['Equation', ['a'], ['1']],
     ['Equation', ['b'], ['2']],
-  ] as MathJson;
+  ];
 
   expect(jsonToLatex(system)).to.equal(
     '\\left\\{\\begin{array}{rcl}\n  a & = & 1\\\\\n  b & = & 2\\\\\n\\end{array}\\right.',
   );
 });
 
-describe('Aligned equations in union', () => {
-  const union = [
+it('Aligned equations in union', () => {
+  const union: MathJson = [
     'EquationUnion',
     ['Equation', ['x'], ['1']],
     ['Equation', ['x'], ['2']],
-  ] as MathJson;
+  ];
 
   expect(jsonToLatex(union)).to.equal('x = 1, x = 2');
 });
 
-describe('Univariate finite set solution', () => {
-  const solution = [
+it('Univariate finite set solution', () => {
+  const solution: MathJson = [
     'SetSolution',
     ['VariableList', ['x']],
     ['FiniteSet', ['Fraction', ['1'], ['2']]],
-  ] as MathJson;
+  ];
 
   expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
     'x = \\frac{1}{2}',
   );
 });
 
-describe('Multivariate finite set solution', () => {
-  const solution = [
+it('Multivariate finite set solution', () => {
+  const solution: MathJson = [
     'SetSolution',
     ['VariableList', ['x'], ['y']],
     ['FiniteSet', ['Tuple', ['Fraction', ['1'], ['2']], ['SquareRoot', ['3']]]],
-  ] as MathJson;
+  ];
 
   expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
     'x = \\frac{1}{2}, y = \\sqrt{3}',
   );
 });
 
-describe('Multivariate cartesian product solution', () => {
-  const solution = [
+it('Multivariate cartesian product solution', () => {
+  const solution: MathJson = [
     'SetSolution',
     ['VariableList', ['x'], ['y']],
     ['CartesianProduct', ['/reals/'], ['FiniteSet', ['SquareRoot', ['3']]]],
-  ] as MathJson;
+  ];
 
   expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
     'x \\in \\mathbb{R}, y = \\sqrt{3}',
   );
 });
 
-describe('Univariate identity solution', () => {
-  const solution = [
+it('Univariate identity solution', () => {
+  const solution: MathJson = [
     'Identity',
     ['VariableList', ['x']],
     ['Equation', ['x'], ['x']],
-  ] as MathJson;
+  ];
 
   expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
     'x \\in \\mathbb{R}',
   );
 });
 
-describe('Multivariate identity solution', () => {
-  const solution = [
+it('Multivariate identity solution', () => {
+  const solution: MathJson = [
     'Identity',
     ['VariableList', ['x'], ['y']],
     ['Equation', ['1'], ['1']],
-  ] as MathJson;
+  ];
 
   expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
     'x, y \\in \\mathbb{R}',
   );
 });
 
-describe('Univariate contradiction solution', () => {
-  const solution = [
+it('Univariate contradiction solution', () => {
+  const solution: MathJson = [
     'Contradiction',
-    ['VariableList', 'x'],
+    ['VariableList', ['x']],
     ['Equation', ['1'], ['2']],
-  ] as MathJson;
+  ];
 
   expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
     'x \\in \\emptyset',
   );
 });
 
-describe('Multivariate contradiction solution', () => {
-  const solution = [
+it('Multivariate contradiction solution', () => {
+  const solution: MathJson = [
     'Contradiction',
-    ['VariableList', 'x', 'y'],
+    ['VariableList', ['x'], ['y']],
     ['GreaterThan', ['1'], ['2']],
-  ] as MathJson;
+  ];
 
   expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
     'x, y \\in \\emptyset',
   );
 });
 
-describe('ImplicitSolution', () => {
-  const solution = [
+it('ImplicitSolution', () => {
+  const solution: MathJson = [
     'ImplicitSolution',
     ['VariableList', ['x'], ['y']],
     ['Equation', ['x'], ['Sum', ['SmartProduct', [false, ['2']], [false, ['y']]], ['3']]],
-  ] as MathJson;
+  ];
 
   expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
     'x, y \\in \\mathbb{R} : x = 2y+3',

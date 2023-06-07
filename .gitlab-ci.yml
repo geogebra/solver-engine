@@ -37,7 +37,10 @@ check-circular-dependencies-in-methods:
 # Test SDK and build all artifacts from SDK for the poker and for possible release
 build-sdk-and-poker:
   stage: build
-  needs: []
+  needs:
+    # The Kotlin tests generate solver-poker/test-results-src/test-results.ts which is
+    # needed by the TS tests.
+    - build-engine
   image: node:18-alpine
   tags:
     - docker
@@ -77,6 +80,8 @@ build-engine:
       - methods/build/generated/ksp/main/resources/TranslationKeys.json
       - methods/build/generated/ksp/main/resources/Method.TranslationKeys.json
       - engine/build/generated/ksp/main/resources/TranslationKeys.json
+      # Used by some TS tests
+      - solver-poker/test-results-src/test-results.ts
     expire_in: 1 day
 
 # Package the engine into a docker image

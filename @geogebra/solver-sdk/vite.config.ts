@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import path from 'path';
 import { defineConfig, normalizePath } from 'vite';
 
@@ -14,6 +15,12 @@ export default defineConfig({
       fileName: (format) => `solver-sdk.${format}.js`,
     },
     outDir: 'dist',
+  },
+  test: {
+    include: ['test/**/*.test.ts'],
+    // Needed to run the gmath library in a node environment
+    environment: 'jsdom',
+    reporters: ['dot'],
   },
 });
 

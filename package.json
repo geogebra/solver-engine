@@ -1,8 +1,8 @@
 {
   "devDependencies": {
     "@types/katex": "^0.16.0",
-    "concurrently": "^8.0.1",
-    "eslint": "^8.39.0",
+    "concurrently": "^8.1.0",
+    "eslint": "^8.42.0",
     "eslint-config-prettier": "^8.8.0",
     "prettier": "2.8.8",
     "pretty-quick": "^3.1.3"
@@ -17,6 +17,7 @@
     "@geogebra/solver-sdk",
     "solver-poker"
   ],
+  "type": "module",
   "volta": {
     "node": "18.15.0"
   }

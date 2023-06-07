@@ -1,5 +1,4 @@
-import { describe, it } from 'mocha';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import { api } from '../src/api';
 
 // We need this for the API calls to work. They assume they have a browser

@@ -1,5 +1,4 @@
-import { describe, it } from 'mocha';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import { isTrivialSolution } from '../src';
 import { planSelectionWithTrivialMember } from './test-data/api-mock-data';
 
