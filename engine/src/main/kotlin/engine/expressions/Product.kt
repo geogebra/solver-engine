@@ -71,6 +71,14 @@ class Product(
             listOf(productSignRequiredForOperand(it, operands[it]), serializedOperands[it])
         }
     }
+
+    override fun fillJson2(s: MutableMap<String, Any>) {
+        s["type"] = "SmartProduct"
+        if (operands.isNotEmpty()) {
+            s["operands"] = operands.map { it.toJson2() }
+            s["signs"] = operands.withIndex().map { (i, op) -> productSignRequiredForOperand(i, op) }
+        }
+    }
 }
 
 private fun getBaseOfPower(expr: Expression): Expression = when (expr) {

@@ -13,7 +13,6 @@ import engine.operators.IndefiniteIntegralOperator
 import engine.operators.InequalityOperators
 import engine.operators.IntervalOperator
 import engine.operators.MatrixOperator
-import engine.operators.NameOperator
 import engine.operators.NaryOperator
 import engine.operators.Operator
 import engine.operators.SetOperators
@@ -282,4 +281,4 @@ private fun flattenedNaryExpression(operator: NaryOperator, operands: List<Expre
     return buildExpression(operator, ops)
 }
 
-fun nameXp(value: String) = buildExpression(NameOperator(value), emptyList())
+fun nameXp(value: String) = Name(value)

@@ -1,4 +1,4 @@
-import { MathJson } from './types';
+import { MathJson, MathJson2 } from './types';
 import { LatexSettings, LatexTransformer, treeToLatex, treeToSolver } from './renderer';
 import { jsonToTree, latexToTree } from './parser';
 
@@ -10,7 +10,7 @@ export * from './types';
 export * from './solutions';
 
 export function jsonToLatex(
-  json: MathJson,
+  json: MathJson | MathJson2,
   settings?: LatexSettings,
   transformer?: LatexTransformer,
 ): string {

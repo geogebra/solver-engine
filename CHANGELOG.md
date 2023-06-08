@@ -20,6 +20,8 @@ contents to a new release section (e.g. _[0.x]_).
 - New test reporter to see global effect of code changes on test output (PLUT-506)
 - Add equation addition and subtraction support in SDK (PLUT-561)
 - Added support for solving modulus equations of the form |f(x)| = g(x) and derived (PLUT-600)
+- Added new `json2` serialisation format for math in engine (PLUT-626)
+- SDK: added support for new `json2` serialisation format for math (PLUT-627)
 
 ### Fixed
 

@@ -15,7 +15,12 @@ class IntegerExpression(
     operator = IntegerOperator(value),
     operands = emptyList(),
     meta,
-)
+) {
+    override fun fillJson2(s: MutableMap<String, Any>) {
+        s["type"] = "Integer"
+        s["value"] = value.toString()
+    }
+}
 
 class DecimalExpression(
     val value: BigDecimal,
@@ -24,7 +29,12 @@ class DecimalExpression(
     operator = DecimalOperator(value),
     operands = emptyList(),
     meta,
-)
+) {
+    override fun fillJson2(s: MutableMap<String, Any>) {
+        s["type"] = "Decimal"
+        s["value"] = value.toString()
+    }
+}
 
 class RecurringDecimalExpression(
     val value: RecurringDecimal,
@@ -33,7 +43,12 @@ class RecurringDecimalExpression(
     operator = RecurringDecimalOperator(value),
     operands = emptyList(),
     meta,
-)
+) {
+    override fun fillJson2(s: MutableMap<String, Any>) {
+        s["type"] = "RecurringDecimal"
+        s["value"] = value.toString()
+    }
+}
 
 class MixedNumberExpression(
     val integerPart: IntegerExpression,

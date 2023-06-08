@@ -1,4 +1,4 @@
-import type { SolverContext } from '@geogebra/solver-sdk';
+import type { ApiMathFormat, SolverContext } from '@geogebra/solver-sdk';
 import * as solverSDK from '@geogebra/solver-sdk';
 import type { ColorScheme, SolutionFormat } from './settings';
 import { settings, solutionFormatters } from './settings';
@@ -7,6 +7,8 @@ import { fetchDefaultTranslations } from './translations';
 import { clone } from './util';
 import type renderMathInElement from 'katex/contrib/auto-render';
 import { copyTestCodeToClipboardOnClick } from './render-test';
+
+const jsonFormat: ApiMathFormat = 'json2';
 
 declare global {
   interface Window {
@@ -76,11 +78,11 @@ const selectPlansOrApplyPlan = async ({
   const [result, solverFormatResult] =
     planId === 'selectPlans'
       ? await Promise.all([
-          solverSDK.api.selectPlans(input, 'json', context),
+          solverSDK.api.selectPlans(input, jsonFormat, context),
           solverSDK.api.selectPlans(input, 'solver', context),
         ])
       : await Promise.all([
-          solverSDK.api.applyPlan(input, planId, 'json', context),
+          solverSDK.api.applyPlan(input, planId, jsonFormat, context),
           solverSDK.api.applyPlan(input, planId, 'solver', context),
         ]);
   lastResult = { planId, result, solverFormatResult };

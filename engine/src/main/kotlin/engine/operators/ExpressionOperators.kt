@@ -70,7 +70,7 @@ abstract class NullaryOperator : ExpressionOperator {
     abstract fun latexString(ctx: RenderContext): String
 }
 
-data class NameOperator(val value: String) : NullaryOperator() {
+internal data class NameOperator(val value: String) : NullaryOperator() {
 
     override val name = toString()
 

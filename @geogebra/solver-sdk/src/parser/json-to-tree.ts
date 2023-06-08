@@ -1,4 +1,4 @@
-import { MathJson, SmartProductOperandJson } from '../types';
+import { MathJson, MathJson2, SmartProductOperandJson } from '../types';
 import {
   DecoratorType,
   ExpressionDecorations,
@@ -8,7 +8,10 @@ import {
   NestedExpressionType,
 } from './types';
 
-export function jsonToTree(json: MathJson, path = '.'): ExpressionTree {
+export function jsonToTree(json: MathJson | MathJson2, path = '.'): ExpressionTree {
+  if (!Array.isArray(json)) {
+    return json2ToTree(json, path);
+  }
   const [head, ...args] = json;
   let value: string;
   let decorators: (DecoratorType | string)[] = [];
@@ -46,6 +49,37 @@ export function jsonToTree(json: MathJson, path = '.'): ExpressionTree {
     Object.assign(result, extractDecorations(decorators));
   }
   return result;
+}
+
+function json2ToTree(json: MathJson2, path = '.'): ExpressionTree {
+  const decorations = { name: json.name, decorators: json.decorators };
+  switch (json.type) {
+    case 'Integer':
+    case 'Decimal':
+    case 'RecurringDecimal':
+      return { ...decorations, type: 'Number', value: json.value, path };
+    case 'Variable':
+      return { ...decorations, type: 'Variable', value: json.value, path };
+    case 'Name':
+      return { ...decorations, type: 'Name', value: json.value, path };
+    case 'SmartProduct':
+      return {
+        ...decorations,
+        type: 'SmartProduct',
+        args: json.operands.map((op, i) => json2ToTree(op, `${path}/${i}`)),
+        signs: json.signs,
+        path,
+      };
+    default:
+      return {
+        ...decorations,
+        type: json.type as NestedExpressionType,
+        args: json.operands
+          ? json.operands.map((op, i) => json2ToTree(op, `${path}/${i}`))
+          : [],
+        path,
+      };
+  }
 }
 
 export function treeToJson(tree: ExpressionTree): MathJson {

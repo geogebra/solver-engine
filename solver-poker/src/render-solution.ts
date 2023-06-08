@@ -5,13 +5,14 @@ import * as solverSDK from '@geogebra/solver-sdk';
 import {
   jsonToTree,
   MathJson,
+  MathJson2,
   Metadata,
   PlanSelection,
-  PlanSelectionJson,
+  PlanSelectionJson2,
   PlanSelectionSolver,
-  TaskJson,
+  TaskJson2,
   Transformation,
-  TransformationJson,
+  TransformationJson2,
 } from '@geogebra/solver-sdk';
 import { colorSchemes, settings } from './settings';
 import {
@@ -36,7 +37,7 @@ const findTransformationInSelections = (selections: PlanSelection[], methodId: s
 };
 
 export const renderPlanSelections = (
-  selections: PlanSelectionJson[],
+  selections: PlanSelectionJson2[],
   testSelections: PlanSelectionSolver[],
 ) => {
   if (selections) {
@@ -68,7 +69,7 @@ export const renderPlanSelections = (
 };
 
 export const renderTransformationAndTest = (
-  trans: TransformationJson,
+  trans: TransformationJson2,
   testTrans?: Transformation,
   depth = 0,
 ) => {
@@ -80,14 +81,14 @@ export const renderTransformationAndTest = (
  * Rendering a transformation
  ******************************************/
 
-const renderTransformation = (trans: TransformationJson, depth = 0): string => {
+const renderTransformation = (trans: TransformationJson2, depth = 0): string => {
   const isThrough = isThroughStep(trans);
   if (!settings.showThroughSteps && isThrough) {
     return renderTransformation(trans.steps![0], depth);
   }
 
   const [fromColoring, toColoring] = createColorMaps(trans);
-  const render = (expr: MathJson, coloring?: LatexTransformer) =>
+  const render = (expr: MathJson2, coloring?: LatexTransformer) =>
     solverSDK.treeToLatex(solverSDK.jsonToTree(expr, trans.path), settings.latexSettings, coloring);
   return /* HTML */ ` <div class="trans ${isThrough ? 'through-step' : ''}">
     ${renderExplanation(trans.explanation)}
@@ -128,7 +129,7 @@ const createColorMaps = (
   }
 };
 
-const renderSteps = (steps: TransformationJson[] | null, depth = 0, open = false): string => {
+const renderSteps = (steps: TransformationJson2[] | null, depth = 0, open = false): string => {
   if (steps === null || steps.length === 0) {
     return '';
   }
@@ -155,7 +156,7 @@ const renderSteps = (steps: TransformationJson[] | null, depth = 0, open = false
   </details>`;
 };
 
-const renderTasks = (tasks: TaskJson[] | null, depth = 0, open = false) => {
+const renderTasks = (tasks: TaskJson2[] | null, depth = 0, open = false) => {
   if (tasks === null || tasks.length === 0) {
     return '';
   }
@@ -167,7 +168,7 @@ const renderTasks = (tasks: TaskJson[] | null, depth = 0, open = false) => {
   </details>`;
 };
 
-const renderTask = (task: TaskJson, depth = 0): string => {
+const renderTask = (task: TaskJson2, depth = 0): string => {
   return /* HTML */ `<div class="task">
     ${renderExplanation(task.explanation)}
     ${!task.steps
@@ -178,7 +179,7 @@ const renderTask = (task: TaskJson, depth = 0): string => {
   </div>`;
 };
 
-const renderTaskTransformation = (task: TaskJson) => {
+const renderTaskTransformation = (task: TaskJson2) => {
   if (task.steps === null) {
     return '';
   }
@@ -194,7 +195,7 @@ const renderTaskTransformation = (task: TaskJson) => {
   return `<div className='expr'>${renderExpression(rendering)}</div>`;
 };
 
-const preprocessSteps = (steps: TransformationJson[]) => {
+const preprocessSteps = (steps: TransformationJson2[]) => {
   // We clone because we may edit the objects
   steps = preprocessInvisibleChangeSteps(clone(steps));
   if (settings.showRearrangementSteps || steps.every((step) => isRearrangementStep(step))) {
@@ -214,7 +215,7 @@ const preprocessSteps = (steps: TransformationJson[]) => {
   return processedSteps;
 };
 
-const preprocessInvisibleChangeSteps = (steps: TransformationJson[]) => {
+const preprocessInvisibleChangeSteps = (steps: TransformationJson2[]) => {
   if (settings.showInvisibleChangeSteps || steps.every((step) => isInvisibleChangeStep(step))) {
     return steps;
   }
@@ -281,7 +282,7 @@ const renderExplanation = (expl?: Metadata | null) => {
   </div>`;
 };
 
-const renderExpression = (expr: MathJson | string) =>
+const renderExpression = (expr: MathJson2 | MathJson | string) =>
   `\\(\\displaystyle ${
     typeof expr === 'string' ? expr : solverSDK.jsonToLatex(expr, settings.latexSettings)
   }\\)`;

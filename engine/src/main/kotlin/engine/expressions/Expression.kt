@@ -10,6 +10,7 @@ import engine.operators.IntegerOperator
 import engine.operators.IntervalOperator
 import engine.operators.LatexRenderable
 import engine.operators.MixedNumberOperator
+import engine.operators.NameOperator
 import engine.operators.Operator
 import engine.operators.ProductOperator
 import engine.operators.RecurringDecimalOperator
@@ -401,6 +402,25 @@ open class Expression internal constructor(
         }
     }
 
+    internal open fun fillJson2(s: MutableMap<String, Any>) {
+        s["type"] = operator.name
+        if (operands.isNotEmpty()) {
+            s["operands"] = operands.map { it.toJson2() }
+        }
+    }
+
+    fun toJson2(): Map<String, Any> {
+        val s = mutableMapOf<String, Any>()
+        fillJson2(s)
+        if (decorators.isNotEmpty()) {
+            s["decorators"] = decorators.map { it.toString() }
+        }
+        if (name != null) {
+            s["name"] = name!!
+        }
+        return s
+    }
+
     val doubleValue: Double by lazy {
         when (operator) {
             is ExpressionOperator -> operator.eval(children.map { it.doubleValue })
@@ -524,6 +544,8 @@ private fun expressionOf(
         EquationOperator -> Equation(operands[0], operands[1], meta)
         is InequalityOperators -> Inequality(operands[0], operands[1], operator, meta)
         StatementWithConstraintOperator -> StatementWithConstraint(operands[0], operands[1], meta)
+
+        is NameOperator -> Name(operator.value, meta)
 
         else -> Expression(operator, operands, meta)
     }

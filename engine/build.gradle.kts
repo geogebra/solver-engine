@@ -21,6 +21,8 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
     testFixturesImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
+    testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.38.0")
+    testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.3")
 
     ksp(project(":export"))
 }
