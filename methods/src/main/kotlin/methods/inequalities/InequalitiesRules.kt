@@ -191,25 +191,25 @@ enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
 
 private fun RuleResultBuilder.trueOrFalseRuleResult(inequality: Pattern, isSatisfied: Boolean): Transformation {
     val noVariable = context.solutionVariables.isEmpty()
-    return if (isSatisfied) {
-        val key = if (noVariable) {
+    val variableList = variableListOf(context.solutionVariables)
+    val toExpr = if (isSatisfied) {
+        identityOf(variableList, get(inequality))
+    } else {
+        contradictionOf(variableList, get(inequality))
+    }
+    return if (noVariable) {
+        val key = if (isSatisfied) {
             Explanation.ExtractTruthFromTrueInequality
         } else {
-            Explanation.ExtractSolutionFromTrueInequality
-        }
-        ruleResult(
-            toExpr = identityOf(variableListOf(context.solutionVariables), get(inequality)),
-            explanation = metadata(key),
-        )
-    } else {
-        val key = if (noVariable) {
             Explanation.ExtractFalsehoodFromFalseInequality
+        }
+        ruleResult(toExpr = toExpr, explanation = metadata(key))
+    } else {
+        val key = if (isSatisfied) {
+            Explanation.ExtractSolutionFromTrueInequality
         } else {
             Explanation.ExtractSolutionFromFalseInequality
         }
-        ruleResult(
-            toExpr = contradictionOf(variableListOf(context.solutionVariables), get(inequality)),
-            explanation = metadata(key),
-        )
+        ruleResult(toExpr = toExpr, explanation = metadata(key, variableList))
     }
 }
