@@ -131,16 +131,18 @@ export const simpleSolutionFormatter = {
       case 'ImplicitSolution':
         return `${rec(n.args[0], null)} \\in \\mathbb{R} : ${rec(n.args[1], n)}`;
       case 'Identity': {
-        const vars = (n as VariableListTree).args;
-        if (vars !== undefined && vars.length > 0) {
-          return `${rec(n.args[0], null)} \\in \\mathbb{R}`;
+        const varList = n.args[0] as VariableListTree;
+        if (varList.args !== undefined && varList.args.length > 0) {
+          return `${rec(varList, null)} \\in \\mathbb{R}`;
         }
+        break;
       }
       case 'Contradiction': {
-        const vars = (n as VariableListTree).args;
-        if (vars !== undefined && vars.length > 0) {
-          return `${rec(n.args[0], null)} \\in \\emptyset`;
+        const varList = n.args[0] as VariableListTree;
+        if (varList.args !== undefined && varList.args.length > 0) {
+          return `${rec(varList, null)} \\in \\emptyset`;
         }
+        break;
       }
     }
 

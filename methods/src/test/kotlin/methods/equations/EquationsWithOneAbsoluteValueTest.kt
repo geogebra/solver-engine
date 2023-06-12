@@ -1,10 +1,13 @@
 package methods.equations
 
+import engine.context.Curriculum
 import engine.methods.testMethodInX
+import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.general.GeneralExplanation
+import methods.integerarithmetic.IntegerArithmeticExplanation
 import org.junit.jupiter.api.Test
 
-@Suppress("MaxLineLength")
+@Suppress("MaxLineLength", "LargeClass")
 class EquationsWithOneAbsoluteValueTest {
     @Test
     fun `test simple linear equation in modulus`() = testMethodInX {
@@ -604,6 +607,190 @@ class EquationsWithOneAbsoluteValueTest {
                     explanation {
                         key = EquationsExplanation.CollectSolutions
                     }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test US method for linear equation with 2 solutions`() = testMethodInX {
+        method = EquationsPlans.SolveEquationWithOneAbsoluteValue
+        context = context.copy(curriculum = Curriculum.US)
+
+        inputExpr = "abs[2 x - 1] = x + 5"
+
+        check {
+            fromExpr = "abs[2 x - 1] = x + 5"
+            toExpr = "SetSolution[x : {-[4 / 3], 6}]"
+            explanation {
+                key = EquationsExplanation.SolveEquationWithOneAbsoluteValueBySubstitution
+            }
+
+            task {
+                taskId = "#1"
+                startExpr = "abs[2 x - 1] = x + 5"
+                explanation {
+                    key = EquationsExplanation.SplitEquationWithAbsoluteValueAndSolve
+                }
+
+                step {
+                    fromExpr = "abs[2 x - 1] = x + 5"
+                    toExpr = "2 x - 1 = x + 5 OR 2 x - 1 = -(x + 5)"
+                }
+
+                step {
+                    fromExpr = "2 x - 1 = x + 5 OR 2 x - 1 = -(x + 5)"
+                    toExpr = "SetSolution[x : {-[4 / 3], 6}]"
+                    explanation {
+                        key = EquationsExplanation.SolveEquationUnion
+                    }
+                }
+            }
+
+            task {
+                taskId = "#2"
+                startExpr = "abs[2 (-[4 / 3]) - 1] = -[4 / 3] + 5"
+                explanation {
+                    key = EquationsExplanation.CheckIfSolutionSatisfiesConstraint
+                }
+
+                step {
+                    fromExpr = "abs[2 (-[4 / 3]) - 1] = -[4 / 3] + 5"
+                    toExpr = "[11 / 3] = -[4 / 3] + 5"
+                    explanation {
+                        key = GeneralExplanation.EvaluateAbsoluteValue
+                    }
+                }
+
+                step {
+                    fromExpr = "[11 / 3] = -[4 / 3] + 5"
+                    toExpr = "[11 / 3] = [11 / 3]"
+                    explanation {
+                        key = FractionArithmeticExplanation.AddIntegerAndFraction
+                    }
+                }
+
+                step {
+                    fromExpr = "[11 / 3] = [11 / 3]"
+                    toExpr = "Identity[[11 / 3] = [11 / 3]]"
+                    explanation {
+                        key = EquationsExplanation.ExtractTruthFromTrueEquality
+                    }
+                }
+            }
+
+            task {
+                taskId = "#3"
+                startExpr = "abs[2 * 6 - 1] = 6 + 5"
+                explanation {
+                    key = EquationsExplanation.CheckIfSolutionSatisfiesConstraint
+                }
+
+                step {
+                    fromExpr = "abs[2 * 6 - 1] = 6 + 5"
+                    toExpr = "11 = 6 + 5"
+                    explanation {
+                        key = GeneralExplanation.EvaluateAbsoluteValue
+                    }
+                }
+
+                step {
+                    fromExpr = "11 = 6 + 5"
+                    toExpr = "11 = 11"
+                    explanation {
+                        key = IntegerArithmeticExplanation.SimplifyIntegersInSum
+                    }
+                }
+
+                step {
+                    fromExpr = "11 = 11"
+                    toExpr = "Identity[11 = 11]"
+                    explanation {
+                        key = EquationsExplanation.ExtractTruthFromTrueEquality
+                    }
+                }
+            }
+
+            task {
+                taskId = "#4"
+                startExpr = "SetSolution[x : {-[4 / 3], 6}]"
+                explanation {
+                    key = EquationsExplanation.AllSolutionsSatisfyConstraint
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test US method for linear equation with no solution`() = testMethodInX {
+        method = EquationsPlans.SolveEquationWithOneAbsoluteValue
+        context = context.copy(curriculum = Curriculum.US)
+        inputExpr = "abs[2 x + 5] = x"
+        check {
+            fromExpr = "abs[2 x + 5] = x"
+            toExpr = "Contradiction[x : SetSolution[x : {-5, -[5 / 3]}] GIVEN abs[2 x + 5] = x]"
+            explanation {
+                key = EquationsExplanation.SolveEquationWithOneAbsoluteValueBySubstitution
+            }
+
+            task {
+                taskId = "#1"
+                startExpr = "abs[2 x + 5] = x"
+                explanation {
+                    key = EquationsExplanation.SplitEquationWithAbsoluteValueAndSolve
+                }
+
+                step {
+                    fromExpr = "abs[2 x + 5] = x"
+                    toExpr = "2 x + 5 = x OR 2 x + 5 = -x"
+                }
+
+                step {
+                    fromExpr = "2 x + 5 = x OR 2 x + 5 = -x"
+                    toExpr = "SetSolution[x : {-5, -[5 / 3]}]"
+                    explanation {
+                        key = EquationsExplanation.SolveEquationUnion
+                    }
+                }
+            }
+
+            task {
+                taskId = "#2"
+                startExpr = "abs[2 * (-5) + 5] = -5"
+                explanation {
+                    key = EquationsExplanation.CheckIfSolutionSatisfiesConstraint
+                }
+
+                step {
+                    fromExpr = "abs[2 * (-5) + 5] = -5"
+                    toExpr = "5 = -5"
+                    explanation {
+                        key = GeneralExplanation.EvaluateAbsoluteValue
+                    }
+                }
+
+                step {
+                    fromExpr = "5 = -5"
+                    toExpr = "Contradiction[5 = -5]"
+                    explanation {
+                        key = EquationsExplanation.ExtractFalsehoodFromFalseEquality
+                    }
+                }
+            }
+
+            task {
+                taskId = "#3"
+                startExpr = "abs[2 (-[5 / 3]) + 5] = -[5 / 3]"
+                explanation {
+                    key = EquationsExplanation.CheckIfSolutionSatisfiesConstraint
+                }
+            }
+
+            task {
+                taskId = "#4"
+                startExpr = "Contradiction[x : SetSolution[x : {-5, -[5 / 3]}] GIVEN abs[2 x + 5] = x]"
+                explanation {
+                    key = EquationsExplanation.NoSolutionSatisfiesConstraint
                 }
             }
         }

@@ -1,5 +1,6 @@
 package methods.equations
 
+import engine.context.Curriculum
 import engine.context.ResourceData
 import engine.expressions.Constants
 import engine.expressions.Solution
@@ -208,8 +209,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                 optionally {
                     firstOf {
                         // check if the equation is in one of the possible solved forms
-                        option(EquationsRules.ExtractSolutionFromContradiction)
-                        option(EquationsRules.ExtractSolutionFromIdentity)
+                        option(EquationsRules.ExtractSolutionFromConstantEquation)
                         option(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
                     }
                 }
@@ -370,7 +370,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                     applyTo(FactorPlans.FactorPolynomialInOneVariable) { it.firstChild }
                 }
                 apply(EquationsRules.SeparateFactoredEquation)
-                apply(solveEquationUnion)
+                apply(SolveEquationUnion)
             }
         },
     ),
@@ -444,7 +444,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                 firstOf {
                     option {
                         apply(EquationsRules.SeparateModulusEqualsPositiveConstant)
-                        apply(solveEquationUnion)
+                        apply(SolveEquationUnion)
                     }
                     option {
                         apply(EquationsRules.ResolveModulusEqualsZero)
@@ -471,6 +471,8 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
         },
     ),
 
+    SolveEquationWithOneAbsoluteValueBySubstitution(solveEquationWithOneAbsoluteValueBySubstitution),
+
     @PublicMethod
     SolveEquationWithOneAbsoluteValue(
         plan {
@@ -494,8 +496,18 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                 }
                 optionally(EquationsRules.NegateBothSides)
 
-                apply(EquationsRules.SeparateModulusEqualsExpression)
-                apply(solveEquationUnion)
+                firstOf {
+                    // Here we can't use contextSensitiveSelector because we want to fall back to the default ("EU")
+                    // solution if the US solutions doesn't work.
+                    option {
+                        check { curriculum == Curriculum.US }
+                        apply(SolveEquationWithOneAbsoluteValueBySubstitution)
+                    }
+                    option {
+                        apply(EquationsRules.SeparateModulusEqualsExpression)
+                        apply(SolveEquationUnion)
+                    }
+                }
             }
         },
     ),
@@ -523,6 +535,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
         },
     ),
 
+    @PublicMethod
     SolveEquationWithConstraint(solveEquationWithConstraint),
 }
 
@@ -595,12 +608,10 @@ val equationSimplificationSteps = steps {
     whilePossible {
         firstOf {
             option(NormalizationPlans.NormalizeExpression)
-            // before we cancel we always have to check for an identity
-            option(EquationsRules.ExtractSolutionFromIdentity)
+            // check for contradiction or identity
+            option(EquationsRules.ExtractSolutionFromConstantEquation)
             // normalize the equation
             option(simplifyEquation)
-            // after cancelling we have to check for contradiction
-            option(EquationsRules.ExtractSolutionFromContradiction)
         }
     }
 }
@@ -739,7 +750,7 @@ private val solveEquationWithTwoAbsoluteValues = plan {
         firstOf {
             option {
                 apply(EquationsRules.SeparateModulusEqualsModulus)
-                apply(solveEquationUnion)
+                apply(EquationsPlans.SolveEquationUnion)
             }
             option {
                 apply(EquationsRules.ResolveModulusEqualsNegativeModulus)

@@ -520,8 +520,7 @@ private object SystemSolverByElimination : SystemSolver() {
             context = context.copy(solutionVariables = listOf(remainingVariable)),
         ) {
             firstOf {
-                option(EquationsRules.ExtractSolutionFromContradiction)
-                option(EquationsRules.ExtractSolutionFromIdentity)
+                option(EquationsRules.ExtractSolutionFromConstantEquation)
                 option(EquationsPlans.SolveLinearEquation)
             }
         }?.let { solvedUnivariateEquation ->

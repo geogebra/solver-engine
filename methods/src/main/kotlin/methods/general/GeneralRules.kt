@@ -64,6 +64,8 @@ import engine.steps.metadata.GmPathModifier as PM
 private val maxPowerAsProduct = 5.toBigInteger()
 
 enum class GeneralRules(override val runner: Rule) : RunnerMethod {
+
+    // Tidy up rules
     RemoveUnitaryCoefficient(removeUnitaryCoefficient),
     EliminateOneInProduct(eliminateOneInProduct),
     EliminateZeroInSum(eliminateZeroInSum),
@@ -76,6 +78,7 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     SimplifyZeroNumeratorFractionToZero(simplifyZeroNumeratorFractionToZero),
     SimplifyUnitFractionToOne(simplifyUnitFractionToOne),
     SimplifyFractionWithOneDenominator(simplifyFractionWithOneDenominator),
+
     CancelDenominator(cancelDenominator),
     CancelCommonTerms(cancelCommonTerms),
     FactorMinusFromSum(factorMinusFromSum),
@@ -90,18 +93,25 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     EvaluateExpressionToThePowerOfZero(evaluateExpressionToThePowerOfZero),
     EvaluateZeroToAPositivePower(evaluateZeroToAPositivePower),
     CancelAdditiveInverseElements(cancelAdditiveInverseElements),
+
+    // Products of powers
     RewriteProductOfPowersWithSameBase(rewriteProductOfPowersWithSameBase),
     RewriteProductOfPowersWithSameExponent(rewriteProductOfPowersWithSameExponent),
-    RewriteFractionOfPowersWithSameBase(rewriteFractionOfPowersWithSameBase),
-    RewriteFractionOfPowersWithSameExponent(rewriteFractionOfPowersWithSameExponent),
-    FlipFractionUnderNegativePower(flipFractionUnderNegativePower),
     RewriteProductOfPowersWithNegatedExponent(rewriteProductOfPowersWithNegatedExponent),
     RewriteProductOfPowersWithInverseFractionBase(rewriteProductOfPowersWithInverseFractionBase),
     RewriteProductOfPowersWithInverseBase(rewriteProductOfPowersWithInverseBase),
+
+    // Fractions of powers
+    RewriteFractionOfPowersWithSameBase(rewriteFractionOfPowersWithSameBase),
+    RewriteFractionOfPowersWithSameExponent(rewriteFractionOfPowersWithSameExponent),
+    FlipFractionUnderNegativePower(flipFractionUnderNegativePower),
+
     RewriteOddRootOfNegative(rewriteOddRootOfNegative),
     RewriteIntegerOrderRootAsPower(rewriteIntegerOrderRootAsPower),
     RewritePowerUnderRoot(rewritePowerUnderRoot),
     CancelRootIndexAndExponent(cancelRootIndexAndExponent),
+
+    // Absolute values
     ResolveAbsoluteValueOfPositiveValue(resolveAbsoluteValueOfPositiveValue),
     ResolveAbsoluteValueOfNegativeValue(resolveAbsoluteValueOfNegativeValue),
     ResolveAbsoluteValueOfZero(resolveAbsoluteValueOfZero),

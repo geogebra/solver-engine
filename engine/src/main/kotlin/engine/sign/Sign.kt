@@ -68,6 +68,8 @@ enum class Sign(val signum: Int) {
         else -> UNKNOWN
     }
 
+    operator fun minus(other: Sign) = this + (-other)
+
     companion object {
         fun fromInt(s: Int) = when {
             s < 0 -> NEGATIVE

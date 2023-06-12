@@ -52,10 +52,6 @@ abstract class SetExpression(
     protected abstract fun unionWithSetUnion(other: SetUnion, comparator: ExpressionComparator): SetExpression?
 }
 
-fun interface ExpressionComparator {
-    fun compare(e1: Expression, e2: Expression): Sign
-}
-
 class Interval(
     leftBound: Expression,
     rightBound: Expression,

@@ -1,10 +1,10 @@
 package methods.equations
 
-import engine.conditions.isDefinitelyNotUndefined
 import engine.conditions.signOf
 import engine.expressions.Constants
 import engine.expressions.Expression
 import engine.expressions.Fraction
+import engine.expressions.SimpleComparator
 import engine.expressions.StatementWithConstraint
 import engine.expressions.Variable
 import engine.expressions.contradictionOf
@@ -34,6 +34,7 @@ import engine.expressions.variableListOf
 import engine.expressions.withoutNegOrPlus
 import engine.expressions.xp
 import engine.methods.Rule
+import engine.methods.RuleResultBuilder
 import engine.methods.RunnerMethod
 import engine.methods.rule
 import engine.operators.SumOperator
@@ -322,36 +323,15 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
         },
     ),
 
-    ExtractSolutionFromIdentity(
-        rule {
-            val value = condition { it.isConstantIn(solutionVariables) && it.isDefinitelyNotUndefined() }
-
-            onEquation(value, value) {
-                ruleResult(
-                    toExpr = identityOf(variableListOf(context.solutionVariables), expression),
-                    explanation = metadata(
-                        Explanation.ExtractSolutionFromIdentity,
-                        variableListOf(context.solutionVariables),
-                    ),
-                )
-            }
-        },
-    ),
-
-    ExtractSolutionFromContradiction(
+    ExtractSolutionFromConstantEquation(
         rule {
             val lhs = ConstantInSolutionVariablePattern()
             val rhs = ConstantInSolutionVariablePattern()
 
             onEquation(lhs, rhs) {
-                if (get(lhs) != get(rhs)) {
-                    ruleResult(
-                        toExpr = contradictionOf(variableListOf(context.solutionVariables), expression),
-                        explanation = metadata(
-                            Explanation.ExtractSolutionFromContradiction,
-                            variableListOf(context.solutionVariables),
-                        ),
-                    )
+                val sign = SimpleComparator.compare(get(lhs), get(rhs))
+                if (sign.isKnown()) {
+                    trueOrFalseRuleResult(sign == Sign.ZERO)
                 } else {
                     null
                 }
@@ -472,7 +452,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
     ResolveModulusEqualsNegativeModulus(resolveModulusEqualsNegativeModulus),
 
     SeparateModulusEqualsExpression(separateModulusEqualsExpression),
-
+    SeparateModulusEqualsExpressionWithoutConstraint(separateModulusEqualsExpressionWithoutConstraint),
     MoveTermsNotContainingModulusToTheRight(moveTermsNotContainingModulusToTheRight),
     MoveTermsNotContainingModulusToTheLeft(moveTermsNotContainingModulusToTheLeft),
 }
@@ -713,6 +693,27 @@ private val separateModulusEqualsExpression = rule {
                     lessThanOf(signedLHSValue, Constants.Zero),
                 ),
             ),
+            explanation = metadata(Explanation.SeparateModulusEqualsExpression),
+        )
+    }
+}
+
+private val separateModulusEqualsExpressionWithoutConstraint = rule {
+    val signedLHS = AnyPattern()
+    val absoluteValue = absoluteValueOf(signedLHS)
+    val lhs = withOptionalConstantCoefficient(absoluteValue, positiveOnly = true)
+    val rhs = AnyPattern()
+
+    onEquation(lhs, rhs) {
+        val signedLHSValue = get(signedLHS)
+        val newLHS = simplifiedProductOf(lhs.getCoefficient(), signedLHSValue)
+        val rhsValue = get(rhs)
+        ruleResult(
+            toExpr = statementUnionOf(
+                equationOf(newLHS, rhsValue),
+                equationOf(newLHS, negOf(rhsValue)),
+            ),
+            explanation = metadata(Explanation.SeparateModulusEqualsExpressionWithoutConstraint),
         )
     }
 }
@@ -766,4 +767,29 @@ internal fun Expression.countAbsoluteValues(solutionVariables: List<String>): In
     childCount == 0 -> 0
     operator == UnaryExpressionOperator.AbsoluteValue && !isConstantIn(solutionVariables) -> 1
     else -> children.sumOf { it.countAbsoluteValues(solutionVariables) }
+}
+
+private fun RuleResultBuilder.trueOrFalseRuleResult(isSatisfied: Boolean): Transformation {
+    val noVariable = context.solutionVariables.isEmpty()
+    val variableList = variableListOf(context.solutionVariables)
+    val toExpr = if (isSatisfied) {
+        identityOf(variableList, expression)
+    } else {
+        contradictionOf(variableList, expression)
+    }
+    return if (noVariable) {
+        val key = if (isSatisfied) {
+            Explanation.ExtractTruthFromTrueEquality
+        } else {
+            Explanation.ExtractFalsehoodFromFalseEquality
+        }
+        ruleResult(toExpr = toExpr, explanation = metadata(key))
+    } else {
+        val key = if (isSatisfied) {
+            Explanation.ExtractSolutionFromIdentity
+        } else {
+            Explanation.ExtractSolutionFromContradiction
+        }
+        ruleResult(toExpr = toExpr, explanation = metadata(key, variableList))
+    }
 }

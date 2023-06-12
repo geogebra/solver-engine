@@ -41,9 +41,9 @@ class RuleResultBuilder(val sub: Expression, ctx: Context, match: Match) : Mappe
     @Suppress("LongParameterList")
     fun ruleResult(
         toExpr: Expression,
+        explanation: Metadata,
         steps: List<Transformation>? = null,
         tasks: List<Task>? = null,
-        explanation: Metadata? = null,
         skills: List<Metadata>? = null,
         gmAction: GmAction? = null,
         tags: List<Transformation.Tag>? = null,

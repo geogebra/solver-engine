@@ -3,6 +3,7 @@ package engine.expressions
 import engine.operators.EquationOperator
 import engine.operators.InequalityOperators
 import engine.operators.StatementWithConstraintOperator
+import engine.sign.Sign
 
 class Equation(lhs: Expression, rhs: Expression, meta: NodeMeta = BasicMeta()) : Expression(
     operator = EquationOperator,
@@ -11,6 +12,14 @@ class Equation(lhs: Expression, rhs: Expression, meta: NodeMeta = BasicMeta()) :
 ) {
     val lhs get() = firstChild
     val rhs get() = secondChild
+
+    fun holds(comparator: ExpressionComparator): Boolean? {
+        return when (comparator.compare(lhs, rhs)) {
+            Sign.ZERO -> true
+            Sign.UNKNOWN -> null
+            else -> false
+        }
+    }
 }
 
 class Inequality(

@@ -478,15 +478,17 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
 
     DistributeFractionPositivePower(
         rule {
-            val fraction = IntegerFractionPattern()
+            val numerator = AnyPattern()
+            val denominator = AnyPattern()
+            val fraction = fractionOf(numerator, denominator)
             val exponent = integerCondition(UnsignedIntegerPattern()) { it > BigInteger.ONE }
             val pattern = powerOf(fraction, exponent)
 
             onPattern(pattern) {
                 ruleResult(
                     fractionOf(
-                        powerOf(move(fraction.numerator), move(exponent)),
-                        powerOf(move(fraction.denominator), move(exponent)),
+                        powerOf(move(numerator), move(exponent)),
+                        powerOf(move(denominator), move(exponent)),
                     ),
                     explanation = metadata(
                         Explanation.DistributeFractionPositivePower,

@@ -90,6 +90,20 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     ExtractSolutionFromContradiction,
 
     /**
+     * Extract a true statement from an equation with no variable which is obviously true
+     *
+     * E.g. 1 = 1 --> True
+     */
+    ExtractTruthFromTrueEquality,
+
+    /**
+     * Extract a false statement from an equation with no variable which is obviously false
+     *
+     * E.g. 1 = 3 --> False
+     */
+    ExtractFalsehoodFromFalseEquality,
+
+    /**
      * Extract the solution from an equation of the form
      * x^n = negative constant, when n is even.
      *
@@ -513,6 +527,45 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      * %1: the solution to check
      */
     CheckIfSolutionSatisfiesConstraint,
+
+    /**
+     * Solve an equation of the form |f(x)| = g(x) checking solutions are correct by
+     * substituting them back into the original equation (method used in the US).
+     */
+    SolveEquationWithOneAbsoluteValueBySubstitution,
+
+    /**
+     * Split an equation containing an absolute value without carrying the constraints into the individual equations
+     * and solve all the resulting equations, gathering the solutions at the end.  This is used as a step in the US
+     * method for solving an equation of the form |f(x)| = g(x)
+     *
+     * E.g.
+     *      abs[x - 1] = 2x + 5
+     *      --> x - 1 = 2x + 5 OR x - 1 = -(2x + 5)
+     *      --> x = -6 OR x = -[4/3]
+     *
+     *  Note that in the above -6 is not a solution to the original equation.
+     */
+    SplitEquationWithAbsoluteValueAndSolve,
+
+    /**
+     * Split an equation containing an absolute value without carrying the constraints into the individual equations.
+     * This is used as a step in the US method for solving an equation of the form |f(x)| = g(x)
+     *
+     * E.g.
+     *      abs[x - 1] = 2x + 5
+     *      --> x - 1 = 2x + 5 OR x - 1 = -(2x + 5)
+     */
+    SeparateModulusEqualsExpressionWithoutConstraint,
+
+    /**
+     * Split an equation containing an absolute value into two equations with constraints
+     *
+     * E.g.
+     *      abs[x - 1] = 2x + 5
+     *      --> x - 1 = 2x + 5 GIVEN x - 1 >= 0 OR -(x - 1) = 2x + 5 GIVEN x - 1 < 0
+     */
+    SeparateModulusEqualsExpression,
     ;
 
     override val category = "Equations"
