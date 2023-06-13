@@ -528,6 +528,11 @@ fun Expression.hasRedundantBrackets(): Boolean = hasBracket() && outerBracket() 
         else -> true
     }
 
+fun Expression.isPolynomial(): Boolean = when {
+    this is Fraction -> numerator.isPolynomial() && denominator.isConstant()
+    else -> children.all { it.isPolynomial() }
+}
+
 internal fun expressionOf(operator: Operator, operands: List<Expression>) =
     expressionOf(operator, operands, BasicMeta())
 

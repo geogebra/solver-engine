@@ -1,15 +1,18 @@
 package methods.fractionarithmetic
 
+import engine.conditions.isDefinitelyNotZero
 import engine.expressions.Constants
 import engine.expressions.DivideBy
 import engine.expressions.Expression
 import engine.expressions.Fraction
 import engine.expressions.Power
+import engine.expressions.areEquivalentSums
 import engine.expressions.fractionOf
 import engine.expressions.inverse
 import engine.expressions.negOf
 import engine.expressions.powerOf
 import engine.expressions.productOf
+import engine.expressions.simplifiedPowerOf
 import engine.expressions.simplifiedProductOf
 import engine.expressions.sumOf
 import engine.expressions.xp
@@ -19,19 +22,23 @@ import engine.methods.rule
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
+import engine.patterns.FractionPattern
 import engine.patterns.IntegerFractionPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.commutativeSumOf
 import engine.patterns.condition
+import engine.patterns.expressionWithFactor
 import engine.patterns.fractionOf
 import engine.patterns.integerCondition
 import engine.patterns.negOf
 import engine.patterns.numericCondition
 import engine.patterns.oneOf
+import engine.patterns.optionalIntegerPowerOf
 import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
+import engine.patterns.sumContaining
 import engine.patterns.sumOf
 import engine.steps.metadata.Skill
 import engine.steps.metadata.metadata
@@ -43,68 +50,66 @@ import engine.steps.metadata.GmPathModifier as PM
 
 enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
 
-    RewriteDivisionByFractionAsProduct(
+    RewriteDivisionAsMultiplicationByReciprocal(
         rule {
-            val product = productContaining(engine.patterns.divideBy(AnyPattern()))
+            val product = productContaining()
 
             onPattern(product) {
                 val factors = get(product).children
-                val division = factors.indexOfFirst { it is DivideBy }
 
-                val numerator = factors[division - 1]
-                val denominator = factors[division].firstChild
+                for ((index, factor) in factors.withIndex()) {
+                    val divideByTerm = factor as? DivideBy ?: continue
 
-                when {
-                    numerator !is Fraction -> null
-                    else -> {
+                    val previousTerm = factors[index - 1]
+                    val argument = divideByTerm.divisor
+
+                    if (argument is Fraction || (previousTerm is Fraction && argument.hasNoFractions())) {
                         val result = mutableListOf<Expression>()
-                        result.addAll(factors.subList(0, division))
-                        result.add(denominator.inverse())
-                        result.addAll(factors.subList(division + 1, factors.size))
+                        result.addAll(factors.subList(0, index))
+                        result.add(argument.inverse())
+                        result.addAll(factors.subList(index + 1, factors.size))
 
-                        ruleResult(
+                        return@onPattern ruleResult(
                             toExpr = productOf(result),
                             gmAction = noGmSupport(),
-                            explanation = metadata(Explanation.RewriteDivisionByFractionAsProduct),
+                            explanation = metadata(Explanation.RewriteDivisionAsMultiplicationByReciprocal),
                         )
                     }
                 }
+
+                null
             }
         },
     ),
 
     RewriteDivisionAsFraction(
         rule {
-            val product = productContaining(engine.patterns.divideBy(AnyPattern()))
+            val product = productContaining()
 
             onPattern(product) {
                 val factors = get(product).children
-                val division = factors.indexOfFirst { it is DivideBy }
 
-                val numerator = factors[division - 1]
-                val denominator = factors[division].firstChild
+                for ((index, factor) in factors.withIndex()) {
+                    val divideByTerm = factor as? DivideBy ?: continue
 
-                when {
-                    numerator is Fraction -> null
-                    else -> {
+                    val previousTerm = factors[index - 1]
+                    val argument = divideByTerm.divisor
+
+                    if (previousTerm.hasNoFractions() && argument.hasNoFractions()) {
                         val result = mutableListOf<Expression>()
-                        result.addAll(factors.subList(0, division - 1))
+                        result.addAll(factors.subList(0, index - 1))
+                        result.add(fractionOf(move(previousTerm), move(argument)))
+                        result.addAll(factors.subList(index + 1, factors.size))
 
-                        result.add(
-                            fractionOf(
-                                move(numerator),
-                                move(denominator),
-                            ),
-                        )
-                        result.addAll(factors.subList(division + 1, factors.size))
-
-                        ruleResult(
+                        return@onPattern ruleResult(
                             toExpr = productOf(result),
                             gmAction = noGmSupport(),
                             explanation = metadata(Explanation.RewriteDivisionAsFraction),
                         )
                     }
                 }
+
+                null
             }
         },
     ),
@@ -250,7 +255,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
         },
     ),
 
-    FindCommonFactorInFraction(
+    FindCommonIntegerFactorInFraction(
         rule {
             val factorNumerator = UnsignedIntegerPattern()
             val factorDenominator = UnsignedIntegerPattern()
@@ -266,7 +271,9 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             onPattern(
                 ConditionPattern(
                     frac,
-                    integerCondition(factorNumerator, factorDenominator) { n, d -> n.gcd(d) != BigInteger.ONE },
+                    integerCondition(factorNumerator, factorDenominator) { n, d ->
+                        d != n && n.gcd(d) != BigInteger.ONE
+                    },
                 ),
             ) {
                 val gcd = integerOp(factorNumerator, factorDenominator) { n, d -> n.gcd(d) }
@@ -288,6 +295,95 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                     ),
                     explanation = metadata(Explanation.FindCommonFactorInFraction),
                 )
+            }
+        },
+    ),
+
+    CancelCommonFactorInFraction(
+        rule {
+            val commonFactor = AnyPattern()
+
+            val numeratorFactor = optionalIntegerPowerOf(commonFactor)
+            val numerator = expressionWithFactor(numeratorFactor)
+
+            val denominatorFactor = optionalIntegerPowerOf(commonFactor)
+            val denominator = expressionWithFactor(denominatorFactor)
+
+            val frac = fractionOf(numerator, denominator)
+
+            onPattern(frac) {
+                val factor = get(commonFactor)
+                if (!factor.isDefinitelyNotUndefined() || (factor.isConstant() && !factor.isDefinitelyNotZero())) {
+                    return@onPattern null
+                }
+
+                val num: Expression
+                val den: Expression
+
+                when ((getValue(numeratorFactor.exponent) - getValue(denominatorFactor.exponent)).signum()) {
+                    1 -> {
+                        val simplifiedPower = simplifiedPowerOf(
+                            get(commonFactor),
+                            integerOp(numeratorFactor.exponent, denominatorFactor.exponent) { n, m -> n - m },
+                        )
+                        num = numerator.substitute(simplifiedPower)
+                        den = restOf(denominator)
+                    }
+                    0 -> {
+                        num = restOf(numerator)
+                        den = restOf(denominator)
+                    }
+                    else -> {
+                        val simplifiedPower = simplifiedPowerOf(
+                            get(commonFactor),
+                            integerOp(numeratorFactor.exponent, denominatorFactor.exponent) { n, m -> m - n },
+                        )
+                        num = restOf(numerator)
+                        den = denominator.substitute(simplifiedPower)
+                    }
+                }
+
+                ruleResult(
+                    toExpr = cancel(commonFactor, fractionOf(num, den)),
+                    explanation = metadata(Explanation.CancelCommonFactorInFraction),
+                )
+            }
+        },
+    ),
+
+    ReorganizeCommonSumFactorInFraction(
+        rule {
+            val numeratorBase = sumContaining()
+            val numeratorFactor = optionalIntegerPowerOf(numeratorBase)
+            val numerator = expressionWithFactor(numeratorFactor)
+
+            val denominatorBase = sumContaining()
+            val denominatorFactor = optionalIntegerPowerOf(denominatorBase)
+            val denominator = expressionWithFactor(denominatorFactor)
+
+            val frac = fractionOf(numerator, denominator)
+
+            onPattern(frac) {
+                val numeratorBaseValue = get(numeratorBase)
+                val denominatorBaseValue = get(denominatorBase)
+
+                if (!numeratorBaseValue.equiv(denominatorBaseValue) &&
+                    areEquivalentSums(numeratorBaseValue, denominatorBaseValue)
+                ) {
+                    val rewrittenDenominator = denominator.substitute(
+                        simplifiedPowerOf(
+                            transformTo(denominatorBaseValue, numeratorBaseValue),
+                            get(denominatorFactor.exponent),
+                        ),
+                    )
+
+                    ruleResult(
+                        toExpr = fractionOf(get(numerator), rewrittenDenominator),
+                        explanation = metadata(Explanation.ReorganizeCommonSumFactorInFraction),
+                    )
+                } else {
+                    null
+                }
             }
         },
     ),
@@ -367,7 +463,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     toExpr = newSum,
                     explanation = metadata(
-                        Explanation.BringToCommonDenominator,
+                        Explanation.BringToCommonDenominatorWithNonFractionalTerm,
                         move(fraction.unsignedPattern),
                         move(nonFractionalTerm.unsignedPattern),
                     ),
@@ -438,7 +534,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
         },
     ),
 
-    DistributeFractionPositiveFractionPower(
+    DistributeFractionalPowerOverFraction(
         rule {
             val fraction = IntegerFractionPattern()
             val exp = IntegerFractionPattern()
@@ -476,43 +572,23 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
         },
     ),
 
-    DistributeFractionPositivePower(
+    DistributePositiveIntegerPowerOverFraction(
         rule {
-            val numerator = AnyPattern()
-            val denominator = AnyPattern()
-            val fraction = fractionOf(numerator, denominator)
+            val fraction = FractionPattern()
             val exponent = integerCondition(UnsignedIntegerPattern()) { it > BigInteger.ONE }
             val pattern = powerOf(fraction, exponent)
 
             onPattern(pattern) {
                 ruleResult(
                     fractionOf(
-                        powerOf(move(numerator), move(exponent)),
-                        powerOf(move(denominator), move(exponent)),
+                        powerOf(move(fraction.numerator), move(exponent)),
+                        powerOf(move(fraction.denominator), move(exponent)),
                     ),
                     explanation = metadata(
                         Explanation.DistributeFractionPositivePower,
                         move(fraction),
                         move(exponent),
                     ),
-                )
-            }
-        },
-    ),
-
-    SimplifyFractionNegativePower(
-        rule {
-            val fraction = IntegerFractionPattern()
-            val exponent = SignedIntegerPattern()
-            val pattern = powerOf(fraction, integerCondition(exponent) { it < -BigInteger.ONE })
-
-            onPattern(pattern) {
-                ruleResult(
-                    powerOf(
-                        fractionOf(move(fraction.denominator), move(fraction.numerator)),
-                        move(exponent.unsignedPattern),
-                    ),
-                    explanation = metadata(Explanation.SimplifyFractionNegativePower, move(fraction), move(exponent)),
                 )
             }
         },
@@ -609,6 +685,8 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
         },
     ),
 }
+
+private fun Expression.hasNoFractions(): Boolean = this !is Fraction && children.all { it.hasNoFractions() }
 
 private fun Expression.canBeTurnedToFraction(): Boolean =
     when {

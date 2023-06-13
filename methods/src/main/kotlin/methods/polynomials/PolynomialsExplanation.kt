@@ -80,9 +80,9 @@ enum class PolynomialsExplanation : CategorisedMetadataKey {
     NormalizePolynomial,
 
     /**
-     * Simplify an algebraic expression in one variable
+     * Simplify a polynomial expression in one variable
      */
-    SimplifyAlgebraicExpression,
+    SimplifyPolynomialExpressionInOneVariable,
 
     ExpandPolynomialExpression,
 

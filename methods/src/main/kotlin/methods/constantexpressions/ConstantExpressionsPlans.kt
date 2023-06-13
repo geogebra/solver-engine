@@ -1,5 +1,7 @@
 package methods.constantexpressions
 
+import engine.expressions.Minus
+import engine.expressions.isSignedFraction
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
@@ -11,6 +13,7 @@ import engine.patterns.ConditionPattern
 import engine.patterns.ConstantPattern
 import engine.patterns.FindPattern
 import engine.patterns.IntegerFractionPattern
+import engine.patterns.RationalPattern
 import engine.patterns.condition
 import engine.patterns.integerCondition
 import engine.patterns.optionalNegOf
@@ -62,16 +65,58 @@ enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : Runn
 
                         // minus one and other negative integer powers
                         option { deeply(simplifyIntegerToNegativePower) }
-                        option { deeply(FractionArithmeticRules.SimplifyFractionToMinusOne) }
-                        option { deeply(FractionArithmeticRules.SimplifyFractionNegativePower) }
 
                         option { deeply(FractionArithmeticPlans.SplitRationalExponent) }
-                        option { deeply(FractionArithmeticRules.DistributeFractionPositivePower) }
-                        option { deeply(FractionArithmeticRules.DistributeFractionPositiveFractionPower) }
                         option { deeply(IntegerArithmeticRules.SimplifyEvenPowerOfNegative) }
                         option { deeply(IntegerArithmeticRules.SimplifyOddPowerOfNegative) }
                         option { deeply(IntegerArithmeticRules.EvaluateIntegerPowerDirectly) }
                         option { deeply(GeneralRules.DistributePowerOfProduct) }
+                    }
+                }
+            }
+        },
+    ),
+
+    SimplifyPowerOfFraction(
+        plan {
+            pattern = powerOf(condition { it.isSignedFraction() && it.isConstant() }, RationalPattern())
+            explanation = Explanation.SimplifyPowerOfFraction
+
+            // TODO come up with a construct which allows us to write this without a nested steps producer
+            val positiveFractionSimplificationSteps = engine.methods.stepsproducers.steps {
+                firstOf {
+                    option(FractionArithmeticRules.SimplifyFractionToMinusOne)
+                    option {
+                        optionally(GeneralRules.FlipFractionUnderNegativePower)
+                        firstOf {
+                            option {
+                                apply(FractionArithmeticPlans.SplitRationalExponent)
+                                applyToChildren(SimplifyPowerOfFraction)
+                            }
+                            option {
+                                // separate rule, so it doesn't distribute exponents if neither the numerator
+                                // nor the denominator can be further simplified, e.g. (2/3)^(2/5)
+                                apply(FractionArithmeticRules.DistributeFractionalPowerOverFraction)
+                                applyToChildren { whilePossible(constantSimplificationSteps) }
+                            }
+                            option {
+                                apply(FractionArithmeticRules.DistributePositiveIntegerPowerOverFraction)
+                                applyToChildren { whilePossible(constantSimplificationSteps) }
+                            }
+                        }
+                    }
+                }
+            }
+
+            steps {
+                firstOf {
+                    option {
+                        apply(IntegerArithmeticRules.SimplifyOddPowerOfNegative)
+                        applyToKind<Minus>(positiveFractionSimplificationSteps) { it.argument }
+                    }
+                    option {
+                        optionally(IntegerArithmeticRules.SimplifyEvenPowerOfNegative)
+                        apply(positiveFractionSimplificationSteps)
                     }
                 }
             }
@@ -200,7 +245,6 @@ val simpleTidyUpSteps = steps {
 private val trickySimplificationSteps = steps {
     deeply {
         firstOf {
-            option(IntegerArithmeticRules.SimplifyEvenPowerOfNegative)
             option(cancelRootOfPower)
             option(IntegerRootsPlans.SplitRootsAndCancelRootsOfPowers)
             option(IntegerRootsPlans.SimplifyPowerOfIntegerUnderRoot)
@@ -242,6 +286,7 @@ val constantSimplificationSteps: StepsProducer = steps {
         option { deeply(GeneralPlans.NormalizeNegativeSignsInProduct) }
 
         option { deeply(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithSameBase) }
+        option { deeply(ConstantExpressionsPlans.SimplifyPowerOfFraction) }
         option { deeply(ConstantExpressionsPlans.SimplifyPowers) }
 
         option { deeply(collectLikeRootsAndSimplify) }

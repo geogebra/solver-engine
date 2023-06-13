@@ -5,13 +5,14 @@ import engine.methods.testRule
 import methods.fractionarithmetic.FractionArithmeticRules.AddLikeFractions
 import methods.fractionarithmetic.FractionArithmeticRules.BringToCommonDenominator
 import methods.fractionarithmetic.FractionArithmeticRules.BringToCommonDenominatorWithNonFractionalTerm
+import methods.fractionarithmetic.FractionArithmeticRules.CancelCommonFactorInFraction
 import methods.fractionarithmetic.FractionArithmeticRules.ConvertIntegerToFraction
-import methods.fractionarithmetic.FractionArithmeticRules.DistributeFractionPositiveFractionPower
-import methods.fractionarithmetic.FractionArithmeticRules.DistributeFractionPositivePower
-import methods.fractionarithmetic.FractionArithmeticRules.FindCommonFactorInFraction
+import methods.fractionarithmetic.FractionArithmeticRules.DistributeFractionalPowerOverFraction
+import methods.fractionarithmetic.FractionArithmeticRules.DistributePositiveIntegerPowerOverFraction
+import methods.fractionarithmetic.FractionArithmeticRules.FindCommonIntegerFactorInFraction
 import methods.fractionarithmetic.FractionArithmeticRules.MultiplyFractions
 import methods.fractionarithmetic.FractionArithmeticRules.RewriteDivisionAsFraction
-import methods.fractionarithmetic.FractionArithmeticRules.SimplifyFractionNegativePower
+import methods.fractionarithmetic.FractionArithmeticRules.RewriteDivisionAsMultiplicationByReciprocal
 import methods.fractionarithmetic.FractionArithmeticRules.SimplifyFractionToInteger
 import methods.fractionarithmetic.FractionArithmeticRules.SimplifyFractionToMinusOne
 import methods.fractionarithmetic.FractionArithmeticRules.SimplifyFractionWithFractionDenominator
@@ -25,7 +26,15 @@ import methods.fractionarithmetic.FractionArithmeticRules.TurnNegativePowerOfInt
 import methods.fractionarithmetic.FractionArithmeticRules.TurnNegativePowerOfZeroToPowerOfFraction
 import org.junit.jupiter.api.Test
 
-class IntegerFractionsRulesTest {
+class FractionsRulesTest {
+
+    @Test
+    fun testRewriteDivisionByFractionAsProduct() {
+        testRule("3 : [2 / 4a]", RewriteDivisionAsMultiplicationByReciprocal, "3 * [4a / 2]")
+        testRule("[2 / 4a] : 3", RewriteDivisionAsMultiplicationByReciprocal, "[2 / 4a] * [1 / 3]")
+        testRule("5 : 2", RewriteDivisionAsMultiplicationByReciprocal, null)
+        testRule("5 : (1 + [2 / 3])", RewriteDivisionAsMultiplicationByReciprocal, null)
+    }
 
     @Test
     fun testRewriteDivisionAsFraction() {
@@ -98,10 +107,29 @@ class IntegerFractionsRulesTest {
 
     @Test
     fun testFindCommonFactorInFraction() {
-        testRule("[6/10]", FindCommonFactorInFraction, "[2 * 3/2 * 5]")
-        testRule("[5/7]", FindCommonFactorInFraction, null)
-        testRule("[700/500]", FindCommonFactorInFraction, "[100 * 7/100 * 5]")
-        testRule("[1/10]", FindCommonFactorInFraction, null)
+        testRule("[6/10]", FindCommonIntegerFactorInFraction, "[2 * 3/2 * 5]")
+        testRule("[5/7]", FindCommonIntegerFactorInFraction, null)
+        testRule("[700/500]", FindCommonIntegerFactorInFraction, "[100 * 7/100 * 5]")
+        testRule("[1/10]", FindCommonIntegerFactorInFraction, null)
+    }
+
+    @Test
+    fun testSimplifyCommonFactorInFraction() {
+        testMethod {
+            method = CancelCommonFactorInFraction
+            inputExpr = "[4 * 3 / 3 * 5]"
+
+            check {
+                shift("./0/0", "./0")
+                shift("./1/1", "./1")
+                cancel("./0/1", "./1/0")
+            }
+        }
+
+        testRule("[x y / a y]", CancelCommonFactorInFraction, "[x / a]")
+        testRule("[x / 2x]", CancelCommonFactorInFraction, "[1 / 2]")
+        testRule("[x y z / a y c]", CancelCommonFactorInFraction, "[x z / a c]")
+        testRule("[3x / 2[x^2]]", CancelCommonFactorInFraction, "[3 / 2x]")
     }
 
     @Test
@@ -162,26 +190,19 @@ class IntegerFractionsRulesTest {
 
     @Test
     fun testDistributeFractionPositivePower() {
-        testRule("[([2 / 3]) ^ 5]", DistributeFractionPositivePower, "[[2 ^ 5] / [3 ^ 5]]")
-        testRule("[([2 / 3]) ^ 1]", DistributeFractionPositivePower, null)
-        testRule("[([2 / 3]) ^ 0]", DistributeFractionPositivePower, null)
-        testRule("[([2 / 3]) ^ -2]", DistributeFractionPositivePower, null)
+        testRule("[([2 / 3]) ^ 5]", DistributePositiveIntegerPowerOverFraction, "[[2 ^ 5] / [3 ^ 5]]")
+        testRule("[([2 / 3]) ^ 1]", DistributePositiveIntegerPowerOverFraction, null)
+        testRule("[([2 / 3]) ^ 0]", DistributePositiveIntegerPowerOverFraction, null)
+        testRule("[([2 / 3]) ^ -2]", DistributePositiveIntegerPowerOverFraction, null)
     }
 
     @Test
     fun testDistributeFractionPositiveFractionPower() {
-        testRule("[([2 / 3]) ^ [1 / 2]]", DistributeFractionPositiveFractionPower, null)
-        testRule("[([2 / 3]) ^ [4 / 3]]", DistributeFractionPositiveFractionPower, null)
-        testRule("[([4 / 9]) ^ [1 / 2]]", DistributeFractionPositiveFractionPower, "[[4 ^ [1 / 2]] / [9 ^ [1 / 2]]]")
-        testRule("[([4 / 5]) ^ [1 / 2]]", DistributeFractionPositiveFractionPower, "[[4 ^ [1 / 2]] / [5 ^ [1 / 2]]]")
-        testRule("[([2 / 9]) ^ [1 / 2]]", DistributeFractionPositiveFractionPower, "[[2 ^ [1 / 2]] / [9 ^ [1 / 2]]]")
-    }
-
-    @Test
-    fun testSimplifyFractionNegativePower() {
-        testRule("[([3 / 5]) ^ -2]", SimplifyFractionNegativePower, "[([5 / 3]) ^ 2]")
-        testRule("[([7 / 10]) ^ (-5)]", SimplifyFractionNegativePower, "[([10 / 7]) ^ 5]")
-        testRule("[([1 / 3]) ^ -1]", SimplifyFractionNegativePower, null)
+        testRule("[([2 / 3]) ^ [1 / 2]]", DistributeFractionalPowerOverFraction, null)
+        testRule("[([2 / 3]) ^ [4 / 3]]", DistributeFractionalPowerOverFraction, null)
+        testRule("[([4 / 9]) ^ [1 / 2]]", DistributeFractionalPowerOverFraction, "[[4 ^ [1 / 2]] / [9 ^ [1 / 2]]]")
+        testRule("[([4 / 5]) ^ [1 / 2]]", DistributeFractionalPowerOverFraction, "[[4 ^ [1 / 2]] / [5 ^ [1 / 2]]]")
+        testRule("[([2 / 9]) ^ [1 / 2]]", DistributeFractionalPowerOverFraction, "[[2 ^ [1 / 2]] / [9 ^ [1 / 2]]]")
     }
 
     @Test

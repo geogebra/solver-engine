@@ -13,7 +13,7 @@ class PolynomialsPlansTestActivePracticeCurriculum {
 
     @Test
     fun testCollectSimpleLikeTerms() = testMethod {
-        method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable
         context = Context(gmFriendly = true)
         inputExpr = "2 x + [x ^ 2] + 3 x - 5 [x ^ 2]"
 
@@ -21,7 +21,7 @@ class PolynomialsPlansTestActivePracticeCurriculum {
             fromExpr = "2 x + [x ^ 2] + 3 x - 5 [x ^ 2]"
             toExpr = "5 x - 4 [x ^ 2]"
             explanation {
-                key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
             }
 
             step {
@@ -44,7 +44,7 @@ class PolynomialsPlansTestActivePracticeCurriculum {
 
     @Test
     fun testMultiplyMonomials() = testMethod {
-        method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable
         context = Context(gmFriendly = true)
         inputExpr = "3[x^2]*4[x^3]x + 5*7[x^6]"
 
@@ -52,7 +52,7 @@ class PolynomialsPlansTestActivePracticeCurriculum {
             fromExpr = "3 [x ^ 2] * 4 [x ^ 3] x + 5 * 7 [x ^ 6]"
             toExpr = "47 [x ^ 6]"
             explanation {
-                key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
             }
 
             step {
@@ -155,7 +155,7 @@ class PolynomialsPlansTestActivePracticeCurriculum {
 
     @Test
     fun testMonomialWithZeroCoefficientEliminated() = testMethod {
-        method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable
         context = Context(gmFriendly = true)
         inputExpr = "3 [a ^ 2] + 2 [a ^ 2] - 3 a - 5 [a ^ 2] + 10 a"
 
@@ -163,7 +163,7 @@ class PolynomialsPlansTestActivePracticeCurriculum {
             fromExpr = "3 [a ^ 2] + 2 [a ^ 2] - 3 a - 5 [a ^ 2] + 10 a"
             toExpr = "7 a"
             explanation {
-                key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
             }
 
             step {

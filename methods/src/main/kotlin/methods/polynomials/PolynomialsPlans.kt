@@ -36,19 +36,15 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
     DistributeProductToIntegerPowerAndSimplify(distributeProductToIntegerPowerAndSimplify),
     NormalizeAllMonomials(normalizeAllMonomials),
 
-    /**
-     * Simplify an algebraic expression with one variable.
-     */
-    @PublicMethod
-    SimplifyAlgebraicExpressionInOneVariable(
+    SimplifyPolynomialExpressionInOneVariable(
         plan {
-            explanation = Explanation.SimplifyAlgebraicExpression
+            explanation = Explanation.SimplifyPolynomialExpressionInOneVariable
             specificPlans(ConstantExpressionsPlans.SimplifyConstantExpression)
 
             steps {
                 whilePossible { deeply(simpleTidyUpSteps) }
                 optionally(NormalizationPlans.NormalizeExpression)
-                whilePossible(algebraicSimplificationSteps)
+                whilePossible(polynomialSimplificationSteps)
                 optionally(NormalizeAllMonomials)
                 optionally(PolynomialRules.NormalizePolynomial)
             }
@@ -56,7 +52,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
                 whilePossible { deeply(simpleTidyUpSteps) }
                 whilePossible { deeply(simplificationSteps) }
                 optionally(NormalizationPlans.NormalizeExpression)
-                whilePossible(algebraicSimplificationSteps)
+                whilePossible(polynomialSimplificationSteps)
                 optionally(NormalizeAllMonomials)
             }
         },
@@ -72,11 +68,11 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
             pattern = condition { it.variables.size == 1 }
 
             steps {
-                whilePossible(algebraicSimplificationSteps)
+                whilePossible(polynomialSimplificationSteps)
                 apply {
                     whilePossible {
                         deeply(expandAndSimplifier.steps, deepFirst = true)
-                        whilePossible(algebraicSimplificationSteps)
+                        whilePossible(polynomialSimplificationSteps)
                     }
                 }
 
@@ -92,7 +88,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
             steps {
                 whilePossible {
                     firstOf {
-                        option(algebraicSimplificationSteps)
+                        option(polynomialSimplificationSteps)
                         option { deeply(expandAndSimplifier.steps, deepFirst = true) }
                     }
                 }
@@ -106,7 +102,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
             steps {
                 whilePossible {
                     firstOf {
-                        option(algebraicSimplificationSteps)
+                        option(polynomialSimplificationSteps)
                         option {
                             deeply {
                                 checkForm {
@@ -130,7 +126,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
 // If we don't do it by lazy we get null pointer exceptions because the MultiplyMonomialsAndSimplify RunnerMethod's
 // runner property is used before it is initialised.  I am not sure why though so this solution is dubious.
 val expandAndSimplifier: ExpandAndSimplifyMethodsProvider by lazy {
-    ExpandAndSimplifier(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable)
+    ExpandAndSimplifier(PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable)
 }
 
 private val multiplyMonomialsAndSimplify = plan {
@@ -210,7 +206,7 @@ private val distributeProductToIntegerPowerAndSimplify = plan {
     }
 }
 
-val algebraicSimplificationSteps = steps {
+val polynomialSimplificationSteps = steps {
     firstOf {
         option { deeply(simpleTidyUpSteps) }
         option {
@@ -243,7 +239,6 @@ private val normalizeAllMonomials = plan {
     explanation = Explanation.NormalizeAllMonomials
 
     steps {
-
         whilePossible { deeply(PolynomialRules.NormalizeMonomial) }
     }
 }

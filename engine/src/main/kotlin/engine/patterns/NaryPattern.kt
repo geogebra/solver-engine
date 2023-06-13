@@ -21,7 +21,7 @@ class NaryPattern internal constructor(
     val childPatterns: List<Pattern>,
     val partial: Boolean,
     val commutative: Boolean,
-) : BasePattern() {
+) : BasePattern(), SubstitutablePattern {
 
     override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
         if (!operator.matches(subexpression.operator)) {
@@ -49,7 +49,7 @@ class NaryPattern internal constructor(
      * from the resulting expression. If [newVals] has more items than the number of matched operands, the extra items
      * are ignored.
      */
-    fun substitute(match: Match, newVals: Array<out Expression>): Expression {
+    override fun substitute(match: Match, newVals: Array<out Expression>): Expression {
         val sub = match.getLastBinding(this)!!
         val matchedOrigins = getMatchedOrigins(match)
 
@@ -78,7 +78,7 @@ class NaryPattern internal constructor(
         }
     }
 
-    private fun getMatchedChildExpressions(match: Match) =
+    fun getMatchedChildExpressions(match: Match) =
         childPatterns.flatMap { match.getBoundExprs(it) }
             .filter { it.isChildOfOrSelf(match.getBoundExpr(this)) }
 

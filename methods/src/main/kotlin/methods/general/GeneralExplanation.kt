@@ -75,7 +75,6 @@ enum class GeneralExplanation : CategorisedMetadataKey {
     SimplifyProductWithTwoNegativeFactors,
 
     MoveSignOfNegativeFactorOutOfProduct,
-    CancelCommonTerms,
     SimplifyZeroNumeratorFractionToZero,
     SimplifyZeroDenominatorFractionToUndefined,
     SimplifyUnitFractionToOne,

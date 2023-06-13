@@ -24,9 +24,10 @@ class PartialExpressionPlan(
     val stepsProducer: StepsProducer,
 ) : CompositeMethod(specificPlans) {
 
+    private val regularPlan = Plan(pattern, AnyPattern(), explanationMaker, skillMakers, specificPlans, stepsProducer)
+
     override fun run(ctx: Context, sub: Expression): Transformation? {
         if (sub.childCount == pattern.childPatterns.size) {
-            val regularPlan = Plan(pattern, AnyPattern(), explanationMaker, skillMakers, specificPlans, stepsProducer)
             return regularPlan.run(ctx, sub)
         }
 

@@ -12,7 +12,6 @@ import engine.expressions.PathScope
 import engine.expressions.Root
 import engine.expressions.SquareRoot
 import engine.expressions.Sum
-import engine.expressions.Variable
 import engine.expressions.absoluteValueOf
 import engine.expressions.asInteger
 import engine.expressions.fractionOf
@@ -85,7 +84,6 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     SimplifyFractionWithOneDenominator(simplifyFractionWithOneDenominator),
 
     CancelDenominator(cancelDenominator),
-    CancelCommonTerms(cancelCommonTerms),
     FactorMinusFromSum(factorMinusFromSum),
     SimplifyProductOfConjugates(simplifyProductOfConjugates),
     DistributePowerOfProduct(distributePowerOfProduct),
@@ -357,7 +355,7 @@ private val simplifyZeroNumeratorFractionToZero =
  */
 private val simplifyUnitFractionToOne =
     rule {
-        val common = condition { it.isDefinitelyNotZero() }
+        val common = condition { !it.isConstant() || it.isDefinitelyNotZero() }
         val pattern = fractionOf(common, common)
 
         onPattern(pattern) {
@@ -398,23 +396,6 @@ private val cancelDenominator =
                 toExpr = cancel(common, restOf(numerator)),
                 gmAction = drag(common.within(denominator), common.within(numerator)),
                 explanation = metadata(Explanation.CancelDenominator),
-            )
-        }
-    }
-
-/** [any1 * any2 / any1 * any3] --> [any2 / any3] */
-private val cancelCommonTerms =
-    rule {
-        val common = condition { it != Constants.One }
-        val numerator = productContaining(common)
-        val denominator = productContaining(common)
-        val fraction = fractionOf(numerator, denominator)
-
-        onPattern(fraction) {
-            ruleResult(
-                toExpr = cancel(common, fractionOf(restOf(numerator), restOf(denominator))),
-                gmAction = drag(common.within(denominator), common.within(numerator)),
-                explanation = metadata(Explanation.CancelCommonTerms),
             )
         }
     }
@@ -677,7 +658,7 @@ private val rewriteProductOfPowersWithSameBase =
         val product = productContaining(power1, power2)
 
         onPattern(product) {
-            if (get(base) is Variable ||
+            if (!get(base).isConstant() ||
                 get(power1.exponent) != Constants.One ||
                 get(power2.exponent) != Constants.One
             ) {

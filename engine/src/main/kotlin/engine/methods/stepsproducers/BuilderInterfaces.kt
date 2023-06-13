@@ -3,6 +3,7 @@ package engine.methods.stepsproducers
 import engine.context.Context
 import engine.expressions.Expression
 import engine.expressions.Extractor
+import engine.methods.CompositeMethod
 import engine.methods.PlanBuilder
 import engine.methods.Strategy
 import engine.methods.TaskSetBuilder
@@ -149,7 +150,7 @@ interface PipelineBuilder {
     /**
      * Apply the following task set
      */
-    fun taskSet(init: TaskSetBuilder.() -> Unit)
+    fun taskSet(init: TaskSetBuilder.() -> CompositeMethod)
 
     fun checkForm(patternProvider: () -> Pattern)
     fun contextSensitive(init: ContextSensitiveBuilder.() -> Unit)

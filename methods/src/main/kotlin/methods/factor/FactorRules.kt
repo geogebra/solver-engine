@@ -11,6 +11,7 @@ import engine.expressions.Power
 import engine.expressions.Sum
 import engine.expressions.SumView
 import engine.expressions.View
+import engine.expressions.areEquivalentSums
 import engine.expressions.bracketOf
 import engine.expressions.equationOf
 import engine.expressions.equationSystemOf
@@ -627,18 +628,6 @@ private fun fractionCbrt(f: Rational?) = f?.let {
     } else {
         null
     }
-}
-
-private fun areEquivalentSums(expr1: Expression, expr2: Expression): Boolean {
-    if (expr1 == expr2) {
-        return true
-    }
-    if (expr1 !is Sum || expr2 !is Sum || expr1.childCount != expr2.childCount) {
-        return false
-    }
-
-    val remainingChildren = expr2.children.toMutableList()
-    return expr1.children.all { remainingChildren.remove(it) }
 }
 
 private class IntegerFactorView(override val original: IntegerExpression) : IntegerView {

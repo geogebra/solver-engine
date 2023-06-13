@@ -29,6 +29,18 @@ class Sum(
     }
 }
 
+fun areEquivalentSums(expr1: Expression, expr2: Expression): Boolean {
+    if (expr1 == expr2) {
+        return true
+    }
+    if (expr1 !is Sum || expr2 !is Sum || expr1.childCount != expr2.childCount) {
+        return false
+    }
+
+    val remainingChildren = expr2.children.toMutableList()
+    return expr1.children.all { remainingChildren.remove(it) }
+}
+
 @Suppress("ReturnCount")
 fun leadingCoefficientOfPolynomial(polynomialExpr: Sum): Expression? {
     val variables = polynomialExpr.variables

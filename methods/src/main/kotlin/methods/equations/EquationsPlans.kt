@@ -32,7 +32,7 @@ import methods.factor.FactorPlans
 import methods.factor.FactorRules
 import methods.general.NormalizationPlans
 import methods.polynomials.PolynomialsPlans
-import methods.polynomials.algebraicSimplificationSteps
+import methods.polynomials.polynomialSimplificationSteps
 import methods.solvable.SolvablePlans
 import methods.solvable.SolvableRules
 import methods.solvable.computeOverallUnionSolution
@@ -49,7 +49,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                 optionally(NormalizationPlans.NormalizeExpression)
                 whilePossible(EquationsRules.EliminateConstantFactorOfLhsWithZeroRhs)
                 whilePossible(SolvableRules.CancelCommonTermsOnBothSides)
-                whilePossible(algebraicSimplificationSteps)
+                whilePossible(polynomialSimplificationSteps)
             }
         },
     ),
@@ -108,7 +108,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 apply(EquationsRules.CompleteTheSquare)
-                optionally(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable)
+                optionally(PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable)
             }
         },
     ),

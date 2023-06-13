@@ -317,7 +317,7 @@ class FractionRootsPlansTest {
                     fromExpr = "[3 * 3 root[72, 4] / 3 * 4]"
                     toExpr = "[3 root[72, 4] / 4]"
                     explanation {
-                        key = GeneralExplanation.CancelCommonTerms
+                        key = FractionArithmeticExplanation.CancelCommonFactorInFraction
                     }
                 }
             }
