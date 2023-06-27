@@ -31,6 +31,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Improve path mappings for better visualization (using colors) in normalization rules (PLUT-520)
 - Fixed the simplification of `sqrt[2] + [7 / 2] - 1` (index bug in partial expression plan) (PLUT-613)
 - Improve handling negative sign with product as first & non-first term in sum (PLUT-249)
+- Fixed some `gmAction` integration tests (SP-72)
 
 ### Changed
 

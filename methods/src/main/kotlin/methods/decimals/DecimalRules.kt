@@ -441,7 +441,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
 
                 ruleResult(
                     toExpr = numericOp(numerator) { it.movePointLeft(powerOfTen) },
-                    gmAction = tap(fraction, PM.FractionBar),
+                    gmAction = doubleTap(fraction, PM.FractionBar),
                     explanation = metadata(Explanation.ConvertFractionWithPowerOfTenDenominatorToDecimal),
                 )
             }

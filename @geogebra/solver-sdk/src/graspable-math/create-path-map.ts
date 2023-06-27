@@ -10,6 +10,7 @@ export type GmMathNode = {
   hidden?: boolean;
   to_ascii: (options?: ToAsciiOptionsType) => string;
   is_group: (...types: string[]) => boolean;
+  getSelectorOfNodes: (nodes: GmMathNode[] | GmMathNode) => string;
   type?: 'AlgebraModel';
 };
 
@@ -29,7 +30,9 @@ export function createPathMap(
   tree: ExpressionTree,
 ): Map<string, GmMathNode[]> {
   const map = new Map();
-  annotate(gmTree, flattenPartialExpressions(rearrangeNegativeProducts(tree)), map);
+  tree = flattenPartialExpressions(tree);
+  tree = rearrangeNegativeProducts(tree);
+  annotate(gmTree, tree, map);
   return map;
 }
 
@@ -91,10 +94,18 @@ function annotate(
         // could be inside a partial sum, use tree.args[i] instead or /${i}
         const path = tree.args[i].path;
         appendMap(addend, `${path}:group`, map);
-        if (tree.args[i].type === 'Minus' || tree.args[i].type === 'PlusMinus') {
+        const addendHasBrackets = !!tree.args[i].decorators?.length;
+        if (
+          (tree.args[i].type === 'Minus' || tree.args[i].type === 'PlusMinus') &&
+          !addendHasBrackets
+        ) {
           annotate(addend, tree.args[i], map);
         } else {
-          appendMap(addend.children[0]!, `${path}:op`, map);
+          appendMap(
+            addend.children[0]!,
+            path + (addendHasBrackets ? ':op()' : ':op'),
+            map,
+          );
           annotate(addend.children[1], tree.args[i], map);
         }
       });
@@ -139,7 +150,7 @@ function annotate(
         annotate(gmTree.children[0].children[1], tree.args[0], map);
       }
 
-      if (['Product', 'ImplicitProduct'].includes(tree.args[1].type)) {
+      if (['Product', 'ImplicitProduct', 'SmartProduct'].includes(tree.args[1].type)) {
         (gmTree as GmFraction).get_bottom().forEach((muldiv, i) => {
           appendMap(muldiv, `${tree.path}/1`, map);
           appendMap(muldiv.children[0]!, `${tree.path}/1/${i}:op`, map);
