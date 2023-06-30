@@ -632,4 +632,24 @@ describe('Solver Parser Unit Tests', () => {
       },
     ]);
   });
+
+  describe('Text style latex commands', async () => {
+    testCases([
+      {
+        solver: 'x',
+        json: ['x'],
+        latex: ['x', '\\textrm{x}', '\\textit{x}'],
+      },
+      {
+        solver: '1+2',
+        json: ['Sum', ['1'], ['2']],
+        latex: [
+          '1+2',
+          '\\textrm{1+2}',
+          '\\textit{1} + \\textrm{2}',
+          '\\textrm{1 + \\textit{2}}',
+        ],
+      },
+    ]);
+  });
 });

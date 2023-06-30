@@ -236,6 +236,17 @@ const latexSymbolDefinitions = {
     };
     sqrt.led = sqrt.led = getLedToExtendNary(parser, 'ImplicitProduct');
   },
+
+  registerTextStyle(parser: Parser<ExprTree>) {
+    // This just ignores text style commands.
+    // Need to know the complete list of styling commands we want to remove.
+    for (const textStyle of ['\\textrm', '\\textit']) {
+      const sym = parser.registerSymbol(textStyle, BP_IMPLICIT_MUL);
+      sym.nud = function () {
+        return parser.expression(Infinity); // Why Infinity?  I copied from registerRoots.
+      };
+    }
+  },
 };
 
 function getLedToExtendNary(
