@@ -123,6 +123,8 @@ const latexSymbolDefinitions = {
       ['>', 'GreaterThan'],
       ['≥', 'GreaterThanEqual'],
       ['\\geq', 'GreaterThanEqual'],
+      ['\\neq', 'NotEqual'],
+      ['≠', 'NotEqual'],
     ] as const) {
       parser.registerSymbol(sym, BP_EQUALS).led = (left) => {
         return { type, args: [left, parser.expression(BP_EQUALS)] };

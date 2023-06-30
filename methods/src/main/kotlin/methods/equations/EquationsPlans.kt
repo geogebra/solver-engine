@@ -51,6 +51,8 @@ import methods.solvable.ApplySolvableRuleAndSimplify
 import methods.solvable.DenominatorExtractor.extractDenominator
 import methods.solvable.SolvableKey
 import methods.solvable.SolvableRules
+import methods.solvable.computeOverallUnionSolution
+import methods.solvable.countAbsoluteValues
 import methods.solvable.extractSumTermsFromSolvable
 import methods.solvable.fractionRequiringMultiplication
 
@@ -463,8 +465,8 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 firstOf {
-                    option(EquationsRules.MoveTermsNotContainingModulusToTheRight)
-                    option(EquationsRules.MoveTermsNotContainingModulusToTheLeft)
+                    option(SolvableRules.MoveTermsNotContainingModulusToTheRight)
+                    option(SolvableRules.MoveTermsNotContainingModulusToTheLeft)
                 }
                 apply(simplifyEquation)
             }
@@ -566,7 +568,7 @@ private val solveEquationUnion = taskSet {
         }
 
         // Else combine the solutions together
-        val overallSolution = computeOverallSolution(splitTasks.map { it.result }) ?: return@tasks null
+        val overallSolution = computeOverallUnionSolution(splitTasks.map { it.result }) ?: return@tasks null
         task(
             startExpr = overallSolution,
             explanation = metadata(Explanation.CollectSolutions),

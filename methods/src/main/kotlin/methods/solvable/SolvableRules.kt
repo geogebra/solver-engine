@@ -18,6 +18,7 @@ import engine.methods.stepsproducers.StepsBuilder
 import engine.methods.stepsproducers.StepsProducer
 import engine.operators.EquationOperator
 import engine.operators.SumOperator
+import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.SolvablePattern
 import engine.patterns.UnsignedIntegerPattern
@@ -193,6 +194,57 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
             }
         },
     ),
+
+    MoveTermsNotContainingModulusToTheRight(moveTermsNotContainingModulusToTheRight),
+
+    MoveTermsNotContainingModulusToTheLeft(moveTermsNotContainingModulusToTheLeft),
+}
+
+private val moveTermsNotContainingModulusToTheRight = rule {
+    val lhs = condition(sumContaining()) { it.countAbsoluteValues(solutionVariables) > 0 }
+    val rhs = condition { it.countAbsoluteValues(solutionVariables) == 0 }
+    val solvable = SolvablePattern(lhs, rhs)
+
+    onPattern(solvable) {
+        val termsNotContainingModulus = extractTermsNotContainingModulus(get(lhs), context.solutionVariables)
+            ?: return@onPattern null
+
+        val negatedTerms = simplifiedNegOfSum(termsNotContainingModulus)
+
+        ruleResult(
+            toExpr = solvable.sameSolvable(sumOf(get(lhs), negatedTerms), sumOf(get(rhs), negatedTerms)),
+            explanation = solvableExplanation(SolvableKey.MoveTermsNotContainingModulusToTheRight),
+        )
+    }
+}
+
+private val moveTermsNotContainingModulusToTheLeft = rule {
+    val lhs = condition { it.countAbsoluteValues(solutionVariables) == 0 }
+    val rhs = condition(sumContaining()) { it.countAbsoluteValues(solutionVariables) > 0 }
+    val solvable = SolvablePattern(lhs, rhs)
+
+    onPattern(solvable) {
+        val termsNotContainingModulus = extractTermsNotContainingModulus(get(rhs), context.solutionVariables)
+            ?: return@onPattern null
+
+        val negatedTerms = simplifiedNegOfSum(termsNotContainingModulus)
+
+        ruleResult(
+            toExpr = solvable.sameSolvable(sumOf(get(lhs), negatedTerms), sumOf(get(rhs), negatedTerms)),
+            explanation = solvableExplanation(SolvableKey.MoveTermsNotContainingModulusToTheLeft),
+        )
+    }
+}
+
+private fun extractTermsNotContainingModulus(expression: Expression, variables: List<String>): Expression? {
+    return when {
+        expression.operator == SumOperator -> {
+            val termsWithoutModulus = expression.children.filter { it.countAbsoluteValues(variables) == 0 }
+            if (termsWithoutModulus.isEmpty()) null else sumOf(termsWithoutModulus)
+        }
+        expression.countAbsoluteValues(variables) == 0 -> expression
+        else -> null
+    }
 }
 
 private fun extractVariableTerms(expression: Expression, variables: List<String>): Expression? {
@@ -308,4 +360,10 @@ private fun MappedExpressionBuilder.solvableExplanation(
     } else {
         Metadata(key, parameters.asList())
     }
+}
+
+internal fun Expression.countAbsoluteValues(solutionVariables: List<String>): Int = when {
+    childCount == 0 -> 0
+    operator == UnaryExpressionOperator.AbsoluteValue && !isConstantIn(solutionVariables) -> 1
+    else -> children.sumOf { it.countAbsoluteValues(solutionVariables) }
 }

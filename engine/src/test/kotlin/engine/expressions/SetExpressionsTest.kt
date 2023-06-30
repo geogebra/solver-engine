@@ -18,6 +18,20 @@ private fun assertIntersection(s1: SetExpression, s2: SetExpression, intersectio
     }
 }
 
+/**
+ * asserts whether s1.union(s2) == s2.union(s1) == union
+ */
+private fun assertUnion(s1: SetExpression, s2: SetExpression, union: Expression) {
+    val setUnion = union as SetExpression
+    assert(setUnion == s1.union(s2, exprDoubleValueComparator)) {
+        "Expected union: $union, but got ${s1.union(s2, exprDoubleValueComparator)}"
+    }
+
+    assert(setUnion == s2.union(s1, exprDoubleValueComparator)) {
+        "Expected union: $union, but got ${s2.union(s1, exprDoubleValueComparator)}"
+    }
+}
+
 private val exprDoubleValueComparator = ExpressionComparator { e1: Expression, e2: Expression ->
     when {
         e1 == Constants.Infinity -> Sign.POSITIVE
@@ -38,6 +52,23 @@ private val exprDoubleValueComparator = ExpressionComparator { e1: Expression, e
 }
 
 class SetExpressionsTest {
+    private val i0Closed3Open = Interval(xp(0), xp(3), closedLeft = true, closedRight = true)
+    private val i1Closed2Open = Interval(xp(1), xp(2), closedLeft = true, closedRight = false)
+    private val iMinus1Closed1Closed = Interval(xp(-1), xp(1), closedLeft = true, closedRight = true)
+    private val iMinus2OpenMinus1Closed = Interval(xp(-2), xp(-1), closedLeft = false, closedRight = true)
+    private val iMinus2OpenMinus1Open = Interval(xp(-2), xp(-1), closedLeft = false, closedRight = false)
+    private val iMinusInf1Closed = Interval(Constants.NegativeInfinity, xp(1), closedLeft = false, closedRight = true)
+    private val iMinus1Closed2Open = Interval(xp(-1), xp(2), closedLeft = true, closedRight = false)
+    private val iMinus2Open1Closed = Interval(xp(-2), xp(1), closedLeft = false, closedRight = true)
+    private val iMinusInf2Open = Interval(Constants.NegativeInfinity, xp(2), closedLeft = false, closedRight = false)
+    private val iMinusInfPlusInf = Interval(
+        Constants.NegativeInfinity,
+        Constants.Infinity,
+        closedLeft = false,
+        closedRight = false,
+    )
+    private val i0Closed1Open = Interval(xp(0), xp(1), closedLeft = true, closedRight = false)
+
     @Test
     fun testIntervalContains() {
         val interval = Interval(xp(1), xp(2), closedLeft = true, closedRight = false)
@@ -45,36 +76,43 @@ class SetExpressionsTest {
     }
 
     @Test
-    fun testIntervalIntersection() {
+    fun testIntervalIntersectionWithInterval() {
         // one interval subset of another
-        val i0Closed3Open = Interval(xp(0), xp(3), closedLeft = true, closedRight = true)
-        val i1Closed2Open = Interval(xp(1), xp(2), closedLeft = true, closedRight = false)
         assertIntersection(i0Closed3Open, i1Closed2Open, i1Closed2Open)
 
         // intersection is a single element
-        val iMinus1Closed1Closed = Interval(xp(-1), xp(1), closedLeft = true, closedRight = true)
-        val iMinusTwoOpenMinusOneClosed = Interval(xp(-2), xp(-1), closedLeft = false, closedRight = true)
         assertIntersection(iMinus1Closed1Closed, i1Closed2Open, FiniteSet(listOf(xp(1))))
-        assertIntersection(iMinusTwoOpenMinusOneClosed, iMinus1Closed1Closed, FiniteSet(listOf(xp(-1))))
+        assertIntersection(iMinus2OpenMinus1Closed, iMinus1Closed1Closed, FiniteSet(listOf(xp(-1))))
 
         // intersection is an empty set
-        val iMinusTwoOpenMinusOneOpen = Interval(xp(-2), xp(-1), closedLeft = false, closedRight = false)
-        assertIntersection(iMinusTwoOpenMinusOneOpen, i0Closed3Open, emptySet)
-        assertIntersection(iMinus1Closed1Closed, iMinusTwoOpenMinusOneOpen, emptySet)
+        assertIntersection(iMinus2OpenMinus1Open, i0Closed3Open, emptySet)
+        assertIntersection(iMinus1Closed1Closed, iMinus2OpenMinus1Open, emptySet)
 
         // non-finite end points intersection
-        val iMinusInf1Closed = Interval(Constants.NegativeInfinity, xp(1), closedLeft = false, closedRight = true)
         assertIntersection(iMinusInf1Closed, i1Closed2Open, FiniteSet(listOf(xp(1))))
         assertIntersection(iMinusInf1Closed, iMinusInf1Closed, iMinusInf1Closed)
 
-        val iMinusInfPlusInf = Interval(
-            Constants.NegativeInfinity,
-            Constants.Infinity,
-            closedLeft = false,
-            closedRight = false,
-        )
-        val i0Closed1Open = Interval(xp(0), xp(1), closedLeft = true, closedRight = false)
         // infinite interval intersection
         assertIntersection(iMinusInfPlusInf, i0Closed1Open, i0Closed1Open)
+    }
+
+    @Test
+    fun testIntervalUnionWithInterval() {
+        // one interval subset of another
+        assertUnion(i0Closed3Open, i1Closed2Open, i0Closed3Open)
+
+        // union, where ends are joined to form interval union
+        assertUnion(iMinus1Closed1Closed, i1Closed2Open, iMinus1Closed2Open)
+        assertUnion(iMinus2OpenMinus1Closed, iMinus1Closed1Closed, iMinus2Open1Closed)
+
+        assertUnion(iMinus2OpenMinus1Open, i0Closed3Open, SetUnion(listOf(iMinus2OpenMinus1Open, i0Closed3Open)))
+        assertUnion(iMinus1Closed1Closed, iMinus2OpenMinus1Open, iMinus2Open1Closed)
+
+        // non-finite end points intersection
+        assertUnion(iMinusInf1Closed, i1Closed2Open, iMinusInf2Open)
+        assertUnion(iMinusInf1Closed, iMinusInf1Closed, iMinusInf1Closed)
+
+        // infinite interval union
+        assertUnion(iMinusInfPlusInf, i0Closed1Open, iMinusInfPlusInf)
     }
 }

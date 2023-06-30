@@ -7,10 +7,12 @@ import engine.operators.BinaryExpressionOperator
 import engine.operators.DefaultProductOperator
 import engine.operators.DefiniteIntegralOperator
 import engine.operators.DerivativeOperator
+import engine.operators.DoubleInequalityOperator
 import engine.operators.EquationOperator
 import engine.operators.EquationSystemOperator
 import engine.operators.IndefiniteIntegralOperator
 import engine.operators.InequalityOperators
+import engine.operators.InequalitySystemOperator
 import engine.operators.IntervalOperator
 import engine.operators.MatrixOperator
 import engine.operators.NaryOperator
@@ -216,6 +218,81 @@ fun greaterThanOf(lhs: Expression, rhs: Expression) =
 fun greaterThanEqualOf(lhs: Expression, rhs: Expression) =
     buildExpression(InequalityOperators.GreaterThanEqual, listOf(lhs, rhs))
 
+fun notEqualOf(lhs: Expression, rhs: Expression) =
+    buildExpression(InequalityOperators.NotEqual, listOf(lhs, rhs))
+
+/**
+ * compound inequality of the form: first < second < third
+ */
+fun openRangeOf(first: Expression, second: Expression, third: Expression) =
+    buildExpression(
+        DoubleInequalityOperator(InequalityOperators.LessThan, InequalityOperators.LessThan),
+        listOf(first, second, third),
+    )
+
+/**
+ * compound inequality of the form: first < second <= third
+ */
+fun openClosedRangeOf(first: Expression, second: Expression, third: Expression) =
+    buildExpression(
+        DoubleInequalityOperator(InequalityOperators.LessThan, InequalityOperators.LessThanEqual),
+        listOf(first, second, third),
+    )
+
+/**
+ * compound inequality of the form: first <= second < third
+ */
+fun closedOpenRangeOf(first: Expression, second: Expression, third: Expression) =
+    buildExpression(
+        DoubleInequalityOperator(InequalityOperators.LessThanEqual, InequalityOperators.LessThan),
+        listOf(first, second, third),
+    )
+
+/**
+ * compound inequality of the form: first <= second <= third
+ */
+fun closedRangeOf(first: Expression, second: Expression, third: Expression) =
+    buildExpression(
+        DoubleInequalityOperator(InequalityOperators.LessThanEqual, InequalityOperators.LessThanEqual),
+        listOf(first, second, third),
+    )
+
+/**
+ * compound inequality of the form: first > second > third
+ */
+fun reversedOpenRangeOf(first: Expression, second: Expression, third: Expression) =
+    buildExpression(
+        DoubleInequalityOperator(InequalityOperators.GreaterThan, InequalityOperators.GreaterThan),
+        listOf(first, second, third),
+    )
+
+/**
+ * compound inequality of the form: first > second >= third
+ */
+fun reversedOpenClosedRangeOf(first: Expression, second: Expression, third: Expression) =
+    buildExpression(
+        DoubleInequalityOperator(InequalityOperators.GreaterThan, InequalityOperators.GreaterThanEqual),
+        listOf(first, second, third),
+    )
+
+/**
+ * compound inequality of the form: first >= second > third
+ */
+fun reversedClosedOpenRangeOf(first: Expression, second: Expression, third: Expression) =
+    buildExpression(
+        DoubleInequalityOperator(InequalityOperators.GreaterThanEqual, InequalityOperators.GreaterThan),
+        listOf(first, second, third),
+    )
+
+/**
+ * compound inequality of the form: first >= second >= third
+ */
+fun reversedClosedRangeOf(first: Expression, second: Expression, third: Expression) =
+    buildExpression(
+        DoubleInequalityOperator(InequalityOperators.GreaterThanEqual, InequalityOperators.GreaterThanEqual),
+        listOf(first, second, third),
+    )
+
 fun openIntervalOf(lhs: Expression, rhs: Expression) =
     buildExpression(IntervalOperator(closedLeft = false, closedRight = false), listOf(lhs, rhs))
 
@@ -230,6 +307,10 @@ fun closedIntervalOf(lhs: Expression, rhs: Expression) =
 
 fun equationSystemOf(equations: List<Expression>) = buildExpression(EquationSystemOperator, equations)
 fun equationSystemOf(vararg equations: Expression) = equationSystemOf(equations.asList())
+
+fun inequalitySystemOf(inequations: List<Expression>) = buildExpression(InequalitySystemOperator, inequations)
+
+fun inequalitySystemOf(vararg inequations: Expression) = inequalitySystemOf(inequations.asList())
 
 fun statementUnionOf(vararg equations: Expression) =
     buildExpression(StatementUnionOperator, equations.asList())

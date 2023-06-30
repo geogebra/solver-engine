@@ -52,7 +52,7 @@ it('Aligned equations in union', () => {
     ['Equation', ['x'], ['2']],
   ];
 
-  expect(jsonToLatex(union)).to.equal('x = 1, x = 2');
+  expect(jsonToLatex(union)).to.equal('x = 1\\text{ or }x = 2');
 });
 
 it('Univariate finite set solution', () => {

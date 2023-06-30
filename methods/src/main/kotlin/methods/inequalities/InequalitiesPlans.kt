@@ -2,6 +2,7 @@ package methods.inequalities
 
 import engine.context.ResourceData
 import engine.expressions.Constants
+import engine.expressions.DoubleInequality
 import engine.expressions.Solution
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
@@ -9,6 +10,9 @@ import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.FormChecker
 import engine.methods.stepsproducers.steps
+import engine.methods.taskSet
+import engine.operators.DoubleInequalityOperator
+import engine.operators.StatementUnionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.BinaryIntegerCondition
 import engine.patterns.ConditionPattern
@@ -33,8 +37,10 @@ import engine.patterns.sumContaining
 import engine.patterns.variableListOf
 import engine.patterns.withOptionalConstantCoefficient
 import engine.patterns.withOptionalIntegerCoefficient
+import engine.steps.metadata.metadata
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.constantexpressions.simpleTidyUpSteps
+import methods.equations.EquationsPlans
 import methods.general.NormalizationPlans
 import methods.polynomials.PolynomialsPlans
 import methods.polynomials.algebraicSimplificationSteps
@@ -42,6 +48,8 @@ import methods.solvable.ApplySolvableRuleAndSimplify
 import methods.solvable.DenominatorExtractor.extractDenominator
 import methods.solvable.SolvableKey
 import methods.solvable.SolvableRules
+import methods.solvable.computeOverallIntersectionSolution
+import methods.solvable.computeOverallUnionSolution
 import methods.solvable.extractSumTermsFromSolvable
 import methods.solvable.fractionRequiringMultiplication
 
@@ -74,6 +82,21 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
         },
     ),
 
+    IsolateAbsoluteValue(
+        plan {
+            explanation = Explanation.IsolateAbsoluteValue
+            pattern = inequalityInOneVariable()
+
+            steps {
+                firstOf {
+                    option(SolvableRules.MoveTermsNotContainingModulusToTheRight)
+                    option(SolvableRules.MoveTermsNotContainingModulusToTheLeft)
+                }
+                apply(simplifyInequality)
+            }
+        },
+    ),
+
     MultiplyByLCDAndSimplify(
         plan {
             explanation = methods.solvable.InequalitiesExplanation.MultiplyByLCDAndSimplify
@@ -95,6 +118,10 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
             }
         },
     ),
+
+    SolveInequalityUnion(solveInequalityUnion),
+
+    SolveDoubleInequality(solveDoubleInequality),
 
     /**
      * Solve a linear inequality in one variable
@@ -206,6 +233,61 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
             }
         },
     ),
+
+    @PublicMethod
+    SolveInequalityWithVariablesInOneAbsoluteValue(
+        plan {
+            explanation = Explanation.SolveInequalityWithVariablesInOneAbsoluteValue
+            pattern = inequalityInOneVariable()
+            resultPattern = condition { it is Solution }
+
+            steps {
+                optionally(inequalitySimplificationSteps)
+                optionally(IsolateAbsoluteValue)
+                optionally {
+                    check { it.firstChild.isConstant() }
+                    apply(InequalitiesRules.FlipInequality)
+                }
+
+                optionally(InequalitiesRules.NegateBothSides)
+
+                optionally {
+                    firstOf {
+                        option {
+                            apply(InequalitiesRules.SeparateModulusGreaterThanPositiveConstant)
+                            apply(SolveInequalityUnion)
+                        }
+                        option {
+                            apply(InequalitiesRules.ConvertModulusGreaterThanZero)
+                            apply(SolveLinearInequality)
+                        }
+                        option {
+                            apply(InequalitiesRules.ConvertModulusLessThanPositiveConstant)
+                            apply(SolveDoubleInequality)
+                        }
+                        option {
+                            apply(InequalitiesRules.ConvertModulusLessThanEqualToPositiveConstant)
+                            apply(SolveDoubleInequality)
+                        }
+                        option {
+                            apply(InequalitiesRules.SeparateModulusGreaterThanEqualToPositiveConstant)
+                            apply(SolveInequalityUnion)
+                        }
+                        option(InequalitiesRules.ExtractSolutionFromModulusLessThanNonPositiveConstant)
+
+                        // after this we need to solve an equation
+                        option {
+                            apply(InequalitiesRules.ReduceModulusLessThanEqualToZeroInequalityToEquation)
+                            apply(EquationsPlans.SolveLinearEquation)
+                        }
+
+                        option(InequalitiesRules.ExtractSolutionFromModulusGreaterThanEqualToNonPositiveConstant)
+                        option(InequalitiesRules.ExtractSolutionFromModulusGreaterThanNegativeConstant)
+                    }
+                }
+            }
+        },
+    ),
 }
 
 internal val simplifyInequality = plan {
@@ -257,6 +339,66 @@ private val decimalSolutionFormChecker = run {
             ),
         ),
     )
+}
+
+private val solveInequalityUnion = taskSet {
+    val inequalityUnion = condition { it.operator == StatementUnionOperator }
+    pattern = inequalityUnion
+    explanation = Explanation.SolveInequalityUnion
+
+    tasks {
+        // Create a task for each to simplify it
+        val splitTasks = get(inequalityUnion).children.map {
+            task(
+                startExpr = it,
+                explanation = metadata(Explanation.SolveInequalityInInequalityUnion),
+                stepsProducer = InequalitiesPlans.SolveLinearInequality,
+            ) ?: return@tasks null
+        }
+
+        // Else combine the solutions together
+        val overallSolution = computeOverallUnionSolution(splitTasks.map { it.result }) ?: return@tasks null
+        task(
+            startExpr = overallSolution,
+            explanation = metadata(Explanation.CollectUnionSolutions),
+        )
+        allTasks()
+    }
+}
+
+private val solveDoubleInequality = taskSet {
+    val doubleInequalityPattern = condition { it.operator is DoubleInequalityOperator }
+    pattern = doubleInequalityPattern
+    explanation = Explanation.SolveDoubleInequality
+
+    tasks {
+        // Create a task for both the inequalities to simplify it
+        val doubleInequality = get(doubleInequalityPattern) as DoubleInequality
+        val leftInequality = doubleInequality.getLeftInequality()
+        val rightInequality = doubleInequality.getRightInequality()
+
+        val task1 = task(
+            startExpr = leftInequality,
+            explanation = metadata(Explanation.SolveLeftInequalityInDoubleInequality),
+            stepsProducer = InequalitiesPlans.SolveLinearInequality,
+        ) ?: return@tasks null
+
+        val task2 = task(
+            startExpr = rightInequality,
+            explanation = metadata(Explanation.SolveRightInequalityInDoubleInequality),
+            stepsProducer = InequalitiesPlans.SolveLinearInequality,
+        ) ?: return@tasks null
+
+        val splitTasks = listOf(task1, task2)
+
+        // Else combine the solutions together
+        val overallSolution = computeOverallIntersectionSolution(splitTasks.map { it.result }) ?: return@tasks null
+        task(
+            startExpr = overallSolution,
+            explanation = metadata(Explanation.CollectIntersectionSolutions),
+        )
+        allTasks()
+    }
 }
 
 private fun inequalityInOneVariable() = inSolutionVariables(inequalityOf(AnyPattern(), AnyPattern()))

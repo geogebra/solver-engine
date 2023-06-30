@@ -23,7 +23,10 @@ contents to a new release section (e.g. _[0.x]_).
   method for US (PLUT-614)
 - Added support for solving modulus equations of the form |f(x)| = g(x) and derived (PLUT-600)
 - Added new `json2` serialisation format for math in engine (PLUT-626)
-- SDK: added support for new `json2` serialisation format for math (PLUT-627)
+- # SDK: added support for new `json2` serialisation format for math (PLUT-627)
+- Added support for inequalities containing absolute values (PLUT-559)
+- SDK: Add support for inequality system and different range
+  (OpenRange, OpenClosedRange, etc.) objects (PLUT-559)
 
 ### Fixed
 

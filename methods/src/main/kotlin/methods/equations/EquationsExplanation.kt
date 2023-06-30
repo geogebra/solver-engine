@@ -467,20 +467,6 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     IsolateAbsoluteValue,
 
     /**
-     * In an equation an absolute value, move terms without an absolute value to the right
-     *
-     * E.g. abs[x] + x - 1 = 2 --> abs[x] + x - 1 - x + 1 = 2 - x + 1
-     */
-    MoveTermsNotContainingModulusToTheRight,
-
-    /**
-     * In an equation with an absolute value, move terms without an absolute value to the left
-     *
-     * E.g. x = 2x - abs[x] + 3 --> x - 2x - 3 = 2x - abs[x] + 3 - 2x - 3
-     */
-    MoveTermsNotContainingModulusToTheLeft,
-
-    /**
      * Simplify a constraint as much as possible
      *
      * E.g. 2x > 4 -> x \in (2, \Infty)

@@ -10,16 +10,21 @@ statementUnion: stmts += statementWithConstraint ('OR' stmts += statementWithCon
 
 statementWithConstraint: stmt=simpleStatement ('GIVEN' constraint=simpleStatement)?;
 
-simpleStatement: equationSystem | equationAddition | equationSubtraction | equation | inequality | solution;
+simpleStatement: equationSystem | inequalitySystem | equationAddition | equationSubtraction | equation | inequality | solution | doubleInequality;
 
 equationSystem: equations += equation (',' equations += equation)+;
+
+inequalitySystem: inequalities += inequality (',' inequalities += inequality)+;
+
+doubleInequality: first=expr left=('<' | '<=') second=expr right=('<' | '<=') third=expr
+    | first=expr left=('>' | '>=') second=expr right=('>' | '>=') third=expr;
 
 equationAddition: eq1=equation '/+/' eq2=equation;
 equationSubtraction: eq1=equation '/-/' eq2=equation;
 
 equation: lhs=expr '=' rhs=expr;
 
-inequality: lhs=expr comparator=('<' | '<=' | '>' | '>=') rhs=expr;
+inequality: lhs=expr comparator=('<' | '<=' | '>' | '>=' | '!=') rhs=expr;
 
 solution
     : 'Identity' '[' (vars=variables ':')? stmt=statementUnion ']'        #identity

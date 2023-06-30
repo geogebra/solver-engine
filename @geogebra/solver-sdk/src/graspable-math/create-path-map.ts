@@ -193,11 +193,13 @@ function annotate(
     case 'GreaterThan':
     case 'LessThanEqual':
     case 'GreaterThanEqual':
+    case 'NotEqual':
       annotate(gmTree.children[0], tree.args[0], map);
       appendMap(gmTree.children[1], `${tree.path}:op`, map);
       annotate(gmTree.children[2], tree.args[1], map);
       break;
     case 'EquationSystem':
+    case 'InequalitySystem':
     case 'MixedNumber':
     case 'Name':
     case '/undefined/':
@@ -221,6 +223,14 @@ function annotate(
     case 'ClosedInterval':
     case 'OpenClosedInterval':
     case 'ClosedOpenInterval':
+    case 'OpenRange':
+    case 'OpenClosedRange':
+    case 'ClosedOpenRange':
+    case 'ClosedRange':
+    case 'ReversedOpenRange':
+    case 'ReversedOpenClosedRange':
+    case 'ReversedClosedOpenRange':
+    case 'ReversedClosedRange':
       throw new Error('Unsupported type: ' + tree.type);
     default:
       needToImplement(treeType);

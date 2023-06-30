@@ -1,8 +1,8 @@
-import { it, describe, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 // If this file doesn't exist, you need to run the kotlin tests in the methods package
 import { testResults } from '../../../solver-poker/test-results-src/test-results';
 import type { TransformationJson } from '../src';
-import { treeToLatex, getInnerSteps, addFullFromExprToTransformation } from '../src';
+import { addFullFromExprToTransformation, getInnerSteps, treeToLatex } from '../src';
 import { solverPathToGmNodes } from '../src/graspable-math/solver-path-to-gm-nodes';
 import * as path from 'path';
 import * as prettier from 'prettier';
@@ -85,9 +85,13 @@ describe('gmAction tests', () => {
           });
           return;
         }
-        if (fromExpr.indexOf('\\leq') !== -1 || fromExpr.indexOf('\\geq') !== -1) {
+        if (
+          fromExpr.indexOf('\\leq') !== -1 ||
+          fromExpr.indexOf('\\geq') !== -1 ||
+          fromExpr.indexOf('\\neq') !== -1
+        ) {
           // Todo: get rid of this skip
-          it.skip(`This test is here to fail to make it obvious that GM can't parse the \\leq or \\geq in ${fromExpr}`, () => {
+          it.skip(`This test is here to fail to make it obvious that GM can't parse \\leq, \\geq or \\neq in ${fromExpr}`, () => {
             throw new Error();
           });
           return;

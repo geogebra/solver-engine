@@ -61,6 +61,8 @@ export function treeToSolver(n: ExpressionTree): string {
       return dec(`${rec(n.args[0])} = ${rec(n.args[1])}`);
     case 'EquationSystem':
       return dec(n.args.map((el) => rec(el)).join(', '));
+    case 'InequalitySystem':
+      return dec(n.args.map((el) => rec(el)).join(', '));
     case 'AddEquations':
       return dec(n.args.map((el) => rec(el)).join(' /+/ '));
     case 'SubtractEquations':
@@ -83,6 +85,8 @@ export function treeToSolver(n: ExpressionTree): string {
       return dec(`${rec(n.args[0])} <= ${rec(n.args[1])}`);
     case 'GreaterThanEqual':
       return dec(`${rec(n.args[0])} >= ${rec(n.args[1])}`);
+    case 'NotEqual':
+      return dec(`${rec(n.args[0])} != ${rec(n.args[1])}`);
     case 'Solution':
       return dec(`Solution[${rec(n.args[0])}, ${rec(n.args[1])}]`);
     case 'SetSolution':
@@ -102,6 +106,22 @@ export function treeToSolver(n: ExpressionTree): string {
       return `(${rec(n.args[0])}, ${rec(n.args[1])}]`;
     case 'ClosedOpenInterval':
       return `[${rec(n.args[0])}, ${rec(n.args[1])})`;
+    case 'OpenRange':
+      return `${rec(n.args[0])} < ${rec(n.args[1])} < ${rec(n.args[2])}`;
+    case 'OpenClosedRange':
+      return `${rec(n.args[0])} < ${rec(n.args[1])} <= ${rec(n.args[2])}`;
+    case 'ClosedOpenRange':
+      return `${rec(n.args[0])} <= ${rec(n.args[1])} < ${rec(n.args[2])}`;
+    case 'ClosedRange':
+      return `${rec(n.args[0])} <= ${rec(n.args[1])} <= ${rec(n.args[2])}`;
+    case 'ReversedOpenRange':
+      return `${rec(n.args[0])} > ${rec(n.args[1])} > ${rec(n.args[2])}`;
+    case 'ReversedOpenClosedRange':
+      return `${rec(n.args[0])} > ${rec(n.args[1])} >= ${rec(n.args[2])}`;
+    case 'ReversedClosedOpenRange':
+      return `${rec(n.args[0])} >= ${rec(n.args[1])} > ${rec(n.args[2])}`;
+    case 'ReversedClosedRange':
+      return `${rec(n.args[0])} >= ${rec(n.args[1])} >= ${rec(n.args[2])}`;
     case 'CartesianProduct':
       return n.args.map(rec).join(' * ');
     case 'SetUnion':

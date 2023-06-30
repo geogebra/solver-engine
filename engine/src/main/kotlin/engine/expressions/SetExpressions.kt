@@ -131,8 +131,36 @@ class Interval(
         return TODO()
     }
 
+    @Suppress("CyclomaticComplexMethod")
     override fun unionWithInterval(other: Interval, comparator: ExpressionComparator): SetExpression? {
-        return TODO()
+        // Find which interval starts "first" (left closed starts first)
+        val iLeft = when (comparator.compare(leftBound, other.leftBound)) {
+            Sign.NEGATIVE -> this
+            Sign.ZERO -> if (this.closedLeft) this else other
+            Sign.POSITIVE -> other
+            else -> return null
+        }
+        // Find which interval stops "last" (right closed stops last)
+        val iRight = when (comparator.compare(rightBound, other.rightBound)) {
+            Sign.NEGATIVE -> other
+            Sign.ZERO -> if (this.closedRight) this else other
+            Sign.POSITIVE -> this
+            else -> return null
+        }
+
+        return when (comparator.compare(iLeft.rightBound, iRight.leftBound)) {
+            // there is no common element b/w the two intervals,
+            // this just ends up sorting the two intervals
+            Sign.NEGATIVE -> SetUnion(listOf(iLeft, iRight), meta)
+            Sign.ZERO, Sign.POSITIVE -> Interval(
+                iLeft.leftBound,
+                iRight.rightBound,
+                iLeft.closedLeft,
+                iRight.closedRight,
+                meta,
+            )
+            else -> null
+        }
     }
 
     override fun unionWithCartesianProduct(other: CartesianProduct, comparator: ExpressionComparator): SetExpression? {

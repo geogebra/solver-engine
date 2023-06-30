@@ -28,6 +28,7 @@ import methods.constantexpressions.constantSimplificationSteps
 import methods.inequalities.InequalitiesPlans
 import methods.inequalities.inequalitySimplificationSteps
 import methods.inequalities.simplifyInequality
+import methods.solvable.expressionComparator
 
 /**
  * Solves an equation with a constraint

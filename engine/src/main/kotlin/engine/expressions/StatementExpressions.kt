@@ -1,5 +1,6 @@
 package engine.expressions
 
+import engine.operators.DoubleInequalityOperator
 import engine.operators.EquationOperator
 import engine.operators.InequalityOperators
 import engine.operators.StatementWithConstraintOperator
@@ -44,6 +45,40 @@ class Inequality(
 
     fun holds(comparator: ExpressionComparator): Boolean? {
         return (operator as InequalityOperators).holdsFor(comparator.compare(lhs, rhs))
+    }
+}
+
+class DoubleInequality(
+    first: Expression,
+    second: Expression,
+    third: Expression,
+    operator: DoubleInequalityOperator,
+    meta: NodeMeta = BasicMeta(),
+) : Expression(
+    operator = operator,
+    operands = listOf(first, second, third),
+    meta = meta,
+) {
+    private val first get() = firstChild
+    private val second get() = secondChild
+    private val third get() = thirdChild
+
+    fun getInequalities(): List<Expression> {
+        val op = (operator as DoubleInequalityOperator)
+        return listOf(
+            buildExpression(op.leftOp, listOf(first, second)),
+            buildExpression(op.rightOp, listOf(second, third)),
+        )
+    }
+
+    fun getLeftInequality(): Expression {
+        val op = (operator as DoubleInequalityOperator)
+        return buildExpression(op.leftOp, listOf(first, second))
+    }
+
+    fun getRightInequality(): Expression {
+        val op = (operator as DoubleInequalityOperator)
+        return buildExpression(op.rightOp, listOf(second, third))
     }
 }
 

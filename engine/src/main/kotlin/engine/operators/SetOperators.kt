@@ -73,7 +73,7 @@ enum class SetOperators : Operator {
         }
 
         override fun <T> readableString(children: List<T>): String {
-            return children.joinToString(separator = ",")
+            return "SetUnion[" + children.joinToString(separator = ", ") + "]"
         }
 
         override fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String {

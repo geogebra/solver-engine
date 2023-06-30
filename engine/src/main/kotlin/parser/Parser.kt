@@ -20,6 +20,7 @@ import engine.expressions.matrixOf
 import engine.expressions.mixedNumber
 import engine.expressions.nameXp
 import engine.expressions.negOf
+import engine.expressions.notEqualOf
 import engine.expressions.productSignRequired
 import engine.expressions.setUnionOf
 import engine.expressions.solutionSetOf
@@ -29,9 +30,12 @@ import engine.operators.BinaryExpressionOperator
 import engine.operators.DefaultProductOperator
 import engine.operators.DefiniteIntegralOperator
 import engine.operators.DerivativeOperator
+import engine.operators.DoubleInequalityOperator
 import engine.operators.EquationOperator
 import engine.operators.EquationSystemOperator
 import engine.operators.IndefiniteIntegralOperator
+import engine.operators.InequalityOperators
+import engine.operators.InequalitySystemOperator
 import engine.operators.IntervalOperator
 import engine.operators.Operator
 import engine.operators.StatementUnionOperator
@@ -102,6 +106,10 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
         return makeExpression(EquationSystemOperator, ctx.equations.map { visit(it) })
     }
 
+    override fun visitInequalitySystem(ctx: ExpressionParser.InequalitySystemContext): Expression {
+        return makeExpression(InequalitySystemOperator, ctx.inequalities.map { visit(it) })
+    }
+
     override fun visitEquationAddition(ctx: ExpressionParser.EquationAdditionContext): Expression {
         return makeExpression(AddEquationsOperator, listOf(visit(ctx.eq1), visit(ctx.eq2)))
     }
@@ -123,12 +131,22 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
             "<=" -> lessThanEqualOf(lhs, rhs)
             ">" -> greaterThanOf(lhs, rhs)
             ">=" -> greaterThanEqualOf(lhs, rhs)
+            "!=" -> notEqualOf(lhs, rhs)
             else -> throw InvalidParameterException("Comparator ${ctx.comparator.text} not recognized")
         }
     }
 
     override fun visitTuple(ctx: ExpressionParser.TupleContext): Expression {
         return makeExpression(TupleOperator, listOf(visit(ctx.first)) + ctx.rest.map { visit(it) })
+    }
+
+    override fun visitDoubleInequality(ctx: ExpressionParser.DoubleInequalityContext): Expression {
+        val leftOp = InequalityOperators.fromReadableString(ctx.left.text)!!
+        val rightOp = InequalityOperators.fromReadableString(ctx.right.text)!!
+        return makeExpression(
+            DoubleInequalityOperator(leftOp, rightOp),
+            listOf(visit(ctx.first), visit(ctx.second), visit(ctx.third)),
+        )
     }
 
     override fun visitExpr(ctx: ExpressionParser.ExprContext): Expression {

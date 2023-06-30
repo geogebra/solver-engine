@@ -62,6 +62,20 @@ enum class SolvableKey {
      * E.g. [2 + x / 6] + 5 = [4 - 2x / 4] -> ([2 + x / 6] + 5) * 12 = [4 - 2x / 4] * 12
      */
     MultiplyBothSidesByLCD,
+
+    /**
+     * In an equation an absolute value, move terms without an absolute value to the right
+     *
+     * E.g. abs[x] + x - 1 = 2 --> abs[x] + x - 1 - x + 1 = 2 - x + 1
+     */
+    MoveTermsNotContainingModulusToTheRight,
+
+    /**
+     * In an equation with an absolute value, move terms without an absolute value to the left
+     *
+     * E.g. x = 2x - abs[x] + 3 --> x - 2x - 3 = 2x - abs[x] + 3 - 2x - 3
+     */
+    MoveTermsNotContainingModulusToTheLeft,
 }
 
 /**
@@ -118,6 +132,10 @@ enum class EquationsExplanation(
      * E.g. 2x + 3 + 4 sqrt[5] = 2 + 4 sqrt[5] -> 2x + 3 = 2
      */
     CancelCommonTermsOnBothSides(SolvableKey.CancelCommonTermsOnBothSides),
+
+    MoveTermsNotContainingModulusToTheLeft(SolvableKey.MoveTermsNotContainingModulusToTheLeft),
+
+    MoveTermsNotContainingModulusToTheRight(SolvableKey.MoveTermsNotContainingModulusToTheRight),
 
     /**
      * Add the opposite of the constants appearing on the RHS
@@ -339,6 +357,10 @@ enum class InequalitiesExplanation(
      * E.g. 2x + 3 + 4 sqrt[5] < 2 + 4 sqrt[5] -> 2x + 3 < 2
      */
     CancelCommonTermsOnBothSides(SolvableKey.CancelCommonTermsOnBothSides),
+
+    MoveTermsNotContainingModulusToTheLeft(SolvableKey.MoveTermsNotContainingModulusToTheLeft),
+
+    MoveTermsNotContainingModulusToTheRight(SolvableKey.MoveTermsNotContainingModulusToTheRight),
 
     /**
      * Add the opposite of the constants appearing on the RHS

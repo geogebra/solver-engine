@@ -482,7 +482,7 @@ class EquationsWithOneAbsoluteValueTest {
                 step {
                     fromExpr = "2 * abs[x] - [x ^ 2] = 1"
                     explanation {
-                        key = EquationsExplanation.MoveTermsNotContainingModulusToTheRight
+                        key = methods.solvable.EquationsExplanation.MoveTermsNotContainingModulusToTheRight
                     }
                     toExpr = "2 * abs[x] - [x ^ 2] + [x ^ 2] = 1 + [x ^ 2]"
                 }

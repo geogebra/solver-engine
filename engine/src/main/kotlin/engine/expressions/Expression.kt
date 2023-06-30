@@ -2,6 +2,7 @@ package engine.expressions
 
 import engine.operators.BinaryExpressionOperator
 import engine.operators.DecimalOperator
+import engine.operators.DoubleInequalityOperator
 import engine.operators.EquationOperator
 import engine.operators.EquationSystemOperator
 import engine.operators.ExpressionOperator
@@ -191,6 +192,7 @@ open class Expression internal constructor(
 
     val firstChild get() = nthChild(0)
     val secondChild get() = nthChild(1)
+    val thirdChild get() = nthChild(2)
 
     fun nthChild(n: Int) = children[n]
 
@@ -543,6 +545,7 @@ private fun expressionOf(
 
         EquationOperator -> Equation(operands[0], operands[1], meta)
         is InequalityOperators -> Inequality(operands[0], operands[1], operator, meta)
+        is DoubleInequalityOperator -> DoubleInequality(operands[0], operands[1], operands[2], operator, meta)
         StatementWithConstraintOperator -> StatementWithConstraint(operands[0], operands[1], meta)
 
         is NameOperator -> Name(operator.value, meta)

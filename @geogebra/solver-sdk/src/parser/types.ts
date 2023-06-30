@@ -16,6 +16,7 @@ export type NestedExpressionType =
   | 'AbsoluteValue' // unary
   | 'Equation' // binary
   | 'EquationSystem' // n-ary
+  | 'InequalitySystem' // n-ary
   | 'AddEquations' // binary
   | 'SubtractEquations' // binary
   | 'EquationUnion' // n-ary
@@ -24,6 +25,7 @@ export type NestedExpressionType =
   | 'GreaterThan' // binary
   | 'LessThanEqual' // binary
   | 'GreaterThanEqual' // binary
+  | 'NotEqual' // binary
   | 'Solution' // (VariableList, FiniteSet | Interval)
   | 'Identity' // (VariableList)
   | 'Contradiction' // (VariableList)
@@ -37,7 +39,15 @@ export type NestedExpressionType =
   | 'OpenInterval' // binary
   | 'ClosedInterval' // binary
   | 'OpenClosedInterval' // binary
-  | 'ClosedOpenInterval'; // binary
+  | 'ClosedOpenInterval' // binary
+  | 'OpenRange' // ternary
+  | 'OpenClosedRange' // ternary
+  | 'ClosedOpenRange' // ternary
+  | 'ClosedRange' // ternary
+  | 'ReversedOpenRange' // ternary
+  | 'ReversedOpenClosedRange' // ternary
+  | 'ReversedClosedOpenRange' // ternary
+  | 'ReversedClosedRange'; // ternary
 
 export type NestedExpressionBase<T> = {
   type: NestedExpressionType;

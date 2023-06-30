@@ -178,6 +178,12 @@ describe('coloringTransformer', () => {
       '\\color{red}5\\color{black}\\color{green}{} \\div \\color{black}\\color{blue}6\\color{black}',
     );
   });
+  it('color not equal operator', () => {
+    const t = coloringTransformer({ '.:op': 'red' }, 'black');
+    expect(treeToLatex(latexToTree('x \\neq 4'), null, t)).to.equal(
+      'x \\color{red}\\neq\\color{black} 4',
+    );
+  });
   it('red default color', () => {
     const t = coloringTransformer({ '.': 'blue' }, 'red');
     expect(treeToLatex(latexToTree('A'), null, t)).to.equal('\\color{blue}A\\color{red}');

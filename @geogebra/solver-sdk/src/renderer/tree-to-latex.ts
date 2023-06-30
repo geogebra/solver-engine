@@ -286,6 +286,16 @@ function treeToLatexInner(
           '\\end{array}\\right.',
       );
     }
+    case 'InequalitySystem': {
+      const alignSetting = { ...s, align: true };
+      return tfd(
+        '\\left\\{\\begin{array}{rcl}\n' +
+          n.args
+            .map((el) => '  ' + treeToLatexInner(el, n, alignSetting, t) + '\\\\\n')
+            .join('') +
+          '\\end{array}\\right.',
+      );
+    }
     case 'AddEquations':
     case 'SubtractEquations': {
       const alignSetting = { ...s, align: true };
@@ -303,7 +313,9 @@ function treeToLatexInner(
     }
     case 'EquationUnion': {
       const alignSetting = { ...s, align: false };
-      return tfd(n.args.map((el) => treeToLatexInner(el, n, alignSetting, t)).join(', '));
+      return tfd(
+        n.args.map((el) => treeToLatexInner(el, n, alignSetting, t)).join('\\text{ or }'),
+      );
     }
     case 'StatementWithConstraint': {
       const alignSetting = { ...s, align: false };
@@ -329,6 +341,8 @@ function treeToLatexInner(
       return tfd(`${rec(n.args[0], n)} ${colorOp('\\leq')} ${rec(n.args[1], n)}`);
     case 'GreaterThanEqual':
       return tfd(`${rec(n.args[0], n)} ${colorOp('\\geq')} ${rec(n.args[1], n)}`);
+    case 'NotEqual':
+      return tfd(`${rec(n.args[0], n)} ${colorOp('\\neq')} ${rec(n.args[1], n)}`);
     case 'Solution':
     case 'SetSolution':
     case 'Identity':
@@ -369,6 +383,22 @@ function treeToLatexInner(
       return `\\left( ${rec(n.args[0], n)}, ${rec(n.args[1], n)} \\right]`;
     case 'ClosedOpenInterval':
       return `\\left[ ${rec(n.args[0], n)}, ${rec(n.args[1], n)} \\right)`;
+    case 'OpenRange':
+      return `${rec(n.args[0], n)} \\lt ${rec(n.args[1], n)} \\lt ${rec(n.args[2], n)}`;
+    case 'OpenClosedRange':
+      return `${rec(n.args[0], n)} \\lt ${rec(n.args[1], n)} \\leq ${rec(n.args[2], n)}`;
+    case 'ClosedOpenRange':
+      return `${rec(n.args[0], n)} \\leq ${rec(n.args[1], n)} \\lt ${rec(n.args[2], n)}`;
+    case 'ClosedRange':
+      return `${rec(n.args[0], n)} \\leq ${rec(n.args[1], n)} \\leq ${rec(n.args[2], n)}`;
+    case 'ReversedOpenRange':
+      return `${rec(n.args[0], n)} \\gt ${rec(n.args[1], n)} \\gt ${rec(n.args[2], n)}`;
+    case 'ReversedOpenClosedRange':
+      return `${rec(n.args[0], n)} \\gt ${rec(n.args[1], n)} \\geq ${rec(n.args[2], n)}`;
+    case 'ReversedClosedOpenRange':
+      return `${rec(n.args[0], n)} \\geq ${rec(n.args[1], n)} \\gt ${rec(n.args[2], n)}`;
+    case 'ReversedClosedRange':
+      return `${rec(n.args[0], n)} \\geq ${rec(n.args[1], n)} \\geq ${rec(n.args[2], n)}`;
   }
 }
 

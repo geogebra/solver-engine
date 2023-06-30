@@ -1,4 +1,4 @@
-package methods.equations
+package methods.solvable
 
 import engine.conditions.signOf
 import engine.context.emptyContext
@@ -10,6 +10,7 @@ import engine.expressions.FiniteSet
 import engine.expressions.Identity
 import engine.expressions.Interval
 import engine.expressions.Root
+import engine.expressions.SetExpression
 import engine.expressions.SetSolution
 import engine.expressions.VariableList
 import engine.expressions.negOf
@@ -19,7 +20,7 @@ import engine.expressions.sumOf
 import engine.sign.Sign
 import methods.constantexpressions.ConstantExpressionsPlans
 
-fun computeOverallSolution(solutions: List<Expression>): Expression? {
+fun computeOverallUnionSolution(solutions: List<Expression>): Expression? {
     // If one of the equations results in an identity, then the overall solution is also an identity
     val identity = solutions.firstOrNull { it is Identity }
     if (identity != null) {
@@ -29,8 +30,46 @@ fun computeOverallSolution(solutions: List<Expression>): Expression? {
     val (singleSolutions, intervals) = separateSingleSolutionsAndIntervals(solutions) ?: return null
 
     return if (intervals.size > 1) {
-        // we cannot handle multiple intervals yet
-        null
+        val unionSet = intervals
+            .subList(1, intervals.size)
+            .fold(intervals[0] as SetExpression) { acc, interval ->
+                acc.union(interval, expressionComparator) as SetExpression
+            }
+
+        setSolutionOf(solutions[0].firstChild as VariableList, unionSet)
+    } else if (intervals.size == 1) {
+        // try to merge the single solutions into the interval
+        mergeSolutionsIntoInterval(singleSolutions, intervals[0])?.let {
+            setSolutionOf(
+                solutions[0].firstChild as VariableList,
+                it,
+            )
+        }
+    } else {
+        setSolutionOf(
+            solutions[0].firstChild as VariableList,
+            solutionSetOf(singleSolutions.sortedBy { it.doubleValue }),
+        )
+    }
+}
+
+fun computeOverallIntersectionSolution(solutions: List<Expression>): Expression? {
+    // If one of the equations results in an identity, then the overall solution is also an identity
+    val identity = solutions.firstOrNull { it is Identity }
+    if (identity != null) {
+        return identity
+    }
+
+    val (singleSolutions, intervals) = separateSingleSolutionsAndIntervals(solutions) ?: return null
+
+    return if (intervals.size > 1) {
+        val intersectionSet = intervals
+            .subList(1, intervals.size)
+            .fold(intervals[0] as SetExpression) { acc, interval ->
+                acc.intersect(interval, expressionComparator) as SetExpression
+            }
+
+        setSolutionOf(solutions[0].firstChild as VariableList, intersectionSet)
     } else if (intervals.size == 1) {
         // try to merge the single solutions into the interval
         mergeSolutionsIntoInterval(singleSolutions, intervals[0])?.let {

@@ -315,42 +315,4 @@ class EquationRulesTest {
             "5x = [x ^ 2] GIVEN x >= 0 OR -5x = [x ^ 2] GIVEN x < 0",
         )
     }
-
-    @Test
-    fun testMoveTermsNotContainingModulusToTheRight() {
-        testRuleInX(
-            "abs[x + 2] + 3 - abs[x] + [x ^ 2] = x",
-            EquationsRules.MoveTermsNotContainingModulusToTheRight,
-            "abs[x + 2] + 3 - abs[x] + [x ^ 2] - 3 - [x ^ 2] = x - 3 - [x ^ 2]",
-        )
-        testRuleInX(
-            "abs[x + 2] + 3 - abs[x] + [x ^ 2] = x - abs[x + 1]",
-            EquationsRules.MoveTermsNotContainingModulusToTheRight,
-            null,
-        )
-        testRuleInX(
-            "x + 4 = abs[x]",
-            EquationsRules.MoveTermsNotContainingModulusToTheRight,
-            null,
-        )
-    }
-
-    @Test
-    fun testMoveTermsNotContainingModulusToTheLeft() {
-        testRuleInX(
-            "x = abs[x + 2] + 3 - abs[x] + [x ^ 2]",
-            EquationsRules.MoveTermsNotContainingModulusToTheLeft,
-            " x - 3 - [x ^ 2] = abs[x + 2] + 3 - abs[x] + [x ^ 2] - 3 - [x ^ 2]",
-        )
-        testRuleInX(
-            "x - abs[x + 1] = abs[x + 2] + 3 - abs[x] + [x ^ 2]",
-            EquationsRules.MoveTermsNotContainingModulusToTheLeft,
-            null,
-        )
-        testRuleInX(
-            "abs[x] = x + 4",
-            EquationsRules.MoveTermsNotContainingModulusToTheLeft,
-            null,
-        )
-    }
 }

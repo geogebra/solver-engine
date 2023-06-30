@@ -21,6 +21,7 @@ import engine.expressions.greaterThanOf
 import engine.expressions.identityOf
 import engine.expressions.implicitSolutionOf
 import engine.expressions.indefiniteIntegralOf
+import engine.expressions.inequalitySystemOf
 import engine.expressions.lessThanEqualOf
 import engine.expressions.lessThanOf
 import engine.expressions.logBase10Of
@@ -30,6 +31,7 @@ import engine.expressions.missingBracketOf
 import engine.expressions.nameXp
 import engine.expressions.naturalLogOf
 import engine.expressions.negOf
+import engine.expressions.notEqualOf
 import engine.expressions.openIntervalOf
 import engine.expressions.percentageOf
 import engine.expressions.percentageOfOf
@@ -317,6 +319,30 @@ class ParserTest {
             greaterThanEqualOf(
                 squareRootOf(rawProductOf(xp("x"), xp("y"))),
                 fractionOf(rawProductOf(xp(2), xp("x"), xp("y")), sumOf(xp("x"), xp("y"))),
+            ),
+        )
+        parsesTo(
+            "sqrt[xy] != [2xy / x + y]",
+            notEqualOf(
+                squareRootOf(rawProductOf(xp("x"), xp("y"))),
+                fractionOf(rawProductOf(xp(2), xp("x"), xp("y")), sumOf(xp("x"), xp("y"))),
+            ),
+        )
+    }
+
+    @Test
+    fun testInequalitySystem() {
+        parsesTo(
+            "3x + 4 > 4x - 5, 3x + 5 < 6x + 7",
+            inequalitySystemOf(
+                greaterThanOf(
+                    rawSumOf(rawProductOf(xp(3), xp("x")), xp(4)),
+                    rawSumOf(rawProductOf(xp(4), xp("x")), negOf(xp(5))),
+                ),
+                lessThanOf(
+                    rawSumOf(rawProductOf(xp(3), xp("x")), xp(5)),
+                    rawSumOf(rawProductOf(xp(6), xp("x")), xp(7)),
+                ),
             ),
         )
     }

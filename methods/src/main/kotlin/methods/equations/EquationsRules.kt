@@ -2,7 +2,6 @@ package methods.equations
 
 import engine.conditions.signOf
 import engine.expressions.Constants
-import engine.expressions.Expression
 import engine.expressions.Fraction
 import engine.expressions.SimpleComparator
 import engine.expressions.StatementWithConstraint
@@ -37,8 +36,6 @@ import engine.methods.Rule
 import engine.methods.RuleResultBuilder
 import engine.methods.RunnerMethod
 import engine.methods.rule
-import engine.operators.SumOperator
-import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ArbitraryVariablePattern
 import engine.patterns.ConditionPattern
@@ -453,8 +450,6 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
     SeparateModulusEqualsExpression(separateModulusEqualsExpression),
     SeparateModulusEqualsExpressionWithoutConstraint(separateModulusEqualsExpressionWithoutConstraint),
-    MoveTermsNotContainingModulusToTheRight(moveTermsNotContainingModulusToTheRight),
-    MoveTermsNotContainingModulusToTheLeft(moveTermsNotContainingModulusToTheLeft),
 }
 
 private val applyQuadraticFormula = rule {
@@ -716,57 +711,6 @@ private val separateModulusEqualsExpressionWithoutConstraint = rule {
             explanation = metadata(Explanation.SeparateModulusEqualsExpressionWithoutConstraint),
         )
     }
-}
-
-private val moveTermsNotContainingModulusToTheRight = rule {
-    val lhs = condition(sumContaining()) { it.countAbsoluteValues(solutionVariables) > 0 }
-    val rhs = condition { it.countAbsoluteValues(solutionVariables) == 0 }
-
-    onEquation(lhs, rhs) {
-        val termsNotContainingModulus = extractTermsNotContainingModulus(get(lhs), context.solutionVariables)
-            ?: return@onEquation null
-
-        val negatedTerms = simplifiedNegOfSum(termsNotContainingModulus)
-
-        ruleResult(
-            toExpr = equationOf(sumOf(get(lhs), negatedTerms), sumOf(get(rhs), negatedTerms)),
-            explanation = metadata(Explanation.MoveTermsNotContainingModulusToTheRight),
-        )
-    }
-}
-
-private val moveTermsNotContainingModulusToTheLeft = rule {
-    val lhs = condition { it.countAbsoluteValues(solutionVariables) == 0 }
-    val rhs = condition(sumContaining()) { it.countAbsoluteValues(solutionVariables) > 0 }
-
-    onEquation(lhs, rhs) {
-        val termsNotContainingModulus = extractTermsNotContainingModulus(get(rhs), context.solutionVariables)
-            ?: return@onEquation null
-
-        val negatedTerms = simplifiedNegOfSum(termsNotContainingModulus)
-
-        ruleResult(
-            toExpr = equationOf(sumOf(get(lhs), negatedTerms), sumOf(get(rhs), negatedTerms)),
-            explanation = metadata(Explanation.MoveTermsNotContainingModulusToTheLeft),
-        )
-    }
-}
-
-private fun extractTermsNotContainingModulus(expression: Expression, variables: List<String>): Expression? {
-    return when {
-        expression.operator == SumOperator -> {
-            val termsWithoutModulus = expression.children.filter { it.countAbsoluteValues(variables) == 0 }
-            if (termsWithoutModulus.isEmpty()) null else sumOf(termsWithoutModulus)
-        }
-        expression.countAbsoluteValues(variables) == 0 -> expression
-        else -> null
-    }
-}
-
-internal fun Expression.countAbsoluteValues(solutionVariables: List<String>): Int = when {
-    childCount == 0 -> 0
-    operator == UnaryExpressionOperator.AbsoluteValue && !isConstantIn(solutionVariables) -> 1
-    else -> children.sumOf { it.countAbsoluteValues(solutionVariables) }
 }
 
 private fun RuleResultBuilder.trueOrFalseRuleResult(isSatisfied: Boolean): Transformation {

@@ -5,6 +5,7 @@ import engine.expressions.Expression
 import engine.expressions.closedOpenIntervalOf
 import engine.expressions.openClosedIntervalOf
 import engine.expressions.openIntervalOf
+import engine.expressions.setUnionOf
 import engine.sign.Sign
 import java.math.BigDecimal
 
@@ -72,6 +73,8 @@ object EquationOperator : BinaryOperator, StatementOperator {
     }
 
     override fun <T> readableString(left: T, right: T) = "$left = $right"
+
+    fun getDual() = EquationOperator
 }
 
 sealed interface EquationOperation
@@ -115,8 +118,8 @@ object SubtractEquationsOperator : BinaryOperator, StatementOperator, EquationOp
 }
 
 enum class InequalityOperators(
-    private val readableString: String,
-    private val latexString: String,
+    val readableString: String,
+    val latexString: String,
 ) : BinaryOperator, StatementOperator {
 
     LessThan("<", "<") {
@@ -157,6 +160,19 @@ enum class InequalityOperators(
         override fun toInterval(boundary: Expression) = closedOpenIntervalOf(boundary, Constants.Infinity)
 
         override fun getDual() = LessThanEqual
+    },
+
+    NotEqual("!=", "\\neq") {
+        override fun holdsFor(val1: BigDecimal, val2: BigDecimal) = val1 != val2
+
+        override fun holdsFor(sign: Sign) = sign != Sign.ZERO
+
+        override fun toInterval(boundary: Expression) = setUnionOf(
+            openIntervalOf(Constants.NegativeInfinity, boundary),
+            openIntervalOf(boundary, Constants.Infinity),
+        )
+
+        override fun getDual() = NotEqual
     }, ;
 
     override val precedence = PREDICATE_PRECEDENCE
@@ -189,6 +205,62 @@ enum class InequalityOperators(
     abstract fun toInterval(boundary: Expression): Expression
 
     abstract fun getDual(): InequalityOperators
+
+    companion object {
+        fun fromReadableString(value: String): InequalityOperators? {
+            return values().find { it.readableString == value }
+        }
+    }
+}
+
+data class DoubleInequalityOperator(
+    val leftOp: InequalityOperators,
+    val rightOp: InequalityOperators,
+) : TernaryOperator, StatementOperator {
+    override val name = when {
+        leftOp == InequalityOperators.LessThan && rightOp == InequalityOperators.LessThan -> "OpenRange"
+        leftOp == InequalityOperators.LessThan && rightOp == InequalityOperators.LessThanEqual -> "OpenClosedRange"
+        leftOp == InequalityOperators.LessThanEqual && rightOp == InequalityOperators.LessThan -> "ClosedOpenRange"
+        leftOp == InequalityOperators.LessThanEqual && rightOp == InequalityOperators.LessThanEqual -> "ClosedRange"
+        leftOp == InequalityOperators.GreaterThan && rightOp == InequalityOperators.GreaterThan -> "ReversedOpenRange"
+        leftOp == InequalityOperators.GreaterThan &&
+            rightOp == InequalityOperators.GreaterThanEqual -> "ReversedOpenClosedRange"
+        leftOp == InequalityOperators.GreaterThanEqual &&
+            rightOp == InequalityOperators.GreaterThan -> "ReversedClosedOpenRange"
+        leftOp == InequalityOperators.GreaterThanEqual &&
+            rightOp == InequalityOperators.GreaterThanEqual -> "ReversedClosedRange"
+        else -> throw error("Invalid operators $leftOp and $rightOp for ${this::class.simpleName}")
+    }
+
+    override val precedence = PREDICATE_PRECEDENCE
+
+    override fun latexString(
+        ctx: RenderContext,
+        first: LatexRenderable,
+        second: LatexRenderable,
+        third: LatexRenderable,
+    ): String {
+        if (ctx.align) {
+            val innerCtx = ctx.copy(align = false)
+            return first.toLatexString(innerCtx) +
+                " & " +
+                leftOp +
+                " & " +
+                second.toLatexString(innerCtx) +
+                " & " +
+                rightOp +
+                " & " +
+                third.toLatexString(innerCtx)
+        } else {
+            return first.toLatexString(ctx) + " " + leftOp +
+                " " + second.toLatexString(ctx) + " " +
+                rightOp + " " + third.toLatexString(ctx)
+        }
+    }
+
+    override fun <T> readableString(first: T, second: T, third: T): String {
+        return "$first ${leftOp.readableString} $second ${rightOp.readableString} $third"
+    }
 }
 
 object EquationSystemOperator : StatementOperator {
@@ -216,6 +288,33 @@ object EquationSystemOperator : StatementOperator {
     }
 }
 
+object InequalitySystemOperator : StatementOperator {
+    override val name = "InequalitySystem"
+
+    override val precedence = EQUATION_SYSTEM_PRECEDENCE
+    override val arity = ARITY_VARIABLE
+
+    override fun nthChildAllowed(n: Int, op: Operator): Boolean {
+        require(op is InequalityOperators)
+        return true
+    }
+
+    override fun <T> readableString(children: List<T>): String {
+        return children.joinToString(", ")
+    }
+
+    override fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String {
+        val alignCtx = ctx.copy(align = true)
+        return buildString {
+            append("\\left\\{\\begin{array}{rcl}")
+            for (eq in children) {
+                append(eq.toLatexString(alignCtx), " \\\\ ")
+            }
+            append("\\end{array}\\right.")
+        }
+    }
+}
+
 object StatementUnionOperator : StatementOperator {
     override val name = "EquationUnion"
 
@@ -230,7 +329,7 @@ object StatementUnionOperator : StatementOperator {
     override fun <T> readableString(children: List<T>) = children.joinToString(" OR ")
 
     override fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String {
-        return "${children[0].toLatexString(ctx)}, ${children[1].toLatexString(ctx)}"
+        return "${children[0].toLatexString(ctx)} \\text{or} ${children[1].toLatexString(ctx)}"
     }
 }
 

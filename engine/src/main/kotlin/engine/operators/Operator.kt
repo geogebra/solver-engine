@@ -127,3 +127,38 @@ interface BinaryOperator : Operator {
         return latexString(ctx, children[0], children[1])
     }
 }
+
+interface TernaryOperator : Operator {
+
+    override val arity get() = ARITY_THREE
+
+    fun firstChildAllowed(op: Operator) = op.precedence > this.precedence
+    fun secondChildAllowed(op: Operator) = op.precedence > this.precedence
+    fun thirdChildAllowed(op: Operator) = op.precedence > this.precedence
+
+    override fun nthChildAllowed(n: Int, op: Operator) = when (n) {
+        0 -> firstChildAllowed(op)
+        1 -> secondChildAllowed(op)
+        2 -> thirdChildAllowed(op)
+        else -> throw IllegalArgumentException(
+            "Ternary operator ${this::class.simpleName} should have exactly three children. " +
+                "Child $op is invalid at position $n.",
+        )
+    }
+
+    fun <T> readableString(first: T, second: T, third: T): String {
+        return "$this($first, $second, $third)"
+    }
+
+    override fun <T> readableString(children: List<T>): String {
+        require(children.size == arity)
+        return readableString(children[0], children[1], children[2])
+    }
+
+    override fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String {
+        require(children.size == arity)
+        return latexString(ctx, children[0], children[1], children[2])
+    }
+
+    fun latexString(ctx: RenderContext, first: LatexRenderable, second: LatexRenderable, third: LatexRenderable): String
+}
