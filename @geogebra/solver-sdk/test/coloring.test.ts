@@ -184,6 +184,12 @@ describe('coloringTransformer', () => {
       'x \\color{red}\\neq\\color{black} 4',
     );
   });
+  it('color absolute value operator', () => {
+    const t = coloringTransformer({ '.:op': 'red' }, 'black');
+    expect(treeToLatex(latexToTree('\\left|x + 1\\right|'), null, t)).to.equal(
+      '\\color{red}\\left|\\color{black}x+1\\color{red}\\right|\\color{black}',
+    );
+  });
   it('red default color', () => {
     const t = coloringTransformer({ '.': 'blue' }, 'red');
     expect(treeToLatex(latexToTree('A'), null, t)).to.equal('\\color{blue}A\\color{red}');

@@ -269,7 +269,7 @@ function treeToLatexInner(
     case 'Root':
       return tfd(`\\sqrt[{${rec(n.args[1], n)}}]{${rec(n.args[0], n)}}`);
     case 'AbsoluteValue':
-      return tfd(`\\left|${rec(n.args[0], n)}\\right|`);
+      return tfd(colorAbsoluteValue(rec(n.args[0], n), n, t, p));
     case 'Equation':
       if (s.align) {
         return tfd(`${rec(n.args[0], n)} & = & ${rec(n.args[1], n)}`);
@@ -435,6 +435,17 @@ const decorators: Record<string, { left: string; right: string }> = {
   SquareBracket: { left: '\\left[', right: '\\right]' },
   CurlyBracket: { left: '\\left\\{', right: '\\right\\}' },
 };
+
+function colorAbsoluteValue(
+  value: string,
+  node: ExpressionTree,
+  t: LatexTransformer,
+  parent: ExpressionTree | null,
+): string {
+  const left = t.transformOperator(node, '\\left|', parent) || '\\left|';
+  const right = t.transformOperator(node, '\\right|', parent) || '\\right|';
+  return left + value + right;
+}
 
 function decorate(
   value: string,

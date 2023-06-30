@@ -14,6 +14,7 @@ const BP_SUM = 10;
 const BP_MUL = 20;
 const BP_IMPLICIT_MUL = 25;
 const BP_UNARY_SIGN = 30;
+const BP_UNARY_OPERATOR = 35;
 const BP_POWER = 40;
 
 const latexSymbolDefinitions = {
@@ -235,6 +236,20 @@ const latexSymbolDefinitions = {
       }
     };
     sqrt.led = sqrt.led = getLedToExtendNary(parser, 'ImplicitProduct');
+  },
+
+  registerAbsoluteValue(parser: Parser<ExprTree>) {
+    const absStart = parser.registerSymbol('\\left|', BP_UNARY_OPERATOR);
+    parser.registerSymbol('\\right|');
+    absStart.nud = function () {
+      const expr = parser.expression(0);
+      parser.advance('\\right|');
+      return {
+        type: 'AbsoluteValue',
+        args: [expr],
+      };
+    };
+    absStart.led = getLedToExtendNary(parser, 'ImplicitProduct');
   },
 };
 
