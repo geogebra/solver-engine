@@ -8,17 +8,21 @@ import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.contextSensitiveSteps
 import engine.methods.stepsproducers.steps
+import engine.patterns.AnyPattern
 import engine.patterns.ArbitraryVariablePattern
 import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.commutativeProductOf
 import engine.patterns.condition
 import engine.patterns.monomialPattern
 import engine.patterns.powerOf
+import engine.patterns.stickyOptionalNegOf
 import methods.collecting.createCollectLikeTermsAndSimplifyPlan
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.constantexpressions.constantSimplificationSteps
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.decimals.decimalEvaluationSteps
-import methods.expand.createExpandAndSimplifySteps
+import methods.expand.ExpandAndSimplifier
+import methods.expand.ExpandAndSimplifyMethodsProvider
 import methods.general.GeneralRules
 import methods.general.NormalizationPlans
 import methods.integerarithmetic.IntegerArithmeticPlans
@@ -71,7 +75,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
                 whilePossible(algebraicSimplificationSteps)
                 apply {
                     whilePossible {
-                        deeply(expandAndSimplifySteps.value, deepFirst = true)
+                        deeply(expandAndSimplifier.steps, deepFirst = true)
                         whilePossible(algebraicSimplificationSteps)
                     }
                 }
@@ -89,7 +93,33 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
                 whilePossible {
                     firstOf {
                         option(algebraicSimplificationSteps)
-                        option { deeply(expandAndSimplifySteps.value, deepFirst = true) }
+                        option { deeply(expandAndSimplifier.steps, deepFirst = true) }
+                    }
+                }
+            }
+        },
+    ),
+
+    ExpandSingleBracketWithIntegerCoefficient(
+        plan {
+            explanation = PolynomialsExplanation.ExpandSingleBracketWithIntegerCoefficient
+            steps {
+                whilePossible {
+                    firstOf {
+                        option(algebraicSimplificationSteps)
+                        option {
+                            deeply {
+                                checkForm {
+                                    stickyOptionalNegOf(
+                                        commutativeProductOf(
+                                            UnsignedIntegerPattern(),
+                                            AnyPattern(),
+                                        ),
+                                    )
+                                }
+                                apply(expandAndSimplifier.singleBracketMethod)
+                            }
+                        }
                     }
                 }
             }
@@ -97,8 +127,10 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
     ),
 }
 
-val expandAndSimplifySteps = lazy {
-    createExpandAndSimplifySteps(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable)
+// If we don't do it by lazy we get null pointer exceptions because the MultiplyMonomialsAndSimplify RunnerMethod's
+// runner property is used before it is initialised.  I am not sure why though so this solution is dubious.
+val expandAndSimplifier: ExpandAndSimplifyMethodsProvider by lazy {
+    ExpandAndSimplifier(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable)
 }
 
 private val multiplyMonomialsAndSimplify = plan {

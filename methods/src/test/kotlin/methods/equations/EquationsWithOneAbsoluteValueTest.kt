@@ -9,16 +9,17 @@ import org.junit.jupiter.api.Test
 
 @Suppress("MaxLineLength", "LargeClass")
 class EquationsWithOneAbsoluteValueTest {
+
     @Test
     fun `test simple linear equation in modulus`() = testMethodInX {
-        method = EquationsPlans.SolveEquationWithVariablesInOneAbsoluteValue
+        method = EquationsPlans.SolveEquationInOneVariable
         inputExpr = "abs[2 x - 1] = 3"
 
         check {
             fromExpr = "abs[2 x - 1] = 3"
             toExpr = "SetSolution[x : {-1, 2}]"
             explanation {
-                key = EquationsExplanation.SolveEquationWithVariablesInOneAbsoluteValue
+                key = EquationsExplanation.SolveEquationWithOneAbsoluteValue
             }
 
             step {
@@ -81,21 +82,21 @@ class EquationsWithOneAbsoluteValueTest {
 
     @Test
     fun `test simple rearrangement needed`() = testMethodInX {
-        method = EquationsPlans.SolveEquationWithVariablesInOneAbsoluteValue
+        method = EquationsPlans.SolveEquationInOneVariable
         inputExpr = "3 * abs[1 - x] + 2 = 10"
 
         check {
             fromExpr = "3 * abs[1 - x] + 2 = 10"
             toExpr = "SetSolution[x : {-[5 / 3], [11 / 3]}]"
             explanation {
-                key = EquationsExplanation.SolveEquationWithVariablesInOneAbsoluteValue
+                key = EquationsExplanation.SolveEquationWithOneAbsoluteValue
             }
 
             step {
                 fromExpr = "3 * abs[1 - x] + 2 = 10"
                 toExpr = "3 * abs[1 - x] = 8"
                 explanation {
-                    key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                    key = EquationsExplanation.IsolateAbsoluteValue
                 }
             }
 
@@ -159,21 +160,21 @@ class EquationsWithOneAbsoluteValueTest {
 
     @Test
     fun `test modulus in fraction and negative`() = testMethodInX {
-        method = EquationsPlans.SolveEquationWithVariablesInOneAbsoluteValue
+        method = EquationsPlans.SolveEquationInOneVariable
         inputExpr = "10 - [abs[1 - x] / 5] = 2"
 
         check {
             fromExpr = "10 - [abs[1 - x] / 5] = 2"
             toExpr = "SetSolution[x : {-39, 41}]"
             explanation {
-                key = EquationsExplanation.SolveEquationWithVariablesInOneAbsoluteValue
+                key = EquationsExplanation.SolveEquationWithOneAbsoluteValue
             }
 
             step {
                 fromExpr = "10 - [abs[1 - x] / 5] = 2"
                 toExpr = "-[abs[1 - x] / 5] = -8"
                 explanation {
-                    key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                    key = EquationsExplanation.IsolateAbsoluteValue
                 }
             }
 
@@ -205,21 +206,21 @@ class EquationsWithOneAbsoluteValueTest {
 
     @Test
     fun `test modulus equals negative`() = testMethodInX {
-        method = EquationsPlans.SolveEquationWithVariablesInOneAbsoluteValue
+        method = EquationsPlans.SolveEquationInOneVariable
         inputExpr = "3 * abs[1 - x] + 5 = 2"
 
         check {
             fromExpr = "3 * abs[1 - x] + 5 = 2"
             toExpr = "Contradiction[x: 3 * abs[1 - x] = -3]"
             explanation {
-                key = EquationsExplanation.SolveEquationWithVariablesInOneAbsoluteValue
+                key = EquationsExplanation.SolveEquationWithOneAbsoluteValue
             }
 
             step {
                 fromExpr = "3 * abs[1 - x] + 5 = 2"
                 toExpr = "3 * abs[1 - x] = -3"
                 explanation {
-                    key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                    key = EquationsExplanation.IsolateAbsoluteValue
                 }
             }
 
@@ -235,14 +236,14 @@ class EquationsWithOneAbsoluteValueTest {
 
     @Test
     fun `test modulus equals 0`() = testMethodInX {
-        method = EquationsPlans.SolveEquationWithVariablesInOneAbsoluteValue
+        method = EquationsPlans.SolveEquationInOneVariable
         inputExpr = "abs[[x ^ 2] - 3] + 2 = 2"
 
         check {
             fromExpr = "abs[[x ^ 2] - 3] + 2 = 2"
             toExpr = "SetSolution[x : {-sqrt[3], sqrt[3]}]"
             explanation {
-                key = EquationsExplanation.SolveEquationWithVariablesInOneAbsoluteValue
+                key = EquationsExplanation.SolveEquationWithOneAbsoluteValue
             }
 
             step {
@@ -273,12 +274,12 @@ class EquationsWithOneAbsoluteValueTest {
 
     @Test
     fun `test linear modulus with x on other side, two solutions`() = testMethodInX {
-        method = EquationsPlans.SolveEquationWithOneAbsoluteValue
+        method = EquationsPlans.SolveEquationInOneVariable
         inputExpr = "abs[2 x - 1] = x + 5"
         check {
             fromExpr = "abs[2 x - 1] = x + 5"
             explanation {
-                key = EquationsExplanation.SolveEquationWithVariablesInOneAbsoluteValue
+                key = EquationsExplanation.SolveEquationWithOneAbsoluteValue
             }
             toExpr = "SetSolution[x : {-[4 / 3], 6}]"
             step {
@@ -337,14 +338,16 @@ class EquationsWithOneAbsoluteValueTest {
 
     @Test
     fun `test linear modulus with x on other side, one solution`() = testMethodInX {
-        method = EquationsPlans.SolveEquationWithOneAbsoluteValue
+        method = EquationsPlans.SolveEquationInOneVariable
         inputExpr = "abs[x + 1] = 2 x + 1"
+
         check {
             fromExpr = "abs[x + 1] = 2 x + 1"
-            explanation {
-                key = EquationsExplanation.SolveEquationWithVariablesInOneAbsoluteValue
-            }
             toExpr = "SetSolution[x : {0}]"
+            explanation {
+                key = EquationsExplanation.SolveEquationWithOneAbsoluteValue
+            }
+
             step {
                 fromExpr = "abs[x + 1] = 2 x + 1"
                 toExpr = "x + 1 = 2 x + 1 GIVEN x + 1 >= 0 OR -(x + 1) = 2 x + 1 GIVEN x + 1 < 0"
@@ -401,12 +404,12 @@ class EquationsWithOneAbsoluteValueTest {
 
     @Test
     fun `test linear modulus with x on other side, no solution`() = testMethodInX {
-        method = EquationsPlans.SolveEquationWithOneAbsoluteValue
+        method = EquationsPlans.SolveEquationInOneVariable
         inputExpr = "abs[4 x + 3] = x - 2"
         check {
             fromExpr = "abs[4 x + 3] = x - 2"
             explanation {
-                key = EquationsExplanation.SolveEquationWithVariablesInOneAbsoluteValue
+                key = EquationsExplanation.SolveEquationWithOneAbsoluteValue
             }
             toExpr = "SetSolution[x : {}]"
             step {
@@ -465,12 +468,12 @@ class EquationsWithOneAbsoluteValueTest {
 
     @Test
     fun `linear modulus with quadratic on other side`() = testMethodInX {
-        method = EquationsPlans.SolveEquationWithOneAbsoluteValue
+        method = EquationsPlans.SolveEquationInOneVariable
         inputExpr = "2 * abs[x] - [x ^ 2] = 1"
         check {
             fromExpr = "2 * abs[x] - [x ^ 2] = 1"
             explanation {
-                key = EquationsExplanation.SolveEquationWithVariablesInOneAbsoluteValue
+                key = EquationsExplanation.SolveEquationWithOneAbsoluteValue
             }
             toExpr = "SetSolution[x : {-1, 1}]"
             step {
@@ -550,12 +553,12 @@ class EquationsWithOneAbsoluteValueTest {
 
     @Test
     fun `quadratic modulus with x on other side`() = testMethodInX {
-        method = EquationsPlans.SolveEquationWithOneAbsoluteValue
+        method = EquationsPlans.SolveEquationInOneVariable
         inputExpr = "abs[[x ^ 2] - 1] = x"
         check {
             fromExpr = "abs[[x ^ 2] - 1] = x"
             explanation {
-                key = EquationsExplanation.SolveEquationWithVariablesInOneAbsoluteValue
+                key = EquationsExplanation.SolveEquationWithOneAbsoluteValue
             }
             toExpr = "SetSolution[x : {[-1 + sqrt[5] / 2], [1 + sqrt[5] / 2]}]"
             step {
@@ -614,7 +617,7 @@ class EquationsWithOneAbsoluteValueTest {
 
     @Test
     fun `test US method for linear equation with 2 solutions`() = testMethodInX {
-        method = EquationsPlans.SolveEquationWithOneAbsoluteValue
+        method = EquationsPlans.SolveEquationInOneVariable
         context = context.copy(curriculum = Curriculum.US)
 
         inputExpr = "abs[2 x - 1] = x + 5"
@@ -723,7 +726,7 @@ class EquationsWithOneAbsoluteValueTest {
 
     @Test
     fun `test US method for linear equation with no solution`() = testMethodInX {
-        method = EquationsPlans.SolveEquationWithOneAbsoluteValue
+        method = EquationsPlans.SolveEquationInOneVariable
         context = context.copy(curriculum = Curriculum.US)
         inputExpr = "abs[2 x + 5] = x"
         check {

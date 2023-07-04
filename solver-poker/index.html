@@ -59,6 +59,10 @@
         margin-bottom: 0;
       }
 
+      details.alternatives > summary {
+        color: blue;
+      }
+
       /* Separations between selected plans */
       .selections > ol > li {
         border-bottom: thin solid black;
@@ -233,6 +237,9 @@
         <label for="plansSelect">Plan</label>
         <select id="plansSelect"></select>
       </p>
+      <details id="strategyDetails">
+        <summary>Strategies</summary>
+      </details>
       <p>
         <label for="input">Input</label>
         <input type="text" id="input" placeholder="Expression" size="30" />

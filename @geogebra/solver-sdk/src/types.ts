@@ -25,6 +25,16 @@ export type SolverContext = {
   precision?: number;
   preferDecimals?: boolean;
   solutionVariable?: string;
+  polynomialEquationSolvingStrategy?: string;
+};
+
+export type Strategy = {
+  strategy: string;
+  description: string;
+};
+
+export type StrategyMap = {
+  [category: string]: Strategy[];
 };
 
 export type ApiMathFormat =
@@ -40,6 +50,7 @@ export type API_VERSION_INFO_RESPONSE = {
 
 export type API_PLANS_RESPONSE = PlanId[];
 export type API_APPLY_PLAN_RESPONSE = Transformation;
+export type API_STRATEGIES_RESPONSE = StrategyMap;
 
 type PlanSelectionBase<MathFormat> = {
   transformation: TransformationBase<MathFormat>;
@@ -143,6 +154,7 @@ type TransformationBase<MathFormat> = {
   skills: MetadataBase<MathFormat>[];
   steps: null | TransformationBase<MathFormat>[];
   tasks: null | TaskBase<MathFormat>[];
+  alternatives: null | AlternativeBase<MathFormat>[];
 };
 
 export type TaskBase<MathFormat> = {
@@ -152,6 +164,12 @@ export type TaskBase<MathFormat> = {
   explanation: null | MetadataBase<MathFormat>;
   steps: null | TransformationBase<MathFormat>[];
   dependsOn: null | string[];
+};
+
+export type AlternativeBase<MathFormat> = {
+  strategy: string;
+  explanation: MetadataBase<MathFormat>;
+  steps: null | TransformationBase<MathFormat>[];
 };
 
 export type TransformationSolver = TransformationBase<string>;
@@ -169,6 +187,16 @@ export type TaskLatex = TaskBase<string>;
 export type TaskJson = TaskBase<MathJson>;
 export type TaskJson2 = TaskBase<MathJson2>;
 export type Task = TaskSolver | TaskLatex | TaskJson | TaskJson2;
+
+export type AlternativeSolver = AlternativeBase<string>;
+export type AlternativeLatex = AlternativeBase<string>;
+export type AlternativeJson = AlternativeBase<MathJson>;
+export type AlternativeJson2 = AlternativeBase<MathJson2>;
+export type Alternative =
+  | AlternativeSolver
+  | AlternativeLatex
+  | AlternativeJson
+  | AlternativeJson2;
 
 export type MetadataSolver = MetadataBase<string>;
 export type MetadataLatex = MetadataBase<string>;

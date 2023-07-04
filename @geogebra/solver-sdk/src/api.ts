@@ -2,6 +2,7 @@ import {
   API_APPLY_PLAN_RESPONSE,
   API_PLANS_RESPONSE,
   API_SELECT_PLANS_RESPONSE,
+  API_STRATEGIES_RESPONSE,
   API_VERSION_INFO_RESPONSE,
   ApiMathFormat,
   PlanId,
@@ -41,7 +42,7 @@ class Api {
   }
 
   /** Get a transformation for each applicable plan. */
-  async selectPlans(
+  selectPlans(
     input: SolverExpr,
     format: ApiMathFormat = 'latex',
     context: SolverContext = this.defaultContext,
@@ -54,7 +55,7 @@ class Api {
   }
 
   /* Apply plan to input and return the transformation. */
-  async applyPlan(
+  applyPlan(
     input: SolverExpr,
     planId: PlanId,
     format: ApiMathFormat = 'latex',
@@ -68,12 +69,18 @@ class Api {
   }
 
   /** Get a list of all available plans. */
-  async listPlans(): Promise<API_PLANS_RESPONSE> {
+  listPlans(): Promise<API_PLANS_RESPONSE> {
     return fetch(`${this.baseUrl}/plans`, this.defaultHeaders).then((res) => res.json());
   }
 
+  listStrategies(): Promise<API_STRATEGIES_RESPONSE> {
+    return fetch(`${this.baseUrl}/strategies`, this.defaultHeaders).then((res) =>
+      res.json(),
+    );
+  }
+
   /** Get solver version info. */
-  async versionInfo(): Promise<API_VERSION_INFO_RESPONSE> {
+  versionInfo(): Promise<API_VERSION_INFO_RESPONSE> {
     return fetch(`${this.baseUrl}/versionInfo`, this.defaultHeaders).then((res) =>
       res.json(),
     );

@@ -3,7 +3,9 @@ package engine.methods.stepsproducers
 import engine.context.Context
 import engine.expressions.Expression
 import engine.expressions.Root
+import engine.methods.Strategy
 import engine.operators.UndefinedOperator
+import engine.steps.Alternative
 import engine.steps.Transformation
 import java.util.logging.Level
 
@@ -27,6 +29,8 @@ class StepsBuilder(val context: Context, sub: Expression) {
     private var steps = mutableListOf<Transformation>()
     var aborted = false
 
+    private val alternatives = mutableListOf<Alternative>()
+
     init {
         // Redundant brackets are removed because the outer brackets in the expression serve no
         // useful purpose
@@ -34,6 +38,13 @@ class StepsBuilder(val context: Context, sub: Expression) {
             is Root -> sub
             else -> sub.removeBrackets()
         }
+    }
+
+    fun copy(): StepsBuilder {
+        val builder = StepsBuilder(context, sub)
+        builder.steps = steps.toMutableList()
+        builder.aborted = aborted
+        return builder
     }
 
     fun undefined() = sub.operator == UndefinedOperator
@@ -97,6 +108,14 @@ class StepsBuilder(val context: Context, sub: Expression) {
         }
     }
 
+    fun addAlternative(strategy: Strategy, steps: List<Transformation>) {
+        if (!aborted) {
+            val alternativeBuilder = copy()
+            alternativeBuilder.addSteps(steps)
+            alternatives.add(Alternative(strategy, alternativeBuilder.steps))
+        }
+    }
+
     /**
      * Aborts the `Transformation` chain.  Any further call to `getFinalSteps()` will return null and any further call
      * to `addSteps()` has no effect.
@@ -115,6 +134,8 @@ class StepsBuilder(val context: Context, sub: Expression) {
      * Returns the list of steps added to the builder, or null if `abort()` was called at least once.
      */
     fun getFinalSteps(): List<Transformation>? = if (aborted || steps.isEmpty()) null else steps
+
+    fun getAlternatives(): List<Alternative> = alternatives
 }
 
 /**

@@ -1,8 +1,10 @@
 package methods.equations
 
+import engine.conditions.isDefinitelyNotZero
 import engine.conditions.signOf
 import engine.expressions.Constants
 import engine.expressions.Fraction
+import engine.expressions.Product
 import engine.expressions.SimpleComparator
 import engine.expressions.StatementWithConstraint
 import engine.expressions.Variable
@@ -45,13 +47,12 @@ import engine.patterns.FixedPattern
 import engine.patterns.QuadraticPolynomialPattern
 import engine.patterns.SolutionVariablePattern
 import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.VariableExpressionPattern
 import engine.patterns.absoluteValueOf
-import engine.patterns.commutativeProductOf
 import engine.patterns.condition
 import engine.patterns.equationOf
 import engine.patterns.inSolutionVariables
 import engine.patterns.integerCondition
-import engine.patterns.monomialPattern
 import engine.patterns.negOf
 import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
@@ -159,8 +160,8 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
     MultiplyByInverseCoefficientOfVariable(
         rule {
-            val lhs = monomialPattern(SolutionVariablePattern())
-            val rhs = AnyPattern()
+            val lhs = withOptionalConstantCoefficient(VariableExpressionPattern())
+            val rhs = ConstantInSolutionVariablePattern()
 
             onEquation(lhs, rhs) {
                 val coefficient = get(lhs::coefficient)!!
@@ -236,14 +237,14 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
     DivideByCoefficientOfVariable(
         rule {
-            val lhs = monomialPattern(SolutionVariablePattern())
-            val rhs = AnyPattern()
+            val lhs = withOptionalConstantCoefficient(VariableExpressionPattern())
+            val rhs = ConstantInSolutionVariablePattern()
 
             onEquation(lhs, rhs) {
                 val coefficientValue = get(lhs::coefficient)!!
 
                 when (val coefficient = introduce(coefficientValue, coefficientValue)) {
-                    Constants.One -> null
+                    Constants.One, Constants.MinusOne -> null
                     else -> ruleResult(
                         toExpr = equationOf(
                             fractionOf(get(lhs), coefficient),
@@ -274,7 +275,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
     TakeRootOfBothSides(
         rule {
-            val variableTerm = condition { !it.isConstantIn(solutionVariables) }
+            val variableTerm = VariableExpressionPattern()
             val exponent = UnsignedIntegerPattern()
             val lhs = powerOf(variableTerm, integerCondition(exponent) { it >= BigInteger.TWO })
             val rhs = ConstantInSolutionVariablePattern()
@@ -305,9 +306,9 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
     TakeRootOfBothSidesRHSIsZero(
         rule {
-            val variableTerm = condition { !it.isConstantIn(solutionVariables) }
-            val exponent = UnsignedIntegerPattern()
-            val lhs = powerOf(variableTerm, integerCondition(exponent) { it >= BigInteger.TWO })
+            val variableTerm = VariableExpressionPattern()
+            val exponent = integerCondition(UnsignedIntegerPattern()) { it >= BigInteger.TWO }
+            val lhs = powerOf(variableTerm, exponent)
             val rhs = FixedPattern(Constants.Zero)
 
             onEquation(lhs, rhs) {
@@ -356,7 +357,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
     ExtractSolutionFromEvenPowerEqualsNegative(
         rule {
-            val variableTerm = condition { !it.isConstantIn(solutionVariables) }
+            val variableTerm = VariableExpressionPattern()
             val exponent = UnsignedIntegerPattern()
             val lhs = powerOf(variableTerm, integerCondition(exponent) { it.isEven() })
             val rhs = condition { it.isConstant() && it.doubleValue < 0 }
@@ -408,24 +409,6 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     toExpr = setSolutionOf(variableListOf(move(lhs) as Variable), solutionSetOf(splitRhs)),
                     explanation = metadata(Explanation.ExtractSolutionFromEquationInPlusMinusForm),
-                )
-            }
-        },
-    ),
-
-    ExtractSolutionFromEquationInUnionForm(
-        rule {
-            val lhs = SolutionVariablePattern()
-            val rhs1 = ConstantPattern()
-            val rhs2 = ConstantPattern()
-            val eq1 = equationOf(lhs, rhs1)
-            val eq2 = equationOf(lhs, rhs2)
-            val pattern = engine.patterns.equationUnionOf(eq1, eq2)
-
-            onPattern(pattern) {
-                ruleResult(
-                    toExpr = setSolutionOf(variableListOf(move(lhs) as Variable), solutionSetOf(get(rhs1), get(rhs2))),
-                    explanation = metadata(Explanation.ExtractSolutionFromEquationInUnionForm),
                 )
             }
         },
@@ -489,7 +472,9 @@ private val applyQuadraticFormula = rule {
 }
 
 private val separateFactoredEquation = rule {
-    val product = productContaining()
+    val product = condition {
+        it is Product && it.children.count { factor -> !factor.isConstantIn(solutionVariables) } > 1
+    }
 
     onEquation(product, FixedPattern(Constants.Zero)) {
         val factors = get(product).children
@@ -516,17 +501,18 @@ private val separateEquationInPlusMinusForm = rule {
 }
 
 private val eliminateConstantFactorOfLhsWithZeroRhs = rule {
-    val factor = ConstantPattern()
-    val polynomial = inSolutionVariables(sumContaining())
-    val lhs = commutativeProductOf(factor, polynomial)
+    val factor = condition(ConstantPattern()) { it.isDefinitelyNotZero() }
+    val unsignedLHS = productContaining(factor)
+    val lhs = optionalNegOf(unsignedLHS)
     val rhs = FixedPattern(Constants.Zero)
 
-    onEquation(lhs, rhs) {
-        val newLhs = cancel(factor, get(polynomial))
+    onEquation(inSolutionVariables(lhs), rhs) {
+        val canceledFactor = copySign(lhs, get(factor))
+        val newLHS = cancel(canceledFactor, unsignedLHS.substitute())
 
         ruleResult(
-            toExpr = equationOf(newLhs, get(rhs)),
-            explanation = metadata(Explanation.EliminateConstantFactorOfLhsWithZeroRhs, get(factor)),
+            toExpr = equationOf(newLHS, get(rhs)),
+            explanation = metadata(Explanation.EliminateConstantFactorOfLhsWithZeroRhs, canceledFactor),
         )
     }
 }

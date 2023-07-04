@@ -3,6 +3,7 @@ package server.api
 import engine.context.Context
 import engine.context.Curriculum
 import engine.context.emptyContext
+import methods.strategyRegistry
 import org.apache.logging.log4j.Logger
 import org.apache.logging.log4j.message.FormattedMessage
 import org.apache.logging.log4j.message.ObjectMessage
@@ -23,6 +24,10 @@ internal fun getContext(
         }
     }
 
+    val strategies = apiCtx.preferredStrategies?.map { (category, strategy) ->
+        strategyRegistry.getStrategyChoice(category, strategy) ?: throw InvalidStrategyException(category, strategy)
+    }?.toMap() ?: emptyMap()
+
     Context(
         curriculum = curriculum,
         gmFriendly = apiCtx.gmFriendly == true,
@@ -30,6 +35,7 @@ internal fun getContext(
         preferDecimals = apiCtx.preferDecimals,
         solutionVariables = listOfNotNull(apiCtx.solutionVariable ?: defaultSolutionVariable),
         logger = ContextLogger(logger),
+        preferredStrategies = strategies,
     )
 } ?: emptyContext.copy(
     solutionVariables = listOfNotNull(defaultSolutionVariable),

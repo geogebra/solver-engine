@@ -59,3 +59,8 @@ private class FirstOfRunner(val sub: Expression, val ctx: Context) : FirstOfBuil
         }
     }
 }
+
+/**
+ * Type-safe builder to create a [StepsProducer] using the [PipelineBuilder] DSL.
+ */
+fun firstOf(init: FirstOfBuilder.() -> Unit): StepsProducer = FirstOf(init)

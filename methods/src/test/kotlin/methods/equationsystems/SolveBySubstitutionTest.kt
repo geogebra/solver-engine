@@ -225,7 +225,7 @@ class SolveBySubstitutionTest {
                     fromExpr = "2 (3 - y) + 2 y = 6"
                     toExpr = "Identity[y: 6 = 6]"
                     explanation {
-                        key = EquationsExplanation.SolveLinearEquation
+                        key = EquationsExplanation.SolveEquationInOneVariable
                     }
                 }
             }

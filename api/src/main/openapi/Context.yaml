@@ -12,3 +12,7 @@ properties:
     type: boolean
   solutionVariable:
     type: string
+  preferredStrategies:
+    type: object
+    additionalProperties:
+      type: string

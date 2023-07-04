@@ -20,8 +20,8 @@ import methods.collecting.createCollectLikeRationalPowersAndSimplifyPlan
 import methods.collecting.createCollectLikeRootsAndSimplifyPlan
 import methods.decimals.DecimalPlans
 import methods.decimals.DecimalRules
+import methods.expand.ExpandAndSimplifier
 import methods.expand.ExpandRules
-import methods.expand.createExpandAndSimplifySteps
 import methods.fractionarithmetic.FractionArithmeticPlans
 import methods.fractionarithmetic.FractionArithmeticRules
 import methods.fractionarithmetic.createAddFractionsPlan
@@ -273,13 +273,11 @@ private val collectLikeRootsAndSimplify =
 private val collectLikeRationalPowersAndSimplify =
     createCollectLikeRationalPowersAndSimplifyPlan(constantSimplificationSteps)
 
-private val expandConstantExpression = run {
-    val constantExpansionSteps = createExpandAndSimplifySteps(ConstantExpressionsPlans.SimplifyConstantExpression)
+private val expandAndSimplifier = ExpandAndSimplifier(ConstantExpressionsPlans.SimplifyConstantExpression)
 
-    steps {
-        check { it.isConstant() }
-        apply(constantExpansionSteps)
-    }
+private val expandConstantExpression = steps {
+    check { it.isConstant() }
+    apply(expandAndSimplifier.steps)
 }
 
 private val addConstantFractions = run {

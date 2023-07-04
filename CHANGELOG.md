@@ -27,6 +27,9 @@ contents to a new release section (e.g. _[0.x]_).
 - Added support for inequalities containing absolute values (PLUT-559)
 - SDK: Add support for inequality system and different range
   (OpenRange, OpenClosedRange, etc.) objects (PLUT-559)
+- SDK: added support for new `json2` serialisation format for math (PLUT-627)
+- New `SolveEquationInOneVariable` plan replaces all the individual plans. Instead the returned solution contains
+  alternatives. A certain type of solution can be requested by setting the preferred strategy (PLUT-618)
 
 ### Fixed
 
@@ -47,6 +50,8 @@ contents to a new release section (e.g. _[0.x]_).
 
 - The legacy Solution operator was replaced by the more descriptive SetSolution, Contradiction and
   Identity operators (PLUT-587)
+- All public plans for solving equations are consolidated into one plan (`SolveEquationInOneVariable`) which uses
+  alternative solutions to show different methods (PLUT-618)
 
 ## [1.1] - 2023-05-10
 

@@ -2,6 +2,8 @@ package engine.context
 
 import engine.logger.DefaultLogger
 import engine.logger.Logger
+import engine.methods.Strategy
+import kotlin.reflect.KClass
 
 data class ResourceData(
     val curriculum: Curriculum? = null,
@@ -24,6 +26,12 @@ private const val MINIMUM_PRECISION = 2
 private const val DEFAULT_PRECISION = 3
 private const val MAXIMUM_PRECISION = 10
 
+enum class StrategySelectionMode {
+    ALL,
+    HIGHEST_PRIORITY,
+    FIRST,
+}
+
 data class Context(
     val curriculum: Curriculum? = null,
     /** GM stands for Graspable Math. `gmFriendly` set to `true` will yield math steps that
@@ -33,6 +41,8 @@ data class Context(
     val preferDecimals: Boolean? = null,
     val solutionVariables: List<String> = emptyList(),
     val logger: Logger = DefaultLogger,
+    val preferredStrategies: Map<KClass<out Strategy>, Strategy> = emptyMap(),
+    val strategySelectionMode: StrategySelectionMode = StrategySelectionMode.ALL,
 ) : Logger by logger {
     val effectivePrecision = (precision ?: DEFAULT_PRECISION).coerceIn(MINIMUM_PRECISION, MAXIMUM_PRECISION)
 
@@ -88,6 +98,14 @@ data class Context(
         }
         return bestResource
     }
+
+    inline fun <reified T : Strategy> preferredStrategy(): Strategy? {
+        return preferredStrategies[T::class]
+    }
+}
+
+inline fun <reified T : Strategy> strategyChoice(choice: T): Pair<KClass<out Strategy>, Strategy> {
+    return T::class to choice
 }
 
 val emptyContext = Context()

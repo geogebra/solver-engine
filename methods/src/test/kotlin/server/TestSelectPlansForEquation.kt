@@ -13,7 +13,8 @@ class TestSelectPlansForEquation {
         testSelectPlanApiInX(
             "2x = [1/2]",
             setOf(
-                EquationsPlans.SolveLinearEquation,
+                EquationsPlans.SolveDecimalLinearEquation,
+                EquationsPlans.SolveEquationInOneVariable,
             ),
         )
     }

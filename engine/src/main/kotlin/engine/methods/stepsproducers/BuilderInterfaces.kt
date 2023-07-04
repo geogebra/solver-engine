@@ -4,6 +4,7 @@ import engine.context.Context
 import engine.expressions.Expression
 import engine.expressions.Extractor
 import engine.methods.PlanBuilder
+import engine.methods.Strategy
 import engine.methods.TaskSetBuilder
 import engine.patterns.Pattern
 
@@ -138,4 +139,13 @@ interface PipelineBuilder {
     fun contextSensitive(init: ContextSensitiveBuilder.() -> Unit)
 
     fun inContext(contextFactory: Context.(Expression) -> Context, init: PipelineBuilder.() -> Unit)
+}
+
+@StepsProducerBuilderMarker
+interface WhileStrategiesAvailableFirstOfBuilder {
+    fun option(strategy: Strategy)
+
+    fun option(init: PipelineBuilder.() -> Unit)
+
+    fun option(stepsProducer: StepsProducer)
 }

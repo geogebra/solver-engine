@@ -13,6 +13,7 @@ import engine.patterns.ArbitraryVariablePattern
 import engine.patterns.CoefficientPattern
 import engine.patterns.Pattern
 import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.condition
 import engine.patterns.oneOf
 import engine.patterns.powerOf
 import engine.patterns.rootOf
@@ -122,10 +123,7 @@ enum class CollectingRules(override val runner: Rule) : RunnerMethod {
 
     CollectLikeTerms(
         createCollectLikeTermsRule(
-            commonPattern = oneOf(
-                ArbitraryVariablePattern(),
-                powerOf(ArbitraryVariablePattern(), UnsignedIntegerPattern()),
-            ),
+            commonPattern = condition { !it.isConstant() },
             coefficientWrapper = { withOptionalConstantCoefficient(it) },
             explanationKey = Explanation.CollectLikeTerms,
         ),

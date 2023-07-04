@@ -57,6 +57,18 @@ paths:
               schema:
                 type: object
 
+  /strategies:
+    get:
+      operationId: getStrategies
+      description: 'Get all the strategies that can be used within the solver'
+      responses:
+        '200':
+          description: 'Successfully returned strategies'
+          content:
+            application/json:
+              schema:
+                type: object
+
   /plans/{planId}/apply:
     post:
       operationId: applyPlan
@@ -124,8 +136,6 @@ components:
         - input
         - format
       properties:
-        dummy:
-          type: string
         input:
           type: string
         context:

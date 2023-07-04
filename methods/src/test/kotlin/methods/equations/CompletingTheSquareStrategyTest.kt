@@ -1,16 +1,29 @@
 package methods.equations
 
+import engine.context.Context
+import engine.context.strategyChoice
+import engine.methods.MethodTestCase
+import engine.methods.getPlan
+import engine.methods.testMethod
 import engine.methods.testMethodInX
 import methods.constantexpressions.ConstantExpressionsExplanation
+import methods.equations.EquationSolvingStrategy.CompletingTheSquare
 import methods.factor.FactorExplanation
-import methods.general.GeneralExplanation
 import methods.polynomials.PolynomialsExplanation
 import org.junit.jupiter.api.Test
 
-class CompletingTheSquareTest {
+class CompletingTheSquareStrategyTest {
 
-    private fun shortTest(inputExpr: String, toExpr: String?) = testMethodInX {
-        method = EquationsPlans.SolveByCompletingTheSquare
+    private val completingTheSquareContext = Context(
+        solutionVariables = listOf("x"),
+        preferredStrategies = mapOf(strategyChoice(CompletingTheSquare)),
+    )
+
+    private val completingTheSquarePlan = CompletingTheSquare.getPlan()
+
+    private fun shortTest(inputExpr: String, toExpr: String?) = testMethod {
+        method = EquationsPlans.SolveEquationInOneVariable
+        context = completingTheSquareContext
         this.inputExpr = inputExpr
 
         check {
@@ -23,6 +36,13 @@ class CompletingTheSquareTest {
                 }
             }
         }
+    }
+
+    private fun testCompletingTheSquare(init: MethodTestCase.() -> Unit) {
+        val testCase = MethodTestCase()
+        testCase.method = EquationsPlans.SolveEquationInOneVariable
+        testCase.context = completingTheSquareContext
+        testCase.init()
     }
 
     @Test
@@ -56,10 +76,14 @@ class CompletingTheSquareTest {
     )
 
     @Test
-    fun `short test no linear term`() = shortTest(
-        inputExpr = "[x ^ 2] = 100",
-        toExpr = null,
-    )
+    fun `short test no linear term`() = testMethodInX {
+        method = completingTheSquarePlan
+        inputExpr = "[x ^ 2] = 100"
+
+        check {
+            noTransformation()
+        }
+    }
 
     @Test
     fun `short test quadratic coefficient not 1`() = shortTest(
@@ -92,8 +116,7 @@ class CompletingTheSquareTest {
     )
 
     @Test
-    fun `test simple case in details`() = testMethodInX {
-        method = EquationsPlans.SolveByCompletingTheSquare
+    fun `test simple case in details`() = testCompletingTheSquare {
         inputExpr = "[x ^ 2] = 6 x + 5"
 
         check {
@@ -194,8 +217,7 @@ class CompletingTheSquareTest {
     }
 
     @Test
-    fun `test complex case in details`() = testMethodInX {
-        method = EquationsPlans.SolveByCompletingTheSquare
+    fun `test complex case in details`() = testCompletingTheSquare {
         inputExpr = "2 [x ^ 2] + 5 x = 7"
 
         check {
@@ -297,7 +319,7 @@ class CompletingTheSquareTest {
                 fromExpr = "x + [5 / 4] = +/-sqrt[[81 / 16]]"
                 toExpr = "x + [5 / 4] = +/-[9 / 4]"
                 explanation {
-                    key = ConstantExpressionsExplanation.SimplifyConstantExpression
+                    key = ConstantExpressionsExplanation.SimplifyRootsInExpression
                 }
             }
 
@@ -373,8 +395,7 @@ class CompletingTheSquareTest {
     }
 
     @Test
-    fun `test expand before multiplying by leading coefficient inverse`() = testMethodInX {
-        method = EquationsPlans.SolveByCompletingTheSquare
+    fun `test expand before multiplying by leading coefficient inverse`() = testCompletingTheSquare {
         inputExpr = "3x+(-x-1)+2x*(x+2)=[11/4]"
 
         check {
@@ -386,14 +407,6 @@ class CompletingTheSquareTest {
 
             step {
                 fromExpr = "3 x + (-x - 1) + 2 x * (x + 2) = [11 / 4]"
-                toExpr = "3 x + (-x - 1) + 2 x (x + 2) = [11 / 4]"
-                explanation {
-                    key = GeneralExplanation.NormalizeProducts
-                }
-            }
-
-            step {
-                fromExpr = "3 x + (-x - 1) + 2 x (x + 2) = [11 / 4]"
                 toExpr = "2 x - 1 + 2 x (x + 2) = [11 / 4]"
                 explanation {
                     key = EquationsExplanation.SimplifyEquation

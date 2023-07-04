@@ -11,7 +11,7 @@ import engine.steps.Transformation
 /**
  * [ProceduralPipeline.whilePossible] will fail if exceeding this number of iterations.
  */
-private const val MAX_WHILE_POSSIBLE_ITERATIONS = 100
+internal const val MAX_WHILE_POSSIBLE_ITERATIONS = 100
 
 /**
  * Exception returned by [ProceduralPipeline.whilePossible] when it exceeds the maximum number of iterations.

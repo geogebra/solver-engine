@@ -36,3 +36,7 @@ properties:
     type: array
     items:
       $ref: 'Task.yaml'
+  alternatives:
+    type: array
+    items:
+      $ref: 'Alternative.yaml'

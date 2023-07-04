@@ -1,17 +1,80 @@
 package methods.equations
 
 import engine.context.Context
+import engine.context.strategyChoice
+import engine.methods.MethodTestCase
+import engine.methods.getPlan
 import engine.methods.testMethod
 import engine.methods.testMethodInX
 import methods.collecting.CollectingExplanation
 import methods.constantexpressions.ConstantExpressionsExplanation
+import methods.equations.EquationSolvingStrategy.RootsMethod
 import org.junit.jupiter.api.Test
 
-class QuadraticEquationsWithRootsMethodTest {
+class RootsMethodStrategyTest {
+
+    fun shortTest(inputExpr: String, toExpr: String?) = testMethodInX {
+        method = EquationsPlans.SolveEquationInOneVariable
+        context = Context(
+            solutionVariables = listOf("x"),
+            preferredStrategies = mapOf(strategyChoice(RootsMethod)),
+        )
+        this.inputExpr = inputExpr
+
+        check {
+            if (toExpr != null) {
+                this.toExpr = toExpr
+                explanation {
+                    key = EquationsExplanation.SolveEquationUsingRootsMethod
+                }
+            } else {
+                noTransformation()
+            }
+        }
+    }
+
+    private fun testRootsMethod(init: MethodTestCase.() -> Unit) {
+        val testCase = MethodTestCase()
+        testCase.method = EquationsPlans.SolveEquationInOneVariable
+        testCase.context = Context(
+            solutionVariables = listOf("x"),
+            preferredStrategies = mapOf(strategyChoice(RootsMethod)),
+        )
+        testCase.init()
+    }
 
     @Test
-    fun `test square equals negative quadratic equation`() = testMethodInX {
-        method = EquationsPlans.SolveEquationUsingRootsMethod
+    fun testCubeEqualsNegative() = shortTest(
+        inputExpr = "[x ^ 3] + 10 = 0",
+        toExpr = "SetSolution[x: {-root[10, 3]}]",
+    )
+
+    @Test
+    fun testCubeEqualsPositive() = shortTest(
+        inputExpr = "8 - [x ^ 3] = 0",
+        toExpr = "SetSolution[x: {2}]",
+    )
+
+    @Test
+    fun testPowerOf5Equals0() = shortTest(
+        inputExpr = "2 [x ^ 5] + 3 = 1 + 2",
+        toExpr = "SetSolution[x: {0}]",
+    )
+
+    @Test
+    fun testSquareOfSquareEqualsNegative() = shortTest(
+        inputExpr = "[([x ^ 2]) ^ 2] + 1 = 0",
+        toExpr = "Contradiction[x: [x ^ 4] = -1]",
+    )
+
+    @Test
+    fun testRootMethodsAppliesWhenBracketsCouldBeExpanded() = shortTest(
+        inputExpr = "3[(x + 1)^2] = [1/3]",
+        toExpr = "SetSolution[x: {-[4/3], -[2/3]}]",
+    )
+
+    @Test
+    fun `test square equals negative quadratic equation`() = testRootsMethod {
         inputExpr = "2 [x ^ 2] - 3 = 3 [x ^ 2] + 4"
 
         check {
@@ -23,25 +86,25 @@ class QuadraticEquationsWithRootsMethodTest {
 
             step {
                 fromExpr = "2 [x ^ 2] - 3 = 3 [x ^ 2] + 4"
-                toExpr = "-[x ^ 2] - 3 = 4"
+                toExpr = "-3 = [x ^ 2] + 4"
                 explanation {
-                    key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeftAndSimplify
+                    key = methods.solvable.EquationsExplanation.MoveVariablesToTheRightAndSimplify
                 }
             }
 
             step {
-                fromExpr = "-[x ^ 2] - 3 = 4"
-                toExpr = "-[x ^ 2] = 7"
+                fromExpr = "-3 = [x ^ 2] + 4"
+                toExpr = "-7 = [x ^ 2]"
                 explanation {
-                    key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                    key = methods.solvable.EquationsExplanation.MoveConstantsToTheLeftAndSimplify
                 }
             }
 
             step {
-                fromExpr = "-[x ^ 2] = 7"
+                fromExpr = "-7 = [x ^ 2]"
                 toExpr = "[x ^ 2] = -7"
                 explanation {
-                    key = EquationsExplanation.NegateBothSides
+                    key = EquationsExplanation.FlipEquation
                 }
             }
 
@@ -56,8 +119,7 @@ class QuadraticEquationsWithRootsMethodTest {
     }
 
     @Test
-    fun `test square equals zero quadratic equation`() = testMethodInX {
-        method = EquationsPlans.SolveEquationUsingRootsMethod
+    fun `test square equals zero quadratic equation`() = testRootsMethod {
         inputExpr = "[5 / 2] [x ^ 2] + 5 = [x ^ 2] + 5"
 
         check {
@@ -87,7 +149,7 @@ class QuadraticEquationsWithRootsMethodTest {
                 fromExpr = "[3 / 2] [x ^ 2] = 0"
                 toExpr = "[x ^ 2] = 0"
                 explanation {
-                    key = EquationsExplanation.MultiplyByInverseCoefficientOfVariableAndSimplify
+                    key = EquationsExplanation.EliminateConstantFactorOfLhsWithZeroRhs
                 }
             }
 
@@ -110,8 +172,7 @@ class QuadraticEquationsWithRootsMethodTest {
     }
 
     @Test
-    fun `test square equals positive number quadratic equation`() = testMethodInX {
-        method = EquationsPlans.SolveEquationUsingRootsMethod
+    fun `test square equals positive number quadratic equation`() = testRootsMethod {
         inputExpr = "4 [x ^ 2] + 5 = 2 [x ^ 2] + 8"
 
         check {
@@ -157,7 +218,7 @@ class QuadraticEquationsWithRootsMethodTest {
                 fromExpr = "x = +/-sqrt[[3 / 2]]"
                 toExpr = "x = +/-[sqrt[6] / 2]"
                 explanation {
-                    key = ConstantExpressionsExplanation.SimplifyConstantExpression
+                    key = EquationsExplanation.SimplifyEquation
                 }
             }
 
@@ -172,9 +233,8 @@ class QuadraticEquationsWithRootsMethodTest {
     }
 
     @Test
-    fun `test quadratic equation containing linear terms that can be eliminated`() = testMethod {
-        context = Context(solutionVariables = listOf("y"))
-        method = EquationsPlans.SolveEquationUsingRootsMethod
+    fun `test quadratic equation containing linear terms that can be eliminated`() = testRootsMethod {
+        context = context.copy(solutionVariables = listOf("y"))
         inputExpr = "2[y^2] + 2y - 3 = y + y + 4"
 
         check {
@@ -228,7 +288,7 @@ class QuadraticEquationsWithRootsMethodTest {
                 fromExpr = "y = +/-sqrt[[7 / 2]]"
                 toExpr = "y = +/-[sqrt[14] / 2]"
                 explanation {
-                    key = ConstantExpressionsExplanation.SimplifyConstantExpression
+                    key = EquationsExplanation.SimplifyEquation
                 }
             }
 
@@ -244,12 +304,100 @@ class QuadraticEquationsWithRootsMethodTest {
 
     @Test
     fun `test quadratic equation containing linear terms that cannot be eliminated fails`() = testMethod {
-        context = Context(solutionVariables = listOf("y"))
-        method = EquationsPlans.SolveEquationUsingRootsMethod
-        inputExpr = "2[y^2] + 2y - 3 = y + 4"
+        context = context.copy(solutionVariables = listOf("y"))
+        method = RootsMethod.getPlan()
+        inputExpr = "2[y^2] + y = 7"
 
         check {
             noTransformation()
+        }
+    }
+
+    @Test
+    fun `test roots method with embedded roots method`() = testMethodInX {
+        method = EquationsPlans.SolveEquationInOneVariable
+        inputExpr = "[([x ^ 2] + 1) ^ 2] = 4"
+        check {
+            fromExpr = "[([x ^ 2] + 1) ^ 2] = 4"
+            toExpr = "SetSolution[x : {-1, 1}]"
+            explanation {
+                key = EquationsExplanation.SolveEquationUsingRootsMethod
+            }
+            step {
+                fromExpr = "[([x ^ 2] + 1) ^ 2] = 4"
+                toExpr = "[x ^ 2] + 1 = +/-sqrt[4]"
+                explanation {
+                    key = EquationsExplanation.TakeRootOfBothSides
+                }
+            }
+            step {
+                fromExpr = "[x ^ 2] + 1 = +/-sqrt[4]"
+                toExpr = "[x ^ 2] + 1 = +/-2"
+                explanation {
+                    key = ConstantExpressionsExplanation.SimplifyRootsInExpression
+                }
+            }
+            step {
+                fromExpr = "[x ^ 2] + 1 = +/-2"
+                toExpr = "[x ^ 2] = +/-2 - 1"
+                explanation {
+                    key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                }
+            }
+            step {
+                fromExpr = "[x ^ 2] = +/-2 - 1"
+                toExpr = "[x ^ 2] = -2 - 1 OR [x ^ 2] = 2 - 1"
+                explanation {
+                    key = EquationsExplanation.SeparatePlusMinusQuadraticSolutions
+                }
+            }
+            step {
+                fromExpr = "[x ^ 2] = -2 - 1 OR [x ^ 2] = 2 - 1"
+                toExpr = "SetSolution[x : {-1, 1}]"
+                explanation {
+                    key = EquationsExplanation.SolveEquationUnion
+                }
+
+                task {
+                    taskId = "#1"
+                    startExpr = "[x ^ 2] = -2 - 1"
+                    explanation {
+                        key = EquationsExplanation.SolveEquationInEquationUnion
+                    }
+
+                    step {
+                        fromExpr = "[x ^ 2] = -2 - 1"
+                        toExpr = "Contradiction[x : [x ^ 2] = -3]"
+                        explanation {
+                            key = EquationsExplanation.SolveEquationUsingRootsMethod
+                        }
+                    }
+                }
+
+                task {
+                    taskId = "#2"
+                    startExpr = "[x ^ 2] = 2 - 1"
+                    explanation {
+                        key = EquationsExplanation.SolveEquationInEquationUnion
+                    }
+
+                    step {
+                        fromExpr = "[x ^ 2] = 2 - 1"
+                        toExpr = "SetSolution[x : {-1, 1}]"
+                        explanation {
+                            key = EquationsExplanation.SolveEquationUsingRootsMethod
+                        }
+                    }
+                }
+
+                task {
+                    taskId = "#3"
+                    startExpr = "SetSolution[x : {-1, 1}]"
+                    explanation {
+                        key = EquationsExplanation.CollectSolutions
+                    }
+                }
+            }
         }
     }
 }

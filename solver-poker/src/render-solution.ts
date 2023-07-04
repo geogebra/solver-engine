@@ -3,6 +3,7 @@
  *******************************************/
 import * as solverSDK from '@geogebra/solver-sdk';
 import {
+  AlternativeJson2,
   jsonToTree,
   MathJson,
   MathJson2,
@@ -105,6 +106,7 @@ const renderTransformation = (trans: TransformationJson2, depth = 0): string => 
     </div>
     ${renderSteps(trans.steps, depth, depth >= 0 || isThrough)}
     ${renderTasks(trans.tasks, depth, depth >= 0)}
+    ${renderAlternatives(trans.alternatives, depth, false)}
   </div>`;
 };
 
@@ -129,7 +131,12 @@ const createColorMaps = (
   }
 };
 
-const renderSteps = (steps: TransformationJson2[] | null, depth = 0, open = false): string => {
+const renderSteps = (
+  steps: TransformationJson2[] | null,
+  depth = 0,
+  open = false,
+  title = '',
+): string => {
   if (steps === null || steps.length === 0) {
     return '';
   }
@@ -149,7 +156,9 @@ const renderSteps = (steps: TransformationJson2[] | null, depth = 0, open = fals
     .filter((step) => !!step);
 
   return /* HTML */ ` <details class="steps" ${open ? 'open' : ''}>
-    <summary>${renderedSteps.length} ${renderedSteps.length === 1 ? 'step' : 'steps'}</summary>
+    <summary>
+      ${title} ${renderedSteps.length} ${renderedSteps.length === 1 ? 'step' : 'steps'}
+    </summary>
     <ol>
       ${renderedSteps.join('')}
     </ol>
@@ -166,6 +175,30 @@ const renderTasks = (tasks: TaskJson2[] | null, depth = 0, open = false) => {
       ${tasks.map((task) => `<li>${renderTask(task, depth - 1)}</li>`).join('')}
     </ol>
   </details>`;
+};
+
+const renderAlternatives = (alternatives: AlternativeJson2[] | null, depth = 0, open = false) => {
+  if (alternatives === null || alternatives.length === 0) {
+    return '';
+  }
+  return `<details class='alternatives' ${open ? 'open' : ''}>
+    <summary>${
+      alternatives.length === 1
+        ? 'alternative method'
+        : alternatives.length + ' alternative methods'
+    }</summary>
+    <ol>
+    ${alternatives
+      .map(
+        (alt) =>
+          `<li>
+              ${renderExplanation(alt.explanation)}
+              ${renderSteps(alt.steps, depth, open)}
+          </li>`,
+      )
+      .join('')}
+    </ol>
+    </details>`;
 };
 
 const renderTask = (task: TaskJson2, depth = 0): string => {

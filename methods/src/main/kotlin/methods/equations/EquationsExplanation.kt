@@ -225,6 +225,18 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     SolveLinearEquation,
 
     /**
+     * Solve a linear equation in a given variable, working with decimal
+     * numbers instead of fractions, if possible.
+     *
+     * E.g. 4x + 3/2 = 2x + 7.3
+     *      -> 4x + 1.5 = 2x + 7.3
+     *      -> 2x + 1.5 = 7.3
+     *      -> 2x = 5.8
+     *      -> x = 2.9
+     */
+    SolveDecimalLinearEquation,
+
+    /**
      * Solve an equation with a single monomial and  without a linear term by
      * moving the monomial to the left hand side, the constants to the right
      * hand side and taking the square root.
@@ -342,15 +354,6 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     ExtractSolutionFromNegativeUnderSquareRootInRealDomain,
 
     /**
-     * Extract the solution set from an equation union of the form:
-     *
-     * x = constantExpr1, x = real conjugate of constantExpr1
-     * E.g. x = [-1 - sqrt[2] / 2], x = [-1 + sqrt[2] / 2]
-     *      --> x \in { [-1 - sqrt[2] / 2], [-1 + sqrt[2] / 2] }
-     */
-    ExtractSolutionFromEquationInUnionForm,
-
-    /**
      * Given an equation union: e.g. x + 2 = 3 OR 2x = 5, solve each equation and
      * gather the solutions together.
      *
@@ -415,7 +418,7 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      * It solves e.g. abs[2x + 3] = 10
      *                5 = 3 - 2abs[[x^2] - x]
      */
-    SolveEquationWithVariablesInOneAbsoluteValue,
+    SolveEquationWithOneAbsoluteValue,
 
     /**
      * Subtract a modulus from both sides of an equation so there is a modulus on each side,

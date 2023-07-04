@@ -30,13 +30,18 @@ class MethodsProcessor(private val codeGenerator: CodeGenerator) : SymbolProcess
             return emptyList()
         }
 
+        processPublicMethods(resolver)
+        processPublicStrategies(resolver)
+
+        invoked = true
+        return emptyList()
+    }
+
+    private fun processPublicMethods(resolver: Resolver) {
         val symbols = resolver.getSymbolsWithAnnotation("engine.methods.PublicMethod").toList()
 
         // skip directory if no symbols annotations (no PublicMethod).
-        val hasPublicMethods = symbols.isEmpty()
-        if (hasPublicMethods) return emptyList()
-
-        val ret = symbols.filter { !it.validate() }.toList()
+        if (symbols.isEmpty()) return
 
         file = codeGenerator.createNewFile(
             Dependencies(true, *symbols.map { it.containingFile!! }.toTypedArray()),
@@ -76,8 +81,42 @@ class MethodsProcessor(private val codeGenerator: CodeGenerator) : SymbolProcess
             "json",
         )
         writeTranslationKeys(keysFile, entries.map { it.getTranslationKey() })
-        invoked = true
-        return ret
+    }
+
+    private fun processPublicStrategies(resolver: Resolver) {
+        val symbols = resolver.getSymbolsWithAnnotation("engine.methods.PublicStrategy").toList()
+
+        // skip directory if no symbols annotations (no PublicMethod).
+        if (symbols.isEmpty()) return
+
+        file = codeGenerator.createNewFile(
+            Dependencies(true, *symbols.map { it.containingFile!! }.toTypedArray()),
+            "methods",
+            "PublicStrategies",
+            "kt",
+        )
+
+        val entries = symbols.filter { it.validate() }.map { it.accept(PublicMethodVisitor(), Unit) }
+        val writer = file.writer()
+        with(writer) {
+            appendLine("package methods\n")
+            appendLine("import engine.methods.StrategyRegistry")
+            appendLine("val strategyRegistry = run {")
+            appendLine("    val registry = StrategyRegistry()")
+            for (entry in entries) {
+                appendLine("    registry.addEntry(")
+                appendLine("        \"${entry.category}\",")
+                appendLine("        StrategyRegistry.EntryData(")
+                appendLine("            category = ${entry.categoryImplementationName}::class,")
+                appendLine("            strategy = ${entry.implementationName},")
+                appendLine("            description = \"\"\"${entry.description}\"\"\",")
+                appendLine("        ),")
+                appendLine("    )")
+            }
+            appendLine("    registry")
+            appendLine("}")
+        }
+        writer.close()
     }
 
     private inner class PublicMethodVisitor : KSDefaultVisitor<Unit, Entry>() {
@@ -87,10 +126,11 @@ class MethodsProcessor(private val codeGenerator: CodeGenerator) : SymbolProcess
             if (classDeclaration.qualifiedName == null || parentDeclaration == null || parentDeclaration.qualifiedName == null) {
                 throw invalidNodeError(classDeclaration)
             }
-            val category = classDeclaration.parentDeclaration!!.qualifiedName!!.getShortName().removeSuffix("Plans")
+            val category = classDeclaration.parentDeclaration!!.qualifiedName!!
             val qname = classDeclaration.qualifiedName!!
             return Entry(
-                category = category,
+                category = category.getShortName().removeSuffix("Plans"),
+                categoryImplementationName = category.asString(),
                 name = qname.getShortName(),
                 implementationName = qname.asString(),
                 description = classDeclaration.docString?.trim() ?: "",
@@ -110,6 +150,7 @@ class MethodsProcessor(private val codeGenerator: CodeGenerator) : SymbolProcess
 
 private data class Entry(
     val category: String,
+    val categoryImplementationName: String,
     val name: String,
     val implementationName: String,
     val description: String,

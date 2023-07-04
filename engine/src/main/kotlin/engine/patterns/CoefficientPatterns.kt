@@ -107,10 +107,10 @@ class ConstantCoefficientPattern(
     private val product = productContaining(value)
 
     private val numerator = oneOf(
-        value,
         ConditionPattern(product) { _, match ->
             product.getRestSubexpressions(match).all { it.isConstant() }
         },
+        value,
     )
     private val denominator = condition { it.isConstant() }
 

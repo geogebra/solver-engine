@@ -49,6 +49,16 @@ enum class FactorExplanation : CategorisedMetadataKey {
     FactorGreatestCommonFactor,
 
     /**
+     * Factor out the greatest common integer factor for a sum by splitting the
+     * terms so the gcd is apparent and then factoring it out.
+     *
+     * E.g. 4x^2 - 6x
+     *   --> 2 * 2x^2 - 2 * 3x
+     *   --> 2(2x^2 - 3x)
+     */
+    FactorGreatestCommonIntegerFactor,
+
+    /**
      * Factor out the negative sign from the leading coefficient term
      * of the polynomial
      *

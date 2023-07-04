@@ -1,0 +1,13 @@
+title: Alternative
+type: object
+required:
+  - strategy
+properties:
+  strategy:
+    type: string
+  explanation:
+    $ref: 'Metadata.yaml'
+  steps:
+    type: array
+    items:
+      $ref: 'Transformation.yaml'

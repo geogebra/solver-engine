@@ -13,6 +13,9 @@ class InvalidExpressionException(expression: String, val parseException: ParseCa
 class InvalidCurriculumException(curriculum: String) :
     ApiException("Invalid curriculum: $curriculum", HttpStatus.BAD_REQUEST.value())
 
+class InvalidStrategyException(category: String, strategy: String) :
+    ApiException("Invalid strategy $strategy for category $category", HttpStatus.BAD_REQUEST.value())
+
 class PlanNotApplicableException(planId: String) :
     ApiException("Plan not applicable: $planId", HttpStatus.BAD_REQUEST.value())
 

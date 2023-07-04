@@ -95,6 +95,21 @@ class EquationRulesTest {
             EliminateConstantFactorOfLhsWithZeroRhs,
             "[x^2] + x + 1 = 0",
         )
+        testRuleInX(
+            "2x = 0",
+            EliminateConstantFactorOfLhsWithZeroRhs,
+            "x = 0",
+        )
+        testRuleInX(
+            "-2x = 0",
+            EliminateConstantFactorOfLhsWithZeroRhs,
+            "x = 0",
+        )
+        testRuleInX(
+            "-2x(x-1) = 0",
+            EliminateConstantFactorOfLhsWithZeroRhs,
+            "x(x-1) = 0",
+        )
     }
 
     @Test
@@ -113,15 +128,6 @@ class EquationRulesTest {
             SeparateEquationInPlusMinusForm,
             "x = [-2 - sqrt[[2 ^ 2] - 4 * 1 * 1] / 2 * 1] OR " +
                 "x = [-2 + sqrt[[2 ^ 2] - 4 * 1 * 1] / 2 * 1]",
-        )
-    }
-
-    @Test
-    fun testExtractSolutionFromEquationInUnionForm() {
-        testRuleInX(
-            "x = [-1 + sqrt[11] / 2] OR x = [-1 - sqrt[11] / 2]",
-            EquationsRules.ExtractSolutionFromEquationInUnionForm,
-            "SetSolution[x: {[-1 + sqrt[11] / 2], [-1 - sqrt[11] / 2]}]",
         )
     }
 

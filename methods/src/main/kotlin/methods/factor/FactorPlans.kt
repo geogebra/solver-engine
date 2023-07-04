@@ -37,6 +37,17 @@ import java.math.BigInteger
 
 enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
 
+    FactorGreatestCommonIntegerFactor(
+        plan {
+            explanation = Explanation.FactorGreatestCommonIntegerFactor
+
+            steps {
+                optionally(FactorRules.SplitIntegersInMonomialsBeforeFactoring)
+                apply(FactorRules.ExtractCommonTerms)
+            }
+        },
+    ),
+
     FactorGreatestCommonFactor(
         plan {
             explanation = Explanation.FactorGreatestCommonFactor

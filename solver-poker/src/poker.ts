@@ -1,4 +1,4 @@
-import type { ApiMathFormat, SolverContext } from '@geogebra/solver-sdk';
+import type { ApiMathFormat, SolverContext, StrategyMap } from '@geogebra/solver-sdk';
 import * as solverSDK from '@geogebra/solver-sdk';
 import type { ColorScheme, SolutionFormat } from './settings';
 import { settings, solutionFormatters } from './settings';
@@ -33,28 +33,11 @@ const getAPIBaseURL = (): string => {
 };
 
 solverSDK.api.baseUrl = getAPIBaseURL();
-const mainPokerURL = 'https://solver.geogebra.net/main/poker.html';
+const mainPokerURL = 'https://solver.geogebra.net/main/poker/index.html';
 
 let lastResult: { planId?: string; result?: any; solverFormatResult?: any } = {};
 
 const el = (id: string) => document.getElementById(id);
-
-/******************************************
- * Setting up
- ******************************************/
-
-const initPlans = (plans: string[]) => {
-  const options = plans
-    .sort()
-    .map((plan) => /* HTML */ `<option value="${plan}">${plan}</option>`)
-    .join('');
-
-  const plansSelect = el('plansSelect') as HTMLSelectElement;
-  plansSelect.innerHTML = /* HTML */ ` <option value="selectPlans">Select Plans</option>
-    ${options}`;
-  // Default to something simple
-  plansSelect.value = 'selectPlans';
-};
 
 /******************************************
  * Functions to execute plans and render the result
@@ -100,6 +83,7 @@ interface RequestData {
   precision: number;
   preferDecimals: boolean;
   solutionVariable: string;
+  preferredStrategies: { [category: string]: string };
 }
 
 const buildURLString = (startURL: string, data: RequestData) => {
@@ -123,6 +107,10 @@ const buildURLString = (startURL: string, data: RequestData) => {
     url.searchParams.delete('preferDecimals');
   }
   url.searchParams.set('solutionVariable', data.solutionVariable);
+  url.searchParams.delete('strategy');
+  for (const category in data.preferredStrategies) {
+    url.searchParams.append('strategy', `${category}:${data.preferredStrategies[category]}`);
+  }
   return url.toString();
 };
 
@@ -130,6 +118,8 @@ window.onload = () => {
   const mathInput = el('input') as HTMLInputElement;
   const curriculumSelect = el('curriculumSelect') as HTMLSelectElement;
   const planSelect = el('plansSelect') as HTMLSelectElement;
+  const strategyDetails = el('strategyDetails') as HTMLDetailsElement;
+  let strategySelects: HTMLSelectElement[] = [];
   const precisionSelect = el('precisionSelect') as HTMLSelectElement;
   const preferDecimalsCheckbox = el('preferDecimals') as HTMLInputElement;
   const gmFriendlyCheckbox = el('gmFriendlyCheckbox') as HTMLInputElement;
@@ -150,6 +140,51 @@ window.onload = () => {
 
   const resultElement = el('result') as HTMLElement;
   const sourceElement = el('source') as HTMLElement;
+
+  /******************************************
+   * Setting up
+   ******************************************/
+
+  const initPlans = (plans: string[]) => {
+    const options = plans
+      .sort()
+      .map((plan) => /* HTML */ `<option value="${plan}">${plan}</option>`)
+      .join('');
+
+    planSelect.innerHTML = /* HTML */ ` <option value="selectPlans">Select Plans</option>
+      ${options}`;
+    // Default to something simple
+    planSelect.value = 'selectPlans';
+  };
+
+  const initStrategies = (strategies: StrategyMap) => {
+    strategyDetails.innerHTML =
+      `<summary>Strategies</summary>` +
+      Object.entries(strategies)
+        .map(([category, strategyList]) => {
+          const categoryName = category.replace(/(.)([A-Z])/g, '$1 $2').toLowerCase();
+
+          return /* HTML */ `<p>
+            <label for="${category}Select">
+              ${categoryName.charAt(0).toUpperCase() + categoryName.slice(1)}
+            </label>
+            <select id="${category}Select" name="${category}">
+              <option name="-" selected>-</option>
+              ${strategyList
+                .map(
+                  (strategy) =>
+                    /* HTML */ `<option value="${strategy.strategy}">${strategy.strategy}</option>`,
+                )
+                .join('')}
+            </select>
+          </p>`;
+        })
+        .join('');
+
+    strategySelects = Object.keys(strategies).map(
+      (category) => el(`${category}Select`) as HTMLSelectElement,
+    );
+  };
 
   const displayLastResult = () => {
     // We clone just in case we get sloppy and mutate the object. I don't think it is
@@ -173,60 +208,77 @@ window.onload = () => {
     }
   };
 
-  const getRequestDataFromForm = (): RequestData => ({
-    planId: planSelect.value,
-    input: mathInput.value,
-    curriculum: curriculumSelect.value,
-    /** GM stands for Graspable Math */
-    gmFriendly: gmFriendlyCheckbox.checked,
-    precision: parseInt(precisionSelect.value),
-    preferDecimals: preferDecimalsCheckbox.checked,
-    solutionVariable: solutionVariableInput.value,
-  });
+  const getRequestDataFromForm = (): RequestData => {
+    const preferredStrategies: { [category: string]: string } = {};
+    for (const strategySelect of strategySelects) {
+      if (strategySelect.value !== '-') {
+        preferredStrategies[strategySelect.name] = strategySelect.value;
+      }
+    }
+
+    return {
+      planId: planSelect.value,
+      input: mathInput.value,
+      curriculum: curriculumSelect.value,
+      /** GM stands for Graspable Math */
+      gmFriendly: gmFriendlyCheckbox.checked,
+      precision: parseInt(precisionSelect.value),
+      preferDecimals: preferDecimalsCheckbox.checked,
+      solutionVariable: solutionVariableInput.value,
+      preferredStrategies,
+    };
+  };
 
   const fetchPlansAndUpdatePage = () =>
-    solverSDK.api.listPlans().then((plans) => {
-      initPlans(plans);
-      const url = new URL(window.location.toString());
-      const planId = url.searchParams.get('plan');
-      const input = url.searchParams.get('input');
-      const curriculum = url.searchParams.get('curriculum');
-      const gmFriendly = url.searchParams.get('gmFriendly') === '1';
-      const precision = url.searchParams.get('precision');
-      // Before 2/23/2023, `preferDecimals` may have been set to "true" instead of "1", so
-      // we should keep this backwards-compatibility logic here, for a while.
-      const temp = url.searchParams.get('preferDecimals');
-      const preferDecimals = temp === '1' || temp === 'true';
-      const solutionVariable = url.searchParams.get('solutionVariable');
-      if (planId) {
-        planSelect.value = planId;
-      }
-      if (input) {
-        mathInput.value = input;
-      }
-      if (curriculum) {
-        curriculumSelect.value = curriculum;
-      }
-      gmFriendlyCheckbox.checked = gmFriendly;
-      if (precision) {
-        precisionSelect.value = precision;
-      }
-      preferDecimalsCheckbox.checked = preferDecimals;
-      if (solutionVariable) {
-        solutionVariableInput.value = solutionVariable;
-      }
-      if (planId && input) {
-        selectPlansOrApplyPlan({
-          planId,
-          input,
-          curriculum: curriculum || undefined,
-          gmFriendly,
-          precision: precision ? parseInt(precision) : undefined,
-          preferDecimals,
-          solutionVariable: solutionVariable || undefined,
-        }).then(displayLastResult);
-      }
-    });
+    Promise.all([solverSDK.api.listPlans(), solverSDK.api.listStrategies()]).then(
+      ([plans, strategies]) => {
+        initPlans(plans);
+        initStrategies(strategies);
+        const url = new URL(window.location.toString());
+        const planId = url.searchParams.get('plan');
+        const input = url.searchParams.get('input');
+        const curriculum = url.searchParams.get('curriculum');
+        const gmFriendly = url.searchParams.get('gmFriendly') === '1';
+        const precision = url.searchParams.get('precision');
+        // Before 2/23/2023, `preferDecimals` may have been set to "true" instead of "1", so
+        // we should keep this backwards-compatibility logic here, for a while.
+        const temp = url.searchParams.get('preferDecimals');
+        const preferDecimals = temp === '1' || temp === 'true';
+        const solutionVariable = url.searchParams.get('solutionVariable');
+        if (planId) {
+          planSelect.value = planId;
+        }
+        if (input) {
+          mathInput.value = input;
+        }
+        if (curriculum) {
+          curriculumSelect.value = curriculum;
+        }
+        gmFriendlyCheckbox.checked = gmFriendly;
+        if (precision) {
+          precisionSelect.value = precision;
+        }
+        preferDecimalsCheckbox.checked = preferDecimals;
+        if (solutionVariable) {
+          solutionVariableInput.value = solutionVariable;
+        }
+        for (const strategyChoice of url.searchParams.getAll('strategy')) {
+          const [category, choice] = strategyChoice.split(':');
+          (el(`${category}Select`) as HTMLSelectElement).value = choice;
+        }
+        if (planId && input) {
+          selectPlansOrApplyPlan({
+            planId,
+            input,
+            curriculum: curriculum || undefined,
+            gmFriendly,
+            precision: precision ? parseInt(precision) : undefined,
+            preferDecimals,
+            solutionVariable: solutionVariable || undefined,
+          }).then(displayLastResult);
+        }
+      },
+    );
 
   fetchDefaultTranslations().then(fetchPlansAndUpdatePage);
 

@@ -319,17 +319,18 @@ class TransformationCheck(
             "Don't assert that there are two different explanations. You have already asserted that there was an explanation with key ${assertionCollector.explanation?.key}",
         )
         val explanationCheck = MetadataCheck(trans?.fromExpr?.origin?.path, test) {
+            val mainExplanation = trans?.explanation
             if (test.logMode) {
                 assertionCollector.explanation = AssertionCollector(key = it.keyName)
             } else {
-                assertNotNull(trans!!.explanation, "Explanation is empty")
+                assertNotNull(mainExplanation, "Explanation is empty")
                 assertEquals(
                     it.keyName,
-                    trans.explanation!!.key.keyName,
+                    mainExplanation.key.keyName,
                     "Explanation key does not match",
                 )
             }
-            trans?.explanation
+            mainExplanation
         }
 
         explanationCheck.init()
@@ -353,15 +354,16 @@ class TransformationCheck(
         val currentStep = checkedSteps ?: 0
         checkedSteps = currentStep + 1
 
+        val mainSteps = trans?.steps
         if (!test.logMode) {
             assertNotNull(trans)
-            assertNotNull(trans.steps, "The transformation has no steps, even though some were specified")
-            assert(trans.steps!!.size > currentStep) {
+            assertNotNull(mainSteps, "The transformation has no steps, even though some were specified")
+            assert(mainSteps.size > currentStep) {
                 "$checkedSteps steps were specified, but the transformation only has ${trans.steps!!.size}"
             }
         }
 
-        return trans?.steps?.getOrNull(currentStep)
+        return mainSteps?.getOrNull(currentStep)
     }
 
     fun invisibleStep(assert: TransformationCheck.() -> Unit) {
@@ -409,7 +411,7 @@ class TransformationCheck(
                 assertEquals(checkedSkills, trans!!.skills?.size, "Some skills have not been checked")
             }
             if (checkedSteps != null) {
-                val transSteps = trans!!.steps
+                val transSteps = trans?.steps
                 assertNotNull(transSteps) // should fail already in `step` and never here
                 assertEquals(checkedSteps, transSteps.size, "Some steps have not been checked")
             }

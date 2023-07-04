@@ -36,7 +36,8 @@ class RuleBuilder {
         Rule(equationOf(lhs, rhs), result)
 }
 
-class RuleResultBuilder(val sub: Expression, ctx: Context, match: Match) : MappedExpressionBuilder(ctx, sub, match) {
+class RuleResultBuilder(expression: Expression, ctx: Context, match: Match) :
+    MappedExpressionBuilder(ctx, expression, match) {
 
     @Suppress("LongParameterList")
     fun ruleResult(
@@ -47,7 +48,17 @@ class RuleResultBuilder(val sub: Expression, ctx: Context, match: Match) : Mappe
         skills: List<Metadata>? = null,
         gmAction: GmAction? = null,
         tags: List<Transformation.Tag>? = null,
-    ) = Transformation(Transformation.Type.Rule, tags, sub, toExpr, steps, tasks, explanation, skills, gmAction)
+    ) = Transformation(
+        type = Transformation.Type.Rule,
+        tags = tags,
+        fromExpr = expression,
+        toExpr = toExpr,
+        steps = steps,
+        tasks = tasks,
+        explanation = explanation,
+        skills = skills,
+        gmAction = gmAction,
+    )
 }
 
 fun rule(init: RuleBuilder.() -> Rule): Rule {

@@ -1,7 +1,9 @@
 package server.api
 
 import engine.expressions.RootPath
+import engine.steps.metadata.metadata
 import methods.KeyNameRegistry
+import server.models.Alternative
 import server.models.Format
 import server.models.GmAction
 import server.models.GmActionDragTo
@@ -26,6 +28,7 @@ class TransformationModeller(val format: Format) {
             gmAction = trans.gmAction?.let { modelGmAction(it) },
             steps = trans.steps?.let { steps -> steps.map { modelTransformation(it) } },
             tasks = trans.tasks?.let { tasks -> tasks.map { modelTask(it) } },
+            alternatives = trans.alternatives?.let { alt -> alt.map { modelAlternative(it) } },
         )
     }
 
@@ -37,6 +40,14 @@ class TransformationModeller(val format: Format) {
             explanation = task.explanation?.let { modelMetadata(it) },
             steps = if (task.steps.isEmpty()) null else task.steps.map { modelTransformation(it) },
             dependsOn = task.dependsOn.ifEmpty { null },
+        )
+    }
+
+    private fun modelAlternative(alternative: engine.steps.Alternative): Alternative {
+        return Alternative(
+            strategy = alternative.strategy.name,
+            explanation = modelMetadata(metadata(alternative.strategy.explanation)),
+            steps = alternative.steps.map { modelTransformation(it) },
         )
     }
 

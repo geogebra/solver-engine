@@ -360,7 +360,7 @@ private abstract class SystemSolver : CompositeMethod() {
                 xp(var1),
                 equation.byName(),
             ),
-            stepsProducer = EquationsPlans.SolveLinearEquation,
+            stepsProducer = EquationsPlans.SolveEquationInOneVariable,
             context = context.copy(solutionVariables = listOf(var1)),
         )
     }
@@ -386,7 +386,7 @@ private object SystemSolverBySubstitution : SystemSolver() {
         optionally {
             check { it.variables.size == 1 }
             inContext(contextFactory = { copy(solutionVariables = it.variables.toList()) }) {
-                apply(EquationsPlans.SolveLinearEquation)
+                apply(EquationsPlans.SolveEquationInOneVariable)
             }
         }
     }
@@ -431,7 +431,7 @@ private object SystemSolverBySubstitution : SystemSolver() {
                     xp(var2),
                     eq2InTermsOfVar2.byName(),
                 ),
-                stepsProducer = EquationsPlans.SolveLinearEquation,
+                stepsProducer = EquationsPlans.SolveEquationInOneVariable,
                 context = context.copy(solutionVariables = listOf(var2)),
             )?.let { solveEq2 ->
                 Pair(var1InTermsOfVar2, solveEq2.result)
@@ -483,7 +483,7 @@ private object SystemSolverByElimination : SystemSolver() {
         optionally {
             check { it.variables.size == 1 }
             inContext(contextFactory = { copy(solutionVariables = it.variables.toList()) }) {
-                apply(EquationsPlans.SolveLinearEquation)
+                apply(EquationsPlans.SolveEquationInOneVariable)
             }
         }
     }
@@ -521,7 +521,7 @@ private object SystemSolverByElimination : SystemSolver() {
         ) {
             firstOf {
                 option(EquationsRules.ExtractSolutionFromConstantEquation)
-                option(EquationsPlans.SolveLinearEquation)
+                option(EquationsPlans.SolveEquationInOneVariable)
             }
         }?.let { solvedUnivariateEquation ->
             val reorganizedFirstEq = if (solvedUnivariateEquation.result is Identity) {

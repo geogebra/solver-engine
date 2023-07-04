@@ -52,7 +52,7 @@ class EquationsPlansTest {
                 fromExpr = "2 [x ^ 2] - 4 x + 2 = 0"
                 toExpr = "2 ([x ^ 2] - 2 x + 1) = 0"
                 explanation {
-                    key = FactorExplanation.FactorGreatestCommonFactor
+                    key = FactorExplanation.FactorGreatestCommonIntegerFactor
                 }
             }
 
@@ -63,6 +63,17 @@ class EquationsPlansTest {
                     key = EquationsExplanation.EliminateConstantFactorOfLhsWithZeroRhs
                 }
             }
+        }
+    }
+
+    @Test
+    fun testSimplifyByDividingByGcfOfCoefficientsWithNoConstantTerm() = testMethodInX {
+        method = EquationsPlans.SimplifyByDividingByGcfOfCoefficients
+        inputExpr = "3[x^2] - 3x = 0"
+
+        check {
+            fromExpr = "3[x^2] - 3x = 0 "
+            toExpr = "[x^2] - x = 0"
         }
     }
 }

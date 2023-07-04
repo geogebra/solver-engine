@@ -60,7 +60,7 @@ internal val solveEquationWithConstraint = taskSet {
         val solveEquation = task(
             startExpr = expression.firstChild,
             explanation = metadata(Explanation.SolveEquationWithoutConstraint),
-            stepsProducer = optimalEquationSolvingSteps,
+            stepsProducer = EquationsPlans.SolveEquationInOneVariable,
         ) ?: return@tasks null
 
         val solution = solveEquation.result

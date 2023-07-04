@@ -164,6 +164,17 @@ fun sumOf(vararg factors: Pattern) =
 fun sumContaining(vararg factors: Pattern) =
     NaryPattern(SumOperator, factors.asList(), commutative = false, partial = true)
 
+fun sumContaining(vararg factors: Pattern, restCondition: Context.(Expression) -> Boolean) =
+    object : BasePattern() {
+        private val pattern = NaryPattern(SumOperator, factors.asList(), commutative = false, partial = true)
+
+        override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
+            return pattern.findMatches(context, match, subexpression).filter {
+                pattern.getRestSubexpressions(it).all { rest -> context.restCondition(rest) }
+            }
+        }
+    }
+
 fun commutativeSumOf(vararg factors: Pattern) =
     NaryPattern(SumOperator, factors.asList(), commutative = true, partial = false)
 

@@ -85,6 +85,9 @@ enum class PolynomialsExplanation : CategorisedMetadataKey {
     SimplifyAlgebraicExpression,
 
     ExpandPolynomialExpression,
+
+    ExpandSingleBracketWithIntegerCoefficient,
+
     ;
 
     override val category = "Polynomials"

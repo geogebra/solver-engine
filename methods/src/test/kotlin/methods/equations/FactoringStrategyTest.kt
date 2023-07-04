@@ -1,14 +1,18 @@
 package methods.equations
 
+import engine.methods.getPlan
 import engine.methods.testMethodInX
+import methods.equations.EquationSolvingStrategy.Factoring
 import methods.factor.FactorExplanation
 import org.junit.jupiter.api.Test
 
-class EquationsByFactoringTest {
+class FactoringStrategyTest {
+
+    private val factoringPlan = Factoring.getPlan()
 
     @Test
     fun `test solving irreducible polynomial by factoring fails`() = testMethodInX {
-        method = EquationsPlans.SolveEquationByFactoring
+        method = factoringPlan
         inputExpr = "[x^2] + x + 1 = 0"
 
         check {
@@ -18,7 +22,7 @@ class EquationsByFactoringTest {
 
     @Test
     fun `test solving quadratic equation by factoring it by guessing`() = testMethodInX {
-        method = EquationsPlans.SolveEquationByFactoring
+        method = factoringPlan
         inputExpr = "[x ^ 2] + 5 x + 6 = 0"
 
         check {
@@ -95,7 +99,7 @@ class EquationsByFactoringTest {
 
     @Test
     fun `test solving simple quadratic equation by factoring`() = testMethodInX {
-        method = EquationsPlans.SolveEquationByFactoring
+        method = factoringPlan
         inputExpr = "[x ^ 2] - 4 = 0"
 
         check {
@@ -173,7 +177,7 @@ class EquationsByFactoringTest {
 
     @Test
     fun `test solving tricky higher order equation by factoring`() = testMethodInX {
-        method = EquationsPlans.SolveEquationByFactoring
+        method = factoringPlan
         inputExpr = "[x ^ 6] = 5 [x ^ 5] - 3 [x ^ 4]"
 
         check {
@@ -258,7 +262,7 @@ class EquationsByFactoringTest {
 
     @Test
     fun `test solving higher order equation which factors into multiple terms`() = testMethodInX {
-        method = EquationsPlans.SolveEquationByFactoring
+        method = factoringPlan
         inputExpr = "[x ^ 6] - [x ^ 2] = 0"
 
         check {
@@ -360,6 +364,51 @@ class EquationsByFactoringTest {
                     explanation {
                         key = EquationsExplanation.CollectSolutions
                     }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test constant factor is removed first`() = testMethodInX {
+        method = EquationsPlans.SolveEquationInOneVariable
+        inputExpr = "-11 ([x ^ 2] + x) = 0"
+
+        check {
+            fromExpr = "-11 ([x ^ 2] + x) = 0"
+            toExpr = "SetSolution[x : {-1, 0}]"
+            explanation {
+                key = EquationsExplanation.SolveEquationByFactoring
+            }
+            step {
+                // Through step
+                step {
+                    fromExpr = "-11 ([x ^ 2] + x) = 0"
+                    toExpr = "[x ^ 2] + x = 0"
+                    explanation {
+                        key = EquationsExplanation.EliminateConstantFactorOfLhsWithZeroRhs
+                    }
+                }
+            }
+            step {
+                fromExpr = "[x ^ 2] + x = 0"
+                toExpr = "x (x + 1) = 0"
+                explanation {
+                    key = FactorExplanation.FactorPolynomial
+                }
+            }
+            step {
+                fromExpr = "x (x + 1) = 0"
+                toExpr = "x = 0 OR x + 1 = 0"
+                explanation {
+                    key = EquationsExplanation.SeparateFactoredEquation
+                }
+            }
+            step {
+                fromExpr = "x = 0 OR x + 1 = 0"
+                toExpr = "SetSolution[x : {-1, 0}]"
+                explanation {
+                    key = EquationsExplanation.SolveEquationUnion
                 }
             }
         }

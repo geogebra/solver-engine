@@ -1,62 +1,94 @@
 package methods.equations
 
-import engine.context.Curriculum
-import engine.context.ResourceData
+import engine.context.Context
 import engine.expressions.Constants
-import engine.expressions.Solution
+import engine.expressions.Expression
+import engine.expressions.Minus
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
-import engine.methods.stepsproducers.FormChecker
 import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
 import engine.operators.StatementUnionOperator
-import engine.patterns.AnyPattern
+import engine.operators.SumOperator
 import engine.patterns.BinaryIntegerCondition
 import engine.patterns.ConditionPattern
+import engine.patterns.ConstantInSolutionVariablePattern
 import engine.patterns.RecurringDecimalPattern
 import engine.patterns.SignedNumberPattern
 import engine.patterns.SolutionVariablePattern
 import engine.patterns.UnsignedNumberPattern
+import engine.patterns.VariableExpressionPattern
 import engine.patterns.condition
 import engine.patterns.contradictionOf
 import engine.patterns.equationOf
 import engine.patterns.fractionOf
 import engine.patterns.identityOf
-import engine.patterns.inSolutionVariables
-import engine.patterns.monomialPattern
 import engine.patterns.negOf
 import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
-import engine.patterns.powerOf
 import engine.patterns.setSolutionOf
 import engine.patterns.solutionSetOf
 import engine.patterns.sumContaining
 import engine.patterns.variableListOf
 import engine.patterns.withOptionalConstantCoefficient
 import engine.patterns.withOptionalIntegerCoefficient
+import engine.steps.Transformation
 import engine.steps.metadata.metadata
-import methods.constantexpressions.ConstantExpressionsPlans
 import methods.constantexpressions.simpleTidyUpSteps
-import methods.equationsystems.EquationSystemsPlans
 import methods.factor.FactorPlans
 import methods.factor.FactorRules
 import methods.general.NormalizationPlans
-import methods.polynomials.PolynomialRules
-import methods.polynomials.PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization
-import methods.polynomials.PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
+import methods.polynomials.PolynomialsPlans
 import methods.polynomials.algebraicSimplificationSteps
 import methods.solvable.ApplySolvableRuleAndSimplify
 import methods.solvable.DenominatorExtractor.extractDenominator
 import methods.solvable.SolvableKey
 import methods.solvable.SolvableRules
 import methods.solvable.computeOverallUnionSolution
-import methods.solvable.countAbsoluteValues
 import methods.solvable.extractSumTermsFromSolvable
 import methods.solvable.fractionRequiringMultiplication
 
 enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
+
+    MoveConstantsToTheLeftAndSimplify(
+        applySolvableRuleAndSimplify(SolvableKey.MoveConstantsToTheLeft, SolvableRules.MoveConstantsToTheLeft),
+    ),
+
+    MoveConstantsToTheRightAndSimplify(
+        applySolvableRuleAndSimplify(SolvableKey.MoveConstantsToTheRight, SolvableRules.MoveConstantsToTheRight),
+    ),
+
+    MoveVariablesToTheLeftAndSimplify(
+        applySolvableRuleAndSimplify(SolvableKey.MoveVariablesToTheLeft, SolvableRules.MoveVariablesToTheLeft),
+    ),
+
+    MoveVariablesToTheRightAndSimplify(
+        applySolvableRuleAndSimplify(SolvableKey.MoveVariablesToTheRight, SolvableRules.MoveVariablesToTheRight),
+    ),
+
+    CollectLikeTermsToTheLeftAndSimplify(
+        plan {
+            explanation = Explanation.CollectLikeTermsToTheLeftAndSimplify
+
+            steps {
+                apply(EquationsRules.CollectLikeTermsToTheLeft)
+                optionally(simplifyEquation)
+            }
+        },
+    ),
+
+    MoveEverythingToTheLeftAndSimplify(
+        plan {
+            explanation = Explanation.MoveEverythingToTheLeftAndSimplify
+
+            steps {
+                apply(EquationsRules.MoveEverythingToTheLeft)
+                optionally(simplifyEquation)
+            }
+        },
+    ),
 
     SimplifyByFactoringNegativeSignOfLeadingCoefficient(
         plan {
@@ -75,46 +107,8 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
             explanation = Explanation.SimplifyByDividingByGcfOfCoefficients
 
             steps {
-                applyTo(FactorPlans.FactorGreatestCommonFactor) { it.firstChild }
+                applyTo(FactorPlans.FactorGreatestCommonIntegerFactor) { it.firstChild }
                 apply(EquationsRules.EliminateConstantFactorOfLhsWithZeroRhs)
-            }
-        },
-    ),
-
-    MoveConstantsToTheLeftAndSimplify(
-        applySolvableRuleAndSimplify(SolvableKey.MoveConstantsToTheLeft, SolvableRules.MoveConstantsToTheLeft),
-    ),
-
-    CollectLikeTermsToTheLeftAndSimplify(
-        plan {
-            explanation = Explanation.CollectLikeTermsToTheLeftAndSimplify
-
-            steps {
-                apply(EquationsRules.CollectLikeTermsToTheLeft)
-                optionally(simplifyEquation)
-            }
-        },
-    ),
-
-    MoveConstantsToTheRightAndSimplify(
-        applySolvableRuleAndSimplify(SolvableKey.MoveConstantsToTheRight, SolvableRules.MoveConstantsToTheRight),
-    ),
-
-    MoveVariablesToTheLeftAndSimplify(
-        applySolvableRuleAndSimplify(SolvableKey.MoveVariablesToTheLeft, SolvableRules.MoveVariablesToTheLeft),
-    ),
-
-    MoveVariablesToTheRightAndSimplify(
-        applySolvableRuleAndSimplify(SolvableKey.MoveVariablesToTheRight, SolvableRules.MoveVariablesToTheRight),
-    ),
-
-    MoveEverythingToTheLeftAndSimplify(
-        plan {
-            explanation = Explanation.MoveEverythingToTheLeftAndSimplify
-
-            steps {
-                apply(EquationsRules.MoveEverythingToTheLeft)
-                optionally(simplifyEquation)
             }
         },
     ),
@@ -136,7 +130,6 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     RewriteToXPLusASquareEqualsBForm(
         plan {
             explanation = Explanation.RewriteToXPLusASquareEqualsBForm
-            pattern = equationInOneVariable()
 
             steps {
                 apply(CompleteTheSquareAndSimplify)
@@ -151,15 +144,15 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 apply(SolvableRules.MultiplySolvableByLCD)
-                whilePossible(ExpandPolynomialExpressionInOneVariableWithoutNormalization)
+                whilePossible(PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
             }
         },
     ),
 
     DivideByCoefficientOfVariableAndSimplify(
         plan {
-            val lhs = monomialPattern(SolutionVariablePattern())
-            val rhs = AnyPattern()
+            val lhs = withOptionalConstantCoefficient(VariableExpressionPattern())
+            val rhs = ConstantInSolutionVariablePattern()
             pattern = equationOf(lhs, rhs)
 
             explanation = Explanation.DivideByCoefficientOfVariableAndSimplify
@@ -178,7 +171,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 apply(EquationsRules.CompleteTheSquare)
-                optionally(SimplifyAlgebraicExpressionInOneVariable)
+                optionally(PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable)
             }
         },
     ),
@@ -189,271 +182,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 apply(EquationsRules.MultiplyByInverseOfLeadingCoefficient)
-                apply(ExpandPolynomialExpressionInOneVariableWithoutNormalization)
-            }
-        },
-    ),
-
-    SolveEquationUnion(solveEquationUnion),
-
-    /**
-     * Solve a linear equation in one variable
-     */
-    @PublicMethod
-    SolveLinearEquation(
-        plan {
-            explanation = Explanation.SolveLinearEquation
-            pattern = equationInOneVariable()
-
-            steps {
-                optionally(rearrangeLinearEquationSteps)
-
-                optionally {
-                    firstOf {
-                        // check if the equation is in one of the possible solved forms
-                        option(EquationsRules.ExtractSolutionFromConstantEquation)
-                        option(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
-                    }
-                }
-
-                contextSensitive {
-                    default(
-                        ResourceData(preferDecimals = false),
-                        FormChecker(condition { it is Solution }),
-                    )
-                    alternative(
-                        ResourceData(preferDecimals = true),
-                        decimalSolutionFormChecker,
-                    )
-                }
-            }
-        },
-    ),
-
-    /**
-     * Solve an equation in one variable with no linear term by writing it in the form
-     *
-     *     x^n = k
-     *
-     * and taking the nth root from both sides
-     */
-    @PublicMethod
-    SolveEquationUsingRootsMethod(
-        plan {
-            explanation = Explanation.SolveEquationUsingRootsMethod
-            pattern = equationInOneVariable()
-            resultPattern = condition { it is Solution }
-
-            steps {
-                optionally(equationSimplificationSteps)
-                optionally(MoveVariablesToTheLeftAndSimplify)
-                optionally(MoveConstantsToTheRightAndSimplify)
-
-                optionally {
-                    firstOf {
-                        // get rid of the coefficient of the variable
-                        option {
-                            checkForm {
-                                equationOf(negOf(powerOf(SolutionVariablePattern(), AnyPattern())), AnyPattern())
-                            }
-                            apply(EquationsRules.NegateBothSides)
-                        }
-                        option(MultiplyByInverseCoefficientOfVariableAndSimplify)
-                        option(DivideByCoefficientOfVariableAndSimplify)
-                    }
-                }
-
-                firstOf {
-                    // x^2n = something negative
-                    option(EquationsRules.ExtractSolutionFromEvenPowerEqualsNegative)
-
-                    option {
-                        apply(EquationsRules.TakeRootOfBothSidesRHSIsZero)
-                        apply(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
-                    }
-
-                    option {
-                        apply(EquationsRules.TakeRootOfBothSides)
-                        optionally {
-                            applyTo(ConstantExpressionsPlans.SimplifyConstantExpression) { it.secondChild }
-                        }
-                        firstOf {
-                            option(EquationsRules.ExtractSolutionFromEquationInPlusMinusForm)
-                            option(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
-                        }
-                    }
-                }
-            }
-        },
-    ),
-
-    /**
-     * Solve an equation by completing the square.  The equation can by of higher order than 2 as long
-     * as completing the square is possible.
-     */
-    @PublicMethod
-    SolveByCompletingTheSquare(
-        plan {
-            explanation = Explanation.SolveByCompletingTheSquare
-            pattern = equationInOneVariable()
-            resultPattern = condition { it is Solution }
-
-            steps {
-
-                // Simplify the equation and move variables to the left
-                optionally(equationSimplificationSteps)
-                optionally {
-                    applyTo(ExpandPolynomialExpressionInOneVariableWithoutNormalization) { it.firstChild }
-                }
-                optionally {
-                    applyTo(ExpandPolynomialExpressionInOneVariableWithoutNormalization) { it.secondChild }
-                }
-                optionally(MoveVariablesToTheLeftAndSimplify)
-
-                // Complete the square
-                firstOf {
-                    option {
-                        // See if we can complete the square straight away
-                        optionally(MultiplyByInverseOfLeadingCoefficientAndSimplify)
-                        optionally {
-                            applyTo(PolynomialRules.NormalizePolynomial) { it.firstChild }
-                        }
-                        applyTo(FactorPlans.FactorSquareOfBinomial) { it.firstChild }
-                    }
-                    option {
-                        // Else rearrange to put constants on the right and complete the square
-                        optionally(MoveConstantsToTheRightAndSimplify)
-                        optionally(MultiplyByInverseOfLeadingCoefficientAndSimplify)
-                        optionally {
-                            applyTo(PolynomialRules.NormalizePolynomial) { it.firstChild }
-                        }
-                        apply(RewriteToXPLusASquareEqualsBForm)
-                    }
-                }
-
-                // Solve the equation
-                firstOf {
-                    // (...)^2 = something negative
-                    option(EquationsRules.ExtractSolutionFromEvenPowerEqualsNegative)
-
-                    // (...)^2 = 0
-                    option {
-                        apply(EquationsRules.TakeRootOfBothSidesRHSIsZero)
-                        apply(MoveConstantsToTheRightAndSimplify)
-                        apply(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
-                    }
-
-                    // (...)^2 = something positive
-                    option {
-                        apply(EquationsRules.TakeRootOfBothSides)
-                        optionally {
-                            applyTo(ConstantExpressionsPlans.SimplifyConstantExpression) { it.secondChild }
-                        }
-                        apply(MoveConstantsToTheRightAndSimplify)
-                        apply(extractSolutionFromEquationPossiblyInPlusMinusForm)
-                    }
-                }
-            }
-        },
-    ),
-
-    /**
-     * Solve an equation by writing it as a product of factors equal to 0 and solving
-     * each equation.
-     */
-    @PublicMethod
-    SolveEquationByFactoring(
-        plan {
-            explanation = Explanation.SolveEquationByFactoring
-
-            steps {
-                optionally(MoveEverythingToTheLeftAndSimplify)
-                optionally {
-                    applyTo(FactorPlans.FactorPolynomialInOneVariable) { it.firstChild }
-                }
-                apply(EquationsRules.SeparateFactoredEquation)
-                apply(SolveEquationUnion)
-            }
-        },
-    ),
-
-    /**
-     * Solve a quadratic equation using the quadratic formula.
-     */
-    @PublicMethod
-    SolveQuadraticEquationUsingQuadraticFormula(
-        plan {
-            explanation = Explanation.SolveQuadraticEquationUsingQuadraticFormula
-            pattern = equationInOneVariable()
-            resultPattern = condition { it is Solution }
-
-            steps {
-                optionally(equationSimplificationSteps)
-
-                optionally {
-                    applyTo(ExpandPolynomialExpressionInOneVariableWithoutNormalization) { it.firstChild }
-                }
-                optionally {
-                    applyTo(ExpandPolynomialExpressionInOneVariableWithoutNormalization) { it.secondChild }
-                }
-                optionally(MultiplyByLCDAndSimplify)
-                optionally(MoveVariablesToTheLeftAndSimplify)
-                optionally(MoveConstantsToTheLeftAndSimplify)
-
-                // rearrange LHS to the form: a[x^2] + bx + c
-                optionally {
-                    applyTo(PolynomialRules.NormalizePolynomial) { it.firstChild }
-                }
-                // normalize to the form: a[x^2] + bx + c = 0, where a > 0
-                optionally(SimplifyByFactoringNegativeSignOfLeadingCoefficient)
-                // normalize to the form: a[x^2] + bx + c = 0, where gcd(a,b,c) = 1
-                optionally(SimplifyByDividingByGcfOfCoefficients)
-
-                apply(EquationsRules.ApplyQuadraticFormula)
-                optionally {
-                    applyTo(ConstantExpressionsPlans.SimplifyConstantExpression) { it.secondChild }
-                }
-
-                // Δ
-                firstOf {
-                    // Δ < 0
-                    option { deeply(EquationsRules.ExtractSolutionFromNegativeUnderSquareRootInRealDomain) }
-                    // Δ >= 0
-                    option(extractSolutionFromEquationPossiblyInPlusMinusForm)
-                }
-            }
-        },
-    ),
-
-    @PublicMethod
-    SolveEquationWithVariablesInOneAbsoluteValue(
-        plan {
-            explanation = Explanation.SolveEquationWithVariablesInOneAbsoluteValue
-            pattern = equationInOneVariable()
-            resultPattern = condition { it is Solution }
-
-            steps {
-                optionally(equationSimplificationSteps)
-
-                optionally {
-                    check { it.firstChild.isConstant() }
-                    apply(EquationsRules.FlipEquation)
-                }
-
-                optionally(MoveConstantsToTheRightAndSimplify)
-                optionally(EquationsRules.NegateBothSides)
-
-                firstOf {
-                    option {
-                        apply(EquationsRules.SeparateModulusEqualsPositiveConstant)
-                        apply(SolveEquationUnion)
-                    }
-                    option {
-                        apply(EquationsRules.ResolveModulusEqualsZero)
-                        apply(SolveEquationInOneVariable)
-                    }
-                    option(EquationsRules.ExtractSolutionFromModulusEqualsNegativeConstant)
-                }
+                apply(PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
             }
         },
     ),
@@ -461,7 +190,6 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     IsolateAbsoluteValue(
         plan {
             explanation = Explanation.IsolateAbsoluteValue
-            pattern = equationInOneVariable()
 
             steps {
                 firstOf {
@@ -473,66 +201,80 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
         },
     ),
 
+    MoveOneModulusToOtherSideAndSimplify(
+        plan {
+            explanation = Explanation.MoveOneModulusToOtherSideAndSimplify
+            steps {
+                firstOf {
+                    option(EquationsRules.MoveSecondModulusToRhs)
+                    option(EquationsRules.MoveSecondModulusToLhs)
+                }
+                optionally(equationSimplificationSteps)
+            }
+        },
+    ),
+
+    SolveEquationUnion(
+        taskSet {
+            val equationUnion = condition { it.operator == StatementUnionOperator }
+            pattern = equationUnion
+            explanation = Explanation.SolveEquationUnion
+
+            tasks {
+                // Create a task for each to simplify it
+                val splitTasks = get(equationUnion).children.map {
+                    task(
+                        startExpr = it,
+                        explanation = metadata(Explanation.SolveEquationInEquationUnion),
+                        stepsProducer = optimalEquationSolvingSteps,
+                    ) ?: return@tasks null
+                }
+
+                // Else combine the solutions together
+                val overallSolution = computeOverallUnionSolution(splitTasks.map { it.result }) ?: return@tasks null
+                task(
+                    startExpr = overallSolution,
+                    explanation = metadata(Explanation.CollectSolutions),
+                )
+                allTasks()
+            }
+        },
+    ),
+
     SolveEquationWithOneAbsoluteValueBySubstitution(solveEquationWithOneAbsoluteValueBySubstitution),
 
     @PublicMethod
-    SolveEquationWithOneAbsoluteValue(
+    SolveDecimalLinearEquation(
         plan {
-            explanation = Explanation.SolveEquationWithVariablesInOneAbsoluteValue
-            pattern = equationInOneVariable()
+            explanation = Explanation.SolveDecimalLinearEquation
+
+            val acceptedSolutions = oneOf(
+                SignedNumberPattern(),
+                optionalNegOf(RecurringDecimalPattern()),
+                optionalNegOf(fractionOf(UnsignedNumberPattern(), UnsignedNumberPattern())),
+            )
+
+            resultPattern = oneOf(
+                setSolutionOf(variableListOf(SolutionVariablePattern()), solutionSetOf(acceptedSolutions)),
+                contradictionOf(variableListOf(SolutionVariablePattern())),
+                identityOf(variableListOf(SolutionVariablePattern())),
+            )
 
             steps {
-                optionally(equationSimplificationSteps)
-                // TODO this is not good, it should only expand things OUTSIDE the absolute value
-                optionally(ExpandPolynomialExpressionInOneVariableWithoutNormalization)
-
-                optionally(IsolateAbsoluteValue)
-                optionally {
-                    checkForm {
-                        equationOf(
-                            AnyPattern(),
-                            condition { it.countAbsoluteValues(solutionVariables) > 0 },
-                        )
-                    }
-                    apply(EquationsRules.FlipEquation)
-                }
-                optionally(EquationsRules.NegateBothSides)
-
-                firstOf {
-                    // Here we can't use contextSensitiveSelector because we want to fall back to the default ("EU")
-                    // solution if the US solutions doesn't work.
-                    option {
-                        check { curriculum == Curriculum.US }
-                        apply(SolveEquationWithOneAbsoluteValueBySubstitution)
-                    }
-                    option {
-                        apply(EquationsRules.SeparateModulusEqualsExpression)
-                        apply(SolveEquationUnion)
-                    }
+                inContext(contextFactory = { copy(preferDecimals = true) }) {
+                    apply(rearrangeLinearEquationSteps)
+                    optionally(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
                 }
             }
         },
     ),
 
     @PublicMethod
-    SolveEquationWithTwoAbsoluteValues(solveEquationWithTwoAbsoluteValues),
-
-    @PublicMethod
     SolveEquationInOneVariable(
-        plan {
-            explanation = Explanation.SolveEquationInOneVariable
-            pattern = equationInOneVariable()
-
-            specificPlans(
-                SolveLinearEquation,
-                SolveEquationUsingRootsMethod,
-                SolveEquationByFactoring,
-                SolveQuadraticEquationUsingQuadraticFormula,
-                SolveByCompletingTheSquare,
-                SolveEquationWithVariablesInOneAbsoluteValue,
-            )
-            steps {
-                apply(optimalEquationSolvingSteps)
+        object : CompositeMethod() {
+            override fun run(ctx: Context, sub: Expression): Transformation? {
+                if (sub.variables.count() != 1) return null
+                return solveEquationInOneVariable.value.run(ctx, sub)
             }
         },
     ),
@@ -541,64 +283,13 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     SolveEquationWithConstraint(solveEquationWithConstraint),
 }
 
-private val extractSolutionFromEquationPossiblyInPlusMinusForm = steps {
-    firstOf {
-        option {
-            apply(EquationsRules.SeparateEquationInPlusMinusForm)
-            apply(EquationsPlans.SolveEquationUnion)
-        }
-        shortOption(EquationsRules.ExtractSolutionFromEquationInPlusMinusForm)
-        option(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
-    }
-}
-
-private val solveEquationUnion = taskSet {
-    val equationUnion = condition { it.operator == StatementUnionOperator }
-    pattern = equationUnion
-    explanation = Explanation.SolveEquationUnion
-
-    tasks {
-        // Create a task for each to simplify it
-        val splitTasks = get(equationUnion).children.map {
-            task(
-                startExpr = it,
-                explanation = metadata(Explanation.SolveEquationInEquationUnion),
-                stepsProducer = optimalEquationSolvingSteps,
-            ) ?: return@tasks null
-        }
-
-        // Else combine the solutions together
-        val overallSolution = computeOverallUnionSolution(splitTasks.map { it.result }) ?: return@tasks null
-        task(
-            startExpr = overallSolution,
-            explanation = metadata(Explanation.CollectSolutions),
-        )
-        allTasks()
-    }
-}
-
-internal val optimalEquationSolvingSteps = steps {
-    firstOf {
-        option {
-            optionally(simplifyEquation)
-            apply(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
-        }
-        option(EquationsPlans.SolveLinearEquation)
-        option(EquationsPlans.SolveEquationUsingRootsMethod)
-        option(EquationsPlans.SolveEquationByFactoring)
-        option(EquationsPlans.SolveQuadraticEquationUsingQuadraticFormula)
-        option(EquationsPlans.SolveByCompletingTheSquare)
-        option(EquationsPlans.SolveEquationWithVariablesInOneAbsoluteValue)
-        option(EquationsPlans.SolveEquationWithConstraint)
-    }
-}
-
 val simplifyEquation = plan {
     explanation = Explanation.SimplifyEquation
 
     steps {
         whilePossible { deeply(simpleTidyUpSteps) }
         optionally(NormalizationPlans.NormalizeExpression)
+        whilePossible(EquationsRules.EliminateConstantFactorOfLhsWithZeroRhs)
         whilePossible(SolvableRules.CancelCommonTermsOnBothSides)
         whilePossible(algebraicSimplificationSteps)
     }
@@ -618,146 +309,136 @@ val equationSimplificationSteps = steps {
     }
 }
 
-private val decimalSolutionFormChecker = run {
-    val acceptedSolutions = oneOf(
-        SignedNumberPattern(),
-        optionalNegOf(RecurringDecimalPattern()),
-        optionalNegOf(fractionOf(UnsignedNumberPattern(), UnsignedNumberPattern())),
-    )
+val equationRearrangementSteps = steps {
+    // three ways to reorganize the equation into aX = b form
+    firstOf {
+        option {
+            // if the equation is in the form `a = bX + c` with `b` non-negative, then
+            // we move `c` to the left hand side and flip the equation
+            checkForm {
+                val lhs = ConstantInSolutionVariablePattern()
+                val nonConstantTerm = condition(VariableExpressionPattern()) {
+                    it !is Minus && it.operator != SumOperator
+                }
+                val rhs = oneOf(
+                    nonConstantTerm,
+                    sumContaining(nonConstantTerm) { rest -> rest.isConstantIn(solutionVariables) },
+                )
+                equationOf(lhs, rhs)
+            }
+            optionally(EquationsPlans.MoveConstantsToTheLeftAndSimplify)
+            apply(EquationsRules.FlipEquation)
+        }
+        option {
+            // if the equation is in the form `aX + b = cx + d` with an integer and `c` a
+            // positive integer such that `c > a`, we move `aX` to the right hand side, `d` to
+            // the left hand side and flip the equation
+            checkForm {
+                val variable = VariableExpressionPattern()
+                val lhsVariable = withOptionalIntegerCoefficient(variable, false)
+                val rhsVariable = withOptionalIntegerCoefficient(variable, true)
 
-    FormChecker(
-        oneOf(
-            setSolutionOf(variableListOf(SolutionVariablePattern()), solutionSetOf(acceptedSolutions)),
-            contradictionOf(variableListOf(SolutionVariablePattern())),
-            identityOf(variableListOf(SolutionVariablePattern())),
-        ),
-    )
+                val lhs = oneOf(
+                    lhsVariable,
+                    sumContaining(lhsVariable) { rest -> rest.isConstantIn(solutionVariables) },
+                )
+                val rhs = oneOf(
+                    rhsVariable,
+                    sumContaining(rhsVariable) { rest -> rest.isConstantIn(solutionVariables) },
+                )
+
+                ConditionPattern(
+                    equationOf(lhs, rhs),
+                    BinaryIntegerCondition(
+                        lhsVariable.integerCoefficient,
+                        rhsVariable.integerCoefficient,
+                    ) { n1, n2 -> n2 > n1 },
+                )
+            }
+
+            apply(EquationsPlans.MoveVariablesToTheRightAndSimplify)
+            optionally(EquationsPlans.MoveConstantsToTheLeftAndSimplify)
+            apply(EquationsRules.FlipEquation)
+        }
+        option {
+            // otherwise we first move variables to the left and then constants
+            // to the right
+            checkForm {
+                val variable = condition { it.operator != SumOperator && !it.isConstantIn(solutionVariables) }
+                val lhsVariable = withOptionalConstantCoefficient(variable)
+                val rhsVariable = withOptionalConstantCoefficient(variable)
+
+                val lhs = oneOf(
+                    ConstantInSolutionVariablePattern(),
+                    lhsVariable,
+                    sumContaining(lhsVariable) { rest -> rest.isConstantIn(solutionVariables) },
+                )
+                val rhs = oneOf(
+                    ConstantInSolutionVariablePattern(),
+                    rhsVariable,
+                    sumContaining(rhsVariable) { rest -> rest.isConstantIn(solutionVariables) },
+                )
+
+                equationOf(lhs, rhs)
+            }
+            optionally(EquationsPlans.MoveVariablesToTheLeftAndSimplify)
+            optionally(EquationsPlans.MoveConstantsToTheRightAndSimplify)
+        }
+    }
+}
+
+private val optimalEquationSolvingSteps = steps {
+    firstOf {
+        option {
+            optionally(simplifyEquation)
+            firstOf {
+                option(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
+                option(EquationsRules.ExtractSolutionFromConstantEquation)
+            }
+        }
+        option(EquationsPlans.SolveEquationInOneVariable)
+        option(EquationsPlans.SolveEquationWithConstraint)
+    }
+}
+
+/**
+ * multiply by the LCM of the constant denominators if there are at least two fractions
+ * or a single fraction with a non-constant numerator (including also 1/2 * (x + 1))
+ */
+val removeConstantDenominatorsSteps = steps {
+    check {
+        val sumTerms = extractSumTermsFromSolvable(it)
+        val denominators = sumTerms.mapNotNull { term -> extractDenominator(term) }
+        denominators.size >= 2 || sumTerms.any { term ->
+            fractionRequiringMultiplication.matches(this, term)
+        }
+    }
+    apply(EquationsPlans.MultiplyByLCDAndSimplify)
+}
+
+val coefficientRemovalSteps = steps {
+    firstOf {
+        // get rid of the coefficient of the variable
+        option(EquationsPlans.MultiplyByInverseCoefficientOfVariableAndSimplify)
+        option(EquationsPlans.DivideByCoefficientOfVariableAndSimplify)
+        option {
+            checkForm {
+                equationOf(negOf(VariableExpressionPattern()), ConstantInSolutionVariablePattern())
+            }
+            apply(EquationsRules.NegateBothSides)
+        }
+    }
 }
 
 val rearrangeLinearEquationSteps = steps {
     whilePossible {
         firstOf {
             option(equationSimplificationSteps)
-            option {
-                check {
-                    val sumTerms = extractSumTermsFromSolvable(it)
-                    val denominators = sumTerms.mapNotNull { term -> extractDenominator(term) }
-
-                    denominators.size >= 2 || sumTerms.any { term ->
-                        fractionRequiringMultiplication.matches(this, term)
-                    }
-                }
-                apply(EquationsPlans.MultiplyByLCDAndSimplify)
-            }
-            option(ExpandPolynomialExpressionInOneVariableWithoutNormalization)
+            option(removeConstantDenominatorsSteps)
+            option(PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
         }
     }
 
-    optionally {
-        firstOf {
-            // three ways to reorganize the equation into ax = b form
-            option {
-                // if the equation is in the form `a = bx + c` with `b` non-negative, then
-                // we move `c` to the left hand side and flip the equation
-                checkForm {
-                    val lhs = condition { it.isConstant() }
-                    val variableWithCoefficient = withOptionalConstantCoefficient(
-                        SolutionVariablePattern(),
-                        positiveOnly = true,
-                    )
-                    val rhs = oneOf(variableWithCoefficient, sumContaining(variableWithCoefficient))
-                    equationOf(lhs, rhs)
-                }
-                optionally(EquationsPlans.MoveConstantsToTheLeftAndSimplify)
-                apply(EquationsRules.FlipEquation)
-            }
-            option {
-                // if the equation is in the form `ax + b = cx + d` with an integer and `c` a
-                // positive integer such that `c > a`, we move `ax` to the right hand side, `d` to
-                // the left hand side and flip the equation
-                checkForm {
-                    val variable = SolutionVariablePattern()
-                    val lhsVariable = withOptionalIntegerCoefficient(variable, false)
-                    val rhsVariable = withOptionalIntegerCoefficient(variable, true)
-
-                    val lhs = oneOf(lhsVariable, sumContaining(lhsVariable))
-                    val rhs = oneOf(rhsVariable, sumContaining(rhsVariable))
-
-                    ConditionPattern(
-                        equationOf(lhs, rhs),
-                        BinaryIntegerCondition(
-                            lhsVariable.integerCoefficient,
-                            rhsVariable.integerCoefficient,
-                        ) { n1, n2 -> n2 > n1 },
-                    )
-                }
-
-                apply(EquationsPlans.MoveVariablesToTheRightAndSimplify)
-                optionally(EquationsPlans.MoveConstantsToTheLeftAndSimplify)
-                apply(EquationsRules.FlipEquation)
-            }
-            option {
-                // otherwise we first move variables to the left and then constants
-                // to the right
-                optionally(EquationsPlans.MoveVariablesToTheLeftAndSimplify)
-                optionally(EquationsPlans.MoveConstantsToTheRightAndSimplify)
-            }
-        }
-    }
-
-    optionally {
-        firstOf {
-            // get rid of the coefficient of the variable
-            option {
-                checkForm {
-                    equationOf(negOf(SolutionVariablePattern()), AnyPattern())
-                }
-                apply(EquationsRules.NegateBothSides)
-            }
-            option(EquationsPlans.MultiplyByInverseCoefficientOfVariableAndSimplify)
-            option(EquationsPlans.DivideByCoefficientOfVariableAndSimplify)
-        }
-    }
-}
-
-private fun equationInOneVariable() = inSolutionVariables(equationOf(AnyPattern(), AnyPattern()))
-
-private val solveEquationWithTwoAbsoluteValues = plan {
-    explanation = Explanation.SolveEquationWithTwoAbsoluteValues
-    pattern = equationInOneVariable()
-    resultPattern = condition { it is Solution }
-
-    steps {
-        optionally(equationSimplificationSteps)
-
-        check {
-            it.countAbsoluteValues(solutionVariables) == 2
-        }
-
-        optionally {
-            plan {
-                explanation = Explanation.MoveOneModulusToOtherSideAndSimplify
-                steps {
-                    firstOf {
-                        option(EquationsRules.MoveSecondModulusToRhs)
-                        option(EquationsRules.MoveSecondModulusToLhs)
-                    }
-                    optionally(equationSimplificationSteps)
-                }
-            }
-        }
-
-        optionally(EquationsRules.NegateBothSides)
-
-        firstOf {
-            option {
-                apply(EquationsRules.SeparateModulusEqualsModulus)
-                apply(EquationsPlans.SolveEquationUnion)
-            }
-            option {
-                apply(EquationsRules.ResolveModulusEqualsNegativeModulus)
-                apply(EquationSystemsPlans.SolveEquationSystemInOneVariable)
-            }
-        }
-    }
+    optionally(equationRearrangementSteps)
+    optionally(coefficientRemovalSteps)
 }
