@@ -236,6 +236,29 @@ const latexSymbolDefinitions = {
     };
     sqrt.led = sqrt.led = getLedToExtendNary(parser, 'ImplicitProduct');
   },
+
+  registerTextStyleCommands(parser: Parser<ExprTree>) {
+    // This just ignores text style commands.
+    // Need to know the complete list of styling commands we want to remove.
+    for (const textStyle of ['\\mathrm', '\\mathit', '\\textit']) {
+      const sym = parser.registerSymbol(textStyle, BP_IMPLICIT_MUL);
+      sym.nud = function () {
+        return parser.expression(Infinity); // Why Infinity?  I copied from registerRoots.
+      };
+    }
+    const nbsp = parser.registerSymbol('\\nbsp', Infinity);
+    // A non-breaking space can be "prefix" or "postfix"
+    nbsp.led = function (left) {
+      parser.advance('{');
+      parser.advance('}');
+      return left;
+    };
+    nbsp.nud = function () {
+      parser.advance('{');
+      parser.advance('}');
+      return parser.expression(Infinity);
+    };
+  },
 };
 
 function getLedToExtendNary(
