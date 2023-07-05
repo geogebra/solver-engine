@@ -1,5 +1,5 @@
-import { tokenize } from './tokenizer';
 import type { Token } from './tokenizer';
+import { tokenize } from './tokenizer';
 
 // Adapted from:
 //   From Top Down Operator Precedence
@@ -57,6 +57,7 @@ export class Parser<T> {
   tokens: Token[] = [];
   token_nr = 0;
   scope: Scope<T> = new Scope(this.symbolTable);
+  balancingTokenIds: string[] = [];
 
   constructor(symbols: ((parser: Parser<T>) => void)[]) {
     this.registerSymbol('(end)');
@@ -119,12 +120,26 @@ export class Parser<T> {
     let t = _token || this.token;
     if (!_token) this.advance();
     let left = t!.nud();
-    while (rbp < this.token.lbp) {
+    while (rbp < this.token.lbp && !this.currentTokenIsBalancing()) {
       t = this.token;
       this.advance();
       left = t.led(left);
     }
     return left;
+  }
+
+  currentTokenIsBalancing(): boolean {
+    const sz = this.balancingTokenIds.length;
+    return sz > 0 && this.balancingTokenIds[sz - 1] === this.token?.id;
+  }
+
+  /// Parse a balanced subexpression, expecting a token with id balancingId to close the subexpression
+  balancedExpression(balancingId: string) {
+    this.balancingTokenIds.push(balancingId);
+    const expr = this.expression(0);
+    this.balancingTokenIds.pop();
+    this.advance(balancingId);
+    return expr;
   }
 
   /// Setup the symbol table (usually before the actual parsing).

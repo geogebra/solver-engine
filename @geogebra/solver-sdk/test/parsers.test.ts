@@ -167,6 +167,11 @@ describe('Solver Parser Unit Tests', () => {
         ],
         latex: '1+--2',
       },
+      {
+        solver: '2 abs[x+1]',
+        json: ['ImplicitProduct', ['2'], ['AbsoluteValue', ['Sum', ['x'], ['1']]]],
+        latex: '2\\left|x+1\\right|',
+      },
     ]);
   });
 
@@ -654,6 +659,73 @@ describe('Solver Parser Unit Tests', () => {
         solver: 'x x',
         json: ['ImplicitProduct', ['x'], ['x']],
         latex: ['xx', 'x\\nbsp{}x', '\\nbsp{}x\\nbsp{}x\\nbsp{}'],
+      },
+    ]);
+  });
+
+  describe('Absolute value', async () => {
+    testCases([
+      {
+        solver: '2 abs[x+1]',
+        json: ['ImplicitProduct', ['2'], ['AbsoluteValue', ['Sum', ['x'], ['1']]]],
+        latex: ['2\\left|x+1\\right|', '2|x + 1|'],
+      },
+      {
+        solver: 'abs[x+1]',
+        json: ['AbsoluteValue', ['Sum', ['x'], ['1']]],
+        latex: ['\\left|x+1\\right|', '|x+1|'],
+        tree: {
+          type: 'AbsoluteValue',
+          path: '.',
+          args: [
+            {
+              type: 'Sum',
+              path: './0',
+              args: [
+                {
+                  type: 'Variable',
+                  path: './0/0',
+                  value: 'x',
+                },
+                {
+                  type: 'Number',
+                  path: './0/1',
+                  value: '1',
+                },
+              ],
+            },
+          ],
+        },
+      },
+      {
+        solver: '2 abs[abs[x+2]+1]+5',
+        json: [
+          'Sum',
+          [
+            'ImplicitProduct',
+            ['2'],
+            ['AbsoluteValue', ['Sum', ['AbsoluteValue', ['Sum', ['x'], ['2']]], ['1']]],
+          ],
+          ['5'],
+        ],
+        latex: ['2\\left|\\left|x+2\\right|+1\\right|+5', '2||x+2|+1|+5'],
+      },
+      {
+        solver: 'abs[x+1] abs[x+3]',
+        json: [
+          'ImplicitProduct',
+          ['AbsoluteValue', ['Sum', ['x'], ['1']]],
+          ['AbsoluteValue', ['Sum', ['x'], ['3']]],
+        ],
+        latex: ['\\left|x+1\\right|\\left|x+3\\right|', '|x+1||x+3|'],
+      },
+      {
+        solver: 'abs[abs[x]+abs[y]]',
+        latex: ['\\left|\\left|x\\right| + \\left|y\\right|\\right|', '||x| + |y||'],
+      },
+      {
+        solver: 'abs[(abs[1])]',
+        latex: ['\\left|(\\left|1\\right|)\\right|', '|(|1|)|'],
       },
     ]);
   });

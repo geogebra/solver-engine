@@ -143,8 +143,7 @@ const latexSymbolDefinitions = {
       parser.registerSymbol(close);
       bracket.nud = () => {
         if (allowEmpty && parser.advance(close, true)) return parser.expression(0);
-        const expr = parser.expression(0);
-        parser.advance(close);
+        const expr = parser.balancedExpression(close);
         if (decorator) {
           if (expr.decorators) expr.decorators.push(decorator);
           else expr.decorators = [decorator];
@@ -258,6 +257,27 @@ const latexSymbolDefinitions = {
       parser.advance('}');
       return parser.expression(Infinity);
     };
+  },
+
+  registerAbsoluteValue(parser: Parser<ExprTree>) {
+    const absStart = parser.registerSymbol('\\left|', BP_IMPLICIT_MUL);
+    parser.registerSymbol('\\right|');
+    absStart.nud = function () {
+      return {
+        type: 'AbsoluteValue',
+        args: [parser.balancedExpression('\\right|')],
+      };
+    };
+    absStart.led = getLedToExtendNary(parser, 'ImplicitProduct');
+
+    const pipeSymbol = parser.registerSymbol('|', BP_IMPLICIT_MUL);
+    pipeSymbol.nud = function () {
+      return {
+        type: 'AbsoluteValue',
+        args: [parser.balancedExpression('|')],
+      };
+    };
+    pipeSymbol.led = getLedToExtendNary(parser, 'ImplicitProduct');
   },
 };
 

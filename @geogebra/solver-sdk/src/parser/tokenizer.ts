@@ -21,7 +21,7 @@ export function tokenize(str: string): Token[] {
   const r_long_name = new RegExp('^\\s*"([^"]+)"'); // multi-character strings "..."
   const r_long_name_latex = new RegExp('^\\s*\\\\text{(.*?)}'); // multi-character strings "\\text{...}"
   const r_operator =
-    /^\s*(\[\.|\.\]|\{\.|\.\}|>=|<=|\*\*|[-–+×*/÷=><();,^{}[\]|_±⁰¹²³⁴⁵⁶⁷⁸⁹ⁿ:≥≤√])/;
+    /^\s*(\[\.|\.\]|\{\.|\.\}|>=|<=|\*\*|[-–+×*/÷=><();,^{}[\]|_±⁰¹²³⁴⁵⁶⁷⁸⁹ⁿ:≥≤√]|\\left\||\\right\||\|)/;
   const r_latex_command = new RegExp('^\\s*(\\\\[^A-Za-z0-9\\s]|\\\\[A-Za-z]+)');
   const r_whitespace = new RegExp('^(\\s+)');
 

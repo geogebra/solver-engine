@@ -14,7 +14,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Added support for solving modulus equations of the form |f(x)| = k and derived (PLUT-589)
 - Added numerical evaluation for constant expressions if symbolic simplification fails (PLUT-597)
 - Added support for solving modulus equations that reduce to the form |f(x)| = k|g(x)| (PLUT-599)
-- Added new syntaxes to the parser (mathematical constants, Greek letter variables,
+- Added new syntax's to the parser (mathematical constants, Greek letter variables,
   trigonometric functions, percentages, derivatives, integrals, vectors, matrices) (PLUT-288)
 - Add rule `|-x| = |x|` for any `x` (PLUT-607)
 - New test reporter to see global effect of code changes on test output (PLUT-506)
@@ -28,8 +28,10 @@ contents to a new release section (e.g. _[0.x]_).
 - SDK: Add support for inequality system and different range
   (OpenRange, OpenClosedRange, etc.) objects (PLUT-559)
 - SDK: added support for new `json2` serialisation format for math (PLUT-627)
-- New `SolveEquationInOneVariable` plan replaces all the individual plans. Instead the returned solution contains
+- New `SolveEquationInOneVariable` plan replaces all the individual plans. Instead, the returned solution contains
   alternatives. A certain type of solution can be requested by setting the preferred strategy (PLUT-618)
+- SDK: Add LaTeX to solver tree support for absolute value as `\\left|`, `\\right|` pair or pipe symbol (i.e. `|`) (
+  PLUT-606)
 
 ### Fixed
 
