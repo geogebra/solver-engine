@@ -71,7 +71,7 @@ enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
                     option(GeneralRules.EvaluateZeroToAPositivePower)
                     option {
                         apply(GeneralRules.RewritePowerAsProduct)
-                        apply(DecimalPlans.EvaluateProductOfDecimals)
+                        apply(EvaluateProductOfDecimals)
                     }
                     option(DecimalRules.EvaluateDecimalPowerDirectly)
                 }
@@ -196,45 +196,41 @@ enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 optionally(StripTrailingZerosAfterDecimalOfAllDecimals)
+                optionally(NormalizationPlans.NormalizeExpression)
                 whilePossible {
-                    firstOf {
-                        option(NormalizationPlans.NormalizeExpression)
-
-                        option {
-                            deeply(DecimalPlans.EvaluateSubexpressionAsDecimal, deepFirst = true)
-                        }
-
-                        option {
-                            whilePossible(decimalEvaluationSteps)
-                        }
-                    }
+                    deeply(EvaluateSubexpressionAsDecimal, deepFirst = true)
                 }
+                whilePossible(decimalEvaluationSteps)
             }
         },
     ),
 }
 
 val decimalEvaluationSteps: StepsProducer = steps {
-    whilePossible {
-        firstOf {
-            option { deeply(GeneralRules.EvaluateProductDividedByZeroAsUndefined, deepFirst = true) }
-            option { deeply(GeneralRules.SimplifyZeroDenominatorFractionToUndefined, deepFirst = true) }
-            option { deeply(inlineSumsAndProducts, deepFirst = true) }
+    firstOf {
+        option { deeply(GeneralRules.EvaluateProductDividedByZeroAsUndefined, deepFirst = true) }
+        option { deeply(GeneralRules.SimplifyZeroDenominatorFractionToUndefined, deepFirst = true) }
+        option { deeply(inlineSumsAndProducts, deepFirst = true) }
 
-            option { deeply(evaluateDecimalAbsoluteValue) }
+        option { deeply(evaluateDecimalAbsoluteValue) }
 
-            option { deeply(normalizeNegativeSignsInFraction) }
+        option { deeply(normalizeNegativeSignsInFraction) }
 
-            option { deeply(DecimalPlans.NormalizeFractionOfDecimals, deepFirst = true) }
-            option { deeply(FractionArithmeticPlans.SimplifyFraction, deepFirst = true) }
-            option { deeply(GeneralRules.SimplifyDoubleMinus, deepFirst = true) }
-            option { deeply(DecimalPlans.ConvertNiceFractionToDecimal, deepFirst = true) }
-            option { deeply(DecimalPlans.EvaluateDecimalPower, deepFirst = true) }
-            option { deeply(DecimalPlans.EvaluateProductOfDecimals, deepFirst = true) }
-            option { deeply(DecimalPlans.EvaluateSumOfDecimals, deepFirst = true) }
-            option { deeply(FractionArithmeticPlans.MultiplyAndSimplifyFractions, deepFirst = true) }
-            option { deeply(DecimalRules.TurnDivisionOfDecimalsIntoFraction, deepFirst = true) }
+        option { deeply(GeneralRules.SimplifyDoubleMinus, deepFirst = true) }
+        option { deeply(DecimalPlans.EvaluateDecimalPower, deepFirst = true) }
+        option {
+            deeply(deepFirst = true) {
+                firstOf {
+                    option(DecimalPlans.NormalizeFractionOfDecimals)
+                    option(FractionArithmeticPlans.SimplifyFraction)
+                    option(DecimalPlans.ConvertNiceFractionToDecimal)
+                    option(DecimalPlans.EvaluateProductOfDecimals)
+                    option(FractionArithmeticPlans.MultiplyAndSimplifyFractions)
+                    option(DecimalRules.TurnDivisionOfDecimalsIntoFraction)
+                }
+            }
         }
+        option { deeply(DecimalPlans.EvaluateSumOfDecimals, deepFirst = true) }
     }
 }
 

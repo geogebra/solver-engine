@@ -479,4 +479,59 @@ class EvaluatExpressionAsDecimalTest {
             }
         }
     }
+
+    @Test
+    fun testMultiplyAndDivideFirst() = testMethod {
+        method = DecimalPlans.EvaluateExpressionAsDecimal
+        inputExpr = "11 - 2 : 5 + 7 - 4 * 2 + 11 : 5"
+        check {
+            fromExpr = "11 - 2 : 5 + 7 - 4 * 2 + 11 : 5"
+            toExpr = "11.8"
+            explanation {
+                key = DecimalsExplanation.EvaluateExpressionAsDecimal
+            }
+            step {
+                fromExpr = "11 - 2 : 5 + 7 - 4 * 2 + 11 : 5"
+                toExpr = "11 - [2 / 5] + 7 - 4 * 2 + 11 : 5"
+                explanation {
+                    key = DecimalsExplanation.TurnDivisionOfDecimalsIntoFraction
+                }
+            }
+            step {
+                fromExpr = "11 - [2 / 5] + 7 - 4 * 2 + 11 : 5"
+                toExpr = "11 - 0.4 + 7 - 4 * 2 + 11 : 5"
+                explanation {
+                    key = DecimalsExplanation.ConvertNiceFractionToDecimal
+                }
+            }
+            step {
+                fromExpr = "11 - 0.4 + 7 - 4 * 2 + 11 : 5"
+                toExpr = "11 - 0.4 + 7 - 8 + 11 : 5"
+                explanation {
+                    key = DecimalsExplanation.EvaluateProductOfDecimals
+                }
+            }
+            step {
+                fromExpr = "11 - 0.4 + 7 - 8 + 11 : 5"
+                toExpr = "11 - 0.4 + 7 - 8 + [11 / 5]"
+                explanation {
+                    key = DecimalsExplanation.TurnDivisionOfDecimalsIntoFraction
+                }
+            }
+            step {
+                fromExpr = "11 - 0.4 + 7 - 8 + [11 / 5]"
+                toExpr = "11 - 0.4 + 7 - 8 + 2.2"
+                explanation {
+                    key = DecimalsExplanation.ConvertNiceFractionToDecimal
+                }
+            }
+            step {
+                fromExpr = "11 - 0.4 + 7 - 8 + 2.2"
+                toExpr = "11.8"
+                explanation {
+                    key = DecimalsExplanation.EvaluateSumOfDecimals
+                }
+            }
+        }
+    }
 }

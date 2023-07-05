@@ -38,6 +38,8 @@ contents to a new release section (e.g. _[0.x]_).
 - Fixed the simplification of `sqrt[2] + [7 / 2] - 1` (index bug in partial expression plan) (PLUT-613)
 - Improve handling negative sign with product as first & non-first term in sum (PLUT-249)
 - Fixed some `gmAction` integration tests (SP-72)
+- Better order of operations for EvaluateExpressionAsDecimal - multiplications and divisions are now done before
+  additions (PLUT-578)
 - SDK: Ignore text style commands when parsing latex (PLUT-636)
 
 ### Changed
