@@ -49,6 +49,7 @@ contents to a new release section (e.g. _[0.x]_).
 - SDK: Changed default API URL to production engine (PLUT-590)
 - Limit precision to be between 2 and 10 decimal places (PLUT-605)
 - Improved parameters for some explanations (PLUT-563)
+- SDK: Add a suffix to most of the names of the versions of the SDK. Release versions will still not be suffixed (PLUT-642)
 
 ### Removed
 
