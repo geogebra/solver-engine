@@ -218,7 +218,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     SolveEquationInOneVariable(
         object : CompositeMethod() {
             override fun run(ctx: Context, sub: Expression): Transformation? {
-                if (sub.variables.count() != 1) return null
+                if (sub.variables.count() > 1) return null
                 return solveEquationInOneVariable.value.run(ctx, sub)
             }
         },

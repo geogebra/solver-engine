@@ -219,6 +219,10 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                 val sign = SimpleComparator.compare(get(lhs), get(rhs))
                 if (sign.isKnown()) {
                     trueOrFalseRuleResult(sign == Sign.ZERO)
+                } else if (get(lhs) == Constants.Zero && get(rhs).isDefinitelyNotZero() ||
+                    get(lhs).isDefinitelyNotZero() && get(rhs) == Constants.Zero
+                ) {
+                    trueOrFalseRuleResult(false)
                 } else {
                     null
                 }

@@ -24,7 +24,7 @@ class SelectPlanApiServiceImpl : SelectPlansApiService {
             throw InvalidExpressionException(solveRequest.input, e)
         }
         val modeller = TransformationModeller(solveRequest.format)
-        val context = getContext(solveRequest.context, expr.variables.firstOrNull(), logger)
+        val context = getContext(solveRequest.context, expr.variables, logger)
 
         try {
             ThreadContext.put("traceId", UUID.randomUUID().toString())

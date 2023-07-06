@@ -138,39 +138,37 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
 
                 optionally(SolvableRules.NegateBothSides)
 
-                optionally {
-                    firstOf {
-                        option {
-                            apply(InequalitiesRules.SeparateModulusGreaterThanPositiveConstant)
-                            apply(SolveInequalityUnion)
-                        }
-                        option {
-                            apply(InequalitiesRules.ConvertModulusGreaterThanZero)
-                            apply(InequationsPlans.SolveInequationInOneVariable)
-                        }
-                        option {
-                            apply(InequalitiesRules.ConvertModulusLessThanPositiveConstant)
-                            apply(SolveDoubleInequality)
-                        }
-                        option {
-                            apply(InequalitiesRules.ConvertModulusLessThanEqualToPositiveConstant)
-                            apply(SolveDoubleInequality)
-                        }
-                        option {
-                            apply(InequalitiesRules.SeparateModulusGreaterThanEqualToPositiveConstant)
-                            apply(SolveInequalityUnion)
-                        }
-                        option(InequalitiesRules.ExtractSolutionFromModulusLessThanNonPositiveConstant)
-
-                        // after this we need to solve an equation
-                        option {
-                            apply(InequalitiesRules.ReduceModulusLessThanEqualToZeroInequalityToEquation)
-                            apply(EquationsPlans.SolveEquationInOneVariable)
-                        }
-
-                        option(InequalitiesRules.ExtractSolutionFromModulusGreaterThanEqualToNonPositiveConstant)
-                        option(InequalitiesRules.ExtractSolutionFromModulusGreaterThanNegativeConstant)
+                firstOf {
+                    option {
+                        apply(InequalitiesRules.SeparateModulusGreaterThanPositiveConstant)
+                        apply(SolveInequalityUnion)
                     }
+                    option {
+                        apply(InequalitiesRules.ConvertModulusGreaterThanZero)
+                        apply(InequationsPlans.SolveInequationInOneVariable)
+                    }
+                    option {
+                        apply(InequalitiesRules.ConvertModulusLessThanPositiveConstant)
+                        apply(SolveDoubleInequality)
+                    }
+                    option {
+                        apply(InequalitiesRules.ConvertModulusLessThanEqualToPositiveConstant)
+                        apply(SolveDoubleInequality)
+                    }
+                    option {
+                        apply(InequalitiesRules.SeparateModulusGreaterThanEqualToPositiveConstant)
+                        apply(SolveInequalityUnion)
+                    }
+                    option(InequalitiesRules.ExtractSolutionFromModulusLessThanNonPositiveConstant)
+
+                    // after this we need to solve an equation
+                    option {
+                        apply(InequalitiesRules.ReduceModulusLessThanEqualToZeroInequalityToEquation)
+                        apply(EquationsPlans.SolveEquationInOneVariable)
+                    }
+
+                    option(InequalitiesRules.ExtractSolutionFromModulusGreaterThanEqualToNonPositiveConstant)
+                    option(InequalitiesRules.ExtractSolutionFromModulusGreaterThanNegativeConstant)
                 }
             }
         },
