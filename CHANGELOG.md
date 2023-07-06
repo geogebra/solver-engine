@@ -27,7 +27,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Added support for inequalities containing absolute values (PLUT-559)
 - SDK: Add support for inequality system and different range
   (OpenRange, OpenClosedRange, etc.) objects (PLUT-559)
-- SDK: added support for new `json2` serialisation format for math (PLUT-627)
+- SDK: added support for new `json2` serialization format for math (PLUT-627)
 - New `SolveEquationInOneVariable` plan replaces all the individual plans. Instead, the returned solution contains
   alternatives. A certain type of solution can be requested by setting the preferred strategy (PLUT-618)
 - SDK: Add LaTeX to solver tree support for absolute value as `\\left|`, `\\right|` pair or pipe symbol (i.e. `|`) (
