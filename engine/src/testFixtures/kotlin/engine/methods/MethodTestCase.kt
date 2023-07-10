@@ -7,7 +7,7 @@ import engine.expressions.Path
 import engine.expressions.PathMapping
 import engine.expressions.PathMappingType
 import engine.expressions.PathScope
-import engine.expressions.Root
+import engine.expressions.RootOrigin
 import engine.expressions.RootPath
 import engine.expressions.parsePathAndScope
 import engine.steps.Task
@@ -456,7 +456,7 @@ class MethodTestCase {
     fun check(assert: TransformationCheck.() -> Unit) {
         if (!logMode) {
             val expr = parseExpression(inputExpr!!)
-            this.transformation = method.tryExecute(context, expr.withOrigin(Root()))
+            this.transformation = method.tryExecute(context, expr.withOrigin(RootOrigin()))
 
             for (processor in solutionProcessors) {
                 processor.processSolution(inputExpr!!, method, transformation)

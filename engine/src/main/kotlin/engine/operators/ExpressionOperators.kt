@@ -40,13 +40,13 @@ private const val MAX_PRECEDENCE = 100
 
 private const val ONE_PERCENT = 0.01
 
-interface ExpressionOperator : Operator {
+internal interface ExpressionOperator : Operator {
     override val kind get() = OperatorKind.EXPRESSION
 
     fun eval(children: List<Double>): Double
 }
 
-abstract class NullaryOperator : ExpressionOperator {
+internal abstract class NullaryOperator : ExpressionOperator {
     override val precedence = MAX_PRECEDENCE
     override val arity = ARITY_NULL
 
@@ -98,7 +98,7 @@ internal data class IntegerOperator(val value: BigInteger) : NullaryOperator() {
     override fun eval(children: List<Double>) = value.toDouble()
 }
 
-object InfinityOperator : NullaryOperator() {
+internal object InfinityOperator : NullaryOperator() {
 
     override val name = "/infinity/"
 
@@ -109,7 +109,7 @@ object InfinityOperator : NullaryOperator() {
     override fun eval(children: List<Double>) = Double.POSITIVE_INFINITY
 }
 
-object UndefinedOperator : NullaryOperator() {
+internal object UndefinedOperator : NullaryOperator() {
 
     override val name = "/undefined/"
 
@@ -120,7 +120,7 @@ object UndefinedOperator : NullaryOperator() {
     override fun eval(children: List<Double>) = Double.NaN
 }
 
-object PiOperator : NullaryOperator() {
+internal object PiOperator : NullaryOperator() {
 
     override val name = "/pi/"
 
@@ -131,7 +131,7 @@ object PiOperator : NullaryOperator() {
     override fun eval(children: List<Double>) = Math.PI
 }
 
-object EulerEOperator : NullaryOperator() {
+internal object EulerEOperator : NullaryOperator() {
 
     override val name = "/e/"
 
@@ -142,7 +142,7 @@ object EulerEOperator : NullaryOperator() {
     override fun eval(children: List<Double>) = Math.E
 }
 
-object ImaginaryUnitOperator : NullaryOperator() {
+internal object ImaginaryUnitOperator : NullaryOperator() {
 
     override val name = "/i/"
 
@@ -192,7 +192,7 @@ internal data class RecurringDecimalOperator(val value: RecurringDecimal) : Null
     override fun eval(children: List<Double>) = value.toDouble()
 }
 
-data class VariableOperator(override val name: String) : NullaryOperator() {
+internal data class VariableOperator(override val name: String) : NullaryOperator() {
     override fun toString() = name
 
     override fun latexString(ctx: RenderContext) = name
@@ -200,7 +200,7 @@ data class VariableOperator(override val name: String) : NullaryOperator() {
     override fun eval(children: List<Double>) = Double.NaN
 }
 
-object MixedNumberOperator : ExpressionOperator {
+internal object MixedNumberOperator : ExpressionOperator {
     override val name = "MixedNumber"
 
     override val precedence = MAX_PRECEDENCE
@@ -219,7 +219,7 @@ object MixedNumberOperator : ExpressionOperator {
     override fun eval(children: List<Double>) = children[0] + children[1] / children[2]
 }
 
-enum class UnaryExpressionOperator(override val precedence: Int) : UnaryOperator, ExpressionOperator {
+internal enum class UnaryExpressionOperator(override val precedence: Int) : UnaryOperator, ExpressionOperator {
     DivideBy(DIVIDE_BY_PRECEDENCE) {
         override fun childAllowed(op: Operator) = op.precedence > PRODUCT_PRECEDENCE
         override fun <T> readableString(child: T) = ": $child"
@@ -281,7 +281,7 @@ enum class UnaryExpressionOperator(override val precedence: Int) : UnaryOperator
     override fun eval(children: List<Double>) = eval(children[0])
 }
 
-enum class TrigonometricFunctionOperator : UnaryOperator, ExpressionOperator {
+internal enum class TrigonometricFunctionOperator : UnaryOperator, ExpressionOperator {
     Sin { override fun eval(operand: Double) = sin(operand) },
     Cos { override fun eval(operand: Double) = cos(operand) },
     Tan { override fun eval(operand: Double) = tan(operand) },
@@ -320,7 +320,7 @@ enum class TrigonometricFunctionOperator : UnaryOperator, ExpressionOperator {
     override fun eval(children: List<Double>) = eval(children[0])
 }
 
-enum class BinaryExpressionOperator(override val precedence: Int) : BinaryOperator, ExpressionOperator {
+internal enum class BinaryExpressionOperator(override val precedence: Int) : BinaryOperator, ExpressionOperator {
     Fraction(FRACTION_PRECEDENCE) {
         override fun leftChildAllowed(op: Operator) = true
         override fun rightChildAllowed(op: Operator) = true
@@ -391,7 +391,7 @@ enum class BinaryExpressionOperator(override val precedence: Int) : BinaryOperat
     override fun eval(children: List<Double>) = eval(children[0], children[1])
 }
 
-sealed class NaryOperator(override val precedence: Int) : ExpressionOperator {
+internal sealed class NaryOperator(override val precedence: Int) : ExpressionOperator {
 
     override val arity = ARITY_VARIABLE
     override fun nthChildAllowed(n: Int, op: Operator) = op.precedence > this.precedence
@@ -399,7 +399,7 @@ sealed class NaryOperator(override val precedence: Int) : ExpressionOperator {
     open fun matches(operator: Operator) = operator == this
 }
 
-object SumOperator : NaryOperator(SUM_PRECEDENCE) {
+internal object SumOperator : NaryOperator(SUM_PRECEDENCE) {
 
     override val name = "Sum"
     override fun <T> readableString(children: List<T>): String {
@@ -435,7 +435,7 @@ object SumOperator : NaryOperator(SUM_PRECEDENCE) {
     override fun eval(children: List<Double>) = children.sum()
 }
 
-data class ProductOperator(val forcedSigns: List<Int>) : NaryOperator(PRODUCT_PRECEDENCE) {
+internal data class ProductOperator(val forcedSigns: List<Int>) : NaryOperator(PRODUCT_PRECEDENCE) {
 
     override val name = "Product"
 
@@ -469,9 +469,9 @@ data class ProductOperator(val forcedSigns: List<Int>) : NaryOperator(PRODUCT_PR
     override fun matches(operator: Operator) = operator is ProductOperator
 }
 
-val DefaultProductOperator = ProductOperator(forcedSigns = emptyList())
+internal val DefaultProductOperator = ProductOperator(forcedSigns = emptyList())
 
-object DerivativeOperator : ExpressionOperator {
+internal object DerivativeOperator : ExpressionOperator {
     override fun eval(children: List<Double>) = Double.NaN
 
     override val name = "Derivative"
@@ -497,7 +497,7 @@ object DerivativeOperator : ExpressionOperator {
     }
 }
 
-object IndefiniteIntegralOperator : BinaryOperator, ExpressionOperator {
+internal object IndefiniteIntegralOperator : BinaryOperator, ExpressionOperator {
     override fun eval(children: List<Double>) = Double.NaN
 
     override val name = "IndefiniteIntegral"
@@ -512,7 +512,7 @@ object IndefiniteIntegralOperator : BinaryOperator, ExpressionOperator {
         "\\int ${left.toLatexString(ctx)} \\, \\mathrm{d}${right.toLatexString(ctx)}"
 }
 
-object DefiniteIntegralOperator : ExpressionOperator {
+internal object DefiniteIntegralOperator : ExpressionOperator {
     override fun eval(children: List<Double>) = Double.NaN
 
     override val name = "DefiniteIntegral"
@@ -529,7 +529,7 @@ object DefiniteIntegralOperator : ExpressionOperator {
     }
 }
 
-object VectorOperator : ExpressionOperator {
+internal object VectorOperator : ExpressionOperator {
     override fun eval(children: List<Double>) = Double.NaN
 
     override val name = "Vector"
@@ -546,7 +546,7 @@ object VectorOperator : ExpressionOperator {
         }
 }
 
-data class MatrixOperator(val rows: Int, val columns: Int) : ExpressionOperator {
+internal data class MatrixOperator(val rows: Int, val columns: Int) : ExpressionOperator {
     override fun eval(children: List<Double>) = Double.NaN
 
     override val name = "Matrix"

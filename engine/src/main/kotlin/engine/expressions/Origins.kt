@@ -12,7 +12,7 @@ abstract class Origin(val path: Path? = null) {
     open fun fromPaths(children: List<Expression>): List<Path> = if (path == null) emptyList() else listOf(path)
 }
 
-class Root(private val rootPath: Path = RootPath()) : Origin(rootPath) {
+class RootOrigin(private val rootPath: Path = RootPath()) : Origin(rootPath) {
     override fun computeChildOrigin(expression: Expression, index: Int) =
         expression.operands[index].withOrigin(Child(expression, index))
 
@@ -26,7 +26,7 @@ class Root(private val rootPath: Path = RootPath()) : Origin(rootPath) {
         )
 
     override fun equals(other: Any?) = this === other ||
-        other is Root && rootPath == other.rootPath
+        other is RootOrigin && rootPath == other.rootPath
 
     override fun hashCode() = rootPath.hashCode()
 }

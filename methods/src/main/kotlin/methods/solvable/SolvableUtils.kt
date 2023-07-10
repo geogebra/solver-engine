@@ -9,7 +9,7 @@ import engine.expressions.ExpressionComparator
 import engine.expressions.FiniteSet
 import engine.expressions.Identity
 import engine.expressions.Interval
-import engine.expressions.Root
+import engine.expressions.RootOrigin
 import engine.expressions.SetExpression
 import engine.expressions.SetSolution
 import engine.expressions.VariableList
@@ -127,7 +127,7 @@ val expressionComparator = ExpressionComparator { e1: Expression, e2: Expression
         e2 == Constants.NegativeInfinity -> Sign.POSITIVE
         e2 == Constants.Infinity -> Sign.NEGATIVE
         else -> {
-            val diff = sumOf(e1, negOf(e2)).withOrigin(Root())
+            val diff = sumOf(e1, negOf(e2)).withOrigin(RootOrigin())
             val result = ConstantExpressionsPlans.SimplifyConstantExpression.tryExecute(emptyContext, diff)
                 ?: return@ExpressionComparator Sign.UNKNOWN
             val simplifiedDiff = result.toExpr

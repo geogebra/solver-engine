@@ -1,7 +1,7 @@
 package engine.patterns
 
 import engine.context.emptyContext
-import engine.expressions.Root
+import engine.expressions.RootOrigin
 import org.junit.jupiter.api.Test
 import parser.parseExpression
 import kotlin.test.assertEquals
@@ -10,7 +10,7 @@ class ExpressionProviderWithinTest {
 
     @Test
     fun testExpressionProviderWithin() {
-        val expression = parseExpression("[2*4/2*7]").withOrigin(Root())
+        val expression = parseExpression("[2*4/2*7]").withOrigin(RootOrigin())
 
         val common = AnyPattern()
         val numerator = productContaining(common)

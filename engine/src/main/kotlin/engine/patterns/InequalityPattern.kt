@@ -4,7 +4,7 @@ import engine.context.Context
 import engine.expressions.Expression
 import engine.operators.InequalityOperators
 
-class InequalityPattern(
+class InequalityPattern internal constructor(
     val lhs: Pattern,
     val rhs: Pattern,
     private val inequalityType: InequalityOperators? = null,

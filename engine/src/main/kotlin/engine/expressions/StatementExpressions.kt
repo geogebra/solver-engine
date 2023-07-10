@@ -3,6 +3,7 @@ package engine.expressions
 import engine.operators.DoubleInequalityOperator
 import engine.operators.EquationOperator
 import engine.operators.InequalityOperators
+import engine.operators.StatementUnionOperator
 import engine.operators.StatementWithConstraintOperator
 import engine.sign.Sign
 
@@ -23,7 +24,7 @@ class Equation(lhs: Expression, rhs: Expression, meta: NodeMeta = BasicMeta()) :
     }
 }
 
-class Inequality(
+class Inequality internal constructor(
     lhs: Expression,
     rhs: Expression,
     operator: InequalityOperators,
@@ -48,7 +49,7 @@ class Inequality(
     }
 }
 
-class DoubleInequality(
+class DoubleInequality internal constructor(
     first: Expression,
     second: Expression,
     third: Expression,
@@ -89,4 +90,12 @@ class StatementWithConstraint(statement: Expression, constraint: Expression, met
 ) {
     val statement get() = firstChild
     val constraint get() = secondChild
+}
+
+class StatementUnion(statements: List<Expression>, meta: NodeMeta = BasicMeta()) : Expression(
+    operator = StatementUnionOperator,
+    operands = statements,
+    meta = meta,
+) {
+    val statements get() = children
 }

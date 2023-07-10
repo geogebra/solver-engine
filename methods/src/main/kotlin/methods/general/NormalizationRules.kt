@@ -1,17 +1,17 @@
 package methods.general
 
-import engine.expressions.Child
 import engine.expressions.Decorator
 import engine.expressions.Expression
 import engine.expressions.PathScope
 import engine.expressions.Product
+import engine.expressions.Root
+import engine.expressions.SquareRoot
+import engine.expressions.Sum
+import engine.expressions.hasRedundantBrackets
 import engine.expressions.productOf
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
-import engine.operators.BinaryExpressionOperator
-import engine.operators.SumOperator
-import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.condition
@@ -51,7 +51,7 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(pattern) {
                 val idxOfFirstChildWithBracket = get(pattern).children.indexOfFirst { child ->
-                    child.operator is SumOperator && child.hasBracket()
+                    child is engine.expressions.Sum && child.hasBracket()
                 }
                 val sumChildren = get(pattern).children.toMutableList()
                 // Remove brackets from the first sum having brackets
@@ -121,14 +121,7 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
 
     RemoveRedundantBracket(
         rule {
-            val pattern = condition {
-                it.hasBracket() && it.outerBracket() != Decorator.MissingBracket && if (it.parent == null) {
-                    true
-                } else {
-                    val origin = it.origin as Child
-                    origin.parent.operator.nthChildAllowed(origin.index, it.operator)
-                }
-            }
+            val pattern = condition { it.hasRedundantBrackets() }
 
             onPattern(pattern) {
                 ruleResult(
@@ -256,10 +249,10 @@ private val normalizeProducts =
 @Suppress("MagicNumber")
 private fun orderInProduct(e: Expression): Int {
     val isConstantAdjuster = if (e.isConstant()) 0 else 10
-    return isConstantAdjuster + when (e.operator) {
-        SumOperator -> 3
-        BinaryExpressionOperator.Root -> 2
-        UnaryExpressionOperator.SquareRoot -> 2
+    return isConstantAdjuster + when (e) {
+        is Sum -> 3
+        is Root -> 2
+        is SquareRoot -> 2
         else -> 1
     }
 }

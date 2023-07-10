@@ -3,7 +3,7 @@ package engine.methods
 import engine.context.Context
 import engine.context.emptyContext
 import engine.expressions.Expression
-import engine.expressions.Root
+import engine.expressions.RootOrigin
 import parser.parseExpression
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -46,7 +46,7 @@ fun testRule(
     context: Context = emptyContext,
     testWithoutBrackets: Boolean = true,
 ) {
-    val step = rule.tryExecute(context, inputExpr.withOrigin(Root()))
+    val step = rule.tryExecute(context, inputExpr.withOrigin(RootOrigin()))
     if (outputExpr == null) {
         assertNull(step)
     } else {

@@ -39,7 +39,7 @@ private val exprDoubleValueComparator = ExpressionComparator { e1: Expression, e
         e2 == Constants.NegativeInfinity -> Sign.POSITIVE
         e2 == Constants.Infinity -> Sign.NEGATIVE
         else -> {
-            val diff = sumOf(e1, negOf(e2)).withOrigin(Root())
+            val diff = sumOf(e1, negOf(e2)).withOrigin(RootOrigin())
             val result = diff.doubleValue.toBigDecimal().setScale(5)
             val compareWithZero = result.compareTo(BigDecimal.ZERO)
             when {

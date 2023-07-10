@@ -1,6 +1,7 @@
 package methods.integerroots
 
 import engine.conditions.signOf
+import engine.expressions.Power
 import engine.expressions.powerOf
 import engine.expressions.productOf
 import engine.expressions.rootOf
@@ -10,7 +11,6 @@ import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
-import engine.operators.BinaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
@@ -438,7 +438,7 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
                 val order = root.order.getBoundExpr(match)!!
                 val product = prod.getBoundExpr(match)!!
 
-                product.children.all { it.operator == BinaryExpressionOperator.Power && it.secondChild == order }
+                product.children.all { it is Power && it.exponent == order }
             }
 
             val pattern = withOptionalIntegerCoefficient(cond, true)

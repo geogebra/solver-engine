@@ -20,7 +20,10 @@ import engine.operators.VariableListOperator
  * Produces a `Pattern` having a list of child patterns
  * `childPattern`'s connected by an operator `operator`.
  */
-data class OperatorPattern(val operator: Operator, val childPatterns: List<Pattern>) : BasePattern() {
+data class OperatorPattern internal constructor(
+    private val operator: Operator,
+    val childPatterns: List<Pattern>,
+) : BasePattern() {
     init {
         require(childPatterns.size >= operator.minChildCount())
         require(childPatterns.size <= operator.maxChildCount())

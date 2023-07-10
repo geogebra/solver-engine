@@ -14,11 +14,11 @@ private const val EQUATION_SYSTEM_PRECEDENCE = -10
 private const val EQUATION_UNION_PRECEDENCE = -20
 private const val STATEMENT_WITH_CONSTRAINT_PRECEDENCE = -15
 
-interface StatementOperator : Operator {
+internal interface StatementOperator : Operator {
     override val kind get() = OperatorKind.STATEMENT
 }
 
-object StatementWithConstraintOperator : BinaryOperator, StatementOperator {
+internal object StatementWithConstraintOperator : BinaryOperator, StatementOperator {
     override val name = "StatementWithConstraint"
 
     override val precedence = STATEMENT_WITH_CONSTRAINT_PRECEDENCE
@@ -48,7 +48,7 @@ object StatementWithConstraintOperator : BinaryOperator, StatementOperator {
     }
 }
 
-object EquationOperator : BinaryOperator, StatementOperator {
+internal object EquationOperator : BinaryOperator, StatementOperator {
     override val name = "Equation"
 
     override val precedence = PREDICATE_PRECEDENCE
@@ -77,9 +77,9 @@ object EquationOperator : BinaryOperator, StatementOperator {
     fun getDual() = EquationOperator
 }
 
-sealed interface EquationOperation
+internal sealed interface EquationOperation
 
-object AddEquationsOperator : BinaryOperator, StatementOperator, EquationOperation {
+internal object AddEquationsOperator : BinaryOperator, StatementOperator, EquationOperation {
     override fun <T> readableString(left: T, right: T): String {
         return "$left /+/ $right"
     }
@@ -98,7 +98,7 @@ object AddEquationsOperator : BinaryOperator, StatementOperator, EquationOperati
     override val precedence = EQUATION_SYSTEM_PRECEDENCE
 }
 
-object SubtractEquationsOperator : BinaryOperator, StatementOperator, EquationOperation {
+internal object SubtractEquationsOperator : BinaryOperator, StatementOperator, EquationOperation {
     override fun <T> readableString(left: T, right: T): String {
         return "$left /-/ $right"
     }
@@ -117,7 +117,7 @@ object SubtractEquationsOperator : BinaryOperator, StatementOperator, EquationOp
     override val precedence = EQUATION_SYSTEM_PRECEDENCE
 }
 
-enum class InequalityOperators(
+internal enum class InequalityOperators(
     val readableString: String,
     val latexString: String,
 ) : BinaryOperator, StatementOperator {
@@ -213,7 +213,7 @@ enum class InequalityOperators(
     }
 }
 
-data class DoubleInequalityOperator(
+internal data class DoubleInequalityOperator(
     val leftOp: InequalityOperators,
     val rightOp: InequalityOperators,
 ) : TernaryOperator, StatementOperator {
@@ -263,7 +263,7 @@ data class DoubleInequalityOperator(
     }
 }
 
-object EquationSystemOperator : StatementOperator {
+internal object EquationSystemOperator : StatementOperator {
     override val name = "EquationSystem"
 
     override val precedence = EQUATION_SYSTEM_PRECEDENCE
@@ -288,7 +288,7 @@ object EquationSystemOperator : StatementOperator {
     }
 }
 
-object InequalitySystemOperator : StatementOperator {
+internal object InequalitySystemOperator : StatementOperator {
     override val name = "InequalitySystem"
 
     override val precedence = EQUATION_SYSTEM_PRECEDENCE
@@ -315,7 +315,7 @@ object InequalitySystemOperator : StatementOperator {
     }
 }
 
-object StatementUnionOperator : StatementOperator {
+internal object StatementUnionOperator : StatementOperator {
     override val name = "EquationUnion"
 
     override val precedence = EQUATION_UNION_PRECEDENCE
@@ -333,7 +333,7 @@ object StatementUnionOperator : StatementOperator {
     }
 }
 
-enum class SolutionOperator : BinaryOperator, StatementOperator {
+internal enum class SolutionOperator : BinaryOperator, StatementOperator {
 
     Identity {
         override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable): String {
@@ -381,7 +381,7 @@ enum class SolutionOperator : BinaryOperator, StatementOperator {
     }
 }
 
-object VariableListOperator : Operator {
+internal object VariableListOperator : Operator {
     override val name = "VariableList"
     override val precedence = 0
     override val arity = ARITY_VARIABLE_FROM_ZERO

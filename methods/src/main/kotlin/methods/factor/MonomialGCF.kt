@@ -3,11 +3,11 @@ package methods.factor
 import engine.context.emptyContext
 import engine.expressions.Distribute
 import engine.expressions.Expression
+import engine.expressions.Minus
 import engine.expressions.negOf
 import engine.expressions.productOf
 import engine.expressions.simplifiedPowerOf
 import engine.expressions.xp
-import engine.operators.UnaryExpressionOperator
 import engine.patterns.FixedPattern
 import engine.patterns.Match
 import engine.patterns.Pattern
@@ -29,7 +29,7 @@ object MonomialGCF {
      *   -x -> [x]
      */
     private fun extractFactors(exp: Expression): MutableList<Expression> {
-        val product = if (exp.operator == UnaryExpressionOperator.Minus) {
+        val product = if (exp is Minus) {
             exp.firstChild
         } else {
             exp
@@ -70,7 +70,7 @@ object MonomialGCF {
     private fun recombineNewFactors(originalExps: List<Expression>, newFactors: List<List<Expression>>):
         List<Expression> {
         return newFactors.mapIndexed { index, factors ->
-            if (originalExps[index].operator == UnaryExpressionOperator.Minus) {
+            if (originalExps[index] is Minus) {
                 negOf(productOf(factors))
             } else {
                 productOf(factors)

@@ -4,8 +4,12 @@ import engine.conditions.isDefinitelyNotUndefined
 import engine.conditions.isDefinitelyNotZero
 import engine.conditions.signOf
 import engine.expressions.Constants
+import engine.expressions.DivideBy
 import engine.expressions.IntegerExpression
+import engine.expressions.Minus
 import engine.expressions.PathScope
+import engine.expressions.Root
+import engine.expressions.SquareRoot
 import engine.expressions.Variable
 import engine.expressions.absoluteValueOf
 import engine.expressions.asInteger
@@ -20,8 +24,6 @@ import engine.expressions.sumOf
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
-import engine.operators.BinaryExpressionOperator
-import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
@@ -177,7 +179,7 @@ private val evaluateProductContainingZero =
         val p = productContaining(zero)
         val pattern = condition(p) { expression ->
             expression.children.all {
-                it.operator != UnaryExpressionOperator.DivideBy && it.isDefinitelyNotUndefined()
+                it !is DivideBy && it.isDefinitelyNotUndefined()
             }
         }
 
@@ -414,7 +416,7 @@ private val cancelCommonTerms =
 private val factorMinusFromSum =
     rule {
         val sum = condition(sumContaining()) { expression ->
-            expression.children.all { it.operator == UnaryExpressionOperator.Minus }
+            expression.children.all { it is Minus }
         }
 
         onPattern(sum) {
@@ -885,11 +887,11 @@ private val rewriteIntegerOrderRootAsPower =
                     move(root.radicand),
                     fractionOf(introduce(Constants.One), move(root.order)),
                 ),
-                gmAction = when (get(root).operator) {
-                    BinaryExpressionOperator.Root -> {
+                gmAction = when (get(root)) {
+                    is Root -> {
                         drag(root.order, root, Position.RightOf)
                     }
-                    UnaryExpressionOperator.SquareRoot -> {
+                    is SquareRoot -> {
                         drag(root, PM.RootIndex, root, null, Position.RightOf)
                     }
                     else -> noGmSupport()

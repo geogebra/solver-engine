@@ -5,8 +5,10 @@ import engine.context.emptyContext
 import engine.expressionbuilder.MappedExpressionBuilder
 import engine.expressions.AbsoluteValue
 import engine.expressions.Constants
+import engine.expressions.Equation
 import engine.expressions.Expression
 import engine.expressions.Introduce
+import engine.expressions.Sum
 import engine.expressions.productOf
 import engine.expressions.simplifiedNegOf
 import engine.expressions.sumOf
@@ -17,8 +19,6 @@ import engine.methods.RunnerMethod
 import engine.methods.rule
 import engine.methods.stepsproducers.StepsBuilder
 import engine.methods.stepsproducers.StepsProducer
-import engine.operators.EquationOperator
-import engine.operators.SumOperator
 import engine.patterns.AnyPattern
 import engine.patterns.SolvablePattern
 import engine.patterns.UnsignedIntegerPattern
@@ -238,7 +238,7 @@ private val moveTermsNotContainingModulusToTheLeft = rule {
 
 private fun extractTermsNotContainingModulus(expression: Expression, variables: List<String>): Expression? {
     return when {
-        expression.operator == SumOperator -> {
+        expression is Sum -> {
             val termsWithoutModulus = expression.children.filter { it.countAbsoluteValues(variables) == 0 }
             if (termsWithoutModulus.isEmpty()) null else sumOf(termsWithoutModulus)
         }
@@ -249,7 +249,7 @@ private fun extractTermsNotContainingModulus(expression: Expression, variables: 
 
 private fun extractVariableTerms(expression: Expression, variables: List<String>): Expression? {
     return when {
-        expression.operator == SumOperator -> {
+        expression is Sum -> {
             val variableTerms = expression.children.filter { !it.isConstantIn(variables) }
             if (variableTerms.isEmpty()) null else sumOf(variableTerms)
         }
@@ -260,7 +260,7 @@ private fun extractVariableTerms(expression: Expression, variables: List<String>
 
 private fun extractConstants(expression: Expression, variables: List<String>): Expression? {
     return when {
-        expression.operator == SumOperator -> {
+        expression is Sum -> {
             val constantTerms = expression.children.filter { it.isConstantIn(variables) }
             if (constantTerms.isEmpty()) null else sumOf(constantTerms)
         }
@@ -276,8 +276,8 @@ private fun extractConstants(expression: Expression, variables: List<String>): E
  *
  * Note: it remains to be determined what a good origin would be for the terms in the result.
  */
-fun simplifiedNegOfSum(expr: Expression) = when (expr.operator) {
-    SumOperator -> sumOf(expr.children.map { simplifiedNegOf(it).withOrigin(Introduce(listOf(it))) })
+fun simplifiedNegOfSum(expr: Expression) = when (expr) {
+    is Sum -> sumOf(expr.children.map { simplifiedNegOf(it).withOrigin(Introduce(listOf(it))) })
     else -> simplifiedNegOf(expr).withOrigin(Introduce(listOf(expr)))
 }
 
@@ -294,8 +294,8 @@ val fractionRequiringMultiplication = optionalNegOf(
 
 fun extractSumTermsFromSolvable(equation: Expression): List<Expression> {
     return equation.children.flatMap {
-        when (it.operator) {
-            SumOperator -> it.children
+        when (it) {
+            is Sum -> it.children
             else -> listOf(it)
         }
     }
@@ -328,7 +328,7 @@ class ApplySolvableRuleAndSimplify(private val simplifySteps: StepsProducer) {
             simplifySteps.produceSteps(ctx, builder.lastSub)?.let { builder.addSteps(it) }
 
             val explicitVariables = ctx.solutionVariables.size < sub.variables.size
-            val key = if (sub.operator == EquationOperator) {
+            val key = if (sub is Equation) {
                 EquationsExplanation.getKey(solvableKey, explicitVariables, true)
             } else {
                 InequalitiesExplanation.getKey(solvableKey, explicitVariables, true)
@@ -350,7 +350,7 @@ private fun MappedExpressionBuilder.solvableExplanation(
     vararg parameters: Expression,
 ): Metadata {
     val explicitVariables = context.solutionVariables.size < expression.variables.size
-    val key = if (expression.operator == EquationOperator) {
+    val key = if (expression is Equation) {
         EquationsExplanation.getKey(solvableKey, explicitVariables, false)
     } else {
         InequalitiesExplanation.getKey(solvableKey, explicitVariables, false)

@@ -30,7 +30,7 @@ import engine.utility.RecurringDecimal
 import java.math.BigDecimal
 import java.math.BigInteger
 
-fun buildExpression(operator: Operator, operands: List<Expression>) =
+internal fun buildExpression(operator: Operator, operands: List<Expression>) =
     expressionOf(
         operator,
         operands.mapIndexed { index, operand -> operand.adjustBracketFor(operator, index) },

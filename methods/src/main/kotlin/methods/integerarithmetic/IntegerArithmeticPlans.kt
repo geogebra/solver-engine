@@ -1,16 +1,18 @@
 package methods.integerarithmetic
 
+import engine.expressions.DivideBy
 import engine.expressions.Expression
 import engine.expressions.IntegerExpression
+import engine.expressions.Minus
+import engine.expressions.Plus
 import engine.expressions.Power
 import engine.expressions.Product
+import engine.expressions.Sum
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
-import engine.operators.SumOperator
-import engine.operators.UnaryExpressionOperator
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.condition
 import engine.patterns.optionalNegOf
@@ -162,14 +164,14 @@ enum class IntegerArithmeticPlans(override val runner: CompositeMethod) : Runner
     ),
 }
 
-fun Expression.hasArithmeticOperation() = when {
-    operator == UnaryExpressionOperator.Minus -> true
-    operator == UnaryExpressionOperator.Plus -> true
-    operator == UnaryExpressionOperator.DivideBy -> true
-    operator == SumOperator -> true
-    this is IntegerExpression -> true
-    this is Power -> true
-    this is Product -> true
+fun Expression.hasArithmeticOperation() = when (this) {
+    is Minus -> true
+    is Plus -> true
+    is DivideBy -> true
+    is Sum -> true
+    is IntegerExpression -> true
+    is Power -> true
+    is Product -> true
     else -> false
 }
 

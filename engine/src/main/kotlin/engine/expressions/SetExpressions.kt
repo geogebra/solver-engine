@@ -6,7 +6,7 @@ import engine.operators.SetOperators
 import engine.operators.TupleOperator
 import engine.sign.Sign
 
-abstract class SetExpression(
+abstract class SetExpression internal constructor(
     operator: Operator,
     operands: List<Expression>,
     meta: NodeMeta,

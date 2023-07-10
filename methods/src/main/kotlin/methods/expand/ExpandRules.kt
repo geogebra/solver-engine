@@ -1,6 +1,7 @@
 package methods.expand
 
 import engine.expressions.Constants
+import engine.expressions.Minus
 import engine.expressions.explicitProductOf
 import engine.expressions.negOf
 import engine.expressions.powerOf
@@ -8,7 +9,6 @@ import engine.expressions.sumOf
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
-import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.FixedPattern
 import engine.patterns.commutativeProductOf
@@ -88,7 +88,7 @@ private val distributeNegativeOverBracket =
             val terms = get(sumTerm).children
             val negDistributedTerm = sumOf(
                 terms.map {
-                    if (it.operator == UnaryExpressionOperator.Minus) move(it.firstChild) else negOf(move(it))
+                    if (it is Minus) move(it.firstChild) else negOf(move(it))
                 },
             )
 
@@ -208,7 +208,7 @@ private val expandTrinomialSquaredUsingIdentity =
 private val expandProductOfSumAndDifference =
     rule {
         val a = AnyPattern()
-        val b = condition { it.operator != UnaryExpressionOperator.Minus }
+        val b = condition { it !is Minus }
         val pattern = commutativeProductOf(commutativeSumOf(a, b), commutativeSumOf(a, negOf(b)))
 
         onPattern(pattern) {

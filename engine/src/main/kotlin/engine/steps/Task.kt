@@ -1,7 +1,7 @@
 package engine.steps
 
 import engine.expressions.Expression
-import engine.expressions.Root
+import engine.expressions.RootOrigin
 import engine.expressions.RootPath
 import engine.steps.metadata.Metadata
 
@@ -38,7 +38,7 @@ data class Task(
     /**
      * This makes the outcome of the task accessible to implementors of methods, with correct origin.
      */
-    val result get() = toExpr.withOrigin(Root(rootPath))
+    val result get() = toExpr.withOrigin(RootOrigin(rootPath))
 
     val rootPath get() = RootPath(taskId)
 }

@@ -1,8 +1,10 @@
 package methods.fractionarithmetic
 
 import engine.expressions.Constants
+import engine.expressions.DivideBy
 import engine.expressions.Expression
 import engine.expressions.Fraction
+import engine.expressions.Power
 import engine.expressions.fractionOf
 import engine.expressions.inverse
 import engine.expressions.negOf
@@ -14,8 +16,6 @@ import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
-import engine.operators.BinaryExpressionOperator
-import engine.operators.NullaryOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
@@ -49,7 +49,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(product) {
                 val factors = get(product).children
-                val division = factors.indexOfFirst { it.operator == engine.operators.UnaryExpressionOperator.DivideBy }
+                val division = factors.indexOfFirst { it is DivideBy }
 
                 val numerator = factors[division - 1]
                 val denominator = factors[division].firstChild
@@ -79,7 +79,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(product) {
                 val factors = get(product).children
-                val division = factors.indexOfFirst { it.operator == engine.operators.UnaryExpressionOperator.DivideBy }
+                val division = factors.indexOfFirst { it is DivideBy }
 
                 val numerator = factors[division - 1]
                 val denominator = factors[division].firstChild
@@ -611,9 +611,9 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
 }
 
 private fun Expression.canBeTurnedToFraction(): Boolean =
-    when (operator) {
-        BinaryExpressionOperator.Fraction -> false
-        BinaryExpressionOperator.Power -> firstChild.canBeTurnedToFraction()
-        is NullaryOperator -> true
+    when {
+        this is Fraction -> false
+        this is Power -> firstChild.canBeTurnedToFraction()
+        // is NullaryOperator -> true
         else -> children.all { it.canBeTurnedToFraction() }
     }

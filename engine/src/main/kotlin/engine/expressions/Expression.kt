@@ -18,6 +18,7 @@ import engine.operators.RecurringDecimalOperator
 import engine.operators.RenderContext
 import engine.operators.SetOperators
 import engine.operators.SolutionOperator
+import engine.operators.StatementUnionOperator
 import engine.operators.StatementWithConstraintOperator
 import engine.operators.SumOperator
 import engine.operators.UnaryExpressionOperator
@@ -124,7 +125,7 @@ data class BasicMeta(
  */
 @Suppress("TooManyFunctions")
 open class Expression internal constructor(
-    val operator: Operator,
+    internal val operator: Operator,
     internal val operands: List<Expression>,
     protected val meta: NodeMeta,
 ) : LatexRenderable, ExpressionProvider {
@@ -297,8 +298,8 @@ open class Expression internal constructor(
      * the expression unchanged with the exception that outer brackets are removed if it is the root expression.
      */
     fun substitute(subExpr: Expression, newExpr: Expression): Expression = when {
-        subExpr.origin is Root && origin !is Root -> this
-        subExpr.origin is Root -> newExpr.removeBrackets()
+        subExpr.origin is RootOrigin && origin !is RootOrigin -> this
+        subExpr.origin is RootOrigin -> newExpr.removeBrackets()
         else -> justSubstitute(subExpr.origin, newExpr)
     }
 
@@ -499,9 +500,14 @@ fun Expression.asPositiveInteger(): BigInteger? = when (this) {
 
 fun Expression.isEquationSystem(): Boolean = operator is EquationSystemOperator
 
-fun expressionOf(operator: Operator, operands: List<Expression>): Expression {
-    return expressionOf(operator, operands, BasicMeta())
-}
+fun Expression.hasRedundantBrackets(): Boolean = hasBracket() && outerBracket() != Decorator.MissingBracket &&
+    when (val origin = origin) {
+        is Child -> origin.parent.operator.nthChildAllowed(origin.index, operator)
+        else -> true
+    }
+
+internal fun expressionOf(operator: Operator, operands: List<Expression>) =
+    expressionOf(operator, operands, BasicMeta())
 
 @Suppress("CyclomaticComplexMethod")
 private fun expressionOf(
@@ -528,9 +534,15 @@ private fun expressionOf(
         UnaryExpressionOperator.Plus -> Plus(operands[0], meta)
         UnaryExpressionOperator.PlusMinus -> PlusMinus(operands[0], meta)
         UnaryExpressionOperator.AbsoluteValue -> AbsoluteValue(operands[0], meta)
+        UnaryExpressionOperator.DivideBy -> DivideBy(operands[0], meta)
+        UnaryExpressionOperator.SquareRoot -> SquareRoot(operands[0], meta)
+
         is ProductOperator -> Product(operands, operator.forcedSigns, meta)
+        SumOperator -> Sum(operands, meta)
+
         BinaryExpressionOperator.Fraction -> Fraction(operands[0], operands[1], meta)
         BinaryExpressionOperator.Power -> Power(operands[0], operands[1], meta)
+        BinaryExpressionOperator.Root -> Root(operands[1], operands[0], meta)
 
         VariableListOperator -> VariableList(operands.map { it as Variable }, meta)
 
@@ -548,6 +560,7 @@ private fun expressionOf(
         is InequalityOperators -> Inequality(operands[0], operands[1], operator, meta)
         is DoubleInequalityOperator -> DoubleInequality(operands[0], operands[1], operands[2], operator, meta)
         StatementWithConstraintOperator -> StatementWithConstraint(operands[0], operands[1], meta)
+        StatementUnionOperator -> StatementUnion(operands, meta)
 
         is NameOperator -> Name(operator.value, meta)
 

@@ -3,7 +3,7 @@ package engine.methods
 import engine.context.Context
 import engine.expressionbuilder.MappedExpressionBuilder
 import engine.expressions.Expression
-import engine.expressions.Root
+import engine.expressions.RootOrigin
 import engine.methods.stepsproducers.PipelineBuilder
 import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.steps
@@ -46,7 +46,7 @@ class TasksBuilder(
         stepsProducer: StepsProducer,
     ): Task? {
         val taskId = nextTaskId()
-        var steps = stepsProducer.produceSteps(context, startExpr.withOrigin(Root())) ?: return null
+        var steps = stepsProducer.produceSteps(context, startExpr.withOrigin(RootOrigin())) ?: return null
         if (resultLabel != null) {
             steps = steps.mapIndexed { i, trans ->
                 if (i + 1 == steps.size) trans.copy(toExpr = trans.toExpr.withName(resultLabel)) else trans

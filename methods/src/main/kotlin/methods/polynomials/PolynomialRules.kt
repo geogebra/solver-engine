@@ -3,6 +3,7 @@ package methods.polynomials
 import engine.expressions.Constants
 import engine.expressions.Expression
 import engine.expressions.Label
+import engine.expressions.Minus
 import engine.expressions.negOf
 import engine.expressions.powerOf
 import engine.expressions.productOf
@@ -10,7 +11,6 @@ import engine.expressions.sumOf
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
-import engine.operators.UnaryExpressionOperator
 import engine.patterns.ArbitraryVariablePattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.condition
@@ -68,7 +68,7 @@ private val collectUnitaryMonomialsInProduct = rule {
         val monomialProduct = if (constantFactors.isEmpty()) {
             productOf(monomialFactors).withLabel(Label.B)
         } else {
-            val hasNegativeConstantFactor = constantFactors.any { it.operator == UnaryExpressionOperator.Minus }
+            val hasNegativeConstantFactor = constantFactors.any { it is Minus }
             if (hasNegativeConstantFactor) {
                 constantFactors[0] = copySign(negProduct, constantFactors[0])
                 signCopied = true
@@ -101,7 +101,7 @@ private val normalizeMonomial = rule {
         val normalized = when {
             coeff == Constants.Zero -> move(coeff)
             coeff == Constants.One -> move(monomial.powerPattern)
-            coeff.operator != UnaryExpressionOperator.Minus ->
+            coeff !is Minus ->
                 productOf(
                     coeff,
                     move(monomial.powerPattern),

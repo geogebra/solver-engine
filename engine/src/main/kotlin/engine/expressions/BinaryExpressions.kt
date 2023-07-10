@@ -27,3 +27,15 @@ class Power(
     val base get() = firstChild
     val exponent get() = secondChild
 }
+class Root(
+    radicand: Expression,
+    index: Expression,
+    meta: NodeMeta = BasicMeta(),
+) : Expression(
+    operator = BinaryExpressionOperator.Root,
+    operands = listOf(index, radicand),
+    meta,
+) {
+    val radicand get() = secondChild
+    val index get() = firstChild
+}

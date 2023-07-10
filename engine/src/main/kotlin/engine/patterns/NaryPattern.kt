@@ -16,8 +16,8 @@ import engine.operators.SumOperator
  * right next to each other, nor in a fixed order.
  * This pattern facilitates such partial and commutative matching.
  */
-class NaryPattern(
-    val operator: NaryOperator,
+class NaryPattern internal constructor(
+    internal val operator: NaryOperator,
     val childPatterns: List<Pattern>,
     val partial: Boolean,
     val commutative: Boolean,

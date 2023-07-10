@@ -1,6 +1,6 @@
 package server.api
 
-import engine.expressions.Root
+import engine.expressions.RootOrigin
 import methods.methodRegistry
 import org.antlr.v4.runtime.misc.ParseCancellationException
 import org.apache.logging.log4j.LogManager
@@ -40,7 +40,7 @@ class PlanApiServiceImpl : PlansApiService {
                 )
             }
             val (trans, duration) = measureTimedValue {
-                plan.tryExecute(context, expr.withOrigin(Root()))
+                plan.tryExecute(context, expr.withOrigin(RootOrigin()))
             }
             context.log(Level.INFO) {
                 mapOf(

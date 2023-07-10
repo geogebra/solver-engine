@@ -4,6 +4,7 @@ import engine.context.ResourceData
 import engine.expressions.Constants
 import engine.expressions.DoubleInequality
 import engine.expressions.Solution
+import engine.expressions.StatementUnion
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
@@ -11,8 +12,6 @@ import engine.methods.plan
 import engine.methods.stepsproducers.FormChecker
 import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
-import engine.operators.DoubleInequalityOperator
-import engine.operators.StatementUnionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.BinaryIntegerCondition
 import engine.patterns.ConditionPattern
@@ -342,7 +341,7 @@ private val decimalSolutionFormChecker = run {
 }
 
 private val solveInequalityUnion = taskSet {
-    val inequalityUnion = condition { it.operator == StatementUnionOperator }
+    val inequalityUnion = condition { it is StatementUnion }
     pattern = inequalityUnion
     explanation = Explanation.SolveInequalityUnion
 
@@ -367,7 +366,7 @@ private val solveInequalityUnion = taskSet {
 }
 
 private val solveDoubleInequality = taskSet {
-    val doubleInequalityPattern = condition { it.operator is DoubleInequalityOperator }
+    val doubleInequalityPattern = condition { it is DoubleInequality }
     pattern = doubleInequalityPattern
     explanation = Explanation.SolveDoubleInequality
 

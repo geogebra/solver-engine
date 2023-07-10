@@ -45,3 +45,11 @@ class AbsoluteValue(
 ) {
     val argument get() = firstChild
 }
+
+class SquareRoot(argument: Expression, meta: NodeMeta = BasicMeta()) : Expression(
+    operator = UnaryExpressionOperator.SquareRoot,
+    operands = listOf(argument),
+    meta,
+) {
+    val argument get() = firstChild
+}

@@ -2,7 +2,7 @@ package engine.methods.stepsproducers
 
 import engine.context.Context
 import engine.expressions.Expression
-import engine.expressions.Root
+import engine.expressions.RootOrigin
 import engine.methods.Strategy
 import engine.operators.UndefinedOperator
 import engine.steps.Alternative
@@ -35,7 +35,7 @@ class StepsBuilder(val context: Context, sub: Expression) {
         // Redundant brackets are removed because the outer brackets in the expression serve no
         // useful purpose
         this.sub = when (sub.origin) {
-            is Root -> sub
+            is RootOrigin -> sub
             else -> sub.removeBrackets()
         }
     }

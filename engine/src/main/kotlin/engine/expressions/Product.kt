@@ -81,6 +81,14 @@ class Product(
     }
 }
 
+class DivideBy(divisor: Expression, meta: NodeMeta = BasicMeta()) : Expression(
+    operator = UnaryExpressionOperator.DivideBy,
+    operands = listOf(divisor),
+    meta = meta,
+) {
+    val divisor get() = firstChild
+}
+
 private fun getBaseOfPower(expr: Expression): Expression = when (expr) {
     is Power -> getBaseOfPower(expr.base)
     else -> expr

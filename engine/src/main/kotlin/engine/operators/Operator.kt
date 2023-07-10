@@ -40,7 +40,7 @@ enum class OperatorKind {
     INNER,
 }
 
-interface Operator {
+internal interface Operator {
     val name: String
 
     val precedence: Int
@@ -68,7 +68,7 @@ interface Operator {
     fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String
 }
 
-interface UnaryOperator : Operator {
+internal interface UnaryOperator : Operator {
 
     override val arity get() = ARITY_ONE
     fun childAllowed(op: Operator) = op.precedence > this.precedence
@@ -95,7 +95,7 @@ interface UnaryOperator : Operator {
     }
 }
 
-interface BinaryOperator : Operator {
+internal interface BinaryOperator : Operator {
 
     override val arity get() = ARITY_TWO
 
@@ -128,7 +128,7 @@ interface BinaryOperator : Operator {
     }
 }
 
-interface TernaryOperator : Operator {
+internal interface TernaryOperator : Operator {
 
     override val arity get() = ARITY_THREE
 

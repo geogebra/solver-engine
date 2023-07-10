@@ -4,6 +4,7 @@ import engine.conditions.signOf
 import engine.expressions.Constants
 import engine.expressions.Expression
 import engine.expressions.Factor
+import engine.expressions.Minus
 import engine.expressions.bracketOf
 import engine.expressions.equationOf
 import engine.expressions.equationSystemOf
@@ -19,7 +20,6 @@ import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
-import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.ArbitraryVariablePattern
 import engine.patterns.ConditionPattern
@@ -101,7 +101,7 @@ enum class FactorRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(sum) {
                 val terms = get(sum).children.map {
-                    if (it.operator == UnaryExpressionOperator.Minus) {
+                    if (it is Minus) {
                         Pair(true, it.firstChild.factors())
                     } else {
                         Pair(false, it.factors())

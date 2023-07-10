@@ -4,7 +4,7 @@ import engine.expressions.Expression
 
 private const val SET_PRECEDENCE = 0
 
-enum class SetOperators : Operator {
+internal enum class SetOperators : Operator {
 
     FiniteSet {
         override val arity = ARITY_VARIABLE
@@ -126,7 +126,7 @@ data class IntervalOperator(
     }
 }
 
-object TupleOperator : Operator {
+internal object TupleOperator : Operator {
     override val name = "Tuple"
     override val precedence = 0
     override val arity = ARITY_VARIABLE_FROM_ZERO

@@ -2,7 +2,7 @@ package engine.methods
 
 import engine.context.Context
 import engine.expressions.Expression
-import engine.expressions.Root
+import engine.expressions.RootOrigin
 import engine.steps.Transformation
 import java.util.logging.Level
 
@@ -126,7 +126,7 @@ class MethodRegistry internal constructor(
                 continue
             }
             val transformation = try {
-                entryData.implementation.tryExecute(context, expr.withOrigin(Root()))
+                entryData.implementation.tryExecute(context, expr.withOrigin(RootOrigin()))
             } catch (e: Exception) {
                 context.log(Level.SEVERE, "Exception caught: ${e.stackTraceToString()}")
                 null

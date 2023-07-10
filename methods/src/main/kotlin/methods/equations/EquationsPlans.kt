@@ -4,14 +4,14 @@ import engine.context.Context
 import engine.expressions.Constants
 import engine.expressions.Expression
 import engine.expressions.Minus
+import engine.expressions.StatementUnion
+import engine.expressions.Sum
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
-import engine.operators.StatementUnionOperator
-import engine.operators.SumOperator
 import engine.patterns.BinaryIntegerCondition
 import engine.patterns.ConditionPattern
 import engine.patterns.ConstantInSolutionVariablePattern
@@ -216,7 +216,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
     SolveEquationUnion(
         taskSet {
-            val equationUnion = condition { it.operator == StatementUnionOperator }
+            val equationUnion = condition { it is StatementUnion }
             pattern = equationUnion
             explanation = Explanation.SolveEquationUnion
 
@@ -317,9 +317,7 @@ val equationRearrangementSteps = steps {
             // we move `c` to the left hand side and flip the equation
             checkForm {
                 val lhs = ConstantInSolutionVariablePattern()
-                val nonConstantTerm = condition(VariableExpressionPattern()) {
-                    it !is Minus && it.operator != SumOperator
-                }
+                val nonConstantTerm = condition(VariableExpressionPattern()) { it !is Minus && it !is Sum }
                 val rhs = oneOf(
                     nonConstantTerm,
                     sumContaining(nonConstantTerm) { rest -> rest.isConstantIn(solutionVariables) },
@@ -364,7 +362,7 @@ val equationRearrangementSteps = steps {
             // otherwise we first move variables to the left and then constants
             // to the right
             checkForm {
-                val variable = condition { it.operator != SumOperator && !it.isConstantIn(solutionVariables) }
+                val variable = condition { it !is Sum && !it.isConstantIn(solutionVariables) }
                 val lhsVariable = withOptionalConstantCoefficient(variable)
                 val rhsVariable = withOptionalConstantCoefficient(variable)
 
