@@ -43,6 +43,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Better order of operations for EvaluateExpressionAsDecimal - multiplications and divisions are now done before
   additions (PLUT-578)
 - SDK: Ignore text style commands when parsing latex (PLUT-636)
+- Improve order of operations when evaluating constant expressions with absolute values (PLUT-620)
 
 ### Changed
 

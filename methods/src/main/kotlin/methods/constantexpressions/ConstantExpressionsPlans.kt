@@ -204,7 +204,6 @@ private val trickySimplificationSteps = steps {
             option(cancelRootOfPower)
             option(IntegerRootsPlans.SplitRootsAndCancelRootsOfPowers)
             option(IntegerRootsPlans.SimplifyPowerOfIntegerUnderRoot)
-            option(addConstantFractions)
         }
     }
 }
@@ -230,9 +229,13 @@ val constantSimplificationSteps: StepsProducer = steps {
 
         option(trickySimplificationSteps)
 
+        option { deeply(evaluateConstantAbsoluteValue) }
+
         option(FractionArithmeticPlans.RewriteDivisionsAsFractions)
 
-        option { deeply(evaluateConstantAbsoluteValue) }
+        // We do this before simplifying fractions for a variety of reasons, a simple one being e.g.
+        // 2/10 + 1/10 --> 3/10
+        option { deeply(addConstantFractions) }
 
         option(fractionSimplificationSteps)
 

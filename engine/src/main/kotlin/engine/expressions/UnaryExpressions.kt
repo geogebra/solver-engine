@@ -34,3 +34,14 @@ class PlusMinus(
 ) {
     val argument get() = firstChild
 }
+
+class AbsoluteValue(
+    argument: Expression,
+    meta: NodeMeta = BasicMeta(),
+) : Expression(
+    operator = UnaryExpressionOperator.AbsoluteValue,
+    operands = listOf(argument),
+    meta,
+) {
+    val argument get() = firstChild
+}

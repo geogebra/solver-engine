@@ -3,6 +3,7 @@ package methods.solvable
 import engine.context.Context
 import engine.context.emptyContext
 import engine.expressionbuilder.MappedExpressionBuilder
+import engine.expressions.AbsoluteValue
 import engine.expressions.Constants
 import engine.expressions.Expression
 import engine.expressions.Introduce
@@ -18,7 +19,6 @@ import engine.methods.stepsproducers.StepsBuilder
 import engine.methods.stepsproducers.StepsProducer
 import engine.operators.EquationOperator
 import engine.operators.SumOperator
-import engine.operators.UnaryExpressionOperator
 import engine.patterns.AnyPattern
 import engine.patterns.SolvablePattern
 import engine.patterns.UnsignedIntegerPattern
@@ -364,6 +364,6 @@ private fun MappedExpressionBuilder.solvableExplanation(
 
 internal fun Expression.countAbsoluteValues(solutionVariables: List<String>): Int = when {
     childCount == 0 -> 0
-    operator == UnaryExpressionOperator.AbsoluteValue && !isConstantIn(solutionVariables) -> 1
+    this is AbsoluteValue && !isConstantIn(solutionVariables) -> 1
     else -> children.sumOf { it.countAbsoluteValues(solutionVariables) }
 }

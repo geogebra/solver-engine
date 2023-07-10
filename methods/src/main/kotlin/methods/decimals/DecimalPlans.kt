@@ -2,6 +2,7 @@ package methods.decimals
 
 import engine.context.Curriculum
 import engine.context.ResourceData
+import engine.expressions.AbsoluteValue
 import engine.expressions.DecimalExpression
 import engine.expressions.Expression
 import engine.expressions.Fraction
@@ -11,7 +12,6 @@ import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.steps
-import engine.operators.UnaryExpressionOperator
 import engine.patterns.SignedNumberPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.condition
@@ -238,9 +238,8 @@ private val evaluateDecimalAbsoluteValue =
     createEvaluateAbsoluteValuePlan(decimalEvaluationSteps)
 
 private fun Expression.isDecimalExpression(): Boolean {
-    val validOperator = this is DecimalExpression ||
-        hasArithmeticOperation() || this is Fraction ||
-        operator == UnaryExpressionOperator.AbsoluteValue
+    val validOperator = this is DecimalExpression || hasArithmeticOperation() || this is Fraction ||
+        this is AbsoluteValue
 
     return validOperator && children.all { it.isDecimalExpression() }
 }

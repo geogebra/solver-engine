@@ -1100,6 +1100,96 @@ class ConstantExpressionTest {
             }
         }
     }
+
+    @Test
+    fun `test absolute values left to right`() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "abs[2 * [1 / 4]] * abs[-2 - [2 / 3]] : abs[[5 / 2] - [1 / 4]]"
+        check {
+            fromExpr = "abs[2 * [1 / 4]] * abs[-2 - [2 / 3]] : abs[[5 / 2] - [1 / 4]]"
+            toExpr = "[16 / 27]"
+            explanation {
+                key = ConstantExpressionsExplanation.SimplifyConstantExpression
+            }
+            step {
+                fromExpr = "abs[2 * [1 / 4]] * abs[-2 - [2 / 3]] : abs[[5 / 2] - [1 / 4]]"
+                toExpr = "[1 / 2] * abs[-2 - [2 / 3]] : abs[[5 / 2] - [1 / 4]]"
+                explanation {
+                    key = GeneralExplanation.EvaluateAbsoluteValue
+                }
+                step {
+                    fromExpr = "abs[2 * [1 / 4]]"
+                    toExpr = "abs[[1 / 2]]"
+                    explanation {
+                        key = FractionArithmeticExplanation.MultiplyAndSimplifyFractions
+                    }
+                }
+                step {
+                    fromExpr = "abs[[1 / 2]]"
+                    toExpr = "[1 / 2]"
+                    explanation {
+                        key = GeneralExplanation.ResolveAbsoluteValueOfPositiveValue
+                    }
+                }
+            }
+            step {
+                fromExpr = "[1 / 2] * abs[-2 - [2 / 3]] : abs[[5 / 2] - [1 / 4]]"
+                toExpr = "[1 / 2] * [8 / 3] : abs[[5 / 2] - [1 / 4]]"
+                explanation {
+                    key = GeneralExplanation.EvaluateAbsoluteValue
+                }
+                step {
+                    fromExpr = "abs[-2 - [2 / 3]]"
+                    toExpr = "abs[-[8 / 3]]"
+                    explanation {
+                        key = FractionArithmeticExplanation.AddIntegerAndFraction
+                    }
+                }
+                step {
+                    fromExpr = "abs[-[8 / 3]]"
+                    toExpr = "[8 / 3]"
+                    explanation {
+                        key = GeneralExplanation.ResolveAbsoluteValueOfNegativeValue
+                    }
+                }
+            }
+            step {
+                fromExpr = "[1 / 2] * [8 / 3] : abs[[5 / 2] - [1 / 4]]"
+                toExpr = "[1 / 2] * [8 / 3] : [9 / 4]"
+                explanation {
+                    key = GeneralExplanation.EvaluateAbsoluteValue
+                }
+                step {
+                    fromExpr = "abs[[5 / 2] - [1 / 4]]"
+                    toExpr = "abs[[9 / 4]]"
+                    explanation {
+                        key = FractionArithmeticExplanation.AddFractions
+                    }
+                }
+                step {
+                    fromExpr = "abs[[9 / 4]]"
+                    toExpr = "[9 / 4]"
+                    explanation {
+                        key = GeneralExplanation.ResolveAbsoluteValueOfPositiveValue
+                    }
+                }
+            }
+            step {
+                fromExpr = "[1 / 2] * [8 / 3] : [9 / 4]"
+                toExpr = "[1 / 2] * [8 / 3] * [4 / 9]"
+                explanation {
+                    key = FractionArithmeticExplanation.RewriteDivisionByFractionAsProduct
+                }
+            }
+            step {
+                fromExpr = "[1 / 2] * [8 / 3] * [4 / 9]"
+                toExpr = "[16 / 27]"
+                explanation {
+                    key = FractionArithmeticExplanation.MultiplyAndSimplifyFractions
+                }
+            }
+        }
+    }
 }
 
 class SimplifyToZeroTest {
