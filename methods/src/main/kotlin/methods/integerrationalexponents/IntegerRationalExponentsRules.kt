@@ -1,6 +1,5 @@
 package methods.integerrationalexponents
 
-import engine.conditions.signOf
 import engine.expressions.Constants
 import engine.expressions.Fraction
 import engine.expressions.Power

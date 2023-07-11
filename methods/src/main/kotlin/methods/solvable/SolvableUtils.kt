@@ -1,6 +1,5 @@
 package methods.solvable
 
-import engine.conditions.signOf
 import engine.context.emptyContext
 import engine.expressions.Constants
 import engine.expressions.Contradiction

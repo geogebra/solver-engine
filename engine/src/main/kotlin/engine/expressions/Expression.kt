@@ -26,6 +26,7 @@ import engine.operators.VariableListOperator
 import engine.operators.VariableOperator
 import engine.patterns.ExpressionProvider
 import engine.patterns.Match
+import engine.sign.Sign
 import engine.utility.Rational
 import engine.utility.product
 import java.math.BigInteger
@@ -430,6 +431,15 @@ open class Expression internal constructor(
             else -> Double.NaN
         }
     }
+
+    /**
+     * Returns the sign of the expression if it can definitely be ascertained.
+     * [Sign.NONE] is returned if the expression could be undefined,
+     * [Sign.UNKNOWN] is returned if the expression has a value but its sign could not be narrowed down.
+     */
+    open fun signOf(): Sign = Sign.NONE
+
+    fun isDefinitelyNotUndefined() = signOf() != Sign.NONE
 }
 
 /**
@@ -536,13 +546,15 @@ private fun expressionOf(
         UnaryExpressionOperator.AbsoluteValue -> AbsoluteValue(operands[0], meta)
         UnaryExpressionOperator.DivideBy -> DivideBy(operands[0], meta)
         UnaryExpressionOperator.SquareRoot -> SquareRoot(operands[0], meta)
+        UnaryExpressionOperator.Percentage -> Percentage(operands[0], meta)
 
         is ProductOperator -> Product(operands, operator.forcedSigns, meta)
         SumOperator -> Sum(operands, meta)
 
         BinaryExpressionOperator.Fraction -> Fraction(operands[0], operands[1], meta)
         BinaryExpressionOperator.Power -> Power(operands[0], operands[1], meta)
-        BinaryExpressionOperator.Root -> Root(operands[1], operands[0], meta)
+        BinaryExpressionOperator.Root -> Root(operands[0], operands[1], meta)
+        BinaryExpressionOperator.PercentageOf -> PercentageOf(operands[0], operands[1], meta)
 
         VariableListOperator -> VariableList(operands.map { it as Variable }, meta)
 

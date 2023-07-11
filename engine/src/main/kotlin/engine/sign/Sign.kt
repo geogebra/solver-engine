@@ -5,26 +5,32 @@ private const val NOT_KNOWN_SIGNUM = 10
 /**
  * The sign of a mathematical expression
  */
-enum class Sign(val signum: Int) {
+enum class Sign(val signum: Int, val canBeZero: Boolean = false) {
     /**
      * Negative and not zero
      */
     NEGATIVE(-1),
 
+    NON_POSITIVE(-1, true),
+
     /**
      * Only zero
      */
-    ZERO(0),
+    ZERO(0, true),
 
     /**
      * Positive and not zero
      */
     POSITIVE(1),
 
+    NON_NEGATIVE(1, false),
+
+    NOT_ZERO(NOT_KNOWN_SIGNUM, false),
+
     /**
      * Sign unknown
      */
-    UNKNOWN(NOT_KNOWN_SIGNUM),
+    UNKNOWN(NOT_KNOWN_SIGNUM, true),
 
     /**
      * No sign (e.g. undefined values have no sign)
@@ -34,48 +40,58 @@ enum class Sign(val signum: Int) {
 
     fun isKnown() = signum != NOT_KNOWN_SIGNUM
 
-    fun inverse() = when (this) {
-        POSITIVE -> POSITIVE
-        NEGATIVE -> NEGATIVE
-        else -> NONE
-    }
+    fun inverse() = if (canBeZero || !isKnown()) NONE else this
 
     operator fun unaryMinus() = when (this) {
         POSITIVE -> NEGATIVE
         NEGATIVE -> POSITIVE
+        NON_NEGATIVE -> NON_POSITIVE
+        NON_POSITIVE -> NON_NEGATIVE
         else -> this
     }
 
     fun truncateToPositive() = when (this) {
-        NEGATIVE -> NONE
-        else -> this
+        POSITIVE, NON_NEGATIVE -> this
+        else -> NONE
     }
 
     operator fun times(other: Sign) = when {
         this == NONE || other == NONE -> NONE
         this == ZERO || other == ZERO -> ZERO
         this == UNKNOWN || other == UNKNOWN -> UNKNOWN
-        else -> fromInt(signum * other.signum)
+        this == NOT_ZERO || other == NOT_ZERO -> NOT_ZERO.orMaybeZero(canBeZero || other.canBeZero)
+        else -> fromInt(signum * other.signum, canBeZero || other.canBeZero)
     }
 
     operator fun div(other: Sign) = this * other.inverse()
 
     operator fun plus(other: Sign) = when {
         this == NONE || other == NONE -> NONE
-        this == UNKNOWN || other == UNKNOWN -> UNKNOWN
-        this == other || other == ZERO -> this
+        !this.isKnown() || !other.isKnown() -> UNKNOWN
+        other == ZERO -> this
         this == ZERO -> other
+        this.signum == other.signum -> this.orMaybeZero(other.canBeZero)
         else -> UNKNOWN
     }
 
     operator fun minus(other: Sign) = this + (-other)
 
+    internal fun orMaybeZero(canBeZero: Boolean = false) = if (!canBeZero) {
+        this
+    } else {
+        when (this) {
+            NEGATIVE -> NON_POSITIVE
+            POSITIVE -> NON_NEGATIVE
+            NOT_ZERO -> UNKNOWN
+            else -> this
+        }
+    }
     companion object {
-        fun fromInt(s: Int) = when {
+        fun fromInt(s: Int, canBeZero: Boolean = false) = when {
             s < 0 -> NEGATIVE
             s == 0 -> ZERO
             s > 0 -> POSITIVE
             else -> NONE
-        }
+        }.orMaybeZero(canBeZero)
     }
 }

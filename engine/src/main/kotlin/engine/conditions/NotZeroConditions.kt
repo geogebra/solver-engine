@@ -2,10 +2,6 @@ package engine.conditions
 
 import engine.context.emptyContext
 import engine.expressions.Expression
-import engine.operators.BinaryExpressionOperator
-import engine.operators.ProductOperator
-import engine.operators.SumOperator
-import engine.operators.UnaryExpressionOperator
 import engine.patterns.RationalPattern
 import engine.patterns.RootMatch
 import engine.patterns.UnsignedIntegerPattern
@@ -19,27 +15,9 @@ import java.math.BigInteger
 /**
  * Returns true if the expression is definitely known to be non-zero, according to some heuristics
  */
-fun Expression.isDefinitelyNotZero(): Boolean = when (signOf()) {
-    Sign.POSITIVE, Sign.NEGATIVE -> true
-    Sign.ZERO -> false
-    else -> isNotZeroNotBasedOnSign()
-}
-
-@Suppress("ComplexMethod")
-fun Expression.isNotZeroNotBasedOnSign(): Boolean = when (operator) {
-    is UnaryExpressionOperator -> when (operator) {
-        UnaryExpressionOperator.DivideBy -> operands[0].isDefinitelyNotZero()
-        UnaryExpressionOperator.Plus -> operands[0].isDefinitelyNotZero()
-        UnaryExpressionOperator.Minus -> operands[0].isDefinitelyNotZero()
-        else -> false
-    }
-    is BinaryExpressionOperator -> when (operator) {
-        BinaryExpressionOperator.Fraction -> operands[0].isDefinitelyNotZero() && operands[1].isDefinitelyNotZero()
-        else -> false
-    }
-    is SumOperator -> sumTermsAreIncommensurable(operands)
-    is ProductOperator -> operands.all { it.isDefinitelyNotZero() }
-    else -> false
+fun Expression.isDefinitelyNotZero(): Boolean {
+    val sign = signOf()
+    return sign != Sign.NONE && !sign.canBeZero
 }
 
 /**

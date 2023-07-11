@@ -1,6 +1,8 @@
 package engine.expressions
 
 import engine.operators.BinaryExpressionOperator
+import engine.sign.Sign
+import engine.utility.isEven
 
 class Fraction(
     numerator: Expression,
@@ -13,6 +15,8 @@ class Fraction(
 ) {
     val numerator get() = firstChild
     val denominator get() = secondChild
+
+    override fun signOf() = numerator.signOf() / denominator.signOf()
 }
 
 class Power(
@@ -26,16 +30,51 @@ class Power(
 ) {
     val base get() = firstChild
     val exponent get() = secondChild
+
+    override fun signOf() = when (val sign = base.signOf()) {
+        Sign.POSITIVE, Sign.NON_NEGATIVE -> sign
+        Sign.ZERO -> if (exponent.signOf() == Sign.POSITIVE) Sign.ZERO else Sign.NONE
+        Sign.NEGATIVE, Sign.NON_POSITIVE, Sign.UNKNOWN, Sign.NOT_ZERO -> {
+            val intExp = exponent.asInteger()
+            when {
+                intExp == null || sign.canBeZero && intExp.signum() <= 0 -> Sign.NONE
+                intExp.isEven() -> Sign.POSITIVE.orMaybeZero(sign.canBeZero)
+                else -> sign
+            }
+        }
+        Sign.NONE -> Sign.NONE
+    }
 }
+
 class Root(
     radicand: Expression,
     index: Expression,
     meta: NodeMeta = BasicMeta(),
 ) : Expression(
     operator = BinaryExpressionOperator.Root,
-    operands = listOf(index, radicand),
+    operands = listOf(radicand, index),
     meta,
 ) {
-    val radicand get() = secondChild
-    val index get() = firstChild
+    val radicand get() = firstChild
+    val index get() = secondChild
+
+    override fun signOf(): Sign {
+        // This is not quite right because we should check the order as well.
+        return radicand.signOf().truncateToPositive()
+    }
+}
+
+class PercentageOf(
+    part: Expression,
+    base: Expression,
+    meta: NodeMeta = BasicMeta(),
+) : Expression(
+    operator = BinaryExpressionOperator.PercentageOf,
+    operands = listOf(part, base),
+    meta = meta,
+) {
+    val part get() = firstChild
+    val base get() = secondChild
+
+    override fun signOf() = part.signOf() * base.signOf()
 }

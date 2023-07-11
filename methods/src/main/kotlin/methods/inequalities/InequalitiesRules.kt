@@ -1,6 +1,5 @@
 package methods.inequalities
 
-import engine.conditions.signOf
 import engine.expressions.Constants
 import engine.expressions.Fraction
 import engine.expressions.Variable
@@ -71,7 +70,7 @@ enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
 
             val inequality = inequalityOf(lhs, rhs)
 
-            onPattern(inequality) {
+            onPattern(condition(inequality) { it.isConstant() }) {
                 val lhsSign = get(lhs).signOf()
                 val rhsSign = get(rhs).signOf()
 

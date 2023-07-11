@@ -4,6 +4,7 @@ import engine.operators.BinaryExpressionOperator
 import engine.operators.ProductOperator
 import engine.operators.RenderContext
 import engine.operators.UnaryExpressionOperator
+import engine.sign.Sign
 
 class Product(
     factors: List<Expression>,
@@ -14,6 +15,8 @@ class Product(
     operands = factors,
     meta,
 ) {
+    override fun signOf() = operands.map { it.signOf() }.reduce(Sign::times)
+
     private fun productSignRequiredForOperand(i: Int, op: Expression) = when {
         op.operator == UnaryExpressionOperator.DivideBy -> false
         forcedSigns.contains(i) -> true
@@ -87,6 +90,8 @@ class DivideBy(divisor: Expression, meta: NodeMeta = BasicMeta()) : Expression(
     meta = meta,
 ) {
     val divisor get() = firstChild
+
+    override fun signOf() = divisor.signOf().inverse()
 }
 
 private fun getBaseOfPower(expr: Expression): Expression = when (expr) {

@@ -1,6 +1,5 @@
 package engine.expressions
 
-import engine.conditions.signOf
 import engine.sign.Sign
 
 fun interface ExpressionComparator {

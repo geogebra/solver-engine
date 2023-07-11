@@ -3,11 +3,14 @@ package engine.expressions
 import engine.operators.NameOperator
 import engine.operators.VariableListOperator
 import engine.operators.VariableOperator
+import engine.sign.Sign
 
 class Variable(
     val variableName: String,
     meta: NodeMeta = BasicMeta(),
 ) : Expression(VariableOperator(variableName), listOf(), meta) {
+    override fun signOf() = Sign.UNKNOWN
+
     override fun fillJson2(s: MutableMap<String, Any>) {
         s["type"] = "Variable"
         s["value"] = variableName

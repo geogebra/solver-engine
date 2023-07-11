@@ -1,6 +1,5 @@
 package methods.integerroots
 
-import engine.conditions.signOf
 import engine.expressions.Power
 import engine.expressions.powerOf
 import engine.expressions.productOf

@@ -1,6 +1,5 @@
 package methods.factor
 
-import engine.conditions.signOf
 import engine.expressions.Constants
 import engine.expressions.Expression
 import engine.expressions.Factor

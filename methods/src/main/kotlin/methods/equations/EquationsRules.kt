@@ -1,7 +1,6 @@
 package methods.equations
 
 import engine.conditions.isDefinitelyNotZero
-import engine.conditions.signOf
 import engine.expressions.Constants
 import engine.expressions.Fraction
 import engine.expressions.Product
