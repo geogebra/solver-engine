@@ -68,6 +68,10 @@ interface PipelineBuilder {
      */
     fun optionally(init: PipelineBuilder.() -> Unit)
 
+    fun shortcut(steps: StepsProducer)
+
+    fun shortcut(init: PipelineBuilder.() -> Unit)
+
     /**
      * Wrap a pipeline that uses labels in this.  It makes sures labels are cleared at the end.  This is not a long-term
      * solution but offers some safety while we look for a good solution.

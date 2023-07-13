@@ -216,15 +216,14 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             val rhs = ConstantInSolutionVariablePattern()
 
             onEquation(lhs, rhs) {
-                val sign = SimpleComparator.compare(get(lhs), get(rhs))
-                if (sign.isKnown()) {
-                    trueOrFalseRuleResult(sign == Sign.ZERO)
-                } else if (get(lhs) == Constants.Zero && get(rhs).isDefinitelyNotZero() ||
-                    get(lhs).isDefinitelyNotZero() && get(rhs) == Constants.Zero
-                ) {
-                    trueOrFalseRuleResult(false)
-                } else {
-                    null
+                val lhsVal = get(lhs)
+                val rhsVal = get(rhs)
+                val sign = SimpleComparator.compare(lhsVal, rhsVal)
+                when {
+                    sign.isKnown() -> trueOrFalseRuleResult(sign == engine.sign.Sign.ZERO)
+                    lhsVal == Constants.Zero && rhsVal.isDefinitelyNotZero() -> trueOrFalseRuleResult(false)
+                    lhsVal.isDefinitelyNotZero() && rhsVal == Constants.Zero -> trueOrFalseRuleResult(false)
+                    else -> null
                 }
             }
         },

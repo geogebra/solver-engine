@@ -240,29 +240,14 @@ enum class EquationSolvingStrategy(
         explanation = EquationsExplanation.SolveEquationInOneVariable,
         steps = steps {
             check { it.isConstant() }
-            // could be expressed nicely with something like
-            //
-            // optionally(EquationsRules.ExtractSolutionFromConstantEquation) onSuccess terminate()
-            //
-            // optionally(simplifyEquation)
-            // optionally(EquationsRules.ExtractSolutionFromConstantEquation) onSuccess terminate()
-            //
-            // apply(EquationsPlans.MoveEverythingToTheLeftAndSimplify)
-            // apply(EquationsRules.ExtractSolutionFromConstantEquation)
 
-            firstOf {
-                option(EquationsRules.ExtractSolutionFromConstantEquation)
-                option {
-                    optionally(simplifyEquation)
-                    firstOf {
-                        option(EquationsRules.ExtractSolutionFromConstantEquation)
-                        option {
-                            apply(EquationsPlans.MoveEverythingToTheLeftAndSimplify)
-                            apply(EquationsRules.ExtractSolutionFromConstantEquation)
-                        }
-                    }
-                }
-            }
+            shortcut(EquationsRules.ExtractSolutionFromConstantEquation)
+
+            optionally(simplifyEquation)
+            shortcut(EquationsRules.ExtractSolutionFromConstantEquation)
+
+            apply(EquationsPlans.MoveEverythingToTheLeftAndSimplify)
+            apply(EquationsRules.ExtractSolutionFromConstantEquation)
         },
     ),
 
