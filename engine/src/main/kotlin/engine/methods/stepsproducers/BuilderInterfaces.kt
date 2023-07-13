@@ -100,6 +100,18 @@ interface PipelineBuilder {
     fun applyTo(extractor: Extractor<Expression>, init: PipelineBuilder.() -> Unit)
 
     /**
+     * Apply the [stepsProducer] to all children of the working expression in turn,
+     * but not to the working expression itself
+     */
+    fun applyToChildren(stepsProducer: StepsProducer)
+
+    /**
+     * Apply the pipeline defined by [init] to all children of the working expression in turn,
+     * but not to the working expression itself
+     */
+    fun applyToChildren(init: PipelineBuilder.() -> Unit)
+
+    /**
      * Apply the recipe to the children of the expression in step.
      */
     fun applyToChildrenInStep(init: InStepBuilder.() -> Unit)

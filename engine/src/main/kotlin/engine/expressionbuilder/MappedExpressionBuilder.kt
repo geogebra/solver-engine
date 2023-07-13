@@ -20,7 +20,6 @@ import engine.expressions.simplifiedPowerOf
 import engine.expressions.variableListOf
 import engine.expressions.xp
 import engine.operators.SolvableOperator
-import engine.patterns.ArbitraryVariablePattern
 import engine.patterns.CoefficientPattern
 import engine.patterns.ExpressionProvider
 import engine.patterns.InequalityPattern
@@ -36,7 +35,6 @@ import engine.patterns.RationalCoefficientPattern
 import engine.patterns.RationalPattern
 import engine.patterns.RecurringDecimalPattern
 import engine.patterns.SolvablePattern
-import engine.patterns.monomialPattern
 import engine.steps.metadata.DragTargetPosition
 import engine.steps.metadata.GmAction
 import engine.steps.metadata.GmActionType
@@ -273,34 +271,6 @@ open class MappedExpressionBuilder(
     fun InequalityPattern.holdsFor(val1: BigDecimal, val2: BigDecimal): Boolean {
         val ineq = getBoundExpr(match)!! as Inequality
         return ineq.comparator.holdsFor(val1, val2)
-    }
-
-    @Suppress("ReturnCount")
-    fun leadingCoefficientOfPolynomial(polynomialExpr: Expression): Expression? {
-        val variables = polynomialExpr.variables
-        if (variables.size != 1) return null
-
-        val monomial = monomialPattern(ArbitraryVariablePattern())
-        var degree = BigInteger.ZERO
-        var leadingCoefficient: Expression? = null
-        for (term in polynomialExpr.children) {
-            if (!term.isConstant()) {
-                // If it isn't a monomial, `polynomialExpr` isn't a polynomial or a polynomial not expanded
-                val monomialMatch = matchPattern(monomial, term) ?: return null
-                val monomialDegree = monomial.exponent.getBoundInt(monomialMatch)
-                when {
-                    monomialDegree > degree -> {
-                        leadingCoefficient = monomial.coefficient(monomialMatch)
-                        degree = monomialDegree
-                    }
-                    monomialDegree == degree -> {
-                        // The polynomial is not normalised
-                        return null
-                    }
-                }
-            }
-        }
-        return leadingCoefficient
     }
 
     fun OptionalWrappingPattern.isWrapping() = this.isWrapping(match)

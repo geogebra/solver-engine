@@ -8,6 +8,7 @@ import methods.integerarithmetic.IntegerArithmeticExplanation
 import methods.polynomials.PolynomialsExplanation
 import org.junit.jupiter.api.Test
 
+@Suppress("LargeClass")
 class FactorPlansTest {
 
     @Test
@@ -19,23 +20,7 @@ class FactorPlansTest {
             fromExpr = "16 [x ^ 5] - 32"
             toExpr = "16 ([x ^ 5] - 2)"
             explanation {
-                key = FactorExplanation.FactorGreatestCommonFactor
-            }
-
-            step {
-                fromExpr = "16 [x ^ 5] - 32"
-                toExpr = "16 [x ^ 5] - 16 * 2"
-                explanation {
-                    key = FactorExplanation.SplitIntegersInMonomialsBeforeFactoring
-                }
-            }
-
-            step {
-                fromExpr = "16 [x ^ 5] - 16 * 2"
-                toExpr = "16 ([x ^ 5] - 2)"
-                explanation {
-                    key = FactorExplanation.ExtractCommonTerms
-                }
+                key = FactorExplanation.FactorGreatestCommonIntegerFactor
             }
         }
     }
@@ -54,25 +39,79 @@ class FactorPlansTest {
 
             step {
                 fromExpr = "15 [x ^ 5] - 33 [x ^ 2]"
-                toExpr = "3 * 5 [x ^ 5] - 3 * 11 [x ^ 2]"
+                toExpr = "3 (5 [x ^ 5] - 11 [x ^ 2])"
                 explanation {
-                    key = FactorExplanation.SplitIntegersInMonomialsBeforeFactoring
+                    key = FactorExplanation.FactorGreatestCommonIntegerFactor
                 }
             }
 
             step {
-                fromExpr = "3 * 5 [x ^ 5] - 3 * 11 [x ^ 2]"
-                toExpr = "3 * 5 [x ^ 2] * [x ^ 3] - 3 * 11 [x ^ 2]"
-                explanation {
-                    key = FactorExplanation.SplitVariablePowersInMonomialsBeforeFactoring
-                }
-            }
-
-            step {
-                fromExpr = "3 * 5 [x ^ 2] * [x ^ 3] - 3 * 11 [x ^ 2]"
+                fromExpr = "3 (5 [x ^ 5] - 11 [x ^ 2])"
                 toExpr = "3 [x ^ 2] (5 [x ^ 3] - 11)"
                 explanation {
-                    key = FactorExplanation.ExtractCommonTerms
+                    key = FactorExplanation.FactorCommonFactor
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test extracting factor after rearranging its terms`() = testMethod {
+        method = FactorPlans.FactorPolynomialInOneVariable
+        inputExpr = "3 * [(x + 1) ^ 3] + 6 * [(1 + x) ^ 2]"
+
+        check {
+            fromExpr = "3 * [(x + 1) ^ 3] + 6 * [(1 + x) ^ 2]"
+            toExpr = "3 * [(x + 1) ^ 2] (x + 3)"
+            explanation {
+                key = FactorExplanation.FactorPolynomial
+            }
+
+            step {
+                fromExpr = "3 * [(x + 1) ^ 3] + 6 * [(1 + x) ^ 2]"
+                toExpr = "3 * [(x + 1) ^ 2] ((x + 1) + 2)"
+                explanation {
+                    key = FactorExplanation.FactorGreatestCommonFactor
+                }
+
+                step {
+                    fromExpr = "3 * [(x + 1) ^ 3] + 6 * [(1 + x) ^ 2]"
+                    toExpr = "3 ([(x + 1) ^ 3] + 2 * [(1 + x) ^ 2])"
+                    explanation {
+                        key = FactorExplanation.FactorGreatestCommonIntegerFactor
+                    }
+                }
+
+                step {
+                    fromExpr = "3 ([(x + 1) ^ 3] + 2 * [(1 + x) ^ 2])"
+                    toExpr = "3 ([(x + 1) ^ 3] + 2 * [(x + 1) ^ 2])"
+                    explanation {
+                        key = FactorExplanation.RearrangeEquivalentSums
+                    }
+                }
+
+                step {
+                    fromExpr = "3 ([(x + 1) ^ 3] + 2 * [(x + 1) ^ 2])"
+                    toExpr = "3 * [(x + 1) ^ 2] ((x + 1) + 2)"
+                    explanation {
+                        key = FactorExplanation.FactorCommonFactor
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "3 * [(x + 1) ^ 2] ((x + 1) + 2)"
+                toExpr = "3 * [(x + 1) ^ 2] (x + 1 + 2)"
+                explanation {
+                    key = GeneralExplanation.RemoveAllBracketSumInSum
+                }
+            }
+
+            step {
+                fromExpr = "3 * [(x + 1) ^ 2] (x + 1 + 2)"
+                toExpr = "3 * [(x + 1) ^ 2] (x + 3)"
+                explanation {
+                    key = IntegerArithmeticExplanation.SimplifyIntegersInSum
                 }
             }
         }
@@ -468,7 +507,7 @@ class FactorPlansTest {
                 fromExpr = "2 [x ^ 2] (3 x + 4) + 3 (3 x + 4)"
                 toExpr = "(3 x + 4) (2 [x ^ 2] + 3)"
                 explanation {
-                    key = FactorExplanation.ExtractCommonTerms
+                    key = FactorExplanation.FactorCommonFactor
                 }
             }
         }
@@ -483,46 +522,54 @@ class FactorPlansTest {
             fromExpr = "[x ^ 4] - [x ^ 2] + 2 x - 1"
             toExpr = "([x ^ 2] - x + 1) ([x ^ 2] + x - 1)"
             explanation {
-                key = FactorExplanation.FactorByGrouping
+                key = FactorExplanation.FactorPolynomial
             }
 
             step {
                 fromExpr = "[x ^ 4] - [x ^ 2] + 2 x - 1"
-                toExpr = "[x ^ 4] + (-[x ^ 2] + 2 x - 1)"
-                explanation {
-                    key = FactorExplanation.GroupPolynomial
-                }
-            }
-
-            step {
-                fromExpr = "[x ^ 4] + (-[x ^ 2] + 2 x - 1)"
-                toExpr = "[x ^ 4] - [(x - 1) ^ 2]"
-                explanation {
-                    key = FactorExplanation.FactorSquareOfBinomial
-                }
-            }
-
-            step {
-                fromExpr = "[x ^ 4] - [(x - 1) ^ 2]"
                 toExpr = "([x ^ 2] - (x - 1)) ([x ^ 2] + (x - 1))"
                 explanation {
-                    key = FactorExplanation.FactorDifferenceOfSquares
+                    key = FactorExplanation.FactorByGrouping
+                }
+
+                step {
+                    fromExpr = "[x ^ 4] - [x ^ 2] + 2 x - 1"
+                    toExpr = "[x ^ 4] + (-[x ^ 2] + 2 x - 1)"
+                    explanation {
+                        key = FactorExplanation.GroupPolynomial
+                    }
+                }
+
+                step {
+                    fromExpr = "[x ^ 4] + (-[x ^ 2] + 2 x - 1)"
+                    toExpr = "[x ^ 4] - [(x - 1) ^ 2]"
+                    explanation {
+                        key = FactorExplanation.FactorSquareOfBinomial
+                    }
+                }
+
+                step {
+                    fromExpr = "[x ^ 4] - [(x - 1) ^ 2]"
+                    toExpr = "([x ^ 2] - (x - 1)) ([x ^ 2] + (x - 1))"
+                    explanation {
+                        key = FactorExplanation.FactorDifferenceOfSquares
+                    }
                 }
             }
 
             step {
                 fromExpr = "([x ^ 2] - (x - 1)) ([x ^ 2] + (x - 1))"
-                toExpr = "([x ^ 2] - (x - 1)) ([x ^ 2] + x - 1)"
+                toExpr = "([x ^ 2] - x + 1) ([x ^ 2] + (x - 1))"
                 explanation {
-                    key = GeneralExplanation.RemoveAllBracketSumInSum
+                    key = ExpandExplanation.DistributeNegativeOverBracket
                 }
             }
 
             step {
-                fromExpr = "([x ^ 2] - (x - 1)) ([x ^ 2] + x - 1)"
+                fromExpr = "([x ^ 2] - x + 1) ([x ^ 2] + (x - 1))"
                 toExpr = "([x ^ 2] - x + 1) ([x ^ 2] + x - 1)"
                 explanation {
-                    key = ExpandExplanation.DistributeNegativeOverBracket
+                    key = GeneralExplanation.RemoveAllBracketSumInSum
                 }
             }
         }
@@ -549,25 +596,17 @@ class FactorPlansTest {
 
                 step {
                     fromExpr = "18 [x ^ 6] - 32 [x ^ 2]"
-                    toExpr = "2 * 9 [x ^ 6] - 2 * 16 [x ^ 2]"
+                    toExpr = "2 (9 [x ^ 6] - 16 [x ^ 2])"
                     explanation {
-                        key = FactorExplanation.SplitIntegersInMonomialsBeforeFactoring
+                        key = FactorExplanation.FactorGreatestCommonIntegerFactor
                     }
                 }
 
                 step {
-                    fromExpr = "2 * 9 [x ^ 6] - 2 * 16 [x ^ 2]"
-                    toExpr = "2 * 9 [x ^ 2] * [x ^ 4] - 2 * 16 [x ^ 2]"
-                    explanation {
-                        key = FactorExplanation.SplitVariablePowersInMonomialsBeforeFactoring
-                    }
-                }
-
-                step {
-                    fromExpr = "2 * 9 [x ^ 2] * [x ^ 4] - 2 * 16 [x ^ 2]"
+                    fromExpr = "2 (9 [x ^ 6] - 16 [x ^ 2])"
                     toExpr = "2 [x ^ 2] (9 [x ^ 4] - 16)"
                     explanation {
-                        key = FactorExplanation.ExtractCommonTerms
+                        key = FactorExplanation.FactorCommonFactor
                     }
                 }
             }
@@ -619,25 +658,17 @@ class FactorPlansTest {
 
                 step {
                     fromExpr = "162 [x ^ 6] - 32 [x ^ 2]"
-                    toExpr = "2 * 81 [x ^ 6] - 2 * 16 [x ^ 2]"
+                    toExpr = "2 (81 [x ^ 6] - 16 [x ^ 2])"
                     explanation {
-                        key = FactorExplanation.SplitIntegersInMonomialsBeforeFactoring
+                        key = FactorExplanation.FactorGreatestCommonIntegerFactor
                     }
                 }
 
                 step {
-                    fromExpr = "2 * 81 [x ^ 6] - 2 * 16 [x ^ 2]"
-                    toExpr = "2 * 81 [x ^ 2] * [x ^ 4] - 2 * 16 [x ^ 2]"
-                    explanation {
-                        key = FactorExplanation.SplitVariablePowersInMonomialsBeforeFactoring
-                    }
-                }
-
-                step {
-                    fromExpr = "2 * 81 [x ^ 2] * [x ^ 4] - 2 * 16 [x ^ 2]"
+                    fromExpr = "2 (81 [x ^ 6] - 16 [x ^ 2])"
                     toExpr = "2 [x ^ 2] (81 [x ^ 4] - 16)"
                     explanation {
-                        key = FactorExplanation.ExtractCommonTerms
+                        key = FactorExplanation.FactorCommonFactor
                     }
                 }
             }
@@ -687,6 +718,98 @@ class FactorPlansTest {
                     explanation {
                         key = FactorExplanation.ApplyDifferenceOfSquaresFormula
                     }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test minus is distributed before factoring if it cancels with the leading coefficient`() = testMethod {
+        method = FactorPlans.FactorPolynomialInOneVariable
+        inputExpr = "-(-[x ^ 2] - 2 x - 1)"
+
+        check {
+            fromExpr = "-(-[x ^ 2] - 2 x - 1)"
+            toExpr = "[(x + 1) ^ 2]"
+            explanation {
+                key = FactorExplanation.FactorPolynomial
+            }
+
+            step {
+                fromExpr = "-(-[x ^ 2] - 2 x - 1)"
+                toExpr = "[x ^ 2] + 2 x + 1"
+                explanation {
+                    key = ExpandExplanation.DistributeNegativeOverBracket
+                }
+            }
+
+            step {
+                fromExpr = "[x ^ 2] + 2 x + 1"
+                toExpr = "[(x + 1) ^ 2]"
+                explanation {
+                    key = FactorExplanation.FactorSquareOfBinomial
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test bracket is not removed if it is useful for factoring`() = testMethod {
+        method = FactorPlans.FactorPolynomialInOneVariable
+        inputExpr = "[(3 x + 6) ^ 2] - (x + 2)"
+
+        check {
+            fromExpr = "[(3 x + 6) ^ 2] - (x + 2)"
+            toExpr = "(x + 2) (9 x + 17)"
+            explanation {
+                key = FactorExplanation.FactorPolynomial
+            }
+
+            step {
+                fromExpr = "[(3 x + 6) ^ 2] - (x + 2)"
+                toExpr = "[(3 (x + 2)) ^ 2] - (x + 2)"
+                explanation {
+                    key = FactorExplanation.FactorGreatestCommonFactor
+                }
+            }
+
+            step {
+                fromExpr = "[(3 (x + 2)) ^ 2] - (x + 2)"
+                toExpr = "9 * [(x + 2) ^ 2] - (x + 2)"
+                explanation {
+                    key = ConstantExpressionsExplanation.SimplifyPowers
+                }
+            }
+
+            step {
+                fromExpr = "9 * [(x + 2) ^ 2] - (x + 2)"
+                toExpr = "(x + 2) (9 (x + 2) - 1)"
+                explanation {
+                    key = FactorExplanation.FactorCommonFactor
+                }
+            }
+
+            step {
+                fromExpr = "(x + 2) (9 (x + 2) - 1)"
+                toExpr = "(x + 2) ((9 x + 18) - 1)"
+                explanation {
+                    key = ExpandExplanation.ExpandSingleBracketAndSimplify
+                }
+            }
+
+            step {
+                fromExpr = "(x + 2) ((9 x + 18) - 1)"
+                toExpr = "(x + 2) (9 x + 18 - 1)"
+                explanation {
+                    key = GeneralExplanation.RemoveAllBracketSumInSum
+                }
+            }
+
+            step {
+                fromExpr = "(x + 2) (9 x + 18 - 1)"
+                toExpr = "(x + 2) (9 x + 17)"
+                explanation {
+                    key = IntegerArithmeticExplanation.SimplifyIntegersInSum
                 }
             }
         }

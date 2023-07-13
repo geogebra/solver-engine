@@ -4,43 +4,73 @@ import engine.methods.testMethod
 import engine.methods.testRule
 import methods.factor.FactorRules.ApplyDifferenceOfSquaresFormula
 import methods.factor.FactorRules.ApplySquareOfBinomialFormula
-import methods.factor.FactorRules.ExtractCommonTerms
+import methods.factor.FactorRules.FactorCommonFactor
+import methods.factor.FactorRules.FactorGreatestCommonIntegerFactor
 import methods.factor.FactorRules.FactorNegativeSignOfLeadingCoefficient
+import methods.factor.FactorRules.RearrangeEquivalentSums
 import methods.factor.FactorRules.RewriteCubeOfBinomial
 import methods.factor.FactorRules.RewriteDifferenceOfSquares
 import methods.factor.FactorRules.RewriteSquareOfBinomial
 import methods.factor.FactorRules.SolveSumProductDiophantineEquationSystemByGuessing
-import methods.factor.FactorRules.SplitIntegersInMonomialsBeforeFactoring
-import methods.factor.FactorRules.SplitVariablePowersInMonomialsBeforeFactoring
 import org.junit.jupiter.api.Test
 
 class FactorRulesTest {
 
     @Test
-    fun testSplitIntegersInMonomialsBeforeFactoring() {
-        testRule("13 + 4[x^2]", SplitIntegersInMonomialsBeforeFactoring, null)
-        testRule("3x + 9", SplitIntegersInMonomialsBeforeFactoring, "3x + 3*3")
-        testRule("3[x^2] + 12x", SplitIntegersInMonomialsBeforeFactoring, "3 [x^2] + 3 * 4x")
-        testRule("3[y^2] + 12x", SplitIntegersInMonomialsBeforeFactoring, "3 [y^2] + 3 * 4x")
-    }
-
-    @Test
-    fun testSplitVariablePowersInMonomialsBeforeFactoring() {
-        testRule("3[y^2] + 12x", SplitVariablePowersInMonomialsBeforeFactoring, null)
-        testRule("3[x^2] + 12x", SplitVariablePowersInMonomialsBeforeFactoring, "3 x * x + 12 x")
+    fun testFactorGreatestCommonIntegerFactor() {
+        testRule("[x^2] + x[y^3]", FactorGreatestCommonIntegerFactor, null)
+        testRule("[x^2] + 5[y^3]", FactorGreatestCommonIntegerFactor, null)
+        testRule("3[x^2] + 5[y^3]", FactorGreatestCommonIntegerFactor, null)
+        testRule("15[x^2] + 21[y^3]", FactorGreatestCommonIntegerFactor, "3(5[x^2] + 7[y^3])")
+        testRule("4[x^2] + 8[y^3]", FactorGreatestCommonIntegerFactor, "4([x^2] + 2[y^3])")
         testRule(
-            "3 sqrt[2] [x^2] + 12 [x^3] + 9 [x^5]",
-            SplitVariablePowersInMonomialsBeforeFactoring,
-            "3 sqrt[2] * [x^2] + 12 [x^2] * x + 9 [x^2] * [x^3]",
+            "15[x^2] + 20[y^3] + 25[z^4]",
+            FactorGreatestCommonIntegerFactor,
+            "5(3[x^2] + 4[y^3] + 5[z^4])",
         )
     }
 
     @Test
-    fun testExtractCommonTerms() {
-        testRule("3x * 2 + 3x * 3x + 4[x^2]", ExtractCommonTerms, null)
-        testRule("3x * 2 + 3x * 3x + 3x * 4[x^2]", ExtractCommonTerms, "3x (2 + 3x + 4[x ^ 2])")
-        testRule("2 sqrt[2] + 2 * 2sqrt[2] x", ExtractCommonTerms, "2 sqrt[2](1 + 2x)")
-        testRule("2 sqrt[2] - 2 * 2sqrt[2] x", ExtractCommonTerms, "2 sqrt[2](1 - 2x)")
+    fun testFactorCommonFactor() {
+        testRule(
+            "[(x + 1)^2] + [(y + 1)^3]",
+            FactorCommonFactor,
+            null,
+        )
+        testRule(
+            "[(x + 1)^2] sqrt[2] + [(y + 1)^3] sqrt[2]",
+            FactorCommonFactor,
+            "sqrt[2] ([(x + 1)^2] + [(y + 1)^3])",
+        )
+        testRule(
+            "3[(x + 1)^3] + 6(x + 1)",
+            FactorCommonFactor,
+            "(x + 1)(3[(x + 1)^2] + 6)",
+        )
+        testRule(
+            "3[(x + 1)^3] + 6[(x + 1)^2]",
+            FactorCommonFactor,
+            "[(x + 1)^2](3(x + 1) + 6)",
+        )
+    }
+
+    @Test
+    fun testRearrangeEquivalentSums() {
+        testRule(
+            "3[(x + 1)^3] + 6[(x + 1)^2]",
+            RearrangeEquivalentSums,
+            null,
+        )
+        testRule(
+            "3[(x + 1)^3] + 6[(1 + x)^2]",
+            RearrangeEquivalentSums,
+            "3[(x + 1)^3] + 6[(x + 1)^2]",
+        )
+        testRule(
+            "3[(x + 1)^3] + 6[(1 + x)^2] + 9(1 + x)",
+            RearrangeEquivalentSums,
+            "3[(x + 1)^3] + 6[(x + 1)^2] + 9(x + 1)",
+        )
     }
 
     @Test

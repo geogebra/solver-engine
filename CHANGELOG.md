@@ -15,6 +15,9 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Changed
 
+- Improved factoring common factors to support powers of arbitrary expressions and sum factors with terms in a
+  different order, e.g. `3 (x + 1)^3 + 6 (1 + x)^2`
+
 ### Removed
 
 ## [1.2] - 2023-07-18

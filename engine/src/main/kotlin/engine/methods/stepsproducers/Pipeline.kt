@@ -129,6 +129,22 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
         applyTo(ProceduralPipeline(init), extractor)
     }
 
+    override fun applyToChildren(init: PipelineBuilder.() -> Unit) {
+        if (!builder.inProgress) return
+
+        applyToChildren(ProceduralPipeline(init))
+    }
+
+    override fun applyToChildren(stepsProducer: StepsProducer) {
+        if (!builder.inProgress) return
+
+        val childCount = builder.lastSub.childCount
+        for (i in 0 until childCount) {
+            stepsProducer.produceSteps(ctx, builder.lastSub.nthChild(i))
+                ?.let { builder.addSteps(it) }
+        }
+    }
+
     override fun applyToChildrenInStep(init: InStepBuilder.() -> Unit) {
         if (!builder.inProgress) return
 

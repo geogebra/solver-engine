@@ -1,9 +1,14 @@
 package methods.factor
 
 import engine.expressions.Constants
+import engine.expressions.Expression
 import engine.expressions.Minus
+import engine.expressions.Power
+import engine.expressions.Product
+import engine.expressions.Sum
 import engine.expressions.equationOf
 import engine.expressions.equationSystemOf
+import engine.expressions.leadingCoefficientOfPolynomial
 import engine.expressions.productOf
 import engine.expressions.simplifiedPowerOf
 import engine.expressions.simplifiedProductOf
@@ -13,6 +18,7 @@ import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
+import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
 import engine.patterns.AnyPattern
@@ -30,32 +36,43 @@ import engine.patterns.productContaining
 import engine.patterns.sumContaining
 import engine.patterns.sumOf
 import engine.steps.metadata.metadata
+import methods.expand.ExpandRules
 import methods.integerarithmetic.IntegerArithmeticRules
 import methods.polynomials.PolynomialRules
 import methods.polynomials.algebraicSimplificationSteps
+import methods.polynomials.expandAndSimplifier
 import java.math.BigInteger
 
 enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
 
-    FactorGreatestCommonIntegerFactor(
-        plan {
-            explanation = Explanation.FactorGreatestCommonIntegerFactor
-
-            steps {
-                optionally(FactorRules.SplitIntegersInMonomialsBeforeFactoring)
-                apply(FactorRules.ExtractCommonTerms)
-            }
-        },
-    ),
-
     FactorGreatestCommonFactor(
         plan {
             explanation = Explanation.FactorGreatestCommonFactor
+            pattern = sumContaining()
+
+            // start by factoring the entire sum, then factor from what's left of the sum
+            fun extractLastFactor(exp: Expression): Expression = when (exp) {
+                is Minus -> extractLastFactor(exp.argument)
+                is Product -> exp.children.last()
+                else -> exp
+            }
 
             steps {
-                optionally(FactorRules.SplitIntegersInMonomialsBeforeFactoring)
-                optionally(FactorRules.SplitVariablePowersInMonomialsBeforeFactoring)
-                apply(FactorRules.ExtractCommonTerms)
+                optionally(FactorRules.FactorNegativeSignOfLeadingCoefficient)
+                apply {
+                    optionally {
+                        applyTo(FactorRules.FactorGreatestCommonIntegerFactor, ::extractLastFactor)
+                    }
+                    whilePossible {
+                        applyTo(FactorRules.FactorCommonFactor, ::extractLastFactor)
+                    }
+                    whilePossible {
+                        applyTo(::extractLastFactor) {
+                            apply(FactorRules.RearrangeEquivalentSums)
+                            apply(FactorRules.FactorCommonFactor)
+                        }
+                    }
+                }
             }
         },
     ),
@@ -147,7 +164,7 @@ enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
                         apply(GroupPolynomial(it))
                         optionally { applyTo(innerFactorSteps) { it.firstChild } }
                         optionally { applyTo(innerFactorSteps) { it.secondChild } }
-                        apply(factorizationSteps)
+                        apply(factorizeSumSteps)
                     }
                 }
             }
@@ -277,26 +294,92 @@ enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
             resultPattern = optionalNegOf(oneOf(productContaining(), powerOf(AnyPattern(), AnyPattern())))
 
             steps {
-                whilePossible(algebraicSimplificationSteps)
                 apply(factorizationSteps)
             }
         },
     ),
 }
 
-private val factorizationSteps = steps {
+private val factorizeSumSteps = steps {
+    firstOf {
+        option(FactorPlans.FactorGreatestCommonFactor)
+        option(FactorPlans.FactorSquareOfBinomial)
+        option(FactorPlans.FactorCubeOfBinomial)
+        option(FactorPlans.FactorDifferenceOfSquares)
+        option(FactorPlans.FactorDifferenceOfCubes)
+        option(FactorPlans.FactorSumOfCubes)
+        option(FactorPlans.FactorByGrouping)
+        option(FactorPlans.FactorMonicTrinomialByGuessing)
+        option(FactorPlans.FactorNonMonicTrinomial)
+    }
+}
+
+private val factorizeSumByFactoringTermsSteps: StepsProducer = steps {
+    check { it is Sum }
+    applyToChildren {
+        applyTo(factorizationSteps) {
+            if (it is Minus) it.argument else it
+        }
+    }
+    apply(factorizeSumSteps)
+    optionally {
+        applyToChildren(factorizationSteps)
+    }
+}
+
+private val factorizeSumByExpandingTermsSteps: StepsProducer = steps {
+    check { it is Sum }
     whilePossible {
         firstOf {
-            option { deeply(FactorPlans.FactorGreatestCommonFactor) }
-            option { deeply(FactorPlans.FactorSquareOfBinomial) }
-            option { deeply(FactorPlans.FactorCubeOfBinomial) }
-            option { deeply(FactorPlans.FactorDifferenceOfSquares) }
-            option { deeply(FactorPlans.FactorDifferenceOfCubes) }
-            option { deeply(FactorPlans.FactorSumOfCubes) }
-            option { deeply(FactorPlans.FactorByGrouping) }
-            option { deeply(FactorPlans.FactorMonicTrinomialByGuessing) }
-            option { deeply(FactorPlans.FactorNonMonicTrinomial) }
+            option(algebraicSimplificationSteps)
+            option { deeply(expandAndSimplifier.steps, deepFirst = true) }
         }
-        whilePossible(algebraicSimplificationSteps)
+    }
+    optionally {
+        apply(factorizeSumSteps)
+        optionally {
+            applyToChildren(factorizationSteps)
+        }
+    }
+}
+
+private val factorizeMinusSteps: StepsProducer = steps {
+    firstOf {
+        option {
+            check { it is Minus && it.argument is Sum && leadingCoefficientOfPolynomial(it.argument as Sum) is Minus }
+            apply(ExpandRules.DistributeNegativeOverBracket)
+            optionally(factorizationSteps)
+        }
+        option {
+            check { it is Minus }
+            applyToKind<Minus>(factorizationSteps) { it.argument }
+            // to tidy up things like -(-(x+1)^2)
+            whilePossible(algebraicSimplificationSteps)
+        }
+    }
+}
+
+private val factorizeProductSteps: StepsProducer = steps {
+    check { it is Product }
+    applyToChildren(factorizationSteps)
+    // to tidy up things like (2(x + 1))^2
+    whilePossible(algebraicSimplificationSteps)
+}
+
+private val factorizePowerSteps: StepsProducer = steps {
+    check { it is Power }
+    applyToKind<Power>(factorizationSteps) { it.base }
+    // to tidy up things like (x+1)^2 (x+2) (x+1)^3
+    whilePossible(algebraicSimplificationSteps)
+}
+
+private val factorizationSteps: StepsProducer = steps {
+    firstOf {
+        option(factorizeSumByFactoringTermsSteps)
+        option(factorizeSumByExpandingTermsSteps)
+        option(factorizeMinusSteps)
+        option(factorizeProductSteps)
+        option(factorizePowerSteps)
+        option { whilePossible(algebraicSimplificationSteps) }
     }
 }
