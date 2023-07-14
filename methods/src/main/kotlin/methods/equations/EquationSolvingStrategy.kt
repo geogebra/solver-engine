@@ -243,7 +243,7 @@ enum class EquationSolvingStrategy(
 
             shortcut(EquationsRules.ExtractSolutionFromConstantEquation)
 
-            optionally(simplifyEquation)
+            optionally(EquationsPlans.SimplifyEquation)
             shortcut(EquationsRules.ExtractSolutionFromConstantEquation)
 
             apply(EquationsPlans.MoveEverythingToTheLeftAndSimplify)
