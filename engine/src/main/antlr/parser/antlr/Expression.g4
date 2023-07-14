@@ -23,7 +23,7 @@ equationAddition: eq1=equation '/+/' eq2=equation;
 equationSubtraction: eq1=equation '/-/' eq2=equation;
 
 equation: lhs=expr '=' rhs=expr;
-
+inequation: lhs=expr '!=' rhs=expr;
 inequality: lhs=expr comparator=('<' | '<=' | '>' | '>=' | '!=') rhs=expr;
 
 solution
@@ -33,11 +33,13 @@ solution
     | 'SetSolution' '[' vars=variables ':' solutionSet=set ']'            #setSolution
     ;
 
-set: cartesianProduct | setUnion;
+set: cartesianProduct | setUnion | setDifference;
 
 cartesianProduct: first=simpleSet ('*' rest+=simpleSet)*;
 
 setUnion: 'SetUnion' '[' first=simpleSet (',' rest+=simpleSet)+ ']';
+
+setDifference: left=simpleSet '\\' right=simpleSet;
 
 simpleSet: emptySet | finiteSet | reals | interval;
 

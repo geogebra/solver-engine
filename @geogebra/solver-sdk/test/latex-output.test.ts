@@ -67,6 +67,18 @@ it('Univariate finite set solution', () => {
   );
 });
 
+it('Univariate solution with holes', () => {
+  const solution: MathJson = [
+    'SetSolution',
+    ['VariableList', ['x']],
+    ['SetDifference', ['Reals'], ['FiniteSet', ['2'], ['3']]],
+  ];
+
+  expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
+    'x \\neq 2 \\text{ and } x \\neq 3',
+  );
+});
+
 it('Multivariate finite set solution', () => {
   const solution: MathJson = [
     'SetSolution',
@@ -83,7 +95,7 @@ it('Multivariate cartesian product solution', () => {
   const solution: MathJson = [
     'SetSolution',
     ['VariableList', ['x'], ['y']],
-    ['CartesianProduct', ['/reals/'], ['FiniteSet', ['SquareRoot', ['3']]]],
+    ['CartesianProduct', ['Reals'], ['FiniteSet', ['SquareRoot', ['3']]]],
   ];
 
   expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
@@ -139,7 +151,7 @@ it('Multivariate contradiction solution', () => {
   );
 });
 
-it('ImplicitSolution', () => {
+it('Implicit solution', () => {
   const solution: MathJson = [
     'ImplicitSolution',
     ['VariableList', ['x'], ['y']],

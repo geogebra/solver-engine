@@ -21,7 +21,7 @@ class LinearInequalitiesTest {
                 fromExpr = "3 x > 1"
                 toExpr = "x > [1 / 3]"
                 explanation {
-                    key = InequalitiesExplanation.DivideByCoefficientOfVariableAndSimplify
+                    key = methods.solvable.InequalitiesExplanation.DivideByCoefficientOfVariableAndSimplify
                 }
             }
 
@@ -51,14 +51,14 @@ class LinearInequalitiesTest {
                 fromExpr = "-3 x <= 1"
                 toExpr = "x >= -[1 / 3]"
                 explanation {
-                    key = InequalitiesExplanation.DivideByCoefficientOfVariableAndSimplify
+                    key = methods.solvable.InequalitiesExplanation.DivideByCoefficientOfVariableAndSimplify
                 }
 
                 step {
                     fromExpr = "-3 x <= 1"
                     toExpr = "[-3 x / -3] >= [1 / -3]"
                     explanation {
-                        key = InequalitiesExplanation.DivideByCoefficientOfVariableAndFlipTheSign
+                        key = methods.solvable.InequalitiesExplanation.DivideByCoefficientOfVariableAndFlipTheSign
                     }
                 }
 
@@ -105,7 +105,7 @@ class LinearInequalitiesTest {
                 fromExpr = "-7 > [x / 3]"
                 toExpr = "[x / 3] < -7"
                 explanation {
-                    key = InequalitiesExplanation.FlipInequality
+                    key = methods.solvable.InequalitiesExplanation.FlipInequality
                 }
             }
 
@@ -113,7 +113,7 @@ class LinearInequalitiesTest {
                 fromExpr = "[x / 3] < -7"
                 toExpr = "x < -21"
                 explanation {
-                    key = InequalitiesExplanation.MultiplyByInverseCoefficientOfVariableAndSimplify
+                    key = methods.solvable.InequalitiesExplanation.MultiplyByInverseCoefficientOfVariableAndSimplify
                 }
             }
 
@@ -159,7 +159,7 @@ class LinearInequalitiesTest {
                 fromExpr = "-2 < x"
                 toExpr = "x > -2"
                 explanation {
-                    key = InequalitiesExplanation.FlipInequality
+                    key = methods.solvable.InequalitiesExplanation.FlipInequality
                 }
             }
 
@@ -189,14 +189,15 @@ class LinearInequalitiesTest {
                 fromExpr = "-[1 / 3] x > 7"
                 toExpr = "x < -21"
                 explanation {
-                    key = InequalitiesExplanation.MultiplyByInverseCoefficientOfVariableAndSimplify
+                    key = methods.solvable.InequalitiesExplanation.MultiplyByInverseCoefficientOfVariableAndSimplify
                 }
 
                 step {
                     fromExpr = "-[1 / 3] x > 7"
                     toExpr = "(-[1 / 3] x) * (-3) < 7 * (-3)"
                     explanation {
-                        key = InequalitiesExplanation.MultiplyByInverseCoefficientOfVariableAndFlipTheSign
+                        key = methods.solvable.InequalitiesExplanation
+                            .MultiplyByInverseCoefficientOfVariableAndFlipTheSign
                     }
                 }
 

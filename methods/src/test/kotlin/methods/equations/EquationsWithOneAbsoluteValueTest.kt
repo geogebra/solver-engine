@@ -182,7 +182,7 @@ class EquationsWithOneAbsoluteValueTest {
                 fromExpr = "-[abs[1 - x] / 5] = -8"
                 toExpr = "[abs[1 - x] / 5] = 8"
                 explanation {
-                    key = EquationsExplanation.NegateBothSides
+                    key = methods.solvable.EquationsExplanation.NegateBothSides
                 }
             }
 

@@ -13,8 +13,6 @@ import engine.methods.stepsproducers.FormChecker
 import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
 import engine.patterns.AnyPattern
-import engine.patterns.BinaryIntegerCondition
-import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
 import engine.patterns.RecurringDecimalPattern
 import engine.patterns.SignedNumberPattern
@@ -32,51 +30,30 @@ import engine.patterns.openClosedIntervalOf
 import engine.patterns.openIntervalOf
 import engine.patterns.optionalNegOf
 import engine.patterns.setSolutionOf
-import engine.patterns.sumContaining
 import engine.patterns.variableListOf
-import engine.patterns.withOptionalConstantCoefficient
-import engine.patterns.withOptionalIntegerCoefficient
 import engine.steps.metadata.metadata
-import methods.constantexpressions.ConstantExpressionsPlans
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.equations.EquationsPlans
 import methods.general.NormalizationPlans
+import methods.inequations.InequationsPlans
 import methods.polynomials.PolynomialsPlans
 import methods.polynomials.algebraicSimplificationSteps
-import methods.solvable.ApplySolvableRuleAndSimplify
-import methods.solvable.DenominatorExtractor.extractDenominator
-import methods.solvable.SolvableKey
+import methods.solvable.SolvablePlans
 import methods.solvable.SolvableRules
 import methods.solvable.computeOverallIntersectionSolution
 import methods.solvable.computeOverallUnionSolution
-import methods.solvable.extractSumTermsFromSolvable
-import methods.solvable.fractionRequiringMultiplication
 
 enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMethod {
 
-    MoveConstantsToTheLeftAndSimplify(
-        applySolvableRuleAndSimplify(SolvableKey.MoveConstantsToTheLeft, SolvableRules.MoveConstantsToTheLeft),
-    ),
-
-    MoveConstantsToTheRightAndSimplify(
-        applySolvableRuleAndSimplify(SolvableKey.MoveConstantsToTheRight, SolvableRules.MoveConstantsToTheRight),
-    ),
-
-    MoveVariablesToTheLeftAndSimplify(
-        applySolvableRuleAndSimplify(SolvableKey.MoveVariablesToTheLeft, SolvableRules.MoveVariablesToTheLeft),
-    ),
-
-    MoveVariablesToTheRightAndSimplify(
-        applySolvableRuleAndSimplify(SolvableKey.MoveVariablesToTheRight, SolvableRules.MoveVariablesToTheRight),
-    ),
-
-    MultiplyByInverseCoefficientOfVariableAndSimplify(
+    SimplifyInequality(
         plan {
-            explanation = Explanation.MultiplyByInverseCoefficientOfVariableAndSimplify
+            explanation = Explanation.SimplifyInequality
 
             steps {
-                apply(InequalitiesRules.MultiplyByInverseCoefficientOfVariable)
-                optionally(inequalitySimplificationSteps)
+                whilePossible { deeply(simpleTidyUpSteps) }
+                optionally(NormalizationPlans.NormalizeExpression)
+                whilePossible(SolvableRules.CancelCommonTermsOnBothSides)
+                whilePossible(algebraicSimplificationSteps)
             }
         },
     ),
@@ -91,29 +68,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
                     option(SolvableRules.MoveTermsNotContainingModulusToTheRight)
                     option(SolvableRules.MoveTermsNotContainingModulusToTheLeft)
                 }
-                apply(simplifyInequality)
-            }
-        },
-    ),
-
-    MultiplyByLCDAndSimplify(
-        plan {
-            explanation = methods.solvable.InequalitiesExplanation.MultiplyByLCDAndSimplify
-
-            steps {
-                apply(SolvableRules.MultiplySolvableByLCD)
-                whilePossible(PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
-            }
-        },
-    ),
-
-    DivideByCoefficientOfVariableAndSimplify(
-        plan {
-            explanation = Explanation.DivideByCoefficientOfVariableAndSimplify
-
-            steps {
-                apply(InequalitiesRules.DivideByCoefficientOfVariable)
-                optionally(inequalitySimplificationSteps)
+                apply(SimplifyInequality)
             }
         },
     ),
@@ -131,93 +86,26 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
             explanation = Explanation.SolveLinearInequality
             pattern = inequalityInOneVariable()
 
+            val solvablePlansForInequalities = SolvablePlans(SimplifyInequality)
+
             steps {
                 whilePossible {
                     firstOf {
-                        option(inequalitySimplificationSteps)
-                        option {
-                            check {
-                                val sumTerms = extractSumTermsFromSolvable(it)
-                                val denominators = sumTerms.mapNotNull { term -> extractDenominator(term) }
+                        option(NormalizationPlans.NormalizeExpression)
+                        // check for contradiction or identity
+                        option(InequalitiesRules.ExtractSolutionFromConstantInequality)
+                        option(InequalitiesRules.ExtractSolutionFromConstantInequalityBasedOnSign)
+                        // normalize the equation
+                        option(SimplifyInequality)
 
-                                denominators.size >= 2 || sumTerms.any { term ->
-                                    fractionRequiringMultiplication.matches(this, term)
-                                }
-                            }
-                            apply(MultiplyByLCDAndSimplify)
-                        }
+                        option(solvablePlansForInequalities.removeConstantDenominatorsSteps)
                         option(PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
                     }
                 }
 
-                optionally {
-                    firstOf {
-                        // three ways to reorganize the inequality into ax </> b form
-                        option {
-                            // if the inequality is in the form `a </> bx + c` with `b` non-negative, then
-                            // we move `c` to the left hand side and flip the equation
-                            checkForm {
-                                val lhs = condition { it.isConstant() }
-                                val variableWithCoefficient = withOptionalConstantCoefficient(
-                                    SolutionVariablePattern(),
-                                    positiveOnly = true,
-                                )
-                                val rhs = oneOf(variableWithCoefficient, sumContaining(variableWithCoefficient))
-                                inequalityOf(lhs, rhs)
-                            }
-                            optionally(MoveConstantsToTheLeftAndSimplify)
-                            apply(InequalitiesRules.FlipInequality)
-                        }
-                        option {
-                            // if the inequality is in the form ax + b = cx + d with a an integer and c a
-                            // positive integer such that c > a we move ax to the right hand side, d to
-                            // the left hand side and flip the inequality
-                            checkForm {
-                                val variable = SolutionVariablePattern()
-                                val lhsVariable = withOptionalIntegerCoefficient(variable, false)
-                                val rhsVariable = withOptionalIntegerCoefficient(variable, true)
-
-                                val lhs = oneOf(lhsVariable, sumContaining(lhsVariable))
-                                val rhs = oneOf(rhsVariable, sumContaining(rhsVariable))
-
-                                ConditionPattern(
-                                    inequalityOf(lhs, rhs),
-                                    BinaryIntegerCondition(
-                                        lhsVariable.integerCoefficient,
-                                        rhsVariable.integerCoefficient,
-                                    ) { n1, n2 -> n2 > n1 },
-                                )
-                            }
-
-                            apply(MoveVariablesToTheRightAndSimplify)
-                            optionally(MoveConstantsToTheLeftAndSimplify)
-                            apply(InequalitiesRules.FlipInequality)
-                        }
-                        option {
-                            // otherwise we first move variables to the left and then constants
-                            // to the right
-                            optionally(MoveVariablesToTheLeftAndSimplify)
-                            optionally(MoveConstantsToTheRightAndSimplify)
-                        }
-                    }
-                }
-
-                optionally {
-                    firstOf {
-                        // get rid of the coefficient of the variable
-                        option(InequalitiesRules.NegateBothSides)
-                        option(MultiplyByInverseCoefficientOfVariableAndSimplify)
-                        option(DivideByCoefficientOfVariableAndSimplify)
-                    }
-                }
-
-                optionally {
-                    firstOf {
-                        option(InequalitiesRules.ExtractSolutionFromInequalityInSolvedForm)
-                        option(InequalitiesRules.ExtractSolutionFromConstantInequality)
-                        option(InequalitiesRules.ExtractSolutionFromConstantInequalityBasedOnSign)
-                    }
-                }
+                optionally(solvablePlansForInequalities.solvableRearrangementSteps)
+                optionally(solvablePlansForInequalities.coefficientRemovalSteps)
+                optionally(InequalitiesRules.ExtractSolutionFromInequalityInSolvedForm)
 
                 contextSensitive {
                     default(
@@ -245,10 +133,10 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
                 optionally(IsolateAbsoluteValue)
                 optionally {
                     check { it.firstChild.isConstant() }
-                    apply(InequalitiesRules.FlipInequality)
+                    apply(SolvableRules.FlipSolvable)
                 }
 
-                optionally(InequalitiesRules.NegateBothSides)
+                optionally(SolvableRules.NegateBothSides)
 
                 optionally {
                     firstOf {
@@ -258,7 +146,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
                         }
                         option {
                             apply(InequalitiesRules.ConvertModulusGreaterThanZero)
-                            apply(SolveLinearInequality)
+                            apply(InequationsPlans.SolveInequationInOneVariable)
                         }
                         option {
                             apply(InequalitiesRules.ConvertModulusLessThanPositiveConstant)
@@ -289,32 +177,16 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
     ),
 }
 
-internal val simplifyInequality = plan {
-    explanation = Explanation.SimplifyInequality
-    pattern = inequalityOf(AnyPattern(), AnyPattern())
-
-    specificPlans(ConstantExpressionsPlans.SimplifyConstantExpression)
-
-    steps {
-        whilePossible { deeply(simpleTidyUpSteps) }
-        optionally(NormalizationPlans.NormalizeExpression)
-        whilePossible(SolvableRules.CancelCommonTermsOnBothSides)
-        whilePossible(algebraicSimplificationSteps)
-    }
-}
-
 internal val inequalitySimplificationSteps = steps {
     whilePossible {
         firstOf {
             option(InequalitiesRules.ExtractSolutionFromConstantInequality)
             option(InequalitiesRules.ExtractSolutionFromConstantInequalityBasedOnSign)
             // normalize the inequality
-            option(simplifyInequality)
+            option(InequalitiesPlans.SimplifyInequality)
         }
     }
 }
-
-private val applySolvableRuleAndSimplify = ApplySolvableRuleAndSimplify(inequalitySimplificationSteps)::getPlan
 
 private val decimalSolutionFormChecker = run {
     val acceptedSolutions = oneOf(

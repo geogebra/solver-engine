@@ -4,14 +4,14 @@ package engine.expressions
 
 import engine.operators.AddEquationsOperator
 import engine.operators.BinaryExpressionOperator
+import engine.operators.Comparator
+import engine.operators.ComparisonOperator
 import engine.operators.DefaultProductOperator
 import engine.operators.DefiniteIntegralOperator
 import engine.operators.DerivativeOperator
-import engine.operators.DoubleInequalityOperator
-import engine.operators.EquationOperator
+import engine.operators.DoubleComparisonOperator
 import engine.operators.EquationSystemOperator
 import engine.operators.IndefiniteIntegralOperator
-import engine.operators.InequalityOperators
 import engine.operators.InequalitySystemOperator
 import engine.operators.IntervalOperator
 import engine.operators.MatrixOperator
@@ -199,7 +199,9 @@ fun matrixOf(matrixRows: List<List<Expression>>): Expression {
 
 fun matrixOf(vararg matrixRows: List<Expression>) = matrixOf(matrixRows.asList())
 
-fun equationOf(lhs: Expression, rhs: Expression) = buildExpression(EquationOperator, listOf(lhs, rhs))
+private fun buildComparison(lhs: Expression, comparator: Comparator, rhs: Expression) =
+    buildExpression(ComparisonOperator(comparator), listOf(lhs, rhs))
+fun equationOf(lhs: Expression, rhs: Expression) = buildComparison(lhs, Comparator.Equal, rhs)
 
 fun addEquationsOf(eq1: Expression, eq2: Expression) =
     buildExpression(AddEquationsOperator, listOf(eq1, eq2))
@@ -207,26 +209,26 @@ fun subtractEquationsOf(eq1: Expression, eq2: Expression) =
     buildExpression(SubtractEquationsOperator, listOf(eq1, eq2))
 
 fun lessThanOf(lhs: Expression, rhs: Expression) =
-    buildExpression(InequalityOperators.LessThan, listOf(lhs, rhs))
+    buildComparison(lhs, Comparator.LessThan, rhs)
 
 fun lessThanEqualOf(lhs: Expression, rhs: Expression) =
-    buildExpression(InequalityOperators.LessThanEqual, listOf(lhs, rhs))
+    buildComparison(lhs, Comparator.LessThanOrEqual, rhs)
 
 fun greaterThanOf(lhs: Expression, rhs: Expression) =
-    buildExpression(InequalityOperators.GreaterThan, listOf(lhs, rhs))
+    buildComparison(lhs, Comparator.GreaterThan, rhs)
 
 fun greaterThanEqualOf(lhs: Expression, rhs: Expression) =
-    buildExpression(InequalityOperators.GreaterThanEqual, listOf(lhs, rhs))
+    buildComparison(lhs, Comparator.GreaterThanOrEqual, rhs)
 
-fun notEqualOf(lhs: Expression, rhs: Expression) =
-    buildExpression(InequalityOperators.NotEqual, listOf(lhs, rhs))
+fun inequationOf(lhs: Expression, rhs: Expression) =
+    buildComparison(lhs, Comparator.NotEqual, rhs)
 
 /**
  * compound inequality of the form: first < second < third
  */
 fun openRangeOf(first: Expression, second: Expression, third: Expression) =
     buildExpression(
-        DoubleInequalityOperator(InequalityOperators.LessThan, InequalityOperators.LessThan),
+        DoubleComparisonOperator(Comparator.LessThan, Comparator.LessThan),
         listOf(first, second, third),
     )
 
@@ -235,7 +237,7 @@ fun openRangeOf(first: Expression, second: Expression, third: Expression) =
  */
 fun openClosedRangeOf(first: Expression, second: Expression, third: Expression) =
     buildExpression(
-        DoubleInequalityOperator(InequalityOperators.LessThan, InequalityOperators.LessThanEqual),
+        DoubleComparisonOperator(Comparator.LessThan, Comparator.LessThanOrEqual),
         listOf(first, second, third),
     )
 
@@ -244,7 +246,7 @@ fun openClosedRangeOf(first: Expression, second: Expression, third: Expression) 
  */
 fun closedOpenRangeOf(first: Expression, second: Expression, third: Expression) =
     buildExpression(
-        DoubleInequalityOperator(InequalityOperators.LessThanEqual, InequalityOperators.LessThan),
+        DoubleComparisonOperator(Comparator.LessThanOrEqual, Comparator.LessThan),
         listOf(first, second, third),
     )
 
@@ -253,7 +255,7 @@ fun closedOpenRangeOf(first: Expression, second: Expression, third: Expression) 
  */
 fun closedRangeOf(first: Expression, second: Expression, third: Expression) =
     buildExpression(
-        DoubleInequalityOperator(InequalityOperators.LessThanEqual, InequalityOperators.LessThanEqual),
+        DoubleComparisonOperator(Comparator.LessThanOrEqual, Comparator.LessThanOrEqual),
         listOf(first, second, third),
     )
 
@@ -262,7 +264,7 @@ fun closedRangeOf(first: Expression, second: Expression, third: Expression) =
  */
 fun reversedOpenRangeOf(first: Expression, second: Expression, third: Expression) =
     buildExpression(
-        DoubleInequalityOperator(InequalityOperators.GreaterThan, InequalityOperators.GreaterThan),
+        DoubleComparisonOperator(Comparator.GreaterThan, Comparator.GreaterThan),
         listOf(first, second, third),
     )
 
@@ -271,7 +273,7 @@ fun reversedOpenRangeOf(first: Expression, second: Expression, third: Expression
  */
 fun reversedOpenClosedRangeOf(first: Expression, second: Expression, third: Expression) =
     buildExpression(
-        DoubleInequalityOperator(InequalityOperators.GreaterThan, InequalityOperators.GreaterThanEqual),
+        DoubleComparisonOperator(Comparator.GreaterThan, Comparator.GreaterThanOrEqual),
         listOf(first, second, third),
     )
 
@@ -280,7 +282,7 @@ fun reversedOpenClosedRangeOf(first: Expression, second: Expression, third: Expr
  */
 fun reversedClosedOpenRangeOf(first: Expression, second: Expression, third: Expression) =
     buildExpression(
-        DoubleInequalityOperator(InequalityOperators.GreaterThanEqual, InequalityOperators.GreaterThan),
+        DoubleComparisonOperator(Comparator.GreaterThanOrEqual, Comparator.GreaterThan),
         listOf(first, second, third),
     )
 
@@ -289,7 +291,7 @@ fun reversedClosedOpenRangeOf(first: Expression, second: Expression, third: Expr
  */
 fun reversedClosedRangeOf(first: Expression, second: Expression, third: Expression) =
     buildExpression(
-        DoubleInequalityOperator(InequalityOperators.GreaterThanEqual, InequalityOperators.GreaterThanEqual),
+        DoubleComparisonOperator(Comparator.GreaterThanOrEqual, Comparator.GreaterThanOrEqual),
         listOf(first, second, third),
     )
 
@@ -326,6 +328,9 @@ fun cartesianProductOf(vararg sets: Expression) = cartesianProductOf(sets.asList
 
 fun setUnionOf(sets: List<Expression>) = buildExpression(SetOperators.SetUnion, sets)
 fun setUnionOf(vararg sets: Expression) = setUnionOf(sets.asList())
+
+fun setDifferenceOf(left: Expression, right: Expression) =
+    buildExpression(SetOperators.SetDifference, listOf(left, right))
 
 fun tupleOf(variables: List<Expression>) = buildExpression(TupleOperator, variables)
 

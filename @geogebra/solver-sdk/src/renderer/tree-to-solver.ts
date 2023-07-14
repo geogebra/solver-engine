@@ -59,6 +59,8 @@ export function treeToSolver(n: ExpressionTree): string {
       return dec(`abs[${rec(n.args[0])}]`);
     case 'Equation':
       return dec(`${rec(n.args[0])} = ${rec(n.args[1])}`);
+    case 'Inequation':
+      return dec(`${rec(n.args[0])} != ${rec(n.args[1])}`);
     case 'EquationSystem':
       return dec(n.args.map((el) => rec(el)).join(', '));
     case 'InequalitySystem':
@@ -75,8 +77,6 @@ export function treeToSolver(n: ExpressionTree): string {
       return dec('/undefined/');
     case '/infinity/':
       return dec('/infinity/');
-    case '/reals/':
-      return dec('/reals/');
     case 'LessThan':
       return dec(`${rec(n.args[0])} < ${rec(n.args[1])}`);
     case 'GreaterThan':
@@ -85,8 +85,6 @@ export function treeToSolver(n: ExpressionTree): string {
       return dec(`${rec(n.args[0])} <= ${rec(n.args[1])}`);
     case 'GreaterThanEqual':
       return dec(`${rec(n.args[0])} >= ${rec(n.args[1])}`);
-    case 'NotEqual':
-      return dec(`${rec(n.args[0])} != ${rec(n.args[1])}`);
     case 'Solution':
       return dec(`Solution[${rec(n.args[0])}, ${rec(n.args[1])}]`);
     case 'SetSolution':
@@ -98,6 +96,8 @@ export function treeToSolver(n: ExpressionTree): string {
     }
     case 'FiniteSet':
       return dec(`{${n.args.map((el) => rec(el)).join(', ')}}`);
+    case 'Reals':
+      return dec('/reals/');
     case 'OpenInterval':
       return `(${rec(n.args[0])}, ${rec(n.args[1])})`;
     case 'ClosedInterval':
@@ -126,6 +126,8 @@ export function treeToSolver(n: ExpressionTree): string {
       return n.args.map(rec).join(' * ');
     case 'SetUnion':
       return dec(`SetUnion[${n.args.map(rec).join(', ')}]`);
+    case 'SetDifference':
+      return dec(`${rec(n.args[0])} \\ ${rec(n.args[1])}`);
     case 'Tuple':
       if (n.args.length === 1) {
         return rec(n.args[0]);

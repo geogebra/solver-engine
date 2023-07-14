@@ -27,7 +27,6 @@ import methods.approximation.ApproximationPlans
 import methods.constantexpressions.constantSimplificationSteps
 import methods.inequalities.InequalitiesPlans
 import methods.inequalities.inequalitySimplificationSteps
-import methods.inequalities.simplifyInequality
 import methods.solvable.expressionComparator
 
 /**
@@ -53,7 +52,7 @@ internal val solveEquationWithConstraint = taskSet {
         ) {
             firstOf {
                 option(InequalitiesPlans.SolveLinearInequality)
-                option(simplifyInequality)
+                option(InequalitiesPlans.SimplifyInequality)
             }
         }
 

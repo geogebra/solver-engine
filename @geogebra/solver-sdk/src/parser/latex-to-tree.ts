@@ -98,7 +98,7 @@ const latexSymbolDefinitions = {
       type: '/infinity/',
     });
     parser.registerSymbol('\\mathbb{R}', BP_IMPLICIT_MUL).nud = () => ({
-      type: '/reals/',
+      type: 'Reals',
     });
     parser.registerSymbol('\\emptyset', BP_IMPLICIT_MUL).nud = () => ({
       type: 'FiniteSet',
@@ -117,14 +117,14 @@ const latexSymbolDefinitions = {
   registerEquation(parser: Parser<ExprTree>) {
     for (const [sym, type] of [
       ['=', 'Equation'],
+      ['≠', 'Inequation'],
+      ['\\neq', 'Inequation'],
       ['<', 'LessThan'],
       ['≤', 'LessThanEqual'],
       ['\\leq', 'LessThanEqual'],
       ['>', 'GreaterThan'],
       ['≥', 'GreaterThanEqual'],
       ['\\geq', 'GreaterThanEqual'],
-      ['\\neq', 'NotEqual'],
-      ['≠', 'NotEqual'],
     ] as const) {
       parser.registerSymbol(sym, BP_EQUALS).led = (left) => {
         return { type, args: [left, parser.expression(BP_EQUALS)] };

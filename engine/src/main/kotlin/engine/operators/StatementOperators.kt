@@ -1,11 +1,6 @@
 package engine.operators
 
-import engine.expressions.Constants
 import engine.expressions.Expression
-import engine.expressions.closedOpenIntervalOf
-import engine.expressions.openClosedIntervalOf
-import engine.expressions.openIntervalOf
-import engine.expressions.setUnionOf
 import engine.sign.Sign
 import java.math.BigDecimal
 
@@ -16,6 +11,168 @@ private const val STATEMENT_WITH_CONSTRAINT_PRECEDENCE = -15
 
 internal interface StatementOperator : Operator {
     override val kind get() = OperatorKind.STATEMENT
+}
+
+enum class Comparator(
+    val type: Type,
+    val readableString: String,
+    val latexString: String,
+    val dual: () -> Comparator,
+    val compareSign: Sign,
+    val operatorName: String,
+) {
+    Equal(
+        type = Type.Equation,
+        readableString = "=",
+        latexString = "=",
+        dual = { Equal },
+        compareSign = Sign.ZERO,
+        operatorName = "Equation",
+    ),
+
+    NotEqual(
+        type = Type.Inequation,
+        readableString = "!=",
+        latexString = "\\neq",
+        dual = { NotEqual },
+        compareSign = Sign.NOT_ZERO,
+        operatorName = "Inequation",
+    ),
+
+    LessThan(
+        type = Type.Inequality,
+        readableString = "<",
+        latexString = "\\lt",
+        dual = { GreaterThan },
+        compareSign = Sign.NEGATIVE,
+        operatorName = "LessThan",
+    ),
+
+    LessThanOrEqual(
+        type = Type.Inequality,
+        readableString = "<=",
+        latexString = "\\leq",
+        dual = { GreaterThanOrEqual },
+        compareSign = Sign.NON_POSITIVE,
+        operatorName = "LessThanEqual",
+    ),
+
+    GreaterThan(
+        type = Type.Inequality,
+        readableString = ">",
+        latexString = "\\gt",
+        dual = { LessThan },
+        compareSign = Sign.POSITIVE,
+        operatorName = "GreaterThan",
+    ),
+
+    GreaterThanOrEqual(
+        type = Type.Inequality,
+        readableString = ">=",
+        latexString = "\\geq",
+        dual = { LessThanOrEqual },
+        compareSign = Sign.NON_NEGATIVE,
+        operatorName = "GreaterThanEqual",
+    ),
+    ;
+
+    fun holdsFor(diffSign: Sign): Boolean {
+        return diffSign.implies(compareSign)
+    }
+    fun holdsFor(left: BigDecimal, right: BigDecimal): Boolean {
+        return holdsFor(Sign.fromInt((left - right).signum()))
+    }
+
+    enum class Type {
+        Equation,
+        Inequation,
+        Inequality,
+    }
+
+    companion object {
+        fun fromReadableString(s: String) = Comparator.values().firstOrNull { it.readableString == s }
+    }
+}
+
+internal data class ComparisonOperator(
+    val comparator: Comparator,
+) : BinaryOperator, StatementOperator, SolvableOperator {
+    override fun getDual(): SolvableOperator {
+        return ComparisonOperator(comparator.dual())
+    }
+
+    override val name = comparator.operatorName
+    override val precedence: Int = PREDICATE_PRECEDENCE
+
+    override fun leftChildAllowed(op: Operator): Boolean {
+        require(op.kind == OperatorKind.EXPRESSION)
+        return true
+    }
+
+    override fun rightChildAllowed(op: Operator): Boolean {
+        require(op.kind == OperatorKind.EXPRESSION)
+        return true
+    }
+
+    override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable): String {
+        if (ctx.align) {
+            val innerCtx = ctx.copy(align = false)
+            return "${left.toLatexString(innerCtx)} & ${comparator.latexString} & ${right.toLatexString(innerCtx)}"
+        } else {
+            return "${left.toLatexString(ctx)} ${comparator.latexString} ${right.toLatexString(ctx)}"
+        }
+    }
+
+    override fun <T> readableString(left: T, right: T) = "$left ${comparator.readableString} $right"
+}
+
+internal data class DoubleComparisonOperator(
+    val leftComparator: Comparator,
+    val rightComparator: Comparator,
+) : StatementOperator, TernaryOperator {
+    override val name = when {
+        leftComparator == Comparator.LessThan && rightComparator == Comparator.LessThan -> "OpenRange"
+        leftComparator == Comparator.LessThan && rightComparator == Comparator.LessThanOrEqual -> "OpenClosedRange"
+        leftComparator == Comparator.LessThanOrEqual && rightComparator == Comparator.LessThan -> "ClosedOpenRange"
+        leftComparator == Comparator.LessThanOrEqual && rightComparator == Comparator.LessThanOrEqual -> "ClosedRange"
+        leftComparator == Comparator.GreaterThan && rightComparator == Comparator.GreaterThan -> "ReversedOpenRange"
+        leftComparator == Comparator.GreaterThan &&
+            rightComparator == Comparator.GreaterThanOrEqual -> "ReversedOpenClosedRange"
+        leftComparator == Comparator.GreaterThanOrEqual &&
+            rightComparator == Comparator.GreaterThan -> "ReversedClosedOpenRange"
+        leftComparator == Comparator.GreaterThanOrEqual &&
+            rightComparator == Comparator.GreaterThanOrEqual -> "ReversedClosedRange"
+        else -> throw error("Invalid operators $leftComparator and $rightComparator for ${this::class.simpleName}")
+    }
+    override val precedence = PREDICATE_PRECEDENCE
+
+    override fun latexString(
+        ctx: RenderContext,
+        first: LatexRenderable,
+        second: LatexRenderable,
+        third: LatexRenderable,
+    ): String {
+        if (ctx.align) {
+            val innerCtx = ctx.copy(align = false)
+            return first.toLatexString(innerCtx) +
+                " & " +
+                leftComparator.latexString +
+                " & " +
+                second.toLatexString(innerCtx) +
+                " & " +
+                rightComparator.latexString +
+                " & " +
+                third.toLatexString(innerCtx)
+        } else {
+            return first.toLatexString(ctx) + " " + leftComparator.latexString +
+                " " + second.toLatexString(ctx) + " " +
+                rightComparator.latexString + " " + third.toLatexString(ctx)
+        }
+    }
+
+    override fun <T> readableString(first: T, second: T, third: T): String {
+        return "$first ${leftComparator.readableString} $second ${rightComparator.readableString} $third"
+    }
 }
 
 internal object StatementWithConstraintOperator : BinaryOperator, StatementOperator {
@@ -48,33 +205,10 @@ internal object StatementWithConstraintOperator : BinaryOperator, StatementOpera
     }
 }
 
-internal object EquationOperator : BinaryOperator, StatementOperator {
-    override val name = "Equation"
+internal interface SolvableOperator : Operator {
+    fun getDual(): SolvableOperator
 
-    override val precedence = PREDICATE_PRECEDENCE
-
-    override fun leftChildAllowed(op: Operator): Boolean {
-        require(op.kind == OperatorKind.EXPRESSION)
-        return true
-    }
-
-    override fun rightChildAllowed(op: Operator): Boolean {
-        require(op.kind == OperatorKind.EXPRESSION)
-        return true
-    }
-
-    override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable): String {
-        if (ctx.align) {
-            val innerCtx = ctx.copy(align = false)
-            return "${left.toLatexString(innerCtx)} & = & ${right.toLatexString(innerCtx)}"
-        } else {
-            return "${left.toLatexString(ctx)} = ${right.toLatexString(ctx)}"
-        }
-    }
-
-    override fun <T> readableString(left: T, right: T) = "$left = $right"
-
-    fun getDual() = EquationOperator
+    fun isSelfDual() = getDual() == this
 }
 
 internal sealed interface EquationOperation
@@ -117,152 +251,6 @@ internal object SubtractEquationsOperator : BinaryOperator, StatementOperator, E
     override val precedence = EQUATION_SYSTEM_PRECEDENCE
 }
 
-internal enum class InequalityOperators(
-    val readableString: String,
-    val latexString: String,
-) : BinaryOperator, StatementOperator {
-
-    LessThan("<", "<") {
-        override fun holdsFor(val1: BigDecimal, val2: BigDecimal) = val1 < val2
-
-        override fun holdsFor(sign: Sign) = sign == Sign.NEGATIVE
-
-        override fun toInterval(boundary: Expression) = openIntervalOf(Constants.NegativeInfinity, boundary)
-
-        override fun getDual() = GreaterThan
-    },
-
-    LessThanEqual("<=", "\\leq") {
-        override fun holdsFor(val1: BigDecimal, val2: BigDecimal) = val1 <= val2
-
-        override fun holdsFor(sign: Sign) = sign == Sign.NEGATIVE || sign == Sign.ZERO
-
-        override fun toInterval(boundary: Expression) = openClosedIntervalOf(Constants.NegativeInfinity, boundary)
-
-        override fun getDual() = GreaterThanEqual
-    },
-
-    GreaterThan(">", ">") {
-        override fun holdsFor(val1: BigDecimal, val2: BigDecimal) = val1 > val2
-
-        override fun holdsFor(sign: Sign) = sign == Sign.POSITIVE
-
-        override fun toInterval(boundary: Expression) = openIntervalOf(boundary, Constants.Infinity)
-
-        override fun getDual() = LessThan
-    },
-
-    GreaterThanEqual(">=", "\\geq") {
-        override fun holdsFor(val1: BigDecimal, val2: BigDecimal) = val1 >= val2
-
-        override fun holdsFor(sign: Sign) = sign == Sign.POSITIVE || sign == Sign.ZERO
-
-        override fun toInterval(boundary: Expression) = closedOpenIntervalOf(boundary, Constants.Infinity)
-
-        override fun getDual() = LessThanEqual
-    },
-
-    NotEqual("!=", "\\neq") {
-        override fun holdsFor(val1: BigDecimal, val2: BigDecimal) = val1 != val2
-
-        override fun holdsFor(sign: Sign) = sign != Sign.ZERO
-
-        override fun toInterval(boundary: Expression) = setUnionOf(
-            openIntervalOf(Constants.NegativeInfinity, boundary),
-            openIntervalOf(boundary, Constants.Infinity),
-        )
-
-        override fun getDual() = NotEqual
-    }, ;
-
-    override val precedence = PREDICATE_PRECEDENCE
-
-    override fun leftChildAllowed(op: Operator): Boolean {
-        require(op.kind == OperatorKind.EXPRESSION)
-        return true
-    }
-
-    override fun rightChildAllowed(op: Operator): Boolean {
-        require(op.kind == OperatorKind.EXPRESSION)
-        return true
-    }
-
-    override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable): String {
-        if (ctx.align) {
-            val innerCtx = ctx.copy(align = false)
-            return "${left.toLatexString(innerCtx)} & $latexString & ${right.toLatexString(innerCtx)}"
-        } else {
-            return "${left.toLatexString(ctx)} $latexString ${right.toLatexString(ctx)}"
-        }
-    }
-
-    override fun <T> readableString(left: T, right: T) = "$left $readableString $right"
-
-    abstract fun holdsFor(val1: BigDecimal, val2: BigDecimal): Boolean
-
-    abstract fun holdsFor(sign: Sign): Boolean?
-
-    abstract fun toInterval(boundary: Expression): Expression
-
-    abstract fun getDual(): InequalityOperators
-
-    companion object {
-        fun fromReadableString(value: String): InequalityOperators? {
-            return values().find { it.readableString == value }
-        }
-    }
-}
-
-internal data class DoubleInequalityOperator(
-    val leftOp: InequalityOperators,
-    val rightOp: InequalityOperators,
-) : TernaryOperator, StatementOperator {
-    override val name = when {
-        leftOp == InequalityOperators.LessThan && rightOp == InequalityOperators.LessThan -> "OpenRange"
-        leftOp == InequalityOperators.LessThan && rightOp == InequalityOperators.LessThanEqual -> "OpenClosedRange"
-        leftOp == InequalityOperators.LessThanEqual && rightOp == InequalityOperators.LessThan -> "ClosedOpenRange"
-        leftOp == InequalityOperators.LessThanEqual && rightOp == InequalityOperators.LessThanEqual -> "ClosedRange"
-        leftOp == InequalityOperators.GreaterThan && rightOp == InequalityOperators.GreaterThan -> "ReversedOpenRange"
-        leftOp == InequalityOperators.GreaterThan &&
-            rightOp == InequalityOperators.GreaterThanEqual -> "ReversedOpenClosedRange"
-        leftOp == InequalityOperators.GreaterThanEqual &&
-            rightOp == InequalityOperators.GreaterThan -> "ReversedClosedOpenRange"
-        leftOp == InequalityOperators.GreaterThanEqual &&
-            rightOp == InequalityOperators.GreaterThanEqual -> "ReversedClosedRange"
-        else -> throw error("Invalid operators $leftOp and $rightOp for ${this::class.simpleName}")
-    }
-
-    override val precedence = PREDICATE_PRECEDENCE
-
-    override fun latexString(
-        ctx: RenderContext,
-        first: LatexRenderable,
-        second: LatexRenderable,
-        third: LatexRenderable,
-    ): String {
-        if (ctx.align) {
-            val innerCtx = ctx.copy(align = false)
-            return first.toLatexString(innerCtx) +
-                " & " +
-                leftOp +
-                " & " +
-                second.toLatexString(innerCtx) +
-                " & " +
-                rightOp +
-                " & " +
-                third.toLatexString(innerCtx)
-        } else {
-            return first.toLatexString(ctx) + " " + leftOp +
-                " " + second.toLatexString(ctx) + " " +
-                rightOp + " " + third.toLatexString(ctx)
-        }
-    }
-
-    override fun <T> readableString(first: T, second: T, third: T): String {
-        return "$first ${leftOp.readableString} $second ${rightOp.readableString} $third"
-    }
-}
-
 internal object EquationSystemOperator : StatementOperator {
     override val name = "EquationSystem"
 
@@ -270,7 +258,7 @@ internal object EquationSystemOperator : StatementOperator {
     override val arity = ARITY_VARIABLE
 
     override fun nthChildAllowed(n: Int, op: Operator): Boolean {
-        require(op is EquationOperator)
+        require(op is ComparisonOperator && op.comparator == Comparator.Equal)
         return true
     }
 
@@ -295,7 +283,7 @@ internal object InequalitySystemOperator : StatementOperator {
     override val arity = ARITY_VARIABLE
 
     override fun nthChildAllowed(n: Int, op: Operator): Boolean {
-        require(op is InequalityOperators)
+        require(op is ComparisonOperator && op.comparator.type == Comparator.Type.Inequality)
         return true
     }
 

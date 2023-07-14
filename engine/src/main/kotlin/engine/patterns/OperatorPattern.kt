@@ -6,7 +6,8 @@ import engine.context.Context
 import engine.expressions.Expression
 import engine.operators.AddEquationsOperator
 import engine.operators.BinaryExpressionOperator
-import engine.operators.EquationOperator
+import engine.operators.Comparator
+import engine.operators.ComparisonOperator
 import engine.operators.IntervalOperator
 import engine.operators.MixedNumberOperator
 import engine.operators.Operator
@@ -69,7 +70,9 @@ fun plusOf(operand: Pattern) = OperatorPattern(UnaryExpressionOperator.Plus, lis
 fun negOf(operand: Pattern) = OperatorPattern(UnaryExpressionOperator.Minus, listOf(operand))
 fun plusMinusOf(operand: Pattern) = OperatorPattern(UnaryExpressionOperator.PlusMinus, listOf(operand))
 
-fun equationOf(lhs: Pattern, rhs: Pattern) = OperatorPattern(EquationOperator, listOf(lhs, rhs))
+fun equationOf(lhs: Pattern, rhs: Pattern) = OperatorPattern(ComparisonOperator(Comparator.Equal), listOf(lhs, rhs))
+fun inequationOf(lhs: Pattern, rhs: Pattern) =
+    OperatorPattern(ComparisonOperator(Comparator.NotEqual), listOf(lhs, rhs))
 
 fun addEquationsOf(eq1: Pattern, eq2: Pattern) = OperatorPattern(AddEquationsOperator, listOf(eq1, eq2))
 fun subtractEquationsOf(eq1: Pattern, eq2: Pattern) = OperatorPattern(SubtractEquationsOperator, listOf(eq1, eq2))

@@ -25,14 +25,14 @@ class LinearEquationsTest {
                 fromExpr = "3 x = 1"
                 toExpr = "x = [1 / 3]"
                 explanation {
-                    key = EquationsExplanation.DivideByCoefficientOfVariableAndSimplify
+                    key = methods.solvable.EquationsExplanation.DivideByCoefficientOfVariableAndSimplify
                 }
 
                 step {
                     fromExpr = "3 x = 1"
                     toExpr = "[3 x / 3] = [1 / 3]"
                     explanation {
-                        key = EquationsExplanation.DivideByCoefficientOfVariable
+                        key = methods.solvable.EquationsExplanation.DivideByCoefficientOfVariable
                     }
                 }
 
@@ -72,7 +72,7 @@ class LinearEquationsTest {
                 fromExpr = "[x / 9] = -1"
                 toExpr = "x = -9"
                 explanation {
-                    key = EquationsExplanation.MultiplyByInverseCoefficientOfVariableAndSimplify
+                    key = methods.solvable.EquationsExplanation.MultiplyByInverseCoefficientOfVariableAndSimplify
                 }
             }
 
@@ -194,7 +194,7 @@ class LinearEquationsTest {
                 fromExpr = "[5 / 3] = x"
                 toExpr = "x = [5 / 3]"
                 explanation {
-                    key = EquationsExplanation.FlipEquation
+                    key = methods.solvable.EquationsExplanation.FlipEquation
                 }
             }
 
@@ -232,7 +232,7 @@ class LinearEquationsTest {
                 fromExpr = "-3 x = -1"
                 toExpr = "x = [1 / 3]"
                 explanation {
-                    key = EquationsExplanation.DivideByCoefficientOfVariableAndSimplify
+                    key = methods.solvable.EquationsExplanation.DivideByCoefficientOfVariableAndSimplify
                 }
             }
 
@@ -270,7 +270,7 @@ class LinearEquationsTest {
                 fromExpr = "-7 = [x / 3]"
                 toExpr = "[x / 3] = -7"
                 explanation {
-                    key = EquationsExplanation.FlipEquation
+                    key = methods.solvable.EquationsExplanation.FlipEquation
                 }
             }
 
@@ -278,7 +278,7 @@ class LinearEquationsTest {
                 fromExpr = "[x / 3] = -7"
                 toExpr = "x = -21"
                 explanation {
-                    key = EquationsExplanation.MultiplyByInverseCoefficientOfVariableAndSimplify
+                    key = methods.solvable.EquationsExplanation.MultiplyByInverseCoefficientOfVariableAndSimplify
                 }
             }
 
@@ -324,7 +324,7 @@ class LinearEquationsTest {
                 fromExpr = "-2 = x"
                 toExpr = "x = -2"
                 explanation {
-                    key = EquationsExplanation.FlipEquation
+                    key = methods.solvable.EquationsExplanation.FlipEquation
                 }
             }
 
@@ -432,14 +432,14 @@ class LinearEquationsTest {
                 fromExpr = "2 x = 4"
                 toExpr = "x = 2"
                 explanation {
-                    key = EquationsExplanation.DivideByCoefficientOfVariableAndSimplify
+                    key = methods.solvable.EquationsExplanation.DivideByCoefficientOfVariableAndSimplify
                 }
 
                 step {
                     fromExpr = "2 x = 4"
                     toExpr = "[2 x / 2] = [4 / 2]"
                     explanation {
-                        key = EquationsExplanation.DivideByCoefficientOfVariable
+                        key = methods.solvable.EquationsExplanation.DivideByCoefficientOfVariable
                     }
                 }
 

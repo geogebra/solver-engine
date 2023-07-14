@@ -85,6 +85,25 @@ internal enum class SetOperators : Operator {
         }
     },
 
+    SetDifference {
+        override val arity = 2
+        override val precedence = SET_PRECEDENCE
+        override val kind = OperatorKind.SET
+
+        override fun nthChildAllowed(n: Int, op: Operator): Boolean {
+            require(op.kind == OperatorKind.SET)
+            return true
+        }
+
+        override fun <T> readableString(children: List<T>): String {
+            return "${children[0]} \\ ${children[1]}"
+        }
+
+        override fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String {
+            return "${children[0].toLatexString(ctx)} \\setminus ${children[1].toLatexString(ctx)}"
+        }
+    },
+
     Reals {
         override val arity = ARITY_NULL
         override val kind = OperatorKind.SET
@@ -97,7 +116,7 @@ internal enum class SetOperators : Operator {
             )
         }
 
-        override fun <T> readableString(children: List<T>) = "REALS"
+        override fun <T> readableString(children: List<T>) = "/reals/"
         override fun latexString(ctx: RenderContext, children: List<LatexRenderable>) = "\\mathbb{R}"
     },
 }

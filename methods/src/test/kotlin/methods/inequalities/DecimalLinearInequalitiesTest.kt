@@ -39,7 +39,7 @@ class DecimalLinearInequalitiesTest {
                 fromExpr = "0.2 x < -11.54"
                 toExpr = "x < -57.7"
                 explanation {
-                    key = InequalitiesExplanation.DivideByCoefficientOfVariableAndSimplify
+                    key = methods.solvable.InequalitiesExplanation.DivideByCoefficientOfVariableAndSimplify
                 }
             }
 
@@ -78,7 +78,7 @@ class DecimalLinearInequalitiesTest {
                 fromExpr = "3.1 x >= -0.99"
                 toExpr = "x >= -[99 / 310]"
                 explanation {
-                    key = InequalitiesExplanation.DivideByCoefficientOfVariableAndSimplify
+                    key = methods.solvable.InequalitiesExplanation.DivideByCoefficientOfVariableAndSimplify
                 }
             }
 
@@ -144,7 +144,7 @@ class DecimalLinearInequalitiesTest {
                 fromExpr = "3.2 x <= -1"
                 toExpr = "x <= -0.3125"
                 explanation {
-                    key = InequalitiesExplanation.DivideByCoefficientOfVariableAndSimplify
+                    key = methods.solvable.InequalitiesExplanation.DivideByCoefficientOfVariableAndSimplify
                 }
             }
 

@@ -1,25 +1,23 @@
 package methods.inequalities
 
 import engine.expressions.Constants
-import engine.expressions.Fraction
+import engine.expressions.Expression
 import engine.expressions.Variable
+import engine.expressions.closedOpenIntervalOf
 import engine.expressions.closedRangeOf
 import engine.expressions.contradictionOf
 import engine.expressions.equationOf
-import engine.expressions.fractionOf
 import engine.expressions.greaterThanEqualOf
 import engine.expressions.greaterThanOf
 import engine.expressions.identityOf
-import engine.expressions.inverse
-import engine.expressions.isNeg
+import engine.expressions.inequationOf
 import engine.expressions.lessThanEqualOf
 import engine.expressions.lessThanOf
 import engine.expressions.negOf
-import engine.expressions.notEqualOf
+import engine.expressions.openClosedIntervalOf
+import engine.expressions.openIntervalOf
 import engine.expressions.openRangeOf
-import engine.expressions.productOf
 import engine.expressions.setSolutionOf
-import engine.expressions.simplifiedNegOf
 import engine.expressions.simplifiedProductOf
 import engine.expressions.statementUnionOf
 import engine.expressions.variableListOf
@@ -27,6 +25,7 @@ import engine.methods.Rule
 import engine.methods.RuleResultBuilder
 import engine.methods.RunnerMethod
 import engine.methods.rule
+import engine.operators.Comparator
 import engine.patterns.AnyPattern
 import engine.patterns.ConstantInSolutionVariablePattern
 import engine.patterns.FixedPattern
@@ -40,13 +39,11 @@ import engine.patterns.greaterThanOf
 import engine.patterns.inequalityOf
 import engine.patterns.lessThanEqualOf
 import engine.patterns.lessThanOf
-import engine.patterns.negOf
 import engine.patterns.oneOf
 import engine.patterns.withOptionalConstantCoefficient
 import engine.sign.Sign
 import engine.steps.Transformation
 import engine.steps.metadata.metadata
-import methods.solvable.countAbsoluteValues
 
 enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
 
@@ -112,122 +109,28 @@ enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
             val inequality = inequalityOf(lhs, rhs)
 
             onPattern(inequality) {
+                val inequality = get(inequality) as engine.expressions.Inequality
+                val interval = makeInterval(inequality.comparator, get(rhs))!!
                 ruleResult(
-                    toExpr = setSolutionOf(variableListOf(move(lhs) as Variable), inequality.toInterval(get(rhs))),
+                    toExpr = setSolutionOf(variableListOf(move(lhs) as Variable), interval),
                     explanation = metadata(Explanation.ExtractSolutionFromInequalityInSolvedForm),
                 )
             }
         },
     ),
+}
 
-    FlipInequality(
-        rule {
-            val lhs = AnyPattern()
-            val rhs = AnyPattern()
-
-            val inequality = inequalityOf(lhs, rhs)
-
-            onPattern(inequality) {
-                ruleResult(
-                    toExpr = inequality.dualInequality(move(rhs), move(lhs)),
-                    explanation = metadata(Explanation.FlipInequality),
-                )
-            }
-        },
-    ),
-
-    NegateBothSides(
-        rule {
-            val variable = SolutionVariablePattern()
-            val absoluteValueContainingLHS = condition { it.countAbsoluteValues(solutionVariables) > 0 }
-            val unsignedLHS = oneOf(variable, absoluteValueContainingLHS)
-            val lhs = negOf(unsignedLHS)
-            val rhs = AnyPattern()
-
-            val inequality = inequalityOf(lhs, rhs)
-
-            onPattern(inequality) {
-                ruleResult(
-                    toExpr = inequality.dualInequality(
-                        move(unsignedLHS),
-                        simplifiedNegOf(move(rhs)),
-                    ),
-                    explanation = metadata(Explanation.NegateBothSidesAndFlipTheSign),
-                )
-            }
-        },
-    ),
-
-    MultiplyByInverseCoefficientOfVariable(
-        rule {
-            val lhs = withOptionalConstantCoefficient(SolutionVariablePattern())
-            val rhs = AnyPattern()
-
-            val inequality = inequalityOf(lhs, rhs)
-
-            onPattern(inequality) {
-                val coefficient = get(lhs::coefficient)!!
-
-                if (coefficient is Fraction || (coefficient.isNeg() && coefficient.firstChild is Fraction)) {
-                    val inverse = introduce(coefficient, coefficient.inverse())
-
-                    when (inverse.signOf()) {
-                        Sign.POSITIVE -> ruleResult(
-                            toExpr = inequality.sameInequality(
-                                productOf(get(lhs), inverse),
-                                productOf(get(rhs), inverse),
-                            ),
-                            explanation = metadata(Explanation.MultiplyByInverseCoefficientOfVariable),
-                        )
-                        Sign.NEGATIVE -> ruleResult(
-                            toExpr = inequality.dualInequality(
-                                productOf(get(lhs), inverse),
-                                productOf(get(rhs), inverse),
-                            ),
-                            explanation = metadata(Explanation.MultiplyByInverseCoefficientOfVariableAndFlipTheSign),
-                        )
-                        else -> null
-                    }
-                } else {
-                    null
-                }
-            }
-        },
-    ),
-
-    DivideByCoefficientOfVariable(
-        rule {
-            val lhs = withOptionalConstantCoefficient(SolutionVariablePattern())
-            val rhs = AnyPattern()
-
-            val inequality = inequalityOf(lhs, rhs)
-
-            onPattern(inequality) {
-                val coefficientValue = get(lhs::coefficient)!!
-                if (coefficientValue == Constants.One) return@onPattern null
-
-                val coefficient = introduce(coefficientValue, coefficientValue)
-
-                when (coefficient.signOf()) {
-                    Sign.POSITIVE -> ruleResult(
-                        toExpr = inequality.sameInequality(
-                            fractionOf(get(lhs), coefficient),
-                            fractionOf(get(rhs), coefficient),
-                        ),
-                        explanation = metadata(Explanation.DivideByCoefficientOfVariable),
-                    )
-                    Sign.NEGATIVE -> ruleResult(
-                        toExpr = inequality.dualInequality(
-                            fractionOf(get(lhs), coefficient),
-                            fractionOf(get(rhs), coefficient),
-                        ),
-                        explanation = metadata(Explanation.DivideByCoefficientOfVariableAndFlipTheSign),
-                    )
-                    else -> null
-                }
-            }
-        },
-    ),
+/**
+ * Turns something like " <= 3" into an interval "[3, infty)"
+ */
+private fun makeInterval(comparator: Comparator, boundary: Expression): Expression? {
+    return when (comparator) {
+        Comparator.LessThan -> openIntervalOf(Constants.NegativeInfinity, boundary)
+        Comparator.LessThanOrEqual -> openClosedIntervalOf(Constants.NegativeInfinity, boundary)
+        Comparator.GreaterThan -> openIntervalOf(boundary, Constants.Infinity)
+        Comparator.GreaterThanOrEqual -> closedOpenIntervalOf(boundary, Constants.Infinity)
+        else -> null
+    }
 }
 
 private fun RuleResultBuilder.trueOrFalseRuleResult(inequality: Pattern, isSatisfied: Boolean): Transformation {
@@ -400,7 +303,7 @@ private val convertModulusGreaterThanZero = rule {
     onPattern(inequality) {
         val newLHS = simplifiedProductOf(lhs.getCoefficient(), get(signedLHS))
         ruleResult(
-            toExpr = transform(notEqualOf(newLHS, get(rhs))),
+            toExpr = transform(inequationOf(newLHS, get(rhs))),
             explanation = metadata(Explanation.ConvertModulusGreaterThanZero),
         )
     }

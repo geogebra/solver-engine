@@ -2,19 +2,20 @@ package engine.patterns
 
 import engine.context.Context
 import engine.expressions.Expression
-import engine.operators.InequalityOperators
+import engine.expressions.Inequality
+import engine.operators.Comparator
 
 class InequalityPattern internal constructor(
     val lhs: Pattern,
     val rhs: Pattern,
-    private val inequalityType: InequalityOperators? = null,
+    private val comparator: Comparator? = null,
 ) : BasePattern() {
     override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
-        if (subexpression.operator !is InequalityOperators) {
+        if (subexpression !is Inequality) {
             return emptySequence()
         }
 
-        if (inequalityType != null && (inequalityType != subexpression.operator)) {
+        if (comparator != null && (comparator != subexpression.comparator)) {
             return emptySequence()
         }
 
@@ -27,12 +28,10 @@ class InequalityPattern internal constructor(
 
 fun inequalityOf(lhs: Pattern, rhs: Pattern) = InequalityPattern(lhs, rhs)
 
-fun lessThanOf(lhs: Pattern, rhs: Pattern) = InequalityPattern(lhs, rhs, InequalityOperators.LessThan)
+fun lessThanOf(lhs: Pattern, rhs: Pattern) = InequalityPattern(lhs, rhs, Comparator.LessThan)
 
-fun lessThanEqualOf(lhs: Pattern, rhs: Pattern) = InequalityPattern(lhs, rhs, InequalityOperators.LessThanEqual)
+fun lessThanEqualOf(lhs: Pattern, rhs: Pattern) = InequalityPattern(lhs, rhs, Comparator.LessThanOrEqual)
 
-fun greaterThanOf(lhs: Pattern, rhs: Pattern) = InequalityPattern(lhs, rhs, InequalityOperators.GreaterThan)
+fun greaterThanOf(lhs: Pattern, rhs: Pattern) = InequalityPattern(lhs, rhs, Comparator.GreaterThan)
 
-fun greaterThanEqualOf(lhs: Pattern, rhs: Pattern) = InequalityPattern(lhs, rhs, InequalityOperators.GreaterThanEqual)
-
-fun notEqualOf(lhs: Pattern, rhs: Pattern) = InequalityPattern(lhs, rhs, InequalityOperators.NotEqual)
+fun greaterThanEqualOf(lhs: Pattern, rhs: Pattern) = InequalityPattern(lhs, rhs, Comparator.GreaterThanOrEqual)

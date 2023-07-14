@@ -272,9 +272,15 @@ function treeToLatexInner(
       return tfd(colorAbsoluteValue(rec(n.args[0], n), n, t, p));
     case 'Equation':
       if (s.align) {
-        return tfd(`${rec(n.args[0], n)} & = & ${rec(n.args[1], n)}`);
+        return tfd(`${rec(n.args[0], n)} & ${colorOp('=')} & ${rec(n.args[1], n)}`);
       } else {
-        return tfd(`${rec(n.args[0], n)} = ${rec(n.args[1], n)}`);
+        return tfd(`${rec(n.args[0], n)} ${colorOp('=')} ${rec(n.args[1], n)}`);
+      }
+    case 'Inequation':
+      if (s.align) {
+        return tfd(`${rec(n.args[0], n)} & ${colorOp('\\neq')} & ${rec(n.args[1], n)}`);
+      } else {
+        return tfd(`${rec(n.args[0], n)} ${colorOp('\\neq')} ${rec(n.args[1], n)}`);
       }
     case 'EquationSystem': {
       const alignSetting = { ...s, align: true };
@@ -331,8 +337,6 @@ function treeToLatexInner(
       return tfd('\\text{undefined}');
     case '/infinity/':
       return tfd('\\infty');
-    case '/reals/':
-      return tfd('\\mathbb{R}');
     case 'LessThan':
       return tfd(`${rec(n.args[0], n)} ${colorOp('<')} ${rec(n.args[1], n)}`);
     case 'GreaterThan':
@@ -341,8 +345,6 @@ function treeToLatexInner(
       return tfd(`${rec(n.args[0], n)} ${colorOp('\\leq')} ${rec(n.args[1], n)}`);
     case 'GreaterThanEqual':
       return tfd(`${rec(n.args[0], n)} ${colorOp('\\geq')} ${rec(n.args[1], n)}`);
-    case 'NotEqual':
-      return tfd(`${rec(n.args[0], n)} ${colorOp('\\neq')} ${rec(n.args[1], n)}`);
     case 'Solution':
     case 'SetSolution':
     case 'Identity':
@@ -363,6 +365,8 @@ function treeToLatexInner(
           ? '\\emptyset'
           : `\\left\\{${n.args.map((el) => rec(el, n)).join(', ')}\\right\\}`,
       );
+    case 'Reals':
+      return tfd('\\mathbb{R}');
     case 'CartesianProduct':
       return tfd(
         n.args.length === 0
@@ -375,6 +379,8 @@ function treeToLatexInner(
           ? '\\emptyset'
           : `${n.args.map((el) => rec(el, n)).join(' \\cup ')}`,
       );
+    case 'SetDifference':
+      return tfd(`${rec(n.args[0], n)} \\setminus ${rec(n.args[1], n)}`);
     case 'OpenInterval':
       return `\\left( ${rec(n.args[0], n)}, ${rec(n.args[1], n)} \\right)`;
     case 'ClosedInterval':

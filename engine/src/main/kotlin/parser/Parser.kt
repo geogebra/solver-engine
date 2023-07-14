@@ -3,10 +3,15 @@ package parser
 import engine.expressions.Constants
 import engine.expressions.Contradiction
 import engine.expressions.Decorator
+import engine.expressions.Equation
 import engine.expressions.Expression
+import engine.expressions.FiniteSet
 import engine.expressions.Identity
 import engine.expressions.ImplicitSolution
+import engine.expressions.Inequation
 import engine.expressions.Product
+import engine.expressions.SetDifference
+import engine.expressions.SetExpression
 import engine.expressions.SetSolution
 import engine.expressions.Variable
 import engine.expressions.VariableList
@@ -14,27 +19,25 @@ import engine.expressions.cartesianProductOf
 import engine.expressions.expressionOf
 import engine.expressions.greaterThanEqualOf
 import engine.expressions.greaterThanOf
+import engine.expressions.inequationOf
 import engine.expressions.lessThanEqualOf
 import engine.expressions.lessThanOf
 import engine.expressions.matrixOf
 import engine.expressions.mixedNumber
 import engine.expressions.nameXp
 import engine.expressions.negOf
-import engine.expressions.notEqualOf
 import engine.expressions.productSignRequired
 import engine.expressions.setUnionOf
-import engine.expressions.solutionSetOf
 import engine.expressions.xp
 import engine.operators.AddEquationsOperator
 import engine.operators.BinaryExpressionOperator
+import engine.operators.Comparator
 import engine.operators.DefaultProductOperator
 import engine.operators.DefiniteIntegralOperator
 import engine.operators.DerivativeOperator
-import engine.operators.DoubleInequalityOperator
-import engine.operators.EquationOperator
+import engine.operators.DoubleComparisonOperator
 import engine.operators.EquationSystemOperator
 import engine.operators.IndefiniteIntegralOperator
-import engine.operators.InequalityOperators
 import engine.operators.InequalitySystemOperator
 import engine.operators.IntervalOperator
 import engine.operators.Operator
@@ -119,7 +122,11 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
     }
 
     override fun visitEquation(ctx: ExpressionParser.EquationContext): Expression {
-        return makeExpression(EquationOperator, visit(ctx.lhs), visit((ctx.rhs)))
+        return Equation(visit(ctx.lhs), visit((ctx.rhs)))
+    }
+
+    override fun visitInequation(ctx: ExpressionParser.InequationContext): Expression {
+        return Inequation(visit(ctx.lhs), visit(ctx.rhs))
     }
 
     override fun visitInequality(ctx: ExpressionParser.InequalityContext): Expression {
@@ -131,7 +138,7 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
             "<=" -> lessThanEqualOf(lhs, rhs)
             ">" -> greaterThanOf(lhs, rhs)
             ">=" -> greaterThanEqualOf(lhs, rhs)
-            "!=" -> notEqualOf(lhs, rhs)
+            "!=" -> inequationOf(lhs, rhs)
             else -> throw InvalidParameterException("Comparator ${ctx.comparator.text} not recognized")
         }
     }
@@ -141,10 +148,10 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
     }
 
     override fun visitDoubleInequality(ctx: ExpressionParser.DoubleInequalityContext): Expression {
-        val leftOp = InequalityOperators.fromReadableString(ctx.left.text)!!
-        val rightOp = InequalityOperators.fromReadableString(ctx.right.text)!!
+        val leftOp = Comparator.fromReadableString(ctx.left.text)!!
+        val rightOp = Comparator.fromReadableString(ctx.right.text)!!
         return makeExpression(
-            DoubleInequalityOperator(leftOp, rightOp),
+            DoubleComparisonOperator(leftOp, rightOp),
             listOf(visit(ctx.first), visit(ctx.second), visit(ctx.third)),
         )
     }
@@ -189,12 +196,22 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
         return setUnionOf(listOf(first) + rest)
     }
 
+    override fun visitSetDifference(ctx: ExpressionParser.SetDifferenceContext): SetExpression {
+        return SetDifference(visitSimpleSet(ctx.left), visitSimpleSet(ctx.right))
+    }
+
+    override fun visitSimpleSet(ctx: ExpressionParser.SimpleSetContext): SetExpression {
+        // I don't think the Kotlin + Antlr combo is strong enough to do this without explicit casting.
+        // Prove me wrong!
+        return super.visitSimpleSet(ctx) as SetExpression
+    }
+
     override fun visitEmptySet(ctx: ExpressionParser.EmptySetContext): Expression {
         return Constants.EmptySet
     }
 
-    override fun visitFiniteSet(ctx: ExpressionParser.FiniteSetContext): Expression {
-        return solutionSetOf(listOf(visit(ctx.first)) + ctx.rest.map { visit(it) })
+    override fun visitFiniteSet(ctx: ExpressionParser.FiniteSetContext): SetExpression {
+        return FiniteSet(listOf(visit(ctx.first)) + ctx.rest.map { visit(it) })
     }
 
     override fun visitReals(ctx: ExpressionParser.RealsContext): Expression {

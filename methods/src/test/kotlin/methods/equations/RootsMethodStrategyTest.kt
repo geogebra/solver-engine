@@ -104,7 +104,7 @@ class RootsMethodStrategyTest {
                 fromExpr = "-7 = [x ^ 2]"
                 toExpr = "[x ^ 2] = -7"
                 explanation {
-                    key = EquationsExplanation.FlipEquation
+                    key = methods.solvable.EquationsExplanation.FlipEquation
                 }
             }
 
@@ -202,7 +202,7 @@ class RootsMethodStrategyTest {
                 fromExpr = "2 [x ^ 2] = 3"
                 toExpr = "[x ^ 2] = [3 / 2]"
                 explanation {
-                    key = EquationsExplanation.DivideByCoefficientOfVariableAndSimplify
+                    key = methods.solvable.EquationsExplanation.DivideByCoefficientOfVariableAndSimplify
                 }
             }
 
@@ -272,7 +272,7 @@ class RootsMethodStrategyTest {
                 fromExpr = "2 [y ^ 2] = 7"
                 toExpr = "[y ^ 2] = [7 / 2]"
                 explanation {
-                    key = EquationsExplanation.DivideByCoefficientOfVariableAndSimplify
+                    key = methods.solvable.EquationsExplanation.DivideByCoefficientOfVariableAndSimplify
                 }
             }
 

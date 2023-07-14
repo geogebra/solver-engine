@@ -189,11 +189,11 @@ function annotate(
       appendMap(gmTree.children[2], `${tree.path}:)`, map);
       break;
     case 'Equation':
+    case 'Inequation':
     case 'LessThan':
     case 'GreaterThan':
     case 'LessThanEqual':
     case 'GreaterThanEqual':
-    case 'NotEqual':
       annotate(gmTree.children[0], tree.args[0], map);
       appendMap(gmTree.children[1], `${tree.path}:op`, map);
       annotate(gmTree.children[2], tree.args[1], map);
@@ -204,7 +204,7 @@ function annotate(
     case 'Name':
     case '/undefined/':
     case '/infinity/':
-    case '/reals/':
+    case 'Reals':
     case 'AddEquations':
     case 'SubtractEquations':
     case 'EquationUnion':
@@ -219,6 +219,7 @@ function annotate(
     case 'FiniteSet':
     case 'CartesianProduct':
     case 'SetUnion':
+    case 'SetDifference':
     case 'OpenInterval':
     case 'ClosedInterval':
     case 'OpenClosedInterval':

@@ -77,6 +77,14 @@ enum class Sign(val signum: Int, val canBeZero: Boolean = false) {
 
     operator fun minus(other: Sign) = this + (-other)
 
+    fun implies(other: Sign) = when {
+        this == NONE -> false
+        !other.canBeZero && this.canBeZero -> false
+        other.isKnown() && !this.isKnown() -> false
+        this.signum != other.signum -> false
+        else -> true
+    }
+
     internal fun orMaybeZero(canBeZero: Boolean = false) = if (!canBeZero) {
         this
     } else {

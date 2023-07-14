@@ -36,20 +36,46 @@ abstract class SetExpression internal constructor(
         }
     }
 
-    protected abstract fun intersectWithFiniteSet(other: FiniteSet, comparator: ExpressionComparator): SetExpression?
-    protected abstract fun intersectWithInterval(other: Interval, comparator: ExpressionComparator): SetExpression?
-    protected abstract fun intersectWithCartesianProduct(
+    protected open fun intersectWithFiniteSet(
+        other: FiniteSet,
+        comparator: ExpressionComparator,
+    ): SetExpression? = null
+
+    protected open fun intersectWithInterval(
+        other: Interval,
+        comparator: ExpressionComparator,
+    ): SetExpression? = null
+
+    protected open fun intersectWithCartesianProduct(
         other: CartesianProduct,
         comparator: ExpressionComparator,
-    ): SetExpression?
-    protected abstract fun intersectWithSetUnion(other: SetUnion, comparator: ExpressionComparator): SetExpression?
-    protected abstract fun unionWithFiniteSet(other: FiniteSet, comparator: ExpressionComparator): SetExpression?
-    protected abstract fun unionWithInterval(other: Interval, comparator: ExpressionComparator): SetExpression?
-    protected abstract fun unionWithCartesianProduct(
+    ): SetExpression? = null
+
+    protected open fun intersectWithSetUnion(
+        other: SetUnion,
+        comparator:
+        ExpressionComparator,
+    ): SetExpression? = null
+
+    protected open fun unionWithFiniteSet(
+        other: FiniteSet,
+        comparator: ExpressionComparator,
+    ): SetExpression? = null
+
+    protected open fun unionWithInterval(
+        other: Interval,
+        comparator: ExpressionComparator,
+    ): SetExpression? = null
+
+    protected open fun unionWithCartesianProduct(
         other: CartesianProduct,
         comparator: ExpressionComparator,
-    ): SetExpression?
-    protected abstract fun unionWithSetUnion(other: SetUnion, comparator: ExpressionComparator): SetExpression?
+    ): SetExpression? = null
+
+    protected open fun unionWithSetUnion(
+        other: SetUnion,
+        comparator: ExpressionComparator,
+    ): SetExpression? = null
 }
 
 class Interval(
@@ -119,16 +145,8 @@ class Interval(
     override fun intersectWithCartesianProduct(
         other: CartesianProduct,
         comparator: ExpressionComparator,
-    ): SetExpression? {
+    ): SetExpression {
         return emptySet
-    }
-
-    override fun intersectWithSetUnion(other: SetUnion, comparator: ExpressionComparator): SetExpression? {
-        return TODO()
-    }
-
-    override fun unionWithFiniteSet(other: FiniteSet, comparator: ExpressionComparator): SetExpression? {
-        return TODO()
     }
 
     @Suppress("CyclomaticComplexMethod")
@@ -161,14 +179,6 @@ class Interval(
             )
             else -> null
         }
-    }
-
-    override fun unionWithCartesianProduct(other: CartesianProduct, comparator: ExpressionComparator): SetExpression? {
-        return TODO()
-    }
-
-    override fun unionWithSetUnion(other: SetUnion, comparator: ExpressionComparator): SetExpression? {
-        return TODO()
     }
 }
 
@@ -220,26 +230,6 @@ class FiniteSet(
     ): SetExpression? {
         return filterElements(other, comparator)
     }
-
-    override fun intersectWithSetUnion(other: SetUnion, comparator: ExpressionComparator): SetExpression? {
-        return TODO()
-    }
-
-    override fun unionWithFiniteSet(other: FiniteSet, comparator: ExpressionComparator): SetExpression? {
-        return TODO()
-    }
-
-    override fun unionWithInterval(other: Interval, comparator: ExpressionComparator): SetExpression? {
-        return TODO()
-    }
-
-    override fun unionWithCartesianProduct(other: CartesianProduct, comparator: ExpressionComparator): SetExpression? {
-        return TODO()
-    }
-
-    override fun unionWithSetUnion(other: SetUnion, comparator: ExpressionComparator): SetExpression? {
-        return TODO()
-    }
 }
 
 class CartesianProduct(
@@ -279,7 +269,7 @@ class CartesianProduct(
         return other.intersect(this, comparator)
     }
 
-    override fun intersectWithInterval(other: Interval, comparator: ExpressionComparator): SetExpression? {
+    override fun intersectWithInterval(other: Interval, comparator: ExpressionComparator): SetExpression {
         return emptySet
     }
     override fun intersectWithCartesianProduct(
@@ -297,26 +287,6 @@ class CartesianProduct(
             else -> CartesianProduct(validComponentIntersections)
         }
     }
-
-    override fun intersectWithSetUnion(other: SetUnion, comparator: ExpressionComparator): SetExpression? {
-        return TODO()
-    }
-
-    override fun unionWithFiniteSet(other: FiniteSet, comparator: ExpressionComparator): SetExpression? {
-        return TODO()
-    }
-
-    override fun unionWithInterval(other: Interval, comparator: ExpressionComparator): SetExpression? {
-        return TODO()
-    }
-
-    override fun unionWithCartesianProduct(other: CartesianProduct, comparator: ExpressionComparator): SetExpression? {
-        return TODO()
-    }
-
-    override fun unionWithSetUnion(other: SetUnion, comparator: ExpressionComparator): SetExpression? {
-        return TODO()
-    }
 }
 
 class SetUnion(
@@ -329,47 +299,51 @@ class SetUnion(
 ) {
     val components get() = children as List<SetExpression>
 
-    override fun isEmpty(comparator: ExpressionComparator): Boolean? {
+    override fun isEmpty(comparator: ExpressionComparator): Boolean {
         return components.map { it.isEmpty(comparator) }.all { it == true }
     }
 
-    override fun intersectWithFiniteSet(other: FiniteSet, comparator: ExpressionComparator): SetExpression? {
-        return TODO()
+    override fun contains(element: Expression, comparator: ExpressionComparator): Boolean {
+        return components.map { it.contains(element, comparator) }.any()
     }
+}
 
-    override fun intersectWithInterval(other: Interval, comparator: ExpressionComparator): SetExpression? {
-        return TODO()
-    }
-
-    override fun intersectWithCartesianProduct(
-        other: CartesianProduct,
-        comparator: ExpressionComparator,
-    ): SetExpression? {
-        return TODO()
-    }
-
-    override fun intersectWithSetUnion(other: SetUnion, comparator: ExpressionComparator): SetExpression? {
-        return TODO()
-    }
-
-    override fun unionWithFiniteSet(other: FiniteSet, comparator: ExpressionComparator): SetExpression? {
-        return TODO()
-    }
-
-    override fun unionWithInterval(other: Interval, comparator: ExpressionComparator): SetExpression? {
-        return TODO()
-    }
-
-    override fun unionWithCartesianProduct(other: CartesianProduct, comparator: ExpressionComparator): SetExpression? {
-        return TODO()
-    }
-
-    override fun unionWithSetUnion(other: SetUnion, comparator: ExpressionComparator): SetExpression? {
-        return TODO()
-    }
+class SetDifference(
+    left: SetExpression,
+    right: SetExpression,
+    meta: NodeMeta = BasicMeta(),
+) : SetExpression(
+    operator = SetOperators.SetDifference,
+    operands = listOf(left, right),
+    meta,
+) {
+    val left get() = firstChild as SetExpression
+    val right get() = secondChild as SetExpression
 
     override fun contains(element: Expression, comparator: ExpressionComparator): Boolean? {
-        return components.map { it.contains(element, comparator) }.any()
+        val leftContains = left.contains(element, comparator) ?: return null
+        val rightContains = right.contains(element, comparator) ?: return null
+        return leftContains && !rightContains
+    }
+
+    override fun isEmpty(comparator: ExpressionComparator): Boolean? {
+        return null
+    }
+}
+
+class Reals(
+    meta: NodeMeta = BasicMeta(),
+) : SetExpression(
+    operator = SetOperators.Reals,
+    operands = listOf(),
+    meta,
+) {
+    override fun contains(element: Expression, comparator: ExpressionComparator): Boolean {
+        return true
+    }
+
+    override fun isEmpty(comparator: ExpressionComparator): Boolean {
+        return false
     }
 }
 

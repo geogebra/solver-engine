@@ -1,12 +1,12 @@
 package engine.expressions
 
 import engine.operators.BinaryExpressionOperator
+import engine.operators.Comparator
+import engine.operators.ComparisonOperator
 import engine.operators.DecimalOperator
-import engine.operators.DoubleInequalityOperator
-import engine.operators.EquationOperator
+import engine.operators.DoubleComparisonOperator
 import engine.operators.EquationSystemOperator
 import engine.operators.ExpressionOperator
-import engine.operators.InequalityOperators
 import engine.operators.IntegerOperator
 import engine.operators.IntervalOperator
 import engine.operators.LatexRenderable
@@ -563,14 +563,26 @@ private fun expressionOf(
         SolutionOperator.ImplicitSolution -> ImplicitSolution(operands[0] as VariableList, operands[1], meta)
         SolutionOperator.SetSolution -> SetSolution(operands[0] as VariableList, operands[1], meta)
 
-        is IntervalOperator -> Interval(operands[0], operands[1], operator.closedLeft, operator.closedRight)
-        SetOperators.FiniteSet -> FiniteSet(operands)
-        SetOperators.CartesianProduct -> CartesianProduct(operands)
-        SetOperators.SetUnion -> SetUnion(operands)
+        is IntervalOperator -> Interval(operands[0], operands[1], operator.closedLeft, operator.closedRight, meta)
+        SetOperators.FiniteSet -> FiniteSet(operands, meta)
+        SetOperators.CartesianProduct -> CartesianProduct(operands, meta)
+        SetOperators.SetUnion -> SetUnion(operands, meta)
+        SetOperators.SetDifference -> SetDifference(operands[0] as SetExpression, operands[1] as SetExpression, meta)
+        SetOperators.Reals -> Reals(meta)
 
-        EquationOperator -> Equation(operands[0], operands[1], meta)
-        is InequalityOperators -> Inequality(operands[0], operands[1], operator, meta)
-        is DoubleInequalityOperator -> DoubleInequality(operands[0], operands[1], operands[2], operator, meta)
+        is ComparisonOperator -> when (operator.comparator) {
+            Comparator.Equal -> Equation(operands[0], operands[1], meta)
+            Comparator.NotEqual -> Inequation(operands[0], operands[1], meta)
+            else -> Inequality(operands[0], operator.comparator, operands[1], meta)
+        }
+        is DoubleComparisonOperator -> DoubleInequality(
+            operands[0],
+            operator.leftComparator,
+            operands[1],
+            operator.rightComparator,
+            operands[2],
+            meta,
+        )
         StatementWithConstraintOperator -> StatementWithConstraint(operands[0], operands[1], meta)
         StatementUnionOperator -> StatementUnion(operands, meta)
 

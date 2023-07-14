@@ -30,7 +30,7 @@ class EquationsPlansTest {
                 fromExpr = "-(2 [x ^ 2] - 4 x + 2) = 0"
                 toExpr = "2 [x ^ 2] - 4 x + 2 = 0"
                 explanation {
-                    key = EquationsExplanation.NegateBothSides
+                    key = methods.solvable.EquationsExplanation.NegateBothSides
                 }
             }
         }

@@ -1,62 +1,66 @@
 package engine.expressions
 
-import engine.operators.DoubleInequalityOperator
-import engine.operators.EquationOperator
-import engine.operators.InequalityOperators
+import engine.operators.Comparator
+import engine.operators.ComparisonOperator
+import engine.operators.DoubleComparisonOperator
 import engine.operators.StatementUnionOperator
 import engine.operators.StatementWithConstraintOperator
 import engine.sign.Sign
 
-class Equation(lhs: Expression, rhs: Expression, meta: NodeMeta = BasicMeta()) : Expression(
-    operator = EquationOperator,
-    operands = listOf(lhs, rhs),
-    meta = meta,
-) {
-    val lhs get() = firstChild
-    val rhs get() = secondChild
-
-    fun holds(comparator: ExpressionComparator): Boolean? {
-        return when (comparator.compare(lhs, rhs)) {
-            Sign.ZERO -> true
-            Sign.UNKNOWN -> null
-            else -> false
-        }
-    }
-}
-
-class Inequality internal constructor(
+open class Comparison(
     lhs: Expression,
+    val comparator: Comparator,
     rhs: Expression,
-    operator: InequalityOperators,
     meta: NodeMeta = BasicMeta(),
 ) : Expression(
-    operator = operator,
+    operator = ComparisonOperator(comparator),
     operands = listOf(lhs, rhs),
     meta = meta,
 ) {
     val lhs get() = firstChild
     val rhs get() = secondChild
 
-    fun holds(): Boolean {
-        return (operator as InequalityOperators).holdsFor(
-            lhs.doubleValue.toBigDecimal(),
-            rhs.doubleValue.toBigDecimal(),
-        )
-    }
-
-    fun holds(comparator: ExpressionComparator): Boolean? {
-        return (operator as InequalityOperators).holdsFor(comparator.compare(lhs, rhs))
+    fun holds(expressionComparator: ExpressionComparator): Boolean? {
+        val compSign = expressionComparator.compare(lhs, rhs)
+        return if (compSign == Sign.NONE) null else compSign.implies(this.comparator.compareSign)
     }
 }
 
-class DoubleInequality internal constructor(
+class Equation(lhs: Expression, rhs: Expression, meta: NodeMeta = BasicMeta()) : Comparison(
+    lhs = lhs,
+    comparator = Comparator.Equal,
+    rhs = rhs,
+    meta = meta,
+)
+
+class Inequation(lhs: Expression, rhs: Expression, meta: NodeMeta = BasicMeta()) : Comparison(
+    lhs = lhs,
+    comparator = Comparator.NotEqual,
+    rhs = rhs,
+    meta = meta,
+)
+
+class Inequality(
+    lhs: Expression,
+    comparator: Comparator,
+    rhs: Expression,
+    meta: NodeMeta = BasicMeta(),
+) : Comparison(
+    lhs = lhs,
+    comparator = comparator,
+    rhs = rhs,
+    meta = meta,
+)
+
+class DoubleInequality(
     first: Expression,
+    val leftComparator: Comparator,
     second: Expression,
+    val rightComparator: Comparator,
     third: Expression,
-    operator: DoubleInequalityOperator,
     meta: NodeMeta = BasicMeta(),
 ) : Expression(
-    operator = operator,
+    operator = DoubleComparisonOperator(leftComparator, rightComparator),
     operands = listOf(first, second, third),
     meta = meta,
 ) {
@@ -64,23 +68,9 @@ class DoubleInequality internal constructor(
     private val second get() = secondChild
     private val third get() = thirdChild
 
-    fun getInequalities(): List<Expression> {
-        val op = (operator as DoubleInequalityOperator)
-        return listOf(
-            buildExpression(op.leftOp, listOf(first, second)),
-            buildExpression(op.rightOp, listOf(second, third)),
-        )
-    }
+    fun getLeftInequality() = Inequality(first, leftComparator, second)
 
-    fun getLeftInequality(): Expression {
-        val op = (operator as DoubleInequalityOperator)
-        return buildExpression(op.leftOp, listOf(first, second))
-    }
-
-    fun getRightInequality(): Expression {
-        val op = (operator as DoubleInequalityOperator)
-        return buildExpression(op.rightOp, listOf(second, third))
-    }
+    fun getRightInequality() = Inequality(second, rightComparator, third)
 }
 
 class StatementWithConstraint(statement: Expression, constraint: Expression, meta: NodeMeta = BasicMeta()) : Expression(

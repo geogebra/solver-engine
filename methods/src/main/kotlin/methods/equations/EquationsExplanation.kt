@@ -19,44 +19,12 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     SimplifyEquation,
 
     /**
-     * Negate both sides of the equation, i.e. turn an equation of
-     * the form -x = a to x = -a.
-     *
-     * E.g. -x = -2 sqrt[3] -> x = 2 sqrt[3]
-     */
-    NegateBothSides,
-
-    /**
-     * Multiply both sides of the equation by the inverse of the coefficient
-     * of the variable.
-     *
-     * E.g. [x / 9] = 3 -> [x / 9] * 9 = 3 * 9
-     * [2x / 5] = 3 -> [2x / 5] * [5 / 2] = 3 * [5 / 2]
-     */
-    MultiplyByInverseCoefficientOfVariable,
-
-    /**
-     * Divide both sides of the equation by the coefficient of the
-     * variable.
-     *
-     * E.g. 2 sqrt[2] x = 3 -> [2 sqrt[2] x / 2 sqrt[2]] = [3 / 2 sqrt[2]]
-     */
-    DivideByCoefficientOfVariable,
-
-    /**
      * Multiply both sides of an equation by the inverse of the leading coefficient
      * on the LHS.  When simplified this will lead to a monic polynomial on the left.
      *
      * E.g. 2[x ^ 2] + 1 = 7 --> (2[x ^ 2] + 1)*[1 / 2] = 7 * [1 / 2]
      */
     MultiplyByInverseOfLeadingCoefficient,
-
-    /**
-     * Flip the equation.
-     *
-     * E.g. 7 = 3x -> 3x = 7
-     */
-    FlipEquation,
 
     /**
      * Take the square root of both sides of an equation of the form
@@ -164,16 +132,6 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     MoveEverythingToTheLeftAndSimplify,
 
     /**
-     * Multiply both sides of the equation by the inverse of the coefficient
-     * of the variable and simplify.
-     *
-     * E.g. [2x / 5] = 3
-     *      -> [2x / 5] * [5 / 2] = 3 * [5 / 2]
-     *      -> x = [15 / 2]
-     */
-    MultiplyByInverseCoefficientOfVariableAndSimplify,
-
-    /**
      * Complete a binomial so that the LHS can be factorised to a square
      *
      * E.g. [x ^ 2] + 6x = 3 -> [x ^ 2] + 6x + [([6 / 2] ^ 2] = 3 + [([6 / 2] ^ 2]
@@ -201,16 +159,6 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      * E.g. 2[x ^ 2] + 1 = 7 --> [x ^ 2] + [1 / 2] = [7 / 2]
      */
     MultiplyByInverseOfLeadingCoefficientAndSimplify,
-
-    /**
-     * Divide both sides of the equation by the coefficient of the variable
-     * and simplify.
-     *
-     * E.g. 2 sqrt[2] x = 3
-     *      -> [2 sqrt[2] x / 2 sqrt[2]] = [3 / 2 sqrt[2]]
-     *      -> x = [3 sqrt[2] / 4]
-     */
-    DivideByCoefficientOfVariableAndSimplify,
 
     /**
      * Solve a linear equation in a given variable by collecting variables

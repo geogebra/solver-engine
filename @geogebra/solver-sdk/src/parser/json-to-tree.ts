@@ -26,7 +26,7 @@ export function jsonToTree(json: MathJson | MathJson2, path = '.'): ExpressionTr
       result = { type: 'Name', value: str.substring(1, str.length - 1), path };
     else if (str === '/undefined/') result = { type: '/undefined/', path };
     else if (str === '/infinity/') result = { type: '/infinity/', path };
-    else if (str === '/reals/') result = { type: '/reals/', path };
+    else if (str === '/reals/' || str === 'Reals') result = { type: 'Reals', path };
     else result = { type: 'Variable', value: str, path };
   } else if (value === 'SmartProduct') {
     result = {
@@ -87,7 +87,7 @@ export function treeToJson(tree: ExpressionTree): MathJson {
   if (
     tree.type === '/undefined/' ||
     tree.type === '/infinity/' ||
-    tree.type === '/reals/'
+    tree.type === 'Reals'
   ) {
     if (decorators?.length) return [[tree.type, ...decorators]];
     else return [tree.type];

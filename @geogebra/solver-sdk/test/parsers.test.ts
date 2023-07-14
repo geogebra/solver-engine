@@ -593,7 +593,7 @@ describe('Solver Parser Unit Tests', () => {
       },
       {
         solver: 'Solution[x, /reals/]',
-        json: ['Solution', ['x'], ['/reals/']],
+        json: ['Solution', ['x'], ['Reals']],
         latex: 'x \\in \\mathbb{R}',
       },
       {

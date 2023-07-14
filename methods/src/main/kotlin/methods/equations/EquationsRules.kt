@@ -2,7 +2,6 @@ package methods.equations
 
 import engine.conditions.isDefinitelyNotZero
 import engine.expressions.Constants
-import engine.expressions.Fraction
 import engine.expressions.Product
 import engine.expressions.SimpleComparator
 import engine.expressions.StatementWithConstraint
@@ -15,7 +14,6 @@ import engine.expressions.greaterThanEqualOf
 import engine.expressions.hasSingleValue
 import engine.expressions.identityOf
 import engine.expressions.inverse
-import engine.expressions.isSignedFraction
 import engine.expressions.lessThanOf
 import engine.expressions.negOf
 import engine.expressions.plusMinusOf
@@ -31,7 +29,6 @@ import engine.expressions.squareRootOf
 import engine.expressions.statementUnionOf
 import engine.expressions.sumOf
 import engine.expressions.variableListOf
-import engine.expressions.withoutNegOrPlus
 import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RuleResultBuilder
@@ -52,7 +49,6 @@ import engine.patterns.condition
 import engine.patterns.equationOf
 import engine.patterns.inSolutionVariables
 import engine.patterns.integerCondition
-import engine.patterns.negOf
 import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
@@ -69,8 +65,6 @@ import engine.utility.isOdd
 import engine.utility.withMaxDP
 import methods.solvable.simplifiedNegOfSum
 import java.math.BigInteger
-import engine.steps.metadata.DragTargetPosition as Position
-import engine.steps.metadata.GmPathModifier as PM
 
 enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
@@ -114,25 +108,6 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
         },
     ),
 
-    NegateBothSides(
-        rule {
-            val unsignedLhs = AnyPattern()
-            val lhs = negOf(unsignedLhs)
-            val rhs = optionalNegOf(AnyPattern())
-
-            onEquation(lhs, rhs) {
-                ruleResult(
-                    toExpr = equationOf(get(unsignedLhs), simplifiedNegOf(move(rhs))),
-                    gmAction = when {
-                        rhs.isNeg() -> drag(lhs, PM.Operator, rhs, PM.Operator)
-                        else -> drag(lhs, PM.Operator, rhs, null, Position.LeftOf)
-                    },
-                    explanation = metadata(Explanation.NegateBothSides),
-                )
-            }
-        },
-    ),
-
     MultiplyByInverseOfLeadingCoefficient(
         rule {
             val lhs = inSolutionVariables(sumContaining())
@@ -153,53 +128,6 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                     ),
                     explanation = metadata(Explanation.MultiplyByInverseOfLeadingCoefficient),
                 )
-            }
-        },
-    ),
-
-    MultiplyByInverseCoefficientOfVariable(
-        rule {
-            val lhs = withOptionalConstantCoefficient(VariableExpressionPattern())
-            val rhs = ConstantInSolutionVariablePattern()
-
-            onEquation(lhs, rhs) {
-                val coefficient = get(lhs::coefficient)!!
-
-                if (coefficient.isSignedFraction()) {
-                    val inverse = coefficient.inverse()
-                    val dragTarget = if (coefficient.parent !== null) {
-                        coefficient
-                    } else {
-                        // We can't use `coefficient` as the drag target because it
-                        // doesn't have a parent chain. We need a parent chain in order to
-                        // create a path mapping to the drag target. This might happen in
-                        // a situation like `[-x/3]` where `coefficient` would be the
-                        // artificially created expression [-1/3]. The `3` in that
-                        // example, however, does have a parent chain to the root of the
-                        // "from expression" so we can use that.
-                        val positiveCoefficient = coefficient.withoutNegOrPlus() as Fraction
-                        if (positiveCoefficient.parent !== null) {
-                            positiveCoefficient
-                        } else {
-                            // TODO What should we do in situations like `[2x/5]`? In
-                            // that, this logic would only provide a drag target of `5` so
-                            // the `2` would still be left behind. It's not ideal that GM
-                            // would require two steps to move the `[2/3]`, while Solver
-                            // would take only one step.
-                            positiveCoefficient.denominator
-                        }
-                    }
-                    ruleResult(
-                        toExpr = equationOf(
-                            productOf(get(lhs), inverse),
-                            productOf(get(rhs), inverse),
-                        ),
-                        gmAction = drag(dragTarget, rhs, Position.LeftOf),
-                        explanation = metadata(Explanation.MultiplyByInverseCoefficientOfVariable),
-                    )
-                } else {
-                    null
-                }
             }
         },
     ),
@@ -229,44 +157,6 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     toExpr = equationOf(sumOf(get(lhs), missingTerm), sumOf(get(rhs), missingTerm)),
                     explanation = metadata(Explanation.CompleteTheSquare),
-                )
-            }
-        },
-    ),
-
-    DivideByCoefficientOfVariable(
-        rule {
-            val lhs = withOptionalConstantCoefficient(VariableExpressionPattern())
-            val rhs = ConstantInSolutionVariablePattern()
-
-            onEquation(lhs, rhs) {
-                val coefficientValue = get(lhs::coefficient)!!
-
-                when (val coefficient = introduce(coefficientValue, coefficientValue)) {
-                    Constants.One, Constants.MinusOne -> null
-                    else -> ruleResult(
-                        toExpr = equationOf(
-                            fractionOf(get(lhs), coefficient),
-                            fractionOf(get(rhs), coefficient),
-                        ),
-                        gmAction = drag(coefficient, rhs, Position.Below),
-                        explanation = metadata(Explanation.DivideByCoefficientOfVariable, coefficientValue),
-                    )
-                }
-            }
-        },
-    ),
-
-    FlipEquation(
-        rule {
-            val lhs = AnyPattern()
-            val rhs = AnyPattern()
-
-            onEquation(lhs, rhs) {
-                ruleResult(
-                    toExpr = equationOf(move(rhs), move(lhs)),
-                    gmAction = drag(lhs, null, expression, PM.Operator, Position.Above),
-                    explanation = metadata(Explanation.FlipEquation),
                 )
             }
         },

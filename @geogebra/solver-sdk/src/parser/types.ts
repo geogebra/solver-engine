@@ -15,6 +15,7 @@ export type NestedExpressionType =
   | 'Root' // (degree, radicand)
   | 'AbsoluteValue' // unary
   | 'Equation' // binary
+  | 'Inequation' // binary
   | 'EquationSystem' // n-ary
   | 'InequalitySystem' // n-ary
   | 'AddEquations' // binary
@@ -25,7 +26,6 @@ export type NestedExpressionType =
   | 'GreaterThan' // binary
   | 'LessThanEqual' // binary
   | 'GreaterThanEqual' // binary
-  | 'NotEqual' // binary
   | 'Solution' // (VariableList, FiniteSet | Interval)
   | 'Identity' // (VariableList)
   | 'Contradiction' // (VariableList)
@@ -36,6 +36,7 @@ export type NestedExpressionType =
   | 'FiniteSet' // n-ary
   | 'CartesianProduct' // n-ary
   | 'SetUnion' // n-ary
+  | 'SetDifference' // binary
   | 'OpenInterval' // binary
   | 'ClosedInterval' // binary
   | 'OpenClosedInterval' // binary
@@ -100,7 +101,7 @@ export type ExpressionTreeBase<T> = ExpressionDecorations &
     | NumberExpression
     | VariableExpression
     | NameExpression
-    | { type: '/undefined/' | '/infinity/' | '/reals/' }
+    | { type: '/undefined/' | '/infinity/' | 'Reals' }
   ) &
   T;
 

@@ -1,8 +1,8 @@
 package engine.patterns
 
 import engine.context.Context
+import engine.expressions.Equation
 import engine.expressions.Expression
-import engine.operators.EquationOperator
 import engine.operators.EquationSystemOperator
 import engine.operators.InequalitySystemOperator
 import engine.operators.StatementUnionOperator
@@ -13,7 +13,7 @@ data class EquationPattern(
     val rhs: Pattern,
 ) : BasePattern() {
     override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
-        if (subexpression.operator != EquationOperator) {
+        if (subexpression !is Equation) {
             return emptySequence()
         }
 

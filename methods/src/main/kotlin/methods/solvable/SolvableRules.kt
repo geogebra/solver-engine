@@ -1,34 +1,40 @@
 package methods.solvable
 
-import engine.context.Context
 import engine.context.emptyContext
 import engine.expressionbuilder.MappedExpressionBuilder
 import engine.expressions.AbsoluteValue
 import engine.expressions.Constants
 import engine.expressions.Equation
 import engine.expressions.Expression
+import engine.expressions.Fraction
 import engine.expressions.Introduce
 import engine.expressions.Sum
+import engine.expressions.fractionOf
+import engine.expressions.inverse
+import engine.expressions.isSignedFraction
 import engine.expressions.productOf
 import engine.expressions.simplifiedNegOf
 import engine.expressions.sumOf
+import engine.expressions.withoutNegOrPlus
 import engine.expressions.xp
-import engine.methods.CompositeMethod
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
-import engine.methods.stepsproducers.StepsBuilder
-import engine.methods.stepsproducers.StepsProducer
 import engine.patterns.AnyPattern
+import engine.patterns.ConstantInSolutionVariablePattern
 import engine.patterns.SolvablePattern
 import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.VariableExpressionPattern
 import engine.patterns.condition
 import engine.patterns.fractionOf
+import engine.patterns.negOf
 import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
-import engine.steps.Transformation
+import engine.patterns.withOptionalConstantCoefficient
+import engine.sign.Sign
+import engine.steps.metadata.GmPathModifier
 import engine.steps.metadata.Metadata
 import engine.utility.lcm
 import methods.solvable.DenominatorExtractor.extractDenominator
@@ -55,7 +61,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                 val restRight = if (isBound(rightSum)) restOf(rightSum) else Constants.Zero
 
                 ruleResult(
-                    toExpr = cancel(common, solvable.sameSolvable(restLeft, restRight)),
+                    toExpr = cancel(common, solvable.deriveSolvable(restLeft, restRight)),
                     gmAction = drag(common.within(lhs), common.within(rhs)),
                     explanation = solvableExplanation(SolvableKey.CancelCommonTermsOnBothSides),
                 )
@@ -77,12 +83,15 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                 val negatedConstants = simplifiedNegOfSum(constants)
 
                 ruleResult(
-                    toExpr = solvable.sameSolvable(
+                    toExpr = solvable.deriveSolvable(
                         sumOf(get(lhs), negatedConstants),
                         sumOf(get(rhs), negatedConstants),
                     ),
                     gmAction = drag(constants, lhs, Position.RightOf),
-                    explanation = solvableExplanation(SolvableKey.MoveConstantsToTheLeft, constants),
+                    explanation = solvableExplanation(
+                        SolvableKey.MoveConstantsToTheLeft,
+                        parameters = listOf(constants),
+                    ),
                 )
             }
         },
@@ -102,12 +111,15 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                 val negatedConstants = simplifiedNegOfSum(constants)
 
                 ruleResult(
-                    toExpr = solvable.sameSolvable(
+                    toExpr = solvable.deriveSolvable(
                         sumOf(get(lhs), negatedConstants),
                         sumOf(get(rhs), negatedConstants),
                     ),
                     gmAction = drag(constants, rhs, Position.RightOf),
-                    explanation = solvableExplanation(SolvableKey.MoveConstantsToTheRight, constants),
+                    explanation = solvableExplanation(
+                        SolvableKey.MoveConstantsToTheRight,
+                        parameters = listOf(constants),
+                    ),
                 )
             }
         },
@@ -126,12 +138,15 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                 val negatedVariable = simplifiedNegOfSum(variables)
 
                 ruleResult(
-                    toExpr = solvable.sameSolvable(
+                    toExpr = solvable.deriveSolvable(
                         sumOf(get(lhs), negatedVariable),
                         sumOf(get(rhs), negatedVariable),
                     ),
                     gmAction = drag(variables, lhs, Position.RightOf),
-                    explanation = solvableExplanation(SolvableKey.MoveVariablesToTheLeft, variables),
+                    explanation = solvableExplanation(
+                        SolvableKey.MoveVariablesToTheLeft,
+                        parameters = listOf(variables),
+                    ),
                 )
             }
         },
@@ -150,12 +165,15 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                 val negatedVariable = simplifiedNegOfSum(variables)
 
                 ruleResult(
-                    toExpr = solvable.sameSolvable(
+                    toExpr = solvable.deriveSolvable(
                         sumOf(get(lhs), negatedVariable),
                         sumOf(get(rhs), negatedVariable),
                     ),
                     gmAction = drag(variables, rhs, Position.RightOf),
-                    explanation = solvableExplanation(SolvableKey.MoveVariablesToTheRight, variables),
+                    explanation = solvableExplanation(
+                        SolvableKey.MoveVariablesToTheRight,
+                        parameters = listOf(variables),
+                    ),
                 )
             }
         },
@@ -183,7 +201,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                 when (val lcm = denominators.lcm()) {
                     BigInteger.ONE -> null
                     else -> ruleResult(
-                        toExpr = solvable.sameSolvable(
+                        toExpr = solvable.deriveSolvable(
                             productOf(get(lhs), xp(lcm)),
                             productOf(get(rhs), xp(lcm)),
                         ),
@@ -191,6 +209,142 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                         explanation = solvableExplanation(SolvableKey.MultiplyBothSidesByLCD),
                     )
                 }
+            }
+        },
+    ),
+
+    MultiplyByInverseCoefficientOfVariable(
+        rule {
+            val lhs = withOptionalConstantCoefficient(VariableExpressionPattern())
+            val rhs = ConstantInSolutionVariablePattern()
+
+            val solvable = SolvablePattern(lhs, rhs)
+
+            onPattern(solvable) {
+                val coefficient = get(lhs::coefficient)!!
+                val useDual = when (coefficient.signOf()) {
+                    Sign.POSITIVE -> false
+                    Sign.NEGATIVE -> true
+                    Sign.NOT_ZERO -> if (solvable.isSelfDual()) false else return@onPattern null
+                    else -> return@onPattern null
+                }
+
+                if (coefficient.isSignedFraction()) {
+                    val inverse = introduce(coefficient, coefficient.inverse())
+
+                    val dragTarget = if (coefficient.parent !== null) {
+                        coefficient
+                    } else {
+                        // We can't use `coefficient` as the drag target because it
+                        // doesn't have a parent chain. We need a parent chain in order to
+                        // create a path mapping to the drag target. This might happen in
+                        // a situation like `[-x/3]` where `coefficient` would be the
+                        // artificially created expression [-1/3]. The `3` in that
+                        // example, however, does have a parent chain to the root of the
+                        // "from expression" so we can use that.
+                        val positiveCoefficient = coefficient.withoutNegOrPlus() as Fraction
+                        if (positiveCoefficient.parent !== null) {
+                            positiveCoefficient
+                        } else {
+                            // TODO What should we do in situations like `[2x/5]`? In
+                            // that, this logic would only provide a drag target of `5` so
+                            // the `2` would still be left behind. It's not ideal that GM
+                            // would require two steps to move the `[2/3]`, while Solver
+                            // would take only one step.
+                            positiveCoefficient.denominator
+                        }
+                    }
+
+                    val newLhs = productOf(get(lhs), inverse)
+                    val newRhs = productOf(get(rhs), inverse)
+
+                    ruleResult(
+                        toExpr = solvable.deriveSolvable(newLhs, newRhs, useDual),
+                        gmAction = drag(dragTarget, rhs, Position.LeftOf),
+                        explanation = solvableExplanation(
+                            SolvableKey.MultiplyByInverseCoefficientOfVariable,
+                            flipSign = useDual && !solvable.isSelfDual(),
+                            parameters = listOf(coefficient),
+                        ),
+                    )
+                } else {
+                    null
+                }
+            }
+        },
+    ),
+
+    DivideByCoefficientOfVariable(
+        rule {
+            val lhs = withOptionalConstantCoefficient(VariableExpressionPattern())
+            val rhs = ConstantInSolutionVariablePattern()
+
+            val solvable = SolvablePattern(lhs, rhs)
+
+            onPattern(solvable) {
+                val coefficientValue = get(lhs::coefficient)!!
+
+                val useDual = when (coefficientValue.signOf()) {
+                    Sign.POSITIVE -> false
+                    Sign.NEGATIVE -> true
+                    Sign.NOT_ZERO -> if (solvable.isSelfDual()) false else return@onPattern null
+                    else -> return@onPattern null
+                }
+
+                if (coefficientValue == Constants.One || coefficientValue == Constants.MinusOne) return@onPattern null
+
+                val coefficient = introduce(coefficientValue, coefficientValue)
+
+                val newLhs = fractionOf(get(lhs), coefficient)
+                val newRhs = fractionOf(get(rhs), coefficient)
+
+                ruleResult(
+                    toExpr = solvable.deriveSolvable(newLhs, newRhs, useDual),
+                    gmAction = drag(coefficient, rhs, engine.steps.metadata.DragTargetPosition.Below),
+                    explanation = solvableExplanation(
+                        SolvableKey.DivideByCoefficientOfVariable,
+                        flipSign = useDual && !solvable.isSelfDual(),
+                        parameters = listOf(coefficient),
+                    ),
+                )
+            }
+        },
+    ),
+
+    NegateBothSides(
+        rule {
+            val unsignedLhs = AnyPattern()
+            val lhs = negOf(unsignedLhs)
+            val rhs = optionalNegOf(AnyPattern())
+
+            val solvable = SolvablePattern(lhs, rhs)
+
+            onPattern(solvable) {
+                ruleResult(
+                    toExpr = solvable.deriveSolvable(get(unsignedLhs), simplifiedNegOf(move(rhs)), useDual = true),
+                    gmAction = when {
+                        rhs.isNeg() -> drag(lhs, GmPathModifier.Operator, rhs, GmPathModifier.Operator)
+                        else -> drag(lhs, GmPathModifier.Operator, rhs, null, Position.LeftOf)
+                    },
+                    explanation = solvableExplanation(SolvableKey.NegateBothSides),
+                )
+            }
+        },
+    ),
+
+    FlipSolvable(
+        rule {
+            val lhs = AnyPattern()
+            val rhs = AnyPattern()
+
+            val solvable = SolvablePattern(lhs, rhs)
+
+            onPattern(solvable) {
+                ruleResult(
+                    toExpr = solvable.deriveSolvable(move(rhs), move(lhs), useDual = true),
+                    gmAction = drag(lhs, null, expression, GmPathModifier.Operator, Position.Above),
+                    explanation = solvableExplanation(SolvableKey.FlipSolvable),
+                )
             }
         },
     ),
@@ -212,7 +366,7 @@ private val moveTermsNotContainingModulusToTheRight = rule {
         val negatedTerms = simplifiedNegOfSum(termsNotContainingModulus)
 
         ruleResult(
-            toExpr = solvable.sameSolvable(sumOf(get(lhs), negatedTerms), sumOf(get(rhs), negatedTerms)),
+            toExpr = solvable.deriveSolvable(sumOf(get(lhs), negatedTerms), sumOf(get(rhs), negatedTerms)),
             explanation = solvableExplanation(SolvableKey.MoveTermsNotContainingModulusToTheRight),
         )
     }
@@ -230,7 +384,7 @@ private val moveTermsNotContainingModulusToTheLeft = rule {
         val negatedTerms = simplifiedNegOfSum(termsNotContainingModulus)
 
         ruleResult(
-            toExpr = solvable.sameSolvable(sumOf(get(lhs), negatedTerms), sumOf(get(rhs), negatedTerms)),
+            toExpr = solvable.deriveSolvable(sumOf(get(lhs), negatedTerms), sumOf(get(rhs), negatedTerms)),
             explanation = solvableExplanation(SolvableKey.MoveTermsNotContainingModulusToTheLeft),
         )
     }
@@ -317,48 +471,23 @@ object DenominatorExtractor {
     }
 }
 
-class ApplySolvableRuleAndSimplify(private val simplifySteps: StepsProducer) {
-    fun getPlan(solvableKey: SolvableKey, rule: RunnerMethod) = object : CompositeMethod() {
-
-        override fun run(ctx: Context, sub: Expression): Transformation? {
-            val initialStep = rule.tryExecute(ctx, sub) ?: return null
-
-            val builder = StepsBuilder(ctx, sub)
-            builder.addStep(initialStep)
-            simplifySteps.produceSteps(ctx, builder.lastSub)?.let { builder.addSteps(it) }
-
-            val explicitVariables = ctx.solutionVariables.size < sub.variables.size
-            val key = if (sub is Equation) {
-                EquationsExplanation.getKey(solvableKey, explicitVariables, true)
-            } else {
-                InequalitiesExplanation.getKey(solvableKey, explicitVariables, true)
-            }
-
-            return Transformation(
-                type = Transformation.Type.Plan,
-                fromExpr = sub,
-                toExpr = builder.lastSub,
-                steps = builder.getFinalSteps(),
-                explanation = Metadata(key, initialStep.explanation!!.mappedParams),
-            )
-        }
-    }
-}
-
 private fun MappedExpressionBuilder.solvableExplanation(
     solvableKey: SolvableKey,
-    vararg parameters: Expression,
+    flipSign: Boolean = false,
+    parameters: List<Expression> = emptyList(),
 ): Metadata {
     val explicitVariables = context.solutionVariables.size < expression.variables.size
-    val key = if (expression is Equation) {
-        EquationsExplanation.getKey(solvableKey, explicitVariables, false)
+    val keyGetter = if (expression is Equation) {
+        EquationsExplanation
     } else {
-        InequalitiesExplanation.getKey(solvableKey, explicitVariables, false)
+        InequalitiesExplanation
     }
+    val key = keyGetter.getKey(solvableKey, explicitVariables = explicitVariables, flipSign = flipSign)
+
     return if (explicitVariables) {
         Metadata(key, listOf(listOfsolutionVariables()) + parameters)
     } else {
-        Metadata(key, parameters.asList())
+        Metadata(key, parameters)
     }
 }
 

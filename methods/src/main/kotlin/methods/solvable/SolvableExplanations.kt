@@ -1,5 +1,6 @@
 package methods.solvable
 
+import engine.methods.RunnerMethod
 import engine.steps.metadata.CategorisedMetadataKey
 import engine.steps.metadata.TranslationKeys
 
@@ -7,13 +8,13 @@ import engine.steps.metadata.TranslationKeys
  * Abstract explanation keys for operations on Solvable.  These are mapped to [EquationsExplanation] and
  * [InequalitiesExplanation] values
  */
-enum class SolvableKey {
+enum class SolvableKey(val rule: RunnerMethod) {
     /**
      * Cancel common terms on both sides of the equation.
      *
      * E.g. 2x + 3 + 4 sqrt[5] = 2 + 4 sqrt[5] -> 2x + 3 = 2
      */
-    CancelCommonTermsOnBothSides,
+    CancelCommonTermsOnBothSides(SolvableRules.CancelCommonTermsOnBothSides),
 
     /**
      * Add the opposite of the constants appearing on the RHS
@@ -24,7 +25,7 @@ enum class SolvableKey {
      * E.g. 1 = 2x + 2 -> 1 - 2 = 2x + 2 - 2
      * 1 = 2x - 3 -> 1 + 3 = 2x - 3 + 3
      */
-    MoveConstantsToTheLeft,
+    MoveConstantsToTheLeft(SolvableRules.MoveConstantsToTheLeft),
 
     /**
      * Add the opposite of the constants appearing on the LHS
@@ -35,7 +36,7 @@ enum class SolvableKey {
      * E.g. 2x + 1 = 2 -> 2x + 1 - 1 = 2 - 1
      * 2x - 1 = 3 -> 2x - 1 + 1 = 3 + 1
      */
-    MoveConstantsToTheRight,
+    MoveConstantsToTheRight(SolvableRules.MoveConstantsToTheRight),
 
     /**
      * Add the opposite of the variables appearing on the RHS
@@ -45,7 +46,7 @@ enum class SolvableKey {
      *
      * E.g. 3x + 2 = 2x + 1 -> 3x + 2 - 2x = 2x + 1 - 2x
      */
-    MoveVariablesToTheLeft,
+    MoveVariablesToTheLeft(SolvableRules.MoveVariablesToTheLeft),
 
     /**
      * Add the opposite of the variables appearing on the LHS
@@ -53,7 +54,7 @@ enum class SolvableKey {
      *
      * E.g. 2x + 2 = 3x + 1 -> 2x + 2 - 2x = 3x + 1 - 2x
      */
-    MoveVariablesToTheRight,
+    MoveVariablesToTheRight(SolvableRules.MoveVariablesToTheRight),
 
     /**
      * Multiply both sides of the equation by the least common denominator of
@@ -61,21 +62,29 @@ enum class SolvableKey {
      *
      * E.g. [2 + x / 6] + 5 = [4 - 2x / 4] -> ([2 + x / 6] + 5) * 12 = [4 - 2x / 4] * 12
      */
-    MultiplyBothSidesByLCD,
+    MultiplyBothSidesByLCD(SolvableRules.MultiplySolvableByLCD),
 
     /**
      * In an equation an absolute value, move terms without an absolute value to the right
      *
      * E.g. abs[x] + x - 1 = 2 --> abs[x] + x - 1 - x + 1 = 2 - x + 1
      */
-    MoveTermsNotContainingModulusToTheRight,
+    MoveTermsNotContainingModulusToTheRight(SolvableRules.MoveTermsNotContainingModulusToTheRight),
 
     /**
      * In an equation with an absolute value, move terms without an absolute value to the left
      *
      * E.g. x = 2x - abs[x] + 3 --> x - 2x - 3 = 2x - abs[x] + 3 - 2x - 3
      */
-    MoveTermsNotContainingModulusToTheLeft,
+    MoveTermsNotContainingModulusToTheLeft(SolvableRules.MoveTermsNotContainingModulusToTheLeft),
+
+    MultiplyByInverseCoefficientOfVariable(SolvableRules.MultiplyByInverseCoefficientOfVariable),
+
+    DivideByCoefficientOfVariable(SolvableRules.DivideByCoefficientOfVariable),
+
+    NegateBothSides(SolvableRules.NegateBothSides),
+
+    FlipSolvable(SolvableRules.FlipSolvable),
 }
 
 /**
@@ -85,6 +94,7 @@ interface SolvableExplanation : CategorisedMetadataKey {
     val solvableKey: SolvableKey
     val explicitVariables: Boolean
     val simplify: Boolean
+    val flipSign: Boolean
 }
 
 /**
@@ -92,13 +102,15 @@ interface SolvableExplanation : CategorisedMetadataKey {
  */
 open class SolvableKeyGetter(solvableExplanations: List<SolvableExplanation>) {
 
-    private val explanations = mutableMapOf<Pair<SolvableKey, Boolean>, SolvableExplanation>()
-    private val explicitVariablesExplanations = mutableMapOf<Pair<SolvableKey, Boolean>, SolvableExplanation>()
+    private data class ExplanationKey(val key: SolvableKey, val simplify: Boolean, val flipSign: Boolean)
+
+    private val explanations = mutableMapOf<ExplanationKey, SolvableExplanation>()
+    private val explicitVariablesExplanations = mutableMapOf<ExplanationKey, SolvableExplanation>()
 
     init {
         for (key in solvableExplanations) {
             val map = if (key.explicitVariables) explicitVariablesExplanations else explanations
-            map[Pair(key.solvableKey, key.simplify)] = key
+            map[ExplanationKey(key.solvableKey, key.simplify, key.flipSign)] = key
         }
     }
 
@@ -108,9 +120,10 @@ open class SolvableKeyGetter(solvableExplanations: List<SolvableExplanation>) {
     fun getKey(
         solvableKey: SolvableKey,
         explicitVariables: Boolean = false,
+        flipSign: Boolean = false,
         simplify: Boolean = false,
     ): SolvableExplanation {
-        val mapKey = Pair(solvableKey, simplify)
+        val mapKey = ExplanationKey(solvableKey, simplify, flipSign)
         if (explicitVariables) {
             val key = explicitVariablesExplanations[mapKey]
             if (key != null) return key
@@ -124,6 +137,7 @@ enum class EquationsExplanation(
     override val solvableKey: SolvableKey,
     override val explicitVariables: Boolean = false,
     override val simplify: Boolean = false,
+    override val flipSign: Boolean = false,
 ) : SolvableExplanation {
 
     /**
@@ -337,6 +351,60 @@ enum class EquationsExplanation(
      */
     MultiplyByLCDAndSimplify(SolvableKey.MultiplyBothSidesByLCD, simplify = true),
 
+    /**
+     * Multiply both sides of the equation by the inverse of the coefficient
+     * of the variable.
+     *
+     * E.g. [x / 9] = 3 -> [x / 9] * 9 = 3 * 9
+     * [2x / 5] = 3 -> [2x / 5] * [5 / 2] = 3 * [5 / 2]
+     */
+    MultiplyByInverseCoefficientOfVariable(SolvableKey.MultiplyByInverseCoefficientOfVariable),
+
+    /**
+     * Multiply both sides of the equation by the inverse of the coefficient
+     * of the variable and simplify.
+     *
+     * E.g. [2x / 5] = 3
+     *      -> [2x / 5] * [5 / 2] = 3 * [5 / 2]
+     *      -> x = [15 / 2]
+     */
+    MultiplyByInverseCoefficientOfVariableAndSimplify(
+        SolvableKey.MultiplyByInverseCoefficientOfVariable,
+        simplify = true,
+    ),
+
+    /**
+     * Divide both sides of the equation by the coefficient of the
+     * variable.
+     *
+     * E.g. 2 sqrt[2] x = 3 -> [2 sqrt[2] x / 2 sqrt[2]] = [3 / 2 sqrt[2]]
+     */
+    DivideByCoefficientOfVariable(SolvableKey.DivideByCoefficientOfVariable),
+
+    /**
+     * Divide both sides of the equation by the coefficient of the variable
+     * and simplify.
+     *
+     * E.g. 2 sqrt[2] x = 3
+     *      -> [2 sqrt[2] x / 2 sqrt[2]] = [3 / 2 sqrt[2]]
+     *      -> x = [3 sqrt[2] / 4]
+     */
+    DivideByCoefficientOfVariableAndSimplify(SolvableKey.DivideByCoefficientOfVariable, simplify = true),
+
+    /**
+     * Negate both sides of the equation, i.e. turn an equation of
+     * the form -x = a to x = -a.
+     *
+     * E.g. -x = -2 sqrt[3] -> x = 2 sqrt[3]
+     */
+    NegateBothSides(SolvableKey.NegateBothSides),
+
+    /**
+     * Flip the equation.
+     *
+     * E.g. 7 = 3x -> 3x = 7
+     */
+    FlipEquation(SolvableKey.FlipSolvable),
     ;
 
     override val category = "Equations"
@@ -349,6 +417,7 @@ enum class InequalitiesExplanation(
     override val solvableKey: SolvableKey,
     override val explicitVariables: Boolean = false,
     override val simplify: Boolean = false,
+    override val flipSign: Boolean = false,
 ) : SolvableExplanation {
 
     /**
@@ -560,6 +629,82 @@ enum class InequalitiesExplanation(
      */
     MultiplyByLCDAndSimplify(SolvableKey.MultiplyBothSidesByLCD, simplify = true),
 
+    /**
+     * Multiply both sides of the inequality by the inverse of the coefficient
+     * of the variable (which is a positive value).
+     *
+     * E.g. [x / 9] < 3 -> [x / 9] * 9 < 3 * 9
+     * [2x / 5] > 3 -> [2x / 5] * [5 / 2] > 3 * [5 / 2]
+     */
+    MultiplyByInverseCoefficientOfVariable(SolvableKey.MultiplyByInverseCoefficientOfVariable),
+
+    /**
+     * Multiply both sides of the inequality by the inverse of the coefficient
+     * of the variable and flip the sign (because we're multiplying by a negative
+     * value).
+     *
+     * E.g. [x / -9] < 3 -> [x / -9] * (-9) > 3 * (-9)
+     * [-2x / 5] > 3 -> [-2x / 5] * [5 / -2] < 3 * [5 / -2]
+     */
+    MultiplyByInverseCoefficientOfVariableAndFlipTheSign(
+        SolvableKey.MultiplyByInverseCoefficientOfVariable,
+        flipSign = true,
+    ),
+
+    /**
+     * Multiply both sides of the inequality by the inverse of the coefficient
+     * of the variable and simplify.
+     *
+     * E.g. [2x / 5] < 3
+     *      -> [2x / 5] * [5 / 2] < 3 * [5 / 2]
+     *      -> x < [15 / 2]
+     */
+    MultiplyByInverseCoefficientOfVariableAndSimplify(
+        SolvableKey.MultiplyByInverseCoefficientOfVariable,
+        simplify = true,
+    ),
+
+    /**
+     * Divide both sides of the inequality by the coefficient of the
+     * variable (which is a positive value).
+     *
+     * E.g. 2 sqrt[2] x <= 3 -> [2 sqrt[2] x / 2 sqrt[2]] <= [3 / 2 sqrt[2]]
+     */
+    DivideByCoefficientOfVariable(SolvableKey.DivideByCoefficientOfVariable),
+
+    /**
+     * Divide both sides of the inequality by the coefficient of the
+     * variable and flip the sign (because we're dividing by a negative
+     * value).
+     *
+     * E.g. -2 sqrt[2] x > 3 -> [-2 sqrt[2] x / -2 sqrt[2]] < [3 / -2 sqrt[2]]
+     */
+    DivideByCoefficientOfVariableAndFlipTheSign(SolvableKey.DivideByCoefficientOfVariable, flipSign = true),
+
+    /**
+     * Divide both sides of the inequality by the coefficient of the variable
+     * and simplify.
+     *
+     * E.g. 2 sqrt[2] x > 3
+     *      -> [2 sqrt[2] x / 2 sqrt[2]] > [3 / 2 sqrt[2]]
+     *      -> x > [3 sqrt[2] / 4]
+     */
+    DivideByCoefficientOfVariableAndSimplify(SolvableKey.DivideByCoefficientOfVariable, simplify = true),
+
+    /**
+     * Negate both sides of the inequality and flip the sign, i.e. turn an
+     * inequality of the form -x < a to x > -a.
+     *
+     * E.g. -x <= -2 sqrt[3] -> x >= 2 sqrt[3]
+     */
+    NegateBothSidesAndFlipTheSign(SolvableKey.NegateBothSides),
+
+    /**
+     * Flip the inequality.
+     *
+     * E.g. 7 < 3x -> 3x > 7
+     */
+    FlipInequality(SolvableKey.FlipSolvable),
     ;
 
     override val category = "Inequalities"

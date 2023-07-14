@@ -65,34 +65,18 @@ export const simpleSolutionFormatter = {
     rec: (n: ExpressionTree, p: ExpressionTree | null) => string,
   ): string {
     switch (n.type) {
-      case 'Solution': {
-        const [v, set] = n.args;
-        const vs = rec(v, null);
+      case 'SetSolution': {
+        const [vars, set] = n.args;
+        const varList = vars as VariableListTree;
+        const [varsTuple, variableCount] = variableListToLatexTuple(vars, rec);
+
         switch (set.type) {
           case 'FiniteSet':
             switch (set.args.length) {
               case 0:
-                return `${vs} \\in \\emptyset`;
-              case 1:
-                return `${vs} = ${rec(set.args[0], null)}`;
-              default:
-                return set.args.map((el) => `${vs} = ${rec(el, null)}`).join(', ');
-            }
-        }
-        break;
-      }
-      case 'SetSolution': {
-        const [vars, set] = n.args;
-        switch (set.type) {
-          case 'FiniteSet':
-            switch (set.args.length) {
-              case 0: {
-                const [varsTuple, _] = variableListToLatexTuple(vars, rec);
                 return `${varsTuple} \\in \\emptyset`;
-              }
               case 1: {
-                const varList = vars as VariableListTree;
-                if (varList.args.length > 1) {
+                if (variableCount > 1) {
                   const tuple = set.args[0] as TupleTree;
                   return varList.args
                     .map((v, i) => `${rec(v, null)} = ${rec(tuple.args[i], null)}`)
@@ -101,29 +85,38 @@ export const simpleSolutionFormatter = {
                   return `${rec(varList.args[0], null)} = ${rec(set.args[0], null)}`;
                 }
               }
-              default: {
-                const [varsTuple, _] = variableListToLatexTuple(vars, rec);
+              default:
                 return set.args.map((el) => `${varsTuple} = ${rec(el, null)}`).join(', ');
-              }
             }
           case 'CartesianProduct':
             if (
               set.args.every(
                 (s) =>
-                  s.type === '/reals/' || (s.type === 'FiniteSet' && s.args.length === 1),
+                  s.type === 'Reals' || (s.type === 'FiniteSet' && s.args.length === 1),
               )
             ) {
               return set.args
                 .map((s, i) => {
                   const v = rec((vars as VariableListTree).args[i], null);
                   switch (s.type) {
-                    case '/reals/':
+                    case 'Reals':
                       return `${v} \\in \\mathbb{R}`;
                     case 'FiniteSet':
                       return `${v} = ${rec(s.args[0], null)}`;
                   }
                 })
                 .join(', ');
+            }
+            break;
+          case 'SetDifference':
+            if (
+              variableCount === 1 &&
+              set.args[0].type === 'Reals' &&
+              set.args[1].type === 'FiniteSet'
+            ) {
+              return set.args[1].args
+                .map((s) => `${varsTuple} \\neq ${rec(s, null)}`)
+                .join(' \\text{ and } ');
             }
         }
         break;

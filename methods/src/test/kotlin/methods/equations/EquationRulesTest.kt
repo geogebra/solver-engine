@@ -4,7 +4,6 @@ import engine.methods.testRule
 import engine.methods.testRuleInX
 import methods.equations.EquationsRules.ApplyQuadraticFormula
 import methods.equations.EquationsRules.EliminateConstantFactorOfLhsWithZeroRhs
-import methods.equations.EquationsRules.MultiplyByInverseCoefficientOfVariable
 import methods.equations.EquationsRules.MultiplyByInverseOfLeadingCoefficient
 import methods.equations.EquationsRules.SeparateEquationInPlusMinusForm
 import methods.equations.EquationsRules.TakeRootOfBothSides
@@ -33,35 +32,6 @@ class EquationRulesTest {
             "2[x^2] - 3[x^3] = 2",
             MultiplyByInverseOfLeadingCoefficient,
             "(2[x^2] - 3[x^3])(-[1/3]) = 2(-[1/3])",
-        )
-    }
-
-    @Test
-    fun testMultiplyByInverseCoefficientOfVariable() {
-        testRuleInX(
-            "3x = 1",
-            MultiplyByInverseCoefficientOfVariable,
-            null,
-        )
-        testRuleInX(
-            "[x / 5] = 1",
-            MultiplyByInverseCoefficientOfVariable,
-            "[x / 5] * 5 = 1 * 5",
-        )
-        testRuleInX(
-            "[3x / 2] = 1",
-            MultiplyByInverseCoefficientOfVariable,
-            "[3x / 2] * [2 / 3] = 1 * [2 / 3]",
-        )
-        testRuleInX(
-            "-[x / 5] = 1",
-            MultiplyByInverseCoefficientOfVariable,
-            "(-[x / 5]) * (-5) = 1 * (-5)",
-        )
-        testRuleInX(
-            "-[3x / 2] = 1",
-            MultiplyByInverseCoefficientOfVariable,
-            "(-[3x / 2]) (-[2 / 3]) = 1 (-[2 / 3])",
         )
     }
 

@@ -46,7 +46,7 @@ class LinearEquationsWithFractionsTest {
                 fromExpr = "0 = 17 x"
                 toExpr = "17 x = 0"
                 explanation {
-                    key = EquationsExplanation.FlipEquation
+                    key = methods.solvable.EquationsExplanation.FlipEquation
                 }
             }
 
@@ -100,7 +100,7 @@ class LinearEquationsWithFractionsTest {
                 fromExpr = "3 x = -22"
                 toExpr = "x = -[22 / 3]"
                 explanation {
-                    key = EquationsExplanation.DivideByCoefficientOfVariableAndSimplify
+                    key = methods.solvable.EquationsExplanation.DivideByCoefficientOfVariableAndSimplify
                 }
             }
 
@@ -146,7 +146,7 @@ class LinearEquationsWithFractionsTest {
                 fromExpr = "3 x = -22"
                 toExpr = "x = -[22 / 3]"
                 explanation {
-                    key = EquationsExplanation.DivideByCoefficientOfVariableAndSimplify
+                    key = methods.solvable.EquationsExplanation.DivideByCoefficientOfVariableAndSimplify
                 }
             }
 
@@ -192,7 +192,7 @@ class LinearEquationsWithFractionsTest {
                 fromExpr = "-21 x = 193"
                 toExpr = "x = -[193 / 21]"
                 explanation {
-                    key = EquationsExplanation.DivideByCoefficientOfVariableAndSimplify
+                    key = methods.solvable.EquationsExplanation.DivideByCoefficientOfVariableAndSimplify
                 }
             }
 

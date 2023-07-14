@@ -6,20 +6,20 @@ import engine.expressions.Combine
 import engine.expressions.Distribute
 import engine.expressions.Expression
 import engine.expressions.Factor
+import engine.expressions.Inequality
 import engine.expressions.Introduce
 import engine.expressions.Move
 import engine.expressions.MoveUnaryOperator
 import engine.expressions.New
 import engine.expressions.PathScope
 import engine.expressions.asRational
+import engine.expressions.buildExpression
 import engine.expressions.divideBy
-import engine.expressions.expressionOf
 import engine.expressions.negOf
 import engine.expressions.simplifiedPowerOf
 import engine.expressions.variableListOf
 import engine.expressions.xp
-import engine.operators.EquationOperator
-import engine.operators.InequalityOperators
+import engine.operators.SolvableOperator
 import engine.patterns.ArbitraryVariablePattern
 import engine.patterns.CoefficientPattern
 import engine.patterns.ExpressionProvider
@@ -256,31 +256,23 @@ open class MappedExpressionBuilder(
 
     fun NaryPattern.substitute(vararg newVals: Expression) = substitute(match, newVals)
 
-    fun SolvablePattern.isEquation() = getBoundExpr(match)?.operator == EquationOperator
+    fun SolvablePattern.isSelfDual(): Boolean {
+        val operator = getBoundExpr(match)!!.operator as SolvableOperator
+        return operator.getDual() == operator
+    }
 
+    fun SolvablePattern.deriveSolvable(lhs: Expression, rhs: Expression, useDual: Boolean = false): Expression {
+        val operator = getBoundExpr(match)!!.operator as SolvableOperator
+        return buildExpression(
+            if (useDual) operator.getDual() else operator,
+            listOf(lhs, rhs),
+        )
+    }
+
+    // Probably can get rid of
     fun InequalityPattern.holdsFor(val1: BigDecimal, val2: BigDecimal): Boolean {
-        val operator = getBoundExpr(match)!!.operator as InequalityOperators
-        return operator.holdsFor(val1, val2)
-    }
-
-    fun InequalityPattern.toInterval(boundary: Expression): Expression {
-        val operator = getBoundExpr(match)!!.operator as InequalityOperators
-        return operator.toInterval(boundary)
-    }
-
-    fun InequalityPattern.sameInequality(lhs: Expression, rhs: Expression): Expression {
-        val operator = getBoundExpr(match)!!.operator as InequalityOperators
-        return expressionOf(operator, listOf(lhs, rhs))
-    }
-
-    fun InequalityPattern.dualInequality(lhs: Expression, rhs: Expression): Expression {
-        val operator = getBoundExpr(match)!!.operator as InequalityOperators
-        return expressionOf(operator.getDual(), listOf(lhs, rhs))
-    }
-
-    fun SolvablePattern.sameSolvable(lhs: Expression, rhs: Expression): Expression {
-        val operator = getBoundExpr(match)!!.operator
-        return expressionOf(operator, listOf(lhs, rhs))
+        val ineq = getBoundExpr(match)!! as Inequality
+        return ineq.comparator.holdsFor(val1, val2)
     }
 
     @Suppress("ReturnCount")

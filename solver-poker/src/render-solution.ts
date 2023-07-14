@@ -206,8 +206,6 @@ const renderTask = (task: TaskJson2, depth = 0): string => {
     ${renderExplanation(task.explanation)}
     ${!task.steps
       ? renderExpression(task.startExpr)
-      : task.steps.length === 1
-      ? renderTransformation(task.steps[0], depth - 1)
       : renderTaskTransformation(task) + renderSteps(task.steps, depth - 1, depth >= 0)}
   </div>`;
 };

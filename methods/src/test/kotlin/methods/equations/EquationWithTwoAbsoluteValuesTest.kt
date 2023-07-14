@@ -22,7 +22,7 @@ class EquationWithTwoAbsoluteValuesTest {
                 fromExpr = "-abs[x + 1] = -2 * abs[x - 2]"
                 toExpr = "abs[x + 1] = 2 * abs[x - 2]"
                 explanation {
-                    key = EquationsExplanation.NegateBothSides
+                    key = methods.solvable.EquationsExplanation.NegateBothSides
                 }
             }
             step {

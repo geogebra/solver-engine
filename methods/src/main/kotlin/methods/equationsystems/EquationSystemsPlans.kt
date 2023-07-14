@@ -48,7 +48,7 @@ import methods.equations.EquationsPlans
 import methods.equations.EquationsRules
 import methods.equations.equationSimplificationSteps
 import methods.equations.rearrangeLinearEquationSteps
-import methods.equations.simplifyEquation
+import methods.equations.solvablePlansForEquations
 import methods.polynomials.PolynomialsPlans
 
 enum class EquationSystemsPlans(override val runner: CompositeMethod) : RunnerMethod {
@@ -378,7 +378,7 @@ private object SystemSolverBySubstitution : SystemSolver() {
         whilePossible {
             firstOf {
                 option(equationSimplificationSteps)
-                option(EquationsPlans.MultiplyByLCDAndSimplify)
+                option(solvablePlansForEquations.multiplyByLCDAndSimplify)
                 option(PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
                 option(EquationsPlans.CollectLikeTermsToTheLeftAndSimplify)
             }
@@ -474,10 +474,10 @@ private object SystemSolverByElimination : SystemSolver() {
         whilePossible {
             firstOf {
                 option(equationSimplificationSteps)
-                option(EquationsPlans.MultiplyByLCDAndSimplify)
+                option(solvablePlansForEquations.multiplyByLCDAndSimplify)
                 option(PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
-                option(EquationsPlans.MoveConstantsToTheRightAndSimplify)
-                option(EquationsPlans.MoveVariablesToTheLeftAndSimplify)
+                option(solvablePlansForEquations.moveConstantsToTheRightAndSimplify)
+                option(solvablePlansForEquations.moveVariablesToTheLeftAndSimplify)
             }
         }
         optionally {
@@ -562,7 +562,7 @@ private object SystemSolverByElimination : SystemSolver() {
                     resultLabel = label(3),
                 ) {
                     apply(EquationSystemsRules.RewriteEquationAddition)
-                    whilePossible(simplifyEquation)
+                    optionally(EquationsPlans.SimplifyEquation)
                 }?.result
             }
 
@@ -576,7 +576,7 @@ private object SystemSolverByElimination : SystemSolver() {
                     resultLabel = label(3),
                 ) {
                     apply(EquationSystemsRules.RewriteEquationSubtraction)
-                    whilePossible(simplifyEquation)
+                    optionally(EquationsPlans.SimplifyEquation)
                 }?.result
             }
 

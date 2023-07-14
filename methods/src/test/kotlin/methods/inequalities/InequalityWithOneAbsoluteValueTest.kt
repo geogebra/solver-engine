@@ -2,8 +2,8 @@ package methods.inequalities
 
 import engine.methods.testMethodInX
 import methods.general.GeneralExplanation
+import methods.inequations.InequationsExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
-import methods.polynomials.PolynomialsExplanation
 import org.junit.jupiter.api.Test
 
 class InequalityWithOneAbsoluteValueTest {
@@ -138,14 +138,15 @@ class InequalityWithOneAbsoluteValueTest {
     @Test
     fun `test abs(ax + b) GreaterThan 0`() = testMethodInX {
         method = InequalitiesPlans.SolveInequalityWithVariablesInOneAbsoluteValue
-        inputExpr = "abs[3x - 1] > 0"
+        inputExpr = "abs[3 x - 1] > 0"
 
         check {
             fromExpr = "abs[3 x - 1] > 0"
-            toExpr = "SetSolution[x : SetUnion[( -/infinity/, [1 / 3] ), ( [1 / 3], /infinity/ )]]"
+            toExpr = "SetSolution[x : /reals/ \\ {[1 / 3]}]"
             explanation {
                 key = InequalitiesExplanation.SolveInequalityWithVariablesInOneAbsoluteValue
             }
+
             step {
                 fromExpr = "abs[3 x - 1] > 0"
                 toExpr = "3 x - 1 != 0"
@@ -153,75 +154,12 @@ class InequalityWithOneAbsoluteValueTest {
                     key = InequalitiesExplanation.ConvertModulusGreaterThanZero
                 }
             }
+
             step {
                 fromExpr = "3 x - 1 != 0"
-                toExpr = "SetSolution[x : SetUnion[( -/infinity/, [1 / 3] ), ( [1 / 3], /infinity/ )]]"
+                toExpr = "SetSolution[x : /reals/ \\ {[1 / 3]}]"
                 explanation {
-                    key = InequalitiesExplanation.SolveLinearInequality
-                }
-                step {
-                    fromExpr = "3 x - 1 != 0"
-                    toExpr = "3 x != 1"
-                    step {
-                        fromExpr = "3 x - 1 != 0"
-                        toExpr = "3 x - 1 + 1 != 0 + 1"
-                    }
-                    step {
-                        fromExpr = "3 x - 1 + 1 != 0 + 1"
-                        toExpr = "3 x != 1"
-                        explanation {
-                            key = InequalitiesExplanation.SimplifyInequality
-                        }
-                        step {
-                            fromExpr = "3 x - 1 + 1 != 0 + 1"
-                            toExpr = "3 x != 0 + 1"
-                            explanation {
-                                key = GeneralExplanation.CancelAdditiveInverseElements
-                            }
-                        }
-                        step {
-                            fromExpr = "3 x != 0 + 1"
-                            toExpr = "3 x != 1"
-                            explanation {
-                                key = GeneralExplanation.EliminateZeroInSum
-                            }
-                        }
-                    }
-                }
-                step {
-                    fromExpr = "3 x != 1"
-                    toExpr = "x != [1 / 3]"
-                    explanation {
-                        key = InequalitiesExplanation.DivideByCoefficientOfVariableAndSimplify
-                    }
-                    step {
-                        fromExpr = "3 x != 1"
-                        toExpr = "[3 x / 3] != [1 / 3]"
-                        explanation {
-                            key = InequalitiesExplanation.DivideByCoefficientOfVariable
-                        }
-                    }
-                    step {
-                        fromExpr = "[3 x / 3] != [1 / 3]"
-                        toExpr = "x != [1 / 3]"
-                        explanation {
-                            key = PolynomialsExplanation.SimplifyMonomial
-                        }
-                        step {
-                            fromExpr = "[3 x / 3]"
-                            toExpr = "x"
-                            explanation {
-                                key = GeneralExplanation.CancelDenominator
-                            }
-                        }
-                    }
-                }
-                step {
-                    fromExpr = "x != [1 / 3]"
-                    toExpr = "SetSolution[x : SetUnion[( -/infinity/, [1 / 3] ), ( [1 / 3], /infinity/ )]]"
-                    explanation {
-                        key = InequalitiesExplanation.ExtractSolutionFromInequalityInSolvedForm
-                    }
+                    key = InequationsExplanation.SolveInequationInOneVariable
                 }
             }
         }
@@ -348,7 +286,7 @@ class InequalityWithOneAbsoluteValueTest {
                 fromExpr = "-5 > abs[x + 5]"
                 toExpr = "abs[x + 5] < -5"
                 explanation {
-                    key = InequalitiesExplanation.FlipInequality
+                    key = methods.solvable.InequalitiesExplanation.FlipInequality
                 }
             }
             step {
@@ -407,14 +345,14 @@ class InequalityWithOneAbsoluteValueTest {
                             fromExpr = "-1 < 3 x"
                             toExpr = "3 x > -1"
                             explanation {
-                                key = InequalitiesExplanation.FlipInequality
+                                key = methods.solvable.InequalitiesExplanation.FlipInequality
                             }
                         }
                         step {
                             fromExpr = "3 x > -1"
                             toExpr = "x > -[1 / 3]"
                             explanation {
-                                key = InequalitiesExplanation.DivideByCoefficientOfVariableAndSimplify
+                                key = methods.solvable.InequalitiesExplanation.DivideByCoefficientOfVariableAndSimplify
                             }
                         }
                         step {
@@ -448,7 +386,7 @@ class InequalityWithOneAbsoluteValueTest {
                             fromExpr = "3 x < 3"
                             toExpr = "x < 1"
                             explanation {
-                                key = InequalitiesExplanation.DivideByCoefficientOfVariableAndSimplify
+                                key = methods.solvable.InequalitiesExplanation.DivideByCoefficientOfVariableAndSimplify
                             }
                         }
                         step {
@@ -501,14 +439,14 @@ class InequalityWithOneAbsoluteValueTest {
                 fromExpr = "-1 < -abs[x + 1]"
                 toExpr = "-abs[x + 1] > -1"
                 explanation {
-                    key = InequalitiesExplanation.FlipInequality
+                    key = methods.solvable.InequalitiesExplanation.FlipInequality
                 }
             }
             step {
                 fromExpr = "-abs[x + 1] > -1"
                 toExpr = "abs[x + 1] < 1"
                 explanation {
-                    key = InequalitiesExplanation.NegateBothSidesAndFlipTheSign
+                    key = methods.solvable.InequalitiesExplanation.NegateBothSidesAndFlipTheSign
                 }
             }
             step {
@@ -543,14 +481,14 @@ class InequalityWithOneAbsoluteValueTest {
                 fromExpr = "-3 < -2 * abs[x + 1]"
                 toExpr = "-2 * abs[x + 1] > -3"
                 explanation {
-                    key = InequalitiesExplanation.FlipInequality
+                    key = methods.solvable.InequalitiesExplanation.FlipInequality
                 }
             }
             step {
                 fromExpr = "-2 * abs[x + 1] > -3"
                 toExpr = "2 * abs[x + 1] < 3"
                 explanation {
-                    key = InequalitiesExplanation.NegateBothSidesAndFlipTheSign
+                    key = methods.solvable.InequalitiesExplanation.NegateBothSidesAndFlipTheSign
                 }
             }
             step {
@@ -585,14 +523,14 @@ class InequalityWithOneAbsoluteValueTest {
                 fromExpr = "-3 > -2 * abs[x + 1]"
                 toExpr = "-2 * abs[x + 1] < -3"
                 explanation {
-                    key = InequalitiesExplanation.FlipInequality
+                    key = methods.solvable.InequalitiesExplanation.FlipInequality
                 }
             }
             step {
                 fromExpr = "-2 * abs[x + 1] < -3"
                 toExpr = "2 * abs[x + 1] > 3"
                 explanation {
-                    key = InequalitiesExplanation.NegateBothSidesAndFlipTheSign
+                    key = methods.solvable.InequalitiesExplanation.NegateBothSidesAndFlipTheSign
                 }
             }
             step {

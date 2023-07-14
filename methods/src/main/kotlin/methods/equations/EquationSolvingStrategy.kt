@@ -17,6 +17,7 @@ import methods.equationsystems.EquationSystemsPlans
 import methods.factor.FactorPlans
 import methods.polynomials.PolynomialRules
 import methods.polynomials.PolynomialsPlans
+import methods.solvable.SolvableRules
 import methods.solvable.countAbsoluteValues
 
 enum class EquationSolvingStrategy(
@@ -71,7 +72,7 @@ enum class EquationSolvingStrategy(
         priority = 3,
         explanation = EquationsExplanation.SolveByCompletingTheSquare,
         steps = steps {
-            optionally(EquationsPlans.MoveVariablesToTheLeftAndSimplify)
+            optionally(solvablePlansForEquations.moveVariablesToTheLeftAndSimplify)
 
             // Complete the square
             firstOf {
@@ -85,7 +86,7 @@ enum class EquationSolvingStrategy(
                 }
                 option {
                     // Else rearrange to put constants on the right and complete the square
-                    optionally(EquationsPlans.MoveConstantsToTheRightAndSimplify)
+                    optionally(solvablePlansForEquations.moveConstantsToTheRightAndSimplify)
                     optionally(EquationsPlans.MultiplyByInverseOfLeadingCoefficientAndSimplify)
                     optionally {
                         applyTo(PolynomialRules.NormalizePolynomial) { it.firstChild }
@@ -131,7 +132,7 @@ enum class EquationSolvingStrategy(
         priority = 5,
         explanation = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula,
         steps = steps {
-            optionally(EquationsPlans.MultiplyByLCDAndSimplify)
+            optionally(solvablePlansForEquations.multiplyByLCDAndSimplify)
             optionally(EquationsPlans.MoveEverythingToTheLeftAndSimplify)
             optionally {
                 applyTo(PolynomialsPlans.ExpandPolynomialExpressionInOneVariable) { it.firstChild }
@@ -173,9 +174,9 @@ enum class EquationSolvingStrategy(
             optionally(EquationsPlans.IsolateAbsoluteValue)
             optionally {
                 check { it is Equation && it.rhs.countAbsoluteValues(solutionVariables) > 0 }
-                apply(EquationsRules.FlipEquation)
+                apply(SolvableRules.FlipSolvable)
             }
-            optionally(EquationsRules.NegateBothSides)
+            optionally(SolvableRules.NegateBothSides)
 
             firstOf {
                 // Cases where the RHS is a constant value
@@ -263,7 +264,7 @@ private val solveEquationWithTwoAbsoluteValues = steps {
 
     optionally(EquationsPlans.MoveOneModulusToOtherSideAndSimplify)
 
-    optionally(EquationsRules.NegateBothSides)
+    optionally(SolvableRules.NegateBothSides)
 
     firstOf {
         option {
@@ -283,7 +284,7 @@ private val separateFactoredEquationSteps = steps {
 }
 private val resolvePlusminusSteps = steps {
     check { !it.hasSingleValue() }
-    optionally(equationRearrangementSteps)
+    optionally(solvablePlansForEquations.solvableRearrangementSteps)
     firstOf {
         option {
             apply(EquationsRules.SeparateEquationInPlusMinusForm)
@@ -303,26 +304,26 @@ internal val solveEquationInOneVariable = lazy {
         option(EquationSolvingStrategy.ExtractSolutionFromConstantEquation)
 
         // simplify the equation
-        option(simplifyEquation)
+        option(EquationsPlans.SimplifyEquation)
 
         // Split up equations containing +/- and solve them
         option(EquationSolvingStrategy.ResolvePlusminus)
 
         // Remove constant denominators when it makes the equation simpler
-        option(removeConstantDenominatorsSteps)
+        option(solvablePlansForEquations.removeConstantDenominatorsSteps)
 
         // Try all regular strategies
         for (strategy in regularStrategies) {
             option(strategy)
         }
 
-        option(equationRearrangementSteps)
+        option(solvablePlansForEquations.solvableRearrangementSteps)
 
         option(EquationSolvingStrategy.SeparateFactoredEquation)
 
         option(PolynomialsPlans.ExpandSingleBracketWithIntegerCoefficient)
 
-        option(coefficientRemovalSteps)
+        option(solvablePlansForEquations.coefficientRemovalSteps)
 
         option(PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
     }

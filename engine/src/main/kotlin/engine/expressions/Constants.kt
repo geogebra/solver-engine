@@ -4,7 +4,6 @@ import engine.operators.EulerEOperator
 import engine.operators.ImaginaryUnitOperator
 import engine.operators.InfinityOperator
 import engine.operators.PiOperator
-import engine.operators.SetOperators
 import engine.operators.UndefinedOperator
 
 @Suppress("MagicNumber")
@@ -28,5 +27,5 @@ object Constants {
     val Undefined = expressionOf(UndefinedOperator, emptyList())
 
     val EmptySet = solutionSetOf()
-    val Reals = expressionOf(SetOperators.Reals, emptyList())
+    val Reals = Reals()
 }

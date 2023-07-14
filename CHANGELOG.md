@@ -21,7 +21,6 @@ contents to a new release section (e.g. _[0.x]_).
 - Add equation addition and subtraction support in SDK (PLUT-561)
 - Added support for solving modulus equations of the form |f(x)| = g(x) and derived (PLUT-600), including a specific
   method for US (PLUT-614)
-- Added support for solving modulus equations of the form |f(x)| = g(x) and derived (PLUT-600)
 - Added new `json2` serialisation format for math in engine (PLUT-626)
 - SDK: added support for new `json2` serialisation format for math (PLUT-627)
 - Added support for inequalities containing absolute values (PLUT-559)
@@ -32,6 +31,11 @@ contents to a new release section (e.g. _[0.x]_).
   alternatives. A certain type of solution can be requested by setting the preferred strategy (PLUT-618)
 - SDK: Add LaTeX to solver tree support for absolute value as `\\left|`, `\\right|` pair or pipe symbol (i.e. `|`) (
   PLUT-606)
+- Added the set subtraction operator to represent solutions with holes, e.g. `R \ {1, 2}` (PLUT-639)
+- Added support for solving inequations, i.e. statements with the `!=` operator, either directly or by
+  transforming them to equations first and taking the complement of the solutions (PLUT-639)
+- SDK: added support for rendering the set subtraction operator and rendering solutions with holes, e.g. `R \ {1, 2}`
+  as `x != 1 and x != 2` (PLUT-639)
 
 ### Fixed
 

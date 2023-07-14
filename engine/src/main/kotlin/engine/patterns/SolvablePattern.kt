@@ -2,15 +2,14 @@ package engine.patterns
 
 import engine.context.Context
 import engine.expressions.Expression
-import engine.operators.EquationOperator
-import engine.operators.InequalityOperators
+import engine.operators.SolvableOperator
 
 class SolvablePattern(
     val lhs: Pattern,
     val rhs: Pattern,
 ) : BasePattern() {
     override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
-        if (subexpression.operator != EquationOperator && subexpression.operator !is InequalityOperators) {
+        if (subexpression.operator !is SolvableOperator) {
             return emptySequence()
         }
 
