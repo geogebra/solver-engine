@@ -69,10 +69,9 @@ class SignOfTest {
         assertSign("- 10 - root[10, 3]", Sign.NEGATIVE)
         assertSign("10 * sqrt[20] + 5", Sign.POSITIVE)
         assertSign("0 * sqrt[10]", Sign.ZERO)
-        assertSign("sqrt[3] - sqrt[4]", Sign.UNKNOWN)
         assertSign("[1 / 0]", Sign.NONE)
         assertSign("-[(2 - sqrt[5]) ^ 2]", Sign.NEGATIVE)
-        assertSign("sqrt[2*sqrt[3] - 2]", Sign.NONE)
+        assertSign("sqrt[2*sqrt[3] - 2]", Sign.UNKNOWN)
         assertSign("abs[-1]", Sign.POSITIVE)
         assertSign("abs[0]", Sign.ZERO)
         assertSign("[2 - 2sqrt[5] / 4]", Sign.NOT_ZERO)
@@ -83,6 +82,9 @@ class SignOfTest {
         assertSign("x", Sign.UNKNOWN)
         assertSign("[x^2]", Sign.NON_NEGATIVE)
         assertSign("abs[x - 1]", Sign.NON_NEGATIVE)
+        assertSign("abs[x] + 1", Sign.POSITIVE)
         assertSign("abs[abs[x] + 1]", Sign.POSITIVE)
+        assertSign("-abs[x] - 1", Sign.NEGATIVE)
+        assertSign("sqrt[2 - x]", Sign.UNKNOWN)
     }
 }

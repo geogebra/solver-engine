@@ -57,16 +57,16 @@ fun createEvaluateAbsoluteValuePlan(simplificationSteps: StepsProducer): StepsPr
 
 private val resolveAbsoluteValuesSteps = steps {
     firstOf {
-        option(GeneralRules.ResolveAbsoluteValueOfPositiveValue)
+        option(GeneralRules.ResolveAbsoluteValueOfZero)
+        option(GeneralRules.ResolveAbsoluteValueOfNonNegativeValue)
         option {
             optionally {
                 applyTo(GeneralRules.FactorMinusFromSum) { it.firstChild }
             }
             firstOf {
-                option(GeneralRules.ResolveAbsoluteValueOfNegativeValue)
+                option(GeneralRules.ResolveAbsoluteValueOfNonPositiveValue)
                 option(GeneralRules.SimplifyAbsoluteValueOfNegatedExpression)
             }
         }
-        option(GeneralRules.ResolveAbsoluteValueOfZero)
     }
 }

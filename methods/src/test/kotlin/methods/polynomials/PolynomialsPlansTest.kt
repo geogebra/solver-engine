@@ -734,3 +734,46 @@ class PolynomialsPlansTest {
         }
     }
 }
+
+class PolynomialPlansSimpleExpressionsTest {
+    @Test
+    fun `test simplify abs(abs(x))`() = testMethod {
+        method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
+        inputExpr = "abs[abs[x]]"
+
+        check {
+            fromExpr = "abs[abs[x]]"
+            toExpr = "abs[x]"
+            explanation {
+                key = GeneralExplanation.ResolveAbsoluteValueOfNonNegativeValue
+            }
+        }
+    }
+
+    @Test
+    fun `test simplify abs(x^2)`() = testMethod {
+        method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
+        inputExpr = "abs[[x^2]]"
+
+        check {
+            fromExpr = "abs[[x ^ 2]]"
+            toExpr = "[x ^ 2]"
+            explanation {
+                key = GeneralExplanation.ResolveAbsoluteValueOfNonNegativeValue
+            }
+        }
+    }
+
+    @Test
+    fun `test simplify abs(-x^2)`() = testMethod {
+        method = PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable
+        inputExpr = "abs[-[x^2]]"
+        check {
+            fromExpr = "abs[-[x ^ 2]]"
+            toExpr = "[x ^ 2]"
+            explanation {
+                key = GeneralExplanation.ResolveAbsoluteValueOfNonPositiveValue
+            }
+        }
+    }
+}

@@ -3,6 +3,7 @@ package methods.constantexpressions
 import engine.methods.testMethod
 import methods.collecting.CollectingExplanation
 import methods.decimals.DecimalsExplanation
+import methods.expand.ExpandExplanation
 import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.fractionroots.FractionRootsExplanation
 import methods.fractionroots.FractionRootsPlans
@@ -1030,7 +1031,7 @@ class ConstantExpressionTest {
                     fromExpr = "abs[2]"
                     toExpr = "2"
                     explanation {
-                        key = GeneralExplanation.ResolveAbsoluteValueOfPositiveValue
+                        key = GeneralExplanation.ResolveAbsoluteValueOfNonNegativeValue
                     }
                 }
             }
@@ -1054,7 +1055,7 @@ class ConstantExpressionTest {
                     fromExpr = "abs[-[1 / 5]]"
                     toExpr = "[1 / 5]"
                     explanation {
-                        key = GeneralExplanation.ResolveAbsoluteValueOfNegativeValue
+                        key = GeneralExplanation.ResolveAbsoluteValueOfNonPositiveValue
                     }
                 }
             }
@@ -1128,7 +1129,7 @@ class ConstantExpressionTest {
                     fromExpr = "abs[[1 / 2]]"
                     toExpr = "[1 / 2]"
                     explanation {
-                        key = GeneralExplanation.ResolveAbsoluteValueOfPositiveValue
+                        key = GeneralExplanation.ResolveAbsoluteValueOfNonNegativeValue
                     }
                 }
             }
@@ -1149,7 +1150,7 @@ class ConstantExpressionTest {
                     fromExpr = "abs[-[8 / 3]]"
                     toExpr = "[8 / 3]"
                     explanation {
-                        key = GeneralExplanation.ResolveAbsoluteValueOfNegativeValue
+                        key = GeneralExplanation.ResolveAbsoluteValueOfNonPositiveValue
                     }
                 }
             }
@@ -1170,7 +1171,7 @@ class ConstantExpressionTest {
                     fromExpr = "abs[[9 / 4]]"
                     toExpr = "[9 / 4]"
                     explanation {
-                        key = GeneralExplanation.ResolveAbsoluteValueOfPositiveValue
+                        key = GeneralExplanation.ResolveAbsoluteValueOfNonNegativeValue
                     }
                 }
             }
@@ -2236,6 +2237,98 @@ class SmartFactorizationUnderRoot {
                 toExpr = "sqrt[6]"
                 explanation {
                     key = IntegerRootsExplanation.RewriteAndCancelPowerUnderRoot
+                }
+            }
+        }
+    }
+}
+
+class SimplifyAbsoluteValueTest {
+    @Test
+    fun `test simplify abs(definitelyNotNegativeValueContainingRoot)`() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "abs[2 - sqrt[2]]"
+
+        check {
+            // Through step
+            step {
+                // Through step
+                step {
+                    fromExpr = "abs[2 - sqrt[2]]"
+                    toExpr = "2 - sqrt[2]"
+                    explanation {
+                        key = GeneralExplanation.ResolveAbsoluteValueOfNonNegativeValue
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test simplify abs(definitelyNegativeValueContainingRoot)`() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "abs[-2 + sqrt[2]]"
+
+        check {
+            fromExpr = "abs[-2 + sqrt[2]]"
+            toExpr = "2 - sqrt[2]"
+            explanation {
+                key = GeneralExplanation.ResolveAbsoluteValueOfNonPositiveValue
+            }
+        }
+    }
+
+    @Test
+    fun `test simplify abs(negOf definitelyPositiveValueContainingRoot)`() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "abs[-(2 - sqrt[2])]"
+
+        check {
+            fromExpr = "abs[-(2 - sqrt[2])]"
+            toExpr = "2 - sqrt[2]"
+            explanation {
+                key = GeneralExplanation.EvaluateAbsoluteValue
+            }
+            step {
+                fromExpr = "abs[-(2 - sqrt[2])]"
+                toExpr = "abs[-2 + sqrt[2]]"
+                explanation {
+                    key = ExpandExplanation.DistributeNegativeOverBracket
+                }
+            }
+            step {
+                fromExpr = "abs[-2 + sqrt[2]]"
+                toExpr = "2 - sqrt[2]"
+                explanation {
+                    key = GeneralExplanation.ResolveAbsoluteValueOfNonPositiveValue
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test simplify abs(negOf definitelyNegativeValueContainingRoot)`() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "abs[-(-2 + sqrt[2])]"
+
+        check {
+            fromExpr = "abs[-(-2 + sqrt[2])]"
+            toExpr = "2 - sqrt[2]"
+            explanation {
+                key = GeneralExplanation.EvaluateAbsoluteValue
+            }
+            step {
+                fromExpr = "abs[-(-2 + sqrt[2])]"
+                toExpr = "abs[2 - sqrt[2]]"
+                explanation {
+                    key = ExpandExplanation.DistributeNegativeOverBracket
+                }
+            }
+            step {
+                fromExpr = "abs[2 - sqrt[2]]"
+                toExpr = "2 - sqrt[2]"
+                explanation {
+                    key = GeneralExplanation.ResolveAbsoluteValueOfNonNegativeValue
                 }
             }
         }

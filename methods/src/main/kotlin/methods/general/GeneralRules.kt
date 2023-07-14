@@ -1,6 +1,9 @@
 package methods.general
 
+import engine.conditions.isDefinitelyNotNegative
+import engine.conditions.isDefinitelyNotPositive
 import engine.conditions.isDefinitelyNotZero
+import engine.conditions.sumTermsAreIncommensurable
 import engine.expressions.Constants
 import engine.expressions.DivideBy
 import engine.expressions.IntegerExpression
@@ -8,6 +11,7 @@ import engine.expressions.Minus
 import engine.expressions.PathScope
 import engine.expressions.Root
 import engine.expressions.SquareRoot
+import engine.expressions.Sum
 import engine.expressions.Variable
 import engine.expressions.absoluteValueOf
 import engine.expressions.asInteger
@@ -16,6 +20,7 @@ import engine.expressions.negOf
 import engine.expressions.powerOf
 import engine.expressions.productOf
 import engine.expressions.rootOf
+import engine.expressions.simplifiedNegOf
 import engine.expressions.simplifiedPowerOf
 import engine.expressions.simplifiedProductOf
 import engine.expressions.sumOf
@@ -112,9 +117,9 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     CancelRootIndexAndExponent(cancelRootIndexAndExponent),
 
     // Absolute values
-    ResolveAbsoluteValueOfPositiveValue(resolveAbsoluteValueOfPositiveValue),
-    ResolveAbsoluteValueOfNegativeValue(resolveAbsoluteValueOfNegativeValue),
     ResolveAbsoluteValueOfZero(resolveAbsoluteValueOfZero),
+    ResolveAbsoluteValueOfNonNegativeValue(resolveAbsoluteValueOfNonNegativeValue),
+    ResolveAbsoluteValueOfNonPositiveValue(resolveAbsoluteValueOfNonPositiveValue),
     SimplifyAbsoluteValueOfNegatedExpression(simplifyAbsoluteValueOfNegatedExpression),
 }
 
@@ -331,7 +336,11 @@ private val simplifyZeroDenominatorFractionToUndefined =
 private val simplifyZeroNumeratorFractionToZero =
     rule {
         val zero = FixedPattern(Constants.Zero)
-        val denominator = condition { it.isDefinitelyNotZero() }
+        val denominator = condition {
+            it.isDefinitelyNotZero() &&
+                // we don't want to directly simplify [0 / 2-3] = 0
+                (it !is Sum || sumTermsAreIncommensurable(it.children))
+        }
         val pattern = fractionOf(zero, denominator)
 
         onPattern(pattern) {
@@ -975,31 +984,6 @@ private val cancelRootIndexAndExponent =
         }
     }
 
-private val resolveAbsoluteValueOfPositiveValue = rule {
-    val argument = condition { it.isConstant() && it.signOf() == Sign.POSITIVE }
-    val absoluteValue = absoluteValueOf(argument)
-
-    onPattern(absoluteValue) {
-        ruleResult(
-            toExpr = transformTo(absoluteValue, get(argument)),
-            explanation = metadata(Explanation.ResolveAbsoluteValueOfPositiveValue),
-        )
-    }
-}
-
-private val resolveAbsoluteValueOfNegativeValue = rule {
-    val argument = condition { it.isConstant() && it.signOf() == Sign.POSITIVE }
-    val negatedArgument = negOf(argument)
-    val absoluteValue = absoluteValueOf(negatedArgument)
-
-    onPattern(absoluteValue) {
-        ruleResult(
-            toExpr = transformTo(absoluteValue, get(argument)),
-            explanation = metadata(Explanation.ResolveAbsoluteValueOfNegativeValue),
-        )
-    }
-}
-
 private val resolveAbsoluteValueOfZero = rule {
     val argument = FixedPattern(Constants.Zero)
     val absoluteValue = absoluteValueOf(argument)
@@ -1008,6 +992,40 @@ private val resolveAbsoluteValueOfZero = rule {
         ruleResult(
             toExpr = transformTo(absoluteValue, get(argument)),
             explanation = metadata(Explanation.ResolveAbsoluteValueOfZero),
+        )
+    }
+}
+
+/**
+ * abs(x) --> x, for any x where x is known to be not-negative
+ */
+private val resolveAbsoluteValueOfNonNegativeValue = rule {
+    val argument = condition { it.isDefinitelyNotNegative() }
+    val absoluteValue = absoluteValueOf(argument)
+    onPattern(absoluteValue) {
+        ruleResult(
+            toExpr = transformTo(absoluteValue, get(argument)),
+            explanation = metadata(Explanation.ResolveAbsoluteValueOfNonNegativeValue),
+        )
+    }
+}
+
+/**
+ * abs(x) --> x, for any x where x is known to be not-negative
+ */
+private val resolveAbsoluteValueOfNonPositiveValue = rule {
+    val argument = condition { it.isDefinitelyNotPositive() }
+    val absoluteValue = absoluteValueOf(argument)
+    onPattern(absoluteValue) {
+        val sumTerms = when (val argumentValue = get(argument)) {
+            is Sum -> argumentValue.children
+            else -> listOf(argumentValue)
+        }
+        val positiveArgumentValue = sumOf(sumTerms.map { simplifiedNegOf(it) })
+
+        ruleResult(
+            toExpr = transformTo(absoluteValue, positiveArgumentValue),
+            explanation = metadata(Explanation.ResolveAbsoluteValueOfNonPositiveValue),
         )
     }
 }

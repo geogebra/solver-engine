@@ -2,6 +2,7 @@ package methods.constantexpressions
 
 import engine.methods.testMethod
 import methods.general.GeneralExplanation
+import methods.integerarithmetic.IntegerArithmeticExplanation
 import org.junit.jupiter.api.Test
 
 class ZeroNumeratorTest {
@@ -59,8 +60,10 @@ class ZeroNumeratorTest {
             step {
                 fromExpr = "[0 / 3 - 5]"
                 toExpr = "[0 / -2]"
+                explanation {
+                    key = IntegerArithmeticExplanation.SimplifyIntegersInSum
+                }
             }
-
             step {
                 fromExpr = "[0 / -2]"
                 toExpr = "0"

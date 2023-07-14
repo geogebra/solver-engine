@@ -23,7 +23,7 @@ enum class Sign(val signum: Int, val canBeZero: Boolean = false) {
      */
     POSITIVE(1),
 
-    NON_NEGATIVE(1, false),
+    NON_NEGATIVE(1, true),
 
     NOT_ZERO(NOT_KNOWN_SIGNUM, false),
 
@@ -51,7 +51,8 @@ enum class Sign(val signum: Int, val canBeZero: Boolean = false) {
     }
 
     fun truncateToPositive() = when (this) {
-        POSITIVE, NON_NEGATIVE -> this
+        POSITIVE, NON_NEGATIVE, UNKNOWN -> this
+        NOT_ZERO -> UNKNOWN
         else -> NONE
     }
 
@@ -70,7 +71,7 @@ enum class Sign(val signum: Int, val canBeZero: Boolean = false) {
         !this.isKnown() || !other.isKnown() -> UNKNOWN
         other == ZERO -> this
         this == ZERO -> other
-        this.signum == other.signum -> this.orMaybeZero(other.canBeZero)
+        this.signum == other.signum -> Sign.fromInt(this.signum, (other.canBeZero && this.canBeZero))
         else -> UNKNOWN
     }
 
@@ -90,8 +91,7 @@ enum class Sign(val signum: Int, val canBeZero: Boolean = false) {
         fun fromInt(s: Int, canBeZero: Boolean = false) = when {
             s < 0 -> NEGATIVE
             s == 0 -> ZERO
-            s > 0 -> POSITIVE
-            else -> NONE
+            else -> POSITIVE
         }.orMaybeZero(canBeZero)
     }
 }

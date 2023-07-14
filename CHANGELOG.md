@@ -44,6 +44,7 @@ contents to a new release section (e.g. _[0.x]_).
   additions (PLUT-578)
 - SDK: Ignore text style commands when parsing latex (PLUT-636)
 - Improve order of operations when evaluating constant expressions with absolute values (PLUT-620)
+- Absolute value of non-negative value is the non-negative itself (PLUT-623)
 
 ### Changed
 

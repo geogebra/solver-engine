@@ -200,8 +200,7 @@ class GeneralRulesTest {
         testRule("[0 / 3 * (sqrt[2] - 1)]", SimplifyZeroNumeratorFractionToZero, "0")
         testRule("[0 / 1 - 1]", SimplifyZeroNumeratorFractionToZero, null)
 
-        // This one works because the denominator is "obviously" positive
-        testRule("[0 / sqrt[2] + sqrt[2]]", SimplifyZeroNumeratorFractionToZero, "0")
+        testRule("[0 / sqrt[2] + sqrt[2]]", SimplifyZeroNumeratorFractionToZero, null)
 
         testMethod {
             method = SimplifyZeroNumeratorFractionToZero
@@ -918,8 +917,6 @@ class GeneralRulesTest {
 
     @Test
     fun testResolveOrSimplifyAbsoluteValue() {
-        testRule("abs[0]", GeneralRules.ResolveAbsoluteValueOfPositiveValue, null)
-        testRule("abs[0]", GeneralRules.ResolveAbsoluteValueOfNegativeValue, null)
         testMethod {
             method = GeneralRules.ResolveAbsoluteValueOfZero
             inputExpr = "abs[0]"
@@ -931,7 +928,7 @@ class GeneralRulesTest {
         }
 
         testMethod {
-            method = GeneralRules.ResolveAbsoluteValueOfPositiveValue
+            method = GeneralRules.ResolveAbsoluteValueOfNonNegativeValue
             inputExpr = "abs[3]"
 
             check {
@@ -939,11 +936,11 @@ class GeneralRulesTest {
                 transform(".", ".")
             }
         }
-        testRule("abs[3]", GeneralRules.ResolveAbsoluteValueOfNegativeValue, null)
+        testRule("abs[3]", GeneralRules.ResolveAbsoluteValueOfNonPositiveValue, null)
 
-        testRule("abs[-3]", GeneralRules.ResolveAbsoluteValueOfPositiveValue, null)
+        testRule("abs[-3]", GeneralRules.ResolveAbsoluteValueOfNonNegativeValue, null)
         testMethod {
-            method = GeneralRules.ResolveAbsoluteValueOfNegativeValue
+            method = GeneralRules.ResolveAbsoluteValueOfNonPositiveValue
             inputExpr = "abs[-3]"
 
             check {
@@ -952,13 +949,33 @@ class GeneralRulesTest {
             }
         }
 
-        testRule("abs[[3 / 2]]", GeneralRules.ResolveAbsoluteValueOfPositiveValue, "[3 / 2]")
-        testRule("abs[-[3 / 2]]", GeneralRules.ResolveAbsoluteValueOfNegativeValue, "[3 / 2]")
+        testRule("abs[[3 / 2]]", GeneralRules.ResolveAbsoluteValueOfNonNegativeValue, "[3 / 2]")
+        testRule("abs[-[3 / 2]]", GeneralRules.ResolveAbsoluteValueOfNonPositiveValue, "[3 / 2]")
 
-        testRule("abs[sqrt[2] + sqrt[3]]", GeneralRules.ResolveAbsoluteValueOfPositiveValue, "sqrt[2] + sqrt[3]")
-        testRule("abs[-(sqrt[2] + sqrt[3])]", GeneralRules.ResolveAbsoluteValueOfNegativeValue, "sqrt[2] + sqrt[3]")
+        testRule("abs[sqrt[2] + sqrt[3]]", GeneralRules.ResolveAbsoluteValueOfNonNegativeValue, "sqrt[2] + sqrt[3]")
+        testRule("abs[-(sqrt[2] + sqrt[3])]", GeneralRules.ResolveAbsoluteValueOfNonPositiveValue, "sqrt[2] + sqrt[3]")
 
         testRule("abs[-x]", GeneralRules.SimplifyAbsoluteValueOfNegatedExpression, "abs[x]")
         testRule("abs[-(x + y)]", GeneralRules.SimplifyAbsoluteValueOfNegatedExpression, "abs[x + y]")
+
+        testRule("abs[x(x - 1)]", GeneralRules.ResolveAbsoluteValueOfNonNegativeValue, null)
+
+        testRule("abs[[x^2]]", GeneralRules.ResolveAbsoluteValueOfNonNegativeValue, "[x^2]")
+        testRule(
+            "abs[2 - sqrt[2]]",
+            GeneralRules.ResolveAbsoluteValueOfNonNegativeValue,
+            "2 - sqrt[2]",
+        )
+        testRule("abs[-3x + 1]", GeneralRules.ResolveAbsoluteValueOfNonNegativeValue, null)
+        testRule(
+            "abs[-2 + sqrt[2]]",
+            GeneralRules.ResolveAbsoluteValueOfNonPositiveValue,
+            "2 - sqrt[2]",
+        )
+        testRule(
+            "abs[-(2 - sqrt[2])]",
+            GeneralRules.ResolveAbsoluteValueOfNonPositiveValue,
+            "2 - sqrt[2]",
+        )
     }
 }

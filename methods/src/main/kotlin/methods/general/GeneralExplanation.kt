@@ -243,29 +243,29 @@ enum class GeneralExplanation : CategorisedMetadataKey {
     NormalizeNegativeSignsInProduct,
 
     /**
-     * Turn |x| to x when x is clearly positive (e.g. integer, fraction,
-     * sum of square roots).
-     *
-     * E.g. |3| -> 3
-     *   |4/5| -> 4/5
-     *   |sqrt(2) + sqrt(3)| -> sqrt(2) + sqrt(3)
-     */
-    ResolveAbsoluteValueOfPositiveValue,
-
-    /**
-     * Turn |-x| to x when x is clearly positive (e.g. integer, fraction,
-     * sum of square roots).
-     *
-     * E.g. |-3| -> 3
-     *   |-4/5| -> 4/5
-     *   |-(sqrt(2) + sqrt(3))| -> sqrt(2) + sqrt(3)
-     */
-    ResolveAbsoluteValueOfNegativeValue,
-
-    /**
      * Turn |0| into 0.
      */
     ResolveAbsoluteValueOfZero,
+
+    /**
+     * Turn |x| to x when x is non-negative
+     *
+     * E.g. |3| -> 3
+     *   | x^2 | -> x^2    (when x is real)
+     *   |sqrt(2) + sqrt(3)| -> sqrt(2) + sqrt(3)
+     */
+    ResolveAbsoluteValueOfNonNegativeValue,
+
+    /**
+     * Turn |x| to -x when x is non-positive
+     *
+     * E.g. |-3| -> 3
+     *   | -x^2 | -> x^2
+     *   | -2 + sqrt[2] | -> -(-2 + sqrt[2])
+     *   |-4/5| -> 4/5
+     *   |-(sqrt(2) + sqrt(3))| -> sqrt(2) + sqrt(3)
+     */
+    ResolveAbsoluteValueOfNonPositiveValue,
 
     /**
      * Turn |-x| to |x| for any x
