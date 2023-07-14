@@ -200,8 +200,8 @@ private fun TasksBuilder.computeValidSetSolutionForEquationConstraint(
                         Explanation.CheckIfSolutionSatisfiesConstraint,
                         equationOf(variable, element),
                     ),
-                    stepsProducer = evaluateConstantEquationSteps,
-                    context = context.copy(precision = 10, solutionVariables = emptyList()),
+                    stepsProducer = solveConstantEquationSteps,
+                    context = context.copy(solutionVariables = emptyList()),
                 ) ?: return null
                 val constraintSatisfied = when (val simplifiedConstraint = simplifyConstraint.result) {
                     is Equation -> simplifiedConstraint.holds(expressionComparator)
@@ -216,28 +216,6 @@ private fun TasksBuilder.computeValidSetSolutionForEquationConstraint(
             FiniteSet(validSolutions)
         }
         else -> null
-    }
-}
-
-/**
- * Steps to evaluate a constant equality so it can be determined whether it holds or not.
- * This can be improved a lot.
- *
- * We could instead turn the result into a [Contradiction] or an [Identity] with no variables.  This is
- * something to do for the future.
- */
-private val evaluateConstantEquationSteps = steps {
-    whilePossible {
-        firstOf {
-            option(constantSimplificationSteps)
-
-            option(EquationsRules.ExtractSolutionFromConstantEquation)
-            option(EquationsRules.MoveEverythingToTheLeft)
-        }
-    }
-    optionally {
-        check { it is Equation }
-        apply(evaluateBothSidesNumerically)
     }
 }
 

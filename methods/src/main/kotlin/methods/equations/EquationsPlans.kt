@@ -25,6 +25,8 @@ import engine.patterns.solutionSetOf
 import engine.patterns.variableListOf
 import engine.steps.Transformation
 import engine.steps.metadata.metadata
+import methods.approximation.ApproximationPlans
+import methods.constantexpressions.constantSimplificationSteps
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.factor.FactorPlans
 import methods.factor.FactorRules
@@ -218,7 +220,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     SolveEquationInOneVariable(
         object : CompositeMethod() {
             override fun run(ctx: Context, sub: Expression): Transformation? {
-                if (sub.variables.count() > 1) return null
+                if (sub.variables.count() != 1) return null
                 return solveEquationInOneVariable.value.run(ctx, sub)
             }
         },
@@ -226,6 +228,17 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
     @PublicMethod
     SolveEquationWithConstraint(solveEquationWithConstraint),
+
+    @PublicMethod
+    SolveConstantEquation(
+        plan {
+            explanation = Explanation.SolveConstantEquation
+
+            steps {
+                apply(solveConstantEquationSteps)
+            }
+        },
+    ),
 }
 
 val equationSimplificationSteps = steps {
@@ -272,4 +285,34 @@ val rearrangeLinearEquationSteps = steps {
 
     optionally(solvablePlansForEquations.solvableRearrangementSteps)
     optionally(solvablePlansForEquations.coefficientRemovalSteps)
+}
+
+val solveConstantEquationSteps = steps {
+    check { it.isConstant() }
+    optionally {
+        plan {
+            explanation = Explanation.SimplifyEquation
+
+            steps {
+                whilePossible(constantSimplificationSteps)
+            }
+        }
+    }
+    shortcut(EquationsRules.ExtractSolutionFromConstantEquation)
+    optionally(EquationsPlans.SimplifyEquation)
+    shortcut(EquationsRules.ExtractSolutionFromConstantEquation)
+    optionally(EquationsPlans.MoveEverythingToTheLeftAndSimplify)
+    shortcut(EquationsRules.ExtractSolutionFromConstantEquation)
+    inContext(contextFactory = { copy(precision = 10) }) {
+        apply(evaluateBothSidesNumerically)
+    }
+}
+
+private val evaluateBothSidesNumerically = steps {
+    optionally {
+        applyTo(ApproximationPlans.EvaluateExpressionNumerically) { it.firstChild }
+    }
+    optionally {
+        applyTo(ApproximationPlans.EvaluateExpressionNumerically) { it.secondChild }
+    }
 }

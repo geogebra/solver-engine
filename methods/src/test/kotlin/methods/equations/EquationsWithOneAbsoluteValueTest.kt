@@ -2,9 +2,7 @@ package methods.equations
 
 import engine.context.Curriculum
 import engine.methods.testMethodInX
-import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.general.GeneralExplanation
-import methods.integerarithmetic.IntegerArithmeticExplanation
 import org.junit.jupiter.api.Test
 
 @Suppress("MaxLineLength", "LargeClass")
@@ -659,17 +657,9 @@ class EquationsWithOneAbsoluteValueTest {
 
                 step {
                     fromExpr = "abs[2 (-[4 / 3]) - 1] = -[4 / 3] + 5"
-                    toExpr = "[11 / 3] = -[4 / 3] + 5"
-                    explanation {
-                        key = GeneralExplanation.EvaluateAbsoluteValue
-                    }
-                }
-
-                step {
-                    fromExpr = "[11 / 3] = -[4 / 3] + 5"
                     toExpr = "[11 / 3] = [11 / 3]"
                     explanation {
-                        key = FractionArithmeticExplanation.AddIntegerAndFraction
+                        key = EquationsExplanation.SimplifyEquation
                     }
                 }
 
@@ -691,17 +681,9 @@ class EquationsWithOneAbsoluteValueTest {
 
                 step {
                     fromExpr = "abs[2 * 6 - 1] = 6 + 5"
-                    toExpr = "11 = 6 + 5"
-                    explanation {
-                        key = GeneralExplanation.EvaluateAbsoluteValue
-                    }
-                }
-
-                step {
-                    fromExpr = "11 = 6 + 5"
                     toExpr = "11 = 11"
                     explanation {
-                        key = IntegerArithmeticExplanation.SimplifyIntegersInSum
+                        key = EquationsExplanation.SimplifyEquation
                     }
                 }
 
