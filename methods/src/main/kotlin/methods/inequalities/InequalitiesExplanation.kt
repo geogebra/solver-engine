@@ -247,6 +247,8 @@ enum class InequalitiesExplanation : CategorisedMetadataKey {
      */
     SolveLinearInequality,
 
+    SolveConstantInequality,
+
     /**
      * Solve an inequality reducible to the form
      * |f(x)| > k        OR

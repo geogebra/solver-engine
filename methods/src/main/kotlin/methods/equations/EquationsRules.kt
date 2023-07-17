@@ -63,7 +63,6 @@ import engine.steps.metadata.metadata
 import engine.utility.isEven
 import engine.utility.isOdd
 import engine.utility.withMaxDP
-import methods.solvable.simplifiedNegOfSum
 import java.math.BigInteger
 
 enum class EquationsRules(override val runner: Rule) : RunnerMethod {
@@ -84,25 +83,6 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                         sumOf(get(rhs), negatedRhsTerm),
                     ),
                     explanation = metadata(Explanation.CollectLikeTermsToTheLeft, get(variable)),
-                )
-            }
-        },
-    ),
-
-    MoveEverythingToTheLeft(
-        rule {
-            val lhs = AnyPattern()
-            val rhs = condition { it != Constants.Zero }
-
-            onEquation(lhs, rhs) {
-                val negatedRhs = simplifiedNegOfSum(get(rhs))
-
-                ruleResult(
-                    toExpr = equationOf(
-                        sumOf(get(lhs), negatedRhs),
-                        sumOf(get(rhs), negatedRhs),
-                    ),
-                    explanation = metadata(Explanation.MoveEverythingToTheLeft),
                 )
             }
         },

@@ -26,6 +26,7 @@ import engine.steps.Transformation
 import engine.steps.metadata.Metadata
 import engine.steps.metadata.MetadataKey
 import engine.steps.metadata.metadata
+import methods.approximation.ApproximationPlans
 import methods.polynomials.PolynomialsPlans
 
 class SolvablePlans(private val simplificationSteps: StepsProducer) {
@@ -72,6 +73,8 @@ class SolvablePlans(private val simplificationSteps: StepsProducer) {
     val moveVariablesToTheLeftAndSimplify = ApplyRuleAndSimplify(SolvableKey.MoveVariablesToTheLeft)
 
     val moveVariablesToTheRightAndSimplify = ApplyRuleAndSimplify(SolvableKey.MoveVariablesToTheRight)
+
+    val moveEverythingToTheLeftAndSimplify = ApplyRuleAndSimplify(SolvableKey.MoveEverythingToTheLeft)
 
     val multiplyByInverseCoefficientOfVariableAndSimplify = ApplyRuleAndSimplify(
         SolvableKey.MultiplyByInverseCoefficientOfVariable,
@@ -200,5 +203,14 @@ class SolvablePlans(private val simplificationSteps: StepsProducer) {
                 apply(SolvableRules.NegateBothSides)
             }
         }
+    }
+}
+
+val evaluateBothSidesNumerically = steps {
+    optionally {
+        applyTo(ApproximationPlans.EvaluateExpressionNumerically) { it.firstChild }
+    }
+    optionally {
+        applyTo(ApproximationPlans.EvaluateExpressionNumerically) { it.secondChild }
     }
 }

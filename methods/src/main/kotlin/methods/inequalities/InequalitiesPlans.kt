@@ -3,6 +3,7 @@ package methods.inequalities
 import engine.context.ResourceData
 import engine.expressions.Constants
 import engine.expressions.DoubleInequality
+import engine.expressions.Inequality
 import engine.expressions.Solution
 import engine.expressions.StatementUnion
 import engine.methods.CompositeMethod
@@ -23,7 +24,6 @@ import engine.patterns.condition
 import engine.patterns.contradictionOf
 import engine.patterns.fractionOf
 import engine.patterns.identityOf
-import engine.patterns.inSolutionVariables
 import engine.patterns.inequalityOf
 import engine.patterns.oneOf
 import engine.patterns.openClosedIntervalOf
@@ -32,6 +32,7 @@ import engine.patterns.optionalNegOf
 import engine.patterns.setSolutionOf
 import engine.patterns.variableListOf
 import engine.steps.metadata.metadata
+import methods.constantexpressions.constantSimplificationSteps
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.equations.EquationsPlans
 import methods.general.NormalizationPlans
@@ -42,6 +43,7 @@ import methods.solvable.SolvablePlans
 import methods.solvable.SolvableRules
 import methods.solvable.computeOverallIntersectionSolution
 import methods.solvable.computeOverallUnionSolution
+import methods.solvable.evaluateBothSidesNumerically
 
 enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMethod {
 
@@ -85,8 +87,6 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
         plan {
             explanation = Explanation.SolveLinearInequality
             pattern = inequalityInOneVariable()
-
-            val solvablePlansForInequalities = SolvablePlans(SimplifyInequality)
 
             steps {
                 whilePossible {
@@ -170,6 +170,17 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
                     option(InequalitiesRules.ExtractSolutionFromModulusGreaterThanEqualToNonPositiveConstant)
                     option(InequalitiesRules.ExtractSolutionFromModulusGreaterThanNegativeConstant)
                 }
+            }
+        },
+    ),
+
+    @PublicMethod
+    SolveConstantInequality(
+        plan {
+            explanation = Explanation.SolveConstantInequality
+
+            steps {
+                apply(solveConstantInequalitySteps)
             }
         },
     ),
@@ -270,4 +281,29 @@ private val solveDoubleInequality = taskSet {
     }
 }
 
-private fun inequalityInOneVariable() = inSolutionVariables(inequalityOf(AnyPattern(), AnyPattern()))
+private fun inequalityInOneVariable() = condition(inequalityOf(AnyPattern(), AnyPattern())) {
+    it.variables.size == 1 && solutionVariables.size == 1 && it.variables.contains(solutionVariables[0])
+}
+
+val solveConstantInequalitySteps = steps {
+    check { it is Inequality && it.isConstant() }
+    optionally {
+        plan {
+            explanation = Explanation.SimplifyInequality
+
+            steps {
+                whilePossible(constantSimplificationSteps)
+            }
+        }
+    }
+    shortcut(InequalitiesRules.ExtractSolutionFromConstantInequality)
+    optionally(InequalitiesPlans.SimplifyInequality)
+    shortcut(InequalitiesRules.ExtractSolutionFromConstantInequality)
+    optionally(solvablePlansForInequalities.moveEverythingToTheLeftAndSimplify)
+    shortcut(InequalitiesRules.ExtractSolutionFromConstantInequality)
+    inContext(contextFactory = { copy(precision = 10) }) {
+        apply(evaluateBothSidesNumerically)
+    }
+}
+
+val solvablePlansForInequalities = SolvablePlans(InequalitiesPlans.SimplifyInequality)

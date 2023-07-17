@@ -110,7 +110,7 @@ enum class EquationSolvingStrategy(
         priority = 8,
         explanation = EquationsExplanation.SolveEquationByFactoring,
         steps = steps {
-            optionally(EquationsPlans.MoveEverythingToTheLeftAndSimplify)
+            optionally(solvablePlansForEquations.moveEverythingToTheLeftAndSimplify)
             applyTo(FactorPlans.FactorPolynomialInOneVariable) { it.firstChild }
             firstOf {
 
@@ -133,7 +133,7 @@ enum class EquationSolvingStrategy(
         explanation = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula,
         steps = steps {
             optionally(solvablePlansForEquations.multiplyByLCDAndSimplify)
-            optionally(EquationsPlans.MoveEverythingToTheLeftAndSimplify)
+            optionally(solvablePlansForEquations.moveEverythingToTheLeftAndSimplify)
             optionally {
                 applyTo(PolynomialsPlans.ExpandPolynomialExpressionInOneVariable) { it.firstChild }
             }
@@ -246,7 +246,7 @@ enum class EquationSolvingStrategy(
             optionally(EquationsPlans.SimplifyEquation)
             shortcut(EquationsRules.ExtractSolutionFromConstantEquation)
 
-            apply(EquationsPlans.MoveEverythingToTheLeftAndSimplify)
+            apply(solvablePlansForEquations.moveEverythingToTheLeftAndSimplify)
             apply(EquationsRules.ExtractSolutionFromConstantEquation)
         },
     ),

@@ -67,6 +67,8 @@ enum class InequationsExplanation : CategorisedMetadataKey {
      */
     SolveEquationCorrespondingToInequation,
 
+    SolveConstantInequation,
+
     /**
      * Take the complement of the solution of the equation corresponding to an inequation (a statement
      * with the not equals != operator) to get the final result.
