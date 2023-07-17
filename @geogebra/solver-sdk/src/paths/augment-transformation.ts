@@ -3,11 +3,17 @@ import type { ExpressionTree, TransformationJson } from '../';
 
 /** Returns all leaf-level steps, which are the ones that a user of GM would
  * be able to directly apply. */
-export function getInnerSteps<T extends TransformationJson>(transformation: T): T[] {
+export function getInnerSteps<T extends TransformationWithJustTheStepsParameter>(
+  transformation: T,
+): T[] {
   return transformation.steps?.length
     ? (transformation.steps as T[]).flatMap(getInnerSteps)
     : ([transformation] as T[]);
 }
+
+type TransformationWithJustTheStepsParameter = {
+  steps?: TransformationWithJustTheStepsParameter[] | null;
+};
 
 export type TransformationWithFullFromExpr = {
   fullFromExpr: ExpressionTree;
@@ -51,7 +57,7 @@ function helper(
   return ret;
 }
 
-function substitute(
+export function substitute(
   childTree: ExpressionTree,
   substitutePath: string,
   parentTree?: ExpressionTree,
