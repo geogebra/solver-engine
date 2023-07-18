@@ -25,10 +25,9 @@ open class Comparison(
         return when {
             compSign == Sign.NONE -> null
             compSign.implies(this.comparator.compareSign) -> true
-            compSign.implies(-this.comparator.compareSign) -> false
+            compSign.implies(this.comparator.compareSign.negation()) -> false
             else -> null
         }
-        return if (compSign == Sign.NONE) null else compSign.implies(this.comparator.compareSign)
     }
 }
 

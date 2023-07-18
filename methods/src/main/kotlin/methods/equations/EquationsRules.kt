@@ -1,6 +1,7 @@
 package methods.equations
 
 import engine.conditions.isDefinitelyNotZero
+import engine.expressions.Comparison
 import engine.expressions.Constants
 import engine.expressions.Product
 import engine.expressions.SimpleComparator
@@ -195,16 +196,11 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             val lhs = ConstantInSolutionVariablePattern()
             val rhs = ConstantInSolutionVariablePattern()
 
-            onEquation(lhs, rhs) {
-                val lhsVal = get(lhs)
-                val rhsVal = get(rhs)
-                val sign = SimpleComparator.compare(lhsVal, rhsVal)
-                when {
-                    sign.isKnown() -> trueOrFalseRuleResult(sign == Sign.ZERO)
-                    lhsVal == Constants.Zero && rhsVal.isDefinitelyNotZero() -> trueOrFalseRuleResult(false)
-                    lhsVal.isDefinitelyNotZero() && rhsVal == Constants.Zero -> trueOrFalseRuleResult(false)
-                    else -> null
-                }
+            val equation = equationOf(lhs, rhs)
+
+            onPattern(equation) {
+                val isSatisfied = (get(equation) as Comparison).holds(SimpleComparator) ?: return@onPattern null
+                trueOrFalseRuleResult(isSatisfied)
             }
         },
     ),
