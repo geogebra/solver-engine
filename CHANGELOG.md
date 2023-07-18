@@ -37,6 +37,7 @@ contents to a new release section (e.g. _[0.x]_).
 - SDK: added support for rendering the set subtraction operator and rendering solutions with holes, e.g. `R \ {1, 2}`
   as `x != 1 and x != 2` (PLUT-639)
 - SDK: exported another call signature for `getInnerSteps`, exported `substitute` function (SP-82)
+- Added support for solving constant equations, inequations and inequalities (PLUT-611)
 
 ### Fixed
 
