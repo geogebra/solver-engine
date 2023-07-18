@@ -7,7 +7,20 @@ import org.junit.jupiter.api.Test
 class ConstantInequalitiesTest {
 
     @Test
-    fun `test trivial inequality`() = testMethod {
+    fun `test trivial inequality 1`() = testMethod {
+        method = InequalitiesPlans.SolveConstantInequality
+        inputExpr = "2 >= 2"
+        check {
+            fromExpr = "2 >= 2"
+            toExpr = "Identity[2 >= 2]"
+            explanation {
+                key = InequalitiesExplanation.ExtractTruthFromTrueInequality
+            }
+        }
+    }
+
+    @Test
+    fun `test trivial inequality 2`() = testMethod {
         method = InequalitiesPlans.SolveConstantInequality
         inputExpr = "3 >= 2"
         check {

@@ -90,6 +90,7 @@ enum class Sign(val signum: Int, val canBeZero: Boolean = false) {
 
     fun implies(other: Sign) = when {
         this == NONE || other == NONE -> false
+        this == ZERO -> other.canBeZero
         !other.canBeZero && this.canBeZero -> false
         !other.isKnown() -> true
         !this.isKnown() -> false
