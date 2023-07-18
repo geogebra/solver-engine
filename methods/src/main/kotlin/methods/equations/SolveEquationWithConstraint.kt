@@ -13,7 +13,6 @@ import engine.expressions.Variable
 import engine.expressions.equationOf
 import engine.expressions.setSolutionOf
 import engine.methods.TasksBuilder
-import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
 import engine.patterns.AnyPattern
 import engine.patterns.absoluteValueOf
@@ -23,10 +22,8 @@ import engine.patterns.statementWithConstraintOf
 import engine.patterns.withOptionalConstantCoefficient
 import engine.steps.Task
 import engine.steps.metadata.metadata
-import methods.approximation.ApproximationPlans
-import methods.constantexpressions.constantSimplificationSteps
 import methods.inequalities.InequalitiesPlans
-import methods.inequalities.inequalitySimplificationSteps
+import methods.inequalities.solveConstantInequalitySteps
 import methods.solvable.expressionComparator
 
 /**
@@ -164,7 +161,7 @@ private fun TasksBuilder.computeValidSetSolutionForInequalityConstraint(
                 val simplifyConstraint = task(
                     startExpr = constraintForElement,
                     explanation = metadata(Explanation.CheckIfSolutionSatisfiesConstraint, element),
-                    stepsProducer = evaluateConstantInequalitySteps,
+                    stepsProducer = solveConstantInequalitySteps,
                     context = context.copy(precision = 10, solutionVariables = emptyList()),
                 ) ?: return null
                 val simplifiedConstraint = simplifyConstraint.result
@@ -216,31 +213,6 @@ private fun TasksBuilder.computeValidSetSolutionForEquationConstraint(
             FiniteSet(validSolutions)
         }
         else -> null
-    }
-}
-
-/**
- * Steps to evaluate a constant inequality so it can be determined whether it holds or not.
- * This can be improved a lot.
- *
- * We could instead turn the result into a [Contradiction] or an [Identity] with no variables.  This is
- * something to do for the future.
- */
-private val evaluateConstantInequalitySteps = steps {
-    whilePossible(constantSimplificationSteps)
-    optionally(inequalitySimplificationSteps)
-    optionally {
-        check { it is Inequality }
-        apply(evaluateBothSidesNumerically)
-    }
-}
-
-private val evaluateBothSidesNumerically = steps {
-    optionally {
-        applyTo(ApproximationPlans.EvaluateExpressionNumerically) { it.firstChild }
-    }
-    optionally {
-        applyTo(ApproximationPlans.EvaluateExpressionNumerically) { it.secondChild }
     }
 }
 

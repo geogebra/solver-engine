@@ -249,7 +249,6 @@ window.onload = () => {
         const temp = url.searchParams.get('preferDecimals');
         const preferDecimals = temp === '1' || temp === 'true';
         const solutionVariable = url.searchParams.get('solutionVariable');
-        console.log(solutionVariable);
         if (planId) {
           planSelect.value = planId;
         }

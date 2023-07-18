@@ -200,7 +200,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                 val rhsVal = get(rhs)
                 val sign = SimpleComparator.compare(lhsVal, rhsVal)
                 when {
-                    sign.isKnown() -> trueOrFalseRuleResult(sign == engine.sign.Sign.ZERO)
+                    sign.isKnown() -> trueOrFalseRuleResult(sign == Sign.ZERO)
                     lhsVal == Constants.Zero && rhsVal.isDefinitelyNotZero() -> trueOrFalseRuleResult(false)
                     lhsVal.isDefinitelyNotZero() && rhsVal == Constants.Zero -> trueOrFalseRuleResult(false)
                     else -> null
