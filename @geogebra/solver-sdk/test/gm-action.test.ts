@@ -51,7 +51,7 @@ if (WHEN_FOR_PATH) {
 //   return new gmath.AlgebraModel(treeToLatex(tree)).to_ascii();
 // }
 
-describe.only('gmAction tests', () => {
+describe('gmAction tests', () => {
   for (const testResult of testResults) {
     const transformation: TransformationJson = JSON.parse(
       testResult.transformationJsonMath,
