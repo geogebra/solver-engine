@@ -38,7 +38,14 @@ export function solverPathToGmNodes(
     (!info.dragTo?.position || info.dragTo.position === 'Onto')
   ) {
     let changedToTap = false;
-    if (areAdjacentAddendsOrFactors(actors[0], targets[0])) {
+    const actor = actors[0];
+    let target = targets[0];
+    // The Solver puts negatives on the first factor around the whole product,
+    // so in a situation like -2*x*3, the target will be "2" instead of "-2".
+    // We need to change that to "-2" to make the drag work.
+    if (target.parent?.is_group('sign')) target = target.parent;
+
+    if (areAdjacentAddendsOrFactors(actor, target)) {
       const operators = map.get(`${actorPaths[0]}:op`);
       if (operators && !operators[0].hidden) {
         changedToTap = true;
@@ -47,15 +54,11 @@ export function solverPathToGmNodes(
         gmAction = { ...info, type: 'Tap' };
       }
     }
+    // In a case like `2x+y+3x`, in GM we need to pick up the `+3x` and drag it onto
+    // `+2x`, not just the `3x`. We'll check for that and expand the actors and targets
+    // to the parent add block. The same applies to `x^2*3*x^3` where we need to drag the
+    // mul blocks, not just the powers.
     if (!changedToTap) {
-      const actor = actors[0];
-      let target = targets[0];
-      // We are going to assume that the target is to the left of the actor. This means
-      // that we only have to do this check for negatives on the target. (This is only
-      // applicable if in a product.) (This is because solver puts the negative on the
-      // product, but GM puts it on the leftmost factor.)
-      if (target.parent?.is_group('sign')) target = target.parent;
-
       const actorsParentParent = actor.parent?.parent;
       const targetParentParent = target.parent?.parent;
 
@@ -63,12 +66,9 @@ export function solverPathToGmNodes(
       // onto another factor in the same product...
       if (
         actorsParentParent === targetParentParent &&
-        actorsParentParent?.name === targetParentParent?.name &&
-        actorsParentParent?.is_group('sum', 'product') &&
-        targetParentParent?.is_group('sum', 'product')
+        actorsParentParent?.is_group('sum', 'product')
       ) {
-        // ...then we need to drag the addsub or the muldiv instead (onto the other addsub
-        // or muldiv)
+        // ...then we need to drag the add node or the mul node instead.
         actors[0] = actor.parent as GmMathNode;
         targets[0] = target.parent as GmMathNode;
       }

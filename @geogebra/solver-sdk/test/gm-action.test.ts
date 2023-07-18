@@ -51,7 +51,7 @@ if (WHEN_FOR_PATH) {
 //   return new gmath.AlgebraModel(treeToLatex(tree)).to_ascii();
 // }
 
-describe('gmAction tests', () => {
+describe.only('gmAction tests', () => {
   for (const testResult of testResults) {
     const transformation: TransformationJson = JSON.parse(
       testResult.transformationJsonMath,
@@ -273,8 +273,13 @@ describe('gmAction tests', () => {
 
         const fromExprGm = new gmath.AlgebraModel(fromExpr) as GmMathNode;
         const fromExprAscii = fromExprGm.to_ascii();
+        ////////////////////////////////////////////////////////////////////////
         // Uncomment this to focus on a specific test
-        // if (fromExprAscii !== '-2*(-x)') { dummyTest(); return; }
+        ////////////////////////////////////////////////////////////////////////
+        // if (fromExprAscii !== 't^(1+2)*t^3') {
+        //   dummyTest();
+        //   return;
+        // }
         if (
           [
             'sqrt[4](1^4)',
