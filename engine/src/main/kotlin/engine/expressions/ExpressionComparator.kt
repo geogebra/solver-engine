@@ -17,8 +17,8 @@ fun interface ExpressionComparator {
 
 /**
  * A simple expression comparator that can compare expressions based on
- * 1. Whether they are the same decimal number, or
- * 2. whether they are the same verbatim, or
+ * 1. whether they are the same verbatim, or
+ * 2. Whether they are the same decimal number, or
  * 3. whether they are the same rational number, or
  * 4. their sign
  */

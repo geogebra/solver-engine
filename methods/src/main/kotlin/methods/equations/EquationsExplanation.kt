@@ -334,6 +334,9 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      */
     SolveEquationInOneVariable,
 
+    /**
+     * Determine whether an equation between constants is true or false.
+     */
     SolveConstantEquation,
 
     /**

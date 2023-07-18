@@ -300,5 +300,5 @@ val solveConstantEquationSteps = steps {
     inContext(contextFactory = { copy(precision = 10) }) {
         apply(evaluateBothSidesNumerically)
     }
-    // apply(EquationsRules.ExtractSolutionFromConstantEquation)
+    apply(EquationsRules.ExtractSolutionFromConstantEquation)
 }

@@ -165,10 +165,7 @@ class SolvablePlans(private val simplificationSteps: StepsProducer) {
                         sumContaining(rhsVariable) { rest -> rest.isConstantIn(solutionVariables) },
                     )
 
-                    // Should probably revert to the line below when constant equation solving is moved out of
-                    // equations with one variable.
-                    // SolvablePattern(lhs, rhs)
-                    condition(SolvablePattern(lhs, rhs)) { !it.isConstant() }
+                    SolvablePattern(lhs, rhs)
                 }
                 optionally(moveVariablesToTheLeftAndSimplify)
                 optionally(moveConstantsToTheRightAndSimplify)

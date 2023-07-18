@@ -67,6 +67,9 @@ enum class InequationsExplanation : CategorisedMetadataKey {
      */
     SolveEquationCorrespondingToInequation,
 
+    /**
+     * Determine whether an inequation between constants is true or false.
+     */
     SolveConstantInequation,
 
     /**

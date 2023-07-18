@@ -247,6 +247,9 @@ enum class InequalitiesExplanation : CategorisedMetadataKey {
      */
     SolveLinearInequality,
 
+    /**
+     * Determine whether an inequality between constants is true or false.
+     */
     SolveConstantInequality,
 
     /**

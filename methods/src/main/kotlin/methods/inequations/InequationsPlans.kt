@@ -26,7 +26,6 @@ import methods.constantexpressions.simpleTidyUpSteps
 import methods.equations.EquationsPlans
 import methods.equations.EquationsRules
 import methods.general.NormalizationPlans
-import methods.inequalities.solvablePlansForInequalities
 import methods.polynomials.PolynomialsPlans
 import methods.polynomials.algebraicSimplificationSteps
 import methods.solvable.SolvablePlans
@@ -54,8 +53,6 @@ enum class InequationsPlans(override val runner: CompositeMethod) : RunnerMethod
             explanation = Explanation.SolveInequationInOneVariable
             pattern = condition { it is Inequation && it.variables.size == 1 }
             resultPattern = condition { it is Solution }
-
-            val solvablePlansForInequations = SolvablePlans(SimplifyInequation)
 
             steps {
                 whilePossible {
@@ -134,6 +131,8 @@ enum class InequationsPlans(override val runner: CompositeMethod) : RunnerMethod
     ),
 }
 
+val solvablePlansForInequations = SolvablePlans(InequationsPlans.SimplifyInequation)
+
 val solveConstantInequationSteps = steps {
     check { it is Inequation && it.isConstant() }
 
@@ -151,7 +150,7 @@ val solveConstantInequationSteps = steps {
     optionally(InequationsPlans.SimplifyInequation)
     shortcut(InequationsRules.ExtractSolutionFromConstantInequation)
 
-    optionally(solvablePlansForInequalities.moveEverythingToTheLeftAndSimplify)
+    optionally(solvablePlansForInequations.moveEverythingToTheLeftAndSimplify)
     shortcut(InequationsRules.ExtractSolutionFromConstantInequation)
 
     inContext(contextFactory = { copy(precision = 10) }) {
