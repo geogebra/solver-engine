@@ -11,7 +11,7 @@ class InequalitiesRulesTest {
     fun testExtractSolutionFromConstantInequalityBasedOnSign() {
         testMethodInX {
             inputExpr = "1 >= 0"
-            method = InequalitiesRules.ExtractSolutionFromConstantInequalityBasedOnSign
+            method = InequalitiesRules.ExtractSolutionFromConstantInequality
             check {
                 explanation {
                     key = InequalitiesExplanation.ExtractSolutionFromTrueInequality
@@ -23,7 +23,7 @@ class InequalitiesRulesTest {
         }
         testMethodInX {
             inputExpr = "1 < 0"
-            method = InequalitiesRules.ExtractSolutionFromConstantInequalityBasedOnSign
+            method = InequalitiesRules.ExtractSolutionFromConstantInequality
             check {
                 explanation {
                     key = InequalitiesExplanation.ExtractSolutionFromFalseInequality
@@ -35,7 +35,7 @@ class InequalitiesRulesTest {
         }
         testMethod {
             inputExpr = "1 >= 0"
-            method = InequalitiesRules.ExtractSolutionFromConstantInequalityBasedOnSign
+            method = InequalitiesRules.ExtractSolutionFromConstantInequality
             check {
                 explanation {
                     key = InequalitiesExplanation.ExtractTruthFromTrueInequality
@@ -44,7 +44,7 @@ class InequalitiesRulesTest {
         }
         testMethod {
             inputExpr = "1 < 0"
-            method = InequalitiesRules.ExtractSolutionFromConstantInequalityBasedOnSign
+            method = InequalitiesRules.ExtractSolutionFromConstantInequality
             check {
                 explanation {
                     key = InequalitiesExplanation.ExtractFalsehoodFromFalseInequality

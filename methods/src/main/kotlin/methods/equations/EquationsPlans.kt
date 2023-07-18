@@ -279,6 +279,7 @@ val rearrangeLinearEquationSteps = steps {
 
 val solveConstantEquationSteps = steps {
     check { it is Equation && it.isConstant() }
+
     optionally {
         plan {
             explanation = Explanation.SimplifyEquation
@@ -289,11 +290,15 @@ val solveConstantEquationSteps = steps {
         }
     }
     shortcut(EquationsRules.ExtractSolutionFromConstantEquation)
+
     optionally(EquationsPlans.SimplifyEquation)
     shortcut(EquationsRules.ExtractSolutionFromConstantEquation)
+
     optionally(solvablePlansForEquations.moveEverythingToTheLeftAndSimplify)
     shortcut(EquationsRules.ExtractSolutionFromConstantEquation)
+
     inContext(contextFactory = { copy(precision = 10) }) {
         apply(evaluateBothSidesNumerically)
     }
+    // apply(EquationsRules.ExtractSolutionFromConstantEquation)
 }

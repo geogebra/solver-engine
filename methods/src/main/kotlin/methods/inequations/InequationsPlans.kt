@@ -136,6 +136,7 @@ enum class InequationsPlans(override val runner: CompositeMethod) : RunnerMethod
 
 val solveConstantInequationSteps = steps {
     check { it is Inequation && it.isConstant() }
+
     optionally {
         plan {
             explanation = Explanation.SimplifyInequation
@@ -146,11 +147,15 @@ val solveConstantInequationSteps = steps {
         }
     }
     shortcut(InequationsRules.ExtractSolutionFromConstantInequation)
+
     optionally(InequationsPlans.SimplifyInequation)
     shortcut(InequationsRules.ExtractSolutionFromConstantInequation)
+
     optionally(solvablePlansForInequalities.moveEverythingToTheLeftAndSimplify)
     shortcut(InequationsRules.ExtractSolutionFromConstantInequation)
+
     inContext(contextFactory = { copy(precision = 10) }) {
         apply(evaluateBothSidesNumerically)
     }
+    apply(InequationsRules.ExtractSolutionFromConstantInequation)
 }

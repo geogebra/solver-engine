@@ -94,7 +94,6 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
                         option(NormalizationPlans.NormalizeExpression)
                         // check for contradiction or identity
                         option(InequalitiesRules.ExtractSolutionFromConstantInequality)
-                        option(InequalitiesRules.ExtractSolutionFromConstantInequalityBasedOnSign)
                         // normalize the equation
                         option(SimplifyInequality)
 
@@ -190,7 +189,6 @@ internal val inequalitySimplificationSteps = steps {
     whilePossible {
         firstOf {
             option(InequalitiesRules.ExtractSolutionFromConstantInequality)
-            option(InequalitiesRules.ExtractSolutionFromConstantInequalityBasedOnSign)
             // normalize the inequality
             option(InequalitiesPlans.SimplifyInequality)
         }
@@ -297,13 +295,17 @@ val solveConstantInequalitySteps = steps {
         }
     }
     shortcut(InequalitiesRules.ExtractSolutionFromConstantInequality)
+
     optionally(InequalitiesPlans.SimplifyInequality)
     shortcut(InequalitiesRules.ExtractSolutionFromConstantInequality)
+
     optionally(solvablePlansForInequalities.moveEverythingToTheLeftAndSimplify)
     shortcut(InequalitiesRules.ExtractSolutionFromConstantInequality)
+
     inContext(contextFactory = { copy(precision = 10) }) {
         apply(evaluateBothSidesNumerically)
     }
+    apply(InequalitiesRules.ExtractSolutionFromConstantInequality)
 }
 
 val solvablePlansForInequalities = SolvablePlans(InequalitiesPlans.SimplifyInequality)
