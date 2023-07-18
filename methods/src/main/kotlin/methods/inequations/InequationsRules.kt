@@ -1,5 +1,6 @@
 package methods.inequations
 
+import engine.expressions.Comparison
 import engine.expressions.Constants
 import engine.expressions.SimpleComparator
 import engine.expressions.Variable
@@ -18,7 +19,6 @@ import engine.patterns.ConstantInSolutionVariablePattern
 import engine.patterns.SolutionVariablePattern
 import engine.patterns.condition
 import engine.patterns.inequationOf
-import engine.sign.Sign
 import engine.steps.Transformation
 import engine.steps.metadata.metadata
 
@@ -55,12 +55,8 @@ enum class InequationsRules(override val runner: Rule) : RunnerMethod {
             val inequation = inequationOf(lhs, rhs)
 
             onPattern(inequation) {
-                val sign = SimpleComparator.compare(get(lhs), get(rhs))
-                if (sign.isKnown()) {
-                    trueOrFalseRuleResult(sign != Sign.ZERO)
-                } else {
-                    null
-                }
+                val isSatisfied = (get(inequation) as Comparison).holds(SimpleComparator) ?: return@onPattern null
+                trueOrFalseRuleResult(isSatisfied)
             }
         },
     ),

@@ -12,7 +12,7 @@ import java.util.logging.Level
 
 internal fun getContext(
     apiCtx: server.models.Context?,
-    defaultSolutionVariable: String?,
+    variables: Set<String>,
     logger: Logger,
 ) = apiCtx?.let {
     val curriculum = when (apiCtx.curriculum) {
@@ -33,12 +33,18 @@ internal fun getContext(
         gmFriendly = apiCtx.gmFriendly == true,
         precision = apiCtx.precision?.toInt(),
         preferDecimals = apiCtx.preferDecimals,
-        solutionVariables = listOfNotNull(apiCtx.solutionVariable ?: defaultSolutionVariable),
+        solutionVariables = listOfNotNull(
+            if (apiCtx.solutionVariable in variables) {
+                apiCtx.solutionVariable
+            } else {
+                variables.firstOrNull()
+            },
+        ),
         logger = ContextLogger(logger),
         preferredStrategies = strategies,
     )
 } ?: emptyContext.copy(
-    solutionVariables = listOfNotNull(defaultSolutionVariable),
+    solutionVariables = listOfNotNull(variables.firstOrNull()),
     logger = ContextLogger(logger),
 )
 

@@ -1,6 +1,7 @@
 package methods.equations
 
 import engine.conditions.isDefinitelyNotZero
+import engine.expressions.Comparison
 import engine.expressions.Constants
 import engine.expressions.Product
 import engine.expressions.SimpleComparator
@@ -63,7 +64,6 @@ import engine.steps.metadata.metadata
 import engine.utility.isEven
 import engine.utility.isOdd
 import engine.utility.withMaxDP
-import methods.solvable.simplifiedNegOfSum
 import java.math.BigInteger
 
 enum class EquationsRules(override val runner: Rule) : RunnerMethod {
@@ -84,25 +84,6 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                         sumOf(get(rhs), negatedRhsTerm),
                     ),
                     explanation = metadata(Explanation.CollectLikeTermsToTheLeft, get(variable)),
-                )
-            }
-        },
-    ),
-
-    MoveEverythingToTheLeft(
-        rule {
-            val lhs = AnyPattern()
-            val rhs = condition { it != Constants.Zero }
-
-            onEquation(lhs, rhs) {
-                val negatedRhs = simplifiedNegOfSum(get(rhs))
-
-                ruleResult(
-                    toExpr = equationOf(
-                        sumOf(get(lhs), negatedRhs),
-                        sumOf(get(rhs), negatedRhs),
-                    ),
-                    explanation = metadata(Explanation.MoveEverythingToTheLeft),
                 )
             }
         },
@@ -215,13 +196,11 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             val lhs = ConstantInSolutionVariablePattern()
             val rhs = ConstantInSolutionVariablePattern()
 
-            onEquation(lhs, rhs) {
-                val sign = SimpleComparator.compare(get(lhs), get(rhs))
-                if (sign.isKnown()) {
-                    trueOrFalseRuleResult(sign == Sign.ZERO)
-                } else {
-                    null
-                }
+            val equation = equationOf(lhs, rhs)
+
+            onPattern(equation) {
+                val isSatisfied = (get(equation) as Comparison).holds(SimpleComparator) ?: return@onPattern null
+                trueOrFalseRuleResult(isSatisfied)
             }
         },
     ),

@@ -14,12 +14,14 @@ import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
+import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
 import engine.patterns.AnyPattern
 import engine.patterns.condition
 import engine.patterns.inequationOf
 import engine.steps.Transformation
 import engine.steps.metadata.metadata
+import methods.constantexpressions.constantSimplificationSteps
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.equations.EquationsPlans
 import methods.equations.EquationsRules
@@ -28,6 +30,7 @@ import methods.polynomials.PolynomialsPlans
 import methods.polynomials.algebraicSimplificationSteps
 import methods.solvable.SolvablePlans
 import methods.solvable.SolvableRules
+import methods.solvable.evaluateBothSidesNumerically
 
 enum class InequationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
@@ -48,10 +51,8 @@ enum class InequationsPlans(override val runner: CompositeMethod) : RunnerMethod
     SolveLinearInequation(
         plan {
             explanation = Explanation.SolveInequationInOneVariable
-            pattern = condition { it is Inequation && it.variables.size <= 1 }
+            pattern = condition { it is Inequation && it.variables.size == 1 }
             resultPattern = condition { it is Solution }
-
-            val solvablePlansForInequations = SolvablePlans(SimplifyInequation)
 
             steps {
                 whilePossible {
@@ -80,7 +81,7 @@ enum class InequationsPlans(override val runner: CompositeMethod) : RunnerMethod
 
             val lhs = AnyPattern()
             val rhs = AnyPattern()
-            pattern = condition(inequationOf(lhs, rhs)) { it.variables.size <= 1 }
+            pattern = condition(inequationOf(lhs, rhs)) { it.variables.size == 1 }
 
             tasks {
                 val equationSolutionTask = task(
@@ -117,4 +118,43 @@ enum class InequationsPlans(override val runner: CompositeMethod) : RunnerMethod
             }
         },
     ),
+
+    @PublicMethod
+    SolveConstantInequation(
+        plan {
+            explanation = Explanation.SolveConstantInequation
+
+            steps {
+                apply(solveConstantInequationSteps)
+            }
+        },
+    ),
+}
+
+val solvablePlansForInequations = SolvablePlans(InequationsPlans.SimplifyInequation)
+
+val solveConstantInequationSteps = steps {
+    check { it is Inequation && it.isConstant() }
+
+    optionally {
+        plan {
+            explanation = Explanation.SimplifyInequation
+
+            steps {
+                whilePossible(constantSimplificationSteps)
+            }
+        }
+    }
+    shortcut(InequationsRules.ExtractSolutionFromConstantInequation)
+
+    optionally(InequationsPlans.SimplifyInequation)
+    shortcut(InequationsRules.ExtractSolutionFromConstantInequation)
+
+    optionally(solvablePlansForInequations.moveEverythingToTheLeftAndSimplify)
+    shortcut(InequationsRules.ExtractSolutionFromConstantInequation)
+
+    inContext(contextFactory = { copy(precision = 10) }) {
+        apply(evaluateBothSidesNumerically)
+    }
+    apply(InequationsRules.ExtractSolutionFromConstantInequation)
 }

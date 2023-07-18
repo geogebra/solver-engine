@@ -24,10 +24,18 @@ interface StepsProducer {
  * This helps build a list of chained `Transformation` instances, starting from the given Expression`.
  */
 class StepsBuilder(val context: Context, sub: Expression) {
+
+    private enum class Status {
+        InProgress,
+        Succeeded,
+        Aborted,
+    }
+
     private var sub: Expression
 
     private var steps = mutableListOf<Transformation>()
-    var aborted = false
+
+    private var status = Status.InProgress
 
     private val alternatives = mutableListOf<Alternative>()
 
@@ -40,10 +48,12 @@ class StepsBuilder(val context: Context, sub: Expression) {
         }
     }
 
+    val inProgress get() = status == Status.InProgress
+
     fun copy(): StepsBuilder {
         val builder = StepsBuilder(context, sub)
         builder.steps = steps.toMutableList()
-        builder.aborted = aborted
+        builder.status = status
         return builder
     }
 
@@ -103,13 +113,13 @@ class StepsBuilder(val context: Context, sub: Expression) {
      * Adds a list of `Transformation` instances to the `Transformation` chain.
      */
     fun addSteps(newSteps: List<Transformation>) {
-        if (!aborted) {
+        if (inProgress) {
             newSteps.forEach { addStep(it) }
         }
     }
 
     fun addAlternative(strategy: Strategy, steps: List<Transformation>) {
-        if (!aborted) {
+        if (inProgress) {
             val alternativeBuilder = copy()
             alternativeBuilder.addSteps(steps)
             alternatives.add(Alternative(strategy, alternativeBuilder.steps))
@@ -121,7 +131,11 @@ class StepsBuilder(val context: Context, sub: Expression) {
      * to `addSteps()` has no effect.
      */
     fun abort() {
-        aborted = true
+        status = Status.Aborted
+    }
+
+    fun succeed() {
+        status = Status.Succeeded
     }
 
     /**
@@ -133,7 +147,7 @@ class StepsBuilder(val context: Context, sub: Expression) {
     /**
      * Returns the list of steps added to the builder, or null if `abort()` was called at least once.
      */
-    fun getFinalSteps(): List<Transformation>? = if (aborted || steps.isEmpty()) null else steps
+    fun getFinalSteps(): List<Transformation>? = if (status == Status.Aborted || steps.isEmpty()) null else steps
 
     fun getAlternatives(): List<Alternative> = alternatives
 }

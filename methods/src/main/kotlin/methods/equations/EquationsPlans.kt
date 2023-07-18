@@ -2,6 +2,7 @@ package methods.equations
 
 import engine.context.Context
 import engine.expressions.Constants
+import engine.expressions.Equation
 import engine.expressions.Expression
 import engine.expressions.StatementUnion
 import engine.methods.CompositeMethod
@@ -25,6 +26,7 @@ import engine.patterns.solutionSetOf
 import engine.patterns.variableListOf
 import engine.steps.Transformation
 import engine.steps.metadata.metadata
+import methods.constantexpressions.constantSimplificationSteps
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.factor.FactorPlans
 import methods.factor.FactorRules
@@ -34,6 +36,7 @@ import methods.polynomials.algebraicSimplificationSteps
 import methods.solvable.SolvablePlans
 import methods.solvable.SolvableRules
 import methods.solvable.computeOverallUnionSolution
+import methods.solvable.evaluateBothSidesNumerically
 
 enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
@@ -57,17 +60,6 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 apply(EquationsRules.CollectLikeTermsToTheLeft)
-                optionally(SimplifyEquation)
-            }
-        },
-    ),
-
-    MoveEverythingToTheLeftAndSimplify(
-        plan {
-            explanation = Explanation.MoveEverythingToTheLeftAndSimplify
-
-            steps {
-                apply(EquationsRules.MoveEverythingToTheLeft)
                 optionally(SimplifyEquation)
             }
         },
@@ -226,6 +218,17 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
     @PublicMethod
     SolveEquationWithConstraint(solveEquationWithConstraint),
+
+    @PublicMethod
+    SolveConstantEquation(
+        plan {
+            explanation = Explanation.SolveConstantEquation
+
+            steps {
+                apply(solveConstantEquationSteps)
+            }
+        },
+    ),
 }
 
 val equationSimplificationSteps = steps {
@@ -272,4 +275,30 @@ val rearrangeLinearEquationSteps = steps {
 
     optionally(solvablePlansForEquations.solvableRearrangementSteps)
     optionally(solvablePlansForEquations.coefficientRemovalSteps)
+}
+
+val solveConstantEquationSteps = steps {
+    check { it is Equation && it.isConstant() }
+
+    optionally {
+        plan {
+            explanation = Explanation.SimplifyEquation
+
+            steps {
+                whilePossible(constantSimplificationSteps)
+            }
+        }
+    }
+    shortcut(EquationsRules.ExtractSolutionFromConstantEquation)
+
+    optionally(EquationsPlans.SimplifyEquation)
+    shortcut(EquationsRules.ExtractSolutionFromConstantEquation)
+
+    optionally(solvablePlansForEquations.moveEverythingToTheLeftAndSimplify)
+    shortcut(EquationsRules.ExtractSolutionFromConstantEquation)
+
+    inContext(contextFactory = { copy(precision = 10) }) {
+        apply(evaluateBothSidesNumerically)
+    }
+    apply(EquationsRules.ExtractSolutionFromConstantEquation)
 }

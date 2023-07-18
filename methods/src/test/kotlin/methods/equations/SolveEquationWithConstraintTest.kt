@@ -3,7 +3,6 @@ package methods.equations
 import engine.methods.testMethodInX
 import methods.general.GeneralExplanation
 import methods.inequalities.InequalitiesExplanation
-import methods.integerarithmetic.IntegerArithmeticExplanation
 import org.junit.jupiter.api.Test
 
 class SolveEquationWithConstraintTest {
@@ -151,15 +150,11 @@ class SolveEquationWithConstraintTest {
                 step {
                     fromExpr = "[(-1) ^ 2] < 0"
                     explanation {
-                        key = IntegerArithmeticExplanation.SimplifyEvenPowerOfNegative
+                        key = InequalitiesExplanation.SimplifyInequality
                     }
-                    toExpr = "[1 ^ 2] < 0"
-                }
-
-                step {
-                    fromExpr = "[1 ^ 2] < 0"
                     toExpr = "1 < 0"
                 }
+
                 step {
                     fromExpr = "1 < 0"
                     explanation {

@@ -3,6 +3,7 @@ package methods.inequalities
 import engine.context.ResourceData
 import engine.expressions.Constants
 import engine.expressions.DoubleInequality
+import engine.expressions.Inequality
 import engine.expressions.Solution
 import engine.expressions.StatementUnion
 import engine.methods.CompositeMethod
@@ -23,7 +24,6 @@ import engine.patterns.condition
 import engine.patterns.contradictionOf
 import engine.patterns.fractionOf
 import engine.patterns.identityOf
-import engine.patterns.inSolutionVariables
 import engine.patterns.inequalityOf
 import engine.patterns.oneOf
 import engine.patterns.openClosedIntervalOf
@@ -32,6 +32,7 @@ import engine.patterns.optionalNegOf
 import engine.patterns.setSolutionOf
 import engine.patterns.variableListOf
 import engine.steps.metadata.metadata
+import methods.constantexpressions.constantSimplificationSteps
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.equations.EquationsPlans
 import methods.general.NormalizationPlans
@@ -42,6 +43,7 @@ import methods.solvable.SolvablePlans
 import methods.solvable.SolvableRules
 import methods.solvable.computeOverallIntersectionSolution
 import methods.solvable.computeOverallUnionSolution
+import methods.solvable.evaluateBothSidesNumerically
 
 enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMethod {
 
@@ -86,15 +88,12 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
             explanation = Explanation.SolveLinearInequality
             pattern = inequalityInOneVariable()
 
-            val solvablePlansForInequalities = SolvablePlans(SimplifyInequality)
-
             steps {
                 whilePossible {
                     firstOf {
                         option(NormalizationPlans.NormalizeExpression)
                         // check for contradiction or identity
                         option(InequalitiesRules.ExtractSolutionFromConstantInequality)
-                        option(InequalitiesRules.ExtractSolutionFromConstantInequalityBasedOnSign)
                         // normalize the equation
                         option(SimplifyInequality)
 
@@ -138,40 +137,49 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
 
                 optionally(SolvableRules.NegateBothSides)
 
-                optionally {
-                    firstOf {
-                        option {
-                            apply(InequalitiesRules.SeparateModulusGreaterThanPositiveConstant)
-                            apply(SolveInequalityUnion)
-                        }
-                        option {
-                            apply(InequalitiesRules.ConvertModulusGreaterThanZero)
-                            apply(InequationsPlans.SolveInequationInOneVariable)
-                        }
-                        option {
-                            apply(InequalitiesRules.ConvertModulusLessThanPositiveConstant)
-                            apply(SolveDoubleInequality)
-                        }
-                        option {
-                            apply(InequalitiesRules.ConvertModulusLessThanEqualToPositiveConstant)
-                            apply(SolveDoubleInequality)
-                        }
-                        option {
-                            apply(InequalitiesRules.SeparateModulusGreaterThanEqualToPositiveConstant)
-                            apply(SolveInequalityUnion)
-                        }
-                        option(InequalitiesRules.ExtractSolutionFromModulusLessThanNonPositiveConstant)
-
-                        // after this we need to solve an equation
-                        option {
-                            apply(InequalitiesRules.ReduceModulusLessThanEqualToZeroInequalityToEquation)
-                            apply(EquationsPlans.SolveEquationInOneVariable)
-                        }
-
-                        option(InequalitiesRules.ExtractSolutionFromModulusGreaterThanEqualToNonPositiveConstant)
-                        option(InequalitiesRules.ExtractSolutionFromModulusGreaterThanNegativeConstant)
+                firstOf {
+                    option {
+                        apply(InequalitiesRules.SeparateModulusGreaterThanPositiveConstant)
+                        apply(SolveInequalityUnion)
                     }
+                    option {
+                        apply(InequalitiesRules.ConvertModulusGreaterThanZero)
+                        apply(InequationsPlans.SolveInequationInOneVariable)
+                    }
+                    option {
+                        apply(InequalitiesRules.ConvertModulusLessThanPositiveConstant)
+                        apply(SolveDoubleInequality)
+                    }
+                    option {
+                        apply(InequalitiesRules.ConvertModulusLessThanEqualToPositiveConstant)
+                        apply(SolveDoubleInequality)
+                    }
+                    option {
+                        apply(InequalitiesRules.SeparateModulusGreaterThanEqualToPositiveConstant)
+                        apply(SolveInequalityUnion)
+                    }
+                    option(InequalitiesRules.ExtractSolutionFromModulusLessThanNonPositiveConstant)
+
+                    // after this we need to solve an equation
+                    option {
+                        apply(InequalitiesRules.ReduceModulusLessThanEqualToZeroInequalityToEquation)
+                        apply(EquationsPlans.SolveEquationInOneVariable)
+                    }
+
+                    option(InequalitiesRules.ExtractSolutionFromModulusGreaterThanEqualToNonPositiveConstant)
+                    option(InequalitiesRules.ExtractSolutionFromModulusGreaterThanNegativeConstant)
                 }
+            }
+        },
+    ),
+
+    @PublicMethod
+    SolveConstantInequality(
+        plan {
+            explanation = Explanation.SolveConstantInequality
+
+            steps {
+                apply(solveConstantInequalitySteps)
             }
         },
     ),
@@ -181,7 +189,6 @@ internal val inequalitySimplificationSteps = steps {
     whilePossible {
         firstOf {
             option(InequalitiesRules.ExtractSolutionFromConstantInequality)
-            option(InequalitiesRules.ExtractSolutionFromConstantInequalityBasedOnSign)
             // normalize the inequality
             option(InequalitiesPlans.SimplifyInequality)
         }
@@ -272,4 +279,33 @@ private val solveDoubleInequality = taskSet {
     }
 }
 
-private fun inequalityInOneVariable() = inSolutionVariables(inequalityOf(AnyPattern(), AnyPattern()))
+private fun inequalityInOneVariable() = condition(inequalityOf(AnyPattern(), AnyPattern())) {
+    it.variables.size == 1 && solutionVariables.size == 1 && it.variables.contains(solutionVariables[0])
+}
+
+val solveConstantInequalitySteps = steps {
+    check { it is Inequality && it.isConstant() }
+    optionally {
+        plan {
+            explanation = Explanation.SimplifyInequality
+
+            steps {
+                whilePossible(constantSimplificationSteps)
+            }
+        }
+    }
+    shortcut(InequalitiesRules.ExtractSolutionFromConstantInequality)
+
+    optionally(InequalitiesPlans.SimplifyInequality)
+    shortcut(InequalitiesRules.ExtractSolutionFromConstantInequality)
+
+    optionally(solvablePlansForInequalities.moveEverythingToTheLeftAndSimplify)
+    shortcut(InequalitiesRules.ExtractSolutionFromConstantInequality)
+
+    inContext(contextFactory = { copy(precision = 10) }) {
+        apply(evaluateBothSidesNumerically)
+    }
+    apply(InequalitiesRules.ExtractSolutionFromConstantInequality)
+}
+
+val solvablePlansForInequalities = SolvablePlans(InequalitiesPlans.SimplifyInequality)

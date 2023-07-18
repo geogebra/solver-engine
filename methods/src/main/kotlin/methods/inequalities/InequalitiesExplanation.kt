@@ -248,6 +248,11 @@ enum class InequalitiesExplanation : CategorisedMetadataKey {
     SolveLinearInequality,
 
     /**
+     * Determine whether an inequality between constants is true or false.
+     */
+    SolveConstantInequality,
+
+    /**
      * Solve an inequality reducible to the form
      * |f(x)| > k        OR
      * |f(x)| >= k       OR

@@ -110,7 +110,7 @@ enum class EquationSolvingStrategy(
         priority = 8,
         explanation = EquationsExplanation.SolveEquationByFactoring,
         steps = steps {
-            optionally(EquationsPlans.MoveEverythingToTheLeftAndSimplify)
+            optionally(solvablePlansForEquations.moveEverythingToTheLeftAndSimplify)
             applyTo(FactorPlans.FactorPolynomialInOneVariable) { it.firstChild }
             firstOf {
 
@@ -133,7 +133,7 @@ enum class EquationSolvingStrategy(
         explanation = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula,
         steps = steps {
             optionally(solvablePlansForEquations.multiplyByLCDAndSimplify)
-            optionally(EquationsPlans.MoveEverythingToTheLeftAndSimplify)
+            optionally(solvablePlansForEquations.moveEverythingToTheLeftAndSimplify)
             optionally {
                 applyTo(PolynomialsPlans.ExpandPolynomialExpressionInOneVariable) { it.firstChild }
             }
@@ -234,11 +234,21 @@ enum class EquationSolvingStrategy(
         steps = resolvePlusminusSteps,
     ),
 
-    ExtractSolutionFromConstantEquation(
+    ConstantEquation(
         family = Family.CONSTANT,
         priority = -1,
         explanation = EquationsExplanation.SolveEquationInOneVariable,
-        steps = EquationsRules.ExtractSolutionFromConstantEquation,
+        steps = steps {
+            check { it.isConstant() }
+
+            shortcut(EquationsRules.ExtractSolutionFromConstantEquation)
+
+            optionally(EquationsPlans.SimplifyEquation)
+            shortcut(EquationsRules.ExtractSolutionFromConstantEquation)
+
+            apply(solvablePlansForEquations.moveEverythingToTheLeftAndSimplify)
+            apply(EquationsRules.ExtractSolutionFromConstantEquation)
+        },
     ),
 
     ;
@@ -300,8 +310,8 @@ internal val solveEquationInOneVariable = lazy {
 
     whileStrategiesAvailableFirstOf(EquationSolvingStrategy.values()) {
 
-        // before we simplify we always have to check for an identity
-        option(EquationSolvingStrategy.ExtractSolutionFromConstantEquation)
+        // before we simplify we always have to check for an identity / trivial contradiction
+        option(EquationSolvingStrategy.ConstantEquation)
 
         // simplify the equation
         option(EquationsPlans.SimplifyEquation)

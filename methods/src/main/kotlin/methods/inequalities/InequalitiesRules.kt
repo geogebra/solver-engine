@@ -1,7 +1,9 @@
 package methods.inequalities
 
+import engine.expressions.Comparison
 import engine.expressions.Constants
 import engine.expressions.Expression
+import engine.expressions.SimpleComparator
 import engine.expressions.Variable
 import engine.expressions.closedOpenIntervalOf
 import engine.expressions.closedRangeOf
@@ -31,7 +33,6 @@ import engine.patterns.ConstantInSolutionVariablePattern
 import engine.patterns.FixedPattern
 import engine.patterns.Pattern
 import engine.patterns.SolutionVariablePattern
-import engine.patterns.UnsignedNumberPattern
 import engine.patterns.absoluteValueOf
 import engine.patterns.condition
 import engine.patterns.greaterThanEqualOf
@@ -49,34 +50,14 @@ enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
 
     ExtractSolutionFromConstantInequality(
         rule {
-            val lhs = UnsignedNumberPattern()
-            val rhs = UnsignedNumberPattern()
+            val lhs = ConstantInSolutionVariablePattern()
+            val rhs = ConstantInSolutionVariablePattern()
 
             val inequality = inequalityOf(lhs, rhs)
 
             onPattern(inequality) {
-                trueOrFalseRuleResult(inequality, inequality.holdsFor(getValue(lhs), getValue(rhs)))
-            }
-        },
-    ),
-
-    ExtractSolutionFromConstantInequalityBasedOnSign(
-        rule {
-            val lhs = AnyPattern()
-            val rhs = AnyPattern()
-
-            val inequality = inequalityOf(lhs, rhs)
-
-            onPattern(condition(inequality) { it.isConstant() }) {
-                val lhsSign = get(lhs).signOf()
-                val rhsSign = get(rhs).signOf()
-
-                if (lhsSign.isKnown() && rhsSign.isKnown()) {
-                    val isSatisfied = inequality.holdsFor(lhsSign.signum.toBigDecimal(), rhsSign.signum.toBigDecimal())
-                    trueOrFalseRuleResult(inequality, isSatisfied)
-                } else {
-                    null
-                }
+                val isSatisfied = (get(inequality) as Comparison).holds(SimpleComparator) ?: return@onPattern null
+                trueOrFalseRuleResult(inequality, isSatisfied)
             }
         },
     ),

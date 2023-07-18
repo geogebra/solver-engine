@@ -106,7 +106,11 @@ const buildURLString = (startURL: string, data: RequestData) => {
   } else {
     url.searchParams.delete('preferDecimals');
   }
-  url.searchParams.set('solutionVariable', data.solutionVariable);
+  if (data.solutionVariable) {
+    url.searchParams.set('solutionVariable', data.solutionVariable);
+  } else {
+    url.searchParams.delete('solutionVariable');
+  }
   url.searchParams.delete('strategy');
   for (const category in data.preferredStrategies) {
     url.searchParams.append('strategy', `${category}:${data.preferredStrategies[category]}`);

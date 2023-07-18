@@ -26,7 +26,7 @@ class PlanApiServiceImpl : PlansApiService {
         } catch (e: ParseCancellationException) {
             throw InvalidExpressionException(solveRequest.input, e)
         }
-        val context = getContext(solveRequest.context, expr.variables.firstOrNull(), logger)
+        val context = getContext(solveRequest.context, expr.variables, logger)
         try {
             ThreadContext.put("traceId", UUID.randomUUID().toString())
             context.log(Level.INFO) {

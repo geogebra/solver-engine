@@ -56,6 +56,8 @@ enum class SolvableKey(val rule: RunnerMethod) {
      */
     MoveVariablesToTheRight(SolvableRules.MoveVariablesToTheRight),
 
+    MoveEverythingToTheLeft(SolvableRules.MoveEverythingToTheLeft),
+
     /**
      * Multiply both sides of the equation by the least common denominator of
      * all the fractions occurring in it.
@@ -332,6 +334,10 @@ enum class EquationsExplanation(
         explicitVariables = true,
         simplify = true,
     ),
+
+    MoveEverythingToTheLeft(SolvableKey.MoveEverythingToTheLeft),
+
+    MoveEverythingToTheLeftAndSimplify(SolvableKey.MoveEverythingToTheLeft, simplify = true),
 
     /**
      * Multiply both sides of the equation by the least common denominator of
@@ -610,6 +616,10 @@ enum class InequalitiesExplanation(
         explicitVariables = true,
         simplify = true,
     ),
+
+    MoveEverythingToTheLeft(SolvableKey.MoveEverythingToTheLeft),
+
+    MoveEverythingToTheLeftAndSimplify(SolvableKey.MoveEverythingToTheLeft, simplify = true),
 
     /**
      * Multiply both sides of the inequality by the least common denominator of

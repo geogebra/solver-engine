@@ -29,6 +29,7 @@ import engine.patterns.Match
 import engine.sign.Sign
 import engine.utility.Rational
 import engine.utility.product
+import java.math.BigDecimal
 import java.math.BigInteger
 
 /**
@@ -505,6 +506,17 @@ fun Expression.asInteger(): BigInteger? = when {
 
 fun Expression.asPositiveInteger(): BigInteger? = when (this) {
     is IntegerExpression -> value
+    else -> null
+}
+
+fun Expression.asDecimal(): BigDecimal? = when (this) {
+    is Minus -> argument.asDecimal()?.negate()
+    else -> asPositiveDecimal()
+}
+
+fun Expression.asPositiveDecimal(): BigDecimal? = when (this) {
+    is DecimalExpression -> value
+    is IntegerExpression -> value.toBigDecimal()
     else -> null
 }
 

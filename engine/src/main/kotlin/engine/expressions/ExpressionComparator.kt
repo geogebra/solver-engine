@@ -17,23 +17,26 @@ fun interface ExpressionComparator {
 
 /**
  * A simple expression comparator that can compare expressions based on
- * 1. their sign
- * 2. whether they are the same verbatim or
- * 3. whether they are the same rational number.
+ * 1. whether they are the same verbatim, or
+ * 2. Whether they are the same decimal number, or
+ * 3. whether they are the same rational number, or
+ * 4. their sign
  */
 object SimpleComparator : ExpressionComparator {
     override fun compare(e1: Expression, e2: Expression): Sign {
         if (e1.isNeg() && e2.isNeg()) {
             return compare(e2.firstChild, e1.firstChild)
         }
-        return signCompare(e1, e2) ?: verbatimCompare(e1, e2) ?: rationalCompare(e1, e2) ?: Sign.UNKNOWN
+        return verbatimCompare(e1, e2)
+            ?: decimalCompare(e1, e2)
+            ?: rationalCompare(e1, e2)
+            ?: signCompare(e1, e2)
     }
 
-    private inline fun signCompare(e1: Expression, e2: Expression): Sign? {
+    private inline fun signCompare(e1: Expression, e2: Expression): Sign {
         val s1 = e1.signOf()
         val s2 = e2.signOf()
-        val signDiff = s1 - s2
-        return if (signDiff.isKnown() || !s1.isKnown() || !s2.isKnown()) signDiff else null
+        return s1 - s2
     }
 
     private inline fun verbatimCompare(e1: Expression, e2: Expression): Sign? {
@@ -47,5 +50,11 @@ object SimpleComparator : ExpressionComparator {
         } else {
             null
         }
+    }
+
+    private inline fun decimalCompare(e1: Expression, e2: Expression): Sign? {
+        val d1 = e1.asDecimal() ?: return null
+        val d2 = e2.asDecimal() ?: return null
+        return Sign.fromInt((d1 - d2).signum())
     }
 }

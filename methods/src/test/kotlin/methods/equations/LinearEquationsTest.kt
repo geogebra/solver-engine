@@ -540,16 +540,6 @@ class LinearEquationsTest {
     }
 
     @Test
-    fun `test linear equation with no variable`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
-        inputExpr = "1 = 2"
-
-        check {
-            noTransformation()
-        }
-    }
-
-    @Test
     fun `test linear equation with two variables`() = testMethodInX {
         method = EquationsPlans.SolveEquationInOneVariable
         inputExpr = "x + 1 = 2x + y - 2"
