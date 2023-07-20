@@ -4,7 +4,7 @@ grammar Expression;
     package parser.antlr;
 }
 
-wholeInput: (statementUnion | set | expr | undefined | name) EOF;
+wholeInput: (statementUnion | set | expr | undefined | name | void) EOF;
 
 statementUnion: stmts += statementWithConstraint ('OR' stmts += statementWithConstraint)*;
 
@@ -166,6 +166,8 @@ variable: LETTER | GREEK_LETTER;
 
 name: NAME;
 
+void: VOID;
+
 fragment DIGIT: [0-9];
 NATNUM: DIGIT+;
 DECNUM: NATNUM '.' NATNUM;
@@ -201,5 +203,7 @@ TRIG_FUNCTION: 'sin' | 'cos' | 'tan' | 'arcsin' | 'arccos' | 'arctan'
              ;
 
 NAME: '"' (~ '"')+ '"';
+
+VOID: '/void/';
 
 UNKNOWN: .;

@@ -38,6 +38,7 @@ enum class OperatorKind {
     STATEMENT,
     SET_ELEMENT,
     INNER,
+    VOID,
 }
 
 internal interface Operator {
@@ -66,6 +67,37 @@ internal interface Operator {
     }
 
     fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String
+}
+
+internal abstract class NullaryOperator : Operator {
+    override val precedence = MAX_PRECEDENCE
+    override val arity = ARITY_NULL
+
+    override fun nthChildAllowed(n: Int, op: Operator): Boolean {
+        throw IllegalArgumentException(
+            "Nullary operator ${this::class.simpleName} should have no children. " +
+                "Child $op is invalid at position $n.",
+        )
+    }
+
+    override fun <T> readableString(children: List<T>): String {
+        require(children.isEmpty())
+        return toString()
+    }
+
+    override fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String {
+        require(children.isEmpty())
+        return latexString(ctx)
+    }
+
+    abstract fun latexString(ctx: RenderContext): String
+}
+
+internal object VoidOperator : NullaryOperator() {
+    override val name = "Void"
+    override val kind = OperatorKind.VOID
+
+    override fun latexString(ctx: RenderContext) = ""
 }
 
 internal interface UnaryOperator : Operator {

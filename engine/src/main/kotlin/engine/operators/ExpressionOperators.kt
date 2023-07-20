@@ -36,7 +36,7 @@ private const val INTEGRAL_PRECEDENCE = 55
 private const val POWER_PRECEDENCE = 60
 private const val DIVIDE_BY_PRECEDENCE = 90
 private const val FUNCTION_LIKE_PRECEDENCE = 95
-private const val MAX_PRECEDENCE = 100
+internal const val MAX_PRECEDENCE = 100
 
 private const val ONE_PERCENT = 0.01
 
@@ -46,31 +46,7 @@ internal interface ExpressionOperator : Operator {
     fun eval(children: List<Double>): Double
 }
 
-internal abstract class NullaryOperator : ExpressionOperator {
-    override val precedence = MAX_PRECEDENCE
-    override val arity = ARITY_NULL
-
-    override fun nthChildAllowed(n: Int, op: Operator): Boolean {
-        throw IllegalArgumentException(
-            "Nullary operator ${this::class.simpleName} should have no children. " +
-                "Child $op is invalid at position $n.",
-        )
-    }
-
-    override fun <T> readableString(children: List<T>): String {
-        require(children.isEmpty())
-        return toString()
-    }
-
-    override fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String {
-        require(children.isEmpty())
-        return latexString(ctx)
-    }
-
-    abstract fun latexString(ctx: RenderContext): String
-}
-
-internal data class NameOperator(val value: String) : NullaryOperator() {
+internal data class NameOperator(val value: String) : NullaryOperator(), ExpressionOperator {
 
     override val name = toString()
 
@@ -84,7 +60,7 @@ internal data class NameOperator(val value: String) : NullaryOperator() {
 /**
  * Operator representing an unsigned integer.
  */
-internal data class IntegerOperator(val value: BigInteger) : NullaryOperator() {
+internal data class IntegerOperator(val value: BigInteger) : NullaryOperator(), ExpressionOperator {
     init {
         require(value.signum() >= 0)
     }
@@ -98,7 +74,7 @@ internal data class IntegerOperator(val value: BigInteger) : NullaryOperator() {
     override fun eval(children: List<Double>) = value.toDouble()
 }
 
-internal object InfinityOperator : NullaryOperator() {
+internal object InfinityOperator : NullaryOperator(), ExpressionOperator {
 
     override val name = "/infinity/"
 
@@ -109,7 +85,7 @@ internal object InfinityOperator : NullaryOperator() {
     override fun eval(children: List<Double>) = Double.POSITIVE_INFINITY
 }
 
-internal object UndefinedOperator : NullaryOperator() {
+internal object UndefinedOperator : NullaryOperator(), ExpressionOperator {
 
     override val name = "/undefined/"
 
@@ -120,7 +96,7 @@ internal object UndefinedOperator : NullaryOperator() {
     override fun eval(children: List<Double>) = Double.NaN
 }
 
-internal object PiOperator : NullaryOperator() {
+internal object PiOperator : NullaryOperator(), ExpressionOperator {
 
     override val name = "/pi/"
 
@@ -131,7 +107,7 @@ internal object PiOperator : NullaryOperator() {
     override fun eval(children: List<Double>) = Math.PI
 }
 
-internal object EulerEOperator : NullaryOperator() {
+internal object EulerEOperator : NullaryOperator(), ExpressionOperator {
 
     override val name = "/e/"
 
@@ -142,7 +118,7 @@ internal object EulerEOperator : NullaryOperator() {
     override fun eval(children: List<Double>) = Math.E
 }
 
-internal object ImaginaryUnitOperator : NullaryOperator() {
+internal object ImaginaryUnitOperator : NullaryOperator(), ExpressionOperator {
 
     override val name = "/i/"
 
@@ -156,7 +132,7 @@ internal object ImaginaryUnitOperator : NullaryOperator() {
 /**
  * Operator representing an unsigned terminating decimal.
  */
-internal data class DecimalOperator(val value: BigDecimal) : NullaryOperator() {
+internal data class DecimalOperator(val value: BigDecimal) : NullaryOperator(), ExpressionOperator {
     init {
         require(value.signum() >= 0)
     }
@@ -177,7 +153,7 @@ internal data class DecimalOperator(val value: BigDecimal) : NullaryOperator() {
  * - 0.[6] is RecurringDecimalOperator(BigDecimal("0.6", 1)
  * - 1.0[45] is RecurringDecimalOperator(BigDecimal("1.045"), 2)
  */
-internal data class RecurringDecimalOperator(val value: RecurringDecimal) : NullaryOperator() {
+internal data class RecurringDecimalOperator(val value: RecurringDecimal) : NullaryOperator(), ExpressionOperator {
 
     override val name = value.toString()
 
@@ -192,7 +168,7 @@ internal data class RecurringDecimalOperator(val value: RecurringDecimal) : Null
     override fun eval(children: List<Double>) = value.toDouble()
 }
 
-internal data class VariableOperator(override val name: String) : NullaryOperator() {
+internal data class VariableOperator(override val name: String) : NullaryOperator(), ExpressionOperator {
     override fun toString() = name
 
     override fun latexString(ctx: RenderContext) = name

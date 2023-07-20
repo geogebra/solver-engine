@@ -1,9 +1,4 @@
-import {
-  ExpressionTree,
-  ExpressionTreeBase,
-  NestedExpression,
-  NumberExpression,
-} from '../parser';
+import { ExpressionTree, ExpressionTreeBase, NestedExpression, NumberExpression } from '../parser';
 import { setsSolutionFormatter, SolutionFormatter } from './solution-formatter';
 import { ColorMap } from '../solutions/coloring';
 
@@ -367,6 +362,8 @@ function treeToLatexInner(
       );
     case 'Reals':
       return tfd('\\mathbb{R}');
+    case 'Void':
+      return tfd('\\textrm{VOID}');
     case 'CartesianProduct':
       return tfd(
         n.args.length === 0
