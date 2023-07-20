@@ -27,6 +27,7 @@ export function jsonToTree(json: MathJson | MathJson2, path = '.'): ExpressionTr
     else if (str === '/undefined/') result = { type: '/undefined/', path };
     else if (str === '/infinity/') result = { type: '/infinity/', path };
     else if (str === '/reals/' || str === 'Reals') result = { type: 'Reals', path };
+    else if (str === 'Void') result = { type: 'Void', path };
     else result = { type: 'Variable', value: str, path };
   } else if (value === 'SmartProduct') {
     result = {

@@ -15,6 +15,7 @@ import engine.expressions.SetExpression
 import engine.expressions.SetSolution
 import engine.expressions.Variable
 import engine.expressions.VariableList
+import engine.expressions.VoidExpression
 import engine.expressions.cartesianProductOf
 import engine.expressions.expressionOf
 import engine.expressions.greaterThanEqualOf
@@ -474,6 +475,10 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
     override fun visitName(ctx: ExpressionParser.NameContext): Expression {
         val text = ctx.NAME().text
         return nameXp(ctx.NAME().text.substring(1, text.length - 1))
+    }
+
+    override fun visitVoid(ctx: ExpressionParser.VoidContext): Expression {
+        return VoidExpression()
     }
 
     override fun visitUndefined(ctx: ExpressionParser.UndefinedContext?): Expression {
