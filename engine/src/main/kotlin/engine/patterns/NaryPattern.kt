@@ -78,9 +78,11 @@ class NaryPattern internal constructor(
         }
     }
 
-    private fun getMatchedChildExpressions(match: Match) =
-        childPatterns.flatMap { match.getBoundExprs(it) }
-            .filter { it.isChildOfOrSelf(match.getBoundExpr(this)) }
+    private fun getMatchedChildExpressions(match: Match): List<Expression> {
+        val boundExpr = match.getBoundExpr(this) ?: return emptyList()
+        return childPatterns.flatMap { match.getBoundExprs(it) }
+            .filter { it.parent === boundExpr }
+    }
 
     fun extract(match: Match): Expression {
         val matchedChildren = getMatchedChildExpressions(match).sortedBy { (it.origin as Child).index }

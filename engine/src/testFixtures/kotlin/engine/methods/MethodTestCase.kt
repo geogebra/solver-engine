@@ -283,7 +283,7 @@ class TransformationCheck(
     private val assertionCollector: AssertionCollector,
     private val test: MethodTestCase,
 ) :
-    PathMappingsCheck(trans?.toExpr?.mergedPathMappings() ?: emptyList(), trans?.fromExpr?.origin?.path ?: RootPath()) {
+    PathMappingsCheck(trans?.toExpr?.mergedPathMappings() ?: emptyList(), trans?.fromExpr?.path ?: RootPath()) {
     var fromExpr: String?
         get() = null
         set(value) {
@@ -318,7 +318,7 @@ class TransformationCheck(
             assertionCollector.explanation,
             "Don't assert that there are two different explanations. You have already asserted that there was an explanation with key ${assertionCollector.explanation?.key}",
         )
-        val explanationCheck = MetadataCheck(trans?.fromExpr?.origin?.path, test) {
+        val explanationCheck = MetadataCheck(trans?.fromExpr?.path, test) {
             val mainExplanation = trans?.explanation
             if (test.logMode) {
                 assertionCollector.explanation = AssertionCollector(key = it.keyName)
@@ -340,7 +340,7 @@ class TransformationCheck(
     fun skill(init: MetadataCheck.() -> Unit) {
         assertNotNull(trans)
 
-        val skillCheck = MetadataCheck(trans.fromExpr.origin.path!!, test) {
+        val skillCheck = MetadataCheck(trans.fromExpr.path!!, test) {
             val skill = trans.skills?.find { s -> s.key == it }
             if (!test.logMode) assertNotNull(skill, "No skill with given key found")
             skill

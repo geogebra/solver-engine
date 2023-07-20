@@ -33,9 +33,14 @@ private class WithinExpressionProvider(
     val expressionsToFilter: ExpressionProvider,
     val parent: ExpressionProvider,
 ) : ExpressionProvider {
+
     override fun getBoundExprs(m: Match): List<Expression> {
-        val parentExpression = parent.getBoundExpr(m)
-        return expressionsToFilter.getBoundExprs(m).filter { it.isChildOfOrSelf(parentExpression) }
+        val parentExpressionPath = parent.getBoundExpr(m)?.path
+        return if (parentExpressionPath == null) {
+            emptyList()
+        } else {
+            expressionsToFilter.getBoundExprs(m).filter { it.path?.hasAncestor(parentExpressionPath) ?: false }
+        }
     }
 }
 

@@ -4,6 +4,7 @@ import engine.context.Context
 import engine.context.emptyContext
 import engine.expressions.Constants
 import engine.expressions.Contradiction
+import engine.expressions.EquationSystem
 import engine.expressions.Expression
 import engine.expressions.Identity
 import engine.expressions.SetSolution
@@ -15,7 +16,6 @@ import engine.expressions.equationOf
 import engine.expressions.equationSystemOf
 import engine.expressions.identityOf
 import engine.expressions.implicitSolutionOf
-import engine.expressions.isEquationSystem
 import engine.expressions.negOf
 import engine.expressions.productOf
 import engine.expressions.setSolutionOf
@@ -80,10 +80,8 @@ enum class EquationSystemsPlans(override val runner: CompositeMethod) : RunnerMe
 private abstract class SystemSolver : CompositeMethod() {
 
     override fun run(ctx: Context, sub: Expression): Transformation? {
-        if (sub.isEquationSystem()) {
-            val namedSystem = equationSystemOf(
-                sub.children.mapIndexed { i, eq -> eq.withName(label(i + 1)) },
-            ).withOrigin(sub.origin)
+        if (sub is EquationSystem) {
+            val namedSystem = sub.withNamedEquations { i -> label(i + 1) }
             return taskSet().run(ctx, namedSystem)
         }
         return null

@@ -16,7 +16,6 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonEncoder
 import kotlinx.serialization.json.encodeToJsonElement
-import java.lang.UnsupportedOperationException
 
 @Serializable
 enum class Format(val value: String) {
@@ -134,10 +133,10 @@ private class TransformationModeller(val format: Format) {
         return Transformation(
             type = trans.type.toString(),
             tags = trans.tags?.map { it.toString() },
-            path = trans.fromExpr.origin.path.toString(),
+            path = trans.fromExpr.path.toString(),
             fromExpr = modelExpression(trans.fromExpr),
             toExpr = modelExpression(trans.toExpr.removeBrackets()),
-            pathMappings = modelPathMappings(trans.toExpr.mergedPathMappings(trans.fromExpr.origin.path!!)),
+            pathMappings = modelPathMappings(trans.toExpr.mergedPathMappings(trans.fromExpr.path!!)),
             explanation = trans.explanation?.let { modelMetadata(it) },
             skills = trans.skills?.map { modelMetadata(it) },
             gmAction = trans.gmAction?.let { modelGmAction(it) },

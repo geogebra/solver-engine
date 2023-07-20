@@ -1,6 +1,7 @@
 package engine.patterns
 
 import engine.context.Context
+import engine.expressions.Child
 import engine.expressions.Expression
 import engine.operators.UnaryExpressionOperator
 
@@ -78,8 +79,8 @@ class StickyOptionalNegPattern<T : Pattern>(unsignedPattern: T, private val stic
             subexpression.parent?.operator == UnaryExpressionOperator.Minus
         // return true when parent subexpression is present as: "-Subexpression + rest" or "-SubExpression"
         // else false (i.e. when present as: "rest - SubExpression")
-        val negatedSubexpressionIsFirstChildOrWithoutParent = subexpression.parent?.parent == null ||
-            subexpression.parent.parent.children[0] == subexpression.parent
+        val parentChildOrigin = subexpression.parent?.origin as? Child
+        val negatedSubexpressionIsFirstChildOrWithoutParent = parentChildOrigin == null || parentChildOrigin.index == 0
 
         return if (
             subExpressionHasMinusParent && (

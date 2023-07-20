@@ -3,6 +3,7 @@ package engine.expressions
 import engine.operators.Comparator
 import engine.operators.ComparisonOperator
 import engine.operators.DoubleComparisonOperator
+import engine.operators.EquationSystemOperator
 import engine.operators.StatementUnionOperator
 import engine.operators.StatementWithConstraintOperator
 import engine.sign.Sign
@@ -93,4 +94,15 @@ class StatementUnion(statements: List<Expression>, meta: NodeMeta = BasicMeta())
     meta = meta,
 ) {
     val statements get() = children
+}
+
+class EquationSystem(equations: List<Expression>, meta: NodeMeta = BasicMeta()) : Expression(
+    operator = EquationSystemOperator,
+    operands = equations,
+    meta = meta,
+) {
+    val equations get() = children
+
+    fun withNamedEquations(name: (Int) -> String) =
+        equationSystemOf(equations.mapIndexed { i, eq -> eq.withName(name(i)) }).withOrigin(origin)
 }

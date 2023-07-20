@@ -133,9 +133,11 @@ open class Expression internal constructor(
 ) : LatexRenderable, ExpressionProvider {
 
     internal val decorators get() = meta.decorators
-    val origin get() = meta.origin
+    internal val origin get() = meta.origin
     private val label get() = meta.label
     val name get() = meta.name
+
+    val path get() = meta.origin.path
 
     init {
         operands.forEachIndexed { i, op -> require(op.hasBracket() || operator.nthChildAllowed(i, op.operator)) }
@@ -387,13 +389,6 @@ open class Expression internal constructor(
         return operator === UnaryExpressionOperator.DivideBy
     }
 
-    /** Returns true if [possibleAncestor] is `===` to `this` or an ancestor of `this` */
-    fun isChildOfOrSelf(possibleAncestor: Expression?): Boolean {
-        if (possibleAncestor === null) return false
-        if (possibleAncestor === this) return true
-        return parent?.isChildOfOrSelf(possibleAncestor) == true
-    }
-
     open fun toJson(): List<Any> {
         val serializedOperands = operands.map { it.toJson() }
         return if (decorators.isEmpty() && name == null) {
@@ -520,8 +515,6 @@ fun Expression.asPositiveDecimal(): BigDecimal? = when (this) {
     else -> null
 }
 
-fun Expression.isEquationSystem(): Boolean = operator is EquationSystemOperator
-
 fun Expression.hasRedundantBrackets(): Boolean = hasBracket() && outerBracket() != Decorator.MissingBracket &&
     when (val origin = origin) {
         is Child -> origin.parent.operator.nthChildAllowed(origin.index, operator)
@@ -531,7 +524,7 @@ fun Expression.hasRedundantBrackets(): Boolean = hasBracket() && outerBracket() 
 internal fun expressionOf(operator: Operator, operands: List<Expression>) =
     expressionOf(operator, operands, BasicMeta())
 
-@Suppress("CyclomaticComplexMethod")
+@Suppress("CyclomaticComplexMethod", "LongMethod")
 private fun expressionOf(
     operator: Operator,
     operands: List<Expression>,
@@ -597,6 +590,8 @@ private fun expressionOf(
         )
         StatementWithConstraintOperator -> StatementWithConstraint(operands[0], operands[1], meta)
         StatementUnionOperator -> StatementUnion(operands, meta)
+
+        EquationSystemOperator -> EquationSystem(operands, meta)
 
         is NameOperator -> Name(operator.value, meta)
 
