@@ -7,10 +7,12 @@ import engine.expressions.IntegerExpression
 import engine.expressions.Minus
 import engine.expressions.Power
 import engine.expressions.areEquivalentSums
+import engine.expressions.asInteger
 import engine.expressions.explicitProductOf
 import engine.expressions.fractionOf
 import engine.expressions.productOf
 import engine.expressions.simplifiedPowerOf
+import engine.expressions.simplifiedProductOf
 import engine.expressions.sumOf
 import engine.expressions.xp
 import engine.methods.CompositeMethod
@@ -30,6 +32,7 @@ import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
 import engine.steps.metadata.metadata
+import engine.utility.lcm
 import methods.factor.FactorPlans
 import methods.factor.factorizationSteps
 import methods.fractionarithmetic.FractionArithmeticPlans
@@ -149,8 +152,8 @@ private val rationalExpressionSimplificationSteps = steps {
 val addRationalExpressions = taskSet {
     explanation = Explanation.AddRationalExpressions
 
-    val f1 = fractionOf(AnyPattern(), condition { !it.isConstant() })
-    val f2 = fractionOf(AnyPattern(), condition { !it.isConstant() })
+    val f1 = FractionPattern()
+    val f2 = FractionPattern()
 
     val nf1 = optionalNegOf(f1)
     val nf2 = optionalNegOf(f2)
@@ -161,6 +164,10 @@ val addRationalExpressions = taskSet {
         val fraction1 = get(f1) as Fraction
         val fraction2 = get(f2) as Fraction
 
+        if (fraction1.denominator.isConstant() && fraction2.denominator.isConstant()) {
+            return@partialExpressionTasks null
+        }
+
         val (factoredFraction1, factoredFraction2) = listOf(fraction1, fraction2).map {
             task(
                 startExpr = it,
@@ -170,8 +177,11 @@ val addRationalExpressions = taskSet {
             }?.result as? Fraction ?: it
         }
 
-        val multiplicities1 = factoredFraction1.denominator.factors().mapNotNull { extractMultiplicity(it) }
-        val multiplicities2 = factoredFraction2.denominator.factors().mapNotNull { extractMultiplicity(it) }
+        val factors1 = factoredFraction1.denominator.factors()
+        val factors2 = factoredFraction2.denominator.factors()
+
+        val multiplicities1 = factors1.mapNotNull { extractMultiplicity(it) }
+        val multiplicities2 = factors2.mapNotNull { extractMultiplicity(it) }
 
         val lcmMultiplicities = multiplicities2.fold(multiplicities1.toMutableList()) { acc, factor ->
             val index = acc.indexOfFirst { areEquivalentSums(it.base, factor.base) }
@@ -184,15 +194,36 @@ val addRationalExpressions = taskSet {
             acc
         }
 
+        val integer1 = factors1.singleOrNull { it is IntegerExpression }?.asInteger() ?: BigInteger.ONE
+        val integer2 = factors2.singleOrNull { it is IntegerExpression }?.asInteger() ?: BigInteger.ONE
+        val integerLcm = integer1.lcm(integer2)
+
+        val lcm = simplifiedProductOf(
+            xp(integerLcm),
+            productOf(lcmMultiplicities.map { (base, exponent) -> simplifiedPowerOf(base, xp(exponent)) }),
+        )
+
         task(
-            startExpr = productOf(lcmMultiplicities.map { (base, exponent) -> simplifiedPowerOf(base, xp(exponent)) }),
-            explanation = metadata(Explanation.ComputeLeastCommonDenominatorOfFractions),
+            startExpr = lcm,
+            explanation = metadata(
+                Explanation.ComputeLeastCommonDenominatorOfFractions,
+                factoredFraction1,
+                factoredFraction2,
+            ),
         )
 
         val (simplifiedFraction1, simplifiedFraction2) =
-            listOf(factoredFraction1 to multiplicities1, factoredFraction2 to multiplicities2)
-                .map { (fraction, multiplicities) ->
-                    val multiplier = computeMultiplierToLCM(multiplicities, lcmMultiplicities)
+            listOf(
+                Triple(factoredFraction1, multiplicities1, integer1),
+                Triple(factoredFraction2, multiplicities2, integer2),
+            )
+                .map { (fraction, multiplicities, integer) ->
+                    val integerMultiplier = xp(integerLcm / integer)
+
+                    val multiplier = simplifiedProductOf(
+                        integerMultiplier,
+                        computeMultiplierToLCM(multiplicities, lcmMultiplicities),
+                    )
                     if (multiplier == Constants.One) return@map fraction
 
                     val expandedFraction = fractionOf(
@@ -202,7 +233,7 @@ val addRationalExpressions = taskSet {
 
                     taskWithOptionalSteps(
                         startExpr = expandedFraction,
-                        explanation = metadata(Explanation.BringFractionToLeastCommonDenominator),
+                        explanation = metadata(Explanation.BringFractionToLeastCommonDenominator, fraction),
                     ) {
                         optionally {
                             applyToKind<Fraction>(
