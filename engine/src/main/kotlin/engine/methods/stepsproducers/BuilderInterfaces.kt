@@ -101,15 +101,19 @@ interface PipelineBuilder {
 
     /**
      * Apply the [stepsProducer] to all children of the working expression in turn,
-     * but not to the working expression itself
+     * but not to the working expression itself. By default, it never fails (i.e. [stepsProducer] is optionally
+     * applied to all children). The [atLeastOne] flags controls whether it must apply to at least one child, and the
+     * [all] flag controls whether it must apply to all children.
      */
-    fun applyToChildren(stepsProducer: StepsProducer)
+    fun applyToChildren(stepsProducer: StepsProducer, all: Boolean = false, atLeastOne: Boolean = false)
 
     /**
      * Apply the pipeline defined by [init] to all children of the working expression in turn,
-     * but not to the working expression itself
+     * but not to the working expression itself. By default, it never fails (i.e. the pipeline is optionally
+     * applied to all children). The [atLeastOne] flags controls whether it must apply to at least one child, and the
+     * [all] flag controls whether it must apply to all children.
      */
-    fun applyToChildren(init: PipelineBuilder.() -> Unit)
+    fun applyToChildren(all: Boolean = false, atLeastOne: Boolean = false, init: PipelineBuilder.() -> Unit)
 
     /**
      * Apply the recipe to the children of the expression in step.
