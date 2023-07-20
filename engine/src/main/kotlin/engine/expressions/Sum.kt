@@ -1,8 +1,13 @@
 package engine.expressions
 
 import engine.conditions.sumTermsAreIncommensurable
+import engine.context.emptyContext
 import engine.operators.SumOperator
+import engine.patterns.ArbitraryVariablePattern
+import engine.patterns.RootMatch
+import engine.patterns.monomialPattern
 import engine.sign.Sign
+import java.math.BigInteger
 
 class Sum(
     terms: List<Expression>,
@@ -22,4 +27,32 @@ class Sum(
             signBasedOnOperandSigns
         }
     }
+}
+
+@Suppress("ReturnCount")
+fun leadingCoefficientOfPolynomial(polynomialExpr: Sum): Expression? {
+    val variables = polynomialExpr.variables
+    if (variables.size != 1) return null
+
+    val monomial = monomialPattern(ArbitraryVariablePattern())
+    var degree = BigInteger.ZERO
+    var leadingCoefficient: Expression? = null
+    for (term in polynomialExpr.terms) {
+        if (!term.isConstant()) {
+            // If it isn't a monomial, `polynomialExpr` isn't a polynomial or a polynomial not expanded
+            val monomialMatch = monomial.findMatches(emptyContext, RootMatch, term).firstOrNull() ?: return null
+            val monomialDegree = monomial.exponent.getBoundInt(monomialMatch)
+            when {
+                monomialDegree > degree -> {
+                    leadingCoefficient = monomial.coefficient(monomialMatch)
+                    degree = monomialDegree
+                }
+                monomialDegree == degree -> {
+                    // The polynomial is not normalised
+                    return null
+                }
+            }
+        }
+    }
+    return leadingCoefficient
 }

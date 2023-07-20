@@ -6,6 +6,7 @@ import engine.expressions.Constants
 import engine.expressions.Product
 import engine.expressions.SimpleComparator
 import engine.expressions.StatementWithConstraint
+import engine.expressions.Sum
 import engine.expressions.Variable
 import engine.expressions.contradictionOf
 import engine.expressions.equationOf
@@ -15,6 +16,7 @@ import engine.expressions.greaterThanEqualOf
 import engine.expressions.hasSingleValue
 import engine.expressions.identityOf
 import engine.expressions.inverse
+import engine.expressions.leadingCoefficientOfPolynomial
 import engine.expressions.lessThanOf
 import engine.expressions.negOf
 import engine.expressions.plusMinusOf
@@ -95,7 +97,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             val rhs = AnyPattern()
 
             onEquation(lhs, rhs) {
-                val lhsExpr = get(lhs)
+                val lhsExpr = get(lhs) as Sum
                 val leadingCoefficient = leadingCoefficientOfPolynomial(lhsExpr)
                 if (leadingCoefficient == null || leadingCoefficient == Constants.One) {
                     return@onEquation null

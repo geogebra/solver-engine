@@ -82,7 +82,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
             explanation = Explanation.SimplifyByDividingByGcfOfCoefficients
 
             steps {
-                applyTo(FactorPlans.FactorGreatestCommonIntegerFactor) { it.firstChild }
+                applyTo(FactorRules.FactorGreatestCommonIntegerFactor) { it.firstChild }
                 apply(EquationsRules.EliminateConstantFactorOfLhsWithZeroRhs)
             }
         },

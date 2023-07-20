@@ -15,6 +15,10 @@ class Product(
     operands = factors,
     meta,
 ) {
+    init {
+        require(operands.size > 1)
+    }
+
     override fun signOf() = operands.map { it.signOf() }.reduce(Sign::times)
 
     private fun productSignRequiredForOperand(i: Int, op: Expression) = when {

@@ -8,34 +8,18 @@ import engine.steps.metadata.TranslationKeys
 enum class FactorExplanation : CategorisedMetadataKey {
 
     /**
-     * Find the gcd of all the integer coefficients in a sum of monomials
-     * and split the integers into a product of gcd and remainder
+     * Factor a single common, non-integer factor (with the greatest possible exponent) from a sum.
      *
-     * E.g. 4 + 2x + 8x^2 -> 2 * 2 + 2x + 2 * 4x^2
-     *   6x + 9x^2 + 12x^3 -> 3 * 2x + 3 * 3x^2 + 3 * 4x^3
+     * E.g. 3 (x + 1)^3 + 6 (x + 1)^2 -> (x + 1)^2 (3(x+1) + 6)
      */
-    @LegacyKeyName("Polynomials.SplitIntegersInMonomialsBeforeFactoring")
-    SplitIntegersInMonomialsBeforeFactoring,
+    FactorCommonFactor,
 
     /**
-     * Find the gcf of all the variable powers in a sum of monomials
-     * and split the powers into a product of gcf and remainder
+     * Rearrange a sum before factoring common terms, to make the common term obvious.
      *
-     * E.g. x^2 + x^3 -> x^2 + x^2 * x
-     *   6x + 9x^2 + 12x^3 -> 6x + 9x * x + 12x * x^2
+     * E.g. 3 (x + 1)^3 + 6 (1 + x)^2 -> 3 (x + 1)^3 + 6 (x + 1)^2
      */
-    @LegacyKeyName("Polynomials.SplitVariablePowersInMonomialsBeforeFactoring")
-    SplitVariablePowersInMonomialsBeforeFactoring,
-
-    /**
-     * Extract the common terms from the sum of monomials. Usually applied
-     * after splitting monomials into the gcf and the remainder.
-     *
-     * E.g. 3x * 2 + 3x * 3x + 3x * 4x^2 -> 3x(2 + 3x + 4x^2)
-     *   2 sqrt[2] + 2 * 2sqrt[2] x -> 2 sqrt[2] (1 + 2x)
-     */
-    @LegacyKeyName("Polynomials.ExtractCommonTerms")
-    ExtractCommonTerms,
+    RearrangeEquivalentSums,
 
     /**
      * Factor out the greatest common factor from a sum, by first splitting

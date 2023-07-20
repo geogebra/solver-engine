@@ -15,7 +15,6 @@ import engine.operators.IndefiniteIntegralOperator
 import engine.operators.InequalitySystemOperator
 import engine.operators.IntervalOperator
 import engine.operators.MatrixOperator
-import engine.operators.NaryOperator
 import engine.operators.Operator
 import engine.operators.SetOperators
 import engine.operators.SolutionOperator
@@ -121,32 +120,46 @@ fun absoluteValueOf(argument: Expression) = buildExpression(UnaryExpressionOpera
 
 fun sumOf(vararg operands: Expression) = sumOf(operands.asList())
 
-fun sumOf(operands: List<Expression>): Expression = flattenedNaryExpression(
-    SumOperator,
-    operands,
-)
+fun sumOf(operands: List<Expression>): Expression {
+    return when (operands.size) {
+        0 -> Constants.Zero
+        1 -> operands[0]
+        else -> {
+            // We inline more products than sums -- something to look into in the future
+            val flattenedOperands = operands
+                .flatMap { if (!it.hasLabel() && !it.hasBracket() && it is Sum) it.children else listOf(it) }
+                .mapIndexed { index, operand -> operand.adjustBracketFor(SumOperator, index) }
+            Sum(flattenedOperands)
+        }
+    }
+}
 
 fun productOf(operands: List<Expression>): Expression {
-    if (operands.size == 1) {
-        return operands[0]
+    return when (operands.size) {
+        0 -> Constants.One
+        1 -> operands[0]
+        else -> {
+            val flattenedOperands = operands
+                .flatMap { if (!it.hasLabel() && !it.isPartialProduct() && it is Product) it.children else listOf(it) }
+                .mapIndexed { index, operand -> operand.adjustBracketFor(DefaultProductOperator, index) }
+            Product(flattenedOperands)
+        }
     }
-
-    val flattenedOperands = operands
-        .flatMap { if (!it.hasLabel() && !it.isPartialProduct() && it is Product) it.children else listOf(it) }
-        .mapIndexed { index, operand -> operand.adjustBracketFor(DefaultProductOperator, index) }
-    return Product(flattenedOperands)
 }
 
 fun explicitProductOf(operands: List<Expression>): Expression {
-    if (operands.size == 1) {
-        return operands[0]
+    return when (operands.size) {
+        0 -> Constants.One
+        1 -> operands[0]
+        else -> {
+            val flattenedOperands = operands
+                .map { if (it is Product) it.decorate(Decorator.PartialBracket) else it }
+                .mapIndexed { index, operand -> operand.adjustBracketFor(DefaultProductOperator, index) }
+            val forcedSigns = (1 until flattenedOperands.size)
+                .filter { !productSignRequired(flattenedOperands[it - 1], flattenedOperands[it]) }
+            Product(flattenedOperands, forcedSigns)
+        }
     }
-    val flattenedOperands = operands
-        .map { if (it is Product) it.decorate(Decorator.PartialBracket) else it }
-        .mapIndexed { index, operand -> operand.adjustBracketFor(DefaultProductOperator, index) }
-    val forcedSigns = (1 until flattenedOperands.size)
-        .filter { !productSignRequired(flattenedOperands[it - 1], flattenedOperands[it]) }
-    return Product(flattenedOperands, forcedSigns)
 }
 
 fun explicitProductOf(vararg operands: Expression) = explicitProductOf(operands.asList())
@@ -351,20 +364,5 @@ fun implicitSolutionOf(variables: VariableList, expr: Expression) =
 
 fun setSolutionOf(variables: VariableList, set: Expression) =
     buildExpression(SolutionOperator.SetSolution, listOf(variables, set))
-
-private fun flattenedNaryExpression(operator: NaryOperator, operands: List<Expression>): Expression {
-    if (operands.size == 1) {
-        return operands[0]
-    }
-    val ops = mutableListOf<Expression>()
-    for (mappedExpr in operands) {
-        if (!mappedExpr.hasBracket() && mappedExpr.operator == operator) {
-            ops.addAll(mappedExpr.children)
-        } else {
-            ops.add(mappedExpr)
-        }
-    }
-    return buildExpression(operator, ops)
-}
 
 fun nameXp(value: String) = Name(value)

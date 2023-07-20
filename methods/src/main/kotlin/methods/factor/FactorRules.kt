@@ -1,13 +1,21 @@
 package methods.factor
 
+import engine.expressions.Combine
 import engine.expressions.Constants
+import engine.expressions.DefaultView
 import engine.expressions.Expression
 import engine.expressions.Factor
-import engine.expressions.Minus
+import engine.expressions.IntegerExpression
+import engine.expressions.IntegerView
+import engine.expressions.Power
+import engine.expressions.Sum
+import engine.expressions.SumView
+import engine.expressions.View
 import engine.expressions.bracketOf
 import engine.expressions.equationOf
 import engine.expressions.equationSystemOf
 import engine.expressions.explicitProductOf
+import engine.expressions.leadingCoefficientOfPolynomial
 import engine.expressions.negOf
 import engine.expressions.powerOf
 import engine.expressions.productOf
@@ -55,109 +63,84 @@ import java.math.BigInteger
 
 enum class FactorRules(override val runner: Rule) : RunnerMethod {
 
-    SplitIntegersInMonomialsBeforeFactoring(
+    FactorGreatestCommonIntegerFactor(
         rule {
-            val sum = condition(sumContaining()) { !it.isConstant() }
+            onPattern(sumContaining()) {
+                val sumView = SumView(expression as Sum) {
+                    if (it is IntegerExpression) IntegerFactorView(it) else DefaultView(it)
+                }
 
-            onPattern(sum) {
-                val splitMonomials = MonomialGCF.splitIntegersInMonomials(get(sum).children)
-                    ?: return@onPattern null
+                val integerFactors = sumView.termViews.map {
+                    it.findSingleFactor<IntegerFactorView>()
+                        ?: return@onPattern null
+                }
+
+                val gcd = integerFactors.fold(BigInteger.ZERO) { acc, n -> acc.gcd(n.value) }
+                if (gcd == BigInteger.ONE) return@onPattern null
+
+                val commonIntegerFactor = xp(gcd).withOrigin(Factor(integerFactors.map { it.original }))
+
+                for (integerFactor in integerFactors) {
+                    integerFactor.changeValue(integerFactor.value / gcd)
+                }
 
                 ruleResult(
-                    toExpr = sumOf(splitMonomials),
-                    explanation = metadata(Explanation.SplitIntegersInMonomialsBeforeFactoring),
+                    toExpr = productOf(commonIntegerFactor, sumView.recombine()),
+                    explanation = metadata(Explanation.FactorGreatestCommonIntegerFactor),
                 )
             }
         },
     ),
 
-    SplitVariablePowersInMonomialsBeforeFactoring(
+    FactorCommonFactor(
         rule {
-            val sum = condition(sumContaining()) { !it.isConstant() }
+            onPattern(sumContaining()) {
+                val sumView = SumView(expression as Sum) { CommonFactorView(it) }
 
-            onPattern(sum) {
-                val sumValue = get(sum)
+                for (factor in sumView.termViews[0].factors) {
+                    if (factor.base == Constants.One) continue
 
-                if (sumValue.variables.size != 1) return@onPattern null
+                    val (minExponent, sameBaseFactors) = sumView.findSameBaseFactors(factor.base)
+                    if (minExponent > BigInteger.ZERO) {
+                        val commonFactor = simplifiedPowerOf(
+                            factor.base.withOrigin(Factor(sameBaseFactors.map { it.base })),
+                            xp(minExponent)
+                                .withOrigin(Factor(sameBaseFactors.mapNotNull { it.exponent })),
+                        )
 
-                val splitMonomials = MonomialGCF.splitVariablePowersInMonomials(
-                    sumValue.children,
-                    sumValue.variables.first(),
-                ) ?: return@onPattern null
+                        for (sameBaseFactor in sameBaseFactors) {
+                            sameBaseFactor.changeExponent(sameBaseFactor.exponentValue - minExponent)
+                        }
 
-                ruleResult(
-                    toExpr = sumOf(splitMonomials),
-                    explanation = metadata(Explanation.SplitVariablePowersInMonomialsBeforeFactoring),
-                )
+                        return@onPattern ruleResult(
+                            toExpr = productOf(commonFactor, sumView.recombine()),
+                            explanation = metadata(Explanation.FactorCommonFactor),
+                        )
+                    }
+                }
+
+                null
             }
         },
     ),
 
-    // -6x^2 + 18x -> -6 * x * x + 6 * 3 * x -> -6x(x - 3)
-    ExtractCommonTerms(
+    RearrangeEquivalentSums(
         rule {
-            val sum = sumContaining()
+            onPattern(sumContaining()) {
+                val sumView = SumView(expression as Sum) { CommonFactorView(it) }
 
-            onPattern(sum) {
-                val terms = get(sum).children.map {
-                    if (it is Minus) {
-                        Pair(true, it.firstChild.factors())
-                    } else {
-                        Pair(false, it.factors())
+                for (factor in sumView.termViews[0].factors) {
+                    val equivalentBaseFactors = sumView.findEquivalentBaseFactors(factor.base)
+
+                    if (equivalentBaseFactors.isNotEmpty()) {
+                        equivalentBaseFactors.forEach { it.changeBase(factor.base) }
+                        return@onPattern ruleResult(
+                            toExpr = sumView.recombine(),
+                            explanation = metadata(Explanation.RearrangeEquivalentSums),
+                        )
                     }
                 }
-
-                val commonTerms = mutableMapOf<Expression, MutableList<Expression>>()
-                commonTerms.putAll(terms[0].second.map { it to mutableListOf(it) })
-
-                for (i in 1 until terms.size) {
-                    val currentTerms = terms[i].second
-                    val keys = commonTerms.keys.toList() // done to avoid concurrent modification issue
-                    for (commonTerm in keys) {
-                        commonTerms.computeIfPresent(commonTerm) { _, occurrences ->
-                            val index = currentTerms.indexOf(commonTerm)
-                            if (index != -1) {
-                                occurrences.add(currentTerms[index])
-                                occurrences
-                            } else {
-                                null
-                            }
-                        }
-                    }
-                }
-
-                if (commonTerms.isEmpty()) return@onPattern null
-
-                val leftovers = sumOf(
-                    terms.map { (isNegative, childTerms) ->
-                        val leftoverTerms = childTerms.toMutableList()
-                        for (common in commonTerms.keys) {
-                            leftoverTerms.remove(common)
-                        }
-                        val leftover = if (leftoverTerms.isEmpty()) {
-                            Constants.One
-                        } else {
-                            productOf(leftoverTerms.map { move(it) })
-                        }
-                        if (isNegative) negOf(leftover) else leftover
-                    },
-                )
-
-                val leadingSign = leadingCoefficientOfPolynomial(leftovers)?.signOf()
-
-                val factoredCommonTerms = commonTerms.entries
-                    .map { (expression, origins) -> expression.withOrigin(Factor(origins)) }
-
-                val toExpr = if (leadingSign == Sign.NEGATIVE) {
-                    negOf(productOf(factoredCommonTerms + simplifiedNegOfSum(leftovers)))
-                } else {
-                    productOf(factoredCommonTerms + leftovers)
-                }
-
-                ruleResult(
-                    toExpr = toExpr,
-                    explanation = metadata(Explanation.ExtractCommonTerms),
-                )
+                null
             }
         },
     ),
@@ -167,7 +150,7 @@ enum class FactorRules(override val runner: Rule) : RunnerMethod {
             val polynomial = sumContaining()
 
             onPattern(polynomial) {
-                val polynomialVal = get(polynomial)
+                val polynomialVal = get(polynomial) as Sum
                 val leadingCoefficient = leadingCoefficientOfPolynomial(polynomialVal)
                 if ((leadingCoefficient == null) || (leadingCoefficient.signOf() == Sign.POSITIVE)) {
                     return@onPattern null
@@ -644,4 +627,102 @@ private fun fractionCbrt(f: Rational?) = f?.let {
     } else {
         null
     }
+}
+
+private fun areEquivalentSums(expr1: Expression, expr2: Expression): Boolean {
+    if (expr1 == expr2) {
+        return true
+    }
+    if (expr1 !is Sum || expr2 !is Sum || expr1.childCount != expr2.childCount) {
+        return false
+    }
+
+    val remainingChildren = expr2.children.toMutableList()
+    return expr1.children.all { remainingChildren.remove(it) }
+}
+
+private class IntegerFactorView(override val original: IntegerExpression) : IntegerView {
+    private var newValue: BigInteger? = null
+
+    override val value get() = newValue ?: original.value
+
+    override fun changeValue(newValue: BigInteger) {
+        this.newValue = newValue
+    }
+
+    override fun recombine(): Expression? {
+        return when {
+            newValue == null -> original
+            newValue == BigInteger.ONE -> null
+            else -> xp(newValue!!).withOrigin(Combine(listOf(original)))
+        }
+    }
+}
+
+private class CommonFactorView(override val original: Expression) : View {
+
+    private var newBase: Expression? = null
+    private var newExponent: BigInteger? = null
+
+    val base get() = if (original is Power) original.base else original
+    val exponent get() = if (original is Power) original.exponent as? IntegerExpression else null
+
+    val exponentValue: BigInteger get() = exponent?.value ?: BigInteger.ONE
+
+    fun changeBase(newBase: Expression) {
+        this.newBase = newBase
+    }
+
+    fun changeExponent(newExponent: BigInteger) {
+        this.newExponent = newExponent
+    }
+
+    private val baseWithOrigin: Expression get() = newBase?.withOrigin(Combine(listOf(base))) ?: base
+    private val exponentWithOrigin: Expression? get() {
+        val exponent = this.exponent
+        val newExponent = this.newExponent
+
+        return if (newExponent != null) {
+            if (exponent != null) {
+                xp(newExponent).withOrigin(Combine(listOf(exponent)))
+            } else {
+                xp(newExponent)
+            }
+        } else {
+            exponent
+        }
+    }
+
+    override fun recombine(): Expression? {
+        return when {
+            newBase == null && newExponent == null -> original
+            newExponent == BigInteger.ZERO -> null
+            newExponent == BigInteger.ONE -> baseWithOrigin
+            exponent == null && newExponent == null -> baseWithOrigin
+            // the previous branch makes sure exponentWithOrigin is not null
+            else -> powerOf(baseWithOrigin, exponentWithOrigin!!)
+        }
+    }
+}
+
+private fun SumView<CommonFactorView>.findEquivalentBaseFactors(base: Expression): List<CommonFactorView> {
+    if (base !is Sum) {
+        return emptyList()
+    }
+    val equivalentBaseFactors = ArrayList<CommonFactorView>(termViews.size)
+    for (term in termViews) {
+        val equivalentFactor = term.findSingleFactor { areEquivalentSums(it.base, base) } ?: return emptyList()
+        if (equivalentFactor.base != base) equivalentBaseFactors.add(equivalentFactor)
+    }
+    return equivalentBaseFactors
+}
+
+private fun SumView<CommonFactorView>.findSameBaseFactors(base: Expression): Pair<BigInteger, List<CommonFactorView>> {
+    val sameBaseFactors = ArrayList<CommonFactorView>(termViews.size)
+    for (term in termViews) {
+        val factor = term.findSingleFactor { it.base == base && it.exponentValue != BigInteger.ZERO }
+            ?: return Pair(BigInteger.ZERO, emptyList())
+        sameBaseFactors.add(factor)
+    }
+    return Pair(sameBaseFactors.minOfOrNull { it.exponentValue } ?: BigInteger.ZERO, sameBaseFactors)
 }
