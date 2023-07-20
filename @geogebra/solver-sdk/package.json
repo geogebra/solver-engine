@@ -5,7 +5,6 @@
   "main": "lib/cjs/index.js",
   "module": "lib/esm/index.js",
   "types": "lib/esm/index.d.ts",
-  "type": "module",
   "files": [
     "lib",
     "dist",

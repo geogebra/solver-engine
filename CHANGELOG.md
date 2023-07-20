@@ -13,6 +13,8 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Fixed
 
+- SDK: Updated package.json for better compatibility
+
 ### Changed
 
 ### Removed
