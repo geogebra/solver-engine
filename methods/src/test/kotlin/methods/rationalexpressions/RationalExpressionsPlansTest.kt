@@ -1,7 +1,6 @@
 package methods.rationalexpressions
 
 import engine.methods.testMethod
-import methods.algebra.AlgebraExplanation
 import methods.expand.ExpandExplanation
 import methods.factor.FactorExplanation
 import methods.fractionarithmetic.FractionArithmeticExplanation

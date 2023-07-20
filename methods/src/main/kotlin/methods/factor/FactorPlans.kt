@@ -18,8 +18,8 @@ import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
-import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.PipelineBuilder
+import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
 import engine.patterns.AnyPattern
@@ -43,8 +43,8 @@ import engine.steps.metadata.metadata
 import methods.expand.ExpandRules
 import methods.integerarithmetic.IntegerArithmeticRules
 import methods.polynomials.PolynomialRules
-import methods.polynomials.polynomialSimplificationSteps
 import methods.polynomials.expandAndSimplifier
+import methods.polynomials.polynomialSimplificationSteps
 import java.math.BigInteger
 
 enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {

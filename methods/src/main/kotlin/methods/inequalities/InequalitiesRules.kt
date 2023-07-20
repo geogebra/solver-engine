@@ -90,8 +90,8 @@ enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
             val inequality = inequalityOf(lhs, rhs)
 
             onPattern(inequality) {
-                val inequality = get(inequality) as engine.expressions.Inequality
-                val interval = makeInterval(inequality.comparator, get(rhs))!!
+                val inequalityValue = get(inequality) as engine.expressions.Inequality
+                val interval = makeInterval(inequalityValue.comparator, get(rhs))!!
                 ruleResult(
                     toExpr = setSolutionOf(variableListOf(move(lhs) as Variable), interval),
                     explanation = metadata(Explanation.ExtractSolutionFromInequalityInSolvedForm),

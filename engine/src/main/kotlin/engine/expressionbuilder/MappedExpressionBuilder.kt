@@ -35,7 +35,6 @@ import engine.patterns.RationalPattern
 import engine.patterns.RecurringDecimalPattern
 import engine.patterns.SolvablePattern
 import engine.patterns.SubstitutablePattern
-import engine.patterns.monomialPattern
 import engine.steps.metadata.DragTargetPosition
 import engine.steps.metadata.GmAction
 import engine.steps.metadata.GmActionType
