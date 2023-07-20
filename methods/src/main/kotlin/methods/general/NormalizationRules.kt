@@ -1,6 +1,7 @@
 package methods.general
 
 import engine.expressions.Decorator
+import engine.expressions.DivideBy
 import engine.expressions.Expression
 import engine.expressions.PathScope
 import engine.expressions.Product
@@ -169,6 +170,8 @@ private val reorderProduct =
 
         onPattern(product) {
             val productChildren = get(product).children
+            if (productChildren.any { it is DivideBy }) return@onPattern null
+
             val sortedProdChildren = productChildren.sortedBy { orderInProduct(it) }
             if (productChildren == sortedProdChildren) {
                 null

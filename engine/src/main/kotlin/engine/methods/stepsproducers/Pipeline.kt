@@ -3,6 +3,7 @@ package engine.methods.stepsproducers
 import engine.context.Context
 import engine.expressions.Expression
 import engine.expressions.Extractor
+import engine.methods.CompositeMethod
 import engine.methods.PlanBuilder
 import engine.methods.TaskSetBuilder
 import engine.patterns.Pattern
@@ -211,7 +212,7 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
         addSteps(engine.methods.plan(init).produceSteps(ctx, builder.lastSub))
     }
 
-    override fun taskSet(init: TaskSetBuilder.() -> Unit) {
+    override fun taskSet(init: TaskSetBuilder.() -> CompositeMethod) {
         if (!builder.inProgress) return
 
         addSteps(engine.methods.taskSet(init).produceSteps(ctx, builder.lastSub))

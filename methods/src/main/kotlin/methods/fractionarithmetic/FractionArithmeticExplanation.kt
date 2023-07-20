@@ -8,9 +8,12 @@ import engine.steps.metadata.TranslationKeys
 enum class FractionArithmeticExplanation : CategorisedMetadataKey {
 
     /**
-     * Rewrite a : (b / c) as a * (c / b)
+     * Rewrite
+     *  a : (b / c) -> a * (c / b)
+     *  (a / b) : c -> (a / b) * (1 / c)
      */
-    RewriteDivisionByFractionAsProduct,
+    @LegacyKeyName("FractionArithmetic.RewriteDivisionByFractionAsProduct")
+    RewriteDivisionAsMultiplicationByReciprocal,
 
     /**
      * Rewrite a * b : c as a * (b / c)
@@ -33,6 +36,7 @@ enum class FractionArithmeticExplanation : CategorisedMetadataKey {
     AddLikeFractions,
     SubtractLikeFractions,
     BringToCommonDenominator,
+    BringToCommonDenominatorWithNonFractionalTerm,
     MultiplyFractions,
 
     /**
@@ -65,11 +69,16 @@ enum class FractionArithmeticExplanation : CategorisedMetadataKey {
     EvaluateIntegerToNegativePower,
 
     FindCommonFactorInFraction,
+
+    @LegacyKeyName("General.CancelCommonTerms")
+    CancelCommonFactorInFraction,
+
+    ReorganizeCommonSumFactorInFraction,
+
     SimplifyFractionToInteger,
     SimplifyFractionWithFractionDenominator,
     SimplifyFractionWithFractionNumerator,
     DistributeFractionPositivePower,
-    SimplifyFractionNegativePower,
     SimplifyFractionToMinusOne,
     TurnIntegerToMinusOneToFraction,
     TurnNegativePowerOfIntegerToFraction,

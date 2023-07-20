@@ -83,6 +83,10 @@ interface Pattern : ExpressionProvider {
     val key: Pattern
 }
 
+interface SubstitutablePattern : Pattern {
+    fun substitute(match: Match, newVals: Array<out Expression>): Expression
+}
+
 /**
  * A type of pattern which defines a basic way of matching - its [key] is always equal to the instance itself.
  */

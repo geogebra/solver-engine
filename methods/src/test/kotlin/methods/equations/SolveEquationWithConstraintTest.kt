@@ -119,10 +119,10 @@ class SolveEquationWithConstraintTest {
         inputExpr = "[x ^ 2] = 1 GIVEN [x ^ 2] < 0"
         check {
             fromExpr = "[x ^ 2] = 1 GIVEN [x ^ 2] < 0"
+            toExpr = "Contradiction[x: SetSolution[x: {-1, 1}] GIVEN [x ^ 2] < 0]"
             explanation {
                 key = EquationsExplanation.SolveEquationInOneVariable
             }
-            toExpr = "Contradiction[x: SetSolution[x: {-1, 1}] GIVEN [x ^ 2] < 0]"
 
             task {
                 taskId = "#1"
@@ -133,10 +133,10 @@ class SolveEquationWithConstraintTest {
 
                 step {
                     fromExpr = "[x ^ 2] = 1"
+                    toExpr = "SetSolution[x: {-1, 1}]"
                     explanation {
                         key = EquationsExplanation.SolveEquationUsingRootsMethod
                     }
-                    toExpr = "SetSolution[x: {-1, 1}]"
                 }
             }
 
@@ -149,18 +149,18 @@ class SolveEquationWithConstraintTest {
 
                 step {
                     fromExpr = "[(-1) ^ 2] < 0"
+                    toExpr = "1 < 0"
                     explanation {
                         key = InequalitiesExplanation.SimplifyInequality
                     }
-                    toExpr = "1 < 0"
                 }
 
                 step {
                     fromExpr = "1 < 0"
+                    toExpr = "Contradiction[1 < 0]"
                     explanation {
                         key = InequalitiesExplanation.ExtractFalsehoodFromFalseInequality
                     }
-                    toExpr = "Contradiction[1 < 0]"
                 }
             }
 
@@ -173,18 +173,18 @@ class SolveEquationWithConstraintTest {
 
                 step {
                     fromExpr = "[1 ^ 2] < 0"
+                    toExpr = "1 < 0"
                     explanation {
                         key = GeneralExplanation.EvaluateOneToAnyPower
                     }
-                    toExpr = "1 < 0"
                 }
 
                 step {
                     fromExpr = "1 < 0"
+                    toExpr = "Contradiction[1 < 0]"
                     explanation {
                         key = InequalitiesExplanation.ExtractFalsehoodFromFalseInequality
                     }
-                    toExpr = "Contradiction[1 < 0]"
                 }
             }
 

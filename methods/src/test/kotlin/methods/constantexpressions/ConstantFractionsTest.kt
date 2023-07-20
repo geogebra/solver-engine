@@ -114,7 +114,7 @@ class ConstantFractionsTest {
                 fromExpr = "3 + [1 / 2]"
                 toExpr = "[3 * 2 / 2] + [1 / 2]"
                 explanation {
-                    key = FractionArithmeticExplanation.BringToCommonDenominator
+                    key = FractionArithmeticExplanation.BringToCommonDenominatorWithNonFractionalTerm
                 }
             }
 
@@ -168,7 +168,7 @@ class ConstantFractionsTest {
                 fromExpr = "sqrt[2] + <. [7 / 2] - 1 .>"
                 toExpr = "sqrt[2] + <. [7 / 2] - [1 * 2 / 2] .>"
                 explanation {
-                    key = FractionArithmeticExplanation.BringToCommonDenominator
+                    key = FractionArithmeticExplanation.BringToCommonDenominatorWithNonFractionalTerm
                 }
             }
 
@@ -224,7 +224,7 @@ class ConstantFractionsTest {
                 fromExpr = "3 + [3 + sqrt[2] / 2]"
                 toExpr = "[3 * 2 / 2] + [3 + sqrt[2] / 2]"
                 explanation {
-                    key = FractionArithmeticExplanation.BringToCommonDenominator
+                    key = FractionArithmeticExplanation.BringToCommonDenominatorWithNonFractionalTerm
                 }
             }
 
@@ -290,7 +290,7 @@ class ConstantFractionsTest {
                 fromExpr = "sqrt[5] + [3 + sqrt[5] / 2]"
                 toExpr = "[sqrt[5] * 2 / 2] + [3 + sqrt[5] / 2]"
                 explanation {
-                    key = FractionArithmeticExplanation.BringToCommonDenominator
+                    key = FractionArithmeticExplanation.BringToCommonDenominatorWithNonFractionalTerm
                 }
             }
 

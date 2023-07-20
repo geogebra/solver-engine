@@ -19,7 +19,18 @@ enum class ConstantExpressionsExplanation : CategorisedMetadataKey {
      * Note: it can be roots of any order, not just square roots.
      */
     SimplifyRootsInExpression,
+
+    /**
+     * Simplify the power of an arbitrary expression, in multiple sub-steps
+     * E.g. (2 sqrt(2))^2 -> 8
+     */
     SimplifyPowers,
+
+    /**
+     * Simplify the power of a fraction, in multiple sub-steps
+     * E.g. (1 + sqrt(2) / 2)^(-2) -> 12 - 8 sqrt(2)
+     */
+    SimplifyPowerOfFraction,
 
     /**
      * Rewrite integer order roots as powers in an expression that also contains rational exponents.

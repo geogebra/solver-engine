@@ -1,14 +1,19 @@
 package methods.integerroots
 
+import engine.expressions.Root
+import engine.expressions.SquareRoot
 import engine.methods.CompositeMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
+import engine.patterns.SignedIntegerPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.integerCondition
 import engine.patterns.integerOrderRootOf
+import engine.patterns.powerOf
+import engine.patterns.rootOf
 import engine.utility.isPowerOfDegree
 import methods.general.GeneralRules
 import methods.integerarithmetic.IntegerArithmeticPlans
@@ -204,12 +209,22 @@ enum class IntegerRootsPlans(override val runner: CompositeMethod) : RunnerMetho
 
 val cancelRootOfPower = steps {
     firstOf {
-        option(IntegerRootsRules.SimplifyNthRootOfNthPower)
+        option {
+            optionally {
+                check { it is SquareRoot || it is Root }
+                applyTo(IntegerArithmeticRules.SimplifyEvenPowerOfNegative) { it.firstChild }
+            }
+            apply(IntegerRootsRules.SimplifyNthRootOfNthPower)
+        }
         option {
             plan {
+                pattern = rootOf(powerOf(AnyPattern(), SignedIntegerPattern()), SignedIntegerPattern())
                 explanation = Explanation.RewriteAndCancelPowerUnderRoot
 
                 steps {
+                    optionally {
+                        applyTo(IntegerArithmeticRules.SimplifyEvenPowerOfNegative) { it.firstChild }
+                    }
                     optionally(GeneralRules.RewritePowerUnderRoot)
                     apply(GeneralRules.CancelRootIndexAndExponent)
                 }

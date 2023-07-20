@@ -73,6 +73,33 @@ class TasksBuilder(
         init: PipelineBuilder.() -> Unit,
     ): Task? = task(startExpr, explanation, dependsOn, context, resultLabel, steps(init))
 
+    @Suppress("LongParameterList")
+    fun taskWithOptionalSteps(
+        startExpr: Expression,
+        explanation: Metadata,
+        dependsOn: List<Task> = emptyList(),
+        context: Context = this.context,
+        resultLabel: String? = null,
+        init: PipelineBuilder.() -> Unit,
+    ): Task {
+        val taskId = nextTaskId()
+        var steps = steps(init).produceSteps(context, startExpr.withOrigin(RootOrigin())) ?: emptyList()
+        if (resultLabel != null) {
+            steps = steps.mapIndexed { i, trans ->
+                if (i + 1 == steps.size) trans.copy(toExpr = trans.toExpr.withName(resultLabel)) else trans
+            }
+        }
+        val task = Task(
+            taskId = taskId,
+            startExpr = startExpr,
+            explanation = explanation,
+            steps = steps,
+            dependsOn = dependsOn.map { it.taskId },
+        )
+        tasks.add(task)
+        return task
+    }
+
     fun allTasks(): List<Task>? = if (tasks.isEmpty()) null else tasks
 }
 

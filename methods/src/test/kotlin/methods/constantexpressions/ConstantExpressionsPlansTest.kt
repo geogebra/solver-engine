@@ -1179,7 +1179,7 @@ class ConstantExpressionTest {
                 fromExpr = "[1 / 2] * [8 / 3] : [9 / 4]"
                 toExpr = "[1 / 2] * [8 / 3] * [4 / 9]"
                 explanation {
-                    key = FractionArithmeticExplanation.RewriteDivisionByFractionAsProduct
+                    key = FractionArithmeticExplanation.RewriteDivisionAsMultiplicationByReciprocal
                 }
             }
             step {
@@ -1807,7 +1807,7 @@ class SimplifyIntegerPowerUnderRoot {
     @Test
     fun `test nthRoot of (-1)^n, where n is even`() = testMethod {
         method = ConstantExpressionsPlans.SimplifyConstantExpression
-        inputExpr = "root[ [(-1)^4], 4]"
+        inputExpr = "root[[(-1) ^ 4], 4]"
 
         check {
             fromExpr = "root[[(-1) ^ 4], 4]"
@@ -1824,16 +1824,20 @@ class SimplifyIntegerPowerUnderRoot {
                 }
             }
 
-            step { }
-
-            step { }
+            step {
+                fromExpr = "root[[1 ^ 4], 4]"
+                toExpr = "1"
+                explanation {
+                    key = IntegerRootsExplanation.SimplifyNthRootOfNthPower
+                }
+            }
         }
     }
 
     @Test
     fun `test don't cancel even root index & base negative`() = testMethod {
         method = ConstantExpressionsPlans.SimplifyConstantExpression
-        inputExpr = "root[ [(-2)^5*2], 3*2]"
+        inputExpr = "root[[(-2) ^ 5 * 2], 3 * 2]"
 
         check {
             fromExpr = "root[[(-2) ^ 5 * 2], 3 * 2]"
@@ -1852,14 +1856,6 @@ class SimplifyIntegerPowerUnderRoot {
 
             step {
                 fromExpr = "root[[(-2) ^ 10], 6]"
-                toExpr = "root[[2 ^ 10], 6]"
-                explanation {
-                    key = IntegerArithmeticExplanation.SimplifyEvenPowerOfNegative
-                }
-            }
-
-            step {
-                fromExpr = "root[[2 ^ 10], 6]"
                 toExpr = "root[[2 ^ 5], 3]"
                 explanation {
                     key = IntegerRootsExplanation.RewriteAndCancelPowerUnderRoot
@@ -2000,7 +1996,7 @@ class SimplifyRationalPowerOfFraction {
         check {
             toExpr = "[64 / 729] * [([4 / 9]) ^ [2 / 3]]"
             explanation {
-                key = ConstantExpressionsExplanation.SimplifyPowers
+                key = ConstantExpressionsExplanation.SimplifyPowerOfFraction
             }
 
             step {
@@ -2013,25 +2009,9 @@ class SimplifyRationalPowerOfFraction {
 
             step {
                 fromExpr = "[([4 / 9]) ^ 3] * [([4 / 9]) ^ [2 / 3]]"
-                toExpr = "[[4 ^ 3] / [9 ^ 3]] * [([4 / 9]) ^ [2 / 3]]"
-                explanation {
-                    key = FractionArithmeticExplanation.DistributeFractionPositivePower
-                }
-            }
-
-            step {
-                fromExpr = "[[4 ^ 3] / [9 ^ 3]] * [([4 / 9]) ^ [2 / 3]]"
-                toExpr = "[64 / [9 ^ 3]] * [([4 / 9]) ^ [2 / 3]]"
-                explanation {
-                    key = IntegerArithmeticExplanation.EvaluateIntegerPowerDirectly
-                }
-            }
-
-            step {
-                fromExpr = "[64 / [9 ^ 3]] * [([4 / 9]) ^ [2 / 3]]"
                 toExpr = "[64 / 729] * [([4 / 9]) ^ [2 / 3]]"
                 explanation {
-                    key = IntegerArithmeticExplanation.EvaluateIntegerPowerDirectly
+                    key = ConstantExpressionsExplanation.SimplifyPowerOfFraction
                 }
             }
         }
@@ -2045,7 +2025,7 @@ class SimplifyRationalPowerOfFraction {
         check {
             toExpr = "[4 / 9]"
             explanation {
-                key = ConstantExpressionsExplanation.SimplifyConstantExpression
+                key = ConstantExpressionsExplanation.SimplifyPowerOfFraction
             }
 
             step {
@@ -2097,17 +2077,9 @@ class SimplifyRationalPowerOfFraction {
 
             step {
                 fromExpr = "[([4 / 3]) ^ [3 / 2]]"
-                toExpr = "[4 / 3] * [[4 ^ [1 / 2]] / [3 ^ [1 / 2]]]"
-                explanation {
-                    key = ConstantExpressionsExplanation.SimplifyPowers
-                }
-            }
-
-            step {
-                fromExpr = "[4 / 3] * [[4 ^ [1 / 2]] / [3 ^ [1 / 2]]]"
                 toExpr = "[4 / 3] * [2 / [3 ^ [1 / 2]]]"
                 explanation {
-                    key = IntegerRationalExponentsExplanation.SimplifyRationalExponentOfInteger
+                    key = ConstantExpressionsExplanation.SimplifyPowerOfFraction
                 }
             }
 

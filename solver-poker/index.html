@@ -41,19 +41,22 @@
 
       /* Separations between plan steps / sub-steps */
 
-      details.steps > ol {
+      details.steps > ol,
+      details.tasks > ol {
         margin: 0 0 0 0;
         border-left: thin solid lightgray;
         padding-right: 0;
       }
 
-      details.steps > ol > li {
+      details.steps > ol > li,
+      details.tasks > ol > li {
         border-bottom: thin solid lightgray;
-        padding: 3px 0;
-        margin: 3px 0;
+        padding: 5px 0;
+        margin: 5px 0;
       }
 
-      details.steps > ol > li:last-child {
+      details.steps > ol > li:last-child,
+      details.tasks > ol > li:last-child {
         border-bottom: 0;
         padding-bottom: 0;
         margin-bottom: 0;

@@ -274,20 +274,6 @@ class GeneralRulesTest {
     }
 
     @Test
-    fun testCancelCommonTerms() {
-        testMethod {
-            method = GeneralRules.CancelCommonTerms
-            inputExpr = "[4 * 3 / 3 * 5]"
-
-            check {
-                shift("./0/0", "./0")
-                shift("./1/1", "./1")
-                cancel("./0/1", "./1/0")
-            }
-        }
-    }
-
-    @Test
     fun testFactorMinusFromSum() {
         testMethod {
             method = GeneralRules.FactorMinusFromSum
@@ -656,6 +642,8 @@ class GeneralRulesTest {
                 move("./1/0", "./1")
             }
         }
+        testRule("[([3 / 5]) ^ -2]", FlipFractionUnderNegativePower, "[([5 / 3]) ^ 2]")
+        testRule("[([7 / 10]) ^ (-5)]", FlipFractionUnderNegativePower, "[([10 / 7]) ^ 5]")
         testRule("[([2 / 3]) ^ [4 / 5]]", FlipFractionUnderNegativePower, null)
     }
 

@@ -26,7 +26,6 @@ import engine.patterns.InequalityPattern
 import engine.patterns.IntegerPattern
 import engine.patterns.IntegerProvider
 import engine.patterns.Match
-import engine.patterns.NaryPattern
 import engine.patterns.NumberProvider
 import engine.patterns.OptionalNegPattern
 import engine.patterns.OptionalWrappingPattern
@@ -35,6 +34,7 @@ import engine.patterns.RationalCoefficientPattern
 import engine.patterns.RationalPattern
 import engine.patterns.RecurringDecimalPattern
 import engine.patterns.SolvablePattern
+import engine.patterns.SubstitutablePattern
 import engine.steps.metadata.DragTargetPosition
 import engine.steps.metadata.GmAction
 import engine.steps.metadata.GmActionType
@@ -250,9 +250,9 @@ open class MappedExpressionBuilder(
      * Returns the "rest of" part of [pattern] which match some operands of an n-ary expression, i.e. the non-matched
      * operands.
      */
-    fun restOf(pattern: NaryPattern) = pattern.substitute(match, arrayOf())
+    fun restOf(pattern: SubstitutablePattern) = pattern.substitute(match, arrayOf())
 
-    fun NaryPattern.substitute(vararg newVals: Expression) = substitute(match, newVals)
+    fun SubstitutablePattern.substitute(vararg newVals: Expression) = substitute(match, newVals)
 
     fun SolvablePattern.isSelfDual(): Boolean {
         val operator = getBoundExpr(match)!!.operator as SolvableOperator

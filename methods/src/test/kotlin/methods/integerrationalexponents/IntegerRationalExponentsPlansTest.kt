@@ -76,7 +76,7 @@ class SimplifyRationalExponents {
                             fromExpr = "[5 * 2 / 1 * 5]"
                             toExpr = "[2 / 1]"
                             explanation {
-                                key = GeneralExplanation.CancelCommonTerms
+                                key = FractionArithmeticExplanation.CancelCommonFactorInFraction
                             }
                         }
 
@@ -175,7 +175,7 @@ class SimplifyRationalExponents {
                             fromExpr = "[3 * 7 / 1 * 3 * 2]"
                             toExpr = "[7 / 1 * 2]"
                             explanation {
-                                key = GeneralExplanation.CancelCommonTerms
+                                key = FractionArithmeticExplanation.CancelCommonFactorInFraction
                             }
                         }
                     }

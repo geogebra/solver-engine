@@ -41,7 +41,7 @@ class ExpandPolynomialExpressionTest {
                         fromExpr = "[(2 x) ^ 2] + 2 * 2 x * (-3) + [(-3) ^ 2]"
                         toExpr = "4 [x ^ 2] - 12 x + 9"
                         explanation {
-                            key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                            key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
                         }
                     }
                 }
@@ -82,7 +82,7 @@ class ExpandPolynomialExpressionTest {
                 fromExpr = "2 x * 2 x + 2 x * (-3) + (-3) * 2 x + (-3) * (-3)"
                 toExpr = "4 [x ^ 2] - 12 x + 9"
                 explanation {
-                    key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                    key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
                 }
             }
         }
@@ -161,7 +161,7 @@ class ExpandPolynomialExpressionTest {
                         fromExpr = "[(2 x) ^ 3] + 3 * [(2 x) ^ 2] * (-3) + 3 * 2 x * [(-3) ^ 2] + [(-3) ^ 3]"
                         toExpr = "8 [x ^ 3] - 36 [x ^ 2] + 54 x - 27"
                         explanation {
-                            key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                            key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
                         }
                     }
                 }
@@ -214,7 +214,7 @@ class ExpandPolynomialExpressionTest {
                     fromExpr = "(2 x * 2 x + 2 x * (-3) + (-3) * 2 x + (-3) * (-3)) (2 x - 3)"
                     toExpr = "(4 [x ^ 2] - 12 x + 9)(2 x - 3)"
                     explanation {
-                        key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                        key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
                     }
                 }
             }
@@ -240,7 +240,7 @@ class ExpandPolynomialExpressionTest {
                         "+ (-12 x) * (-3) + 9 * 2 x + 9 * (-3)"
                     toExpr = "8 [x ^ 3] - 36 [x ^ 2] + 54 x - 27"
                     explanation {
-                        key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                        key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
                     }
                 }
             }
@@ -277,7 +277,7 @@ class ExpandPolynomialExpressionTest {
                     fromExpr = "[(2 x) ^ 3] + 3 * [(2 x) ^ 2] * (-3) + 3 * 2 x * [(-3) ^ 2] + [(-3) ^ 3]"
                     toExpr = "8 [x ^ 3] - 36 [x ^ 2] + 54 x - 27"
                     explanation {
-                        key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                        key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
                     }
                 }
             }
@@ -303,7 +303,7 @@ class ExpandPolynomialExpressionTest {
                     fromExpr = "5 * 8 [x ^ 3] + 5 (-36 [x ^ 2]) + 5 * 54 x + 5 * (-27)"
                     toExpr = "40 [x ^ 3] - 180 [x ^ 2] + 270 x - 135"
                     explanation {
-                        key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                        key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
                     }
                 }
             }
@@ -338,7 +338,7 @@ class ExpandPolynomialExpressionTest {
                 fromExpr = "[(2 x) ^ 2] + [1 ^ 2] + [(sqrt[3]) ^ 2] + 2 * 2 x * 1 + 2 * 1 sqrt[3] + 2 sqrt[3] * 2 x"
                 toExpr = "4 [x ^ 2] + (4 + 4 sqrt[3]) x + 4 + 2 sqrt[3]"
                 explanation {
-                    key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                    key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
                 }
             }
         }
@@ -372,7 +372,7 @@ class ExpandPolynomialExpressionTest {
                     "+ 2 x * (-3) + 2 * (-3) * 2 [x ^ 2]"
                 toExpr = "4 [x ^ 4] + 4 [x ^ 3] - 11 [x ^ 2] - 6 x + 9"
                 explanation {
-                    key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                    key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
                 }
             }
         }
@@ -416,7 +416,7 @@ class ExpandPolynomialExpressionTest {
                     "+ sqrt[3] * 2 x + sqrt[3] * 1 + sqrt[3] * sqrt[3]"
                 toExpr = "4 [x ^ 2] + (4 + 4 sqrt[3]) x + 4 + 2 sqrt[3]"
                 explanation {
-                    key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                    key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
                 }
             }
         }
@@ -446,7 +446,7 @@ class ExpandPolynomialExpressionTest {
                 fromExpr = "[(2 x) ^ 2] - [3 ^ 2]"
                 toExpr = "4 [x ^ 2] - 9"
                 explanation {
-                    key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                    key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
                 }
             }
         }
@@ -496,7 +496,7 @@ class ExpandPolynomialExpressionTest {
                     fromExpr = "11 ([(2 x) ^ 2] - [3 ^ 2])"
                     toExpr = "11 (4 [x ^ 2] - 9)"
                     explanation {
-                        key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                        key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
                     }
                 }
             }
@@ -520,7 +520,7 @@ class ExpandPolynomialExpressionTest {
                     fromExpr = "11 * 4 [x ^ 2] + 11 * (-9)"
                     toExpr = "44 [x ^ 2] - 99"
                     explanation {
-                        key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                        key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
                     }
                 }
             }
@@ -551,7 +551,7 @@ class ExpandPolynomialExpressionTest {
                 fromExpr = "2 x * 3 x + 2 x * (-2) + 3 * 3 x + 3 * (-2)"
                 toExpr = "6 [x ^ 2] + 5 x - 6"
                 explanation {
-                    key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                    key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
                 }
             }
         }
@@ -582,7 +582,7 @@ class ExpandPolynomialExpressionTest {
                 fromExpr = "[x ^ 2] * 3 x + [x ^ 2] * (-5) + 5 x * 3 x + 5 x * (-5) + (-2) * 3 x + (-2) * (-5)"
                 toExpr = "3 [x ^ 3] + 10 [x ^ 2] - 31 x + 10"
                 explanation {
-                    key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                    key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
                 }
             }
         }
@@ -612,7 +612,7 @@ class ExpandPolynomialExpressionTest {
                 fromExpr = "3 [x ^ 2] * 2 x + 3 [x ^ 2] * (-7)"
                 toExpr = "6 [x ^ 3] - 21 [x ^ 2]"
                 explanation {
-                    key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                    key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
                 }
             }
         }
@@ -687,7 +687,7 @@ class ExpandPolynomialExpressionTest {
                     fromExpr = "5 [x ^ 2] * x + 5 [x ^ 2] * 1"
                     toExpr = "5 [x ^ 3] + 5 [x ^ 2]"
                     explanation {
-                        key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                        key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
                     }
                 }
             }
@@ -791,7 +791,7 @@ class ExpandPolynomialExpressionTest {
                     fromExpr = "(-2) x + (-2) * 6"
                     toExpr = "-2 x - 12"
                     explanation {
-                        key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                        key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
                     }
                 }
             }
@@ -853,7 +853,7 @@ class ExpandPolynomialExpressionTest {
                     fromExpr = "[(2 x) ^ 2] + 2 * 2 x * 3 + [3 ^ 2]"
                     toExpr = "4 [x ^ 2] + 12 x + 9"
                     explanation {
-                        key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                        key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
                     }
                 }
             }
@@ -880,7 +880,7 @@ class ExpandPolynomialExpressionTest {
                     fromExpr = "4 [x ^ 2] * x + 4 [x ^ 2] * 1 + 12 x * x + 12 x * 1 + 9 x + 9 * 1"
                     toExpr = "4 [x ^ 3] + 16 [x ^ 2] + 21 x + 9"
                     explanation {
-                        key = PolynomialsExplanation.SimplifyAlgebraicExpression
+                        key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
                     }
                 }
             }

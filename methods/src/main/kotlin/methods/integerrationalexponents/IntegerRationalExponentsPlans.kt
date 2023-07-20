@@ -181,6 +181,7 @@ enum class IntegerRationalExponentsPlans(override val runner: CompositeMethod) :
 }
 
 val simplifyRationalExponentsInProduct = steps {
+    check { it.isConstant() }
     whilePossible {
         firstOf {
             option { deeply(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithSameBase) }
@@ -191,7 +192,6 @@ val simplifyRationalExponentsInProduct = steps {
             option { deeply(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithNegatedExponent) }
             option { deeply(IntegerRationalExponentsPlans.SimplifyFractionOfPowersWithSameBase) }
             option { deeply(IntegerRationalExponentsPlans.SimplifyFractionOfPowersWithSameExponent) }
-            option { deeply(GeneralRules.FlipFractionUnderNegativePower) }
             option { deeply(IntegerRationalExponentsPlans.ApplyPowerRuleOfExponents) }
             option { deeply(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithRationalExponents) }
         }

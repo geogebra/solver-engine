@@ -2,7 +2,9 @@ package methods.fractionarithmetic
 
 import engine.expressions.Fraction
 import engine.expressions.Power
+import engine.expressions.Product
 import engine.expressions.asRational
+import engine.expressions.isPolynomial
 import engine.methods.CompositeMethod
 import engine.methods.Method
 import engine.methods.RunnerMethod
@@ -14,6 +16,7 @@ import engine.patterns.IntegerFractionPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.commutativeSumContaining
+import engine.patterns.condition
 import engine.patterns.fractionOf
 import engine.patterns.integerOrderRootOf
 import engine.patterns.oneOf
@@ -38,7 +41,7 @@ enum class FractionArithmeticPlans(override val runner: CompositeMethod) : Runne
                 whilePossible {
                     deeply {
                         firstOf {
-                            option(FractionArithmeticRules.RewriteDivisionByFractionAsProduct)
+                            option(FractionArithmeticRules.RewriteDivisionAsMultiplicationByReciprocal)
                             option(FractionArithmeticRules.RewriteDivisionAsFraction)
                         }
                     }
@@ -63,9 +66,10 @@ enum class FractionArithmeticPlans(override val runner: CompositeMethod) : Runne
                         option(GeneralRules.SimplifyUnitFractionToOne)
                         option(GeneralRules.SimplifyFractionWithOneDenominator)
                         option(FractionArithmeticRules.SimplifyFractionToInteger)
-                        option(GeneralRules.CancelCommonTerms)
                         option(GeneralRules.CancelDenominator)
-                        option(FractionArithmeticRules.FindCommonFactorInFraction)
+                        option(FractionArithmeticRules.CancelCommonFactorInFraction)
+                        option(FractionArithmeticRules.ReorganizeCommonSumFactorInFraction)
+                        option(FractionArithmeticRules.FindCommonIntegerFactorInFraction)
                     }
                 }
             }
@@ -74,6 +78,7 @@ enum class FractionArithmeticPlans(override val runner: CompositeMethod) : Runne
 
     MultiplyAndSimplifyFractions(
         plan {
+            pattern = condition { it is Product && it.isPolynomial() }
             explanation = Explanation.MultiplyAndSimplifyFractions
 
             steps {
