@@ -210,10 +210,13 @@ const renderAlternatives = (alternatives: AlternativeJson2[] | null, depth = 0, 
 };
 
 const renderTask = (task: TaskJson2, depth = 0): string => {
+  const startExprTree = solverSDK.jsonToTree(task.startExpr);
   return /* HTML */ `<div class="task">
     ${renderExplanation(task.explanation)}
     ${!task.steps
-      ? renderExpression(task.startExpr)
+      ? startExprTree.type === 'Void'
+        ? ''
+        : renderExpression(solverSDK.treeToLatex(startExprTree))
       : renderTaskTransformation(task) + renderSteps(task.steps, depth - 1, depth >= 0)}
   </div>`;
 };

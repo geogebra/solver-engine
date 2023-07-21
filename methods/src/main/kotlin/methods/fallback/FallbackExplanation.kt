@@ -12,6 +12,20 @@ enum class FallbackExplanation : CategorisedMetadataKey {
      */
     ExpressionIsFullySimplified,
 
+    /**
+     * This explanation is given when the input is a simplified quadratic with a negative discriminant
+     */
+    QuadraticIsIrreducible,
+
+    /**
+     * Form an inequality of the form b^2 - 4ac < 0 and solve it to find whether it is true
+     */
+    CheckDiscriminantIsNegative,
+
+    /**
+     * Conclude that the quadratic is negative because its discriminant was shown to be negative.
+     */
+    QuadraticIsIrreducibleBecauseDiscriminantIsNegative,
     ;
 
     override val category = "Fallback"

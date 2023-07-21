@@ -17,7 +17,7 @@ enum class FallbackRules(override val runner: Rule) : RunnerMethod {
 
     ExpressionIsFullySimplified(
         rule {
-            var variablePattern = ArbitraryVariablePattern()
+            val variablePattern = ArbitraryVariablePattern()
             val fullySimplifiedPtn = oneOf(
 
                 // Any constant expression, if SimplifyConstantExpression didn't apply then it means it's simplify
