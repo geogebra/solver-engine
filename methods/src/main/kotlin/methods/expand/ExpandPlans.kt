@@ -28,7 +28,7 @@ interface ExpandAndSimplifyMethodsProvider {
 class ExpandAndSimplifier(simplificationSteps: StepsProducer) : ExpandAndSimplifyMethodsProvider {
 
     private val simplificationWithCleanup: StepsProducer = steps {
-        whilePossible { deeply(NormalizationRules.NormalizeProducts) }
+        whilePossible { deeply(NormalizationRules.InlinePartialProducts) }
         optionally(simplificationSteps)
     }
 

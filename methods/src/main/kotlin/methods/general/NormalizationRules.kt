@@ -161,7 +161,8 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
 
     ReorderProduct(reorderProduct),
     ReorderProductSingleStep(reorderProductSingleStep),
-    NormalizeProducts(normalizeProducts),
+    NormalizeProductSigns(normalizeProductSigns),
+    InlinePartialProducts(inlinePartialProducts),
 }
 
 private val reorderProduct =
@@ -221,33 +222,41 @@ private val reorderProductSingleStep =
         }
     }
 
+/**
+ * Takes advantage of the fact that [Product.replaceNthChild] preserves product signs
+ */
+private val inlinePartialProducts = rule {
+    val product = condition(productContaining()) { it.isPartialProduct() }
+
+    onPattern(product) {
+        ruleResult(
+            tags = listOf(Transformation.Tag.InvisibleChange),
+            toExpr = get(product),
+            explanation = metadata(Explanation.NormalizeProducts),
+            // gmAction = do nothing, because it happens automatically
+        )
+    }
+}
+
 /** Make multiplication implicit or explicit, to make the product end up written in the
  * most standard form */
-private val normalizeProducts =
-    rule {
-        val product = productContaining()
+private val normalizeProductSigns = rule {
+    val product = productContaining()
 
-        onPattern(product) {
-            val productValue = get(product) as Product
-            if (productValue.children.none { it.isPartialProduct() } && productValue.forcedSigns.isEmpty()) {
-                return@onPattern null
-            }
-
-            val productChildren = productValue.children.flatMap {
-                if (it.isPartialProduct()) it.children else listOf(it)
-            }
-            ruleResult(
-                tags = if (productValue.forcedSigns.isNotEmpty()) {
-                    listOf(Transformation.Tag.Cosmetic)
-                } else {
-                    listOf(Transformation.Tag.InvisibleChange)
-                },
-                toExpr = productOf(productChildren),
-                explanation = metadata(Explanation.NormalizeProducts),
-                // gmAction = do nothing, because it happens automatically
-            )
+    onPattern(product) {
+        val productValue = get(product) as Product
+        if (productValue.forcedSigns.isEmpty()) {
+            return@onPattern null
         }
+
+        ruleResult(
+            tags = listOf(Transformation.Tag.Cosmetic),
+            toExpr = productOf(productValue.children),
+            explanation = metadata(Explanation.NormalizeProducts),
+            // gmAction = do nothing, because it happens automatically
+        )
     }
+}
 
 @Suppress("MagicNumber")
 private fun orderInProduct(e: Expression): Int {
