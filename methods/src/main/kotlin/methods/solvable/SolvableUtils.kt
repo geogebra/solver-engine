@@ -60,19 +60,11 @@ fun computeOverallIntersectionSolution(solutions: List<Expression>): Expression?
 }
 
 fun computeUnionOfSets(sets: List<SetExpression>): Expression? {
-    val (singleSolutions, intervals) = separateSingleSolutionsAndIntervals(sets) ?: return null
-
-    return if (intervals.size > 1) {
-        intervals
-            .subList(1, intervals.size)
-            .fold(intervals[0] as SetExpression) { acc, interval ->
-                acc.union(interval, expressionComparator) as SetExpression
-            }
-    } else if (intervals.size == 1) {
-        // try to merge the single solutions into the interval
-        mergeSolutionsIntoInterval(singleSolutions, intervals[0])
-    } else {
-        finiteSetOf(singleSolutions.sortedBy { it.doubleValue })
+    return when (sets.size) {
+        0 -> Constants.EmptySet
+        else -> sets.reduce { acc, set ->
+            acc.union(set, expressionComparator) ?: return null
+        }
     }
 }
 
@@ -109,37 +101,6 @@ fun computeIntersectionOfHoles(sets: List<SetExpression>): Expression? {
     return setDifferenceOf(Constants.Reals, finiteSetOf(holes.sortedBy { it.doubleValue }))
 }
 
-fun mergeSolutionsIntoInterval(singleSolutions: Set<Expression>, interval: Interval): Interval? {
-    var currentInterval = interval
-
-    for (solution in singleSolutions) {
-        if (currentInterval.leftBound == solution) {
-            currentInterval = currentInterval.leftClosed()
-        } else if (currentInterval.rightBound == solution) {
-            currentInterval = currentInterval.rightClosed()
-        } else if (currentInterval.contains(solution, expressionComparator) != true) {
-            return null
-        }
-    }
-
-    return currentInterval
-}
-
-private fun separateSingleSolutionsAndIntervals(sets: List<SetExpression>): Pair<Set<Expression>, List<Interval>>? {
-    val singleSolutions = mutableSetOf<Expression>()
-    val intervals = mutableListOf<Interval>()
-
-    for (set in sets) {
-        when (set) {
-            is FiniteSet -> singleSolutions.addAll(set.elements)
-            is Interval -> intervals.add(set)
-            else -> return null
-        }
-    }
-
-    return Pair(singleSolutions, intervals)
-}
-
 val expressionComparator = ExpressionComparator { e1: Expression, e2: Expression ->
     when {
         e1 == Constants.Infinity -> Sign.POSITIVE
@@ -149,8 +110,7 @@ val expressionComparator = ExpressionComparator { e1: Expression, e2: Expression
         else -> {
             val diff = sumOf(e1, negOf(e2)).withOrigin(RootOrigin())
             val result = ConstantExpressionsPlans.SimplifyConstantExpression.tryExecute(emptyContext, diff)
-                ?: return@ExpressionComparator Sign.UNKNOWN
-            val simplifiedDiff = result.toExpr
+            val simplifiedDiff = result?.toExpr ?: diff
             val signOfDiff = simplifiedDiff.signOf()
             if (signOfDiff != Sign.UNKNOWN) {
                 signOfDiff

@@ -230,6 +230,15 @@ class FiniteSet(
     ): SetExpression? {
         return filterElements(other, comparator)
     }
+
+    override fun unionWithFiniteSet(other: FiniteSet, comparator: ExpressionComparator): SetExpression? {
+        val unionElements = elements.toMutableList()
+        for (otherElement in other.elements) {
+            val contains = this.contains(otherElement, comparator) ?: return null
+            if (!contains) unionElements.add(otherElement)
+        }
+        return FiniteSet(unionElements.sortedBy { it.doubleValue })
+    }
 }
 
 class CartesianProduct(
