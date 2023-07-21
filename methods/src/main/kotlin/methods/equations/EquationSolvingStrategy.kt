@@ -315,7 +315,6 @@ internal val solveEquationInOneVariable = lazy {
 
         // simplify the equation
         option(EquationsPlans.SimplifyEquation)
-
         // Split up equations containing +/- and solve them
         option(EquationSolvingStrategy.ResolvePlusminus)
 

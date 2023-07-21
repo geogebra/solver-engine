@@ -29,10 +29,21 @@ import methods.general.GeneralRules.SimplifyUnitFractionToOne
 import methods.general.GeneralRules.SimplifyZeroDenominatorFractionToUndefined
 import methods.general.GeneralRules.SimplifyZeroNumeratorFractionToZero
 import org.junit.jupiter.api.Test
+import parser.parseExpression
+import kotlin.test.assertEquals
 import engine.methods.SerializedGmAction as GmAction
 
 @Suppress("LargeClass")
 class GeneralRulesTest {
+
+    @Test
+    fun testHasZeroInNumeratorInTheExpression() {
+        assertEquals(true, parseExpression("1 + [2 / 0]").hasZeroInNumeratorInTheExpression())
+        assertEquals(false, parseExpression("1 + [2 / 2]").hasZeroInNumeratorInTheExpression())
+        assertEquals(true, parseExpression("[1 ^ [2 / 0]]").hasZeroInNumeratorInTheExpression())
+        assertEquals(true, parseExpression("1 + [2 / 3 + [4/5-6-[7 / [1^[2/0]]]]]").hasZeroInNumeratorInTheExpression())
+    }
+
     @Test
     fun testRemoveUnitaryCoefficient() {
         testMethod {

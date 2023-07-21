@@ -158,6 +158,14 @@ class CompletingTheSquareStrategyTest {
 
                     step {
                         fromExpr = "[x ^ 2] - 6 x + [([-6 / 2]) ^ 2] = 5 + [([-6 / 2]) ^ 2]"
+                        toExpr = "[x ^ 2] - 6 x + 9 = 5 + [([-6 / 2]) ^ 2]"
+                        explanation {
+                            key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
+                        }
+                    }
+
+                    step {
+                        fromExpr = "[x ^ 2] - 6 x + 9 = 5 + [([-6 / 2]) ^ 2]"
                         toExpr = "[x ^ 2] - 6 x + 9 = 14"
                         explanation {
                             key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
@@ -275,6 +283,14 @@ class CompletingTheSquareStrategyTest {
 
                     step {
                         fromExpr = "[x ^ 2] + [5 / 2] x + [([[5 / 2] / 2]) ^ 2] = [7 / 2] + [([[5 / 2] / 2]) ^ 2]"
+                        toExpr = "[x ^ 2] + [5 / 2] x + [25 / 16] = [7 / 2] + [([[5 / 2] / 2]) ^ 2]"
+                        explanation {
+                            key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
+                        }
+                    }
+
+                    step {
+                        fromExpr = "[x ^ 2] + [5 / 2] x + [25 / 16] = [7 / 2] + [([[5 / 2] / 2]) ^ 2]"
                         toExpr = "[x ^ 2] + [5 / 2] x + [25 / 16] = [81 / 16]"
                         explanation {
                             key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable

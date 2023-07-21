@@ -1,5 +1,6 @@
 package methods.constantexpressions
 
+import engine.expressions.Comparison
 import engine.expressions.Minus
 import engine.expressions.isSignedFraction
 import engine.methods.CompositeMethod
@@ -10,7 +11,6 @@ import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.steps
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
-import engine.patterns.ConstantPattern
 import engine.patterns.FindPattern
 import engine.patterns.IntegerFractionPattern
 import engine.patterns.RationalPattern
@@ -182,7 +182,7 @@ enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : Runn
     @PublicMethod
     SimplifyConstantExpression(
         plan {
-            pattern = ConstantPattern()
+            pattern = condition { it.isConstant() && (it !is Comparison) }
             explanation = Explanation.SimplifyConstantExpression
 
             specificPlans(

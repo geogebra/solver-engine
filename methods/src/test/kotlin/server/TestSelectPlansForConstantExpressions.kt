@@ -50,4 +50,28 @@ class TestSelectPlansForConstantExpressions {
             ),
         )
     }
+
+    @Test
+    fun testConstantEqualityOrInequality() {
+        // testSelectPlanApi(
+        //     "sqrt[2] + 2 = 4 + 2",
+        //     setOf(
+        //         EquationsPlans.SolveConstantEquation,
+        //     ),
+        // )
+
+        // testSelectPlanApi(
+        //     "sqrt[2] + 2 > 4 + 2",
+        //     setOf(
+        //         InequalitiesPlans.SolveConstantInequality,
+        //     ),
+        // )
+        //
+        // testSelectPlanApi(
+        //     "sqrt[2] + 2 != 4 + 2",
+        //     setOf(
+        //         InequationsPlans.SolveConstantInequation,
+        //     ),
+        // )
+    }
 }

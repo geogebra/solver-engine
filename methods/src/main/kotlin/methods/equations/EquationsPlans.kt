@@ -108,7 +108,12 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 apply(EquationsRules.CompleteTheSquare)
-                optionally(PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable)
+                optionally {
+                    applyTo(PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable) { it.firstChild }
+                }
+                optionally {
+                    applyTo(PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable) { it.secondChild }
+                }
             }
         },
     ),

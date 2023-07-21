@@ -6,6 +6,8 @@ import engine.conditions.isDefinitelyNotZero
 import engine.conditions.sumTermsAreIncommensurable
 import engine.expressions.Constants
 import engine.expressions.DivideBy
+import engine.expressions.Expression
+import engine.expressions.Fraction
 import engine.expressions.IntegerExpression
 import engine.expressions.Minus
 import engine.expressions.PathScope
@@ -1027,5 +1029,13 @@ private val simplifyAbsoluteValueOfNegatedExpression = rule {
             ),
             explanation = metadata(Explanation.SimplifyAbsoluteValueOfNegatedExpression),
         )
+    }
+}
+
+fun Expression.hasZeroInNumeratorInTheExpression(): Boolean {
+    return when {
+        this is Fraction && (this.denominator == Constants.Zero) -> true
+        this.children.isNotEmpty() -> this.children.map { it.hasZeroInNumeratorInTheExpression() }.any { it }
+        else -> false
     }
 }

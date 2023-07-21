@@ -1,6 +1,7 @@
 package methods.polynomials
 
 import engine.context.ResourceData
+import engine.expressions.Comparison
 import engine.expressions.Label
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
@@ -39,6 +40,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
     SimplifyPolynomialExpressionInOneVariable(
         plan {
             explanation = Explanation.SimplifyPolynomialExpressionInOneVariable
+            pattern = condition { it !is Comparison }
             specificPlans(ConstantExpressionsPlans.SimplifyConstantExpression)
 
             steps {
