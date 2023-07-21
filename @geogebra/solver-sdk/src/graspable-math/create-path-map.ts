@@ -232,6 +232,7 @@ function annotate(
     case 'ReversedOpenClosedRange':
     case 'ReversedClosedOpenRange':
     case 'ReversedClosedRange':
+    case 'Void':
       throw new Error('Unsupported type: ' + tree.type);
     default:
       needToImplement(treeType);

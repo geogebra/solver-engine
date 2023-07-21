@@ -1,4 +1,9 @@
-import { ExpressionTree, ExpressionTreeBase, NestedExpression, NumberExpression } from '../parser';
+import {
+  ExpressionTree,
+  ExpressionTreeBase,
+  NestedExpression,
+  NumberExpression,
+} from '../parser';
 import { setsSolutionFormatter, SolutionFormatter } from './solution-formatter';
 import { ColorMap } from '../solutions/coloring';
 
