@@ -26,6 +26,7 @@ enum class FallbackExplanation : CategorisedMetadataKey {
      * Conclude that the quadratic is negative because its discriminant was shown to be negative.
      */
     QuadraticIsIrreducibleBecauseDiscriminantIsNegative,
+
     ;
 
     override val category = "Fallback"

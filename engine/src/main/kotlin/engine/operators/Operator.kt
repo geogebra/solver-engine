@@ -97,6 +97,8 @@ internal object VoidOperator : NullaryOperator() {
     override val name = "Void"
     override val kind = OperatorKind.VOID
 
+    override fun toString() = "/void/"
+
     override fun latexString(ctx: RenderContext) = ""
 }
 
