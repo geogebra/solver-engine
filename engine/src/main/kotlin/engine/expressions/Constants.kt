@@ -26,6 +26,6 @@ object Constants {
 
     val Undefined = expressionOf(UndefinedOperator, emptyList())
 
-    val EmptySet = solutionSetOf()
+    val EmptySet = finiteSetOf()
     val Reals = Reals()
 }

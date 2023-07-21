@@ -11,6 +11,7 @@ import engine.expressions.Variable
 import engine.expressions.contradictionOf
 import engine.expressions.equationOf
 import engine.expressions.equationSystemOf
+import engine.expressions.finiteSetOf
 import engine.expressions.fractionOf
 import engine.expressions.greaterThanEqualOf
 import engine.expressions.hasSingleValue
@@ -26,7 +27,6 @@ import engine.expressions.rootOf
 import engine.expressions.setSolutionOf
 import engine.expressions.simplifiedNegOf
 import engine.expressions.simplifiedProductOf
-import engine.expressions.solutionSetOf
 import engine.expressions.splitPlusMinus
 import engine.expressions.squareRootOf
 import engine.expressions.statementUnionOf
@@ -259,7 +259,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             onEquation(lhs, rhs) {
                 ruleResult(
                     tags = listOf(Transformation.Tag.Pedantic),
-                    toExpr = setSolutionOf(variableListOf(move(lhs) as Variable), solutionSetOf(move(rhs))),
+                    toExpr = setSolutionOf(variableListOf(move(lhs) as Variable), finiteSetOf(move(rhs))),
                     explanation = metadata(Explanation.ExtractSolutionFromEquationInSolvedForm),
                 )
             }
@@ -277,7 +277,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                     return@onEquation null
                 }
                 ruleResult(
-                    toExpr = setSolutionOf(variableListOf(move(lhs) as Variable), solutionSetOf(splitRhs)),
+                    toExpr = setSolutionOf(variableListOf(move(lhs) as Variable), finiteSetOf(splitRhs)),
                     explanation = metadata(Explanation.ExtractSolutionFromEquationInPlusMinusForm),
                 )
             }

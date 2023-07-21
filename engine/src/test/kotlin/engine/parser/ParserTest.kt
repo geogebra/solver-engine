@@ -18,6 +18,7 @@ import engine.expressions.derivativeOf
 import engine.expressions.equationOf
 import engine.expressions.explicitProductOf
 import engine.expressions.expressionOf
+import engine.expressions.finiteSetOf
 import engine.expressions.fractionOf
 import engine.expressions.greaterThanEqualOf
 import engine.expressions.greaterThanOf
@@ -46,7 +47,6 @@ import engine.expressions.rawRootOf
 import engine.expressions.setSolutionOf
 import engine.expressions.setUnionOf
 import engine.expressions.sinOf
-import engine.expressions.solutionSetOf
 import engine.expressions.squareBracketOf
 import engine.expressions.squareRootOf
 import engine.expressions.statementUnionOf
@@ -425,19 +425,19 @@ class ParserTest {
         )
         parsesTo(
             "SetSolution[x: {1}]",
-            setSolutionOf(variableListOf("x"), solutionSetOf(xp(1))),
+            setSolutionOf(variableListOf("x"), finiteSetOf(xp(1))),
         )
         parsesTo(
             "SetSolution[x, y : {(1, 2)}]",
-            setSolutionOf(variableListOf("x", "y"), solutionSetOf(tupleOf(xp(1), xp(2)))),
+            setSolutionOf(variableListOf("x", "y"), finiteSetOf(tupleOf(xp(1), xp(2)))),
         )
         parsesTo(
             "SetSolution[x, y : {1} * /reals/]",
-            setSolutionOf(variableListOf("x", "y"), cartesianProductOf(solutionSetOf(xp(1)), Constants.Reals)),
+            setSolutionOf(variableListOf("x", "y"), cartesianProductOf(finiteSetOf(xp(1)), Constants.Reals)),
         )
         parsesTo(
             "SetSolution[x : SetUnion[{1}, (2, 3)]]",
-            setSolutionOf(variableListOf("x"), setUnionOf(solutionSetOf(xp(1)), openIntervalOf(xp(2), xp(3)))),
+            setSolutionOf(variableListOf("x"), setUnionOf(finiteSetOf(xp(1)), openIntervalOf(xp(2), xp(3)))),
         )
     }
 

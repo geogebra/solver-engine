@@ -5,11 +5,11 @@ import engine.expressions.Constants
 import engine.expressions.SimpleComparator
 import engine.expressions.Variable
 import engine.expressions.contradictionOf
+import engine.expressions.finiteSetOf
 import engine.expressions.hasSingleValue
 import engine.expressions.identityOf
 import engine.expressions.setDifferenceOf
 import engine.expressions.setSolutionOf
-import engine.expressions.solutionSetOf
 import engine.expressions.variableListOf
 import engine.methods.Rule
 import engine.methods.RuleResultBuilder
@@ -39,7 +39,7 @@ enum class InequationsRules(override val runner: Rule) : RunnerMethod {
                     tags = listOf(Transformation.Tag.Pedantic),
                     toExpr = setSolutionOf(
                         variableListOf(move(lhs) as Variable),
-                        setDifferenceOf(Constants.Reals, solutionSetOf(move(rhs))),
+                        setDifferenceOf(Constants.Reals, finiteSetOf(move(rhs))),
                     ),
                     explanation = metadata(Explanation.ExtractSolutionFromInequationInSolvedForm),
                 )

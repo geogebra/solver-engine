@@ -11,6 +11,11 @@ enum class AlgebraExplanation : CategorisedMetadataKey {
      */
     SimplifyAlgebraicExpression,
 
+    ComputeDomainOfAlgebraicExpression,
+
+    MustNotBeZero,
+
+    ComputeDomain,
     ;
 
     override val category = "Algebra"

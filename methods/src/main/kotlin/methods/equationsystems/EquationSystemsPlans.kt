@@ -14,13 +14,13 @@ import engine.expressions.cartesianProductOf
 import engine.expressions.contradictionOf
 import engine.expressions.equationOf
 import engine.expressions.equationSystemOf
+import engine.expressions.finiteSetOf
 import engine.expressions.identityOf
 import engine.expressions.implicitSolutionOf
 import engine.expressions.negOf
 import engine.expressions.productOf
 import engine.expressions.setSolutionOf
 import engine.expressions.simplifiedNegOf
-import engine.expressions.solutionSetOf
 import engine.expressions.subtractEquationsOf
 import engine.expressions.tupleOf
 import engine.expressions.variableListOf
@@ -638,7 +638,7 @@ private fun combineSolutions(var1: String, sol1: Expression, var2: String, sol2:
         variableListOf(var1, var2),
         when {
             sol1 == Constants.Reals || sol2 == Constants.Reals -> cartesianProductOf(sol1, sol2)
-            else -> solutionSetOf(tupleOf(sol1.firstChild, sol2.firstChild))
+            else -> finiteSetOf(tupleOf(sol1.firstChild, sol2.firstChild))
         },
     )
 }
@@ -703,7 +703,7 @@ private val solveEquationSystemInOneVariable = taskSet {
                     val overallSolution = if (commonSolutions.isEmpty()) {
                         Contradiction(firstSolution.solutionVariables, system)
                     } else {
-                        SetSolution(firstSolution.solutionVariables, solutionSetOf(commonSolutions))
+                        SetSolution(firstSolution.solutionVariables, finiteSetOf(commonSolutions))
                     }
                     task(
                         startExpr = overallSolution,
