@@ -33,7 +33,7 @@ enum class FallbackPlans(override val runner: CompositeMethod) : RunnerMethod {
                 ConstantExpressionsPlans.SimplifyConstantExpression,
                 IntegerArithmeticPlans.EvaluateArithmeticExpression,
                 ApproximationPlans.EvaluateExpressionNumerically,
-                PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable,
+                PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable,
                 FactorPlans.FactorPolynomialInOneVariable,
             )
 
@@ -51,7 +51,7 @@ enum class FallbackPlans(override val runner: CompositeMethod) : RunnerMethod {
         taskSet {
 
             specificPlans(
-                PolynomialsPlans.SimplifyAlgebraicExpressionInOneVariable,
+                PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable,
                 FactorPlans.FactorPolynomialInOneVariable,
             )
 
