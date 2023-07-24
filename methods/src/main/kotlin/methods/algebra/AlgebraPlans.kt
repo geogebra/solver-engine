@@ -10,7 +10,9 @@ import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
+import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
+import engine.patterns.condition
 import engine.steps.Task
 import engine.steps.metadata.metadata
 import methods.constantexpressions.ConstantExpressionsPlans
@@ -25,33 +27,44 @@ import methods.solvable.computeOverallIntersectionSolution
 enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
 
     /**
-     * Simplify an algebraic expression with one variable.
+     * Compute the domain of an algebraic expression then simplify it.
      */
     @PublicMethod
-    SimplifyAlgebraicExpressionInOneVariable(
+    ComputeDomainAndSimplifyAlgebraicExpression(
+        taskSet {
+            explanation = Explanation.ComputeDomainAndSimplifyAlgebraicExpression
+
+            tasks {
+                val domainComputationTask = task(
+                    startExpr = expression,
+                    explanation = metadata(Explanation.ComputeDomainOfAlgebraicExpression),
+                    stepsProducer = ComputeDomainOfAlgebraicExpression,
+                ) ?: return@tasks null
+
+                if (domainComputationTask.result == Constants.Reals) return@tasks null
+
+                task(
+                    startExpr = expression,
+                    explanation = metadata(Explanation.SimplifyAlgebraicExpression),
+                    stepsProducer = algebraicSimplificationSteps,
+                )
+
+                allTasks()
+            }
+        },
+    ),
+
+    @PublicMethod
+    SimplifyAlgebraicExpression(
         plan {
             explanation = Explanation.SimplifyAlgebraicExpression
             specificPlans(
                 ConstantExpressionsPlans.SimplifyConstantExpression,
-                PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable,
+                ComputeDomainAndSimplifyAlgebraicExpression,
             )
 
             steps {
-                whilePossible { deeply(simpleTidyUpSteps) }
-                optionally(NormalizationPlans.NormalizeExpression)
-                whilePossible {
-                    firstOf {
-                        option(polynomialSimplificationSteps)
-                        option { deeply(RationalExpressionsPlans.SimplifyRationalExpression, deepFirst = true) }
-                        option { deeply(RationalExpressionsPlans.SimplifyPowerOfRationalExpression, deepFirst = true) }
-                        option { deeply(RationalExpressionsPlans.MultiplyRationalExpressions, deepFirst = true) }
-                        option { deeply(RationalExpressionsPlans.AddLikeRationalExpressions, deepFirst = true) }
-                        option { deeply(RationalExpressionsPlans.AddTermAndRationalExpression, deepFirst = true) }
-                        option { deeply(RationalExpressionsPlans.AddRationalExpressions, deepFirst = true) }
-                    }
-                }
-
-                optionally(PolynomialsPlans.NormalizeAllMonomials)
+                apply(algebraicSimplificationSteps)
             }
         },
     ),
@@ -60,6 +73,7 @@ enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
     ComputeDomainOfAlgebraicExpression(
         taskSet {
             explanation = Explanation.ComputeDomainOfAlgebraicExpression
+            pattern = condition { solutionVariables.size == 1 }
 
             tasks {
                 val solutionVariable = context.solutionVariables.single()
@@ -70,23 +84,53 @@ enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
                     if (solutionVariable in denominatorOrDivisor.variables) {
                         val constraintTask = task(
                             startExpr = inequationOf(denominatorOrDivisor, Constants.Zero),
-                            explanation = metadata(Explanation.MustNotBeZero, denominatorOrDivisor, inExpression),
+                            explanation = if (inExpression is Fraction) {
+                                metadata(Explanation.DenominatorMustNotBeZero, denominatorOrDivisor, inExpression)
+                            } else {
+                                metadata(Explanation.DivisorMustNotBeZero, denominatorOrDivisor, inExpression)
+                            },
                             stepsProducer = InequationsPlans.SolveInequationInOneVariable,
                         ) ?: return@tasks null
                         constraintTasks.add(constraintTask)
                     }
                 }
 
-                val overallSolution = computeOverallIntersectionSolution(constraintTasks.map { it.result }) ?: return@tasks null
-                task(
-                    startExpr = overallSolution,
-                    explanation = metadata(Explanation.ComputeDomain),
-                )
+                if (constraintTasks.isEmpty()) {
+                    task(
+                        startExpr = Constants.Reals,
+                        explanation = metadata(Explanation.ExpressionIsDefinedEverywhere),
+                    )
+                } else {
+                    val overallSolution = computeOverallIntersectionSolution(constraintTasks.map { it.result })
+                        ?: return@tasks null
+                    task(
+                        startExpr = overallSolution,
+                        explanation = metadata(Explanation.CollectDomainRestrictions),
+                    )
+                }
 
                 allTasks()
             }
         },
     ),
+}
+
+val algebraicSimplificationSteps = steps {
+    whilePossible { deeply(simpleTidyUpSteps) }
+    optionally(NormalizationPlans.NormalizeExpression)
+    whilePossible {
+        firstOf {
+            option(polynomialSimplificationSteps)
+            option { deeply(RationalExpressionsPlans.SimplifyRationalExpression, deepFirst = true) }
+            option { deeply(RationalExpressionsPlans.SimplifyPowerOfRationalExpression, deepFirst = true) }
+            option { deeply(RationalExpressionsPlans.MultiplyRationalExpressions, deepFirst = true) }
+            option { deeply(RationalExpressionsPlans.AddLikeRationalExpressions, deepFirst = true) }
+            option { deeply(RationalExpressionsPlans.AddTermAndRationalExpression, deepFirst = true) }
+            option { deeply(RationalExpressionsPlans.AddRationalExpressions, deepFirst = true) }
+        }
+    }
+
+    optionally(PolynomialsPlans.NormalizeAllMonomials)
 }
 
 private fun findDenominatorsAndDivisors(expr: Expression): Sequence<Pair<Expression, Expression>> = sequence {

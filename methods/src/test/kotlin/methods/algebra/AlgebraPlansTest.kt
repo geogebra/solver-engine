@@ -9,7 +9,7 @@ class AlgebraPlansTest {
 
     @Test
     fun `test dividing rational expressions`() = testMethod {
-        method = AlgebraPlans.SimplifyAlgebraicExpressionInOneVariable
+        method = AlgebraPlans.SimplifyAlgebraicExpression
         inputExpr = "[[x ^ 3] + 3 [x ^ 2] + 3 x + 1 / [x ^ 3] + 1] : [x + 1 / [x ^ 2] - x + 1]"
 
         check {
@@ -47,7 +47,7 @@ class AlgebraPlansTest {
 
     @Test
     fun `test simplifying before multiplying of rational expressions`() = testMethod {
-        method = AlgebraPlans.SimplifyAlgebraicExpressionInOneVariable
+        method = AlgebraPlans.SimplifyAlgebraicExpression
         inputExpr = "[[x ^ 2] + 5 x + 6 / 4 [x ^ 2] + 12 x] * [[x ^ 3] / [x ^ 2] - 4]"
 
         check {
