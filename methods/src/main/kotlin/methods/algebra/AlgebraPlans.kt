@@ -78,6 +78,10 @@ enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
             tasks {
                 val solutionVariable = context.solutionVariables.single()
                 val denominatorsAndDivisors = findDenominatorsAndDivisors(expression)
+                    .filter { (denominatorOrDivisor, _) -> solutionVariable in denominatorOrDivisor.variables }
+                    .toList()
+
+                if (denominatorsAndDivisors.isEmpty()) return@tasks null
 
                 val constraintTasks = mutableListOf<Task>()
                 for ((denominatorOrDivisor, inExpression) in denominatorsAndDivisors) {

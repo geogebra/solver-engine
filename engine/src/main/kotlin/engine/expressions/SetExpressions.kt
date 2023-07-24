@@ -141,7 +141,11 @@ class Interval(
         // The intersection is what is between iLeft.leftBound and iRight.rightBound
         return when (comparator.compare(iLeft.leftBound, iRight.rightBound)) {
             Sign.NEGATIVE -> Interval(iLeft.leftBound, iRight.rightBound, iLeft.closedLeft, iRight.closedRight, meta)
-            Sign.ZERO -> if (iLeft.closedLeft && iRight.closedRight) FiniteSet(listOf(iLeft.leftBound)) else Constants.EmptySet
+            Sign.ZERO -> if (iLeft.closedLeft && iRight.closedRight) {
+                FiniteSet(listOf(iLeft.leftBound))
+            } else {
+                Constants.EmptySet
+            }
             Sign.POSITIVE -> Constants.EmptySet
             else -> null
         }

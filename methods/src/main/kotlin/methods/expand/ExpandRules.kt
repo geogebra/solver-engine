@@ -1,6 +1,7 @@
 package methods.expand
 
 import engine.expressions.Constants
+import engine.expressions.DivideBy
 import engine.expressions.Minus
 import engine.expressions.explicitProductOf
 import engine.expressions.negOf
@@ -48,6 +49,8 @@ private val distributeMultiplicationOverSum =
         val optionalNegProduct = stickyOptionalNegOf(product)
 
         onPattern(optionalNegProduct) {
+            if (get(product).children.any { it is DivideBy }) return@onPattern null
+
             val getSum = get(sum)
             val terms = getSum.children
             val restOfProd = distribute(restOf(product))
