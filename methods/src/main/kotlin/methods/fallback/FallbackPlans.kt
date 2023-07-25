@@ -15,12 +15,12 @@ import engine.methods.taskSet
 import engine.patterns.ArbitraryVariablePattern
 import engine.patterns.QuadraticPolynomialPattern
 import engine.steps.metadata.metadata
+import methods.algebra.AlgebraPlans
 import methods.approximation.ApproximationPlans
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.factor.FactorPlans
 import methods.inequalities.solveConstantInequalitySteps
 import methods.integerarithmetic.IntegerArithmeticPlans
-import methods.polynomials.PolynomialsPlans
 
 enum class FallbackPlans(override val runner: CompositeMethod) : RunnerMethod {
 
@@ -33,7 +33,7 @@ enum class FallbackPlans(override val runner: CompositeMethod) : RunnerMethod {
                 ConstantExpressionsPlans.SimplifyConstantExpression,
                 IntegerArithmeticPlans.EvaluateArithmeticExpression,
                 ApproximationPlans.EvaluateExpressionNumerically,
-                PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable,
+                AlgebraPlans.SimplifyAlgebraicExpressionInOneVariable,
                 FactorPlans.FactorPolynomialInOneVariable,
             )
 
@@ -51,7 +51,7 @@ enum class FallbackPlans(override val runner: CompositeMethod) : RunnerMethod {
         taskSet {
 
             specificPlans(
-                PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable,
+                AlgebraPlans.SimplifyAlgebraicExpressionInOneVariable,
                 FactorPlans.FactorPolynomialInOneVariable,
             )
 

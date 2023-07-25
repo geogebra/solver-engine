@@ -11,6 +11,9 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Added
 
+- Fallback plan for expressions which are fully simplified or quadratics with negative discriminant (PLUT-603, PLUT-624)
+- SDK: added support for Void expression - this would need explicit handling in front-ends (PLUT-603)
+
 ### Fixed
 
 - SDK: Updated package.json for better compatibility
@@ -18,7 +21,7 @@ contents to a new release section (e.g. _[0.x]_).
 ### Changed
 
 - Improved factoring common factors to support powers of arbitrary expressions and sum factors with terms in a
-  different order, e.g. `3 (x + 1)^3 + 6 (1 + x)^2`
+  different order, e.g. `3 (x + 1)^3 + 6 (1 + x)^2` (PLUT-647)
 
 ### Removed
 
