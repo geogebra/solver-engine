@@ -8,6 +8,7 @@ import methods.integerarithmetic.IntegerArithmeticExplanation
 import methods.polynomials.PolynomialsExplanation
 import org.junit.jupiter.api.Test
 
+@Suppress("LargeClass")
 class LinearEquationsTest {
 
     @Test
