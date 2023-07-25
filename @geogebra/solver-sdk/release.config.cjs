@@ -2,21 +2,22 @@ module.exports = {
   branches: [
     // release new SDK package with @latest when on "release" branch
     'release',
+
+    // We set staging and main to do pre-releases instead of full releases,
+    // because semantic-release enforces that the versions numbers are
+    // release <= staging <= main otherwise. This would conflict with our
+    // requirement to do a new SDK release after merging into staging and
+    // release branches as the SDK needs to point to a different backend
+    // URL.
+
     // pre-release new SDK package with @staging tag when on "staging" branch
     { name: 'staging', channel: 'staging', prerelease: 'staging' },
     // pre-release new SDK package with @main tag when on "main" branch
     { name: 'main', channel: 'main', prerelease: 'main' },
-    // do a pre-release of SDK package with @plut-xyz tag on "plut-xyz-*" branches
-    {
-      // this uses [glob notation](https://github.com/micromatch/micromatch#matching-features)
-      name: 'plut-+([0-9])-*',
-      // version a.b.c-plut-xyz.0
-      // this uses [lodash template notation](https://lodash.com/docs/4.17.15#template)
-      prerelease: "${name.replace(/(plut-[0-9]+).*/, '$1')}",
-      // @plut-xyz tag
-      // this uses [lodash template notation](https://lodash.com/docs/4.17.15#template)
-      channel: "${name.replace(/(plut-[0-9]+).*/, '$1')}",
-    },
+
+    // We don't do pre-releases on feature branches, because rebasing them on
+    // main leads to lost git-tags and semantic-release will try to re-create
+    // existing git-tags and fail.
   ],
   plugins: [
     '@semantic-release/commit-analyzer',
