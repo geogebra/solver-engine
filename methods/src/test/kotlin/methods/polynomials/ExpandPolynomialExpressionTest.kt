@@ -361,7 +361,7 @@ class ExpandPolynomialExpressionTest {
 
             step {
                 fromExpr = "[(2 [x ^ 2]) ^ 2] + [x ^ 2] + [(-3) ^ 2] + 2 * 2 [x ^ 2] * x " +
-                    "+ 2 x * (-3) + 2 * (-3) * 2 [x ^ 2]"
+                    "+ 2 * x * (-3) + 2 * (-3) * 2 [x ^ 2]"
                 toExpr = "4 [x ^ 4] + 4 [x ^ 3] - 11 [x ^ 2] - 6 x + 9"
                 explanation {
                     key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
@@ -400,11 +400,8 @@ class ExpandPolynomialExpressionTest {
                 }
             }
 
-            step { /* product sign */ }
-            step { /* product sign */ }
-
             step {
-                fromExpr = "2 x * 2 x + 2 x * 1 + 2 x sqrt[3] + 1 * 2 x + 1 * 1 + 1 sqrt[3] " +
+                fromExpr = "2 x * 2 x + 2 x * 1 + 2 x * sqrt[3] + 1 * 2 x + 1 * 1 + 1 * sqrt[3] " +
                     "+ sqrt[3] * 2 x + sqrt[3] * 1 + sqrt[3] * sqrt[3]"
                 toExpr = "4 [x ^ 2] + (4 + 4 sqrt[3]) x + 4 + 2 sqrt[3]"
                 explanation {

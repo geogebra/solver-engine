@@ -17,6 +17,7 @@ import engine.steps.metadata.MetadataKey
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.opentest4j.AssertionFailedError
 import parser.parseExpression
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -513,13 +514,13 @@ private fun checkTransformation(
             transVar = transVar?.steps?.get(0)
         }
     } else if (transVar != null && transVar.isThroughStep()) {
-        // try {
-        val transCheckOfChild = checkTransformation(transVar.steps?.get(0), newAssertionCollector, test, assert)
-        test.throughSteps.add(transVar)
-        return transCheckOfChild
-        // } catch (_: AssertionFailedError) {
-        // do nothing
-        // }
+        try {
+            val transCheckOfChild = checkTransformation(transVar.steps?.get(0), newAssertionCollector, test, assert)
+            test.throughSteps.add(transVar)
+            return transCheckOfChild
+        } catch (_: AssertionFailedError) {
+            // do nothing
+        }
     }
 
     val check = TransformationCheck(transVar, newAssertionCollector, test)
