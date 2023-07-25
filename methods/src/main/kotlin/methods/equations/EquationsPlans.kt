@@ -5,18 +5,21 @@ import engine.expressions.Constants
 import engine.expressions.Equation
 import engine.expressions.Expression
 import engine.expressions.StatementUnion
+import engine.expressions.equationOf
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
+import engine.patterns.AnyPattern
 import engine.patterns.RecurringDecimalPattern
 import engine.patterns.SignedNumberPattern
 import engine.patterns.SolutionVariablePattern
 import engine.patterns.UnsignedNumberPattern
 import engine.patterns.condition
 import engine.patterns.contradictionOf
+import engine.patterns.equationOf
 import engine.patterns.fractionOf
 import engine.patterns.identityOf
 import engine.patterns.oneOf
@@ -45,14 +48,14 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
             explanation = Explanation.SimplifyEquation
 
             steps {
-                whilePossible { deeply(simpleTidyUpSteps) }
-                optionally(NormalizationPlans.NormalizeExpression)
+                optionally(SimplifyLhsAndRhsSeparately)
                 whilePossible(EquationsRules.EliminateConstantFactorOfLhsWithZeroRhs)
                 whilePossible(SolvableRules.CancelCommonTermsOnBothSides)
-                whilePossible(polynomialSimplificationSteps)
             }
         },
     ),
+
+    SimplifyLhsAndRhsSeparately(simplifyLhsAndRhsSeparately),
 
     CollectLikeTermsToTheLeftAndSimplify(
         plan {
@@ -306,4 +309,40 @@ val solveConstantEquationSteps = steps {
         apply(evaluateBothSidesNumerically)
     }
     apply(EquationsRules.ExtractSolutionFromConstantEquation)
+}
+
+private val simplifyOneSide = steps {
+    whilePossible { deeply(simpleTidyUpSteps) }
+    optionally(NormalizationPlans.NormalizeExpression)
+    whilePossible(polynomialSimplificationSteps)
+}
+
+private val simplifyLhsAndRhsSeparately = taskSet {
+    explanation = Explanation.SimplifyLhsAndRhsSeparately
+    val lhs = AnyPattern()
+    val rhs = AnyPattern()
+    pattern = equationOf(lhs, rhs)
+
+    tasks {
+        val task1 = task(
+            startExpr = get(lhs),
+            explanation = metadata(Explanation.SimplifyLhs),
+            stepsProducer = simplifyOneSide,
+        )
+        val lhsValue = task1?.result ?: get(lhs)
+
+        val task2 = task(
+            startExpr = get(rhs),
+            explanation = metadata(Explanation.SimplifyRhs),
+            stepsProducer = simplifyOneSide,
+        )
+        val rhsValue = task2?.result ?: get(rhs)
+
+        task(
+            startExpr = equationOf(lhsValue, rhsValue),
+            explanation = metadata(Explanation.SolveEquationInEquationUnion),
+        )
+
+        allTasks()
+    }
 }

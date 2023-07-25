@@ -124,6 +124,7 @@ atom: bracket
     | derivative | indefiniteIntegral | definiteIntegral
     | vector | matrix
     | variable | constant | naturalNumber | decimalNumber | recurringDecimalNumber
+    | undefined
     ;
 
 derivative

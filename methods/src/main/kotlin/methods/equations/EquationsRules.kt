@@ -266,15 +266,19 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
         },
     ),
 
-    ExtractSolutionFromUndefinedLHS(
+    ExtractSolutionFromUndefinedInEquation(
         rule {
-            val lhs = SolutionVariablePattern()
-            val rhs = condition { it == Constants.Undefined }
+            val undefinedTerm = condition { it == Constants.Undefined }
+            val pattern = oneOf(
+                equationOf(AnyPattern(), undefinedTerm), // x = undefined
+                equationOf(undefinedTerm, AnyPattern()), // undefined = x
+                equationOf(undefinedTerm, undefinedTerm), // undefined = undefined
+            )
 
-            onEquation(lhs, rhs) {
+            onPattern(pattern) {
                 ruleResult(
                     toExpr = contradictionOf(variableListOf(context.solutionVariables), expression),
-                    explanation = metadata(Explanation.ExtractSolutionFromEquationInPlusMinusForm),
+                    explanation = metadata(Explanation.ExtractSolutionFromUndefinedInEquation),
                 )
             }
         },

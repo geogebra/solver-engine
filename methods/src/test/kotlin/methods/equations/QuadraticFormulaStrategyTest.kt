@@ -3,11 +3,9 @@ package methods.equations
 import engine.context.Context
 import engine.context.strategyChoice
 import engine.methods.MethodTestCase
-import methods.collecting.CollectingExplanation
 import methods.constantexpressions.ConstantExpressionsExplanation
 import methods.equations.EquationSolvingStrategy.QuadraticFormula
 import methods.factor.FactorExplanation
-import methods.integerarithmetic.IntegerArithmeticExplanation
 import methods.polynomials.PolynomialsExplanation
 import org.junit.jupiter.api.Test
 
@@ -39,7 +37,7 @@ class QuadraticFormulaStrategyTest {
                 fromExpr = "[x ^ 2] + 5 + 1 + 5 x = 0"
                 toExpr = "[x ^ 2] + 6 + 5 x = 0"
                 explanation {
-                    key = IntegerArithmeticExplanation.SimplifyIntegersInSum
+                    key = EquationsExplanation.SimplifyEquation
                 }
             }
 
@@ -703,7 +701,7 @@ class QuadraticFormulaStrategyTest {
                 fromExpr = "[1 / 5] [x ^ 2] - [2 / 3] x - [1 / 6] x - [5 / 6] = 0"
                 toExpr = "[1 / 5] [x ^ 2] - [5 / 6] x - [5 / 6] = 0"
                 explanation {
-                    key = CollectingExplanation.CollectLikeTermsAndSimplify
+                    key = EquationsExplanation.SimplifyEquation
                 }
             }
 

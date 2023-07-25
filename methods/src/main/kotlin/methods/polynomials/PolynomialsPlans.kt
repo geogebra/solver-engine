@@ -67,7 +67,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
     ExpandPolynomialExpressionInOneVariable(
         plan {
             explanation = Explanation.ExpandPolynomialExpression
-            pattern = condition { it.variables.size == 1 }
+            pattern = condition { it.variables.size == 1 && (it !is Comparison) }
 
             steps {
                 whilePossible(polynomialSimplificationSteps)

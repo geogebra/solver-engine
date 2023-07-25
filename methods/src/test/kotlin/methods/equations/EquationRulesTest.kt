@@ -291,4 +291,23 @@ class EquationRulesTest {
             "5x = [x ^ 2] GIVEN x >= 0 OR -5x = [x ^ 2] GIVEN x < 0",
         )
     }
+
+    @Test
+    fun testExtractSolutionFromUndefinedLHS() {
+        testRuleInX(
+            "x = /undefined/",
+            EquationsRules.ExtractSolutionFromUndefinedInEquation,
+            "Contradiction[x: x = /undefined/]",
+        )
+        testRuleInX(
+            "/undefined/ = x",
+            EquationsRules.ExtractSolutionFromUndefinedInEquation,
+            "Contradiction[x: /undefined/ = x]",
+        )
+        testRuleInX(
+            "/undefined/ = /undefined/",
+            EquationsRules.ExtractSolutionFromUndefinedInEquation,
+            "Contradiction[x: /undefined/ = /undefined/]",
+        )
+    }
 }

@@ -40,6 +40,7 @@ object SimpleComparator : ExpressionComparator {
     }
 
     private inline fun verbatimCompare(e1: Expression, e2: Expression): Sign? {
+        if (e1 == Constants.Undefined || e2 == Constants.Undefined) return Sign.NONE
         return if (e1 == e2) Sign.ZERO else null
     }
     private inline fun rationalCompare(e1: Expression, e2: Expression): Sign? {

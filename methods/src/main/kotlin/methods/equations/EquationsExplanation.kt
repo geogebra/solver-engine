@@ -18,6 +18,14 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      */
     SimplifyEquation,
 
+    SimplifyLhs,
+
+    SimplifyRhs,
+
+    ExtractSolutionFromUndefinedInEquation,
+
+    SimplifyLhsAndRhsSeparately,
+
     /**
      * Multiply both sides of an equation by the inverse of the leading coefficient
      * on the LHS.  When simplified this will lead to a monic polynomial on the left.
@@ -171,6 +179,8 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      *      -> x = 2
      */
     SolveLinearEquation,
+
+    SolveEquationWithUndefinedInEquation,
 
     /**
      * Solve a linear equation in a given variable, working with decimal

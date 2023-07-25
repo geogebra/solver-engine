@@ -45,7 +45,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
 
     CancelCommonTermsOnBothSides(
         rule {
-            val common = condition { it != Constants.Zero }
+            val common = condition { it != Constants.Zero && it != Constants.Undefined }
 
             // intentionally matching members of the sum first, to avoid cancelling an
             // entire sum at once
@@ -181,8 +181,8 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
 
     MoveEverythingToTheLeft(
         rule {
-            val lhs = AnyPattern()
-            val rhs = condition { it != Constants.Zero }
+            val lhs = condition(AnyPattern()) { it != Constants.Undefined }
+            val rhs = condition { it != Constants.Zero && it != Constants.Undefined }
 
             val solvable = SolvablePattern(lhs, rhs)
 

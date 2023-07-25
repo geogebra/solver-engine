@@ -1,6 +1,7 @@
 package methods.equations
 
 import engine.methods.testMethodInX
+import methods.collecting.CollectingExplanation
 import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.general.GeneralExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
@@ -186,7 +187,7 @@ class LinearEquationsTest {
                 fromExpr = "1 + [2 / 3] = x"
                 toExpr = "[5 / 3] = x"
                 explanation {
-                    key = FractionArithmeticExplanation.AddIntegerAndFraction
+                    key = EquationsExplanation.SimplifyEquation
                 }
             }
 
@@ -383,58 +384,153 @@ class LinearEquationsTest {
 
         check {
             fromExpr = "2 x + x + 5 - 5 = x + 9 - 5"
-            toExpr = "SetSolution[x: {2}]"
+            toExpr = "SetSolution[x : {2}]"
             explanation {
                 key = EquationsExplanation.SolveLinearEquation
             }
-
             step {
                 fromExpr = "2 x + x + 5 - 5 = x + 9 - 5"
-                toExpr = "2 x = 4"
+                toExpr = "3 x = x + 4"
                 explanation {
-                    key = EquationsExplanation.SimplifyEquation
+                    key = EquationsExplanation.SimplifyLhsAndRhsSeparately
                 }
 
-                step {
-                    fromExpr = "2 x + x + 5 - 5 = x + 9 - 5"
-                    toExpr = "2 x + x = x + 9 - 5"
+                task {
+                    taskId = "#1"
+                    startExpr = "2 x + x + 5 - 5"
                     explanation {
-                        key = GeneralExplanation.CancelAdditiveInverseElements
-                    }
-                }
-
-                step {
-                    fromExpr = "2 x + x = x + 9 - 5"
-                    toExpr = "2 x = 9 - 5"
-                    explanation {
-                        key = methods.solvable.EquationsExplanation.CancelCommonTermsOnBothSides
-                    }
-                }
-
-                step {
-                    fromExpr = "2 x = 9 - 5"
-                    toExpr = "2 x = 4"
-                    explanation {
-                        key = IntegerArithmeticExplanation.SimplifyIntegersInSum
+                        key = EquationsExplanation.SimplifyLhs
                     }
 
                     step {
-                        fromExpr = "9 - 5"
-                        toExpr = "4"
+                        fromExpr = "2 x + x + 5 - 5"
+                        toExpr = "2 x + x"
+                        explanation {
+                            key = GeneralExplanation.CancelAdditiveInverseElements
+                        }
+                    }
+
+                    step {
+                        fromExpr = "2 x + x"
+                        toExpr = "3 x"
+                        explanation {
+                            key = CollectingExplanation.CollectLikeTermsAndSimplify
+                        }
+                        step {
+                            fromExpr = "2 x + x"
+                            toExpr = "(2 + 1) x"
+                            explanation {
+                                key = CollectingExplanation.CollectLikeTerms
+                            }
+                        }
+                        step {
+                            fromExpr = "(2 + 1) x"
+                            toExpr = "3 x"
+                            explanation {
+                                key = CollectingExplanation.SimplifyCoefficient
+                            }
+                            step {
+                                fromExpr = "2 + 1"
+                                toExpr = "3"
+                                explanation {
+                                    key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                                }
+                            }
+                        }
+                    }
+                }
+
+                task {
+                    taskId = "#2"
+                    startExpr = "x + 9 - 5"
+                    explanation {
+                        key = EquationsExplanation.SimplifyRhs
+                    }
+
+                    step {
+                        fromExpr = "x + 9 - 5"
+                        toExpr = "x + 4"
                         explanation {
                             key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
                         }
                     }
                 }
-            }
 
+                task {
+                    taskId = "#3"
+                    startExpr = "3 x = x + 4"
+                    explanation {
+                        key = EquationsExplanation.SolveEquationInEquationUnion
+                    }
+                }
+            }
+            step {
+                fromExpr = "3 x = x + 4"
+                toExpr = "2 x = 4"
+                explanation {
+                    key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeftAndSimplify
+                }
+                step {
+                    fromExpr = "3 x = x + 4"
+                    toExpr = "3 x - x = x + 4 - x"
+                    explanation {
+                        key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeft
+                    }
+                }
+                step {
+                    fromExpr = "3 x - x = x + 4 - x"
+                    toExpr = "2 x = 4"
+                    explanation {
+                        key = EquationsExplanation.SimplifyLhsAndRhsSeparately
+                    }
+
+                    task {
+                        taskId = "#1"
+                        startExpr = "3 x - x"
+                        explanation {
+                            key = EquationsExplanation.SimplifyLhs
+                        }
+
+                        step {
+                            fromExpr = "3 x - x"
+                            toExpr = "2 x"
+                            explanation {
+                                key = CollectingExplanation.CollectLikeTermsAndSimplify
+                            }
+                        }
+                    }
+
+                    task {
+                        taskId = "#2"
+                        startExpr = "x + 4 - x"
+                        explanation {
+                            key = EquationsExplanation.SimplifyRhs
+                        }
+
+                        step {
+                            fromExpr = "x + 4 - x"
+                            toExpr = "4"
+                            explanation {
+                                key = GeneralExplanation.CancelAdditiveInverseElements
+                            }
+                        }
+                    }
+
+                    task {
+                        taskId = "#3"
+                        startExpr = "2 x = 4"
+                        explanation {
+                            key = EquationsExplanation.SolveEquationInEquationUnion
+                        }
+                    }
+                }
+            }
             step {
                 fromExpr = "2 x = 4"
                 toExpr = "x = 2"
                 explanation {
                     key = methods.solvable.EquationsExplanation.DivideByCoefficientOfVariableAndSimplify
                 }
-
                 step {
                     fromExpr = "2 x = 4"
                     toExpr = "[2 x / 2] = [4 / 2]"
@@ -442,19 +538,57 @@ class LinearEquationsTest {
                         key = methods.solvable.EquationsExplanation.DivideByCoefficientOfVariable
                     }
                 }
-
                 step {
                     fromExpr = "[2 x / 2] = [4 / 2]"
                     toExpr = "x = 2"
                     explanation {
-                        key = EquationsExplanation.SimplifyEquation
+                        key = EquationsExplanation.SimplifyLhsAndRhsSeparately
+                    }
+
+                    task {
+                        taskId = "#1"
+                        startExpr = "[2 x / 2]"
+                        explanation {
+                            key = EquationsExplanation.SimplifyLhs
+                        }
+
+                        step {
+                            fromExpr = "[2 x / 2]"
+                            toExpr = "x"
+                            explanation {
+                                key = GeneralExplanation.CancelDenominator
+                            }
+                        }
+                    }
+
+                    task {
+                        taskId = "#2"
+                        startExpr = "[4 / 2]"
+                        explanation {
+                            key = EquationsExplanation.SimplifyRhs
+                        }
+
+                        step {
+                            fromExpr = "[4 / 2]"
+                            toExpr = "2"
+                            explanation {
+                                key = FractionArithmeticExplanation.SimplifyFractionToInteger
+                            }
+                        }
+                    }
+
+                    task {
+                        taskId = "#3"
+                        startExpr = "x = 2"
+                        explanation {
+                            key = EquationsExplanation.SolveEquationInEquationUnion
+                        }
                     }
                 }
             }
-
             step {
                 fromExpr = "x = 2"
-                toExpr = "SetSolution[x: {2}]"
+                toExpr = "SetSolution[x : {2}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                 }
@@ -499,39 +633,65 @@ class LinearEquationsTest {
 
         check {
             fromExpr = "6 x + 6 = 6 x + 3 + 3"
-            toExpr = "Identity[x: 6 = 6]"
+            toExpr = "Identity[x : 0 = 0]"
             explanation {
                 key = EquationsExplanation.SolveEquationInOneVariable
             }
-
             step {
                 fromExpr = "6 x + 6 = 6 x + 3 + 3"
-                toExpr = "6 = 6"
-
+                toExpr = "0 = 0"
                 explanation {
                     key = EquationsExplanation.SimplifyEquation
                 }
-
                 step {
                     fromExpr = "6 x + 6 = 6 x + 3 + 3"
-                    toExpr = "6 = 3 + 3"
+                    toExpr = "6 x + 6 = 6 x + 6"
+                    explanation {
+                        key = EquationsExplanation.SimplifyLhsAndRhsSeparately
+                    }
+
+                    task {
+                        taskId = "#1"
+                        startExpr = "6 x + 3 + 3"
+                        explanation {
+                            key = EquationsExplanation.SimplifyRhs
+                        }
+
+                        step {
+                            fromExpr = "6 x + 3 + 3"
+                            toExpr = "6 x + 6"
+                            explanation {
+                                key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                            }
+                        }
+                    }
+
+                    task {
+                        taskId = "#2"
+                        startExpr = "6 x + 6 = 6 x + 6"
+                        explanation {
+                            key = EquationsExplanation.SolveEquationInEquationUnion
+                        }
+                    }
+                }
+                step {
+                    fromExpr = "6 x + 6 = 6 x + 6"
+                    toExpr = "6 = 6"
                     explanation {
                         key = methods.solvable.EquationsExplanation.CancelCommonTermsOnBothSides
                     }
                 }
-
                 step {
-                    fromExpr = "6 = 3 + 3"
-                    toExpr = "6 = 6"
+                    fromExpr = "6 = 6"
+                    toExpr = "0 = 0"
                     explanation {
-                        key = IntegerArithmeticExplanation.SimplifyIntegersInSum
+                        key = methods.solvable.EquationsExplanation.CancelCommonTermsOnBothSides
                     }
                 }
             }
-
             step {
-                fromExpr = "6 = 6"
-                toExpr = "Identity[x: 6 = 6]"
+                fromExpr = "0 = 0"
+                toExpr = "Identity[x : 0 = 0]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromIdentity
                 }
@@ -566,46 +726,59 @@ class LinearEquationsTest {
 
         check {
             fromExpr = "abs[-x] - abs[x] = 0"
+            toExpr = "Identity[x : 0 = 0]"
             explanation {
                 key = EquationsExplanation.SolveEquationInOneVariable
             }
-            toExpr = "Identity[x: 0 = 0]"
-
             step {
                 fromExpr = "abs[-x] - abs[x] = 0"
                 toExpr = "0 = 0"
                 explanation {
-                    key = EquationsExplanation.SimplifyEquation
+                    key = EquationsExplanation.SimplifyLhsAndRhsSeparately
                 }
 
-                step {
-                    fromExpr = "abs[-x] - abs[x] = 0"
-                    toExpr = "abs[x] - abs[x] = 0"
+                task {
+                    taskId = "#1"
+                    startExpr = "abs[-x] - abs[x]"
                     explanation {
-                        key = GeneralExplanation.EvaluateAbsoluteValue
+                        key = EquationsExplanation.SimplifyLhs
                     }
 
                     step {
-                        fromExpr = "abs[-x]"
-                        toExpr = "abs[x]"
+                        fromExpr = "abs[-x] - abs[x]"
+                        toExpr = "abs[x] - abs[x]"
                         explanation {
-                            key = GeneralExplanation.SimplifyAbsoluteValueOfNegatedExpression
+                            key = GeneralExplanation.EvaluateAbsoluteValue
+                        }
+                        step {
+                            fromExpr = "abs[-x]"
+                            toExpr = "abs[x]"
+                            explanation {
+                                key = GeneralExplanation.SimplifyAbsoluteValueOfNegatedExpression
+                            }
+                        }
+                    }
+
+                    step {
+                        fromExpr = "abs[x] - abs[x]"
+                        toExpr = "0"
+                        explanation {
+                            key = GeneralExplanation.CancelAdditiveInverseElements
                         }
                     }
                 }
 
-                step {
-                    fromExpr = "abs[x] - abs[x] = 0"
-                    toExpr = "0 = 0"
+                task {
+                    taskId = "#2"
+                    startExpr = "0 = 0"
                     explanation {
-                        key = GeneralExplanation.CancelAdditiveInverseElements
+                        key = EquationsExplanation.SolveEquationInEquationUnion
                     }
                 }
             }
-
             step {
                 fromExpr = "0 = 0"
-                toExpr = "Identity[x: 0 = 0]"
+                toExpr = "Identity[x : 0 = 0]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromIdentity
                 }
@@ -620,48 +793,70 @@ class LinearEquationsTest {
 
         check {
             fromExpr = "abs[-x - sqrt[2]] - abs[x + sqrt[2]] = 0"
-            toExpr = "Identity[x: 0 = 0]"
+            toExpr = "Identity[x : 0 = 0]"
             explanation {
                 key = EquationsExplanation.SolveEquationInOneVariable
             }
-
             step {
                 fromExpr = "abs[-x - sqrt[2]] - abs[x + sqrt[2]] = 0"
                 toExpr = "0 = 0"
                 explanation {
-                    key = EquationsExplanation.SimplifyEquation
+                    key = EquationsExplanation.SimplifyLhsAndRhsSeparately
                 }
-                step {
-                    fromExpr = "abs[-x - sqrt[2]] - abs[x + sqrt[2]] = 0"
-                    toExpr = "abs[x + sqrt[2]] - abs[x + sqrt[2]] = 0"
+
+                task {
+                    taskId = "#1"
+                    startExpr = "abs[-x - sqrt[2]] - abs[x + sqrt[2]]"
                     explanation {
-                        key = GeneralExplanation.EvaluateAbsoluteValue
+                        key = EquationsExplanation.SimplifyLhs
                     }
+
                     step {
-                        fromExpr = "abs[-x - sqrt[2]]"
-                        toExpr = "abs[-(x + sqrt[2])]"
+                        fromExpr = "abs[-x - sqrt[2]] - abs[x + sqrt[2]]"
+                        toExpr = "abs[x + sqrt[2]] - abs[x + sqrt[2]]"
                         explanation {
-                            key = GeneralExplanation.FactorMinusFromSum
+                            key = GeneralExplanation.EvaluateAbsoluteValue
+                        }
+                        step {
+                            fromExpr = "abs[-x - sqrt[2]]"
+                            toExpr = "abs[-(x + sqrt[2])]"
+                            explanation {
+                                key = GeneralExplanation.FactorMinusFromSum
+                            }
+                        }
+                        step {
+                            fromExpr = "abs[-(x + sqrt[2])]"
+                            toExpr = "abs[x + sqrt[2]]"
+                            explanation {
+                                key = GeneralExplanation.SimplifyAbsoluteValueOfNegatedExpression
+                            }
                         }
                     }
+
                     step {
-                        fromExpr = "abs[-(x + sqrt[2])]"
-                        toExpr = "abs[x + sqrt[2]]"
+                        fromExpr = "abs[x + sqrt[2]] - abs[x + sqrt[2]]"
+                        toExpr = "0"
                         explanation {
-                            key = GeneralExplanation.SimplifyAbsoluteValueOfNegatedExpression
+                            key = GeneralExplanation.CancelAdditiveInverseElements
                         }
                     }
                 }
-                step {
-                    fromExpr = "abs[x + sqrt[2]] - abs[x + sqrt[2]] = 0"
-                    toExpr = "0 = 0"
+
+                task {
+                    taskId = "#2"
+                    startExpr = "0 = 0"
                     explanation {
-                        key = GeneralExplanation.CancelAdditiveInverseElements
+                        key = EquationsExplanation.SolveEquationInEquationUnion
                     }
                 }
             }
-
-            step { }
+            step {
+                fromExpr = "0 = 0"
+                toExpr = "Identity[x : 0 = 0]"
+                explanation {
+                    key = EquationsExplanation.ExtractSolutionFromIdentity
+                }
+            }
         }
     }
 }

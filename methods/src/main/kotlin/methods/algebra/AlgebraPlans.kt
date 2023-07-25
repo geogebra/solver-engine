@@ -1,9 +1,11 @@
 package methods.algebra
 
+import engine.expressions.Comparison
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
+import engine.patterns.condition
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.general.NormalizationPlans
@@ -20,6 +22,7 @@ enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
     SimplifyAlgebraicExpressionInOneVariable(
         plan {
             explanation = Explanation.SimplifyAlgebraicExpression
+            pattern = condition { it !is Comparison }
             specificPlans(
                 ConstantExpressionsPlans.SimplifyConstantExpression,
                 PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable,

@@ -2,7 +2,6 @@ package methods.equations
 
 import engine.methods.testMethodInX
 import methods.equationsystems.EquationSystemsExplanation
-import methods.general.GeneralExplanation
 import org.junit.jupiter.api.Test
 
 class EquationWithTwoAbsoluteValuesTest {
@@ -70,7 +69,7 @@ class EquationWithTwoAbsoluteValuesTest {
                     fromExpr = "abs[[x ^ 2] - x] + abs[[x ^ 3] - 1] - abs[[x ^ 3] - 1] = -abs[[x ^ 3] - 1]"
                     toExpr = "abs[[x ^ 2] - x] = -abs[[x ^ 3] - 1]"
                     explanation {
-                        key = GeneralExplanation.CancelAdditiveInverseElements
+                        key = EquationsExplanation.SimplifyEquation
                     }
                 }
             }

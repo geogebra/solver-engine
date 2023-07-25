@@ -1,6 +1,7 @@
 package engine.methods.stepsproducers
 
 import engine.context.Context
+import engine.expressions.Comparison
 import engine.expressions.Expression
 import engine.expressions.RootOrigin
 import engine.methods.Strategy
@@ -65,9 +66,9 @@ class StepsBuilder(val context: Context, sub: Expression) {
     }
 
     fun addStep(step: Transformation) {
-        if (undefined()) {
-            return
-        }
+        // if (undefined()) {
+        //     return
+        // }
 
         /**
          * If `step` results in `undefined` for a subexpression of the current
@@ -78,8 +79,8 @@ class StepsBuilder(val context: Context, sub: Expression) {
          * --> [1 / 0] + 2
          * --> undefined ([1/ 0] is undefined)
          */
-        val substitution = when (step.toExpr.operator) {
-            UndefinedOperator -> sub.substitute(sub, step.toExpr)
+        val substitution = when {
+            step.toExpr.operator == UndefinedOperator && sub !is Comparison -> sub.substitute(sub, step.toExpr)
             else -> sub.substitute(step.fromExpr, step.toExpr)
         }
 

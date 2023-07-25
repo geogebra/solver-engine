@@ -6,8 +6,6 @@ import engine.methods.MethodTestCase
 import engine.methods.getPlan
 import engine.methods.testMethod
 import engine.methods.testMethodInX
-import methods.collecting.CollectingExplanation
-import methods.constantexpressions.ConstantExpressionsExplanation
 import methods.equations.EquationSolvingStrategy.RootsMethod
 import org.junit.jupiter.api.Test
 
@@ -139,17 +137,9 @@ class RootsMethodStrategyTest {
 
             step {
                 fromExpr = "[5 / 2] [x ^ 2] = [x ^ 2]"
-                toExpr = "[3 / 2] [x ^ 2] = 0"
-                explanation {
-                    key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeftAndSimplify
-                }
-            }
-
-            step {
-                fromExpr = "[3 / 2] [x ^ 2] = 0"
                 toExpr = "[x ^ 2] = 0"
                 explanation {
-                    key = EquationsExplanation.EliminateConstantFactorOfLhsWithZeroRhs
+                    key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeftAndSimplify
                 }
             }
 
@@ -246,17 +236,9 @@ class RootsMethodStrategyTest {
 
             step {
                 fromExpr = "2 [y ^ 2] + 2 y - 3 = y + y + 4"
-                toExpr = "2 [y ^ 2] + 2 y - 3 = 2 y + 4"
-                explanation {
-                    key = CollectingExplanation.CollectLikeTermsAndSimplify
-                }
-            }
-
-            step {
-                fromExpr = "2 [y ^ 2] + 2 y - 3 = 2 y + 4"
                 toExpr = "2 [y ^ 2] - 3 = 4"
                 explanation {
-                    key = methods.solvable.EquationsExplanation.CancelCommonTermsOnBothSides
+                    key = EquationsExplanation.SimplifyEquation
                 }
             }
 
@@ -334,7 +316,7 @@ class RootsMethodStrategyTest {
                 fromExpr = "[x ^ 2] + 1 = +/-sqrt[4]"
                 toExpr = "[x ^ 2] + 1 = +/-2"
                 explanation {
-                    key = ConstantExpressionsExplanation.SimplifyRootsInExpression
+                    key = EquationsExplanation.SimplifyEquation
                 }
             }
             step {

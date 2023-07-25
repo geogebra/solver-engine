@@ -27,6 +27,17 @@ enum class EquationSolvingStrategy(
     override val steps: StepsProducer,
 ) : Strategy {
 
+    @PublicStrategy
+    UndefinedInEquation(
+        family = Family.UNDEFINED,
+        priority = 200,
+        explanation = EquationsExplanation.SolveEquationWithUndefinedInEquation,
+        steps = steps {
+            optionally(EquationsPlans.SimplifyEquation)
+            apply(EquationsRules.ExtractSolutionFromUndefinedInEquation)
+        },
+    ),
+
     LinearEquation(
         family = Family.LINEAR,
         priority = 100,
@@ -254,6 +265,7 @@ enum class EquationSolvingStrategy(
     ;
 
     enum class Family : StrategyFamily {
+        UNDEFINED,
         LINEAR,
         POLYNOMIAL,
         ABSOLUTE_VALUE,

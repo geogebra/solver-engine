@@ -490,7 +490,7 @@ class EquationsWithOneAbsoluteValueTest {
                 step {
                     fromExpr = "2 * abs[x] - [x ^ 2] + [x ^ 2] = 1 + [x ^ 2]"
                     explanation {
-                        key = GeneralExplanation.CancelAdditiveInverseElements
+                        key = EquationsExplanation.SimplifyEquation
                     }
                     toExpr = "2 * abs[x] = 1 + [x ^ 2]"
                 }
