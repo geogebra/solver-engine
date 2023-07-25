@@ -17,7 +17,7 @@ enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
      * Simplify an algebraic expression with one variable.
      */
     @PublicMethod
-    SimplifyAlgebraicExpressionInOneVariable(
+    SimplifyAlgebraicExpression(
         plan {
             explanation = Explanation.SimplifyAlgebraicExpression
             specificPlans(

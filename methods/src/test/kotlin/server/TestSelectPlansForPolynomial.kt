@@ -9,7 +9,7 @@ class TestSelectPlansForPolynomial {
         testSelectPlanApiInX(
             "x(x + 1)",
             setOf(
-                PolynomialsPlans.ExpandPolynomialExpressionInOneVariable,
+                PolynomialsPlans.ExpandPolynomialExpression,
             ),
         )
     }

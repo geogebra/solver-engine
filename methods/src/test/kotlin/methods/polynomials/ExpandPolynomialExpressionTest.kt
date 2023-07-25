@@ -18,7 +18,7 @@ class ExpandPolynomialExpressionTest {
     fun `test expand square of binomial, GM or default curriculum`() {
         for (testContext in arrayOf(Context(), Context(curriculum = Curriculum.US, gmFriendly = true))) {
             testMethod {
-                method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
+                method = PolynomialsPlans.ExpandPolynomialExpression
                 context = testContext
                 inputExpr = "[(2x - 3) ^ 2]"
 
@@ -51,7 +51,7 @@ class ExpandPolynomialExpressionTest {
 
     @Test
     fun `test expand square of binomial, US curriculum`() = testMethod {
-        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpression
         inputExpr = "[(2x - 3) ^ 2]"
         context = Context(curriculum = Curriculum.US)
 
@@ -90,7 +90,7 @@ class ExpandPolynomialExpressionTest {
 
     @Test
     fun `test expand expands inner expressions before the outer ones`() = testMethod {
-        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpression
         inputExpr = "[([(x + 1)^2] + 2) ^ 2]"
 
         check {
@@ -138,7 +138,7 @@ class ExpandPolynomialExpressionTest {
     fun `test expand cube of binomial, GM or default curriculum`() {
         for (testContext in arrayOf(Context(), Context(curriculum = Curriculum.US, gmFriendly = true))) {
             testMethod {
-                method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
+                method = PolynomialsPlans.ExpandPolynomialExpression
                 context = testContext
                 inputExpr = "[(2x - 3) ^ 3]"
 
@@ -171,7 +171,7 @@ class ExpandPolynomialExpressionTest {
 
     @Test
     fun `test expand cube of binomial, US curriculum`() = testMethod {
-        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpression
         inputExpr = "[(2x - 3) ^ 3]"
         context = Context(curriculum = Curriculum.US)
 
@@ -249,7 +249,7 @@ class ExpandPolynomialExpressionTest {
 
     @Test
     fun `test expand cube of binomial multiplied by a constant`() = testMethod {
-        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpression
         inputExpr = "5 * [(2x - 3) ^ 3]"
         check {
             fromExpr = "5 * [(2 x - 3) ^ 3]"
@@ -312,7 +312,7 @@ class ExpandPolynomialExpressionTest {
 
     @Test
     fun `test expand square of trinomial, default curriculum`() = testMethod {
-        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpression
         inputExpr = "[(2x + 1 + sqrt[3]) ^ 2]"
 
         check {
@@ -346,7 +346,7 @@ class ExpandPolynomialExpressionTest {
 
     @Test
     fun `test expand square of trinomial 2, default curriculum`() = testMethod {
-        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpression
         inputExpr = "[(2[x ^ 2] + x - 3) ^ 2]"
 
         check {
@@ -380,7 +380,7 @@ class ExpandPolynomialExpressionTest {
 
     @Test
     fun `test expand square of trinomial, US curriculum`() = testMethod {
-        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpression
         context = Context(curriculum = Curriculum.US)
         inputExpr = "[(2x + 1 + sqrt[3]) ^ 2]"
 
@@ -424,7 +424,7 @@ class ExpandPolynomialExpressionTest {
 
     @Test
     fun `test expand product of sum and difference using the identity`() = testMethod {
-        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpression
         inputExpr = "(2x - 3) (2x + 3)"
 
         check {
@@ -454,7 +454,7 @@ class ExpandPolynomialExpressionTest {
 
     @Test
     fun `test expand product of sum and difference using the identity 2`() = testMethod {
-        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpression
         inputExpr = "(2x - 3) * (2x + 3) * 11"
 
         check {
@@ -529,7 +529,7 @@ class ExpandPolynomialExpressionTest {
 
     @Test
     fun `test expand the product of binomials`() = testMethod {
-        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpression
         inputExpr = "(2x + 3) (3x - 2)"
 
         check {
@@ -559,7 +559,7 @@ class ExpandPolynomialExpressionTest {
 
     @Test
     fun `test expand the product of a trinomial and a binomial`() = testMethod {
-        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpression
         inputExpr = "([x^2] + 5x - 2) (3x - 5)"
 
         check {
@@ -590,7 +590,7 @@ class ExpandPolynomialExpressionTest {
 
     @Test
     fun `test distribute monomial from the left`() = testMethod {
-        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpression
         inputExpr = "3[x^2] (2x - 7)"
 
         check {
@@ -620,7 +620,7 @@ class ExpandPolynomialExpressionTest {
 
     @Test
     fun testDistributeConstantFromRhs() = testMethod {
-        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpression
         inputExpr = "(x + 1) * 5"
 
         check {
@@ -650,7 +650,7 @@ class ExpandPolynomialExpressionTest {
 
     @Test
     fun testDistributeMonomialFromRhs() = testMethod {
-        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpression
         inputExpr = "(x + 1)*5[x^2]"
 
         check {
@@ -696,7 +696,7 @@ class ExpandPolynomialExpressionTest {
 
     @Test
     fun testDistributeMonomiaFromLhsAndConstantFromRhs() = testMethod {
-        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpression
         inputExpr = "3 [x^2] * (2x - 7) sqrt[2]"
 
         check {
@@ -726,7 +726,7 @@ class ExpandPolynomialExpressionTest {
 
     @Test
     fun `test expanding two brackets in an expression`() = testMethod {
-        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpression
         inputExpr = "3(x+1) - 2(x+6)"
 
         check {
@@ -824,7 +824,7 @@ class ExpandPolynomialExpressionTest {
 
     @Test
     fun `expand (ax + b)^2 (cx + d)`() = testMethod {
-        method = PolynomialsPlans.ExpandPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.ExpandPolynomialExpression
         inputExpr = "[(2x + 3)^2] (x + 1)"
 
         check {

@@ -12,7 +12,6 @@ import engine.patterns.AnyPattern
 import engine.patterns.ArbitraryVariablePattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.commutativeProductOf
-import engine.patterns.condition
 import engine.patterns.monomialPattern
 import engine.patterns.powerOf
 import engine.patterns.stickyOptionalNegOf
@@ -62,10 +61,9 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
      * Expand and simplify an expression containing a product or a power of polynomials in one variable.
      */
     @PublicMethod
-    ExpandPolynomialExpressionInOneVariable(
+    ExpandPolynomialExpression(
         plan {
             explanation = Explanation.ExpandPolynomialExpression
-            pattern = condition { it.variables.size == 1 }
 
             steps {
                 whilePossible(polynomialSimplificationSteps)
