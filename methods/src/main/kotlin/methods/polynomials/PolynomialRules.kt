@@ -4,17 +4,23 @@ import engine.expressions.Constants
 import engine.expressions.Expression
 import engine.expressions.Label
 import engine.expressions.Minus
-import engine.expressions.negOf
+import engine.expressions.Power
+import engine.expressions.Variable
+import engine.expressions.fractionOf
 import engine.expressions.powerOf
 import engine.expressions.productOf
+import engine.expressions.simplifiedProductOf
 import engine.expressions.sumOf
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
 import engine.patterns.ArbitraryVariablePattern
+import engine.patterns.ConstantPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.condition
+import engine.patterns.fractionOf
 import engine.patterns.monomialPattern
+import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
@@ -93,30 +99,41 @@ private val collectUnitaryMonomialsInProduct = rule {
 }
 
 private val normalizeMonomial = rule {
-    val monomial = monomialPattern(ArbitraryVariablePattern(), positiveOnly = true)
+    val product = productContaining()
+    val denominator = ConstantPattern()
+    val fraction = fractionOf(product, denominator)
 
-    onPattern(monomial) {
-        val before = get(monomial.key)
-        val coeff = get(monomial::coefficient)!!
-        val normalized = when {
-            coeff == Constants.Zero -> move(coeff)
-            coeff == Constants.One -> move(monomial.powerPattern)
-            coeff !is Minus ->
-                productOf(
-                    coeff,
-                    move(monomial.powerPattern),
-                )
-            coeff.firstChild == Constants.One -> negOf(move(monomial.powerPattern))
-            else -> negOf(productOf(coeff.firstChild, move(monomial.powerPattern)))
+    onPattern(oneOf(fraction, product)) {
+        val coefficients = mutableListOf<Expression>()
+        val variablePowers = mutableListOf<Expression>()
+
+        for (factor in get(product).children) {
+            when {
+                factor.isConstant() -> coefficients.add(move(factor))
+                factor is Variable -> variablePowers.add(move(factor))
+                factor is Power && factor.base is Variable -> variablePowers.add(move(factor))
+                else -> return@onPattern null
+            }
         }
-        if (normalized == before) {
-            null
+
+        if (variablePowers.isEmpty()) return@onPattern null
+
+        val coefficient = if (isBound(fraction)) {
+            fractionOf(productOf(coefficients), move(denominator))
         } else {
-            ruleResult(
-                toExpr = normalized,
-                explanation = metadata(Explanation.NormalizeMonomial),
-            )
+            productOf(coefficients)
         }
+
+        variablePowers.sortBy { if (it is Variable) it.variableName else ((it as Power).base as Variable).variableName }
+        val variables = productOf(variablePowers)
+
+        val normalized = simplifiedProductOf(coefficient, variables)
+        if (normalized == expression) return@onPattern null
+
+        ruleResult(
+            toExpr = normalized,
+            explanation = metadata(Explanation.NormalizeMonomial),
+        )
     }
 }
 

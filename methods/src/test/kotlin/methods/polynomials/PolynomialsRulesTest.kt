@@ -33,9 +33,9 @@ class PolynomialsRulesTest {
         testRule("-2x", NormalizeMonomial, null)
         testRule("(-1)[t^3]", NormalizeMonomial, "-[t^3]")
         testRule("1[z^2]", NormalizeMonomial, "[z^2]")
-        testRule("0y", NormalizeMonomial, "0")
 
         // Do those simplifications separately so they can have an explanation for the user.
+        testRule("0y", NormalizeMonomial, null)
         testRule("[x^1]", NormalizeMonomial, null)
         testRule("[t^0]", NormalizeMonomial, null)
     }

@@ -171,12 +171,12 @@ fun productOf(vararg operands: Expression) = productOf(operands.asList())
  * equal to one
  */
 fun simplifiedProductOf(firstFactor: Expression, secondFactor: Expression): Expression {
-    if (secondFactor == Constants.One) return firstFactor
+    if (secondFactor.equiv(Constants.One)) return firstFactor
 
-    return when (firstFactor) {
-        Constants.One -> secondFactor
-        Constants.MinusOne -> negOf(secondFactor)
-        is Minus -> negOf(productOf(firstFactor.argument, secondFactor))
+    return when {
+        firstFactor.equiv(Constants.One) -> secondFactor
+        firstFactor.equiv(Constants.MinusOne) -> negOf(secondFactor)
+        firstFactor is Minus -> negOf(productOf(firstFactor.argument, secondFactor))
         else -> productOf(firstFactor, secondFactor)
     }
 }

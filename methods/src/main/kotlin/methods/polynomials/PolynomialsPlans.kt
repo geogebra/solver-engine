@@ -35,6 +35,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
     DistributeProductToIntegerPowerAndSimplify(distributeProductToIntegerPowerAndSimplify),
     NormalizeAllMonomials(normalizeAllMonomials),
 
+    @PublicMethod
     SimplifyPolynomialExpressionInOneVariable(
         plan {
             explanation = Explanation.SimplifyPolynomialExpressionInOneVariable

@@ -298,7 +298,6 @@ private val moveSignOfNegativeFactorOutOfProduct =
         val product = productContaining(fd)
 
         onPattern(product) {
-            if (context.gmFriendly) return@onPattern null
             ruleResult(
                 toExpr = moveUnaryOperator(
                     negf, // -x
