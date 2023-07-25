@@ -22,6 +22,8 @@ enum class EquationsExplanation : CategorisedMetadataKey {
 
     SimplifyRhs,
 
+    SubstitutingSimplifiedLhsAndRhsIntoOriginalEquation,
+
     ExtractSolutionFromUndefinedInEquation,
 
     SimplifyLhsAndRhsSeparately,

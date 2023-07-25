@@ -415,6 +415,7 @@ class LinearEquationsTest {
                         fromExpr = "2 x + x"
                         toExpr = "3 x"
                         explanation {
+<<<<<<< HEAD
                             key = CollectingExplanation.CollectLikeTermsAndSimplify
                         }
                         step {
@@ -437,6 +438,9 @@ class LinearEquationsTest {
                                     key = IntegerArithmeticExplanation.EvaluateIntegerAddition
                                 }
                             }
+=======
+                            key = methods.collecting.CollectingExplanation.CollectLikeTermsAndSimplify
+>>>>>>> c0f7c8ad (fix test cases)
                         }
                     }
                 }
@@ -461,7 +465,11 @@ class LinearEquationsTest {
                     taskId = "#3"
                     startExpr = "3 x = x + 4"
                     explanation {
+<<<<<<< HEAD
                         key = EquationsExplanation.SolveEquationInEquationUnion
+=======
+                        key = EquationsExplanation.SubstitutingSimplifiedLhsAndRhsIntoOriginalEquation
+>>>>>>> c0f7c8ad (fix test cases)
                     }
                 }
             }
@@ -498,6 +506,30 @@ class LinearEquationsTest {
                             explanation {
                                 key = CollectingExplanation.CollectLikeTermsAndSimplify
                             }
+<<<<<<< HEAD
+=======
+                            step {
+                                fromExpr = "3 x - x"
+                                toExpr = "(3 - 1) x"
+                                explanation {
+                                    key = CollectingExplanation.CollectLikeTerms
+                                }
+                            }
+                            step {
+                                fromExpr = "(3 - 1) x"
+                                toExpr = "2 x"
+                                explanation {
+                                    key = CollectingExplanation.SimplifyCoefficient
+                                }
+                                step {
+                                    fromExpr = "3 - 1"
+                                    toExpr = "2"
+                                    explanation {
+                                        key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
+                                    }
+                                }
+                            }
+>>>>>>> c0f7c8ad (fix test cases)
                         }
                     }
 
@@ -521,7 +553,11 @@ class LinearEquationsTest {
                         taskId = "#3"
                         startExpr = "2 x = 4"
                         explanation {
+<<<<<<< HEAD
                             key = EquationsExplanation.SolveEquationInEquationUnion
+=======
+                            key = EquationsExplanation.SubstitutingSimplifiedLhsAndRhsIntoOriginalEquation
+>>>>>>> c0f7c8ad (fix test cases)
                         }
                     }
                 }
@@ -582,7 +618,11 @@ class LinearEquationsTest {
                         taskId = "#3"
                         startExpr = "x = 2"
                         explanation {
+<<<<<<< HEAD
                             key = EquationsExplanation.SolveEquationInEquationUnion
+=======
+                            key = EquationsExplanation.SubstitutingSimplifiedLhsAndRhsIntoOriginalEquation
+>>>>>>> c0f7c8ad (fix test cases)
                         }
                     }
                 }
@@ -650,6 +690,7 @@ class LinearEquationsTest {
                     explanation {
                         key = EquationsExplanation.SimplifyLhsAndRhsSeparately
                     }
+<<<<<<< HEAD
 
                     task {
                         taskId = "#1"
@@ -674,6 +715,8 @@ class LinearEquationsTest {
                             key = EquationsExplanation.SolveEquationInEquationUnion
                         }
                     }
+=======
+>>>>>>> c0f7c8ad (fix test cases)
                 }
                 step {
                     fromExpr = "6 x + 6 = 6 x + 6"
@@ -751,6 +794,7 @@ class LinearEquationsTest {
                         explanation {
                             key = GeneralExplanation.EvaluateAbsoluteValue
                         }
+<<<<<<< HEAD
                         step {
                             fromExpr = "abs[-x]"
                             toExpr = "abs[x]"
@@ -758,6 +802,8 @@ class LinearEquationsTest {
                                 key = GeneralExplanation.SimplifyAbsoluteValueOfNegatedExpression
                             }
                         }
+=======
+>>>>>>> c0f7c8ad (fix test cases)
                     }
 
                     step {
@@ -773,7 +819,11 @@ class LinearEquationsTest {
                     taskId = "#2"
                     startExpr = "0 = 0"
                     explanation {
+<<<<<<< HEAD
                         key = EquationsExplanation.SolveEquationInEquationUnion
+=======
+                        key = EquationsExplanation.SubstitutingSimplifiedLhsAndRhsIntoOriginalEquation
+>>>>>>> c0f7c8ad (fix test cases)
                     }
                 }
             }
@@ -799,6 +849,7 @@ class LinearEquationsTest {
                 key = EquationsExplanation.SolveEquationInOneVariable
             }
             step {
+<<<<<<< HEAD
                 fromExpr = "abs[-x - sqrt[2]] - abs[x + sqrt[2]] = 0"
                 toExpr = "0 = 0"
                 explanation {
@@ -848,6 +899,60 @@ class LinearEquationsTest {
                     startExpr = "0 = 0"
                     explanation {
                         key = EquationsExplanation.SolveEquationInEquationUnion
+=======
+                // Through step
+                step {
+                    fromExpr = "abs[-x - sqrt[2]] - abs[x + sqrt[2]] = 0"
+                    toExpr = "0 = 0"
+                    explanation {
+                        key = EquationsExplanation.SimplifyLhsAndRhsSeparately
+                    }
+
+                    task {
+                        taskId = "#1"
+                        startExpr = "abs[-x - sqrt[2]] - abs[x + sqrt[2]]"
+                        explanation {
+                            key = EquationsExplanation.SimplifyLhs
+                        }
+
+                        step {
+                            fromExpr = "abs[-x - sqrt[2]] - abs[x + sqrt[2]]"
+                            toExpr = "abs[x + sqrt[2]] - abs[x + sqrt[2]]"
+                            explanation {
+                                key = GeneralExplanation.EvaluateAbsoluteValue
+                            }
+                            step {
+                                fromExpr = "abs[-x - sqrt[2]]"
+                                toExpr = "abs[-(x + sqrt[2])]"
+                                explanation {
+                                    key = GeneralExplanation.FactorMinusFromSum
+                                }
+                            }
+                            step {
+                                fromExpr = "abs[-(x + sqrt[2])]"
+                                toExpr = "abs[x + sqrt[2]]"
+                                explanation {
+                                    key = GeneralExplanation.SimplifyAbsoluteValueOfNegatedExpression
+                                }
+                            }
+                        }
+
+                        step {
+                            fromExpr = "abs[x + sqrt[2]] - abs[x + sqrt[2]]"
+                            toExpr = "0"
+                            explanation {
+                                key = GeneralExplanation.CancelAdditiveInverseElements
+                            }
+                        }
+                    }
+
+                    task {
+                        taskId = "#2"
+                        startExpr = "0 = 0"
+                        explanation {
+                            key = EquationsExplanation.SubstitutingSimplifiedLhsAndRhsIntoOriginalEquation
+                        }
+>>>>>>> c0f7c8ad (fix test cases)
                     }
                 }
             }

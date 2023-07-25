@@ -8,7 +8,7 @@ class UndefinedInEquationTest {
     @Test
     fun `test RHS is undefined`() = testMethodInX {
         method = EquationsPlans.SolveEquationInOneVariable
-        inputExpr = "x = [1/2-2] + sqrt[3]"
+        inputExpr = "x = [1 / 2 - 2] + sqrt[3]"
 
         check {
             fromExpr = "x = [1 / 2 - 2] + sqrt[3]"
@@ -51,7 +51,7 @@ class UndefinedInEquationTest {
                     taskId = "#2"
                     startExpr = "x = /undefined/"
                     explanation {
-                        key = EquationsExplanation.SolveEquationInEquationUnion
+                        key = EquationsExplanation.SubstitutingSimplifiedLhsAndRhsIntoOriginalEquation
                     }
                 }
             }
@@ -89,6 +89,22 @@ class UndefinedInEquationTest {
                     explanation {
                         key = EquationsExplanation.SimplifyLhs
                     }
+
+                    step {
+                        fromExpr = "[x - 1 / sqrt[3] - sqrt[3]]"
+                        toExpr = "[x - 1 / 0]"
+                        explanation {
+                            key = GeneralExplanation.CancelAdditiveInverseElements
+                        }
+                    }
+
+                    step {
+                        fromExpr = "[x - 1 / 0]"
+                        toExpr = "/undefined/"
+                        explanation {
+                            key = GeneralExplanation.SimplifyZeroDenominatorFractionToUndefined
+                        }
+                    }
                 }
 
                 task {
@@ -97,13 +113,29 @@ class UndefinedInEquationTest {
                     explanation {
                         key = EquationsExplanation.SimplifyRhs
                     }
+
+                    step {
+                        fromExpr = "[1 / 2 - 2] + sqrt[3]"
+                        toExpr = "[1 / 0] + sqrt[3]"
+                        explanation {
+                            key = GeneralExplanation.CancelAdditiveInverseElements
+                        }
+                    }
+
+                    step {
+                        fromExpr = "[1 / 0] + sqrt[3]"
+                        toExpr = "/undefined/"
+                        explanation {
+                            key = GeneralExplanation.SimplifyZeroDenominatorFractionToUndefined
+                        }
+                    }
                 }
 
                 task {
                     taskId = "#3"
                     startExpr = "/undefined/ = /undefined/"
                     explanation {
-                        key = EquationsExplanation.SolveEquationInEquationUnion
+                        key = EquationsExplanation.SubstitutingSimplifiedLhsAndRhsIntoOriginalEquation
                     }
                 }
             }

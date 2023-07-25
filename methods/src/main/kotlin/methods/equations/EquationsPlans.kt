@@ -48,6 +48,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
             explanation = Explanation.SimplifyEquation
 
             steps {
+                // whilePossible(SolvableRules.CancelCommonTermsOnBothSides)
                 optionally(SimplifyLhsAndRhsSeparately)
                 whilePossible(EquationsRules.EliminateConstantFactorOfLhsWithZeroRhs)
                 whilePossible(SolvableRules.CancelCommonTermsOnBothSides)
@@ -340,7 +341,7 @@ private val simplifyLhsAndRhsSeparately = taskSet {
 
         task(
             startExpr = equationOf(lhsValue, rhsValue),
-            explanation = metadata(Explanation.SolveEquationInEquationUnion),
+            explanation = metadata(Explanation.SubstitutingSimplifiedLhsAndRhsIntoOriginalEquation),
         )
 
         allTasks()
