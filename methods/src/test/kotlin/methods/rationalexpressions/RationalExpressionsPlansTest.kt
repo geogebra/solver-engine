@@ -158,8 +158,10 @@ class RationalExpressionsPlansTest {
                         key = PolynomialsExplanation.ExpandPolynomialExpression
                     }
 
+                    step { /* remove product sign */ }
+
                     step {
-                        fromExpr = "([x ^ 2] + 1) * (x + 2)"
+                        fromExpr = "([x ^ 2] + 1) (x + 2)"
                         toExpr = "[x ^ 3] + 2 [x ^ 2] + x + 2"
                         explanation {
                             key = ExpandExplanation.ExpandDoubleBracketsAndSimplify

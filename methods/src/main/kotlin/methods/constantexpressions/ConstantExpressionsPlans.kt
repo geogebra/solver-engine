@@ -38,6 +38,7 @@ import methods.fractionroots.FractionRootsRules
 import methods.general.GeneralPlans
 import methods.general.GeneralRules
 import methods.general.NormalizationPlans
+import methods.general.NormalizationRules
 import methods.general.createEvaluateAbsoluteValuePlan
 import methods.general.inlineSumsAndProducts
 import methods.general.reorderProductSteps
@@ -310,6 +311,7 @@ val constantSimplificationSteps: StepsProducer = steps {
         option { deeply(expandConstantExpression) }
 
         option { deeply(reorderProductSteps) }
+        option { deeply(NormalizationRules.NormalizeProductSigns) }
     }
 }
 

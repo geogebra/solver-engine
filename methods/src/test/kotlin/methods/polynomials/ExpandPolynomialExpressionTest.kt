@@ -8,7 +8,6 @@ import methods.collecting.CollectingExplanation
 import methods.expand.ExpandExplanation
 import methods.general.GeneralExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
-import methods.integerroots.IntegerRootsExplanation
 import org.junit.jupiter.api.Test
 
 @Suppress("LargeClass")
@@ -297,10 +296,8 @@ class ExpandPolynomialExpressionTest {
                     }
                 }
 
-                step { /* product sign */ }
-
                 step {
-                    fromExpr = "5 * 8 [x ^ 3] + 5 (-36 [x ^ 2]) + 5 * 54 x + 5 * (-27)"
+                    fromExpr = "5 * 8 [x ^ 3] + 5 * (-36 [x ^ 2]) + 5 * 54 x + 5 * (-27)"
                     toExpr = "40 [x ^ 3] - 180 [x ^ 2] + 270 x - 135"
                     explanation {
                         key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
@@ -331,11 +328,8 @@ class ExpandPolynomialExpressionTest {
                 }
             }
 
-            step { /* product sign */ }
-            step { /* product sign */ }
-
             step {
-                fromExpr = "[(2 x) ^ 2] + [1 ^ 2] + [(sqrt[3]) ^ 2] + 2 * 2 x * 1 + 2 * 1 sqrt[3] + 2 sqrt[3] * 2 x"
+                fromExpr = "[(2 x) ^ 2] + [1 ^ 2] + [(sqrt[3]) ^ 2] + 2 * 2 x * 1 + 2 * 1 * sqrt[3] + 2 * sqrt[3] * 2 x"
                 toExpr = "4 [x ^ 2] + (4 + 4 sqrt[3]) x + 4 + 2 sqrt[3]"
                 explanation {
                     key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
@@ -365,11 +359,9 @@ class ExpandPolynomialExpressionTest {
                 }
             }
 
-            step { /* product sign */ }
-
             step {
                 fromExpr = "[(2 [x ^ 2]) ^ 2] + [x ^ 2] + [(-3) ^ 2] + 2 * 2 [x ^ 2] * x " +
-                    "+ 2 x * (-3) + 2 * (-3) * 2 [x ^ 2]"
+                    "+ 2 * x * (-3) + 2 * (-3) * 2 [x ^ 2]"
                 toExpr = "4 [x ^ 4] + 4 [x ^ 3] - 11 [x ^ 2] - 6 x + 9"
                 explanation {
                     key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
@@ -408,11 +400,8 @@ class ExpandPolynomialExpressionTest {
                 }
             }
 
-            step { /* product sign */ }
-            step { /* product sign */ }
-
             step {
-                fromExpr = "2 x * 2 x + 2 x * 1 + 2 x sqrt[3] + 1 * 2 x + 1 * 1 + 1 sqrt[3] " +
+                fromExpr = "2 x * 2 x + 2 x * 1 + 2 x * sqrt[3] + 1 * 2 x + 1 * 1 + 1 * sqrt[3] " +
                     "+ sqrt[3] * 2 x + sqrt[3] * 1 + sqrt[3] * sqrt[3]"
                 toExpr = "4 [x ^ 2] + (4 + 4 sqrt[3]) x + 4 + 2 sqrt[3]"
                 explanation {
@@ -751,13 +740,11 @@ class ExpandPolynomialExpressionTest {
                     }
                 }
 
-                step { /* product sign */ }
-
                 step {
-                    fromExpr = "3 x + 3 * 1"
+                    fromExpr = "3 * x + 3 * 1"
                     toExpr = "3 x + 3"
                     explanation {
-                        key = IntegerRootsExplanation.SimplifyProductWithRoots
+                        key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
                     }
                 }
             }
@@ -785,10 +772,8 @@ class ExpandPolynomialExpressionTest {
                     }
                 }
 
-                step { /* product sign */ }
-
                 step {
-                    fromExpr = "(-2) x + (-2) * 6"
+                    fromExpr = "(-2) * x + (-2) * 6"
                     toExpr = "-2 x - 12"
                     explanation {
                         key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
@@ -874,10 +859,8 @@ class ExpandPolynomialExpressionTest {
                     }
                 }
 
-                step { /* product sign */ }
-
                 step {
-                    fromExpr = "4 [x ^ 2] * x + 4 [x ^ 2] * 1 + 12 x * x + 12 x * 1 + 9 x + 9 * 1"
+                    fromExpr = "4 [x ^ 2] * x + 4 [x ^ 2] * 1 + 12 x * x + 12 x * 1 + 9 * x + 9 * 1"
                     toExpr = "4 [x ^ 3] + 16 [x ^ 2] + 21 x + 9"
                     explanation {
                         key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
