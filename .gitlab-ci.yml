@@ -14,6 +14,8 @@ variables:
   GITLAB_CLUSTER: solver-v2
   GGBTRANS_SOLVER_IMPORT_URL: https://dev.geogebra.org/ggbtrans/props/api/solver_import
   GRADLE: './gradlew --no-daemon --stacktrace --build-cache --gradle-user-home cache/.gradle'
+  PRODUCTION_DOMAIN: solver-api.geogebra.org
+  DEVELOPMENT_DOMAIN: solver.geogebra.net
 
 stages:
   - checks
@@ -22,9 +24,31 @@ stages:
   - deploy
 
 before_script:
+  # Extract the meaningful part from the commit ref slug.  This means if the branch starts with a JIRA ticket
+  # number of the for ABC-123 then just use that, else use the whole branch name.
   - export SLUG=`echo $CI_COMMIT_REF_SLUG | sed 's/^\([a-z][a-z]*\-[0-9][0-9]*\).*/\1/'`
-  - export API_URL=`  if [[ $CI_COMMIT_REF_NAME == "release" ]]; then echo "https://solver-api.geogebra.org/api/v1"; else echo "https://solver.geogebra.net/$SLUG/api/v1"; fi`
-  - export POKER_URL=`if [[ $CI_COMMIT_REF_NAME == "release" ]]; then echo "https://solver-api.geogebra.org/poker/index.html" ; else echo "https://solver.geogebra.net/$SLUG/poker/index.html" ; fi`
+
+  # The tag for the container image of the solver backend that will be published to the container registry
+  - export SOLVER_IMAGE_TAG="$SLUG"
+
+  # The name of the Helm deployment - will also be used as the base for naming the kubernetes entities (see helm templates)
+  - export DEPLOYMENT_NAME="$SLUG"
+
+  # The domain where the deployed solver backend will be available
+  - export DEPLOYMENT_DOMAIN=`if [[ $CI_COMMIT_REF_NAME == "release" ]]; then echo "$PRODUCTION_DOMAIN"; else echo "$DEVELOPMENT_DOMAIN"; fi`
+
+  # The path at which the root of the deployment can be reached
+  - export CONTEXT_PATH=`if [[ $CI_COMMIT_REF_NAME == "release" ]]; then echo "/"; else echo "/$SLUG"; fi`
+
+  # The base URL for reaching the deployment
+  - export BASE_URL=`if [[ CONTEXT_PATH == "/" ]]; then echo "https://$DEPLOYMENT_DOMAIN"; else echo "https://$DEPLOYMENT_DOMAIN$CONTEXT_PATH"; fi`
+
+  # The URL where the solver API can be reached
+  - export API_URL="$BASE_URL/api/v1"
+
+  # The URL where the poker can be reached
+  - export POKER_URL="$BASE_URL/poker/index.html"
+
   - export REPO_FULL_NAME=`echo $CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME`
   - export REPOSITORY_ID=4 # The gitlab ID of the repository where our container images are uploaded
 
@@ -93,7 +117,7 @@ package-engine:
   tags:
     - docker
   script:
-    - $GRADLE bootBuildImage --imageName="registry.git.geogebra.org/solver-team/solver-engine/api:$SLUG"
+    - $GRADLE bootBuildImage --imageName="registry.git.geogebra.org/solver-team/solver-engine/api:$SOLVER_IMAGE_TAG"
 
 export-translation-keys:
   stage: publish
@@ -145,8 +169,11 @@ deploy-engine:
     - kubectl config use-context $REPO_FULL_NAME:$GITLAB_CLUSTER
     - helm package helm/ --version "6.6.6"
     - |
-      helm upgrade --install $SLUG solver-6.6.6.tgz \
-          --set branchName=$SLUG \
+      helm upgrade --install $DEPLOYMENT_NAME solver-6.6.6.tgz \
+          --set deploymentDomain=$DEPLOYMENT_DOMAIN \
+          --set contextPath=$CONTEXT_PATH \
+          --set deploymentName=$DEPLOYMENT_NAME \
+          --set solverImageTag=$SOLVER_IMAGE_TAG \
           --set commitSha=$CI_COMMIT_SHA \
           --set imageCredentials.username=$CI_REGISTRY_USER \
           --set imageCredentials.password=$CI_REGISTRY_PASSWORD \
@@ -204,10 +231,10 @@ undeploy-engine:
     - |
       curl --request DELETE \
            --header "PRIVATE-TOKEN: $GITLAB_API_PRIVATE_TOKEN" \
-           "$CI_API_V4_URL/projects/$CI_PROJECT_ID/registry/repositories/$REPOSITORY_ID/tags/$SLUG"
+           "$CI_API_V4_URL/projects/$CI_PROJECT_ID/registry/repositories/$REPOSITORY_ID/tags/$SOLVER_IMAGE_TAG"
     - kubectl config get-contexts
     - kubectl config use-context $REPO_FULL_NAME:$GITLAB_CLUSTER
-    - helm uninstall $SLUG
+    - helm uninstall $DEPLOYMENT_NAME
   when: manual
   except:
     - main
