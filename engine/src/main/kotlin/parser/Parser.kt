@@ -5,6 +5,7 @@ import engine.expressions.Contradiction
 import engine.expressions.Decorator
 import engine.expressions.Equation
 import engine.expressions.Expression
+import engine.expressions.ExpressionWithConstraint
 import engine.expressions.FiniteSet
 import engine.expressions.Identity
 import engine.expressions.ImplicitSolution
@@ -224,12 +225,16 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
         return makeExpression(IntervalOperator(leftClosed, rightClosed), visit(ctx.left), visit(ctx.right))
     }
 
-    override fun visitInfinity(ctx: ExpressionParser.InfinityContext?): Expression {
+    override fun visitInfinity(ctx: ExpressionParser.InfinityContext): Expression {
         return Constants.Infinity
     }
 
-    override fun visitMinusInfinity(ctx: ExpressionParser.MinusInfinityContext?): Expression {
+    override fun visitMinusInfinity(ctx: ExpressionParser.MinusInfinityContext): Expression {
         return negOf(Constants.Infinity)
+    }
+
+    override fun visitExpressionWithConstraint(ctx: ExpressionParser.ExpressionWithConstraintContext): Expression {
+        return ExpressionWithConstraint(visit(ctx.sum()), visit(ctx.simpleStatement()))
     }
 
     override fun visitSum(ctx: ExpressionParser.SumContext): Expression {

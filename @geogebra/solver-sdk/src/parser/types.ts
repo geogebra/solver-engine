@@ -14,6 +14,7 @@ export type NestedExpressionType =
   | 'SquareRoot' // unary
   | 'Root' // (degree, radicand)
   | 'AbsoluteValue' // unary
+  | 'ExpressionWithConstraint' // (expression, constraint)
   | 'Equation' // binary
   | 'Inequation' // binary
   | 'EquationSystem' // n-ary

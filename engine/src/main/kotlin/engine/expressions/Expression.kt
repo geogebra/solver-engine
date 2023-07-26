@@ -7,6 +7,7 @@ import engine.operators.DecimalOperator
 import engine.operators.DoubleComparisonOperator
 import engine.operators.EquationSystemOperator
 import engine.operators.ExpressionOperator
+import engine.operators.ExpressionWithConstraintOperator
 import engine.operators.IntegerOperator
 import engine.operators.IntervalOperator
 import engine.operators.LatexRenderable
@@ -565,6 +566,8 @@ private fun expressionOf(
         BinaryExpressionOperator.Power -> Power(operands[0], operands[1], meta)
         BinaryExpressionOperator.Root -> Root(operands[0], operands[1], meta)
         BinaryExpressionOperator.PercentageOf -> PercentageOf(operands[0], operands[1], meta)
+
+        ExpressionWithConstraintOperator -> ExpressionWithConstraint(operands[0], operands[1], meta)
 
         VariableListOperator -> VariableList(operands.map { it as Variable }, meta)
 

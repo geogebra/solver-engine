@@ -22,6 +22,7 @@ abstract class SetExpression internal constructor(
             is Interval -> intersectWithInterval(other, comparator)
             is CartesianProduct -> intersectWithCartesianProduct(other, comparator)
             is SetUnion -> intersectWithSetUnion(other, comparator)
+            is SetDifference -> intersectWithSetDifference(other, comparator)
             else -> null
         }
     }
@@ -53,8 +54,12 @@ abstract class SetExpression internal constructor(
 
     protected open fun intersectWithSetUnion(
         other: SetUnion,
-        comparator:
-        ExpressionComparator,
+        comparator: ExpressionComparator,
+    ): SetExpression? = null
+
+    protected open fun intersectWithSetDifference(
+        other: SetDifference,
+        comparator: ExpressionComparator,
     ): SetExpression? = null
 
     protected open fun unionWithFiniteSet(
@@ -136,8 +141,12 @@ class Interval(
         // The intersection is what is between iLeft.leftBound and iRight.rightBound
         return when (comparator.compare(iLeft.leftBound, iRight.rightBound)) {
             Sign.NEGATIVE -> Interval(iLeft.leftBound, iRight.rightBound, iLeft.closedLeft, iRight.closedRight, meta)
-            Sign.ZERO -> if (iLeft.closedLeft && iRight.closedRight) FiniteSet(listOf(iLeft.leftBound)) else emptySet
-            Sign.POSITIVE -> emptySet
+            Sign.ZERO -> if (iLeft.closedLeft && iRight.closedRight) {
+                FiniteSet(listOf(iLeft.leftBound))
+            } else {
+                Constants.EmptySet
+            }
+            Sign.POSITIVE -> Constants.EmptySet
             else -> null
         }
     }
@@ -146,7 +155,7 @@ class Interval(
         other: CartesianProduct,
         comparator: ExpressionComparator,
     ): SetExpression {
-        return emptySet
+        return Constants.EmptySet
     }
 
     @Suppress("CyclomaticComplexMethod")
@@ -213,7 +222,7 @@ class FiniteSet(
                 commonElements.add(member)
             }
         }
-        return if (commonElements.isEmpty()) emptySet else FiniteSet(commonElements)
+        return if (commonElements.isEmpty()) Constants.EmptySet else FiniteSet(commonElements)
     }
 
     override fun intersectWithInterval(other: Interval, comparator: ExpressionComparator): SetExpression? {
@@ -229,6 +238,15 @@ class FiniteSet(
         comparator: ExpressionComparator,
     ): SetExpression? {
         return filterElements(other, comparator)
+    }
+
+    override fun unionWithFiniteSet(other: FiniteSet, comparator: ExpressionComparator): SetExpression? {
+        val unionElements = elements.toMutableList()
+        for (otherElement in other.elements) {
+            val contains = this.contains(otherElement, comparator) ?: return null
+            if (!contains) unionElements.add(otherElement)
+        }
+        return FiniteSet(unionElements.sortedBy { it.doubleValue })
     }
 }
 
@@ -270,14 +288,14 @@ class CartesianProduct(
     }
 
     override fun intersectWithInterval(other: Interval, comparator: ExpressionComparator): SetExpression {
-        return emptySet
+        return Constants.EmptySet
     }
     override fun intersectWithCartesianProduct(
         other: CartesianProduct,
         comparator: ExpressionComparator,
     ): SetExpression? {
         if (other.childCount != childCount) {
-            return emptySet
+            return Constants.EmptySet
         }
         val componentIntersections = components.zip(other.components).map { (x, y) -> x.intersect(y, comparator) }
         val validComponentIntersections = componentIntersections.filterNotNull()
@@ -329,6 +347,15 @@ class SetDifference(
     override fun isEmpty(comparator: ExpressionComparator): Boolean? {
         return null
     }
+
+    override fun intersectWithSetDifference(other: SetDifference, comparator: ExpressionComparator): SetExpression? {
+        if (left == other.left) {
+            val rightUnion = right.union(other.right, comparator) ?: return null
+            return SetDifference(left, rightUnion)
+        }
+
+        return null
+    }
 }
 
 class Reals(
@@ -346,9 +373,3 @@ class Reals(
         return false
     }
 }
-
-/**
- * this is a hack.  I don't know how to handle the interaction between this empty set and the Contradiction concept,
- * It will probably need to be revisited
- */
-val emptySet = FiniteSet(emptyList())

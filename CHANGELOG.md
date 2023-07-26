@@ -11,6 +11,9 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Added
 
+- Added support for simplifying rational expressions, without considering domain restrictions (PLUT-637)
+- Added support for computing the domain of rational expressions (PLUT-638)
+
 ### Fixed
 
 - SDK: Updated package.json for better compatibility
@@ -38,7 +41,6 @@ contents to a new release section (e.g. _[0.x]_).
 - Added support for solving modulus equations of the form |f(x)| = g(x) and derived (PLUT-600), including a specific
   method for US (PLUT-614)
 - Added new `json2` serialisation format for math in engine (PLUT-626)
-- Added support for simplifying rational expressions, without considering domain restrictions (PLUT-637)
 - SDK: added support for new `json2` serialisation format for math (PLUT-627)
 - Added support for inequalities containing absolute values (PLUT-559)
 - SDK: Add support for inequality system and different range

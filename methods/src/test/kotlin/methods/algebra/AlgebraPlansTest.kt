@@ -1,7 +1,9 @@
 package methods.algebra
 
 import engine.methods.testMethod
+import engine.methods.testMethodInX
 import methods.fractionarithmetic.FractionArithmeticExplanation
+import methods.inequations.InequationsExplanation
 import methods.rationalexpressions.RationalExpressionsExplanation
 import org.junit.jupiter.api.Test
 
@@ -9,7 +11,7 @@ class AlgebraPlansTest {
 
     @Test
     fun `test dividing rational expressions`() = testMethod {
-        method = AlgebraPlans.SimplifyAlgebraicExpressionInOneVariable
+        method = AlgebraPlans.SimplifyAlgebraicExpression
         inputExpr = "[[x ^ 3] + 3 [x ^ 2] + 3 x + 1 / [x ^ 3] + 1] : [x + 1 / [x ^ 2] - x + 1]"
 
         check {
@@ -47,7 +49,7 @@ class AlgebraPlansTest {
 
     @Test
     fun `test simplifying before multiplying of rational expressions`() = testMethod {
-        method = AlgebraPlans.SimplifyAlgebraicExpressionInOneVariable
+        method = AlgebraPlans.SimplifyAlgebraicExpression
         inputExpr = "[[x ^ 2] + 5 x + 6 / 4 [x ^ 2] + 12 x] * [[x ^ 3] / [x ^ 2] - 4]"
 
         check {
@@ -70,6 +72,136 @@ class AlgebraPlansTest {
                 toExpr = "[[x ^ 2] / 4 (x - 2)]"
                 explanation {
                     key = RationalExpressionsExplanation.MultiplyRationalExpressions
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test computing the domain of an expression with a rational subexpression`() = testMethodInX {
+        method = AlgebraPlans.ComputeDomainOfAlgebraicExpression
+        inputExpr = "[[x ^ 2] + 5 x + 6 / 4 [x ^ 2] + 12 x]"
+
+        check {
+            fromExpr = "[[x ^ 2] + 5 x + 6 / 4 [x ^ 2] + 12 x]"
+            toExpr = "SetSolution[x : /reals/ \\ {-3, 0}]"
+            explanation {
+                key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
+            }
+
+            task {
+                taskId = "#1"
+                startExpr = "4 [x ^ 2] + 12 x != 0"
+                explanation {
+                    key = AlgebraExplanation.DenominatorMustNotBeZero
+                }
+
+                step {
+                    fromExpr = "4 [x ^ 2] + 12 x != 0"
+                    toExpr = "SetSolution[x : /reals/ \\ {-3, 0}]"
+                    explanation {
+                        key = InequationsExplanation.SolveInequationInOneVariable
+                    }
+                }
+            }
+
+            task {
+                taskId = "#2"
+                startExpr = "SetSolution[x : /reals/ \\ {-3, 0}]"
+                explanation {
+                    key = AlgebraExplanation.CollectDomainRestrictions
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test computing the domain of an expression with a non-constant divisor`() = testMethodInX {
+        method = AlgebraPlans.ComputeDomainOfAlgebraicExpression
+        inputExpr = "[x ^ 2] : ([x ^ 2] - x + 1)"
+
+        check {
+            fromExpr = "[x ^ 2] : ([x ^ 2] - x + 1)"
+            toExpr = "SetSolution[x : /reals/]"
+            explanation {
+                key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
+            }
+
+            task {
+                taskId = "#1"
+                startExpr = "[x ^ 2] - x + 1 != 0"
+                explanation {
+                    key = AlgebraExplanation.DivisorMustNotBeZero
+                }
+
+                step {
+                    fromExpr = "[x ^ 2] - x + 1 != 0"
+                    toExpr = "Identity[x : x = [1 +/- sqrt[-3] / 2]]"
+                    explanation {
+                        key = InequationsExplanation.SolveInequationInOneVariable
+                    }
+                }
+            }
+
+            task {
+                taskId = "#2"
+                startExpr = "SetSolution[x : /reals/]"
+                explanation {
+                    key = AlgebraExplanation.ExpressionIsDefinedEverywhere
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test simplifying an algebraic expression after computing its domain`() = testMethodInX {
+        method = AlgebraPlans.ComputeDomainAndSimplifyAlgebraicExpression
+        inputExpr = "[x / x + 1] + [x / x + 2]"
+
+        check {
+            fromExpr = "[x / x + 1] + [x / x + 2]"
+            toExpr = "[2 [x ^ 2] + 3 x / (x + 1) (x + 2)] GIVEN SetSolution[x : /reals/ \\ {-2, -1}]"
+            explanation {
+                key = AlgebraExplanation.ComputeDomainAndSimplifyAlgebraicExpression
+            }
+
+            task {
+                taskId = "#1"
+                startExpr = "[x / x + 1] + [x / x + 2]"
+                explanation {
+                    key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
+                }
+
+                step {
+                    fromExpr = "[x / x + 1] + [x / x + 2]"
+                    toExpr = "SetSolution[x : /reals/ \\ {-2, -1}]"
+                    explanation {
+                        key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
+                    }
+                }
+            }
+
+            task {
+                taskId = "#2"
+                startExpr = "[x / x + 1] + [x / x + 2]"
+                explanation {
+                    key = AlgebraExplanation.SimplifyAlgebraicExpression
+                }
+
+                step {
+                    fromExpr = "[x / x + 1] + [x / x + 2]"
+                    toExpr = "[2 [x ^ 2] + 3 x / (x + 1) (x + 2)]"
+                    explanation {
+                        key = RationalExpressionsExplanation.AddRationalExpressions
+                    }
+                }
+            }
+
+            task {
+                taskId = "#3"
+                startExpr = "[2 [x ^ 2] + 3 x / (x + 1) (x + 2)] GIVEN SetSolution[x : /reals/ \\ {-2, -1}]"
+                explanation {
+                    key = AlgebraExplanation.CombineSimplifiedExpressionWithConstraint
                 }
             }
         }

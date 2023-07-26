@@ -164,9 +164,7 @@ private fun TasksBuilder.computeValidSetSolutionForInequalityConstraint(
                     stepsProducer = solveConstantInequalitySteps,
                     context = context.copy(precision = 10, solutionVariables = emptyList()),
                 ) ?: return null
-                val simplifiedConstraint = simplifyConstraint.result
-                val constraintSatisfied = when (simplifiedConstraint) {
-                    is Inequality -> simplifiedConstraint.holds(expressionComparator)
+                val constraintSatisfied = when (simplifyConstraint.result) {
                     is Contradiction -> false
                     is Identity -> true
                     else -> null
@@ -200,8 +198,7 @@ private fun TasksBuilder.computeValidSetSolutionForEquationConstraint(
                     stepsProducer = solveConstantEquationSteps,
                     context = context.copy(solutionVariables = emptyList()),
                 ) ?: return null
-                val constraintSatisfied = when (val simplifiedConstraint = simplifyConstraint.result) {
-                    is Equation -> simplifiedConstraint.holds(expressionComparator)
+                val constraintSatisfied = when (simplifyConstraint.result) {
                     is Contradiction -> false
                     is Identity -> true
                     else -> null

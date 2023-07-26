@@ -203,11 +203,25 @@ const renderAlternatives = (alternatives: AlternativeJson2[] | null, depth = 0, 
 
 const renderTask = (task: TaskJson2, depth = 0): string => {
   return /* HTML */ `<div class="task">
-    ${renderExplanation(task.explanation)}
-    ${!task.steps
-      ? renderExpression(task.startExpr)
-      : renderTaskTransformation(task) + renderSteps(task.steps, depth - 1, depth >= 0)}
+    ${renderExplanation(task.explanation)} ${renderTaskSteps(task, depth)}
   </div>`;
+};
+
+const renderTaskSteps = (task: TaskJson2, depth: number): string => {
+  if (!task.steps) {
+    return renderExpression(task.startExpr);
+  }
+
+  if (
+    !settings.showThroughSteps &&
+    task.steps.length === 1 &&
+    task.steps[0].tasks &&
+    task.steps[0].explanation.key === task.explanation?.key
+  ) {
+    return renderTaskTransformation(task) + renderTasks(task.steps[0].tasks, depth - 1, depth >= 0);
+  }
+
+  return renderTaskTransformation(task) + renderSteps(task.steps, depth - 1, depth >= 0);
 };
 
 const renderTaskTransformation = (task: TaskJson2) => {

@@ -23,6 +23,7 @@ import kotlin.math.sqrt
 import kotlin.math.tan
 import kotlin.math.tanh
 
+private const val EXPRESSION_WITH_CONSTRAINT_PRECEDENCE = 5
 private const val SUM_PRECEDENCE = 10
 private const val PLUS_MINUS_PRECEDENCE = 15
 private const val PERCENTAGE_OF_PRECEDENCE = 17
@@ -470,6 +471,30 @@ internal data class ProductOperator(val forcedSigns: List<Int>) : NaryOperator(P
 }
 
 internal val DefaultProductOperator = ProductOperator(forcedSigns = emptyList())
+
+internal object ExpressionWithConstraintOperator : BinaryOperator, StatementOperator {
+    override val name = "ExpressionWithConstraint"
+
+    override val precedence = EXPRESSION_WITH_CONSTRAINT_PRECEDENCE
+
+    override fun leftChildAllowed(op: Operator): Boolean {
+        require(op.kind == OperatorKind.EXPRESSION)
+        return true
+    }
+
+    override fun rightChildAllowed(op: Operator): Boolean {
+        require(op.kind == OperatorKind.STATEMENT)
+        return true
+    }
+
+    override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable): String {
+        return "${left.toLatexString(ctx)} \\text{ given } ${right.toLatexString(ctx)}"
+    }
+
+    override fun <T> readableString(left: T, right: T): String {
+        return "$left GIVEN $right"
+    }
+}
 
 internal object DerivativeOperator : ExpressionOperator {
     override fun eval(children: List<Double>) = Double.NaN

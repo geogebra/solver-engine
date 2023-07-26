@@ -2,8 +2,10 @@ package methods.inequations
 
 import engine.context.Context
 import engine.expressions.Constants
+import engine.expressions.Contradiction
 import engine.expressions.Expression
 import engine.expressions.FiniteSet
+import engine.expressions.Identity
 import engine.expressions.Inequation
 import engine.expressions.SetSolution
 import engine.expressions.Solution
@@ -90,19 +92,24 @@ enum class InequationsPlans(override val runner: CompositeMethod) : RunnerMethod
                     stepsProducer = EquationsPlans.SolveEquationInOneVariable,
                 ) ?: return@tasks null
 
-                val result = equationSolutionTask.result
-
-                if (result is SetSolution && result.solutionSet is FiniteSet) {
-                    task(
-                        startExpr = setSolutionOf(
+                val solution = when (val result = equationSolutionTask.result) {
+                    is SetSolution -> if (result.solutionSet is FiniteSet) {
+                        setSolutionOf(
                             result.solutionVariables,
                             setDifferenceOf(Constants.Reals, result.solutionSet),
-                        ),
-                        explanation = metadata(Explanation.TakeComplementOfSolution),
-                    )
-                } else {
-                    return@tasks null
+                        )
+                    } else {
+                        return@tasks null
+                    }
+                    is Contradiction -> Identity(result.solutionVariables, result.contradictionExpression)
+                    is Identity -> Contradiction(result.solutionVariables, result.identityExpression)
+                    else -> return@tasks null
                 }
+
+                task(
+                    startExpr = solution,
+                    explanation = metadata(Explanation.TakeComplementOfSolution),
+                )
 
                 allTasks()
             }

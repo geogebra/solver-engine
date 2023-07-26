@@ -333,8 +333,8 @@ fun statementUnionOf(vararg equations: Expression) =
 fun statementUnionOf(equations: List<Expression>) =
     buildExpression(StatementUnionOperator, equations)
 
-fun solutionSetOf(elements: List<Expression>) = buildExpression(SetOperators.FiniteSet, elements)
-fun solutionSetOf(vararg elements: Expression) = buildExpression(SetOperators.FiniteSet, elements.asList())
+fun finiteSetOf(elements: List<Expression>) = buildExpression(SetOperators.FiniteSet, elements)
+fun finiteSetOf(vararg elements: Expression) = buildExpression(SetOperators.FiniteSet, elements.asList())
 
 fun cartesianProductOf(sets: List<Expression>) = buildExpression(SetOperators.CartesianProduct, sets)
 fun cartesianProductOf(vararg sets: Expression) = cartesianProductOf(sets.asList())

@@ -85,8 +85,8 @@ class SetExpressionsTest {
         assertIntersection(iMinus2OpenMinus1Closed, iMinus1Closed1Closed, FiniteSet(listOf(xp(-1))))
 
         // intersection is an empty set
-        assertIntersection(iMinus2OpenMinus1Open, i0Closed3Open, emptySet)
-        assertIntersection(iMinus1Closed1Closed, iMinus2OpenMinus1Open, emptySet)
+        assertIntersection(iMinus2OpenMinus1Open, i0Closed3Open, Constants.EmptySet)
+        assertIntersection(iMinus1Closed1Closed, iMinus2OpenMinus1Open, Constants.EmptySet)
 
         // non-finite end points intersection
         assertIntersection(iMinusInf1Closed, i1Closed2Open, FiniteSet(listOf(xp(1))))

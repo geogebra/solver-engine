@@ -270,6 +270,8 @@ function treeToLatexInner(
       return tfd(`\\sqrt[{${rec(n.args[1], n)}}]{${rec(n.args[0], n)}}`);
     case 'AbsoluteValue':
       return tfd(colorAbsoluteValue(rec(n.args[0], n), n, t, p));
+    case 'ExpressionWithConstraint':
+      return tfd(`${rec(n.args[0], n)} \\text{ given } ${rec(n.args[1], n)}`);
     case 'Equation':
       if (s.align) {
         return tfd(`${rec(n.args[0], n)} & ${colorOp('=')} & ${rec(n.args[1], n)}`);

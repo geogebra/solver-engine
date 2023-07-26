@@ -55,7 +55,9 @@ element: tuple | expr;
 
 tuple: '(' first=element (',' rest+=element)+ ')';
 
-expr: sum | infinity | minusInfinity;
+expr: sum | infinity | minusInfinity | expressionWithConstraint;
+
+expressionWithConstraint: sum 'GIVEN' simpleStatement;
 
 sum: first=firstTerm (rest+=otherTerm)*;
 

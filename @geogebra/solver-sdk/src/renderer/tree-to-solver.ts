@@ -57,6 +57,8 @@ export function treeToSolver(n: ExpressionTree): string {
       return dec(`root[${rec(n.args[0])}, ${rec(n.args[1])}]`);
     case 'AbsoluteValue':
       return dec(`abs[${rec(n.args[0])}]`);
+    case 'ExpressionWithConstraint':
+      return dec(`${rec(n.args[0])} GIVEN ${rec(n.args[1])}`);
     case 'Equation':
       return dec(`${rec(n.args[0])} = ${rec(n.args[1])}`);
     case 'Inequation':

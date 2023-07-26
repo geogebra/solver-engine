@@ -208,6 +208,7 @@ function annotate(
     case 'AddEquations':
     case 'SubtractEquations':
     case 'EquationUnion':
+    case 'ExpressionWithConstraint':
     case 'StatementWithConstraint':
     case 'Solution':
     case 'Identity':
