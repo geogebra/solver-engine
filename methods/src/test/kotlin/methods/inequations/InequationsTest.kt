@@ -1,8 +1,7 @@
-package methods.equations
+package methods.inequations
 
 import engine.methods.testMethodInX
-import methods.inequations.InequationsExplanation
-import methods.inequations.InequationsPlans
+import methods.equations.EquationsExplanation
 import org.junit.jupiter.api.Test
 
 class InequationsTest {

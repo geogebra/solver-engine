@@ -15,6 +15,8 @@ internal class WhileStrategiesAvailableFirstOf<T : Strategy>(
     private val allStrategies: List<Strategy>,
     val init: WhileStrategiesAvailableFirstOfBuilder.() -> Unit,
 ) : CompositeMethod() {
+
+    @Suppress("ReturnCount")
     override fun run(ctx: Context, sub: Expression): Transformation? {
         val builder = StepsBuilder(ctx, sub)
         val runner = WhileStrategiesAvailableFirstOfRunner(builder, allStrategies)
@@ -26,37 +28,40 @@ internal class WhileStrategiesAvailableFirstOf<T : Strategy>(
             strategy.priority
         }
 
+        fun List<Strategy>.hasNoBetterStrategy(bestAlternative: Alternative): Boolean {
+            val bestAlternativePriority = effectivePriority(bestAlternative.strategy)
+            return none { effectivePriority(it) > bestAlternativePriority }
+        }
+
         repeat(MAX_WHILE_POSSIBLE_ITERATIONS) {
             runner.init()
             val alternatives = builder.getAlternatives()
 
+            if (runner.roundFailed() && alternatives.isEmpty()) {
+                return null
+            }
+
             if (alternatives.isNotEmpty()) {
-                val sortedAlternatives = when (ctx.strategySelectionMode) {
+                when (ctx.strategySelectionMode) {
                     StrategySelectionMode.ALL -> {
-                        if (runner.finished()) {
-                            alternatives.sortedByDescending { effectivePriority(it.strategy) }
-                        } else {
-                            null
+                        if (runner.roundFailed() || runner.remainingStrategies.isEmpty()) {
+                            return makeTransformation(
+                                alternatives.sortedByDescending {
+                                    effectivePriority(it.strategy)
+                                },
+                            )
                         }
                     }
                     StrategySelectionMode.HIGHEST_PRIORITY -> {
                         val bestAlternative = alternatives.maxBy { effectivePriority(it.strategy) }
-                        val bestAlternativePriority = effectivePriority(bestAlternative.strategy)
-                        if (runner.remainingStrategies.none { effectivePriority(it) > bestAlternativePriority }) {
-                            listOf(bestAlternative)
-                        } else {
-                            null
+                        if (runner.roundFailed() || runner.remainingStrategies.hasNoBetterStrategy(bestAlternative)) {
+                            return makeTransformation(listOf(bestAlternative))
                         }
                     }
                     StrategySelectionMode.FIRST -> {
-                        alternatives.subList(0, 1)
+                        return makeTransformation(alternatives.subList(0, 1))
                     }
                 }
-                sortedAlternatives?.let { return makeTransformation(sortedAlternatives) }
-            }
-
-            if (runner.finished()) {
-                return null
             }
 
             runner.newRound()
@@ -89,40 +94,40 @@ private class WhileStrategiesAvailableFirstOfRunner(val builder: StepsBuilder, a
     WhileStrategiesAvailableFirstOfBuilder {
 
     val remainingStrategies = allStrategies.toMutableList()
-    private var done = false
+    private var roundSucceeded = false
 
     override fun option(strategy: Strategy) {
-        if (done) return
+        if (roundSucceeded) return
         if (strategy in remainingStrategies) {
             val result = strategy.steps.produceSteps(builder.context, builder.lastSub)
             if (result != null) {
                 builder.addAlternative(strategy, result)
                 remainingStrategies.removeAll { it == strategy || it.isIncompatibleWith(strategy) }
-                done = true
+                roundSucceeded = true
             }
         }
     }
 
     override fun option(init: PipelineBuilder.() -> Unit) {
-        if (done) return
+        if (roundSucceeded) return
         option(ProceduralPipeline(init))
     }
 
     override fun option(stepsProducer: StepsProducer) {
-        if (done) return
+        if (roundSucceeded) return
         val steps = stepsProducer.produceSteps(builder.context, builder.lastSub)
         if (steps != null) {
             builder.addSteps(steps)
-            done = true
+            roundSucceeded = true
         }
     }
 
-    fun finished(): Boolean {
-        return !done || remainingStrategies.isEmpty()
+    fun roundFailed(): Boolean {
+        return !roundSucceeded
     }
 
     fun newRound() {
-        done = false
+        roundSucceeded = false
     }
 }
 

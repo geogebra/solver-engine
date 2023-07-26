@@ -314,15 +314,16 @@ class RootsMethodStrategyTest {
     }
 
     @Test
-    fun `test roots method with embedded roots method`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+    fun `test roots method followed by roots method`() = testRootsMethod {
         inputExpr = "[([x ^ 2] + 1) ^ 2] = 4"
+
         check {
             fromExpr = "[([x ^ 2] + 1) ^ 2] = 4"
             toExpr = "SetSolution[x : {-1, 1}]"
             explanation {
                 key = EquationsExplanation.SolveEquationUsingRootsMethod
             }
+
             step {
                 fromExpr = "[([x ^ 2] + 1) ^ 2] = 4"
                 toExpr = "[x ^ 2] + 1 = +/-sqrt[4]"
@@ -330,6 +331,7 @@ class RootsMethodStrategyTest {
                     key = EquationsExplanation.TakeRootOfBothSides
                 }
             }
+
             step {
                 fromExpr = "[x ^ 2] + 1 = +/-sqrt[4]"
                 toExpr = "[x ^ 2] + 1 = +/-2"
@@ -337,6 +339,7 @@ class RootsMethodStrategyTest {
                     key = ConstantExpressionsExplanation.SimplifyRootsInExpression
                 }
             }
+
             step {
                 fromExpr = "[x ^ 2] + 1 = +/-2"
                 toExpr = "[x ^ 2] = +/-2 - 1"
@@ -344,6 +347,7 @@ class RootsMethodStrategyTest {
                     key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
                 }
             }
+
             step {
                 fromExpr = "[x ^ 2] = +/-2 - 1"
                 toExpr = "[x ^ 2] = -2 - 1 OR [x ^ 2] = 2 - 1"
@@ -351,6 +355,7 @@ class RootsMethodStrategyTest {
                     key = EquationsExplanation.SeparatePlusMinusQuadraticSolutions
                 }
             }
+
             step {
                 fromExpr = "[x ^ 2] = -2 - 1 OR [x ^ 2] = 2 - 1"
                 toExpr = "SetSolution[x : {-1, 1}]"
@@ -396,6 +401,67 @@ class RootsMethodStrategyTest {
                     explanation {
                         key = EquationsExplanation.CollectSolutions
                     }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test roots method followed by quadratic formula`() = testRootsMethod {
+        inputExpr = "[([x ^ 2] + 3 x + 1) ^ 3] = 3"
+
+        check {
+            fromExpr = "[([x ^ 2] + 3 x + 1) ^ 3] = 3"
+            toExpr = "SetSolution[x : {-[3 + sqrt[5 + 4 root[3, 3]] / 2], [-3 + sqrt[5 + 4 root[3, 3]] / 2]}]"
+            explanation {
+                key = EquationsExplanation.SolveEquationUsingRootsMethod
+            }
+
+            step {
+                fromExpr = "[([x ^ 2] + 3 x + 1) ^ 3] = 3"
+                toExpr = "[x ^ 2] + 3 x + 1 = root[3, 3]"
+                explanation {
+                    key = EquationsExplanation.TakeRootOfBothSides
+                }
+            }
+
+            step {
+                fromExpr = "[x ^ 2] + 3 x + 1 = root[3, 3]"
+                toExpr = "[x ^ 2] + 3 x + 1 - root[3, 3] = 0"
+                explanation {
+                    key = EquationsExplanation.MoveEverythingToTheLeftAndSimplify
+                }
+            }
+
+            step {
+                fromExpr = "[x ^ 2] + 3 x + 1 - root[3, 3] = 0"
+                toExpr = "x = [-3 +/- sqrt[[3 ^ 2] - 4 * 1 (1 - root[3, 3])] / 2 * 1]"
+                explanation {
+                    key = EquationsExplanation.ApplyQuadraticFormula
+                }
+            }
+
+            step {
+                fromExpr = "x = [-3 +/- sqrt[[3 ^ 2] - 4 * 1 (1 - root[3, 3])] / 2 * 1]"
+                toExpr = "x = [-3 +/- sqrt[5 + 4 root[3, 3]] / 2]"
+                explanation {
+                    key = ConstantExpressionsExplanation.SimplifyConstantExpression
+                }
+            }
+
+            step {
+                fromExpr = "x = [-3 +/- sqrt[5 + 4 root[3, 3]] / 2]"
+                toExpr = "x = [-3 - sqrt[5 + 4 root[3, 3]] / 2] OR x = [-3 + sqrt[5 + 4 root[3, 3]] / 2]"
+                explanation {
+                    key = EquationsExplanation.SeparatePlusMinusQuadraticSolutions
+                }
+            }
+
+            step {
+                fromExpr = "x = [-3 - sqrt[5 + 4 root[3, 3]] / 2] OR x = [-3 + sqrt[5 + 4 root[3, 3]] / 2]"
+                toExpr = "SetSolution[x : {-[3 + sqrt[5 + 4 root[3, 3]] / 2], [-3 + sqrt[5 + 4 root[3, 3]] / 2]}]"
+                explanation {
+                    key = EquationsExplanation.SolveEquationUnion
                 }
             }
         }
