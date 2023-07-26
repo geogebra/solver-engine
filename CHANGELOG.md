@@ -17,6 +17,7 @@ contents to a new release section (e.g. _[0.x]_).
 ### Fixed
 
 - SDK: Updated package.json for better compatibility
+- Fixed equations solvable by applying roots method followed by quadratic formula (PLUT-657)
 
 ### Changed
 
