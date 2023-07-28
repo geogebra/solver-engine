@@ -7,13 +7,29 @@ import engine.sign.Sign
 
 class Variable(
     val variableName: String,
+    val subscript: String? = null,
     meta: NodeMeta = BasicMeta(),
-) : Expression(VariableOperator(variableName), listOf(), meta) {
+) : Expression(VariableOperator(variableName, subscript), listOf(), meta) {
     override fun signOf() = Sign.UNKNOWN
+
+    override fun toJson(): List<Any> {
+        return if (decorators.isEmpty() && name == null) {
+            listOf(operator.toString())
+        } else {
+            listOf(
+                listOf(operator.toString()) +
+                    (if (name == null) listOf() else listOf(name)) +
+                    decorators.map { it.toString() },
+            )
+        }
+    }
 
     override fun fillJson2(s: MutableMap<String, Any>) {
         s["type"] = "Variable"
         s["value"] = variableName
+        if (subscript != null) {
+            s["subscript"] = subscript
+        }
     }
 }
 

@@ -56,7 +56,7 @@ fun xp(x: RecurringDecimal): Expression {
     return RecurringDecimalExpression(x)
 }
 
-fun xp(v: String) = Variable(v)
+fun xp(v: String, subscript: String? = null) = Variable(v, subscript)
 
 fun mixedNumber(integer: BigInteger, numerator: BigInteger, denominator: BigInteger) =
     MixedNumberExpression(IntegerExpression(integer), IntegerExpression(numerator), IntegerExpression(denominator))

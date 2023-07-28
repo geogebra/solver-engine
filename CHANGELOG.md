@@ -13,6 +13,8 @@ contents to a new release section (e.g. _[0.x]_).
 
 - Added support for simplifying rational expressions, without considering domain restrictions (PLUT-637)
 - Added support for computing the domain of rational expressions (PLUT-638)
+- Added support for variables with subscripts (PLUT-656)
+- SDK: added support for displaying variables with subscripts and parsing such constructs from LaTeX (PLUT-656)
 
 ### Fixed
 

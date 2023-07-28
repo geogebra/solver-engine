@@ -33,6 +33,22 @@ Grouping with brackets can be done with the following
 - Square brackets: `3 - [. 1 + 1 .]`
 - Curly brackets: `3 - {. 1 + 1 .}`
 
+### Variables and subscripts
+
+Single letter variables (lower and uppercase) are written verbatim
+
+- `x`
+- `xy` means `x * y`
+
+Variables can have a subscript which is a sequence of digits or a letter (including a greek letter)
+
+- `x_0`
+- `y_12`
+- `\alpha_0`
+- `\Delta_n`
+
+Note that `x_{n+1}` is not supported
+
 ### Implicit product
 
 In some places two expression one after another are interpreted as the "implicit product"

@@ -729,4 +729,76 @@ describe('Solver Parser Unit Tests', () => {
       },
     ]);
   });
+  describe('subscripts', async () => {
+    testCases([
+      // Digit subscript
+      {
+        solver: 'x_1',
+        tree: {
+          type: 'Variable',
+          path: '.',
+          value: 'x',
+          subscript: '1',
+        },
+        latex: ['x_{1}', 'x_1'],
+      },
+      // Variable subscript
+      {
+        solver: 'A_n',
+        tree: {
+          type: 'Variable',
+          path: '.',
+          value: 'A',
+          subscript: 'n',
+        },
+        latex: ['A_{n}', 'A_n'],
+      },
+      // Check precedence and spacing adjustment
+      {
+        solver: '[x_1 ^ y_2]',
+        tree: {
+          type: 'Power',
+          path: '.',
+          args: [
+            {
+              type: 'Variable',
+              path: './0',
+              value: 'x',
+              subscript: '1',
+            },
+            {
+              type: 'Variable',
+              path: './1',
+              value: 'y',
+              subscript: '2',
+            },
+          ],
+        },
+        latex: ['x_{1}^{\\,y_{2}}', 'x_1^y_2'],
+      },
+      // Check no spacing adjustment when subscripted variable has brackets
+      {
+        solver: '[(x_1) ^ 2]',
+        tree: {
+          type: 'Power',
+          path: '.',
+          args: [
+            {
+              type: 'Variable',
+              path: './0',
+              value: 'x',
+              subscript: '1',
+              decorators: ['RoundBracket'],
+            },
+            {
+              type: 'Number',
+              path: './1',
+              value: '2',
+            },
+          ],
+        },
+        latex: ['{\\left(x_{1}\\right)}^{2}', '(x_1)^2'],
+      },
+    ]);
+  });
 });

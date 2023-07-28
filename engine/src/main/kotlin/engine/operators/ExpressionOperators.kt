@@ -193,10 +193,13 @@ internal data class RecurringDecimalOperator(val value: RecurringDecimal) : Null
     override fun eval(children: List<Double>) = value.toDouble()
 }
 
-internal data class VariableOperator(override val name: String) : NullaryOperator() {
-    override fun toString() = name
+internal data class VariableOperator(val variableName: String, val subscript: String? = null) : NullaryOperator() {
 
-    override fun latexString(ctx: RenderContext) = name
+    override val name: String get() = "Variable"
+
+    override fun toString() = "${variableName}${if (subscript != null) "_$subscript" else ""}"
+
+    override fun latexString(ctx: RenderContext) = "${variableName}${if (subscript != null) "_{$subscript}" else ""}"
 
     override fun eval(children: List<Double>) = Double.NaN
 }

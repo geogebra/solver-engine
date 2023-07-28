@@ -537,7 +537,7 @@ private fun expressionOf(
     meta: NodeMeta,
 ): Expression {
     return when (operator) {
-        is VariableOperator -> Variable(operator.name, meta)
+        is VariableOperator -> Variable(operator.variableName, operator.subscript, meta)
         is IntegerOperator -> IntegerExpression(operator.value, meta)
         is DecimalOperator -> DecimalExpression(operator.value, meta)
         is RecurringDecimalOperator -> RecurringDecimalExpression(operator.value, meta)

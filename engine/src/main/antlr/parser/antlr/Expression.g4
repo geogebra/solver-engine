@@ -164,7 +164,7 @@ recurringDecimalNumber: RECURRING_DECNUM;
 
 variables: first=variable (',' rest+=variable)*;
 
-variable: LETTER | GREEK_LETTER;
+variable: LETTER | LETTER_WITH_SUBSCRIPT;
 
 name: NAME;
 
@@ -191,10 +191,11 @@ REALS: '/reals/';
 INFINITY: '/infinity/';
 UNDEFINED: '/undefined/';
 
-LETTER: [a-z];
-GREEK_LETTER: '\\' ('alpha' | 'beta' | 'gamma' | 'delta' | 'epsilon' | 'zeta' | 'eta' | 'theta' | 'iota' | 'kappa' | 'lambda' | 'mu' | 'nu' | 'xi' | 'omicron' | 'pi' | 'rho' | 'sigma' | 'tau' | 'upsilon' | 'phi' | 'chi' | 'psi' | 'omega'
+fragment ROMAN_LETTER: [a-zA-Z];
+fragment GREEK_LETTER: '\\' ('alpha' | 'beta' | 'gamma' | 'delta' | 'epsilon' | 'zeta' | 'eta' | 'theta' | 'iota' | 'kappa' | 'lambda' | 'mu' | 'nu' | 'xi' | 'omicron' | 'pi' | 'rho' | 'sigma' | 'tau' | 'upsilon' | 'phi' | 'chi' | 'psi' | 'omega'
           | 'Alpha' | 'Beta' | 'Gamma' | 'Delta' | 'Epsilon' | 'Zeta' | 'Eta' | 'Theta' | 'Iota' | 'Kappa' | 'Lambda' | 'Mu' | 'Nu' | 'Xi' | 'Omicron' | 'Pi' | 'Rho' | 'Sigma' | 'Tau' | 'Upsilon' | 'Phi' | 'Chi' | 'Psi' | 'Omega');
-WHITESPACE: [ \t] -> skip;
+LETTER: ROMAN_LETTER | GREEK_LETTER;
+LETTER_WITH_SUBSCRIPT: LETTER '_' (LETTER | DIGIT+);
 
 TRIG_FUNCTION: 'sin' | 'cos' | 'tan' | 'arcsin' | 'arccos' | 'arctan'
              | 'sec' | 'csc' | 'cot' | 'arcsec' | 'arccsc' | 'arccot'
@@ -204,4 +205,5 @@ TRIG_FUNCTION: 'sin' | 'cos' | 'tan' | 'arcsin' | 'arccos' | 'arctan'
 
 NAME: '"' (~ '"')+ '"';
 
+WHITESPACE: [ \t] -> skip;
 UNKNOWN: .;

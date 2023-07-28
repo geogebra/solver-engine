@@ -15,6 +15,7 @@ const BP_MUL = 20;
 const BP_IMPLICIT_MUL = 25;
 const BP_UNARY_SIGN = 30;
 const BP_POWER = 40;
+const BP_SUBSCRIPT = 50;
 
 const latexSymbolDefinitions = {
   registerSum(parser: Parser<ExprTree>) {
@@ -245,6 +246,9 @@ const latexSymbolDefinitions = {
         return parser.expression(Infinity); // Why Infinity?  I copied from registerRoots.
       };
     }
+  },
+
+  registerSpacingCommands(parser: Parser<ExprTree>) {
     const nbsp = parser.registerSymbol('\\nbsp', Infinity);
     // A non-breaking space can be "prefix" or "postfix"
     nbsp.led = function (left) {
@@ -257,6 +261,15 @@ const latexSymbolDefinitions = {
       parser.advance('}');
       return parser.expression(Infinity);
     };
+    for (const spacingCmd of ['\\,', '\\ ', '\\.', '\\;']) {
+      const sym = parser.registerSymbol(spacingCmd, Infinity);
+      sym.led = function (left) {
+        return left;
+      };
+      sym.nud = function () {
+        return parser.expression(Infinity);
+      };
+    }
   },
 
   registerAbsoluteValue(parser: Parser<ExprTree>) {
@@ -278,6 +291,26 @@ const latexSymbolDefinitions = {
       };
     };
     pipeSymbol.led = getLedToExtendNary(parser, 'ImplicitProduct');
+  },
+
+  // The solver currently only supports subscripts for variables, and the subscripts have to be letters
+  // or numbers themselves
+  // So e.g. x_1, Y_n are supported but not x_{n+1} or (x)_3
+  registerSubscript(parser: Parser<ExprTree>) {
+    const sub = parser.registerSymbol('_', BP_SUBSCRIPT);
+    sub.led = function (left) {
+      if (left.type !== 'Variable' || left.subscript) {
+        parser.error('only variables can have subscripts');
+      }
+      const right = parser.expression(BP_SUBSCRIPT - 1);
+      if (right.type !== 'Variable' && right.type !== 'Number') {
+        parser.error('subscripts must be variables or numeric values');
+      }
+      if (right.type === 'Variable' && right.subscript) {
+        parser.error('nested subscripts are disallowed');
+      }
+      return { ...left, subscript: right.value };
+    };
   },
 };
 

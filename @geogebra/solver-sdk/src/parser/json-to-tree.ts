@@ -21,13 +21,22 @@ export function jsonToTree(json: MathJson | MathJson2, path = '.'): ExpressionTr
 
   if (args.length === 0 && value !== 'FiniteSet') {
     const str = value as string;
-    if (str.match(/^[+\-0-9]/)) result = { type: 'Number', value: str, path };
-    else if (str.match(/^".*"$/))
+    if (str.match(/^[+\-0-9]/)) {
+      result = { type: 'Number', value: str, path };
+    } else if (str.match(/^".*"$/)) {
       result = { type: 'Name', value: str.substring(1, str.length - 1), path };
-    else if (str === '/undefined/') result = { type: '/undefined/', path };
-    else if (str === '/infinity/') result = { type: '/infinity/', path };
-    else if (str === '/reals/' || str === 'Reals') result = { type: 'Reals', path };
-    else result = { type: 'Variable', value: str, path };
+    } else if (str === '/undefined/') {
+      result = { type: '/undefined/', path };
+    } else if (str === '/infinity/') {
+      result = { type: '/infinity/', path };
+    } else if (str === '/reals/' || str === 'Reals') {
+      result = { type: 'Reals', path };
+    } else if (str.includes('_')) {
+      const [value, subscript] = str.split('_', 2);
+      result = { type: 'Variable', value, subscript, path };
+    } else {
+      result = { type: 'Variable', value: str, path };
+    }
   } else if (value === 'SmartProduct') {
     result = {
       type: 'SmartProduct',
@@ -59,7 +68,13 @@ function json2ToTree(json: MathJson2, path = '.'): ExpressionTree {
     case 'RecurringDecimal':
       return { ...decorations, type: 'Number', value: json.value, path };
     case 'Variable':
-      return { ...decorations, type: 'Variable', value: json.value, path };
+      return {
+        ...decorations,
+        type: 'Variable',
+        value: json.value,
+        subscript: json.subscript,
+        path,
+      };
     case 'Name':
       return { ...decorations, type: 'Name', value: json.value, path };
     case 'SmartProduct':

@@ -207,7 +207,14 @@ function treeToLatexInner(
     case 'Number':
       return tfd(numberToLatex(n));
     case 'Variable':
-      return tfd(n.value);
+      // Special case when the variable has a subscript and no decorators. We don't want to enclose the whole expression
+      // (e.g. `x_2`) in color because it would create a box around it and mess up the spacing for powers (e.g. `x_2^3`
+      // would have the exponent 3 moved to the right of `x_2`).
+      if (n.subscript && !n.decorators) {
+        return `${tfd(n.value)}_{${tfd(n.subscript)}}`;
+      } else {
+        return tfd(`${n.value}${n.subscript ? `_{${n.subscript}}` : ''}`);
+      }
     case 'Name':
       return tfd(`\\textrm{${n.value}}`);
     case 'Sum':
@@ -262,8 +269,15 @@ function treeToLatexInner(
       return tfd(
         `${rec(n.args[0], n)}\\frac{${rec(n.args[1], n)}}{${rec(n.args[2], n)}}`,
       );
-    case 'Power':
-      return tfd(`{${rec(n.args[0], n)}}^{${rec(n.args[1], n)}}`);
+    case 'Power': {
+      // Special case for the
+      const base = n.args[0];
+      if (base.type === 'Variable' && base.subscript && !base.decorators) {
+        return tfd(`${rec(base, n)}^{\\,${rec(n.args[1], n)}}`);
+      } else {
+        return tfd(`{${rec(base, n)}}^{${rec(n.args[1], n)}}`);
+      }
+    }
     case 'SquareRoot':
       return tfd(`\\sqrt{${rec(n.args[0], n)}}`);
     case 'Root':

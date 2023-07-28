@@ -7,9 +7,15 @@ import { tokenize } from './tokenizer';
 //   Douglas Crockford
 //   2010-06-26
 
-function error(message: string, object: any): never {
-  throw new Error(`SyntaxError: ${message}
-${JSON.stringify(object, null, 2)}`);
+function error(message: string, object: any = undefined): never {
+  throw new Error(
+    `SyntaxError: ${message}${
+      object === undefined
+        ? ''
+        : `
+${JSON.stringify(object, null, 2)}`
+    }`,
+  );
 }
 
 export abstract class ParserSymbol<T> {
@@ -64,6 +70,10 @@ export class Parser<T> {
     symbols.forEach((symbol) => symbol(this));
   }
 
+  error(message: string, object: any = undefined): never {
+    error(message, object);
+  }
+
   /// Read and return the next token.
   /// If `id` is passed, the method will throw an error if the current token
   /// has not the same (expected) id. If `optional` is passed, the method will
@@ -73,7 +83,7 @@ export class Parser<T> {
   advance(id?: string, optional = false) {
     if (id && this.token?.id !== id) {
       if (optional) return;
-      else error("Expected '" + id + "'.", this.token);
+      else this.error("Expected '" + id + "'.", this.token);
     }
 
     if (this.token_nr >= this.tokens.length) {
@@ -101,9 +111,9 @@ export class Parser<T> {
     } else if (a === 'symbol') {
       o = this.symbolTable[v] ?? this.symbolTable['(symbol)'];
     } else {
-      error('Unexpected token.', t);
+      this.error('Unexpected token.', t);
     }
-    if (!o) error("Couldn't find token.", t);
+    if (!o) this.error("Couldn't find token.", t);
 
     const token = Object.create(o);
     token.from = t.from;
@@ -116,7 +126,7 @@ export class Parser<T> {
 
   /// If a token is passed as second parameter, no initial advance() is called.
   expression(rbp: number, _token: ParserSymbol<T> | null = null): T {
-    if (!this.token) throw new Error('Parser error: Missing token.');
+    if (!this.token) this.error('Parser error: Missing token.');
     let t = _token || this.token;
     if (!_token) this.advance();
     let left = t!.nud();

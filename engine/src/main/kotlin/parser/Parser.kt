@@ -461,7 +461,13 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
     }
 
     override fun visitVariable(ctx: ExpressionParser.VariableContext): Variable {
-        return xp(ctx.text)
+        val variableText = ctx.text
+        val underscorePos = variableText.indexOf('_')
+        return if (underscorePos < 0) {
+            xp(variableText)
+        } else {
+            xp(variableText.substring(0, underscorePos), variableText.substring(underscorePos + 1))
+        }
     }
 
     override fun visitPi(ctx: ExpressionParser.PiContext?): Expression {

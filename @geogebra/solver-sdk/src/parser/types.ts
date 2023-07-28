@@ -68,6 +68,7 @@ export type NumberExpression = {
 export type VariableExpression = {
   type: 'Variable';
   value: string;
+  subscript?: string;
 };
 
 export type SmartProductExpression<T> = {

@@ -106,8 +106,13 @@ export type MathJson2 = ExpressionDecorations &
         operands?: MathJson2[];
       }
     | {
-        type: 'Integer' | 'Decimal' | 'RecurringDecimal' | 'Variable' | 'Name';
+        type: 'Integer' | 'Decimal' | 'RecurringDecimal' | 'Name';
         value: string;
+      }
+    | {
+        type: 'Variable';
+        value: string;
+        subscript?: string;
       }
     | {
         type: 'SmartProduct';

@@ -111,6 +111,15 @@ class ParserTest {
     }
 
     @Test
+    fun testVariable() {
+        parsesTo("x", xp("x"))
+        parsesTo("Z", xp("Z"))
+        parsesTo("x_1", xp("x", "1"))
+        parsesTo("\\alpha_x", xp("\\alpha", "x"))
+        parsesTo("\\Omega_010", xp("\\Omega", "010"))
+    }
+
+    @Test
     fun testOperators() {
         parsesTo("1+2", rawSumOf(xp(1), xp(2)))
         parsesTo("3-2*5", rawSumOf(xp(3), negOf(rawProductOf(xp(2), xp(5)))))

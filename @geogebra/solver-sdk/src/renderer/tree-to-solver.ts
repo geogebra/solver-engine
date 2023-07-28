@@ -9,7 +9,7 @@ export function treeToSolver(n: ExpressionTree): string {
     case 'Number':
       return dec(n.value);
     case 'Variable':
-      return dec(n.value);
+      return dec(`${n.value}${n.subscript ? `_${n.subscript}` : ''}`);
     case 'Sum':
       return dec(
         n.args
