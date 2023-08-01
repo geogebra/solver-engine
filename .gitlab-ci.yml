@@ -61,6 +61,7 @@ check-circular-dependencies-in-methods:
 test-git-tags:
   stage: checks
   script:
+    - echo CI_COMMIT_REF_SLUG="$CI_COMMIT_REF_SLUG"
     - echo SLUG="$SLUG"
     - echo CI_COMMIT_TAG="$CI_COMMIT_TAG"
     - echo $CI_COMMIT_TAG | sed 's/^api-\([0-9]*\.[0-9]*\).*$/\1/'
