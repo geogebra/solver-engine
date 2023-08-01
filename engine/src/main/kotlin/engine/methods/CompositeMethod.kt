@@ -33,6 +33,13 @@ open class CompositeMethodBuilder {
     lateinit var explanation: MetadataKey
 
     private lateinit var explicitExplanationMaker: MetadataMaker
+    private var specificPlansList: MutableList<Method> = mutableListOf()
+
+    fun specificPlans(vararg plans: Method) {
+        specificPlansList.addAll(plans)
+    }
+
+    internal val specificPlans: List<Method> get() = specificPlansList
 
     fun explanationParameters(parameters: MappedExpressionBuilder.() -> List<Expression>) {
         explicitExplanationMaker = FixedKeyMetadataMaker(explanation, parameters)

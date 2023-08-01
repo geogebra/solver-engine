@@ -383,6 +383,8 @@ function treeToLatexInner(
       );
     case 'Reals':
       return tfd('\\mathbb{R}');
+    case 'Void':
+      return tfd('\\textrm{VOID}');
     case 'CartesianProduct':
       return tfd(
         n.args.length === 0

@@ -38,7 +38,7 @@ class MethodRegistryBuilder {
      * [moreSpecificMethods] map) come first
      */
     private fun buildPublicEntries(moreSpecificMethods: Map<MethodId, List<MethodId>>): List<MethodRegistry.EntryData> {
-        val remaining = registeredEntries.filter { it.isPublic }.toMutableSet()
+        val remaining = registeredEntries.toMutableSet()
         val addedIds = mutableSetOf<MethodId>()
         val publicEntries = mutableListOf<MethodRegistry.EntryData>()
         repeat(remaining.size) {
@@ -56,8 +56,7 @@ class MethodRegistryBuilder {
     }
 
     private fun buildMoreSpecificMethodsMap(): Map<MethodId, List<MethodId>> {
-        return registeredEntries.filter { it.isPublic }
-            .associateBy({ it.methodId }, { calculateMoreSpecificMethods(it) })
+        return registeredEntries.associateBy({ it.methodId }, { calculateMoreSpecificMethods(it) })
     }
 
     private fun calculateMoreSpecificMethods(entry: MethodRegistry.EntryData): List<MethodId> {
@@ -86,20 +85,22 @@ class MethodRegistry internal constructor(
     /**
      * List of public method entries, guaranteed to be ordered such that more specific methods come first.
      */
-    val publicEntries: List<EntryData>,
+    private val sortedEntries: List<EntryData>,
 ) {
 
     data class EntryData(
         val methodId: MethodId,
-        val isPublic: Boolean,
+        val hiddenFromList: Boolean,
         val description: String,
         val implementation: Method,
     )
 
+    val listedEntries = sortedEntries.filter { !it.hiddenFromList }
+
     /**
      * Get list of method IDs of methods more specific than [methodId]
      */
-    fun getMoreSpecificMethods(methodId: MethodId) = moreSpecificMethods[methodId] ?: emptyList()
+    private fun getMoreSpecificMethods(methodId: MethodId) = moreSpecificMethods[methodId] ?: emptyList()
 
     /**
      * Find the implementation of the method whose method ID has string representation [name]
@@ -109,8 +110,8 @@ class MethodRegistry internal constructor(
         return entries[methodId]?.implementation
     }
 
-    fun methodIsPublic(methodId: MethodId): Boolean {
-        return entries[methodId]?.isPublic ?: false
+    fun methodIsNotListed(methodId: MethodId): Boolean {
+        return entries[methodId]?.hiddenFromList ?: false
     }
 
     @Suppress("TooGenericExceptionCaught")
@@ -119,7 +120,7 @@ class MethodRegistry internal constructor(
         val successfulPlansIds = mutableSetOf<MethodId>()
         val selections = mutableListOf<Pair<MethodId, Transformation>>()
 
-        for (entryData in this.publicEntries) {
+        for (entryData in sortedEntries) {
             if (this.getMoreSpecificMethods(entryData.methodId).any { it in successfulPlansIds }) {
                 successfulPlansIds.add(entryData.methodId)
                 context.log(Level.FINE, "Skipping plan ID: ${entryData.methodId}")

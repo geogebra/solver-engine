@@ -16,7 +16,8 @@ class TaskSet(
     private val explanationMaker: MetadataMaker,
     private val skillMakers: List<MetadataMaker> = emptyList(),
     private val tasksProducer: TasksProducer,
-) : CompositeMethod() {
+    specificPlans: List<Method> = emptyList(),
+) : CompositeMethod(specificPlans) {
     override fun run(ctx: Context, sub: Expression): Transformation? {
         for (match in pattern.findMatches(ctx, RootMatch, sub)) {
             val tasks = tasksProducer.produceTasks(ctx, sub, match)
@@ -88,6 +89,7 @@ class TaskSetBuilder : CompositeMethodBuilder() {
             explanationMaker = explanationMaker,
             skillMakers = skillMakers,
             tasksProducer = ProceduralTasksProducer(init),
+            specificPlans = specificPlans,
         )
     }
 

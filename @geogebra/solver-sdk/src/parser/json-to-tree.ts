@@ -31,6 +31,8 @@ export function jsonToTree(json: MathJson | MathJson2, path = '.'): ExpressionTr
       result = { type: '/infinity/', path };
     } else if (str === '/reals/' || str === 'Reals') {
       result = { type: 'Reals', path };
+    } else if (str === 'Void') {
+      result = { type: 'Void', path };
     } else if (str.includes('_')) {
       const [value, subscript] = str.split('_', 2);
       result = { type: 'Variable', value, subscript, path };

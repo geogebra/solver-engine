@@ -71,7 +71,7 @@ class PlanApiServiceImpl : PlansApiService {
     }
 
     override fun listPlans(): List<String> {
-        return methodRegistry.publicEntries.map { it.methodId.toString() }.toList()
+        return methodRegistry.listedEntries.map { it.methodId.toString() }.toList()
     }
 
     companion object {

@@ -34,4 +34,4 @@ interface RunnerMethod : Method {
 }
 
 @Target(AnnotationTarget.FIELD)
-annotation class PublicMethod
+annotation class PublicMethod(val hiddenFromList: Boolean = false)

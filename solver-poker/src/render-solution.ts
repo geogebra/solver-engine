@@ -93,21 +93,29 @@ const renderTransformation = (trans: TransformationJson2, depth = 0): string => 
     solverSDK.treeToLatex(solverSDK.jsonToTree(expr, trans.path), settings.latexSettings, coloring);
   return /* HTML */ ` <div class="trans ${isThrough ? 'through-step' : ''}">
     ${renderExplanation(trans.explanation)}
-    <div class="expr">
-      ${renderExpression(
-        `${render(
-          trans.fromExpr,
-          fromColoring,
-        )} {\\color{#8888ff}\\thickspace\\longmapsto\\thickspace} ${render(
-          trans.toExpr,
-          toColoring,
-        )}`,
-      )}
-    </div>
+    <div class="expr">${renderExpressionMapping(trans, fromColoring, toColoring)}</div>
     ${renderSteps(trans.steps, depth, depth >= 0 || isThrough)}
     ${renderTasks(trans.tasks, depth, depth >= 0)}
     ${renderAlternatives(trans.alternatives, depth, false)}
   </div>`;
+};
+
+const renderExpressionMapping = (
+  trans: TransformationJson2,
+  fromColoring?: LatexTransformer,
+  toColoring?: LatexTransformer,
+) => {
+  const fromTree = solverSDK.jsonToTree(trans.fromExpr, trans.path);
+  const toTree = solverSDK.jsonToTree(trans.toExpr, trans.path);
+  const fromLatex = solverSDK.treeToLatex(fromTree, settings.latexSettings, fromColoring);
+  if (toTree.type === 'Void') {
+    return renderExpression(fromLatex);
+  } else {
+    const toLatex = solverSDK.treeToLatex(toTree, settings.latexSettings, toColoring);
+    return renderExpression(
+      `${fromLatex} {\\color{#8888ff}\\thickspace\\longmapsto\\thickspace} ${toLatex}`,
+    );
+  }
 };
 
 const createColorMaps = (
@@ -208,8 +216,11 @@ const renderTask = (task: TaskJson2, depth = 0): string => {
 };
 
 const renderTaskSteps = (task: TaskJson2, depth: number): string => {
+  const startExprTree = solverSDK.jsonToTree(task.startExpr);
   if (!task.steps) {
-    return renderExpression(task.startExpr);
+    return startExprTree.type === 'Void'
+      ? ''
+      : renderExpression(solverSDK.treeToLatex(startExprTree));
   }
 
   if (

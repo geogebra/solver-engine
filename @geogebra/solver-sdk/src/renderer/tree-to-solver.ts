@@ -1,4 +1,4 @@
-import type { DecoratorType, ExpressionTree, NestedExpression } from '../parser/types';
+import type { DecoratorType, ExpressionTree, NestedExpression } from '../parser';
 
 export type TransformerFunction = (node: ExpressionTree, defaultResult: string) => string;
 
@@ -100,6 +100,8 @@ export function treeToSolver(n: ExpressionTree): string {
       return dec(`{${n.args.map((el) => rec(el)).join(', ')}}`);
     case 'Reals':
       return dec('/reals/');
+    case 'Void':
+      return dec('/void/');
     case 'OpenInterval':
       return `(${rec(n.args[0])}, ${rec(n.args[1])})`;
     case 'ClosedInterval':

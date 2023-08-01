@@ -331,9 +331,7 @@ private val factorizeSumByFactoringTermsSteps: StepsProducer = steps {
         }
     }
     apply(factorizeSumSteps)
-    optionally {
-        applyToChildren(factorizationSteps)
-    }
+    applyToChildren(factorizationSteps)
     whilePossible(polynomialSimplificationSteps)
 }
 
@@ -347,9 +345,7 @@ private val factorizeSumByExpandingTermsSteps: StepsProducer = steps {
     }
     optionally {
         apply(factorizeSumSteps)
-        optionally {
-            applyToChildren(factorizationSteps)
-        }
+        applyToChildren(factorizationSteps)
     }
 }
 
@@ -371,7 +367,7 @@ private val factorizeMinusSteps: StepsProducer = steps {
 
 private val factorizeProductSteps: StepsProducer = steps {
     check { it is Product }
-    applyToChildren(factorizationSteps)
+    applyToChildren(factorizationSteps, atLeastOne = true)
     // to tidy up things like (x+1)^2 (x+2) (x+1)^3
     whilePossible(polynomialSimplificationSteps)
 }
@@ -390,7 +386,9 @@ val factorizationSteps: StepsProducer = steps {
         option(factorizeMinusSteps)
         option(factorizeProductSteps)
         option(factorizePowerSteps)
-        option { whilePossible(polynomialSimplificationSteps) }
+
+        // TODO figure out if there are problems with removing this option
+        // option { whilePossible(polynomialSimplificationSteps) }
     }
 }
 

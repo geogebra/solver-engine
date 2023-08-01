@@ -3,6 +3,7 @@ package server
 import methods.approximation.ApproximationPlans
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.decimals.DecimalPlans
+import methods.fallback.FallbackPlans
 import methods.integerarithmetic.IntegerArithmeticPlans
 import org.junit.jupiter.api.Test
 
@@ -47,6 +48,16 @@ class TestSelectPlansForConstantExpressions {
             setOf(
                 ConstantExpressionsPlans.SimplifyConstantExpression,
                 DecimalPlans.EvaluateExpressionAsDecimal,
+            ),
+        )
+    }
+
+    @Test
+    fun testSimplifiedConstant() {
+        testSelectPlanApi(
+            "2",
+            setOf(
+                FallbackPlans.ExpressionIsFullySimplified,
             ),
         )
     }

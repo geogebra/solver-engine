@@ -9,6 +9,7 @@ import engine.expressions.Inequation
 import engine.expressions.Product
 import engine.expressions.SetDifference
 import engine.expressions.StatementWithConstraint
+import engine.expressions.VoidExpression
 import engine.expressions.arsinhOf
 import engine.expressions.bracketOf
 import engine.expressions.cartesianProductOf
@@ -467,6 +468,14 @@ class ParserTest {
                 StatementWithConstraint(equationOf(xp("x"), xp(1)), lessThanOf(xp("x"), xp(0))),
                 equationOf(xp("x"), xp(2)),
             ),
+        )
+    }
+
+    @Test
+    fun testVoid() {
+        parsesTo(
+            "/void/",
+            VoidExpression(),
         )
     }
 }

@@ -1,6 +1,8 @@
 package processor
 
+import com.google.devtools.ksp.KspExperimental
 import com.google.devtools.ksp.containingFile
+import com.google.devtools.ksp.getAnnotationsByType
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
@@ -12,6 +14,8 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSNode
 import com.google.devtools.ksp.validate
 import com.google.devtools.ksp.visitor.KSDefaultVisitor
+import engine.methods.PublicMethod
+import engine.methods.PublicStrategy
 import translationkeys.TranslationKey
 import translationkeys.writeTranslationKeys
 import java.io.OutputStream
@@ -38,7 +42,7 @@ class MethodsProcessor(private val codeGenerator: CodeGenerator) : SymbolProcess
     }
 
     private fun processPublicMethods(resolver: Resolver) {
-        val symbols = resolver.getSymbolsWithAnnotation("engine.methods.PublicMethod").toList()
+        val symbols = resolver.getSymbolsWithAnnotation(PublicMethod::class.qualifiedName!!).toList()
 
         // skip directory if no symbols annotations (no PublicMethod).
         if (symbols.isEmpty()) return
@@ -62,10 +66,10 @@ class MethodsProcessor(private val codeGenerator: CodeGenerator) : SymbolProcess
             for (entry in entries) {
                 appendLine("    builder.registerEntry(")
                 appendLine("        MethodRegistry.EntryData(")
-                appendLine("            MethodId(\"${entry.category}\", \"${entry.name}\"),")
-                appendLine("            true,")
-                appendLine("            \"\"\"${entry.description}\"\"\",")
-                appendLine("            ${entry.implementationName}")
+                appendLine("            methodId = MethodId(\"${entry.category}\", \"${entry.name}\"),")
+                appendLine("            hiddenFromList = ${(entry.hiddenFromList)},")
+                appendLine("            description = \"\"\"${entry.description}\"\"\",")
+                appendLine("            implementation = ${entry.implementationName}")
                 appendLine("        )")
                 appendLine("    )")
             }
@@ -84,8 +88,7 @@ class MethodsProcessor(private val codeGenerator: CodeGenerator) : SymbolProcess
     }
 
     private fun processPublicStrategies(resolver: Resolver) {
-        val symbols = resolver.getSymbolsWithAnnotation("engine.methods.PublicStrategy").toList()
-
+        val symbols = resolver.getSymbolsWithAnnotation(PublicStrategy::class.qualifiedName!!).toList()
         // skip directory if no symbols annotations (no PublicMethod).
         if (symbols.isEmpty()) return
 
@@ -121,6 +124,7 @@ class MethodsProcessor(private val codeGenerator: CodeGenerator) : SymbolProcess
 
     private inner class PublicMethodVisitor : KSDefaultVisitor<Unit, Entry>() {
 
+        @OptIn(KspExperimental::class)
         override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit): Entry {
             val parentDeclaration = classDeclaration.parentDeclaration
             if (classDeclaration.qualifiedName == null || parentDeclaration == null || parentDeclaration.qualifiedName == null) {
@@ -128,12 +132,23 @@ class MethodsProcessor(private val codeGenerator: CodeGenerator) : SymbolProcess
             }
             val category = classDeclaration.parentDeclaration!!.qualifiedName!!
             val qname = classDeclaration.qualifiedName!!
+
+            // This visitor function is used both for @PublicMethod and @PublicStrategy annotated enum values,
+            // so the @PublicMethod annotation might not be there.  It's probably not the right way to organise
+            // the code...
+            val publicMethodAnnotation = classDeclaration.getAnnotationsByType(PublicMethod::class).firstOrNull()
+            val hiddenFromList = when {
+                publicMethodAnnotation != null -> publicMethodAnnotation.hiddenFromList
+                else -> false
+            }
+
             return Entry(
                 category = category.getShortName().removeSuffix("Plans"),
                 categoryImplementationName = category.asString(),
                 name = qname.getShortName(),
                 implementationName = qname.asString(),
                 description = classDeclaration.docString?.trim() ?: "",
+                hiddenFromList = hiddenFromList,
             )
         }
 
@@ -154,6 +169,7 @@ private data class Entry(
     val name: String,
     val implementationName: String,
     val description: String,
+    val hiddenFromList: Boolean,
 ) {
     fun getTranslationKey() = TranslationKey(
         key = "Method.$category.$name",

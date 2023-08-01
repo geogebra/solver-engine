@@ -15,6 +15,8 @@ contents to a new release section (e.g. _[0.x]_).
 - Added support for computing the domain of rational expressions (PLUT-638)
 - Added support for variables with subscripts (PLUT-656)
 - SDK: added support for displaying variables with subscripts and parsing such constructs from LaTeX (PLUT-656)
+- Fallback plan for expressions which are fully simplified or quadratics with negative discriminant (PLUT-603, PLUT-624)
+- SDK: added support for Void expression - this would need explicit handling in front-ends (PLUT-603)
 
 ### Fixed
 
@@ -24,7 +26,7 @@ contents to a new release section (e.g. _[0.x]_).
 ### Changed
 
 - Improved factoring common factors to support powers of arbitrary expressions and sum factors with terms in a
-  different order, e.g. `3 (x + 1)^3 + 6 (1 + x)^2`
+  different order, e.g. `3 (x + 1)^3 + 6 (1 + x)^2` (PLUT-647)
 - Improved the simplification of coefficients after expanding (PLUT-630)
 - When a sum is substituted into a sum it is inlined instead of being wrapped in a bracket (PLUT-621)
 - Changed the conversion of mixed numbers to improper fractions, the transformations are no longer executed "in step"

@@ -57,11 +57,6 @@ class PlanBuilder : CompositeMethodBuilder() {
     private var alternatives: MutableList<ContextSensitiveAlternative> = mutableListOf()
     private lateinit var defaultSteps: StepsProducer
     private lateinit var resourceData: ResourceData
-    private var specificPlansList: MutableList<Method> = mutableListOf()
-
-    fun specificPlans(vararg plans: Method) {
-        specificPlansList.addAll(plans)
-    }
 
     private fun checkNotInitialized() {
         check(!::defaultSteps.isInitialized)
@@ -92,7 +87,7 @@ class PlanBuilder : CompositeMethodBuilder() {
                 stepsProducer = stepsProducer,
                 explanationMaker = explanationMaker,
                 skillMakers = skillMakers,
-                specificPlans = specificPlansList,
+                specificPlans = specificPlans,
             )
             else -> Plan(
                 pattern = pattern,
@@ -100,7 +95,7 @@ class PlanBuilder : CompositeMethodBuilder() {
                 stepsProducer = stepsProducer,
                 explanationMaker = explanationMaker,
                 skillMakers = skillMakers,
-                specificPlans = specificPlansList,
+                specificPlans = specificPlans,
             )
         }
     }

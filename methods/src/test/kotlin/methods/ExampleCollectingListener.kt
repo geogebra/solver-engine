@@ -89,7 +89,7 @@ ${testReports.sortedBy { !it.passed }.joinToString(",\n", transform = ::generate
             val keys = extractExplanationsKeys(solution).toSet()
             if (category != null && keys.isNotEmpty()) {
                 val methodId = MethodId(category, method.name)
-                if (methodRegistry.methodIsPublic(methodId)) {
+                if (!methodRegistry.methodIsNotListed(methodId)) {
                     examples.addAll(keys.map { Example(input, method.toString(), KeyNameRegistry.getKeyName(it)) })
                 }
             }

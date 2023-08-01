@@ -25,6 +25,7 @@ import engine.operators.SumOperator
 import engine.operators.UnaryExpressionOperator
 import engine.operators.VariableListOperator
 import engine.operators.VariableOperator
+import engine.operators.VoidOperator
 import engine.patterns.ExpressionProvider
 import engine.patterns.Match
 import engine.sign.Sign
@@ -607,6 +608,8 @@ private fun expressionOf(
         EquationSystemOperator -> EquationSystem(operands, meta)
 
         is NameOperator -> Name(operator.value, meta)
+
+        VoidOperator -> VoidExpression(meta)
 
         else -> Expression(operator, operands, meta)
     }
