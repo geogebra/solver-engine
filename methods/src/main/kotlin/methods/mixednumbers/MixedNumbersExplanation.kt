@@ -7,9 +7,9 @@ import engine.steps.metadata.TranslationKeys
 enum class MixedNumbersExplanation : CategorisedMetadataKey {
 
     /**
-     * Convert two or more mixed numbers to improper fractions in parallel
+     * Convert a mixed numbers to an improper fraction
      */
-    ConvertMixedNumbersToImproperFraction,
+    ConvertMixedNumberToImproperFraction,
 
     /**
      * Convert two or more mixed numbers to sums in parellel
@@ -22,18 +22,6 @@ enum class MixedNumbersExplanation : CategorisedMetadataKey {
      * E.g. [1 2/3] -> 1 + [2 / 3]
      */
     ConvertMixedNumberToSum,
-
-    /**
-     * Convert two or more integers to fractions in parallel
-     * E.g. (1 + [2 / 3]) + (3 + [1 / 2]) -> ([1 / 1] + [2 / 3]) + ([3 / 1] + [1 / 2])
-     */
-    ConvertIntegersToFractions,
-
-    /**
-     * Add two or more (unlike) fractions in parallel
-     * E.g. ([1 / 1] + [2 / 3]) + ([3 / 1] + [1 / 2]) -> [5 / 3] + [7 / 2]
-     */
-    AddFractions,
 
     /**
      * Convert the sum of an integer and a proper fraction to a mixed number

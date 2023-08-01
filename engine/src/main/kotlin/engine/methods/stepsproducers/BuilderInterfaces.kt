@@ -13,20 +13,6 @@ import engine.patterns.Pattern
 annotation class StepsProducerBuilderMarker
 
 @StepsProducerBuilderMarker
-interface InStepBuilder {
-
-    /**
-     * A single mandatory step.
-     */
-    fun step(init: InStepStepBuilder.() -> Unit)
-
-    /**
-     * A single optional step.
-     */
-    fun optionalStep(init: InStepStepBuilder.() -> Unit)
-}
-
-@StepsProducerBuilderMarker
 interface FirstOfBuilder {
 
     /**
@@ -111,11 +97,6 @@ interface PipelineBuilder {
      * but not to the working expression itself
      */
     fun applyToChildren(init: PipelineBuilder.() -> Unit)
-
-    /**
-     * Apply the recipe to the children of the expression in step.
-     */
-    fun applyToChildrenInStep(init: InStepBuilder.() -> Unit)
 
     /**
      * Apply the first valid option in the following.  The step fails if no option is valid.

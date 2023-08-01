@@ -101,17 +101,9 @@ class ExpandPolynomialExpressionTest {
 
             step {
                 fromExpr = "[([(x + 1) ^ 2] + 2) ^ 2]"
-                toExpr = "[(([x ^ 2] + 2 x + 1) + 2) ^ 2]"
-                explanation {
-                    key = ExpandExplanation.ExpandBinomialSquaredAndSimplify
-                }
-            }
-
-            step {
-                fromExpr = "[(([x ^ 2] + 2 x + 1) + 2) ^ 2]"
                 toExpr = "[([x ^ 2] + 2 x + 1 + 2) ^ 2]"
                 explanation {
-                    key = GeneralExplanation.RemoveAllBracketSumInSum
+                    key = ExpandExplanation.ExpandBinomialSquaredAndSimplify
                 }
             }
 
@@ -727,7 +719,7 @@ class ExpandPolynomialExpressionTest {
 
             step {
                 fromExpr = "3 (x + 1) - 2 (x + 6)"
-                toExpr = "(3 x + 3) - 2 (x + 6)"
+                toExpr = "3 x + 3 - 2 (x + 6)"
                 explanation {
                     key = ExpandExplanation.ExpandSingleBracketAndSimplify
                 }
@@ -750,16 +742,8 @@ class ExpandPolynomialExpressionTest {
             }
 
             step {
-                fromExpr = "(3 x + 3) - 2 (x + 6)"
-                toExpr = "3 x + 3 - 2 (x + 6)"
-                explanation {
-                    key = GeneralExplanation.RemoveBracketSumInSum
-                }
-            }
-
-            step {
                 fromExpr = "3 x + 3 - 2 (x + 6)"
-                toExpr = "3 x + 3 + (-2 x - 12)"
+                toExpr = "3 x + 3 - 2 x - 12"
                 explanation {
                     key = ExpandExplanation.ExpandSingleBracketAndSimplify
                 }
@@ -778,14 +762,6 @@ class ExpandPolynomialExpressionTest {
                     explanation {
                         key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
                     }
-                }
-            }
-
-            step {
-                fromExpr = "3 x + 3 + (-2 x - 12)"
-                toExpr = "3 x + 3 - 2 x - 12"
-                explanation {
-                    key = GeneralExplanation.RemoveBracketSumInSum
                 }
             }
 

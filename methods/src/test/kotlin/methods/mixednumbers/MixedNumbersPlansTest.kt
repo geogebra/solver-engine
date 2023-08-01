@@ -15,36 +15,67 @@ class MixedNumbersPlansTest {
         inputExpr = "[5 1/4] + [2 2/3]"
 
         check {
+            fromExpr = "[5 1/4] + [2 2/3]"
             toExpr = "[7 11/12]"
+            explanation {
+                key = MixedNumbersExplanation.AddMixedNumbers
+            }
+
             step {
                 fromExpr = "[5 1/4] + [2 2/3]"
-                toExpr = "[21 / 4] + [8 / 3]"
+                toExpr = "[21 / 4] + [2 2/3]"
+                explanation {
+                    key = MixedNumbersExplanation.ConvertMixedNumberToImproperFraction
+                }
 
                 transform {
-                    fromPaths(".")
-                    toPaths(".")
+                    fromPaths("./0")
+                    toPaths("./0")
+                }
+
+                shift {
+                    fromPaths("./1")
+                    toPaths("./1")
+                }
+            }
+
+            step {
+                fromExpr = "[21 / 4] + [2 2/3]"
+                toExpr = "[21 / 4] + [8 / 3]"
+                explanation {
+                    key = MixedNumbersExplanation.ConvertMixedNumberToImproperFraction
+                }
+
+                shift {
+                    fromPaths("./0")
+                    toPaths("./0")
+                }
+
+                transform {
+                    fromPaths("./1")
+                    toPaths("./1")
                 }
             }
 
             step {
                 fromExpr = "[21 / 4] + [8 / 3]"
                 toExpr = "[95 / 12]"
+                explanation {
+                    key = FractionArithmeticExplanation.AddFractions
+                }
 
                 transform {
                     fromPaths(".")
                     toPaths(".")
                 }
-
-                explanation {
-                    key = methods.fractionarithmetic.Explanation.AddFractions
-                }
             }
 
-            // the path mappings of this aren't probably correct
-            // it should be [95 / 12] -> [7 11/12] (as a transformation)
             step {
                 fromExpr = "[95 / 12]"
                 toExpr = "[7 11/12]"
+                explanation {
+                    key = MixedNumbersExplanation.ConvertFractionToMixedNumber
+                }
 
                 combine {
                     fromPaths("./0", "./1", "./1:outerOp")
@@ -60,34 +91,7 @@ class MixedNumbersPlansTest {
                     fromPaths("./1")
                     toPaths("./2")
                 }
-
-                explanation {
-                    key = Explanation.ConvertFractionToMixedNumber
-                }
             }
-        }
-    }
-
-    @Test
-    fun testContextSensitivePlanEU() = testMethod {
-        method = MixedNumbersPlans.AddMixedNumbers
-        context = Context(curriculum = Curriculum.EU)
-        inputExpr = "[5 1/4] + [2 2/3]"
-
-        check {
-            toExpr = "[7 11/12]"
-            step {
-                fromExpr = "[5 1/4] + [2 2/3]"
-                toExpr = "[21 / 4] + [8 / 3]"
-
-                transform {
-                    fromPaths(".")
-                    toPaths(".")
-                }
-            }
-
-            step { }
-            step { }
         }
     }
 
@@ -100,19 +104,20 @@ class MixedNumbersPlansTest {
         check {
             fromExpr = "[5 3/4] + [2 2/3]"
             toExpr = "[8 5/12]"
+            explanation {
+                key = MixedNumbersExplanation.AddMixedNumbers
+            }
 
             step {
-                toExpr = "(5 + [3 / 4]) + (2 + [2 / 3])"
+                fromExpr = "[5 3/4] + [2 2/3]"
+                toExpr = "5 + [3 / 4] + 2 + [2 / 3]"
                 explanation {
                     key = MixedNumbersExplanation.ConvertMixedNumbersToSums
                 }
             }
 
             step {
-                toExpr = "5 + [3 / 4] + 2 + [2 / 3]"
-            }
-
-            step {
+                fromExpr = "5 + [3 / 4] + 2 + [2 / 3]"
                 toExpr = "7 + [3 / 4] + [2 / 3]"
                 explanation {
                     key = IntegerArithmeticExplanation.EvaluateIntegerAddition
@@ -120,6 +125,7 @@ class MixedNumbersPlansTest {
             }
 
             step {
+                fromExpr = "7 + [3 / 4] + [2 / 3]"
                 toExpr = "7 + [17 / 12]"
                 explanation {
                     key = FractionArithmeticExplanation.AddFractions
@@ -127,6 +133,7 @@ class MixedNumbersPlansTest {
             }
 
             step {
+                fromExpr = "7 + [17 / 12]"
                 toExpr = "[7 / 1] + [17 / 12]"
                 explanation {
                     key = FractionArithmeticExplanation.ConvertIntegerToFraction
@@ -134,6 +141,7 @@ class MixedNumbersPlansTest {
             }
 
             step {
+                fromExpr = "[7 / 1] + [17 / 12]"
                 toExpr = "[101 / 12]"
                 explanation {
                     key = FractionArithmeticExplanation.AddFractions
@@ -141,6 +149,7 @@ class MixedNumbersPlansTest {
             }
 
             step {
+                fromExpr = "[101 / 12]"
                 toExpr = "[8 5/12]"
                 explanation {
                     key = MixedNumbersExplanation.ConvertFractionToMixedNumber
@@ -158,19 +167,20 @@ class MixedNumbersPlansTest {
         check {
             fromExpr = "[1 1/2] + [2 1/3]"
             toExpr = "[3 5/6]"
+            explanation {
+                key = MixedNumbersExplanation.AddMixedNumbers
+            }
 
             step {
-                toExpr = "(1 + [1 / 2]) + (2 + [1 / 3])"
+                fromExpr = "[1 1/2] + [2 1/3]"
+                toExpr = "1 + [1 / 2] + 2 + [1 / 3]"
                 explanation {
                     key = MixedNumbersExplanation.ConvertMixedNumbersToSums
                 }
             }
 
             step {
-                toExpr = "1 + [1 / 2] + 2 + [1 / 3]"
-            }
-
-            step {
+                fromExpr = "1 + [1 / 2] + 2 + [1 / 3]"
                 toExpr = "3 + [1 / 2] + [1 / 3]"
                 explanation {
                     key = IntegerArithmeticExplanation.EvaluateIntegerAddition
@@ -178,6 +188,7 @@ class MixedNumbersPlansTest {
             }
 
             step {
+                fromExpr = "3 + [1 / 2] + [1 / 3]"
                 toExpr = "3 + [5 / 6]"
                 explanation {
                     key = FractionArithmeticExplanation.AddFractions
@@ -185,6 +196,7 @@ class MixedNumbersPlansTest {
             }
 
             step {
+                fromExpr = "3 + [5 / 6]"
                 toExpr = "[3 5/6]"
                 explanation {
                     key = MixedNumbersExplanation.ConvertSumOfIntegerAndProperFractionToMixedNumber
@@ -202,19 +214,20 @@ class MixedNumbersPlansTest {
         check {
             fromExpr = "[5 2/3] + [3 12/36]"
             toExpr = "9"
+            explanation {
+                key = MixedNumbersExplanation.AddMixedNumbers
+            }
 
             step {
-                toExpr = "(5 + [2 / 3]) + (3 + [12 / 36])"
+                fromExpr = "[5 2/3] + [3 12/36]"
+                toExpr = "5 + [2 / 3] + 3 + [12 / 36]"
                 explanation {
                     key = MixedNumbersExplanation.ConvertMixedNumbersToSums
                 }
             }
 
             step {
-                toExpr = "5 + [2 / 3] + 3 + [12 / 36]"
-            }
-
-            step {
+                fromExpr = "5 + [2 / 3] + 3 + [12 / 36]"
                 toExpr = "5 + [2 / 3] + 3 + [1 / 3]"
                 explanation {
                     key = FractionArithmeticExplanation.SimplifyFraction
@@ -222,6 +235,7 @@ class MixedNumbersPlansTest {
             }
 
             step {
+                fromExpr = "5 + [2 / 3] + 3 + [1 / 3]"
                 toExpr = "8 + [2 / 3] + [1 / 3]"
                 explanation {
                     key = IntegerArithmeticExplanation.EvaluateIntegerAddition
@@ -229,6 +243,7 @@ class MixedNumbersPlansTest {
             }
 
             step {
+                fromExpr = "8 + [2 / 3] + [1 / 3]"
                 toExpr = "8 + 1"
                 explanation {
                     key = FractionArithmeticExplanation.AddFractions
@@ -236,6 +251,7 @@ class MixedNumbersPlansTest {
             }
 
             step {
+                fromExpr = "8 + 1"
                 toExpr = "9"
                 explanation {
                     key = IntegerArithmeticExplanation.EvaluateIntegerAddition
@@ -243,15 +259,4 @@ class MixedNumbersPlansTest {
             }
         }
     }
-
-    // this would need a check as well
-    // @Test
-    // fun testFunction() = testMethod {
-    //     method = convertMixedNumberToImproperFraction
-    //     inputExpr = "[3 1/0] + [2 1/0]"
-    //
-    //     check {
-    //         toExpr = "[7 / 2] + [7 / 3]"
-    //     }
-    // }
 }

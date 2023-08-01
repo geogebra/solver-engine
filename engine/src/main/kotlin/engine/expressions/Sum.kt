@@ -27,6 +27,22 @@ class Sum(
             signBasedOnOperandSigns
         }
     }
+
+    @Suppress("ComplexCondition") // This method will be removed soon
+    override fun replaceNthChild(childIndex: Int, newChild: Expression): Expression {
+        if (newChild !is Sum || newChild.hasLabel() || children[childIndex].isPartialSum() || newChild.isPartialSum()) {
+            return super.replaceNthChild(childIndex, newChild)
+        }
+        val flatOperands = mutableListOf<Expression>()
+        for ((i, child) in children.withIndex()) {
+            if (i != childIndex) {
+                flatOperands.add(child)
+            } else {
+                flatOperands.addAll(newChild.children)
+            }
+        }
+        return Sum(flatOperands, meta.copyMeta(origin = Build))
+    }
 }
 
 fun areEquivalentSums(expr1: Expression, expr2: Expression): Boolean {

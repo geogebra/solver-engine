@@ -791,17 +791,9 @@ class FactorPlansTest {
 
             step {
                 fromExpr = "(x + 2) (9 (x + 2) - 1)"
-                toExpr = "(x + 2) ((9 x + 18) - 1)"
-                explanation {
-                    key = ExpandExplanation.ExpandSingleBracketAndSimplify
-                }
-            }
-
-            step {
-                fromExpr = "(x + 2) ((9 x + 18) - 1)"
                 toExpr = "(x + 2) (9 x + 18 - 1)"
                 explanation {
-                    key = GeneralExplanation.RemoveAllBracketSumInSum
+                    key = ExpandExplanation.ExpandSingleBracketAndSimplify
                 }
             }
 

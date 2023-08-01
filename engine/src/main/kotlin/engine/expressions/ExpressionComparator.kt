@@ -24,8 +24,8 @@ fun interface ExpressionComparator {
  */
 object SimpleComparator : ExpressionComparator {
     override fun compare(e1: Expression, e2: Expression): Sign {
-        if (e1.isNeg() && e2.isNeg()) {
-            return compare(e2.firstChild, e1.firstChild)
+        if (e1 is Minus && e2 is Minus) {
+            return compare(e2.argument, e1.argument)
         }
         return verbatimCompare(e1, e2)
             ?: decimalCompare(e1, e2)

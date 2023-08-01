@@ -232,19 +232,17 @@ open class Expression internal constructor(
             operands.zip(other.operands).all { (op1, op2) -> op1.equiv(op2) }
     }
 
-    fun decorate(decorator: Decorator?) = if (decorator == null) {
-        this
-    } else {
-        expressionOf(operator, operands, meta.copyMeta(decorators = decorators + decorator))
-    }
+    private fun withDecorators(decorators: List<Decorator>) =
+        expressionOf(operator, operands, meta.copyMeta(decorators = decorators))
+
+    fun decorate(decorator: Decorator?) = if (decorator == null) this else withDecorators(decorators + decorator)
+
+    fun removeBrackets() = if (hasBracket()) withDecorators(emptyList()) else this
 
     fun hasBracket() = decorators.isNotEmpty()
 
-    fun isPartialSum() = operator is SumOperator && decorators.getOrNull(0) === Decorator.PartialBracket
+    fun isPartialSum() = this is Sum && decorators.getOrNull(0) === Decorator.PartialBracket
     fun isPartialProduct() = this is Product && decorators.getOrNull(0) === Decorator.PartialBracket
-
-    fun removeBrackets() =
-        if (hasBracket()) expressionOf(operator, operands, meta.copyMeta(decorators = emptyList())) else this
 
     fun outerBracket() = decorators.lastOrNull()
 
@@ -290,35 +288,33 @@ open class Expression internal constructor(
     }
 
     /**
-     * Updates the origin of the expression so that it now descends from [ancestor]
-     */
-    internal fun updateOrigin(ancestor: Expression): Expression = when (val origin = origin) {
-        ancestor.origin -> ancestor
-        is Child -> origin.parent.updateOrigin(ancestor).nthChild(origin.index)
-        else -> this
-    }
-
-    /**
      * Builds an expression that substitutes [newExpr] for [subExpr] in this expression if possible, otherwise returns
-     * the expression unchanged with the exception that outer brackets are removed if it is the root expression.
+     * the expression unchanged. Flattens the expression if substituting a product in a product or a sum in a sum.
      */
-    fun substitute(subExpr: Expression, newExpr: Expression): Expression = when {
-        subExpr.origin is RootOrigin && origin !is RootOrigin -> this
-        subExpr.origin is RootOrigin -> newExpr.removeBrackets()
-        else -> justSubstitute(subExpr.origin, newExpr)
+    internal fun substitute(subExpr: Expression, newExpr: Expression): Expression {
+        return when (val subOrigin = subExpr.origin) {
+            origin -> newExpr
+            is Child -> justSubstitute(
+                subOrigin.parent.origin,
+                subOrigin.parent.replaceNthChild(subOrigin.index, newExpr),
+            )
+            else -> this
+        }
     }
 
     /**
-     * Builds and expression that substitutes [newExpr] for the expression at [subOrigin] in this expression, flattening
-     * products as fit.
+     * Builds and expression that substitutes [newExpr] for the expression at [subOrigin] in this expression without
+     * changing brackets or the structure of the expression.
      */
-    private fun justSubstitute(subOrigin: Origin, newExpr: Expression): Expression = when (subOrigin) {
-        origin -> newExpr
-        is Child -> justSubstitute(
-            subOrigin.parent.origin,
-            subOrigin.parent.replaceNthChild(subOrigin.index, newExpr),
-        )
-        else -> this
+    private fun justSubstitute(subOrigin: Origin, newExpr: Expression): Expression {
+        return when (subOrigin) {
+            origin -> newExpr
+            is Child -> justSubstitute(
+                subOrigin.parent.origin,
+                subOrigin.parent.justReplaceNthChild(subOrigin.index, newExpr),
+            )
+            else -> this
+        }
     }
 
     /**
@@ -343,17 +339,28 @@ open class Expression internal constructor(
             children.mapIndexed { i, op ->
                 when {
                     i != childIndex -> op
-                    newChild.hasBracket() || operator.nthChildAllowed(i, newChild.operator) -> newChild
                     else -> {
-                        val outerBracket = op.outerBracket()
+                        val oldBracket = op.outerBracket()
                         val newBracket = when {
-                            outerBracket == null -> Decorator.RoundBracket
-                            outerBracket == Decorator.PartialBracket && newChild.operator != op.operator ->
+                            operator.nthChildAllowed(i, newChild.operator) -> null
+                            oldBracket == null || oldBracket == Decorator.MissingBracket ->
+                                newChild.outerBracket() ?: Decorator.RoundBracket
+                            oldBracket == Decorator.PartialBracket && newChild.operator != op.operator ->
                                 Decorator.RoundBracket
-                            else -> outerBracket
+                            else -> oldBracket
                         }
-                        newChild.decorate(newBracket)
+                        newChild.withDecorators(listOfNotNull(newBracket))
                     }
+                }
+            },
+        )
+
+    protected open fun justReplaceNthChild(childIndex: Int, newChild: Expression) =
+        replaceChildren(
+            children.mapIndexed { i, op ->
+                when {
+                    i != childIndex -> op
+                    else -> newChild
                 }
             },
         )
@@ -470,13 +477,11 @@ fun Expression.withoutNegOrPlus(): Expression = when (operator) {
     else -> this
 }
 
-fun Expression.isNeg() = operator == UnaryExpressionOperator.Minus
-
-fun Expression.isSignedFraction() = this is Fraction || (this.isNeg() && firstChild is Fraction)
+fun Expression.isSignedFraction() = this is Fraction || (this is Minus && firstChild is Fraction)
 
 fun Expression.inverse(): Expression = when {
     this == Constants.One -> this
-    isNeg() -> simplifiedNegOf(firstChild.inverse())
+    this is Minus -> simplifiedNegOf(firstChild.inverse())
     this is Fraction -> simplifiedFractionOf(denominator, numerator)
     else -> fractionOf(Constants.One, this)
 }

@@ -1556,6 +1556,7 @@ class CancelOppositeTermTest {
 }
 
 class ExponentsTest {
+
     @Test
     fun testEvaluateExpressionToThePowerOfOneComplexExpression() = testMethod {
         method = ConstantExpressionsPlans.SimplifyConstantExpression
@@ -1569,13 +1570,11 @@ class ExponentsTest {
             }
 
             step {
-                toExpr = "(sqrt[2] + 1) + 1"
+                toExpr = "sqrt[2] + 1 + 1"
                 explanation {
                     key = GeneralExplanation.SimplifyExpressionToThePowerOfOne
                 }
             }
-
-            step { }
 
             step { }
         }

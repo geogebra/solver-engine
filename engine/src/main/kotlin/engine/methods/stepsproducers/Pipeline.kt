@@ -146,12 +146,6 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
         }
     }
 
-    override fun applyToChildrenInStep(init: InStepBuilder.() -> Unit) {
-        if (!builder.inProgress) return
-
-        addSteps(ProceduralApplyToChildrenInStep(init).produceSteps(ctx, builder.lastSub))
-    }
-
     override fun firstOf(init: FirstOfBuilder.() -> Unit) {
         if (!builder.inProgress) return
 

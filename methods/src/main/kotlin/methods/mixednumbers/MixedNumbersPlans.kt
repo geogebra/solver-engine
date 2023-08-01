@@ -2,40 +2,41 @@ package methods.mixednumbers
 
 import engine.context.Curriculum
 import engine.context.ResourceData
+import engine.expressions.MixedNumberExpression
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
-import engine.patterns.mixedNumberOf
-import engine.patterns.sumOf
+import engine.patterns.sumContaining
 import methods.fractionarithmetic.FractionArithmeticPlans
 import methods.fractionarithmetic.FractionArithmeticRules
 import methods.fractionarithmetic.addIntegerFractions
 import methods.general.GeneralRules
-import methods.general.NormalizationPlans
 import methods.integerarithmetic.IntegerArithmeticRules
 
 enum class MixedNumbersPlans(override val runner: CompositeMethod) : RunnerMethod {
 
-    ConvertMixedNumberToImproperFraction(
+    ConvertMixedNumbersToSums(
         plan {
-            explanation = Explanation.ConvertMixedNumbersToImproperFraction
+            explanation = Explanation.ConvertMixedNumbersToSums
 
             steps {
-                applyToChildrenInStep {
-                    step {
-                        explanationKey = Explanation.ConvertMixedNumbersToSums
-                        method = MixedNumbersRules.SplitMixedNumber
-                    }
-                    step {
-                        explanationKey = Explanation.ConvertIntegersToFractions
-                        method = FractionArithmeticRules.ConvertIntegerToFraction
-                    }
-                    step {
-                        explanationKey = Explanation.AddFractions
-                        method = addIntegerFractions
-                    }
+                whilePossible { deeply(MixedNumbersRules.SplitMixedNumber) }
+            }
+        },
+    ),
+
+    ConvertMixedNumberToImproperFraction(
+        plan {
+            explanation = Explanation.ConvertMixedNumberToImproperFraction
+
+            steps {
+                apply(MixedNumbersRules.SplitMixedNumber)
+                optionally {
+                    applyTo(FractionArithmeticPlans.SimplifyFraction) { it.secondChild }
                 }
+                apply(FractionArithmeticRules.ConvertIntegerToFraction)
+                apply(addIntegerFractions)
             }
         },
     ),
@@ -46,40 +47,31 @@ enum class MixedNumbersPlans(override val runner: CompositeMethod) : RunnerMetho
     @PublicMethod
     AddMixedNumbers(
         plan {
-            pattern = sumOf(mixedNumberOf(), mixedNumberOf())
+            pattern = sumContaining { it is MixedNumberExpression }
 
             explanation = Explanation.AddMixedNumbers
 
             steps(ResourceData(curriculum = Curriculum.EU)) {
-                apply(ConvertMixedNumberToImproperFraction)
-                apply(addIntegerFractions)
+                applyToChildren(ConvertMixedNumberToImproperFraction)
+                whilePossible(addIntegerFractions)
                 // result might be integer or proper fraction after
                 // simplification, so this step is optional
                 optionally(MixedNumbersRules.FractionToMixedNumber)
             }
 
             alternative(ResourceData(curriculum = Curriculum.US)) {
+                apply(ConvertMixedNumbersToSums)
 
-                plan {
-                    explanation = Explanation.ConvertMixedNumbersToSums
-
-                    steps {
-                        whilePossible { deeply(MixedNumbersRules.SplitMixedNumber) }
-                    }
-                }
-
-                whilePossible {
+                shortcut {
                     deeply(GeneralRules.SimplifyZeroDenominatorFractionToUndefined)
                 }
 
-                apply(NormalizationPlans.RemoveAllBracketSumInSum)
-
-                whilePossible {
-                    deeply(FractionArithmeticPlans.SimplifyFraction)
+                optionally {
+                    applyToChildren(FractionArithmeticPlans.SimplifyFraction)
                 }
 
-                apply(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
-                apply(addIntegerFractions)
+                whilePossible(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
+                whilePossible(addIntegerFractions)
 
                 firstOf {
                     option(IntegerArithmeticRules.EvaluateSignedIntegerAddition)

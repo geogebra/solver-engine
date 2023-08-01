@@ -160,7 +160,7 @@ enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             val innerFactorSteps = engine.methods.stepsproducers.steps {
                 firstOf {
-                    option(factorizationSteps)
+                    option(factorizeSumSteps)
                     option(FactorRules.FactorNegativeSignOfLeadingCoefficient)
                 }
             }
@@ -169,8 +169,10 @@ enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
                 firstOf {
                     optionsFor({ 1 until it.childCount }) {
                         apply(GroupPolynomial(it))
-                        optionally { applyTo(innerFactorSteps) { it.firstChild } }
-                        optionally { applyTo(innerFactorSteps) { it.secondChild } }
+                        apply {
+                            optionally { applyTo(innerFactorSteps) { it.firstChild } }
+                            optionally { applyTo(innerFactorSteps) { it.secondChild } }
+                        }
                         apply(factorizeSumSteps)
                     }
                 }

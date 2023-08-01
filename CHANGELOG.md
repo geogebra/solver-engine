@@ -26,6 +26,9 @@ contents to a new release section (e.g. _[0.x]_).
 - Improved factoring common factors to support powers of arbitrary expressions and sum factors with terms in a
   different order, e.g. `3 (x + 1)^3 + 6 (1 + x)^2`
 - Improved the simplification of coefficients after expanding (PLUT-630)
+- When a sum is substituted into a sum it is inlined instead of being wrapped in a bracket (PLUT-621)
+- Changed the conversion of mixed numbers to improper fractions, the transformations are no longer executed "in step"
+  on the two mixed numbers, rather in turn (PLUT-621)
 
 ### Removed
 
