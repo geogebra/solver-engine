@@ -4,6 +4,7 @@ import engine.expressions.Decorator
 import engine.expressions.DivideBy
 import engine.expressions.Expression
 import engine.expressions.PathScope
+import engine.expressions.Power
 import engine.expressions.Product
 import engine.expressions.Root
 import engine.expressions.SquareRoot
@@ -263,8 +264,7 @@ private fun orderInProduct(e: Expression): Int {
     val isConstantAdjuster = if (e.isConstant()) 0 else 10
     return isConstantAdjuster + when (e) {
         is Sum -> 3
-        is Root -> 2
-        is SquareRoot -> 2
+        is Root, is Power, is SquareRoot -> 2
         else -> 1
     }
 }

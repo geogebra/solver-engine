@@ -1,5 +1,6 @@
 package methods.integerrationalexponents
 
+import engine.methods.testMethod
 import engine.methods.testRule
 import methods.integerrationalexponents.IntegerRationalExponentsRules.EvaluateNegativeToRationalExponentAsUndefined
 import methods.integerrationalexponents.IntegerRationalExponentsRules.FactorDenominatorOfRationalExponents
@@ -125,6 +126,53 @@ object IntegerRationalExponentsRulesTest {
             "[(-2) ^ -[1/2]]",
             EvaluateNegativeToRationalExponentAsUndefined,
             "/undefined/",
+        )
+    }
+
+    @Test
+    fun testApplyReciprocalPowerRule() {
+        testMethod {
+            method = IntegerRationalExponentsRules.ApplyReciprocalPowerRule
+            inputExpr = "[4 / 5*[3^[1/3]]]"
+
+            check {
+                toExpr = "[4 * [3 ^ -[1 / 3]] / 5]"
+
+                shift("./0", "./0/0")
+                transform("./1/1", "./0/1")
+                shift("./1/0", "./1")
+            }
+        }
+
+        testRule(
+            "[1 / [3^[1/3]]]",
+            IntegerRationalExponentsRules.ApplyReciprocalPowerRule,
+            "[3^-[1/3]]",
+        )
+        testRule(
+            "[4 / [3^[1/3]]]",
+            IntegerRationalExponentsRules.ApplyReciprocalPowerRule,
+            "4 * [3^-[1/3]]",
+        )
+        testRule(
+            "[4 / 5 [3^[1/3]]]",
+            IntegerRationalExponentsRules.ApplyReciprocalPowerRule,
+            "[4 * [3^-[1/3]] / 5]",
+        )
+        testRule(
+            "[4 / [3^-[1/3]]]",
+            IntegerRationalExponentsRules.ApplyReciprocalPowerRule,
+            "4 * [3^[1/3]]",
+        )
+        testRule(
+            "[4 / 5 [3^-[1/3]]]",
+            IntegerRationalExponentsRules.ApplyReciprocalPowerRule,
+            "[4 * [3^[1/3]] / 5]",
+        )
+        testRule(
+            "[3 / [3^-[1/3]]]",
+            IntegerRationalExponentsRules.ApplyReciprocalPowerRule,
+            "3 * [3^[1/3]]",
         )
     }
 }

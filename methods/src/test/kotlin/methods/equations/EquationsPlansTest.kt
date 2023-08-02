@@ -76,4 +76,14 @@ class EquationsPlansTest {
             toExpr = "[x^2] - x = 0"
         }
     }
+
+    @Test
+    fun `test equation reducible to quadratic equation with integerRationalExponent`() = testMethodInX {
+        method = EquationsPlans.SolveEquationInOneVariable
+        inputExpr = "[3^[1/3]]([x^2]-[3^[1/3]])=2x"
+
+        check {
+            toExpr = "SetSolution[x : {-[3 ^ -[1 / 3]], [3 ^ [2 / 3]]}]"
+        }
+    }
 }

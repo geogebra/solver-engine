@@ -884,6 +884,11 @@ class GeneralRulesTest {
             NormalizationRules.ReorderProduct,
             null,
         )
+        testRule(
+            "[3^-[1/3]]*2",
+            NormalizationRules.ReorderProduct,
+            "2*[3^-[1/3]]",
+        )
     }
 
     @Test

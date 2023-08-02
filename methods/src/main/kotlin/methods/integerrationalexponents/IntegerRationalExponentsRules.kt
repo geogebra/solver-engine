@@ -6,7 +6,10 @@ import engine.expressions.Power
 import engine.expressions.fractionOf
 import engine.expressions.powerOf
 import engine.expressions.productOf
+import engine.expressions.simplifiedFractionOf
+import engine.expressions.simplifiedNegOf
 import engine.expressions.simplifiedPowerOf
+import engine.expressions.simplifiedProductOf
 import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
@@ -16,6 +19,7 @@ import engine.patterns.ConditionPattern
 import engine.patterns.IntegerFractionPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.condition
+import engine.patterns.expressionWithFactor
 import engine.patterns.fractionOf
 import engine.patterns.integerCondition
 import engine.patterns.oneOf
@@ -209,4 +213,31 @@ enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMeth
             }
         },
     ),
+
+    ApplyReciprocalPowerRule(applyReciprocalPowerRule),
+}
+
+/**
+ * [1 / a^n] -> a^(-n)
+ */
+private val applyReciprocalPowerRule = rule {
+    val numerator = AnyPattern()
+
+    val base = UnsignedIntegerPattern()
+    val exp = optionalNegOf(IntegerFractionPattern())
+    val power = powerOf(base, exp)
+    val denominator = expressionWithFactor(power)
+
+    val fraction = fractionOf(numerator, denominator)
+
+    onPattern(fraction) {
+        // only highlight the power as a transformation
+        val newPower = transform(power, powerOf(get(base), simplifiedNegOf(get(exp))))
+        val newNumerator = simplifiedProductOf(get(numerator), newPower)
+        val result = simplifiedFractionOf(newNumerator, restOf(denominator))
+        ruleResult(
+            toExpr = result,
+            explanation = metadata(Explanation.ApplyReciprocalPowerRule),
+        )
+    }
 }

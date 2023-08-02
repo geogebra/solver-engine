@@ -109,7 +109,6 @@ class ConstantFractionsTest {
             explanation {
                 key = FractionArithmeticExplanation.AddIntegerAndFraction
             }
-
             step {
                 fromExpr = "3 + [1 / 2]"
                 toExpr = "[3 * 2 / 2] + [1 / 2]"
@@ -117,7 +116,6 @@ class ConstantFractionsTest {
                     key = FractionArithmeticExplanation.BringToCommonDenominatorWithNonFractionalTerm
                 }
             }
-
             step {
                 fromExpr = "[3 * 2 / 2] + [1 / 2]"
                 toExpr = "[6 / 2] + [1 / 2]"
@@ -125,7 +123,6 @@ class ConstantFractionsTest {
                     key = IntegerArithmeticExplanation.EvaluateIntegerProduct
                 }
             }
-
             step {
                 fromExpr = "[6 / 2] + [1 / 2]"
                 toExpr = "[6 + 1 / 2]"
@@ -133,12 +130,11 @@ class ConstantFractionsTest {
                     key = FractionArithmeticExplanation.AddLikeFractions
                 }
             }
-
             step {
                 fromExpr = "[6 + 1 / 2]"
                 toExpr = "[7 / 2]"
                 explanation {
-                    key = IntegerArithmeticExplanation.SimplifyIntegersInSum
+                    key = IntegerArithmeticExplanation.EvaluateIntegerAddition
                 }
             }
         }
@@ -219,7 +215,6 @@ class ConstantFractionsTest {
             explanation {
                 key = FractionArithmeticExplanation.AddIntegerAndFraction
             }
-
             step {
                 fromExpr = "3 + [3 + sqrt[2] / 2]"
                 toExpr = "[3 * 2 / 2] + [3 + sqrt[2] / 2]"
@@ -227,7 +222,6 @@ class ConstantFractionsTest {
                     key = FractionArithmeticExplanation.BringToCommonDenominatorWithNonFractionalTerm
                 }
             }
-
             step {
                 fromExpr = "[3 * 2 / 2] + [3 + sqrt[2] / 2]"
                 toExpr = "[6 / 2] + [3 + sqrt[2] / 2]"
@@ -235,7 +229,6 @@ class ConstantFractionsTest {
                     key = IntegerArithmeticExplanation.EvaluateIntegerProduct
                 }
             }
-
             step {
                 fromExpr = "[6 / 2] + [3 + sqrt[2] / 2]"
                 toExpr = "[6 + 3 + sqrt[2] / 2]"
@@ -243,12 +236,11 @@ class ConstantFractionsTest {
                     key = FractionArithmeticExplanation.AddLikeFractions
                 }
             }
-
             step {
                 fromExpr = "[6 + 3 + sqrt[2] / 2]"
                 toExpr = "[9 + sqrt[2] / 2]"
                 explanation {
-                    key = IntegerArithmeticExplanation.SimplifyIntegersInSum
+                    key = IntegerArithmeticExplanation.EvaluateIntegerAddition
                 }
             }
         }

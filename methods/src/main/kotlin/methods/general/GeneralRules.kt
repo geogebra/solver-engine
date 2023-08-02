@@ -658,11 +658,16 @@ private val rewriteProductOfPowersWithSameBase =
         val product = productContaining(power1, power2)
 
         onPattern(product) {
-            if (!get(base).isConstant() ||
-                get(power1.exponent) != Constants.One ||
-                get(power2.exponent) != Constants.One
-            ) {
+            val exp1Value = get(power1.exponent)
+            val exp2Value = get(power2.exponent)
 
+            val addExponents = (!get(base).isConstant()) ||
+                (
+                    (exp1Value != Constants.One || exp2Value.doubleValue !in 0.0..1.0) &&
+                        (exp2Value != Constants.One || exp1Value.doubleValue !in 0.0..1.0)
+                    )
+
+            if (addExponents) {
                 ruleResult(
                     toExpr = product.substitute(
                         powerOf(factor(base), sumOf(move(power1.exponent), move(power2.exponent))),

@@ -11,10 +11,12 @@ import engine.methods.RunnerMethod
 import engine.methods.rule
 import engine.patterns.ArbitraryVariablePattern
 import engine.patterns.CoefficientPattern
+import engine.patterns.IntegerFractionPattern
 import engine.patterns.Pattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.condition
 import engine.patterns.oneOf
+import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.rootOf
 import engine.patterns.sumContaining
@@ -115,7 +117,7 @@ enum class CollectingRules(override val runner: Rule) : RunnerMethod {
 
     CollectLikeRationalPowers(
         createCollectLikeTermsRule(
-            commonPattern = powerOf(UnsignedIntegerPattern(), engine.patterns.IntegerFractionPattern()),
+            commonPattern = powerOf(UnsignedIntegerPattern(), optionalNegOf(IntegerFractionPattern())),
             coefficientWrapper = { withOptionalRationalCoefficient(it) },
             explanationKey = Explanation.CollectLikeRationalPowers,
         ),

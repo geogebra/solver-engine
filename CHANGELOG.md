@@ -23,6 +23,7 @@ contents to a new release section (e.g. _[0.x]_).
 - SDK: Updated package.json for better compatibility
 - Fixed equations solvable by applying roots method followed by quadratic formula (PLUT-657)
 - Show `EvaluateExpressionAsDecimal` only when Decimal/Fraction/DivideBy is present in expression (PLUT-631)
+- Add reciprocal power rule i.e. `[1/a^n] = a^-n` and collect integers with rational exponents (PLUT-625)
 
 ### Changed
 

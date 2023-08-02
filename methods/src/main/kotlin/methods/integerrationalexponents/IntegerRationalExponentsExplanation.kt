@@ -140,6 +140,13 @@ enum class IntegerRationalExponentsExplanation : CategorisedMetadataKey {
      * E.g. [-1 ^ [1/3]] -> /undefined/
      */
     EvaluateNegativeToRationalExponentAsUndefined,
+
+    /**
+     * apply the power rule [1/a^n] = a^-n
+     *
+     * E.g. [1 / [3^-[1/4]]] -> [3^[1/4]]
+     */
+    ApplyReciprocalPowerRule,
     ;
 
     override val category = "IntegerRationalExponents"

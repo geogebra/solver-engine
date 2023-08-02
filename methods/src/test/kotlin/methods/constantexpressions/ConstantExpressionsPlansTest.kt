@@ -1330,7 +1330,7 @@ class SimplifyToUndefinedTest {
         }
     }
 
-    // step-by-step of this needs to be improved
+    // step-by-step of this, needs to be improved
     @Test
     fun testDivisionByZero2() = testMethod {
         method = ConstantExpressionsPlans.SimplifyConstantExpression
@@ -1549,6 +1549,41 @@ class CancelOppositeTermTest {
                     explanation {
                         key = FractionArithmeticExplanation.AddFractions
                     }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test collect when negative rational exponents`() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "[3^-[1/3]] * 4 - [3^-[1/3]] * 2"
+
+        check {
+            fromExpr = "[3 ^ -[1 / 3]] * 4 - [3 ^ -[1 / 3]] * 2"
+            toExpr = "2 * [3 ^ -[1 / 3]]"
+            explanation {
+                key = ConstantExpressionsExplanation.SimplifyConstantExpression
+            }
+            step {
+                fromExpr = "[3 ^ -[1 / 3]] * 4 - [3 ^ -[1 / 3]] * 2"
+                toExpr = "4 * [3 ^ -[1 / 3]] - [3 ^ -[1 / 3]] * 2"
+                explanation {
+                    key = GeneralExplanation.ReorderProduct
+                }
+            }
+            step {
+                fromExpr = "4 * [3 ^ -[1 / 3]] - [3 ^ -[1 / 3]] * 2"
+                toExpr = "4 * [3 ^ -[1 / 3]] - 2 * [3 ^ -[1 / 3]]"
+                explanation {
+                    key = GeneralExplanation.ReorderProduct
+                }
+            }
+            step {
+                fromExpr = "4 * [3 ^ -[1 / 3]] - 2 * [3 ^ -[1 / 3]]"
+                toExpr = "2 * [3 ^ -[1 / 3]]"
+                explanation {
+                    key = CollectingExplanation.CollectLikeRationalPowersAndSimplify
                 }
             }
         }
@@ -2069,11 +2104,11 @@ class SimplifyRationalPowerOfFraction {
         inputExpr = "[([4 / 3]) ^ [3 / 2]]"
 
         check {
-            toExpr = "[8 / 3 * [3 ^ [1 / 2]]]"
+            fromExpr = "[([4 / 3]) ^ [3 / 2]]"
+            toExpr = "[8 * [3 ^ -[1 / 2]] / 3]"
             explanation {
                 key = ConstantExpressionsExplanation.SimplifyConstantExpression
             }
-
             step {
                 fromExpr = "[([4 / 3]) ^ [3 / 2]]"
                 toExpr = "[4 / 3] * [2 / [3 ^ [1 / 2]]]"
@@ -2081,14 +2116,143 @@ class SimplifyRationalPowerOfFraction {
                     key = ConstantExpressionsExplanation.SimplifyPowerOfFraction
                 }
             }
-
             step {
                 fromExpr = "[4 / 3] * [2 / [3 ^ [1 / 2]]]"
-                toExpr = "[8 / 3 * [3 ^ [1 / 2]]]"
+                toExpr = "[4 / 3] * 2 * [3 ^ -[1 / 2]]"
+                explanation {
+                    key = IntegerRationalExponentsExplanation.ApplyReciprocalPowerRule
+                }
+            }
+            step {
+                fromExpr = "[4 / 3] * 2 * [3 ^ -[1 / 2]]"
+                toExpr = "[8 * [3 ^ -[1 / 2]] / 3]"
                 explanation {
                     key = FractionArithmeticExplanation.MultiplyAndSimplifyFractions
                 }
             }
+        }
+    }
+
+    @Test
+    fun `test negative rational power in denominator with unit numerator`() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "[1 / [3^-[1/3]]]"
+
+        check {
+            fromExpr = "[1 / [3 ^ -[1 / 3]]]"
+            toExpr = "[3 ^ [1 / 3]]"
+            explanation {
+                key = IntegerRationalExponentsExplanation.ApplyReciprocalPowerRule
+            }
+        }
+    }
+
+    @Test
+    fun `test positive rational power in denominator with unit numerator`() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "[1 / [3^[1/3]]]"
+
+        check {
+            fromExpr = "[1 / [3 ^ [1 / 3]]]"
+            toExpr = "[3 ^ -[1 / 3]]"
+            explanation {
+                key = IntegerRationalExponentsExplanation.ApplyReciprocalPowerRule
+            }
+        }
+    }
+
+    @Test
+    fun `test positive rational power in denominator`() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "[3 / [3^[1/3]]]"
+
+        check {
+            fromExpr = "[3 / [3 ^ [1 / 3]]]"
+            toExpr = "[3 ^ [2 / 3]]"
+            explanation {
+                key = ConstantExpressionsExplanation.SimplifyConstantExpression
+            }
+            step {
+                fromExpr = "[3 / [3 ^ [1 / 3]]]"
+                toExpr = "3 * [3 ^ -[1 / 3]]"
+                explanation {
+                    key = IntegerRationalExponentsExplanation.ApplyReciprocalPowerRule
+                }
+            }
+            step {
+                fromExpr = "3 * [3 ^ -[1 / 3]]"
+                toExpr = "[3 ^ [2 / 3]]"
+                explanation {
+                    key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithSameBase
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test negative exponent and positive exponent with same base to negative exponent`() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "[3^-1] * [3^[1/2]]"
+
+        check {
+            fromExpr = "[3 ^ -1] * [3 ^ [1 / 2]]"
+            toExpr = "[3 ^ -[1 / 2]]"
+            explanation {
+                key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithSameBase
+            }
+            step {
+                fromExpr = "[3 ^ -1] * [3 ^ [1 / 2]]"
+                toExpr = "[3 ^ -1 + [1 / 2]]"
+                explanation {
+                    key = GeneralExplanation.RewriteProductOfPowersWithSameBase
+                }
+            }
+            step {
+                fromExpr = "[3 ^ -1 + [1 / 2]]"
+                toExpr = "[3 ^ -[1 / 2]]"
+                explanation {
+                    key = FractionArithmeticExplanation.AddIntegerAndFraction
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `negative exponent and positive exponent with same base to positive exponent`() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "[3^-3] * [3^[11/3]]"
+
+        check {
+            fromExpr = "[3 ^ -3] * [3 ^ [11 / 3]]"
+            toExpr = "[3 ^ [2 / 3]]"
+            explanation {
+                key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithSameBase
+            }
+            step {
+                fromExpr = "[3 ^ -3] * [3 ^ [11 / 3]]"
+                toExpr = "[3 ^ -3 + [11 / 3]]"
+                explanation {
+                    key = GeneralExplanation.RewriteProductOfPowersWithSameBase
+                }
+            }
+            step {
+                fromExpr = "[3 ^ -3 + [11 / 3]]"
+                toExpr = "[3 ^ [2 / 3]]"
+                explanation {
+                    key = FractionArithmeticExplanation.AddIntegerAndFraction
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test product of base and base with positive less than one exponent`() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "3 * [3^[1/3]]"
+
+        // this used to go into an infinite loop earlier
+        check {
+            noTransformation()
         }
     }
 }

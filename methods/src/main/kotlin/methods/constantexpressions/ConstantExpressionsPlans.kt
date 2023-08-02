@@ -27,8 +27,8 @@ import methods.expand.ExpandAndSimplifier
 import methods.expand.ExpandRules
 import methods.fractionarithmetic.FractionArithmeticPlans
 import methods.fractionarithmetic.FractionArithmeticRules
+import methods.fractionarithmetic.addIntegerAndFraction
 import methods.fractionarithmetic.createAddFractionsPlan
-import methods.fractionarithmetic.createAddIntegerAndFractionPlan
 import methods.fractionarithmetic.createAddRootAndFractionPlan
 import methods.fractionarithmetic.normalizeFractionsWithinFractions
 import methods.fractionarithmetic.normalizeNegativeSignsInFraction
@@ -338,9 +338,6 @@ private val addConstantFractions = run {
         apply(fractionAdditionSteps)
     }
 }
-
-private val addIntegerAndFraction =
-    createAddIntegerAndFractionPlan(steps { whilePossible(constantSimplificationSteps) })
 
 private val addRootAndFraction =
     createAddRootAndFractionPlan(steps { whilePossible(constantSimplificationSteps) })

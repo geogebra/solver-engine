@@ -229,6 +229,7 @@ fun createAddRootAndFractionPlan(numeratorSimplificationSteps: StepsProducer): C
 }
 
 val addIntegerFractions = createAddFractionsPlan(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
+val addIntegerAndFraction = createAddIntegerAndFractionPlan(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
 
 val normalizeFractionsWithinFractions = steps {
     firstOf {
