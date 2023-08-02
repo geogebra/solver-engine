@@ -2,8 +2,8 @@ package methods.decimals
 
 import engine.context.Curriculum
 import engine.context.ResourceData
-import engine.expressions.AbsoluteValue
 import engine.expressions.DecimalExpression
+import engine.expressions.DivideBy
 import engine.expressions.Expression
 import engine.expressions.Fraction
 import engine.methods.CompositeMethod
@@ -28,7 +28,6 @@ import methods.general.createEvaluateAbsoluteValuePlan
 import methods.general.inlineSumsAndProducts
 import methods.integerarithmetic.IntegerArithmeticPlans
 import methods.integerarithmetic.IntegerArithmeticRules
-import methods.integerarithmetic.hasArithmeticOperation
 
 enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
     EvaluateSumOfDecimals(
@@ -187,7 +186,7 @@ enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
     @PublicMethod
     EvaluateExpressionAsDecimal(
         plan {
-            pattern = condition { it.isDecimalExpression() }
+            pattern = condition { it.hasDecimalOrFractionOrDivideBy() && it.isConstant() }
             resultPattern = SignedNumberPattern()
 
             specificPlans(IntegerArithmeticPlans.EvaluateArithmeticExpression)
@@ -237,9 +236,7 @@ val decimalEvaluationSteps: StepsProducer = steps {
 private val evaluateDecimalAbsoluteValue =
     createEvaluateAbsoluteValuePlan(decimalEvaluationSteps)
 
-private fun Expression.isDecimalExpression(): Boolean {
-    val validOperator = this is DecimalExpression || hasArithmeticOperation() || this is Fraction ||
-        this is AbsoluteValue
-
-    return validOperator && children.all { it.isDecimalExpression() }
+private fun Expression.hasDecimalOrFractionOrDivideBy(): Boolean {
+    return this is DecimalExpression || this is Fraction || this is DivideBy ||
+        this.children.any { it.hasDecimalOrFractionOrDivideBy() }
 }

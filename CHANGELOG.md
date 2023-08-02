@@ -22,6 +22,7 @@ contents to a new release section (e.g. _[0.x]_).
 
 - SDK: Updated package.json for better compatibility
 - Fixed equations solvable by applying roots method followed by quadratic formula (PLUT-657)
+- Show `EvaluateExpressionAsDecimal` only when Decimal/Fraction/DivideBy is present in expression (PLUT-631)
 
 ### Changed
 

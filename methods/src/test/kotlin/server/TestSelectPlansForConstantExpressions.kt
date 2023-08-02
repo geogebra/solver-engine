@@ -50,6 +50,28 @@ class TestSelectPlansForConstantExpressions {
                 DecimalPlans.EvaluateExpressionAsDecimal,
             ),
         )
+
+        testSelectPlanApi(
+            "abs[1 + 2 - 4]",
+            setOf(
+                ConstantExpressionsPlans.SimplifyConstantExpression,
+            ),
+        )
+
+        testSelectPlanApi(
+            "abs[[1/2] + [1/4]]",
+            setOf(
+                DecimalPlans.EvaluateExpressionAsDecimal,
+                ConstantExpressionsPlans.SimplifyConstantExpression,
+            ),
+        )
+
+        testSelectPlanApi(
+            "abs[[2/5]] + abs[[1/3]]",
+            setOf(
+                ConstantExpressionsPlans.SimplifyConstantExpression,
+            ),
+        )
     }
 
     @Test
