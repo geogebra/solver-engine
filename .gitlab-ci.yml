@@ -24,21 +24,39 @@ stages:
   - deploy
 
 before_script:
+  - |
+    if [[ $CI_COMMIT_TAG =~ ^release-[0-9]*\.[0-9]*.*$ ]]; then
+      export VERSION = `echo "$CI_COMMIT_TAG" | sed 's/^release-\([0-9]*\.[0-9]*\).*$/\1/'
+      # release-1.2.1 ==> 1.2
+      export SOLVER_IMAGE_TAG="$CI_COMMIT_TAG"
+      export DEPLOYMENT_NAME="release-$VERSION"
+      export DEPLOYMENT_DOMAIN="$PRODUCTION_DOMAIN"
+      export CONTEXT_PATH="/$VERSION"
+    else
+      export VERSION=`echo $CI_COMMIT_REF_SLUG | sed 's/^\([a-z][a-z]*\-[0-9][0-9]*\).*/\1/'`
+      export SOLVER_IMAGE_TAG="$VERSION"
+      export DEPLOYMENT_NAME="$VERSION"
+      export DEPLOYMENT_DOMAIN="$DEVELOPMENT_DOMAIN"
+      export CONTEXT_PATH="$/VERSION"
+    fi
+
+    export BASE_URL="https://$DEPLOYMENT_DOMAIN$CONTEXT_PATH"
+
   # Extract the meaningful part from the commit ref slug.  This means if the branch starts with a JIRA ticket
   # number of the for ABC-123 then just use that, else use the whole branch name.
-  - export SLUG=`echo $CI_COMMIT_REF_SLUG | sed 's/^\([a-z][a-z]*\-[0-9][0-9]*\).*/\1/'`
+  #- export SLUG=`echo $CI_COMMIT_REF_SLUG | sed 's/^\([a-z][a-z]*\-[0-9][0-9]*\).*/\1/'`
 
   # The tag for the container image of the solver backend that will be published to the container registry
-  - export SOLVER_IMAGE_TAG="$SLUG"
+  #- export SOLVER_IMAGE_TAG="$SLUG"
 
   # The name of the Helm deployment - will also be used as the base for naming the kubernetes entities (see helm templates)
-  - export DEPLOYMENT_NAME="$SLUG"
+  #- export DEPLOYMENT_NAME="$SLUG"
 
   # The domain where the deployed solver backend will be available
-  - export DEPLOYMENT_DOMAIN=`if [[ $CI_COMMIT_REF_NAME == "release" ]]; then echo "$PRODUCTION_DOMAIN"; else echo "$DEVELOPMENT_DOMAIN"; fi`
+  #- export DEPLOYMENT_DOMAIN=`if [[ $CI_COMMIT_REF_NAME == "release" ]]; then echo "$PRODUCTION_DOMAIN"; else echo "$DEVELOPMENT_DOMAIN"; fi`
 
   # The path at which the root of the deployment can be reached
-  - export CONTEXT_PATH=`if [[ $CI_COMMIT_REF_NAME == "release" ]]; then echo "/"; else echo "/$SLUG"; fi`
+  #- export CONTEXT_PATH=`if [[ $CI_COMMIT_REF_NAME == "release" ]]; then echo "/"; else echo "/$SLUG"; fi`
 
   # The base URL for reaching the deployment
   - export BASE_URL=`if [[ CONTEXT_PATH == "/" ]]; then echo "https://$DEPLOYMENT_DOMAIN"; else echo "https://$DEPLOYMENT_DOMAIN$CONTEXT_PATH"; fi`
@@ -61,14 +79,13 @@ check-circular-dependencies-in-methods:
 test-git-tags:
   stage: checks
   script:
-    - echo CI_COMMIT_REF_SLUG="$CI_COMMIT_REF_SLUG"
-    - echo SLUG="$SLUG"
-    - echo CI_COMMIT_TAG="$CI_COMMIT_TAG"
-    - echo $CI_COMMIT_TAG | sed 's/^api-\([0-9]*\.[0-9]*\).*$/\1/'
-  rules:
+    - env
+    #rules:
     # This makes this a tag pipeline, and it means we won't have the branch name
-    # available. Instead, CI_COMMIT_REF_SLUG will be set to the tag name. 
-    - if: $CI_COMMIT_TAG =~ /^api-[0-9]*\.[0-9]*.*$/
+    # available. Instead, CI_COMMIT_REF_SLUG will be set to the tag name.
+  #  - if: $CI_COMMIT_TAG
+  #    when: always
+  #  - when: always
 
 # Test SDK and build all artifacts from SDK for the poker and for possible release
 build-sdk-and-poker:
@@ -242,7 +259,7 @@ undeploy-engine:
     - docker
   cache: []
   script:
-    - echo "Attempting do delete tag $SLUG..."
+    - echo "Attempting do delete tag $SOLVER_IMAGE_TAG of deployment $DEPLOYMENT_NAME..."
     # Call the gitlab API to delete the image tag as it is no longer needed. This will allow the image
     # to be garbage-collected, saving space on the container registry.
     - |
