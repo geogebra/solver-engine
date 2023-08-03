@@ -59,7 +59,7 @@ before_script:
   #- export CONTEXT_PATH=`if [[ $CI_COMMIT_REF_NAME == "release" ]]; then echo "/"; else echo "/$SLUG"; fi`
 
   # The base URL for reaching the deployment
-  - export BASE_URL=`if [[ CONTEXT_PATH == "/" ]]; then echo "https://$DEPLOYMENT_DOMAIN"; else echo "https://$DEPLOYMENT_DOMAIN$CONTEXT_PATH"; fi`
+  #- export BASE_URL=`if [[ CONTEXT_PATH == "/" ]]; then echo "https://$DEPLOYMENT_DOMAIN"; else echo "https://$DEPLOYMENT_DOMAIN$CONTEXT_PATH"; fi`
 
   # The URL where the solver API can be reached
   - export API_URL="$BASE_URL/api/v1"
@@ -79,15 +79,23 @@ check-circular-dependencies-in-methods:
 test-git-tags:
   stage: checks
   script:
-    - env
-    #rules:
-    # This makes this a tag pipeline, and it means we won't have the branch name
-    # available. Instead, CI_COMMIT_REF_SLUG will be set to the tag name.
-  #  - if: $CI_COMMIT_TAG
-  #    when: always
-  #  - when: always
+    - echo SOLVER_IMAGE_TAG=$SOLVER_IMAGE_TAG
+    - echo DEPLOYMENT_NAME=$DEPLOYMENT_NAME
+    - echo DEPLOYMENT_DOMAIN=$DEPLOYMENT_DOMAIN
+    - echo CONTEXT_PATH=$CONTEXT_PATH
+    - echo BASE_URL=$BASE_URL
+    - echo API_URL=$API_URL
+    - echo POKER_URL=$POKER_URL
+    - echo REPO_FULL_NAME=$REPO_FULL_NAME
+    - echo REPOSITORY_ID=$REPOSITORY_ID
+      #rules:
+      # This makes this a tag pipeline, and it means we won't have the branch name
+      # available. Instead, CI_COMMIT_REF_SLUG will be set to the tag name.
+      #  - if: $CI_COMMIT_TAG
+    #    when: always
+    #  - when: always
 
-# Test SDK and build all artifacts from SDK for the poker and for possible release
+    # Test SDK and build all artifacts from SDK for the poker and for possible release
 build-sdk-and-poker:
   stage: build
   when: manual
