@@ -30,7 +30,8 @@ before_script:
     if [[ $CI_COMMIT_TAG =~ ^release-[0-9]*\.[0-9]*.*$ ]]; then
       # release-1.2.1 ==> 1.2
       export SOLVER_VERSION=`echo "$CI_COMMIT_TAG" | sed 's/^release-\([0-9]*\.[0-9]*\).*$/\1/'`
-      export SOLVER_IMAGE_TAG="$CI_COMMIT_TAG"
+      # release-1-2-1 so kubernetes doesn't complain
+      export SOLVER_IMAGE_TAG="$CI_COMMIT_REF_SLUG"
       export SOLVER_DEPLOYMENT_NAME="release-$SOLVER_VERSION"
       export SOLVER_DEPLOYMENT_DOMAIN="$SOLVER_PRODUCTION_DOMAIN"
       export SOLVER_CONTEXT_PATH="/$SOLVER_VERSION"
@@ -69,6 +70,8 @@ check-circular-dependencies-in-methods:
 print-solver-vars:
   stage: checks
   script:
+    - echo CI_COMMIT_TAG=$CI_COMMIT_TAG
+    - echo CI_COMMIT_REF_SLUG=$CI_COMMIT_REF_SLUG
     - echo SOLVER_VERSION=$SOLVER_VERSION
     - echo SOLVER_IMAGE_TAG=$SOLVER_IMAGE_TAG
     - echo SOLVER_DEPLOYMENT_NAME=$SOLVER_DEPLOYMENT_NAME
@@ -201,6 +204,11 @@ deploy-engine:
           --set imageCredentials.password=$CI_REGISTRY_PASSWORD \
           --set springProfile=production
     - echo "DYNAMIC_ENVIRONMENT_URL=$POKER_URL" >> deploy.env
+  # only deploy the API if this pipeline was triggered by a "release-..." tag
+  # or was triggered by a commit (not a tag)
+  rules:
+    - if: $CI_COMMIT_TAG =~ ^release-[0-9]*\.[0-9]*.*$
+    - if: $CI_COMMIT_TAG == ""
 
 # Make an SDK release
 sdk-semantic-release:
