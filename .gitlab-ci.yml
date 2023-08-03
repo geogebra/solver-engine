@@ -14,8 +14,8 @@ variables:
   GITLAB_CLUSTER: solver-v2
   GGBTRANS_SOLVER_IMPORT_URL: https://dev.geogebra.org/ggbtrans/props/api/solver_import
   GRADLE: './gradlew --no-daemon --stacktrace --build-cache --gradle-user-home cache/.gradle'
-  PRODUCTION_DOMAIN: solver-api.geogebra.org
-  DEVELOPMENT_DOMAIN: solver.geogebra.net
+  SOLVER_PRODUCTION_DOMAIN: solver-api.geogebra.org
+  SOLVER_DEVELOPMENT_DOMAIN: solver.geogebra.net
 
 stages:
   - checks
@@ -24,39 +24,61 @@ stages:
   - deploy
 
 before_script:
-  # Extract the meaningful part from the commit ref slug.  This means if the branch starts with a JIRA ticket
-  # number of the for ABC-123 then just use that, else use the whole branch name.
-  - export SLUG=`echo $CI_COMMIT_REF_SLUG | sed 's/^\([a-z][a-z]*\-[0-9][0-9]*\).*/\1/'`
-
-  # The tag for the container image of the solver backend that will be published to the container registry
-  - export SOLVER_IMAGE_TAG="$SLUG"
-
-  # The name of the Helm deployment - will also be used as the base for naming the kubernetes entities (see helm templates)
-  - export DEPLOYMENT_NAME="$SLUG"
-
-  # The domain where the deployed solver backend will be available
-  - export DEPLOYMENT_DOMAIN=`if [[ $CI_COMMIT_REF_NAME == "release" ]]; then echo "$PRODUCTION_DOMAIN"; else echo "$DEVELOPMENT_DOMAIN"; fi`
-
-  # The path at which the root of the deployment can be reached
-  - export CONTEXT_PATH=`if [[ $CI_COMMIT_REF_NAME == "release" ]]; then echo "/"; else echo "/$SLUG"; fi`
-
+  # Do a new production release if there is a git tag like release-1.2.3,
+  # otherwise do a development release.
+  - |
+    if [[ $CI_COMMIT_TAG =~ ^release-[0-9]*\.[0-9]*.*$ ]]; then
+      # release-1.2.1 ==> 1.2
+      export SOLVER_VERSION=`echo "$CI_COMMIT_TAG" | sed 's/^release-\([0-9]*\.[0-9]*\).*$/\1/'`
+      export SOLVER_IMAGE_TAG="$CI_COMMIT_TAG"
+      export SOLVER_DEPLOYMENT_NAME="release-$SOLVER_VERSION"
+      export SOLVER_DEPLOYMENT_DOMAIN="$SOLVER_PRODUCTION_DOMAIN"
+      export SOLVER_CONTEXT_PATH="/$SOLVER_VERSION"
+    else
+      # If the branch name starts with a JIRA ticket number (PLUT-123) use that, else use the whole branch name.
+      export SOLVER_VERSION=`echo $CI_COMMIT_REF_SLUG | sed 's/^\([a-z][a-z]*\-[0-9][0-9]*\).*/\1/'`
+      # The tag for the container image of the solver backend that will be published to the container registry
+      export SOLVER_IMAGE_TAG="$SOLVER_VERSION"
+      # The name of the Helm deployment - will also be used as the base for naming the kubernetes entities (see helm templates)
+      export SOLVER_DEPLOYMENT_NAME="$SOLVER_VERSION"
+      # The domain where the deployed solver backend will be available
+      export SOLVER_DEPLOYMENT_DOMAIN="$SOLVER_DEVELOPMENT_DOMAIN"
+      # The path at which the root of the deployment can be reached
+      export SOLVER_CONTEXT_PATH="/$SOLVER_VERSION"
+    fi
   # The base URL for reaching the deployment
-  - export BASE_URL=`if [[ CONTEXT_PATH == "/" ]]; then echo "https://$DEPLOYMENT_DOMAIN"; else echo "https://$DEPLOYMENT_DOMAIN$CONTEXT_PATH"; fi`
+  - export SOLVER_BASE_URL="https://$SOLVER_DEPLOYMENT_DOMAIN$SOLVER_CONTEXT_PATH"
 
   # The URL where the solver API can be reached
-  - export API_URL="$BASE_URL/api/v1"
+  - export API_URL="$SOLVER_BASE_URL/api/v1"
 
   # The URL where the poker can be reached
-  - export POKER_URL="$BASE_URL/poker/index.html"
+  - export POKER_URL="$SOLVER_BASE_URL/poker/index.html"
 
   - export REPO_FULL_NAME=`echo $CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME`
-  - export REPOSITORY_ID=4 # The gitlab ID of the repository where our container images are uploaded
+  
+  # The gitlab ID of the repository where our container images are uploaded
+  - export REPOSITORY_ID=4
 
 check-circular-dependencies-in-methods:
   stage: checks
   cache: []
   script:
     - ./scripts/check_method_dependencies.sh
+
+print-solver-vars:
+  stage: checks
+  script:
+    - echo SOLVER_VERSION=$SOLVER_VERSION
+    - echo SOLVER_IMAGE_TAG=$SOLVER_IMAGE_TAG
+    - echo SOLVER_DEPLOYMENT_NAME=$SOLVER_DEPLOYMENT_NAME
+    - echo SOLVER_DEPLOYMENT_DOMAIN=$SOLVER_DEPLOYMENT_DOMAIN
+    - echo SOLVER_CONTEXT_PATH=$SOLVER_CONTEXT_PATH
+    - echo SOLVER_BASE_URL=$SOLVER_BASE_URL
+    - echo API_URL=$API_URL
+    - echo POKER_URL=$POKER_URL
+    - echo REPO_FULL_NAME=$REPO_FULL_NAME
+    - echo REPOSITORY_ID=$REPOSITORY_ID
 
 # Test SDK and build all artifacts from SDK for the poker and for possible release
 build-sdk-and-poker:
@@ -169,10 +191,10 @@ deploy-engine:
     - kubectl config use-context $REPO_FULL_NAME:$GITLAB_CLUSTER
     - helm package helm/ --version "6.6.6"
     - |
-      helm upgrade --install $DEPLOYMENT_NAME solver-6.6.6.tgz \
-          --set deploymentDomain=$DEPLOYMENT_DOMAIN \
-          --set contextPath=$CONTEXT_PATH \
-          --set deploymentName=$DEPLOYMENT_NAME \
+      helm upgrade --install $SOLVER_DEPLOYMENT_NAME solver-6.6.6.tgz \
+          --set deploymentDomain=$SOLVER_DEPLOYMENT_DOMAIN \
+          --set contextPath=$SOLVER_CONTEXT_PATH \
+          --set deploymentName=$SOLVER_DEPLOYMENT_NAME \
           --set solverImageTag=$SOLVER_IMAGE_TAG \
           --set commitSha=$CI_COMMIT_SHA \
           --set imageCredentials.username=$CI_REGISTRY_USER \
@@ -225,7 +247,7 @@ undeploy-engine:
     - docker
   cache: []
   script:
-    - echo "Attempting do delete tag $SLUG..."
+    - echo "Attempting do delete tag $SOLVER_IMAGE_TAG of deployment $SOLVER_DEPLOYMENT_NAME..."
     # Call the gitlab API to delete the image tag as it is no longer needed. This will allow the image
     # to be garbage-collected, saving space on the container registry.
     - |
@@ -234,7 +256,7 @@ undeploy-engine:
            "$CI_API_V4_URL/projects/$CI_PROJECT_ID/registry/repositories/$REPOSITORY_ID/tags/$SOLVER_IMAGE_TAG"
     - kubectl config get-contexts
     - kubectl config use-context $REPO_FULL_NAME:$GITLAB_CLUSTER
-    - helm uninstall $DEPLOYMENT_NAME
+    - helm uninstall $SOLVER_DEPLOYMENT_NAME
   when: manual
   except:
     - main
