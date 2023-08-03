@@ -429,7 +429,7 @@ class RootsMethodStrategyTest {
                 fromExpr = "[x ^ 2] + 3 x + 1 = root[3, 3]"
                 toExpr = "[x ^ 2] + 3 x + 1 - root[3, 3] = 0"
                 explanation {
-                    key = EquationsExplanation.MoveEverythingToTheLeftAndSimplify
+                    key = methods.solvable.EquationsExplanation.MoveEverythingToTheLeftAndSimplify
                 }
             }
 

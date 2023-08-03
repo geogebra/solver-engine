@@ -16,28 +16,26 @@ class IntegerArithmeticPlansTest {
             toExpr = "6"
 
             step {
-                step {
-                    fromExpr = "1 + 2 + 3"
-                    toExpr = "3 + 3"
+                fromExpr = "1 + 2 + 3"
+                toExpr = "3 + 3"
 
-                    combine {
-                        fromPaths("./0", "./1", "./1:outerOp")
-                        toPaths("./0")
-                    }
-
-                    shift {
-                        fromPaths("./2")
-                        toPaths("./1")
-                    }
+                combine {
+                    fromPaths("./0", "./1", "./1:outerOp")
+                    toPaths("./0")
                 }
-                step {
-                    fromExpr = "3 + 3"
-                    toExpr = "6"
 
-                    combine {
-                        fromPaths("./0", "./1", "./1:outerOp")
-                        toPaths(".")
-                    }
+                shift {
+                    fromPaths("./2")
+                    toPaths("./1")
+                }
+            }
+            step {
+                fromExpr = "3 + 3"
+                toExpr = "6"
+
+                combine {
+                    fromPaths("./0", "./1", "./1:outerOp")
+                    toPaths(".")
                 }
             }
         }
@@ -52,29 +50,27 @@ class IntegerArithmeticPlansTest {
             toExpr = "16"
 
             step {
-                step {
-                    fromExpr = "[2 ^ 4]"
-                    toExpr = "2 * 2 * 2 * 2"
-                }
+                fromExpr = "[2 ^ 4]"
+                toExpr = "2 * 2 * 2 * 2"
+            }
+
+            step {
+                fromExpr = "2 * 2 * 2 * 2"
+                toExpr = "16"
 
                 step {
                     fromExpr = "2 * 2 * 2 * 2"
+                    toExpr = "4 * 2 * 2"
+                }
+
+                step {
+                    fromExpr = "4 * 2 * 2"
+                    toExpr = "8 * 2"
+                }
+
+                step {
+                    fromExpr = "8 * 2"
                     toExpr = "16"
-
-                    step {
-                        fromExpr = "2 * 2 * 2 * 2"
-                        toExpr = "4 * 2 * 2"
-                    }
-
-                    step {
-                        fromExpr = "4 * 2 * 2"
-                        toExpr = "8 * 2"
-                    }
-
-                    step {
-                        fromExpr = "8 * 2"
-                        toExpr = "16"
-                    }
                 }
             }
         }
@@ -366,10 +362,10 @@ class IntegerArithmeticPlansTest {
         inputExpr = "[2 ^ 6]"
 
         check {
+            fromExpr = "[2 ^ 6]"
             toExpr = "64"
-
-            step {
-                toExpr = "64"
+            explanation {
+                key = IntegerArithmeticExplanation.EvaluateIntegerPowerDirectly
             }
         }
     }

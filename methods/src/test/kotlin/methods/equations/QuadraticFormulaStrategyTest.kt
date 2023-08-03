@@ -100,7 +100,7 @@ class QuadraticFormulaStrategyTest {
                 fromExpr = "2 [x ^ 2] - 7 x + 4 = 1"
                 toExpr = "2 [x ^ 2] - 7 x + 3 = 0"
                 explanation {
-                    key = EquationsExplanation.MoveEverythingToTheLeftAndSimplify
+                    key = methods.solvable.EquationsExplanation.MoveEverythingToTheLeftAndSimplify
                 }
             }
 
@@ -670,7 +670,7 @@ class QuadraticFormulaStrategyTest {
                 fromExpr = "3 [x ^ 2] + 3 + 3 x = 2 x + 2"
                 toExpr = "3 [x ^ 2] + 1 + x = 0"
                 explanation {
-                    key = EquationsExplanation.MoveEverythingToTheLeftAndSimplify
+                    key = methods.solvable.EquationsExplanation.MoveEverythingToTheLeftAndSimplify
                 }
             }
 

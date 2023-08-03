@@ -74,7 +74,7 @@ class ConstantEquationsTest {
                 fromExpr = "8 + 2 sqrt[2] = 7 + 4 sqrt[2]"
                 toExpr = "1 - 2 sqrt[2] = 0"
                 explanation {
-                    key = EquationsExplanation.MoveEverythingToTheLeftAndSimplify
+                    key = methods.solvable.EquationsExplanation.MoveEverythingToTheLeftAndSimplify
                 }
             }
 

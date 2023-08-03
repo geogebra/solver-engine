@@ -1214,7 +1214,7 @@ class SimplifyToZeroTest {
                     fromExpr = "1 + 1"
                     toExpr = "2"
                     explanation {
-                        key = IntegerArithmeticExplanation.SimplifyIntegersInSum
+                        key = IntegerArithmeticExplanation.EvaluateIntegerAddition
                     }
                 }
             }
@@ -2379,22 +2379,17 @@ class SmartFactorizationUnderRoot {
 }
 
 class SimplifyAbsoluteValueTest {
+
     @Test
     fun `test simplify abs(definitelyNotNegativeValueContainingRoot)`() = testMethod {
         method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "abs[2 - sqrt[2]]"
 
         check {
-            // Through step
-            step {
-                // Through step
-                step {
-                    fromExpr = "abs[2 - sqrt[2]]"
-                    toExpr = "2 - sqrt[2]"
-                    explanation {
-                        key = GeneralExplanation.ResolveAbsoluteValueOfNonNegativeValue
-                    }
-                }
+            fromExpr = "abs[2 - sqrt[2]]"
+            toExpr = "2 - sqrt[2]"
+            explanation {
+                key = GeneralExplanation.ResolveAbsoluteValueOfNonNegativeValue
             }
         }
     }

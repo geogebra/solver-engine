@@ -53,9 +53,7 @@ if (WHEN_FOR_PATH) {
 
 describe('gmAction tests', () => {
   for (const testResult of testResults) {
-    const transformation: TransformationJson = JSON.parse(
-      testResult.transformationJsonMath,
-    );
+    const transformation: TransformationJson = JSON.parse(testResult.transformation);
     if (!transformation) continue;
     const augmentedTransformation = addFullFromExprToTransformation(transformation);
     for (const step of getInnerSteps(augmentedTransformation)) {

@@ -309,9 +309,11 @@ class SimplifyProductOfRootsTest {
         inputExpr = "sqrt[6] * sqrt[6]"
 
         check {
+            fromExpr = "sqrt[6] * sqrt[6]"
             toExpr = "6"
-
-            step {}
+            explanation {
+                key = IntegerRootsExplanation.SimplifyMultiplicationOfSquareRoots
+            }
         }
     }
 

@@ -40,7 +40,7 @@ class LinearEquationsTest {
                     fromExpr = "[3 x / 3] = [1 / 3]"
                     toExpr = "x = [1 / 3]"
                     explanation {
-                        key = EquationsExplanation.SimplifyEquation
+                        key = PolynomialsExplanation.SimplifyMonomial
                     }
                 }
             }

@@ -265,7 +265,11 @@ class TestSimplifyFraction {
         inputExpr = "[3 * 4 / 4 * 5]"
 
         check {
-            step { toExpr = "[3 / 5]" }
+            fromExpr = "[3 * 4 / 4 * 5]"
+            toExpr = "[3 / 5]"
+            explanation {
+                key = FractionArithmeticExplanation.CancelCommonFactorInFraction
+            }
         }
     }
 

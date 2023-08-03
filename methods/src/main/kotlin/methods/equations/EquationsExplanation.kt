@@ -102,14 +102,6 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     SolveEquationInEquationUnion,
 
     /**
-     * Add the opposite of everything on the LHS to both sides
-     * of the equation.
-     *
-     * E.g. 4x - 3 = 2x + 1 -> 4x - 3 - (2x + 1) = 2x + 1 - (2x + 1)
-     */
-    MoveEverythingToTheLeft,
-
-    /**
      * Collect like terms to the left
      *
      * %1: "like" variable
@@ -120,16 +112,6 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      * Collect like terms to the left and simplify
      */
     CollectLikeTermsToTheLeftAndSimplify,
-
-    /**
-     * Add the opposite of everything on the LHS to both sides
-     * of the equation and simplify.
-     *
-     * E.g. 4x - 3 = 2x + 1
-     *      -> 4x - 3 - (2x + 1) = 2x + 1 - (2x + 1)
-     *      -> 2x - 4 = 0
-     */
-    MoveEverythingToTheLeftAndSimplify,
 
     /**
      * Complete a binomial so that the LHS can be factorised to a square

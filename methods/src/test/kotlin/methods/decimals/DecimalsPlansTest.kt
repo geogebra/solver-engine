@@ -212,9 +212,11 @@ class DecimalsPlansTest {
         inputExpr = "[2/100]"
 
         check {
+            fromExpr = "[2/100]"
             toExpr = "0.02"
-
-            step { toExpr = "0.02" }
+            explanation {
+                key = Explanation.ConvertFractionWithPowerOfTenDenominatorToDecimal
+            }
         }
     }
 
@@ -308,20 +310,17 @@ class DecimalsPlansTest {
             inputExpr = "[0.1 ^ 10]"
 
             check {
+                fromExpr = "[0.1 ^ 10]"
                 toExpr = "0.0000000001"
-
-                step {
-                    toExpr = "0.0000000001"
-                    explanation {
-                        key = Explanation.EvaluateDecimalPowerDirectly
-                    }
+                explanation {
+                    key = Explanation.EvaluateDecimalPowerDirectly
                 }
             }
         }
     }
 }
 
-class EvaluatExpressionAsDecimalTest {
+class EvaluateExpressionAsDecimalTest {
 
     @Test
     fun testArithmeticOps() = testMethod {

@@ -97,9 +97,13 @@ class NormalizationPlansTests {
     fun testDoRemoveBracketInSumWithRedundantUnaryPlusInFirstPosition() = testMethod {
         method = NormalizationPlans.NormalizeExpression
         inputExpr = "+1 + 2"
+
         check {
+            fromExpr = "+1 + 2"
             toExpr = "1 + 2"
-            step { toExpr = "1 + 2" }
+            explanation {
+                key = GeneralExplanation.RemoveRedundantPlusSign
+            }
         }
     }
 

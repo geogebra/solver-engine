@@ -1,6 +1,7 @@
 package methods.equations
 
 import engine.methods.testMethodInX
+import methods.constantexpressions.ConstantExpressionsExplanation
 import methods.general.GeneralExplanation
 import methods.inequalities.InequalitiesExplanation
 import org.junit.jupiter.api.Test
@@ -151,7 +152,7 @@ class SolveEquationWithConstraintTest {
                     fromExpr = "[(-1) ^ 2] < 0"
                     toExpr = "1 < 0"
                     explanation {
-                        key = InequalitiesExplanation.SimplifyInequality
+                        key = ConstantExpressionsExplanation.SimplifyPowers
                     }
                 }
 

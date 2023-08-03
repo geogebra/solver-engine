@@ -335,8 +335,22 @@ enum class EquationsExplanation(
         simplify = true,
     ),
 
+    /**
+     * Add the opposite of everything on the LHS to both sides
+     * of the equation.
+     *
+     * E.g. 4x - 3 = 2x + 1 -> 4x - 3 - (2x + 1) = 2x + 1 - (2x + 1)
+     */
     MoveEverythingToTheLeft(SolvableKey.MoveEverythingToTheLeft),
 
+    /**
+     * Add the opposite of everything on the LHS to both sides
+     * of the equation and simplify.
+     *
+     * E.g. 4x - 3 = 2x + 1
+     *      -> 4x - 3 - (2x + 1) = 2x + 1 - (2x + 1)
+     *      -> 2x - 4 = 0
+     */
     MoveEverythingToTheLeftAndSimplify(SolvableKey.MoveEverythingToTheLeft, simplify = true),
 
     /**

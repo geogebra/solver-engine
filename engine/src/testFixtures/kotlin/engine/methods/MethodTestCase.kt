@@ -14,10 +14,6 @@ import engine.steps.Task
 import engine.steps.Transformation
 import engine.steps.metadata.Metadata
 import engine.steps.metadata.MetadataKey
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import org.opentest4j.AssertionFailedError
 import parser.parseExpression
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -128,147 +124,121 @@ open class PathMappingsCheck(mappings: List<PathMapping>, private val rootPath: 
         )
     }
 
-    open fun finish() {
+    open fun finalize() {
         if (checkedMappings != null) {
             assertEquals(pathMappings.count(), checkedMappings, "Some path mappings have not been checked")
         }
     }
 }
 
-class MappedExpressionCheck(
-    private val mappedExpression: Expression,
-    rootPath: Path,
-    private val test: MethodTestCase,
-) : PathMappingsCheck(mappedExpression.mergedPathMappings(), rootPath) {
+class MappedExpressionCheck(private val mappedExpression: Expression, rootPath: Path) :
+    PathMappingsCheck(mappedExpression.mergedPathMappings(), rootPath) {
 
     var expr: String?
         get() = null
         set(value) {
-            if (!test.logMode) assertEquals(parseExpression(value!!), mappedExpression)
+            assertEquals(parseExpression(value!!), mappedExpression)
         }
 }
 
 @TestCaseBuilderMarker
-class MetadataCheck(
-    private val rootPath: Path?,
-    private val test: MethodTestCase,
-    /** Returns the actual (as opposed to expected) metadata object, for that given key.
-     * Also, this should run assertions that the key is right, if not in `logMode`. */
-    private val keyChecker: (MetadataKey) -> Metadata?,
-) {
-    private var checkedParamCount = 0
+class MetadataCheck(private val rootPath: Path, private val keyChecker: (MetadataKey) -> Metadata) {
+    private var checkedParams: Int? = null
     private var params: List<Expression>? = null
 
-    var key: MetadataKey? = null
+    var key: MetadataKey?
+        get() = null
         set(value) {
-            field = value!!
-            params = keyChecker(value)?.mappedParams
+            params = keyChecker(value!!).mappedParams
         }
 
     fun param(assert: MappedExpressionCheck.() -> Unit) {
         assertNotNull(params, "Please specify the MetadataKey before the parameters")
 
-        if (!test.logMode) {
-            val param = MappedExpressionCheck(params!![checkedParamCount], rootPath!!, test)
-            param.assert()
-            param.finish()
-            checkedParamCount++
-        }
+        val param = MappedExpressionCheck(params!![checkedParams ?: 0], rootPath)
+        param.assert()
+        param.finalize()
+        checkedParams = (checkedParams ?: 0) + 1
     }
 
-    fun finish() {
-        if (!test.logMode && checkedParamCount != 0) {
-            assertEquals(params!!.size, checkedParamCount, "Some parameters have not been checked")
+    fun finalize() {
+        if (checkedParams != null) {
+            assertNotNull(params) // should fail already in `param` and never here
+            assertEquals(params!!.size, checkedParams, "Some parameters have not been checked")
         }
     }
 }
 
 @TestCaseBuilderMarker
-class TaskCheck(
-    private val task: Task?,
-    private val assertionCollector: AssertionCollector,
-    private val test: MethodTestCase,
-) :
-    PathMappingsCheck(task?.startExpr?.mergedPathMappings() ?: emptyList(), task?.rootPath ?: RootPath()) {
+class TaskCheck(private val task: Task?) :
+    PathMappingsCheck(
+        task?.startExpr?.mergedPathMappings() ?: emptyList(),
+        task?.rootPath ?: RootPath(),
+    ) {
     var startExpr: String?
         get() = null
         set(value) {
-            assertionCollector.fromExpr = value
-            if (!test.logMode) {
-                assertNotNull(task)
-                assertEquals((parseExpression(value!!)), task.startExpr)
-            }
+            assertNotNull(task)
+            assertEquals((parseExpression(value!!)), task.startExpr)
         }
 
     var taskId: String?
         get() = null
         set(value) {
-            assertionCollector.toExpr = value
-            if (!test.logMode) {
-                assertNotNull(task)
-                assertEquals(value, task.taskId)
-            }
+            assertNotNull(task)
+            assertEquals(value, task.taskId)
         }
 
     private var checkedSteps: Int? = null
 
     fun explanation(init: MetadataCheck.() -> Unit) {
-        assertNull(
-            assertionCollector.explanation,
-            "Don't assert that there are two different explanations. You have already asserted that there was an explanation with key ${assertionCollector.explanation?.key}",
-        )
-        val explanationCheck = MetadataCheck(task?.rootPath, test) {
-            if (test.logMode) {
-                assertionCollector.explanation = AssertionCollector(key = it.keyName)
-            } else {
-                assertNotNull(task!!.explanation, "Explanation is empty")
-                assertEquals(
-                    it.keyName,
-                    task.explanation!!.key.keyName,
-                    "Explanation key does not match",
-                )
-            }
-            task?.explanation
+        assertNotNull(task)
+        val explanationCheck = MetadataCheck(task.rootPath) {
+            assertNotNull(task.explanation, "Explanation is empty")
+            assertEquals(
+                it,
+                task.explanation!!.key,
+                "Explanation key does not match",
+            )
+            task.explanation!!
         }
 
         explanationCheck.init()
-        explanationCheck.finish()
+        explanationCheck.finalize()
     }
 
-    private fun getCurrentStep(): Transformation? {
+    private fun getCurrentStep(): Transformation {
+        assertNotNull(task)
+
         val currentStep = checkedSteps ?: 0
         checkedSteps = currentStep + 1
 
-        if (!test.logMode) {
-            assertNotNull(task)
-            assertNotNull(task.steps, "The tasks has no steps, even though some were specified")
-            assert(task.steps.size > currentStep) {
-                "$checkedSteps steps were specified, but the task only has ${task.steps.size}"
-            }
+        assertNotNull(task.steps, "The tasks has no steps, even though some were specified")
+        assert(task.steps.size > currentStep) {
+            "$checkedSteps steps were specified, but the task only has ${task.steps.size}"
         }
 
-        return task?.steps?.getOrNull(currentStep)
+        return task.steps[currentStep]
     }
 
     fun step(assert: TransformationCheck.() -> Unit) {
         val currentStep = getCurrentStep()
 
-        if (currentStep?.tags?.contains(Transformation.Tag.InvisibleChange) == true) {
+        if (currentStep.tags?.contains(Transformation.Tag.InvisibleChange) == true) {
             // if this is an invisible step, check the next one instead
             step(assert)
         } else {
-            checkTransformation(currentStep, assertionCollector, test, assert)
+            checkTransformation(currentStep, assert)
         }
     }
 
     fun noStep() {
-        assertionCollector.noSteps = true
         assertNotNull(task)
         assert(task.steps.isEmpty()) { "The tasks has ${task.steps.size} steps but should have none" }
     }
 
-    override fun finish() {
-        super.finish()
+    override fun finalize() {
+        super.finalize()
         if (checkedSteps != null) {
             val transSteps = task!!.steps
             assertNotNull(transSteps) // should fail already in `step` and never here
@@ -278,30 +248,23 @@ class TaskCheck(
 }
 
 @TestCaseBuilderMarker
-class TransformationCheck(
-    private val trans: Transformation?,
-    private val assertionCollector: AssertionCollector,
-    private val test: MethodTestCase,
-) :
-    PathMappingsCheck(trans?.toExpr?.mergedPathMappings() ?: emptyList(), trans?.fromExpr?.path ?: RootPath()) {
+class TransformationCheck(private val trans: Transformation?) :
+    PathMappingsCheck(
+        trans?.toExpr?.mergedPathMappings() ?: emptyList(),
+        trans?.fromExpr?.path ?: RootPath(),
+    ) {
     var fromExpr: String?
         get() = null
         set(value) {
-            assertionCollector.fromExpr = value
-            if (!test.logMode) {
-                assertNotNull(trans)
-                assertEquals(parseExpression(value!!), trans.fromExpr)
-            }
+            assertNotNull(trans)
+            assertEquals(parseExpression(value!!), trans.fromExpr)
         }
 
     var toExpr: String?
         get() = null
         set(value) {
-            assertionCollector.toExpr = value
-            if (!test.logMode) {
-                assertNotNull(trans)
-                assertEquals(parseExpression(value!!), trans.toExpr.removeBrackets())
-            }
+            assertNotNull(trans)
+            assertEquals(parseExpression(value!!), trans.toExpr.removeBrackets())
         }
 
     private var checkedSkills: Int? = null
@@ -309,80 +272,67 @@ class TransformationCheck(
     private var checkedTasks: Int? = null
 
     fun noTransformation() {
-        assertionCollector.noSteps = true
         assertNull(trans, "Transformation should not have been executed")
     }
 
     fun explanation(init: MetadataCheck.() -> Unit) {
-        assertNull(
-            assertionCollector.explanation,
-            "Don't assert that there are two different explanations. You have already asserted that there was an explanation with key ${assertionCollector.explanation?.key}",
-        )
-        val explanationCheck = MetadataCheck(trans?.fromExpr?.path, test) {
-            val mainExplanation = trans?.explanation
-            if (test.logMode) {
-                assertionCollector.explanation = AssertionCollector(key = it.keyName)
-            } else {
-                assertNotNull(mainExplanation, "Explanation is empty")
-                assertEquals(
-                    it.keyName,
-                    mainExplanation.key.keyName,
-                    "Explanation key does not match",
-                )
-            }
-            mainExplanation
+        assertNotNull(trans)
+        val explanationCheck = MetadataCheck(trans.fromExpr.path!!) {
+            assertNotNull(trans.explanation, "Explanation is empty")
+            assertEquals(
+                it,
+                trans.explanation!!.key,
+                "Explanation key does not match",
+            )
+            trans.explanation!!
         }
 
         explanationCheck.init()
-        explanationCheck.finish()
+        explanationCheck.finalize()
     }
 
     fun skill(init: MetadataCheck.() -> Unit) {
         assertNotNull(trans)
 
-        val skillCheck = MetadataCheck(trans.fromExpr.path!!, test) {
+        val skillCheck = MetadataCheck(trans.fromExpr.path!!) {
             val skill = trans.skills?.find { s -> s.key == it }
-            if (!test.logMode) assertNotNull(skill, "No skill with given key found")
+            assertNotNull(skill, "No skill with given key found")
             skill
         }
         skillCheck.init()
-        skillCheck.finish()
+        skillCheck.finalize()
         checkedSkills = (checkedSkills ?: 0) + 1
     }
 
-    fun getCurrentStep(): Transformation? {
+    fun getCurrentStep(): Transformation {
+        assertNotNull(trans)
+
         val currentStep = checkedSteps ?: 0
         checkedSteps = currentStep + 1
 
-        val mainSteps = trans?.steps
-        if (!test.logMode) {
-            assertNotNull(trans)
-            assertNotNull(mainSteps, "The transformation has no steps, even though some were specified")
-            assert(mainSteps.size > currentStep) {
-                "$checkedSteps steps were specified, but the transformation only has ${trans.steps!!.size}"
-            }
+        assertNotNull(trans.steps, "The transformation has no steps, even though some were specified")
+        assert(trans.steps!!.size > currentStep) {
+            "$checkedSteps steps were specified, but the transformation only has ${trans.steps!!.size}"
         }
 
-        return mainSteps?.getOrNull(currentStep)
+        return trans.steps!![currentStep]
     }
 
     fun invisibleStep(assert: TransformationCheck.() -> Unit) {
         val currentStep = getCurrentStep()
 
-        if (!test.logMode) {
-            assert(currentStep!!.tags?.contains(Transformation.Tag.InvisibleChange) == true)
-        }
-        checkTransformation(currentStep, assertionCollector, test, assert)
+        assert(currentStep.tags?.contains(Transformation.Tag.InvisibleChange) == true)
+        checkTransformation(currentStep, assert)
     }
 
     fun step(assert: TransformationCheck.() -> Unit) {
         val currentStep = getCurrentStep()
 
-        if (currentStep?.tags?.contains(Transformation.Tag.InvisibleChange) == true) {
+        if (currentStep.tags?.contains(Transformation.Tag.InvisibleChange) == true) {
             // if this is an invisible step, check the next one instead
             step(assert)
         } else {
-            checkTransformation(currentStep, assertionCollector, test, assert)
+            checkTransformation(currentStep, assert)
         }
     }
 
@@ -397,72 +347,48 @@ class TransformationCheck(
             "$checkedTasks tasks were specified, but the transformation only has ${trans.tasks!!.size}"
         }
 
-        val newChild = assertionCollector.newTask()
-        newChild.isTask = true
-        val check = TaskCheck(trans.tasks!![currentTask], newChild, test)
+        val check = TaskCheck(trans.tasks!![currentTask])
         check.assert()
-        check.finish()
+        check.finalize()
     }
 
-    override fun finish() {
-        super.finish()
-        if (!test.logMode) {
-            if (checkedSkills != null) {
-                assertEquals(checkedSkills, trans!!.skills?.size, "Some skills have not been checked")
-            }
-            if (checkedSteps != null) {
-                val transSteps = trans?.steps
-                assertNotNull(transSteps) // should fail already in `step` and never here
-                assertEquals(checkedSteps, transSteps.size, "Some steps have not been checked")
-            }
-            if (checkedTasks != null) {
-                val transTasks = trans!!.tasks
-                assertNotNull(transTasks)
-                assertEquals(checkedTasks, transTasks.size, "Some tasks have not been checked")
-            }
-            // Assert that the gmAction will probably not cause problems when being
-            // serialized, like in PLUT-567
-            trans?.gmAction?.expressionsAsPathStrings()
-            trans?.gmAction?.dragToExpressionAsPathString()
+    override fun finalize() {
+        super.finalize()
+        if (checkedSkills != null) {
+            assertEquals(checkedSkills, trans!!.skills?.size, "Some skills have not been checked")
         }
+        if (checkedSteps != null) {
+            val transSteps = trans!!.steps
+            assertNotNull(transSteps) // should fail already in `step` and never here
+            assertEquals(checkedSteps, transSteps.size, "Some steps have not been checked")
+        }
+        if (checkedTasks != null) {
+            val transTasks = trans!!.tasks
+            assertNotNull(transTasks)
+            assertEquals(checkedTasks, transTasks.size, "Some tasks have not been checked")
+        }
+        // Assert that the gmAction will probably not cause problems when being
+        // serialized, like in PLUT-567
+        trans?.gmAction?.expressionsAsPathStrings()
+        trans?.gmAction?.dragToExpressionAsPathString()
     }
 }
 
 @TestCaseBuilderMarker
 class MethodTestCase {
-    var testName: String = "unknown"
-    var testClassName: String = "unknown"
     var context: Context = emptyContext
     lateinit var method: Method
-    var inputExpr: String? = null
-        set(value) {
-            field = value
-            assertionCollector.fromExpr = value
-        }
-    var transformation: Transformation? = null
-    var passed = false
-    var failureMessage: String? = null
-    internal var logMode = false
-    internal var firstCheckTransformation = true
-    internal val throughSteps = mutableSetOf<Transformation>()
-    var assertionCollector: AssertionCollector = AssertionCollector(noSteps = false)
-        internal set
-    init {
-        for (processor in solutionProcessors) {
-            processor.registerTest(this)
-        }
-    }
+    lateinit var inputExpr: String
 
     fun check(assert: TransformationCheck.() -> Unit) {
-        if (!logMode) {
-            val expr = parseExpression(inputExpr!!)
-            this.transformation = method.tryExecute(context, expr.withOrigin(RootOrigin()))
+        val expr = parseExpression(inputExpr)
+        val trans = method.tryExecute(context, expr.withOrigin(RootOrigin()))
 
-            for (processor in solutionProcessors) {
-                processor.processSolution(inputExpr!!, method, transformation)
-            }
+        for (processor in solutionProcessors) {
+            processor.processSolution(inputExpr, method, trans)
         }
-        checkTransformation(transformation, assertionCollector, this, assert)
+
+        checkTransformation(trans, assert)
     }
 
     companion object {
@@ -472,106 +398,29 @@ class MethodTestCase {
             solutionProcessors.add(processor)
         }
     }
-
-    internal fun finish() {
-        if (!logMode) passed = true
-    }
 }
 
-fun getMethodId(method: Method): String {
-    val category = method::class.simpleName!!.removeSuffix("Plans")
-    return if (method is RunnerMethod) {
-        MethodId(category, method.name).toString()
-    } else {
-        "<an anonymous plan>"
-    }
-}
-
-interface SolutionProcessor {
+fun interface SolutionProcessor {
     fun processSolution(input: String, method: Method, solution: Transformation?)
-    fun registerTest(test: MethodTestCase)
 }
 
 private fun Transformation.isThroughStep() =
     steps?.let { it.size == 1 && it[0].fromExpr == fromExpr } ?: false
 
-private fun checkTransformation(
-    trans: Transformation?,
-    assertionCollector: AssertionCollector,
-    test: MethodTestCase,
-    assert: TransformationCheck.() -> Unit,
-): TransformationCheck {
-    var transVar = trans
-    val newAssertionCollector = if (test.firstCheckTransformation) {
-        test.firstCheckTransformation = false
-        assertionCollector
-    } else {
-        assertionCollector.newStep()
-    }
-    if (test.logMode) {
-        if (test.throughSteps.contains(transVar)) {
-            newAssertionCollector.wasIgnoredDuringTestAsAThroughStep = true
-            transVar = transVar?.steps?.get(0)
-        }
-    } else if (transVar != null && transVar.isThroughStep()) {
-        try {
-            val transCheckOfChild = checkTransformation(transVar.steps?.get(0), newAssertionCollector, test, assert)
-            test.throughSteps.add(transVar)
-            return transCheckOfChild
-        } catch (_: AssertionFailedError) {
-            // do nothing
-        }
+private fun checkTransformation(trans: Transformation?, assert: TransformationCheck.() -> Unit) {
+    if (trans != null && trans.isThroughStep()) {
+        checkTransformation(trans.steps?.get(0), assert)
+        return
     }
 
-    val check = TransformationCheck(transVar, newAssertionCollector, test)
+    val check = TransformationCheck(trans)
     check.assert()
-    check.finish()
-    return check
-}
-
-@Serializable
-data class AssertionCollector(
-    var explanation: AssertionCollector? = null,
-    var fromExpr: String? = null,
-    var steps: MutableList<AssertionCollector>? = null,
-    var tasks: MutableList<AssertionCollector>? = null,
-    var toExpr: String? = null,
-    var key: String? = null,
-    var noSteps: Boolean? = null,
-    var wasIgnoredDuringTestAsAThroughStep: Boolean? = null,
-    var isTask: Boolean? = null,
-) {
-    fun newStep(): AssertionCollector {
-        if (steps == null) steps = mutableListOf()
-        val child = AssertionCollector()
-        steps!!.add(child)
-        return child
-    }
-
-    fun newTask(): AssertionCollector {
-        if (tasks == null) tasks = mutableListOf()
-        val child = AssertionCollector()
-        tasks!!.add(child)
-        return child
-    }
-
-    fun toJsonString(): String {
-        return Json.encodeToString(this)
-    }
+    check.finalize()
 }
 
 fun testMethod(init: MethodTestCase.() -> Unit) {
     val testCase = MethodTestCase()
-    try {
-        testCase.init()
-        testCase.finish()
-    } finally {
-        testCase.logMode = true
-        // Throw away the old assertionCollector. It was just a dummy. This will be the real one.
-        testCase.assertionCollector = AssertionCollector()
-        testCase.init()
-        testCase.finish()
-    }
+    testCase.init()
 }
 
 /**
@@ -579,15 +428,6 @@ fun testMethod(init: MethodTestCase.() -> Unit) {
  */
 fun testMethodInX(init: MethodTestCase.() -> Unit) {
     val testCase = MethodTestCase()
-    try {
-        testCase.context = Context(solutionVariables = listOf("x"))
-        testCase.init()
-        testCase.finish()
-    } finally {
-        testCase.logMode = true
-        // Throw away the old assertionCollector. It was just a dummy. This will be the real one.
-        testCase.assertionCollector = AssertionCollector()
-        testCase.init()
-        testCase.finish()
-    }
+    testCase.context = Context(solutionVariables = listOf("x"))
+    testCase.init()
 }

@@ -191,7 +191,7 @@ class FactoringStrategyTest {
                 fromExpr = "[x ^ 6] = 5 [x ^ 5] - 3 [x ^ 4]"
                 toExpr = "[x ^ 6] - 5 [x ^ 5] + 3 [x ^ 4] = 0"
                 explanation {
-                    key = EquationsExplanation.MoveEverythingToTheLeftAndSimplify
+                    key = methods.solvable.EquationsExplanation.MoveEverythingToTheLeftAndSimplify
                 }
             }
 
@@ -380,16 +380,15 @@ class FactoringStrategyTest {
             explanation {
                 key = EquationsExplanation.SolveEquationByFactoring
             }
+
             step {
-                // Through step
-                step {
-                    fromExpr = "-11 ([x ^ 2] + x) = 0"
-                    toExpr = "[x ^ 2] + x = 0"
-                    explanation {
-                        key = EquationsExplanation.EliminateConstantFactorOfLhsWithZeroRhs
-                    }
+                fromExpr = "-11 ([x ^ 2] + x) = 0"
+                toExpr = "[x ^ 2] + x = 0"
+                explanation {
+                    key = EquationsExplanation.EliminateConstantFactorOfLhsWithZeroRhs
                 }
             }
+
             step {
                 fromExpr = "[x ^ 2] + x = 0"
                 toExpr = "x (x + 1) = 0"
@@ -397,6 +396,7 @@ class FactoringStrategyTest {
                     key = FactorExplanation.FactorPolynomial
                 }
             }
+
             step {
                 fromExpr = "x (x + 1) = 0"
                 toExpr = "x = 0 OR x + 1 = 0"
@@ -404,6 +404,7 @@ class FactoringStrategyTest {
                     key = EquationsExplanation.SeparateFactoredEquation
                 }
             }
+
             step {
                 fromExpr = "x = 0 OR x + 1 = 0"
                 toExpr = "SetSolution[x : {-1, 0}]"
