@@ -7,7 +7,12 @@ import org.jlleitschuh.gradle.ktlint.KtlintExtension
 plugins {
     kotlin("jvm")
 
-    id("org.jlleitschuh.gradle.ktlint") version "11.3.2" apply false
+    id("org.jlleitschuh.gradle.ktlint") version "11.5.0" apply false
+
+    // 1.23 is available BUT upgrading is causing some error whose solution is unclear to me.
+    // - 1.23.0 wants kotlin 1.8.21 and we have 1.8.22
+    // - 1.23.1 wants kotlin 1.9.0 and we have 1.8.22
+    // See https://detekt.dev/docs/gettingstarted/gradle/#dependencies
     id("io.gitlab.arturbosch.detekt") version "1.22.0" apply false
 }
 

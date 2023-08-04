@@ -17,6 +17,7 @@ pluginManagement {
         kotlin("jvm") version kotlinVersion
         kotlin("plugin.jpa") version kotlinVersion
         kotlin("plugin.spring") version kotlinVersion
+        kotlin("plugin.serialization") version kotlinVersion
         id("com.google.devtools.ksp") version kspVersion
     }
 }

@@ -5,7 +5,7 @@ import org.jlleitschuh.gradle.ktlint.tasks.KtLintFormatTask
 plugins {
     kotlin("jvm")
     antlr
-    kotlin("plugin.serialization") version "1.8.20"
+    kotlin("plugin.serialization")
 
     id("io.gitlab.arturbosch.detekt")
     id("java-test-fixtures")
