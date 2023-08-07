@@ -1,5 +1,6 @@
 package engine.context
 
+import engine.expressions.LabelSpace
 import engine.logger.DefaultLogger
 import engine.logger.Logger
 import engine.methods.Strategy
@@ -43,6 +44,7 @@ data class Context(
     val logger: Logger = DefaultLogger,
     val preferredStrategies: Map<KClass<out Strategy>, Strategy> = emptyMap(),
     val strategySelectionMode: StrategySelectionMode = StrategySelectionMode.ALL,
+    val labelSpace: LabelSpace? = null,
 ) : Logger by logger {
     val effectivePrecision = (precision ?: DEFAULT_PRECISION).coerceIn(MINIMUM_PRECISION, MAXIMUM_PRECISION)
 
@@ -109,3 +111,4 @@ inline fun <reified T : Strategy> strategyChoice(choice: T): Pair<KClass<out Str
 }
 
 val emptyContext = Context()
+val emptyContextWithLabels = Context(labelSpace = LabelSpace())

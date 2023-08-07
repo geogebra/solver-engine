@@ -1,7 +1,7 @@
 package engine.methods
 
 import engine.context.Context
-import engine.context.emptyContext
+import engine.context.emptyContextWithLabels
 import engine.expressions.Expression
 import engine.expressions.RootOrigin
 import parser.parseExpression
@@ -31,7 +31,7 @@ fun testRule(
     rule: Method,
     outputExpr: String?,
     gmAction: SerializedGmAction? = null,
-    context: Context = emptyContext,
+    context: Context = emptyContextWithLabels,
     testWithoutBrackets: Boolean = true,
 ) {
     val expression = parseExpression(inputExpr)
@@ -43,7 +43,7 @@ fun testRule(
     rule: Method,
     outputExpr: String?,
     gmAction: SerializedGmAction? = null,
-    context: Context = emptyContext,
+    context: Context = emptyContextWithLabels,
     testWithoutBrackets: Boolean = true,
 ) {
     val step = rule.tryExecute(context, inputExpr.withOrigin(RootOrigin()))

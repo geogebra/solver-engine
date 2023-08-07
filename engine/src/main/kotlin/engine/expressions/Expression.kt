@@ -60,18 +60,24 @@ enum class Decorator {
     open fun decorateLatexString(str: String): String = str
 }
 
+class LabelSpace {
+    internal fun getLabelInstance(label: Label) = LabelInstance(this, label)
+}
+
+data class LabelInstance(val space: LabelSpace, val label: Label) : Extractor<Expression> {
+
+    override fun extract(sub: Expression) = sub.labelledPart(this)
+}
+
 /**
  * Each expression can have a [Label] attached to it.  As labels implement the [Extractor] interface, they can be used
  * in a rule to tag some sub-expressions of the result for further processing.  It is possible for the same label to be
  * present in more than one node of an expression.
  */
-enum class Label : Extractor<Expression> {
+enum class Label {
     A,
     B,
     C,
-    ;
-
-    override fun extract(sub: Expression) = sub.labelledPart(this)
 }
 
 /**
@@ -94,7 +100,7 @@ interface NodeMeta {
      * A [label] can be attached to a node so it can be retrieved later independently of its position in a larger
      * node.
      */
-    val label: Label?
+    val label: LabelInstance?
 
     /**
      * A [name] can be attached to a node - this can be displayed next to the expression
@@ -108,7 +114,7 @@ interface NodeMeta {
     fun copyMeta(
         decorators: List<Decorator> = this.decorators,
         origin: Origin = this.origin,
-        label: Label? = this.label,
+        label: LabelInstance? = this.label,
         name: String? = this.name,
     ): NodeMeta
 }
@@ -116,10 +122,10 @@ interface NodeMeta {
 data class BasicMeta(
     override val decorators: List<Decorator> = emptyList(),
     override val origin: Origin = Build,
-    override val label: Label? = null,
+    override val label: LabelInstance? = null,
     override val name: String? = null,
 ) : NodeMeta {
-    override fun copyMeta(decorators: List<Decorator>, origin: Origin, label: Label?, name: String?) =
+    override fun copyMeta(decorators: List<Decorator>, origin: Origin, label: LabelInstance?, name: String?) =
         copy(decorators, origin, label, name)
 }
 
@@ -163,7 +169,7 @@ open class Expression internal constructor(
     /**
      * Returns a copy labelled with [newLabel] instead of the existing label.
      */
-    fun withLabel(newLabel: Label?) = expressionOf(operator, operands, meta.copyMeta(label = newLabel))
+    fun withLabel(newLabel: LabelInstance?) = expressionOf(operator, operands, meta.copyMeta(label = newLabel))
 
     fun byName() = if (name != null) nameXp(name!!) else this
 
@@ -174,7 +180,7 @@ open class Expression internal constructor(
     /**
      * Returns a node in the expression tree labelled with [findLabel] if there is one, else null.
      */
-    fun labelledPart(findLabel: Label = Label.A): Expression? = when (findLabel) {
+    fun labelledPart(findLabel: LabelInstance): Expression? = when (findLabel) {
         label -> this
         else -> children.firstNotNullOfOrNull { it.labelledPart(findLabel) }
     }
@@ -182,8 +188,13 @@ open class Expression internal constructor(
     /**
      * Returns a copy of the expression with all labels cleared recursively.
      */
-    fun clearLabels(): Expression =
-        expressionOf(operator, operands.map { it.clearLabels() }, meta.copyMeta(label = null))
+    fun clearLabels(labelSpace: LabelSpace): Expression {
+        return expressionOf(
+            operator = operator,
+            operands = operands.map { it.clearLabels(labelSpace) },
+            meta = if (meta.label?.space == labelSpace) meta.copyMeta(label = null) else meta,
+        )
+    }
 
     val children by lazy { origin.computeChildrenOrigin(this) }
 

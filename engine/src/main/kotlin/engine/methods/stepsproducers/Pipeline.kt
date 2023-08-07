@@ -3,6 +3,8 @@ package engine.methods.stepsproducers
 import engine.context.Context
 import engine.expressions.Expression
 import engine.expressions.Extractor
+import engine.expressions.Label
+import engine.expressions.LabelSpace
 import engine.methods.CompositeMethod
 import engine.methods.PlanBuilder
 import engine.methods.TaskSetBuilder
@@ -48,10 +50,10 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
 
     override fun withNewLabels(init: PipelineBuilder.() -> Unit) {
         if (!builder.inProgress) return
+        val labels = LabelSpace()
 
-        builder.clearLabels()
-        apply(init)
-        builder.clearLabels()
+        inContext({ copy(labelSpace = labels) }, init)
+        builder.clearLabels(labels)
     }
 
     override fun optionally(steps: StepsProducer) {
@@ -124,10 +126,26 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
         )
     }
 
+    override fun applyTo(stepsProducer: StepsProducer, label: Label) {
+        if (!builder.inProgress) return
+
+        val extractor = ctx.labelSpace?.getLabelInstance(label)
+        if (extractor == null) {
+            builder.abort()
+        } else {
+            applyTo(stepsProducer, extractor)
+        }
+    }
     override fun applyTo(extractor: Extractor<Expression>, init: PipelineBuilder.() -> Unit) {
         if (!builder.inProgress) return
 
         applyTo(ProceduralPipeline(init), extractor)
+    }
+
+    override fun applyTo(label: Label, init: PipelineBuilder.() -> Unit) {
+        if (!builder.inProgress) return
+
+        applyTo(ProceduralPipeline(init), label)
     }
 
     override fun applyToChildren(all: Boolean, atLeastOne: Boolean, init: PipelineBuilder.() -> Unit) {

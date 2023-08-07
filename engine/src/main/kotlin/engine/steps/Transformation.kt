@@ -1,6 +1,7 @@
 package engine.steps
 
 import engine.expressions.Expression
+import engine.expressions.LabelSpace
 import engine.steps.Transformation.Tag
 import engine.steps.Transformation.Type
 import engine.steps.metadata.GmAction
@@ -113,5 +114,8 @@ data class Transformation(
     /**
      * Clear all labels contained in the [fromExpr] or [toExpr] of the transformation.
      */
-    fun clearLabels() = copy(fromExpr = fromExpr.clearLabels(), toExpr = toExpr.clearLabels())
+    fun clearLabels(labelSpace: LabelSpace) = copy(
+        fromExpr = fromExpr.clearLabels(labelSpace),
+        toExpr = toExpr.clearLabels(labelSpace),
+    )
 }

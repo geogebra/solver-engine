@@ -3,6 +3,7 @@ package engine.methods.stepsproducers
 import engine.context.Context
 import engine.expressions.Expression
 import engine.expressions.Extractor
+import engine.expressions.Label
 import engine.methods.CompositeMethod
 import engine.methods.PlanBuilder
 import engine.methods.Strategy
@@ -82,9 +83,12 @@ interface PipelineBuilder {
      */
     fun applyTo(stepsProducer: StepsProducer, extractor: Extractor<Expression>)
 
+    fun applyTo(stepsProducer: StepsProducer, label: Label)
     fun <T : Expression> applyToKind(stepsProducer: StepsProducer, extractor: Extractor<T>)
 
     fun applyTo(extractor: Extractor<Expression>, init: PipelineBuilder.() -> Unit)
+
+    fun applyTo(label: Label, init: PipelineBuilder.() -> Unit)
 
     /**
      * Apply the [stepsProducer] to all children of the working expression in turn,

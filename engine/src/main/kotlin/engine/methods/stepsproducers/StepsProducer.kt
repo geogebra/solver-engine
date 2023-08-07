@@ -2,6 +2,7 @@ package engine.methods.stepsproducers
 
 import engine.context.Context
 import engine.expressions.Expression
+import engine.expressions.LabelSpace
 import engine.expressions.RootOrigin
 import engine.methods.Strategy
 import engine.operators.UndefinedOperator
@@ -59,9 +60,9 @@ class StepsBuilder(val context: Context, sub: Expression) {
 
     fun undefined() = sub.operator == UndefinedOperator
 
-    internal fun clearLabels() {
-        sub = sub.clearLabels()
-        steps.replaceAll { it.clearLabels() }
+    internal fun clearLabels(labelSpace: LabelSpace) {
+        sub = sub.clearLabels(labelSpace)
+        steps.replaceAll { it.clearLabels(labelSpace) }
     }
 
     fun addStep(step: Transformation) {

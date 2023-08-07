@@ -8,6 +8,7 @@ import engine.expressions.Expression
 import engine.expressions.Factor
 import engine.expressions.Inequality
 import engine.expressions.Introduce
+import engine.expressions.Label
 import engine.expressions.Move
 import engine.expressions.MoveUnaryOperator
 import engine.expressions.New
@@ -402,6 +403,8 @@ open class MappedExpressionBuilder(
     }
 
     fun CoefficientPattern.getCoefficient() = coefficient(match)
+
+    fun Expression.withLabel(label: Label) = this.withLabel(context.labelSpace?.getLabelInstance(label))
 }
 
 class EmptyExpressionProviderException : Exception("No expressions were bound by the expression provider")
