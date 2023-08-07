@@ -489,6 +489,8 @@ fun Expression.withoutNegOrPlus(): Expression = when (operator) {
     else -> this
 }
 
+fun Expression.isSignedInteger() = this is IntegerExpression || (this is Minus && firstChild is IntegerExpression)
+
 fun Expression.isSignedFraction() = this is Fraction || (this is Minus && firstChild is Fraction)
 
 fun Expression.inverse(): Expression = when {
@@ -539,8 +541,17 @@ fun Expression.hasRedundantBrackets(): Boolean = hasBracket() && outerBracket() 
         else -> true
     }
 
+fun Expression.variablePowerBase(): Variable? {
+    return when {
+        this is Variable -> this
+        this is Power && this.base is Variable -> this.base as Variable
+        else -> null
+    }
+}
+
 fun Expression.isPolynomial(): Boolean = when {
     this is Fraction -> numerator.isPolynomial() && denominator.isConstant()
+    this is DivideBy -> divisor.isConstant()
     else -> children.all { it.isPolynomial() }
 }
 

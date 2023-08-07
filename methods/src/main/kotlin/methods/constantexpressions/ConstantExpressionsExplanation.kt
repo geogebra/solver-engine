@@ -21,10 +21,17 @@ enum class ConstantExpressionsExplanation : CategorisedMetadataKey {
     SimplifyRootsInExpression,
 
     /**
-     * Simplify the power of an arbitrary expression, in multiple sub-steps
-     * E.g. (2 sqrt(2))^2 -> 8
+     * Simplify the power of an integer
+     * E.g. 3^4 -> 81
+     *      2^(-3) -> 1/2^3 -> 1/8
      */
-    SimplifyPowers,
+    SimplifyPowerOfInteger,
+
+    /**
+     * Simplify the power of a product
+     * E.g. (3 sqrt(2))^2 -> 3^2 (sqrt(2))^2 -> 9 * 2 -> 18
+     */
+    SimplifyPowerOfProduct,
 
     /**
      * Simplify the power of a fraction, in multiple sub-steps

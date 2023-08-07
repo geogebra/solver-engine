@@ -4,6 +4,7 @@ import engine.context.Context
 import engine.expressions.Expression
 import engine.expressions.Extractor
 import engine.expressions.Label
+import engine.expressions.Minus
 import engine.methods.CompositeMethod
 import engine.methods.PlanBuilder
 import engine.methods.Strategy
@@ -145,6 +146,10 @@ interface PipelineBuilder {
     fun contextSensitive(init: ContextSensitiveBuilder.() -> Unit)
 
     fun inContext(contextFactory: Context.(Expression) -> Context, init: PipelineBuilder.() -> Unit)
+}
+
+fun PipelineBuilder.applyAfterMaybeExtractingMinus(init: PipelineBuilder.() -> Unit) {
+    applyTo(extractor = { if (it is Minus) it.argument else it }, init)
 }
 
 @StepsProducerBuilderMarker

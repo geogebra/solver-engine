@@ -9,6 +9,7 @@ import engine.expressions.DivideBy
 import engine.expressions.IntegerExpression
 import engine.expressions.Minus
 import engine.expressions.PathScope
+import engine.expressions.Product
 import engine.expressions.Root
 import engine.expressions.SquareRoot
 import engine.expressions.Sum
@@ -123,16 +124,20 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
 
 private val removeUnitaryCoefficient =
     rule {
-        val one = FixedPattern(Constants.One)
-        val otherTerm = condition { it !is IntegerExpression }
-        val pattern = productOf(one, otherTerm)
+        onPattern(productContaining()) {
+            val factors = (expression as Product).children
+            val firstFactor = factors[0]
+            val otherFactors = factors.drop(1)
 
-        onPattern(pattern) {
-            ruleResult(
-                toExpr = cancel(one, get(otherTerm)),
-                gmAction = tap(one),
-                explanation = metadata(Explanation.RemoveUnitaryCoefficient),
-            )
+            if (firstFactor == Constants.One && otherFactors.none { it is IntegerExpression }) {
+                ruleResult(
+                    toExpr = cancel(firstFactor, productOf(otherFactors)),
+                    gmAction = tap(firstFactor),
+                    explanation = metadata(Explanation.RemoveUnitaryCoefficient),
+                )
+            } else {
+                null
+            }
         }
     }
 
@@ -298,7 +303,6 @@ private val moveSignOfNegativeFactorOutOfProduct =
         val product = productContaining(fd)
 
         onPattern(product) {
-            if (context.gmFriendly) return@onPattern null
             ruleResult(
                 toExpr = moveUnaryOperator(
                     negf, // -x

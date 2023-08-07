@@ -1,57 +1,25 @@
 package methods.polynomials
 
 import engine.methods.testRule
-import methods.polynomials.PolynomialRules.CollectUnitaryMonomialsInProduct
-import methods.polynomials.PolynomialRules.DistributeMonomialToIntegerPower
-import methods.polynomials.PolynomialRules.DistributeProductToIntegerPower
-import methods.polynomials.PolynomialRules.NormalizeMonomial
 import methods.polynomials.PolynomialRules.NormalizePolynomial
+import methods.polynomials.PolynomialRules.RearrangeProductOfMonomials
 import org.junit.jupiter.api.Test
 
 class PolynomialsRulesTest {
 
     @Test
-    fun testMultiplyMonomials() {
-        testRule("x*x", CollectUnitaryMonomialsInProduct, null)
-        testRule("2x*3x", CollectUnitaryMonomialsInProduct, "(2*3)(x*x)")
-        testRule("[x/2] * [3x/5] * [x^2]", CollectUnitaryMonomialsInProduct, "([1/2]*[3/5])(x*x*[x^2])")
-        testRule("(-2x)*5[x^2]", CollectUnitaryMonomialsInProduct, "((-2)*5)(x*[x^2])")
-        testRule("2[x^2]", CollectUnitaryMonomialsInProduct, null)
-
-        // The negation of a product is also handled by this rule.
-        testRule("-2x*3x", CollectUnitaryMonomialsInProduct, "-(2 * 3)(x * x)")
-        testRule("-2t(-[t^3])", CollectUnitaryMonomialsInProduct, "((-2) * (-1))(t * [t^3])")
-    }
-
-    @Test
-    fun testNormalizeMonomial() {
-        testRule("t*2", NormalizeMonomial, "2t")
-        testRule("2x", NormalizeMonomial, null)
-        testRule("2*y", NormalizeMonomial, "2y")
-        testRule("2y * 3", NormalizeMonomial, "2*3y")
-        testRule("[3t/2]", NormalizeMonomial, "[3/2]t")
-        testRule("-2x", NormalizeMonomial, null)
-        testRule("(-1)[t^3]", NormalizeMonomial, "-[t^3]")
-        testRule("1[z^2]", NormalizeMonomial, "[z^2]")
-        testRule("0y", NormalizeMonomial, "0")
-
-        // Do those simplifications separately so they can have an explanation for the user.
-        testRule("[x^1]", NormalizeMonomial, null)
-        testRule("[t^0]", NormalizeMonomial, null)
-    }
-
-    @Test
-    fun distributeMonomialToIntegerPower() {
-        testRule("[([t/2]) ^ 4]", DistributeMonomialToIntegerPower, "[([1/2]) ^ 4][t ^ 4]")
-        testRule("[(-2[x ^ 3]) ^ 4]", DistributeMonomialToIntegerPower, "[(-2) ^ 4][([x ^ 3]) ^ 4]")
-        testRule("[(-tsqrt[3]) ^ 5]", DistributeMonomialToIntegerPower, "[(-sqrt[3]) ^ 5] * [t ^ 5]")
-        testRule("[(2x)^2]", DistributeProductToIntegerPower, "[2^2][x^2]")
-        testRule("[([1/2]tsqrt[2]) ^ 4]", DistributeProductToIntegerPower, "[([1/2]sqrt[2])^4]*[t^4]")
-    }
-
-    @Test
-    fun testDistributeProductToIntegerPower() {
-        testRule("[(2x * 3x) ^ 2]", DistributeProductToIntegerPower, "[(2 * 3) ^ 2]*[x^2]*[x^2]")
+    fun testRearrangeProductOfMonomials() {
+        testRule("3 x y", RearrangeProductOfMonomials, null)
+        testRule("3 x y * y", RearrangeProductOfMonomials, "3 x (y * y)")
+        testRule("3 y x y", RearrangeProductOfMonomials, "3 x (y * y)")
+        testRule("3 y x [y ^ 2]", RearrangeProductOfMonomials, "3 x (y * [y ^ 2])")
+        testRule("3 y x * 4 [y ^ 2]", RearrangeProductOfMonomials, "(3 * 4) x (y * [y ^ 2])")
+        testRule("y a * 2 x b", RearrangeProductOfMonomials, "2 a b x y")
+        testRule(
+            "[2 / 3] b [x ^ 3] y * 5 a b [x ^ 2] y",
+            RearrangeProductOfMonomials,
+            "([2 / 3] * 5) a (b * b) ([x ^ 3] * [x ^ 2]) (y * y)",
+        )
     }
 
     @Test

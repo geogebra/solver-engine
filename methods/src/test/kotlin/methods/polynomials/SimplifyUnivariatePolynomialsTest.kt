@@ -2,7 +2,6 @@ package methods.polynomials
 
 import engine.methods.testMethod
 import methods.collecting.CollectingExplanation
-import methods.constantexpressions.ConstantExpressionsExplanation
 import methods.expand.ExpandExplanation
 import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.fractionroots.FractionRootsExplanation
@@ -12,11 +11,11 @@ import methods.integerroots.IntegerRootsExplanation
 import org.junit.jupiter.api.Test
 
 @Suppress("LargeClass")
-class PolynomialsPlansTest {
+class SimplifyUnivariatePolynomialsTest {
 
     @Test
     fun testCollectSimpleLikeTerms() = testMethod {
-        method = PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyPolynomialExpression
         inputExpr = "2 x + 3 x + [x ^ 2] - 5 [x ^ 2]"
 
         check {
@@ -67,17 +66,9 @@ class PolynomialsPlansTest {
 
                 step {
                     fromExpr = "5 x + (1 - 5) [x ^ 2]"
-                    toExpr = "5 x + (-4) [x ^ 2]"
-                    explanation {
-                        key = CollectingExplanation.SimplifyCoefficient
-                    }
-                }
-
-                step {
-                    fromExpr = "5 x + (-4) [x ^ 2]"
                     toExpr = "5 x - 4 [x ^ 2]"
                     explanation {
-                        key = GeneralExplanation.MoveSignOfNegativeFactorOutOfProduct
+                        key = CollectingExplanation.SimplifyCoefficient
                     }
                 }
             }
@@ -94,7 +85,7 @@ class PolynomialsPlansTest {
 
     @Test
     fun testMonomialWithZeroCoefficientEliminated() = testMethod {
-        method = PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyPolynomialExpression
         inputExpr = "3 [a ^ 2] + 2 [a ^ 2] - 3 a - 5 [a ^ 2] + 10 a"
 
         check {
@@ -121,17 +112,9 @@ class PolynomialsPlansTest {
 
                 step {
                     fromExpr = "(3 + 2 - 5) [a ^ 2] - 3 a + 10 a"
-                    toExpr = "0 [a ^ 2] - 3 a + 10 a"
-                    explanation {
-                        key = CollectingExplanation.SimplifyCoefficient
-                    }
-                }
-
-                step {
-                    fromExpr = "0 [a ^ 2] - 3 a + 10 a"
                     toExpr = "0 - 3 a + 10 a"
                     explanation {
-                        key = GeneralExplanation.EvaluateProductContainingZero
+                        key = CollectingExplanation.SimplifyCoefficient
                     }
                 }
 
@@ -156,7 +139,7 @@ class PolynomialsPlansTest {
 
     @Test
     fun testRationalCoefficients() = testMethod {
-        method = PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyPolynomialExpression
         inputExpr = "[z / 2] - [3 z / 4] + 4 z"
 
         check {
@@ -186,7 +169,7 @@ class PolynomialsPlansTest {
 
     @Test
     fun testSurdCoefficients() = testMethod {
-        method = PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyPolynomialExpression
         inputExpr = "2 t sqrt[3] + [t sqrt[3] / 3]"
 
         check {
@@ -230,7 +213,7 @@ class PolynomialsPlansTest {
                     fromExpr = "(2 sqrt[3] + [sqrt[3] / 3]) t"
                     toExpr = "[7 sqrt[3] / 3] t"
                     explanation {
-                        key = CollectingExplanation.SimplifyCoefficient
+                        key = CollectingExplanation.CollectLikeRootsAndSimplify
                     }
                 }
             }
@@ -239,7 +222,7 @@ class PolynomialsPlansTest {
 
     @Test
     fun testMultiplyUnitaryMonomials() = testMethod {
-        method = PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyPolynomialExpression
         inputExpr = "t * [t ^ 2] * [t ^ 3]"
 
         check {
@@ -277,7 +260,7 @@ class PolynomialsPlansTest {
 
     @Test
     fun testMultiplyMonomials() = testMethod {
-        method = PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyPolynomialExpression
         inputExpr = "3 [x ^ 2] * 4 [x ^ 3]"
 
         check {
@@ -291,7 +274,7 @@ class PolynomialsPlansTest {
                 fromExpr = "3 [x ^ 2] * 4 [x ^ 3]"
                 toExpr = "(3 * 4) ([x ^ 2] * [x ^ 3])"
                 explanation {
-                    key = PolynomialsExplanation.CollectUnitaryMonomialsInProduct
+                    key = PolynomialsExplanation.RearrangeProductOfMonomials
                 }
             }
 
@@ -299,7 +282,7 @@ class PolynomialsPlansTest {
                 fromExpr = "(3 * 4) ([x ^ 2] * [x ^ 3])"
                 toExpr = "12 ([x ^ 2] * [x ^ 3])"
                 explanation {
-                    key = ConstantExpressionsExplanation.SimplifyExpressionInBrackets
+                    key = PolynomialsExplanation.SimplifyCoefficient
                 }
             }
 
@@ -331,7 +314,7 @@ class PolynomialsPlansTest {
 
     @Test
     fun testMultiplyMonomialsWithRationalCoefficients() = testMethod {
-        method = PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyPolynomialExpression
         inputExpr = "2 y * [1 / 3] [y ^ 2]"
 
         check {
@@ -345,7 +328,7 @@ class PolynomialsPlansTest {
                 fromExpr = "2 y * [1 / 3] [y ^ 2]"
                 toExpr = "(2 * [1 / 3]) (y * [y ^ 2])"
                 explanation {
-                    key = PolynomialsExplanation.CollectUnitaryMonomialsInProduct
+                    key = PolynomialsExplanation.RearrangeProductOfMonomials
                 }
             }
 
@@ -353,7 +336,7 @@ class PolynomialsPlansTest {
                 fromExpr = "(2 * [1 / 3]) (y * [y ^ 2])"
                 toExpr = "[2 / 3] (y * [y ^ 2])"
                 explanation {
-                    key = ConstantExpressionsExplanation.SimplifyExpressionInBrackets
+                    key = PolynomialsExplanation.SimplifyCoefficient
                 }
 
                 step {
@@ -393,7 +376,7 @@ class PolynomialsPlansTest {
 
     @Test
     fun testNegatedProductContainingMonomialsNoNegativeFactors() = testMethod {
-        method = PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyPolynomialExpression
         inputExpr = "1 - 2 x * 3 [x ^ 2]"
 
         check {
@@ -411,24 +394,24 @@ class PolynomialsPlansTest {
                 }
 
                 step {
-                    fromExpr = "-2 x * 3 [x ^ 2]"
-                    toExpr = "-(2 * 3) (x * [x ^ 2])"
+                    fromExpr = "2 x * 3 [x ^ 2]"
+                    toExpr = "(2 * 3) (x * [x ^ 2])"
                     explanation {
-                        key = PolynomialsExplanation.CollectUnitaryMonomialsInProduct
+                        key = PolynomialsExplanation.RearrangeProductOfMonomials
                     }
                 }
 
                 step {
-                    fromExpr = "-(2 * 3) (x * [x ^ 2])"
-                    toExpr = "-6 (x * [x ^ 2])"
+                    fromExpr = "(2 * 3) (x * [x ^ 2])"
+                    toExpr = "6 (x * [x ^ 2])"
                     explanation {
-                        key = ConstantExpressionsExplanation.SimplifyExpressionInBrackets
+                        key = PolynomialsExplanation.SimplifyCoefficient
                     }
                 }
 
                 step {
-                    fromExpr = "-6 (x * [x ^ 2])"
-                    toExpr = "-6 [x ^ 3]"
+                    fromExpr = "6 (x * [x ^ 2])"
+                    toExpr = "6 [x ^ 3]"
                     explanation {
                         key = PolynomialsExplanation.MultiplyUnitaryMonomialsAndSimplify
                     }
@@ -447,7 +430,7 @@ class PolynomialsPlansTest {
 
     @Test
     fun testNegatedProductContainingMonomialsWithNegativeFactors() = testMethod {
-        method = PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyPolynomialExpression
         inputExpr = "1 - 2 x * [(-x) ^ 3]"
 
         check {
@@ -459,32 +442,32 @@ class PolynomialsPlansTest {
 
             step {
                 fromExpr = "1 - 2 x * [(-x) ^ 3]"
-                toExpr = "1 - 2 x * (-1)[x ^ 3]"
+                toExpr = "1 - 2 x (-[x ^ 3])"
                 explanation {
-                    key = PolynomialsExplanation.DistributeProductToIntegerPowerAndSimplify
+                    key = PolynomialsExplanation.SimplifyPowerOfUnitaryMonomial
                 }
             }
 
             step {
-                fromExpr = "1 - 2 x * (-1)[x ^ 3]"
+                fromExpr = "1 - 2 x (-[x ^ 3])"
+                toExpr = "1 + 2 x * [x ^ 3]"
+                explanation {
+                    key = GeneralExplanation.NormalizeNegativeSignsInProduct
+                }
+            }
+
+            step {
+                fromExpr = "1 + 2 x * [x ^ 3]"
                 toExpr = "1 + 2 [x ^ 4]"
                 explanation {
                     key = PolynomialsExplanation.MultiplyMonomialsAndSimplify
                 }
 
                 step {
-                    fromExpr = "-2 x * (-1)[x ^ 3]"
-                    toExpr = "((-2) * (-1)) (x * [x ^ 3])"
-                    explanation {
-                        key = PolynomialsExplanation.CollectUnitaryMonomialsInProduct
-                    }
-                }
-
-                step {
-                    fromExpr = "((-2) * (-1)) (x * [x ^ 3])"
+                    fromExpr = "2 x * [x ^ 3]"
                     toExpr = "2 (x * [x ^ 3])"
                     explanation {
-                        key = ConstantExpressionsExplanation.SimplifyExpressionInBrackets
+                        key = PolynomialsExplanation.RearrangeProductOfMonomials
                     }
                 }
 
@@ -509,7 +492,7 @@ class PolynomialsPlansTest {
 
     @Test
     fun testPowerOfUnitaryMonomial() = testMethod {
-        method = PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyPolynomialExpression
         inputExpr = "[([x ^ 2]) ^ 3]"
 
         check {
@@ -519,7 +502,7 @@ class PolynomialsPlansTest {
 
     @Test
     fun testCombiningSimplifyingAndNormalizing() = testMethod {
-        method = PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyPolynomialExpression
         inputExpr = "sqrt[3] + [x ^ 3] + 2 x * 5 x + [(2 x) ^ 3] + 1"
 
         check {
@@ -569,7 +552,7 @@ class PolynomialsPlansTest {
      */
     @Test
     fun testMonomialWithSumCoefficient() = testMethod {
-        method = PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyPolynomialExpression
         inputExpr = "2 t + [t / sqrt[3]]"
 
         check {
@@ -615,7 +598,7 @@ class PolynomialsPlansTest {
 
     @Test
     fun testDistributingNegativeIntoPositives() = testMethod {
-        method = PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyPolynomialExpression
         inputExpr = "-(a + 3)"
 
         check {
@@ -629,7 +612,7 @@ class PolynomialsPlansTest {
 
     @Test
     fun testDistributingNegativeIntoNegatives() = testMethod {
-        method = PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyPolynomialExpression
         inputExpr = "-(-a - 3)"
 
         check {
@@ -643,7 +626,7 @@ class PolynomialsPlansTest {
 
     @Test
     fun `Cancel negatives on different factors of product`() = testMethod {
-        method = PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyPolynomialExpression
         inputExpr = "-3 (-a)"
 
         check {
@@ -657,7 +640,7 @@ class PolynomialsPlansTest {
 
     @Test
     fun `test simplification left to right`() = testMethod {
-        method = PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyPolynomialExpression
         inputExpr = "2 x * x + [(2 x) ^ 2] - 3 x * 2 x + 3 * 10 - [([x ^ 2]) ^ 3] + x * x"
 
         check {
@@ -712,7 +695,7 @@ class PolynomialsPlansTest {
                 fromExpr = "2 [x ^ 2] + 4 [x ^ 2] - 6 [x ^ 2] + 30 - [x ^ 6] + x * x"
                 toExpr = "2 [x ^ 2] + 4 [x ^ 2] - 6 [x ^ 2] + 30 - [x ^ 6] + [x ^ 2]"
                 explanation {
-                    key = PolynomialsExplanation.MultiplyMonomialsAndSimplify
+                    key = PolynomialsExplanation.MultiplyUnitaryMonomialsAndSimplify
                 }
             }
 
@@ -733,12 +716,10 @@ class PolynomialsPlansTest {
             }
         }
     }
-}
 
-class PolynomialPlansSimpleExpressionsTest {
     @Test
     fun `test simplify abs(abs(x))`() = testMethod {
-        method = PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyPolynomialExpression
         inputExpr = "abs[abs[x]]"
 
         check {
@@ -752,7 +733,7 @@ class PolynomialPlansSimpleExpressionsTest {
 
     @Test
     fun `test simplify abs(x^2)`() = testMethod {
-        method = PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyPolynomialExpression
         inputExpr = "abs[[x^2]]"
 
         check {
@@ -766,7 +747,7 @@ class PolynomialPlansSimpleExpressionsTest {
 
     @Test
     fun `test simplify abs(-x^2)`() = testMethod {
-        method = PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable
+        method = PolynomialsPlans.SimplifyPolynomialExpression
         inputExpr = "abs[-[x^2]]"
         check {
             fromExpr = "abs[-[x ^ 2]]"

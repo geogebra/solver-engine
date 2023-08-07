@@ -99,7 +99,7 @@ enum class RationalExpressionsPlans(override val runner: CompositeMethod) : Runn
                 apply(FractionArithmeticRules.AddLikeFractions)
                 optionally {
                     applyToKind<Fraction>(
-                        PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization,
+                        PolynomialsPlans.ExpandPolynomialExpressionWithoutNormalization,
                     ) { it.numerator }
                 }
                 optionally(rationalExpressionSimplificationSteps)
@@ -136,7 +136,7 @@ enum class RationalExpressionsPlans(override val runner: CompositeMethod) : Runn
             steps {
                 optionally(GeneralRules.FlipFractionUnderNegativePower)
                 apply(FractionArithmeticRules.DistributePositiveIntegerPowerOverFraction)
-                applyToChildren(PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable)
+                applyToChildren(PolynomialsPlans.SimplifyPolynomialExpression)
             }
         },
     ),
@@ -199,7 +199,7 @@ private val addRationalExpressions = taskSet {
             ),
             explanation = metadata(Explanation.AddLikeRationalExpressions),
         ) {
-            optionally(PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable)
+            optionally(PolynomialsPlans.SimplifyPolynomialExpression)
             optionally(rationalExpressionSimplificationSteps)
         }
 
@@ -232,12 +232,12 @@ private fun TasksBuilder.bringFractionToCommonDenominatorTask(fraction: Fraction
     ) {
         optionally {
             applyToKind<Fraction>(
-                PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization,
+                PolynomialsPlans.ExpandPolynomialExpressionWithoutNormalization,
             ) { it.numerator }
         }
         optionally {
             applyToKind<Fraction>(
-                PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable,
+                PolynomialsPlans.SimplifyPolynomialExpression,
             ) { it.denominator }
         }
     }

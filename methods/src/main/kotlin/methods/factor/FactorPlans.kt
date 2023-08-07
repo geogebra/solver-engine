@@ -18,8 +18,8 @@ import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
-import engine.methods.stepsproducers.PipelineBuilder
 import engine.methods.stepsproducers.StepsProducer
+import engine.methods.stepsproducers.applyAfterMaybeExtractingMinus
 import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
 import engine.patterns.AnyPattern
@@ -88,7 +88,7 @@ enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
             steps {
                 optionally(FactorRules.FactorNegativeSignOfLeadingCoefficient)
 
-                applyAfterMaybeFactoringMinus {
+                applyAfterMaybeExtractingMinus {
                     optionally(PolynomialRules.NormalizePolynomial)
                     optionally(FactorRules.RewriteSquareOfBinomial)
                     apply(FactorRules.ApplySquareOfBinomialFormula)
@@ -121,7 +121,7 @@ enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
                     apply(FactorRules.FactorNegativeSignOfLeadingCoefficient)
                 }
 
-                applyAfterMaybeFactoringMinus {
+                applyAfterMaybeExtractingMinus {
                     optionally(FactorRules.RewriteDifferenceOfSquares)
                     apply(FactorRules.ApplyDifferenceOfSquaresFormula)
                 }
@@ -390,8 +390,4 @@ val factorizationSteps: StepsProducer = steps {
         // TODO figure out if there are problems with removing this option
         // option { whilePossible(polynomialSimplificationSteps) }
     }
-}
-
-private fun PipelineBuilder.applyAfterMaybeFactoringMinus(init: PipelineBuilder.() -> Unit) {
-    applyTo(extractor = { if (it is Minus) it.argument else it }, init)
 }

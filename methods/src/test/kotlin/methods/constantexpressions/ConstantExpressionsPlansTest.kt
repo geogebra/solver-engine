@@ -343,25 +343,41 @@ class ConstantExpressionsPlansTest {
 
             step {
                 fromExpr = "2 + (-3 + [2 / 3] + 2) sqrt[3] + root[3, 3]"
-                toExpr = "2 + (-[1 / 3]) sqrt[3] + root[3, 3]"
+                toExpr = "2 - [sqrt[3] / 3] + root[3, 3]"
                 explanation {
                     key = CollectingExplanation.SimplifyCoefficient
                 }
-            }
 
-            step {
-                fromExpr = "2 + (-[1 / 3]) sqrt[3] + root[3, 3]"
-                toExpr = "2 - [1 / 3] sqrt[3] + root[3, 3]"
-                explanation {
-                    key = GeneralExplanation.MoveSignOfNegativeFactorOutOfProduct
+                step {
+                    fromExpr = "(-3 + [2 / 3] + 2) sqrt[3]"
+                    toExpr = "(-1 + [2 / 3]) sqrt[3]"
+                    explanation {
+                        key = IntegerArithmeticExplanation.SimplifyIntegersInSum
+                    }
                 }
-            }
 
-            step {
-                fromExpr = "2 - [1 / 3] sqrt[3] + root[3, 3]"
-                toExpr = "2 - [sqrt[3] / 3] + root[3, 3]"
-                explanation {
-                    key = FractionArithmeticExplanation.MultiplyAndSimplifyFractions
+                step {
+                    fromExpr = "(-1 + [2 / 3]) sqrt[3]"
+                    toExpr = "(-[1 / 3]) sqrt[3]"
+                    explanation {
+                        key = FractionArithmeticExplanation.AddIntegerAndFraction
+                    }
+                }
+
+                step {
+                    fromExpr = "(-[1 / 3]) sqrt[3]"
+                    toExpr = "-[1 / 3] sqrt[3]"
+                    explanation {
+                        key = GeneralExplanation.MoveSignOfNegativeFactorOutOfProduct
+                    }
+                }
+
+                step {
+                    fromExpr = "-[1 / 3] sqrt[3]"
+                    toExpr = "-[sqrt[3] / 3]"
+                    explanation {
+                        key = FractionArithmeticExplanation.MultiplyAndSimplifyFractions
+                    }
                 }
             }
         }
@@ -434,14 +450,14 @@ class ConstantExpressionRationalizationTest {
             step {
                 toExpr = "[root[25, 3] - root[15, 3] + root[[3 ^ 2], 3] / 4]"
                 explanation {
-                    key = ConstantExpressionsExplanation.SimplifyPowers
+                    key = ConstantExpressionsExplanation.SimplifyPowerOfInteger
                 }
             }
 
             step {
                 toExpr = "[root[25, 3] - root[15, 3] + root[9, 3] / 4]"
                 explanation {
-                    key = ConstantExpressionsExplanation.SimplifyPowers
+                    key = ConstantExpressionsExplanation.SimplifyPowerOfInteger
                 }
             }
         }
@@ -1555,7 +1571,7 @@ class CancelOppositeTermTest {
     }
 
     @Test
-    fun `test collect when negative rational exponents`() = testMethod {
+    fun `test collecting powers with negative rational exponents`() = testMethod {
         method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[3^-[1/3]] * 4 - [3^-[1/3]] * 2"
 
@@ -1563,28 +1579,7 @@ class CancelOppositeTermTest {
             fromExpr = "[3 ^ -[1 / 3]] * 4 - [3 ^ -[1 / 3]] * 2"
             toExpr = "2 * [3 ^ -[1 / 3]]"
             explanation {
-                key = ConstantExpressionsExplanation.SimplifyConstantExpression
-            }
-            step {
-                fromExpr = "[3 ^ -[1 / 3]] * 4 - [3 ^ -[1 / 3]] * 2"
-                toExpr = "4 * [3 ^ -[1 / 3]] - [3 ^ -[1 / 3]] * 2"
-                explanation {
-                    key = GeneralExplanation.ReorderProduct
-                }
-            }
-            step {
-                fromExpr = "4 * [3 ^ -[1 / 3]] - [3 ^ -[1 / 3]] * 2"
-                toExpr = "4 * [3 ^ -[1 / 3]] - 2 * [3 ^ -[1 / 3]]"
-                explanation {
-                    key = GeneralExplanation.ReorderProduct
-                }
-            }
-            step {
-                fromExpr = "4 * [3 ^ -[1 / 3]] - 2 * [3 ^ -[1 / 3]]"
-                toExpr = "2 * [3 ^ -[1 / 3]]"
-                explanation {
-                    key = CollectingExplanation.CollectLikeRationalPowersAndSimplify
-                }
+                key = CollectingExplanation.CollectLikeRationalPowersAndSimplify
             }
         }
     }
@@ -1657,7 +1652,7 @@ class ExponentsTest {
         check {
             toExpr = "/undefined/"
             explanation {
-                key = FractionArithmeticExplanation.EvaluateIntegerToNegativePower
+                key = ConstantExpressionsExplanation.SimplifyPowerOfInteger
             }
 
             step {
@@ -1908,7 +1903,7 @@ class SimplifyIntegerPowerUnderRoot {
                 fromExpr = "2 root[[2 ^ 2], 3]"
                 toExpr = "2 root[4, 3]"
                 explanation {
-                    key = ConstantExpressionsExplanation.SimplifyPowers
+                    key = ConstantExpressionsExplanation.SimplifyPowerOfInteger
                 }
             }
         }

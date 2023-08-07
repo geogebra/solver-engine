@@ -1,6 +1,7 @@
 package methods.polynomials
 
 import engine.steps.metadata.CategorisedMetadataKey
+import engine.steps.metadata.LegacyKeyName
 import engine.steps.metadata.TranslationKeys
 
 @TranslationKeys
@@ -11,7 +12,8 @@ enum class PolynomialsExplanation : CategorisedMetadataKey {
      *
      * E.g. 2x * 3[x^2] * [x/5] --> (2 * 3 * [1/5])(x * [x^2] * x)
      */
-    CollectUnitaryMonomialsInProduct,
+    @LegacyKeyName("Polynomials.CollectUnitaryMonomialsInProduct")
+    RearrangeProductOfMonomials,
 
     /**
      * Multiply powers of the same variable
@@ -27,14 +29,7 @@ enum class PolynomialsExplanation : CategorisedMetadataKey {
      */
     MultiplyMonomialsAndSimplify,
 
-    /**
-     * Normalize a monomial so the variable appears at the end (but do not simplify)
-     *
-     * E.g. x * 2     --> 2x
-     *      3x * 5    --> 3 * 5x
-     *      [x/2] * 3 --> [1/2] * 3x
-     */
-    NormalizeMonomial,
+    SimplifyCoefficient,
 
     /**
      * Normalize all monomials in an expression
@@ -49,13 +44,6 @@ enum class PolynomialsExplanation : CategorisedMetadataKey {
      *      [x/2] * 3 --> [3/2]x
      */
     SimplifyMonomial,
-
-    /**
-     * Distribute a product raised to an integer power
-     *
-     * E.g. [(2[x^3]) ^ 2] --> [2^2] * [([x^3]) ^ 2]
-     */
-    DistributeProductToIntegerPower,
 
     /**
      * Use the power rule to simplify the power of a power of a variable and simplify the result

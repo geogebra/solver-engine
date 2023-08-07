@@ -19,18 +19,37 @@ class DefaultView(override val original: Expression) : View {
     override fun recombine() = original
 }
 
+class CancellableView(override val original: Expression) : View {
+    private var cancelled = false
+
+    fun cancel() {
+        cancelled = true
+    }
+
+    override fun recombine() = if (cancelled) null else original.withOrigin(Move(original))
+}
+
 class TermView<T : View>(override val original: Expression, factorViewCreator: (Expression) -> T) : View {
 
     val negated: Boolean
     val factors: List<T>
+    val denominatorFactors: List<T>
 
     init {
-        if (original is Minus) {
+        val positiveTerm = if (original is Minus) {
             negated = true
-            factors = original.argument.factors().map { factorViewCreator(it) }
+            original.argument
         } else {
             negated = false
-            factors = original.factors().map { factorViewCreator(it) }
+            original
+        }
+
+        if (positiveTerm is Fraction) {
+            factors = positiveTerm.numerator.factors().map { factorViewCreator(it) }
+            denominatorFactors = positiveTerm.denominator.factors().map { factorViewCreator(it) }
+        } else {
+            factors = positiveTerm.factors().map { factorViewCreator(it) }
+            denominatorFactors = emptyList()
         }
     }
 
@@ -39,8 +58,10 @@ class TermView<T : View>(override val original: Expression, factorViewCreator: (
     inline fun findSingleFactor(condition: (T) -> Boolean) = factors.singleOrNull(condition)
 
     override fun recombine(): Expression {
-        val product = productOf(factors.mapNotNull { it.recombine() })
-        return if (negated) negOf(product) else product
+        val numerator = productOf(factors.mapNotNull { it.recombine() })
+        val denominator = productOf(denominatorFactors.mapNotNull { it.recombine() })
+        val fraction = simplifiedFractionOf(numerator, denominator)
+        return if (negated) negOf(fraction) else fraction
     }
 }
 

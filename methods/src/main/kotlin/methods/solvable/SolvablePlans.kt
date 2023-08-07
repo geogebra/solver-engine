@@ -91,7 +91,7 @@ class SolvablePlans(private val simplificationSteps: StepsProducer) {
 
         steps {
             apply(SolvableRules.MultiplySolvableByLCD)
-            whilePossible(PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
+            whilePossible(PolynomialsPlans.ExpandPolynomialExpressionWithoutNormalization)
         }
     }
 

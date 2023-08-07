@@ -98,7 +98,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
                         option(SimplifyInequality)
 
                         option(solvablePlansForInequalities.removeConstantDenominatorsSteps)
-                        option(PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
+                        option(PolynomialsPlans.ExpandPolynomialExpressionWithoutNormalization)
                     }
                 }
 

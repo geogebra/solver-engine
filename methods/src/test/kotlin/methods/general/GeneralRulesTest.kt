@@ -889,6 +889,12 @@ class GeneralRulesTest {
             NormalizationRules.ReorderProduct,
             "2*[3^-[1/3]]",
         )
+        // although the opposite order is preferable, reordering is unnecessary most of the time
+        testRule(
+            "[(x + 1) ^ 2] (x + 2)",
+            NormalizationRules.ReorderProduct,
+            null,
+        )
     }
 
     @Test

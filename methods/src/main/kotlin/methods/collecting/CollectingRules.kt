@@ -1,7 +1,17 @@
 package methods.collecting
 
+import engine.expressions.CancellableView
 import engine.expressions.Expression
+import engine.expressions.Factor
+import engine.expressions.IntegerExpression
 import engine.expressions.Label
+import engine.expressions.Power
+import engine.expressions.Root
+import engine.expressions.SquareRoot
+import engine.expressions.Sum
+import engine.expressions.TermView
+import engine.expressions.isSignedFraction
+import engine.expressions.isSignedInteger
 import engine.expressions.negOf
 import engine.expressions.productOf
 import engine.expressions.simplifiedProductOf
@@ -10,64 +20,146 @@ import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
 import engine.patterns.ArbitraryVariablePattern
-import engine.patterns.CoefficientPattern
 import engine.patterns.IntegerFractionPattern
 import engine.patterns.Pattern
 import engine.patterns.UnsignedIntegerPattern
-import engine.patterns.condition
 import engine.patterns.oneOf
-import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.rootOf
 import engine.patterns.sumContaining
-import engine.patterns.withOptionalConstantCoefficient
 import engine.patterns.withOptionalIntegerCoefficient
-import engine.patterns.withOptionalRationalCoefficient
 import engine.steps.metadata.MetadataKey
 import engine.steps.metadata.metadata
 
+enum class CollectingRules(override val runner: Rule) : RunnerMethod {
+    CollectLikeRoots(
+        CollectLikeTermsRule(
+            factorSelector = { it is SquareRoot || it is Root },
+            coefficientCondition = { it.isSignedInteger() || it.isSignedFraction() },
+            explanationKey = Explanation.CollectLikeRoots,
+        ).rule,
+    ),
+
+    CollectLikeRationalPowers(
+        CollectLikeTermsRule(
+            factorSelector = { it is Power && it.base is IntegerExpression && it.exponent.isSignedFraction() },
+            coefficientCondition = { it.isSignedInteger() || it.isSignedFraction() },
+            explanationKey = Explanation.CollectLikeRationalPowers,
+        ).rule,
+    ),
+
+    CollectLikeTerms(
+        CollectLikeTermsRule(
+            factorSelector = { !it.isConstant() },
+            coefficientCondition = { it.isConstant() },
+            explanationKey = Explanation.CollectLikeTerms,
+        ).rule,
+    ),
+
+    CombineTwoSimpleLikeRoots(
+        createCombineSimpleLikeTermsRule(
+            commonPattern = rootOf(UnsignedIntegerPattern()),
+            explanationKey = Explanation.CombineTwoSimpleLikeRoots,
+        ),
+    ),
+
+    CombineTwoSimpleLikeRationalPowers(
+        createCombineSimpleLikeTermsRule(
+            commonPattern = powerOf(UnsignedIntegerPattern(), IntegerFractionPattern()),
+            explanationKey = Explanation.CombineTwoSimpleLikeRationalPowers,
+        ),
+    ),
+
+    CombineTwoSimpleLikeTerms(
+        createCombineSimpleLikeTermsRule(
+            commonPattern = oneOf(
+                ArbitraryVariablePattern(),
+                powerOf(ArbitraryVariablePattern(), UnsignedIntegerPattern()),
+            ),
+            explanationKey = Explanation.CombineTwoSimpleLikeTerms,
+        ),
+    ),
+}
+
 /**
- * Create a rule which collects all the terms matching the common pattern
- * with the given coefficient.
- * E.g. when the common pattern matches roots with rational coefficients:
- *  3 sqrt[2] + sqrt[3] + [1 / 2] sqrt[2] -> (3 + [1 / 2]) sqrt[2] + sqrt[3]
+ * Create a rule which collects all the like terms, meaning terms in which the factors
+ * selected by [factorSelector] match. There is an extra condition imposed on the coefficients
+ * of the like terms by [coefficientCondition]. This is done so `sqrt[2]` and `sqrt[2] x` are
+ * not collected.
  */
-private fun createCollectLikeTermsRule(
-    commonPattern: Pattern,
-    coefficientWrapper: (Pattern) -> CoefficientPattern,
-    explanationKey: MetadataKey,
-): Rule {
-    return rule {
-        val commonTerm1 = coefficientWrapper(commonPattern)
-        val commonTerm2 = coefficientWrapper(commonPattern)
-        val sum = sumContaining(commonTerm1, commonTerm2)
+private class CollectLikeTermsRule(
+    private val factorSelector: (Expression) -> Boolean,
+    private val coefficientCondition: (Expression) -> Boolean,
+    private val explanationKey: MetadataKey,
+) {
+    private class SplitTerm(
+        val selectedFactors: List<Expression>,
+        val coefficient: Expression,
+    ) {
+        private val sortedFactors = selectedFactors.sortedWith(compareBy({ it.hashCode() }, { it.toString() }))
 
-        onPattern(sum) {
-            val commonTerm = coefficientWrapper(commonPattern)
+        fun hasSameFactorsAs(other: SplitTerm?) = other != null && sortedFactors == other.sortedFactors
 
-            val coefficients = mutableListOf<Expression>()
-            val otherTerms = mutableListOf<Expression>()
-            var firstIndex: Int? = null
+        fun findLikeFactor(factor: Expression) = selectedFactors.singleOrNull { it == factor }
+    }
 
-            for ((index, term) in get(sum).children.withIndex()) {
-                val m = matchPattern(commonTerm, term)
-                if (m != null) {
-                    coefficients.add(commonTerm.coefficient(m))
-                    if (firstIndex == null) {
-                        firstIndex = index
-                    }
-                } else {
-                    otherTerms.add(term)
-                }
+    private fun splitTerm(term: Expression): SplitTerm? {
+        val termView = TermView(term) { CancellableView(it) }
+        val selectedFactors = mutableListOf<Expression>()
+        for (factor in termView.factors) {
+            if (factorSelector(factor.original)) {
+                selectedFactors.add(factor.original)
+                factor.cancel()
+            }
+        }
+
+        if (selectedFactors.isEmpty()) return null
+
+        val coefficient = termView.recombine()
+        if (!coefficientCondition(coefficient)) return null
+
+        return SplitTerm(selectedFactors, coefficient)
+    }
+
+    val rule = rule {
+        onPattern(sumContaining()) {
+            val terms = (expression as Sum).terms
+            val splitTerms = terms.map { splitTerm(it) }
+
+            // Find a split term which has the same selected factors as at least one more term
+            // (then we have a like term)
+            val firstLikeTerm = splitTerms.firstOrNull { splitTerm ->
+                splitTerm != null && splitTerms.count { splitTerm.hasSameFactorsAs(it) } > 1
+            } ?: return@onPattern null
+
+            // Now find the like terms in the sum
+            val likeTerms = splitTerms.mapNotNull { if (firstLikeTerm.hasSameFactorsAs(it)) it else null }
+
+            // Compute the common factors of the sum with correct origin
+            val commonFactorsWithOrigins = firstLikeTerm.selectedFactors.map { commonFactor ->
+                val sameFactors = likeTerms.map { it.findLikeFactor(commonFactor) ?: return@onPattern null }
+                commonFactor.withOrigin(Factor(sameFactors))
             }
 
-            require(firstIndex != null)
+            // Construct the factored term
+            val factoredLikeTerms = productOf(
+                sumOf(likeTerms.map { it.coefficient }),
+                productOf(commonFactorsWithOrigins),
+            ).withLabel(Label.A)
 
-            val collectedTerms = productOf(sumOf(coefficients), move(commonTerm.value)).withLabel(Label.A)
-            otherTerms.add(firstIndex, collectedTerms)
+            // Then substitute that back into the sum
+            val result = sumOf(
+                splitTerms.mapIndexedNotNull { index, splitTerm ->
+                    when (splitTerm) {
+                        !in likeTerms -> terms[index]
+                        likeTerms[0] -> factoredLikeTerms
+                        else -> null
+                    }
+                },
+            )
 
             ruleResult(
-                toExpr = sumOf(otherTerms),
+                toExpr = result,
                 explanation = metadata(explanationKey),
             )
         }
@@ -75,7 +167,7 @@ private fun createCollectLikeTermsRule(
 }
 
 /**
- * Create a rule which combines two occurences of the common pattern
+ * Create a rule which combines two occurrences of the common pattern
  * with integer coefficients.
  * E.g. when the common pattern matches roots:
  *  3 sqrt[2] + sqrt[3] + 5 sqrt[2] -> 8 sqrt[2] + sqrt[3]
@@ -104,54 +196,4 @@ private fun createCombineSimpleLikeTermsRule(
             )
         }
     }
-}
-
-enum class CollectingRules(override val runner: Rule) : RunnerMethod {
-    CollectLikeRoots(
-        createCollectLikeTermsRule(
-            commonPattern = rootOf(UnsignedIntegerPattern()),
-            coefficientWrapper = { withOptionalRationalCoefficient(it) },
-            explanationKey = Explanation.CollectLikeRoots,
-        ),
-    ),
-
-    CollectLikeRationalPowers(
-        createCollectLikeTermsRule(
-            commonPattern = powerOf(UnsignedIntegerPattern(), optionalNegOf(IntegerFractionPattern())),
-            coefficientWrapper = { withOptionalRationalCoefficient(it) },
-            explanationKey = Explanation.CollectLikeRationalPowers,
-        ),
-    ),
-
-    CollectLikeTerms(
-        createCollectLikeTermsRule(
-            commonPattern = condition { !it.isConstant() },
-            coefficientWrapper = { withOptionalConstantCoefficient(it) },
-            explanationKey = Explanation.CollectLikeTerms,
-        ),
-    ),
-
-    CombineTwoSimpleLikeRoots(
-        createCombineSimpleLikeTermsRule(
-            commonPattern = rootOf(UnsignedIntegerPattern()),
-            explanationKey = Explanation.CombineTwoSimpleLikeRoots,
-        ),
-    ),
-
-    CombineTwoSimpleLikeRationalPowers(
-        createCombineSimpleLikeTermsRule(
-            commonPattern = powerOf(UnsignedIntegerPattern(), engine.patterns.IntegerFractionPattern()),
-            explanationKey = Explanation.CombineTwoSimpleLikeRationalPowers,
-        ),
-    ),
-
-    CombineTwoSimpleLikeTerms(
-        createCombineSimpleLikeTermsRule(
-            commonPattern = oneOf(
-                ArbitraryVariablePattern(),
-                powerOf(ArbitraryVariablePattern(), UnsignedIntegerPattern()),
-            ),
-            explanationKey = Explanation.CombineTwoSimpleLikeTerms,
-        ),
-    ),
 }

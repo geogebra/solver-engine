@@ -4,27 +4,17 @@ import engine.expressions.Label
 import engine.methods.Method
 import engine.methods.plan
 import engine.methods.stepsproducers.StepsProducer
-import engine.methods.stepsproducers.steps
 import methods.fractionarithmetic.FractionArithmeticPlans
 import methods.general.GeneralRules
 
-private fun createSimplifyCoefficientPlan(simplificationSteps: StepsProducer): Method {
+private fun createSimplifyCoefficientPlan(simplificationSteps: StepsProducer, preferFractionalForm: Boolean): Method {
     return plan {
         explanation = Explanation.SimplifyCoefficient
 
         steps {
-            whilePossible(simplificationSteps)
-        }
-    }
-}
-
-private fun createSimplifyAfterCollectingLikeTermsSteps(
-    simplificationSteps: StepsProducer,
-    preferFractionalForm: Boolean,
-): StepsProducer {
-    return steps {
-        applyTo(Label.A) {
-            applyTo(createSimplifyCoefficientPlan(simplificationSteps)) { it.firstChild }
+            applyTo(extractor = { it.firstChild }) {
+                whilePossible(simplificationSteps)
+            }
             optionally(GeneralRules.EvaluateProductContainingZero)
             optionally(GeneralRules.MoveSignOfNegativeFactorOutOfProduct)
             optionally {
@@ -39,7 +29,6 @@ private fun createSimplifyAfterCollectingLikeTermsSteps(
                 }
             }
         }
-        optionally(GeneralRules.EliminateZeroInSum)
     }
 }
 
@@ -49,18 +38,21 @@ private fun createSimplifyAfterCollectingLikeTermsSteps(
  */
 fun createCollectLikeRootsAndSimplifyPlan(simplificationSteps: StepsProducer): Method {
     val coefficientSimplificationSteps =
-        createSimplifyAfterCollectingLikeTermsSteps(simplificationSteps, preferFractionalForm = true)
+        createSimplifyCoefficientPlan(simplificationSteps, preferFractionalForm = true)
 
     return plan {
         explanation = Explanation.CollectLikeRootsAndSimplify
 
         steps {
-            withNewLabels {
-                firstOf {
-                    option(CollectingRules.CombineTwoSimpleLikeRoots)
-                    option(CollectingRules.CollectLikeRoots)
+            firstOf {
+                option(CollectingRules.CombineTwoSimpleLikeRoots)
+                option {
+                    withNewLabels {
+                        apply(CollectingRules.CollectLikeRoots)
+                        optionally { applyTo(coefficientSimplificationSteps, Label.A) }
+                        optionally(GeneralRules.EliminateZeroInSum)
+                    }
                 }
-                optionally(coefficientSimplificationSteps)
             }
         }
     }
@@ -72,18 +64,21 @@ fun createCollectLikeRootsAndSimplifyPlan(simplificationSteps: StepsProducer): M
  */
 fun createCollectLikeRationalPowersAndSimplifyPlan(simplificationSteps: StepsProducer): Method {
     val coefficientSimplificationSteps =
-        createSimplifyAfterCollectingLikeTermsSteps(simplificationSteps, preferFractionalForm = true)
+        createSimplifyCoefficientPlan(simplificationSteps, preferFractionalForm = true)
 
     return plan {
         explanation = Explanation.CollectLikeRationalPowersAndSimplify
 
         steps {
-            withNewLabels {
-                firstOf {
-                    option(CollectingRules.CombineTwoSimpleLikeRationalPowers)
-                    option(CollectingRules.CollectLikeRationalPowers)
+            firstOf {
+                option(CollectingRules.CombineTwoSimpleLikeRationalPowers)
+                option {
+                    withNewLabels {
+                        apply(CollectingRules.CollectLikeRationalPowers)
+                        optionally { applyTo(coefficientSimplificationSteps, Label.A) }
+                        optionally(GeneralRules.EliminateZeroInSum)
+                    }
                 }
-                optionally(coefficientSimplificationSteps)
             }
         }
     }
@@ -95,18 +90,21 @@ fun createCollectLikeRationalPowersAndSimplifyPlan(simplificationSteps: StepsPro
  */
 fun createCollectLikeTermsAndSimplifyPlan(simplificationSteps: StepsProducer): Method {
     val coefficientSimplificationSteps =
-        createSimplifyAfterCollectingLikeTermsSteps(simplificationSteps, preferFractionalForm = false)
+        createSimplifyCoefficientPlan(simplificationSteps, preferFractionalForm = false)
 
     return plan {
         explanation = Explanation.CollectLikeTermsAndSimplify
 
         steps {
-            withNewLabels {
-                firstOf {
-                    option(CollectingRules.CombineTwoSimpleLikeTerms)
-                    option(CollectingRules.CollectLikeTerms)
+            firstOf {
+                option(CollectingRules.CombineTwoSimpleLikeTerms)
+                option {
+                    withNewLabels {
+                        apply(CollectingRules.CollectLikeTerms)
+                        optionally { applyTo(coefficientSimplificationSteps, Label.A) }
+                        optionally(GeneralRules.EliminateZeroInSum)
+                    }
                 }
-                optionally(coefficientSimplificationSteps)
             }
         }
     }

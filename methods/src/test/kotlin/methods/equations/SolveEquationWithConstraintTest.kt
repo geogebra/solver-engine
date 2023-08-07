@@ -152,7 +152,7 @@ class SolveEquationWithConstraintTest {
                     fromExpr = "[(-1) ^ 2] < 0"
                     toExpr = "1 < 0"
                     explanation {
-                        key = ConstantExpressionsExplanation.SimplifyPowers
+                        key = ConstantExpressionsExplanation.SimplifyPowerOfInteger
                     }
                 }
 

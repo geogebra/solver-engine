@@ -66,7 +66,7 @@ enum class InequationsPlans(override val runner: CompositeMethod) : RunnerMethod
                         option(SimplifyInequation)
 
                         option(solvablePlansForInequations.removeConstantDenominatorsSteps)
-                        option(PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
+                        option(PolynomialsPlans.ExpandPolynomialExpressionWithoutNormalization)
                     }
                 }
 

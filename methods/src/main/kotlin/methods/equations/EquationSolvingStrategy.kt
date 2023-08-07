@@ -135,7 +135,7 @@ enum class EquationSolvingStrategy(
             optionally(solvablePlansForEquations.multiplyByLCDAndSimplify)
             optionally(solvablePlansForEquations.moveEverythingToTheLeftAndSimplify)
             optionally {
-                applyTo(PolynomialsPlans.ExpandPolynomialExpressionInOneVariable) { it.firstChild }
+                applyTo(PolynomialsPlans.ExpandPolynomialExpression) { it.firstChild }
             }
 
             // rearrange LHS to the form: a[x^2] + bx + c
@@ -335,7 +335,7 @@ internal val solveEquationInOneVariable = lazy {
 
         option(solvablePlansForEquations.coefficientRemovalSteps)
 
-        option(PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
+        option(PolynomialsPlans.ExpandPolynomialExpressionWithoutNormalization)
     }
 }
 

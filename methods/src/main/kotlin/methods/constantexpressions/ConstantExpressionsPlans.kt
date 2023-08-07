@@ -1,12 +1,14 @@
 package methods.constantexpressions
 
-import engine.expressions.Minus
+import engine.expressions.Fraction
+import engine.expressions.Power
 import engine.expressions.isSignedFraction
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.StepsProducer
+import engine.methods.stepsproducers.applyAfterMaybeExtractingMinus
 import engine.methods.stepsproducers.steps
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
@@ -14,10 +16,12 @@ import engine.patterns.ConstantPattern
 import engine.patterns.FindPattern
 import engine.patterns.IntegerFractionPattern
 import engine.patterns.RationalPattern
+import engine.patterns.SignedIntegerPattern
 import engine.patterns.condition
 import engine.patterns.integerCondition
 import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
+import engine.patterns.productContaining
 import engine.utility.divides
 import methods.collecting.createCollectLikeRationalPowersAndSimplifyPlan
 import methods.collecting.createCollectLikeRootsAndSimplifyPlan
@@ -32,7 +36,6 @@ import methods.fractionarithmetic.createAddFractionsPlan
 import methods.fractionarithmetic.createAddRootAndFractionPlan
 import methods.fractionarithmetic.normalizeFractionsWithinFractions
 import methods.fractionarithmetic.normalizeNegativeSignsInFraction
-import methods.fractionarithmetic.simplifyIntegerToNegativePower
 import methods.fractionroots.FractionRootsPlans
 import methods.fractionroots.FractionRootsRules
 import methods.general.GeneralPlans
@@ -54,25 +57,54 @@ import methods.mixednumbers.MixedNumbersPlans
 import methods.mixednumbers.MixedNumbersRules
 
 enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : RunnerMethod {
-    SimplifyPowers(
+
+    SimplifyPowerOfInteger(
         plan {
-            pattern = powerOf(AnyPattern(), AnyPattern())
-            explanation = Explanation.SimplifyPowers
+            pattern = powerOf(SignedIntegerPattern(), AnyPattern())
+            explanation = Explanation.SimplifyPowerOfInteger
 
             steps {
-                whilePossible {
+                optionally(IntegerArithmeticRules.SimplifyEvenPowerOfNegative)
+                optionally(IntegerArithmeticRules.SimplifyOddPowerOfNegative)
+
+                applyAfterMaybeExtractingMinus {
                     firstOf {
-                        option { deeply(GeneralRules.EvaluateZeroToAPositivePower) }
+                        option(FractionArithmeticRules.TurnIntegerToMinusOneToFraction)
 
-                        // minus one and other negative integer powers
-                        option { deeply(simplifyIntegerToNegativePower) }
+                        option {
+                            apply(FractionArithmeticRules.TurnNegativePowerOfIntegerToFraction)
+                            applyToKind<Fraction>(IntegerArithmeticRules.EvaluateIntegerPowerDirectly) {
+                                it.denominator
+                            }
+                        }
 
-                        option { deeply(FractionArithmeticPlans.SplitRationalExponent) }
-                        option { deeply(IntegerArithmeticRules.SimplifyEvenPowerOfNegative) }
-                        option { deeply(IntegerArithmeticRules.SimplifyOddPowerOfNegative) }
-                        option { deeply(IntegerArithmeticRules.EvaluateIntegerPowerDirectly) }
-                        option { deeply(GeneralRules.DistributePowerOfProduct) }
+                        option {
+                            // [0 ^ -n] -> [[1 / 0] ^ n]
+                            apply(FractionArithmeticRules.TurnNegativePowerOfZeroToPowerOfFraction)
+                            applyToKind<Power>(GeneralRules.SimplifyZeroDenominatorFractionToUndefined) {
+                                it.base
+                            }
+                        }
+
+                        option(IntegerArithmeticRules.EvaluateIntegerPowerDirectly)
                     }
+                }
+            }
+        },
+    ),
+
+    SimplifyPowerOfProduct(
+        plan {
+            pattern = powerOf(productContaining(), AnyPattern())
+            explanation = Explanation.SimplifyPowerOfProduct
+
+            steps {
+                optionally(IntegerArithmeticRules.SimplifyOddPowerOfNegative)
+                optionally(IntegerArithmeticRules.SimplifyEvenPowerOfNegative)
+
+                applyAfterMaybeExtractingMinus {
+                    apply(GeneralRules.DistributePowerOfProduct)
+                    whilePossible(constantSimplificationSteps)
                 }
             }
         },
@@ -83,41 +115,29 @@ enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : Runn
             pattern = powerOf(condition { it.isSignedFraction() && it.isConstant() }, RationalPattern())
             explanation = Explanation.SimplifyPowerOfFraction
 
-            // TODO come up with a construct which allows us to write this without a nested steps producer
-            val positiveFractionSimplificationSteps = engine.methods.stepsproducers.steps {
-                firstOf {
-                    option(FractionArithmeticRules.SimplifyFractionToMinusOne)
-                    option {
-                        optionally(GeneralRules.FlipFractionUnderNegativePower)
-                        firstOf {
-                            option {
-                                apply(FractionArithmeticPlans.SplitRationalExponent)
-                                applyToChildren(SimplifyPowerOfFraction)
-                            }
-                            option {
-                                // separate rule, so it doesn't distribute exponents if neither the numerator
-                                // nor the denominator can be further simplified, e.g. (2/3)^(2/5)
-                                apply(FractionArithmeticRules.DistributeFractionalPowerOverFraction)
-                                applyToChildren { whilePossible(constantSimplificationSteps) }
-                            }
-                            option {
-                                apply(FractionArithmeticRules.DistributePositiveIntegerPowerOverFraction)
-                                applyToChildren { whilePossible(constantSimplificationSteps) }
-                            }
-                        }
-                    }
-                }
-            }
-
             steps {
-                firstOf {
-                    option {
-                        apply(IntegerArithmeticRules.SimplifyOddPowerOfNegative)
-                        applyToKind<Minus>(positiveFractionSimplificationSteps) { it.argument }
-                    }
-                    option {
-                        optionally(IntegerArithmeticRules.SimplifyEvenPowerOfNegative)
-                        apply(positiveFractionSimplificationSteps)
+                optionally(IntegerArithmeticRules.SimplifyOddPowerOfNegative)
+                optionally(IntegerArithmeticRules.SimplifyEvenPowerOfNegative)
+
+                applyAfterMaybeExtractingMinus {
+                    shortcut(FractionArithmeticRules.SimplifyFractionToMinusOne)
+
+                    optionally(GeneralRules.FlipFractionUnderNegativePower)
+                    firstOf {
+                        option {
+                            apply(FractionArithmeticPlans.SplitRationalExponent)
+                            applyToChildren(SimplifyPowerOfFraction)
+                        }
+                        option {
+                            // separate rule, so it doesn't distribute exponents if neither the numerator
+                            // nor the denominator can be further simplified, e.g. (2/3)^(2/5)
+                            apply(FractionArithmeticRules.DistributeFractionalPowerOverFraction)
+                            applyToChildren { whilePossible(constantSimplificationSteps) }
+                        }
+                        option {
+                            apply(FractionArithmeticRules.DistributePositiveIntegerPowerOverFraction)
+                            applyToChildren { whilePossible(constantSimplificationSteps) }
+                        }
                     }
                 }
             }
@@ -287,8 +307,15 @@ val constantSimplificationSteps: StepsProducer = steps {
         option { deeply(GeneralPlans.NormalizeNegativeSignsInProduct) }
 
         option { deeply(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithSameBase) }
-        option { deeply(ConstantExpressionsPlans.SimplifyPowerOfFraction) }
-        option { deeply(ConstantExpressionsPlans.SimplifyPowers) }
+        option {
+            deeply(deepFirst = true) {
+                firstOf {
+                    option(ConstantExpressionsPlans.SimplifyPowerOfInteger)
+                    option(ConstantExpressionsPlans.SimplifyPowerOfProduct)
+                    option(ConstantExpressionsPlans.SimplifyPowerOfFraction)
+                }
+            }
+        }
 
         option { deeply(collectLikeRootsAndSimplify) }
         option { deeply(collectLikeRationalPowersAndSimplify) }

@@ -307,7 +307,7 @@ class FactorPlansTest {
                 fromExpr = "(4 - x) ([4 ^ 2] + 4 x + [x ^ 2])"
                 toExpr = "(4 - x) (16 + 4 x + [x ^ 2])"
                 explanation {
-                    key = ConstantExpressionsExplanation.SimplifyPowers
+                    key = ConstantExpressionsExplanation.SimplifyPowerOfInteger
                 }
             }
         }
@@ -345,7 +345,7 @@ class FactorPlansTest {
                 fromExpr = "(5 + 2 [x ^ 2]) ([5 ^ 2] - 5 * 2 [x ^ 2] + [(2 [x ^ 2]) ^ 2])"
                 toExpr = "(5 + 2 [x ^ 2]) (25 - 5 * 2 [x ^ 2] + [(2 [x ^ 2]) ^ 2])"
                 explanation {
-                    key = ConstantExpressionsExplanation.SimplifyPowers
+                    key = ConstantExpressionsExplanation.SimplifyPowerOfInteger
                 }
             }
 
@@ -777,7 +777,7 @@ class FactorPlansTest {
                 fromExpr = "[(3 (x + 2)) ^ 2] - (x + 2)"
                 toExpr = "9 * [(x + 2) ^ 2] - (x + 2)"
                 explanation {
-                    key = ConstantExpressionsExplanation.SimplifyPowers
+                    key = PolynomialsExplanation.DistributeProductToIntegerPowerAndSimplify
                 }
             }
 

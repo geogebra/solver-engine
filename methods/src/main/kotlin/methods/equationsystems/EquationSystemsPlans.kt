@@ -377,7 +377,7 @@ private object SystemSolverBySubstitution : SystemSolver() {
             firstOf {
                 option(equationSimplificationSteps)
                 option(solvablePlansForEquations.multiplyByLCDAndSimplify)
-                option(PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
+                option(PolynomialsPlans.ExpandPolynomialExpressionWithoutNormalization)
                 option(EquationsPlans.CollectLikeTermsToTheLeftAndSimplify)
             }
         }
@@ -406,7 +406,7 @@ private object SystemSolverBySubstitution : SystemSolver() {
         ) {
             apply(rearrangeLinearEquationSteps)
             optionally {
-                applyTo(PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization) {
+                applyTo(PolynomialsPlans.ExpandPolynomialExpressionWithoutNormalization) {
                     it.secondChild
                 }
             }
@@ -473,7 +473,7 @@ private object SystemSolverByElimination : SystemSolver() {
             firstOf {
                 option(equationSimplificationSteps)
                 option(solvablePlansForEquations.multiplyByLCDAndSimplify)
-                option(PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
+                option(PolynomialsPlans.ExpandPolynomialExpressionWithoutNormalization)
                 option(solvablePlansForEquations.moveConstantsToTheRightAndSimplify)
                 option(solvablePlansForEquations.moveVariablesToTheLeftAndSimplify)
             }
@@ -492,7 +492,7 @@ private object SystemSolverByElimination : SystemSolver() {
                 startExpr = equationOf(productOf(factor, eq.firstChild), productOf(factor, eq.secondChild)),
                 explanation = metadata(Explanation.MultiplyEquation, factor, eq.byName()),
                 resultLabel = eq.name,
-                stepsProducer = PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization,
+                stepsProducer = PolynomialsPlans.ExpandPolynomialExpressionWithoutNormalization,
             )!!.result
         } else {
             eq

@@ -108,7 +108,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 apply(EquationsRules.CompleteTheSquare)
-                optionally(PolynomialsPlans.SimplifyPolynomialExpressionInOneVariable)
+                optionally(PolynomialsPlans.SimplifyPolynomialExpression)
             }
         },
     ),
@@ -119,7 +119,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 apply(EquationsRules.MultiplyByInverseOfLeadingCoefficient)
-                apply(PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
+                apply(PolynomialsPlans.ExpandPolynomialExpressionWithoutNormalization)
             }
         },
     ),
@@ -269,7 +269,7 @@ val rearrangeLinearEquationSteps = steps {
             option(EquationsPlans.SimplifyEquation)
 
             option(solvablePlansForEquations.removeConstantDenominatorsSteps)
-            option(PolynomialsPlans.ExpandPolynomialExpressionInOneVariableWithoutNormalization)
+            option(PolynomialsPlans.ExpandPolynomialExpressionWithoutNormalization)
         }
     }
 

@@ -254,32 +254,3 @@ val normalizeNegativeSignsInFraction = steps {
         option(FractionArithmeticRules.SimplifyNegativeInDenominator)
     }
 }
-
-val simplifyIntegerToNegativePower = steps {
-    firstOf {
-        option(FractionArithmeticRules.TurnIntegerToMinusOneToFraction)
-
-        option {
-            plan {
-                explanation = Explanation.EvaluateIntegerToNegativePower
-
-                steps {
-                    apply(FractionArithmeticRules.TurnNegativePowerOfIntegerToFraction)
-                    applyToKind<Fraction>(IntegerArithmeticRules.EvaluateIntegerPowerDirectly) { it.denominator }
-                }
-            }
-        }
-
-        option {
-            plan {
-                explanation = Explanation.EvaluateIntegerToNegativePower
-
-                steps {
-                    // [0 ^ -n] -> [[1 / 0] ^ n]
-                    apply(FractionArithmeticRules.TurnNegativePowerOfZeroToPowerOfFraction)
-                    applyToKind<Power>(GeneralRules.SimplifyZeroDenominatorFractionToUndefined) { it.base }
-                }
-            }
-        }
-    }
-}

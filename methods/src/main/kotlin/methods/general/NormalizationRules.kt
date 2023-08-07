@@ -9,8 +9,11 @@ import engine.expressions.Product
 import engine.expressions.Root
 import engine.expressions.SquareRoot
 import engine.expressions.Sum
+import engine.expressions.Variable
 import engine.expressions.hasRedundantBrackets
+import engine.expressions.isSignedFraction
 import engine.expressions.productOf
+import engine.expressions.variablePowerBase
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
@@ -53,7 +56,7 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(pattern) {
                 val idxOfFirstChildWithBracket = get(pattern).children.indexOfFirst { child ->
-                    child is engine.expressions.Sum && child.hasBracket()
+                    child is Sum && child.hasBracket()
                 }
                 val sumChildren = get(pattern).children.toMutableList()
                 // Remove brackets from the first sum having brackets
@@ -166,28 +169,28 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
     InlinePartialProducts(inlinePartialProducts),
 }
 
-private val reorderProduct =
-    rule {
-        val product = productContaining()
+private val reorderProduct = rule {
+    val product = productContaining()
 
-        onPattern(product) {
-            val productChildren = get(product).children
-            if (productChildren.any { it is DivideBy }) return@onPattern null
+    onPattern(product) {
+        val productChildren = get(product).children
+        if (productChildren.any { it is DivideBy }) return@onPattern null
 
-            val sortedProdChildren = productChildren.sortedBy { orderInProduct(it) }
-            if (productChildren == sortedProdChildren) {
-                null
-            } else {
-                val toExpr = productOf(sortedProdChildren.map { move(it) })
-                ruleResult(
-                    tags = listOf(Transformation.Tag.Rearrangement),
-                    toExpr = toExpr,
-                    explanation = metadata(Explanation.ReorderProduct),
-                    gmAction = edit(product),
-                )
-            }
+        val sortedProdChildren = productChildren.sortedWith(priorityComparator)
+
+        if (productChildren == sortedProdChildren) {
+            null
+        } else {
+            val toExpr = productOf(sortedProdChildren.map { move(it) })
+            ruleResult(
+                tags = listOf(Transformation.Tag.Rearrangement),
+                toExpr = toExpr,
+                explanation = metadata(Explanation.ReorderProduct),
+                gmAction = edit(product),
+            )
         }
     }
+}
 
 /** Like [reorderProduct], but only rearranges one term. It sorts via
  * insertion sort. */
@@ -199,13 +202,11 @@ private val reorderProductSingleStep =
             val productChildren = get(product).children
             for (i in 1 until productChildren.size) {
                 val current = productChildren[i]
-                val currentOrder = orderInProduct(current)
                 val previous = productChildren[i - 1]
-                val previousOrder = orderInProduct(previous)
-                if (currentOrder < previousOrder) {
+                if (priorityComparator.compare(current, previous) < 0) {
                     val movedCurrent = move(current)
                     val sortedFirstPartOfProductChildren =
-                        (productChildren.take(i) + movedCurrent).sortedBy { orderInProduct(it) }
+                        (productChildren.take(i) + movedCurrent).sortedWith(priorityComparator)
                     val toExpr = productOf(sortedFirstPartOfProductChildren + productChildren.drop(i + 1))
                     return@onPattern ruleResult(
                         tags = listOf(Transformation.Tag.Rearrangement),
@@ -259,15 +260,26 @@ private val normalizeProductSigns = rule {
     }
 }
 
-@Suppress("MagicNumber")
-private fun orderInProduct(e: Expression): Int {
-    val isConstantAdjuster = if (e.isConstant()) 0 else 10
-    return isConstantAdjuster + when (e) {
-        is Sum -> 3
-        is Root, is Power, is SquareRoot -> 2
-        else -> 1
-    }
-}
+private val priorityComparator = compareBy<Expression>(
+    { !it.isConstant() },
+    {
+        @Suppress("MagicNumber")
+        when (if (it is Power) it.base else it) {
+            // (x + 1) or (1 + sqrt[3])
+            is Sum -> 4
+            // sqrt[...] or root[..., n]
+            is Root, is SquareRoot -> 3
+            // a, x, [x ^ 2]
+            is Variable -> 2
+            else -> 1
+        }
+    },
+    { it.variablePowerBase()?.variableName },
+    {
+        // if the bases have the same priority put powers with rational exponents at the end
+        it is Power && it.exponent.isSignedFraction()
+    },
+)
 
 private fun isNonPartialProductWithoutLabelAndBracket(expr: Expression): Boolean {
     return expr is Product && !expr.isPartialProduct() && !expr.hasLabel() && !expr.hasBracket()

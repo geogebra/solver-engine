@@ -21,7 +21,6 @@ import methods.constantexpressions.ConstantExpressionsPlans
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.general.NormalizationPlans
 import methods.inequations.InequationsPlans
-import methods.polynomials.PolynomialsPlans
 import methods.polynomials.polynomialSimplificationSteps
 import methods.rationalexpressions.RationalExpressionsPlans
 import methods.solvable.computeOverallIntersectionSolution
@@ -136,8 +135,6 @@ val algebraicSimplificationSteps = steps {
             option { deeply(RationalExpressionsPlans.AddRationalExpressions, deepFirst = true) }
         }
     }
-
-    optionally(PolynomialsPlans.NormalizeAllMonomials)
 }
 
 private fun findDenominatorsAndDivisors(expr: Expression): Sequence<Pair<Expression, Expression>> = sequence {

@@ -4,7 +4,6 @@ import engine.methods.SolverEngineExplanation
 import engine.methods.testMethod
 import methods.collecting.CollectingExplanation
 import methods.fractionarithmetic.FractionArithmeticExplanation
-import methods.general.GeneralExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
 import org.junit.jupiter.api.Test
 
@@ -298,23 +297,7 @@ class ConstantFractionsTest {
                 fromExpr = "[sqrt[5] * 2 + 3 + sqrt[5] / 2]"
                 toExpr = "[3 sqrt[5] + 3 / 2]"
                 explanation {
-                    key = FractionArithmeticExplanation.SimplifyNumerator
-                }
-
-                step {
-                    fromExpr = "[sqrt[5] * 2 + 3 + sqrt[5] / 2]"
-                    toExpr = "[2 sqrt[5] + 3 + sqrt[5] / 2]"
-                    explanation {
-                        key = GeneralExplanation.ReorderProduct
-                    }
-                }
-
-                step {
-                    fromExpr = "[2 sqrt[5] + 3 + sqrt[5] / 2]"
-                    toExpr = "[3 sqrt[5] + 3 / 2]"
-                    explanation {
-                        key = CollectingExplanation.CollectLikeRootsAndSimplify
-                    }
+                    key = CollectingExplanation.CollectLikeRootsAndSimplify
                 }
             }
         }

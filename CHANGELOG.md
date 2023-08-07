@@ -17,6 +17,7 @@ contents to a new release section (e.g. _[0.x]_).
 - SDK: added support for displaying variables with subscripts and parsing such constructs from LaTeX (PLUT-656)
 - Fallback plan for expressions which are fully simplified or quadratics with negative discriminant (PLUT-603, PLUT-624)
 - SDK: added support for Void expression - this would need explicit handling in front-ends (PLUT-603)
+- Added support for simplifying and expanding multivariate polynomial expressions (PLUT-651)
 
 ### Fixed
 
