@@ -6,7 +6,6 @@ import methods.collecting.CollectingExplanation
 import methods.general.GeneralExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
 import methods.integerrationalexponents.IntegerRationalExponentsExplanation
-import methods.integerroots.IntegerRootsExplanation
 import org.junit.jupiter.api.Test
 
 class PolynomialsPlansTestActivePracticeCurriculum {
@@ -19,7 +18,7 @@ class PolynomialsPlansTestActivePracticeCurriculum {
 
         check {
             fromExpr = "2 x + [x ^ 2] + 3 x - 5 [x ^ 2]"
-            toExpr = "5 x - 4 [x ^ 2]"
+            toExpr = "-4 [x ^ 2] + 5 x"
             explanation {
                 key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
             }
@@ -39,6 +38,14 @@ class PolynomialsPlansTestActivePracticeCurriculum {
                     key = CollectingExplanation.CombineTwoSimpleLikeTerms
                 }
             }
+
+            step {
+                fromExpr = "5 x - 4 [x ^ 2]"
+                toExpr = "-4 [x ^ 2] + 5 x"
+                explanation {
+                    key = PolynomialsExplanation.NormalizePolynomial
+                }
+            }
         }
     }
 
@@ -46,99 +53,91 @@ class PolynomialsPlansTestActivePracticeCurriculum {
     fun testMultiplyMonomials() = testMethod {
         method = PolynomialsPlans.SimplifyPolynomialExpression
         context = Context(gmFriendly = true)
-        inputExpr = "3[x^2]*4[x^3]x + 5*7[x^6]"
+        inputExpr = "3 [x ^ 2] * 4 [x ^ 3] * x + 5 * 7 [x ^ 6]"
 
         check {
-            fromExpr = "3 [x ^ 2] * 4 [x ^ 3] x + 5 * 7 [x ^ 6]"
+            fromExpr = "3 [x ^ 2] * 4 [x ^ 3] * x + 5 * 7 [x ^ 6]"
             toExpr = "47 [x ^ 6]"
             explanation {
                 key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
             }
 
             step {
-                fromExpr = "3 [x ^ 2] * 4 [x ^ 3] x + 5 * 7 [x ^ 6]"
-                toExpr = "3 [x ^ 5] * 4 x + 5 * 7 [x ^ 6]"
+                fromExpr = "3 [x ^ 2] * 4 [x ^ 3] * x + 5 * 7 [x ^ 6]"
+                toExpr = "12 [x ^ 6] + 5 * 7 [x ^ 6]"
                 explanation {
-                    key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithSameBase
+                    key = PolynomialsExplanation.MultiplyMonomialsAndSimplify
                 }
 
                 step {
-                    fromExpr = "3 [x ^ 2] * 4 [x ^ 3] x"
-                    toExpr = "3 [x ^ 2 + 3] * 4 x"
-                    explanation {
-                        key = GeneralExplanation.RewriteProductOfPowersWithSameBase
-                    }
-                }
-
-                step {
-                    fromExpr = "3 [x ^ 2 + 3] * 4 x"
+                    fromExpr = "3 [x ^ 2] * 4 [x ^ 3] * x"
                     toExpr = "3 [x ^ 5] * 4 x"
                     explanation {
-                        key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                        key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithSameBase
                     }
-                }
-            }
 
-            step {
-                fromExpr = "3 [x ^ 5] * 4 x + 5 * 7 [x ^ 6]"
-                toExpr = "3 [x ^ 6] * 4 + 5 * 7 [x ^ 6]"
-                explanation {
-                    key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithSameBase
+                    step {
+                        fromExpr = "3 [x ^ 2] * 4 [x ^ 3] * x"
+                        toExpr = "3 [x ^ 2 + 3] * 4 x"
+                        explanation {
+                            key = GeneralExplanation.RewriteProductOfPowersWithSameBase
+                        }
+                    }
+
+                    step {
+                        fromExpr = "3 [x ^ 2 + 3] * 4 x"
+                        toExpr = "3 [x ^ 5] * 4 x"
+                        explanation {
+                            key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                        }
+                    }
                 }
 
                 step {
                     fromExpr = "3 [x ^ 5] * 4 x"
-                    toExpr = "3 [x ^ 5 + 1] * 4"
+                    toExpr = "3 [x ^ 6] * 4"
                     explanation {
-                        key = GeneralExplanation.RewriteProductOfPowersWithSameBase
+                        key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithSameBase
+                    }
+
+                    step {
+                        fromExpr = "3 [x ^ 5] * 4 x"
+                        toExpr = "3 [x ^ 5 + 1] * 4"
+                        explanation {
+                            key = GeneralExplanation.RewriteProductOfPowersWithSameBase
+                        }
+                    }
+
+                    step {
+                        fromExpr = "3 [x ^ 5 + 1] * 4"
+                        toExpr = "3 [x ^ 6] * 4"
+                        explanation {
+                            key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                        }
                     }
                 }
 
                 step {
-                    fromExpr = "3 [x ^ 5 + 1] * 4"
-                    toExpr = "3 [x ^ 6] * 4"
+                    fromExpr = "3 [x ^ 6] * 4"
+                    toExpr = "12 [x ^ 6]"
                     explanation {
-                        key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                        key = IntegerArithmeticExplanation.EvaluateIntegerProduct
                     }
                 }
             }
 
             step {
-                fromExpr = "3 [x ^ 6] * 4 + 5 * 7 [x ^ 6]"
+                fromExpr = "12 [x ^ 6] + 5 * 7 [x ^ 6]"
                 toExpr = "12 [x ^ 6] + 35 [x ^ 6]"
                 explanation {
-                    key = IntegerRootsExplanation.SimplifyProductWithRoots
+                    key = PolynomialsExplanation.MultiplyMonomialsAndSimplify
                 }
 
                 step {
-                    fromExpr = "3 [x ^ 6] * 4 + 5 * 7 [x ^ 6]"
-                    toExpr = "12 [x ^ 6] + 5 * 7 [x ^ 6]"
+                    fromExpr = "5 * 7 [x ^ 6]"
+                    toExpr = "35 [x ^ 6]"
                     explanation {
-                        key = IntegerArithmeticExplanation.SimplifyIntegersInProduct
-                    }
-
-                    step {
-                        fromExpr = "3 [x ^ 6] * 4"
-                        toExpr = "12 [x ^ 6]"
-                        explanation {
-                            key = IntegerArithmeticExplanation.EvaluateIntegerProduct
-                        }
-                    }
-                }
-
-                step {
-                    fromExpr = "12 [x ^ 6] + 5 * 7 [x ^ 6]"
-                    toExpr = "12 [x ^ 6] + 35 [x ^ 6]"
-                    explanation {
-                        key = IntegerArithmeticExplanation.SimplifyIntegersInProduct
-                    }
-
-                    step {
-                        fromExpr = "5 * 7 [x ^ 6]"
-                        toExpr = "35 [x ^ 6]"
-                        explanation {
-                            key = IntegerArithmeticExplanation.EvaluateIntegerProduct
-                        }
+                        key = IntegerArithmeticExplanation.EvaluateIntegerProduct
                     }
                 }
             }

@@ -17,6 +17,7 @@ import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.commutativeProductOf
 import engine.patterns.condition
 import engine.patterns.monomialPattern
+import engine.patterns.negOf
 import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
@@ -55,12 +56,6 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
                 optionally(NormalizationPlans.NormalizeExpression)
                 whilePossible(polynomialSimplificationSteps)
                 optionally(PolynomialRules.NormalizePolynomial)
-            }
-            alternative(ResourceData(gmFriendly = true)) {
-                whilePossible { deeply(simpleTidyUpSteps) }
-                whilePossible { deeply(simplificationSteps) }
-                optionally(NormalizationPlans.NormalizeExpression)
-                whilePossible(polynomialSimplificationSteps)
             }
         },
     ),
@@ -151,8 +146,8 @@ private val multiplyMonomials = plan {
     explanation = Explanation.MultiplyMonomialsAndSimplify
     pattern = oneOf(
         // grab the minus sign only if there is another minus among to coefficients so it can simplify
-        optionalNegOf(condition { it is Product && it.children.any { child -> child is Minus } }),
-        condition { it is Product },
+        negOf(condition { it is Product && !it.isConstant() && it.children.any { child -> child is Minus } }),
+        condition { it is Product && !it.isConstant() },
     )
 
     steps {
@@ -162,6 +157,10 @@ private val multiplyMonomials = plan {
             applyToChildren(PolynomialsPlans.MultiplyVariablePowers)
         }
         optionally(GeneralRules.MoveSignOfNegativeFactorOutOfProduct)
+    }
+
+    alternative(ResourceData(gmFriendly = true)) {
+        whilePossible(simplificationSteps)
     }
 }
 

@@ -17,10 +17,10 @@ import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
 import engine.patterns.condition
 import engine.steps.metadata.metadata
-import methods.constantexpressions.ConstantExpressionsPlans
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.general.NormalizationPlans
 import methods.inequations.InequationsPlans
+import methods.polynomials.PolynomialsPlans
 import methods.polynomials.polynomialSimplificationSteps
 import methods.rationalexpressions.RationalExpressionsPlans
 import methods.solvable.computeOverallIntersectionSolution
@@ -65,7 +65,7 @@ enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
         plan {
             explanation = Explanation.SimplifyAlgebraicExpression
             specificPlans(
-                ConstantExpressionsPlans.SimplifyConstantExpression,
+                PolynomialsPlans.SimplifyPolynomialExpression,
                 ComputeDomainAndSimplifyAlgebraicExpression,
             )
 

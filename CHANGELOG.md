@@ -34,6 +34,7 @@ contents to a new release section (e.g. _[0.x]_).
 - When a sum is substituted into a sum it is inlined instead of being wrapped in a bracket (PLUT-621)
 - Changed the conversion of mixed numbers to improper fractions, the transformations are no longer executed "in step"
   on the two mixed numbers, rather in turn (PLUT-621)
+- Changed polynomial simplification to normalize polynomials at the end also in GM friendly mode (PLUT-650)
 
 ### Removed
 
