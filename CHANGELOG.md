@@ -38,6 +38,7 @@ contents to a new release section (e.g. _[0.x]_).
 - SolveDecimalLinearEquation is now only executed if the input contains a decimal and the output can be expressed
   without fractions (PLUT-660)
 - Make it easy to substitute sub-step nodes into the parent step expression (PLUT-658). For details see JIRA ticket.
+- SDK: Parse latex/ascii `3 x/2 x` as `3 [x/2] x`. Also, parse latex/ascii `(1+2)/x` as `[1+2 / x]` (SP-133)
 
 ### Removed
 

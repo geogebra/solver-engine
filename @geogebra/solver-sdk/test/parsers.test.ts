@@ -133,7 +133,21 @@ describe('Solver Parser Unit Tests', () => {
       {
         solver: '2*3:4*5',
         json: ['Product', ['2'], ['3'], ['DivideBy', ['4']], ['5']],
-        latex: '2 \\cdot 3 \\div 4 \\cdot 5',
+        latex: [
+          '2 \\cdot 3 \\div 4 \\cdot 5',
+          '2 \\cdot 3   ÷   4 \\cdot 5',
+          '2 \\cdot 3   :   4 \\cdot 5',
+        ],
+      },
+      {
+        solver: '3:[4 ^ 5]',
+        json: ['Product', ['3'], ['DivideBy', ['Power', ['4'], ['5']]]],
+        latex: ['3 \\div {4}^{5}', '3÷4^5', '3:4^5'],
+      },
+      {
+        solver: '3:-[4 ^ 5]',
+        json: ['Product', ['3'], ['DivideBy', ['Minus', ['Power', ['4'], ['5']]]]],
+        latex: ['3 \\div -{4}^{5}', '3÷-4^5', '3:-4^5'],
       },
       {
         solver: '(1+2)+3',
@@ -495,20 +509,62 @@ describe('Solver Parser Unit Tests', () => {
       {
         solver: '[a / b]',
         json: ['Fraction', ['a'], ['b']],
-        latex: ['\\frac{a}{b}', '\\frac ab'],
+        latex: ['\\frac{a}{b}', '\\frac ab', 'a/b'],
       },
-      { latex: '2.1\\frac{1}{2}', solver: '2.1 [1 / 2]' },
+      {
+        solver: '[1 / 2] x',
+        latex: ['\\frac{1}{2}x', '1/2x'],
+        tree: {
+          type: 'ImplicitProduct',
+          args: [
+            {
+              type: 'Fraction',
+              args: [
+                {
+                  type: 'Number',
+                  value: '1',
+                  path: './0/0',
+                },
+                {
+                  type: 'Number',
+                  value: '2',
+                  path: './0/1',
+                },
+              ],
+              path: './0',
+            },
+            {
+              type: 'Variable',
+              value: 'x',
+              path: './1',
+            },
+          ],
+          path: '.',
+        },
+      },
+      // Decimals cannot be used in mixed numbers
+      { solver: '2.1 [1 / 2]', latex: ['2.1\\frac{1}{2}', '2.1 1/2'] },
+      { solver: '2 [1.3 / 2]', latex: ['2\\frac{1.3}{2}', '2 1.3/2'] },
+      { solver: '2 [1 / 2.3]', latex: ['2\\frac{1}{2.3}', '2 1/2.3'] },
+      { solver: '2 [1 / [2 ^ 3]]', latex: ['2\\frac{1}{2^3}', '2 1/2^3'] },
       {
         solver: '[1 2 / 3]',
         json: ['MixedNumber', ['1'], ['2'], ['3']],
-        latex: '1\\frac{2}{3}',
+        latex: ['1\\frac{2}{3}', '1 2/3'],
       },
       {
         solver: '[[1 / 2] / 3]',
         json: ['Fraction', ['Fraction', ['1'], ['2']], ['3']],
-        latex: '\\frac{\\frac{1}{2}}{3}',
+        latex: ['\\frac{\\frac{1}{2}}{3}', '1/2/3'],
       },
       { latex: '2+\\frac{1}{2}', solver: '2+[1 / 2]' },
+      { solver: '[-3 / -4]', latex: ['-3/-4', '(-3)/(-4)'] },
+      { solver: '2 [x / 3] x', latex: ['2\\frac{x}{3}x', '2x/3x'] },
+      {
+        solver: '1+[2 / [3 ^ x]]-3',
+        latex: ['1+\\frac{2}{3^x}-3', '1+2/3^x-3', '1+2/(3^x)-3'],
+      },
+      { solver: '[1+2 / 3]', latex: ['\\frac{1+2}{3}', '(1+2)/3'] },
     ]);
   });
 

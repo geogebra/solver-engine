@@ -13,6 +13,7 @@ const BP_ELEMENT_OF_OPERATOR = 6;
 const BP_SUM = 10;
 const BP_MUL = 20;
 const BP_IMPLICIT_MUL = 25;
+const BP_FRACTION_BINARY_OPERATOR = 28;
 const BP_UNARY_SIGN = 30;
 const BP_POWER = 40;
 const BP_SUBSCRIPT = 50;
@@ -55,7 +56,7 @@ const latexSymbolDefinitions = {
     for (const mulSym of ['*', '\\cdot', '\\times', '×']) {
       parser.registerSymbol(mulSym, BP_MUL).led = getLedToExtendNary(parser, 'Product');
     }
-    for (const divSym of [':', '\\div', '/']) {
+    for (const divSym of [':', '\\div', '÷']) {
       parser.registerSymbol(divSym, BP_MUL).led = getLedToExtendNary(
         parser,
         'Product',
@@ -69,7 +70,25 @@ const latexSymbolDefinitions = {
     num.nud = function () {
       return { type: 'Number', value: this.value };
     };
-    num.led = getLedToExtendNary(parser, 'ImplicitProduct');
+    num.led = getLedToExtendNary(parser, 'ImplicitProduct', undefined, (left, right) => {
+      // Parse strings like "2 3/4" as mixed numbers
+      if (left.type === 'Number' && right.type === 'Fraction') {
+        const numerator = right.args[0];
+        const denominator = right.args[1];
+        // A mixed number is comprized of 3 integers, only.
+        if (
+          !isInteger(left.value) ||
+          numerator.type !== 'Number' ||
+          !isInteger(numerator.value) ||
+          denominator.type !== 'Number' ||
+          !isInteger(denominator.value)
+        ) {
+          return null;
+        }
+        return { type: 'MixedNumber', args: [left, numerator, denominator] };
+      }
+      return null;
+    });
     const repeatingDecimal = parser.registerSymbol('\\overline', 100);
     repeatingDecimal.led = function (left) {
       const digits = parser.expression(100);
@@ -189,11 +208,11 @@ const latexSymbolDefinitions = {
       // mixed number?
       if (
         first.type === 'Number' &&
-        Number.isInteger(+first.value) &&
+        isInteger(first.value) &&
         left.type === 'Number' &&
-        Number.isInteger(+left.value) &&
+        isInteger(left.value) &&
         right.type === 'Number' &&
-        Number.isInteger(+right.value)
+        isInteger(right.value)
       ) {
         return { type: 'MixedNumber', args: [first, left, right] };
       } else
@@ -208,6 +227,21 @@ const latexSymbolDefinitions = {
       frac.nud = nud;
       frac.led = led;
     });
+  },
+
+  registerFractionBinary(parser: Parser<ExprTree>) {
+    const frac = parser.registerSymbol('/', BP_FRACTION_BINARY_OPERATOR);
+    frac.led = (first: ExprTree): ExprTree => {
+      const right = parser.expression(BP_FRACTION_BINARY_OPERATOR);
+      // We want to remove a layer of parenthesis, if there are any, since the purpose of
+      // those parenthesis was just to group the terms in numerator or the denominator
+      // onto the top or the bottom.
+      first.decorators?.pop();
+      if (!first.decorators?.length) delete first.decorators;
+      right.decorators?.pop();
+      if (!right.decorators?.length) delete right.decorators;
+      return { type: 'Fraction', args: [first, right] };
+    };
   },
 
   registerExponent(parser: Parser<ExprTree>) {
@@ -354,6 +388,12 @@ function addPathsToTree(tree: ExprTree, path = '.'): ExpressionTree {
         args: tree.args.map((arg, index) => addPathsToTree(arg, `${path}/${index}`)),
       }
     : { ...tree, path };
+}
+
+function isInteger(str: string) {
+  // We do it this way because obvious algorithm (`Number.isInteger(+str)`) would produce
+  // an inaccurate result when fed the input '5555555555555555.5'
+  return !!/^\d+$/.test(str);
 }
 
 const latexParser = new Parser(Object.values(latexSymbolDefinitions));
