@@ -7,6 +7,7 @@ import engine.expressions.Expression
 import engine.expressions.Factor
 import engine.expressions.IntegerExpression
 import engine.expressions.IntegerView
+import engine.expressions.Label
 import engine.expressions.Power
 import engine.expressions.Sum
 import engine.expressions.SumView
@@ -167,49 +168,7 @@ enum class FactorRules(override val runner: Rule) : RunnerMethod {
         },
     ),
 
-    RewriteSquareOfBinomial(
-        rule {
-            val variable = ArbitraryVariablePattern()
-
-            val squaredTerm = rationalMonomialPattern(variable, positiveOnly = true)
-            val baseTerm = rationalMonomialPattern(variable)
-            val constantTerm = RationalPattern()
-
-            val pattern = ConditionPattern(
-                commutativeSumOf(squaredTerm, baseTerm, constantTerm),
-                integerCondition(squaredTerm.exponent, baseTerm.exponent) { a, b -> a == BigInteger.TWO * b },
-            )
-
-            onPattern(pattern) {
-                val squaredCoefficient = getCoefficientValue(squaredTerm.ptn)!!
-                val baseCoefficient = getCoefficientValue(baseTerm.ptn)!!
-                val constant = getValue(constantTerm)!!
-
-                @Suppress("MagicNumber")
-                val delta = baseCoefficient.squared() - 4 * squaredCoefficient * constant
-
-                if (delta.isZero()) {
-                    val squaredCoefficientSqrt = fractionSqrt(squaredCoefficient) ?: return@onPattern null
-                    val squaredTermSqrt = simplifiedProductOf(squaredCoefficientSqrt, get(baseTerm.powerPattern))
-
-                    val constantSqrt = fractionSqrt(constant)
-                        ?.let { if (baseCoefficient.isNeg()) negOf(it) else it }
-                        ?: return@onPattern null
-
-                    ruleResult(
-                        toExpr = sumOf(
-                            transformTo(squaredTerm, powerOf(squaredTermSqrt, Constants.Two)),
-                            transformTo(baseTerm, explicitProductOf(Constants.Two, constantSqrt, squaredTermSqrt)),
-                            transformTo(constantTerm, powerOf(constantSqrt, Constants.Two)),
-                        ),
-                        explanation = metadata(Explanation.RewriteSquareOfBinomial),
-                    )
-                } else {
-                    null
-                }
-            }
-        },
-    ),
+    RewriteSquareOfBinomial(rewriteSquareOfBinomial),
 
     ApplySquareOfBinomialFormula(
         rule {
@@ -233,66 +192,7 @@ enum class FactorRules(override val runner: Rule) : RunnerMethod {
         },
     ),
 
-    RewriteCubeOfBinomial(
-        rule {
-            val variable = ArbitraryVariablePattern()
-
-            val cubedTerm = rationalMonomialPattern(variable, positiveOnly = true)
-            val squaredTerm = rationalMonomialPattern(variable)
-            val baseTerm = rationalMonomialPattern(variable, positiveOnly = true)
-            val constantTerm = RationalPattern()
-
-            val sum = ConditionPattern(
-                commutativeSumOf(cubedTerm, squaredTerm, baseTerm, constantTerm),
-                integerCondition(cubedTerm.exponent, squaredTerm.exponent, baseTerm.exponent) { n1, n2, n3 ->
-                    n1 == 3.toBigInteger() * n3 && n2 == 2.toBigInteger() * n3
-                },
-            )
-
-            onPattern(sum) {
-                val cubedCoefficient = getCoefficientValue(cubedTerm.ptn)!!
-                val squaredCoefficient = getCoefficientValue(squaredTerm.ptn)!!
-                val baseCoefficient = getCoefficientValue(baseTerm.ptn)!!
-                val constant = getValue(constantTerm)!!
-
-                // x + y + z + w can be written as a^3 + 3 a^2 b + 3 a b^2 + b^3 iff
-                // y^3 - 27 x^2 w = 0 and z^3 - 27 x w^2 = 0
-                @Suppress("MagicNumber")
-                val delta1 = squaredCoefficient.cubed() - 27 * cubedCoefficient.squared() * constant
-
-                @Suppress("MagicNumber")
-                val delta2 = baseCoefficient.cubed() - 27 * cubedCoefficient * constant.squared()
-
-                if (delta1.isZero() && delta2.isZero()) {
-                    val cubedCoefficientCbrt = fractionCbrt(cubedCoefficient) ?: return@onPattern null
-                    val cubedTermCbrt = simplifiedProductOf(cubedCoefficientCbrt, get(baseTerm.powerPattern))
-
-                    val constantCbrt = fractionCbrt(constant) ?: return@onPattern null
-
-                    ruleResult(
-                        toExpr = sumOf(
-                            transformTo(cubedTerm, powerOf(cubedTermCbrt, Constants.Three)),
-                            transformTo(
-                                squaredTerm,
-                                explicitProductOf(Constants.Three, powerOf(cubedTermCbrt, Constants.Two), constantCbrt),
-                            ),
-                            transformTo(
-                                baseTerm,
-                                explicitProductOf(Constants.Three, cubedTermCbrt, powerOf(constantCbrt, Constants.Two)),
-                            ),
-                            transformTo(
-                                constantTerm,
-                                powerOf(constantCbrt, Constants.Three),
-                            ),
-                        ),
-                        explanation = metadata(Explanation.RewriteCubeOfBinomial),
-                    )
-                } else {
-                    null
-                }
-            }
-        },
-    ),
+    RewriteCubeOfBinomial(rewriteCubeOfBinomial),
 
     ApplyCubeOfBinomialFormula(
         rule {
@@ -714,4 +614,115 @@ private fun SumView<CommonFactorView>.findSameBaseFactors(base: Expression): Pai
         sameBaseFactors.add(factor)
     }
     return Pair(sameBaseFactors.minOfOrNull { it.exponentValue } ?: BigInteger.ZERO, sameBaseFactors)
+}
+
+val rewriteSquareOfBinomial = rule {
+    val variable = ArbitraryVariablePattern()
+
+    val squaredTerm = rationalMonomialPattern(variable, positiveOnly = true)
+    val baseTerm = rationalMonomialPattern(variable)
+    val constantTerm = RationalPattern()
+
+    val pattern = ConditionPattern(
+        commutativeSumOf(squaredTerm, baseTerm, constantTerm),
+        integerCondition(squaredTerm.exponent, baseTerm.exponent) { a, b -> a == BigInteger.TWO * b },
+    )
+
+    onPattern(pattern) {
+        val squaredCoefficient = getCoefficientValue(squaredTerm.ptn)!!
+        val baseCoefficient = getCoefficientValue(baseTerm.ptn)!!
+        val constant = getValue(constantTerm)!!
+
+        @Suppress("MagicNumber")
+        val delta = baseCoefficient.squared() - 4 * squaredCoefficient * constant
+
+        if (delta.isZero()) {
+            val squaredCoefficientSqrt = fractionSqrt(squaredCoefficient) ?: return@onPattern null
+            val squaredTermSqrt = simplifiedProductOf(squaredCoefficientSqrt, get(baseTerm.powerPattern))
+                .withLabel(Label.A)
+
+            val constantSqrt = fractionSqrt(constant)
+                ?.let { if (baseCoefficient.isNeg()) negOf(it) else it }
+                ?.withLabel(Label.A)
+                ?: return@onPattern null
+
+            ruleResult(
+                toExpr = sumOf(
+                    transformTo(squaredTerm, powerOf(squaredTermSqrt, Constants.Two)),
+                    transformTo(baseTerm, explicitProductOf(Constants.Two, constantSqrt, squaredTermSqrt)),
+                    transformTo(constantTerm, powerOf(constantSqrt, Constants.Two)),
+                ),
+                explanation = metadata(Explanation.RewriteSquareOfBinomial),
+            )
+        } else {
+            null
+        }
+    }
+}
+
+val rewriteCubeOfBinomial = rule {
+    val variable = ArbitraryVariablePattern()
+
+    val cubedTerm = rationalMonomialPattern(variable, positiveOnly = true)
+    val squaredTerm = rationalMonomialPattern(variable)
+    val baseTerm = rationalMonomialPattern(variable, positiveOnly = true)
+    val constantTerm = RationalPattern()
+
+    val sum = ConditionPattern(
+        commutativeSumOf(cubedTerm, squaredTerm, baseTerm, constantTerm),
+        integerCondition(cubedTerm.exponent, squaredTerm.exponent, baseTerm.exponent) { n1, n2, n3 ->
+            n1 == 3.toBigInteger() * n3 && n2 == 2.toBigInteger() * n3
+        },
+    )
+
+    onPattern(sum) {
+        val cubedCoefficient = getCoefficientValue(cubedTerm.ptn)!!
+        val squaredCoefficient = getCoefficientValue(squaredTerm.ptn)!!
+        val baseCoefficient = getCoefficientValue(baseTerm.ptn)!!
+        val constant = getValue(constantTerm)!!
+
+        // x + y + z + w can be written as a^3 + 3 a^2 b + 3 a b^2 + b^3 iff
+        // y^3 - 27 x^2 w = 0 and z^3 - 27 x w^2 = 0
+        @Suppress("MagicNumber")
+        val delta1 = squaredCoefficient.cubed() - 27 * cubedCoefficient.squared() * constant
+
+        @Suppress("MagicNumber")
+        val delta2 = baseCoefficient.cubed() - 27 * cubedCoefficient * constant.squared()
+
+        if (delta1.isZero() && delta2.isZero()) {
+            val cubedCoefficientCbrt = fractionCbrt(cubedCoefficient) ?: return@onPattern null
+            val cubedTermCbrt = simplifiedProductOf(cubedCoefficientCbrt, get(baseTerm.powerPattern)).withLabel(Label.A)
+
+            val constantCbrt = fractionCbrt(constant)?.withLabel(Label.A) ?: return@onPattern null
+
+            ruleResult(
+                toExpr = sumOf(
+                    transformTo(cubedTerm, powerOf(cubedTermCbrt, Constants.Three)),
+                    transformTo(
+                        squaredTerm,
+                        explicitProductOf(
+                            Constants.Three,
+                            powerOf(cubedTermCbrt, Constants.Two),
+                            constantCbrt,
+                        ),
+                    ),
+                    transformTo(
+                        baseTerm,
+                        explicitProductOf(
+                            Constants.Three,
+                            cubedTermCbrt,
+                            powerOf(constantCbrt, Constants.Two),
+                        ),
+                    ),
+                    transformTo(
+                        constantTerm,
+                        powerOf(constantCbrt, Constants.Three),
+                    ),
+                ),
+                explanation = metadata(Explanation.RewriteCubeOfBinomial),
+            )
+        } else {
+            null
+        }
+    }
 }

@@ -6,6 +6,7 @@ import engine.expressions.Extractor
 import engine.expressions.Label
 import engine.expressions.LabelSpace
 import engine.methods.CompositeMethod
+import engine.methods.InlinePartialExpressions
 import engine.methods.PlanBuilder
 import engine.methods.TaskSetBuilder
 import engine.patterns.Pattern
@@ -40,9 +41,17 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
         PipelineRunner(builder, ctx.contextFactory(expression)).init()
     }
 
+    private fun tidyUp() {
+        repeat(MAX_WHILE_POSSIBLE_ITERATIONS) {
+            val iterationStep = InlinePartialExpressions.tryExecute(ctx, builder.lastSub) ?: return
+            builder.addStep(iterationStep)
+        }
+    }
+
     private fun addSteps(steps: List<Transformation>?) {
         if (steps != null) {
             builder.addSteps(steps)
+            tidyUp()
         } else {
             builder.abort()
         }
@@ -60,7 +69,10 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
         if (!builder.inProgress) return
 
         steps.produceSteps(ctx, builder.lastSub)
-            ?.let { builder.addSteps(it) }
+            ?.let {
+                builder.addSteps(it)
+                tidyUp()
+            }
     }
 
     override fun optionally(init: PipelineBuilder.() -> Unit) {
@@ -172,6 +184,7 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
                 }
             }
         }
+        tidyUp()
         if (atLeastOne && !appliedOnce) {
             builder.abort()
         }
@@ -189,6 +202,7 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
         repeat(MAX_WHILE_POSSIBLE_ITERATIONS) {
             val iterationSteps = stepsProducer.produceSteps(ctx, builder.lastSub) ?: return
             builder.addSteps(iterationSteps)
+            tidyUp()
             if (builder.undefined()) {
                 return
             }

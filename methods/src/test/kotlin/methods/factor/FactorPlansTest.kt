@@ -47,7 +47,7 @@ class FactorPlansTest {
 
             step {
                 fromExpr = "3 (5 [x ^ 5] - 11 [x ^ 2])"
-                toExpr = "3 [x ^ 2] (5 [x ^ 3] - 11)"
+                toExpr = "3 <. [x ^ 2] (5 [x ^ 3] - 11) .>"
                 explanation {
                     key = FactorExplanation.FactorCommonFactor
                 }
@@ -92,7 +92,7 @@ class FactorPlansTest {
 
                 step {
                     fromExpr = "3 ([(x + 1) ^ 3] + 2 * [(x + 1) ^ 2])"
-                    toExpr = "3 * [(x + 1) ^ 2] ((x + 1) + 2)"
+                    toExpr = "3 * <. [(x + 1) ^ 2] ((x + 1) + 2) .>"
                     explanation {
                         key = FactorExplanation.FactorCommonFactor
                     }
@@ -604,7 +604,7 @@ class FactorPlansTest {
 
                 step {
                     fromExpr = "2 (9 [x ^ 6] - 16 [x ^ 2])"
-                    toExpr = "2 [x ^ 2] (9 [x ^ 4] - 16)"
+                    toExpr = "2 <. [x ^ 2] (9 [x ^ 4] - 16) .>"
                     explanation {
                         key = FactorExplanation.FactorCommonFactor
                     }
@@ -613,22 +613,22 @@ class FactorPlansTest {
 
             step {
                 fromExpr = "2 [x ^ 2] (9 [x ^ 4] - 16)"
-                toExpr = "2 [x ^ 2] (3 [x ^ 2] - 4) (3 [x ^ 2] + 4)"
+                toExpr = "2 [x ^ 2] <. (3 [x ^ 2] - 4) (3 [x ^ 2] + 4) .>"
                 explanation {
                     key = FactorExplanation.FactorDifferenceOfSquares
                 }
 
                 step {
-                    fromExpr = "9 [x ^ 4] - 16"
-                    toExpr = "[(3 [x ^ 2]) ^ 2] - [4 ^ 2]"
+                    fromExpr = "(9 [x ^ 4] - 16)"
+                    toExpr = "([(3 [x ^ 2]) ^ 2] - [4 ^ 2])"
                     explanation {
                         key = FactorExplanation.RewriteDifferenceOfSquares
                     }
                 }
 
                 step {
-                    fromExpr = "[(3 [x ^ 2]) ^ 2] - [4 ^ 2]"
-                    toExpr = "(3 [x ^ 2] - 4) (3 [x ^ 2] + 4)"
+                    fromExpr = "([(3 [x ^ 2]) ^ 2] - [4 ^ 2])"
+                    toExpr = "<. (3 [x ^ 2] - 4) (3 [x ^ 2] + 4) .>"
                     explanation {
                         key = FactorExplanation.ApplyDifferenceOfSquaresFormula
                     }
@@ -666,7 +666,7 @@ class FactorPlansTest {
 
                 step {
                     fromExpr = "2 (81 [x ^ 6] - 16 [x ^ 2])"
-                    toExpr = "2 [x ^ 2] (81 [x ^ 4] - 16)"
+                    toExpr = "2 <. [x ^ 2] (81 [x ^ 4] - 16) .>"
                     explanation {
                         key = FactorExplanation.FactorCommonFactor
                     }
@@ -675,22 +675,22 @@ class FactorPlansTest {
 
             step {
                 fromExpr = "2 [x ^ 2] (81 [x ^ 4] - 16)"
-                toExpr = "2 [x ^ 2] (9 [x ^ 2] - 4) (9 [x ^ 2] + 4)"
+                toExpr = "2 [x ^ 2] <. (9 [x ^ 2] - 4) (9 [x ^ 2] + 4) .>"
                 explanation {
                     key = FactorExplanation.FactorDifferenceOfSquares
                 }
 
                 step {
-                    fromExpr = "81 [x ^ 4] - 16"
-                    toExpr = "[(9 [x ^ 2]) ^ 2] - [4 ^ 2]"
+                    fromExpr = "(81 [x ^ 4] - 16)"
+                    toExpr = "([(9 [x ^ 2]) ^ 2] - [4 ^ 2])"
                     explanation {
                         key = FactorExplanation.RewriteDifferenceOfSquares
                     }
                 }
 
                 step {
-                    fromExpr = "[(9 [x ^ 2]) ^ 2] - [4 ^ 2]"
-                    toExpr = "(9 [x ^ 2] - 4) (9 [x ^ 2] + 4)"
+                    fromExpr = "([(9 [x ^ 2]) ^ 2] - [4 ^ 2])"
+                    toExpr = "<. (9 [x ^ 2] - 4) (9 [x ^ 2] + 4) .>"
                     explanation {
                         key = FactorExplanation.ApplyDifferenceOfSquaresFormula
                     }
@@ -698,23 +698,23 @@ class FactorPlansTest {
             }
 
             step {
-                fromExpr = "2 [x ^ 2] (9 [x ^ 2] - 4) (9 [x ^ 2] + 4)"
-                toExpr = "2 [x ^ 2] (3 x - 2) (3 x + 2) (9 [x ^ 2] + 4)"
+                fromExpr = "2 [x ^ 2] <. (9 [x ^ 2] - 4) (9 [x ^ 2] + 4) .>"
+                toExpr = "2 [x ^ 2] <. <. (3 x - 2) (3 x + 2) .> (9 [x ^ 2] + 4) .>"
                 explanation {
                     key = FactorExplanation.FactorDifferenceOfSquares
                 }
 
                 step {
-                    fromExpr = "9 [x ^ 2] - 4"
-                    toExpr = "[(3 x) ^ 2] - [2 ^ 2]"
+                    fromExpr = "(9 [x ^ 2] - 4)"
+                    toExpr = "([(3 x) ^ 2] - [2 ^ 2])"
                     explanation {
                         key = FactorExplanation.RewriteDifferenceOfSquares
                     }
                 }
 
                 step {
-                    fromExpr = "[(3 x) ^ 2] - [2 ^ 2]"
-                    toExpr = "(3 x - 2) (3 x + 2)"
+                    fromExpr = "([(3 x) ^ 2] - [2 ^ 2])"
+                    toExpr = "<. (3 x - 2) (3 x + 2) .>"
                     explanation {
                         key = FactorExplanation.ApplyDifferenceOfSquaresFormula
                     }
@@ -791,7 +791,7 @@ class FactorPlansTest {
 
             step {
                 fromExpr = "(x + 2) (9 (x + 2) - 1)"
-                toExpr = "(x + 2) (9 x + 18 - 1)"
+                toExpr = "(x + 2) (<. 9 x + 18 .> - 1)"
                 explanation {
                     key = ExpandExplanation.ExpandSingleBracketAndSimplify
                 }

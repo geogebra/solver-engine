@@ -18,6 +18,7 @@ import parser.parseExpression
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.fail
 
 @DslMarker
 annotation class TestCaseBuilderMarker
@@ -224,7 +225,7 @@ class TaskCheck(private val task: Task?) :
     fun step(assert: TransformationCheck.() -> Unit) {
         val currentStep = getCurrentStep()
 
-        if (currentStep.tags?.contains(Transformation.Tag.InvisibleChange) == true) {
+        if (currentStep.isInvisibleStep()) {
             // if this is an invisible step, check the next one instead
             step(assert)
         } else {
@@ -264,7 +265,7 @@ class TransformationCheck(private val trans: Transformation?) :
         get() = null
         set(value) {
             assertNotNull(trans)
-            assertEquals(parseExpression(value!!), trans.toExpr.removeBrackets())
+            assertEquals(parseExpression(value!!), trans.toExpr)
         }
 
     private var checkedSkills: Int? = null
@@ -321,14 +322,14 @@ class TransformationCheck(private val trans: Transformation?) :
     fun invisibleStep(assert: TransformationCheck.() -> Unit) {
         val currentStep = getCurrentStep()
 
-        assert(currentStep.tags?.contains(Transformation.Tag.InvisibleChange) == true)
+        assert(currentStep.isInvisibleStep())
         checkTransformation(currentStep, assert)
     }
 
     fun step(assert: TransformationCheck.() -> Unit) {
         val currentStep = getCurrentStep()
 
-        if (currentStep.tags?.contains(Transformation.Tag.InvisibleChange) == true) {
+        if (currentStep.isInvisibleStep()) {
             // if this is an invisible step, check the next one instead
             step(assert)
         } else {
@@ -360,7 +361,9 @@ class TransformationCheck(private val trans: Transformation?) :
         if (checkedSteps != null) {
             val transSteps = trans!!.steps
             assertNotNull(transSteps) // should fail already in `step` and never here
-            assertEquals(checkedSteps, transSteps.size, "Some steps have not been checked")
+            if (transSteps.size > checkedSteps!! && transSteps.drop(checkedSteps!!).any { !it.isInvisibleStep() }) {
+                fail("Only $checkedSteps steps were checked, but the transformation has ${transSteps.size}")
+            }
         }
         if (checkedTasks != null) {
             val transTasks = trans!!.tasks
@@ -406,6 +409,9 @@ fun interface SolutionProcessor {
 
 private fun Transformation.isThroughStep() =
     steps?.let { it.size == 1 && it[0].fromExpr == fromExpr } ?: false
+
+private fun Transformation.isInvisibleStep() =
+    tags?.contains(Transformation.Tag.InvisibleChange) ?: false
 
 private fun checkTransformation(trans: Transformation?, assert: TransformationCheck.() -> Unit) {
     if (trans != null && trans.isThroughStep()) {

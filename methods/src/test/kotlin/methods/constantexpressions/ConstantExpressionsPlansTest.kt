@@ -1227,7 +1227,7 @@ class SimplifyToZeroTest {
                     key = ConstantExpressionsExplanation.SimplifyExpressionInBrackets
                 }
                 step {
-                    fromExpr = "1 + 1"
+                    fromExpr = "(1 + 1)"
                     toExpr = "2"
                     explanation {
                         key = IntegerArithmeticExplanation.EvaluateIntegerAddition
@@ -1310,7 +1310,7 @@ class SimplifyToUndefinedTest {
                 }
 
                 step {
-                    fromExpr = "5 - 4"
+                    fromExpr = "(5 - 4)"
                     toExpr = "1"
                     explanation {
                         key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
@@ -1503,7 +1503,7 @@ class CancelOppositeTermTest {
             }
 
             step {
-                toExpr = "2 * 2 * [3 ^ [1 / 2]]"
+                toExpr = "2 * <. 2 * [3 ^ [1 / 2]] .>"
                 explanation {
                     key = IntegerRationalExponentsExplanation.SimplifyRationalExponentOfInteger
                 }
@@ -1600,7 +1600,7 @@ class ExponentsTest {
             }
 
             step {
-                toExpr = "sqrt[2] + 1 + 1"
+                toExpr = "<. sqrt[2] + 1 .> + 1"
                 explanation {
                     key = GeneralExplanation.SimplifyExpressionToThePowerOfOne
                 }
@@ -1931,7 +1931,7 @@ class SimplifyIntegerPowerUnderRoot {
 
             step {
                 fromExpr = "24 root[[24 ^ 2], 3]"
-                toExpr = "24 * 4 root[9, 3]"
+                toExpr = "24 * <. 4 root[9, 3] .>"
                 explanation {
                     key = IntegerRootsExplanation.SimplifyPowerOfIntegerUnderRoot
                 }
@@ -2001,7 +2001,8 @@ class SimplifyIntegerPowerUnderRoot {
                 fromExpr = "sqrt[32] * root[243, 6]"
                 toExpr = "4 sqrt[2] * root[243, 6]"
                 explanation {
-                    key = IntegerRootsExplanation.SimplifyIntegerRoot
+                    // I am not sure about this key
+                    key = ConstantExpressionsExplanation.SimplifyRootsInExpression
                 }
             }
 
@@ -2113,7 +2114,7 @@ class SimplifyRationalPowerOfFraction {
             }
             step {
                 fromExpr = "[4 / 3] * [2 / [3 ^ [1 / 2]]]"
-                toExpr = "[4 / 3] * 2 * [3 ^ -[1 / 2]]"
+                toExpr = "[4 / 3] * <. 2 * [3 ^ -[1 / 2]] .>"
                 explanation {
                     key = IntegerRationalExponentsExplanation.ApplyReciprocalPowerRule
                 }

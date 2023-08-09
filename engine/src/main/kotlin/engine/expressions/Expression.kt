@@ -54,7 +54,9 @@ enum class Decorator {
     MissingBracket,
     PartialBracket {
         override fun decorateString(str: String) = "<. $str .>"
-    }, ;
+    },
+
+    ;
 
     open fun decorateString(str: String): String = str
     open fun decorateLatexString(str: String): String = str
@@ -244,8 +246,11 @@ open class Expression internal constructor(
             operands.zip(other.operands).all { (op1, op2) -> op1.equiv(op2) }
     }
 
-    private fun withDecorators(decorators: List<Decorator>) =
+    internal fun withDecorators(decorators: List<Decorator>) = if (decorators == this.decorators) {
+        this
+    } else {
         expressionOf(operator, operands, meta.copyMeta(decorators = decorators))
+    }
 
     fun decorate(decorator: Decorator?) = if (decorator == null) this else withDecorators(decorators + decorator)
 
@@ -300,11 +305,23 @@ open class Expression internal constructor(
     }
 
     /**
-     * Builds an expression that substitutes [newExpr] for [subExpr] in this expression if possible, otherwise returns
-     * the expression unchanged. Flattens the expression if substituting a product in a product or a sum in a sum.
+     * Substitute [newExpr] for [oldExpr] in the expression, returning the new expression.  This does not produce
+     * any flattening of sums or products (or other expressions).
+     *
+     * Brackets around [newExpr] are adjusted (removed if unnecessary, added if required and in the case of sums or
+     * products substituted into a sum or product, a [Decorator.PartialBracket] is used).
      */
-    internal fun substitute(subExpr: Expression, newExpr: Expression): Expression {
-        return when (val subOrigin = subExpr.origin) {
+    fun substitute(oldExpr: Expression, newExpr: Expression): Expression {
+        return justSubstitute(oldExpr.origin, newExpr.adjustBracketToReplace(oldExpr))
+    }
+
+    /**
+     * Builds and expression that substitutes [newExpr] for the expression at [subOrigin] in this expression without
+     * changing brackets or the structure of the expression.  This is unsafe and should not be used by anything but
+     * [substitute]
+     */
+    private fun justSubstitute(subOrigin: Origin, newExpr: Expression): Expression {
+        return when (subOrigin) {
             origin -> newExpr
             is Child -> justSubstitute(
                 subOrigin.parent.origin,
@@ -315,17 +332,54 @@ open class Expression internal constructor(
     }
 
     /**
-     * Builds and expression that substitutes [newExpr] for the expression at [subOrigin] in this expression without
-     * changing brackets or the structure of the expression.
+     * Adjust the brackets around the expression which is meant to be the new version of [oldExpression] so that
+     * when substituting it for [oldExpression] in a parent expression, no further bracket adjustment
+     * will be needed.
      */
-    private fun justSubstitute(subOrigin: Origin, newExpr: Expression): Expression {
-        return when (subOrigin) {
-            origin -> newExpr
-            is Child -> justSubstitute(
-                subOrigin.parent.origin,
-                subOrigin.parent.justReplaceNthChild(subOrigin.index, newExpr),
-            )
-            else -> this
+    private fun adjustBracketToReplace(oldExpression: Expression): Expression {
+        val origin = oldExpression.origin
+
+        return if (origin is Child) {
+            val parent = origin.parent
+            val index = origin.index
+
+            val oldBracket = oldExpression.outerBracket()
+            when {
+                parent.operator.nthChildAllowed(index, operator) -> removeBrackets()
+                oldBracket != null && canUseOldBracket(oldExpression, parent) -> withDecorators(listOf(oldBracket))
+                else -> withDecorators(listOf(fallbackBracket(parent)))
+            }
+        } else {
+            removeBrackets()
+        }
+    }
+
+    /**
+     * Given that a bracket is missing around the expression, returns the bracket that should be put around it
+     * so it can be substituted into [parent]
+     *
+     * [Decorator.PartialBracket] is used for sums in sums or products in products because we do not want to draw the
+     * brackets, even though we want to keep the grouping.
+     */
+    private fun fallbackBracket(parent: Expression): Decorator {
+        return when {
+            this is Sum && parent is Sum -> Decorator.PartialBracket
+            this is Product && parent is Product -> Decorator.PartialBracket
+            else -> Decorator.RoundBracket
+        }
+    }
+
+    /**
+     * Returns true if the expression can be substituted for [oldExpression] in [parent] without adding a bracket
+     */
+    private fun canUseOldBracket(oldExpression: Expression, parent: Expression): Boolean {
+        return when {
+            this is Sum && parent is Sum -> oldExpression is Sum
+            this is Product && parent is Product -> oldExpression is Product
+            else -> {
+                val previousBracket = oldExpression.outerBracket()
+                previousBracket != Decorator.MissingBracket && previousBracket != Decorator.PartialBracket
+            }
         }
     }
 
@@ -340,34 +394,13 @@ open class Expression internal constructor(
         for ((i, child) in children.withIndex()) {
             val newChild = child.substituteAllOccurrences(oldValue, newValue)
             if (newChild != child) {
-                newExpr = newExpr.replaceNthChild(i, newChild)
+                newExpr = newExpr.replaceNthChild(i, newChild.adjustBracketFor(operator, i))
             }
         }
         return newExpr
     }
 
-    protected open fun replaceNthChild(childIndex: Int, newChild: Expression) =
-        replaceChildren(
-            children.mapIndexed { i, op ->
-                when {
-                    i != childIndex -> op
-                    else -> {
-                        val oldBracket = op.outerBracket()
-                        val newBracket = when {
-                            operator.nthChildAllowed(i, newChild.operator) -> null
-                            oldBracket == null || oldBracket == Decorator.MissingBracket ->
-                                newChild.outerBracket() ?: Decorator.RoundBracket
-                            oldBracket == Decorator.PartialBracket && newChild.operator != op.operator ->
-                                Decorator.RoundBracket
-                            else -> oldBracket
-                        }
-                        newChild.withDecorators(listOfNotNull(newBracket))
-                    }
-                }
-            },
-        )
-
-    protected open fun justReplaceNthChild(childIndex: Int, newChild: Expression) =
+    private fun replaceNthChild(childIndex: Int, newChild: Expression) =
         replaceChildren(
             children.mapIndexed { i, op ->
                 when {

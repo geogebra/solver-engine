@@ -32,7 +32,8 @@ enum class SolverEngineExplanation : CategorisedMetadataKey {
      *      then substitute back 1/(x + 1) + 1/(x + 2) + 1/(x + 3) -> (2x + 3)/(x + 1)(x + 2) + 1/(x + 3)
      */
     SubstituteResultOfTaskSet,
-
+    InlinePartialSum,
+    InlinePartialProduct,
     ;
 
     override val category = "SolverEngine"

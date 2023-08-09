@@ -3,7 +3,6 @@ package engine.methods.stepsproducers
 import engine.context.Context
 import engine.expressions.Expression
 import engine.expressions.LabelSpace
-import engine.expressions.RootOrigin
 import engine.methods.Strategy
 import engine.operators.UndefinedOperator
 import engine.steps.Alternative
@@ -24,7 +23,7 @@ interface StepsProducer {
 /**
  * This helps build a list of chained `Transformation` instances, starting from the given Expression`.
  */
-class StepsBuilder(val context: Context, sub: Expression) {
+class StepsBuilder(val context: Context, private var sub: Expression) {
 
     private enum class Status {
         InProgress,
@@ -32,22 +31,11 @@ class StepsBuilder(val context: Context, sub: Expression) {
         Aborted,
     }
 
-    private var sub: Expression
-
     private var steps = mutableListOf<Transformation>()
 
     private var status = Status.InProgress
 
     private val alternatives = mutableListOf<Alternative>()
-
-    init {
-        // Redundant brackets are removed because the outer brackets in the expression serve no
-        // useful purpose
-        this.sub = when (sub.origin) {
-            is RootOrigin -> sub
-            else -> sub.removeBrackets()
-        }
-    }
 
     val inProgress get() = status == Status.InProgress
 
@@ -80,7 +68,7 @@ class StepsBuilder(val context: Context, sub: Expression) {
          * --> undefined ([1/ 0] is undefined)
          */
         val substitution = when (step.toExpr.operator) {
-            UndefinedOperator -> sub.substitute(sub, step.toExpr)
+            UndefinedOperator -> step.toExpr
             else -> sub.substitute(step.fromExpr, step.toExpr)
         }
 

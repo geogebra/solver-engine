@@ -166,7 +166,6 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
     ReorderProduct(reorderProduct),
     ReorderProductSingleStep(reorderProductSingleStep),
     NormalizeProductSigns(normalizeProductSigns),
-    InlinePartialProducts(inlinePartialProducts),
 }
 
 private val reorderProduct = rule {
@@ -223,22 +222,6 @@ private val reorderProductSingleStep =
             null
         }
     }
-
-/**
- * Takes advantage of the fact that [Product.replaceNthChild] preserves product signs
- */
-private val inlinePartialProducts = rule {
-    val product = condition(productContaining()) { it.isPartialProduct() }
-
-    onPattern(product) {
-        ruleResult(
-            tags = listOf(Transformation.Tag.InvisibleChange),
-            toExpr = get(product),
-            explanation = metadata(Explanation.NormalizeProducts),
-            // gmAction = do nothing, because it happens automatically
-        )
-    }
-}
 
 /** Make multiplication implicit or explicit, to make the product end up written in the
  * most standard form */

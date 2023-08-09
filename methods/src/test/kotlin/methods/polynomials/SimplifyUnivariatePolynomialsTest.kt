@@ -294,7 +294,7 @@ class SimplifyUnivariatePolynomialsTest {
                 }
 
                 step {
-                    fromExpr = "[x ^ 2] * [x ^ 3]"
+                    fromExpr = "([x ^ 2] * [x ^ 3])"
                     toExpr = "[x ^ 2 + 3]"
                     explanation {
                         key = GeneralExplanation.RewriteProductOfPowersWithSameBase
@@ -340,7 +340,7 @@ class SimplifyUnivariatePolynomialsTest {
                 }
 
                 step {
-                    fromExpr = "2 * [1 / 3]"
+                    fromExpr = "(2 * [1 / 3])"
                     toExpr = "[2 / 3]"
                     explanation {
                         key = FractionArithmeticExplanation.MultiplyAndSimplifyFractions
@@ -356,7 +356,7 @@ class SimplifyUnivariatePolynomialsTest {
                 }
 
                 step {
-                    fromExpr = "y * [y ^ 2]"
+                    fromExpr = "(y * [y ^ 2])"
                     toExpr = "[y ^ 1 + 2]"
                     explanation {
                         key = GeneralExplanation.RewriteProductOfPowersWithSameBase

@@ -4,6 +4,7 @@
 import * as solverSDK from '@geogebra/solver-sdk';
 import {
   AlternativeJson2,
+  ExpressionTree,
   jsonToTree,
   MathJson,
   MathJson2,
@@ -89,8 +90,6 @@ const renderTransformation = (trans: TransformationJson2, depth = 0): string => 
   }
 
   const [fromColoring, toColoring] = createColorMaps(trans);
-  const render = (expr: MathJson2, coloring?: LatexTransformer) =>
-    solverSDK.treeToLatex(solverSDK.jsonToTree(expr, trans.path), settings.latexSettings, coloring);
   return /* HTML */ ` <div class="trans ${isThrough ? 'through-step' : ''}">
     ${renderExplanation(trans.explanation)}
     <div class="expr">${renderExpressionMapping(trans, fromColoring, toColoring)}</div>
@@ -100,13 +99,15 @@ const renderTransformation = (trans: TransformationJson2, depth = 0): string => 
   </div>`;
 };
 
+const removeOuterBrackets = (expression: ExpressionTree) => ({ ...expression, decorators: [] });
+
 const renderExpressionMapping = (
   trans: TransformationJson2,
   fromColoring?: LatexTransformer,
   toColoring?: LatexTransformer,
 ) => {
-  const fromTree = solverSDK.jsonToTree(trans.fromExpr, trans.path);
-  const toTree = solverSDK.jsonToTree(trans.toExpr, trans.path);
+  const fromTree = removeOuterBrackets(solverSDK.jsonToTree(trans.fromExpr, trans.path));
+  const toTree = removeOuterBrackets(solverSDK.jsonToTree(trans.toExpr, trans.path));
   const fromLatex = solverSDK.treeToLatex(fromTree, settings.latexSettings, fromColoring);
   if (toTree.type === 'Void') {
     return renderExpression(fromLatex);
@@ -254,7 +255,7 @@ const renderTaskTransformation = (task: TaskJson2) => {
 const preprocessSteps = (steps: TransformationJson2[]) => {
   // We clone because we may edit the objects
   steps = preprocessInvisibleChangeSteps(clone(steps));
-  if (settings.showRearrangementSteps || steps.every((step) => isRearrangementStep(step))) {
+  if (settings.showRearrangementSteps || steps.every((step) => !isRearrangementStep(step))) {
     return steps;
   }
   // Rearrangement steps are "collapsed" with the previous step if it exists
@@ -272,21 +273,10 @@ const preprocessSteps = (steps: TransformationJson2[]) => {
 };
 
 const preprocessInvisibleChangeSteps = (steps: TransformationJson2[]) => {
-  if (settings.showInvisibleChangeSteps || steps.every((step) => isInvisibleChangeStep(step))) {
+  if (settings.showInvisibleChangeSteps) {
     return steps;
   }
-  // InvisibleChange steps are "collapsed" with the next step if it exists
-  const processedStepsReversed = [];
-  let lastProcessedStep = null;
-  for (const step of steps.reverse()) {
-    if (lastProcessedStep !== null && isInvisibleChangeStep(step)) {
-      lastProcessedStep.fromExpr = step.fromExpr;
-    } else {
-      lastProcessedStep = step;
-      processedStepsReversed.push(step);
-    }
-  }
-  return processedStepsReversed.reverse();
+  return steps.filter((step) => !isInvisibleChangeStep(step));
 };
 
 const renderWarning = (content: string) =>

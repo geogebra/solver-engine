@@ -37,6 +37,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Changed polynomial simplification to normalize polynomials at the end also in GM friendly mode (PLUT-650)
 - SolveDecimalLinearEquation is now only executed if the input contains a decimal and the output can be expressed
   without fractions (PLUT-660)
+- Make it easy to substitute sub-step nodes into the parent step expression (PLUT-658). For details see JIRA ticket.
 
 ### Removed
 

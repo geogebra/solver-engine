@@ -101,7 +101,7 @@ class ExpandPolynomialsTest {
 
             step {
                 fromExpr = "[([(x + 1) ^ 2] + 2) ^ 2]"
-                toExpr = "[([x ^ 2] + 2 x + 1 + 2) ^ 2]"
+                toExpr = "[(<. [x ^ 2] + 2 x + 1 .> + 2) ^ 2]"
                 explanation {
                     key = ExpandExplanation.ExpandBinomialSquaredAndSimplify
                 }
@@ -258,15 +258,15 @@ class ExpandPolynomialsTest {
 
                 step {
                     fromExpr = "[(2 x - 3) ^ 3]"
-                    toExpr = "[(2 x) ^ 3] + 3 * [(2 x) ^ 2] * (-3) + 3 * <. 2 x .> * [(-3) ^ 2] + [(-3) ^ 3]"
+                    toExpr = "([(2 x) ^ 3] + 3 * [(2 x) ^ 2] * (-3) + 3 * <. 2 x .> * [(-3) ^ 2] + [(-3) ^ 3])"
                     explanation {
                         key = ExpandExplanation.ExpandBinomialCubedUsingIdentity
                     }
                 }
 
                 step {
-                    fromExpr = "[(2 x) ^ 3] + 3 * [(2 x) ^ 2] * (-3) + 3 * 2 x * [(-3) ^ 2] + [(-3) ^ 3]"
-                    toExpr = "8 [x ^ 3] - 36 [x ^ 2] + 54 x - 27"
+                    fromExpr = "([(2 x) ^ 3] + 3 * [(2 x) ^ 2] * (-3) + 3 * 2 x * [(-3) ^ 2] + [(-3) ^ 3])"
+                    toExpr = "(8 [x ^ 3] - 36 [x ^ 2] + 54 x - 27)"
                     explanation {
                         key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
                     }
@@ -719,22 +719,22 @@ class ExpandPolynomialsTest {
 
             step {
                 fromExpr = "3 (x + 1) - 2 (x + 6)"
-                toExpr = "3 x + 3 - 2 (x + 6)"
+                toExpr = "<. 3 x + 3 .> - 2 (x + 6)"
                 explanation {
                     key = ExpandExplanation.ExpandSingleBracketAndSimplify
                 }
 
                 step {
                     fromExpr = "3 (x + 1)"
-                    toExpr = "3 * x + 3 * 1"
+                    toExpr = "<. 3 * x + 3 * 1 .>"
                     explanation {
                         key = ExpandExplanation.DistributeMultiplicationOverSum
                     }
                 }
 
                 step {
-                    fromExpr = "3 * x + 3 * 1"
-                    toExpr = "3 x + 3"
+                    fromExpr = "<. 3 * x + 3 * 1 .>"
+                    toExpr = "<. 3 x + 3 .>"
                     explanation {
                         key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
                     }
@@ -743,22 +743,22 @@ class ExpandPolynomialsTest {
 
             step {
                 fromExpr = "3 x + 3 - 2 (x + 6)"
-                toExpr = "3 x + 3 - 2 x - 12"
+                toExpr = "3 x + 3 + <. -2 x - 12 .>"
                 explanation {
                     key = ExpandExplanation.ExpandSingleBracketAndSimplify
                 }
 
                 step {
                     fromExpr = "-2 (x + 6)"
-                    toExpr = "(-2) * x + (-2) * 6"
+                    toExpr = "<. (-2) * x + (-2) * 6 .>"
                     explanation {
                         key = ExpandExplanation.DistributeMultiplicationOverSum
                     }
                 }
 
                 step {
-                    fromExpr = "(-2) * x + (-2) * 6"
-                    toExpr = "-2 x - 12"
+                    fromExpr = "<. (-2) * x + (-2) * 6 .>"
+                    toExpr = "<. -2 x - 12 .>"
                     explanation {
                         key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
                     }
@@ -804,15 +804,15 @@ class ExpandPolynomialsTest {
 
                 step {
                     fromExpr = "[(2 x + 3) ^ 2]"
-                    toExpr = "[(2 x) ^ 2] + 2 * <. 2 x .> * 3 + [3 ^ 2]"
+                    toExpr = "([(2 x) ^ 2] + 2 * <. 2 x .> * 3 + [3 ^ 2])"
                     explanation {
                         key = ExpandExplanation.ExpandBinomialSquaredUsingIdentity
                     }
                 }
 
                 step {
-                    fromExpr = "[(2 x) ^ 2] + 2 * 2 x * 3 + [3 ^ 2]"
-                    toExpr = "4 [x ^ 2] + 12 x + 9"
+                    fromExpr = "([(2 x) ^ 2] + 2 * 2 x * 3 + [3 ^ 2])"
+                    toExpr = "(4 [x ^ 2] + 12 x + 9)"
                     explanation {
                         key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
                     }

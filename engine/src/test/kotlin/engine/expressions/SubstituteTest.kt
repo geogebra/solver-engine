@@ -1,7 +1,9 @@
 package engine.expressions
 
 import engine.context.Context
+import engine.methods.DummyKey
 import engine.methods.Method
+import engine.methods.plan
 import engine.methods.testMethod
 import engine.steps.Transformation
 import org.junit.jupiter.api.Test
@@ -10,12 +12,19 @@ import parser.parseExpression
 class TestSubstituteMethod(val f: (Expression) -> Pair<Expression, Expression>) : Method {
     override fun tryExecute(ctx: Context, sub: Expression): Transformation {
         val (subExpr, newExpr) = f(sub)
-        val toExpr = sub.substitute(subExpr, newExpr)
         return Transformation(
             type = Transformation.Type.Rule,
-            fromExpr = sub,
-            toExpr = toExpr,
+            fromExpr = subExpr,
+            toExpr = newExpr,
         )
+    }
+}
+
+fun appliedSubstituteMethod(f: (Expression) -> Pair<Expression, Expression>) = plan {
+    explanation = DummyKey("SubstitutionMethod")
+
+    steps {
+        apply(TestSubstituteMethod(f))
     }
 }
 
@@ -23,7 +32,7 @@ class SubstituteTest {
 
     @Test
     fun testSimpleSubstitution() = testMethod {
-        method = TestSubstituteMethod { it.firstChild to parseExpression("y") }
+        method = appliedSubstituteMethod { it.firstChild to parseExpression("y") }
         inputExpr = "x + 1"
 
         check {
@@ -36,7 +45,7 @@ class SubstituteTest {
 
     @Test
     fun testSimpleSubstitution2() = testMethod {
-        method = TestSubstituteMethod { it.firstChild.secondChild to Constants.One }
+        method = appliedSubstituteMethod { it.firstChild.secondChild to Constants.One }
         inputExpr = "(x + y)(x - y)(t - 1)"
 
         check {
@@ -49,7 +58,7 @@ class SubstituteTest {
 
     @Test
     fun testSwap() = testMethod {
-        method = TestSubstituteMethod {
+        method = appliedSubstituteMethod {
             val second = it.secondChild
             val swappedSum = sumOf(
                 second.secondChild.withOrigin(Move(second.secondChild)),
@@ -71,7 +80,7 @@ class SubstituteTest {
 
     @Test
     fun testCombine() = testMethod {
-        method = TestSubstituteMethod {
+        method = appliedSubstituteMethod {
             it to Constants.Two.withOrigin(Combine(it.firstChild, it.secondChild))
         }
         inputExpr = "1 + 1"
@@ -88,7 +97,7 @@ class SubstituteTest {
 
     @Test
     fun testFactor() = testMethod {
-        method = TestSubstituteMethod {
+        method = appliedSubstituteMethod {
             it to productOf(
                 it.firstChild.secondChild.withOrigin(Factor(it.firstChild.secondChild, it.secondChild.secondChild)),
                 sumOf(
@@ -113,7 +122,7 @@ class SubstituteTest {
 
     @Test
     fun testDistribute() = testMethod {
-        method = TestSubstituteMethod {
+        method = appliedSubstituteMethod {
             val product = it.firstChild
             val x = product.firstChild.withOrigin(Distribute(product.firstChild))
             val sum = product.secondChild
@@ -142,7 +151,7 @@ class SubstituteTest {
 
     @Test
     fun testRewrittenProduct() = testMethod {
-        method = TestSubstituteMethod {
+        method = appliedSubstituteMethod {
             val x = it.secondChild.secondChild
             x to Constants.Two.withOrigin(Combine(x))
         }
@@ -159,7 +168,7 @@ class SubstituteTest {
 
     @Test
     fun testOuterBracketsRemoved() = testMethod {
-        method = TestSubstituteMethod { it to it }
+        method = appliedSubstituteMethod { it to it }
         inputExpr = "(x + 1)"
 
         check {

@@ -222,8 +222,8 @@ class IntegerArithmeticPlansTest {
                 toExpr = "34 + 60 + 6 - 44"
 
                 step {
-                    fromExpr = "4 + 10 - 3 * 5 * (-2)"
-                    toExpr = "4 + 10 - (-30)"
+                    fromExpr = "(4 + 10 - 3 * 5 * (-2))"
+                    toExpr = "(4 + 10 - (-30))"
 
                     explanation {
                         key = Explanation.EvaluateProductOfIntegers
@@ -246,13 +246,13 @@ class IntegerArithmeticPlansTest {
 
                     step {
                         fromExpr = "15 * (-2)"
-                        toExpr = "-30"
+                        toExpr = "(-30)"
                     }
                 }
 
                 step {
-                    fromExpr = "4 + 10 - (-30)"
-                    toExpr = "4 + 10 + 30"
+                    fromExpr = "(4 + 10 - (-30))"
+                    toExpr = "(4 + 10 + 30)"
 
                     explanation {
                         key = methods.general.Explanation.SimplifyDoubleMinus
@@ -260,7 +260,7 @@ class IntegerArithmeticPlansTest {
                 }
 
                 step {
-                    fromExpr = "4 + 10 + 30"
+                    fromExpr = "(4 + 10 + 30)"
                     toExpr = "44"
 
                     explanation {
@@ -293,7 +293,7 @@ class IntegerArithmeticPlansTest {
                 toExpr = "[2 ^ [2 ^ 3]]"
 
                 step {
-                    fromExpr = "1 + 1"
+                    fromExpr = "(1 + 1)"
                     toExpr = "2"
                 }
             }

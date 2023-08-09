@@ -282,7 +282,7 @@ class FractionRootsPlansTest {
 
                     step {
                         fromExpr = "[9 root[72, 4] / 2 root[[(2 * 3) ^ 4], 4]]"
-                        toExpr = "[9 root[72, 4] / 2 * 2 * 3]"
+                        toExpr = "[9 root[72, 4] / 2 * <. 2 * 3 .>]"
                         explanation {
                             key = IntegerRootsExplanation.SimplifyNthRootOfNthPower
                         }

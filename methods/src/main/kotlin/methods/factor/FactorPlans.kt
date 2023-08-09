@@ -81,33 +81,9 @@ enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
         },
     ),
 
-    FactorSquareOfBinomial(
-        plan {
-            explanation = Explanation.FactorSquareOfBinomial
+    FactorSquareOfBinomial(factorSquareOfBinomial),
 
-            steps {
-                optionally(FactorRules.FactorNegativeSignOfLeadingCoefficient)
-
-                applyAfterMaybeExtractingMinus {
-                    optionally(PolynomialRules.NormalizePolynomial)
-                    optionally(FactorRules.RewriteSquareOfBinomial)
-                    apply(FactorRules.ApplySquareOfBinomialFormula)
-                }
-            }
-        },
-    ),
-
-    FactorCubeOfBinomial(
-        plan {
-            explanation = Explanation.FactorCubeOfBinomial
-
-            steps {
-                optionally(PolynomialRules.NormalizePolynomial)
-                optionally(FactorRules.RewriteCubeOfBinomial)
-                apply(FactorRules.ApplyCubeOfBinomialFormula)
-            }
-        },
-    ),
+    FactorCubeOfBinomial(factorCubeOfBinomial),
 
     FactorDifferenceOfSquares(
         plan {
@@ -389,5 +365,33 @@ val factorizationSteps: StepsProducer = steps {
 
         // TODO figure out if there are problems with removing this option
         // option { whilePossible(polynomialSimplificationSteps) }
+    }
+}
+
+val factorSquareOfBinomial = plan {
+    explanation = Explanation.FactorSquareOfBinomial
+
+    steps {
+        optionally(FactorRules.FactorNegativeSignOfLeadingCoefficient)
+
+        applyAfterMaybeExtractingMinus {
+            optionally(PolynomialRules.NormalizePolynomial)
+            withNewLabels {
+                optionally(FactorRules.RewriteSquareOfBinomial)
+                apply(FactorRules.ApplySquareOfBinomialFormula)
+            }
+        }
+    }
+}
+
+val factorCubeOfBinomial = plan {
+    explanation = Explanation.FactorCubeOfBinomial
+
+    steps {
+        optionally(PolynomialRules.NormalizePolynomial)
+        withNewLabels {
+            optionally(FactorRules.RewriteCubeOfBinomial)
+            apply(FactorRules.ApplyCubeOfBinomialFormula)
+        }
     }
 }

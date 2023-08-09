@@ -14,7 +14,6 @@ import engine.patterns.productContaining
 import engine.patterns.sumContaining
 import engine.patterns.sumOf
 import methods.general.GeneralRules
-import methods.general.NormalizationRules
 
 interface ExpandAndSimplifyMethodsProvider {
     val singleBracketMethod: Method
@@ -27,17 +26,12 @@ interface ExpandAndSimplifyMethodsProvider {
 
 class ExpandAndSimplifier(simplificationSteps: StepsProducer) : ExpandAndSimplifyMethodsProvider {
 
-    private val simplificationWithCleanup: StepsProducer = steps {
-        whilePossible { deeply(NormalizationRules.InlinePartialProducts) }
-        optionally(simplificationSteps)
-    }
-
     override val singleBracketMethod = plan {
         explanation = Explanation.ExpandSingleBracketAndSimplify
 
         steps {
             apply(ExpandRules.DistributeMultiplicationOverSum)
-            optionally(simplificationWithCleanup)
+            optionally(simplificationSteps)
         }
     }
 
@@ -53,7 +47,7 @@ class ExpandAndSimplifier(simplificationSteps: StepsProducer) : ExpandAndSimplif
                 option(ExpandRules.ApplyFoilMethod)
                 option(ExpandRules.ExpandDoubleBrackets)
             }
-            optionally(simplificationWithCleanup)
+            optionally(simplificationSteps)
         }
     }
 
@@ -75,7 +69,7 @@ class ExpandAndSimplifier(simplificationSteps: StepsProducer) : ExpandAndSimplif
                     apply(ExpandRules.ApplyFoilMethod)
                 }
             }
-            optionally(simplificationWithCleanup)
+            optionally(simplificationSteps)
         }
     }
 
@@ -85,11 +79,11 @@ class ExpandAndSimplifier(simplificationSteps: StepsProducer) : ExpandAndSimplif
 
         steps(ResourceData(curriculum = Curriculum.EU)) {
             apply(ExpandRules.ExpandBinomialCubedUsingIdentity)
-            optionally(simplificationWithCleanup)
+            optionally(simplificationSteps)
         }
         alternative(ResourceData(gmFriendly = true)) {
             apply(ExpandRules.ExpandBinomialCubedUsingIdentity)
-            optionally(simplificationWithCleanup)
+            optionally(simplificationSteps)
         }
         alternative(ResourceData(curriculum = Curriculum.US)) {
             apply(GeneralRules.RewritePowerAsProduct)
@@ -116,7 +110,7 @@ class ExpandAndSimplifier(simplificationSteps: StepsProducer) : ExpandAndSimplif
                     apply(ExpandRules.ExpandDoubleBrackets)
                 }
             }
-            optionally(simplificationWithCleanup)
+            optionally(simplificationSteps)
         }
     }
 
