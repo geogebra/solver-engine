@@ -35,6 +35,8 @@ contents to a new release section (e.g. _[0.x]_).
 - Changed the conversion of mixed numbers to improper fractions, the transformations are no longer executed "in step"
   on the two mixed numbers, rather in turn (PLUT-621)
 - Changed polynomial simplification to normalize polynomials at the end also in GM friendly mode (PLUT-650)
+- SolveDecimalLinearEquation is now only executed if the input contains a decimal and the output can be expressed
+  without fractions (PLUT-660)
 
 ### Removed
 

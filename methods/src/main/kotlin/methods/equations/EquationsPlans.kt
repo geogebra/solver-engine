@@ -2,8 +2,10 @@ package methods.equations
 
 import engine.context.Context
 import engine.expressions.Constants
+import engine.expressions.DecimalExpression
 import engine.expressions.Equation
 import engine.expressions.Expression
+import engine.expressions.RecurringDecimalExpression
 import engine.expressions.StatementUnion
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
@@ -11,13 +13,12 @@ import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
+import engine.patterns.FindPattern
 import engine.patterns.RecurringDecimalPattern
 import engine.patterns.SignedNumberPattern
 import engine.patterns.SolutionVariablePattern
-import engine.patterns.UnsignedNumberPattern
 import engine.patterns.condition
 import engine.patterns.contradictionOf
-import engine.patterns.fractionOf
 import engine.patterns.identityOf
 import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
@@ -184,11 +185,11 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     SolveDecimalLinearEquation(
         plan {
             explanation = Explanation.SolveDecimalLinearEquation
+            pattern = FindPattern(condition { it is DecimalExpression || it is RecurringDecimalExpression })
 
             val acceptedSolutions = oneOf(
                 SignedNumberPattern(),
                 optionalNegOf(RecurringDecimalPattern()),
-                optionalNegOf(fractionOf(UnsignedNumberPattern(), UnsignedNumberPattern())),
             )
 
             resultPattern = oneOf(
