@@ -55,9 +55,14 @@ enum class GeneralExplanation : CategorisedMetadataKey {
     RemoveRedundantBracket,
     RemoveRedundantPlusSign,
 
+    /**
+     * Remove the leftmost factor of 1 in a product
+     * E.g. 1xy --> xy
+     *      x*1z*1 --> xz*1
+     *
+     * %1 is the instance of a 1 that is removed.
+     */
     RemoveUnitaryCoefficient,
-
-    EliminateOneInProduct,
 
     EliminateZeroInSum,
 

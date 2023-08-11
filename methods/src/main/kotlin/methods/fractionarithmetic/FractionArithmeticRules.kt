@@ -63,7 +63,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                     val previousTerm = factors[index - 1]
                     val argument = divideByTerm.divisor
 
-                    if (argument is Fraction || (previousTerm is Fraction && argument.hasNoFractions())) {
+                    if (argument is Fraction || (previousTerm is Fraction && argument.canBeTurnedToFraction())) {
                         val result = mutableListOf<Expression>()
                         result.addAll(factors.subList(0, index))
                         result.add(argument.inverse())
@@ -95,7 +95,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                     val previousTerm = factors[index - 1]
                     val argument = divideByTerm.divisor
 
-                    if (previousTerm.hasNoFractions() && argument.hasNoFractions()) {
+                    if (previousTerm.canBeTurnedToFraction() && argument.canBeTurnedToFraction()) {
                         val result = mutableListOf<Expression>()
                         result.addAll(factors.subList(0, index - 1))
                         result.add(fractionOf(move(previousTerm), move(argument)))
@@ -686,12 +686,9 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
     ),
 }
 
-private fun Expression.hasNoFractions(): Boolean = this !is Fraction && children.all { it.hasNoFractions() }
-
-private fun Expression.canBeTurnedToFraction(): Boolean =
-    when {
-        this is Fraction -> false
-        this is Power -> firstChild.canBeTurnedToFraction()
-        // is NullaryOperator -> true
-        else -> children.all { it.canBeTurnedToFraction() }
-    }
+private fun Expression.canBeTurnedToFraction(): Boolean = when (this) {
+    is Fraction -> false
+    is Power -> firstChild.canBeTurnedToFraction()
+    // is NullaryOperator -> true
+    else -> children.all { it.canBeTurnedToFraction() }
+}

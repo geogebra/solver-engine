@@ -128,7 +128,7 @@ enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
                     firstOf {
                         option(GeneralRules.EvaluateProductContainingZero)
                         option(DecimalRules.EvaluateDecimalProductAndDivision)
-                        option(GeneralRules.EliminateOneInProduct)
+                        option(GeneralRules.RemoveUnitaryCoefficient)
                     }
                 }
             }

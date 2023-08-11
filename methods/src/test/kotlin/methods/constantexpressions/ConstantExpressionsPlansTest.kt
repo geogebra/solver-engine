@@ -2158,6 +2158,33 @@ class SimplifyRationalPowerOfFraction {
     }
 
     @Test
+    fun `test positive rational power in denominator with unit numerator as division`() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "1 : [3 ^ [1 / 2]]"
+        check {
+            fromExpr = "1 : [3 ^ [1 / 2]]"
+            toExpr = "[3 ^ -[1 / 2]]"
+            explanation {
+                key = ConstantExpressionsExplanation.SimplifyConstantExpression
+            }
+            step {
+                fromExpr = "1 : [3 ^ [1 / 2]]"
+                toExpr = "[1 / [3 ^ [1 / 2]]]"
+                explanation {
+                    key = FractionArithmeticExplanation.RewriteDivisionAsFraction
+                }
+            }
+            step {
+                fromExpr = "[1 / [3 ^ [1 / 2]]]"
+                toExpr = "[3 ^ -[1 / 2]]"
+                explanation {
+                    key = IntegerRationalExponentsExplanation.ApplyReciprocalPowerRule
+                }
+            }
+        }
+    }
+
+    @Test
     fun `test positive rational power in denominator`() = testMethod {
         method = ConstantExpressionsPlans.SimplifyConstantExpression
         inputExpr = "[3 / [3^[1/3]]]"

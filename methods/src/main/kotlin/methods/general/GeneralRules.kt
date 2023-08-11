@@ -6,7 +6,6 @@ import engine.conditions.isDefinitelyNotZero
 import engine.conditions.sumTermsAreIncommensurable
 import engine.expressions.Constants
 import engine.expressions.DivideBy
-import engine.expressions.IntegerExpression
 import engine.expressions.Minus
 import engine.expressions.PathScope
 import engine.expressions.Product
@@ -53,7 +52,6 @@ import engine.patterns.optionalPowerOf
 import engine.patterns.plusMinusOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
-import engine.patterns.productOf
 import engine.patterns.rootOf
 import engine.patterns.stickyOptionalNegOf
 import engine.patterns.sumContaining
@@ -72,7 +70,6 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
 
     // Tidy up rules
     RemoveUnitaryCoefficient(removeUnitaryCoefficient),
-    EliminateOneInProduct(eliminateOneInProduct),
     EliminateZeroInSum(eliminateZeroInSum),
     EvaluateProductContainingZero(evaluateProductContainingZero),
     EvaluateProductDividedByZeroAsUndefined(evaluateProductDividedByZeroAsUndefined),
@@ -122,41 +119,29 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     SimplifyAbsoluteValueOfNegatedExpression(simplifyAbsoluteValueOfNegatedExpression),
 }
 
-private val removeUnitaryCoefficient =
-    rule {
-        onPattern(productContaining()) {
-            val factors = (expression as Product).children
-            val firstFactor = factors[0]
-            val otherFactors = factors.drop(1)
+private val removeUnitaryCoefficient = rule {
+    val one = FixedPattern(Constants.One)
+    val pattern = productContaining(one)
 
-            if (firstFactor == Constants.One && otherFactors.none { it is IntegerExpression }) {
-                ruleResult(
-                    toExpr = cancel(firstFactor, productOf(otherFactors)),
-                    gmAction = tap(firstFactor),
-                    explanation = metadata(Explanation.RemoveUnitaryCoefficient),
-                )
-            } else {
-                null
-            }
-        }
-    }
-
-private val eliminateOneInProduct =
-    rule {
-        val one = FixedPattern(Constants.One)
-        val pattern = productContaining(one)
-
-        onPattern(pattern) {
+    onPattern(pattern) {
+        // We need to check the result doesn't start by divide-by
+        val productWithoutOne = restOf(pattern)
+        if (productWithoutOne is DivideBy ||
+            (productWithoutOne is Product && productWithoutOne.firstChild is DivideBy)
+        ) {
+            null
+        } else {
             ruleResult(
                 toExpr = cancel(
                     mapOf(one to listOf(Scope.Expression, Scope.OuterOperator)),
-                    restOf(pattern),
+                    productWithoutOne,
                 ),
                 gmAction = tap(one),
-                explanation = metadata(Explanation.EliminateOneInProduct, move(one)),
+                explanation = metadata(Explanation.RemoveUnitaryCoefficient, move(one)),
             )
         }
     }
+}
 
 private val eliminateZeroInSum =
     rule {

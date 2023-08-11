@@ -158,7 +158,8 @@ enum class PathScope {
         val default = Expression
 
         fun fromString(stringValue: String): PathScope {
-            return values().find { it.toString() == stringValue } ?: default
+            return values().find { it.toString() == stringValue }
+                ?: throw IllegalArgumentException("invalid path scope: $stringValue")
         }
     }
 }

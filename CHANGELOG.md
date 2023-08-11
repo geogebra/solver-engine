@@ -25,6 +25,8 @@ contents to a new release section (e.g. _[0.x]_).
 - Fixed equations solvable by applying roots method followed by quadratic formula (PLUT-657)
 - Show `EvaluateExpressionAsDecimal` only when Decimal/Fraction/DivideBy is present in expression (PLUT-631)
 - Add reciprocal power rule i.e. `[1/a^n] = a^-n` and collect integers with rational exponents (PLUT-625)
+- Make sure leading factor of 1 is not removed when followed by division sign and relax rule for turning divisions into
+  fractions (PLUT-664)
 
 ### Changed
 

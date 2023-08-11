@@ -5,7 +5,6 @@ import engine.methods.testRule
 import methods.general.GeneralRules.CancelAdditiveInverseElements
 import methods.general.GeneralRules.DistributePowerOfProduct
 import methods.general.GeneralRules.DistributeSumOfPowers
-import methods.general.GeneralRules.EliminateOneInProduct
 import methods.general.GeneralRules.EliminateZeroInSum
 import methods.general.GeneralRules.EvaluateExpressionToThePowerOfZero
 import methods.general.GeneralRules.EvaluateOneToAnyPower
@@ -42,20 +41,22 @@ class GeneralRulesTest {
             check {
                 toExpr = "x"
                 shift("./1", ".")
-                cancel("./0")
+                cancel("./0", "./0:outerOp")
             }
         }
-    }
 
-    @Test
-    fun testEliminateOneInProduct() {
-        testRule("3*x*1*y*4", EliminateOneInProduct, "3xy*4", GmAction("Tap", "./2"))
-        testRule("3*x*1*y*4", EliminateOneInProduct, "3xy*4")
-        testRule("3*1*4", EliminateOneInProduct, "3*4")
-        testRule("1*x", EliminateOneInProduct, "x")
+        testRule(
+            "3*x*1*y*4",
+            GeneralRules.RemoveUnitaryCoefficient,
+            "3xy*4",
+            GmAction("Tap", "./2"),
+        )
+        testRule("3*x*1*y*4", GeneralRules.RemoveUnitaryCoefficient, "3xy*4")
+        testRule("3*1*4", GeneralRules.RemoveUnitaryCoefficient, "3*4")
+        testRule("1*x", GeneralRules.RemoveUnitaryCoefficient, "x")
 
         testMethod {
-            method = EliminateOneInProduct
+            method = GeneralRules.RemoveUnitaryCoefficient
             inputExpr = "3x*1*y"
 
             check {
@@ -63,7 +64,7 @@ class GeneralRulesTest {
 
                 shift("./0", "./0")
                 shift("./1", "./1")
-                cancel("./2:exp", "./2:outerOp")
+                cancel("./2", "./2:outerOp")
                 shift("./3", "./2")
             }
         }
