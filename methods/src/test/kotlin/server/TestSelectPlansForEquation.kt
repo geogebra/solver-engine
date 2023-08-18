@@ -5,10 +5,19 @@
 package server
 
 import methods.equations.EquationsPlans
-import methods.polynomials.PolynomialsPlans
 import org.junit.jupiter.api.Test
 
 class TestSelectPlansForEquation {
+
+    @Test
+    fun `test constant equation`() {
+        testSelectPlanApi(
+            "3 + 4 = 7",
+            setOf(
+                EquationsPlans.SolveConstantEquation,
+            ),
+        )
+    }
 
     @Test
     fun `test linear equation with fractions`() {
@@ -26,8 +35,6 @@ class TestSelectPlansForEquation {
             "3.1 x + 2.2 = 1.21",
             setOf(
                 EquationsPlans.SolveEquationInOneVariable,
-                // TODO PLUT-661
-                PolynomialsPlans.SimplifyPolynomialExpression,
             ),
         )
     }
@@ -39,8 +46,6 @@ class TestSelectPlansForEquation {
             setOf(
                 EquationsPlans.SolveEquationInOneVariable,
                 EquationsPlans.SolveDecimalLinearEquation,
-                // TODO PLUT-661
-                PolynomialsPlans.SimplifyPolynomialExpression,
             ),
         )
     }
@@ -51,8 +56,6 @@ class TestSelectPlansForEquation {
             "3.1x + 2.2[3] = 1.21",
             setOf(
                 EquationsPlans.SolveEquationInOneVariable,
-                // TODO PLUT-661
-                PolynomialsPlans.SimplifyPolynomialExpression,
             ),
         )
     }
@@ -64,8 +67,6 @@ class TestSelectPlansForEquation {
             setOf(
                 EquationsPlans.SolveEquationInOneVariable,
                 EquationsPlans.SolveDecimalLinearEquation,
-                // TODO PLUT-661
-                PolynomialsPlans.SimplifyPolynomialExpression,
             ),
         )
     }

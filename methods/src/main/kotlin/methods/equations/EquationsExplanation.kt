@@ -19,6 +19,12 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     SimplifyEquation,
 
     /**
+     * Reduce the equation to an equivalent equation which should be simpler to solve.
+     * If possible this puts the equation in the form f(x) = 0
+     */
+    ReduceEquation,
+
+    /**
      * Multiply both sides of an equation by the inverse of the leading coefficient
      * on the LHS.  When simplified this will lead to a monic polynomial on the left.
      *

@@ -669,3 +669,11 @@ private fun expressionOf(
         else -> Expression(operator, operands, meta)
     }
 }
+
+// This class is only there to be subclassed and can grow some methods so it is correct for it to be abstract
+@Suppress("UnnecessaryAbstractClass")
+abstract class ValueExpression internal constructor(
+    operator: Operator,
+    operands: List<Expression>,
+    meta: NodeMeta,
+) : Expression(operator, operands, meta)

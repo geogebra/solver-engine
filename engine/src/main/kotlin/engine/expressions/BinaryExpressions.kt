@@ -8,7 +8,7 @@ class Fraction(
     numerator: Expression,
     denominator: Expression,
     meta: NodeMeta = BasicMeta(),
-) : Expression(
+) : ValueExpression(
     operator = BinaryExpressionOperator.Fraction,
     operands = listOf(numerator, denominator),
     meta,
@@ -23,7 +23,7 @@ class Power(
     base: Expression,
     exponent: Expression,
     meta: NodeMeta = BasicMeta(),
-) : Expression(
+) : ValueExpression(
     operator = BinaryExpressionOperator.Power,
     operands = listOf(base, exponent),
     meta,
@@ -50,7 +50,7 @@ class Root(
     radicand: Expression,
     index: Expression,
     meta: NodeMeta = BasicMeta(),
-) : Expression(
+) : ValueExpression(
     operator = BinaryExpressionOperator.Root,
     operands = listOf(radicand, index),
     meta,
@@ -68,7 +68,7 @@ class PercentageOf(
     part: Expression,
     base: Expression,
     meta: NodeMeta = BasicMeta(),
-) : Expression(
+) : ValueExpression(
     operator = BinaryExpressionOperator.PercentageOf,
     operands = listOf(part, base),
     meta = meta,

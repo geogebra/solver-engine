@@ -51,7 +51,7 @@ private class FirstOfRunner(val sub: Expression, val ctx: Context) : FirstOfBuil
 
         val sequence = sequenceGenerator(sub)
         for (elem in sequence) {
-            val currentSteps = ProceduralPipeline { optionGenerator(elem) }.produceSteps(ctx, sub)
+            val currentSteps = ProceduralPipeline({ optionGenerator(elem) }).produceSteps(ctx, sub)
             if (currentSteps != null) {
                 steps = currentSteps
                 break

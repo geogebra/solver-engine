@@ -41,6 +41,8 @@ contents to a new release section (e.g. _[0.x]_).
   without fractions (PLUT-660)
 - Make it easy to substitute sub-step nodes into the parent step expression (PLUT-658). For details see JIRA ticket.
 - SDK: Parse latex/ascii `3 x/2 x` as `3 [x/2] x`. Also, parse latex/ascii `(1+2)/x` as `[1+2 / x]` (SP-133)
+- Simplification plans now only apply to expressions, not equations. The equation solving plan returns a simplified
+  version of the equation if possible even when it can't solve the equation (PLUT-661)
 
 ### Removed
 

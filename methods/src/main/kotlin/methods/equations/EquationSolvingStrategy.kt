@@ -10,6 +10,7 @@ import engine.methods.PublicStrategy
 import engine.methods.Strategy
 import engine.methods.StrategyFamily
 import engine.methods.stepsproducers.StepsProducer
+import engine.methods.stepsproducers.optionalSteps
 import engine.methods.stepsproducers.steps
 import engine.methods.stepsproducers.whileStrategiesAvailableFirstOf
 import methods.constantexpressions.ConstantExpressionsPlans
@@ -251,6 +252,18 @@ enum class EquationSolvingStrategy(
         },
     ),
 
+    Fallback(
+        family = Family.FALLBACK,
+        priority = -1,
+        explanation = EquationsExplanation.ReduceEquation,
+        steps = optionalSteps {
+            optionally(solvablePlansForEquations.moveEverythingToTheLeftAndSimplify)
+            optionally {
+                applyTo(PolynomialRules.NormalizePolynomial) { it.firstChild }
+            }
+        },
+    ),
+
     ;
 
     enum class Family : StrategyFamily {
@@ -260,6 +273,7 @@ enum class EquationSolvingStrategy(
         SEPARABLE,
         PLUSMINUS,
         CONSTANT,
+        FALLBACK,
     }
 
     override fun isIncompatibleWith(other: Strategy): Boolean {
@@ -292,6 +306,7 @@ private val separateFactoredEquationSteps = steps {
     apply(EquationsRules.SeparateFactoredEquation)
     apply(EquationsPlans.SolveEquationUnion)
 }
+
 private val resolvePlusminusSteps = steps {
     check { !it.hasSingleValue() }
     optionally(solvablePlansForEquations.solvableRearrangementSteps)
@@ -336,6 +351,8 @@ internal val solveEquationInOneVariable = lazy {
         option(solvablePlansForEquations.coefficientRemovalSteps)
 
         option(PolynomialsPlans.ExpandPolynomialExpressionWithoutNormalization)
+
+        fallback(EquationSolvingStrategy.Fallback)
     }
 }
 

@@ -101,9 +101,10 @@ private class WhileStrategiesAvailableFirstOfRunner(val builder: StepsBuilder, a
         if (strategy in remainingStrategies) {
             val result = strategy.steps.produceSteps(builder.context, builder.lastSub)
             if (result != null) {
-                builder.addAlternative(strategy, result)
-                remainingStrategies.removeAll { it == strategy || it.isIncompatibleWith(strategy) }
-                roundSucceeded = true
+                val added = builder.addAlternative(strategy, result)
+                if (added) {
+                    remainingStrategies.removeAll { it == strategy || it.isIncompatibleWith(strategy) }
+                }
             }
         }
     }
@@ -120,6 +121,11 @@ private class WhileStrategiesAvailableFirstOfRunner(val builder: StepsBuilder, a
             builder.addSteps(steps)
             roundSucceeded = true
         }
+    }
+
+    override fun fallback(strategy: Strategy) {
+        if (roundSucceeded || builder.getAlternatives().isNotEmpty()) return
+        option(strategy)
     }
 
     fun roundFailed(): Boolean {

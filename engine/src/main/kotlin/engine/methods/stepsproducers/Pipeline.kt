@@ -23,9 +23,12 @@ internal const val MAX_WHILE_POSSIBLE_ITERATIONS = 100
  */
 class TooManyIterationsException(msg: String) : RuntimeException(msg)
 
-internal class ProceduralPipeline(val init: PipelineBuilder.() -> Unit) : StepsProducer {
+internal class ProceduralPipeline(
+    val init: PipelineBuilder.() -> Unit,
+    private val optionalSteps: Boolean = false,
+) : StepsProducer {
     override fun produceSteps(ctx: Context, sub: Expression): List<Transformation>? {
-        val builder = StepsBuilder(ctx, sub)
+        val builder = StepsBuilder(ctx, sub, optionalSteps = optionalSteps)
         val runner = PipelineRunner(builder, ctx)
         runner.init()
         return builder.getFinalSteps()
@@ -277,3 +280,5 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
  * Type-safe builder to create a [StepsProducer] using the [PipelineBuilder] DSL.
  */
 fun steps(init: PipelineBuilder.() -> Unit): StepsProducer = ProceduralPipeline(init)
+
+fun optionalSteps(init: PipelineBuilder.() -> Unit): StepsProducer = ProceduralPipeline(init, optionalSteps = true)

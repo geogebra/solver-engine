@@ -12,7 +12,7 @@ import java.math.BigInteger
 class IntegerExpression(
     val value: BigInteger,
     meta: NodeMeta = BasicMeta(),
-) : Expression(
+) : ValueExpression(
     operator = IntegerOperator(value),
     operands = emptyList(),
     meta,
@@ -28,7 +28,7 @@ class IntegerExpression(
 class DecimalExpression(
     val value: BigDecimal,
     meta: NodeMeta = BasicMeta(),
-) : Expression(
+) : ValueExpression(
     operator = DecimalOperator(value),
     operands = emptyList(),
     meta,
@@ -44,7 +44,7 @@ class DecimalExpression(
 class RecurringDecimalExpression(
     val value: RecurringDecimal,
     meta: NodeMeta = BasicMeta(),
-) : Expression(
+) : ValueExpression(
     operator = RecurringDecimalOperator(value),
     operands = emptyList(),
     meta,
@@ -62,7 +62,7 @@ class MixedNumberExpression(
     val numerator: IntegerExpression,
     val denominator: IntegerExpression,
     meta: NodeMeta = BasicMeta(),
-) : Expression(
+) : ValueExpression(
     operator = MixedNumberOperator,
     operands = listOf(integerPart, numerator, denominator),
     meta,

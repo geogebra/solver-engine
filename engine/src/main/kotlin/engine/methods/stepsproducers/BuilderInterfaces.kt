@@ -159,4 +159,6 @@ interface WhileStrategiesAvailableFirstOfBuilder {
     fun option(init: PipelineBuilder.() -> Unit)
 
     fun option(stepsProducer: StepsProducer)
+
+    fun fallback(strategy: Strategy)
 }

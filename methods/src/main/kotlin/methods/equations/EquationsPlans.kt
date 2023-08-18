@@ -109,7 +109,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 apply(EquationsRules.CompleteTheSquare)
-                optionally(PolynomialsPlans.SimplifyPolynomialExpression)
+                applyToChildren(PolynomialsPlans.SimplifyPolynomialExpression)
             }
         },
     ),
@@ -211,7 +211,12 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     SolveEquationInOneVariable(
         object : CompositeMethod() {
             override fun run(ctx: Context, sub: Expression): Transformation? {
-                if (sub.variables.count() != 1) return null
+                if (sub.variables.count() != 1 ||
+                    ctx.solutionVariables.toSet() != sub.variables ||
+                    sub !is Equation
+                ) {
+                    return null
+                }
                 return solveEquationInOneVariable.value.run(ctx, sub)
             }
         },

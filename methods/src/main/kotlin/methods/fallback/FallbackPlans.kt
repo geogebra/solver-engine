@@ -18,8 +18,11 @@ import engine.steps.metadata.metadata
 import methods.algebra.AlgebraPlans
 import methods.approximation.ApproximationPlans
 import methods.constantexpressions.ConstantExpressionsPlans
+import methods.equations.EquationsPlans
 import methods.factor.FactorPlans
+import methods.inequalities.InequalitiesPlans
 import methods.inequalities.solveConstantInequalitySteps
+import methods.inequations.InequationsPlans
 import methods.integerarithmetic.IntegerArithmeticPlans
 
 enum class FallbackPlans(override val runner: CompositeMethod) : RunnerMethod {
@@ -75,13 +78,18 @@ enum class FallbackPlans(override val runner: CompositeMethod) : RunnerMethod {
     @PublicMethod(hiddenFromList = true)
     ExpressionIsFullySimplified(
         plan {
-
             specificPlans(
                 ConstantExpressionsPlans.SimplifyConstantExpression,
                 IntegerArithmeticPlans.EvaluateArithmeticExpression,
                 ApproximationPlans.EvaluateExpressionNumerically,
                 AlgebraPlans.SimplifyAlgebraicExpression,
                 FactorPlans.FactorPolynomialInOneVariable,
+                EquationsPlans.SolveConstantEquation,
+                EquationsPlans.SolveEquationInOneVariable,
+                InequalitiesPlans.SolveConstantInequality,
+                InequalitiesPlans.SolveLinearInequality,
+                InequationsPlans.SolveConstantInequation,
+                InequationsPlans.SolveInequationInOneVariable,
                 QuadraticIsIrreducible,
             )
 

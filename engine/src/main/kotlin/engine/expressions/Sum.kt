@@ -12,7 +12,7 @@ import java.math.BigInteger
 class Sum(
     terms: List<Expression>,
     meta: NodeMeta = BasicMeta(),
-) : Expression(
+) : ValueExpression(
     operator = SumOperator,
     operands = terms,
     meta,

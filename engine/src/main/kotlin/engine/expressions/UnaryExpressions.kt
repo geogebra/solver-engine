@@ -6,7 +6,7 @@ import engine.sign.Sign
 class Minus(
     argument: Expression,
     meta: NodeMeta = BasicMeta(),
-) : Expression(
+) : ValueExpression(
     operator = UnaryExpressionOperator.Minus,
     operands = listOf(argument),
     meta,
@@ -19,7 +19,7 @@ class Minus(
 class Plus(
     argument: Expression,
     meta: NodeMeta = BasicMeta(),
-) : Expression(
+) : ValueExpression(
     operator = UnaryExpressionOperator.Plus,
     operands = listOf(argument),
     meta,
@@ -32,7 +32,7 @@ class Plus(
 class PlusMinus(
     argument: Expression,
     meta: NodeMeta = BasicMeta(),
-) : Expression(
+) : ValueExpression(
     operator = UnaryExpressionOperator.PlusMinus,
     operands = listOf(argument),
     meta,
@@ -49,7 +49,7 @@ class PlusMinus(
 class AbsoluteValue(
     argument: Expression,
     meta: NodeMeta = BasicMeta(),
-) : Expression(
+) : ValueExpression(
     operator = UnaryExpressionOperator.AbsoluteValue,
     operands = listOf(argument),
     meta,
@@ -62,7 +62,10 @@ class AbsoluteValue(
     }
 }
 
-class SquareRoot(argument: Expression, meta: NodeMeta = BasicMeta()) : Expression(
+class SquareRoot(
+    argument: Expression,
+    meta: NodeMeta = BasicMeta(),
+) : ValueExpression(
     operator = UnaryExpressionOperator.SquareRoot,
     operands = listOf(argument),
     meta,
@@ -75,7 +78,7 @@ class SquareRoot(argument: Expression, meta: NodeMeta = BasicMeta()) : Expressio
 class Percentage(
     argument: Expression,
     meta: NodeMeta = BasicMeta(),
-) : Expression(
+) : ValueExpression(
     operator = UnaryExpressionOperator.Percentage,
     operands = listOf(argument),
     meta = meta,

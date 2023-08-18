@@ -9,7 +9,11 @@ class Variable(
     val variableName: String,
     val subscript: String? = null,
     meta: NodeMeta = BasicMeta(),
-) : Expression(VariableOperator(variableName, subscript), listOf(), meta) {
+) : ValueExpression(
+    operator = VariableOperator(variableName, subscript),
+    operands = listOf(),
+    meta = meta,
+) {
     override fun signOf() = Sign.UNKNOWN
 
     override fun toJson(): List<Any> {

@@ -7,6 +7,7 @@ import engine.expressions.ExpressionWithConstraint
 import engine.expressions.Fraction
 import engine.expressions.Product
 import engine.expressions.SetSolution
+import engine.expressions.ValueExpression
 import engine.expressions.inequationOf
 import engine.expressions.xp
 import engine.methods.CompositeMethod
@@ -64,6 +65,7 @@ enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
     SimplifyAlgebraicExpression(
         plan {
             explanation = Explanation.SimplifyAlgebraicExpression
+            pattern = condition { it is ValueExpression }
             specificPlans(
                 PolynomialsPlans.SimplifyPolynomialExpression,
                 ComputeDomainAndSimplifyAlgebraicExpression,

@@ -10,7 +10,7 @@ class Product(
     factors: List<Expression>,
     val forcedSigns: List<Int> = emptyList(),
     meta: NodeMeta = BasicMeta(),
-) : Expression(
+) : ValueExpression(
     operator = ProductOperator(forcedSigns),
     operands = factors,
     meta,

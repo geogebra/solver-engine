@@ -13,7 +13,7 @@ import java.util.logging.Level
  * This is used by plans to provide them with a list of steps.  There are a number of standard `StepsProducer` in this
  * package that can be combined.
  */
-interface StepsProducer {
+fun interface StepsProducer {
     /**
      * Produces non-empty list of `Transformation` instances or null.
      */
@@ -23,7 +23,11 @@ interface StepsProducer {
 /**
  * This helps build a list of chained `Transformation` instances, starting from the given Expression`.
  */
-class StepsBuilder(val context: Context, private var sub: Expression) {
+class StepsBuilder(
+    val context: Context,
+    private var sub: Expression,
+    private val optionalSteps: Boolean = false,
+) {
 
     private enum class Status {
         InProgress,
@@ -107,12 +111,19 @@ class StepsBuilder(val context: Context, private var sub: Expression) {
         }
     }
 
-    fun addAlternative(strategy: Strategy, steps: List<Transformation>) {
-        if (inProgress) {
+    /**
+     * Returns whether an alternative was actually added.  If there are currently no
+     * steps in the StepsBuilder and no steps are added then an alternative will not be
+     * added.
+     */
+    fun addAlternative(strategy: Strategy, steps: List<Transformation>): Boolean {
+        if (inProgress && (steps.isNotEmpty() || this.steps.isNotEmpty())) {
             val alternativeBuilder = copy()
             alternativeBuilder.addSteps(steps)
             alternatives.add(Alternative(strategy, alternativeBuilder.steps))
+            return true
         }
+        return false
     }
 
     /**
@@ -136,16 +147,11 @@ class StepsBuilder(val context: Context, private var sub: Expression) {
     /**
      * Returns the list of steps added to the builder, or null if `abort()` was called at least once.
      */
-    fun getFinalSteps(): List<Transformation>? = if (status == Status.Aborted || steps.isEmpty()) null else steps
+    fun getFinalSteps(): List<Transformation>? = when (status) {
+        Status.Aborted -> if (optionalSteps) emptyList() else null
+        else -> if (steps.isNotEmpty() || optionalSteps) steps else null
+        // We should make sure the status is not InProgress, but currently that is often not true
+    }
 
     fun getAlternatives(): List<Alternative> = alternatives
-}
-
-/**
- * Provides a convenient way to use a `StepsBuilder`.
- */
-fun buildSteps(ctx: Context, sub: Expression, init: StepsBuilder.() -> Unit): List<Transformation>? {
-    val builder = StepsBuilder(ctx, sub)
-    builder.init()
-    return builder.getFinalSteps()
 }
