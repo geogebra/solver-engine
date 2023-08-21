@@ -126,7 +126,6 @@ enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
             steps {
                 whilePossible {
                     firstOf {
-                        option(GeneralRules.EvaluateProductContainingZero)
                         option(DecimalRules.EvaluateDecimalProductAndDivision)
                         option(GeneralRules.RemoveUnitaryCoefficient)
                     }
@@ -209,6 +208,9 @@ val decimalEvaluationSteps: StepsProducer = steps {
     firstOf {
         option { deeply(GeneralRules.EvaluateProductDividedByZeroAsUndefined, deepFirst = true) }
         option { deeply(GeneralRules.SimplifyZeroDenominatorFractionToUndefined, deepFirst = true) }
+
+        option { deeply(GeneralRules.EvaluateProductContainingZero) }
+
         option { deeply(inlineSumsAndProducts, deepFirst = true) }
 
         option { deeply(evaluateDecimalAbsoluteValue) }

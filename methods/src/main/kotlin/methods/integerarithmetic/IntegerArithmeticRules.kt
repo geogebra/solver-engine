@@ -22,7 +22,6 @@ import engine.patterns.sumContaining
 import engine.steps.metadata.metadata
 import engine.utility.isEven
 import engine.utility.isOdd
-import java.math.BigInteger
 
 private val MAX_POWER = 64.toBigInteger()
 
@@ -35,9 +34,8 @@ enum class IntegerArithmeticRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(sum) {
                 val explanation = when {
-                    getValue(term1) > BigInteger.ZERO && getValue(term2) < BigInteger.ZERO ->
+                    !term1.isNeg() && term2.isNeg() ->
                         metadata(Explanation.EvaluateIntegerSubtraction, move(term1), move(term2.unsignedPattern))
-
                     else ->
                         metadata(Explanation.EvaluateIntegerAddition, move(term1), move(term2))
                 }

@@ -279,7 +279,7 @@ open class MappedExpressionBuilder(
     fun Expression.wrapIf(pattern: OptionalWrappingPattern, wrapper: (Expression) -> Expression) =
         if (pattern.isWrapping()) wrapper(this) else this
 
-    fun OptionalNegPattern<Pattern>.isNeg() = this.isNeg(match)
+    fun OptionalNegPattern<*>.isNeg() = this.isNeg(match)
 
     /**
      * return a list of mapped expression of, prime factors of `integer`

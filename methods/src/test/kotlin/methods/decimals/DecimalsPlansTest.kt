@@ -533,4 +533,31 @@ class EvaluateExpressionAsDecimalTest {
             }
         }
     }
+
+    @Test
+    fun testNegativeProductWithZero() = testMethod {
+        method = DecimalPlans.EvaluateExpressionAsDecimal
+        inputExpr = "-0 * 3 + 0.5"
+        check {
+            fromExpr = "-0 * 3 + 0.5"
+            toExpr = "0.5"
+            explanation {
+                key = DecimalsExplanation.EvaluateExpressionAsDecimal
+            }
+            step {
+                fromExpr = "-0 * 3 + 0.5"
+                toExpr = "0 + 0.5"
+                explanation {
+                    key = GeneralExplanation.EvaluateProductContainingZero
+                }
+            }
+            step {
+                fromExpr = "0 + 0.5"
+                toExpr = "0.5"
+                explanation {
+                    key = DecimalsExplanation.EvaluateDecimalAddition
+                }
+            }
+        }
+    }
 }

@@ -162,7 +162,11 @@ private val eliminateZeroInSum =
     }
 
 /**
- * 0 * anyX --> 0
+ * Simplify any product containing zero to zero.
+ * Only do the simplification if we are sure all the terms are defined, to avoid simplifying
+ * 0 * [1 / 1 - 1] to 0 (it should be undefined).
+ * If the product is at the initial position in a sum then remove also the leading minus,
+ * i.e. turn -3*0 + 4 into 0 + 4 instead of -0 + 4.
  */
 private val evaluateProductContainingZero =
     rule {

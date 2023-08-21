@@ -324,6 +324,10 @@ describe('gmAction tests', () => {
             'sqrt[3](19*19^2)',
             'sqrt[3](2^3*19*19^2)',
             'sqrt[3](2*19*2^2*19^2)',
+
+            // Ágoston: solver turns this into 0+0.5, while GM turns it to -0+0.5
+            // To be improved in GM according to Erik
+            '-0*3+0.5',
           ].includes(fromExprAscii)
         ) {
           dummyTest();
