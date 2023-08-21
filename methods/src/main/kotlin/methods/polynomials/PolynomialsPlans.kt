@@ -4,7 +4,7 @@ import engine.context.ResourceData
 import engine.expressions.Minus
 import engine.expressions.Power
 import engine.expressions.Product
-import engine.expressions.ValueExpression
+import engine.expressions.isPolynomial
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
@@ -50,8 +50,8 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
     SimplifyPolynomialExpression(
         plan {
             explanation = Explanation.SimplifyPolynomialExpressionInOneVariable
+            pattern = condition { it.isPolynomial() }
             specificPlans(ConstantExpressionsPlans.SimplifyConstantExpression)
-            pattern = condition { it is ValueExpression }
 
             steps {
                 whilePossible { deeply(simpleTidyUpSteps) }

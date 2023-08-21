@@ -4,12 +4,13 @@ import engine.expressions.Constants
 import engine.expressions.Expression
 import engine.expressions.Fraction
 import engine.expressions.IntegerExpression
-import engine.expressions.Minus
 import engine.expressions.Power
 import engine.expressions.areEquivalentSums
 import engine.expressions.asInteger
 import engine.expressions.explicitProductOf
 import engine.expressions.fractionOf
+import engine.expressions.isRationalExpression
+import engine.expressions.isSignedFraction
 import engine.expressions.productOf
 import engine.expressions.simplifiedPowerOf
 import engine.expressions.simplifiedProductOf
@@ -26,6 +27,7 @@ import engine.patterns.FractionPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.commutativeSumContaining
 import engine.patterns.condition
+import engine.patterns.divideBy
 import engine.patterns.fractionOf
 import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
@@ -40,6 +42,7 @@ import methods.fractionarithmetic.FractionArithmeticPlans
 import methods.fractionarithmetic.FractionArithmeticRules
 import methods.general.GeneralRules
 import methods.polynomials.PolynomialsPlans
+import methods.polynomials.polynomialSimplificationSteps
 import java.math.BigInteger
 
 enum class RationalExpressionsPlans(override val runner: CompositeMethod) : RunnerMethod {
@@ -90,8 +93,8 @@ enum class RationalExpressionsPlans(override val runner: CompositeMethod) : Runn
         plan {
             explanation = Explanation.AddTermAndRationalExpression
             pattern = commutativeSumContaining(
-                condition { it !is Fraction && !(it is Minus && it.argument is Fraction) },
-                optionalNegOf(FractionPattern()),
+                condition { !it.isSignedFraction() },
+                condition { it.isRationalExpression() },
             )
 
             partialExpressionSteps {
@@ -112,6 +115,7 @@ enum class RationalExpressionsPlans(override val runner: CompositeMethod) : Runn
             explanation = Explanation.SimplifyRationalExpression
 
             steps {
+                optionally(FractionArithmeticRules.RewriteDivisionAsFraction)
                 apply(rationalExpressionSimplificationSteps)
             }
         },
@@ -140,6 +144,18 @@ enum class RationalExpressionsPlans(override val runner: CompositeMethod) : Runn
             }
         },
     ),
+
+    SimplifyDivisionOfPolynomial(
+        plan {
+            explanation = Explanation.SimplifyDivisionOfPolynomial
+            pattern = productContaining(sumContaining(), divideBy(condition { it !is Fraction }))
+
+            partialExpressionSteps {
+                apply(RationalExpressionsRules.DistributeDivisionOverSum)
+                applyToChildren(SimplifyRationalExpression)
+            }
+        },
+    ),
 }
 
 private val factoredExpressionPattern = optionalNegOf(oneOf(productContaining(), powerOf(AnyPattern(), AnyPattern())))
@@ -148,6 +164,7 @@ private val rationalExpressionSimplificationSteps = steps {
     optionally(RationalExpressionsPlans.FactorNumeratorOfFraction)
     optionally(RationalExpressionsPlans.FactorDenominatorOfFraction)
     apply(FractionArithmeticPlans.SimplifyFraction)
+    whilePossible(polynomialSimplificationSteps)
 }
 
 private val addRationalExpressions = taskSet {
@@ -199,7 +216,7 @@ private val addRationalExpressions = taskSet {
             ),
             explanation = metadata(Explanation.AddLikeRationalExpressions),
         ) {
-            optionally(PolynomialsPlans.SimplifyPolynomialExpression)
+            optionally { applyToKind<Fraction>(PolynomialsPlans.SimplifyPolynomialExpression) { it.numerator } }
             optionally(rationalExpressionSimplificationSteps)
         }
 

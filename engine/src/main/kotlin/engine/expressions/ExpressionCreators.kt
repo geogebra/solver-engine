@@ -10,14 +10,13 @@ import engine.operators.DefaultProductOperator
 import engine.operators.DefiniteIntegralOperator
 import engine.operators.DerivativeOperator
 import engine.operators.DoubleComparisonOperator
-import engine.operators.EquationSystemOperator
 import engine.operators.IndefiniteIntegralOperator
-import engine.operators.InequalitySystemOperator
 import engine.operators.IntervalOperator
 import engine.operators.MatrixOperator
 import engine.operators.Operator
 import engine.operators.SetOperators
 import engine.operators.SolutionOperator
+import engine.operators.StatementSystemOperator
 import engine.operators.StatementUnionOperator
 import engine.operators.SubtractEquationsOperator
 import engine.operators.SumOperator
@@ -320,12 +319,8 @@ fun closedOpenIntervalOf(lhs: Expression, rhs: Expression) =
 fun closedIntervalOf(lhs: Expression, rhs: Expression) =
     buildExpression(IntervalOperator(closedLeft = true, closedRight = true), listOf(lhs, rhs))
 
-fun equationSystemOf(equations: List<Expression>) = buildExpression(EquationSystemOperator, equations)
-fun equationSystemOf(vararg equations: Expression) = equationSystemOf(equations.asList())
-
-fun inequalitySystemOf(inequations: List<Expression>) = buildExpression(InequalitySystemOperator, inequations)
-
-fun inequalitySystemOf(vararg inequations: Expression) = inequalitySystemOf(inequations.asList())
+fun statementSystemOf(equations: List<Expression>) = buildExpression(StatementSystemOperator, equations)
+fun statementSystemOf(vararg equations: Expression) = statementSystemOf(equations.asList())
 
 fun statementUnionOf(vararg equations: Expression) =
     buildExpression(StatementUnionOperator, equations.asList())

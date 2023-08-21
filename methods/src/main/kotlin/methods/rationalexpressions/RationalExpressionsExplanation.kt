@@ -78,6 +78,20 @@ enum class RationalExpressionsExplanation : CategorisedMetadataKey {
      * E.g. (2x / (1 + x))^2 -> 4x^2 / (1 + x)^2
      */
     SimplifyPowerOfRationalExpression,
+
+    /**
+     * Distribute a division over a sum.
+     * E.g. (3x^3 + 2x^2) : 5x -> 3x^3 : 5x + 2x^2 : 5x
+     */
+    DistributeDivisionOverSum,
+
+    /**
+     * Distribute a division over a sum then simplify the terms
+     * E.g. (3x^3 + 2x^2) : 5x
+     *      -> 3x^3 : 5x + 2x^2 : 5x
+     *      -> 3/5 x^2 + 2/5 x
+     */
+    SimplifyDivisionOfPolynomial,
     ;
 
     override val category = "RationalExpressions"

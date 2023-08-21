@@ -17,6 +17,7 @@ import engine.expressions.contradictionOf
 import engine.expressions.curlyBracketOf
 import engine.expressions.definiteIntegralOf
 import engine.expressions.derivativeOf
+import engine.expressions.divideBy
 import engine.expressions.equationOf
 import engine.expressions.explicitProductOf
 import engine.expressions.expressionOf
@@ -27,7 +28,6 @@ import engine.expressions.greaterThanOf
 import engine.expressions.identityOf
 import engine.expressions.implicitSolutionOf
 import engine.expressions.indefiniteIntegralOf
-import engine.expressions.inequalitySystemOf
 import engine.expressions.inequationOf
 import engine.expressions.lessThanEqualOf
 import engine.expressions.lessThanOf
@@ -51,6 +51,7 @@ import engine.expressions.setUnionOf
 import engine.expressions.sinOf
 import engine.expressions.squareBracketOf
 import engine.expressions.squareRootOf
+import engine.expressions.statementSystemOf
 import engine.expressions.statementUnionOf
 import engine.expressions.sumOf
 import engine.expressions.tupleOf
@@ -169,6 +170,20 @@ class ParserTest {
         parsesTo("2[2^2]", rawProductOf(xp(2), powerOf(xp(2), xp(2))))
         // Should give warning but be accepted
         parsesTo("2[1 / 3]", rawProductOf(xp(2), fractionOf(xp(1), xp(3))))
+        parsesTo("abcf", rawProductOf(xp("a"), xp("b"), xp("c"), xp("f")))
+    }
+
+    @Test
+    fun testDivisions() {
+        parsesTo(
+            "abc : cf",
+            rawProductOf(
+                xp("a"),
+                xp("b"),
+                xp("c"),
+                divideBy(missingBracketOf(rawProductOf(xp("c"), xp("f")))),
+            ),
+        )
     }
 
     @Test
@@ -359,7 +374,7 @@ class ParserTest {
     fun testInequalitySystem() {
         parsesTo(
             "3x + 4 > 4x - 5, 3x + 5 < 6x + 7",
-            inequalitySystemOf(
+            statementSystemOf(
                 greaterThanOf(
                     rawSumOf(rawProductOf(xp(3), xp("x")), xp(4)),
                     rawSumOf(rawProductOf(xp(4), xp("x")), negOf(xp(5))),

@@ -5,7 +5,6 @@ import engine.operators.Comparator
 import engine.operators.ComparisonOperator
 import engine.operators.DecimalOperator
 import engine.operators.DoubleComparisonOperator
-import engine.operators.EquationSystemOperator
 import engine.operators.ExpressionOperator
 import engine.operators.ExpressionWithConstraintOperator
 import engine.operators.IntegerOperator
@@ -19,6 +18,7 @@ import engine.operators.RecurringDecimalOperator
 import engine.operators.RenderContext
 import engine.operators.SetOperators
 import engine.operators.SolutionOperator
+import engine.operators.StatementSystemOperator
 import engine.operators.StatementUnionOperator
 import engine.operators.StatementWithConstraintOperator
 import engine.operators.SumOperator
@@ -526,6 +526,11 @@ fun Expression.isSignedInteger() = this is IntegerExpression || (this is Minus &
 
 fun Expression.isSignedFraction() = this is Fraction || (this is Minus && firstChild is Fraction)
 
+fun Expression.isRationalExpression(): Boolean {
+    return (this is Fraction && !denominator.isConstant()) ||
+        (this is Minus && firstChild is Fraction && !(firstChild as Fraction).denominator.isConstant())
+}
+
 fun Expression.inverse(): Expression = when {
     this == Constants.One -> this
     this is Minus -> simplifiedNegOf(firstChild.inverse())
@@ -582,9 +587,10 @@ fun Expression.variablePowerBase(): Variable? {
     }
 }
 
-fun Expression.isPolynomial(): Boolean = when {
-    this is Fraction -> numerator.isPolynomial() && denominator.isConstant()
-    this is DivideBy -> divisor.isConstant()
+fun Expression.isPolynomial(): Boolean = when (this) {
+    !is ValueExpression -> false
+    is Fraction -> numerator.isPolynomial() && denominator.isConstant()
+    is DivideBy -> divisor.isConstant()
     else -> children.all { it.isPolynomial() }
 }
 
@@ -660,7 +666,7 @@ private fun expressionOf(
         StatementWithConstraintOperator -> StatementWithConstraint(operands[0], operands[1], meta)
         StatementUnionOperator -> StatementUnion(operands, meta)
 
-        EquationSystemOperator -> EquationSystem(operands, meta)
+        StatementSystemOperator -> StatementSystem(operands, meta)
 
         is NameOperator -> Name(operator.value, meta)
 

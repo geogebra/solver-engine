@@ -4,16 +4,15 @@ import engine.context.Context
 import engine.context.emptyContext
 import engine.expressions.Constants
 import engine.expressions.Contradiction
-import engine.expressions.EquationSystem
 import engine.expressions.Expression
 import engine.expressions.Identity
 import engine.expressions.SetSolution
+import engine.expressions.StatementSystem
 import engine.expressions.addEquationsOf
 import engine.expressions.asInteger
 import engine.expressions.cartesianProductOf
 import engine.expressions.contradictionOf
 import engine.expressions.equationOf
-import engine.expressions.equationSystemOf
 import engine.expressions.finiteSetOf
 import engine.expressions.identityOf
 import engine.expressions.implicitSolutionOf
@@ -21,6 +20,7 @@ import engine.expressions.negOf
 import engine.expressions.productOf
 import engine.expressions.setSolutionOf
 import engine.expressions.simplifiedNegOf
+import engine.expressions.statementSystemOf
 import engine.expressions.subtractEquationsOf
 import engine.expressions.tupleOf
 import engine.expressions.variableListOf
@@ -38,7 +38,7 @@ import engine.patterns.FixedPattern
 import engine.patterns.RootMatch
 import engine.patterns.condition
 import engine.patterns.equationOf
-import engine.patterns.equationSystemOf
+import engine.patterns.statementSystemOf
 import engine.patterns.withOptionalConstantCoefficient
 import engine.steps.Task
 import engine.steps.Transformation
@@ -80,7 +80,7 @@ enum class EquationSystemsPlans(override val runner: CompositeMethod) : RunnerMe
 private abstract class SystemSolver : CompositeMethod() {
 
     override fun run(ctx: Context, sub: Expression): Transformation? {
-        if (sub is EquationSystem) {
+        if (sub is StatementSystem) {
             val namedSystem = sub.withNamedEquations { i -> label(i + 1) }
             return taskSet().run(ctx, namedSystem)
         }
@@ -120,7 +120,7 @@ private abstract class SystemSolver : CompositeMethod() {
      */
     fun taskSet() = taskSet {
         explanation = this@SystemSolver.explanation
-        val systemPtn = equationSystemOf(
+        val systemPtn = statementSystemOf(
             equationOf(AnyPattern(), AnyPattern()),
             equationOf(AnyPattern(), AnyPattern()),
         )
@@ -193,7 +193,7 @@ private abstract class SystemSolver : CompositeMethod() {
                 task(
                     startExpr = identityOf(
                         variableListOf(variables),
-                        equationSystemOf(firstEq.identityExpression, secondEq.identityExpression),
+                        statementSystemOf(firstEq.identityExpression, secondEq.identityExpression),
                     ),
                     explanation = metadata(
                         Explanation.BuildSolutionIdentities,
@@ -653,7 +653,7 @@ private fun Expression.coefficientOf(x: String): Expression? {
 }
 
 private val solveEquationSystemInOneVariable = taskSet {
-    val systemPtn = equationSystemOf(
+    val systemPtn = statementSystemOf(
         equationOf(AnyPattern(), AnyPattern()),
         equationOf(AnyPattern(), AnyPattern()),
     )

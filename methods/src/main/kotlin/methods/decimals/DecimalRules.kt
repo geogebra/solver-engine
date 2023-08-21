@@ -1,10 +1,10 @@
 package methods.decimals
 
 import engine.expressions.equationOf
-import engine.expressions.equationSystemOf
 import engine.expressions.fractionOf
 import engine.expressions.negOf
 import engine.expressions.productOf
+import engine.expressions.statementSystemOf
 import engine.expressions.sumOf
 import engine.expressions.xp
 import engine.methods.Rule
@@ -19,7 +19,6 @@ import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.UnsignedNumberPattern
 import engine.patterns.commutativeEquationOf
 import engine.patterns.divideBy
-import engine.patterns.equationSystemOf
 import engine.patterns.fractionOf
 import engine.patterns.integerCondition
 import engine.patterns.numericCondition
@@ -27,6 +26,7 @@ import engine.patterns.oneOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.productOf
+import engine.patterns.statementSystemOf
 import engine.patterns.sumContaining
 import engine.patterns.withOptionalIntegerCoefficient
 import engine.steps.Transformation
@@ -178,7 +178,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
                 )
 
                 ruleResult(
-                    toExpr = equationSystemOf(scaledEquation1, scaledEquation2),
+                    toExpr = statementSystemOf(scaledEquation1, scaledEquation2),
                     explanation = metadata(Explanation.MakeEquationSystemForRecurringDecimal),
                     steps = steps,
                 )
@@ -197,7 +197,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
             val equation1 = commutativeEquationOf(lhs1, decimal1)
             val equation2 = commutativeEquationOf(lhs2, decimal2)
 
-            val equationSystem = equationSystemOf(equation1, equation2)
+            val equationSystem = statementSystemOf(equation1, equation2)
 
             onPattern(equationSystem) {
                 val d1 = getValue(decimal1)

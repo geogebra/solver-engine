@@ -12,6 +12,7 @@ import engine.expressions.SetSolution
 import engine.expressions.VariableList
 import engine.expressions.negOf
 import engine.expressions.setSolutionOf
+import engine.expressions.statementSystemOf
 import engine.expressions.sumOf
 import engine.sign.Sign
 import methods.constantexpressions.ConstantExpressionsPlans
@@ -35,22 +36,44 @@ fun computeOverallUnionSolution(solutions: List<Expression>): Expression? {
     }
 }
 
-fun computeOverallIntersectionSolution(solutions: List<Expression>): Expression? {
-    val solutionSets = solutions.mapNotNull { solution ->
-        when (solution) {
-            // If one of solutions is a contradiction, then the overall solution is also a contradiction
-            is Contradiction -> return solution
-            // Identities are irrelevant in an intersection
-            is Identity -> null
-            // Select SetSolutions
-            is SetSolution -> solution.solutionSet
-            // Otherwise we cannot merge the solutions
-            else -> return null
+fun computeOverallIntersectionSolution(solutions: List<Expression>): Expression {
+    val processedSolutions = mutableListOf(solutions[0])
+
+    for (solution in solutions.drop(1)) {
+        var intersected = false
+        for ((index, processedSolution) in processedSolutions.withIndex()) {
+            val intersectedSolution = intersect(processedSolution, solution)
+            if (intersectedSolution != null) {
+                processedSolutions[index] = intersectedSolution
+                intersected = true
+                break
+            }
+        }
+
+        if (!intersected) {
+            processedSolutions.add(solution)
         }
     }
 
-    return computeIntersectionOfSets(solutionSets)?.let {
-        setSolutionOf(solutions[0].firstChild as VariableList, it)
+    return if (processedSolutions.size == 1) {
+        processedSolutions[0]
+    } else {
+        statementSystemOf(processedSolutions)
+    }
+}
+
+fun intersect(solution1: Expression, solution2: Expression): Expression? {
+    return when {
+        solution1 is Contradiction -> solution1
+        solution2 is Contradiction -> solution2
+        solution1 is Identity -> solution2
+        solution2 is Identity -> solution1
+        solution1 is SetSolution && solution2 is SetSolution &&
+            solution1.solutionVariables == solution2.solutionVariables ->
+            solution1.solutionSet.intersect(solution2.solutionSet, expressionComparator)?.let {
+                setSolutionOf(solution1.solutionVariables, it)
+            }
+        else -> null
     }
 }
 
@@ -59,15 +82,6 @@ fun computeUnionOfSets(sets: List<SetExpression>): Expression? {
         0 -> Constants.EmptySet
         else -> sets.reduce { acc, set ->
             acc.union(set, expressionComparator) ?: return null
-        }
-    }
-}
-
-fun computeIntersectionOfSets(sets: List<SetExpression>): Expression? {
-    return when (sets.size) {
-        0 -> Constants.Reals
-        else -> sets.reduce { acc, set ->
-            acc.intersect(set, expressionComparator) ?: return null
         }
     }
 }

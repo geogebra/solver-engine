@@ -10,7 +10,6 @@ import engine.expressions.Sum
 import engine.expressions.Variable
 import engine.expressions.contradictionOf
 import engine.expressions.equationOf
-import engine.expressions.equationSystemOf
 import engine.expressions.finiteSetOf
 import engine.expressions.fractionOf
 import engine.expressions.greaterThanEqualOf
@@ -29,6 +28,7 @@ import engine.expressions.simplifiedNegOf
 import engine.expressions.simplifiedProductOf
 import engine.expressions.splitPlusMinus
 import engine.expressions.squareRootOf
+import engine.expressions.statementSystemOf
 import engine.expressions.statementUnionOf
 import engine.expressions.sumOf
 import engine.expressions.variableListOf
@@ -514,7 +514,7 @@ private val resolveModulusEqualsNegativeModulus = rule {
         val newLHS = simplifiedProductOf(lhsCoeff, get(innerLHS))
         val newRHS = simplifiedProductOf(rhsCoeff, get(innerRHS))
         ruleResult(
-            toExpr = equationSystemOf(
+            toExpr = statementSystemOf(
                 equationOf(newLHS, Constants.Zero),
                 equationOf(newRHS, Constants.Zero),
             ),

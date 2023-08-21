@@ -251,45 +251,18 @@ internal object SubtractEquationsOperator : BinaryOperator, StatementOperator, E
     override val precedence = EQUATION_SYSTEM_PRECEDENCE
 }
 
-internal object EquationSystemOperator : StatementOperator {
+internal object StatementSystemOperator : StatementOperator {
     override val name = "EquationSystem"
 
     override val precedence = EQUATION_SYSTEM_PRECEDENCE
     override val arity = ARITY_VARIABLE
 
     override fun nthChildAllowed(n: Int, op: Operator): Boolean {
-        require(op is ComparisonOperator && op.comparator == Comparator.Equal)
+        require(op is StatementOperator)
         return true
     }
 
     override fun <T> readableString(children: List<T>) = children.joinToString(", ")
-
-    override fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String {
-        val alignCtx = ctx.copy(align = true)
-        return buildString {
-            append("\\left\\{\\begin{array}{rcl}")
-            for (eq in children) {
-                append(eq.toLatexString(alignCtx), " \\\\ ")
-            }
-            append("\\end{array}\\right.")
-        }
-    }
-}
-
-internal object InequalitySystemOperator : StatementOperator {
-    override val name = "InequalitySystem"
-
-    override val precedence = EQUATION_SYSTEM_PRECEDENCE
-    override val arity = ARITY_VARIABLE
-
-    override fun nthChildAllowed(n: Int, op: Operator): Boolean {
-        require(op is ComparisonOperator && op.comparator.type == Comparator.Type.Inequality)
-        return true
-    }
-
-    override fun <T> readableString(children: List<T>): String {
-        return children.joinToString(", ")
-    }
 
     override fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String {
         val alignCtx = ctx.copy(align = true)

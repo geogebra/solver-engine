@@ -65,7 +65,7 @@ class Product(
     }
 }
 
-class DivideBy(divisor: Expression, meta: NodeMeta = BasicMeta()) : Expression(
+class DivideBy(divisor: Expression, meta: NodeMeta = BasicMeta()) : ValueExpression(
     operator = UnaryExpressionOperator.DivideBy,
     operands = listOf(divisor),
     meta = meta,

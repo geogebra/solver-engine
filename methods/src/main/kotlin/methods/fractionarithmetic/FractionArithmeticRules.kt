@@ -28,6 +28,7 @@ import engine.patterns.SignedIntegerPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.commutativeSumOf
 import engine.patterns.condition
+import engine.patterns.divideBy
 import engine.patterns.expressionWithFactor
 import engine.patterns.fractionOf
 import engine.patterns.integerCondition
@@ -63,7 +64,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                     val previousTerm = factors[index - 1]
                     val argument = divideByTerm.divisor
 
-                    if (argument is Fraction || (previousTerm is Fraction && argument.canBeTurnedToFraction())) {
+                    if (argument is Fraction || previousTerm is Fraction) {
                         val result = mutableListOf<Expression>()
                         result.addAll(factors.subList(0, index))
                         result.add(argument.inverse())
@@ -84,32 +85,21 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
 
     RewriteDivisionAsFraction(
         rule {
-            val product = productContaining()
+            val product = productContaining(divideBy(AnyPattern()))
 
             onPattern(product) {
                 val factors = get(product).children
+                val index = factors.indexOfFirst { it is DivideBy }
 
-                for ((index, factor) in factors.withIndex()) {
-                    val divideByTerm = factor as? DivideBy ?: continue
+                val numerator = productOf(factors.subList(0, index))
+                val denominator = (factors[index] as DivideBy).divisor
+                val fraction = fractionOf(numerator, denominator)
 
-                    val previousTerm = factors[index - 1]
-                    val argument = divideByTerm.divisor
-
-                    if (previousTerm.canBeTurnedToFraction() && argument.canBeTurnedToFraction()) {
-                        val result = mutableListOf<Expression>()
-                        result.addAll(factors.subList(0, index - 1))
-                        result.add(fractionOf(move(previousTerm), move(argument)))
-                        result.addAll(factors.subList(index + 1, factors.size))
-
-                        return@onPattern ruleResult(
-                            toExpr = productOf(result),
-                            gmAction = noGmSupport(),
-                            explanation = metadata(Explanation.RewriteDivisionAsFraction),
-                        )
-                    }
-                }
-
-                null
+                ruleResult(
+                    toExpr = productOf(listOf(fraction) + factors.subList(index + 1, factors.size)),
+                    gmAction = noGmSupport(),
+                    explanation = metadata(Explanation.RewriteDivisionAsFraction),
+                )
             }
         },
     ),
@@ -524,10 +514,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(outerFraction) {
                 ruleResult(
-                    productOf(
-                        move(outerNumerator),
-                        fractionOf(move(denominator), move(numerator)),
-                    ),
+                    toExpr = productOf(move(outerNumerator), get(innerFraction).inverse()),
                     explanation = metadata(Explanation.SimplifyFractionWithFractionDenominator, move(outerFraction)),
                 )
             }

@@ -7,11 +7,11 @@ import engine.expressions.Power
 import engine.expressions.Product
 import engine.expressions.Sum
 import engine.expressions.equationOf
-import engine.expressions.equationSystemOf
 import engine.expressions.leadingCoefficientOfPolynomial
 import engine.expressions.productOf
 import engine.expressions.simplifiedPowerOf
 import engine.expressions.simplifiedProductOf
+import engine.expressions.statementSystemOf
 import engine.expressions.sumOf
 import engine.expressions.xp
 import engine.methods.CompositeMethod
@@ -174,7 +174,7 @@ enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             tasks {
                 val solvedSystem = task(
-                    startExpr = equationSystemOf(
+                    startExpr = statementSystemOf(
                         equationOf(sumOf(xp("a"), xp("b")), get(baseTerm::coefficient)!!),
                         equationOf(productOf(xp("a"), xp("b")), move(constantTerm)),
                     ),
@@ -223,7 +223,7 @@ enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
                 val baseCoefficient = baseTerm.ptn.getCoefficient()
 
                 val solvedSystem = task(
-                    startExpr = equationSystemOf(
+                    startExpr = statementSystemOf(
                         equationOf(sumOf(xp("a"), xp("b")), baseCoefficient),
                         equationOf(
                             productOf(xp("a"), xp("b")),

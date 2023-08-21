@@ -38,11 +38,10 @@ import engine.operators.DefaultProductOperator
 import engine.operators.DefiniteIntegralOperator
 import engine.operators.DerivativeOperator
 import engine.operators.DoubleComparisonOperator
-import engine.operators.EquationSystemOperator
 import engine.operators.IndefiniteIntegralOperator
-import engine.operators.InequalitySystemOperator
 import engine.operators.IntervalOperator
 import engine.operators.Operator
+import engine.operators.StatementSystemOperator
 import engine.operators.StatementUnionOperator
 import engine.operators.StatementWithConstraintOperator
 import engine.operators.SubtractEquationsOperator
@@ -91,7 +90,7 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
     }
 
     override fun visitStatementUnion(ctx: ExpressionParser.StatementUnionContext): Expression {
-        val statements = ctx.stmts.map { visit(it) }
+        val statements = ctx.statements.map { visit(it) }
         return if (statements.size == 1) {
             statements[0]
         } else {
@@ -107,12 +106,13 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
         }
     }
 
-    override fun visitEquationSystem(ctx: ExpressionParser.EquationSystemContext): Expression {
-        return makeExpression(EquationSystemOperator, ctx.equations.map { visit(it) })
-    }
-
-    override fun visitInequalitySystem(ctx: ExpressionParser.InequalitySystemContext): Expression {
-        return makeExpression(InequalitySystemOperator, ctx.inequalities.map { visit(it) })
+    override fun visitStatementSystem(ctx: ExpressionParser.StatementSystemContext): Expression {
+        val statements = ctx.statements.map { visit(it) }
+        return if (statements.size == 1) {
+            statements[0]
+        } else {
+            makeExpression(StatementSystemOperator, statements)
+        }
     }
 
     override fun visitEquationAddition(ctx: ExpressionParser.EquationAdditionContext): Expression {

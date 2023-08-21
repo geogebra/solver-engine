@@ -125,6 +125,16 @@ class RationalExpressionsPlansTest {
     }
 
     @Test
+    fun `test addition of term and fraction which is not a rational expression fails`() = testMethod {
+        method = RationalExpressionsPlans.AddTermAndRationalExpression
+        inputExpr = "2 x + [y / 2]"
+
+        check {
+            noTransformation()
+        }
+    }
+
+    @Test
     fun `test addition of unlike rational expressions without factorization`() = testMethod {
         method = RationalExpressionsPlans.AddRationalExpressions
         inputExpr = "[[x ^ 2] + 1 / x + 1] + [x - 1 / x + 2]"
@@ -339,6 +349,56 @@ class RationalExpressionsPlansTest {
                 toExpr = "[[(x + 1) ^ 2] / 4 [x ^ 2]]"
                 explanation {
                     key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test division of polynomial by monomial`() = testMethod {
+        method = RationalExpressionsPlans.SimplifyDivisionOfPolynomial
+        inputExpr = "(5 [x ^ 7] + 12 [x ^ 3] [y ^ 7] - [10 / 7] [x ^ 5] y) : (-[1 / 5] [x ^ 3])"
+
+        check {
+            fromExpr = "(5 [x ^ 7] + 12 [x ^ 3] [y ^ 7] - [10 / 7] [x ^ 5] y) : (-[1 / 5] [x ^ 3])"
+            toExpr = "-25 [x ^ 4] - 60 [y ^ 7] + [50 / 7] [x ^ 2] y"
+            explanation {
+                key = RationalExpressionsExplanation.SimplifyDivisionOfPolynomial
+            }
+
+            step {
+                fromExpr = "(5 [x ^ 7] + 12 [x ^ 3] [y ^ 7] - [10 / 7] [x ^ 5] y) : (-[1 / 5] [x ^ 3])"
+                toExpr = "5 [x ^ 7] : (-[1 / 5] [x ^ 3]) + 12 [x ^ 3] [y ^ 7] : (-[1 / 5] [x ^ 3]) " +
+                    "+ (-[10 / 7] [x ^ 5] y) : (-[1 / 5] [x ^ 3])"
+                explanation {
+                    key = RationalExpressionsExplanation.DistributeDivisionOverSum
+                }
+            }
+
+            step {
+                fromExpr = "5 [x ^ 7] : (-[1 / 5] [x ^ 3]) + 12 [x ^ 3] [y ^ 7] : (-[1 / 5] [x ^ 3]) " +
+                    "+ (-[10 / 7] [x ^ 5] y) : (-[1 / 5] [x ^ 3])"
+                toExpr = "-25 [x ^ 4] + 12 [x ^ 3] [y ^ 7] : (-[1 / 5] [x ^ 3]) " +
+                    "+ (-[10 / 7] [x ^ 5] y) : (-[1 / 5] [x ^ 3])"
+                explanation {
+                    key = RationalExpressionsExplanation.SimplifyRationalExpression
+                }
+            }
+
+            step {
+                fromExpr = "-25 [x ^ 4] + 12 [x ^ 3] [y ^ 7] : (-[1 / 5] [x ^ 3]) " +
+                    "+ (-[10 / 7] [x ^ 5] y) : (-[1 / 5] [x ^ 3])"
+                toExpr = "-25 [x ^ 4] - 60 [y ^ 7] + (-[10 / 7] [x ^ 5] y) : (-[1 / 5] [x ^ 3])"
+                explanation {
+                    key = RationalExpressionsExplanation.SimplifyRationalExpression
+                }
+            }
+
+            step {
+                fromExpr = "-25 [x ^ 4] - 60 [y ^ 7] + (-[10 / 7] [x ^ 5] y) : (-[1 / 5] [x ^ 3])"
+                toExpr = "-25 [x ^ 4] - 60 [y ^ 7] + [50 / 7] [x ^ 2] y"
+                explanation {
+                    key = RationalExpressionsExplanation.SimplifyRationalExpression
                 }
             }
         }

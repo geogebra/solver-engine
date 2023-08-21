@@ -221,7 +221,7 @@ const renderTaskSteps = (task: TaskJson2, depth: number): string => {
   if (!task.steps) {
     return startExprTree.type === 'Void'
       ? ''
-      : renderExpression(solverSDK.treeToLatex(startExprTree));
+      : renderExpression(solverSDK.treeToLatex(startExprTree, settings.latexSettings));
   }
 
   if (

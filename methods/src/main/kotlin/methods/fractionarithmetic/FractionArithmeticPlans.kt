@@ -82,6 +82,7 @@ enum class FractionArithmeticPlans(override val runner: CompositeMethod) : Runne
             explanation = Explanation.MultiplyAndSimplifyFractions
 
             steps {
+                // Doesn't turn all factors into fractions, e.g. it won't turn variable expressions into fractions
                 whilePossible(FractionArithmeticRules.TurnFactorIntoFractionInProduct)
                 apply {
                     whilePossible(FractionArithmeticRules.MultiplyFractions)

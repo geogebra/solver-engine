@@ -15,7 +15,6 @@ import engine.expressions.View
 import engine.expressions.areEquivalentSums
 import engine.expressions.bracketOf
 import engine.expressions.equationOf
-import engine.expressions.equationSystemOf
 import engine.expressions.explicitProductOf
 import engine.expressions.leadingCoefficientOfPolynomial
 import engine.expressions.negOf
@@ -24,6 +23,7 @@ import engine.expressions.productOf
 import engine.expressions.simplifiedFractionOf
 import engine.expressions.simplifiedPowerOf
 import engine.expressions.simplifiedProductOf
+import engine.expressions.statementSystemOf
 import engine.expressions.sumOf
 import engine.expressions.xp
 import engine.methods.Rule
@@ -40,7 +40,6 @@ import engine.patterns.commutativeProductOf
 import engine.patterns.commutativeSumOf
 import engine.patterns.condition
 import engine.patterns.equationOf
-import engine.patterns.equationSystemOf
 import engine.patterns.integerCondition
 import engine.patterns.negOf
 import engine.patterns.oneOf
@@ -48,6 +47,7 @@ import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.productOf
 import engine.patterns.rationalMonomialPattern
+import engine.patterns.statementSystemOf
 import engine.patterns.sumContaining
 import engine.patterns.sumOf
 import engine.patterns.withOptionalRationalCoefficient
@@ -468,7 +468,7 @@ enum class FactorRules(override val runner: Rule) : RunnerMethod {
             val equation1 = equationOf(sumOf(variable1, variable2), rhs1)
             val equation2 = equationOf(productOf(variable1, variable2), rhs2)
 
-            val equationSystem = equationSystemOf(equation1, equation2)
+            val equationSystem = statementSystemOf(equation1, equation2)
 
             onPattern(equationSystem) {
                 val rhs1Val = getValue(rhs1)
@@ -485,7 +485,7 @@ enum class FactorRules(override val runner: Rule) : RunnerMethod {
                 val solution2 = (rhs1Val + discriminantSqrt).shiftRight(1)
 
                 ruleResult(
-                    toExpr = equationSystemOf(
+                    toExpr = statementSystemOf(
                         equationOf(move(variable1), combineTo(rhs1, rhs2, xp(solution1))),
                         equationOf(move(variable2), combineTo(rhs1, rhs2, xp(solution2))),
                     ),

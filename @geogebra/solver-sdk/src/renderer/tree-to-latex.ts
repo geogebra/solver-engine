@@ -12,6 +12,7 @@ export type LatexSettings = {
   mulSymbol?: ' \\cdot ' | ' \\times ' | string;
   divSymbol?: ' \\div ' | ':' | string;
   align?: boolean;
+  flat?: boolean;
   displayNames?: boolean;
 
   solutionFormatter: SolutionFormatter;
@@ -284,8 +285,11 @@ function treeToLatexInner(
       return tfd(`\\sqrt[{${rec(n.args[1], n)}}]{${rec(n.args[0], n)}}`);
     case 'AbsoluteValue':
       return tfd(colorAbsoluteValue(rec(n.args[0], n), n, t, p));
-    case 'ExpressionWithConstraint':
-      return tfd(`${rec(n.args[0], n)} \\text{ given } ${rec(n.args[1], n)}`);
+    case 'ExpressionWithConstraint': {
+      const latexSettings = { ...s, flat: true };
+      const constraint = treeToLatexInner(n.args[1], n, latexSettings, t);
+      return tfd(`${rec(n.args[0], n)} \\text{ given } ${constraint}`);
+    }
     case 'Equation':
       if (s.align) {
         return tfd(`${rec(n.args[0], n)} & ${colorOp('=')} & ${rec(n.args[1], n)}`);
@@ -299,14 +303,23 @@ function treeToLatexInner(
         return tfd(`${rec(n.args[0], n)} ${colorOp('\\neq')} ${rec(n.args[1], n)}`);
       }
     case 'EquationSystem': {
-      const alignSetting = { ...s, align: true };
-      return tfd(
-        '\\left\\{\\begin{array}{rcl}\n' +
+      if (s.flat || n.args.some((child) => !isSolvable(child))) {
+        const alignSetting = { ...s, align: false };
+        return tfd(
           n.args
-            .map((el) => '  ' + treeToLatexInner(el, n, alignSetting, t) + '\\\\\n')
-            .join('') +
-          '\\end{array}\\right.',
-      );
+            .map((el) => treeToLatexInner(el, n, alignSetting, t))
+            .join('\\text{ and }'),
+        );
+      } else {
+        const alignSetting = { ...s, align: true };
+        return tfd(
+          '\\left\\{\\begin{array}{rcl}\n' +
+            n.args
+              .map((el) => '  ' + treeToLatexInner(el, n, alignSetting, t) + '\\\\\n')
+              .join('') +
+            '\\end{array}\\right.',
+        );
+      }
     }
     case 'InequalitySystem': {
       const alignSetting = { ...s, align: true };
@@ -425,6 +438,17 @@ function treeToLatexInner(
       return `${rec(n.args[0], n)} \\geq ${rec(n.args[1], n)} \\geq ${rec(n.args[2], n)}`;
   }
 }
+
+const isSolvable = (node: ExpressionTree) => {
+  return (
+    node.type === 'Equation' ||
+    node.type === 'LessThan' ||
+    node.type === 'LessThanEqual' ||
+    node.type === 'GreaterThan' ||
+    node.type === 'GreaterThanEqual' ||
+    node.type === 'Inequation'
+  );
+};
 
 function addendNeedsPlusInFront(
   addend: ExpressionTreeBase<{ path: string }>,

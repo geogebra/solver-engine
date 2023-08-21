@@ -6,15 +6,14 @@ grammar Expression;
 
 wholeInput: (statementUnion | set | expr | undefined | name | void) EOF;
 
-statementUnion: stmts += statementWithConstraint ('OR' stmts += statementWithConstraint)*;
+// statements are in disjunctive normal form (constraints and systems both represent conjunctions)
+statementUnion: statements += statementWithConstraint ('OR' statements += statementWithConstraint)*;
 
-statementWithConstraint: stmt=simpleStatement ('GIVEN' constraint=simpleStatement)?;
+statementWithConstraint: stmt=statementSystem ('GIVEN' constraint=statementSystem)?;
 
-simpleStatement: equationSystem | inequalitySystem | equationAddition | equationSubtraction | equation | inequality | solution | doubleInequality;
+statementSystem: statements += simpleStatement (',' statements += simpleStatement)*;
 
-equationSystem: equations += equation (',' equations += equation)+;
-
-inequalitySystem: inequalities += inequality (',' inequalities += inequality)+;
+simpleStatement: equation | equationAddition | equationSubtraction | inequality | doubleInequality | inequation | solution;
 
 doubleInequality: first=expr left=('<' | '<=') second=expr right=('<' | '<=') third=expr
     | first=expr left=('>' | '>=') second=expr right=('>' | '>=') third=expr;
