@@ -1,12 +1,12 @@
 import type { ApiMathFormat, SolverContext, StrategyMap } from '@geogebra/solver-sdk';
 import * as solverSDK from '@geogebra/solver-sdk';
+import { TransformationJson2 } from '@geogebra/solver-sdk';
 import type { ColorScheme, SolutionFormat } from './settings';
 import { settings, solutionFormatters } from './settings';
-import { renderPlanSelections, renderTransformationAndTest } from './render-solution';
+import { renderPlanSelections, renderTransformation } from './render-solution';
 import { fetchDefaultTranslations } from './translations';
-import { clone } from './util';
 import type renderMathInElement from 'katex/contrib/auto-render';
-import { copyTestCodeToClipboardOnClick } from './render-test';
+import { copyTestCodeToClipboardOnClick, renderTest } from './render-test';
 
 const jsonFormat: ApiMathFormat = 'json2';
 
@@ -35,7 +35,7 @@ const getAPIBaseURL = (): string => {
 solverSDK.api.baseUrl = getAPIBaseURL();
 const mainPokerURL = 'https://solver.geogebra.net/main/poker/index.html';
 
-let lastResult: { planId?: string; result?: any; solverFormatResult?: any } = {};
+let lastResult: { planId?: string; result?: any } = {};
 
 const el = (id: string) => document.getElementById(id);
 
@@ -58,17 +58,11 @@ const selectPlansOrApplyPlan = async ({
   input,
   ...context
 }: { planId: string; input: string } & SolverContext) => {
-  const [result, solverFormatResult] =
+  const result =
     planId === 'selectPlans'
-      ? await Promise.all([
-          solverSDK.api.selectPlans(input, jsonFormat, context),
-          solverSDK.api.selectPlans(input, 'solver', context),
-        ])
-      : await Promise.all([
-          solverSDK.api.applyPlan(input, planId, jsonFormat, context),
-          solverSDK.api.applyPlan(input, planId, 'solver', context),
-        ]);
-  lastResult = { planId, result, solverFormatResult };
+      ? await solverSDK.api.selectPlans(input, jsonFormat, context)
+      : await solverSDK.api.applyPlan(input, planId, jsonFormat, context);
+  lastResult = { planId, result: result as TransformationJson2 };
 };
 
 /******************************************
@@ -191,21 +185,19 @@ window.onload = () => {
   };
 
   const displayLastResult = () => {
-    // We clone just in case we get sloppy and mutate the object. I don't think it is
-    // actually necessary, right now.
-    const { planId, result, solverFormatResult } = clone(lastResult);
-    sourceElement.innerHTML = JSON.stringify(solverFormatResult, null, 4);
-    console.log({ planId, result, solverFormatResult });
-    if (planId === undefined) {
+    const { planId, result } = lastResult;
+    sourceElement.innerHTML = JSON.stringify(result, null, 4);
+    console.log({ planId, result });
+    if (planId === undefined || result === undefined) {
       return;
     }
-    if (result.error !== undefined) {
+    if ('error' in result) {
       resultElement.innerHTML = /* HTML */ `Error: ${result.error}<br />Message: ${result.message}`;
     } else {
       resultElement.innerHTML =
         planId === 'selectPlans'
-          ? renderPlanSelections(result, solverFormatResult)
-          : renderTransformationAndTest(result, solverFormatResult, 1);
+          ? renderPlanSelections(result)
+          : `${renderTransformation(result, 1)} ${renderTest(result, planId)}`;
       window.renderMathInElement(resultElement);
       copyTranslationKeysToClipboardOnClick();
       copyTestCodeToClipboardOnClick();

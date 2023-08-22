@@ -9,9 +9,7 @@ import {
   MathJson,
   MathJson2,
   Metadata,
-  PlanSelection,
   PlanSelectionJson2,
-  PlanSelectionSolver,
   TaskJson2,
   Transformation,
   TransformationJson2,
@@ -30,18 +28,7 @@ import { renderTest } from './render-test';
 import { translationData } from './translations';
 import { LatexTransformer } from '@geogebra/solver-sdk/src/renderer/tree-to-latex';
 
-const findTransformationInSelections = (selections: PlanSelection[], methodId: string) => {
-  for (const selection of selections) {
-    if (selection.metadata.methodId === methodId) {
-      return selection.transformation;
-    }
-  }
-};
-
-export const renderPlanSelections = (
-  selections: PlanSelectionJson2[],
-  testSelections: PlanSelectionSolver[],
-) => {
+export const renderPlanSelections = (selections: PlanSelectionJson2[]) => {
   if (selections) {
     selections = selections.filter((selection) => containsNonTrivialStep(selection.transformation));
   }
@@ -57,10 +44,8 @@ export const renderPlanSelections = (
             (selection) => /* HTML */ `<li>
               <div class="plan-selection">
                 <div class="plan-id">${selection.metadata.methodId}</div>
-                ${renderTransformationAndTest(
-                  selection.transformation,
-                  findTransformationInSelections(testSelections, selection.metadata.methodId),
-                )}
+                ${renderTransformation(selection.transformation, 0)}
+                ${renderTest(selection.transformation, selection.metadata.methodId)}
               </div>
             </li>`,
           )
@@ -70,20 +55,11 @@ export const renderPlanSelections = (
   `;
 };
 
-export const renderTransformationAndTest = (
-  trans: TransformationJson2,
-  testTrans?: Transformation,
-  depth = 0,
-) => {
-  return /* HTML */ ` ${renderTransformation(trans, depth)}
-  ${testTrans ? renderTest(testTrans) : ''}`;
-};
-
 /******************************************
  * Rendering a transformation
  ******************************************/
 
-const renderTransformation = (trans: TransformationJson2, depth = 0): string => {
+export const renderTransformation = (trans: TransformationJson2, depth = 0): string => {
   const isThrough = isThroughStep(trans);
   if (!settings.showThroughSteps && isThrough) {
     return renderTransformation(trans.steps![0], depth);

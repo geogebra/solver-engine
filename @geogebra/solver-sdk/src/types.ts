@@ -97,8 +97,8 @@ export type MathJson =
 
 export type SmartProductOperandJson = [boolean, MathJson];
 
-// This is how the `json2` format is typed. This For a human-centric description of this format,
-// see docs/expression-serialization.md
+// This is how the `json2` format is typed.
+// For a human-centric description of this format, see docs/expression-serialization.md
 export type MathJson2 = ExpressionDecorations &
   (
     | {

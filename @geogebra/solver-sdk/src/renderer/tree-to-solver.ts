@@ -14,16 +14,17 @@ export function treeToSolver(n: ExpressionTree): string {
       return dec(
         n.args
           .map((el, i) =>
-            el.type === 'Minus' && !el.decorators?.length
+            i === 0
+              ? // unary plus / minus / ±
+                rec(el)
+              : el.type === 'Minus' && !el.decorators?.length
               ? // binary minus
-                `-${rec((el as NestedExpression).args[0])}`
+                ` - ${rec((el as NestedExpression).args[0])}`
               : el.type === 'PlusMinus' && !el.decorators?.length
               ? // binary ±
-                `+/-${rec((el as NestedExpression).args[0])}`
+                ` +/- ${rec((el as NestedExpression).args[0])}`
               : // binary plus
-              i === 0
-              ? rec(el)
-              : `+${rec(el)}`,
+                ` + ${rec(el)}`,
           )
           .join(''),
       );
@@ -36,15 +37,17 @@ export function treeToSolver(n: ExpressionTree): string {
     case 'Product':
       return dec(
         n.args
-          .map((el, i) => (i === 0 || el.type === 'DivideBy' ? rec(el) : `*${rec(el)}`))
-          .join(''),
+          .map((el, i) => (i === 0 || el.type === 'DivideBy' ? rec(el) : `* ${rec(el)}`))
+          .join(' '),
       );
     case 'ImplicitProduct':
       return dec(n.args.map((el) => rec(el)).join(' '));
     case 'SmartProduct':
-      return 'TODO';
+      return dec(
+        n.args.map((el, i) => (n.signs[i] ? `* ${rec(el)}` : `${rec(el)}`)).join(' '),
+      );
     case 'DivideBy':
-      return `:${rec(n.args[0])}`;
+      return `: ${rec(n.args[0])}`;
     case 'Fraction':
       return dec(`[${rec(n.args[0])} / ${rec(n.args[1])}]`);
     case 'MixedNumber':
@@ -94,7 +97,7 @@ export function treeToSolver(n: ExpressionTree): string {
     case 'Contradiction':
     case 'Identity': {
       const varList = rec(n.args[0]).replace(/\(\)/, '');
-      return dec(`${n.type}[${varList ? varList + '//' : ''} ${rec(n.args[1])})}]`);
+      return dec(`${n.type}[${varList ? varList + ': ' : ''}${rec(n.args[1])}]`);
     }
     case 'FiniteSet':
       return dec(`{${n.args.map((el) => rec(el)).join(', ')}}`);

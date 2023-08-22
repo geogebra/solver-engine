@@ -1,11 +1,18 @@
-import { Metadata, Task, Transformation } from '@geogebra/solver-sdk';
+import {
+  jsonToTree,
+  MathJson2,
+  Metadata,
+  TaskJson2,
+  TransformationJson2,
+  treeToSolver,
+} from '@geogebra/solver-sdk';
 import { isThroughStep } from './util';
 import { settings } from './settings';
 
-export const renderTest = (trans: Transformation) => /* HTML */ `
+export const renderTest = (trans: TransformationJson2, methodId: string) => /* HTML */ `
   <details class="hide-in-demo-mode">
     <summary>Test Code <button class="copy-test-code-button">Copy</button></summary>
-    <pre>${generateTestSuggestion(trans)}</pre>
+    <pre>${generateTestSuggestion(trans, methodId)}</pre>
   </details>
 `;
 
@@ -21,14 +28,9 @@ export const copyTestCodeToClipboardOnClick = () => {
   }
 };
 
-export function generateTestSuggestion(
-  trans: Transformation,
-  omitRepeatedExprs = false,
-  methodId = 'FILL_ME_IN',
-): string {
-  lastExpressionPrinted = '';
+export function generateTestSuggestion(trans: TransformationJson2, methodId: string): string {
   const stringBuilder = new StringBuilder();
-  new IndentBuilder(stringBuilder, omitRepeatedExprs).do(buildTest(trans, methodId));
+  new IndentBuilder(stringBuilder).do(buildTest(trans, methodId));
   return stringBuilder.toString();
 }
 
@@ -48,21 +50,17 @@ class StringBuilder {
   }
 }
 
-let lastExpressionPrinted = '';
-
 class IndentBuilder {
   parent: StringBuilder | IndentBuilder;
   indent: string;
-  omitRepeatedExprs: boolean;
 
-  constructor(parent: StringBuilder | IndentBuilder, omitRepeatedExprs = false, indent = '') {
-    this.omitRepeatedExprs = omitRepeatedExprs;
+  constructor(parent: StringBuilder | IndentBuilder, indent = '') {
     this.parent = parent;
     this.indent = indent;
   }
 
   child(indent = '    ') {
-    return new IndentBuilder(this, this.omitRepeatedExprs, indent);
+    return new IndentBuilder(this, indent);
   }
 
   addLine(line: string) {
@@ -81,18 +79,17 @@ class IndentBuilder {
   }
 }
 
-const buildTest = (trans: Transformation, methodId: string) => (builder: IndentBuilder) => {
+const buildTest = (trans: TransformationJson2, methodId: string) => (builder: IndentBuilder) => {
   builder.nest('testMethod', (builder) => {
-    builder.addLine(`method = ${methodId}`);
-    const fromExpr = trans?.fromExpr.toString();
-    builder.addLine(`inputExpr = "${fromExpr}"`);
-    lastExpressionPrinted = fromExpr;
-    builder.nest('check', buildTestTransformation(trans));
+    builder
+      .addLine(`method = ${methodId.replace('.', 'Plans.')}`)
+      .addLine(`inputExpr = "${renderExpression(trans.fromExpr)}"`)
+      .addLine('')
+      .nest('check', buildTestTransformation(trans));
   });
 };
 
-const buildTestTransformation = (trans: Transformation) => (builder: IndentBuilder) => {
-  if (!trans) return;
+const buildTestTransformation = (trans: TransformationJson2) => (builder: IndentBuilder) => {
   const throughStep = isThroughStep(trans);
   if (throughStep && !settings.showThroughSteps) {
     builder.do(buildTestTransformation(trans.steps[0]));
@@ -101,32 +98,16 @@ const buildTestTransformation = (trans: Transformation) => (builder: IndentBuild
   if (throughStep) {
     builder.addLine('// Through step');
   } else {
-    const fromExpr = trans.fromExpr?.toString();
-    if (
-      (!builder.omitRepeatedExprs || fromExpr !== lastExpressionPrinted) &&
-      fromExpr !== undefined
-    ) {
-      builder.addLine(`fromExpr = "${fromExpr}"`);
-      lastExpressionPrinted = fromExpr;
-    }
-    const toExpr = trans.toExpr?.toString();
-    if (!builder.omitRepeatedExprs && toExpr !== undefined) {
-      builder.addLine(`toExpr = "${toExpr}"`);
-    }
+    builder
+      .addLine(`fromExpr = "${renderExpression(trans.fromExpr)}"`)
+      .addLine(`toExpr = "${renderExpression(trans.toExpr)}"`);
     if (trans.explanation) {
       builder.do(buildExplanation(trans.explanation));
     }
   }
   if (trans.steps) {
     for (const step of trans.steps) {
-      builder.nest('step', buildTestTransformation(step));
-    }
-  }
-  if (!throughStep && builder.omitRepeatedExprs) {
-    const toExpr = trans.toExpr?.toString();
-    if (toExpr !== lastExpressionPrinted && toExpr !== undefined) {
-      builder.addLine(`toExpr = "${toExpr}"`);
-      lastExpressionPrinted = toExpr;
+      builder.addLine('').nest('step', buildTestTransformation(step));
     }
   }
   if (trans.tasks) {
@@ -136,9 +117,9 @@ const buildTestTransformation = (trans: Transformation) => (builder: IndentBuild
   }
 };
 
-const buildTestTask = (task: Task) => (builder: IndentBuilder) => {
+const buildTestTask = (task: TaskJson2) => (builder: IndentBuilder) => {
   builder.addLine(`taskId = "${task.taskId}"`);
-  builder.addLine(`startExpr = "${task.startExpr}"`);
+  builder.addLine(`startExpr = "${renderExpression(task.startExpr)}"`);
   if (task.explanation) {
     builder.do(buildExplanation(task.explanation));
   }
@@ -159,3 +140,6 @@ const buildExplanation = (explanation?: Metadata) => (builder: IndentBuilder) =>
     });
   }
 };
+
+const renderExpression = (expression: MathJson2) =>
+  treeToSolver(jsonToTree(expression)).replace('\\', '\\\\');

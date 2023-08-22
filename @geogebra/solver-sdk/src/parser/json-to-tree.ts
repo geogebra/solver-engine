@@ -19,7 +19,7 @@ export function jsonToTree(json: MathJson | MathJson2, path = '.'): ExpressionTr
   else [value, ...decorators] = head as [string, DecoratorType];
   let result: ExpressionTree;
 
-  if (args.length === 0 && value !== 'FiniteSet') {
+  if (args.length === 0 && value !== 'FiniteSet' && value != 'VariableList') {
     const str = value as string;
     if (str.match(/^[+\-0-9]/)) {
       result = { type: 'Number', value: str, path };

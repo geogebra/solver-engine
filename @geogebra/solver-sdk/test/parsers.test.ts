@@ -96,42 +96,42 @@ describe('Solver Parser Unit Tests', () => {
     testCases([
       { solver: '1', json: ['1'], latex: '1' },
       {
-        solver: '1+2+3',
+        solver: '1 + 2 + 3',
         json: ['Sum', ['1'], ['2'], ['3']],
         latex: '1+2+3',
       },
       {
-        solver: '1+2-3-4',
+        solver: '1 + 2 - 3 - 4',
         json: ['Sum', ['1'], ['2'], ['Minus', ['3']], ['Minus', ['4']]],
         latex: '1+2-3-4',
       },
       {
-        solver: '+1+2+3',
+        solver: '+1 + 2 + 3',
         json: ['Sum', ['Plus', ['1']], ['2'], ['3']],
         latex: '+1+2+3',
       },
       {
-        solver: '1+2*3*4+5*6',
+        solver: '1 + 2 * 3 * 4 + 5 * 6',
         json: ['Sum', ['1'], ['Product', ['2'], ['3'], ['4']], ['Product', ['5'], ['6']]],
         latex: '1+2 \\cdot 3 \\cdot 4+5 \\cdot 6',
       },
       {
-        solver: '-1-2',
+        solver: '-1 - 2',
         json: ['Sum', ['Minus', ['1']], ['Minus', ['2']]],
         latex: '-1-2',
       },
       {
-        solver: '-1-2*3',
+        solver: '-1 - 2 * 3',
         json: ['Sum', ['Minus', ['1']], ['Minus', ['Product', ['2'], ['3']]]],
         latex: ['-1-2 \\cdot 3', '-1-2\\cdot3', '-1-2\\times3', '-1–2*3', '–1-2×3'],
       },
       {
-        solver: '1*3',
+        solver: '1 * 3',
         json: ['Product', ['1'], ['3']],
         latex: ['1 \\cdot 3', '1\\cdot{}3', '1\\times{}3', '1\\times 3'],
       },
       {
-        solver: '2*3:4*5',
+        solver: '2 * 3 : 4 * 5',
         json: ['Product', ['2'], ['3'], ['DivideBy', ['4']], ['5']],
         latex: [
           '2 \\cdot 3 \\div 4 \\cdot 5',
@@ -140,37 +140,37 @@ describe('Solver Parser Unit Tests', () => {
         ],
       },
       {
-        solver: '3:[4 ^ 5]',
+        solver: '3 : [4 ^ 5]',
         json: ['Product', ['3'], ['DivideBy', ['Power', ['4'], ['5']]]],
         latex: ['3 \\div {4}^{5}', '3÷4^5', '3:4^5'],
       },
       {
-        solver: '3:-[4 ^ 5]',
+        solver: '3 : -[4 ^ 5]',
         json: ['Product', ['3'], ['DivideBy', ['Minus', ['Power', ['4'], ['5']]]]],
         latex: ['3 \\div -{4}^{5}', '3÷-4^5', '3:-4^5'],
       },
       {
-        solver: '(1+2)+3',
+        solver: '(1 + 2) + 3',
         json: ['Sum', [['Sum', 'RoundBracket'], ['1'], ['2']], ['3']],
         latex: '\\left(1+2\\right)+3',
       },
       {
-        solver: '1+(-2)',
+        solver: '1 + (-2)',
         json: ['Sum', ['1'], [['Minus', 'RoundBracket'], ['2']]],
         latex: '1+\\left(-2\\right)',
       },
       {
-        solver: '1-(+2)',
+        solver: '1 - (+2)',
         json: ['Sum', ['1'], ['Minus', [['Plus', 'RoundBracket'], ['2']]]],
         latex: '1-\\left(+2\\right)',
       },
       {
-        solver: '1+-2',
+        solver: '1 + -2',
         json: ['Sum', ['1'], [['Minus', 'MissingBracket'], ['2']]],
         latex: '1+-2',
       },
       {
-        solver: '1+--2',
+        solver: '1 + --2',
         json: [
           'Sum',
           ['1'],
@@ -182,7 +182,7 @@ describe('Solver Parser Unit Tests', () => {
         latex: '1+--2',
       },
       {
-        solver: '2 abs[x+1]',
+        solver: '2 abs[x + 1]',
         json: ['ImplicitProduct', ['2'], ['AbsoluteValue', ['Sum', ['x'], ['1']]]],
         latex: '2\\left|x+1\\right|',
       },
@@ -193,17 +193,17 @@ describe('Solver Parser Unit Tests', () => {
     testCases([
       { solver: '+/-1', json: ['PlusMinus', ['1']], latex: ['\\pm 1', '±1'] },
       {
-        solver: '1+/-2',
+        solver: '1 +/- 2',
         json: ['Sum', ['1'], ['PlusMinus', ['2']]],
         latex: ['1\\pm 2', '1±2'],
       },
       {
-        solver: '1++/-2',
+        solver: '1 + +/-2',
         json: ['Sum', ['1'], [['PlusMinus', 'MissingBracket'], ['2']]],
         latex: ['1+\\pm 2', '1+±2'],
       },
       {
-        solver: '1++/-+/-2',
+        solver: '1 + +/-+/-2',
         json: [
           'Sum',
           ['1'],
@@ -215,12 +215,12 @@ describe('Solver Parser Unit Tests', () => {
         latex: ['1+\\pm \\pm 2', '1+±±2'],
       },
       {
-        solver: '+/-1+/-2+/-3',
+        solver: '+/-1 +/- 2 +/- 3',
         json: ['Sum', ['PlusMinus', ['1']], ['PlusMinus', ['2']], ['PlusMinus', ['3']]],
         latex: ['\\pm 1\\pm 2\\pm 3', '±1±2±3'],
       },
       {
-        solver: '1+/-(+/-2)',
+        solver: '1 +/- (+/-2)',
         json: ['Sum', ['1'], ['PlusMinus', [['PlusMinus', 'RoundBracket'], ['2']]]],
         latex: ['1\\pm \\left(\\pm 2\\right)', '1±(±2)'],
       },
@@ -261,7 +261,7 @@ describe('Solver Parser Unit Tests', () => {
         latex: '\\left(1\\right)\\left(2\\right)4\\left(-5\\right)',
       },
       {
-        solver: '2 a*3 a',
+        solver: '2 a * 3 a',
         json: [
           'Product',
           ['ImplicitProduct', ['2'], ['a']],
@@ -275,7 +275,7 @@ describe('Solver Parser Unit Tests', () => {
   describe('Equations', () => {
     testCases([
       {
-        solver: '3 = 1+2',
+        solver: '3 = 1 + 2',
         json: ['Equation', ['3'], ['Sum', ['1'], ['2']]],
         latex: '3 = 1+2',
       },
@@ -305,7 +305,7 @@ describe('Solver Parser Unit Tests', () => {
         latex: ['{3}^{\\frac{1}{2}}', '3^\\frac{1}{2}'],
       },
       {
-        solver: '2+3*[4 ^ 5]*6+7',
+        solver: '2 + 3 * [4 ^ 5] * 6 + 7',
         json: ['Sum', ['2'], ['Product', ['3'], ['Power', ['4'], ['5']], ['6']], ['7']],
         latex: ['2+3 \\cdot {4}^{5} \\cdot 6+7', '2+3*4^5*6+7'],
       },
@@ -315,7 +315,7 @@ describe('Solver Parser Unit Tests', () => {
   describe('Variables', () => {
     testCases([
       {
-        solver: 'a+b c*D',
+        solver: 'a + b c * D',
         json: ['Sum', ['a'], ['Product', ['ImplicitProduct', ['b'], ['c']], ['D']]],
         latex: 'a+bc \\cdot D',
       },
@@ -325,7 +325,7 @@ describe('Solver Parser Unit Tests', () => {
   describe('Fractions and Mixed Numbers', () => {
     testCases([
       {
-        solver: '[2 / 3]+1',
+        solver: '[2 / 3] + 1',
         json: ['Sum', ['Fraction', ['2'], ['3']], ['1']],
         latex: '\\frac{2}{3}+1',
       },
@@ -335,12 +335,12 @@ describe('Solver Parser Unit Tests', () => {
         latex: '1\\frac{2}{3}',
       },
       {
-        solver: '[2*1 / 3*1]',
+        solver: '[2 * 1 / 3 * 1]',
         json: ['Fraction', ['Product', ['2'], ['1']], ['Product', ['3'], ['1']]],
         latex: '\\frac{2 \\cdot 1}{3 \\cdot 1}',
       },
       {
-        solver: '-[2+1 / 3*[1 / 2]]',
+        solver: '-[2 + 1 / 3 * [1 / 2]]',
         json: [
           'Minus',
           [
@@ -358,17 +358,17 @@ describe('Solver Parser Unit Tests', () => {
     testCases([
       { solver: '(1)', json: [['1', 'RoundBracket']], latex: '\\left(1\\right)' },
       {
-        solver: '(1+2)',
+        solver: '(1 + 2)',
         json: [['Sum', 'RoundBracket'], ['1'], ['2']],
         latex: '\\left(1+2\\right)',
       },
       {
-        solver: '([.{.1.}+2.])',
+        solver: '([.{.1.} + 2.])',
         json: [['Sum', 'SquareBracket', 'RoundBracket'], [['1', 'CurlyBracket']], ['2']],
         latex: '\\left(\\left[\\left\\{1\\right\\}+2\\right]\\right)',
       },
-      { latex: '\\left(a+b\\right) \\cdot c', solver: '(a+b)*c' },
-      { latex: '((a+b))', solver: '((a+b))' },
+      { latex: '\\left(a+b\\right) \\cdot c', solver: '(a + b) * c' },
+      { latex: '((a+b))', solver: '((a + b))' },
       {
         latex: '\\left\\{\\left[\\left(x\\right)\\right]\\right\\}',
         solver: '{.[.(x).].}',
@@ -380,7 +380,7 @@ describe('Solver Parser Unit Tests', () => {
   describe('Partial Sums', () => {
     testCases([
       {
-        solver: '1+<.-[1 / 2]+[1 / 3].>',
+        solver: '1 + <.-[1 / 2] + [1 / 3].>',
         json: [
           'Sum',
           ['1'],
@@ -394,13 +394,13 @@ describe('Solver Parser Unit Tests', () => {
         dontParseLatex: true,
       },
       {
-        solver: '1+<.1+2.>+3',
+        solver: '1 + <.1 + 2.> + 3',
         json: ['Sum', ['1'], [['Sum', 'PartialBracket'], ['1'], ['2']], ['3']],
         latex: '1+1+2+3',
         dontParseLatex: true,
       },
       {
-        solver: '<.1+2.>+3',
+        solver: '<.1 + 2.> + 3',
         json: ['Sum', [['Sum', 'PartialBracket'], ['1'], ['2']], ['3']],
         latex: '1+2+3',
         dontParseLatex: true,
@@ -427,7 +427,7 @@ describe('Solver Parser Unit Tests', () => {
         latex: ['\\sqrt[{3}]{4}', '\\sqrt[3] 4'],
       },
       {
-        solver: '[2 ^ root[1+2-4 a, 3]]',
+        solver: '[2 ^ root[1 + 2 - 4 a, 3]]',
         json: [
           'Power',
           ['2'],
@@ -439,14 +439,14 @@ describe('Solver Parser Unit Tests', () => {
         ],
         latex: '{2}^{\\sqrt[{3}]{1+2-4a}}',
       },
-      { latex: '2^\\sqrt[3]{1+2}', solver: '[2 ^ root[1+2, 3]]' },
+      { latex: '2^\\sqrt[3]{1+2}', solver: '[2 ^ root[1 + 2, 3]]' },
     ]);
   });
 
   describe('Sums and products', () => {
     testCases([
       {
-        solver: '2.3+3',
+        solver: '2.3 + 3',
         json: ['Sum', ['2.3'], ['3']],
         tree: {
           type: 'Sum',
@@ -459,12 +459,12 @@ describe('Solver Parser Unit Tests', () => {
         latex: '2.3+3',
       },
       {
-        solver: '1-2*3',
+        solver: '1 - 2 * 3',
         json: ['Sum', ['1'], ['Minus', ['Product', ['2'], ['3']]]],
         latex: '1-2 \\cdot 3',
       },
       {
-        solver: '2 a:3',
+        solver: '2 a : 3',
         json: ['Product', ['ImplicitProduct', ['2'], ['a']], ['DivideBy', ['3']]],
         latex: '2a \\div 3',
       },
@@ -487,7 +487,7 @@ describe('Solver Parser Unit Tests', () => {
   describe('Round, square and curly brackets', async () => {
     testCases([
       {
-        solver: '(1+2)*3',
+        solver: '(1 + 2) * 3',
         json: ['Product', [['Sum', 'RoundBracket'], ['1'], ['2']], ['3']],
         latex: '\\left(1+2\\right) \\cdot 3',
       },
@@ -557,14 +557,14 @@ describe('Solver Parser Unit Tests', () => {
         json: ['Fraction', ['Fraction', ['1'], ['2']], ['3']],
         latex: ['\\frac{\\frac{1}{2}}{3}', '1/2/3'],
       },
-      { latex: '2+\\frac{1}{2}', solver: '2+[1 / 2]' },
+      { latex: '2+\\frac{1}{2}', solver: '2 + [1 / 2]' },
       { solver: '[-3 / -4]', latex: ['-3/-4', '(-3)/(-4)'] },
       { solver: '2 [x / 3] x', latex: ['2\\frac{x}{3}x', '2x/3x'] },
       {
-        solver: '1+[2 / [3 ^ x]]-3',
+        solver: '1 + [2 / [3 ^ x]] - 3',
         latex: ['1+\\frac{2}{3^x}-3', '1+2/3^x-3', '1+2/(3^x)-3'],
       },
-      { solver: '[1+2 / 3]', latex: ['\\frac{1+2}{3}', '(1+2)/3'] },
+      { solver: '[1 + 2 / 3]', latex: ['\\frac{1+2}{3}', '(1+2)/3'] },
     ]);
   });
 
@@ -591,7 +591,7 @@ describe('Solver Parser Unit Tests', () => {
         latex: '{3}^{\\frac{1}{2}}',
       },
       {
-        solver: '2+3*[4 ^ 5]*6+7',
+        solver: '2 + 3 * [4 ^ 5] * 6 + 7',
         json: ['Sum', ['2'], ['Product', ['3'], ['Power', ['4'], ['5']], ['6']], ['7']],
         latex: '2+3 \\cdot {4}^{5} \\cdot 6+7',
       },
@@ -603,7 +603,7 @@ describe('Solver Parser Unit Tests', () => {
       { solver: 'sqrt[4]', json: ['SquareRoot', ['4']], latex: '\\sqrt{4}' },
       { solver: 'root[4, 3]', json: ['Root', ['4'], ['3']], latex: '\\sqrt[{3}]{4}' },
       {
-        solver: '[2 ^ root[1+2, 3]]',
+        solver: '[2 ^ root[1 + 2, 3]]',
         json: ['Power', ['2'], ['Root', ['Sum', ['1'], ['2']], ['3']]],
         latex: '{2}^{\\sqrt[{3}]{1+2}}',
       },
@@ -680,6 +680,30 @@ describe('Solver Parser Unit Tests', () => {
         latex: 'x \\in \\left[ 5, \\infty \\right)',
         dontParseLatex: true,
       },
+      {
+        solver: 'Identity[x: 3 = 3]',
+        json: ['Identity', ['VariableList', ['x']], ['Equation', ['3'], ['3']]],
+        latex: 'x \\in \\mathbb{R}',
+        dontParseLatex: true,
+      },
+      {
+        solver: 'Identity[3 = 3]',
+        json: ['Identity', ['VariableList'], ['Equation', ['3'], ['3']]],
+        latex: '\\top',
+        dontParseLatex: true,
+      },
+      {
+        solver: 'Contradiction[x: 3 != 3]',
+        json: ['Contradiction', ['VariableList', ['x']], ['Inequation', ['3'], ['3']]],
+        latex: 'x \\in \\emptyset',
+        dontParseLatex: true,
+      },
+      {
+        solver: 'Contradiction[3 != 3]',
+        json: ['Contradiction', ['VariableList'], ['Inequation', ['3'], ['3']]],
+        latex: '\\bot',
+        dontParseLatex: true,
+      },
     ]);
   });
 
@@ -702,7 +726,7 @@ describe('Solver Parser Unit Tests', () => {
         latex: ['x', '\\mathrm{x}', '\\textit{x}'],
       },
       {
-        solver: '1+2',
+        solver: '1 + 2',
         json: ['Sum', ['1'], ['2']],
         latex: [
           '1+2',
@@ -722,12 +746,12 @@ describe('Solver Parser Unit Tests', () => {
   describe('Absolute value', async () => {
     testCases([
       {
-        solver: '2 abs[x+1]',
+        solver: '2 abs[x + 1]',
         json: ['ImplicitProduct', ['2'], ['AbsoluteValue', ['Sum', ['x'], ['1']]]],
         latex: ['2\\left|x+1\\right|', '2|x + 1|'],
       },
       {
-        solver: 'abs[x+1]',
+        solver: 'abs[x + 1]',
         json: ['AbsoluteValue', ['Sum', ['x'], ['1']]],
         latex: ['\\left|x+1\\right|', '|x+1|'],
         tree: {
@@ -754,7 +778,7 @@ describe('Solver Parser Unit Tests', () => {
         },
       },
       {
-        solver: '2 abs[abs[x+2]+1]+5',
+        solver: '2 abs[abs[x + 2] + 1] + 5',
         json: [
           'Sum',
           [
@@ -767,7 +791,7 @@ describe('Solver Parser Unit Tests', () => {
         latex: ['2\\left|\\left|x+2\\right|+1\\right|+5', '2||x+2|+1|+5'],
       },
       {
-        solver: 'abs[x+1] abs[x+3]',
+        solver: 'abs[x + 1] abs[x + 3]',
         json: [
           'ImplicitProduct',
           ['AbsoluteValue', ['Sum', ['x'], ['1']]],
@@ -776,7 +800,7 @@ describe('Solver Parser Unit Tests', () => {
         latex: ['\\left|x+1\\right|\\left|x+3\\right|', '|x+1||x+3|'],
       },
       {
-        solver: 'abs[abs[x]+abs[y]]',
+        solver: 'abs[abs[x] + abs[y]]',
         latex: ['\\left|\\left|x\\right| + \\left|y\\right|\\right|', '||x| + |y||'],
       },
       {
