@@ -431,6 +431,30 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
         },
     ),
 
+    TurnProductOfFractionAndNonFractionFactorIntoFraction(
+        rule {
+            val fraction = FractionPattern()
+            val opNegFraction = optionalNegOf(fraction)
+            val product = productContaining(opNegFraction)
+
+            onPattern(product) {
+                if (restOf(product).children.any { it is Fraction }) {
+                    return@onPattern null
+                }
+                ruleResult(
+                    toExpr = copySign(
+                        opNegFraction,
+                        fractionOf(
+                            productOf(get(fraction.numerator), restOf(product)),
+                            get(fraction.denominator),
+                        ),
+                    ),
+                    explanation = metadata(Explanation.TurnProductOfFractionAndNonFractionFactorIntoFraction),
+                )
+            }
+        },
+    ),
+
     BringToCommonDenominatorWithNonFractionalTerm(
         rule {
             val denominator = AnyPattern()

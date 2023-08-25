@@ -2,6 +2,7 @@ package methods.fractionarithmetic
 
 import engine.methods.testMethod
 import engine.methods.testRule
+import engine.methods.testRuleInX
 import methods.fractionarithmetic.FractionArithmeticRules.AddLikeFractions
 import methods.fractionarithmetic.FractionArithmeticRules.BringToCommonDenominator
 import methods.fractionarithmetic.FractionArithmeticRules.BringToCommonDenominatorWithNonFractionalTerm
@@ -159,6 +160,25 @@ class FractionsRulesTest {
         testRule("[1/2] * (1 + [2 ^ [1/2]])", TurnFactorIntoFractionInProduct, "[1/2] * [1 + [2 ^ [1/2]] / 1]")
         testRule("[2/3] * (5 + [([1/2]) ^ 2])", TurnFactorIntoFractionInProduct, null)
         testRule("[2/3] * (1 - [1/3])", TurnFactorIntoFractionInProduct, null)
+    }
+
+    @Test
+    fun testTurnProductOfFractionAndNonFractionFactorIntoFraction() {
+        testRuleInX(
+            "[12 / x - 3] (x-3)(x-4)(x-5)",
+            FractionArithmeticRules.TurnProductOfFractionAndNonFractionFactorIntoFraction,
+            "[12 (x-3)(x-4)(x-5) / x - 3]",
+        )
+        testRuleInX(
+            "(-[12 / x - 3]) (x-3)(x-4)(x-5)",
+            FractionArithmeticRules.TurnProductOfFractionAndNonFractionFactorIntoFraction,
+            "-[12 (x-3)(x-4)(x-5) / x - 3]",
+        )
+        testRuleInX(
+            "[9x / x + 1] (x + 2)(x + 3)",
+            FractionArithmeticRules.TurnProductOfFractionAndNonFractionFactorIntoFraction,
+            "[9x (x + 2)(x + 3) / x + 1]",
+        )
     }
 
     @Test

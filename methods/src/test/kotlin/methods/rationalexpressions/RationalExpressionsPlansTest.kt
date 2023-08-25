@@ -9,7 +9,6 @@ import methods.polynomials.PolynomialsExplanation
 import org.junit.jupiter.api.Test
 
 class RationalExpressionsPlansTest {
-
     @Test
     fun `test simplification of rational expression`() = testMethod {
         method = RationalExpressionsPlans.SimplifyRationalExpression

@@ -38,6 +38,7 @@ import methods.solvable.SolvablePlans
 import methods.solvable.SolvableRules
 import methods.solvable.computeOverallUnionSolution
 import methods.solvable.evaluateBothSidesNumerically
+import solveRationalEquation
 
 enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
@@ -224,6 +225,9 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
     @PublicMethod
     SolveEquationWithConstraint(solveEquationWithConstraint),
+
+    @PublicMethod
+    SolveRationalEquation(solveRationalEquation),
 
     @PublicMethod
     SolveConstantEquation(

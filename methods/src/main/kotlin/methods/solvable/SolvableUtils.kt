@@ -104,6 +104,7 @@ val expressionComparator = ExpressionComparator { e1: Expression, e2: Expression
                 when {
                     d > 0 -> Sign.POSITIVE
                     d < 0 -> Sign.NEGATIVE
+                    d.toInt() == 0 -> Sign.ZERO
                     d.isNaN() -> Sign.NONE
                     else -> Sign.UNKNOWN
                 }

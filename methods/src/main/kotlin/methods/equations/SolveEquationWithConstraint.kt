@@ -98,7 +98,7 @@ internal val solveEquationWithOneAbsoluteValueBySubstitution = taskSet {
  * Creates some tasks that, if necessary, filter down the [solution] values to the ones which are valid according
  * to the [constraint].  Returns null if it fails to do it.
  */
-private fun TasksBuilder.checkSolutionsAgainstConstraint(solution: Expression, constraint: Expression): Task? {
+fun TasksBuilder.checkSolutionsAgainstConstraint(solution: Expression, constraint: Expression): Task? {
     return when {
         constraint is Identity || solution is Contradiction -> {
             task(

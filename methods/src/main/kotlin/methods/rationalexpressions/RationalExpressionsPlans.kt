@@ -192,7 +192,8 @@ private val addRationalExpressions = taskSet {
         val factoredFraction1 = factorFractionDenominatorTask(fraction1)
         val factoredFraction2 = factorFractionDenominatorTask(fraction2)
 
-        val (lcm, multiplier1, multiplier2) = computeLcdAndMultipliers(factoredFraction1, factoredFraction2)
+        val (lcm, multipliers) = computeLcdAndMultipliers(listOf(factoredFraction1, factoredFraction2))
+        val (multiplier1, multiplier2) = multipliers
 
         // 3. Display the LCD (no computations shown)
         task(
@@ -224,7 +225,7 @@ private val addRationalExpressions = taskSet {
     }
 }
 
-private fun TasksBuilder.factorFractionDenominatorTask(fraction: Fraction): Fraction {
+fun TasksBuilder.factorFractionDenominatorTask(fraction: Fraction): Fraction {
     val factoringTask = task(
         startExpr = fraction,
         explanation = metadata(Explanation.FactorDenominatorOfFraction),
@@ -262,30 +263,33 @@ private fun TasksBuilder.bringFractionToCommonDenominatorTask(fraction: Fraction
     return simplificationTask.result as Fraction
 }
 
-private fun computeLcdAndMultipliers(factoredFraction1: Fraction, factoredFraction2: Fraction):
-    Triple<Expression, Expression, Expression> {
+fun computeLcdAndMultipliers(factoredFractions: List<Fraction>):
+    Pair<Expression, List<Expression>> {
     // Compute the LCM of the denominators
-    val factors1 = factoredFraction1.denominator.factors()
-    val factors2 = factoredFraction2.denominator.factors()
+    val factorsList = factoredFractions.map { it.denominator.factors() }
 
-    // Compute the LCM of the non-integer factors
-    val multiplicities1 = factors1.mapNotNull { extractMultiplicity(it) }
-    val multiplicities2 = factors2.mapNotNull { extractMultiplicity(it) }
+    val multiplicitiesList = factorsList.map { factors -> factors.mapNotNull { expr -> extractMultiplicity(expr) } }
 
-    val lcmMultiplicities = multiplicities1.toMutableList()
-    for (factor in multiplicities2) {
-        val index = lcmMultiplicities.indexOfFirst { areEquivalentSums(it.base, factor.base) }
-        if (index == -1) {
-            lcmMultiplicities.add(factor)
-        } else if (lcmMultiplicities[index].exponent < factor.exponent) {
-            lcmMultiplicities[index] = factor
+    val lcmMultiplicities = multiplicitiesList[0].toMutableList()
+
+    for (i in 1 until multiplicitiesList.size) {
+        val multiplicities = multiplicitiesList[i]
+        for (factor in multiplicities) {
+            val index = lcmMultiplicities.indexOfFirst { areEquivalentSums(it.base, factor.base) }
+            if (index == -1) {
+                lcmMultiplicities.add(factor)
+            } else if (lcmMultiplicities[index].exponent < factor.exponent) {
+                lcmMultiplicities[index] = factor
+            }
         }
     }
 
-    // Compute the LCM of the integer factors
-    val integer1 = factors1.singleOrNull { it is IntegerExpression }?.asInteger() ?: BigInteger.ONE
-    val integer2 = factors2.singleOrNull { it is IntegerExpression }?.asInteger() ?: BigInteger.ONE
-    val integerLcm = integer1.lcm(integer2)
+    val integerList = factorsList.map {
+            factors ->
+        factors.singleOrNull { it is IntegerExpression }?.asInteger() ?: BigInteger.ONE
+    }
+
+    val integerLcm = integerList.lcm()
 
     val lcm = simplifiedProductOf(
         xp(integerLcm),
@@ -293,20 +297,15 @@ private fun computeLcdAndMultipliers(factoredFraction1: Fraction, factoredFracti
     )
 
     // Compute the multiplier as a product of the integer multiplier and the non-integer multiplier
-    val integerMultiplier1 = xp(integerLcm / integer1)
-    val integerMultiplier2 = xp(integerLcm / integer2)
+    val integerMultipliers = integerList.map { xp(integerLcm / it) }
+    val multipliers = multiplicitiesList.indices.map { i ->
+        simplifiedProductOf(
+            integerMultipliers[i],
+            computeMultiplierToLCM(multiplicitiesList[i], lcmMultiplicities),
+        )
+    }
 
-    val multiplier1 = simplifiedProductOf(
-        integerMultiplier1,
-        computeMultiplierToLCM(multiplicities1, lcmMultiplicities),
-    )
-
-    val multiplier2 = simplifiedProductOf(
-        integerMultiplier2,
-        computeMultiplierToLCM(multiplicities2, lcmMultiplicities),
-    )
-
-    return Triple(lcm, multiplier1, multiplier2)
+    return Pair(lcm, multipliers)
 }
 
 private data class FactorWithMultiplicity(val base: Expression, val exponent: BigInteger)

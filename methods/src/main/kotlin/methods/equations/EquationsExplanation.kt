@@ -496,6 +496,77 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      *      --> x - 1 = 2x + 5 GIVEN x - 1 >= 0 OR -(x - 1) = 2x + 5 GIVEN x - 1 < 0
      */
     SeparateModulusEqualsExpression,
+
+    /**
+     * Compute LCD of rational fractions
+     *
+     * E.g. [12 / (x-3)(x+3) ] = [8x / 5(x - 3)] - [2 / x + 3]
+     *      --> LCD((x-3)(x+3), 5(x - 3), x + 3) = 5(x-3)(x+3)
+     */
+    ComputeLeastCommonDenominatorOfFractions,
+
+    /**
+     * Multiplies and distributes LCD (computed in another step), to the entire rational equation
+     *
+     * E.g. [12 / (x-3)(x+3) ] = [8x / 5(x-3)] - [2 / x+3] with computed LCD = 5(x-3)(x+3)
+     *          --> [12 / (x-3)(x+3) ] 5(x-3)(x+3) = [8x / 4(x-3)] 5(x-3)(x+3) + (-[2 / x + 3]) 5(x-3)(x+3)
+     */
+    MultiplyBothSidesAndSimplifyEquation,
+
+    /**
+     * Multiplies a rational expression with another rational expression (could be polynomial expression as well)
+     * and simplifies product of integers (if present)
+     *
+     * E.g. [12 / (x-3)(x+3) ] 5(x-3)(x+3) = [8x / 5(x-3)] 5(x-3)(x+3) + (-[2 / x + 3]) 5(x-3)(x+3)
+     *          --> [12 / (x-3)(x+3) ] 5(x-3)(x+3) --> [12 (x-3)(x + 3) / 5(x-3)(x+3)] --> 60
+     *          --> [8x / 5(x-3)] 5(x-3)(x+3) --> [8x * 5(x-3)(x+3) / 5(x-3)] --> 8x (x+3)
+     *          --> (-[2 / x + 3]) 5(x-3)(x+3) --> -[2 * 5(x-3)(x+3) / x + 3] --> -10(x-3)
+     *
+     *      --> 60 = 8x(x + 3) - 10(x - 3)
+     */
+    SimplifyRationalExpression,
+
+    /**
+     * Factors denominator of a fraction(s) in an expression/equation
+     *
+     * E.g. [12 / [x^2] - 9] = [8x / [x^2] - 16] --> [12 / (x-3)(x+3)] = [8x / (x-4)(x+4)]
+     */
+    FactorDenominatorOfFraction,
+
+    /**
+     * Multiplies a rational expression with another rational expression (could be polynomial expression as well)
+     * and simplifies product of integers (if present)
+     *
+     * E.g. [12 / (x-3)(x+3) ] 5(x-3)(x+3) = [8x / 5(x-3)] 5(x-3)(x+3) + (-[2 / x + 3]) 5(x-3)(x+3)
+     *          --> [12 / (x-3)(x+3) ] 5(x-3)(x+3) --> [12 (x-3)(x + 3) / 5(x-3)(x+3)] --> 60
+     *          --> [8x / 5(x-3)] 5(x-3)(x+3) --> [8x * 5(x-3)(x+3) / 5(x-3)] --> 8x (x+3)
+     *          --> (-[2 / x + 3]) 5(x-3)(x+3) --> -[2 * 5(x-3)(x+3) / x + 3] --> -10(x-3)
+     *
+     *      --> 60 = 8x(x + 3) - 10(x - 3)
+     */
+    MultiplyAndSimplifyRationalFractions,
+
+    /**
+     * Multiply both sides of a rational equation with denominator (unique) present in the equation
+     *
+     * E.g. [12 / [x^2] - 9] + [1/[x^2] - 9] = 8
+     *      --> [12 / [x^2] - 9] ([x^2] - 9) + [1/[x^2] - 9] ([x^2] - 9) = 8 ([x^2] - 9)
+     *
+     * Another E.g. [12 / [x^2] - 9] + 8 sqrt[3] = [8 / [x^2] - 9]
+     *              --> [12 / [x^2] - 9] ([x^2] - 9) + 8 sqrt[3] ([x^2] - 9) = [8 / [x^2] - 9] ([x^2] - 9)
+     */
+    MultiplyBothSidesByDenominator,
+
+    /**
+     * Simplify a rational equation to a polynomial equation either
+     * (a). multiplying by LCD both the sides
+     * (b). or multiplying by (unique) denominator both the sides
+     *
+     * and then simplify the equation to make it a polynomial equation
+     */
+    SimplifyToPolynomialEquation,
+
+    SimplifiedPolynomialEquation,
     ;
 
     override val category = "Equations"

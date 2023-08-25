@@ -14,6 +14,7 @@ import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
+import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
 import engine.patterns.condition
@@ -48,7 +49,7 @@ enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
                 val simplificationTask = task(
                     startExpr = expression,
                     explanation = metadata(Explanation.SimplifyAlgebraicExpression),
-                    stepsProducer = algebraicSimplificationSteps,
+                    stepsProducer = algebraicSimplificationSteps(),
                 ) ?: return@tasks null
 
                 task(
@@ -72,7 +73,7 @@ enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
             )
 
             steps {
-                apply(algebraicSimplificationSteps)
+                apply(algebraicSimplificationSteps())
             }
         },
     ),
@@ -125,26 +126,30 @@ enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
     ),
 }
 
-val algebraicSimplificationSteps = steps {
-    whilePossible { deeply(simpleTidyUpSteps) }
-    optionally(NormalizationPlans.NormalizeExpression)
-    whilePossible {
-        deeply(deepFirst = true) {
-            firstOf {
-                option(RationalExpressionsPlans.SimplifyDivisionOfPolynomial)
-                option(RationalExpressionsPlans.SimplifyRationalExpression)
-                option(RationalExpressionsPlans.SimplifyPowerOfRationalExpression)
-                option(RationalExpressionsPlans.MultiplyRationalExpressions)
-                option(RationalExpressionsPlans.AddLikeRationalExpressions)
-                option(RationalExpressionsPlans.AddTermAndRationalExpression)
-                option(RationalExpressionsPlans.AddRationalExpressions)
-                option(polynomialSimplificationSteps)
+fun algebraicSimplificationSteps(addRationalExpressions: Boolean = true): StepsProducer {
+    return steps {
+        whilePossible { deeply(simpleTidyUpSteps) }
+        optionally(NormalizationPlans.NormalizeExpression)
+        whilePossible {
+            deeply(deepFirst = true) {
+                firstOf {
+                    option(RationalExpressionsPlans.SimplifyDivisionOfPolynomial)
+                    option(RationalExpressionsPlans.SimplifyRationalExpression)
+                    option(RationalExpressionsPlans.SimplifyPowerOfRationalExpression)
+                    option(RationalExpressionsPlans.MultiplyRationalExpressions)
+                    if (addRationalExpressions) {
+                        option(RationalExpressionsPlans.AddLikeRationalExpressions)
+                        option(RationalExpressionsPlans.AddTermAndRationalExpression)
+                        option(RationalExpressionsPlans.AddRationalExpressions)
+                    }
+                    option(polynomialSimplificationSteps)
+                }
             }
         }
     }
 }
 
-private fun findDenominatorsAndDivisors(expr: Expression): Sequence<Pair<Expression, Expression>> = sequence {
+fun findDenominatorsAndDivisors(expr: Expression): Sequence<Pair<Expression, Expression>> = sequence {
     for (child in expr.children) {
         yieldAll(findDenominatorsAndDivisors(child))
     }

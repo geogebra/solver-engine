@@ -25,6 +25,7 @@ class DecimalsRulesTest {
     fun testStripTrailingZeros() {
         testRule("1.100", DecimalRules.StripTrailingZerosAfterDecimal, "1.1")
         testRule("1.1", DecimalRules.StripTrailingZerosAfterDecimal, null)
+        testRule("(-9)", DecimalRules.StripTrailingZerosAfterDecimal, null)
     }
 
     @Test

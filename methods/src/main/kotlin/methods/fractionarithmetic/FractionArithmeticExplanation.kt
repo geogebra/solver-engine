@@ -54,6 +54,13 @@ enum class FractionArithmeticExplanation : CategorisedMetadataKey {
     TurnFactorIntoFractionInProduct,
 
     /**
+     * Turn product of rational fraction term and a polynomial term into fraction
+     *
+     * E.g. [12 / [x^2] - 9] 4(x-3) --> [12 * 4(x-3) / [x^2] - 9]
+     */
+    TurnProductOfFractionAndNonFractionFactorIntoFraction,
+
+    /**
      * Multiply fractions together in a product and also multiply fractions by integers,
      * simplifying the resulting fraction as much as possible
      *
@@ -123,7 +130,6 @@ enum class FractionArithmeticExplanation : CategorisedMetadataKey {
      * E.g. [0 ^ -[2 / 3]] -> [(1 / 0) ^ [2 / 3]]
      */
     TurnNegativePowerOfZeroToPowerOfFraction,
-
     ;
 
     override val category = "FractionArithmetic"

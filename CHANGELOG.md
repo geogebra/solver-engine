@@ -19,6 +19,7 @@ contents to a new release section (e.g. _[0.x]_).
 - SDK: added support for Void expression - this would need explicit handling in front-ends (PLUT-603)
 - Added support for simplifying and expanding multivariate polynomial expressions (PLUT-651)
 - Added support for simplifying multivariate algebraic expressions (PLUT-667)
+- Solve rational equations implementation (PLUT-593)
 
 ### Fixed
 

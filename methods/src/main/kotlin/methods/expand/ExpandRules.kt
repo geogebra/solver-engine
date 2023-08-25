@@ -40,40 +40,44 @@ enum class ExpandRules(override val runner: Rule) : RunnerMethod {
 
 /**
  * a * (b + c) -> a * b + a * c
- * (b + c + d) * a -> b * a + c * a + d * a
+ *
+ * if "distributeFromRight" is false (default), then:
+ * (b + c + d) * a -> a * b + a * c + a * d
+ *
+ * when "distributeFromRight" is true, then:
+ * (b + c + d) * a -> b * a + b * c + d * a
  */
-private val distributeMultiplicationOverSum =
-    rule {
-        val sum = sumContaining()
-        val product = productContaining(sum)
-        val optionalNegProduct = stickyOptionalNegOf(product)
+private val distributeMultiplicationOverSum = rule {
+    val sum = sumContaining()
+    val product = productContaining(sum)
+    val optionalNegProduct = stickyOptionalNegOf(product)
 
-        onPattern(optionalNegProduct) {
-            if (get(product).children.any { it is DivideBy }) return@onPattern null
+    onPattern(optionalNegProduct) {
+        if (get(product).children.any { it is DivideBy }) return@onPattern null
 
-            val getSum = get(sum)
-            val terms = getSum.children
-            val restOfProd = distribute(restOf(product))
+        val getSum = get(sum)
+        val terms = getSum.children
+        val restOfProd = distribute(restOf(product))
 
-            // variableExpression * (c1 + c2 + ... + cn) --> shouldn't be expanded
-            if (getSum.isConstant() && !restOfProd.isConstant()) return@onPattern null
-            val distributeTerm = if (optionalNegProduct.isNeg()) {
-                negOf(restOfProd)
-            } else {
-                restOfProd
-            }
-
-            val distributedExpr = sumOf(
-                terms.map { explicitProductOf(distributeTerm, move(it)) },
-            )
-
-            ruleResult(
-                toExpr = distributedExpr,
-                gmAction = drag(restOf(product), sum),
-                explanation = metadata(Explanation.DistributeMultiplicationOverSum, distributeTerm),
-            )
+        // variableExpression * (c1 + c2 + ... + cn) --> shouldn't be expanded
+        if (getSum.isConstant() && !restOfProd.isConstant()) return@onPattern null
+        val distributeTerm = if (optionalNegProduct.isNeg()) {
+            negOf(restOfProd)
+        } else {
+            restOfProd
         }
+
+        val distributedExpr = sumOf(
+            terms.map { explicitProductOf(distributeTerm, move(it)) },
+        )
+
+        ruleResult(
+            toExpr = distributedExpr,
+            gmAction = drag(restOf(product), sum),
+            explanation = metadata(Explanation.DistributeMultiplicationOverSum, distributeTerm),
+        )
     }
+}
 
 /**
  * -(x + y) --> -x - y

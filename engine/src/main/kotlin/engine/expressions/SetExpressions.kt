@@ -23,6 +23,7 @@ abstract class SetExpression internal constructor(
             is CartesianProduct -> intersectWithCartesianProduct(other, comparator)
             is SetUnion -> intersectWithSetUnion(other, comparator)
             is SetDifference -> intersectWithSetDifference(other, comparator)
+            Constants.Reals -> this
             else -> null
         }
     }
@@ -33,6 +34,7 @@ abstract class SetExpression internal constructor(
             is Interval -> unionWithInterval(other, comparator)
             is CartesianProduct -> unionWithCartesianProduct(other, comparator)
             is SetUnion -> unionWithSetUnion(other, comparator)
+            Constants.Reals -> other
             else -> null
         }
     }
@@ -235,6 +237,13 @@ class FiniteSet(
 
     override fun intersectWithCartesianProduct(
         other: CartesianProduct,
+        comparator: ExpressionComparator,
+    ): SetExpression? {
+        return filterElements(other, comparator)
+    }
+
+    override fun intersectWithSetDifference(
+        other: SetDifference,
         comparator: ExpressionComparator,
     ): SetExpression? {
         return filterElements(other, comparator)

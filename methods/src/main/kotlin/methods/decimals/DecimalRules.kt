@@ -1,5 +1,6 @@
 package methods.decimals
 
+import engine.expressions.DecimalExpression
 import engine.expressions.equationOf
 import engine.expressions.fractionOf
 import engine.expressions.negOf
@@ -18,6 +19,7 @@ import engine.patterns.SignedNumberPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.UnsignedNumberPattern
 import engine.patterns.commutativeEquationOf
+import engine.patterns.condition
 import engine.patterns.divideBy
 import engine.patterns.fractionOf
 import engine.patterns.integerCondition
@@ -350,21 +352,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
         },
     ),
 
-    StripTrailingZerosAfterDecimal(
-        rule {
-            val num = SignedNumberPattern()
-
-            onPattern(num) {
-                val n = numericOp(num) { n -> n.stripTrailingZeros() }
-                if (get(num) == n) return@onPattern null
-
-                ruleResult(
-                    toExpr = transform(num, n),
-                    explanation = metadata(Explanation.StripTrailingZerosAfterDecimal),
-                )
-            }
-        },
-    ),
+    StripTrailingZerosAfterDecimal(stripTrailingZerosAfterDecimal),
 
     EvaluateSignedDecimalAddition(
         rule {
@@ -463,4 +451,18 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
             }
         },
     ),
+}
+
+private val stripTrailingZerosAfterDecimal = rule {
+    val num = condition { it is DecimalExpression }
+
+    onPattern(num) {
+        val n = xp((get(num) as DecimalExpression).value.stripTrailingZeros())
+        if (get(num) == n) return@onPattern null
+
+        ruleResult(
+            toExpr = transform(num, n),
+            explanation = metadata(Explanation.StripTrailingZerosAfterDecimal),
+        )
+    }
 }

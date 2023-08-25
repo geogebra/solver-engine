@@ -16,6 +16,7 @@ import engine.expressions.greaterThanEqualOf
 import engine.expressions.hasSingleValue
 import engine.expressions.identityOf
 import engine.expressions.inverse
+import engine.expressions.isPolynomial
 import engine.expressions.leadingCoefficientOfPolynomial
 import engine.expressions.lessThanOf
 import engine.expressions.negOf
@@ -303,6 +304,8 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
     SeparateModulusEqualsExpression(separateModulusEqualsExpression),
     SeparateModulusEqualsExpressionWithoutConstraint(separateModulusEqualsExpressionWithoutConstraint),
+
+    MultiplyBothSidesOfLikeRationalEquation(multiplyBothSidesOfLikeRationalEquation),
 }
 
 private val applyQuadraticFormula = rule {
@@ -591,5 +594,30 @@ private fun RuleResultBuilder.trueOrFalseRuleResult(isSatisfied: Boolean): Trans
             Explanation.ExtractSolutionFromContradiction
         }
         ruleResult(toExpr = toExpr, explanation = metadata(key, variableList))
+    }
+}
+
+/**
+ * An equation of the form: [p(x) / r(x)] = [q(x) / r(x)]
+ * is called like rational equation (custom term)
+ */
+private val multiplyBothSidesOfLikeRationalEquation = rule {
+    val commonDenominator = condition { it.isPolynomial() }
+    val firstPolynomial = condition { it.isPolynomial() }
+    val secondPolynomial = condition { it.isPolynomial() }
+    val lhsRationalPolynomial = optionalNegOf(engine.patterns.fractionOf(firstPolynomial, commonDenominator))
+    val rhsRationalPolynomial = optionalNegOf(engine.patterns.fractionOf(secondPolynomial, commonDenominator))
+
+    val eq = equationOf(lhsRationalPolynomial, rhsRationalPolynomial)
+
+    onPattern(eq) {
+        val newLhs = productOf(get(lhsRationalPolynomial), get(commonDenominator))
+        val newRhs = productOf(get(rhsRationalPolynomial), get(commonDenominator))
+        val newEq = equationOf(newLhs, newRhs)
+
+        ruleResult(
+            toExpr = newEq,
+            explanation = metadata(Explanation.MultiplyBothSidesByDenominator),
+        )
     }
 }
