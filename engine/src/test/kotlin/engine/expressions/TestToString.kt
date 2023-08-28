@@ -82,10 +82,10 @@ class TestToString {
 
     @Test
     fun testCalculus() {
-        test("diff[sin x / dx]", "diff[sin x / dx]", "\\frac{\\mathrm{d} \\sin x}{\\mathrm{d} x}")
+        test("diff[sin x / x]", "diff[sin x / x]", "\\frac{\\mathrm{d} \\sin x}{\\mathrm{d} x}")
         test(
-            "[diff ^ 2][sin x * sin y / dx dy]",
-            "[diff ^ 2][sin x * sin y / dx dy]",
+            "[diff ^ 2][sin x * sin y / x y]",
+            "[diff ^ 2][sin x * sin y / x y]",
             "\\frac{\\mathrm{d}^{2} \\sin x \\times \\sin y}{\\mathrm{d} x \\, \\mathrm{d} y}",
         )
         test(

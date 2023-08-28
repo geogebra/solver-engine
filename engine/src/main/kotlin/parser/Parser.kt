@@ -10,6 +10,7 @@ import engine.expressions.FiniteSet
 import engine.expressions.Identity
 import engine.expressions.ImplicitSolution
 import engine.expressions.Inequation
+import engine.expressions.Power
 import engine.expressions.Product
 import engine.expressions.SetDifference
 import engine.expressions.SetExpression
@@ -21,7 +22,6 @@ import engine.expressions.cartesianProductOf
 import engine.expressions.expressionOf
 import engine.expressions.greaterThanEqualOf
 import engine.expressions.greaterThanOf
-import engine.expressions.inequationOf
 import engine.expressions.lessThanEqualOf
 import engine.expressions.lessThanOf
 import engine.expressions.matrixOf
@@ -140,7 +140,6 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
             "<=" -> lessThanEqualOf(lhs, rhs)
             ">" -> greaterThanOf(lhs, rhs)
             ">=" -> greaterThanEqualOf(lhs, rhs)
-            "!=" -> inequationOf(lhs, rhs)
             else -> throw InvalidParameterException("Comparator ${ctx.comparator.text} not recognized")
         }
     }
@@ -382,8 +381,12 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
         return makeExpression(function, visit(ctx.argument))
     }
 
+    override fun visitRealVariablePower(ctx: ExpressionParser.RealVariablePowerContext): Expression {
+        return Power(visitVariable(ctx.base), visitNaturalNumber(ctx.exp))
+    }
+
     override fun visitFirstDerivative(ctx: ExpressionParser.FirstDerivativeContext): Expression {
-        return makeExpression(DerivativeOperator, Constants.One, visit(ctx.product()), visit(ctx.variable()))
+        return makeExpression(DerivativeOperator, Constants.One, visit(ctx.product()), visit(ctx.variablePower()))
     }
 
     override fun visitNthDerivative(ctx: ExpressionParser.NthDerivativeContext): Expression {

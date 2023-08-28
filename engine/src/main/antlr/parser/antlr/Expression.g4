@@ -23,7 +23,7 @@ equationSubtraction: eq1=equation '/-/' eq2=equation;
 
 equation: lhs=expr '=' rhs=expr;
 inequation: lhs=expr '!=' rhs=expr;
-inequality: lhs=expr comparator=('<' | '<=' | '>' | '>=' | '!=') rhs=expr;
+inequality: lhs=expr comparator=('<' | '<=' | '>' | '>=') rhs=expr;
 
 solution
     : 'Identity' '[' (vars=variables ':')? stmt=statementUnion ']'        #identity
@@ -127,9 +127,14 @@ atom: bracket
     | variable | constant | naturalNumber | decimalNumber | recurringDecimalNumber
     ;
 
+variablePower
+    : variable                                      #justVariable
+    | '[' base=variable '^' exp=naturalNumber ']'   #realVariablePower
+    ;
+
 derivative
-    : 'diff' '[' product '/' 'd' variable ']'                              #firstDerivative
-    | '[' 'diff' '^' order=expr ']' '[' product '/' ('d' vars+=atom)+ ']'  #nthDerivative
+    : 'diff' '[' product '/' variablePower ']'                              #firstDerivative
+    | '[' 'diff' '^' order=expr ']' '[' product '/' (vars+=variablePower)+ ']'  #nthDerivative
     ;
 
 indefiniteIntegral: 'prim' '[' function=expr ',' variable ']';

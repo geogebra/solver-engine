@@ -125,7 +125,7 @@ the other.
 ### Calculus
 
 - First derivative: `diff[sin(x) / x]`
-- N-th derivative: `[diff ^ n + 2][sin(x) sin(y) / x, y, [x ^ n]]`
+- N-th derivative: `[diff ^ n + 2][sin(x) sin(y) / x y [x ^ n]]`
 - Indefinite integral: `prim[sin x, x]`
 - Definite integral: `int[0, /pi/, sin x, x]`
 

@@ -115,6 +115,7 @@ class ParserTest {
     @Test
     fun testVariable() {
         parsesTo("x", xp("x"))
+        parsesTo("d", xp("d"))
         parsesTo("Z", xp("Z"))
         parsesTo("x_1", xp("x", "1"))
         parsesTo("\\alpha_x", xp("\\alpha", "x"))
@@ -170,18 +171,18 @@ class ParserTest {
         parsesTo("2[2^2]", rawProductOf(xp(2), powerOf(xp(2), xp(2))))
         // Should give warning but be accepted
         parsesTo("2[1 / 3]", rawProductOf(xp(2), fractionOf(xp(1), xp(3))))
-        parsesTo("abcf", rawProductOf(xp("a"), xp("b"), xp("c"), xp("f")))
+        parsesTo("abcd", rawProductOf(xp("a"), xp("b"), xp("c"), xp("d")))
     }
 
     @Test
     fun testDivisions() {
         parsesTo(
-            "abc : cf",
+            "abc : cd",
             rawProductOf(
                 xp("a"),
                 xp("b"),
                 xp("c"),
-                divideBy(missingBracketOf(rawProductOf(xp("c"), xp("f")))),
+                divideBy(missingBracketOf(rawProductOf(xp("c"), xp("d")))),
             ),
         )
     }
@@ -283,10 +284,14 @@ class ParserTest {
 
     @Test
     fun testCalculus() {
-        parsesTo("diff[sin x / dx]", derivativeOf(sinOf(xp("x")), xp("x")))
+        parsesTo("diff[sin x / x]", derivativeOf(sinOf(xp("x")), xp("x")))
         parsesTo(
-            "[diff ^ 2][sin x * sin y / dx dy]",
+            "[diff ^ 2][sin x * sin y / x y]",
             derivativeOf(Constants.Two, productOf(sinOf(xp("x")), sinOf(xp("y"))), xp("x"), xp("y")),
+        )
+        parsesTo(
+            "[diff ^ 2][sin x / [x ^ 2]]",
+            derivativeOf(Constants.Two, sinOf(xp("x")), powerOf(xp("x"), xp(2))),
         )
         parsesTo(
             "prim[arsinh(x + 1), x]",

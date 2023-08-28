@@ -489,9 +489,9 @@ internal object DerivativeOperator : ExpressionOperator {
     }
 
     override fun <T> readableString(children: List<T>) = when (children[0]) {
-        Constants.One -> "diff[${children[1]} / d${children[2]}]"
+        Constants.One -> "diff[${children[1]} / ${children[2]}]"
         else -> "[diff ^ ${children[0]}][${children[1]} " +
-            "/ ${children.drop(2).joinToString(separator = " ") { "d$it" }}]"
+            "/ ${children.drop(2).joinToString(separator = " ")}]"
     }
 
     override fun latexString(ctx: RenderContext, children: List<LatexRenderable>) = when (children[0]) {
