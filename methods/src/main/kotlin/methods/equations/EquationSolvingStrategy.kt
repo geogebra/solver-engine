@@ -252,6 +252,13 @@ enum class EquationSolvingStrategy(
         },
     ),
 
+    Undefined(
+        family = Family.UNDEFINED,
+        priority = -1,
+        explanation = EquationsExplanation.SolveEquationInOneVariable,
+        steps = EquationsRules.UndefinedEquationCannotBeSolved,
+    ),
+
     Fallback(
         family = Family.FALLBACK,
         priority = -1,
@@ -273,6 +280,7 @@ enum class EquationSolvingStrategy(
         SEPARABLE,
         PLUSMINUS,
         CONSTANT,
+        UNDEFINED,
         FALLBACK,
     }
 
@@ -327,6 +335,7 @@ internal val solveEquationInOneVariable = lazy {
 
         // before we simplify we always have to check for an identity / trivial contradiction
         option(EquationSolvingStrategy.ConstantEquation)
+        option(EquationSolvingStrategy.Undefined)
 
         // simplify the equation
         option(EquationsPlans.SimplifyEquation)

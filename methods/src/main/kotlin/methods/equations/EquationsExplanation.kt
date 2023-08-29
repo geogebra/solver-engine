@@ -78,6 +78,20 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     ExtractFalsehoodFromFalseEquality,
 
     /**
+     * A constant equation with at least one side undefined is false.
+     *
+     * E.g. 2 = 1/(1 - 1) -> undefined -> false
+     */
+    UndefinedConstantEquationIsFalse,
+
+    /**
+     * An equation with at least one side undefined cannot be solved.
+     *
+     * E.g. x = 1/(1 - 1) -> undefined -> cannot be solved
+     */
+    UndefinedEquationCannotBeSolved,
+
+    /**
      * Extract the solution from an equation of the form
      * x^n = negative constant, when n is even.
      *

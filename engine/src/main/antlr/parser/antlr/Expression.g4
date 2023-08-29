@@ -26,10 +26,10 @@ inequation: lhs=expr '!=' rhs=expr;
 inequality: lhs=expr comparator=('<' | '<=' | '>' | '>=') rhs=expr;
 
 solution
-    : 'Identity' '[' (vars=variables ':')? stmt=statementUnion ']'        #identity
-    | 'Contradiction' '[' (vars=variables ':')? stmt=statementUnion ']'   #contradiction
-    | 'ImplicitSolution' '[' vars=variables ':' stmt=statementUnion ']'   #implicitSolution
-    | 'SetSolution' '[' vars=variables ':' solutionSet=set ']'            #setSolution
+    : 'Identity' '[' (vars=variables ':')? stmt=statementUnion ']'                      #identity
+    | 'Contradiction' '[' (vars=variables ':')? (stmt=statementUnion | undefined) ']'   #contradiction
+    | 'ImplicitSolution' '[' vars=variables ':' stmt=statementUnion ']'                 #implicitSolution
+    | 'SetSolution' '[' vars=variables ':' solutionSet=set ']'                          #setSolution
     ;
 
 set: cartesianProduct | setUnion | setDifference;

@@ -6,6 +6,7 @@ import engine.expressions.DecimalExpression
 import engine.expressions.DivideBy
 import engine.expressions.Expression
 import engine.expressions.Fraction
+import engine.expressions.ValueExpression
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
@@ -185,7 +186,7 @@ enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
     @PublicMethod
     EvaluateExpressionAsDecimal(
         plan {
-            pattern = condition { it.hasDecimalOrFractionOrDivideBy() && it.isConstant() }
+            pattern = condition { it is ValueExpression && it.isConstant() && it.hasDecimalOrFractionOrDivideBy() }
             resultPattern = SignedNumberPattern()
 
             specificPlans(IntegerArithmeticPlans.EvaluateArithmeticExpression)

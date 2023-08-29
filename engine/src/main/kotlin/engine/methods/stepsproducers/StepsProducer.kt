@@ -58,10 +58,6 @@ class StepsBuilder(
     }
 
     fun addStep(step: Transformation) {
-        if (undefined()) {
-            return
-        }
-
         /**
          * If `step` results in `undefined` for a subexpression of the current
          * working expression, the execution of the plan is halted and the

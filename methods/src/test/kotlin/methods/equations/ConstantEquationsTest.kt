@@ -117,4 +117,34 @@ class ConstantEquationsTest {
             }
         }
     }
+
+    @Test
+    fun `test undefined constant equation is false`() = testMethod {
+        method = EquationsPlans.SolveConstantEquation
+        inputExpr = "2 = [1 / 1 - 1]"
+
+        check {
+            fromExpr = "2 = [1 / 1 - 1]"
+            toExpr = "Contradiction[/undefined/]"
+            explanation {
+                key = EquationsExplanation.SolveConstantEquation
+            }
+
+            step {
+                fromExpr = "2 = [1 / 1 - 1]"
+                toExpr = "/undefined/"
+                explanation {
+                    key = EquationsExplanation.SimplifyEquation
+                }
+            }
+
+            step {
+                fromExpr = "/undefined/"
+                toExpr = "Contradiction[/undefined/]"
+                explanation {
+                    key = EquationsExplanation.UndefinedConstantEquationIsFalse
+                }
+            }
+        }
+    }
 }

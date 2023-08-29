@@ -20,6 +20,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Added support for simplifying and expanding multivariate polynomial expressions (PLUT-651)
 - Added support for simplifying multivariate algebraic expressions (PLUT-667)
 - Solve rational equations implementation (PLUT-593)
+- Added support for equations simplifying to undefined (PLUT-652)
 
 ### Fixed
 

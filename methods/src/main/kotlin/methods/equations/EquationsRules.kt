@@ -3,11 +3,14 @@ package methods.equations
 import engine.conditions.isDefinitelyNotZero
 import engine.expressions.Comparison
 import engine.expressions.Constants
+import engine.expressions.Contradiction
 import engine.expressions.Product
 import engine.expressions.SimpleComparator
 import engine.expressions.StatementWithConstraint
 import engine.expressions.Sum
 import engine.expressions.Variable
+import engine.expressions.VariableList
+import engine.expressions.VoidExpression
 import engine.expressions.contradictionOf
 import engine.expressions.equationOf
 import engine.expressions.finiteSetOf
@@ -204,6 +207,28 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             onPattern(equation) {
                 val isSatisfied = (get(equation) as Comparison).holds(SimpleComparator) ?: return@onPattern null
                 trueOrFalseRuleResult(isSatisfied)
+            }
+        },
+    ),
+
+    UndefinedConstantEquationIsFalse(
+        rule {
+            onPattern(FixedPattern(Constants.Undefined)) {
+                ruleResult(
+                    toExpr = Contradiction(VariableList(emptyList()), expression),
+                    explanation = metadata(Explanation.UndefinedConstantEquationIsFalse),
+                )
+            }
+        },
+    ),
+
+    UndefinedEquationCannotBeSolved(
+        rule {
+            onPattern(FixedPattern(Constants.Undefined)) {
+                ruleResult(
+                    toExpr = VoidExpression(),
+                    explanation = metadata(Explanation.UndefinedEquationCannotBeSolved),
+                )
             }
         },
     ),

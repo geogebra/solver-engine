@@ -299,6 +299,7 @@ val solveConstantEquationSteps = steps {
             }
         }
     }
+    shortcut(EquationsRules.UndefinedConstantEquationIsFalse)
     shortcut(EquationsRules.ExtractSolutionFromConstantEquation)
 
     optionally(EquationsPlans.SimplifyEquation)

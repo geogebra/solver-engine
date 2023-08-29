@@ -86,4 +86,34 @@ class EquationsPlansTest {
             toExpr = "SetSolution[x : {-[3 ^ -[1 / 3]], [3 ^ [2 / 3]]}]"
         }
     }
+
+    @Test
+    fun `test undefined equation cannot be solved`() = testMethodInX {
+        method = EquationsPlans.SolveEquationInOneVariable
+        inputExpr = "x = [1 / 1 - 1]"
+
+        check {
+            fromExpr = "x = [1 / 1 - 1]"
+            toExpr = "/void/"
+            explanation {
+                key = EquationsExplanation.SolveEquationInOneVariable
+            }
+
+            step {
+                fromExpr = "x = [1 / 1 - 1]"
+                toExpr = "/undefined/"
+                explanation {
+                    key = EquationsExplanation.SimplifyEquation
+                }
+            }
+
+            step {
+                fromExpr = "/undefined/"
+                toExpr = "/void/"
+                explanation {
+                    key = EquationsExplanation.UndefinedEquationCannotBeSolved
+                }
+            }
+        }
+    }
 }

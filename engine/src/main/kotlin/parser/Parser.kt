@@ -168,7 +168,8 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
 
     override fun visitContradiction(ctx: ExpressionParser.ContradictionContext): Expression {
         val vars = if (ctx.vars == null) VariableList(emptyList()) else visitVariables(ctx.vars)
-        return Contradiction(vars, visit(ctx.stmt))
+        val statement = if (ctx.stmt == null) Constants.Undefined else visit(ctx.stmt)
+        return Contradiction(vars, statement)
     }
 
     override fun visitImplicitSolution(ctx: ExpressionParser.ImplicitSolutionContext): Expression {

@@ -195,14 +195,107 @@ class SolveRationalEquationTest {
         }
     }
 
-    // the below test fails, because `solveConstantEquationSteps` fails for verifying
-    // when whether `x = -3` is a valid solution or not (as it results in "Undefined")
-    // PLUT-652 might be needed here?
     @Test
-    fun `test rational equation with one valid solution by US method`() = testMethodInX {
+    fun `test rational equation with one valid solution by US method`() = testMethod {
         method = EquationsPlans.SolveRationalEquation
-        inputExpr = "[12 / [x^2] - 9] = [8x / x - 3] - [2 /x + 3]"
-        context = Context(curriculum = Curriculum.US)
+        inputExpr = "[12 / [x ^ 2] - 9] = [8 x / x - 3] - [2 / x + 3]"
+        context = Context(solutionVariables = listOf("x"), curriculum = Curriculum.US)
+
+        check {
+            fromExpr = "[12 / [x ^ 2] - 9] = [8 x / x - 3] - [2 / x + 3]"
+            toExpr = "SetSolution[x: {[1 / 4]}]"
+            explanation {
+                key = EquationsExplanation.SolveEquationInOneVariable
+            }
+
+            task {
+                taskId = "#1"
+                startExpr = "[12 / [x ^ 2] - 9] = [8 x / x - 3] - [2 / x + 3]"
+                explanation {
+                    key = EquationsExplanation.SimplifyToPolynomialEquation
+                }
+
+                step {
+                    fromExpr = "[12 / [x ^ 2] - 9] = [8 x / x - 3] - [2 / x + 3]"
+                    toExpr = "12 = 8 x (x + 3) - 2 (x - 3)"
+                    explanation {
+                        key = EquationsExplanation.SimplifyToPolynomialEquation
+                    }
+                }
+            }
+
+            task {
+                taskId = "#2"
+                startExpr = "12 = 8 x (x + 3) - 2 (x - 3)"
+                explanation {
+                    key = EquationsExplanation.SolveEquationInOneVariable
+                }
+
+                step {
+                    fromExpr = "12 = 8 x (x + 3) - 2 (x - 3)"
+                    toExpr = "SetSolution[x: {-3, [1 / 4]}]"
+                    explanation {
+                        key = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula
+                    }
+                }
+            }
+
+            task {
+                taskId = "#3"
+                startExpr = "[12 / [(-3) ^ 2] - 9] = [8 * (-3) / -3 - 3] - [2 / -3 + 3]"
+                explanation {
+                    key = EquationsExplanation.CheckIfSolutionSatisfiesConstraint
+                }
+
+                step {
+                    fromExpr = "[12 / [(-3) ^ 2] - 9] = [8 * (-3) / -3 - 3] - [2 / -3 + 3]"
+                    toExpr = "/undefined/"
+                    explanation {
+                        key = EquationsExplanation.SimplifyEquation
+                    }
+                }
+
+                step {
+                    fromExpr = "/undefined/"
+                    toExpr = "Contradiction[/undefined/]"
+                    explanation {
+                        key = EquationsExplanation.UndefinedConstantEquationIsFalse
+                    }
+                }
+            }
+
+            task {
+                taskId = "#4"
+                startExpr = "[12 / [([1 / 4]) ^ 2] - 9] = [8 * [1 / 4] / [1 / 4] - 3] - [2 / [1 / 4] + 3]"
+                explanation {
+                    key = EquationsExplanation.CheckIfSolutionSatisfiesConstraint
+                }
+
+                step {
+                    fromExpr = "[12 / [([1 / 4]) ^ 2] - 9] = [8 * [1 / 4] / [1 / 4] - 3] - [2 / [1 / 4] + 3]"
+                    toExpr = "-[192 / 143] = -[192 / 143]"
+                    explanation {
+                        key = EquationsExplanation.SimplifyEquation
+                    }
+                }
+
+                step {
+                    fromExpr = "-[192 / 143] = -[192 / 143]"
+                    toExpr = "Identity[-[192 / 143] = -[192 / 143]]"
+                    explanation {
+                        key = EquationsExplanation.ExtractTruthFromTrueEquality
+                    }
+                }
+            }
+
+            task {
+                taskId = "#5"
+                startExpr = "SetSolution[x: {[1 / 4]}]"
+                explanation {
+                    key = EquationsExplanation.SomeSolutionsDoNotSatisfyConstraint
+                }
+            }
+        }
     }
 
     @Test
