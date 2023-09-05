@@ -21,7 +21,6 @@ class SimplifyRationalExponents {
             explanation {
                 key = IntegerRationalExponentsExplanation.SimplifyRationalExponentOfInteger
             }
-
             step {
                 fromExpr = "[32 ^ [2 / 5]]"
                 toExpr = "[([2 ^ 5]) ^ [2 / 5]]"
@@ -29,14 +28,12 @@ class SimplifyRationalExponents {
                     key = IntegerRationalExponentsExplanation.FactorizeIntegerUnderRationalExponent
                 }
             }
-
             step {
                 fromExpr = "[([2 ^ 5]) ^ [2 / 5]]"
                 toExpr = "[2 ^ 2]"
                 explanation {
                     key = IntegerRationalExponentsExplanation.PowerRuleOfExponents
                 }
-
                 step {
                     fromExpr = "[([2 ^ 5]) ^ [2 / 5]]"
                     toExpr = "[2 ^ 5 * [2 / 5]]"
@@ -44,53 +41,14 @@ class SimplifyRationalExponents {
                         key = GeneralExplanation.MultiplyExponentsUsingPowerRule
                     }
                 }
-
                 step {
                     fromExpr = "[2 ^ 5 * [2 / 5]]"
                     toExpr = "[2 ^ 2]"
-
-                    step {
-                        fromExpr = "5 * [2 / 5]"
-                        toExpr = "[5 / 1] * [2 / 5]"
-                        explanation {
-                            key = FractionArithmeticExplanation.TurnFactorIntoFractionInProduct
-                        }
-                    }
-
-                    step {
-                        fromExpr = "[5 / 1] * [2 / 5]"
-                        toExpr = "[5 * 2 / 1 * 5]"
-                        explanation {
-                            key = FractionArithmeticExplanation.MultiplyFractions
-                        }
-                    }
-
-                    step {
-                        fromExpr = "[5 * 2 / 1 * 5]"
-                        toExpr = "2"
-                        explanation {
-                            key = FractionArithmeticExplanation.SimplifyFraction
-                        }
-
-                        step {
-                            fromExpr = "[5 * 2 / 1 * 5]"
-                            toExpr = "[2 / 1]"
-                            explanation {
-                                key = FractionArithmeticExplanation.CancelCommonFactorInFraction
-                            }
-                        }
-
-                        step {
-                            fromExpr = "[2 / 1]"
-                            toExpr = "2"
-                            explanation {
-                                key = GeneralExplanation.SimplifyFractionWithOneDenominator
-                            }
-                        }
+                    explanation {
+                        key = FractionArithmeticExplanation.MultiplyAndSimplifyFractions
                     }
                 }
             }
-
             step {
                 fromExpr = "[2 ^ 2]"
                 toExpr = "4"
@@ -503,6 +461,41 @@ class SimplifyRationalExponents {
             step {
                 fromExpr = "[(sqrt[5]) ^ [1 / 2] * [2 / 3]]"
                 toExpr = "[(sqrt[5]) ^ [1 / 3]]"
+                explanation {
+                    key = FractionArithmeticExplanation.MultiplyAndSimplifyFractions
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test power rule of exponents with one negative exponent`() = testMethod {
+        method = IntegerRationalExponentsPlans.ApplyPowerRuleOfExponents
+        inputExpr = "[([5 ^ 2]) ^ -[1/2]]"
+
+        check {
+            fromExpr = "[([5 ^ 2]) ^ -[1 / 2]]"
+            toExpr = "[5 ^ -1]"
+            explanation {
+                key = IntegerRationalExponentsExplanation.PowerRuleOfExponents
+            }
+            step {
+                fromExpr = "[([5 ^ 2]) ^ -[1 / 2]]"
+                toExpr = "[5 ^ 2 (-[1 / 2])]"
+                explanation {
+                    key = GeneralExplanation.MultiplyExponentsUsingPowerRule
+                }
+            }
+            step {
+                fromExpr = "[5 ^ 2 (-[1 / 2])]"
+                toExpr = "[5 ^ -2 * [1 / 2]]"
+                explanation {
+                    key = GeneralExplanation.NormalizeNegativeSignsInProduct
+                }
+            }
+            step {
+                fromExpr = "[5 ^ -2 * [1 / 2]]"
+                toExpr = "[5 ^ -1]"
                 explanation {
                     key = FractionArithmeticExplanation.MultiplyAndSimplifyFractions
                 }

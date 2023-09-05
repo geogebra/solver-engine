@@ -58,32 +58,8 @@ enum class IntegerRationalExponentsRules(override val runner: Rule) : RunnerMeth
         },
     ),
 
-    FactorizeIntegerUnderRationalExponent(
-        rule {
-            val integer = integerCondition(UnsignedIntegerPattern()) { !it.isPrime() }
-            val exp = IntegerFractionPattern()
-            val power = powerOf(integer, exp)
-
-            onPattern(power) {
-                val integerValue = getValue(integer)
-                val expNum = getValue(exp.numerator)
-                val expDen = getValue(exp.denominator)
-                if (integerValue.isFactorizableUnderRationalExponent(expNum, expDen)) {
-                    val primeFactorization = getValue(integer).primeFactorDecomposition()
-                    val factorized = primeFactorization
-                        .map { (f, n) -> introduce(if (n == BigInteger.ONE) xp(f) else powerOf(xp(f), xp(n))) }
-
-                    ruleResult(
-                        toExpr = powerOf(productOf(factorized), move(exp)),
-                        explanation = metadata(Explanation.FactorizeIntegerUnderRationalExponent),
-                        skills = listOf(metadata(Skill.FactorInteger, move(integer))),
-                    )
-                } else {
-                    null
-                }
-            }
-        },
-    ),
+    FactorizeIntegerUnderRationalExponent(factorizeIntegerUnderRationalExponent()),
+    FactorizeIntegerUnderRationalExponentAlways(factorizeIntegerUnderRationalExponent(alwaysFactorize = true)),
 
     /**
      * brings the "integers" or exponents with integral powers to the front
@@ -239,5 +215,31 @@ private val applyReciprocalPowerRule = rule {
             toExpr = result,
             explanation = metadata(Explanation.ApplyReciprocalPowerRule),
         )
+    }
+}
+
+private fun factorizeIntegerUnderRationalExponent(alwaysFactorize: Boolean = false) = rule {
+    val integer = integerCondition(UnsignedIntegerPattern()) { !it.isPrime() }
+    val exp = IntegerFractionPattern()
+    val signedExp = optionalNegOf(exp)
+    val power = powerOf(integer, signedExp)
+
+    onPattern(power) {
+        val integerValue = getValue(integer)
+        val expNum = getValue(exp.numerator)
+        val expDen = getValue(exp.denominator)
+        if (alwaysFactorize || integerValue.isFactorizableUnderRationalExponent(expNum, expDen)) {
+            val primeFactorization = getValue(integer).primeFactorDecomposition()
+            val factorized = primeFactorization
+                .map { (f, n) -> introduce(if (n == BigInteger.ONE) xp(f) else powerOf(xp(f), xp(n))) }
+
+            ruleResult(
+                toExpr = powerOf(productOf(factorized), move(signedExp)),
+                explanation = metadata(Explanation.FactorizeIntegerUnderRationalExponent),
+                skills = listOf(metadata(Skill.FactorInteger, move(integer))),
+            )
+        } else {
+            null
+        }
     }
 }

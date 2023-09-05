@@ -47,6 +47,10 @@ contents to a new release section (e.g. _[0.x]_).
 - SDK: Parse latex/ascii `3 x/2 x` as `3 [x/2] x`. Also, parse latex/ascii `(1+2)/x` as `[1+2 / x]` (SP-133)
 - Simplification plans now only apply to expressions, not equations. The equation solving plan returns a simplified
   version of the equation if possible even when it can't solve the equation (PLUT-661)
+- Simplify rational exponent of integer (e.g. `[25^-[1/2]]` to `[1/5]`) and its product with integer
+  (e.g. `27*[3^-[1/3]]` to `9*3^[2/3]`) (PLUT-669)
+- Apply reciprocal power rule before simplifying rational exponent of integer
+  (e.g. `[[3^[5/4]] / [3^[1/2]]]`) (PLUT-665)
 
 ### Removed
 

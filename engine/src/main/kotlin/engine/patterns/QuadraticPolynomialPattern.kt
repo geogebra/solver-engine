@@ -17,10 +17,10 @@ class QuadraticPolynomialPattern(val variable: Pattern) : KeyedPattern {
     private val incompleteQuadraticPolynomial = commutativeSumContaining(quadraticTerm)
 
     private val quadraticPolynomial = oneOf(
-        ConditionPattern(completeQuadraticPolynomial) { _, match ->
+        ConditionPattern(completeQuadraticPolynomial) { _, match, _ ->
             completeQuadraticPolynomial.restIsConstant(match)
         },
-        ConditionPattern(incompleteQuadraticPolynomial) { _, match ->
+        ConditionPattern(incompleteQuadraticPolynomial) { _, match, _ ->
             incompleteQuadraticPolynomial.restIsConstant(match)
         },
     )

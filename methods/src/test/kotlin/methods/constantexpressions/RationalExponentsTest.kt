@@ -148,6 +148,36 @@ class RationalPowersTest {
             }
         }
     }
+
+    @Test
+    fun `test simplifying division of powers with the same base`() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "[[3 ^ [5 / 3]] / [3 ^ [7 / 5]]]"
+
+        check {
+            fromExpr = "[[3 ^ [5 / 3]] / [3 ^ [7 / 5]]]"
+            toExpr = "[3 ^ [4 / 15]]"
+            explanation {
+                key = IntegerRationalExponentsExplanation.SimplifyFractionOfPowersWithSameBase
+            }
+
+            step {
+                fromExpr = "[[3 ^ [5 / 3]] / [3 ^ [7 / 5]]]"
+                toExpr = "[3 ^ [5 / 3] - [7 / 5]]"
+                explanation {
+                    key = GeneralExplanation.RewriteFractionOfPowersWithSameBase
+                }
+            }
+
+            step {
+                fromExpr = "[3 ^ [5 / 3] - [7 / 5]]"
+                toExpr = "[3 ^ [4 / 15]]"
+                explanation {
+                    key = FractionArithmeticExplanation.AddFractions
+                }
+            }
+        }
+    }
 }
 
 class SimplifyRationalPowerOfFraction {
@@ -409,6 +439,295 @@ class SimplifyRationalPowerOfFraction {
         // this used to go into an infinite loop earlier
         check {
             noTransformation()
+        }
+    }
+
+    @Test
+    fun `test cancellable negative rational exponent of integer`() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "[25 ^ -[1/2]]"
+
+        check {
+            fromExpr = "[25 ^ -[1 / 2]]"
+            toExpr = "[1 / 5]"
+            explanation {
+                key = ConstantExpressionsExplanation.SimplifyConstantExpression
+            }
+            step {
+                fromExpr = "[25 ^ -[1 / 2]]"
+                toExpr = "[5 ^ -1]"
+                explanation {
+                    key = IntegerRationalExponentsExplanation.SimplifyRationalExponentOfInteger
+                }
+                step {
+                    fromExpr = "[25 ^ -[1 / 2]]"
+                    toExpr = "[([5 ^ 2]) ^ -[1 / 2]]"
+                    explanation {
+                        key = IntegerRationalExponentsExplanation.FactorizeIntegerUnderRationalExponent
+                    }
+                }
+                step {
+                    fromExpr = "[([5 ^ 2]) ^ -[1 / 2]]"
+                    toExpr = "[5 ^ -1]"
+                    explanation {
+                        key = IntegerRationalExponentsExplanation.PowerRuleOfExponents
+                    }
+                }
+            }
+            step {
+                fromExpr = "[5 ^ -1]"
+                toExpr = "[1 / 5]"
+                explanation {
+                    key = FractionArithmeticExplanation.TurnIntegerToMinusOneToFraction
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test product and division of rational exponents`() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "[3 ^ 2] * [3 ^ -[1 / 3]] : [3 ^ [1 / 2]]"
+
+        check {
+            fromExpr = "[3 ^ 2] * [3 ^ -[1 / 3]] : [3 ^ [1 / 2]]"
+            toExpr = "3 * [3 ^ [1 / 6]]"
+            explanation {
+                key = ConstantExpressionsExplanation.SimplifyConstantExpression
+            }
+
+            step {
+                fromExpr = "[3 ^ 2] * [3 ^ -[1 / 3]] : [3 ^ [1 / 2]]"
+                toExpr = "[[3 ^ 2] * [3 ^ -[1 / 3]] / [3 ^ [1 / 2]]]"
+                explanation {
+                    key = FractionArithmeticExplanation.RewriteDivisionAsFraction
+                }
+            }
+
+            step {
+                fromExpr = "[[3 ^ 2] * [3 ^ -[1 / 3]] / [3 ^ [1 / 2]]]"
+                toExpr = "[[3 ^ [5 / 3]] / [3 ^ [1 / 2]]]"
+                explanation {
+                    key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithSameBase
+                }
+            }
+
+            step {
+                fromExpr = "[[3 ^ [5 / 3]] / [3 ^ [1 / 2]]]"
+                toExpr = "[3 ^ [7 / 6]]"
+                explanation {
+                    key = IntegerRationalExponentsExplanation.SimplifyFractionOfPowersWithSameBase
+                }
+            }
+
+            step {
+                fromExpr = "[3 ^ [7 / 6]]"
+                toExpr = "3 * [3 ^ [1 / 6]]"
+                explanation {
+                    key = FractionArithmeticExplanation.SplitRationalExponent
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test product of integer and negative rational exponent`() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "27 * [6 ^ -[1 / 3]]"
+
+        check {
+            fromExpr = "27 * [6 ^ -[1 / 3]]"
+            toExpr = "9 * [3 ^ [2 / 3]] * [2 ^ -[1 / 3]]"
+            explanation {
+                key = ConstantExpressionsExplanation.SimplifyConstantExpression
+            }
+
+            step {
+                fromExpr = "27 * [6 ^ -[1 / 3]]"
+                toExpr = "[3 ^ [8 / 3]] * [2 ^ -[1 / 3]]"
+                explanation {
+                    key = IntegerRationalExponentsExplanation.SimplifyProductOfIntegerAndRationalExponentOfInteger
+                }
+
+                step {
+                    fromExpr = "27 * [6 ^ -[1 / 3]]"
+                    toExpr = "[3 ^ 3] * [6 ^ -[1 / 3]]"
+                    explanation {
+                        key = GeneralExplanation.FactorizeInteger
+                    }
+                }
+
+                step {
+                    fromExpr = "[3 ^ 3] * [6 ^ -[1 / 3]]"
+                    toExpr = "[3 ^ 3] * <.[2 ^ -[1 / 3]] * [3 ^ -[1 / 3]].>"
+                    explanation {
+                        key = IntegerRationalExponentsExplanation.SimplifyRationalExponentOfInteger
+                    }
+                }
+
+                step {
+                    fromExpr = "[3 ^ 3] * [2 ^ -[1 / 3]] * [3 ^ -[1 / 3]]"
+                    toExpr = "[3 ^ [8 / 3]] * [2 ^ -[1 / 3]]"
+                    explanation {
+                        key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithSameBase
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "[3 ^ [8 / 3]] * [2 ^ -[1 / 3]]"
+                toExpr = "<.9 * [3 ^ [2 / 3]].> * [2 ^ -[1 / 3]]"
+                explanation {
+                    key = IntegerRationalExponentsExplanation.SimplifyRationalExponentOfInteger
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test product of integer, rational exponent of integers with positive and negated exponent`() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "25 * [5 ^ -[1 / 2]] * [2 ^ [1 / 2]]"
+
+        check {
+            fromExpr = "25 * [5 ^ -[1 / 2]] * [2 ^ [1 / 2]]"
+            toExpr = "5 * [10 ^ [1 / 2]]"
+            explanation {
+                key = ConstantExpressionsExplanation.SimplifyConstantExpression
+            }
+            step {
+                fromExpr = "25 * [5 ^ -[1 / 2]] * [2 ^ [1 / 2]]"
+                toExpr = "[5 ^ [3 / 2]] * [2 ^ [1 / 2]]"
+                explanation {
+                    key = IntegerRationalExponentsExplanation.SimplifyProductOfIntegerAndRationalExponentOfInteger
+                }
+                step {
+                    fromExpr = "<. 25 * [5 ^ -[1 / 2]] .> * [2 ^ [1 / 2]]"
+                    toExpr = "<. [5 ^ 2] * [5 ^ -[1 / 2]] .> * [2 ^ [1 / 2]]"
+                    explanation {
+                        key = GeneralExplanation.FactorizeInteger
+                    }
+                }
+                step {
+                    fromExpr = "<. [5 ^ 2] * [5 ^ -[1 / 2]] .> * [2 ^ [1 / 2]]"
+                    toExpr = "[5 ^ [3 / 2]] * [2 ^ [1 / 2]]"
+                    explanation {
+                        key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithSameBase
+                    }
+                    step {
+                        fromExpr = "<. [5 ^ 2] * [5 ^ -[1 / 2]] .>"
+                        toExpr = "[5 ^ 2 - [1 / 2]]"
+                        explanation {
+                            key = GeneralExplanation.RewriteProductOfPowersWithSameBase
+                        }
+                    }
+                    step {
+                        fromExpr = "[5 ^ 2 - [1 / 2]]"
+                        toExpr = "[5 ^ [3 / 2]]"
+                        explanation {
+                            key = FractionArithmeticExplanation.AddIntegerAndFraction
+                        }
+                    }
+                }
+            }
+            step {
+                fromExpr = "[5 ^ [3 / 2]] * [2 ^ [1 / 2]]"
+                toExpr = "<. 5 * [5 ^ [1 / 2]] .> * [2 ^ [1 / 2]]"
+                explanation {
+                    key = IntegerRationalExponentsExplanation.SimplifyRationalExponentOfInteger
+                }
+                step {
+                    fromExpr = "[5 ^ [3 / 2]]"
+                    toExpr = "<. 5 * [5 ^ [1 / 2]] .>"
+                    explanation {
+                        key = FractionArithmeticExplanation.SplitRationalExponent
+                    }
+                }
+            }
+            step {
+                fromExpr = "5 * [5 ^ [1 / 2]] * [2 ^ [1 / 2]]"
+                toExpr = "5 * [10 ^ [1 / 2]]"
+                explanation {
+                    key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithSameExponent
+                }
+                step {
+                    fromExpr = "5 * [5 ^ [1 / 2]] * [2 ^ [1 / 2]]"
+                    toExpr = "5 * [(5 * 2) ^ [1 / 2]]"
+                    explanation {
+                        key = GeneralExplanation.RewriteProductOfPowersWithSameExponent
+                    }
+                }
+                step {
+                    fromExpr = "5 * [(5 * 2) ^ [1 / 2]]"
+                    toExpr = "5 * [10 ^ [1 / 2]]"
+                    explanation {
+                        key = IntegerArithmeticExplanation.EvaluateIntegerProduct
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test product of integer, rational exponent of integer with same negative exponent`() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "26 * [2 ^ -[1 / 2]] * [3 ^ -[1 / 2]]"
+
+        check {
+            fromExpr = "26 * [2 ^ -[1 / 2]] * [3 ^ -[1 / 2]]"
+            toExpr = "13 * [([2 / 3]) ^ [1 / 2]]"
+            explanation {
+                key = ConstantExpressionsExplanation.SimplifyConstantExpression
+            }
+            step {
+                fromExpr = "26 * [2 ^ -[1 / 2]] * [3 ^ -[1 / 2]]"
+                toExpr = "<. [2 ^ [1 / 2]] * 13 .> * [3 ^ -[1 / 2]]"
+                explanation {
+                    key = IntegerRationalExponentsExplanation.SimplifyProductOfIntegerAndRationalExponentOfInteger
+                }
+                step {
+                    fromExpr = "<. 26 * [2 ^ -[1 / 2]] .> * [3 ^ -[1 / 2]]"
+                    toExpr = "<. <. 2 * 13 .> * [2 ^ -[1 / 2]] .> * [3 ^ -[1 / 2]]"
+                    explanation {
+                        key = GeneralExplanation.FactorizeInteger
+                    }
+                }
+                step {
+                    fromExpr = "<. 2 * 13 * [2 ^ -[1 / 2]] .> * [3 ^ -[1 / 2]]"
+                    toExpr = "<. [2 ^ [1 / 2]] * 13 .> * [3 ^ -[1 / 2]]"
+                    explanation {
+                        key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithSameBase
+                    }
+                }
+            }
+            step {
+                fromExpr = "[2 ^ [1 / 2]] * 13 * [3 ^ -[1 / 2]]"
+                toExpr = "[([2 / 3]) ^ [1 / 2]] * 13"
+                explanation {
+                    key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithNegatedExponent
+                }
+                step {
+                    fromExpr = "[2 ^ [1 / 2]] * 13 * [3 ^ -[1 / 2]]"
+                    toExpr = "[2 ^ [1 / 2]] * 13 * [([1 / 3]) ^ [1 / 2]]"
+                    explanation {
+                        key = GeneralExplanation.RewriteProductOfPowersWithNegatedExponent
+                    }
+                }
+                step {
+                    fromExpr = "[2 ^ [1 / 2]] * 13 * [([1 / 3]) ^ [1 / 2]]"
+                    toExpr = "[([2 / 3]) ^ [1 / 2]] * 13"
+                    explanation {
+                        key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithSameExponent
+                    }
+                }
+            }
+            step {
+                fromExpr = "[([2 / 3]) ^ [1 / 2]] * 13"
+                toExpr = "13 * [([2 / 3]) ^ [1 / 2]]"
+                explanation {
+                    key = GeneralExplanation.ReorderProduct
+                }
+            }
         }
     }
 }

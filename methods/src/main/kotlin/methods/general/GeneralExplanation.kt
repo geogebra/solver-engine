@@ -287,6 +287,13 @@ enum class GeneralExplanation : CategorisedMetadataKey {
      *   |2 - 1 - 1| -> |0| -> 0
      */
     EvaluateAbsoluteValue,
+
+    /**
+     * factorize an integer as product of powers of prime factors to their multiplicities
+     *
+     * E.g. 90 -> 2 * [3^2] * 5
+     */
+    FactorizeInteger,
     ;
 
     override val category = "General"

@@ -1,13 +1,22 @@
 package methods.integerrationalexponents
 
+import engine.expressions.Minus
 import engine.expressions.Power
+import engine.expressions.isSignedFraction
 import engine.methods.CompositeMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
+import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.steps
+import engine.patterns.BuilderCondition
+import engine.patterns.ConditionPattern
 import engine.patterns.IntegerFractionPattern
+import engine.patterns.RationalPattern
 import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.optionalNegOf
+import engine.patterns.optionalPowerOf
 import engine.patterns.powerOf
+import engine.patterns.productContaining
 import methods.fractionarithmetic.FractionArithmeticPlans
 import methods.fractionarithmetic.addIntegerAndFraction
 import methods.fractionarithmetic.addIntegerFractions
@@ -15,6 +24,7 @@ import methods.general.GeneralRules
 import methods.general.NormalizationRules
 import methods.integerarithmetic.IntegerArithmeticRules
 import methods.integerarithmetic.simplifyIntegersInExpression
+import java.math.BigInteger
 
 enum class IntegerRationalExponentsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
@@ -28,49 +38,11 @@ enum class IntegerRationalExponentsPlans(override val runner: CompositeMethod) :
 
             steps {
                 apply(GeneralRules.MultiplyExponentsUsingPowerRule)
-                applyToKind<Power>(FractionArithmeticPlans.MultiplyAndSimplifyFractions) { it.exponent }
-            }
-        },
-    ),
-
-    SimplifyRationalExponentOfInteger(
-        plan {
-            pattern = powerOf(UnsignedIntegerPattern(), IntegerFractionPattern())
-
-            explanation = Explanation.SimplifyRationalExponentOfInteger
-
-            steps {
-                // input: 1350 ^ [2 / 5]
-
-                // [ ( 2 * 3^3 * 5^2 ) ^ [2 / 5] ]
-                optionally(IntegerRationalExponentsRules.FactorizeIntegerUnderRationalExponent)
-                // [2 ^ [2 / 5]] * [ (3^3) ^ [2 / 5]] * [ (5^2) ^ [2 / 5]]
-                optionally(GeneralRules.DistributePowerOfProduct)
-
-                // [2 ^ [2 / 5] ] * [ 3 ^ [6 / 5] ] * [ 5 ^ [4 / 5] ]
-                whilePossible { deeply(ApplyPowerRuleOfExponents) }
-
-                // [2 ^ [2 / 5] ] * [ 3 * 3 ^ [1 / 5] ] * [ 5 ^ [4 / 5] ]
                 optionally {
-                    plan {
-                        explanation = Explanation.SplitProductOfExponentsWithImproperFractionPowers
-
-                        steps {
-                            whilePossible { deeply(FractionArithmeticPlans.SplitRationalExponent) }
-                            whilePossible { deeply(NormalizationRules.RemoveBracketProductInProduct) }
-                        }
-                    }
+                    applyToKind<Power>(methods.general.GeneralPlans.NormalizeNegativeSignsInProduct) { it.exponent }
                 }
-
-                optionally {
-                    plan {
-                        explanation = Explanation.NormalizeRationalExponentsAndIntegers
-
-                        steps {
-                            optionally(IntegerRationalExponentsRules.NormaliseProductWithRationalExponents)
-                            whilePossible { deeply(simplifyIntegersInExpression) }
-                        }
-                    }
+                applyToKind<Power>(FractionArithmeticPlans.MultiplyAndSimplifyFractions) {
+                    if (it.exponent is Minus) it.exponent.firstChild else it.exponent
                 }
             }
         },
@@ -90,6 +62,8 @@ enum class IntegerRationalExponentsPlans(override val runner: CompositeMethod) :
             }
         },
     ),
+
+    SimplifyProductOfIntegerAndRationalExponentOfInteger(simplifyProductOfIntegerAndRationalExponentOfInteger),
 
     SimplifyProductOfPowersWithInverseFractionBase(
         plan {
@@ -180,23 +154,116 @@ enum class IntegerRationalExponentsPlans(override val runner: CompositeMethod) :
             }
         },
     ),
+
+    SimplifyRationalExponentOfInteger(simplifyRationalExponentOfInteger),
 }
 
 val simplifyRationalExponentsInProduct = steps {
     check { it.isConstant() }
     whilePossible {
         firstOf {
-            option { deeply(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithSameBase) }
-            option { deeply(IntegerRationalExponentsPlans.SimplifyRationalExponentOfInteger) }
-            option { deeply(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithInverseFractionBase) }
-            option { deeply(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithInverseBase) }
-            option { deeply(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithSameExponent) }
-            option { deeply(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithNegatedExponent) }
             option { deeply(IntegerRationalExponentsPlans.SimplifyFractionOfPowersWithSameBase) }
             option { deeply(IntegerRationalExponentsPlans.SimplifyFractionOfPowersWithSameExponent) }
-            option { deeply(IntegerRationalExponentsPlans.ApplyPowerRuleOfExponents) }
             option { deeply(IntegerRationalExponentsRules.ApplyReciprocalPowerRule) }
+            option { deeply(simplifyRationalExponentOfInteger) }
+            option { deeply(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithSameBase) }
+            option { deeply(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithInverseFractionBase) }
+            option { deeply(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithInverseBase) }
+            option { deeply(IntegerRationalExponentsPlans.SimplifyProductOfIntegerAndRationalExponentOfInteger) }
+            option { deeply(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithSameExponent) }
+            option { deeply(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithNegatedExponent) }
+            option { deeply(IntegerRationalExponentsPlans.ApplyPowerRuleOfExponents) }
             option { deeply(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithRationalExponents) }
         }
+    }
+}
+
+private val simplifyRationalExponentOfIntegerAlways = simplifyRationalExponentOfInteger(
+    IntegerRationalExponentsRules.FactorizeIntegerUnderRationalExponentAlways,
+)
+
+private val simplifyRationalExponentOfInteger = simplifyRationalExponentOfInteger(
+    IntegerRationalExponentsRules.FactorizeIntegerUnderRationalExponent,
+)
+
+private fun simplifyRationalExponentOfInteger(factorizeIntegerUnderRationalExponent: StepsProducer) = plan {
+    pattern = powerOf(UnsignedIntegerPattern(), optionalNegOf(IntegerFractionPattern()))
+
+    explanation = Explanation.SimplifyRationalExponentOfInteger
+
+    steps {
+        // input: 1350 ^ [2 / 5]
+
+        // [ ( 2 * 3^3 * 5^2 ) ^ [2 / 5] ]
+        optionally(factorizeIntegerUnderRationalExponent)
+
+        // [2 ^ [2 / 5]] * [ (3^3) ^ [2 / 5]] * [ (5^2) ^ [2 / 5]]
+        optionally(GeneralRules.DistributePowerOfProduct)
+
+        // [2 ^ [2 / 5] ] * [ 3 ^ [6 / 5] ] * [ 5 ^ [4 / 5] ]
+        whilePossible { deeply(IntegerRationalExponentsPlans.ApplyPowerRuleOfExponents) }
+
+        // [2 ^ [2 / 5] ] * [ 3 * 3 ^ [1 / 5] ] * [ 5 ^ [4 / 5] ]
+        optionally {
+            plan {
+                explanation = Explanation.SplitProductOfExponentsWithImproperFractionPowers
+
+                steps {
+                    whilePossible { deeply(FractionArithmeticPlans.SplitRationalExponent) }
+                    whilePossible { deeply(NormalizationRules.RemoveBracketProductInProduct) }
+                }
+            }
+        }
+
+        optionally {
+            plan {
+                explanation = Explanation.NormalizeRationalExponentsAndIntegers
+
+                steps {
+                    optionally(IntegerRationalExponentsRules.NormaliseProductWithRationalExponents)
+                    whilePossible { deeply(simplifyIntegersInExpression) }
+                }
+            }
+        }
+    }
+}
+
+private val simplifyProductOfIntegerAndRationalExponentOfInteger = plan {
+    explanation = Explanation.SimplifyProductOfIntegerAndRationalExponentOfInteger
+
+    val base1 = UnsignedIntegerPattern()
+    val base2 = UnsignedIntegerPattern()
+
+    val exponent1 = RationalPattern()
+    val exponent2 = RationalPattern()
+
+    val power1 = optionalPowerOf(base1, exponent1)
+    val power2 = optionalPowerOf(base2, exponent2)
+
+    val suitablePower2 = ConditionPattern(
+        power2,
+        BuilderCondition {
+            if (!get(power1.exponent).isSignedFraction() && !get(power2.exponent).isSignedFraction()) {
+                return@BuilderCondition false
+            }
+
+            if (get(power1.exponent) !is Minus && get(power2.exponent) !is Minus) {
+                return@BuilderCondition false
+            }
+
+            getValue(base1).gcd(getValue(base2)) != BigInteger.ONE
+        },
+    )
+
+    pattern = productContaining(power1, suitablePower2)
+
+    partialExpressionSteps {
+        applyToChildren {
+            firstOf {
+                option(GeneralRules.FactorizeInteger)
+                option(simplifyRationalExponentOfIntegerAlways)
+            }
+        }
+        whilePossible(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithSameBase)
     }
 }

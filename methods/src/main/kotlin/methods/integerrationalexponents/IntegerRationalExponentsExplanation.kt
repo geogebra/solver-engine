@@ -147,6 +147,16 @@ enum class IntegerRationalExponentsExplanation : CategorisedMetadataKey {
      * E.g. [1 / [3^-[1/4]]] -> [3^[1/4]]
      */
     ApplyReciprocalPowerRule,
+
+    /**
+     * Simplifies product of integer and rational exponent of integer
+     *
+     * E.g. 27 * [6^-[1/3]] ->
+     *          27          -> [3^3]
+     *          [6^-[1/3]]  -> [2^-[1/3]] * [3^-[1/3]]
+     *          [3^3] * [2^-[1/3]] * [3^-[1/3]]
+     */
+    SimplifyProductOfIntegerAndRationalExponentOfInteger,
     ;
 
     override val category = "IntegerRationalExponents"

@@ -56,6 +56,11 @@ object IntegerRationalExponentsRulesTest {
             // rational power
             "[ ([2^4] * [5^6]) ^ [1/8] ]",
         )
+        testRule(
+            "[25 ^ -[1/2]]",
+            FactorizeIntegerUnderRationalExponent,
+            "[([5^2]) ^ -[1/2]]",
+        )
     }
 
     @Test

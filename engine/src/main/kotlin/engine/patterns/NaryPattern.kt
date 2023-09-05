@@ -154,6 +154,19 @@ fun productOf(vararg factors: Pattern) =
 fun productContaining(vararg factors: Pattern) =
     NaryPattern(DefaultProductOperator, factors.asList(), commutative = false, partial = true)
 
+fun productContaining(vararg terms: Pattern, restCondition: Context.(Expression) -> Boolean): SubstitutablePattern =
+    object : Pattern, SubstitutablePattern {
+        override val key = NaryPattern(DefaultProductOperator, terms.asList(), commutative = false, partial = true)
+
+        override fun findMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
+            return key.findMatches(context, match, subexpression).filter {
+                key.getRestSubexpressions(it).all { rest -> context.restCondition(rest) }
+            }
+        }
+
+        override fun substitute(match: Match, newVals: Array<out Expression>) = key.substitute(match, newVals)
+    }
+
 fun commutativeProductOf(vararg factors: Pattern) =
     NaryPattern(DefaultProductOperator, factors.asList(), commutative = true, partial = false)
 
@@ -166,15 +179,17 @@ fun sumOf(vararg factors: Pattern) =
 fun sumContaining(vararg factors: Pattern) =
     NaryPattern(SumOperator, factors.asList(), commutative = false, partial = true)
 
-fun sumContaining(vararg terms: Pattern, restCondition: Context.(Expression) -> Boolean) =
-    object : BasePattern() {
-        private val pattern = NaryPattern(SumOperator, terms.asList(), commutative = false, partial = true)
+fun sumContaining(vararg terms: Pattern, restCondition: Context.(Expression) -> Boolean): SubstitutablePattern =
+    object : Pattern, SubstitutablePattern {
+        override val key = NaryPattern(SumOperator, terms.asList(), commutative = false, partial = true)
 
-        override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
-            return pattern.findMatches(context, match, subexpression).filter {
-                pattern.getRestSubexpressions(it).all { rest -> context.restCondition(rest) }
+        override fun findMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
+            return key.findMatches(context, match, subexpression).filter {
+                key.getRestSubexpressions(it).all { rest -> context.restCondition(rest) }
             }
         }
+
+        override fun substitute(match: Match, newVals: Array<out Expression>) = key.substitute(match, newVals)
     }
 
 fun commutativeSumOf(vararg factors: Pattern) =

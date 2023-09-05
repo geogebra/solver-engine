@@ -11,6 +11,7 @@ import methods.general.GeneralRules.EvaluateOneToAnyPower
 import methods.general.GeneralRules.EvaluateProductContainingZero
 import methods.general.GeneralRules.EvaluateProductDividedByZeroAsUndefined
 import methods.general.GeneralRules.EvaluateZeroToAPositivePower
+import methods.general.GeneralRules.FactorizeInteger
 import methods.general.GeneralRules.FlipFractionUnderNegativePower
 import methods.general.GeneralRules.MoveSignOfNegativeFactorOutOfProduct
 import methods.general.GeneralRules.RewriteFractionOfPowersWithSameBase
@@ -977,5 +978,10 @@ class GeneralRulesTest {
             GeneralRules.ResolveAbsoluteValueOfNonPositiveValue,
             "2 - sqrt[2]",
         )
+    }
+
+    @Test
+    fun testFactorizeInteger() {
+        testRule("12", FactorizeInteger, "[2^2] * 3")
     }
 }

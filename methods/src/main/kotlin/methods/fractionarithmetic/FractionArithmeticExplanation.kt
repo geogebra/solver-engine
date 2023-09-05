@@ -68,13 +68,6 @@ enum class FractionArithmeticExplanation : CategorisedMetadataKey {
      */
     MultiplyAndSimplifyFractions,
 
-    /**
-     * Evaluate an integer to a negative power
-     *
-     * E.g. [5 ^ -2] -> [1 / 25]
-     */
-    EvaluateIntegerToNegativePower,
-
     FindCommonFactorInFraction,
 
     @LegacyKeyName("General.CancelCommonTerms")

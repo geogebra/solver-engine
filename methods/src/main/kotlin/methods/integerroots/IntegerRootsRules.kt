@@ -11,6 +11,7 @@ import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
 import engine.patterns.AnyPattern
+import engine.patterns.BuilderCondition
 import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
 import engine.patterns.UnsignedIntegerPattern
@@ -433,12 +434,15 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
         rule {
             val prod = productContaining()
             val root = rootOf(prod)
-            val cond = ConditionPattern(root) { _, match ->
-                val order = root.order.getBoundExpr(match)!!
-                val product = prod.getBoundExpr(match)!!
+            val cond = ConditionPattern(
+                root,
+                BuilderCondition {
+                    val order = get(root.order)
+                    val product = get(prod)
 
-                product.children.all { it is Power && it.exponent == order }
-            }
+                    product.children.all { it is Power && it.exponent == order }
+                },
+            )
 
             val pattern = withOptionalIntegerCoefficient(cond, true)
 

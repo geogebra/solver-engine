@@ -117,6 +117,8 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     ResolveAbsoluteValueOfNonNegativeValue(resolveAbsoluteValueOfNonNegativeValue),
     ResolveAbsoluteValueOfNonPositiveValue(resolveAbsoluteValueOfNonPositiveValue),
     SimplifyAbsoluteValueOfNegatedExpression(simplifyAbsoluteValueOfNegatedExpression),
+
+    FactorizeInteger(factorizeInteger),
 }
 
 private val removeUnitaryCoefficient = rule {
@@ -1024,6 +1026,17 @@ private val simplifyAbsoluteValueOfNegatedExpression = rule {
                 absoluteValueOf(get(expr)),
             ),
             explanation = metadata(Explanation.SimplifyAbsoluteValueOfNegatedExpression),
+        )
+    }
+}
+
+private val factorizeInteger = rule {
+    val integer = UnsignedIntegerPattern()
+    onPattern(integer) {
+        val primeFactorization = productOf(productOfPrimeFactors(integer))
+        ruleResult(
+            toExpr = transform(integer, primeFactorization),
+            explanation = metadata(Explanation.FactorizeInteger),
         )
     }
 }

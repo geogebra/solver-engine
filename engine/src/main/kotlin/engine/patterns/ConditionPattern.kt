@@ -1,6 +1,7 @@
 package engine.patterns
 
 import engine.context.Context
+import engine.expressionbuilder.MappedExpressionBuilder
 import engine.expressions.Expression
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -11,7 +12,13 @@ data class PureConditionPattern(private val condition: Context.(Expression) -> B
 }
 
 fun interface MatchCondition {
-    fun checkMatch(context: Context, match: Match): Boolean
+    fun checkMatch(context: Context, match: Match, subexpression: Expression): Boolean
+}
+
+class BuilderCondition(private val condition: MappedExpressionBuilder.() -> Boolean) : MatchCondition {
+    override fun checkMatch(context: Context, match: Match, subexpression: Expression): Boolean {
+        return MappedExpressionBuilder(context, subexpression, match).condition()
+    }
 }
 
 data class ConditionPattern(
@@ -22,7 +29,9 @@ data class ConditionPattern(
     override val key = pattern.key
 
     override fun findMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
-        return pattern.findMatches(context, match, subexpression).filter { condition.checkMatch(context, it) }
+        return pattern.findMatches(context, match, subexpression).filter {
+            condition.checkMatch(context, it, subexpression)
+        }
     }
 }
 
@@ -50,21 +59,12 @@ data class NumericConditionPattern(
     }
 }
 
-data class UnaryCondition(
-    val ptn: Pattern,
-    val condition: Context.(Expression) -> Boolean,
-) : MatchCondition {
-    override fun checkMatch(context: Context, match: Match): Boolean {
-        return context.condition(ptn.getBoundExpr(match)!!)
-    }
-}
-
 data class BinaryIntegerCondition(
     val ptn1: IntegerProvider,
     val ptn2: IntegerProvider,
     val condition: Context.(BigInteger, BigInteger) -> Boolean,
 ) : MatchCondition {
-    override fun checkMatch(context: Context, match: Match): Boolean {
+    override fun checkMatch(context: Context, match: Match, subexpression: Expression): Boolean {
         return context.condition(ptn1.getBoundInt(match), ptn2.getBoundInt(match))
     }
 }
@@ -75,7 +75,7 @@ data class TernaryIntegerCondition(
     val ptn3: IntegerProvider,
     val condition: Context.(BigInteger, BigInteger, BigInteger) -> Boolean,
 ) : MatchCondition {
-    override fun checkMatch(context: Context, match: Match): Boolean {
+    override fun checkMatch(context: Context, match: Match, subexpression: Expression): Boolean {
         return context.condition(
             ptn1.getBoundInt(match),
             ptn2.getBoundInt(match),
@@ -89,7 +89,7 @@ data class BinaryNumericCondition(
     val ptn2: NumberProvider,
     val condition: Context.(BigDecimal, BigDecimal) -> Boolean,
 ) : MatchCondition {
-    override fun checkMatch(context: Context, match: Match): Boolean {
+    override fun checkMatch(context: Context, match: Match, subexpression: Expression): Boolean {
         return context.condition(ptn1.getBoundNumber(match), ptn2.getBoundNumber(match))
     }
 }
@@ -99,7 +99,7 @@ fun condition(condition: Context.(Expression) -> Boolean) = PureConditionPattern
 fun condition(
     ptn: Pattern,
     condition: Context.(Expression) -> Boolean,
-) = ConditionPattern(ptn, UnaryCondition(ptn, condition))
+) = ConditionPattern(ptn) { context, _, expression -> context.condition(expression) }
 
 fun integerCondition(
     ptn: IntegerPattern,
