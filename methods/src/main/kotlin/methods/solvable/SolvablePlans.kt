@@ -1,10 +1,10 @@
 package methods.solvable
 
 import engine.context.Context
+import engine.expressions.AbsoluteValue
 import engine.expressions.Equation
 import engine.expressions.Expression
-import engine.expressions.Minus
-import engine.expressions.Sum
+import engine.expressions.Power
 import engine.methods.Runner
 import engine.methods.RunnerMethod
 import engine.methods.plan
@@ -14,6 +14,7 @@ import engine.methods.stepsproducers.steps
 import engine.patterns.BinaryIntegerCondition
 import engine.patterns.ConditionPattern
 import engine.patterns.ConstantInSolutionVariablePattern
+import engine.patterns.SolutionVariablePattern
 import engine.patterns.SolvablePattern
 import engine.patterns.VariableExpressionPattern
 import engine.patterns.condition
@@ -95,6 +96,15 @@ class SolvablePlans(private val simplificationSteps: StepsProducer) {
         }
     }
 
+    /**
+     * Only rearrange when the variable subexpression is "atomic". For example: don't reorganize
+     * (3x + 1)(3x + 2) + 3 = 0 into (3x + 1)(3x + 2) = -3.
+     */
+    private val variableTerm = oneOf(
+        SolutionVariablePattern(),
+        condition { (it is Power || it is AbsoluteValue) && !it.isConstantIn(solutionVariables) },
+    )
+
     val solvableRearrangementSteps = steps {
         // three ways to reorganize the solvable into aX = b form
         firstOf {
@@ -103,9 +113,7 @@ class SolvablePlans(private val simplificationSteps: StepsProducer) {
                 // we move `c` to the left hand side and flip the solvable
                 checkForm {
                     val lhs = ConstantInSolutionVariablePattern()
-                    val nonConstantTerm = condition(VariableExpressionPattern()) {
-                        it !is Minus && it !is Sum
-                    }
+                    val nonConstantTerm = withOptionalConstantCoefficient(variableTerm, positiveOnly = true)
                     val rhs = oneOf(
                         nonConstantTerm,
                         sumContaining(nonConstantTerm) { rest -> rest.isConstantIn(solutionVariables) },
@@ -120,9 +128,8 @@ class SolvablePlans(private val simplificationSteps: StepsProducer) {
                 // positive integer such that `c > a`, we move `aX` to the right hand side, `d` to
                 // the left hand side and flip the solvable
                 checkForm {
-                    val variable = VariableExpressionPattern()
-                    val lhsVariable = withOptionalIntegerCoefficient(variable, false)
-                    val rhsVariable = withOptionalIntegerCoefficient(variable, true)
+                    val lhsVariable = withOptionalIntegerCoefficient(variableTerm, false)
+                    val rhsVariable = withOptionalIntegerCoefficient(variableTerm, true)
 
                     val lhs = oneOf(
                         lhsVariable,
@@ -150,9 +157,8 @@ class SolvablePlans(private val simplificationSteps: StepsProducer) {
                 // otherwise we first move variables to the left and then constants
                 // to the right
                 checkForm {
-                    val variable = condition { it !is Sum && !it.isConstantIn(solutionVariables) }
-                    val lhsVariable = withOptionalConstantCoefficient(variable)
-                    val rhsVariable = withOptionalConstantCoefficient(variable)
+                    val lhsVariable = withOptionalConstantCoefficient(variableTerm)
+                    val rhsVariable = withOptionalConstantCoefficient(variableTerm)
 
                     val lhs = oneOf(
                         ConstantInSolutionVariablePattern(),

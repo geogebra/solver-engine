@@ -121,7 +121,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
     CompleteTheSquare(
         rule {
-            val variable = SolutionVariablePattern()
+            val variable = VariableExpressionPattern()
 
             val squaredOrder = UnsignedIntegerPattern()
             val squaredTerm = powerOf(variable, squaredOrder)

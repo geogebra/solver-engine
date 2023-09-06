@@ -49,8 +49,8 @@ contents to a new release section (e.g. _[0.x]_).
   version of the equation if possible even when it can't solve the equation (PLUT-661)
 - Simplify rational exponent of integer (e.g. `[25^-[1/2]]` to `[1/5]`) and its product with integer
   (e.g. `27*[3^-[1/3]]` to `9*3^[2/3]`) (PLUT-669)
-- Apply reciprocal power rule before simplifying rational exponent of integer
-  (e.g. `[[3^[5/4]] / [3^[1/2]]]`) (PLUT-665)
+- Improved factoring and expanding equations so examples like `([(x + 1)^2] + 1)([(x + 1)^2] + 2) + 3 = 0` can be
+  solved using completing the square (PLUT-641)
 
 ### Removed
 

@@ -1,6 +1,7 @@
 package methods.polynomials
 
 import engine.context.ResourceData
+import engine.expressions.Expression
 import engine.expressions.Minus
 import engine.expressions.Power
 import engine.expressions.Product
@@ -95,6 +96,23 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
                         option { deeply(expandAndSimplifier.steps, deepFirst = true) }
                     }
                 }
+            }
+        },
+    ),
+
+    ExpandMostComplexSubterm(
+        plan {
+            explanation = Explanation.ExpandPolynomialExpression
+
+            steps {
+                firstOf {
+                    optionsFor({
+                        it.allSubterms().sortedByDescending { subterm -> subterm.complexity() }
+                    }) { subterm ->
+                        applyTo(expandAndSimplifier.steps) { subterm }
+                    }
+                }
+                whilePossible(polynomialSimplificationSteps)
             }
         },
     ),
@@ -255,3 +273,6 @@ private val simplificationSteps = contextSensitiveSteps {
 }
 
 private val collectLikeTermsSteps = createCollectLikeTermsAndSimplifyPlan(simplificationSteps)
+
+private fun Expression.allSubterms(): List<Expression> = listOf(this) + children.flatMap { it.allSubterms() }
+private fun Expression.complexity(): Int = 1 + children.sumOf { it.complexity() }

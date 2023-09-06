@@ -36,6 +36,7 @@ import engine.patterns.FixedPattern
 import engine.patterns.RationalPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.VariableExpressionPattern
 import engine.patterns.commutativeProductOf
 import engine.patterns.commutativeSumOf
 import engine.patterns.condition
@@ -617,7 +618,7 @@ private fun SumView<CommonFactorView>.findSameBaseFactors(base: Expression): Pai
 }
 
 val rewriteSquareOfBinomial = rule {
-    val variable = ArbitraryVariablePattern()
+    val variable = VariableExpressionPattern()
 
     val squaredTerm = rationalMonomialPattern(variable, positiveOnly = true)
     val baseTerm = rationalMonomialPattern(variable)
@@ -661,7 +662,7 @@ val rewriteSquareOfBinomial = rule {
 }
 
 val rewriteCubeOfBinomial = rule {
-    val variable = ArbitraryVariablePattern()
+    val variable = VariableExpressionPattern()
 
     val cubedTerm = rationalMonomialPattern(variable, positiveOnly = true)
     val squaredTerm = rationalMonomialPattern(variable)

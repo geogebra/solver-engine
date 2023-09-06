@@ -452,4 +452,166 @@ class CompletingTheSquareStrategyTest {
             step { }
         }
     }
+
+    @Test
+    fun `test completing the square without expanding the equation`() = testCompletingTheSquare {
+        inputExpr = "[(x + 1) ^ 2] + 2 (x + 1) + 3 = 0"
+
+        check {
+            fromExpr = "[(x + 1) ^ 2] + 2 (x + 1) + 3 = 0"
+            toExpr = "Contradiction[x: [((x + 1) + 1) ^ 2] = -2]"
+            explanation {
+                key = EquationsExplanation.SolveByCompletingTheSquare
+            }
+
+            step {
+                fromExpr = "[(x + 1) ^ 2] + 2 (x + 1) + 3 = 0"
+                toExpr = "[(x + 1) ^ 2] + 2 (x + 1) = -3"
+                explanation {
+                    key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                }
+            }
+
+            step {
+                fromExpr = "[(x + 1) ^ 2] + 2 (x + 1) = -3"
+                toExpr = "[((x + 1) + 1) ^ 2] = -2"
+                explanation {
+                    key = EquationsExplanation.RewriteToXPLusASquareEqualsBForm
+                }
+
+                step {
+                    fromExpr = "[(x + 1) ^ 2] + 2 (x + 1) = -3"
+                    toExpr = "[(x + 1) ^ 2] + 2 (x + 1) + 1 = -2"
+                    explanation {
+                        key = EquationsExplanation.CompleteTheSquareAndSimplify
+                    }
+
+                    step {
+                        fromExpr = "[(x + 1) ^ 2] + 2 (x + 1) = -3"
+                        toExpr = "[(x + 1) ^ 2] + 2 (x + 1) + [([2 / 2]) ^ 2] = -3 + [([2 / 2]) ^ 2]"
+                        explanation {
+                            key = EquationsExplanation.CompleteTheSquare
+                        }
+                    }
+
+                    step {
+                        fromExpr = "[(x + 1) ^ 2] + 2 (x + 1) + [([2 / 2]) ^ 2] = -3 + [([2 / 2]) ^ 2]"
+                        toExpr = "[(x + 1) ^ 2] + 2 (x + 1) + 1 = -3 + [([2 / 2]) ^ 2]"
+                        explanation {
+                            key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
+                        }
+                    }
+
+                    step {
+                        fromExpr = "[(x + 1) ^ 2] + 2 (x + 1) + 1 = -3 + [([2 / 2]) ^ 2]"
+                        toExpr = "[(x + 1) ^ 2] + 2 (x + 1) + 1 = -2"
+                        explanation {
+                            key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
+                        }
+                    }
+                }
+
+                step {
+                    fromExpr = "[(x + 1) ^ 2] + 2 (x + 1) + 1 = -2"
+                    toExpr = "[((x + 1) + 1) ^ 2] = -2"
+                    explanation {
+                        key = FactorExplanation.FactorSquareOfBinomial
+                    }
+
+                    step {
+                        fromExpr = "[(x + 1) ^ 2] + 2 (x + 1) + 1"
+                        toExpr = "[(x + 1) ^ 2] + 2 * 1 * (x + 1) + [1 ^ 2]"
+                        explanation {
+                            key = FactorExplanation.RewriteSquareOfBinomial
+                        }
+                    }
+
+                    step {
+                        fromExpr = "[(x + 1) ^ 2] + 2 * 1 * (x + 1) + [1 ^ 2]"
+                        toExpr = "[((x + 1) + 1) ^ 2]"
+                        explanation {
+                            key = FactorExplanation.ApplySquareOfBinomialFormula
+                        }
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "[((x + 1) + 1) ^ 2] = -2"
+                toExpr = "Contradiction[x: [((x + 1) + 1) ^ 2] = -2]"
+                explanation {
+                    key = EquationsExplanation.ExtractSolutionFromEvenPowerEqualsNegative
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test completing the square after expanding only the most complex subterm`() = testCompletingTheSquare {
+        inputExpr = "([(x + 1) ^ 2] - 1) ([(x + 1) ^ 2] + 3) - 3 = 0"
+
+        check {
+            fromExpr = "([(x + 1) ^ 2] - 1) ([(x + 1) ^ 2] + 3) - 3 = 0"
+            toExpr = "SetSolution[x: {-sqrt[sqrt[7] - 1] - 1, sqrt[sqrt[7] - 1] - 1}]"
+            explanation {
+                key = EquationsExplanation.SolveByCompletingTheSquare
+            }
+
+            step {
+                fromExpr = "([(x + 1) ^ 2] - 1) ([(x + 1) ^ 2] + 3) - 3 = 0"
+                toExpr = "[(x + 1) ^ 4] + 2 * [(x + 1) ^ 2] - 6 = 0"
+                explanation {
+                    key = PolynomialsExplanation.ExpandPolynomialExpression
+                }
+            }
+
+            step {
+                fromExpr = "[(x + 1) ^ 4] + 2 * [(x + 1) ^ 2] - 6 = 0"
+                toExpr = "[(x + 1) ^ 4] + 2 * [(x + 1) ^ 2] = 6"
+                explanation {
+                    key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                }
+            }
+
+            step {
+                fromExpr = "[(x + 1) ^ 4] + 2 * [(x + 1) ^ 2] = 6"
+                toExpr = "[([(x + 1) ^ 2] + 1) ^ 2] = 7"
+                explanation {
+                    key = EquationsExplanation.RewriteToXPLusASquareEqualsBForm
+                }
+            }
+
+            step {
+                fromExpr = "[([(x + 1) ^ 2] + 1) ^ 2] = 7"
+                toExpr = "[(x + 1) ^ 2] + 1 = +/-sqrt[7]"
+                explanation {
+                    key = EquationsExplanation.TakeRootOfBothSides
+                }
+            }
+
+            step {
+                fromExpr = "[(x + 1) ^ 2] + 1 = +/-sqrt[7]"
+                toExpr = "[(x + 1) ^ 2] = +/-sqrt[7] - 1"
+                explanation {
+                    key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                }
+            }
+
+            step {
+                fromExpr = "[(x + 1) ^ 2] = +/-sqrt[7] - 1"
+                toExpr = "[(x + 1) ^ 2] = -sqrt[7] - 1 OR [(x + 1) ^ 2] = sqrt[7] - 1"
+                explanation {
+                    key = EquationsExplanation.SeparatePlusMinusQuadraticSolutions
+                }
+            }
+
+            step {
+                fromExpr = "[(x + 1) ^ 2] = -sqrt[7] - 1 OR [(x + 1) ^ 2] = sqrt[7] - 1"
+                toExpr = "SetSolution[x: {-sqrt[sqrt[7] - 1] - 1, sqrt[sqrt[7] - 1] - 1}]"
+                explanation {
+                    key = EquationsExplanation.SolveEquationUnion
+                }
+            }
+        }
+    }
 }

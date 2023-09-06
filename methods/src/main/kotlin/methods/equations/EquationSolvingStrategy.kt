@@ -1,10 +1,8 @@
 package methods.equations
 
-import engine.context.Context
 import engine.context.Curriculum
 import engine.context.StrategySelectionMode
 import engine.expressions.Equation
-import engine.expressions.Expression
 import engine.expressions.hasSingleValue
 import engine.methods.PublicStrategy
 import engine.methods.Strategy
@@ -135,14 +133,12 @@ enum class EquationSolvingStrategy(
         steps = steps {
             optionally(solvablePlansForEquations.multiplyByLCDAndSimplify)
             optionally(solvablePlansForEquations.moveEverythingToTheLeftAndSimplify)
-            optionally {
-                applyTo(PolynomialsPlans.ExpandPolynomialExpression) { it.firstChild }
-            }
 
             // rearrange LHS to the form: a[x^2] + bx + c
             optionally {
                 applyTo(PolynomialRules.NormalizePolynomial) { it.firstChild }
             }
+
             // normalize to the form: a[x^2] + bx + c = 0, where a > 0
             optionally(EquationsPlans.SimplifyByFactoringNegativeSignOfLeadingCoefficient)
             // normalize to the form: a[x^2] + bx + c = 0, where gcd(a,b,c) = 1
@@ -359,15 +355,14 @@ internal val solveEquationInOneVariable = lazy {
 
         option(solvablePlansForEquations.coefficientRemovalSteps)
 
-        option(PolynomialsPlans.ExpandPolynomialExpressionWithoutNormalization)
+        option(PolynomialsPlans.ExpandMostComplexSubterm)
 
         fallback(EquationSolvingStrategy.Fallback)
     }
 }
 
-private val equationSolvingSteps = object : StepsProducer {
-    override fun produceSteps(ctx: Context, sub: Expression) =
-        solveEquationInOneVariable.value
-            .run(ctx.copy(strategySelectionMode = StrategySelectionMode.HIGHEST_PRIORITY), sub)
-            ?.steps
+private val equationSolvingSteps = StepsProducer { ctx, sub ->
+    solveEquationInOneVariable.value
+        .run(ctx.copy(strategySelectionMode = StrategySelectionMode.HIGHEST_PRIORITY), sub)
+        ?.steps
 }
