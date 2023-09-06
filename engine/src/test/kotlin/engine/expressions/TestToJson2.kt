@@ -88,7 +88,7 @@ class TestToJson2 {
 
     @Test
     fun equationSystemTest() = test(
-        "x = y, y = z",
+        "x = y AND y = z",
         """{
             "type": "EquationSystem",
             "operands": [

@@ -4,14 +4,18 @@ grammar Expression;
     package parser.antlr;
 }
 
-wholeInput: (statementUnion | set | expr | undefined | name | void) EOF;
+wholeInput: (inputList | singleInput | void) EOF;
+
+inputList: elements += singleInput (',' elements += singleInput)+;
+
+singleInput: statementUnion | set | expr | undefined | name;
 
 // statements are in disjunctive normal form (constraints and systems both represent conjunctions)
 statementUnion: statements += statementWithConstraint ('OR' statements += statementWithConstraint)*;
 
 statementWithConstraint: stmt=statementSystem ('GIVEN' constraint=statementSystem)?;
 
-statementSystem: statements += simpleStatement (',' statements += simpleStatement)*;
+statementSystem: statements += simpleStatement ('AND' statements += simpleStatement)*;
 
 simpleStatement: equation | equationAddition | equationSubtraction | inequality | doubleInequality | inequation | solution;
 

@@ -134,24 +134,24 @@ class FactorRulesTest {
     @Test
     fun testSolveSumProductDiophantineEquationSystemByGuessing() {
         testRule(
-            "a + b = 7, a * b = 9",
+            "a + b = 7 AND a * b = 9",
             SolveSumProductDiophantineEquationSystemByGuessing,
             null,
         )
         testRule(
-            "a + b = 5, a * b = 6",
+            "a + b = 5 AND a * b = 6",
             SolveSumProductDiophantineEquationSystemByGuessing,
-            "a = 2, b = 3",
+            "a = 2 AND b = 3",
         )
         testRule(
-            "a + b = 6, a * b = 5",
+            "a + b = 6 AND a * b = 5",
             SolveSumProductDiophantineEquationSystemByGuessing,
-            "a = 1, b = 5",
+            "a = 1 AND b = 5",
         )
         testRule(
-            "a + b = -2, a * b = -15",
+            "a + b = -2 AND a * b = -15",
             SolveSumProductDiophantineEquationSystemByGuessing,
-            "a = -5, b = 3",
+            "a = -5 AND b = 3",
         )
     }
 

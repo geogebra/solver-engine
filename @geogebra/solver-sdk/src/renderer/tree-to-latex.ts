@@ -380,6 +380,19 @@ function treeToLatexInner(
     case 'Contradiction':
     case 'ImplicitSolution':
       return tfd(s.solutionFormatter.formatSolution(n, rec));
+    case 'List':
+      if (n.args.length === 1) {
+        return tfd(rec(n.args[0], n));
+      } else {
+        return tfd(
+          n.args
+            .slice(0, n.args.length - 1)
+            .map((x) => rec(x, n))
+            .join(', ') +
+            '\\text{ and }' +
+            rec(n.args[n.args.length - 1], n),
+        );
+      }
     case 'VariableList':
       return tfd(`${n.args.map((x) => rec(x, n)).join(', ')}`);
     case 'Tuple':

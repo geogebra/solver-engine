@@ -141,6 +141,7 @@ export function treeToSolver(n: ExpressionTree): string {
       } else {
         return `(${n.args.map(rec).join(', ')})`;
       }
+    case 'List':
     case 'VariableList':
       return n.args.map(rec).join(', ');
     case 'Name':

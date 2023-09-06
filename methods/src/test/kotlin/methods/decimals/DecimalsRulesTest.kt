@@ -54,7 +54,7 @@ class DecimalsRulesTest {
         testRule(
             "x = 3.14[15]",
             MakeEquationSystemForRecurringDecimal,
-            "100 x = 314.[15], 10000 x = 31415.[15]",
+            "100 x = 314.[15] AND 10000 x = 31415.[15]",
         )
     }
 

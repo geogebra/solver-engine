@@ -35,6 +35,7 @@ interface LatexRenderable {
 enum class OperatorKind {
     EXPRESSION,
     SET,
+    LIST,
     STATEMENT,
     SET_ELEMENT,
     INNER,
@@ -195,4 +196,26 @@ internal interface TernaryOperator : Operator {
     }
 
     fun latexString(ctx: RenderContext, first: LatexRenderable, second: LatexRenderable, third: LatexRenderable): String
+}
+
+internal object ListOperator : Operator {
+    override val arity = ARITY_VARIABLE
+    override val name = "List"
+    override val kind = OperatorKind.LIST
+    override val precedence = MAX_PRECEDENCE
+
+    override fun nthChildAllowed(n: Int, op: Operator) = true
+
+    override fun <T> readableString(children: List<T>): String {
+        return children.joinToString()
+    }
+
+    override fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String {
+        return when (children.size) {
+            0 -> ""
+            1 -> children[0].toLatexString(ctx)
+            else -> "${children.subList(0, children.size - 1).joinToString { it.toLatexString(ctx) }} " +
+                "and ${children.last().toLatexString(ctx)}"
+        }
+    }
 }

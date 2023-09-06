@@ -20,89 +20,89 @@ class SolveByEliminationTest {
 
     @Test
     fun shortTestSimpleSystem() = shortTest(
-        "x + y = 1, x - y = 1",
+        "x + y = 1 AND x - y = 1",
         "SetSolution[x, y : {(1, 0)}]",
     )
 
     @Test
     fun shortTestMoreComplexSystem() = shortTest(
-        "2x + 3y = 1, 5x - 2y = 10",
+        "2x + 3y = 1 AND 5x - 2y = 10",
         "SetSolution[x, y : {([32/19], -[15/19])}]",
     )
 
     @Test
     fun shortTestTwoIdentities() = shortTest(
-        "x + y = y + x, 2x = x + x",
-        "Identity[x, y : 0 = 0, 0 = 0]",
+        "x + y = y + x AND 2x = x + x",
+        "Identity[x, y : 0 = 0 AND 0 = 0]",
     )
 
     @Test
     fun shortTestSimpleContradiction() = shortTest(
-        "x + y = x + y + 1, y = x",
+        "x + y = x + y + 1 AND y = x",
         "Contradiction[x, y: 0 = 1]",
     )
 
     @Test
     fun shortTestCombinedContradiction() = shortTest(
-        "x + y = 2, x + y = 3",
+        "x + y = 2 AND x + y = 3",
         "Contradiction[x, y: 0 = -1]",
     )
 
     @Test
     fun shortTestEquivalent() = shortTest(
-        "x + y = 2, y = 2 - x",
+        "x + y = 2 AND y = 2 - x",
         "ImplicitSolution[x, y: x = 2 - y]",
     )
 
     @Test
     fun shortTestOneEquationIsIdentity() = shortTest(
-        "x + y = y + 2, y + y = 2y",
+        "x + y = y + 2 AND y + y = 2y",
         "SetSolution[x, y: {2}*/reals/]",
     )
 
     @Test
     fun shortTestAnotherEquationIsIdentity() = shortTest(
-        "x + y - x = 5, x + y = y + x",
+        "x + y - x = 5 AND x + y = y + x",
         "SetSolution[x, y: /reals/*{5}]",
     )
 
     @Test
     fun testIdentityAndGenuineEquationRelatingXAndY() = shortTest(
-        "y = y, x + y = 5",
+        "y = y AND x + y = 5",
         "ImplicitSolution[x, y: x + y = 5]",
     )
 
     @Test
     fun testIndependentEquations() = shortTest(
-        "2y = 10, x + 2 = 5",
+        "2y = 10 AND x + 2 = 5",
         "SetSolution[x, y: {(3, 5)}]",
     )
 
     @Test
     fun testOneUnivariateEquation() = shortTest(
-        "x + y = 10, y + 2 = 1",
+        "x + y = 10 AND y + 2 = 1",
         "SetSolution[x, y: {(11, -1)}]",
     )
 
     @Test
     fun testSameXInBoth() = shortTest(
-        "x + y = y + 10, x + 2 = 12",
+        "x + y = y + 10 AND x + 2 = 12",
         "SetSolution[x, y: {10}*/reals/]",
     )
 
     @Test
     fun testDifferentYInBoth() = shortTest(
-        "x + y = x + 10, y + 2 = 10",
+        "x + y = x + 10 AND y + 2 = 10",
         "Contradiction[x, y: 10 = 8]",
     )
 
     @Test
     fun testTwoSolutionsBySubtraction() = testMethod {
         method = EquationSystemsPlans.SolveEquationSystemByElimination
-        inputExpr = "2 x + 3 y = 5, x - y = 2"
+        inputExpr = "2 x + 3 y = 5 AND x - y = 2"
 
         check {
-            fromExpr = "2 x + 3 y = 5, x - y = 2"
+            fromExpr = "2 x + 3 y = 5 AND x - y = 2"
             toExpr = "SetSolution[x, y: {([11 / 5], [1 / 5])}]"
             explanation {
                 key = EquationSystemsExplanation.SolveEquationSystemByElimination
@@ -199,10 +199,10 @@ class SolveByEliminationTest {
     @Test
     fun testTwoSolutionsByAddition() = testMethod {
         method = EquationSystemsPlans.SolveEquationSystemByElimination
-        inputExpr = "2 x + 3 y = 5, x - 3 y = 2"
+        inputExpr = "2 x + 3 y = 5 AND x - 3 y = 2"
 
         check {
-            fromExpr = "2 x + 3 y = 5, x - 3 y = 2"
+            fromExpr = "2 x + 3 y = 5 AND x - 3 y = 2"
             toExpr = "SetSolution[x, y: {([7 / 3], [1 / 9])}]"
             explanation {
                 key = EquationSystemsExplanation.SolveEquationSystemByElimination
@@ -283,10 +283,10 @@ class SolveByEliminationTest {
     @Test
     fun testImplicitSolution() = testMethod {
         method = EquationSystemsPlans.SolveEquationSystemByElimination
-        inputExpr = "x + y = 3, 2 x + 2 y = 6"
+        inputExpr = "x + y = 3 AND 2 x + 2 y = 6"
 
         check {
-            fromExpr = "x + y = 3, 2 x + 2 y = 6"
+            fromExpr = "x + y = 3 AND 2 x + 2 y = 6"
             toExpr = "ImplicitSolution[x, y: x = 3 - y]"
             explanation {
                 key = EquationSystemsExplanation.SolveEquationSystemByElimination
@@ -383,10 +383,10 @@ class SolveByEliminationTest {
     @Test
     fun testSameSolution() = testMethod {
         method = EquationSystemsPlans.SolveEquationSystemByElimination
-        inputExpr = "x + x = 2, x + y = y + 1"
+        inputExpr = "x + x = 2 AND x + y = y + 1"
 
         check {
-            fromExpr = "x + x = 2, x + y = y + 1"
+            fromExpr = "x + x = 2 AND x + y = y + 1"
             toExpr = "SetSolution[x, y: {1}*/reals/]"
             explanation {
                 key = EquationSystemsExplanation.SolveEquationSystemByElimination
@@ -449,10 +449,10 @@ class SolveByEliminationTest {
     @Test
     fun testDifferentSolutions() = testMethod {
         method = EquationSystemsPlans.SolveEquationSystemByElimination
-        inputExpr = "x = 2, x + y = y + 1"
+        inputExpr = "x = 2 AND x + y = y + 1"
 
         check {
-            fromExpr = "x = 2, x + y = y + 1"
+            fromExpr = "x = 2 AND x + y = y + 1"
             toExpr = "Contradiction[x, y: 2 = 1]"
             explanation {
                 key = EquationSystemsExplanation.SolveEquationSystemByElimination

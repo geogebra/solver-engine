@@ -6,6 +6,7 @@ import engine.expressions.Expression
 import engine.expressions.ExpressionWithConstraint
 import engine.expressions.FiniteSet
 import engine.expressions.Inequation
+import engine.expressions.ListExpression
 import engine.expressions.Product
 import engine.expressions.SetDifference
 import engine.expressions.StatementWithConstraint
@@ -378,7 +379,7 @@ class ParserTest {
     @Test
     fun testInequalitySystem() {
         parsesTo(
-            "3x + 4 > 4x - 5, 3x + 5 < 6x + 7",
+            "3x + 4 > 4x - 5 AND 3x + 5 < 6x + 7",
             statementSystemOf(
                 greaterThanOf(
                     rawSumOf(rawProductOf(xp(3), xp("x")), xp(4)),
@@ -487,6 +488,35 @@ class ParserTest {
             statementUnionOf(
                 StatementWithConstraint(equationOf(xp("x"), xp(1)), lessThanOf(xp("x"), xp(0))),
                 equationOf(xp("x"), xp(2)),
+            ),
+        )
+    }
+
+    @Test
+    fun testList() {
+        parsesTo(
+            "3x + 2, 4x + 5",
+            ListExpression(
+                listOf(
+                    sumOf(
+                        productOf(xp(3), xp("x")),
+                        xp(2),
+                    ),
+                    sumOf(
+                        productOf(xp(4), xp("x")),
+                        xp(5),
+                    ),
+                ),
+            ),
+        )
+        parsesTo(
+            "a = b, c != d, e < f",
+            ListExpression(
+                listOf(
+                    equationOf(xp("a"), xp("b")),
+                    inequationOf(xp("c"), xp("d")),
+                    lessThanOf(xp("e"), xp("f")),
+                ),
             ),
         )
     }

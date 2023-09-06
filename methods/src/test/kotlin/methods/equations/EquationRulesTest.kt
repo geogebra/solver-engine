@@ -259,12 +259,12 @@ class EquationRulesTest {
         testRule(
             "abs[x + 2] = -abs[x - 1]",
             EquationsRules.ResolveModulusEqualsNegativeModulus,
-            "x + 2 = 0, x - 1 = 0",
+            "x + 2 = 0 AND x - 1 = 0",
         )
         testRule(
             "3abs[x] = -2abs[x + 2]",
             EquationsRules.ResolveModulusEqualsNegativeModulus,
-            "3x = 0, 2(x + 2) = 0",
+            "3x = 0 AND 2(x + 2) = 0",
         )
         testRule(
             "5abs[x] = -2x",

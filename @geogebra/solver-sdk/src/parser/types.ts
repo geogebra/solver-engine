@@ -33,6 +33,7 @@ export type NestedExpressionType =
   | 'ImplicitSolution' // (VariableList, Equation)
   | 'SetSolution' // (VariableList, FiniteSet | CartesianProduct)
   | 'VariableList' // n-ary list of variables
+  | 'List' // n-ary list of expression (used in explanations)
   | 'Tuple'
   | 'FiniteSet' // n-ary
   | 'CartesianProduct' // n-ary

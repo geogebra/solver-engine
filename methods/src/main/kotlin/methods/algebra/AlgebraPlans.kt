@@ -6,6 +6,7 @@ import engine.expressions.Expression
 import engine.expressions.ExpressionWithConstraint
 import engine.expressions.Fraction
 import engine.expressions.Identity
+import engine.expressions.ListExpression
 import engine.expressions.Product
 import engine.expressions.SetSolution
 import engine.expressions.ValueExpression
@@ -86,18 +87,31 @@ enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
             tasks {
                 val denominatorsAndDivisors = findDenominatorsAndDivisors(expression)
                     .filter { (denominatorOrDivisor, _) -> !denominatorOrDivisor.isConstant() }
-                    .toList()
+                    .groupBy(
+                        keySelector = { (denominatorOrDivisor, _) -> denominatorOrDivisor.removeBrackets() },
+                        valueTransform = { (_, inExpression) -> inExpression },
+                    )
 
                 if (denominatorsAndDivisors.isEmpty()) return@tasks null
 
-                val constraintTasks = denominatorsAndDivisors.map { (denominatorOrDivisor, inExpression) ->
+                val constraintTasks = denominatorsAndDivisors.map { (denominatorOrDivisor, inExpressions) ->
+                    val explanation = if (inExpressions.size == 1) {
+                        metadata(
+                            Explanation.ExpressionMustNotBeZero,
+                            denominatorOrDivisor,
+                            inExpressions[0],
+                        )
+                    } else {
+                        metadata(
+                            Explanation.ExpressionMustNotBeZeroPlural,
+                            denominatorOrDivisor,
+                            ListExpression(inExpressions),
+                        )
+                    }
+
                     taskWithOptionalSteps(
                         startExpr = inequationOf(denominatorOrDivisor, Constants.Zero),
-                        explanation = if (inExpression is Fraction) {
-                            metadata(Explanation.DenominatorMustNotBeZero, denominatorOrDivisor, inExpression)
-                        } else {
-                            metadata(Explanation.DivisorMustNotBeZero, denominatorOrDivisor, inExpression)
-                        },
+                        explanation = explanation,
                     ) {
                         inContext({ copy(solutionVariables = listOfNotNull(it.variables.singleOrNull())) }) {
                             apply(InequationsPlans.SolveInequationInOneVariable)

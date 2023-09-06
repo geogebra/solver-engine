@@ -215,6 +215,7 @@ function annotate(
     case 'Contradiction':
     case 'ImplicitSolution':
     case 'SetSolution':
+    case 'List':
     case 'VariableList':
     case 'Tuple':
     case 'FiniteSet':

@@ -35,20 +35,22 @@ enum class AlgebraExplanation : CategorisedMetadataKey {
     ExpressionIsDefinedEverywhere,
 
     /**
-     * States that a denominator cannot be zero because it would make the fraction undefined.
+     * States that a subexpression cannot be zero because it would make another (e.g. fraction
+     * or division) undefined.
      *
-     * %0 - the denominator
-     * %1 - the fraction which would become undefined
+     * %0 - the subexpression which must not be zero
+     * %1 - the expression which would become undefined
      */
-    DenominatorMustNotBeZero,
+    ExpressionMustNotBeZero,
 
     /**
-     * States that a divisor cannot be zero because it would make the division undefined.
+     * States that a subexpression cannot be zero because it would make several others
+     * (e.g. fractions and divisions) undefined.
      *
-     * %0 - the divisor
-     * %1 - the division which would become undefined
+     * %0 - the subexpression which must not be zero
+     * %1 - a list of expressions which would become undefined
      */
-    DivisorMustNotBeZero,
+    ExpressionMustNotBeZeroPlural,
 
     /**
      * Collect domain restrictions into one.

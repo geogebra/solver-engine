@@ -10,6 +10,7 @@ import engine.operators.ExpressionWithConstraintOperator
 import engine.operators.IntegerOperator
 import engine.operators.IntervalOperator
 import engine.operators.LatexRenderable
+import engine.operators.ListOperator
 import engine.operators.MixedNumberOperator
 import engine.operators.NameOperator
 import engine.operators.Operator
@@ -671,6 +672,8 @@ private fun expressionOf(
         is NameOperator -> Name(operator.value, meta)
 
         VoidOperator -> VoidExpression(meta)
+
+        ListOperator -> ListExpression(operands, meta)
 
         else -> Expression(operator, operands, meta)
     }

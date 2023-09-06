@@ -93,7 +93,7 @@ class AlgebraPlansTest {
                 taskId = "#1"
                 startExpr = "4 [x ^ 2] + 12 x != 0"
                 explanation {
-                    key = AlgebraExplanation.DenominatorMustNotBeZero
+                    key = AlgebraExplanation.ExpressionMustNotBeZero
                 }
 
                 step {
@@ -225,7 +225,7 @@ class AlgebraPlansTest {
                 taskId = "#1"
                 startExpr = "[x ^ 2] - x + 1 != 0"
                 explanation {
-                    key = AlgebraExplanation.DivisorMustNotBeZero
+                    key = AlgebraExplanation.ExpressionMustNotBeZero
                 }
 
                 step {
@@ -254,7 +254,7 @@ class AlgebraPlansTest {
 
         check {
             fromExpr = "a b c : c f + c : (2 f + 1) + f : (3 f + 1)"
-            toExpr = "c f != 0, SetSolution[f : /reals/ \\ {-[1 / 2], -[1 / 3]}]"
+            toExpr = "c f != 0 AND SetSolution[f : /reals/ \\ {-[1 / 2], -[1 / 3]}]"
             explanation {
                 key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
             }
@@ -263,7 +263,7 @@ class AlgebraPlansTest {
                 taskId = "#1"
                 startExpr = "c f != 0"
                 explanation {
-                    key = AlgebraExplanation.DivisorMustNotBeZero
+                    key = AlgebraExplanation.ExpressionMustNotBeZero
                 }
             }
 
@@ -271,7 +271,7 @@ class AlgebraPlansTest {
                 taskId = "#2"
                 startExpr = "2 f + 1 != 0"
                 explanation {
-                    key = AlgebraExplanation.DivisorMustNotBeZero
+                    key = AlgebraExplanation.ExpressionMustNotBeZero
                 }
 
                 step {
@@ -287,7 +287,7 @@ class AlgebraPlansTest {
                 taskId = "#3"
                 startExpr = "3 f + 1 != 0"
                 explanation {
-                    key = AlgebraExplanation.DivisorMustNotBeZero
+                    key = AlgebraExplanation.ExpressionMustNotBeZero
                 }
 
                 step {
@@ -301,7 +301,63 @@ class AlgebraPlansTest {
 
             task {
                 taskId = "#4"
-                startExpr = "c f != 0, SetSolution[f : /reals/ \\ {-[1 / 2], -[1 / 3]}]"
+                startExpr = "c f != 0 AND SetSolution[f : /reals/ \\ {-[1 / 2], -[1 / 3]}]"
+                explanation {
+                    key = AlgebraExplanation.CollectDomainRestrictions
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test computing the domain for equal denominators is done in the same task`() = testMethod {
+        method = AlgebraPlans.ComputeDomainOfAlgebraicExpression
+        inputExpr = "[6 / x + 1] + [6 x / x + 1] + [3 / 2 x + 3]"
+
+        check {
+            fromExpr = "[6 / x + 1] + [6 x / x + 1] + [3 / 2 x + 3]"
+            toExpr = "SetSolution[x: /reals/ \\ {-[3 / 2], -1}]"
+            explanation {
+                key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
+            }
+
+            task {
+                taskId = "#1"
+                startExpr = "x + 1 != 0"
+                explanation {
+                    key = AlgebraExplanation.ExpressionMustNotBeZeroPlural
+                    param { expr = "x + 1" }
+                    param { expr = "[6 / x + 1], [6 x / x + 1]" }
+                }
+
+                step {
+                    fromExpr = "x + 1 != 0"
+                    toExpr = "SetSolution[x: /reals/ \\ {-1}]"
+                    explanation {
+                        key = InequationsExplanation.SolveInequationInOneVariable
+                    }
+                }
+            }
+
+            task {
+                taskId = "#2"
+                startExpr = "2 x + 3 != 0"
+                explanation {
+                    key = AlgebraExplanation.ExpressionMustNotBeZero
+                }
+
+                step {
+                    fromExpr = "2 x + 3 != 0"
+                    toExpr = "SetSolution[x: /reals/ \\ {-[3 / 2]}]"
+                    explanation {
+                        key = InequationsExplanation.SolveInequationInOneVariable
+                    }
+                }
+            }
+
+            task {
+                taskId = "#3"
+                startExpr = "SetSolution[x: /reals/ \\ {-[3 / 2], -1}]"
                 explanation {
                     key = AlgebraExplanation.CollectDomainRestrictions
                 }

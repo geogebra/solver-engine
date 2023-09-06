@@ -21,6 +21,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Added support for simplifying multivariate algebraic expressions (PLUT-667)
 - Solve rational equations implementation (PLUT-593)
 - Added support for equations simplifying to undefined (PLUT-652)
+- Added ExpressionList to represent a variable number of parameters in explanations (PLUT-663)
 
 ### Fixed
 

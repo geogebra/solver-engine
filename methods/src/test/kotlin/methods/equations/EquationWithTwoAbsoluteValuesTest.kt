@@ -76,13 +76,13 @@ class EquationWithTwoAbsoluteValuesTest {
             }
             step {
                 fromExpr = "abs[[x ^ 2] - x] = -abs[[x ^ 3] - 1]"
-                toExpr = "[x ^ 2] - x = 0, [x ^ 3] - 1 = 0"
+                toExpr = "[x ^ 2] - x = 0 AND [x ^ 3] - 1 = 0"
                 explanation {
                     key = EquationsExplanation.ResolveModulusEqualsNegativeModulus
                 }
             }
             step {
-                fromExpr = "[x ^ 2] - x = 0, [x ^ 3] - 1 = 0"
+                fromExpr = "[x ^ 2] - x = 0 AND [x ^ 3] - 1 = 0"
                 toExpr = "SetSolution[x: {1}]"
                 explanation {
                     key = EquationSystemsExplanation.SolveEquationSystemInOneVariable
@@ -98,7 +98,7 @@ class EquationWithTwoAbsoluteValuesTest {
 
         check {
             fromExpr = "3 * abs[x + 1] + 1 = 1 - abs[x - 1]"
-            toExpr = "Contradiction[x: 3 (x + 1) = 0, x - 1 = 0]"
+            toExpr = "Contradiction[x: 3 (x + 1) = 0 AND x - 1 = 0]"
             explanation {
                 key = EquationsExplanation.SolveEquationWithTwoAbsoluteValues
             }
@@ -111,14 +111,14 @@ class EquationWithTwoAbsoluteValuesTest {
             }
             step {
                 fromExpr = "3 * abs[x + 1] = -abs[x - 1]"
-                toExpr = "3 (x + 1) = 0, x - 1 = 0"
+                toExpr = "3 (x + 1) = 0 AND x - 1 = 0"
                 explanation {
                     key = EquationsExplanation.ResolveModulusEqualsNegativeModulus
                 }
             }
             step {
-                fromExpr = "3 (x + 1) = 0, x - 1 = 0"
-                toExpr = "Contradiction[x: 3 (x + 1) = 0, x - 1 = 0]"
+                fromExpr = "3 (x + 1) = 0 AND x - 1 = 0"
+                toExpr = "Contradiction[x: 3 (x + 1) = 0 AND x - 1 = 0]"
                 explanation {
                     key = EquationSystemsExplanation.SolveEquationSystemInOneVariable
                 }

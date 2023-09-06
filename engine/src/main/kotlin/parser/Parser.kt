@@ -10,6 +10,7 @@ import engine.expressions.FiniteSet
 import engine.expressions.Identity
 import engine.expressions.ImplicitSolution
 import engine.expressions.Inequation
+import engine.expressions.ListExpression
 import engine.expressions.Power
 import engine.expressions.Product
 import engine.expressions.SetDifference
@@ -87,6 +88,10 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
 
     override fun visitWholeInput(ctx: ExpressionParser.WholeInputContext): Expression {
         return visit(ctx.getChild(0))
+    }
+
+    override fun visitInputList(ctx: ExpressionParser.InputListContext): Expression {
+        return ListExpression(ctx.elements.map { visit(it) })
     }
 
     override fun visitStatementUnion(ctx: ExpressionParser.StatementUnionContext): Expression {

@@ -72,7 +72,7 @@ class DecimalsPlansTest {
 
             step {
                 fromExpr = "x = 3.14[15]"
-                toExpr = "100 x = 314.[15], 10000 x = 31415.[15]"
+                toExpr = "100 x = 314.[15] AND 10000 x = 31415.[15]"
                 explanation {
                     key = DecimalsExplanation.MakeEquationSystemForRecurringDecimal
                 }
@@ -95,7 +95,7 @@ class DecimalsPlansTest {
             }
 
             step {
-                fromExpr = "100 x = 314.[15], 10000 x = 31415.[15]"
+                fromExpr = "100 x = 314.[15] AND 10000 x = 31415.[15]"
                 toExpr = "9900 x = 31101"
                 explanation {
                     key = DecimalsExplanation.SimplifyEquationSystemForRecurringDecimal

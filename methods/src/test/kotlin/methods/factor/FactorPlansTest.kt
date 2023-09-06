@@ -381,14 +381,14 @@ class FactorPlansTest {
 
             task {
                 taskId = "#1"
-                startExpr = "a + b = -5, a b = 6"
+                startExpr = "a + b = -5 AND a b = 6"
                 explanation {
                     key = FactorExplanation.SetUpAndSolveEquationSystemForMonicTrinomial
                 }
 
                 step {
-                    fromExpr = "a + b = -5, a b = 6"
-                    toExpr = "a = -3, b = -2"
+                    fromExpr = "a + b = -5 AND a b = 6"
+                    toExpr = "a = -3 AND b = -2"
                     explanation {
                         key = FactorExplanation.SolveSumProductDiophantineEquationSystemByGuessing
                     }
@@ -426,22 +426,22 @@ class FactorPlansTest {
 
                 task {
                     taskId = "#1"
-                    startExpr = "a + b = 11, a b = 6 * 4"
+                    startExpr = "a + b = 11 AND a b = 6 * 4"
                     explanation {
                         key = FactorExplanation.SetUpAndSolveEquationSystemForNonMonicTrinomial
                     }
 
                     step {
-                        fromExpr = "a + b = 11, a b = 6 * 4"
-                        toExpr = "a + b = 11, a b = 24"
+                        fromExpr = "a + b = 11 AND a b = 6 * 4"
+                        toExpr = "a + b = 11 AND a b = 24"
                         explanation {
                             key = IntegerArithmeticExplanation.EvaluateIntegerProduct
                         }
                     }
 
                     step {
-                        fromExpr = "a + b = 11, a b = 24"
-                        toExpr = "a = 3, b = 8"
+                        fromExpr = "a + b = 11 AND a b = 24"
+                        toExpr = "a = 3 AND b = 8"
                         explanation {
                             key = FactorExplanation.SolveSumProductDiophantineEquationSystemByGuessing
                         }
