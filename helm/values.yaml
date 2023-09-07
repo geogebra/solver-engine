@@ -1,6 +1,30 @@
-branchName: dev
-LoadBalancerPath: /dev
+# The domain where the deployed solver backend will be accessible
+deploymentDomain: localhost
+
+# The URL path to where the solver backend is served
+# Eg. /plut-602 for a feature branch
+# /main for main
+# / for the release (currently)
+contextPath: dev
+
+# The name of the deployment, used to name all of the kubernetes resources
+# For main it is "main"
+# For a feature branch it will usually be "plut-123"
+# For the release it is currently "release"
+deploymentName: dev
+
+# The container image tag to use to run the payload of the deployment
+# For main it is "main"
+# For a feature branch it will usually be "plut-123"
+# For the release it is currently "release"
+# Question: should it be the commit sha?
+solverImageTag: dev
+
+# Commit SHA of the solver-engine that is being deployed
 commitSha: latest
+
+# Spring profile, which select the correct configuration for the spring server
+# For all deployments to the cloud it should be "production"
 springProfile: dev
 
 imageCredentials:

@@ -26,7 +26,6 @@ contents to a new release section (e.g. _[0.x]_).
 ### Fixed
 
 - SDK: Updated package.json for better compatibility
-- Fixed equations solvable by applying roots method followed by quadratic formula (PLUT-657)
 - Show `EvaluateExpressionAsDecimal` only when Decimal/Fraction/DivideBy is present in expression (PLUT-631)
 - Add reciprocal power rule i.e. `[1/a^n] = a^-n` and collect integers with rational exponents (PLUT-625)
 - Make sure leading factor of 1 is not removed when followed by division sign and relax rule for turning divisions into
@@ -99,6 +98,7 @@ contents to a new release section (e.g. _[0.x]_).
 - SDK: Ignore text style commands when parsing latex (PLUT-636)
 - Improve order of operations when evaluating constant expressions with absolute values (PLUT-620)
 - Absolute value of non-negative value is the non-negative itself (PLUT-623)
+- Fixed equations solvable by applying roots method followed by quadratic formula (PLUT-657)
 
 ### Changed
 

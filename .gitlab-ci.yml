@@ -14,6 +14,11 @@ variables:
   GITLAB_CLUSTER: solver-v2
   GGBTRANS_SOLVER_IMPORT_URL: https://dev.geogebra.org/ggbtrans/props/api/solver_import
   GRADLE: './gradlew --no-daemon --stacktrace --build-cache --gradle-user-home cache/.gradle'
+  SOLVER_PRODUCTION_DOMAIN: solver-api.geogebra.org
+  SOLVER_DEVELOPMENT_DOMAIN: solver.geogebra.net
+  RELEASE_BRANCH: release
+  # The gitlab ID of the repository where our container images are uploaded
+  REPOSITORY_ID: 4
 
 stages:
   - checks
@@ -21,18 +26,133 @@ stages:
   - publish
   - deploy
 
+# Here we define all the variables that configure whether and how the jobs are run.
+#
+# The strategy is to:
+# - deploy SDK and engine in development branches and staging
+# - deploy only the SDK when committing to $RELEASE_BRANCH
+# - deploy only the engine when a release-x.y.z tag is created
+#
+# This means that to deploy a new release the steps are as follows
+# 1. Create a "release-x.y.0" tag on the staging branch. This will deploy the engine version "x.y".
+# 2. Merge staging into $RELEASE_BRANCH. This should trigger an SDK release with the SDK pointing to the x.y API URL.
+# 3. Merge $RELEASE_BRANCH back into main.  This is to keep semantic-release happy. (See https://semantic-release.gitbook.io/semantic-release/usage/workflow-configuration)
+#
+# Once we have a release "x.y.z" we can
+# - deploy a patch release by creating a new "release-x.y.(z + 1)" tag on the release branch (this will overwrite the
+#   existing x.y release)
+# - release a new SDK simply by adding commits to $RELEASE_BRANCH that contain "fix:" or "feat:" commit messages
+#
+# This strategy means that several minor release versions can be deployed simultaneously.  So it is up to us
+# to delete deployments of old releases.
+#
+# To deploy the engine, the following variables must be set
+# - SOLVER_VERSION: something like 1.2 for release versions, plut-652 for development branch, main for the main branch
+# - SOLVER_IMAGE_TAG: the container image tag for the solver image, must be different for distinct deployments
+# - SOLVER_DEPLOYMENT_NAME: a name used to create a k8s namespace and a gitlab environment.  Reuse the same name to
+#   update a deployment (e.g. when releasing a patch version, or for any development branch)
+# - SOLVER_DEPLOYMENT_DOMAIN: the DNS domain where the solver deployment will be available
+#
+# These variables are required but computed from the ones above
+# - SOLVER_CONTEXT_PATH: the path at which the solver API root is accessible (e.g. /main, /1.2, /plut-654)
+# - SOLVER_BASE_URL: the base URL for accessing the solver deployment
+# - POKER_URL: The URL where the poker can be reached (it extends $SOLVER_BASE_URL)
+#
+# To deploy the SDK, the following variables must be set
+# - SOLVER_VERSION: something like 1.2 for release versions, plut-652 for development branch, main for the main branch
+# - SOLVER_DEPLOYMENT_NAME: a name used to create a k8s namespace and a gitlab environment.  Reuse the same name to
+#
+# The following variables are required but computed from the ones above
+# - API_URL: the URL where the solver API can be accessed (it extends $SOLVER_BASE_URL)
+#
 before_script:
-  - export SLUG=`echo $CI_COMMIT_REF_SLUG | sed 's/^\([a-z][a-z]*\-[0-9][0-9]*\).*/\1/'`
-  - export API_URL=`  if [[ $CI_COMMIT_REF_NAME == "release" ]]; then echo "https://solver-api.geogebra.org/api/v1"; else echo "https://solver.geogebra.net/$SLUG/api/v1"; fi`
-  - export POKER_URL=`if [[ $CI_COMMIT_REF_NAME == "release" ]]; then echo "https://solver-api.geogebra.org/poker/index.html" ; else echo "https://solver.geogebra.net/$SLUG/poker/index.html" ; fi`
+  # Define a bunch of variables depending on the commit or branch that triggered the pipeline
+  - |
+    if [[ $CI_COMMIT_TAG =~ ^release-[0-9]*\.[0-9]*.*$ ]]; then
+      # This pipeline is triggered by a release tag: we deploy only the engine, not the SDK, to production.
+
+      # release-1.2.1 ==> 1.2
+      export SOLVER_VERSION=`echo "$CI_COMMIT_TAG" | sed 's/^release-\([0-9]*\.[0-9]*\).*$/\1/'`
+
+      # release-1-2-1 so kubernetes doesn't complain
+      export SOLVER_IMAGE_TAG="$CI_COMMIT_REF_SLUG"
+
+      # release-1-2 to only have one deployment per minor version
+      export SOLVER_DEPLOYMENT_NAME=$(echo "release-$SOLVER_VERSION" | tr "." "-")
+
+      export SOLVER_DEPLOYMENT_DOMAIN="$SOLVER_PRODUCTION_DOMAIN"
+
+    elif [[ $CI_COMMIT_BRANCH == $RELEASE_BRANCH ]]; then
+      # This pipeline is triggered by committing to the release branch: we deploy only the SDK, not the engine.
+
+      # on the release branch, we only do SDK releases on commit, based on the latest tag
+      RELEASE_TAG=`git describe --tags --match 'release-*' --abbrev=0`
+      export SOLVER_VERSION=`echo $RELEASE_TAG | sed 's/^release-\([0-9]*\.[0-9]*\).*$/\1/'`
+      export SOLVER_DEPLOYMENT_DOMAIN="$SOLVER_PRODUCTION_DOMAIN"
+
+    else 
+      # This is a development commit - we want to deploy both engine and SDK
+
+      # If the branch name starts with a JIRA tiket number (PLUT-123) use that, else use the whole branch name.
+      export SOLVER_VERSION=`echo $CI_COMMIT_REF_SLUG | sed 's/^\([a-z][a-z]*\-[0-9][0-9]*\).*/\1/'`
+
+      # The tag for the container image of the solver backend that will be published to the container registry
+      export SOLVER_IMAGE_TAG="$SOLVER_VERSION"
+
+      # The name of the Helm deployment - will also be used as the base for naming the kubernetes entities (see helm templates)
+      export SOLVER_DEPLOYMENT_NAME="$SOLVER_VERSION"
+
+      # The domain where the deployed solver backend will be available
+      export SOLVER_DEPLOYMENT_DOMAIN="$SOLVER_DEVELOPMENT_DOMAIN"
+    fi
+
+  # For now, the solver context path is always /$SOLVER_VERSION
+  - export SOLVER_CONTEXT_PATH="/$SOLVER_VERSION"
+
+  # The base URL for reaching the deployment
+  - export SOLVER_BASE_URL="https://$SOLVER_DEPLOYMENT_DOMAIN$SOLVER_CONTEXT_PATH"
+
+  # The URL where the solver API can be reached
+  - export API_URL="$SOLVER_BASE_URL/api/v1"
+
+  # The URL where the poker can be reached
+  - export POKER_URL="$SOLVER_BASE_URL/poker/index.html"
+
   - export REPO_FULL_NAME=`echo $CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME`
-  - export REPOSITORY_ID=4 # The gitlab ID of the repository where our container images are uploaded
+
+# This encodes the conditions when to perform the jobs that are needed only for releasing the SDK
+.deploy-sdk-job:
+  rules:
+    - if: $CI_COMMIT_BRANCH
+
+# This encodes the conditions when to perform the jobs that are needed only for deploying the engine
+.deploy-engine-job:
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^release-[0-9]*\.[0-9]*.*$/
+    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $RELEASE_BRANCH
 
 check-circular-dependencies-in-methods:
   stage: checks
   cache: []
   script:
     - ./scripts/check_method_dependencies.sh
+
+print-solver-vars:
+  stage: checks
+  script:
+    - echo RELEASE_BRANCH=$RELEASE_BRANCH
+    - echo CI_COMMIT_TAG=$CI_COMMIT_TAG
+    - echo CI_COMMIT_REF_SLUG=$CI_COMMIT_REF_SLUG
+    - echo SOLVER_VERSION=$SOLVER_VERSION
+    - echo SOLVER_IMAGE_TAG=$SOLVER_IMAGE_TAG
+    - echo SOLVER_DEPLOYMENT_NAME=$SOLVER_DEPLOYMENT_NAME
+    - echo SOLVER_DEPLOYMENT_DOMAIN=$SOLVER_DEPLOYMENT_DOMAIN
+    - echo SOLVER_CONTEXT_PATH=$SOLVER_CONTEXT_PATH
+    - echo SOLVER_BASE_URL=$SOLVER_BASE_URL
+    - echo API_URL=$API_URL
+    - echo POKER_URL=$POKER_URL
+    - echo REPO_FULL_NAME=$REPO_FULL_NAME
+    - echo REPOSITORY_ID=$REPOSITORY_ID
 
 # Test SDK and build all artifacts from SDK for the poker and for possible release
 build-sdk-and-poker:
@@ -41,7 +161,7 @@ build-sdk-and-poker:
     # The Kotlin tests generate solver-poker/test-results-src/test-results.ts which is
     # needed by the TS tests.
     - build-engine
-  image: node:18-alpine
+  image: node:18
   tags:
     - docker
   cache:
@@ -86,6 +206,7 @@ build-engine:
 
 # Package the engine into a docker image
 package-engine:
+  extends: .deploy-engine-job
   stage: publish
   needs:
     - build-engine
@@ -93,7 +214,7 @@ package-engine:
   tags:
     - docker
   script:
-    - $GRADLE bootBuildImage --imageName="registry.git.geogebra.org/solver-team/solver-engine/api:$SLUG"
+    - $GRADLE bootBuildImage --imageName="registry.git.geogebra.org/solver-team/solver-engine/api:$SOLVER_IMAGE_TAG"
 
 export-translation-keys:
   stage: publish
@@ -126,6 +247,7 @@ export-translation-keys:
 
 # Deploy the engine to k8s
 deploy-engine:
+  extends: .deploy-engine-job
   stage: deploy
   needs:
     - package-engine
@@ -145,8 +267,11 @@ deploy-engine:
     - kubectl config use-context $REPO_FULL_NAME:$GITLAB_CLUSTER
     - helm package helm/ --version "6.6.6"
     - |
-      helm upgrade --install $SLUG solver-6.6.6.tgz \
-          --set branchName=$SLUG \
+      helm upgrade --install $SOLVER_DEPLOYMENT_NAME solver-6.6.6.tgz \
+          --set deploymentDomain=$SOLVER_DEPLOYMENT_DOMAIN \
+          --set contextPath=$SOLVER_CONTEXT_PATH \
+          --set deploymentName=$SOLVER_DEPLOYMENT_NAME \
+          --set solverImageTag=$SOLVER_IMAGE_TAG \
           --set commitSha=$CI_COMMIT_SHA \
           --set imageCredentials.username=$CI_REGISTRY_USER \
           --set imageCredentials.password=$CI_REGISTRY_PASSWORD \
@@ -155,6 +280,7 @@ deploy-engine:
 
 # Make an SDK release
 sdk-semantic-release:
+  extends: .deploy-sdk-job
   stage: deploy
   needs:
     - build-sdk-and-poker
@@ -198,17 +324,16 @@ undeploy-engine:
     - docker
   cache: []
   script:
-    - echo "Attempting do delete tag $SLUG..."
+    - echo "Attempting do delete tag $SOLVER_IMAGE_TAG of deployment $SOLVER_DEPLOYMENT_NAME..."
     # Call the gitlab API to delete the image tag as it is no longer needed. This will allow the image
     # to be garbage-collected, saving space on the container registry.
     - |
       curl --request DELETE \
            --header "PRIVATE-TOKEN: $GITLAB_API_PRIVATE_TOKEN" \
-           "$CI_API_V4_URL/projects/$CI_PROJECT_ID/registry/repositories/$REPOSITORY_ID/tags/$SLUG"
+           "$CI_API_V4_URL/projects/$CI_PROJECT_ID/registry/repositories/$REPOSITORY_ID/tags/$SOLVER_IMAGE_TAG"
     - kubectl config get-contexts
     - kubectl config use-context $REPO_FULL_NAME:$GITLAB_CLUSTER
-    - helm uninstall $SLUG
+    - helm uninstall $SOLVER_DEPLOYMENT_NAME
   when: manual
-  except:
-    - main
-    - release
+  rules:
+    - if: $CI_COMMIT_REF_NAME != "main" && $CI_COMMIT_REF_NAME != $RELEASE_BRANCH

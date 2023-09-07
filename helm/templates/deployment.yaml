@@ -1,14 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.branchName }}
-  namespace: "solver-{{ .Values.branchName }}"
+  name: {{ .Values.deploymentName }}
+  namespace: "solver-{{ .Values.deploymentName }}"
   labels:
-    app: {{ .Values.branchName }}
+    app: {{ .Values.deploymentName }}
 spec:
   selector:
     matchLabels:
-      app: {{ .Values.branchName }}
+      app: {{ .Values.deploymentName }}
   replicas: 1
   template:
     metadata:
@@ -16,26 +16,21 @@ spec:
         # This annotation is necessary to update the deployed pod for a branch as the image name doesn't change
         solver/commit-sha: {{ .Values.commitSha }}
       labels:
-        app: {{ .Values.branchName }}
+        app: {{ .Values.deploymentName }}
     spec:
       containers:
-        - name: {{ .Values.branchName }}
-          image: "registry.git.geogebra.org/solver-team/solver-engine/api:{{ .Values.branchName }}"
+        - name: {{ .Values.deploymentName }}
+          image: "registry.git.geogebra.org/solver-team/solver-engine/api:{{ .Values.solverImageTag }}"
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
           env:
-            {{ if eq .Values.branchName "release" }}
             - name: SERVER_SERVLET_CONTEXT_PATH
-              value: "/"
-            {{ else }}
-            - name: SERVER_SERVLET_CONTEXT_PATH
-              value: "/{{ .Values.branchName }}"
-            {{ end }}
+              value: "{{ .Values.contextPath }}"
             - name: SOLVER_COMMIT_SHA
               value: "{{ .Values.commitSha }}"
             - name: DEPLOYMENT_NAME
-              value: "{{ .Values.branchName }}"
+              value: "{{ .Values.deploymentName }}"
             - name: SPRING_PROFILES_ACTIVE
               value: "{{ .Values.springProfile }}"
       imagePullSecrets:
