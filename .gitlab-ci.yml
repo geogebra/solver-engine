@@ -24,43 +24,95 @@ stages:
   - publish
   - deploy
 
+# Here we define all the variables that configure whether and how the jobs are run.
+# Overall
+# - if $DEPLOY_ENGINE is set, the engine is deployed.
+# - if $DEPLOY_SDK is set, the SDK is released if needed (this is decided by semantic-release).
+#
+# The strategy is to:
+# - deploy SDK and engine in development branches and staging
+# - deploy only the SDK when committing to $RELEASE_BRANCH
+# - deploy only the engine when a release-x.y.z tag is created
+#
+# This means that to deploy a new release the steps are as follows
+# 1. Create a "release-x.y.0" tag on the staging branch. This will deploy the engine version "x.y".
+# 2. Merge staging into $RELEASE_BRANCH. This should trigger an SDK release.
+# 3. Merge $RELEASE_BRANCH back into main.  This is to keep semantic-release happy. (See https://semantic-release.gitbook.io/semantic-release/usage/workflow-configuration)
+#
+# Once we have a release "x.y.z" we can
+# - deploy a patch release by creating a new "release-x.y.(z + 1)" tag on the release branch
+# - release a new SDK simply by adding commits to $RELEASE_BRANCH that contain "fix:" or "feat:" commit messages
+#
+# This strategy means that several minor release versions can be deployed simultaneously.  So it is up to us
+# to delete deployments of old releases.
+#
+# To deploy the engine, the following variables must be set
+# - SOLVER_VERSION: something like 1.2 for release versions, plut-652 for development branch, main for the main branch
+# - SOLVER_IMAGE_TAG: the container image tag for the solver image, must be different for distinct deployments
+# - SOLVER_DEPLOYMENT_NAME: a name used to create a k8s namespace and a gitlab environment.  Reuse the same name to
+#   update a deployment (e.g. when releasing a patch version, or for any development branch)
+# - SOLVER_DEPLOYMENT_DOMAIN: the DNS domain where the solver deployment will be available
+#
+# These variables are required but computed from the ones above
+# - SOLVER_CONTEXT_PATH: the path at which the solver API root is accessible (e.g. /main, /1.2, /plut-654)
+# - SOLVER_BASE_URL: the base URL for accessing the solver deployment
+# - POKER_URL: The URL where the poker can be reached (it extends $SOLVER_BASE_URL)
+#
+# To deploy the SDK, the following variables must be set
+# - SOLVER_VERSION: something like 1.2 for release versions, plut-652 for development branch, main for the main branch
+# - SOLVER_DEPLOYMENT_NAME: a name used to create a k8s namespace and a gitlab environment.  Reuse the same name to
+#
+# The following variables are required but computed from the ones above
+# - API_URL: the URL where the solver API can be accessed (it extends $SOLVER_BASE_URL)
+#
 before_script:
-  # Do a new production release if there is a git tag like release-1.2.3,
-  # otherwise do a development release.
+  # Define a bunch of variables depending on the commit or branch that triggered the pipeline
   - |
     if [[ $CI_COMMIT_TAG =~ ^release-[0-9]*\.[0-9]*.*$ ]]; then
-      # We only do an engine release but not an SDK release
+      # This pipeline is triggered by a release tag: we deploy only the engine, not the SDK, to production.
+      export DEPLOY_ENGINE=yes
+
       # release-1.2.1 ==> 1.2
       export SOLVER_VERSION=`echo "$CI_COMMIT_TAG" | sed 's/^release-\([0-9]*\.[0-9]*\).*$/\1/'`
+
       # release-1-2-1 so kubernetes doesn't complain
       export SOLVER_IMAGE_TAG="$CI_COMMIT_REF_SLUG"
+
       # release-1-2 to only have one deployment per minor version
       export SOLVER_DEPLOYMENT_NAME=$(echo "release-$SOLVER_VERSION" | tr "." "-")
-      export SOLVER_DEPLOYMENT_DOMAIN="$SOLVER_PRODUCTION_DOMAIN"
-      export SOLVER_CONTEXT_PATH="/$SOLVER_VERSION"
 
-      export DEPLOY_ENGINE=yes
-    else
+      export SOLVER_DEPLOYMENT_DOMAIN="$SOLVER_PRODUCTION_DOMAIN"
+
+    elif [[ $CI_COMMIT_BRANCH == $RELEASE_BRANCH ]]; then
+      # This pipeline is triggered by committing to the release branch: we deploy only the SDK, not the engine.
       export DEPLOY_SDK=yes
-      if [[ $CI_COMMIT_BRANCH == $RELEASE_BRANCH ]]; then
-        # on the release branch, we only do SDK releases on commit, based on the latest tag
-        RELEASE_TAG=`git describe --tags --match 'release-*' --abbrev=0`
-        export SOLVER_VERSION=`echo $RELEASE_TAG | sed 's/^release-\([0-9]*\.[0-9]*\).*$/\1/'`
-      else 
-        # If the branch name starts with a JIRA tiket number (PLUT-123) use that, else use the whole branch name.
-        export SOLVER_VERSION=`echo $CI_COMMIT_REF_SLUG | sed 's/^\([a-z][a-z]*\-[0-9][0-9]*\).*/\1/'`
-        # The tag for the container image of the solver backend that will be published to the container registry
-        export SOLVER_IMAGE_TAG="$SOLVER_VERSION"
-        # The name of the Helm deployment - will also be used as the base for naming the kubernetes entities (see helm templates)
-        export SOLVER_DEPLOYMENT_NAME="$SOLVER_VERSION"
-        export DEPLOY_ENGINE=yes
-      fi
+
+      # on the release branch, we only do SDK releases on commit, based on the latest tag
+      RELEASE_TAG=`git describe --tags --match 'release-*' --abbrev=0`
+      export SOLVER_VERSION=`echo $RELEASE_TAG | sed 's/^release-\([0-9]*\.[0-9]*\).*$/\1/'`
+      export SOLVER_DEPLOYMENT_DOMAIN="$SOLVER_PRODUCTION_DOMAIN"
+
+    else 
+      # This is a development commit - we want to deploy both engine and SDK
+      export DEPLOY_SDK=yes
+      export DEPLOY_ENGINE=yes
+
+      # If the branch name starts with a JIRA tiket number (PLUT-123) use that, else use the whole branch name.
+      export SOLVER_VERSION=`echo $CI_COMMIT_REF_SLUG | sed 's/^\([a-z][a-z]*\-[0-9][0-9]*\).*/\1/'`
+
+      # The tag for the container image of the solver backend that will be published to the container registry
+      export SOLVER_IMAGE_TAG="$SOLVER_VERSION"
+
+      # The name of the Helm deployment - will also be used as the base for naming the kubernetes entities (see helm templates)
+      export SOLVER_DEPLOYMENT_NAME="$SOLVER_VERSION"
 
       # The domain where the deployed solver backend will be available
       export SOLVER_DEPLOYMENT_DOMAIN="$SOLVER_DEVELOPMENT_DOMAIN"
-      # The path at which the root of the deployment can be reached
-      export SOLVER_CONTEXT_PATH="/$SOLVER_VERSION"
     fi
+
+  # For now, the solver context path is always /$SOLVER_VERSION
+  - export SOLVER_CONTEXT_PATH="/$SOLVER_VERSION"
+
   # The base URL for reaching the deployment
   - export SOLVER_BASE_URL="https://$SOLVER_DEPLOYMENT_DOMAIN$SOLVER_CONTEXT_PATH"
 
@@ -199,6 +251,7 @@ print-solver-vars:
     - package-engine
   image: alpine/k8s:1.23.7
   environment:
+    # TODO: I think that should now be solver/$SOLVER_DEPLOYMENT_NAME
     name: solver/$CI_COMMIT_REF_SLUG
     url: $DYNAMIC_ENVIRONMENT_URL
     on_stop: undeploy-engine
@@ -269,6 +322,7 @@ print-solver-vars:
     # As the branch is deleted at this point we can't fetch the repo (and we don't need to)
     GIT_STRATEGY: none
   environment:
+    # TODO: I think that should now be solver/$SOLVER_DEPLOYMENT_NAME
     name: solver/$CI_COMMIT_REF_SLUG
     action: stop
   tags:
