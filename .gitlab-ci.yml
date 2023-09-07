@@ -16,6 +16,7 @@ variables:
   GRADLE: './gradlew --no-daemon --stacktrace --build-cache --gradle-user-home cache/.gradle'
   SOLVER_PRODUCTION_DOMAIN: solver-api.geogebra.org
   SOLVER_DEVELOPMENT_DOMAIN: solver.geogebra.net
+  RELEASE_BRANCH: release-versions
 
 stages:
   - checks
@@ -28,20 +29,33 @@ before_script:
   # otherwise do a development release.
   - |
     if [[ $CI_COMMIT_TAG =~ ^release-[0-9]*\.[0-9]*.*$ ]]; then
+      # We only do an engine release but not an SDK release
       # release-1.2.1 ==> 1.2
       export SOLVER_VERSION=`echo "$CI_COMMIT_TAG" | sed 's/^release-\([0-9]*\.[0-9]*\).*$/\1/'`
       # release-1-2-1 so kubernetes doesn't complain
       export SOLVER_IMAGE_TAG="$CI_COMMIT_REF_SLUG"
-      export SOLVER_DEPLOYMENT_NAME="$CI_COMMIT_REF_SLUG"
+      # release-1-2 to only have one deployment per minor version
+      export SOLVER_DEPLOYMENT_NAME=$(echo "release-$SOLVER_VERSION" | tr "." "-")
       export SOLVER_DEPLOYMENT_DOMAIN="$SOLVER_PRODUCTION_DOMAIN"
       export SOLVER_CONTEXT_PATH="/$SOLVER_VERSION"
+
+      export DEPLOY_ENGINE=yes
     else
-      # If the branch name starts with a JIRA ticket number (PLUT-123) use that, else use the whole branch name.
-      export SOLVER_VERSION=`echo $CI_COMMIT_REF_SLUG | sed 's/^\([a-z][a-z]*\-[0-9][0-9]*\).*/\1/'`
-      # The tag for the container image of the solver backend that will be published to the container registry
-      export SOLVER_IMAGE_TAG="$SOLVER_VERSION"
-      # The name of the Helm deployment - will also be used as the base for naming the kubernetes entities (see helm templates)
-      export SOLVER_DEPLOYMENT_NAME="$SOLVER_VERSION"
+      export DEPLOY_SDK=yes
+      if [[ $CI_COMMIT_BRANCH == $RELEASE_BRANCH ]]; then
+        # on the release branch, we only do SDK releases on commit, based on the latest tag
+        RELEASE_TAG=`git describe --tags --match 'release-*' --abbrev=0`
+        export SOLVER_VERSION=`echo $RELEASE_TAG | sed 's/^release-\([0-9]*\.[0-9]*\).*$/\1/'`
+      else 
+        # If the branch name starts with a JIRA tiket number (PLUT-123) use that, else use the whole branch name.
+        export SOLVER_VERSION=`echo $CI_COMMIT_REF_SLUG | sed 's/^\([a-z][a-z]*\-[0-9][0-9]*\).*/\1/'`
+        # The tag for the container image of the solver backend that will be published to the container registry
+        export SOLVER_IMAGE_TAG="$SOLVER_VERSION"
+        # The name of the Helm deployment - will also be used as the base for naming the kubernetes entities (see helm templates)
+        export SOLVER_DEPLOYMENT_NAME="$SOLVER_VERSION"
+        export DEPLOY_ENGINE=yes
+      fi
+
       # The domain where the deployed solver backend will be available
       export SOLVER_DEPLOYMENT_DOMAIN="$SOLVER_DEVELOPMENT_DOMAIN"
       # The path at which the root of the deployment can be reached
@@ -70,6 +84,9 @@ check-circular-dependencies-in-methods:
 print-solver-vars:
   stage: checks
   script:
+    - echo RELEASE_BRANCH=$RELEASE_BRANCH
+    - echo DEPLOY_SDK=$DEPLOY_SDK
+    - echo DEPLOY_ENGINE=$DEPLOY_ENGINE
     - echo CI_COMMIT_TAG=$CI_COMMIT_TAG
     - echo CI_COMMIT_REF_SLUG=$CI_COMMIT_REF_SLUG
     - echo SOLVER_VERSION=$SOLVER_VERSION
@@ -84,7 +101,7 @@ print-solver-vars:
     - echo REPOSITORY_ID=$REPOSITORY_ID
 
 # Test SDK and build all artifacts from SDK for the poker and for possible release
-build-sdk-and-poker:
+.build-sdk-and-poker:
   stage: build
   needs:
     # The Kotlin tests generate solver-poker/test-results-src/test-results.ts which is
@@ -115,7 +132,7 @@ build-sdk-and-poker:
     expire_in: 1 day
 
 # The gradle 'build' includes running detekt, ktlint, runnings tests.
-build-engine:
+.build-engine:
   stage: build
   needs: []
   tags:
@@ -134,7 +151,7 @@ build-engine:
     expire_in: 1 day
 
 # Package the engine into a docker image
-package-engine:
+.package-engine:
   stage: publish
   needs:
     - build-engine
@@ -143,8 +160,10 @@ package-engine:
     - docker
   script:
     - $GRADLE bootBuildImage --imageName="registry.git.geogebra.org/solver-team/solver-engine/api:$SOLVER_IMAGE_TAG"
+  rules:
+    - if: $DEPLOY_ENGINE
 
-export-translation-keys:
+.export-translation-keys:
   stage: publish
   needs:
     - build-engine
@@ -174,7 +193,7 @@ export-translation-keys:
   when: manual
 
 # Deploy the engine to k8s
-deploy-engine:
+.deploy-engine:
   stage: deploy
   needs:
     - package-engine
@@ -207,11 +226,10 @@ deploy-engine:
   # only deploy the API if this pipeline was triggered by a "release-..." tag
   # or was triggered by a commit (not a tag)
   rules:
-    - if: $CI_COMMIT_TAG =~ /^release-[0-9]*\.[0-9]*.*$/
-    - if: $CI_COMMIT_BRANCH
+    - if: $DEPLOY_ENGINE
 
 # Make an SDK release
-sdk-semantic-release:
+.sdk-semantic-release:
   stage: deploy
   needs:
     - build-sdk-and-poker
@@ -239,9 +257,11 @@ sdk-semantic-release:
     - npm config set "@geogebra:registry" https://git.geogebra.org/api/v4/projects/126/packages/npm/
     - npm config set "//git.geogebra.org/api/v4/projects/126/packages/npm/:_authToken" ${CI_JOB_TOKEN}
     - npm run semantic-release -w @geogebra/solver-sdk
+  rules:
+    - if: $DEPLOY_SDK
 
 # Remove kubernetes deployment.  This job is automatically triggered when the feature branch is deleted.
-undeploy-engine:
+.undeploy-engine:
   stage: deploy
   dependencies: []
   image: alpine/k8s:1.23.7
@@ -266,6 +286,5 @@ undeploy-engine:
     - kubectl config use-context $REPO_FULL_NAME:$GITLAB_CLUSTER
     - helm uninstall $SOLVER_DEPLOYMENT_NAME
   when: manual
-  except:
-    - main
-    - release
+  rules:
+    - if: $CI_COMMIT_REF != main && $CI_COMMIT_REF != $RELEASE_BRANCH
