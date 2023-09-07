@@ -161,7 +161,7 @@ build-sdk-and-poker:
     # The Kotlin tests generate solver-poker/test-results-src/test-results.ts which is
     # needed by the TS tests.
     - build-engine
-  image: node:18-alpine
+  image: node:18
   tags:
     - docker
   cache:
