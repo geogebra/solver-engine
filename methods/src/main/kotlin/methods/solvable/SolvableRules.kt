@@ -115,7 +115,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                         sumOf(get(lhs), negatedConstants),
                         sumOf(get(rhs), negatedConstants),
                     ),
-                    gmAction = drag(constants, rhs, Position.RightOf),
+                    gmAction = drag(constants, GmPathModifier.Group, rhs, null, Position.RightOf),
                     explanation = solvableExplanation(
                         SolvableKey.MoveConstantsToTheRight,
                         parameters = listOf(constants),
@@ -321,7 +321,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
 
                 ruleResult(
                     toExpr = solvable.deriveSolvable(newLhs, newRhs, useDual),
-                    gmAction = drag(coefficient, rhs, engine.steps.metadata.DragTargetPosition.Below),
+                    gmAction = drag(coefficient, GmPathModifier.Group, rhs),
                     explanation = solvableExplanation(
                         SolvableKey.DivideByCoefficientOfVariable,
                         flipSign = useDual && !solvable.isSelfDual(),

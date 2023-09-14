@@ -38,7 +38,7 @@ describe('Paths Unit Tests', () => {
     });
     it('should substitute "1+5" at [1] in "x*(1+2+3)" to get "x*(1+5)"', () => {
       const parent = latexToTree('x*(1+2+3)');
-      const child = latexToTree('1+5');
+      const child = latexToTree('(1+5)');
       const path = [1];
       const result = substituteTree(parent, child, path);
       expect(result).to.deep.equal({

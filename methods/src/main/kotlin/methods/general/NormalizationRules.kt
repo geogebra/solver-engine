@@ -117,7 +117,14 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
                         mapOf(number to listOf(PathScope.Decorator, PathScope.OuterOperator)),
                         pattern.substitute(get(number).removeBrackets()),
                     ),
-                    gmAction = tap(number, PM.OuterOperator),
+                    gmAction = tap(
+                        number,
+                        if (get(pattern).children[0] == get(number)) {
+                            PM.OpenParens
+                        } else {
+                            PM.OuterOperator
+                        },
+                    ),
                     explanation = metadata(Explanation.NormalizeNegativeSignOfIntegerInSum),
                 )
             }

@@ -257,7 +257,13 @@ function treeToLatexInner(
             if (i === 0 || el.type === 'DivideBy') {
               return rec(el, n);
             } else {
-              return outerColorOp(el, `${n.signs[i] ? s.mulSymbol : ''}`) + rec(el, n);
+              // TODO: remove useSign logic when PLUT-684 is fixed.
+              const useSign =
+                el.decorators?.[0] === 'PartialBracket' && el.type === 'SmartProduct';
+              return (
+                outerColorOp(el, `${useSign || n.signs[i] ? s.mulSymbol : ''}`) +
+                rec(el, n)
+              );
             }
           })
           .join(''),

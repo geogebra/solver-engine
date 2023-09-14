@@ -667,7 +667,7 @@ private val rewriteProductOfPowersWithSameBase =
                     toExpr = product.substitute(
                         powerOf(factor(base), sumOf(move(power1.exponent), move(power2.exponent))),
                     ),
-                    gmAction = drag(power2, power1),
+                    gmAction = drag(power2, PM.Group, power1, PM.Group),
                     explanation = metadata(Explanation.RewriteProductOfPowersWithSameBase),
                 )
             } else {

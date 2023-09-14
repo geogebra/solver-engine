@@ -104,6 +104,9 @@ enum class GmPathModifier(val value: String) {
     /** select outer '-', '+', '*', or '÷', e.g. select '*' in *(-2) */
     OuterOperator("op()"),
 
+    /** select the addend or factor, e.g. select '*2' instead of '2' in 3*2 */
+    Group("group"),
+
     /** select fraction bar in [1/2] */
     FractionBar("/"),
 

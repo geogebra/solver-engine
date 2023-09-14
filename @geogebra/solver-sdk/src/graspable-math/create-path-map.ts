@@ -8,14 +8,19 @@ export type GmMathNode = {
   value: string;
   name: string;
   hidden?: boolean;
-  to_ascii: (options?: ToAsciiOptionsType) => string;
+  to_ascii: (options?: TodoFigureOutType) => string;
   is_group: (...types: string[]) => boolean;
   getSelectorOfNodes: (nodes: GmMathNode[] | GmMathNode) => string;
+  to_latex(options?: TodoFigureOutType): string;
+  getNodes(
+    toAsciiOfDesiredNode: string,
+    unnecessaryParameter1?: TodoFigureOutType,
+    unnecessaryParameter2?: TodoFigureOutType,
+  ): GmMathNode[];
   type?: 'AlgebraModel';
 };
 
-// Todo: find out what the type of ToAsciiOptionsType is
-type ToAsciiOptionsType = any;
+type TodoFigureOutType = any;
 
 type GmFraction = GmMathNode & {
   get_top: () => GmMathNode[];
@@ -139,7 +144,10 @@ function annotate(
       appendMap((gmTree as GmFraction).get_fraction_bar(), `${tree.path}:/`, map);
       if (['Product', 'ImplicitProduct', 'SmartProduct'].includes(tree.args[0].type)) {
         (gmTree as GmFraction).get_top().forEach((muldiv, i) => {
+          // we give all factors in the numerator the same /0 path so we can later
+          // select all numerator terms with that path
           appendMap(muldiv, `${tree.path}/0`, map);
+          appendMap(muldiv, `${tree.path}/0/${i}:group`, map);
           appendMap(muldiv.children[0]!, `${tree.path}/0/${i}:op`, map);
           annotate(muldiv.children[1], (tree.args[0] as NestedExpression).args[i], map);
         });
@@ -152,7 +160,10 @@ function annotate(
 
       if (['Product', 'ImplicitProduct', 'SmartProduct'].includes(tree.args[1].type)) {
         (gmTree as GmFraction).get_bottom().forEach((muldiv, i) => {
+          // we give all factors in the denominator the same /1 path so we can later
+          // select all denominator terms with that path
           appendMap(muldiv, `${tree.path}/1`, map);
+          appendMap(muldiv, `${tree.path}/1/${i}:group`, map);
           appendMap(muldiv.children[0]!, `${tree.path}/1/${i}:op`, map);
           annotate(muldiv.children[1], (tree.args[1] as NestedExpression).args[i], map);
         });

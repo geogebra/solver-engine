@@ -14,9 +14,9 @@ class IntegerArithmeticRulesTest {
 
     @Test
     fun testEvaluateSignedIntegerAddition() {
-        testRule("5 - 4", EvaluateSignedIntegerAddition, "1", GmAction("Drag", "./1", "./0"))
+        testRule("5 - 4", EvaluateSignedIntegerAddition, "1", GmAction("Drag", "./1:group", "./0:group"))
         testRule("4 - 5", EvaluateSignedIntegerAddition, "-1")
-        testRule("1 + x + 2", EvaluateSignedIntegerAddition, "3 + x", GmAction("Drag", "./2", "./0"))
+        testRule("1 + x + 2", EvaluateSignedIntegerAddition, "3 + x", GmAction("Drag", "./2:group", "./0:group"))
         testRule("1 + x + (-2)", EvaluateSignedIntegerAddition, "-1 + x")
         testRule("(-2) + 3", EvaluateSignedIntegerAddition, "1")
         testRule("(-2) + (-3) + x", EvaluateSignedIntegerAddition, "-5 + x")
@@ -55,9 +55,9 @@ class IntegerArithmeticRulesTest {
 
     @Test
     fun testEvaluateIntegerProductAndDivision() {
-        testRule("z*2*x*3*y", EvaluateIntegerProductAndDivision, "z*6xy", GmAction("Drag", "./3", "./1"))
+        testRule("z*2*x*3*y", EvaluateIntegerProductAndDivision, "z*6xy", GmAction("Drag", "./3:group", "./1:group"))
         testRule("2*3", EvaluateIntegerProductAndDivision, "6")
-        testRule("1 * (-2)", EvaluateIntegerProductAndDivision, "-2", GmAction("Drag", "./1", "./0"))
+        testRule("1 * (-2)", EvaluateIntegerProductAndDivision, "-2", GmAction("Drag", "./1:group", "./0:group"))
         testRule("(-2) * x * 5", EvaluateIntegerProductAndDivision, "(-10) x")
         testRule("10:2", EvaluateIntegerProductAndDivision, "5", GmAction("NotSupported"))
         testRule("10:(-2)", EvaluateIntegerProductAndDivision, "-5")

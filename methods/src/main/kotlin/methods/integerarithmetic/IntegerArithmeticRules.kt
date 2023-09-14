@@ -22,6 +22,7 @@ import engine.patterns.sumContaining
 import engine.steps.metadata.metadata
 import engine.utility.isEven
 import engine.utility.isOdd
+import engine.steps.metadata.GmPathModifier as PM
 
 private val MAX_POWER = 64.toBigInteger()
 
@@ -42,7 +43,7 @@ enum class IntegerArithmeticRules(override val runner: Rule) : RunnerMethod {
 
                 ruleResult(
                     toExpr = sum.substitute(integerOp(term1, term2) { n1, n2 -> n1 + n2 }),
-                    gmAction = drag(term2, term1),
+                    gmAction = drag(term2, PM.Group, term1, PM.Group),
                     explanation = explanation,
                 )
             }
@@ -82,7 +83,7 @@ enum class IntegerArithmeticRules(override val runner: Rule) : RunnerMethod {
                 }
 
                 val gmAction = if (isBound(multiplier)) {
-                    drag(multiplier, base)
+                    drag(multiplier, PM.Group, base, PM.Group)
                 } else {
                     noGmSupport()
                 }

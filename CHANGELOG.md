@@ -31,6 +31,9 @@ contents to a new release section (e.g. _[0.x]_).
 - Make sure leading factor of 1 is not removed when followed by division sign and relax rule for turning divisions into
   fractions (PLUT-664)
 - Fix parsing the variable 'd' (PLUT-671)
+- SDK: fixed missing `:group` annotations in fractions for `createPathMap` (SP-216)
+- fixed gmActionInfo of several rules (e.g., select `+2` instead of `2` when dragging to add in `1+x+2`) (SP-216)
+- temporary fix for PartialBrackets + SmartProduct bug (SP-216, PLUT-684)
 
 ### Changed
 
@@ -51,6 +54,9 @@ contents to a new release section (e.g. _[0.x]_).
   (e.g. `27*[3^-[1/3]]` to `9*3^[2/3]`) (PLUT-669)
 - Improved factoring and expanding equations so examples like `([(x + 1)^2] + 1)([(x + 1)^2] + 2) + 3 = 0` can be
   solved using completing the square (PLUT-641)
+- SDK: simplified logic of `solverPathToGmNodes` method (SP-216)
+- SDK: simplified logic of `substituteTree` to always use the substitute's decorators (SP-216)
+- refactored and expanded the gm-action tests (SP-216)
 
 ### Removed
 

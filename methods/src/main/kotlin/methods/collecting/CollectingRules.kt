@@ -30,6 +30,7 @@ import engine.patterns.sumContaining
 import engine.patterns.withOptionalIntegerCoefficient
 import engine.steps.metadata.MetadataKey
 import engine.steps.metadata.metadata
+import engine.steps.metadata.GmPathModifier as PM
 
 enum class CollectingRules(override val runner: Rule) : RunnerMethod {
     CollectLikeRoots(
@@ -191,7 +192,7 @@ private fun createCombineSimpleLikeTermsRule(
 
             ruleResult(
                 toExpr = sum.substitute(newTerm),
-                gmAction = drag(t2, t1),
+                gmAction = drag(t2, PM.Group, t1, PM.Group),
                 explanation = metadata(explanationKey, move(t1), move(t2)),
             )
         }

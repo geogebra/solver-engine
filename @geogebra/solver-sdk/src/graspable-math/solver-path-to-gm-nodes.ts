@@ -37,7 +37,6 @@ export function solverPathToGmNodes(
     info.type === 'Drag' &&
     (!info.dragTo?.position || info.dragTo.position === 'Onto')
   ) {
-    let changedToTap = false;
     const actor = actors[0];
     let target = targets[0];
     // The Solver puts negatives on the first factor around the whole product,
@@ -48,29 +47,9 @@ export function solverPathToGmNodes(
     if (areAdjacentAddendsOrFactors(actor, target)) {
       const operators = map.get(`${actorPaths[0]}:op`);
       if (operators && !operators[0].hidden) {
-        changedToTap = true;
         actors[0] = operators[0];
         targets.splice(0);
         gmAction = { ...info, type: 'Tap' };
-      }
-    }
-    // In a case like `2x+y+3x`, in GM we need to pick up the `+3x` and drag it onto
-    // `+2x`, not just the `3x`. We'll check for that and expand the actors and targets
-    // to the parent add block. The same applies to `x^2*3*x^3` where we need to drag the
-    // mul blocks, not just the powers.
-    if (!changedToTap) {
-      const actorsParentParent = actor.parent?.parent;
-      const targetParentParent = target.parent?.parent;
-
-      // If dragging a addend onto another addend in the same sum, or dragging a factor
-      // onto another factor in the same product...
-      if (
-        actorsParentParent === targetParentParent &&
-        actorsParentParent?.is_group('sum', 'product')
-      ) {
-        // ...then we need to drag the add node or the mul node instead.
-        actors[0] = actor.parent as GmMathNode;
-        targets[0] = target.parent as GmMathNode;
       }
     }
   }
