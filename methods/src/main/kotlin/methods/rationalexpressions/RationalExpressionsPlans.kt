@@ -263,8 +263,7 @@ private fun TasksBuilder.bringFractionToCommonDenominatorTask(fraction: Fraction
     return simplificationTask.result as Fraction
 }
 
-fun computeLcdAndMultipliers(factoredFractions: List<Fraction>):
-    Pair<Expression, List<Expression>> {
+fun computeLcdAndMultipliers(factoredFractions: List<Fraction>): Pair<Expression, List<Expression>> {
     // Compute the LCM of the denominators
     val factorsList = factoredFractions.map { it.denominator.factors() }
 

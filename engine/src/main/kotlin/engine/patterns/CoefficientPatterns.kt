@@ -69,7 +69,7 @@ class RationalCoefficientPattern(value: Pattern, private val positiveOnly: Boole
      * Given a match, returns the coefficient as an integer or fraction
      */
     override fun coefficient(match: Match): Expression =
-        with(MappedExpressionBuilder(emptyContext /* TODO */, match.getBoundExpr(key)!!, match)) {
+        with(MappedExpressionBuilder(emptyContext, match.getBoundExpr(key)!!, match)) {
             val numeratorCoefficient = when {
                 match.isBound(numerator) -> move(numerator)
                 else -> introduce(Constants.One)
@@ -123,7 +123,7 @@ class ConstantCoefficientPattern(
      * Given a match, returns the coefficient
      */
     override fun coefficient(match: Match): Expression =
-        with(MappedExpressionBuilder(emptyContext /* TODO */, match.getBoundExpr(key)!!, match)) {
+        with(MappedExpressionBuilder(emptyContext, match.getBoundExpr(key)!!, match)) {
             val numeratorCoefficient = when {
                 match.isBound(product) -> restOf(product)
                 else -> introduce(Constants.One)

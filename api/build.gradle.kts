@@ -50,7 +50,15 @@ application {
     mainClass.set("server.ApplicationKt")
 }
 
+/*
+ * OpenAPI configuration
+ */
+
 val generatedRoot: String = File(buildDir, "generated-src/openapi").absolutePath
+
+sourceSets["main"].java {
+    srcDirs("$generatedRoot/src/main/kotlin")
+}
 
 tasks.openApiGenerate {
     generatorName.set("kotlin-spring")
@@ -70,6 +78,10 @@ tasks.openApiGenerate {
     )
 }
 
+/*
+ * Configuration to generate a container image
+ */
+
 tasks.named<BootBuildImage>("bootBuildImage") {
     imageName = "registry.git.geogebra.org/solver-team/solver-engine/${project.name}:${project.version}"
     isPublish = true
@@ -82,14 +94,27 @@ tasks.named<BootBuildImage>("bootBuildImage") {
     }
 }
 
-sourceSets["main"].java {
-    srcDirs("$generatedRoot/src/main/kotlin")
+/*
+ * Detect configuration
+ */
+
+// See https://github.com/detekt/detekt/issues/6198#issuecomment-1700332653 for why we need this
+configurations.detekt {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "org.jetbrains.kotlin") {
+            useVersion("1.9.0") // Add the version of Kotlin that detekt needs
+        }
+    }
 }
 
 detekt {
     buildUponDefaultConfig = true
     config = files("$rootDir/config/detekt.yaml")
 }
+
+/*
+ * Ktlint configuration
+ */
 
 ktlint {
     filter {

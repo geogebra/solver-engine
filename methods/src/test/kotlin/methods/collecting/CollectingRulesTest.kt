@@ -59,7 +59,8 @@ class CollectingRulesTest {
         t("1-2a+3a+1", "1+a+1")
         t("z + [1/2]*z + [z / 2] - 3z", "-2z + [1/2]*z + [z/2]")
         // Someday come back to this example, it should work
-        t("z + [1/2]*z + [z / 2] - z*3", /*"-2z + [1/2]*z + [z/2]"*/ null)
+        // t("z + [1/2]*z + [z / 2] - z*3", "-2z + [1/2]*z + [z/2]")
+        t("z + [1/2]*z + [z / 2] - z*3", null)
         t("t*sqrt[3] + 2*t - [t*sqrt[2]/2]", null)
     }
 }
