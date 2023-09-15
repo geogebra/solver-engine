@@ -33,12 +33,17 @@ describe('Custom LaTeX output', () => {
   });
 });
 
+const integer = (value: string): MathJson => ({ type: 'Integer', value });
+const variable = (value: string): MathJson => ({ type: 'Variable', value });
+
 it('Aligned equations in system', () => {
-  const system: MathJson = [
-    'EquationSystem',
-    ['Equation', ['a'], ['1']],
-    ['Equation', ['b'], ['2']],
-  ];
+  const system: MathJson = {
+    type: 'EquationSystem',
+    operands: [
+      { type: 'Equation', operands: [variable('a'), integer('1')] },
+      { type: 'Equation', operands: [variable('b'), integer('2')] },
+    ],
+  };
 
   expect(jsonToLatex(system)).to.equal(
     '\\left\\{\\begin{array}{rcl}\n  a & = & 1\\\\\n  b & = & 2\\\\\n\\end{array}\\right.',
@@ -46,21 +51,28 @@ it('Aligned equations in system', () => {
 });
 
 it('Aligned equations in union', () => {
-  const union: MathJson = [
-    'EquationUnion',
-    ['Equation', ['x'], ['1']],
-    ['Equation', ['x'], ['2']],
-  ];
+  const union: MathJson = {
+    type: 'EquationUnion',
+    operands: [
+      { type: 'Equation', operands: [variable('x'), integer('1')] },
+      { type: 'Equation', operands: [variable('x'), integer('2')] },
+    ],
+  };
 
   expect(jsonToLatex(union)).to.equal('x = 1\\text{ or }x = 2');
 });
 
 it('Univariate finite set solution', () => {
-  const solution: MathJson = [
-    'SetSolution',
-    ['VariableList', ['x']],
-    ['FiniteSet', ['Fraction', ['1'], ['2']]],
-  ];
+  const solution: MathJson = {
+    type: 'SetSolution',
+    operands: [
+      { type: 'VariableList', operands: [variable('x')] },
+      {
+        type: 'FiniteSet',
+        operands: [{ type: 'Fraction', operands: [integer('1'), integer('2')] }],
+      },
+    ],
+  };
 
   expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
     'x = \\frac{1}{2}',
@@ -68,11 +80,19 @@ it('Univariate finite set solution', () => {
 });
 
 it('Univariate solution with holes', () => {
-  const solution: MathJson = [
-    'SetSolution',
-    ['VariableList', ['x']],
-    ['SetDifference', ['Reals'], ['FiniteSet', ['2'], ['3']]],
-  ];
+  const solution: MathJson = {
+    type: 'SetSolution',
+    operands: [
+      { type: 'VariableList', operands: [variable('x')] },
+      {
+        type: 'SetDifference',
+        operands: [
+          { type: 'Reals' },
+          { type: 'FiniteSet', operands: [integer('2'), integer('3')] },
+        ],
+      },
+    ],
+  };
 
   expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
     'x \\neq 2 \\text{ and } x \\neq 3',
@@ -80,11 +100,24 @@ it('Univariate solution with holes', () => {
 });
 
 it('Multivariate finite set solution', () => {
-  const solution: MathJson = [
-    'SetSolution',
-    ['VariableList', ['x'], ['y']],
-    ['FiniteSet', ['Tuple', ['Fraction', ['1'], ['2']], ['SquareRoot', ['3']]]],
-  ];
+  const solution: MathJson = {
+    type: 'SetSolution',
+    operands: [
+      { type: 'VariableList', operands: [variable('x'), variable('y')] },
+      {
+        type: 'FiniteSet',
+        operands: [
+          {
+            type: 'Tuple',
+            operands: [
+              { type: 'Fraction', operands: [integer('1'), integer('2')] },
+              { type: 'SquareRoot', operands: [integer('3')] },
+            ],
+          },
+        ],
+      },
+    ],
+  };
 
   expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
     'x = \\frac{1}{2}, y = \\sqrt{3}',
@@ -92,11 +125,22 @@ it('Multivariate finite set solution', () => {
 });
 
 it('Multivariate cartesian product solution', () => {
-  const solution: MathJson = [
-    'SetSolution',
-    ['VariableList', ['x'], ['y']],
-    ['CartesianProduct', ['Reals'], ['FiniteSet', ['SquareRoot', ['3']]]],
-  ];
+  const solution: MathJson = {
+    type: 'SetSolution',
+    operands: [
+      { type: 'VariableList', operands: [variable('x'), variable('y')] },
+      {
+        type: 'CartesianProduct',
+        operands: [
+          { type: 'Reals' },
+          {
+            type: 'FiniteSet',
+            operands: [{ type: 'SquareRoot', operands: [integer('3')] }],
+          },
+        ],
+      },
+    ],
+  };
 
   expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
     'x \\in \\mathbb{R}, y = \\sqrt{3}',
@@ -104,11 +148,13 @@ it('Multivariate cartesian product solution', () => {
 });
 
 it('Univariate identity solution', () => {
-  const solution: MathJson = [
-    'Identity',
-    ['VariableList', ['x']],
-    ['Equation', ['x'], ['x']],
-  ];
+  const solution: MathJson = {
+    type: 'Identity',
+    operands: [
+      { type: 'VariableList', operands: [variable('x')] },
+      { type: 'Equation', operands: [variable('x'), variable('x')] },
+    ],
+  };
 
   expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
     'x \\in \\mathbb{R}',
@@ -116,11 +162,13 @@ it('Univariate identity solution', () => {
 });
 
 it('Multivariate identity solution', () => {
-  const solution: MathJson = [
-    'Identity',
-    ['VariableList', ['x'], ['y']],
-    ['Equation', ['1'], ['1']],
-  ];
+  const solution: MathJson = {
+    type: 'Identity',
+    operands: [
+      { type: 'VariableList', operands: [variable('x'), variable('y')] },
+      { type: 'Equation', operands: [integer('1'), integer('1')] },
+    ],
+  };
 
   expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
     'x, y \\in \\mathbb{R}',
@@ -128,11 +176,13 @@ it('Multivariate identity solution', () => {
 });
 
 it('Univariate contradiction solution', () => {
-  const solution: MathJson = [
-    'Contradiction',
-    ['VariableList', ['x']],
-    ['Equation', ['1'], ['2']],
-  ];
+  const solution: MathJson = {
+    type: 'Contradiction',
+    operands: [
+      { type: 'VariableList', operands: [variable('x')] },
+      { type: 'Equation', operands: [integer('1'), integer('2')] },
+    ],
+  };
 
   expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
     'x \\in \\emptyset',
@@ -140,11 +190,13 @@ it('Univariate contradiction solution', () => {
 });
 
 it('Multivariate contradiction solution', () => {
-  const solution: MathJson = [
-    'Contradiction',
-    ['VariableList', ['x'], ['y']],
-    ['GreaterThan', ['1'], ['2']],
-  ];
+  const solution: MathJson = {
+    type: 'Contradiction',
+    operands: [
+      { type: 'VariableList', operands: [variable('x'), variable('y')] },
+      { type: 'GreaterThan', operands: [integer('1'), integer('2')] },
+    ],
+  };
 
   expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
     'x, y \\in \\emptyset',
@@ -152,11 +204,29 @@ it('Multivariate contradiction solution', () => {
 });
 
 it('Implicit solution', () => {
-  const solution: MathJson = [
-    'ImplicitSolution',
-    ['VariableList', ['x'], ['y']],
-    ['Equation', ['x'], ['Sum', ['SmartProduct', [false, ['2']], [false, ['y']]], ['3']]],
-  ];
+  const solution: MathJson = {
+    type: 'ImplicitSolution',
+    operands: [
+      { type: 'VariableList', operands: [variable('x'), variable('y')] },
+      {
+        type: 'Equation',
+        operands: [
+          variable('x'),
+          {
+            type: 'Sum',
+            operands: [
+              {
+                type: 'SmartProduct',
+                signs: [false, false],
+                operands: [integer('2'), variable('y')],
+              },
+              integer('3'),
+            ],
+          },
+        ],
+      },
+    ],
+  };
 
   expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
     'x, y \\in \\mathbb{R} : x = 2y+3',

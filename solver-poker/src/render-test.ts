@@ -1,15 +1,15 @@
 import {
   jsonToTree,
-  MathJson2,
+  MathJson,
   Metadata,
-  TaskJson2,
-  TransformationJson2,
+  TaskJson,
+  TransformationJson,
   treeToSolver,
 } from '@geogebra/solver-sdk';
 import { isThroughStep } from './util';
 import { settings } from './settings';
 
-export const renderTest = (trans: TransformationJson2, methodId: string) => /* HTML */ `
+export const renderTest = (trans: TransformationJson, methodId: string) => /* HTML */ `
   <details class="hide-in-demo-mode">
     <summary>Test Code <button class="copy-test-code-button">Copy</button></summary>
     <pre>${generateTestSuggestion(trans, methodId)}</pre>
@@ -28,7 +28,7 @@ export const copyTestCodeToClipboardOnClick = () => {
   }
 };
 
-export function generateTestSuggestion(trans: TransformationJson2, methodId: string): string {
+export function generateTestSuggestion(trans: TransformationJson, methodId: string): string {
   const stringBuilder = new StringBuilder();
   new IndentBuilder(stringBuilder).do(buildTest(trans, methodId));
   return stringBuilder.toString();
@@ -79,7 +79,7 @@ class IndentBuilder {
   }
 }
 
-const buildTest = (trans: TransformationJson2, methodId: string) => (builder: IndentBuilder) => {
+const buildTest = (trans: TransformationJson, methodId: string) => (builder: IndentBuilder) => {
   builder.nest('testMethod', (builder) => {
     builder
       .addLine(`method = ${methodId.replace('.', 'Plans.')}`)
@@ -89,7 +89,7 @@ const buildTest = (trans: TransformationJson2, methodId: string) => (builder: In
   });
 };
 
-const buildTestTransformation = (trans: TransformationJson2) => (builder: IndentBuilder) => {
+const buildTestTransformation = (trans: TransformationJson) => (builder: IndentBuilder) => {
   const throughStep = isThroughStep(trans);
   if (throughStep && !settings.showThroughSteps) {
     builder.do(buildTestTransformation(trans.steps[0]));
@@ -117,7 +117,7 @@ const buildTestTransformation = (trans: TransformationJson2) => (builder: Indent
   }
 };
 
-const buildTestTask = (task: TaskJson2) => (builder: IndentBuilder) => {
+const buildTestTask = (task: TaskJson) => (builder: IndentBuilder) => {
   builder.addLine(`taskId = "${task.taskId}"`);
   builder.addLine(`startExpr = "${renderExpression(task.startExpr)}"`);
   if (task.explanation) {
@@ -141,5 +141,5 @@ const buildExplanation = (explanation?: Metadata) => (builder: IndentBuilder) =>
   }
 };
 
-const renderExpression = (expression: MathJson2) =>
+const renderExpression = (expression: MathJson) =>
   treeToSolver(jsonToTree(expression)).replace('\\', '\\\\');

@@ -1,9 +1,4 @@
-import {
-  ExpressionTree,
-  ExpressionTreeBase,
-  NestedExpression,
-  NumberExpression,
-} from '../parser';
+import { ExpressionTree, ExpressionTreeBase, NestedExpression } from '../parser';
 import { setsSolutionFormatter, SolutionFormatter } from './solution-formatter';
 import { ColorMap } from '../solutions/coloring';
 
@@ -205,8 +200,14 @@ function treeToLatexInner(
   };
 
   switch (n.type) {
-    case 'Number':
-      return tfd(numberToLatex(n));
+    case 'Integer':
+    case 'Decimal':
+      return tfd(n.value);
+    case 'RecurringDecimal': {
+      // check for number with repeating digits
+      const [value, repeatingDigits] = n.value.split('[');
+      return `${value}\\overline{${repeatingDigits.slice(0, -1)}}`;
+    }
     case 'Variable':
       // Special case when the variable has a subscript and no decorators. We don't want to enclose the whole expression
       // (e.g. `x_2`) in color because it would create a box around it and mess up the spacing for powers (e.g. `x_2^3`
@@ -368,9 +369,9 @@ function treeToLatexInner(
           '\\end{array}\\right.',
       );
     }
-    case '/undefined/':
+    case 'Undefined':
       return tfd('\\text{undefined}');
-    case '/infinity/':
+    case 'Infinity':
       return tfd('\\infty');
     case 'LessThan':
       return tfd(`${rec(n.args[0], n)} ${colorOp('<')} ${rec(n.args[1], n)}`);
@@ -487,14 +488,6 @@ function addendNeedsPlusInFront(
     return false;
   }
   return true;
-}
-
-function numberToLatex(n: NumberExpression): string {
-  // check for number with repeating digits
-  const [value, repeatingDigits] = n.value.split('[');
-  return repeatingDigits !== undefined
-    ? `${value}\\overline{${repeatingDigits.slice(0, -1)}}`
-    : value;
 }
 
 const decorators: Record<string, { left: string; right: string }> = {

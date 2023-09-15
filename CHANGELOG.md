@@ -60,6 +60,8 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Removed
 
+- SDK: Removed old Json format from the SDK (PLUT-628)
+
 ## [1.2] - 2023-07-18
 
 ### Added

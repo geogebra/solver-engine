@@ -1,9 +1,10 @@
 import { Parser, ParserSymbol } from './parser';
 import type {
+  DecimalExpression,
   DecoratorType,
   ExpressionTree,
   ExpressionTreeBase,
-  NumberExpression,
+  IntegerExpression,
 } from './types';
 
 type ExprTree = ExpressionTreeBase<unknown>;
@@ -68,21 +69,19 @@ const latexSymbolDefinitions = {
   registerNumber(parser: Parser<ExprTree>) {
     const num = parser.registerSymbol('(number)', BP_IMPLICIT_MUL);
     num.nud = function () {
-      return { type: 'Number', value: this.value };
+      if (isInteger(this.value)) {
+        return { type: 'Integer', value: this.value };
+      } else {
+        return { type: 'Decimal', value: this.value };
+      }
     };
     num.led = getLedToExtendNary(parser, 'ImplicitProduct', undefined, (left, right) => {
       // Parse strings like "2 3/4" as mixed numbers
-      if (left.type === 'Number' && right.type === 'Fraction') {
+      if (left.type === 'Integer' && right.type === 'Fraction') {
         const numerator = right.args[0];
         const denominator = right.args[1];
         // A mixed number is comprized of 3 integers, only.
-        if (
-          !isInteger(left.value) ||
-          numerator.type !== 'Number' ||
-          !isInteger(numerator.value) ||
-          denominator.type !== 'Number' ||
-          !isInteger(denominator.value)
-        ) {
+        if (numerator.type !== 'Integer' || denominator.type !== 'Integer') {
           return null;
         }
         return { type: 'MixedNumber', args: [left, numerator, denominator] };
@@ -93,9 +92,9 @@ const latexSymbolDefinitions = {
     repeatingDecimal.led = function (left) {
       const digits = parser.expression(100);
       return {
-        type: 'Number',
-        value: `${(left as NumberExpression).value}[${
-          (digits as NumberExpression).value
+        type: 'RecurringDecimal',
+        value: `${(left as DecimalExpression).value}[${
+          (digits as IntegerExpression).value
         }]`,
       };
     };
@@ -112,10 +111,10 @@ const latexSymbolDefinitions = {
   registerSymbols(parser: Parser<ExprTree>) {
     parser.registerSymbol('(symbol)');
     parser.registerSymbol('/undefined/', BP_IMPLICIT_MUL).nud = () => ({
-      type: '/undefined/',
+      type: 'Undefined',
     });
     parser.registerSymbol('\\infty', BP_IMPLICIT_MUL).nud = () => ({
-      type: '/infinity/',
+      type: 'Infinity',
     });
     parser.registerSymbol('\\mathbb{R}', BP_IMPLICIT_MUL).nud = () => ({
       type: 'Reals',
@@ -207,12 +206,9 @@ const latexSymbolDefinitions = {
       const right = parser.expression(100);
       // mixed number?
       if (
-        first.type === 'Number' &&
-        isInteger(first.value) &&
-        left.type === 'Number' &&
-        isInteger(left.value) &&
-        right.type === 'Number' &&
-        isInteger(right.value)
+        first.type === 'Integer' &&
+        left.type === 'Integer' &&
+        right.type === 'Integer'
       ) {
         return { type: 'MixedNumber', args: [first, left, right] };
       } else
@@ -337,7 +333,7 @@ const latexSymbolDefinitions = {
         parser.error('only variables can have subscripts');
       }
       const right = parser.expression(BP_SUBSCRIPT - 1);
-      if (right.type !== 'Variable' && right.type !== 'Number') {
+      if (right.type !== 'Variable' && right.type !== 'Integer') {
         parser.error('subscripts must be variables or numeric values');
       }
       if (right.type === 'Variable' && right.subscript) {

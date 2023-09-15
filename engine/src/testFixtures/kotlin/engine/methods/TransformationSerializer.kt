@@ -209,7 +209,7 @@ private class TransformationModeller(val format: Format) {
         return when (format) {
             Format.Latex -> expr.toLatexString()
             Format.Solver -> expr.toString()
-            Format.Json -> expr.toJson()
+            Format.Json -> expr.toJson2()
         }
     }
 }

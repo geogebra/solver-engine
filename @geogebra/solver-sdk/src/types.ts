@@ -1,4 +1,4 @@
-import { DecoratorType, ExpressionDecorations, NestedExpressionType } from './parser';
+import { ExpressionDecorations, NestedExpressionType } from './parser';
 
 export type PlanId =
   | 'Equations.SolveLinearEquation'
@@ -40,8 +40,7 @@ export type StrategyMap = {
 export type ApiMathFormat =
   | 'solver' // solver format - do not use unless you know why you are doing it
   | 'latex' // latex format - good for quick rendering, but lacks metadata
-  | 'json' // array-based json format, use this one (will be deprecated in favour of json2)
-  | 'json2'; // object-based json format, not supported on all servers yet so use with care
+  | 'json2'; // object-based json format
 
 export type API_VERSION_INFO_RESPONSE = {
   commit: string;
@@ -62,12 +61,7 @@ type PlanSelectionBase<MathFormat> = {
 export type PlanSelectionSolver = PlanSelectionBase<string>;
 export type PlanSelectionLatex = PlanSelectionBase<string>;
 export type PlanSelectionJson = PlanSelectionBase<MathJson>;
-export type PlanSelectionJson2 = PlanSelectionBase<MathJson2>;
-export type PlanSelection =
-  | PlanSelectionSolver
-  | PlanSelectionLatex
-  | PlanSelectionJson
-  | PlanSelectionJson2;
+export type PlanSelection = PlanSelectionSolver | PlanSelectionLatex | PlanSelectionJson;
 
 export type API_SELECT_PLANS_RESPONSE = PlanSelection[];
 
@@ -87,23 +81,15 @@ export type PathMapping = {
 };
 
 // This is how the `json` format is typed.
-export type MathJson =
-  | [string] // variable, number, undefined, infinity, or reals
-  | [[string, ...(DecoratorType | string)[]]] // variable or number
-  | [NestedExpressionType, ...MathJson[]]
-  | [[NestedExpressionType, ...(DecoratorType | string)[]], ...MathJson[]]
-  | ['SmartProduct', ...SmartProductOperandJson[]]
-  | [['SmartProduct', ...(DecoratorType | string)[]], ...SmartProductOperandJson[]];
-
-export type SmartProductOperandJson = [boolean, MathJson];
-
-// This is how the `json2` format is typed.
 // For a human-centric description of this format, see docs/expression-serialization.md
-export type MathJson2 = ExpressionDecorations &
+export type MathJson = ExpressionDecorations &
   (
     | {
         type: NestedExpressionType;
-        operands?: MathJson2[];
+        operands?: MathJson[];
+      }
+    | {
+        type: 'Undefined' | 'Infinity' | 'Reals' | 'Void';
       }
     | {
         type: 'Integer' | 'Decimal' | 'RecurringDecimal' | 'Name';
@@ -116,7 +102,7 @@ export type MathJson2 = ExpressionDecorations &
       }
     | {
         type: 'SmartProduct';
-        operands: MathJson2[];
+        operands: MathJson[];
         signs: boolean[];
       }
   );
@@ -180,32 +166,23 @@ export type AlternativeBase<MathFormat> = {
 export type TransformationSolver = TransformationBase<string>;
 export type TransformationLatex = TransformationBase<string>;
 export type TransformationJson = TransformationBase<MathJson>;
-export type TransformationJson2 = TransformationBase<MathJson2>;
 export type Transformation =
   | TransformationSolver
   | TransformationLatex
-  | TransformationJson
-  | TransformationJson2;
+  | TransformationJson;
 
 export type TaskSolver = TaskBase<string>;
 export type TaskLatex = TaskBase<string>;
 export type TaskJson = TaskBase<MathJson>;
-export type TaskJson2 = TaskBase<MathJson2>;
-export type Task = TaskSolver | TaskLatex | TaskJson | TaskJson2;
+export type Task = TaskSolver | TaskLatex | TaskJson;
 
 export type AlternativeSolver = AlternativeBase<string>;
 export type AlternativeLatex = AlternativeBase<string>;
 export type AlternativeJson = AlternativeBase<MathJson>;
-export type AlternativeJson2 = AlternativeBase<MathJson2>;
-export type Alternative =
-  | AlternativeSolver
-  | AlternativeLatex
-  | AlternativeJson
-  | AlternativeJson2;
+export type Alternative = AlternativeSolver | AlternativeLatex | AlternativeJson;
 
 export type MetadataSolver = MetadataBase<string>;
 export type MetadataLatex = MetadataBase<string>;
 export type MetadataJson = MetadataBase<MathJson>;
-export type MetadataJson2 = MetadataBase<MathJson2>;
 
-export type Metadata = MetadataSolver | MetadataLatex | MetadataJson | MetadataJson2;
+export type Metadata = MetadataSolver | MetadataLatex | MetadataJson;

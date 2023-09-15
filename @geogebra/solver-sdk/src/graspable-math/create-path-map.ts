@@ -91,7 +91,9 @@ function annotate(
   appendMap(gmTree, tree.path, map);
   const treeType = tree.type;
   switch (treeType) {
-    case 'Number':
+    case 'Integer':
+    case 'Decimal':
+    case 'RecurringDecimal':
     case 'Variable':
       break;
     case 'Sum':
@@ -213,8 +215,8 @@ function annotate(
     case 'InequalitySystem':
     case 'MixedNumber':
     case 'Name':
-    case '/undefined/':
-    case '/infinity/':
+    case 'Undefined':
+    case 'Infinity':
     case 'Reals':
     case 'AddEquations':
     case 'SubtractEquations':

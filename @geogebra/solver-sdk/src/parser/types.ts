@@ -61,8 +61,19 @@ export type NameExpression = {
   type: 'Name';
   value: string;
 };
-export type NumberExpression = {
-  type: 'Number';
+
+export type IntegerExpression = {
+  type: 'Integer';
+  value: string;
+};
+
+export type DecimalExpression = {
+  type: 'Decimal';
+  value: string;
+};
+
+export type RecurringDecimalExpression = {
+  type: 'RecurringDecimal';
   value: string;
 };
 
@@ -101,10 +112,12 @@ export type ExpressionTreeBase<T> = ExpressionDecorations &
   (
     | NestedExpressionBase<T>
     | SmartProductExpression<T>
-    | NumberExpression
+    | IntegerExpression
+    | DecimalExpression
+    | RecurringDecimalExpression
     | VariableExpression
     | NameExpression
-    | { type: '/undefined/' | '/infinity/' | 'Reals' | 'Void' }
+    | { type: 'Undefined' | 'Infinity' | 'Reals' | 'Void' }
   ) &
   T;
 

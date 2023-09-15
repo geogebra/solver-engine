@@ -6,7 +6,9 @@ export function treeToSolver(n: ExpressionTree): string {
   const rec = (n: ExpressionTree): string => treeToSolver(n);
   const dec = (solver: string): string => decorate(solver, n.decorators);
   switch (n.type) {
-    case 'Number':
+    case 'Integer':
+    case 'Decimal':
+    case 'RecurringDecimal':
       return dec(n.value);
     case 'Variable':
       return dec(`${n.value}${n.subscript ? `_${n.subscript}` : ''}`);
@@ -78,9 +80,9 @@ export function treeToSolver(n: ExpressionTree): string {
       return dec(n.args.map((el) => rec(el)).join(' OR '));
     case 'StatementWithConstraint':
       return dec(`${rec(n.args[0])} GIVEN ${rec(n.args[1])}`);
-    case '/undefined/':
+    case 'Undefined':
       return dec('/undefined/');
-    case '/infinity/':
+    case 'Infinity':
       return dec('/infinity/');
     case 'LessThan':
       return dec(`${rec(n.args[0])} < ${rec(n.args[1])}`);

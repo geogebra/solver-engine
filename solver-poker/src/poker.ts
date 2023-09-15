@@ -1,6 +1,6 @@
 import type { ApiMathFormat, SolverContext, StrategyMap } from '@geogebra/solver-sdk';
 import * as solverSDK from '@geogebra/solver-sdk';
-import { TransformationJson2 } from '@geogebra/solver-sdk';
+import { TransformationJson } from '@geogebra/solver-sdk';
 import type { ColorScheme, SolutionFormat } from './settings';
 import { settings, solutionFormatters } from './settings';
 import { renderPlanSelections, renderTransformation } from './render-solution';
@@ -62,7 +62,7 @@ const selectPlansOrApplyPlan = async ({
     planId === 'selectPlans'
       ? await solverSDK.api.selectPlans(input, jsonFormat, context)
       : await solverSDK.api.applyPlan(input, planId, jsonFormat, context);
-  lastResult = { planId, result: result as TransformationJson2 };
+  lastResult = { planId, result: result as TransformationJson };
 };
 
 /******************************************

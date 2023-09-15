@@ -33,8 +33,7 @@ describe('Paths Unit Tests', () => {
       const child = latexToTree('2');
       const path = [];
       const result = substituteTree(parent, child, path);
-      expect(result).to.deep.equal({ type: 'Number', value: '2', path: '.' });
-      expect(treeToJson(result)).to.deep.equal(['2']);
+      expect(result).to.deep.equal({ type: 'Integer', value: '2', path: '.' });
     });
     it('should substitute "1+5" at [1] in "x*(1+2+3)" to get "x*(1+5)"', () => {
       const parent = latexToTree('x*(1+2+3)');
@@ -51,17 +50,12 @@ describe('Paths Unit Tests', () => {
             decorators: ['RoundBracket'],
             path: './1',
             args: [
-              { type: 'Number', value: '1', path: './1/0' },
-              { type: 'Number', value: '5', path: './1/1' },
+              { type: 'Integer', value: '1', path: './1/0' },
+              { type: 'Integer', value: '5', path: './1/1' },
             ],
           },
         ],
       });
-      expect(treeToJson(result)).to.deep.equal([
-        'Product',
-        ['x'],
-        [['Sum', 'RoundBracket'], ['1'], ['5']],
-      ]);
     });
     it('should throw an exception for an invalid path', () => {
       expect(() => {
