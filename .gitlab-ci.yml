@@ -336,4 +336,5 @@ undeploy-engine:
     - helm uninstall $SOLVER_DEPLOYMENT_NAME
   when: manual
   rules:
-    - if: $CI_COMMIT_REF_NAME != "main" && $CI_COMMIT_REF_NAME != $RELEASE_BRANCH
+    # we only want to let people undeploy when it's not main or $RELEASE_BRANCH and it's a branch pipeline.
+    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != "main" && $CI_COMMIT_BRANCH != $RELEASE_BRANCH
