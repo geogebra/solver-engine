@@ -1,7 +1,6 @@
 package engine.methods
 
 import engine.context.Context
-import engine.context.emptyContext
 import engine.expressions.Expression
 import engine.expressions.Path
 import engine.expressions.PathMapping
@@ -379,7 +378,7 @@ class TransformationCheck(private val trans: Transformation?) :
 
 @TestCaseBuilderMarker
 class MethodTestCase {
-    var context: Context = emptyContext
+    var context: Context = Context()
     lateinit var method: Method
     lateinit var inputExpr: String
 

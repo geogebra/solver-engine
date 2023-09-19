@@ -228,10 +228,10 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
 
         fun visitPrefix(sub: Expression): List<Transformation>? =
             stepsProducer.produceSteps(ctx, sub)
-                ?: sub.children.firstNotNullOfOrNull { visitPrefix(it) }
+                ?: sub.childrenInVisitingOrder().firstNotNullOfOrNull { visitPrefix(it) }
 
         fun visitPostfix(sub: Expression): List<Transformation>? =
-            sub.children.firstNotNullOfOrNull { visitPostfix(it) }
+            sub.childrenInVisitingOrder().firstNotNullOfOrNull { visitPostfix(it) }
                 ?: stepsProducer.produceSteps(ctx, sub)
 
         addSteps(

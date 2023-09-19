@@ -37,6 +37,7 @@ enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
     ComputeDomainAndSimplifyAlgebraicExpression(
         taskSet {
             explanation = Explanation.ComputeDomainAndSimplifyAlgebraicExpression
+            pattern = condition { it is ValueExpression }
 
             tasks {
                 val domainComputationTask = task(

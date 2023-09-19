@@ -58,6 +58,10 @@ class Root(
     val radicand get() = firstChild
     val index get() = secondChild
 
+    override fun childrenInVisitingOrder(): List<Expression> {
+        return listOf(secondChild, firstChild)
+    }
+
     override fun signOf(): Sign {
         // This is not quite right because we should check the order as well.
         return radicand.signOf().truncateToPositive()

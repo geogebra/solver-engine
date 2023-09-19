@@ -22,6 +22,9 @@ contents to a new release section (e.g. _[0.x]_).
 - Solve rational equations implementation (PLUT-593)
 - Added support for equations simplifying to undefined (PLUT-652)
 - Added ExpressionList to represent a variable number of parameters in explanations (PLUT-663)
+- Performance improvement via context-local caching of plans, adding guards to some methods and deduplicating the use of
+  deeply (PLUT-677)
+- Tools for profiling performance of queries, see [docs/profiling.md](docs/profiling.md) for details (PLUT-677)
 
 ### Fixed
 
@@ -61,6 +64,8 @@ contents to a new release section (e.g. _[0.x]_).
 ### Removed
 
 - SDK: Removed old Json format from the SDK (PLUT-628)
+- the `SolveRationalEquation` plan is no longer public (it has been rolled into `SolveEquationWithOneVariable` as part
+  of PLUT-677)
 
 ## [1.2] - 2023-07-18
 

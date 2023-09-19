@@ -10,8 +10,8 @@ import engine.steps.Transformation
 import java.util.logging.Level
 
 /**
- * This is used by plans to provide them with a list of steps.  There are a number of standard `StepsProducer` in this
- * package that can be combined.
+ * This is used by plans to provide them with a list of steps.  There are a number of standard [StepsProducer]
+ * implementations in this package that can be combined.
  */
 fun interface StepsProducer {
     /**
@@ -21,7 +21,7 @@ fun interface StepsProducer {
 }
 
 /**
- * This helps build a list of chained `Transformation` instances, starting from the given Expression`.
+ * This helps build a list of chained [Transformation] instances, starting from the given expression [sub].
  */
 class StepsBuilder(
     val context: Context,

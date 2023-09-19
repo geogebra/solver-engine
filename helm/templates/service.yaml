@@ -6,7 +6,7 @@ metadata:
   labels:
     app: {{ .Values.deploymentName }}
   annotations:
-    alb.ingress.kubernetes.io/healthcheck-path: "/{{ .Values.contextPath }}/poker.html"
+    alb.ingress.kubernetes.io/healthcheck-path: "{{ .Values.contextPath }}/poker.html"
 spec:
   type: NodePort
   selector:

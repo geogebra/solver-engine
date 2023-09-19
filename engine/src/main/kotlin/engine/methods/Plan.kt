@@ -29,7 +29,12 @@ class Plan(
     private val stepsProducer: StepsProducer,
 ) : CompositeMethod(specificPlans) {
 
-    override fun run(ctx: Context, sub: Expression): Transformation? {
+    override fun run(ctx: Context, sub: Expression) =
+        ctx.unlessPreviouslyFailed(this, sub) { doRun(ctx, sub) }
+    // To disable cache, do this instead
+    //  doRun(ctx, sub)
+
+    private fun doRun(ctx: Context, sub: Expression): Transformation? {
         val match = pattern.findMatches(ctx, RootMatch, sub).firstOrNull() ?: return null
 
         return stepsProducer.produceSteps(ctx, sub)?.let { steps ->

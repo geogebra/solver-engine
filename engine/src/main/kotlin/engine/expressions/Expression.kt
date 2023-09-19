@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package engine.expressions
 
 import engine.operators.BinaryExpressionOperator
@@ -200,6 +202,15 @@ open class Expression internal constructor(
     }
 
     val children by lazy { origin.computeChildrenOrigin(this) }
+
+    /**
+     * Returns the children in their natural visiting order.  Ideally this would already be the case with [children]
+     * but root[x, y] means the y-th root of x and we want the visiting order to be (y, x) not (x, y).
+     *
+     * In the future, we can make sure [children] is in natural visiting order but that means changing the API as at
+     * least root[x, y] will have a different JSON representation
+     */
+    internal open fun childrenInVisitingOrder() = children
 
     /**
      * Number of children of this expression.
@@ -593,6 +604,20 @@ fun Expression.isPolynomial(): Boolean = when (this) {
     is Fraction -> numerator.isPolynomial() && denominator.isConstant()
     is DivideBy -> divisor.isConstant()
     else -> children.all { it.isPolynomial() }
+}
+
+fun Expression.containsRoots(): Boolean {
+    return when (this) {
+        is Root, is SquareRoot -> true
+        else -> children.any { it.containsRoots() }
+    }
+}
+
+fun Expression.containsPowers(): Boolean {
+    return when (this) {
+        is Power -> true
+        else -> children.any { it.containsPowers() }
+    }
 }
 
 internal fun expressionOf(operator: Operator, operands: List<Expression>) =

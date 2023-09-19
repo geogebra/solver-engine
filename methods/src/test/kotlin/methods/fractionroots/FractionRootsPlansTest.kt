@@ -292,7 +292,7 @@ class FractionRootsPlansTest {
                         fromExpr = "[9 root[72, 4] / 2 * 2 * 3]"
                         toExpr = "[9 root[72, 4] / 12]"
                         explanation {
-                            key = IntegerRootsExplanation.SimplifyProductWithRoots
+                            key = IntegerArithmeticExplanation.SimplifyIntegersInProduct
                         }
                     }
                 }
@@ -435,7 +435,7 @@ class FractionRootsPlansTest {
                     fromExpr = "[9 root[1331, 4] / 2 * 11]"
                     toExpr = "[9 root[1331, 4] / 22]"
                     explanation {
-                        key = IntegerRootsExplanation.SimplifyProductWithRoots
+                        key = IntegerArithmeticExplanation.SimplifyIntegersInProduct
                     }
                 }
             }

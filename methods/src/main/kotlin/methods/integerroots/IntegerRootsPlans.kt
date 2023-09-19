@@ -1,7 +1,9 @@
 package methods.integerroots
 
+import engine.expressions.Product
 import engine.expressions.Root
 import engine.expressions.SquareRoot
+import engine.expressions.containsRoots
 import engine.methods.CompositeMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
@@ -10,6 +12,7 @@ import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.condition
 import engine.patterns.integerCondition
 import engine.patterns.integerOrderRootOf
 import engine.patterns.powerOf
@@ -68,6 +71,7 @@ enum class IntegerRootsPlans(override val runner: CompositeMethod) : RunnerMetho
     SimplifyProductWithRoots(
         plan {
             explanation = Explanation.SimplifyProductWithRoots
+            pattern = condition { it is Product && it.containsRoots() }
 
             steps {
                 whilePossible { deeply(IntegerArithmeticRules.EvaluateIntegerPowerDirectly) }
@@ -120,6 +124,7 @@ enum class IntegerRootsPlans(override val runner: CompositeMethod) : RunnerMetho
 
                 // 490 * root[14]
                 optionally(SimplifyProductWithRoots)
+                optionally(IntegerArithmeticPlans.SimplifyIntegersInProduct)
             }
         },
     ),

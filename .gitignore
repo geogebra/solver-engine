@@ -6,7 +6,11 @@ build/
 /api/src/main/resources/static/poker
 /solver-poker/test-results-src/test-results.ts
 
+# Generated documentation
 documentation
+
+# Dev server puts logs in here
+logs
 
 ### IntelliJ IDEA ###
 .idea/modules.xml

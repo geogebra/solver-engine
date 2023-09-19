@@ -75,17 +75,24 @@ internal class WhileStrategiesAvailableFirstOf<T : Strategy>(
 
     private fun makeTransformation(alternatives: List<Alternative>): Transformation {
         val mainAlternative = alternatives[0]
+        val secondaryAlternatives = if (alternatives.size > 1) {
+            alternatives.subList(1, alternatives.size)
+        } else {
+            null
+        }
+        if (mainAlternative.steps.size == 1) {
+            val mainStep = mainAlternative.steps[0]
+            if (mainStep.explanation?.key == mainAlternative.strategy.explanation) {
+                return mainStep.copy(alternatives = secondaryAlternatives)
+            }
+        }
         return Transformation(
             type = Transformation.Type.Plan,
             explanation = metadata(mainAlternative.strategy.explanation),
             fromExpr = mainAlternative.steps.first().fromExpr,
             toExpr = mainAlternative.steps.last().toExpr,
             steps = mainAlternative.steps,
-            alternatives = if (alternatives.size > 1) {
-                alternatives.subList(1, alternatives.size)
-            } else {
-                null
-            },
+            alternatives = secondaryAlternatives,
         )
     }
 }

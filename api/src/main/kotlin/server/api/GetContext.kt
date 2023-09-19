@@ -2,11 +2,10 @@ package server.api
 
 import engine.context.Context
 import engine.context.Curriculum
-import engine.context.emptyContext
 import methods.strategyRegistry
 import org.apache.logging.log4j.Logger
-import org.apache.logging.log4j.message.FormattedMessage
 import org.apache.logging.log4j.message.ObjectMessage
+import org.apache.logging.log4j.message.SimpleMessage
 import java.util.function.Supplier
 import java.util.logging.Level
 
@@ -43,21 +42,23 @@ internal fun getContext(
         logger = ContextLogger(logger),
         preferredStrategies = strategies,
     )
-} ?: emptyContext.copy(
+} ?: Context(
     solutionVariables = listOfNotNull(variables.firstOrNull()),
     logger = ContextLogger(logger),
 )
 
 private class ContextLogger(val logger: Logger) : engine.logger.Logger {
-    override fun log(level: Level, string: String) {
-        logger.log(convertLevel(level), string)
+    override fun log(level: Level, depth: Int, string: String) {
+        val indent = ". ".repeat(depth)
+        logger.log(convertLevel(level), indent + string)
     }
 
-    override fun <T>log(level: Level, supplier: Supplier<T>) {
+    override fun <T>log(level: Level, depth: Int, supplier: Supplier<T>) {
         logger.log(convertLevel(level)) {
             val msg = supplier.get()
+            val indent = ". ".repeat(depth)
             if (msg is String) {
-                FormattedMessage(msg)
+                SimpleMessage(indent + msg)
             } else {
                 ObjectMessage(msg)
             }

@@ -17,14 +17,20 @@
         </Console>
         <Console name="ConsoleWithContext" target="SYSTEM_OUT">
             <PatternLayout pattern="${LOG_PATTERN_WITH_CONTEXT}" disableAnsi="false"/>
+            <ThresholdFilter level="DEBUG"/>
         </Console>
+        <File name="TraceFile" fileName="logs/trace.log" append="false">
+            <PatternLayout pattern="%X %m%n"/>
+        </File>
     </Appenders>
     <Loggers>
         <Root level="info">
             <AppenderRef ref="Console"/>
         </Root>
-        <Logger name="engine" level="debug" additivity="false">
+        <!-- Set LOG_LEVEL env variable to TRACE to log traces to logs/trace.log -->
+        <Logger name="engine" level="${env:LOG_LEVEL}" additivity="false">
             <AppenderRef ref="ConsoleWithContext"/>
+            <AppenderRef ref="TraceFile"/>
         </Logger>
     </Loggers>
 </Configuration>

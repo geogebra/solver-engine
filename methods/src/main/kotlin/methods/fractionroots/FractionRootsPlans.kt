@@ -1,10 +1,12 @@
 package methods.fractionroots
 
 import engine.expressions.Fraction
+import engine.expressions.containsRoots
 import engine.methods.CompositeMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
+import engine.patterns.condition
 import methods.fractionarithmetic.FractionArithmeticRules
 import methods.general.GeneralRules
 import methods.integerarithmetic.IntegerArithmeticPlans
@@ -54,6 +56,7 @@ enum class FractionRootsPlans(override val runner: CompositeMethod) : RunnerMeth
     RationalizeDenominators(
         plan {
             explanation = Explanation.RationalizeDenominator
+            pattern = condition { it is Fraction && it.denominator.containsRoots() }
 
             steps {
                 optionally(FractionRootsRules.FlipRootsInDenominator)

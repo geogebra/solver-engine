@@ -4,9 +4,9 @@ import java.util.function.Supplier
 import java.util.logging.Level
 
 interface Logger {
-    fun log(level: Level, string: String)
+    fun log(level: Level, depth: Int, string: String)
 
-    fun <T> log(level: Level, supplier: Supplier<T>)
+    fun <T> log(level: Level, depth: Int, supplier: Supplier<T>)
 }
 
 /**
@@ -14,11 +14,11 @@ interface Logger {
  */
 object DefaultLogger : Logger {
 
-    override fun log(level: Level, string: String) {
+    override fun log(level: Level, depth: Int, string: String) {
         // Do nothing
     }
 
-    override fun <T>log(level: Level, supplier: Supplier<T>) {
+    override fun <T>log(level: Level, depth: Int, supplier: Supplier<T>) {
         // Do nothing
     }
 }

@@ -248,6 +248,13 @@ enum class EquationSolvingStrategy(
         },
     ),
 
+    RationalEquation(
+        family = Family.RATIONAL,
+        priority = 0,
+        explanation = EquationsExplanation.SolveEquationInOneVariable,
+        steps = EquationsPlans.SolveRationalEquation,
+    ),
+
     Undefined(
         family = Family.UNDEFINED,
         priority = -1,
@@ -275,6 +282,7 @@ enum class EquationSolvingStrategy(
         ABSOLUTE_VALUE,
         SEPARABLE,
         PLUSMINUS,
+        RATIONAL,
         CONSTANT,
         UNDEFINED,
         FALLBACK,
