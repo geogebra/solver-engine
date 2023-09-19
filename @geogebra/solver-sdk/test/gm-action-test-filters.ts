@@ -58,6 +58,8 @@ export const expressionSkipList = [
   '(3-4)*x-42+2=8*(2*x-5)',
   '8+(2-4)*sqrt 2-7=0',
   '-((3-4)*sqrt[3]3)-(-sqrt[3]3-3*sqrt[3]3+5*sqrt[3]3)',
+  '-(-1*sqrt[3]3)-(-sqrt[3]3-3*sqrt[3]3+5*sqrt[3]3)',
+  '-(3-4)*sqrt[3]3-(-sqrt[3]3-3*sqrt[3]3+5*sqrt[3]3)',
   '(-1)+1',
   '(-0.2)*(-0.2)',
 
