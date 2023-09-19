@@ -128,7 +128,7 @@ components:
   schemas:
     Format:
       type: string
-      enum: [latex, solver, json, json2]
+      enum: [latex, solver, json2]
       default: solver
     SolveRequest:
       type: object

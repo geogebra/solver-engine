@@ -2,12 +2,10 @@
 
 Mathematical expression can be serialized in different formats
 
-- `solver` - the solver format which is human readable, unambiguous, but hard to parse for a machine, used in tests
-- `latex` - this makes it easy to display the expression but it is hard to parse and can be ambiguous
-- `json` - a structured json representation easier to parse for a machine, harder to read for a human, array based and
-  difficult to extend. this will be deprecated soon
-- `json2` - a structured json easiest to parse for a machine, easiest to extend in the future. more verbose than `json`
-  but there is no drastic difference on compressed responses
+- `solver` - the solver format which is human-readable, unambiguous, but hard to parse for a machine, used in tests
+- `latex` - this makes it easy to display the expression, but it is hard to parse and can be ambiguous
+- `json` - an array based format, no longer supported
+- `json2` - a structured json easiest to parse for a machine, easiest to extend in the future
 
 ## Definition of the `json2` format.
 

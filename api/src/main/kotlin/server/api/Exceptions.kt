@@ -1,10 +1,13 @@
 package server.api
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import org.antlr.v4.runtime.misc.ParseCancellationException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
+import server.models.Format
 import javax.servlet.http.HttpServletResponse
 
 class InvalidExpressionException(expression: String, val parseException: ParseCancellationException? = null) :
@@ -30,6 +33,23 @@ class FallbackExceptionHandler {
     fun onException(ex: Exception, response: HttpServletResponse) {
         logger.error(ex.stackTraceToString())
         response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "internal error")
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException::class)
+    fun handleInvalidRequestFormat(response: HttpServletResponse, ex: HttpMessageNotReadableException) {
+        val rootCause = ex.rootCause
+        if (rootCause is InvalidFormatException) {
+            if (rootCause.targetType.isAssignableFrom(Format::class.java)) {
+                response.sendError(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "Invalid value \"${rootCause.value}\" specified for Format. " +
+                        "Valid inputs are: \"solver\", \"latex\", \"json2\".",
+                )
+                return
+            }
+        }
+
+        response.sendError(HttpStatus.BAD_REQUEST.value(), ex.message)
     }
 
     companion object {

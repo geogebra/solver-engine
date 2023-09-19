@@ -44,22 +44,10 @@ class Product(
         return decorators.fold(str) { acc, dec -> dec.decorateLatexString(acc) }
     }
 
-    override fun toJson(): List<Any> {
-        val serializedOperands = operands.map { it.toJson() }
-        val initial = if (decorators.isEmpty()) {
-            listOf("SmartProduct")
-        } else {
-            listOf(listOf("SmartProduct") + decorators.map { it.toString() })
-        }
-        return initial + serializedOperands.indices.map {
-            listOf(productSignRequiredForOperand(it, operands[it]), serializedOperands[it])
-        }
-    }
-
-    override fun fillJson2(s: MutableMap<String, Any>) {
+    override fun fillJson(s: MutableMap<String, Any>) {
         s["type"] = "SmartProduct"
         if (operands.isNotEmpty()) {
-            s["operands"] = operands.map { it.toJson2() }
+            s["operands"] = operands.map { it.toJson() }
             s["signs"] = operands.withIndex().map { (i, op) -> productSignRequiredForOperand(i, op) }
         }
     }

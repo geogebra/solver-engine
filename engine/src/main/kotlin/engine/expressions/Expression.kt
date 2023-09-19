@@ -454,29 +454,16 @@ open class Expression internal constructor(
         return operator === UnaryExpressionOperator.DivideBy
     }
 
-    open fun toJson(): List<Any> {
-        val serializedOperands = operands.map { it.toJson() }
-        return if (decorators.isEmpty() && name == null) {
-            listOf(operator.name) + serializedOperands
-        } else {
-            listOf(
-                listOf(operator.name) +
-                    (if (name == null) listOf() else listOf(name)) +
-                    decorators.map { it.toString() },
-            ) + serializedOperands
-        }
-    }
-
-    internal open fun fillJson2(s: MutableMap<String, Any>) {
+    internal open fun fillJson(s: MutableMap<String, Any>) {
         s["type"] = operator.name
         if (operands.isNotEmpty()) {
-            s["operands"] = operands.map { it.toJson2() }
+            s["operands"] = operands.map { it.toJson() }
         }
     }
 
-    fun toJson2(): Map<String, Any> {
+    fun toJson(): Map<String, Any> {
         val s = mutableMapOf<String, Any>()
-        fillJson2(s)
+        fillJson(s)
         if (decorators.isNotEmpty()) {
             s["decorators"] = decorators.map { it.toString() }
         }

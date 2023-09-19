@@ -63,7 +63,8 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Removed
 
-- SDK: Removed old Json format from the SDK (PLUT-628)
+- SDK: Removed support for old Json format from the SDK (PLUT-628)
+- Removed support for old Json format from the engine (PLUT-629)
 - the `SolveRationalEquation` plan is no longer public (it has been rolled into `SolveEquationWithOneVariable` as part
   of PLUT-677)
 

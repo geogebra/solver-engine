@@ -11,13 +11,11 @@ import server.models.SolveRequest
 import server.models.Transformation
 import java.util.UUID
 import java.util.logging.Level
-import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
 
 @Service
 class PlanApiServiceImpl : PlansApiService {
 
-    @OptIn(ExperimentalTime::class)
     override fun applyPlan(planId: String, solveRequest: SolveRequest): Transformation {
         val plan =
             methodRegistry.getMethodByName(planId) ?: throw NotFoundException("plan not found")
