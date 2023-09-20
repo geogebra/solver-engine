@@ -6,7 +6,9 @@ import engine.expressions.DecimalExpression
 import engine.expressions.Equation
 import engine.expressions.Expression
 import engine.expressions.RecurringDecimalExpression
+import engine.expressions.StatementSystem
 import engine.expressions.StatementUnion
+import engine.expressions.isPolynomial
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
@@ -32,6 +34,8 @@ import methods.constantexpressions.simpleTidyUpSteps
 import methods.factor.FactorPlans
 import methods.factor.FactorRules
 import methods.general.NormalizationPlans
+import methods.inequalities.InequalitiesPlans
+import methods.inequations.InequationsPlans
 import methods.polynomials.PolynomialsPlans
 import methods.polynomials.polynomialSimplificationSteps
 import methods.solvable.SolvablePlans
@@ -209,22 +213,24 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     ),
 
     @PublicMethod
-    SolveEquationInOneVariable(
+    SolveEquation(
         object : CompositeMethod() {
             override fun run(ctx: Context, sub: Expression): Transformation? {
-                if (sub.variables.count() != 1 ||
-                    ctx.solutionVariables.toSet() != sub.variables ||
-                    sub !is Equation
-                ) {
-                    return null
+                if (sub is Equation && sub.lhs.isPolynomial() && sub.rhs.isPolynomial()) {
+                    val solutionVariable = ctx.solutionVariables.singleOrNull() ?: return null
+
+                    if (sub.variables.contains(solutionVariable)) {
+                        return solveEquation.value.run(ctx, sub)
+                    }
                 }
-                return solveEquationInOneVariable.value.run(ctx, sub)
+
+                return null
             }
         },
     ),
 
     @PublicMethod
-    SolveEquationWithConstraint(solveEquationWithConstraint),
+    SolveEquationWithInequalityConstraint(solveEquationWithInequalityConstraint),
 
     SolveRationalEquation(solveRationalEquation),
 
@@ -261,12 +267,36 @@ private val optimalEquationSolvingSteps = steps {
                 option(EquationsRules.ExtractSolutionFromConstantEquation)
             }
         }
-        option(EquationsPlans.SolveEquationInOneVariable)
-        option(EquationsPlans.SolveEquationWithConstraint)
+        option(EquationsPlans.SolveEquation)
+        option(EquationsPlans.SolveEquationWithInequalityConstraint)
     }
 }
 
-val solvablePlansForEquations = SolvablePlans(EquationsPlans.SimplifyEquation)
+private val constraintSimplificationPlan = plan {
+    explanation = EquationsExplanation.SimplifyConstraint
+
+    val simplifySingleConstraint = engine.methods.stepsproducers.steps {
+        check { it.variables.size == 1 }
+        inContext(contextFactory = { copy(solutionVariables = it.variables.toList()) }) {
+            firstOf {
+                option(InequationsPlans.SolveInequationInOneVariable)
+                option(InequalitiesPlans.SolveLinearInequality)
+            }
+        }
+    }
+
+    steps {
+        firstOf {
+            option {
+                check { it is StatementSystem }
+                applyToChildren(simplifySingleConstraint)
+            }
+            option(simplifySingleConstraint)
+        }
+    }
+}
+
+val solvablePlansForEquations = SolvablePlans(EquationsPlans.SimplifyEquation, constraintSimplificationPlan)
 
 val rearrangeLinearEquationSteps = steps {
     whilePossible {

@@ -18,11 +18,9 @@ export type NestedExpressionType =
   | 'Equation' // binary
   | 'Inequation' // binary
   | 'EquationSystem' // n-ary
-  | 'InequalitySystem' // n-ary
   | 'AddEquations' // binary
   | 'SubtractEquations' // binary
   | 'EquationUnion' // n-ary
-  | 'StatementWithConstraint' // binary
   | 'LessThan' // binary
   | 'GreaterThan' // binary
   | 'LessThanEqual' // binary

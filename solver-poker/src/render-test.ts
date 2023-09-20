@@ -142,4 +142,4 @@ const buildExplanation = (explanation?: Metadata) => (builder: IndentBuilder) =>
 };
 
 const renderExpression = (expression: MathJson) =>
-  treeToSolver(jsonToTree(expression)).replace('\\', '\\\\');
+  treeToSolver(jsonToTree(expression)).replaceAll('\\', '\\\\');

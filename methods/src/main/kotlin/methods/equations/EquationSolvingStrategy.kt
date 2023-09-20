@@ -187,7 +187,7 @@ enum class EquationSolvingStrategy(
                 // RHS = 0
                 option {
                     apply(EquationsRules.ResolveModulusEqualsZero)
-                    apply(EquationsPlans.SolveEquationInOneVariable)
+                    apply(EquationsPlans.SolveEquation)
                 }
 
                 // RHS < 0
@@ -220,21 +220,21 @@ enum class EquationSolvingStrategy(
     SeparateFactoredEquation(
         family = Family.SEPARABLE,
         priority = -1,
-        explanation = EquationsExplanation.SolveEquationInOneVariable,
+        explanation = EquationsExplanation.SolveEquation,
         steps = separateFactoredEquationSteps,
     ),
 
     ResolvePlusminus(
         family = Family.PLUSMINUS,
         priority = -1,
-        explanation = EquationsExplanation.SolveEquationInOneVariable,
+        explanation = EquationsExplanation.SolveEquation,
         steps = resolvePlusminusSteps,
     ),
 
     ConstantEquation(
         family = Family.CONSTANT,
         priority = -1,
-        explanation = EquationsExplanation.SolveEquationInOneVariable,
+        explanation = EquationsExplanation.SolveEquation,
         steps = steps {
             check { it.isConstant() }
 
@@ -251,14 +251,14 @@ enum class EquationSolvingStrategy(
     RationalEquation(
         family = Family.RATIONAL,
         priority = 0,
-        explanation = EquationsExplanation.SolveEquationInOneVariable,
+        explanation = EquationsExplanation.SolveEquation,
         steps = EquationsPlans.SolveRationalEquation,
     ),
 
     Undefined(
         family = Family.UNDEFINED,
         priority = -1,
-        explanation = EquationsExplanation.SolveEquationInOneVariable,
+        explanation = EquationsExplanation.SolveEquation,
         steps = EquationsRules.UndefinedEquationCannotBeSolved,
     ),
 
@@ -331,7 +331,7 @@ private val resolvePlusminusSteps = steps {
     }
 }
 
-internal val solveEquationInOneVariable = lazy {
+internal val solveEquation = lazy {
     // All strategies excepting special ones
     val regularStrategies = EquationSolvingStrategy.values().filter { it.priority >= 0 }
 
@@ -370,7 +370,7 @@ internal val solveEquationInOneVariable = lazy {
 }
 
 private val equationSolvingSteps = StepsProducer { ctx, sub ->
-    solveEquationInOneVariable.value
+    solveEquation.value
         .run(ctx.copy(strategySelectionMode = StrategySelectionMode.HIGHEST_PRIORITY), sub)
         ?.steps
 }

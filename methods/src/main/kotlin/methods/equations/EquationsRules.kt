@@ -6,7 +6,6 @@ import engine.expressions.Constants
 import engine.expressions.Contradiction
 import engine.expressions.Product
 import engine.expressions.SimpleComparator
-import engine.expressions.StatementWithConstraint
 import engine.expressions.Sum
 import engine.expressions.Variable
 import engine.expressions.VariableList
@@ -563,11 +562,11 @@ private val separateModulusEqualsExpression = rule {
         val rhsValue = get(rhs)
         ruleResult(
             toExpr = statementUnionOf(
-                StatementWithConstraint(
+                statementSystemOf(
                     equationOf(newLHS, rhsValue),
                     greaterThanEqualOf(signedLHSValue, Constants.Zero),
                 ),
-                StatementWithConstraint(
+                statementSystemOf(
                     equationOf(negOf(newLHS), rhsValue),
                     lessThanOf(signedLHSValue, Constants.Zero),
                 ),

@@ -2,7 +2,9 @@ package engine.methods.stepsproducers
 
 import engine.context.Context
 import engine.expressions.Expression
+import engine.expressions.ExpressionWithConstraint
 import engine.expressions.LabelSpace
+import engine.expressions.StatementSystem
 import engine.methods.Strategy
 import engine.operators.UndefinedOperator
 import engine.steps.Alternative
@@ -35,6 +37,22 @@ class StepsBuilder(
         Aborted,
     }
 
+    /**
+     * This is the value the initial substitution was turned into after applying all the currently added
+     * `Transformation` instances.
+     */
+    val expression get() = sub
+
+    val simpleExpression get() = when (val expression = sub) {
+        is ExpressionWithConstraint -> expression.expression
+        else -> expression
+    }
+
+    val constraint get() = when (val expression = sub) {
+        is ExpressionWithConstraint -> expression.constraint
+        else -> null
+    }
+
     private var steps = mutableListOf<Transformation>()
 
     private var status = Status.InProgress
@@ -57,6 +75,20 @@ class StepsBuilder(
         steps.replaceAll { it.clearLabels(labelSpace) }
     }
 
+    private fun mergeConstraints(oldConstraints: Expression, newConstraints: Expression): Expression {
+        val oldConstraintsList = when {
+            oldConstraints is StatementSystem -> oldConstraints.equations
+            else -> listOf(oldConstraints)
+        }
+
+        val newConstraintsList = when {
+            newConstraints is StatementSystem -> newConstraints.equations
+            else -> listOf(newConstraints)
+        }
+
+        return StatementSystem(oldConstraintsList + newConstraintsList)
+    }
+
     fun addStep(step: Transformation) {
         /**
          * If `step` results in `undefined` for a subexpression of the current
@@ -67,9 +99,20 @@ class StepsBuilder(
          * --> [1 / 0] + 2
          * --> undefined ([1/ 0] is undefined)
          */
-        val substitution = when (step.toExpr.operator) {
-            UndefinedOperator -> step.toExpr
-            else -> sub.substitute(step.fromExpr, step.toExpr)
+
+        val oldSub = sub
+        val toExpr = step.toExpr
+
+        // Is this going to cause issues for e.g. explanation path mappings?
+
+        val substitution = when {
+            toExpr.operator is UndefinedOperator -> toExpr
+            toExpr is ExpressionWithConstraint && oldSub is ExpressionWithConstraint ->
+                ExpressionWithConstraint(
+                    oldSub.expression.substitute(step.fromExpr, toExpr.expression),
+                    mergeConstraints(oldSub.constraint, toExpr.constraint),
+                )
+            else -> oldSub.substitute(step.fromExpr, toExpr)
         }
 
         steps.add(
@@ -133,12 +176,6 @@ class StepsBuilder(
     fun succeed() {
         status = Status.Succeeded
     }
-
-    /**
-     * This is the value the initial substitution was turned into after applying all the currently added
-     * `Transformation` instances.
-     */
-    val lastSub get() = sub
 
     /**
      * Returns the list of steps added to the builder, or null if `abort()` was called at least once.

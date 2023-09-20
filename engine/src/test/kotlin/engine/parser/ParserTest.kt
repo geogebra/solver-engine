@@ -9,7 +9,6 @@ import engine.expressions.Inequation
 import engine.expressions.ListExpression
 import engine.expressions.Product
 import engine.expressions.SetDifference
-import engine.expressions.StatementWithConstraint
 import engine.expressions.VoidExpression
 import engine.expressions.arsinhOf
 import engine.expressions.bracketOf
@@ -486,7 +485,7 @@ class ParserTest {
         parsesTo(
             "x=1 GIVEN x<0 OR x=2",
             statementUnionOf(
-                StatementWithConstraint(equationOf(xp("x"), xp(1)), lessThanOf(xp("x"), xp(0))),
+                ExpressionWithConstraint(equationOf(xp("x"), xp(1)), lessThanOf(xp("x"), xp(0))),
                 equationOf(xp("x"), xp(2)),
             ),
         )

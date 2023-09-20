@@ -19,7 +19,7 @@ import {
   containsNonTrivialStep,
   isCosmeticTransformation,
   isInvisibleChangeStep,
-  isPedanticStep,
+  isPedanticTransformation,
   isRearrangementStep,
   isThroughStep,
 } from './util';
@@ -127,7 +127,7 @@ const renderSteps = (
 
   const renderedSteps = preprocessSteps(steps)
     .map((step) => {
-      if (!settings.showPedanticSteps && isPedanticStep(step)) {
+      if (!settings.showPedanticSteps && isPedanticTransformation(step)) {
         return null;
       } else if (!settings.showCosmeticSteps && isCosmeticTransformation(step)) {
         return /* HTML */ `<span class="note">

@@ -3,7 +3,6 @@ package methods.general
 import engine.conditions.isDefinitelyNotNegative
 import engine.conditions.isDefinitelyNotPositive
 import engine.conditions.isDefinitelyNotZero
-import engine.conditions.sumTermsAreIncommensurable
 import engine.expressions.Constants
 import engine.expressions.DivideBy
 import engine.expressions.Minus
@@ -330,9 +329,8 @@ private val simplifyZeroNumeratorFractionToZero =
     rule {
         val zero = FixedPattern(Constants.Zero)
         val denominator = condition {
-            it.isDefinitelyNotZero() &&
-                // we don't want to directly simplify [0 / 2-3] = 0
-                (it !is Sum || sumTermsAreIncommensurable(it.children))
+            it.isDefinitelyNotZero() ||
+                !it.isConstant() // if it is not constant we have already made sure the fraction is defined
         }
         val pattern = fractionOf(zero, denominator)
 
@@ -350,7 +348,10 @@ private val simplifyZeroNumeratorFractionToZero =
  */
 private val simplifyUnitFractionToOne =
     rule {
-        val common = condition { !it.isConstant() || it.isDefinitelyNotZero() }
+        val common = condition {
+            it.isDefinitelyNotZero() ||
+                !it.isConstant() // if it is not constant we have already made sure the fraction is defined
+        }
         val pattern = fractionOf(common, common)
 
         onPattern(pattern) {

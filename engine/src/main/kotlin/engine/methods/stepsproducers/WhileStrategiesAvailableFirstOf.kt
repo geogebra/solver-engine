@@ -69,7 +69,7 @@ internal class WhileStrategiesAvailableFirstOf<T : Strategy>(
 
         throw TooManyIterationsException(
             "WhileStrategies max iteration number ($MAX_WHILE_POSSIBLE_ITERATIONS) " +
-                "exceeded for expression ${builder.lastSub}",
+                "exceeded for expression ${builder.simpleExpression}",
         )
     }
 
@@ -106,7 +106,7 @@ private class WhileStrategiesAvailableFirstOfRunner(val builder: StepsBuilder, a
     override fun option(strategy: Strategy) {
         if (roundSucceeded) return
         if (strategy in remainingStrategies) {
-            val result = strategy.steps.produceSteps(builder.context, builder.lastSub)
+            val result = strategy.steps.produceSteps(builder.context, builder.simpleExpression)
             if (result != null) {
                 val added = builder.addAlternative(strategy, result)
                 if (added) {
@@ -123,7 +123,7 @@ private class WhileStrategiesAvailableFirstOfRunner(val builder: StepsBuilder, a
 
     override fun option(stepsProducer: StepsProducer) {
         if (roundSucceeded) return
-        val steps = stepsProducer.produceSteps(builder.context, builder.lastSub)
+        val steps = stepsProducer.produceSteps(builder.context, builder.simpleExpression)
         if (steps != null) {
             builder.addSteps(steps)
             roundSucceeded = true

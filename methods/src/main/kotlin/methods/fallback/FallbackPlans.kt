@@ -85,7 +85,7 @@ enum class FallbackPlans(override val runner: CompositeMethod) : RunnerMethod {
                 AlgebraPlans.SimplifyAlgebraicExpression,
                 FactorPlans.FactorPolynomialInOneVariable,
                 EquationsPlans.SolveConstantEquation,
-                EquationsPlans.SolveEquationInOneVariable,
+                EquationsPlans.SolveEquation,
                 InequalitiesPlans.SolveConstantInequality,
                 InequalitiesPlans.SolveLinearInequality,
                 InequationsPlans.SolveConstantInequation,

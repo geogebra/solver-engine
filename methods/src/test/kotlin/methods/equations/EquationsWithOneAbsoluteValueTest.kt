@@ -10,7 +10,7 @@ class EquationsWithOneAbsoluteValueTest {
 
     @Test
     fun `test simple linear equation in modulus`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "abs[2 x - 1] = 3"
 
         check {
@@ -80,7 +80,7 @@ class EquationsWithOneAbsoluteValueTest {
 
     @Test
     fun `test simple rearrangement needed`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "3 * abs[1 - x] + 2 = 10"
 
         check {
@@ -158,7 +158,7 @@ class EquationsWithOneAbsoluteValueTest {
 
     @Test
     fun `test modulus in fraction and negative`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "10 - [abs[1 - x] / 5] = 2"
 
         check {
@@ -204,7 +204,7 @@ class EquationsWithOneAbsoluteValueTest {
 
     @Test
     fun `test modulus equals negative`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "3 * abs[1 - x] + 5 = 2"
 
         check {
@@ -234,7 +234,7 @@ class EquationsWithOneAbsoluteValueTest {
 
     @Test
     fun `test modulus equals 0`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "abs[[x ^ 2] - 3] + 2 = 2"
 
         check {
@@ -272,54 +272,57 @@ class EquationsWithOneAbsoluteValueTest {
 
     @Test
     fun `test linear modulus with x on other side, two solutions`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "abs[2 x - 1] = x + 5"
+
         check {
             fromExpr = "abs[2 x - 1] = x + 5"
+            toExpr = "SetSolution[x : {-[4 / 3], 6}]"
             explanation {
                 key = EquationsExplanation.SolveEquationWithOneAbsoluteValue
             }
-            toExpr = "SetSolution[x : {-[4 / 3], 6}]"
+
             step {
                 fromExpr = "abs[2 x - 1] = x + 5"
-                toExpr = "2 x - 1 = x + 5 GIVEN 2 x - 1 >= 0 OR -(2 x - 1) = x + 5 GIVEN 2 x - 1 < 0"
+                toExpr = "2 x - 1 = x + 5 AND 2 x - 1 >= 0 OR -(2 x - 1) = x + 5 AND 2 x - 1 < 0"
             }
+
             step {
-                fromExpr = "2 x - 1 = x + 5 GIVEN 2 x - 1 >= 0 OR -(2 x - 1) = x + 5 GIVEN 2 x - 1 < 0"
+                fromExpr = "2 x - 1 = x + 5 AND 2 x - 1 >= 0 OR -(2 x - 1) = x + 5 AND 2 x - 1 < 0"
+                toExpr = "SetSolution[x : {-[4 / 3], 6}]"
                 explanation {
                     key = EquationsExplanation.SolveEquationUnion
                 }
-                toExpr = "SetSolution[x : {-[4 / 3], 6}]"
 
                 task {
                     taskId = "#1"
-                    startExpr = "2 x - 1 = x + 5 GIVEN 2 x - 1 >= 0"
+                    startExpr = "2 x - 1 = x + 5 AND 2 x - 1 >= 0"
                     explanation {
                         key = EquationsExplanation.SolveEquationInEquationUnion
                     }
 
                     step {
-                        fromExpr = "2 x - 1 = x + 5 GIVEN 2 x - 1 >= 0"
-                        explanation {
-                            key = EquationsExplanation.SolveEquationInOneVariable
-                        }
+                        fromExpr = "2 x - 1 = x + 5 AND 2 x - 1 >= 0"
                         toExpr = "SetSolution[x : {6}]"
+                        explanation {
+                            key = EquationsExplanation.SolveEquation
+                        }
                     }
                 }
 
                 task {
                     taskId = "#2"
-                    startExpr = "-(2 x - 1) = x + 5 GIVEN 2 x - 1 < 0"
+                    startExpr = "-(2 x - 1) = x + 5 AND 2 x - 1 < 0"
                     explanation {
                         key = EquationsExplanation.SolveEquationInEquationUnion
                     }
 
                     step {
-                        fromExpr = "-(2 x - 1) = x + 5 GIVEN 2 x - 1 < 0"
-                        explanation {
-                            key = EquationsExplanation.SolveEquationInOneVariable
-                        }
+                        fromExpr = "-(2 x - 1) = x + 5 AND 2 x - 1 < 0"
                         toExpr = "SetSolution[x : {-[4 / 3]}]"
+                        explanation {
+                            key = EquationsExplanation.SolveEquation
+                        }
                     }
                 }
 
@@ -336,7 +339,7 @@ class EquationsWithOneAbsoluteValueTest {
 
     @Test
     fun `test linear modulus with x on other side, one solution`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "abs[x + 1] = 2 x + 1"
 
         check {
@@ -348,10 +351,10 @@ class EquationsWithOneAbsoluteValueTest {
 
             step {
                 fromExpr = "abs[x + 1] = 2 x + 1"
-                toExpr = "x + 1 = 2 x + 1 GIVEN x + 1 >= 0 OR -(x + 1) = 2 x + 1 GIVEN x + 1 < 0"
+                toExpr = "x + 1 = 2 x + 1 AND x + 1 >= 0 OR -(x + 1) = 2 x + 1 AND x + 1 < 0"
             }
             step {
-                fromExpr = "x + 1 = 2 x + 1 GIVEN x + 1 >= 0 OR -(x + 1) = 2 x + 1 GIVEN x + 1 < 0"
+                fromExpr = "x + 1 = 2 x + 1 AND x + 1 >= 0 OR -(x + 1) = 2 x + 1 AND x + 1 < 0"
                 explanation {
                     key = EquationsExplanation.SolveEquationUnion
                 }
@@ -359,15 +362,15 @@ class EquationsWithOneAbsoluteValueTest {
 
                 task {
                     taskId = "#1"
-                    startExpr = "x + 1 = 2 x + 1 GIVEN x + 1 >= 0"
+                    startExpr = "x + 1 = 2 x + 1 AND x + 1 >= 0"
                     explanation {
                         key = EquationsExplanation.SolveEquationInEquationUnion
                     }
 
                     step {
-                        fromExpr = "x + 1 = 2 x + 1 GIVEN x + 1 >= 0"
+                        fromExpr = "x + 1 = 2 x + 1 AND x + 1 >= 0"
                         explanation {
-                            key = EquationsExplanation.SolveEquationInOneVariable
+                            key = EquationsExplanation.SolveEquation
                         }
                         toExpr = "SetSolution[x : {0}]"
                     }
@@ -375,17 +378,17 @@ class EquationsWithOneAbsoluteValueTest {
 
                 task {
                     taskId = "#2"
-                    startExpr = "-(x + 1) = 2 x + 1 GIVEN x + 1 < 0"
+                    startExpr = "-(x + 1) = 2 x + 1 AND x + 1 < 0"
                     explanation {
                         key = EquationsExplanation.SolveEquationInEquationUnion
                     }
 
                     step {
-                        fromExpr = "-(x + 1) = 2 x + 1 GIVEN x + 1 < 0"
+                        fromExpr = "-(x + 1) = 2 x + 1 AND x + 1 < 0"
                         explanation {
-                            key = EquationsExplanation.SolveEquationInOneVariable
+                            key = EquationsExplanation.SolveEquation
                         }
-                        toExpr = "Contradiction[x : SetSolution[x : {-[2 / 3]}] GIVEN SetSolution[x : ( -/infinity/, -1 )]]"
+                        toExpr = "Contradiction[x : SetSolution[x : {-[2 / 3]}] AND SetSolution[x : ( -/infinity/, -1 )]]"
                     }
                 }
 
@@ -402,54 +405,57 @@ class EquationsWithOneAbsoluteValueTest {
 
     @Test
     fun `test linear modulus with x on other side, no solution`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "abs[4 x + 3] = x - 2"
+
         check {
             fromExpr = "abs[4 x + 3] = x - 2"
+            toExpr = "SetSolution[x : {}]"
             explanation {
                 key = EquationsExplanation.SolveEquationWithOneAbsoluteValue
             }
-            toExpr = "SetSolution[x : {}]"
+
             step {
                 fromExpr = "abs[4 x + 3] = x - 2"
-                toExpr = "4 x + 3 = x - 2 GIVEN 4 x + 3 >= 0 OR -(4 x + 3) = x - 2 GIVEN 4 x + 3 < 0"
+                toExpr = "4 x + 3 = x - 2 AND 4 x + 3 >= 0 OR -(4 x + 3) = x - 2 AND 4 x + 3 < 0"
             }
+
             step {
-                fromExpr = "4 x + 3 = x - 2 GIVEN 4 x + 3 >= 0 OR -(4 x + 3) = x - 2 GIVEN 4 x + 3 < 0"
+                fromExpr = "4 x + 3 = x - 2 AND 4 x + 3 >= 0 OR -(4 x + 3) = x - 2 AND 4 x + 3 < 0"
+                toExpr = "SetSolution[x : {}]"
                 explanation {
                     key = EquationsExplanation.SolveEquationUnion
                 }
-                toExpr = "SetSolution[x : {}]"
 
                 task {
                     taskId = "#1"
-                    startExpr = "4 x + 3 = x - 2 GIVEN 4 x + 3 >= 0"
+                    startExpr = "4 x + 3 = x - 2 AND 4 x + 3 >= 0"
                     explanation {
                         key = EquationsExplanation.SolveEquationInEquationUnion
                     }
 
                     step {
-                        fromExpr = "4 x + 3 = x - 2 GIVEN 4 x + 3 >= 0"
+                        fromExpr = "4 x + 3 = x - 2 AND 4 x + 3 >= 0"
+                        toExpr = "Contradiction[x : SetSolution[x : {-[5 / 3]}] AND SetSolution[x : [ -[3 / 4], /infinity/ )]]"
                         explanation {
-                            key = EquationsExplanation.SolveEquationInOneVariable
+                            key = EquationsExplanation.SolveEquation
                         }
-                        toExpr = "Contradiction[x : SetSolution[x : {-[5 / 3]}] GIVEN SetSolution[x : [ -[3 / 4], /infinity/ )]]"
                     }
                 }
 
                 task {
                     taskId = "#2"
-                    startExpr = "-(4 x + 3) = x - 2 GIVEN 4 x + 3 < 0"
+                    startExpr = "-(4 x + 3) = x - 2 AND 4 x + 3 < 0"
                     explanation {
                         key = EquationsExplanation.SolveEquationInEquationUnion
                     }
 
                     step {
-                        fromExpr = "-(4 x + 3) = x - 2 GIVEN 4 x + 3 < 0"
+                        fromExpr = "-(4 x + 3) = x - 2 AND 4 x + 3 < 0"
+                        toExpr = "Contradiction[x : SetSolution[x : {-[1 / 5]}] AND SetSolution[x : ( -/infinity/, -[3 / 4] )]]"
                         explanation {
-                            key = EquationsExplanation.SolveEquationInOneVariable
+                            key = EquationsExplanation.SolveEquation
                         }
-                        toExpr = "Contradiction[x : SetSolution[x : {-[1 / 5]}] GIVEN SetSolution[x : ( -/infinity/, -[3 / 4] )]]"
                     }
                 }
 
@@ -466,27 +472,31 @@ class EquationsWithOneAbsoluteValueTest {
 
     @Test
     fun `linear modulus with quadratic on other side`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "2 * abs[x] - [x ^ 2] = 1"
+
         check {
             fromExpr = "2 * abs[x] - [x ^ 2] = 1"
+            toExpr = "SetSolution[x : {-1, 1}]"
             explanation {
                 key = EquationsExplanation.SolveEquationWithOneAbsoluteValue
             }
-            toExpr = "SetSolution[x : {-1, 1}]"
+
             step {
                 fromExpr = "2 * abs[x] - [x ^ 2] = 1"
+                toExpr = "2 * abs[x] = 1 + [x ^ 2]"
                 explanation {
                     key = EquationsExplanation.IsolateAbsoluteValue
                 }
-                toExpr = "2 * abs[x] = 1 + [x ^ 2]"
+
                 step {
                     fromExpr = "2 * abs[x] - [x ^ 2] = 1"
+                    toExpr = "2 * abs[x] - [x ^ 2] + [x ^ 2] = 1 + [x ^ 2]"
                     explanation {
                         key = methods.solvable.EquationsExplanation.MoveTermsNotContainingModulusToTheRight
                     }
-                    toExpr = "2 * abs[x] - [x ^ 2] + [x ^ 2] = 1 + [x ^ 2]"
                 }
+
                 step {
                     fromExpr = "2 * abs[x] - [x ^ 2] + [x ^ 2] = 1 + [x ^ 2]"
                     explanation {
@@ -495,46 +505,48 @@ class EquationsWithOneAbsoluteValueTest {
                     toExpr = "2 * abs[x] = 1 + [x ^ 2]"
                 }
             }
+
             step {
                 fromExpr = "2 * abs[x] = 1 + [x ^ 2]"
-                toExpr = "2 x = 1 + [x ^ 2] GIVEN x >= 0 OR -2 x = 1 + [x ^ 2] GIVEN x < 0"
+                toExpr = "2 x = 1 + [x ^ 2] AND x >= 0 OR -2 x = 1 + [x ^ 2] AND x < 0"
             }
+
             step {
-                fromExpr = "2 x = 1 + [x ^ 2] GIVEN x >= 0 OR -2 x = 1 + [x ^ 2] GIVEN x < 0"
+                fromExpr = "2 x = 1 + [x ^ 2] AND x >= 0 OR -2 x = 1 + [x ^ 2] AND x < 0"
+                toExpr = "SetSolution[x : {-1, 1}]"
                 explanation {
                     key = EquationsExplanation.SolveEquationUnion
                 }
-                toExpr = "SetSolution[x : {-1, 1}]"
 
                 task {
                     taskId = "#1"
-                    startExpr = "2 x = 1 + [x ^ 2] GIVEN x >= 0"
+                    startExpr = "2 x = 1 + [x ^ 2] AND x >= 0"
                     explanation {
                         key = EquationsExplanation.SolveEquationInEquationUnion
                     }
 
                     step {
-                        fromExpr = "2 x = 1 + [x ^ 2] GIVEN x >= 0"
-                        explanation {
-                            key = EquationsExplanation.SolveEquationInOneVariable
-                        }
+                        fromExpr = "2 x = 1 + [x ^ 2] AND x >= 0"
                         toExpr = "SetSolution[x : {1}]"
+                        explanation {
+                            key = EquationsExplanation.SolveEquation
+                        }
                     }
                 }
 
                 task {
                     taskId = "#2"
-                    startExpr = "-2 x = 1 + [x ^ 2] GIVEN x < 0"
+                    startExpr = "-2 x = 1 + [x ^ 2] AND x < 0"
                     explanation {
                         key = EquationsExplanation.SolveEquationInEquationUnion
                     }
 
                     step {
-                        fromExpr = "-2 x = 1 + [x ^ 2] GIVEN x < 0"
-                        explanation {
-                            key = EquationsExplanation.SolveEquationInOneVariable
-                        }
+                        fromExpr = "-2 x = 1 + [x ^ 2] AND x < 0"
                         toExpr = "SetSolution[x : {-1}]"
+                        explanation {
+                            key = EquationsExplanation.SolveEquation
+                        }
                     }
                 }
 
@@ -551,54 +563,57 @@ class EquationsWithOneAbsoluteValueTest {
 
     @Test
     fun `quadratic modulus with x on other side`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "abs[[x ^ 2] - 1] = x"
+
         check {
             fromExpr = "abs[[x ^ 2] - 1] = x"
+            toExpr = "SetSolution[x : {[-1 + sqrt[5] / 2], [1 + sqrt[5] / 2]}]"
             explanation {
                 key = EquationsExplanation.SolveEquationWithOneAbsoluteValue
             }
-            toExpr = "SetSolution[x : {[-1 + sqrt[5] / 2], [1 + sqrt[5] / 2]}]"
+
             step {
                 fromExpr = "abs[[x ^ 2] - 1] = x"
-                toExpr = "[x ^ 2] - 1 = x GIVEN [x ^ 2] - 1 >= 0 OR -([x ^ 2] - 1) = x GIVEN [x ^ 2] - 1 < 0"
+                toExpr = "[x ^ 2] - 1 = x AND [x ^ 2] - 1 >= 0 OR -([x ^ 2] - 1) = x AND [x ^ 2] - 1 < 0"
             }
+
             step {
-                fromExpr = "[x ^ 2] - 1 = x GIVEN [x ^ 2] - 1 >= 0 OR -([x ^ 2] - 1) = x GIVEN [x ^ 2] - 1 < 0"
+                fromExpr = "[x ^ 2] - 1 = x AND [x ^ 2] - 1 >= 0 OR -([x ^ 2] - 1) = x AND [x ^ 2] - 1 < 0"
+                toExpr = "SetSolution[x : {[-1 + sqrt[5] / 2], [1 + sqrt[5] / 2]}]"
                 explanation {
                     key = EquationsExplanation.SolveEquationUnion
                 }
-                toExpr = "SetSolution[x : {[-1 + sqrt[5] / 2], [1 + sqrt[5] / 2]}]"
 
                 task {
                     taskId = "#1"
-                    startExpr = "[x ^ 2] - 1 = x GIVEN [x ^ 2] - 1 >= 0"
+                    startExpr = "[x ^ 2] - 1 = x AND [x ^ 2] - 1 >= 0"
                     explanation {
                         key = EquationsExplanation.SolveEquationInEquationUnion
                     }
 
                     step {
-                        fromExpr = "[x ^ 2] - 1 = x GIVEN [x ^ 2] - 1 >= 0"
-                        explanation {
-                            key = EquationsExplanation.SolveEquationInOneVariable
-                        }
+                        fromExpr = "[x ^ 2] - 1 = x AND [x ^ 2] - 1 >= 0"
                         toExpr = "SetSolution[x : {[1 + sqrt[5] / 2]}]"
+                        explanation {
+                            key = EquationsExplanation.SolveEquation
+                        }
                     }
                 }
 
                 task {
                     taskId = "#2"
-                    startExpr = "-([x ^ 2] - 1) = x GIVEN [x ^ 2] - 1 < 0"
+                    startExpr = "-([x ^ 2] - 1) = x AND [x ^ 2] - 1 < 0"
                     explanation {
                         key = EquationsExplanation.SolveEquationInEquationUnion
                     }
 
                     step {
-                        fromExpr = "-([x ^ 2] - 1) = x GIVEN [x ^ 2] - 1 < 0"
-                        explanation {
-                            key = EquationsExplanation.SolveEquationInOneVariable
-                        }
+                        fromExpr = "-([x ^ 2] - 1) = x AND [x ^ 2] - 1 < 0"
                         toExpr = "SetSolution[x : {[-1 + sqrt[5] / 2]}]"
+                        explanation {
+                            key = EquationsExplanation.SolveEquation
+                        }
                     }
                 }
 
@@ -615,9 +630,8 @@ class EquationsWithOneAbsoluteValueTest {
 
     @Test
     fun `test US method for linear equation with 2 solutions`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         context = context.copy(curriculum = Curriculum.US)
-
         inputExpr = "abs[2 x - 1] = x + 5"
 
         check {
@@ -708,12 +722,13 @@ class EquationsWithOneAbsoluteValueTest {
 
     @Test
     fun `test US method for linear equation with no solution`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         context = context.copy(curriculum = Curriculum.US)
         inputExpr = "abs[2 x + 5] = x"
+
         check {
             fromExpr = "abs[2 x + 5] = x"
-            toExpr = "Contradiction[x : SetSolution[x : {-5, -[5 / 3]}] GIVEN abs[2 x + 5] = x]"
+            toExpr = "Contradiction[x : SetSolution[x : {-5, -[5 / 3]}] AND abs[2 x + 5] = x]"
             explanation {
                 key = EquationsExplanation.SolveEquationWithOneAbsoluteValueBySubstitution
             }
@@ -773,7 +788,7 @@ class EquationsWithOneAbsoluteValueTest {
 
             task {
                 taskId = "#4"
-                startExpr = "Contradiction[x : SetSolution[x : {-5, -[5 / 3]}] GIVEN abs[2 x + 5] = x]"
+                startExpr = "Contradiction[x : SetSolution[x : {-5, -[5 / 3]}] AND abs[2 x + 5] = x]"
                 explanation {
                     key = EquationsExplanation.NoSolutionSatisfiesConstraint
                 }

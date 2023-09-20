@@ -89,7 +89,7 @@ enum class InequationsPlans(override val runner: CompositeMethod) : RunnerMethod
                 val equationSolutionTask = task(
                     startExpr = equationOf(get(lhs), get(rhs)),
                     explanation = metadata(Explanation.SolveEquationCorrespondingToInequation),
-                    stepsProducer = EquationsPlans.SolveEquationInOneVariable,
+                    stepsProducer = EquationsPlans.SolveEquation,
                 ) ?: return@tasks null
 
                 val solution = when (val result = equationSolutionTask.result) {

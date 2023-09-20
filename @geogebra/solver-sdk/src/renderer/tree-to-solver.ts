@@ -69,17 +69,13 @@ export function treeToSolver(n: ExpressionTree): string {
     case 'Inequation':
       return dec(`${rec(n.args[0])} != ${rec(n.args[1])}`);
     case 'EquationSystem':
-      return dec(n.args.map((el) => rec(el)).join(', '));
-    case 'InequalitySystem':
-      return dec(n.args.map((el) => rec(el)).join(', '));
+      return dec(n.args.map((el) => rec(el)).join(' AND '));
     case 'AddEquations':
       return dec(n.args.map((el) => rec(el)).join(' /+/ '));
     case 'SubtractEquations':
       return dec(n.args.map((el) => rec(el)).join(' /-/ '));
     case 'EquationUnion':
       return dec(n.args.map((el) => rec(el)).join(' OR '));
-    case 'StatementWithConstraint':
-      return dec(`${rec(n.args[0])} GIVEN ${rec(n.args[1])}`);
     case 'Undefined':
       return dec('/undefined/');
     case 'Infinity':

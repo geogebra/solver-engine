@@ -22,7 +22,7 @@ class CompletingTheSquareStrategyTest {
     private val completingTheSquarePlan = CompletingTheSquare.getPlan()
 
     private fun shortTest(inputExpr: String, toExpr: String?) = testMethod {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         context = completingTheSquareContext
         this.inputExpr = inputExpr
 
@@ -40,7 +40,7 @@ class CompletingTheSquareStrategyTest {
 
     private fun testCompletingTheSquare(init: MethodTestCase.() -> Unit) {
         val testCase = MethodTestCase()
-        testCase.method = EquationsPlans.SolveEquationInOneVariable
+        testCase.method = EquationsPlans.SolveEquation
         testCase.context = completingTheSquareContext
         testCase.init()
     }

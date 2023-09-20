@@ -190,7 +190,7 @@ private fun Expression.containsVariableDenominator(context: Context): Boolean {
 }
 
 internal val solveRationalEquation = taskSet {
-    explanation = Explanation.SolveEquationInOneVariable
+    explanation = Explanation.SolveEquation
     pattern = condition { it is Equation && it.containsVariableDenominator(this) }
 
     tasks {
@@ -217,8 +217,8 @@ internal val solveRationalEquation = taskSet {
 
         val solvePolynomialEquation = task(
             startExpr = simplifyToPolynomialExpression,
-            explanation = metadata(Explanation.SolveEquationInOneVariable),
-            stepsProducer = EquationsPlans.SolveEquationInOneVariable,
+            explanation = metadata(Explanation.SolveEquation),
+            stepsProducer = EquationsPlans.SolveEquation,
         ) ?: return@tasks null
 
         val solution = solvePolynomialEquation.result

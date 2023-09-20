@@ -64,14 +64,14 @@ class PartialExpressionPlan(
             )
 
             val firstChildIndex = pattern.getMatchedOrigins(match).minOf { (it as Child).index }
-            val steps = stepsProducer.produceSteps(ctx, builder.lastSub.nthChild(firstChildIndex))
+            val steps = stepsProducer.produceSteps(ctx, builder.simpleExpression.nthChild(firstChildIndex))
 
             if (steps != null) {
                 builder.addSteps(steps)
 
                 return Transformation(
                     fromExpr = sub,
-                    toExpr = builder.lastSub,
+                    toExpr = builder.expression,
                     steps = builder.getFinalSteps(),
                     explanation = explanationMaker.make(ctx, sub, match),
                     skills = skillMakers.map { it.make(ctx, sub, match) },

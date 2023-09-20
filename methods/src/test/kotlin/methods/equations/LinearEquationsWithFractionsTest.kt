@@ -8,7 +8,7 @@ class LinearEquationsWithFractionsTest {
 
     @Test
     fun `test multiplying through by the LCD in linear equations`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "[x - 14 / 12] - [2 x - 1 / 18] = [2 / 9] (2 x - 5)"
 
         check {
@@ -70,7 +70,7 @@ class LinearEquationsWithFractionsTest {
 
     @Test
     fun `test consistently multiply equation by the LCD 1`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "[x / 2] + [11 / 3] = 0"
 
         check {
@@ -116,7 +116,7 @@ class LinearEquationsWithFractionsTest {
 
     @Test
     fun `test consistently multiply equation by the LCD 2`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "[1 / 2]x + [11 / 3] = 0"
 
         check {
@@ -162,7 +162,7 @@ class LinearEquationsWithFractionsTest {
 
     @Test
     fun `test no multiplication by the lcd when the equation has to be expanded first`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "180 ([x - 14 / 12] - [2 x - 1 / 10]) = 1"
 
         check {

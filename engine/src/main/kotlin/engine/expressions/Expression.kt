@@ -23,7 +23,6 @@ import engine.operators.SetOperators
 import engine.operators.SolutionOperator
 import engine.operators.StatementSystemOperator
 import engine.operators.StatementUnionOperator
-import engine.operators.StatementWithConstraintOperator
 import engine.operators.SumOperator
 import engine.operators.UnaryExpressionOperator
 import engine.operators.VariableListOperator
@@ -676,7 +675,7 @@ private fun expressionOf(
             operands[2],
             meta,
         )
-        StatementWithConstraintOperator -> StatementWithConstraint(operands[0], operands[1], meta)
+        ExpressionWithConstraintOperator -> ExpressionWithConstraint(operands[0], operands[1], meta)
         StatementUnionOperator -> StatementUnion(operands, meta)
 
         StatementSystemOperator -> StatementSystem(operands, meta)

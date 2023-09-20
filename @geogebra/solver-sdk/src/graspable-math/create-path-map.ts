@@ -212,7 +212,6 @@ function annotate(
       annotate(gmTree.children[2], tree.args[1], map);
       break;
     case 'EquationSystem':
-    case 'InequalitySystem':
     case 'MixedNumber':
     case 'Name':
     case 'Undefined':
@@ -222,7 +221,6 @@ function annotate(
     case 'SubtractEquations':
     case 'EquationUnion':
     case 'ExpressionWithConstraint':
-    case 'StatementWithConstraint':
     case 'Solution':
     case 'Identity':
     case 'Contradiction':

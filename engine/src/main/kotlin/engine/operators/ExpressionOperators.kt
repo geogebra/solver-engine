@@ -457,10 +457,7 @@ internal object ExpressionWithConstraintOperator : BinaryOperator, StatementOper
 
     override val precedence = EXPRESSION_WITH_CONSTRAINT_PRECEDENCE
 
-    override fun leftChildAllowed(op: Operator): Boolean {
-        require(op.kind == OperatorKind.EXPRESSION)
-        return true
-    }
+    override fun leftChildAllowed(op: Operator) = true
 
     override fun rightChildAllowed(op: Operator): Boolean {
         require(op.kind == OperatorKind.STATEMENT)

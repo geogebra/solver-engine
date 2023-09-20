@@ -22,14 +22,22 @@ export function isInvisibleChangeStep(transformation: Transformation): boolean {
   );
 }
 
-export const isCosmeticTransformation = (transformation: Transformation): boolean => {
+export const isPedanticTransformation = (transformation: Transformation): boolean => {
   if (!transformation.steps || !transformation.steps.length) {
-    return isCosmeticStep(transformation);
+    return isPedanticStep(transformation);
   }
 
   // Needs the cast because of a bug in Typescript lmao
   // Strangely it is not needed for `some`
   // Remove when they have fixed this problem
+  return (transformation.steps as Transformation[]).every(isPedanticTransformation);
+};
+
+export const isCosmeticTransformation = (transformation: Transformation): boolean => {
+  if (!transformation.steps || !transformation.steps.length) {
+    return isCosmeticStep(transformation);
+  }
+
   return (transformation.steps as Transformation[]).every(isCosmeticTransformation);
 };
 

@@ -202,8 +202,6 @@ class GeneralRulesTest {
         testRule("[0 / 3 * (sqrt[2] - 1)]", SimplifyZeroNumeratorFractionToZero, "0")
         testRule("[0 / 1 - 1]", SimplifyZeroNumeratorFractionToZero, null)
 
-        testRule("[0 / sqrt[2] + sqrt[2]]", SimplifyZeroNumeratorFractionToZero, null)
-
         testMethod {
             method = SimplifyZeroNumeratorFractionToZero
             inputExpr = "[0 / 2]"

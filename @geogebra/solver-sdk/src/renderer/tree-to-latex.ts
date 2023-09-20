@@ -328,16 +328,6 @@ function treeToLatexInner(
         );
       }
     }
-    case 'InequalitySystem': {
-      const alignSetting = { ...s, align: true };
-      return tfd(
-        '\\left\\{\\begin{array}{rcl}\n' +
-          n.args
-            .map((el) => '  ' + treeToLatexInner(el, n, alignSetting, t) + '\\\\\n')
-            .join('') +
-          '\\end{array}\\right.',
-      );
-    }
     case 'AddEquations':
     case 'SubtractEquations': {
       const alignSetting = { ...s, align: true };
@@ -357,16 +347,6 @@ function treeToLatexInner(
       const alignSetting = { ...s, align: false };
       return tfd(
         n.args.map((el) => treeToLatexInner(el, n, alignSetting, t)).join('\\text{ or }'),
-      );
-    }
-    case 'StatementWithConstraint': {
-      const alignSetting = { ...s, align: false };
-      return tfd(
-        '\\left\\{\\begin{array}{l}\n' +
-          n.args
-            .map((el) => '  ' + treeToLatexInner(el, n, alignSetting, t) + '\\\\\n')
-            .join('') +
-          '\\end{array}\\right.',
       );
     }
     case 'Undefined':

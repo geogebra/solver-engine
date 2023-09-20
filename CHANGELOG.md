@@ -25,6 +25,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Performance improvement via context-local caching of plans, adding guards to some methods and deduplicating the use of
   deeply (PLUT-677)
 - Tools for profiling performance of queries, see [docs/profiling.md](docs/profiling.md) for details (PLUT-677)
+- Equation solving has been extended to support multivariate linear equations (PLUT-672)
 
 ### Fixed
 
@@ -59,7 +60,8 @@ contents to a new release section (e.g. _[0.x]_).
   solved using completing the square (PLUT-641)
 - SDK: simplified logic of `solverPathToGmNodes` method (SP-216)
 - SDK: simplified logic of `substituteTree` to always use the substitute's decorators (SP-216)
-- refactored and expanded the gm-action tests (SP-216)
+- Refactored and expanded the gm-action tests (SP-216)
+- The `SolveEquationInOneVariable` plan has been renamed to `SolveEquation` (PLUT-672)
 
 ### Removed
 
