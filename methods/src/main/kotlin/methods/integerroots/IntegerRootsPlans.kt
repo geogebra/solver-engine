@@ -217,7 +217,7 @@ val cancelRootOfPower = steps {
         option {
             optionally {
                 check { it is SquareRoot || it is Root }
-                applyTo(IntegerArithmeticRules.SimplifyEvenPowerOfNegative) { it.firstChild }
+                applyTo(GeneralRules.SimplifyEvenPowerOfNegative) { it.firstChild }
             }
             apply(IntegerRootsRules.SimplifyNthRootOfNthPower)
         }
@@ -228,7 +228,7 @@ val cancelRootOfPower = steps {
 
                 steps {
                     optionally {
-                        applyTo(IntegerArithmeticRules.SimplifyEvenPowerOfNegative) { it.firstChild }
+                        applyTo(GeneralRules.SimplifyEvenPowerOfNegative) { it.firstChild }
                     }
                     optionally(GeneralRules.RewritePowerUnderRoot)
                     apply(GeneralRules.CancelRootIndexAndExponent)

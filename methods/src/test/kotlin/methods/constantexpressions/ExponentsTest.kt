@@ -5,9 +5,126 @@ import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.general.GeneralExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
 import methods.integerrationalexponents.IntegerRationalExponentsExplanation
+import methods.integerroots.IntegerRootsExplanation
 import org.junit.jupiter.api.Test
 
 class ExponentsTest {
+
+    @Test
+    fun `test simplify -ve constant base to even power`() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "[(-sqrt[2])^6]"
+
+        check {
+            fromExpr = "[(-sqrt[2]) ^ 6]"
+            toExpr = "8"
+            explanation {
+                key = ConstantExpressionsExplanation.SimplifyConstantExpression
+            }
+
+            step {
+                fromExpr = "[(-sqrt[2]) ^ 6]"
+                toExpr = "[2 ^ 3]"
+                explanation {
+                    key = ConstantExpressionsExplanation.SimplifyRootsInExpression
+                }
+
+                step {
+                    fromExpr = "[(-sqrt[2]) ^ 6]"
+                    toExpr = "[(sqrt[2]) ^ 6]"
+                    explanation {
+                        key = GeneralExplanation.SimplifyEvenPowerOfNegative
+                    }
+                }
+
+                step {
+                    fromExpr = "[(sqrt[2]) ^ 6]"
+                    toExpr = "[2 ^ 3]"
+                    explanation {
+                        key = IntegerRootsExplanation.CancelPowerOfARoot
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "[2 ^ 3]"
+                toExpr = "8"
+                explanation {
+                    key = IntegerArithmeticExplanation.EvaluateIntegerPowerDirectly
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test simplify -ve constant base to odd power`() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "[(-2 sqrt[2])^3]"
+
+        check {
+            fromExpr = "[(-2 sqrt[2]) ^ 3]"
+            toExpr = "-16 sqrt[2]"
+            explanation {
+                key = ConstantExpressionsExplanation.SimplifyConstantExpression
+            }
+
+            step {
+                fromExpr = "[(-2 sqrt[2]) ^ 3]"
+                toExpr = "-8 * 2 sqrt[2]"
+                explanation {
+                    key = ConstantExpressionsExplanation.SimplifyPowerOfProduct
+                }
+
+                step {
+                    fromExpr = "[(-2 sqrt[2]) ^ 3]"
+                    toExpr = "-[(2 sqrt[2]) ^ 3]"
+                    explanation {
+                        key = GeneralExplanation.SimplifyOddPowerOfNegative
+                    }
+                }
+
+                step {
+                    fromExpr = "-[(2 sqrt[2]) ^ 3]"
+                    toExpr = "-[2 ^ 3] [(sqrt[2]) ^ 3]"
+                    explanation {
+                        key = GeneralExplanation.DistributePowerOfProduct
+                    }
+                }
+
+                step {
+                    fromExpr = "-[2 ^ 3] [(sqrt[2]) ^ 3]"
+                    toExpr = "-8 [(sqrt[2]) ^ 3]"
+                    explanation {
+                        key = ConstantExpressionsExplanation.SimplifyPowerOfInteger
+                    }
+                }
+
+                step {
+                    fromExpr = "-8 [(sqrt[2]) ^ 3]"
+                    toExpr = "-8 sqrt[[2 ^ 3]]"
+                    explanation {
+                        key = ConstantExpressionsExplanation.SimplifyRootsInExpression
+                    }
+                }
+
+                step {
+                    fromExpr = "-8 sqrt[[2 ^ 3]]"
+                    toExpr = "-8 * 2 sqrt[2]"
+                    explanation {
+                        key = IntegerRootsExplanation.SplitRootsAndCancelRootsOfPowers
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "-8 * 2 sqrt[2]"
+                toExpr = "-16 sqrt[2]"
+                explanation {
+                    key = IntegerArithmeticExplanation.EvaluateIntegerProduct
+                }
+            }
+        }
+    }
 
     @Test
     fun testNegativeExponentsOfIntegers() = testMethod {

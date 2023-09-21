@@ -94,6 +94,10 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     EvaluateZeroToAPositivePower(evaluateZeroToAPositivePower),
     CancelAdditiveInverseElements(cancelAdditiveInverseElements),
 
+    // Powers
+    SimplifyEvenPowerOfNegative(simplifyEvenPowerOfNegative),
+    SimplifyOddPowerOfNegative(simplifyOddPowerOfNegative),
+
     // Products of powers
     RewriteProductOfPowersWithSameBase(rewriteProductOfPowersWithSameBase),
     RewriteProductOfPowersWithSameExponent(rewriteProductOfPowersWithSameExponent),
@@ -643,6 +647,44 @@ private val cancelAdditiveInverseElements =
             )
         }
     }
+
+private val simplifyEvenPowerOfNegative = rule {
+    val positiveBase = AnyPattern()
+    val base = negOf(positiveBase)
+    val exponent = integerCondition(SignedIntegerPattern()) { it.isEven() }
+    val power = powerOf(base, exponent)
+
+    onPattern(power) {
+        ruleResult(
+            toExpr = cancel(
+                mapOf(
+                    base to listOf(PathScope.Operator),
+                    exponent to listOf(PathScope.Expression),
+                ),
+                powerOf(get(positiveBase), get(exponent)),
+            ),
+            gmAction = tapOp(base),
+            explanation = metadata(Explanation.SimplifyEvenPowerOfNegative),
+        )
+    }
+}
+
+private val simplifyOddPowerOfNegative = rule {
+    val positiveBase = AnyPattern()
+    val base = negOf(positiveBase)
+    val exponent = integerCondition(SignedIntegerPattern()) { it.isOdd() }
+    val power = powerOf(base, exponent)
+
+    onPattern(power) {
+        ruleResult(
+            // transform is a better path mapping that using "moveUnaryOperator" on "neg"
+            // and "move" on "exponent", since that would be two separate "move"'s (instead of single one)
+            toExpr = transform(power, negOf(powerOf(get(positiveBase), get(exponent)))),
+            gmAction = drag(exponent, positiveBase),
+            explanation = metadata(Explanation.SimplifyOddPowerOfNegative),
+        )
+    }
+}
 
 private val rewriteProductOfPowersWithSameBase =
     rule {

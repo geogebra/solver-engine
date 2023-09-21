@@ -5,8 +5,6 @@ import engine.methods.testRule
 import methods.integerarithmetic.IntegerArithmeticRules.EvaluateIntegerPowerDirectly
 import methods.integerarithmetic.IntegerArithmeticRules.EvaluateIntegerProductAndDivision
 import methods.integerarithmetic.IntegerArithmeticRules.EvaluateSignedIntegerAddition
-import methods.integerarithmetic.IntegerArithmeticRules.SimplifyEvenPowerOfNegative
-import methods.integerarithmetic.IntegerArithmeticRules.SimplifyOddPowerOfNegative
 import org.junit.jupiter.api.Test
 import engine.methods.SerializedGmAction as GmAction
 
@@ -84,14 +82,5 @@ class IntegerArithmeticRulesTest {
     fun testEvaluateIntegerPowerDirectly() {
         testRule("[5^3]", EvaluateIntegerPowerDirectly, "125", GmAction("Tap", "./1"))
         testRule("[(-5) ^ 3]", EvaluateIntegerPowerDirectly, "-125")
-    }
-
-    @Test
-    fun testSimplifyPowerOfNegative() {
-        testRule("[(-2)^4]", SimplifyEvenPowerOfNegative, "[2^4]", GmAction("Tap", "./0:op"))
-        testRule("[(-x)^6]", SimplifyEvenPowerOfNegative, "[x^6]")
-        testRule("[(-2)^5]", SimplifyOddPowerOfNegative, "-[2^5]", GmAction("Drag", "./1", "./0/0"))
-        testRule("[(-x)^7]", SimplifyOddPowerOfNegative, "-[x^7]")
-        testRule("[(-[1 / 2]) ^ 3]", SimplifyOddPowerOfNegative, "-[([1 / 2]) ^ 3]")
     }
 }

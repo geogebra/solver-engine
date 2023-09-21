@@ -23,7 +23,9 @@ import methods.general.GeneralRules.RewriteProductOfPowersWithNegatedExponent
 import methods.general.GeneralRules.RewriteProductOfPowersWithSameBase
 import methods.general.GeneralRules.RewriteProductOfPowersWithSameExponent
 import methods.general.GeneralRules.SimplifyDoubleMinus
+import methods.general.GeneralRules.SimplifyEvenPowerOfNegative
 import methods.general.GeneralRules.SimplifyExpressionToThePowerOfOne
+import methods.general.GeneralRules.SimplifyOddPowerOfNegative
 import methods.general.GeneralRules.SimplifyProductWithTwoNegativeFactors
 import methods.general.GeneralRules.SimplifyUnitFractionToOne
 import methods.general.GeneralRules.SimplifyZeroDenominatorFractionToUndefined
@@ -452,6 +454,35 @@ class GeneralRulesTest {
                 cancel("./0", "./0:outerOp", "./2/0", "./2/0:outerOp")
             }
         }
+    }
+
+    @Test
+    fun testSimplifyPowerOfNegative() {
+        testMethod {
+            method = SimplifyEvenPowerOfNegative
+            inputExpr = "[(-2)^4]"
+
+            check {
+                toExpr = "[2^4]"
+                shift("./0/0", "./0")
+                shift("./1", "./1")
+                cancel("./0:op", "./1")
+            }
+        }
+        testRule("[(-x)^6]", SimplifyEvenPowerOfNegative, "[x^6]")
+
+        testMethod {
+            method = SimplifyOddPowerOfNegative
+            inputExpr = "[(-2)^5]"
+
+            check {
+                toExpr = "-[2^5]"
+
+                transform(".", ".")
+            }
+        }
+        testRule("[(-x)^7]", SimplifyOddPowerOfNegative, "-[x^7]", GmAction("Drag", "./1", "./0/0"))
+        testRule("[(-[1 / 2]) ^ 3]", SimplifyOddPowerOfNegative, "-[([1 / 2]) ^ 3]")
     }
 
     @Test

@@ -241,7 +241,7 @@ class SimplifyIntegerPowerUnderRoot {
                 fromExpr = "root[[(-2) ^ 4], 4]"
                 toExpr = "root[[2 ^ 4], 4]"
                 explanation {
-                    key = IntegerArithmeticExplanation.SimplifyEvenPowerOfNegative
+                    key = GeneralExplanation.SimplifyEvenPowerOfNegative
                 }
             }
 
@@ -271,7 +271,7 @@ class SimplifyIntegerPowerUnderRoot {
                 fromExpr = "root[[(-1) ^ 4], 4]"
                 toExpr = "root[[1 ^ 4], 4]"
                 explanation {
-                    key = IntegerArithmeticExplanation.SimplifyEvenPowerOfNegative
+                    key = GeneralExplanation.SimplifyEvenPowerOfNegative
                 }
             }
 

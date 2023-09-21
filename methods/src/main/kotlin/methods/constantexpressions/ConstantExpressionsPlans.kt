@@ -66,8 +66,8 @@ enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : Runn
             explanation = Explanation.SimplifyPowerOfInteger
 
             steps {
-                optionally(IntegerArithmeticRules.SimplifyEvenPowerOfNegative)
-                optionally(IntegerArithmeticRules.SimplifyOddPowerOfNegative)
+                optionally(GeneralRules.SimplifyEvenPowerOfNegative)
+                optionally(GeneralRules.SimplifyOddPowerOfNegative)
 
                 applyAfterMaybeExtractingMinus {
                     firstOf {
@@ -97,12 +97,12 @@ enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : Runn
 
     SimplifyPowerOfProduct(
         plan {
-            pattern = powerOf(productContaining(), AnyPattern())
+            pattern = powerOf(optionalNegOf(productContaining()), AnyPattern())
             explanation = Explanation.SimplifyPowerOfProduct
 
             steps {
-                optionally(IntegerArithmeticRules.SimplifyOddPowerOfNegative)
-                optionally(IntegerArithmeticRules.SimplifyEvenPowerOfNegative)
+                optionally(GeneralRules.SimplifyOddPowerOfNegative)
+                optionally(GeneralRules.SimplifyEvenPowerOfNegative)
 
                 applyAfterMaybeExtractingMinus {
                     apply(GeneralRules.DistributePowerOfProduct)
@@ -118,8 +118,8 @@ enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : Runn
             explanation = Explanation.SimplifyPowerOfFraction
 
             steps {
-                optionally(IntegerArithmeticRules.SimplifyOddPowerOfNegative)
-                optionally(IntegerArithmeticRules.SimplifyEvenPowerOfNegative)
+                optionally(GeneralRules.SimplifyOddPowerOfNegative)
+                optionally(GeneralRules.SimplifyEvenPowerOfNegative)
 
                 applyAfterMaybeExtractingMinus {
                     shortcut(FractionArithmeticRules.SimplifyFractionToMinusOne)
@@ -154,6 +154,8 @@ enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : Runn
             steps {
                 whilePossible {
                     firstOf {
+                        option { deeply(GeneralRules.SimplifyEvenPowerOfNegative) }
+                        option { deeply(GeneralRules.SimplifyOddPowerOfNegative) }
                         option { deeply(IntegerRootsPlans.SimplifyIntegerRootToInteger) }
                         option { deeply(IntegerRootsPlans.CancelPowerOfARoot) }
                         option { deeply(IntegerRootsPlans.SimplifyRootOfRootWithCoefficient) }

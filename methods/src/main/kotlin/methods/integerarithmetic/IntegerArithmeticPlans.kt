@@ -74,8 +74,8 @@ private enum class PrivateIntegerArithmeticPlans(override val runner: CompositeM
                         apply(EvaluateProductOfIntegers)
                     }
                     option {
-                        optionally(IntegerArithmeticRules.SimplifyEvenPowerOfNegative)
-                        optionally(IntegerArithmeticRules.SimplifyOddPowerOfNegative)
+                        optionally(GeneralRules.SimplifyEvenPowerOfNegative)
+                        optionally(GeneralRules.SimplifyOddPowerOfNegative)
                         apply(IntegerArithmeticRules.EvaluateIntegerPowerDirectly)
                     }
                 }

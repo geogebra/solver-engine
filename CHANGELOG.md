@@ -38,6 +38,7 @@ contents to a new release section (e.g. _[0.x]_).
 - SDK: fixed missing `:group` annotations in fractions for `createPathMap` (SP-216)
 - fixed gmActionInfo of several rules (e.g., select `+2` instead of `2` when dragging to add in `1+x+2`) (SP-216)
 - temporary fix for PartialBrackets + SmartProduct bug (SP-216, PLUT-684)
+- Simplification of -ve base root power be done by "SimplifyConstantExpression" (PLUT-682)
 
 ### Changed
 
