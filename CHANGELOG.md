@@ -63,6 +63,7 @@ contents to a new release section (e.g. _[0.x]_).
 - SDK: simplified logic of `substituteTree` to always use the substitute's decorators (SP-216)
 - Refactored and expanded the gm-action tests (SP-216)
 - The `SolveEquationInOneVariable` plan has been renamed to `SolveEquation` (PLUT-672)
+- SDK: made the type information of the return types of `applyPlan` and `selectPlans` more specific (PLUT-688)
 
 ### Removed
 
@@ -70,6 +71,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Removed support for old Json format from the engine (PLUT-629)
 - the `SolveRationalEquation` plan is no longer public (it has been rolled into `SolveEquationWithOneVariable` as part
   of PLUT-677)
+- SDK: Removed the `API_APPLY_PLAN_RESPONSE` and `API_SELECT_PLANS_RESPONSE` TS types (PLUT-688)
 
 ## [1.2] - 2023-07-18
 

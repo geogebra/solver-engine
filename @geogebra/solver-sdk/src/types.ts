@@ -1,4 +1,4 @@
-import { ExpressionDecorations, NestedExpressionType } from './parser';
+import { ExpressionTreeBase } from './parser';
 
 export type PlanId =
   | 'Equations.SolveLinearEquation'
@@ -48,22 +48,19 @@ export type API_VERSION_INFO_RESPONSE = {
 };
 
 export type API_PLANS_RESPONSE = PlanId[];
-export type API_APPLY_PLAN_RESPONSE = Transformation;
 export type API_STRATEGIES_RESPONSE = StrategyMap;
 
-type PlanSelectionBase<MathFormat> = {
-  transformation: TransformationBase<MathFormat>;
+type PlanSelectionBase<T> = {
+  transformation: T;
   metadata: {
     methodId: PlanId;
   };
 };
 
-export type PlanSelectionSolver = PlanSelectionBase<string>;
-export type PlanSelectionLatex = PlanSelectionBase<string>;
-export type PlanSelectionJson = PlanSelectionBase<MathJson>;
+export type PlanSelectionSolver = PlanSelectionBase<TransformationSolver>;
+export type PlanSelectionLatex = PlanSelectionBase<TransformationLatex>;
+export type PlanSelectionJson = PlanSelectionBase<TransformationJson>;
 export type PlanSelection = PlanSelectionSolver | PlanSelectionLatex | PlanSelectionJson;
-
-export type API_SELECT_PLANS_RESPONSE = PlanSelection[];
 
 export type PathMapping = {
   type:
@@ -82,30 +79,7 @@ export type PathMapping = {
 
 // This is how the `json` format is typed.
 // For a human-centric description of this format, see docs/expression-serialization.md
-export type MathJson = ExpressionDecorations &
-  (
-    | {
-        type: NestedExpressionType;
-        operands?: MathJson[];
-      }
-    | {
-        type: 'Undefined' | 'Infinity' | 'Reals' | 'Void';
-      }
-    | {
-        type: 'Integer' | 'Decimal' | 'RecurringDecimal' | 'Name';
-        value: string;
-      }
-    | {
-        type: 'Variable';
-        value: string;
-        subscript?: string;
-      }
-    | {
-        type: 'SmartProduct';
-        operands: MathJson[];
-        signs: boolean[];
-      }
-  );
+export type MathJson = ExpressionTreeBase<Record<never, never>>;
 
 export type GmAction = {
   type:

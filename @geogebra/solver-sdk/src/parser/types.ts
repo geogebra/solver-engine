@@ -52,7 +52,7 @@ export type NestedExpressionType =
 
 export type NestedExpressionBase<T> = {
   type: NestedExpressionType;
-  args: ExpressionTreeBase<T>[];
+  operands: ExpressionTreeBase<T>[];
 };
 
 export type NameExpression = {
@@ -83,7 +83,7 @@ export type VariableExpression = {
 
 export type SmartProductExpression<T> = {
   type: 'SmartProduct';
-  args: ExpressionTreeBase<T>[];
+  operands: ExpressionTreeBase<T>[];
   signs: boolean[];
 };
 

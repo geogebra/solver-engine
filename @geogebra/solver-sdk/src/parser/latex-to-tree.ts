@@ -25,7 +25,7 @@ const latexSymbolDefinitions = {
     // unary plus
     plus.nud = () => ({
       type: 'Plus',
-      args: [parser.expression(BP_UNARY_SIGN)],
+      operands: [parser.expression(BP_UNARY_SIGN)],
     });
     // binary plus - sum
     plus.led = getLedToExtendNary(parser, 'Sum');
@@ -35,7 +35,7 @@ const latexSymbolDefinitions = {
       // unary minus
       minus.nud = () => ({
         type: 'Minus',
-        args: [parser.expression(BP_UNARY_SIGN)],
+        operands: [parser.expression(BP_UNARY_SIGN)],
       });
       // binary plus - sum
       minus.led = getLedToExtendNary(parser, 'Sum', 'Minus');
@@ -46,7 +46,7 @@ const latexSymbolDefinitions = {
       // unary ±
       plusMinus.nud = () => ({
         type: 'PlusMinus',
-        args: [parser.expression(BP_UNARY_SIGN)],
+        operands: [parser.expression(BP_UNARY_SIGN)],
       });
       // binary plus - sum
       plusMinus.led = getLedToExtendNary(parser, 'Sum', 'PlusMinus');
@@ -78,13 +78,13 @@ const latexSymbolDefinitions = {
     num.led = getLedToExtendNary(parser, 'ImplicitProduct', undefined, (left, right) => {
       // Parse strings like "2 3/4" as mixed numbers
       if (left.type === 'Integer' && right.type === 'Fraction') {
-        const numerator = right.args[0];
-        const denominator = right.args[1];
+        const numerator = right.operands[0];
+        const denominator = right.operands[1];
         // A mixed number is comprized of 3 integers, only.
         if (numerator.type !== 'Integer' || denominator.type !== 'Integer') {
           return null;
         }
-        return { type: 'MixedNumber', args: [left, numerator, denominator] };
+        return { type: 'MixedNumber', operands: [left, numerator, denominator] };
       }
       return null;
     });
@@ -121,7 +121,7 @@ const latexSymbolDefinitions = {
     });
     parser.registerSymbol('\\emptyset', BP_IMPLICIT_MUL).nud = () => ({
       type: 'FiniteSet',
-      args: [],
+      operands: [],
     });
   },
 
@@ -129,7 +129,7 @@ const latexSymbolDefinitions = {
     const sol = parser.registerSymbol('\\in', BP_ELEMENT_OF_OPERATOR);
     sol.led = (left) => {
       const right = parser.expression(0);
-      return { type: 'Solution', args: [left, right] };
+      return { type: 'Solution', operands: [left, right] };
     };
   },
 
@@ -146,7 +146,7 @@ const latexSymbolDefinitions = {
       ['\\geq', 'GreaterThanEqual'],
     ] as const) {
       parser.registerSymbol(sym, BP_EQUALS).led = (left) => {
-        return { type, args: [left, parser.expression(BP_EQUALS)] };
+        return { type, operands: [left, parser.expression(BP_EQUALS)] };
       };
     }
   },
@@ -199,7 +199,7 @@ const latexSymbolDefinitions = {
     const nud = (): ExprTree => {
       const left = parser.expression(100);
       const right = parser.expression(100);
-      return { type: 'Fraction', args: [left, right] };
+      return { type: 'Fraction', operands: [left, right] };
     };
     const led = (first: ExprTree): ExprTree => {
       const left = parser.expression(100);
@@ -210,11 +210,11 @@ const latexSymbolDefinitions = {
         left.type === 'Integer' &&
         right.type === 'Integer'
       ) {
-        return { type: 'MixedNumber', args: [first, left, right] };
+        return { type: 'MixedNumber', operands: [first, left, right] };
       } else
         return {
           type: 'ImplicitProduct',
-          args: [first, { type: 'Fraction', args: [left, right] }],
+          operands: [first, { type: 'Fraction', operands: [left, right] }],
         };
     };
     const latexLabels = ['\\frac', '\\dfrac', '\\tfrac'];
@@ -236,7 +236,7 @@ const latexSymbolDefinitions = {
       if (!first.decorators?.length) delete first.decorators;
       right.decorators?.pop();
       if (!right.decorators?.length) delete right.decorators;
-      return { type: 'Fraction', args: [first, right] };
+      return { type: 'Fraction', operands: [first, right] };
     };
   },
 
@@ -244,7 +244,7 @@ const latexSymbolDefinitions = {
     const exp = parser.registerSymbol('^', BP_POWER);
     exp.led = function (left) {
       const right = parser.expression(BP_POWER - 1);
-      return { type: 'Power', args: [left, right] };
+      return { type: 'Power', operands: [left, right] };
     };
   },
 
@@ -257,11 +257,11 @@ const latexSymbolDefinitions = {
         const radicand = parser.expression(Infinity);
         return {
           type: 'Root',
-          args: [radicand, order],
+          operands: [radicand, order],
         };
       } else {
         const radicand = parser.expression(Infinity);
-        return { type: 'SquareRoot', args: [radicand] };
+        return { type: 'SquareRoot', operands: [radicand] };
       }
     };
     sqrt.led = sqrt.led = getLedToExtendNary(parser, 'ImplicitProduct');
@@ -308,7 +308,7 @@ const latexSymbolDefinitions = {
     absStart.nud = function () {
       return {
         type: 'AbsoluteValue',
-        args: [parser.balancedExpression('\\right|')],
+        operands: [parser.balancedExpression('\\right|')],
       };
     };
     absStart.led = getLedToExtendNary(parser, 'ImplicitProduct');
@@ -317,7 +317,7 @@ const latexSymbolDefinitions = {
     pipeSymbol.nud = function () {
       return {
         type: 'AbsoluteValue',
-        args: [parser.balancedExpression('|')],
+        operands: [parser.balancedExpression('|')],
       };
     };
     pipeSymbol.led = getLedToExtendNary(parser, 'ImplicitProduct');
@@ -355,7 +355,7 @@ function getLedToExtendNary(
       type === 'Sum' ? BP_SUM : type === 'ImplicitProduct' ? BP_IMPLICIT_MUL : BP_MUL;
     let right =
       type === 'ImplicitProduct' ? parser.expression(BP, this) : parser.expression(BP);
-    if (inverse) right = { type: inverse, args: [right] };
+    if (inverse) right = { type: inverse, operands: [right] };
     if (customLed) {
       const res = customLed(left, right);
       if (res) return res;
@@ -369,19 +369,21 @@ function getLedToExtendNary(
       right.decorators = ['MissingBracket'];
     }
     if (left.type === type && !left.decorators?.length) {
-      return { type, args: [...(left.args || []), right] };
+      return { type, operands: [...(left.operands || []), right] };
     } else {
-      return { type, args: [left, right] };
+      return { type, operands: [left, right] };
     }
   };
 }
 
 function addPathsToTree(tree: ExprTree, path = '.'): ExpressionTree {
-  return 'args' in tree
+  return 'operands' in tree
     ? {
         ...tree,
         path,
-        args: tree.args.map((arg, index) => addPathsToTree(arg, `${path}/${index}`)),
+        operands: tree.operands.map((arg, index) =>
+          addPathsToTree(arg, `${path}/${index}`),
+        ),
       }
     : { ...tree, path };
 }

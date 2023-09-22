@@ -43,13 +43,13 @@ describe('Paths Unit Tests', () => {
       expect(result).to.deep.equal({
         type: 'Product',
         path: '.',
-        args: [
+        operands: [
           { type: 'Variable', value: 'x', path: './0' },
           {
             type: 'Sum',
             decorators: ['RoundBracket'],
             path: './1',
-            args: [
+            operands: [
               { type: 'Integer', value: '1', path: './1/0' },
               { type: 'Integer', value: '5', path: './1/1' },
             ],
