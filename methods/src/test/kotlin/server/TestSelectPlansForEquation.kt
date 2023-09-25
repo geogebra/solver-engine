@@ -4,6 +4,7 @@
  */
 package server
 
+import methods.algebra.AlgebraPlans
 import methods.equations.EquationsPlans
 import org.junit.jupiter.api.Test
 
@@ -67,6 +68,18 @@ class TestSelectPlansForEquation {
             setOf(
                 EquationsPlans.SolveEquation,
                 EquationsPlans.SolveDecimalLinearEquation,
+            ),
+        )
+    }
+
+    @Test
+    fun `test rational equation compute domain and solve`() {
+        testSelectPlanApiInX(
+            "1 + [1 / x] = [2 / x]",
+            setOf(
+                // this plan probably shouldn't be executed
+                AlgebraPlans.ComputeDomainOfAlgebraicExpression,
+                EquationsPlans.SolveEquation,
             ),
         )
     }

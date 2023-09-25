@@ -8,7 +8,6 @@ import engine.expressions.Expression
 import engine.expressions.RecurringDecimalExpression
 import engine.expressions.StatementSystem
 import engine.expressions.StatementUnion
-import engine.expressions.isPolynomial
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
@@ -216,7 +215,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     SolveEquation(
         object : CompositeMethod() {
             override fun run(ctx: Context, sub: Expression): Transformation? {
-                if (sub is Equation && sub.lhs.isPolynomial() && sub.rhs.isPolynomial()) {
+                if (sub is Equation) {
                     val solutionVariable = ctx.solutionVariables.singleOrNull() ?: return null
 
                     if (sub.variables.contains(solutionVariable)) {
