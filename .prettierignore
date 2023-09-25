@@ -15,6 +15,7 @@
 !/solver-poker/**
 
 # Blacklist these
+Pipfile.lock
 node_modules
 /helm
 /@geogebra/**/dist

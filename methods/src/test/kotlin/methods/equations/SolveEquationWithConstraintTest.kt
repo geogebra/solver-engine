@@ -10,14 +10,15 @@ class SolveEquationWithConstraintTest {
 
     @Test
     fun `test no overall solutions`() = testMethodInX {
-        method = EquationsPlans.SolveEquationWithConstraint
-        inputExpr = "x + 1 = 0 GIVEN x > 0"
+        method = EquationsPlans.SolveEquationWithInequalityConstraint
+        inputExpr = "x + 1 = 0 AND x > 0"
+
         check {
-            fromExpr = "x + 1 = 0 GIVEN x > 0"
+            fromExpr = "x + 1 = 0 AND x > 0"
+            toExpr = "Contradiction[x: SetSolution[x: {-1}] AND SetSolution[x: ( 0, /infinity/ )]]"
             explanation {
-                key = EquationsExplanation.SolveEquationInOneVariable
+                key = EquationsExplanation.SolveEquation
             }
-            toExpr = "Contradiction[x: SetSolution[x: {-1}] GIVEN SetSolution[x: ( 0, /infinity/ )]]"
 
             task {
                 taskId = "#1"
@@ -28,10 +29,10 @@ class SolveEquationWithConstraintTest {
 
                 step {
                     fromExpr = "x > 0"
+                    toExpr = "SetSolution[x: ( 0, /infinity/ )]"
                     explanation {
                         key = InequalitiesExplanation.ExtractSolutionFromInequalityInSolvedForm
                     }
-                    toExpr = "SetSolution[x: ( 0, /infinity/ )]"
                 }
             }
 
@@ -44,16 +45,16 @@ class SolveEquationWithConstraintTest {
 
                 step {
                     fromExpr = "x + 1 = 0"
+                    toExpr = "SetSolution[x: {-1}]"
                     explanation {
                         key = EquationsExplanation.SolveLinearEquation
                     }
-                    toExpr = "SetSolution[x: {-1}]"
                 }
             }
 
             task {
                 taskId = "#3"
-                startExpr = "Contradiction[x: SetSolution[x: {-1}] GIVEN SetSolution[x: ( 0, /infinity/ )]]"
+                startExpr = "Contradiction[x: SetSolution[x: {-1}] AND SetSolution[x: ( 0, /infinity/ )]]"
                 explanation {
                     key = EquationsExplanation.NoSolutionSatisfiesConstraint
                 }
@@ -63,14 +64,15 @@ class SolveEquationWithConstraintTest {
 
     @Test
     fun `test one solution removed`() = testMethodInX {
-        method = EquationsPlans.SolveEquationWithConstraint
-        inputExpr = "[x ^ 2] = 4 GIVEN x + 1 < 0"
+        method = EquationsPlans.SolveEquationWithInequalityConstraint
+        inputExpr = "[x ^ 2] = 4 AND x + 1 < 0"
+
         check {
-            fromExpr = "[x ^ 2] = 4 GIVEN x + 1 < 0"
-            explanation {
-                key = EquationsExplanation.SolveEquationInOneVariable
-            }
+            fromExpr = "[x ^ 2] = 4 AND x + 1 < 0"
             toExpr = "SetSolution[x: {-2}]"
+            explanation {
+                key = EquationsExplanation.SolveEquation
+            }
 
             task {
                 taskId = "#1"
@@ -81,10 +83,10 @@ class SolveEquationWithConstraintTest {
 
                 step {
                     fromExpr = "x + 1 < 0"
+                    toExpr = "SetSolution[x: ( -/infinity/, -1 )]"
                     explanation {
                         key = InequalitiesExplanation.SolveLinearInequality
                     }
-                    toExpr = "SetSolution[x: ( -/infinity/, -1 )]"
                 }
             }
 
@@ -97,10 +99,10 @@ class SolveEquationWithConstraintTest {
 
                 step {
                     fromExpr = "[x ^ 2] = 4"
+                    toExpr = "SetSolution[x: {-2, 2}]"
                     explanation {
                         key = EquationsExplanation.SolveEquationUsingRootsMethod
                     }
-                    toExpr = "SetSolution[x: {-2, 2}]"
                 }
             }
 
@@ -116,13 +118,14 @@ class SolveEquationWithConstraintTest {
 
     @Test
     fun `test constraint remains an inequality`() = testMethodInX {
-        method = EquationsPlans.SolveEquationWithConstraint
-        inputExpr = "[x ^ 2] = 1 GIVEN [x ^ 2] < 0"
+        method = EquationsPlans.SolveEquationWithInequalityConstraint
+        inputExpr = "[x ^ 2] = 1 AND [x ^ 2] < 0"
+
         check {
-            fromExpr = "[x ^ 2] = 1 GIVEN [x ^ 2] < 0"
-            toExpr = "Contradiction[x: SetSolution[x: {-1, 1}] GIVEN [x ^ 2] < 0]"
+            fromExpr = "[x ^ 2] = 1 AND [x ^ 2] < 0"
+            toExpr = "Contradiction[x: SetSolution[x: {-1, 1}] AND [x ^ 2] < 0]"
             explanation {
-                key = EquationsExplanation.SolveEquationInOneVariable
+                key = EquationsExplanation.SolveEquation
             }
 
             task {
@@ -191,7 +194,7 @@ class SolveEquationWithConstraintTest {
 
             task {
                 taskId = "#4"
-                startExpr = "Contradiction[x: SetSolution[x: {-1, 1}] GIVEN [x ^ 2] < 0]"
+                startExpr = "Contradiction[x: SetSolution[x: {-1, 1}] AND [x ^ 2] < 0]"
                 explanation {
                     key = EquationsExplanation.NoSolutionSatisfiesConstraint
                 }

@@ -1,6 +1,7 @@
 package methods.equations
 
 import engine.steps.metadata.CategorisedMetadataKey
+import engine.steps.metadata.LegacyKeyName
 import engine.steps.metadata.TranslationKeys
 
 @TranslationKeys
@@ -332,9 +333,10 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     SolveQuadraticEquationUsingQuadraticFormula,
 
     /**
-     * Solve equation in one variable, trying to apply the most relevant method.
+     * Solve equation in a given variable, trying to apply the most relevant method.
      */
-    SolveEquationInOneVariable,
+    @LegacyKeyName("Equations.SolveEquationInOneVariable")
+    SolveEquation,
 
     /**
      * Determine whether an equation between constants is true or false.

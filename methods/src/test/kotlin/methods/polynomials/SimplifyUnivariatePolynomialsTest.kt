@@ -7,7 +7,6 @@ import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.fractionroots.FractionRootsExplanation
 import methods.general.GeneralExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
-import methods.integerroots.IntegerRootsExplanation
 import org.junit.jupiter.api.Test
 
 @Suppress("LargeClass")
@@ -678,8 +677,7 @@ class SimplifyUnivariatePolynomialsTest {
                 fromExpr = "2 [x ^ 2] + 4 [x ^ 2] - 6 [x ^ 2] + 3 * 10 - [([x ^ 2]) ^ 3] + x * x"
                 toExpr = "2 [x ^ 2] + 4 [x ^ 2] - 6 [x ^ 2] + 30 - [([x ^ 2]) ^ 3] + x * x"
                 explanation {
-                    // This is a strange explanation!
-                    key = IntegerRootsExplanation.SimplifyProductWithRoots
+                    key = IntegerArithmeticExplanation.SimplifyIntegersInProduct
                 }
             }
 

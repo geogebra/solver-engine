@@ -16,7 +16,7 @@ class QuadraticFormulaStrategyTest {
 
     private fun testQuadraticFormula(init: MethodTestCase.() -> Unit) {
         val testCase = MethodTestCase()
-        testCase.method = EquationsPlans.SolveEquationInOneVariable
+        testCase.method = EquationsPlans.SolveEquation
         testCase.context = Context(
             solutionVariables = listOf("x"),
             preferredStrategies = mapOf(strategyChoice(QuadraticFormula)),

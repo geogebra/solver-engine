@@ -5,7 +5,6 @@ import methods.expand.ExpandExplanation
 import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.general.GeneralExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
-import methods.integerroots.IntegerRootsExplanation
 import org.junit.jupiter.api.Test
 
 class AbsoluteValuesTest {
@@ -33,7 +32,7 @@ class AbsoluteValuesTest {
                     fromExpr = "abs[3 * 2 - 4]"
                     toExpr = "abs[6 - 4]"
                     explanation {
-                        key = IntegerRootsExplanation.SimplifyProductWithRoots
+                        key = IntegerArithmeticExplanation.SimplifyIntegersInProduct
                     }
                 }
 

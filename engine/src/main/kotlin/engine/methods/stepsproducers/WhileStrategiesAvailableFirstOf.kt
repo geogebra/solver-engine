@@ -69,23 +69,30 @@ internal class WhileStrategiesAvailableFirstOf<T : Strategy>(
 
         throw TooManyIterationsException(
             "WhileStrategies max iteration number ($MAX_WHILE_POSSIBLE_ITERATIONS) " +
-                "exceeded for expression ${builder.lastSub}",
+                "exceeded for expression ${builder.simpleExpression}",
         )
     }
 
     private fun makeTransformation(alternatives: List<Alternative>): Transformation {
         val mainAlternative = alternatives[0]
+        val secondaryAlternatives = if (alternatives.size > 1) {
+            alternatives.subList(1, alternatives.size)
+        } else {
+            null
+        }
+        if (mainAlternative.steps.size == 1) {
+            val mainStep = mainAlternative.steps[0]
+            if (mainStep.explanation?.key == mainAlternative.strategy.explanation) {
+                return mainStep.copy(alternatives = secondaryAlternatives)
+            }
+        }
         return Transformation(
             type = Transformation.Type.Plan,
             explanation = metadata(mainAlternative.strategy.explanation),
             fromExpr = mainAlternative.steps.first().fromExpr,
             toExpr = mainAlternative.steps.last().toExpr,
             steps = mainAlternative.steps,
-            alternatives = if (alternatives.size > 1) {
-                alternatives.subList(1, alternatives.size)
-            } else {
-                null
-            },
+            alternatives = secondaryAlternatives,
         )
     }
 }
@@ -99,7 +106,7 @@ private class WhileStrategiesAvailableFirstOfRunner(val builder: StepsBuilder, a
     override fun option(strategy: Strategy) {
         if (roundSucceeded) return
         if (strategy in remainingStrategies) {
-            val result = strategy.steps.produceSteps(builder.context, builder.lastSub)
+            val result = strategy.steps.produceSteps(builder.context, builder.simpleExpression)
             if (result != null) {
                 val added = builder.addAlternative(strategy, result)
                 if (added) {
@@ -116,7 +123,7 @@ private class WhileStrategiesAvailableFirstOfRunner(val builder: StepsBuilder, a
 
     override fun option(stepsProducer: StepsProducer) {
         if (roundSucceeded) return
-        val steps = stepsProducer.produceSteps(builder.context, builder.lastSub)
+        val steps = stepsProducer.produceSteps(builder.context, builder.simpleExpression)
         if (steps != null) {
             builder.addSteps(steps)
             roundSucceeded = true

@@ -9,7 +9,7 @@ class EquationWithTwoAbsoluteValuesTest {
 
     @Test
     fun `test negative absolute values`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "-abs[x + 1] = -2 * abs[x - 2]"
 
         check {
@@ -44,7 +44,7 @@ class EquationWithTwoAbsoluteValuesTest {
 
     @Test
     fun `test system equations have common solution`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "abs[[x ^ 2] - x] + abs[[x ^ 3] - 1] = 0"
 
         check {
@@ -93,7 +93,7 @@ class EquationWithTwoAbsoluteValuesTest {
 
     @Test
     fun `test system equations have no common solution`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "3 * abs[x + 1] + 1 = 1 - abs[x - 1]"
 
         check {

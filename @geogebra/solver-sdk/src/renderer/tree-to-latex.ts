@@ -1,9 +1,4 @@
-import {
-  ExpressionTree,
-  ExpressionTreeBase,
-  NestedExpression,
-  NumberExpression,
-} from '../parser';
+import { ExpressionTree, ExpressionTreeBase, NestedExpression } from '../parser';
 import { setsSolutionFormatter, SolutionFormatter } from './solution-formatter';
 import { ColorMap } from '../solutions/coloring';
 
@@ -91,7 +86,7 @@ export class ColorLatexTransformer implements LatexTransformer {
     let layoutCorrection = '';
     if (
       (parent?.type === 'Sum' || parent?.type === 'Product') &&
-      parent?.args[0] !== node
+      parent?.operands[0] !== node
     ) {
       // need this so that binary operators are shown with correct spacing:
       // Example: 1-2 ==> 1{\color{red}{}-2}
@@ -205,8 +200,14 @@ function treeToLatexInner(
   };
 
   switch (n.type) {
-    case 'Number':
-      return tfd(numberToLatex(n));
+    case 'Integer':
+    case 'Decimal':
+      return tfd(n.value);
+    case 'RecurringDecimal': {
+      // check for number with repeating digits
+      const [value, repeatingDigits] = n.value.split('[');
+      return `${value}\\overline{${repeatingDigits.slice(0, -1)}}`;
+    }
     case 'Variable':
       // Special case when the variable has a subscript and no decorators. We don't want to enclose the whole expression
       // (e.g. `x_2`) in color because it would create a box around it and mess up the spacing for powers (e.g. `x_2^3`
@@ -220,7 +221,7 @@ function treeToLatexInner(
       return tfd(`\\textrm{${n.value}}`);
     case 'Sum':
       return tfd(
-        n.args
+        n.operands
           .map((el, i) => {
             if (addendNeedsPlusInFront(el, i)) {
               return outerColorOp(el, '+') + rec(el, n);
@@ -231,14 +232,14 @@ function treeToLatexInner(
           .join(''),
       );
     case 'Plus':
-      return tfd(`${outerColorOp(n.args[0], '+')}${rec(n.args[0], n)}`);
+      return tfd(`${outerColorOp(n.operands[0], '+')}${rec(n.operands[0], n)}`);
     case 'Minus':
-      return tfd(`${outerColorOp(n.args[0], '-')}${rec(n.args[0], n)}`);
+      return tfd(`${outerColorOp(n.operands[0], '-')}${rec(n.operands[0], n)}`);
     case 'PlusMinus':
-      return tfd(`\\pm ${rec(n.args[0], n)}`);
+      return tfd(`\\pm ${rec(n.operands[0], n)}`);
     case 'Product':
       return tfd(
-        n.args
+        n.operands
           .map((el, i) => {
             if (i === 0 || el.type === 'DivideBy') {
               return rec(el, n);
@@ -249,10 +250,10 @@ function treeToLatexInner(
           .join(''),
       );
     case 'ImplicitProduct':
-      return tfd(n.args.map((el) => rec(el, n)).join(''));
+      return tfd(n.operands.map((el) => rec(el, n)).join(''));
     case 'SmartProduct':
       return tfd(
-        n.args
+        n.operands
           .map((el, i) => {
             if (i === 0 || el.type === 'DivideBy') {
               return rec(el, n);
@@ -269,50 +270,61 @@ function treeToLatexInner(
           .join(''),
       );
     case 'DivideBy':
-      return tfd(outerColorOp(n.args[0], `${s.divSymbol}`) + `${rec(n.args[0], n)}`);
+      return tfd(
+        outerColorOp(n.operands[0], `${s.divSymbol}`) + `${rec(n.operands[0], n)}`,
+      );
     case 'Fraction':
-      return tfd(`\\frac{${rec(n.args[0], n)}}{${rec(n.args[1], n)}}`);
+      return tfd(`\\frac{${rec(n.operands[0], n)}}{${rec(n.operands[1], n)}}`);
     case 'MixedNumber':
       return tfd(
-        `${rec(n.args[0], n)}\\frac{${rec(n.args[1], n)}}{${rec(n.args[2], n)}}`,
+        `${rec(n.operands[0], n)}\\frac{${rec(n.operands[1], n)}}{${rec(
+          n.operands[2],
+          n,
+        )}}`,
       );
     case 'Power': {
       // Special case for the
-      const base = n.args[0];
+      const base = n.operands[0];
       if (base.type === 'Variable' && base.subscript && !base.decorators) {
-        return tfd(`${rec(base, n)}^{\\,${rec(n.args[1], n)}}`);
+        return tfd(`${rec(base, n)}^{\\,${rec(n.operands[1], n)}}`);
       } else {
-        return tfd(`{${rec(base, n)}}^{${rec(n.args[1], n)}}`);
+        return tfd(`{${rec(base, n)}}^{${rec(n.operands[1], n)}}`);
       }
     }
     case 'SquareRoot':
-      return tfd(`\\sqrt{${rec(n.args[0], n)}}`);
+      return tfd(`\\sqrt{${rec(n.operands[0], n)}}`);
     case 'Root':
-      return tfd(`\\sqrt[{${rec(n.args[1], n)}}]{${rec(n.args[0], n)}}`);
+      return tfd(`\\sqrt[{${rec(n.operands[1], n)}}]{${rec(n.operands[0], n)}}`);
     case 'AbsoluteValue':
-      return tfd(colorAbsoluteValue(rec(n.args[0], n), n, t, p));
+      return tfd(colorAbsoluteValue(rec(n.operands[0], n), n, t, p));
     case 'ExpressionWithConstraint': {
       const latexSettings = { ...s, flat: true };
-      const constraint = treeToLatexInner(n.args[1], n, latexSettings, t);
-      return tfd(`${rec(n.args[0], n)} \\text{ given } ${constraint}`);
+      const constraint = treeToLatexInner(n.operands[1], n, latexSettings, t);
+      return tfd(`${rec(n.operands[0], n)} \\text{ given } ${constraint}`);
     }
     case 'Equation':
       if (s.align) {
-        return tfd(`${rec(n.args[0], n)} & ${colorOp('=')} & ${rec(n.args[1], n)}`);
+        return tfd(
+          `${rec(n.operands[0], n)} & ${colorOp('=')} & ${rec(n.operands[1], n)}`,
+        );
       } else {
-        return tfd(`${rec(n.args[0], n)} ${colorOp('=')} ${rec(n.args[1], n)}`);
+        return tfd(`${rec(n.operands[0], n)} ${colorOp('=')} ${rec(n.operands[1], n)}`);
       }
     case 'Inequation':
       if (s.align) {
-        return tfd(`${rec(n.args[0], n)} & ${colorOp('\\neq')} & ${rec(n.args[1], n)}`);
+        return tfd(
+          `${rec(n.operands[0], n)} & ${colorOp('\\neq')} & ${rec(n.operands[1], n)}`,
+        );
       } else {
-        return tfd(`${rec(n.args[0], n)} ${colorOp('\\neq')} ${rec(n.args[1], n)}`);
+        return tfd(
+          `${rec(n.operands[0], n)} ${colorOp('\\neq')} ${rec(n.operands[1], n)}`,
+        );
       }
     case 'EquationSystem': {
-      if (s.flat || n.args.some((child) => !isSolvable(child))) {
+      if (s.flat || n.operands.some((child) => !isSolvable(child))) {
         const alignSetting = { ...s, align: false };
         return tfd(
-          n.args
+          n.operands
             .map((el) => treeToLatexInner(el, n, alignSetting, t))
             .join('\\text{ and }'),
         );
@@ -320,22 +332,12 @@ function treeToLatexInner(
         const alignSetting = { ...s, align: true };
         return tfd(
           '\\left\\{\\begin{array}{rcl}\n' +
-            n.args
+            n.operands
               .map((el) => '  ' + treeToLatexInner(el, n, alignSetting, t) + '\\\\\n')
               .join('') +
             '\\end{array}\\right.',
         );
       }
-    }
-    case 'InequalitySystem': {
-      const alignSetting = { ...s, align: true };
-      return tfd(
-        '\\left\\{\\begin{array}{rcl}\n' +
-          n.args
-            .map((el) => '  ' + treeToLatexInner(el, n, alignSetting, t) + '\\\\\n')
-            .join('') +
-          '\\end{array}\\right.',
-      );
     }
     case 'AddEquations':
     case 'SubtractEquations': {
@@ -344,10 +346,10 @@ function treeToLatexInner(
       return tfd(
         '\\begin{array}{rcl|l}\n' +
           '  ' +
-          treeToLatexInner(n.args[0], n, alignSetting, t) +
+          treeToLatexInner(n.operands[0], n, alignSetting, t) +
           ` & ${operation} \\\\\n` +
           '  ' +
-          treeToLatexInner(n.args[1], n, alignSetting, t) +
+          treeToLatexInner(n.operands[1], n, alignSetting, t) +
           ' & \\\\\n' +
           '\\end{array}',
       );
@@ -355,31 +357,23 @@ function treeToLatexInner(
     case 'EquationUnion': {
       const alignSetting = { ...s, align: false };
       return tfd(
-        n.args.map((el) => treeToLatexInner(el, n, alignSetting, t)).join('\\text{ or }'),
+        n.operands
+          .map((el) => treeToLatexInner(el, n, alignSetting, t))
+          .join('\\text{ or }'),
       );
     }
-    case 'StatementWithConstraint': {
-      const alignSetting = { ...s, align: false };
-      return tfd(
-        '\\left\\{\\begin{array}{l}\n' +
-          n.args
-            .map((el) => '  ' + treeToLatexInner(el, n, alignSetting, t) + '\\\\\n')
-            .join('') +
-          '\\end{array}\\right.',
-      );
-    }
-    case '/undefined/':
+    case 'Undefined':
       return tfd('\\text{undefined}');
-    case '/infinity/':
+    case 'Infinity':
       return tfd('\\infty');
     case 'LessThan':
-      return tfd(`${rec(n.args[0], n)} ${colorOp('<')} ${rec(n.args[1], n)}`);
+      return tfd(`${rec(n.operands[0], n)} ${colorOp('<')} ${rec(n.operands[1], n)}`);
     case 'GreaterThan':
-      return tfd(`${rec(n.args[0], n)} ${colorOp('>')} ${rec(n.args[1], n)}`);
+      return tfd(`${rec(n.operands[0], n)} ${colorOp('>')} ${rec(n.operands[1], n)}`);
     case 'LessThanEqual':
-      return tfd(`${rec(n.args[0], n)} ${colorOp('\\leq')} ${rec(n.args[1], n)}`);
+      return tfd(`${rec(n.operands[0], n)} ${colorOp('\\leq')} ${rec(n.operands[1], n)}`);
     case 'GreaterThanEqual':
-      return tfd(`${rec(n.args[0], n)} ${colorOp('\\geq')} ${rec(n.args[1], n)}`);
+      return tfd(`${rec(n.operands[0], n)} ${colorOp('\\geq')} ${rec(n.operands[1], n)}`);
     case 'Solution':
     case 'SetSolution':
     case 'Identity':
@@ -387,31 +381,31 @@ function treeToLatexInner(
     case 'ImplicitSolution':
       return tfd(s.solutionFormatter.formatSolution(n, rec));
     case 'List':
-      if (n.args.length === 1) {
-        return tfd(rec(n.args[0], n));
+      if (n.operands.length === 1) {
+        return tfd(rec(n.operands[0], n));
       } else {
         return tfd(
-          n.args
-            .slice(0, n.args.length - 1)
+          n.operands
+            .slice(0, n.operands.length - 1)
             .map((x) => rec(x, n))
             .join(', ') +
             '\\text{ and }' +
-            rec(n.args[n.args.length - 1], n),
+            rec(n.operands[n.operands.length - 1], n),
         );
       }
     case 'VariableList':
-      return tfd(`${n.args.map((x) => rec(x, n)).join(', ')}`);
+      return tfd(`${n.operands.map((x) => rec(x, n)).join(', ')}`);
     case 'Tuple':
-      if (n.args.length === 1) {
-        return tfd(rec(n.args[0], n));
+      if (n.operands.length === 1) {
+        return tfd(rec(n.operands[0], n));
       } else {
-        return tfd(`\\left( ${n.args.map((x) => rec(x, n)).join(', ')}\\right)`);
+        return tfd(`\\left( ${n.operands.map((x) => rec(x, n)).join(', ')}\\right)`);
       }
     case 'FiniteSet':
       return tfd(
-        n.args.length === 0
+        n.operands.length === 0
           ? '\\emptyset'
-          : `\\left\\{${n.args.map((el) => rec(el, n)).join(', ')}\\right\\}`,
+          : `\\left\\{${n.operands.map((el) => rec(el, n)).join(', ')}\\right\\}`,
       );
     case 'Reals':
       return tfd('\\mathbb{R}');
@@ -419,42 +413,66 @@ function treeToLatexInner(
       return tfd('\\textrm{VOID}');
     case 'CartesianProduct':
       return tfd(
-        n.args.length === 0
+        n.operands.length === 0
           ? '\\emptyset'
-          : `${n.args.map((el) => rec(el, n)).join(' \\times ')}`,
+          : `${n.operands.map((el) => rec(el, n)).join(' \\times ')}`,
       );
     case 'SetUnion':
       return tfd(
-        n.args.length === 0
+        n.operands.length === 0
           ? '\\emptyset'
-          : `${n.args.map((el) => rec(el, n)).join(' \\cup ')}`,
+          : `${n.operands.map((el) => rec(el, n)).join(' \\cup ')}`,
       );
     case 'SetDifference':
-      return tfd(`${rec(n.args[0], n)} \\setminus ${rec(n.args[1], n)}`);
+      return tfd(`${rec(n.operands[0], n)} \\setminus ${rec(n.operands[1], n)}`);
     case 'OpenInterval':
-      return `\\left( ${rec(n.args[0], n)}, ${rec(n.args[1], n)} \\right)`;
+      return `\\left( ${rec(n.operands[0], n)}, ${rec(n.operands[1], n)} \\right)`;
     case 'ClosedInterval':
-      return `\\left[ ${rec(n.args[0], n)}, ${rec(n.args[1], n)} \\right]`;
+      return `\\left[ ${rec(n.operands[0], n)}, ${rec(n.operands[1], n)} \\right]`;
     case 'OpenClosedInterval':
-      return `\\left( ${rec(n.args[0], n)}, ${rec(n.args[1], n)} \\right]`;
+      return `\\left( ${rec(n.operands[0], n)}, ${rec(n.operands[1], n)} \\right]`;
     case 'ClosedOpenInterval':
-      return `\\left[ ${rec(n.args[0], n)}, ${rec(n.args[1], n)} \\right)`;
+      return `\\left[ ${rec(n.operands[0], n)}, ${rec(n.operands[1], n)} \\right)`;
     case 'OpenRange':
-      return `${rec(n.args[0], n)} \\lt ${rec(n.args[1], n)} \\lt ${rec(n.args[2], n)}`;
+      return `${rec(n.operands[0], n)} \\lt ${rec(n.operands[1], n)} \\lt ${rec(
+        n.operands[2],
+        n,
+      )}`;
     case 'OpenClosedRange':
-      return `${rec(n.args[0], n)} \\lt ${rec(n.args[1], n)} \\leq ${rec(n.args[2], n)}`;
+      return `${rec(n.operands[0], n)} \\lt ${rec(n.operands[1], n)} \\leq ${rec(
+        n.operands[2],
+        n,
+      )}`;
     case 'ClosedOpenRange':
-      return `${rec(n.args[0], n)} \\leq ${rec(n.args[1], n)} \\lt ${rec(n.args[2], n)}`;
+      return `${rec(n.operands[0], n)} \\leq ${rec(n.operands[1], n)} \\lt ${rec(
+        n.operands[2],
+        n,
+      )}`;
     case 'ClosedRange':
-      return `${rec(n.args[0], n)} \\leq ${rec(n.args[1], n)} \\leq ${rec(n.args[2], n)}`;
+      return `${rec(n.operands[0], n)} \\leq ${rec(n.operands[1], n)} \\leq ${rec(
+        n.operands[2],
+        n,
+      )}`;
     case 'ReversedOpenRange':
-      return `${rec(n.args[0], n)} \\gt ${rec(n.args[1], n)} \\gt ${rec(n.args[2], n)}`;
+      return `${rec(n.operands[0], n)} \\gt ${rec(n.operands[1], n)} \\gt ${rec(
+        n.operands[2],
+        n,
+      )}`;
     case 'ReversedOpenClosedRange':
-      return `${rec(n.args[0], n)} \\gt ${rec(n.args[1], n)} \\geq ${rec(n.args[2], n)}`;
+      return `${rec(n.operands[0], n)} \\gt ${rec(n.operands[1], n)} \\geq ${rec(
+        n.operands[2],
+        n,
+      )}`;
     case 'ReversedClosedOpenRange':
-      return `${rec(n.args[0], n)} \\geq ${rec(n.args[1], n)} \\gt ${rec(n.args[2], n)}`;
+      return `${rec(n.operands[0], n)} \\geq ${rec(n.operands[1], n)} \\gt ${rec(
+        n.operands[2],
+        n,
+      )}`;
     case 'ReversedClosedRange':
-      return `${rec(n.args[0], n)} \\geq ${rec(n.args[1], n)} \\geq ${rec(n.args[2], n)}`;
+      return `${rec(n.operands[0], n)} \\geq ${rec(n.operands[1], n)} \\geq ${rec(
+        n.operands[2],
+        n,
+      )}`;
   }
 }
 
@@ -482,19 +500,11 @@ function addendNeedsPlusInFront(
   // need to put a plus around the whole partial sum
   if (
     addend.decorators?.[0] === 'PartialBracket' &&
-    ['Minus', 'PlusMinus'].includes((addend as NestedExpression).args[0].type)
+    ['Minus', 'PlusMinus'].includes((addend as NestedExpression).operands[0].type)
   ) {
     return false;
   }
   return true;
-}
-
-function numberToLatex(n: NumberExpression): string {
-  // check for number with repeating digits
-  const [value, repeatingDigits] = n.value.split('[');
-  return repeatingDigits !== undefined
-    ? `${value}\\overline{${repeatingDigits.slice(0, -1)}}`
-    : value;
 }
 
 const decorators: Record<string, { left: string; right: string }> = {

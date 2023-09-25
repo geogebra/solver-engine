@@ -3,7 +3,6 @@ package methods.general
 import engine.conditions.isDefinitelyNotNegative
 import engine.conditions.isDefinitelyNotPositive
 import engine.conditions.isDefinitelyNotZero
-import engine.conditions.sumTermsAreIncommensurable
 import engine.expressions.Constants
 import engine.expressions.DivideBy
 import engine.expressions.Minus
@@ -94,6 +93,10 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     EvaluateExpressionToThePowerOfZero(evaluateExpressionToThePowerOfZero),
     EvaluateZeroToAPositivePower(evaluateZeroToAPositivePower),
     CancelAdditiveInverseElements(cancelAdditiveInverseElements),
+
+    // Powers
+    SimplifyEvenPowerOfNegative(simplifyEvenPowerOfNegative),
+    SimplifyOddPowerOfNegative(simplifyOddPowerOfNegative),
 
     // Products of powers
     RewriteProductOfPowersWithSameBase(rewriteProductOfPowersWithSameBase),
@@ -330,9 +333,8 @@ private val simplifyZeroNumeratorFractionToZero =
     rule {
         val zero = FixedPattern(Constants.Zero)
         val denominator = condition {
-            it.isDefinitelyNotZero() &&
-                // we don't want to directly simplify [0 / 2-3] = 0
-                (it !is Sum || sumTermsAreIncommensurable(it.children))
+            it.isDefinitelyNotZero() ||
+                !it.isConstant() // if it is not constant we have already made sure the fraction is defined
         }
         val pattern = fractionOf(zero, denominator)
 
@@ -350,7 +352,10 @@ private val simplifyZeroNumeratorFractionToZero =
  */
 private val simplifyUnitFractionToOne =
     rule {
-        val common = condition { !it.isConstant() || it.isDefinitelyNotZero() }
+        val common = condition {
+            it.isDefinitelyNotZero() ||
+                !it.isConstant() // if it is not constant we have already made sure the fraction is defined
+        }
         val pattern = fractionOf(common, common)
 
         onPattern(pattern) {
@@ -642,6 +647,44 @@ private val cancelAdditiveInverseElements =
             )
         }
     }
+
+private val simplifyEvenPowerOfNegative = rule {
+    val positiveBase = AnyPattern()
+    val base = negOf(positiveBase)
+    val exponent = integerCondition(SignedIntegerPattern()) { it.isEven() }
+    val power = powerOf(base, exponent)
+
+    onPattern(power) {
+        ruleResult(
+            toExpr = cancel(
+                mapOf(
+                    base to listOf(PathScope.Operator),
+                    exponent to listOf(PathScope.Expression),
+                ),
+                powerOf(get(positiveBase), get(exponent)),
+            ),
+            gmAction = tapOp(base),
+            explanation = metadata(Explanation.SimplifyEvenPowerOfNegative),
+        )
+    }
+}
+
+private val simplifyOddPowerOfNegative = rule {
+    val positiveBase = AnyPattern()
+    val base = negOf(positiveBase)
+    val exponent = integerCondition(SignedIntegerPattern()) { it.isOdd() }
+    val power = powerOf(base, exponent)
+
+    onPattern(power) {
+        ruleResult(
+            // transform is a better path mapping that using "moveUnaryOperator" on "neg"
+            // and "move" on "exponent", since that would be two separate "move"'s (instead of single one)
+            toExpr = transform(power, negOf(powerOf(get(positiveBase), get(exponent)))),
+            gmAction = drag(exponent, positiveBase),
+            explanation = metadata(Explanation.SimplifyOddPowerOfNegative),
+        )
+    }
+}
 
 private val rewriteProductOfPowersWithSameBase =
     rule {

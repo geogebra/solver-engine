@@ -3,16 +3,15 @@
  *******************************************/
 import * as solverSDK from '@geogebra/solver-sdk';
 import {
-  AlternativeJson2,
+  AlternativeJson,
   ExpressionTree,
   jsonToTree,
   MathJson,
-  MathJson2,
   Metadata,
-  PlanSelectionJson2,
-  TaskJson2,
+  PlanSelectionJson,
+  TaskJson,
   Transformation,
-  TransformationJson2,
+  TransformationJson,
 } from '@geogebra/solver-sdk';
 import { colorSchemes, settings } from './settings';
 import {
@@ -20,7 +19,7 @@ import {
   containsNonTrivialStep,
   isCosmeticTransformation,
   isInvisibleChangeStep,
-  isPedanticStep,
+  isPedanticTransformation,
   isRearrangementStep,
   isThroughStep,
 } from './util';
@@ -28,7 +27,7 @@ import { renderTest } from './render-test';
 import { translationData } from './translations';
 import { LatexTransformer } from '@geogebra/solver-sdk/src/renderer/tree-to-latex';
 
-export const renderPlanSelections = (selections: PlanSelectionJson2[]) => {
+export const renderPlanSelections = (selections: PlanSelectionJson[]) => {
   if (selections) {
     selections = selections.filter((selection) => containsNonTrivialStep(selection.transformation));
   }
@@ -59,7 +58,7 @@ export const renderPlanSelections = (selections: PlanSelectionJson2[]) => {
  * Rendering a transformation
  ******************************************/
 
-export const renderTransformation = (trans: TransformationJson2, depth = 0): string => {
+export const renderTransformation = (trans: TransformationJson, depth = 0): string => {
   const isThrough = isThroughStep(trans);
   if (!settings.showThroughSteps && isThrough) {
     return renderTransformation(trans.steps![0], depth);
@@ -78,7 +77,7 @@ export const renderTransformation = (trans: TransformationJson2, depth = 0): str
 const removeOuterBrackets = (expression: ExpressionTree) => ({ ...expression, decorators: [] });
 
 const renderExpressionMapping = (
-  trans: TransformationJson2,
+  trans: TransformationJson,
   fromColoring?: LatexTransformer,
   toColoring?: LatexTransformer,
 ) => {
@@ -117,7 +116,7 @@ const createColorMaps = (
 };
 
 const renderSteps = (
-  steps: TransformationJson2[] | null,
+  steps: TransformationJson[] | null,
   depth = 0,
   open = false,
   title = '',
@@ -128,7 +127,7 @@ const renderSteps = (
 
   const renderedSteps = preprocessSteps(steps)
     .map((step) => {
-      if (!settings.showPedanticSteps && isPedanticStep(step)) {
+      if (!settings.showPedanticSteps && isPedanticTransformation(step)) {
         return null;
       } else if (!settings.showCosmeticSteps && isCosmeticTransformation(step)) {
         return /* HTML */ `<span class="note">
@@ -150,7 +149,7 @@ const renderSteps = (
   </details>`;
 };
 
-const renderTasks = (tasks: TaskJson2[] | null, depth = 0, open = false) => {
+const renderTasks = (tasks: TaskJson[] | null, depth = 0, open = false) => {
   if (tasks === null || tasks.length === 0) {
     return '';
   }
@@ -162,7 +161,7 @@ const renderTasks = (tasks: TaskJson2[] | null, depth = 0, open = false) => {
   </details>`;
 };
 
-const renderAlternatives = (alternatives: AlternativeJson2[] | null, depth = 0, open = false) => {
+const renderAlternatives = (alternatives: AlternativeJson[] | null, depth = 0, open = false) => {
   if (alternatives === null || alternatives.length === 0) {
     return '';
   }
@@ -186,13 +185,13 @@ const renderAlternatives = (alternatives: AlternativeJson2[] | null, depth = 0, 
     </details>`;
 };
 
-const renderTask = (task: TaskJson2, depth = 0): string => {
+const renderTask = (task: TaskJson, depth = 0): string => {
   return /* HTML */ `<div class="task">
     ${renderExplanation(task.explanation)} ${renderTaskSteps(task, depth)}
   </div>`;
 };
 
-const renderTaskSteps = (task: TaskJson2, depth: number): string => {
+const renderTaskSteps = (task: TaskJson, depth: number): string => {
   const startExprTree = solverSDK.jsonToTree(task.startExpr);
   if (!task.steps) {
     return startExprTree.type === 'Void'
@@ -212,7 +211,7 @@ const renderTaskSteps = (task: TaskJson2, depth: number): string => {
   return renderTaskTransformation(task) + renderSteps(task.steps, depth - 1, depth >= 0);
 };
 
-const renderTaskTransformation = (task: TaskJson2) => {
+const renderTaskTransformation = (task: TaskJson) => {
   if (task.steps === null) {
     return '';
   }
@@ -228,7 +227,7 @@ const renderTaskTransformation = (task: TaskJson2) => {
   return `<div className='expr'>${renderExpression(rendering)}</div>`;
 };
 
-const preprocessSteps = (steps: TransformationJson2[]) => {
+const preprocessSteps = (steps: TransformationJson[]) => {
   // We clone because we may edit the objects
   steps = preprocessInvisibleChangeSteps(clone(steps));
   if (settings.showRearrangementSteps || steps.every((step) => !isRearrangementStep(step))) {
@@ -248,7 +247,7 @@ const preprocessSteps = (steps: TransformationJson2[]) => {
   return processedSteps;
 };
 
-const preprocessInvisibleChangeSteps = (steps: TransformationJson2[]) => {
+const preprocessInvisibleChangeSteps = (steps: TransformationJson[]) => {
   if (settings.showInvisibleChangeSteps) {
     return steps;
   }
@@ -304,7 +303,7 @@ const renderExplanation = (expl?: Metadata | null) => {
   </div>`;
 };
 
-const renderExpression = (expr: MathJson2 | MathJson | string) =>
+const renderExpression = (expr: MathJson | string) =>
   `\\(\\displaystyle ${
     typeof expr === 'string' ? expr : solverSDK.jsonToLatex(expr, settings.latexSettings)
   }\\)`;

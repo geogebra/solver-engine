@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package engine.expressions
 
 import engine.operators.BinaryExpressionOperator
@@ -21,7 +23,6 @@ import engine.operators.SetOperators
 import engine.operators.SolutionOperator
 import engine.operators.StatementSystemOperator
 import engine.operators.StatementUnionOperator
-import engine.operators.StatementWithConstraintOperator
 import engine.operators.SumOperator
 import engine.operators.UnaryExpressionOperator
 import engine.operators.VariableListOperator
@@ -200,6 +201,15 @@ open class Expression internal constructor(
     }
 
     val children by lazy { origin.computeChildrenOrigin(this) }
+
+    /**
+     * Returns the children in their natural visiting order.  Ideally this would already be the case with [children]
+     * but root[x, y] means the y-th root of x and we want the visiting order to be (y, x) not (x, y).
+     *
+     * In the future, we can make sure [children] is in natural visiting order but that means changing the API as at
+     * least root[x, y] will have a different JSON representation
+     */
+    internal open fun childrenInVisitingOrder() = children
 
     /**
      * Number of children of this expression.
@@ -443,29 +453,16 @@ open class Expression internal constructor(
         return operator === UnaryExpressionOperator.DivideBy
     }
 
-    open fun toJson(): List<Any> {
-        val serializedOperands = operands.map { it.toJson() }
-        return if (decorators.isEmpty() && name == null) {
-            listOf(operator.name) + serializedOperands
-        } else {
-            listOf(
-                listOf(operator.name) +
-                    (if (name == null) listOf() else listOf(name)) +
-                    decorators.map { it.toString() },
-            ) + serializedOperands
-        }
-    }
-
-    internal open fun fillJson2(s: MutableMap<String, Any>) {
+    internal open fun fillJson(s: MutableMap<String, Any>) {
         s["type"] = operator.name
         if (operands.isNotEmpty()) {
-            s["operands"] = operands.map { it.toJson2() }
+            s["operands"] = operands.map { it.toJson() }
         }
     }
 
-    fun toJson2(): Map<String, Any> {
+    fun toJson(): Map<String, Any> {
         val s = mutableMapOf<String, Any>()
-        fillJson2(s)
+        fillJson(s)
         if (decorators.isNotEmpty()) {
             s["decorators"] = decorators.map { it.toString() }
         }
@@ -595,6 +592,20 @@ fun Expression.isPolynomial(): Boolean = when (this) {
     else -> children.all { it.isPolynomial() }
 }
 
+fun Expression.containsRoots(): Boolean {
+    return when (this) {
+        is Root, is SquareRoot -> true
+        else -> children.any { it.containsRoots() }
+    }
+}
+
+fun Expression.containsPowers(): Boolean {
+    return when (this) {
+        is Power -> true
+        else -> children.any { it.containsPowers() }
+    }
+}
+
 internal fun expressionOf(operator: Operator, operands: List<Expression>) =
     expressionOf(operator, operands, BasicMeta())
 
@@ -664,7 +675,7 @@ private fun expressionOf(
             operands[2],
             meta,
         )
-        StatementWithConstraintOperator -> StatementWithConstraint(operands[0], operands[1], meta)
+        ExpressionWithConstraintOperator -> ExpressionWithConstraint(operands[0], operands[1], meta)
         StatementUnionOperator -> StatementUnion(operands, meta)
 
         StatementSystemOperator -> StatementSystem(operands, meta)

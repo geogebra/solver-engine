@@ -11,7 +11,7 @@ class LinearEquationsTest {
 
     @Test
     fun `test ax = b linear equation`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "3 x = 1"
 
         check {
@@ -57,7 +57,7 @@ class LinearEquationsTest {
 
     @Test
     fun `test x div a = b linear equation`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "[x / 9] = -1"
 
         check {
@@ -88,7 +88,7 @@ class LinearEquationsTest {
 
     @Test
     fun `test x - a = b linear equation`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "x - 2 = 36"
 
         check {
@@ -134,7 +134,7 @@ class LinearEquationsTest {
 
     @Test
     fun `test a = b - cx linear equation`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "1 = [3 / 5] - x"
 
         check {
@@ -172,7 +172,7 @@ class LinearEquationsTest {
 
     @Test
     fun `test a = x equation`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "1 + [2 / 3] = x"
 
         check {
@@ -210,7 +210,7 @@ class LinearEquationsTest {
 
     @Test
     fun `test a - bx = 0 linear equation`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "1 - 3 x = 0"
 
         check {
@@ -248,7 +248,7 @@ class LinearEquationsTest {
 
     @Test
     fun `test a = b + cx linear equation`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "4 = 11 + [x / 3]"
 
         check {
@@ -294,7 +294,7 @@ class LinearEquationsTest {
 
     @Test
     fun `test ax + b = cx + d linear equation with c larger than a`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "x + 1 = 2 x + 3"
 
         check {
@@ -340,7 +340,7 @@ class LinearEquationsTest {
 
     @Test
     fun `test expanding brackets in linear equation`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "3 (x + 1) - 2 (x - 6) = 0"
 
         check {
@@ -378,7 +378,7 @@ class LinearEquationsTest {
 
     @Test
     fun `test cancellation of opposites happens on one side before it happens on both sides`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "2 x + x + 5 - 5 = x + 9 - 5"
 
         check {
@@ -464,14 +464,14 @@ class LinearEquationsTest {
 
     @Test
     fun `test linear equations with no solutions`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "6 x + 6 = 6 x - 5"
 
         check {
             fromExpr = "6 x + 6 = 6 x - 5"
             toExpr = "Contradiction[x: 6 = -5]"
             explanation {
-                key = EquationsExplanation.SolveEquationInOneVariable
+                key = EquationsExplanation.SolveEquation
             }
 
             step {
@@ -494,14 +494,14 @@ class LinearEquationsTest {
 
     @Test
     fun `test linear equation with infinitely many solutions`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "6 x + 6 = 6 x + 3 + 3"
 
         check {
             fromExpr = "6 x + 6 = 6 x + 3 + 3"
             toExpr = "Identity[x: 6 = 6]"
             explanation {
-                key = EquationsExplanation.SolveEquationInOneVariable
+                key = EquationsExplanation.SolveEquation
             }
 
             step {
@@ -540,18 +540,8 @@ class LinearEquationsTest {
     }
 
     @Test
-    fun `test linear equation with two variables`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
-        inputExpr = "x + 1 = 2x + y - 2"
-
-        check {
-            noTransformation()
-        }
-    }
-
-    @Test
     fun `test linear equation without solution variable`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "y + 1 = 2y"
 
         check {
@@ -561,13 +551,13 @@ class LinearEquationsTest {
 
     @Test
     fun `test abs(-x) - abs(x) = 0`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "abs[-x] - abs[x] = 0"
 
         check {
             fromExpr = "abs[-x] - abs[x] = 0"
             explanation {
-                key = EquationsExplanation.SolveEquationInOneVariable
+                key = EquationsExplanation.SolveEquation
             }
             toExpr = "Identity[x: 0 = 0]"
 
@@ -615,14 +605,14 @@ class LinearEquationsTest {
 
     @Test
     fun `test abs(-x - sqrt(2)) - abs(x + sqrt(2)) = 0`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "abs[-x - sqrt[2]] - abs[x + sqrt[2]] = 0"
 
         check {
             fromExpr = "abs[-x - sqrt[2]] - abs[x + sqrt[2]] = 0"
             toExpr = "Identity[x: 0 = 0]"
             explanation {
-                key = EquationsExplanation.SolveEquationInOneVariable
+                key = EquationsExplanation.SolveEquation
             }
 
             step {

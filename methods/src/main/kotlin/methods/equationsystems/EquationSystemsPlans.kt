@@ -358,7 +358,7 @@ private abstract class SystemSolver : CompositeMethod() {
                 xp(var1),
                 equation.byName(),
             ),
-            stepsProducer = EquationsPlans.SolveEquationInOneVariable,
+            stepsProducer = EquationsPlans.SolveEquation,
             context = context.copy(solutionVariables = listOf(var1)),
         )
     }
@@ -384,7 +384,7 @@ private object SystemSolverBySubstitution : SystemSolver() {
         optionally {
             check { it.variables.size == 1 }
             inContext(contextFactory = { copy(solutionVariables = it.variables.toList()) }) {
-                apply(EquationsPlans.SolveEquationInOneVariable)
+                apply(EquationsPlans.SolveEquation)
             }
         }
     }
@@ -429,7 +429,7 @@ private object SystemSolverBySubstitution : SystemSolver() {
                     xp(var2),
                     eq2InTermsOfVar2.byName(),
                 ),
-                stepsProducer = EquationsPlans.SolveEquationInOneVariable,
+                stepsProducer = EquationsPlans.SolveEquation,
                 context = context.copy(solutionVariables = listOf(var2)),
             )?.let { solveEq2 ->
                 Pair(var1InTermsOfVar2, solveEq2.result)
@@ -481,7 +481,7 @@ private object SystemSolverByElimination : SystemSolver() {
         optionally {
             check { it.variables.size == 1 }
             inContext(contextFactory = { copy(solutionVariables = it.variables.toList()) }) {
-                apply(EquationsPlans.SolveEquationInOneVariable)
+                apply(EquationsPlans.SolveEquation)
             }
         }
     }
@@ -519,7 +519,7 @@ private object SystemSolverByElimination : SystemSolver() {
         ) {
             firstOf {
                 option(EquationsRules.ExtractSolutionFromConstantEquation)
-                option(EquationsPlans.SolveEquationInOneVariable)
+                option(EquationsPlans.SolveEquation)
             }
         }?.let { solvedUnivariateEquation ->
             val reorganizedFirstEq = if (solvedUnivariateEquation.result is Identity) {
@@ -667,7 +667,7 @@ private val solveEquationSystemInOneVariable = taskSet {
 
         val solveFirstEq = task(
             startExpr = get(system.firstChild),
-            stepsProducer = EquationsPlans.SolveEquationInOneVariable,
+            stepsProducer = EquationsPlans.SolveEquation,
             context = context.copy(solutionVariables = system.variables.toList()),
             explanation = metadata(Explanation.SolveEquationInSystem),
         ) ?: return@tasks null
@@ -675,7 +675,7 @@ private val solveEquationSystemInOneVariable = taskSet {
         if (solveFirstEq.result !is Contradiction) {
             val solveSecondEq = task(
                 startExpr = get(system.secondChild),
-                stepsProducer = EquationsPlans.SolveEquationInOneVariable,
+                stepsProducer = EquationsPlans.SolveEquation,
                 context = context.copy(solutionVariables = system.variables.toList()),
                 explanation = metadata(Explanation.SolveEquationInSystem),
             ) ?: return@tasks null

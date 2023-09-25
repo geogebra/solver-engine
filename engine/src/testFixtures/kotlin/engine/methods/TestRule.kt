@@ -31,7 +31,7 @@ fun testRule(
     rule: Method,
     outputExpr: String?,
     gmAction: SerializedGmAction? = null,
-    context: Context = emptyContextWithLabels,
+    context: Context = emptyContextWithLabels(),
     testWithoutBrackets: Boolean = true,
 ) {
     val expression = parseExpression(inputExpr)
@@ -43,7 +43,7 @@ fun testRule(
     rule: Method,
     outputExpr: String?,
     gmAction: SerializedGmAction? = null,
-    context: Context = emptyContextWithLabels,
+    context: Context = emptyContextWithLabels(),
     testWithoutBrackets: Boolean = true,
 ) {
     val step = rule.tryExecute(context, inputExpr.withOrigin(RootOrigin()))

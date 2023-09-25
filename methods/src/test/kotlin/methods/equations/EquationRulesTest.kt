@@ -283,12 +283,12 @@ class EquationRulesTest {
         testRule(
             "abs[x + 2] = 3x",
             EquationsRules.SeparateModulusEqualsExpression,
-            "x + 2 = 3x GIVEN x + 2 >= 0 OR -(x + 2) = 3x GIVEN x + 2 < 0",
+            "x + 2 = 3x AND x + 2 >= 0 OR -(x + 2) = 3x AND x + 2 < 0",
         )
         testRule(
             "5abs[x] = [x ^ 2]",
             EquationsRules.SeparateModulusEqualsExpression,
-            "5x = [x ^ 2] GIVEN x >= 0 OR -5x = [x ^ 2] GIVEN x < 0",
+            "5x = [x ^ 2] AND x >= 0 OR -5x = [x ^ 2] AND x < 0",
         )
     }
 }

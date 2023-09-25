@@ -1,9 +1,10 @@
 import { Parser, ParserSymbol } from './parser';
 import type {
+  DecimalExpression,
   DecoratorType,
   ExpressionTree,
   ExpressionTreeBase,
-  NumberExpression,
+  IntegerExpression,
 } from './types';
 
 type ExprTree = ExpressionTreeBase<unknown>;
@@ -24,7 +25,7 @@ const latexSymbolDefinitions = {
     // unary plus
     plus.nud = () => ({
       type: 'Plus',
-      args: [parser.expression(BP_UNARY_SIGN)],
+      operands: [parser.expression(BP_UNARY_SIGN)],
     });
     // binary plus - sum
     plus.led = getLedToExtendNary(parser, 'Sum');
@@ -34,7 +35,7 @@ const latexSymbolDefinitions = {
       // unary minus
       minus.nud = () => ({
         type: 'Minus',
-        args: [parser.expression(BP_UNARY_SIGN)],
+        operands: [parser.expression(BP_UNARY_SIGN)],
       });
       // binary plus - sum
       minus.led = getLedToExtendNary(parser, 'Sum', 'Minus');
@@ -45,7 +46,7 @@ const latexSymbolDefinitions = {
       // unary ±
       plusMinus.nud = () => ({
         type: 'PlusMinus',
-        args: [parser.expression(BP_UNARY_SIGN)],
+        operands: [parser.expression(BP_UNARY_SIGN)],
       });
       // binary plus - sum
       plusMinus.led = getLedToExtendNary(parser, 'Sum', 'PlusMinus');
@@ -68,24 +69,22 @@ const latexSymbolDefinitions = {
   registerNumber(parser: Parser<ExprTree>) {
     const num = parser.registerSymbol('(number)', BP_IMPLICIT_MUL);
     num.nud = function () {
-      return { type: 'Number', value: this.value };
+      if (isInteger(this.value)) {
+        return { type: 'Integer', value: this.value };
+      } else {
+        return { type: 'Decimal', value: this.value };
+      }
     };
     num.led = getLedToExtendNary(parser, 'ImplicitProduct', undefined, (left, right) => {
       // Parse strings like "2 3/4" as mixed numbers
-      if (left.type === 'Number' && right.type === 'Fraction') {
-        const numerator = right.args[0];
-        const denominator = right.args[1];
+      if (left.type === 'Integer' && right.type === 'Fraction') {
+        const numerator = right.operands[0];
+        const denominator = right.operands[1];
         // A mixed number is comprized of 3 integers, only.
-        if (
-          !isInteger(left.value) ||
-          numerator.type !== 'Number' ||
-          !isInteger(numerator.value) ||
-          denominator.type !== 'Number' ||
-          !isInteger(denominator.value)
-        ) {
+        if (numerator.type !== 'Integer' || denominator.type !== 'Integer') {
           return null;
         }
-        return { type: 'MixedNumber', args: [left, numerator, denominator] };
+        return { type: 'MixedNumber', operands: [left, numerator, denominator] };
       }
       return null;
     });
@@ -93,9 +92,9 @@ const latexSymbolDefinitions = {
     repeatingDecimal.led = function (left) {
       const digits = parser.expression(100);
       return {
-        type: 'Number',
-        value: `${(left as NumberExpression).value}[${
-          (digits as NumberExpression).value
+        type: 'RecurringDecimal',
+        value: `${(left as DecimalExpression).value}[${
+          (digits as IntegerExpression).value
         }]`,
       };
     };
@@ -112,17 +111,17 @@ const latexSymbolDefinitions = {
   registerSymbols(parser: Parser<ExprTree>) {
     parser.registerSymbol('(symbol)');
     parser.registerSymbol('/undefined/', BP_IMPLICIT_MUL).nud = () => ({
-      type: '/undefined/',
+      type: 'Undefined',
     });
     parser.registerSymbol('\\infty', BP_IMPLICIT_MUL).nud = () => ({
-      type: '/infinity/',
+      type: 'Infinity',
     });
     parser.registerSymbol('\\mathbb{R}', BP_IMPLICIT_MUL).nud = () => ({
       type: 'Reals',
     });
     parser.registerSymbol('\\emptyset', BP_IMPLICIT_MUL).nud = () => ({
       type: 'FiniteSet',
-      args: [],
+      operands: [],
     });
   },
 
@@ -130,7 +129,7 @@ const latexSymbolDefinitions = {
     const sol = parser.registerSymbol('\\in', BP_ELEMENT_OF_OPERATOR);
     sol.led = (left) => {
       const right = parser.expression(0);
-      return { type: 'Solution', args: [left, right] };
+      return { type: 'Solution', operands: [left, right] };
     };
   },
 
@@ -147,7 +146,7 @@ const latexSymbolDefinitions = {
       ['\\geq', 'GreaterThanEqual'],
     ] as const) {
       parser.registerSymbol(sym, BP_EQUALS).led = (left) => {
-        return { type, args: [left, parser.expression(BP_EQUALS)] };
+        return { type, operands: [left, parser.expression(BP_EQUALS)] };
       };
     }
   },
@@ -200,25 +199,22 @@ const latexSymbolDefinitions = {
     const nud = (): ExprTree => {
       const left = parser.expression(100);
       const right = parser.expression(100);
-      return { type: 'Fraction', args: [left, right] };
+      return { type: 'Fraction', operands: [left, right] };
     };
     const led = (first: ExprTree): ExprTree => {
       const left = parser.expression(100);
       const right = parser.expression(100);
       // mixed number?
       if (
-        first.type === 'Number' &&
-        isInteger(first.value) &&
-        left.type === 'Number' &&
-        isInteger(left.value) &&
-        right.type === 'Number' &&
-        isInteger(right.value)
+        first.type === 'Integer' &&
+        left.type === 'Integer' &&
+        right.type === 'Integer'
       ) {
-        return { type: 'MixedNumber', args: [first, left, right] };
+        return { type: 'MixedNumber', operands: [first, left, right] };
       } else
         return {
           type: 'ImplicitProduct',
-          args: [first, { type: 'Fraction', args: [left, right] }],
+          operands: [first, { type: 'Fraction', operands: [left, right] }],
         };
     };
     const latexLabels = ['\\frac', '\\dfrac', '\\tfrac'];
@@ -240,7 +236,7 @@ const latexSymbolDefinitions = {
       if (!first.decorators?.length) delete first.decorators;
       right.decorators?.pop();
       if (!right.decorators?.length) delete right.decorators;
-      return { type: 'Fraction', args: [first, right] };
+      return { type: 'Fraction', operands: [first, right] };
     };
   },
 
@@ -248,7 +244,7 @@ const latexSymbolDefinitions = {
     const exp = parser.registerSymbol('^', BP_POWER);
     exp.led = function (left) {
       const right = parser.expression(BP_POWER - 1);
-      return { type: 'Power', args: [left, right] };
+      return { type: 'Power', operands: [left, right] };
     };
   },
 
@@ -261,11 +257,11 @@ const latexSymbolDefinitions = {
         const radicand = parser.expression(Infinity);
         return {
           type: 'Root',
-          args: [radicand, order],
+          operands: [radicand, order],
         };
       } else {
         const radicand = parser.expression(Infinity);
-        return { type: 'SquareRoot', args: [radicand] };
+        return { type: 'SquareRoot', operands: [radicand] };
       }
     };
     sqrt.led = sqrt.led = getLedToExtendNary(parser, 'ImplicitProduct');
@@ -312,7 +308,7 @@ const latexSymbolDefinitions = {
     absStart.nud = function () {
       return {
         type: 'AbsoluteValue',
-        args: [parser.balancedExpression('\\right|')],
+        operands: [parser.balancedExpression('\\right|')],
       };
     };
     absStart.led = getLedToExtendNary(parser, 'ImplicitProduct');
@@ -321,7 +317,7 @@ const latexSymbolDefinitions = {
     pipeSymbol.nud = function () {
       return {
         type: 'AbsoluteValue',
-        args: [parser.balancedExpression('|')],
+        operands: [parser.balancedExpression('|')],
       };
     };
     pipeSymbol.led = getLedToExtendNary(parser, 'ImplicitProduct');
@@ -337,7 +333,7 @@ const latexSymbolDefinitions = {
         parser.error('only variables can have subscripts');
       }
       const right = parser.expression(BP_SUBSCRIPT - 1);
-      if (right.type !== 'Variable' && right.type !== 'Number') {
+      if (right.type !== 'Variable' && right.type !== 'Integer') {
         parser.error('subscripts must be variables or numeric values');
       }
       if (right.type === 'Variable' && right.subscript) {
@@ -359,7 +355,7 @@ function getLedToExtendNary(
       type === 'Sum' ? BP_SUM : type === 'ImplicitProduct' ? BP_IMPLICIT_MUL : BP_MUL;
     let right =
       type === 'ImplicitProduct' ? parser.expression(BP, this) : parser.expression(BP);
-    if (inverse) right = { type: inverse, args: [right] };
+    if (inverse) right = { type: inverse, operands: [right] };
     if (customLed) {
       const res = customLed(left, right);
       if (res) return res;
@@ -373,19 +369,21 @@ function getLedToExtendNary(
       right.decorators = ['MissingBracket'];
     }
     if (left.type === type && !left.decorators?.length) {
-      return { type, args: [...(left.args || []), right] };
+      return { type, operands: [...(left.operands || []), right] };
     } else {
-      return { type, args: [left, right] };
+      return { type, operands: [left, right] };
     }
   };
 }
 
 function addPathsToTree(tree: ExprTree, path = '.'): ExpressionTree {
-  return 'args' in tree
+  return 'operands' in tree
     ? {
         ...tree,
         path,
-        args: tree.args.map((arg, index) => addPathsToTree(arg, `${path}/${index}`)),
+        operands: tree.operands.map((arg, index) =>
+          addPathsToTree(arg, `${path}/${index}`),
+        ),
       }
     : { ...tree, path };
 }

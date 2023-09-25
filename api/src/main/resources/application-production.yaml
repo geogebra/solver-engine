@@ -1,4 +1,4 @@
 spring:
   mvc:
     async:
-      request-timeout: 1500
+      request-timeout: 750

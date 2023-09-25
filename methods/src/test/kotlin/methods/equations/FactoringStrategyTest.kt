@@ -371,7 +371,7 @@ class FactoringStrategyTest {
 
     @Test
     fun `test constant factor is removed first`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "-11 ([x ^ 2] + x) = 0"
 
         check {

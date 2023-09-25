@@ -42,8 +42,8 @@ export const expressionSkipList = [
   '3*(x+1)^2=1/3',
 
   // TODO: adjust GM to handle signs and brackets better:
-  // addition: a+(3-5)b => a+(-2)b
-  // multiplication: a-2*(-3) => a-(-6)
+  // addition: a+(3-5)b => a+(-2)b ; -(2-4)+1 ==> -(-2)+1
+  // multiplication: a-2*(-3) => a-(-6) ; -(-1*x)+1 ==> -(-x)+1
   // leading addend: (-1)+1 => -1+1
   // drag factors on top of each other: (-2)(-3) => 6
   '5*x+(1-5)*x^2',
@@ -62,54 +62,15 @@ export const expressionSkipList = [
   '-(3-4)*sqrt[3]3-(-sqrt[3]3-3*sqrt[3]3+5*sqrt[3]3)',
   '(-1)+1',
   '(-0.2)*(-0.2)',
-
-  // TODO: adjust GMs gesture priorities to resolve signs before cancelling
-  // opposite terms, e.g.: 1+(-1) => 1-1, not 0
-  '1+(-1)',
-
-  // TODO: extend GMs gesture to remove a sign from a squared expression to work
-  // inside of products: e.g. (-ab)^2 = (ab)^2
-  'x^2-1/2*x+(-{1/2}*1/2)^2=45/2+(-{1/2}/2)^2',
-
-  // TODO: fix -0 results in GM (should just be 0)
-  '-4*0+1',
-  '-0*3+0.5',
+  '-(-1*sqrt[3]3)-(-sqrt[3]3-3*sqrt[3]3+5*sqrt[3]3)',
+  '-(3-4)*sqrt[3]3-(-sqrt[3]3-3*sqrt[3]3+5*sqrt[3]3)',
 
   // TODO: adjust GM to set entire product to 0 when multiplying by 0
   'x=(-7±sqrt(7^2-4*1*0))/(2*1)',
 
-  // TODO: fix brackets bug in GM for sqrt(2^2)
-  '(1*sqrt[3](2^2))/(sqrt[3]2*sqrt[3](2^2))',
-  '(9*sqrt[4](11^3))/(2*sqrt[4]11*sqrt[4](11^3))',
-  'x=(-6±2*sqrt[4]2*sqrt[4](3^2))/6',
-  'sqrt[5](12^4)',
-  '2*sqrt[3](2^2)',
-  'sqrt[3](7^2)',
-  '(2*sqrt[3](2^2))/(sqrt[3]2*sqrt[3](2^2))',
-  '(2*(4+2*sqrt[3]3+sqrt[3](3^2)))/5',
-  '(sqrt[3]25-sqrt[3]15+sqrt[3](3^2))/4',
-  '(sqrt[3](5^2)-sqrt[3]15+sqrt[3](3^2))/4',
-  '24*4*sqrt[3](3^2)',
-  '1/sqrt[3](13^2)*sqrt[3]13/sqrt[3](13^1)',
-  '1/sqrt[3](13^2)*sqrt[3](13^1)/sqrt[3](13^1)',
-  '4*sqrt[6](2^3)*sqrt[6]243',
-  'sqrt 32*sqrt[6](3^5)',
-  'sqrt(2^5)*sqrt[6](3^5)',
-  '2*sqrt[5]8*sqrt[5](3^4)',
-  '2*sqrt[5](2^3)*sqrt[5](3^4)',
-
-  // TODO: fix GM brackets cleanup bug
-  '(sqrt 2+1)^1+1',
-
-  // TODO: extend GM gesture to cover these
+  // TODO: extend GM gesture to cover these: 0^x, 1^x, x^1, x^0, radical cases
   '1^(sqrt 2+1)',
   '0^(3/2)',
-
-  // TODO: fix GM to simplify *1 in denominators
-  '1/(1*sqrt 3)',
-
-  // TODO: fix GM to parse `-1sqrt3` without an extra set of brackets
-  '-(-(1*sqrt[3]3))-(-sqrt[3]3-3*sqrt[3]3+5*sqrt[3]3)',
 ];
 
 export const ruleWhiteList = [

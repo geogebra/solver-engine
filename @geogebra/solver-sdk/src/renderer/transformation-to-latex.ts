@@ -20,7 +20,7 @@ export function specialTransformationLatex(
     //   x - y = 3 |
     //   ----------+--
     //      2x = 5
-    const [eq1, eq2] = fromExpr.args;
+    const [eq1, eq2] = fromExpr.operands;
     const alignSetting = { ...settings, align: true };
     const operator = fromExpr.type === 'AddEquations' ? '+' : '-';
     return (

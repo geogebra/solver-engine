@@ -11,12 +11,11 @@ import server.models.PlanSelectionMetadata
 import server.models.SolveRequest
 import java.util.UUID
 import java.util.logging.Level
-import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
 
 @Service
 class SelectPlanApiServiceImpl : SelectPlansApiService {
-    @OptIn(ExperimentalTime::class)
+
     override fun selectPlans(solveRequest: SolveRequest): List<PlanSelection> {
         val expr = try {
             parseExpression(solveRequest.input)

@@ -125,6 +125,24 @@ enum class GeneralExplanation : CategorisedMetadataKey {
     CancelAdditiveInverseElements,
 
     /**
+     * simplify power where the base is negative and exponent is an even value
+     *
+     * E.g. [(-2)^4] -> [(2)^4]
+     *      [(-x)^4] -> [x^4]
+     */
+    @LegacyKeyName("IntegerArithmetic.SimplifyEvenPowerOfNegative")
+    SimplifyEvenPowerOfNegative,
+
+    /**
+     * simplify power where the base is negative and exponent is an odd value
+     *
+     * E.g. [(-2)^3] -> -[2^3]
+     *      [(-x)^3] -> -[x^3]
+     */
+    @LegacyKeyName("IntegerArithmetic.SimplifyOddPowerOfNegative")
+    SimplifyOddPowerOfNegative,
+
+    /**
      * 0 to any positive power is 0
      *
      * E.g. [0 ^ 3] -> 0

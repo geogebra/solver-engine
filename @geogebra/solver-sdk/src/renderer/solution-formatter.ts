@@ -20,13 +20,13 @@ export const setsSolutionFormatter = {
   ): string {
     switch (n.type) {
       case 'Solution':
-        return `${rec(n.args[0], n)} \\in ${rec(n.args[1], n)}`;
+        return `${rec(n.operands[0], n)} \\in ${rec(n.operands[1], n)}`;
       case 'SetSolution': {
-        const [varTuple, _] = variableListToLatexTuple(n.args[0], rec);
-        return `${varTuple} \\in ${rec(n.args[1], n)}`;
+        const [varTuple, _] = variableListToLatexTuple(n.operands[0], rec);
+        return `${varTuple} \\in ${rec(n.operands[1], n)}`;
       }
       case 'Identity': {
-        const [varTuple, size] = variableListToLatexTuple(n.args[0], rec);
+        const [varTuple, size] = variableListToLatexTuple(n.operands[0], rec);
         if (size === 0) {
           return '\\top';
         } else if (size === 1) {
@@ -36,7 +36,7 @@ export const setsSolutionFormatter = {
         }
       }
       case 'Contradiction': {
-        const [varTuple, size] = variableListToLatexTuple(n.args[0], rec);
+        const [varTuple, size] = variableListToLatexTuple(n.operands[0], rec);
         if (size === 0) {
           return '\\bot';
         } else {
@@ -44,8 +44,8 @@ export const setsSolutionFormatter = {
         }
       }
       case 'ImplicitSolution': {
-        const [varTuple, size] = variableListToLatexTuple(n.args[0], rec);
-        return `${varTuple} \\in \\mathbb{R}^${size} : ${rec(n.args[1], n)}`;
+        const [varTuple, size] = variableListToLatexTuple(n.operands[0], rec);
+        return `${varTuple} \\in \\mathbb{R}^${size} : ${rec(n.operands[1], n)}`;
       }
     }
     return '???';
@@ -66,43 +66,49 @@ export const simpleSolutionFormatter = {
   ): string {
     switch (n.type) {
       case 'SetSolution': {
-        const [vars, set] = n.args;
+        const [vars, set] = n.operands;
         const varList = vars as VariableListTree;
         const [varsTuple, variableCount] = variableListToLatexTuple(vars, rec);
 
         switch (set.type) {
           case 'FiniteSet':
-            switch (set.args.length) {
+            switch (set.operands.length) {
               case 0:
                 return `${varsTuple} \\in \\emptyset`;
               case 1: {
                 if (variableCount > 1) {
-                  const tuple = set.args[0] as TupleTree;
-                  return varList.args
-                    .map((v, i) => `${rec(v, null)} = ${rec(tuple.args[i], null)}`)
+                  const tuple = set.operands[0] as TupleTree;
+                  return varList.operands
+                    .map((v, i) => `${rec(v, null)} = ${rec(tuple.operands[i], null)}`)
                     .join(', ');
                 } else {
-                  return `${rec(varList.args[0], null)} = ${rec(set.args[0], null)}`;
+                  return `${rec(varList.operands[0], null)} = ${rec(
+                    set.operands[0],
+                    null,
+                  )}`;
                 }
               }
               default:
-                return set.args.map((el) => `${varsTuple} = ${rec(el, null)}`).join(', ');
+                return set.operands
+                  .map((el) => `${varsTuple} = ${rec(el, null)}`)
+                  .join(', ');
             }
           case 'CartesianProduct':
             if (
-              set.args.every(
+              set.operands.every(
                 (s) =>
-                  s.type === 'Reals' || (s.type === 'FiniteSet' && s.args.length === 1),
+                  s.type === 'Reals' ||
+                  (s.type === 'FiniteSet' && s.operands.length === 1),
               )
             ) {
-              return set.args
+              return set.operands
                 .map((s, i) => {
-                  const v = rec((vars as VariableListTree).args[i], null);
+                  const v = rec((vars as VariableListTree).operands[i], null);
                   switch (s.type) {
                     case 'Reals':
                       return `${v} \\in \\mathbb{R}`;
                     case 'FiniteSet':
-                      return `${v} = ${rec(s.args[0], null)}`;
+                      return `${v} = ${rec(s.operands[0], null)}`;
                   }
                 })
                 .join(', ');
@@ -111,10 +117,10 @@ export const simpleSolutionFormatter = {
           case 'SetDifference':
             if (
               variableCount === 1 &&
-              set.args[0].type === 'Reals' &&
-              set.args[1].type === 'FiniteSet'
+              set.operands[0].type === 'Reals' &&
+              set.operands[1].type === 'FiniteSet'
             ) {
-              return set.args[1].args
+              return set.operands[1].operands
                 .map((s) => `${varsTuple} \\neq ${rec(s, null)}`)
                 .join(' \\text{ and } ');
             }
@@ -122,17 +128,17 @@ export const simpleSolutionFormatter = {
         break;
       }
       case 'ImplicitSolution':
-        return `${rec(n.args[0], null)} \\in \\mathbb{R} : ${rec(n.args[1], n)}`;
+        return `${rec(n.operands[0], null)} \\in \\mathbb{R} : ${rec(n.operands[1], n)}`;
       case 'Identity': {
-        const varList = n.args[0] as VariableListTree;
-        if (varList.args !== undefined && varList.args.length > 0) {
+        const varList = n.operands[0] as VariableListTree;
+        if (varList.operands !== undefined && varList.operands.length > 0) {
           return `${rec(varList, null)} \\in \\mathbb{R}`;
         }
         break;
       }
       case 'Contradiction': {
-        const varList = n.args[0] as VariableListTree;
-        if (varList.args !== undefined && varList.args.length > 0) {
+        const varList = n.operands[0] as VariableListTree;
+        if (varList.operands !== undefined && varList.operands.length > 0) {
           return `${rec(varList, null)} \\in \\emptyset`;
         }
         break;
@@ -147,7 +153,7 @@ function variableListToLatexTuple(
   n: ExpressionTree,
   rec: (n: ExpressionTree, p: ExpressionTree | null) => string,
 ): [string, number] {
-  const vars = (n as VariableListTree).args;
+  const vars = (n as VariableListTree).operands;
   switch (vars ? vars.length : 0) {
     case 0:
       return ['()', 0];

@@ -38,7 +38,7 @@ internal class ProceduralPipeline(
 @Suppress("TooManyFunctions")
 private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : PipelineBuilder {
 
-    private val expression get() = builder.lastSub
+    private val expression get() = builder.simpleExpression
 
     override fun inContext(contextFactory: Context.(Expression) -> Context, init: PipelineBuilder.() -> Unit) {
         PipelineRunner(builder, ctx.contextFactory(expression)).init()
@@ -46,7 +46,7 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
 
     private fun tidyUp() {
         repeat(MAX_WHILE_POSSIBLE_ITERATIONS) {
-            val iterationStep = InlinePartialExpressions.tryExecute(ctx, builder.lastSub) ?: return
+            val iterationStep = InlinePartialExpressions.tryExecute(ctx, builder.simpleExpression) ?: return
             builder.addStep(iterationStep)
         }
     }
@@ -71,7 +71,7 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
     override fun optionally(steps: StepsProducer) {
         if (!builder.inProgress) return
 
-        steps.produceSteps(ctx, builder.lastSub)
+        steps.produceSteps(ctx, builder.simpleExpression)
             ?.let {
                 builder.addSteps(it)
                 tidyUp()
@@ -87,7 +87,7 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
     override fun shortcut(steps: StepsProducer) {
         if (!builder.inProgress) return
 
-        steps.produceSteps(ctx, builder.lastSub)
+        steps.produceSteps(ctx, builder.simpleExpression)
             ?.let {
                 builder.addSteps(it)
                 builder.succeed()
@@ -103,7 +103,7 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
     override fun apply(steps: StepsProducer) {
         if (!builder.inProgress) return
 
-        addSteps(steps.produceSteps(ctx, builder.lastSub))
+        addSteps(steps.produceSteps(ctx, builder.simpleExpression))
     }
 
     override fun apply(init: PipelineBuilder.() -> Unit) {
@@ -115,7 +115,7 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
     override fun check(condition: Context.(Expression) -> Boolean) {
         if (!builder.inProgress) return
 
-        if (!ctx.condition(builder.lastSub)) {
+        if (!ctx.condition(builder.simpleExpression)) {
             builder.abort()
         }
     }
@@ -125,7 +125,7 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
         if (!builder.inProgress) return
 
         addSteps(
-            extractor.extract(builder.lastSub as T)?.let {
+            extractor.extract(builder.simpleExpression as T)?.let {
                 stepsProducer.produceSteps(ctx, it)
             },
         )
@@ -135,7 +135,7 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
         if (!builder.inProgress) return
 
         addSteps(
-            extractor.extract(builder.lastSub)?.let {
+            extractor.extract(builder.simpleExpression)?.let {
                 stepsProducer.produceSteps(ctx, it)
             },
         )
@@ -172,10 +172,10 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
     override fun applyToChildren(stepsProducer: StepsProducer, all: Boolean, atLeastOne: Boolean) {
         if (!builder.inProgress) return
 
-        val childCount = builder.lastSub.childCount
+        val childCount = builder.simpleExpression.childCount
         var appliedOnce = false
         for (i in 0 until childCount) {
-            val steps = stepsProducer.produceSteps(ctx, builder.lastSub.nthChild(i))
+            val steps = stepsProducer.produceSteps(ctx, builder.simpleExpression.nthChild(i))
             when {
                 steps != null -> {
                     appliedOnce = true
@@ -196,14 +196,14 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
     override fun firstOf(init: FirstOfBuilder.() -> Unit) {
         if (!builder.inProgress) return
 
-        addSteps(FirstOf(init).produceSteps(ctx, builder.lastSub))
+        addSteps(FirstOf(init).produceSteps(ctx, builder.simpleExpression))
     }
 
     override fun whilePossible(stepsProducer: StepsProducer) {
         if (!builder.inProgress) return
 
         repeat(MAX_WHILE_POSSIBLE_ITERATIONS) {
-            val iterationSteps = stepsProducer.produceSteps(ctx, builder.lastSub) ?: return
+            val iterationSteps = stepsProducer.produceSteps(ctx, builder.simpleExpression) ?: return
             builder.addSteps(iterationSteps)
             tidyUp()
             if (builder.undefined()) {
@@ -213,7 +213,7 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
 
         throw TooManyIterationsException(
             "WhilePossible max iteration number ($MAX_WHILE_POSSIBLE_ITERATIONS) " +
-                "exceeded for expression ${builder.lastSub}",
+                "exceeded for expression ${builder.simpleExpression}",
         )
     }
 
@@ -228,16 +228,16 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
 
         fun visitPrefix(sub: Expression): List<Transformation>? =
             stepsProducer.produceSteps(ctx, sub)
-                ?: sub.children.firstNotNullOfOrNull { visitPrefix(it) }
+                ?: sub.childrenInVisitingOrder().firstNotNullOfOrNull { visitPrefix(it) }
 
         fun visitPostfix(sub: Expression): List<Transformation>? =
-            sub.children.firstNotNullOfOrNull { visitPostfix(it) }
+            sub.childrenInVisitingOrder().firstNotNullOfOrNull { visitPostfix(it) }
                 ?: stepsProducer.produceSteps(ctx, sub)
 
         addSteps(
             when {
-                deepFirst -> visitPostfix(builder.lastSub)
-                else -> visitPrefix(builder.lastSub)
+                deepFirst -> visitPostfix(builder.simpleExpression)
+                else -> visitPrefix(builder.simpleExpression)
             },
         )
     }
@@ -251,20 +251,20 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
     override fun plan(init: PlanBuilder.() -> Unit) {
         if (!builder.inProgress) return
 
-        addSteps(engine.methods.plan(init).produceSteps(ctx, builder.lastSub))
+        addSteps(engine.methods.plan(init).produceSteps(ctx, builder.simpleExpression))
     }
 
     override fun taskSet(init: TaskSetBuilder.() -> CompositeMethod) {
         if (!builder.inProgress) return
 
-        addSteps(engine.methods.taskSet(init).produceSteps(ctx, builder.lastSub))
+        addSteps(engine.methods.taskSet(init).produceSteps(ctx, builder.simpleExpression))
     }
 
     override fun checkForm(patternProvider: () -> Pattern) {
         if (!builder.inProgress) return
 
         val pattern = patternProvider()
-        if (!pattern.matches(ctx, builder.lastSub)) {
+        if (!pattern.matches(ctx, builder.simpleExpression)) {
             builder.abort()
         }
     }
@@ -272,7 +272,7 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
     override fun contextSensitive(init: ContextSensitiveBuilder.() -> Unit) {
         if (!builder.inProgress) return
 
-        addSteps(contextSensitiveSteps(init).produceSteps(ctx, builder.lastSub))
+        addSteps(contextSensitiveSteps(init).produceSteps(ctx, builder.simpleExpression))
     }
 }
 

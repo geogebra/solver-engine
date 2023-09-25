@@ -19,7 +19,7 @@ class Rule(
 
     override fun run(ctx: Context, sub: Expression): Transformation? {
         for (match in pattern.findMatches(ctx, RootMatch, sub)) {
-            val builder = RuleResultBuilder(sub, ctx, match)
+            val builder = RuleResultBuilder(ctx, sub, match)
             builder.transformation()?.let {
                 return it
             }
@@ -36,7 +36,7 @@ class RuleBuilder {
         Rule(equationOf(lhs, rhs), result)
 }
 
-class RuleResultBuilder(expression: Expression, ctx: Context, match: Match) :
+class RuleResultBuilder(ctx: Context, expression: Expression, match: Match) :
     MappedExpressionBuilder(ctx, expression, match) {
 
     @Suppress("LongParameterList")

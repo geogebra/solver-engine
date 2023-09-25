@@ -3,6 +3,8 @@ package methods.constantexpressions
 import engine.expressions.Fraction
 import engine.expressions.Power
 import engine.expressions.ValueExpression
+import engine.expressions.containsPowers
+import engine.expressions.containsRoots
 import engine.expressions.isSignedFraction
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
@@ -64,8 +66,8 @@ enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : Runn
             explanation = Explanation.SimplifyPowerOfInteger
 
             steps {
-                optionally(IntegerArithmeticRules.SimplifyEvenPowerOfNegative)
-                optionally(IntegerArithmeticRules.SimplifyOddPowerOfNegative)
+                optionally(GeneralRules.SimplifyEvenPowerOfNegative)
+                optionally(GeneralRules.SimplifyOddPowerOfNegative)
 
                 applyAfterMaybeExtractingMinus {
                     firstOf {
@@ -95,12 +97,12 @@ enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : Runn
 
     SimplifyPowerOfProduct(
         plan {
-            pattern = powerOf(productContaining(), AnyPattern())
+            pattern = powerOf(optionalNegOf(productContaining()), AnyPattern())
             explanation = Explanation.SimplifyPowerOfProduct
 
             steps {
-                optionally(IntegerArithmeticRules.SimplifyOddPowerOfNegative)
-                optionally(IntegerArithmeticRules.SimplifyEvenPowerOfNegative)
+                optionally(GeneralRules.SimplifyOddPowerOfNegative)
+                optionally(GeneralRules.SimplifyEvenPowerOfNegative)
 
                 applyAfterMaybeExtractingMinus {
                     apply(GeneralRules.DistributePowerOfProduct)
@@ -116,8 +118,8 @@ enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : Runn
             explanation = Explanation.SimplifyPowerOfFraction
 
             steps {
-                optionally(IntegerArithmeticRules.SimplifyOddPowerOfNegative)
-                optionally(IntegerArithmeticRules.SimplifyEvenPowerOfNegative)
+                optionally(GeneralRules.SimplifyOddPowerOfNegative)
+                optionally(GeneralRules.SimplifyEvenPowerOfNegative)
 
                 applyAfterMaybeExtractingMinus {
                     shortcut(FractionArithmeticRules.SimplifyFractionToMinusOne)
@@ -147,10 +149,13 @@ enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : Runn
     SimplifyRootsInExpression(
         plan {
             explanation = Explanation.SimplifyRootsInExpression
+            pattern = condition { it.containsRoots() }
 
             steps {
                 whilePossible {
                     firstOf {
+                        option { deeply(GeneralRules.SimplifyEvenPowerOfNegative) }
+                        option { deeply(GeneralRules.SimplifyOddPowerOfNegative) }
                         option { deeply(IntegerRootsPlans.SimplifyIntegerRootToInteger) }
                         option { deeply(IntegerRootsPlans.CancelPowerOfARoot) }
                         option { deeply(IntegerRootsPlans.SimplifyRootOfRootWithCoefficient) }
@@ -231,39 +236,38 @@ enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : Runn
 }
 
 val simpleTidyUpSteps = steps {
-    deeply {
-        firstOf {
-            // simplify to undefined
-            option(GeneralRules.SimplifyZeroDenominatorFractionToUndefined)
-            option(GeneralRules.EvaluateZeroToThePowerOfZero)
-            option(IntegerRationalExponentsRules.EvaluateNegativeToRationalExponentAsUndefined)
+    firstOf {
+        // simplify to undefined
+        option(GeneralRules.SimplifyZeroDenominatorFractionToUndefined)
+        option(GeneralRules.EvaluateZeroToThePowerOfZero)
+        option(IntegerRationalExponentsRules.EvaluateNegativeToRationalExponentAsUndefined)
 
-            // tidy up decimals
-            option(DecimalRules.StripTrailingZerosAfterDecimal)
+        // tidy up decimals
+        option(DecimalRules.StripTrailingZerosAfterDecimal)
 
-            // handle zeroes
-            option(GeneralRules.EvaluateProductContainingZero)
-            option(GeneralRules.EliminateZeroInSum)
-            option(GeneralRules.SimplifyZeroNumeratorFractionToZero)
-            option(GeneralRules.EvaluateZeroToAPositivePower)
-            option(GeneralRules.EvaluateExpressionToThePowerOfZero)
-            option(IntegerRootsRules.SimplifyRootOfZero)
+        // handle zeroes
+        option(GeneralRules.EvaluateProductContainingZero)
+        option(GeneralRules.EliminateZeroInSum)
+        option(GeneralRules.SimplifyZeroNumeratorFractionToZero)
+        option(GeneralRules.EvaluateZeroToAPositivePower)
+        option(GeneralRules.EvaluateExpressionToThePowerOfZero)
+        option(IntegerRootsRules.SimplifyRootOfZero)
 
-            // handle ones
-            option(GeneralRules.SimplifyFractionWithOneDenominator)
-            option(GeneralRules.EvaluateOneToAnyPower)
-            option(GeneralRules.SimplifyExpressionToThePowerOfOne)
-            option(IntegerRootsRules.SimplifyRootOfOne)
+        // handle ones
+        option(GeneralRules.SimplifyFractionWithOneDenominator)
+        option(GeneralRules.EvaluateOneToAnyPower)
+        option(GeneralRules.SimplifyExpressionToThePowerOfOne)
+        option(IntegerRootsRules.SimplifyRootOfOne)
 
-            // miscellaneous
-            option(GeneralRules.SimplifyDoubleMinus)
-            option(MixedNumbersRules.SplitMixedNumber)
-            option(GeneralRules.CancelAdditiveInverseElements)
-        }
+        // miscellaneous
+        option(GeneralRules.SimplifyDoubleMinus)
+        option(MixedNumbersRules.SplitMixedNumber)
+        option(GeneralRules.CancelAdditiveInverseElements)
     }
 }
 
 private val trickySimplificationSteps = steps {
+    check { it.containsRoots() }
     deeply {
         firstOf {
             option(cancelRootOfPower)
@@ -279,6 +283,8 @@ private val fractionSimplificationSteps = steps {
             option(normalizeFractionsWithinFractions)
             option(normalizeNegativeSignsInFraction)
             option(FractionArithmeticPlans.SimplifyFraction)
+
+            // These should be done once and for all at the start I guess, no need to try again and again
             option(DecimalPlans.NormalizeFractionOfDecimals)
             option(DecimalPlans.ConvertTerminatingDecimalToFractionAndSimplify)
             option(DecimalPlans.ConvertRecurringDecimalToFractionAndSimplify)
@@ -288,7 +294,7 @@ private val fractionSimplificationSteps = steps {
 
 val constantSimplificationSteps: StepsProducer = steps {
     firstOf {
-        option(simpleTidyUpSteps)
+        option { deeply(simpleTidyUpSteps) }
 
         option { deeply(inlineSumsAndProducts) }
 
@@ -308,6 +314,7 @@ val constantSimplificationSteps: StepsProducer = steps {
 
         option { deeply(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithSameBase) }
         option {
+            check { it.containsPowers() }
             deeply(deepFirst = true) {
                 firstOf {
                     option(ConstantExpressionsPlans.SimplifyPowerOfInteger)
@@ -332,7 +339,10 @@ val constantSimplificationSteps: StepsProducer = steps {
         option { deeply(addIntegerAndFraction) }
         option { deeply(addRootAndFraction) }
 
-        option { deeply(FractionRootsPlans.RationalizeDenominators) }
+        option {
+            check { it.containsRoots() }
+            deeply(FractionRootsPlans.RationalizeDenominators)
+        }
 
         option { deeply(ExpandRules.DistributeNegativeOverBracket) }
         option { deeply(expandConstantExpression) }

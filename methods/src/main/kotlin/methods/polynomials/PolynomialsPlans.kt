@@ -207,8 +207,8 @@ private val simplifyPowerOfNegatedVariable = plan {
 
     steps {
         firstOf {
-            option(IntegerArithmeticRules.SimplifyOddPowerOfNegative)
-            option(IntegerArithmeticRules.SimplifyEvenPowerOfNegative)
+            option(GeneralRules.SimplifyOddPowerOfNegative)
+            option(GeneralRules.SimplifyEvenPowerOfNegative)
         }
     }
 }
@@ -219,8 +219,8 @@ private val simplifyPowerOfVariablePower = plan {
         powerOf(optionalNegOf(powerOf(ArbitraryVariablePattern(), UnsignedIntegerPattern())), UnsignedIntegerPattern())
 
     steps {
-        optionally(IntegerArithmeticRules.SimplifyOddPowerOfNegative)
-        optionally(IntegerArithmeticRules.SimplifyEvenPowerOfNegative)
+        optionally(GeneralRules.SimplifyOddPowerOfNegative)
+        optionally(GeneralRules.SimplifyEvenPowerOfNegative)
 
         applyAfterMaybeExtractingMinus {
             apply(GeneralRules.MultiplyExponentsUsingPowerRule)
@@ -233,8 +233,8 @@ private val simplifyPowerOfMonomial = plan {
     explanation = Explanation.DistributeProductToIntegerPowerAndSimplify
 
     steps {
-        optionally(IntegerArithmeticRules.SimplifyOddPowerOfNegative)
-        optionally(IntegerArithmeticRules.SimplifyEvenPowerOfNegative)
+        optionally(GeneralRules.SimplifyOddPowerOfNegative)
+        optionally(GeneralRules.SimplifyEvenPowerOfNegative)
 
         applyAfterMaybeExtractingMinus {
             apply(GeneralRules.DistributePowerOfProduct)

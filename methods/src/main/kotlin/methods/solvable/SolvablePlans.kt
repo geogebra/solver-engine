@@ -5,11 +5,11 @@ import engine.expressions.AbsoluteValue
 import engine.expressions.Equation
 import engine.expressions.Expression
 import engine.expressions.Power
+import engine.methods.Method
 import engine.methods.Runner
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.StepsBuilder
-import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.steps
 import engine.patterns.BinaryIntegerCondition
 import engine.patterns.ConditionPattern
@@ -21,7 +21,7 @@ import engine.patterns.condition
 import engine.patterns.negOf
 import engine.patterns.oneOf
 import engine.patterns.sumContaining
-import engine.patterns.withOptionalConstantCoefficient
+import engine.patterns.withOptionalConstantCoefficientInSolutionVariables
 import engine.patterns.withOptionalIntegerCoefficient
 import engine.steps.Transformation
 import engine.steps.metadata.Metadata
@@ -30,7 +30,7 @@ import engine.steps.metadata.metadata
 import methods.approximation.ApproximationPlans
 import methods.polynomials.PolynomialsPlans
 
-class SolvablePlans(private val simplificationSteps: StepsProducer) {
+class SolvablePlans(private val simplificationPlan: Method, private val constraintSimplificationPlan: Method? = null) {
 
     private fun getExplanationKey(solvableKey: SolvableKey, ctx: Context, expr: Expression): MetadataKey {
         val keyGetter = if (expr is Equation) {
@@ -48,28 +48,41 @@ class SolvablePlans(private val simplificationSteps: StepsProducer) {
     inner class ApplyRuleAndSimplify(private val key: SolvableKey) : RunnerMethod {
 
         override val name = key.name
-        override val runner = Runner { ctx: Context, sub: Expression ->
-            val initialStep = key.rule.tryExecute(ctx, sub) ?: return@Runner null
+        override val runner = object : Runner {
+            override fun run(ctx: Context, sub: Expression): Transformation? {
+                val initialStep = key.rule.tryExecute(ctx, sub) ?: return null
 
-            val builder = StepsBuilder(ctx, sub)
-            builder.addStep(initialStep)
-            simplificationSteps.produceSteps(ctx, builder.lastSub)?.let { builder.addSteps(it) }
+                val builder = StepsBuilder(ctx, sub)
+                val oldConstraint = builder.constraint
 
-            val key = getExplanationKey(key, ctx, sub)
+                builder.addStep(initialStep)
 
-            Transformation(
-                type = Transformation.Type.Plan,
-                fromExpr = sub,
-                toExpr = builder.lastSub,
-                steps = builder.getFinalSteps(),
-                explanation = Metadata(key, initialStep.explanation!!.mappedParams),
-            )
+                simplificationPlan.tryExecute(ctx, builder.simpleExpression)?.let { builder.addStep(it) }
+
+                val constraint = builder.constraint
+
+                if (constraintSimplificationPlan != null && constraint != null && constraint != oldConstraint) {
+                    constraintSimplificationPlan.tryExecute(ctx, constraint)?.let { builder.addStep(it) }
+                }
+
+                val key = getExplanationKey(key, ctx, builder.simpleExpression)
+
+                return Transformation(
+                    type = Transformation.Type.Plan,
+                    fromExpr = sub,
+                    toExpr = builder.expression,
+                    steps = builder.getFinalSteps(),
+                    explanation = Metadata(key, initialStep.explanation!!.mappedParams),
+                )
+            }
         }
     }
 
     val moveConstantsToTheLeftAndSimplify = ApplyRuleAndSimplify(SolvableKey.MoveConstantsToTheLeft)
 
-    val moveConstantsToTheRightAndSimplify = ApplyRuleAndSimplify(SolvableKey.MoveConstantsToTheRight)
+    val moveConstantsToTheRightAndSimplify = ApplyRuleAndSimplify(
+        SolvableKey.MoveConstantsToTheRight,
+    )
 
     val moveVariablesToTheLeftAndSimplify = ApplyRuleAndSimplify(SolvableKey.MoveVariablesToTheLeft)
 
@@ -113,7 +126,10 @@ class SolvablePlans(private val simplificationSteps: StepsProducer) {
                 // we move `c` to the left hand side and flip the solvable
                 checkForm {
                     val lhs = ConstantInSolutionVariablePattern()
-                    val nonConstantTerm = withOptionalConstantCoefficient(variableTerm, positiveOnly = true)
+                    val nonConstantTerm = withOptionalConstantCoefficientInSolutionVariables(
+                        variableTerm,
+                        positiveOnly = true,
+                    )
                     val rhs = oneOf(
                         nonConstantTerm,
                         sumContaining(nonConstantTerm) { rest -> rest.isConstantIn(solutionVariables) },
@@ -157,8 +173,8 @@ class SolvablePlans(private val simplificationSteps: StepsProducer) {
                 // otherwise we first move variables to the left and then constants
                 // to the right
                 checkForm {
-                    val lhsVariable = withOptionalConstantCoefficient(variableTerm)
-                    val rhsVariable = withOptionalConstantCoefficient(variableTerm)
+                    val lhsVariable = withOptionalConstantCoefficientInSolutionVariables(variableTerm)
+                    val rhsVariable = withOptionalConstantCoefficientInSolutionVariables(variableTerm)
 
                     val lhs = oneOf(
                         ConstantInSolutionVariablePattern(),

@@ -6,10 +6,12 @@ import engine.expressions.AbsoluteValue
 import engine.expressions.Constants
 import engine.expressions.Equation
 import engine.expressions.Expression
+import engine.expressions.ExpressionWithConstraint
 import engine.expressions.Fraction
 import engine.expressions.Introduce
 import engine.expressions.Sum
 import engine.expressions.fractionOf
+import engine.expressions.inequationOf
 import engine.expressions.inverse
 import engine.expressions.isSignedFraction
 import engine.expressions.productOf
@@ -33,6 +35,7 @@ import engine.patterns.optionalNegOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
 import engine.patterns.withOptionalConstantCoefficient
+import engine.patterns.withOptionalConstantCoefficientInSolutionVariables
 import engine.sign.Sign
 import engine.steps.metadata.GmPathModifier
 import engine.steps.metadata.Metadata
@@ -297,21 +300,13 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
 
     DivideByCoefficientOfVariable(
         rule {
-            val lhs = withOptionalConstantCoefficient(VariableExpressionPattern())
+            val lhs = withOptionalConstantCoefficientInSolutionVariables(VariableExpressionPattern())
             val rhs = ConstantInSolutionVariablePattern()
 
             val solvable = SolvablePattern(lhs, rhs)
 
             onPattern(solvable) {
                 val coefficientValue = get(lhs::coefficient)!!
-
-                val useDual = when (coefficientValue.signOf()) {
-                    Sign.POSITIVE -> false
-                    Sign.NEGATIVE -> true
-                    Sign.NOT_ZERO -> if (solvable.isSelfDual()) false else return@onPattern null
-                    else -> return@onPattern null
-                }
-
                 if (coefficientValue == Constants.One || coefficientValue == Constants.MinusOne) return@onPattern null
 
                 val coefficient = introduce(coefficientValue, coefficientValue)
@@ -319,15 +314,44 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                 val newLhs = fractionOf(get(lhs), coefficient)
                 val newRhs = fractionOf(get(rhs), coefficient)
 
-                ruleResult(
-                    toExpr = solvable.deriveSolvable(newLhs, newRhs, useDual),
-                    gmAction = drag(coefficient, GmPathModifier.Group, rhs),
-                    explanation = solvableExplanation(
-                        SolvableKey.DivideByCoefficientOfVariable,
-                        flipSign = useDual && !solvable.isSelfDual(),
-                        parameters = listOf(coefficient),
-                    ),
-                )
+                if (solvable.isSelfDual()) {
+                    val derivedSolvable = solvable.deriveSolvable(newLhs, newRhs, useDual = false)
+
+                    val toExpr = if (coefficientValue.isConstant()) {
+                        derivedSolvable
+                    } else {
+                        ExpressionWithConstraint(
+                            derivedSolvable,
+                            inequationOf(coefficientValue, Constants.Zero),
+                        )
+                    }
+
+                    ruleResult(
+                        toExpr = toExpr,
+                        gmAction = drag(coefficient, GmPathModifier.Group, rhs),
+                        explanation = solvableExplanation(
+                            SolvableKey.DivideByCoefficientOfVariable,
+                            flipSign = false,
+                            parameters = listOf(coefficient),
+                        ),
+                    )
+                } else {
+                    val useDual = when (coefficientValue.signOf()) {
+                        Sign.POSITIVE -> false
+                        Sign.NEGATIVE -> true
+                        else -> return@onPattern null
+                    }
+
+                    ruleResult(
+                        toExpr = solvable.deriveSolvable(newLhs, newRhs, useDual),
+                        gmAction = drag(coefficient, GmPathModifier.Group, rhs),
+                        explanation = solvableExplanation(
+                            SolvableKey.DivideByCoefficientOfVariable,
+                            flipSign = useDual,
+                            parameters = listOf(coefficient),
+                        ),
+                    )
+                }
             }
         },
     ),

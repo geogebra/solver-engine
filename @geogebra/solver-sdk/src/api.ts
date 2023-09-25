@@ -1,13 +1,19 @@
-import {
-  API_APPLY_PLAN_RESPONSE,
+import type {
   API_PLANS_RESPONSE,
-  API_SELECT_PLANS_RESPONSE,
   API_STRATEGIES_RESPONSE,
   API_VERSION_INFO_RESPONSE,
   ApiMathFormat,
   PlanId,
+  PlanSelection,
+  PlanSelectionJson,
+  PlanSelectionLatex,
+  PlanSelectionSolver,
   SolverContext,
   SolverExpr,
+  Transformation,
+  TransformationJson,
+  TransformationLatex,
+  TransformationSolver,
 } from './types';
 
 /**
@@ -42,30 +48,65 @@ class Api {
   }
 
   /** Get a transformation for each applicable plan. */
-  selectPlans(
+  async selectPlans(
+    input: SolverExpr,
+    format: 'solver',
+    context?: SolverContext,
+  ): Promise<PlanSelectionSolver[]>;
+  async selectPlans(
+    input: SolverExpr,
+    format?: 'latex',
+    context?: SolverContext,
+  ): Promise<PlanSelectionLatex[]>;
+  async selectPlans(
+    input: SolverExpr,
+    format: 'json2',
+    context?: SolverContext,
+  ): Promise<PlanSelectionJson[]>;
+  async selectPlans(
     input: SolverExpr,
     format: ApiMathFormat = 'latex',
     context: SolverContext = this.defaultContext,
-  ): Promise<API_SELECT_PLANS_RESPONSE> {
-    return fetch(`${this.baseUrl}/selectPlans`, {
+  ): Promise<PlanSelection[]> {
+    const res = await fetch(`${this.baseUrl}/selectPlans`, {
       ...this.defaultHeaders,
       method: 'POST',
       body: JSON.stringify({ input, format, context }),
-    }).then((res) => res.json());
+    });
+    return await res.json();
   }
 
   /* Apply plan to input and return the transformation. */
-  applyPlan(
+  async applyPlan(
+    input: SolverExpr,
+    planId: PlanId,
+    format: 'solver',
+    context?: SolverContext,
+  ): Promise<TransformationSolver>;
+  async applyPlan(
+    input: SolverExpr,
+    planId: PlanId,
+    format?: 'latex',
+    context?: SolverContext,
+  ): Promise<TransformationLatex>;
+  async applyPlan(
+    input: SolverExpr,
+    planId: PlanId,
+    format: 'json2',
+    context?: SolverContext,
+  ): Promise<TransformationJson>;
+  async applyPlan(
     input: SolverExpr,
     planId: PlanId,
     format: ApiMathFormat = 'latex',
     context: SolverContext = this.defaultContext,
-  ): Promise<API_APPLY_PLAN_RESPONSE> {
-    return fetch(`${this.baseUrl}/plans/${planId}/apply`, {
+  ): Promise<Transformation> {
+    const res = await fetch(`${this.baseUrl}/plans/${planId}/apply`, {
       ...this.defaultHeaders,
       method: 'POST',
       body: JSON.stringify({ input, format, context }),
-    }).then((res) => res.json());
+    });
+    return await res.json();
   }
 
   /** Get a list of all available plans. */

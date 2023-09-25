@@ -115,8 +115,10 @@ class MethodRegistry internal constructor(
     }
 
     @Suppress("TooGenericExceptionCaught")
-    fun selectSuccessfulPlansMethodIdAndTransformation(expr: Expression, context: Context):
-        List<Pair<MethodId, Transformation>> {
+    fun selectSuccessfulPlansMethodIdAndTransformation(
+        expr: Expression,
+        context: Context,
+    ): List<Pair<MethodId, Transformation>> {
         val successfulPlansIds = mutableSetOf<MethodId>()
         val selections = mutableListOf<Pair<MethodId, Transformation>>()
 

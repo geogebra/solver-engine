@@ -104,8 +104,7 @@ class TransformationModeller(val format: Format) {
         return when (format) {
             Format.Latex -> expr.toLatexString()
             Format.Solver -> expr.toString()
-            Format.Json -> expr.toJson()
-            Format.Json2 -> expr.toJson2()
+            Format.Json2 -> expr.toJson()
         }
     }
 }

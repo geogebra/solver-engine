@@ -33,13 +33,13 @@ export function substituteTree(
       return prefixedSubstitute;
     }
     const index = pathArray[pathIdx];
-    if (!('args' in subDestination) || index >= subDestination.args.length) {
+    if (!('operands' in subDestination) || index >= subDestination.operands.length) {
       // these don't have subtrees, so the path should have had length 0
       throw new Error('Invalid path');
     }
     return {
       ...subDestination,
-      args: subDestination.args.map((arg, i) => {
+      operands: subDestination.operands.map((arg, i) => {
         if (i === index) {
           return inner(arg, pathIdx + 1, subDestination);
         } else return arg;
@@ -53,8 +53,8 @@ function prefixPaths(tree: ExpressionTree, prefix = ''): ExpressionTree {
   return {
     ...tree,
     path: prefix + tree.path.slice(1),
-    ...('args' in tree
-      ? { args: tree.args.map((arg) => prefixPaths(arg, prefix)) }
+    ...('operands' in tree
+      ? { operands: tree.operands.map((arg) => prefixPaths(arg, prefix)) }
       : null),
   };
 }

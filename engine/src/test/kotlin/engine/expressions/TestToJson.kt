@@ -4,9 +4,9 @@ import net.javacrumbs.jsonunit.assertj.assertThatJson
 import org.junit.jupiter.api.Test
 import parser.parseExpression
 
-class TestToJson2 {
+class TestToJson {
     fun test(text: String, expectedJson: String) {
-        val expr = parseExpression(text).toJson2()
+        val expr = parseExpression(text).toJson()
         assertThatJson(expr).isEqualTo(expectedJson)
     }
 

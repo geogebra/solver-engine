@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 An entry should be added to the _[Unreleased]_ section when committing to main. When a release is made we move its
 contents to a new release section (e.g. _[0.x]_).
 
-## Unreleased
+## [1.3] 2023-09-25
 
 ### Added
 
@@ -22,6 +22,10 @@ contents to a new release section (e.g. _[0.x]_).
 - Solve rational equations implementation (PLUT-593)
 - Added support for equations simplifying to undefined (PLUT-652)
 - Added ExpressionList to represent a variable number of parameters in explanations (PLUT-663)
+- Performance improvement via context-local caching of plans, adding guards to some methods and deduplicating the use of
+  deeply (PLUT-677)
+- Tools for profiling performance of queries, see [docs/profiling.md](docs/profiling.md) for details (PLUT-677)
+- Equation solving has been extended to support multivariate linear equations (PLUT-672)
 
 ### Fixed
 
@@ -34,6 +38,8 @@ contents to a new release section (e.g. _[0.x]_).
 - SDK: fixed missing `:group` annotations in fractions for `createPathMap` (SP-216)
 - fixed gmActionInfo of several rules (e.g., select `+2` instead of `2` when dragging to add in `1+x+2`) (SP-216)
 - temporary fix for PartialBrackets + SmartProduct bug (SP-216, PLUT-684)
+- Simplification of -ve base root power be done by "SimplifyConstantExpression" (PLUT-682)
+- Fix regression: SolveEquation plan should solve rational equations well (PLUT-689)
 
 ### Changed
 
@@ -56,9 +62,17 @@ contents to a new release section (e.g. _[0.x]_).
   solved using completing the square (PLUT-641)
 - SDK: simplified logic of `solverPathToGmNodes` method (SP-216)
 - SDK: simplified logic of `substituteTree` to always use the substitute's decorators (SP-216)
-- refactored and expanded the gm-action tests (SP-216)
+- Refactored and expanded the gm-action tests (SP-216)
+- The `SolveEquationInOneVariable` plan has been renamed to `SolveEquation` (PLUT-672)
+- SDK: made the type information of the return types of `applyPlan` and `selectPlans` more specific (PLUT-688)
 
 ### Removed
+
+- SDK: Removed support for old Json format from the SDK (PLUT-628)
+- Removed support for old Json format from the engine (PLUT-629)
+- the `SolveRationalEquation` plan is no longer public (it has been rolled into `SolveEquationWithOneVariable` as part
+  of PLUT-677)
+- SDK: Removed the `API_APPLY_PLAN_RESPONSE` and `API_SELECT_PLANS_RESPONSE` TS types (PLUT-688)
 
 ## [1.2] - 2023-07-18
 

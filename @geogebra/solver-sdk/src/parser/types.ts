@@ -18,11 +18,9 @@ export type NestedExpressionType =
   | 'Equation' // binary
   | 'Inequation' // binary
   | 'EquationSystem' // n-ary
-  | 'InequalitySystem' // n-ary
   | 'AddEquations' // binary
   | 'SubtractEquations' // binary
   | 'EquationUnion' // n-ary
-  | 'StatementWithConstraint' // binary
   | 'LessThan' // binary
   | 'GreaterThan' // binary
   | 'LessThanEqual' // binary
@@ -54,15 +52,26 @@ export type NestedExpressionType =
 
 export type NestedExpressionBase<T> = {
   type: NestedExpressionType;
-  args: ExpressionTreeBase<T>[];
+  operands: ExpressionTreeBase<T>[];
 };
 
 export type NameExpression = {
   type: 'Name';
   value: string;
 };
-export type NumberExpression = {
-  type: 'Number';
+
+export type IntegerExpression = {
+  type: 'Integer';
+  value: string;
+};
+
+export type DecimalExpression = {
+  type: 'Decimal';
+  value: string;
+};
+
+export type RecurringDecimalExpression = {
+  type: 'RecurringDecimal';
   value: string;
 };
 
@@ -74,7 +83,7 @@ export type VariableExpression = {
 
 export type SmartProductExpression<T> = {
   type: 'SmartProduct';
-  args: ExpressionTreeBase<T>[];
+  operands: ExpressionTreeBase<T>[];
   signs: boolean[];
 };
 
@@ -101,10 +110,12 @@ export type ExpressionTreeBase<T> = ExpressionDecorations &
   (
     | NestedExpressionBase<T>
     | SmartProductExpression<T>
-    | NumberExpression
+    | IntegerExpression
+    | DecimalExpression
+    | RecurringDecimalExpression
     | VariableExpression
     | NameExpression
-    | { type: '/undefined/' | '/infinity/' | 'Reals' | 'Void' }
+    | { type: 'Undefined' | 'Infinity' | 'Reals' | 'Void' }
   ) &
   T;
 

@@ -51,7 +51,7 @@ export function hideImplicitMultiplicationSigns(
   pathMap: Map<string, GmMathNode[]>,
 ) {
   if (['Product', 'ImplicitProduct', 'SmartProduct'].includes(tree.type)) {
-    (tree as NestedExpression).args.forEach((factor, index) => {
+    (tree as NestedExpression).operands.forEach((factor, index) => {
       const path = `${factor.path}:op`;
       const show =
         tree.type === 'SmartProduct'
@@ -61,8 +61,8 @@ export function hideImplicitMultiplicationSigns(
           : index > 0;
       pathMap.get(path)?.forEach((node) => (node.hidden = !show));
     });
-  } else if ('args' in tree) {
-    tree.args.forEach((arg) => {
+  } else if ('operands' in tree) {
+    tree.operands.forEach((arg) => {
       hideImplicitMultiplicationSigns(gmTree, arg, pathMap);
     });
   }
@@ -91,50 +91,52 @@ function annotate(
   appendMap(gmTree, tree.path, map);
   const treeType = tree.type;
   switch (treeType) {
-    case 'Number':
+    case 'Integer':
+    case 'Decimal':
+    case 'RecurringDecimal':
     case 'Variable':
       break;
     case 'Sum':
       gmTree.children.forEach((addend, i) => {
         // could be inside a partial sum, use tree.args[i] instead or /${i}
-        const path = tree.args[i].path;
+        const path = tree.operands[i].path;
         appendMap(addend, `${path}:group`, map);
-        const addendHasBrackets = !!tree.args[i].decorators?.length;
+        const addendHasBrackets = !!tree.operands[i].decorators?.length;
         if (
-          (tree.args[i].type === 'Minus' || tree.args[i].type === 'PlusMinus') &&
+          (tree.operands[i].type === 'Minus' || tree.operands[i].type === 'PlusMinus') &&
           !addendHasBrackets
         ) {
-          annotate(addend, tree.args[i], map);
+          annotate(addend, tree.operands[i], map);
         } else {
           appendMap(
             addend.children[0]!,
             path + (addendHasBrackets ? ':op()' : ':op'),
             map,
           );
-          annotate(addend.children[1], tree.args[i], map);
+          annotate(addend.children[1], tree.operands[i], map);
         }
       });
       break;
     case 'Plus':
       // not supported in GM
-      annotate(gmTree, tree.args[0], map);
+      annotate(gmTree, tree.operands[0], map);
       break;
     case 'Minus':
     case 'PlusMinus':
     case 'DivideBy':
       appendMap(gmTree.children[0], `${tree.path}:op`, map);
-      annotate(gmTree.children[1], tree.args[0], map);
+      annotate(gmTree.children[1], tree.operands[0], map);
       break;
     case 'Product':
     case 'ImplicitProduct':
     case 'SmartProduct':
       gmTree.children.forEach((factor, i) => {
         appendMap(factor, `${tree.path}/${i}:group`, map);
-        if (tree.args[i].type === 'DivideBy') {
-          annotate(factor, tree.args[i], map);
+        if (tree.operands[i].type === 'DivideBy') {
+          annotate(factor, tree.operands[i], map);
         } else {
           appendMap(factor.children[0]!, `${tree.path}/${i}:op`, map);
-          annotate(factor.children[1], tree.args[i], map);
+          annotate(factor.children[1], tree.operands[i], map);
         }
       });
       break;
@@ -142,61 +144,73 @@ function annotate(
       // GM puts a list of muldiv nodes into the numerator and denominator while the
       // Solver either directly puts a single node, or wraps several nodes into a Product.
       appendMap((gmTree as GmFraction).get_fraction_bar(), `${tree.path}:/`, map);
-      if (['Product', 'ImplicitProduct', 'SmartProduct'].includes(tree.args[0].type)) {
+      if (
+        ['Product', 'ImplicitProduct', 'SmartProduct'].includes(tree.operands[0].type)
+      ) {
         (gmTree as GmFraction).get_top().forEach((muldiv, i) => {
           // we give all factors in the numerator the same /0 path so we can later
           // select all numerator terms with that path
           appendMap(muldiv, `${tree.path}/0`, map);
           appendMap(muldiv, `${tree.path}/0/${i}:group`, map);
           appendMap(muldiv.children[0]!, `${tree.path}/0/${i}:op`, map);
-          annotate(muldiv.children[1], (tree.args[0] as NestedExpression).args[i], map);
+          annotate(
+            muldiv.children[1],
+            (tree.operands[0] as NestedExpression).operands[i],
+            map,
+          );
         });
       } else {
         // single node in numerator
         appendMap(gmTree.children[0], `${tree.path}/0:group`, map);
         appendMap(gmTree.children[0].children[0]!, `${tree.path}/0:op`, map);
-        annotate(gmTree.children[0].children[1], tree.args[0], map);
+        annotate(gmTree.children[0].children[1], tree.operands[0], map);
       }
 
-      if (['Product', 'ImplicitProduct', 'SmartProduct'].includes(tree.args[1].type)) {
+      if (
+        ['Product', 'ImplicitProduct', 'SmartProduct'].includes(tree.operands[1].type)
+      ) {
         (gmTree as GmFraction).get_bottom().forEach((muldiv, i) => {
           // we give all factors in the denominator the same /1 path so we can later
           // select all denominator terms with that path
           appendMap(muldiv, `${tree.path}/1`, map);
           appendMap(muldiv, `${tree.path}/1/${i}:group`, map);
           appendMap(muldiv.children[0]!, `${tree.path}/1/${i}:op`, map);
-          annotate(muldiv.children[1], (tree.args[1] as NestedExpression).args[i], map);
+          annotate(
+            muldiv.children[1],
+            (tree.operands[1] as NestedExpression).operands[i],
+            map,
+          );
         });
       } else {
         // single node in denominator
         const node = gmTree.children[gmTree.children.length - 1];
         appendMap(node, `${tree.path}/1:group`, map);
         appendMap(node.children[0]!, `${tree.path}/1:op`, map);
-        annotate(node.children[1], tree.args[1], map);
+        annotate(node.children[1], tree.operands[1], map);
       }
       break;
     case 'Power':
-      annotate(gmTree.children[0], tree.args[0], map);
+      annotate(gmTree.children[0], tree.operands[0], map);
       appendMap(gmTree.children[1], `${tree.path}/1:group`, map);
-      annotate(gmTree.children[1].children[0], tree.args[1], map);
+      annotate(gmTree.children[1].children[0], tree.operands[1], map);
       break;
     case 'SquareRoot':
       appendMap(gmTree.children[0], `${tree.path}:idx`, map);
       appendMap(gmTree.children[1], `${tree.path}:op`, map);
       appendMap(gmTree.children[2], `${tree.path}:op`, map);
-      annotate(gmTree.children[3], tree.args[0], map);
+      annotate(gmTree.children[3], tree.operands[0], map);
       break;
     case 'Root':
       appendMap(gmTree.children[0], `${tree.path}:idx`, map);
-      annotate(gmTree.children[0].children[0], tree.args[1], map);
+      annotate(gmTree.children[0].children[0], tree.operands[1], map);
       appendMap(gmTree.children[1], `${tree.path}:op`, map);
       appendMap(gmTree.children[2], `${tree.path}:op`, map);
-      annotate(gmTree.children[3], tree.args[0], map);
+      annotate(gmTree.children[3], tree.operands[0], map);
       break;
     case 'AbsoluteValue':
       appendMap(gmTree, `${tree.path}:()`, map);
       appendMap(gmTree.children[0], `${tree.path}:(`, map);
-      annotate(gmTree.children[1], tree.args[0], map);
+      annotate(gmTree.children[1], tree.operands[0], map);
       appendMap(gmTree.children[2], `${tree.path}:)`, map);
       break;
     case 'Equation':
@@ -205,22 +219,20 @@ function annotate(
     case 'GreaterThan':
     case 'LessThanEqual':
     case 'GreaterThanEqual':
-      annotate(gmTree.children[0], tree.args[0], map);
+      annotate(gmTree.children[0], tree.operands[0], map);
       appendMap(gmTree.children[1], `${tree.path}:op`, map);
-      annotate(gmTree.children[2], tree.args[1], map);
+      annotate(gmTree.children[2], tree.operands[1], map);
       break;
     case 'EquationSystem':
-    case 'InequalitySystem':
     case 'MixedNumber':
     case 'Name':
-    case '/undefined/':
-    case '/infinity/':
+    case 'Undefined':
+    case 'Infinity':
     case 'Reals':
     case 'AddEquations':
     case 'SubtractEquations':
     case 'EquationUnion':
     case 'ExpressionWithConstraint':
-    case 'StatementWithConstraint':
     case 'Solution':
     case 'Identity':
     case 'Contradiction':
@@ -267,25 +279,27 @@ function rearrangeNegativeProducts(
   if (
     expr.type === 'Minus' &&
     !parentIsSum &&
-    (expr.args[0].type === 'Product' ||
-      expr.args[0].type === 'ImplicitProduct' ||
-      expr.args[0].type === 'SmartProduct') &&
-    !expr.args[0].decorators?.length
+    (expr.operands[0].type === 'Product' ||
+      expr.operands[0].type === 'ImplicitProduct' ||
+      expr.operands[0].type === 'SmartProduct') &&
+    !expr.operands[0].decorators?.length
   ) {
-    const prod = expr.args[0];
+    const prod = expr.operands[0];
     return {
       ...prod,
-      args: [
-        { ...expr, args: [rearrangeNegativeProducts(prod.args[0])] },
-        ...prod.args.slice(1).map((arg) => rearrangeNegativeProducts(arg)),
+      operands: [
+        { ...expr, operands: [rearrangeNegativeProducts(prod.operands[0])] },
+        ...prod.operands.slice(1).map((arg) => rearrangeNegativeProducts(arg)),
       ],
     };
   } else {
-    if (!('args' in expr)) return expr;
+    if (!('operands' in expr)) return expr;
     else
       return {
         ...expr,
-        args: expr.args.map((arg) => rearrangeNegativeProducts(arg, expr.type === 'Sum')),
+        operands: expr.operands.map((arg) =>
+          rearrangeNegativeProducts(arg, expr.type === 'Sum'),
+        ),
       };
   }
 }
@@ -303,23 +317,23 @@ function flattenPartialExpressions(expr: ExpressionTree): ExpressionTree {
   if (expr.type === 'Sum' || expr.type === 'SmartProduct') {
     return {
       ...expr,
-      args: expr.args
+      operands: expr.operands
         .flatMap((child) => {
           if (
             (child.type === 'Sum' || child.type === 'SmartProduct') &&
             child.decorators?.[0] === 'PartialBracket'
           )
-            return child.args;
+            return child.operands;
           else return child;
         })
         .map(flattenPartialExpressions),
     };
   } else {
-    if (!('args' in expr)) return expr;
+    if (!('operands' in expr)) return expr;
     else
       return {
         ...expr,
-        args: expr.args.map(flattenPartialExpressions),
+        operands: expr.operands.map(flattenPartialExpressions),
       };
   }
 }

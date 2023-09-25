@@ -7,7 +7,6 @@ import java.math.BigDecimal
 private const val PREDICATE_PRECEDENCE = 0
 private const val EQUATION_SYSTEM_PRECEDENCE = -10
 private const val EQUATION_UNION_PRECEDENCE = -20
-private const val STATEMENT_WITH_CONSTRAINT_PRECEDENCE = -15
 
 internal interface StatementOperator : Operator {
     override val kind get() = OperatorKind.STATEMENT
@@ -175,36 +174,6 @@ internal data class DoubleComparisonOperator(
     }
 }
 
-internal object StatementWithConstraintOperator : BinaryOperator, StatementOperator {
-    override val name = "StatementWithConstraint"
-
-    override val precedence = STATEMENT_WITH_CONSTRAINT_PRECEDENCE
-
-    override fun leftChildAllowed(op: Operator): Boolean {
-        require(op.kind == OperatorKind.STATEMENT)
-        return true
-    }
-
-    override fun rightChildAllowed(op: Operator): Boolean {
-        require(op.kind == OperatorKind.STATEMENT)
-        return true
-    }
-
-    override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable): String {
-        val innerCtx = ctx.copy(align = false)
-        return buildString {
-            append("\\left\\{\\begin{array}{l}")
-            append(left.toLatexString(innerCtx), " \\\\")
-            append(right.toLatexString(innerCtx), " \\\\")
-            append("\\end{array}\\right.")
-        }
-    }
-
-    override fun <T> readableString(left: T, right: T): String {
-        return "$left GIVEN $right"
-    }
-}
-
 internal interface SolvableOperator : Operator {
     fun getDual(): SolvableOperator
 
@@ -262,7 +231,7 @@ internal object StatementSystemOperator : StatementOperator {
         return true
     }
 
-    override fun <T> readableString(children: List<T>) = children.joinToString(", ")
+    override fun <T> readableString(children: List<T>) = children.joinToString(" AND ")
 
     override fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String {
         val alignCtx = ctx.copy(align = true)

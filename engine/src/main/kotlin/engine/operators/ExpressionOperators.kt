@@ -77,7 +77,7 @@ internal data class IntegerOperator(val value: BigInteger) : NullaryOperator(), 
 
 internal object InfinityOperator : NullaryOperator(), ExpressionOperator {
 
-    override val name = "/infinity/"
+    override val name = "Infinity"
 
     override fun toString() = "/infinity/"
 
@@ -88,7 +88,7 @@ internal object InfinityOperator : NullaryOperator(), ExpressionOperator {
 
 internal object UndefinedOperator : NullaryOperator(), ExpressionOperator {
 
-    override val name = "/undefined/"
+    override val name = "Undefined"
 
     override fun toString() = "/undefined/"
 
@@ -99,7 +99,7 @@ internal object UndefinedOperator : NullaryOperator(), ExpressionOperator {
 
 internal object PiOperator : NullaryOperator(), ExpressionOperator {
 
-    override val name = "/pi/"
+    override val name = "Pi"
 
     override fun toString() = "/pi/"
 
@@ -110,7 +110,7 @@ internal object PiOperator : NullaryOperator(), ExpressionOperator {
 
 internal object EulerEOperator : NullaryOperator(), ExpressionOperator {
 
-    override val name = "/e/"
+    override val name = "EulerE"
 
     override fun toString() = "/e/"
 
@@ -121,7 +121,7 @@ internal object EulerEOperator : NullaryOperator(), ExpressionOperator {
 
 internal object ImaginaryUnitOperator : NullaryOperator(), ExpressionOperator {
 
-    override val name = "/i/"
+    override val name = "ImaginaryUnit"
 
     override fun toString() = "/i/"
 
@@ -457,10 +457,7 @@ internal object ExpressionWithConstraintOperator : BinaryOperator, StatementOper
 
     override val precedence = EXPRESSION_WITH_CONSTRAINT_PRECEDENCE
 
-    override fun leftChildAllowed(op: Operator): Boolean {
-        require(op.kind == OperatorKind.EXPRESSION)
-        return true
-    }
+    override fun leftChildAllowed(op: Operator) = true
 
     override fun rightChildAllowed(op: Operator): Boolean {
         require(op.kind == OperatorKind.STATEMENT)

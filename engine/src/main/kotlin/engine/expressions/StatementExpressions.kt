@@ -5,7 +5,6 @@ import engine.operators.ComparisonOperator
 import engine.operators.DoubleComparisonOperator
 import engine.operators.StatementSystemOperator
 import engine.operators.StatementUnionOperator
-import engine.operators.StatementWithConstraintOperator
 import engine.sign.Sign
 
 open class Comparison(
@@ -77,15 +76,6 @@ class DoubleInequality(
     fun getLeftInequality() = Inequality(first, leftComparator, second)
 
     fun getRightInequality() = Inequality(second, rightComparator, third)
-}
-
-class StatementWithConstraint(statement: Expression, constraint: Expression, meta: NodeMeta = BasicMeta()) : Expression(
-    operator = StatementWithConstraintOperator,
-    operands = listOf(statement, constraint),
-    meta = meta,
-) {
-    val statement get() = firstChild
-    val constraint get() = secondChild
 }
 
 class StatementUnion(statements: List<Expression>, meta: NodeMeta = BasicMeta()) : Expression(

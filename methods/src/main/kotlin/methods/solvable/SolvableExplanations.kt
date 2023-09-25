@@ -166,7 +166,8 @@ enum class EquationsExplanation(
      * Add the opposite of the constants appearing on the RHS
      * of the equation to both sides.
      *
-     * %1: variables that are not constant (x in the example below)
+     * %1: variables that are not constant (x in the example)
+     * %2: constants (2k in the first example)
      *
      * E.g. k = 2x + 2k -> k - 2k = 2x + 2k - 2k
      * k = 2x - 3k -> k + 3k = 2x - 3k + 3k
@@ -188,6 +189,7 @@ enum class EquationsExplanation(
      * of the equation to both sides and simplify.
      *
      * %1: variables that are not constant (x in the example)
+     * %2: constants (2k in the example)
      *
      * E.g. k = 2x + 2k
      *      -> k - 2k = 2x + k - k
@@ -212,9 +214,10 @@ enum class EquationsExplanation(
      * Add the opposite of the constants appearing on the LHS
      * of the equation to both sides.
      *
-     * %1: variables that are not constant
+     * %1: variables that are not constant (x in the example)
+     * %2: constants (2k in the first example)
      *
-     * E.g. 2x + k = 2k -> 2x + k - k = 2k - k
+     * E.g. 2x + 2k = k -> 2x + 2k - 2k = k - 2k
      * 2x - k = 3k -> 2x - k + k = 3k + k
      */
     MoveConstantsInVariablesToTheRight(SolvableKey.MoveConstantsToTheRight, explicitVariables = true),
@@ -233,11 +236,12 @@ enum class EquationsExplanation(
      * Add the opposite of the constants appearing on the LHS
      * of the equation to both sides and simplify.
      *
-     * %1: variables that are not constant (x in the example below)
+     * %1: variables that are not constant (x in the example)
+     * %2: constants (2k in the example)
      *
-     * E.g. 2x + k = 2k
-     *      -> 2x + k - k = 2k - k
-     *      -> 2x = k
+     * E.g. 2x + 2k = k
+     *      -> 2x + 2k - 2k = k - 2k
+     *      -> 2x = -k
      */
     MoveConstantsInVariablesToTheRightAndSimplify(
         SolvableKey.MoveConstantsToTheRight,
@@ -249,7 +253,6 @@ enum class EquationsExplanation(
      * Add the opposite of the variables appearing on the RHS
      * of the equation to both sides.
      *
-     *
      * E.g. 3x + 2 = 2x + 1 -> 3x + 2 - 2x = 2x + 1 - 2x
      */
     MoveVariablesToTheLeft(SolvableKey.MoveVariablesToTheLeft),
@@ -258,7 +261,8 @@ enum class EquationsExplanation(
      * Add the opposite of some variables appearing on the RHS
      * of the equation to both sides.
      *
-     * %1: variables that can be moved (x in the example below)
+     * %1: variables that are moved (x in the example)
+     * %2: value which is actually moved (2x in the example)
      *
      * E.g. 3x + 2k = 2x + k -> 3x + k - 2x = 2x + k - 2x
      */
@@ -278,7 +282,8 @@ enum class EquationsExplanation(
      * Add the opposite of some variables appearing on the RHS
      * of the equation to both sides and simplify
      *
-     * %1: variables that can be moved (x in the example below)
+     * %1: variables that are moved (x in the example)
+     * %2: value which is actually moved (2x in the example)
      *
      * E.g. 3x + 2k = 2x + k
      *      -> 3x + 2k - 2x = 2x + k - 2x
@@ -302,7 +307,8 @@ enum class EquationsExplanation(
      * Add the opposite of some variables appearing on the LHS
      * of the equation to both sides.
      *
-     * %1: variables that can be moved (x in the example below)
+     * %1: variables that are moved (x in the example)
+     * %2: value which is actually moved (2x in the example)
      *
      * E.g. 2x + 2y = 3x + y -> 2x + 2y - 2x = 3x + y - 2x
      */
@@ -323,7 +329,8 @@ enum class EquationsExplanation(
      * Add the opposite of some variables appearing on the LHS
      * of the equation to both sides and simplify
      *
-     * %1: variables that can be moved (x in the example below)
+     * %1: variables that are moved (x in the example)
+     * %2: value which is actually moved (2x in the example)
      *
      * E.g. 2x + 2k = 3x + k
      *      -> 2x + 2k - 2x = 3x + k - 2x
@@ -402,6 +409,17 @@ enum class EquationsExplanation(
     DivideByCoefficientOfVariable(SolvableKey.DivideByCoefficientOfVariable),
 
     /**
+     * Divide both sides of the equation by the coefficient of the solution variable in a
+     * multivariate equation.
+     *
+     * %1: the variable we are solving for
+     * %2: the coefficient
+     *
+     * E.g. 2 (z + 1) x = 3 -> [2 (z + 1) x / 2 (z + 1)] = [3 / 2 (z + 1)] given that z + 1 != 0
+     */
+    DivideByCoefficientOfVariableMultivariate(SolvableKey.DivideByCoefficientOfVariable, explicitVariables = true),
+
+    /**
      * Divide both sides of the equation by the coefficient of the variable
      * and simplify.
      *
@@ -410,6 +428,23 @@ enum class EquationsExplanation(
      *      -> x = [3 sqrt[2] / 4]
      */
     DivideByCoefficientOfVariableAndSimplify(SolvableKey.DivideByCoefficientOfVariable, simplify = true),
+
+    /**
+     * Divide both sides of the equation by the coefficient of the solution variable in a
+     * multivariate equation and simplify.
+     *
+     * %1: the variable we are solving for
+     * %2: the coefficient
+     *
+     * E.g. 2 (z + 1) x = 3
+     *      -> [2 (z + 1) x / 2 (z + 1)] = [3 / 2 (z + 1)] given that z + 1 != 0
+     *      -> x = [3 / 2 (z + 1)] given that z != -1
+     */
+    DivideByCoefficientOfVariableAndSimplifyMultivariate(
+        SolvableKey.DivideByCoefficientOfVariable,
+        explicitVariables = true,
+        simplify = true,
+    ),
 
     /**
      * Negate both sides of the equation, i.e. turn an equation of

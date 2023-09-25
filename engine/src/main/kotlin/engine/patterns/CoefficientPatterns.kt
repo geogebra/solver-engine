@@ -1,5 +1,6 @@
 package engine.patterns
 
+import engine.context.Context
 import engine.context.emptyContext
 import engine.expressionbuilder.MappedExpressionBuilder
 import engine.expressions.Constants
@@ -69,7 +70,7 @@ class RationalCoefficientPattern(value: Pattern, private val positiveOnly: Boole
      * Given a match, returns the coefficient as an integer or fraction
      */
     override fun coefficient(match: Match): Expression =
-        with(MappedExpressionBuilder(emptyContext /* TODO */, match.getBoundExpr(key)!!, match)) {
+        with(MappedExpressionBuilder(emptyContext, match.getBoundExpr(key)!!, match)) {
             val numeratorCoefficient = when {
                 match.isBound(numerator) -> move(numerator)
                 else -> introduce(Constants.One)
@@ -81,6 +82,52 @@ class RationalCoefficientPattern(value: Pattern, private val positiveOnly: Boole
             }
 
             if (positiveOnly) coefficient else copySign(optionalNegPattern, coefficient)
+        }
+}
+
+abstract class ConstantCoefficientPatternBase(
+    value: Pattern,
+    private val positiveOnly: Boolean = false,
+) : CoefficientPattern(value) {
+
+    protected abstract fun isConstant(context: Context, expression: Expression): Boolean
+
+    private val product = productContaining(value)
+
+    private val numerator = oneOf(
+        ConditionPattern(product) { context, match, _ ->
+            product.getRestSubexpressions(match).all { isConstant(context, it) }
+        },
+        value,
+    )
+    private val denominator = condition { isConstant(this, it) }
+
+    private val options = oneOf(
+        numerator,
+        fractionOf(numerator, denominator),
+    )
+
+    private val optionalNegPtn = optionalNegOf(options)
+    private val ptn = if (positiveOnly) options else optionalNegPtn
+
+    override val key = ptn.key
+
+    /**
+     * Given a match, returns the coefficient
+     */
+    override fun coefficient(match: Match): Expression =
+        with(MappedExpressionBuilder(emptyContext, match.getBoundExpr(key)!!, match)) {
+            val numeratorCoefficient = when {
+                match.isBound(product) -> restOf(product)
+                else -> introduce(Constants.One)
+            }
+
+            val coefficient = when {
+                match.isBound(denominator) -> fractionOf(numeratorCoefficient, move(denominator))
+                else -> numeratorCoefficient
+            }
+
+            if (!positiveOnly) copySign(optionalNegPtn, coefficient) else coefficient
         }
 }
 
@@ -99,43 +146,21 @@ class RationalCoefficientPattern(value: Pattern, private val positiveOnly: Boole
  *     It is possible to restrict matching to expressions not starting with a negative sign by setting [positiveOnly] to
  *     true.
  */
-class ConstantCoefficientPattern(
-    value: Pattern,
-    private val positiveOnly: Boolean = false,
-) : CoefficientPattern(value) {
+class ConstantCoefficientPattern(value: Pattern, positiveOnly: Boolean = false) :
+    ConstantCoefficientPatternBase(value, positiveOnly) {
 
-    private val product = productContaining(value) { rest -> rest.isConstant() }
+    override fun isConstant(context: Context, expression: Expression) = expression.isConstant()
+}
 
-    private val numerator = oneOf(product, value)
-    private val denominator = condition { it.isConstant() }
+/**
+ * Just as above, except factors which don't contain any of the solution variables are also
+ * considered constant.
+ */
+class ConstantCoefficientInSolutionVariablesPattern(value: Pattern, positiveOnly: Boolean = false) :
+    ConstantCoefficientPatternBase(value, positiveOnly) {
 
-    private val options = oneOf(
-        numerator,
-        fractionOf(numerator, denominator),
-    )
-
-    private val optionalNegPtn = optionalNegOf(options)
-    private val ptn = if (positiveOnly) options else optionalNegPtn
-
-    override val key = ptn.key
-
-    /**
-     * Given a match, returns the coefficient
-     */
-    override fun coefficient(match: Match): Expression =
-        with(MappedExpressionBuilder(emptyContext /* TODO */, match.getBoundExpr(key)!!, match)) {
-            val numeratorCoefficient = when {
-                match.isBound(product) -> restOf(product)
-                else -> introduce(Constants.One)
-            }
-
-            val coefficient = when {
-                match.isBound(denominator) -> fractionOf(numeratorCoefficient, move(denominator))
-                else -> numeratorCoefficient
-            }
-
-            if (!positiveOnly) copySign(optionalNegPtn, coefficient) else coefficient
-        }
+    override fun isConstant(context: Context, expression: Expression) =
+        expression.isConstantIn(context.solutionVariables)
 }
 
 /**
@@ -158,3 +183,10 @@ fun withOptionalRationalCoefficient(pattern: Pattern, positiveOnly: Boolean = fa
  */
 fun withOptionalConstantCoefficient(variable: Pattern, positiveOnly: Boolean = false) =
     ConstantCoefficientPattern(variable, positiveOnly)
+
+/**
+ * Creates a pattern which matches the given variable optionally multiplied
+ * by a constant coefficient. See [ConstantCoefficientPattern] for details.
+ */
+fun withOptionalConstantCoefficientInSolutionVariables(variable: Pattern, positiveOnly: Boolean = false) =
+    ConstantCoefficientInSolutionVariablesPattern(variable, positiveOnly)

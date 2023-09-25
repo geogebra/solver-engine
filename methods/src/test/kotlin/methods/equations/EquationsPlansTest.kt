@@ -79,7 +79,7 @@ class EquationsPlansTest {
 
     @Test
     fun `test equation reducible to quadratic equation with integerRationalExponent`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "[3^[1/3]]([x^2]-[3^[1/3]])=2x"
 
         check {
@@ -89,14 +89,14 @@ class EquationsPlansTest {
 
     @Test
     fun `test undefined equation cannot be solved`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "x = [1 / 1 - 1]"
 
         check {
             fromExpr = "x = [1 / 1 - 1]"
             toExpr = "/void/"
             explanation {
-                key = EquationsExplanation.SolveEquationInOneVariable
+                key = EquationsExplanation.SolveEquation
             }
 
             step {

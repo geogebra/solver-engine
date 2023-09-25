@@ -22,7 +22,7 @@ class SolveRationalEquationTest {
             fromExpr = "[12 / [x ^ 2] - 9] = [8 x / x - 3] - [2 / x + 3]"
             toExpr = "SetSolution[x : {[1 / 4]}]"
             explanation {
-                key = EquationsExplanation.SolveEquationInOneVariable
+                key = EquationsExplanation.SolveEquation
             }
 
             // not necessary to test domain
@@ -205,7 +205,7 @@ class SolveRationalEquationTest {
             fromExpr = "[12 / [x ^ 2] - 9] = [8 x / x - 3] - [2 / x + 3]"
             toExpr = "SetSolution[x: {[1 / 4]}]"
             explanation {
-                key = EquationsExplanation.SolveEquationInOneVariable
+                key = EquationsExplanation.SolveEquation
             }
 
             task {
@@ -228,7 +228,7 @@ class SolveRationalEquationTest {
                 taskId = "#2"
                 startExpr = "12 = 8 x (x + 3) - 2 (x - 3)"
                 explanation {
-                    key = EquationsExplanation.SolveEquationInOneVariable
+                    key = EquationsExplanation.SolveEquation
                 }
 
                 step {
@@ -307,7 +307,7 @@ class SolveRationalEquationTest {
             fromExpr = "[x + 2 / x - 3] = [x / 3 x - 2]"
             toExpr = "SetSolution[x : {-4, [1 / 2]}]"
             explanation {
-                key = EquationsExplanation.SolveEquationInOneVariable
+                key = EquationsExplanation.SolveEquation
             }
 
             // not necessary to test domain
@@ -444,7 +444,7 @@ class SolveRationalEquationTest {
             fromExpr = "[x + 2 / x - 3] = [x / 3 x - 2]"
             toExpr = "SetSolution[x : {-4, [1 / 2]}]"
             explanation {
-                key = EquationsExplanation.SolveEquationInOneVariable
+                key = EquationsExplanation.SolveEquation
             }
 
             task {
@@ -467,7 +467,7 @@ class SolveRationalEquationTest {
                 taskId = "#2"
                 startExpr = "(x + 2) (3 x - 2) = x (x - 3)"
                 explanation {
-                    key = EquationsExplanation.SolveEquationInOneVariable
+                    key = EquationsExplanation.SolveEquation
                 }
 
                 step {
@@ -546,7 +546,7 @@ class SolveRationalEquationTest {
             fromExpr = "[[x ^ 2] + 5 x + 6 / x + 3] = [x + 2 / [x ^ 2] - 3 x - 10]"
             toExpr = "SetSolution[x : {[3 - sqrt[53] / 2], [3 + sqrt[53] / 2]}]"
             explanation {
-                key = EquationsExplanation.SolveEquationInOneVariable
+                key = EquationsExplanation.SolveEquation
             }
 
             task {
@@ -585,7 +585,7 @@ class SolveRationalEquationTest {
                 taskId = "#3"
                 startExpr = "x (x - 5) + 2 (x - 5) = 1"
                 explanation {
-                    key = EquationsExplanation.SolveEquationInOneVariable
+                    key = EquationsExplanation.SolveEquation
                 }
 
                 step {
@@ -616,7 +616,7 @@ class SolveRationalEquationTest {
             fromExpr = "[12 x / x - 9] + [1 / 3] = 8"
             toExpr = "SetSolution[x : {-[207 / 13]}]"
             explanation {
-                key = EquationsExplanation.SolveEquationInOneVariable
+                key = EquationsExplanation.SolveEquation
             }
 
             // domain computation task, not necessary to test
@@ -642,7 +642,7 @@ class SolveRationalEquationTest {
                 taskId = "#3"
                 startExpr = "36 x + x - 9 = 24 (x - 9)"
                 explanation {
-                    key = EquationsExplanation.SolveEquationInOneVariable
+                    key = EquationsExplanation.SolveEquation
                 }
 
                 step {
@@ -673,7 +673,7 @@ class SolveRationalEquationTest {
             fromExpr = "[12 x / [x ^ 2] - 9] - [1 / [x ^ 2] - 9] = 8"
             toExpr = "SetSolution[x : {[12 - 4 sqrt[151] / 16], [12 + 4 sqrt[151] / 16]}]"
             explanation {
-                key = EquationsExplanation.SolveEquationInOneVariable
+                key = EquationsExplanation.SolveEquation
             }
 
             // no need to test computation of domain
@@ -790,7 +790,7 @@ class SolveRationalEquationTest {
                 taskId = "#3"
                 startExpr = "12 x - 1 = 8 ([x ^ 2] - 9)"
                 explanation {
-                    key = EquationsExplanation.SolveEquationInOneVariable
+                    key = EquationsExplanation.SolveEquation
                 }
 
                 step {
@@ -823,7 +823,7 @@ class SolveRationalEquationTest {
             // result to "3 + sqrt[2]"
             toExpr = "SetSolution[x : {[2 sqrt[2] + sqrt[152 + 48 sqrt[2]] / 4]}]"
             explanation {
-                key = EquationsExplanation.SolveEquationInOneVariable
+                key = EquationsExplanation.SolveEquation
             }
 
             // no need to test the domain computation task
@@ -964,7 +964,7 @@ class SolveRationalEquationTest {
                 taskId = "#3"
                 startExpr = "12 = sqrt[2] (x - 3) (x + 3) - 2 (x - 3)"
                 explanation {
-                    key = EquationsExplanation.SolveEquationInOneVariable
+                    key = EquationsExplanation.SolveEquation
                 }
             }
 
@@ -987,7 +987,7 @@ class SolveRationalEquationTest {
             fromExpr = "[([x / x + 1]) ^ 2] = 1"
             toExpr = "SetSolution[x : {-[1 / 2]}]"
             explanation {
-                key = EquationsExplanation.SolveEquationInOneVariable
+                key = EquationsExplanation.SolveEquation
             }
 
             // domain computation task, not necessary to test it
@@ -1106,7 +1106,7 @@ class SolveRationalEquationTest {
                 taskId = "#3"
                 startExpr = "[x ^ 2] = [(x + 1) ^ 2]"
                 explanation {
-                    key = EquationsExplanation.SolveEquationInOneVariable
+                    key = EquationsExplanation.SolveEquation
                 }
             }
 
@@ -1129,7 +1129,7 @@ class SolveRationalEquationTest {
             fromExpr = "[2 x / x] = [4 / x]"
             toExpr = "SetSolution[x : {2}]"
             explanation {
-                key = EquationsExplanation.SolveEquationInOneVariable
+                key = EquationsExplanation.SolveEquation
             }
 
             // not necessary to test the domain computation task

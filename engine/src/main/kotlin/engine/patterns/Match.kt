@@ -47,7 +47,8 @@ object RootMatch : Match {
     override fun getLastBinding(p: Pattern): Expression? = null
     override fun getBoundExpr(p: Pattern): Expression? = null
 
-    override fun accumulateExprs(p: Pattern, acc: MutableList<Expression>) { /* do nothing */
+    override fun accumulateExprs(p: Pattern, acc: MutableList<Expression>) {
+        /* do nothing */
     }
 
     override fun getBoundExprs(p: Pattern): List<Expression> = emptyList()

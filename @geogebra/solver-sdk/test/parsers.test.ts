@@ -1,47 +1,38 @@
 import { describe, expect, it } from 'vitest';
-import type { ExpressionTree } from '../src';
+import type { MathJson } from '../src';
 import {
   jsonToLatex,
   jsonToTree,
   latexToSolver,
   latexToTree,
-  MathJson,
   treeToJson,
-  treeToLatex,
   treeToSolver,
 } from '../src';
 
 const latexToJson = (latex) => treeToJson(latexToTree(latex));
 const jsonToSolver = (json) => treeToSolver(jsonToTree(json));
 
+const integer = (value: string): MathJson => ({ type: 'Integer', value });
+const decimal = (value: string): MathJson => ({ type: 'Decimal', value });
+const variable = (value: string): MathJson => ({ type: 'Variable', value });
+
 function testCases(
   cases: {
     solver?: string;
     json?: MathJson;
     latex?: string | string[];
-    tree?: ExpressionTree;
     /** We currently do not support parsing sets or intervals in LaTeX, so we
      * need to be able to skip that part of those tests */
     dontParseLatex?: boolean;
   }[],
 ) {
-  cases.forEach(({ solver, latex, json, tree, dontParseLatex }) => {
+  cases.forEach(({ solver, latex, json, dontParseLatex }) => {
     /* things we actually need:
     - latex => solver (user input needs to be sent to the solver)
-    - json => tree (turn solver response into tree representation)
-    - tree => latex (display math to user)
-    - tree => solver (some intermediate step we have in json/tree format and want to send to the solver)
+    - json => latex (display math to user)
+    - json => solver (some intermediate step we have in json/tree format and want to send to the solver)
     - maybe: solver => latex (for debugging)
     */
-
-    if (json && tree) {
-      it(`json "${JSON.stringify(json)}" => Tree "${JSON.stringify(tree)}"`, () => {
-        expect(jsonToTree(json)).to.deep.equal(tree);
-      });
-      it(`Tree "${JSON.stringify(tree)}" => json "${JSON.stringify(json)}"`, () => {
-        expect(treeToJson(tree)).to.deep.equal(json);
-      });
-    }
 
     if (!Array.isArray(latex)) latex = [latex];
     const [unCastedLatexExact, ...latexAlternates] = latex;
@@ -52,6 +43,7 @@ function testCases(
         expect(latexToSolver(latexExact)).to.equal(solver);
       });
     }
+
     if (latexExact && json) {
       it(`json "${JSON.stringify(json)}" => LaTeX "${latexExact}"`, () => {
         expect(jsonToLatex(json)).to.equal(latexExact);
@@ -62,24 +54,10 @@ function testCases(
         });
       }
     }
-    if (latexExact && tree) {
-      it(`tree "${JSON.stringify(tree)}" => LaTeX "${latexExact}"`, () => {
-        expect(treeToLatex(tree)).to.equal(latexExact);
-      });
-      if (!dontParseLatex) {
-        it(`LaTeX "${latexExact}" => tree "${JSON.stringify(tree)}"`, () => {
-          expect(latexToTree(latexExact)).to.deep.equal(tree);
-        });
-      }
-    }
+
     if (solver && json) {
       it(`json "${JSON.stringify(json)}" => Solver "${solver}"`, () => {
         expect(jsonToSolver(json)).to.equal(solver);
-      });
-    }
-    if (solver && tree) {
-      it(`tree "${JSON.stringify(tree)}" => Solver "${solver}"`, () => {
-        expect(treeToSolver(tree)).to.equal(solver);
       });
     }
 
@@ -94,139 +72,346 @@ function testCases(
 describe('Solver Parser Unit Tests', () => {
   describe('Sums and products', () => {
     testCases([
-      { solver: '1', json: ['1'], latex: '1' },
+      { solver: '1', json: integer('1'), latex: '1' },
+
       {
         solver: '1 + 2 + 3',
-        json: ['Sum', ['1'], ['2'], ['3']],
+        json: {
+          type: 'Sum',
+          operands: [integer('1'), integer('2'), integer('3')],
+        },
         latex: '1+2+3',
       },
+
       {
         solver: '1 + 2 - 3 - 4',
-        json: ['Sum', ['1'], ['2'], ['Minus', ['3']], ['Minus', ['4']]],
+        json: {
+          type: 'Sum',
+          operands: [
+            integer('1'),
+            integer('2'),
+            { type: 'Minus', operands: [integer('3')] },
+            { type: 'Minus', operands: [integer('4')] },
+          ],
+        },
         latex: '1+2-3-4',
       },
+
       {
         solver: '+1 + 2 + 3',
-        json: ['Sum', ['Plus', ['1']], ['2'], ['3']],
+        json: {
+          type: 'Sum',
+          operands: [
+            { type: 'Plus', operands: [integer('1')] },
+            integer('2'),
+            integer('3'),
+          ],
+        },
         latex: '+1+2+3',
       },
+
       {
         solver: '1 + 2 * 3 * 4 + 5 * 6',
-        json: ['Sum', ['1'], ['Product', ['2'], ['3'], ['4']], ['Product', ['5'], ['6']]],
+        json: {
+          type: 'Sum',
+          operands: [
+            integer('1'),
+            {
+              type: 'Product',
+              operands: [integer('2'), integer('3'), integer('4')],
+            },
+            {
+              type: 'Product',
+              operands: [integer('5'), integer('6')],
+            },
+          ],
+        },
         latex: '1+2 \\cdot 3 \\cdot 4+5 \\cdot 6',
       },
+
       {
         solver: '-1 - 2',
-        json: ['Sum', ['Minus', ['1']], ['Minus', ['2']]],
+        json: {
+          type: 'Sum',
+          operands: [
+            { type: 'Minus', operands: [integer('1')] },
+            { type: 'Minus', operands: [integer('2')] },
+          ],
+        },
         latex: '-1-2',
       },
+
       {
         solver: '-1 - 2 * 3',
-        json: ['Sum', ['Minus', ['1']], ['Minus', ['Product', ['2'], ['3']]]],
+        json: {
+          type: 'Sum',
+          operands: [
+            { type: 'Minus', operands: [integer('1')] },
+            {
+              type: 'Minus',
+              operands: [
+                {
+                  type: 'Product',
+                  operands: [integer('2'), integer('3')],
+                },
+              ],
+            },
+          ],
+        },
         latex: ['-1-2 \\cdot 3', '-1-2\\cdot3', '-1-2\\times3', '-1–2*3', '–1-2×3'],
       },
+
       {
         solver: '1 * 3',
-        json: ['Product', ['1'], ['3']],
+        json: {
+          type: 'Product',
+          operands: [integer('1'), integer('3')],
+        },
         latex: ['1 \\cdot 3', '1\\cdot{}3', '1\\times{}3', '1\\times 3'],
       },
+
       {
         solver: '2 * 3 : 4 * 5',
-        json: ['Product', ['2'], ['3'], ['DivideBy', ['4']], ['5']],
+        json: {
+          type: 'Product',
+          operands: [
+            integer('2'),
+            integer('3'),
+            { type: 'DivideBy', operands: [integer('4')] },
+            integer('5'),
+          ],
+        },
         latex: [
           '2 \\cdot 3 \\div 4 \\cdot 5',
           '2 \\cdot 3   ÷   4 \\cdot 5',
           '2 \\cdot 3   :   4 \\cdot 5',
         ],
       },
+
       {
         solver: '3 : [4 ^ 5]',
-        json: ['Product', ['3'], ['DivideBy', ['Power', ['4'], ['5']]]],
+        json: {
+          type: 'Product',
+          operands: [
+            integer('3'),
+            {
+              type: 'DivideBy',
+              operands: [
+                {
+                  type: 'Power',
+                  operands: [integer('4'), integer('5')],
+                },
+              ],
+            },
+          ],
+        },
         latex: ['3 \\div {4}^{5}', '3÷4^5', '3:4^5'],
       },
+
       {
         solver: '3 : -[4 ^ 5]',
-        json: ['Product', ['3'], ['DivideBy', ['Minus', ['Power', ['4'], ['5']]]]],
+        json: {
+          type: 'Product',
+          operands: [
+            integer('3'),
+            {
+              type: 'DivideBy',
+              operands: [
+                {
+                  type: 'Minus',
+                  operands: [
+                    {
+                      type: 'Power',
+                      operands: [integer('4'), integer('5')],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
         latex: ['3 \\div -{4}^{5}', '3÷-4^5', '3:-4^5'],
       },
+
       {
         solver: '(1 + 2) + 3',
-        json: ['Sum', [['Sum', 'RoundBracket'], ['1'], ['2']], ['3']],
+        json: {
+          type: 'Sum',
+          operands: [
+            {
+              type: 'Sum',
+              decorators: ['RoundBracket'],
+              operands: [integer('1'), integer('2')],
+            },
+            integer('3'),
+          ],
+        },
         latex: '\\left(1+2\\right)+3',
       },
+
       {
         solver: '1 + (-2)',
-        json: ['Sum', ['1'], [['Minus', 'RoundBracket'], ['2']]],
+        json: {
+          type: 'Sum',
+          operands: [
+            integer('1'),
+            { type: 'Minus', decorators: ['RoundBracket'], operands: [integer('2')] },
+          ],
+        },
         latex: '1+\\left(-2\\right)',
       },
+
       {
         solver: '1 - (+2)',
-        json: ['Sum', ['1'], ['Minus', [['Plus', 'RoundBracket'], ['2']]]],
+        json: {
+          type: 'Sum',
+          operands: [
+            integer('1'),
+            {
+              type: 'Minus',
+              operands: [
+                { type: 'Plus', decorators: ['RoundBracket'], operands: [integer('2')] },
+              ],
+            },
+          ],
+        },
         latex: '1-\\left(+2\\right)',
       },
+
       {
         solver: '1 + -2',
-        json: ['Sum', ['1'], [['Minus', 'MissingBracket'], ['2']]],
+        json: {
+          type: 'Sum',
+          operands: [
+            integer('1'),
+            { type: 'Minus', decorators: ['MissingBracket'], operands: [integer('2')] },
+          ],
+        },
         latex: '1+-2',
       },
+
       {
         solver: '1 + --2',
-        json: [
-          'Sum',
-          ['1'],
-          [
-            ['Minus', 'MissingBracket'],
-            ['Minus', ['2']],
+        json: {
+          type: 'Sum',
+          operands: [
+            integer('1'),
+            {
+              type: 'Minus',
+              decorators: ['MissingBracket'],
+              operands: [
+                {
+                  type: 'Minus',
+                  operands: [integer('2')],
+                },
+              ],
+            },
           ],
-        ],
+        },
         latex: '1+--2',
-      },
-      {
-        solver: '2 abs[x + 1]',
-        json: ['ImplicitProduct', ['2'], ['AbsoluteValue', ['Sum', ['x'], ['1']]]],
-        latex: '2\\left|x+1\\right|',
       },
     ]);
   });
 
   describe('Plus/minus (±)', () => {
     testCases([
-      { solver: '+/-1', json: ['PlusMinus', ['1']], latex: ['\\pm 1', '±1'] },
+      {
+        solver: '+/-1',
+        json: { type: 'PlusMinus', operands: [integer('1')] },
+        latex: ['\\pm 1', '±1'],
+      },
+
       {
         solver: '1 +/- 2',
-        json: ['Sum', ['1'], ['PlusMinus', ['2']]],
+        json: {
+          type: 'Sum',
+          operands: [integer('1'), { type: 'PlusMinus', operands: [integer('2')] }],
+        },
         latex: ['1\\pm 2', '1±2'],
       },
+
       {
         solver: '1 + +/-2',
-        json: ['Sum', ['1'], [['PlusMinus', 'MissingBracket'], ['2']]],
+        json: {
+          type: 'Sum',
+          operands: [
+            integer('1'),
+            {
+              type: 'PlusMinus',
+              decorators: ['MissingBracket'],
+              operands: [integer('2')],
+            },
+          ],
+        },
         latex: ['1+\\pm 2', '1+±2'],
       },
+
       {
         solver: '1 + +/-+/-2',
-        json: [
-          'Sum',
-          ['1'],
-          [
-            ['PlusMinus', 'MissingBracket'],
-            ['PlusMinus', ['2']],
+        json: {
+          type: 'Sum',
+          operands: [
+            integer('1'),
+            {
+              type: 'PlusMinus',
+              decorators: ['MissingBracket'],
+              operands: [
+                {
+                  type: 'PlusMinus',
+                  operands: [integer('2')],
+                },
+              ],
+            },
           ],
-        ],
+        },
         latex: ['1+\\pm \\pm 2', '1+±±2'],
       },
+
       {
         solver: '+/-1 +/- 2 +/- 3',
-        json: ['Sum', ['PlusMinus', ['1']], ['PlusMinus', ['2']], ['PlusMinus', ['3']]],
+        json: {
+          type: 'Sum',
+          operands: [
+            { type: 'PlusMinus', operands: [integer('1')] },
+            { type: 'PlusMinus', operands: [integer('2')] },
+            { type: 'PlusMinus', operands: [integer('3')] },
+          ],
+        },
         latex: ['\\pm 1\\pm 2\\pm 3', '±1±2±3'],
       },
+
       {
         solver: '1 +/- (+/-2)',
-        json: ['Sum', ['1'], ['PlusMinus', [['PlusMinus', 'RoundBracket'], ['2']]]],
+        json: {
+          type: 'Sum',
+          operands: [
+            integer('1'),
+            {
+              type: 'PlusMinus',
+              operands: [
+                {
+                  type: 'PlusMinus',
+                  decorators: ['RoundBracket'],
+                  operands: [integer('2')],
+                },
+              ],
+            },
+          ],
+        },
         latex: ['1\\pm \\left(\\pm 2\\right)', '1±(±2)'],
       },
+
       {
         solver: '+/-[2 ^ 4]',
-        json: ['PlusMinus', ['Power', ['2'], ['4']]],
+        json: {
+          type: 'PlusMinus',
+          operands: [
+            {
+              type: 'Power',
+              operands: [integer('2'), integer('4')],
+            },
+          ],
+        },
         latex: ['\\pm {2}^{4}', '±2^4'],
       },
     ]);
@@ -236,37 +421,82 @@ describe('Solver Parser Unit Tests', () => {
     testCases([
       {
         solver: '1 (2)',
-        json: ['ImplicitProduct', ['1'], [['2', 'RoundBracket']]],
+        json: {
+          type: 'ImplicitProduct',
+          operands: [
+            integer('1'),
+            {
+              type: 'Integer',
+              decorators: ['RoundBracket'],
+              value: '2',
+            },
+          ],
+        },
         latex: '1\\left(2\\right)',
       },
+
       {
         solver: '(1) (2) 3',
-        json: [
-          'ImplicitProduct',
-          [['1', 'RoundBracket']],
-          [['2', 'RoundBracket']],
-          ['3'],
-        ],
+        json: {
+          type: 'ImplicitProduct',
+          operands: [
+            {
+              type: 'Integer',
+              decorators: ['RoundBracket'],
+              value: '1',
+            },
+            {
+              type: 'Integer',
+              decorators: ['RoundBracket'],
+              value: '2',
+            },
+            integer('3'),
+          ],
+        },
         latex: '\\left(1\\right)\\left(2\\right)3',
       },
+
       {
         solver: '(1) (2) 4 (-5)',
-        json: [
-          'ImplicitProduct',
-          [['1', 'RoundBracket']],
-          [['2', 'RoundBracket']],
-          ['4'],
-          [['Minus', 'RoundBracket'], ['5']],
-        ],
+        json: {
+          type: 'ImplicitProduct',
+          operands: [
+            {
+              type: 'Integer',
+              decorators: ['RoundBracket'],
+              value: '1',
+            },
+            {
+              type: 'Integer',
+              decorators: ['RoundBracket'],
+              value: '2',
+            },
+            integer('4'),
+            {
+              type: 'Minus',
+              decorators: ['RoundBracket'],
+              operands: [integer('5')],
+            },
+          ],
+        },
         latex: '\\left(1\\right)\\left(2\\right)4\\left(-5\\right)',
       },
+
       {
         solver: '2 a * 3 a',
-        json: [
-          'Product',
-          ['ImplicitProduct', ['2'], ['a']],
-          ['ImplicitProduct', ['3'], ['a']],
-        ],
+        json: {
+          type: 'Product',
+          operands: [
+            {
+              type: 'ImplicitProduct',
+              operands: [integer('2'), variable('a')],
+            },
+            {
+              type: 'ImplicitProduct',
+              operands: [integer('3'), variable('a')],
+            },
+          ],
+        },
         latex: '2a \\cdot 3a',
       },
     ]);
@@ -276,7 +506,13 @@ describe('Solver Parser Unit Tests', () => {
     testCases([
       {
         solver: '3 = 1 + 2',
-        json: ['Equation', ['3'], ['Sum', ['1'], ['2']]],
+        json: {
+          type: 'Equation',
+          operands: [
+            integer('3'),
+            { type: 'Sum', operands: [integer('1'), integer('2')] },
+          ],
+        },
         latex: '3 = 1+2',
       },
     ]);
@@ -286,27 +522,76 @@ describe('Solver Parser Unit Tests', () => {
     testCases([
       {
         solver: '-[3 ^ 4]',
-        json: ['Minus', ['Power', ['3'], ['4']]],
+        json: {
+          type: 'Minus',
+          operands: [
+            {
+              type: 'Power',
+              operands: [integer('3'), integer('4')],
+            },
+          ],
+        },
         latex: ['-{3}^{4}', '-3^4'],
       },
       {
         solver: '[(-3) ^ -4]',
-        json: ['Power', [['Minus', 'RoundBracket'], ['3']], ['Minus', ['4']]],
+        json: {
+          type: 'Power',
+          operands: [
+            { type: 'Minus', decorators: ['RoundBracket'], operands: [integer('3')] },
+            { type: 'Minus', operands: [integer('4')] },
+          ],
+        },
         latex: ['{\\left(-3\\right)}^{-4}', '(-3)^{-4}'],
       },
       {
         solver: '[3 ^ [4 ^ 5]]',
-        json: ['Power', ['3'], ['Power', ['4'], ['5']]],
+        json: {
+          type: 'Power',
+          operands: [
+            integer('3'),
+            {
+              type: 'Power',
+              operands: [integer('4'), integer('5')],
+            },
+          ],
+        },
         latex: ['{3}^{{4}^{5}}', '3^4^5'],
       },
       {
         solver: '[3 ^ [1 / 2]]',
-        json: ['Power', ['3'], ['Fraction', ['1'], ['2']]],
+        json: {
+          type: 'Power',
+          operands: [
+            integer('3'),
+            {
+              type: 'Fraction',
+              operands: [integer('1'), integer('2')],
+            },
+          ],
+        },
         latex: ['{3}^{\\frac{1}{2}}', '3^\\frac{1}{2}'],
       },
       {
         solver: '2 + 3 * [4 ^ 5] * 6 + 7',
-        json: ['Sum', ['2'], ['Product', ['3'], ['Power', ['4'], ['5']], ['6']], ['7']],
+        json: {
+          type: 'Sum',
+          operands: [
+            integer('2'),
+            {
+              type: 'Product',
+              operands: [
+                integer('3'),
+                {
+                  type: 'Power',
+                  operands: [integer('4'), integer('5')],
+                },
+                integer('6'),
+              ],
+            },
+            integer('7'),
+          ],
+        },
         latex: ['2+3 \\cdot {4}^{5} \\cdot 6+7', '2+3*4^5*6+7'],
       },
     ]);
@@ -316,7 +601,22 @@ describe('Solver Parser Unit Tests', () => {
     testCases([
       {
         solver: 'a + b c * D',
-        json: ['Sum', ['a'], ['Product', ['ImplicitProduct', ['b'], ['c']], ['D']]],
+        json: {
+          type: 'Sum',
+          operands: [
+            variable('a'),
+            {
+              type: 'Product',
+              operands: [
+                {
+                  type: 'ImplicitProduct',
+                  operands: [variable('b'), variable('c')],
+                },
+                variable('D'),
+              ],
+            },
+          ],
+        },
         latex: 'a+bc \\cdot D',
       },
     ]);
@@ -326,29 +626,57 @@ describe('Solver Parser Unit Tests', () => {
     testCases([
       {
         solver: '[2 / 3] + 1',
-        json: ['Sum', ['Fraction', ['2'], ['3']], ['1']],
+        json: {
+          type: 'Sum',
+          operands: [
+            {
+              type: 'Fraction',
+              operands: [integer('2'), integer('3')],
+            },
+            integer('1'),
+          ],
+        },
         latex: '\\frac{2}{3}+1',
       },
       {
         solver: '[1 2 / 3]',
-        json: ['MixedNumber', ['1'], ['2'], ['3']],
-        latex: '1\\frac{2}{3}',
+        json: {
+          type: 'MixedNumber',
+          operands: [integer('1'), integer('2'), integer('3')],
+        },
+        latex: ['1\\frac{2}{3}', '1 2/3'],
       },
       {
         solver: '[2 * 1 / 3 * 1]',
-        json: ['Fraction', ['Product', ['2'], ['1']], ['Product', ['3'], ['1']]],
+        json: {
+          type: 'Fraction',
+          operands: [
+            { type: 'Product', operands: [integer('2'), integer('1')] },
+            { type: 'Product', operands: [integer('3'), integer('1')] },
+          ],
+        },
         latex: '\\frac{2 \\cdot 1}{3 \\cdot 1}',
       },
       {
         solver: '-[2 + 1 / 3 * [1 / 2]]',
-        json: [
-          'Minus',
-          [
-            'Fraction',
-            ['Sum', ['2'], ['1']],
-            ['Product', ['3'], ['Fraction', ['1'], ['2']]],
+        json: {
+          type: 'Minus',
+          operands: [
+            {
+              type: 'Fraction',
+              operands: [
+                { type: 'Sum', operands: [integer('2'), integer('1')] },
+                {
+                  type: 'Product',
+                  operands: [
+                    integer('3'),
+                    { type: 'Fraction', operands: [integer('1'), integer('2')] },
+                  ],
+                },
+              ],
+            },
           ],
-        ],
+        },
         latex: '-\\frac{2+1}{3 \\cdot \\frac{1}{2}}',
       },
     ]);
@@ -356,15 +684,30 @@ describe('Solver Parser Unit Tests', () => {
 
   describe('Brackets', () => {
     testCases([
-      { solver: '(1)', json: [['1', 'RoundBracket']], latex: '\\left(1\\right)' },
+      {
+        solver: '(1)',
+        json: { type: 'Integer', decorators: ['RoundBracket'], value: '1' },
+        latex: '\\left(1\\right)',
+      },
       {
         solver: '(1 + 2)',
-        json: [['Sum', 'RoundBracket'], ['1'], ['2']],
+        json: {
+          type: 'Sum',
+          decorators: ['RoundBracket'],
+          operands: [integer('1'), integer('2')],
+        },
         latex: '\\left(1+2\\right)',
       },
       {
         solver: '([.{.1.} + 2.])',
-        json: [['Sum', 'SquareBracket', 'RoundBracket'], [['1', 'CurlyBracket']], ['2']],
+        json: {
+          type: 'Sum',
+          decorators: ['SquareBracket', 'RoundBracket'],
+          operands: [
+            { type: 'Integer', decorators: ['CurlyBracket'], value: '1' },
+            integer('2'),
+          ],
+        },
         latex: '\\left(\\left[\\left\\{1\\right\\}+2\\right]\\right)',
       },
       { latex: '\\left(a+b\\right) \\cdot c', solver: '(a + b) * c' },
@@ -381,27 +724,64 @@ describe('Solver Parser Unit Tests', () => {
     testCases([
       {
         solver: '1 + <.-[1 / 2] + [1 / 3].>',
-        json: [
-          'Sum',
-          ['1'],
-          [
-            ['Sum', 'PartialBracket'],
-            ['Minus', ['Fraction', ['1'], ['2']]],
-            ['Fraction', ['1'], ['3']],
+        json: {
+          type: 'Sum',
+          operands: [
+            integer('1'),
+            {
+              type: 'Sum',
+              decorators: ['PartialBracket'],
+              operands: [
+                {
+                  type: 'Minus',
+                  operands: [
+                    {
+                      type: 'Fraction',
+                      operands: [integer('1'), integer('2')],
+                    },
+                  ],
+                },
+                {
+                  type: 'Fraction',
+                  operands: [integer('1'), integer('3')],
+                },
+              ],
+            },
           ],
-        ],
+        },
         latex: '1-\\frac{1}{2}+\\frac{1}{3}',
         dontParseLatex: true,
       },
       {
         solver: '1 + <.1 + 2.> + 3',
-        json: ['Sum', ['1'], [['Sum', 'PartialBracket'], ['1'], ['2']], ['3']],
+        json: {
+          type: 'Sum',
+          operands: [
+            integer('1'),
+            {
+              type: 'Sum',
+              decorators: ['PartialBracket'],
+              operands: [integer('1'), integer('2')],
+            },
+            integer('3'),
+          ],
+        },
         latex: '1+1+2+3',
         dontParseLatex: true,
       },
       {
         solver: '<.1 + 2.> + 3',
-        json: ['Sum', [['Sum', 'PartialBracket'], ['1'], ['2']], ['3']],
+        json: {
+          type: 'Sum',
+          operands: [
+            {
+              type: 'Sum',
+              decorators: ['PartialBracket'],
+              operands: [integer('1'), integer('2')],
+            },
+            integer('3'),
+          ],
+        },
         latex: '1+2+3',
         dontParseLatex: true,
       },
@@ -412,34 +792,91 @@ describe('Solver Parser Unit Tests', () => {
     testCases([
       {
         solver: 'sqrt[4]',
-        json: ['SquareRoot', ['4']],
+        json: {
+          type: 'SquareRoot',
+          operands: [integer('4')],
+        },
         latex: ['\\sqrt{4}', '\\sqrt 4'],
       },
       {
         solver: '2 sqrt[4] sqrt[2]',
-        json: ['ImplicitProduct', ['2'], ['SquareRoot', ['4']], ['SquareRoot', ['2']]],
+        json: {
+          type: 'ImplicitProduct',
+          operands: [
+            integer('2'),
+            {
+              type: 'SquareRoot',
+              operands: [integer('4')],
+            },
+            {
+              type: 'SquareRoot',
+              operands: [integer('2')],
+            },
+          ],
+        },
         latex: '2\\sqrt{4}\\sqrt{2}',
       },
       { latex: '2 \\sqrt[3] 4', solver: '2 root[4, 3]' },
       {
         solver: 'root[4, 3]',
-        json: ['Root', ['4'], ['3']],
+        json: {
+          type: 'Root',
+          operands: [integer('4'), integer('3')],
+        },
         latex: ['\\sqrt[{3}]{4}', '\\sqrt[3] 4'],
       },
       {
         solver: '[2 ^ root[1 + 2 - 4 a, 3]]',
-        json: [
-          'Power',
-          ['2'],
-          [
-            'Root',
-            ['Sum', ['1'], ['2'], ['Minus', ['ImplicitProduct', ['4'], ['a']]]],
-            ['3'],
+        json: {
+          type: 'Power',
+          operands: [
+            integer('2'),
+            {
+              type: 'Root',
+              operands: [
+                {
+                  type: 'Sum',
+                  operands: [
+                    integer('1'),
+                    integer('2'),
+                    {
+                      type: 'Minus',
+                      operands: [
+                        {
+                          type: 'ImplicitProduct',
+                          operands: [integer('4'), variable('a')],
+                        },
+                      ],
+                    },
+                  ],
+                },
+                integer('3'),
+              ],
+            },
           ],
-        ],
+        },
         latex: '{2}^{\\sqrt[{3}]{1+2-4a}}',
       },
-      { latex: '2^\\sqrt[3]{1+2}', solver: '[2 ^ root[1 + 2, 3]]' },
+      {
+        solver: '[2 ^ root[1 + 2, 3]]',
+        json: {
+          type: 'Power',
+          operands: [
+            integer('2'),
+            {
+              type: 'Root',
+              operands: [
+                {
+                  type: 'Sum',
+                  operands: [integer('1'), integer('2')],
+                },
+                integer('3'),
+              ],
+            },
+          ],
+        },
+        latex: ['{2}^{\\sqrt[{3}]{1+2}}', '2^\\sqrt[3]{1+2}'],
+      },
     ]);
   });
 
@@ -447,25 +884,35 @@ describe('Solver Parser Unit Tests', () => {
     testCases([
       {
         solver: '2.3 + 3',
-        json: ['Sum', ['2.3'], ['3']],
-        tree: {
+        json: {
           type: 'Sum',
-          path: '.',
-          args: [
-            { type: 'Number', path: './0', value: '2.3' },
-            { type: 'Number', path: './1', value: '3' },
-          ],
+          operands: [decimal('2.3'), integer('3')],
         },
         latex: '2.3+3',
       },
       {
         solver: '1 - 2 * 3',
-        json: ['Sum', ['1'], ['Minus', ['Product', ['2'], ['3']]]],
+        json: {
+          type: 'Sum',
+          operands: [
+            integer('1'),
+            {
+              type: 'Minus',
+              operands: [{ type: 'Product', operands: [integer('2'), integer('3')] }],
+            },
+          ],
+        },
         latex: '1-2 \\cdot 3',
       },
       {
         solver: '2 a : 3',
-        json: ['Product', ['ImplicitProduct', ['2'], ['a']], ['DivideBy', ['3']]],
+        json: {
+          type: 'Product',
+          operands: [
+            { type: 'ImplicitProduct', operands: [integer('2'), variable('a')] },
+            { type: 'DivideBy', operands: [integer('3')] },
+          ],
+        },
         latex: '2a \\div 3',
       },
     ]);
@@ -473,14 +920,29 @@ describe('Solver Parser Unit Tests', () => {
 
   describe('Variables', () => {
     testCases([
-      { solver: 'a A a', json: ['ImplicitProduct', ['a'], ['A'], ['a']], latex: 'aAa' },
+      {
+        solver: 'a A a',
+        json: {
+          type: 'ImplicitProduct',
+          operands: [variable('a'), variable('A'), variable('a')],
+        },
+        latex: 'aAa',
+      },
     ]);
   });
 
   describe('Numbers with repeating decimals', () => {
     testCases([
-      { solver: '2.1[33]', json: ['2.1[33]'], latex: '2.1\\overline{33}' },
-      { solver: '0.[05]', json: ['0.[05]'], latex: '0.\\overline{05}' },
+      {
+        solver: '2.1[33]',
+        json: { type: 'RecurringDecimal', value: '2.1[33]' },
+        latex: '2.1\\overline{33}',
+      },
+      {
+        solver: '0.[05]',
+        json: { type: 'RecurringDecimal', value: '0.[05]' },
+        latex: '0.\\overline{05}',
+      },
     ]);
   });
 
@@ -488,12 +950,26 @@ describe('Solver Parser Unit Tests', () => {
     testCases([
       {
         solver: '(1 + 2) * 3',
-        json: ['Product', [['Sum', 'RoundBracket'], ['1'], ['2']], ['3']],
+        json: {
+          type: 'Product',
+          operands: [
+            {
+              type: 'Sum',
+              decorators: ['RoundBracket'],
+              operands: [integer('1'), integer('2')],
+            },
+            integer('3'),
+          ],
+        },
         latex: '\\left(1+2\\right) \\cdot 3',
       },
       {
         solver: '{.[.(x).].}',
-        json: [['x', 'RoundBracket', 'SquareBracket', 'CurlyBracket']],
+        json: {
+          type: 'Variable',
+          decorators: ['RoundBracket', 'SquareBracket', 'CurlyBracket'],
+          value: 'x',
+        },
         latex: '\\left\\{\\left[\\left(x\\right)\\right]\\right\\}',
       },
     ]);
@@ -503,43 +979,32 @@ describe('Solver Parser Unit Tests', () => {
     testCases([
       {
         solver: '[1 / 2]',
-        json: ['Fraction', ['1'], ['2']],
+        json: {
+          type: 'Fraction',
+          operands: [integer('1'), integer('2')],
+        },
         latex: ['\\frac{1}{2}', '\\dfrac{1}{2}', '\\tfrac{1}{2}'],
       },
       {
         solver: '[a / b]',
-        json: ['Fraction', ['a'], ['b']],
+        json: {
+          type: 'Fraction',
+          operands: [variable('a'), variable('b')],
+        },
         latex: ['\\frac{a}{b}', '\\frac ab', 'a/b'],
       },
       {
         solver: '[1 / 2] x',
         latex: ['\\frac{1}{2}x', '1/2x'],
-        tree: {
+        json: {
           type: 'ImplicitProduct',
-          args: [
+          operands: [
             {
               type: 'Fraction',
-              args: [
-                {
-                  type: 'Number',
-                  value: '1',
-                  path: './0/0',
-                },
-                {
-                  type: 'Number',
-                  value: '2',
-                  path: './0/1',
-                },
-              ],
-              path: './0',
+              operands: [integer('1'), integer('2')],
             },
-            {
-              type: 'Variable',
-              value: 'x',
-              path: './1',
-            },
+            variable('x'),
           ],
-          path: '.',
         },
       },
       // Decimals cannot be used in mixed numbers
@@ -548,13 +1013,17 @@ describe('Solver Parser Unit Tests', () => {
       { solver: '2 [1 / 2.3]', latex: ['2\\frac{1}{2.3}', '2 1/2.3'] },
       { solver: '2 [1 / [2 ^ 3]]', latex: ['2\\frac{1}{2^3}', '2 1/2^3'] },
       {
-        solver: '[1 2 / 3]',
-        json: ['MixedNumber', ['1'], ['2'], ['3']],
-        latex: ['1\\frac{2}{3}', '1 2/3'],
-      },
-      {
         solver: '[[1 / 2] / 3]',
-        json: ['Fraction', ['Fraction', ['1'], ['2']], ['3']],
+        json: {
+          type: 'Fraction',
+          operands: [
+            {
+              type: 'Fraction',
+              operands: [integer('1'), integer('2')],
+            },
+            integer('3'),
+          ],
+        },
         latex: ['\\frac{\\frac{1}{2}}{3}', '1/2/3'],
       },
       { latex: '2+\\frac{1}{2}', solver: '2 + [1 / 2]' },
@@ -568,61 +1037,46 @@ describe('Solver Parser Unit Tests', () => {
     ]);
   });
 
-  describe('Powers', async () => {
-    testCases([
-      {
-        solver: '[(-3) ^ 4]',
-        json: ['Power', [['Minus', 'RoundBracket'], ['3']], ['4']],
-        latex: '{\\left(-3\\right)}^{4}',
-      },
-      {
-        solver: '-[3 ^ 4]',
-        json: ['Minus', ['Power', ['3'], ['4']]],
-        latex: '-{3}^{4}',
-      },
-      {
-        solver: '[3 ^ [4 ^ 5]]',
-        json: ['Power', ['3'], ['Power', ['4'], ['5']]],
-        latex: '{3}^{{4}^{5}}',
-      },
-      {
-        solver: '[3 ^ [1 / 2]]',
-        json: ['Power', ['3'], ['Fraction', ['1'], ['2']]],
-        latex: '{3}^{\\frac{1}{2}}',
-      },
-      {
-        solver: '2 + 3 * [4 ^ 5] * 6 + 7',
-        json: ['Sum', ['2'], ['Product', ['3'], ['Power', ['4'], ['5']], ['6']], ['7']],
-        latex: '2+3 \\cdot {4}^{5} \\cdot 6+7',
-      },
-    ]);
-  });
-
-  describe('Roots', async () => {
-    testCases([
-      { solver: 'sqrt[4]', json: ['SquareRoot', ['4']], latex: '\\sqrt{4}' },
-      { solver: 'root[4, 3]', json: ['Root', ['4'], ['3']], latex: '\\sqrt[{3}]{4}' },
-      {
-        solver: '[2 ^ root[1 + 2, 3]]',
-        json: ['Power', ['2'], ['Root', ['Sum', ['1'], ['2']], ['3']]],
-        latex: '{2}^{\\sqrt[{3}]{1+2}}',
-      },
-    ]);
-  });
-
   describe('Relations', async () => {
     testCases([
-      { solver: 'x = 5', json: ['Equation', ['x'], ['5']], latex: 'x = 5' },
-      { solver: 'x < 5', json: ['LessThan', ['x'], ['5']], latex: 'x < 5' },
-      { solver: 'x > 5', json: ['GreaterThan', ['x'], ['5']], latex: 'x > 5' },
+      {
+        solver: 'x = 5',
+        json: {
+          type: 'Equation',
+          operands: [variable('x'), integer('5')],
+        },
+        latex: 'x = 5',
+      },
+      {
+        solver: 'x < 5',
+        json: {
+          type: 'LessThan',
+          operands: [variable('x'), integer('5')],
+        },
+        latex: 'x < 5',
+      },
+      {
+        solver: 'x > 5',
+        json: {
+          type: 'GreaterThan',
+          operands: [variable('x'), integer('5')],
+        },
+        latex: 'x > 5',
+      },
       {
         solver: 'x <= 5',
-        json: ['LessThanEqual', ['x'], ['5']],
+        json: {
+          type: 'LessThanEqual',
+          operands: [variable('x'), integer('5')],
+        },
         latex: ['x \\leq 5', 'x ≤ 5'],
       },
       {
         solver: 'x >= 5',
-        json: ['GreaterThanEqual', ['x'], ['5']],
+        json: {
+          type: 'GreaterThanEqual',
+          operands: [variable('x'), integer('5')],
+        },
         latex: ['x \\geq 5', 'x ≥ 5'],
       },
     ]);
@@ -631,76 +1085,140 @@ describe('Solver Parser Unit Tests', () => {
   describe('Solutions and sets', async () => {
     testCases([
       {
-        solver: 'Solution[x, {}]',
-        json: ['Solution', ['x'], ['FiniteSet']],
-        latex: 'x \\in \\emptyset',
-      },
-      {
-        solver: 'Solution[x, {5}]',
-        json: ['Solution', ['x'], ['FiniteSet', ['5']]],
+        solver: 'SetSolution[x: {5}]',
+        json: {
+          type: 'SetSolution',
+          operands: [
+            { type: 'VariableList', operands: [variable('x')] },
+            { type: 'FiniteSet', operands: [integer('5')] },
+          ],
+        },
         latex: 'x \\in \\left\\{5\\right\\}',
         dontParseLatex: true,
       },
       {
-        solver: 'Solution[x, {5, 2}]',
-        json: ['Solution', ['x'], ['FiniteSet', ['5'], ['2']]],
+        solver: 'SetSolution[x: {5, 2}]',
+        json: {
+          type: 'SetSolution',
+          operands: [
+            { type: 'VariableList', operands: [variable('x')] },
+            { type: 'FiniteSet', operands: [integer('5'), integer('2')] },
+          ],
+        },
         latex: 'x \\in \\left\\{5, 2\\right\\}',
         dontParseLatex: true,
       },
       {
-        solver: 'Solution[x, /reals/]',
-        json: ['Solution', ['x'], ['Reals']],
-        latex: 'x \\in \\mathbb{R}',
-      },
-      {
-        solver: 'Solution[x, (-/infinity/, 5)]',
-        json: ['Solution', ['x'], ['OpenInterval', ['Minus', ['/infinity/']], ['5']]],
+        solver: 'SetSolution[x: (-/infinity/, 5)]',
+        json: {
+          type: 'SetSolution',
+          operands: [
+            { type: 'VariableList', operands: [variable('x')] },
+            {
+              type: 'OpenInterval',
+              operands: [
+                { type: 'Minus', operands: [{ type: 'Infinity' }] },
+                integer('5'),
+              ],
+            },
+          ],
+        },
         latex: 'x \\in \\left( -\\infty, 5 \\right)',
         dontParseLatex: true,
       },
       {
-        solver: 'Solution[x, [0, 5]]',
-        json: ['Solution', ['x'], ['ClosedInterval', ['0'], ['5']]],
+        solver: 'SetSolution[x: [0, 5]]',
+        json: {
+          type: 'SetSolution',
+          operands: [
+            { type: 'VariableList', operands: [variable('x')] },
+            {
+              type: 'ClosedInterval',
+              operands: [integer('0'), integer('5')],
+            },
+          ],
+        },
         latex: 'x \\in \\left[ 0, 5 \\right]',
         dontParseLatex: true,
       },
       {
-        solver: 'Solution[x, (-/infinity/, 5]]',
-        json: [
-          'Solution',
-          ['x'],
-          ['OpenClosedInterval', ['Minus', ['/infinity/']], ['5']],
-        ],
+        solver: 'SetSolution[x: (-/infinity/, 5]]',
+        json: {
+          type: 'SetSolution',
+          operands: [
+            { type: 'VariableList', operands: [variable('x')] },
+            {
+              type: 'OpenClosedInterval',
+              operands: [
+                { type: 'Minus', operands: [{ type: 'Infinity' }] },
+                integer('5'),
+              ],
+            },
+          ],
+        },
         latex: 'x \\in \\left( -\\infty, 5 \\right]',
         dontParseLatex: true,
       },
       {
-        solver: 'Solution[x, [5, /infinity/)]',
-        json: ['Solution', ['x'], ['ClosedOpenInterval', ['5'], ['/infinity/']]],
+        solver: 'SetSolution[x: [5, /infinity/)]',
+        json: {
+          type: 'SetSolution',
+          operands: [
+            { type: 'VariableList', operands: [variable('x')] },
+            {
+              type: 'ClosedOpenInterval',
+              operands: [integer('5'), { type: 'Infinity' }],
+            },
+          ],
+        },
         latex: 'x \\in \\left[ 5, \\infty \\right)',
         dontParseLatex: true,
       },
       {
         solver: 'Identity[x: 3 = 3]',
-        json: ['Identity', ['VariableList', ['x']], ['Equation', ['3'], ['3']]],
+        json: {
+          type: 'Identity',
+          operands: [
+            { type: 'VariableList', operands: [variable('x')] },
+            { type: 'Equation', operands: [integer('3'), integer('3')] },
+          ],
+        },
         latex: 'x \\in \\mathbb{R}',
         dontParseLatex: true,
       },
       {
         solver: 'Identity[3 = 3]',
-        json: ['Identity', ['VariableList'], ['Equation', ['3'], ['3']]],
+        json: {
+          type: 'Identity',
+          operands: [
+            { type: 'VariableList' },
+            { type: 'Equation', operands: [integer('3'), integer('3')] },
+          ],
+        },
         latex: '\\top',
         dontParseLatex: true,
       },
       {
         solver: 'Contradiction[x: 3 != 3]',
-        json: ['Contradiction', ['VariableList', ['x']], ['Inequation', ['3'], ['3']]],
+        json: {
+          type: 'Contradiction',
+          operands: [
+            { type: 'VariableList', operands: [variable('x')] },
+            { type: 'Inequation', operands: [integer('3'), integer('3')] },
+          ],
+        },
         latex: 'x \\in \\emptyset',
         dontParseLatex: true,
       },
       {
         solver: 'Contradiction[3 != 3]',
-        json: ['Contradiction', ['VariableList'], ['Inequation', ['3'], ['3']]],
+        json: {
+          type: 'Contradiction',
+          operands: [
+            { type: 'VariableList' },
+            { type: 'Inequation', operands: [integer('3'), integer('3')] },
+          ],
+        },
         latex: '\\bot',
         dontParseLatex: true,
       },
@@ -711,9 +1229,8 @@ describe('Solver Parser Unit Tests', () => {
     testCases([
       {
         solver: '/undefined/',
-        json: ['/undefined/'],
         latex: '\\text{undefined}',
-        tree: { type: '/undefined/', path: '.' },
+        json: { type: 'Undefined' },
       },
     ]);
   });
@@ -722,12 +1239,12 @@ describe('Solver Parser Unit Tests', () => {
     testCases([
       {
         solver: 'x',
-        json: ['x'],
+        json: variable('x'),
         latex: ['x', '\\mathrm{x}', '\\textit{x}'],
       },
       {
         solver: '1 + 2',
-        json: ['Sum', ['1'], ['2']],
+        json: { type: 'Sum', operands: [integer('1'), integer('2')] },
         latex: [
           '1+2',
           '\\mathrm{1+2}',
@@ -737,7 +1254,7 @@ describe('Solver Parser Unit Tests', () => {
       },
       {
         solver: 'x x',
-        json: ['ImplicitProduct', ['x'], ['x']],
+        json: { type: 'ImplicitProduct', operands: [variable('x'), variable('x')] },
         latex: ['xx', 'x\\nbsp{}x', '\\nbsp{}x\\nbsp{}x\\nbsp{}'],
       },
     ]);
@@ -746,57 +1263,85 @@ describe('Solver Parser Unit Tests', () => {
   describe('Absolute value', async () => {
     testCases([
       {
-        solver: '2 abs[x + 1]',
-        json: ['ImplicitProduct', ['2'], ['AbsoluteValue', ['Sum', ['x'], ['1']]]],
-        latex: ['2\\left|x+1\\right|', '2|x + 1|'],
-      },
-      {
         solver: 'abs[x + 1]',
-        json: ['AbsoluteValue', ['Sum', ['x'], ['1']]],
         latex: ['\\left|x+1\\right|', '|x+1|'],
-        tree: {
+        json: {
           type: 'AbsoluteValue',
-          path: '.',
-          args: [
+          operands: [
             {
               type: 'Sum',
-              path: './0',
-              args: [
-                {
-                  type: 'Variable',
-                  path: './0/0',
-                  value: 'x',
-                },
-                {
-                  type: 'Number',
-                  path: './0/1',
-                  value: '1',
-                },
-              ],
+              operands: [variable('x'), integer('1')],
             },
           ],
         },
       },
       {
-        solver: '2 abs[abs[x + 2] + 1] + 5',
-        json: [
-          'Sum',
-          [
-            'ImplicitProduct',
-            ['2'],
-            ['AbsoluteValue', ['Sum', ['AbsoluteValue', ['Sum', ['x'], ['2']]], ['1']]],
+        solver: '2 abs[x + 1]',
+        json: {
+          type: 'ImplicitProduct',
+          operands: [
+            integer('2'),
+            {
+              type: 'AbsoluteValue',
+              operands: [
+                {
+                  type: 'Sum',
+                  operands: [variable('x'), integer('1')],
+                },
+              ],
+            },
           ],
-          ['5'],
-        ],
+        },
+        latex: ['2\\left|x+1\\right|', '2|x + 1|'],
+      },
+      {
+        solver: '2 abs[abs[x + 2] + 1] + 5',
+        json: {
+          type: 'Sum',
+          operands: [
+            {
+              type: 'ImplicitProduct',
+              operands: [
+                integer('2'),
+                {
+                  type: 'AbsoluteValue',
+                  operands: [
+                    {
+                      type: 'Sum',
+                      operands: [
+                        {
+                          type: 'AbsoluteValue',
+                          operands: [
+                            { type: 'Sum', operands: [variable('x'), integer('2')] },
+                          ],
+                        },
+                        integer('1'),
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+            integer('5'),
+          ],
+        },
         latex: ['2\\left|\\left|x+2\\right|+1\\right|+5', '2||x+2|+1|+5'],
       },
       {
         solver: 'abs[x + 1] abs[x + 3]',
-        json: [
-          'ImplicitProduct',
-          ['AbsoluteValue', ['Sum', ['x'], ['1']]],
-          ['AbsoluteValue', ['Sum', ['x'], ['3']]],
-        ],
+        json: {
+          type: 'ImplicitProduct',
+          operands: [
+            {
+              type: 'AbsoluteValue',
+              operands: [{ type: 'Sum', operands: [variable('x'), integer('1')] }],
+            },
+            {
+              type: 'AbsoluteValue',
+              operands: [{ type: 'Sum', operands: [variable('x'), integer('3')] }],
+            },
+          ],
+        },
         latex: ['\\left|x+1\\right|\\left|x+3\\right|', '|x+1||x+3|'],
       },
       {
@@ -814,9 +1359,8 @@ describe('Solver Parser Unit Tests', () => {
       // Digit subscript
       {
         solver: 'x_1',
-        tree: {
+        json: {
           type: 'Variable',
-          path: '.',
           value: 'x',
           subscript: '1',
         },
@@ -825,9 +1369,8 @@ describe('Solver Parser Unit Tests', () => {
       // Variable subscript
       {
         solver: 'A_n',
-        tree: {
+        json: {
           type: 'Variable',
-          path: '.',
           value: 'A',
           subscript: 'n',
         },
@@ -836,19 +1379,16 @@ describe('Solver Parser Unit Tests', () => {
       // Check precedence and spacing adjustment
       {
         solver: '[x_1 ^ y_2]',
-        tree: {
+        json: {
           type: 'Power',
-          path: '.',
-          args: [
+          operands: [
             {
               type: 'Variable',
-              path: './0',
               value: 'x',
               subscript: '1',
             },
             {
               type: 'Variable',
-              path: './1',
               value: 'y',
               subscript: '2',
             },
@@ -859,22 +1399,16 @@ describe('Solver Parser Unit Tests', () => {
       // Check no spacing adjustment when subscripted variable has brackets
       {
         solver: '[(x_1) ^ 2]',
-        tree: {
+        json: {
           type: 'Power',
-          path: '.',
-          args: [
+          operands: [
             {
               type: 'Variable',
-              path: './0',
               value: 'x',
               subscript: '1',
               decorators: ['RoundBracket'],
             },
-            {
-              type: 'Number',
-              path: './1',
-              value: '2',
-            },
+            integer('2'),
           ],
         },
         latex: ['{\\left(x_{1}\\right)}^{2}', '(x_1)^2'],

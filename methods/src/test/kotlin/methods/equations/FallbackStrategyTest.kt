@@ -9,7 +9,7 @@ class FallbackStrategyTest {
 
     @Test
     fun `test fallback strategy applies on unsolvable unsimplified equation`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "[x ^ 6] + 2 x + 1 = [x ^ 5] + 2 x - 3"
 
         check {
@@ -45,7 +45,7 @@ class FallbackStrategyTest {
 
     @Test
     fun `test fallback strategy applies for unsimplified equation = 0`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "[x ^ 6] + [x ^ 6] + [x ^ 5] + 1 = 0"
         check {
             fromExpr = "[x ^ 6] + [x ^ 6] + [x ^ 5] + 1 = 0"
@@ -58,7 +58,7 @@ class FallbackStrategyTest {
 
     @Test
     fun `test fallback strategy does not apply on simplified equation`() = testMethodInX {
-        method = EquationsPlans.SolveEquationInOneVariable
+        method = EquationsPlans.SolveEquation
         inputExpr = "[x^6] + [x^5] + 1 = 0"
 
         check {

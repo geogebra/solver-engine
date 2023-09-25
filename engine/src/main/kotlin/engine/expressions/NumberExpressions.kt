@@ -19,7 +19,7 @@ class IntegerExpression(
 ) {
     override fun signOf() = Sign.fromInt(value.signum())
 
-    override fun fillJson2(s: MutableMap<String, Any>) {
+    override fun fillJson(s: MutableMap<String, Any>) {
         s["type"] = "Integer"
         s["value"] = value.toString()
     }
@@ -35,7 +35,7 @@ class DecimalExpression(
 ) {
     override fun signOf() = Sign.fromInt(value.signum())
 
-    override fun fillJson2(s: MutableMap<String, Any>) {
+    override fun fillJson(s: MutableMap<String, Any>) {
         s["type"] = "Decimal"
         s["value"] = value.toString()
     }
@@ -51,7 +51,7 @@ class RecurringDecimalExpression(
 ) {
     override fun signOf() = Sign.POSITIVE // If it was 0, it would not be recurring
 
-    override fun fillJson2(s: MutableMap<String, Any>) {
+    override fun fillJson(s: MutableMap<String, Any>) {
         s["type"] = "RecurringDecimal"
         s["value"] = value.toString()
     }

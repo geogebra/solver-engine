@@ -39,12 +39,12 @@ import engine.operators.DefaultProductOperator
 import engine.operators.DefiniteIntegralOperator
 import engine.operators.DerivativeOperator
 import engine.operators.DoubleComparisonOperator
+import engine.operators.ExpressionWithConstraintOperator
 import engine.operators.IndefiniteIntegralOperator
 import engine.operators.IntervalOperator
 import engine.operators.Operator
 import engine.operators.StatementSystemOperator
 import engine.operators.StatementUnionOperator
-import engine.operators.StatementWithConstraintOperator
 import engine.operators.SubtractEquationsOperator
 import engine.operators.SumOperator
 import engine.operators.TrigonometricFunctionOperator
@@ -107,7 +107,7 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
         return if (ctx.constraint == null) {
             visit(ctx.stmt)
         } else {
-            makeExpression(StatementWithConstraintOperator, listOf(visit(ctx.stmt), visit(ctx.constraint)))
+            makeExpression(ExpressionWithConstraintOperator, listOf(visit(ctx.stmt), visit(ctx.constraint)))
         }
     }
 

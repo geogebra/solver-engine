@@ -3,9 +3,9 @@ package engine.patterns
 import engine.context.Context
 import engine.expressions.Equation
 import engine.expressions.Expression
+import engine.operators.ExpressionWithConstraintOperator
 import engine.operators.StatementSystemOperator
 import engine.operators.StatementUnionOperator
-import engine.operators.StatementWithConstraintOperator
 
 data class EquationPattern(
     val lhs: Pattern,
@@ -35,5 +35,5 @@ fun statementSystemOf(eq1: Pattern, eq2: Pattern) = OperatorPattern(StatementSys
 
 fun statementUnionOf(eq1: Pattern, eq2: Pattern) = OperatorPattern(StatementUnionOperator, listOf(eq1, eq2))
 
-fun statementWithConstraintOf(statement: Pattern, constraint: Pattern) =
-    OperatorPattern(StatementWithConstraintOperator, listOf(statement, constraint))
+fun expressionWithConstraintOf(statement: Pattern, constraint: Pattern) =
+    OperatorPattern(ExpressionWithConstraintOperator, listOf(statement, constraint))

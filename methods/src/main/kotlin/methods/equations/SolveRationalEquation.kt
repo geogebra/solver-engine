@@ -1,7 +1,10 @@
 
+import engine.context.Context
 import engine.context.Curriculum
 import engine.expressions.Constants
 import engine.expressions.Contradiction
+import engine.expressions.DivideBy
+import engine.expressions.Equation
 import engine.expressions.Expression
 import engine.expressions.Fraction
 import engine.expressions.Sum
@@ -11,8 +14,7 @@ import engine.expressions.sumOf
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
-import engine.patterns.AnyPattern
-import engine.patterns.equationOf
+import engine.patterns.condition
 import engine.steps.metadata.metadata
 import methods.algebra.AlgebraExplanation
 import methods.algebra.AlgebraPlans
@@ -178,9 +180,18 @@ private val simplifyToPolynomialEquation = taskSet {
     }
 }
 
+private fun Expression.containsVariableDenominator(context: Context): Boolean {
+    val variableDenominator = when (this) {
+        is Fraction -> !denominator.isConstantIn(context.solutionVariables)
+        is DivideBy -> !divisor.isConstantIn(context.solutionVariables)
+        else -> false
+    }
+    return variableDenominator || children.any { it.containsVariableDenominator(context) }
+}
+
 internal val solveRationalEquation = taskSet {
-    explanation = Explanation.SolveEquationInOneVariable
-    pattern = equationOf(AnyPattern(), AnyPattern())
+    explanation = Explanation.SolveEquation
+    pattern = condition { it is Equation && it.containsVariableDenominator(this) }
 
     tasks {
         val constraint = when (context.curriculum) {
@@ -206,8 +217,8 @@ internal val solveRationalEquation = taskSet {
 
         val solvePolynomialEquation = task(
             startExpr = simplifyToPolynomialExpression,
-            explanation = metadata(Explanation.SolveEquationInOneVariable),
-            stepsProducer = EquationsPlans.SolveEquationInOneVariable,
+            explanation = metadata(Explanation.SolveEquation),
+            stepsProducer = EquationsPlans.SolveEquation,
         ) ?: return@tasks null
 
         val solution = solvePolynomialEquation.result

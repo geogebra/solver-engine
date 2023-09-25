@@ -4,6 +4,7 @@
  */
 package server
 
+import methods.algebra.AlgebraPlans
 import methods.equations.EquationsPlans
 import org.junit.jupiter.api.Test
 
@@ -24,7 +25,7 @@ class TestSelectPlansForEquation {
         testSelectPlanApiInX(
             "2x = [1/2]",
             setOf(
-                EquationsPlans.SolveEquationInOneVariable,
+                EquationsPlans.SolveEquation,
             ),
         )
     }
@@ -34,7 +35,7 @@ class TestSelectPlansForEquation {
         testSelectPlanApiInX(
             "3.1 x + 2.2 = 1.21",
             setOf(
-                EquationsPlans.SolveEquationInOneVariable,
+                EquationsPlans.SolveEquation,
             ),
         )
     }
@@ -44,7 +45,7 @@ class TestSelectPlansForEquation {
         testSelectPlanApiInX(
             "2x + 2.2[3] = x",
             setOf(
-                EquationsPlans.SolveEquationInOneVariable,
+                EquationsPlans.SolveEquation,
                 EquationsPlans.SolveDecimalLinearEquation,
             ),
         )
@@ -55,7 +56,7 @@ class TestSelectPlansForEquation {
         testSelectPlanApiInX(
             "3.1x + 2.2[3] = 1.21",
             setOf(
-                EquationsPlans.SolveEquationInOneVariable,
+                EquationsPlans.SolveEquation,
             ),
         )
     }
@@ -65,8 +66,20 @@ class TestSelectPlansForEquation {
         testSelectPlanApiInX(
             "3.2x + 2.2 = 1.2",
             setOf(
-                EquationsPlans.SolveEquationInOneVariable,
+                EquationsPlans.SolveEquation,
                 EquationsPlans.SolveDecimalLinearEquation,
+            ),
+        )
+    }
+
+    @Test
+    fun `test rational equation compute domain and solve`() {
+        testSelectPlanApiInX(
+            "1 + [1 / x] = [2 / x]",
+            setOf(
+                // this plan probably shouldn't be executed
+                AlgebraPlans.ComputeDomainOfAlgebraicExpression,
+                EquationsPlans.SolveEquation,
             ),
         )
     }

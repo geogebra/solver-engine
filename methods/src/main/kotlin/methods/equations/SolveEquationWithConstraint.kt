@@ -8,17 +8,19 @@ import engine.expressions.Identity
 import engine.expressions.Inequality
 import engine.expressions.SetExpression
 import engine.expressions.SetSolution
-import engine.expressions.StatementWithConstraint
 import engine.expressions.Variable
 import engine.expressions.equationOf
 import engine.expressions.setSolutionOf
+import engine.expressions.statementSystemOf
 import engine.methods.TasksBuilder
 import engine.methods.taskSet
 import engine.patterns.AnyPattern
 import engine.patterns.absoluteValueOf
+import engine.patterns.condition
 import engine.patterns.equationOf
 import engine.patterns.inSolutionVariables
-import engine.patterns.statementWithConstraintOf
+import engine.patterns.oneOf
+import engine.patterns.statementSystemOf
 import engine.patterns.withOptionalConstantCoefficient
 import engine.steps.Task
 import engine.steps.metadata.metadata
@@ -27,24 +29,25 @@ import methods.inequalities.solveConstantInequalitySteps
 import methods.solvable.expressionComparator
 
 /**
- * Solves an equation with a constraint
- *    e.g. [x ^ 2] = 3 GIVEN x > 0
+ * Solves a system consisting of an equation and an inequality (constraint)
+ *    e.g. [x ^ 2] = 3 AND x > 0
  */
-internal val solveEquationWithConstraint = taskSet {
-    explanation = Explanation.SolveEquationInOneVariable
+internal val solveEquationWithInequalityConstraint = taskSet {
+    explanation = Explanation.SolveEquation
+
+    val equation = condition { it is Equation }
+    val inequality = condition { it is Inequality }
+
     pattern = inSolutionVariables(
-        statementWithConstraintOf(
-            equationOf(
-                AnyPattern(),
-                AnyPattern(),
-            ),
-            AnyPattern(),
+        oneOf(
+            statementSystemOf(equation, inequality),
+            statementSystemOf(inequality, equation),
         ),
     )
 
     tasks {
         val simplifyConstraint = task(
-            startExpr = expression.secondChild,
+            startExpr = get(inequality),
             explanation = metadata(Explanation.SimplifyConstraint),
         ) {
             firstOf {
@@ -54,13 +57,13 @@ internal val solveEquationWithConstraint = taskSet {
         }
 
         val solveEquation = task(
-            startExpr = expression.firstChild,
+            startExpr = get(equation),
             explanation = metadata(Explanation.SolveEquationWithoutConstraint),
-            stepsProducer = EquationsPlans.SolveEquationInOneVariable,
+            stepsProducer = EquationsPlans.SolveEquation,
         ) ?: return@tasks null
 
         val solution = solveEquation.result
-        val constraint = simplifyConstraint?.result ?: expression.secondChild
+        val constraint = simplifyConstraint?.result ?: get(inequality)
 
         checkSolutionsAgainstConstraint(solution, constraint) ?: return@tasks null
 
@@ -225,7 +228,7 @@ private fun TasksBuilder.reportValidSolutions(
     return when {
         validSolutions.isEmpty(expressionComparator) ?: return null -> {
             task(
-                startExpr = Contradiction(solution.solutionVariables, StatementWithConstraint(solution, constraint)),
+                startExpr = Contradiction(solution.solutionVariables, statementSystemOf(solution, constraint)),
                 explanation = metadata(Explanation.NoSolutionSatisfiesConstraint),
             )
         }

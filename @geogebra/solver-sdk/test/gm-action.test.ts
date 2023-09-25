@@ -234,8 +234,8 @@ function searchExpressionTree(
   fn: (expr: ExpressionTree) => boolean,
 ) {
   if (fn(expr)) return expr;
-  if ('args' in expr) {
-    return expr.args.find((arg) => searchExpressionTree(arg, fn));
+  if ('operands' in expr) {
+    return expr.operands.find((arg) => searchExpressionTree(arg, fn));
   }
   return undefined;
 }
