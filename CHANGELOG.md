@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 An entry should be added to the _[Unreleased]_ section when committing to main. When a release is made we move its
 contents to a new release section (e.g. _[0.x]_).
 
-## Unreleased
+## [1.3] 2023-09-25
 
 ### Added
 
@@ -39,7 +39,7 @@ contents to a new release section (e.g. _[0.x]_).
 - fixed gmActionInfo of several rules (e.g., select `+2` instead of `2` when dragging to add in `1+x+2`) (SP-216)
 - temporary fix for PartialBrackets + SmartProduct bug (SP-216, PLUT-684)
 - Simplification of -ve base root power be done by "SimplifyConstantExpression" (PLUT-682)
-- fixed: SolveEquation plan should solve rational equations well (PLUT-689)
+- Fix regression: SolveEquation plan should solve rational equations well (PLUT-689)
 
 ### Changed
 
