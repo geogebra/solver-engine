@@ -118,6 +118,11 @@ class ExpandRulesTest {
             "sqrt[2] * 3 + sqrt[2] * (-sqrt[4])",
         )
         testRule(
+            "(3 - sqrt[4]) * sqrt[2]",
+            DistributeMultiplicationOverSum,
+            "3 * sqrt[2] + (-sqrt[4]) * sqrt[2]",
+        )
+        testRule(
             "sqrt[2] * (3 + sqrt[4] + sqrt[5])",
             DistributeMultiplicationOverSum,
             "sqrt[2] * 3 + sqrt[2] * sqrt[4] + sqrt[2] * sqrt[5]",
@@ -125,17 +130,17 @@ class ExpandRulesTest {
         testRule(
             "-2 * (3 + sqrt[5])",
             DistributeMultiplicationOverSum,
-            "(-2) * 3 + (-2) * sqrt[5]",
+            "-2 * 3 - 2 * sqrt[5]",
         )
         testRule(
             "-sqrt[2] * (3 + sqrt[5])",
             DistributeMultiplicationOverSum,
-            "(-sqrt[2]) * 3 + (-sqrt[2]) * sqrt[5]",
+            "-sqrt[2] * 3 - sqrt[2] * sqrt[5]",
         )
         testRule(
             "-2 * (-3 - sqrt[5])",
             DistributeMultiplicationOverSum,
-            "(-2) *( -3) + (-2) * (-sqrt[5])",
+            "-2 * (-3) - 2 * (-sqrt[5])",
         )
         testRule(
             "2 (4x - 3)",
@@ -151,6 +156,11 @@ class ExpandRulesTest {
             "3 sqrt[2] * [x^2] * (2x - 7)",
             DistributeMultiplicationOverSum,
             "<. 3 sqrt[2] * [x ^ 2] .> * <. 2 x .> + <. 3 sqrt[2] * [x ^ 2] .> * (-7)",
+        )
+        testRule(
+            "2*(1 + sqrt[3])*sqrt[2]",
+            DistributeMultiplicationOverSum,
+            null,
         )
         testRule(
             "x*(1 + sqrt[3])",

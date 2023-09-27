@@ -15,12 +15,10 @@ import {
 } from '@geogebra/solver-sdk';
 import { colorSchemes, settings } from './settings';
 import {
-  clone,
   containsNonTrivialStep,
   isCosmeticTransformation,
   isInvisibleChangeStep,
   isPedanticTransformation,
-  isRearrangementStep,
   isThroughStep,
 } from './util';
 import { renderTest } from './render-test';
@@ -61,7 +59,7 @@ export const renderPlanSelections = (selections: PlanSelectionJson[]) => {
 export const renderTransformation = (trans: TransformationJson, depth = 0): string => {
   const isThrough = isThroughStep(trans);
   if (!settings.showThroughSteps && isThrough) {
-    return renderTransformation(trans.steps![0], depth);
+    return renderTransformation(trans.steps[0], depth);
   }
 
   const [fromColoring, toColoring] = createColorMaps(trans);
@@ -224,30 +222,10 @@ const renderTaskTransformation = (task: TaskJson) => {
       {\\color{#8888ff}\\thickspace\\longmapsto\\thickspace} 
       ${solverSDK.treeToLatex(toExpr, settings.latexSettings)}`;
 
-  return `<div className='expr'>${renderExpression(rendering)}</div>`;
+  return `<div class='expr'>${renderExpression(rendering)}</div>`;
 };
 
 const preprocessSteps = (steps: TransformationJson[]) => {
-  // We clone because we may edit the objects
-  steps = preprocessInvisibleChangeSteps(clone(steps));
-  if (settings.showRearrangementSteps || steps.every((step) => !isRearrangementStep(step))) {
-    return steps;
-  }
-  // Rearrangement steps are "collapsed" with the previous step if it exists
-  const processedSteps = [];
-  let lastStep = null;
-  for (const step of steps) {
-    if (lastStep !== null && isRearrangementStep(step)) {
-      lastStep.toExpr = step.toExpr;
-    } else {
-      lastStep = step;
-      processedSteps.push(step);
-    }
-  }
-  return processedSteps;
-};
-
-const preprocessInvisibleChangeSteps = (steps: TransformationJson[]) => {
   if (settings.showInvisibleChangeSteps) {
     return steps;
   }

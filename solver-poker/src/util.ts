@@ -1,10 +1,6 @@
 import { Transformation } from '@geogebra/solver-sdk';
 import { settings } from './settings';
 
-export const isRearrangementStep = (transformation: Transformation) => {
-  return transformation.tags && transformation.tags.includes('Rearrangement');
-};
-
 export const isPedanticStep = (transformation: Transformation) => {
   return transformation.tags && transformation.tags.includes('Pedantic');
 };
@@ -45,7 +41,6 @@ const isTrivialStep = (transformation: Transformation) => {
   if (!transformation.tags) return false;
 
   return (
-    (!settings.showRearrangementSteps && isRearrangementStep(transformation)) ||
     (!settings.showPedanticSteps && isPedanticStep(transformation)) ||
     (!settings.showCosmeticSteps && isCosmeticStep(transformation)) ||
     (!settings.showInvisibleChangeSteps && isInvisibleChangeStep(transformation))

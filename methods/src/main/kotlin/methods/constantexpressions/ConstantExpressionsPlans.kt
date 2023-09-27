@@ -1,6 +1,7 @@
 package methods.constantexpressions
 
 import engine.expressions.Fraction
+import engine.expressions.Minus
 import engine.expressions.Power
 import engine.expressions.ValueExpression
 import engine.expressions.containsPowers
@@ -310,7 +311,14 @@ val constantSimplificationSteps: StepsProducer = steps {
 
         option(fractionSimplificationSteps)
 
-        option { deeply(GeneralPlans.NormalizeNegativeSignsInProduct) }
+        option {
+            deeply {
+                // We reorganize the product before extracting the signs, but if we don't have signs
+                // to handle, we leave the reorganization to the end
+                optionally { applyTo(reorderProductSteps) { if (it is Minus) it.argument else it } }
+                apply(GeneralPlans.NormalizeNegativeSignsInProduct)
+            }
+        }
 
         option { deeply(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithSameBase) }
         option {

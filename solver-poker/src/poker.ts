@@ -127,7 +127,6 @@ window.onload = () => {
   const submitToMainButton = el('submitToMain') as HTMLButtonElement;
 
   const showThroughStepsCheckbox = el('showThroughSteps') as HTMLInputElement;
-  const showRearrangementStepsCheckbox = el('showRearrangementSteps') as HTMLInputElement;
   const showPedanticStepsCheckbox = el('showPedanticSteps') as HTMLInputElement;
   const showCosmeticStepsCheckbox = el('showCosmeticSteps') as HTMLInputElement;
   const showInvisibleChangeStepsCheckbox = el('showInvisibleChangeSteps') as HTMLInputElement;
@@ -329,7 +328,6 @@ window.onload = () => {
   const displayOptionsChanged = () => {
     Object.assign(settings, {
       showThroughSteps: showThroughStepsCheckbox.checked,
-      showRearrangementSteps: showRearrangementStepsCheckbox.checked,
       showPedanticSteps: showPedanticStepsCheckbox.checked,
       showCosmeticSteps: showCosmeticStepsCheckbox.checked,
       showInvisibleChangeSteps: showInvisibleChangeStepsCheckbox.checked,
@@ -351,7 +349,6 @@ window.onload = () => {
   gmFriendlyCheckbox.onchange = optionsChanged;
 
   showThroughStepsCheckbox.onchange = displayOptionsChanged;
-  showRearrangementStepsCheckbox.onchange = displayOptionsChanged;
   showPedanticStepsCheckbox.onchange = displayOptionsChanged;
   showCosmeticStepsCheckbox.onchange = displayOptionsChanged;
   showInvisibleChangeStepsCheckbox.onchange = displayOptionsChanged;

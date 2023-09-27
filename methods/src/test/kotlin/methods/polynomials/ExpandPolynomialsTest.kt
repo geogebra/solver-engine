@@ -570,9 +570,9 @@ class ExpandPolynomialsTest {
     }
 
     @Test
-    fun `test distribute monomial from the left`() = testMethod {
+    fun `test expanding product of a sum and a monomial on the left`() = testMethod {
         method = PolynomialsPlans.ExpandPolynomialExpression
-        inputExpr = "3[x^2] (2x - 7)"
+        inputExpr = "3 [x ^ 2] (2 x - 7)"
 
         check {
             fromExpr = "3 [x ^ 2] (2 x - 7)"
@@ -600,7 +600,7 @@ class ExpandPolynomialsTest {
     }
 
     @Test
-    fun testDistributeConstantFromRhs() = testMethod {
+    fun `test expanding product of a sum and a constant on the right`() = testMethod {
         method = PolynomialsPlans.ExpandPolynomialExpression
         inputExpr = "(x + 1) * 5"
 
@@ -611,6 +611,7 @@ class ExpandPolynomialsTest {
                 key = PolynomialsExplanation.ExpandPolynomialExpression
             }
 
+            // This reordering should not happen
             step {
                 fromExpr = "(x + 1) * 5"
                 toExpr = "5 (x + 1)"
@@ -630,9 +631,9 @@ class ExpandPolynomialsTest {
     }
 
     @Test
-    fun testDistributeMonomialFromRhs() = testMethod {
+    fun `test expanding product of a sum and a monomial on the right`() = testMethod {
         method = PolynomialsPlans.ExpandPolynomialExpression
-        inputExpr = "(x + 1)*5[x^2]"
+        inputExpr = "(x + 1) * 5 [x ^ 2]"
 
         check {
             fromExpr = "(x + 1) * 5 [x ^ 2]"
@@ -641,8 +642,55 @@ class ExpandPolynomialsTest {
                 key = PolynomialsExplanation.ExpandPolynomialExpression
             }
 
+            // This reordering should not happen
             step {
                 fromExpr = "(x + 1) * 5 [x ^ 2]"
+                toExpr = "5 [x ^ 2] (x + 1)"
+                explanation {
+                    key = GeneralExplanation.ReorderProduct
+                }
+            }
+
+            step {
+                fromExpr = "5 [x ^ 2] (x + 1)"
+                toExpr = "5 [x ^ 3] + 5 [x ^ 2]"
+                explanation {
+                    key = ExpandExplanation.ExpandSingleBracketAndSimplify
+                }
+
+                step {
+                    fromExpr = "5 [x ^ 2] (x + 1)"
+                    toExpr = "<. 5 [x ^ 2] .> * x + <. 5 [x ^ 2] .> * 1"
+                    explanation {
+                        key = ExpandExplanation.DistributeMultiplicationOverSum
+                    }
+                }
+
+                step {
+                    fromExpr = "5 [x ^ 2] * x + 5 [x ^ 2] * 1"
+                    toExpr = "5 [x ^ 3] + 5 [x ^ 2]"
+                    explanation {
+                        key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test expanding product of a sum with factors on both sides`() = testMethod {
+        method = PolynomialsPlans.ExpandPolynomialExpression
+        inputExpr = "5 (x + 1) * [x ^ 2]"
+
+        check {
+            fromExpr = "5 (x + 1) * [x ^ 2]"
+            toExpr = "5 [x ^ 3] + 5 [x ^ 2]"
+            explanation {
+                key = PolynomialsExplanation.ExpandPolynomialExpression
+            }
+
+            step {
+                fromExpr = "5 (x + 1) * [x ^ 2]"
                 toExpr = "5 [x ^ 2] (x + 1)"
                 explanation {
                     key = GeneralExplanation.ReorderProduct
@@ -750,15 +798,15 @@ class ExpandPolynomialsTest {
 
                 step {
                     fromExpr = "-2 (x + 6)"
-                    toExpr = "<. (-2) * x + (-2) * 6 .>"
+                    toExpr = "<.-2 * x - 2 * 6.>"
                     explanation {
                         key = ExpandExplanation.DistributeMultiplicationOverSum
                     }
                 }
 
                 step {
-                    fromExpr = "<. (-2) * x + (-2) * 6 .>"
-                    toExpr = "<. -2 x - 12 .>"
+                    fromExpr = "<.-2 * x - 2 * 6.>"
+                    toExpr = "<.-2 x - 12.>"
                     explanation {
                         key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
                     }

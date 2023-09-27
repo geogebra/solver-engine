@@ -15,6 +15,8 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Changed
 
+- Improved steps for expanding expressions like `(sqrt[2] + 1)(-2)` and `(x + 1)(-2)` (PLUT-478)
+
 ### Removed
 
 ## [1.3] 2023-09-25

@@ -18,12 +18,8 @@ enum class GeneralPlans(override val runner: CompositeMethod) : RunnerMethod {
             explanation = Explanation.NormalizeNegativeSignsInProduct
 
             steps {
-                whilePossible {
-                    firstOf {
-                        option(GeneralRules.SimplifyProductWithTwoNegativeFactors)
-                        option(GeneralRules.MoveSignOfNegativeFactorOutOfProduct)
-                    }
-                }
+                whilePossible(GeneralRules.SimplifyProductWithTwoNegativeFactors)
+                optionally(GeneralRules.MoveSignOfNegativeFactorOutOfProduct)
             }
         },
     ),

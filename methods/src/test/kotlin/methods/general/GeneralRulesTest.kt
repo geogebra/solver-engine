@@ -92,6 +92,7 @@ class GeneralRulesTest {
         testRule("(-2):(-3)", SimplifyProductWithTwoNegativeFactors, "2:3")
         testRule("-2:(-3)", SimplifyProductWithTwoNegativeFactors, "2:3")
         testRule("-2:-3", SimplifyProductWithTwoNegativeFactors, "2:3")
+        testRule("-(-42) sqrt[6]", SimplifyProductWithTwoNegativeFactors, "42 sqrt[6]")
 
         testMethod {
             method = SimplifyProductWithTwoNegativeFactors
@@ -121,7 +122,6 @@ class GeneralRulesTest {
     @Test
     fun testMoveSignOfNegativeFactorOutOfProduct() {
         testRule("x * (-y) * z", MoveSignOfNegativeFactorOutOfProduct, "-xyz")
-        testRule("x*3:(-5)", MoveSignOfNegativeFactorOutOfProduct, "- x*3:5")
 
         testMethod {
             method = MoveSignOfNegativeFactorOutOfProduct

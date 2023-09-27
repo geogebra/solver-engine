@@ -244,9 +244,7 @@ private val simplifyProductWithTwoNegativeFactors =
 
         // Alternative pattern, to cover the situation where the negative is in front of
         // the product
-
-        val fd1Positive = optionalDivideBy(f1)
-        val productInNeg = productContaining(fd1Positive, fd2)
+        val productInNeg = productContaining(fd2)
         val negProduct = negOf(productInNeg)
 
         onPattern(oneOf(product, negProduct)) {
@@ -258,10 +256,7 @@ private val simplifyProductWithTwoNegativeFactors =
                             negProduct to listOf(Scope.Operator),
                             f2Negative to listOf(Scope.Operator),
                         ),
-                        productInNeg.substitute(
-                            optionalDivideBy(fd1Positive, get(fd1Positive)),
-                            optionalDivideBy(fd2, get(f2)),
-                        ),
+                        productInNeg.substitute(optionalDivideBy(fd2, get(f2))),
                     )
                 } else {
                     cancel(
@@ -286,21 +281,22 @@ private val simplifyProductWithTwoNegativeFactors =
     }
 
 /**
- * 2*(-x) -> - 2x
+ * 2 * (-x) -> - 2x
+ * x * (-2) -> rule shouldn't apply (we rearrange first)
+ * sqrt[2] * (-2) * x -> rule shouldn't apply (we rearrange first)
  * negative sign has a "move" path mapping, rest have a "shift"
  */
 private val moveSignOfNegativeFactorOutOfProduct =
     rule {
         val f = AnyPattern()
         val negf = negOf(f)
-        val fd = optionalDivideBy(negf)
-        val product = productContaining(fd)
+        val product = productContaining(negf)
 
         onPattern(product) {
             ruleResult(
                 toExpr = moveUnaryOperator(
                     negf, // -x
-                    negOf(product.substitute(optionalDivideBy(fd, get(f)))), // -2x
+                    negOf(product.substitute(get(f))), // -2x
                 ),
                 gmAction = drag(negf, PM.Operator, product, null, Position.LeftOf),
                 explanation = metadata(Explanation.MoveSignOfNegativeFactorOutOfProduct),

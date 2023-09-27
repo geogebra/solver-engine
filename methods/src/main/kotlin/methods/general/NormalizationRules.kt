@@ -250,6 +250,7 @@ private val normalizeProductSigns = rule {
     }
 }
 
+// We should add tests for this and then tidy up the logic, probably by doing a case split on isConstant
 private val priorityComparator = compareBy<Expression>(
     { !it.isConstant() },
     {
@@ -260,8 +261,8 @@ private val priorityComparator = compareBy<Expression>(
             // sqrt[...] or root[..., n]
             is Root, is SquareRoot -> 3
             // a, x, [x ^ 2]
-            is Variable -> 2
-            else -> 1
+            is Variable -> 1
+            else -> 2
         }
     },
     { it.variablePowerBase()?.variableName },
