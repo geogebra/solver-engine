@@ -57,7 +57,7 @@ enum class ApproximationPlans(override val runner: CompositeMethod) : RunnerMeth
     ApproximateSubexpression(
         plan {
             explanation = Explanation.ApproximateExpressionInBrackets
-            pattern = condition { it.hasBracket() }
+            pattern = condition { it.hasVisibleBracket() }
 
             steps {
                 whilePossible(approximationSteps)

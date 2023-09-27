@@ -268,7 +268,7 @@ class ExpandPolynomialsTest {
                     fromExpr = "([(2 x) ^ 3] + 3 * [(2 x) ^ 2] * (-3) + 3 * 2 x * [(-3) ^ 2] + [(-3) ^ 3])"
                     toExpr = "(8 [x ^ 3] - 36 [x ^ 2] + 54 x - 27)"
                     explanation {
-                        key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
+                        key = PolynomialsExplanation.SimplifyExpressionInBrackets
                     }
                 }
             }
@@ -783,6 +783,7 @@ class ExpandPolynomialsTest {
                 step {
                     fromExpr = "<. 3 * x + 3 * 1 .>"
                     toExpr = "<. 3 x + 3 .>"
+                    // probably will be fixed in PLUT-478 (key shouldn't be SimplifyExpressionInBrackets)
                     explanation {
                         key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
                     }
@@ -862,7 +863,7 @@ class ExpandPolynomialsTest {
                     fromExpr = "([(2 x) ^ 2] + 2 * 2 x * 3 + [3 ^ 2])"
                     toExpr = "(4 [x ^ 2] + 12 x + 9)"
                     explanation {
-                        key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
+                        key = PolynomialsExplanation.SimplifyExpressionInBrackets
                     }
                 }
             }

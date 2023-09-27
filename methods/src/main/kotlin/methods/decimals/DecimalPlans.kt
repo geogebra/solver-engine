@@ -172,7 +172,7 @@ enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
     EvaluateSubexpressionAsDecimal(
         plan {
             explanation = Explanation.EvaluateExpressionInBracketsAsDecimal
-            pattern = condition { it.hasBracket() }
+            pattern = condition { it.hasVisibleBracket() }
 
             steps {
                 whilePossible(decimalEvaluationSteps)

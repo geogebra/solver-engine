@@ -272,6 +272,11 @@ open class Expression internal constructor(
     fun isPartialSum() = this is Sum && decorators.getOrNull(0) === Decorator.PartialBracket
     fun isPartialProduct() = this is Product && decorators.getOrNull(0) === Decorator.PartialBracket
 
+    /**
+     * Any bracket other than Decorator.PartialBracket is a "visible bracket"
+     */
+    fun hasVisibleBracket() = decorators.any { it != Decorator.PartialBracket }
+
     fun outerBracket() = decorators.lastOrNull()
 
     /**

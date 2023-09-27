@@ -76,6 +76,10 @@ enum class PolynomialsExplanation : CategorisedMetadataKey {
 
     ExpandSingleBracketWithIntegerCoefficient,
 
+    /**
+     * Simplify an expression in brackets
+     */
+    SimplifyExpressionInBrackets,
     ;
 
     override val category = "Polynomials"

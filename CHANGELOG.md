@@ -13,6 +13,8 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Fixed
 
+- Simplify brackets in polynomial expression deep-first (PLUT-588)
+
 ### Changed
 
 - Improved steps for expanding expressions like `(sqrt[2] + 1)(-2)` and `(x + 1)(-2)` (PLUT-478)

@@ -86,7 +86,7 @@ private enum class PrivateIntegerArithmeticPlans(override val runner: CompositeM
     EvaluateArithmeticSubexpression(
         plan {
             explanation = Explanation.SimplifyExpressionInBrackets
-            pattern = condition { it.hasBracket() }
+            pattern = condition { it.hasVisibleBracket() }
 
             steps {
                 whilePossible(evaluationSteps)

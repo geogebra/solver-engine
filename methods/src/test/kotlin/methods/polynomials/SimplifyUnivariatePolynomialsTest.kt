@@ -756,3 +756,107 @@ class SimplifyUnivariatePolynomialsTest {
         }
     }
 }
+
+class SimplifyUnivariatePolynomialsWithMultipleBrackets {
+    @Test
+    fun `test order of simplification of brackets`() = testMethod {
+        method = PolynomialsPlans.SimplifyPolynomialExpression
+        inputExpr = "3 + (x + 2 + (2x - 1 + (-x + 5))) + 4"
+
+        check {
+            fromExpr = "3 + (x + 2 + (2 x - 1 + (-x + 5))) + 4"
+            toExpr = "2 x + 13"
+            explanation {
+                key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
+            }
+
+            step {
+                fromExpr = "3 + (x + 2 + (2 x - 1 + (-x + 5))) + 4"
+                toExpr = "3 + (x + 2 + (x + 4)) + 4"
+                explanation {
+                    key = PolynomialsExplanation.SimplifyExpressionInBrackets
+                }
+
+                step {
+                    fromExpr = "(2 x - 1 + (-x + 5))"
+                    toExpr = "(2 x - 1 - x + 5)"
+                    explanation {
+                        key = GeneralExplanation.RemoveBracketSumInSum
+                    }
+                }
+
+                step {
+                    fromExpr = "(2 x - 1 - x + 5)"
+                    toExpr = "(x - 1 + 5)"
+                    explanation {
+                        key = CollectingExplanation.CollectLikeTermsAndSimplify
+                    }
+                }
+
+                step {
+                    fromExpr = "(x - 1 + 5)"
+                    toExpr = "(x + 4)"
+                    explanation {
+                        key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "3 + (x + 2 + (x + 4)) + 4"
+                toExpr = "3 + (2 x + 6) + 4"
+                explanation {
+                    key = PolynomialsExplanation.SimplifyExpressionInBrackets
+                }
+
+                step {
+                    fromExpr = "(x + 2 + (x + 4))"
+                    toExpr = "(x + 2 + x + 4)"
+                    explanation {
+                        key = GeneralExplanation.RemoveBracketSumInSum
+                    }
+                }
+
+                step {
+                    fromExpr = "(x + 2 + x + 4)"
+                    toExpr = "(2 x + 2 + 4)"
+                    explanation {
+                        key = CollectingExplanation.CollectLikeTermsAndSimplify
+                    }
+                }
+
+                step {
+                    fromExpr = "(2 x + 2 + 4)"
+                    toExpr = "(2 x + 6)"
+                    explanation {
+                        key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "3 + (2 x + 6) + 4"
+                toExpr = "3 + 2 x + 6 + 4"
+                explanation {
+                    key = GeneralExplanation.RemoveBracketSumInSum
+                }
+            }
+
+            step {
+                fromExpr = "3 + 2 x + 6 + 4"
+                toExpr = "13 + 2 x"
+                explanation {
+                    key = IntegerArithmeticExplanation.SimplifyIntegersInSum
+                }
+            }
+
+            step {
+                fromExpr = "13 + 2 x"
+                toExpr = "2 x + 13"
+                explanation {
+                    key = PolynomialsExplanation.NormalizePolynomial
+                }
+            }
+        }
+    }
+}

@@ -174,7 +174,7 @@ enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : Runn
     SimplifyConstantSubexpression(
         plan {
             explanation = Explanation.SimplifyExpressionInBrackets
-            pattern = condition { it.hasBracket() }
+            pattern = condition { it.hasVisibleBracket() }
 
             steps {
                 whilePossible(constantSimplificationSteps)

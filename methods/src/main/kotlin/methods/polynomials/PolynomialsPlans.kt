@@ -47,6 +47,17 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
     SimplifyPowerOfVariablePower(simplifyPowerOfVariablePower),
     SimplifyPowerOfMonomial(simplifyPowerOfMonomial),
 
+    SimplifyPolynomialSubexpression(
+        plan {
+            explanation = Explanation.SimplifyExpressionInBrackets
+            pattern = condition { it.hasVisibleBracket() }
+
+            steps {
+                whilePossible(polynomialSimplificationSteps)
+            }
+        },
+    ),
+
     @PublicMethod
     SimplifyPolynomialExpression(
         plan {
@@ -57,6 +68,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
             steps {
                 whilePossible { deeply(simpleTidyUpSteps) }
                 optionally(NormalizationPlans.NormalizeExpression)
+                whilePossible { deeply(SimplifyPolynomialSubexpression, deepFirst = true) }
                 whilePossible(polynomialSimplificationSteps)
                 optionally(PolynomialRules.NormalizePolynomial)
             }
