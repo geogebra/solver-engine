@@ -14,6 +14,8 @@ contents to a new release section (e.g. _[0.x]_).
 ### Fixed
 
 - Simplify brackets in polynomial expression deep-first (PLUT-588)
+- Avoid multiplying a product by 1, instead eliminate the factor of 1 (PLUT-670). Previously this wasn't done except in
+  the simplest cases.
 
 ### Changed
 

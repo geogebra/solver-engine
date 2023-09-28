@@ -69,6 +69,9 @@ export const expressionSkipList = [
   // TODO: extend GM gesture to cover these: 0^x, 1^x, x^1, x^0, radical cases
   '1^(sqrt 2+1)',
   '0^(3/2)',
+
+  // TODO: Added in PLUT-670 where factors of 1 are now eliminated
+  'x=(-3±sqrt(9+(-4)*1+(-4)*(-sqrt[3]3)))/2',
 ];
 
 export const ruleWhiteList = [

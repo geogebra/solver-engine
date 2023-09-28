@@ -9,6 +9,36 @@ import org.junit.jupiter.api.Test
 class SimplifyMultivariatePolynomialsTest {
 
     @Test
+    fun testFactorOfOneIsEliminatedInPolynomial() = testMethod {
+        method = PolynomialsPlans.SimplifyPolynomialExpression
+        inputExpr = "1 x * 1 y"
+
+        check {
+            fromExpr = "1 x * 1 y"
+            toExpr = "x y"
+            explanation {
+                key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
+            }
+
+            step {
+                fromExpr = "1 x * 1 y"
+                toExpr = "x * 1 y"
+                explanation {
+                    key = GeneralExplanation.RemoveUnitaryCoefficient
+                }
+            }
+
+            step {
+                fromExpr = "x * 1 y"
+                toExpr = "x y"
+                explanation {
+                    key = GeneralExplanation.RemoveUnitaryCoefficient
+                }
+            }
+        }
+    }
+
+    @Test
     fun `test rearranging multivariate monomial`() = testMethod {
         method = PolynomialsPlans.SimplifyPolynomialExpression
         inputExpr = "3 [x ^ 4] [a ^ 2] b y"

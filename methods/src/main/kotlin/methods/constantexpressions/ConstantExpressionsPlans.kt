@@ -255,6 +255,7 @@ val simpleTidyUpSteps = steps {
         option(IntegerRootsRules.SimplifyRootOfZero)
 
         // handle ones
+        option(GeneralRules.RemoveUnitaryCoefficient)
         option(GeneralRules.SimplifyFractionWithOneDenominator)
         option(GeneralRules.EvaluateOneToAnyPower)
         option(GeneralRules.SimplifyExpressionToThePowerOfOne)
