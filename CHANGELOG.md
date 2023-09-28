@@ -11,6 +11,8 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Added
 
+- Added a checkbox to Poker to toggle between solver and JSON math formats (PLUT-691)
+
 ### Fixed
 
 - Simplify brackets in polynomial expression deep-first (PLUT-588)

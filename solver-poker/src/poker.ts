@@ -1,6 +1,13 @@
-import type { ApiMathFormat, SolverContext, StrategyMap } from '@geogebra/solver-sdk';
+import type {
+  ApiMathFormat,
+  SolverContext,
+  StrategyMap,
+  PlanSelectionJson,
+  PlanSelectionSolver,
+  TransformationJson,
+  TransformationSolver,
+} from '@geogebra/solver-sdk';
 import * as solverSDK from '@geogebra/solver-sdk';
-import { TransformationJson } from '@geogebra/solver-sdk';
 import type { ColorScheme, SolutionFormat } from './settings';
 import { settings, solutionFormatters } from './settings';
 import { renderPlanSelections, renderTransformation } from './render-solution';
@@ -35,7 +42,20 @@ const getAPIBaseURL = (): string => {
 solverSDK.api.baseUrl = getAPIBaseURL();
 const mainPokerURL = 'https://solver.geogebra.net/main/poker/index.html';
 
-let lastResult: { planId?: string; result?: any } = {};
+let lastResult:
+  | {
+      planId: 'selectPlans';
+      result: PlanSelectionJson[];
+      resultSolverFormat?: PlanSelectionSolver[];
+    }
+  | {
+      planId: Exclude<string, 'selectPlans'>;
+      result: TransformationJson;
+      resultSolverFormat?: TransformationSolver;
+    }
+  | { planId?: undefined; result?: undefined; resultSolverFormat?: undefined }
+  | { planId: string; result: { error: string; message: string }; resultSolverFormat?: undefined } =
+  {};
 
 const el = (id: string) => document.getElementById(id);
 
@@ -51,18 +71,6 @@ const copyTranslationKeysToClipboardOnClick = () => {
   for (const el of document.querySelectorAll<HTMLElement>('.translation-key')) {
     el.onclick = copyToClipboard;
   }
-};
-
-const selectPlansOrApplyPlan = async ({
-  planId,
-  input,
-  ...context
-}: { planId: string; input: string } & SolverContext) => {
-  const result =
-    planId === 'selectPlans'
-      ? await solverSDK.api.selectPlans(input, jsonFormat, context)
-      : await solverSDK.api.applyPlan(input, planId, jsonFormat, context);
-  lastResult = { planId, result: result as TransformationJson };
 };
 
 /******************************************
@@ -138,6 +146,9 @@ window.onload = () => {
   const resultElement = el('result') as HTMLElement;
   const sourceElement = el('source') as HTMLElement;
 
+  const jsonFormatCheckbox = el('jsonFormatCheckbox') as HTMLInputElement;
+  const responseSourceDetails = el('responseSourceDetails') as HTMLDetailsElement;
+
   /******************************************
    * Setting up
    ******************************************/
@@ -183,10 +194,35 @@ window.onload = () => {
     );
   };
 
+  const selectPlansOrApplyPlan = async ({
+    planId,
+    input,
+    ...context
+  }: { planId: string; input: string } & SolverContext) => {
+    if (planId === 'selectPlans') {
+      const result = await solverSDK.api.selectPlans(input, jsonFormat, context);
+      lastResult = { planId, result };
+    } else {
+      const result = await solverSDK.api.applyPlan(input, planId, jsonFormat, context);
+      lastResult = { planId, result };
+    }
+
+    if (!jsonFormatCheckbox.checked && responseSourceDetails.open) {
+      lastResult.resultSolverFormat =
+        planId === 'selectPlans'
+          ? await solverSDK.api.selectPlans(input, 'solver', context)
+          : await solverSDK.api.applyPlan(input, planId, 'solver', context);
+    }
+  };
+
   const displayLastResult = () => {
-    const { planId, result } = lastResult;
-    sourceElement.innerHTML = JSON.stringify(result, null, 4);
-    console.log({ planId, result });
+    const { planId, result, resultSolverFormat } = lastResult;
+    sourceElement.innerHTML = JSON.stringify(
+      jsonFormatCheckbox.checked ? result : resultSolverFormat,
+      null,
+      4,
+    );
+    console.log(lastResult);
     if (planId === undefined || result === undefined) {
       return;
     }
@@ -195,8 +231,11 @@ window.onload = () => {
     } else {
       resultElement.innerHTML =
         planId === 'selectPlans'
-          ? renderPlanSelections(result)
-          : `${renderTransformation(result, 1)} ${renderTest(result, planId)}`;
+          ? renderPlanSelections(result as PlanSelectionJson[])
+          : `${renderTransformation(result as TransformationJson, 1)} ${renderTest(
+              result as TransformationJson,
+              planId,
+            )}`;
       window.renderMathInElement(resultElement);
       copyTranslationKeysToClipboardOnClick();
       copyTestCodeToClipboardOnClick();
@@ -347,6 +386,8 @@ window.onload = () => {
   precisionSelect.onchange = optionsChanged;
   preferDecimalsCheckbox.onchange = optionsChanged;
   gmFriendlyCheckbox.onchange = optionsChanged;
+  jsonFormatCheckbox.onchange = optionsChanged;
+  responseSourceDetails.ontoggle = optionsChanged;
 
   showThroughStepsCheckbox.onchange = displayOptionsChanged;
   showPedanticStepsCheckbox.onchange = displayOptionsChanged;

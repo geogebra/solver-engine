@@ -21,11 +21,12 @@ export type SolverExpr = string;
 export type LatexExpr = string;
 export type SolverContext = {
   curriculum?: string;
+  /** GM stands for Graspable Math */
   gmFriendly?: boolean;
   precision?: number;
   preferDecimals?: boolean;
   solutionVariable?: string;
-  polynomialEquationSolvingStrategy?: string;
+  preferredStrategies?: { [category: string]: string };
 };
 
 export type Strategy = {
