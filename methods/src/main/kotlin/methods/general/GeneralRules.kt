@@ -298,7 +298,7 @@ private val moveSignOfNegativeFactorOutOfProduct =
                     negf, // -x
                     negOf(product.substitute(get(f))), // -2x
                 ),
-                gmAction = drag(negf, PM.Operator, product, null, Position.LeftOf),
+                gmAction = drag(negf, PM.Operator, product.childPatterns[0], PM.Parens, Position.LeftOf),
                 explanation = metadata(Explanation.MoveSignOfNegativeFactorOutOfProduct),
             )
         }
@@ -390,7 +390,7 @@ private val cancelDenominator =
             val denominator = pattern.childPatterns[1]
             ruleResult(
                 toExpr = cancel(common, restOf(numerator)),
-                gmAction = drag(common.within(denominator), common.within(numerator)),
+                gmAction = drag(common.within(denominator), PM.Group, common.within(numerator), PM.Group),
                 explanation = metadata(Explanation.CancelDenominator),
             )
         }
@@ -485,7 +485,7 @@ private val multiplyExponentsUsingPowerRule =
                     get(base),
                     productOf(move(exp1), move(exp2)),
                 ),
-                gmAction = drag(exp2, innerPower),
+                gmAction = drag(exp2, PM.Group, innerPower),
                 explanation = metadata(Explanation.MultiplyExponentsUsingPowerRule),
             )
         }
@@ -638,7 +638,7 @@ private val cancelAdditiveInverseElements =
             }
             ruleResult(
                 toExpr = toExpr,
-                gmAction = drag(additiveInverseSearchTerm, searchTerm),
+                gmAction = drag(additiveInverseSearchTerm, PM.Group, searchTerm, PM.Group),
                 explanation = metadata(Explanation.CancelAdditiveInverseElements, move(term)),
             )
         }
@@ -760,7 +760,7 @@ private val rewriteFractionOfPowersWithSameBase =
                         negOf(move(power2.exponent)),
                     ),
                 ),
-                gmAction = drag(power2, power1),
+                gmAction = drag(power2, PM.Group, power1, PM.Group),
                 explanation = metadata(Explanation.RewriteFractionOfPowersWithSameBase),
             )
         }
@@ -916,7 +916,7 @@ private val rewriteIntegerOrderRootAsPower =
                 ),
                 gmAction = when (get(root)) {
                     is Root -> {
-                        drag(root.order, root, Position.RightOf)
+                        drag(root, PM.RootIndex, root, null, Position.RightOf)
                     }
                     is SquareRoot -> {
                         drag(root, PM.RootIndex, root, null, Position.RightOf)

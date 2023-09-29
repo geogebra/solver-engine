@@ -18,10 +18,12 @@ contents to a new release section (e.g. _[0.x]_).
 - Simplify brackets in polynomial expression deep-first (PLUT-588)
 - Avoid multiplying a product by 1, instead eliminate the factor of 1 (PLUT-670). Previously this wasn't done except in
   the simplest cases.
+- SDK: Fixed gm action tests by improving action handling in GM. (SP-222)
 
 ### Changed
 
 - Improved steps for expanding expressions like `(sqrt[2] + 1)(-2)` and `(x + 1)(-2)` (PLUT-478)
+- SDK: Switched from allow-list to skip-list for GM action tests. (SP-222)
 
 ### Removed
 

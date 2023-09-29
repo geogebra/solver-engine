@@ -289,7 +289,13 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
             onPattern(product) {
                 ruleResult(
                     toExpr = product.substitute(fractionOf(move(numerator), move(denominator))),
-                    gmAction = drag(denominator, numerator, dragToPosition = DragTargetPosition.Below),
+                    gmAction = drag(
+                        denominator,
+                        PM.Group,
+                        numerator,
+                        PM.Group,
+                        dragToPosition = DragTargetPosition.Below,
+                    ),
                     explanation = metadata(
                         Explanation.TurnDivisionOfDecimalsIntoFraction,
                         move(numerator),
@@ -333,7 +339,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
                                 (n1 * n2).stripTrailingZeros()
                             },
                         ),
-                        gmAction = drag(multiplier, base),
+                        gmAction = drag(multiplier, PM.Group, base, PM.Group),
                         explanation = metadata(Explanation.EvaluateDecimalProduct, move(base), move(multiplier)),
                     )
 
@@ -344,7 +350,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
                                 (n1 / n2).stripTrailingZeros()
                             },
                         ),
-                        gmAction = drag(divisor, base),
+                        gmAction = drag(divisor, PM.Group, base, PM.Group),
                         explanation = metadata(Explanation.EvaluateDecimalDivision, move(base), move(divisor)),
                     )
                 }
@@ -371,7 +377,7 @@ enum class DecimalRules(override val runner: Rule) : RunnerMethod {
 
                 ruleResult(
                     toExpr = sum.substitute(numericOp(term1, term2) { n1, n2 -> (n1 + n2).stripTrailingZeros() }),
-                    gmAction = drag(term2, term1),
+                    gmAction = drag(term2, PM.Group, term1, PM.Group),
                     explanation = explanation,
                 )
             }

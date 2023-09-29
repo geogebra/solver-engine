@@ -41,6 +41,7 @@ import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
 import engine.patterns.sumOf
+import engine.steps.metadata.DragTargetPosition
 import engine.steps.metadata.Skill
 import engine.steps.metadata.metadata
 import engine.utility.divides
@@ -143,7 +144,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                         ),
                         factor(denom),
                     ),
-                    gmAction = drag(nf2, nf1),
+                    gmAction = drag(nf2, PM.Group, nf1, PM.Group),
                     explanation = when {
                         !nf1.isNeg() && nf2.isNeg() -> metadata(Explanation.SubtractLikeFractions, move(f1), move(f2))
                         else -> metadata(Explanation.AddLikeFractions, move(nf1), move(nf2))
@@ -196,9 +197,9 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                     toExpr = sumOf(expandedFraction1, expandedFraction2),
                     // REVISIT: no clear actor / not aligned with GM's approach
                     gmAction = if (factor1 == Constants.One) {
-                        drag(denominator2, f1)
+                        drag(denominator2, PM.Group, f1, null, DragTargetPosition.RightOf)
                     } else {
-                        drag(denominator1, f2)
+                        drag(denominator1, PM.Group, f2, null, DragTargetPosition.LeftOf)
                     },
                     explanation = metadata(Explanation.BringToCommonDenominator, move(f1), move(f2)),
                     skills = listOf(metadata(Skill.NumericLCM, move(denominator1), move(denominator2))),

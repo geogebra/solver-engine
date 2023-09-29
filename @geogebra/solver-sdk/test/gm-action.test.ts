@@ -13,7 +13,6 @@ import { GmMathNode } from '../src/graspable-math/create-path-map';
 import {
   ruleSkipList,
   expressionSkipList,
-  ruleWhiteList,
   expressionTypeSkipList,
 } from './gm-action-test-filters';
 
@@ -62,7 +61,10 @@ describe('gmAction tests', () => {
         continue;
       }
       const fromExprTree = step.fullFromExpr;
-      if (hasExpressionType(step.fullFromExpr, expressionTypeSkipList)) {
+      if (
+        hasExpressionType(step.fullFromExpr, expressionTypeSkipList) ||
+        hasExpressionType(step.fullToExpr, expressionTypeSkipList)
+      ) {
         dummyTest();
         continue;
       }
@@ -84,10 +86,10 @@ GmActionInfo: ${JSON.stringify(step.gmAction, null, 2)}
           transformation;
           testResult;
 
-          // We will eventually get rid of the whitelist and just have a blacklist.
           if (
-            ruleSkipList.includes(step.explanation.key) ||
-            !ruleWhiteList.includes(step.explanation.key)
+            // Uncomment below line and comment out the other conditions to debug a single test case
+            // step.explanation.key !== 'General.RemoveRedundantPlusSign'
+            ruleSkipList.includes(step.explanation.key)
           )
             return dummyTest();
 
@@ -143,18 +145,24 @@ GmActionInfo: ${JSON.stringify(step.gmAction, null, 2)}
                   throwUnknownTypeError(gmAction.dragTo.position);
               }
               // otherTargets.forEach((target) => (whenFor = whenFor.and(target)));
-              chain.gives(fullToExpr)();
+              // finish_interaction is run automatically in GM and will sometimes do
+              // automatic cleanup work that we rely on here
+              chain.gives().finish_interaction().gives(fullToExpr)();
               break;
             case 'DoubleTap':
               chain
                 .simplifying(fromExprAscii)
                 .selecting(actorsSelector, 'dbltap')
+                .gives()
+                .finish_interaction()
                 .gives(fullToExpr)();
               break;
             case 'Tap':
               chain
                 .simplifying(fromExprAscii)
                 .selecting(actorsSelector)
+                .gives()
+                .finish_interaction()
                 .gives(fullToExpr)();
               break;
             case 'DragCollect':
@@ -213,18 +221,21 @@ function dummyTest() {
 }
 
 function getGmSelector(rootExpression: GmMathNode, subExpressions: GmMathNode[]) {
-  return rootExpression
-    .getSelectorOfNodes(subExpressions)
-    .split(';')
-    .map((it) => {
-      const tokens = it.split(':');
-      if (tokens.length > 1) {
-        const index = +tokens[1] + 1;
-        return tokens[0] + ':' + index;
-      }
-      return it;
-    })
-    .join(';');
+  return (
+    rootExpression
+      .getSelectorOfNodes(subExpressions)
+      .split(';')
+      .map((it) => {
+        const tokens = it.split(':');
+        if (tokens.length > 1) {
+          const index = +tokens[1] + 1;
+          return tokens[0] + ':' + index;
+        }
+        return it;
+      })
+      // .filter((it) => !!it) // Sometimes we have empty selectors, we may want to find the origin of that
+      .join(';')
+  );
 }
 
 const formulaMap = { 'Difference of Squares': '(a+b)*(a-b)' };

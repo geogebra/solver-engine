@@ -21,6 +21,7 @@ export default defineConfig({
     // Needed to run the gmath library in a node environment
     environment: 'jsdom',
     reporters: ['dot'],
+    singleThread: true,
   },
 });
 

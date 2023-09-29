@@ -37,12 +37,12 @@ import engine.patterns.sumContaining
 import engine.patterns.withOptionalConstantCoefficient
 import engine.patterns.withOptionalConstantCoefficientInSolutionVariables
 import engine.sign.Sign
-import engine.steps.metadata.GmPathModifier
 import engine.steps.metadata.Metadata
 import engine.utility.lcm
 import methods.solvable.DenominatorExtractor.extractDenominator
 import java.math.BigInteger
 import engine.steps.metadata.DragTargetPosition as Position
+import engine.steps.metadata.GmPathModifier as PM
 
 enum class SolvableRules(override val runner: Rule) : RunnerMethod {
 
@@ -65,7 +65,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
 
                 ruleResult(
                     toExpr = cancel(common, solvable.deriveSolvable(restLeft, restRight)),
-                    gmAction = drag(common.within(lhs), common.within(rhs)),
+                    gmAction = drag(common.within(lhs), PM.Group, common.within(rhs), PM.Group),
                     explanation = solvableExplanation(SolvableKey.CancelCommonTermsOnBothSides),
                 )
             }
@@ -118,7 +118,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                         sumOf(get(lhs), negatedConstants),
                         sumOf(get(rhs), negatedConstants),
                     ),
-                    gmAction = drag(constants, GmPathModifier.Group, rhs, null, Position.RightOf),
+                    gmAction = drag(constants, rhs, Position.RightOf),
                     explanation = solvableExplanation(
                         SolvableKey.MoveConstantsToTheRight,
                         parameters = listOf(constants),
@@ -328,7 +328,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
 
                     ruleResult(
                         toExpr = toExpr,
-                        gmAction = drag(coefficient, GmPathModifier.Group, rhs),
+                        gmAction = drag(coefficient, PM.Group, rhs),
                         explanation = solvableExplanation(
                             SolvableKey.DivideByCoefficientOfVariable,
                             flipSign = false,
@@ -344,7 +344,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
 
                     ruleResult(
                         toExpr = solvable.deriveSolvable(newLhs, newRhs, useDual),
-                        gmAction = drag(coefficient, GmPathModifier.Group, rhs),
+                        gmAction = drag(coefficient, PM.Group, rhs),
                         explanation = solvableExplanation(
                             SolvableKey.DivideByCoefficientOfVariable,
                             flipSign = useDual,
@@ -368,8 +368,8 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     toExpr = solvable.deriveSolvable(get(unsignedLhs), simplifiedNegOf(move(rhs)), useDual = true),
                     gmAction = when {
-                        rhs.isNeg() -> drag(lhs, GmPathModifier.Operator, rhs, GmPathModifier.Operator)
-                        else -> drag(lhs, GmPathModifier.Operator, rhs, null, Position.LeftOf)
+                        rhs.isNeg() -> drag(lhs, PM.Operator, rhs, PM.Operator)
+                        else -> drag(lhs, PM.Operator, rhs, null, Position.LeftOf)
                     },
                     explanation = solvableExplanation(SolvableKey.NegateBothSides),
                 )
@@ -387,7 +387,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
             onPattern(solvable) {
                 ruleResult(
                     toExpr = solvable.deriveSolvable(move(rhs), move(lhs), useDual = true),
-                    gmAction = drag(lhs, null, expression, GmPathModifier.Operator, Position.Above),
+                    gmAction = drag(lhs, null, expression, PM.Operator, Position.Above),
                     explanation = solvableExplanation(SolvableKey.FlipSolvable),
                 )
             }

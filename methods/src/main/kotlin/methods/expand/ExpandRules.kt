@@ -76,7 +76,7 @@ private val distributeMultiplicationOverSum = rule {
                     sumValue.terms.map { copySign(optionalNegProduct, explicitProductOf(toDistribute, move(it))) }
                 },
             ),
-            gmAction = drag(toDistribute, sum),
+            gmAction = drag(toDistribute, GmPathModifier.Group, sum, null, DragTargetPosition.LeftOf),
             explanation = metadata(
                 Explanation.DistributeMultiplicationOverSum,
                 copySign(optionalNegProduct, toDistribute),

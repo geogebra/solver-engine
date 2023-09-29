@@ -15,6 +15,7 @@ import engine.patterns.oneOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.steps.metadata.metadata
+import engine.steps.metadata.GmPathModifier as PM
 
 private val MAX_POWER = 64.toBigInteger()
 
@@ -111,7 +112,7 @@ enum class ApproximationRules(override val runner: Rule) : RunnerMethod {
                         toExpr = product.substitute(
                             numericOp(base, multiplier) { n1, n2 -> round(n1 * n2) },
                         ),
-                        gmAction = drag(multiplier, base),
+                        gmAction = drag(multiplier, PM.Group, base, PM.Group),
                         explanation = metadata(
                             Explanation.ApproximateDecimalProduct,
                             move(base),
@@ -124,7 +125,7 @@ enum class ApproximationRules(override val runner: Rule) : RunnerMethod {
                         toExpr = product.substitute(
                             numericOp(base, divisor) { n1, n2 -> round(n1) / n2 },
                         ),
-                        gmAction = drag(divisor, base),
+                        gmAction = drag(divisor, PM.Group, base, PM.Group),
                         explanation = metadata(
                             Explanation.ApproximateDecimalDivision,
                             move(base),
