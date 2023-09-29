@@ -79,6 +79,22 @@ it('Univariate finite set solution', () => {
   );
 });
 
+it('Univariate empty set solution', () => {
+  const solution: MathJson = {
+    type: 'SetSolution',
+    operands: [
+      { type: 'VariableList', operands: [variable('x')] },
+      {
+        type: 'FiniteSet',
+      },
+    ],
+  };
+
+  expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
+    'x \\in \\emptyset',
+  );
+});
+
 it('Univariate solution with holes', () => {
   const solution: MathJson = {
     type: 'SetSolution',

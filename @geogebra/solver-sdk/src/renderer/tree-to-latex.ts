@@ -403,7 +403,7 @@ function treeToLatexInner(
       }
     case 'FiniteSet':
       return tfd(
-        n.operands.length === 0
+        !n.operands || n.operands.length === 0
           ? '\\emptyset'
           : `\\left\\{${n.operands.map((el) => rec(el, n)).join(', ')}\\right\\}`,
       );

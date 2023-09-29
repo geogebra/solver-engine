@@ -98,7 +98,7 @@ export function treeToSolver(n: ExpressionTree): string {
       return dec(`${n.type}[${varList ? varList + ': ' : ''}${rec(n.operands[1])}]`);
     }
     case 'FiniteSet':
-      return dec(`{${n.operands.map((el) => rec(el)).join(', ')}}`);
+      return dec(n.operands ? `{${n.operands.map(rec).join(', ')}}` : `{}`);
     case 'Reals':
       return dec('/reals/');
     case 'Void':

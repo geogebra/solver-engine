@@ -7,8 +7,12 @@ export interface SolutionFormatter {
   ): string;
 }
 
-type VariableListTree = ExpressionTree & { type: 'VariableList' };
-type TupleTree = ExpressionTree & { type: 'Tuple' };
+type VariableListTree = ExpressionTree & {
+  type: 'VariableList';
+};
+type TupleTree = ExpressionTree & {
+  type: 'Tuple';
+};
 
 /**
  * This formatter always uses set notation to describe solutions.
@@ -72,7 +76,8 @@ export const simpleSolutionFormatter = {
 
         switch (set.type) {
           case 'FiniteSet':
-            switch (set.operands.length) {
+            const operandsLength = set.operands ? set.operands.length : 0;
+            switch (operandsLength) {
               case 0:
                 return `${varsTuple} \\in \\emptyset`;
               case 1: {

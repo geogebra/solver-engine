@@ -19,6 +19,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Avoid multiplying a product by 1, instead eliminate the factor of 1 (PLUT-670). Previously this wasn't done except in
   the simplest cases.
 - SDK: Fixed gm action tests by improving action handling in GM. (SP-222)
+- SDK: Fix regression, undefined `operands` value of emptyset is parsed by latex parser without error (PLUT-695)
 
 ### Changed
 

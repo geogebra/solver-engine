@@ -1175,6 +1175,28 @@ describe('Solver Parser Unit Tests', () => {
         dontParseLatex: true,
       },
       {
+        solver: 'SetSolution[x: {}]',
+        json: {
+          type: 'SetSolution',
+          operands: [
+            {
+              type: 'VariableList',
+              operands: [
+                {
+                  type: 'Variable',
+                  value: 'x',
+                },
+              ],
+            },
+            {
+              type: 'FiniteSet',
+            },
+          ],
+        },
+        latex: 'x \\in \\emptyset',
+        dontParseLatex: true,
+      },
+      {
         solver: 'Identity[x: 3 = 3]',
         json: {
           type: 'Identity',
