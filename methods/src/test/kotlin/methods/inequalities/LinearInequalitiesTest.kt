@@ -1,5 +1,7 @@
 package methods.inequalities
 
+import engine.context.Context
+import engine.methods.testMethod
 import engine.methods.testMethodInX
 import org.junit.jupiter.api.Test
 
@@ -281,6 +283,45 @@ class LinearInequalitiesTest {
     }
 
     @Test
+    fun `test multivariate linear inequality`() = testMethod {
+        method = InequalitiesPlans.SolveLinearInequality
+        context = Context(solutionVariables = listOf("b"))
+        inputExpr = "3 a + 2 b < 9"
+
+        check {
+            fromExpr = "3 a + 2 b < 9"
+            toExpr = "SetSolution[b: (-/infinity/, [9 - 3 a / 2])]"
+            explanation {
+                key = InequalitiesExplanation.SolveLinearInequality
+            }
+
+            step {
+                fromExpr = "3 a + 2 b < 9"
+                toExpr = "2 b < 9 - 3 a"
+                explanation {
+                    key = methods.solvable.InequalitiesExplanation.MoveConstantsInVariablesToTheRightAndSimplify
+                }
+            }
+
+            step {
+                fromExpr = "2 b < 9 - 3 a"
+                toExpr = "b < [9 - 3 a / 2]"
+                explanation {
+                    key = methods.solvable.InequalitiesExplanation.DivideByCoefficientOfVariableAndSimplify
+                }
+            }
+
+            step {
+                fromExpr = "b < [9 - 3 a / 2]"
+                toExpr = "SetSolution[b: (-/infinity/, [9 - 3 a / 2])]"
+                explanation {
+                    key = InequalitiesExplanation.ExtractSolutionFromInequalityInSolvedForm
+                }
+            }
+        }
+    }
+
+    @Test
     fun `test linear inequality with no variable`() = testMethodInX {
         method = InequalitiesPlans.SolveLinearInequality
         inputExpr = "1 < 2"
@@ -291,9 +332,9 @@ class LinearInequalitiesTest {
     }
 
     @Test
-    fun `test linear inequality with two variables`() = testMethodInX {
+    fun `test linear inequality without solution variable`() = testMethodInX {
         method = InequalitiesPlans.SolveLinearInequality
-        inputExpr = "x < y"
+        inputExpr = "y + 1 < 2y"
 
         check {
             noTransformation()
@@ -301,9 +342,9 @@ class LinearInequalitiesTest {
     }
 
     @Test
-    fun `test linear inequality without solution variable`() = testMethodInX {
+    fun `test linear inequality with solution variable having a non-constant coefficient`() = testMethodInX {
         method = InequalitiesPlans.SolveLinearInequality
-        inputExpr = "y + 1 < 2y"
+        inputExpr = "ax < y"
 
         check {
             noTransformation()

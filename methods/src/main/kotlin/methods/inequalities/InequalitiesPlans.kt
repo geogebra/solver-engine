@@ -86,7 +86,10 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
     SolveLinearInequality(
         plan {
             explanation = Explanation.SolveLinearInequality
-            pattern = inequalityInOneVariable()
+            pattern = condition {
+                it is Inequality && solutionVariables.size == 1 &&
+                    it.variables.contains(solutionVariables[0])
+            }
 
             steps {
                 whilePossible {

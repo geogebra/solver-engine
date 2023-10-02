@@ -227,4 +227,7 @@ export const expressionSkipList = [
   // TODO: fix GM bug with dragging factors across equal sign
   '-3*x=-1',
   '3.2*x=-1',
+
+  // TODO: should work in GM
+  '3*a+2*b<9',
 ];

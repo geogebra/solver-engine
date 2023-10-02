@@ -312,7 +312,6 @@ enum class EquationsExplanation(
      *
      * E.g. 2x + 2y = 3x + y -> 2x + 2y - 2x = 3x + y - 2x
      */
-
     MoveSomeVariablesToTheRight(SolvableKey.MoveVariablesToTheRight, explicitVariables = true),
 
     /**
@@ -499,10 +498,11 @@ enum class InequalitiesExplanation(
      * Add the opposite of the constants appearing on the RHS
      * of the inequality to both sides.
      *
-     * %1: variables that are not constant (x in the example below)
+     * %1: variables that are not constant (x in the example)
+     * %2: constants (2k in the first example)
      *
-     * E.g. k < 2x + k -> k - 2k < 2x + 2k - 2k
-     * k < 2x - 3k-> k + 3k < 2x - 3k + 3k
+     * E.g. k < 2x + 2k -> k - 2k < 2x + 2k - 2k
+     * k < 2x - 3k -> k + 3k < 2x - 3k + 3k
      */
     MoveConstantsInVariablesToTheLeft(SolvableKey.MoveConstantsToTheLeft, explicitVariables = true),
 
@@ -518,9 +518,10 @@ enum class InequalitiesExplanation(
 
     /**
      * Add the opposite of the constants appearing on the RHS
-     * of the equation to both sides and simplify.
+     * of the inequality to both sides and simplify.
      *
      * %1: variables that are not constant (x in the example)
+     * %2: constants (2k in the example)
      *
      * E.g. k > 2x + 2k
      *      -> k - 2k > 2x + k - k
@@ -545,9 +546,10 @@ enum class InequalitiesExplanation(
      * Add the opposite of the constants appearing on the LHS
      * of the inequality to both sides.
      *
-     * %1: variables that are not constant (x in the example below)
+     * %1: variables that are not constant (x in the example)
+     * %2: constants (2k in the first example)
      *
-     * E.g. 2x + k >= 2k -> 2x + k - k >= 2k - k
+     * E.g. 2x + 2k >= k -> 2x + 2k - 2k >= k - 2k
      * 2x - k >= 3k -> 2x - k + k >= 3k + k
      */
     MoveConstantsInVariablesToTheRight(SolvableKey.MoveConstantsToTheRight, explicitVariables = true),
@@ -564,13 +566,14 @@ enum class InequalitiesExplanation(
 
     /**
      * Add the opposite of the constants appearing on the LHS
-     * of the equation to both sides and simplify.
+     * of the inequality to both sides and simplify.
      *
-     * %1: variables that are not constant (x in the example below)
+     * %1: variables that are not constant (x in the example)
+     * %2: constants (2k in the example)
      *
-     * E.g. 2x + k <= 2k
-     *      -> 2x + k - k <= 2k - k
-     *      -> 2x <= k
+     * E.g. 2x + 2k <= k
+     *      -> 2x + 2k - 2k <= k - 2k
+     *      -> 2x <= -k
      */
     MoveConstantsInVariablesToTheRightAndSimplify(
         SolvableKey.MoveConstantsToTheRight,
@@ -590,9 +593,10 @@ enum class InequalitiesExplanation(
      * Add the opposite of some variables appearing on the RHS
      * of the inequality to both sides.
      *
-     * %1: variables that can be moved (x in the example below)
+     * %1: variables that are moved (x in the example)
+     * %2: value which is actually moved (2x in the example)
      *
-     * E.g. 3x + 2y > 2x + y -> 3x + 2y - 2x > 2x + y - 2x
+     * E.g. 3x + 2k > 2x + k -> 3x + k - 2x > 2x + k - 2x
      */
     MoveSomeVariablesToTheLeft(SolvableKey.MoveVariablesToTheLeft, explicitVariables = true),
 
@@ -608,9 +612,10 @@ enum class InequalitiesExplanation(
 
     /**
      * Add the opposite of some variables appearing on the RHS
-     * of the equation to both sides and simplify
+     * of the inequality to both sides and simplify
      *
-     * %1: variables that can be moved (x in the example below)
+     * %1: variables that are moved (x in the example)
+     * %2: value which is actually moved (2x in the example)
      *
      * E.g. 3x + 2k > 2x + k
      *      -> 3x + 2k - 2x > 2x + k - 2x
@@ -634,7 +639,8 @@ enum class InequalitiesExplanation(
      * Add the opposite of some variables appearing on the LHS
      * of the inequality to both sides.
      *
-     * %1: variables that can be moved (x in the example below)
+     * %1: variables that are moved (x in the example)
+     * %2: value which is actually moved (2x in the example)
      *
      * E.g. 2x + 2y > 3x + y -> 2x + 2y - 2x > 3x + y - 2x
      */
@@ -652,9 +658,10 @@ enum class InequalitiesExplanation(
 
     /**
      * Add the opposite of some variables appearing on the LHS
-     * of the equation to both sides and simplify
+     * of the inequality to both sides and simplify
      *
-     * %1: variables that can be moved (x in the example below)
+     * %1: variables that are moved (x in the example)
+     * %2: value which is actually moved (2x in the example)
      *
      * E.g. 2x + 2k >= 3x + k
      *      -> 2x + 2k - 2x >= 3x + k - 2x
