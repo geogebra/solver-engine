@@ -5,6 +5,143 @@ import engine.operators.Operator
 import engine.operators.SetOperators
 import engine.operators.TupleOperator
 import engine.sign.Sign
+import kotlin.math.sign
+
+data class Boundary(
+    val value: Expression,
+    val side: Int, // -1 for left, 1 for right
+    val gradient: Int, // 1 for entering a set, -1 for leaving a set
+) {
+    override fun toString() = "($value, $side, $gradient)"
+
+    fun isStarting() = gradient > 0
+    fun isEnding() = gradient < 0
+
+    fun isClosed() = gradient * side < 0
+    fun isOpen() = gradient * side > 0
+}
+
+data class BoundarySet(
+    val boundaries: List<Boundary>,
+    val initialHeight: Int,
+) {
+    fun complement(): BoundarySet = BoundarySet(
+        boundaries = boundaries.map { it.copy(gradient = -it.gradient) },
+        initialHeight = 1 - initialHeight,
+    )
+
+    @Suppress("CyclomaticComplexMethod")
+    fun toSetExpression(): SetExpression {
+        if (boundaries.isEmpty()) {
+            return if (initialHeight > 0) Constants.Reals else Constants.EmptySet
+        }
+
+        // Let's find the components of this set.
+
+        // - the intervals it contains
+        val intervals = mutableListOf<Interval>()
+        // - the discret points it contains
+        val discretePoints = mutableListOf<Expression>()
+        // - the discrete points its complement contains
+        val codiscretePoints = mutableListOf<Expression>()
+
+        var lastBoundary = Boundary(Constants.NegativeInfinity, 1, if (initialHeight > 0) 1 else -1)
+
+        for (boundary in boundaries) {
+            if (lastBoundary.isStarting()) {
+                assert(boundary.isEnding())
+                if (lastBoundary.value == boundary.value) {
+                    assert(boundary.isClosed() && lastBoundary.isClosed())
+                    discretePoints.add(boundary.value)
+                } else {
+                    intervals.add(
+                        Interval(
+                            lastBoundary.value,
+                            boundary.value,
+                            closedLeft = lastBoundary.isClosed(),
+                            closedRight = boundary.isClosed(),
+                        ),
+                    )
+                }
+            } else {
+                assert(lastBoundary.isEnding())
+                assert(boundary.isStarting())
+                if (lastBoundary.value == boundary.value) {
+                    assert(boundary.isOpen() && lastBoundary.isOpen())
+                    codiscretePoints.add(boundary.value)
+                }
+            }
+            lastBoundary = boundary
+        }
+
+        // If the last boundary is starting we need to end it
+        if (lastBoundary.isStarting()) {
+            intervals.add(
+                Interval(
+                    lastBoundary.value,
+                    Constants.Infinity,
+                    closedLeft = lastBoundary.isClosed(),
+                    closedRight = false,
+                ),
+            )
+        }
+
+        return when {
+            intervals.isEmpty() -> FiniteSet(discretePoints)
+            2 * codiscretePoints.size == boundaries.size -> SetDifference(Constants.Reals, FiniteSet(codiscretePoints))
+            discretePoints.isEmpty() && intervals.size == 1 -> intervals[0]
+            discretePoints.isEmpty() -> SetUnion(intervals)
+            else -> SetUnion(listOf(FiniteSet(discretePoints)) + intervals)
+        }
+    }
+}
+
+/**
+ * Join a number of sets - numSets is the number of sets we want to be in
+ */
+private fun joinBoundarySets(
+    boundarySets: List<BoundarySet>,
+    numSets: Int,
+    comparator: Comparator<Expression>,
+): BoundarySet {
+    val boundaryComparator = compareBy<Boundary, Expression>(comparator) { it.value }.thenBy { it.side }
+    val boundaries = boundarySets.flatMap { it.boundaries }.sortedWith(boundaryComparator)
+    val initialHeight = boundarySets.sumOf { it.initialHeight } - numSets + 1
+
+    var height = 2 * initialHeight - 1
+    val flatBoundaries = mutableListOf<Boundary>()
+
+    val iter = boundaries.listIterator()
+    while (iter.hasNext()) {
+        var simplestBoundary = iter.next()
+        var gradient = simplestBoundary.gradient
+
+        for (boundary in iter) {
+            if (boundaryComparator.compare(boundary, simplestBoundary) != 0) {
+                iter.previous()
+                break
+            }
+
+            gradient += boundary.gradient
+            if (boundary.value.complexity() < simplestBoundary.value.complexity()) {
+                simplestBoundary = boundary
+            }
+        }
+
+        if (height * (height + 2 * gradient) < 0) {
+            flatBoundaries.add(simplestBoundary.copy(gradient = gradient.sign))
+        }
+        height += 2 * gradient
+    }
+
+    return BoundarySet(flatBoundaries.toList(), if (initialHeight > 0) 1 else 0)
+}
+
+fun boundarySetUnion(boundarySets: List<BoundarySet>, comparator: Comparator<Expression>) =
+    joinBoundarySets(boundarySets, 1, comparator)
+
+fun boundarySetIntersection(boundarySets: List<BoundarySet>, comparator: Comparator<Expression>) =
+    joinBoundarySets(boundarySets, boundarySets.size, comparator)
 
 abstract class SetExpression internal constructor(
     operator: Operator,
@@ -16,73 +153,35 @@ abstract class SetExpression internal constructor(
 
     abstract fun isEmpty(comparator: ExpressionComparator): Boolean?
 
-    fun intersect(other: SetExpression, comparator: ExpressionComparator): SetExpression? {
-        return when (other) {
-            is FiniteSet -> intersectWithFiniteSet(other, comparator)
-            is Interval -> intersectWithInterval(other, comparator)
-            is CartesianProduct -> intersectWithCartesianProduct(other, comparator)
-            is SetUnion -> intersectWithSetUnion(other, comparator)
-            is SetDifference -> intersectWithSetDifference(other, comparator)
-            Constants.Reals -> this
-            else -> null
+    abstract fun toBoundarySet(comparator: Comparator<Expression>): BoundarySet
+
+    open fun intersect(other: SetExpression, comparator: Comparator<Expression>): SetExpression? {
+        return try {
+            boundarySetIntersection(
+                listOf(
+                    toBoundarySet(comparator),
+                    other.toBoundarySet(comparator),
+                ),
+                comparator,
+            ).toSetExpression()
+        } catch (e: IncomparableExpressionsException) {
+            null
         }
     }
 
-    fun union(other: SetExpression, comparator: ExpressionComparator): SetExpression? {
-        return when (other) {
-            is FiniteSet -> unionWithFiniteSet(other, comparator)
-            is Interval -> unionWithInterval(other, comparator)
-            is CartesianProduct -> unionWithCartesianProduct(other, comparator)
-            is SetUnion -> unionWithSetUnion(other, comparator)
-            Constants.Reals -> other
-            else -> null
+    open fun union(other: SetExpression, comparator: Comparator<Expression>): SetExpression? {
+        return try {
+            boundarySetUnion(
+                listOf(
+                    toBoundarySet(comparator),
+                    other.toBoundarySet(comparator),
+                ),
+                comparator,
+            ).toSetExpression()
+        } catch (e: IncomparableExpressionsException) {
+            null
         }
     }
-
-    protected open fun intersectWithFiniteSet(
-        other: FiniteSet,
-        comparator: ExpressionComparator,
-    ): SetExpression? = null
-
-    protected open fun intersectWithInterval(
-        other: Interval,
-        comparator: ExpressionComparator,
-    ): SetExpression? = null
-
-    protected open fun intersectWithCartesianProduct(
-        other: CartesianProduct,
-        comparator: ExpressionComparator,
-    ): SetExpression? = null
-
-    protected open fun intersectWithSetUnion(
-        other: SetUnion,
-        comparator: ExpressionComparator,
-    ): SetExpression? = null
-
-    protected open fun intersectWithSetDifference(
-        other: SetDifference,
-        comparator: ExpressionComparator,
-    ): SetExpression? = null
-
-    protected open fun unionWithFiniteSet(
-        other: FiniteSet,
-        comparator: ExpressionComparator,
-    ): SetExpression? = null
-
-    protected open fun unionWithInterval(
-        other: Interval,
-        comparator: ExpressionComparator,
-    ): SetExpression? = null
-
-    protected open fun unionWithCartesianProduct(
-        other: CartesianProduct,
-        comparator: ExpressionComparator,
-    ): SetExpression? = null
-
-    protected open fun unionWithSetUnion(
-        other: SetUnion,
-        comparator: ExpressionComparator,
-    ): SetExpression? = null
 }
 
 class Interval(
@@ -107,8 +206,8 @@ class Interval(
     }
 
     override fun contains(element: Expression, comparator: ExpressionComparator): Boolean? {
-        val leftSign = comparator.compare(element, leftBound)
-        val rightSign = comparator.compare(rightBound, element)
+        val leftSign = comparator.compareExpressions(element, leftBound)
+        val rightSign = comparator.compareExpressions(rightBound, element)
         return when {
             !leftSign.isKnown() -> null
             !rightSign.isKnown() -> null
@@ -120,75 +219,14 @@ class Interval(
         }
     }
 
-    override fun intersectWithFiniteSet(other: FiniteSet, comparator: ExpressionComparator): SetExpression? {
-        return other.intersect(this, comparator)
-    }
-
-    @Suppress("CyclomaticComplexMethod")
-    override fun intersectWithInterval(other: Interval, comparator: ExpressionComparator): SetExpression? {
-        // Find which interval starts "last" (left closed starts first)
-        val iLeft = when (comparator.compare(leftBound, other.leftBound)) {
-            Sign.NEGATIVE -> other
-            Sign.ZERO -> if (this.closedLeft) other else this
-            Sign.POSITIVE -> this
-            else -> return null
-        }
-        // Find which interval stops "first" (right closed stops last)
-        val iRight = when (comparator.compare(rightBound, other.rightBound)) {
-            Sign.NEGATIVE -> this
-            Sign.ZERO -> if (this.closedRight) other else this
-            Sign.POSITIVE -> other
-            else -> return null
-        }
-        // The intersection is what is between iLeft.leftBound and iRight.rightBound
-        return when (comparator.compare(iLeft.leftBound, iRight.rightBound)) {
-            Sign.NEGATIVE -> Interval(iLeft.leftBound, iRight.rightBound, iLeft.closedLeft, iRight.closedRight, meta)
-            Sign.ZERO -> if (iLeft.closedLeft && iRight.closedRight) {
-                FiniteSet(listOf(iLeft.leftBound))
-            } else {
-                Constants.EmptySet
-            }
-            Sign.POSITIVE -> Constants.EmptySet
-            else -> null
-        }
-    }
-
-    override fun intersectWithCartesianProduct(
-        other: CartesianProduct,
-        comparator: ExpressionComparator,
-    ): SetExpression {
-        return Constants.EmptySet
-    }
-
-    @Suppress("CyclomaticComplexMethod")
-    override fun unionWithInterval(other: Interval, comparator: ExpressionComparator): SetExpression? {
-        // Find which interval starts "first" (left closed starts first)
-        val iLeft = when (comparator.compare(leftBound, other.leftBound)) {
-            Sign.NEGATIVE -> this
-            Sign.ZERO -> if (this.closedLeft) this else other
-            Sign.POSITIVE -> other
-            else -> return null
-        }
-        // Find which interval stops "last" (right closed stops last)
-        val iRight = when (comparator.compare(rightBound, other.rightBound)) {
-            Sign.NEGATIVE -> other
-            Sign.ZERO -> if (this.closedRight) this else other
-            Sign.POSITIVE -> this
-            else -> return null
-        }
-
-        return when (comparator.compare(iLeft.rightBound, iRight.leftBound)) {
-            // there is no common element b/w the two intervals,
-            // this just ends up sorting the two intervals
-            Sign.NEGATIVE -> SetUnion(listOf(iLeft, iRight), meta)
-            Sign.ZERO, Sign.POSITIVE -> Interval(
-                iLeft.leftBound,
-                iRight.rightBound,
-                iLeft.closedLeft,
-                iRight.closedRight,
-                meta,
-            )
-            else -> null
+    override fun toBoundarySet(comparator: Comparator<Expression>): BoundarySet {
+        val leftBoundary = Boundary(leftBound, if (closedLeft) -1 else 1, 1)
+        val rightBoundary = Boundary(rightBound, if (closedRight) 1 else -1, -1)
+        return when {
+            leftBound == Constants.NegativeInfinity && rightBound == Constants.Infinity -> BoundarySet(emptyList(), 1)
+            leftBound == Constants.NegativeInfinity -> BoundarySet(listOf(rightBoundary), 1)
+            rightBound == Constants.Infinity -> BoundarySet(listOf(leftBoundary), 0)
+            else -> BoundarySet(listOf(leftBoundary, rightBoundary), 0)
         }
     }
 }
@@ -208,7 +246,7 @@ class FiniteSet(
     override fun contains(element: Expression, comparator: ExpressionComparator): Boolean? {
         var defaultResult: Boolean? = false
         for (member in elements) {
-            val sign = comparator.compare(member, element)
+            val sign = comparator.compareExpressions(member, element)
             when {
                 sign == Sign.ZERO -> return true
                 sign == Sign.UNKNOWN -> defaultResult = null
@@ -217,45 +255,16 @@ class FiniteSet(
         return defaultResult
     }
 
-    private fun filterElements(other: SetExpression, comparator: ExpressionComparator): FiniteSet? {
-        val commonElements = mutableListOf<Expression>()
-        for (member in elements) {
-            if (other.contains(member, comparator) ?: return null) {
-                commonElements.add(member)
-            }
-        }
-        return if (commonElements.isEmpty()) Constants.EmptySet else FiniteSet(commonElements)
-    }
-
-    override fun intersectWithInterval(other: Interval, comparator: ExpressionComparator): SetExpression? {
-        return filterElements(other, comparator)
-    }
-
-    override fun intersectWithFiniteSet(other: FiniteSet, comparator: ExpressionComparator): SetExpression? {
-        return filterElements(other, comparator)
-    }
-
-    override fun intersectWithCartesianProduct(
-        other: CartesianProduct,
-        comparator: ExpressionComparator,
-    ): SetExpression? {
-        return filterElements(other, comparator)
-    }
-
-    override fun intersectWithSetDifference(
-        other: SetDifference,
-        comparator: ExpressionComparator,
-    ): SetExpression? {
-        return filterElements(other, comparator)
-    }
-
-    override fun unionWithFiniteSet(other: FiniteSet, comparator: ExpressionComparator): SetExpression? {
-        val unionElements = elements.toMutableList()
-        for (otherElement in other.elements) {
-            val contains = this.contains(otherElement, comparator) ?: return null
-            if (!contains) unionElements.add(otherElement)
-        }
-        return FiniteSet(unionElements.sortedBy { it.doubleValue })
+    override fun toBoundarySet(comparator: Comparator<Expression>): BoundarySet {
+        return BoundarySet(
+            elements.flatMap {
+                listOf(
+                    Boundary(it, -1, 1),
+                    Boundary(it, 1, -1),
+                )
+            },
+            0,
+        )
     }
 }
 
@@ -292,28 +301,24 @@ class CartesianProduct(
         }
     }
 
-    override fun intersectWithFiniteSet(other: FiniteSet, comparator: ExpressionComparator): SetExpression? {
-        return other.intersect(this, comparator)
+    override fun union(other: SetExpression, comparator: Comparator<Expression>): SetExpression? {
+        if (other !is CartesianProduct || other.components.size != components.size) return null
+
+        val unionComponents = components.zip(other.components)
+            .map { (a, b) -> a.union(b, comparator) ?: return null }
+        return CartesianProduct(unionComponents)
     }
 
-    override fun intersectWithInterval(other: Interval, comparator: ExpressionComparator): SetExpression {
-        return Constants.EmptySet
+    override fun intersect(other: SetExpression, comparator: Comparator<Expression>): SetExpression? {
+        if (other !is CartesianProduct || other.components.size != components.size) return null
+
+        val intersectionComponents = components.zip(other.components)
+            .map { (a, b) -> a.intersect(b, comparator) ?: return null }
+        return CartesianProduct(intersectionComponents)
     }
-    override fun intersectWithCartesianProduct(
-        other: CartesianProduct,
-        comparator: ExpressionComparator,
-    ): SetExpression? {
-        if (other.childCount != childCount) {
-            return Constants.EmptySet
-        }
-        val componentIntersections = components.zip(other.components).map { (x, y) -> x.intersect(y, comparator) }
-        val validComponentIntersections = componentIntersections.filterNotNull()
-        return when {
-            validComponentIntersections.size < componentIntersections.size -> null
-            validComponentIntersections == components -> this
-            else -> CartesianProduct(validComponentIntersections)
-        }
-    }
+
+    override fun toBoundarySet(comparator: Comparator<Expression>) =
+        throw UnsupportedOperationException("Cartesian product cannot be converted to canonical set representation")
 }
 
 class SetUnion(
@@ -332,6 +337,10 @@ class SetUnion(
 
     override fun contains(element: Expression, comparator: ExpressionComparator): Boolean {
         return components.map { it.contains(element, comparator) }.any()
+    }
+
+    override fun toBoundarySet(comparator: Comparator<Expression>): BoundarySet {
+        return boundarySetUnion(components.map { it.toBoundarySet(comparator) }, comparator)
     }
 }
 
@@ -357,13 +366,14 @@ class SetDifference(
         return null
     }
 
-    override fun intersectWithSetDifference(other: SetDifference, comparator: ExpressionComparator): SetExpression? {
-        if (left == other.left) {
-            val rightUnion = right.union(other.right, comparator) ?: return null
-            return SetDifference(left, rightUnion)
-        }
-
-        return null
+    override fun toBoundarySet(comparator: Comparator<Expression>): BoundarySet {
+        return boundarySetIntersection(
+            listOf(
+                left.toBoundarySet(comparator),
+                right.toBoundarySet(comparator).complement(),
+            ),
+            comparator,
+        )
     }
 }
 
@@ -380,5 +390,9 @@ class Reals(
 
     override fun isEmpty(comparator: ExpressionComparator): Boolean {
         return false
+    }
+
+    override fun toBoundarySet(comparator: Comparator<Expression>): BoundarySet {
+        return BoundarySet(emptyList(), 1)
     }
 }

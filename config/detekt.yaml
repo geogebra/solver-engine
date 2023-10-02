@@ -12,3 +12,6 @@ style:
   MagicNumber:
     ignoreNumbers: ['-1', '0', '1', '2', '3']
     excludes: ['**/test/**', '**/engine/expressions/Constants.kt']
+exceptions:
+  SwallowedException:
+    ignoredExceptionTypes: ['IncomparableExpressionsException']

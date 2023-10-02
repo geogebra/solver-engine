@@ -97,7 +97,7 @@ val expressionComparator = ExpressionComparator { e1: Expression, e2: Expression
             val result = ConstantExpressionsPlans.SimplifyConstantExpression.tryExecute(emptyContext, diff)
             val simplifiedDiff = result?.toExpr ?: diff
             val signOfDiff = simplifiedDiff.signOf()
-            if (signOfDiff != Sign.UNKNOWN) {
+            if (signOfDiff.isKnown()) {
                 signOfDiff
             } else {
                 val d = simplifiedDiff.doubleValue

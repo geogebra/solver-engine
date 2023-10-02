@@ -2,7 +2,10 @@ package engine.expressions
 
 import engine.sign.Sign
 
-fun interface ExpressionComparator {
+class IncomparableExpressionsException(e1: Expression, e2: Expression) :
+    Exception("$e1 and $e2 are incomparable")
+
+fun interface ExpressionComparator : Comparator<Expression> {
 
     /**
      * Returns
@@ -12,7 +15,15 @@ fun interface ExpressionComparator {
      * - Sign.UNKOWN if it can't tell but e1 and e2 don't have a sign equal to Sign.NONE
      * - Sign.NONE if either e1 or e2 have sign equal to Sign.NONE
      */
-    fun compare(e1: Expression, e2: Expression): Sign
+    fun compareExpressions(e1: Expression, e2: Expression): Sign
+
+    override fun compare(e1: Expression, e2: Expression): Int {
+        val sign = compareExpressions(e1, e2)
+        if (!sign.isKnown() || sign.signum != 0 && sign.canBeZero) {
+            throw IncomparableExpressionsException(e1, e2)
+        }
+        return sign.signum
+    }
 }
 
 /**
@@ -23,9 +34,9 @@ fun interface ExpressionComparator {
  * 4. their sign
  */
 object SimpleComparator : ExpressionComparator {
-    override fun compare(e1: Expression, e2: Expression): Sign {
+    override fun compareExpressions(e1: Expression, e2: Expression): Sign {
         if (e1 is Minus && e2 is Minus) {
-            return compare(e2.argument, e1.argument)
+            return compareExpressions(e2.argument, e1.argument)
         }
         return verbatimCompare(e1, e2)
             ?: decimalCompare(e1, e2)

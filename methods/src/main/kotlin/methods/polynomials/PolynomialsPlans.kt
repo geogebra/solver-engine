@@ -1,10 +1,11 @@
 package methods.polynomials
 
 import engine.context.ResourceData
-import engine.expressions.Expression
 import engine.expressions.Minus
 import engine.expressions.Power
 import engine.expressions.Product
+import engine.expressions.allSubterms
+import engine.expressions.complexity
 import engine.expressions.isPolynomial
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
@@ -285,6 +286,3 @@ private val simplificationSteps = contextSensitiveSteps {
 }
 
 private val collectLikeTermsSteps = createCollectLikeTermsAndSimplifyPlan(simplificationSteps)
-
-private fun Expression.allSubterms(): List<Expression> = listOf(this) + children.flatMap { it.allSubterms() }
-private fun Expression.complexity(): Int = 1 + children.sumOf { it.complexity() }

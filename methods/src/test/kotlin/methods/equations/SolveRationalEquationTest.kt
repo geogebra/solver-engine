@@ -820,7 +820,7 @@ class SolveRationalEquationTest {
         check {
             fromExpr = "[12 / [x ^ 2] - 9] = sqrt[2] - [2 / x + 3]"
             // on one of the good days, we will be able to simplify the below
-            // result to "3 + sqrt[2]"
+            // result to "3 + 2sqrt[2]"
             toExpr = "SetSolution[x : {[2 sqrt[2] + sqrt[152 + 48 sqrt[2]] / 4]}]"
             explanation {
                 key = EquationsExplanation.SolveEquation

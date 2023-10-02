@@ -21,7 +21,7 @@ open class Comparison(
     val rhs get() = secondChild
 
     fun holds(expressionComparator: ExpressionComparator): Boolean? {
-        val compSign = expressionComparator.compare(lhs, rhs)
+        val compSign = expressionComparator.compareExpressions(lhs, rhs)
         return when {
             compSign == Sign.NONE -> null
             compSign.implies(this.comparator.compareSign) -> true

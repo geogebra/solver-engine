@@ -611,6 +611,10 @@ fun Expression.containsPowers(): Boolean {
     }
 }
 
+fun Expression.allSubterms(): List<Expression> = listOf(this) + children.flatMap { it.allSubterms() }
+
+fun Expression.complexity(): Int = 1 + children.sumOf { it.complexity() }
+
 internal fun expressionOf(operator: Operator, operands: List<Expression>) =
     expressionOf(operator, operands, BasicMeta())
 
