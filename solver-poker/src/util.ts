@@ -1,5 +1,5 @@
 import { Transformation } from '@geogebra/solver-sdk';
-import { settings } from './settings';
+import { showPedanticSteps, showCosmeticSteps, showInvisibleChangeSteps } from './settings';
 
 export const isPedanticStep = (transformation: Transformation) => {
   return transformation.tags && transformation.tags.includes('Pedantic');
@@ -41,9 +41,9 @@ const isTrivialStep = (transformation: Transformation) => {
   if (!transformation.tags) return false;
 
   return (
-    (!settings.showPedanticSteps && isPedanticStep(transformation)) ||
-    (!settings.showCosmeticSteps && isCosmeticStep(transformation)) ||
-    (!settings.showInvisibleChangeSteps && isInvisibleChangeStep(transformation))
+    (!showPedanticSteps && isPedanticStep(transformation)) ||
+    (!showCosmeticSteps && isCosmeticStep(transformation)) ||
+    (!showInvisibleChangeSteps && isInvisibleChangeStep(transformation))
   );
 };
 

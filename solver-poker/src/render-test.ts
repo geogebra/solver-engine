@@ -7,26 +7,7 @@ import {
   treeToSolver,
 } from '@geogebra/solver-sdk';
 import { isThroughStep } from './util';
-import { settings } from './settings';
-
-export const renderTest = (trans: TransformationJson, methodId: string) => /* HTML */ `
-  <details class="test-code hide-in-demo-mode">
-    <summary>Test Code <button class="copy-test-code-button">Copy</button></summary>
-    <pre>${generateTestSuggestion(trans, methodId)}</pre>
-  </details>
-`;
-
-export const copyTestCodeToClipboardOnClick = () => {
-  const copyToClipboard = async (evt: Event) => {
-    const testCode = (evt.target as HTMLElement)?.parentElement?.nextElementSibling?.textContent;
-    if (testCode) {
-      await navigator.clipboard.writeText(testCode);
-    }
-  };
-  for (const el of document.querySelectorAll<HTMLElement>('.copy-test-code-button')) {
-    el.onclick = copyToClipboard;
-  }
-};
+import { showThroughSteps } from './settings';
 
 export function generateTestSuggestion(trans: TransformationJson, methodId: string): string {
   const stringBuilder = new StringBuilder();
@@ -91,7 +72,7 @@ const buildTest = (trans: TransformationJson, methodId: string) => (builder: Ind
 
 const buildTestTransformation = (trans: TransformationJson) => (builder: IndentBuilder) => {
   const throughStep = isThroughStep(trans);
-  if (throughStep && !settings.showThroughSteps) {
+  if (throughStep && !showThroughSteps.value) {
     builder.do(buildTestTransformation(trans.steps[0]));
     return;
   }

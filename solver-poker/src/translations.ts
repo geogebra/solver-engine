@@ -1,5 +1,8 @@
+import { ref } from 'vue';
+
 // Holds all default translations as a key: translation map
-export let translationData: Record<string, string> = {};
+export const translationData = ref<Record<string, string>>({});
+export const translationsFetched = ref(false);
 
 const translationsRootURL = 'https://export-solver.s3.eu-west-1.amazonaws.com';
 
@@ -10,5 +13,6 @@ export const fetchDefaultTranslations = () =>
   })
     .then((resp) => resp.json())
     .then((jsonResp) => {
-      translationData = jsonResp;
+      translationData.value = jsonResp;
+      translationsFetched.value = true;
     });

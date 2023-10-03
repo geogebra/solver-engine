@@ -25,12 +25,14 @@ contents to a new release section (e.g. _[0.x]_).
 - SDK: Fixed gm action tests by improving action handling in GM. (SP-222), (SP-239)
 - SDK: Fix regression, undefined `operands` value of emptyset is parsed by latex parser without error (PLUT-695)
 - SDK: Fixed the use of :op vs :op() when translating solver paths into GM terms
+- SDK: Improved accuracy of type information (SP-237)
 
 ### Changed
 
 - Improved steps for expanding expressions like `(sqrt[2] + 1)(-2)` and `(x + 1)(-2)` (PLUT-478)
 - SDK: Switched from allow-list to skip-list for GM action tests. (SP-222)
 - Simplifying a rational equation to a polynomial equation has been rewritten to use plans instead of tasks (PLUT-701)
+- Changed Poker to use Vue (SP-237)
 
 ### Removed
 

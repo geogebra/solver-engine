@@ -2,31 +2,36 @@
 import type {
   ApiMathFormat,
   SolverContext,
-  StrategyMap,
   PlanSelectionJson,
   PlanSelectionSolver,
   ServerErrorResponse,
   TransformationJson,
   TransformationSolver,
 } from '@geogebra/solver-sdk';
-import * as solverSDK from '@geogebra/solver-sdk';
-import type { ColorScheme, SolutionFormat } from './settings';
-import { settings, solutionFormatters } from './settings';
-import { renderPlanSelections, renderTransformation } from './render-solution';
-import { fetchDefaultTranslations } from './translations';
-import type renderMathInElement from 'katex/contrib/auto-render';
-import { copyTestCodeToClipboardOnClick, renderTest } from './render-test';
+import * as solverSdk from '@geogebra/solver-sdk';
+import {
+  gmFriendly,
+  params,
+  preferDecimals,
+  solutionFormat,
+  showThroughSteps,
+  hideWarnings,
+  showPedanticSteps,
+  showCosmeticSteps,
+  showInvisibleChangeSteps,
+  showTranslationKeys,
+  jsonFormat,
+  colorScheme,
+  demoMode,
+} from './settings';
+import TransformationComponent from './transformation-component.vue';
+import PlanSelections from './plan-selections.vue';
+import TestSuggestion from './test-suggestion.vue';
+import { fetchDefaultTranslations, translationsFetched } from './translations';
+import { computed, onMounted, reactive, ref, watch, watchEffect } from 'vue';
+import { computedAsync } from '@vueuse/core';
 
-const jsonFormat: ApiMathFormat = 'json2';
-
-declare global {
-  interface Window {
-    ggbSolver: typeof solverSDK;
-    renderMathInElement: typeof renderMathInElement;
-  }
-}
-// just for debug convenience
-window.ggbSolver = solverSDK;
+const jsonFormatSpecifier: ApiMathFormat = 'json2';
 
 const getAPIBaseURL = (): string => {
   // This magic number for the port is dictated in the `poker-dev` script in package.json.
@@ -41,397 +46,155 @@ const getAPIBaseURL = (): string => {
   return location.pathname.replace(/\/(poker\.html|poker\/?|poker\/index\.html)$/, '/api/v1');
 };
 
-solverSDK.api.baseUrl = getAPIBaseURL();
+solverSdk.api.baseUrl = getAPIBaseURL();
 const mainPokerURL = 'https://solver.geogebra.net/main/poker/index.html';
 
-let lastResult:
-  | {
-      planId: 'selectPlans';
-      result: PlanSelectionJson[];
-      resultSolverFormat?: PlanSelectionSolver[];
-    }
-  | {
-      planId: Exclude<string, 'selectPlans'>;
-      result: TransformationJson;
-      resultSolverFormat?: TransformationSolver;
-    }
-  | { planId?: undefined; result?: undefined; resultSolverFormat?: undefined }
-  | {
-      planId: string;
-      result: ServerErrorResponse;
-      resultSolverFormat?: ServerErrorResponse;
-    } = {};
+const plans = computedAsync(() => solverSdk.api.listPlans());
+const versionInfo = computedAsync(() => solverSdk.api.versionInfo());
+const strategies = computedAsync(() => solverSdk.api.listStrategies());
 
-const el = (id: string) => document.getElementById(id);
-
-/******************************************
- * Functions to execute plans and render the result
- *******************************************/
-
-const copyTranslationKeysToClipboardOnClick = () => {
-  const copyToClipboard = async (evt: Event) => {
-    const textContent = (evt.target as HTMLElement).textContent!;
-    await navigator.clipboard.writeText(textContent);
-  };
-  for (const el of document.querySelectorAll<HTMLElement>('.translation-key')) {
-    el.onclick = copyToClipboard;
-  }
-};
-
-/******************************************
- * Do initial setup and register event handlers
- ******************************************/
-
-interface RequestData {
-  planId: string;
-  input: string;
-  curriculum: string;
-  gmFriendly: boolean;
-  precision: number;
-  preferDecimals: boolean;
-  solutionVariable: string;
-  preferredStrategies: { [category: string]: string };
+/** Map of strategy category to preferred strategy. If no value is set, then nothing was
+ * selected for that category. */
+const mapOfCategoryToSelectedStrategy = reactive<{ [category: string]: string }>({});
+// populate that map with the values from the URL
+for (const strategyChoice of [params.strategy || []].flat()) {
+  const [category, choice] = strategyChoice.split(':');
+  mapOfCategoryToSelectedStrategy[category] = choice;
 }
+// watcher updates the url URL when that map changes
+watch(
+  mapOfCategoryToSelectedStrategy,
+  () => {
+    params.strategy = Object.entries(mapOfCategoryToSelectedStrategy)
+      .filter(([_, strategy]) => strategy)
+      .map(([category, strategy]) => `${category}:${strategy}`);
+  },
+  { deep: true },
+);
 
-const buildURLString = (startURL: string, data: RequestData) => {
-  const url = new URL(startURL);
-  url.searchParams.set('plan', data.planId);
-  url.searchParams.set('input', data.input);
-  if (data.curriculum) {
-    url.searchParams.set('curriculum', data.curriculum);
-  } else {
-    url.searchParams.delete('curriculum');
-  }
-  if (data.gmFriendly) {
-    url.searchParams.set('gmFriendly', '1');
-  } else {
-    url.searchParams.delete('gmFriendly');
-  }
-  url.searchParams.set('precision', data.precision.toString());
-  if (data.preferDecimals) {
-    url.searchParams.set('preferDecimals', '1');
-  } else {
-    url.searchParams.delete('preferDecimals');
-  }
-  if (data.solutionVariable) {
-    url.searchParams.set('solutionVariable', data.solutionVariable);
-  } else {
-    url.searchParams.delete('solutionVariable');
-  }
-  url.searchParams.delete('strategy');
-  for (const category in data.preferredStrategies) {
-    url.searchParams.append('strategy', `${category}:${data.preferredStrategies[category]}`);
-  }
-  return url.toString();
+const strategySectionOpen = ref<boolean>(!!params.strategy);
+const responseSourceDetailsOpen = ref<boolean>(false);
+const textInTheMathInputTextbox = ref<string>(params.input);
+
+const submitForm = () => {
+  // This will trigger re-querying Solver (assuming the value of `params.input` actually
+  // changes), because the `computedAsync`s that query the Solver reactively depend on
+  // `params.input`
+  params.input = textInTheMathInputTextbox.value;
 };
 
-window.onload = () => {
-  const mathInput = el('input') as HTMLInputElement;
-  const curriculumSelect = el('curriculumSelect') as HTMLSelectElement;
-  const planSelect = el('plansSelect') as HTMLSelectElement;
-  const strategyDetails = el('strategyDetails') as HTMLDetailsElement;
-  let strategySelects: HTMLSelectElement[] = [];
-  const precisionSelect = el('precisionSelect') as HTMLSelectElement;
-  const preferDecimalsCheckbox = el('preferDecimals') as HTMLInputElement;
-  const gmFriendlyCheckbox = el('gmFriendlyCheckbox') as HTMLInputElement;
-  const solutionVariableInput = el('solutionVariable') as HTMLInputElement;
-
-  const inputForm = el('form') as HTMLFormElement;
-  const submitToMainButton = el('submitToMain') as HTMLButtonElement;
-
-  const showThroughStepsCheckbox = el('showThroughSteps') as HTMLInputElement;
-  const showPedanticStepsCheckbox = el('showPedanticSteps') as HTMLInputElement;
-  const showCosmeticStepsCheckbox = el('showCosmeticSteps') as HTMLInputElement;
-  const showInvisibleChangeStepsCheckbox = el('showInvisibleChangeSteps') as HTMLInputElement;
-  const colorSchemeSelect = el('colorScheme') as HTMLSelectElement;
-  const solutionFormatSelect = el('solutionFormat') as HTMLSelectElement;
-  const showTranslationKeysCheckbox = el('showTranslationKeys') as HTMLInputElement;
-  const hideWarningsCheckbox = el('hideWarnings') as HTMLInputElement;
-
-  const resultElement = el('result') as HTMLElement;
-  const sourceElement = el('source') as HTMLElement;
-
-  const jsonFormatCheckbox = el('jsonFormatCheckbox') as HTMLInputElement;
-  const responseSourceDetails = el('responseSourceDetails') as HTMLDetailsElement;
-
-  /******************************************
-   * Setting up
-   ******************************************/
-
-  const initPlans = (plans: string[]) => {
-    const options = plans
-      .sort()
-      .map((plan) => /* HTML */ `<option value="${plan}">${plan}</option>`)
-      .join('');
-
-    planSelect.innerHTML = /* HTML */ ` <option value="selectPlans">Select Plans</option>
-      ${options}`;
-    // Default to something simple
-    planSelect.value = 'selectPlans';
+const solverContext = computed(() => {
+  const ret: SolverContext = {
+    gmFriendly: gmFriendly.value,
+    preferDecimals: preferDecimals.value,
   };
-
-  const initStrategies = (strategies: StrategyMap) => {
-    strategyDetails.innerHTML =
-      `<summary>Strategies</summary>` +
-      Object.entries(strategies)
-        .map(([category, strategyList]) => {
-          const categoryName = category.replace(/(.)([A-Z])/g, '$1 $2').toLowerCase();
-
-          return /* HTML */ `<p>
-            <label for="${category}Select">
-              ${categoryName.charAt(0).toUpperCase() + categoryName.slice(1)}
-            </label>
-            <select id="${category}Select" name="${category}">
-              <option name="-" selected>-</option>
-              ${strategyList
-                .map(
-                  (strategy) =>
-                    /* HTML */ `<option value="${strategy.strategy}">${strategy.strategy}</option>`,
-                )
-                .join('')}
-            </select>
-          </p>`;
-        })
-        .join('');
-
-    strategySelects = Object.keys(strategies).map(
-      (category) => el(`${category}Select`) as HTMLSelectElement,
-    );
-  };
-
-  const selectPlansOrApplyPlan = async ({
-    planId,
-    input,
-    ...context
-  }: { planId: string; input: string } & SolverContext) => {
-    if (planId === 'selectPlans') {
-      const result = await solverSDK.api.selectPlans(input, jsonFormat, context);
-      lastResult = { planId, result };
-    } else {
-      const result = await solverSDK.api.applyPlan(input, planId, jsonFormat, context);
-      lastResult = { planId, result };
+  if (params.curriculum) {
+    ret.curriculum = params.curriculum;
+  }
+  if (params.precision) {
+    ret.precision = parseInt(params.precision);
+  }
+  if (params.solutionVariable) {
+    ret.solutionVariable = params.solutionVariable;
+  }
+  const preferredStrategies = { ...mapOfCategoryToSelectedStrategy };
+  for (const category in preferredStrategies) {
+    if (preferredStrategies[category] === '') {
+      delete preferredStrategies[category];
     }
+  }
+  if (Object.keys(preferredStrategies).length > 0) {
+    ret.preferredStrategies = preferredStrategies;
+  }
+  return ret;
+});
 
-    if (!jsonFormatCheckbox.checked && responseSourceDetails.open) {
-      lastResult.resultSolverFormat =
-        planId === 'selectPlans'
-          ? await solverSDK.api.selectPlans(input, 'solver', context)
-          : await solverSDK.api.applyPlan(input, planId, 'solver', context);
+const resultJsonFormat = computedAsync<
+  TransformationJson | PlanSelectionJson[] | ServerErrorResponse | undefined
+>(
+  async () => {
+    const input = params.input;
+    if (!input) return undefined;
+    const plan = params.plan;
+    const ret =
+      plan === 'selectPlans'
+        ? await solverSdk.api.selectPlans(input, jsonFormatSpecifier, solverContext.value)
+        : await solverSdk.api.applyPlan(input, plan, jsonFormatSpecifier, solverContext.value);
+    console.log('Fetched result in JSON format:', ret);
+    return ret;
+  },
+  undefined,
+  // Invalid math syntax errors are not thrown errors, so they are not handled by this
+  { onError: (error) => console.error(error) },
+);
+
+/** Use this instead of `params.plan === 'selectPlans'` because `resultJsonFormat` might
+ * be the wrong format, temporarily, while we are fetching a new format. */
+const resultJsonFormatIsAListOfPlans = computed(() => {
+  return Array.isArray(resultJsonFormat.value);
+});
+
+const resultSolverFormat = computed(() => {
+  // We don't want to query Solver for the result in Solver format, unless the user
+  // clicked on the things in the UI that would require showing the result in Solver
+  // format.
+  if (!jsonFormat.value && responseSourceDetailsOpen.value) {
+    return resultSolverFormat_Helper.value;
+  }
+  return undefined;
+});
+
+const resultSolverFormat_Helper = computedAsync<
+  TransformationSolver | PlanSelectionSolver[] | ServerErrorResponse | undefined
+>(
+  async () => {
+    const ret =
+      params.plan === 'selectPlans'
+        ? await solverSdk.api.selectPlans(params.input, 'solver', solverContext.value)
+        : await solverSdk.api.applyPlan(params.input, params.plan, 'solver', solverContext.value);
+    console.log('Fetched result in Solver format:', ret);
+    return ret;
+  },
+  undefined,
+  { lazy: true, onError: (error) => console.error(error) },
+);
+
+fetchDefaultTranslations();
+
+// Set `document.title`
+const stopChangeTitleWatcher = watchEffect(() => {
+  const info = versionInfo.value;
+  if (info) {
+    stopChangeTitleWatcher();
+    const { deploymentName } = info;
+    if (deploymentName && deploymentName !== 'main') {
+      document.title = `${deploymentName} Solver Poker`;
     }
-  };
+  }
+});
 
-  const displayLastResult = () => {
-    const { planId, result, resultSolverFormat } = lastResult;
-    sourceElement.innerHTML = JSON.stringify(
-      jsonFormatCheckbox.checked ? result : resultSolverFormat,
-      null,
-      4,
-    );
-    console.log(lastResult);
-    if (planId === undefined || result === undefined) {
-      return;
-    }
-    if ('error' in result) {
-      resultElement.innerHTML = /* HTML */ `Error: ${result.error}<br />Message: ${result.message}`;
-    } else {
-      resultElement.innerHTML =
-        planId === 'selectPlans'
-          ? renderPlanSelections(result as PlanSelectionJson[])
-          : `${renderTransformation(result as TransformationJson, 1)} ${renderTest(
-              result as TransformationJson,
-              planId,
-            )}`;
-      window.renderMathInElement(resultElement);
-      copyTranslationKeysToClipboardOnClick();
-      copyTestCodeToClipboardOnClick();
-    }
-  };
-
-  const getRequestDataFromForm = (): RequestData => {
-    const preferredStrategies: { [category: string]: string } = {};
-    for (const strategySelect of strategySelects) {
-      if (strategySelect.value !== '-') {
-        preferredStrategies[strategySelect.name] = strategySelect.value;
-      }
-    }
-
-    return {
-      planId: planSelect.value,
-      input: mathInput.value,
-      curriculum: curriculumSelect.value,
-      /** GM stands for Graspable Math */
-      gmFriendly: gmFriendlyCheckbox.checked,
-      precision: parseInt(precisionSelect.value),
-      preferDecimals: preferDecimalsCheckbox.checked,
-      solutionVariable: solutionVariableInput.value,
-      preferredStrategies,
-    };
-  };
-
-  const fetchPlansAndUpdatePage = () =>
-    Promise.all([solverSDK.api.listPlans(), solverSDK.api.listStrategies()]).then(
-      ([plans, strategies]) => {
-        initPlans(plans);
-        initStrategies(strategies);
-        const url = new URL(window.location.toString());
-        const planId = url.searchParams.get('plan');
-        const input = url.searchParams.get('input');
-        const curriculum = url.searchParams.get('curriculum');
-        const gmFriendly = url.searchParams.get('gmFriendly') === '1';
-        const precision = url.searchParams.get('precision');
-        // Before 2/23/2023, `preferDecimals` may have been set to "true" instead of "1", so
-        // we should keep this backwards-compatibility logic here, for a while.
-        const temp = url.searchParams.get('preferDecimals');
-        const preferDecimals = temp === '1' || temp === 'true';
-        const solutionVariable = url.searchParams.get('solutionVariable');
-        if (planId) {
-          planSelect.value = planId;
-        }
-        if (input) {
-          mathInput.value = input;
-        }
-        if (curriculum) {
-          curriculumSelect.value = curriculum;
-        }
-        gmFriendlyCheckbox.checked = gmFriendly;
-        if (precision) {
-          precisionSelect.value = precision;
-        }
-        preferDecimalsCheckbox.checked = preferDecimals;
-        if (solutionVariable) {
-          solutionVariableInput.value = solutionVariable;
-        }
-        for (const strategyChoice of url.searchParams.getAll('strategy')) {
-          const [category, choice] = strategyChoice.split(':');
-          (el(`${category}Select`) as HTMLSelectElement).value = choice;
-        }
-        if (planId && input) {
-          selectPlansOrApplyPlan({
-            planId,
-            input,
-            curriculum: curriculum || undefined,
-            gmFriendly,
-            precision: precision ? parseInt(precision) : undefined,
-            preferDecimals,
-            solutionVariable: solutionVariable || undefined,
-          }).then(displayLastResult);
-        }
-      },
-    );
-
-  fetchDefaultTranslations().then(fetchPlansAndUpdatePage);
-
-  solverSDK.api.versionInfo().then((info) => {
-    el('version-info')!.innerHTML = info.commit
-      ? /* HTML */ `commit
-          <a href="https://git.geogebra.org/solver-team/solver-engine/-/commit/${info.commit}"
-            >${info.commit.substring(0, 8)}
-          </a> `
-      : 'no commit info';
-
-    if (info.deploymentName === 'main') {
-      el('submitToMain')!.remove();
-    } else if (info.deploymentName) {
-      if (/^PLUT-\d+$/i.test(info.deploymentName)) {
-        el('title')!.innerHTML = /* HTML */ `
-          Solver Poker
-          <a href="https://geogebra-jira.atlassian.net/browse/${info.deploymentName.toUpperCase()}"
-            >${info.deploymentName.toUpperCase()}
-          </a>
-        `;
-      } else {
-        el('title')!.innerHTML = `Solver Poker (${info.deploymentName})`;
-      }
-      document.title = `${info.deploymentName} Solver Poker`;
-    }
-  });
-
-  inputForm.onsubmit = (evt) => {
-    evt.preventDefault();
-    const data = getRequestDataFromForm();
-    const urlString = buildURLString(window.location.toString(), data);
-    history.pushState({ url: urlString }, '', urlString);
-    selectPlansOrApplyPlan(data).then(displayLastResult);
-  };
-
-  submitToMainButton.onclick = () => {
-    const data = getRequestDataFromForm();
-    const urlString = buildURLString(mainPokerURL, data);
-    window.open(urlString, '_blank');
-  };
-
-  const optionsChanged = () => {
-    const data = getRequestDataFromForm();
-    const urlString = buildURLString(window.location.toString(), data);
-    history.replaceState({ url: urlString }, '', urlString);
-    if (data.input !== '') {
-      selectPlansOrApplyPlan(data).then(displayLastResult);
-    }
-  };
-
-  const displayOptionsChanged = () => {
-    Object.assign(settings, {
-      showThroughSteps: showThroughStepsCheckbox.checked,
-      showPedanticSteps: showPedanticStepsCheckbox.checked,
-      showCosmeticSteps: showCosmeticStepsCheckbox.checked,
-      showInvisibleChangeSteps: showInvisibleChangeStepsCheckbox.checked,
-      selectedColorScheme: colorSchemeSelect.value as ColorScheme,
-      showTranslationKeys: showTranslationKeysCheckbox.checked,
-      latexSettings: {
-        ...settings.latexSettings,
-        solutionFormatter: solutionFormatters[solutionFormatSelect.value as SolutionFormat],
-      },
-    });
-
-    displayLastResult();
-  };
-
-  curriculumSelect.onchange = optionsChanged;
-  planSelect.onchange = optionsChanged;
-  precisionSelect.onchange = optionsChanged;
-  preferDecimalsCheckbox.onchange = optionsChanged;
-  gmFriendlyCheckbox.onchange = optionsChanged;
-  jsonFormatCheckbox.onchange = optionsChanged;
-  responseSourceDetails.ontoggle = optionsChanged;
-
-  showThroughStepsCheckbox.onchange = displayOptionsChanged;
-  showPedanticStepsCheckbox.onchange = displayOptionsChanged;
-  showCosmeticStepsCheckbox.onchange = displayOptionsChanged;
-  showInvisibleChangeStepsCheckbox.onchange = displayOptionsChanged;
-  colorSchemeSelect.onchange = displayOptionsChanged;
-  solutionFormatSelect.onchange = displayOptionsChanged;
-
-  showTranslationKeysCheckbox.onchange = () => {
-    settings.showTranslationKeys = showTranslationKeysCheckbox.checked;
-    for (const el of document.getElementsByClassName('translation-key')) {
-      el.classList.toggle('hidden', !settings.showTranslationKeys);
-    }
-  };
-
-  hideWarningsCheckbox.onchange = () => {
-    settings.hideWarnings = hideWarningsCheckbox.checked;
-    for (const el of document.getElementsByClassName('warning')) {
-      el.classList.toggle('hidden', settings.hideWarnings);
-    }
-  };
-
-  document.onkeydown = (evt) => {
-    if (evt.ctrlKey && evt.code === 'KeyD') {
-      for (const el of document.getElementsByClassName('hide-in-demo-mode')) {
-        el.classList.toggle('hidden');
-      }
-    }
-  };
-
-  window.onpopstate = fetchPlansAndUpdatePage;
+const submitToMainButtonClicked = () => {
+  const url = new URL(mainPokerURL);
+  url.search = location.search;
+  window.open(url.toString(), '_blank');
 };
+
+const calculateLabelForStrategyCategory = (category: string) => {
+  const categoryName = category.replace(/(.)([A-Z])/g, '$1 $2').toLowerCase();
+  return categoryName.charAt(0).toUpperCase() + categoryName.slice(1);
+};
+
+const inputSyntaxHelpSection = ref<HTMLDetailsElement | null>(null);
+onMounted(() => {
+  window.renderMathInElement?.(inputSyntaxHelpSection.value!);
+});
 </script>
 
 <template>
-  <form class="display-options hide-in-demo-mode">
+  <form v-show="!demoMode" class="display-options">
     <h3>Display Options</h3>
     <label for="colorScheme">Colors</label>
-    <select id="colorScheme">
+    <select id="colorScheme" v-model="colorScheme">
       <option value="default">Default</option>
       <option value="primary">Primary colors</option>
       <option value="none">No coloring</option>
@@ -439,33 +202,54 @@ window.onload = () => {
     </select>
     <br />
     <label for="solutionFormat">Solution format</label>
-    <select id="solutionFormat">
+    <select id="solutionFormat" v-model="solutionFormat">
       <option value="simple">Simple</option>
       <option value="sets">Sets</option>
     </select>
     <br />
-    <input id="showThroughSteps" type="checkbox" />
+    <input id="showThroughSteps" type="checkbox" v-model="showThroughSteps" />
     <label for="showThroughSteps">Show through steps</label>
     <br />
-    <input id="hideWarnings" type="checkbox" />
+    <input id="hideWarnings" type="checkbox" v-model="hideWarnings" />
     <label for="hideWarnings">Hide warnings</label>
     <br />
-    <input id="showPedanticSteps" type="checkbox" />
+    <input id="showPedanticSteps" type="checkbox" v-model="showPedanticSteps" />
     <label for="showPedanticSteps">Show pedantic steps</label>
     <br />
-    <input id="showCosmeticSteps" type="checkbox" />
+    <input id="showCosmeticSteps" type="checkbox" v-model="showCosmeticSteps" />
     <label for="showCosmeticSteps">Show cosmetic steps</label>
     <br />
-    <input id="showInvisibleChangeSteps" type="checkbox" />
+    <input id="showInvisibleChangeSteps" type="checkbox" v-model="showInvisibleChangeSteps" />
     <label for="showInvisibleChangeSteps">Show InvisibleChange steps</label>
     <br />
-    <input id="showTranslationKeys" type="checkbox" />
+    <input id="showTranslationKeys" type="checkbox" v-model="showTranslationKeys" />
     <label for="showTranslationKeys">Show translation keys</label>
   </form>
 
-  <div id="version-info" class="version-info">fetching commit...</div>
-  <h1 contenteditable="true" id="title">Solver Poker</h1>
-  <details class="hide-in-demo-mode">
+  <div class="version-info">
+    <template v-if="!versionInfo">fetching commit...</template>
+    <template v-else-if="versionInfo.commit">
+      commit
+      <a href="https://git.geogebra.org/solver-team/solver-engine/-/commit/${info.commit}">{{
+        versionInfo.commit.substring(0, 8)
+      }}</a>
+    </template>
+    <template v-else>no commit info</template>
+  </div>
+  <h1 contenteditable="true">
+    <template v-if="!versionInfo?.deploymentName || versionInfo.deploymentName === 'main'"
+      >Solver Poker
+    </template>
+    <template v-else-if="/^PLUT-\d+$/i.test(versionInfo.deploymentName)"
+      >Solver Poker
+      <a
+        :href="`https://geogebra-jira.atlassian.net/browse/${versionInfo.deploymentName.toUpperCase()}`"
+        >{{ versionInfo.deploymentName.toUpperCase() }}
+      </a>
+    </template>
+    <template v-else>Solver Poker ({{ versionInfo.deploymentName }})</template>
+  </h1>
+  <details v-show="!demoMode" ref="inputSyntaxHelpSection">
     <summary>Input syntax</summary>
     <ul>
       <li>recurring decimals: \(10.3\overline{401}\) is <code>10.3[401]</code>,</li>
@@ -515,16 +299,18 @@ window.onload = () => {
     <p>Example: \(\frac{1}{\sqrt{1 - x^2}}\) is <code>[1 / sqrt[1 - [x^2]]]</code>.</p>
   </details>
 
-  <form id="form" class="hide-in-demo-mode">
+  <!-- The `.prevent` prevents that thing where the browser automatically tries to do a
+  page navigation when a form is submitted. -->
+  <form v-show="!demoMode" @submit.prevent="submitForm">
     <p>
       <label for="curriculumSelect">Curriculum</label>
-      <select id="curriculumSelect">
+      <select id="curriculumSelect" v-model="params.curriculum">
         <option value="" selected>Default</option>
         <option value="US">US</option>
         <option value="EU">EU</option>
       </select>
       <label for="precisionSelect">Precision</label>
-      <select id="precisionSelect">
+      <select id="precisionSelect" v-model="params.precision">
         <option value="2">2 d.p.</option>
         <option value="3" selected>3 d.p.</option>
         <option value="4">4 d.p.</option>
@@ -533,44 +319,113 @@ window.onload = () => {
       </select>
       <label for="solutionVariable">Solution variable</label>
       <input type="text" id="solutionVariable" value="x" size="1" />
-      <input id="preferDecimals" type="checkbox" />
+      <input id="preferDecimals" type="checkbox" v-model="preferDecimals" />
       <label for="preferDecimals">Prefer decimals</label>
       <!-- GM stands for Graspable Math -->
-      <input id="gmFriendlyCheckbox" type="checkbox" />
+      <input id="gmFriendlyCheckbox" type="checkbox" v-model="gmFriendly" />
       <label for="gmFriendlyCheckbox">GM friendly</label>
     </p>
     <p>
       <label for="plansSelect">Plan</label>
-      <select id="plansSelect"></select>
+      <select id="plansSelect" v-model="params.plan">
+        <option value="selectPlans">Select Plans</option>
+        <option v-for="plan in plans" :value="plan">{{ plan }}</option>
+      </select>
     </p>
-    <details id="strategyDetails">
+    <details :open="strategySectionOpen">
       <summary>Strategies</summary>
+      <p v-for="[category, strategyList] in Object.entries(strategies ?? {})" :key="category">
+        <label :for="`${category}Select`">
+          {{ calculateLabelForStrategyCategory(category) }}
+        </label>
+        <select
+          v-model="mapOfCategoryToSelectedStrategy[category]"
+          :id="`${category}Select`"
+          :name="category"
+        >
+          <option name="-" value="" selected>-</option>
+          <option v-for="strategy in strategyList" :value="strategy.strategy">
+            {{ strategy.strategy }}
+          </option>
+        </select>
+      </p>
     </details>
     <p>
       <label for="input">Input</label>
-      <input type="text" id="input" placeholder="Expression" size="30" />
-      <input type="submit" id="submit" value="Submit" />
-      <input type="button" id="submitToMain" value="Submit to main" />
+      <input
+        type="text"
+        id="input"
+        v-model="textInTheMathInputTextbox"
+        placeholder="Expression"
+        size="30"
+      />
+      <input type="submit" value="Submit" />
+      <input
+        v-if="versionInfo && versionInfo.deploymentName !== 'main'"
+        type="button"
+        value="Submit to main"
+        @click="submitToMainButtonClicked"
+      />
     </p>
   </form>
 
-  <p id="result"></p>
-  <details id="responseSourceDetails" class="hide-in-demo-mode">
+  <p v-if="translationsFetched">
+    <template v-if="!params.input"></template>
+    <template v-else-if="!resultJsonFormat">Fetching…</template>
+    <template v-else-if="'error' in resultJsonFormat">
+      Error: {{ resultJsonFormat.error }}<br />
+      Message: {{ resultJsonFormat.message }}
+    </template>
+    <PlanSelections
+      v-else-if="resultJsonFormatIsAListOfPlans"
+      :solverResponse="(resultJsonFormat as PlanSelectionJson[])"
+    ></PlanSelections>
+    <template v-else>
+      <TransformationComponent
+        :transformation="(resultJsonFormat as TransformationJson)"
+        :depth="1"
+      ></TransformationComponent>
+      <TestSuggestion
+        :transformation="(resultJsonFormat as TransformationJson)"
+        :method-id="params.plan"
+      ></TestSuggestion>
+    </template>
+  </p>
+  <details
+    v-show="!demoMode"
+    :open="responseSourceDetailsOpen"
+    @toggle="responseSourceDetailsOpen = !responseSourceDetailsOpen"
+  >
     <summary>Response Source</summary>
-    <input id="jsonFormatCheckbox" type="checkbox" />
+    <input id="jsonFormatCheckbox" type="checkbox" v-model="jsonFormat" />
     <label for="jsonFormatCheckbox">JSON Format</label>
-    <pre id="source"></pre>
+    <pre id="source">{{
+      JSON.stringify(jsonFormat ? resultJsonFormat : resultSolverFormat, null, 4)
+    }}</pre>
   </details>
 </template>
 
 <style>
-.plan-id {
-  color: blue;
-  font-family: monospace;
+input,
+select {
+  margin-left: 4px;
+}
+
+select {
+  margin-right: 4px;
 }
 
 .display-options {
   float: right;
+}
+
+.display-options > input[type='checkbox'] {
+  margin-left: 0;
+}
+
+.plan-id {
+  color: blue;
+  font-family: monospace;
 }
 
 .translation-key {
@@ -586,10 +441,6 @@ window.onload = () => {
 
 .warning {
   color: #ac0000;
-}
-
-.hidden {
-  display: none;
 }
 
 /* Separations between plan steps / sub-steps */
