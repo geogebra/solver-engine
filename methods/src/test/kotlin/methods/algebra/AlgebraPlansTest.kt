@@ -1,5 +1,6 @@
 package methods.algebra
 
+import engine.methods.SolverEngineExplanation
 import engine.methods.testMethod
 import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.general.GeneralExplanation
@@ -8,6 +9,76 @@ import methods.rationalexpressions.RationalExpressionsExplanation
 import org.junit.jupiter.api.Test
 
 class AlgebraPlansTest {
+
+    @Test
+    fun `test product of fractions and non-fractional terms`() = testMethod {
+        method = AlgebraPlans.SimplifyAlgebraicExpression
+        inputExpr = "[x + 1 / x + 2] (x + 3) (x + 4) * [x + 2 / x + 3]"
+
+        check {
+            fromExpr = "[x + 1 / x + 2] (x + 3) (x + 4) * [x + 2 / x + 3]"
+            toExpr = "(x + 1) (x + 4)"
+            explanation {
+                key = AlgebraExplanation.SimplifyAlgebraicExpression
+            }
+
+            step {
+                fromExpr = "[x + 1 / x + 2] (x + 3) (x + 4) * [x + 2 / x + 3]"
+                toExpr = "[x + 1 / x + 3] (x + 3) (x + 4)"
+                explanation {
+                    key = RationalExpressionsExplanation.MultiplyRationalExpressions
+                }
+
+                step {
+                    fromExpr = "[x + 1 / x + 2] (x + 3) (x + 4) * [x + 2 / x + 3]"
+                    toExpr = "<.[x + 1 / x + 2] * [x + 2 / x + 3].> (x + 3) (x + 4)"
+                    explanation {
+                        key = SolverEngineExplanation.RearrangeProduct
+                    }
+                }
+
+                step {
+                    fromExpr = "<.[x + 1 / x + 2] * [x + 2 / x + 3].> (x + 3) (x + 4)"
+                    toExpr = "[(x + 1) (x + 2) / (x + 2) (x + 3)] (x + 3) (x + 4)"
+                    explanation {
+                        key = FractionArithmeticExplanation.MultiplyFractions
+                    }
+                }
+
+                step {
+                    fromExpr = "[(x + 1) (x + 2) / (x + 2) (x + 3)] (x + 3) (x + 4)"
+                    toExpr = "[x + 1 / x + 3] (x + 3) (x + 4)"
+                    explanation {
+                        key = FractionArithmeticExplanation.SimplifyFraction
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "[x + 1 / x + 3] (x + 3) (x + 4)"
+                toExpr = "(x + 1) (x + 4)"
+                explanation {
+                    key = RationalExpressionsExplanation.MultiplyRationalExpressions
+                }
+
+                step {
+                    fromExpr = "[x + 1 / x + 3] (x + 3) (x + 4)"
+                    toExpr = "[(x + 1) (x + 3) (x + 4) / x + 3]"
+                    explanation {
+                        key = FractionArithmeticExplanation.TurnProductOfFractionAndNonFractionFactorIntoFraction
+                    }
+                }
+
+                step {
+                    fromExpr = "[(x + 1) (x + 3) (x + 4) / x + 3]"
+                    toExpr = "(x + 1) (x + 4)"
+                    explanation {
+                        key = GeneralExplanation.CancelDenominator
+                    }
+                }
+            }
+        }
+    }
 
     @Test
     fun `test dividing rational expressions`() = testMethod {

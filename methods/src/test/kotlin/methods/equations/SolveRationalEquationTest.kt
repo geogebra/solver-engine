@@ -1,18 +1,16 @@
+package methods.equations
 
 import engine.context.Context
 import engine.context.Curriculum
 import engine.methods.testMethod
 import engine.methods.testMethodInX
 import methods.algebra.AlgebraExplanation
-import methods.equations.EquationsExplanation
-import methods.equations.EquationsPlans
-import methods.fractionarithmetic.FractionArithmeticExplanation
-import methods.general.GeneralExplanation
 import methods.rationalexpressions.RationalExpressionsExplanation
 import org.junit.jupiter.api.Test
 
 @Suppress("MaxLineLength", "LargeClass")
 class SolveRationalEquationTest {
+
     @Test
     fun `test rational equation with one valid solution`() = testMethodInX {
         method = EquationsPlans.SolveRationalEquation
@@ -37,147 +35,25 @@ class SolveRationalEquationTest {
 
                 step {
                     fromExpr = "[12 / [x ^ 2] - 9] = [8 x / x - 3] - [2 / x + 3]"
+                    toExpr = "[12 / (x - 3) (x + 3)] = [8 x / x - 3] - [2 / x + 3]"
+                    explanation {
+                        key = RationalExpressionsExplanation.FactorDenominatorOfFraction
+                    }
+                }
+
+                step {
+                    fromExpr = "[12 / (x - 3) (x + 3)] = [8 x / x - 3] - [2 / x + 3]"
+                    toExpr = "[12 / (x - 3) (x + 3)] * <. (x - 3) (x + 3) .> = [8 x / x - 3] * <. (x - 3) (x + 3) .> - [2 / x + 3] * <. (x - 3) (x + 3) .>"
+                    explanation {
+                        key = EquationsExplanation.MultiplyBothSidesByDenominator
+                    }
+                }
+
+                step {
+                    fromExpr = "[12 / (x - 3) (x + 3)] * (x - 3) (x + 3) = [8 x / x - 3] * (x - 3) (x + 3) - [2 / x + 3] * (x - 3) (x + 3)"
                     toExpr = "12 = 8 x (x + 3) - 2 (x - 3)"
                     explanation {
-                        key = EquationsExplanation.SimplifyToPolynomialEquation
-                    }
-
-                    task {
-                        taskId = "#1"
-                        startExpr = "[12 / [x ^ 2] - 9] = [8 x / x - 3] - [2 / x + 3]"
-                        explanation {
-                            key = EquationsExplanation.FactorDenominatorOfFraction
-                        }
-
-                        step {
-                            fromExpr = "[12 / [x ^ 2] - 9] = [8 x / x - 3] - [2 / x + 3]"
-                            toExpr = "[12 / (x - 3) (x + 3)] = [8 x / x - 3] - [2 / x + 3]"
-                            explanation {
-                                key = RationalExpressionsExplanation.FactorDenominatorOfFraction
-                            }
-                        }
-                    }
-
-                    task {
-                        taskId = "#2"
-                        startExpr = "(x - 3) (x + 3)"
-                        explanation {
-                            key = EquationsExplanation.ComputeLeastCommonDenominatorOfFractions
-                        }
-                    }
-
-                    task {
-                        taskId = "#3"
-                        startExpr = "[12 / (x - 3) (x + 3)] = [8 x / x - 3] - [2 / x + 3]"
-                        explanation {
-                            key = EquationsExplanation.MultiplyBothSidesAndSimplifyEquation
-                        }
-
-                        step {
-                            fromExpr = "[12 / (x - 3) (x + 3)] = [8 x / x - 3] - [2 / x + 3]"
-                            toExpr = "12 = 8 x (x + 3) - 2 (x - 3)"
-                            explanation {
-                                key = EquationsExplanation.MultiplyBothSidesAndSimplifyEquation
-                            }
-
-                            task {
-                                taskId = "#1"
-                                startExpr = "[12 / (x - 3) (x + 3)] (x - 3) (x + 3)"
-                                explanation {
-                                    key = EquationsExplanation.SimplifyRationalExpression
-                                }
-
-                                step {
-                                    fromExpr = "[12 / (x - 3) (x + 3)] (x - 3) (x + 3)"
-                                    toExpr = "12"
-                                    explanation {
-                                        key = EquationsExplanation.MultiplyAndSimplifyRationalFractions
-                                    }
-                                    step {
-                                        fromExpr = "[12 / (x - 3) (x + 3)] (x - 3) (x + 3)"
-                                        toExpr = "[12 (x - 3) (x + 3) / (x - 3) (x + 3)]"
-                                        explanation {
-                                            key = FractionArithmeticExplanation.TurnProductOfFractionAndNonFractionFactorIntoFraction
-                                        }
-                                    }
-                                    step {
-                                        fromExpr = "[12 (x - 3) (x + 3) / (x - 3) (x + 3)]"
-                                        toExpr = "12"
-                                        explanation {
-                                            key = FractionArithmeticExplanation.SimplifyFraction
-                                        }
-                                    }
-                                }
-                            }
-
-                            task {
-                                taskId = "#2"
-                                startExpr = "[8 x / x - 3] (x - 3) (x + 3)"
-                                explanation {
-                                    key = EquationsExplanation.SimplifyRationalExpression
-                                }
-
-                                step {
-                                    fromExpr = "[8 x / x - 3] (x - 3) (x + 3)"
-                                    toExpr = "8 x (x + 3)"
-                                    explanation {
-                                        key = EquationsExplanation.MultiplyAndSimplifyRationalFractions
-                                    }
-                                    step {
-                                        fromExpr = "[8 x / x - 3] (x - 3) (x + 3)"
-                                        toExpr = "[8 x (x - 3) (x + 3) / x - 3]"
-                                        explanation {
-                                            key = FractionArithmeticExplanation.TurnProductOfFractionAndNonFractionFactorIntoFraction
-                                        }
-                                    }
-                                    step {
-                                        fromExpr = "[8 x (x - 3) (x + 3) / x - 3]"
-                                        toExpr = "8 x (x + 3)"
-                                        explanation {
-                                            key = GeneralExplanation.CancelDenominator
-                                        }
-                                    }
-                                }
-                            }
-
-                            task {
-                                taskId = "#3"
-                                startExpr = "(-[2 / x + 3]) (x - 3) (x + 3)"
-                                explanation {
-                                    key = EquationsExplanation.SimplifyRationalExpression
-                                }
-
-                                step {
-                                    fromExpr = "(-[2 / x + 3]) (x - 3) (x + 3)"
-                                    toExpr = "-2 (x - 3)"
-                                    explanation {
-                                        key = EquationsExplanation.MultiplyAndSimplifyRationalFractions
-                                    }
-                                    step {
-                                        fromExpr = "(-[2 / x + 3]) (x - 3) (x + 3)"
-                                        toExpr = "-[2 (x - 3) (x + 3) / x + 3]"
-                                        explanation {
-                                            key = FractionArithmeticExplanation.TurnProductOfFractionAndNonFractionFactorIntoFraction
-                                        }
-                                    }
-                                    step {
-                                        fromExpr = "-[2 (x - 3) (x + 3) / x + 3]"
-                                        toExpr = "-2 (x - 3)"
-                                        explanation {
-                                            key = FractionArithmeticExplanation.SimplifyFraction
-                                        }
-                                    }
-                                }
-                            }
-
-                            task {
-                                taskId = "#4"
-                                startExpr = "12 = 8 x (x + 3) - 2 (x - 3)"
-                                explanation {
-                                    key = EquationsExplanation.SimplifiedPolynomialEquation
-                                }
-                            }
-                        }
+                        key = EquationsExplanation.SimplifyEquation
                     }
                 }
             }
@@ -217,9 +93,25 @@ class SolveRationalEquationTest {
 
                 step {
                     fromExpr = "[12 / [x ^ 2] - 9] = [8 x / x - 3] - [2 / x + 3]"
+                    toExpr = "[12 / (x - 3) (x + 3)] = [8 x / x - 3] - [2 / x + 3]"
+                    explanation {
+                        key = RationalExpressionsExplanation.FactorDenominatorOfFraction
+                    }
+                }
+
+                step {
+                    fromExpr = "[12 / (x - 3) (x + 3)] = [8 x / x - 3] - [2 / x + 3]"
+                    toExpr = "[12 / (x - 3) (x + 3)] * <. (x - 3) (x + 3) .> = [8 x / x - 3] * <. (x - 3) (x + 3) .> - [2 / x + 3] * <. (x - 3) (x + 3) .>"
+                    explanation {
+                        key = EquationsExplanation.MultiplyBothSidesByDenominator
+                    }
+                }
+
+                step {
+                    fromExpr = "[12 / (x - 3) (x + 3)] * (x - 3) (x + 3) = [8 x / x - 3] * (x - 3) (x + 3) - [2 / x + 3] * (x - 3) (x + 3)"
                     toExpr = "12 = 8 x (x + 3) - 2 (x - 3)"
                     explanation {
-                        key = EquationsExplanation.SimplifyToPolynomialEquation
+                        key = EquationsExplanation.SimplifyEquation
                     }
                 }
             }
@@ -322,101 +214,17 @@ class SolveRationalEquationTest {
 
                 step {
                     fromExpr = "[x + 2 / x - 3] = [x / 3 x - 2]"
+                    toExpr = "[x + 2 / x - 3] * <. (x - 3) (3 x - 2) .> = [x / 3 x - 2] * <. (x - 3) (3 x - 2) .>"
+                    explanation {
+                        key = EquationsExplanation.MultiplyBothSidesByDenominator
+                    }
+                }
+
+                step {
+                    fromExpr = "[x + 2 / x - 3] * (x - 3) (3 x - 2) = [x / 3 x - 2] * (x - 3) (3 x - 2)"
                     toExpr = "(x + 2) (3 x - 2) = x (x - 3)"
                     explanation {
-                        key = EquationsExplanation.SimplifyToPolynomialEquation
-                    }
-
-                    task {
-                        taskId = "#1"
-                        startExpr = "(x - 3) (3 x - 2)"
-                        explanation {
-                            key = EquationsExplanation.ComputeLeastCommonDenominatorOfFractions
-                        }
-                    }
-
-                    task {
-                        taskId = "#2"
-                        startExpr = "[x + 2 / x - 3] = [x / 3 x - 2]"
-                        explanation {
-                            key = EquationsExplanation.MultiplyBothSidesAndSimplifyEquation
-                        }
-
-                        step {
-                            fromExpr = "[x + 2 / x - 3] = [x / 3 x - 2]"
-                            toExpr = "(x + 2) (3 x - 2) = x (x - 3)"
-                            explanation {
-                                key = EquationsExplanation.MultiplyBothSidesAndSimplifyEquation
-                            }
-
-                            task {
-                                taskId = "#1"
-                                startExpr = "[x + 2 / x - 3] (x - 3) (3 x - 2)"
-                                explanation {
-                                    key = EquationsExplanation.SimplifyRationalExpression
-                                }
-
-                                step {
-                                    fromExpr = "[x + 2 / x - 3] (x - 3) (3 x - 2)"
-                                    toExpr = "(x + 2) (3 x - 2)"
-                                    explanation {
-                                        key = EquationsExplanation.MultiplyAndSimplifyRationalFractions
-                                    }
-                                    step {
-                                        fromExpr = "[x + 2 / x - 3] (x - 3) (3 x - 2)"
-                                        toExpr = "[(x + 2) (x - 3) (3 x - 2) / x - 3]"
-                                        explanation {
-                                            key = FractionArithmeticExplanation.TurnProductOfFractionAndNonFractionFactorIntoFraction
-                                        }
-                                    }
-                                    step {
-                                        fromExpr = "[(x + 2) (x - 3) (3 x - 2) / x - 3]"
-                                        toExpr = "(x + 2) (3 x - 2)"
-                                        explanation {
-                                            key = GeneralExplanation.CancelDenominator
-                                        }
-                                    }
-                                }
-                            }
-
-                            task {
-                                taskId = "#2"
-                                startExpr = "[x / 3 x - 2] (x - 3) (3 x - 2)"
-                                explanation {
-                                    key = EquationsExplanation.SimplifyRationalExpression
-                                }
-
-                                step {
-                                    fromExpr = "[x / 3 x - 2] (x - 3) (3 x - 2)"
-                                    toExpr = "x (x - 3)"
-                                    explanation {
-                                        key = EquationsExplanation.MultiplyAndSimplifyRationalFractions
-                                    }
-                                    step {
-                                        fromExpr = "[x / 3 x - 2] (x - 3) (3 x - 2)"
-                                        toExpr = "[x (x - 3) (3 x - 2) / 3 x - 2]"
-                                        explanation {
-                                            key = FractionArithmeticExplanation.TurnProductOfFractionAndNonFractionFactorIntoFraction
-                                        }
-                                    }
-                                    step {
-                                        fromExpr = "[x (x - 3) (3 x - 2) / 3 x - 2]"
-                                        toExpr = "x (x - 3)"
-                                        explanation {
-                                            key = GeneralExplanation.CancelDenominator
-                                        }
-                                    }
-                                }
-                            }
-
-                            task {
-                                taskId = "#3"
-                                startExpr = "(x + 2) (3 x - 2) = x (x - 3)"
-                                explanation {
-                                    key = EquationsExplanation.SimplifiedPolynomialEquation
-                                }
-                            }
-                        }
+                        key = EquationsExplanation.SimplifyEquation
                     }
                 }
             }
@@ -456,9 +264,17 @@ class SolveRationalEquationTest {
 
                 step {
                     fromExpr = "[x + 2 / x - 3] = [x / 3 x - 2]"
+                    toExpr = "[x + 2 / x - 3] * <. (x - 3) (3 x - 2) .> = [x / 3 x - 2] * <. (x - 3) (3 x - 2) .>"
+                    explanation {
+                        key = EquationsExplanation.MultiplyBothSidesByDenominator
+                    }
+                }
+
+                step {
+                    fromExpr = "[x + 2 / x - 3] * (x - 3) (3 x - 2) = [x / 3 x - 2] * (x - 3) (3 x - 2)"
                     toExpr = "(x + 2) (3 x - 2) = x (x - 3)"
                     explanation {
-                        key = EquationsExplanation.SimplifyToPolynomialEquation
+                        key = EquationsExplanation.SimplifyEquation
                     }
                 }
             }
@@ -574,9 +390,25 @@ class SolveRationalEquationTest {
 
                 step {
                     fromExpr = "[[x ^ 2] + 5 x + 6 / x + 3] = [x + 2 / [x ^ 2] - 3 x - 10]"
+                    toExpr = "x + 2 = [1 / x - 5]"
+                    explanation {
+                        key = EquationsExplanation.SimplifyEquation
+                    }
+                }
+
+                step {
+                    fromExpr = "x + 2 = [1 / x - 5]"
+                    toExpr = "x * (x - 5) + 2 * (x - 5) = [1 / x - 5] * (x - 5)"
+                    explanation {
+                        key = EquationsExplanation.MultiplyBothSidesByDenominator
+                    }
+                }
+
+                step {
+                    fromExpr = "x * (x - 5) + 2 * (x - 5) = [1 / x - 5] * (x - 5)"
                     toExpr = "x (x - 5) + 2 (x - 5) = 1"
                     explanation {
-                        key = EquationsExplanation.SimplifyToPolynomialEquation
+                        key = EquationsExplanation.SimplifyEquation
                     }
                 }
             }
@@ -631,22 +463,30 @@ class SolveRationalEquationTest {
 
                 step {
                     fromExpr = "[12 x / x - 9] + [1 / 3] = 8"
-                    toExpr = "36 x + x - 9 = 24 (x - 9)"
+                    toExpr = "[12 x / x - 9] * <. 3 (x - 9) .> + [1 / 3] * <. 3 (x - 9) .> = 8 * <. 3 (x - 9) .>"
                     explanation {
-                        key = EquationsExplanation.SimplifyToPolynomialEquation
+                        key = EquationsExplanation.MultiplyBothSidesByDenominator
+                    }
+                }
+
+                step {
+                    fromExpr = "[12 x / x - 9] * 3 (x - 9) + [1 / 3] * 3 (x - 9) = 8 * 3 (x - 9)"
+                    toExpr = "37 x - 9 = 24 (x - 9)"
+                    explanation {
+                        key = EquationsExplanation.SimplifyEquation
                     }
                 }
             }
 
             task {
                 taskId = "#3"
-                startExpr = "36 x + x - 9 = 24 (x - 9)"
+                startExpr = "37 x - 9 = 24 (x - 9)"
                 explanation {
                     key = EquationsExplanation.SolveEquation
                 }
 
                 step {
-                    fromExpr = "36 x + x - 9 = 24 (x - 9)"
+                    fromExpr = "37 x - 9 = 24 (x - 9)"
                     toExpr = "SetSolution[x : {-[207 / 13]}]"
                     explanation {
                         key = EquationsExplanation.SolveLinearEquation
@@ -688,100 +528,17 @@ class SolveRationalEquationTest {
 
                 step {
                     fromExpr = "[12 x / [x ^ 2] - 9] - [1 / [x ^ 2] - 9] = 8"
+                    toExpr = "[12 x / [x ^ 2] - 9] * ([x ^ 2] - 9) - [1 / [x ^ 2] - 9] * ([x ^ 2] - 9) = 8 * ([x ^ 2] - 9)"
+                    explanation {
+                        key = EquationsExplanation.MultiplyBothSidesByDenominator
+                    }
+                }
+
+                step {
+                    fromExpr = "[12 x / [x ^ 2] - 9] * ([x ^ 2] - 9) - [1 / [x ^ 2] - 9] * ([x ^ 2] - 9) = 8 * ([x ^ 2] - 9)"
                     toExpr = "12 x - 1 = 8 ([x ^ 2] - 9)"
                     explanation {
-                        key = EquationsExplanation.SimplifyToPolynomialEquation
-                    }
-
-                    task {
-                        taskId = "#1"
-                        startExpr = "[12 x / [x ^ 2] - 9] - [1 / [x ^ 2] - 9] = 8"
-                        explanation {
-                            key = EquationsExplanation.MultiplyBothSidesAndSimplifyEquation
-                        }
-
-                        step {
-                            fromExpr = "[12 x / [x ^ 2] - 9] - [1 / [x ^ 2] - 9] = 8"
-                            toExpr = "12 x - 1 = 8 ([x ^ 2] - 9)"
-                            explanation {
-                                key = EquationsExplanation.MultiplyBothSidesAndSimplifyEquation
-                            }
-
-                            task {
-                                taskId = "#1"
-                                startExpr = "[12 x / [x ^ 2] - 9] ([x ^ 2] - 9)"
-                                explanation {
-                                    key = EquationsExplanation.SimplifyRationalExpression
-                                }
-
-                                step {
-                                    fromExpr = "[12 x / [x ^ 2] - 9] ([x ^ 2] - 9)"
-                                    toExpr = "12 x"
-                                    explanation {
-                                        key = EquationsExplanation.MultiplyAndSimplifyRationalFractions
-                                    }
-                                    step {
-                                        fromExpr = "[12 x / [x ^ 2] - 9] ([x ^ 2] - 9)"
-                                        toExpr = "[12 x ([x ^ 2] - 9) / [x ^ 2] - 9]"
-                                        explanation {
-                                            key = FractionArithmeticExplanation.TurnProductOfFractionAndNonFractionFactorIntoFraction
-                                        }
-                                    }
-                                    step {
-                                        fromExpr = "[12 x ([x ^ 2] - 9) / [x ^ 2] - 9]"
-                                        toExpr = "12 x"
-                                        explanation {
-                                            key = GeneralExplanation.CancelDenominator
-                                        }
-                                    }
-                                }
-                            }
-
-                            task {
-                                taskId = "#2"
-                                startExpr = "(-[1 / [x ^ 2] - 9]) ([x ^ 2] - 9)"
-                                explanation {
-                                    key = EquationsExplanation.SimplifyRationalExpression
-                                }
-
-                                step {
-                                    fromExpr = "(-[1 / [x ^ 2] - 9]) ([x ^ 2] - 9)"
-                                    toExpr = "-1"
-                                    explanation {
-                                        key = EquationsExplanation.MultiplyAndSimplifyRationalFractions
-                                    }
-                                    step {
-                                        fromExpr = "(-[1 / [x ^ 2] - 9]) ([x ^ 2] - 9)"
-                                        toExpr = "-[1 ([x ^ 2] - 9) / [x ^ 2] - 9]"
-                                        explanation {
-                                            key = FractionArithmeticExplanation.TurnProductOfFractionAndNonFractionFactorIntoFraction
-                                        }
-                                    }
-                                    step {
-                                        fromExpr = "-[1 ([x ^ 2] - 9) / [x ^ 2] - 9]"
-                                        toExpr = "-1"
-                                        explanation {
-                                            key = FractionArithmeticExplanation.SimplifyFraction
-                                        }
-                                        step {
-                                            fromExpr = "[1 ([x ^ 2] - 9) / [x ^ 2] - 9]"
-                                            toExpr = "1"
-                                            explanation {
-                                                key = GeneralExplanation.CancelDenominator
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            task {
-                                taskId = "#3"
-                                startExpr = "12 x - 1 = 8 ([x ^ 2] - 9)"
-                                explanation {
-                                    key = EquationsExplanation.SimplifiedPolynomialEquation
-                                }
-                            }
-                        }
+                        key = EquationsExplanation.SimplifyEquation
                     }
                 }
             }
@@ -838,124 +595,25 @@ class SolveRationalEquationTest {
 
                 step {
                     fromExpr = "[12 / [x ^ 2] - 9] = sqrt[2] - [2 / x + 3]"
+                    toExpr = "[12 / (x - 3) (x + 3)] = sqrt[2] - [2 / x + 3]"
+                    explanation {
+                        key = RationalExpressionsExplanation.FactorDenominatorOfFraction
+                    }
+                }
+
+                step {
+                    fromExpr = "[12 / (x - 3) (x + 3)] = sqrt[2] - [2 / x + 3]"
+                    toExpr = "[12 / (x - 3) (x + 3)] * <. (x - 3) (x + 3) .> = sqrt[2] * <. (x - 3) (x + 3) .> - [2 / x + 3] * <. (x - 3) (x + 3) .>"
+                    explanation {
+                        key = EquationsExplanation.MultiplyBothSidesByDenominator
+                    }
+                }
+
+                step {
+                    fromExpr = "[12 / (x - 3) (x + 3)] * (x - 3) (x + 3) = sqrt[2] * (x - 3) (x + 3) - [2 / x + 3] * (x - 3) (x + 3)"
                     toExpr = "12 = sqrt[2] (x - 3) (x + 3) - 2 (x - 3)"
                     explanation {
-                        key = EquationsExplanation.SimplifyToPolynomialEquation
-                    }
-
-                    task {
-                        taskId = "#1"
-                        startExpr = "[12 / [x ^ 2] - 9] = sqrt[2] - [2 / x + 3]"
-                        explanation {
-                            key = EquationsExplanation.FactorDenominatorOfFraction
-                        }
-
-                        step {
-                            fromExpr = "[12 / [x ^ 2] - 9] = sqrt[2] - [2 / x + 3]"
-                            toExpr = "[12 / (x - 3) (x + 3)] = sqrt[2] - [2 / x + 3]"
-                            explanation {
-                                key = RationalExpressionsExplanation.FactorDenominatorOfFraction
-                            }
-                        }
-                    }
-
-                    task {
-                        taskId = "#2"
-                        startExpr = "(x - 3) (x + 3)"
-                        explanation {
-                            key = EquationsExplanation.ComputeLeastCommonDenominatorOfFractions
-                        }
-                    }
-
-                    task {
-                        taskId = "#3"
-                        startExpr = "[12 / (x - 3) (x + 3)] = sqrt[2] - [2 / x + 3]"
-                        explanation {
-                            key = EquationsExplanation.MultiplyBothSidesAndSimplifyEquation
-                        }
-
-                        step {
-                            fromExpr = "[12 / (x - 3) (x + 3)] = sqrt[2] - [2 / x + 3]"
-                            toExpr = "12 = sqrt[2] (x - 3) (x + 3) - 2 (x - 3)"
-                            explanation {
-                                key = EquationsExplanation.MultiplyBothSidesAndSimplifyEquation
-                            }
-
-                            task {
-                                taskId = "#1"
-                                startExpr = "[12 / (x - 3) (x + 3)] (x - 3) (x + 3)"
-                                explanation {
-                                    key = EquationsExplanation.SimplifyRationalExpression
-                                }
-
-                                step {
-                                    fromExpr = "[12 / (x - 3) (x + 3)] (x - 3) (x + 3)"
-                                    toExpr = "12"
-                                    explanation {
-                                        key = EquationsExplanation.MultiplyAndSimplifyRationalFractions
-                                    }
-                                    step {
-                                        fromExpr = "[12 / (x - 3) (x + 3)] (x - 3) (x + 3)"
-                                        toExpr = "[12 (x - 3) (x + 3) / (x - 3) (x + 3)]"
-                                        explanation {
-                                            key = FractionArithmeticExplanation.TurnProductOfFractionAndNonFractionFactorIntoFraction
-                                        }
-                                    }
-                                    step {
-                                        fromExpr = "[12 (x - 3) (x + 3) / (x - 3) (x + 3)]"
-                                        toExpr = "12"
-                                        explanation {
-                                            key = FractionArithmeticExplanation.SimplifyFraction
-                                        }
-                                    }
-                                }
-                            }
-
-                            task {
-                                taskId = "#2"
-                                startExpr = "(-[2 / x + 3]) (x - 3) (x + 3)"
-                                explanation {
-                                    key = EquationsExplanation.SimplifyRationalExpression
-                                }
-
-                                step {
-                                    fromExpr = "(-[2 / x + 3]) (x - 3) (x + 3)"
-                                    toExpr = "-2 (x - 3)"
-                                    explanation {
-                                        key = EquationsExplanation.MultiplyAndSimplifyRationalFractions
-                                    }
-                                    step {
-                                        fromExpr = "(-[2 / x + 3]) (x - 3) (x + 3)"
-                                        toExpr = "-[2 (x - 3) (x + 3) / x + 3]"
-                                        explanation {
-                                            key = FractionArithmeticExplanation.TurnProductOfFractionAndNonFractionFactorIntoFraction
-                                        }
-                                    }
-                                    step {
-                                        fromExpr = "-[2 (x - 3) (x + 3) / x + 3]"
-                                        toExpr = "-2 (x - 3)"
-                                        explanation {
-                                            key = FractionArithmeticExplanation.SimplifyFraction
-                                        }
-                                        step {
-                                            fromExpr = "[2 (x - 3) (x + 3) / x + 3]"
-                                            toExpr = "2 (x - 3)"
-                                            explanation {
-                                                key = GeneralExplanation.CancelDenominator
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            task {
-                                taskId = "#3"
-                                startExpr = "12 = sqrt[2] (x - 3) (x + 3) - 2 (x - 3)"
-                                explanation {
-                                    key = EquationsExplanation.SimplifiedPolynomialEquation
-                                }
-                            }
-                        }
+                        key = EquationsExplanation.SimplifyEquation
                     }
                 }
             }
@@ -981,7 +639,7 @@ class SolveRationalEquationTest {
     @Test
     fun `test simplify power of lhs of rational equation`() = testMethodInX {
         method = EquationsPlans.SolveRationalEquation
-        inputExpr = "[([x / x + 1]) ^ 2 ] = 1"
+        inputExpr = "[([x / x + 1]) ^ 2] = 1"
 
         check {
             fromExpr = "[([x / x + 1]) ^ 2] = 1"
@@ -1002,102 +660,25 @@ class SolveRationalEquationTest {
 
                 step {
                     fromExpr = "[([x / x + 1]) ^ 2] = 1"
+                    toExpr = "[[x ^ 2] / [(x + 1) ^ 2]] = 1"
+                    explanation {
+                        key = RationalExpressionsExplanation.SimplifyPowerOfRationalExpression
+                    }
+                }
+
+                step {
+                    fromExpr = "[[x ^ 2] / [(x + 1) ^ 2]] = 1"
+                    toExpr = "[[x ^ 2] / [(x + 1) ^ 2]] * [(x + 1) ^ 2] = 1 * [(x + 1) ^ 2]"
+                    explanation {
+                        key = EquationsExplanation.MultiplyBothSidesByDenominator
+                    }
+                }
+
+                step {
+                    fromExpr = "[[x ^ 2] / [(x + 1) ^ 2]] * [(x + 1) ^ 2] = 1 * [(x + 1) ^ 2]"
                     toExpr = "[x ^ 2] = [(x + 1) ^ 2]"
                     explanation {
-                        key = EquationsExplanation.SimplifyToPolynomialEquation
-                    }
-
-                    task {
-                        taskId = "#1"
-                        startExpr = "[([x / x + 1]) ^ 2] = 1"
-                        explanation {
-                            key = EquationsExplanation.SimplifyEquation
-                        }
-
-                        step {
-                            fromExpr = "[([x / x + 1]) ^ 2] = 1"
-                            toExpr = "[[x ^ 2] / [(x + 1) ^ 2]] = 1"
-                            explanation {
-                                key = RationalExpressionsExplanation.SimplifyPowerOfRationalExpression
-                            }
-                            step {
-                                fromExpr = "[([x / x + 1]) ^ 2]"
-                                toExpr = "[[x ^ 2] / [(x + 1) ^ 2]]"
-                                explanation {
-                                    key = FractionArithmeticExplanation.DistributeFractionPositivePower
-                                }
-                            }
-                        }
-                    }
-
-                    task {
-                        taskId = "#2"
-                        startExpr = "[[x ^ 2] / [(x + 1) ^ 2]] = 1"
-                        explanation {
-                            key = EquationsExplanation.MultiplyBothSidesAndSimplifyEquation
-                        }
-
-                        step {
-                            fromExpr = "[[x ^ 2] / [(x + 1) ^ 2]] = 1"
-                            toExpr = "[x ^ 2] = [(x + 1) ^ 2]"
-                            explanation {
-                                key = EquationsExplanation.MultiplyBothSidesAndSimplifyEquation
-                            }
-
-                            task {
-                                taskId = "#1"
-                                startExpr = "[[x ^ 2] / [(x + 1) ^ 2]] * [(x + 1) ^ 2]"
-                                explanation {
-                                    key = EquationsExplanation.SimplifyRationalExpression
-                                }
-
-                                step {
-                                    fromExpr = "[[x ^ 2] / [(x + 1) ^ 2]] * [(x + 1) ^ 2]"
-                                    toExpr = "[x ^ 2]"
-                                    explanation {
-                                        key = EquationsExplanation.MultiplyAndSimplifyRationalFractions
-                                    }
-                                    step {
-                                        fromExpr = "[[x ^ 2] / [(x + 1) ^ 2]] * [(x + 1) ^ 2]"
-                                        toExpr = "[[x ^ 2] * [(x + 1) ^ 2] / [(x + 1) ^ 2]]"
-                                        explanation {
-                                            key = FractionArithmeticExplanation.TurnProductOfFractionAndNonFractionFactorIntoFraction
-                                        }
-                                    }
-                                    step {
-                                        fromExpr = "[[x ^ 2] * [(x + 1) ^ 2] / [(x + 1) ^ 2]]"
-                                        toExpr = "[x ^ 2]"
-                                        explanation {
-                                            key = GeneralExplanation.CancelDenominator
-                                        }
-                                    }
-                                }
-                            }
-
-                            task {
-                                taskId = "#2"
-                                startExpr = "1 * [(x + 1) ^ 2]"
-                                explanation {
-                                    key = EquationsExplanation.SimplifyRationalExpression
-                                }
-
-                                step {
-                                    fromExpr = "1 * [(x + 1) ^ 2]"
-                                    toExpr = "[(x + 1) ^ 2]"
-                                    explanation {
-                                        key = GeneralExplanation.RemoveUnitaryCoefficient
-                                    }
-                                }
-                            }
-
-                            task {
-                                taskId = "#3"
-                                startExpr = "[x ^ 2] = [(x + 1) ^ 2]"
-                                explanation {
-                                    key = EquationsExplanation.SimplifiedPolynomialEquation
-                                }
-                            }
-                        }
+                        key = EquationsExplanation.SimplifyEquation
                     }
                 }
             }
@@ -1144,70 +725,17 @@ class SolveRationalEquationTest {
 
                 step {
                     fromExpr = "[2 x / x] = [4 / x]"
+                    toExpr = "[2 x / x] * x = [4 / x] * x"
+                    explanation {
+                        key = EquationsExplanation.MultiplyBothSidesByDenominator
+                    }
+                }
+
+                step {
+                    fromExpr = "[2 x / x] * x = [4 / x] * x"
                     toExpr = "2 x = 4"
                     explanation {
-                        key = EquationsExplanation.SimplifyToPolynomialEquation
-                    }
-
-                    task {
-                        taskId = "#1"
-                        startExpr = "[2 x / x] = [4 / x]"
-                        explanation {
-                            key = EquationsExplanation.MultiplyBothSidesByDenominator
-                        }
-
-                        step {
-                            fromExpr = "[2 x / x] = [4 / x]"
-                            toExpr = "[2 x / x] x = [4 / x] x"
-                            explanation {
-                                key = EquationsExplanation.MultiplyBothSidesByDenominator
-                            }
-                        }
-                    }
-
-                    task {
-                        taskId = "#2"
-                        startExpr = "[2 x / x] x = [4 / x] x"
-                        explanation {
-                            key = EquationsExplanation.SimplifyRationalExpression
-                        }
-
-                        step {
-                            fromExpr = "[2 x / x] x = [4 / x] x"
-                            toExpr = "2 x = [4 / x] x"
-                            explanation {
-                                key = FractionArithmeticExplanation.SimplifyFraction
-                            }
-                            step {
-                                fromExpr = "[2 x / x]"
-                                toExpr = "2"
-                                explanation {
-                                    key = GeneralExplanation.CancelDenominator
-                                }
-                            }
-                        }
-
-                        step {
-                            fromExpr = "2 x = [4 / x] x"
-                            toExpr = "2 x = 4"
-                            explanation {
-                                key = EquationsExplanation.MultiplyAndSimplifyRationalFractions
-                            }
-                            step {
-                                fromExpr = "[4 / x] x"
-                                toExpr = "[4 x / x]"
-                                explanation {
-                                    key = FractionArithmeticExplanation.TurnProductOfFractionAndNonFractionFactorIntoFraction
-                                }
-                            }
-                            step {
-                                fromExpr = "[4 x / x]"
-                                toExpr = "4"
-                                explanation {
-                                    key = GeneralExplanation.CancelDenominator
-                                }
-                            }
-                        }
+                        key = EquationsExplanation.SimplifyEquation
                     }
                 }
             }

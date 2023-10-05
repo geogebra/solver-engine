@@ -10,6 +10,7 @@ import engine.expressions.ExpressionWithConstraint
 import engine.expressions.Fraction
 import engine.expressions.Introduce
 import engine.expressions.Sum
+import engine.expressions.asInteger
 import engine.expressions.equationOf
 import engine.expressions.fractionOf
 import engine.expressions.greaterThanEqualOf
@@ -32,6 +33,7 @@ import engine.patterns.SolvablePattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.VariableExpressionPattern
 import engine.patterns.condition
+import engine.patterns.expressionWithFactor
 import engine.patterns.fractionOf
 import engine.patterns.integerCondition
 import engine.patterns.negOf
@@ -225,6 +227,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
             onPattern(solvable) {
                 val terms = extractSumTermsFromSolvable(get(solvable))
                 val denominators = terms.mapNotNull { extractDenominator(it) }
+                    .map { it.asInteger() ?: return@onPattern null }
 
                 if (denominators.isEmpty()) {
                     return@onPattern null
@@ -550,18 +553,18 @@ fun extractSumTermsFromSolvable(equation: Expression): List<Expression> {
 }
 
 object DenominatorExtractor {
-    private val integerDenominator = UnsignedIntegerPattern()
-    private val integerDenominatorFraction = fractionOf(AnyPattern(), integerDenominator)
-    private val denominatorDetectingPattern = optionalNegOf(
-        oneOf(
-            productContaining(integerDenominatorFraction),
-            integerDenominatorFraction,
-        ),
-    )
+    private val denominator = AnyPattern()
+    private val fraction = fractionOf(AnyPattern(), denominator)
+    private val denominatorDetectingPattern = expressionWithFactor(fraction)
 
-    fun extractDenominator(expression: Expression): BigInteger? {
+    fun extractDenominator(expression: Expression): Expression? {
         val match = denominatorDetectingPattern.findMatches(emptyContext, subexpression = expression).firstOrNull()
-        return match?.let { integerDenominator.getBoundInt(it) }
+        return match?.let { denominator.getBoundExpr(it) }
+    }
+
+    fun extractFraction(expression: Expression): Fraction? {
+        val match = denominatorDetectingPattern.findMatches(emptyContext, subexpression = expression).firstOrNull()
+        return match?.let { fraction.getBoundExpr(it) as Fraction }
     }
 }
 

@@ -5,6 +5,7 @@ import engine.expressions.Constants
 import engine.expressions.DivideBy
 import engine.expressions.Expression
 import engine.expressions.Fraction
+import engine.expressions.Minus
 import engine.expressions.Power
 import engine.expressions.areEquivalentSums
 import engine.expressions.fractionOf
@@ -432,23 +433,19 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
         },
     ),
 
-    TurnProductOfFractionAndNonFractionFactorIntoFraction(
+    TurnProductOfFractionAndNonFractionFactorsIntoFraction(
         rule {
             val fraction = FractionPattern()
-            val opNegFraction = optionalNegOf(fraction)
-            val product = productContaining(opNegFraction)
+            val product = productContaining(fraction) { rest ->
+                // in these cases we should normalize the product first
+                rest !is Fraction && rest !is DivideBy && rest !is Minus
+            }
 
             onPattern(product) {
-                if (restOf(product).children.any { it is Fraction }) {
-                    return@onPattern null
-                }
                 ruleResult(
-                    toExpr = copySign(
-                        opNegFraction,
-                        fractionOf(
-                            productOf(get(fraction.numerator), restOf(product)),
-                            get(fraction.denominator),
-                        ),
+                    toExpr = fractionOf(
+                        productOf(get(fraction.numerator), restOf(product)),
+                        get(fraction.denominator),
                     ),
                     explanation = metadata(Explanation.TurnProductOfFractionAndNonFractionFactorIntoFraction),
                 )
@@ -489,20 +486,16 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
 
     MultiplyFractions(
         rule {
-            val num1 = AnyPattern()
-            val num2 = AnyPattern()
-            val denom1 = AnyPattern()
-            val denom2 = AnyPattern()
-            val f1 = fractionOf(num1, denom1)
-            val f2 = fractionOf(num2, denom2)
+            val f1 = FractionPattern()
+            val f2 = FractionPattern()
             val product = productContaining(f1, f2)
 
             onPattern(product) {
                 ruleResult(
                     product.substitute(
                         fractionOf(
-                            productOf(move(num1), move(num2)),
-                            productOf(move(denom1), move(denom2)),
+                            productOf(move(f1.numerator), move(f2.numerator)),
+                            productOf(move(f1.denominator), move(f2.denominator)),
                         ),
                     ),
                     explanation = metadata(Explanation.MultiplyFractions, move(f1), move(f2)),

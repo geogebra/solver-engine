@@ -19,7 +19,6 @@ import engine.expressions.greaterThanEqualOf
 import engine.expressions.hasSingleValue
 import engine.expressions.identityOf
 import engine.expressions.inverse
-import engine.expressions.isPolynomial
 import engine.expressions.leadingCoefficientOfPolynomial
 import engine.expressions.lessThanOf
 import engine.expressions.negOf
@@ -34,6 +33,7 @@ import engine.expressions.squareRootOf
 import engine.expressions.statementSystemOf
 import engine.expressions.statementUnionOf
 import engine.expressions.sumOf
+import engine.expressions.termwiseProductOf
 import engine.expressions.variableListOf
 import engine.expressions.xp
 import engine.methods.Rule
@@ -68,6 +68,10 @@ import engine.steps.Transformation
 import engine.steps.metadata.metadata
 import engine.utility.isEven
 import engine.utility.withMaxDP
+import methods.rationalexpressions.computeLcdAndMultipliers
+import methods.solvable.DenominatorExtractor.extractDenominator
+import methods.solvable.DenominatorExtractor.extractFraction
+import methods.solvable.extractSumTermsFromSolvable
 import java.math.BigInteger
 
 enum class EquationsRules(override val runner: Rule) : RunnerMethod {
@@ -281,7 +285,8 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
     SeparateModulusEqualsExpression(separateModulusEqualsExpression),
     SeparateModulusEqualsExpressionWithoutConstraint(separateModulusEqualsExpressionWithoutConstraint),
 
-    MultiplyBothSidesOfLikeRationalEquation(multiplyBothSidesOfLikeRationalEquation),
+    MultiplyBothSidesOfRationalEquationWithTrivialLCD(multiplyBothSidesOfRationalEquationWithTrivialLCD),
+    MultiplyBothSidesOfRationalEquation(multiplyBothSidesOfRationalEquation),
 }
 
 private val extractSolutionFromEquationInPlusMinusForm = rule {
@@ -589,27 +594,41 @@ private fun RuleResultBuilder.trueOrFalseRuleResult(isSatisfied: Boolean): Trans
     }
 }
 
-/**
- * An equation of the form: [p(x) / r(x)] = [q(x) / r(x)]
- * is called like rational equation (custom term)
- */
-private val multiplyBothSidesOfLikeRationalEquation = rule {
-    val commonDenominator = condition { it.isPolynomial() }
-    val firstPolynomial = condition { it.isPolynomial() }
-    val secondPolynomial = condition { it.isPolynomial() }
-    val lhsRationalPolynomial = optionalNegOf(engine.patterns.fractionOf(firstPolynomial, commonDenominator))
-    val rhsRationalPolynomial = optionalNegOf(engine.patterns.fractionOf(secondPolynomial, commonDenominator))
+private val multiplyBothSidesOfRationalEquationWithTrivialLCD = rule {
+    val lhs = AnyPattern()
+    val rhs = AnyPattern()
 
-    val eq = equationOf(lhsRationalPolynomial, rhsRationalPolynomial)
+    onEquation(lhs, rhs) {
+        val commonDenominator = extractSumTermsFromSolvable(expression)
+            .mapNotNull { extractDenominator(it) }.distinct().singleOrNull()
+            ?: return@onEquation null
 
-    onPattern(eq) {
-        val newLhs = productOf(get(lhsRationalPolynomial), get(commonDenominator))
-        val newRhs = productOf(get(rhsRationalPolynomial), get(commonDenominator))
+        val newLhs = termwiseProductOf(get(lhs), introduce(commonDenominator))
+        val newRhs = termwiseProductOf(get(rhs), introduce(commonDenominator))
         val newEq = equationOf(newLhs, newRhs)
 
         ruleResult(
             toExpr = newEq,
-            explanation = metadata(Explanation.MultiplyBothSidesByDenominator),
+            explanation = metadata(Explanation.MultiplyBothSidesByDenominator, commonDenominator),
+        )
+    }
+}
+
+private val multiplyBothSidesOfRationalEquation = rule {
+    val lhs = AnyPattern()
+    val rhs = AnyPattern()
+
+    onEquation(lhs, rhs) {
+        val denominators = extractSumTermsFromSolvable(expression).mapNotNull { extractFraction(it) }
+        val (lcd, _) = computeLcdAndMultipliers(denominators)
+
+        val newLhs = termwiseProductOf(get(lhs), introduce(lcd))
+        val newRhs = termwiseProductOf(get(rhs), introduce(lcd))
+        val newEq = equationOf(newLhs, newRhs)
+
+        ruleResult(
+            toExpr = newEq,
+            explanation = metadata(Explanation.MultiplyBothSidesByDenominator, lcd),
         )
     }
 }

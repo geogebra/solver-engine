@@ -152,6 +152,7 @@ fun algebraicSimplificationSteps(addRationalExpressions: Boolean = true): StepsP
                     option(RationalExpressionsPlans.SimplifyRationalExpression)
                     option(RationalExpressionsPlans.SimplifyPowerOfRationalExpression)
                     option(RationalExpressionsPlans.MultiplyRationalExpressions)
+                    option(RationalExpressionsPlans.MultiplyRationalExpressionWithNonFractionalFactors)
                     if (addRationalExpressions) {
                         option(RationalExpressionsPlans.AddLikeRationalExpressions)
                         option(RationalExpressionsPlans.AddTermAndRationalExpression)

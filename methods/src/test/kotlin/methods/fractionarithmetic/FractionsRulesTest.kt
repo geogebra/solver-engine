@@ -165,19 +165,24 @@ class FractionsRulesTest {
     @Test
     fun testTurnProductOfFractionAndNonFractionFactorIntoFraction() {
         testRuleInX(
-            "[12 / x - 3] (x-3)(x-4)(x-5)",
-            FractionArithmeticRules.TurnProductOfFractionAndNonFractionFactorIntoFraction,
-            "[12 (x-3)(x-4)(x-5) / x - 3]",
+            "[12 / x - 3] (x - 3) (x - 4) (x - 5)",
+            FractionArithmeticRules.TurnProductOfFractionAndNonFractionFactorsIntoFraction,
+            "[12 (x - 3) (x - 4) (x - 5) / x - 3]",
         )
         testRuleInX(
-            "(-[12 / x - 3]) (x-3)(x-4)(x-5)",
-            FractionArithmeticRules.TurnProductOfFractionAndNonFractionFactorIntoFraction,
-            "-[12 (x-3)(x-4)(x-5) / x - 3]",
+            "[9 x / x + 1] (x + 2) (x + 3)",
+            FractionArithmeticRules.TurnProductOfFractionAndNonFractionFactorsIntoFraction,
+            "[9 x (x + 2) (x + 3) / x + 1]",
         )
         testRuleInX(
-            "[9x / x + 1] (x + 2)(x + 3)",
-            FractionArithmeticRules.TurnProductOfFractionAndNonFractionFactorIntoFraction,
-            "[9x (x + 2)(x + 3) / x + 1]",
+            "[9 x / x + 1] (-x) (x + 3)",
+            FractionArithmeticRules.TurnProductOfFractionAndNonFractionFactorsIntoFraction,
+            null,
+        )
+        testRuleInX(
+            "[9 x / x + 1] (x + 2) : (x + 3)",
+            FractionArithmeticRules.TurnProductOfFractionAndNonFractionFactorsIntoFraction,
+            null,
         )
     }
 

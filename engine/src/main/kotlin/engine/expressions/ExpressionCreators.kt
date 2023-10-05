@@ -180,6 +180,21 @@ fun simplifiedProductOf(firstFactor: Expression, secondFactor: Expression): Expr
     }
 }
 
+fun termwiseProductOf(expr: Expression, multiplier: Expression): Expression {
+    return if (expr is Sum) {
+        val multipliedTerms = expr.children.map {
+            if (it is Minus) {
+                negOf(explicitProductOf(it.argument, multiplier))
+            } else {
+                explicitProductOf(it, multiplier)
+            }
+        }
+        sumOf(multipliedTerms)
+    } else {
+        explicitProductOf(expr, multiplier)
+    }
+}
+
 fun divideBy(operand: Expression) = buildExpression(UnaryExpressionOperator.DivideBy, listOf(operand))
 
 fun percentageOf(operand: Expression) = buildExpression(UnaryExpressionOperator.Percentage, listOf(operand))

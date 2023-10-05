@@ -124,9 +124,21 @@ enum class RationalExpressionsPlans(override val runner: CompositeMethod) : Runn
     MultiplyRationalExpressions(
         plan {
             explanation = Explanation.MultiplyRationalExpressions
+            pattern = productContaining(FractionPattern(), FractionPattern())
+
+            partialExpressionSteps {
+                apply(FractionArithmeticRules.MultiplyFractions)
+                optionally(rationalExpressionSimplificationSteps)
+            }
+        },
+    ),
+
+    MultiplyRationalExpressionWithNonFractionalFactors(
+        plan {
+            explanation = Explanation.MultiplyRationalExpressions
 
             steps {
-                apply(FractionArithmeticRules.MultiplyFractions)
+                apply(FractionArithmeticRules.TurnProductOfFractionAndNonFractionFactorsIntoFraction)
                 optionally(rationalExpressionSimplificationSteps)
             }
         },
