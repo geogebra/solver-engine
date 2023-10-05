@@ -11,9 +11,9 @@ inputList: elements += singleInput (',' elements += singleInput)+;
 singleInput: statementUnion | set | expr | undefined | name;
 
 // statements are in disjunctive normal form (constraints and systems both represent conjunctions)
-statementUnion: statements += statementWithConstraint ('OR' statements += statementWithConstraint)*;
+statementUnion: statements += statementWithConstraints ('OR' statements += statementWithConstraints)*;
 
-statementWithConstraint: stmt=statementSystem ('GIVEN' constraint=statementSystem)?;
+statementWithConstraints: stmt=statementSystem ('GIVEN' constraints+=statementSystem)*;
 
 statementSystem: statements += simpleStatement ('AND' statements += simpleStatement)*;
 

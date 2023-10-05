@@ -199,4 +199,13 @@ class SolvableRulesTest {
             "([x^2] - [x/6] - [1/3]) * 6 = 0 * 6",
         )
     }
+
+    @Test
+    fun testTakeRootOfBothSides() {
+        testRuleInX("[x ^ 2] = 4", SolvableRules.TakeRootOfBothSides, "x = +/-sqrt[4]")
+        testRuleInX("[x ^ 3] = 2", SolvableRules.TakeRootOfBothSides, "x = root[2, 3]")
+        testRuleInX("[x ^ 5] = -8", SolvableRules.TakeRootOfBothSides, "x = root[-8, 5]")
+        testRuleInX("[x ^ 4] = 0", SolvableRules.TakeRootOfBothSides, "x = 0")
+        testRuleInX("[x ^ 2] = -1", SolvableRules.TakeRootOfBothSides, null)
+    }
 }

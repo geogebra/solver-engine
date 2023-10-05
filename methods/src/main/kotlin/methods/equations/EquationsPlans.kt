@@ -5,12 +5,15 @@ import engine.expressions.Constants
 import engine.expressions.DecimalExpression
 import engine.expressions.Equation
 import engine.expressions.Expression
+import engine.expressions.ExpressionWithConstraint
 import engine.expressions.RecurringDecimalExpression
 import engine.expressions.StatementSystem
 import engine.expressions.StatementUnion
 import engine.methods.CompositeMethod
+import engine.methods.Method
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
+import engine.methods.SolverEngineExplanation
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
@@ -39,6 +42,7 @@ import methods.polynomials.PolynomialsPlans
 import methods.polynomials.polynomialSimplificationSteps
 import methods.solvable.SolvablePlans
 import methods.solvable.SolvableRules
+import methods.solvable.computeOverallIntersectionSolution
 import methods.solvable.computeOverallUnionSolution
 import methods.solvable.evaluateBothSidesNumerically
 import solveRationalEquation
@@ -212,21 +216,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     ),
 
     @PublicMethod
-    SolveEquation(
-        object : CompositeMethod() {
-            override fun run(ctx: Context, sub: Expression): Transformation? {
-                if (sub is Equation) {
-                    val solutionVariable = ctx.solutionVariables.singleOrNull() ?: return null
-
-                    if (sub.variables.contains(solutionVariable)) {
-                        return solveEquation.value.run(ctx, sub)
-                    }
-                }
-
-                return null
-            }
-        },
-    ),
+    SolveEquation(solveEquationPlan),
 
     @PublicMethod
     SolveEquationWithInequalityConstraint(solveEquationWithInequalityConstraint),
@@ -340,4 +330,54 @@ val solveConstantEquationSteps = steps {
         apply(evaluateBothSidesNumerically)
     }
     apply(EquationsRules.ExtractSolutionFromConstantEquation)
+}
+
+val solveEquationPlan = object : CompositeMethod() {
+
+    // Can't be a rule since rules have been changed to apply only on the expression not the constraint
+    private val mergeConstraintsRule = object : Method {
+
+        override fun tryExecute(ctx: Context, sub: Expression): Transformation? {
+            if (sub !is ExpressionWithConstraint) return null
+            val innerExpression = sub.expression
+            val constraint1 = sub.constraint
+
+            if (innerExpression !is ExpressionWithConstraint) return null
+            val expression = innerExpression.expression
+            val constraint2 = innerExpression.constraint
+
+            val constraintList = mutableListOf<Expression>()
+            if (constraint1 is StatementSystem) {
+                constraintList.addAll(constraint1.equations)
+            } else {
+                constraintList.add(constraint1)
+            }
+            if (constraint2 is StatementSystem) {
+                constraintList.addAll(constraint2.equations)
+            } else {
+                constraintList.add(constraint2)
+            }
+
+            val mergedConstraints = computeOverallIntersectionSolution(constraintList)
+
+            return Transformation(
+                type = Transformation.Type.Rule,
+                fromExpr = sub,
+                toExpr = ExpressionWithConstraint(expression, mergedConstraints),
+                explanation = metadata(SolverEngineExplanation.MergeConstraints),
+            )
+        }
+    }
+
+    override fun run(ctx: Context, sub: Expression): Transformation? {
+        if (sub is Equation) {
+            val solutionVariable = ctx.solutionVariables.singleOrNull() ?: return null
+
+            if (sub.variables.contains(solutionVariable)) {
+                return solveEquation.value.run(ctx.copy(constraintMerger = mergeConstraintsRule), sub)
+            }
+        }
+
+        return null
+    }
 }

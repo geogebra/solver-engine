@@ -6,6 +6,7 @@ import engine.context.emptyResourceData
 import engine.expressions.Combine
 import engine.expressions.Constants
 import engine.expressions.Expression
+import engine.expressions.ExpressionWithConstraint
 import engine.methods.stepsproducers.ContextSensitiveAlternative
 import engine.methods.stepsproducers.ContextSensitiveSelector
 import engine.methods.stepsproducers.PipelineBuilder
@@ -35,7 +36,8 @@ class Plan(
     //  doRun(ctx, sub)
 
     private fun doRun(ctx: Context, sub: Expression): Transformation? {
-        val match = pattern.findMatches(ctx, RootMatch, sub).firstOrNull() ?: return null
+        val expression = if (sub is ExpressionWithConstraint) sub.expression else sub
+        val match = pattern.findMatches(ctx, RootMatch, expression).firstOrNull() ?: return null
 
         return stepsProducer.produceSteps(ctx, sub)?.let { steps ->
             val toExpr = steps.last().toExpr.withOrigin(Combine(listOf(sub)))

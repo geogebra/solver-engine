@@ -87,6 +87,8 @@ enum class SolvableKey(val rule: RunnerMethod) {
     NegateBothSides(SolvableRules.NegateBothSides),
 
     FlipSolvable(SolvableRules.FlipSolvable),
+
+    TakeRootOfBothSides(SolvableRules.TakeRootOfBothSides),
 }
 
 /**
@@ -459,6 +461,26 @@ enum class EquationsExplanation(
      * E.g. 7 = 3x -> 3x = 7
      */
     FlipEquation(SolvableKey.FlipSolvable),
+
+    /**
+     * Take the square root of both sides of an equation of the form
+     * x^n = non-zero constant and simplify the result
+     *
+     * E.g. x^2 = 9 -> x = +/-sqrt[3]
+     *      x^3 = 27 -> x = 3
+     *      x^5 = -2 -> x = root[-2, 5]
+     */
+    TakeRootOfBothSidesAndSimplify(SolvableKey.TakeRootOfBothSides, simplify = true),
+
+    /**
+     * Take the square root of both sides of an equation of the form
+     * x^n = non-zero constant.
+     *
+     * E.g. x^2 = 9 -> x = +/-sqrt[9]
+     *      x^3 = 5 -> x = root[5, 3]
+     *      x^5 = -2 -> x = root[-2, 5]
+     */
+    TakeRootOfBothSides(SolvableKey.TakeRootOfBothSides),
     ;
 
     override val category = "Equations"

@@ -113,5 +113,12 @@ enum class Sign(val signum: Int, val canBeZero: Boolean = false) {
             s == 0 -> ZERO
             else -> POSITIVE
         }.orMaybeZero(canBeZero)
+
+        fun fromDouble(x: Double) = when {
+            x < 0.0 -> NEGATIVE
+            x == 0.0 -> ZERO
+            x > 0.0 -> POSITIVE
+            else -> NONE
+        }
     }
 }

@@ -1,5 +1,6 @@
 package methods.equations
 
+import engine.conditions.isDefinitelyNegative
 import engine.conditions.isDefinitelyNotZero
 import engine.expressions.Comparison
 import engine.expressions.Constants
@@ -25,7 +26,6 @@ import engine.expressions.negOf
 import engine.expressions.plusMinusOf
 import engine.expressions.powerOf
 import engine.expressions.productOf
-import engine.expressions.rootOf
 import engine.expressions.setSolutionOf
 import engine.expressions.simplifiedNegOf
 import engine.expressions.simplifiedProductOf
@@ -67,7 +67,6 @@ import engine.sign.Sign
 import engine.steps.Transformation
 import engine.steps.metadata.metadata
 import engine.utility.isEven
-import engine.utility.isOdd
 import engine.utility.withMaxDP
 import java.math.BigInteger
 
@@ -143,37 +142,6 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     toExpr = equationOf(sumOf(get(lhs), missingTerm), sumOf(get(rhs), missingTerm)),
                     explanation = metadata(Explanation.CompleteTheSquare),
-                )
-            }
-        },
-    ),
-
-    TakeRootOfBothSides(
-        rule {
-            val variableTerm = VariableExpressionPattern()
-            val exponent = UnsignedIntegerPattern()
-            val lhs = powerOf(variableTerm, integerCondition(exponent) { it >= BigInteger.TWO })
-            val rhs = ConstantInSolutionVariablePattern()
-
-            onEquation(lhs, rhs) {
-                val rhsValue = get(rhs)
-                val signOfRHS = rhsValue.signOf()
-                val exponentValue = getValue(exponent)
-                val newRHS = when {
-                    exponentValue.isEven() && (signOfRHS == Sign.POSITIVE || rhsValue.doubleValue > 0) ->
-                        plusMinusOf(rootOf(move(rhs), move(exponent)))
-                    exponentValue.isOdd() ->
-                        rootOf(move(rhs), move(exponent))
-                    // This case is actually handled in another rule... but it could be here?
-                    signOfRHS == Sign.ZERO ->
-                        move(rhs)
-                    // In other cases (e.g. the RHS is negative and the power is even, the rule cannot apply
-                    else -> return@onEquation null
-                }
-                ruleResult(
-                    toExpr = equationOf(move(variableTerm), newRHS),
-                    gmAction = drag(exponent, rhs),
-                    explanation = metadata(Explanation.TakeRootOfBothSides),
                 )
             }
         },
@@ -255,7 +223,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             val variableTerm = VariableExpressionPattern()
             val exponent = UnsignedIntegerPattern()
             val lhs = powerOf(variableTerm, integerCondition(exponent) { it.isEven() })
-            val rhs = condition { it.isConstant() && it.doubleValue < 0 }
+            val rhs = condition { it.isDefinitelyNegative() }
 
             onEquation(lhs, rhs) {
                 val rhsVal = get(rhs)
@@ -291,23 +259,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
         },
     ),
 
-    ExtractSolutionFromEquationInPlusMinusForm(
-        rule {
-            val lhs = SolutionVariablePattern()
-            val rhs = ConstantInSolutionVariablePattern()
-
-            onEquation(lhs, rhs) {
-                val splitRhs = get(rhs).splitPlusMinus()
-                if (splitRhs.size < 2) {
-                    return@onEquation null
-                }
-                ruleResult(
-                    toExpr = setSolutionOf(variableListOf(move(lhs) as Variable), finiteSetOf(splitRhs)),
-                    explanation = metadata(Explanation.ExtractSolutionFromEquationInPlusMinusForm),
-                )
-            }
-        },
-    ),
+    ExtractSolutionFromEquationInPlusMinusForm(extractSolutionFromEquationInPlusMinusForm),
 
     ApplyQuadraticFormula(applyQuadraticFormula),
 
@@ -330,6 +282,22 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
     SeparateModulusEqualsExpressionWithoutConstraint(separateModulusEqualsExpressionWithoutConstraint),
 
     MultiplyBothSidesOfLikeRationalEquation(multiplyBothSidesOfLikeRationalEquation),
+}
+
+private val extractSolutionFromEquationInPlusMinusForm = rule {
+    val lhs = SolutionVariablePattern()
+    val rhs = ConstantInSolutionVariablePattern()
+
+    onEquation(lhs, rhs) {
+        val splitRhs = get(rhs).splitPlusMinus()
+        if (splitRhs.size < 2) {
+            return@onEquation null
+        }
+        ruleResult(
+            toExpr = setSolutionOf(variableListOf(move(lhs) as Variable), finiteSetOf(splitRhs)),
+            explanation = metadata(Explanation.ExtractSolutionFromEquationInPlusMinusForm),
+        )
+    }
 }
 
 private val applyQuadraticFormula = rule {

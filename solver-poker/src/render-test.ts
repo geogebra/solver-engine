@@ -10,7 +10,7 @@ import { isThroughStep } from './util';
 import { settings } from './settings';
 
 export const renderTest = (trans: TransformationJson, methodId: string) => /* HTML */ `
-  <details class="hide-in-demo-mode">
+  <details class="test-code hide-in-demo-mode">
     <summary>Test Code <button class="copy-test-code-button">Copy</button></summary>
     <pre>${generateTestSuggestion(trans, methodId)}</pre>
   </details>

@@ -13,6 +13,13 @@ enum class SolverEngineExplanation : CategorisedMetadataKey {
     ExtractPartialExpression,
 
     /**
+     * Internal step for merging nested constraints into a single constraint. Ideally it would be hidden from the user.
+     *
+     * E.g. x = y + 1 GIVEN y >= 0 GIVEN y != 0 --> x = y + 1 GIVEN y > 0
+     */
+    MergeConstraints,
+
+    /**
      * Rearrange a product so that certain factors (on which the system is going to focus) are next to each other.
      * E.g. 3^(1/2) * 2 * 3^(3/2) -> 3^(1/2) * 3^(3/2) * 2
      */

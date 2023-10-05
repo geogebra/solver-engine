@@ -13,6 +13,7 @@ contents to a new release section (e.g. _[0.x]_).
 
 - Added a checkbox to Poker to toggle between solver and JSON math formats (PLUT-691)
 - Added support for multivariate linear inequalities, such as `3a + 2b > 9` (PLUT-693)
+- Added support for solving multivariate equations for one variable which is a power e.g. `m[x^2] = 3z + 1` (PLUT-674)
 
 ### Fixed
 

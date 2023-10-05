@@ -5,6 +5,7 @@ import engine.expressions.Expression
 import engine.expressions.LabelSpace
 import engine.logger.DefaultLogger
 import engine.logger.Logger
+import engine.methods.Method
 import engine.methods.Strategy
 import engine.operators.Operator
 import java.util.function.Supplier
@@ -50,6 +51,7 @@ data class Context(
     val preferredStrategies: Map<KClass<out Strategy>, Strategy> = emptyMap(),
     val strategySelectionMode: StrategySelectionMode = StrategySelectionMode.ALL,
     val labelSpace: LabelSpace? = null,
+    val constraintMerger: Method? = null,
 ) {
     val effectivePrecision = (precision ?: DEFAULT_PRECISION).coerceIn(MINIMUM_PRECISION, MAXIMUM_PRECISION)
 

@@ -106,7 +106,7 @@ private class WhileStrategiesAvailableFirstOfRunner(val builder: StepsBuilder, a
     override fun option(strategy: Strategy) {
         if (roundSucceeded) return
         if (strategy in remainingStrategies) {
-            val result = strategy.steps.produceSteps(builder.context, builder.simpleExpression)
+            val result = strategy.steps.produceSteps(builder.context, builder.expression)
             if (result != null) {
                 val added = builder.addAlternative(strategy, result)
                 if (added) {
@@ -123,7 +123,7 @@ private class WhileStrategiesAvailableFirstOfRunner(val builder: StepsBuilder, a
 
     override fun option(stepsProducer: StepsProducer) {
         if (roundSucceeded) return
-        val steps = stepsProducer.produceSteps(builder.context, builder.simpleExpression)
+        val steps = stepsProducer.produceSteps(builder.context, builder.expression)
         if (steps != null) {
             builder.addSteps(steps)
             roundSucceeded = true

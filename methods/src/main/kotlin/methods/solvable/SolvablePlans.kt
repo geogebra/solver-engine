@@ -4,10 +4,9 @@ import engine.context.Context
 import engine.expressions.AbsoluteValue
 import engine.expressions.Equation
 import engine.expressions.Expression
+import engine.expressions.ExpressionWithConstraint
 import engine.expressions.Power
 import engine.methods.Method
-import engine.methods.Runner
-import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.StepsBuilder
 import engine.methods.stepsproducers.steps
@@ -45,36 +44,32 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
         )
     }
 
-    inner class ApplyRuleAndSimplify(private val key: SolvableKey) : RunnerMethod {
+    inner class ApplyRuleAndSimplify(private val key: SolvableKey) : Method {
 
-        override val name = key.name
-        override val runner = object : Runner {
-            override fun run(ctx: Context, sub: Expression): Transformation? {
-                val initialStep = key.rule.tryExecute(ctx, sub) ?: return null
+        override fun tryExecute(ctx: Context, sub: Expression): Transformation? {
+            val expression = if (sub is ExpressionWithConstraint) sub.expression else sub
 
-                val builder = StepsBuilder(ctx, sub)
-                val oldConstraint = builder.constraint
+            val initialStep = key.rule.tryExecute(ctx, expression) ?: return null
 
-                builder.addStep(initialStep)
+            val builder = StepsBuilder(ctx, expression)
+            builder.addStep(initialStep)
 
-                simplificationPlan.tryExecute(ctx, builder.simpleExpression)?.let { builder.addStep(it) }
+            simplificationPlan.tryExecute(ctx, builder.simpleExpression)?.let { builder.addStep(it) }
 
-                val constraint = builder.constraint
-
-                if (constraintSimplificationPlan != null && constraint != null && constraint != oldConstraint) {
-                    constraintSimplificationPlan.tryExecute(ctx, constraint)?.let { builder.addStep(it) }
-                }
-
-                val key = getExplanationKey(key, ctx, builder.simpleExpression)
-
-                return Transformation(
-                    type = Transformation.Type.Plan,
-                    fromExpr = sub,
-                    toExpr = builder.expression,
-                    steps = builder.getFinalSteps(),
-                    explanation = Metadata(key, initialStep.explanation!!.mappedParams),
-                )
+            val constraint = builder.constraint
+            if (constraintSimplificationPlan != null && constraint != null) {
+                constraintSimplificationPlan.tryExecute(ctx, constraint)?.let { builder.addStep(it) }
             }
+
+            val explanationKey = getExplanationKey(key, ctx, builder.simpleExpression)
+
+            return Transformation(
+                type = Transformation.Type.Plan,
+                fromExpr = expression,
+                toExpr = builder.expression,
+                steps = builder.getFinalSteps(),
+                explanation = Metadata(explanationKey, initialStep.explanation!!.mappedParams),
+            )
         }
     }
 
@@ -108,6 +103,8 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
             whilePossible(PolynomialsPlans.ExpandPolynomialExpressionWithoutNormalization)
         }
     }
+
+    val takeRootOfBothSidesAndSimplify = ApplyRuleAndSimplify(SolvableKey.TakeRootOfBothSides)
 
     /**
      * Only rearrange when the variable subexpression is "atomic". For example: don't reorganize

@@ -6,7 +6,6 @@ import methods.equations.EquationsRules.ApplyQuadraticFormula
 import methods.equations.EquationsRules.EliminateConstantFactorOfLhsWithZeroRhs
 import methods.equations.EquationsRules.MultiplyByInverseOfLeadingCoefficient
 import methods.equations.EquationsRules.SeparateEquationInPlusMinusForm
-import methods.equations.EquationsRules.TakeRootOfBothSides
 import org.junit.jupiter.api.Test
 
 class EquationRulesTest {
@@ -47,15 +46,6 @@ class EquationRulesTest {
             EquationsRules.CompleteTheSquare,
             "[x^2] + [1/2]x + [([[1/2]/2])^2] = 10 + [([[1/2]/2])^2]",
         )
-    }
-
-    @Test
-    fun testTakeRootOfBothSides() {
-        testRuleInX("[x ^ 2] = 4", TakeRootOfBothSides, "x = +/-sqrt[4]")
-        testRuleInX("[x ^ 3] = 2", TakeRootOfBothSides, "x = root[2, 3]")
-        testRuleInX("[x ^ 5] = -8", TakeRootOfBothSides, "x = root[-8, 5]")
-        testRuleInX("[x ^ 4] = 0", TakeRootOfBothSides, "x = 0")
-        testRuleInX("[x ^ 2] = -1", TakeRootOfBothSides, null)
     }
 
     @Test

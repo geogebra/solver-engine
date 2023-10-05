@@ -34,16 +34,6 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     MultiplyByInverseOfLeadingCoefficient,
 
     /**
-     * Take the square root of both sides of an equation of the form
-     * x^n = non-zero constant.
-     *
-     * E.g. x^2 = 9 -> x = +/-sqrt[9]
-     *      x^3 = 5 -> x = root[5, 3]
-     *      x^5 = -2 -> x = root[-2, 5]
-     */
-    TakeRootOfBothSides,
-
-    /**
      * Transform the equation x^n = 0 into x = 0 (with n > 0).
      */
     TakeRootOfBothSidesRHSIsZero,

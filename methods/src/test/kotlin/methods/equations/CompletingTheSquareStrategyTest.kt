@@ -6,7 +6,6 @@ import engine.methods.MethodTestCase
 import engine.methods.getPlan
 import engine.methods.testMethod
 import engine.methods.testMethodInX
-import methods.constantexpressions.ConstantExpressionsExplanation
 import methods.equations.EquationSolvingStrategy.CompletingTheSquare
 import methods.factor.FactorExplanation
 import methods.polynomials.PolynomialsExplanation
@@ -201,7 +200,7 @@ class CompletingTheSquareStrategyTest {
                 fromExpr = "[(x - 3) ^ 2] = 14"
                 toExpr = "x - 3 = +/-sqrt[14]"
                 explanation {
-                    key = EquationsExplanation.TakeRootOfBothSides
+                    key = methods.solvable.EquationsExplanation.TakeRootOfBothSides
                 }
             }
 
@@ -323,17 +322,9 @@ class CompletingTheSquareStrategyTest {
 
             step {
                 fromExpr = "[(x + [5 / 4]) ^ 2] = [81 / 16]"
-                toExpr = "x + [5 / 4] = +/-sqrt[[81 / 16]]"
-                explanation {
-                    key = EquationsExplanation.TakeRootOfBothSides
-                }
-            }
-
-            step {
-                fromExpr = "x + [5 / 4] = +/-sqrt[[81 / 16]]"
                 toExpr = "x + [5 / 4] = +/-[9 / 4]"
                 explanation {
-                    key = ConstantExpressionsExplanation.SimplifyRootsInExpression
+                    key = methods.solvable.EquationsExplanation.TakeRootOfBothSidesAndSimplify
                 }
             }
 
@@ -443,7 +434,6 @@ class CompletingTheSquareStrategyTest {
                 }
             }
 
-            step { }
             step { }
             step { }
             step { }
@@ -585,7 +575,7 @@ class CompletingTheSquareStrategyTest {
                 fromExpr = "[([(x + 1) ^ 2] + 1) ^ 2] = 7"
                 toExpr = "[(x + 1) ^ 2] + 1 = +/-sqrt[7]"
                 explanation {
-                    key = EquationsExplanation.TakeRootOfBothSides
+                    key = methods.solvable.EquationsExplanation.TakeRootOfBothSides
                 }
             }
 

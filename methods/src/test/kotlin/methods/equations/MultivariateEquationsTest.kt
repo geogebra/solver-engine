@@ -1,8 +1,11 @@
 package methods.equations
 
 import engine.context.Context
+import engine.methods.SolverEngineExplanation
 import engine.methods.testMethod
+import engine.methods.testMethodInX
 import methods.general.GeneralExplanation
+import methods.inequalities.InequalitiesExplanation
 import methods.inequations.InequationsExplanation
 import kotlin.test.Test
 
@@ -222,9 +225,8 @@ class MultivariateEquationsTest {
     }
 
     @Test
-    fun `test linear equation with two constraints`() = testMethod {
+    fun `test linear equation with two constraints`() = testMethodInX {
         method = EquationsPlans.SolveEquation
-        context = Context(solutionVariables = listOf("x"))
         inputExpr = "(x z + 1) (y + 2) = 1"
 
         check {
@@ -254,9 +256,19 @@ class MultivariateEquationsTest {
             step {
                 fromExpr = "x z = [1 / y + 2] - 1 GIVEN SetSolution[y: /reals/ \\ {-2}]"
                 toExpr = "x = [[1 / y + 2] - 1 / z] " +
-                    "GIVEN SetSolution[y: /reals/ \\ {-2}] AND SetSolution[z: /reals/ \\ {0}]"
+                    "GIVEN SetSolution[z: /reals/ \\ {0}] GIVEN SetSolution[y: /reals/ \\ {-2}]"
                 explanation {
                     key = methods.solvable.EquationsExplanation.DivideByCoefficientOfVariableAndSimplifyMultivariate
+                }
+            }
+
+            step {
+                fromExpr = "x = [[1 / y + 2] - 1 / z] " +
+                    "GIVEN SetSolution[z: /reals/ \\ {0}] GIVEN SetSolution[y: /reals/ \\ {-2}]"
+                toExpr = "x = [[1 / y + 2] - 1 / z] " +
+                    "GIVEN SetSolution[y: /reals/ \\ {-2}] AND SetSolution[z: /reals/ \\ {0}]"
+                explanation {
+                    key = SolverEngineExplanation.MergeConstraints
                 }
             }
 
@@ -267,6 +279,217 @@ class MultivariateEquationsTest {
                     "GIVEN SetSolution[y: /reals/ \\ {-2}] AND SetSolution[z: /reals/ \\ {0}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test roots method with odd exponent`() = testMethod {
+        method = EquationsPlans.SolveEquation
+        context = context.copy(solutionVariables = listOf("a"))
+        inputExpr = "[a ^ 3] b + c = 0"
+
+        check {
+            fromExpr = "[a ^ 3] b + c = 0"
+            toExpr = "SetSolution[a: {-root[[c / b], 3]}] GIVEN SetSolution[b: /reals/ \\ {0}]"
+            explanation {
+                key = EquationsExplanation.SolveEquationUsingRootsMethod
+            }
+
+            step {
+                fromExpr = "[a ^ 3] b + c = 0"
+                toExpr = "[a ^ 3] b = -c"
+                explanation {
+                    key = methods.solvable.EquationsExplanation.MoveConstantsInVariablesToTheRightAndSimplify
+                }
+            }
+
+            step {
+                fromExpr = "[a ^ 3] b = -c"
+                toExpr = "[a ^ 3] = -[c / b] GIVEN SetSolution[b: /reals/ \\ {0}]"
+                explanation {
+                    key = methods.solvable.EquationsExplanation.DivideByCoefficientOfVariableAndSimplifyMultivariate
+                }
+
+                step {
+                    fromExpr = "[a ^ 3] b = -c"
+                    toExpr = "[[a ^ 3] b / b] = [-c / b] GIVEN b != 0"
+                    explanation {
+                        key = methods.solvable.EquationsExplanation.DivideByCoefficientOfVariableMultivariate
+                    }
+                }
+
+                step {
+                    fromExpr = "[[a ^ 3] b / b] = [-c / b] GIVEN b != 0"
+                    toExpr = "[a ^ 3] = -[c / b] GIVEN b != 0"
+                    explanation {
+                        key = EquationsExplanation.SimplifyEquation
+                    }
+                }
+
+                step {
+                    fromExpr = "[a ^ 3] = -[c / b] GIVEN b != 0"
+                    toExpr = "[a ^ 3] = -[c / b] GIVEN SetSolution[b: /reals/ \\ {0}]"
+                    explanation {
+                        key = EquationsExplanation.SimplifyConstraint
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "[a ^ 3] = -[c / b] GIVEN SetSolution[b: /reals/ \\ {0}]"
+                toExpr = "a = -root[[c / b], 3] GIVEN SetSolution[b: /reals/ \\ {0}]"
+                explanation {
+                    key = methods.solvable.EquationsExplanation.TakeRootOfBothSidesAndSimplify
+                }
+
+                step {
+                    fromExpr = "[a ^ 3] = -[c / b]"
+                    toExpr = "a = root[-[c / b], 3]"
+                    explanation {
+                        key = methods.solvable.EquationsExplanation.TakeRootOfBothSides
+                    }
+                }
+
+                step {
+                    fromExpr = "a = root[-[c / b], 3]"
+                    toExpr = "a = -root[[c / b], 3]"
+                    explanation {
+                        key = GeneralExplanation.RewriteOddRootOfNegative
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "a = -root[[c / b], 3] GIVEN SetSolution[b: /reals/ \\ {0}]"
+                toExpr = "SetSolution[a: {-root[[c / b], 3]}] GIVEN SetSolution[b: /reals/ \\ {0}]"
+                explanation {
+                    key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test roots method with constraints that simplify`() = testMethodInX {
+        method = EquationsPlans.SolveEquation
+        inputExpr = "m [x ^ 2] = 2 [m ^ 2]"
+
+        check {
+            fromExpr = "m [x ^ 2] = 2 [m ^ 2]"
+            toExpr = "SetSolution[x: {-sqrt[2 m], sqrt[2 m]}] GIVEN SetSolution[m: (0, /infinity/)]"
+            explanation {
+                key = EquationsExplanation.SolveEquationUsingRootsMethod
+            }
+
+            step {
+                fromExpr = "m [x ^ 2] = 2 [m ^ 2]"
+                toExpr = "[x ^ 2] = 2 m GIVEN SetSolution[m: /reals/ \\ {0}]"
+                explanation {
+                    key = methods.solvable.EquationsExplanation.DivideByCoefficientOfVariableAndSimplifyMultivariate
+                }
+
+                step {
+                    fromExpr = "m [x ^ 2] = 2 [m ^ 2]"
+                    toExpr = "[m [x ^ 2] / m] = [2 [m ^ 2] / m] GIVEN m != 0"
+                    explanation {
+                        key = methods.solvable.EquationsExplanation.DivideByCoefficientOfVariableMultivariate
+                    }
+                }
+
+                step {
+                    fromExpr = "[m [x ^ 2] / m] = [2 [m ^ 2] / m] GIVEN m != 0"
+                    toExpr = "[x ^ 2] = 2 m GIVEN m != 0"
+                    explanation {
+                        key = EquationsExplanation.SimplifyEquation
+                    }
+                }
+
+                step {
+                    fromExpr = "[x ^ 2] = 2 m GIVEN m != 0"
+                    toExpr = "[x ^ 2] = 2 m GIVEN SetSolution[m: /reals/ \\ {0}]"
+                    explanation {
+                        key = EquationsExplanation.SimplifyConstraint
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "[x ^ 2] = 2 m GIVEN SetSolution[m: /reals/ \\ {0}]"
+                toExpr = "x = +/-sqrt[2 m] GIVEN SetSolution[m: [0, /infinity/)] GIVEN SetSolution[m: /reals/ \\ {0}]"
+                explanation {
+                    key = methods.solvable.EquationsExplanation.TakeRootOfBothSidesAndSimplify
+                }
+
+                step {
+                    fromExpr = "[x ^ 2] = 2 m"
+                    toExpr = "x = +/-sqrt[2 m] GIVEN 2 m >= 0"
+                    explanation {
+                        key = methods.solvable.EquationsExplanation.TakeRootOfBothSides
+                    }
+                }
+
+                step {
+                    fromExpr = "x = +/-sqrt[2 m] GIVEN 2 m >= 0"
+                    toExpr = "x = +/-sqrt[2 m] GIVEN SetSolution[m: [0, /infinity/)]"
+                    explanation {
+                        key = EquationsExplanation.SimplifyConstraint
+                    }
+
+                    step {
+                        fromExpr = "2 m >= 0"
+                        toExpr = "SetSolution[m: [0, /infinity/)]"
+                        explanation {
+                            key = InequalitiesExplanation.SolveLinearInequality
+                        }
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "x = +/-sqrt[2 m] GIVEN SetSolution[m: [0, /infinity/)] GIVEN SetSolution[m: /reals/ \\ {0}]"
+                toExpr = "x = +/-sqrt[2 m] GIVEN SetSolution[m: (0, /infinity/)]"
+                explanation {
+                    key = SolverEngineExplanation.MergeConstraints
+                }
+            }
+
+            step {
+                fromExpr = "x = +/-sqrt[2 m] GIVEN SetSolution[m: (0, /infinity/)]"
+                toExpr = "SetSolution[x: {-sqrt[2 m], sqrt[2 m]}] GIVEN SetSolution[m: (0, /infinity/)]"
+                explanation {
+                    key = EquationsExplanation.ExtractSolutionFromEquationInPlusMinusForm
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test roots method with no solution`() = testMethodInX {
+        method = EquationsPlans.SolveEquation
+        inputExpr = "[x ^ 6] + [y ^ 2] + 1 = 0"
+
+        check {
+            fromExpr = "[x ^ 6] + [y ^ 2] + 1 = 0"
+            toExpr = "Contradiction[x: [x ^ 6] = -[y ^ 2] - 1]"
+            explanation {
+                key = EquationsExplanation.SolveEquationUsingRootsMethod
+            }
+
+            step {
+                fromExpr = "[x ^ 6] + [y ^ 2] + 1 = 0"
+                toExpr = "[x ^ 6] = -[y ^ 2] - 1"
+                explanation {
+                    key = methods.solvable.EquationsExplanation.MoveConstantsInVariablesToTheRightAndSimplify
+                }
+            }
+
+            step {
+                fromExpr = "[x ^ 6] = -[y ^ 2] - 1"
+                toExpr = "Contradiction[x: [x ^ 6] = -[y ^ 2] - 1]"
+                explanation {
+                    key = EquationsExplanation.ExtractSolutionFromEvenPowerEqualsNegative
                 }
             }
         }

@@ -4,7 +4,6 @@ import engine.context.Context
 import engine.expressions.Expression
 import engine.expressions.ExpressionWithConstraint
 import engine.expressions.LabelSpace
-import engine.expressions.StatementSystem
 import engine.methods.Strategy
 import engine.operators.UndefinedOperator
 import engine.steps.Alternative
@@ -75,20 +74,6 @@ class StepsBuilder(
         steps.replaceAll { it.clearLabels(labelSpace) }
     }
 
-    private fun mergeConstraints(oldConstraints: Expression, newConstraints: Expression): Expression {
-        val oldConstraintsList = when {
-            oldConstraints is StatementSystem -> oldConstraints.equations
-            else -> listOf(oldConstraints)
-        }
-
-        val newConstraintsList = when {
-            newConstraints is StatementSystem -> newConstraints.equations
-            else -> listOf(newConstraints)
-        }
-
-        return StatementSystem(oldConstraintsList + newConstraintsList)
-    }
-
     fun addStep(step: Transformation) {
         /**
          * If `step` results in `undefined` for a subexpression of the current
@@ -99,20 +84,9 @@ class StepsBuilder(
          * --> [1 / 0] + 2
          * --> undefined ([1/ 0] is undefined)
          */
-
-        val oldSub = sub
-        val toExpr = step.toExpr
-
-        // Is this going to cause issues for e.g. explanation path mappings?
-
-        val substitution = when {
-            toExpr.operator is UndefinedOperator -> toExpr
-            toExpr is ExpressionWithConstraint && oldSub is ExpressionWithConstraint ->
-                ExpressionWithConstraint(
-                    oldSub.expression.substitute(step.fromExpr, toExpr.expression),
-                    mergeConstraints(oldSub.constraint, toExpr.constraint),
-                )
-            else -> oldSub.substitute(step.fromExpr, toExpr)
+        val substitution = when (step.toExpr.operator) {
+            UndefinedOperator -> step.toExpr
+            else -> sub.substitute(step.fromExpr, step.toExpr)
         }
 
         steps.add(

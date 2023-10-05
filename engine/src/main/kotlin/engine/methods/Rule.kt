@@ -3,6 +3,7 @@ package engine.methods
 import engine.context.Context
 import engine.expressionbuilder.MappedExpressionBuilder
 import engine.expressions.Expression
+import engine.expressions.ExpressionWithConstraint
 import engine.patterns.Match
 import engine.patterns.Pattern
 import engine.patterns.RootMatch
@@ -18,8 +19,10 @@ class Rule(
 ) : Runner {
 
     override fun run(ctx: Context, sub: Expression): Transformation? {
-        for (match in pattern.findMatches(ctx, RootMatch, sub)) {
-            val builder = RuleResultBuilder(ctx, sub, match)
+        val expression = if (sub is ExpressionWithConstraint) sub.expression else sub
+
+        for (match in pattern.findMatches(ctx, RootMatch, expression)) {
+            val builder = RuleResultBuilder(ctx, expression, match)
             builder.transformation()?.let {
                 return it
             }

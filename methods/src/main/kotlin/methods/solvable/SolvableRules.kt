@@ -10,11 +10,15 @@ import engine.expressions.ExpressionWithConstraint
 import engine.expressions.Fraction
 import engine.expressions.Introduce
 import engine.expressions.Sum
+import engine.expressions.equationOf
 import engine.expressions.fractionOf
+import engine.expressions.greaterThanEqualOf
 import engine.expressions.inequationOf
 import engine.expressions.inverse
 import engine.expressions.isSignedFraction
+import engine.expressions.plusMinusOf
 import engine.expressions.productOf
+import engine.expressions.rootOf
 import engine.expressions.simplifiedNegOf
 import engine.expressions.sumOf
 import engine.expressions.withoutNegOrPlus
@@ -29,15 +33,19 @@ import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.VariableExpressionPattern
 import engine.patterns.condition
 import engine.patterns.fractionOf
+import engine.patterns.integerCondition
 import engine.patterns.negOf
 import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
+import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
 import engine.patterns.withOptionalConstantCoefficient
 import engine.patterns.withOptionalConstantCoefficientInSolutionVariables
 import engine.sign.Sign
 import engine.steps.metadata.Metadata
+import engine.utility.isEven
+import engine.utility.isOdd
 import engine.utility.lcm
 import methods.solvable.DenominatorExtractor.extractDenominator
 import java.math.BigInteger
@@ -397,6 +405,47 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
     MoveTermsNotContainingModulusToTheRight(moveTermsNotContainingModulusToTheRight),
 
     MoveTermsNotContainingModulusToTheLeft(moveTermsNotContainingModulusToTheLeft),
+
+    TakeRootOfBothSides(
+        rule {
+            val variableTerm = VariableExpressionPattern()
+            val exponent = UnsignedIntegerPattern()
+            val lhs = powerOf(variableTerm, integerCondition(exponent) { it >= BigInteger.TWO })
+            val rhs = ConstantInSolutionVariablePattern()
+
+            onEquation(lhs, rhs) {
+                val rhsValue = get(rhs)
+                val signOfRHS = rhsValue.signOf()
+                val exponentValue = getValue(exponent)
+                val toExpr = when {
+                    // This case is actually handled in another rule... but it could be here?
+                    signOfRHS == Sign.ZERO ->
+                        equationOf(move(variableTerm), move(rhs))
+                    exponentValue.isEven() -> {
+                        val toEq = equationOf(move(variableTerm), plusMinusOf(rootOf(move(rhs), move(exponent))))
+                        when {
+                            signOfRHS.implies(Sign.NON_NEGATIVE) || rhsValue.doubleValue > 0 -> toEq
+                            !rhsValue.isConstant() -> ExpressionWithConstraint(
+                                toEq,
+                                greaterThanEqualOf(rhsValue, Constants.Zero),
+                            )
+                            else -> return@onEquation null
+                        }
+                    }
+                    exponentValue.isOdd() ->
+                        equationOf(move(variableTerm), rootOf(move(rhs), move(exponent)))
+
+                    // In other cases (e.g. the RHS is negative and the power is even, the rule cannot apply
+                    else -> return@onEquation null
+                }
+                ruleResult(
+                    toExpr = toExpr,
+                    gmAction = drag(exponent, rhs),
+                    explanation = solvableExplanation(SolvableKey.TakeRootOfBothSides),
+                )
+            }
+        },
+    ),
 }
 
 private val moveTermsNotContainingModulusToTheRight = rule {

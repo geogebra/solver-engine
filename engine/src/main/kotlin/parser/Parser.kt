@@ -103,11 +103,9 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
         }
     }
 
-    override fun visitStatementWithConstraint(ctx: ExpressionParser.StatementWithConstraintContext): Expression {
-        return if (ctx.constraint == null) {
-            visit(ctx.stmt)
-        } else {
-            makeExpression(ExpressionWithConstraintOperator, listOf(visit(ctx.stmt), visit(ctx.constraint)))
+    override fun visitStatementWithConstraints(ctx: ExpressionParser.StatementWithConstraintsContext): Expression {
+        return ctx.constraints.fold(visit(ctx.stmt)) { stmt, constraint ->
+            makeExpression(ExpressionWithConstraintOperator, listOf(stmt, visit(constraint)))
         }
     }
 

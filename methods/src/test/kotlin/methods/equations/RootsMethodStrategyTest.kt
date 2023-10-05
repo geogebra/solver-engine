@@ -208,17 +208,9 @@ class RootsMethodStrategyTest {
 
             step {
                 fromExpr = "[x ^ 2] = [3 / 2]"
-                toExpr = "x = +/-sqrt[[3 / 2]]"
-                explanation {
-                    key = EquationsExplanation.TakeRootOfBothSides
-                }
-            }
-
-            step {
-                fromExpr = "x = +/-sqrt[[3 / 2]]"
                 toExpr = "x = +/-[sqrt[6] / 2]"
                 explanation {
-                    key = EquationsExplanation.SimplifyEquation
+                    key = methods.solvable.EquationsExplanation.TakeRootOfBothSidesAndSimplify
                 }
             }
 
@@ -278,17 +270,9 @@ class RootsMethodStrategyTest {
 
             step {
                 fromExpr = "[y ^ 2] = [7 / 2]"
-                toExpr = "y = +/-sqrt[[7 / 2]]"
-                explanation {
-                    key = EquationsExplanation.TakeRootOfBothSides
-                }
-            }
-
-            step {
-                fromExpr = "y = +/-sqrt[[7 / 2]]"
                 toExpr = "y = +/-[sqrt[14] / 2]"
                 explanation {
-                    key = EquationsExplanation.SimplifyEquation
+                    key = methods.solvable.EquationsExplanation.TakeRootOfBothSidesAndSimplify
                 }
             }
 
@@ -326,17 +310,9 @@ class RootsMethodStrategyTest {
 
             step {
                 fromExpr = "[([x ^ 2] + 1) ^ 2] = 4"
-                toExpr = "[x ^ 2] + 1 = +/-sqrt[4]"
-                explanation {
-                    key = EquationsExplanation.TakeRootOfBothSides
-                }
-            }
-
-            step {
-                fromExpr = "[x ^ 2] + 1 = +/-sqrt[4]"
                 toExpr = "[x ^ 2] + 1 = +/-2"
                 explanation {
-                    key = ConstantExpressionsExplanation.SimplifyRootsInExpression
+                    key = methods.solvable.EquationsExplanation.TakeRootOfBothSidesAndSimplify
                 }
             }
 
@@ -421,7 +397,7 @@ class RootsMethodStrategyTest {
                 fromExpr = "[([x ^ 2] + 3 x + 1) ^ 3] = 3"
                 toExpr = "[x ^ 2] + 3 x + 1 = root[3, 3]"
                 explanation {
-                    key = EquationsExplanation.TakeRootOfBothSides
+                    key = methods.solvable.EquationsExplanation.TakeRootOfBothSides
                 }
             }
 

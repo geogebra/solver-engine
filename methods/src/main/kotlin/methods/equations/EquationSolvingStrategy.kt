@@ -52,7 +52,7 @@ enum class EquationSolvingStrategy(
                         option(EquationsRules.TakeRootOfBothSidesRHSIsZero)
                         // x^2k = something positive
                         // x^(2k+1) = something nonzero
-                        option(EquationsRules.TakeRootOfBothSides)
+                        option(solvablePlansForEquations.takeRootOfBothSidesAndSimplify)
                     }
 
                     apply(equationSolvingSteps)
