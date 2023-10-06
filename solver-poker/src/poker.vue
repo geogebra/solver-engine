@@ -161,6 +161,22 @@ const resultSolverFormat_Helper = computedAsync<
 
 fetchDefaultTranslations();
 
+/** This is a convenience mode for local development. When enabled, this makes it so that
+ * you don't have to press enter to submit the form.
+ *
+ * You can enable this by creating a solver-poker/.env.local file that has
+ * `VITE_AUTO_SUBMISSION_MODE=true` in it. Then run Poker locally (rebuilding first, if
+ * you are not using `npm run poker-dev`) */
+const autoSubmissionMode =
+  (import.meta as TodoFigureOutType).env.VITE_AUTO_SUBMISSION_MODE === 'true' &&
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+if (autoSubmissionMode) {
+  watch(textInTheMathInputTextbox, () => submitForm());
+}
+
+type TodoFigureOutType = any;
+
 // Set `document.title`
 const stopChangeTitleWatcher = watchEffect(() => {
   const info = versionInfo.value;
@@ -359,7 +375,7 @@ onMounted(() => {
         placeholder="Expression"
         size="30"
       />
-      <input type="submit" value="Submit" />
+      <input type="submit" value="Submit" v-if="!autoSubmissionMode" />
       <input
         v-if="versionInfo && versionInfo.deploymentName !== 'main'"
         type="button"

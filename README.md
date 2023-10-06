@@ -74,6 +74,9 @@ changes and automatically reflect those changes in the browser. The console outp
 look funny because it is showing the output of both `tsc` and `vite` at the same time, but
 that saves having to open two different terminals.
 
+If you create a solver-poker/.env.local file that says `VITE_AUTO_SUBMISSION_MODE=true`,
+then using Poker locally may be easier. See the code for details.
+
 ### Extra Help Testing
 
 Looking at the test results for bigger tests can be difficult. To make it easier, we made
