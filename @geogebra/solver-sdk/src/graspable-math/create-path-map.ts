@@ -108,11 +108,8 @@ function annotate(
         ) {
           annotate(addend, tree.operands[i], map);
         } else {
-          appendMap(
-            addend.children[0]!,
-            path + (addendHasBrackets ? ':op()' : ':op'),
-            map,
-          );
+          const opStr = getOpStr(tree.operands[i]);
+          appendMap(addend.children[0]!, `${path}:${opStr}`, map);
           annotate(addend.children[1], tree.operands[i], map);
         }
       });
@@ -135,7 +132,8 @@ function annotate(
         if (tree.operands[i].type === 'DivideBy') {
           annotate(factor, tree.operands[i], map);
         } else {
-          appendMap(factor.children[0]!, `${tree.path}/${i}:op`, map);
+          const opStr = getOpStr(tree.operands[i]);
+          appendMap(factor.children[0]!, `${tree.path}/${i}:${opStr}`, map);
           annotate(factor.children[1], tree.operands[i], map);
         }
       });
@@ -152,17 +150,16 @@ function annotate(
           // select all numerator terms with that path
           appendMap(muldiv, `${tree.path}/0`, map);
           appendMap(muldiv, `${tree.path}/0/${i}:group`, map);
-          appendMap(muldiv.children[0]!, `${tree.path}/0/${i}:op`, map);
-          annotate(
-            muldiv.children[1],
-            (tree.operands[0] as NestedExpression).operands[i],
-            map,
-          );
+          const factor = (tree.operands[0] as NestedExpression).operands[i];
+          const opStr = getOpStr(factor);
+          appendMap(muldiv.children[0]!, `${tree.path}/0/${i}:${opStr}`, map);
+          annotate(muldiv.children[1], factor, map);
         });
       } else {
         // single node in numerator
         appendMap(gmTree.children[0], `${tree.path}/0:group`, map);
-        appendMap(gmTree.children[0].children[0]!, `${tree.path}/0:op`, map);
+        const opStr = getOpStr(tree.operands[0]);
+        appendMap(gmTree.children[0].children[0]!, `${tree.path}/0:${opStr}`, map);
         annotate(gmTree.children[0].children[1], tree.operands[0], map);
       }
 
@@ -174,18 +171,17 @@ function annotate(
           // select all denominator terms with that path
           appendMap(muldiv, `${tree.path}/1`, map);
           appendMap(muldiv, `${tree.path}/1/${i}:group`, map);
-          appendMap(muldiv.children[0]!, `${tree.path}/1/${i}:op`, map);
-          annotate(
-            muldiv.children[1],
-            (tree.operands[1] as NestedExpression).operands[i],
-            map,
-          );
+          const factor = (tree.operands[1] as NestedExpression).operands[i];
+          const opStr = getOpStr(factor);
+          appendMap(muldiv.children[0]!, `${tree.path}/1/${i}:${opStr}`, map);
+          annotate(muldiv.children[1], factor, map);
         });
       } else {
         // single node in denominator
         const node = gmTree.children[gmTree.children.length - 1];
         appendMap(node, `${tree.path}/1:group`, map);
-        appendMap(node.children[0]!, `${tree.path}/1:op`, map);
+        const opStr = getOpStr(tree.operands[0]);
+        appendMap(node.children[0]!, `${tree.path}/1:${opStr}`, map);
         annotate(node.children[1], tree.operands[1], map);
       }
       break;
@@ -302,6 +298,11 @@ function rearrangeNegativeProducts(
         ),
       };
   }
+}
+
+function getOpStr(expr: ExpressionTree): string {
+  const hasBrackets = !!expr.decorators?.length;
+  return hasBrackets ? 'op()' : 'op';
 }
 
 /** Add entry to path map array. */

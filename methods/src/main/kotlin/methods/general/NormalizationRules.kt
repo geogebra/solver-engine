@@ -214,13 +214,17 @@ private val reorderProductSingleStep =
                     val sortedFirstPartOfProductChildren =
                         (productChildren.take(i) + movedCurrent).sortedWith(priorityComparator)
                     val toExpr = productOf(sortedFirstPartOfProductChildren + productChildren.drop(i + 1))
+                    val target = productChildren[sortedFirstPartOfProductChildren.indexOf(movedCurrent)]
                     return@onPattern ruleResult(
                         tags = listOf(Transformation.Tag.Rearrangement),
                         toExpr = toExpr,
                         explanation = metadata(Explanation.ReorderProduct),
                         gmAction = drag(
                             current,
-                            productChildren[sortedFirstPartOfProductChildren.indexOf(movedCurrent)],
+                            PM.Group,
+                            target,
+                            // in (2+a)*x, we need to target (2+a) when commuting the x to the left
+                            if (target is Sum) PM.Parens else null,
                             DragTargetPosition.LeftOf,
                         ),
                     )

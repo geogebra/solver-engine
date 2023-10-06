@@ -79,13 +79,13 @@ class GeneralRulesTest {
             "(-2) * (-3)",
             SimplifyProductWithTwoNegativeFactors,
             "2 * 3",
-            GmAction("Drag", "./1/0:op", "./0/0:op"),
+            GmAction("Drag", "./1:op", "./0:op"),
         )
         testRule(
             "-3*(-a)",
             SimplifyProductWithTwoNegativeFactors,
             "3 a",
-            GmAction("Drag", "./0/1/0:op", ".:op"),
+            GmAction("Drag", "./0/1:op", ".:op"),
         )
         testRule("(-x) * y * (-12) * 5", SimplifyProductWithTwoNegativeFactors, "x y * 12 * 5")
         testRule("-x * y * (-12) * 5", SimplifyProductWithTwoNegativeFactors, "x y * 12 * 5")

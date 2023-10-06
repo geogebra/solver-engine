@@ -263,7 +263,7 @@ private val applyFoilMethod =
 
             ruleResult(
                 toExpr = toExpr,
-                gmAction = doubleTap(sum2, GmPathModifier.OuterOperator),
+                gmAction = doubleTap(sum2, GmPathModifier.OpenParens),
                 explanation = metadata(Explanation.ApplyFoilMethod),
             )
         }
@@ -291,7 +291,7 @@ private val expandDoubleBrackets =
 
             ruleResult(
                 toExpr = toExpr,
-                gmAction = doubleTap(sum2, GmPathModifier.OuterOperator),
+                gmAction = doubleTap(sum2, GmPathModifier.OpenParens),
                 explanation = metadata(Explanation.ExpandDoubleBrackets),
             )
         }

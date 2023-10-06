@@ -22,8 +22,9 @@ contents to a new release section (e.g. _[0.x]_).
 - Simplify brackets in polynomial expression deep-first (PLUT-588)
 - Avoid multiplying a product by 1, instead eliminate the factor of 1 (PLUT-670). Previously this wasn't done except in
   the simplest cases.
-- SDK: Fixed gm action tests by improving action handling in GM. (SP-222)
+- SDK: Fixed gm action tests by improving action handling in GM. (SP-222), (SP-239)
 - SDK: Fix regression, undefined `operands` value of emptyset is parsed by latex parser without error (PLUT-695)
+- SDK: Fixed the use of :op vs :op() when translating solver paths into GM terms
 
 ### Changed
 

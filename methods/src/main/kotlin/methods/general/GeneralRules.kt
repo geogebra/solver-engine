@@ -271,9 +271,9 @@ private val simplifyProductWithTwoNegativeFactors =
                     )
                 },
                 gmAction = if (negIsOnProduct) {
-                    drag(f2, PM.Operator, negProduct, PM.Operator, Position.Onto)
+                    drag(f2Negative, PM.Operator, negProduct, PM.Operator, Position.Onto)
                 } else {
-                    drag(f2, PM.Operator, f1, PM.Operator, Position.Onto)
+                    drag(f2Negative, PM.Operator, f1Negative, PM.Operator, Position.Onto)
                 },
                 explanation = metadata(Explanation.SimplifyProductWithTwoNegativeFactors),
             )
@@ -461,7 +461,7 @@ private val distributePowerOfProduct =
                 toExpr = productOf(
                     get(product).children.map { powerOf(move(it), distributedExponent) },
                 ),
-                gmAction = drag(exponent, product),
+                gmAction = drag(exponent, PM.Group, product),
                 explanation = metadata(Explanation.DistributePowerOfProduct),
             )
         }

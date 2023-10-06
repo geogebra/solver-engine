@@ -100,7 +100,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                         sumOf(get(lhs), negatedConstants),
                         sumOf(get(rhs), negatedConstants),
                     ),
-                    gmAction = drag(constants, lhs, Position.RightOf),
+                    gmAction = drag(constants, PM.Group, lhs),
                     explanation = solvableExplanation(
                         SolvableKey.MoveConstantsToTheLeft,
                         parameters = listOf(constants),
@@ -128,7 +128,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                         sumOf(get(lhs), negatedConstants),
                         sumOf(get(rhs), negatedConstants),
                     ),
-                    gmAction = drag(constants, rhs, Position.RightOf),
+                    gmAction = drag(constants, PM.Group, rhs),
                     explanation = solvableExplanation(
                         SolvableKey.MoveConstantsToTheRight,
                         parameters = listOf(constants),
@@ -155,7 +155,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                         sumOf(get(lhs), negatedVariable),
                         sumOf(get(rhs), negatedVariable),
                     ),
-                    gmAction = drag(variables, lhs, Position.RightOf),
+                    gmAction = drag(variables, if (get(rhs) is Sum) PM.Group else null, lhs),
                     explanation = solvableExplanation(
                         SolvableKey.MoveVariablesToTheLeft,
                         parameters = listOf(variables),
@@ -182,7 +182,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                         sumOf(get(lhs), negatedVariable),
                         sumOf(get(rhs), negatedVariable),
                     ),
-                    gmAction = drag(variables, rhs, Position.RightOf),
+                    gmAction = drag(variables, if (get(lhs) is Sum) PM.Group else null, rhs),
                     explanation = solvableExplanation(
                         SolvableKey.MoveVariablesToTheRight,
                         parameters = listOf(variables),
@@ -295,7 +295,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
 
                     ruleResult(
                         toExpr = solvable.deriveSolvable(newLhs, newRhs, useDual),
-                        gmAction = drag(dragTarget, rhs, Position.LeftOf),
+                        gmAction = drag(dragTarget, PM.Group, rhs),
                         explanation = solvableExplanation(
                             SolvableKey.MultiplyByInverseCoefficientOfVariable,
                             flipSign = useDual && !solvable.isSelfDual(),

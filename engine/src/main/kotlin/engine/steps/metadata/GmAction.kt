@@ -98,10 +98,12 @@ enum class GmPathModifier(val value: String) {
     /** select '(-2)' in *(-2) */
     Parens("()"),
 
-    /** select inner '-', '+', '*', or '÷', e.g. select '-' in *(-2) */
+    /** select '-', '+', or '±', e.g. select '-' in 1+(-2)
+     * select relation symbol, e.g. '=' in x=1
+     * select radical symbol */
     Operator("op"),
 
-    /** select outer '-', '+', '*', or '÷', e.g. select '*' in *(-2) */
+    /** select outer '-', '+', or '±', e.g. select '+' in 1+(-2) */
     OuterOperator("op()"),
 
     /** select the addend or factor, e.g. select '*2' instead of '2' in 3*2 */
