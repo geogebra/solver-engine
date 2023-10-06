@@ -1,3 +1,4 @@
+<script setup lang="ts">
 import type {
   ApiMathFormat,
   SolverContext,
@@ -424,3 +425,237 @@ window.onload = () => {
 
   window.onpopstate = fetchPlansAndUpdatePage;
 };
+</script>
+
+<template>
+  <form class="display-options hide-in-demo-mode">
+    <h3>Display Options</h3>
+    <label for="colorScheme">Colors</label>
+    <select id="colorScheme">
+      <option value="default">Default</option>
+      <option value="primary">Primary colors</option>
+      <option value="none">No coloring</option>
+      <option value="blue">Just blue</option>
+    </select>
+    <br />
+    <label for="solutionFormat">Solution format</label>
+    <select id="solutionFormat">
+      <option value="simple">Simple</option>
+      <option value="sets">Sets</option>
+    </select>
+    <br />
+    <input id="showThroughSteps" type="checkbox" />
+    <label for="showThroughSteps">Show through steps</label>
+    <br />
+    <input id="hideWarnings" type="checkbox" />
+    <label for="hideWarnings">Hide warnings</label>
+    <br />
+    <input id="showPedanticSteps" type="checkbox" />
+    <label for="showPedanticSteps">Show pedantic steps</label>
+    <br />
+    <input id="showCosmeticSteps" type="checkbox" />
+    <label for="showCosmeticSteps">Show cosmetic steps</label>
+    <br />
+    <input id="showInvisibleChangeSteps" type="checkbox" />
+    <label for="showInvisibleChangeSteps">Show InvisibleChange steps</label>
+    <br />
+    <input id="showTranslationKeys" type="checkbox" />
+    <label for="showTranslationKeys">Show translation keys</label>
+  </form>
+
+  <div id="version-info" class="version-info">fetching commit...</div>
+  <h1 contenteditable="true" id="title">Solver Poker</h1>
+  <details class="hide-in-demo-mode">
+    <summary>Input syntax</summary>
+    <ul>
+      <li>recurring decimals: \(10.3\overline{401}\) is <code>10.3[401]</code>,</li>
+      <li>arithmetic operators \(+, -, \times, \div\) are <code>+, -, *, :</code>,</li>
+      <li>\(\alpha + \Omega\) is <code>\alpha + \Omega</code></li>
+      <li>\(x_{12} - \beta_n\) is <code>x_12 - \beta_n</code></li>
+      <li>\(x^y\) is <code>[x ^ y]</code>,</li>
+      <li>\(\frac{x}{y}\) is <code>[x / y]</code>,</li>
+      <li>\(2\frac{1}{3}\) is <code>[2 1/3]</code>,</li>
+      <li>\(\sqrt{x}\) is <code>sqrt[x]</code>,</li>
+      <li>\(\sqrt[3]{12}\) is <code>root[12, 3]</code>.</li>
+      <li>\(\left|3x^2 + 2\right|\) is <code>abs[3 [x ^ 2] + 2]</code></li>
+      <li>natural log: \(\ln x\) is <code>ln x</code></li>
+      <li>base-10 log: \(\log x\) is <code>log x</code></li>
+      <li>base-b log: \(\log_b x\) is <code>log[b] x</code></li>
+      <li>
+        mathematical constants \(e\), \(\pi\), and \(i\) are <code>/e/</code>, <code>/pi/</code>,
+        and <code>/i/</code>
+      </li>
+      <li>
+        supported trigonometric functions: <code>sin</code>, <code>cos</code>, <code>tan</code>,
+        <code>sec</code>, <code>csc</code>, <code>cot</code>, and their inverse (e.g.
+        <code>arcsin</code>), hyperbolic (e.g. <code>sinh</code>) and hyperbolic inverse (e.g.
+        <code>asinh</code>) functions; the argument is written directly after the function name, e.g
+        <code>sin x</code> for \(\sin x\) or <code>asinh(x + 1)</code> for \(\textrm{asinh}(x + 1)\)
+      </li>
+      <li>
+        <code>x + &lt;. -y + z .&gt;</code> is another way of writing \(x-y+z\), but it separates
+        the \(-y+z\) into a subexpression called a partial sum. You should never need to input
+        partial sums, possibly unless you are trying to test the back end.
+      </li>
+      <li>\(\frac{\mathrm{d} \sin x}{\mathrm{d} x}\) is <code>diff[sin x / x]</code></li>
+      <li>
+        \(\frac{\partial^2 \sin x \cos y}{\partial x \partial y}\) is
+        <code>[diff ^ 2][sin x cos y / x y]</code>
+      </li>
+      <li>\(\int 3x + 1 \mathrm{d}x\) is <code>prim[3x + 1, x]</code></li>
+      <li>
+        \(\int_{-\infty}^0 e^{-x^2} \mathrm{d}x\) is
+        <code>int[-/infinity/, 0, [/e/ ^ -[x^2]], x]</code>
+      </li>
+      <li>the vector \(\begin{pmatrix}1 \\ 2 \\ 3\end{pmatrix}\) is <code>vec[1, 2, 3]</code></li>
+      <li>
+        the matrix \(\begin{pmatrix}1 & 2 \\ 3 & 4\end{pmatrix}\) is <code>mat[1, 2; 3, 4]</code>
+      </li>
+    </ul>
+    <p>Example: \(\frac{1}{\sqrt{1 - x^2}}\) is <code>[1 / sqrt[1 - [x^2]]]</code>.</p>
+  </details>
+
+  <form id="form" class="hide-in-demo-mode">
+    <p>
+      <label for="curriculumSelect">Curriculum</label>
+      <select id="curriculumSelect">
+        <option value="" selected>Default</option>
+        <option value="US">US</option>
+        <option value="EU">EU</option>
+      </select>
+      <label for="precisionSelect">Precision</label>
+      <select id="precisionSelect">
+        <option value="2">2 d.p.</option>
+        <option value="3" selected>3 d.p.</option>
+        <option value="4">4 d.p.</option>
+        <option value="5">5 d.p.</option>
+        <option value="6">6 d.p.</option>
+      </select>
+      <label for="solutionVariable">Solution variable</label>
+      <input type="text" id="solutionVariable" value="x" size="1" />
+      <input id="preferDecimals" type="checkbox" />
+      <label for="preferDecimals">Prefer decimals</label>
+      <!-- GM stands for Graspable Math -->
+      <input id="gmFriendlyCheckbox" type="checkbox" />
+      <label for="gmFriendlyCheckbox">GM friendly</label>
+    </p>
+    <p>
+      <label for="plansSelect">Plan</label>
+      <select id="plansSelect"></select>
+    </p>
+    <details id="strategyDetails">
+      <summary>Strategies</summary>
+    </details>
+    <p>
+      <label for="input">Input</label>
+      <input type="text" id="input" placeholder="Expression" size="30" />
+      <input type="submit" id="submit" value="Submit" />
+      <input type="button" id="submitToMain" value="Submit to main" />
+    </p>
+  </form>
+
+  <p id="result"></p>
+  <details id="responseSourceDetails" class="hide-in-demo-mode">
+    <summary>Response Source</summary>
+    <input id="jsonFormatCheckbox" type="checkbox" />
+    <label for="jsonFormatCheckbox">JSON Format</label>
+    <pre id="source"></pre>
+  </details>
+</template>
+
+<style>
+.plan-id {
+  color: blue;
+  font-family: monospace;
+}
+
+.display-options {
+  float: right;
+}
+
+.translation-key {
+  font-family: monospace;
+  color: darkgreen;
+  cursor: copy;
+}
+
+.note {
+  color: gray;
+  font-size: small;
+}
+
+.warning {
+  color: #ac0000;
+}
+
+.hidden {
+  display: none;
+}
+
+/* Separations between plan steps / sub-steps */
+
+details.steps > ol,
+details.tasks > ol {
+  margin: 0 0 0 0;
+  border-left: thin solid lightgray;
+  padding-right: 0;
+}
+
+details.steps > ol > li,
+details.tasks > ol > li {
+  border-bottom: thin solid lightgray;
+  padding: 5px 0;
+  margin: 5px 0;
+}
+
+details.steps > ol > li:last-child,
+details.tasks > ol > li:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
+details.alternatives > summary {
+  color: blue;
+}
+
+/* Separations between selected plans */
+.selections > ol > li {
+  border-bottom: thin solid black;
+  padding: 6px 0;
+  margin: 6px 0;
+}
+
+.selections > ol > li:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
+/* Separate the Test Code section from the solution */
+.test-code {
+  padding-top: 20px;
+}
+
+.through-step > .expr,
+.through-step > .plan-id,
+.through-step > .plan-explanation {
+  color: lightgray;
+}
+
+.version-info {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  background-color: white;
+  color: dimgrey;
+  padding: 4px;
+  font-family: monospace;
+  font-size: small;
+}
+
+summary {
+  /* to avoid expanding the details view when clicking on the whitespace next to the summary */
+  width: fit-content;
+}
+</style>

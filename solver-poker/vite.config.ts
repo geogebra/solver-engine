@@ -1,5 +1,6 @@
 import path from 'path';
 import { defineConfig, normalizePath } from 'vite';
+import vue from '@vitejs/plugin-vue';
 
 import dns from 'dns';
 // print address as localhost, not 127.0.0.1 because this is what the solver API
@@ -7,6 +8,7 @@ import dns from 'dns';
 dns.setDefaultResultOrder('verbatim');
 
 export default defineConfig({
+  plugins: [vue()],
   build: {
     outDir: toAbsolutePath('../api/src/main/resources/static/poker'),
     assetsDir: '.',
