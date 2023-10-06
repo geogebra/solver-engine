@@ -3,5 +3,21 @@
   "endOfLine": "auto",
   "semi": true,
   "singleQuote": true,
-  "trailingComma": "all"
+  "trailingComma": "all",
+  "overrides": [
+    {
+      "files": [
+        "**/.vscode/extensions.json",
+        "**/.vscode/launch.json",
+        "**/.vscode/settings.json",
+        "**/tsconfig*.json"
+      ],
+      "options": {
+        "parser": "json5",
+        "quoteProps": "preserve",
+        "singleQuote": false,
+        "trailingComma": "all"
+      }
+    }
+  ]
 }

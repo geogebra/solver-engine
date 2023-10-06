@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    // This extension isn't necessary, but it is small and very usefull. If it is a
+    // problem for you that it is recommended here, feel free to remove it from this list.
+    "ryu1kn.partial-diff",
+    "streetsidesoftware.code-spell-checker",
+    "vue.volar",
+  ],
+}

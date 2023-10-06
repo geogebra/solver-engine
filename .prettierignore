@@ -13,6 +13,7 @@
 !/config/*
 !/docs/*
 !/solver-poker/**
+!/.vscode/**
 
 # Blacklist these
 Pipfile.lock

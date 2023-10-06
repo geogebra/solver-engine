@@ -7,7 +7,7 @@
     "lib": [
       "es2021",
       "dom",
-      "dom.iterable"
+      "dom.iterable",
     ] /* Specify library files to be included in the compilation. */,
     "declaration": true /* Generates corresponding '.d.ts' file. */,
     // "declarationMap": true /* Generates a sourcemap for each corresponding '.d.ts' file. */,
@@ -23,7 +23,7 @@
 
     /* Advanced Options */
     "skipLibCheck": true /* Skip type checking of declaration files. */,
-    "forceConsistentCasingInFileNames": true /* Disallow inconsistently-cased references to the same file. */
+    "forceConsistentCasingInFileNames": true /* Disallow inconsistently-cased references to the same file. */,
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*"],
 }

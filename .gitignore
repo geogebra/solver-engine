@@ -50,7 +50,8 @@ bin/
 !.vscode/launch.json
 !.vscode/settings.json
 !.vscode/tasks.json
-/.vscode/
+# Un-ignore this if you think you have something that works for this file.
+/.vscode/launch.json
 
 ### Mac OS ###
 .DS_Store

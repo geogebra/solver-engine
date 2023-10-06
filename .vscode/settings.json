@@ -1,0 +1,103 @@
+{
+  "editor.wordWrapColumn": 90,
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "file",
+    "editor.tabSize": 2,
+  },
+  "[kotlin]": {
+    // Unfortunately, we can't get this to work on Windows for anything except unreasonably
+    // small files.
+    "editor.defaultFormatter": "cstef.kotlin-formatter",
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "file",
+  },
+  "[kotlinscript]": {
+    // Unfortunately, we can't get this to work on Windows for anything except unreasonably
+    // small files.
+    "editor.defaultFormatter": "cstef.kotlin-formatter",
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "file",
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "file",
+    "editor.tabSize": 2,
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "file",
+    "editor.tabSize": 2,
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "file",
+    "editor.tabSize": 2,
+  },
+  "[handlebars]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "file",
+    "editor.tabSize": 2,
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "file",
+    "editor.tabSize": 2,
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "file",
+    "editor.tabSize": 2,
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "file",
+    "editor.tabSize": 2,
+  },
+  "[vue]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "file",
+    "editor.tabSize": 2,
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "file",
+    "editor.tabSize": 2,
+  },
+  // cSpell settings go with the vscode extension that has the ID
+  // streetsidesoftware.code-spell-checker
+  "cSpell.words": ["GeoGebra", "IntelliJ", "subexpression", "Vite"],
+  // "cSpell.ignoreWords" is like "cSpell.words", except that words in
+  // "cSpell.words" may appear in the spelling suggestions list, unlike the
+  // words in "cSpell.ignoreWords"
+  "cSpell.ignoreWords": [
+    "Bitstream",
+    "KaTeX",
+    "Mergely",
+    "arcsin",
+    "detekt",
+    "gmath",
+    "ignorews",
+    "infty",
+    "jsondiffpatch",
+    "ktlint",
+    "mathrm",
+    "plut",
+    "pmatrix",
+    "textrm",
+    "vueuse",
+  ],
+  "gitlens.remotes": [{ "domain": "git.geogebra.org", "type": "GitLab" }],
+  // David Ludlow still can't get this to work (he uses Windows, that might be relevant)
+  "vitest.commandLine": "npx vitest --environment jsdom",
+}
