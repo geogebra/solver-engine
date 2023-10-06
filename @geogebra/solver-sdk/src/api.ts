@@ -8,6 +8,7 @@ import type {
   PlanSelectionJson,
   PlanSelectionLatex,
   PlanSelectionSolver,
+  ServerErrorResponse,
   SolverContext,
   SolverExpr,
   Transformation,
@@ -52,22 +53,22 @@ class Api {
     input: SolverExpr,
     format: 'solver',
     context?: SolverContext,
-  ): Promise<PlanSelectionSolver[]>;
+  ): Promise<PlanSelectionSolver[] | ServerErrorResponse>;
   async selectPlans(
     input: SolverExpr,
     format?: 'latex',
     context?: SolverContext,
-  ): Promise<PlanSelectionLatex[]>;
+  ): Promise<PlanSelectionLatex[] | ServerErrorResponse>;
   async selectPlans(
     input: SolverExpr,
     format: 'json2',
     context?: SolverContext,
-  ): Promise<PlanSelectionJson[]>;
+  ): Promise<PlanSelectionJson[] | ServerErrorResponse>;
   async selectPlans(
     input: SolverExpr,
     format: ApiMathFormat = 'latex',
     context: SolverContext = this.defaultContext,
-  ): Promise<PlanSelection[]> {
+  ): Promise<PlanSelection[] | ServerErrorResponse> {
     const res = await fetch(`${this.baseUrl}/selectPlans`, {
       ...this.defaultHeaders,
       method: 'POST',
@@ -82,25 +83,25 @@ class Api {
     planId: PlanId,
     format: 'solver',
     context?: SolverContext,
-  ): Promise<TransformationSolver>;
+  ): Promise<TransformationSolver | ServerErrorResponse>;
   async applyPlan(
     input: SolverExpr,
     planId: PlanId,
     format?: 'latex',
     context?: SolverContext,
-  ): Promise<TransformationLatex>;
+  ): Promise<TransformationLatex | ServerErrorResponse>;
   async applyPlan(
     input: SolverExpr,
     planId: PlanId,
     format: 'json2',
     context?: SolverContext,
-  ): Promise<TransformationJson>;
+  ): Promise<TransformationJson | ServerErrorResponse>;
   async applyPlan(
     input: SolverExpr,
     planId: PlanId,
     format: ApiMathFormat = 'latex',
     context: SolverContext = this.defaultContext,
-  ): Promise<Transformation> {
+  ): Promise<Transformation | ServerErrorResponse> {
     const res = await fetch(`${this.baseUrl}/plans/${planId}/apply`, {
       ...this.defaultHeaders,
       method: 'POST',

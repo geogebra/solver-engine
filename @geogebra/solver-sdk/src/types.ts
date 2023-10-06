@@ -51,6 +51,14 @@ export type API_VERSION_INFO_RESPONSE = {
 export type API_PLANS_RESPONSE = PlanId[];
 export type API_STRATEGIES_RESPONSE = StrategyMap;
 
+/** The most common case where you would get a response like this would be if the math
+ * input is not syntactically correct. */
+// TODO: research to see if this type is always accurate.
+export type ServerErrorResponse = {
+  error: Exclude<string, ''>;
+  message: string;
+};
+
 type PlanSelectionBase<T> = {
   transformation: T;
   metadata: {

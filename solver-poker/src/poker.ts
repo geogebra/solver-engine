@@ -4,6 +4,7 @@ import type {
   StrategyMap,
   PlanSelectionJson,
   PlanSelectionSolver,
+  ServerErrorResponse,
   TransformationJson,
   TransformationSolver,
 } from '@geogebra/solver-sdk';
@@ -54,8 +55,11 @@ let lastResult:
       resultSolverFormat?: TransformationSolver;
     }
   | { planId?: undefined; result?: undefined; resultSolverFormat?: undefined }
-  | { planId: string; result: { error: string; message: string }; resultSolverFormat?: undefined } =
-  {};
+  | {
+      planId: string;
+      result: ServerErrorResponse;
+      resultSolverFormat?: ServerErrorResponse;
+    } = {};
 
 const el = (id: string) => document.getElementById(id);
 
