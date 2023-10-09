@@ -622,6 +622,33 @@ describe('Solver Parser Unit Tests', () => {
     ]);
   });
 
+  describe('Greek letter variables', () => {
+    testCases([
+      {
+        solver: '\\alpha + x + \\Beta',
+        json: {
+          type: 'Sum',
+          operands: [variable('\\alpha'), variable('x'), variable('\\Beta')],
+        },
+        latex: ['\\alpha+x+\\Beta', '\\alpha{}+x+\\Beta{}'],
+      },
+      {
+        solver: 'x [\\alpha ^ 2]',
+        json: {
+          type: 'ImplicitProduct',
+          operands: [
+            variable('x'),
+            {
+              type: 'Power',
+              operands: [variable('\\alpha'), integer('2')],
+            },
+          ],
+        },
+        latex: ['x{\\alpha}^{2}', 'x {\\alpha{} ^ 2}'],
+      },
+    ]);
+  });
+
   describe('Fractions and Mixed Numbers', () => {
     testCases([
       {
@@ -1434,6 +1461,196 @@ describe('Solver Parser Unit Tests', () => {
           ],
         },
         latex: ['{\\left(x_{1}\\right)}^{2}', '(x_1)^2'],
+      },
+    ]);
+  });
+
+  describe('Trigonometric functions', () => {
+    testCases([
+      {
+        solver: 'sin x',
+        json: {
+          type: 'Sin',
+          operands: [variable('x')],
+        },
+        latex: ['\\sin{x}'],
+      },
+      {
+        solver: 'arcsin x',
+        json: {
+          type: 'Arcsin',
+          operands: [variable('x')],
+        },
+        latex: ['\\arcsin{x}'],
+      },
+      {
+        solver: 'sinh x',
+        json: {
+          type: 'Sinh',
+          operands: [variable('x')],
+        },
+        latex: ['\\sinh{x}'],
+      },
+      {
+        solver: 'sin (x)',
+        json: {
+          type: 'Sin',
+          operands: [
+            {
+              type: 'Variable',
+              value: 'x',
+              decorators: ['RoundBracket'],
+            },
+          ],
+        },
+        latex: [
+          '\\sin{\\left(x\\right)}',
+          '{{\\mathrm{sin}}\\left(x\\right)}', // ggb keyboard output
+        ],
+      },
+      {
+        solver: '[sin x ^ 2]',
+        json: {
+          type: 'Power',
+          operands: [
+            {
+              type: 'Sin',
+              operands: [variable('x')],
+            },
+            integer('2'),
+          ],
+        },
+        latex: [
+          '{\\sin{x}}^{2}',
+          '{{\\mathrm{sin}} x}^{2}', // ggb keyboard output
+        ],
+      },
+      {
+        solver: '[(sin x) ^ 2]',
+        json: {
+          type: 'Power',
+          operands: [
+            {
+              type: 'Sin',
+              operands: [variable('x')],
+              decorators: ['RoundBracket'],
+            },
+            integer('2'),
+          ],
+        },
+        latex: ['{\\left(\\sin{x}\\right)}^{2}'],
+      },
+      {
+        solver: 'sin x + 1',
+        json: {
+          type: 'Sum',
+          operands: [
+            {
+              type: 'Sin',
+              operands: [variable('x')],
+            },
+            integer('1'),
+          ],
+        },
+        latex: ['\\sin{x}+1'],
+      },
+      {
+        solver: 'sin (x) + 1',
+        json: {
+          type: 'Sum',
+          operands: [
+            {
+              type: 'Sin',
+              operands: [
+                {
+                  type: 'Variable',
+                  value: 'x',
+                  decorators: ['RoundBracket'],
+                },
+              ],
+            },
+            integer('1'),
+          ],
+        },
+        latex: [
+          '\\sin{\\left(x\\right)}+1',
+          '{{\\mathrm{sin}}\\left(x\\right)}+1', // ggb keyboard output
+        ],
+      },
+      {
+        solver: 'sin 2 x',
+        json: {
+          type: 'Sin',
+          operands: [
+            {
+              type: 'ImplicitProduct',
+              operands: [integer('2'), variable('x')],
+            },
+          ],
+        },
+        latex: ['\\sin{2x}'],
+      },
+      {
+        solver: 'sin (2 x)',
+        json: {
+          type: 'Sin',
+          operands: [
+            {
+              type: 'ImplicitProduct',
+              operands: [integer('2'), variable('x')],
+              decorators: ['RoundBracket'],
+            },
+          ],
+        },
+        latex: [
+          '\\sin{\\left(2x\\right)}',
+          '{{\\mathrm{sin}}\\left({2x}\\right)}', // ggb keyboard output
+        ],
+      },
+      {
+        solver: '[(sin (x)) ^ 2]',
+        json: {
+          type: 'Power',
+          operands: [
+            {
+              type: 'Sin',
+              operands: [
+                {
+                  type: 'Variable',
+                  value: 'x',
+                  decorators: ['RoundBracket'],
+                },
+              ],
+              decorators: ['RoundBracket'],
+            },
+            integer('2'),
+          ],
+        },
+        latex: [
+          '{\\left(\\sin{\\left(x\\right)}\\right)}^{2}',
+          '\\left({{{\\mathrm{sin}}\\left(x\\right)}}\\right)^{2}', // ggb keyboard output
+        ],
+      },
+      {
+        // TODO: add "json" and "solver" syntax for below once we agree on their syntax's
+        latex: ['\\sin^{2} x', '\\sin^2 x', '{{\\mathrm{sin}}^{2} x}'],
+      },
+      {
+        solver: 'tan (x)',
+        json: {
+          type: 'Tan',
+          operands: [
+            {
+              type: 'Variable',
+              value: 'x',
+              decorators: ['RoundBracket'],
+            },
+          ],
+        },
+        latex: [
+          '\\tan{\\left(x\\right)}',
+          '{{\\mathrm{tan}}\\left(x\\right)}', // ggb keyboard output
+        ],
       },
     ]);
   });

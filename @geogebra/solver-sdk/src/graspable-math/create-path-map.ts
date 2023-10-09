@@ -254,6 +254,30 @@ function annotate(
     case 'ReversedClosedOpenRange':
     case 'ReversedClosedRange':
     case 'Void':
+    case 'Sin':
+    case 'Cos':
+    case 'Tan':
+    case 'Cot':
+    case 'Sec':
+    case 'Csc':
+    case 'Arcsin':
+    case 'Arccos':
+    case 'Arctan':
+    case 'Arccot':
+    case 'Arcsec':
+    case 'Arccsc':
+    case 'Sinh':
+    case 'Cosh':
+    case 'Tanh':
+    case 'Sech':
+    case 'Csch':
+    case 'Coth':
+    case 'Arsinh':
+    case 'Arcosh':
+    case 'Artanh':
+    case 'Arcoth':
+    case 'Arcsch':
+    case 'Arsech':
       throw new Error('Unsupported type: ' + tree.type);
     default:
       needToImplement(treeType);

@@ -13,6 +13,36 @@ export type NestedExpressionType =
   | 'Power' // (base, power)
   | 'SquareRoot' // unary
   | 'Root' // (degree, radicand)
+  /// Trigonometric functions
+  // Function
+  | 'Sin' // unary
+  | 'Cos'
+  | 'Tan'
+  | 'Cot' // unary
+  | 'Sec' // unary
+  | 'Csc' // unary
+  // Inverse
+  | 'Arcsin' // unary
+  | 'Arccos' // unary
+  | 'Arctan' // unary (do we need Arctan2 as well?)
+  | 'Arccot' // unary
+  | 'Arcsec' // unary
+  | 'Arccsc' // unary
+  // Hyperbolic
+  | 'Sinh' // unary
+  | 'Cosh' // unary
+  | 'Tanh' // unary
+  | 'Coth' // unary
+  | 'Sech' // unary
+  | 'Csch' // unary
+  // Area hyperbolic
+  | 'Arsinh' // unary
+  | 'Arcosh' // unary
+  | 'Artanh' // unary
+  | 'Arcoth' // unary
+  | 'Arcsch' // unary
+  | 'Arsech' // unary
+  /**/
   | 'AbsoluteValue' // unary
   | 'ExpressionWithConstraint' // (expression, constraint)
   | 'Equation' // binary
@@ -115,9 +145,15 @@ export type ExpressionTreeBase<T> = ExpressionDecorations &
     | RecurringDecimalExpression
     | VariableExpression
     | NameExpression
-    | { type: 'Undefined' | 'Infinity' | 'Reals' | 'Void' }
+    | {
+        type: 'Undefined' | 'Infinity' | 'Reals' | 'Void';
+      }
   ) &
   T;
 
-export type ExpressionTree = ExpressionTreeBase<{ path: string }>;
-export type NestedExpression = NestedExpressionBase<{ path: string }>;
+export type ExpressionTree = ExpressionTreeBase<{
+  path: string;
+}>;
+export type NestedExpression = NestedExpressionBase<{
+  path: string;
+}>;

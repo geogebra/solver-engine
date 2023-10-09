@@ -17,7 +17,12 @@ export function tokenize(str: string): Token[] {
   const r_match = new RegExp('^\\s*\\{(\\??[A-Za-z0-9_]*)\\:'); // named regexp match
   const r_name = new RegExp('^\\s*([a-zA-Z₀₁₂₃₄₅₆₇₈₉⬚])'); // single-character names
   const r_func = new RegExp('^\\s*(sqrt|root|Solution)');
+  const r_latex_trig = new RegExp('^\\s*{\\\\mathrm{([^}]+)}}');
+  // const r_latex_trig = new RegExp('^\\s*({\\\\mathrm{(sin|cos|tan|cot|sec|csc)}})');
   const r_greek = new RegExp('^\\s*([α-ωΑ-Ω])'); // single-character greek letters
+  const r_greek_latex_cmds = new RegExp(
+    '^\\s*(\\\\(alpha|beta|gamma|delta|epsilon|zeta|eta|theta|iota|kappa|lambda|mu|nu|xi|omicron|pi|rho|sigma|tau|upsilon|phi|chi|psi|omega|Alpha|Beta|Gamma|Delta|Epsilon|Zeta|Eta|Theta|Iota|Kappa|Lambda|Mu|Nu|Xi|Omicron|Pi|Rho|Sigma|Tau|Upsilon|Phi|Chi|Psi|Omega)(?:\\{\\})?)',
+  ); // greek alphabet with optional `{}` at the end (as returned by the keyboard)
   const r_long_name = new RegExp('^\\s*"([^"]+)"'); // multi-character strings "..."
   const r_long_name_latex = new RegExp('^\\s*\\\\text{(.*?)}'); // multi-character strings "\\text{...}"
   const r_operator =
@@ -91,6 +96,14 @@ export function tokenize(str: string): Token[] {
         to: i + m[0].length,
       });
       i += m[0].length;
+    } else if ((m = r_greek_latex_cmds.exec(s))) {
+      tokens.push({
+        type: 'name',
+        value: m[1].replace(/\{\}$/, ''),
+        from: i + (m[0].length - m[1].length),
+        to: i + m[0].length,
+      });
+      i += m[0].length;
     } else if ((m = r_long_name.exec(s))) {
       // the token is a long name
       tokens.push({
@@ -104,6 +117,15 @@ export function tokenize(str: string): Token[] {
       // the token is a long name based on a latex \\text element
       const from = i + m.index + m[0].indexOf(m[1]);
       tokens.push({ type: 'name', value: m[1], from: from, to: from + m[1].length });
+      i += m[0].length;
+    } else if ((m = r_latex_trig.exec(s))) {
+      // the token is a trigonometric function using \\mathrm
+      tokens.push({
+        type: 'latex',
+        value: m[0],
+        from: i + (m[0].length - m[1].length),
+        to: i + m[0].length,
+      });
       i += m[0].length;
     } else if ((m = r_operator.exec(s))) {
       // the token is an operator

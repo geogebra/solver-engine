@@ -16,6 +16,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Added support for solving multivariate equations for one variable which is a power e.g. `m[x^2] = 3z + 1` (PLUT-674)
 - Added some project settings for when using vscode, instead of ignoring those files in
   git. (PLUT-598)
+- SDK: add latex rendering for greek-symbols and trigonometric functions (PLUT-714)
 
 ### Fixed
 

@@ -5,6 +5,7 @@ import type {
   ExpressionTree,
   ExpressionTreeBase,
   IntegerExpression,
+  NestedExpressionType,
 } from './types';
 
 type ExprTree = ExpressionTreeBase<unknown>;
@@ -265,6 +266,75 @@ const latexSymbolDefinitions = {
       }
     };
     sqrt.led = sqrt.led = getLedToExtendNary(parser, 'ImplicitProduct');
+  },
+
+  registerTrigonometricFunctions(parser: Parser<ExprTree>) {
+    const trigFunctions = [
+      'sin',
+      'cos',
+      'tan',
+      'cot',
+      'sec',
+      'csc',
+      'arcsin',
+      'arccos',
+      'arctan',
+      'arccot',
+      'arcsec',
+      'arccsc',
+      'sinh',
+      'cosh',
+      'tanh',
+      'coth',
+      'sech',
+      'csch',
+      'arsinh',
+      'arcosh',
+      'artanh',
+      'arcoth',
+      'arcsch',
+      'arsech',
+    ];
+
+    for (const func of trigFunctions) {
+      for (const symbolForm of ['\\' + func, '{\\mathrm{' + func + '}}']) {
+        const symbol = parser.registerSymbol(symbolForm, BP_IMPLICIT_MUL);
+
+        symbol.nud = function () {
+          let power = null;
+
+          // Check if there's a power notation right after the trig function.
+          if (parser.advance('^', true)) {
+            power = parser.expression(BP_POWER - 1);
+          }
+
+          const argument = parser.expression(Infinity);
+
+          const baseExpression = {
+            type: (func.charAt(0).toUpperCase() + func.slice(1)) as NestedExpressionType,
+            operands: [argument],
+          };
+
+          // If there's a power, wrap the base expression inside a power expression
+          if (power) {
+            return {
+              type: 'Power',
+              operands: [
+                {
+                  ...baseExpression,
+                  decorators: ['RoundBracket'],
+                },
+                power,
+              ],
+            };
+          }
+
+          return baseExpression;
+        };
+
+        symbol.led = getLedToExtendNary(parser, 'ImplicitProduct');
+      }
+    }
   },
 
   registerTextStyleCommands(parser: Parser<ExprTree>) {

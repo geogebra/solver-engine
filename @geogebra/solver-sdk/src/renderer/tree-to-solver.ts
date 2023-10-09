@@ -60,6 +60,31 @@ export function treeToSolver(n: ExpressionTree): string {
       return dec(`sqrt[${rec(n.operands[0])}]`);
     case 'Root':
       return dec(`root[${rec(n.operands[0])}, ${rec(n.operands[1])}]`);
+    case 'Sin':
+    case 'Cos':
+    case 'Tan':
+    case 'Cot':
+    case 'Sec':
+    case 'Csc':
+    case 'Arcsin':
+    case 'Arccos':
+    case 'Arctan':
+    case 'Arccot':
+    case 'Arcsec':
+    case 'Arccsc':
+    case 'Sinh':
+    case 'Cosh':
+    case 'Tanh':
+    case 'Sech':
+    case 'Csch':
+    case 'Coth':
+    case 'Arsinh':
+    case 'Arcosh':
+    case 'Artanh':
+    case 'Arcoth':
+    case 'Arcsch':
+    case 'Arsech':
+      return dec(`${n.type.toLowerCase()} ${rec(n.operands[0])}`);
     case 'AbsoluteValue':
       return dec(`abs[${rec(n.operands[0])}]`);
     case 'ExpressionWithConstraint':

@@ -295,6 +295,31 @@ function treeToLatexInner(
       return tfd(`\\sqrt{${rec(n.operands[0], n)}}`);
     case 'Root':
       return tfd(`\\sqrt[{${rec(n.operands[1], n)}}]{${rec(n.operands[0], n)}}`);
+    case 'Sin':
+    case 'Cos':
+    case 'Tan':
+    case 'Cot':
+    case 'Sec':
+    case 'Csc':
+    case 'Arcsin':
+    case 'Arccos':
+    case 'Arctan':
+    case 'Arccot':
+    case 'Arcsec':
+    case 'Arccsc':
+    case 'Sinh':
+    case 'Cosh':
+    case 'Tanh':
+    case 'Sech':
+    case 'Csch':
+    case 'Coth':
+    case 'Arsinh':
+    case 'Arcosh':
+    case 'Artanh':
+    case 'Arcoth':
+    case 'Arcsch':
+    case 'Arsech':
+      return tfd(`\\${n.type.toLowerCase()}{${rec(n.operands[0], n)}}`);
     case 'AbsoluteValue':
       return tfd(colorAbsoluteValue(rec(n.operands[0], n), n, t, p));
     case 'ExpressionWithConstraint': {
@@ -488,7 +513,9 @@ const isSolvable = (node: ExpressionTree) => {
 };
 
 function addendNeedsPlusInFront(
-  addend: ExpressionTreeBase<{ path: string }>,
+  addend: ExpressionTreeBase<{
+    path: string;
+  }>,
   indexOfAddend: number,
 ) {
   // the first addend in a sum doesn't need a leading plus
@@ -507,7 +534,13 @@ function addendNeedsPlusInFront(
   return true;
 }
 
-const decorators: Record<string, { left: string; right: string }> = {
+const decorators: Record<
+  string,
+  {
+    left: string;
+    right: string;
+  }
+> = {
   RoundBracket: { left: '\\left(', right: '\\right)' },
   SquareBracket: { left: '\\left[', right: '\\right]' },
   CurlyBracket: { left: '\\left\\{', right: '\\right\\}' },
