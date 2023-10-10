@@ -75,12 +75,16 @@ watch(
 const strategySectionOpen = ref<boolean>(!!params.strategy);
 const responseSourceDetailsOpen = ref<boolean>(false);
 const textInTheMathInputTextbox = ref<string>(params.input);
+/** Change this to reactively trigger re-querying Solver, since the solver backend might
+ * have changed. */
+const reactivityTriggerForQueryingSolver = ref({});
 
 const submitForm = () => {
-  // This will trigger re-querying Solver (assuming the value of `params.input` actually
-  // changes), because the `computedAsync`s that query the Solver reactively depend on
-  // `params.input`
+  // This will trigger re-querying Solver, because the `computedAsync`s that query the
+  // Solver reactively depend on `params.input`
   params.input = textInTheMathInputTextbox.value;
+  // Re-query solver even if `params.input` didn't change.
+  reactivityTriggerForQueryingSolver.value = {};
 };
 
 const solverContext = computed(() => {
@@ -115,6 +119,8 @@ const resultJsonFormat = computedAsync<
   async () => {
     const input = params.input;
     if (!input) return undefined;
+    // Read this value, to make this `computedAsync` reactively depend on its value.
+    reactivityTriggerForQueryingSolver.value;
     const plan = params.plan;
     const ret =
       plan === 'selectPlans'
@@ -148,6 +154,8 @@ const resultSolverFormat_Helper = computedAsync<
   TransformationSolver | PlanSelectionSolver[] | ServerErrorResponse | undefined
 >(
   async () => {
+    // Read this value, to make this `computedAsync` reactively depend on its value.
+    reactivityTriggerForQueryingSolver.value;
     const ret =
       params.plan === 'selectPlans'
         ? await solverSdk.api.selectPlans(params.input, 'solver', solverContext.value)
@@ -334,7 +342,7 @@ onMounted(() => {
         <option value="6">6 d.p.</option>
       </select>
       <label for="solutionVariable">Solution variable</label>
-      <input type="text" id="solutionVariable" value="x" size="1" />
+      <input type="text" id="solutionVariable" v-model="params.solutionVariable" size="1" />
       <input id="preferDecimals" type="checkbox" v-model="preferDecimals" />
       <label for="preferDecimals">Prefer decimals</label>
       <!-- GM stands for Graspable Math -->

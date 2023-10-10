@@ -28,9 +28,12 @@ const copyToClipboard = async () => {
       v-if="explanationInfo.explanationString"
       :title="metadata.key"
       :text="explanationInfo.explanationString"
-    ></KatexRenderedText>
-    <div v-for="content in explanationInfo.warnings || []" v-show="!hideWarnings" class="warning">
-      {{ content }}
-    </div>
+    />
+    <KatexRenderedText
+      v-for="warning in explanationInfo.warnings || []"
+      v-show="!hideWarnings"
+      :text="warning"
+      class="warning"
+    />
   </div>
 </template>

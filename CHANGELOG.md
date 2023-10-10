@@ -33,7 +33,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Improved steps for expanding expressions like `(sqrt[2] + 1)(-2)` and `(x + 1)(-2)` (PLUT-478)
 - SDK: Switched from allow-list to skip-list for GM action tests. (SP-222)
 - Simplifying a rational equation to a polynomial equation has been rewritten to use plans instead of tasks (PLUT-701)
-- Changed Poker to use Vue (SP-237)
+- Changed Poker to use Vue (SP-237) (PLUT-803)
 
 ### Removed
 
