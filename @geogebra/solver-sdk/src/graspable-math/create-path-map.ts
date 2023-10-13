@@ -278,6 +278,9 @@ function annotate(
     case 'Arcoth':
     case 'Arcsch':
     case 'Arsech':
+    case 'Log':
+    case 'Ln':
+    case 'Log10':
       throw new Error('Unsupported type: ' + tree.type);
     default:
       needToImplement(treeType);

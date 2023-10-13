@@ -337,6 +337,49 @@ const latexSymbolDefinitions = {
     }
   },
 
+  registerLogarithms(parser: Parser<ExprTree>) {
+    const logSymbol = parser.registerSymbol('\\log', BP_IMPLICIT_MUL);
+    logSymbol.nud = function () {
+      if (parser.advance('_', true)) {
+        const base = parser.expression(BP_SUBSCRIPT - 1);
+        const argument = parser.expression(Infinity);
+
+        return {
+          type: 'Log',
+          operands: [base, argument],
+        };
+      }
+      const argument = parser.expression(Infinity);
+      return {
+        type: 'Log10',
+        operands: [argument],
+      };
+    };
+
+    logSymbol.led = getLedToExtendNary(parser, 'ImplicitProduct');
+  },
+
+  registerNaturalLogarithms(parser: Parser<ExprTree>) {
+    const naturalLog = parser.registerSymbol('\\ln', BP_IMPLICIT_MUL);
+    const naturalLogWithMathrm = parser.registerSymbol(
+      '{\\mathrm{\\mathrm{ln}}}',
+      BP_IMPLICIT_MUL,
+    );
+
+    for (const symbol of [naturalLog, naturalLogWithMathrm]) {
+      symbol.nud = function () {
+        const argument = parser.expression(Infinity);
+        return {
+          type: 'Ln',
+          operands: [argument],
+        };
+      };
+    }
+
+    naturalLog.led = getLedToExtendNary(parser, 'ImplicitProduct');
+    naturalLogWithMathrm.led = getLedToExtendNary(parser, 'ImplicitProduct');
+  },
+
   registerTextStyleCommands(parser: Parser<ExprTree>) {
     // This just ignores text style commands.
     // Need to know the complete list of styling commands we want to remove.

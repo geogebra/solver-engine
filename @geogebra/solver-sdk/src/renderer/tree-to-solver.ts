@@ -85,6 +85,12 @@ export function treeToSolver(n: ExpressionTree): string {
     case 'Arcsch':
     case 'Arsech':
       return dec(`${n.type.toLowerCase()} ${rec(n.operands[0])}`);
+    case 'Log10':
+      return dec(`log ${rec(n.operands[0])}`);
+    case 'Ln':
+      return dec(`ln ${rec(n.operands[0])}`);
+    case 'Log':
+      return dec(`log[${rec(n.operands[0])}] ${rec(n.operands[1])}`);
     case 'AbsoluteValue':
       return dec(`abs[${rec(n.operands[0])}]`);
     case 'ExpressionWithConstraint':

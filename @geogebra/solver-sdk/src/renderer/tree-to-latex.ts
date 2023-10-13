@@ -320,6 +320,12 @@ function treeToLatexInner(
     case 'Arcsch':
     case 'Arsech':
       return tfd(`\\${n.type.toLowerCase()}{${rec(n.operands[0], n)}}`);
+    case 'Log10':
+      return tfd(`\\log{${rec(n.operands[0], n)}}`);
+    case 'Log':
+      return tfd(`\\log_{${rec(n.operands[0], n)}}{${rec(n.operands[1], n)}}`);
+    case 'Ln':
+      return tfd(`\\ln{${rec(n.operands[0], n)}}`);
     case 'AbsoluteValue':
       return tfd(colorAbsoluteValue(rec(n.operands[0], n), n, t, p));
     case 'ExpressionWithConstraint': {

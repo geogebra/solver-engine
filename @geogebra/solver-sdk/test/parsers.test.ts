@@ -28,11 +28,11 @@ function testCases(
 ) {
   cases.forEach(({ solver, latex, json, dontParseLatex }) => {
     /* things we actually need:
-    - latex => solver (user input needs to be sent to the solver)
-    - json => latex (display math to user)
-    - json => solver (some intermediate step we have in json/tree format and want to send to the solver)
-    - maybe: solver => latex (for debugging)
-    */
+        - latex => solver (user input needs to be sent to the solver)
+        - json => latex (display math to user)
+        - json => solver (some intermediate step we have in json/tree format and want to send to the solver)
+        - maybe: solver => latex (for debugging)
+        */
 
     if (!Array.isArray(latex)) latex = [latex];
     const [unCastedLatexExact, ...latexAlternates] = latex;
@@ -1651,6 +1651,164 @@ describe('Solver Parser Unit Tests', () => {
           '\\tan{\\left(x\\right)}',
           '{{\\mathrm{tan}}\\left(x\\right)}', // ggb keyboard output
         ],
+      },
+    ]);
+  });
+
+  describe('Logarithm', () => {
+    testCases([
+      {
+        solver: 'log x',
+        json: {
+          type: 'Log10',
+          operands: [variable('x')],
+        },
+        latex: ['\\log{x}'],
+      },
+      {
+        solver: 'log 2 x',
+        json: {
+          type: 'Log10',
+          operands: [
+            {
+              type: 'ImplicitProduct',
+              operands: [integer('2'), variable('x')],
+            },
+          ],
+        },
+        latex: ['\\log{2x}'],
+      },
+      {
+        solver: '1 + 6 * log x',
+        json: {
+          type: 'Sum',
+          operands: [
+            integer('1'),
+            {
+              type: 'Product',
+              operands: [
+                integer('6'),
+                {
+                  type: 'Log10',
+                  operands: [variable('x')],
+                },
+              ],
+            },
+          ],
+        },
+        latex: ['1+6 \\cdot \\log{x}'],
+      },
+      {
+        solver: 'ln 2 x + 1',
+        json: {
+          type: 'Sum',
+          operands: [
+            {
+              type: 'Ln',
+              operands: [
+                {
+                  type: 'ImplicitProduct',
+                  operands: [integer('2'), variable('x')],
+                },
+              ],
+            },
+            integer('1'),
+          ],
+        },
+        latex: ['\\ln{2x}+1'],
+      },
+      {
+        solver: 'log (x + 1)',
+        json: {
+          type: 'Log10',
+          operands: [
+            {
+              type: 'Sum',
+              operands: [variable('x'), integer('1')],
+              decorators: ['RoundBracket'],
+            },
+          ],
+        },
+        latex: ['\\log{\\left(x+1\\right)}'],
+      },
+      {
+        solver: 'ln x',
+        json: {
+          type: 'Ln',
+          operands: [variable('x')],
+        },
+        latex: ['\\ln{x}', '{{\\mathrm{\\mathrm{ln}}} x}'],
+      },
+      {
+        solver: 'ln (x + 1)',
+        json: {
+          type: 'Ln',
+          operands: [
+            {
+              type: 'Sum',
+              operands: [variable('x'), integer('1')],
+              decorators: ['RoundBracket'],
+            },
+          ],
+        },
+        latex: [
+          '\\ln{\\left(x+1\\right)}',
+          '{{\\mathrm{\\mathrm{ln}}}\\left({x+1}\\right)}', // ggb keyboard output
+        ],
+      },
+      {
+        json: {
+          type: 'Log',
+          operands: [integer('10'), variable('x')],
+        },
+        latex: ['\\log_{10}{x}'],
+      },
+      {
+        solver: 'log[5] x',
+        json: {
+          type: 'Log',
+          operands: [integer('5'), variable('x')],
+        },
+        latex: ['\\log_{5}{x}'],
+      },
+      {
+        solver: 'log[a + 1] (x)',
+        json: {
+          type: 'Log',
+          operands: [
+            {
+              type: 'Sum',
+              operands: [variable('a'), integer('1')],
+            },
+            {
+              type: 'Variable',
+              value: 'x',
+              decorators: ['RoundBracket'],
+            },
+          ],
+        },
+        latex: ['\\log_{a+1}{\\left(x\\right)}'],
+      },
+      {
+        solver: '[(log[5] x + 1) ^ 2]',
+        json: {
+          type: 'Power',
+          operands: [
+            {
+              type: 'Sum',
+              operands: [
+                {
+                  type: 'Log',
+                  operands: [integer('5'), variable('x')],
+                },
+                integer('1'),
+              ],
+              decorators: ['RoundBracket'],
+            },
+            integer('2'),
+          ],
+        },
+        latex: ['{\\left(\\log_{5}{x}+1\\right)}^{2}'],
       },
     ]);
   });

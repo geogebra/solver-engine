@@ -17,8 +17,10 @@ export function tokenize(str: string): Token[] {
   const r_match = new RegExp('^\\s*\\{(\\??[A-Za-z0-9_]*)\\:'); // named regexp match
   const r_name = new RegExp('^\\s*([a-zA-Z₀₁₂₃₄₅₆₇₈₉⬚])'); // single-character names
   const r_func = new RegExp('^\\s*(sqrt|root|Solution)');
-  const r_latex_trig = new RegExp('^\\s*{\\\\mathrm{([^}]+)}}');
-  // const r_latex_trig = new RegExp('^\\s*({\\\\mathrm{(sin|cos|tan|cot|sec|csc)}})');
+  // this currently handles:
+  // * {\mathrm{sin}} (or any other trigonometric function)
+  // * {{\mathrm{\mathrm{ln}}}\left(x\right)} (nested natural-log)
+  const r_nested_mathrm = new RegExp('^\\s*{\\\\mathrm{(\\\\mathrm{[^}]+}|[^}]+)}}');
   const r_greek = new RegExp('^\\s*([α-ωΑ-Ω])'); // single-character greek letters
   const r_greek_latex_cmds = new RegExp(
     '^\\s*(\\\\(alpha|beta|gamma|delta|epsilon|zeta|eta|theta|iota|kappa|lambda|mu|nu|xi|omicron|pi|rho|sigma|tau|upsilon|phi|chi|psi|omega|Alpha|Beta|Gamma|Delta|Epsilon|Zeta|Eta|Theta|Iota|Kappa|Lambda|Mu|Nu|Xi|Omicron|Pi|Rho|Sigma|Tau|Upsilon|Phi|Chi|Psi|Omega)(?:\\{\\})?)',
@@ -118,7 +120,7 @@ export function tokenize(str: string): Token[] {
       const from = i + m.index + m[0].indexOf(m[1]);
       tokens.push({ type: 'name', value: m[1], from: from, to: from + m[1].length });
       i += m[0].length;
-    } else if ((m = r_latex_trig.exec(s))) {
+    } else if ((m = r_nested_mathrm.exec(s))) {
       // the token is a trigonometric function using \\mathrm
       tokens.push({
         type: 'latex',

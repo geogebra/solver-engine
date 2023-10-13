@@ -43,6 +43,9 @@ export type NestedExpressionType =
   | 'Arcsch' // unary
   | 'Arsech' // unary
   /**/
+  | 'Log'
+  | 'Ln'
+  | 'Log10'
   | 'AbsoluteValue' // unary
   | 'ExpressionWithConstraint' // (expression, constraint)
   | 'Equation' // binary
