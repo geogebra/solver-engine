@@ -18,6 +18,7 @@ contents to a new release section (e.g. _[0.x]_).
   git. (PLUT-598)
 - SDK: add latex rendering for greek-symbols and trigonometric functions (PLUT-714)
 - SDK: add latex rendering for natural-log, log base 10 & general log functions (PLUT-805)
+- Added support for parametric quadratic equations (where coefficents are not constant) (PLUT-807)
 
 ### Fixed
 

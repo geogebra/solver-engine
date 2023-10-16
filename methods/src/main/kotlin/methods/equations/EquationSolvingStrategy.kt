@@ -11,6 +11,7 @@ import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.optionalSteps
 import engine.methods.stepsproducers.steps
 import engine.methods.stepsproducers.whileStrategiesAvailableFirstOf
+import methods.algebra.AlgebraPlans
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.equationsystems.EquationSystemsPlans
 import methods.factor.FactorPlans
@@ -130,35 +131,7 @@ enum class EquationSolvingStrategy(
         family = Family.POLYNOMIAL,
         priority = 5,
         explanation = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula,
-        steps = steps {
-            optionally(solvablePlansForEquations.multiplyByLCDAndSimplify)
-            optionally(solvablePlansForEquations.moveEverythingToTheLeftAndSimplify)
-
-            // rearrange LHS to the form: a[x^2] + bx + c
-            optionally {
-                applyTo(PolynomialRules.NormalizePolynomial) { it.firstChild }
-            }
-
-            // normalize to the form: a[x^2] + bx + c = 0, where a > 0
-            optionally(EquationsPlans.SimplifyByFactoringNegativeSignOfLeadingCoefficient)
-            // normalize to the form: a[x^2] + bx + c = 0, where gcd(a,b,c) = 1
-            optionally(EquationsPlans.SimplifyByDividingByGcfOfCoefficients)
-
-            apply(EquationsRules.ApplyQuadraticFormula)
-
-            optionally {
-                applyTo(ConstantExpressionsPlans.SimplifyConstantExpression) { it.secondChild }
-            }
-
-            firstOf {
-                // Δ < 0
-                option(EquationsRules.ExtractSolutionFromNegativeUnderSquareRootInRealDomain)
-                // Δ > 0
-                option(resolvePlusminusSteps)
-                // Δ = 0
-                option(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
-            }
-        },
+        steps = quadraticFormulaSteps,
     ),
 
     SolveEquationWithOneAbsoluteValue(
@@ -373,4 +346,58 @@ private val equationSolvingSteps = StepsProducer { ctx, sub ->
     solveEquation.value
         .run(ctx.copy(strategySelectionMode = StrategySelectionMode.HIGHEST_PRIORITY), sub)
         ?.steps
+}
+
+private val quadraticFormulaSteps = steps {
+    optionally(solvablePlansForEquations.multiplyByLCDAndSimplify)
+    optionally(solvablePlansForEquations.moveEverythingToTheLeftAndSimplify)
+
+    // rearrange LHS to the form: a[x^2] + bx + c
+    optionally {
+        applyTo(PolynomialRules.NormalizePolynomial) { it.firstChild }
+    }
+
+    // normalize to the form: a[x^2] + bx + c = 0, where a > 0
+    optionally(EquationsPlans.SimplifyByFactoringNegativeSignOfLeadingCoefficient)
+    // normalize to the form: a[x^2] + bx + c = 0, where gcd(a,b,c) = 1
+    optionally(EquationsPlans.SimplifyByDividingByGcfOfCoefficients)
+
+    apply(EquationsRules.ApplyQuadraticFormula)
+
+    optionally {
+        applyToConstraint(constraintSimplificationPlan)
+    }
+
+    optionally {
+        firstOf {
+            // Keep this option to make the tests pass.  Perhaps it's ok to remove it.
+            option {
+                applyTo(ConstantExpressionsPlans.SimplifyConstantExpression) { it.secondChild }
+            }
+            // This option is for parametric equations.  It is ad-hoc for now, we need a generic plan for simplifying
+            // expressions.
+            option {
+                optionally {
+                    applyTo(PolynomialsPlans.ExpandPolynomialExpression) { it.secondChild }
+                }
+                optionally {
+                    applyTo(AlgebraPlans.SimplifyAlgebraicExpression) { it.secondChild }
+                }
+            }
+        }
+    }
+
+    optionally {
+        firstOf {
+            // Δ < 0
+            option(EquationsRules.ExtractSolutionFromNegativeUnderSquareRootInRealDomain)
+            // Δ > 0
+            option {
+                check { it.secondChild.isConstant() }
+                apply(resolvePlusminusSteps)
+            }
+            // Δ = 0
+            option(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
+        }
+    }
 }

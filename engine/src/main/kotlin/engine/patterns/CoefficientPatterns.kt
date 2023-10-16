@@ -1,11 +1,13 @@
 package engine.patterns
 
-import engine.context.Context
 import engine.context.emptyContext
 import engine.expressionbuilder.MappedExpressionBuilder
+import engine.expressions.ConstantChecker
 import engine.expressions.Constants
 import engine.expressions.Expression
+import engine.expressions.defaultConstantChecker
 import engine.expressions.fractionOf
+import engine.expressions.solutionVariableConstantChecker
 import java.math.BigInteger
 
 abstract class CoefficientPattern(val value: Pattern) : KeyedPattern {
@@ -85,12 +87,26 @@ class RationalCoefficientPattern(value: Pattern, private val positiveOnly: Boole
         }
 }
 
-abstract class ConstantCoefficientPatternBase(
+/**
+ * A pattern matching [value] multiplied by a constant (possibly rational) coefficient.
+ * Say [value] matches x, the pattern can then match:
+ *     sqrt[3] * x
+ *     [2/3 * root[5, 7]] * x
+ *     [4*sqrt[3]*x/5*root[3, 3] + 1]
+ *     [x/10 - sqrt[7]]
+ *     any of the above with a negative sign in front.
+ * But it will not match expression where the coefficient is not constant, such as:
+ *     y * x
+ *     [2/3 * y] * x
+ *
+ *     It is possible to restrict matching to expressions not starting with a negative sign by setting [positiveOnly] to
+ *     true.
+ */
+class ConstantCoefficientPattern(
     value: Pattern,
+    constantChecker: ConstantChecker = defaultConstantChecker,
     private val positiveOnly: Boolean = false,
-) : CoefficientPattern(value) {
-
-    protected abstract fun isConstant(context: Context, expression: Expression): Boolean
+) : CoefficientPattern(value), ConstantChecker by constantChecker {
 
     private val product = productContaining(value)
 
@@ -132,38 +148,6 @@ abstract class ConstantCoefficientPatternBase(
 }
 
 /**
- * A pattern matching [value] multiplied by a constant (possibly rational) coefficient.
- * Say [value] matches x, the pattern can then match:
- *     sqrt[3] * x
- *     [2/3 * root[5, 7]] * x
- *     [4*sqrt[3]*x/5*root[3, 3] + 1]
- *     [x/10 - sqrt[7]]
- *     any of the above with a negative sign in front.
- * But it will not match expression where the coefficient is not constant, such as:
- *     y * x
- *     [2/3 * y] * x
- *
- *     It is possible to restrict matching to expressions not starting with a negative sign by setting [positiveOnly] to
- *     true.
- */
-class ConstantCoefficientPattern(value: Pattern, positiveOnly: Boolean = false) :
-    ConstantCoefficientPatternBase(value, positiveOnly) {
-
-    override fun isConstant(context: Context, expression: Expression) = expression.isConstant()
-}
-
-/**
- * Just as above, except factors which don't contain any of the solution variables are also
- * considered constant.
- */
-class ConstantCoefficientInSolutionVariablesPattern(value: Pattern, positiveOnly: Boolean = false) :
-    ConstantCoefficientPatternBase(value, positiveOnly) {
-
-    override fun isConstant(context: Context, expression: Expression) =
-        expression.isConstantIn(context.solutionVariables)
-}
-
-/**
  * Creates a pattern for the given pattern optionally multiplied by an integer
  * coefficient. See [IntegerCoefficientPattern] for details.
  */
@@ -181,12 +165,16 @@ fun withOptionalRationalCoefficient(pattern: Pattern, positiveOnly: Boolean = fa
  * Creates a pattern which matches the given variable optionally multiplied
  * by a constant coefficient. See [ConstantCoefficientPattern] for details.
  */
-fun withOptionalConstantCoefficient(variable: Pattern, positiveOnly: Boolean = false) =
-    ConstantCoefficientPattern(variable, positiveOnly)
+fun withOptionalConstantCoefficient(
+    variable: Pattern,
+    constantChecker: ConstantChecker = defaultConstantChecker,
+    positiveOnly: Boolean = false,
+) =
+    ConstantCoefficientPattern(variable, constantChecker, positiveOnly)
 
 /**
  * Creates a pattern which matches the given variable optionally multiplied
  * by a constant coefficient. See [ConstantCoefficientPattern] for details.
  */
 fun withOptionalConstantCoefficientInSolutionVariables(variable: Pattern, positiveOnly: Boolean = false) =
-    ConstantCoefficientInSolutionVariablesPattern(variable, positiveOnly)
+    ConstantCoefficientPattern(variable, solutionVariableConstantChecker, positiveOnly)

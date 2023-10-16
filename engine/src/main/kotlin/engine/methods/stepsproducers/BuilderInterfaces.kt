@@ -107,6 +107,8 @@ interface PipelineBuilder {
      */
     fun applyToChildren(all: Boolean = false, atLeastOne: Boolean = false, init: PipelineBuilder.() -> Unit)
 
+    fun applyToConstraint(stepsProducer: StepsProducer)
+
     /**
      * Apply the first valid option in the following.  The step fails if no option is valid.
      */

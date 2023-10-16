@@ -10,8 +10,7 @@ import engine.expressions.variablePowerBase
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
-import engine.patterns.ArbitraryVariablePattern
-import engine.patterns.condition
+import engine.patterns.defaultPolynomialSpecification
 import engine.patterns.monomialPattern
 import engine.patterns.optionalNegOf
 import engine.patterns.productContaining
@@ -62,19 +61,20 @@ private val rearrangeProductOfMonomials = rule {
 }
 
 private val normalizePolynomial = rule {
-    val commonVariable = ArbitraryVariablePattern()
-    val sum = condition(sumContaining(monomialPattern(commonVariable))) { it.variables.size == 1 }
+    val sum = sumContaining()
 
     onPattern(sum) {
+
+        val spec = defaultPolynomialSpecification(context, expression) ?: return@onPattern null
         val terms = get(sum).children
-        val monomialPattern = monomialPattern(commonVariable)
+        val monomialPattern = monomialPattern(spec)
 
         // Find the degree of each term so we can decide whether the sum is normalized already.
         // If we find a non-monomial non-constant term, we don't have a polynomial, so we cannot
         // normalize it
         val termsWithDegree = terms.map { term ->
             val termOrder = when (val match = matchPattern(monomialPattern, term)) {
-                null -> if (term.isConstant()) BigInteger.ZERO else return@onPattern null
+                null -> if (spec.isConstant(context, term)) BigInteger.ZERO else return@onPattern null
                 else -> monomialPattern.exponent.getBoundInt(match)
             }
             Pair(term, termOrder)

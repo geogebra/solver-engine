@@ -1,27 +1,36 @@
 package engine.patterns
 
+import engine.context.Context
+import engine.expressions.ConstantChecker
 import engine.expressions.Constants
 import engine.expressions.Expression
+import engine.expressions.defaultConstantChecker
 
-class QuadraticPolynomialPattern(val variable: Pattern) : KeyedPattern {
+class QuadraticPolynomialPattern(
+    val variable: Pattern,
+    constantChecker: ConstantChecker = defaultConstantChecker,
+) : KeyedPattern, ConstantChecker by constantChecker {
 
-    private fun NaryPattern.restIsConstant(match: Match) =
-        getRestSubexpressions(match).all { rest -> rest.isConstant() }
+    private fun NaryPattern.restIsConstant(context: Context, match: Match) =
+        getRestSubexpressions(match).all { rest -> isConstant(context, rest) }
 
-    private val quadraticTerm = withOptionalConstantCoefficient(powerOf(variable, FixedPattern(Constants.Two)))
+    private val quadraticTerm = withOptionalConstantCoefficient(
+        powerOf(variable, FixedPattern(Constants.Two)),
+        constantChecker,
+    )
 
-    private val linearTerm = withOptionalConstantCoefficient(variable)
+    private val linearTerm = withOptionalConstantCoefficient(variable, constantChecker)
 
     private val completeQuadraticPolynomial = commutativeSumContaining(quadraticTerm, linearTerm)
 
     private val incompleteQuadraticPolynomial = commutativeSumContaining(quadraticTerm)
 
     private val quadraticPolynomial = oneOf(
-        ConditionPattern(completeQuadraticPolynomial) { _, match, _ ->
-            completeQuadraticPolynomial.restIsConstant(match)
+        ConditionPattern(completeQuadraticPolynomial) { context, match, _ ->
+            completeQuadraticPolynomial.restIsConstant(context, match)
         },
-        ConditionPattern(incompleteQuadraticPolynomial) { _, match, _ ->
-            incompleteQuadraticPolynomial.restIsConstant(match)
+        ConditionPattern(incompleteQuadraticPolynomial) { context, match, _ ->
+            incompleteQuadraticPolynomial.restIsConstant(context, match)
         },
     )
 

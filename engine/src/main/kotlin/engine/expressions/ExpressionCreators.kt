@@ -337,6 +337,15 @@ fun closedIntervalOf(lhs: Expression, rhs: Expression) =
 fun statementSystemOf(equations: List<Expression>) = buildExpression(StatementSystemOperator, equations)
 fun statementSystemOf(vararg equations: Expression) = statementSystemOf(equations.asList())
 
+fun statementSystemOfNotNullOrNull(vararg equations: Expression?): Expression? {
+    val notNullExpressions = equations.filterNotNull()
+    return when (notNullExpressions.size) {
+        0 -> null
+        1 -> notNullExpressions[0]
+        else -> statementSystemOf(notNullExpressions)
+    }
+}
+
 fun statementUnionOf(vararg equations: Expression) =
     buildExpression(StatementUnionOperator, equations.asList())
 

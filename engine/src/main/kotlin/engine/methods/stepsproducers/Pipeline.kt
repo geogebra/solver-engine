@@ -195,6 +195,13 @@ private class PipelineRunner(val builder: StepsBuilder, val ctx: Context) : Pipe
         }
     }
 
+    override fun applyToConstraint(stepsProducer: StepsProducer) {
+        val constraint = builder.constraint
+        if (constraint != null) {
+            addSteps(stepsProducer.produceSteps(ctx, constraint))
+        }
+    }
+
     override fun firstOf(init: FirstOfBuilder.() -> Unit) {
         if (!builder.inProgress) return
 

@@ -261,16 +261,22 @@ private val optimalEquationSolvingSteps = steps {
     }
 }
 
-private val constraintSimplificationPlan = plan {
+internal val constraintSimplificationPlan = plan {
     explanation = EquationsExplanation.SimplifyConstraint
 
     val simplifySingleConstraint = engine.methods.stepsproducers.steps {
-        check { it.variables.size == 1 }
-        inContext(contextFactory = { copy(solutionVariables = it.variables.toList()) }) {
-            firstOf {
-                option(InequationsPlans.SolveInequationInOneVariable)
-                option(InequalitiesPlans.SolveLinearInequality)
+        firstOf {
+            option {
+                check { it.variables.size == 1 }
+                inContext(contextFactory = { copy(solutionVariables = it.variables.toList()) }) {
+                    firstOf {
+                        option(InequationsPlans.SolveInequationInOneVariable)
+                        option(InequalitiesPlans.SolveLinearInequality)
+                    }
+                }
             }
+            option(InequationsPlans.SimplifyInequation)
+            option(InequalitiesPlans.SimplifyInequality)
         }
     }
 

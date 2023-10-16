@@ -26,9 +26,12 @@ class MonomialPattern<T : CoefficientPattern> internal constructor(
 }
 
 fun monomialPattern(base: Pattern, positiveOnly: Boolean = false) =
-    MonomialPattern(base) { withOptionalConstantCoefficient(it, positiveOnly) }
+    MonomialPattern(base) { withOptionalConstantCoefficient(it, positiveOnly = positiveOnly) }
 
 fun rationalMonomialPattern(base: Pattern, positiveOnly: Boolean = false) =
     MonomialPattern(base) { withOptionalRationalCoefficient(it, positiveOnly) }
 
 fun integerMonomialPattern(base: Pattern) = MonomialPattern(base) { withOptionalIntegerCoefficient(it) }
+
+fun monomialPattern(spec: PolynomialSpecification, positiveOnly: Boolean = false) =
+    MonomialPattern(spec.variable) { withOptionalConstantCoefficient(it, spec.constantChecker, positiveOnly) }

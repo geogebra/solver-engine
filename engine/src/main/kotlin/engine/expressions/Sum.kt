@@ -1,10 +1,10 @@
 package engine.expressions
 
 import engine.conditions.sumTermsAreIncommensurable
-import engine.context.emptyContext
+import engine.context.Context
 import engine.operators.SumOperator
-import engine.patterns.ArbitraryVariablePattern
 import engine.patterns.RootMatch
+import engine.patterns.defaultPolynomialSpecification
 import engine.patterns.monomialPattern
 import engine.sign.Sign
 import java.math.BigInteger
@@ -42,21 +42,20 @@ fun areEquivalentSums(expr1: Expression, expr2: Expression): Boolean {
 }
 
 @Suppress("ReturnCount")
-fun leadingCoefficientOfPolynomial(polynomialExpr: Sum): Expression? {
-    val variables = polynomialExpr.variables
-    if (variables.size != 1) return null
+fun leadingCoefficientOfPolynomial(context: Context, polynomialExpr: Sum): Expression? {
+    val spec = defaultPolynomialSpecification(context, polynomialExpr) ?: return null
+    val monomialPattern = monomialPattern(spec)
 
-    val monomial = monomialPattern(ArbitraryVariablePattern())
     var degree = BigInteger.ZERO
     var leadingCoefficient: Expression? = null
     for (term in polynomialExpr.terms) {
-        if (!term.isConstant()) {
+        if (!spec.isConstant(context, term)) {
             // If it isn't a monomial, `polynomialExpr` isn't a polynomial or a polynomial not expanded
-            val monomialMatch = monomial.findMatches(emptyContext, RootMatch, term).firstOrNull() ?: return null
-            val monomialDegree = monomial.exponent.getBoundInt(monomialMatch)
+            val monomialMatch = monomialPattern.findMatches(context, RootMatch, term).firstOrNull() ?: return null
+            val monomialDegree = monomialPattern.exponent.getBoundInt(monomialMatch)
             when {
                 monomialDegree > degree -> {
-                    leadingCoefficient = monomial.coefficient(monomialMatch)
+                    leadingCoefficient = monomialPattern.coefficient(monomialMatch)
                     degree = monomialDegree
                 }
                 monomialDegree == degree -> {

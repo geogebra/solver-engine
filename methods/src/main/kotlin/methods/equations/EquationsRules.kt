@@ -13,11 +13,13 @@ import engine.expressions.VariableList
 import engine.expressions.VoidExpression
 import engine.expressions.contradictionOf
 import engine.expressions.equationOf
+import engine.expressions.expressionWithConstraintOf
 import engine.expressions.finiteSetOf
 import engine.expressions.fractionOf
 import engine.expressions.greaterThanEqualOf
 import engine.expressions.hasSingleValue
 import engine.expressions.identityOf
+import engine.expressions.inequationOf
 import engine.expressions.inverse
 import engine.expressions.leadingCoefficientOfPolynomial
 import engine.expressions.lessThanOf
@@ -28,9 +30,11 @@ import engine.expressions.productOf
 import engine.expressions.setSolutionOf
 import engine.expressions.simplifiedNegOf
 import engine.expressions.simplifiedProductOf
+import engine.expressions.solutionVariableConstantChecker
 import engine.expressions.splitPlusMinus
 import engine.expressions.squareRootOf
 import engine.expressions.statementSystemOf
+import engine.expressions.statementSystemOfNotNullOrNull
 import engine.expressions.statementUnionOf
 import engine.expressions.sumOf
 import engine.expressions.termwiseProductOf
@@ -104,7 +108,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
             onEquation(lhs, rhs) {
                 val lhsExpr = get(lhs) as Sum
-                val leadingCoefficient = leadingCoefficientOfPolynomial(lhsExpr)
+                val leadingCoefficient = leadingCoefficientOfPolynomial(context, lhsExpr)
                 if (leadingCoefficient == null || leadingCoefficient == Constants.One) {
                     return@onEquation null
                 }
@@ -210,7 +214,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             val rhs = condition {
                 // if any of the '+' or '-' term has non-real term in it
                 // for e.g. if the expression contains `sqrt[-3]`
-                it.isConstant() && it.splitPlusMinus().any { child -> child.signOf() == Sign.NONE }
+                it.isConstant() && it.splitPlusMinus().any { it.signOf() == Sign.NONE }
             }
 
             onEquation(lhs, rhs) {
@@ -306,8 +310,10 @@ private val extractSolutionFromEquationInPlusMinusForm = rule {
 }
 
 private val applyQuadraticFormula = rule {
-    val solutionVariable = SolutionVariablePattern()
-    val quadraticPolynomial = QuadraticPolynomialPattern(solutionVariable)
+    val quadraticPolynomial = QuadraticPolynomialPattern(
+        variable = SolutionVariablePattern(),
+        constantChecker = solutionVariableConstantChecker,
+    )
     val rhs = FixedPattern(Constants.Zero)
 
     onEquation(quadraticPolynomial, rhs) {
@@ -321,6 +327,10 @@ private val applyQuadraticFormula = rule {
                 productOf(Constants.Four, a, c),
             ),
         )
+        val denominator = productOf(
+            Constants.Two,
+            a,
+        )
         val sol = fractionOf(
             sumOf(
                 negOf(b),
@@ -328,14 +338,16 @@ private val applyQuadraticFormula = rule {
                     squareRootOf(discriminant),
                 ),
             ),
-            productOf(
-                Constants.Two,
-                a,
-            ),
+            denominator,
+        )
+
+        val constraint = statementSystemOfNotNullOrNull(
+            if (discriminant.isConstant()) null else greaterThanEqualOf(discriminant, Constants.Zero),
+            if (denominator.isConstant()) null else inequationOf(denominator, Constants.Zero),
         )
 
         ruleResult(
-            toExpr = equationOf(get(solutionVariable), sol),
+            toExpr = expressionWithConstraintOf(equationOf(get(quadraticPolynomial.variable), sol), constraint),
             explanation = metadata(Explanation.ApplyQuadraticFormula),
         )
     }

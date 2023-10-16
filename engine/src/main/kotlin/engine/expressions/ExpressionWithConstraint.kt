@@ -14,3 +14,6 @@ class ExpressionWithConstraint(
     val expression get() = firstChild
     val constraint get() = secondChild
 }
+
+fun expressionWithConstraintOf(expression: Expression, constraint: Expression?) =
+    if (constraint == null) expression else ExpressionWithConstraint(expression, constraint)

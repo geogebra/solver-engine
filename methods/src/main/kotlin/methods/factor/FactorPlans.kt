@@ -328,7 +328,10 @@ private val factorizeSumByExpandingTermsSteps: StepsProducer = steps {
 private val factorizeMinusSteps: StepsProducer = steps {
     firstOf {
         option {
-            check { it is Minus && it.argument is Sum && leadingCoefficientOfPolynomial(it.argument as Sum) is Minus }
+            check {
+                it is Minus && it.argument is Sum &&
+                    leadingCoefficientOfPolynomial(this, it.argument as Sum) is Minus
+            }
             apply(ExpandRules.DistributeNegativeOverBracket)
             optionally(factorizationSteps)
         }

@@ -3,10 +3,12 @@ package methods.equations
 import engine.context.Context
 import engine.context.strategyChoice
 import engine.methods.MethodTestCase
+import methods.algebra.AlgebraExplanation
 import methods.collecting.CollectingExplanation
 import methods.constantexpressions.ConstantExpressionsExplanation
 import methods.equations.EquationSolvingStrategy.QuadraticFormula
 import methods.factor.FactorExplanation
+import methods.general.GeneralExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
 import methods.polynomials.PolynomialsExplanation
 import org.junit.jupiter.api.Test
@@ -14,11 +16,11 @@ import org.junit.jupiter.api.Test
 @Suppress("LargeClass")
 class QuadraticFormulaStrategyTest {
 
-    private fun testQuadraticFormula(init: MethodTestCase.() -> Unit) {
+    private fun testQuadraticFormula(variable: String = "x", init: MethodTestCase.() -> Unit) {
         val testCase = MethodTestCase()
         testCase.method = EquationsPlans.SolveEquation
         testCase.context = Context(
-            solutionVariables = listOf("x"),
+            solutionVariables = listOf(variable),
             preferredStrategies = mapOf(strategyChoice(QuadraticFormula)),
         )
         testCase.init()
@@ -762,6 +764,202 @@ class QuadraticFormulaStrategyTest {
                 toExpr = "SetSolution[x: {-[6 + 2 root[18, 4] / 6], [-6 + 2 root[18, 4] / 6]}]"
                 explanation {
                     key = EquationsExplanation.SolveEquationUnion
+                }
+            }
+        }
+    }
+
+    @Suppress("MaxLineLength")
+    @Test
+    fun `test parametric equation with constraint`() = testQuadraticFormula("c") {
+        inputExpr = "-[a ^ 2] = [b ^ 2] + [c ^ 2] - 3 b c"
+
+        check {
+            fromExpr = "-[a ^ 2] = [b ^ 2] + [c ^ 2] - 3 b c"
+            toExpr = "c = [3 b +/- sqrt[5 [b ^ 2] - 4 [a ^ 2]] / 2] GIVEN 9 [b ^ 2] - 4 ([a ^ 2] + [b ^ 2]) >= 0"
+            explanation {
+                key = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula
+            }
+
+            step {
+                fromExpr = "-[a ^ 2] = [b ^ 2] + [c ^ 2] - 3 b c"
+                toExpr = "-[a ^ 2] - [b ^ 2] - [c ^ 2] + 3 b c = 0"
+                explanation {
+                    key = methods.solvable.EquationsExplanation.MoveEverythingToTheLeftAndSimplify
+                }
+            }
+
+            step {
+                fromExpr = "-[a ^ 2] - [b ^ 2] - [c ^ 2] + 3 b c = 0"
+                toExpr = "-[c ^ 2] + 3 b c - [a ^ 2] - [b ^ 2] = 0"
+                explanation {
+                    key = PolynomialsExplanation.NormalizePolynomial
+                }
+            }
+
+            step {
+                fromExpr = "-[c ^ 2] + 3 b c - [a ^ 2] - [b ^ 2] = 0"
+                toExpr = "[c ^ 2] - 3 b c + [a ^ 2] + [b ^ 2] = 0"
+                explanation {
+                    key = EquationsExplanation.SimplifyByFactoringNegativeSignOfLeadingCoefficient
+                }
+            }
+
+            step {
+                fromExpr = "[c ^ 2] - 3 b c + [a ^ 2] + [b ^ 2] = 0"
+                toExpr = "c = [-(-3 b) +/- sqrt[[(-3 b) ^ 2] - 4 * 1 ([a ^ 2] + [b ^ 2])] / 2 * 1] GIVEN [(-3 b) ^ 2] - 4 * 1 ([a ^ 2] + [b ^ 2]) >= 0"
+                explanation {
+                    key = EquationsExplanation.ApplyQuadraticFormula
+                }
+            }
+
+            // This constraint should be simplified further
+            step {
+                fromExpr = "c = [-(-3 b) +/- sqrt[[(-3 b) ^ 2] - 4 * 1 ([a ^ 2] + [b ^ 2])] / 2 * 1] GIVEN [(-3 b) ^ 2] - 4 * 1 ([a ^ 2] + [b ^ 2]) >= 0"
+                toExpr = "c = [-(-3 b) +/- sqrt[[(-3 b) ^ 2] - 4 * 1 ([a ^ 2] + [b ^ 2])] / 2 * 1] GIVEN 9 [b ^ 2] - 4 ([a ^ 2] + [b ^ 2]) >= 0"
+                explanation {
+                    key = EquationsExplanation.SimplifyConstraint
+                }
+            }
+
+            step {
+                fromExpr = "c = [-(-3 b) +/- sqrt[[(-3 b) ^ 2] - 4 * 1 ([a ^ 2] + [b ^ 2])] / 2 * 1] GIVEN 9 [b ^ 2] - 4 ([a ^ 2] + [b ^ 2]) >= 0"
+                toExpr = "c = [3 b +/- sqrt[5 [b ^ 2] - 4 [a ^ 2]] / 2] GIVEN 9 [b ^ 2] - 4 ([a ^ 2] + [b ^ 2]) >= 0"
+                explanation {
+                    key = PolynomialsExplanation.ExpandPolynomialExpression
+                }
+            }
+        }
+    }
+
+    @Suppress("MaxLineLength")
+    @Test
+    fun `test parametric quadratic equation with constraint always satisfied`() = testQuadraticFormula("c") {
+        inputExpr = "[a ^ 2] = [b ^ 2] + [c ^ 2] - 4 b c"
+
+        check {
+            fromExpr = "[a ^ 2] = [b ^ 2] + [c ^ 2] - 4 b c"
+            toExpr = "c = [4 b +/- sqrt[12 [b ^ 2] + 4 [a ^ 2]] / 2] GIVEN 16 [b ^ 2] - 4 (-[a ^ 2] + [b ^ 2]) >= 0"
+            explanation {
+                key = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula
+            }
+
+            step {
+                fromExpr = "[a ^ 2] = [b ^ 2] + [c ^ 2] - 4 b c"
+                toExpr = "[a ^ 2] - [b ^ 2] - [c ^ 2] + 4 b c = 0"
+                explanation {
+                    key = methods.solvable.EquationsExplanation.MoveEverythingToTheLeftAndSimplify
+                }
+            }
+
+            step {
+                fromExpr = "[a ^ 2] - [b ^ 2] - [c ^ 2] + 4 b c = 0"
+                toExpr = "-[c ^ 2] + 4 b c + [a ^ 2] - [b ^ 2] = 0"
+                explanation {
+                    key = PolynomialsExplanation.NormalizePolynomial
+                }
+            }
+
+            step {
+                fromExpr = "-[c ^ 2] + 4 b c + [a ^ 2] - [b ^ 2] = 0"
+                toExpr = "[c ^ 2] - 4 b c - [a ^ 2] + [b ^ 2] = 0"
+                explanation {
+                    key = EquationsExplanation.SimplifyByFactoringNegativeSignOfLeadingCoefficient
+                }
+            }
+
+            step {
+                fromExpr = "[c ^ 2] - 4 b c - [a ^ 2] + [b ^ 2] = 0"
+                toExpr = "c = [-(-4 b) +/- sqrt[[(-4 b) ^ 2] - 4 * 1 (-[a ^ 2] + [b ^ 2])] / 2 * 1] GIVEN [(-4 b) ^ 2] - 4 * 1 (-[a ^ 2] + [b ^ 2]) >= 0"
+                explanation {
+                    key = EquationsExplanation.ApplyQuadraticFormula
+                }
+            }
+
+            // The steps below should be improved later
+            step {
+                fromExpr = "c = [-(-4 b) +/- sqrt[[(-4 b) ^ 2] - 4 * 1 (-[a ^ 2] + [b ^ 2])] / 2 * 1] GIVEN [(-4 b) ^ 2] - 4 * 1 (-[a ^ 2] + [b ^ 2]) >= 0"
+                toExpr = "c = [-(-4 b) +/- sqrt[[(-4 b) ^ 2] - 4 * 1 (-[a ^ 2] + [b ^ 2])] / 2 * 1] GIVEN 16 [b ^ 2] - 4 (-[a ^ 2] + [b ^ 2]) >= 0"
+                explanation {
+                    key = EquationsExplanation.SimplifyConstraint
+                }
+            }
+
+            step {
+                fromExpr = "c = [-(-4 b) +/- sqrt[[(-4 b) ^ 2] - 4 * 1 (-[a ^ 2] + [b ^ 2])] / 2 * 1] GIVEN 16 [b ^ 2] - 4 (-[a ^ 2] + [b ^ 2]) >= 0"
+                toExpr = "c = [4 b +/- sqrt[12 [b ^ 2] + 4 [a ^ 2]] / 2] GIVEN 16 [b ^ 2] - 4 (-[a ^ 2] + [b ^ 2]) >= 0"
+                explanation {
+                    key = PolynomialsExplanation.ExpandPolynomialExpression
+                }
+            }
+        }
+    }
+
+    @Suppress("MaxLineLength")
+    @Test
+    fun `test parametric equation with no linear term`() = testQuadraticFormula("c") {
+        inputExpr = "E = m [c ^ 2]"
+
+        check {
+            fromExpr = "E = m [c ^ 2]"
+            toExpr = "c = [+/-sqrt[4 E m] / 2 m] GIVEN 4 E m >= 0 AND SetSolution[m: /reals/ \\ {0}]"
+            explanation {
+                key = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula
+            }
+
+            step {
+                fromExpr = "E = m [c ^ 2]"
+                toExpr = "E = [c ^ 2] m"
+                explanation {
+                    key = GeneralExplanation.ReorderProduct
+                }
+            }
+
+            step {
+                fromExpr = "E = [c ^ 2] m"
+                toExpr = "E - [c ^ 2] m = 0"
+                explanation {
+                    key = methods.solvable.EquationsExplanation.MoveEverythingToTheLeftAndSimplify
+                }
+            }
+
+            step {
+                fromExpr = "E - [c ^ 2] m = 0"
+                toExpr = "-[c ^ 2] m + E = 0"
+                explanation {
+                    key = PolynomialsExplanation.NormalizePolynomial
+                }
+            }
+
+            step {
+                fromExpr = "-[c ^ 2] m + E = 0"
+                toExpr = "[c ^ 2] m - E = 0"
+                explanation {
+                    key = EquationsExplanation.SimplifyByFactoringNegativeSignOfLeadingCoefficient
+                }
+            }
+
+            step {
+                fromExpr = "[c ^ 2] m - E = 0"
+                toExpr = "c = [-0 +/- sqrt[[0 ^ 2] - 4 m (-E)] / 2 m] GIVEN [0 ^ 2] - 4 m (-E) >= 0 AND 2 m != 0"
+                explanation {
+                    key = EquationsExplanation.ApplyQuadraticFormula
+                }
+            }
+
+            step {
+                fromExpr = "c = [-0 +/- sqrt[[0 ^ 2] - 4 m (-E)] / 2 m] GIVEN [0 ^ 2] - 4 m (-E) >= 0 AND 2 m != 0"
+                toExpr = "c = [-0 +/- sqrt[[0 ^ 2] - 4 m (-E)] / 2 m] GIVEN 4 E m >= 0 AND SetSolution[m: /reals/ \\ {0}]"
+                explanation {
+                    key = EquationsExplanation.SimplifyConstraint
+                }
+            }
+
+            step {
+                fromExpr = "c = [-0 +/- sqrt[[0 ^ 2] - 4 m (-E)] / 2 m] GIVEN 4 E m >= 0 AND SetSolution[m: /reals/ \\ {0}]"
+                toExpr = "c = [+/-sqrt[4 E m] / 2 m] GIVEN 4 E m >= 0 AND SetSolution[m: /reals/ \\ {0}]"
+                explanation {
+                    key = AlgebraExplanation.SimplifyAlgebraicExpression
                 }
             }
         }

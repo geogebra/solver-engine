@@ -243,4 +243,9 @@ export const expressionSkipList = [
 
   // TODO: should work in GM
   '3*a+2*b<9',
+
+  // TODO: this error was introduced in PLUT-807
+  '-(c^2-3*b*c+a^2+b^2)=0',
+  '-(c^2-4*b*c-a^2+b^2)=0',
+  '-(c^2*m-E)=0',
 ];

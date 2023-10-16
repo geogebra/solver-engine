@@ -8,6 +8,7 @@ import engine.expressions.Factor
 import engine.expressions.IntegerExpression
 import engine.expressions.IntegerView
 import engine.expressions.Label
+import engine.expressions.Minus
 import engine.expressions.Power
 import engine.expressions.Sum
 import engine.expressions.SumView
@@ -52,7 +53,6 @@ import engine.patterns.statementSystemOf
 import engine.patterns.sumContaining
 import engine.patterns.sumOf
 import engine.patterns.withOptionalRationalCoefficient
-import engine.sign.Sign
 import engine.steps.metadata.metadata
 import engine.utility.Rational
 import engine.utility.cbrt
@@ -154,8 +154,8 @@ enum class FactorRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(polynomial) {
                 val polynomialVal = get(polynomial) as Sum
-                val leadingCoefficient = leadingCoefficientOfPolynomial(polynomialVal)
-                if ((leadingCoefficient == null) || (leadingCoefficient.signOf() == Sign.POSITIVE)) {
+                val leadingCoefficient = leadingCoefficientOfPolynomial(context, polynomialVal)
+                if ((leadingCoefficient == null) || (leadingCoefficient !is Minus)) {
                     return@onPattern null
                 }
 
