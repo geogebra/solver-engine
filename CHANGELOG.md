@@ -72,6 +72,7 @@ contents to a new release section (e.g. _[0.x]_).
 - temporary fix for PartialBrackets + SmartProduct bug (SP-216, PLUT-684)
 - Simplification of -ve base root power be done by "SimplifyConstantExpression" (PLUT-682)
 - Fix regression: SolveEquation plan should solve rational equations well (PLUT-689)
+- SDK: fixed actor selection for GM actions involving adjacent actors (PLUT-806)
 
 ### Changed
 

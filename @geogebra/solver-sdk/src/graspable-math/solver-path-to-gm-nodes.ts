@@ -45,7 +45,8 @@ export function solverPathToGmNodes(
     if (target.parent?.is_group('sign')) target = target.parent;
 
     if (areAdjacentAddendsOrFactors(actor, target)) {
-      const operators = map.get(`${actorPaths[0]}:op`);
+      // If we are dragging the entire group (-1) we need the operator (-) of the main actor (1) to be tapped
+      const operators = map.get(`${actorPaths[0].replace(':group', '')}:op`);
       if (operators && !operators[0].hidden) {
         actors[0] = operators[0];
         targets.splice(0);
