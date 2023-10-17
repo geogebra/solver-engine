@@ -35,7 +35,20 @@ class TestToJson {
                 {"type": "Variable", "value": "y"}
             ],
             "signs": [false, false, true, true]
-            }""",
+        }""",
+    )
+
+    @Test
+    fun productTestWithMissingBracket() = test(
+        "3*-x",
+        """{
+            "type": "SmartProduct",
+            "operands": [
+                {"type": "Integer", "value": "3"},
+                {"type": "Minus", "operands": [{"type": "Variable", "value": "x"}], "decorators": ["MissingBracket"]}
+            ],
+            "signs": [false, true]
+        }""",
     )
 
     @Test

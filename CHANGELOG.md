@@ -29,6 +29,7 @@ contents to a new release section (e.g. _[0.x]_).
 - SDK: Fix regression, undefined `operands` value of emptyset is parsed by latex parser without error (PLUT-695)
 - SDK: Fixed the use of :op vs :op() when translating solver paths into GM terms
 - SDK: Improved accuracy of type information (SP-237)
+- Fixed missing product sign in expressions with missing brackets (e.g. `3*-x`) (PLUT-824)
 
 ### Changed
 

@@ -89,7 +89,7 @@ fun productSignRequired(left: Expression, right: Expression): Boolean = when {
     right.isPartialProduct() -> productSignRequired(left, right.children.first())
     left.operator == UnaryExpressionOperator.DivideBy || right.operator == UnaryExpressionOperator.DivideBy -> true
     right.isNumbery() -> true
-    left.hasBracket() || right.hasBracket() -> false
+    left.hasVisibleBracket() || right.hasVisibleBracket() -> false
     else -> {
         val rightOp = getBaseOfPower(right)
         val leftOp = getBaseOfPower(left)
