@@ -65,9 +65,29 @@ class TermView<T : View>(override val original: Expression, factorViewCreator: (
     }
 }
 
-class SumView<T : View>(override val original: Sum, factorViewCreator: (Expression) -> T) : View {
+class SumView<T : View>(override val original: Expression, factorViewCreator: (Expression) -> T) : View {
 
-    val termViews = original.terms.map { TermView(it) { factor -> factorViewCreator(factor) } }
+    private fun originalTerms() = if (original is Sum) original.terms else listOf(original)
+
+    val termViews = originalTerms().map { TermView(it) { factor -> factorViewCreator(factor) } }
 
     override fun recombine() = sumOf(termViews.map { it.recombine() })
+}
+
+class IntegerFactorView(override val original: IntegerExpression) : IntegerView {
+    private var newValue: BigInteger? = null
+
+    override val value get() = newValue ?: original.value
+
+    override fun changeValue(newValue: BigInteger) {
+        this.newValue = newValue
+    }
+
+    override fun recombine(): Expression? {
+        return when {
+            newValue == null -> original
+            newValue == BigInteger.ONE -> null
+            else -> xp(newValue!!).withOrigin(Combine(listOf(original)))
+        }
+    }
 }

@@ -839,7 +839,7 @@ class QuadraticFormulaStrategyTest {
 
         check {
             fromExpr = "[a ^ 2] = [b ^ 2] + [c ^ 2] - 4 b c"
-            toExpr = "c = [4 b +/- sqrt[12 [b ^ 2] + 4 [a ^ 2]] / 2] GIVEN 16 [b ^ 2] - 4 (-[a ^ 2] + [b ^ 2]) >= 0"
+            toExpr = "c = [4 b +/- 2 sqrt[3 [b ^ 2] + [a ^ 2]] / 2] GIVEN 16 [b ^ 2] - 4 (-[a ^ 2] + [b ^ 2]) >= 0"
             explanation {
                 key = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula
             }
@@ -887,9 +887,9 @@ class QuadraticFormulaStrategyTest {
 
             step {
                 fromExpr = "c = [-(-4 b) +/- sqrt[[(-4 b) ^ 2] - 4 * 1 (-[a ^ 2] + [b ^ 2])] / 2 * 1] GIVEN 16 [b ^ 2] - 4 (-[a ^ 2] + [b ^ 2]) >= 0"
-                toExpr = "c = [4 b +/- sqrt[12 [b ^ 2] + 4 [a ^ 2]] / 2] GIVEN 16 [b ^ 2] - 4 (-[a ^ 2] + [b ^ 2]) >= 0"
+                toExpr = "c = [4 b +/- 2 sqrt[3 [b ^ 2] + [a ^ 2]] / 2] GIVEN 16 [b ^ 2] - 4 (-[a ^ 2] + [b ^ 2]) >= 0"
                 explanation {
-                    key = PolynomialsExplanation.ExpandPolynomialExpression
+                    key = AlgebraExplanation.SimplifyAlgebraicExpression
                 }
             }
         }
@@ -902,7 +902,7 @@ class QuadraticFormulaStrategyTest {
 
         check {
             fromExpr = "E = m [c ^ 2]"
-            toExpr = "c = [+/-sqrt[4 E m] / 2 m] GIVEN 4 E m >= 0 AND SetSolution[m: /reals/ \\ {0}]"
+            toExpr = "c = [+/-2 sqrt[E m] / 2 m] GIVEN 4 E m >= 0 AND SetSolution[m: /reals/ \\ {0}]"
             explanation {
                 key = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula
             }
@@ -957,7 +957,7 @@ class QuadraticFormulaStrategyTest {
 
             step {
                 fromExpr = "c = [-0 +/- sqrt[[0 ^ 2] - 4 m (-E)] / 2 m] GIVEN 4 E m >= 0 AND SetSolution[m: /reals/ \\ {0}]"
-                toExpr = "c = [+/-sqrt[4 E m] / 2 m] GIVEN 4 E m >= 0 AND SetSolution[m: /reals/ \\ {0}]"
+                toExpr = "c = [+/-2 sqrt[E m] / 2 m] GIVEN 4 E m >= 0 AND SetSolution[m: /reals/ \\ {0}]"
                 explanation {
                     key = AlgebraExplanation.SimplifyAlgebraicExpression
                 }

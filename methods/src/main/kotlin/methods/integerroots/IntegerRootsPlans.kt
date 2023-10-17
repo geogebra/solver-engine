@@ -17,6 +17,7 @@ import engine.patterns.integerCondition
 import engine.patterns.integerOrderRootOf
 import engine.patterns.powerOf
 import engine.patterns.rootOf
+import engine.patterns.squareRootOf
 import engine.utility.isPowerOfDegree
 import methods.general.GeneralRules
 import methods.integerarithmetic.IntegerArithmeticPlans
@@ -210,6 +211,8 @@ enum class IntegerRootsPlans(override val runner: CompositeMethod) : RunnerMetho
             }
         },
     ),
+
+    SimplifySquareRootWithASquareFactorRadicand(simplifySquareRootWithASquareFactorRadicand),
 }
 
 val cancelRootOfPower = steps {
@@ -247,4 +250,17 @@ val simplifyProductOfRoots = steps {
     optionally(IntegerRootsRules.SimplifyMultiplicationOfSquareRoots)
     whilePossible(IntegerRootsRules.MultiplyNthRoots)
     whilePossible { deeply(IntegerArithmeticPlans.SimplifyIntegersInProduct) }
+}
+
+val simplifySquareRootWithASquareFactorRadicand = plan {
+    explanation = Explanation.SimplifySquareRootWithASquareFactorRadicand
+    pattern = squareRootOf(AnyPattern())
+
+    steps {
+        optionally {
+            applyToKind<SquareRoot>(IntegerRootsRules.FactorGreatestCommonSquareIntegerFactor) { it.argument }
+        }
+        apply(IntegerRootsRules.MoveSquareFactorOutOfRoot)
+        applyTo(IntegerRootsPlans.SimplifyIntegerRoot) { it.firstChild }
+    }
 }

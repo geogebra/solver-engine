@@ -1,6 +1,8 @@
 package methods.constantexpressions
 
 import engine.methods.testMethod
+import methods.collecting.CollectingExplanation
+import methods.expand.ExpandExplanation
 import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.fractionroots.FractionRootsExplanation
 import methods.general.GeneralExplanation
@@ -562,6 +564,76 @@ class SmartFactorizationUnderRoot {
                 toExpr = "sqrt[6]"
                 explanation {
                     key = IntegerRootsExplanation.RewriteAndCancelPowerUnderRoot
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testSimplifyRootOfSum() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "sqrt[4 (sqrt[2] + 2) + 5 sqrt[2] + 10]"
+
+        check {
+            fromExpr = "sqrt[4 (sqrt[2] + 2) + 5 sqrt[2] + 10]"
+            toExpr = "3 sqrt[sqrt[2] + 2]"
+            explanation {
+                key = ConstantExpressionsExplanation.SimplifyConstantExpression
+            }
+
+            step {
+                fromExpr = "sqrt[4 (sqrt[2] + 2) + 5 sqrt[2] + 10]"
+                toExpr = "sqrt[<.4 sqrt[2] + 8.> + 5 sqrt[2] + 10]"
+                explanation {
+                    key = ExpandExplanation.ExpandSingleBracketAndSimplify
+                }
+            }
+
+            step {
+                fromExpr = "sqrt[4 sqrt[2] + 8 + 5 sqrt[2] + 10]"
+                toExpr = "sqrt[9 sqrt[2] + 8 + 10]"
+                explanation {
+                    key = CollectingExplanation.CollectLikeRootsAndSimplify
+                }
+            }
+
+            step {
+                fromExpr = "sqrt[9 sqrt[2] + 8 + 10]"
+                toExpr = "sqrt[9 sqrt[2] + 18]"
+                explanation {
+                    key = IntegerArithmeticExplanation.SimplifyIntegersInSum
+                }
+            }
+
+            step {
+                fromExpr = "sqrt[9 sqrt[2] + 18]"
+                toExpr = "3 sqrt[sqrt[2] + 2]"
+                explanation {
+                    key = IntegerRootsExplanation.SimplifySquareRootWithASquareFactorRadicand
+                }
+
+                step {
+                    fromExpr = "sqrt[9 sqrt[2] + 18]"
+                    toExpr = "sqrt[9 (sqrt[2] + 2)]"
+                    explanation {
+                        key = IntegerRootsExplanation.FactorGreatestCommonSquareIntegerFactor
+                    }
+                }
+
+                step {
+                    fromExpr = "sqrt[9 (sqrt[2] + 2)]"
+                    toExpr = "sqrt[9] * sqrt[sqrt[2] + 2]"
+                    explanation {
+                        key = IntegerRootsExplanation.SplitRootOfProduct
+                    }
+                }
+
+                step {
+                    fromExpr = "sqrt[9] * sqrt[sqrt[2] + 2]"
+                    toExpr = "3 sqrt[sqrt[2] + 2]"
+                    explanation {
+                        key = IntegerRootsExplanation.SimplifyIntegerRoot
+                    }
                 }
             }
         }

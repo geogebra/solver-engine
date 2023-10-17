@@ -226,3 +226,22 @@ fun gcd(vararg values: BigInteger): BigInteger {
     }
     return values.reduce { acc, n -> acc.gcd(n) }
 }
+
+fun BigInteger.greatestSquareFactor(): BigInteger {
+    // Simply loop over primes, checking if the square of the current prime is a factor
+
+    var n = this // Remaining factor that could still have square factors
+    var f = BigInteger.ONE // Square factor found so far
+
+    var p = BigInteger.TWO // Current prime number considered
+    var p2 = p * p // Current squared prime
+    while (p2 <= n) {
+        while (p2.divides(n)) {
+            n /= p2
+            f *= p2
+        }
+        p = p.nextProbablePrime()
+        p2 = p * p
+    }
+    return f
+}

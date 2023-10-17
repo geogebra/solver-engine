@@ -1,11 +1,18 @@
 package methods.integerroots
 
+import engine.expressions.DefaultView
+import engine.expressions.Factor
+import engine.expressions.IntegerExpression
+import engine.expressions.IntegerFactorView
 import engine.expressions.Power
+import engine.expressions.SumView
+import engine.expressions.isSignedInteger
 import engine.expressions.powerOf
 import engine.expressions.productOf
 import engine.expressions.rootOf
 import engine.expressions.simplifiedPowerOf
 import engine.expressions.simplifiedProductOf
+import engine.expressions.squareRootOf
 import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
@@ -29,9 +36,11 @@ import engine.steps.metadata.metadata
 import engine.utility.asPowerForRoot
 import engine.utility.asProductForRoot
 import engine.utility.divides
+import engine.utility.greatestSquareFactor
 import engine.utility.hasFactorOfDegree
 import engine.utility.isEven
 import engine.utility.isFactorizableUnderRationalExponent
+import engine.utility.isSquare
 import engine.utility.primeFactorDecomposition
 import java.math.BigInteger
 
@@ -251,6 +260,11 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
     ),
 
     /**
+     * sqrt[25xy] -> sqrt[25]*sqrt[xy]
+     */
+    MoveSquareFactorOutOfRoot(moveSquareFactorOutOfSquareRoot),
+
+    /**
      * [root[a, n] ^ n] -> a
      */
     SimplifyNthRootToThePowerOfN(
@@ -466,4 +480,59 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
             }
         },
     ),
+
+    FactorGreatestCommonSquareIntegerFactor(factorGreatestCommonSquareIntegerFactor),
+}
+
+private val moveSquareFactorOutOfSquareRoot = rule {
+    val square = integerCondition(UnsignedIntegerPattern()) { it != BigInteger.ONE && it.isSquare() }
+    val product = productContaining(square)
+
+    onPattern(squareRootOf(product)) {
+        ruleResult(
+            toExpr = productOf(
+                squareRootOf(move(square)),
+                squareRootOf(restOf(product)),
+            ),
+            explanation = metadata(Explanation.SplitRootOfProduct),
+        )
+    }
+}
+
+private val factorGreatestCommonSquareIntegerFactor = rule {
+    onPattern(AnyPattern()) {
+        if (expression.isSignedInteger()) {
+            // If it's just an integer we defer to more basic methods
+            return@onPattern null
+        }
+
+        val sumView = SumView(expression) {
+            if (it is IntegerExpression) {
+                IntegerFactorView(it)
+            } else {
+                DefaultView(it)
+            }
+        }
+
+        val integerFactors = sumView.termViews.map {
+            it.findSingleFactor<IntegerFactorView>() ?: return@onPattern null
+        }
+
+        val gcd = integerFactors.fold(BigInteger.ZERO) { acc, n -> acc.gcd(n.value) }
+        val squareFactor = gcd.greatestSquareFactor()
+        if (squareFactor == BigInteger.ONE || squareFactor == gcd && integerFactors.size == 1) {
+            return@onPattern null
+        }
+
+        val commonIntegerFactor = xp(squareFactor).withOrigin(Factor(integerFactors.map { it.original }))
+
+        for (integerFactor in integerFactors) {
+            integerFactor.changeValue(integerFactor.value / squareFactor)
+        }
+
+        ruleResult(
+            toExpr = productOf(commonIntegerFactor, sumView.recombine()),
+            explanation = metadata(Explanation.FactorGreatestCommonSquareIntegerFactor),
+        )
+    }
 }

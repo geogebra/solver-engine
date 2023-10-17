@@ -346,11 +346,15 @@ val constantSimplificationSteps: StepsProducer = steps {
 
         option { deeply(IntegerArithmeticPlans.SimplifyIntegersInSum) }
         option { deeply(addIntegerAndFraction) }
-        option { deeply(addRootAndFraction) }
 
         option {
             check { it.containsRoots() }
-            deeply(FractionRootsPlans.RationalizeDenominators)
+            firstOf {
+                // Do this after integers are added we don't apply it to e.g. `sqrt[4 + 8]`
+                option { deeply(IntegerRootsPlans.SimplifySquareRootWithASquareFactorRadicand) }
+                option { deeply(addRootAndFraction) }
+                option { deeply(FractionRootsPlans.RationalizeDenominators) }
+            }
         }
 
         option { deeply(ExpandRules.DistributeNegativeOverBracket) }

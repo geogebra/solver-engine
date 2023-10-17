@@ -3,8 +3,10 @@ package methods.integerroots
 import engine.methods.testMethod
 import engine.methods.testRule
 import methods.integerroots.IntegerRootsRules.CombineProductOfSamePowerUnderHigherRoot
+import methods.integerroots.IntegerRootsRules.FactorGreatestCommonSquareIntegerFactor
 import methods.integerroots.IntegerRootsRules.FactorizeIntegerPowerUnderRoot
 import methods.integerroots.IntegerRootsRules.FactorizeIntegerUnderRoot
+import methods.integerroots.IntegerRootsRules.MoveSquareFactorOutOfRoot
 import methods.integerroots.IntegerRootsRules.MultiplyNthRoots
 import methods.integerroots.IntegerRootsRules.SimplifyMultiplicationOfSquareRoots
 import methods.integerroots.IntegerRootsRules.SimplifyNthRootOfNthPower
@@ -164,5 +166,21 @@ class IntegerRootsRulesTest {
             CombineProductOfSamePowerUnderHigherRoot,
             "2 root[[(2 * 3 * 5) ^ 4], 4]",
         )
+    }
+
+    @Test
+    fun testFactorGreatestCommonSquareIntegerFactor() {
+        testRule("4x + 8y", FactorGreatestCommonSquareIntegerFactor, "4(x + 2y)")
+        testRule("16x + 12", FactorGreatestCommonSquareIntegerFactor, "4(4x + 3)")
+        testRule("18sqrt[3] - 45", FactorGreatestCommonSquareIntegerFactor, "9(2sqrt[3] - 5)")
+        testRule("50xy", FactorGreatestCommonSquareIntegerFactor, "25 * 2xy")
+        testRule("1x + 1y", FactorGreatestCommonSquareIntegerFactor, null)
+    }
+
+    @Test
+    fun testMoveSquareFactorOutOfSquareRoot() {
+        testRule("sqrt[4x]", MoveSquareFactorOutOfRoot, "sqrt[4]sqrt[x]")
+        testRule("sqrt[1x]", MoveSquareFactorOutOfRoot, null)
+        testRule("sqrt[x*9y]", MoveSquareFactorOutOfRoot, "sqrt[9] * sqrt[xy]")
     }
 }

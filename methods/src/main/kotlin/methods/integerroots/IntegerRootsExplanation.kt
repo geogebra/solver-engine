@@ -97,7 +97,7 @@ enum class IntegerRootsExplanation : CategorisedMetadataKey {
     /**
      * Cancel all roots of powers that can be cancelled, in a product
      *
-     * Eg.g. sqrt[[2 ^ 4]] * sqrt[2] -> [2 ^ 2] * sqrt[2]
+     * E.g. sqrt[[2 ^ 4]] * sqrt[2] -> [2 ^ 2] * sqrt[2]
      */
     CancelAllRootsOfPowers,
     SplitRootOfProduct,
@@ -112,6 +112,28 @@ enum class IntegerRootsExplanation : CategorisedMetadataKey {
     PutRootCoefficientUnderRootAndSimplify,
     SimplifyRootOfRootWithCoefficient,
     CombineProductOfSamePowerUnderHigherRoot,
+
+    /**
+     * Find the greatest common square factor in a product or sum and use it to factor it
+     *
+     * E.g. 8x - 12 --> 4(2x - 3)
+     *      18xy    --> 9(2xy)
+     *
+     * This is used specifically to simplify a square root containing a square factor
+     */
+    FactorGreatestCommonSquareIntegerFactor,
+
+    /**
+     * Simplify a square root of that has common factor which is a square
+     *
+     * E.g. sqrt[9x - 18] --> sqrt[9(x - 2)]
+     *                    --> sqrt[9]sqrt[x - 2]
+     *                    --> 3sqrt[x - 2]
+     *
+     * E.g. sqrt[8a] --> sqrt[4*2a]
+     */
+    SimplifySquareRootWithASquareFactorRadicand,
+
     ;
 
     override val category = "IntegerRoots"

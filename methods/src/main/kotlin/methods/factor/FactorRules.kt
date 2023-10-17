@@ -6,7 +6,7 @@ import engine.expressions.DefaultView
 import engine.expressions.Expression
 import engine.expressions.Factor
 import engine.expressions.IntegerExpression
-import engine.expressions.IntegerView
+import engine.expressions.IntegerFactorView
 import engine.expressions.Label
 import engine.expressions.Minus
 import engine.expressions.Power
@@ -523,29 +523,12 @@ private fun fractionSqrt(f: Rational?) = f?.let {
         null
     }
 }
+
 private fun fractionCbrt(f: Rational?) = f?.let {
     if (it.numerator.isCube() && it.denominator.isCube()) {
         simplifiedFractionOf(xp(it.numerator.cbrt()), xp(it.denominator.cbrt()))
     } else {
         null
-    }
-}
-
-private class IntegerFactorView(override val original: IntegerExpression) : IntegerView {
-    private var newValue: BigInteger? = null
-
-    override val value get() = newValue ?: original.value
-
-    override fun changeValue(newValue: BigInteger) {
-        this.newValue = newValue
-    }
-
-    override fun recombine(): Expression? {
-        return when {
-            newValue == null -> original
-            newValue == BigInteger.ONE -> null
-            else -> xp(newValue!!).withOrigin(Combine(listOf(original)))
-        }
     }
 }
 

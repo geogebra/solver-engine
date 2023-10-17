@@ -83,4 +83,12 @@ class TestBigIntegerExtensions {
         assertTrue(i(12).isFactorizableUnderRationalExponent(i(1), i(2)))
         assertFalse(i(1).isFactorizableUnderRationalExponent(i(1), i(2)))
     }
+
+    @Test
+    fun testGreatestSquareFactor() {
+        assertEquals(i(100), i(100).greatestSquareFactor())
+        assertEquals(i(100), i(1500).greatestSquareFactor())
+        assertEquals(i(1), i(777).greatestSquareFactor())
+        assertEquals(i(1024), i(2048).greatestSquareFactor())
+    }
 }
