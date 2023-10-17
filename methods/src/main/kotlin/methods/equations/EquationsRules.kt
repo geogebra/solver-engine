@@ -632,6 +632,7 @@ private val multiplyBothSidesOfRationalEquation = rule {
 
     onEquation(lhs, rhs) {
         val denominators = extractSumTermsFromSolvable(expression).mapNotNull { extractFraction(it) }
+        if (denominators.isEmpty()) return@onEquation null
         val (lcd, _) = computeLcdAndMultipliers(denominators)
 
         val newLhs = termwiseProductOf(get(lhs), introduce(lcd))

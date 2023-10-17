@@ -3,10 +3,12 @@ package methods.equations
 import engine.context.Curriculum
 import engine.context.StrategySelectionMode
 import engine.expressions.Equation
+import engine.expressions.Expression
 import engine.expressions.hasSingleValue
 import engine.methods.PublicStrategy
 import engine.methods.Strategy
 import engine.methods.StrategyFamily
+import engine.methods.plan
 import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.optionalSteps
 import engine.methods.stepsproducers.steps
@@ -17,8 +19,11 @@ import methods.equationsystems.EquationSystemsPlans
 import methods.factor.FactorPlans
 import methods.polynomials.PolynomialRules
 import methods.polynomials.PolynomialsPlans
+import methods.rationalexpressions.RationalExpressionsPlans
+import methods.solvable.DenominatorExtractor.extractFraction
 import methods.solvable.SolvableRules
 import methods.solvable.countAbsoluteValues
+import methods.solvable.extractSumTermsFromSolvable
 
 enum class EquationSolvingStrategy(
     override val family: Family,
@@ -223,9 +228,29 @@ enum class EquationSolvingStrategy(
 
     RationalEquation(
         family = Family.RATIONAL,
-        priority = 0,
-        explanation = EquationsExplanation.SolveEquation,
-        steps = EquationsPlans.SolveRationalEquation,
+        priority = -1,
+        explanation = EquationsExplanation.SolveRationalEquation,
+        steps = steps {
+            check { it.containsVariableDenominator(solutionVariables) }
+            firstOf {
+                option {
+                    /**
+                     * An equation where all the denominators are the same is called a
+                     * rational equation with a trivial LCD
+                     * Here we don't want to cancel the fractions (because the cancellation would have to be undone)
+                     */
+                    apply(EquationsRules.MultiplyBothSidesOfRationalEquationWithTrivialLCD)
+                    apply(EquationsPlans.SimplifyEquation)
+                }
+                option {
+                    optionally(EquationsPlans.SimplifyEquation)
+                    optionally(factorDenominatorsOfFractions)
+                    apply(EquationsRules.MultiplyBothSidesOfRationalEquation)
+                    optionally(EquationsPlans.SimplifyEquation)
+                }
+            }
+            apply(equationSolvingSteps)
+        },
     ),
 
     Undefined(
@@ -304,15 +329,30 @@ private val resolvePlusminusSteps = steps {
     }
 }
 
+fun Expression.containsVariableDenominator(solutionVariables: List<String>): Boolean {
+    return extractSumTermsFromSolvable(this).mapNotNull { extractFraction(it) }
+        .count { !it.denominator.isConstantIn(solutionVariables) } > 0
+}
+
+private val factorDenominatorsOfFractions = plan {
+    explanation = Explanation.FactorDenominatorOfFraction
+    steps {
+        whilePossible {
+            deeply(RationalExpressionsPlans.FactorDenominatorOfFraction)
+        }
+    }
+}
+
 internal val solveEquation = lazy {
     // All strategies excepting special ones
     val regularStrategies = EquationSolvingStrategy.values().filter { it.priority >= 0 }
 
     whileStrategiesAvailableFirstOf(EquationSolvingStrategy.values()) {
-
         // before we simplify we always have to check for an identity / trivial contradiction
         option(EquationSolvingStrategy.ConstantEquation)
         option(EquationSolvingStrategy.Undefined)
+
+        option(EquationSolvingStrategy.RationalEquation)
 
         // simplify the equation
         option(EquationsPlans.SimplifyEquation)

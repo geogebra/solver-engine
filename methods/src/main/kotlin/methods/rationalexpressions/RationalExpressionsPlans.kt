@@ -116,6 +116,7 @@ enum class RationalExpressionsPlans(override val runner: CompositeMethod) : Runn
 
             steps {
                 optionally(FractionArithmeticRules.RewriteDivisionAsFraction)
+                check { it is Fraction && !it.denominator.isConstant() }
                 apply(rationalExpressionSimplificationSteps)
             }
         },
@@ -124,7 +125,10 @@ enum class RationalExpressionsPlans(override val runner: CompositeMethod) : Runn
     MultiplyRationalExpressions(
         plan {
             explanation = Explanation.MultiplyRationalExpressions
-            pattern = productContaining(FractionPattern(), FractionPattern())
+            pattern = productContaining(
+                condition { it is Fraction && !it.denominator.isConstant() },
+                condition { it is Fraction && !it.denominator.isConstant() },
+            )
 
             partialExpressionSteps {
                 apply(FractionArithmeticRules.MultiplyFractions)
@@ -136,6 +140,7 @@ enum class RationalExpressionsPlans(override val runner: CompositeMethod) : Runn
     MultiplyRationalExpressionWithNonFractionalFactors(
         plan {
             explanation = Explanation.MultiplyRationalExpressions
+            pattern = productContaining(condition { it is Fraction && !it.denominator.isConstant() })
 
             steps {
                 apply(FractionArithmeticRules.TurnProductOfFractionAndNonFractionFactorsIntoFraction)

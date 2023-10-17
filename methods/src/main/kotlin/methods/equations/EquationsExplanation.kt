@@ -334,6 +334,11 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     SolveConstantEquation,
 
     /**
+     * Solve a rational equation
+     */
+    SolveRationalEquation,
+
+    /**
      * Separate an equation of the form |f(x)| = K (positive constant) into two equations,
      * f(x) = K and f(x) = -K so that they can then be solved.
      *
@@ -520,15 +525,6 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      *              --> [12 / [x^2] - 9] ([x^2] - 9) + 8 sqrt[3] ([x^2] - 9) = [8 / [x^2] - 9] ([x^2] - 9)
      */
     MultiplyBothSidesByDenominator,
-
-    /**
-     * Simplify a rational equation to a polynomial equation either
-     * (a). multiplying by LCD both the sides
-     * (b). or multiplying by (unique) denominator both the sides
-     *
-     * and then simplify the equation to make it a polynomial equation
-     */
-    SimplifyToPolynomialEquation,
 
     ;
 

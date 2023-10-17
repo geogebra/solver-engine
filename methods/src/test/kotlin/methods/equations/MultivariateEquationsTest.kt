@@ -4,6 +4,7 @@ import engine.context.Context
 import engine.methods.SolverEngineExplanation
 import engine.methods.testMethod
 import engine.methods.testMethodInX
+import methods.constantexpressions.ConstantExpressionsExplanation
 import methods.general.GeneralExplanation
 import methods.inequalities.InequalitiesExplanation
 import methods.inequations.InequationsExplanation
@@ -356,7 +357,7 @@ class MultivariateEquationsTest {
                     fromExpr = "a = root[-[c / b], 3]"
                     toExpr = "a = -root[[c / b], 3]"
                     explanation {
-                        key = GeneralExplanation.RewriteOddRootOfNegative
+                        key = ConstantExpressionsExplanation.SimplifyRootsInExpression
                     }
                 }
             }

@@ -1,7 +1,9 @@
 package methods.equations
 
 import engine.context.Context
+import engine.context.Curriculum
 import engine.expressions.Constants
+import engine.expressions.Contradiction
 import engine.expressions.DecimalExpression
 import engine.expressions.Equation
 import engine.expressions.Expression
@@ -31,6 +33,10 @@ import engine.patterns.solutionSetOf
 import engine.patterns.variableListOf
 import engine.steps.Transformation
 import engine.steps.metadata.metadata
+import methods.algebra.AlgebraExplanation
+import methods.algebra.AlgebraPlans
+import methods.algebra.algebraicSimplificationSteps
+import methods.algebra.findDenominatorsAndDivisors
 import methods.constantexpressions.constantSimplificationSteps
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.factor.FactorPlans
@@ -39,13 +45,11 @@ import methods.general.NormalizationPlans
 import methods.inequalities.InequalitiesPlans
 import methods.inequations.InequationsPlans
 import methods.polynomials.PolynomialsPlans
-import methods.polynomials.polynomialSimplificationSteps
 import methods.solvable.SolvablePlans
 import methods.solvable.SolvableRules
 import methods.solvable.computeOverallIntersectionSolution
 import methods.solvable.computeOverallUnionSolution
 import methods.solvable.evaluateBothSidesNumerically
-import solveRationalEquation
 
 enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
@@ -53,12 +57,14 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
         plan {
             explanation = Explanation.SimplifyEquation
 
+            val simplificationSteps = algebraicSimplificationSteps(addRationalExpressions = false)
+
             steps {
                 whilePossible { deeply(simpleTidyUpSteps) }
                 optionally(NormalizationPlans.NormalizeExpression)
                 whilePossible(EquationsRules.EliminateConstantFactorOfLhsWithZeroRhs)
                 whilePossible(SolvableRules.CancelCommonTermsOnBothSides)
-                whilePossible(polynomialSimplificationSteps)
+                optionally(simplificationSteps)
             }
         },
     ),
@@ -221,7 +227,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     @PublicMethod
     SolveEquationWithInequalityConstraint(solveEquationWithInequalityConstraint),
 
-    SolveRationalEquation(solveRationalEquation),
+    SolveRationalEquation(solveEquationPlan),
 
     @PublicMethod
     SolveConstantEquation(
@@ -375,12 +381,50 @@ val solveEquationPlan = object : CompositeMethod() {
         }
     }
 
+    private val solveEquationWithDomainRestrictions = taskSet {
+        explanation = Explanation.SolveEquation
+
+        tasks {
+            val constraint = when (context.curriculum) {
+                Curriculum.US -> expression
+                else -> task(
+                    startExpr = expression,
+                    explanation = metadata(AlgebraExplanation.ComputeDomainOfAlgebraicExpression),
+                    stepsProducer = AlgebraPlans.ComputeDomainOfAlgebraicExpression,
+                )?.result ?: return@tasks null
+            }
+
+            val solvePolynomialEquation = task(
+                startExpr = expression,
+                context = context.copy(constraintMerger = mergeConstraintsRule),
+                explanation = metadata(Explanation.SolveEquation),
+                stepsProducer = solveEquation.value,
+            ) ?: return@tasks null
+
+            val solution = solvePolynomialEquation.result
+
+            // no need to check if the constraint(s) is/are satisfied if solution
+            // is an empty set
+            if (solution !is Contradiction || solution == Constants.EmptySet) {
+                checkSolutionsAgainstConstraint(solution, constraint) ?: return@tasks null
+            }
+
+            allTasks()
+        }
+    }
+
     override fun run(ctx: Context, sub: Expression): Transformation? {
         if (sub is Equation) {
             val solutionVariable = ctx.solutionVariables.singleOrNull() ?: return null
 
             if (sub.variables.contains(solutionVariable)) {
-                return solveEquation.value.run(ctx.copy(constraintMerger = mergeConstraintsRule), sub)
+                val equationContext = ctx.copy(constraintMerger = mergeConstraintsRule)
+
+                return if (findDenominatorsAndDivisors(sub).any { (expr, _) -> !expr.isConstant() }) {
+                    solveEquationWithDomainRestrictions.run(equationContext, sub)
+                } else {
+                    solveEquation.value.run(equationContext, sub)
+                }
             }
         }
 
