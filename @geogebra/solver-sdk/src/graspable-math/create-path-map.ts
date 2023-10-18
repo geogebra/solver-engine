@@ -225,11 +225,15 @@ function annotate(
     case 'Undefined':
     case 'Infinity':
     case 'Reals':
+    case 'Pi':
+    case 'ExponentialE':
+    case 'ImaginaryUnit':
     case 'AddEquations':
     case 'SubtractEquations':
     case 'EquationUnion':
     case 'ExpressionWithConstraint':
     case 'Solution':
+    case 'Percent':
     case 'Identity':
     case 'Contradiction':
     case 'ImplicitSolution':

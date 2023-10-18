@@ -28,11 +28,11 @@ function testCases(
 ) {
   cases.forEach(({ solver, latex, json, dontParseLatex }) => {
     /* things we actually need:
-        - latex => solver (user input needs to be sent to the solver)
-        - json => latex (display math to user)
-        - json => solver (some intermediate step we have in json/tree format and want to send to the solver)
-        - maybe: solver => latex (for debugging)
-        */
+    - latex => solver (user input needs to be sent to the solver)
+    - json => latex (display math to user)
+    - json => solver (some intermediate step we have in json/tree format and want to send to the solver)
+    - maybe: solver => latex (for debugging)
+    */
 
     if (!Array.isArray(latex)) latex = [latex];
     const [unCastedLatexExact, ...latexAlternates] = latex;
@@ -1809,6 +1809,133 @@ describe('Solver Parser Unit Tests', () => {
           ],
         },
         latex: ['{\\left(\\log_{5}{x}+1\\right)}^{2}'],
+      },
+    ]);
+  });
+
+  describe('special symbols', () => {
+    testCases([
+      {
+        solver: '/e/',
+        json: {
+          type: 'ExponentialE',
+        },
+        latex: [
+          '\\mathrm{e}',
+          'ℯ', // ggb keyboard output
+        ],
+      },
+      {
+        solver: '/pi/',
+        json: {
+          type: 'Pi',
+        },
+        latex: [
+          '\\pi',
+          '\\pi{}', // ggb keyboard output
+        ],
+      },
+      {
+        solver: '5 [/pi/ ^ 2] + 1',
+        json: {
+          type: 'Sum',
+          operands: [
+            {
+              type: 'ImplicitProduct',
+              operands: [
+                integer('5'),
+                {
+                  type: 'Power',
+                  operands: [
+                    {
+                      type: 'Pi',
+                    },
+                    integer('2'),
+                  ],
+                },
+              ],
+            },
+            integer('1'),
+          ],
+        },
+        latex: [
+          '5{\\pi}^{2}+1',
+          '5\\pi{}^{2}+1', // ggb keyboard output
+        ],
+      },
+      {
+        solver: '/i/',
+        json: {
+          type: 'ImaginaryUnit',
+        },
+        latex: ['\\iota', 'ί', '\\mathrm{i}'],
+      },
+      {
+        solver: '5 [/i/ ^ 2] x + 1',
+        json: {
+          type: 'Sum',
+          operands: [
+            {
+              type: 'ImplicitProduct',
+              operands: [
+                integer('5'),
+                {
+                  type: 'Power',
+                  operands: [
+                    {
+                      type: 'ImaginaryUnit',
+                    },
+                    integer('2'),
+                  ],
+                },
+                variable('x'),
+              ],
+            },
+            integer('1'),
+          ],
+        },
+        latex: ['5{\\iota}^{2}x+1', '5ί^{2}x+1'],
+      },
+    ]);
+  });
+
+  describe('Percentage', () => {
+    testCases([
+      {
+        solver: '10 %',
+        json: {
+          type: 'Percent',
+          operands: [integer('10')],
+        },
+        latex: ['10\\%'],
+      },
+      {
+        solver: '10 % + 1',
+        json: {
+          type: 'Sum',
+          operands: [
+            {
+              type: 'Percent',
+              operands: [integer('10')],
+            },
+            integer('1'),
+          ],
+        },
+        latex: ['10\\%+1'],
+      },
+      {
+        solver: '10 % 5', // we can debate later whether to allow or not this notation
+        json: {
+          type: 'ImplicitProduct',
+          operands: [
+            {
+              type: 'Percent',
+              operands: [integer('10')],
+            },
+            integer('5'),
+          ],
+        },
+        latex: ['10\\%5'],
       },
     ]);
   });

@@ -43,9 +43,10 @@ export type NestedExpressionType =
   | 'Arcsch' // unary
   | 'Arsech' // unary
   /**/
-  | 'Log'
-  | 'Ln'
-  | 'Log10'
+  | 'Log' // binary
+  | 'Ln' // unary
+  | 'Log10' // unary
+  | 'Percent' // unary
   | 'AbsoluteValue' // unary
   | 'ExpressionWithConstraint' // (expression, constraint)
   | 'Equation' // binary
@@ -149,7 +150,14 @@ export type ExpressionTreeBase<T> = ExpressionDecorations &
     | VariableExpression
     | NameExpression
     | {
-        type: 'Undefined' | 'Infinity' | 'Reals' | 'Void';
+        type:
+          | 'Undefined'
+          | 'Infinity'
+          | 'Reals'
+          | 'Void'
+          | 'ExponentialE'
+          | 'Pi'
+          | 'ImaginaryUnit';
       }
   ) &
   T;

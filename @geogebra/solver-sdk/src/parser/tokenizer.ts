@@ -12,7 +12,8 @@ export type Token = {
 /// a latex command is either a backslash plus a single non-alpha-numeric character
 /// like \, or is a backslash plus a string of alphabetic characters
 export function tokenize(str: string): Token[] {
-  const r_symbols = /^\s*(\/undefined\/|\/reals\/|\\text\{[Uu]ndefined\}|\\mathbb\{R\})/;
+  const r_symbols =
+    /^\s*(\/undefined\/|\/reals\/|\\text\{[Uu]ndefined\}|\\mathbb\{R\}|ℯ|\\mathrm\{e\}|ί|\\mathrm{i}|\\iota|\\pi(?:\{\})?)/;
   const r_number = /^\s*((([0-9]*(\.[0-9]*|[0-9]+))([eE][-+]?[0-9]+)?)|∞|Infinity)/;
   const r_match = new RegExp('^\\s*\\{(\\??[A-Za-z0-9_]*)\\:'); // named regexp match
   const r_name = new RegExp('^\\s*([a-zA-Z₀₁₂₃₄₅₆₇₈₉⬚])'); // single-character names
@@ -22,6 +23,10 @@ export function tokenize(str: string): Token[] {
   // * {{\mathrm{\mathrm{ln}}}\left(x\right)} (nested natural-log)
   const r_nested_mathrm = new RegExp('^\\s*{\\\\mathrm{(\\\\mathrm{[^}]+}|[^}]+)}}');
   const r_greek = new RegExp('^\\s*([α-ωΑ-Ω])'); // single-character greek letters
+
+  // we continue to have "iota" and "pi" here,
+  // though they are currently tokenized as "symbols"
+  // not as "variables"
   const r_greek_latex_cmds = new RegExp(
     '^\\s*(\\\\(alpha|beta|gamma|delta|epsilon|zeta|eta|theta|iota|kappa|lambda|mu|nu|xi|omicron|pi|rho|sigma|tau|upsilon|phi|chi|psi|omega|Alpha|Beta|Gamma|Delta|Epsilon|Zeta|Eta|Theta|Iota|Kappa|Lambda|Mu|Nu|Xi|Omicron|Pi|Rho|Sigma|Tau|Upsilon|Phi|Chi|Psi|Omega)(?:\\{\\})?)',
   ); // greek alphabet with optional `{}` at the end (as returned by the keyboard)
@@ -46,7 +51,7 @@ export function tokenize(str: string): Token[] {
     } else if ((m = r_symbols.exec(s))) {
       tokens.push({
         type: 'symbol',
-        value: m[1].replace(/\\text\{[Uu]ndefined\}/, '/undefined/'),
+        value: m[1].replace(/\\text\{[Uu]ndefined\}/, '/undefined/').replace(/\{\}$/, ''),
         from: i + (m[0].length - m[1].length),
         to: i + m[0].length,
       });

@@ -126,11 +126,36 @@ const latexSymbolDefinitions = {
     });
   },
 
+  registerSpecialSymbols(parser: Parser<ExprTree>) {
+    const registerAndAssign = (symbol: string, nudType: string) => {
+      const registeredSymbol = parser.registerSymbol(symbol, BP_IMPLICIT_MUL);
+      registeredSymbol.nud = () => ({ type: nudType as ExpressionTreeBase<any> });
+      registeredSymbol.led = getLedToExtendNary(parser, 'ImplicitProduct');
+      return registeredSymbol;
+    };
+
+    // this is the unicode character '\u212F': https://www.fileformat.info/info/unicode/char/212f/index.htm
+    registerAndAssign('ℯ', 'ExponentialE');
+    registerAndAssign('\\mathrm{e}', 'ExponentialE');
+    registerAndAssign('\\pi', 'Pi');
+    registerAndAssign('\\iota', 'ImaginaryUnit');
+    // this is the unicode character '\u03AF': https://www.fileformat.info/info/unicode/char/03af/index.htm
+    registerAndAssign('ί', 'ImaginaryUnit');
+    registerAndAssign('\\mathrm{i}', 'ImaginaryUnit');
+  },
+
   registerSolution(parser: Parser<ExprTree>) {
     const sol = parser.registerSymbol('\\in', BP_ELEMENT_OF_OPERATOR);
     sol.led = (left) => {
       const right = parser.expression(0);
       return { type: 'Solution', operands: [left, right] };
+    };
+  },
+
+  registerPercentage(parser: Parser<ExprTree>) {
+    const percentage = parser.registerSymbol('\\%', BP_IMPLICIT_MUL);
+    percentage.led = (left) => {
+      return { type: 'Percent', operands: [left] };
     };
   },
 

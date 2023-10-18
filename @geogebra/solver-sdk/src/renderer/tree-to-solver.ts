@@ -91,6 +91,8 @@ export function treeToSolver(n: ExpressionTree): string {
       return dec(`ln ${rec(n.operands[0])}`);
     case 'Log':
       return dec(`log[${rec(n.operands[0])}] ${rec(n.operands[1])}`);
+    case 'Percent':
+      return dec(`${rec(n.operands[0])} %`);
     case 'AbsoluteValue':
       return dec(`abs[${rec(n.operands[0])}]`);
     case 'ExpressionWithConstraint':
@@ -134,6 +136,12 @@ export function treeToSolver(n: ExpressionTree): string {
       return dec('/reals/');
     case 'Void':
       return dec('/void/');
+    case 'ExponentialE':
+      return dec('/e/');
+    case 'Pi':
+      return dec('/pi/');
+    case 'ImaginaryUnit':
+      return dec('/i/');
     case 'OpenInterval':
       return `(${rec(n.operands[0])}, ${rec(n.operands[1])})`;
     case 'ClosedInterval':

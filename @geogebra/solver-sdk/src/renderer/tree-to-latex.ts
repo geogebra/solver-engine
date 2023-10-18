@@ -442,6 +442,14 @@ function treeToLatexInner(
       return tfd('\\mathbb{R}');
     case 'Void':
       return tfd('\\textrm{VOID}');
+    case 'ExponentialE':
+      return tfd('\\mathrm{e}');
+    case 'Pi':
+      return tfd('\\pi');
+    case 'ImaginaryUnit':
+      return tfd('\\iota');
+    case 'Percent':
+      return tfd(`${rec(n.operands[0], n)}\\%`);
     case 'CartesianProduct':
       return tfd(
         n.operands.length === 0
