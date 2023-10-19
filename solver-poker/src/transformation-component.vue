@@ -15,8 +15,8 @@ const props = defineProps<{
 }>();
 
 const colorMaps = computed(() => {
-  const [toColoring, fromColoring] = createColorMaps(props.transformation);
-  return { toColoring, fromColoring };
+  const [fromColoring, toColoring] = createColorMaps(props.transformation);
+  return { fromColoring, toColoring };
 });
 const isThrough = computed(() => isThroughStep(props.transformation));
 const alternatives = computed(() => props.transformation.alternatives || []);
