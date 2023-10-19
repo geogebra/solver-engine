@@ -1,12 +1,18 @@
 import org.jlleitschuh.gradle.ktlint.tasks.KtLintCheckTask
 import org.jlleitschuh.gradle.ktlint.tasks.KtLintFormatTask
 
+val kotlinBenchmarkVersion: String by project
+
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
 
     id("io.gitlab.arturbosch.detekt")
     id("com.google.devtools.ksp")
+
+    // Plugins for benchmarking
+    kotlin("plugin.allopen")
+    id("org.jetbrains.kotlinx.benchmark")
 }
 
 dependencies {
@@ -66,5 +72,42 @@ kotlin {
 afterEvaluate {
     tasks.named("kspTestKotlin") {
         enabled = false
+    }
+}
+
+//
+// Configuration for benchmarks
+//
+
+// Benchmark requires benchmark classes to be open, this makes them open automatically
+allOpen {
+    annotation("org.openjdk.jmh.annotations.State")
+}
+
+// The benchmarks go in a new source set called "benchmarks"
+sourceSets {
+    create("benchmarks")
+}
+
+kotlin.sourceSets.named("benchmarks") {
+    dependencies {
+        // These are required to run benchmarks in the jvm
+        implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:$kotlinBenchmarkVersion")
+        implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime-jvm:$kotlinBenchmarkVersion")
+
+        // These dependencies are for the code that is being benchmarked
+        implementation(project(":engine"))
+        implementation(sourceSets.main.get().output)
+    }
+}
+
+benchmark {
+    configurations {
+        named("main") {
+            mode = "avgt"
+        }
+    }
+    targets {
+        register("benchmarks")
     }
 }

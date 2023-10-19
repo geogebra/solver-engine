@@ -31,10 +31,6 @@ tasks.test {
     useJUnitPlatform()
 }
 
-tasks.withType<Jar> {
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
-}
-
 tasks.withType<KotlinCompile> {
     // The antlr plugin defines a dependency for java compilation but not Kotlin, so we do it manually here.
     dependsOn(tasks.withType<AntlrTask>())
