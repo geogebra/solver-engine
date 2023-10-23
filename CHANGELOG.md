@@ -32,6 +32,7 @@ contents to a new release section (e.g. _[0.x]_).
 - SDK: Fixed the use of :op vs :op() when translating solver paths into GM terms
 - SDK: Improved accuracy of type information (SP-237)
 - Fixed missing product sign in expressions with missing brackets (e.g. `3*-x`) (PLUT-824)
+- SDK: fixed actor selection for GM actions involving adjacent actors (PLUT-806)
 
 ### Changed
 
@@ -79,7 +80,6 @@ contents to a new release section (e.g. _[0.x]_).
 - temporary fix for PartialBrackets + SmartProduct bug (SP-216, PLUT-684)
 - Simplification of -ve base root power be done by "SimplifyConstantExpression" (PLUT-682)
 - Fix regression: SolveEquation plan should solve rational equations well (PLUT-689)
-- SDK: fixed actor selection for GM actions involving adjacent actors (PLUT-806)
 
 ### Changed
 
