@@ -345,9 +345,9 @@ private val factorDenominatorsOfFractions = plan {
 
 internal val solveEquation = lazy {
     // All strategies excepting special ones
-    val regularStrategies = EquationSolvingStrategy.values().filter { it.priority >= 0 }
+    val regularStrategies = EquationSolvingStrategy.entries.filter { it.priority >= 0 }
 
-    whileStrategiesAvailableFirstOf(EquationSolvingStrategy.values()) {
+    whileStrategiesAvailableFirstOf(EquationSolvingStrategy.entries) {
         // before we simplify we always have to check for an identity / trivial contradiction
         option(EquationSolvingStrategy.ConstantEquation)
         option(EquationSolvingStrategy.Undefined)

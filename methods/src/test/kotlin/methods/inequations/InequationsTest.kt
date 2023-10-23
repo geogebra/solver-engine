@@ -1,5 +1,7 @@
 package methods.inequations
 
+import engine.context.Context
+import engine.methods.testMethod
 import engine.methods.testMethodInX
 import methods.equations.EquationsExplanation
 import org.junit.jupiter.api.Test
@@ -8,7 +10,7 @@ class InequationsTest {
 
     @Test
     fun `test solving simple inequation`() = testMethodInX {
-        method = InequationsPlans.SolveInequationInOneVariable
+        method = InequationsPlans.SolveInequation
         inputExpr = "3 x - 1 != 2"
 
         check {
@@ -46,7 +48,7 @@ class InequationsTest {
 
     @Test
     fun `test solving complex inequation`() = testMethodInX {
-        method = InequationsPlans.SolveInequationInOneVariable
+        method = InequationsPlans.SolveInequation
         inputExpr = "(2 x + 3) ([x ^ 2] + 3 x + 2) != 0"
 
         check {
@@ -78,6 +80,21 @@ class InequationsTest {
                 explanation {
                     key = InequationsExplanation.TakeComplementOfSolution
                 }
+            }
+        }
+    }
+
+    @Test
+    fun `test reducing multivariate inequation`() = testMethod {
+        method = InequationsPlans.SolveInequation
+        context = Context(solutionVariables = listOf("a", "b"))
+        inputExpr = "-3 a [b ^ 2] != 0"
+
+        check {
+            fromExpr = "-3 a [b ^ 2] != 0"
+            toExpr = "a [b ^ 2] != 0"
+            explanation {
+                key = EquationsExplanation.EliminateConstantFactorOfLhsWithZeroRhs
             }
         }
     }

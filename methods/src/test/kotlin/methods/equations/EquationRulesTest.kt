@@ -70,6 +70,16 @@ class EquationRulesTest {
             EliminateConstantFactorOfLhsWithZeroRhs,
             "x(x-1) = 0",
         )
+        testRuleInX(
+            "-2x(x-1) != 0",
+            EliminateConstantFactorOfLhsWithZeroRhs,
+            "x(x-1) != 0",
+        )
+        testRuleInX(
+            "-2a[b^2] != 0",
+            EliminateConstantFactorOfLhsWithZeroRhs,
+            "a[b^2] != 0",
+        )
     }
 
     @Test

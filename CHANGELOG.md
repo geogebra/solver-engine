@@ -41,6 +41,8 @@ contents to a new release section (e.g. _[0.x]_).
 - Changed Poker to use Vue (SP-237) (PLUT-803)
 - Converting a rational equation to a polynomial equation and solving the polynomial equation have been merged to
   a single task (PLUT-702)
+- The `SolveInequationInOneVariable` plan was renamed to `SolveInequation` and now it can bring multivariate
+  inequations to a simpler form (e.g. `-3ab^2 != 0` to `ab^2 != 0`) (PLUT-679)
 
 ### Removed
 

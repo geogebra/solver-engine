@@ -271,18 +271,12 @@ internal val constraintSimplificationPlan = plan {
     explanation = EquationsExplanation.SimplifyConstraint
 
     val simplifySingleConstraint = engine.methods.stepsproducers.steps {
-        firstOf {
-            option {
-                check { it.variables.size == 1 }
-                inContext(contextFactory = { copy(solutionVariables = it.variables.toList()) }) {
-                    firstOf {
-                        option(InequationsPlans.SolveInequationInOneVariable)
-                        option(InequalitiesPlans.SolveLinearInequality)
-                    }
-                }
+        inContext(contextFactory = { copy(solutionVariables = it.variables.toList()) }) {
+            firstOf {
+                option(InequationsPlans.SolveInequation)
+                option(InequalitiesPlans.SolveLinearInequality)
+                option(InequalitiesPlans.SimplifyInequality)
             }
-            option(InequationsPlans.SimplifyInequation)
-            option(InequalitiesPlans.SimplifyInequality)
         }
     }
 

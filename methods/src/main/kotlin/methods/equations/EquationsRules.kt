@@ -48,10 +48,10 @@ import engine.patterns.AnyPattern
 import engine.patterns.ArbitraryVariablePattern
 import engine.patterns.ConditionPattern
 import engine.patterns.ConstantInSolutionVariablePattern
-import engine.patterns.ConstantPattern
 import engine.patterns.FixedPattern
 import engine.patterns.QuadraticPolynomialPattern
 import engine.patterns.SolutionVariablePattern
+import engine.patterns.SolvablePattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.VariableExpressionPattern
 import engine.patterns.absoluteValueOf
@@ -383,17 +383,19 @@ private val separateEquationInPlusMinusForm = rule {
 }
 
 private val eliminateConstantFactorOfLhsWithZeroRhs = rule {
-    val factor = condition(ConstantPattern()) { it.isDefinitelyNotZero() }
+    val factor = condition { it.isConstant() && it.isDefinitelyNotZero() }
     val unsignedLHS = productContaining(factor)
     val lhs = optionalNegOf(unsignedLHS)
     val rhs = FixedPattern(Constants.Zero)
 
-    onEquation(inSolutionVariables(lhs), rhs) {
+    val solvable = SolvablePattern(condition(lhs) { !it.isConstant() }, rhs)
+
+    onPattern(solvable) {
         val canceledFactor = copySign(lhs, get(factor))
-        val newLHS = cancel(canceledFactor, unsignedLHS.substitute())
+        val newLHS = cancel(canceledFactor, restOf(unsignedLHS))
 
         ruleResult(
-            toExpr = equationOf(newLHS, get(rhs)),
+            toExpr = solvable.deriveSolvable(newLHS, get(rhs)),
             explanation = metadata(Explanation.EliminateConstantFactorOfLhsWithZeroRhs, canceledFactor),
         )
     }

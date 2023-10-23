@@ -114,8 +114,8 @@ enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
                         startExpr = inequationOf(denominatorOrDivisor, Constants.Zero),
                         explanation = explanation,
                     ) {
-                        inContext({ copy(solutionVariables = listOfNotNull(it.variables.singleOrNull())) }) {
-                            apply(InequationsPlans.SolveInequationInOneVariable)
+                        inContext({ copy(solutionVariables = it.variables.toList()) }) {
+                            apply(InequationsPlans.SolveInequation)
                         }
                     }
                 }

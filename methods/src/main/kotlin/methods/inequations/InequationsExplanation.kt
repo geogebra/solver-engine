@@ -82,6 +82,11 @@ enum class InequationsExplanation : CategorisedMetadataKey {
      */
     TakeComplementOfSolution,
 
+    /**
+     * Reduce the inequation to an equivalent equation which should be simpler to solve.
+     * If possible this puts the inequation in the form f(x) != 0
+     */
+    ReduceInequation,
     ;
 
     override val category = "Inequations"

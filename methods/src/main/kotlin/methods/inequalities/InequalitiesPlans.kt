@@ -147,7 +147,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
                     }
                     option {
                         apply(InequalitiesRules.ConvertModulusGreaterThanZero)
-                        apply(InequationsPlans.SolveInequationInOneVariable)
+                        apply(InequationsPlans.SolveInequation)
                     }
                     option {
                         apply(InequalitiesRules.ConvertModulusLessThanPositiveConstant)

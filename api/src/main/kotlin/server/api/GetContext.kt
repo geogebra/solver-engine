@@ -27,18 +27,16 @@ internal fun getContext(
         strategyRegistry.getStrategyChoice(category, strategy) ?: throw InvalidStrategyException(category, strategy)
     }?.toMap() ?: emptyMap()
 
+    val apiVariables = apiCtx.solutionVariable?.split(",")?.map { it.trim() } ?: emptyList()
+    val intersectionVariables = apiVariables.intersect(variables)
+    val solutionVariables = intersectionVariables.toList().ifEmpty { listOfNotNull(variables.firstOrNull()) }
+
     Context(
         curriculum = curriculum,
         gmFriendly = apiCtx.gmFriendly == true,
         precision = apiCtx.precision?.toInt(),
         preferDecimals = apiCtx.preferDecimals,
-        solutionVariables = listOfNotNull(
-            if (apiCtx.solutionVariable in variables) {
-                apiCtx.solutionVariable
-            } else {
-                variables.firstOrNull()
-            },
-        ),
+        solutionVariables = solutionVariables,
         logger = ContextLogger(logger),
         preferredStrategies = strategies,
     )

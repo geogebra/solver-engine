@@ -153,8 +153,8 @@ fun <T : Strategy>whileStrategiesAvailableFirstOf(
 }
 
 inline fun <reified T : Strategy>whileStrategiesAvailableFirstOf(
-    allStrategies: Array<T>,
+    allStrategies: List<T>,
     noinline init: WhileStrategiesAvailableFirstOfBuilder.() -> Unit,
 ): CompositeMethod {
-    return whileStrategiesAvailableFirstOf(T::class, allStrategies.toList(), init)
+    return whileStrategiesAvailableFirstOf(T::class, allStrategies, init)
 }

@@ -89,7 +89,7 @@ enum class FallbackPlans(override val runner: CompositeMethod) : RunnerMethod {
                 InequalitiesPlans.SolveConstantInequality,
                 InequalitiesPlans.SolveLinearInequality,
                 InequationsPlans.SolveConstantInequation,
-                InequationsPlans.SolveInequationInOneVariable,
+                InequationsPlans.SolveInequation,
                 QuadraticIsIrreducible,
             )
 
