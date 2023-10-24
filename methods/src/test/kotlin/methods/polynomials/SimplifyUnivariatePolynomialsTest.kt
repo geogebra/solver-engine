@@ -757,6 +757,139 @@ class SimplifyUnivariatePolynomialsTest {
     }
 }
 
+class PolynomialFractionsTest {
+
+    @Test
+    fun `test adding non constant fraction to constant fraction`() = testMethod {
+        method = PolynomialsPlans.SimplifyPolynomialExpression
+        inputExpr = "[x / 2] + [2 / 3]"
+
+        check {
+            fromExpr = "[x / 2] + [2 / 3]"
+            toExpr = "[3 x + 4 / 6]"
+            explanation {
+                key = FractionArithmeticExplanation.AddFractions
+            }
+
+            step {
+                fromExpr = "[x / 2] + [2 / 3]"
+                toExpr = "[x * 3 / 2 * 3] + [2 * 2 / 3 * 2]"
+                explanation {
+                    key = FractionArithmeticExplanation.BringToCommonDenominator
+                }
+            }
+
+            step {
+                fromExpr = "[x * 3 / 2 * 3] + [2 * 2 / 3 * 2]"
+                toExpr = "[x * 3 / 6] + [4 / 6]"
+                explanation {
+                    key = FractionArithmeticExplanation.EvaluateProductsInNumeratorAndDenominator
+                }
+            }
+
+            step {
+                fromExpr = "[x * 3 / 6] + [4 / 6]"
+                toExpr = "[x * 3 + 4 / 6]"
+                explanation {
+                    key = FractionArithmeticExplanation.AddLikeFractions
+                }
+            }
+
+            step {
+                fromExpr = "[x * 3 + 4 / 6]"
+                toExpr = "[3 x + 4 / 6]"
+                explanation {
+                    key = PolynomialsExplanation.SimplifyMonomial
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test adding two variable fractions`() = testMethod {
+        method = PolynomialsPlans.SimplifyPolynomialExpression
+        inputExpr = "[x + 1 / 2] + [2 x + 3 / 3]"
+
+        check {
+            fromExpr = "[x + 1 / 2] + [2 x + 3 / 3]"
+            toExpr = "[7 x + 9 / 6]"
+            explanation {
+                key = FractionArithmeticExplanation.AddFractions
+            }
+
+            step {
+                fromExpr = "[x + 1 / 2] + [2 x + 3 / 3]"
+                toExpr = "[(x + 1) * 3 / 2 * 3] + [(2 x + 3) * 2 / 3 * 2]"
+                explanation {
+                    key = FractionArithmeticExplanation.BringToCommonDenominator
+                }
+            }
+
+            step {
+                fromExpr = "[(x + 1) * 3 / 2 * 3] + [(2 x + 3) * 2 / 3 * 2]"
+                toExpr = "[(x + 1) * 3 / 6] + [(2 x + 3) * 2 / 6]"
+                explanation {
+                    key = FractionArithmeticExplanation.EvaluateProductsInNumeratorAndDenominator
+                }
+            }
+
+            step {
+                fromExpr = "[(x + 1) * 3 / 6] + [(2 x + 3) * 2 / 6]"
+                toExpr = "[(x + 1) * 3 + (2 x + 3) * 2 / 6]"
+                explanation {
+                    key = FractionArithmeticExplanation.AddLikeFractions
+                }
+            }
+
+            step {
+                fromExpr = "[(x + 1) * 3 + (2 x + 3) * 2 / 6]"
+                toExpr = "[7 x + 9 / 6]"
+                explanation {
+                    key = FractionArithmeticExplanation.SimplifyNumerator
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test adding monomial term to polynomial fraction`() = testMethod {
+        method = PolynomialsPlans.SimplifyPolynomialExpression
+        inputExpr = "[[x ^ 2] + x / 2] + x"
+
+        check {
+            fromExpr = "[[x ^ 2] + x / 2] + x"
+            toExpr = "[[x ^ 2] + 3 x / 2]"
+            explanation {
+                key = FractionArithmeticExplanation.AddTermAndFraction
+            }
+
+            step {
+                fromExpr = "[[x ^ 2] + x / 2] + x"
+                toExpr = "[[x ^ 2] + x / 2] + [x * 2 / 2]"
+                explanation {
+                    key = FractionArithmeticExplanation.BringToCommonDenominatorWithNonFractionalTerm
+                }
+            }
+
+            step {
+                fromExpr = "[[x ^ 2] + x / 2] + [x * 2 / 2]"
+                toExpr = "[[x ^ 2] + x + x * 2 / 2]"
+                explanation {
+                    key = FractionArithmeticExplanation.AddLikeFractions
+                }
+            }
+
+            step {
+                fromExpr = "[[x ^ 2] + x + x * 2 / 2]"
+                toExpr = "[[x ^ 2] + 3 x / 2]"
+                explanation {
+                    key = FractionArithmeticExplanation.SimplifyNumerator
+                }
+            }
+        }
+    }
+}
+
 class SimplifyUnivariatePolynomialsWithMultipleBrackets {
     @Test
     fun `test order of simplification of brackets`() = testMethod {
@@ -787,17 +920,17 @@ class SimplifyUnivariatePolynomialsWithMultipleBrackets {
 
                 step {
                     fromExpr = "(2 x - 1 - x + 5)"
-                    toExpr = "(x - 1 + 5)"
+                    toExpr = "(2 x + 4 - x)"
                     explanation {
-                        key = CollectingExplanation.CollectLikeTermsAndSimplify
+                        key = IntegerArithmeticExplanation.EvaluateIntegerAddition
                     }
                 }
 
                 step {
-                    fromExpr = "(x - 1 + 5)"
+                    fromExpr = "(2 x + 4 - x)"
                     toExpr = "(x + 4)"
                     explanation {
-                        key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                        key = CollectingExplanation.CollectLikeTermsAndSimplify
                     }
                 }
             }
@@ -819,17 +952,17 @@ class SimplifyUnivariatePolynomialsWithMultipleBrackets {
 
                 step {
                     fromExpr = "(x + 2 + x + 4)"
-                    toExpr = "(2 x + 2 + 4)"
+                    toExpr = "(x + 6 + x)"
                     explanation {
-                        key = CollectingExplanation.CollectLikeTermsAndSimplify
+                        key = IntegerArithmeticExplanation.EvaluateIntegerAddition
                     }
                 }
 
                 step {
-                    fromExpr = "(2 x + 2 + 4)"
+                    fromExpr = "(x + 6 + x)"
                     toExpr = "(2 x + 6)"
                     explanation {
-                        key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                        key = CollectingExplanation.CollectLikeTermsAndSimplify
                     }
                 }
             }

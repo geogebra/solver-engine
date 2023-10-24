@@ -43,6 +43,8 @@ class CollectingRulesTest {
         testRule("t*sqrt[3] + 2*t - [t*sqrt[2]/2]", CollectLikeTerms, "(sqrt[3] + 2 - [sqrt[2]/2]) t")
         // the factors should be simplified first
         testRule("3xy*y + 2xy*y", CollectLikeTerms, null)
+        // should use fraction addition
+        testRule("[[x^2] + x / 2] + 3x + [[x^2] + x / 2]", CollectLikeTerms, null)
     }
 
     @Test

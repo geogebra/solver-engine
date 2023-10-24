@@ -25,6 +25,8 @@ import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.stickyOptionalNegOf
+import methods.algebra.algebraicSimplificationSteps
+import methods.algebra.algebraicSimplificationStepsWithoutFractionAddition
 import methods.collecting.createCollectLikeTermsAndSimplifyPlan
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.constantexpressions.constantSimplificationSteps
@@ -32,6 +34,8 @@ import methods.constantexpressions.simpleTidyUpSteps
 import methods.decimals.decimalEvaluationSteps
 import methods.expand.ExpandAndSimplifier
 import methods.expand.ExpandAndSimplifyMethodsProvider
+import methods.fractionarithmetic.createAddFractionsPlan
+import methods.fractionarithmetic.createAddTermAndFractionPlan
 import methods.general.GeneralRules
 import methods.general.NormalizationPlans
 import methods.integerarithmetic.IntegerArithmeticRules
@@ -54,7 +58,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
             pattern = condition { it.hasVisibleBracket() }
 
             steps {
-                whilePossible(polynomialSimplificationSteps)
+                whilePossible(algebraicSimplificationSteps)
             }
         },
     ),
@@ -70,7 +74,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
                 whilePossible { deeply(simpleTidyUpSteps) }
                 optionally(NormalizationPlans.NormalizeExpression)
                 whilePossible { deeply(SimplifyPolynomialSubexpression, deepFirst = true) }
-                whilePossible(polynomialSimplificationSteps)
+                whilePossible(algebraicSimplificationSteps)
                 optionally(PolynomialRules.NormalizePolynomial)
             }
         },
@@ -85,11 +89,11 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
             explanation = Explanation.ExpandPolynomialExpression
 
             steps {
-                whilePossible(polynomialSimplificationSteps)
+                whilePossible(algebraicSimplificationSteps)
                 apply {
                     whilePossible {
                         deeply(expandAndSimplifier.steps, deepFirst = true)
-                        whilePossible(polynomialSimplificationSteps)
+                        whilePossible(algebraicSimplificationSteps)
                     }
                 }
 
@@ -105,7 +109,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
             steps {
                 whilePossible {
                     firstOf {
-                        option(polynomialSimplificationSteps)
+                        option(algebraicSimplificationStepsWithoutFractionAddition)
                         option { deeply(expandAndSimplifier.steps, deepFirst = true) }
                     }
                 }
@@ -125,7 +129,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
                         applyTo(expandAndSimplifier.steps) { subterm }
                     }
                 }
-                whilePossible(polynomialSimplificationSteps)
+                whilePossible(algebraicSimplificationStepsWithoutFractionAddition)
             }
         },
     ),
@@ -136,7 +140,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
             steps {
                 whilePossible {
                     firstOf {
-                        option(polynomialSimplificationSteps)
+                        option(algebraicSimplificationStepsWithoutFractionAddition)
                         option {
                             deeply {
                                 checkForm {
@@ -251,38 +255,36 @@ private val simplifyPowerOfMonomial = plan {
 
         applyAfterMaybeExtractingMinus {
             apply(GeneralRules.DistributePowerOfProduct)
-            whilePossible(polynomialSimplificationSteps)
+            whilePossible(algebraicSimplificationSteps)
         }
     }
 }
 
-val polynomialSimplificationSteps = steps {
-    firstOf {
-        option { deeply(simpleTidyUpSteps) }
-        option {
-            deeply {
-                firstOf {
-                    option(PolynomialsPlans.MultiplyVariablePowers)
-                    option(PolynomialsPlans.MultiplyMonomials)
-                    option(PolynomialsPlans.SimplifyPowerOfNegatedVariable)
-                    option(PolynomialsPlans.SimplifyPowerOfVariablePower)
-                    option(PolynomialsPlans.SimplifyPowerOfMonomial)
-                    option(PolynomialsPlans.SimplifyMonomial)
-                    option {
-                        check { it.isConstant() }
-                        apply(simplificationSteps)
-                    }
-                }
-            }
-        }
-        option { deeply(collectLikeTermsSteps) }
-        option(simplificationSteps)
-    }
-}
-
-private val simplificationSteps = contextSensitiveSteps {
+val simplificationSteps = contextSensitiveSteps {
     default(ResourceData(preferDecimals = false), constantSimplificationSteps)
     alternative(ResourceData(preferDecimals = true), decimalEvaluationSteps)
 }
 
-private val collectLikeTermsSteps = createCollectLikeTermsAndSimplifyPlan(simplificationSteps)
+val addFractionsSteps = createAddFractionsPlan(
+    numeratorSimplificationSteps = steps {
+        whilePossible {
+            firstOf {
+                option(algebraicSimplificationSteps)
+                option { deeply(expandAndSimplifier.steps, deepFirst = true) }
+            }
+        }
+    },
+)
+
+val addTermAndFractionSteps = createAddTermAndFractionPlan(
+    numeratorSimplificationSteps = steps {
+        whilePossible {
+            firstOf {
+                option(algebraicSimplificationSteps)
+                option { deeply(expandAndSimplifier.steps, deepFirst = true) }
+            }
+        }
+    },
+)
+
+val collectLikeTermsSteps = createCollectLikeTermsAndSimplifyPlan(simplificationSteps)

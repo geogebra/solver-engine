@@ -40,11 +40,11 @@ import engine.patterns.productContaining
 import engine.patterns.sumContaining
 import engine.patterns.sumOf
 import engine.steps.metadata.metadata
+import methods.algebra.algebraicSimplificationSteps
 import methods.expand.ExpandRules
 import methods.integerarithmetic.IntegerArithmeticRules
 import methods.polynomials.PolynomialRules
 import methods.polynomials.expandAndSimplifier
-import methods.polynomials.polynomialSimplificationSteps
 import java.math.BigInteger
 
 enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
@@ -112,7 +112,7 @@ enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
             steps {
                 optionally(FactorRules.RewriteSumAndDifferenceOfCubes)
                 apply(FactorRules.ApplyDifferenceOfCubesFormula)
-                whilePossible(polynomialSimplificationSteps)
+                whilePossible(algebraicSimplificationSteps)
             }
         },
     ),
@@ -124,7 +124,7 @@ enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
             steps {
                 optionally(FactorRules.RewriteSumAndDifferenceOfCubes)
                 apply(FactorRules.ApplySumOfCubesFormula)
-                whilePossible(polynomialSimplificationSteps)
+                whilePossible(algebraicSimplificationSteps)
             }
         },
     ),
@@ -308,14 +308,14 @@ private val factorizeSumByFactoringTermsSteps: StepsProducer = steps {
     }
     apply(factorizeSumSteps)
     applyToChildren(factorizationSteps)
-    whilePossible(polynomialSimplificationSteps)
+    whilePossible(algebraicSimplificationSteps)
 }
 
 private val factorizeSumByExpandingTermsSteps: StepsProducer = steps {
     check { it is Sum }
     whilePossible {
         firstOf {
-            option(polynomialSimplificationSteps)
+            option(algebraicSimplificationSteps)
             option { deeply(expandAndSimplifier.steps, deepFirst = true) }
         }
     }
@@ -339,7 +339,7 @@ private val factorizeMinusSteps: StepsProducer = steps {
             check { it is Minus }
             applyToKind<Minus>(factorizationSteps) { it.argument }
             // to tidy up things like -(-(x+1)^2)
-            whilePossible(polynomialSimplificationSteps)
+            whilePossible(algebraicSimplificationSteps)
         }
     }
 }
@@ -348,14 +348,14 @@ private val factorizeProductSteps: StepsProducer = steps {
     check { it is Product }
     applyToChildren(factorizationSteps, atLeastOne = true)
     // to tidy up things like (x+1)^2 (x+2) (x+1)^3
-    whilePossible(polynomialSimplificationSteps)
+    whilePossible(algebraicSimplificationSteps)
 }
 
 private val factorizePowerSteps: StepsProducer = steps {
     check { it is Power }
     applyToKind<Power>(factorizationSteps) { it.base }
     // to tidy up things like (2(x + 1))^2
-    whilePossible(polynomialSimplificationSteps)
+    whilePossible(algebraicSimplificationSteps)
 }
 
 val factorizationSteps: StepsProducer = steps {

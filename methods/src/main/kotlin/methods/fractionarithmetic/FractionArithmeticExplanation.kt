@@ -111,6 +111,13 @@ enum class FractionArithmeticExplanation : CategorisedMetadataKey {
     AddRootAndFraction,
 
     /**
+     * Add a term to a fraction
+     *
+     * E.g. x + (x + x^2) / 5 -> (6x + x^2) / 5
+     */
+    AddTermAndFraction,
+
+    /**
      * Convert an improper fraction (one with a greater numerator than denominator) to the sum
      * of an integer and a proper fraction.
      *

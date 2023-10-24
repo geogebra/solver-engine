@@ -559,7 +559,7 @@ class FactorPlansTest {
 
             step {
                 fromExpr = "([x ^ 2] - (x - 1)) ([x ^ 2] + (x - 1))"
-                toExpr = "([x ^ 2] - x + 1) ([x ^ 2] + (x - 1))"
+                toExpr = "([x ^ 2] + <. -x + 1 .>) ([x ^ 2] + (x - 1))"
                 explanation {
                     key = ExpandExplanation.DistributeNegativeOverBracket
                 }

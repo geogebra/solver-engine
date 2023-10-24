@@ -12,9 +12,11 @@ import engine.methods.plan
 import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.steps
 import engine.patterns.AnyPattern
+import engine.patterns.ConstantPattern
 import engine.patterns.IntegerFractionPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.VariableExpressionPattern
 import engine.patterns.commutativeSumContaining
 import engine.patterns.condition
 import engine.patterns.fractionOf
@@ -163,8 +165,8 @@ fun createAddFractionsPlan(numeratorSimplificationSteps: StepsProducer): Method 
     val addFractionSteps = createAddFractionsSteps(numeratorSimplificationSteps)
 
     return plan {
-        val f1 = optionalNegOf(fractionOf(AnyPattern(), AnyPattern()))
-        val f2 = optionalNegOf(fractionOf(AnyPattern(), AnyPattern()))
+        val f1 = optionalNegOf(fractionOf(AnyPattern(), ConstantPattern()))
+        val f2 = optionalNegOf(fractionOf(AnyPattern(), ConstantPattern()))
 
         pattern = sumContaining(f1, f2)
 
@@ -218,6 +220,32 @@ fun createAddRootAndFractionPlan(numeratorSimplificationSteps: StepsProducer): C
         val numerator = oneOf(
             withOptionalIntegerCoefficient(root),
             sumContaining(withOptionalIntegerCoefficient(root)),
+        )
+        val fraction = optionalNegOf(fractionOf(numerator, UnsignedIntegerPattern()))
+        pattern = commutativeSumContaining(rootWithCoefficient, fraction)
+
+        partialExpressionSteps {
+            apply(FractionArithmeticRules.BringToCommonDenominatorWithNonFractionalTerm)
+            apply(addFractionSteps)
+        }
+    }
+}
+
+/**
+ * Only add a term to a fraction if that fraction already contains a similar term in
+ * its numerator (i.e. don't add x and [1 / 2] but do add x and [1 + x / 2])
+ */
+fun createAddTermAndFractionPlan(numeratorSimplificationSteps: StepsProducer): CompositeMethod {
+    val addFractionSteps = createAddFractionsSteps(numeratorSimplificationSteps)
+
+    return plan {
+        explanation = Explanation.AddTermAndFraction
+
+        val variable = VariableExpressionPattern()
+        val rootWithCoefficient = withOptionalIntegerCoefficient(variable)
+        val numerator = oneOf(
+            withOptionalIntegerCoefficient(variable),
+            sumContaining(withOptionalIntegerCoefficient(variable)),
         )
         val fraction = optionalNegOf(fractionOf(numerator, UnsignedIntegerPattern()))
         pattern = commutativeSumContaining(rootWithCoefficient, fraction)

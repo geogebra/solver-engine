@@ -36,13 +36,13 @@ import engine.patterns.productContaining
 import engine.patterns.sumContaining
 import engine.steps.metadata.metadata
 import engine.utility.lcm
+import methods.algebra.algebraicSimplificationSteps
 import methods.factor.FactorPlans
 import methods.factor.factorizationSteps
 import methods.fractionarithmetic.FractionArithmeticPlans
 import methods.fractionarithmetic.FractionArithmeticRules
 import methods.general.GeneralRules
 import methods.polynomials.PolynomialsPlans
-import methods.polynomials.polynomialSimplificationSteps
 import java.math.BigInteger
 
 enum class RationalExpressionsPlans(override val runner: CompositeMethod) : RunnerMethod {
@@ -181,7 +181,7 @@ private val rationalExpressionSimplificationSteps = steps {
     optionally(RationalExpressionsPlans.FactorNumeratorOfFraction)
     optionally(RationalExpressionsPlans.FactorDenominatorOfFraction)
     apply(FractionArithmeticPlans.SimplifyFraction)
-    whilePossible(polynomialSimplificationSteps)
+    whilePossible(algebraicSimplificationSteps)
 }
 
 private val addRationalExpressions = taskSet {

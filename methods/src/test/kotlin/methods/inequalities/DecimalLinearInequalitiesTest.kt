@@ -1,7 +1,7 @@
 package methods.inequalities
 
 import engine.methods.testMethodInX
-import methods.polynomials.PolynomialsExplanation
+import methods.decimals.DecimalsExplanation
 import org.junit.jupiter.api.Test
 
 class DecimalLinearInequalitiesTest {
@@ -120,7 +120,7 @@ class DecimalLinearInequalitiesTest {
                 fromExpr = "3.6 x + 2.2 <= [2 / 5] x + 1.2"
                 toExpr = "3.6 x + 2.2 <= 0.4 x + 1.2"
                 explanation {
-                    key = PolynomialsExplanation.SimplifyMonomial
+                    key = DecimalsExplanation.ConvertNiceFractionToDecimal
                 }
             }
 

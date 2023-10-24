@@ -3,6 +3,7 @@ package methods.collecting
 import engine.expressions.CancellableView
 import engine.expressions.Expression
 import engine.expressions.Factor
+import engine.expressions.Fraction
 import engine.expressions.IntegerExpression
 import engine.expressions.Label
 import engine.expressions.Power
@@ -94,6 +95,7 @@ private class CollectLikeTermsRule(
     private val explanationKey: MetadataKey,
 ) {
     private class SplitTerm(
+        val term: Expression,
         val selectedFactors: List<Expression>,
         val coefficient: Expression,
     ) {
@@ -119,7 +121,7 @@ private class CollectLikeTermsRule(
         val coefficient = termView.recombine()
         if (!coefficientCondition(coefficient)) return null
 
-        return SplitTerm(selectedFactors, coefficient)
+        return SplitTerm(term, selectedFactors, coefficient)
     }
 
     val rule = rule {
@@ -135,6 +137,9 @@ private class CollectLikeTermsRule(
 
             // Now find the like terms in the sum
             val likeTerms = splitTerms.mapNotNull { if (firstLikeTerm.hasSameFactorsAs(it)) it else null }
+
+            // Do not collect like terms when all like terms are fractions
+            if (likeTerms.all { it.term is Fraction }) return@onPattern null
 
             // Compute the common factors of the sum with correct origin
             val commonFactorsWithOrigins = firstLikeTerm.selectedFactors.map { commonFactor ->

@@ -151,6 +151,12 @@ export const expressionSkipList = [
   '-(x^2-2*x+8)=0',
   '-(2*x^2-4*x+2)=0',
   '-x=16*x',
+  '3*x+3-2*x-2*(-6)=0',
+  '3*x-42-4*x-2*(-1)=8*(2*x-5)',
+  '(3-4)*x-40=8*(2*x-5)',
+  '15*x-210-36*x-18*(-1)=1',
+  '(15-36)*x-192=1',
+  '8*x^3+(-12-24)*x^2+36*x+18*x-27',
 
   // [TRACKED] adjust GM to set entire product to 0 when multiplying by 0
   'x=(-7±sqrt(7^2-4*1*0))/(2*1)',

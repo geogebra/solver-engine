@@ -35,7 +35,7 @@ import engine.steps.Transformation
 import engine.steps.metadata.metadata
 import methods.algebra.AlgebraExplanation
 import methods.algebra.AlgebraPlans
-import methods.algebra.algebraicSimplificationSteps
+import methods.algebra.algebraicSimplificationStepsWithoutFractionAddition
 import methods.algebra.findDenominatorsAndDivisors
 import methods.constantexpressions.constantSimplificationSteps
 import methods.constantexpressions.simpleTidyUpSteps
@@ -57,14 +57,12 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
         plan {
             explanation = Explanation.SimplifyEquation
 
-            val simplificationSteps = algebraicSimplificationSteps(addRationalExpressions = false)
-
             steps {
                 whilePossible { deeply(simpleTidyUpSteps) }
                 optionally(NormalizationPlans.NormalizeExpression)
                 whilePossible(EquationsRules.EliminateConstantFactorOfLhsWithZeroRhs)
                 whilePossible(SolvableRules.CancelCommonTermsOnBothSides)
-                optionally(simplificationSteps)
+                whilePossible(algebraicSimplificationStepsWithoutFractionAddition)
             }
         },
     ),

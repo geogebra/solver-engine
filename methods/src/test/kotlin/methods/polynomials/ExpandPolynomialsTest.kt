@@ -816,17 +816,17 @@ class ExpandPolynomialsTest {
 
             step {
                 fromExpr = "3 x + 3 - 2 x - 12"
-                toExpr = "x + 3 - 12"
+                toExpr = "3 x - 9 - 2 x"
                 explanation {
-                    key = CollectingExplanation.CollectLikeTermsAndSimplify
+                    key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
                 }
             }
 
             step {
-                fromExpr = "x + 3 - 12"
+                fromExpr = "3 x - 9 - 2 x"
                 toExpr = "x - 9"
                 explanation {
-                    key = IntegerArithmeticExplanation.EvaluateIntegerSubtraction
+                    key = CollectingExplanation.CollectLikeTermsAndSimplify
                 }
             }
         }
