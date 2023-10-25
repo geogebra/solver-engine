@@ -13,6 +13,9 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Fixed
 
+- `ComputeDomainOfAlgebraicExpression` plan isn't shown when `ComputeDomainAndSimplifyAlgebraicExpression` plan can be
+  shown (e.g., for `[3 * 2 / (x - 1)(x - 2)]`) (PLUT-708)
+
 ### Changed
 
 ### Removed

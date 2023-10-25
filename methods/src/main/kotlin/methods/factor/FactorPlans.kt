@@ -365,9 +365,6 @@ val factorizationSteps: StepsProducer = steps {
         option(factorizeMinusSteps)
         option(factorizeProductSteps)
         option(factorizePowerSteps)
-
-        // TODO figure out if there are problems with removing this option
-        // option { whilePossible(polynomialSimplificationSteps) }
     }
 }
 

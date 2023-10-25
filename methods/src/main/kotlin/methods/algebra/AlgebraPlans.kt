@@ -87,6 +87,7 @@ enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
     ComputeDomainOfAlgebraicExpression(
         taskSet {
             explanation = Explanation.ComputeDomainOfAlgebraicExpression
+            specificPlans(ComputeDomainAndSimplifyAlgebraicExpression)
 
             tasks {
                 val denominatorsAndDivisors = findDenominatorsAndDivisors(expression)
