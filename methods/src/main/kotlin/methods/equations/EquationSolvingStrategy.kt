@@ -235,9 +235,20 @@ enum class EquationSolvingStrategy(
             firstOf {
                 option {
                     /**
+                     * First we check if we can get rid of the denominators by simplifying and expanding.
+                     */
+                    optionally(EquationsPlans.SimplifyEquation)
+                    whilePossible {
+                        check { it.containsVariableDenominator(solutionVariables) }
+                        apply(PolynomialsPlans.ExpandMostComplexSubterm)
+                    }
+                    check { !it.containsVariableDenominator(solutionVariables) }
+                }
+                option {
+                    /**
                      * An equation where all the denominators are the same is called a
-                     * rational equation with a trivial LCD
-                     * Here we don't want to cancel the fractions (because the cancellation would have to be undone)
+                     * rational equation with a trivial LCD. Here we don't want to cancel
+                     * the fractions (because the cancellation would have to be undone)
                      */
                     apply(EquationsRules.MultiplyBothSidesOfRationalEquationWithTrivialLCD)
                     apply(EquationsPlans.SimplifyEquation)

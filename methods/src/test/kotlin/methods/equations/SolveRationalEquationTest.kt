@@ -1013,4 +1013,85 @@ class SolveRationalEquationTest {
             }
         }
     }
+
+    @Test
+    fun `test rational equation reducible to polynomial by expanding`() = testMethodInX {
+        method = EquationsPlans.SolveEquation
+        inputExpr = "([1 / x] + 2) x = [2 / x] x"
+
+        check {
+            fromExpr = "([1 / x] + 2) x = [2 / x] x"
+            toExpr = "SetSolution[x: {[1 / 2]}]"
+            explanation {
+                key = EquationsExplanation.SolveEquation
+            }
+
+            // not necessary to test the domain computation task
+            task { }
+
+            task {
+                taskId = "#2"
+                startExpr = "([1 / x] + 2) x = [2 / x] x"
+                explanation {
+                    key = EquationsExplanation.SolveEquation
+                }
+
+                step {
+                    fromExpr = "([1 / x] + 2) x = [2 / x] x"
+                    toExpr = "SetSolution[x: {[1 / 2]}]"
+                    explanation {
+                        key = EquationsExplanation.SolveRationalEquation
+                    }
+
+                    step {
+                        fromExpr = "([1 / x] + 2) x = [2 / x] x"
+                        toExpr = "x ([1 / x] + 2) = 2"
+                        explanation {
+                            key = EquationsExplanation.SimplifyEquation
+                        }
+                    }
+
+                    step {
+                        fromExpr = "x ([1 / x] + 2) = 2"
+                        toExpr = "1 + 2 x = 2"
+                        explanation {
+                            key = PolynomialsExplanation.ExpandPolynomialExpression
+                        }
+                    }
+
+                    step {
+                        fromExpr = "1 + 2 x = 2"
+                        toExpr = "2 x = 1"
+                        explanation {
+                            key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                        }
+                    }
+
+                    step {
+                        fromExpr = "2 x = 1"
+                        toExpr = "x = [1 / 2]"
+                        explanation {
+                            key = methods.solvable.EquationsExplanation.DivideByCoefficientOfVariableAndSimplify
+                        }
+                    }
+
+                    step {
+                        fromExpr = "x = [1 / 2]"
+                        toExpr = "SetSolution[x: {[1 / 2]}]"
+                        explanation {
+                            key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
+                        }
+                    }
+                }
+            }
+
+            task {
+                taskId = "#3"
+                startExpr = "SetSolution[x: {[1 / 2]}]"
+                explanation {
+                    key = EquationsExplanation.AllSolutionsSatisfyConstraint
+                }
+            }
+        }
+    }
 }
