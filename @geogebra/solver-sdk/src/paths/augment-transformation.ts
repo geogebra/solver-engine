@@ -19,7 +19,7 @@ export type TransformationWithFullFromExpr = {
   fullFromExpr: ExpressionTree;
   fullToExpr: ExpressionTree;
   depth: number;
-  steps: null | TransformationWithFullFromExpr[];
+  steps?: TransformationWithFullFromExpr[];
 } & Omit<TransformationJson, 'steps'>;
 
 /** Augments a solver response. In particular, it will substitute the sub-step expressions

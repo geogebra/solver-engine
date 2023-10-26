@@ -15,6 +15,8 @@ contents to a new release section (e.g. _[0.x]_).
   (PLUT-715)
 - SDK: add latex rendering for inverse trig functions (e.g., `sin^-1 x`) and power of trig functions (e.g., `tan^2 x`)
   (PLUT-715)
+- Added support for simplifying the sum of non-constant fractions, such as `[x + 1 / 2] + [3x / 5]` (not applied when
+  solving equations) (PLUT-680)
 
 ### Fixed
 
@@ -24,6 +26,9 @@ contents to a new release section (e.g. _[0.x]_).
   e.g. `([1/x]+2)x=[2/x]x` (PLUT-703)
 
 ### Changed
+
+- The Spring configurations have been changed to exclude null values from the returned objects (PLUT-692)
+- SDK: the Transformation type has been changed to reflect the optional fields (PLUT-692)
 
 ### Removed
 
@@ -41,8 +46,6 @@ contents to a new release section (e.g. _[0.x]_).
 - SDK: add support for specials symbols i.e. `%, pi, exponentialE, iota` (PLUT-822)
 - Added support for parametric quadratic equations (where coefficents are not constant) (PLUT-807)
 - Added ability to simplify a square root with a square factor (e.g. `sqrt[4x - 8]`) (PLUT-808)
-- Added support for simplifying the sum of non-constant fractions, such as `[x + 1 / 2] + [3x / 5]` (not applied when
-  solving equations) (PLUT-680)
 - Optimization of deeply: added machinery for avoiding searching too deep into expressions when the plan applied
   requires a deep expression (PLUT-831)
 

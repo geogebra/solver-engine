@@ -110,40 +110,40 @@ export type GmAction = {
 
 type MetadataBase<MathFormat> = {
   key: string;
-  params: { expression: MathFormat; pathMappings: PathMapping[] }[];
+  params?: { expression: MathFormat; pathMappings: PathMapping[] }[];
 };
 
 export type Tag = 'Rearrangement' | 'Cosmetic' | 'Pedantic' | 'InvisibleChange';
 
 type TransformationBase<MathFormat> = {
   type: 'Plan' | 'Rule' | 'TaskSet';
-  tags: Tag[];
+  tags?: Tag[];
 
   path: string;
   fromExpr: MathFormat;
   toExpr: MathFormat;
   pathMappings: PathMapping[];
   explanation: MetadataBase<MathFormat>;
-  gmAction: null | GmAction;
-  skills: MetadataBase<MathFormat>[];
-  steps: null | TransformationBase<MathFormat>[];
-  tasks: null | TaskBase<MathFormat>[];
-  alternatives: null | AlternativeBase<MathFormat>[];
+  gmAction?: GmAction;
+  skills?: MetadataBase<MathFormat>[];
+  steps?: TransformationBase<MathFormat>[];
+  tasks?: TaskBase<MathFormat>[];
+  alternatives?: AlternativeBase<MathFormat>[];
 };
 
 export type TaskBase<MathFormat> = {
   taskId: string;
   startExpr: MathFormat;
   pathMappings: PathMapping[];
-  explanation: null | MetadataBase<MathFormat>;
-  steps: null | TransformationBase<MathFormat>[];
-  dependsOn: null | string[];
+  explanation: MetadataBase<MathFormat>;
+  steps?: TransformationBase<MathFormat>[];
+  dependsOn?: string[];
 };
 
 export type AlternativeBase<MathFormat> = {
   strategy: string;
   explanation: MetadataBase<MathFormat>;
-  steps: null | TransformationBase<MathFormat>[];
+  steps: TransformationBase<MathFormat>[];
 };
 
 export type TransformationSolver = TransformationBase<string>;

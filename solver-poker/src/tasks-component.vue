@@ -3,7 +3,7 @@ import type { TaskJson } from '@geogebra/solver-sdk';
 import TaskComponent from './task-component.vue';
 
 const props = defineProps<{
-  tasks: TaskJson[] | null;
+  tasks?: TaskJson[];
   depth: number;
   open: boolean;
 }>();

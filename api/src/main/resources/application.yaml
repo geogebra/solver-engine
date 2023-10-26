@@ -6,7 +6,9 @@ server:
   error:
     include-message: always
     include-stacktrace: never
-
+spring:
+  jackson:
+    default-property-inclusion: non_null
 api:
   web-security:
     allowed-origins:

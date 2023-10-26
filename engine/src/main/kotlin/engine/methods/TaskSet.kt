@@ -14,7 +14,7 @@ import engine.steps.metadata.metadata
 class TaskSet(
     private val pattern: Pattern,
     private val explanationMaker: MetadataMaker,
-    private val skillMakers: List<MetadataMaker> = emptyList(),
+    private val skillMakers: List<MetadataMaker>?,
     private val tasksProducer: TasksProducer,
     specificPlans: List<Method> = emptyList(),
 ) : CompositeMethod(specificPlans) {
@@ -29,7 +29,7 @@ class TaskSet(
                     toExpr = toExpr,
                     tasks = tasks,
                     explanation = explanationMaker.make(ctx, sub, match),
-                    skills = skillMakers.map { it.make(ctx, sub, match) },
+                    skills = skillMakers?.map { it.make(ctx, sub, match) },
                 )
             }
         }
@@ -42,11 +42,11 @@ class TaskSet(
 class PartialExpressionTaskSet(
     private val pattern: NaryPattern,
     private val explanationMaker: MetadataMaker,
-    private val skillMakers: List<MetadataMaker> = emptyList(),
+    private val skillMakers: List<MetadataMaker>?,
     private val tasksProducer: TasksProducer,
 ) : CompositeMethod() {
 
-    val regularTaskSet = TaskSet(pattern, explanationMaker, skillMakers, tasksProducer)
+    private val regularTaskSet = TaskSet(pattern, explanationMaker, skillMakers, tasksProducer)
 
     override fun run(ctx: Context, sub: Expression): Transformation? {
         if (sub.childCount == pattern.childPatterns.size) {
@@ -75,7 +75,7 @@ class PartialExpressionTaskSet(
                     toExpr = toExpr,
                     tasks = finalTasks,
                     explanation = explanationMaker.make(ctx, sub, match),
-                    skills = skillMakers.map { it.make(ctx, sub, match) },
+                    skills = skillMakers?.map { it.make(ctx, sub, match) },
                 )
             }
         }

@@ -29,13 +29,12 @@ abstract class CompositeMethod(
 
 @StepsProducerBuilderMarker
 open class CompositeMethodBuilder {
-    protected var skillMakers: MutableList<MetadataMaker> = mutableListOf()
     var pattern: Pattern = AnyPattern()
     var resultPattern: Pattern = AnyPattern()
-
     lateinit var explanation: MetadataKey
 
     private lateinit var explicitExplanationMaker: MetadataMaker
+    protected var skillMakers: MutableList<MetadataMaker>? = null
     private var specificPlansList: MutableList<Method> = mutableListOf()
 
     fun specificPlans(vararg plans: Method) {
@@ -60,11 +59,13 @@ open class CompositeMethodBuilder {
         skillKey: MetadataKey,
         skillParameters: MappedExpressionBuilder.() -> List<Expression> = { emptyList() },
     ) {
-        skillMakers.add(FixedKeyMetadataMaker(skillKey, skillParameters))
+        skillMakers = skillMakers ?: mutableListOf()
+        skillMakers!!.add(FixedKeyMetadataMaker(skillKey, skillParameters))
     }
 
     fun skill(skillKey: MetadataKey, vararg params: ExpressionProvider) {
-        skillMakers.add(FixedKeyMetadataMaker(skillKey) { params.map { move(it) } })
+        skillMakers = skillMakers ?: mutableListOf()
+        skillMakers!!.add(FixedKeyMetadataMaker(skillKey) { params.map { move(it) } })
     }
 
     protected val explanationMaker get() = when {

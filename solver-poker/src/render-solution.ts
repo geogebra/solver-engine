@@ -54,12 +54,14 @@ export const createColorMaps = (
 export const getExplanationString = (expl: Metadata) => {
   let explanationString = translationData.value[expl.key];
   const warnings = [];
+
+  const parameters = expl.params || [];
   if (!explanationString) {
     warnings.push(`Missing default translation for ${expl.key}`);
-    explanationString = `${expl.key}(${[...expl.params.keys()].map((i) => `%${i + 1}`).join()})`;
+    explanationString = `${expl.key}(${[...parameters.keys()].map((i) => `%${i + 1}`).join()})`;
   }
 
-  for (const [i, param] of expl.params.entries()) {
+  for (const [i, param] of parameters.entries()) {
     // replacing "%1", "%2", ... with the respective rendered expression
     if (explanationString.includes('%' + (i + 1))) {
       explanationString = explanationString.replaceAll(
