@@ -82,6 +82,8 @@ class PartialExpressionPlan(
 
         return null
     }
+
+    override val minDepth get() = maxOf(pattern.minDepth, stepsProducer.minDepth)
 }
 
 private fun matchedTermsAreNextToEachOther(pattern: NaryPattern, match: Match): Boolean {

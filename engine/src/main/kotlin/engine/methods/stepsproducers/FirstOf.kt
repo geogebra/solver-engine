@@ -4,17 +4,104 @@ import engine.context.Context
 import engine.expressions.Expression
 import engine.steps.Transformation
 
-internal class FirstOf(val init: FirstOfBuilder.() -> Unit) : StepsProducer {
+/**
+ * Implements the firstOf [StepsProducer] from [init].  It uses a [FirstOfCompiler] to prepare the
+ * options and calculate its minDepth, then uses a [FirstOfRunner] to execute the firstOf.
+ */
+private class FirstOf(val init: FirstOfFunc) : StepsProducer {
+
+    private lateinit var stepsProducers: List<StepsProducer>
+    private var minDepthValue = -1
+
+    private fun initialize() {
+        val compiler = FirstOfCompiler()
+        compiler.init()
+        stepsProducers = compiler.getStepsProducers()
+        minDepthValue = compiler.getMindDepth()
+    }
+
+    override val minDepth: Int get() {
+        if (minDepthValue < 0) {
+            initialize()
+        }
+        return minDepthValue
+    }
+
     override fun produceSteps(ctx: Context, sub: Expression): List<Transformation>? {
-        val runner = FirstOfRunner(sub, ctx)
+        if (!::stepsProducers.isInitialized) {
+            initialize()
+        }
+        val runner = FirstOfRunner(stepsProducers, sub, ctx)
         runner.init()
         return runner.steps
     }
 }
 
-private class FirstOfRunner(val sub: Expression, val ctx: Context) : FirstOfBuilder {
+/**
+ * A [FirstOfBuilder] whose purpose is to compile the pipeline, i.e. precalculate options from their specification and
+ * precalculate the minDepth of a firstOf.
+ */
+private class FirstOfCompiler : FirstOfBuilder {
+
+    private val stepsProducers = mutableListOf<StepsProducer>()
+    private var minDepth = Int.MAX_VALUE
+
+    fun getStepsProducers() = stepsProducers.toList()
+    fun getMindDepth() = minDepth
+
+    private fun registerOption(opt: StepsProducer) {
+        minDepth = minOf(minDepth, opt.minDepth)
+    }
+    private fun registerOption(init: PipelineFunc) {
+        val stepsProducer = steps(init)
+        stepsProducers.add(stepsProducer)
+        registerOption(stepsProducer)
+    }
+
+    override fun option(opt: StepsProducer) {
+        registerOption(opt)
+    }
+
+    override fun option(init: PipelineFunc) {
+        registerOption(init)
+    }
+
+    override fun shortOption(opt: StepsProducer) {
+        registerOption(opt)
+    }
+
+    override fun shortOption(init: PipelineFunc) {
+        registerOption(init)
+    }
+
+    override fun <T> optionsFor(
+        sequenceGenerator: (Expression) -> Iterable<T>,
+        optionGenerator: PipelineBuilder.(T) -> Unit,
+    ) {
+        // It is not possible to compile this at the moment because [sequenceGenerator] depends on the input.
+        // This is probably an antipattern and we should fix it but I don't know how yet.
+        minDepth = 0
+    }
+}
+
+/**
+ * A [FirstOfBuilder] that executes the pipeline. [stepsProducers] is the list of [StepsProducer] instances
+ * precalculated by the [FirstOfCompiler].
+ */
+private class FirstOfRunner(
+    val stepsProducers: List<StepsProducer>,
+    val sub: Expression,
+    val ctx: Context,
+) : FirstOfBuilder {
 
     var steps: List<Transformation>? = null
+    private var index = 0
+
+    private fun nextStepsProducer(): StepsProducer {
+        val next = stepsProducers[index]
+        index++
+        return next
+    }
 
     override fun option(opt: StepsProducer) {
         if (steps == null) {
@@ -25,9 +112,9 @@ private class FirstOfRunner(val sub: Expression, val ctx: Context) : FirstOfBuil
         }
     }
 
-    override fun option(init: PipelineBuilder.() -> Unit) {
+    override fun option(init: PipelineFunc) {
         if (steps == null) {
-            option(ProceduralPipeline(init))
+            option(nextStepsProducer())
         }
     }
 
@@ -39,8 +126,8 @@ private class FirstOfRunner(val sub: Expression, val ctx: Context) : FirstOfBuil
         }
     }
 
-    override fun shortOption(init: PipelineBuilder.() -> Unit) {
-        shortOption(ProceduralPipeline(init))
+    override fun shortOption(init: PipelineFunc) {
+        shortOption(nextStepsProducer())
     }
 
     override fun <T> optionsFor(
@@ -51,7 +138,7 @@ private class FirstOfRunner(val sub: Expression, val ctx: Context) : FirstOfBuil
 
         val sequence = sequenceGenerator(sub)
         for (elem in sequence) {
-            val currentSteps = ProceduralPipeline({ optionGenerator(elem) }).produceSteps(ctx, sub)
+            val currentSteps = steps { optionGenerator(elem) }.produceSteps(ctx, sub)
             if (currentSteps != null) {
                 steps = currentSteps
                 break
@@ -63,4 +150,4 @@ private class FirstOfRunner(val sub: Expression, val ctx: Context) : FirstOfBuil
 /**
  * Type-safe builder to create a [StepsProducer] using the [PipelineBuilder] DSL.
  */
-fun firstOf(init: FirstOfBuilder.() -> Unit): StepsProducer = FirstOf(init)
+fun firstOf(init: FirstOfFunc): StepsProducer = FirstOf(init)

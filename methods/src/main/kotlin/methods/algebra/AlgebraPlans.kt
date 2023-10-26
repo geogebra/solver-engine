@@ -89,6 +89,12 @@ enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
             explanation = Explanation.ComputeDomainOfAlgebraicExpression
             specificPlans(ComputeDomainAndSimplifyAlgebraicExpression)
 
+            val solveInequationInOneVariableSteps = steps {
+                inContext({ copy(solutionVariables = it.variables.toList()) }) {
+                    apply(InequationsPlans.SolveInequation)
+                }
+            }
+
             tasks {
                 val denominatorsAndDivisors = findDenominatorsAndDivisors(expression)
                     .filter { (denominatorOrDivisor, _) -> !denominatorOrDivisor.isConstant() }
@@ -116,12 +122,9 @@ enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
 
                     taskWithOptionalSteps(
                         startExpr = inequationOf(denominatorOrDivisor, Constants.Zero),
+                        stepsProducer = solveInequationInOneVariableSteps,
                         explanation = explanation,
-                    ) {
-                        inContext({ copy(solutionVariables = it.variables.toList()) }) {
-                            apply(InequationsPlans.SolveInequation)
-                        }
-                    }
+                    )
                 }
 
                 val overallSolution = computeOverallIntersectionSolution(constraintTasks.map { it.result })

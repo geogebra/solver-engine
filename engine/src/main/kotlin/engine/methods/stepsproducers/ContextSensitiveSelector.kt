@@ -25,6 +25,8 @@ data class ContextSensitiveSelector(
     val alternatives: List<ContextSensitiveAlternative>,
 ) : StepsProducer {
 
+    override val minDepth get() = alternatives.minOf { it.stepsProducer.minDepth }
+
     override fun produceSteps(ctx: Context, sub: Expression): List<Transformation>? {
         val best = ctx.selectBestResource(default, alternatives).stepsProducer
         return best.produceSteps(ctx, sub)
@@ -42,16 +44,16 @@ class ContextSensitiveBuilder {
         default = ContextSensitiveAlternative(stepsProducer, resourceData)
     }
 
-    fun default(resourceData: ResourceData, steps: PipelineBuilder.() -> Unit) {
-        default(resourceData, ProceduralPipeline(steps))
+    fun default(resourceData: ResourceData, init: PipelineFunc) {
+        default(resourceData, steps(init))
     }
 
     fun alternative(resourceData: ResourceData, stepsProducer: StepsProducer) {
         alternatives.add(ContextSensitiveAlternative(stepsProducer, resourceData))
     }
 
-    fun alternative(resourceData: ResourceData, steps: PipelineBuilder.() -> Unit) {
-        alternative(resourceData, ProceduralPipeline(steps))
+    fun alternative(resourceData: ResourceData, init: PipelineFunc) {
+        alternative(resourceData, steps(init))
     }
 }
 

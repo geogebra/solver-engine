@@ -81,6 +81,8 @@ interface Pattern : ExpressionProvider {
     }
 
     val key: Pattern
+
+    val minDepth get() = 0
 }
 
 interface SubstitutablePattern : Pattern {
@@ -99,7 +101,7 @@ abstract class BasePattern : Pattern {
      * [doFindMatches] function to return all possible matches.
      */
     final override fun findMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
-        if (!this.checkPreviousMatch(subexpression, match)) {
+        if (subexpression.depth < minDepth || !this.checkPreviousMatch(subexpression, match)) {
             return emptySequence()
         }
         return doFindMatches(context, match, subexpression)
@@ -126,4 +128,6 @@ interface KeyedPattern : Pattern {
     override fun findMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
         return key.findMatches(context, match, subexpression)
     }
+
+    override val minDepth: Int get() = key.minDepth
 }

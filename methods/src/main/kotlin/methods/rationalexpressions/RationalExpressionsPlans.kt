@@ -195,6 +195,11 @@ private val addRationalExpressions = taskSet {
 
     pattern = sumContaining(nf1, nf2)
 
+    val addLikeFractionsAndSimplifySteps = steps {
+        optionally { applyToKind<Fraction>(PolynomialsPlans.SimplifyPolynomialExpression) { it.numerator } }
+        optionally(rationalExpressionSimplificationSteps)
+    }
+
     partialExpressionTasks {
         val fraction1 = get(f1) as Fraction
         val fraction2 = get(f2) as Fraction
@@ -232,25 +237,39 @@ private val addRationalExpressions = taskSet {
                 sumOf(copySign(nf1, simplifiedFraction1.numerator), copySign(nf2, simplifiedFraction2.numerator)),
                 simplifiedFraction1.denominator,
             ),
+            stepsProducer = addLikeFractionsAndSimplifySteps,
             explanation = metadata(Explanation.AddLikeRationalExpressions),
-        ) {
-            optionally { applyToKind<Fraction>(PolynomialsPlans.SimplifyPolynomialExpression) { it.numerator } }
-            optionally(rationalExpressionSimplificationSteps)
-        }
+        )
 
         allTasks()
     }
 }
 
-fun TasksBuilder.factorFractionDenominatorTask(fraction: Fraction): Fraction {
+private val factoringTaskSteps = steps {
+    applyToKind<Fraction>(FactorPlans.FactorPolynomialInOneVariable) { it.denominator }
+}
+
+private fun TasksBuilder.factorFractionDenominatorTask(fraction: Fraction): Fraction {
     val factoringTask = task(
         startExpr = fraction,
+        stepsProducer = factoringTaskSteps,
         explanation = metadata(Explanation.FactorDenominatorOfFraction),
-    ) {
-        applyToKind<Fraction>(FactorPlans.FactorPolynomialInOneVariable) { it.denominator }
-    }
+    )
 
     return factoringTask?.result as? Fraction ?: fraction
+}
+
+private val simplifyFractionSteps = steps {
+    optionally {
+        applyToKind<Fraction>(
+            PolynomialsPlans.ExpandPolynomialExpressionWithoutNormalization,
+        ) { it.numerator }
+    }
+    optionally {
+        applyToKind<Fraction>(
+            PolynomialsPlans.SimplifyPolynomialExpression,
+        ) { it.denominator }
+    }
 }
 
 private fun TasksBuilder.bringFractionToCommonDenominatorTask(fraction: Fraction, multiplier: Expression): Fraction {
@@ -263,19 +282,9 @@ private fun TasksBuilder.bringFractionToCommonDenominatorTask(fraction: Fraction
 
     val simplificationTask = taskWithOptionalSteps(
         startExpr = expandedFraction,
+        stepsProducer = simplifyFractionSteps,
         explanation = metadata(Explanation.BringFractionToLeastCommonDenominator, fraction),
-    ) {
-        optionally {
-            applyToKind<Fraction>(
-                PolynomialsPlans.ExpandPolynomialExpressionWithoutNormalization,
-            ) { it.numerator }
-        }
-        optionally {
-            applyToKind<Fraction>(
-                PolynomialsPlans.SimplifyPolynomialExpression,
-            ) { it.denominator }
-        }
-    }
+    )
 
     return simplificationTask.result as Fraction
 }

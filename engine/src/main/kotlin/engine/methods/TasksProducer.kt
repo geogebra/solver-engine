@@ -4,9 +4,7 @@ import engine.context.Context
 import engine.expressionbuilder.MappedExpressionBuilder
 import engine.expressions.Expression
 import engine.expressions.RootOrigin
-import engine.methods.stepsproducers.PipelineBuilder
 import engine.methods.stepsproducers.StepsProducer
-import engine.methods.stepsproducers.steps
 import engine.patterns.Match
 import engine.steps.Task
 import engine.steps.Transformation
@@ -64,26 +62,16 @@ class TasksBuilder(
     }
 
     @Suppress("LongParameterList")
-    fun task(
-        startExpr: Expression,
-        explanation: Metadata,
-        dependsOn: List<Task> = emptyList(),
-        context: Context = this.context,
-        resultLabel: String? = null,
-        init: PipelineBuilder.() -> Unit,
-    ): Task? = task(startExpr, explanation, dependsOn, context, resultLabel, steps(init))
-
-    @Suppress("LongParameterList")
     fun taskWithOptionalSteps(
         startExpr: Expression,
         explanation: Metadata,
         dependsOn: List<Task> = emptyList(),
         context: Context = this.context,
         resultLabel: String? = null,
-        init: PipelineBuilder.() -> Unit,
+        stepsProducer: StepsProducer,
     ): Task {
         val taskId = nextTaskId()
-        var steps = steps(init).produceSteps(context, startExpr.withOrigin(RootOrigin())) ?: emptyList()
+        var steps = stepsProducer.produceSteps(context, startExpr.withOrigin(RootOrigin())) ?: emptyList()
         if (resultLabel != null) {
             steps = steps.mapIndexed { i, trans ->
                 if (i + 1 == steps.size) trans.copy(toExpr = trans.toExpr.withName(resultLabel)) else trans

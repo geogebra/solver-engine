@@ -18,4 +18,6 @@ class SolvablePattern(
             rhs.findMatches(context, it, subexpression.secondChild)
         }
     }
+
+    override val minDepth = 1 + maxOf(lhs.minDepth, rhs.minDepth)
 }

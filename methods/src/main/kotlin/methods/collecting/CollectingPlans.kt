@@ -49,7 +49,9 @@ fun createCollectLikeRootsAndSimplifyPlan(simplificationSteps: StepsProducer): M
                 option {
                     withNewLabels {
                         apply(CollectingRules.CollectLikeRoots)
-                        optionally { applyTo(coefficientSimplificationSteps, Label.A) }
+                        optionally {
+                            applyTo(coefficientSimplificationSteps, Label.A)
+                        }
                         optionally(GeneralRules.EliminateZeroInSum)
                     }
                 }

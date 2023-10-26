@@ -7,7 +7,7 @@
     </envs>
     <output_file path="$USER_HOME$/solver-engine.log" />
     <module name="solver-engine.api.main" />
-    <option name="SPRING_BOOT_MAIN_CLASS" value="server.Application" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="server.ApplicationKt" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>

@@ -14,6 +14,7 @@ import engine.methods.plan
 import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.applyAfterMaybeExtractingMinus
 import engine.methods.stepsproducers.steps
+import engine.methods.stepsproducers.stepsWithMinDepth
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.FindPattern
@@ -244,6 +245,7 @@ val simpleTidyUpSteps = steps {
         option(IntegerRationalExponentsRules.EvaluateNegativeToRationalExponentAsUndefined)
 
         // tidy up decimals
+        // It's bad to have this here as it has depth = 0.  We should do this at the start and then forget about it.
         option(DecimalRules.StripTrailingZerosAfterDecimal)
 
         // handle zeroes
@@ -286,7 +288,8 @@ private val fractionSimplificationSteps = steps {
             option(normalizeNegativeSignsInFraction)
             option(FractionArithmeticPlans.SimplifyFraction)
 
-            // These should be done once and for all at the start I guess, no need to try again and again
+            // These should be done once and for all at the start I guess, no need to try again and again.
+            // Moving them out of the way would yield 8% speedup in benchmarks
             option(DecimalPlans.NormalizeFractionOfDecimals)
             option(DecimalPlans.ConvertTerminatingDecimalToFractionAndSimplify)
             option(DecimalPlans.ConvertRecurringDecimalToFractionAndSimplify)
@@ -294,7 +297,8 @@ private val fractionSimplificationSteps = steps {
     }
 }
 
-val constantSimplificationSteps: StepsProducer = steps {
+// Give it a minDepth of 1 to break cycles.
+val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
     firstOf {
         option { deeply(simpleTidyUpSteps) }
 

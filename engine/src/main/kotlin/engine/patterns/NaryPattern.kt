@@ -94,6 +94,8 @@ class NaryPattern internal constructor(
     }
 
     fun getMatchedOrigins(m: Match) = getMatchedChildExpressions(m).map { it.origin }
+
+    override val minDepth = if (childPatterns.isEmpty()) 1 else 1 + childPatterns.maxOf { it.minDepth }
 }
 
 private data class RecursiveMatcher(

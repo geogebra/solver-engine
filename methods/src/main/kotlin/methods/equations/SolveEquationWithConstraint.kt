@@ -13,6 +13,7 @@ import engine.expressions.equationOf
 import engine.expressions.setSolutionOf
 import engine.expressions.statementSystemOf
 import engine.methods.TasksBuilder
+import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
 import engine.patterns.AnyPattern
 import engine.patterns.absoluteValueOf
@@ -45,16 +46,19 @@ internal val solveEquationWithInequalityConstraint = taskSet {
         ),
     )
 
+    val simplifyConstraintSteps = steps {
+        firstOf {
+            option(InequalitiesPlans.SolveLinearInequality)
+            option(InequalitiesPlans.SimplifyInequality)
+        }
+    }
+
     tasks {
         val simplifyConstraint = task(
             startExpr = get(inequality),
             explanation = metadata(Explanation.SimplifyConstraint),
-        ) {
-            firstOf {
-                option(InequalitiesPlans.SolveLinearInequality)
-                option(InequalitiesPlans.SimplifyInequality)
-            }
-        }
+            stepsProducer = simplifyConstraintSteps,
+        )
 
         val solveEquation = task(
             startExpr = get(equation),
@@ -82,14 +86,17 @@ internal val solveEquationWithOneAbsoluteValueBySubstitution = taskSet {
 
     pattern = equationOf(lhs, rhs)
     explanation = Explanation.SolveEquationWithOneAbsoluteValueBySubstitution
+
+    val solveWithoutConstraintSteps = steps {
+        apply(EquationsRules.SeparateModulusEqualsExpressionWithoutConstraint)
+        apply(EquationsPlans.SolveEquationUnion)
+    }
     tasks {
         val solveWithoutConstraint = task(
             startExpr = expression,
             explanation = metadata(Explanation.SplitEquationWithAbsoluteValueAndSolve),
-        ) {
-            apply(EquationsRules.SeparateModulusEqualsExpressionWithoutConstraint)
-            apply(EquationsPlans.SolveEquationUnion)
-        } ?: return@tasks null
+            stepsProducer = solveWithoutConstraintSteps,
+        ) ?: return@tasks null
 
         checkSolutionsAgainstConstraint(solveWithoutConstraint.result, expression) ?: return@tasks null
 

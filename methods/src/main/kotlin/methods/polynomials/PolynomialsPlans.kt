@@ -170,12 +170,24 @@ val expandAndSimplifier: ExpandAndSimplifyMethodsProvider by lazy {
 private val multiplyVariablePowers = plan {
     explanation = Explanation.MultiplyUnitaryMonomialsAndSimplify
 
+    val simplifyCompletelySteps = engine.methods.stepsproducers.steps {
+        whilePossible(simplificationSteps)
+    }
+
     steps {
         apply {
             whilePossible(GeneralRules.RewriteProductOfPowersWithSameBase)
         }
         check { it is Power }
-        applyToKind<Power>(engine.methods.stepsproducers.steps { whilePossible(simplificationSteps) }) { it.exponent }
+        applyToKind<Power>(simplifyCompletelySteps) { it.exponent }
+    }
+}
+
+private val simplifyCoefficient = plan {
+    explanation = Explanation.SimplifyCoefficient
+
+    steps {
+        whilePossible(simplificationSteps)
     }
 }
 
@@ -197,14 +209,6 @@ private val multiplyMonomials = plan {
     }
 
     alternative(ResourceData(gmFriendly = true)) {
-        whilePossible(simplificationSteps)
-    }
-}
-
-private val simplifyCoefficient = plan {
-    explanation = Explanation.SimplifyCoefficient
-
-    steps {
         whilePossible(simplificationSteps)
     }
 }
@@ -260,11 +264,6 @@ private val simplifyPowerOfMonomial = plan {
     }
 }
 
-val simplificationSteps = contextSensitiveSteps {
-    default(ResourceData(preferDecimals = false), constantSimplificationSteps)
-    alternative(ResourceData(preferDecimals = true), decimalEvaluationSteps)
-}
-
 val addFractionsSteps = createAddFractionsPlan(
     numeratorSimplificationSteps = steps {
         whilePossible {
@@ -287,4 +286,9 @@ val addTermAndFractionSteps = createAddTermAndFractionPlan(
     },
 )
 
-val collectLikeTermsSteps = createCollectLikeTermsAndSimplifyPlan(simplificationSteps)
+internal val simplificationSteps = contextSensitiveSteps {
+    default(ResourceData(preferDecimals = false), constantSimplificationSteps)
+    alternative(ResourceData(preferDecimals = true), decimalEvaluationSteps)
+}
+
+internal val collectLikeTermsSteps = createCollectLikeTermsAndSimplifyPlan(simplificationSteps)

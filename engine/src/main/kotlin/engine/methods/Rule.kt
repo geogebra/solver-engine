@@ -29,6 +29,8 @@ class Rule(
         }
         return null
     }
+
+    override val minDepth = pattern.minDepth
 }
 
 class RuleBuilder {

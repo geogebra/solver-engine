@@ -35,6 +35,8 @@ class TaskSet(
         }
         return null
     }
+
+    override val minDepth = pattern.minDepth
 }
 
 class PartialExpressionTaskSet(
@@ -79,6 +81,8 @@ class PartialExpressionTaskSet(
         }
         return null
     }
+
+    override val minDepth = pattern.minDepth
 }
 
 class TaskSetBuilder : CompositeMethodBuilder() {

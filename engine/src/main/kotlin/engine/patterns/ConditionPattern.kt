@@ -33,6 +33,8 @@ data class ConditionPattern(
             condition.checkMatch(context, it, subexpression)
         }
     }
+
+    override val minDepth = pattern.minDepth
 }
 
 data class IntegerConditionPattern(

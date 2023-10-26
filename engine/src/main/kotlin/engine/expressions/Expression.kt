@@ -492,6 +492,11 @@ open class Expression internal constructor(
     open fun signOf(): Sign = Sign.NONE
 
     fun isDefinitelyNotUndefined() = signOf() != Sign.NONE
+
+    /**
+     * Returns the depth of the expression.  The depth of an expression is the depth of its tree representation.
+     */
+    val depth: Int by lazy { if (operands.isEmpty()) 0 else 1 + operands.maxOf { it.depth } }
 }
 
 /**

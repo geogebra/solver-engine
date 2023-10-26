@@ -21,6 +21,7 @@ import engine.methods.plan
 import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.applyAfterMaybeExtractingMinus
 import engine.methods.stepsproducers.steps
+import engine.methods.stepsproducers.stepsWithMinDepth
 import engine.methods.taskSet
 import engine.patterns.AnyPattern
 import engine.patterns.ArbitraryVariablePattern
@@ -216,6 +217,11 @@ enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
                 integerCondition(squaredTerm.exponent, baseTerm.exponent) { a, b -> a == BigInteger.TWO * b },
             )
 
+            val solveSystemSteps = steps {
+                optionally { deeply(IntegerArithmeticRules.EvaluateIntegerProductAndDivision) }
+                apply(FactorRules.SolveSumProductDiophantineEquationSystemByGuessing)
+            }
+
             tasks {
                 val squaredCoefficient = squaredTerm.ptn.getCoefficient()
                 if (squaredCoefficient == Constants.One) return@tasks null
@@ -230,11 +236,9 @@ enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
                             simplifiedProductOf(squaredCoefficient, move(constantTerm)),
                         ),
                     ),
+                    stepsProducer = solveSystemSteps,
                     explanation = metadata(Explanation.SetUpAndSolveEquationSystemForNonMonicTrinomial),
-                ) {
-                    optionally { deeply(IntegerArithmeticRules.EvaluateIntegerProductAndDivision) }
-                    apply(FactorRules.SolveSumProductDiophantineEquationSystemByGuessing)
-                } ?: return@tasks null
+                ) ?: return@tasks null
 
                 val solution1 = solvedSystem.result.firstChild.secondChild
                 val solution2 = solvedSystem.result.secondChild.secondChild
@@ -358,7 +362,8 @@ private val factorizePowerSteps: StepsProducer = steps {
     whilePossible(algebraicSimplificationSteps)
 }
 
-val factorizationSteps: StepsProducer = steps {
+// As the options call these steps recursively, we declare the minDepth
+val factorizationSteps: StepsProducer = stepsWithMinDepth(1) {
     firstOf {
         option(factorizeSumByFactoringTermsSteps)
         option(factorizeSumByExpandingTermsSteps)

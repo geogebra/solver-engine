@@ -53,6 +53,11 @@ class MethodTestCaseTest {
         pattern = ptn
         explanation = testPlanMetadataKey
 
+        val applyTestRuleTwice = steps {
+            apply(testRule)
+            apply(testRule)
+        }
+
         tasks {
             val task1 = task(
                 startExpr = get(ptn),
@@ -60,11 +65,9 @@ class MethodTestCaseTest {
             )
             task(
                 startExpr = task1.result,
+                stepsProducer = applyTestRuleTwice,
                 explanation = metadata(testPlanMetadataKey, task1.result),
-            ) {
-                apply(testRule)
-                apply(testRule)
-            }
+            )
             allTasks()
         }
     }

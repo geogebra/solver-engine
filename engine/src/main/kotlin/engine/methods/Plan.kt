@@ -9,7 +9,7 @@ import engine.expressions.Expression
 import engine.expressions.ExpressionWithConstraint
 import engine.methods.stepsproducers.ContextSensitiveAlternative
 import engine.methods.stepsproducers.ContextSensitiveSelector
-import engine.methods.stepsproducers.PipelineBuilder
+import engine.methods.stepsproducers.PipelineFunc
 import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.steps
 import engine.patterns.NaryPattern
@@ -56,6 +56,7 @@ class Plan(
             }
         }
     }
+    override val minDepth get() = maxOf(pattern.minDepth, stepsProducer.minDepth)
 }
 
 class PlanBuilder : CompositeMethodBuilder() {
@@ -69,20 +70,20 @@ class PlanBuilder : CompositeMethodBuilder() {
         check(!::defaultSteps.isInitialized)
     }
 
-    fun partialExpressionSteps(resourceData: ResourceData = emptyResourceData, init: PipelineBuilder.() -> Unit) {
+    fun partialExpressionSteps(resourceData: ResourceData = emptyResourceData, init: PipelineFunc) {
         checkNotInitialized()
         require(pattern is NaryPattern)
         this.isPartialExpression = true
         steps(resourceData, init)
     }
 
-    fun steps(resourceData: ResourceData = emptyResourceData, init: PipelineBuilder.() -> Unit) {
+    fun steps(resourceData: ResourceData = emptyResourceData, init: PipelineFunc) {
         checkNotInitialized()
         defaultSteps = steps(init)
         this.resourceData = resourceData
     }
 
-    fun alternative(resourceData: ResourceData, init: PipelineBuilder.() -> Unit) {
+    fun alternative(resourceData: ResourceData, init: PipelineFunc) {
         val alternative = steps(init)
         alternatives.add(ContextSensitiveAlternative(alternative, resourceData))
     }

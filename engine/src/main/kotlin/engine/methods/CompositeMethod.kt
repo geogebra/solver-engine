@@ -22,6 +22,9 @@ abstract class CompositeMethod(
         ctx.requireActive()
         return run(ctx, sub)
     }
+
+    override val minDepth: Int
+        get() = super<Runner>.minDepth
 }
 
 @StepsProducerBuilderMarker
