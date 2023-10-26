@@ -181,7 +181,7 @@ private val rationalExpressionSimplificationSteps = steps {
     optionally(RationalExpressionsPlans.FactorNumeratorOfFraction)
     optionally(RationalExpressionsPlans.FactorDenominatorOfFraction)
     apply(FractionArithmeticPlans.SimplifyFraction)
-    whilePossible(algebraicSimplificationSteps)
+    optionally(algebraicSimplificationSteps)
 }
 
 private val addRationalExpressions = taskSet {

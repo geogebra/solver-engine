@@ -58,7 +58,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
             pattern = condition { it.hasVisibleBracket() }
 
             steps {
-                whilePossible(algebraicSimplificationSteps)
+                apply(algebraicSimplificationSteps)
             }
         },
     ),
@@ -74,7 +74,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
                 whilePossible { deeply(simpleTidyUpSteps) }
                 optionally(NormalizationPlans.NormalizeExpression)
                 whilePossible { deeply(SimplifyPolynomialSubexpression, deepFirst = true) }
-                whilePossible(algebraicSimplificationSteps)
+                optionally(algebraicSimplificationSteps)
                 optionally(PolynomialRules.NormalizePolynomial)
             }
         },
@@ -89,11 +89,11 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
             explanation = Explanation.ExpandPolynomialExpression
 
             steps {
-                whilePossible(algebraicSimplificationSteps)
+                optionally(algebraicSimplificationSteps)
                 apply {
                     whilePossible {
                         deeply(expandAndSimplifier.steps, deepFirst = true)
-                        whilePossible(algebraicSimplificationSteps)
+                        optionally(algebraicSimplificationSteps)
                     }
                 }
 
@@ -129,7 +129,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
                         applyTo(expandAndSimplifier.steps) { subterm }
                     }
                 }
-                whilePossible(algebraicSimplificationStepsWithoutFractionAddition)
+                optionally(algebraicSimplificationStepsWithoutFractionAddition)
             }
         },
     ),
@@ -259,7 +259,7 @@ private val simplifyPowerOfMonomial = plan {
 
         applyAfterMaybeExtractingMinus {
             apply(GeneralRules.DistributePowerOfProduct)
-            whilePossible(algebraicSimplificationSteps)
+            optionally(algebraicSimplificationSteps)
         }
     }
 }

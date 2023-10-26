@@ -54,7 +54,7 @@ enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
                 val simplificationTask = task(
                     startExpr = expression,
                     explanation = metadata(Explanation.SimplifyAlgebraicExpression),
-                    stepsProducer = algebraicSimplificationSteps(),
+                    stepsProducer = simplifyAlgebraicExpressionSteps,
                 ) ?: return@tasks null
 
                 task(
@@ -78,7 +78,7 @@ enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
             )
 
             steps {
-                apply(algebraicSimplificationSteps)
+                apply(simplifyAlgebraicExpressionSteps)
             }
         },
     ),
@@ -156,8 +156,6 @@ val algebraicSimplificationStepsWithoutFractionAddition = algebraicSimplificatio
 
 private fun algebraicSimplificationSteps(addRationalExpressions: Boolean = true): StepsProducer {
     return steps {
-        whilePossible { deeply(simpleTidyUpSteps) }
-        optionally(NormalizationPlans.NormalizeExpression)
         whilePossible {
             deeply(deepFirst = true) {
                 firstOf {
@@ -187,6 +185,12 @@ private fun algebraicSimplificationSteps(addRationalExpressions: Boolean = true)
             }
         }
     }
+}
+
+private val simplifyAlgebraicExpressionSteps = steps {
+    whilePossible { deeply(simpleTidyUpSteps) }
+    optionally(NormalizationPlans.NormalizeExpression)
+    optionally(algebraicSimplificationSteps)
 }
 
 fun findDenominatorsAndDivisors(expr: Expression): Sequence<Pair<Expression, Expression>> = sequence {

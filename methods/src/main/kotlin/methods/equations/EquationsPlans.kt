@@ -62,7 +62,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                 optionally(NormalizationPlans.NormalizeExpression)
                 whilePossible(EquationsRules.EliminateConstantFactorOfLhsWithZeroRhs)
                 whilePossible(SolvableRules.CancelCommonTermsOnBothSides)
-                whilePossible(algebraicSimplificationStepsWithoutFractionAddition)
+                optionally(algebraicSimplificationStepsWithoutFractionAddition)
             }
         },
     ),

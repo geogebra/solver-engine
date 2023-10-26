@@ -113,7 +113,7 @@ enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
             steps {
                 optionally(FactorRules.RewriteSumAndDifferenceOfCubes)
                 apply(FactorRules.ApplyDifferenceOfCubesFormula)
-                whilePossible(algebraicSimplificationSteps)
+                optionally(algebraicSimplificationSteps)
             }
         },
     ),
@@ -125,7 +125,7 @@ enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
             steps {
                 optionally(FactorRules.RewriteSumAndDifferenceOfCubes)
                 apply(FactorRules.ApplySumOfCubesFormula)
-                whilePossible(algebraicSimplificationSteps)
+                optionally(algebraicSimplificationSteps)
             }
         },
     ),
@@ -312,7 +312,7 @@ private val factorizeSumByFactoringTermsSteps: StepsProducer = steps {
     }
     apply(factorizeSumSteps)
     applyToChildren(factorizationSteps)
-    whilePossible(algebraicSimplificationSteps)
+    optionally(algebraicSimplificationSteps)
 }
 
 private val factorizeSumByExpandingTermsSteps: StepsProducer = steps {
@@ -343,7 +343,7 @@ private val factorizeMinusSteps: StepsProducer = steps {
             check { it is Minus }
             applyToKind<Minus>(factorizationSteps) { it.argument }
             // to tidy up things like -(-(x+1)^2)
-            whilePossible(algebraicSimplificationSteps)
+            optionally(algebraicSimplificationSteps)
         }
     }
 }
@@ -352,14 +352,14 @@ private val factorizeProductSteps: StepsProducer = steps {
     check { it is Product }
     applyToChildren(factorizationSteps, atLeastOne = true)
     // to tidy up things like (x+1)^2 (x+2) (x+1)^3
-    whilePossible(algebraicSimplificationSteps)
+    optionally(algebraicSimplificationSteps)
 }
 
 private val factorizePowerSteps: StepsProducer = steps {
     check { it is Power }
     applyToKind<Power>(factorizationSteps) { it.base }
     // to tidy up things like (2(x + 1))^2
-    whilePossible(algebraicSimplificationSteps)
+    optionally(algebraicSimplificationSteps)
 }
 
 // As the options call these steps recursively, we declare the minDepth

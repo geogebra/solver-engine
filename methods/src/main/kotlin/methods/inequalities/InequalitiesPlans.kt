@@ -55,7 +55,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
                 whilePossible { deeply(simpleTidyUpSteps) }
                 optionally(NormalizationPlans.NormalizeExpression)
                 whilePossible(SolvableRules.CancelCommonTermsOnBothSides)
-                whilePossible(algebraicSimplificationStepsWithoutFractionAddition)
+                optionally(algebraicSimplificationStepsWithoutFractionAddition)
             }
         },
     ),
