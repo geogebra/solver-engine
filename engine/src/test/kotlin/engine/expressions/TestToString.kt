@@ -81,6 +81,12 @@ class TestToString {
     }
 
     @Test
+    fun testTrigonometry() {
+        test("[sin ^ 2] x", "[sin ^ 2] x", "\\sin^{2} x")
+        test("[sin ^ -1] x", "[sin ^ -1] x", "\\sin^{-1} x")
+    }
+
+    @Test
     fun testCalculus() {
         test("diff[sin x / x]", "diff[sin x / x]", "\\frac{\\mathrm{d} \\sin x}{\\mathrm{d} x}")
         test(

@@ -1,6 +1,12 @@
-import { ExpressionTree, ExpressionTreeBase, NestedExpression } from '../parser';
+import {
+  ExpressionTree,
+  ExpressionTreeBase,
+  NestedExpression,
+  TrigonometricFunctions,
+} from '../parser';
 import { setsSolutionFormatter, SolutionFormatter } from './solution-formatter';
 import { ColorMap } from '../solutions/coloring';
+import { trigFunctions } from '../parser/latex-to-tree';
 
 // Make sure to put a space after a latex command to avoid, e.g., "2\\cdotx"
 export type LatexSettings = {
@@ -287,6 +293,13 @@ function treeToLatexInner(
       const base = n.operands[0];
       if (base.type === 'Variable' && base.subscript && !base.decorators) {
         return tfd(`${rec(base, n)}^{\\,${rec(n.operands[1], n)}}`);
+      } else if ((base.type as TrigonometricFunctions) && (base as any).powerInside) {
+        return tfd(
+          `\\${base.type.toLowerCase()}^{${rec(n.operands[1], n)}}{${rec(
+            (base as any).operands[0],
+            n,
+          )}}`,
+        );
       } else {
         return tfd(`{${rec(base, n)}}^{${rec(n.operands[1], n)}}`);
       }
@@ -301,25 +314,35 @@ function treeToLatexInner(
     case 'Cot':
     case 'Sec':
     case 'Csc':
-    case 'Arcsin':
-    case 'Arccos':
-    case 'Arctan':
-    case 'Arccot':
-    case 'Arcsec':
-    case 'Arccsc':
     case 'Sinh':
     case 'Cosh':
     case 'Tanh':
     case 'Sech':
     case 'Csch':
     case 'Coth':
+      return tfd(`\\${n.type.toLowerCase()}{${rec(n.operands[0], n)}}`);
+    case 'Arcsin':
+    case 'Arccos':
+    case 'Arctan':
+    case 'Arccot':
+    case 'Arcsec':
+    case 'Arccsc':
+      if (n.inverseNotation === 'superscript') {
+        return tfd(`\\${n.type.slice(3).toLowerCase()}^{-1}{${rec(n.operands[0], n)}}`);
+      } else {
+        return tfd(`\\${n.type.toLowerCase()}{${rec(n.operands[0], n)}}`);
+      }
     case 'Arsinh':
     case 'Arcosh':
     case 'Artanh':
     case 'Arcoth':
     case 'Arcsch':
     case 'Arsech':
-      return tfd(`\\${n.type.toLowerCase()}{${rec(n.operands[0], n)}}`);
+      if (n.inverseNotation === 'superscript') {
+        return tfd(`\\${n.type.slice(2).toLowerCase()}^{-1}{${rec(n.operands[0], n)}}`);
+      } else {
+        return tfd(`\\${n.type.toLowerCase()}{${rec(n.operands[0], n)}}`);
+      }
     case 'Log10':
       return tfd(`\\log{${rec(n.operands[0], n)}}`);
     case 'Log':

@@ -1,4 +1,9 @@
-import type { DecoratorType, ExpressionTree, NestedExpression } from '../parser';
+import type {
+  DecoratorType,
+  ExpressionTree,
+  NestedExpression,
+  TrigonometricFunctions,
+} from '../parser';
 
 export type TransformerFunction = (node: ExpressionTree, defaultResult: string) => string;
 
@@ -54,8 +59,18 @@ export function treeToSolver(n: ExpressionTree): string {
       return dec(`[${rec(n.operands[0])} / ${rec(n.operands[1])}]`);
     case 'MixedNumber':
       return dec(`[${rec(n.operands[0])} ${rec(n.operands[1])} / ${rec(n.operands[2])}]`);
-    case 'Power':
-      return dec(`[${rec(n.operands[0])} ^ ${rec(n.operands[1])}]`);
+    case 'Power': {
+      const base = n.operands[0];
+      if ((base.type as TrigonometricFunctions) && (base as any).powerInside) {
+        return dec(
+          `[${base.type.toLowerCase()} ^ ${rec(n.operands[1])}] ${rec(
+            (base as any).operands[0],
+          )}`,
+        );
+      } else {
+        return dec(`[${rec(base)} ^ ${rec(n.operands[1])}]`);
+      }
+    }
     case 'SquareRoot':
       return dec(`sqrt[${rec(n.operands[0])}]`);
     case 'Root':
@@ -66,25 +81,35 @@ export function treeToSolver(n: ExpressionTree): string {
     case 'Cot':
     case 'Sec':
     case 'Csc':
-    case 'Arcsin':
-    case 'Arccos':
-    case 'Arctan':
-    case 'Arccot':
-    case 'Arcsec':
-    case 'Arccsc':
     case 'Sinh':
     case 'Cosh':
     case 'Tanh':
     case 'Sech':
     case 'Csch':
     case 'Coth':
+      return dec(`${n.type.toLowerCase()} ${rec(n.operands[0])}`);
+    case 'Arcsin':
+    case 'Arccos':
+    case 'Arctan':
+    case 'Arccot':
+    case 'Arcsec':
+    case 'Arccsc':
+      if (n.inverseNotation === 'superscript') {
+        return dec(`[${n.type.slice(3).toLowerCase()} ^ -1] ${rec(n.operands[0])}`);
+      } else {
+        return dec(`${n.type.toLowerCase()} ${rec(n.operands[0])}`);
+      }
     case 'Arsinh':
     case 'Arcosh':
     case 'Artanh':
     case 'Arcoth':
     case 'Arcsch':
     case 'Arsech':
-      return dec(`${n.type.toLowerCase()} ${rec(n.operands[0])}`);
+      if (n.inverseNotation === 'superscript') {
+        return dec(`[${n.type.slice(2).toLowerCase()} ^ -1] ${rec(n.operands[0])}`);
+      } else {
+        return dec(`${n.type.toLowerCase()} ${rec(n.operands[0])}`);
+      }
     case 'Log10':
       return dec(`log ${rec(n.operands[0])}`);
     case 'Ln':

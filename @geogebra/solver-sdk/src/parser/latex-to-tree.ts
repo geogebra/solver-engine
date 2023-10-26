@@ -5,7 +5,7 @@ import type {
   ExpressionTree,
   ExpressionTreeBase,
   IntegerExpression,
-  NestedExpressionType,
+  TrigonometricExpression,
 } from './types';
 
 type ExprTree = ExpressionTreeBase<unknown>;
@@ -19,6 +19,33 @@ const BP_FRACTION_BINARY_OPERATOR = 28;
 const BP_UNARY_SIGN = 30;
 const BP_POWER = 40;
 const BP_SUBSCRIPT = 50;
+
+export const trigFunctions = [
+  { latexName: 'sin', type: 'Sin', inverseType: 'Arcsin', isInverse: false },
+  { latexName: 'cos', type: 'Cos', inverseType: 'Arccos', isInverse: false },
+  { latexName: 'tan', type: 'Tan', inverseType: 'Arctan', isInverse: false },
+  { latexName: 'arcsin', type: 'Arcsin', inverseType: 'Sin', isInverse: true },
+  { latexName: 'arccos', type: 'Arccos', inverseType: 'Cos', isInverse: true },
+  { latexName: 'arctan', type: 'Arctan', inverseType: 'Tan', isInverse: true },
+  { latexName: 'sec', type: 'Sec', inverseType: 'Arcsec', isInverse: false },
+  { latexName: 'csc', type: 'Csc', inverseType: 'Arccsc', isInverse: false },
+  { latexName: 'cot', type: 'Cot', inverseType: 'Arccot', isInverse: false },
+  { latexName: 'arcsec', type: 'Arcsec', inverseType: 'Sec', isInverse: true },
+  { latexName: 'arccsc', type: 'Arccsc', inverseType: 'Csc', isInverse: true },
+  { latexName: 'arccot', type: 'Arccot', inverseType: 'Cot', isInverse: true },
+  { latexName: 'sinh', type: 'Sinh', inverseType: 'Arsinh', isInverse: false },
+  { latexName: 'cosh', type: 'Cosh', inverseType: 'Arcosh', isInverse: false },
+  { latexName: 'tanh', type: 'Tanh', inverseType: 'Artanh', isInverse: false },
+  { latexName: 'arsinh', type: 'Arsinh', inverseType: 'Sinh', isInverse: true },
+  { latexName: 'arcosh', type: 'Arcosh', inverseType: 'Cosh', isInverse: true },
+  { latexName: 'artanh', type: 'Artanh', inverseType: 'Tanh', isInverse: true },
+  { latexName: 'sech', type: 'Sech', inverseType: 'Arsech', isInverse: false },
+  { latexName: 'csch', type: 'Csch', inverseType: 'Arcsch', isInverse: false },
+  { latexName: 'coth', type: 'Coth', inverseType: 'Arcoth', isInverse: false },
+  { latexName: 'arsech', type: 'Arsech', inverseType: 'Sech', isInverse: true },
+  { latexName: 'arcsch', type: 'Arcsch', inverseType: 'Csch', isInverse: true },
+  { latexName: 'arcoth', type: 'Arcoth', inverseType: 'Coth', isInverse: true },
+] as const;
 
 const latexSymbolDefinitions = {
   registerSum(parser: Parser<ExprTree>) {
@@ -256,7 +283,7 @@ const latexSymbolDefinitions = {
     frac.led = (first: ExprTree): ExprTree => {
       const right = parser.expression(BP_FRACTION_BINARY_OPERATOR);
       // We want to remove a layer of parenthesis, if there are any, since the purpose of
-      // those parenthesis was just to group the terms in numerator or the denominator
+      // those parentheses was just to group the terms in numerator or the denominator
       // onto the top or the bottom.
       first.decorators?.pop();
       if (!first.decorators?.length) delete first.decorators;
@@ -294,64 +321,46 @@ const latexSymbolDefinitions = {
   },
 
   registerTrigonometricFunctions(parser: Parser<ExprTree>) {
-    const trigFunctions = [
-      'sin',
-      'cos',
-      'tan',
-      'cot',
-      'sec',
-      'csc',
-      'arcsin',
-      'arccos',
-      'arctan',
-      'arccot',
-      'arcsec',
-      'arccsc',
-      'sinh',
-      'cosh',
-      'tanh',
-      'coth',
-      'sech',
-      'csch',
-      'arsinh',
-      'arcosh',
-      'artanh',
-      'arcoth',
-      'arcsch',
-      'arsech',
-    ];
-
-    for (const func of trigFunctions) {
-      for (const symbolForm of ['\\' + func, '{\\mathrm{' + func + '}}']) {
+    for (const trigFunc of trigFunctions) {
+      for (const symbolForm of [
+        `\\${trigFunc.latexName}`,
+        `\\mathrm{${trigFunc.latexName}}`,
+        `{\\mathrm{${trigFunc.latexName}}}`,
+      ]) {
         const symbol = parser.registerSymbol(symbolForm, BP_IMPLICIT_MUL);
 
         symbol.nud = function () {
-          let power = null;
-
+          let power: ExprTree | null = null;
           // Check if there's a power notation right after the trig function.
           if (parser.advance('^', true)) {
             power = parser.expression(BP_POWER - 1);
           }
-
           const argument = parser.expression(Infinity);
-
-          const baseExpression = {
-            type: (func.charAt(0).toUpperCase() + func.slice(1)) as NestedExpressionType,
+          const baseExpression: TrigonometricExpression<any> = {
+            type: trigFunc.type,
             operands: [argument],
           };
 
-          // If there's a power, wrap the base expression inside a power expression
           if (power) {
-            return {
-              type: 'Power',
-              operands: [
-                {
-                  ...baseExpression,
-                  decorators: ['RoundBracket'],
-                },
-                power,
-              ],
-            };
+            // if the power is "-1", then it's the corresponding inverse trigonometric function
+            if (isMinusOne(power)) {
+              return {
+                ...baseExpression,
+                type: trigFunc.inverseType,
+                ...(!trigFunc.isInverse ? { inverseNotation: 'superscript' } : {}),
+              };
+            } else {
+              return {
+                type: 'Power',
+                operands: [
+                  {
+                    ...baseExpression,
+                    powerInside: true,
+                  } as TrigonometricExpression<any>,
+                  power,
+                ],
+              };
+            }
           }
 
           return baseExpression;
@@ -524,6 +533,16 @@ function addPathsToTree(tree: ExprTree, path = '.'): ExpressionTree {
         ),
       }
     : { ...tree, path };
+}
+
+function isMinusOne(expr: ExprTree): boolean {
+  return (
+    expr.type === 'Minus' &&
+    Array.isArray(expr.operands) &&
+    expr.operands.length === 1 &&
+    expr.operands[0].type === 'Integer' &&
+    expr.operands[0].value === '1'
+  );
 }
 
 function isInteger(str: string) {

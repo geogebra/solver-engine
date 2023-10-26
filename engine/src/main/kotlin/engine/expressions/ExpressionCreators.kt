@@ -21,6 +21,7 @@ import engine.operators.StatementUnionOperator
 import engine.operators.SubtractEquationsOperator
 import engine.operators.SumOperator
 import engine.operators.TrigonometricFunctionOperator
+import engine.operators.TrigonometricFunctionType
 import engine.operators.TupleOperator
 import engine.operators.UnaryExpressionOperator
 import engine.operators.VectorOperator
@@ -112,8 +113,15 @@ fun logBase10Of(argument: Expression) = buildExpression(UnaryExpressionOperator.
 fun logOf(base: Expression, argument: Expression) =
     buildExpression(BinaryExpressionOperator.Log, listOf(base, argument))
 
-fun sinOf(argument: Expression) = buildExpression(TrigonometricFunctionOperator.Sin, listOf(argument))
-fun arsinhOf(argument: Expression) = buildExpression(TrigonometricFunctionOperator.Arsinh, listOf(argument))
+fun sinOf(argument: Expression) = buildExpression(
+    TrigonometricFunctionOperator(TrigonometricFunctionType.Sin),
+    listOf(argument),
+)
+
+fun arsinhOf(argument: Expression) = buildExpression(
+    TrigonometricFunctionOperator(TrigonometricFunctionType.Arsinh),
+    listOf(argument),
+)
 
 fun absoluteValueOf(argument: Expression) = buildExpression(UnaryExpressionOperator.AbsoluteValue, listOf(argument))
 

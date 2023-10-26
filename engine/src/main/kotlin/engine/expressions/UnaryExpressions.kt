@@ -1,5 +1,7 @@
 package engine.expressions
 
+import engine.operators.TrigonometricFunctionOperator
+import engine.operators.TrigonometricFunctionType
 import engine.operators.UnaryExpressionOperator
 import engine.sign.Sign
 
@@ -86,4 +88,25 @@ class Percentage(
     val argument get() = firstChild
 
     override fun signOf() = argument.signOf()
+}
+
+class TrigonometricExpression(
+    private val functionType: TrigonometricFunctionType,
+    operand: Expression,
+    val powerInside: Boolean,
+    private val inverseNotation: String,
+    meta: NodeMeta = BasicMeta(),
+) : ValueExpression(
+    operator = TrigonometricFunctionOperator(functionType, powerInside, inverseNotation),
+    operands = listOf(operand),
+    meta = meta,
+) {
+    val argument get() = firstChild
+
+    override fun fillJson(s: MutableMap<String, Any>) {
+        s["type"] = functionType.name
+        s["operands"] = operands.map { it.toJson() }
+        s["inverseNotation"] = inverseNotation
+        s["powerNotation"] = if (powerInside) "inside" else "outside"
+    }
 }

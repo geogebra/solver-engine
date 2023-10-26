@@ -116,7 +116,10 @@ logarithm
     | 'log[' base=expr ']' argument=implicitProduct     #log
     ;
 
-trigFunction: function=TRIG_FUNCTION argument=implicitProduct;
+trigFunction
+    : function=TRIG_FUNCTION argument=implicitProduct                       # simpleTrigFunction
+    | '[' base=TRIG_FUNCTION '^' exp=expr ']' argument=implicitProduct      # powerTrigFunction
+    ;
 
 bracket
     : '(' expr ')'                  #roundBracket

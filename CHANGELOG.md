@@ -11,6 +11,11 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Added
 
+- Add solver syntax for inverse trig functions (e.g., `[sin^-1] x`) and power of trig functions (e.g., `[tan^2] x`)
+  (PLUT-715)
+- SDK: add latex rendering for inverse trig functions (e.g., `sin^-1 x`) and power of trig functions (e.g., `tan^2 x`)
+  (PLUT-715)
+
 ### Fixed
 
 - `ComputeDomainOfAlgebraicExpression` plan isn't shown when `ComputeDomainAndSimplifyAlgebraicExpression` plan can be

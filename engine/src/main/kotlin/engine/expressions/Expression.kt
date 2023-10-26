@@ -24,6 +24,7 @@ import engine.operators.SolutionOperator
 import engine.operators.StatementSystemOperator
 import engine.operators.StatementUnionOperator
 import engine.operators.SumOperator
+import engine.operators.TrigonometricFunctionOperator
 import engine.operators.UnaryExpressionOperator
 import engine.operators.VariableListOperator
 import engine.operators.VariableOperator
@@ -652,6 +653,8 @@ private fun expressionOf(
         UnaryExpressionOperator.SquareRoot -> SquareRoot(operands[0], meta)
         UnaryExpressionOperator.Percentage -> Percentage(operands[0], meta)
 
+        is TrigonometricFunctionOperator ->
+            TrigonometricExpression(operator.type, operands[0], operator.powerInside, operator.inverseNotation, meta)
         is ProductOperator -> Product(operands, operator.forcedSigns, meta)
         SumOperator -> Sum(operands, meta)
 
