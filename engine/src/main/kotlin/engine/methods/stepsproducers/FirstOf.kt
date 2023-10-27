@@ -3,6 +3,7 @@ package engine.methods.stepsproducers
 import engine.context.Context
 import engine.expressions.Expression
 import engine.steps.Transformation
+import kotlin.concurrent.Volatile
 
 /**
  * Implements the firstOf [StepsProducer] from [init].  It uses a [FirstOfCompiler] to prepare the
@@ -10,7 +11,15 @@ import engine.steps.Transformation
  */
 private class FirstOf(val init: FirstOfFunc) : StepsProducer {
 
+    // These vars may be accessed from different request threads, so we want reads and writes to be atomic.  It doesn't
+    // matter if two threads call initialize() because they will calculate the same value.  That wastes a little time
+    // but that is more than offset by avoiding the slowdown that putting a lock around initialize() and accessing
+    // stepsProducers and minDepthValue would induce.
+
+    @Volatile
     private lateinit var stepsProducers: List<StepsProducer>
+
+    @Volatile
     private var minDepthValue = -1
 
     private fun initialize() {

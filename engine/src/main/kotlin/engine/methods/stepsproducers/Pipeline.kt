@@ -11,6 +11,7 @@ import engine.methods.PlanBuilder
 import engine.methods.TaskSetBuilder
 import engine.patterns.Pattern
 import engine.steps.Transformation
+import kotlin.concurrent.Volatile
 
 /**
  * [Pipeline.whilePossible] will fail if exceeding this number of iterations.
@@ -36,10 +37,20 @@ private class Pipeline(
     minDepth: Int = -1,
 ) : StepsProducer {
 
+    // These vars may be accessed from different request threads, so we want reads and writes to be atomic.  It doesn't
+    // matter if two threads call initialize() because they will calculate the same value.  That wastes a little time
+    // but that is more than offset by avoiding the slowdown that putting a lock around initialize() and accessing
+    // stepsProducers and minDepthValue would induce.
+
+    @Volatile
     private lateinit var stepsProducers: List<StepsProducer>
+
+    @Volatile
     private var minDepthValue = minDepth
 
     override val minDepth: Int get() {
+        // We only want to compute minDepth if it wasn't provided explicitly.  The reason it was provided is probably to
+        // break cycles in this very computations leading to stack overflows.
         if (minDepthValue < 0) {
             initialize()
         }
