@@ -17,6 +17,8 @@ contents to a new release section (e.g. _[0.x]_).
   (PLUT-715)
 - Added support for simplifying the sum of non-constant fractions, such as `[x + 1 / 2] + [3x / 5]` (not applied when
   solving equations) (PLUT-680)
+- Optimization of deeply: added machinery for avoiding searching too deep into expressions when the plan applied
+  requires a deep expression (PLUT-831)
 
 ### Fixed
 
@@ -48,8 +50,6 @@ contents to a new release section (e.g. _[0.x]_).
 - SDK: add support for specials symbols i.e. `%, pi, exponentialE, iota` (PLUT-822)
 - Added support for parametric quadratic equations (where coefficents are not constant) (PLUT-807)
 - Added ability to simplify a square root with a square factor (e.g. `sqrt[4x - 8]`) (PLUT-808)
-- Optimization of deeply: added machinery for avoiding searching too deep into expressions when the plan applied
-  requires a deep expression (PLUT-831)
 
 ### Fixed
 
