@@ -4,6 +4,8 @@ import engine.expressions.Fraction
 import engine.expressions.Minus
 import engine.expressions.Power
 import engine.expressions.ValueExpression
+import engine.expressions.containsDecimals
+import engine.expressions.containsFractions
 import engine.expressions.containsPowers
 import engine.expressions.containsRoots
 import engine.expressions.isSignedFraction
@@ -281,15 +283,27 @@ private val trickySimplificationSteps = steps {
     }
 }
 
+/**
+ * Steps to tidy up fractions (e.g. fractions of fractions, fractions with negative arguments, unsimplified fractions)
+ */
 private val fractionSimplificationSteps = steps {
+    check { it.containsFractions() }
     deeply {
         firstOf {
             option(normalizeFractionsWithinFractions)
             option(normalizeNegativeSignsInFraction)
             option(FractionArithmeticPlans.SimplifyFraction)
+        }
+    }
+}
 
-            // These should be done once and for all at the start I guess, no need to try again and again.
-            // Moving them out of the way would yield 8% speedup in benchmarks
+/**
+ * Steps to turn decimals to fractions
+ */
+val decimalToFractionConversionSteps = steps {
+    check { it.containsDecimals() }
+    deeply {
+        firstOf {
             option(DecimalPlans.NormalizeFractionOfDecimals)
             option(DecimalPlans.ConvertTerminatingDecimalToFractionAndSimplify)
             option(DecimalPlans.ConvertRecurringDecimalToFractionAndSimplify)
@@ -316,6 +330,10 @@ val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
 
         option(fractionSimplificationSteps)
 
+        // It would be better to move this out of constantSimplificationSteps altogether and do it first but the
+        // required behaviour depends on the previous steps being tried first.
+        option(decimalToFractionConversionSteps)
+
         option {
             deeply {
                 // We reorganize the product before extracting the signs, but if we don't have signs
@@ -337,14 +355,20 @@ val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
             }
         }
 
-        option { deeply(collectLikeRootsAndSimplify) }
+        option {
+            check { it.containsRoots() }
+            deeply(collectLikeRootsAndSimplify)
+        }
         option { deeply(collectLikeRationalPowersAndSimplify) }
 
         option(ConstantExpressionsPlans.SimplifyRootsInExpression)
         option(simplifyRationalExponentsInProduct)
 
         option { deeply(FractionArithmeticPlans.MultiplyAndSimplifyFractions) }
-        option { deeply(IntegerRootsPlans.SimplifyProductWithRoots) }
+        option {
+            check { it.containsRoots() }
+            deeply(IntegerRootsPlans.SimplifyProductWithRoots)
+        }
 
         option { deeply(IntegerArithmeticPlans.SimplifyIntegersInProduct) }
 

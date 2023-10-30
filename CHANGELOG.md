@@ -30,6 +30,7 @@ contents to a new release section (e.g. _[0.x]_).
 
 - The Spring configurations have been changed to exclude null values from the returned objects (PLUT-692)
 - SDK: the Transformation type has been changed to reflect the optional fields (PLUT-692)
+- Speed up method execution when it doesn't contain decimals (PLUT-836)
 
 ### Removed
 

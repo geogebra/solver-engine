@@ -617,6 +617,11 @@ fun Expression.containsPowers(): Boolean {
     }
 }
 
+fun Expression.containsDecimals(): Boolean = this is DecimalExpression || this is RecurringDecimalExpression ||
+    children.any { it.containsDecimals() }
+
+fun Expression.containsFractions(): Boolean = this is Fraction || children.any { it.containsFractions() }
+
 fun Expression.allSubterms(): List<Expression> = listOf(this) + children.flatMap { it.allSubterms() }
 
 fun Expression.complexity(): Int = 1 + children.sumOf { it.complexity() }
