@@ -1,4 +1,4 @@
-package methods.polynomials
+package methods.simplify
 
 import engine.context.Context
 import engine.methods.testMethod
@@ -6,13 +6,14 @@ import methods.collecting.CollectingExplanation
 import methods.general.GeneralExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
 import methods.integerrationalexponents.IntegerRationalExponentsExplanation
+import methods.polynomials.PolynomialsExplanation
 import org.junit.jupiter.api.Test
 
-class PolynomialsPlansTestActivePracticeCurriculum {
+class ActivePracticePolynomialSimplificationsTest {
 
     @Test
     fun testCollectSimpleLikeTerms() = testMethod {
-        method = PolynomialsPlans.SimplifyPolynomialExpression
+        method = SimplifyPlans.SimplifyAlgebraicExpression
         context = Context(gmFriendly = true)
         inputExpr = "2 x + [x ^ 2] + 3 x - 5 [x ^ 2]"
 
@@ -20,7 +21,7 @@ class PolynomialsPlansTestActivePracticeCurriculum {
             fromExpr = "2 x + [x ^ 2] + 3 x - 5 [x ^ 2]"
             toExpr = "-4 [x ^ 2] + 5 x"
             explanation {
-                key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
+                key = SimplifyExplanation.SimplifyPolynomialExpression
             }
 
             step {
@@ -51,7 +52,7 @@ class PolynomialsPlansTestActivePracticeCurriculum {
 
     @Test
     fun testMultiplyMonomials() = testMethod {
-        method = PolynomialsPlans.SimplifyPolynomialExpression
+        method = SimplifyPlans.SimplifyAlgebraicExpression
         context = Context(gmFriendly = true)
         inputExpr = "3 [x ^ 2] * 4 [x ^ 3] * x + 5 * 7 [x ^ 6]"
 
@@ -59,7 +60,7 @@ class PolynomialsPlansTestActivePracticeCurriculum {
             fromExpr = "3 [x ^ 2] * 4 [x ^ 3] * x + 5 * 7 [x ^ 6]"
             toExpr = "47 [x ^ 6]"
             explanation {
-                key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
+                key = SimplifyExplanation.SimplifyPolynomialExpression
             }
 
             step {
@@ -154,7 +155,7 @@ class PolynomialsPlansTestActivePracticeCurriculum {
 
     @Test
     fun testMonomialWithZeroCoefficientEliminated() = testMethod {
-        method = PolynomialsPlans.SimplifyPolynomialExpression
+        method = SimplifyPlans.SimplifyAlgebraicExpression
         context = Context(gmFriendly = true)
         inputExpr = "3 [a ^ 2] + 2 [a ^ 2] - 3 a - 5 [a ^ 2] + 10 a"
 
@@ -162,7 +163,7 @@ class PolynomialsPlansTestActivePracticeCurriculum {
             fromExpr = "3 [a ^ 2] + 2 [a ^ 2] - 3 a - 5 [a ^ 2] + 10 a"
             toExpr = "7 a"
             explanation {
-                key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
+                key = SimplifyExplanation.SimplifyPolynomialExpression
             }
 
             step {

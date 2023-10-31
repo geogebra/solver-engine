@@ -23,7 +23,6 @@ import engine.patterns.inequationOf
 import engine.steps.Transformation
 import engine.steps.metadata.MetadataKey
 import engine.steps.metadata.metadata
-import methods.algebra.algebraicSimplificationStepsWithoutFractionAddition
 import methods.constantexpressions.constantSimplificationSteps
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.equations.EquationsPlans
@@ -31,6 +30,7 @@ import methods.equations.EquationsRules
 import methods.factor.FactorPlans
 import methods.general.NormalizationPlans
 import methods.polynomials.PolynomialsPlans
+import methods.simplify.algebraicSimplificationStepsWithoutFractionAddition
 import methods.solvable.SolvablePlans
 import methods.solvable.SolvableRules
 import methods.solvable.evaluateBothSidesNumerically

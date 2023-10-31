@@ -35,7 +35,6 @@ import engine.steps.Transformation
 import engine.steps.metadata.metadata
 import methods.algebra.AlgebraExplanation
 import methods.algebra.AlgebraPlans
-import methods.algebra.algebraicSimplificationStepsWithoutFractionAddition
 import methods.algebra.findDenominatorsAndDivisors
 import methods.constantexpressions.constantSimplificationSteps
 import methods.constantexpressions.simpleTidyUpSteps
@@ -45,6 +44,8 @@ import methods.general.NormalizationPlans
 import methods.inequalities.InequalitiesPlans
 import methods.inequations.InequationsPlans
 import methods.polynomials.PolynomialsPlans
+import methods.simplify.SimplifyPlans
+import methods.simplify.algebraicSimplificationStepsWithoutFractionAddition
 import methods.solvable.SolvablePlans
 import methods.solvable.SolvableRules
 import methods.solvable.computeOverallIntersectionSolution
@@ -121,7 +122,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 apply(EquationsRules.CompleteTheSquare)
-                applyToChildren(PolynomialsPlans.SimplifyPolynomialExpression)
+                applyToChildren(SimplifyPlans.SimplifyAlgebraicExpression)
             }
         },
     ),

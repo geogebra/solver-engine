@@ -6,6 +6,7 @@ import methods.factor.FactorExplanation
 import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.general.GeneralExplanation
 import methods.polynomials.PolynomialsExplanation
+import methods.simplify.SimplifyExplanation
 import org.junit.jupiter.api.Test
 
 class RationalExpressionsPlansTest {
@@ -182,7 +183,7 @@ class RationalExpressionsPlansTest {
                     fromExpr = "[[x ^ 3] + 2 [x ^ 2] + x + 2 / (x + 1) * (x + 2)]"
                     toExpr = "[[x ^ 3] + 2 [x ^ 2] + x + 2 / (x + 1) (x + 2)]"
                     explanation {
-                        key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
+                        key = SimplifyExplanation.SimplifyPolynomialExpression
                     }
 
                     step {
@@ -214,7 +215,7 @@ class RationalExpressionsPlansTest {
                     fromExpr = "[[x ^ 2] - 1 / (x + 2) * (x + 1)]"
                     toExpr = "[[x ^ 2] - 1 / (x + 2) (x + 1)]"
                     explanation {
-                        key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
+                        key = SimplifyExplanation.SimplifyPolynomialExpression
                     }
                 }
             }
@@ -230,7 +231,7 @@ class RationalExpressionsPlansTest {
                     fromExpr = "[[x ^ 3] + 2 [x ^ 2] + x + 2 + [x ^ 2] - 1 / (x + 1) (x + 2)]"
                     toExpr = "[[x ^ 3] + 3 [x ^ 2] + x + 1 / (x + 1) (x + 2)]"
                     explanation {
-                        key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
+                        key = SimplifyExplanation.SimplifyPolynomialExpression
                     }
                 }
             }
@@ -292,7 +293,7 @@ class RationalExpressionsPlansTest {
                     fromExpr = "[[x ^ 2] - 1 / (x + 2) * (x + 1)]"
                     toExpr = "[[x ^ 2] - 1 / (x + 2) (x + 1)]"
                     explanation {
-                        key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
+                        key = SimplifyExplanation.SimplifyPolynomialExpression
                     }
                 }
             }
@@ -308,7 +309,7 @@ class RationalExpressionsPlansTest {
                     fromExpr = "[[x ^ 2] + 1 + [x ^ 2] - 1 / (x + 1) (x + 2)]"
                     toExpr = "[2 [x ^ 2] / (x + 1) (x + 2)]"
                     explanation {
-                        key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
+                        key = SimplifyExplanation.SimplifyPolynomialExpression
                     }
                 }
             }
@@ -347,7 +348,7 @@ class RationalExpressionsPlansTest {
                 fromExpr = "[[(x + 1) ^ 2] / [(2 x) ^ 2]]"
                 toExpr = "[[(x + 1) ^ 2] / 4 [x ^ 2]]"
                 explanation {
-                    key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
+                    key = SimplifyExplanation.SimplifyPolynomialExpression
                 }
             }
         }

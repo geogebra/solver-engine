@@ -600,6 +600,8 @@ fun Expression.isPolynomial(): Boolean = when (this) {
     !is ValueExpression -> false
     is Fraction -> numerator.isPolynomial() && denominator.isConstant()
     is DivideBy -> divisor.isConstant()
+    is Root -> radicand.isConstant()
+    is SquareRoot -> argument.isConstant()
     else -> children.all { it.isPolynomial() }
 }
 

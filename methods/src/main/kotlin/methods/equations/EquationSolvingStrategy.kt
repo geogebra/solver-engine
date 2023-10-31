@@ -13,13 +13,13 @@ import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.optionalSteps
 import engine.methods.stepsproducers.steps
 import engine.methods.stepsproducers.whileStrategiesAvailableFirstOf
-import methods.algebra.AlgebraPlans
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.equationsystems.EquationSystemsPlans
 import methods.factor.FactorPlans
 import methods.polynomials.PolynomialRules
 import methods.polynomials.PolynomialsPlans
 import methods.rationalexpressions.RationalExpressionsPlans
+import methods.simplify.SimplifyPlans
 import methods.solvable.DenominatorExtractor.extractFraction
 import methods.solvable.SolvableRules
 import methods.solvable.countAbsoluteValues
@@ -432,7 +432,7 @@ private val quadraticFormulaSteps = steps {
                     applyTo(PolynomialsPlans.ExpandPolynomialExpression) { it.secondChild }
                 }
                 optionally {
-                    applyTo(AlgebraPlans.SimplifyAlgebraicExpression) { it.secondChild }
+                    applyTo(SimplifyPlans.SimplifyAlgebraicExpression) { it.secondChild }
                 }
             }
         }

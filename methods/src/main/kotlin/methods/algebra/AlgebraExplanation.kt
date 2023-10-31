@@ -7,11 +7,6 @@ import engine.steps.metadata.TranslationKeys
 enum class AlgebraExplanation : CategorisedMetadataKey {
 
     /**
-     * Simplify an algebraic expression in one variable
-     */
-    SimplifyAlgebraicExpression,
-
-    /**
      * Compute the domain on which a given algebraic expression is defined (e.g. exclude zero
      * denominators) then simplify it.
      */

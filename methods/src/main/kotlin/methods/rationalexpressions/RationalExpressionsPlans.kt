@@ -36,13 +36,14 @@ import engine.patterns.productContaining
 import engine.patterns.sumContaining
 import engine.steps.metadata.metadata
 import engine.utility.lcm
-import methods.algebra.algebraicSimplificationSteps
 import methods.factor.FactorPlans
 import methods.factor.factorizationSteps
 import methods.fractionarithmetic.FractionArithmeticPlans
 import methods.fractionarithmetic.FractionArithmeticRules
 import methods.general.GeneralRules
 import methods.polynomials.PolynomialsPlans
+import methods.simplify.SimplifyPlans
+import methods.simplify.algebraicSimplificationSteps
 import java.math.BigInteger
 
 enum class RationalExpressionsPlans(override val runner: CompositeMethod) : RunnerMethod {
@@ -157,7 +158,7 @@ enum class RationalExpressionsPlans(override val runner: CompositeMethod) : Runn
             steps {
                 optionally(GeneralRules.FlipFractionUnderNegativePower)
                 apply(FractionArithmeticRules.DistributePositiveIntegerPowerOverFraction)
-                applyToChildren(PolynomialsPlans.SimplifyPolynomialExpression)
+                applyToChildren(SimplifyPlans.SimplifyAlgebraicExpression)
             }
         },
     ),
@@ -196,7 +197,7 @@ private val addRationalExpressions = taskSet {
     pattern = sumContaining(nf1, nf2)
 
     val addLikeFractionsAndSimplifySteps = steps {
-        optionally { applyToKind<Fraction>(PolynomialsPlans.SimplifyPolynomialExpression) { it.numerator } }
+        optionally { applyToKind<Fraction>(SimplifyPlans.SimplifyAlgebraicExpression) { it.numerator } }
         optionally(rationalExpressionSimplificationSteps)
     }
 
@@ -267,7 +268,7 @@ private val simplifyFractionSteps = steps {
     }
     optionally {
         applyToKind<Fraction>(
-            PolynomialsPlans.SimplifyPolynomialExpression,
+            SimplifyPlans.SimplifyAlgebraicExpression,
         ) { it.denominator }
     }
 }

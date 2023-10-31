@@ -41,11 +41,11 @@ import engine.patterns.productContaining
 import engine.patterns.sumContaining
 import engine.patterns.sumOf
 import engine.steps.metadata.metadata
-import methods.algebra.algebraicSimplificationSteps
 import methods.expand.ExpandRules
 import methods.integerarithmetic.IntegerArithmeticRules
 import methods.polynomials.PolynomialRules
 import methods.polynomials.expandAndSimplifier
+import methods.simplify.algebraicSimplificationSteps
 import java.math.BigInteger
 
 enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {

@@ -14,21 +14,13 @@ import engine.expressions.inequationOf
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
-import engine.methods.plan
-import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
 import engine.patterns.condition
 import engine.steps.metadata.metadata
-import methods.constantexpressions.simpleTidyUpSteps
-import methods.general.NormalizationPlans
 import methods.inequations.InequationsPlans
-import methods.polynomials.PolynomialsPlans
-import methods.polynomials.addFractionsSteps
-import methods.polynomials.addTermAndFractionSteps
-import methods.polynomials.collectLikeTermsSteps
-import methods.polynomials.simplificationSteps
-import methods.rationalexpressions.RationalExpressionsPlans
+import methods.simplify.SimplifyExplanation
+import methods.simplify.simplifyAlgebraicExpressionSteps
 import methods.solvable.computeOverallIntersectionSolution
 
 enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
@@ -53,7 +45,7 @@ enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
 
                 val simplificationTask = task(
                     startExpr = expression,
-                    explanation = metadata(Explanation.SimplifyAlgebraicExpression),
+                    explanation = metadata(SimplifyExplanation.SimplifyAlgebraicExpression),
                     stepsProducer = simplifyAlgebraicExpressionSteps,
                 ) ?: return@tasks null
 
@@ -63,22 +55,6 @@ enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
                 )
 
                 allTasks()
-            }
-        },
-    ),
-
-    @PublicMethod
-    SimplifyAlgebraicExpression(
-        plan {
-            explanation = Explanation.SimplifyAlgebraicExpression
-            pattern = condition { it is ValueExpression }
-            specificPlans(
-                PolynomialsPlans.SimplifyPolynomialExpression,
-                ComputeDomainAndSimplifyAlgebraicExpression,
-            )
-
-            steps {
-                apply(simplifyAlgebraicExpressionSteps)
             }
         },
     ),
@@ -146,51 +122,6 @@ enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
             }
         },
     ),
-}
-
-val algebraicSimplificationSteps = algebraicSimplificationSteps(true)
-
-// when solving equations or inequalities we don't want to add fractions
-// e.g. in x/2 + x/3 = 1 we want to multiply through by 6 instead of adding the fractions
-val algebraicSimplificationStepsWithoutFractionAddition = algebraicSimplificationSteps(false)
-
-private fun algebraicSimplificationSteps(addRationalExpressions: Boolean = true): StepsProducer {
-    return steps {
-        whilePossible {
-            deeply(deepFirst = true) {
-                firstOf {
-                    option(RationalExpressionsPlans.SimplifyDivisionOfPolynomial)
-                    option(RationalExpressionsPlans.SimplifyRationalExpression)
-                    option(RationalExpressionsPlans.SimplifyPowerOfRationalExpression)
-                    option(RationalExpressionsPlans.MultiplyRationalExpressions)
-                    option(RationalExpressionsPlans.MultiplyRationalExpressionWithNonFractionalFactors)
-                    option(PolynomialsPlans.MultiplyVariablePowers)
-                    option(PolynomialsPlans.MultiplyMonomials)
-                    option(PolynomialsPlans.SimplifyPowerOfNegatedVariable)
-                    option(PolynomialsPlans.SimplifyPowerOfVariablePower)
-                    option(PolynomialsPlans.SimplifyPowerOfMonomial)
-                    option(PolynomialsPlans.SimplifyMonomial)
-
-                    option(simplificationSteps)
-                    option(collectLikeTermsSteps)
-
-                    if (addRationalExpressions) {
-                        option(addFractionsSteps)
-                        option(addTermAndFractionSteps)
-                        option(RationalExpressionsPlans.AddLikeRationalExpressions)
-                        option(RationalExpressionsPlans.AddTermAndRationalExpression)
-                        option(RationalExpressionsPlans.AddRationalExpressions)
-                    }
-                }
-            }
-        }
-    }
-}
-
-private val simplifyAlgebraicExpressionSteps = steps {
-    whilePossible { deeply(simpleTidyUpSteps) }
-    optionally(NormalizationPlans.NormalizeExpression)
-    optionally(algebraicSimplificationSteps)
 }
 
 fun findDenominatorsAndDivisors(expr: Expression): Sequence<Pair<Expression, Expression>> = sequence {

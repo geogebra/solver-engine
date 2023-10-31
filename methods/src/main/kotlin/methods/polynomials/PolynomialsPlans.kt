@@ -6,7 +6,6 @@ import engine.expressions.Power
 import engine.expressions.Product
 import engine.expressions.allSubterms
 import engine.expressions.complexity
-import engine.expressions.isPolynomial
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
@@ -25,20 +24,17 @@ import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.stickyOptionalNegOf
-import methods.algebra.algebraicSimplificationSteps
-import methods.algebra.algebraicSimplificationStepsWithoutFractionAddition
 import methods.collecting.createCollectLikeTermsAndSimplifyPlan
-import methods.constantexpressions.ConstantExpressionsPlans
 import methods.constantexpressions.constantSimplificationSteps
-import methods.constantexpressions.simpleTidyUpSteps
 import methods.decimals.decimalEvaluationSteps
 import methods.expand.ExpandAndSimplifier
-import methods.expand.ExpandAndSimplifyMethodsProvider
 import methods.fractionarithmetic.createAddFractionsPlan
 import methods.fractionarithmetic.createAddTermAndFractionPlan
 import methods.general.GeneralRules
-import methods.general.NormalizationPlans
 import methods.integerarithmetic.IntegerArithmeticRules
+import methods.simplify.SimplifyPlans
+import methods.simplify.algebraicSimplificationSteps
+import methods.simplify.algebraicSimplificationStepsWithoutFractionAddition
 
 enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
@@ -51,34 +47,6 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
     SimplifyPowerOfNegatedVariable(simplifyPowerOfNegatedVariable),
     SimplifyPowerOfVariablePower(simplifyPowerOfVariablePower),
     SimplifyPowerOfMonomial(simplifyPowerOfMonomial),
-
-    SimplifyPolynomialSubexpression(
-        plan {
-            explanation = Explanation.SimplifyExpressionInBrackets
-            pattern = condition { it.hasVisibleBracket() }
-
-            steps {
-                apply(algebraicSimplificationSteps)
-            }
-        },
-    ),
-
-    @PublicMethod
-    SimplifyPolynomialExpression(
-        plan {
-            explanation = Explanation.SimplifyPolynomialExpressionInOneVariable
-            pattern = condition { it.isPolynomial() }
-            specificPlans(ConstantExpressionsPlans.SimplifyConstantExpression)
-
-            steps {
-                whilePossible { deeply(simpleTidyUpSteps) }
-                optionally(NormalizationPlans.NormalizeExpression)
-                whilePossible { deeply(SimplifyPolynomialSubexpression, deepFirst = true) }
-                optionally(algebraicSimplificationSteps)
-                optionally(PolynomialRules.NormalizePolynomial)
-            }
-        },
-    ),
 
     /**
      * Expand and simplify an expression containing a product or a power of polynomials in one variable.
@@ -161,11 +129,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
     ),
 }
 
-// If we don't do it by lazy we get null pointer exceptions because the MultiplyMonomialsAndSimplify RunnerMethod's
-// runner property is used before it is initialised.  I am not sure why though so this solution is dubious.
-val expandAndSimplifier: ExpandAndSimplifyMethodsProvider by lazy {
-    ExpandAndSimplifier(PolynomialsPlans.SimplifyPolynomialExpression)
-}
+val expandAndSimplifier = ExpandAndSimplifier(SimplifyPlans.SimplifyAlgebraicExpression)
 
 private val multiplyVariablePowers = plan {
     explanation = Explanation.MultiplyUnitaryMonomialsAndSimplify

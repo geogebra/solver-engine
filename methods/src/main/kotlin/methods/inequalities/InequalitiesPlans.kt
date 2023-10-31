@@ -32,13 +32,13 @@ import engine.patterns.optionalNegOf
 import engine.patterns.setSolutionOf
 import engine.patterns.variableListOf
 import engine.steps.metadata.metadata
-import methods.algebra.algebraicSimplificationStepsWithoutFractionAddition
 import methods.constantexpressions.constantSimplificationSteps
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.equations.EquationsPlans
 import methods.general.NormalizationPlans
 import methods.inequations.InequationsPlans
 import methods.polynomials.PolynomialsPlans
+import methods.simplify.algebraicSimplificationStepsWithoutFractionAddition
 import methods.solvable.SolvablePlans
 import methods.solvable.SolvableRules
 import methods.solvable.computeOverallIntersectionSolution

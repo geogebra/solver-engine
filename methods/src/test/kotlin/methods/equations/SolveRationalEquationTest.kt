@@ -1053,14 +1053,14 @@ class SolveRationalEquationTest {
 
                     step {
                         fromExpr = "x ([1 / x] + 2) = 2"
-                        toExpr = "1 + 2 x = 2"
+                        toExpr = "2 x + 1 = 2"
                         explanation {
-                            key = PolynomialsExplanation.ExpandPolynomialExpression
+                            key = ExpandExplanation.ExpandSingleBracketAndSimplify
                         }
                     }
 
                     step {
-                        fromExpr = "1 + 2 x = 2"
+                        fromExpr = "2 x + 1 = 2"
                         toExpr = "2 x = 1"
                         explanation {
                             key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
