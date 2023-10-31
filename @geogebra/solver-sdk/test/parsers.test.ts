@@ -20,6 +20,8 @@ function testCases(
   cases: {
     solver?: string;
     json?: MathJson;
+    /** By setting the first expression in the array to '', you can skip all
+     * tests that use the latex expressions as targets (solver->latex; json->latex). */
     latex?: string | string[];
     /** We currently do not support parsing sets or intervals in LaTeX, so we
      * need to be able to skip that part of those tests */
@@ -62,9 +64,23 @@ function testCases(
     }
 
     for (const alternate of latexAlternates) {
-      it(`LaTeX "${alternate}" => LaTeX "${latex}"`, () => {
-        expect(latexToTree(latexExact)).to.deep.equal(latexToTree(alternate));
-      });
+      if (latexExact) {
+        it(`LaTeX "${alternate}" => LaTeX "${latex}"`, () => {
+          expect(latexToTree(latexExact)).to.deep.equal(latexToTree(alternate));
+        });
+      } else if (json) {
+        it(`LaTeX "${alternate}" => json "${JSON.stringify(json)}"`, () => {
+          expect(latexToJson(alternate)).to.deep.equal(json);
+        });
+      } else if (solver) {
+        it(`LaTeX "${alternate}" => Solver "${solver}"`, () => {
+          expect(latexToSolver(alternate)).to.equal(solver);
+        });
+      } else {
+        throw new Error(
+          'Need to define "json" or "solver" field when specifying alternative latex expressions without a main latex expression.',
+        );
+      }
     }
   });
 }
@@ -2051,6 +2067,115 @@ describe('Solver Parser Unit Tests', () => {
           ],
         },
         latex: ['10\\%5'],
+      },
+    ]);
+  });
+
+  describe('Systems of Relations', async () => {
+    testCases([
+      {
+        solver: 'x = 5 AND y = x AND z = 1',
+        json: {
+          type: 'EquationSystem',
+          operands: [
+            { type: 'Equation', operands: [variable('x'), integer('5')] },
+            { type: 'Equation', operands: [variable('y'), variable('x')] },
+            { type: 'Equation', operands: [variable('z'), integer('1')] },
+          ],
+        },
+        // Set first latex expression to '' to avoid creating output tests for it
+        // since the latex output includes an `align` environment.
+        latex: ['', 'x=5 \\text{AND} y=x \\text{and} z=1', 'x=5,y=x,z=1', 'x=5;y=x;z=1'],
+      },
+      {
+        solver: 'x < 1 AND x > 0',
+        json: {
+          type: 'EquationSystem',
+          operands: [
+            {
+              type: 'LessThan',
+              operands: [variable('x'), integer('1')],
+            },
+            {
+              type: 'GreaterThan',
+              operands: [variable('x'), integer('0')],
+            },
+          ],
+        },
+        // Set first latex expression to '' to avoid creating output tests for it
+        // since the latex output includes an `align` environment.
+        latex: ['', 'x<1 \\text{and} x>0', 'x<1,x>0', 'x<1;x>0'],
+      },
+      {
+        solver: '5 x + 1 = 21 AND 2 y + 1 = 5',
+        json: {
+          type: 'EquationSystem',
+          operands: [
+            {
+              type: 'Equation',
+              operands: [
+                {
+                  type: 'Sum',
+                  operands: [
+                    {
+                      type: 'ImplicitProduct',
+                      operands: [
+                        {
+                          type: 'Integer',
+                          value: '5',
+                        },
+                        {
+                          type: 'Variable',
+                          value: 'x',
+                        },
+                      ],
+                    },
+                    {
+                      type: 'Integer',
+                      value: '1',
+                    },
+                  ],
+                },
+                {
+                  type: 'Integer',
+                  value: '21',
+                },
+              ],
+            },
+            {
+              type: 'Equation',
+              operands: [
+                {
+                  type: 'Sum',
+                  operands: [
+                    {
+                      type: 'ImplicitProduct',
+                      operands: [
+                        {
+                          type: 'Integer',
+                          value: '2',
+                        },
+                        {
+                          type: 'Variable',
+                          value: 'y',
+                        },
+                      ],
+                    },
+                    {
+                      type: 'Integer',
+                      value: '1',
+                    },
+                  ],
+                },
+                {
+                  type: 'Integer',
+                  value: '5',
+                },
+              ],
+            },
+          ],
+        },
+        latex: ['', '5x+1=21 \\text{AND} 2y+1=5', '5x+1=21 , 2y+1=5', '5x+1=21 ; 2y+1=5'],
       },
     ]);
   });

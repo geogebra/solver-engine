@@ -357,23 +357,17 @@ function treeToLatexInner(
       return tfd(`${rec(n.operands[0], n)} \\text{ given } ${constraint}`);
     }
     case 'Equation':
-      if (s.align) {
-        return tfd(
-          `${rec(n.operands[0], n)} & ${colorOp('=')} & ${rec(n.operands[1], n)}`,
-        );
-      } else {
-        return tfd(`${rec(n.operands[0], n)} ${colorOp('=')} ${rec(n.operands[1], n)}`);
-      }
+      return tfd(
+        [rec(n.operands[0], n), colorOp('='), rec(n.operands[1], n)].join(
+          s.align ? ' & ' : ' ',
+        ),
+      );
     case 'Inequation':
-      if (s.align) {
-        return tfd(
-          `${rec(n.operands[0], n)} & ${colorOp('\\neq')} & ${rec(n.operands[1], n)}`,
-        );
-      } else {
-        return tfd(
-          `${rec(n.operands[0], n)} ${colorOp('\\neq')} ${rec(n.operands[1], n)}`,
-        );
-      }
+      return tfd(
+        [rec(n.operands[0], n), colorOp('\\neq'), rec(n.operands[1], n)].join(
+          s.align ? ' & ' : ' ',
+        ),
+      );
     case 'EquationSystem': {
       if (s.flat || n.operands.some((child) => !isSolvable(child))) {
         const alignSetting = { ...s, align: false };
@@ -384,8 +378,12 @@ function treeToLatexInner(
         );
       } else {
         const alignSetting = { ...s, align: true };
+        // The array has 5 columns specified, as extra columns do not affect rendering.
+        // Currently we can have expressions with:
+        // - 3 columns: Regular equations/inequalities
+        // - 4 columns: Equations/Inequalities with labels
         return tfd(
-          '\\left\\{\\begin{array}{rcl}\n' +
+          '\\left\\{\\begin{array}{rclrr}\n' +
             n.operands
               .map((el) => '  ' + treeToLatexInner(el, n, alignSetting, t) + '\\\\\n')
               .join('') +
@@ -421,13 +419,29 @@ function treeToLatexInner(
     case 'Infinity':
       return tfd('\\infty');
     case 'LessThan':
-      return tfd(`${rec(n.operands[0], n)} ${colorOp('<')} ${rec(n.operands[1], n)}`);
+      return tfd(
+        [rec(n.operands[0], n), colorOp('<'), rec(n.operands[1], n)].join(
+          s.align ? ' & ' : ' ',
+        ),
+      );
     case 'GreaterThan':
-      return tfd(`${rec(n.operands[0], n)} ${colorOp('>')} ${rec(n.operands[1], n)}`);
+      return tfd(
+        [rec(n.operands[0], n), colorOp('>'), rec(n.operands[1], n)].join(
+          s.align ? ' & ' : ' ',
+        ),
+      );
     case 'LessThanEqual':
-      return tfd(`${rec(n.operands[0], n)} ${colorOp('\\leq')} ${rec(n.operands[1], n)}`);
+      return tfd(
+        [rec(n.operands[0], n), colorOp('\\leq'), rec(n.operands[1], n)].join(
+          s.align ? ' & ' : ' ',
+        ),
+      );
     case 'GreaterThanEqual':
-      return tfd(`${rec(n.operands[0], n)} ${colorOp('\\geq')} ${rec(n.operands[1], n)}`);
+      return tfd(
+        [rec(n.operands[0], n), colorOp('\\geq'), rec(n.operands[1], n)].join(
+          s.align ? ' & ' : ' ',
+        ),
+      );
     case 'Solution':
     case 'SetSolution':
     case 'Identity':

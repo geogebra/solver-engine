@@ -10,6 +10,7 @@ import type {
 
 type ExprTree = ExpressionTreeBase<unknown>;
 
+const BP_EQUATION_SYSTEM = 4;
 const BP_EQUALS = 5;
 const BP_ELEMENT_OF_OPERATOR = 6;
 const BP_SUM = 10;
@@ -200,6 +201,20 @@ const latexSymbolDefinitions = {
     ] as const) {
       parser.registerSymbol(sym, BP_EQUALS).led = (left) => {
         return { type, operands: [left, parser.expression(BP_EQUALS)] };
+      };
+    }
+  },
+
+  registerEquationSystem(parser: Parser<ExprTree>) {
+    for (const andSym of ['/and/', ',', ';']) {
+      parser.registerSymbol(andSym, BP_EQUATION_SYSTEM).led = (left) => {
+        const right = parser.expression(BP_EQUATION_SYSTEM);
+        const type = 'EquationSystem';
+        if (left.type === type) {
+          return { type, operands: [...(left.operands || []), right] };
+        } else {
+          return { type, operands: [left, right] };
+        }
       };
     }
   },

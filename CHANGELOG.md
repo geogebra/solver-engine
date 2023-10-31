@@ -11,6 +11,7 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Added
 
+- SDK: Added support for entering LaTeX systems of equations separated by '\text{AND}', ';', ',' (PLUT-717)
 - Add solver syntax for inverse trig functions (e.g., `[sin^-1] x`) and power of trig functions (e.g., `[tan^2] x`)
   (PLUT-715)
 - SDK: add latex rendering for inverse trig functions (e.g., `sin^-1 x`) and power of trig functions (e.g., `tan^2 x`)
@@ -24,6 +25,7 @@ contents to a new release section (e.g. _[0.x]_).
 
 - `ComputeDomainOfAlgebraicExpression` plan isn't shown when `ComputeDomainAndSimplifyAlgebraicExpression` plan can be
   shown (e.g., for `[3 * 2 / (x - 1)(x - 2)]`) (PLUT-708)
+- SDK: Fixed LaTeX representation of equation systems (PLUT-717)
 - Fixed rational equations which can be reduced to a polynomial one just by simplifying and expanding,
   e.g. `([1/x]+2)x=[2/x]x` (PLUT-703)
 - Improved thread-safety of deeply optimization (PLUT-835)

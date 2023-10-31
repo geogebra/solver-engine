@@ -13,7 +13,7 @@ export type Token = {
 /// like \, or is a backslash plus a string of alphabetic characters
 export function tokenize(str: string): Token[] {
   const r_symbols =
-    /^\s*(\/undefined\/|\/reals\/|\\text\{[Uu]ndefined\}|\\mathbb\{R\}|ℯ|\\mathrm\{e\}|ί|\\mathrm{i}|\\iota|\\pi(?:\{\})?)/;
+    /^\s*(\/undefined\/|\/reals\/|\\text\{[Uu]ndefined\}|\\text{[Aa][Nn][Dd]}|\\mathbb\{R\}|ℯ|\\mathrm\{e\}|ί|\\mathrm{i}|\\iota|\\pi(?:\{\})?)/;
   const r_number = /^\s*((([0-9]*(\.[0-9]*|[0-9]+))([eE][-+]?[0-9]+)?)|∞|Infinity)/;
   const r_match = new RegExp('^\\s*\\{(\\??[A-Za-z0-9_]*)\\:'); // named regexp match
   const r_name = new RegExp('^\\s*([a-zA-Z₀₁₂₃₄₅₆₇₈₉⬚])'); // single-character names
@@ -64,7 +64,10 @@ export function tokenize(str: string): Token[] {
     } else if ((m = r_symbols.exec(s))) {
       tokens.push({
         type: 'symbol',
-        value: m[1].replace(/\\text\{[Uu]ndefined\}/, '/undefined/').replace(/\{\}$/, ''),
+        value: m[1]
+          .replace(/\\text\{[Uu]ndefined\}/, '/undefined/')
+          .replace(/\\text\{[Aa][Nn][Dd]\}/, '/and/')
+          .replace(/\{\}$/, ''),
         from: i + (m[0].length - m[1].length),
         to: i + m[0].length,
       });
