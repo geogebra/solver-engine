@@ -63,8 +63,13 @@ import engine.utility.isSquare
 import engine.utility.times
 import methods.solvable.simplifiedNegOfSum
 import java.math.BigInteger
+import engine.steps.metadata.GmPathModifier as PM
 
 enum class FactorRules(override val runner: Rule) : RunnerMethod {
+
+    // when factoring more than two terms the gmAction only factors the factor from the last two
+    // drag two terms next to each other: converted to tapping plus x^2 + x
+    // something going wrong with minus signs?? 16*x^5-32
 
     FactorGreatestCommonIntegerFactor(
         rule {
@@ -87,8 +92,12 @@ enum class FactorRules(override val runner: Rule) : RunnerMethod {
                     integerFactor.changeValue(integerFactor.value / gcd)
                 }
 
+                val lastIntegerFactor = integerFactors.last().original
+                val penultimateIntegerFactor = integerFactors[integerFactors.size - 2].original
+
                 ruleResult(
                     toExpr = productOf(commonIntegerFactor, sumView.recombine()),
+                    gmAction = drag(lastIntegerFactor, PM.Group, penultimateIntegerFactor, PM.Group),
                     explanation = metadata(Explanation.FactorGreatestCommonIntegerFactor),
                 )
             }
@@ -115,8 +124,12 @@ enum class FactorRules(override val runner: Rule) : RunnerMethod {
                             sameBaseFactor.changeExponent(sameBaseFactor.exponentValue - minExponent)
                         }
 
+                        val lastFactor = sameBaseFactors.last().original
+                        val penultimateFactor = sameBaseFactors[sameBaseFactors.size - 2].original
+
                         return@onPattern ruleResult(
                             toExpr = productOf(commonFactor, sumView.recombine()),
+                            gmAction = drag(lastFactor, PM.Group, penultimateFactor, PM.Group),
                             explanation = metadata(Explanation.FactorCommonFactor),
                         )
                     }

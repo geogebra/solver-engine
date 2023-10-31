@@ -10,6 +10,7 @@ export type GmMathNode = {
   hidden?: boolean;
   to_ascii: (options?: TodoFigureOutType) => string;
   is_group: (...types: string[]) => boolean;
+  get_root: () => { getMoveActions: (nodes: GmMathNode[]) => GmAction[] };
   getSelectorOfNodes: (nodes: GmMathNode[] | GmMathNode) => string;
   to_latex(options?: TodoFigureOutType): string;
   getNodes(
@@ -18,6 +19,15 @@ export type GmMathNode = {
     unnecessaryParameter2?: TodoFigureOutType,
   ): GmMathNode[];
   type?: 'AlgebraModel';
+};
+
+type GmAction = {
+  name: string;
+  // for tap action
+  actor?: GmMathNode;
+  // for drag action
+  nodes?: GmMathNode[];
+  target?: GmMathNode | GmMathNode[];
 };
 
 type TodoFigureOutType = any;
@@ -98,7 +108,7 @@ function annotate(
       break;
     case 'Sum':
       gmTree.children.forEach((addend, i) => {
-        // could be inside a partial sum, use tree.args[i] instead or /${i}
+        // could be inside a partial sum, use tree.args[i] instead of /${i}
         const path = tree.operands[i].path;
         appendMap(addend, `${path}:group`, map);
         const addendHasBrackets = !!tree.operands[i].decorators?.length;
@@ -106,6 +116,9 @@ function annotate(
           (tree.operands[i].type === 'Minus' || tree.operands[i].type === 'PlusMinus') &&
           !addendHasBrackets
         ) {
+          // in a case like 2-1, we want to create an extra ":group" path mapping for the "1"
+          // in the ExprTree to select the "sub" group in GM
+          appendMap(addend, `${path}/0:group`, map);
           annotate(addend, tree.operands[i], map);
         } else {
           const opStr = getOpStr(tree.operands[i]);

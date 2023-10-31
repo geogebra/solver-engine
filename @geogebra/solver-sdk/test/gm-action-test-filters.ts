@@ -254,4 +254,11 @@ export const expressionSkipList = [
   '-(c^2-3*b*c+a^2+b^2)=0',
   '-(c^2-4*b*c-a^2+b^2)=0',
   '-(c^2*m-E)=0',
+
+  // Factoring: GM can only factor 2 things at a time
+  '2*x^2-4*x+2=0',
+  '2*x^2+4*x+2=0',
+
+  // Factoring: GM removes brackets around single remaining factor, but Solver doesn't
+  '3*((x+1)^3+2*(x+1)^2)', // GM: 3*(x+1)^2*(x+1+2); Solver: 3*(x+1)^2*((x+1)+2)
 ];

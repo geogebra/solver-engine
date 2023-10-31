@@ -20,6 +20,7 @@ contents to a new release section (e.g. _[0.x]_).
   solving equations) (PLUT-680)
 - Optimization of deeply: added machinery for avoiding searching too deep into expressions when the plan applied
   requires a deep expression (PLUT-831)
+- add gmAction information to factoring plans (PLUT-832)
 
 ### Fixed
 
@@ -29,6 +30,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Fixed rational equations which can be reduced to a polynomial one just by simplifying and expanding,
   e.g. `([1/x]+2)x=[2/x]x` (PLUT-703)
 - Improved thread-safety of deeply optimization (PLUT-835)
+- Improved handling of negatives in sums by the SDK (PLUT-832)
 
 ### Changed
 

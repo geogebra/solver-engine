@@ -62,6 +62,10 @@ enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
                 else -> exp
             }
 
+            // 77x + 110y + 165z
+            // 11(7x + 5(2y + 3z))
+            // 11(7x + 10y + 15z)
+
             steps {
                 optionally(FactorRules.FactorNegativeSignOfLeadingCoefficient)
                 apply {
