@@ -385,6 +385,11 @@ val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
             }
         }
 
+        // Now that numerator and denominator have been simplified enough, we can find a common factor in the
+        // numerator and denominator of fractions.  Do this after factoring squares out of roots so that e.g.
+        // [4 + 2sqrt[8] / 8] is transformaed to [4 + 4sqrt[2] / 8] first.
+        option(FractionArithmeticPlans.SimplifyCommonIntegerFactorInFraction)
+
         option { deeply(ExpandRules.DistributeNegativeOverBracket) }
         option { deeply(expandConstantExpression) }
 

@@ -730,7 +730,7 @@ class QuadraticFormulaStrategyTest {
 
         check {
             fromExpr = "3 [x ^ 2] + 6 x + 3 - sqrt[2] = 0"
-            toExpr = "SetSolution[x: {-[6 + 2 root[18, 4] / 6], [-6 + 2 root[18, 4] / 6]}]"
+            toExpr = "SetSolution[x: {-[3 + root[18, 4] / 3], [-3 + root[18, 4] / 3]}]"
             explanation {
                 key = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula
             }
@@ -745,23 +745,23 @@ class QuadraticFormulaStrategyTest {
 
             step {
                 fromExpr = "x = [-6 +/- sqrt[[6 ^ 2] - 4 * 3 (3 - sqrt[2])] / 2 * 3]"
-                toExpr = "x = [-6 +/- 2 root[18, 4] / 6]"
+                toExpr = "x = [-3 +/- root[18, 4] / 3]"
                 explanation {
                     key = ConstantExpressionsExplanation.SimplifyConstantExpression
                 }
             }
 
             step {
-                fromExpr = "x = [-6 +/- 2 root[18, 4] / 6]"
-                toExpr = "x = [-6 - 2 root[18, 4] / 6] OR x = [-6 + 2 root[18, 4] / 6]"
+                fromExpr = "x = [-3 +/- root[18, 4] / 3]"
+                toExpr = "x = [-3 - root[18, 4] / 3] OR x = [-3 + root[18, 4] / 3]"
                 explanation {
                     key = EquationsExplanation.SeparatePlusMinusQuadraticSolutions
                 }
             }
 
             step {
-                fromExpr = "x = [-6 - 2 root[18, 4] / 6] OR x = [-6 + 2 root[18, 4] / 6]"
-                toExpr = "SetSolution[x: {-[6 + 2 root[18, 4] / 6], [-6 + 2 root[18, 4] / 6]}]"
+                fromExpr = "x = [-3 - root[18, 4] / 3] OR x = [-3 + root[18, 4] / 3]"
+                toExpr = "SetSolution[x: {-[3 + root[18, 4] / 3], [-3 + root[18, 4] / 3]}]"
                 explanation {
                     key = EquationsExplanation.SolveEquationUnion
                 }
@@ -839,7 +839,7 @@ class QuadraticFormulaStrategyTest {
 
         check {
             fromExpr = "[a ^ 2] = [b ^ 2] + [c ^ 2] - 4 b c"
-            toExpr = "c = [4 b +/- 2 sqrt[3 [b ^ 2] + [a ^ 2]] / 2] GIVEN 16 [b ^ 2] - 4 (-[a ^ 2] + [b ^ 2]) >= 0"
+            toExpr = "c = 2 b +/- sqrt[3 [b ^ 2] + [a ^ 2]] GIVEN 16 [b ^ 2] - 4 (-[a ^ 2] + [b ^ 2]) >= 0"
             explanation {
                 key = EquationsExplanation.SolveQuadraticEquationUsingQuadraticFormula
             }
@@ -887,7 +887,7 @@ class QuadraticFormulaStrategyTest {
 
             step {
                 fromExpr = "c = [-(-4 b) +/- sqrt[[(-4 b) ^ 2] - 4 * 1 (-[a ^ 2] + [b ^ 2])] / 2 * 1] GIVEN 16 [b ^ 2] - 4 (-[a ^ 2] + [b ^ 2]) >= 0"
-                toExpr = "c = [4 b +/- 2 sqrt[3 [b ^ 2] + [a ^ 2]] / 2] GIVEN 16 [b ^ 2] - 4 (-[a ^ 2] + [b ^ 2]) >= 0"
+                toExpr = "c = 2 b +/- sqrt[3 [b ^ 2] + [a ^ 2]] GIVEN 16 [b ^ 2] - 4 (-[a ^ 2] + [b ^ 2]) >= 0"
                 explanation {
                     key = SimplifyExplanation.SimplifyAlgebraicExpression
                 }

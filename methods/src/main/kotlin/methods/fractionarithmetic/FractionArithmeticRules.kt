@@ -2,11 +2,17 @@ package methods.fractionarithmetic
 
 import engine.conditions.isDefinitelyNotZero
 import engine.expressions.Constants
+import engine.expressions.DefaultView
 import engine.expressions.DivideBy
 import engine.expressions.Expression
+import engine.expressions.Factor
 import engine.expressions.Fraction
+import engine.expressions.IntegerExpression
+import engine.expressions.IntegerFactorView
 import engine.expressions.Minus
 import engine.expressions.Power
+import engine.expressions.Sum
+import engine.expressions.SumView
 import engine.expressions.areEquivalentSums
 import engine.expressions.fractionOf
 import engine.expressions.inverse
@@ -46,6 +52,7 @@ import engine.steps.metadata.DragTargetPosition
 import engine.steps.metadata.Skill
 import engine.steps.metadata.metadata
 import engine.utility.divides
+import engine.utility.gcd
 import engine.utility.isFactorizableUnderRationalExponent
 import engine.utility.isZero
 import java.math.BigInteger
@@ -290,6 +297,8 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             }
         },
     ),
+
+    FactorGreatestCommonIntegerFactorInFraction(factorGreatestCommonIntegerFactorInFraction),
 
     CancelCommonFactorInFraction(
         rule {
@@ -696,4 +705,58 @@ private fun Expression.canBeTurnedToFraction(): Boolean = when (this) {
     is Power -> firstChild.canBeTurnedToFraction()
     // is NullaryOperator -> true
     else -> children.all { it.canBeTurnedToFraction() }
+}
+
+private fun getView(e: Expression) = if (e is IntegerExpression) {
+    IntegerFactorView(e)
+} else {
+    DefaultView(e)
+}
+
+private val factorGreatestCommonIntegerFactorInFraction = rule {
+    val pattern = condition(fractionOf(AnyPattern(), AnyPattern())) { it.firstChild is Sum || it.secondChild is Sum }
+
+    onPattern(pattern) {
+        val numeratorView = SumView(expression.firstChild, ::getView)
+        val denominatorView = SumView(expression.secondChild, ::getView)
+
+        val numeratorIntegerFactors = numeratorView.termViews.map {
+            it.findSingleFactor<IntegerFactorView>()
+                ?: return@onPattern null
+        }
+        val numeratorGcd = numeratorIntegerFactors.fold(BigInteger.ZERO) { acc, n -> acc.gcd(n.value) }
+        if (numeratorGcd == BigInteger.ONE) return@onPattern null
+
+        val denominatorIntegerFactors = denominatorView.termViews.map {
+            it.findSingleFactor<IntegerFactorView>()
+                ?: return@onPattern null
+        }
+
+        val denominatorGcd = denominatorIntegerFactors.fold(BigInteger.ZERO) { acc, n -> acc.gcd(n.value) }
+        if (denominatorGcd == BigInteger.ONE) return@onPattern null
+
+        val gcd = gcd(numeratorGcd, denominatorGcd)
+        if (gcd == BigInteger.ONE) return@onPattern null
+
+        val commonIntegerFactor = xp(gcd).withOrigin(
+            Factor(
+                numeratorIntegerFactors.map { it.original } + denominatorIntegerFactors.map { it.original },
+            ),
+        )
+
+        for (integerFactor in numeratorIntegerFactors) {
+            integerFactor.changeValue(integerFactor.value / gcd)
+        }
+        for (integerFactor in denominatorIntegerFactors) {
+            integerFactor.changeValue(integerFactor.value / gcd)
+        }
+
+        ruleResult(
+            toExpr = fractionOf(
+                simplifiedProductOf(commonIntegerFactor, numeratorView.recombine()),
+                simplifiedProductOf(commonIntegerFactor, denominatorView.recombine()),
+            ),
+            explanation = metadata(Explanation.FactorCommonIntegerFactorInFraction),
+        )
+    }
 }

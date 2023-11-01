@@ -10,6 +10,7 @@ import methods.fractionarithmetic.FractionArithmeticRules.CancelCommonFactorInFr
 import methods.fractionarithmetic.FractionArithmeticRules.ConvertIntegerToFraction
 import methods.fractionarithmetic.FractionArithmeticRules.DistributeFractionalPowerOverFraction
 import methods.fractionarithmetic.FractionArithmeticRules.DistributePositiveIntegerPowerOverFraction
+import methods.fractionarithmetic.FractionArithmeticRules.FactorGreatestCommonIntegerFactorInFraction
 import methods.fractionarithmetic.FractionArithmeticRules.FindCommonIntegerFactorInFraction
 import methods.fractionarithmetic.FractionArithmeticRules.MultiplyFractions
 import methods.fractionarithmetic.FractionArithmeticRules.RewriteDivisionAsFraction
@@ -112,6 +113,13 @@ class FractionsRulesTest {
         testRule("[5/7]", FindCommonIntegerFactorInFraction, null)
         testRule("[700/500]", FindCommonIntegerFactorInFraction, "[100 * 7/100 * 5]")
         testRule("[1/10]", FindCommonIntegerFactorInFraction, null)
+    }
+
+    @Test
+    fun testFactorGreatestCommonIntegerFactorInFraction() {
+        testRule("[2x + 4 / 6]", FactorGreatestCommonIntegerFactorInFraction, "[2(x + 2) / 2 * 3]")
+        testRule("[2 + 2sqrt[3] / 2]", FactorGreatestCommonIntegerFactorInFraction, "[2(1 + sqrt[3]) / 2]")
+        testRule("[3 - 9x / 3x]", FactorGreatestCommonIntegerFactorInFraction, "[3(1 - 3x) / 3x]")
     }
 
     @Test

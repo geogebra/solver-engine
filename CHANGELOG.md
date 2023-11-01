@@ -20,7 +20,9 @@ contents to a new release section (e.g. _[0.x]_).
   solving equations) (PLUT-680)
 - Optimization of deeply: added machinery for avoiding searching too deep into expressions when the plan applied
   requires a deep expression (PLUT-831)
-- add gmAction information to factoring plans (PLUT-832)
+- Added gmAction information to factoring plans (PLUT-832)
+- Added simplification of fractions containing a sum with a common integer factor, such as `[2 + 4sqrt[2] / 2]`
+  (PLUT-821)
 
 ### Fixed
 

@@ -641,7 +641,7 @@ class SolveRationalEquationTest {
 
         check {
             fromExpr = "[12 x / [x ^ 2] - 9] - [1 / [x ^ 2] - 9] = 8"
-            toExpr = "SetSolution[x : {[12 - 4 sqrt[151] / 16], [12 + 4 sqrt[151] / 16]}]"
+            toExpr = "SetSolution[x : {[3 - sqrt[151] / 4], [3 + sqrt[151] / 4]}]"
             explanation {
                 key = EquationsExplanation.SolveEquation
             }
@@ -658,7 +658,7 @@ class SolveRationalEquationTest {
 
                 step {
                     fromExpr = "[12 x / [x ^ 2] - 9] - [1 / [x ^ 2] - 9] = 8"
-                    toExpr = "SetSolution[x: {[12 - 4 sqrt[151] / 16], [12 + 4 sqrt[151] / 16]}]"
+                    toExpr = "SetSolution[x: {[3 - sqrt[151] / 4], [3 + sqrt[151] / 4]}]"
                     explanation {
                         key = EquationsExplanation.SolveRationalEquation
                     }
@@ -721,15 +721,15 @@ class SolveRationalEquationTest {
 
                     step {
                         fromExpr = "x = [-(-12) +/- sqrt[[(-12) ^ 2] - 4 * 8 * (-71)] / 2 * 8]"
-                        toExpr = "x = [12 +/- 4 sqrt[151] / 16]"
+                        toExpr = "x = [3 +/- sqrt[151] / 4]"
                         explanation {
                             key = ConstantExpressionsExplanation.SimplifyConstantExpression
                         }
                     }
 
                     step {
-                        fromExpr = "x = [12 +/- 4 sqrt[151] / 16]"
-                        toExpr = "SetSolution[x: {[12 - 4 sqrt[151] / 16], [12 + 4 sqrt[151] / 16]}]"
+                        fromExpr = "x = [3 +/-  sqrt[151] / 4]"
+                        toExpr = "SetSolution[x: {[3 - sqrt[151] / 4], [3 + sqrt[151] / 4]}]"
                         explanation {
                             key = EquationsExplanation.ExtractSolutionFromEquationInPlusMinusForm
                         }
@@ -739,7 +739,7 @@ class SolveRationalEquationTest {
 
             task {
                 taskId = "#3"
-                startExpr = "SetSolution[x : {[12 - 4 sqrt[151] / 16], [12 + 4 sqrt[151] / 16]}]"
+                startExpr = "SetSolution[x : {[3 - sqrt[151] / 4], [3 + sqrt[151] / 4]}]"
                 explanation {
                     key = EquationsExplanation.AllSolutionsSatisfyConstraint
                 }
@@ -756,7 +756,7 @@ class SolveRationalEquationTest {
             fromExpr = "[12 / [x ^ 2] - 9] = sqrt[2] - [2 / x + 3]"
             // on one of the good days, we will be able to simplify the below
             // result to "3 + 2sqrt[2]"
-            toExpr = "SetSolution[x : {[2 sqrt[2] + 2 sqrt[38 + 12 sqrt[2]] / 4]}]"
+            toExpr = "SetSolution[x : {[sqrt[2] + sqrt[38 + 12 sqrt[2]] / 2]}]"
             explanation {
                 key = EquationsExplanation.SolveEquation
             }
@@ -773,7 +773,7 @@ class SolveRationalEquationTest {
 
                 step {
                     fromExpr = "[12 / [x ^ 2] - 9] = sqrt[2] - [2 / x + 3]"
-                    toExpr = "SetSolution[x: {[2 sqrt[2] - 2 sqrt[38 + 12 sqrt[2]] / 4], [2 sqrt[2] + 2 sqrt[38 + 12 sqrt[2]] / 4]}]"
+                    toExpr = "SetSolution[x: {[sqrt[2] - sqrt[38 + 12 sqrt[2]] / 2], [sqrt[2] + sqrt[38 + 12 sqrt[2]] / 2]}]"
                     explanation {
                         key = EquationsExplanation.SolveRationalEquation
                     }
@@ -810,7 +810,7 @@ class SolveRationalEquationTest {
 
                     step {
                         fromExpr = "x = [2 sqrt[2] + (-2 sqrt[19 + 6 sqrt[2]]) sqrt[2] / 4] OR x = [2 sqrt[2] + (2 sqrt[19 + 6 sqrt[2]]) sqrt[2] / 4]"
-                        toExpr = "SetSolution[x: {[2 sqrt[2] - 2 sqrt[38 + 12 sqrt[2]] / 4], [2 sqrt[2] + 2 sqrt[38 + 12 sqrt[2]] / 4]}]"
+                        toExpr = "SetSolution[x: {[sqrt[2] - sqrt[38 + 12 sqrt[2]] / 2], [sqrt[2] + sqrt[38 + 12 sqrt[2]] / 2]}]"
                         explanation {
                             key = EquationsExplanation.SolveEquationUnion
                         }
@@ -820,7 +820,7 @@ class SolveRationalEquationTest {
 
             task {
                 taskId = "#3"
-                startExpr = "SetSolution[x : {[2 sqrt[2] + 2 sqrt[38 + 12 sqrt[2]] / 4]}]"
+                startExpr = "SetSolution[x : {[sqrt[2] + sqrt[38 + 12 sqrt[2]] / 2]}]"
                 explanation {
                     key = EquationsExplanation.SomeSolutionsDoNotSatisfyConstraint
                 }

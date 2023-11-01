@@ -68,7 +68,19 @@ enum class FractionArithmeticExplanation : CategorisedMetadataKey {
      */
     MultiplyAndSimplifyFractions,
 
+    /**
+     * Find a common factor in a numeric fraction and rewrite it so the factor is explicit.
+     *
+     * E.g. [4 / 6] --> [2 * 2 / 2 * 3]
+     */
     FindCommonFactorInFraction,
+
+    /**
+     * Find a common integer factor in a fraction and rewrite it so the factor is explicit.
+     *
+     * E.g. [12 + 6sqrt[2]] / 15] --> [3(4 + 2sqrt[2]) / 3 * 5]
+     */
+    FactorCommonIntegerFactorInFraction,
 
     @LegacyKeyName("General.CancelCommonTerms")
     CancelCommonFactorInFraction,

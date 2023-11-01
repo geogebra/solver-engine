@@ -10,6 +10,7 @@ import engine.methods.Method
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.StepsProducer
+import engine.methods.stepsproducers.firstOf
 import engine.methods.stepsproducers.steps
 import engine.patterns.AnyPattern
 import engine.patterns.ConstantPattern
@@ -63,17 +64,32 @@ enum class FractionArithmeticPlans(override val runner: CompositeMethod) : Runne
             skill(Skill.SimplifyNumericFraction, f)
 
             steps {
+                // Cancel obvious common factors and if the numerator and denominator have an integer factor,
+                // simplify that.
                 whilePossible {
+                    check { it is Fraction }
                     firstOf {
-                        option(GeneralRules.SimplifyUnitFractionToOne)
-                        option(GeneralRules.SimplifyFractionWithOneDenominator)
+                        option(trivialFractionCancellationSteps)
                         option(FractionArithmeticRules.SimplifyFractionToInteger)
-                        option(GeneralRules.CancelDenominator)
-                        option(FractionArithmeticRules.CancelCommonFactorInFraction)
                         option(FractionArithmeticRules.ReorganizeCommonSumFactorInFraction)
                         option(FractionArithmeticRules.FindCommonIntegerFactorInFraction)
                     }
                 }
+            }
+        },
+    ),
+
+    SimplifyCommonIntegerFactorInFraction(
+        plan {
+            val f = fractionOf(AnyPattern(), AnyPattern())
+            pattern = f
+
+            explanation = Explanation.SimplifyFraction
+            explanationParameters(f)
+
+            steps {
+                apply(FractionArithmeticRules.FactorGreatestCommonIntegerFactorInFraction)
+                apply(trivialFractionCancellationSteps)
             }
         },
     ),
@@ -282,4 +298,16 @@ val normalizeNegativeSignsInFraction = steps {
         option(FractionArithmeticRules.SimplifyNegativeInNumerator)
         option(FractionArithmeticRules.SimplifyNegativeInDenominator)
     }
+}
+
+/**
+ * Fraction cancellation steps that doesn't involve any calculation
+ * - cancel common factor which is already factorized
+ * - cancel 1
+ */
+private val trivialFractionCancellationSteps = firstOf {
+    option(GeneralRules.SimplifyUnitFractionToOne)
+    option(GeneralRules.SimplifyFractionWithOneDenominator)
+    option(GeneralRules.CancelDenominator)
+    option(FractionArithmeticRules.CancelCommonFactorInFraction)
 }
