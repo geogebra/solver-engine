@@ -73,6 +73,10 @@ class ProductTest {
         testSignRequired("[x^3]", "x", true)
         testSignRequired("2", "[2^x]", true)
 
+        // Division
+        testSignRequired("2:x", false)
+        testSignRequired("x:2", false)
+
         // Test whether signs are forced
         testSignForced("x*y", true)
         testSignForced("x*x", false)

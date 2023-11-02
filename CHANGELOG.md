@@ -33,6 +33,7 @@ contents to a new release section (e.g. _[0.x]_).
   e.g. `([1/x]+2)x=[2/x]x` (PLUT-703)
 - Improved thread-safety of deeply optimization (PLUT-835)
 - Improved handling of negatives in sums by the SDK (PLUT-832)
+- Fixed bug in `productSignRequired` that led to incorrect warnings in parser for divisions (PLUT-841)
 
 ### Changed
 
