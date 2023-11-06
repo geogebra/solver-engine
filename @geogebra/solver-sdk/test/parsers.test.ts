@@ -534,6 +534,84 @@ describe('Solver Parser Unit Tests', () => {
     ]);
   });
 
+  describe('AddEquations', () => {
+    testCases([
+      {
+        solver: 'x + y = 3 /+/ 2 x - y = 10',
+        json: {
+          type: 'AddEquations',
+          operands: [
+            {
+              type: 'Equation',
+              operands: [
+                {
+                  type: 'Sum',
+                  operands: [
+                    {
+                      type: 'Variable',
+                      value: 'x',
+                    },
+                    {
+                      type: 'Variable',
+                      value: 'y',
+                    },
+                  ],
+                },
+                {
+                  type: 'Integer',
+                  value: '3',
+                },
+              ],
+              name: '(1)',
+            },
+            {
+              type: 'Equation',
+              operands: [
+                {
+                  type: 'Sum',
+                  operands: [
+                    {
+                      type: 'SmartProduct',
+                      operands: [
+                        {
+                          type: 'Integer',
+                          value: '2',
+                        },
+                        {
+                          type: 'Variable',
+                          value: 'x',
+                        },
+                      ],
+                      signs: [false, false],
+                    },
+                    {
+                      type: 'Minus',
+                      operands: [
+                        {
+                          type: 'Variable',
+                          value: 'y',
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: 'Integer',
+                  value: '10',
+                },
+              ],
+              name: '(2)',
+            },
+          ],
+        },
+        latex: [
+          '\\begin{array}{rclr|l}\n  x+y & = & 3 & \\textrm{(1)} & + \\\\\n  2x-y & = & 10 & \\textrm{(2)} & \\\\\n\\end{array}',
+        ],
+        dontParseLatex: true,
+      },
+    ]);
+  });
+
   describe('Powers', () => {
     testCases([
       {
@@ -1233,6 +1311,7 @@ describe('Solver Parser Unit Tests', () => {
             },
             {
               type: 'FiniteSet',
+              operands: [],
             },
           ],
         },
@@ -1256,7 +1335,7 @@ describe('Solver Parser Unit Tests', () => {
         json: {
           type: 'Identity',
           operands: [
-            { type: 'VariableList' },
+            { type: 'VariableList', operands: [] },
             { type: 'Equation', operands: [integer('3'), integer('3')] },
           ],
         },
@@ -1280,7 +1359,7 @@ describe('Solver Parser Unit Tests', () => {
         json: {
           type: 'Contradiction',
           operands: [
-            { type: 'VariableList' },
+            { type: 'VariableList', operands: [] },
             { type: 'Inequation', operands: [integer('3'), integer('3')] },
           ],
         },

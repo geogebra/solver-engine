@@ -395,10 +395,13 @@ function treeToLatexInner(
     case 'SubtractEquations': {
       const alignSetting = { ...s, align: true };
       const operation = n.type === 'AddEquations' ? '+' : '-';
+      // If any equation has labels we need to add an extra column
+      const alignment = n.operands.find((op) => op.name) ? 'rclr|l' : 'rcl|l';
       return tfd(
-        '\\begin{array}{rcl|l}\n' +
+        `\\begin{array}{${alignment}}\n` +
           '  ' +
           treeToLatexInner(n.operands[0], n, alignSetting, t) +
+          (n.operands[0].name ? '' : ' & ') +
           ` & ${operation} \\\\\n` +
           '  ' +
           treeToLatexInner(n.operands[1], n, alignSetting, t) +

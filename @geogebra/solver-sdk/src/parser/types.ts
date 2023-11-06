@@ -118,7 +118,7 @@ type InverseNotation = 'arcPrefix' | 'aPrefix' | 'superscript';
 export type TrigonometricExpression<T> = {
   type: TrigonometricFunctions;
   operands: ExpressionTreeBase<T>[];
-  powerInside: boolean;
+  powerInside?: boolean;
   inverseNotation?: InverseNotation;
 } & T;
 
