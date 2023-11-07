@@ -1339,7 +1339,7 @@ describe('Solver Parser Unit Tests', () => {
             { type: 'Equation', operands: [integer('3'), integer('3')] },
           ],
         },
-        latex: '\\top',
+        latex: '\\text{true}',
         dontParseLatex: true,
       },
       {
@@ -1363,7 +1363,7 @@ describe('Solver Parser Unit Tests', () => {
             { type: 'Inequation', operands: [integer('3'), integer('3')] },
           ],
         },
-        latex: '\\bot',
+        latex: '\\text{false}',
         dontParseLatex: true,
       },
     ]);

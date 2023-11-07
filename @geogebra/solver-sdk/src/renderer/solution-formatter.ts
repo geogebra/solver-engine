@@ -1,9 +1,11 @@
 import { ExpressionTree } from '../parser';
+import { MathWords } from './tree-to-latex';
 
 export interface SolutionFormatter {
   formatSolution(
     n: ExpressionTree,
     rec: (n: ExpressionTree, p: ExpressionTree | null) => string,
+    w: MathWords,
   ): string;
 }
 
@@ -17,10 +19,11 @@ type TupleTree = ExpressionTree & {
 /**
  * This formatter always uses set notation to describe solutions.
  */
-export const setsSolutionFormatter = {
+export const setsSolutionFormatter: SolutionFormatter = {
   formatSolution(
     n: ExpressionTree,
     rec: (n: ExpressionTree, p: ExpressionTree | null) => string,
+    w: MathWords,
   ): string {
     switch (n.type) {
       case 'Solution':
@@ -32,7 +35,7 @@ export const setsSolutionFormatter = {
       case 'Identity': {
         const [varTuple, size] = variableListToLatexTuple(n.operands[0], rec);
         if (size === 0) {
-          return '\\top';
+          return `\\text{${w.True}}`;
         } else if (size === 1) {
           return `${varTuple} \\in \\mathbb{R}`;
         } else {
@@ -42,7 +45,7 @@ export const setsSolutionFormatter = {
       case 'Contradiction': {
         const [varTuple, size] = variableListToLatexTuple(n.operands[0], rec);
         if (size === 0) {
-          return '\\bot';
+          return `\\text{${w.False}}`;
         } else {
           return `${varTuple} \\in \\emptyset`;
         }
@@ -63,10 +66,11 @@ export const setsSolutionFormatter = {
  *      x = 2, y = 1  for SolutionSet[x, y: {(2, 1)}
  *      x = 1, x = 2 for Solution[x, {1, 2}]
  */
-export const simpleSolutionFormatter = {
+export const simpleSolutionFormatter: SolutionFormatter = {
   formatSolution(
     n: ExpressionTree,
     rec: (n: ExpressionTree, p: ExpressionTree | null) => string,
+    w: MathWords,
   ): string {
     switch (n.type) {
       case 'SetSolution': {
@@ -127,7 +131,7 @@ export const simpleSolutionFormatter = {
             ) {
               return set.operands[1].operands
                 .map((s) => `${varsTuple} \\neq ${rec(s, null)}`)
-                .join(' \\text{ and } ');
+                .join(` \\text{ ${w.And} } `);
             }
         }
         break;
@@ -150,7 +154,7 @@ export const simpleSolutionFormatter = {
       }
     }
 
-    return setsSolutionFormatter.formatSolution(n, rec);
+    return setsSolutionFormatter.formatSolution(n, rec, w);
   },
 };
 

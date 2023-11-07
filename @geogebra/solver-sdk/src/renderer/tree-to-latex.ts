@@ -6,7 +6,24 @@ import {
 } from '../parser';
 import { setsSolutionFormatter, SolutionFormatter } from './solution-formatter';
 import { ColorMap } from '../solutions/coloring';
-import { trigFunctions } from '../parser/latex-to-tree';
+
+export interface MathWords {
+  Undefined: string;
+  Given: string;
+  True: string;
+  False: string;
+  And: string;
+  Or: string;
+}
+
+export const defaultMathWords: MathWords = {
+  Undefined: 'undefined',
+  Given: 'given',
+  True: 'true',
+  False: 'false',
+  And: 'and',
+  Or: 'or',
+};
 
 // Make sure to put a space after a latex command to avoid, e.g., "2\\cdotx"
 export type LatexSettings = {
@@ -161,12 +178,14 @@ export function treeToLatex(
   n: ExpressionTree,
   settings?: LatexSettings,
   transformer?: LatexTransformer,
+  mathWords?: MathWords,
 ): string {
   return treeToLatexInner(
     n,
     null,
     { ...DefaultSettings, ...settings },
     transformer || defaultTransformer,
+    mathWords || defaultMathWords,
   );
 }
 
@@ -177,9 +196,10 @@ function treeToLatexInner(
   p: ExpressionTree | null,
   s: LatexSettings,
   t: LatexTransformer,
+  w: MathWords,
 ): string {
   const rec = (n: ExpressionTree, p: ExpressionTree | null): string =>
-    treeToLatexInner(n, p, s, t);
+    treeToLatexInner(n, p, s, t, w);
 
   const tfd = (latex: string): string => {
     const transformed = t.transformNode(n, decorate(latex, n, t, p), p);
@@ -353,8 +373,8 @@ function treeToLatexInner(
       return tfd(colorAbsoluteValue(rec(n.operands[0], n), n, t, p));
     case 'ExpressionWithConstraint': {
       const latexSettings = { ...s, flat: true };
-      const constraint = treeToLatexInner(n.operands[1], n, latexSettings, t);
-      return tfd(`${rec(n.operands[0], n)} \\text{ given } ${constraint}`);
+      const constraint = treeToLatexInner(n.operands[1], n, latexSettings, t, w);
+      return tfd(`${rec(n.operands[0], n)} \\text{ ${w.Given} } ${constraint}`);
     }
     case 'Equation':
       return tfd(
@@ -373,8 +393,8 @@ function treeToLatexInner(
         const alignSetting = { ...s, align: false };
         return tfd(
           n.operands
-            .map((el) => treeToLatexInner(el, n, alignSetting, t))
-            .join('\\text{ and }'),
+            .map((el) => treeToLatexInner(el, n, alignSetting, t, w))
+            .join(`\\text{ ${w.And} }`),
         );
       } else {
         const alignSetting = { ...s, align: true };
@@ -385,7 +405,7 @@ function treeToLatexInner(
         return tfd(
           '\\left\\{\\begin{array}{rclrr}\n' +
             n.operands
-              .map((el) => '  ' + treeToLatexInner(el, n, alignSetting, t) + '\\\\\n')
+              .map((el) => '  ' + treeToLatexInner(el, n, alignSetting, t, w) + '\\\\\n')
               .join('') +
             '\\end{array}\\right.',
         );
@@ -400,11 +420,11 @@ function treeToLatexInner(
       return tfd(
         `\\begin{array}{${alignment}}\n` +
           '  ' +
-          treeToLatexInner(n.operands[0], n, alignSetting, t) +
+          treeToLatexInner(n.operands[0], n, alignSetting, t, w) +
           (n.operands[0].name ? '' : ' & ') +
           ` & ${operation} \\\\\n` +
           '  ' +
-          treeToLatexInner(n.operands[1], n, alignSetting, t) +
+          treeToLatexInner(n.operands[1], n, alignSetting, t, w) +
           ' & \\\\\n' +
           '\\end{array}',
       );
@@ -413,12 +433,12 @@ function treeToLatexInner(
       const alignSetting = { ...s, align: false };
       return tfd(
         n.operands
-          .map((el) => treeToLatexInner(el, n, alignSetting, t))
-          .join('\\text{ or }'),
+          .map((el) => treeToLatexInner(el, n, alignSetting, t, w))
+          .join(`\\text{ ${w.Or} }`),
       );
     }
     case 'Undefined':
-      return tfd('\\text{undefined}');
+      return tfd(`\\text{${w.Undefined}}`);
     case 'Infinity':
       return tfd('\\infty');
     case 'LessThan':
@@ -450,7 +470,7 @@ function treeToLatexInner(
     case 'Identity':
     case 'Contradiction':
     case 'ImplicitSolution':
-      return tfd(s.solutionFormatter.formatSolution(n, rec));
+      return tfd(s.solutionFormatter.formatSolution(n, rec, w));
     case 'List':
       if (n.operands.length === 1) {
         return tfd(rec(n.operands[0], n));
@@ -460,7 +480,7 @@ function treeToLatexInner(
             .slice(0, n.operands.length - 1)
             .map((x) => rec(x, n))
             .join(', ') +
-            '\\text{ and }' +
+            `\\text{ ${w.And} }` +
             rec(n.operands[n.operands.length - 1], n),
         );
       }

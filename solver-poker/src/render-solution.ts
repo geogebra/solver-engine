@@ -1,14 +1,15 @@
-import * as solverSdk from '@geogebra/solver-sdk';
 import type {
   ExpressionTree,
+  LatexTransformer,
   MathJson,
   Metadata,
   Transformation,
   TransformationJson,
-  LatexTransformer,
 } from '@geogebra/solver-sdk';
-import { colorScheme, colorSchemes, latexSettings } from './settings';
+import * as solverSdk from '@geogebra/solver-sdk';
+import { colorScheme, colorSchemes } from './settings';
 import { translationData } from './translations';
+import { jsonToLatex, treeToLatex } from './render-math.ts';
 
 const removeOuterBrackets = (expression: ExpressionTree) => ({ ...expression, decorators: [] });
 
@@ -19,11 +20,11 @@ export const renderExpressionMapping = (
 ) => {
   const fromTree = removeOuterBrackets(solverSdk.jsonToTree(trans.fromExpr, trans.path));
   const toTree = removeOuterBrackets(solverSdk.jsonToTree(trans.toExpr, trans.path));
-  const fromLatex = solverSdk.treeToLatex(fromTree, latexSettings.value, fromColoring);
+  const fromLatex = treeToLatex(fromTree, fromColoring);
   if (toTree.type === 'Void') {
     return renderExpression(fromLatex);
   } else {
-    const toLatex = solverSdk.treeToLatex(toTree, latexSettings.value, toColoring);
+    const toLatex = treeToLatex(toTree, toColoring);
     return renderExpression(
       `${fromLatex} {\\color{#8888ff}\\thickspace\\longmapsto\\thickspace} ${toLatex}`,
     );
@@ -86,6 +87,4 @@ export const getExplanationString = (expl: Metadata) => {
 };
 
 export const renderExpression = (expr: MathJson | string) =>
-  `\\(\\displaystyle ${
-    typeof expr === 'string' ? expr : solverSdk.jsonToLatex(expr, latexSettings.value)
-  }\\)`;
+  `\\(\\displaystyle ${typeof expr === 'string' ? expr : jsonToLatex(expr)}\\)`;

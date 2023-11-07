@@ -1,28 +1,28 @@
 <script setup lang="ts">
 import type {
   ApiMathFormat,
-  SolverContext,
   PlanSelectionJson,
   PlanSelectionSolver,
   ServerErrorResponse,
+  SolverContext,
   TransformationJson,
   TransformationSolver,
 } from '@geogebra/solver-sdk';
 import * as solverSdk from '@geogebra/solver-sdk';
 import {
-  gmFriendly,
-  params,
-  preferDecimals,
-  solutionFormat,
-  showThroughSteps,
-  hideWarnings,
-  showPedanticSteps,
-  showCosmeticSteps,
-  showInvisibleChangeSteps,
-  showTranslationKeys,
-  jsonFormat,
   colorScheme,
   demoMode,
+  gmFriendly,
+  hideWarnings,
+  jsonFormat,
+  params,
+  preferDecimals,
+  showCosmeticSteps,
+  showInvisibleChangeSteps,
+  showPedanticSteps,
+  showThroughSteps,
+  showTranslationKeys,
+  solutionFormat,
 } from './settings';
 import TransformationComponent from './transformation-component.vue';
 import PlanSelections from './plan-selections.vue';
@@ -231,22 +231,22 @@ onMounted(() => {
       <option value="sets">Sets</option>
     </select>
     <br />
-    <input id="showThroughSteps" type="checkbox" v-model="showThroughSteps" />
+    <input id="showThroughSteps" v-model="showThroughSteps" type="checkbox" />
     <label for="showThroughSteps">Show through steps</label>
     <br />
-    <input id="hideWarnings" type="checkbox" v-model="hideWarnings" />
+    <input id="hideWarnings" v-model="hideWarnings" type="checkbox" />
     <label for="hideWarnings">Hide warnings</label>
     <br />
-    <input id="showPedanticSteps" type="checkbox" v-model="showPedanticSteps" />
+    <input id="showPedanticSteps" v-model="showPedanticSteps" type="checkbox" />
     <label for="showPedanticSteps">Show pedantic steps</label>
     <br />
-    <input id="showCosmeticSteps" type="checkbox" v-model="showCosmeticSteps" />
+    <input id="showCosmeticSteps" v-model="showCosmeticSteps" type="checkbox" />
     <label for="showCosmeticSteps">Show cosmetic steps</label>
     <br />
-    <input id="showInvisibleChangeSteps" type="checkbox" v-model="showInvisibleChangeSteps" />
+    <input id="showInvisibleChangeSteps" v-model="showInvisibleChangeSteps" type="checkbox" />
     <label for="showInvisibleChangeSteps">Show InvisibleChange steps</label>
     <br />
-    <input id="showTranslationKeys" type="checkbox" v-model="showTranslationKeys" />
+    <input id="showTranslationKeys" v-model="showTranslationKeys" type="checkbox" />
     <label for="showTranslationKeys">Show translation keys</label>
   </form>
 
@@ -342,11 +342,11 @@ onMounted(() => {
         <option value="6">6 d.p.</option>
       </select>
       <label for="solutionVariable">Solution variable</label>
-      <input type="text" id="solutionVariable" v-model="params.solutionVariable" size="1" />
-      <input id="preferDecimals" type="checkbox" v-model="preferDecimals" />
+      <input id="solutionVariable" v-model="params.solutionVariable" type="text" size="1" />
+      <input id="preferDecimals" v-model="preferDecimals" type="checkbox" />
       <label for="preferDecimals">Prefer decimals</label>
       <!-- GM stands for Graspable Math -->
-      <input id="gmFriendlyCheckbox" type="checkbox" v-model="gmFriendly" />
+      <input id="gmFriendlyCheckbox" v-model="gmFriendly" type="checkbox" />
       <label for="gmFriendlyCheckbox">GM friendly</label>
     </p>
     <p>
@@ -363,8 +363,8 @@ onMounted(() => {
           {{ calculateLabelForStrategyCategory(category) }}
         </label>
         <select
-          v-model="mapOfCategoryToSelectedStrategy[category]"
           :id="`${category}Select`"
+          v-model="mapOfCategoryToSelectedStrategy[category]"
           :name="category"
         >
           <option name="-" value="" selected>-</option>
@@ -377,13 +377,13 @@ onMounted(() => {
     <p>
       <label for="input">Input</label>
       <input
-        type="text"
         id="input"
         v-model="textInTheMathInputTextbox"
+        type="text"
         placeholder="Expression"
         size="30"
       />
-      <input type="submit" value="Submit" v-if="!autoSubmissionMode" />
+      <input v-if="!autoSubmissionMode" type="submit" value="Submit" />
       <input
         v-if="versionInfo && versionInfo.deploymentName !== 'main'"
         type="button"
@@ -402,7 +402,7 @@ onMounted(() => {
     </template>
     <PlanSelections
       v-else-if="resultJsonFormatIsAListOfPlans"
-      :solverResponse="(resultJsonFormat as PlanSelectionJson[])"
+      :solver-response="(resultJsonFormat as PlanSelectionJson[])"
     ></PlanSelections>
     <template v-else>
       <TransformationComponent
@@ -421,7 +421,7 @@ onMounted(() => {
     @toggle="responseSourceDetailsOpen = !responseSourceDetailsOpen"
   >
     <summary>Response Source</summary>
-    <input id="jsonFormatCheckbox" type="checkbox" v-model="jsonFormat" />
+    <input id="jsonFormatCheckbox" v-model="jsonFormat" type="checkbox" />
     <label for="jsonFormatCheckbox">JSON Format</label>
     <pre id="source">{{
       JSON.stringify(jsonFormat ? resultJsonFormat : resultSolverFormat, null, 4)

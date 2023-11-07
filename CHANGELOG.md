@@ -23,6 +23,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Added gmAction information to factoring plans (PLUT-832)
 - Added simplification of fractions containing a sum with a common integer factor, such as `[2 + 4sqrt[2] / 2]`
   (PLUT-821)
+- SDK: Localization of math words (e.g. 'and', 'or', 'true', 'false', ...) (PLUT-707)
 
 ### Fixed
 
