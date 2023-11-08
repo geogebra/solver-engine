@@ -34,6 +34,18 @@ class PlansBenchmarks {
     }
 
     @Benchmark
+    fun cubeRootRationalisationBenchmark() = runBenchmark(
+        method = ConstantExpressionsPlans.SimplifyConstantExpression,
+        input = "[2 / -root[5, 3] + root[3, 3]]",
+    )
+
+    @Benchmark
+    fun integerRootBenchmark() = runBenchmark(
+        method = ConstantExpressionsPlans.SimplifyConstantExpression,
+        input = "root[[430259200 ^ 13], 4] + root[[430259200 ^ 11], 4]",
+    )
+
+    @Benchmark
     fun slowRationalEquationBenchmark() = runBenchmark(
         method = EquationsPlans.SolveEquation,
         input = "[12 / [x ^ 2] - 9] = [8 x / x - 3] - [2 / x + 3]",
@@ -41,13 +53,7 @@ class PlansBenchmarks {
     )
 
     @Benchmark
-    fun cubeRootRationalisationBenchmark() = runBenchmark(
-        method = ConstantExpressionsPlans.SimplifyConstantExpression,
-        input = "[2 / -root[5, 3] + root[3, 3]]",
-    )
-
-    @Benchmark
-    fun slowFooBenchmark() = runBenchmark(
+    fun slowSimplifyRationalExpressionBenchmark() = runBenchmark(
         method = AlgebraPlans.ComputeDomainAndSimplifyAlgebraicExpression,
         input = "([4 / x] - [7 / x - 3]) : (1 + [1 / x] - [12 / [x ^ 2]]) + [9 / [x ^ 2] - 3 x] + [3 / x]",
     )
