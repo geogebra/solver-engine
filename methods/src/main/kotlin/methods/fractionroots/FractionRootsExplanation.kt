@@ -55,7 +55,6 @@ enum class FractionRootsExplanation : CategorisedMetadataKey {
      */
     SimplifyFractionOfRoots,
     HigherOrderRationalizingTerm,
-    SimplifyNthRootOfNthPower,
     FactorizeHigherOrderRadicand,
     ;
 

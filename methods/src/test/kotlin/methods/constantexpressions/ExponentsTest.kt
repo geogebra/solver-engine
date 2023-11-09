@@ -109,9 +109,9 @@ class ExponentsTest {
 
                 step {
                     fromExpr = "-8 sqrt[[2 ^ 3]]"
-                    toExpr = "-8 * 2 sqrt[2]"
+                    toExpr = "-8 * <. 2 sqrt[2] .>"
                     explanation {
-                        key = IntegerRootsExplanation.SplitRootsAndCancelRootsOfPowers
+                        key = IntegerRootsExplanation.SplitAndCancelRootOfPower
                     }
                 }
             }

@@ -160,10 +160,9 @@ enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : Runn
                     firstOf {
                         option { deeply(GeneralRules.SimplifyEvenPowerOfNegative) }
                         option { deeply(GeneralRules.SimplifyOddPowerOfNegative) }
-                        option { deeply(IntegerRootsPlans.SimplifyIntegerRootToInteger) }
+                        option { deeply(IntegerRootsPlans.SimplifyIntegerRoot) }
                         option { deeply(IntegerRootsPlans.CancelPowerOfARoot) }
                         option { deeply(IntegerRootsPlans.SimplifyRootOfRootWithCoefficient) }
-                        option { deeply(IntegerRootsPlans.SimplifyIntegerRoot) }
                         option { deeply(IntegerRootsRules.TurnPowerOfRootToRootOfPower) }
                         option { deeply(FractionRootsPlans.SimplifyFractionOfRoots) }
                         option { deeply(FractionRootsRules.DistributeRadicalOverFraction) }
@@ -272,12 +271,12 @@ val simpleTidyUpSteps = steps {
     }
 }
 
-private val trickySimplificationSteps = steps {
+private val rootOfPowerSimplificationSteps = steps {
     check { it.containsRoots() }
     deeply {
         firstOf {
             option(cancelRootOfPower)
-            option(IntegerRootsPlans.SplitRootsAndCancelRootsOfPowers)
+            option(IntegerRootsPlans.SplitAndCancelRootOfPower)
             option(IntegerRootsPlans.SimplifyPowerOfIntegerUnderRoot)
         }
     }
@@ -318,7 +317,7 @@ val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
 
         option { deeply(inlineSumsAndProducts) }
 
-        option(trickySimplificationSteps)
+        option(rootOfPowerSimplificationSteps)
 
         option { deeply(evaluateConstantAbsoluteValue) }
 

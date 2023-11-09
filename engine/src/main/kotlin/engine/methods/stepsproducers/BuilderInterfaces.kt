@@ -5,6 +5,7 @@ import engine.expressions.Expression
 import engine.expressions.Extractor
 import engine.expressions.Label
 import engine.expressions.Minus
+import engine.expressions.Product
 import engine.methods.CompositeMethod
 import engine.methods.PlanBuilder
 import engine.methods.Strategy
@@ -165,6 +166,16 @@ interface PipelineBuilder {
 
 fun PipelineBuilder.applyAfterMaybeExtractingMinus(init: PipelineFunc) {
     applyTo(extractor = { if (it is Minus) it.argument else it }, init)
+}
+
+fun PipelineBuilder.applyToFactors(steps: StepsProducer) {
+    firstOf {
+        option {
+            check { it is Product }
+            applyToChildren(steps, all = false, atLeastOne = true)
+        }
+        option(steps)
+    }
 }
 
 /**

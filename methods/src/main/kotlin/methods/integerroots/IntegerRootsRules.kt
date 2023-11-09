@@ -211,7 +211,7 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
                         ),
                         move(root.order),
                     ),
-                    explanation = metadata(Explanation.SeparateSquaresUnderSquareRoot, move(base), move(exponent)),
+                    explanation = metadata(Explanation.SeparateSquaresUnderSquareRoot),
                 )
             }
         },

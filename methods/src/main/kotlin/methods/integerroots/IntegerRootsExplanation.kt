@@ -1,6 +1,7 @@
 package methods.integerroots
 
 import engine.steps.metadata.CategorisedMetadataKey
+import engine.steps.metadata.LegacyKeyName
 import engine.steps.metadata.TranslationKeys
 
 @TranslationKeys
@@ -57,7 +58,14 @@ enum class IntegerRootsExplanation : CategorisedMetadataKey {
     SimplifyIntegerRoot,
     SimplifyIntegerRootToInteger,
     MultiplyNthRoots,
-    SplitRootsAndCancelRootsOfPowers,
+
+    /**
+     * Split root(a^b, c) to root(a^(q*c) * a^r), c) then simplify it to a^q * root(a^r, c)
+     *
+     * E.g. root(10^7, 3) -> root(10^6 * 10, 3) -> root(10^6, 3) * root(10, 3) -> 10^2 * root(10, 3)
+     */
+    @LegacyKeyName("IntegerRoots.SplitRootsAndCancelRootsOfPowers")
+    SplitAndCancelRootOfPower,
 
     /**
      * Write a root of an integer as a product of values whose root can easily be computed
@@ -77,29 +85,6 @@ enum class IntegerRootsExplanation : CategorisedMetadataKey {
      */
     WriteRootAsRootPower,
 
-    /**
-     * Write each root in a product of roots so that it can be easily cancelled
-     *
-     * E.g. sqrt[36] * sqrt[100] -> sqrt[6 ^ 2] * sqrt[10 ^ 2]
-     * E.g. root[8, 3] * root[10000, 3] -> root[2 ^ 3, 3] * root[10 ^ 4, 3]
-     */
-    WriteRootsAsRootPowers,
-
-    /**
-     * Split roots that can be in a product of roots so that they can be simplified
-     *
-     * E.g. sqrt[[2^5]] * sqrt[[3^3]] -> sqrt[[2^4]] * sqrt[2] * sqrt[[3^2]] * sqrt[3]
-     *
-     * Note: this can apply to roots of any order.
-     */
-    SplitRootsInProduct,
-
-    /**
-     * Cancel all roots of powers that can be cancelled, in a product
-     *
-     * E.g. sqrt[[2 ^ 4]] * sqrt[2] -> [2 ^ 2] * sqrt[2]
-     */
-    CancelAllRootsOfPowers,
     SplitRootOfProduct,
     SimplifyNthRootToThePowerOfN,
     PrepareCancellingPowerOfARoot,

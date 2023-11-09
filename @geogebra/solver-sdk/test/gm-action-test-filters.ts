@@ -178,6 +178,7 @@ export const expressionSkipList = [
   '24*sqrt[3]((2^3*3)^2)',
   'sqrt[6]((2^3*3)^5)',
   '2*(2^2*3)^(1/2)',
+  'sqrt[5]((2^2*3)^4)',
 
   // [TRACKED] GM automatically removes a "0" on the other side of the equation if
   // the user adds or subtracts from both side. The Solver doesn't.
