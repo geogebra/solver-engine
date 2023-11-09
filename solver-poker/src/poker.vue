@@ -10,6 +10,7 @@ import type {
 } from '@geogebra/solver-sdk';
 import * as solverSdk from '@geogebra/solver-sdk';
 import {
+  advancedBalancing,
   colorScheme,
   demoMode,
   gmFriendly,
@@ -91,6 +92,7 @@ const solverContext = computed(() => {
   const ret: SolverContext = {
     gmFriendly: gmFriendly.value,
     preferDecimals: preferDecimals.value,
+    advancedBalancing: advancedBalancing.value,
   };
   if (params.curriculum) {
     ret.curriculum = params.curriculum;
@@ -348,6 +350,8 @@ onMounted(() => {
       <!-- GM stands for Graspable Math -->
       <input id="gmFriendlyCheckbox" v-model="gmFriendly" type="checkbox" />
       <label for="gmFriendlyCheckbox">GM friendly</label>
+      <input id="advancedBalancingCheckbox" v-model="advancedBalancing" type="checkbox" />
+      <label for="advancedBalancingCheckbox">Advanced balancing</label>
     </p>
     <p>
       <label for="plansSelect">Plan</label>

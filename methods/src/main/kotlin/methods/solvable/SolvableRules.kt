@@ -1,5 +1,6 @@
 package methods.solvable
 
+import engine.context.Context
 import engine.context.emptyContext
 import engine.expressionbuilder.MappedExpressionBuilder
 import engine.expressions.AbsoluteValue
@@ -90,20 +91,13 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
             val solvable = SolvablePattern(lhs, rhs)
 
             onPattern(solvable) {
-                val constants = extractConstants(get(rhs), context.solutionVariables)
-                if (constants == Constants.Zero || constants == null) return@onPattern null
-
-                val negatedConstants = simplifiedNegOfSum(constants)
-
+                val result = Mover.ConstantTerms.move(context, get(rhs), get(lhs)) ?: return@onPattern null
                 ruleResult(
-                    toExpr = solvable.deriveSolvable(
-                        sumOf(get(lhs), negatedConstants),
-                        sumOf(get(rhs), negatedConstants),
-                    ),
-                    gmAction = drag(constants, PM.Group, lhs),
+                    toExpr = solvable.deriveSolvable(result.toSide, result.fromSide),
+                    gmAction = drag(result.movedTerms, PM.Group, lhs),
                     explanation = solvableExplanation(
                         SolvableKey.MoveConstantsToTheLeft,
-                        parameters = listOf(constants),
+                        parameters = listOf(result.movedTerms),
                     ),
                 )
             }
@@ -118,20 +112,13 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
             val solvable = SolvablePattern(lhs, rhs)
 
             onPattern(solvable) {
-                val constants = extractConstants(get(lhs), context.solutionVariables)
-                if (constants == Constants.Zero || constants == null) return@onPattern null
-
-                val negatedConstants = simplifiedNegOfSum(constants)
-
+                val result = Mover.ConstantTerms.move(context, get(lhs), get(rhs)) ?: return@onPattern null
                 ruleResult(
-                    toExpr = solvable.deriveSolvable(
-                        sumOf(get(lhs), negatedConstants),
-                        sumOf(get(rhs), negatedConstants),
-                    ),
-                    gmAction = drag(constants, PM.Group, rhs),
+                    toExpr = solvable.deriveSolvable(result.fromSide, result.toSide),
+                    gmAction = drag(result.movedTerms, PM.Group, rhs),
                     explanation = solvableExplanation(
                         SolvableKey.MoveConstantsToTheRight,
-                        parameters = listOf(constants),
+                        parameters = listOf(result.movedTerms),
                     ),
                 )
             }
@@ -146,19 +133,13 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
             val solvable = SolvablePattern(lhs, rhs)
 
             onPattern(solvable) {
-                val variables = extractVariableTerms(get(rhs), context.solutionVariables) ?: return@onPattern null
-
-                val negatedVariable = simplifiedNegOfSum(variables)
-
+                val result = Mover.VariableTerms.move(context, get(rhs), get(lhs)) ?: return@onPattern null
                 ruleResult(
-                    toExpr = solvable.deriveSolvable(
-                        sumOf(get(lhs), negatedVariable),
-                        sumOf(get(rhs), negatedVariable),
-                    ),
-                    gmAction = drag(variables, if (get(rhs) is Sum) PM.Group else null, lhs),
+                    toExpr = solvable.deriveSolvable(result.toSide, result.fromSide),
+                    gmAction = drag(result.movedTerms, if (get(rhs) is Sum) PM.Group else null, lhs),
                     explanation = solvableExplanation(
                         SolvableKey.MoveVariablesToTheLeft,
-                        parameters = listOf(variables),
+                        parameters = listOf(result.movedTerms),
                     ),
                 )
             }
@@ -173,19 +154,13 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
             val solvable = SolvablePattern(lhs, rhs)
 
             onPattern(solvable) {
-                val variables = extractVariableTerms(get(lhs), context.solutionVariables) ?: return@onPattern null
-
-                val negatedVariable = simplifiedNegOfSum(variables)
-
+                val result = Mover.VariableTerms.move(context, get(lhs), get(rhs)) ?: return@onPattern null
                 ruleResult(
-                    toExpr = solvable.deriveSolvable(
-                        sumOf(get(lhs), negatedVariable),
-                        sumOf(get(rhs), negatedVariable),
-                    ),
-                    gmAction = drag(variables, if (get(lhs) is Sum) PM.Group else null, rhs),
+                    toExpr = solvable.deriveSolvable(result.fromSide, result.toSide),
+                    gmAction = drag(result.movedTerms, if (get(lhs) is Sum) PM.Group else null, rhs),
                     explanation = solvableExplanation(
                         SolvableKey.MoveVariablesToTheRight,
-                        parameters = listOf(variables),
+                        parameters = listOf(result.movedTerms),
                     ),
                 )
             }
@@ -200,13 +175,9 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
             val solvable = SolvablePattern(lhs, rhs)
 
             onPattern(solvable) {
-                val negatedRhs = simplifiedNegOfSum(get(rhs))
-
+                val result = Mover.Everything.move(context, get(rhs), get(lhs)) ?: return@onPattern null
                 ruleResult(
-                    toExpr = solvable.deriveSolvable(
-                        sumOf(get(lhs), negatedRhs),
-                        sumOf(get(rhs), negatedRhs),
-                    ),
+                    toExpr = solvable.deriveSolvable(result.toSide, result.fromSide),
                     explanation = solvableExplanation(SolvableKey.MoveEverythingToTheLeft),
                 )
             }
@@ -250,7 +221,8 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
 
     MultiplyByInverseCoefficientOfVariable(
         rule {
-            val lhs = withOptionalConstantCoefficient(VariableExpressionPattern())
+            val variable = VariableExpressionPattern()
+            val lhs = withOptionalConstantCoefficient(variable)
             val rhs = ConstantInSolutionVariablePattern()
 
             val solvable = SolvablePattern(lhs, rhs)
@@ -289,8 +261,11 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                             positiveCoefficient.denominator
                         }
                     }
-
-                    val newLhs = productOf(get(lhs), inverse)
+                    val newLhs = if (context.advancedBalancing) {
+                        get(variable)
+                    } else {
+                        productOf(get(lhs), inverse)
+                    }
                     val newRhs = productOf(get(rhs), inverse)
 
                     ruleResult(
@@ -311,7 +286,8 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
 
     DivideByCoefficientOfVariable(
         rule {
-            val lhs = withOptionalConstantCoefficientInSolutionVariables(VariableExpressionPattern())
+            val variable = VariableExpressionPattern()
+            val lhs = withOptionalConstantCoefficientInSolutionVariables(variable)
             val rhs = ConstantInSolutionVariablePattern()
 
             val solvable = SolvablePattern(lhs, rhs)
@@ -322,7 +298,11 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
 
                 val coefficient = introduce(coefficientValue, coefficientValue)
 
-                val newLhs = fractionOf(get(lhs), coefficient)
+                val newLhs = if (context.advancedBalancing) {
+                    get(variable)
+                } else {
+                    fractionOf(get(lhs), coefficient)
+                }
                 val newRhs = fractionOf(get(rhs), coefficient)
 
                 if (solvable.isSelfDual()) {
@@ -457,13 +437,10 @@ private val moveTermsNotContainingModulusToTheRight = rule {
     val solvable = SolvablePattern(lhs, rhs)
 
     onPattern(solvable) {
-        val termsNotContainingModulus = extractTermsNotContainingModulus(get(lhs), context.solutionVariables)
-            ?: return@onPattern null
-
-        val negatedTerms = simplifiedNegOfSum(termsNotContainingModulus)
+        val result = Mover.TermsNotContainingModulus.move(context, get(lhs), get(rhs)) ?: return@onPattern null
 
         ruleResult(
-            toExpr = solvable.deriveSolvable(sumOf(get(lhs), negatedTerms), sumOf(get(rhs), negatedTerms)),
+            toExpr = solvable.deriveSolvable(result.fromSide, result.toSide),
             explanation = solvableExplanation(SolvableKey.MoveTermsNotContainingModulusToTheRight),
         )
     }
@@ -475,26 +452,59 @@ private val moveTermsNotContainingModulusToTheLeft = rule {
     val solvable = SolvablePattern(lhs, rhs)
 
     onPattern(solvable) {
-        val termsNotContainingModulus = extractTermsNotContainingModulus(get(rhs), context.solutionVariables)
-            ?: return@onPattern null
-
-        val negatedTerms = simplifiedNegOfSum(termsNotContainingModulus)
+        val result = Mover.TermsNotContainingModulus.move(context, get(rhs), get(lhs)) ?: return@onPattern null
 
         ruleResult(
-            toExpr = solvable.deriveSolvable(sumOf(get(lhs), negatedTerms), sumOf(get(rhs), negatedTerms)),
+            toExpr = solvable.deriveSolvable(result.toSide, result.fromSide),
             explanation = solvableExplanation(SolvableKey.MoveTermsNotContainingModulusToTheLeft),
         )
     }
 }
 
-private fun extractTermsNotContainingModulus(expression: Expression, variables: List<String>): Expression? {
-    return when {
-        expression is Sum -> {
-            val termsWithoutModulus = expression.children.filter { it.countAbsoluteValues(variables) == 0 }
-            if (termsWithoutModulus.isEmpty()) null else sumOf(termsWithoutModulus)
+private enum class Mover {
+    ConstantTerms {
+        override fun extractMove(c: Context, e: Expression) = extractConstants(e, c.solutionVariables)
+        override fun extractRemain(c: Context, e: Expression) =
+            extractVariableTerms(e, c.solutionVariables) ?: Constants.Zero
+    },
+    VariableTerms {
+        override fun extractMove(c: Context, e: Expression) = extractVariableTerms(e, c.solutionVariables)
+        override fun extractRemain(c: Context, e: Expression) =
+            extractConstants(e, c.solutionVariables) ?: Constants.Zero
+    },
+    TermsNotContainingModulus {
+        override fun extractMove(c: Context, e: Expression) = extractTermsNotContainingModulus(e, c.solutionVariables)
+
+        override fun extractRemain(c: Context, e: Expression) =
+            extractTermsContainingModulus(e, c.solutionVariables) ?: Constants.Zero
+    },
+    Everything {
+        override fun extractMove(c: Context, e: Expression) = e
+        override fun extractRemain(c: Context, e: Expression) = Constants.Zero
+    },
+    ;
+
+    data class MoveResult(val movedTerms: Expression, val fromSide: Expression, val toSide: Expression)
+    abstract fun extractMove(c: Context, e: Expression): Expression?
+    abstract fun extractRemain(c: Context, e: Expression): Expression
+
+    fun move(context: Context, fromSide: Expression, toSide: Expression): MoveResult? {
+        val termsToMove = extractMove(context, fromSide)
+        if (termsToMove == null || termsToMove == Constants.Zero) {
+            return null
         }
-        expression.countAbsoluteValues(variables) == 0 -> expression
-        else -> null
+        val negatedTerms = simplifiedNegOfSum(termsToMove)
+        val fromSideAfter = if (context.advancedBalancing) {
+            extractRemain(context, fromSide)
+        } else {
+            sumOf(fromSide, negatedTerms)
+        }
+        val toSideAfter = if (toSide == Constants.Zero) {
+            negatedTerms
+        } else {
+            sumOf(toSide, negatedTerms)
+        }
+        return MoveResult(termsToMove, fromSideAfter, toSideAfter)
     }
 }
 
@@ -516,6 +526,28 @@ private fun extractConstants(expression: Expression, variables: List<String>): E
             if (constantTerms.isEmpty()) null else sumOf(constantTerms)
         }
         expression.isConstantIn(variables) -> expression
+        else -> null
+    }
+}
+
+private fun extractTermsNotContainingModulus(expression: Expression, variables: List<String>): Expression? {
+    return when {
+        expression is Sum -> {
+            val termsWithoutModulus = expression.children.filter { it.countAbsoluteValues(variables) == 0 }
+            if (termsWithoutModulus.isEmpty()) null else sumOf(termsWithoutModulus)
+        }
+        expression.countAbsoluteValues(variables) == 0 -> expression
+        else -> null
+    }
+}
+
+private fun extractTermsContainingModulus(expression: Expression, variables: List<String>): Expression? {
+    return when {
+        expression is Sum -> {
+            val termsWithModulus = expression.children.filter { it.countAbsoluteValues(variables) > 0 }
+            if (termsWithModulus.isEmpty()) null else sumOf(termsWithModulus)
+        }
+        expression.countAbsoluteValues(variables) > 0 -> expression
         else -> null
     }
 }

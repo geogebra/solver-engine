@@ -49,6 +49,7 @@ export const params = useUrlSearchParams('history', {
   gmFriendly?: '1' | '';
   precision: string;
   preferDecimals?: '1' | '';
+  advancedBalancing?: '1' | '';
   solutionVariable: string;
   strategy?: string | string[];
 
@@ -69,6 +70,7 @@ export const gmFriendly = booleanRefSyncedWithUrlParam('gmFriendly');
 params.precision = params.precision || '3';
 export const preferDecimals = booleanRefSyncedWithUrlParam('preferDecimals');
 params.solutionVariable = params.solutionVariable || 'x';
+export const advancedBalancing = booleanRefSyncedWithUrlParam('advancedBalancing');
 
 function booleanRefSyncedWithUrlParam(paramName: keyof typeof params) {
   return computed({

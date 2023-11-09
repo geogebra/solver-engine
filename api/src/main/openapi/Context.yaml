@@ -16,3 +16,5 @@ properties:
     type: object
     additionalProperties:
       type: string
+  advancedBalancing:
+    type: boolean

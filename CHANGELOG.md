@@ -24,6 +24,8 @@ contents to a new release section (e.g. _[0.x]_).
 - Added simplification of fractions containing a sum with a common integer factor, such as `[2 + 4sqrt[2] / 2]`
   (PLUT-821)
 - SDK: Localization of math words (e.g. 'and', 'or', 'true', 'false', ...) (PLUT-707)
+- Added solver engine support for "advanced balancing" (PLUT-845)
+- SDK: Allowed setting `advancedBalancing` flag in SDK (PLUT-845)
 
 ### Fixed
 

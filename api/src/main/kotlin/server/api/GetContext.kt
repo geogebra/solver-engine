@@ -36,6 +36,7 @@ internal fun getContext(
         gmFriendly = apiCtx.gmFriendly == true,
         precision = apiCtx.precision?.toInt(),
         preferDecimals = apiCtx.preferDecimals,
+        advancedBalancing = apiCtx.advancedBalancing ?: false,
         solutionVariables = solutionVariables,
         logger = ContextLogger(logger),
         preferredStrategies = strategies,

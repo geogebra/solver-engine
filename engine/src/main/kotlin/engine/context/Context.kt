@@ -52,6 +52,7 @@ data class Context(
     val strategySelectionMode: StrategySelectionMode = StrategySelectionMode.ALL,
     val labelSpace: LabelSpace? = null,
     val constraintMerger: Method? = null,
+    val advancedBalancing: Boolean = false,
 ) {
     val effectivePrecision = (precision ?: DEFAULT_PRECISION).coerceIn(MINIMUM_PRECISION, MAXIMUM_PRECISION)
 

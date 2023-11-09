@@ -1,12 +1,32 @@
 package methods.solvable
 
+import engine.context.Context
+import engine.methods.Method
 import engine.methods.testMethod
+import engine.methods.testRule
 import engine.methods.testRuleInX
 import methods.solvable.SolvableRules.MultiplyByInverseCoefficientOfVariable
 import methods.solvable.SolvableRules.MultiplySolvableByLCD
 import org.junit.jupiter.api.Test
 
 class SolvableRulesTest {
+
+    private fun testRuleInX(
+        inputExpr: String,
+        rule: Method,
+        outputExpr: String,
+        advandedBalancingOutputExpr: String = "",
+    ) {
+        engine.methods.testRuleInX(inputExpr, rule, outputExpr)
+        if (advandedBalancingOutputExpr != "") {
+            testRule(
+                inputExpr,
+                rule,
+                advandedBalancingOutputExpr,
+                context = Context(solutionVariables = listOf("x"), advancedBalancing = true),
+            )
+        }
+    }
 
     @Test
     fun testCancelCommonTermsOnBothSides() {
@@ -31,6 +51,69 @@ class SolvableRulesTest {
             SolvableRules.MoveConstantsToTheLeft,
             null,
         )
+        testRuleInX(
+            "10 = 3x + 5",
+            SolvableRules.MoveConstantsToTheLeft,
+            "10 - 5 = 3x + 5 - 5",
+            "10 - 5 = 3x",
+        )
+    }
+
+    @Test
+    fun testMoveConstantsToTheRight() {
+        testRuleInX(
+            "0 = [x^2] + 4x + 5",
+            SolvableRules.MoveConstantsToTheRight,
+            null,
+        )
+        testRuleInX(
+            "3x + 5 = 10",
+            SolvableRules.MoveConstantsToTheRight,
+            "3x + 5 - 5 = 10 - 5",
+            "3x = 10 - 5",
+        )
+    }
+
+    @Test
+    fun testMoveVariablesToTheLeft() {
+        testRuleInX(
+            "3x = [x^2] - 7",
+            SolvableRules.MoveVariablesToTheLeft,
+            "3x - [x^2] =  [x^2] - 7 - [x^2]",
+            "3x - [x^2] =  -7",
+        )
+        testRuleInX(
+            "10x = 2",
+            SolvableRules.MoveVariablesToTheLeft,
+            null,
+        )
+        testRuleInX(
+            "0 = -5[x^2] + 2x + 10",
+            SolvableRules.MoveVariablesToTheLeft,
+            "5[x^2] - 2x = -5[x^2] + 2x + 10 + 5[x^2] - 2x",
+            "5[x^2] - 2x = 10",
+        )
+    }
+
+    @Test
+    fun testMoveVariablesToTheRight() {
+        testRuleInX(
+            "[x^3] + sqrt[2] = x",
+            SolvableRules.MoveVariablesToTheRight,
+            "[x^3] + sqrt[2] - [x^3] = x - [x^3]",
+            "sqrt[2] = x - [x^3]",
+        )
+        testRuleInX(
+            "10 = 2x",
+            SolvableRules.MoveVariablesToTheRight,
+            null,
+        )
+        testRuleInX(
+            "x + [x^2] = 7",
+            SolvableRules.MoveVariablesToTheRight,
+            "x + [x^2] - x - [x^2] = 7 - x - [x^2]",
+            "0 = 7 - x - [x^2]",
+        )
     }
 
     @Test
@@ -39,6 +122,7 @@ class SolvableRulesTest {
             "abs[x + 2] + 3 - abs[x] + [x ^ 2] = x",
             SolvableRules.MoveTermsNotContainingModulusToTheRight,
             "abs[x + 2] + 3 - abs[x] + [x ^ 2] - 3 - [x ^ 2] = x - 3 - [x ^ 2]",
+            "abs[x + 2] - abs[x] = x - 3 - [x ^ 2]",
         )
         testRuleInX(
             "abs[x + 2] + 3 - abs[x] + [x ^ 2] = x - abs[x + 1]",
@@ -54,21 +138,25 @@ class SolvableRulesTest {
             "abs[x + 2] + 3 > 2",
             SolvableRules.MoveTermsNotContainingModulusToTheRight,
             "abs[x + 2] + 3 - 3 > 2 - 3",
+            "abs[x + 2] > 2 - 3",
         )
         testRuleInX(
             "abs[x + 2] + 3 >= 2",
             SolvableRules.MoveTermsNotContainingModulusToTheRight,
             "abs[x + 2] + 3 - 3 >= 2 - 3",
+            "abs[x + 2] >= 2 - 3",
         )
         testRuleInX(
             "abs[x + 2] + 3 <= 2",
             SolvableRules.MoveTermsNotContainingModulusToTheRight,
             "abs[x + 2] + 3 - 3 <= 2 - 3",
+            "abs[x + 2] <= 2 - 3",
         )
         testRuleInX(
             "abs[x + 2] + 3 < 2",
             SolvableRules.MoveTermsNotContainingModulusToTheRight,
             "abs[x + 2] + 3 - 3 < 2 - 3",
+            "abs[x + 2] < 2 - 3",
         )
     }
 
@@ -77,12 +165,16 @@ class SolvableRulesTest {
         testRuleInX(
             "x = abs[x + 2] + 3 - abs[x] + [x ^ 2]",
             SolvableRules.MoveTermsNotContainingModulusToTheLeft,
-            " x - 3 - [x ^ 2] = abs[x + 2] + 3 - abs[x] + [x ^ 2] - 3 - [x ^ 2]",
+            "x - 3 - [x ^ 2] = abs[x + 2] + 3 - abs[x] + [x ^ 2] - 3 - [x ^ 2]",
+            "x - 3 - [x ^ 2] = abs[x + 2] - abs[x]",
+
         )
         testRuleInX(
             "x > abs[x + 2] + 3 - abs[x] + [x ^ 2]",
             SolvableRules.MoveTermsNotContainingModulusToTheLeft,
-            " x - 3 - [x ^ 2] > abs[x + 2] + 3 - abs[x] + [x ^ 2] - 3 - [x ^ 2]",
+            "x - 3 - [x ^ 2] > abs[x + 2] + 3 - abs[x] + [x ^ 2] - 3 - [x ^ 2]",
+            "x - 3 - [x ^ 2] > abs[x + 2] - abs[x]",
+
         )
         testRuleInX(
             "x - abs[x + 1] = abs[x + 2] + 3 - abs[x] + [x ^ 2]",
@@ -112,21 +204,28 @@ class SolvableRulesTest {
             "[x / 5] = 1",
             MultiplyByInverseCoefficientOfVariable,
             "[x / 5] * 5 = 1 * 5",
+            "x = 1 * 5",
         )
         testRuleInX(
             "[3x / 2] = 1",
             MultiplyByInverseCoefficientOfVariable,
             "[3x / 2] * [2 / 3] = 1 * [2 / 3]",
+            "x = 1 * [2 / 3]",
+
         )
         testRuleInX(
             "-[x / 5] = 1",
             MultiplyByInverseCoefficientOfVariable,
             "(-[x / 5]) * (-5) = 1 * (-5)",
+            "x = 1 * (-5)",
+
         )
         testRuleInX(
             "-[3x / 2] = 1",
             MultiplyByInverseCoefficientOfVariable,
             "(-[3x / 2]) (-[2 / 3]) = 1 (-[2 / 3])",
+            "x = 1 (-[2 / 3])",
+
         )
 
         testRuleInX(
@@ -138,21 +237,29 @@ class SolvableRulesTest {
             "[x / 5] > 1",
             MultiplyByInverseCoefficientOfVariable,
             "[x / 5] * 5 > 1 * 5",
+            "x > 1 * 5",
+
         )
         testRuleInX(
             "[3x / 2] > 1",
             MultiplyByInverseCoefficientOfVariable,
             "[3x / 2] * [2 / 3] > 1 * [2 / 3]",
+            "x > 1 * [2 / 3]",
+
         )
         testRuleInX(
             "-[x / 5] > 1",
             MultiplyByInverseCoefficientOfVariable,
             "(-[x / 5]) * (-5) < 1 * (-5)",
+            "x < 1 * (-5)",
+
         )
         testRuleInX(
             "-[3x / 2] > 1",
             MultiplyByInverseCoefficientOfVariable,
             "(-[3x / 2]) (-[2 / 3]) < 1 (-[2 / 3])",
+            "x < 1 (-[2 / 3])",
+
         )
     }
 

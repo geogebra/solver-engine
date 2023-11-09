@@ -111,6 +111,10 @@ export const expressionTypeSkipList = [
   'Plus',
 ];
 
+/**
+ * This list is composed of the input of tests that we want to skip because
+ * the gm-actions are not aligned with the solver steps
+ */
 export const expressionSkipList = [
   // [TRACKED] adjust Solver behavior (either the default or gm-friendly one)
   // currently, it rewrites 3x=1/2 to x=1/2/3, not x=1/(2*3)
@@ -261,4 +265,9 @@ export const expressionSkipList = [
 
   // Factoring: GM removes brackets around single remaining factor, but Solver doesn't
   '3*((x+1)^3+2*(x+1)^2)', // GM: 3*(x+1)^2*(x+1+2); Solver: 3*(x+1)^2*((x+1)+2)
+
+  // TODO: these test were introduced in PLUT-845 to test advanced balancing of equations
+  '1=3/5-x',
+  'x-2=36',
+  '3*x=1',
 ];

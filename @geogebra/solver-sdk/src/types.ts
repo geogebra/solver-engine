@@ -25,6 +25,7 @@ export type SolverContext = {
   gmFriendly?: boolean;
   precision?: number;
   preferDecimals?: boolean;
+  advancedBalancing?: boolean;
   solutionVariable?: string;
   preferredStrategies?: { [category: string]: string };
 };

@@ -34,17 +34,17 @@ class MultivariateEquationsTest {
 
                 step {
                     fromExpr = "A - b h = 0"
-                    toExpr = "A - b h + b h = 0 + b h"
+                    toExpr = "A - b h + b h = b h"
                     explanation {
                         key = methods.solvable.EquationsExplanation.MoveConstantsInVariablesToTheRight
                     }
                 }
 
                 step {
-                    fromExpr = "A - b h + b h = 0 + b h"
+                    fromExpr = "A - b h + b h = b h"
                     toExpr = "A = b h"
                     explanation {
-                        key = EquationsExplanation.SimplifyEquation
+                        key = GeneralExplanation.CancelAdditiveInverseElements
                     }
                 }
             }
