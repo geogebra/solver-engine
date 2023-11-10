@@ -29,6 +29,7 @@ import engine.patterns.sumContaining
 import engine.patterns.withOptionalIntegerCoefficient
 import engine.steps.metadata.Skill
 import engine.utility.gcd
+import methods.general.GeneralPlans
 import methods.general.GeneralRules
 import methods.integerarithmetic.IntegerArithmeticPlans
 import methods.integerarithmetic.IntegerArithmeticRules
@@ -64,13 +65,18 @@ enum class FractionArithmeticPlans(override val runner: CompositeMethod) : Runne
             skill(Skill.SimplifyNumericFraction, f)
 
             steps {
-                // Cancel obvious common factors and if the numerator and denominator have an integer factor,
+                // Cancel obvious common factors, and if the numerator and denominator have an integer factor,
                 // simplify that.
                 whilePossible {
                     check { it is Fraction }
                     firstOf {
                         option(trivialFractionCancellationSteps)
                         option(FractionArithmeticRules.SimplifyFractionToInteger)
+                        // simplification of something like: [(1 - sqrt[2])x + 1 / (-1 + sqrt[2])x - 1]
+                        // doesn't happen because "simplify" doesn't expand (1 - sqrt[2])x
+                        // and extracting minus from it is tricky, hence "expand" is where
+                        // the above should get simplified
+                        option(extractNegativeFromNumeratorOrDenominatorAndCancelFactor)
                         option(FractionArithmeticRules.ReorganizeCommonSumFactorInFraction)
                         option(FractionArithmeticRules.FindCommonIntegerFactorInFraction)
                     }
@@ -287,10 +293,10 @@ val normalizeNegativeSignsInFraction = steps {
     check { it is Fraction }
 
     optionally {
-        applyToKind<Fraction>(GeneralRules.FactorMinusFromSum) { it.numerator }
+        applyToKind<Fraction>(GeneralRules.FactorMinusFromSumWithAllNegativeTerms) { it.numerator }
     }
     optionally {
-        applyToKind<Fraction>(GeneralRules.FactorMinusFromSum) { it.denominator }
+        applyToKind<Fraction>(GeneralRules.FactorMinusFromSumWithAllNegativeTerms) { it.denominator }
     }
 
     firstOf {
@@ -310,4 +316,61 @@ private val trivialFractionCancellationSteps = firstOf {
     option(GeneralRules.SimplifyFractionWithOneDenominator)
     option(GeneralRules.CancelDenominator)
     option(FractionArithmeticRules.CancelCommonFactorInFraction)
+}
+
+private val extractMinusFromPower = steps {
+    check { it is Power }
+    applyToKind<Power>(GeneralRules.FactorMinusFromSum) { it.base }
+    firstOf {
+        option(GeneralRules.SimplifyEvenPowerOfNegative)
+        option(GeneralRules.SimplifyOddPowerOfNegative)
+    }
+}
+
+private val extractMinusFromProduct = steps {
+    check { it is Product }
+    applyToChildren {
+        firstOf {
+            option(GeneralRules.FactorMinusFromSum)
+            option(extractMinusFromPower)
+        }
+    }
+    optionally(GeneralPlans.NormalizeNegativeSignsInProduct)
+}
+
+/**
+ * extract -ve sign from a product or sum or power expression, whether
+ * to extract the -ve sign or not is done on the basis of "pseudo-degree"
+ * assigned to term with highest "pseudo-degree" in Sum; the term with
+ * highest "pseudo-degree" is preferred to have no -ve sign next to it
+ *
+ * e.g.; 1 - x + [x^[5/3]] - [x^3] -> -(-1 + x + [x^3])
+ * since the term (i.e. [x^3]) with highest "pseudo-degree" has -ve
+ * next to it
+ */
+val extractMinusFromProductOrSumOrPower = steps {
+    firstOf {
+        option(GeneralRules.FactorMinusFromSum)
+        option(extractMinusFromProduct)
+        option(extractMinusFromPower)
+    }
+}
+
+/**
+ * extract -ve from numerator (or one of its multiples) or denominator (or one of its multiples)
+ * and cancel the common factor in the fraction
+ */
+private val extractNegativeFromNumeratorOrDenominatorAndCancelFactor = steps {
+    firstOf {
+        option {
+            applyToKind<Fraction>(extractMinusFromProductOrSumOrPower) { it.numerator }
+            optionally(FractionArithmeticRules.ReorganizeCommonSumFactorInFraction)
+            apply(FractionArithmeticRules.CancelCommonFactorInFraction)
+        }
+        option {
+            applyToKind<Fraction>(extractMinusFromProductOrSumOrPower) { it.denominator }
+            optionally(FractionArithmeticRules.ReorganizeCommonSumFactorInFraction)
+            apply(FractionArithmeticRules.CancelCommonFactorInFraction)
+        }
+    }
 }

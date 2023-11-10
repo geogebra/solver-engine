@@ -271,7 +271,7 @@ private val priorityComparator = compareBy<Expression>(
     },
     { it.variablePowerBase()?.variableName },
     {
-        // if the bases have the same priority put powers with rational exponents at the end
+        // if the bases have the same priority, put powers with rational exponents at the end
         it is Power && it.exponent.isSignedFraction()
     },
 )

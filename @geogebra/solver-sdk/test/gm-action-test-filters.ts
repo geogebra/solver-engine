@@ -72,7 +72,7 @@ export const ruleSkipList = [
   'General.SimplifyProductWithTwoNegativeFactors',
 
   // TODO: Find a way to factor out a "-" from a sum without brackets in GM: -3-x ==> -(3+x)
-  'General.FactorMinusFromSum',
+  'General.FactorMinusFromSumWithAllNegativeTerms',
 
   /* TODO: improve GM behavior for signs. Currently, GM does this:
    - for nested signs: -(-x) need to drag signs & brackets stay

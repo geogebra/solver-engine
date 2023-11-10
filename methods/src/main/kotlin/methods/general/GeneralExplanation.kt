@@ -85,7 +85,21 @@ enum class GeneralExplanation : CategorisedMetadataKey {
     SimplifyUnitFractionToOne,
     SimplifyFractionWithOneDenominator,
     CancelDenominator,
+
+    /**
+     * extract -ve sign from a sum, in this case it isn't necessary for all
+     * sub-terms of sum to have -ve sign, but whether to extract or not "-"
+     * is done on the basis of "pseudo degree."
+     *
+     * e.g.; -x + 1 -> -(x - 1)
+     */
     FactorMinusFromSum,
+
+    /**
+     * extract -ve sign from a sum with all terms have "-" in front of them
+     * e.g.; -x -1 -> -(x + 1)
+     */
+    FactorMinusFromSumWithAllNegativeTerms,
     SimplifyProductOfConjugates,
     DistributePowerOfProduct,
 

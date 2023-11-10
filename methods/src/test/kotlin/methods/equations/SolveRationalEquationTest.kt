@@ -8,6 +8,8 @@ import methods.algebra.AlgebraExplanation
 import methods.constantexpressions.ConstantExpressionsExplanation
 import methods.expand.ExpandExplanation
 import methods.factor.FactorExplanation
+import methods.fractionarithmetic.FractionArithmeticExplanation
+import methods.general.GeneralExplanation
 import methods.polynomials.PolynomialsExplanation
 import methods.rationalexpressions.RationalExpressionsExplanation
 import org.junit.jupiter.api.Test
@@ -627,6 +629,147 @@ class SolveRationalEquationTest {
             task {
                 taskId = "#3"
                 startExpr = "SetSolution[x : {-[207 / 13]}]"
+                explanation {
+                    key = EquationsExplanation.AllSolutionsSatisfyConstraint
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test lcd of additive inverse polynomial`() = testMethodInX {
+        method = EquationsPlans.SolveRationalEquation
+        inputExpr = "[12 / x - 3] = [8x / x - 3] - [2 /-x + 3]"
+
+        check {
+            fromExpr = "[12 / x - 3] = [8 x / x - 3] - [2 / -x + 3]"
+            toExpr = "SetSolution[x: {[5 / 4]}]"
+            explanation {
+                key = EquationsExplanation.SolveEquation
+            }
+
+            task { }
+
+            task {
+                taskId = "#2"
+                startExpr = "[12 / x - 3] = [8 x / x - 3] - [2 / -x + 3]"
+                explanation {
+                    key = EquationsExplanation.SolveEquation
+                }
+
+                step {
+                    fromExpr = "[12 / x - 3] = [8 x / x - 3] - [2 / -x + 3]"
+                    toExpr = "SetSolution[x: {[5 / 4]}]"
+                    explanation {
+                        key = EquationsExplanation.SolveRationalEquation
+                    }
+
+                    step {
+                        fromExpr = "[12 / x - 3] = [8 x / x - 3] - [2 / -x + 3]"
+                        toExpr = "[12 / x - 3] * (x - 3) = [8 x / x - 3] * (x - 3) - [2 / -x + 3] * (x - 3)"
+                        explanation {
+                            key = EquationsExplanation.MultiplyBothSidesByDenominator
+                        }
+                    }
+
+                    step {
+                        fromExpr = "[12 / x - 3] * (x - 3) = [8 x / x - 3] * (x - 3) - [2 / -x + 3] * (x - 3)"
+                        toExpr = "12 = 8 x + 2"
+                        explanation {
+                            key = EquationsExplanation.SimplifyEquation
+                        }
+
+                        step {
+                            fromExpr = "[12 / x - 3] * (x - 3) = [8 x / x - 3] * (x - 3) - [2 / -x + 3] * (x - 3)"
+                            toExpr = "12 = [8 x / x - 3] * (x - 3) - [2 / -x + 3] * (x - 3)"
+                            explanation {
+                                key = RationalExpressionsExplanation.MultiplyRationalExpressions
+                            }
+                        }
+
+                        step {
+                            fromExpr = "12 = [8 x / x - 3] * (x - 3) - [2 / -x + 3] * (x - 3)"
+                            toExpr = "12 = 8 x - [2 / -x + 3] * (x - 3)"
+                            explanation {
+                                key = RationalExpressionsExplanation.MultiplyRationalExpressions
+                            }
+                        }
+
+                        step {
+                            fromExpr = "12 = 8 x - [2 / -x + 3] * (x - 3)"
+                            toExpr = "12 = 8 x - (-2)"
+                            explanation {
+                                key = RationalExpressionsExplanation.MultiplyRationalExpressions
+                            }
+
+                            step {
+                                fromExpr = "[2 / -x + 3] * (x - 3)"
+                                toExpr = "[2 (x - 3) / -x + 3]"
+                                explanation {
+                                    key = FractionArithmeticExplanation.TurnProductOfFractionAndNonFractionFactorIntoFraction
+                                }
+                            }
+
+                            step {
+                                fromExpr = "[2 (x - 3) / -x + 3]"
+                                toExpr = "[2 / -1]"
+                                explanation {
+                                    key = FractionArithmeticExplanation.SimplifyFraction
+                                }
+
+                                step {
+                                    fromExpr = "[2 (x - 3) / -x + 3]"
+                                    toExpr = "[2 (x - 3) / -(x - 3)]"
+                                    explanation {
+                                        key = GeneralExplanation.FactorMinusFromSum
+                                    }
+                                }
+
+                                step {
+                                    fromExpr = "[2 (x - 3) / -(x - 3)]"
+                                    toExpr = "[2 / -1]"
+                                    explanation {
+                                        key = FractionArithmeticExplanation.CancelCommonFactorInFraction
+                                    }
+                                }
+                            }
+
+                            step {
+                                fromExpr = "[2 / -1]"
+                                toExpr = "(-[2 / 1])"
+                                explanation {
+                                    key = FractionArithmeticExplanation.SimplifyNegativeInDenominator
+                                }
+                            }
+
+                            step {
+                                fromExpr = "(-[2 / 1])"
+                                toExpr = "(-2)"
+                                explanation {
+                                    key = GeneralExplanation.SimplifyFractionWithOneDenominator
+                                }
+                            }
+                        }
+
+                        step {
+                            fromExpr = "12 = 8 x - (-2)"
+                            toExpr = "12 = 8 x + 2"
+                            explanation {
+                                key = GeneralExplanation.SimplifyDoubleMinus
+                            }
+                        }
+                    }
+
+                    step { }
+                    step { }
+                    step { }
+                    step { }
+                }
+            }
+
+            task {
+                taskId = "#3"
+                startExpr = "SetSolution[x: {[5 / 4]}]"
                 explanation {
                     key = EquationsExplanation.AllSolutionsSatisfyConstraint
                 }

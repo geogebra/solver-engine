@@ -12,6 +12,7 @@ import engine.expressions.fractionOf
 import engine.expressions.isRationalExpression
 import engine.expressions.isSignedFraction
 import engine.expressions.productOf
+import engine.expressions.simplifiedNegOfSum
 import engine.expressions.simplifiedPowerOf
 import engine.expressions.simplifiedProductOf
 import engine.expressions.sumOf
@@ -301,7 +302,10 @@ fun computeLcdAndMultipliers(factoredFractions: List<Fraction>): Pair<Expression
     for (i in 1 until multiplicitiesList.size) {
         val multiplicities = multiplicitiesList[i]
         for (factor in multiplicities) {
-            val index = lcmMultiplicities.indexOfFirst { areEquivalentSums(it.base, factor.base) }
+            val index = lcmMultiplicities.indexOfFirst {
+                areEquivalentSums(it.base, factor.base) ||
+                    areEquivalentSums(it.base, simplifiedNegOfSum(factor.base))
+            }
             if (index == -1) {
                 lcmMultiplicities.add(factor)
             } else if (lcmMultiplicities[index].exponent < factor.exponent) {

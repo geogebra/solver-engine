@@ -22,6 +22,7 @@ import engine.expressions.negOf
 import engine.expressions.powerOf
 import engine.expressions.productOf
 import engine.expressions.simplifiedFractionOf
+import engine.expressions.simplifiedNegOfSum
 import engine.expressions.simplifiedPowerOf
 import engine.expressions.simplifiedProductOf
 import engine.expressions.statementSystemOf
@@ -61,7 +62,6 @@ import engine.utility.isCube
 import engine.utility.isEven
 import engine.utility.isSquare
 import engine.utility.times
-import methods.solvable.simplifiedNegOfSum
 import java.math.BigInteger
 import engine.steps.metadata.GmPathModifier as PM
 

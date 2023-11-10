@@ -631,7 +631,7 @@ class LinearEquationsTest {
                         fromExpr = "abs[-x - sqrt[2]]"
                         toExpr = "abs[-(x + sqrt[2])]"
                         explanation {
-                            key = GeneralExplanation.FactorMinusFromSum
+                            key = GeneralExplanation.FactorMinusFromSumWithAllNegativeTerms
                         }
                     }
                     step {

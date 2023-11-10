@@ -9,7 +9,6 @@ import engine.expressions.Equation
 import engine.expressions.Expression
 import engine.expressions.ExpressionWithConstraint
 import engine.expressions.Fraction
-import engine.expressions.Introduce
 import engine.expressions.Sum
 import engine.expressions.asInteger
 import engine.expressions.equationOf
@@ -22,6 +21,7 @@ import engine.expressions.plusMinusOf
 import engine.expressions.productOf
 import engine.expressions.rootOf
 import engine.expressions.simplifiedNegOf
+import engine.expressions.simplifiedNegOfSum
 import engine.expressions.sumOf
 import engine.expressions.withoutNegOrPlus
 import engine.expressions.xp
@@ -550,18 +550,6 @@ private fun extractTermsContainingModulus(expression: Expression, variables: Lis
         expression.countAbsoluteValues(variables) > 0 -> expression
         else -> null
     }
-}
-
-/**
- * The simplified negation of an expression, but if [expr] is a sum then each of its terms is negated.  So
- *
- *     x - 2 --> -x + 2
- *
- * Note: it remains to be determined what a good origin would be for the terms in the result.
- */
-fun simplifiedNegOfSum(expr: Expression) = when (expr) {
-    is Sum -> sumOf(expr.children.map { simplifiedNegOf(it).withOrigin(Introduce(listOf(it))) })
-    else -> simplifiedNegOf(expr).withOrigin(Introduce(listOf(expr)))
 }
 
 private val nonConstantSum = condition(sumContaining()) { !it.isConstantIn(solutionVariables) }

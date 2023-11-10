@@ -139,6 +139,8 @@ class FractionsRulesTest {
         testRule("[x / 2x]", CancelCommonFactorInFraction, "[1 / 2]")
         testRule("[x y z / a y c]", CancelCommonFactorInFraction, "[x z / a c]")
         testRule("[3x / 2[x^2]]", CancelCommonFactorInFraction, "[3 / 2x]")
+        testRule("[6(x - 1) / -(x - 1)]", CancelCommonFactorInFraction, "[6 / -1]")
+        testRule("[1 / -1]", CancelCommonFactorInFraction, null)
     }
 
     @Test

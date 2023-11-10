@@ -302,7 +302,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
 
     CancelCommonFactorInFraction(
         rule {
-            val commonFactor = AnyPattern()
+            val commonFactor = condition { it != Constants.One }
 
             val numeratorFactor = optionalIntegerPowerOf(commonFactor)
             val numerator = expressionWithFactor(numeratorFactor)

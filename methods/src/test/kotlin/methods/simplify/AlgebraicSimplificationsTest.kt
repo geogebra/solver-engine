@@ -216,4 +216,246 @@ class AlgebraicSimplificationsTest {
             }
         }
     }
+
+    @Test
+    fun `test simplify algebraic expression with common factor`() = testMethod {
+        method = SimplifyPlans.SimplifyAlgebraicExpression
+        inputExpr = "[x - 1 / (x + 1) [(1 - x)^3]]"
+
+        check {
+            fromExpr = "[x - 1 / (x + 1) [(1 - x) ^ 3]]"
+            toExpr = "-[1 / (x + 1) [(x - 1) ^ 2]]"
+            explanation {
+                key = RationalExpressionsExplanation.SimplifyRationalExpression
+            }
+
+            step {
+                fromExpr = "[x - 1 / (x + 1) [(1 - x) ^ 3]]"
+                toExpr = "[1 / -(x + 1) [(x - 1) ^ 2]]"
+                explanation {
+                    key = FractionArithmeticExplanation.SimplifyFraction
+                }
+
+                step {
+                    fromExpr = "[x - 1 / (x + 1) [(1 - x) ^ 3]]"
+                    toExpr = "[x - 1 / (x + 1) [(-(-1 + x)) ^ 3]]"
+                    explanation {
+                        key = GeneralExplanation.FactorMinusFromSum
+                    }
+                }
+
+                step {
+                    fromExpr = "[x - 1 / (x + 1) [(-(-1 + x)) ^ 3]]"
+                    toExpr = "[x - 1 / (x + 1) (-[(-1 + x) ^ 3])]"
+                    explanation {
+                        key = GeneralExplanation.SimplifyOddPowerOfNegative
+                    }
+                }
+
+                step {
+                    fromExpr = "[x - 1 / (x + 1) (-[(-1 + x) ^ 3])]"
+                    toExpr = "[x - 1 / -(x + 1) [(-1 + x) ^ 3]]"
+                    explanation {
+                        key = GeneralExplanation.NormalizeNegativeSignsInProduct
+                    }
+
+                    step {
+                        fromExpr = "(x + 1) (-[(-1 + x) ^ 3])"
+                        toExpr = "-(x + 1) [(-1 + x) ^ 3]"
+                        explanation {
+                            key = GeneralExplanation.MoveSignOfNegativeFactorOutOfProduct
+                        }
+                    }
+                }
+
+                step {
+                    fromExpr = "[x - 1 / -(x + 1) [(-1 + x) ^ 3]]"
+                    toExpr = "[x - 1 / -(x + 1) [(x - 1) ^ 3]]"
+                    explanation {
+                        key = FractionArithmeticExplanation.ReorganizeCommonSumFactorInFraction
+                    }
+                }
+
+                step {
+                    fromExpr = "[x - 1 / -(x + 1) [(x - 1) ^ 3]]"
+                    toExpr = "[1 / -(x + 1) [(x - 1) ^ 2]]"
+                    explanation {
+                        key = FractionArithmeticExplanation.CancelCommonFactorInFraction
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "[1 / -(x + 1) [(x - 1) ^ 2]]"
+                toExpr = "-[1 / (x + 1) [(x - 1) ^ 2]]"
+                explanation {
+                    key = FractionArithmeticExplanation.SimplifyNegativeInDenominator
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test cancel two multiple after extracting -ve`() = testMethod {
+        method = SimplifyPlans.SimplifyAlgebraicExpression
+        inputExpr = "[(x - 1)[(x - 2)^2] / [(2 - x)^3](1 - x)]"
+
+        check {
+            fromExpr = "[(x - 1) [(x - 2) ^ 2] / [(2 - x) ^ 3] (1 - x)]"
+            toExpr = "[1 / x - 2]"
+            explanation {
+                key = FractionArithmeticExplanation.SimplifyFraction
+            }
+
+            step {
+                fromExpr = "[(x - 1) [(x - 2) ^ 2] / [(2 - x) ^ 3] (1 - x)]"
+                toExpr = "[(x - 1) [(x - 2) ^ 2] / [(-(-2 + x)) ^ 3] (1 - x)]"
+                explanation {
+                    key = GeneralExplanation.FactorMinusFromSum
+                }
+            }
+
+            step {
+                fromExpr = "[(x - 1) [(x - 2) ^ 2] / [(-(-2 + x)) ^ 3] (1 - x)]"
+                toExpr = "[(x - 1) [(x - 2) ^ 2] / (-[(-2 + x) ^ 3]) (1 - x)]"
+                explanation {
+                    key = GeneralExplanation.SimplifyOddPowerOfNegative
+                }
+            }
+
+            step {
+                fromExpr = "[(x - 1) [(x - 2) ^ 2] / (-[(-2 + x) ^ 3]) (1 - x)]"
+                toExpr = "[(x - 1) [(x - 2) ^ 2] / (-[(-2 + x) ^ 3]) (-(-1 + x))]"
+                explanation {
+                    key = GeneralExplanation.FactorMinusFromSum
+                }
+            }
+
+            step {
+                fromExpr = "[(x - 1) [(x - 2) ^ 2] / (-[(-2 + x) ^ 3]) (-(-1 + x))]"
+                toExpr = "[(x - 1) [(x - 2) ^ 2] / [(-2 + x) ^ 3] (-1 + x)]"
+                explanation {
+                    key = GeneralExplanation.NormalizeNegativeSignsInProduct
+                }
+            }
+
+            step {
+                fromExpr = "[(x - 1) [(x - 2) ^ 2] / [(-2 + x) ^ 3] (-1 + x)]"
+                toExpr = "[(x - 1) [(x - 2) ^ 2] / [(-2 + x) ^ 3] (x - 1)]"
+                explanation {
+                    key = FractionArithmeticExplanation.ReorganizeCommonSumFactorInFraction
+                }
+            }
+
+            step {
+                fromExpr = "[(x - 1) [(x - 2) ^ 2] / [(-2 + x) ^ 3] (x - 1)]"
+                toExpr = "[[(x - 2) ^ 2] / [(-2 + x) ^ 3]]"
+                explanation {
+                    key = FractionArithmeticExplanation.CancelCommonFactorInFraction
+                }
+            }
+
+            step {
+                fromExpr = "[[(x - 2) ^ 2] / [(-2 + x) ^ 3]]"
+                toExpr = "[[(x - 2) ^ 2] / [(x - 2) ^ 3]]"
+                explanation {
+                    key = FractionArithmeticExplanation.ReorganizeCommonSumFactorInFraction
+                }
+            }
+
+            step {
+                fromExpr = "[[(x - 2) ^ 2] / [(x - 2) ^ 3]]"
+                toExpr = "[1 / x - 2]"
+                explanation {
+                    key = FractionArithmeticExplanation.CancelCommonFactorInFraction
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test cancellation of one factor even after possible minus extraction`() = testMethod {
+        method = SimplifyPlans.SimplifyAlgebraicExpression
+        inputExpr = "[(-x - 1)[(x - 2)^2] / [(2 - x)^3](x - 1)]"
+
+        check {
+            fromExpr = "[(-x - 1) [(x - 2) ^ 2] / [(2 - x) ^ 3] (x - 1)]"
+            toExpr = "[x + 1 / (x - 2) (x - 1)]"
+            explanation {
+                key = RationalExpressionsExplanation.SimplifyRationalExpression
+            }
+
+            step {
+                fromExpr = "[(-x - 1) [(x - 2) ^ 2] / [(2 - x) ^ 3] (x - 1)]"
+                toExpr = "[-x - 1 / -(x - 2) (x - 1)]"
+                explanation {
+                    key = FractionArithmeticExplanation.SimplifyFraction
+                }
+
+                step {
+                    fromExpr = "[(-x - 1) [(x - 2) ^ 2] / [(2 - x) ^ 3] (x - 1)]"
+                    toExpr = "[(-x - 1) [(x - 2) ^ 2] / [(-(-2 + x)) ^ 3] (x - 1)]"
+                    explanation {
+                        key = GeneralExplanation.FactorMinusFromSum
+                    }
+                }
+
+                step {
+                    fromExpr = "[(-x - 1) [(x - 2) ^ 2] / [(-(-2 + x)) ^ 3] (x - 1)]"
+                    toExpr = "[(-x - 1) [(x - 2) ^ 2] / (-[(-2 + x) ^ 3]) (x - 1)]"
+                    explanation {
+                        key = GeneralExplanation.SimplifyOddPowerOfNegative
+                    }
+                }
+
+                step {
+                    fromExpr = "[(-x - 1) [(x - 2) ^ 2] / (-[(-2 + x) ^ 3]) (x - 1)]"
+                    toExpr = "[(-x - 1) [(x - 2) ^ 2] / -[(-2 + x) ^ 3] (x - 1)]"
+                    explanation {
+                        key = GeneralExplanation.NormalizeNegativeSignsInProduct
+                    }
+
+                    step {
+                        fromExpr = "(-[(-2 + x) ^ 3]) (x - 1)"
+                        toExpr = "-[(-2 + x) ^ 3] (x - 1)"
+                        explanation {
+                            key = GeneralExplanation.MoveSignOfNegativeFactorOutOfProduct
+                        }
+                    }
+                }
+
+                step {
+                    fromExpr = "[(-x - 1) [(x - 2) ^ 2] / -[(-2 + x) ^ 3] (x - 1)]"
+                    toExpr = "[(-x - 1) [(x - 2) ^ 2] / -[(x - 2) ^ 3] (x - 1)]"
+                    explanation {
+                        key = FractionArithmeticExplanation.ReorganizeCommonSumFactorInFraction
+                    }
+                }
+
+                step {
+                    fromExpr = "[(-x - 1) [(x - 2) ^ 2] / -[(x - 2) ^ 3] (x - 1)]"
+                    toExpr = "[-x - 1 / -(x - 2) (x - 1)]"
+                    explanation {
+                        key = FractionArithmeticExplanation.CancelCommonFactorInFraction
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "[-x - 1 / -(x - 2) (x - 1)]"
+                toExpr = "[-(x + 1) / -(x - 2) (x - 1)]"
+                explanation {
+                    key = GeneralExplanation.FactorMinusFromSumWithAllNegativeTerms
+                }
+            }
+
+            step {
+                fromExpr = "[-(x + 1) / -(x - 2) (x - 1)]"
+                toExpr = "[x + 1 / (x - 2) (x - 1)]"
+                explanation {
+                    key = FractionArithmeticExplanation.SimplifyNegativeInNumeratorAndDenominator
+                }
+            }
+        }
+    }
 }

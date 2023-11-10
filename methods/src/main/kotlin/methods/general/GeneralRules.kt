@@ -5,12 +5,15 @@ import engine.conditions.isDefinitelyNotPositive
 import engine.conditions.isDefinitelyNotZero
 import engine.expressions.Constants
 import engine.expressions.DivideBy
+import engine.expressions.Expression
 import engine.expressions.Minus
 import engine.expressions.PathScope
+import engine.expressions.Power
 import engine.expressions.Product
 import engine.expressions.Root
 import engine.expressions.SquareRoot
 import engine.expressions.Sum
+import engine.expressions.Variable
 import engine.expressions.absoluteValueOf
 import engine.expressions.asInteger
 import engine.expressions.fractionOf
@@ -19,6 +22,7 @@ import engine.expressions.powerOf
 import engine.expressions.productOf
 import engine.expressions.rootOf
 import engine.expressions.simplifiedNegOf
+import engine.expressions.simplifiedNegOfSum
 import engine.expressions.simplifiedPowerOf
 import engine.expressions.simplifiedProductOf
 import engine.expressions.sumOf
@@ -59,6 +63,7 @@ import engine.steps.metadata.metadata
 import engine.utility.isEven
 import engine.utility.isOdd
 import java.math.BigInteger
+import kotlin.math.abs
 import engine.expressions.PathScope as Scope
 import engine.steps.metadata.DragTargetPosition as Position
 import engine.steps.metadata.GmPathModifier as PM
@@ -82,6 +87,7 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
 
     CancelDenominator(cancelDenominator),
     FactorMinusFromSum(factorMinusFromSum),
+    FactorMinusFromSumWithAllNegativeTerms(factorMinusFromSumWithAllNegativeTerms),
     SimplifyProductOfConjugates(simplifyProductOfConjugates),
     DistributePowerOfProduct(distributePowerOfProduct),
     MultiplyExponentsUsingPowerRule(multiplyExponentsUsingPowerRule),
@@ -397,7 +403,7 @@ private val cancelDenominator =
     }
 
 /** -2-3-4 --> -(2+3+4) */
-private val factorMinusFromSum =
+private val factorMinusFromSumWithAllNegativeTerms =
     rule {
         val sum = condition(sumContaining()) { expression ->
             expression.children.all { it is Minus }
@@ -416,6 +422,67 @@ private val factorMinusFromSum =
                     PM.Operator,
                     Position.LeftOf,
                 ),
+                explanation = metadata(Explanation.FactorMinusFromSumWithAllNegativeTerms),
+            )
+        }
+    }
+
+/**
+ * A comparator for [Expression] objects that orders them based on a non-negative "pseudo degree."
+ * The "pseudo degree" extends the concept of the polynomial degree to non-polynomial expressions,
+ * following certain rules.
+ *
+ * Comparator priority:
+ * - Non-constant expressions take precedence over constant expressions.
+ * - Expressions are subsequently ordered by their non-negative pseudo degree.
+ * - Ties are resolved by re-evaluating expressions' pseudo degrees, considering constants to have a non-zero degree.
+ */
+val pseudoDegreeComparator = compareBy<Expression>(
+    { !it.isConstant() },
+    { it.pseudoDegree() },
+    { it.pseudoDegree(constantIsZeroDegree = false) },
+)
+
+/**
+ * Calculates the non-negative pseudo degree of an [Expression] instance.
+ *
+ * The pseudo degree is determined by the type of the expression and its components:
+ * - For constants, when [constantIsZeroDegree] is true, the degree is 0.0.
+ * - For [Minus] expressions, it is the pseudo degree of the argument.
+ * - [SquareRoot] expressions are fixed at 0.5.
+ * - [Root] expressions are the reciprocal of the radicand's absolute double value.
+ * - Variables have a degree of 1.0.
+ * - [Power] expressions combine the base's pseudo degree with the exponent's absolute double value.
+ * - [Product] expressions sum the pseudo degrees of their children.
+ * - [Sum] expressions use the maximum pseudo degree among their children.
+ * - Other expression types default to 0.0.
+ *
+ * @param constantIsZeroDegree Boolean flag indicating whether to consider the degree of constants as zero(default true)
+ * @return The non-negative pseudo degree as a [Double].
+ */
+@Suppress("MagicNumber")
+private fun Expression.pseudoDegree(constantIsZeroDegree: Boolean = true): Double = when {
+    this.isConstant() && constantIsZeroDegree -> 0.0
+    this is Minus -> this.argument.pseudoDegree(constantIsZeroDegree)
+    this is SquareRoot -> 0.5
+    this is Root -> 1.0 / abs(this.radicand.doubleValue)
+    this is Variable -> 1.0
+    this is Power -> abs(this.base.pseudoDegree(constantIsZeroDegree)) * abs(this.exponent.doubleValue)
+    this is Product -> this.children.sumOf { it.pseudoDegree(constantIsZeroDegree) }
+    this is Sum -> this.children.maxOf { it.pseudoDegree(constantIsZeroDegree) }
+    else -> 0.0
+}
+
+private val factorMinusFromSum =
+    rule {
+        val sum = condition(sumContaining()) { expression ->
+            expression.children.maxWith(pseudoDegreeComparator) is Minus
+        }
+
+        onPattern(sum) {
+            val toExpr = negOf(simplifiedNegOfSum(get(sum)))
+            ruleResult(
+                toExpr = transform(sum, toExpr),
                 explanation = metadata(Explanation.FactorMinusFromSum),
             )
         }

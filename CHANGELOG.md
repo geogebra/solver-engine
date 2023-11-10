@@ -38,6 +38,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Improved handling of negatives in sums by the SDK (PLUT-832)
 - Fixed bug in `productSignRequired` that led to incorrect warnings in parser for divisions (PLUT-841)
 - SDK: Fixed LaTeX representation of addition/subtraction of equations in equation system (PLUT-848)
+- Fix computation of lcd and addition of fractions with additive inverse denominators (PLUT-706)
 
 ### Changed
 
