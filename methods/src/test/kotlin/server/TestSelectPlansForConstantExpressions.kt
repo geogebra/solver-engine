@@ -83,4 +83,14 @@ class TestSelectPlansForConstantExpressions {
             ),
         )
     }
+
+    @Test
+    fun testSimplifyExpressionToUndefined() {
+        testSelectPlanApiInX(
+            "[0 / sqrt[2] - sqrt[2]]",
+            setOf(
+                ConstantExpressionsPlans.SimplifyConstantExpression,
+            ),
+        )
+    }
 }
