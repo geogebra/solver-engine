@@ -26,6 +26,7 @@ contents to a new release section (e.g. _[0.x]_).
 - SDK: Localization of math words (e.g. 'and', 'or', 'true', 'false', ...) (PLUT-707)
 - Added solver engine support for "advanced balancing" (PLUT-845)
 - SDK: Allowed setting `advancedBalancing` flag in SDK (PLUT-845)
+- Performance: added caching to deeply calls (PLUT-854)
 
 ### Fixed
 

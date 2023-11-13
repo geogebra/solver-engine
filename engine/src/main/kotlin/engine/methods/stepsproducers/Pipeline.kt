@@ -459,29 +459,40 @@ private class PipelineRunner(
         whilePossible(nextStepsProducer())
     }
 
+    private data class DeeplyCacheKey(val stepsProducer: StepsProducer)
+
     override fun deeply(stepsProducer: StepsProducer, deepFirst: Boolean) {
         if (!builder.inProgress) return
 
-        fun visitPrefix(sub: Expression): List<Transformation>? = if (sub.depth < stepsProducer.minDepth) {
-            null
+        val cacheKey = DeeplyCacheKey(stepsProducer)
+
+        // visitPrefix and visitPostfix are only defined in the branches so that the closures only get created when
+        // necessary.
+        val steps = if (!deepFirst) {
+            fun visitPrefix(sub: Expression): List<Transformation>? =
+                builder.context.unlessPreviouslyFailed(cacheKey, sub) {
+                    if (sub.depth < stepsProducer.minDepth) {
+                        null
+                    } else {
+                        stepsProducer.produceSteps(ctx, sub)
+                            ?: sub.childrenInVisitingOrder().firstNotNullOfOrNull { visitPrefix(it) }
+                    }
+                }
+            visitPrefix(builder.simpleExpression)
         } else {
-            stepsProducer.produceSteps(ctx, sub)
-                ?: sub.childrenInVisitingOrder().firstNotNullOfOrNull { visitPrefix(it) }
+            fun visitPostfix(sub: Expression): List<Transformation>? =
+                builder.context.unlessPreviouslyFailed(cacheKey, sub) {
+                    if (sub.depth < stepsProducer.minDepth) {
+                        null
+                    } else {
+                        sub.childrenInVisitingOrder().firstNotNullOfOrNull { visitPostfix(it) }
+                            ?: stepsProducer.produceSteps(ctx, sub)
+                    }
+                }
+            visitPostfix(builder.simpleExpression)
         }
 
-        fun visitPostfix(sub: Expression): List<Transformation>? = if (sub.depth < stepsProducer.minDepth) {
-            null
-        } else {
-            sub.childrenInVisitingOrder().firstNotNullOfOrNull { visitPostfix(it) }
-                ?: stepsProducer.produceSteps(ctx, sub)
-        }
-
-        addSteps(
-            when {
-                deepFirst -> visitPostfix(builder.simpleExpression)
-                else -> visitPrefix(builder.simpleExpression)
-            },
-        )
+        addSteps(steps)
     }
 
     override fun deeply(deepFirst: Boolean, init: PipelineFunc) {
