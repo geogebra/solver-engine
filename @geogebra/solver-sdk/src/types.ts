@@ -109,9 +109,14 @@ export type GmAction = {
   formulaId?: string;
 };
 
+type MappedExpressionBase<MathFormat> = {
+  expression: MathFormat;
+  pathMappings: PathMapping[];
+};
+
 type MetadataBase<MathFormat> = {
   key: string;
-  params?: { expression: MathFormat; pathMappings: PathMapping[] }[];
+  params?: MappedExpressionBase<MathFormat>[];
 };
 
 export type Tag = 'Rearrangement' | 'Cosmetic' | 'Pedantic' | 'InvisibleChange';
@@ -125,6 +130,7 @@ type TransformationBase<MathFormat> = {
   toExpr: MathFormat;
   pathMappings: PathMapping[];
   explanation: MetadataBase<MathFormat>;
+  formula: MappedExpressionBase<MathFormat>;
   gmAction?: GmAction;
   skills?: MetadataBase<MathFormat>[];
   steps?: TransformationBase<MathFormat>[];
@@ -168,5 +174,12 @@ export type Alternative = AlternativeSolver | AlternativeLatex | AlternativeJson
 export type MetadataSolver = MetadataBase<string>;
 export type MetadataLatex = MetadataBase<string>;
 export type MetadataJson = MetadataBase<MathJson>;
-
 export type Metadata = MetadataSolver | MetadataLatex | MetadataJson;
+
+export type MappedExpressionSolver = MappedExpressionBase<string>;
+export type MappedExpressionLatex = MappedExpressionBase<string>;
+export type MappedExpressionJson = MappedExpressionBase<MathJson>;
+export type MappedExpression =
+  | MappedExpressionSolver
+  | MappedExpressionLatex
+  | MappedExpressionJson;

@@ -58,6 +58,11 @@ data class Transformation(
     val explanation: Metadata? = null,
 
     /**
+     * The mathematical formula which was applied in this transformation (e.g. (a + b)^2 = a^2 + 2ab + b^2)
+     */
+    val formula: Expression? = null,
+
+    /**
      * An optional list of skills associated with this transformation.
      */
     val skills: List<Metadata>? = null,

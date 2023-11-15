@@ -29,11 +29,11 @@ const alternatives = computed(() => props.transformation.alternatives || []);
     :depth="depth"
   />
   <div v-else :class="`trans ${isThrough ? 'through-step' : ''}`">
-    <Explanation :metadata="transformation.explanation" />
+    <Explanation :metadata="transformation.explanation" :formula="transformation.formula" />
     <KatexRenderedText
       class="expr"
       :text="renderExpressionMapping(transformation, colorMaps.fromColoring, colorMaps.toColoring)"
-    ></KatexRenderedText>
+    />
     <StepsComponent :steps="transformation.steps" :depth="depth" :open="depth >= 0 || isThrough" />
     <TasksComponent :tasks="transformation.tasks" :depth="depth" :open="depth >= 0" />
 

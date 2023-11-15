@@ -13,6 +13,7 @@ import engine.expressions.Move
 import engine.expressions.MoveUnaryOperator
 import engine.expressions.New
 import engine.expressions.PathScope
+import engine.expressions.Substitution
 import engine.expressions.asRational
 import engine.expressions.buildExpression
 import engine.expressions.divideBy
@@ -87,6 +88,33 @@ open class MappedExpressionBuilder(
             0 -> throw EmptyExpressionProviderException()
             1 -> expressions[0].withOrigin(Move(expressions[0]))
             else -> expressions[0].withOrigin(Factor(expressions))
+        }
+    }
+
+    /**
+     * Returns the expression provided by [expressionProvider] with a [Substitution] origin.
+     * Used to make the variable in the formula point to the concrete value it had in the expression,
+     * e.g. `2` in `(a + b)^2 = a^2 + 2ab + b^2` should point to `2` in `(x + 1)^2`
+     */
+    fun substitute(expressionProvider: ExpressionProvider): Expression {
+        val expressions = expressionProvider.getBoundExprs(match)
+        return when (expressions.size) {
+            0 -> throw EmptyExpressionProviderException()
+            else -> expressions[0].withOrigin(Substitution(expressions))
+        }
+    }
+
+    /**
+     * Return the variable created from [substitutedName] with a [Substitution] origin with from paths
+     * taken from [expressionProvider].
+     * Used to make the variable in the formula point to the concrete value it had in the expression,
+     * e.g. `a` in `(a + b)^2 = a^2 + 2ab + b^2` should point to `x` in `(x + 1)^2`
+     */
+    fun substitute(expressionProvider: ExpressionProvider, substitutedName: String): Expression {
+        val expressions = expressionProvider.getBoundExprs(match)
+        return when (expressions.size) {
+            0 -> throw EmptyExpressionProviderException()
+            else -> xp(substitutedName).withOrigin(Substitution(expressions))
         }
     }
 

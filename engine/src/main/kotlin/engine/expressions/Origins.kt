@@ -248,3 +248,22 @@ class Cancel(val origin: Origin, private val cancelParts: List<Pair<Expression, 
                 ),
             )
 }
+
+class Substitution(val from: List<Expression>) : Origin() {
+
+    override fun computeChildOrigin(expression: Expression, index: Int) =
+        expression.operands[index].withOrigin(Substitution(from))
+
+    override fun computePathMappings(rootPath: Path, children: List<Expression>) =
+        sequenceOf(
+            PathMapping(
+                from.flatMap {
+                    it.origin.fromPaths(it.children).map { path ->
+                        path to PathScope.default
+                    }
+                },
+                PathMappingType.Substitute,
+                listOf(Pair(rootPath, PathScope.default)),
+            ),
+        )
+}

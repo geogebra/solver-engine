@@ -22,6 +22,8 @@ properties:
       $ref: 'PathMapping.yaml'
   explanation:
     $ref: 'Metadata.yaml'
+  formula:
+    $ref: 'MappedExpression.yaml'
   gmAction:
     $ref: 'GmAction.yaml'
   skills:

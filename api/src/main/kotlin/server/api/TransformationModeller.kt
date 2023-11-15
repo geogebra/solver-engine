@@ -24,6 +24,7 @@ class TransformationModeller(val format: Format) {
             toExpr = modelExpression(trans.toExpr),
             pathMappings = modelPathMappings(trans.toExpr.mergedPathMappings(trans.fromExpr.path!!)),
             explanation = trans.explanation?.let { modelMetadata(it) },
+            formula = trans.formula?.let { modelMappedExpression(it) },
             skills = trans.skills?.map { modelMetadata(it) },
             gmAction = trans.gmAction?.let { modelGmAction(it) },
             steps = trans.steps?.let { steps -> steps.map { modelTransformation(it) } },
@@ -78,12 +79,7 @@ class TransformationModeller(val format: Format) {
     private fun modelMetadata(metadata: engine.steps.metadata.Metadata): Metadata {
         return Metadata(
             key = KeyNameRegistry.getKeyName(metadata.key),
-            params = metadata.mappedParams.map {
-                MappedExpression(
-                    expression = modelExpression(it),
-                    pathMappings = modelPathMappings(it.mergedPathMappings(RootPath())),
-                )
-            },
+            params = metadata.mappedParams.map { modelMappedExpression(it) },
         )
     }
 
@@ -97,6 +93,13 @@ class TransformationModeller(val format: Format) {
                 GmActionDragTo(gmAction.dragToExpressionAsPathString(), gmAction.dragTo?.position?.name)
             },
             formulaId = gmAction.formulaId,
+        )
+    }
+
+    private fun modelMappedExpression(expr: engine.expressions.Expression): MappedExpression {
+        return MappedExpression(
+            expression = modelExpression(expr),
+            pathMappings = modelPathMappings(expr.mergedPathMappings(RootPath())),
         )
     }
 

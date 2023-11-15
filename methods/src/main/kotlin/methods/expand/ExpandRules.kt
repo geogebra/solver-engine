@@ -4,6 +4,7 @@ import engine.expressions.Constants
 import engine.expressions.DivideBy
 import engine.expressions.Minus
 import engine.expressions.Sum
+import engine.expressions.equationOf
 import engine.expressions.explicitProductOf
 import engine.expressions.negOf
 import engine.expressions.powerOf
@@ -135,11 +136,19 @@ private val expandBinomialSquaredUsingIdentity =
         onPattern(pattern) {
             val (da, db, dtwo) = distribute(a, b, two)
 
+            val fa = substitute(a, "a")
+            val fb = substitute(b, "b")
+            val ftwo = substitute(two)
+
             ruleResult(
                 toExpr = sumOf(
                     powerOf(da, dtwo),
                     explicitProductOf(dtwo, da, db),
                     powerOf(db, dtwo),
+                ),
+                formula = equationOf(
+                    powerOf(sumOf(fa, fb), ftwo),
+                    sumOf(powerOf(fa, ftwo), productOf(ftwo, fa, fb), powerOf(fb, ftwo)),
                 ),
                 gmAction = doubleTap(two),
                 explanation = metadata(Explanation.ExpandBinomialSquaredUsingIdentity),
@@ -163,6 +172,10 @@ private val expandBinomialCubedUsingIdentity =
         onPattern(pattern) {
             val (da, db, dthree) = distribute(a, b, three)
 
+            val fa = substitute(a, "a")
+            val fb = substitute(b, "b")
+            val fthree = substitute(three)
+
             ruleResult(
                 toExpr = sumOf(
                     powerOf(da, dthree),
@@ -177,6 +190,15 @@ private val expandBinomialCubedUsingIdentity =
                         powerOf(db, introduce(Constants.Two)),
                     ),
                     powerOf(db, dthree),
+                ),
+                formula = equationOf(
+                    powerOf(sumOf(fa, fb), fthree),
+                    sumOf(
+                        powerOf(fa, fthree),
+                        productOf(fthree, powerOf(fa, Constants.Two), fb),
+                        productOf(fthree, fa, powerOf(fb, Constants.Three)),
+                        powerOf(fb, fthree),
+                    ),
                 ),
                 gmAction = doubleTap(three),
                 explanation = metadata(Explanation.ExpandBinomialCubedUsingIdentity),
@@ -200,14 +222,30 @@ private val expandTrinomialSquaredUsingIdentity =
         onPattern(trinomialSquared) {
             val (da, db, dc, dtwo) = distribute(a, b, c, two)
 
+            val fa = substitute(a, "a")
+            val fb = substitute(b, "b")
+            val fc = substitute(c, "c")
+            val ftwo = substitute(two)
+
             ruleResult(
                 toExpr = sumOf(
                     powerOf(da, dtwo),
                     powerOf(db, dtwo),
                     powerOf(dc, dtwo),
-                    explicitProductOf(dtwo, move(a), move(b)),
-                    explicitProductOf(dtwo, move(b), move(c)),
-                    explicitProductOf(dtwo, move(c), move(a)),
+                    explicitProductOf(dtwo, da, db),
+                    explicitProductOf(dtwo, db, dc),
+                    explicitProductOf(dtwo, dc, da),
+                ),
+                formula = equationOf(
+                    powerOf(sumOf(fa, fb, fc), ftwo),
+                    sumOf(
+                        powerOf(fa, ftwo),
+                        powerOf(fb, ftwo),
+                        powerOf(fc, ftwo),
+                        productOf(ftwo, fa, fb),
+                        productOf(ftwo, fb, fc),
+                        productOf(ftwo, fc, fa),
+                    ),
                 ),
                 gmAction = doubleTap(two),
                 explanation = metadata(Explanation.ExpandTrinomialSquaredUsingIdentity),
@@ -225,12 +263,19 @@ private val expandProductOfSumAndDifference =
         val pattern = commutativeProductOf(commutativeSumOf(a, b), commutativeSumOf(a, negOf(b)))
 
         onPattern(pattern) {
+            val fa = substitute(a, "a")
+            val fb = substitute(b, "b")
+
             ruleResult(
                 toExpr = sumOf(
                     powerOf(move(a), introduce(Constants.Two)),
                     negOf(
                         powerOf(move(b), introduce(Constants.Two)),
                     ),
+                ),
+                formula = equationOf(
+                    pattern.substitute(sumOf(fa, fb), sumOf(fa, negOf(fb))),
+                    sumOf(powerOf(fa, Constants.Two), powerOf(fb, Constants.Two)),
                 ),
                 gmAction = applyFormula(pattern, "Difference of Squares"),
                 explanation = metadata(Explanation.ExpandProductOfSumAndDifference),

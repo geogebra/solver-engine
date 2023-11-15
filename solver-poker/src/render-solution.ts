@@ -10,6 +10,7 @@ import * as solverSdk from '@geogebra/solver-sdk';
 import { colorScheme, colorSchemes } from './settings';
 import { translationData } from './translations';
 import { jsonToLatex, treeToLatex } from './render-math.ts';
+import { MappedExpression } from '@geogebra/solver-sdk';
 
 const removeOuterBrackets = (expression: ExpressionTree) => ({ ...expression, decorators: [] });
 
@@ -52,7 +53,7 @@ export const createColorMaps = (
   }
 };
 
-export const getExplanationString = (expl: Metadata) => {
+export const getExplanationString = (expl: Metadata, formula?: MappedExpression) => {
   let explanationString = translationData.value[expl.key];
   const warnings = [];
 
@@ -77,7 +78,18 @@ export const getExplanationString = (expl: Metadata) => {
       );
     }
   }
-  const unusedPlaceholders = explanationString.match(/%[1-9]/g);
+
+  if (formula) {
+    if (explanationString.includes('%f')) {
+      explanationString = explanationString.replaceAll('%f', renderExpression(formula.expression));
+    } else {
+      warnings.push(
+        `Missing %f in default translation, should contain ${renderExpression(formula.expression)}`,
+      );
+    }
+  }
+
+  const unusedPlaceholders = explanationString.match(/%([1-9]|f)/g);
   if (unusedPlaceholders) {
     for (const placeholder of unusedPlaceholders) {
       warnings.push(`Missing parameter for placeholder ${placeholder}`);

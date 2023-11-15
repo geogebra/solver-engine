@@ -27,6 +27,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Added solver engine support for "advanced balancing" (PLUT-845)
 - SDK: Allowed setting `advancedBalancing` flag in SDK (PLUT-845)
 - Performance: added caching to deeply calls (PLUT-854)
+- Added formulas to certain transformations (PLUT-694)
 
 ### Fixed
 
@@ -46,7 +47,7 @@ contents to a new release section (e.g. _[0.x]_).
 - The Spring configurations have been changed to exclude null values from the returned objects (PLUT-692)
 - SDK: the Transformation type has been changed to reflect the optional fields (PLUT-692)
 - Speed up method execution when it doesn't contain decimals (PLUT-836)
-- Simplification of roots of integers and roots of powers of an integers have been improved (PLUT-705)
+- Simplification of roots of integers and roots of powers of integers have been improved (PLUT-705)
 
 ### Removed
 

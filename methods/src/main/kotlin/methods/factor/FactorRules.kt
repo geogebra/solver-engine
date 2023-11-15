@@ -198,9 +198,17 @@ enum class FactorRules(override val runner: Rule) : RunnerMethod {
             val sum = commutativeSumOf(firstPower, mixedTerm, secondPower)
 
             onPattern(sum) {
+                val fTwo = substitute(two)
+                val a = substitute(firstBase, "a")
+                val b = substitute(secondBase, "b")
+
                 ruleResult(
                     toExpr = powerOf(sumOf(factor(firstBase), copySign(mixedTerm, factor(secondBase))), factor(two)),
                     explanation = metadata(Explanation.ApplySquareOfBinomialFormula),
+                    formula = equationOf(
+                        sumOf(powerOf(a, fTwo), productOf(fTwo, a, b), powerOf(b, fTwo)),
+                        powerOf(sumOf(a, b), fTwo),
+                    ),
                 )
             }
         },
@@ -231,9 +239,22 @@ enum class FactorRules(override val runner: Rule) : RunnerMethod {
             val sum = commutativeSumOf(firstPower, firstMixedTerm, secondMixedTerm, secondPower)
 
             onPattern(sum) {
+                val a = substitute(firstBase, "a")
+                val b = substitute(secondBase, "b")
+                val fThree = substitute(three)
+
                 ruleResult(
                     toExpr = powerOf(sumOf(factor(firstBase), factor(secondBase)), factor(three)),
                     explanation = metadata(Explanation.ApplyCubeOfBinomialFormula),
+                    formula = equationOf(
+                        sumOf(
+                            powerOf(a, fThree),
+                            productOf(fThree, powerOf(a, xp(2)), b),
+                            productOf(fThree, a, powerOf(b, xp(2))),
+                            powerOf(b, fThree),
+                        ),
+                        powerOf(sumOf(a, b), fThree),
+                    ),
                 )
             }
         },
@@ -314,16 +335,21 @@ enum class FactorRules(override val runner: Rule) : RunnerMethod {
 
     ApplyDifferenceOfSquaresFormula(
         rule {
+            val two = FixedPattern(Constants.Two)
             val firstBase = AnyPattern()
             val secondBase = AnyPattern()
 
-            val firstPower = powerOf(firstBase, FixedPattern(Constants.Two))
-            val secondPower = powerOf(secondBase, FixedPattern(Constants.Two))
+            val firstPower = powerOf(firstBase, two)
+            val secondPower = powerOf(secondBase, two)
 
             val sum = commutativeSumOf(firstPower, negOf(secondPower))
 
             onPattern(sum) {
                 val (dFirstBase, dSecondBase) = distribute(firstBase, secondBase)
+
+                val a = substitute(firstBase, "a")
+                val b = substitute(secondBase, "b")
+                val fTwo = substitute(two)
 
                 ruleResult(
                     toExpr = productOf(
@@ -331,6 +357,10 @@ enum class FactorRules(override val runner: Rule) : RunnerMethod {
                         sum.substitute(dFirstBase, dSecondBase),
                     ),
                     explanation = metadata(Explanation.ApplyDifferenceOfSquaresFormula),
+                    formula = equationOf(
+                        sumOf(powerOf(a, fTwo), powerOf(b, fTwo)),
+                        productOf(sumOf(a, b), sumOf(a, negOf(b))),
+                    ),
                 )
             }
         },
@@ -417,16 +447,21 @@ enum class FactorRules(override val runner: Rule) : RunnerMethod {
 
     ApplyDifferenceOfCubesFormula(
         rule {
+            val three = FixedPattern(Constants.Three)
             val firstBase = AnyPattern()
             val secondBase = AnyPattern()
 
-            val firstPower = powerOf(firstBase, FixedPattern(Constants.Three))
-            val secondPower = powerOf(secondBase, FixedPattern(Constants.Three))
+            val firstPower = powerOf(firstBase, three)
+            val secondPower = powerOf(secondBase, three)
 
             val sum = commutativeSumOf(firstPower, negOf(secondPower))
 
             onPattern(sum) {
                 val (dFirstBase, dSecondBase) = distribute(firstBase, secondBase)
+
+                val a = substitute(firstBase, "a")
+                val b = substitute(secondBase, "b")
+                val fThree = substitute(three)
 
                 ruleResult(
                     toExpr = productOf(
@@ -438,6 +473,10 @@ enum class FactorRules(override val runner: Rule) : RunnerMethod {
                         ),
                     ),
                     explanation = metadata(Explanation.ApplyDifferenceOfCubesFormula),
+                    formula = equationOf(
+                        sumOf(powerOf(a, fThree), negOf(powerOf(b, fThree))),
+                        productOf(sumOf(a, b), sumOf(powerOf(a, xp(2)), productOf(a, b), powerOf(b, xp(2)))),
+                    ),
                 )
             }
         },
@@ -445,16 +484,21 @@ enum class FactorRules(override val runner: Rule) : RunnerMethod {
 
     ApplySumOfCubesFormula(
         rule {
+            val three = FixedPattern(Constants.Three)
             val firstBase = AnyPattern()
             val secondBase = AnyPattern()
 
-            val firstPower = powerOf(firstBase, FixedPattern(Constants.Three))
-            val secondPower = powerOf(secondBase, FixedPattern(Constants.Three))
+            val firstPower = powerOf(firstBase, three)
+            val secondPower = powerOf(secondBase, three)
 
             val sum = sumOf(firstPower, secondPower)
 
             onPattern(sum) {
                 val (dFirstBase, dSecondBase) = distribute(firstBase, secondBase)
+
+                val a = substitute(firstBase, "a")
+                val b = substitute(secondBase, "b")
+                val fThree = substitute(three)
 
                 ruleResult(
                     toExpr = productOf(
@@ -466,6 +510,10 @@ enum class FactorRules(override val runner: Rule) : RunnerMethod {
                         ),
                     ),
                     explanation = metadata(Explanation.ApplySumOfCubesFormula),
+                    formula = equationOf(
+                        sumOf(powerOf(a, fThree), powerOf(b, fThree)),
+                        productOf(sumOf(a, b), sumOf(powerOf(a, xp(2)), negOf(productOf(a, b)), powerOf(b, xp(2)))),
+                    ),
                 )
             }
         },
