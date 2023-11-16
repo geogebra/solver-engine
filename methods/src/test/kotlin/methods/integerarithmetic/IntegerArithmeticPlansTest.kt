@@ -8,9 +8,10 @@ import kotlin.test.Test
 class IntegerArithmeticPlansTest {
 
     @Test
-    fun testSimplifyArithmeticExpressionSimple() = testMethod {
+    fun testSimplifyArithmeticExpressionSimple() = testMethod { // change to gmTestMethod
         method = IntegerArithmeticPlans.EvaluateArithmeticExpression
         inputExpr = "1 + 2 + 3"
+        context = context.copy(advancedBalancing = true)
 
         check {
             toExpr = "6"
@@ -18,6 +19,7 @@ class IntegerArithmeticPlansTest {
             step {
                 fromExpr = "1 + 2 + 3"
                 toExpr = "3 + 3"
+                // gmToExpr = "3 + 3"
 
                 combine {
                     fromPaths("./0", "./1", "./1:outerOp")

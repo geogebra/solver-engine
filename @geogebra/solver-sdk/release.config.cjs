@@ -15,6 +15,12 @@ module.exports = {
     // pre-release new SDK package with @main tag when on "main" branch
     { name: 'main', channel: 'main', prerelease: 'main' },
 
+    {
+      name: 'test-semantic-release',
+      channel: 'test-semantic-release',
+      prerelease: 'test-semantic-release',
+    },
+
     // We don't do pre-releases on feature branches, because rebasing them on
     // main leads to lost git-tags and semantic-release will try to re-create
     // existing git-tags and fail.
