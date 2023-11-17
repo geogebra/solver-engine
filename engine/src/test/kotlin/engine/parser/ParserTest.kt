@@ -10,6 +10,7 @@ import engine.expressions.ListExpression
 import engine.expressions.Product
 import engine.expressions.SetDifference
 import engine.expressions.VoidExpression
+import engine.expressions.absoluteValueOf
 import engine.expressions.arsinhOf
 import engine.expressions.bracketOf
 import engine.expressions.cartesianProductOf
@@ -184,6 +185,18 @@ class ParserTest {
                 xp("c"),
                 divideBy(missingBracketOf(rawProductOf(xp("c"), xp("d")))),
             ),
+        )
+    }
+
+    @Test
+    fun testPowerOfAbsoluteValue() {
+        parsesTo(
+            "[abs[x] ^ 2]",
+            powerOf(absoluteValueOf(xp("x")), xp(2)),
+        )
+        parsesTo(
+            "[abs[x + 1] ^ 3]",
+            powerOf(absoluteValueOf(sumOf(xp("x"), xp(1))), xp(3)),
         )
     }
 

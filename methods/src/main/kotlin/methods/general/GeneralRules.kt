@@ -16,6 +16,7 @@ import engine.expressions.Sum
 import engine.expressions.Variable
 import engine.expressions.absoluteValueOf
 import engine.expressions.asInteger
+import engine.expressions.equationOf
 import engine.expressions.fractionOf
 import engine.expressions.negOf
 import engine.expressions.powerOf
@@ -103,6 +104,7 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     // Powers
     SimplifyEvenPowerOfNegative(simplifyEvenPowerOfNegative),
     SimplifyOddPowerOfNegative(simplifyOddPowerOfNegative),
+    RewriteEvenPowerOfBaseAsEvenPowerOfAbsoluteValueOfBase(rewriteEvenPowerOfBaseAsEvenPowerOfAbsoluteValueOfBase),
 
     // Products of powers
     RewriteProductOfPowersWithSameBase(rewriteProductOfPowersWithSameBase),
@@ -126,8 +128,10 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     ResolveAbsoluteValueOfNonNegativeValue(resolveAbsoluteValueOfNonNegativeValue),
     ResolveAbsoluteValueOfNonPositiveValue(resolveAbsoluteValueOfNonPositiveValue),
     SimplifyAbsoluteValueOfNegatedExpression(simplifyAbsoluteValueOfNegatedExpression),
+    SimplifyEvenPowerOfAbsoluteValue(simplifyEvenPowerOfAbsoluteValue),
 
     FactorizeInteger(factorizeInteger),
+    SimplifyPlusMinusOfAbsoluteValue(simplifyPlusMinusOfAbsoluteValue),
 }
 
 private val removeUnitaryCoefficient = rule {
@@ -749,6 +753,28 @@ private val simplifyOddPowerOfNegative = rule {
     }
 }
 
+/**
+ * `[y^k]` --> `[abs[y] ^ k]`
+ */
+private val rewriteEvenPowerOfBaseAsEvenPowerOfAbsoluteValueOfBase = rule {
+    val base = condition { it.signOf() == Sign.UNKNOWN }
+    val exponent = integerCondition(SignedIntegerPattern()) { it.isEven() }
+    val power = powerOf(base, exponent)
+
+    onPattern(power) {
+        val fa = substitute(base, "a")
+        val fExponent = substitute(exponent, "2k")
+        ruleResult(
+            toExpr = transform(power, powerOf(absoluteValueOf(get(base)), get(exponent))),
+            formula = equationOf(
+                powerOf(fa, fExponent),
+                powerOf(absoluteValueOf(fa), fExponent),
+            ),
+            explanation = metadata(Explanation.RewriteEvenPowerOfBaseAsEvenPowerOfAbsoluteValueOfBase),
+        )
+    }
+}
+
 private val rewriteProductOfPowersWithSameBase =
     rule {
         val base = AnyPattern()
@@ -1048,7 +1074,7 @@ private val cancelRootIndexAndExponent =
 
         onPattern(root) {
             if (get(commonExponent).asInteger()!!.isEven() &&
-                get(base).signOf() != Sign.POSITIVE
+                get(base).signOf().signum != 1
             ) {
                 return@onPattern null
             }
@@ -1136,6 +1162,20 @@ private val simplifyAbsoluteValueOfNegatedExpression = rule {
     }
 }
 
+private val simplifyEvenPowerOfAbsoluteValue = rule {
+    val expr = AnyPattern()
+    val absoluteValue = absoluteValueOf(expr)
+    val exponent = integerCondition(SignedIntegerPattern()) { it.isEven() }
+    val power = powerOf(absoluteValue, exponent)
+
+    onPattern(power) {
+        ruleResult(
+            toExpr = transform(power, powerOf(get(expr), get(exponent))),
+            explanation = metadata(Explanation.SimplifyEvenPowerOfAbsoluteValue),
+        )
+    }
+}
+
 private val factorizeInteger = rule {
     val integer = UnsignedIntegerPattern()
     onPattern(integer) {
@@ -1143,6 +1183,19 @@ private val factorizeInteger = rule {
         ruleResult(
             toExpr = transform(integer, primeFactorization),
             explanation = metadata(Explanation.FactorizeInteger),
+        )
+    }
+}
+
+private val simplifyPlusMinusOfAbsoluteValue = rule {
+    val expr = AnyPattern()
+    val absoluteValue = absoluteValueOf(expr)
+    val plusMinusTerm = plusMinusOf(absoluteValue)
+
+    onPattern(plusMinusTerm) {
+        ruleResult(
+            toExpr = transform(plusMinusTerm, engine.expressions.plusMinusOf(get(expr))),
+            explanation = metadata(Explanation.SimplifyPlusMinusOfAbsoluteValue),
         )
     }
 }

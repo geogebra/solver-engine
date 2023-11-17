@@ -243,7 +243,7 @@ internal enum class UnaryExpressionOperator(override val precedence: Int) : Unar
         override fun latexString(ctx: RenderContext, child: LatexRenderable) = "\\log ${child.toLatexString(ctx)}"
         override fun eval(operand: Double) = log10(operand)
     },
-    AbsoluteValue(FUNCTION_LIKE_PRECEDENCE) {
+    AbsoluteValue(MAX_PRECEDENCE) {
         override fun childAllowed(op: Operator) = true
         override fun <T> readableString(child: T) = "abs[$child]"
         override fun latexString(ctx: RenderContext, child: LatexRenderable) =
@@ -345,7 +345,6 @@ internal enum class BinaryExpressionOperator(override val precedence: Int) : Bin
     Power(POWER_PRECEDENCE) {
         override fun leftChildAllowed(op: Operator) = (op.precedence == MAX_PRECEDENCE) ||
             (op is TrigonometricFunctionOperator)
-
         override fun rightChildAllowed(op: Operator) = true
 
         override fun <T> readableString(left: T, right: T): String {

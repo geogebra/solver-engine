@@ -503,6 +503,15 @@ class GeneralRulesTest {
     }
 
     @Test
+    fun testRewriteEvenPowerOfBaseAsEvenPowerOfAbsoluteValueOfBase() {
+        testRule(
+            "[y ^ 6]",
+            GeneralRules.RewriteEvenPowerOfBaseAsEvenPowerOfAbsoluteValueOfBase,
+            "[abs[y] ^ 6]",
+        )
+    }
+
+    @Test
     fun testSimplifyExpressionToThePowerOfOne() {
         testRule("[(sqrt[2] + 1) ^ 1]", SimplifyExpressionToThePowerOfOne, "sqrt[2] + 1")
         testRule("[2 ^ 1]", SimplifyExpressionToThePowerOfOne, "2")
@@ -879,6 +888,11 @@ class GeneralRulesTest {
             GeneralRules.CancelRootIndexAndExponent,
             "7",
         )
+        testRule(
+            "root[[abs[y] ^ 3 * 4], 4]",
+            GeneralRules.CancelRootIndexAndExponent,
+            "[abs[y] ^ 3]",
+        )
     }
 
     @Test
@@ -1029,6 +1043,12 @@ class GeneralRulesTest {
     @Test
     fun testFactorizeInteger() {
         testRule("12", FactorizeInteger, "[2^2] * 3")
+    }
+
+    @Test
+    fun testSimplifyPlusMinusOfAbsoluteValue() {
+        testRule("+/- abs[y]", GeneralRules.SimplifyPlusMinusOfAbsoluteValue, "+/- y")
+        testRule("+/- abs[1 - y]", GeneralRules.SimplifyPlusMinusOfAbsoluteValue, "+/- (1 - y)")
     }
 }
 

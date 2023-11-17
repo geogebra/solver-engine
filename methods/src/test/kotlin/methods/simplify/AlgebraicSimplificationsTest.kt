@@ -4,6 +4,7 @@ import engine.methods.SolverEngineExplanation
 import engine.methods.testMethod
 import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.general.GeneralExplanation
+import methods.integerroots.IntegerRootsExplanation
 import methods.rationalexpressions.RationalExpressionsExplanation
 import org.junit.jupiter.api.Test
 
@@ -454,6 +455,114 @@ class AlgebraicSimplificationsTest {
                 toExpr = "[x + 1 / (x - 2) (x - 1)]"
                 explanation {
                     key = FractionArithmeticExplanation.SimplifyNegativeInNumeratorAndDenominator
+                }
+            }
+        }
+    }
+}
+
+class AlgebraicExpressionContainingAbsoluteValue {
+    @Test
+    fun `test simplify even power of absoluteValue`() = testMethod {
+        method = SimplifyPlans.SimplifyAlgebraicExpression
+        inputExpr = "[abs[y]^2]"
+
+        check {
+            fromExpr = "[abs[y] ^ 2]"
+            toExpr = "[y ^ 2]"
+            explanation {
+                key = GeneralExplanation.SimplifyEvenPowerOfAbsoluteValue
+            }
+        }
+    }
+
+    @Test
+    fun `test simplify cancellable root of power to even power`() = testMethod {
+        method = SimplifyPlans.SimplifyAlgebraicExpression
+        inputExpr = "root[[y^4], 2]"
+
+        check {
+            fromExpr = "root[[y ^ 4], 2]"
+            toExpr = "[y ^ 2]"
+            explanation {
+                key = SimplifyExplanation.SimplifyAlgebraicExpression
+            }
+
+            step {
+                fromExpr = "root[[y ^ 4], 2]"
+                toExpr = "[abs[y] ^ 2]"
+                explanation {
+                    key = IntegerRootsExplanation.RewriteAndCancelPowerUnderRoot
+                }
+
+                step {
+                    fromExpr = "root[[y ^ 4], 2]"
+                    toExpr = "root[[abs[y] ^ 4], 2]"
+                    explanation {
+                        key = GeneralExplanation.RewriteEvenPowerOfBaseAsEvenPowerOfAbsoluteValueOfBase
+                    }
+                }
+
+                step {
+                    fromExpr = "root[[abs[y] ^ 4], 2]"
+                    toExpr = "sqrt[[abs[y] ^ 2 * 2]]"
+                    explanation {
+                        key = GeneralExplanation.RewritePowerUnderRoot
+                    }
+                }
+
+                step {
+                    fromExpr = "sqrt[[abs[y] ^ 2 * 2]]"
+                    toExpr = "[abs[y] ^ 2]"
+                    explanation {
+                        key = GeneralExplanation.CancelRootIndexAndExponent
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "[abs[y] ^ 2]"
+                toExpr = "[y ^ 2]"
+                explanation {
+                    key = GeneralExplanation.SimplifyEvenPowerOfAbsoluteValue
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test simplify cancellable root of power to power of absolute value`() = testMethod {
+        method = SimplifyPlans.SimplifyAlgebraicExpression
+        inputExpr = "root[[(y + 1)^12], 4]"
+
+        check {
+            fromExpr = "root[[(y + 1) ^ 12], 4]"
+            toExpr = "[abs[y + 1] ^ 3]"
+            explanation {
+                key = IntegerRootsExplanation.RewriteAndCancelPowerUnderRoot
+            }
+
+            step {
+                fromExpr = "root[[(y + 1) ^ 12], 4]"
+                toExpr = "root[[abs[y + 1] ^ 12], 4]"
+                explanation {
+                    key = GeneralExplanation.RewriteEvenPowerOfBaseAsEvenPowerOfAbsoluteValueOfBase
+                }
+            }
+
+            step {
+                fromExpr = "root[[abs[y + 1] ^ 12], 4]"
+                toExpr = "root[[abs[y + 1] ^ 3 * 4], 4]"
+                explanation {
+                    key = GeneralExplanation.RewritePowerUnderRoot
+                }
+            }
+
+            step {
+                fromExpr = "root[[abs[y + 1] ^ 3 * 4], 4]"
+                toExpr = "[abs[y + 1] ^ 3]"
+                explanation {
+                    key = GeneralExplanation.CancelRootIndexAndExponent
                 }
             }
         }

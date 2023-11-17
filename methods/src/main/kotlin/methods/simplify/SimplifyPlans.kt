@@ -68,8 +68,8 @@ val simplifyAlgebraicExpressionSteps = steps {
 
 val algebraicSimplificationSteps = algebraicSimplificationSteps(true)
 
-// when solving equations or inequalities we don't want to add fractions
-// e.g. in x/2 + x/3 = 1 we want to multiply through by 6 instead of adding the fractions
+// when solving equations or inequalities, we don't want to add fractions
+// e.g., in x/2 + x/3 = 1 we want to multiply through by 6 instead of adding the fractions
 val algebraicSimplificationStepsWithoutFractionAddition = algebraicSimplificationSteps(false)
 
 private fun algebraicSimplificationSteps(addRationalExpressions: Boolean = true): StepsProducer {

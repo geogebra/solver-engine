@@ -160,6 +160,9 @@ enum class IntegerRootsPlans(override val runner: CompositeMethod) : RunnerMetho
                 optionally {
                     applyTo(GeneralRules.SimplifyEvenPowerOfNegative) { it.firstChild }
                 }
+                optionally {
+                    applyTo(GeneralRules.RewriteEvenPowerOfBaseAsEvenPowerOfAbsoluteValueOfBase) { it.firstChild }
+                }
 
                 optionally(GeneralRules.RewritePowerUnderRoot)
                 apply(GeneralRules.CancelRootIndexAndExponent)

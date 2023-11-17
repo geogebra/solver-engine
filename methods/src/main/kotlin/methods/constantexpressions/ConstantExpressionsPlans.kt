@@ -23,6 +23,7 @@ import engine.patterns.FindPattern
 import engine.patterns.IntegerFractionPattern
 import engine.patterns.RationalPattern
 import engine.patterns.SignedIntegerPattern
+import engine.patterns.absoluteValueOf
 import engine.patterns.condition
 import engine.patterns.integerCondition
 import engine.patterns.optionalNegOf
@@ -112,6 +113,19 @@ enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : Runn
                     apply(GeneralRules.DistributePowerOfProduct)
                     whilePossible(constantSimplificationSteps)
                 }
+            }
+        },
+    ),
+
+    SimplifyPowerOfAbsoluteValue(
+        plan {
+            pattern = powerOf(optionalNegOf(absoluteValueOf(AnyPattern())), AnyPattern())
+            explanation = Explanation.SimplifyPowerOfAbsoluteValue
+
+            steps {
+                optionally(GeneralRules.SimplifyOddPowerOfNegative)
+                optionally(GeneralRules.SimplifyEvenPowerOfNegative)
+                optionally(GeneralRules.SimplifyEvenPowerOfAbsoluteValue)
             }
         },
     ),
@@ -332,6 +346,8 @@ val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
         // It would be better to move this out of constantSimplificationSteps altogether and do it first but the
         // required behaviour depends on the previous steps being tried first.
         option(decimalToFractionConversionSteps)
+        // can't think of a better place for this rule for now
+        option(GeneralRules.SimplifyPlusMinusOfAbsoluteValue)
 
         option {
             deeply {
@@ -350,6 +366,7 @@ val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
                     option(ConstantExpressionsPlans.SimplifyPowerOfInteger)
                     option(ConstantExpressionsPlans.SimplifyPowerOfProduct)
                     option(ConstantExpressionsPlans.SimplifyPowerOfFraction)
+                    option(ConstantExpressionsPlans.SimplifyPowerOfAbsoluteValue)
                 }
             }
         }
@@ -377,7 +394,7 @@ val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
         option {
             check { it.containsRoots() }
             firstOf {
-                // Do this after integers are added we don't apply it to e.g. `sqrt[4 + 8]`
+                // Do this after integers are added, we don't apply it to e.g. `sqrt[4 + 8]`
                 option { deeply(IntegerRootsPlans.SimplifySquareRootWithASquareFactorRadicand) }
                 option { deeply(addRootAndFraction) }
                 option { deeply(FractionRootsPlans.RationalizeDenominators) }

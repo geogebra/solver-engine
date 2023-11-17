@@ -28,6 +28,7 @@ contents to a new release section (e.g. _[0.x]_).
 - SDK: Allowed setting `advancedBalancing` flag in SDK (PLUT-845)
 - Performance: added caching to deeply calls (PLUT-854)
 - Added formulas to certain transformations (PLUT-694)
+- Add rules to simplify cancellation of root with any base and absolute power (PLUT-852)
 
 ### Fixed
 
