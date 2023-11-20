@@ -89,6 +89,10 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
         SolvableKey.MultiplyByInverseCoefficientOfVariable,
     )
 
+    val multiplyByDenominatorOfVariableAndSimplify = ApplyRuleAndSimplify(
+        SolvableKey.MultiplyByDenominatorOfVariable,
+    )
+
     val divideByCoefficientOfVariableAndSimplify = ApplyRuleAndSimplify(
         SolvableKey.DivideByCoefficientOfVariable,
     )
@@ -211,6 +215,7 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
         firstOf {
             // get rid of the coefficient of the variable
             option(multiplyByInverseCoefficientOfVariableAndSimplify)
+            option(multiplyByDenominatorOfVariableAndSimplify)
             option(divideByCoefficientOfVariableAndSimplify)
             option {
                 checkForm {

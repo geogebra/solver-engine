@@ -203,29 +203,27 @@ class SolvableRulesTest {
         testRuleInX(
             "[x / 5] = 1",
             MultiplyByInverseCoefficientOfVariable,
-            "[x / 5] * 5 = 1 * 5",
-            "x = 1 * 5",
+            "5 * [x / 5] = 5 * 1",
+            "x = 5 * 1",
         )
         testRuleInX(
             "[3x / 2] = 1",
             MultiplyByInverseCoefficientOfVariable,
-            "[3x / 2] * [2 / 3] = 1 * [2 / 3]",
-            "x = 1 * [2 / 3]",
-
+            "[2 / 3] * [3x / 2] = [2 / 3] * 1",
+            "x = [2 / 3] * 1",
         )
         testRuleInX(
             "-[x / 5] = 1",
             MultiplyByInverseCoefficientOfVariable,
-            "(-[x / 5]) * (-5) = 1 * (-5)",
-            "x = 1 * (-5)",
+            "(-5) (-[x / 5]) = (-5) * 1",
+            "x = (-5) * 1",
 
         )
         testRuleInX(
             "-[3x / 2] = 1",
             MultiplyByInverseCoefficientOfVariable,
-            "(-[3x / 2]) (-[2 / 3]) = 1 (-[2 / 3])",
-            "x = 1 (-[2 / 3])",
-
+            "(-[2 / 3]) (-[3x / 2]) = (-[2 / 3]) * 1",
+            "x = (-[2 / 3]) * 1 ",
         )
 
         testRuleInX(
@@ -236,30 +234,46 @@ class SolvableRulesTest {
         testRuleInX(
             "[x / 5] > 1",
             MultiplyByInverseCoefficientOfVariable,
-            "[x / 5] * 5 > 1 * 5",
-            "x > 1 * 5",
-
+            "5 [x / 5] > 5 * 1",
+            "x > 5 * 1",
         )
         testRuleInX(
             "[3x / 2] > 1",
             MultiplyByInverseCoefficientOfVariable,
-            "[3x / 2] * [2 / 3] > 1 * [2 / 3]",
-            "x > 1 * [2 / 3]",
-
+            "[2 / 3] [3x / 2] > [2 / 3] * 1",
+            "x > [2 / 3] * 1",
         )
         testRuleInX(
             "-[x / 5] > 1",
             MultiplyByInverseCoefficientOfVariable,
-            "(-[x / 5]) * (-5) < 1 * (-5)",
-            "x < 1 * (-5)",
-
+            "(-5) (-[x / 5])  < (-5) * 1",
+            "x < (-5) * 1",
         )
         testRuleInX(
             "-[3x / 2] > 1",
             MultiplyByInverseCoefficientOfVariable,
-            "(-[3x / 2]) (-[2 / 3]) < 1 (-[2 / 3])",
-            "x < 1 (-[2 / 3])",
+            "(-[2 / 3]) (-[3x / 2]) < (-[2 / 3]) * 1",
+            "x < (-[2 / 3]) * 1",
+        )
+        // in this case, we shouldn't multiply by inverse coefficient of 'x'
+        testRuleInX(
+            "[2hx / 3] = 1",
+            MultiplyByInverseCoefficientOfVariable,
+            null,
+        )
+    }
 
+    @Test
+    fun testMultiplyByDenominatorOfVariable() {
+        testRuleInX(
+            "[1/2](B + b)x = S",
+            SolvableRules.MultiplyByDenominatorOfVariable,
+            "2 * [1/2](B + b) x = 2S",
+        )
+        testRuleInX(
+            "[(B + b)x / 2] = S",
+            SolvableRules.MultiplyByDenominatorOfVariable,
+            "2 * [(B + b)x / 2] = 2S",
         )
     }
 

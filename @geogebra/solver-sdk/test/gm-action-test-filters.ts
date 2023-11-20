@@ -94,6 +94,10 @@ export const ruleSkipList = [
 
   // [TRACKED] APA doesn't support automatic rounding in intermediate steps.
   'Approximation.ApproximateDecimalProduct',
+
+  // skipping it currently as now the inverse is multiplied on the left-side of both
+  // sides of the solvable
+  'Equations.MultiplyByInverseCoefficientOfVariable',
 ];
 
 export const expressionTypeSkipList = [

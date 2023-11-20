@@ -30,6 +30,7 @@ import engine.methods.RunnerMethod
 import engine.methods.rule
 import engine.patterns.AnyPattern
 import engine.patterns.ConstantInSolutionVariablePattern
+import engine.patterns.SolutionVariablePattern
 import engine.patterns.SolvablePattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.VariableExpressionPattern
@@ -221,7 +222,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
 
     MultiplyByInverseCoefficientOfVariable(
         rule {
-            val variable = VariableExpressionPattern()
+            val variable = SolutionVariablePattern()
             val lhs = withOptionalConstantCoefficient(variable)
             val rhs = ConstantInSolutionVariablePattern()
 
@@ -264,9 +265,9 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                     val newLhs = if (context.advancedBalancing) {
                         get(variable)
                     } else {
-                        productOf(get(lhs), inverse)
+                        productOf(inverse, get(lhs))
                     }
-                    val newRhs = productOf(get(rhs), inverse)
+                    val newRhs = productOf(inverse, get(rhs))
 
                     ruleResult(
                         toExpr = solvable.deriveSolvable(newLhs, newRhs, useDual),
@@ -283,6 +284,8 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
             }
         },
     ),
+
+    MultiplyByDenominatorOfVariable(multiplyByDenominatorOfVariable),
 
     DivideByCoefficientOfVariable(
         rule {
@@ -612,4 +615,38 @@ internal fun Expression.countAbsoluteValues(solutionVariables: List<String>): In
     childCount == 0 -> 0
     this is AbsoluteValue && !isConstantIn(solutionVariables) -> 1
     else -> children.sumOf { it.countAbsoluteValues(solutionVariables) }
+}
+
+private val multiplyByDenominatorOfVariable = rule {
+    val variable = VariableExpressionPattern()
+    val lhs = withOptionalConstantCoefficientInSolutionVariables(variable)
+    val rhs = ConstantInSolutionVariablePattern()
+
+    val solvable = SolvablePattern(lhs, rhs)
+
+    onPattern(solvable) {
+        val denominator = extractDenominator(get(lhs::coefficient)!!) ?: return@onPattern null
+        val useDual = if (solvable.isSelfDual()) {
+            false
+        } else {
+            when (denominator.signOf()) {
+                Sign.POSITIVE -> false
+                Sign.NEGATIVE -> true
+                Sign.NOT_ZERO -> if (solvable.isSelfDual()) false else return@onPattern null
+                else -> return@onPattern null
+            }
+        }
+
+        val newLhs = productOf(denominator, get(lhs))
+        val newRhs = productOf(denominator, get(rhs))
+
+        ruleResult(
+            toExpr = solvable.deriveSolvable(newLhs, newRhs, useDual),
+            explanation = solvableExplanation(
+                SolvableKey.MultiplyByDenominatorOfVariable,
+                flipSign = useDual && !solvable.isSelfDual(),
+                parameters = listOf(denominator),
+            ),
+        )
+    }
 }

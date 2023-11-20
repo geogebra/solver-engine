@@ -196,7 +196,7 @@ class LinearInequalitiesTest {
 
                 step {
                     fromExpr = "-[1 / 3] x > 7"
-                    toExpr = "(-[1 / 3] x) * (-3) < 7 * (-3)"
+                    toExpr = "(-3) (-[1 / 3] x) < (-3) * 7"
                     explanation {
                         key = methods.solvable.InequalitiesExplanation
                             .MultiplyByInverseCoefficientOfVariableAndFlipTheSign
@@ -204,7 +204,7 @@ class LinearInequalitiesTest {
                 }
 
                 step {
-                    fromExpr = "(-[1 / 3] x) * (-3) < 7 * (-3)"
+                    fromExpr = "(-3) (-[1 / 3] x) < (-3) * 7"
                     toExpr = "x < -21"
                     explanation {
                         key = InequalitiesExplanation.SimplifyInequality

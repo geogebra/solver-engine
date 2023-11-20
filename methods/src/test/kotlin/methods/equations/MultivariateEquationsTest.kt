@@ -8,6 +8,7 @@ import methods.constantexpressions.ConstantExpressionsExplanation
 import methods.general.GeneralExplanation
 import methods.inequalities.InequalitiesExplanation
 import methods.inequations.InequationsExplanation
+import methods.polynomials.PolynomialsExplanation
 import kotlin.test.Test
 
 class MultivariateEquationsTest {
@@ -113,17 +114,17 @@ class MultivariateEquationsTest {
 
                 step {
                     fromExpr = "[9 / 5] C = F - 32"
-                    toExpr = "[9 / 5] C * [5 / 9] = (F - 32) * [5 / 9]"
+                    toExpr = "[5 / 9] * [9 / 5] C  = [5 / 9] (F - 32)"
                     explanation {
                         key = methods.solvable.EquationsExplanation.MultiplyByInverseCoefficientOfVariable
                     }
                 }
 
                 step {
-                    fromExpr = "[9 / 5] C * [5 / 9] = (F - 32) * [5 / 9]"
+                    fromExpr = "[5 / 9] * [9 / 5] C  = [5 / 9] (F - 32)"
                     toExpr = "C = [5 / 9] (F - 32)"
                     explanation {
-                        key = EquationsExplanation.SimplifyEquation
+                        key = PolynomialsExplanation.SimplifyMonomial
                     }
                 }
             }
@@ -491,6 +492,193 @@ class MultivariateEquationsTest {
                 toExpr = "Contradiction[x: [x ^ 6] = -[y ^ 2] - 1]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEvenPowerEqualsNegative
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test multiply and then divide by coefficient`() = testMethod {
+        method = EquationsPlans.SolveEquation
+        context = Context(solutionVariables = listOf("h"))
+        inputExpr = "[1/2] h (B + b) = S"
+
+        check {
+            fromExpr = "[1 / 2] h (B + b) = S"
+            toExpr = "SetSolution[h: {[2 S / B + b]}] GIVEN B + b != 0"
+            explanation {
+                key = EquationsExplanation.SolveLinearEquation
+            }
+
+            step {
+                fromExpr = "[1 / 2] h (B + b) = S"
+                toExpr = "h (B + b) = 2 S"
+                explanation {
+                    key = methods.solvable.EquationsExplanation.MultiplyByDenominatorOfVariableAndSimplify
+                }
+
+                step {
+                    fromExpr = "[1 / 2] h (B + b) = S"
+                    toExpr = "2 * [1 / 2] h (B + b) = 2 S"
+                    explanation {
+                        key = methods.solvable.EquationsExplanation.MultiplyByDenominatorOfVariable
+                    }
+                }
+
+                step {
+                    fromExpr = "2 * [1 / 2] h (B + b) = 2 S"
+                    toExpr = "h (B + b) = 2 S"
+                    explanation {
+                        key = EquationsExplanation.SimplifyEquation
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "h (B + b) = 2 S"
+                toExpr = "h = [2 S / B + b] GIVEN B + b != 0"
+                explanation {
+                    key = methods.solvable.EquationsExplanation.DivideByCoefficientOfVariableAndSimplifyMultivariate
+                }
+
+                step {
+                    fromExpr = "h (B + b) = 2 S"
+                    toExpr = "[h (B + b) / B + b] = [2 S / B + b] GIVEN B + b != 0"
+                    explanation {
+                        key = methods.solvable.EquationsExplanation.DivideByCoefficientOfVariableMultivariate
+                    }
+                }
+
+                step {
+                    fromExpr = "[h (B + b) / B + b] = [2 S / B + b] GIVEN B + b != 0"
+                    toExpr = "h = [2 S / B + b] GIVEN B + b != 0"
+                    explanation {
+                        key = EquationsExplanation.SimplifyEquation
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "h = [2 S / B + b] GIVEN B + b != 0"
+                toExpr = "SetSolution[h: {[2 S / B + b]}] GIVEN B + b != 0"
+                explanation {
+                    key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test multiply and then divide by coefficient example2`() = testMethodInX {
+        method = EquationsPlans.SolveEquation
+        inputExpr = "x * [y / 2] = 5"
+
+        check {
+            fromExpr = "x * [y / 2] = 5"
+            toExpr = "SetSolution[x: {[10 / y]}] GIVEN SetSolution[y: /reals/ \\ {0}]"
+            explanation {
+                key = EquationsExplanation.SolveLinearEquation
+            }
+
+            step {
+                fromExpr = "x * [y / 2] = 5"
+                toExpr = "x y = 10"
+                explanation {
+                    key = methods.solvable.EquationsExplanation.MultiplyByDenominatorOfVariableAndSimplify
+                }
+
+                step {
+                    fromExpr = "x * [y / 2] = 5"
+                    toExpr = "2 x * [y / 2] = 2 * 5"
+                    explanation {
+                        key = methods.solvable.EquationsExplanation.MultiplyByDenominatorOfVariable
+                    }
+                }
+
+                step {
+                    fromExpr = "2 x * [y / 2] = 2 * 5"
+                    toExpr = "x y = 10"
+                    explanation {
+                        key = EquationsExplanation.SimplifyEquation
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "x y = 10"
+                toExpr = "x = [10 / y] GIVEN SetSolution[y: /reals/ \\ {0}]"
+                explanation {
+                    key = methods.solvable.EquationsExplanation.DivideByCoefficientOfVariableAndSimplifyMultivariate
+                }
+
+                step {
+                    fromExpr = "x y = 10"
+                    toExpr = "[x y / y] = [10 / y] GIVEN y != 0"
+                    explanation {
+                        key = methods.solvable.EquationsExplanation.DivideByCoefficientOfVariableMultivariate
+                    }
+                }
+
+                step {
+                    fromExpr = "[x y / y] = [10 / y] GIVEN y != 0"
+                    toExpr = "x = [10 / y] GIVEN y != 0"
+                    explanation {
+                        key = EquationsExplanation.SimplifyEquation
+                    }
+                }
+
+                step {
+                    fromExpr = "x = [10 / y] GIVEN y != 0"
+                    toExpr = "x = [10 / y] GIVEN SetSolution[y: /reals/ \\ {0}]"
+                    explanation {
+                        key = EquationsExplanation.SimplifyConstraint
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "x = [10 / y] GIVEN SetSolution[y: /reals/ \\ {0}]"
+                toExpr = "SetSolution[x: {[10 / y]}] GIVEN SetSolution[y: /reals/ \\ {0}]"
+                explanation {
+                    key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test multiply and then divide by coefficient example3`() = testMethodInX {
+        method = EquationsPlans.SolveEquation
+        inputExpr = "[2hx / 3] = 1"
+
+        check {
+            fromExpr = "[2 h x / 3] = 1"
+            toExpr = "SetSolution[x: {[3 / 2 h]}] GIVEN SetSolution[h: /reals/ \\ {0}]"
+            explanation {
+                key = EquationsExplanation.SolveLinearEquation
+            }
+
+            step {
+                fromExpr = "[2 h x / 3] = 1"
+                toExpr = "2 h x = 3"
+                explanation {
+                    key = methods.solvable.EquationsExplanation.MultiplyByDenominatorOfVariableAndSimplify
+                }
+            }
+
+            step {
+                fromExpr = "2 h x = 3"
+                toExpr = "x = [3 / 2 h] GIVEN SetSolution[h: /reals/ \\ {0}]"
+                explanation {
+                    key = methods.solvable.EquationsExplanation.DivideByCoefficientOfVariableAndSimplifyMultivariate
+                }
+            }
+
+            step {
+                fromExpr = "x = [3 / 2 h] GIVEN SetSolution[h: /reals/ \\ {0}]"
+                toExpr = "SetSolution[x: {[3 / 2 h]}] GIVEN SetSolution[h: /reals/ \\ {0}]"
+                explanation {
+                    key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                 }
             }
         }

@@ -82,6 +82,13 @@ enum class SolvableKey(val rule: RunnerMethod) {
 
     MultiplyByInverseCoefficientOfVariable(SolvableRules.MultiplyByInverseCoefficientOfVariable),
 
+    /**
+     * Multiply both the side by denominator of the variable present on the LHS.
+     *
+     * E.g.; [xh / 2] = 1 --> 2 * [xh / 2] = 2 * 1
+     */
+    MultiplyByDenominatorOfVariable(SolvableRules.MultiplyByDenominatorOfVariable),
+
     DivideByCoefficientOfVariable(SolvableRules.DivideByCoefficientOfVariable),
 
     NegateBothSides(SolvableRules.NegateBothSides),
@@ -380,24 +387,43 @@ enum class EquationsExplanation(
     MultiplyByLCDAndSimplify(SolvableKey.MultiplyBothSidesByLCD, simplify = true),
 
     /**
-     * Multiply both sides of the equation by the inverse of the coefficient
+     * Multiply both sides of the equation by the inverse of the coefficient (if it's a numeric constant)
      * of the variable.
      *
-     * E.g. [x / 9] = 3 -> [x / 9] * 9 = 3 * 9
-     * [2x / 5] = 3 -> [2x / 5] * [5 / 2] = 3 * [5 / 2]
+     * E.g. [x / 9] = 3 -> 9 * [x / 9] = 9 * 3
+     * [2x / 5] = 3 -> [5 / 2] * [2x / 5] = [5 / 2] * 3
      */
     MultiplyByInverseCoefficientOfVariable(SolvableKey.MultiplyByInverseCoefficientOfVariable),
+
+    /**
+     * Multiply both sides of the equation by denominator of the variable
+     *
+     * E.g. [hx / 9] = 3 -> 9 * [hx / 9] = 9 * 3
+     */
+    MultiplyByDenominatorOfVariable(SolvableKey.MultiplyByDenominatorOfVariable),
 
     /**
      * Multiply both sides of the equation by the inverse of the coefficient
      * of the variable and simplify.
      *
      * E.g. [2x / 5] = 3
-     *      -> [2x / 5] * [5 / 2] = 3 * [5 / 2]
+     *      -> [5 / 2] * [2x / 5] = [5 / 2] * 3
      *      -> x = [15 / 2]
      */
     MultiplyByInverseCoefficientOfVariableAndSimplify(
         SolvableKey.MultiplyByInverseCoefficientOfVariable,
+        simplify = true,
+    ),
+
+    /**
+     * Multiply both sides of the equation by denominator of the variable
+     * and simplify
+     *
+     * E.g. [hx / 9] = 3 -> 9 * [hx / 9] = 9 * 3
+     *  --> hx = 27
+     */
+    MultiplyByDenominatorOfVariableAndSimplify(
+        SolvableKey.MultiplyByDenominatorOfVariable,
         simplify = true,
     ),
 
@@ -718,24 +744,31 @@ enum class InequalitiesExplanation(
     MultiplyByLCDAndSimplify(SolvableKey.MultiplyBothSidesByLCD, simplify = true),
 
     /**
-     * Multiply both sides of the inequality by the inverse of the coefficient
+     * Multiply both sides of the inequality by the inverse of the coefficient (a numeric constant)
      * of the variable (which is a positive value).
      *
-     * E.g. [x / 9] < 3 -> [x / 9] * 9 < 3 * 9
-     * [2x / 5] > 3 -> [2x / 5] * [5 / 2] > 3 * [5 / 2]
+     * E.g. [x / 9] < 3 -> 9 * [x / 9] < 9 * 3
+     * [2x / 5] > 3 -> [5 / 2] * [2x / 5] > [5 / 2] * 3
      */
     MultiplyByInverseCoefficientOfVariable(SolvableKey.MultiplyByInverseCoefficientOfVariable),
+
+    MultiplyByDenominatorOfVariable(SolvableKey.MultiplyByDenominatorOfVariable),
 
     /**
      * Multiply both sides of the inequality by the inverse of the coefficient
      * of the variable and flip the sign (because we're multiplying by a negative
      * value).
      *
-     * E.g. [x / -9] < 3 -> [x / -9] * (-9) > 3 * (-9)
-     * [-2x / 5] > 3 -> [-2x / 5] * [5 / -2] < 3 * [5 / -2]
+     * E.g. [x / -9] < 3 -> (-9) * [x / -9] > (-9) * 3
+     * [-2x / 5] > 3 -> [5 / -2] * [-2x / 5] < [5 / -2] * 3
      */
     MultiplyByInverseCoefficientOfVariableAndFlipTheSign(
         SolvableKey.MultiplyByInverseCoefficientOfVariable,
+        flipSign = true,
+    ),
+
+    MultiplyByDenominatorOfVariableAndFlipTheSign(
+        SolvableKey.MultiplyByDenominatorOfVariable,
         flipSign = true,
     ),
 
@@ -744,11 +777,16 @@ enum class InequalitiesExplanation(
      * of the variable and simplify.
      *
      * E.g. [2x / 5] < 3
-     *      -> [2x / 5] * [5 / 2] < 3 * [5 / 2]
+     *      -> [5 / 2] * [2x / 5] < [5 / 2] * 3
      *      -> x < [15 / 2]
      */
     MultiplyByInverseCoefficientOfVariableAndSimplify(
         SolvableKey.MultiplyByInverseCoefficientOfVariable,
+        simplify = true,
+    ),
+
+    MultiplyByDenominatorOfVariableAndSimplify(
+        SolvableKey.MultiplyByDenominatorOfVariable,
         simplify = true,
     ),
 
