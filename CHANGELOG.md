@@ -29,6 +29,9 @@ contents to a new release section (e.g. _[0.x]_).
 - Performance: added caching to deeply calls (PLUT-854)
 - Added formulas to certain transformations (PLUT-694)
 - Add rules to simplify cancellation of root with any base and absolute power (PLUT-852)
+- Added an easy to extend settings system to give users granular control over the steps of the output (PLUT-796).
+- Added the `/settings` and `/presets` endpoints to the API (PLUT-796).
+- Added the `QuickAddLikeFractions` setting to sum like integer fractions in one step (PLUT-796).
 
 ### Fixed
 
@@ -59,6 +62,8 @@ contents to a new release section (e.g. _[0.x]_).
   - RewriteProductOfPowersWithSameExponent
   - NegateBothSides
   - x^0, 1^x, 0^x
+- Replaced curricula and the GM friendly flag with presets, which are a combination of various settings (PLUT-796)
+- SDK: Adapted SDK and the poker to use the settings and presets returned by the engine (PLUT-796)
 
 ### Removed
 

@@ -1,50 +1,70 @@
 package server.api
 
 import engine.context.Context
-import engine.context.Curriculum
+import engine.context.Preset
+import engine.context.Setting
+import engine.context.SettingValue
+import engine.methods.Strategy
 import methods.strategyRegistry
 import org.apache.logging.log4j.Logger
 import org.apache.logging.log4j.message.ObjectMessage
 import org.apache.logging.log4j.message.SimpleMessage
 import java.util.function.Supplier
 import java.util.logging.Level
+import kotlin.reflect.KClass
 
 internal fun getContext(
     apiCtx: server.models.Context?,
     variables: Set<String>,
     logger: Logger,
 ) = apiCtx?.let {
-    val curriculum = when (apiCtx.curriculum) {
-        null, "" -> null
-        else -> try {
-            Curriculum.valueOf(apiCtx.curriculum)
-        } catch (_: IllegalArgumentException) {
-            throw InvalidCurriculumException(apiCtx.curriculum)
-        }
-    }
-
-    val strategies = apiCtx.preferredStrategies?.map { (category, strategy) ->
-        strategyRegistry.getStrategyChoice(category, strategy) ?: throw InvalidStrategyException(category, strategy)
-    }?.toMap() ?: emptyMap()
-
-    val apiVariables = apiCtx.solutionVariable?.split(",")?.map { it.trim() } ?: emptyList()
-    val intersectionVariables = apiVariables.intersect(variables)
-    val solutionVariables = intersectionVariables.toList().ifEmpty { listOfNotNull(variables.firstOrNull()) }
-
     Context(
-        curriculum = curriculum,
-        gmFriendly = apiCtx.gmFriendly == true,
+        settings = getSettings(apiCtx.presets, apiCtx.settings),
         precision = apiCtx.precision?.toInt(),
-        preferDecimals = apiCtx.preferDecimals,
-        advancedBalancing = apiCtx.advancedBalancing ?: false,
-        solutionVariables = solutionVariables,
+        solutionVariables = getSolutionVariables(variables, apiCtx.solutionVariable),
+        preferredStrategies = apiCtx.preferredStrategies?.let { getStrategies(it) } ?: emptyMap(),
         logger = ContextLogger(logger),
-        preferredStrategies = strategies,
     )
 } ?: Context(
     solutionVariables = listOfNotNull(variables.firstOrNull()),
     logger = ContextLogger(logger),
 )
+
+private fun getSolutionVariables(expressionVariables: Set<String>, contextVariables: String?): List<String> {
+    val apiVariables = contextVariables?.split(",")?.map { it.trim() } ?: emptyList()
+    val intersectionVariables = apiVariables.intersect(expressionVariables)
+    return intersectionVariables.toList().ifEmpty { listOfNotNull(expressionVariables.firstOrNull()) }
+}
+
+private fun getStrategies(contextStrategies: Map<String, String>): Map<KClass<out Strategy>, Strategy> {
+    return contextStrategies.entries.associate { (category, strategy) ->
+        strategyRegistry.getStrategyChoice(category, strategy)
+            ?: throw InvalidStrategyException(category, strategy)
+    }
+}
+
+private fun getSettings(contextPresets: List<String>?, contextSettings: Map<String, String>?):
+    Map<Setting, SettingValue> {
+    val settings = mutableMapOf<Setting, SettingValue>()
+
+    contextPresets?.forEach {
+        val preset = Preset.entries.firstOrNull { preset -> preset.name == it }
+            ?: throw InvalidPresetException(it)
+        settings += preset.settings
+    }
+
+    contextSettings?.forEach { (key, value) ->
+        val setting = Setting.entries.firstOrNull { it.name == key }
+        val settingValue = setting?.kind?.fromName(value)
+        if (setting == null || settingValue == null) {
+            throw InvalidSettingException(key, value)
+        }
+
+        settings[setting] = settingValue
+    }
+
+    return settings
+}
 
 private class ContextLogger(val logger: Logger) : engine.logger.Logger {
     override fun log(level: Level, depth: Int, string: String) {

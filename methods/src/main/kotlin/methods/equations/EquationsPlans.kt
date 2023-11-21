@@ -1,7 +1,8 @@
 package methods.equations
 
+import engine.context.BooleanSetting
 import engine.context.Context
-import engine.context.Curriculum
+import engine.context.Setting
 import engine.expressions.Constants
 import engine.expressions.Contradiction
 import engine.expressions.DecimalExpression
@@ -212,7 +213,9 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
             )
 
             steps {
-                inContext(contextFactory = { copy(preferDecimals = true) }) {
+                inContext(contextFactory = {
+                    copy(settings = settings + Pair(Setting.PreferDecimals, BooleanSetting.True))
+                }) {
                     apply(rearrangeLinearEquationSteps)
                     optionally(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
                 }
@@ -378,8 +381,8 @@ val solveEquationPlan = object : CompositeMethod() {
         explanation = Explanation.SolveEquation
 
         tasks {
-            val constraint = when (context.curriculum) {
-                Curriculum.US -> expression
+            val constraint = when {
+                context.isSet(Setting.SolveEquationsWithoutComputingTheDomain) -> expression
                 else -> task(
                     startExpr = expression,
                     explanation = metadata(AlgebraExplanation.ComputeDomainOfAlgebraicExpression),

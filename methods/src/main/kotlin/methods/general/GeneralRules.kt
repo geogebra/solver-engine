@@ -596,8 +596,6 @@ private val rewritePowerAsProduct =
         val power = powerOf(base, exponent)
 
         onPattern(power) {
-            // We want to prefer direct evaluation over 2^3 ==> 2*2*2
-            if (context.gmFriendly) return@onPattern null
             ruleResult(
                 toExpr = productOf(List(getValue(exponent).toInt()) { distribute(base) }),
                 gmAction = edit(power),

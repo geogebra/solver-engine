@@ -1,5 +1,6 @@
 package methods.rationalexpressions
 
+import engine.context.Setting
 import engine.expressions.Constants
 import engine.expressions.Expression
 import engine.expressions.Fraction
@@ -83,7 +84,13 @@ enum class RationalExpressionsPlans(override val runner: CompositeMethod) : Runn
             pattern = sumContaining(optionalNegOf(fraction1), optionalNegOf(fraction2))
 
             partialExpressionSteps {
-                apply(FractionArithmeticRules.AddLikeFractions)
+                firstOf {
+                    option {
+                        check { isSet(Setting.QuickAddLikeFraction) }
+                        FractionArithmeticRules.AddAndSimplifyLikeFractions
+                    }
+                    option(FractionArithmeticRules.AddLikeFractions)
+                }
                 optionally(rationalExpressionSimplificationSteps)
             }
         },

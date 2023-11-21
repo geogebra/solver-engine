@@ -10,14 +10,15 @@ import type {
 } from '@geogebra/solver-sdk';
 import * as solverSdk from '@geogebra/solver-sdk';
 import {
-  advancedBalancing,
   colorScheme,
   demoMode,
-  gmFriendly,
+  getSettingValue,
   hideWarnings,
   jsonFormat,
   params,
-  preferDecimals,
+  presets,
+  setSettingValue,
+  settings,
   showCosmeticSteps,
   showInvisibleChangeSteps,
   showPedanticSteps,
@@ -34,20 +35,6 @@ import { computedAsync } from '@vueuse/core';
 
 const jsonFormatSpecifier: ApiMathFormat = 'json2';
 
-const getAPIBaseURL = (): string => {
-  // This magic number for the port is dictated in the `poker-dev` script in package.json.
-  const runningLocallyViaVite = location.port === '4173';
-  if (runningLocallyViaVite) {
-    return 'http://localhost:8080/api/v1';
-  }
-  // Poker can be served at
-  // - <base>/poker.html (legacy)
-  // - <base>/poker
-  // - <base>/poker/index.html
-  return location.pathname.replace(/\/(poker\.html|poker\/?|poker\/index\.html)$/, '/api/v1');
-};
-
-solverSdk.api.baseUrl = getAPIBaseURL();
 const mainPokerURL = 'https://solver.geogebra.net/main/poker/index.html';
 
 const plans = computedAsync(() => solverSdk.api.listPlans());
@@ -62,7 +49,7 @@ for (const strategyChoice of [params.strategy || []].flat()) {
   const [category, choice] = strategyChoice.split(':');
   mapOfCategoryToSelectedStrategy[category] = choice;
 }
-// watcher updates the url URL when that map changes
+// watcher updates the URL when that map changes
 watch(
   mapOfCategoryToSelectedStrategy,
   () => {
@@ -89,21 +76,18 @@ const submitForm = () => {
 };
 
 const solverContext = computed(() => {
-  const ret: SolverContext = {
-    gmFriendly: gmFriendly.value,
-    preferDecimals: preferDecimals.value,
-    advancedBalancing: advancedBalancing.value,
-  };
-  if (params.curriculum) {
-    ret.curriculum = params.curriculum;
-  }
+  const ret: SolverContext = {};
   if (params.precision) {
     ret.precision = parseInt(params.precision);
   }
   if (params.solutionVariable) {
     ret.solutionVariable = params.solutionVariable;
   }
+  if (params.preset) {
+    ret.presets = [params.preset];
+  }
   const preferredStrategies = { ...mapOfCategoryToSelectedStrategy };
+  console.log(preferredStrategies);
   for (const category in preferredStrategies) {
     if (preferredStrategies[category] === '') {
       delete preferredStrategies[category];
@@ -112,6 +96,14 @@ const solverContext = computed(() => {
   if (Object.keys(preferredStrategies).length > 0) {
     ret.preferredStrategies = preferredStrategies;
   }
+
+  ret.settings = {};
+  for (const setting of settings.value || []) {
+    if (params[setting.name]) {
+      ret.settings[setting.name] = params[setting.name];
+    }
+  }
+
   return ret;
 });
 
@@ -205,7 +197,7 @@ const submitToMainButtonClicked = () => {
   window.open(url.toString(), '_blank');
 };
 
-const calculateLabelForStrategyCategory = (category: string) => {
+const camelCaseToLabel = (category: string) => {
   const categoryName = category.replace(/(.)([A-Z])/g, '$1 $2').toLowerCase();
   return categoryName.charAt(0).toUpperCase() + categoryName.slice(1);
 };
@@ -218,6 +210,25 @@ onMounted(() => {
 
 <template>
   <form v-show="!demoMode" class="display-options">
+    <h3>Engine Options</h3>
+    <label for="presets">Preset</label>
+    <select id="presets" v-model="params.preset">
+      <option name="-" value="" selected>-</option>
+      <option v-for="preset in presets" :value="preset.name">
+        {{ preset.name }}
+      </option>
+    </select>
+    <br />
+    <template v-for="setting of settings ?? []" :key="setting">
+      <input
+        :id="setting.name"
+        :checked="getSettingValue(setting.name)"
+        type="checkbox"
+        @input="(event) => setSettingValue(setting.name, (event.target as HTMLInputElement).checked)"
+      />
+      <label :for="setting.name">{{ camelCaseToLabel(setting.name) }}</label>
+      <br />
+    </template>
     <h3>Display Options</h3>
     <label for="colorScheme">Colors</label>
     <select id="colorScheme" v-model="colorScheme">
@@ -329,12 +340,6 @@ onMounted(() => {
   page navigation when a form is submitted. -->
   <form v-show="!demoMode" @submit.prevent="submitForm">
     <p>
-      <label for="curriculumSelect">Curriculum</label>
-      <select id="curriculumSelect" v-model="params.curriculum">
-        <option value="" selected>Default</option>
-        <option value="US">US</option>
-        <option value="EU">EU</option>
-      </select>
       <label for="precisionSelect">Precision</label>
       <select id="precisionSelect" v-model="params.precision">
         <option value="2">2 d.p.</option>
@@ -345,13 +350,6 @@ onMounted(() => {
       </select>
       <label for="solutionVariable">Solution variable</label>
       <input id="solutionVariable" v-model="params.solutionVariable" type="text" size="1" />
-      <input id="preferDecimals" v-model="preferDecimals" type="checkbox" />
-      <label for="preferDecimals">Prefer decimals</label>
-      <!-- GM stands for Graspable Math -->
-      <input id="gmFriendlyCheckbox" v-model="gmFriendly" type="checkbox" />
-      <label for="gmFriendlyCheckbox">GM friendly</label>
-      <input id="advancedBalancingCheckbox" v-model="advancedBalancing" type="checkbox" />
-      <label for="advancedBalancingCheckbox">Advanced balancing</label>
     </p>
     <p>
       <label for="plansSelect">Plan</label>
@@ -364,7 +362,7 @@ onMounted(() => {
       <summary>Strategies</summary>
       <p v-for="[category, strategyList] in Object.entries(strategies ?? {})" :key="category">
         <label :for="`${category}Select`">
-          {{ calculateLabelForStrategyCategory(category) }}
+          {{ camelCaseToLabel(category) }}
         </label>
         <select
           :id="`${category}Select`"

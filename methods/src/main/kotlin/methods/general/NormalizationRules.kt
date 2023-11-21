@@ -35,7 +35,6 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
             val missingBracket = condition { it.outerBracket() == Decorator.MissingBracket }
 
             onPattern(missingBracket) {
-                if (context.gmFriendly) return@onPattern null
                 ruleResult(
                     tags = listOf(Transformation.Tag.Cosmetic),
                     toExpr = transformTo(missingBracket) { it.removeBrackets().decorate(Decorator.RoundBracket) },

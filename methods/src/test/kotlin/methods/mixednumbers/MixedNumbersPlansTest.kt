@@ -1,7 +1,7 @@
 package methods.mixednumbers
 
-import engine.context.Context
-import engine.context.Curriculum
+import engine.context.BooleanSetting
+import engine.context.Setting
 import engine.methods.testMethod
 import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
@@ -96,9 +96,11 @@ class MixedNumbersPlansTest {
     }
 
     @Test
-    fun testContextSensitivePlanUS() = testMethod {
+    fun `test add mixed numbers without converting them to fractions first`() = testMethod {
         method = MixedNumbersPlans.AddMixedNumbers
-        context = Context(curriculum = Curriculum.US)
+        context = context.copy(
+            settings = mapOf(Setting.AddMixedNumbersWithoutConvertingToImproperFractions to BooleanSetting.True),
+        )
         inputExpr = "[5 3/4] + [2 2/3]"
 
         check {
@@ -159,9 +161,11 @@ class MixedNumbersPlansTest {
     }
 
     @Test
-    fun testUSStyleConversionWithShortcut() = testMethod {
+    fun `test shortcut in adding mixed numbers without converting to improper fractions`() = testMethod {
         method = MixedNumbersPlans.AddMixedNumbers
-        context = Context(curriculum = Curriculum.US)
+        context = context.copy(
+            settings = mapOf(Setting.AddMixedNumbersWithoutConvertingToImproperFractions to BooleanSetting.True),
+        )
         inputExpr = "[1 1/2] + [2 1/3]"
 
         check {
@@ -197,7 +201,7 @@ class MixedNumbersPlansTest {
 
             step {
                 fromExpr = "3 + [5 / 6]"
-                toExpr = "[3 5/6]"
+                toExpr = "[3 5 / 6]"
                 explanation {
                     key = MixedNumbersExplanation.ConvertSumOfIntegerAndProperFractionToMixedNumber
                 }
@@ -206,9 +210,11 @@ class MixedNumbersPlansTest {
     }
 
     @Test
-    fun testUSStyleConversionResultingInInteger() = testMethod {
+    fun `test shortcut when the addition of mixed numbers results in the sum of two integers`() = testMethod {
         method = MixedNumbersPlans.AddMixedNumbers
-        context = Context(curriculum = Curriculum.US)
+        context = context.copy(
+            settings = mapOf(Setting.AddMixedNumbersWithoutConvertingToImproperFractions to BooleanSetting.True),
+        )
         inputExpr = "[5 2/3] + [3 12/36]"
 
         check {

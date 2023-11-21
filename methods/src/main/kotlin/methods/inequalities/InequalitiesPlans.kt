@@ -1,6 +1,7 @@
 package methods.inequalities
 
-import engine.context.ResourceData
+import engine.context.BooleanSetting
+import engine.context.Setting
 import engine.expressions.Constants
 import engine.expressions.DoubleInequality
 import engine.expressions.Inequality
@@ -109,15 +110,9 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
                 optionally(solvablePlansForInequalities.coefficientRemovalSteps)
                 optionally(InequalitiesRules.ExtractSolutionFromInequalityInSolvedForm)
 
-                contextSensitive {
-                    default(
-                        ResourceData(preferDecimals = false),
-                        FormChecker(condition { it is Solution }),
-                    )
-                    alternative(
-                        ResourceData(preferDecimals = true),
-                        decimalSolutionFormChecker,
-                    )
+                branchOn(Setting.PreferDecimals) {
+                    case(BooleanSetting.True, decimalSolutionFormChecker)
+                    case(BooleanSetting.False, FormChecker(condition { it is Solution }))
                 }
             }
         },

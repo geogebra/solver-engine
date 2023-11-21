@@ -1,8 +1,7 @@
 package methods.equations
 
-import engine.context.Context
-import engine.context.Curriculum
-import engine.methods.testMethod
+import engine.context.BooleanSetting
+import engine.context.Setting
 import engine.methods.testMethodInX
 import methods.algebra.AlgebraExplanation
 import methods.constantexpressions.ConstantExpressionsExplanation
@@ -163,10 +162,11 @@ class SolveRationalEquationTest {
     }
 
     @Test
-    fun `test rational equation with one valid solution by US method`() = testMethod {
+    fun `test rational equation with one valid solution without computing the domain`() = testMethodInX {
         method = EquationsPlans.SolveRationalEquation
         inputExpr = "[12 / [x ^ 2] - 9] = [8 x / x - 3] - [2 / x + 3]"
-        context = Context(solutionVariables = listOf("x"), curriculum = Curriculum.US)
+        context =
+            context.copy(settings = mapOf(Setting.SolveEquationsWithoutComputingTheDomain to BooleanSetting.True))
 
         check {
             fromExpr = "[12 / [x ^ 2] - 9] = [8 x / x - 3] - [2 / x + 3]"
@@ -333,10 +333,11 @@ class SolveRationalEquationTest {
     }
 
     @Test
-    fun `test solve equation with rational expression on both the sides US method`() = testMethod {
+    fun `test equation with rational expression on both the sides without computing the domain`() = testMethodInX {
         method = EquationsPlans.SolveRationalEquation
         inputExpr = "[x + 2 / x - 3] = [x / 3 x - 2]"
-        context = Context(curriculum = Curriculum.US, solutionVariables = listOf("x"))
+        context =
+            context.copy(settings = mapOf(Setting.SolveEquationsWithoutComputingTheDomain to BooleanSetting.True))
 
         check {
             fromExpr = "[x + 2 / x - 3] = [x / 3 x - 2]"

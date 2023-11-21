@@ -1,6 +1,8 @@
 package methods.general
 
+import engine.context.BooleanSetting
 import engine.context.Context
+import engine.context.Setting
 import engine.methods.testMethod
 import org.junit.jupiter.api.Test
 
@@ -23,7 +25,7 @@ class NormalizationPlansTests {
     fun testReplaceAllInvisibleBracketsSimpleGm() = testMethod {
         method = NormalizationPlans.NormalizeExpression
         inputExpr = "3*-4"
-        context = Context(gmFriendly = true)
+        context = Context(settings = mapOf(Setting.DontAddClarifyingBrackets to BooleanSetting.True))
         check {
             noTransformation()
         }

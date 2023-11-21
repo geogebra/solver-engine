@@ -1,6 +1,7 @@
 package engine.methods.stepsproducers
 
 import engine.context.Context
+import engine.context.Setting
 import engine.expressions.Expression
 import engine.expressions.Extractor
 import engine.expressions.Label
@@ -106,7 +107,7 @@ private class PipelineCompiler : PipelineBuilder {
             // The pipeline is made only of optional steps. So we want the same minDepth as the shallowest optional
             // step.  It is only calculated at the end because many plans have optional steps that introduce cycles in
             // minDepth calculation.
-            optionalSteps.minOf { (step, offset) -> step.minDepth + offset }
+            optionalSteps.minOfOrNull { (step, offset) -> step.minDepth + offset } ?: 0
         }
     }
 
@@ -201,6 +202,12 @@ private class PipelineCompiler : PipelineBuilder {
         stepsProducers.add(stepsProducer)
     }
 
+    override fun branchOn(setting: Setting, init: BranchOnFunc) {
+        val stepsProducer = engine.methods.stepsproducers.branchOn(setting, init)
+        registerStep(stepsProducer)
+        stepsProducers.add(stepsProducer)
+    }
+
     override fun whilePossible(stepsProducer: StepsProducer) {
         registerStep(stepsProducer, optional = true)
     }
@@ -217,7 +224,7 @@ private class PipelineCompiler : PipelineBuilder {
         registerStepsInit(init)
     }
 
-    override fun plan(init: PlanBuilder.() -> Unit) {
+    override fun plan(init: PlanBuilder.() -> CompositeMethod) {
         val stepsProducer = engine.methods.plan(init)
         stepsProducers.add(stepsProducer)
         registerStep(stepsProducer)
@@ -234,12 +241,6 @@ private class PipelineCompiler : PipelineBuilder {
         if (!compulsoryStepFound && pattern.minDepth > minDepth) {
             minDepth = pattern.minDepth
         }
-    }
-
-    override fun contextSensitive(init: ContextSensitiveBuilder.() -> Unit) {
-        val stepsProducer = contextSensitiveSteps(init)
-        stepsProducers.add(stepsProducer)
-        registerStep(stepsProducer)
     }
 
     override fun inContext(contextFactory: Context.(Expression) -> Context, init: PipelineFunc) {
@@ -435,6 +436,12 @@ private class PipelineRunner(
         addSteps(nextStepsProducer().produceSteps(ctx, expression))
     }
 
+    override fun branchOn(setting: Setting, init: BranchOnFunc) {
+        if (!builder.inProgress) return
+
+        addSteps(nextStepsProducer().produceSteps(ctx, expression))
+    }
+
     override fun whilePossible(stepsProducer: StepsProducer) {
         if (!builder.inProgress) return
 
@@ -501,7 +508,7 @@ private class PipelineRunner(
         deeply(nextStepsProducer(), deepFirst)
     }
 
-    override fun plan(init: PlanBuilder.() -> Unit) {
+    override fun plan(init: PlanBuilder.() -> CompositeMethod) {
         if (!builder.inProgress) return
 
         addSteps(nextStepsProducer().produceSteps(ctx, expression))
@@ -520,12 +527,6 @@ private class PipelineRunner(
         if (!pattern.matches(ctx, builder.simpleExpression)) {
             builder.abort()
         }
-    }
-
-    override fun contextSensitive(init: ContextSensitiveBuilder.() -> Unit) {
-        if (!builder.inProgress) return
-
-        addSteps(nextStepsProducer().produceSteps(ctx, expression))
     }
 }
 

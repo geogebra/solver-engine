@@ -1,6 +1,7 @@
 package methods.polynomials
 
-import engine.context.ResourceData
+import engine.context.BooleanSetting
+import engine.context.Setting
 import engine.expressions.Minus
 import engine.expressions.Power
 import engine.expressions.Product
@@ -11,7 +12,8 @@ import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.applyAfterMaybeExtractingMinus
-import engine.methods.stepsproducers.contextSensitiveSteps
+import engine.methods.stepsproducers.branchOn
+import engine.methods.stepsproducers.firstOf
 import engine.methods.stepsproducers.steps
 import engine.patterns.AnyPattern
 import engine.patterns.ArbitraryVariablePattern
@@ -164,16 +166,19 @@ private val multiplyMonomials = plan {
     )
 
     steps {
-        apply(PolynomialRules.RearrangeProductOfMonomials)
-        apply {
-            optionally { applyTo(PolynomialsPlans.SimplifyCoefficient) { it.firstChild } }
-            applyToChildren(PolynomialsPlans.MultiplyVariablePowers)
+        branchOn(Setting.ReorderProductsInSteps) {
+            case(BooleanSetting.True) {
+                whilePossible(simplificationSteps)
+            }
+            case(BooleanSetting.False) {
+                apply(PolynomialRules.RearrangeProductOfMonomials)
+                apply {
+                    optionally { applyTo(PolynomialsPlans.SimplifyCoefficient) { it.firstChild } }
+                    applyToChildren(PolynomialsPlans.MultiplyVariablePowers)
+                }
+                optionally(GeneralRules.MoveSignOfNegativeFactorOutOfProduct)
+            }
         }
-        optionally(GeneralRules.MoveSignOfNegativeFactorOutOfProduct)
-    }
-
-    alternative(ResourceData(gmFriendly = true)) {
-        whilePossible(simplificationSteps)
     }
 }
 
@@ -250,9 +255,9 @@ val addTermAndFractionSteps = createAddTermAndFractionPlan(
     },
 )
 
-internal val simplificationSteps = contextSensitiveSteps {
-    default(ResourceData(preferDecimals = false), constantSimplificationSteps)
-    alternative(ResourceData(preferDecimals = true), decimalEvaluationSteps)
+internal val simplificationSteps = branchOn(Setting.PreferDecimals) {
+    case(BooleanSetting.True, decimalEvaluationSteps)
+    case(BooleanSetting.False, constantSimplificationSteps)
 }
 
 internal val collectLikeTermsSteps = createCollectLikeTermsAndSimplifyPlan(simplificationSteps)

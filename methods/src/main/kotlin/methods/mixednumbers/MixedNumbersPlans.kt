@@ -1,7 +1,7 @@
 package methods.mixednumbers
 
-import engine.context.Curriculum
-import engine.context.ResourceData
+import engine.context.BooleanSetting
+import engine.context.Setting
 import engine.expressions.MixedNumberExpression
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
@@ -51,35 +51,39 @@ enum class MixedNumbersPlans(override val runner: CompositeMethod) : RunnerMetho
 
             explanation = Explanation.AddMixedNumbers
 
-            steps(ResourceData(curriculum = Curriculum.EU)) {
-                applyToChildren(ConvertMixedNumberToImproperFraction)
-                whilePossible(addIntegerFractions)
-                // result might be integer or proper fraction after
-                // simplification, so this step is optional
-                optionally(MixedNumbersRules.FractionToMixedNumber)
-            }
+            steps {
+                branchOn(Setting.AddMixedNumbersWithoutConvertingToImproperFractions) {
+                    case(BooleanSetting.True) {
+                        apply(ConvertMixedNumbersToSums)
 
-            alternative(ResourceData(curriculum = Curriculum.US)) {
-                apply(ConvertMixedNumbersToSums)
+                        shortcut {
+                            deeply(GeneralRules.SimplifyZeroDenominatorFractionToUndefined)
+                        }
 
-                shortcut {
-                    deeply(GeneralRules.SimplifyZeroDenominatorFractionToUndefined)
-                }
+                        optionally {
+                            applyToChildren(FractionArithmeticPlans.SimplifyFraction)
+                        }
 
-                optionally {
-                    applyToChildren(FractionArithmeticPlans.SimplifyFraction)
-                }
+                        whilePossible(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
+                        whilePossible(addIntegerFractions)
 
-                whilePossible(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
-                whilePossible(addIntegerFractions)
+                        firstOf {
+                            option(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
+                            option(MixedNumbersRules.ConvertSumOfIntegerAndProperFractionToMixedNumber)
+                            option {
+                                apply(FractionArithmeticRules.ConvertIntegerToFraction)
+                                apply(addIntegerFractions)
+                                apply(MixedNumbersRules.FractionToMixedNumber)
+                            }
+                        }
+                    }
 
-                firstOf {
-                    option(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
-                    option(MixedNumbersRules.ConvertSumOfIntegerAndProperFractionToMixedNumber)
-                    option {
-                        apply(FractionArithmeticRules.ConvertIntegerToFraction)
-                        apply(addIntegerFractions)
-                        apply(MixedNumbersRules.FractionToMixedNumber)
+                    case(BooleanSetting.False) {
+                        applyToChildren(ConvertMixedNumberToImproperFraction)
+                        whilePossible(addIntegerFractions)
+                        // result might be integer or proper fraction after
+                        // simplification, so this step is optional
+                        optionally(MixedNumbersRules.FractionToMixedNumber)
                     }
                 }
             }

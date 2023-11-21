@@ -1,6 +1,8 @@
 package engine.methods.stepsproducers
 
 import engine.context.Context
+import engine.context.Setting
+import engine.context.SettingValue
 import engine.expressions.Expression
 import engine.expressions.Extractor
 import engine.expressions.Label
@@ -17,6 +19,7 @@ annotation class StepsProducerBuilderMarker
 
 typealias PipelineFunc = PipelineBuilder.() -> Unit
 typealias FirstOfFunc = FirstOfBuilder.() -> Unit
+typealias BranchOnFunc = BranchOnBuilder.() -> Unit
 
 /**
  * This interface defines the actions that can be performed in a [FirstOf] StepsProducer.  Actions are tried in order
@@ -49,6 +52,17 @@ interface FirstOfBuilder {
      * Generates options using the [optionGenerator] from the sequence produced by the [sequenceGenerator]
      */
     fun <T> optionsFor(sequenceGenerator: (Expression) -> Iterable<T>, optionGenerator: PipelineBuilder.(T) -> Unit)
+}
+
+/**
+ * This interface defines the actions that can be performed in a [BranchOn] StepsProducer.
+ */
+@StepsProducerBuilderMarker
+interface BranchOnBuilder {
+
+    fun case(value: SettingValue, opt: StepsProducer)
+
+    fun case(value: SettingValue, init: PipelineFunc)
 }
 
 /**
@@ -128,6 +142,8 @@ interface PipelineBuilder {
      */
     fun firstOf(init: FirstOfFunc)
 
+    fun branchOn(setting: Setting, init: BranchOnFunc)
+
     /**
      * Apply the [stepsProducer] as many times as possible.  They are not required to be applied at least once.
      */
@@ -151,7 +167,7 @@ interface PipelineBuilder {
     /**
      * Apply the following plan.
      */
-    fun plan(init: PlanBuilder.() -> Unit)
+    fun plan(init: PlanBuilder.() -> CompositeMethod)
 
     /**
      * Apply the following task set
@@ -159,7 +175,6 @@ interface PipelineBuilder {
     fun taskSet(init: TaskSetBuilder.() -> CompositeMethod)
 
     fun checkForm(patternProvider: () -> Pattern)
-    fun contextSensitive(init: ContextSensitiveBuilder.() -> Unit)
 
     fun inContext(contextFactory: Context.(Expression) -> Context, init: PipelineFunc)
 }

@@ -1,7 +1,7 @@
 // Globally changes the rendering of steps.
 import * as solverSdk from '@geogebra/solver-sdk';
 import { LatexSettings } from '@geogebra/solver-sdk';
-import { useUrlSearchParams } from '@vueuse/core';
+import { computedAsync, useUrlSearchParams } from '@vueuse/core';
 import { computed, ref } from 'vue';
 import type renderMathInElement from 'katex/contrib/auto-render';
 
@@ -11,6 +11,22 @@ declare global {
     renderMathInElement: typeof renderMathInElement;
   }
 }
+
+const getAPIBaseURL = (): string => {
+  // This magic number for the port is dictated in the `poker-dev` script in package.json.
+  const runningLocallyViaVite = location.port === '4173';
+  if (runningLocallyViaVite) {
+    return 'http://localhost:8080/api/v1';
+  }
+  // Poker can be served at
+  // - <base>/poker.html (legacy)
+  // - <base>/poker
+  // - <base>/poker/index.html
+  return location.pathname.replace(/\/(poker\.html|poker\/?|poker\/index\.html)$/, '/api/v1');
+};
+
+solverSdk.api.baseUrl = getAPIBaseURL();
+
 // just for debug convenience
 window.ggbSolver = solverSdk;
 
@@ -39,19 +55,19 @@ export type SolutionFormat = keyof typeof solutionFormatters;
 export const colorScheme = ref<ColorScheme>('default');
 export const solutionFormat = ref<SolutionFormat>('simple');
 
+export const settings = computedAsync(() => solverSdk.api.listSettings());
+export const presets = computedAsync(() => solverSdk.api.listPresets());
+
 export const params = useUrlSearchParams('history', {
   removeFalsyValues: true,
   removeNullishValues: true,
 }) as {
   plan: string;
   input: string;
-  curriculum: string;
-  gmFriendly?: '1' | '';
   precision: string;
-  preferDecimals?: '1' | '';
-  advancedBalancing?: '1' | '';
   solutionVariable: string;
   strategy?: string | string[];
+  preset?: string;
 
   // Properties that only affect how the Solver's response is displayed
 
@@ -62,15 +78,15 @@ export const params = useUrlSearchParams('history', {
   showInvisibleChangeSteps?: '1' | '';
   showTranslationKeys?: '1' | '';
   jsonFormat?: '1' | '';
+} & {
+  // settings
+  [key: string]: string;
 };
+
 params.plan = params.plan || 'selectPlans';
 params.input = params.input || '';
-params.curriculum = params.curriculum || '';
-export const gmFriendly = booleanRefSyncedWithUrlParam('gmFriendly');
 params.precision = params.precision || '3';
-export const preferDecimals = booleanRefSyncedWithUrlParam('preferDecimals');
 params.solutionVariable = params.solutionVariable || 'x';
-export const advancedBalancing = booleanRefSyncedWithUrlParam('advancedBalancing');
 
 function booleanRefSyncedWithUrlParam(paramName: keyof typeof params) {
   return computed({
@@ -88,6 +104,12 @@ export const showCosmeticSteps = booleanRefSyncedWithUrlParam('showCosmeticSteps
 export const showInvisibleChangeSteps = booleanRefSyncedWithUrlParam('showInvisibleChangeSteps');
 export const showTranslationKeys = booleanRefSyncedWithUrlParam('showTranslationKeys');
 export const jsonFormat = booleanRefSyncedWithUrlParam('jsonFormat');
+
+export const getSettingValue = (settingName: string) => params[settingName] === 'true';
+
+export const setSettingValue = (settingName: string, value: boolean) => {
+  params[settingName] = value ? 'true' : '';
+};
 
 export const latexSettings = computed<LatexSettings>(() => ({
   solutionFormatter: solutionFormatters[solutionFormat.value as SolutionFormat],

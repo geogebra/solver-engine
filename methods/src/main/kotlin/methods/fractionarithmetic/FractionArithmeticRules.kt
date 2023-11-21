@@ -162,6 +162,42 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
         },
     ),
 
+    AddAndSimplifyLikeFractions(
+        rule {
+            val num1 = SignedIntegerPattern()
+            val num2 = SignedIntegerPattern()
+            val denom = AnyPattern()
+            val f1 = fractionOf(condition(num1) { !it.hasBracket() }, denom)
+            val f2 = fractionOf(condition(num2) { !it.hasBracket() }, denom)
+            val nf1 = optionalNegOf(f1)
+            val nf2 = optionalNegOf(f2)
+            val sum = sumOf(nf1, nf2)
+
+            onPattern(sum) {
+                fun BigInteger.negateIf(condition: Boolean) = if (condition) negate() else this
+
+                val simplifiedNumerator = integerOp(num1, num2) { n1, n2 ->
+                    n1.negateIf(nf1.isNeg()) + n2.negateIf(nf2.isNeg())
+                }
+
+                val result = if (simplifiedNumerator is Minus) {
+                    negOf(fractionOf(simplifiedNumerator.argument, factor(denom)))
+                } else {
+                    fractionOf(simplifiedNumerator, factor(denom))
+                }
+
+                ruleResult(
+                    toExpr = result,
+                    gmAction = drag(nf2, PM.Group, nf1, PM.Group),
+                    explanation = when {
+                        !nf1.isNeg() && nf2.isNeg() -> metadata(Explanation.SubtractLikeFractions, move(f1), move(f2))
+                        else -> metadata(Explanation.AddLikeFractions, move(nf1), move(nf2))
+                    },
+                )
+            }
+        },
+    ),
+
     BringToCommonDenominator(
         rule {
             val numerator1 = AnyPattern()

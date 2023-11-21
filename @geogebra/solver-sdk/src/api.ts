@@ -1,5 +1,7 @@
 import type {
   API_PLANS_RESPONSE,
+  API_PRESETS_RESPONSE,
+  API_SETTINGS_RESPONSE,
   API_STRATEGIES_RESPONSE,
   API_VERSION_INFO_RESPONSE,
   ApiMathFormat,
@@ -108,6 +110,18 @@ class Api {
       body: JSON.stringify({ input, format, context }),
     });
     return await res.json();
+  }
+
+  listSettings(): Promise<API_SETTINGS_RESPONSE> {
+    return fetch(`${this.baseUrl}/settings`, this.defaultHeaders).then((res) =>
+      res.json(),
+    );
+  }
+
+  listPresets(): Promise<API_PRESETS_RESPONSE> {
+    return fetch(`${this.baseUrl}/presets`, this.defaultHeaders).then((res) =>
+      res.json(),
+    );
   }
 
   /** Get a list of all available plans. */

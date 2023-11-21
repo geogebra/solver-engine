@@ -1,5 +1,6 @@
 package methods.collecting
 
+import engine.context.Setting
 import engine.expressions.Label
 import engine.methods.Method
 import engine.methods.plan
@@ -45,13 +46,14 @@ fun createCollectLikeRootsAndSimplifyPlan(simplificationSteps: StepsProducer): M
 
         steps {
             firstOf {
-                option(CollectingRules.CombineTwoSimpleLikeRoots)
+                option {
+                    check { isSet(Setting.QuickAddLikeTerms) }
+                    apply(CollectingRules.CombineTwoSimpleLikeRoots)
+                }
                 option {
                     withNewLabels {
                         apply(CollectingRules.CollectLikeRoots)
-                        optionally {
-                            applyTo(coefficientSimplificationSteps, Label.A)
-                        }
+                        optionally { applyTo(coefficientSimplificationSteps, Label.A) }
                         optionally(GeneralRules.EliminateZeroInSum)
                     }
                 }
@@ -73,7 +75,10 @@ fun createCollectLikeRationalPowersAndSimplifyPlan(simplificationSteps: StepsPro
 
         steps {
             firstOf {
-                option(CollectingRules.CombineTwoSimpleLikeRationalPowers)
+                option {
+                    check { isSet(Setting.QuickAddLikeTerms) }
+                    apply(CollectingRules.CombineTwoSimpleLikeRationalPowers)
+                }
                 option {
                     withNewLabels {
                         apply(CollectingRules.CollectLikeRationalPowers)
@@ -99,7 +104,10 @@ fun createCollectLikeTermsAndSimplifyPlan(simplificationSteps: StepsProducer): M
 
         steps {
             firstOf {
-                option(CollectingRules.CombineTwoSimpleLikeTerms)
+                option {
+                    check { isSet(Setting.QuickAddLikeTerms) }
+                    apply(CollectingRules.CombineTwoSimpleLikeTerms)
+                }
                 option {
                     withNewLabels {
                         apply(CollectingRules.CollectLikeTerms)

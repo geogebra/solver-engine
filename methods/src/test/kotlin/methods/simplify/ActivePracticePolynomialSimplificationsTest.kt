@@ -1,6 +1,8 @@
 package methods.simplify
 
+import engine.context.BooleanSetting
 import engine.context.Context
+import engine.context.Setting
 import engine.methods.testMethod
 import methods.collecting.CollectingExplanation
 import methods.general.GeneralExplanation
@@ -14,7 +16,7 @@ class ActivePracticePolynomialSimplificationsTest {
     @Test
     fun testCollectSimpleLikeTerms() = testMethod {
         method = SimplifyPlans.SimplifyAlgebraicExpression
-        context = Context(gmFriendly = true)
+        context = Context(settings = mapOf(Setting.QuickAddLikeTerms to BooleanSetting.True))
         inputExpr = "2 x + [x ^ 2] + 3 x - 5 [x ^ 2]"
 
         check {
@@ -53,7 +55,12 @@ class ActivePracticePolynomialSimplificationsTest {
     @Test
     fun testMultiplyMonomials() = testMethod {
         method = SimplifyPlans.SimplifyAlgebraicExpression
-        context = Context(gmFriendly = true)
+        context = Context(
+            settings = mapOf(
+                Setting.ReorderProductsInSteps to BooleanSetting.True,
+                Setting.QuickAddLikeTerms to BooleanSetting.True,
+            ),
+        )
         inputExpr = "3 [x ^ 2] * 4 [x ^ 3] * x + 5 * 7 [x ^ 6]"
 
         check {
@@ -156,7 +163,7 @@ class ActivePracticePolynomialSimplificationsTest {
     @Test
     fun testMonomialWithZeroCoefficientEliminated() = testMethod {
         method = SimplifyPlans.SimplifyAlgebraicExpression
-        context = Context(gmFriendly = true)
+        context = Context(settings = mapOf(Setting.QuickAddLikeTerms to BooleanSetting.True))
         inputExpr = "3 [a ^ 2] + 2 [a ^ 2] - 3 a - 5 [a ^ 2] + 10 a"
 
         check {

@@ -1,6 +1,7 @@
 package methods.integerarithmetic
 
-import engine.context.Context
+import engine.context.BooleanSetting
+import engine.context.Setting
 import engine.methods.testMethod
 import methods.general.GeneralExplanation
 import kotlin.test.Test
@@ -140,10 +141,10 @@ class IntegerArithmeticPlansTest {
     }
 
     @Test
-    fun testPlusNegativeGm() = testMethod {
+    fun `test 1 plus negative 2 without adding clarifying brackets`() = testMethod {
         method = IntegerArithmeticPlans.EvaluateArithmeticExpression
+        context = context.copy(settings = mapOf(Setting.DontAddClarifyingBrackets to BooleanSetting.True))
         inputExpr = "1+-2"
-        context = Context(gmFriendly = true)
 
         check {
             fromExpr = "1+-2"

@@ -1,6 +1,7 @@
 package methods.solvable
 
 import engine.context.Context
+import engine.context.Setting
 import engine.context.emptyContext
 import engine.expressionbuilder.MappedExpressionBuilder
 import engine.expressions.AbsoluteValue
@@ -267,7 +268,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                             positiveCoefficient.denominator
                         }
                     }
-                    val newLhs = if (context.advancedBalancing) {
+                    val newLhs = if (context.isSet(Setting.AdvancedBalancing)) {
                         get(variable)
                     } else {
                         productOf(inverse, get(lhs))
@@ -306,7 +307,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
 
                 val coefficient = introduce(coefficientValue, coefficientValue)
 
-                val newLhs = if (context.advancedBalancing) {
+                val newLhs = if (context.isSet(Setting.AdvancedBalancing)) {
                     get(variable)
                 } else {
                     fractionOf(get(lhs), coefficient)
@@ -502,7 +503,7 @@ private enum class Mover {
             return null
         }
         val negatedTerms = simplifiedNegOfSum(termsToMove)
-        val fromSideAfter = if (context.advancedBalancing) {
+        val fromSideAfter = if (context.isSet(Setting.AdvancedBalancing)) {
             extractRemain(context, fromSide)
         } else {
             sumOf(fromSide, negatedTerms)

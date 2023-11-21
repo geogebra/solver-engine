@@ -1,7 +1,8 @@
 package methods.polynomials
 
+import engine.context.BooleanSetting
 import engine.context.Context
-import engine.context.Curriculum
+import engine.context.Setting
 import engine.methods.SolverEngineExplanation
 import engine.methods.testMethod
 import methods.collecting.CollectingExplanation
@@ -16,33 +17,30 @@ class ExpandPolynomialsTest {
 
     @Test
     fun `test expand square of binomial, GM or default curriculum`() {
-        for (testContext in arrayOf(Context(), Context(curriculum = Curriculum.US, gmFriendly = true))) {
-            testMethod {
-                method = PolynomialsPlans.ExpandPolynomialExpression
-                context = testContext
-                inputExpr = "[(2x - 3) ^ 2]"
+        testMethod {
+            method = PolynomialsPlans.ExpandPolynomialExpression
+            inputExpr = "[(2x - 3) ^ 2]"
 
-                check {
+            check {
+                fromExpr = "[(2 x - 3) ^ 2]"
+                toExpr = "4 [x ^ 2] - 12 x + 9"
+                explanation {
+                    key = ExpandExplanation.ExpandBinomialSquaredAndSimplify
+                }
+
+                step {
                     fromExpr = "[(2 x - 3) ^ 2]"
+                    toExpr = "[(2 x) ^ 2] + 2 * <. 2 x .> * (-3) + [(-3) ^ 2]"
+                    explanation {
+                        key = ExpandExplanation.ExpandBinomialSquaredUsingIdentity
+                    }
+                }
+
+                step {
+                    fromExpr = "[(2 x) ^ 2] + 2 * 2 x * (-3) + [(-3) ^ 2]"
                     toExpr = "4 [x ^ 2] - 12 x + 9"
                     explanation {
-                        key = ExpandExplanation.ExpandBinomialSquaredAndSimplify
-                    }
-
-                    step {
-                        fromExpr = "[(2 x - 3) ^ 2]"
-                        toExpr = "[(2 x) ^ 2] + 2 * <. 2 x .> * (-3) + [(-3) ^ 2]"
-                        explanation {
-                            key = ExpandExplanation.ExpandBinomialSquaredUsingIdentity
-                        }
-                    }
-
-                    step {
-                        fromExpr = "[(2 x) ^ 2] + 2 * 2 x * (-3) + [(-3) ^ 2]"
-                        toExpr = "4 [x ^ 2] - 12 x + 9"
-                        explanation {
-                            key = SimplifyExplanation.SimplifyPolynomialExpression
-                        }
+                        key = SimplifyExplanation.SimplifyPolynomialExpression
                     }
                 }
             }
@@ -50,10 +48,10 @@ class ExpandPolynomialsTest {
     }
 
     @Test
-    fun `test expand square of binomial, US curriculum`() = testMethod {
+    fun `test expand square of binomial without using the identity`() = testMethod {
         method = PolynomialsPlans.ExpandPolynomialExpression
+        context = Context(settings = mapOf(Setting.DontUseIdentitiesForExpanding to BooleanSetting.True))
         inputExpr = "[(2x - 3) ^ 2]"
-        context = Context(curriculum = Curriculum.US)
 
         check {
             fromExpr = "[(2 x - 3) ^ 2]"
@@ -127,34 +125,31 @@ class ExpandPolynomialsTest {
     }
 
     @Test
-    fun `test expand cube of binomial, GM or default curriculum`() {
-        for (testContext in arrayOf(Context(), Context(curriculum = Curriculum.US, gmFriendly = true))) {
-            testMethod {
-                method = PolynomialsPlans.ExpandPolynomialExpression
-                context = testContext
-                inputExpr = "[(2x - 3) ^ 3]"
+    fun `test expand cube of binomial, default curriculum`() {
+        testMethod {
+            method = PolynomialsPlans.ExpandPolynomialExpression
+            inputExpr = "[(2x - 3) ^ 3]"
 
-                check {
+            check {
+                fromExpr = "[(2 x - 3) ^ 3]"
+                toExpr = "8 [x ^ 3] - 36 [x ^ 2] + 54 x - 27"
+                explanation {
+                    key = ExpandExplanation.ExpandBinomialCubedAndSimplify
+                }
+
+                step {
                     fromExpr = "[(2 x - 3) ^ 3]"
+                    toExpr = "[(2 x) ^ 3] + 3 * [(2 x) ^ 2] * (-3) + 3 * <. 2 x .> * [(-3) ^ 2] + [(-3) ^ 3]"
+                    explanation {
+                        key = ExpandExplanation.ExpandBinomialCubedUsingIdentity
+                    }
+                }
+
+                step {
+                    fromExpr = "[(2 x) ^ 3] + 3 * [(2 x) ^ 2] * (-3) + 3 * 2 x * [(-3) ^ 2] + [(-3) ^ 3]"
                     toExpr = "8 [x ^ 3] - 36 [x ^ 2] + 54 x - 27"
                     explanation {
-                        key = ExpandExplanation.ExpandBinomialCubedAndSimplify
-                    }
-
-                    step {
-                        fromExpr = "[(2 x - 3) ^ 3]"
-                        toExpr = "[(2 x) ^ 3] + 3 * [(2 x) ^ 2] * (-3) + 3 * <. 2 x .> * [(-3) ^ 2] + [(-3) ^ 3]"
-                        explanation {
-                            key = ExpandExplanation.ExpandBinomialCubedUsingIdentity
-                        }
-                    }
-
-                    step {
-                        fromExpr = "[(2 x) ^ 3] + 3 * [(2 x) ^ 2] * (-3) + 3 * 2 x * [(-3) ^ 2] + [(-3) ^ 3]"
-                        toExpr = "8 [x ^ 3] - 36 [x ^ 2] + 54 x - 27"
-                        explanation {
-                            key = SimplifyExplanation.SimplifyPolynomialExpression
-                        }
+                        key = SimplifyExplanation.SimplifyPolynomialExpression
                     }
                 }
             }
@@ -162,10 +157,10 @@ class ExpandPolynomialsTest {
     }
 
     @Test
-    fun `test expand cube of binomial, US curriculum`() = testMethod {
+    fun `test expand cube of binomial without using the identity`() = testMethod {
         method = PolynomialsPlans.ExpandPolynomialExpression
+        context = Context(settings = mapOf(Setting.DontUseIdentitiesForExpanding to BooleanSetting.True))
         inputExpr = "[(2x - 3) ^ 3]"
-        context = Context(curriculum = Curriculum.US)
 
         check {
             fromExpr = "[(2 x - 3) ^ 3]"
@@ -364,9 +359,9 @@ class ExpandPolynomialsTest {
     }
 
     @Test
-    fun `test expand square of trinomial, US curriculum`() = testMethod {
+    fun `test expand square of trinomial without using the identity`() = testMethod {
+        context = Context(settings = mapOf(Setting.DontUseIdentitiesForExpanding to BooleanSetting.True))
         method = PolynomialsPlans.ExpandPolynomialExpression
-        context = Context(curriculum = Curriculum.US)
         inputExpr = "[(2x + 1 + sqrt[3]) ^ 2]"
 
         check {

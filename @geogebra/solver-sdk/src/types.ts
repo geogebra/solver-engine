@@ -20,12 +20,9 @@ export type PlanId =
 export type SolverExpr = string;
 export type LatexExpr = string;
 export type SolverContext = {
-  curriculum?: string;
-  /** GM stands for Graspable Math */
-  gmFriendly?: boolean;
+  presets?: string[];
+  settings?: { [name: string]: string };
   precision?: number;
-  preferDecimals?: boolean;
-  advancedBalancing?: boolean;
   solutionVariable?: string;
   preferredStrategies?: { [category: string]: string };
 };
@@ -39,6 +36,11 @@ export type StrategyMap = {
   [category: string]: Strategy[];
 };
 
+export type Setting = {
+  name: string;
+  description: string;
+};
+
 export type ApiMathFormat =
   | 'solver' // solver format - do not use unless you know why you are doing it
   | 'latex' // latex format - good for quick rendering, but lacks metadata
@@ -49,7 +51,16 @@ export type API_VERSION_INFO_RESPONSE = {
   deploymentName: string;
 };
 
+export type API_SETTINGS_RESPONSE = Setting[];
+
+export type API_PRESETS_RESPONSE = {
+  name: string;
+  description: string;
+  settings: { name: string; value: string }[];
+}[];
+
 export type API_PLANS_RESPONSE = PlanId[];
+
 export type API_STRATEGIES_RESPONSE = StrategyMap;
 
 /** The most common case where you would get a response like this would be if the math

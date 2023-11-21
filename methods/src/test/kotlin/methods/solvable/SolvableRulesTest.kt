@@ -1,6 +1,8 @@
 package methods.solvable
 
+import engine.context.BooleanSetting
 import engine.context.Context
+import engine.context.Setting
 import engine.methods.Method
 import engine.methods.testMethod
 import engine.methods.testRule
@@ -23,7 +25,10 @@ class SolvableRulesTest {
                 inputExpr,
                 rule,
                 advandedBalancingOutputExpr,
-                context = Context(solutionVariables = listOf("x"), advancedBalancing = true),
+                context = Context(
+                    solutionVariables = listOf("x"),
+                    settings = mapOf(Setting.AdvancedBalancing to BooleanSetting.True),
+                ),
             )
         }
     }

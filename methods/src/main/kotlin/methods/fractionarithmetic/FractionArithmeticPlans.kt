@@ -1,5 +1,6 @@
 package methods.fractionarithmetic
 
+import engine.context.Setting
 import engine.expressions.Fraction
 import engine.expressions.Power
 import engine.expressions.Product
@@ -169,17 +170,26 @@ private fun createAddFractionsSteps(numeratorSimplificationSteps: StepsProducer)
             ) == BigInteger.ONE
         }
     }
-    apply(FractionArithmeticRules.AddLikeFractions)
-    optionally {
-        plan {
-            explanation = Explanation.SimplifyNumerator
+    firstOf {
+        option {
+            check { isSet(Setting.QuickAddLikeFraction) }
+            apply(FractionArithmeticRules.AddAndSimplifyLikeFractions)
+        }
 
-            steps {
-                applyToKind<Fraction>(numeratorSimplificationSteps) { it.numerator }
+        option {
+            apply(FractionArithmeticRules.AddLikeFractions)
+            optionally {
+                plan {
+                    explanation = Explanation.SimplifyNumerator
+
+                    steps {
+                        applyToKind<Fraction>(numeratorSimplificationSteps) { it.numerator }
+                    }
+                }
             }
+            optionally(normalizeNegativeSignsInFraction)
         }
     }
-    optionally(normalizeNegativeSignsInFraction)
     optionally(FractionArithmeticPlans.SimplifyFraction)
 }
 

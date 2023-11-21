@@ -1,7 +1,7 @@
 package methods.expand
 
-import engine.context.Curriculum
-import engine.context.ResourceData
+import engine.context.BooleanSetting
+import engine.context.Setting
 import engine.expressions.Constants
 import engine.methods.Method
 import engine.methods.plan
@@ -56,19 +56,15 @@ class ExpandAndSimplifier(simplificationSteps: StepsProducer) : ExpandAndSimplif
         pattern = powerOf(sumOf(AnyPattern(), AnyPattern()), FixedPattern(Constants.Two))
 
         steps {
-            contextSensitive {
-                default(
-                    ResourceData(curriculum = Curriculum.EU),
-                    ExpandRules.ExpandBinomialSquaredUsingIdentity,
-                )
-                alternative(ResourceData(gmFriendly = true)) {
-                    apply(ExpandRules.ExpandBinomialSquaredUsingIdentity)
-                }
-                alternative(ResourceData(curriculum = Curriculum.US)) {
+            branchOn(Setting.DontUseIdentitiesForExpanding) {
+                case(BooleanSetting.True) {
                     apply(GeneralRules.RewritePowerAsProduct)
                     apply(ExpandRules.ApplyFoilMethod)
                 }
+
+                case(BooleanSetting.False, ExpandRules.ExpandBinomialSquaredUsingIdentity)
             }
+
             optionally(simplificationSteps)
         }
     }
@@ -77,18 +73,19 @@ class ExpandAndSimplifier(simplificationSteps: StepsProducer) : ExpandAndSimplif
         explanation = Explanation.ExpandBinomialCubedAndSimplify
         pattern = powerOf(sumOf(AnyPattern(), AnyPattern()), FixedPattern(Constants.Three))
 
-        steps(ResourceData(curriculum = Curriculum.EU)) {
-            apply(ExpandRules.ExpandBinomialCubedUsingIdentity)
-            optionally(simplificationSteps)
-        }
-        alternative(ResourceData(gmFriendly = true)) {
-            apply(ExpandRules.ExpandBinomialCubedUsingIdentity)
-            optionally(simplificationSteps)
-        }
-        alternative(ResourceData(curriculum = Curriculum.US)) {
-            apply(GeneralRules.RewritePowerAsProduct)
-            apply(doubleBracketsMethod)
-            apply(doubleBracketsMethod)
+        steps {
+            branchOn(Setting.DontUseIdentitiesForExpanding) {
+                case(BooleanSetting.True) {
+                    apply(GeneralRules.RewritePowerAsProduct)
+                    apply(doubleBracketsMethod)
+                    apply(doubleBracketsMethod)
+                }
+
+                case(BooleanSetting.False) {
+                    apply(ExpandRules.ExpandBinomialCubedUsingIdentity)
+                    optionally(simplificationSteps)
+                }
+            }
         }
     }
 
@@ -100,16 +97,15 @@ class ExpandAndSimplifier(simplificationSteps: StepsProducer) : ExpandAndSimplif
         )
 
         steps {
-            contextSensitive {
-                default(
-                    ResourceData(curriculum = Curriculum.EU),
-                    ExpandRules.ExpandTrinomialSquaredUsingIdentity,
-                )
-                alternative(ResourceData(curriculum = Curriculum.US)) {
+            branchOn(Setting.DontUseIdentitiesForExpanding) {
+                case(BooleanSetting.True) {
                     apply(GeneralRules.RewritePowerAsProduct)
                     apply(ExpandRules.ExpandDoubleBrackets)
                 }
+
+                case(BooleanSetting.False, ExpandRules.ExpandTrinomialSquaredUsingIdentity)
             }
+
             optionally(simplificationSteps)
         }
     }

@@ -1,6 +1,7 @@
 package methods.equations
 
-import engine.context.Curriculum
+import engine.context.BooleanSetting
+import engine.context.Setting
 import engine.methods.testMethodInX
 import methods.general.GeneralExplanation
 import org.junit.jupiter.api.Test
@@ -629,9 +630,10 @@ class EquationsWithOneAbsoluteValueTest {
     }
 
     @Test
-    fun `test US method for linear equation with 2 solutions`() = testMethodInX {
+    fun `test linear equation with 2 solutions without computing the domain`() = testMethodInX {
         method = EquationsPlans.SolveEquation
-        context = context.copy(curriculum = Curriculum.US)
+        context =
+            context.copy(settings = mapOf(Setting.SolveEquationsWithoutComputingTheDomain to BooleanSetting.True))
         inputExpr = "abs[2 x - 1] = x + 5"
 
         check {
@@ -721,9 +723,10 @@ class EquationsWithOneAbsoluteValueTest {
     }
 
     @Test
-    fun `test US method for linear equation with no solution`() = testMethodInX {
+    fun `test linear equation with no solution without computing the domain`() = testMethodInX {
         method = EquationsPlans.SolveEquation
-        context = context.copy(curriculum = Curriculum.US)
+        context =
+            context.copy(settings = mapOf(Setting.SolveEquationsWithoutComputingTheDomain to BooleanSetting.True))
         inputExpr = "abs[2 x + 5] = x"
 
         check {

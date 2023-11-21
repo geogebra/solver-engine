@@ -188,7 +188,6 @@ private fun createCombineSimpleLikeTermsRule(
         val sum = sumContaining(t1, t2)
 
         onPattern(sum) {
-            if (!context.gmFriendly) return@onPattern null
             val newCoef =
                 integerOp(t1.integerCoefficient, t2.integerCoefficient) { n1, n2 -> (n1 + n2).abs() }
             val newCoefValue = getValue(t1.integerCoefficient) + getValue(t2.integerCoefficient)

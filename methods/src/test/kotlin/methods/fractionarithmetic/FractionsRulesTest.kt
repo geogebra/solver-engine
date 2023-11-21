@@ -3,6 +3,7 @@ package methods.fractionarithmetic
 import engine.methods.testMethod
 import engine.methods.testRule
 import engine.methods.testRuleInX
+import methods.fractionarithmetic.FractionArithmeticRules.AddAndSimplifyLikeFractions
 import methods.fractionarithmetic.FractionArithmeticRules.AddLikeFractions
 import methods.fractionarithmetic.FractionArithmeticRules.BringToCommonDenominator
 import methods.fractionarithmetic.FractionArithmeticRules.BringToCommonDenominatorWithNonFractionalTerm
@@ -82,6 +83,17 @@ class FractionsRulesTest {
                 }
             }
         }
+    }
+
+    @Test
+    fun testAddAndSimplifyLikeFractions() {
+        testRule("[1 / 2] + [3 / 2]", AddAndSimplifyLikeFractions, "[4 / 2]")
+        testRule("[1 / x] - [2 / x]", AddAndSimplifyLikeFractions, "-[1 / x]")
+        testRule("[1 / x] + [-2 / x]", AddAndSimplifyLikeFractions, "-[1 / x]")
+        testRule("-[1 / 2] - [3 / 2]", AddAndSimplifyLikeFractions, "-[4 / 2]")
+        testRule("[1 / x] + [(-2) / x]", AddAndSimplifyLikeFractions, null)
+        testRule("[1 + 2 / x] + [3 / x]", AddAndSimplifyLikeFractions, null)
+        testRule("[a / x] + [1 / x]", AddAndSimplifyLikeFractions, null)
     }
 
     @Test

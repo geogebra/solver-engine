@@ -1,6 +1,5 @@
 package methods.collecting
 
-import engine.context.Context
 import engine.methods.testRule
 import methods.collecting.CollectingRules.CollectLikeRoots
 import methods.collecting.CollectingRules.CollectLikeTerms
@@ -49,20 +48,26 @@ class CollectingRulesTest {
 
     @Test
     fun testCombineTwoSimpleLikeTerms() {
-        fun t(input: String, output: String?) =
-            testRule(input, CombineTwoSimpleLikeTerms, output, null, Context(gmFriendly = true))
-        t("x + x", "2x")
-        t("x - x", "0x") // cancel opposite terms will overrule this with a result of 0
-        t("4x - 4x", "0x") // cancel opposite terms will overrule this with a result of 0
-        t("1+2x-3+5x", "1+7x-3")
-        t("2*y+y", "3y")
-        t("1+2a-3a+1", "1-a+1")
-        t("1-2a-3a+1", "1-5a+1")
-        t("1-2a+3a+1", "1+a+1")
-        t("z + [1/2]*z + [z / 2] - 3z", "-2z + [1/2]*z + [z/2]")
+        testRule("x + x", CombineTwoSimpleLikeTerms, "2x")
+        testRule(
+            "x - x",
+            CombineTwoSimpleLikeTerms,
+            "0x",
+        ) // cancel opposite terms will overrule this with a result of 0
+        testRule(
+            "4x - 4x",
+            CombineTwoSimpleLikeTerms,
+            "0x",
+        ) // cancel opposite terms will overrule this with a result of 0
+        testRule("1+2x-3+5x", CombineTwoSimpleLikeTerms, "1+7x-3")
+        testRule("2*y+y", CombineTwoSimpleLikeTerms, "3y")
+        testRule("1+2a-3a+1", CombineTwoSimpleLikeTerms, "1-a+1")
+        testRule("1-2a-3a+1", CombineTwoSimpleLikeTerms, "1-5a+1")
+        testRule("1-2a+3a+1", CombineTwoSimpleLikeTerms, "1+a+1")
+        testRule("z + [1/2]*z + [z / 2] - 3z", CombineTwoSimpleLikeTerms, "-2z + [1/2]*z + [z/2]")
         // Someday come back to this example, it should work
         // t("z + [1/2]*z + [z / 2] - z*3", "-2z + [1/2]*z + [z/2]")
-        t("z + [1/2]*z + [z / 2] - z*3", null)
-        t("t*sqrt[3] + 2*t - [t*sqrt[2]/2]", null)
+        testRule("z + [1/2]*z + [z / 2] - z*3", CombineTwoSimpleLikeTerms, null)
+        testRule("t*sqrt[3] + 2*t - [t*sqrt[2]/2]", CombineTwoSimpleLikeTerms, null)
     }
 }

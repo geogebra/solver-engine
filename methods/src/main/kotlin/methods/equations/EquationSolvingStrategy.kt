@@ -1,6 +1,5 @@
 package methods.equations
 
-import engine.context.Curriculum
 import engine.context.StrategySelectionMode
 import engine.expressions.Equation
 import engine.expressions.Expression
@@ -173,10 +172,9 @@ enum class EquationSolvingStrategy(
 
                 // Cases where the RHS is not constant
 
-                // The US method doesn't use equations with constraints but doesn't always work, so we
-                // try it first if the curriculum is US
+                // The solution without domain computation doesn't always work, so we try it first
                 option {
-                    check { curriculum == Curriculum.US }
+                    check { isSet(engine.context.Setting.SolveEquationsWithoutComputingTheDomain) }
                     apply(EquationsPlans.SolveEquationWithOneAbsoluteValueBySubstitution)
                 }
 
