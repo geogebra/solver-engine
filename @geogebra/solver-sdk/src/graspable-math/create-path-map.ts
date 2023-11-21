@@ -141,12 +141,16 @@ function annotate(
     case 'ImplicitProduct':
     case 'SmartProduct':
       gmTree.children.forEach((factor, i) => {
-        appendMap(factor, `${tree.path}/${i}:group`, map);
+        const path = `${tree.path}/${i}`;
+        appendMap(factor, `${path}:group`, map);
         if (tree.operands[i].type === 'DivideBy') {
+          // in a case like 2÷1, we want to create an extra ":group" path mapping for the "1"
+          // in the ExprTree to select the "div" group in GM
+          appendMap(factor, `${path}/0:group`, map);
           annotate(factor, tree.operands[i], map);
         } else {
           const opStr = getOpStr(tree.operands[i]);
-          appendMap(factor.children[0]!, `${tree.path}/${i}:${opStr}`, map);
+          appendMap(factor.children[0]!, `${path}:${opStr}`, map);
           annotate(factor.children[1], tree.operands[i], map);
         }
       });

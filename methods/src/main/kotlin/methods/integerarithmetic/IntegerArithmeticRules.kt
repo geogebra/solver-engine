@@ -78,7 +78,7 @@ enum class IntegerArithmeticRules(override val runner: Rule) : RunnerMethod {
                 val gmAction = if (isBound(multiplier)) {
                     drag(multiplier, PM.Group, base, PM.Group)
                 } else {
-                    noGmSupport()
+                    drag(divisor, PM.Group, base, PM.Group)
                 }
 
                 val explanation = if (isBound(multiplier)) {

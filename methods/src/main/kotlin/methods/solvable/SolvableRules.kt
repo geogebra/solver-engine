@@ -77,7 +77,12 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
 
                 ruleResult(
                     toExpr = cancel(common, solvable.deriveSolvable(restLeft, restRight)),
-                    gmAction = drag(common.within(lhs), PM.Group, common.within(rhs), PM.Group),
+                    gmAction = drag(
+                        common.within(lhs),
+                        if (isBound(leftSum)) PM.Group else null,
+                        common.within(rhs),
+                        if (isBound(rightSum)) PM.Group else null,
+                    ),
                     explanation = solvableExplanation(SolvableKey.CancelCommonTermsOnBothSides),
                 )
             }

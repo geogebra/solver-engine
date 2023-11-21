@@ -1009,10 +1009,10 @@ private val rewriteIntegerOrderRootAsPower =
                 ),
                 gmAction = when (get(root)) {
                     is Root -> {
-                        drag(root, PM.RootIndex, root, null, Position.RightOf)
+                        drag(root, PM.RootIndex, root.radicand)
                     }
                     is SquareRoot -> {
-                        drag(root, PM.RootIndex, root, null, Position.RightOf)
+                        drag(root, PM.RootIndex, root.radicand)
                     }
                     else -> noGmSupport()
                 },
@@ -1104,6 +1104,7 @@ private val resolveAbsoluteValueOfZero = rule {
     onPattern(absoluteValue) {
         ruleResult(
             toExpr = transformTo(absoluteValue, get(argument)),
+            gmAction = tap(argument),
             explanation = metadata(Explanation.ResolveAbsoluteValueOfZero),
         )
     }
@@ -1118,6 +1119,7 @@ private val resolveAbsoluteValueOfNonNegativeValue = rule {
     onPattern(absoluteValue) {
         ruleResult(
             toExpr = transformTo(absoluteValue, get(argument)),
+            gmAction = tap(absoluteValue, PM.OpenParens),
             explanation = metadata(Explanation.ResolveAbsoluteValueOfNonNegativeValue),
         )
     }
@@ -1138,6 +1140,7 @@ private val resolveAbsoluteValueOfNonPositiveValue = rule {
 
         ruleResult(
             toExpr = transformTo(absoluteValue, positiveArgumentValue),
+            gmAction = tap(absoluteValue, PM.OpenParens),
             explanation = metadata(Explanation.ResolveAbsoluteValueOfNonPositiveValue),
         )
     }
@@ -1157,6 +1160,7 @@ private val simplifyAbsoluteValueOfNegatedExpression = rule {
                 mapOf(negExpr to listOf(PathScope.Operator)),
                 absoluteValueOf(get(expr)),
             ),
+            gmAction = tap(negExpr, PM.Operator),
             explanation = metadata(Explanation.SimplifyAbsoluteValueOfNegatedExpression),
         )
     }
@@ -1182,6 +1186,7 @@ private val factorizeInteger = rule {
         val primeFactorization = productOf(productOfPrimeFactors(integer))
         ruleResult(
             toExpr = transform(integer, primeFactorization),
+            gmAction = edit(integer),
             explanation = metadata(Explanation.FactorizeInteger),
         )
     }
