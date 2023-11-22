@@ -2,12 +2,15 @@ package methods.constantexpressions
 
 import engine.methods.testMethod
 import methods.collecting.CollectingExplanation
+import methods.equations.EquationsExplanation
+import methods.equationsystems.EquationSystemsExplanation
 import methods.expand.ExpandExplanation
 import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.fractionroots.FractionRootsExplanation
 import methods.general.GeneralExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
 import methods.integerroots.IntegerRootsExplanation
+import methods.polynomials.PolynomialsExplanation
 import org.junit.jupiter.api.Test
 
 class SimplifyingRootsTest {
@@ -528,6 +531,194 @@ class SmartFactorizationUnderRoot {
                     explanation {
                         key = IntegerRootsExplanation.SimplifyIntegerRootToInteger
                     }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test simplifying root of integer minus surd`() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "sqrt[11 - 6 sqrt[2]]"
+
+        check {
+            fromExpr = "sqrt[11 - 6 sqrt[2]]"
+            toExpr = "3 - sqrt[2]"
+            explanation {
+                key = IntegerRootsExplanation.SimplifySquareRootOfIntegerPlusSurd
+            }
+
+            step {
+                fromExpr = "sqrt[11 - 6 sqrt[2]]"
+                toExpr = "sqrt[[(3 - sqrt[2]) ^ 2]]"
+                explanation {
+                    key = IntegerRootsExplanation.WriteIntegerPlusSquareRootAsSquare
+                }
+
+                task {
+                    taskId = "#1"
+                    startExpr = "[(x + y sqrt[2]) ^ 2] = 11 - 6 sqrt[2]"
+                    explanation {
+                        key = IntegerRootsExplanation.WriteEquationInXAndYAndSolveItForFactoringIntegerPlusSurd
+                    }
+
+                    step {
+                        fromExpr = "[(x + y sqrt[2]) ^ 2] = 11 - 6 sqrt[2]"
+                        toExpr = "[x ^ 2] + 2 sqrt[2] * x y + 2 [y ^ 2] = 11 - 6 sqrt[2]"
+                        explanation {
+                            key = PolynomialsExplanation.ExpandPolynomialExpression
+                        }
+                    }
+
+                    step {
+                        fromExpr = "[x ^ 2] + 2 sqrt[2] * x y + 2 [y ^ 2] = 11 - 6 sqrt[2]"
+                        toExpr = "[x ^ 2] + 2 [y ^ 2] = 11 AND 2 sqrt[2] * x y = -6 sqrt[2]"
+                        explanation {
+                            key = EquationsExplanation.SplitEquationWithRationalVariables
+                        }
+                    }
+
+                    step {
+                        fromExpr = "[x ^ 2] + 2 [y ^ 2] = 11 AND 2 sqrt[2] * x y = -6 sqrt[2]"
+                        toExpr = "[x ^ 2] + 2 [y ^ 2] = 11 AND 2 x y = -6"
+                        explanation {
+                            key = methods.solvable.EquationsExplanation.CancelCommonFactorOnBothSides
+                        }
+                    }
+
+                    step {
+                        fromExpr = "[x ^ 2] + 2 [y ^ 2] = 11 AND 2 x y = -6"
+                        toExpr = "[x ^ 2] + 2 [y ^ 2] = 11 AND 2 x y = 2 * (-3)"
+                        explanation {
+                            key = methods.solvable.EquationsExplanation.FindCommonIntegerFactorOnBothSides
+                        }
+                    }
+
+                    step {
+                        fromExpr = "[x ^ 2] + 2 [y ^ 2] = 11 AND 2 x y = 2 * (-3)"
+                        toExpr = "[x ^ 2] + 2 [y ^ 2] = 11 AND x y = -3"
+                        explanation {
+                            key = methods.solvable.EquationsExplanation.CancelCommonFactorOnBothSides
+                        }
+                    }
+
+                    step {
+                        fromExpr = "[x ^ 2] + 2 [y ^ 2] = 11 AND x y = -3"
+                        toExpr = "x = 3 AND y = -1"
+                        explanation {
+                            key = EquationSystemsExplanation.GuessIntegerSolutionsOfSystemContainingXYEqualsInteger
+                        }
+                    }
+                }
+
+                task {
+                    taskId = "#2"
+                    startExpr = "[(3 - sqrt[2]) ^ 2]"
+                    explanation {
+                        key = IntegerRootsExplanation.SubstituteXAndYorFactoringIntegerPlusSurd
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "sqrt[[(3 - sqrt[2]) ^ 2]]"
+                toExpr = "3 - sqrt[2]"
+                explanation {
+                    key = GeneralExplanation.CancelRootIndexAndExponent
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test simplifying root of integer plus surd`() = testMethod {
+        method = ConstantExpressionsPlans.SimplifyConstantExpression
+        inputExpr = "sqrt[28 + 10 sqrt[3]]"
+
+        check {
+            fromExpr = "sqrt[28 + 10 sqrt[3]]"
+            toExpr = "5 + sqrt[3]"
+            explanation {
+                key = IntegerRootsExplanation.SimplifySquareRootOfIntegerPlusSurd
+            }
+
+            step {
+                fromExpr = "sqrt[28 + 10 sqrt[3]]"
+                toExpr = "sqrt[[(5 + sqrt[3]) ^ 2]]"
+                explanation {
+                    key = IntegerRootsExplanation.WriteIntegerPlusSquareRootAsSquare
+                }
+
+                task {
+                    taskId = "#1"
+                    startExpr = "[(x + y sqrt[3]) ^ 2] = 28 + 10 sqrt[3]"
+                    explanation {
+                        key = IntegerRootsExplanation.WriteEquationInXAndYAndSolveItForFactoringIntegerPlusSurd
+                    }
+
+                    step {
+                        fromExpr = "[(x + y sqrt[3]) ^ 2] = 28 + 10 sqrt[3]"
+                        toExpr = "[x ^ 2] + 2 sqrt[3] * x y + 3 [y ^ 2] = 28 + 10 sqrt[3]"
+                        explanation {
+                            key = PolynomialsExplanation.ExpandPolynomialExpression
+                        }
+                    }
+
+                    step {
+                        fromExpr = "[x ^ 2] + 2 sqrt[3] * x y + 3 [y ^ 2] = 28 + 10 sqrt[3]"
+                        toExpr = "[x ^ 2] + 3 [y ^ 2] = 28 AND 2 sqrt[3] * x y = 10 sqrt[3]"
+                        explanation {
+                            key = EquationsExplanation.SplitEquationWithRationalVariables
+                        }
+                    }
+
+                    step {
+                        fromExpr = "[x ^ 2] + 3 [y ^ 2] = 28 AND 2 sqrt[3] * x y = 10 sqrt[3]"
+                        toExpr = "[x ^ 2] + 3 [y ^ 2] = 28 AND 2 x y = 10"
+                        explanation {
+                            key = methods.solvable.EquationsExplanation.CancelCommonFactorOnBothSides
+                        }
+                    }
+
+                    step {
+                        fromExpr = "[x ^ 2] + 3 [y ^ 2] = 28 AND 2 x y = 10"
+                        toExpr = "[x ^ 2] + 3 [y ^ 2] = 28 AND 2 x y = 2 * 5"
+                        explanation {
+                            key = methods.solvable.EquationsExplanation.FindCommonIntegerFactorOnBothSides
+                        }
+                    }
+
+                    step {
+                        fromExpr = "[x ^ 2] + 3 [y ^ 2] = 28 AND 2 x y = 2 * 5"
+                        toExpr = "[x ^ 2] + 3 [y ^ 2] = 28 AND x y = 5"
+                        explanation {
+                            key = methods.solvable.EquationsExplanation.CancelCommonFactorOnBothSides
+                        }
+                    }
+
+                    step {
+                        fromExpr = "[x ^ 2] + 3 [y ^ 2] = 28 AND x y = 5"
+                        toExpr = "x = 5 AND y = 1"
+                        explanation {
+                            key = EquationSystemsExplanation.GuessIntegerSolutionsOfSystemContainingXYEqualsInteger
+                        }
+                    }
+                }
+
+                task {
+                    taskId = "#2"
+                    startExpr = "[(5 + sqrt[3]) ^ 2]"
+                    explanation {
+                        key = IntegerRootsExplanation.SubstituteXAndYorFactoringIntegerPlusSurd
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "sqrt[[(5 + sqrt[3]) ^ 2]]"
+                toExpr = "5 + sqrt[3]"
+                explanation {
+                    key = GeneralExplanation.CancelRootIndexAndExponent
                 }
             }
         }

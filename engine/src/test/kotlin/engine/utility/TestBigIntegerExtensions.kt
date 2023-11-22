@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class TestBigIntegerExtensions {
@@ -40,37 +39,6 @@ class TestBigIntegerExtensions {
     }
 
     @Test
-    fun testAsProductForRoot() {
-        assertContentEquals(
-            listOf(i(36), i(100)),
-            i(3600).asProductForRoot(i(2)),
-        )
-        assertContentEquals(
-            listOf(i(8), i(10)),
-            i(80).asProductForRoot(i(3)),
-        )
-        assertContentEquals(
-            listOf(i(49), i(1000)),
-            i(49000).asProductForRoot(i(2)),
-        )
-        assertNull(i(700).asProductForRoot(i(2)))
-        assertNull(i(100).asProductForRoot(i(3)))
-        assertNull(i(16).asProductForRoot(i(4)))
-    }
-
-    @Test
-    fun testAsPowerForRoot() {
-        assertEquals(Pair(i(2), i(2)), i(4).asPowerForRoot(i(2)))
-        assertEquals(Pair(i(5), i(3)), i(125).asPowerForRoot(i(3)))
-        assertEquals(Pair(i(100), i(3)), i(1000000).asPowerForRoot(i(3)))
-        assertEquals(Pair(i(10), i(5)), i(100000).asPowerForRoot(i(3)))
-        assertNull(i(27).asPowerForRoot(i(2)))
-        assertNull(i(16).asPowerForRoot(i(4)))
-        assertNull(i(10).asPowerForRoot(i(2)))
-        assertNull(i(1000).asPowerForRoot(i(4)))
-    }
-
-    @Test
     fun testIsFactorizableUnderRationalExponent() {
         // root[9, 4]
         assertTrue(i(9).isFactorizableUnderRationalExponent(i(1), i(4)))
@@ -90,5 +58,21 @@ class TestBigIntegerExtensions {
         assertEquals(i(100), i(1500).greatestSquareFactor())
         assertEquals(i(1), i(777).greatestSquareFactor())
         assertEquals(i(1024), i(2048).greatestSquareFactor())
+    }
+
+    private fun factorsOf(n: Int) = i(n).factors().map { it.toInt() }.toList().sorted()
+
+    @Test
+    fun testFactors() {
+        assertContentEquals(listOf(1, 2, 4, 5, 10, 20), factorsOf(20))
+        assertContentEquals(listOf(1), factorsOf(1))
+        assertContentEquals(listOf(1, 19), factorsOf(19))
+        assertContentEquals(listOf(1, 2, 4, 8, 16), factorsOf(16))
+    }
+
+    @Test
+    fun testFactorsCount() {
+        assertEquals(49, i(1000000).factors().count())
+        assertEquals(10, i(1000000).factors(limit = 10).count())
     }
 }

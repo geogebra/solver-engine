@@ -32,6 +32,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Added an easy to extend settings system to give users granular control over the steps of the output (PLUT-796).
 - Added the `/settings` and `/presets` endpoints to the API (PLUT-796).
 - Added the `QuickAddLikeFractions` setting to sum like integer fractions in one step (PLUT-796).
+- Added ability to simplify a square root of `a +/- b sqrt[c]` when that can be written as a square (PLUT-582)
 
 ### Fixed
 

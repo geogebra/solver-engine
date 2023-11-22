@@ -11,7 +11,7 @@ class ExpressionWithFactorPattern(val factor: Pattern, val positiveOnly: Boolean
     private val options = oneOf(factor, productWithFactor)
     private val optionalNegPattern = optionalNegOf(options)
 
-    override val key = if (positiveOnly) options else optionalNegPattern
+    override val key = if (positiveOnly) options.key else optionalNegPattern.key
 
     override fun substitute(match: Match, newVals: Array<out Expression>): Expression {
         val substituted = if (match.isBound(productWithFactor)) {

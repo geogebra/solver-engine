@@ -526,6 +526,12 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      */
     MultiplyBothSidesByDenominator,
 
+    /**
+     * Split an equation with rational variables and irrational coefficients
+     *
+     * E.g x + sqrt[2] = y + x sqrt[2] + 1 --> x = y + 1 AND sqrt[2] = x sqrt[2]
+     */
+    SplitEquationWithRationalVariables,
     ;
 
     override val category = "Equations"

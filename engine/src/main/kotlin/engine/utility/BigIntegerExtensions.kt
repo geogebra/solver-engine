@@ -3,6 +3,8 @@ package engine.utility
 import java.math.BigInteger
 
 private val MAX_FACTOR = 1000.toBigInteger()
+
+private const val FACTORS_DEFAULT_LIMIT = 1000
 private const val PRIME_CERTAINTY = 5
 
 private const val MAX_KNOWN_SQUARE = 15
@@ -15,7 +17,7 @@ private const val CUBE_POWER = 3
  * This represents the powers that students should know by heart
  * (e.g. 36 = 6^2, 8 = 2^3)
  */
-private val knownPowers = buildMap<Pair<BigInteger, BigInteger>, BigInteger> {
+val knownPowers = buildMap<Pair<BigInteger, BigInteger>, BigInteger> {
     for (n in 2..MAX_KNOWN_SQUARE) {
         val bn = n.toBigInteger()
         put(Pair(BigInteger.TWO, bn * bn), bn)
@@ -147,42 +149,6 @@ fun BigInteger.primeFactorDecomposition(): List<Pair<BigInteger, BigInteger>> {
 }
 
 /**
- * Splits an integer as a product whose root of order [rootOrder] will be easy to compute.
- */
-fun BigInteger.asProductForRoot(rootOrder: BigInteger): List<BigInteger>? {
-    val factorizer = Factorizer(this)
-    val multiplicityOfTen = factorizer.extractMultiplicity(BigInteger.TEN)
-    if (multiplicityOfTen == 0 || Pair(rootOrder, factorizer.n) !in knownPowers) {
-        return null
-    }
-    return listOf(factorizer.n, BigInteger.TEN.pow(multiplicityOfTen))
-}
-
-/**
- * Writes an integer as a power whose root of order [rootOrder] will be easy to compute.
- */
-fun BigInteger.asPowerForRoot(rootOrder: BigInteger): Pair<BigInteger, BigInteger>? {
-    val factorizer = Factorizer(this)
-    val multiplicityOfTen = factorizer.extractMultiplicity(BigInteger.TEN)
-    return when {
-        multiplicityOfTen == 0 -> {
-            val root = knownPowers[Pair(rootOrder, this)]
-            if (root == null) null else Pair(root, rootOrder)
-        }
-        multiplicityOfTen == 1 || !factorizer.fullyFactorized() -> null
-        rootOrder.divides(multiplicityOfTen.toBigInteger()) -> Pair(
-            BigInteger.TEN.pow(multiplicityOfTen / rootOrder.toInt()),
-            rootOrder,
-        )
-        rootOrder < multiplicityOfTen.toBigInteger() -> Pair(
-            BigInteger.TEN,
-            multiplicityOfTen.toBigInteger(),
-        )
-        else -> null
-    }
-}
-
-/**
  * reference: https://stackoverflow.com/a/32035942/3396379
  */
 @Suppress("ReturnCount")
@@ -244,4 +210,23 @@ fun BigInteger.greatestSquareFactor(): BigInteger {
         p2 = p * p
     }
     return f
+}
+
+fun BigInteger.factors(limit: Int = FACTORS_DEFAULT_LIMIT) = sequence<BigInteger> {
+    if (signum() == 0) {
+        return@sequence
+    }
+    val primeFactors = abs().primeFactorDecomposition().map { Pair(it.first, it.second.toInt() + 1) }
+
+    val combinations = kotlin.math.min(limit, primeFactors.fold(1) { n, fm -> n * fm.second })
+
+    for (i in 1..combinations) {
+        var factor = BigInteger.ONE
+        var ir = i
+        for ((f, m) in primeFactors) {
+            factor *= f.pow(ir % m)
+            ir /= m
+        }
+        yield(factor)
+    }
 }

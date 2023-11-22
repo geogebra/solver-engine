@@ -1072,7 +1072,7 @@ private val cancelRootIndexAndExponent =
 
         onPattern(root) {
             if (get(commonExponent).asInteger()!!.isEven() &&
-                get(base).signOf().signum != 1
+                !get(base).signOf().implies(Sign.NON_NEGATIVE) && !(get(base).doubleValue > 0)
             ) {
                 return@onPattern null
             }

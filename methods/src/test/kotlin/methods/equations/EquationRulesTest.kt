@@ -291,4 +291,18 @@ class EquationRulesTest {
             "5x = [x ^ 2] AND x >= 0 OR -5x = [x ^ 2] AND x < 0",
         )
     }
+
+    @Test
+    fun testSplitEquationWithRationalVariables() {
+        testRule(
+            "[x^2] + 3[y^2] + 6xy sqrt[3] = 5 - 2sqrt[3]",
+            EquationsRules.SplitEquationWithRationalVariables,
+            "[x^2] + 3[y^2] = 5 AND 6xy sqrt[3] = -2sqrt[3]",
+        )
+        testRule(
+            "3x + sqrt[5] = y sqrt[5] - 2",
+            EquationsRules.SplitEquationWithRationalVariables,
+            "3x = -2 AND sqrt[5] = y sqrt[5]",
+        )
+    }
 }

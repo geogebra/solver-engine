@@ -893,6 +893,11 @@ class GeneralRulesTest {
             GeneralRules.CancelRootIndexAndExponent,
             "[abs[y] ^ 3]",
         )
+        testRule(
+            "sqrt[[(7-sqrt[2])^2]]",
+            GeneralRules.CancelRootIndexAndExponent,
+            "7-sqrt[2]",
+        )
     }
 
     @Test

@@ -96,6 +96,19 @@ enum class SolvableKey(val rule: RunnerMethod) {
     FlipSolvable(SolvableRules.FlipSolvable),
 
     TakeRootOfBothSides(SolvableRules.TakeRootOfBothSides),
+
+    /**
+     * Find a common integer factor on both sides of an equation
+     *
+     * E.g. 6xy = 8z --> 2 * 3xy = 2 * 4z
+     */
+    FindCommonIntegerFactorOnBothSides(SolvableRules.FindCommonIntegerFactorOnBothSides),
+
+    /**
+     * Cancel a (non-zero) common factor on both sides of an equation
+     * E.g. xy sqrt[2] = 6 sqrt[2] --> xy = 6
+     */
+    CancelCommonFactorOnBothSides(SolvableRules.CancelCommonFactorOnBothSides),
 }
 
 /**
@@ -507,6 +520,11 @@ enum class EquationsExplanation(
      *      x^5 = -2 -> x = root[-2, 5]
      */
     TakeRootOfBothSides(SolvableKey.TakeRootOfBothSides),
+
+    FindCommonIntegerFactorOnBothSides(SolvableKey.FindCommonIntegerFactorOnBothSides),
+
+    CancelCommonFactorOnBothSides(SolvableKey.CancelCommonFactorOnBothSides),
+
     ;
 
     override val category = "Equations"

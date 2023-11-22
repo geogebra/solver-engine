@@ -396,6 +396,8 @@ val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
             firstOf {
                 // Do this after integers are added, we don't apply it to e.g. `sqrt[4 + 8]`
                 option { deeply(IntegerRootsPlans.SimplifySquareRootWithASquareFactorRadicand) }
+                // Do this after SimplifySquareRootWithASquareFactorRadicand to make it easier
+                option { deeply(IntegerRootsPlans.SimplifySquareRootOfIntegerPlusSurd) }
                 option { deeply(addRootAndFraction) }
                 option { deeply(FractionRootsPlans.RationalizeDenominators) }
             }

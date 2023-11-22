@@ -33,8 +33,6 @@ import engine.patterns.withOptionalIntegerCoefficient
 import engine.sign.Sign
 import engine.steps.metadata.Skill
 import engine.steps.metadata.metadata
-import engine.utility.asPowerForRoot
-import engine.utility.asProductForRoot
 import engine.utility.divides
 import engine.utility.greatestSquareFactor
 import engine.utility.hasFactorOfDegree

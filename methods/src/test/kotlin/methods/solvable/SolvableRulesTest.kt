@@ -50,6 +50,45 @@ class SolvableRulesTest {
     }
 
     @Test
+    fun testFindCommonIntegerFactorOnBothSides() {
+        testRule(
+            "4xy = 2 sqrt[2]",
+            SolvableRules.FindCommonIntegerFactorOnBothSides,
+            "2 * 2xy = 2 sqrt[2]",
+        )
+        testRule(
+            "10(x + 2) = 8y",
+            SolvableRules.FindCommonIntegerFactorOnBothSides,
+            "2 * 5(x + 2) = 2 * 4y",
+        )
+        testRule("2xy = -6", SolvableRules.FindCommonIntegerFactorOnBothSides, "2 xy = 2*(-3)")
+    }
+
+    @Test
+    fun testCancelCommonFactorOnBothSides() {
+        testRule(
+            "2 * 2xy = 2 sqrt[2]",
+            SolvableRules.CancelCommonFactorOnBothSides,
+            "2xy = sqrt[2]",
+        )
+        testRule(
+            "xy sqrt[3] = 5 sqrt[3]",
+            SolvableRules.CancelCommonFactorOnBothSides,
+            "xy = 5",
+        )
+        testRule(
+            "2x = 3x",
+            SolvableRules.CancelCommonFactorOnBothSides,
+            null,
+        )
+        testRule(
+            "[(1 + [x^2]) ^ 3] = 2[(1 + [x^2]) ^ 2]",
+            SolvableRules.CancelCommonFactorOnBothSides,
+            "1 + [x^2] = 2",
+        )
+    }
+
+    @Test
     fun testMoveConstantsToTheLeft() {
         testRuleInX(
             "[x^2] + 4x + 5 = 0",

@@ -72,3 +72,6 @@ fun testRule(
 
 fun testRuleInX(inputExpr: String, rule: Method, outputExpr: String?) =
     testRule(inputExpr, rule, outputExpr, null, Context(solutionVariables = listOf("x")))
+
+fun testRuleInXY(inputExpr: String, rule: Method, outputExpr: String?) =
+    testRule(inputExpr, rule, outputExpr, null, Context(solutionVariables = listOf("x", "y")))

@@ -161,6 +161,15 @@ enum class EquationSystemsExplanation : CategorisedMetadataKey {
      */
     SolveEquationSystemInOneVariable,
 
+    /**
+     * Guess Integer solutions of a system of 2 equations in 2 variables where
+     * one equation is of the form xy = n (n integer)
+     *
+     * E.g. x - y = 1 AND xy = 6 --> x = 3 AND y = 2
+     *
+     * Note: only one solution is given even if there may be more integer solutions.
+     */
+    GuessIntegerSolutionsOfSystemContainingXYEqualsInteger,
     ;
 
     override val category = "EquationSystems"

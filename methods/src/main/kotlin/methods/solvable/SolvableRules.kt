@@ -1,5 +1,6 @@
 package methods.solvable
 
+import engine.conditions.isDefinitelyPositive
 import engine.context.Context
 import engine.context.Setting
 import engine.context.emptyContext
@@ -23,6 +24,8 @@ import engine.expressions.productOf
 import engine.expressions.rootOf
 import engine.expressions.simplifiedNegOf
 import engine.expressions.simplifiedNegOfSum
+import engine.expressions.simplifiedPowerOf
+import engine.expressions.simplifiedProductOf
 import engine.expressions.sumOf
 import engine.expressions.withoutNegOrPlus
 import engine.expressions.xp
@@ -30,7 +33,9 @@ import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
 import engine.patterns.AnyPattern
+import engine.patterns.ConditionPattern
 import engine.patterns.ConstantInSolutionVariablePattern
+import engine.patterns.SignedIntegerPattern
 import engine.patterns.SolutionVariablePattern
 import engine.patterns.SolvablePattern
 import engine.patterns.UnsignedIntegerPattern
@@ -41,6 +46,7 @@ import engine.patterns.fractionOf
 import engine.patterns.integerCondition
 import engine.patterns.negOf
 import engine.patterns.oneOf
+import engine.patterns.optionalIntegerPowerOf
 import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
@@ -85,6 +91,107 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                         if (isBound(rightSum)) PM.Group else null,
                     ),
                     explanation = solvableExplanation(SolvableKey.CancelCommonTermsOnBothSides),
+                )
+            }
+        },
+    ),
+
+    FindCommonIntegerFactorOnBothSides(
+        rule {
+            val factorLHS = SignedIntegerPattern()
+            val factorRHS = SignedIntegerPattern()
+
+            val productLHS = productContaining(factorLHS)
+            val productRHS = productContaining(factorRHS)
+
+            val lhs = oneOf(factorLHS, productLHS)
+            val rhs = oneOf(factorRHS, productRHS)
+
+            val solvable = SolvablePattern(lhs, rhs)
+
+            onPattern(
+                ConditionPattern(
+                    solvable,
+                    integerCondition(factorLHS, factorRHS) { n, d ->
+                        d != n && n.gcd(d) != BigInteger.ONE
+                    },
+                ),
+            ) {
+                val gcd = integerOp(factorLHS, factorRHS) { n, d -> n.gcd(d) }
+                val lhsOverGCD = integerOp(factorLHS, factorRHS) { n, d -> n / n.gcd(d) }
+                val rhsOverGCD = integerOp(factorLHS, factorRHS) { n, d -> d / n.gcd(d) }
+
+                ruleResult(
+                    toExpr = solvable.deriveSolvable(
+                        if (isBound(productLHS)) {
+                            productLHS.substitute(
+                                simplifiedProductOf(gcd, lhsOverGCD),
+                            )
+                        } else {
+                            productOf(gcd, lhsOverGCD)
+                        },
+                        if (isBound(productRHS)) {
+                            productRHS.substitute(
+                                simplifiedProductOf(gcd, rhsOverGCD),
+                            )
+                        } else {
+                            productOf(gcd, rhsOverGCD)
+                        },
+                    ),
+                    explanation = solvableExplanation(SolvableKey.FindCommonIntegerFactorOnBothSides),
+                )
+            }
+        },
+    ),
+
+    CancelCommonFactorOnBothSides(
+        rule {
+            val commonFactor = AnyPattern()
+
+            val lhsFactor = optionalIntegerPowerOf(commonFactor)
+            val lhs = expressionWithFactor(lhsFactor)
+
+            val rhsFactor = optionalIntegerPowerOf(commonFactor)
+            val rhs = expressionWithFactor(rhsFactor)
+
+            val solvable = SolvablePattern(lhs, rhs)
+
+            onPattern(solvable) {
+                val factor = get(commonFactor)
+                // factor.isDefinitelyPositive() is too strong but it'll do for now.
+                if (!factor.isDefinitelyPositive()) {
+                    return@onPattern null
+                }
+
+                val newLHS: Expression
+                val newRHS: Expression
+
+                when ((getValue(lhsFactor.exponent) - getValue(rhsFactor.exponent)).signum()) {
+                    1 -> {
+                        val simplifiedPower = simplifiedPowerOf(
+                            get(commonFactor),
+                            integerOp(lhsFactor.exponent, rhsFactor.exponent) { n, m -> n - m },
+                        )
+                        newLHS = lhs.substitute(simplifiedPower)
+                        newRHS = restOf(rhs)
+                    }
+                    0 -> {
+                        newLHS = restOf(lhs)
+                        newRHS = restOf(rhs)
+                    }
+                    else -> {
+                        val simplifiedPower = simplifiedPowerOf(
+                            get(commonFactor),
+                            integerOp(lhsFactor.exponent, rhsFactor.exponent) { n, m -> m - n },
+                        )
+                        newLHS = restOf(lhs)
+                        newRHS = rhs.substitute(simplifiedPower)
+                    }
+                }
+
+                ruleResult(
+                    toExpr = cancel(commonFactor, solvable.deriveSolvable(newLHS, newRHS)),
+                    explanation = solvableExplanation(SolvableKey.CancelCommonFactorOnBothSides),
                 )
             }
         },
