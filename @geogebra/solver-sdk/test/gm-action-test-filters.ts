@@ -272,4 +272,14 @@ export const expressionSkipList = [
   '|2-sqrt 2|',
   '|1+sqrt 2|=0',
   '|-(x+sqrt 2)|-|x+sqrt 2|=0',
+
+  // Turning division into a fraction: the solver puts all other factors into
+  // the numerator, while GM puts one of the other factors into the numerator
+  '3^2*3^(-{1/3})÷3^(1/2)',
+  '5*x^7÷(-{1/5}*x^3)+12*x^3*y^7÷(-{1/5}*x^3)+(-{10/7}*x^5*y)÷(-{1/5}*x^3)',
+  '-25*x^4+12*x^3*y^7÷(-{1/5}*x^3)+(-{10/7}*x^5*y)÷(-{1/5}*x^3)',
+
+  // Turning division into a fraction: the solver removes brackets in the new
+  // numerator automatically, while GM doesn't
+  '-25*x^4-60*y^7+(-{10/7}*x^5*y)÷(-{1/5}*x^3)',
 ];

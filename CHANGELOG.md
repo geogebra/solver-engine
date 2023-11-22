@@ -46,7 +46,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Fixed bug in `productSignRequired` that led to incorrect warnings in parser for divisions (PLUT-841)
 - SDK: Fixed LaTeX representation of addition/subtraction of equations in equation system (PLUT-848)
 - Fix computation of lcd and addition of fractions with additive inverse denominators (PLUT-706)
-- SDK: Fixed ÷ path map issue
+- SDK: Fixed ÷ path map issue (PLUT-864)
 - Multiply by denominator of variable on LHS when not a constant (PLUT-711)
 
 ### Changed
@@ -55,12 +55,13 @@ contents to a new release section (e.g. _[0.x]_).
 - SDK: the Transformation type has been changed to reflect the optional fields (PLUT-692)
 - Speed up method execution when it doesn't contain decimals (PLUT-836)
 - Simplification of roots of integers and roots of powers of integers have been improved (PLUT-705)
-- switch SDK tests to use gmath-3.0.0, which adds or improves GM alignment for
+- (PLUT-864) switch SDK tests to use gmath-3.0.0, which adds or improves GM alignment for
   - CancelCommonTermsOnBothSides
   - TakeRootOfBothSidesRHSIsZero
   - TakeRootOfBothSides
   - RewriteFractionOfPowersWithSameExponent
   - RewriteProductOfPowersWithSameExponent
+  - FractionArithmeticRules
   - NegateBothSides
   - x^0, 1^x, 0^x
 - Replaced curricula and the GM friendly flag with presets, which are a combination of various settings (PLUT-796)

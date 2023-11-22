@@ -81,7 +81,11 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
 
                         return@onPattern ruleResult(
                             toExpr = productOf(result),
-                            gmAction = noGmSupport(),
+                            gmAction = if (argument is Fraction) {
+                                tap(divideByTerm, PM.Operator)
+                            } else {
+                                drag(argument, PM.Group, argument, PM.Group, DragTargetPosition.Below)
+                            },
                             explanation = metadata(Explanation.RewriteDivisionAsMultiplicationByReciprocal),
                         )
                     }
@@ -94,7 +98,8 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
 
     RewriteDivisionAsFraction(
         rule {
-            val product = productContaining(divideBy(AnyPattern()))
+            val divisor = divideBy(AnyPattern())
+            val product = productContaining(divisor)
 
             onPattern(product) {
                 val factors = get(product).children
@@ -106,7 +111,13 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
 
                 ruleResult(
                     toExpr = productOf(listOf(fraction) + factors.subList(index + 1, factors.size)),
-                    gmAction = noGmSupport(),
+                    gmAction = drag(
+                        divisor,
+                        PM.Group,
+                        factors[if (index == 0) index + 1 else index - 1],
+                        PM.Group,
+                        DragTargetPosition.Below,
+                    ),
                     explanation = metadata(Explanation.RewriteDivisionAsFraction),
                 )
             }
