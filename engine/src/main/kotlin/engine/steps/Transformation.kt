@@ -6,6 +6,7 @@ import engine.steps.Transformation.Tag
 import engine.steps.Transformation.Type
 import engine.steps.metadata.GmAction
 import engine.steps.metadata.Metadata
+import kotlin.reflect.KClass
 
 /**
  * Contains the details of the transformation to a mathematical expression effected by a plan or rule.
@@ -71,6 +72,9 @@ data class Transformation(
      * Optional GM action associated with this transformation.
      */
     val gmAction: GmAction? = null,
+
+    var extra: MutableMap<String, Pair<KClass<*>, Any>>? = null,
+
 ) {
 
     enum class Type {
@@ -123,4 +127,22 @@ data class Transformation(
         fromExpr = fromExpr.clearLabels(labelSpace),
         toExpr = toExpr.clearLabels(labelSpace),
     )
+
+    inline fun <reified T : Any>setExtra(key: String, value: T) {
+        extra?.let {
+            it[key] = Pair(T::class, value)
+            return
+        }
+        extra = mutableMapOf(key to Pair(T::class, value))
+    }
+
+    inline fun <reified T : Any>getExtra(key: String): T? {
+        val (kclass, value) = extra?.let { it[key] } ?: return null
+        return if (kclass == T::class) {
+            value as T
+        } else {
+            // Or throw a programmer error
+            null
+        }
+    }
 }

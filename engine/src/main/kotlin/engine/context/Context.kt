@@ -56,6 +56,10 @@ data class Context(
         }
     }
 
+    fun addPreset(preset: Preset): Context {
+        return copy(settings = settings + preset.settings)
+    }
+
     fun addSettings(settings: Map<Setting, SettingValue>) = if (settings.isEmpty()) {
         this
     } else {
