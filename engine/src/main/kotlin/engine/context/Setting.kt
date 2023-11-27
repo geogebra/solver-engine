@@ -78,4 +78,9 @@ enum class Setting(val kind: SettingKind, val description: String) {
         "When adding several mixed numbers, instead of converting them individually to fractions, split them, then" +
             "add the integers, the fractions and finally add the two together",
     ),
+
+    CopySumSignsWhenDistributing(
+        BooleanSetting,
+        "When distributing 5(x - 2), do 5*x - 5*2 rather than 5*x + 5*(-2)",
+    ),
 }

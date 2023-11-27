@@ -24,6 +24,7 @@ enum class Preset(val description: String, val settings: Map<Setting, SettingVal
             Setting.QuickAddLikeFraction to BooleanSetting.True,
             Setting.QuickAddLikeTerms to BooleanSetting.True,
             Setting.ReorderProductsInSteps to BooleanSetting.True,
+            Setting.CopySumSignsWhenDistributing to BooleanSetting.True,
         ),
     ),
 }

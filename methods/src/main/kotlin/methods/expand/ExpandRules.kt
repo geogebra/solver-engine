@@ -1,7 +1,9 @@
 package methods.expand
 
+import engine.context.Setting
 import engine.expressions.Constants
 import engine.expressions.DivideBy
+import engine.expressions.Expression
 import engine.expressions.Minus
 import engine.expressions.Sum
 import engine.expressions.equationOf
@@ -11,6 +13,7 @@ import engine.expressions.powerOf
 import engine.expressions.productOf
 import engine.expressions.sumOf
 import engine.methods.Rule
+import engine.methods.RuleResultBuilder
 import engine.methods.RunnerMethod
 import engine.methods.rule
 import engine.patterns.AnyPattern
@@ -69,20 +72,47 @@ private val distributeMultiplicationOverSum = rule {
         // variableExpression * (c1 + c2 + ... + cn) --> shouldn't be expanded
         if (sumValue.isConstant() && !toDistribute.isConstant()) return@onPattern null
 
+        val distributedTerms = if (context.isSet(Setting.CopySumSignsWhenDistributing)) {
+            val toDistribute = copySign(optionalNegProduct, toDistribute)
+            sumValue.terms.map {
+                multiplyDistributedTerm(toDistribute, it, multiplyFromRight, extractMinus = true)
+            }
+        } else {
+            sumValue.terms.map {
+                copySign(optionalNegProduct, multiplyDistributedTerm(toDistribute, it, multiplyFromRight))
+            }
+        }
         ruleResult(
-            toExpr = sumOf(
-                if (multiplyFromRight) {
-                    sumValue.terms.map { copySign(optionalNegProduct, explicitProductOf(move(it), toDistribute)) }
-                } else {
-                    sumValue.terms.map { copySign(optionalNegProduct, explicitProductOf(toDistribute, move(it))) }
-                },
-            ),
+            toExpr = sumOf(distributedTerms),
             gmAction = drag(toDistribute, GmPathModifier.Group, sum, null, DragTargetPosition.LeftOf),
             explanation = metadata(
                 Explanation.DistributeMultiplicationOverSum,
                 copySign(optionalNegProduct, toDistribute),
             ),
         )
+    }
+}
+
+private fun RuleResultBuilder.multiplyDistributedTerm(
+    toDistribute: Expression,
+    term: Expression,
+    fromRight: Boolean,
+    extractMinus: Boolean = false,
+): Expression {
+    val effectiveTerm = if (extractMinus && term is Minus && !term.hasVisibleBracket()) {
+        term.argument
+    } else {
+        term
+    }
+    val product = if (fromRight) {
+        explicitProductOf(move(effectiveTerm), toDistribute)
+    } else {
+        explicitProductOf(toDistribute, move(effectiveTerm))
+    }
+    return if (term === effectiveTerm) {
+        product
+    } else {
+        negOf(product)
     }
 }
 

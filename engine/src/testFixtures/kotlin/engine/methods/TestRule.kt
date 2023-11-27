@@ -1,6 +1,8 @@
 package engine.methods
 
 import engine.context.Context
+import engine.context.Setting
+import engine.context.SettingValue
 import engine.context.emptyContextWithLabels
 import engine.expressions.Expression
 import engine.expressions.RootOrigin
@@ -32,10 +34,11 @@ fun testRule(
     outputExpr: String?,
     gmAction: SerializedGmAction? = null,
     context: Context = emptyContextWithLabels(),
+    settings: Map<Setting, SettingValue> = mapOf(),
     testWithoutBrackets: Boolean = true,
 ) {
     val expression = parseExpression(inputExpr)
-    return testRule(expression, rule, outputExpr, gmAction, context, testWithoutBrackets)
+    return testRule(expression, rule, outputExpr, gmAction, context, settings, testWithoutBrackets)
 }
 
 fun testRule(
@@ -44,9 +47,10 @@ fun testRule(
     outputExpr: String?,
     gmAction: SerializedGmAction? = null,
     context: Context = emptyContextWithLabels(),
+    settings: Map<Setting, SettingValue> = mapOf(),
     testWithoutBrackets: Boolean = true,
 ) {
-    val step = rule.tryExecute(context, inputExpr.withOrigin(RootOrigin()))
+    val step = rule.tryExecute(context.addSettings(settings), inputExpr.withOrigin(RootOrigin()))
     if (outputExpr == null) {
         assertNull(step)
     } else {

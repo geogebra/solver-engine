@@ -56,6 +56,12 @@ data class Context(
         }
     }
 
+    fun addSettings(settings: Map<Setting, SettingValue>) = if (settings.isEmpty()) {
+        this
+    } else {
+        copy(settings = this.settings + settings)
+    }
+
     fun isSet(flag: Setting, value: SettingValue = BooleanSetting.True): Boolean {
         assert(flag.kind == BooleanSetting)
         return settings.getOrDefault(flag, flag.kind.default) == value
