@@ -12,6 +12,8 @@ import engine.expressions.Equation
 import engine.expressions.Expression
 import engine.expressions.ExpressionWithConstraint
 import engine.expressions.Fraction
+import engine.expressions.Minus
+import engine.expressions.Product
 import engine.expressions.Sum
 import engine.expressions.asInteger
 import engine.expressions.equationOf
@@ -19,7 +21,6 @@ import engine.expressions.fractionOf
 import engine.expressions.greaterThanEqualOf
 import engine.expressions.inequationOf
 import engine.expressions.inverse
-import engine.expressions.isSignedFraction
 import engine.expressions.plusMinusOf
 import engine.expressions.productOf
 import engine.expressions.rootOf
@@ -27,7 +28,6 @@ import engine.expressions.simplifiedNegOf
 import engine.expressions.simplifiedPowerOf
 import engine.expressions.simplifiedProductOf
 import engine.expressions.sumOf
-import engine.expressions.withoutNegOrPlus
 import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
@@ -36,7 +36,6 @@ import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.ConstantInSolutionVariablePattern
 import engine.patterns.SignedIntegerPattern
-import engine.patterns.SolutionVariablePattern
 import engine.patterns.SolvablePattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.VariableExpressionPattern
@@ -51,9 +50,9 @@ import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
-import engine.patterns.withOptionalConstantCoefficient
 import engine.patterns.withOptionalConstantCoefficientInSolutionVariables
 import engine.sign.Sign
+import engine.steps.metadata.DragTargetPosition
 import engine.steps.metadata.Metadata
 import engine.utility.extractFirst
 import engine.utility.isEven
@@ -334,135 +333,11 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
         },
     ),
 
-    MultiplyByInverseCoefficientOfVariable(
-        rule {
-            val variable = SolutionVariablePattern()
-            val lhs = withOptionalConstantCoefficient(variable)
-            val rhs = ConstantInSolutionVariablePattern()
+    MoveConstantFractionFactorToTheRight(moveConstantFractionFactorToTheRight),
 
-            val solvable = SolvablePattern(lhs, rhs)
+    MoveConstantDenominatorToTheRight(moveConstantDenominatorToTheRight),
 
-            onPattern(solvable) {
-                val coefficient = get(lhs::coefficient)!!
-                val useDual = when (coefficient.signOf()) {
-                    Sign.POSITIVE -> false
-                    Sign.NEGATIVE -> true
-                    Sign.NOT_ZERO -> if (solvable.isSelfDual()) false else return@onPattern null
-                    else -> return@onPattern null
-                }
-
-                if (coefficient.isSignedFraction()) {
-                    val inverse = introduce(coefficient, coefficient.inverse())
-
-                    val dragTarget = if (coefficient.parent !== null) {
-                        coefficient
-                    } else {
-                        // We can't use `coefficient` as the drag target because it
-                        // doesn't have a parent chain. We need a parent chain in order to
-                        // create a path mapping to the drag target. This might happen in
-                        // a situation like `[-x/3]` where `coefficient` would be the
-                        // artificially created expression [-1/3]. The `3` in that
-                        // example, however, does have a parent chain to the root of the
-                        // "from expression" so we can use that.
-                        val positiveCoefficient = coefficient.withoutNegOrPlus() as Fraction
-                        if (positiveCoefficient.parent !== null) {
-                            positiveCoefficient
-                        } else {
-                            // TODO What should we do in situations like `[2x/5]`? In
-                            // that, this logic would only provide a drag target of `5` so
-                            // the `2` would still be left behind. It's not ideal that GM
-                            // would require two steps to move the `[2/3]`, while Solver
-                            // would take only one step.
-                            positiveCoefficient.denominator
-                        }
-                    }
-                    val newLhs = if (context.get(Setting.BalancingMode) == BalancingModeSetting.Advanced) {
-                        get(variable)
-                    } else {
-                        productOf(inverse, get(lhs))
-                    }
-                    val newRhs = productOf(inverse, get(rhs))
-
-                    ruleResult(
-                        toExpr = solvable.deriveSolvable(newLhs, newRhs, useDual),
-                        gmAction = drag(dragTarget, PM.Group, rhs),
-                        explanation = solvableExplanation(
-                            SolvableKey.MultiplyByInverseCoefficientOfVariable,
-                            flipSign = useDual && !solvable.isSelfDual(),
-                            parameters = listOf(coefficient),
-                        ),
-                    )
-                } else {
-                    null
-                }
-            }
-        },
-    ),
-
-    MultiplyByDenominatorOfVariable(multiplyByDenominatorOfVariable),
-
-    DivideByCoefficientOfVariable(
-        rule {
-            val variable = VariableExpressionPattern()
-            val lhs = withOptionalConstantCoefficientInSolutionVariables(variable)
-            val rhs = ConstantInSolutionVariablePattern()
-
-            val solvable = SolvablePattern(lhs, rhs)
-
-            onPattern(solvable) {
-                val coefficientValue = get(lhs::coefficient)!!
-                if (coefficientValue == Constants.One || coefficientValue == Constants.MinusOne) return@onPattern null
-
-                val coefficient = introduce(coefficientValue, coefficientValue)
-
-                val newLhs = if (context.get(Setting.BalancingMode) == BalancingModeSetting.Advanced) {
-                    get(variable)
-                } else {
-                    fractionOf(get(lhs), coefficient)
-                }
-                val newRhs = fractionOf(get(rhs), coefficient)
-
-                if (solvable.isSelfDual()) {
-                    val derivedSolvable = solvable.deriveSolvable(newLhs, newRhs, useDual = false)
-
-                    val toExpr = if (coefficientValue.isConstant()) {
-                        derivedSolvable
-                    } else {
-                        ExpressionWithConstraint(
-                            derivedSolvable,
-                            inequationOf(coefficientValue, Constants.Zero),
-                        )
-                    }
-
-                    ruleResult(
-                        toExpr = toExpr,
-                        gmAction = drag(coefficient, PM.Group, rhs),
-                        explanation = solvableExplanation(
-                            SolvableKey.DivideByCoefficientOfVariable,
-                            flipSign = false,
-                            parameters = listOf(coefficient),
-                        ),
-                    )
-                } else {
-                    val useDual = when (coefficientValue.signOf()) {
-                        Sign.POSITIVE -> false
-                        Sign.NEGATIVE -> true
-                        else -> return@onPattern null
-                    }
-
-                    ruleResult(
-                        toExpr = solvable.deriveSolvable(newLhs, newRhs, useDual),
-                        gmAction = drag(coefficient, PM.Group, rhs),
-                        explanation = solvableExplanation(
-                            SolvableKey.DivideByCoefficientOfVariable,
-                            flipSign = useDual,
-                            parameters = listOf(coefficient),
-                        ),
-                    )
-                }
-            }
-        },
-    ),
+    MoveConstantFactorWithNoFractionToTheRight(moveConstantFactorWithNoFractionToTheRight),
 
     NegateBothSides(
         rule {
@@ -685,7 +560,7 @@ private fun MappedExpressionBuilder.solvableExplanation(
     }
     val key = keyGetter.getKey(solvableKey, explicitVariables = explicitVariables, flipSign = flipSign)
 
-    return if (explicitVariables) {
+    return if (key.explicitVariables) {
         Metadata(key, listOf(listOfsolutionVariables()) + parameters)
     } else {
         Metadata(key, parameters)
@@ -698,7 +573,7 @@ internal fun Expression.countAbsoluteValues(solutionVariables: List<String>): In
     else -> children.sumOf { it.countAbsoluteValues(solutionVariables) }
 }
 
-private val multiplyByDenominatorOfVariable = rule {
+private val moveConstantFactorWithNoFractionToTheRight = rule {
     val variable = VariableExpressionPattern()
     val lhs = withOptionalConstantCoefficientInSolutionVariables(variable)
     val rhs = ConstantInSolutionVariablePattern()
@@ -706,11 +581,93 @@ private val multiplyByDenominatorOfVariable = rule {
     val solvable = SolvablePattern(lhs, rhs)
 
     onPattern(solvable) {
-        val denominator = extractDenominator(get(lhs::coefficient)!!) ?: return@onPattern null
+        val coefficientValue = get(lhs::coefficient)!!
+        if (coefficientValue == Constants.One ||
+            coefficientValue == Constants.MinusOne ||
+            coefficientValue.hasFractionFactor()
+        ) {
+            return@onPattern null
+        }
+
+        val coefficient = introduce(coefficientValue, coefficientValue)
+
+        val rhsValue = get(rhs)
+        val multiplyByReciprocal = rhsValue.hasFractionFactor()
+
+        val newLhs = when {
+            context.get(Setting.BalancingMode) == BalancingModeSetting.Advanced -> get(variable)
+            multiplyByReciprocal -> productOf(coefficient.inverse(), get(lhs))
+            else -> fractionOf(get(lhs), coefficient)
+        }
+
+        val newRhs = if (multiplyByReciprocal) {
+            productOf(coefficient.inverse(), rhsValue)
+        } else {
+            fractionOf(rhsValue, coefficient)
+        }
+
+        val explanationKey = if (multiplyByReciprocal) {
+            SolvableKey.MultiplyByInverseCoefficientOfVariable
+        } else {
+            SolvableKey.DivideByCoefficientOfVariable
+        }
+
+        if (solvable.isSelfDual()) {
+            val derivedSolvable = solvable.deriveSolvable(newLhs, newRhs, useDual = false)
+
+            val toExpr = if (coefficientValue.isConstant()) {
+                derivedSolvable
+            } else {
+                ExpressionWithConstraint(
+                    derivedSolvable,
+                    inequationOf(coefficientValue, Constants.Zero),
+                )
+            }
+
+            ruleResult(
+                toExpr = toExpr,
+                gmAction = drag(coefficient, PM.Group, rhs),
+                explanation = solvableExplanation(
+                    explanationKey,
+                    flipSign = false,
+                    parameters = listOf(coefficient),
+                ),
+            )
+        } else {
+            val useDual = when (coefficientValue.signOf()) {
+                Sign.POSITIVE -> false
+                Sign.NEGATIVE -> true
+                else -> return@onPattern null
+            }
+
+            ruleResult(
+                toExpr = solvable.deriveSolvable(newLhs, newRhs, useDual),
+                gmAction = drag(coefficient, PM.Group, rhs),
+                explanation = solvableExplanation(
+                    explanationKey,
+                    flipSign = useDual,
+                    parameters = listOf(coefficient),
+                ),
+            )
+        }
+    }
+}
+
+private val moveConstantDenominatorToTheRight = rule {
+    val variable = VariableExpressionPattern()
+    val denominator = ConstantInSolutionVariablePattern()
+    val fraction = fractionOf(variable, denominator)
+    val lhs = expressionWithFactor(fraction)
+    val rhs = ConstantInSolutionVariablePattern()
+
+    val solvable = SolvablePattern(lhs, rhs)
+
+    onPattern(solvable) {
+        val denominatorValue = get(denominator)
         val useDual = if (solvable.isSelfDual()) {
             false
         } else {
-            when (denominator.signOf()) {
+            when (denominatorValue.signOf()) {
                 Sign.POSITIVE -> false
                 Sign.NEGATIVE -> true
                 Sign.NOT_ZERO -> if (solvable.isSelfDual()) false else return@onPattern null
@@ -718,16 +675,69 @@ private val multiplyByDenominatorOfVariable = rule {
             }
         }
 
-        val newLhs = productOf(denominator, get(lhs))
-        val newRhs = productOf(denominator, get(rhs))
+        val newLhs = when (context.get(Setting.BalancingMode)) {
+            BalancingModeSetting.Advanced -> lhs.substitute(get(variable))
+            BalancingModeSetting.NextTo -> lhs.substitute(productOf(get(fraction), denominatorValue))
+            else /* BalancingModeSetting.Basic */ -> productOf(denominatorValue, get(lhs))
+        }
+
+        val newRhs = simplifiedProductOf(denominatorValue, get(rhs))
 
         ruleResult(
             toExpr = solvable.deriveSolvable(newLhs, newRhs, useDual),
+            gmAction = drag(denominator, PM.Group, rhs, null, DragTargetPosition.LeftOf),
             explanation = solvableExplanation(
-                SolvableKey.MultiplyByDenominatorOfVariable,
+                SolvableKey.MultiplyByDenominatorOfVariableLHS,
                 flipSign = useDual && !solvable.isSelfDual(),
-                parameters = listOf(denominator),
+                parameters = listOf(denominatorValue),
             ),
         )
+    }
+}
+
+private val moveConstantFractionFactorToTheRight = rule {
+    val fraction = fractionOf(ConstantInSolutionVariablePattern(), ConstantInSolutionVariablePattern())
+    val lhs = expressionWithFactor(fraction)
+    val rhs = ConstantInSolutionVariablePattern()
+
+    val solvable = SolvablePattern(lhs, rhs)
+
+    onPattern(solvable) {
+        val fractionValue = get(fraction)
+        val useDual = when (fractionValue.signOf()) {
+            Sign.POSITIVE -> false
+            Sign.NEGATIVE -> true
+            Sign.NOT_ZERO -> if (solvable.isSelfDual()) false else return@onPattern null
+            else -> return@onPattern null
+        }
+
+        val inverse = introduce(fraction, fractionValue.inverse())
+
+        val newLhs = when (context.get(Setting.BalancingMode)) {
+            BalancingModeSetting.Advanced -> restOf(lhs)
+            BalancingModeSetting.NextTo -> lhs.substitute(productOf(fractionValue, inverse))
+            else /* BalancingModeSetting.Basic */ -> productOf(inverse, get(lhs))
+        }
+
+        val newRhs = simplifiedProductOf(inverse, get(rhs))
+
+        ruleResult(
+            toExpr = solvable.deriveSolvable(newLhs, newRhs, useDual),
+            gmAction = drag(fraction, PM.Group, rhs),
+            explanation = solvableExplanation(
+                SolvableKey.MultiplyByInverseCoefficientOfVariable,
+                flipSign = useDual && !solvable.isSelfDual(),
+                parameters = listOf(fractionValue),
+            ),
+        )
+    }
+}
+
+private fun Expression.hasFractionFactor(): Boolean {
+    return when (this) {
+        is Minus -> argument.hasFractionFactor()
+        is Fraction -> true
+        is Product -> children.any { it is Fraction }
+        else -> false
     }
 }

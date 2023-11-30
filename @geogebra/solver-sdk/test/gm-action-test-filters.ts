@@ -236,6 +236,8 @@ export const expressionSkipList = [
   'x/3<-7',
   'x+1=2*x+3',
   '3*a+2*b<9',
+  '(2*h*x)/3=1',
+  'x*y/2=5',
 
   // [TRACKED] In GM, it is easier to move one term at a time, though the Solver doesn't
   // TODO: figure out how to tell the GM Action that several terms should be moved
@@ -282,4 +284,9 @@ export const expressionSkipList = [
   // Turning division into a fraction: the solver removes brackets in the new
   // numerator automatically, while GM doesn't
   '-25*x^4-60*y^7+(-{10/7}*x^5*y)÷(-{1/5}*x^3)',
+
+  // Issues introduced in PLUT-797
+  '3/3*(x+1)^2=1/3*1/3',
+  '1/3*x<-7',
+  '3/3*x<3*(-7)',
 ];

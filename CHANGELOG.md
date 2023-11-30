@@ -71,6 +71,8 @@ contents to a new release section (e.g. _[0.x]_).
 - SDK: Adapted SDK and the poker to use the settings and presets returned by the engine (PLUT-796)
 - Renamed the `AdvancedBalancing` flag to `BalancingMode` and changed the options to `basic`, `advanced` and
   `nextTo` (PLUT-802)
+- Changed the removal of the coefficients on the left hand sides of equations and inequalities for better compatibility
+  with Graspable Math (PLUT-797)
 
 ### Removed
 

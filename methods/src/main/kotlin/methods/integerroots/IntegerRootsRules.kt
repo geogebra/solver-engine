@@ -6,7 +6,7 @@ import engine.expressions.IntegerExpression
 import engine.expressions.IntegerFactorView
 import engine.expressions.Power
 import engine.expressions.SumView
-import engine.expressions.isSignedInteger
+import engine.expressions.isSigned
 import engine.expressions.powerOf
 import engine.expressions.productOf
 import engine.expressions.rootOf
@@ -499,7 +499,7 @@ private val moveSquareFactorOutOfSquareRoot = rule {
 
 private val factorGreatestCommonSquareIntegerFactor = rule {
     onPattern(AnyPattern()) {
-        if (expression.isSignedInteger()) {
+        if (expression.isSigned<IntegerExpression>()) {
             // If it's just an integer we defer to more basic methods
             return@onPattern null
         }

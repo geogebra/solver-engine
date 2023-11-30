@@ -80,16 +80,23 @@ enum class SolvableKey(val rule: RunnerMethod) {
      */
     MoveTermsNotContainingModulusToTheLeft(SolvableRules.MoveTermsNotContainingModulusToTheLeft),
 
-    MultiplyByInverseCoefficientOfVariable(SolvableRules.MultiplyByInverseCoefficientOfVariable),
+    /**
+     * Multiply both sides by the inverse of a constant fraction to simplify the LHS
+     */
+    MultiplyByInverseCoefficientOfVariable(SolvableRules.MoveConstantFractionFactorToTheRight),
 
     /**
-     * Multiply both the side by denominator of the variable present on the LHS.
+     * Multiply both the side by denominator of a fraction in the LHS to simplify it.
      *
-     * E.g.; [xh / 2] = 1 --> 2 * [xh / 2] = 2 * 1
+     * E.g.  [xh / 2] = 1 --> 2 * [xh / 2] = 2 * 1
+     *       [x/2](y - x) = 6 -> 2 * [x/2](y - x) = 2 * 6
      */
-    MultiplyByDenominatorOfVariable(SolvableRules.MultiplyByDenominatorOfVariable),
+    MultiplyByDenominatorOfVariableLHS(SolvableRules.MoveConstantDenominatorToTheRight),
 
-    DivideByCoefficientOfVariable(SolvableRules.DivideByCoefficientOfVariable),
+    /**
+     * Divide both sides by the coefficient of the variable
+     */
+    DivideByCoefficientOfVariable(SolvableRules.MoveConstantFactorWithNoFractionToTheRight),
 
     NegateBothSides(SolvableRules.NegateBothSides),
 
@@ -413,7 +420,7 @@ enum class EquationsExplanation(
      *
      * E.g. [hx / 9] = 3 -> 9 * [hx / 9] = 9 * 3
      */
-    MultiplyByDenominatorOfVariable(SolvableKey.MultiplyByDenominatorOfVariable),
+    MultiplyByDenominatorOfVariableLHS(SolvableKey.MultiplyByDenominatorOfVariableLHS),
 
     /**
      * Multiply both sides of the equation by the inverse of the coefficient
@@ -429,14 +436,13 @@ enum class EquationsExplanation(
     ),
 
     /**
-     * Multiply both sides of the equation by denominator of the variable
-     * and simplify
+     * Multiply both the side by denominator of a fraction in the LHS and simplify the result.
      *
-     * E.g. [hx / 9] = 3 -> 9 * [hx / 9] = 9 * 3
-     *  --> hx = 27
+     * E.g.  [xh / 2] = 1 --> 2 * [xh / 2] = 2 * 1 --> xh = 2
+     *       [x/2](y - x) = 6 --> 2 * [x/2](y - x) = 2 * 6 --> x(y -x) = 12
      */
-    MultiplyByDenominatorOfVariableAndSimplify(
-        SolvableKey.MultiplyByDenominatorOfVariable,
+    MultiplyByDenominatorOfVariableLHSAndSimplify(
+        SolvableKey.MultiplyByDenominatorOfVariableLHS,
         simplify = true,
     ),
 
@@ -770,7 +776,13 @@ enum class InequalitiesExplanation(
      */
     MultiplyByInverseCoefficientOfVariable(SolvableKey.MultiplyByInverseCoefficientOfVariable),
 
-    MultiplyByDenominatorOfVariable(SolvableKey.MultiplyByDenominatorOfVariable),
+    /**
+     * Multiply both the side by denominator of a fraction in the LHS to simplify it.
+     *
+     * E.g.  [xh / 2] < 1 --> 2 * [xh / 2] < 2 * 1
+     *       [x/2](y - x) < 6 -> 2 * [x/2](y - x) < 2 * 6
+     */
+    MultiplyByDenominatorOfVariableLHS(SolvableKey.MultiplyByDenominatorOfVariableLHS),
 
     /**
      * Multiply both sides of the inequality by the inverse of the coefficient
@@ -785,8 +797,13 @@ enum class InequalitiesExplanation(
         flipSign = true,
     ),
 
-    MultiplyByDenominatorOfVariableAndFlipTheSign(
-        SolvableKey.MultiplyByDenominatorOfVariable,
+    /**
+     * Multiply both the side by negative denominator of a fraction in the LHS to simplify it.
+     *
+     * E.g.  [xh / -2] < 1 --> (-2) * [xh / -2] > (-2) * 1
+     */
+    MultiplyByDenominatorOfVariableLHSAndFlipTheSign(
+        SolvableKey.MultiplyByDenominatorOfVariableLHS,
         flipSign = true,
     ),
 
@@ -803,8 +820,14 @@ enum class InequalitiesExplanation(
         simplify = true,
     ),
 
-    MultiplyByDenominatorOfVariableAndSimplify(
-        SolvableKey.MultiplyByDenominatorOfVariable,
+    /**
+     * Multiply both the side by denominator of a fraction in the LHS and simplify the result.
+     *
+     * E.g.  [xh / 2] = 1 --> 2 * [xh / 2] = 2 * 1 --> xh = 2
+     *       [x/2](y - x) = 6 --> 2 * [x/2](y - x) = 2 * 6 --> x(y -x) = 12
+     */
+    MultiplyByDenominatorOfVariableLHSAndSimplify(
+        SolvableKey.MultiplyByDenominatorOfVariableLHS,
         simplify = true,
     ),
 

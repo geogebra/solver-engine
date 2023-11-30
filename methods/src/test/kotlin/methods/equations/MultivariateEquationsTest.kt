@@ -514,14 +514,14 @@ class MultivariateEquationsTest {
                 fromExpr = "[1 / 2] h (B + b) = S"
                 toExpr = "h (B + b) = 2 S"
                 explanation {
-                    key = methods.solvable.EquationsExplanation.MultiplyByDenominatorOfVariableAndSimplify
+                    key = methods.solvable.EquationsExplanation.MultiplyByInverseCoefficientOfVariableAndSimplify
                 }
 
                 step {
                     fromExpr = "[1 / 2] h (B + b) = S"
                     toExpr = "2 * [1 / 2] h (B + b) = 2 S"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MultiplyByDenominatorOfVariable
+                        key = methods.solvable.EquationsExplanation.MultiplyByInverseCoefficientOfVariable
                     }
                 }
 
@@ -584,14 +584,14 @@ class MultivariateEquationsTest {
                 fromExpr = "x * [y / 2] = 5"
                 toExpr = "x y = 10"
                 explanation {
-                    key = methods.solvable.EquationsExplanation.MultiplyByDenominatorOfVariableAndSimplify
+                    key = methods.solvable.EquationsExplanation.MultiplyByDenominatorOfVariableLHSAndSimplify
                 }
 
                 step {
                     fromExpr = "x * [y / 2] = 5"
                     toExpr = "2 x * [y / 2] = 2 * 5"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MultiplyByDenominatorOfVariable
+                        key = methods.solvable.EquationsExplanation.MultiplyByDenominatorOfVariableLHS
                     }
                 }
 
@@ -662,7 +662,7 @@ class MultivariateEquationsTest {
                 fromExpr = "[2 h x / 3] = 1"
                 toExpr = "2 h x = 3"
                 explanation {
-                    key = methods.solvable.EquationsExplanation.MultiplyByDenominatorOfVariableAndSimplify
+                    key = methods.solvable.EquationsExplanation.MultiplyByDenominatorOfVariableLHSAndSimplify
                 }
             }
 

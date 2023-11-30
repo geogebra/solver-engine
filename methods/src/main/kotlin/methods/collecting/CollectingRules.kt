@@ -11,8 +11,7 @@ import engine.expressions.Root
 import engine.expressions.SquareRoot
 import engine.expressions.Sum
 import engine.expressions.TermView
-import engine.expressions.isSignedFraction
-import engine.expressions.isSignedInteger
+import engine.expressions.isSigned
 import engine.expressions.negOf
 import engine.expressions.productOf
 import engine.expressions.simplifiedProductOf
@@ -37,15 +36,15 @@ enum class CollectingRules(override val runner: Rule) : RunnerMethod {
     CollectLikeRoots(
         CollectLikeTermsRule(
             factorSelector = { it is SquareRoot || it is Root },
-            coefficientCondition = { it.isSignedInteger() || it.isSignedFraction() },
+            coefficientCondition = { it.isSigned<IntegerExpression>() || it.isSigned<Fraction>() },
             explanationKey = Explanation.CollectLikeRoots,
         ).rule,
     ),
 
     CollectLikeRationalPowers(
         CollectLikeTermsRule(
-            factorSelector = { it is Power && it.base is IntegerExpression && it.exponent.isSignedFraction() },
-            coefficientCondition = { it.isSignedInteger() || it.isSignedFraction() },
+            factorSelector = { it is Power && it.base is IntegerExpression && it.exponent.isSigned<Fraction>() },
+            coefficientCondition = { it.isSigned<IntegerExpression>() || it.isSigned<Fraction>() },
             explanationKey = Explanation.CollectLikeRationalPowers,
         ).rule,
     ),

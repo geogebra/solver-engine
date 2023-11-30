@@ -3,6 +3,7 @@ package methods.general
 import engine.expressions.Decorator
 import engine.expressions.DivideBy
 import engine.expressions.Expression
+import engine.expressions.Fraction
 import engine.expressions.PathScope
 import engine.expressions.Power
 import engine.expressions.Product
@@ -11,7 +12,7 @@ import engine.expressions.SquareRoot
 import engine.expressions.Sum
 import engine.expressions.Variable
 import engine.expressions.hasRedundantBrackets
-import engine.expressions.isSignedFraction
+import engine.expressions.isSigned
 import engine.expressions.productOf
 import engine.expressions.variablePowerBase
 import engine.methods.Rule
@@ -271,7 +272,7 @@ private val priorityComparator = compareBy<Expression>(
     { it.variablePowerBase()?.variableName },
     {
         // if the bases have the same priority, put powers with rational exponents at the end
-        it is Power && it.exponent.isSignedFraction()
+        it is Power && it.exponent.isSigned<Fraction>()
     },
 )
 

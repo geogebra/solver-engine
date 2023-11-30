@@ -95,8 +95,8 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
         SolvableKey.MultiplyByInverseCoefficientOfVariable,
     )
 
-    val multiplyByDenominatorOfVariableAndSimplify = ApplyRuleAndSimplify(
-        SolvableKey.MultiplyByDenominatorOfVariable,
+    val multiplyByDenominatorOfVariableLHSAndSimplify = ApplyRuleAndSimplify(
+        SolvableKey.MultiplyByDenominatorOfVariableLHS,
     )
 
     val divideByCoefficientOfVariableAndSimplify = ApplyRuleAndSimplify(
@@ -217,17 +217,28 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
         apply(multiplyByLCDAndSimplify)
     }
 
+    // The explanations use advanced balancing for conciseness.
     val coefficientRemovalSteps = steps {
-        firstOf {
-            // get rid of the coefficient of the variable
-            option(multiplyByInverseCoefficientOfVariableAndSimplify)
-            option(multiplyByDenominatorOfVariableAndSimplify)
-            option(divideByCoefficientOfVariableAndSimplify)
-            option {
-                checkForm {
-                    SolvablePattern(negOf(VariableExpressionPattern()), ConstantInSolutionVariablePattern())
+        whilePossible {
+            firstOf {
+                // First deal with coefficients not containing fractions e.g. -5x = 2 -> x = [2 / -5]
+                option(divideByCoefficientOfVariableAndSimplify)
+
+                // Then if the LHS is a negation, negate both side e.g. -[2x / 3] = 7 -> [2x / 3] = -7
+                option {
+                    checkForm {
+                        SolvablePattern(negOf(VariableExpressionPattern()), ConstantInSolutionVariablePattern())
+                    }
+                    apply(SolvableRules.NegateBothSides)
                 }
-                apply(SolvableRules.NegateBothSides)
+
+                // Next if the coefficient contains a constant fraction, multiply both sides by the reciprocal
+                // E.g. [5 / 2]x = 3 -> x = [2 / 5] * 3
+                option(multiplyByInverseCoefficientOfVariableAndSimplify)
+
+                // Last if the coefficient has a fraction with a constant denominator, multiply by this denominator
+                // E.g. [5x / 3] = 8 -> 5x = 3 * 8
+                option(multiplyByDenominatorOfVariableLHSAndSimplify)
             }
         }
     }

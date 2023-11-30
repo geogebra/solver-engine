@@ -11,7 +11,7 @@ import engine.expressions.asInteger
 import engine.expressions.explicitProductOf
 import engine.expressions.fractionOf
 import engine.expressions.isRationalExpression
-import engine.expressions.isSignedFraction
+import engine.expressions.isSigned
 import engine.expressions.productOf
 import engine.expressions.simplifiedNegOfSum
 import engine.expressions.simplifiedPowerOf
@@ -102,7 +102,7 @@ enum class RationalExpressionsPlans(override val runner: CompositeMethod) : Runn
         plan {
             explanation = Explanation.AddTermAndRationalExpression
             pattern = commutativeSumContaining(
-                condition { !it.isSignedFraction() },
+                condition { !it.isSigned<Fraction>() },
                 condition { it.isRationalExpression() },
             )
 

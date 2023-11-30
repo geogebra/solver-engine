@@ -8,7 +8,7 @@ import engine.expressions.containsDecimals
 import engine.expressions.containsFractions
 import engine.expressions.containsPowers
 import engine.expressions.containsRoots
-import engine.expressions.isSignedFraction
+import engine.expressions.isSigned
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
@@ -132,7 +132,7 @@ enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : Runn
 
     SimplifyPowerOfFraction(
         plan {
-            pattern = powerOf(condition { it.isSignedFraction() && it.isConstant() }, RationalPattern())
+            pattern = powerOf(condition { it.isSigned<Fraction>() && it.isConstant() }, RationalPattern())
             explanation = Explanation.SimplifyPowerOfFraction
 
             steps {

@@ -9,7 +9,7 @@ import engine.methods.Method
 import engine.methods.testMethod
 import engine.methods.testRule
 import engine.methods.testRuleInX
-import methods.solvable.SolvableRules.MultiplyByInverseCoefficientOfVariable
+import methods.solvable.SolvableRules.MoveConstantFractionFactorToTheRight
 import methods.solvable.SolvableRules.MultiplySolvableByLCD
 import org.junit.jupiter.api.Test
 
@@ -252,86 +252,147 @@ class SolvableRulesTest {
     }
 
     @Test
-    fun testMultiplyByInverseCoefficientOfVariable() {
+    fun testNegateBothSides() {
         testRuleInX(
-            "3x = 1",
-            MultiplyByInverseCoefficientOfVariable,
+            "-2x = 3",
+            SolvableRules.NegateBothSides,
+            "2x = -3",
+        )
+        testRuleInX(
+            "-6x = -4",
+            SolvableRules.NegateBothSides,
+            "6x = 4",
+        )
+        testRuleInX(
+            "3x = -2",
+            SolvableRules.NegateBothSides,
             null,
-        )
-        testRuleInX(
-            "[x / 5] = 1",
-            MultiplyByInverseCoefficientOfVariable,
-            "5 * [x / 5] = 5 * 1",
-            advanced to "x = 5 * 1",
-        )
-        testRuleInX(
-            "[3x / 2] = 1",
-            MultiplyByInverseCoefficientOfVariable,
-            "[2 / 3] * [3x / 2] = [2 / 3] * 1",
-            advanced to "x = [2 / 3] * 1",
-        )
-        testRuleInX(
-            "-[x / 5] = 1",
-            MultiplyByInverseCoefficientOfVariable,
-            "(-5) (-[x / 5]) = (-5) * 1",
-            advanced to "x = (-5) * 1",
-
-        )
-        testRuleInX(
-            "-[3x / 2] = 1",
-            MultiplyByInverseCoefficientOfVariable,
-            "(-[2 / 3]) (-[3x / 2]) = (-[2 / 3]) * 1",
-            advanced to "x = (-[2 / 3]) * 1 ",
-        )
-
-        testRuleInX(
-            "3x > 1",
-            MultiplyByInverseCoefficientOfVariable,
-            null,
-        )
-        testRuleInX(
-            "[x / 5] > 1",
-            MultiplyByInverseCoefficientOfVariable,
-            "5 [x / 5] > 5 * 1",
-            advanced to "x > 5 * 1",
-        )
-        testRuleInX(
-            "[3x / 2] > 1",
-            MultiplyByInverseCoefficientOfVariable,
-            "[2 / 3] [3x / 2] > [2 / 3] * 1",
-            advanced to "x > [2 / 3] * 1",
         )
         testRuleInX(
             "-[x / 5] > 1",
-            MultiplyByInverseCoefficientOfVariable,
-            "(-5) (-[x / 5])  < (-5) * 1",
-            advanced to "x < (-5) * 1",
+            SolvableRules.NegateBothSides,
+            "[x / 5] < -1",
         )
         testRuleInX(
             "-[3x / 2] > 1",
-            MultiplyByInverseCoefficientOfVariable,
-            "(-[2 / 3]) (-[3x / 2]) < (-[2 / 3]) * 1",
-            advanced to "x < (-[2 / 3]) * 1",
-        )
-        // in this case, we shouldn't multiply by inverse coefficient of 'x'
-        testRuleInX(
-            "[2hx / 3] = 1",
-            MultiplyByInverseCoefficientOfVariable,
-            null,
+            SolvableRules.NegateBothSides,
+            "[3x / 2] < -1",
         )
     }
 
     @Test
-    fun testMultiplyByDenominatorOfVariable() {
+    fun testMoveConstantFactorWithNoFractionToTheRight() {
         testRuleInX(
-            "[1/2](B + b)x = S",
-            SolvableRules.MultiplyByDenominatorOfVariable,
-            "2 * [1/2](B + b) x = 2S",
+            "3x = 5",
+            SolvableRules.MoveConstantFactorWithNoFractionToTheRight,
+            "[3x / 3]= [5 / 3]",
+            advanced to "x = [5 / 3]",
         )
         testRuleInX(
+            "3x = [1 / 2]",
+            SolvableRules.MoveConstantFactorWithNoFractionToTheRight,
+            "[1 / 3] * 3x = [1 / 3] * [1 / 2]",
+            advanced to "x = [1 / 3] * [1 / 2]",
+        )
+        testRuleInX(
+            "-3x = 5",
+            SolvableRules.MoveConstantFactorWithNoFractionToTheRight,
+            "[-3x / -3] = [5 / -3]",
+            advanced to "x = [5 / -3]",
+        )
+
+        // I can't say I like this one
+        testRuleInX(
+            "-3x = [1 / 2]",
+            SolvableRules.MoveConstantFactorWithNoFractionToTheRight,
+            "(-[1 / 3])(-3x) = (-[1 / 3]) * [1 / 2]",
+            advanced to "x = (-[1 / 3]) * [1 / 2]",
+        )
+    }
+
+    @Test
+    fun testMoveConstantFractionFactorToTheRight() {
+        testRuleInX(
+            "[1/3]x = 2",
+            MoveConstantFractionFactorToTheRight,
+            "3*[1/3]x = 3*2",
+            advanced to "x = 3*2",
+        )
+        testRuleInX(
+            "[2/3]xy = 7",
+            MoveConstantFractionFactorToTheRight,
+            "[3/2]*[2/3]xy = [3/2]*7",
+            advanced to "xy = [3/2]*7",
+        )
+        testRuleInX(
+            "3x = 1",
+            MoveConstantFractionFactorToTheRight,
+            null,
+        )
+        testRuleInX(
+            "-[x / 5] = 1",
+            MoveConstantFractionFactorToTheRight,
+            null,
+
+        )
+        testRuleInX(
+            "-[3x / 2] = 1",
+            MoveConstantFractionFactorToTheRight,
+            null,
+        )
+
+        testRuleInX(
+            "3x > 1",
+            MoveConstantFractionFactorToTheRight,
+            null,
+        )
+
+        // in this case, we shouldn't multiply by inverse coefficient of 'x'
+        testRuleInX(
+            "[2hx / 3] = 1",
+            MoveConstantFractionFactorToTheRight,
+            null,
+        )
+        testRuleInX(
+            "[1/2](B + b)x = S",
+            MoveConstantFractionFactorToTheRight,
+            "2 * [1/2](B + b) x = 2S",
+            advanced to "(B + b) x = 2S",
+            nextTo to "[1/2] * 2 (B + b)x = 2S",
+        )
+    }
+
+    @Test
+    fun testMoveConstantDenominatorToTheRight() {
+        testRuleInX(
             "[(B + b)x / 2] = S",
-            SolvableRules.MultiplyByDenominatorOfVariable,
+            SolvableRules.MoveConstantDenominatorToTheRight,
             "2 * [(B + b)x / 2] = 2S",
+        )
+        testRuleInX(
+            "[x / 5] = 1",
+            SolvableRules.MoveConstantDenominatorToTheRight,
+            "5 * [x / 5] = 5",
+            advanced to "x = 5",
+            nextTo to "[x / 5] * 5 = 5",
+        )
+        testRuleInX(
+            "[3x / 2] = 1",
+            SolvableRules.MoveConstantDenominatorToTheRight,
+            "2 * [3x / 2] = 2",
+            advanced to "3x = 2",
+        )
+        testRuleInX(
+            "[x / 5] > 1",
+            SolvableRules.MoveConstantDenominatorToTheRight,
+            "5 [x / 5] > 5",
+            advanced to "x > 5",
+        )
+        testRuleInX(
+            "[3x / 2] > 1",
+            SolvableRules.MoveConstantDenominatorToTheRight,
+            "2 * [3x / 2] > 2",
+            advanced to "3x > 2",
         )
     }
 

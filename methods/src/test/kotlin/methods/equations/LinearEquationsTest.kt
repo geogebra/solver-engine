@@ -116,7 +116,7 @@ class LinearEquationsTest {
                 fromExpr = "[x / 9] = -1"
                 toExpr = "x = -9"
                 explanation {
-                    key = methods.solvable.EquationsExplanation.MultiplyByInverseCoefficientOfVariableAndSimplify
+                    key = methods.solvable.EquationsExplanation.MultiplyByDenominatorOfVariableLHSAndSimplify
                 }
             }
 
@@ -322,7 +322,7 @@ class LinearEquationsTest {
                 fromExpr = "[x / 3] = -7"
                 toExpr = "x = -21"
                 explanation {
-                    key = methods.solvable.EquationsExplanation.MultiplyByInverseCoefficientOfVariableAndSimplify
+                    key = methods.solvable.EquationsExplanation.MultiplyByDenominatorOfVariableLHSAndSimplify
                 }
             }
 

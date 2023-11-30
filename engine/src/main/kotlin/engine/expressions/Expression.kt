@@ -7,6 +7,7 @@ import engine.operators.Comparator
 import engine.operators.ComparisonOperator
 import engine.operators.DecimalOperator
 import engine.operators.DoubleComparisonOperator
+import engine.operators.EulerEOperator
 import engine.operators.ExpressionOperator
 import engine.operators.ExpressionWithConstraintOperator
 import engine.operators.IntegerOperator
@@ -16,6 +17,7 @@ import engine.operators.ListOperator
 import engine.operators.MixedNumberOperator
 import engine.operators.NameOperator
 import engine.operators.Operator
+import engine.operators.PiOperator
 import engine.operators.ProductOperator
 import engine.operators.RecurringDecimalOperator
 import engine.operators.RenderContext
@@ -531,10 +533,6 @@ fun Expression.withoutNegOrPlus(): Expression = when (operator) {
     else -> this
 }
 
-fun Expression.isSignedInteger() = this is IntegerExpression || (this is Minus && firstChild is IntegerExpression)
-
-fun Expression.isSignedFraction() = this is Fraction || (this is Minus && firstChild is Fraction)
-
 fun Expression.isRationalExpression(): Boolean {
     return (this is Fraction && !denominator.isConstant()) ||
         (this is Minus && firstChild is Fraction && !(firstChild as Fraction).denominator.isConstant())
@@ -628,6 +626,8 @@ fun Expression.allSubterms(): List<Expression> = listOf(this) + children.flatMap
 
 fun Expression.complexity(): Int = 1 + children.sumOf { it.complexity() }
 
+inline fun <reified T : Expression>Expression.isSigned(): Boolean = this is T || this is Minus && argument is T
+
 internal fun expressionOf(operator: Operator, operands: List<Expression>) =
     expressionOf(operator, operands, BasicMeta())
 
@@ -652,6 +652,8 @@ private fun expressionOf(
                 meta,
             )
         }
+        PiOperator -> PiExpression(meta)
+        EulerEOperator -> EulerEExpression(meta)
         UnaryExpressionOperator.Minus -> Minus(operands[0], meta)
         UnaryExpressionOperator.Plus -> Plus(operands[0], meta)
         UnaryExpressionOperator.PlusMinus -> PlusMinus(operands[0], meta)
