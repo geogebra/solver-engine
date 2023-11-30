@@ -17,7 +17,7 @@ class InvalidPresetException(preset: String) :
     ApiException("Invalid preset: $preset", HttpStatus.BAD_REQUEST.value())
 
 class InvalidSettingException(setting: String, value: String) :
-    ApiException("Invalid curriculum: $setting = $value", HttpStatus.BAD_REQUEST.value())
+    ApiException("Invalid setting: $setting = $value", HttpStatus.BAD_REQUEST.value())
 
 class InvalidStrategyException(category: String, strategy: String) :
     ApiException("Invalid strategy $strategy for category $category", HttpStatus.BAD_REQUEST.value())

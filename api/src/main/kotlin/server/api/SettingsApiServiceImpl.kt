@@ -7,5 +7,7 @@ import server.models.SettingEntry
 @Service
 class SettingsApiServiceImpl : SettingsApiService {
 
-    override fun getSettings() = Setting.entries.map { SettingEntry(it.name, it.description) }
+    override fun getSettings() = Setting.entries.map {
+        SettingEntry(it.name, it.description, it.kind.settingValues.map { value -> value.name })
+    }
 }

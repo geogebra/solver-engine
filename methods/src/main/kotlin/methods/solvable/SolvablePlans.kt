@@ -1,6 +1,8 @@
 package methods.solvable
 
+import engine.context.BooleanSetting
 import engine.context.Context
+import engine.context.Setting
 import engine.expressions.AbsoluteValue
 import engine.expressions.Equation
 import engine.expressions.Expression
@@ -9,6 +11,7 @@ import engine.expressions.Power
 import engine.methods.Method
 import engine.methods.plan
 import engine.methods.stepsproducers.StepsBuilder
+import engine.methods.stepsproducers.branchOn
 import engine.methods.stepsproducers.steps
 import engine.patterns.BinaryIntegerCondition
 import engine.patterns.ConditionPattern
@@ -73,17 +76,20 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
         }
     }
 
-    val moveConstantsToTheLeftAndSimplify = ApplyRuleAndSimplify(SolvableKey.MoveConstantsToTheLeft)
+    private fun applyRuleAndSimplify(key: SolvableKey) = branchOn(Setting.MoveTermsOneByOne) {
+        case(BooleanSetting.True) { whilePossible(ApplyRuleAndSimplify(key)) }
+        case(BooleanSetting.False) { apply(ApplyRuleAndSimplify(key)) }
+    }
 
-    val moveConstantsToTheRightAndSimplify = ApplyRuleAndSimplify(
-        SolvableKey.MoveConstantsToTheRight,
-    )
+    val moveConstantsToTheLeftAndSimplify = applyRuleAndSimplify(SolvableKey.MoveConstantsToTheLeft)
 
-    val moveVariablesToTheLeftAndSimplify = ApplyRuleAndSimplify(SolvableKey.MoveVariablesToTheLeft)
+    val moveConstantsToTheRightAndSimplify = applyRuleAndSimplify(SolvableKey.MoveConstantsToTheRight)
 
-    val moveVariablesToTheRightAndSimplify = ApplyRuleAndSimplify(SolvableKey.MoveVariablesToTheRight)
+    val moveVariablesToTheLeftAndSimplify = applyRuleAndSimplify(SolvableKey.MoveVariablesToTheLeft)
 
-    val moveEverythingToTheLeftAndSimplify = ApplyRuleAndSimplify(SolvableKey.MoveEverythingToTheLeft)
+    val moveVariablesToTheRightAndSimplify = applyRuleAndSimplify(SolvableKey.MoveVariablesToTheRight)
+
+    val moveEverythingToTheLeftAndSimplify = applyRuleAndSimplify(SolvableKey.MoveEverythingToTheLeft)
 
     val multiplyByInverseCoefficientOfVariableAndSimplify = ApplyRuleAndSimplify(
         SolvableKey.MultiplyByInverseCoefficientOfVariable,

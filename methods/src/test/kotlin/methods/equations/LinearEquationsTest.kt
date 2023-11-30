@@ -1,6 +1,6 @@
 package methods.equations
 
-import engine.context.BooleanSetting
+import engine.context.BalancingModeSetting
 import engine.context.Preset
 import engine.context.Setting
 import engine.methods.testMethodInX
@@ -706,7 +706,7 @@ class LinearEquationWithAdvancedBalancingTest {
     fun `test ax = b linear equation`() = testMethodInX {
         method = EquationsPlans.SolveEquation
         inputExpr = "3 x = 1"
-        context = context.copy(settings = mapOf(Setting.AdvancedBalancing to BooleanSetting.True))
+        context = context.copy(settings = mapOf(Setting.BalancingMode setTo BalancingModeSetting.Advanced))
 
         check {
             fromExpr = "3 x = 1"
@@ -737,7 +737,7 @@ class LinearEquationWithAdvancedBalancingTest {
     fun `test x - a = b linear equation`() = testMethodInX {
         method = EquationsPlans.SolveEquation
         inputExpr = "x - 2 = 36"
-        context = context.copy(settings = mapOf(Setting.AdvancedBalancing to BooleanSetting.True))
+        context = context.copy(settings = mapOf(Setting.BalancingMode setTo BalancingModeSetting.Advanced))
 
         check {
             fromExpr = "x - 2 = 36"
@@ -784,7 +784,7 @@ class LinearEquationWithAdvancedBalancingTest {
     fun `test a = b - cx linear equation`() = testMethodInX {
         method = EquationsPlans.SolveEquation
         inputExpr = "1 = [3 / 5] - x"
-        context = context.copy(settings = mapOf(Setting.AdvancedBalancing to BooleanSetting.True))
+        context = context.copy(settings = mapOf(Setting.BalancingMode setTo BalancingModeSetting.Advanced))
 
         check {
             fromExpr = "1 = [3 / 5] - x"

@@ -39,6 +39,7 @@ export type StrategyMap = {
 export type Setting = {
   name: string;
   description: string;
+  values: string[];
 };
 
 export type ApiMathFormat =

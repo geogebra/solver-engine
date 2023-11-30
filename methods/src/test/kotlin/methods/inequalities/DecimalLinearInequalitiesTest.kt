@@ -11,7 +11,7 @@ class DecimalLinearInequalitiesTest {
     @Test
     fun `test ax + b less than cx + d decimal linear inequality`() = testMethodInX {
         method = InequalitiesPlans.SolveLinearInequality
-        context = context.copy(settings = mapOf(Setting.PreferDecimals to BooleanSetting.True))
+        context = context.copy(settings = mapOf(Setting.PreferDecimals setTo BooleanSetting.True))
         inputExpr = "3.1 x + 2.2 < 2.9 x - 9.34"
 
         check {
@@ -58,7 +58,7 @@ class DecimalLinearInequalitiesTest {
     @Test
     fun `test decimal linear inequality with solution not expressible as terminating decimal`() = testMethodInX {
         method = InequalitiesPlans.SolveLinearInequality
-        context = context.copy(settings = mapOf(Setting.PreferDecimals to BooleanSetting.True))
+        context = context.copy(settings = mapOf(Setting.PreferDecimals setTo BooleanSetting.True))
         inputExpr = "3.1 x + 2.2 >= 1.21"
 
         check {
@@ -97,7 +97,7 @@ class DecimalLinearInequalitiesTest {
     @Test
     fun `test decimal linear inequality fails for recurring decimal in solution`() = testMethodInX {
         method = InequalitiesPlans.SolveLinearInequality
-        context = context.copy(settings = mapOf(Setting.PreferDecimals to BooleanSetting.True))
+        context = context.copy(settings = mapOf(Setting.PreferDecimals setTo BooleanSetting.True))
         inputExpr = "3.1x + 2.2[3] > 1.21"
 
         check {
@@ -108,7 +108,7 @@ class DecimalLinearInequalitiesTest {
     @Test
     fun `test decimal linear inequality with fractions in the initial expression`() = testMethodInX {
         method = InequalitiesPlans.SolveLinearInequality
-        context = context.copy(settings = mapOf(Setting.PreferDecimals to BooleanSetting.True))
+        context = context.copy(settings = mapOf(Setting.PreferDecimals setTo BooleanSetting.True))
         inputExpr = "3.6 x + 2.2 <= [2 / 5] x + 1.2"
 
         check {

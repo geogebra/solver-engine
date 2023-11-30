@@ -25,7 +25,7 @@ class NormalizationPlansTests {
     fun testReplaceAllInvisibleBracketsSimpleGm() = testMethod {
         method = NormalizationPlans.NormalizeExpression
         inputExpr = "3*-4"
-        context = Context(settings = mapOf(Setting.DontAddClarifyingBrackets to BooleanSetting.True))
+        context = Context(settings = mapOf(Setting.DontAddClarifyingBrackets setTo BooleanSetting.True))
         check {
             noTransformation()
         }

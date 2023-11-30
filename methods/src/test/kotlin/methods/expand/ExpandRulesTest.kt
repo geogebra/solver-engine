@@ -173,7 +173,7 @@ class ExpandRulesTest {
 
     @Test
     fun `test ExpandProductOfSingleTermAndSum with CopySumSignsWhenDistributing`() {
-        val settings = mapOf(Setting.CopySumSignsWhenDistributing to BooleanSetting.True)
+        val settings = mapOf(Setting.CopySumSignsWhenDistributing setTo BooleanSetting.True)
         testRule(
             "5(x - 2)",
             DistributeMultiplicationOverSum,

@@ -50,7 +50,7 @@ class ExpandPolynomialsTest {
     @Test
     fun `test expand square of binomial without using the identity`() = testMethod {
         method = PolynomialsPlans.ExpandPolynomialExpression
-        context = Context(settings = mapOf(Setting.DontUseIdentitiesForExpanding to BooleanSetting.True))
+        context = Context(settings = mapOf(Setting.DontUseIdentitiesForExpanding setTo BooleanSetting.True))
         inputExpr = "[(2x - 3) ^ 2]"
 
         check {
@@ -159,7 +159,7 @@ class ExpandPolynomialsTest {
     @Test
     fun `test expand cube of binomial without using the identity`() = testMethod {
         method = PolynomialsPlans.ExpandPolynomialExpression
-        context = Context(settings = mapOf(Setting.DontUseIdentitiesForExpanding to BooleanSetting.True))
+        context = Context(settings = mapOf(Setting.DontUseIdentitiesForExpanding setTo BooleanSetting.True))
         inputExpr = "[(2x - 3) ^ 3]"
 
         check {
@@ -360,7 +360,7 @@ class ExpandPolynomialsTest {
 
     @Test
     fun `test expand square of trinomial without using the identity`() = testMethod {
-        context = Context(settings = mapOf(Setting.DontUseIdentitiesForExpanding to BooleanSetting.True))
+        context = Context(settings = mapOf(Setting.DontUseIdentitiesForExpanding setTo BooleanSetting.True))
         method = PolynomialsPlans.ExpandPolynomialExpression
         inputExpr = "[(2x + 1 + sqrt[3]) ^ 2]"
 

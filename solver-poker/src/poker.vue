@@ -12,12 +12,10 @@ import * as solverSdk from '@geogebra/solver-sdk';
 import {
   colorScheme,
   demoMode,
-  getSettingValue,
   hideWarnings,
   jsonFormat,
   params,
   presets,
-  setSettingValue,
   settings,
   showCosmeticSteps,
   showInvisibleChangeSteps,
@@ -220,12 +218,12 @@ onMounted(() => {
     </select>
     <br />
     <template v-for="setting of settings ?? []" :key="setting">
-      <input
-        :id="setting.name"
-        :checked="getSettingValue(setting.name)"
-        type="checkbox"
-        @input="(event) => setSettingValue(setting.name, (event.target as HTMLInputElement).checked)"
-      />
+      <select :id="setting.name" v-model="params[setting.name]">
+        <option name="-" value="" selected>-</option>
+        <option v-for="value in setting.values" :value="value">
+          {{ value }}
+        </option>
+      </select>
       <label :for="setting.name">{{ camelCaseToLabel(setting.name) }}</label>
       <br />
     </template>

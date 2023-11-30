@@ -10,10 +10,10 @@ enum class Preset(val description: String, val settings: Map<Setting, SettingVal
     USCurriculum(
         "A set of settings corresponding to the usual way the concepts are taught in the USA.",
         mapOf(
-            Setting.DontUseIdentitiesForExpanding to BooleanSetting.True,
-            Setting.SolveEquationsWithoutComputingTheDomain to BooleanSetting.True,
-            Setting.ConvertRecurringDecimalsToFractionsUsingAlgorithm to BooleanSetting.True,
-            Setting.AddMixedNumbersWithoutConvertingToImproperFractions to BooleanSetting.True,
+            Setting.DontUseIdentitiesForExpanding setTo BooleanSetting.True,
+            Setting.SolveEquationsWithoutComputingTheDomain setTo BooleanSetting.True,
+            Setting.ConvertRecurringDecimalsToFractionsUsingAlgorithm setTo BooleanSetting.True,
+            Setting.AddMixedNumbersWithoutConvertingToImproperFractions setTo BooleanSetting.True,
         ),
     ),
 
@@ -25,12 +25,13 @@ enum class Preset(val description: String, val settings: Map<Setting, SettingVal
     GMFriendly(
         "A set of settings which make the solutions compatible with Graspable Math.",
         mapOf(
-            Setting.DontAddClarifyingBrackets to BooleanSetting.True,
-            Setting.AdvancedBalancing to BooleanSetting.True,
-            Setting.QuickAddLikeFraction to BooleanSetting.True,
-            Setting.QuickAddLikeTerms to BooleanSetting.True,
-            Setting.ReorderProductsInSteps to BooleanSetting.True,
-            Setting.CopySumSignsWhenDistributing to BooleanSetting.True,
+            Setting.DontAddClarifyingBrackets setTo BooleanSetting.True,
+            Setting.BalancingMode setTo BalancingModeSetting.Advanced,
+            Setting.MoveTermsOneByOne setTo BooleanSetting.True,
+            Setting.QuickAddLikeFraction setTo BooleanSetting.True,
+            Setting.QuickAddLikeTerms setTo BooleanSetting.True,
+            Setting.ReorderProductsInSteps setTo BooleanSetting.True,
+            Setting.CopySumSignsWhenDistributing setTo BooleanSetting.True,
         ),
     ),
 }

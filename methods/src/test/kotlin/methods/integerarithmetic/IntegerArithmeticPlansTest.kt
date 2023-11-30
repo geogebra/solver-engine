@@ -143,7 +143,7 @@ class IntegerArithmeticPlansTest {
     @Test
     fun `test 1 plus negative 2 without adding clarifying brackets`() = testMethod {
         method = IntegerArithmeticPlans.EvaluateArithmeticExpression
-        context = context.copy(settings = mapOf(Setting.DontAddClarifyingBrackets to BooleanSetting.True))
+        context = context.copy(settings = mapOf(Setting.DontAddClarifyingBrackets setTo BooleanSetting.True))
         inputExpr = "1+-2"
 
         check {

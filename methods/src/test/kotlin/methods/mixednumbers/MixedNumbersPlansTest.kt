@@ -99,7 +99,7 @@ class MixedNumbersPlansTest {
     fun `test add mixed numbers without converting them to fractions first`() = testMethod {
         method = MixedNumbersPlans.AddMixedNumbers
         context = context.copy(
-            settings = mapOf(Setting.AddMixedNumbersWithoutConvertingToImproperFractions to BooleanSetting.True),
+            settings = mapOf(Setting.AddMixedNumbersWithoutConvertingToImproperFractions setTo BooleanSetting.True),
         )
         inputExpr = "[5 3/4] + [2 2/3]"
 
@@ -164,7 +164,7 @@ class MixedNumbersPlansTest {
     fun `test shortcut in adding mixed numbers without converting to improper fractions`() = testMethod {
         method = MixedNumbersPlans.AddMixedNumbers
         context = context.copy(
-            settings = mapOf(Setting.AddMixedNumbersWithoutConvertingToImproperFractions to BooleanSetting.True),
+            settings = mapOf(Setting.AddMixedNumbersWithoutConvertingToImproperFractions setTo BooleanSetting.True),
         )
         inputExpr = "[1 1/2] + [2 1/3]"
 
@@ -213,7 +213,7 @@ class MixedNumbersPlansTest {
     fun `test shortcut when the addition of mixed numbers results in the sum of two integers`() = testMethod {
         method = MixedNumbersPlans.AddMixedNumbers
         context = context.copy(
-            settings = mapOf(Setting.AddMixedNumbersWithoutConvertingToImproperFractions to BooleanSetting.True),
+            settings = mapOf(Setting.AddMixedNumbersWithoutConvertingToImproperFractions setTo BooleanSetting.True),
         )
         inputExpr = "[5 2/3] + [3 12/36]"
 

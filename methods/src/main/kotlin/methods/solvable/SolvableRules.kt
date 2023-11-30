@@ -1,6 +1,7 @@
 package methods.solvable
 
 import engine.conditions.isDefinitelyPositive
+import engine.context.BalancingModeSetting
 import engine.context.Context
 import engine.context.Setting
 import engine.context.emptyContext
@@ -23,7 +24,6 @@ import engine.expressions.plusMinusOf
 import engine.expressions.productOf
 import engine.expressions.rootOf
 import engine.expressions.simplifiedNegOf
-import engine.expressions.simplifiedNegOfSum
 import engine.expressions.simplifiedPowerOf
 import engine.expressions.simplifiedProductOf
 import engine.expressions.sumOf
@@ -55,6 +55,7 @@ import engine.patterns.withOptionalConstantCoefficient
 import engine.patterns.withOptionalConstantCoefficientInSolutionVariables
 import engine.sign.Sign
 import engine.steps.metadata.Metadata
+import engine.utility.extractFirst
 import engine.utility.isEven
 import engine.utility.isOdd
 import engine.utility.lcm
@@ -375,7 +376,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                             positiveCoefficient.denominator
                         }
                     }
-                    val newLhs = if (context.isSet(Setting.AdvancedBalancing)) {
+                    val newLhs = if (context.get(Setting.BalancingMode) == BalancingModeSetting.Advanced) {
                         get(variable)
                     } else {
                         productOf(inverse, get(lhs))
@@ -414,7 +415,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
 
                 val coefficient = introduce(coefficientValue, coefficientValue)
 
-                val newLhs = if (context.isSet(Setting.AdvancedBalancing)) {
+                val newLhs = if (context.get(Setting.BalancingMode) == BalancingModeSetting.Advanced) {
                     get(variable)
                 } else {
                     fractionOf(get(lhs), coefficient)
@@ -579,94 +580,61 @@ private val moveTermsNotContainingModulusToTheLeft = rule {
 
 private enum class Mover {
     ConstantTerms {
-        override fun extractMove(c: Context, e: Expression) = extractConstants(e, c.solutionVariables)
-        override fun extractRemain(c: Context, e: Expression) =
-            extractVariableTerms(e, c.solutionVariables) ?: Constants.Zero
+        override fun shouldMove(c: Context, e: Expression) = e.isConstantIn(c.solutionVariables)
     },
+
     VariableTerms {
-        override fun extractMove(c: Context, e: Expression) = extractVariableTerms(e, c.solutionVariables)
-        override fun extractRemain(c: Context, e: Expression) =
-            extractConstants(e, c.solutionVariables) ?: Constants.Zero
+        override fun shouldMove(c: Context, e: Expression) = !e.isConstantIn(c.solutionVariables)
     },
+
     TermsNotContainingModulus {
-        override fun extractMove(c: Context, e: Expression) = extractTermsNotContainingModulus(e, c.solutionVariables)
-
-        override fun extractRemain(c: Context, e: Expression) =
-            extractTermsContainingModulus(e, c.solutionVariables) ?: Constants.Zero
+        override fun shouldMove(c: Context, e: Expression) = e.countAbsoluteValues(c.solutionVariables) == 0
     },
+
     Everything {
-        override fun extractMove(c: Context, e: Expression) = e
-        override fun extractRemain(c: Context, e: Expression) = Constants.Zero
-    },
-    ;
+        override fun shouldMove(c: Context, e: Expression) = true
+    }, ;
 
-    data class MoveResult(val movedTerms: Expression, val fromSide: Expression, val toSide: Expression)
-    abstract fun extractMove(c: Context, e: Expression): Expression?
-    abstract fun extractRemain(c: Context, e: Expression): Expression
+    abstract fun shouldMove(c: Context, e: Expression): Boolean
 
-    fun move(context: Context, fromSide: Expression, toSide: Expression): MoveResult? {
-        val termsToMove = extractMove(context, fromSide)
-        if (termsToMove == null || termsToMove == Constants.Zero) {
-            return null
-        }
-        val negatedTerms = simplifiedNegOfSum(termsToMove)
-        val fromSideAfter = if (context.isSet(Setting.AdvancedBalancing)) {
-            extractRemain(context, fromSide)
+    data class MoveResultData(val movedTerms: Expression, val fromSide: Expression, val toSide: Expression)
+
+    fun move(context: Context, fromSide: Expression, toSide: Expression): MoveResultData? {
+        val fromSideTerms = fromSide.terms()
+
+        // First decide which terms are moved, which are kept
+        val (movedTerms, keptTerms) = if (context.isSet(Setting.MoveTermsOneByOne)) {
+            fromSideTerms.extractFirst { shouldMove(context, it) }
         } else {
-            sumOf(fromSide, negatedTerms)
+            fromSideTerms.partition { shouldMove(context, it) }
         }
+
+        if (movedTerms.isEmpty() || movedTerms.size == 1 && movedTerms.first() == Constants.Zero) return null
+
+        // Then decide how to move terms according to the balancing mode
+        val negatedTerms = sumOf(movedTerms.map { simplifiedNegOf(it) })
+
+        val fromSideAfter = when (context.get(Setting.BalancingMode)) {
+            BalancingModeSetting.Advanced -> sumOf(keptTerms)
+            BalancingModeSetting.NextTo -> {
+                val terms = fromSideTerms.toMutableList()
+                terms.add(fromSideTerms.lastIndexOf(movedTerms.last()) + 1, negatedTerms)
+                sumOf(terms)
+            }
+            else -> sumOf(fromSide, negatedTerms) // BalancingModeSetting.Basic
+        }
+
         val toSideAfter = if (toSide == Constants.Zero) {
             negatedTerms
         } else {
             sumOf(toSide, negatedTerms)
         }
-        return MoveResult(termsToMove, fromSideAfter, toSideAfter)
+
+        return MoveResultData(sumOf(movedTerms), fromSideAfter, toSideAfter)
     }
 }
 
-private fun extractVariableTerms(expression: Expression, variables: List<String>): Expression? {
-    return when {
-        expression is Sum -> {
-            val variableTerms = expression.children.filter { !it.isConstantIn(variables) }
-            if (variableTerms.isEmpty()) null else sumOf(variableTerms)
-        }
-        !expression.isConstantIn(variables) -> expression
-        else -> null
-    }
-}
-
-private fun extractConstants(expression: Expression, variables: List<String>): Expression? {
-    return when {
-        expression is Sum -> {
-            val constantTerms = expression.children.filter { it.isConstantIn(variables) }
-            if (constantTerms.isEmpty()) null else sumOf(constantTerms)
-        }
-        expression.isConstantIn(variables) -> expression
-        else -> null
-    }
-}
-
-private fun extractTermsNotContainingModulus(expression: Expression, variables: List<String>): Expression? {
-    return when {
-        expression is Sum -> {
-            val termsWithoutModulus = expression.children.filter { it.countAbsoluteValues(variables) == 0 }
-            if (termsWithoutModulus.isEmpty()) null else sumOf(termsWithoutModulus)
-        }
-        expression.countAbsoluteValues(variables) == 0 -> expression
-        else -> null
-    }
-}
-
-private fun extractTermsContainingModulus(expression: Expression, variables: List<String>): Expression? {
-    return when {
-        expression is Sum -> {
-            val termsWithModulus = expression.children.filter { it.countAbsoluteValues(variables) > 0 }
-            if (termsWithModulus.isEmpty()) null else sumOf(termsWithModulus)
-        }
-        expression.countAbsoluteValues(variables) > 0 -> expression
-        else -> null
-    }
-}
+private fun Expression.terms() = if (this is Sum) this.terms else listOf(this)
 
 private val nonConstantSum = condition(sumContaining()) { !it.isConstantIn(solutionVariables) }
 val fractionRequiringMultiplication = optionalNegOf(

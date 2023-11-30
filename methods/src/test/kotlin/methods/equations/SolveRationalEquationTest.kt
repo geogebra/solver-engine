@@ -166,7 +166,7 @@ class SolveRationalEquationTest {
         method = EquationsPlans.SolveRationalEquation
         inputExpr = "[12 / [x ^ 2] - 9] = [8 x / x - 3] - [2 / x + 3]"
         context =
-            context.copy(settings = mapOf(Setting.SolveEquationsWithoutComputingTheDomain to BooleanSetting.True))
+            context.copy(settings = mapOf(Setting.SolveEquationsWithoutComputingTheDomain setTo BooleanSetting.True))
 
         check {
             fromExpr = "[12 / [x ^ 2] - 9] = [8 x / x - 3] - [2 / x + 3]"
@@ -337,7 +337,7 @@ class SolveRationalEquationTest {
         method = EquationsPlans.SolveRationalEquation
         inputExpr = "[x + 2 / x - 3] = [x / 3 x - 2]"
         context =
-            context.copy(settings = mapOf(Setting.SolveEquationsWithoutComputingTheDomain to BooleanSetting.True))
+            context.copy(settings = mapOf(Setting.SolveEquationsWithoutComputingTheDomain setTo BooleanSetting.True))
 
         check {
             fromExpr = "[x + 2 / x - 3] = [x / 3 x - 2]"

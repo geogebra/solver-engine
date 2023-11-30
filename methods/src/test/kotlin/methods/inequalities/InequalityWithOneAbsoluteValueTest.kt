@@ -1,5 +1,7 @@
 package methods.inequalities
 
+import engine.context.BooleanSetting
+import engine.context.Setting
 import engine.methods.testMethodInX
 import methods.general.GeneralExplanation
 import methods.inequations.InequationsExplanation
@@ -545,6 +547,77 @@ class InequalityWithOneAbsoluteValueTest {
                 toExpr = "SetSolution[x : SetUnion[( -/infinity/, -[5 / 2] ), ( [1 / 2], /infinity/ )]]"
                 explanation {
                     key = InequalitiesExplanation.SolveInequalityUnion
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test moving terms one by one`() = testMethodInX {
+        method = InequalitiesPlans.SolveInequalityWithVariablesInOneAbsoluteValue
+        inputExpr = "1 - sqrt[2] + abs[x] < 2"
+        context = context.copy(settings = mapOf(Setting.MoveTermsOneByOne setTo BooleanSetting.True))
+
+        check {
+            fromExpr = "1 - sqrt[2] + abs[x] < 2"
+            toExpr = "SetSolution[x: (-1 - sqrt[2], 1 + sqrt[2])]"
+            explanation {
+                key = InequalitiesExplanation.SolveInequalityWithVariablesInOneAbsoluteValue
+            }
+
+            step {
+                fromExpr = "1 - sqrt[2] + abs[x] < 2"
+                toExpr = "abs[x] < 1 + sqrt[2]"
+                explanation {
+                    key = InequalitiesExplanation.IsolateAbsoluteValue
+                }
+
+                step {
+                    fromExpr = "1 - sqrt[2] + abs[x] < 2"
+                    toExpr = "1 - sqrt[2] + abs[x] - 1 < 2 - 1"
+                    explanation {
+                        key = methods.solvable.InequalitiesExplanation.MoveTermsNotContainingModulusToTheRight
+                    }
+                }
+
+                step {
+                    fromExpr = "1 - sqrt[2] + abs[x] - 1 < 2 - 1"
+                    toExpr = "-sqrt[2] + abs[x] < 1"
+                    explanation {
+                        key = InequalitiesExplanation.SimplifyInequality
+                    }
+                }
+
+                step {
+                    fromExpr = "-sqrt[2] + abs[x] < 1"
+                    toExpr = "-sqrt[2] + abs[x] + sqrt[2] < 1 + sqrt[2]"
+                    explanation {
+                        key = methods.solvable.InequalitiesExplanation.MoveTermsNotContainingModulusToTheRight
+                    }
+                }
+
+                step {
+                    fromExpr = "-sqrt[2] + abs[x] + sqrt[2] < 1 + sqrt[2]"
+                    toExpr = "abs[x] < 1 + sqrt[2]"
+                    explanation {
+                        key = GeneralExplanation.CancelAdditiveInverseElements
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "abs[x] < 1 + sqrt[2]"
+                toExpr = "-(1 + sqrt[2]) < x < 1 + sqrt[2]"
+                explanation {
+                    key = InequalitiesExplanation.ConvertModulusLessThanPositiveConstant
+                }
+            }
+
+            step {
+                fromExpr = "-(1 + sqrt[2]) < x < 1 + sqrt[2]"
+                toExpr = "SetSolution[x: (-1 - sqrt[2], 1 + sqrt[2])]"
+                explanation {
+                    key = InequalitiesExplanation.SolveDoubleInequality
                 }
             }
         }

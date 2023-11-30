@@ -52,8 +52,9 @@ class DecimalsPlansTest {
     @Test
     fun testAlgorithmForConversionOfRecurringDecimalToFraction() = testMethod {
         method = DecimalPlans.ConvertRecurringDecimalToFractionAndSimplify
-        context =
-            Context(settings = mapOf(Setting.ConvertRecurringDecimalsToFractionsUsingAlgorithm to BooleanSetting.True))
+        context = Context(
+            settings = mapOf(Setting.ConvertRecurringDecimalsToFractionsUsingAlgorithm setTo BooleanSetting.True),
+        )
         inputExpr = "3.14[15]"
 
         check {

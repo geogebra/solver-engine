@@ -37,12 +37,22 @@ enum class Setting(val kind: SettingKind, val description: String) {
         "Do not add clarifying brackets to ambiguous expressions",
     ),
 
-    // TODO switch this to a BalancingModeSetting kind in PLUT-802
-    AdvancedBalancing(BooleanSetting, ""),
+    MoveTermsOneByOne(
+        BooleanSetting,
+        "Move terms (such as constants or variable) in an equation one by one instead of all at once",
+    ),
+
+    BalancingMode(
+        BalancingModeSetting,
+        "How to balance an equation: " +
+            "'basic' means explicit inverse operation to both sides, " +
+            "'advanced' means direct canceling of the term(s) to be canceled, " +
+            "'nextTo' means keep inverse operation next to original term when possible",
+    ),
 
     QuickAddLikeFraction(
         BooleanSetting,
-        "Add like integer fractions, such as 1/5 + 2/5 in a single stepp",
+        "Add like integer fractions, such as 1/5 + 2/5 in a single step",
     ),
 
     QuickAddLikeTerms(
@@ -83,4 +93,17 @@ enum class Setting(val kind: SettingKind, val description: String) {
         BooleanSetting,
         "When distributing 5(x - 2), do 5*x - 5*2 rather than 5*x + 5*(-2)",
     ),
+    ;
+
+    infix fun setTo(value: SettingValue): Pair<Setting, SettingValue> {
+        if (value !in kind.settingValues) {
+            throw InvalidSettingValueException(this, value)
+        }
+        return Pair(this, value)
+    }
 }
+
+class InvalidSettingValueException(val setting: Setting, val value: SettingValue) :
+    Exception("Invalid value $value for setting $setting")
+
+typealias SettingsMap = Map<Setting, SettingValue>

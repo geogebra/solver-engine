@@ -99,7 +99,7 @@ private class BranchOnRunner(
     }
 
     override fun case(value: SettingValue, opt: StepsProducer) {
-        if (steps == null && ctx.isSet(setting, value)) {
+        if (steps == null && ctx.get(setting) == value) {
             val currentSteps = opt.produceSteps(ctx, sub)
             if (currentSteps != null) {
                 steps = currentSteps
@@ -109,7 +109,7 @@ private class BranchOnRunner(
 
     override fun case(value: SettingValue, init: PipelineFunc) {
         val stepsProducer = nextStepsProducer()
-        if (steps == null && ctx.isSet(setting, value)) {
+        if (steps == null && ctx.get(setting) == value) {
             val currentSteps = stepsProducer.produceSteps(ctx, sub)
             if (currentSteps != null) {
                 steps = currentSteps

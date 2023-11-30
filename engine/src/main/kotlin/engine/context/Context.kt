@@ -66,9 +66,13 @@ data class Context(
         copy(settings = this.settings + settings)
     }
 
-    fun isSet(flag: Setting, value: SettingValue = BooleanSetting.True): Boolean {
+    fun get(flag: Setting): SettingValue {
+        return settings.getOrDefault(flag, flag.kind.default)
+    }
+
+    fun isSet(flag: Setting): Boolean {
         assert(flag.kind == BooleanSetting)
-        return settings.getOrDefault(flag, flag.kind.default) == value
+        return settings.getOrDefault(flag, flag.kind.default) == BooleanSetting.True
     }
 
     inline fun <reified T : Strategy> preferredStrategy(): Strategy? {

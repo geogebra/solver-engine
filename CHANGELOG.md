@@ -35,6 +35,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Added ability to simplify a square root of `a +/- b sqrt[c]` when that can be written as a square (PLUT-582)
 - Added `CopySumSignsWhenDistributing` setting for gm-alignment (PLUT-798)
 - Provide framework for writing new style gmActions tests (PLUT-884)
+- Added the `MoveTermsOneByOne` setting for gm-alignment (PLUT-802)
 
 ### Fixed
 
@@ -68,6 +69,8 @@ contents to a new release section (e.g. _[0.x]_).
   - x^0, 1^x, 0^x
 - Replaced curricula and the GM friendly flag with presets, which are a combination of various settings (PLUT-796)
 - SDK: Adapted SDK and the poker to use the settings and presets returned by the engine (PLUT-796)
+- Renamed the `AdvancedBalancing` flag to `BalancingMode` and changed the options to `basic`, `advanced` and
+  `nextTo` (PLUT-802)
 
 ### Removed
 

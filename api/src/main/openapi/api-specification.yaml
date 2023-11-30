@@ -2,7 +2,7 @@ openapi: 3.0.3
 
 info:
   title: 'GeoGebra Solver API'
-  version: '1.3.1-plut-796-1'
+  version: '1.3.1-plut-802'
 servers:
   - url: http://localhost:8080/api/v1/
 
@@ -38,6 +38,10 @@ paths:
                       type: string
                     description:
                       type: string
+                    values:
+                      type: array
+                      items:
+                        type: string
 
   /presets:
     get:

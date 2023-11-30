@@ -66,12 +66,19 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
             explanation = Explanation.IsolateAbsoluteValue
             pattern = inequalityInOneVariable()
 
-            steps {
+            val innerSteps = engine.methods.stepsproducers.steps {
                 firstOf {
                     option(SolvableRules.MoveTermsNotContainingModulusToTheRight)
                     option(SolvableRules.MoveTermsNotContainingModulusToTheLeft)
                 }
                 apply(SimplifyInequality)
+            }
+
+            steps {
+                branchOn(Setting.MoveTermsOneByOne) {
+                    case(BooleanSetting.True) { whilePossible(innerSteps) }
+                    case(BooleanSetting.False) { apply(innerSteps) }
+                }
             }
         },
     ),

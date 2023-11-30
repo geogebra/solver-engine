@@ -143,12 +143,19 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
         plan {
             explanation = Explanation.IsolateAbsoluteValue
 
-            steps {
+            val innerSteps = engine.methods.stepsproducers.steps {
                 firstOf {
                     option(SolvableRules.MoveTermsNotContainingModulusToTheRight)
                     option(SolvableRules.MoveTermsNotContainingModulusToTheLeft)
                 }
                 apply(SimplifyEquation)
+            }
+
+            steps {
+                branchOn(Setting.MoveTermsOneByOne) {
+                    case(BooleanSetting.True) { whilePossible(innerSteps) }
+                    case(BooleanSetting.False) { apply(innerSteps) }
+                }
             }
         },
     ),
