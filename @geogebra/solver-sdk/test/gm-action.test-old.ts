@@ -1,3 +1,5 @@
+// DEPRECATED - will be removed soon
+
 import { describe, expect, it } from 'vitest';
 // If this file doesn't exist, you need to run the kotlin tests in the methods package
 import { testResults } from '../../../solver-poker/test-results-src/test-results';

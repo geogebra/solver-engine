@@ -65,9 +65,9 @@ enum class Setting(val kind: SettingKind, val description: String) {
         "Do not use identities such as (a + b) = a^2 + 2ab + b^2 when expanding",
     ),
 
-    ReorderProductsInSteps(
+    CommutativeReorderInSteps(
         BooleanSetting,
-        "Reorder a product by moving individual factors instead of all of them in a single step",
+        "Reorder a product or polynomial by moving one term at a time instead of all of them in a single step",
     ),
 
     SolveEquationsWithoutComputingTheDomain(

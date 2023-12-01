@@ -698,7 +698,7 @@ class SolveRationalEquationTest {
 
                         step {
                             fromExpr = "12 = 8 x - [2 / -x + 3] * (x - 3)"
-                            toExpr = "12 = 8 x - (-2)"
+                            toExpr = "12 = 8 x - [2 / -1]"
                             explanation {
                                 key = RationalExpressionsExplanation.MultiplyRationalExpressions
                             }
@@ -734,29 +734,21 @@ class SolveRationalEquationTest {
                                     }
                                 }
                             }
+                        }
 
-                            step {
-                                fromExpr = "[2 / -1]"
-                                toExpr = "(-[2 / 1])"
-                                explanation {
-                                    key = FractionArithmeticExplanation.SimplifyNegativeInDenominator
-                                }
-                            }
-
-                            step {
-                                fromExpr = "(-[2 / 1])"
-                                toExpr = "(-2)"
-                                explanation {
-                                    key = GeneralExplanation.SimplifyFractionWithOneDenominator
-                                }
+                        step {
+                            fromExpr = "12 = 8 x - [2 / -1]"
+                            toExpr = "12 = 8 x + [2 / 1]"
+                            explanation {
+                                key = FractionArithmeticExplanation.SimplifyNegativeInDenominator
                             }
                         }
 
                         step {
-                            fromExpr = "12 = 8 x - (-2)"
+                            fromExpr = "12 = 8 x + [2 / 1]"
                             toExpr = "12 = 8 x + 2"
                             explanation {
-                                key = GeneralExplanation.SimplifyDoubleMinus
+                                key = GeneralExplanation.SimplifyFractionWithOneDenominator
                             }
                         }
                     }

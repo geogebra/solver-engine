@@ -6,7 +6,6 @@ import engine.methods.CompositeMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.branchOn
-import engine.methods.stepsproducers.firstOf
 import engine.methods.stepsproducers.steps
 
 enum class NormalizationPlans(override val runner: CompositeMethod) : RunnerMethod {
@@ -64,7 +63,7 @@ enum class NormalizationPlans(override val runner: CompositeMethod) : RunnerMeth
     ),
 }
 
-val reorderProductSteps = branchOn(Setting.ReorderProductsInSteps) {
+val reorderProductSteps = branchOn(Setting.CommutativeReorderInSteps) {
     case(BooleanSetting.True, NormalizationPlans.ReorderProductInSteps)
     case(BooleanSetting.False, NormalizationRules.ReorderProduct)
 }

@@ -133,8 +133,10 @@ function annotate(
       break;
     case 'Minus':
     case 'PlusMinus':
-    case 'DivideBy':
       appendMap(gmTree.children[0], `${tree.path}:op`, map);
+      annotate(gmTree.children[1], tree.operands[0], map);
+      break;
+    case 'DivideBy':
       annotate(gmTree.children[1], tree.operands[0], map);
       break;
     case 'Product':
@@ -149,8 +151,6 @@ function annotate(
           appendMap(factor, `${path}/0:group`, map);
           annotate(factor, tree.operands[i], map);
         } else {
-          const opStr = getOpStr(tree.operands[i]);
-          appendMap(factor.children[0]!, `${path}:${opStr}`, map);
           annotate(factor.children[1], tree.operands[i], map);
         }
       });
@@ -168,15 +168,11 @@ function annotate(
           appendMap(muldiv, `${tree.path}/0`, map);
           appendMap(muldiv, `${tree.path}/0/${i}:group`, map);
           const factor = (tree.operands[0] as NestedExpression).operands[i];
-          const opStr = getOpStr(factor);
-          appendMap(muldiv.children[0]!, `${tree.path}/0/${i}:${opStr}`, map);
           annotate(muldiv.children[1], factor, map);
         });
       } else {
         // single node in numerator
         appendMap(gmTree.children[0], `${tree.path}/0:group`, map);
-        const opStr = getOpStr(tree.operands[0]);
-        appendMap(gmTree.children[0].children[0]!, `${tree.path}/0:${opStr}`, map);
         annotate(gmTree.children[0].children[1], tree.operands[0], map);
       }
 
@@ -189,16 +185,12 @@ function annotate(
           appendMap(muldiv, `${tree.path}/1`, map);
           appendMap(muldiv, `${tree.path}/1/${i}:group`, map);
           const factor = (tree.operands[1] as NestedExpression).operands[i];
-          const opStr = getOpStr(factor);
-          appendMap(muldiv.children[0]!, `${tree.path}/1/${i}:${opStr}`, map);
           annotate(muldiv.children[1], factor, map);
         });
       } else {
         // single node in denominator
         const node = gmTree.children[gmTree.children.length - 1];
         appendMap(node, `${tree.path}/1:group`, map);
-        const opStr = getOpStr(tree.operands[0]);
-        appendMap(node.children[0]!, `${tree.path}/1:${opStr}`, map);
         annotate(node.children[1], tree.operands[1], map);
       }
       break;

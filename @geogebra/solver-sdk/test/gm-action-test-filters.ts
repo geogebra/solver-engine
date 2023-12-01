@@ -1,3 +1,6 @@
+// DEPRECATED - will be removed soon
+// need to move all valuable information here somewhere else
+
 export const ruleSkipList = [
   // [TRACKED] Adding like fractions works differently in GM: GM goes directly
   // from 1/7+2/7 to 3/7 instead.

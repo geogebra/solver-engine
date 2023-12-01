@@ -15,8 +15,8 @@ import engine.methods.stepsproducers.whileStrategiesAvailableFirstOf
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.equationsystems.EquationSystemsPlans
 import methods.factor.FactorPlans
-import methods.polynomials.PolynomialRules
 import methods.polynomials.PolynomialsPlans
+import methods.polynomials.normalizePolynomialSteps
 import methods.rationalexpressions.RationalExpressionsPlans
 import methods.simplify.SimplifyPlans
 import methods.solvable.DenominatorExtractor.extractFraction
@@ -84,7 +84,7 @@ enum class EquationSolvingStrategy(
                     // See if we can complete the square straight away
                     optionally(EquationsPlans.MultiplyByInverseOfLeadingCoefficientAndSimplify)
                     optionally {
-                        applyTo(PolynomialRules.NormalizePolynomial) { it.firstChild }
+                        applyTo(normalizePolynomialSteps) { it.firstChild }
                     }
                     applyTo(FactorPlans.FactorSquareOfBinomial) { it.firstChild }
                 }
@@ -93,7 +93,7 @@ enum class EquationSolvingStrategy(
                     optionally(solvablePlansForEquations.moveConstantsToTheRightAndSimplify)
                     optionally(EquationsPlans.MultiplyByInverseOfLeadingCoefficientAndSimplify)
                     optionally {
-                        applyTo(PolynomialRules.NormalizePolynomial) { it.firstChild }
+                        applyTo(normalizePolynomialSteps) { it.firstChild }
                     }
                     apply(EquationsPlans.RewriteToXPLusASquareEqualsBForm)
                 }
@@ -276,7 +276,7 @@ enum class EquationSolvingStrategy(
         steps = optionalSteps {
             optionally(solvablePlansForEquations.moveEverythingToTheLeftAndSimplify)
             optionally {
-                applyTo(PolynomialRules.NormalizePolynomial) { it.firstChild }
+                applyTo(normalizePolynomialSteps) { it.firstChild }
             }
         },
     ),
@@ -403,7 +403,7 @@ private val quadraticFormulaSteps = steps {
 
     // rearrange LHS to the form: a[x^2] + bx + c
     optionally {
-        applyTo(PolynomialRules.NormalizePolynomial) { it.firstChild }
+        applyTo(normalizePolynomialSteps) { it.firstChild }
     }
 
     // normalize to the form: a[x^2] + bx + c = 0, where a > 0

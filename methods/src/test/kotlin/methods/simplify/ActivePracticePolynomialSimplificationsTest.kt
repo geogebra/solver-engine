@@ -57,7 +57,7 @@ class ActivePracticePolynomialSimplificationsTest {
         method = SimplifyPlans.SimplifyAlgebraicExpression
         context = Context(
             settings = mapOf(
-                Setting.ReorderProductsInSteps setTo BooleanSetting.True,
+                Setting.CommutativeReorderInSteps setTo BooleanSetting.True,
                 Setting.QuickAddLikeTerms setTo BooleanSetting.True,
             ),
         )

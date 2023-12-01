@@ -1,55 +1,13 @@
 package methods.equations
 
 import engine.context.BalancingModeSetting
-import engine.context.Preset
 import engine.context.Setting
 import engine.methods.testMethodInX
 import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.general.GeneralExplanation
 import methods.integerarithmetic.IntegerArithmeticExplanation
 import methods.polynomials.PolynomialsExplanation
-import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
-
-// An example of how the tests can be written, to be moved somewhere better.
-// The tag can be on the class as here, in which case all tests in the class will be tagged, or
-// on individual tests.
-@Tag("GmAction")
-class GmActionTestForLinearEquations {
-
-    @Test
-    fun `test ax = b linear equation`() = testMethodInX(Preset.GMFriendly) {
-        method = EquationsPlans.SolveEquation
-        inputExpr = "3 x = 1"
-
-        check {
-            fromExpr = "3 x = 1"
-            toExpr = "SetSolution[x: {[1 / 3]}]"
-            explanation {
-                key = EquationsExplanation.SolveLinearEquation
-            }
-
-            step {
-                fromExpr = "3 x = 1"
-                toExpr = "x = [1 / 3]"
-
-                gmToExpr = "x = 1 : 3" // Just an example
-
-                explanation {
-                    key = methods.solvable.EquationsExplanation.DivideByCoefficientOfVariable
-                }
-            }
-
-            step {
-                fromExpr = "x = [1 / 3]"
-                toExpr = "SetSolution[x: {[1 / 3]}]"
-                explanation {
-                    key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
-                }
-            }
-        }
-    }
-}
 
 class LinearEquationsTest {
 

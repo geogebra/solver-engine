@@ -2,10 +2,12 @@ package methods.fractionarithmetic
 
 import engine.context.Setting
 import engine.expressions.Fraction
+import engine.expressions.Minus
 import engine.expressions.Power
 import engine.expressions.Product
 import engine.expressions.asRational
 import engine.expressions.isPolynomial
+import engine.expressions.isSigned
 import engine.methods.CompositeMethod
 import engine.methods.Method
 import engine.methods.RunnerMethod
@@ -300,13 +302,25 @@ val normalizeFractionsWithinFractions = steps {
 }
 
 val normalizeNegativeSignsInFraction = steps {
-    check { it is Fraction }
+    check { it.isSigned<Fraction>() }
 
     optionally {
-        applyToKind<Fraction>(GeneralRules.FactorMinusFromSumWithAllNegativeTerms) { it.numerator }
+        applyTo(GeneralRules.FactorMinusFromSumWithAllNegativeTerms) {
+            when {
+                it is Minus && it.argument is Fraction -> (it.argument as Fraction).numerator
+                it is Fraction -> it.numerator
+                else -> null
+            }
+        }
     }
     optionally {
-        applyToKind<Fraction>(GeneralRules.FactorMinusFromSumWithAllNegativeTerms) { it.denominator }
+        applyTo(GeneralRules.FactorMinusFromSumWithAllNegativeTerms) {
+            when {
+                it is Minus && it.argument is Fraction -> (it.argument as Fraction).denominator
+                it is Fraction -> it.denominator
+                else -> null
+            }
+        }
     }
 
     firstOf {

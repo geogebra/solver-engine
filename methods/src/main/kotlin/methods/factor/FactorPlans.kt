@@ -43,8 +43,8 @@ import engine.patterns.sumOf
 import engine.steps.metadata.metadata
 import methods.expand.ExpandRules
 import methods.integerarithmetic.IntegerArithmeticRules
-import methods.polynomials.PolynomialRules
 import methods.polynomials.expandAndSimplifier
+import methods.polynomials.normalizePolynomialSteps
 import methods.simplify.algebraicSimplificationSteps
 import java.math.BigInteger
 
@@ -384,7 +384,7 @@ val factorSquareOfBinomial = plan {
         optionally(FactorRules.FactorNegativeSignOfLeadingCoefficient)
 
         applyAfterMaybeExtractingMinus {
-            optionally(PolynomialRules.NormalizePolynomial)
+            optionally(normalizePolynomialSteps)
             withNewLabels {
                 optionally(FactorRules.RewriteSquareOfBinomial)
                 apply(FactorRules.ApplySquareOfBinomialFormula)
@@ -397,7 +397,7 @@ val factorCubeOfBinomial = plan {
     explanation = Explanation.FactorCubeOfBinomial
 
     steps {
-        optionally(PolynomialRules.NormalizePolynomial)
+        optionally(normalizePolynomialSteps)
         withNewLabels {
             optionally(FactorRules.RewriteCubeOfBinomial)
             apply(FactorRules.ApplyCubeOfBinomialFormula)

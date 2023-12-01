@@ -15,7 +15,6 @@ import org.junit.platform.launcher.TestExecutionListener
 import org.junit.platform.launcher.TestIdentifier
 import org.junit.platform.launcher.TestPlan
 import java.io.File
-import java.util.Date
 
 class TestResultsListener : TestExecutionListener, SolutionProcessor {
 
@@ -45,9 +44,8 @@ class TestResultsListener : TestExecutionListener, SolutionProcessor {
     }
 
     override fun processSolution(context: Context, input: String, method: Method, solution: Transformation?) {
-        if (solution != null && method is RunnerMethod) {
-            val testDataList = if (testHasGMActionTag) gmActionTestData else testData
-            testDataList.add(
+        if (solution != null && method is RunnerMethod && testHasGMActionTag) {
+            gmActionTestData.add(
                 TestData(
                     testClassName = testClassName,
                     testName = testName,
@@ -59,19 +57,7 @@ class TestResultsListener : TestExecutionListener, SolutionProcessor {
     }
 
     override fun testPlanExecutionFinished(testPlan: TestPlan?) {
-        // @erik eventually we do not write those tests anymore once coverage is good enough for the new ones
-        writeTestData()
-
         writeGmActionTestData()
-    }
-
-    private fun writeTestData() {
-        val writer = File(testDataFilePath).writer()
-        with(writer) {
-            appendLine("export const dateGenerated = \"${Date()}\";")
-            appendLine("export const testResults = " + Json.encodeToString(testData))
-        }
-        writer.close()
     }
 
     private fun writeGmActionTestData() {
@@ -88,10 +74,8 @@ class TestResultsListener : TestExecutionListener, SolutionProcessor {
     }
 
     private val gmActionTestData = mutableListOf<TestData>()
-    private val testData = mutableListOf<TestData>()
 
     private val gmActionTestDataFilePath = "build/test-results/gmActionTests.json"
-    private val testDataFilePath = "../solver-poker/test-results-src/test-results.ts"
 }
 
 @Serializable

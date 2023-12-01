@@ -15,11 +15,11 @@ import methods.algebra.AlgebraPlans
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.general.NormalizationPlans
-import methods.polynomials.PolynomialRules
 import methods.polynomials.PolynomialsPlans
 import methods.polynomials.addFractionsSteps
 import methods.polynomials.addTermAndFractionSteps
 import methods.polynomials.collectLikeTermsSteps
+import methods.polynomials.normalizePolynomialSteps
 import methods.polynomials.simplificationSteps
 import methods.rationalexpressions.RationalExpressionsPlans
 
@@ -63,7 +63,7 @@ val simplifyAlgebraicExpressionSteps = steps {
     optionally(NormalizationPlans.NormalizeExpression)
     whilePossible { deeply(SimplifyPlans.SimplifySubexpression, deepFirst = true) }
     optionally(algebraicSimplificationSteps)
-    optionally(PolynomialRules.NormalizePolynomial)
+    optionally(normalizePolynomialSteps)
 }
 
 val algebraicSimplificationSteps = algebraicSimplificationSteps(true)

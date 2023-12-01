@@ -13,7 +13,6 @@ import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.applyAfterMaybeExtractingMinus
 import engine.methods.stepsproducers.branchOn
-import engine.methods.stepsproducers.firstOf
 import engine.methods.stepsproducers.steps
 import engine.patterns.AnyPattern
 import engine.patterns.ArbitraryVariablePattern
@@ -39,6 +38,16 @@ import methods.simplify.algebraicSimplificationSteps
 import methods.simplify.algebraicSimplificationStepsWithoutFractionAddition
 
 enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod {
+
+    NormalizePolynomialInSteps(
+        plan {
+            explanation = Explanation.NormalizePolynomial
+
+            steps {
+                whilePossible(PolynomialRules.NormalizePolynomialOneStep)
+            }
+        },
+    ),
 
     SimplifyCoefficient(simplifyCoefficient),
     SimplifyMonomial(simplifyMonomial),
@@ -67,7 +76,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
                     }
                 }
 
-                optionally(PolynomialRules.NormalizePolynomial)
+                optionally(normalizePolynomialSteps)
             }
         },
     ),
@@ -133,6 +142,11 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
 
 val expandAndSimplifier = ExpandAndSimplifier(SimplifyPlans.SimplifyAlgebraicExpression)
 
+val normalizePolynomialSteps = branchOn(Setting.CommutativeReorderInSteps) {
+    case(BooleanSetting.True, PolynomialsPlans.NormalizePolynomialInSteps)
+    case(BooleanSetting.False, PolynomialRules.NormalizePolynomial)
+}
+
 private val multiplyVariablePowers = plan {
     explanation = Explanation.MultiplyUnitaryMonomialsAndSimplify
 
@@ -166,7 +180,7 @@ private val multiplyMonomials = plan {
     )
 
     steps {
-        branchOn(Setting.ReorderProductsInSteps) {
+        branchOn(Setting.CommutativeReorderInSteps) {
             case(BooleanSetting.True) {
                 whilePossible(simplificationSteps)
             }

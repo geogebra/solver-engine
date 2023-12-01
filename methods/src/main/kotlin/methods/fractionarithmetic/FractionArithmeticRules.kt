@@ -46,6 +46,7 @@ import engine.patterns.optionalIntegerPowerOf
 import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
+import engine.patterns.stickyOptionalNegOf
 import engine.patterns.sumContaining
 import engine.patterns.sumOf
 import engine.steps.metadata.DragTargetPosition
@@ -267,13 +268,20 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
         rule {
             val numerator = AnyPattern()
             val denominator = AnyPattern()
+            val negDenominator = negOf(denominator)
 
-            val pattern = fractionOf(numerator, negOf(denominator))
+            val fraction = fractionOf(numerator, negDenominator)
+            val negFraction = stickyOptionalNegOf(fraction)
 
-            onPattern(pattern) {
+            onPattern(negFraction) {
                 ruleResult(
-                    toExpr = negOf(fractionOf(get(numerator), move(denominator))),
-                    explanation = metadata(Explanation.SimplifyNegativeInDenominator, move(pattern)),
+                    toExpr = copyFlippedSign(negFraction, fractionOf(get(numerator), move(denominator))),
+                    gmAction = if (negFraction.isNeg()) {
+                        drag(negDenominator, PM.Operator, negFraction, PM.Operator)
+                    } else {
+                        drag(negDenominator, PM.Operator, negFraction, null, DragTargetPosition.LeftOf)
+                    },
+                    explanation = metadata(Explanation.SimplifyNegativeInDenominator, move(fraction)),
                 )
             }
         },
@@ -393,6 +401,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
 
                 ruleResult(
                     toExpr = cancel(commonFactor, fractionOf(num, den)),
+                    gmAction = drag(denominatorFactor, PM.Group, numeratorFactor, PM.Group),
                     explanation = metadata(Explanation.CancelCommonFactorInFraction),
                 )
             }
@@ -440,13 +449,20 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
         rule {
             val numerator = AnyPattern()
             val denominator = AnyPattern()
+            val negNumerator = negOf(numerator)
 
-            val pattern = fractionOf(negOf(numerator), denominator)
+            val fraction = fractionOf(negNumerator, denominator)
+            val negFraction = stickyOptionalNegOf(fraction)
 
-            onPattern(pattern) {
+            onPattern(negFraction) {
                 ruleResult(
-                    negOf(fractionOf(move(numerator), move(denominator))),
-                    explanation = metadata(Explanation.SimplifyNegativeInNumerator, move(pattern)),
+                    toExpr = copyFlippedSign(negFraction, fractionOf(move(numerator), get(denominator))),
+                    gmAction = if (negFraction.isNeg()) {
+                        drag(negNumerator, PM.Operator, negFraction, PM.Operator)
+                    } else {
+                        drag(negNumerator, PM.Operator, negFraction, null, DragTargetPosition.LeftOf)
+                    },
+                    explanation = metadata(Explanation.SimplifyNegativeInNumerator, move(fraction)),
                 )
             }
         },
@@ -456,12 +472,15 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
         rule {
             val numerator = AnyPattern()
             val denominator = AnyPattern()
+            val negNum = negOf(numerator)
+            val negDenom = negOf(denominator)
 
-            val pattern = fractionOf(negOf(numerator), negOf(denominator))
+            val pattern = fractionOf(negNum, negDenom)
 
             onPattern(pattern) {
                 ruleResult(
-                    fractionOf(move(numerator), move(denominator)),
+                    toExpr = fractionOf(move(numerator), move(denominator)),
+                    gmAction = drag(negNum, PM.Operator, negDenom, PM.Operator),
                     explanation = metadata(Explanation.SimplifyNegativeInNumeratorAndDenominator, move(pattern)),
                 )
             }
@@ -554,6 +573,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                             productOf(move(f1.denominator), move(f2.denominator)),
                         ),
                     ),
+                    gmAction = drag(f2, PM.Group, f1, PM.Group),
                     explanation = metadata(Explanation.MultiplyFractions, move(f1), move(f2)),
                 )
             }

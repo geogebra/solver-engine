@@ -36,6 +36,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Added `CopySumSignsWhenDistributing` setting for gm-alignment (PLUT-798)
 - Provide framework for writing new style gmActions tests (PLUT-884)
 - Added the `MoveTermsOneByOne` setting for gm-alignment (PLUT-802)
+- Added new gmActions tests that use the new testing framework, disabled all old gmAction tests (PLUT-888)
 
 ### Fixed
 
@@ -51,6 +52,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Fix computation of lcd and addition of fractions with additive inverse denominators (PLUT-706)
 - SDK: Fixed ÷ path map issue (PLUT-864)
 - Multiply by denominator of variable on LHS when not a constant (PLUT-711)
+- SDK: Fixed \* and ÷ path issues (PLUT-888)
 
 ### Changed
 
@@ -73,6 +75,10 @@ contents to a new release section (e.g. _[0.x]_).
   `nextTo` (PLUT-802)
 - Changed the removal of the coefficients on the left hand sides of equations and inequalities for better compatibility
   with Graspable Math (PLUT-797)
+- Split GmFriendly preset into GmFriendly and GmFriendlyAdvanced (PLUT-888)
+- Changed setting ReorderProductsInSteps into CommutativeReorderInSteps and made it cover step by step normalization of
+  polynomials (PLUT-888)
+- improved FractionArithmetic rules for signs in fractions (`-[-2/3]` and `-[2/-3]`) (PLUT-888)
 
 ### Removed
 
