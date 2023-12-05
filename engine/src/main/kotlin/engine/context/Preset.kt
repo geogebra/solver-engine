@@ -32,6 +32,7 @@ enum class Preset(val description: String, val settings: Map<Setting, SettingVal
             Setting.QuickAddLikeTerms setTo BooleanSetting.True,
             Setting.CommutativeReorderInSteps setTo BooleanSetting.True,
             Setting.CopySumSignsWhenDistributing setTo BooleanSetting.True,
+            Setting.MultiplyFractionsAndNotFractionsDirectly setTo BooleanSetting.True,
         ),
     ),
 
@@ -45,6 +46,7 @@ enum class Preset(val description: String, val settings: Map<Setting, SettingVal
             Setting.QuickAddLikeTerms setTo BooleanSetting.True,
             Setting.CommutativeReorderInSteps setTo BooleanSetting.True,
             Setting.CopySumSignsWhenDistributing setTo BooleanSetting.True,
+            Setting.MultiplyFractionsAndNotFractionsDirectly setTo BooleanSetting.True,
         ),
     ),
 }

@@ -719,7 +719,10 @@ private val moveConstantFractionFactorToTheRight = rule {
             else /* BalancingModeSetting.Basic */ -> productOf(inverse, get(lhs))
         }
 
-        val newRhs = simplifiedProductOf(inverse, get(rhs))
+        val newRhs = when (context.get(Setting.BalancingMode)) {
+            BalancingModeSetting.NextTo -> simplifiedProductOf(get(rhs), inverse)
+            else -> simplifiedProductOf(inverse, get(rhs))
+        }
 
         ruleResult(
             toExpr = solvable.deriveSolvable(newLhs, newRhs, useDual),

@@ -308,7 +308,7 @@ private val moveSignOfNegativeFactorOutOfProduct =
                     negf, // -x
                     negOf(product.substitute(get(f))), // -2x
                 ),
-                gmAction = drag(negf, PM.Operator, product.childPatterns[0], PM.Parens, Position.LeftOf),
+                gmAction = drag(negf, PM.Operator, get(product).firstChild, null),
                 explanation = metadata(Explanation.MoveSignOfNegativeFactorOutOfProduct),
             )
         }

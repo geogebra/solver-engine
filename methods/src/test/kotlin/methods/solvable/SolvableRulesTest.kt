@@ -358,7 +358,7 @@ class SolvableRulesTest {
             MoveConstantFractionFactorToTheRight,
             "2 * [1/2](B + b) x = 2S",
             advanced to "(B + b) x = 2S",
-            nextTo to "[1/2] * 2 (B + b)x = 2S",
+            nextTo to "[1/2] * 2 (B + b)x = S*2",
         )
     }
 

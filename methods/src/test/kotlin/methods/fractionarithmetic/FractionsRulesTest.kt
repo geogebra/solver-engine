@@ -13,7 +13,7 @@ import methods.fractionarithmetic.FractionArithmeticRules.DistributeFractionalPo
 import methods.fractionarithmetic.FractionArithmeticRules.DistributePositiveIntegerPowerOverFraction
 import methods.fractionarithmetic.FractionArithmeticRules.FactorGreatestCommonIntegerFactorInFraction
 import methods.fractionarithmetic.FractionArithmeticRules.FindCommonIntegerFactorInFraction
-import methods.fractionarithmetic.FractionArithmeticRules.MultiplyFractions
+import methods.fractionarithmetic.FractionArithmeticRules.MultiplyFractionAndFractionable
 import methods.fractionarithmetic.FractionArithmeticRules.RewriteDivisionAsFraction
 import methods.fractionarithmetic.FractionArithmeticRules.RewriteDivisionAsMultiplicationByReciprocal
 import methods.fractionarithmetic.FractionArithmeticRules.SimplifyFractionToInteger
@@ -216,11 +216,21 @@ class FractionsRulesTest {
     }
 
     @Test
-    fun testMultiplyFractions() {
-        testRule("[2/3] * [4/5]", MultiplyFractions, "[2*4/3*5]")
-        testRule("[2/3] * [4/(5)]", MultiplyFractions, "[2*4/3*5]")
-        testRule("[-4/5] * ([2/(-3)])", MultiplyFractions, "[(-4) * 2 / 5 * (-3)]")
-        testRule("[-4/5] * [2/{. -3 .}]", MultiplyFractions, "[(-4) * 2 / 5 * {. -3 .}]")
+    fun testMultiplyFractionAndFractionable() {
+        testRule("[2/3] * [4/5]", MultiplyFractionAndFractionable, "[2*4/3*5]")
+        testRule("[2/3] * [4/(5)]", MultiplyFractionAndFractionable, "[2*4/3*5]")
+        testRule("[-4/5] * ([2/(-3)])", MultiplyFractionAndFractionable, "[(-4) * 2 / 5 * (-3)]")
+        testRule("[-4/5] * [2/{. -3 .}]", MultiplyFractionAndFractionable, "[(-4) * 2 / 5 * {. -3 .}]")
+
+        // Should move other stuff to the top
+        testRule("2 * [3 / 4]", MultiplyFractionAndFractionable, "[2 * 3 / 4]")
+        testRule("[2 / 5] * 6", MultiplyFractionAndFractionable, "[2 * 6 / 5]")
+
+        // If the numerator is 1, simplify the product straight away
+        testRule("3 * [1 / 4]", MultiplyFractionAndFractionable, "[3 / 4]")
+
+        // But there needs to be at least one fraction
+        testRule("2 * 3", MultiplyFractionAndFractionable, null)
     }
 
     @Test

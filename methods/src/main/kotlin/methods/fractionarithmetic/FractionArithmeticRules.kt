@@ -347,6 +347,8 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                             productOf(gcd, denominatorOverGcd)
                         },
                     ),
+                    //
+                    gmAction = drag(factorDenominator, PM.Group, factorNumerator, PM.Group),
                     explanation = metadata(Explanation.FindCommonFactorInFraction),
                 )
             }
@@ -559,23 +561,70 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
         },
     ),
 
-    MultiplyFractions(
+    MultiplyFractionAndFractionable(
         rule {
-            val f1 = FractionPattern()
-            val f2 = FractionPattern()
+            val f1 = condition { it is Fraction || it.canBeTurnedToFraction() }
+            val f2 = condition { it is Fraction || it.canBeTurnedToFraction() }
             val product = productContaining(f1, f2)
 
             onPattern(product) {
-                ruleResult(
-                    product.substitute(
-                        fractionOf(
-                            productOf(move(f1.numerator), move(f2.numerator)),
-                            productOf(move(f1.denominator), move(f2.denominator)),
+                val f1Value = get(f1)
+                val f2Value = get(f2)
+                when {
+                    f1Value is Fraction && f2Value is Fraction -> ruleResult(
+                        product.substitute(
+                            fractionOf(
+                                productOf(move(f1Value.numerator), move(f2Value.numerator)),
+                                productOf(move(f1Value.denominator), move(f2Value.denominator)),
+                            ),
                         ),
-                    ),
-                    gmAction = drag(f2, PM.Group, f1, PM.Group),
-                    explanation = metadata(Explanation.MultiplyFractions, move(f1), move(f2)),
-                )
+                        gmAction = drag(f2, PM.Group, f1, PM.Group),
+                        explanation = metadata(Explanation.MultiplyFractions, move(f1), move(f2)),
+                    )
+                    f1Value is Fraction && f2Value.isConstant() -> ruleResult(
+                        product.substitute(
+                            fractionOf(
+                                simplifiedProductOf(move(f1Value.numerator), move(f2Value)),
+                                f1Value.denominator,
+                            ),
+                        ),
+                        gmAction = drag(
+                            f2,
+                            PM.Group,
+                            // we need to put the number to the right of the last term in the numerator
+                            if (f1Value.numerator is engine.expressions.Product) {
+                                f1Value.numerator.children.last()
+                            } else {
+                                f1Value.numerator
+                            },
+                            PM.Group,
+                            DragTargetPosition.RightOf,
+                        ),
+                        explanation = metadata(Explanation.MultiplyFractionAndValue, move(f1), move(f2)),
+                    )
+                    f2Value is Fraction && f1Value.isConstant() -> ruleResult(
+                        product.substitute(
+                            fractionOf(
+                                simplifiedProductOf(move(f1Value), move(f2Value.numerator)),
+                                f2Value.denominator,
+                            ),
+                        ),
+                        gmAction = drag(
+                            f1,
+                            PM.Group,
+                            // we need to put the number to the left of the first term in the numerator
+                            if (f2Value.numerator is engine.expressions.Product) {
+                                f2Value.numerator.children.first()
+                            } else {
+                                f2Value.numerator
+                            },
+                            PM.Group,
+                            DragTargetPosition.LeftOf,
+                        ),
+                        explanation = metadata(Explanation.MultiplyFractionAndValue, move(f2), move(f1)),
+                    )
+                    else -> null
+                }
             }
         },
     ),

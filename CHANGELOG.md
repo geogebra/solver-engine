@@ -37,6 +37,8 @@ contents to a new release section (e.g. _[0.x]_).
 - Provide framework for writing new style gmActions tests (PLUT-884)
 - Added the `MoveTermsOneByOne` setting for gm-alignment (PLUT-802)
 - Added new gmActions tests that use the new testing framework, disabled all old gmAction tests (PLUT-888)
+- Added the `MultiplyFractionsAndNotFractionsDirectly` setting for gm-alignment (PLUT-885). Multiplies
+  e.g. `2 * [3 / 4]` to `[2 * 3 / 4]` in one step
 
 ### Fixed
 

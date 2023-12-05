@@ -140,7 +140,7 @@ enum class RationalExpressionsPlans(override val runner: CompositeMethod) : Runn
             )
 
             partialExpressionSteps {
-                apply(FractionArithmeticRules.MultiplyFractions)
+                apply(FractionArithmeticRules.MultiplyFractionAndFractionable)
                 optionally(rationalExpressionSimplificationSteps)
             }
         },

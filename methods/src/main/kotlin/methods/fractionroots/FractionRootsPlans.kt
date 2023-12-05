@@ -61,7 +61,7 @@ enum class FractionRootsPlans(override val runner: CompositeMethod) : RunnerMeth
             steps {
                 optionally(FractionRootsRules.FlipRootsInDenominator)
                 apply(findRationalizingTerm)
-                apply(FractionArithmeticRules.MultiplyFractions)
+                apply(FractionArithmeticRules.MultiplyFractionAndFractionable)
                 optionally {
                     plan {
                         explanation = Explanation.SimplifyNumeratorAfterRationalization

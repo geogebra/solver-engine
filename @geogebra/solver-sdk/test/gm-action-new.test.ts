@@ -21,7 +21,7 @@ import { GmMathNode } from '../src/graspable-math/create-path-map';
 import { loadGmEnvironment } from './gm-tools';
 const { gmath, when } = await loadGmEnvironment();
 gmath.MathSettings.defaults.set('dont_pass_through_minus_when_dividing', true);
-gmath.MathSettings.defaults.set('cancel_common_terms_after_finding_gcf', true);
+gmath.MathSettings.defaults.set('cancel_common_terms_after_finding_gcf', false);
 gmath.SettingsType.get('AlgebraModel').defaults.set('auto_simplify_distributions', false);
 
 type TransformationJsonWithGmToExpr = TransformationJson & {

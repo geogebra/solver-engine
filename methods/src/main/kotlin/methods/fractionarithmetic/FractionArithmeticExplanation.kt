@@ -40,6 +40,17 @@ enum class FractionArithmeticExplanation : CategorisedMetadataKey {
     MultiplyFractions,
 
     /**
+     * Multiply a fraction by a non-fraction value
+     *
+     * Parameters:
+     *   %1: the fraction
+     *   %2: the value which is not a fraction
+     *
+     *   E.g. 3 * [2 / 5] --> [3 * 2 / 5]
+     */
+    MultiplyFractionAndValue,
+
+    /**
      * Split improper fraction power to any base by converting the exponent to
      * sum of an integer and proper fraction and then distribute sum of powers
      * to its base

@@ -1,5 +1,6 @@
 package methods.fractionarithmetic
 
+import engine.context.BooleanSetting
 import engine.context.Setting
 import engine.expressions.Fraction
 import engine.expressions.Minus
@@ -109,11 +110,20 @@ enum class FractionArithmeticPlans(override val runner: CompositeMethod) : Runne
             explanation = Explanation.MultiplyAndSimplifyFractions
 
             steps {
-                // Doesn't turn all factors into fractions, e.g. it won't turn variable expressions into fractions
-                whilePossible(FractionArithmeticRules.TurnFactorIntoFractionInProduct)
-                apply {
-                    whilePossible(FractionArithmeticRules.MultiplyFractions)
+                branchOn(Setting.MultiplyFractionsAndNotFractionsDirectly) {
+                    case(BooleanSetting.False) {
+                        // Doesn't turn all factors into fractions, e.g. it won't turn variable expressions into
+                        // fractions
+                        whilePossible(FractionArithmeticRules.TurnFactorIntoFractionInProduct)
+                        apply {
+                            whilePossible(FractionArithmeticRules.MultiplyFractionAndFractionable)
+                        }
+                    }
+                    case(BooleanSetting.True) {
+                        whilePossible(FractionArithmeticRules.MultiplyFractionAndFractionable)
+                    }
                 }
+
                 optionally(SimplifyFraction)
                 whilePossible {
                     deeply(IntegerArithmeticPlans.SimplifyIntegersInProduct)

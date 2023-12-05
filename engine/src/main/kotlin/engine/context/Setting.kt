@@ -93,6 +93,11 @@ enum class Setting(val kind: SettingKind, val description: String) {
         BooleanSetting,
         "When distributing 5(x - 2), do 5*x - 5*2 rather than 5*x + 5*(-2)",
     ),
+
+    MultiplyFractionsAndNotFractionsDirectly(
+        BooleanSetting,
+        "when multplying e.g. 3*[x / 2], do not turn 3 to a fraction but write it as [3x / 2] directly",
+    ),
     ;
 
     infix fun setTo(value: SettingValue): Pair<Setting, SettingValue> {
