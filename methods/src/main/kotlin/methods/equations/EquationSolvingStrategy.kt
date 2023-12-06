@@ -369,6 +369,10 @@ internal val solveEquation = lazy {
         // Split up equations containing +/- and solve them
         option(EquationSolvingStrategy.ResolvePlusminus)
 
+        // Remove constant coefficient but only for linear equations.  This is so the next options doesn't do something
+        // more complicated with the coefficients.
+        option(solvablePlansForEquations.linearCoefficientRemovalSteps)
+
         // Remove constant denominators when it makes the equation simpler
         option(solvablePlansForEquations.removeConstantDenominatorsSteps)
 

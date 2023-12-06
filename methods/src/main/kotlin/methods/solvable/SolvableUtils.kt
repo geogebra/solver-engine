@@ -1,6 +1,8 @@
 package methods.solvable
 
+import engine.context.Context
 import engine.context.emptyContext
+import engine.expressions.Comparison
 import engine.expressions.Constants
 import engine.expressions.Contradiction
 import engine.expressions.Expression
@@ -9,11 +11,20 @@ import engine.expressions.Identity
 import engine.expressions.RootOrigin
 import engine.expressions.SetExpression
 import engine.expressions.SetSolution
+import engine.expressions.Sum
 import engine.expressions.VariableList
 import engine.expressions.negOf
 import engine.expressions.setSolutionOf
 import engine.expressions.statementSystemOf
 import engine.expressions.sumOf
+import engine.patterns.AnyPattern
+import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.condition
+import engine.patterns.fractionOf
+import engine.patterns.oneOf
+import engine.patterns.optionalNegOf
+import engine.patterns.productContaining
+import engine.patterns.sumContaining
 import engine.sign.Sign
 import methods.constantexpressions.ConstantExpressionsPlans
 
@@ -111,4 +122,39 @@ val expressionComparator = ExpressionComparator { e1: Expression, e2: Expression
             }
         }
     }
+}
+
+private val nonConstantSum = condition(sumContaining()) { !it.isConstantIn(solutionVariables) }
+private val fractionRequiringMultiplication = optionalNegOf(
+    oneOf(
+        fractionOf(nonConstantSum, UnsignedIntegerPattern()),
+        productContaining(
+            fractionOf(AnyPattern(), UnsignedIntegerPattern()),
+            nonConstantSum,
+        ),
+    ),
+)
+
+private fun Expression.isSumContainingFractionRequiringMultiplication(ctx: Context) =
+    fractionRequiringMultiplication.matches(ctx, this) ||
+        this is Sum && this.terms.any { fractionRequiringMultiplication.matches(ctx, it) }
+
+/**
+ * YES: [2/3](x+1) = [1/6](x+2)
+ * YES: [x + 2 / 4] + 5 = 3x
+ * YES: [x + 2 / 4] = [2x - 3 / 6]
+ * YES: [x + 2 / 4] = 3x <== but show a different explanation since only one denominator is involved
+ * YES: [2/3](x+1) = x+2 <== but show a different explanation since only one denominator is involved
+ * YES: [x + 2 / 4] = 1 <== but show a different explanation since only one denominator is involved
+ * NO: [2 / 3](x-1) = 1
+ * NO: [2/3]x = [4/5]
+ * */
+fun requiresMultiplicationByTheLCD(expr: Expression, ctx: Context): Boolean {
+    if (expr !is Comparison) return false
+
+    // sum containing fraction with sum numerator and integer denominator
+    return expr.lhs.isSumContainingFractionRequiringMultiplication(ctx) ||
+        expr.rhs.isSumContainingFractionRequiringMultiplication(ctx)
+
+    // exclude the case "constantFraction * linearVariableExpr = constant"
 }

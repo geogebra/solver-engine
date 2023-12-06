@@ -55,6 +55,8 @@ contents to a new release section (e.g. _[0.x]_).
 - SDK: Fixed ÷ path map issue (PLUT-864)
 - Multiply by denominator of variable on LHS when not a constant (PLUT-711)
 - SDK: Fixed \* and ÷ path issues (PLUT-888)
+- Improved handling of multiplying inverse fractions `[2/3]*[3/2]` (PLUT-894)
+- Improved explanations for multiply by LCD for single denominator (PLUT-894)
 
 ### Changed
 

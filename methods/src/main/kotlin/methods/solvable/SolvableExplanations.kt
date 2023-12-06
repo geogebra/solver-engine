@@ -67,6 +67,13 @@ enum class SolvableKey(val rule: RunnerMethod) {
     MultiplyBothSidesByLCD(SolvableRules.MultiplySolvableByLCD),
 
     /**
+     * Multiply both sides of the equations by the integer denominator so the equation no longer has a denominator.
+     *
+     * E.g. [x / 2] + 5 = 3x --> 2([x / 2] + 5) = 2 * 3x
+     */
+    MultiplyBothSidesByIntegerDenominator(SolvableRules.MultiplySolvableByLCD),
+
+    /**
      * In an equation an absolute value, move terms without an absolute value to the right
      *
      * E.g. abs[x] + x - 1 = 2 --> abs[x] + x - 1 - x + 1 = 2 - x + 1
@@ -405,6 +412,13 @@ enum class EquationsExplanation(
      *      -> 2x + 64 = 12 - 6x
      */
     MultiplyByLCDAndSimplify(SolvableKey.MultiplyBothSidesByLCD, simplify = true),
+
+    /**
+     * Multiply both sides of the equations by the integer denominator so the equation no longer has a denominator.
+     *
+     * E.g. [x / 2] + 5 = 3x --> 2([x / 2] + 5) = 2 * 3x
+     */
+    MultiplyBothSidesByIntegerDenominator(SolvableKey.MultiplyBothSidesByIntegerDenominator),
 
     /**
      * Multiply both sides of the equation by the inverse of the coefficient (if it's a numeric constant)

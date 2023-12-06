@@ -7,7 +7,11 @@ import engine.expressions.AbsoluteValue
 import engine.expressions.Equation
 import engine.expressions.Expression
 import engine.expressions.ExpressionWithConstraint
+import engine.expressions.Fraction
 import engine.expressions.Power
+import engine.expressions.Product
+import engine.expressions.Sum
+import engine.expressions.Variable
 import engine.methods.Method
 import engine.methods.plan
 import engine.methods.stepsproducers.StepsBuilder
@@ -202,19 +206,14 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
         }
     }
 
-    /**
-     * multiply by the LCM of the constant denominators if there are at least two fractions
-     * or a single fraction with a non-constant numerator (including also 1/2 * (x + 1))
-     */
     val removeConstantDenominatorsSteps = steps {
-        check {
-            val sumTerms = extractSumTermsFromSolvable(it)
-            val denominators = sumTerms.mapNotNull { term -> DenominatorExtractor.extractDenominator(term) }
-            denominators.size >= 2 || sumTerms.any { term ->
-                fractionRequiringMultiplication.matches(this, term)
-            }
-        }
+        check { requiresMultiplicationByTheLCD(it, this) }
         apply(multiplyByLCDAndSimplify)
+    }
+
+    val linearCoefficientRemovalSteps = steps {
+        check { it.isLinearIn(solutionVariables) }
+        apply { coefficientRemovalSteps }
     }
 
     // The explanations use advanced balancing for conciseness.
@@ -250,5 +249,21 @@ val evaluateBothSidesNumerically = steps {
     }
     optionally {
         applyTo(ApproximationPlans.EvaluateExpressionNumerically) { it.secondChild }
+    }
+}
+
+private fun Expression.isLinearIn(variables: List<String>) = linearDegreeIn(variables) == 1
+
+/**
+ * This returns 0 if the expression is constant in the given variables, 1 if it is linear, > 1 if it is neither.
+ */
+private fun Expression.linearDegreeIn(variables: List<String>): Int {
+    return when {
+        isConstantIn(variables) -> 0
+        this is Variable -> 1
+        this is Sum -> terms.maxOf { it.linearDegreeIn(variables) }
+        this is Product -> factors().sumOf { it.linearDegreeIn(variables) }
+        this is Fraction -> if (denominator.isConstantIn(variables)) numerator.linearDegreeIn(variables) else 2
+        else -> 2
     }
 }

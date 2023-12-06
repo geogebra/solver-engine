@@ -786,6 +786,7 @@ private val rewriteProductOfPowersWithSameBase =
             val exp1Value = get(power1.exponent)
             val exp2Value = get(power2.exponent)
 
+            // To avoid combining 3 * [3 ^ [1 / 2]]
             val addExponents = (!get(base).isConstant()) ||
                 (
                     (exp1Value != Constants.One || exp2Value.doubleValue !in 0.0..1.0) &&
@@ -943,17 +944,22 @@ private val rewriteProductOfPowersWithInverseFractionBase =
         val product = productContaining(power1, power2)
 
         onPattern(product) {
-            ruleResult(
-                toExpr = product.substitute(
-                    get(power1),
-                    powerOf(
-                        fractionOf(move(value1), move(value2)),
-                        negOf(move(power2.exponent)),
+            if (get(power1) is Power || get(power2) is Power) {
+                ruleResult(
+                    toExpr = product.substitute(
+                        get(power1),
+                        powerOf(
+                            fractionOf(move(value1), move(value2)),
+                            negOf(move(power2.exponent)),
+                        ),
                     ),
-                ),
-                gmAction = edit(power2),
-                explanation = metadata(Explanation.RewriteProductOfPowersWithInverseFractionBase),
-            )
+                    gmAction = edit(power2),
+                    explanation = metadata(Explanation.RewriteProductOfPowersWithInverseFractionBase),
+                )
+            } else {
+                // don't introduce powers and exponents if there were none, e.g. [2/3]*[3/2]
+                null
+            }
         }
     }
 

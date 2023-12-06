@@ -310,23 +310,33 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
             val solvable = SolvablePattern(lhs, rhs)
 
             onPattern(solvable) {
-                val terms = extractSumTermsFromSolvable(get(solvable))
-                val denominators = terms.mapNotNull { extractDenominator(it) }
-                    .map { it.asInteger() ?: return@onPattern null }
+                val lhsTerms = if (get(solvable.lhs) is Sum) get(solvable.lhs).children else listOf(get(solvable.lhs))
+                val rhsTerms = if (get(solvable.rhs) is Sum) get(solvable.rhs).children else listOf(get(solvable.rhs))
+                val lhsDenominators = lhsTerms.mapNotNull { extractDenominator(it) }
+                val rhsDenominators = rhsTerms.mapNotNull { extractDenominator(it) }
+                val denominators = lhsDenominators + rhsDenominators
+                val denominatorInts = denominators.map { it.asInteger() ?: return@onPattern null }
+                if (denominators.isEmpty()) return@onPattern null
 
-                if (denominators.isEmpty()) {
-                    return@onPattern null
-                }
+                val otherSide = if (lhsDenominators.isNotEmpty()) rhs else lhs
 
-                when (val lcm = denominators.lcm()) {
+                when (val lcm = denominatorInts.lcm()) {
                     BigInteger.ONE -> null
                     else -> ruleResult(
                         toExpr = solvable.deriveSolvable(
                             productOf(get(lhs), xp(lcm)),
                             productOf(get(rhs), xp(lcm)),
                         ),
-                        gmAction = editOp(solvable),
-                        explanation = solvableExplanation(SolvableKey.MultiplyBothSidesByLCD),
+                        gmAction = if (denominators.size == 1) {
+                            drag(denominators[0], PM.Group, otherSide, null)
+                        } else {
+                            editOp(solvable)
+                        },
+                        explanation = if (denominators.size == 1) {
+                            solvableExplanation(SolvableKey.MultiplyBothSidesByIntegerDenominator)
+                        } else {
+                            solvableExplanation(SolvableKey.MultiplyBothSidesByLCD)
+                        },
                     )
                 }
             }
@@ -510,17 +520,6 @@ private enum class Mover {
 }
 
 private fun Expression.terms() = if (this is Sum) this.terms else listOf(this)
-
-private val nonConstantSum = condition(sumContaining()) { !it.isConstantIn(solutionVariables) }
-val fractionRequiringMultiplication = optionalNegOf(
-    oneOf(
-        fractionOf(nonConstantSum, UnsignedIntegerPattern()),
-        productContaining(
-            fractionOf(AnyPattern(), UnsignedIntegerPattern()),
-            nonConstantSum,
-        ),
-    ),
-)
 
 fun extractSumTermsFromSolvable(equation: Expression): List<Expression> {
     return equation.children.flatMap {

@@ -781,6 +781,16 @@ class GeneralRulesTest {
             null,
         )
         testRule(
+            "[2 / 3] * [3 / 2]",
+            RewriteProductOfPowersWithInverseFractionBase,
+            null,
+        )
+        testRule(
+            "[([2 / 3]) ^ [1 / 2]] * [3 / 2]",
+            RewriteProductOfPowersWithInverseFractionBase,
+            "[([2 / 3]) ^ [1 / 2]] * [([2 / 3]) ^ -1]",
+        )
+        testRule(
             "[([2 / 3]) ^ [1 / 2]] * [([3 / 2]) ^ [2 / 5]]",
             RewriteProductOfPowersWithInverseFractionBase,
             "[([2 / 3]) ^ [1 / 2]] * [([2 / 3]) ^ -[2 / 5]]",
