@@ -57,6 +57,7 @@ contents to a new release section (e.g. _[0.x]_).
 - SDK: Fixed \* and ÷ path issues (PLUT-888)
 - Improved handling of multiplying inverse fractions `[2/3]*[3/2]` (PLUT-894)
 - Improved explanations for multiply by LCD for single denominator (PLUT-894)
+- Fixed regression in solving linear equations (PLUT-923)
 
 ### Changed
 

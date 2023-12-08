@@ -89,6 +89,37 @@ class LinearEquationsTest {
     }
 
     @Test
+    fun `test x div a = 0 linear equation`() = testMethodInX {
+        method = EquationsPlans.SolveEquation
+        inputExpr = "[x / 4] = 0"
+
+        check {
+            fromExpr = "[x / 4] = 0"
+            toExpr = "SetSolution[x: {0}]"
+            explanation {
+                key = EquationsExplanation.SolveLinearEquation
+            }
+
+            // should not happen
+            step {
+                fromExpr = "[x / 4] =0"
+                toExpr = "x = 0"
+                explanation {
+                    key = methods.solvable.EquationsExplanation.MultiplyByDenominatorOfVariableLHSAndSimplify
+                }
+            }
+
+            step {
+                fromExpr = "x = 0"
+                toExpr = "SetSolution[x: {0}]"
+                explanation {
+                    key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
+                }
+            }
+        }
+    }
+
+    @Test
     fun `test x - a = b linear equation`() = testMethodInX {
         method = EquationsPlans.SolveEquation
         inputExpr = "x - 2 = 36"

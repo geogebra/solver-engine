@@ -69,6 +69,20 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
         },
     ),
 
+    // After balancing an equation we don't want to "undo" the balancing operation, e.g. if we multiply both sides by a
+    // number we don't want to undo that in a simplification step.  Instead we always want to simplify both sides of the
+    // equation.
+    SimplifyEquationAfterBalancing(
+        plan {
+            explanation = Explanation.SimplifyEquation
+
+            steps {
+                whilePossible { deeply(simpleTidyUpSteps) }
+                optionally(NormalizationPlans.NormalizeExpression)
+                optionally(algebraicSimplificationStepsWithoutFractionAddition)
+            }
+        },
+    ),
     CollectLikeTermsToTheLeftAndSimplify(
         plan {
             explanation = Explanation.CollectLikeTermsToTheLeftAndSimplify
@@ -300,7 +314,10 @@ internal val constraintSimplificationPlan = plan {
     }
 }
 
-val solvablePlansForEquations = SolvablePlans(EquationsPlans.SimplifyEquation, constraintSimplificationPlan)
+val solvablePlansForEquations = SolvablePlans(
+    EquationsPlans.SimplifyEquationAfterBalancing,
+    constraintSimplificationPlan,
+)
 
 val rearrangeLinearEquationSteps = steps {
     whilePossible {
