@@ -33,7 +33,11 @@ internal fun getContext(
 private fun getSolutionVariables(expressionVariables: Set<String>, contextVariables: String?): List<String> {
     val apiVariables = contextVariables?.split(",")?.map { it.trim() } ?: emptyList()
     val intersectionVariables = apiVariables.intersect(expressionVariables)
-    return intersectionVariables.toList().ifEmpty { listOfNotNull(expressionVariables.firstOrNull()) }
+    return when {
+        intersectionVariables.isNotEmpty() -> intersectionVariables.toList()
+        expressionVariables.size == 1 -> expressionVariables.toList()
+        else -> emptyList()
+    }
 }
 
 private fun getStrategies(contextStrategies: Map<String, String>): Map<KClass<out Strategy>, Strategy> {

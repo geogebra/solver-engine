@@ -64,6 +64,35 @@ export type API_PLANS_RESPONSE = PlanId[];
 
 export type API_STRATEGIES_RESPONSE = StrategyMap;
 
+export type GraphResponseBase<MathFormat> = {
+  coordinateSystem: Cartesian2DSystem;
+  objects: ExpressionGraphObject<MathFormat>[];
+};
+
+export type ExpressionGraphObject<MathFormat> = {
+  type: 'curve2D';
+  label?: string;
+  expression: MathFormat;
+};
+
+export type Cartesian2DSystem = {
+  type: 'Cartesian2D';
+  horizontalAxis: GraphAxis;
+  verticalAxis: GraphAxis;
+};
+
+export type GraphAxis = {
+  variable: string;
+  label: string;
+  minValue: number;
+  maxValue: number;
+};
+
+export type GraphResponseSolver = GraphResponseBase<string>;
+export type GraphResponseLatex = GraphResponseBase<string>;
+export type GraphResponseJson = GraphResponseBase<MathJson>;
+export type GraphResponse = GraphResponseSolver | GraphResponseLatex | GraphResponseJson;
+
 /** The most common case where you would get a response like this would be if the math
  * input is not syntactically correct. */
 // TODO: research to see if this type is always accurate.

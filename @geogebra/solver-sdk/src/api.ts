@@ -5,6 +5,10 @@ import type {
   API_STRATEGIES_RESPONSE,
   API_VERSION_INFO_RESPONSE,
   ApiMathFormat,
+  GraphResponse,
+  GraphResponseJson,
+  GraphResponseLatex,
+  GraphResponseSolver,
   PlanId,
   PlanSelection,
   PlanSelectionJson,
@@ -133,6 +137,37 @@ class Api {
     return fetch(`${this.baseUrl}/strategies`, this.defaultHeaders).then((res) =>
       res.json(),
     );
+  }
+
+  async createGraph(
+    input: SolverExpr,
+    format: 'latex',
+    context?: SolverContext,
+  ): Promise<GraphResponseLatex | ServerErrorResponse>;
+
+  async createGraph(
+    input: SolverExpr,
+    format: 'json2',
+    context?: SolverContext,
+  ): Promise<GraphResponseJson | ServerErrorResponse>;
+
+  async createGraph(
+    input: SolverExpr,
+    format: 'solver',
+    context?: SolverContext,
+  ): Promise<GraphResponseSolver | ServerErrorResponse>;
+
+  async createGraph(
+    input: SolverExpr,
+    format: ApiMathFormat = 'latex',
+    context: SolverContext = this.defaultContext,
+  ): Promise<GraphResponse | ServerErrorResponse> {
+    const res = await fetch(`${this.baseUrl}/graph`, {
+      ...this.defaultHeaders,
+      method: 'POST',
+      body: JSON.stringify({ input, format, context }),
+    });
+    return await res.json();
   }
 
   /** Get solver version info. */

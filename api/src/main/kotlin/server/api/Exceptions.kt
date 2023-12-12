@@ -25,6 +25,9 @@ class InvalidStrategyException(category: String, strategy: String) :
 class PlanNotApplicableException(planId: String) :
     ApiException("Plan not applicable: $planId", HttpStatus.BAD_REQUEST.value())
 
+class ExpressionNotGraphableException(expression: String) :
+    ApiException("Expression not graphable: $expression", HttpStatus.BAD_REQUEST.value())
+
 @ControllerAdvice
 class FallbackExceptionHandler {
 

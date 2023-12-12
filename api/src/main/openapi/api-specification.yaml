@@ -111,18 +111,6 @@ paths:
               schema:
                 type: object
 
-  /strategies:
-    get:
-      operationId: getStrategies
-      description: 'Get all the strategies that can be used within the solver'
-      responses:
-        '200':
-          description: 'Successfully returned strategies'
-          content:
-            application/json:
-              schema:
-                type: object
-
   /plans/{planId}/apply:
     post:
       operationId: applyPlan
@@ -178,6 +166,43 @@ paths:
             application/json:
               schema:
                 type: object
+
+  /strategies:
+    get:
+      operationId: getStrategies
+      description: 'Get all the strategies that can be used within the solver'
+      responses:
+        '200':
+          description: 'Successfully returned strategies'
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /graph:
+    post:
+      operationId: createGraph
+      description: 'Create a graph representation of the given expression'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GraphRequest'
+      responses:
+        '200':
+          description: 'Successful request, returning graph data'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GraphResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+
 components:
   schemas:
     Format:
@@ -196,3 +221,67 @@ components:
           $ref: 'Context.yaml'
         format:
           $ref: '#/components/schemas/Format'
+    GraphRequest:
+      allOf:
+        - $ref: '#/components/schemas/SolveRequest'
+        - type: object
+          properties:
+            graphType:
+              $ref: '#/components/schemas/GraphType'
+            axes:
+              type: array
+              items:
+                type: string
+    GraphResponse:
+      type: object
+      required:
+        - graphType
+        - graphs
+        - axes
+      properties:
+        coordinateSystem:
+          $ref: '#/components/schemas/Cartesian2DSystem'
+        objects:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExpressionGraphObject'
+    Cartesian2DSystem:
+      type: object
+      required:
+        - type
+        - horizontalAxis
+        - verticalAxis
+      properties:
+        type:
+          type: string
+          enum: ['Cartesian2D']
+        horizontalAxis:
+          $ref: '#/components/schemas/GraphAxis'
+        verticalAxis:
+          $ref: '#/components/schemas/GraphAxis'
+    GraphAxis:
+      type: object
+      properties:
+        variable:
+          type: string
+        label:
+          type: string
+        minValue:
+          type: number
+        maxValue:
+          type: number
+    ExpressionGraphObject:
+      type: object
+      required:
+        - type
+        - equation
+      properties:
+        label:
+          type: string
+        type:
+          type: string
+          enum: [curve2D]
+        expression: {}
+    GraphType:
+      type: string
+      enum: [2DGraph, 3DGraph]

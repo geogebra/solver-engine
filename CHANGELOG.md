@@ -39,6 +39,8 @@ contents to a new release section (e.g. _[0.x]_).
 - Added new gmActions tests that use the new testing framework, disabled all old gmAction tests (PLUT-888)
 - Added the `MultiplyFractionsAndNotFractionsDirectly` setting for gm-alignment (PLUT-885). Multiplies
   e.g. `2 * [3 / 4]` to `[2 * 3 / 4]` in one step
+- Added the `/graph` API, which returns a description of a graph that can be drawn from an input (PLUT-912).
+- SDK: Added support for the `/graph` API in SDK and conversion of tree format to ggb format in SDK (PLUT-912)
 
 ### Fixed
 

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type {
   ApiMathFormat,
+  GraphResponseJson,
+  GraphResponseSolver,
   PlanSelectionJson,
   PlanSelectionSolver,
   ServerErrorResponse,
@@ -9,6 +11,7 @@ import type {
   TransformationSolver,
 } from '@geogebra/solver-sdk';
 import * as solverSdk from '@geogebra/solver-sdk';
+import { jsonToTree, treeToGgb, treeToLatex } from '@geogebra/solver-sdk';
 import {
   colorScheme,
   demoMode,
@@ -30,6 +33,7 @@ import TestSuggestion from './test-suggestion.vue';
 import { fetchDefaultTranslations, translationsFetched } from './translations';
 import { computed, onMounted, reactive, ref, watch, watchEffect } from 'vue';
 import { computedAsync } from '@vueuse/core';
+import GgbApplet, { GgbAppletApi } from './GgbApplet.vue';
 
 const jsonFormatSpecifier: ApiMathFormat = 'json2';
 
@@ -41,7 +45,9 @@ const strategies = computedAsync(() => solverSdk.api.listStrategies());
 
 /** Map of strategy category to preferred strategy. If no value is set, then nothing was
  * selected for that category. */
-const mapOfCategoryToSelectedStrategy = reactive<{ [category: string]: string }>({});
+const mapOfCategoryToSelectedStrategy = reactive<{
+  [category: string]: string;
+}>({});
 // populate that map with the values from the URL
 for (const strategyChoice of [params.strategy || []].flat()) {
   const [category, choice] = strategyChoice.split(':');
@@ -60,6 +66,7 @@ watch(
 
 const strategySectionOpen = ref<boolean>(!!params.strategy);
 const responseSourceDetailsOpen = ref<boolean>(false);
+
 const textInTheMathInputTextbox = ref<string>(params.input);
 /** Change this to reactively trigger re-querying Solver, since the solver backend might
  * have changed. */
@@ -125,6 +132,18 @@ const resultJsonFormat = computedAsync<
   // Invalid math syntax errors are not thrown errors, so they are not handled by this
   { onError: (error) => console.error(error) },
 );
+
+const graphSolverFormat = computedAsync<GraphResponseSolver | ServerErrorResponse>(async () => {
+  const input = params.input;
+  const ret = await solverSdk.api.createGraph(input, 'solver', solverContext.value);
+  return ret;
+});
+
+const graphJsonFormat = computedAsync<GraphResponseJson | ServerErrorResponse>(async () => {
+  const input = params.input;
+  const ret = await solverSdk.api.createGraph(input, 'json2', solverContext.value);
+  return ret;
+});
 
 /** Use this instead of `params.plan === 'selectPlans'` because `resultJsonFormat` might
  * be the wrong format, temporarily, while we are fetching a new format. */
@@ -201,6 +220,62 @@ const camelCaseToLabel = (category: string) => {
 };
 
 const inputSyntaxHelpSection = ref<HTMLDetailsElement | null>(null);
+
+let applet = ref<GgbAppletApi | undefined>(undefined);
+
+function onLoad(api: GgbAppletApi) {
+  console.log('Defining applet');
+  applet.value = api;
+}
+
+watch([graphJsonFormat, applet], () => {
+  // Redraw the graph
+  const graph = graphJsonFormat.value;
+  const ggbApi = applet.value;
+  if (!ggbApi || !graph) {
+    return;
+  }
+  ggbApi.newConstruction();
+  if ('error' in graph) {
+    return;
+  }
+  const coordinateSystem = graph.coordinateSystem;
+  let varSub: Record<string, string> = {};
+  if (coordinateSystem.type === 'Cartesian2D') {
+    ggbApi.setCoordSystem(
+      coordinateSystem.horizontalAxis.minValue,
+      coordinateSystem.horizontalAxis.maxValue,
+      coordinateSystem.verticalAxis.minValue,
+      coordinateSystem.verticalAxis.maxValue,
+    );
+    ggbApi.setAxisLabels(
+      1,
+      coordinateSystem.horizontalAxis.label,
+      coordinateSystem.verticalAxis.label,
+      '',
+    );
+    varSub[coordinateSystem.horizontalAxis.variable] = 'x';
+    varSub[coordinateSystem.verticalAxis.variable] = 'y';
+  }
+  const colors = [
+    [200, 20, 20],
+    [10, 120, 10],
+    [10, 10, 100],
+  ];
+  for (const [i, obj] of graph.objects.entries()) {
+    const exprTree = jsonToTree(obj.expression);
+    const color = colors[i % colors.length];
+    ggbApi.evalCommand(`${obj.label}:${treeToGgb(exprTree, varSub)}`);
+    if (obj.label) {
+      ggbApi.setColor(obj.label, color[0], color[1], color[2]);
+      ggbApi.setCaption(obj.label, `$${treeToLatex(exprTree)}$`);
+      ggbApi.setLabelStyle(obj.label, 3);
+      ggbApi.setLabelVisible(obj.label, true);
+    }
+  }
+  // applet.value.showAllObjects();
+});
+
 onMounted(() => {
   window.renderMathInElement?.(inputSyntaxHelpSection.value!);
 });
@@ -393,28 +468,32 @@ onMounted(() => {
     </p>
   </form>
 
-  <p v-if="translationsFetched">
-    <template v-if="!params.input"></template>
-    <template v-else-if="!resultJsonFormat">Fetching…</template>
-    <template v-else-if="'error' in resultJsonFormat">
-      Error: {{ resultJsonFormat.error }}<br />
-      Message: {{ resultJsonFormat.message }}
-    </template>
-    <PlanSelections
-      v-else-if="resultJsonFormatIsAListOfPlans"
-      :solver-response="(resultJsonFormat as PlanSelectionJson[])"
-    ></PlanSelections>
-    <template v-else>
-      <TransformationComponent
-        :transformation="(resultJsonFormat as TransformationJson)"
-        :depth="1"
-      ></TransformationComponent>
-      <TestSuggestion
-        :transformation="(resultJsonFormat as TransformationJson)"
-        :method-id="params.plan"
-      ></TestSuggestion>
-    </template>
-  </p>
+  <details open>
+    <summary>Response</summary>
+    <p v-if="translationsFetched">
+      <template v-if="!params.input"></template>
+      <template v-else-if="!resultJsonFormat">Fetching…</template>
+      <template v-else-if="'error' in resultJsonFormat">
+        Error: {{ resultJsonFormat.error }}<br />
+        Message: {{ resultJsonFormat.message }}
+      </template>
+      <PlanSelections
+        v-else-if="resultJsonFormatIsAListOfPlans"
+        :solver-response="(resultJsonFormat as PlanSelectionJson[])"
+      ></PlanSelections>
+      <template v-else>
+        <TransformationComponent
+          :transformation="(resultJsonFormat as TransformationJson)"
+          :depth="1"
+        ></TransformationComponent>
+        <TestSuggestion
+          :transformation="(resultJsonFormat as TransformationJson)"
+          :method-id="params.plan"
+        ></TestSuggestion>
+      </template>
+    </p>
+  </details>
+
   <details
     v-show="!demoMode"
     :open="responseSourceDetailsOpen"
@@ -426,6 +505,30 @@ onMounted(() => {
     <pre id="source">{{
       JSON.stringify(jsonFormat ? resultJsonFormat : resultSolverFormat, null, 4)
     }}</pre>
+  </details>
+  <details>
+    <summary>Graph</summary>
+    <div id="applet">
+      <GgbApplet
+        :material-id="''"
+        :settings="{
+          appName: 'classic',
+          showAlgebraInput: false,
+          perspective: 'G',
+          height: 600,
+          width: 600,
+          enableLabelDrags: true,
+          enableShiftDragZoom: true,
+          scaleContainerClass: null, // If we scale, firefox thinks the scale is 0
+          allowUpscale: false, // We want width and height to really be 600
+        }"
+        @onLoad="onLoad"
+      />
+    </div>
+  </details>
+  <details v-show="!demoMode">
+    <summary>Graph Source</summary>
+    <pre>{{ JSON.stringify(graphSolverFormat, null, 4) }}</pre>
   </details>
 </template>
 

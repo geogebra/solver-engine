@@ -1,0 +1,9 @@
+title: Graph
+type: object
+property:
+  coordinateSystem:
+    $ref: '#/components/schemas/CoordinateSystem'
+components:
+  schemas:
+    CoordinateSystem:
+      type: object

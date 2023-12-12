@@ -290,7 +290,7 @@ open class Expression internal constructor(
     /**
      * The expression does not depend on the specified symbols
      */
-    fun isConstantIn(symbols: List<String>) = variables.all { !symbols.contains(it) }
+    fun isConstantIn(symbols: Collection<String>) = variables.all { !symbols.contains(it) }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -480,9 +480,35 @@ open class Expression internal constructor(
         return s
     }
 
+    /**
+     * Approximation of the expression numeric value as a Double.  Returns NaN if it is undefined or if it is
+     * not a numerical value (e.g. an equation or a variable expression)
+     */
     val doubleValue: Double by lazy {
         when (operator) {
             is ExpressionOperator -> operator.eval(children.map { it.doubleValue })
+            else -> Double.NaN
+        }
+    }
+
+    /**
+     * Approximation of the expression numeric value as a Double for the given variable values. Returns NaN if it is
+     * undefined or if it is not a numerical value (e.g. an equation or has other variables than the ones given)
+     */
+    fun evaluate(variableValues: Map<String, Double>): Double {
+        return when {
+            isConstantIn(variableValues.keys) -> doubleValue
+            this is Variable -> variableValues[variableName] ?: Double.NaN
+            operator is ExpressionOperator -> operator.eval(children.map { it.evaluate(variableValues) })
+            else -> Double.NaN
+        }
+    }
+
+    fun evaluate(variable: String, value: Double): Double {
+        return when {
+            variable !in variables -> doubleValue
+            this is Variable -> if (variableName == variable) value else Double.NaN
+            operator is ExpressionOperator -> operator.eval(children.map { it.evaluate(variable, value) })
             else -> Double.NaN
         }
     }
