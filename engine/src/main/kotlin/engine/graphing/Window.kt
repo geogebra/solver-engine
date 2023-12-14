@@ -1,9 +1,11 @@
 package engine.graphing
 
+import engine.expressions.Comparison
 import engine.expressions.Expression
 import engine.expressions.ExpressionWithConstraint
 import engine.expressions.FiniteSet
 import engine.expressions.SetSolution
+import engine.expressions.equationOf
 import kotlin.math.max
 import kotlin.math.min
 
@@ -108,20 +110,23 @@ fun bestWindowForExpr(
     if (fy != null) {
         return fy.bestWindow(defaultWindow.transpose()).transpose()
     }
-    // Try to rearrange expr as y = f(x)
-    val solutionY = solveForVariable(expr, axisVariables.vertical)
-    if (solutionY != null) {
-        val solutions = extractSolutionsFromResult(solutionY)
-        if (solutions != null) {
-            return bestWindowForExprs(solutions, axisVariables, solveForVariable, window)
+    if (expr is Comparison) {
+        val eq = equationOf(expr.lhs, expr.rhs)
+        // Try to rearrange expr as y = f(x)
+        val solutionY = solveForVariable(eq, axisVariables.vertical)
+        if (solutionY != null) {
+            val solutions = extractSolutionsFromResult(solutionY)
+            if (solutions != null) {
+                return bestWindowForExprs(solutions, axisVariables, solveForVariable, window)
+            }
         }
-    }
-    // Try to rearrange expr as x = f(y)
-    val solutionX = solveForVariable(expr, axisVariables.horizontal)
-    if (solutionX != null) {
-        val solutions = extractSolutionsFromResult(solutionX)
-        if (solutions != null) {
-            return bestWindowForExprs(solutions, axisVariables, solveForVariable, window)
+        // Try to rearrange expr as x = f(y)
+        val solutionX = solveForVariable(eq, axisVariables.horizontal)
+        if (solutionX != null) {
+            val solutions = extractSolutionsFromResult(solutionX)
+            if (solutions != null) {
+                return bestWindowForExprs(solutions, axisVariables, solveForVariable, window)
+            }
         }
     }
     // Nothing works; return the default window.

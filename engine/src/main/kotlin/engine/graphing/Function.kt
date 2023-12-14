@@ -36,6 +36,7 @@ class Function(val f: ValueExpression, val xVar: String) {
     /**
      * Looks in the range [[x0], [x1] and return a sequence of interesting points (e.g. turning points, x/y intercepts).
      */
+    @Suppress("CyclomaticComplexMethod")
     fun estimateInterestingPoints(x0: Double, x1: Double, n: Int) = sequence {
         // The y-intercept is interesting
         if (x0 <= 0 && x1 >= 0) {
@@ -53,27 +54,42 @@ class Function(val f: ValueExpression, val xVar: String) {
             val newX = x0 + i * xRange / n
             val newY = evaluateAt(newX)
             val newGradient = (newY - y) / dx
-            if (newY.isInfinite()) {
-                // We found an asymptote probably, so let's make sure the x-coordinate will be in the graph
-                yield(Point(newX, 0.0))
-            }
-            if (newY == 0.0) {
-                // How lucky, an x-intercept
-                yield(Point(newX, newY))
-            } else if (y * newY < 0) {
-                // There is an x-intercept or a discontinuity between x and newX.  Either way it's interesting
-                // Should work out x by interpolation...
-                yield(Point((x + newX) / 2, 0.0))
-            } else if (newGradient == 0.0) {
-                // This is probably a turning point, else it's an inflexion point which is interesting
-                yield(Point(newX, newY))
-            } else if (gradient * newGradient < 0.0) {
-                // There is a turning or a discontinuity point near x
-                if (gradient > 1.0 || newGradient > 1.0) {
-                    // The gradient is big, so it is probably an asymptote
+            when {
+                newY.isNaN() -> {
+                    if (y.isFinite()) {
+                        // We are leaving the domain
+                        yield(Point(x, y))
+                    }
+                }
+                newY.isInfinite() -> {
+                    // We found an asymptote probably, so let's make sure the x-coordinate will be in the graph
                     yield(Point(newX, 0.0))
-                } else {
-                    yield(Point(x, y))
+                }
+                newY == 0.0 -> {
+                    // How lucky, an x-intercept
+                    yield(Point(newX, newY))
+                }
+                y.isNaN() -> {
+                    // As newY is finite, we are entering the domain
+                    yield(Point(newX, newY))
+                }
+                y * newY < 0 -> {
+                    // There is an x-intercept or a discontinuity between x and newX.  Either way it's interesting
+                    // Should work out x by interpolation...
+                    yield(Point((x + newX) / 2, 0.0))
+                }
+                newGradient == 0.0 -> {
+                    // This is probably a turning point, else it's an inflexion point which is interesting
+                    yield(Point(newX, newY))
+                }
+                gradient * newGradient < 0.0 -> {
+                    // There is a turning or a discontinuity point near x
+                    if (gradient > 1.0 || newGradient > 1.0) {
+                        // The gradient is big, so it is probably an asymptote
+                        yield(Point(newX, 0.0))
+                    } else {
+                        yield(Point(x, y))
+                    }
                 }
             }
             gradient = newGradient
