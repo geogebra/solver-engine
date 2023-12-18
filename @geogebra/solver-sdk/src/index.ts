@@ -15,6 +15,7 @@ export * from './paths';
 export * from './types';
 export * from './solutions';
 export * from './translations';
+export * from './math-generator';
 
 export function jsonToLatex(
   json: MathJson,

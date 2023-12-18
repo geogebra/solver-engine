@@ -1,12 +1,15 @@
-import type { PlanSelection, Transformation } from '../types';
+import type { PlanSelection, Tag, Transformation } from '../types';
 import { isTrivialStep } from './transformation';
 
-function containsNonTrivialStep(transformation: Transformation): boolean {
+function containsNonTrivialStep(
+  transformation: Transformation,
+  trivialTags?: Tag[],
+): boolean {
   if (!transformation.steps || !transformation.steps.length) {
-    return !isTrivialStep(transformation);
+    return !isTrivialStep(transformation, trivialTags);
   }
 
-  return transformation.steps.some(containsNonTrivialStep);
+  return transformation.steps.some((step) => containsNonTrivialStep(step, trivialTags));
 }
 
 /**
@@ -16,6 +19,6 @@ function containsNonTrivialStep(transformation: Transformation): boolean {
  * @param solution
  * @returns A boolean indicating whether the solution is trivial or not.
  */
-export function isTrivialSolution(solution: PlanSelection): boolean {
-  return !containsNonTrivialStep(solution.transformation);
+export function isTrivialSolution(solution: PlanSelection, trivialTags?: Tag[]): boolean {
+  return !containsNonTrivialStep(solution.transformation, trivialTags);
 }

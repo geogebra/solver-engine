@@ -9,7 +9,11 @@ describe('isTrivialStep tests', () => {
   it('returns true when invoked with a trivial transformation', () => {
     const trivialTransformation =
       planSelectionWithTrivialMember[0].transformation.steps[0].steps[0];
-    expect(isTrivialStep(trivialTransformation)).to.equal(true);
+    // 'Rearrangement' is no longer a trivial step by default, so we'll explicitly
+    // include it here.
+    expect(isTrivialStep(trivialTransformation, ['Rearrangement', 'Cosmetic'])).to.equal(
+      true,
+    );
   });
 
   it('returns false when invoked with a non-trivial transformation', () => {

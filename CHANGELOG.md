@@ -41,6 +41,7 @@ contents to a new release section (e.g. _[0.x]_).
   e.g. `2 * [3 / 4]` to `[2 * 3 / 4]` in one step
 - Added the `/graph` API, which returns a description of a graph that can be drawn from an input (PLUT-912).
 - SDK: Added support for the `/graph` API in SDK and conversion of tree format to ggb format in SDK (PLUT-912)
+- SDK: Added support for generating math problems for various topics, subtopics and difficulty levels (PLUT-911)
 
 ### Fixed
 
@@ -87,6 +88,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Changed setting ReorderProductsInSteps into CommutativeReorderInSteps and made it cover step by step normalization of
   polynomials (PLUT-888)
 - improved FractionArithmetic rules for signs in fractions (`-[-2/3]` and `-[2/-3]`) (PLUT-888)
+- SDK: don't consider a "Rearrangement" step a trivial step
 
 ### Removed
 
