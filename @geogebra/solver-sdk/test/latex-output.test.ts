@@ -105,7 +105,7 @@ it('Univariate empty set solution', () => {
   };
 
   expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
-    'x \\in \\emptyset',
+    '\\text{no solution}',
   );
 });
 
@@ -187,7 +187,7 @@ it('Univariate identity solution', () => {
   };
 
   expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
-    'x \\in \\mathbb{R}',
+    '\\text{infinitely many solutions}',
   );
 });
 
@@ -215,7 +215,7 @@ it('Univariate contradiction solution', () => {
   };
 
   expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
-    'x \\in \\emptyset',
+    '\\text{no solution}',
   );
 });
 
@@ -229,7 +229,7 @@ it('Multivariate contradiction solution', () => {
   };
 
   expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
-    'x, y \\in \\emptyset',
+    '\\text{no solution}',
   );
 });
 

@@ -14,6 +14,8 @@ export interface MathWords {
   False: string;
   And: string;
   Or: string;
+  NoSolution: string;
+  InfinitelyManySolutions: string;
 }
 
 export const defaultMathWords: MathWords = {
@@ -23,6 +25,8 @@ export const defaultMathWords: MathWords = {
   False: 'false',
   And: 'and',
   Or: 'or',
+  NoSolution: 'no solution',
+  InfinitelyManySolutions: 'infinitely many solutions',
 };
 
 // Make sure to put a space after a latex command to avoid, e.g., "2\\cdotx"

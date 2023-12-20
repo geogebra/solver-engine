@@ -94,6 +94,20 @@ enum class MathWord : CategorisedMetadataKey {
      * E.g. x < -2 or x > 2
      */
     Or,
+
+    // Used in SDK, not in engine
+    /**
+     * Used to express that an equation has no solution
+     */
+    NoSolution,
+
+    // Used in SDK, not in engine
+    /**
+     * Used to express that an equation has infinitely many solutions - this is a vague notion,
+     * typically used to talk about an identity (e.g. "x = x has infinitely many solutions")
+     */
+    InfinitelyManySolutions,
+
     ;
 
     override val category = "MathWord"

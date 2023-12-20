@@ -89,6 +89,8 @@ contents to a new release section (e.g. _[0.x]_).
   polynomials (PLUT-888)
 - improved FractionArithmetic rules for signs in fractions (`-[-2/3]` and `-[2/-3]`) (PLUT-888)
 - SDK: don't consider a "Rearrangement" step a trivial step
+- SDK: the "simple" solution formatter now shows "no solution" or "infinitely many solutions" messages for
+  contradictions and identities (PLUT-899)
 
 ### Removed
 

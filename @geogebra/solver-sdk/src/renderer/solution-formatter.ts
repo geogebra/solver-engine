@@ -79,11 +79,11 @@ export const simpleSolutionFormatter: SolutionFormatter = {
         const [varsTuple, variableCount] = variableListToLatexTuple(vars, rec);
 
         switch (set.type) {
-          case 'FiniteSet':
+          case 'FiniteSet': {
             const operandsLength = set.operands ? set.operands.length : 0;
             switch (operandsLength) {
               case 0:
-                return `${varsTuple} \\in \\emptyset`;
+                return `\\text{${w.NoSolution}}`;
               case 1: {
                 if (variableCount > 1) {
                   const tuple = set.operands[0] as TupleTree;
@@ -102,6 +102,7 @@ export const simpleSolutionFormatter: SolutionFormatter = {
                   .map((el) => `${varsTuple} = ${rec(el, null)}`)
                   .join(', ');
             }
+          }
           case 'CartesianProduct':
             if (
               set.operands.every(
@@ -140,17 +141,20 @@ export const simpleSolutionFormatter: SolutionFormatter = {
         return `${rec(n.operands[0], null)} \\in \\mathbb{R} : ${rec(n.operands[1], n)}`;
       case 'Identity': {
         const varList = n.operands[0] as VariableListTree;
-        if (varList.operands !== undefined && varList.operands.length > 0) {
-          return `${rec(varList, null)} \\in \\mathbb{R}`;
+        if (varList.operands !== undefined) {
+          switch (varList.operands.length) {
+            case 0:
+              break;
+            case 1:
+              return `\\text{${w.InfinitelyManySolutions}}`;
+            default:
+              return `${rec(varList, null)} \\in \\mathbb{R}`;
+          }
         }
         break;
       }
       case 'Contradiction': {
-        const varList = n.operands[0] as VariableListTree;
-        if (varList.operands !== undefined && varList.operands.length > 0) {
-          return `${rec(varList, null)} \\in \\emptyset`;
-        }
-        break;
+        return `\\text{${w.NoSolution}}`;
       }
     }
 
