@@ -2,10 +2,12 @@ package methods.fractionarithmetic
 
 import engine.context.BooleanSetting
 import engine.context.Setting
+import engine.expressions.Expression
 import engine.expressions.Fraction
 import engine.expressions.Minus
 import engine.expressions.Power
 import engine.expressions.Product
+import engine.expressions.Sum
 import engine.expressions.asRational
 import engine.expressions.isPolynomial
 import engine.expressions.isSigned
@@ -220,6 +222,21 @@ fun createAddFractionsPlan(numeratorSimplificationSteps: StepsProducer): Method 
         skill(Skill.AddFractions, f1, f2)
 
         partialExpressionSteps {
+            check {
+                if (!isSet(Setting.RestrictAddingFractionsWithConstantDenominator)) {
+                    true
+                } else {
+                    // We only add the fractions if they are constant or one of them is a sum
+                    val num1 = it.firstChild.getNumerator() ?: return@check false
+                    val num2 = it.secondChild.getNumerator() ?: return@check false
+                    when {
+                        num1 is Sum -> true
+                        num2 is Sum -> true
+                        num1.isConstant() && num2.isConstant() -> true
+                        else -> false
+                    }
+                }
+            }
             apply(addFractionSteps)
         }
     }
@@ -242,10 +259,26 @@ fun createAddIntegerAndFractionPlan(numeratorSimplificationSteps: StepsProducer)
         explanationParameters(integer, fraction)
 
         partialExpressionSteps {
+            check {
+                if (!isSet(Setting.RestrictAddingFractionsWithConstantDenominator)) {
+                    true
+                } else {
+                    val num = it.firstChild.getNumerator() ?: it.secondChild.getNumerator() ?: return@check false
+                    num.isConstant() || num is Sum
+                }
+            }
             apply(FractionArithmeticRules.BringToCommonDenominatorWithNonFractionalTerm)
             deeply(IntegerArithmeticRules.EvaluateIntegerProductAndDivision)
             apply(addFractionSteps)
         }
+    }
+}
+
+private fun Expression.getNumerator(): Expression? {
+    return when (this) {
+        is Minus -> argument.getNumerator()
+        is Fraction -> numerator
+        else -> null
     }
 }
 

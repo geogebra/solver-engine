@@ -67,25 +67,26 @@ enum class Setting(val kind: SettingKind, val description: String) {
 
     CommutativeReorderInSteps(
         BooleanSetting,
-        "Reorder a product or polynomial by moving one term at a time instead of all of them in a single step",
+        "Reorder a product or polynomial by moving one term at a time instead of " +
+            "all of them in a single step",
     ),
 
     SolveEquationsWithoutComputingTheDomain(
         BooleanSetting,
-        "Solve an equation without computing the domain first, i.e. by finding all the solutions and then plugging" +
+        "Solve an equation without computing the domain first, i.e. by finding all the solutions and then plugging " +
             "them in to check if they are valid. May not work for all equations.",
     ),
 
     ConvertRecurringDecimalsToFractionsUsingAlgorithm(
         BooleanSetting,
-        "Instead of using the formula for converting recurring decimals to fractions, use the algorithm where you" +
-            "set x equal to the number, multiply the equation by a power of ten and solve the equation system formed" +
+        "Instead of using the formula for converting recurring decimals to fractions, use the algorithm where you " +
+            "set x equal to the number, multiply the equation by a power of ten and solve the equation system formed " +
             "by these two equations.",
     ),
 
     AddMixedNumbersWithoutConvertingToImproperFractions(
         BooleanSetting,
-        "When adding several mixed numbers, instead of converting them individually to fractions, split them, then" +
+        "When adding several mixed numbers, instead of converting them individually to fractions, split them, then " +
             "add the integers, the fractions and finally add the two together",
     ),
 
@@ -98,6 +99,14 @@ enum class Setting(val kind: SettingKind, val description: String) {
         BooleanSetting,
         "when multplying e.g. 3*[x / 2], do not turn 3 to a fraction but write it as [3x / 2] directly",
     ),
+
+    RestrictAddingFractionsWithConstantDenominator(
+        BooleanSetting,
+        "Add restrictions to adding fractions with constant denominator, for example " +
+            "non-constant fractions are only added if at least one of them is a sum. Similar restrictions " +
+            "apply to adding an integer and a fraction.",
+    ),
+
     ;
 
     infix fun setTo(value: SettingValue): Pair<Setting, SettingValue> {

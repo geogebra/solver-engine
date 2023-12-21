@@ -16,6 +16,64 @@ import org.junit.jupiter.api.Test
 class ExpandPolynomialsTest {
 
     @Test
+    fun `test expand a fraction`() = testMethod {
+        method = PolynomialsPlans.ExpandPolynomialExpression
+        context = context.addSettings(
+            mapOf(Setting.RestrictAddingFractionsWithConstantDenominator to BooleanSetting.True),
+        )
+        inputExpr = "[2 x - 3 / 2]"
+
+        check {
+            fromExpr = "[2 x - 3 / 2]"
+            toExpr = "x - [3 / 2]"
+            explanation {
+                key = ExpandExplanation.ExpandFractionAndSimplify
+            }
+
+            step {
+                fromExpr = "[2 x - 3 / 2]"
+                toExpr = "[2 x / 2] - [3 / 2]"
+                explanation {
+                    key = ExpandExplanation.DistributeConstantNumerator
+                }
+            }
+
+            step {
+                fromExpr = "[2 x / 2] - [3 / 2]"
+                toExpr = "x - [3 / 2]"
+                explanation {
+                    key = PolynomialsExplanation.SimplifyMonomial
+                }
+
+                step {
+                    fromExpr = "[2 x / 2]"
+                    toExpr = "x"
+                    explanation {
+                        key = GeneralExplanation.CancelDenominator
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test expand a fraction with negative terms`() = testMethod {
+        method = PolynomialsPlans.ExpandPolynomialExpression
+        inputExpr = "[y - 2 x - 4 / 5]"
+        context = context.addSettings(
+            mapOf(Setting.RestrictAddingFractionsWithConstantDenominator to BooleanSetting.True),
+        )
+
+        check {
+            fromExpr = "[y - 2 x - 4 / 5]"
+            toExpr = "[y / 5] - [2 x / 5] - [4 / 5]"
+            explanation {
+                key = ExpandExplanation.DistributeConstantNumerator
+            }
+        }
+    }
+
+    @Test
     fun `test expand square of binomial, GM or default curriculum`() {
         testMethod {
             method = PolynomialsPlans.ExpandPolynomialExpression

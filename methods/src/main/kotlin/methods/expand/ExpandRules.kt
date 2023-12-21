@@ -8,6 +8,7 @@ import engine.expressions.Minus
 import engine.expressions.Sum
 import engine.expressions.equationOf
 import engine.expressions.explicitProductOf
+import engine.expressions.fractionOf
 import engine.expressions.negOf
 import engine.expressions.powerOf
 import engine.expressions.productOf
@@ -21,6 +22,7 @@ import engine.patterns.FixedPattern
 import engine.patterns.commutativeProductOf
 import engine.patterns.commutativeSumOf
 import engine.patterns.condition
+import engine.patterns.fractionOf
 import engine.patterns.negOf
 import engine.patterns.oneOf
 import engine.patterns.powerOf
@@ -35,6 +37,7 @@ import engine.steps.metadata.metadata
 
 enum class ExpandRules(override val runner: Rule) : RunnerMethod {
     DistributeMultiplicationOverSum(distributeMultiplicationOverSum),
+    DistributeConstantNumerator(distributeConstantNumerator),
     DistributeNegativeOverBracket(distributeNegativeOverBracket),
     ExpandBinomialSquaredUsingIdentity(expandBinomialSquaredUsingIdentity),
     ExpandBinomialCubedUsingIdentity(expandBinomialCubedUsingIdentity),
@@ -113,6 +116,60 @@ private fun RuleResultBuilder.multiplyDistributedTerm(
         product
     } else {
         negOf(product)
+    }
+}
+
+/**
+ * [x + 2 / 3] -> [x / 3] + [2 / 3]
+ * [x - 2 / 3] -> [x / 3] - [2 / 3]
+ *
+ * We don't want to expand when the numerator is constant because it would break constant expression
+ * simplification.  This probably should be thought through.
+ */
+private val distributeConstantNumerator = rule {
+    val sum = condition(sumContaining()) { !it.isConstant() }
+    val denominator = condition { it.isConstant() }
+    val fraction = fractionOf(sum, denominator)
+
+    onPattern(fraction) {
+
+        val sumValue = get(sum) as Sum
+        val toDistribute = distribute(denominator)
+
+        // We always extract the minus in this case because we want
+        // [x - 2 / 3] --> [x / 3] - [2 / 3]
+        // Not
+        // --> [x / 3] + [-2 / 3]
+        val distributedTerms = sumValue.terms.map {
+            divideDistributedTerm(toDistribute, it, extractMinus = true)
+        }
+
+        ruleResult(
+            toExpr = sumOf(distributedTerms),
+            gmAction = drag(toDistribute, GmPathModifier.Group, sum, null, DragTargetPosition.LeftOf),
+            explanation = metadata(
+                Explanation.DistributeConstantNumerator,
+                toDistribute,
+            ),
+        )
+    }
+}
+
+private fun RuleResultBuilder.divideDistributedTerm(
+    toDistribute: Expression,
+    term: Expression,
+    extractMinus: Boolean = false,
+): Expression {
+    val effectiveTerm = if (extractMinus && term is Minus && !term.hasVisibleBracket()) {
+        term.argument
+    } else {
+        term
+    }
+    val fraction = fractionOf(move(effectiveTerm), toDistribute)
+    return if (term === effectiveTerm) {
+        fraction
+    } else {
+        negOf(fraction)
     }
 }
 

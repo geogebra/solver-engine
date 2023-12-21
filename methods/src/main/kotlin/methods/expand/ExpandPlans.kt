@@ -17,6 +17,7 @@ import methods.general.GeneralRules
 
 interface ExpandAndSimplifyMethodsProvider {
     val singleBracketMethod: Method
+    val fractionMethod: Method
     val doubleBracketsMethod: Method
     val binomialSquaredMethod: Method
     val binomialCubedMethod: Method
@@ -31,6 +32,16 @@ class ExpandAndSimplifier(simplificationSteps: StepsProducer) : ExpandAndSimplif
 
         steps {
             apply(ExpandRules.DistributeMultiplicationOverSum)
+            optionally(simplificationSteps)
+        }
+    }
+
+    override val fractionMethod = plan {
+        explanation = Explanation.ExpandFractionAndSimplify
+
+        steps {
+            check { isSet(Setting.RestrictAddingFractionsWithConstantDenominator) }
+            apply(ExpandRules.DistributeConstantNumerator)
             optionally(simplificationSteps)
         }
     }
@@ -114,6 +125,7 @@ class ExpandAndSimplifier(simplificationSteps: StepsProducer) : ExpandAndSimplif
         firstOf {
             option(doubleBracketsMethod)
             option(singleBracketMethod)
+            option(fractionMethod)
             option(binomialSquaredMethod)
             option(binomialCubedMethod)
             option(trinomialSquaredMethod)

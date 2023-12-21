@@ -42,6 +42,8 @@ contents to a new release section (e.g. _[0.x]_).
 - Added the `/graph` API, which returns a description of a graph that can be drawn from an input (PLUT-912).
 - SDK: Added support for the `/graph` API in SDK and conversion of tree format to ggb format in SDK (PLUT-912)
 - SDK: Added support for generating math problems for various topics, subtopics and difficulty levels (PLUT-911)
+- Added support for expanding fractions such as `[3x - 2/5]` to a sum, under a new setting
+  called `RestrictAddingFractionsWithConstantDenominator` (PLUT-939)
 
 ### Fixed
 

@@ -5,6 +5,7 @@ import engine.context.Setting
 import engine.methods.testMethod
 import engine.methods.testRule
 import methods.expand.ExpandRules.ApplyFoilMethod
+import methods.expand.ExpandRules.DistributeConstantNumerator
 import methods.expand.ExpandRules.DistributeMultiplicationOverSum
 import methods.expand.ExpandRules.DistributeNegativeOverBracket
 import methods.expand.ExpandRules.ExpandBinomialCubedUsingIdentity
@@ -168,6 +169,30 @@ class ExpandRulesTest {
             "x*(1 + sqrt[3])",
             DistributeMultiplicationOverSum,
             null,
+        )
+    }
+
+    @Test
+    fun testDistributeFractionWithSumNumerator() {
+        testRule(
+            "[x + 2 / 3]",
+            DistributeConstantNumerator,
+            "[x / 3] + [2 / 3]",
+        )
+        testRule(
+            "[1 + sqrt[2] / 3]",
+            DistributeConstantNumerator,
+            null,
+        )
+        testRule(
+            "[x - 3 + y / 2]",
+            DistributeConstantNumerator,
+            "[x / 2] - [3 / 2] + [y / 2]",
+        )
+        testRule(
+            "[-sqrt[3] + 2x / 5]",
+            DistributeConstantNumerator,
+            "-[sqrt[3] / 5] + [2x / 5]",
         )
     }
 
