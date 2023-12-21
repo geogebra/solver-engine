@@ -1,5 +1,8 @@
 package methods.fractionarithmetic
+
+import engine.context.BooleanSetting
 import engine.context.Preset
+import engine.context.Setting
 import engine.methods.testMethodInX
 import methods.simplify.SimplifyPlans
 import org.junit.jupiter.api.Tag
@@ -46,5 +49,21 @@ class GmFractionsTest {
         method = SimplifyPlans.SimplifyAlgebraicExpression
         inputExpr = "[2/3]*[3/5]"
         check { toExpr = "[2/5]" }
+    }
+
+    @Test
+    fun `add fraction and non-fraction`() = testMethodInX(Preset.GMFriendly) {
+        method = SimplifyPlans.SimplifyAlgebraicExpression
+        inputExpr = "2+[1/3]"
+        check { toExpr = "[7/3]" }
+    }
+
+    @Test
+    fun `simplify polynomial with fractional coefficients`() = testMethodInX(Preset.GMFriendly) {
+        method = SimplifyPlans.SimplifyAlgebraicExpression
+        context =
+            context.addSettings(mapOf(Setting.RestrictAddingFractionsWithConstantDenominator setTo BooleanSetting.True))
+        inputExpr = "1 + [2 x / 3] + [[x ^ 2] / 2] - 3 * [[x ^ 4] / 2]"
+        check { toExpr = "-[3 / 2] [x ^ 4] + [1 / 2] [x ^ 2] + [2 / 3] x + 1" }
     }
 }

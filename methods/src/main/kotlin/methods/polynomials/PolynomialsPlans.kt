@@ -142,9 +142,12 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
 
 val expandAndSimplifier = ExpandAndSimplifier(SimplifyPlans.SimplifyAlgebraicExpression)
 
-val normalizePolynomialSteps = branchOn(Setting.CommutativeReorderInSteps) {
-    case(BooleanSetting.True, PolynomialsPlans.NormalizePolynomialInSteps)
-    case(BooleanSetting.False, PolynomialRules.NormalizePolynomial)
+val normalizePolynomialSteps = steps {
+    branchOn(Setting.CommutativeReorderInSteps) {
+        case(BooleanSetting.True, PolynomialsPlans.NormalizePolynomialInSteps)
+        case(BooleanSetting.False, PolynomialRules.NormalizePolynomial)
+    }
+    whilePossible(PolynomialRules.NormalizeMonomial)
 }
 
 private val multiplyVariablePowers = plan {

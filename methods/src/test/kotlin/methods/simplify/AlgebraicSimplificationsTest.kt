@@ -1,10 +1,14 @@
 package methods.simplify
 
+import engine.context.BooleanSetting
+import engine.context.Context
+import engine.context.Setting
 import engine.methods.SolverEngineExplanation
 import engine.methods.testMethod
 import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.general.GeneralExplanation
 import methods.integerroots.IntegerRootsExplanation
+import methods.polynomials.PolynomialsExplanation
 import methods.rationalexpressions.RationalExpressionsExplanation
 import org.junit.jupiter.api.Test
 
@@ -563,6 +567,59 @@ class AlgebraicExpressionContainingAbsoluteValue {
                 toExpr = "[abs[y + 1] ^ 3]"
                 explanation {
                     key = GeneralExplanation.CancelRootIndexAndExponent
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test simplify polynomial with fraction coefficients`() = testMethod {
+        method = SimplifyPlans.SimplifyAlgebraicExpression
+        context =
+            Context(settings = mapOf(Setting.RestrictAddingFractionsWithConstantDenominator setTo BooleanSetting.True))
+        inputExpr = "2 * [x / 3] + [[x ^ 2] / 2] + [2 [x ^ 3] / 7]"
+
+        check {
+            fromExpr = "2 * [x / 3] + [[x ^ 2] / 2] + [2 [x ^ 3] / 7]"
+            toExpr = "[2 / 7] [x ^ 3] + [1 / 2] [x ^ 2] + [2 / 3] x"
+
+            step {
+                fromExpr = "2 * [x / 3] + [[x ^ 2] / 2] + [2 [x ^ 3] / 7]"
+                toExpr = "[2 x / 3] + [[x ^ 2] / 2] + [2 [x ^ 3] / 7]"
+                explanation {
+                    key = FractionArithmeticExplanation.MultiplyAndSimplifyFractions
+                }
+            }
+
+            step {
+                fromExpr = "[2 x / 3] + [[x ^ 2] / 2] + [2 [x ^ 3] / 7]"
+                toExpr = "[2 [x ^ 3] / 7] + [[x ^ 2] / 2] + [2 x / 3]"
+                explanation {
+                    key = PolynomialsExplanation.NormalizePolynomial
+                }
+            }
+
+            step {
+                fromExpr = "[2 [x ^ 3] / 7] + [[x ^ 2] / 2] + [2 x / 3]"
+                toExpr = "[2 / 7] [x ^ 3] + [[x ^ 2] / 2] + [2 x / 3]"
+                explanation {
+                    key = PolynomialsExplanation.NormalizeMonomial
+                }
+            }
+
+            step {
+                fromExpr = "[2 / 7] [x ^ 3] + [[x ^ 2] / 2] + [2 x / 3]"
+                toExpr = "[2 / 7] [x ^ 3] + [1 / 2] [x ^ 2] + [2 x / 3]"
+                explanation {
+                    key = PolynomialsExplanation.NormalizeMonomial
+                }
+            }
+
+            step {
+                fromExpr = "[2 / 7] [x ^ 3] + [1 / 2] [x ^ 2] + [2 x / 3]"
+                toExpr = "[2 / 7] [x ^ 3] + [1 / 2] [x ^ 2] + [2 / 3] x"
+                explanation {
+                    key = PolynomialsExplanation.NormalizeMonomial
                 }
             }
         }

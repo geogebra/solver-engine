@@ -32,6 +32,11 @@ enum class PolynomialsExplanation : CategorisedMetadataKey {
     SimplifyCoefficient,
 
     /**
+     * Normalize a monomial
+     */
+    NormalizeMonomial,
+
+    /**
      * Normalize all monomials in an expression
      */
     NormalizeAllMonomials,
