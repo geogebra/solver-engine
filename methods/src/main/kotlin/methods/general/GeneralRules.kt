@@ -5,20 +5,25 @@ import engine.conditions.isDefinitelyNotPositive
 import engine.conditions.isDefinitelyNotZero
 import engine.expressions.Constants
 import engine.expressions.DivideBy
+import engine.expressions.Expression
 import engine.expressions.Minus
 import engine.expressions.PathScope
+import engine.expressions.Power
 import engine.expressions.Product
 import engine.expressions.Root
 import engine.expressions.SquareRoot
 import engine.expressions.Sum
+import engine.expressions.Variable
 import engine.expressions.absoluteValueOf
 import engine.expressions.asInteger
+import engine.expressions.equationOf
 import engine.expressions.fractionOf
 import engine.expressions.negOf
 import engine.expressions.powerOf
 import engine.expressions.productOf
 import engine.expressions.rootOf
 import engine.expressions.simplifiedNegOf
+import engine.expressions.simplifiedNegOfSum
 import engine.expressions.simplifiedPowerOf
 import engine.expressions.simplifiedProductOf
 import engine.expressions.sumOf
@@ -59,6 +64,7 @@ import engine.steps.metadata.metadata
 import engine.utility.isEven
 import engine.utility.isOdd
 import java.math.BigInteger
+import kotlin.math.abs
 import engine.expressions.PathScope as Scope
 import engine.steps.metadata.DragTargetPosition as Position
 import engine.steps.metadata.GmPathModifier as PM
@@ -82,6 +88,7 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
 
     CancelDenominator(cancelDenominator),
     FactorMinusFromSum(factorMinusFromSum),
+    FactorMinusFromSumWithAllNegativeTerms(factorMinusFromSumWithAllNegativeTerms),
     SimplifyProductOfConjugates(simplifyProductOfConjugates),
     DistributePowerOfProduct(distributePowerOfProduct),
     MultiplyExponentsUsingPowerRule(multiplyExponentsUsingPowerRule),
@@ -97,6 +104,7 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     // Powers
     SimplifyEvenPowerOfNegative(simplifyEvenPowerOfNegative),
     SimplifyOddPowerOfNegative(simplifyOddPowerOfNegative),
+    RewriteEvenPowerOfBaseAsEvenPowerOfAbsoluteValueOfBase(rewriteEvenPowerOfBaseAsEvenPowerOfAbsoluteValueOfBase),
 
     // Products of powers
     RewriteProductOfPowersWithSameBase(rewriteProductOfPowersWithSameBase),
@@ -120,8 +128,10 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     ResolveAbsoluteValueOfNonNegativeValue(resolveAbsoluteValueOfNonNegativeValue),
     ResolveAbsoluteValueOfNonPositiveValue(resolveAbsoluteValueOfNonPositiveValue),
     SimplifyAbsoluteValueOfNegatedExpression(simplifyAbsoluteValueOfNegatedExpression),
+    SimplifyEvenPowerOfAbsoluteValue(simplifyEvenPowerOfAbsoluteValue),
 
     FactorizeInteger(factorizeInteger),
+    SimplifyPlusMinusOfAbsoluteValue(simplifyPlusMinusOfAbsoluteValue),
 }
 
 private val removeUnitaryCoefficient = rule {
@@ -298,7 +308,7 @@ private val moveSignOfNegativeFactorOutOfProduct =
                     negf, // -x
                     negOf(product.substitute(get(f))), // -2x
                 ),
-                gmAction = drag(negf, PM.Operator, product.childPatterns[0], PM.Parens, Position.LeftOf),
+                gmAction = drag(negf, PM.Operator, get(product).firstChild, null),
                 explanation = metadata(Explanation.MoveSignOfNegativeFactorOutOfProduct),
             )
         }
@@ -397,7 +407,7 @@ private val cancelDenominator =
     }
 
 /** -2-3-4 --> -(2+3+4) */
-private val factorMinusFromSum =
+private val factorMinusFromSumWithAllNegativeTerms =
     rule {
         val sum = condition(sumContaining()) { expression ->
             expression.children.all { it is Minus }
@@ -416,6 +426,67 @@ private val factorMinusFromSum =
                     PM.Operator,
                     Position.LeftOf,
                 ),
+                explanation = metadata(Explanation.FactorMinusFromSumWithAllNegativeTerms),
+            )
+        }
+    }
+
+/**
+ * A comparator for [Expression] objects that orders them based on a non-negative "pseudo degree."
+ * The "pseudo degree" extends the concept of the polynomial degree to non-polynomial expressions,
+ * following certain rules.
+ *
+ * Comparator priority:
+ * - Non-constant expressions take precedence over constant expressions.
+ * - Expressions are subsequently ordered by their non-negative pseudo degree.
+ * - Ties are resolved by re-evaluating expressions' pseudo degrees, considering constants to have a non-zero degree.
+ */
+val pseudoDegreeComparator = compareBy<Expression>(
+    { !it.isConstant() },
+    { it.pseudoDegree() },
+    { it.pseudoDegree(constantIsZeroDegree = false) },
+)
+
+/**
+ * Calculates the non-negative pseudo degree of an [Expression] instance.
+ *
+ * The pseudo degree is determined by the type of the expression and its components:
+ * - For constants, when [constantIsZeroDegree] is true, the degree is 0.0.
+ * - For [Minus] expressions, it is the pseudo degree of the argument.
+ * - [SquareRoot] expressions are fixed at 0.5.
+ * - [Root] expressions are the reciprocal of the radicand's absolute double value.
+ * - Variables have a degree of 1.0.
+ * - [Power] expressions combine the base's pseudo degree with the exponent's absolute double value.
+ * - [Product] expressions sum the pseudo degrees of their children.
+ * - [Sum] expressions use the maximum pseudo degree among their children.
+ * - Other expression types default to 0.0.
+ *
+ * @param constantIsZeroDegree Boolean flag indicating whether to consider the degree of constants as zero(default true)
+ * @return The non-negative pseudo degree as a [Double].
+ */
+@Suppress("MagicNumber")
+private fun Expression.pseudoDegree(constantIsZeroDegree: Boolean = true): Double = when {
+    this.isConstant() && constantIsZeroDegree -> 0.0
+    this is Minus -> this.argument.pseudoDegree(constantIsZeroDegree)
+    this is SquareRoot -> 0.5
+    this is Root -> 1.0 / abs(this.radicand.doubleValue)
+    this is Variable -> 1.0
+    this is Power -> abs(this.base.pseudoDegree(constantIsZeroDegree)) * abs(this.exponent.doubleValue)
+    this is Product -> this.children.sumOf { it.pseudoDegree(constantIsZeroDegree) }
+    this is Sum -> this.children.maxOf { it.pseudoDegree(constantIsZeroDegree) }
+    else -> 0.0
+}
+
+private val factorMinusFromSum =
+    rule {
+        val sum = condition(sumContaining()) { expression ->
+            expression.children.maxWith(pseudoDegreeComparator) is Minus
+        }
+
+        onPattern(sum) {
+            val toExpr = negOf(simplifiedNegOfSum(get(sum)))
+            ruleResult(
+                toExpr = transform(sum, toExpr),
                 explanation = metadata(Explanation.FactorMinusFromSum),
             )
         }
@@ -525,8 +596,6 @@ private val rewritePowerAsProduct =
         val power = powerOf(base, exponent)
 
         onPattern(power) {
-            // We want to prefer direct evaluation over 2^3 ==> 2*2*2
-            if (context.gmFriendly) return@onPattern null
             ruleResult(
                 toExpr = productOf(List(getValue(exponent).toInt()) { distribute(base) }),
                 gmAction = edit(power),
@@ -682,6 +751,28 @@ private val simplifyOddPowerOfNegative = rule {
     }
 }
 
+/**
+ * `[y^k]` --> `[abs[y] ^ k]`
+ */
+private val rewriteEvenPowerOfBaseAsEvenPowerOfAbsoluteValueOfBase = rule {
+    val base = condition { it.signOf() == Sign.UNKNOWN }
+    val exponent = integerCondition(SignedIntegerPattern()) { it.isEven() }
+    val power = powerOf(base, exponent)
+
+    onPattern(power) {
+        val fa = substitute(base, "a")
+        val fExponent = substitute(exponent, "2k")
+        ruleResult(
+            toExpr = transform(power, powerOf(absoluteValueOf(get(base)), get(exponent))),
+            formula = equationOf(
+                powerOf(fa, fExponent),
+                powerOf(absoluteValueOf(fa), fExponent),
+            ),
+            explanation = metadata(Explanation.RewriteEvenPowerOfBaseAsEvenPowerOfAbsoluteValueOfBase),
+        )
+    }
+}
+
 private val rewriteProductOfPowersWithSameBase =
     rule {
         val base = AnyPattern()
@@ -695,6 +786,7 @@ private val rewriteProductOfPowersWithSameBase =
             val exp1Value = get(power1.exponent)
             val exp2Value = get(power2.exponent)
 
+            // To avoid combining 3 * [3 ^ [1 / 2]]
             val addExponents = (!get(base).isConstant()) ||
                 (
                     (exp1Value != Constants.One || exp2Value.doubleValue !in 0.0..1.0) &&
@@ -852,17 +944,22 @@ private val rewriteProductOfPowersWithInverseFractionBase =
         val product = productContaining(power1, power2)
 
         onPattern(product) {
-            ruleResult(
-                toExpr = product.substitute(
-                    get(power1),
-                    powerOf(
-                        fractionOf(move(value1), move(value2)),
-                        negOf(move(power2.exponent)),
+            if (get(power1) is Power || get(power2) is Power) {
+                ruleResult(
+                    toExpr = product.substitute(
+                        get(power1),
+                        powerOf(
+                            fractionOf(move(value1), move(value2)),
+                            negOf(move(power2.exponent)),
+                        ),
                     ),
-                ),
-                gmAction = edit(power2),
-                explanation = metadata(Explanation.RewriteProductOfPowersWithInverseFractionBase),
-            )
+                    gmAction = edit(power2),
+                    explanation = metadata(Explanation.RewriteProductOfPowersWithInverseFractionBase),
+                )
+            } else {
+                // don't introduce powers and exponents if there were none, e.g. [2/3]*[3/2]
+                null
+            }
         }
     }
 
@@ -916,10 +1013,10 @@ private val rewriteIntegerOrderRootAsPower =
                 ),
                 gmAction = when (get(root)) {
                     is Root -> {
-                        drag(root, PM.RootIndex, root, null, Position.RightOf)
+                        drag(root, PM.RootIndex, root.radicand)
                     }
                     is SquareRoot -> {
-                        drag(root, PM.RootIndex, root, null, Position.RightOf)
+                        drag(root, PM.RootIndex, root.radicand)
                     }
                     else -> noGmSupport()
                 },
@@ -981,7 +1078,7 @@ private val cancelRootIndexAndExponent =
 
         onPattern(root) {
             if (get(commonExponent).asInteger()!!.isEven() &&
-                get(base).signOf() != Sign.POSITIVE
+                !get(base).signOf().implies(Sign.NON_NEGATIVE) && !(get(base).doubleValue > 0)
             ) {
                 return@onPattern null
             }
@@ -1011,6 +1108,7 @@ private val resolveAbsoluteValueOfZero = rule {
     onPattern(absoluteValue) {
         ruleResult(
             toExpr = transformTo(absoluteValue, get(argument)),
+            gmAction = tap(argument),
             explanation = metadata(Explanation.ResolveAbsoluteValueOfZero),
         )
     }
@@ -1025,6 +1123,7 @@ private val resolveAbsoluteValueOfNonNegativeValue = rule {
     onPattern(absoluteValue) {
         ruleResult(
             toExpr = transformTo(absoluteValue, get(argument)),
+            gmAction = tap(absoluteValue, PM.OpenParens),
             explanation = metadata(Explanation.ResolveAbsoluteValueOfNonNegativeValue),
         )
     }
@@ -1045,6 +1144,7 @@ private val resolveAbsoluteValueOfNonPositiveValue = rule {
 
         ruleResult(
             toExpr = transformTo(absoluteValue, positiveArgumentValue),
+            gmAction = tap(absoluteValue, PM.OpenParens),
             explanation = metadata(Explanation.ResolveAbsoluteValueOfNonPositiveValue),
         )
     }
@@ -1064,7 +1164,22 @@ private val simplifyAbsoluteValueOfNegatedExpression = rule {
                 mapOf(negExpr to listOf(PathScope.Operator)),
                 absoluteValueOf(get(expr)),
             ),
+            gmAction = tap(negExpr, PM.Operator),
             explanation = metadata(Explanation.SimplifyAbsoluteValueOfNegatedExpression),
+        )
+    }
+}
+
+private val simplifyEvenPowerOfAbsoluteValue = rule {
+    val expr = AnyPattern()
+    val absoluteValue = absoluteValueOf(expr)
+    val exponent = integerCondition(SignedIntegerPattern()) { it.isEven() }
+    val power = powerOf(absoluteValue, exponent)
+
+    onPattern(power) {
+        ruleResult(
+            toExpr = transform(power, powerOf(get(expr), get(exponent))),
+            explanation = metadata(Explanation.SimplifyEvenPowerOfAbsoluteValue),
         )
     }
 }
@@ -1075,7 +1190,21 @@ private val factorizeInteger = rule {
         val primeFactorization = productOf(productOfPrimeFactors(integer))
         ruleResult(
             toExpr = transform(integer, primeFactorization),
+            gmAction = edit(integer),
             explanation = metadata(Explanation.FactorizeInteger),
+        )
+    }
+}
+
+private val simplifyPlusMinusOfAbsoluteValue = rule {
+    val expr = AnyPattern()
+    val absoluteValue = absoluteValueOf(expr)
+    val plusMinusTerm = plusMinusOf(absoluteValue)
+
+    onPattern(plusMinusTerm) {
+        ruleResult(
+            toExpr = transform(plusMinusTerm, engine.expressions.plusMinusOf(get(expr))),
+            explanation = metadata(Explanation.SimplifyPlusMinusOfAbsoluteValue),
         )
     }
 }

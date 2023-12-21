@@ -21,6 +21,7 @@ import engine.methods.plan
 import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.applyAfterMaybeExtractingMinus
 import engine.methods.stepsproducers.steps
+import engine.methods.stepsproducers.stepsWithMinDepth
 import engine.methods.taskSet
 import engine.patterns.AnyPattern
 import engine.patterns.ArbitraryVariablePattern
@@ -42,9 +43,9 @@ import engine.patterns.sumOf
 import engine.steps.metadata.metadata
 import methods.expand.ExpandRules
 import methods.integerarithmetic.IntegerArithmeticRules
-import methods.polynomials.PolynomialRules
 import methods.polynomials.expandAndSimplifier
-import methods.polynomials.polynomialSimplificationSteps
+import methods.polynomials.normalizePolynomialSteps
+import methods.simplify.algebraicSimplificationSteps
 import java.math.BigInteger
 
 enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
@@ -60,6 +61,10 @@ enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
                 is Product -> exp.children.last()
                 else -> exp
             }
+
+            // 77x + 110y + 165z
+            // 11(7x + 5(2y + 3z))
+            // 11(7x + 10y + 15z)
 
             steps {
                 optionally(FactorRules.FactorNegativeSignOfLeadingCoefficient)
@@ -112,7 +117,7 @@ enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
             steps {
                 optionally(FactorRules.RewriteSumAndDifferenceOfCubes)
                 apply(FactorRules.ApplyDifferenceOfCubesFormula)
-                whilePossible(polynomialSimplificationSteps)
+                optionally(algebraicSimplificationSteps)
             }
         },
     ),
@@ -124,7 +129,7 @@ enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
             steps {
                 optionally(FactorRules.RewriteSumAndDifferenceOfCubes)
                 apply(FactorRules.ApplySumOfCubesFormula)
-                whilePossible(polynomialSimplificationSteps)
+                optionally(algebraicSimplificationSteps)
             }
         },
     ),
@@ -216,6 +221,11 @@ enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
                 integerCondition(squaredTerm.exponent, baseTerm.exponent) { a, b -> a == BigInteger.TWO * b },
             )
 
+            val solveSystemSteps = steps {
+                optionally { deeply(IntegerArithmeticRules.EvaluateIntegerProductAndDivision) }
+                apply(FactorRules.SolveSumProductDiophantineEquationSystemByGuessing)
+            }
+
             tasks {
                 val squaredCoefficient = squaredTerm.ptn.getCoefficient()
                 if (squaredCoefficient == Constants.One) return@tasks null
@@ -230,11 +240,9 @@ enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
                             simplifiedProductOf(squaredCoefficient, move(constantTerm)),
                         ),
                     ),
+                    stepsProducer = solveSystemSteps,
                     explanation = metadata(Explanation.SetUpAndSolveEquationSystemForNonMonicTrinomial),
-                ) {
-                    optionally { deeply(IntegerArithmeticRules.EvaluateIntegerProductAndDivision) }
-                    apply(FactorRules.SolveSumProductDiophantineEquationSystemByGuessing)
-                } ?: return@tasks null
+                ) ?: return@tasks null
 
                 val solution1 = solvedSystem.result.firstChild.secondChild
                 val solution2 = solvedSystem.result.secondChild.secondChild
@@ -308,14 +316,14 @@ private val factorizeSumByFactoringTermsSteps: StepsProducer = steps {
     }
     apply(factorizeSumSteps)
     applyToChildren(factorizationSteps)
-    whilePossible(polynomialSimplificationSteps)
+    optionally(algebraicSimplificationSteps)
 }
 
 private val factorizeSumByExpandingTermsSteps: StepsProducer = steps {
     check { it is Sum }
     whilePossible {
         firstOf {
-            option(polynomialSimplificationSteps)
+            option(algebraicSimplificationSteps)
             option { deeply(expandAndSimplifier.steps, deepFirst = true) }
         }
     }
@@ -339,7 +347,7 @@ private val factorizeMinusSteps: StepsProducer = steps {
             check { it is Minus }
             applyToKind<Minus>(factorizationSteps) { it.argument }
             // to tidy up things like -(-(x+1)^2)
-            whilePossible(polynomialSimplificationSteps)
+            optionally(algebraicSimplificationSteps)
         }
     }
 }
@@ -348,26 +356,24 @@ private val factorizeProductSteps: StepsProducer = steps {
     check { it is Product }
     applyToChildren(factorizationSteps, atLeastOne = true)
     // to tidy up things like (x+1)^2 (x+2) (x+1)^3
-    whilePossible(polynomialSimplificationSteps)
+    optionally(algebraicSimplificationSteps)
 }
 
 private val factorizePowerSteps: StepsProducer = steps {
     check { it is Power }
     applyToKind<Power>(factorizationSteps) { it.base }
     // to tidy up things like (2(x + 1))^2
-    whilePossible(polynomialSimplificationSteps)
+    optionally(algebraicSimplificationSteps)
 }
 
-val factorizationSteps: StepsProducer = steps {
+// As the options call these steps recursively, we declare the minDepth
+val factorizationSteps: StepsProducer = stepsWithMinDepth(1) {
     firstOf {
         option(factorizeSumByFactoringTermsSteps)
         option(factorizeSumByExpandingTermsSteps)
         option(factorizeMinusSteps)
         option(factorizeProductSteps)
         option(factorizePowerSteps)
-
-        // TODO figure out if there are problems with removing this option
-        // option { whilePossible(polynomialSimplificationSteps) }
     }
 }
 
@@ -378,7 +384,7 @@ val factorSquareOfBinomial = plan {
         optionally(FactorRules.FactorNegativeSignOfLeadingCoefficient)
 
         applyAfterMaybeExtractingMinus {
-            optionally(PolynomialRules.NormalizePolynomial)
+            optionally(normalizePolynomialSteps)
             withNewLabels {
                 optionally(FactorRules.RewriteSquareOfBinomial)
                 apply(FactorRules.ApplySquareOfBinomialFormula)
@@ -391,7 +397,7 @@ val factorCubeOfBinomial = plan {
     explanation = Explanation.FactorCubeOfBinomial
 
     steps {
-        optionally(PolynomialRules.NormalizePolynomial)
+        optionally(normalizePolynomialSteps)
         withNewLabels {
             optionally(FactorRules.RewriteCubeOfBinomial)
             apply(FactorRules.ApplyCubeOfBinomialFormula)

@@ -1,28 +1,31 @@
 <script setup lang="ts">
 import type {
   ApiMathFormat,
-  SolverContext,
+  GraphResponseJson,
+  GraphResponseSolver,
   PlanSelectionJson,
   PlanSelectionSolver,
   ServerErrorResponse,
+  SolverContext,
   TransformationJson,
   TransformationSolver,
 } from '@geogebra/solver-sdk';
 import * as solverSdk from '@geogebra/solver-sdk';
+import { jsonToTree, treeToGgb, treeToLatex } from '@geogebra/solver-sdk';
 import {
-  gmFriendly,
-  params,
-  preferDecimals,
-  solutionFormat,
-  showThroughSteps,
-  hideWarnings,
-  showPedanticSteps,
-  showCosmeticSteps,
-  showInvisibleChangeSteps,
-  showTranslationKeys,
-  jsonFormat,
   colorScheme,
   demoMode,
+  hideWarnings,
+  jsonFormat,
+  params,
+  presets,
+  settings,
+  showCosmeticSteps,
+  showInvisibleChangeSteps,
+  showPedanticSteps,
+  showThroughSteps,
+  showTranslationKeys,
+  solutionFormat,
 } from './settings';
 import TransformationComponent from './transformation-component.vue';
 import PlanSelections from './plan-selections.vue';
@@ -30,23 +33,10 @@ import TestSuggestion from './test-suggestion.vue';
 import { fetchDefaultTranslations, translationsFetched } from './translations';
 import { computed, onMounted, reactive, ref, watch, watchEffect } from 'vue';
 import { computedAsync } from '@vueuse/core';
+import GgbApplet, { GgbAppletApi } from './GgbApplet.vue';
 
 const jsonFormatSpecifier: ApiMathFormat = 'json2';
 
-const getAPIBaseURL = (): string => {
-  // This magic number for the port is dictated in the `poker-dev` script in package.json.
-  const runningLocallyViaVite = location.port === '4173';
-  if (runningLocallyViaVite) {
-    return 'http://localhost:8080/api/v1';
-  }
-  // Poker can be served at
-  // - <base>/poker.html (legacy)
-  // - <base>/poker
-  // - <base>/poker/index.html
-  return location.pathname.replace(/\/(poker\.html|poker\/?|poker\/index\.html)$/, '/api/v1');
-};
-
-solverSdk.api.baseUrl = getAPIBaseURL();
 const mainPokerURL = 'https://solver.geogebra.net/main/poker/index.html';
 
 const plans = computedAsync(() => solverSdk.api.listPlans());
@@ -55,13 +45,15 @@ const strategies = computedAsync(() => solverSdk.api.listStrategies());
 
 /** Map of strategy category to preferred strategy. If no value is set, then nothing was
  * selected for that category. */
-const mapOfCategoryToSelectedStrategy = reactive<{ [category: string]: string }>({});
+const mapOfCategoryToSelectedStrategy = reactive<{
+  [category: string]: string;
+}>({});
 // populate that map with the values from the URL
 for (const strategyChoice of [params.strategy || []].flat()) {
   const [category, choice] = strategyChoice.split(':');
   mapOfCategoryToSelectedStrategy[category] = choice;
 }
-// watcher updates the url URL when that map changes
+// watcher updates the URL when that map changes
 watch(
   mapOfCategoryToSelectedStrategy,
   () => {
@@ -74,6 +66,7 @@ watch(
 
 const strategySectionOpen = ref<boolean>(!!params.strategy);
 const responseSourceDetailsOpen = ref<boolean>(false);
+
 const textInTheMathInputTextbox = ref<string>(params.input);
 /** Change this to reactively trigger re-querying Solver, since the solver backend might
  * have changed. */
@@ -88,20 +81,18 @@ const submitForm = () => {
 };
 
 const solverContext = computed(() => {
-  const ret: SolverContext = {
-    gmFriendly: gmFriendly.value,
-    preferDecimals: preferDecimals.value,
-  };
-  if (params.curriculum) {
-    ret.curriculum = params.curriculum;
-  }
+  const ret: SolverContext = {};
   if (params.precision) {
     ret.precision = parseInt(params.precision);
   }
   if (params.solutionVariable) {
     ret.solutionVariable = params.solutionVariable;
   }
+  if (params.preset) {
+    ret.presets = [params.preset];
+  }
   const preferredStrategies = { ...mapOfCategoryToSelectedStrategy };
+  console.log(preferredStrategies);
   for (const category in preferredStrategies) {
     if (preferredStrategies[category] === '') {
       delete preferredStrategies[category];
@@ -110,6 +101,14 @@ const solverContext = computed(() => {
   if (Object.keys(preferredStrategies).length > 0) {
     ret.preferredStrategies = preferredStrategies;
   }
+
+  ret.settings = {};
+  for (const setting of settings.value || []) {
+    if (params[setting.name]) {
+      ret.settings[setting.name] = params[setting.name];
+    }
+  }
+
   return ret;
 });
 
@@ -133,6 +132,18 @@ const resultJsonFormat = computedAsync<
   // Invalid math syntax errors are not thrown errors, so they are not handled by this
   { onError: (error) => console.error(error) },
 );
+
+const graphSolverFormat = computedAsync<GraphResponseSolver | ServerErrorResponse>(async () => {
+  const input = params.input;
+  const ret = await solverSdk.api.createGraph(input, 'solver', solverContext.value);
+  return ret;
+});
+
+const graphJsonFormat = computedAsync<GraphResponseJson | ServerErrorResponse>(async () => {
+  const input = params.input;
+  const ret = await solverSdk.api.createGraph(input, 'json2', solverContext.value);
+  return ret;
+});
 
 /** Use this instead of `params.plan === 'selectPlans'` because `resultJsonFormat` might
  * be the wrong format, temporarily, while we are fetching a new format. */
@@ -203,12 +214,68 @@ const submitToMainButtonClicked = () => {
   window.open(url.toString(), '_blank');
 };
 
-const calculateLabelForStrategyCategory = (category: string) => {
+const camelCaseToLabel = (category: string) => {
   const categoryName = category.replace(/(.)([A-Z])/g, '$1 $2').toLowerCase();
   return categoryName.charAt(0).toUpperCase() + categoryName.slice(1);
 };
 
 const inputSyntaxHelpSection = ref<HTMLDetailsElement | null>(null);
+
+let applet = ref<GgbAppletApi | undefined>(undefined);
+
+function onLoad(api: GgbAppletApi) {
+  console.log('Defining applet');
+  applet.value = api;
+}
+
+watch([graphJsonFormat, applet], () => {
+  // Redraw the graph
+  const graph = graphJsonFormat.value;
+  const ggbApi = applet.value;
+  if (!ggbApi || !graph) {
+    return;
+  }
+  ggbApi.newConstruction();
+  if ('error' in graph) {
+    return;
+  }
+  const coordinateSystem = graph.coordinateSystem;
+  let varSub: Record<string, string> = {};
+  if (coordinateSystem.type === 'Cartesian2D') {
+    ggbApi.setCoordSystem(
+      coordinateSystem.horizontalAxis.minValue,
+      coordinateSystem.horizontalAxis.maxValue,
+      coordinateSystem.verticalAxis.minValue,
+      coordinateSystem.verticalAxis.maxValue,
+    );
+    ggbApi.setAxisLabels(
+      1,
+      coordinateSystem.horizontalAxis.label,
+      coordinateSystem.verticalAxis.label,
+      '',
+    );
+    varSub[coordinateSystem.horizontalAxis.variable] = 'x';
+    varSub[coordinateSystem.verticalAxis.variable] = 'y';
+  }
+  const colors = [
+    [200, 20, 20],
+    [10, 120, 10],
+    [10, 10, 100],
+  ];
+  for (const [i, obj] of graph.objects.entries()) {
+    const exprTree = jsonToTree(obj.expression);
+    const color = colors[i % colors.length];
+    ggbApi.evalCommand(`${obj.label}:${treeToGgb(exprTree, varSub)}`);
+    if (obj.label) {
+      ggbApi.setColor(obj.label, color[0], color[1], color[2]);
+      ggbApi.setCaption(obj.label, `$${treeToLatex(exprTree)}$`);
+      ggbApi.setLabelStyle(obj.label, 3);
+      ggbApi.setLabelVisible(obj.label, true);
+    }
+  }
+  // applet.value.showAllObjects();
+});
+
 onMounted(() => {
   window.renderMathInElement?.(inputSyntaxHelpSection.value!);
 });
@@ -216,6 +283,25 @@ onMounted(() => {
 
 <template>
   <form v-show="!demoMode" class="display-options">
+    <h3>Engine Options</h3>
+    <label for="presets">Preset</label>
+    <select id="presets" v-model="params.preset">
+      <option name="-" value="" selected>-</option>
+      <option v-for="preset in presets" :value="preset.name">
+        {{ preset.name }}
+      </option>
+    </select>
+    <br />
+    <template v-for="setting of settings ?? []" :key="setting">
+      <select :id="setting.name" v-model="params[setting.name]">
+        <option name="-" value="" selected>-</option>
+        <option v-for="value in setting.values" :value="value">
+          {{ value }}
+        </option>
+      </select>
+      <label :for="setting.name">{{ camelCaseToLabel(setting.name) }}</label>
+      <br />
+    </template>
     <h3>Display Options</h3>
     <label for="colorScheme">Colors</label>
     <select id="colorScheme" v-model="colorScheme">
@@ -231,22 +317,22 @@ onMounted(() => {
       <option value="sets">Sets</option>
     </select>
     <br />
-    <input id="showThroughSteps" type="checkbox" v-model="showThroughSteps" />
+    <input id="showThroughSteps" v-model="showThroughSteps" type="checkbox" />
     <label for="showThroughSteps">Show through steps</label>
     <br />
-    <input id="hideWarnings" type="checkbox" v-model="hideWarnings" />
+    <input id="hideWarnings" v-model="hideWarnings" type="checkbox" />
     <label for="hideWarnings">Hide warnings</label>
     <br />
-    <input id="showPedanticSteps" type="checkbox" v-model="showPedanticSteps" />
+    <input id="showPedanticSteps" v-model="showPedanticSteps" type="checkbox" />
     <label for="showPedanticSteps">Show pedantic steps</label>
     <br />
-    <input id="showCosmeticSteps" type="checkbox" v-model="showCosmeticSteps" />
+    <input id="showCosmeticSteps" v-model="showCosmeticSteps" type="checkbox" />
     <label for="showCosmeticSteps">Show cosmetic steps</label>
     <br />
-    <input id="showInvisibleChangeSteps" type="checkbox" v-model="showInvisibleChangeSteps" />
+    <input id="showInvisibleChangeSteps" v-model="showInvisibleChangeSteps" type="checkbox" />
     <label for="showInvisibleChangeSteps">Show InvisibleChange steps</label>
     <br />
-    <input id="showTranslationKeys" type="checkbox" v-model="showTranslationKeys" />
+    <input id="showTranslationKeys" v-model="showTranslationKeys" type="checkbox" />
     <label for="showTranslationKeys">Show translation keys</label>
   </form>
 
@@ -327,12 +413,6 @@ onMounted(() => {
   page navigation when a form is submitted. -->
   <form v-show="!demoMode" @submit.prevent="submitForm">
     <p>
-      <label for="curriculumSelect">Curriculum</label>
-      <select id="curriculumSelect" v-model="params.curriculum">
-        <option value="" selected>Default</option>
-        <option value="US">US</option>
-        <option value="EU">EU</option>
-      </select>
       <label for="precisionSelect">Precision</label>
       <select id="precisionSelect" v-model="params.precision">
         <option value="2">2 d.p.</option>
@@ -342,12 +422,7 @@ onMounted(() => {
         <option value="6">6 d.p.</option>
       </select>
       <label for="solutionVariable">Solution variable</label>
-      <input type="text" id="solutionVariable" v-model="params.solutionVariable" size="1" />
-      <input id="preferDecimals" type="checkbox" v-model="preferDecimals" />
-      <label for="preferDecimals">Prefer decimals</label>
-      <!-- GM stands for Graspable Math -->
-      <input id="gmFriendlyCheckbox" type="checkbox" v-model="gmFriendly" />
-      <label for="gmFriendlyCheckbox">GM friendly</label>
+      <input id="solutionVariable" v-model="params.solutionVariable" type="text" size="1" />
     </p>
     <p>
       <label for="plansSelect">Plan</label>
@@ -360,11 +435,11 @@ onMounted(() => {
       <summary>Strategies</summary>
       <p v-for="[category, strategyList] in Object.entries(strategies ?? {})" :key="category">
         <label :for="`${category}Select`">
-          {{ calculateLabelForStrategyCategory(category) }}
+          {{ camelCaseToLabel(category) }}
         </label>
         <select
-          v-model="mapOfCategoryToSelectedStrategy[category]"
           :id="`${category}Select`"
+          v-model="mapOfCategoryToSelectedStrategy[category]"
           :name="category"
         >
           <option name="-" value="" selected>-</option>
@@ -377,13 +452,13 @@ onMounted(() => {
     <p>
       <label for="input">Input</label>
       <input
-        type="text"
         id="input"
         v-model="textInTheMathInputTextbox"
+        type="text"
         placeholder="Expression"
         size="30"
       />
-      <input type="submit" value="Submit" v-if="!autoSubmissionMode" />
+      <input v-if="!autoSubmissionMode" type="submit" value="Submit" />
       <input
         v-if="versionInfo && versionInfo.deploymentName !== 'main'"
         type="button"
@@ -393,39 +468,67 @@ onMounted(() => {
     </p>
   </form>
 
-  <p v-if="translationsFetched">
-    <template v-if="!params.input"></template>
-    <template v-else-if="!resultJsonFormat">Fetching…</template>
-    <template v-else-if="'error' in resultJsonFormat">
-      Error: {{ resultJsonFormat.error }}<br />
-      Message: {{ resultJsonFormat.message }}
-    </template>
-    <PlanSelections
-      v-else-if="resultJsonFormatIsAListOfPlans"
-      :solverResponse="(resultJsonFormat as PlanSelectionJson[])"
-    ></PlanSelections>
-    <template v-else>
-      <TransformationComponent
-        :transformation="(resultJsonFormat as TransformationJson)"
-        :depth="1"
-      ></TransformationComponent>
-      <TestSuggestion
-        :transformation="(resultJsonFormat as TransformationJson)"
-        :method-id="params.plan"
-      ></TestSuggestion>
-    </template>
-  </p>
+  <details open>
+    <summary>Response</summary>
+    <p v-if="translationsFetched">
+      <template v-if="!params.input"></template>
+      <template v-else-if="!resultJsonFormat">Fetching…</template>
+      <template v-else-if="'error' in resultJsonFormat">
+        Error: {{ resultJsonFormat.error }}<br />
+        Message: {{ resultJsonFormat.message }}
+      </template>
+      <PlanSelections
+        v-else-if="resultJsonFormatIsAListOfPlans"
+        :solver-response="(resultJsonFormat as PlanSelectionJson[])"
+      ></PlanSelections>
+      <template v-else>
+        <TransformationComponent
+          :transformation="(resultJsonFormat as TransformationJson)"
+          :depth="1"
+        ></TransformationComponent>
+        <TestSuggestion
+          :transformation="(resultJsonFormat as TransformationJson)"
+          :method-id="params.plan"
+        ></TestSuggestion>
+      </template>
+    </p>
+  </details>
+
   <details
     v-show="!demoMode"
     :open="responseSourceDetailsOpen"
     @toggle="responseSourceDetailsOpen = !responseSourceDetailsOpen"
   >
     <summary>Response Source</summary>
-    <input id="jsonFormatCheckbox" type="checkbox" v-model="jsonFormat" />
+    <input id="jsonFormatCheckbox" v-model="jsonFormat" type="checkbox" />
     <label for="jsonFormatCheckbox">JSON Format</label>
     <pre id="source">{{
       JSON.stringify(jsonFormat ? resultJsonFormat : resultSolverFormat, null, 4)
     }}</pre>
+  </details>
+  <details>
+    <summary>Graph</summary>
+    <div id="applet">
+      <GgbApplet
+        :material-id="''"
+        :settings="{
+          appName: 'classic',
+          showAlgebraInput: false,
+          perspective: 'G',
+          height: 600,
+          width: 600,
+          enableLabelDrags: true,
+          enableShiftDragZoom: true,
+          scaleContainerClass: null, // If we scale, firefox thinks the scale is 0
+          allowUpscale: false, // We want width and height to really be 600
+        }"
+        @onLoad="onLoad"
+      />
+    </div>
+  </details>
+  <details v-show="!demoMode">
+    <summary>Graph Source</summary>
+    <pre>{{ JSON.stringify(graphSolverFormat, null, 4) }}</pre>
   </details>
 </template>
 

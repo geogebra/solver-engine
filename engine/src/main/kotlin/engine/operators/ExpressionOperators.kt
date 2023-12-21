@@ -1,6 +1,7 @@
 package engine.operators
 
 import engine.expressions.Constants
+import engine.expressions.TrigonometricExpression
 import engine.utility.RecurringDecimal
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -242,7 +243,7 @@ internal enum class UnaryExpressionOperator(override val precedence: Int) : Unar
         override fun latexString(ctx: RenderContext, child: LatexRenderable) = "\\log ${child.toLatexString(ctx)}"
         override fun eval(operand: Double) = log10(operand)
     },
-    AbsoluteValue(FUNCTION_LIKE_PRECEDENCE) {
+    AbsoluteValue(MAX_PRECEDENCE) {
         override fun childAllowed(op: Operator) = true
         override fun <T> readableString(child: T) = "abs[$child]"
         override fun latexString(ctx: RenderContext, child: LatexRenderable) =
@@ -262,43 +263,73 @@ internal enum class UnaryExpressionOperator(override val precedence: Int) : Unar
     override fun eval(children: List<Double>) = eval(children[0])
 }
 
-internal enum class TrigonometricFunctionOperator : UnaryOperator, ExpressionOperator {
-    Sin { override fun eval(operand: Double) = sin(operand) },
-    Cos { override fun eval(operand: Double) = cos(operand) },
-    Tan { override fun eval(operand: Double) = tan(operand) },
-    Arcsin { override fun eval(operand: Double) = asin(operand) },
-    Arccos { override fun eval(operand: Double) = acos(operand) },
-    Arctan { override fun eval(operand: Double) = atan(operand) },
-    Sec { override fun eval(operand: Double) = 1 / cos(operand) },
-    Csc { override fun eval(operand: Double) = 1 / sin(operand) },
-    Cot { override fun eval(operand: Double) = 1 / tan(operand) },
-    Arcsec { override fun eval(operand: Double) = acos(1 / operand) },
-    Arccsc { override fun eval(operand: Double) = asin(1 / operand) },
-    Arccot { override fun eval(operand: Double) = atan(1 / operand) },
-    Sinh { override fun eval(operand: Double) = sinh(operand) },
-    Cosh { override fun eval(operand: Double) = cosh(operand) },
-    Tanh { override fun eval(operand: Double) = tanh(operand) },
-    Arsinh { override fun eval(operand: Double) = asinh(operand) },
-    Arcosh { override fun eval(operand: Double) = acosh(operand) },
-    Artanh { override fun eval(operand: Double) = atanh(operand) },
-    Sech { override fun eval(operand: Double) = 1 / cosh(operand) },
-    Csch { override fun eval(operand: Double) = 1 / sinh(operand) },
-    Coth { override fun eval(operand: Double) = 1 / tanh(operand) },
-    Arsech { override fun eval(operand: Double) = acosh(1 / operand) },
-    Arcsch { override fun eval(operand: Double) = asinh(1 / operand) },
-    Arcoth { override fun eval(operand: Double) = atanh(1 / operand) },
+enum class TrigonometricFunctionType(
+    val text: String,
+    val evalFunc: (Double) -> Double,
+    val getInv: () -> TrigonometricFunctionType,
+) {
+    Sin("sin", ::sin, { Arcsin }),
+    Cos("cos", ::cos, { Arccos }),
+    Tan("tan", ::tan, { Arctan }),
+    Arcsin("arcsin", ::asin, { Sin }),
+    Arccos("arccos", ::acos, { Cos }),
+    Arctan("arctan", ::atan, { Tan }),
+    Sec("sec", { 1 / cos(it) }, { Arcsec }),
+    Csc("csc", { 1 / sin(it) }, { Arccsc }),
+    Cot("cot", { 1 / tan(it) }, { Arccot }),
+    Arcsec("arcsec", { acos(1 / it) }, { Sec }),
+    Arccsc("arccsc", { asin(1 / it) }, { Csc }),
+    Arccot("arccot", { atan(1 / it) }, { Cot }),
+    Sinh("sinh", ::sinh, { Arsinh }),
+    Cosh("cosh", ::cosh, { Arcosh }),
+    Tanh("tanh", ::tanh, { Artanh }),
+    Arsinh("arsinh", ::asinh, { Sinh }),
+    Arcosh("arcosh", ::acosh, { Cosh }),
+    Artanh("artanh", ::atanh, { Tanh }),
+    Sech("sech", { 1 / cosh(it) }, { Arsech }),
+    Csch("csch", { 1 / sinh(it) }, { Arcsch }),
+    Coth("coth", { 1 / tanh(it) }, { Arcoth }),
+    Arsech("arsech", { acosh(1 / it) }, { Sech }),
+    Arcsch("arcsch", { asinh(1 / it) }, { Csch }),
+    Arcoth("arcoth", { atanh(1 / it) }, { Coth }),
     ;
+
+    val inverse: TrigonometricFunctionType get() = getInv()
+    fun eval(x: Double) = evalFunc(x)
+}
+
+internal data class TrigonometricFunctionOperator(
+    val type: TrigonometricFunctionType,
+    val powerInside: Boolean = false,
+    // possible values are "superscript" (e.g. sin^-1), "arcPrefix" (e.g. arcsin) or "aPrefix" (e.g. "asin")
+    val inverseNotation: String = "arcPrefix",
+) : UnaryOperator, ExpressionOperator {
+
+    override val name = type.text
 
     override val precedence = TRIG_PRECEDENCE
 
     override fun childAllowed(op: Operator) = op.precedence >= PRODUCT_PRECEDENCE
 
-    override fun <T> readableString(child: T) = "${name.lowercase()} $child"
-    override fun latexString(ctx: RenderContext, child: LatexRenderable) =
-        "\\${name.lowercase()} ${child.toLatexString(ctx)}"
+    override fun <T> readableString(child: T): String = when (inverseNotation) {
+        "superscript" -> {
+            val inverse = this.type.inverse.text
+            "[$inverse ^ -1] $child"
+        }
+        else -> "${type.text} $child"
+    }
 
-    protected abstract fun eval(operand: Double): Double
-    override fun eval(children: List<Double>) = eval(children[0])
+    override fun latexString(ctx: RenderContext, child: LatexRenderable) = when (inverseNotation) {
+        "superscript" -> {
+            val inverse = this.type.inverse.text
+            "\\$inverse^{-1} ${child.toLatexString(ctx)}"
+        }
+        else -> "\\${type.text} ${child.toLatexString(ctx)}"
+    }
+
+    override fun eval(children: List<Double>): Double {
+        return type.eval(children[0])
+    }
 }
 
 internal enum class BinaryExpressionOperator(override val precedence: Int) : BinaryOperator, ExpressionOperator {
@@ -312,14 +343,29 @@ internal enum class BinaryExpressionOperator(override val precedence: Int) : Bin
         override fun eval(first: Double, second: Double) = first / second
     },
     Power(POWER_PRECEDENCE) {
-        override fun leftChildAllowed(op: Operator) = op.precedence == MAX_PRECEDENCE
-
+        override fun leftChildAllowed(op: Operator) = (op.precedence == MAX_PRECEDENCE) ||
+            (op is TrigonometricFunctionOperator)
         override fun rightChildAllowed(op: Operator) = true
 
-        override fun <T> readableString(left: T, right: T) = "[$left ^ $right]"
+        override fun <T> readableString(left: T, right: T): String {
+            return when {
+                left is TrigonometricExpression && left.powerInside -> {
+                    val operatorType = left.operator.name
+                    "[$operatorType ^ $right] ${left.operands[0]}"
+                }
+                else -> "[$left ^ $right]"
+            }
+        }
 
-        override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable) =
-            "${left.toLatexString(ctx)}^{${right.toLatexString(ctx)}}"
+        override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable): String {
+            return when {
+                left is TrigonometricExpression && left.powerInside -> {
+                    val operatorType = left.operator.name
+                    "\\$operatorType^{${right.toLatexString(ctx)}} ${left.operands[0].toLatexString(ctx)}"
+                }
+                else -> "${left.toLatexString(ctx)}^{${right.toLatexString(ctx)}}"
+            }
+        }
 
         override fun eval(first: Double, second: Double) = first.pow(second)
     },

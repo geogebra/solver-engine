@@ -45,3 +45,70 @@ enum class SolverEngineExplanation : CategorisedMetadataKey {
 
     override val category = "SolverEngine"
 }
+
+/**
+ * Words used in Math expressions. The SDK uses these words to render math.  It is convenient to define the keys here
+ * as the export process will then automatically add them to the poker.
+ */
+@TranslationKeys
+enum class MathWord : CategorisedMetadataKey {
+
+    /**
+     * Used when an expression has no value
+     *
+     * E.g. 1 / 0 = undefined
+     */
+    Undefined,
+
+    /**
+     * Used e.g. to introduce a constraint for an equation
+     *
+     * E.g. y = 1/x given x != 0
+     */
+    Given,
+
+    /**
+     * Used to say a statement is true.
+     *
+     * E.g. 1 + 1 = 2 --> true
+     */
+    True,
+
+    /**
+     * Used to say a statement is false
+     *
+     * E.g. 1 + 1 = 3 --> false
+     */
+    False,
+
+    /**
+     * Used to express the conjunction of two conditions
+     *
+     * E.g. x > 2 and x != 3
+     */
+    And,
+
+    /**
+     * Used to express the disjunction of two conditions
+     *
+     * E.g. x < -2 or x > 2
+     */
+    Or,
+
+    // Used in SDK, not in engine
+    /**
+     * Used to express that an equation has no solution
+     */
+    NoSolution,
+
+    // Used in SDK, not in engine
+    /**
+     * Used to express that an equation has infinitely many solutions - this is a vague notion,
+     * typically used to talk about an identity (e.g. "x = x has infinitely many solutions")
+     */
+    InfinitelyManySolutions,
+
+    ;
+
+    override val category = "MathWord"
+}

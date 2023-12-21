@@ -389,6 +389,15 @@ private object SystemSolverBySubstitution : SystemSolver() {
         }
     }
 
+    private val expressVar1InTermsOfVar2Steps = steps {
+        apply(rearrangeLinearEquationSteps)
+        optionally {
+            applyTo(PolynomialsPlans.ExpandPolynomialExpressionWithoutNormalization) {
+                it.secondChild
+            }
+        }
+    }
+
     override fun TasksBuilder.solveIndependentEquations(
         firstEq: Expression,
         secondEq: Expression,
@@ -403,14 +412,8 @@ private object SystemSolverBySubstitution : SystemSolver() {
             explanation = metadata(Explanation.ExpressInTermsOf, xp(var1), xp(var2), eq1.byName()),
             resultLabel = label(3),
             context = context.copy(solutionVariables = listOf(var1)),
-        ) {
-            apply(rearrangeLinearEquationSteps)
-            optionally {
-                applyTo(PolynomialsPlans.ExpandPolynomialExpressionWithoutNormalization) {
-                    it.secondChild
-                }
-            }
-        }
+            stepsProducer = expressVar1InTermsOfVar2Steps,
+        )
 
         // If it was successful, or if x was already expressed in terms of y, substitute all occurrences of x in
         // eq2 and solve it to find the value of y.
@@ -499,6 +502,13 @@ private object SystemSolverByElimination : SystemSolver() {
         }
     }
 
+    private val solveEliminatedEquationSteps = steps {
+        firstOf {
+            option(EquationsRules.ExtractSolutionFromConstantEquation)
+            option(EquationsPlans.SolveEquation)
+        }
+    }
+
     override fun TasksBuilder.solveIndependentEquations(
         firstEq: Expression,
         secondEq: Expression,
@@ -514,14 +524,10 @@ private object SystemSolverByElimination : SystemSolver() {
 
         return task(
             startExpr = univariateEquation,
+            stepsProducer = solveEliminatedEquationSteps,
             explanation = metadata(Explanation.SolveEliminatedEquation, univariateEquation.byName()),
             context = context.copy(solutionVariables = listOf(remainingVariable)),
-        ) {
-            firstOf {
-                option(EquationsRules.ExtractSolutionFromConstantEquation)
-                option(EquationsPlans.SolveEquation)
-            }
-        }?.let { solvedUnivariateEquation ->
+        )?.let { solvedUnivariateEquation ->
             val reorganizedFirstEq = if (solvedUnivariateEquation.result is Identity) {
                 task(
                     startExpr = firstEq,
@@ -542,6 +548,16 @@ private object SystemSolverByElimination : SystemSolver() {
         }
     }
 
+    private val rewriteEquationAdditionSteps = steps {
+        apply(EquationSystemsRules.RewriteEquationAddition)
+        optionally(EquationsPlans.SimplifyEquation)
+    }
+
+    private val rewriteEquationSubtractionSteps = steps {
+        apply(EquationSystemsRules.RewriteEquationSubtraction)
+        optionally(EquationsPlans.SimplifyEquation)
+    }
+
     /**
      * Add or subtract [eq1] and [eq2] to eliminate the variable [variable]
      */
@@ -556,12 +572,10 @@ private object SystemSolverByElimination : SystemSolver() {
                 @Suppress("MagicNumber")
                 task(
                     startExpr = eqSum,
+                    stepsProducer = rewriteEquationAdditionSteps,
                     explanation = metadata(Explanation.AddEquations),
                     resultLabel = label(3),
-                ) {
-                    apply(EquationSystemsRules.RewriteEquationAddition)
-                    optionally(EquationsPlans.SimplifyEquation)
-                }?.result
+                ) ?.result
             }
 
             coeff1 == coeff2 -> {
@@ -570,12 +584,10 @@ private object SystemSolverByElimination : SystemSolver() {
                 @Suppress("MagicNumber")
                 task(
                     startExpr = eqSum,
+                    stepsProducer = rewriteEquationSubtractionSteps,
                     explanation = metadata(Explanation.SubtractEquations),
                     resultLabel = label(3),
-                ) {
-                    apply(EquationSystemsRules.RewriteEquationSubtraction)
-                    optionally(EquationsPlans.SimplifyEquation)
-                }?.result
+                )?.result
             }
 
             else -> null

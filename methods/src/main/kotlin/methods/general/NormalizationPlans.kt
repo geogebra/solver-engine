@@ -1,10 +1,11 @@
 package methods.general
 
-import engine.context.ResourceData
+import engine.context.BooleanSetting
+import engine.context.Setting
 import engine.methods.CompositeMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
-import engine.methods.stepsproducers.contextSensitiveSteps
+import engine.methods.stepsproducers.branchOn
 import engine.methods.stepsproducers.steps
 
 enum class NormalizationPlans(override val runner: CompositeMethod) : RunnerMethod {
@@ -19,7 +20,10 @@ enum class NormalizationPlans(override val runner: CompositeMethod) : RunnerMeth
                 whilePossible {
                     firstOf {
                         option { deeply(NormalizationRules.NormalizeNegativeSignOfIntegerInSum) }
-                        option { deeply(NormalizationRules.AddClarifyingBracket) }
+                        option {
+                            check { !isSet(Setting.DontAddClarifyingBrackets) }
+                            deeply(NormalizationRules.AddClarifyingBracket)
+                        }
                         option { deeply(NormalizationRules.RemoveRedundantBracket) }
                         option { deeply(NormalizationRules.RemoveRedundantPlusSign) }
                     }
@@ -59,9 +63,9 @@ enum class NormalizationPlans(override val runner: CompositeMethod) : RunnerMeth
     ),
 }
 
-val reorderProductSteps = contextSensitiveSteps {
-    default(ResourceData(), NormalizationRules.ReorderProduct)
-    alternative(ResourceData(gmFriendly = true), NormalizationPlans.ReorderProductInSteps)
+val reorderProductSteps = branchOn(Setting.CommutativeReorderInSteps) {
+    case(BooleanSetting.True, NormalizationPlans.ReorderProductInSteps)
+    case(BooleanSetting.False, NormalizationRules.ReorderProduct)
 }
 
 val inlineSumsAndProducts = steps {

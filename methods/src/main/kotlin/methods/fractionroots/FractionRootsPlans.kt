@@ -60,11 +60,8 @@ enum class FractionRootsPlans(override val runner: CompositeMethod) : RunnerMeth
 
             steps {
                 optionally(FractionRootsRules.FlipRootsInDenominator)
-                optionally { deeply(IntegerRootsRules.SimplifyRootOfOne) }
-                optionally { deeply(IntegerRootsPlans.SimplifyIntegerRoot) }
-                optionally { deeply(FractionRootsRules.FactorizeHigherOrderRadicand) }
                 apply(findRationalizingTerm)
-                apply(FractionArithmeticRules.MultiplyFractions)
+                apply(FractionArithmeticRules.MultiplyFractionAndFractionable)
                 optionally {
                     plan {
                         explanation = Explanation.SimplifyNumeratorAfterRationalization
@@ -104,7 +101,10 @@ enum class FractionRootsPlans(override val runner: CompositeMethod) : RunnerMeth
 val findRationalizingTerm = steps {
     firstOf {
         option(FractionRootsRules.RationalizeSimpleDenominator)
-        option(FractionRootsPlans.RationalizeHigherOrderRoot)
+        option {
+            optionally(FractionRootsRules.FactorizeHigherOrderRadicand)
+            apply(FractionRootsPlans.RationalizeHigherOrderRoot)
+        }
         option(FractionRootsRules.RationalizeSumOfIntegerAndSquareRoot)
         option(FractionRootsRules.RationalizeSumOfIntegerAndCubeRoot)
     }
@@ -121,6 +121,7 @@ private val simplifyAfterRationalization = steps {
                 deeply(cancelRootOfPower)
             }
             option { deeply(IntegerRootsRules.SimplifyNthRootToThePowerOfN) }
+            option { deeply(IntegerArithmeticRules.EvaluateIntegerPowerDirectly) }
             option { deeply(IntegerRootsPlans.SimplifyProductWithRoots) }
             option { deeply(IntegerArithmeticPlans.SimplifyIntegersInProduct) }
             option { deeply(IntegerArithmeticPlans.SimplifyIntegersInSum) }

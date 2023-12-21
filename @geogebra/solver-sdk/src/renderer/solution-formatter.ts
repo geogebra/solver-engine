@@ -1,9 +1,11 @@
 import { ExpressionTree } from '../parser';
+import { MathWords } from './tree-to-latex';
 
 export interface SolutionFormatter {
   formatSolution(
     n: ExpressionTree,
     rec: (n: ExpressionTree, p: ExpressionTree | null) => string,
+    w: MathWords,
   ): string;
 }
 
@@ -17,10 +19,11 @@ type TupleTree = ExpressionTree & {
 /**
  * This formatter always uses set notation to describe solutions.
  */
-export const setsSolutionFormatter = {
+export const setsSolutionFormatter: SolutionFormatter = {
   formatSolution(
     n: ExpressionTree,
     rec: (n: ExpressionTree, p: ExpressionTree | null) => string,
+    w: MathWords,
   ): string {
     switch (n.type) {
       case 'Solution':
@@ -32,7 +35,7 @@ export const setsSolutionFormatter = {
       case 'Identity': {
         const [varTuple, size] = variableListToLatexTuple(n.operands[0], rec);
         if (size === 0) {
-          return '\\top';
+          return `\\text{${w.True}}`;
         } else if (size === 1) {
           return `${varTuple} \\in \\mathbb{R}`;
         } else {
@@ -42,7 +45,7 @@ export const setsSolutionFormatter = {
       case 'Contradiction': {
         const [varTuple, size] = variableListToLatexTuple(n.operands[0], rec);
         if (size === 0) {
-          return '\\bot';
+          return `\\text{${w.False}}`;
         } else {
           return `${varTuple} \\in \\emptyset`;
         }
@@ -63,10 +66,11 @@ export const setsSolutionFormatter = {
  *      x = 2, y = 1  for SolutionSet[x, y: {(2, 1)}
  *      x = 1, x = 2 for Solution[x, {1, 2}]
  */
-export const simpleSolutionFormatter = {
+export const simpleSolutionFormatter: SolutionFormatter = {
   formatSolution(
     n: ExpressionTree,
     rec: (n: ExpressionTree, p: ExpressionTree | null) => string,
+    w: MathWords,
   ): string {
     switch (n.type) {
       case 'SetSolution': {
@@ -75,11 +79,11 @@ export const simpleSolutionFormatter = {
         const [varsTuple, variableCount] = variableListToLatexTuple(vars, rec);
 
         switch (set.type) {
-          case 'FiniteSet':
+          case 'FiniteSet': {
             const operandsLength = set.operands ? set.operands.length : 0;
             switch (operandsLength) {
               case 0:
-                return `${varsTuple} \\in \\emptyset`;
+                return `\\text{${w.NoSolution}}`;
               case 1: {
                 if (variableCount > 1) {
                   const tuple = set.operands[0] as TupleTree;
@@ -98,6 +102,7 @@ export const simpleSolutionFormatter = {
                   .map((el) => `${varsTuple} = ${rec(el, null)}`)
                   .join(', ');
             }
+          }
           case 'CartesianProduct':
             if (
               set.operands.every(
@@ -127,7 +132,7 @@ export const simpleSolutionFormatter = {
             ) {
               return set.operands[1].operands
                 .map((s) => `${varsTuple} \\neq ${rec(s, null)}`)
-                .join(' \\text{ and } ');
+                .join(` \\text{ ${w.And} } `);
             }
         }
         break;
@@ -136,21 +141,24 @@ export const simpleSolutionFormatter = {
         return `${rec(n.operands[0], null)} \\in \\mathbb{R} : ${rec(n.operands[1], n)}`;
       case 'Identity': {
         const varList = n.operands[0] as VariableListTree;
-        if (varList.operands !== undefined && varList.operands.length > 0) {
-          return `${rec(varList, null)} \\in \\mathbb{R}`;
+        if (varList.operands !== undefined) {
+          switch (varList.operands.length) {
+            case 0:
+              break;
+            case 1:
+              return `\\text{${w.InfinitelyManySolutions}}`;
+            default:
+              return `${rec(varList, null)} \\in \\mathbb{R}`;
+          }
         }
         break;
       }
       case 'Contradiction': {
-        const varList = n.operands[0] as VariableListTree;
-        if (varList.operands !== undefined && varList.operands.length > 0) {
-          return `${rec(varList, null)} \\in \\emptyset`;
-        }
-        break;
+        return `\\text{${w.NoSolution}}`;
       }
     }
 
-    return setsSolutionFormatter.formatSolution(n, rec);
+    return setsSolutionFormatter.formatSolution(n, rec, w);
   },
 };
 

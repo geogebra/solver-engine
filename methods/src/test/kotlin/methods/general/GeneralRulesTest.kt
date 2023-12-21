@@ -31,6 +31,8 @@ import methods.general.GeneralRules.SimplifyUnitFractionToOne
 import methods.general.GeneralRules.SimplifyZeroDenominatorFractionToUndefined
 import methods.general.GeneralRules.SimplifyZeroNumeratorFractionToZero
 import org.junit.jupiter.api.Test
+import parser.parseExpression
+import kotlin.test.assertTrue
 import engine.methods.SerializedGmAction as GmAction
 
 @Suppress("LargeClass")
@@ -276,9 +278,9 @@ class GeneralRulesTest {
     }
 
     @Test
-    fun testFactorMinusFromSum() {
+    fun testFactorMinusFromSumWithAllNegativeTerms() {
         testMethod {
-            method = GeneralRules.FactorMinusFromSum
+            method = GeneralRules.FactorMinusFromSumWithAllNegativeTerms
             inputExpr = "-1 - sqrt[2] - root[3, 3]"
 
             check {
@@ -290,6 +292,21 @@ class GeneralRulesTest {
                 }
             }
         }
+    }
+
+    @Test
+    fun testFactorMinusFromSum() {
+        testRule("-x + 1", GeneralRules.FactorMinusFromSum, "-(x - 1)")
+        testRule("x + 1", GeneralRules.FactorMinusFromSum, null)
+        testRule("-x + 1", GeneralRules.FactorMinusFromSum, "-(x - 1)")
+        testRule("x - 1", GeneralRules.FactorMinusFromSum, null)
+        testRule("1 - sqrt[2]", GeneralRules.FactorMinusFromSum, "-(-1 + sqrt[2])")
+        testRule("-1 + sqrt[2]", GeneralRules.FactorMinusFromSum, null)
+        testRule("x - sqrt[2]", GeneralRules.FactorMinusFromSum, null)
+        testRule("-x + sqrt[2]", GeneralRules.FactorMinusFromSum, "-(x - sqrt[2])")
+        testRule("sqrt[2] - x", GeneralRules.FactorMinusFromSum, "-(-sqrt[2] + x)")
+        testRule("-sqrt[2] + x", GeneralRules.FactorMinusFromSum, null)
+        testRule("(1 - sqrt[2])x + 1", GeneralRules.FactorMinusFromSum, null)
     }
 
     @Test
@@ -483,6 +500,15 @@ class GeneralRulesTest {
         }
         testRule("[(-x)^7]", SimplifyOddPowerOfNegative, "-[x^7]", GmAction("Drag", "./1", "./0/0"))
         testRule("[(-[1 / 2]) ^ 3]", SimplifyOddPowerOfNegative, "-[([1 / 2]) ^ 3]")
+    }
+
+    @Test
+    fun testRewriteEvenPowerOfBaseAsEvenPowerOfAbsoluteValueOfBase() {
+        testRule(
+            "[y ^ 6]",
+            GeneralRules.RewriteEvenPowerOfBaseAsEvenPowerOfAbsoluteValueOfBase,
+            "[abs[y] ^ 6]",
+        )
     }
 
     @Test
@@ -755,6 +781,16 @@ class GeneralRulesTest {
             null,
         )
         testRule(
+            "[2 / 3] * [3 / 2]",
+            RewriteProductOfPowersWithInverseFractionBase,
+            null,
+        )
+        testRule(
+            "[([2 / 3]) ^ [1 / 2]] * [3 / 2]",
+            RewriteProductOfPowersWithInverseFractionBase,
+            "[([2 / 3]) ^ [1 / 2]] * [([2 / 3]) ^ -1]",
+        )
+        testRule(
             "[([2 / 3]) ^ [1 / 2]] * [([3 / 2]) ^ [2 / 5]]",
             RewriteProductOfPowersWithInverseFractionBase,
             "[([2 / 3]) ^ [1 / 2]] * [([2 / 3]) ^ -[2 / 5]]",
@@ -861,6 +897,16 @@ class GeneralRulesTest {
             "root[[7 ^ 2], 2]",
             GeneralRules.CancelRootIndexAndExponent,
             "7",
+        )
+        testRule(
+            "root[[abs[y] ^ 3 * 4], 4]",
+            GeneralRules.CancelRootIndexAndExponent,
+            "[abs[y] ^ 3]",
+        )
+        testRule(
+            "sqrt[[(7-sqrt[2])^2]]",
+            GeneralRules.CancelRootIndexAndExponent,
+            "7-sqrt[2]",
         )
     }
 
@@ -1012,5 +1058,43 @@ class GeneralRulesTest {
     @Test
     fun testFactorizeInteger() {
         testRule("12", FactorizeInteger, "[2^2] * 3")
+    }
+
+    @Test
+    fun testSimplifyPlusMinusOfAbsoluteValue() {
+        testRule("+/- abs[y]", GeneralRules.SimplifyPlusMinusOfAbsoluteValue, "+/- y")
+        testRule("+/- abs[1 - y]", GeneralRules.SimplifyPlusMinusOfAbsoluteValue, "+/- (1 - y)")
+    }
+}
+
+class PseudoDegreeComparatorTest {
+
+    /**
+     * Utility function to test the ordering of two expressions.
+     * Checks if e1 is smaller than e2 regardless of their input order.
+     */
+    private fun testOrdering(smallerExpression: String, biggerExpression: String) {
+        val e1 = parseExpression(smallerExpression)
+        val e2 = parseExpression(biggerExpression)
+        val isOrderedCorrectly = pseudoDegreeComparator.compare(e2, e1) > 0
+        assertTrue(isOrderedCorrectly, "Unexpected order of $e1 and $e2")
+    }
+
+    @Test
+    fun testNonConstantBeforeConstant() {
+        testOrdering("1", "sqrt[2]")
+        testOrdering("1", "-sqrt[2]")
+        testOrdering("-1", "-sqrt[2]")
+        testOrdering("1", "2 sqrt[2]")
+        testOrdering("5", "x")
+        testOrdering("3x", "[x^2]")
+        testOrdering("1", "sqrt[2]x")
+        testOrdering("sqrt[2]x", "[x^2]")
+        testOrdering("2 root[5, 8]", "x")
+        testOrdering("1 + x", "1 + x + [x^2]")
+        testOrdering("[(1 + x)^6]", "[(1 + [x^2])^5]")
+        testOrdering("sqrt[2] [x^2]", "[x^[7/3]]")
+        // absolute values are compared
+        testOrdering("[x^4]", "[x^-5]")
     }
 }

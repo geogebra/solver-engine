@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { getExplanationString } from './render-solution';
-import type { Metadata } from '@geogebra/solver-sdk';
+import type { MappedExpression, Metadata } from '@geogebra/solver-sdk';
 import { hideWarnings, showTranslationKeys } from './settings';
 import KatexRenderedText from './katex-rendered-text.vue';
 
-const props = defineProps<{ metadata: Metadata | null }>();
+const props = defineProps<{
+  metadata: Metadata | null;
+  formula?: MappedExpression;
+}>();
 
 const explanationInfo = computed(() =>
   props.metadata
-    ? getExplanationString(props.metadata)
+    ? getExplanationString(props.metadata, props.formula)
     : { explanationString: undefined, warnings: undefined },
 );
 

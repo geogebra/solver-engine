@@ -15,7 +15,6 @@ import engine.methods.taskSet
 import engine.patterns.ArbitraryVariablePattern
 import engine.patterns.QuadraticPolynomialPattern
 import engine.steps.metadata.metadata
-import methods.algebra.AlgebraPlans
 import methods.approximation.ApproximationPlans
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.equations.EquationsPlans
@@ -24,6 +23,7 @@ import methods.inequalities.InequalitiesPlans
 import methods.inequalities.solveConstantInequalitySteps
 import methods.inequations.InequationsPlans
 import methods.integerarithmetic.IntegerArithmeticPlans
+import methods.simplify.SimplifyPlans
 
 enum class FallbackPlans(override val runner: CompositeMethod) : RunnerMethod {
 
@@ -31,9 +31,8 @@ enum class FallbackPlans(override val runner: CompositeMethod) : RunnerMethod {
     @PublicMethod(hiddenFromList = true)
     QuadraticIsIrreducible(
         taskSet {
-
             specificPlans(
-                AlgebraPlans.SimplifyAlgebraicExpression,
+                SimplifyPlans.SimplifyAlgebraicExpression,
                 FactorPlans.FactorPolynomialInOneVariable,
             )
 
@@ -82,7 +81,7 @@ enum class FallbackPlans(override val runner: CompositeMethod) : RunnerMethod {
                 ConstantExpressionsPlans.SimplifyConstantExpression,
                 IntegerArithmeticPlans.EvaluateArithmeticExpression,
                 ApproximationPlans.EvaluateExpressionNumerically,
-                AlgebraPlans.SimplifyAlgebraicExpression,
+                SimplifyPlans.SimplifyAlgebraicExpression,
                 FactorPlans.FactorPolynomialInOneVariable,
                 EquationsPlans.SolveConstantEquation,
                 EquationsPlans.SolveEquation,

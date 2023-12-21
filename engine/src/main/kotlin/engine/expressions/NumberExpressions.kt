@@ -1,8 +1,10 @@
 package engine.expressions
 
 import engine.operators.DecimalOperator
+import engine.operators.EulerEOperator
 import engine.operators.IntegerOperator
 import engine.operators.MixedNumberOperator
+import engine.operators.PiOperator
 import engine.operators.RecurringDecimalOperator
 import engine.sign.Sign
 import engine.utility.RecurringDecimal
@@ -68,4 +70,24 @@ class MixedNumberExpression(
     meta,
 ) {
     override fun signOf() = Sign.POSITIVE // If it was 0, it would not be a mixed number
+}
+
+class PiExpression(
+    meta: NodeMeta = BasicMeta(),
+) : ValueExpression(
+    operator = PiOperator,
+    operands = emptyList(),
+    meta = meta,
+) {
+    override fun signOf() = Sign.POSITIVE
+}
+
+class EulerEExpression(
+    meta: NodeMeta = BasicMeta(),
+) : ValueExpression(
+    operator = EulerEOperator,
+    operands = emptyList(),
+    meta = meta,
+) {
+    override fun signOf() = Sign.POSITIVE
 }

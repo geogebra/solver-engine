@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <h1>Loading...</h1>
+    <script>
+      fetch('http://3.80.44.86/ascii2latex', {
+        method: 'POST', // Specifies the method to be POST
+        headers: {
+          'Content-Type': 'application/json', // Sets the content type header
+        },
+        body: JSON.stringify({ ascii: '1/2' }), // Sets the request body
+      })
+        .then((response) => response.json())
+        .then(
+          (data) =>
+            (document.querySelector('h1').innerText = JSON.stringify(data))
+        )
+        .catch((error) => console.error('Error:', error));
+    </script>
+  </body>
+</html>

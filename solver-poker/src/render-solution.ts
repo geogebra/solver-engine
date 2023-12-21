@@ -1,14 +1,16 @@
-import * as solverSdk from '@geogebra/solver-sdk';
 import type {
   ExpressionTree,
+  LatexTransformer,
   MathJson,
   Metadata,
   Transformation,
   TransformationJson,
-  LatexTransformer,
 } from '@geogebra/solver-sdk';
-import { colorScheme, colorSchemes, latexSettings } from './settings';
+import * as solverSdk from '@geogebra/solver-sdk';
+import { colorScheme, colorSchemes } from './settings';
 import { translationData } from './translations';
+import { jsonToLatex, treeToLatex } from './render-math.ts';
+import { MappedExpression } from '@geogebra/solver-sdk';
 
 const removeOuterBrackets = (expression: ExpressionTree) => ({ ...expression, decorators: [] });
 
@@ -19,11 +21,11 @@ export const renderExpressionMapping = (
 ) => {
   const fromTree = removeOuterBrackets(solverSdk.jsonToTree(trans.fromExpr, trans.path));
   const toTree = removeOuterBrackets(solverSdk.jsonToTree(trans.toExpr, trans.path));
-  const fromLatex = solverSdk.treeToLatex(fromTree, latexSettings.value, fromColoring);
+  const fromLatex = treeToLatex(fromTree, fromColoring);
   if (toTree.type === 'Void') {
     return renderExpression(fromLatex);
   } else {
-    const toLatex = solverSdk.treeToLatex(toTree, latexSettings.value, toColoring);
+    const toLatex = treeToLatex(toTree, toColoring);
     return renderExpression(
       `${fromLatex} {\\color{#8888ff}\\thickspace\\longmapsto\\thickspace} ${toLatex}`,
     );
@@ -51,15 +53,17 @@ export const createColorMaps = (
   }
 };
 
-export const getExplanationString = (expl: Metadata) => {
+export const getExplanationString = (expl: Metadata, formula?: MappedExpression) => {
   let explanationString = translationData.value[expl.key];
   const warnings = [];
+
+  const parameters = expl.params || [];
   if (!explanationString) {
     warnings.push(`Missing default translation for ${expl.key}`);
-    explanationString = `${expl.key}(${[...expl.params.keys()].map((i) => `%${i + 1}`).join()})`;
+    explanationString = `${expl.key}(${[...parameters.keys()].map((i) => `%${i + 1}`).join()})`;
   }
 
-  for (const [i, param] of expl.params.entries()) {
+  for (const [i, param] of parameters.entries()) {
     // replacing "%1", "%2", ... with the respective rendered expression
     if (explanationString.includes('%' + (i + 1))) {
       explanationString = explanationString.replaceAll(
@@ -74,7 +78,18 @@ export const getExplanationString = (expl: Metadata) => {
       );
     }
   }
-  const unusedPlaceholders = explanationString.match(/%[1-9]/g);
+
+  if (formula) {
+    if (explanationString.includes('%f')) {
+      explanationString = explanationString.replaceAll('%f', renderExpression(formula.expression));
+    } else {
+      warnings.push(
+        `Missing %f in default translation, should contain ${renderExpression(formula.expression)}`,
+      );
+    }
+  }
+
+  const unusedPlaceholders = explanationString.match(/%([1-9]|f)/g);
   if (unusedPlaceholders) {
     for (const placeholder of unusedPlaceholders) {
       warnings.push(`Missing parameter for placeholder ${placeholder}`);
@@ -84,6 +99,4 @@ export const getExplanationString = (expl: Metadata) => {
 };
 
 export const renderExpression = (expr: MathJson | string) =>
-  `\\(\\displaystyle ${
-    typeof expr === 'string' ? expr : solverSdk.jsonToLatex(expr, latexSettings.value)
-  }\\)`;
+  `\\(\\displaystyle ${typeof expr === 'string' ? expr : jsonToLatex(expr)}\\)`;

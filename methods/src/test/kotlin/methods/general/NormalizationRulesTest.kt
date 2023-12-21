@@ -9,7 +9,7 @@ import methods.general.NormalizationRules.RemoveRedundantBracket
 import org.junit.jupiter.api.Test
 import parser.parseExpression
 
-object NormalizationRulesTest {
+class NormalizationRulesTest {
     @Test
     fun testRemoveRedundantPlusSign() {
         testMethod {
@@ -37,7 +37,7 @@ object NormalizationRulesTest {
     }
 }
 
-object RemoveBracketsTest {
+class RemoveBracketsTest {
 
     @Test
     fun testRemoveBracketsSumInSum() {

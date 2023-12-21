@@ -24,6 +24,8 @@ class InequalityPattern internal constructor(
             rhs.findMatches(context, it, subexpression.secondChild)
         }
     }
+
+    override val minDepth = 1 + maxOf(lhs.minDepth, rhs.minDepth)
 }
 
 fun inequalityOf(lhs: Pattern, rhs: Pattern) = InequalityPattern(lhs, rhs)

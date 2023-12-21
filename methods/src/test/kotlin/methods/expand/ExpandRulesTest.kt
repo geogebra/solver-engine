@@ -1,8 +1,11 @@
 package methods.expand
 
+import engine.context.BooleanSetting
+import engine.context.Setting
 import engine.methods.testMethod
 import engine.methods.testRule
 import methods.expand.ExpandRules.ApplyFoilMethod
+import methods.expand.ExpandRules.DistributeConstantNumerator
 import methods.expand.ExpandRules.DistributeMultiplicationOverSum
 import methods.expand.ExpandRules.DistributeNegativeOverBracket
 import methods.expand.ExpandRules.ExpandBinomialCubedUsingIdentity
@@ -166,6 +169,59 @@ class ExpandRulesTest {
             "x*(1 + sqrt[3])",
             DistributeMultiplicationOverSum,
             null,
+        )
+    }
+
+    @Test
+    fun testDistributeFractionWithSumNumerator() {
+        testRule(
+            "[x + 2 / 3]",
+            DistributeConstantNumerator,
+            "[x / 3] + [2 / 3]",
+        )
+        testRule(
+            "[1 + sqrt[2] / 3]",
+            DistributeConstantNumerator,
+            null,
+        )
+        testRule(
+            "[x - 3 + y / 2]",
+            DistributeConstantNumerator,
+            "[x / 2] - [3 / 2] + [y / 2]",
+        )
+        testRule(
+            "[-sqrt[3] + 2x / 5]",
+            DistributeConstantNumerator,
+            "-[sqrt[3] / 5] + [2x / 5]",
+        )
+    }
+
+    @Test
+    fun `test ExpandProductOfSingleTermAndSum with CopySumSignsWhenDistributing`() {
+        val settings = mapOf(Setting.CopySumSignsWhenDistributing setTo BooleanSetting.True)
+        testRule(
+            "5(x - 2)",
+            DistributeMultiplicationOverSum,
+            "5*x - 5*2",
+            settings = settings,
+        )
+        testRule(
+            "5(-2x + 2)",
+            DistributeMultiplicationOverSum,
+            "-5*<. 2x .> + 5*2",
+            settings = settings,
+        )
+        testRule(
+            "(-5)(-2x - 2 + (-4))",
+            DistributeMultiplicationOverSum,
+            "-(-5)*<. 2x .> - (-5)*2 + (-5)*(-4)",
+            settings = settings,
+        )
+        testRule(
+            "-5(3x - 2)",
+            DistributeMultiplicationOverSum,
+            "(-5)*<. 3x .> - (-5)*2",
+            settings = settings,
         )
     }
 

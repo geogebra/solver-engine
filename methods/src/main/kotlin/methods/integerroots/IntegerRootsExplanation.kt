@@ -1,6 +1,7 @@
 package methods.integerroots
 
 import engine.steps.metadata.CategorisedMetadataKey
+import engine.steps.metadata.LegacyKeyName
 import engine.steps.metadata.TranslationKeys
 
 @TranslationKeys
@@ -57,7 +58,14 @@ enum class IntegerRootsExplanation : CategorisedMetadataKey {
     SimplifyIntegerRoot,
     SimplifyIntegerRootToInteger,
     MultiplyNthRoots,
-    SplitRootsAndCancelRootsOfPowers,
+
+    /**
+     * Split root(a^b, c) to root(a^(q*c) * a^r), c) then simplify it to a^q * root(a^r, c)
+     *
+     * E.g. root(10^7, 3) -> root(10^6 * 10, 3) -> root(10^6, 3) * root(10, 3) -> 10^2 * root(10, 3)
+     */
+    @LegacyKeyName("IntegerRoots.SplitRootsAndCancelRootsOfPowers")
+    SplitAndCancelRootOfPower,
 
     /**
      * Write a root of an integer as a product of values whose root can easily be computed
@@ -77,29 +85,6 @@ enum class IntegerRootsExplanation : CategorisedMetadataKey {
      */
     WriteRootAsRootPower,
 
-    /**
-     * Write each root in a product of roots so that it can be easily cancelled
-     *
-     * E.g. sqrt[36] * sqrt[100] -> sqrt[6 ^ 2] * sqrt[10 ^ 2]
-     * E.g. root[8, 3] * root[10000, 3] -> root[2 ^ 3, 3] * root[10 ^ 4, 3]
-     */
-    WriteRootsAsRootPowers,
-
-    /**
-     * Split roots that can be in a product of roots so that they can be simplified
-     *
-     * E.g. sqrt[[2^5]] * sqrt[[3^3]] -> sqrt[[2^4]] * sqrt[2] * sqrt[[3^2]] * sqrt[3]
-     *
-     * Note: this can apply to roots of any order.
-     */
-    SplitRootsInProduct,
-
-    /**
-     * Cancel all roots of powers that can be cancelled, in a product
-     *
-     * E.g. sqrt[[2 ^ 4]] * sqrt[2] -> [2 ^ 2] * sqrt[2]
-     */
-    CancelAllRootsOfPowers,
     SplitRootOfProduct,
     SimplifyNthRootToThePowerOfN,
     PrepareCancellingPowerOfARoot,
@@ -134,6 +119,48 @@ enum class IntegerRootsExplanation : CategorisedMetadataKey {
      */
     SimplifySquareRootWithASquareFactorRadicand,
 
+    /**
+     * Simplify an expression of the form sqrt[a +/- b sqrt[n]]
+     * when a +/- b sqrt[n] can be written as a square.
+     *
+     * E.g. sqrt[11 - 6sqrt[2]] --> sqrt[(3 - sqrt[2]) ^ 2]
+     *                          --> 3 - sqrt[2]
+     */
+    SimplifySquareRootOfIntegerPlusSurd,
+
+    /**
+     * Write an expression of the form a +/- b sqrt[n] as (x +/- y sqrt[n]) ^ 2 by writing
+     * a system of equations for x and y and finding a solution to it.
+     *
+     * E.g. 11 - 6 sqrt[2] --> (3 - sqrt[2]) ^ 2
+     */
+    WriteIntegerPlusSquareRootAsSquare,
+
+    /**
+     * In the context of factoring a + b sqrt[n] as a square, write an equation in x and y,
+     * deduce a system of two equations that x and y my satisfy and find integer solutions
+     * for x and y.
+     *
+     * E.g. in the context of factoring 11 - 6sqrt[2]
+     *     (x + y sqrt[2])^2 = 11 - 6sqrt[2]
+     * --> x^2 + 2xy sqrt[2] + 2y^2 = 11 - 6 sqrt[2]
+     * --> x^2 + 2y^2 = 11 AND 2xy sqrt[2] = -6 sqrt[2]
+     * --> x^2 + 2y^2 = 11 AND xy = -3
+     * --> x = 3 AND y = -1
+     */
+    WriteEquationInXAndYAndSolveItForFactoringIntegerPlusSurd,
+
+    /**
+     * In the context of factoring  a + b sqrt[n] = (x + y sqrt[2])^2, given that integer solutions
+     * have been found for x and y, substituted them back in order to find the square form for
+     * a + b sqrt[n].
+     *
+     * E.g. in the context of factoring 11 - 6sqrt[2] in the form (x + y sqrt[2])^2,
+     * we found x= 3 AND y = -1.  So the form for 11 - 6sqrt[2] as a square will be:
+     *
+     *     3 - sqrt[2]
+     */
+    SubstituteXAndYorFactoringIntegerPlusSurd,
     ;
 
     override val category = "IntegerRoots"

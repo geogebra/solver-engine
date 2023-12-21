@@ -1,7 +1,7 @@
 package methods.decimals
 
-import engine.context.Curriculum
-import engine.context.ResourceData
+import engine.context.BooleanSetting
+import engine.context.Setting
 import engine.expressions.DecimalExpression
 import engine.expressions.DivideBy
 import engine.expressions.Expression
@@ -103,18 +103,22 @@ enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
         plan {
             explanation = Explanation.ConvertRecurringDecimalToFractionAndSimplify
 
-            steps(ResourceData(curriculum = Curriculum.EU)) {
-                apply(DecimalRules.ConvertRecurringDecimalToFractionDirectly)
-                deeply(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
-                optionally(FractionArithmeticPlans.SimplifyFraction)
-            }
+            steps {
+                branchOn(Setting.ConvertRecurringDecimalsToFractionsUsingAlgorithm) {
+                    case(BooleanSetting.True) {
+                        apply(DecimalRules.ConvertRecurringDecimalToEquation)
+                        apply(DecimalRules.MakeEquationSystemForRecurringDecimal)
+                        apply(DecimalRules.SimplifyEquationSystemForRecurringDecimal)
+                        apply(DecimalRules.SolveLinearEquation)
+                        optionally(FractionArithmeticPlans.SimplifyFraction)
+                    }
 
-            alternative(ResourceData(curriculum = Curriculum.US)) {
-                apply(DecimalRules.ConvertRecurringDecimalToEquation)
-                apply(DecimalRules.MakeEquationSystemForRecurringDecimal)
-                apply(DecimalRules.SimplifyEquationSystemForRecurringDecimal)
-                apply(DecimalRules.SolveLinearEquation)
-                optionally(FractionArithmeticPlans.SimplifyFraction)
+                    case(BooleanSetting.False) {
+                        apply(DecimalRules.ConvertRecurringDecimalToFractionDirectly)
+                        deeply(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
+                        optionally(FractionArithmeticPlans.SimplifyFraction)
+                    }
+                }
             }
         },
     ),

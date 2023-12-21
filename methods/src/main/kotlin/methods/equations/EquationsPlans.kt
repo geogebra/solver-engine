@@ -1,7 +1,9 @@
 package methods.equations
 
+import engine.context.BooleanSetting
 import engine.context.Context
-import engine.context.Curriculum
+import engine.context.Setting
+import engine.expressions.Comparison
 import engine.expressions.Constants
 import engine.expressions.Contradiction
 import engine.expressions.DecimalExpression
@@ -19,10 +21,13 @@ import engine.methods.SolverEngineExplanation
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
+import engine.patterns.AnyPattern
 import engine.patterns.FindPattern
+import engine.patterns.FixedPattern
 import engine.patterns.RecurringDecimalPattern
 import engine.patterns.SignedNumberPattern
 import engine.patterns.SolutionVariablePattern
+import engine.patterns.SolvablePattern
 import engine.patterns.condition
 import engine.patterns.contradictionOf
 import engine.patterns.identityOf
@@ -35,7 +40,6 @@ import engine.steps.Transformation
 import engine.steps.metadata.metadata
 import methods.algebra.AlgebraExplanation
 import methods.algebra.AlgebraPlans
-import methods.algebra.algebraicSimplificationSteps
 import methods.algebra.findDenominatorsAndDivisors
 import methods.constantexpressions.constantSimplificationSteps
 import methods.constantexpressions.simpleTidyUpSteps
@@ -45,6 +49,8 @@ import methods.general.NormalizationPlans
 import methods.inequalities.InequalitiesPlans
 import methods.inequations.InequationsPlans
 import methods.polynomials.PolynomialsPlans
+import methods.simplify.SimplifyPlans
+import methods.simplify.algebraicSimplificationStepsWithoutFractionAddition
 import methods.solvable.SolvablePlans
 import methods.solvable.SolvableRules
 import methods.solvable.computeOverallIntersectionSolution
@@ -53,22 +59,53 @@ import methods.solvable.evaluateBothSidesNumerically
 
 enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
-    SimplifyEquation(
+    SimplifyByEliminatingConstantFactorOfLhsWithZeroRhs(
         plan {
-            explanation = Explanation.SimplifyEquation
-
-            val simplificationSteps = algebraicSimplificationSteps(addRationalExpressions = false)
+            explanation = Explanation.SimplifyByEliminatingConstantFactorOfLhsWithZeroRhs
+            pattern = SolvablePattern(AnyPattern(), FixedPattern(Constants.Zero))
 
             steps {
-                whilePossible { deeply(simpleTidyUpSteps) }
-                optionally(NormalizationPlans.NormalizeExpression)
-                whilePossible(EquationsRules.EliminateConstantFactorOfLhsWithZeroRhs)
-                whilePossible(SolvableRules.CancelCommonTermsOnBothSides)
-                optionally(simplificationSteps)
+                branchOn(Setting.EliminateNonZeroFactorByDividing) {
+                    case(BooleanSetting.False) {
+                        apply(EquationsRules.EliminateConstantFactorOfLhsWithZeroRhsDirectly)
+                    }
+                    case(BooleanSetting.True) {
+                        check { it is Comparison && it.rhs == Constants.Zero }
+                        apply(solvablePlansForEquations.coefficientRemovalSteps)
+                    }
+                }
             }
         },
     ),
 
+    SimplifyEquation(
+        plan {
+            explanation = Explanation.SimplifyEquation
+
+            steps {
+                whilePossible { deeply(simpleTidyUpSteps) }
+                optionally(NormalizationPlans.NormalizeExpression)
+                whilePossible(SimplifyByEliminatingConstantFactorOfLhsWithZeroRhs)
+                whilePossible(SolvableRules.CancelCommonTermsOnBothSides)
+                optionally(algebraicSimplificationStepsWithoutFractionAddition)
+            }
+        },
+    ),
+
+    // After balancing an equation we don't want to "undo" the balancing operation, e.g. if we multiply both sides by a
+    // number we don't want to undo that in a simplification step.  Instead we always want to simplify both sides of the
+    // equation.
+    SimplifyEquationAfterBalancing(
+        plan {
+            explanation = Explanation.SimplifyEquation
+
+            steps {
+                whilePossible { deeply(simpleTidyUpSteps) }
+                optionally(NormalizationPlans.NormalizeExpression)
+                optionally(algebraicSimplificationStepsWithoutFractionAddition)
+            }
+        },
+    ),
     CollectLikeTermsToTheLeftAndSimplify(
         plan {
             explanation = Explanation.CollectLikeTermsToTheLeftAndSimplify
@@ -98,7 +135,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 applyTo(FactorRules.FactorGreatestCommonIntegerFactor) { it.firstChild }
-                apply(EquationsRules.EliminateConstantFactorOfLhsWithZeroRhs)
+                apply(SimplifyByEliminatingConstantFactorOfLhsWithZeroRhs)
             }
         },
     ),
@@ -123,7 +160,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 apply(EquationsRules.CompleteTheSquare)
-                applyToChildren(PolynomialsPlans.SimplifyPolynomialExpression)
+                applyToChildren(SimplifyPlans.SimplifyAlgebraicExpression)
             }
         },
     ),
@@ -143,12 +180,19 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
         plan {
             explanation = Explanation.IsolateAbsoluteValue
 
-            steps {
+            val innerSteps = engine.methods.stepsproducers.steps {
                 firstOf {
                     option(SolvableRules.MoveTermsNotContainingModulusToTheRight)
                     option(SolvableRules.MoveTermsNotContainingModulusToTheLeft)
                 }
                 apply(SimplifyEquation)
+            }
+
+            steps {
+                branchOn(Setting.MoveTermsOneByOne) {
+                    case(BooleanSetting.True) { whilePossible(innerSteps) }
+                    case(BooleanSetting.False) { apply(innerSteps) }
+                }
             }
         },
     ),
@@ -213,7 +257,9 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
             )
 
             steps {
-                inContext(contextFactory = { copy(preferDecimals = true) }) {
+                inContext(contextFactory = {
+                    copy(settings = settings + Pair(Setting.PreferDecimals, BooleanSetting.True))
+                }) {
                     apply(rearrangeLinearEquationSteps)
                     optionally(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
                 }
@@ -291,7 +337,10 @@ internal val constraintSimplificationPlan = plan {
     }
 }
 
-val solvablePlansForEquations = SolvablePlans(EquationsPlans.SimplifyEquation, constraintSimplificationPlan)
+val solvablePlansForEquations = SolvablePlans(
+    EquationsPlans.SimplifyEquationAfterBalancing,
+    constraintSimplificationPlan,
+)
 
 val rearrangeLinearEquationSteps = steps {
     whilePossible {
@@ -379,8 +428,8 @@ val solveEquationPlan = object : CompositeMethod() {
         explanation = Explanation.SolveEquation
 
         tasks {
-            val constraint = when (context.curriculum) {
-                Curriculum.US -> expression
+            val constraint = when {
+                context.isSet(Setting.SolveEquationsWithoutComputingTheDomain) -> expression
                 else -> task(
                     startExpr = expression,
                     explanation = metadata(AlgebraExplanation.ComputeDomainOfAlgebraicExpression),

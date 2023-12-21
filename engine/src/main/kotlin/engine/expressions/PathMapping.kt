@@ -16,8 +16,8 @@ data class PathMapping(
     }
 
     private fun mergeableWith(other: PathMapping): Boolean {
-        val isMergeableType = type == PathMappingType.Distribute ||
-            (type == PathMappingType.Introduce && fromPaths.isNotEmpty())
+        val isMergeableType = type == PathMappingType.Distribute || type == PathMappingType.Substitute
+        (type == PathMappingType.Introduce && fromPaths.isNotEmpty())
 
         return isMergeableType && type == other.type && fromPaths == other.fromPaths
     }
@@ -103,6 +103,15 @@ enum class PathMappingType {
      * to the `2` in the result.
      */
     Relate,
+
+    /**
+     * Used to connect the variables in formulas to their concrete
+     * values in the transformation.
+     * E.g. all the `a`s in `(a + b)^2 = a^2 + 2ab + b^2` have a
+     * Substitute path mapping to `x` in `(x + 1)^2` (the fromExpr of
+     * the transformation).
+     */
+    Substitute,
 }
 
 /**

@@ -45,16 +45,32 @@ export function solverPathToGmNodes(
     if (target.parent?.is_group('sign')) target = target.parent;
 
     if (areAdjacentAddendsOrFactors(actor, target)) {
-      // If we are dragging the entire group (-1) we need the operator (-) of the main actor (1) to be tapped
-      const operators = map.get(`${actorPaths[0].replace(':group', '')}:op`);
-      if (operators && !operators[0].hidden) {
-        actors[0] = operators[0];
-        targets.splice(0);
-        gmAction = { ...info, type: 'Tap' };
+      // This is for cases like 2x+x or 3*5, where the Solver responds with a
+      // "drag" gesture hint, but the alternative "tap" action is nicer. However,
+      // when factoring an expression like x^2+x, the Solver will also suggest
+      // dragging one addend onto an adjacent addend, though here, we don't want
+      // to replace that with a tap on the plus.
+      if (!isGmFactorAction(actor, target)) {
+        // If we are dragging the entire group (-1) we need the operator (-) of the main actor (1) to be tapped
+        const operators = map.get(actorPaths[0])?.map((group) => group.children[0]);
+        if (operators && operators[0] && !operators[0].hidden) {
+          actors[0] = operators[0];
+          targets.splice(0);
+          gmAction = { ...info, type: 'Tap' };
+        }
       }
     }
   }
   return { actors, targets, gmAction };
+}
+
+function isGmFactorAction(actor: GmMathNode, target: GmMathNode) {
+  const actions = actor
+    .get_root()
+    .getMoveActions([actor])
+    .filter((action) => action.target === target)
+    .sort((a, b) => b.priority - a.priority);
+  return actions[0]?.name === 'GreatestCommonFactorAction';
 }
 
 /** Checks if the passed gm terms are addends or factors that are next to each

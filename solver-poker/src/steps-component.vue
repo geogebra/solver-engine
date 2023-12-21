@@ -6,7 +6,7 @@ import { isCosmeticTransformation, isInvisibleChangeStep, isPedanticTransformati
 import TransformationComponent from './transformation-component.vue';
 
 const props = defineProps<{
-  steps: TransformationJson[] | null;
+  steps?: TransformationJson[];
   depth: number;
   open: boolean;
 }>();

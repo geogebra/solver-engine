@@ -28,6 +28,8 @@ class RootPattern<T : Pattern>(val radicand: Pattern, val order: T) : BasePatter
             else -> emptySequence()
         }
     }
+
+    override val minDepth = 1 + maxOf(radicand.minDepth, order.minDepth)
 }
 
 fun rootOf(radicand: Pattern, index: Pattern = AnyPattern()) = RootPattern(radicand, index)

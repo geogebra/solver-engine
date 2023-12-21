@@ -7,6 +7,7 @@ import engine.operators.Comparator
 import engine.operators.ComparisonOperator
 import engine.operators.DecimalOperator
 import engine.operators.DoubleComparisonOperator
+import engine.operators.EulerEOperator
 import engine.operators.ExpressionOperator
 import engine.operators.ExpressionWithConstraintOperator
 import engine.operators.IntegerOperator
@@ -16,6 +17,7 @@ import engine.operators.ListOperator
 import engine.operators.MixedNumberOperator
 import engine.operators.NameOperator
 import engine.operators.Operator
+import engine.operators.PiOperator
 import engine.operators.ProductOperator
 import engine.operators.RecurringDecimalOperator
 import engine.operators.RenderContext
@@ -24,6 +26,7 @@ import engine.operators.SolutionOperator
 import engine.operators.StatementSystemOperator
 import engine.operators.StatementUnionOperator
 import engine.operators.SumOperator
+import engine.operators.TrigonometricFunctionOperator
 import engine.operators.UnaryExpressionOperator
 import engine.operators.VariableListOperator
 import engine.operators.VariableOperator
@@ -287,7 +290,7 @@ open class Expression internal constructor(
     /**
      * The expression does not depend on the specified symbols
      */
-    fun isConstantIn(symbols: List<String>) = variables.all { !symbols.contains(it) }
+    fun isConstantIn(symbols: Collection<String>) = variables.all { !symbols.contains(it) }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -477,9 +480,35 @@ open class Expression internal constructor(
         return s
     }
 
+    /**
+     * Approximation of the expression numeric value as a Double.  Returns NaN if it is undefined or if it is
+     * not a numerical value (e.g. an equation or a variable expression)
+     */
     val doubleValue: Double by lazy {
         when (operator) {
             is ExpressionOperator -> operator.eval(children.map { it.doubleValue })
+            else -> Double.NaN
+        }
+    }
+
+    /**
+     * Approximation of the expression numeric value as a Double for the given variable values. Returns NaN if it is
+     * undefined or if it is not a numerical value (e.g. an equation or has other variables than the ones given)
+     */
+    fun evaluate(variableValues: Map<String, Double>): Double {
+        return when {
+            isConstantIn(variableValues.keys) -> doubleValue
+            this is Variable -> variableValues[variableName] ?: Double.NaN
+            operator is ExpressionOperator -> operator.eval(children.map { it.evaluate(variableValues) })
+            else -> Double.NaN
+        }
+    }
+
+    fun evaluate(variable: String, value: Double): Double {
+        return when {
+            variable !in variables -> doubleValue
+            this is Variable -> if (variableName == variable) value else Double.NaN
+            operator is ExpressionOperator -> operator.eval(children.map { it.evaluate(variable, value) })
             else -> Double.NaN
         }
     }
@@ -492,6 +521,11 @@ open class Expression internal constructor(
     open fun signOf(): Sign = Sign.NONE
 
     fun isDefinitelyNotUndefined() = signOf() != Sign.NONE
+
+    /**
+     * Returns the depth of the expression.  The depth of an expression is the depth of its tree representation.
+     */
+    val depth: Int by lazy { if (operands.isEmpty()) 0 else 1 + operands.maxOf { it.depth } }
 }
 
 /**
@@ -524,10 +558,6 @@ fun Expression.withoutNegOrPlus(): Expression = when (operator) {
         firstChild.withoutNegOrPlus()
     else -> this
 }
-
-fun Expression.isSignedInteger() = this is IntegerExpression || (this is Minus && firstChild is IntegerExpression)
-
-fun Expression.isSignedFraction() = this is Fraction || (this is Minus && firstChild is Fraction)
 
 fun Expression.isRationalExpression(): Boolean {
     return (this is Fraction && !denominator.isConstant()) ||
@@ -594,6 +624,8 @@ fun Expression.isPolynomial(): Boolean = when (this) {
     !is ValueExpression -> false
     is Fraction -> numerator.isPolynomial() && denominator.isConstant()
     is DivideBy -> divisor.isConstant()
+    is Root -> radicand.isConstant()
+    is SquareRoot -> argument.isConstant()
     else -> children.all { it.isPolynomial() }
 }
 
@@ -611,9 +643,16 @@ fun Expression.containsPowers(): Boolean {
     }
 }
 
+fun Expression.containsDecimals(): Boolean = this is DecimalExpression || this is RecurringDecimalExpression ||
+    children.any { it.containsDecimals() }
+
+fun Expression.containsFractions(): Boolean = this is Fraction || children.any { it.containsFractions() }
+
 fun Expression.allSubterms(): List<Expression> = listOf(this) + children.flatMap { it.allSubterms() }
 
 fun Expression.complexity(): Int = 1 + children.sumOf { it.complexity() }
+
+inline fun <reified T : Expression>Expression.isSigned(): Boolean = this is T || this is Minus && argument is T
 
 internal fun expressionOf(operator: Operator, operands: List<Expression>) =
     expressionOf(operator, operands, BasicMeta())
@@ -639,6 +678,8 @@ private fun expressionOf(
                 meta,
             )
         }
+        PiOperator -> PiExpression(meta)
+        EulerEOperator -> EulerEExpression(meta)
         UnaryExpressionOperator.Minus -> Minus(operands[0], meta)
         UnaryExpressionOperator.Plus -> Plus(operands[0], meta)
         UnaryExpressionOperator.PlusMinus -> PlusMinus(operands[0], meta)
@@ -647,6 +688,8 @@ private fun expressionOf(
         UnaryExpressionOperator.SquareRoot -> SquareRoot(operands[0], meta)
         UnaryExpressionOperator.Percentage -> Percentage(operands[0], meta)
 
+        is TrigonometricFunctionOperator ->
+            TrigonometricExpression(operator.type, operands[0], operator.powerInside, operator.inverseNotation, meta)
         is ProductOperator -> Product(operands, operator.forcedSigns, meta)
         SumOperator -> Sum(operands, meta)
 

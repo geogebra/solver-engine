@@ -1,6 +1,6 @@
 import type { Tag, Transformation } from '../types';
 
-const trivialTags: Tag[] = ['Cosmetic', 'Rearrangement', 'Pedantic', 'InvisibleChange'];
+const defaultTrivialTags: Tag[] = ['Cosmetic', 'Pedantic', 'InvisibleChange'];
 
 /**
  * Evaluates whether a step (a single transformation) is tagged with a trivial tag.
@@ -8,7 +8,10 @@ const trivialTags: Tag[] = ['Cosmetic', 'Rearrangement', 'Pedantic', 'InvisibleC
  * @param transformation
  * @returns A boolean indicating whether the provided transformation is trivial or not.
  */
-export function isTrivialStep(transformation: Transformation): boolean {
+export function isTrivialStep(
+  transformation: Transformation,
+  trivialTags = defaultTrivialTags,
+): boolean {
   if (transformation.tags) {
     for (const tag of transformation.tags) {
       if (trivialTags.includes(tag)) return true;

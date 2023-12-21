@@ -1,10 +1,11 @@
 {
   "plugins": ["@typescript-eslint"],
-  "parser": "@typescript-eslint/parser",
+  "parser": "vue-eslint-parser",
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended",
+    "plugin:vue/vue3-recommended",
     "prettier"
   ],
   "env": {
@@ -16,6 +17,7 @@
     "eqeqeq": "error"
   },
   "parserOptions": {
-    "sourceType": "module"
+    "sourceType": "module",
+    "parser": "@typescript-eslint/parser"
   }
 }

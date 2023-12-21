@@ -57,7 +57,7 @@ class IntegerArithmeticRulesTest {
         testRule("2*3", EvaluateIntegerProductAndDivision, "6")
         testRule("1 * (-2)", EvaluateIntegerProductAndDivision, "-2", GmAction("Drag", "./1:group", "./0:group"))
         testRule("(-2) * x * 5", EvaluateIntegerProductAndDivision, "(-10) x")
-        testRule("10:2", EvaluateIntegerProductAndDivision, "5", GmAction("NotSupported"))
+        testRule("10:2", EvaluateIntegerProductAndDivision, "5", GmAction("Drag", "./1/0:group", "./0:group"))
         testRule("10:(-2)", EvaluateIntegerProductAndDivision, "-5")
         testRule("-2*0", EvaluateIntegerProductAndDivision, "0")
         testRule("-2*3", EvaluateIntegerProductAndDivision, "-6")

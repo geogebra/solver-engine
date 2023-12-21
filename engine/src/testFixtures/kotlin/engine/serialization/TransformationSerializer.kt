@@ -1,7 +1,8 @@
-package engine.methods
+package engine.serialization
 
 import engine.expressions.Expression
 import engine.expressions.RootPath
+import engine.methods.GMTOEXPR_KEY
 import engine.steps.metadata.MetadataKey
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
@@ -10,12 +11,30 @@ import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonEncoder
 import kotlinx.serialization.json.encodeToJsonElement
+
+@Serializable
+data class Context(
+    val settings: Map<String, String>,
+    val precision: Int,
+    val solutionVariables: List<String>,
+    val preferredStrategies: Map<String, String>,
+) {
+    companion object {
+        fun fromContext(context: engine.context.Context) = Context(
+            settings = context.settings.entries.associate { it.key.name to it.value.name },
+            precision = context.effectivePrecision,
+            solutionVariables = context.solutionVariables,
+            preferredStrategies = context.preferredStrategies.entries.associate {
+                it.key.simpleName.toString() to it.value.name
+            },
+        )
+    }
+}
 
 @Serializable
 enum class Format(val value: String) {
@@ -25,7 +44,7 @@ enum class Format(val value: String) {
 }
 
 @Serializable
-private data class GmAction(
+data class GmAction(
     val type: String,
     val expressions: List<String>? = null,
     val dragTo: GmActionDragTo? = null,
@@ -33,33 +52,33 @@ private data class GmAction(
 )
 
 @Serializable
-private data class GmActionDragTo(
+data class GmActionDragTo(
     val expression: String? = null,
     val position: String? = null,
 )
 
 @Serializable
-private data class MappedExpression(
+data class MappedExpression(
     @Serializable(with = ExpressionSerializer::class)
     val expression: Any,
     val pathMappings: List<PathMapping>,
 )
 
 @Serializable
-private data class Metadata(
+data class Metadata(
     val key: String,
     val params: List<MappedExpression>? = null,
 )
 
 @Serializable
-private data class PathMapping(
+data class PathMapping(
     val type: String,
     val fromPaths: List<String>,
     val toPaths: List<String>,
 )
 
 @Serializable
-private data class Task(
+data class Task(
     val taskId: String,
     @Serializable(with = ExpressionSerializer::class)
     val startExpr: Any,
@@ -70,12 +89,14 @@ private data class Task(
 )
 
 @Serializable
-private data class Transformation(
+data class Transformation(
     val path: String,
     @Serializable(with = ExpressionSerializer::class)
     val fromExpr: Any,
     @Serializable(with = ExpressionSerializer::class)
     val toExpr: Any,
+    @Serializable(with = ExpressionSerializer::class)
+    val gmToExpr: Any? = null,
     val pathMappings: List<PathMapping>,
     val type: String? = null,
     val tags: List<String>? = null,
@@ -84,9 +105,16 @@ private data class Transformation(
     val skills: List<Metadata>? = null,
     val steps: List<Transformation>? = null,
     val tasks: List<Task>? = null,
-)
+) {
+    companion object {
+        fun fromTransformation(
+            transformation: engine.steps.Transformation,
+            format: Format = Format.Json,
+        ) = TransformationModeller(format).modelTransformation(transformation)
+    }
+}
 
-private class KeyNameRegistry {
+class KeyNameRegistry {
     companion object {
         fun getKeyName(key: MetadataKey): String {
             return key.keyName
@@ -117,11 +145,6 @@ private class ExpressionSerializer : kotlinx.serialization.KSerializer<Any> {
     }
 }
 
-fun encodeTransformationToString(trans: engine.steps.Transformation?, format: Format): String {
-    if (trans === null) return "null"
-    val surrogate = TransformationModeller(format).modelTransformation(trans)
-    return Json.encodeToString(surrogate)
-}
 private class TransformationModeller(val format: Format) {
 
 // ***********************************************************************************************
@@ -136,6 +159,7 @@ private class TransformationModeller(val format: Format) {
             path = trans.fromExpr.path.toString(),
             fromExpr = modelExpression(trans.fromExpr),
             toExpr = modelExpression(trans.toExpr.removeBrackets()),
+            gmToExpr = trans.getExtra<Expression>(GMTOEXPR_KEY)?.let { modelExpression(it) },
             pathMappings = modelPathMappings(trans.toExpr.mergedPathMappings(trans.fromExpr.path!!)),
             explanation = trans.explanation?.let { modelMetadata(it) },
             skills = trans.skills?.map { modelMetadata(it) },

@@ -334,15 +334,7 @@ class RationalizationTest {
                     fromExpr = "[2 root[[2 ^ 2], 3] / root[2, 3] * root[[2 ^ 2], 3]]"
                     toExpr = "[2 root[4, 3] / root[2, 3] * root[[2 ^ 2], 3]]"
                     explanation {
-                        key = IntegerRootsExplanation.SimplifyProductWithRoots
-                    }
-
-                    step {
-                        fromExpr = "2 root[[2 ^ 2], 3]"
-                        toExpr = "2 root[4, 3]"
-                        explanation {
-                            key = IntegerArithmeticExplanation.EvaluateIntegerPowerDirectly
-                        }
+                        key = IntegerArithmeticExplanation.EvaluateIntegerPowerDirectly
                     }
                 }
 

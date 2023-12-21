@@ -3,6 +3,7 @@ package methods.collecting
 import engine.expressions.CancellableView
 import engine.expressions.Expression
 import engine.expressions.Factor
+import engine.expressions.Fraction
 import engine.expressions.IntegerExpression
 import engine.expressions.Label
 import engine.expressions.Power
@@ -10,8 +11,7 @@ import engine.expressions.Root
 import engine.expressions.SquareRoot
 import engine.expressions.Sum
 import engine.expressions.TermView
-import engine.expressions.isSignedFraction
-import engine.expressions.isSignedInteger
+import engine.expressions.isSigned
 import engine.expressions.negOf
 import engine.expressions.productOf
 import engine.expressions.simplifiedProductOf
@@ -36,15 +36,15 @@ enum class CollectingRules(override val runner: Rule) : RunnerMethod {
     CollectLikeRoots(
         CollectLikeTermsRule(
             factorSelector = { it is SquareRoot || it is Root },
-            coefficientCondition = { it.isSignedInteger() || it.isSignedFraction() },
+            coefficientCondition = { it.isSigned<IntegerExpression>() || it.isSigned<Fraction>() },
             explanationKey = Explanation.CollectLikeRoots,
         ).rule,
     ),
 
     CollectLikeRationalPowers(
         CollectLikeTermsRule(
-            factorSelector = { it is Power && it.base is IntegerExpression && it.exponent.isSignedFraction() },
-            coefficientCondition = { it.isSignedInteger() || it.isSignedFraction() },
+            factorSelector = { it is Power && it.base is IntegerExpression && it.exponent.isSigned<Fraction>() },
+            coefficientCondition = { it.isSigned<IntegerExpression>() || it.isSigned<Fraction>() },
             explanationKey = Explanation.CollectLikeRationalPowers,
         ).rule,
     ),
@@ -94,6 +94,7 @@ private class CollectLikeTermsRule(
     private val explanationKey: MetadataKey,
 ) {
     private class SplitTerm(
+        val term: Expression,
         val selectedFactors: List<Expression>,
         val coefficient: Expression,
     ) {
@@ -119,7 +120,7 @@ private class CollectLikeTermsRule(
         val coefficient = termView.recombine()
         if (!coefficientCondition(coefficient)) return null
 
-        return SplitTerm(selectedFactors, coefficient)
+        return SplitTerm(term, selectedFactors, coefficient)
     }
 
     val rule = rule {
@@ -135,6 +136,9 @@ private class CollectLikeTermsRule(
 
             // Now find the like terms in the sum
             val likeTerms = splitTerms.mapNotNull { if (firstLikeTerm.hasSameFactorsAs(it)) it else null }
+
+            // Do not collect like terms when all like terms are fractions
+            if (likeTerms.all { it.term is Fraction }) return@onPattern null
 
             // Compute the common factors of the sum with correct origin
             val commonFactorsWithOrigins = firstLikeTerm.selectedFactors.map { commonFactor ->
@@ -183,7 +187,6 @@ private fun createCombineSimpleLikeTermsRule(
         val sum = sumContaining(t1, t2)
 
         onPattern(sum) {
-            if (!context.gmFriendly) return@onPattern null
             val newCoef =
                 integerOp(t1.integerCoefficient, t2.integerCoefficient) { n1, n2 -> (n1 + n2).abs() }
             val newCoefValue = getValue(t1.integerCoefficient) + getValue(t2.integerCoefficient)

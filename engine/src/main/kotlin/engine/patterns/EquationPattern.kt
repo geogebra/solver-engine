@@ -27,6 +27,8 @@ data class EquationPattern(
             }
         }
     }
+
+    override val minDepth = 1 + maxOf(lhs.minDepth, rhs.minDepth)
 }
 
 fun commutativeEquationOf(lhs: Pattern, rhs: Pattern) = EquationPattern(lhs, rhs)

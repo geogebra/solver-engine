@@ -1,5 +1,7 @@
 package methods.equations
 
+import engine.context.BalancingModeSetting
+import engine.context.Setting
 import engine.methods.testMethodInX
 import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.general.GeneralExplanation
@@ -72,13 +74,44 @@ class LinearEquationsTest {
                 fromExpr = "[x / 9] = -1"
                 toExpr = "x = -9"
                 explanation {
-                    key = methods.solvable.EquationsExplanation.MultiplyByInverseCoefficientOfVariableAndSimplify
+                    key = methods.solvable.EquationsExplanation.MultiplyByDenominatorOfVariableLHSAndSimplify
                 }
             }
 
             step {
                 fromExpr = "x = -9"
                 toExpr = "SetSolution[x: {-9}]"
+                explanation {
+                    key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test x div a = 0 linear equation`() = testMethodInX {
+        method = EquationsPlans.SolveEquation
+        inputExpr = "[x / 4] = 0"
+
+        check {
+            fromExpr = "[x / 4] = 0"
+            toExpr = "SetSolution[x: {0}]"
+            explanation {
+                key = EquationsExplanation.SolveLinearEquation
+            }
+
+            // should not happen
+            step {
+                fromExpr = "[x / 4] =0"
+                toExpr = "x = 0"
+                explanation {
+                    key = methods.solvable.EquationsExplanation.MultiplyByDenominatorOfVariableLHSAndSimplify
+                }
+            }
+
+            step {
+                fromExpr = "x = 0"
+                toExpr = "SetSolution[x: {0}]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                 }
@@ -278,7 +311,7 @@ class LinearEquationsTest {
                 fromExpr = "[x / 3] = -7"
                 toExpr = "x = -21"
                 explanation {
-                    key = methods.solvable.EquationsExplanation.MultiplyByInverseCoefficientOfVariableAndSimplify
+                    key = methods.solvable.EquationsExplanation.MultiplyByDenominatorOfVariableLHSAndSimplify
                 }
             }
 
@@ -631,7 +664,7 @@ class LinearEquationsTest {
                         fromExpr = "abs[-x - sqrt[2]]"
                         toExpr = "abs[-(x + sqrt[2])]"
                         explanation {
-                            key = GeneralExplanation.FactorMinusFromSum
+                            key = GeneralExplanation.FactorMinusFromSumWithAllNegativeTerms
                         }
                     }
                     step {
@@ -652,6 +685,140 @@ class LinearEquationsTest {
             }
 
             step { }
+        }
+    }
+}
+
+class LinearEquationWithAdvancedBalancingTest {
+
+    @Test
+    fun `test ax = b linear equation`() = testMethodInX {
+        method = EquationsPlans.SolveEquation
+        inputExpr = "3 x = 1"
+        context = context.copy(settings = mapOf(Setting.BalancingMode setTo BalancingModeSetting.Advanced))
+
+        check {
+            fromExpr = "3 x = 1"
+            toExpr = "SetSolution[x: {[1 / 3]}]"
+            explanation {
+                key = EquationsExplanation.SolveLinearEquation
+            }
+
+            step {
+                fromExpr = "3 x = 1"
+                toExpr = "x = [1 / 3]"
+                explanation {
+                    key = methods.solvable.EquationsExplanation.DivideByCoefficientOfVariable
+                }
+            }
+
+            step {
+                fromExpr = "x = [1 / 3]"
+                toExpr = "SetSolution[x: {[1 / 3]}]"
+                explanation {
+                    key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test x - a = b linear equation`() = testMethodInX {
+        method = EquationsPlans.SolveEquation
+        inputExpr = "x - 2 = 36"
+        context = context.copy(settings = mapOf(Setting.BalancingMode setTo BalancingModeSetting.Advanced))
+
+        check {
+            fromExpr = "x - 2 = 36"
+            toExpr = "SetSolution[x: {38}]"
+            explanation {
+                key = EquationsExplanation.SolveLinearEquation
+            }
+
+            step {
+                fromExpr = "x - 2 = 36"
+                toExpr = "x = 38"
+                explanation {
+                    key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                }
+
+                step {
+                    fromExpr = "x - 2 = 36"
+                    toExpr = "x = 36 + 2"
+                    explanation {
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRight
+                    }
+                }
+
+                step {
+                    fromExpr = "x = 36 + 2"
+                    toExpr = "x = 38"
+                    explanation {
+                        key = IntegerArithmeticExplanation.SimplifyIntegersInSum
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "x = 38"
+                toExpr = "SetSolution[x: {38}]"
+                explanation {
+                    key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test a = b - cx linear equation`() = testMethodInX {
+        method = EquationsPlans.SolveEquation
+        inputExpr = "1 = [3 / 5] - x"
+        context = context.copy(settings = mapOf(Setting.BalancingMode setTo BalancingModeSetting.Advanced))
+
+        check {
+            fromExpr = "1 = [3 / 5] - x"
+            toExpr = "SetSolution[x: {-[2 / 5]}]"
+            explanation {
+                key = EquationsExplanation.SolveLinearEquation
+            }
+
+            step {
+                fromExpr = "1 = [3 / 5] - x"
+                toExpr = "1 + x = [3 / 5]"
+                explanation {
+                    key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeft
+                }
+            }
+
+            step {
+                fromExpr = "1 + x = [3 / 5]"
+                toExpr = "x = -[2 / 5]"
+                explanation {
+                    key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                }
+
+                step {
+                    toExpr = "x = [3 / 5] - 1"
+                    explanation {
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRight
+                    }
+                }
+
+                step {
+                    toExpr = "x = -[2 / 5]"
+                    explanation {
+                        key = FractionArithmeticExplanation.AddIntegerAndFraction
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "x = -[2 / 5]"
+                toExpr = "SetSolution[x: {-[2 / 5]}]"
+                explanation {
+                    key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
+                }
+            }
         }
     }
 }

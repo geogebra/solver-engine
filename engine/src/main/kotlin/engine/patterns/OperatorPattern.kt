@@ -43,6 +43,8 @@ data class OperatorPattern internal constructor(
         }
         return matches
     }
+
+    override val minDepth = if (childPatterns.isEmpty()) 0 else 1 + childPatterns.maxOf { it.minDepth }
 }
 
 fun fractionOf(numerator: Pattern, denominator: Pattern) =

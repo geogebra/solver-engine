@@ -85,6 +85,7 @@ private fun Expression.isNumbery(): Boolean = when {
 // couldn't come up with a good way of splitting or simplifying this method
 @Suppress("CyclomaticComplexMethod")
 fun productSignRequired(left: Expression, right: Expression): Boolean = when {
+    right is DivideBy -> false
     left.isPartialProduct() -> productSignRequired(left.children.last(), right)
     right.isPartialProduct() -> productSignRequired(left, right.children.first())
     left.operator == UnaryExpressionOperator.DivideBy || right.operator == UnaryExpressionOperator.DivideBy -> true

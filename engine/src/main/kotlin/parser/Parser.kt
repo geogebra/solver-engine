@@ -48,6 +48,7 @@ import engine.operators.StatementUnionOperator
 import engine.operators.SubtractEquationsOperator
 import engine.operators.SumOperator
 import engine.operators.TrigonometricFunctionOperator
+import engine.operators.TrigonometricFunctionType
 import engine.operators.TupleOperator
 import engine.operators.UnaryExpressionOperator
 import engine.operators.VectorOperator
@@ -379,10 +380,32 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
         return makeExpression(BinaryExpressionOperator.Log, visit(ctx.base), visit(ctx.argument))
     }
 
-    override fun visitTrigFunction(ctx: ExpressionParser.TrigFunctionContext): Expression {
+    // to parse "trigFunction argument" format
+    override fun visitSimpleTrigFunction(ctx: ExpressionParser.SimpleTrigFunctionContext): Expression {
         val functionName = ctx.TRIG_FUNCTION().text.replaceFirstChar { it.uppercase() }
-        val function = TrigonometricFunctionOperator.valueOf(functionName)
+        val function = TrigonometricFunctionOperator(TrigonometricFunctionType.valueOf(functionName))
         return makeExpression(function, visit(ctx.argument))
+    }
+
+    // to parse "[trigonometricFunction ^ power] argument" format
+    override fun visitPowerTrigFunction(ctx: ExpressionParser.PowerTrigFunctionContext): Expression {
+        val baseTrigFunctionType = TrigonometricFunctionType.valueOf(ctx.base.text.replaceFirstChar { it.uppercase() })
+        val exponent = visit(ctx.exp)!!
+
+        return if (exponent == Constants.MinusOne) {
+            val inverseTrigFunction = TrigonometricFunctionOperator(
+                baseTrigFunctionType.inverse,
+                inverseNotation = "superscript",
+            )
+            makeExpression(inverseTrigFunction, visit(ctx.argument))
+        } else {
+            val baseTrigFunction = TrigonometricFunctionOperator(
+                baseTrigFunctionType,
+                powerInside = true,
+            )
+            val baseExpression = makeExpression(baseTrigFunction, visit(ctx.argument))
+            makeExpression(BinaryExpressionOperator.Power, baseExpression, exponent)
+        }
     }
 
     override fun visitRealVariablePower(ctx: ExpressionParser.RealVariablePowerContext): Expression {

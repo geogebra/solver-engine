@@ -10,7 +10,7 @@ import engine.steps.Transformation
 import engine.steps.metadata.metadata
 import kotlin.reflect.KClass
 
-internal class WhileStrategiesAvailableFirstOf<T : Strategy>(
+private class WhileStrategiesAvailableFirstOf<T : Strategy>(
     private val strategyClass: KClass<T>,
     private val allStrategies: List<Strategy>,
     val init: WhileStrategiesAvailableFirstOfBuilder.() -> Unit,
@@ -116,9 +116,9 @@ private class WhileStrategiesAvailableFirstOfRunner(val builder: StepsBuilder, a
         }
     }
 
-    override fun option(init: PipelineBuilder.() -> Unit) {
+    override fun option(init: PipelineFunc) {
         if (roundSucceeded) return
-        option(ProceduralPipeline(init))
+        option(steps(init))
     }
 
     override fun option(stepsProducer: StepsProducer) {

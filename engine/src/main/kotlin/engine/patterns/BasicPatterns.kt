@@ -17,6 +17,8 @@ data class FixedPattern(val expr: Expression) : BasePattern() {
             else -> emptySequence()
         }
     }
+
+    override val minDepth = expr.depth
 }
 
 /**

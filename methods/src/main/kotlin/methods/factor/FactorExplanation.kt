@@ -21,8 +21,6 @@ enum class FactorExplanation : CategorisedMetadataKey {
      */
     RearrangeEquivalentSums,
 
-    FactorIntegerInSquareRoot,
-
     /**
      * Factor out the greatest common factor from a sum, by first splitting
      * the monomials and then extracting the common terms.
@@ -33,8 +31,6 @@ enum class FactorExplanation : CategorisedMetadataKey {
      */
     @LegacyKeyName("Polynomials.FactorGreatestCommonFactor")
     FactorGreatestCommonFactor,
-
-    FactorGreatestCommonSquareIntegerFactor,
 
     /**
      * Factor out the greatest common integer factor for a sum by splitting the

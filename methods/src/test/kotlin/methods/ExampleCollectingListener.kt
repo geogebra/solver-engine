@@ -1,5 +1,6 @@
 package methods
 
+import engine.context.Context
 import engine.methods.Method
 import engine.methods.MethodId
 import engine.methods.MethodTestCase
@@ -36,7 +37,7 @@ class ExampleCollectingListener : TestExecutionListener, SolutionProcessor {
         }
     }
 
-    override fun processSolution(input: String, method: Method, solution: Transformation?) {
+    override fun processSolution(context: Context, input: String, method: Method, solution: Transformation?) {
         if (solution != null && method is RunnerMethod) {
             val category = method::class.simpleName?.removeSuffix("Plans")
             val keys = extractExplanationsKeys(solution).toSet()

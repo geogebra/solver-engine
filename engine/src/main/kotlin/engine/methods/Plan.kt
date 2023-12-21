@@ -1,17 +1,12 @@
 package engine.methods
 
 import engine.context.Context
-import engine.context.ResourceData
-import engine.context.emptyResourceData
 import engine.expressions.Combine
 import engine.expressions.Constants
 import engine.expressions.Expression
 import engine.expressions.ExpressionWithConstraint
-import engine.methods.stepsproducers.ContextSensitiveAlternative
-import engine.methods.stepsproducers.ContextSensitiveSelector
-import engine.methods.stepsproducers.PipelineBuilder
+import engine.methods.stepsproducers.PipelineFunc
 import engine.methods.stepsproducers.StepsProducer
-import engine.methods.stepsproducers.steps
 import engine.patterns.NaryPattern
 import engine.patterns.Pattern
 import engine.patterns.RootMatch
@@ -56,75 +51,46 @@ class Plan(
             }
         }
     }
+    override val minDepth get() = maxOf(pattern.minDepth, stepsProducer.minDepth)
 }
 
 class PlanBuilder : CompositeMethodBuilder() {
 
-    private var isPartialExpression = false
-    private var alternatives: MutableList<ContextSensitiveAlternative> = mutableListOf()
     private lateinit var defaultSteps: StepsProducer
-    private lateinit var resourceData: ResourceData
 
     private fun checkNotInitialized() {
         check(!::defaultSteps.isInitialized)
     }
 
-    fun partialExpressionSteps(resourceData: ResourceData = emptyResourceData, init: PipelineBuilder.() -> Unit) {
+    fun partialExpressionSteps(init: PipelineFunc): PartialExpressionPlan {
         checkNotInitialized()
         require(pattern is NaryPattern)
-        this.isPartialExpression = true
-        steps(resourceData, init)
+        return PartialExpressionPlan(
+            pattern = pattern as NaryPattern,
+            stepsProducer = engine.methods.stepsproducers.steps(init),
+            explanationMaker = explanationMaker,
+            skillMakers = skillMakers,
+            specificPlans = specificPlans,
+        )
     }
 
-    fun steps(resourceData: ResourceData = emptyResourceData, init: PipelineBuilder.() -> Unit) {
+    fun steps(init: PipelineFunc): Plan {
         checkNotInitialized()
-        defaultSteps = steps(init)
-        this.resourceData = resourceData
-    }
-
-    fun alternative(resourceData: ResourceData, init: PipelineBuilder.() -> Unit) {
-        val alternative = steps(init)
-        alternatives.add(ContextSensitiveAlternative(alternative, resourceData))
-    }
-
-    private fun wrapPlanExecutor(stepsProducer: StepsProducer): CompositeMethod {
-        return when {
-            isPartialExpression -> PartialExpressionPlan(
-                pattern = pattern as NaryPattern,
-                stepsProducer = stepsProducer,
-                explanationMaker = explanationMaker,
-                skillMakers = skillMakers,
-                specificPlans = specificPlans,
-            )
-            else -> Plan(
-                pattern = pattern,
-                resultPattern = resultPattern,
-                stepsProducer = stepsProducer,
-                explanationMaker = explanationMaker,
-                skillMakers = skillMakers,
-                specificPlans = specificPlans,
-            )
-        }
-    }
-
-    fun buildPlan(): CompositeMethod {
-        return when {
-            alternatives.isEmpty() -> wrapPlanExecutor(defaultSteps)
-            else -> wrapPlanExecutor(
-                ContextSensitiveSelector(
-                    default = ContextSensitiveAlternative(defaultSteps, resourceData),
-                    alternatives = alternatives,
-                ),
-            )
-        }
+        return Plan(
+            pattern = pattern,
+            resultPattern = resultPattern,
+            stepsProducer = engine.methods.stepsproducers.steps(init),
+            explanationMaker = explanationMaker,
+            skillMakers = skillMakers,
+            specificPlans = specificPlans,
+        )
     }
 }
 
 /**
  * Type-safe builder to create [CompositeMethod] instance using the [PlanBuilder] DSL.
  */
-fun plan(init: PlanBuilder.() -> Unit): CompositeMethod {
+fun plan(init: PlanBuilder.() -> CompositeMethod): CompositeMethod {
     val planBuilder = PlanBuilder()
-    planBuilder.init()
-    return planBuilder.buildPlan()
+    return planBuilder.init()
 }

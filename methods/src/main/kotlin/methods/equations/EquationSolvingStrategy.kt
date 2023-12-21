@@ -1,6 +1,5 @@
 package methods.equations
 
-import engine.context.Curriculum
 import engine.context.StrategySelectionMode
 import engine.expressions.Equation
 import engine.expressions.Expression
@@ -13,13 +12,13 @@ import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.optionalSteps
 import engine.methods.stepsproducers.steps
 import engine.methods.stepsproducers.whileStrategiesAvailableFirstOf
-import methods.algebra.AlgebraPlans
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.equationsystems.EquationSystemsPlans
 import methods.factor.FactorPlans
-import methods.polynomials.PolynomialRules
 import methods.polynomials.PolynomialsPlans
+import methods.polynomials.normalizePolynomialSteps
 import methods.rationalexpressions.RationalExpressionsPlans
+import methods.simplify.SimplifyPlans
 import methods.solvable.DenominatorExtractor.extractFraction
 import methods.solvable.SolvableRules
 import methods.solvable.countAbsoluteValues
@@ -85,7 +84,7 @@ enum class EquationSolvingStrategy(
                     // See if we can complete the square straight away
                     optionally(EquationsPlans.MultiplyByInverseOfLeadingCoefficientAndSimplify)
                     optionally {
-                        applyTo(PolynomialRules.NormalizePolynomial) { it.firstChild }
+                        applyTo(normalizePolynomialSteps) { it.firstChild }
                     }
                     applyTo(FactorPlans.FactorSquareOfBinomial) { it.firstChild }
                 }
@@ -94,7 +93,7 @@ enum class EquationSolvingStrategy(
                     optionally(solvablePlansForEquations.moveConstantsToTheRightAndSimplify)
                     optionally(EquationsPlans.MultiplyByInverseOfLeadingCoefficientAndSimplify)
                     optionally {
-                        applyTo(PolynomialRules.NormalizePolynomial) { it.firstChild }
+                        applyTo(normalizePolynomialSteps) { it.firstChild }
                     }
                     apply(EquationsPlans.RewriteToXPLusASquareEqualsBForm)
                 }
@@ -173,10 +172,9 @@ enum class EquationSolvingStrategy(
 
                 // Cases where the RHS is not constant
 
-                // The US method doesn't use equations with constraints but doesn't always work, so we
-                // try it first if the curriculum is US
+                // The solution without domain computation doesn't always work, so we try it first
                 option {
-                    check { curriculum == Curriculum.US }
+                    check { isSet(engine.context.Setting.SolveEquationsWithoutComputingTheDomain) }
                     apply(EquationsPlans.SolveEquationWithOneAbsoluteValueBySubstitution)
                 }
 
@@ -235,9 +233,20 @@ enum class EquationSolvingStrategy(
             firstOf {
                 option {
                     /**
+                     * First we check if we can get rid of the denominators by simplifying and expanding.
+                     */
+                    optionally(EquationsPlans.SimplifyEquation)
+                    whilePossible {
+                        check { it.containsVariableDenominator(solutionVariables) }
+                        apply(PolynomialsPlans.ExpandMostComplexSubterm)
+                    }
+                    check { !it.containsVariableDenominator(solutionVariables) }
+                }
+                option {
+                    /**
                      * An equation where all the denominators are the same is called a
-                     * rational equation with a trivial LCD
-                     * Here we don't want to cancel the fractions (because the cancellation would have to be undone)
+                     * rational equation with a trivial LCD. Here we don't want to cancel
+                     * the fractions (because the cancellation would have to be undone)
                      */
                     apply(EquationsRules.MultiplyBothSidesOfRationalEquationWithTrivialLCD)
                     apply(EquationsPlans.SimplifyEquation)
@@ -267,7 +276,7 @@ enum class EquationSolvingStrategy(
         steps = optionalSteps {
             optionally(solvablePlansForEquations.moveEverythingToTheLeftAndSimplify)
             optionally {
-                applyTo(PolynomialRules.NormalizePolynomial) { it.firstChild }
+                applyTo(normalizePolynomialSteps) { it.firstChild }
             }
         },
     ),
@@ -360,6 +369,10 @@ internal val solveEquation = lazy {
         // Split up equations containing +/- and solve them
         option(EquationSolvingStrategy.ResolvePlusminus)
 
+        // Remove constant coefficient but only for linear equations.  This is so the next options doesn't do something
+        // more complicated with the coefficients.
+        option(solvablePlansForEquations.linearCoefficientRemovalSteps)
+
         // Remove constant denominators when it makes the equation simpler
         option(solvablePlansForEquations.removeConstantDenominatorsSteps)
 
@@ -394,7 +407,7 @@ private val quadraticFormulaSteps = steps {
 
     // rearrange LHS to the form: a[x^2] + bx + c
     optionally {
-        applyTo(PolynomialRules.NormalizePolynomial) { it.firstChild }
+        applyTo(normalizePolynomialSteps) { it.firstChild }
     }
 
     // normalize to the form: a[x^2] + bx + c = 0, where a > 0
@@ -421,7 +434,7 @@ private val quadraticFormulaSteps = steps {
                     applyTo(PolynomialsPlans.ExpandPolynomialExpression) { it.secondChild }
                 }
                 optionally {
-                    applyTo(AlgebraPlans.SimplifyAlgebraicExpression) { it.secondChild }
+                    applyTo(SimplifyPlans.SimplifyAlgebraicExpression) { it.secondChild }
                 }
             }
         }

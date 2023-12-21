@@ -1,15 +1,20 @@
 package methods.expand
 
+import engine.context.Setting
 import engine.expressions.Constants
 import engine.expressions.DivideBy
+import engine.expressions.Expression
 import engine.expressions.Minus
 import engine.expressions.Sum
+import engine.expressions.equationOf
 import engine.expressions.explicitProductOf
+import engine.expressions.fractionOf
 import engine.expressions.negOf
 import engine.expressions.powerOf
 import engine.expressions.productOf
 import engine.expressions.sumOf
 import engine.methods.Rule
+import engine.methods.RuleResultBuilder
 import engine.methods.RunnerMethod
 import engine.methods.rule
 import engine.patterns.AnyPattern
@@ -17,6 +22,7 @@ import engine.patterns.FixedPattern
 import engine.patterns.commutativeProductOf
 import engine.patterns.commutativeSumOf
 import engine.patterns.condition
+import engine.patterns.fractionOf
 import engine.patterns.negOf
 import engine.patterns.oneOf
 import engine.patterns.powerOf
@@ -31,6 +37,7 @@ import engine.steps.metadata.metadata
 
 enum class ExpandRules(override val runner: Rule) : RunnerMethod {
     DistributeMultiplicationOverSum(distributeMultiplicationOverSum),
+    DistributeConstantNumerator(distributeConstantNumerator),
     DistributeNegativeOverBracket(distributeNegativeOverBracket),
     ExpandBinomialSquaredUsingIdentity(expandBinomialSquaredUsingIdentity),
     ExpandBinomialCubedUsingIdentity(expandBinomialCubedUsingIdentity),
@@ -68,20 +75,101 @@ private val distributeMultiplicationOverSum = rule {
         // variableExpression * (c1 + c2 + ... + cn) --> shouldn't be expanded
         if (sumValue.isConstant() && !toDistribute.isConstant()) return@onPattern null
 
+        val distributedTerms = if (context.isSet(Setting.CopySumSignsWhenDistributing)) {
+            val toDistribute = copySign(optionalNegProduct, toDistribute)
+            sumValue.terms.map {
+                multiplyDistributedTerm(toDistribute, it, multiplyFromRight, extractMinus = true)
+            }
+        } else {
+            sumValue.terms.map {
+                copySign(optionalNegProduct, multiplyDistributedTerm(toDistribute, it, multiplyFromRight))
+            }
+        }
         ruleResult(
-            toExpr = sumOf(
-                if (multiplyFromRight) {
-                    sumValue.terms.map { copySign(optionalNegProduct, explicitProductOf(move(it), toDistribute)) }
-                } else {
-                    sumValue.terms.map { copySign(optionalNegProduct, explicitProductOf(toDistribute, move(it))) }
-                },
-            ),
+            toExpr = sumOf(distributedTerms),
             gmAction = drag(toDistribute, GmPathModifier.Group, sum, null, DragTargetPosition.LeftOf),
             explanation = metadata(
                 Explanation.DistributeMultiplicationOverSum,
                 copySign(optionalNegProduct, toDistribute),
             ),
         )
+    }
+}
+
+private fun RuleResultBuilder.multiplyDistributedTerm(
+    toDistribute: Expression,
+    term: Expression,
+    fromRight: Boolean,
+    extractMinus: Boolean = false,
+): Expression {
+    val effectiveTerm = if (extractMinus && term is Minus && !term.hasVisibleBracket()) {
+        term.argument
+    } else {
+        term
+    }
+    val product = if (fromRight) {
+        explicitProductOf(move(effectiveTerm), toDistribute)
+    } else {
+        explicitProductOf(toDistribute, move(effectiveTerm))
+    }
+    return if (term === effectiveTerm) {
+        product
+    } else {
+        negOf(product)
+    }
+}
+
+/**
+ * [x + 2 / 3] -> [x / 3] + [2 / 3]
+ * [x - 2 / 3] -> [x / 3] - [2 / 3]
+ *
+ * We don't want to expand when the numerator is constant because it would break constant expression
+ * simplification.  This probably should be thought through.
+ */
+private val distributeConstantNumerator = rule {
+    val sum = condition(sumContaining()) { !it.isConstant() }
+    val denominator = condition { it.isConstant() }
+    val fraction = fractionOf(sum, denominator)
+
+    onPattern(fraction) {
+
+        val sumValue = get(sum) as Sum
+        val toDistribute = distribute(denominator)
+
+        // We always extract the minus in this case because we want
+        // [x - 2 / 3] --> [x / 3] - [2 / 3]
+        // Not
+        // --> [x / 3] + [-2 / 3]
+        val distributedTerms = sumValue.terms.map {
+            divideDistributedTerm(toDistribute, it, extractMinus = true)
+        }
+
+        ruleResult(
+            toExpr = sumOf(distributedTerms),
+            gmAction = drag(toDistribute, GmPathModifier.Group, sum, null, DragTargetPosition.LeftOf),
+            explanation = metadata(
+                Explanation.DistributeConstantNumerator,
+                toDistribute,
+            ),
+        )
+    }
+}
+
+private fun RuleResultBuilder.divideDistributedTerm(
+    toDistribute: Expression,
+    term: Expression,
+    extractMinus: Boolean = false,
+): Expression {
+    val effectiveTerm = if (extractMinus && term is Minus && !term.hasVisibleBracket()) {
+        term.argument
+    } else {
+        term
+    }
+    val fraction = fractionOf(move(effectiveTerm), toDistribute)
+    return if (term === effectiveTerm) {
+        fraction
+    } else {
+        negOf(fraction)
     }
 }
 
@@ -135,11 +223,19 @@ private val expandBinomialSquaredUsingIdentity =
         onPattern(pattern) {
             val (da, db, dtwo) = distribute(a, b, two)
 
+            val fa = substitute(a, "a")
+            val fb = substitute(b, "b")
+            val ftwo = substitute(two)
+
             ruleResult(
                 toExpr = sumOf(
                     powerOf(da, dtwo),
                     explicitProductOf(dtwo, da, db),
                     powerOf(db, dtwo),
+                ),
+                formula = equationOf(
+                    powerOf(sumOf(fa, fb), ftwo),
+                    sumOf(powerOf(fa, ftwo), productOf(ftwo, fa, fb), powerOf(fb, ftwo)),
                 ),
                 gmAction = doubleTap(two),
                 explanation = metadata(Explanation.ExpandBinomialSquaredUsingIdentity),
@@ -163,6 +259,10 @@ private val expandBinomialCubedUsingIdentity =
         onPattern(pattern) {
             val (da, db, dthree) = distribute(a, b, three)
 
+            val fa = substitute(a, "a")
+            val fb = substitute(b, "b")
+            val fthree = substitute(three)
+
             ruleResult(
                 toExpr = sumOf(
                     powerOf(da, dthree),
@@ -177,6 +277,15 @@ private val expandBinomialCubedUsingIdentity =
                         powerOf(db, introduce(Constants.Two)),
                     ),
                     powerOf(db, dthree),
+                ),
+                formula = equationOf(
+                    powerOf(sumOf(fa, fb), fthree),
+                    sumOf(
+                        powerOf(fa, fthree),
+                        productOf(fthree, powerOf(fa, Constants.Two), fb),
+                        productOf(fthree, fa, powerOf(fb, Constants.Three)),
+                        powerOf(fb, fthree),
+                    ),
                 ),
                 gmAction = doubleTap(three),
                 explanation = metadata(Explanation.ExpandBinomialCubedUsingIdentity),
@@ -200,14 +309,30 @@ private val expandTrinomialSquaredUsingIdentity =
         onPattern(trinomialSquared) {
             val (da, db, dc, dtwo) = distribute(a, b, c, two)
 
+            val fa = substitute(a, "a")
+            val fb = substitute(b, "b")
+            val fc = substitute(c, "c")
+            val ftwo = substitute(two)
+
             ruleResult(
                 toExpr = sumOf(
                     powerOf(da, dtwo),
                     powerOf(db, dtwo),
                     powerOf(dc, dtwo),
-                    explicitProductOf(dtwo, move(a), move(b)),
-                    explicitProductOf(dtwo, move(b), move(c)),
-                    explicitProductOf(dtwo, move(c), move(a)),
+                    explicitProductOf(dtwo, da, db),
+                    explicitProductOf(dtwo, db, dc),
+                    explicitProductOf(dtwo, dc, da),
+                ),
+                formula = equationOf(
+                    powerOf(sumOf(fa, fb, fc), ftwo),
+                    sumOf(
+                        powerOf(fa, ftwo),
+                        powerOf(fb, ftwo),
+                        powerOf(fc, ftwo),
+                        productOf(ftwo, fa, fb),
+                        productOf(ftwo, fb, fc),
+                        productOf(ftwo, fc, fa),
+                    ),
                 ),
                 gmAction = doubleTap(two),
                 explanation = metadata(Explanation.ExpandTrinomialSquaredUsingIdentity),
@@ -225,12 +350,19 @@ private val expandProductOfSumAndDifference =
         val pattern = commutativeProductOf(commutativeSumOf(a, b), commutativeSumOf(a, negOf(b)))
 
         onPattern(pattern) {
+            val fa = substitute(a, "a")
+            val fb = substitute(b, "b")
+
             ruleResult(
                 toExpr = sumOf(
                     powerOf(move(a), introduce(Constants.Two)),
                     negOf(
                         powerOf(move(b), introduce(Constants.Two)),
                     ),
+                ),
+                formula = equationOf(
+                    pattern.substitute(sumOf(fa, fb), sumOf(fa, negOf(fb))),
+                    sumOf(powerOf(fa, Constants.Two), powerOf(fb, Constants.Two)),
                 ),
                 gmAction = applyFormula(pattern, "Difference of Squares"),
                 explanation = metadata(Explanation.ExpandProductOfSumAndDifference),

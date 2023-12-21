@@ -13,7 +13,7 @@ export type Token = {
 /// like \, or is a backslash plus a string of alphabetic characters
 export function tokenize(str: string): Token[] {
   const r_symbols =
-    /^\s*(\/undefined\/|\/reals\/|\\text\{[Uu]ndefined\}|\\mathbb\{R\}|ℯ|\\mathrm\{e\}|ί|\\mathrm{i}|\\iota|\\pi(?:\{\})?)/;
+    /^\s*(\/undefined\/|\/reals\/|\\text\{[Uu]ndefined\}|\\text{[Aa][Nn][Dd]}|\\mathbb\{R\}|ℯ|\\mathrm\{e\}|ί|\\mathrm{i}|\\iota|\\pi(?:\{\})?)/;
   const r_number = /^\s*((([0-9]*(\.[0-9]*|[0-9]+))([eE][-+]?[0-9]+)?)|∞|Infinity)/;
   const r_match = new RegExp('^\\s*\\{(\\??[A-Za-z0-9_]*)\\:'); // named regexp match
   const r_name = new RegExp('^\\s*([a-zA-Z₀₁₂₃₄₅₆₇₈₉⬚])'); // single-character names
@@ -21,7 +21,20 @@ export function tokenize(str: string): Token[] {
   // this currently handles:
   // * {\mathrm{sin}} (or any other trigonometric function)
   // * {{\mathrm{\mathrm{ln}}}\left(x\right)} (nested natural-log)
-  const r_nested_mathrm = new RegExp('^\\s*{\\\\mathrm{(\\\\mathrm{[^}]+}|[^}]+)}}');
+  const r_nested_mathrm_with_braces = new RegExp(
+    '^\\s*{\\\\mathrm{(\\\\mathrm{[^}]+}|[^}]+)}}',
+  );
+  // this doesn't include the opening and closing `{}` pair around it
+  // we only want to include selected functions, as we \mathrm{2} shouldn't be tokenize here
+  const r_trig_and_log_mathrm = new RegExp(
+    '^\\s*\\\\mathrm{(' +
+      'sin|cos|tan|cot|csc|sec|' + // Trigonometric functions
+      'arcsin|arccos|arctan|arccot|arccsc|arcsec|' + // inverse trig functions
+      'sinh|cosh|tanh|coth|csch|sech|' + // Hyperbolic functions
+      'arsinh|arcosh|artanh|arcoth|arcsch|arsech|' + // inverse Hyperbolic functions
+      'ln|log' + // Logarithmic functions
+      ')}',
+  );
   const r_greek = new RegExp('^\\s*([α-ωΑ-Ω])'); // single-character greek letters
 
   // we continue to have "iota" and "pi" here,
@@ -51,7 +64,10 @@ export function tokenize(str: string): Token[] {
     } else if ((m = r_symbols.exec(s))) {
       tokens.push({
         type: 'symbol',
-        value: m[1].replace(/\\text\{[Uu]ndefined\}/, '/undefined/').replace(/\{\}$/, ''),
+        value: m[1]
+          .replace(/\\text\{[Uu]ndefined\}/, '/undefined/')
+          .replace(/\\text\{[Aa][Nn][Dd]\}/, '/and/')
+          .replace(/\{\}$/, ''),
         from: i + (m[0].length - m[1].length),
         to: i + m[0].length,
       });
@@ -125,7 +141,16 @@ export function tokenize(str: string): Token[] {
       const from = i + m.index + m[0].indexOf(m[1]);
       tokens.push({ type: 'name', value: m[1], from: from, to: from + m[1].length });
       i += m[0].length;
-    } else if ((m = r_nested_mathrm.exec(s))) {
+    } else if ((m = r_nested_mathrm_with_braces.exec(s))) {
+      // the token is a trigonometric function using \\mathrm
+      tokens.push({
+        type: 'latex',
+        value: m[0],
+        from: i + (m[0].length - m[1].length),
+        to: i + m[0].length,
+      });
+      i += m[0].length;
+    } else if ((m = r_trig_and_log_mathrm.exec(s))) {
       // the token is a trigonometric function using \\mathrm
       tokens.push({
         type: 'latex',

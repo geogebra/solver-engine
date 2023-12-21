@@ -1,6 +1,7 @@
 package methods.inequalities
 
-import engine.context.ResourceData
+import engine.context.BooleanSetting
+import engine.context.Setting
 import engine.expressions.Constants
 import engine.expressions.DoubleInequality
 import engine.expressions.Inequality
@@ -38,7 +39,7 @@ import methods.equations.EquationsPlans
 import methods.general.NormalizationPlans
 import methods.inequations.InequationsPlans
 import methods.polynomials.PolynomialsPlans
-import methods.polynomials.polynomialSimplificationSteps
+import methods.simplify.algebraicSimplificationStepsWithoutFractionAddition
 import methods.solvable.SolvablePlans
 import methods.solvable.SolvableRules
 import methods.solvable.computeOverallIntersectionSolution
@@ -55,7 +56,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
                 whilePossible { deeply(simpleTidyUpSteps) }
                 optionally(NormalizationPlans.NormalizeExpression)
                 whilePossible(SolvableRules.CancelCommonTermsOnBothSides)
-                whilePossible(polynomialSimplificationSteps)
+                optionally(algebraicSimplificationStepsWithoutFractionAddition)
             }
         },
     ),
@@ -65,12 +66,19 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
             explanation = Explanation.IsolateAbsoluteValue
             pattern = inequalityInOneVariable()
 
-            steps {
+            val innerSteps = engine.methods.stepsproducers.steps {
                 firstOf {
                     option(SolvableRules.MoveTermsNotContainingModulusToTheRight)
                     option(SolvableRules.MoveTermsNotContainingModulusToTheLeft)
                 }
                 apply(SimplifyInequality)
+            }
+
+            steps {
+                branchOn(Setting.MoveTermsOneByOne) {
+                    case(BooleanSetting.True) { whilePossible(innerSteps) }
+                    case(BooleanSetting.False) { apply(innerSteps) }
+                }
             }
         },
     ),
@@ -109,15 +117,9 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
                 optionally(solvablePlansForInequalities.coefficientRemovalSteps)
                 optionally(InequalitiesRules.ExtractSolutionFromInequalityInSolvedForm)
 
-                contextSensitive {
-                    default(
-                        ResourceData(preferDecimals = false),
-                        FormChecker(condition { it is Solution }),
-                    )
-                    alternative(
-                        ResourceData(preferDecimals = true),
-                        decimalSolutionFormChecker,
-                    )
+                branchOn(Setting.PreferDecimals) {
+                    case(BooleanSetting.True, decimalSolutionFormChecker)
+                    case(BooleanSetting.False, FormChecker(condition { it is Solution }))
                 }
             }
         },

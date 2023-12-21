@@ -57,7 +57,7 @@ private val resolveAbsoluteValuesSteps = steps {
         option(GeneralRules.ResolveAbsoluteValueOfNonNegativeValue)
         option {
             optionally {
-                applyTo(GeneralRules.FactorMinusFromSum) { it.firstChild }
+                applyTo(GeneralRules.FactorMinusFromSumWithAllNegativeTerms) { it.firstChild }
             }
             firstOf {
                 option(GeneralRules.ResolveAbsoluteValueOfNonPositiveValue)

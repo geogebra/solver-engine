@@ -1,5 +1,6 @@
 package methods.rationalexpressions
 
+import engine.context.Setting
 import engine.expressions.Constants
 import engine.expressions.Expression
 import engine.expressions.Fraction
@@ -10,8 +11,9 @@ import engine.expressions.asInteger
 import engine.expressions.explicitProductOf
 import engine.expressions.fractionOf
 import engine.expressions.isRationalExpression
-import engine.expressions.isSignedFraction
+import engine.expressions.isSigned
 import engine.expressions.productOf
+import engine.expressions.simplifiedNegOfSum
 import engine.expressions.simplifiedPowerOf
 import engine.expressions.simplifiedProductOf
 import engine.expressions.sumOf
@@ -42,7 +44,8 @@ import methods.fractionarithmetic.FractionArithmeticPlans
 import methods.fractionarithmetic.FractionArithmeticRules
 import methods.general.GeneralRules
 import methods.polynomials.PolynomialsPlans
-import methods.polynomials.polynomialSimplificationSteps
+import methods.simplify.SimplifyPlans
+import methods.simplify.algebraicSimplificationSteps
 import java.math.BigInteger
 
 enum class RationalExpressionsPlans(override val runner: CompositeMethod) : RunnerMethod {
@@ -81,7 +84,13 @@ enum class RationalExpressionsPlans(override val runner: CompositeMethod) : Runn
             pattern = sumContaining(optionalNegOf(fraction1), optionalNegOf(fraction2))
 
             partialExpressionSteps {
-                apply(FractionArithmeticRules.AddLikeFractions)
+                firstOf {
+                    option {
+                        check { isSet(Setting.QuickAddLikeFraction) }
+                        FractionArithmeticRules.AddAndSimplifyLikeFractions
+                    }
+                    option(FractionArithmeticRules.AddLikeFractions)
+                }
                 optionally(rationalExpressionSimplificationSteps)
             }
         },
@@ -93,7 +102,7 @@ enum class RationalExpressionsPlans(override val runner: CompositeMethod) : Runn
         plan {
             explanation = Explanation.AddTermAndRationalExpression
             pattern = commutativeSumContaining(
-                condition { !it.isSignedFraction() },
+                condition { !it.isSigned<Fraction>() },
                 condition { it.isRationalExpression() },
             )
 
@@ -131,7 +140,7 @@ enum class RationalExpressionsPlans(override val runner: CompositeMethod) : Runn
             )
 
             partialExpressionSteps {
-                apply(FractionArithmeticRules.MultiplyFractions)
+                apply(FractionArithmeticRules.MultiplyFractionAndFractionable)
                 optionally(rationalExpressionSimplificationSteps)
             }
         },
@@ -157,7 +166,7 @@ enum class RationalExpressionsPlans(override val runner: CompositeMethod) : Runn
             steps {
                 optionally(GeneralRules.FlipFractionUnderNegativePower)
                 apply(FractionArithmeticRules.DistributePositiveIntegerPowerOverFraction)
-                applyToChildren(PolynomialsPlans.SimplifyPolynomialExpression)
+                applyToChildren(SimplifyPlans.SimplifyAlgebraicExpression)
             }
         },
     ),
@@ -181,7 +190,7 @@ private val rationalExpressionSimplificationSteps = steps {
     optionally(RationalExpressionsPlans.FactorNumeratorOfFraction)
     optionally(RationalExpressionsPlans.FactorDenominatorOfFraction)
     apply(FractionArithmeticPlans.SimplifyFraction)
-    whilePossible(polynomialSimplificationSteps)
+    optionally(algebraicSimplificationSteps)
 }
 
 private val addRationalExpressions = taskSet {
@@ -194,6 +203,11 @@ private val addRationalExpressions = taskSet {
     val nf2 = optionalNegOf(f2)
 
     pattern = sumContaining(nf1, nf2)
+
+    val addLikeFractionsAndSimplifySteps = steps {
+        optionally { applyToKind<Fraction>(SimplifyPlans.SimplifyAlgebraicExpression) { it.numerator } }
+        optionally(rationalExpressionSimplificationSteps)
+    }
 
     partialExpressionTasks {
         val fraction1 = get(f1) as Fraction
@@ -232,25 +246,39 @@ private val addRationalExpressions = taskSet {
                 sumOf(copySign(nf1, simplifiedFraction1.numerator), copySign(nf2, simplifiedFraction2.numerator)),
                 simplifiedFraction1.denominator,
             ),
+            stepsProducer = addLikeFractionsAndSimplifySteps,
             explanation = metadata(Explanation.AddLikeRationalExpressions),
-        ) {
-            optionally { applyToKind<Fraction>(PolynomialsPlans.SimplifyPolynomialExpression) { it.numerator } }
-            optionally(rationalExpressionSimplificationSteps)
-        }
+        )
 
         allTasks()
     }
 }
 
-fun TasksBuilder.factorFractionDenominatorTask(fraction: Fraction): Fraction {
+private val factoringTaskSteps = steps {
+    applyToKind<Fraction>(FactorPlans.FactorPolynomialInOneVariable) { it.denominator }
+}
+
+private fun TasksBuilder.factorFractionDenominatorTask(fraction: Fraction): Fraction {
     val factoringTask = task(
         startExpr = fraction,
+        stepsProducer = factoringTaskSteps,
         explanation = metadata(Explanation.FactorDenominatorOfFraction),
-    ) {
-        applyToKind<Fraction>(FactorPlans.FactorPolynomialInOneVariable) { it.denominator }
-    }
+    )
 
     return factoringTask?.result as? Fraction ?: fraction
+}
+
+private val simplifyFractionSteps = steps {
+    optionally {
+        applyToKind<Fraction>(
+            PolynomialsPlans.ExpandPolynomialExpressionWithoutNormalization,
+        ) { it.numerator }
+    }
+    optionally {
+        applyToKind<Fraction>(
+            SimplifyPlans.SimplifyAlgebraicExpression,
+        ) { it.denominator }
+    }
 }
 
 private fun TasksBuilder.bringFractionToCommonDenominatorTask(fraction: Fraction, multiplier: Expression): Fraction {
@@ -263,19 +291,9 @@ private fun TasksBuilder.bringFractionToCommonDenominatorTask(fraction: Fraction
 
     val simplificationTask = taskWithOptionalSteps(
         startExpr = expandedFraction,
+        stepsProducer = simplifyFractionSteps,
         explanation = metadata(Explanation.BringFractionToLeastCommonDenominator, fraction),
-    ) {
-        optionally {
-            applyToKind<Fraction>(
-                PolynomialsPlans.ExpandPolynomialExpressionWithoutNormalization,
-            ) { it.numerator }
-        }
-        optionally {
-            applyToKind<Fraction>(
-                PolynomialsPlans.SimplifyPolynomialExpression,
-            ) { it.denominator }
-        }
-    }
+    )
 
     return simplificationTask.result as Fraction
 }
@@ -291,7 +309,10 @@ fun computeLcdAndMultipliers(factoredFractions: List<Fraction>): Pair<Expression
     for (i in 1 until multiplicitiesList.size) {
         val multiplicities = multiplicitiesList[i]
         for (factor in multiplicities) {
-            val index = lcmMultiplicities.indexOfFirst { areEquivalentSums(it.base, factor.base) }
+            val index = lcmMultiplicities.indexOfFirst {
+                areEquivalentSums(it.base, factor.base) ||
+                    areEquivalentSums(it.base, simplifiedNegOfSum(factor.base))
+            }
             if (index == -1) {
                 lcmMultiplicities.add(factor)
             } else if (lcmMultiplicities[index].exponent < factor.exponent) {

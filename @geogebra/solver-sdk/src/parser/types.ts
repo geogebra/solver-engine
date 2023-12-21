@@ -1,3 +1,5 @@
+import { trigFunctions } from './latex-to-tree';
+
 export type { LatexSettings, LatexTransformer } from '../renderer/tree-to-latex';
 
 export type NestedExpressionType =
@@ -13,36 +15,6 @@ export type NestedExpressionType =
   | 'Power' // (base, power)
   | 'SquareRoot' // unary
   | 'Root' // (degree, radicand)
-  /// Trigonometric functions
-  // Function
-  | 'Sin' // unary
-  | 'Cos'
-  | 'Tan'
-  | 'Cot' // unary
-  | 'Sec' // unary
-  | 'Csc' // unary
-  // Inverse
-  | 'Arcsin' // unary
-  | 'Arccos' // unary
-  | 'Arctan' // unary (do we need Arctan2 as well?)
-  | 'Arccot' // unary
-  | 'Arcsec' // unary
-  | 'Arccsc' // unary
-  // Hyperbolic
-  | 'Sinh' // unary
-  | 'Cosh' // unary
-  | 'Tanh' // unary
-  | 'Coth' // unary
-  | 'Sech' // unary
-  | 'Csch' // unary
-  // Area hyperbolic
-  | 'Arsinh' // unary
-  | 'Arcosh' // unary
-  | 'Artanh' // unary
-  | 'Arcoth' // unary
-  | 'Arcsch' // unary
-  | 'Arsech' // unary
-  /**/
   | 'Log' // binary
   | 'Ln' // unary
   | 'Log10' // unary
@@ -140,6 +112,16 @@ export type ExpressionDecorations = {
   name?: string;
 };
 
+export type TrigonometricFunctions = (typeof trigFunctions)[number]['type'];
+
+type InverseNotation = 'arcPrefix' | 'aPrefix' | 'superscript';
+export type TrigonometricExpression<T> = {
+  type: TrigonometricFunctions;
+  operands: ExpressionTreeBase<T>[];
+  powerInside?: boolean;
+  inverseNotation?: InverseNotation;
+} & T;
+
 export type ExpressionTreeBase<T> = ExpressionDecorations &
   (
     | NestedExpressionBase<T>
@@ -149,6 +131,7 @@ export type ExpressionTreeBase<T> = ExpressionDecorations &
     | RecurringDecimalExpression
     | VariableExpression
     | NameExpression
+    | TrigonometricExpression<T>
     | {
         type:
           | 'Undefined'

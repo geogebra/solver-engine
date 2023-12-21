@@ -20,10 +20,11 @@ class TransformationModeller(val format: Format) {
             type = trans.type.toString(),
             tags = trans.tags?.map { it.toString() },
             path = trans.fromExpr.path.toString(),
-            fromExpr = modelExpression(trans.fromExpr),
-            toExpr = modelExpression(trans.toExpr),
+            fromExpr = format.modelExpression(trans.fromExpr),
+            toExpr = format.modelExpression(trans.toExpr),
             pathMappings = modelPathMappings(trans.toExpr.mergedPathMappings(trans.fromExpr.path!!)),
             explanation = trans.explanation?.let { modelMetadata(it) },
+            formula = trans.formula?.let { modelMappedExpression(it) },
             skills = trans.skills?.map { modelMetadata(it) },
             gmAction = trans.gmAction?.let { modelGmAction(it) },
             steps = trans.steps?.let { steps -> steps.map { modelTransformation(it) } },
@@ -35,7 +36,7 @@ class TransformationModeller(val format: Format) {
     private fun modelTask(task: engine.steps.Task): Task {
         return Task(
             taskId = task.taskId,
-            startExpr = modelExpression(task.startExpr),
+            startExpr = format.modelExpression(task.startExpr),
             pathMappings = modelPathMappings(task.startExpr.mergedPathMappings(RootPath(task.taskId))),
             explanation = task.explanation?.let { modelMetadata(it) },
             steps = if (task.steps.isEmpty()) null else task.steps.map { modelTransformation(it) },
@@ -78,12 +79,7 @@ class TransformationModeller(val format: Format) {
     private fun modelMetadata(metadata: engine.steps.metadata.Metadata): Metadata {
         return Metadata(
             key = KeyNameRegistry.getKeyName(metadata.key),
-            params = metadata.mappedParams.map {
-                MappedExpression(
-                    expression = modelExpression(it),
-                    pathMappings = modelPathMappings(it.mergedPathMappings(RootPath())),
-                )
-            },
+            params = metadata.mappedParams.map { modelMappedExpression(it) },
         )
     }
 
@@ -100,11 +96,18 @@ class TransformationModeller(val format: Format) {
         )
     }
 
-    private fun modelExpression(expr: engine.expressions.Expression): Any {
-        return when (format) {
-            Format.Latex -> expr.toLatexString()
-            Format.Solver -> expr.toString()
-            Format.Json2 -> expr.toJson()
-        }
+    private fun modelMappedExpression(expr: engine.expressions.Expression): MappedExpression {
+        return MappedExpression(
+            expression = format.modelExpression(expr),
+            pathMappings = modelPathMappings(expr.mergedPathMappings(RootPath())),
+        )
+    }
+}
+
+internal fun Format.modelExpression(expr: engine.expressions.Expression): Any {
+    return when (this) {
+        Format.Latex -> expr.toLatexString()
+        Format.Solver -> expr.toString()
+        Format.Json2 -> expr.toJson()
     }
 }

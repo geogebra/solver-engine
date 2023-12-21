@@ -1,15 +1,16 @@
 title: Context
 type: object
 properties:
-  curriculum:
-    type: string
-  gmFriendly:
-    type: boolean
-    description: Give steps that are good for when you want to do your math on a Graspable Math (GM) canvas. (See graspablemath.com). Default is false.
+  presets:
+    type: array
+    items:
+      type: string
+  settings:
+    type: object
+    additionalProperties:
+      type: string
   precision:
     type: number
-  preferDecimals:
-    type: boolean
   solutionVariable:
     type: string
   preferredStrategies:

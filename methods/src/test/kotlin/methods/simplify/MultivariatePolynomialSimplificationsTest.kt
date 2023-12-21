@@ -1,23 +1,24 @@
-package methods.polynomials
+package methods.simplify
 
 import engine.methods.testMethod
 import methods.collecting.CollectingExplanation
 import methods.constantexpressions.ConstantExpressionsExplanation
 import methods.general.GeneralExplanation
+import methods.polynomials.PolynomialsExplanation
 import org.junit.jupiter.api.Test
 
-class SimplifyMultivariatePolynomialsTest {
+class MultivariatePolynomialSimplificationsTest {
 
     @Test
     fun testFactorOfOneIsEliminatedInPolynomial() = testMethod {
-        method = PolynomialsPlans.SimplifyPolynomialExpression
+        method = SimplifyPlans.SimplifyAlgebraicExpression
         inputExpr = "1 x * 1 y"
 
         check {
             fromExpr = "1 x * 1 y"
             toExpr = "x y"
             explanation {
-                key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
+                key = SimplifyExplanation.SimplifyPolynomialExpression
             }
 
             step {
@@ -40,7 +41,7 @@ class SimplifyMultivariatePolynomialsTest {
 
     @Test
     fun `test rearranging multivariate monomial`() = testMethod {
-        method = PolynomialsPlans.SimplifyPolynomialExpression
+        method = SimplifyPlans.SimplifyAlgebraicExpression
         inputExpr = "3 [x ^ 4] [a ^ 2] b y"
 
         check {
@@ -54,14 +55,14 @@ class SimplifyMultivariatePolynomialsTest {
 
     @Test
     fun `test collecting like multivariate terms`() = testMethod {
-        method = PolynomialsPlans.SimplifyPolynomialExpression
+        method = SimplifyPlans.SimplifyAlgebraicExpression
         inputExpr = "a x + [1 / 3] a b x - 2 a x + [3 / 4] a b x"
 
         check {
             fromExpr = "a x + [1 / 3] a b x - 2 a x + [3 / 4] a b x"
             toExpr = "-a x + [13 / 12] a b x"
             explanation {
-                key = PolynomialsExplanation.SimplifyPolynomialExpressionInOneVariable
+                key = SimplifyExplanation.SimplifyPolynomialExpression
             }
 
             step {
@@ -116,7 +117,7 @@ class SimplifyMultivariatePolynomialsTest {
 
     @Test
     fun `test multiplying multivariate monomials`() = testMethod {
-        method = PolynomialsPlans.SimplifyPolynomialExpression
+        method = SimplifyPlans.SimplifyAlgebraicExpression
         inputExpr = "-[2 / 3] b [x ^ 3] y * 5 a b [x ^ 2] y"
 
         check {
@@ -170,7 +171,7 @@ class SimplifyMultivariatePolynomialsTest {
 
     @Test
     fun `test simplifying power of multivariate monomial`() = testMethod {
-        method = PolynomialsPlans.SimplifyPolynomialExpression
+        method = SimplifyPlans.SimplifyAlgebraicExpression
         inputExpr = "[(3 a [b ^ 2] c [x ^ 4]) ^ 3]"
 
         check {

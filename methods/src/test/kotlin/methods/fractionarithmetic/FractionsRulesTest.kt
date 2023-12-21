@@ -3,6 +3,7 @@ package methods.fractionarithmetic
 import engine.methods.testMethod
 import engine.methods.testRule
 import engine.methods.testRuleInX
+import methods.fractionarithmetic.FractionArithmeticRules.AddAndSimplifyLikeFractions
 import methods.fractionarithmetic.FractionArithmeticRules.AddLikeFractions
 import methods.fractionarithmetic.FractionArithmeticRules.BringToCommonDenominator
 import methods.fractionarithmetic.FractionArithmeticRules.BringToCommonDenominatorWithNonFractionalTerm
@@ -10,8 +11,9 @@ import methods.fractionarithmetic.FractionArithmeticRules.CancelCommonFactorInFr
 import methods.fractionarithmetic.FractionArithmeticRules.ConvertIntegerToFraction
 import methods.fractionarithmetic.FractionArithmeticRules.DistributeFractionalPowerOverFraction
 import methods.fractionarithmetic.FractionArithmeticRules.DistributePositiveIntegerPowerOverFraction
+import methods.fractionarithmetic.FractionArithmeticRules.FactorGreatestCommonIntegerFactorInFraction
 import methods.fractionarithmetic.FractionArithmeticRules.FindCommonIntegerFactorInFraction
-import methods.fractionarithmetic.FractionArithmeticRules.MultiplyFractions
+import methods.fractionarithmetic.FractionArithmeticRules.MultiplyFractionAndFractionable
 import methods.fractionarithmetic.FractionArithmeticRules.RewriteDivisionAsFraction
 import methods.fractionarithmetic.FractionArithmeticRules.RewriteDivisionAsMultiplicationByReciprocal
 import methods.fractionarithmetic.FractionArithmeticRules.SimplifyFractionToInteger
@@ -84,6 +86,17 @@ class FractionsRulesTest {
     }
 
     @Test
+    fun testAddAndSimplifyLikeFractions() {
+        testRule("[1 / 2] + [3 / 2]", AddAndSimplifyLikeFractions, "[4 / 2]")
+        testRule("[1 / x] - [2 / x]", AddAndSimplifyLikeFractions, "-[1 / x]")
+        testRule("[1 / x] + [-2 / x]", AddAndSimplifyLikeFractions, "-[1 / x]")
+        testRule("-[1 / 2] - [3 / 2]", AddAndSimplifyLikeFractions, "-[4 / 2]")
+        testRule("[1 / x] + [(-2) / x]", AddAndSimplifyLikeFractions, null)
+        testRule("[1 + 2 / x] + [3 / x]", AddAndSimplifyLikeFractions, null)
+        testRule("[a / x] + [1 / x]", AddAndSimplifyLikeFractions, null)
+    }
+
+    @Test
     fun testBringToCommonDenominator() {
         testRule("[3/8] + [5/12]", BringToCommonDenominator, "[3 * 3/8 * 3] + [5 * 2/12 * 2]")
         testRule("[3/8] - [5/12]", BringToCommonDenominator, "[3 * 3/8 * 3] - [5 * 2/12 * 2]")
@@ -115,6 +128,13 @@ class FractionsRulesTest {
     }
 
     @Test
+    fun testFactorGreatestCommonIntegerFactorInFraction() {
+        testRule("[2x + 4 / 6]", FactorGreatestCommonIntegerFactorInFraction, "[2(x + 2) / 2 * 3]")
+        testRule("[2 + 2sqrt[3] / 2]", FactorGreatestCommonIntegerFactorInFraction, "[2(1 + sqrt[3]) / 2]")
+        testRule("[3 - 9x / 3x]", FactorGreatestCommonIntegerFactorInFraction, "[3(1 - 3x) / 3x]")
+    }
+
+    @Test
     fun testSimplifyCommonFactorInFraction() {
         testMethod {
             method = CancelCommonFactorInFraction
@@ -131,6 +151,8 @@ class FractionsRulesTest {
         testRule("[x / 2x]", CancelCommonFactorInFraction, "[1 / 2]")
         testRule("[x y z / a y c]", CancelCommonFactorInFraction, "[x z / a c]")
         testRule("[3x / 2[x^2]]", CancelCommonFactorInFraction, "[3 / 2x]")
+        testRule("[6(x - 1) / -(x - 1)]", CancelCommonFactorInFraction, "[6 / -1]")
+        testRule("[1 / -1]", CancelCommonFactorInFraction, null)
     }
 
     @Test
@@ -194,11 +216,21 @@ class FractionsRulesTest {
     }
 
     @Test
-    fun testMultiplyFractions() {
-        testRule("[2/3] * [4/5]", MultiplyFractions, "[2*4/3*5]")
-        testRule("[2/3] * [4/(5)]", MultiplyFractions, "[2*4/3*5]")
-        testRule("[-4/5] * ([2/(-3)])", MultiplyFractions, "[(-4) * 2 / 5 * (-3)]")
-        testRule("[-4/5] * [2/{. -3 .}]", MultiplyFractions, "[(-4) * 2 / 5 * {. -3 .}]")
+    fun testMultiplyFractionAndFractionable() {
+        testRule("[2/3] * [4/5]", MultiplyFractionAndFractionable, "[2*4/3*5]")
+        testRule("[2/3] * [4/(5)]", MultiplyFractionAndFractionable, "[2*4/3*5]")
+        testRule("[-4/5] * ([2/(-3)])", MultiplyFractionAndFractionable, "[(-4) * 2 / 5 * (-3)]")
+        testRule("[-4/5] * [2/{. -3 .}]", MultiplyFractionAndFractionable, "[(-4) * 2 / 5 * {. -3 .}]")
+
+        // Should move other stuff to the top
+        testRule("2 * [3 / 4]", MultiplyFractionAndFractionable, "[2 * 3 / 4]")
+        testRule("[2 / 5] * 6", MultiplyFractionAndFractionable, "[2 * 6 / 5]")
+
+        // If the numerator is 1, simplify the product straight away
+        testRule("3 * [1 / 4]", MultiplyFractionAndFractionable, "[3 / 4]")
+
+        // But there needs to be at least one fraction
+        testRule("2 * 3", MultiplyFractionAndFractionable, null)
     }
 
     @Test

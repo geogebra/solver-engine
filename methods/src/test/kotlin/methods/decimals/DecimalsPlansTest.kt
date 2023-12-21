@@ -1,7 +1,8 @@
 package methods.decimals
 
+import engine.context.BooleanSetting
 import engine.context.Context
-import engine.context.Curriculum
+import engine.context.Setting
 import engine.methods.testMethod
 import methods.fractionarithmetic.FractionArithmeticExplanation
 import methods.general.GeneralExplanation
@@ -13,7 +14,6 @@ class DecimalsPlansTest {
     @Test
     fun testDirectConversionOfRecurringDecimalToFraction() = testMethod {
         method = DecimalPlans.ConvertRecurringDecimalToFractionAndSimplify
-        context = Context(curriculum = Curriculum.EU)
         inputExpr = "3.14[15]"
 
         check {
@@ -52,7 +52,9 @@ class DecimalsPlansTest {
     @Test
     fun testAlgorithmForConversionOfRecurringDecimalToFraction() = testMethod {
         method = DecimalPlans.ConvertRecurringDecimalToFractionAndSimplify
-        context = Context(curriculum = Curriculum.US)
+        context = Context(
+            settings = mapOf(Setting.ConvertRecurringDecimalsToFractionsUsingAlgorithm setTo BooleanSetting.True),
+        )
         inputExpr = "3.14[15]"
 
         check {

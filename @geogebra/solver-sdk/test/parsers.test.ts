@@ -20,6 +20,8 @@ function testCases(
   cases: {
     solver?: string;
     json?: MathJson;
+    /** By setting the first expression in the array to '', you can skip all
+     * tests that use the latex expressions as targets (solver->latex; json->latex). */
     latex?: string | string[];
     /** We currently do not support parsing sets or intervals in LaTeX, so we
      * need to be able to skip that part of those tests */
@@ -62,9 +64,23 @@ function testCases(
     }
 
     for (const alternate of latexAlternates) {
-      it(`LaTeX "${alternate}" => LaTeX "${latex}"`, () => {
-        expect(latexToTree(latexExact)).to.deep.equal(latexToTree(alternate));
-      });
+      if (latexExact) {
+        it(`LaTeX "${alternate}" => LaTeX "${latex}"`, () => {
+          expect(latexToTree(latexExact)).to.deep.equal(latexToTree(alternate));
+        });
+      } else if (json) {
+        it(`LaTeX "${alternate}" => json "${JSON.stringify(json)}"`, () => {
+          expect(latexToJson(alternate)).to.deep.equal(json);
+        });
+      } else if (solver) {
+        it(`LaTeX "${alternate}" => Solver "${solver}"`, () => {
+          expect(latexToSolver(alternate)).to.equal(solver);
+        });
+      } else {
+        throw new Error(
+          'Need to define "json" or "solver" field when specifying alternative latex expressions without a main latex expression.',
+        );
+      }
     }
   });
 }
@@ -514,6 +530,84 @@ describe('Solver Parser Unit Tests', () => {
           ],
         },
         latex: '3 = 1+2',
+      },
+    ]);
+  });
+
+  describe('AddEquations', () => {
+    testCases([
+      {
+        solver: 'x + y = 3 /+/ 2 x - y = 10',
+        json: {
+          type: 'AddEquations',
+          operands: [
+            {
+              type: 'Equation',
+              operands: [
+                {
+                  type: 'Sum',
+                  operands: [
+                    {
+                      type: 'Variable',
+                      value: 'x',
+                    },
+                    {
+                      type: 'Variable',
+                      value: 'y',
+                    },
+                  ],
+                },
+                {
+                  type: 'Integer',
+                  value: '3',
+                },
+              ],
+              name: '(1)',
+            },
+            {
+              type: 'Equation',
+              operands: [
+                {
+                  type: 'Sum',
+                  operands: [
+                    {
+                      type: 'SmartProduct',
+                      operands: [
+                        {
+                          type: 'Integer',
+                          value: '2',
+                        },
+                        {
+                          type: 'Variable',
+                          value: 'x',
+                        },
+                      ],
+                      signs: [false, false],
+                    },
+                    {
+                      type: 'Minus',
+                      operands: [
+                        {
+                          type: 'Variable',
+                          value: 'y',
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: 'Integer',
+                  value: '10',
+                },
+              ],
+              name: '(2)',
+            },
+          ],
+        },
+        latex: [
+          '\\begin{array}{rclr|l}\n  x+y & = & 3 & \\textrm{(1)} & + \\\\\n  2x-y & = & 10 & \\textrm{(2)} & \\\\\n\\end{array}',
+        ],
+        dontParseLatex: true,
       },
     ]);
   });
@@ -1217,6 +1311,7 @@ describe('Solver Parser Unit Tests', () => {
             },
             {
               type: 'FiniteSet',
+              operands: [],
             },
           ],
         },
@@ -1240,11 +1335,11 @@ describe('Solver Parser Unit Tests', () => {
         json: {
           type: 'Identity',
           operands: [
-            { type: 'VariableList' },
+            { type: 'VariableList', operands: [] },
             { type: 'Equation', operands: [integer('3'), integer('3')] },
           ],
         },
-        latex: '\\top',
+        latex: '\\text{true}',
         dontParseLatex: true,
       },
       {
@@ -1264,11 +1359,11 @@ describe('Solver Parser Unit Tests', () => {
         json: {
           type: 'Contradiction',
           operands: [
-            { type: 'VariableList' },
+            { type: 'VariableList', operands: [] },
             { type: 'Inequation', operands: [integer('3'), integer('3')] },
           ],
         },
-        latex: '\\bot',
+        latex: '\\text{false}',
         dontParseLatex: true,
       },
     ]);
@@ -1465,7 +1560,7 @@ describe('Solver Parser Unit Tests', () => {
     ]);
   });
 
-  describe('Trigonometric functions', () => {
+  describe('Trigonometric functions simple operations', () => {
     testCases([
       {
         solver: 'sin x',
@@ -1506,6 +1601,8 @@ describe('Solver Parser Unit Tests', () => {
         latex: [
           '\\sin{\\left(x\\right)}',
           '{{\\mathrm{sin}}\\left(x\\right)}', // ggb keyboard output
+          '{\\mathrm{sin}\\left(x\\right)}',
+          '\\mathrm{sin}\\left(x\\right)', // ggb keyboard output
         ],
       },
       {
@@ -1632,10 +1729,6 @@ describe('Solver Parser Unit Tests', () => {
         ],
       },
       {
-        // TODO: add "json" and "solver" syntax for below once we agree on their syntax's
-        latex: ['\\sin^{2} x', '\\sin^2 x', '{{\\mathrm{sin}}^{2} x}'],
-      },
-      {
         solver: 'tan (x)',
         json: {
           type: 'Tan',
@@ -1651,6 +1744,123 @@ describe('Solver Parser Unit Tests', () => {
           '\\tan{\\left(x\\right)}',
           '{{\\mathrm{tan}}\\left(x\\right)}', // ggb keyboard output
         ],
+      },
+    ]);
+  });
+
+  describe('Power of trigonometric functions', () => {
+    testCases([
+      {
+        solver: '[sin ^ 2] (x)',
+        json: {
+          type: 'Power',
+          operands: [
+            {
+              type: 'Sin',
+              operands: [
+                {
+                  type: 'Variable',
+                  value: 'x',
+                  decorators: ['RoundBracket'],
+                },
+              ],
+              powerInside: true,
+            },
+            integer('2'),
+          ],
+        },
+        latex: [
+          '\\sin^{2}{\\left(x\\right)}',
+          '\\sin^2 {(x)}',
+          // below is "expected" ggb keyboard output, current keyboard output is '{{\mathrm{sin^{2}}}\left(x\right)}'
+          '{{\\mathrm{sin}}^{2} \\left(x\\right)}',
+          '{\\mathrm{sin}^{2} \\left(x\\right)}',
+          '\\mathrm{sin}^{2} \\left(x\\right)',
+        ],
+      },
+      {
+        solver: '[arctan ^ 2] (x)',
+        json: {
+          type: 'Power',
+          operands: [
+            {
+              type: 'Arctan',
+              operands: [
+                {
+                  type: 'Variable',
+                  value: 'x',
+                  decorators: ['RoundBracket'],
+                },
+              ],
+              powerInside: true,
+            },
+            integer('2'),
+          ],
+        },
+        latex: ['\\arctan^{2}{\\left(x\\right)}', '\\arctan^2 {(x)}'],
+      },
+      {
+        solver: '[cosh ^ 3] (x)',
+        json: {
+          type: 'Power',
+          operands: [
+            {
+              type: 'Cosh',
+              operands: [
+                {
+                  type: 'Variable',
+                  value: 'x',
+                  decorators: ['RoundBracket'],
+                },
+              ],
+              powerInside: true,
+            },
+            integer('3'),
+          ],
+        },
+        latex: ['\\cosh^{3}{\\left(x\\right)}', '\\cosh^3 {(x)}'],
+      },
+    ]);
+  });
+
+  describe('Inverse trigonometric functions', () => {
+    testCases([
+      {
+        solver: '[sin ^ -1] (x)',
+        json: {
+          type: 'Arcsin',
+          operands: [
+            {
+              type: 'Variable',
+              value: 'x',
+              decorators: ['RoundBracket'],
+            },
+          ],
+          inverseNotation: 'superscript',
+        },
+        latex: ['\\sin^{-1}{\\left(x\\right)}', '{{\\mathrm{sin}}^{-1}\\left(x\\right)}'],
+      },
+      {
+        solver: '[sinh ^ -1] (x)',
+        json: {
+          type: 'Arsinh',
+          operands: [
+            {
+              type: 'Variable',
+              value: 'x',
+              decorators: ['RoundBracket'],
+            },
+          ],
+          inverseNotation: 'superscript',
+        },
+        latex: [
+          '\\sinh^{-1}{\\left(x\\right)}',
+          '{{\\mathrm{sinh}}^{-1}\\left(x\\right)}',
+        ],
+      },
+      {
+        // inverse of an inverse function is treated and parsed the same way as the function currently
+        latex: ['\\arcsin^{-1}{x}', '\\sin x'],
       },
     ]);
   });
@@ -1936,6 +2146,115 @@ describe('Solver Parser Unit Tests', () => {
           ],
         },
         latex: ['10\\%5'],
+      },
+    ]);
+  });
+
+  describe('Systems of Relations', async () => {
+    testCases([
+      {
+        solver: 'x = 5 AND y = x AND z = 1',
+        json: {
+          type: 'EquationSystem',
+          operands: [
+            { type: 'Equation', operands: [variable('x'), integer('5')] },
+            { type: 'Equation', operands: [variable('y'), variable('x')] },
+            { type: 'Equation', operands: [variable('z'), integer('1')] },
+          ],
+        },
+        // Set first latex expression to '' to avoid creating output tests for it
+        // since the latex output includes an `align` environment.
+        latex: ['', 'x=5 \\text{AND} y=x \\text{and} z=1', 'x=5,y=x,z=1', 'x=5;y=x;z=1'],
+      },
+      {
+        solver: 'x < 1 AND x > 0',
+        json: {
+          type: 'EquationSystem',
+          operands: [
+            {
+              type: 'LessThan',
+              operands: [variable('x'), integer('1')],
+            },
+            {
+              type: 'GreaterThan',
+              operands: [variable('x'), integer('0')],
+            },
+          ],
+        },
+        // Set first latex expression to '' to avoid creating output tests for it
+        // since the latex output includes an `align` environment.
+        latex: ['', 'x<1 \\text{and} x>0', 'x<1,x>0', 'x<1;x>0'],
+      },
+      {
+        solver: '5 x + 1 = 21 AND 2 y + 1 = 5',
+        json: {
+          type: 'EquationSystem',
+          operands: [
+            {
+              type: 'Equation',
+              operands: [
+                {
+                  type: 'Sum',
+                  operands: [
+                    {
+                      type: 'ImplicitProduct',
+                      operands: [
+                        {
+                          type: 'Integer',
+                          value: '5',
+                        },
+                        {
+                          type: 'Variable',
+                          value: 'x',
+                        },
+                      ],
+                    },
+                    {
+                      type: 'Integer',
+                      value: '1',
+                    },
+                  ],
+                },
+                {
+                  type: 'Integer',
+                  value: '21',
+                },
+              ],
+            },
+            {
+              type: 'Equation',
+              operands: [
+                {
+                  type: 'Sum',
+                  operands: [
+                    {
+                      type: 'ImplicitProduct',
+                      operands: [
+                        {
+                          type: 'Integer',
+                          value: '2',
+                        },
+                        {
+                          type: 'Variable',
+                          value: 'y',
+                        },
+                      ],
+                    },
+                    {
+                      type: 'Integer',
+                      value: '1',
+                    },
+                  ],
+                },
+                {
+                  type: 'Integer',
+                  value: '5',
+                },
+              ],
+            },
+          ],
+        },
+        latex: ['', '5x+1=21 \\text{AND} 2y+1=5', '5x+1=21 , 2y+1=5', '5x+1=21 ; 2y+1=5'],
       },
     ]);
   });

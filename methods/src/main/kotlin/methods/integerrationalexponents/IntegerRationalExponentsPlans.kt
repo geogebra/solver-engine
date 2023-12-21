@@ -1,8 +1,9 @@
 package methods.integerrationalexponents
 
+import engine.expressions.Fraction
 import engine.expressions.Minus
 import engine.expressions.Power
-import engine.expressions.isSignedFraction
+import engine.expressions.isSigned
 import engine.methods.CompositeMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
@@ -243,7 +244,7 @@ private val simplifyProductOfIntegerAndRationalExponentOfInteger = plan {
     val suitablePower2 = ConditionPattern(
         power2,
         BuilderCondition {
-            if (!get(power1.exponent).isSignedFraction() && !get(power2.exponent).isSignedFraction()) {
+            if (!get(power1.exponent).isSigned<Fraction>() && !get(power2.exponent).isSigned<Fraction>()) {
                 return@BuilderCondition false
             }
 

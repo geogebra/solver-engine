@@ -67,6 +67,13 @@ enum class SolvableKey(val rule: RunnerMethod) {
     MultiplyBothSidesByLCD(SolvableRules.MultiplySolvableByLCD),
 
     /**
+     * Multiply both sides of the equations by the integer denominator so the equation no longer has a denominator.
+     *
+     * E.g. [x / 2] + 5 = 3x --> 2([x / 2] + 5) = 2 * 3x
+     */
+    MultiplyBothSidesByIntegerDenominator(SolvableRules.MultiplySolvableByLCD),
+
+    /**
      * In an equation an absolute value, move terms without an absolute value to the right
      *
      * E.g. abs[x] + x - 1 = 2 --> abs[x] + x - 1 - x + 1 = 2 - x + 1
@@ -80,15 +87,42 @@ enum class SolvableKey(val rule: RunnerMethod) {
      */
     MoveTermsNotContainingModulusToTheLeft(SolvableRules.MoveTermsNotContainingModulusToTheLeft),
 
-    MultiplyByInverseCoefficientOfVariable(SolvableRules.MultiplyByInverseCoefficientOfVariable),
+    /**
+     * Multiply both sides by the inverse of a constant fraction to simplify the LHS
+     */
+    MultiplyByInverseCoefficientOfVariable(SolvableRules.MoveConstantFractionFactorToTheRight),
 
-    DivideByCoefficientOfVariable(SolvableRules.DivideByCoefficientOfVariable),
+    /**
+     * Multiply both the side by denominator of a fraction in the LHS to simplify it.
+     *
+     * E.g.  [xh / 2] = 1 --> 2 * [xh / 2] = 2 * 1
+     *       [x/2](y - x) = 6 -> 2 * [x/2](y - x) = 2 * 6
+     */
+    MultiplyByDenominatorOfVariableLHS(SolvableRules.MoveConstantDenominatorToTheRight),
+
+    /**
+     * Divide both sides by the coefficient of the variable
+     */
+    DivideByCoefficientOfVariable(SolvableRules.MoveConstantFactorWithNoFractionToTheRight),
 
     NegateBothSides(SolvableRules.NegateBothSides),
 
     FlipSolvable(SolvableRules.FlipSolvable),
 
     TakeRootOfBothSides(SolvableRules.TakeRootOfBothSides),
+
+    /**
+     * Find a common integer factor on both sides of an equation
+     *
+     * E.g. 6xy = 8z --> 2 * 3xy = 2 * 4z
+     */
+    FindCommonIntegerFactorOnBothSides(SolvableRules.FindCommonIntegerFactorOnBothSides),
+
+    /**
+     * Cancel a (non-zero) common factor on both sides of an equation
+     * E.g. xy sqrt[2] = 6 sqrt[2] --> xy = 6
+     */
+    CancelCommonFactorOnBothSides(SolvableRules.CancelCommonFactorOnBothSides),
 }
 
 /**
@@ -380,24 +414,49 @@ enum class EquationsExplanation(
     MultiplyByLCDAndSimplify(SolvableKey.MultiplyBothSidesByLCD, simplify = true),
 
     /**
-     * Multiply both sides of the equation by the inverse of the coefficient
+     * Multiply both sides of the equations by the integer denominator so the equation no longer has a denominator.
+     *
+     * E.g. [x / 2] + 5 = 3x --> 2([x / 2] + 5) = 2 * 3x
+     */
+    MultiplyBothSidesByIntegerDenominator(SolvableKey.MultiplyBothSidesByIntegerDenominator),
+
+    /**
+     * Multiply both sides of the equation by the inverse of the coefficient (if it's a numeric constant)
      * of the variable.
      *
-     * E.g. [x / 9] = 3 -> [x / 9] * 9 = 3 * 9
-     * [2x / 5] = 3 -> [2x / 5] * [5 / 2] = 3 * [5 / 2]
+     * E.g. [x / 9] = 3 -> 9 * [x / 9] = 9 * 3
+     * [2x / 5] = 3 -> [5 / 2] * [2x / 5] = [5 / 2] * 3
      */
     MultiplyByInverseCoefficientOfVariable(SolvableKey.MultiplyByInverseCoefficientOfVariable),
+
+    /**
+     * Multiply both sides of the equation by denominator of the variable
+     *
+     * E.g. [hx / 9] = 3 -> 9 * [hx / 9] = 9 * 3
+     */
+    MultiplyByDenominatorOfVariableLHS(SolvableKey.MultiplyByDenominatorOfVariableLHS),
 
     /**
      * Multiply both sides of the equation by the inverse of the coefficient
      * of the variable and simplify.
      *
      * E.g. [2x / 5] = 3
-     *      -> [2x / 5] * [5 / 2] = 3 * [5 / 2]
+     *      -> [5 / 2] * [2x / 5] = [5 / 2] * 3
      *      -> x = [15 / 2]
      */
     MultiplyByInverseCoefficientOfVariableAndSimplify(
         SolvableKey.MultiplyByInverseCoefficientOfVariable,
+        simplify = true,
+    ),
+
+    /**
+     * Multiply both the side by denominator of a fraction in the LHS and simplify the result.
+     *
+     * E.g.  [xh / 2] = 1 --> 2 * [xh / 2] = 2 * 1 --> xh = 2
+     *       [x/2](y - x) = 6 --> 2 * [x/2](y - x) = 2 * 6 --> x(y -x) = 12
+     */
+    MultiplyByDenominatorOfVariableLHSAndSimplify(
+        SolvableKey.MultiplyByDenominatorOfVariableLHS,
         simplify = true,
     ),
 
@@ -481,6 +540,11 @@ enum class EquationsExplanation(
      *      x^5 = -2 -> x = root[-2, 5]
      */
     TakeRootOfBothSides(SolvableKey.TakeRootOfBothSides),
+
+    FindCommonIntegerFactorOnBothSides(SolvableKey.FindCommonIntegerFactorOnBothSides),
+
+    CancelCommonFactorOnBothSides(SolvableKey.CancelCommonFactorOnBothSides),
+
     ;
 
     override val category = "Equations"
@@ -718,24 +782,42 @@ enum class InequalitiesExplanation(
     MultiplyByLCDAndSimplify(SolvableKey.MultiplyBothSidesByLCD, simplify = true),
 
     /**
-     * Multiply both sides of the inequality by the inverse of the coefficient
+     * Multiply both sides of the inequality by the inverse of the coefficient (a numeric constant)
      * of the variable (which is a positive value).
      *
-     * E.g. [x / 9] < 3 -> [x / 9] * 9 < 3 * 9
-     * [2x / 5] > 3 -> [2x / 5] * [5 / 2] > 3 * [5 / 2]
+     * E.g. [x / 9] < 3 -> 9 * [x / 9] < 9 * 3
+     * [2x / 5] > 3 -> [5 / 2] * [2x / 5] > [5 / 2] * 3
      */
     MultiplyByInverseCoefficientOfVariable(SolvableKey.MultiplyByInverseCoefficientOfVariable),
+
+    /**
+     * Multiply both the side by denominator of a fraction in the LHS to simplify it.
+     *
+     * E.g.  [xh / 2] < 1 --> 2 * [xh / 2] < 2 * 1
+     *       [x/2](y - x) < 6 -> 2 * [x/2](y - x) < 2 * 6
+     */
+    MultiplyByDenominatorOfVariableLHS(SolvableKey.MultiplyByDenominatorOfVariableLHS),
 
     /**
      * Multiply both sides of the inequality by the inverse of the coefficient
      * of the variable and flip the sign (because we're multiplying by a negative
      * value).
      *
-     * E.g. [x / -9] < 3 -> [x / -9] * (-9) > 3 * (-9)
-     * [-2x / 5] > 3 -> [-2x / 5] * [5 / -2] < 3 * [5 / -2]
+     * E.g. [x / -9] < 3 -> (-9) * [x / -9] > (-9) * 3
+     * [-2x / 5] > 3 -> [5 / -2] * [-2x / 5] < [5 / -2] * 3
      */
     MultiplyByInverseCoefficientOfVariableAndFlipTheSign(
         SolvableKey.MultiplyByInverseCoefficientOfVariable,
+        flipSign = true,
+    ),
+
+    /**
+     * Multiply both the side by negative denominator of a fraction in the LHS to simplify it.
+     *
+     * E.g.  [xh / -2] < 1 --> (-2) * [xh / -2] > (-2) * 1
+     */
+    MultiplyByDenominatorOfVariableLHSAndFlipTheSign(
+        SolvableKey.MultiplyByDenominatorOfVariableLHS,
         flipSign = true,
     ),
 
@@ -744,11 +826,22 @@ enum class InequalitiesExplanation(
      * of the variable and simplify.
      *
      * E.g. [2x / 5] < 3
-     *      -> [2x / 5] * [5 / 2] < 3 * [5 / 2]
+     *      -> [5 / 2] * [2x / 5] < [5 / 2] * 3
      *      -> x < [15 / 2]
      */
     MultiplyByInverseCoefficientOfVariableAndSimplify(
         SolvableKey.MultiplyByInverseCoefficientOfVariable,
+        simplify = true,
+    ),
+
+    /**
+     * Multiply both the side by denominator of a fraction in the LHS and simplify the result.
+     *
+     * E.g.  [xh / 2] = 1 --> 2 * [xh / 2] = 2 * 1 --> xh = 2
+     *       [x/2](y - x) = 6 --> 2 * [x/2](y - x) = 2 * 6 --> x(y -x) = 12
+     */
+    MultiplyByDenominatorOfVariableLHSAndSimplify(
+        SolvableKey.MultiplyByDenominatorOfVariableLHS,
         simplify = true,
     ),
 

@@ -19,7 +19,7 @@ import engine.steps.metadata.metadata
 class PartialExpressionPlan(
     val pattern: NaryPattern,
     val explanationMaker: MetadataMaker,
-    val skillMakers: List<MetadataMaker> = emptyList(),
+    val skillMakers: List<MetadataMaker>?,
     specificPlans: List<Method> = emptyList(),
     val stepsProducer: StepsProducer,
 ) : CompositeMethod(specificPlans) {
@@ -74,7 +74,7 @@ class PartialExpressionPlan(
                     toExpr = builder.expression,
                     steps = builder.getFinalSteps(),
                     explanation = explanationMaker.make(ctx, sub, match),
-                    skills = skillMakers.map { it.make(ctx, sub, match) },
+                    skills = skillMakers?.map { it.make(ctx, sub, match) },
                     type = Transformation.Type.Plan,
                 )
             }
@@ -82,6 +82,8 @@ class PartialExpressionPlan(
 
         return null
     }
+
+    override val minDepth get() = maxOf(pattern.minDepth, stepsProducer.minDepth)
 }
 
 private fun matchedTermsAreNextToEachOther(pattern: NaryPattern, match: Match): Boolean {

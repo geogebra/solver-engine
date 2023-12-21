@@ -1,8 +1,14 @@
 import type {
   API_PLANS_RESPONSE,
+  API_PRESETS_RESPONSE,
+  API_SETTINGS_RESPONSE,
   API_STRATEGIES_RESPONSE,
   API_VERSION_INFO_RESPONSE,
   ApiMathFormat,
+  GraphResponse,
+  GraphResponseJson,
+  GraphResponseLatex,
+  GraphResponseSolver,
   PlanId,
   PlanSelection,
   PlanSelectionJson,
@@ -110,6 +116,18 @@ class Api {
     return await res.json();
   }
 
+  listSettings(): Promise<API_SETTINGS_RESPONSE> {
+    return fetch(`${this.baseUrl}/settings`, this.defaultHeaders).then((res) =>
+      res.json(),
+    );
+  }
+
+  listPresets(): Promise<API_PRESETS_RESPONSE> {
+    return fetch(`${this.baseUrl}/presets`, this.defaultHeaders).then((res) =>
+      res.json(),
+    );
+  }
+
   /** Get a list of all available plans. */
   listPlans(): Promise<API_PLANS_RESPONSE> {
     return fetch(`${this.baseUrl}/plans`, this.defaultHeaders).then((res) => res.json());
@@ -119,6 +137,37 @@ class Api {
     return fetch(`${this.baseUrl}/strategies`, this.defaultHeaders).then((res) =>
       res.json(),
     );
+  }
+
+  async createGraph(
+    input: SolverExpr,
+    format: 'latex',
+    context?: SolverContext,
+  ): Promise<GraphResponseLatex | ServerErrorResponse>;
+
+  async createGraph(
+    input: SolverExpr,
+    format: 'json2',
+    context?: SolverContext,
+  ): Promise<GraphResponseJson | ServerErrorResponse>;
+
+  async createGraph(
+    input: SolverExpr,
+    format: 'solver',
+    context?: SolverContext,
+  ): Promise<GraphResponseSolver | ServerErrorResponse>;
+
+  async createGraph(
+    input: SolverExpr,
+    format: ApiMathFormat = 'latex',
+    context: SolverContext = this.defaultContext,
+  ): Promise<GraphResponse | ServerErrorResponse> {
+    const res = await fetch(`${this.baseUrl}/graph`, {
+      ...this.defaultHeaders,
+      method: 'POST',
+      body: JSON.stringify({ input, format, context }),
+    });
+    return await res.json();
   }
 
   /** Get solver version info. */

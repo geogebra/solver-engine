@@ -2,11 +2,11 @@ import { Transformation } from '@geogebra/solver-sdk';
 import { showPedanticSteps, showCosmeticSteps, showInvisibleChangeSteps } from './settings';
 
 export const isPedanticStep = (transformation: Transformation) => {
-  return transformation.tags && transformation.tags.includes('Pedantic');
+  return !!transformation.tags && transformation.tags.includes('Pedantic');
 };
 
 export const isCosmeticStep = (transformation: Transformation) => {
-  return transformation.tags && transformation.tags.includes('Cosmetic');
+  return !!transformation.tags && transformation.tags.includes('Cosmetic');
 };
 
 export function isInvisibleChangeStep(transformation: Transformation): boolean {

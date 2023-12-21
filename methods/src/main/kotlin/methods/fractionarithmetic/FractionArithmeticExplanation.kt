@@ -40,6 +40,17 @@ enum class FractionArithmeticExplanation : CategorisedMetadataKey {
     MultiplyFractions,
 
     /**
+     * Multiply a fraction by a non-fraction value
+     *
+     * Parameters:
+     *   %1: the fraction
+     *   %2: the value which is not a fraction
+     *
+     *   E.g. 3 * [2 / 5] --> [3 * 2 / 5]
+     */
+    MultiplyFractionAndValue,
+
+    /**
      * Split improper fraction power to any base by converting the exponent to
      * sum of an integer and proper fraction and then distribute sum of powers
      * to its base
@@ -68,7 +79,19 @@ enum class FractionArithmeticExplanation : CategorisedMetadataKey {
      */
     MultiplyAndSimplifyFractions,
 
+    /**
+     * Find a common factor in a numeric fraction and rewrite it so the factor is explicit.
+     *
+     * E.g. [4 / 6] --> [2 * 2 / 2 * 3]
+     */
     FindCommonFactorInFraction,
+
+    /**
+     * Find a common integer factor in a fraction and rewrite it so the factor is explicit.
+     *
+     * E.g. [12 + 6sqrt[2]] / 15] --> [3(4 + 2sqrt[2]) / 3 * 5]
+     */
+    FactorCommonIntegerFactorInFraction,
 
     @LegacyKeyName("General.CancelCommonTerms")
     CancelCommonFactorInFraction,
@@ -109,6 +132,13 @@ enum class FractionArithmeticExplanation : CategorisedMetadataKey {
      * E.g. sqrt(2) + (3 + 2 sqrt(2)) / 5 -> (3 + 7 sqrt(2)) / 5
      */
     AddRootAndFraction,
+
+    /**
+     * Add a term to a fraction
+     *
+     * E.g. x + (x + x^2) / 5 -> (6x + x^2) / 5
+     */
+    AddTermAndFraction,
 
     /**
      * Convert an improper fraction (one with a greater numerator than denominator) to the sum

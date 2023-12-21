@@ -16,12 +16,15 @@ import engine.patterns.optionalNegOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
 import engine.steps.Transformation
+import engine.steps.metadata.DragTargetPosition
 import engine.steps.metadata.metadata
 import java.math.BigInteger
+import engine.steps.metadata.GmPathModifier as PM
 
 enum class PolynomialRules(override val runner: Rule) : RunnerMethod {
     RearrangeProductOfMonomials(rearrangeProductOfMonomials),
     NormalizePolynomial(normalizePolynomial),
+    NormalizePolynomialOneStep(normalizePolynomialOneStep),
 }
 
 private val rearrangeProductOfMonomials = rule {
@@ -94,6 +97,52 @@ private val normalizePolynomial = rule {
                 )
             }
         }
+    }
+}
+
+// Like normalizePolynomial, but only does one step.
+// It will find the biggest monomial term that's not in the right place and move it there.
+private val normalizePolynomialOneStep = rule {
+    val sum = sumContaining()
+
+    onPattern(sum) {
+
+        val spec = defaultPolynomialSpecification(context, expression) ?: return@onPattern null
+        val terms = get(sum).children
+        val monomialPattern = monomialPattern(spec)
+
+        // Find the degree of each term so we can decide whether the sum is normalized already.
+        // If we find a non-monomial non-constant term, we don't have a polynomial, so we cannot
+        // normalize it
+        val termsWithDegree = terms.map { term ->
+            val termOrder = when (val match = matchPattern(monomialPattern, term)) {
+                null -> if (spec.isConstant(context, term)) BigInteger.ZERO else return@onPattern null
+                else -> monomialPattern.exponent.getBoundInt(match)
+            }
+            Pair(term, termOrder)
+        }
+
+        val termsInDescendingOrder = termsWithDegree.sortedByDescending { it.second }.map { it.first }
+
+        val mismatchedTerm = termsInDescendingOrder.withIndex().find { it.value != termsWithDegree[it.index].first }
+            ?: return@onPattern null
+
+        ruleResult(
+            toExpr = sumOf(
+                terms.take(mismatchedTerm.index) +
+                    move(mismatchedTerm.value) +
+                    terms.drop(mismatchedTerm.index).filter { it != mismatchedTerm.value },
+            ),
+            gmAction = drag(
+                mismatchedTerm.value,
+                PM.Group,
+                termsWithDegree[mismatchedTerm.index].first,
+                null,
+                DragTargetPosition.LeftOf,
+            ),
+            explanation = metadata(Explanation.NormalizePolynomial),
+            tags = listOf(Transformation.Tag.Rearrangement),
+        )
     }
 }
 

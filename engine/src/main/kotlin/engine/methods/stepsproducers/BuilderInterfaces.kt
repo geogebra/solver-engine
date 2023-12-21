@@ -1,10 +1,13 @@
 package engine.methods.stepsproducers
 
 import engine.context.Context
+import engine.context.Setting
+import engine.context.SettingValue
 import engine.expressions.Expression
 import engine.expressions.Extractor
 import engine.expressions.Label
 import engine.expressions.Minus
+import engine.expressions.Product
 import engine.methods.CompositeMethod
 import engine.methods.PlanBuilder
 import engine.methods.Strategy
@@ -14,6 +17,14 @@ import engine.patterns.Pattern
 @DslMarker
 annotation class StepsProducerBuilderMarker
 
+typealias PipelineFunc = PipelineBuilder.() -> Unit
+typealias FirstOfFunc = FirstOfBuilder.() -> Unit
+typealias BranchOnFunc = BranchOnBuilder.() -> Unit
+
+/**
+ * This interface defines the actions that can be performed in a [FirstOf] StepsProducer.  Actions are tried in order
+ * until one action succeeds.  If all actions fail then the whole StepsProducer fails.
+ */
 @StepsProducerBuilderMarker
 interface FirstOfBuilder {
 
@@ -25,7 +36,7 @@ interface FirstOfBuilder {
     /**
      * Try the following option and stop here if it is valid.
      */
-    fun option(init: PipelineBuilder.() -> Unit)
+    fun option(init: PipelineFunc)
 
     /**
      * Overrides the previous option if it produces the same result.
@@ -35,7 +46,7 @@ interface FirstOfBuilder {
     /**
      * Overrides the previous option if it produces the same result.
      */
-    fun shortOption(init: PipelineBuilder.() -> Unit)
+    fun shortOption(init: PipelineFunc)
 
     /**
      * Generates options using the [optionGenerator] from the sequence produced by the [sequenceGenerator]
@@ -43,6 +54,22 @@ interface FirstOfBuilder {
     fun <T> optionsFor(sequenceGenerator: (Expression) -> Iterable<T>, optionGenerator: PipelineBuilder.(T) -> Unit)
 }
 
+/**
+ * This interface defines the actions that can be performed in a [BranchOn] StepsProducer.
+ */
+@StepsProducerBuilderMarker
+interface BranchOnBuilder {
+
+    fun case(value: SettingValue, opt: StepsProducer)
+
+    fun case(value: SettingValue, init: PipelineFunc)
+}
+
+/**
+ * This interface describes the actions that can be performed in a [Pipeline] StepsProducer. The actions are performed
+ * in order (as a pipeline), the output of the previous one being the input of the next one. Some actions are optional
+ * and if they fail the pipeline continue, whereas non-optional actions must succeed otherwise the pipeline aborts
+ */
 @Suppress("TooManyFunctions")
 @StepsProducerBuilderMarker
 interface PipelineBuilder {
@@ -55,17 +82,17 @@ interface PipelineBuilder {
     /**
      * Optionally follow those steps
      */
-    fun optionally(init: PipelineBuilder.() -> Unit)
+    fun optionally(init: PipelineFunc)
 
     fun shortcut(steps: StepsProducer)
 
-    fun shortcut(init: PipelineBuilder.() -> Unit)
+    fun shortcut(init: PipelineFunc)
 
     /**
      * Wrap a pipeline that uses labels in this.  It makes sures labels are cleared at the end.  This is not a long-term
      * solution but offers some safety while we look for a good solution.
      */
-    fun withNewLabels(init: PipelineBuilder.() -> Unit)
+    fun withNewLabels(init: PipelineFunc)
 
     /**
      * Apply the [steps].  The pipeline will fail if the steps can't be applied.
@@ -75,7 +102,7 @@ interface PipelineBuilder {
     /**
      * Follow the given steps.  The pipeline will fail if the steps can't be followed to completion.
      */
-    fun apply(init: PipelineBuilder.() -> Unit)
+    fun apply(init: PipelineFunc)
 
     fun check(condition: Context.(Expression) -> Boolean)
 
@@ -85,11 +112,12 @@ interface PipelineBuilder {
     fun applyTo(stepsProducer: StepsProducer, extractor: Extractor<Expression>)
 
     fun applyTo(stepsProducer: StepsProducer, label: Label)
+
     fun <T : Expression> applyToKind(stepsProducer: StepsProducer, extractor: Extractor<T>)
 
-    fun applyTo(extractor: Extractor<Expression>, init: PipelineBuilder.() -> Unit)
+    fun applyTo(extractor: Extractor<Expression>, init: PipelineFunc)
 
-    fun applyTo(label: Label, init: PipelineBuilder.() -> Unit)
+    fun applyTo(label: Label, init: PipelineFunc)
 
     /**
      * Apply the [stepsProducer] to all children of the working expression in turn,
@@ -105,14 +133,16 @@ interface PipelineBuilder {
      * applied to all children). The [atLeastOne] flags controls whether it must apply to at least one child, and the
      * [all] flag controls whether it must apply to all children.
      */
-    fun applyToChildren(all: Boolean = false, atLeastOne: Boolean = false, init: PipelineBuilder.() -> Unit)
+    fun applyToChildren(all: Boolean = false, atLeastOne: Boolean = false, init: PipelineFunc)
 
     fun applyToConstraint(stepsProducer: StepsProducer)
 
     /**
      * Apply the first valid option in the following.  The step fails if no option is valid.
      */
-    fun firstOf(init: FirstOfBuilder.() -> Unit)
+    fun firstOf(init: FirstOfFunc)
+
+    fun branchOn(setting: Setting, init: BranchOnFunc)
 
     /**
      * Apply the [stepsProducer] as many times as possible.  They are not required to be applied at least once.
@@ -122,7 +152,7 @@ interface PipelineBuilder {
     /**
      * Apply the following steps as many times as possible. They are not required to be applied at least once.
      */
-    fun whilePossible(init: PipelineBuilder.() -> Unit)
+    fun whilePossible(init: PipelineFunc)
 
     /**
      * Apply [steps] deeply ([deepFirst] controls whether it is depth first or breadth first).
@@ -132,12 +162,12 @@ interface PipelineBuilder {
     /**
      * Apply the following steps deeply ([deepFirst] controls whether it is depth first or breadth first).
      */
-    fun deeply(deepFirst: Boolean = false, init: PipelineBuilder.() -> Unit)
+    fun deeply(deepFirst: Boolean = false, init: PipelineFunc)
 
     /**
      * Apply the following plan.
      */
-    fun plan(init: PlanBuilder.() -> Unit)
+    fun plan(init: PlanBuilder.() -> CompositeMethod)
 
     /**
      * Apply the following task set
@@ -145,20 +175,33 @@ interface PipelineBuilder {
     fun taskSet(init: TaskSetBuilder.() -> CompositeMethod)
 
     fun checkForm(patternProvider: () -> Pattern)
-    fun contextSensitive(init: ContextSensitiveBuilder.() -> Unit)
 
-    fun inContext(contextFactory: Context.(Expression) -> Context, init: PipelineBuilder.() -> Unit)
+    fun inContext(contextFactory: Context.(Expression) -> Context, init: PipelineFunc)
 }
 
-fun PipelineBuilder.applyAfterMaybeExtractingMinus(init: PipelineBuilder.() -> Unit) {
+fun PipelineBuilder.applyAfterMaybeExtractingMinus(init: PipelineFunc) {
     applyTo(extractor = { if (it is Minus) it.argument else it }, init)
 }
 
+fun PipelineBuilder.applyToFactors(steps: StepsProducer) {
+    firstOf {
+        option {
+            check { it is Product }
+            applyToChildren(steps, all = false, atLeastOne = true)
+        }
+        option(steps)
+    }
+}
+
+/**
+ * This interface describes the actions that can be performed in a [WhileStrategiesAvailableFirstOf] StepsProducer.
+ * It is made specially to apply strategies (see equation solving for an example).
+ */
 @StepsProducerBuilderMarker
 interface WhileStrategiesAvailableFirstOfBuilder {
     fun option(strategy: Strategy)
 
-    fun option(init: PipelineBuilder.() -> Unit)
+    fun option(init: PipelineFunc)
 
     fun option(stepsProducer: StepsProducer)
 

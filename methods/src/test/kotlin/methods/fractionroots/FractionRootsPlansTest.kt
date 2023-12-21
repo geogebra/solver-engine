@@ -181,38 +181,31 @@ class FractionRootsPlansTest {
                         "[9 root[[2 ^ 3] * [3 ^ 2], 4] / 2 root[2 * [3 ^ 2], 4] * root[[2 ^ 3] * [3 ^ 2], 4]]"
                     toExpr = "[9 root[72, 4] / 2 root[2 * [3 ^ 2], 4] * root[[2 ^ 3] * [3 ^ 2], 4]]"
                     explanation {
-                        key = IntegerRootsExplanation.SimplifyProductWithRoots
+                        key = FractionRootsExplanation.SimplifyNumeratorAfterRationalization
                     }
 
                     step {
-                        fromExpr = "9 root[[2 ^ 3] * [3 ^ 2], 4]"
-                        toExpr = "9 root[8 * [3 ^ 2], 4]"
+                        fromExpr =
+                            "[9 root[[2 ^ 3] * [3 ^ 2], 4] / 2 root[2 * [3 ^ 2], 4] * root[[2 ^ 3] * [3 ^ 2], 4]]"
+                        toExpr = "[9 root[8 * [3 ^ 2], 4] / 2 root[2 * [3 ^ 2], 4] * root[[2 ^ 3] * [3 ^ 2], 4]]"
                         explanation {
                             key = IntegerArithmeticExplanation.EvaluateIntegerPowerDirectly
                         }
                     }
 
                     step {
-                        fromExpr = "9 root[8 * [3 ^ 2], 4]"
-                        toExpr = "9 root[8 * 9, 4]"
+                        fromExpr = "[9 root[8 * [3 ^ 2], 4] / 2 root[2 * [3 ^ 2], 4] * root[[2 ^ 3] * [3 ^ 2], 4]]"
+                        toExpr = "[9 root[8 * 9, 4] / 2 root[2 * [3 ^ 2], 4] * root[[2 ^ 3] * [3 ^ 2], 4]]"
                         explanation {
                             key = IntegerArithmeticExplanation.EvaluateIntegerPowerDirectly
                         }
                     }
 
                     step {
-                        fromExpr = "9 root[8 * 9, 4]"
-                        toExpr = "9 root[72, 4]"
+                        fromExpr = "[9 root[8 * 9, 4] / 2 root[2 * [3 ^ 2], 4] * root[[2 ^ 3] * [3 ^ 2], 4]]"
+                        toExpr = "[9 root[72, 4] / 2 root[2 * [3 ^ 2], 4] * root[[2 ^ 3] * [3 ^ 2], 4]]"
                         explanation {
                             key = IntegerArithmeticExplanation.SimplifyIntegersInProduct
-                        }
-
-                        step {
-                            fromExpr = "8 * 9"
-                            toExpr = "72"
-                            explanation {
-                                key = IntegerArithmeticExplanation.EvaluateIntegerProduct
-                            }
                         }
                     }
                 }
@@ -372,15 +365,7 @@ class FractionRootsPlansTest {
                 fromExpr = "[9 root[[11 ^ 3], 4] / 2 root[11, 4] * root[[11 ^ 3], 4]]"
                 toExpr = "[9 root[1331, 4] / 2 root[11, 4] * root[[11 ^ 3], 4]]"
                 explanation {
-                    key = IntegerRootsExplanation.SimplifyProductWithRoots
-                }
-
-                step {
-                    fromExpr = "9 root[[11 ^ 3], 4]"
-                    toExpr = "9 root[1331, 4]"
-                    explanation {
-                        key = IntegerArithmeticExplanation.EvaluateIntegerPowerDirectly
-                    }
+                    key = IntegerArithmeticExplanation.EvaluateIntegerPowerDirectly
                 }
             }
 
@@ -509,22 +494,22 @@ class FractionRootsRationalization {
                 fromExpr = "[1 root[[2 ^ 2], 3] / root[2, 3] * root[[2 ^ 2], 3]]"
                 toExpr = "[root[4, 3] / root[2, 3] * root[[2 ^ 2], 3]]"
                 explanation {
-                    key = IntegerRootsExplanation.SimplifyProductWithRoots
+                    key = FractionRootsExplanation.SimplifyNumeratorAfterRationalization
                 }
 
                 step {
-                    fromExpr = "1 root[[2 ^ 2], 3]"
-                    toExpr = "1 root[4, 3]"
+                    fromExpr = "[1 root[[2 ^ 2], 3] / root[2, 3] * root[[2 ^ 2], 3]]"
+                    toExpr = "[1 root[4, 3] / root[2, 3] * root[[2 ^ 2], 3]]"
                     explanation {
                         key = IntegerArithmeticExplanation.EvaluateIntegerPowerDirectly
                     }
                 }
 
                 step {
-                    fromExpr = "1 root[4, 3]"
-                    toExpr = "root[4, 3]"
+                    fromExpr = "[1 root[4, 3] / root[2, 3] * root[[2 ^ 2], 3]]"
+                    toExpr = "[root[4, 3] / root[2, 3] * root[[2 ^ 2], 3]]"
                     explanation {
-                        key = GeneralExplanation.RemoveUnitaryCoefficient
+                        key = IntegerArithmeticExplanation.SimplifyIntegersInProduct
                     }
                 }
             }
@@ -659,7 +644,7 @@ class FractionRootsRationalization {
                 fromExpr = "[1 root[13, 3] / root[[13 ^ 2], 3] * root[13, 3]]"
                 toExpr = "[root[13, 3] / root[[13 ^ 2], 3] * root[13, 3]]"
                 explanation {
-                    key = IntegerRootsExplanation.SimplifyProductWithRoots
+                    key = IntegerArithmeticExplanation.SimplifyIntegersInProduct
                 }
 
                 step {

@@ -1,6 +1,7 @@
 package engine.methods
 
 import engine.context.Context
+import engine.context.Preset
 import engine.expressions.Expression
 import engine.expressions.Path
 import engine.expressions.PathMapping
@@ -18,6 +19,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.fail
+
+internal const val GMTOEXPR_KEY = "gmToExpr"
 
 @DslMarker
 annotation class TestCaseBuilderMarker
@@ -267,6 +270,12 @@ class TransformationCheck(private val trans: Transformation?) :
             assertEquals(parseExpression(value!!), trans.toExpr)
         }
 
+    var gmToExpr: String?
+        get() = null
+        set(value) {
+            trans?.setExtra(GMTOEXPR_KEY, parseExpression(value!!))
+        }
+
     private var checkedSkills: Int? = null
     private var checkedSteps: Int? = null
     private var checkedTasks: Int? = null
@@ -386,11 +395,11 @@ class MethodTestCase {
         val expr = parseExpression(inputExpr)
         val trans = method.tryExecute(context, expr.withOrigin(RootOrigin()))
 
-        for (processor in solutionProcessors) {
-            processor.processSolution(inputExpr, method, trans)
-        }
-
         checkTransformation(trans, assert)
+
+        for (processor in solutionProcessors) {
+            processor.processSolution(context, inputExpr, method, trans)
+        }
     }
 
     companion object {
@@ -403,7 +412,7 @@ class MethodTestCase {
 }
 
 fun interface SolutionProcessor {
-    fun processSolution(input: String, method: Method, solution: Transformation?)
+    fun processSolution(context: Context, input: String, method: Method, solution: Transformation?)
 }
 
 private fun Transformation.isThroughStep() =
@@ -423,16 +432,17 @@ private fun checkTransformation(trans: Transformation?, assert: TransformationCh
     check.finalize()
 }
 
-fun testMethod(init: MethodTestCase.() -> Unit) {
+fun testMethod(preset: Preset = Preset.Default, init: MethodTestCase.() -> Unit) {
     val testCase = MethodTestCase()
+    testCase.context = testCase.context.addPreset(preset)
     testCase.init()
 }
 
 /**
  * Test a method with a context set up with solutionVariable equal to "x"
  */
-fun testMethodInX(init: MethodTestCase.() -> Unit) {
+fun testMethodInX(preset: Preset = Preset.Default, init: MethodTestCase.() -> Unit) {
     val testCase = MethodTestCase()
-    testCase.context = Context(solutionVariables = listOf("x"))
+    testCase.context = testCase.context.copy(solutionVariables = listOf("x")).addPreset(preset)
     testCase.init()
 }

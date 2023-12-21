@@ -31,17 +31,30 @@ class CancellableView(override val original: Expression) : View {
 
 class TermView<T : View>(override val original: Expression, factorViewCreator: (Expression) -> T) : View {
 
-    val negated: Boolean
+    private enum class TermSign(val of: (Expression) -> Expression) {
+        PLUS({ it }),
+        MINUS({ negOf(it) }),
+        PLUSMINUS({ plusMinusOf(it) }),
+    }
+
+    private val termSign: TermSign
     val factors: List<T>
     val denominatorFactors: List<T>
 
     init {
-        val positiveTerm = if (original is Minus) {
-            negated = true
-            original.argument
-        } else {
-            negated = false
-            original
+        val positiveTerm = when (original) {
+            is Minus -> {
+                termSign = TermSign.MINUS
+                original.argument
+            }
+            is PlusMinus -> {
+                termSign = TermSign.PLUSMINUS
+                original.argument
+            }
+            else -> {
+                termSign = TermSign.PLUS
+                original
+            }
         }
 
         if (positiveTerm is Fraction) {
@@ -61,7 +74,7 @@ class TermView<T : View>(override val original: Expression, factorViewCreator: (
         val numerator = productOf(factors.mapNotNull { it.recombine() })
         val denominator = productOf(denominatorFactors.mapNotNull { it.recombine() })
         val fraction = simplifiedFractionOf(numerator, denominator)
-        return if (negated) negOf(fraction) else fraction
+        return termSign.of(fraction)
     }
 }
 

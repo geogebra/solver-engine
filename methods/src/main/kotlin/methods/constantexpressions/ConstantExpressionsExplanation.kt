@@ -40,6 +40,12 @@ enum class ConstantExpressionsExplanation : CategorisedMetadataKey {
     SimplifyPowerOfFraction,
 
     /**
+     * Simplify the power of an absolute value
+     * E.g.; |y|^2 -> y^2
+     */
+    SimplifyPowerOfAbsoluteValue,
+
+    /**
      * Rewrite integer order roots as powers in an expression that also contains rational exponents.
      * This is so that further simplifications of rational exponents can be performed
      *

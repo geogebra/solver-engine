@@ -1,5 +1,5 @@
 default:
-  image: gradle:8.0.2-jdk17-alpine
+  image: gradle:8.4.0-jdk17-alpine
   cache:
     key:
       files:
@@ -200,8 +200,8 @@ build-engine:
       - methods/build/generated/ksp/main/resources/TranslationKeys.json
       - methods/build/generated/ksp/main/resources/Method.TranslationKeys.json
       - engine/build/generated/ksp/main/resources/TranslationKeys.json
-      # Used by some TS tests
-      - solver-poker/test-results-src/test-results.ts
+      # Used by SDK tests
+      - methods/build/test-results/gmActionTests.json
     expire_in: 1 day
 
 # Package the engine into a docker image

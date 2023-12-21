@@ -20,11 +20,9 @@ export type PlanId =
 export type SolverExpr = string;
 export type LatexExpr = string;
 export type SolverContext = {
-  curriculum?: string;
-  /** GM stands for Graspable Math */
-  gmFriendly?: boolean;
+  presets?: string[];
+  settings?: { [name: string]: string };
   precision?: number;
-  preferDecimals?: boolean;
   solutionVariable?: string;
   preferredStrategies?: { [category: string]: string };
 };
@@ -38,6 +36,12 @@ export type StrategyMap = {
   [category: string]: Strategy[];
 };
 
+export type Setting = {
+  name: string;
+  description: string;
+  values: string[];
+};
+
 export type ApiMathFormat =
   | 'solver' // solver format - do not use unless you know why you are doing it
   | 'latex' // latex format - good for quick rendering, but lacks metadata
@@ -48,8 +52,46 @@ export type API_VERSION_INFO_RESPONSE = {
   deploymentName: string;
 };
 
+export type API_SETTINGS_RESPONSE = Setting[];
+
+export type API_PRESETS_RESPONSE = {
+  name: string;
+  description: string;
+  settings: { name: string; value: string }[];
+}[];
+
 export type API_PLANS_RESPONSE = PlanId[];
+
 export type API_STRATEGIES_RESPONSE = StrategyMap;
+
+export type GraphResponseBase<MathFormat> = {
+  coordinateSystem: Cartesian2DSystem;
+  objects: ExpressionGraphObject<MathFormat>[];
+};
+
+export type ExpressionGraphObject<MathFormat> = {
+  type: 'curve2D';
+  label?: string;
+  expression: MathFormat;
+};
+
+export type Cartesian2DSystem = {
+  type: 'Cartesian2D';
+  horizontalAxis: GraphAxis;
+  verticalAxis: GraphAxis;
+};
+
+export type GraphAxis = {
+  variable: string;
+  label: string;
+  minValue: number;
+  maxValue: number;
+};
+
+export type GraphResponseSolver = GraphResponseBase<string>;
+export type GraphResponseLatex = GraphResponseBase<string>;
+export type GraphResponseJson = GraphResponseBase<MathJson>;
+export type GraphResponse = GraphResponseSolver | GraphResponseLatex | GraphResponseJson;
 
 /** The most common case where you would get a response like this would be if the math
  * input is not syntactically correct. */
@@ -106,44 +148,51 @@ export type GmAction = {
     position?: 'Above' | 'Below' | 'LeftOf' | 'RightOf' | 'Onto' | 'OutsideOf';
   };
   formulaId?: string;
+  priority: number;
+};
+
+type MappedExpressionBase<MathFormat> = {
+  expression: MathFormat;
+  pathMappings: PathMapping[];
 };
 
 type MetadataBase<MathFormat> = {
   key: string;
-  params: { expression: MathFormat; pathMappings: PathMapping[] }[];
+  params?: MappedExpressionBase<MathFormat>[];
 };
 
 export type Tag = 'Rearrangement' | 'Cosmetic' | 'Pedantic' | 'InvisibleChange';
 
 type TransformationBase<MathFormat> = {
   type: 'Plan' | 'Rule' | 'TaskSet';
-  tags: Tag[];
+  tags?: Tag[];
 
   path: string;
   fromExpr: MathFormat;
   toExpr: MathFormat;
   pathMappings: PathMapping[];
   explanation: MetadataBase<MathFormat>;
-  gmAction: null | GmAction;
-  skills: MetadataBase<MathFormat>[];
-  steps: null | TransformationBase<MathFormat>[];
-  tasks: null | TaskBase<MathFormat>[];
-  alternatives: null | AlternativeBase<MathFormat>[];
+  formula: MappedExpressionBase<MathFormat>;
+  gmAction?: GmAction;
+  skills?: MetadataBase<MathFormat>[];
+  steps?: TransformationBase<MathFormat>[];
+  tasks?: TaskBase<MathFormat>[];
+  alternatives?: AlternativeBase<MathFormat>[];
 };
 
 export type TaskBase<MathFormat> = {
   taskId: string;
   startExpr: MathFormat;
   pathMappings: PathMapping[];
-  explanation: null | MetadataBase<MathFormat>;
-  steps: null | TransformationBase<MathFormat>[];
-  dependsOn: null | string[];
+  explanation: MetadataBase<MathFormat>;
+  steps?: TransformationBase<MathFormat>[];
+  dependsOn?: string[];
 };
 
 export type AlternativeBase<MathFormat> = {
   strategy: string;
   explanation: MetadataBase<MathFormat>;
-  steps: null | TransformationBase<MathFormat>[];
+  steps: TransformationBase<MathFormat>[];
 };
 
 export type TransformationSolver = TransformationBase<string>;
@@ -167,5 +216,12 @@ export type Alternative = AlternativeSolver | AlternativeLatex | AlternativeJson
 export type MetadataSolver = MetadataBase<string>;
 export type MetadataLatex = MetadataBase<string>;
 export type MetadataJson = MetadataBase<MathJson>;
-
 export type Metadata = MetadataSolver | MetadataLatex | MetadataJson;
+
+export type MappedExpressionSolver = MappedExpressionBase<string>;
+export type MappedExpressionLatex = MappedExpressionBase<string>;
+export type MappedExpressionJson = MappedExpressionBase<MathJson>;
+export type MappedExpression =
+  | MappedExpressionSolver
+  | MappedExpressionLatex
+  | MappedExpressionJson;

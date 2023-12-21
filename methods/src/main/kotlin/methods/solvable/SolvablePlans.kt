@@ -1,14 +1,21 @@
 package methods.solvable
 
+import engine.context.BooleanSetting
 import engine.context.Context
+import engine.context.Setting
 import engine.expressions.AbsoluteValue
 import engine.expressions.Equation
 import engine.expressions.Expression
 import engine.expressions.ExpressionWithConstraint
+import engine.expressions.Fraction
 import engine.expressions.Power
+import engine.expressions.Product
+import engine.expressions.Sum
+import engine.expressions.Variable
 import engine.methods.Method
 import engine.methods.plan
 import engine.methods.stepsproducers.StepsBuilder
+import engine.methods.stepsproducers.branchOn
 import engine.methods.stepsproducers.steps
 import engine.patterns.BinaryIntegerCondition
 import engine.patterns.ConditionPattern
@@ -73,20 +80,27 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
         }
     }
 
-    val moveConstantsToTheLeftAndSimplify = ApplyRuleAndSimplify(SolvableKey.MoveConstantsToTheLeft)
+    private fun applyRuleAndSimplify(key: SolvableKey) = branchOn(Setting.MoveTermsOneByOne) {
+        case(BooleanSetting.True) { whilePossible(ApplyRuleAndSimplify(key)) }
+        case(BooleanSetting.False) { apply(ApplyRuleAndSimplify(key)) }
+    }
 
-    val moveConstantsToTheRightAndSimplify = ApplyRuleAndSimplify(
-        SolvableKey.MoveConstantsToTheRight,
-    )
+    val moveConstantsToTheLeftAndSimplify = applyRuleAndSimplify(SolvableKey.MoveConstantsToTheLeft)
 
-    val moveVariablesToTheLeftAndSimplify = ApplyRuleAndSimplify(SolvableKey.MoveVariablesToTheLeft)
+    val moveConstantsToTheRightAndSimplify = applyRuleAndSimplify(SolvableKey.MoveConstantsToTheRight)
 
-    val moveVariablesToTheRightAndSimplify = ApplyRuleAndSimplify(SolvableKey.MoveVariablesToTheRight)
+    val moveVariablesToTheLeftAndSimplify = applyRuleAndSimplify(SolvableKey.MoveVariablesToTheLeft)
 
-    val moveEverythingToTheLeftAndSimplify = ApplyRuleAndSimplify(SolvableKey.MoveEverythingToTheLeft)
+    val moveVariablesToTheRightAndSimplify = applyRuleAndSimplify(SolvableKey.MoveVariablesToTheRight)
+
+    val moveEverythingToTheLeftAndSimplify = applyRuleAndSimplify(SolvableKey.MoveEverythingToTheLeft)
 
     val multiplyByInverseCoefficientOfVariableAndSimplify = ApplyRuleAndSimplify(
         SolvableKey.MultiplyByInverseCoefficientOfVariable,
+    )
+
+    val multiplyByDenominatorOfVariableLHSAndSimplify = ApplyRuleAndSimplify(
+        SolvableKey.MultiplyByDenominatorOfVariableLHS,
     )
 
     val divideByCoefficientOfVariableAndSimplify = ApplyRuleAndSimplify(
@@ -192,31 +206,38 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
         }
     }
 
-    /**
-     * multiply by the LCM of the constant denominators if there are at least two fractions
-     * or a single fraction with a non-constant numerator (including also 1/2 * (x + 1))
-     */
     val removeConstantDenominatorsSteps = steps {
-        check {
-            val sumTerms = extractSumTermsFromSolvable(it)
-            val denominators = sumTerms.mapNotNull { term -> DenominatorExtractor.extractDenominator(term) }
-            denominators.size >= 2 || sumTerms.any { term ->
-                fractionRequiringMultiplication.matches(this, term)
-            }
-        }
+        check { requiresMultiplicationByTheLCD(it, this) }
         apply(multiplyByLCDAndSimplify)
     }
 
+    val linearCoefficientRemovalSteps = steps {
+        check { it.isLinearIn(solutionVariables) }
+        apply { coefficientRemovalSteps }
+    }
+
+    // The explanations use advanced balancing for conciseness.
     val coefficientRemovalSteps = steps {
-        firstOf {
-            // get rid of the coefficient of the variable
-            option(multiplyByInverseCoefficientOfVariableAndSimplify)
-            option(divideByCoefficientOfVariableAndSimplify)
-            option {
-                checkForm {
-                    SolvablePattern(negOf(VariableExpressionPattern()), ConstantInSolutionVariablePattern())
+        whilePossible {
+            firstOf {
+                // First deal with coefficients not containing fractions e.g. -5x = 2 -> x = [2 / -5]
+                option(divideByCoefficientOfVariableAndSimplify)
+
+                // Then if the LHS is a negation, negate both side e.g. -[2x / 3] = 7 -> [2x / 3] = -7
+                option {
+                    checkForm {
+                        SolvablePattern(negOf(VariableExpressionPattern()), ConstantInSolutionVariablePattern())
+                    }
+                    apply(SolvableRules.NegateBothSides)
                 }
-                apply(SolvableRules.NegateBothSides)
+
+                // Next if the coefficient contains a constant fraction, multiply both sides by the reciprocal
+                // E.g. [5 / 2]x = 3 -> x = [2 / 5] * 3
+                option(multiplyByInverseCoefficientOfVariableAndSimplify)
+
+                // Last if the coefficient has a fraction with a constant denominator, multiply by this denominator
+                // E.g. [5x / 3] = 8 -> 5x = 3 * 8
+                option(multiplyByDenominatorOfVariableLHSAndSimplify)
             }
         }
     }
@@ -228,5 +249,21 @@ val evaluateBothSidesNumerically = steps {
     }
     optionally {
         applyTo(ApproximationPlans.EvaluateExpressionNumerically) { it.secondChild }
+    }
+}
+
+private fun Expression.isLinearIn(variables: List<String>) = linearDegreeIn(variables) == 1
+
+/**
+ * This returns 0 if the expression is constant in the given variables, 1 if it is linear, > 1 if it is neither.
+ */
+private fun Expression.linearDegreeIn(variables: List<String>): Int {
+    return when {
+        isConstantIn(variables) -> 0
+        this is Variable -> 1
+        this is Sum -> terms.maxOf { it.linearDegreeIn(variables) }
+        this is Product -> factors().sumOf { it.linearDegreeIn(variables) }
+        this is Fraction -> if (denominator.isConstantIn(variables)) numerator.linearDegreeIn(variables) else 2
+        else -> 2
     }
 }

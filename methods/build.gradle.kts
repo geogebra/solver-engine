@@ -32,7 +32,7 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
-    outputs.file("../solver-poker/test-results-src/test-results.ts")
+    outputs.file("build/test-results/gmActionTests.json")
 }
 
 detekt {

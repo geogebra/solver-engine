@@ -13,14 +13,20 @@ import javax.servlet.http.HttpServletResponse
 class InvalidExpressionException(expression: String, val parseException: ParseCancellationException? = null) :
     ApiException("Invalid expression: $expression", HttpStatus.BAD_REQUEST.value())
 
-class InvalidCurriculumException(curriculum: String) :
-    ApiException("Invalid curriculum: $curriculum", HttpStatus.BAD_REQUEST.value())
+class InvalidPresetException(preset: String) :
+    ApiException("Invalid preset: $preset", HttpStatus.BAD_REQUEST.value())
+
+class InvalidSettingException(setting: String, value: String) :
+    ApiException("Invalid setting: $setting = $value", HttpStatus.BAD_REQUEST.value())
 
 class InvalidStrategyException(category: String, strategy: String) :
     ApiException("Invalid strategy $strategy for category $category", HttpStatus.BAD_REQUEST.value())
 
 class PlanNotApplicableException(planId: String) :
     ApiException("Plan not applicable: $planId", HttpStatus.BAD_REQUEST.value())
+
+class ExpressionNotGraphableException(expression: String) :
+    ApiException("Expression not graphable: $expression", HttpStatus.BAD_REQUEST.value())
 
 @ControllerAdvice
 class FallbackExceptionHandler {

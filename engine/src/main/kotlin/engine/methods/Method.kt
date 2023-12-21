@@ -5,7 +5,6 @@ import engine.expressions.Expression
 import engine.methods.stepsproducers.StepsProducer
 import engine.steps.Transformation
 import java.util.logging.Level
-import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
 
 fun interface Method : StepsProducer {
@@ -17,17 +16,19 @@ fun interface Method : StepsProducer {
 
 fun interface Runner {
     fun run(ctx: Context, sub: Expression): Transformation?
+
+    val minDepth get() = 0
 }
 
 interface RunnerMethod : Method {
     val name: String
     val runner: Runner
 
-    @OptIn(ExperimentalTime::class)
     override fun tryExecute(ctx: Context, sub: Expression): Transformation? {
         ctx.requireActive()
 
         if (timeRuns) {
+            // ctx.log(Level.FINE) { "$name MINDEPTH $minDepth" }
             ctx.log(Level.FINER) { "-> $name: $sub" }
             val (result, duration) = try {
                 ctx.nest()
@@ -45,6 +46,8 @@ interface RunnerMethod : Method {
             return runner.run(ctx, sub)
         }
     }
+
+    override val minDepth get() = runner.minDepth
 
     companion object {
         // This is not a very sound way to express the intent that we should not time runs in productions and we should

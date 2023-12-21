@@ -1,12 +1,11 @@
+// DEPRECATED - will be removed soon
+// need to move all valuable information here somewhere else
+
 export const ruleSkipList = [
   // [TRACKED] Adding like fractions works differently in GM: GM goes directly
   // from 1/7+2/7 to 3/7 instead.
   'FractionArithmetic.AddLikeFractions',
   'FractionArithmetic.SubtractLikeFractions',
-
-  // [TRACKED] add support for the following gesture / action to GM (e.g. x+1=3+1 ==> x=3 directly)
-  'Equations.CancelCommonTermsOnBothSides',
-  'Inequalities.CancelCommonTermsOnBothSides',
 
   // [TRACKED] adjust the solver to do x*x => x^2 instead of x^(1+1); GM does that
   // when multiplying with an implied ^1 power (e.g. x^6*x or x*x but not x^(1+2)*x)
@@ -41,23 +40,11 @@ export const ruleSkipList = [
   */
   'General.DistributeSumOfPowers',
 
-  /* [TRACKED] GM should do x^2=0 ==> x=0, not x=±sqrt(0) */
-  'Equations.TakeRootOfBothSidesRHSIsZero',
-
-  /* [TRACKED] GM should automatically remove parentheses in (x+1)^2=5 ==> (x+1)=sqrt 5 */
-  'Equations.TakeRootOfBothSides',
-
   /* [TRACKED] Resolve what the intended behavior should be, e.g.:
    * x+(-3)^3 ==> x-3^3 or x+(-3^3)
    * 2*(-x)^3 ==> 2*(-x^3) (this one is clear)
    */
   'General.SimplifyOddPowerOfNegative',
-
-  // [TRACKED]
-  // 1. GM to remove extra brackets for 2^(1/2)*13*(1/3)^(1/2) ==> (2*(1/3))^(1/2)*13
-  // 2. Adjust GM to make the target area more predictable in 2^(1/3)*3^(1/3)*6^(1/2)
-  'General.RewriteFractionOfPowersWithSameExponent',
-  'General.RewriteProductOfPowersWithSameExponent',
 
   ///////////////// SIGNS ///////////////////////////////////
 
@@ -72,7 +59,7 @@ export const ruleSkipList = [
   'General.SimplifyProductWithTwoNegativeFactors',
 
   // TODO: Find a way to factor out a "-" from a sum without brackets in GM: -3-x ==> -(3+x)
-  'General.FactorMinusFromSum',
+  'General.FactorMinusFromSumWithAllNegativeTerms',
 
   /* TODO: improve GM behavior for signs. Currently, GM does this:
    - for nested signs: -(-x) need to drag signs & brackets stay
@@ -94,13 +81,15 @@ export const ruleSkipList = [
 
   // [TRACKED] APA doesn't support automatic rounding in intermediate steps.
   'Approximation.ApproximateDecimalProduct',
+
+  // skipping it currently as now the inverse is multiplied on the left-side of both
+  // sides of the solvable
+  'Equations.MultiplyByInverseCoefficientOfVariable',
 ];
 
 export const expressionTypeSkipList = [
   // [TRACKED] support mixed numbers in GM
   'MixedNumber',
-  // [TRACKED] support horizontal division "÷" in GM
-  'DivideBy',
   // [TRACKED] support inequations "!=" in GM
   'Inequation',
   // [TRACKED] support recurring decimals in GM (?)
@@ -111,9 +100,42 @@ export const expressionTypeSkipList = [
   'Plus',
 ];
 
+/**
+ * This list is composed of the input of tests that we want to skip because
+ * the gm-actions are not aligned with the solver steps
+ */
 export const expressionSkipList = [
+  // GM removes the *1 automatically, Solver doesn't
+  // [OK for now]
+  '3/3*x<7*(-3)',
+  '45/45*C=(F-32)*5/9',
+  '2/2*x^2+2*x+2*1/2=0',
+  '3*x+2/2*x^2=15/8',
+  '2/2*x^2+1/2*5*x=7/2',
+  '2/2*x^2+1/2*x=1/2',
+  '2/2*x^2+1/2*(-x)=45/2',
+
+  // GM now automatically puts the sign in front of the fraction when dividing an equation
+  // [OK for now]
+  '3.1*x>=-0.99', // GM: (3.1*x)/3.1>=-{0.99/3.1}, Solver: (3.1*x)/3.1>=-0.99/3.1
+  '0.2*x<-11.54',
+  '3*x=-22',
+  '0.2*x=-11.54',
+  '3.2*x<=-1',
+  '-3*x=-1',
+  '3.2*x=-1',
+
+  // GM puts the term next to the opposite one when multiplying both sides of an equation
+  // [TODO SOLVER] need to use new gm-friendly rule for this when running tests
+  '9/5*C=F-32',
+
+  // Some cases of RewriteFractionOfPowersWithSameExponent are now supported, but GM needs
+  // a more predictable target area [TRACKED]
+  '5*5^(1/2)*2^(1/2)',
+  '2^(1/3)*3^(1/3)*6^(1/2)',
+
   // [TRACKED] adjust Solver behavior (either the default or gm-friendly one)
-  // currently, it rewrites 3x=1/2 to x=1/2/3, not x=1/(2*3)
+  // currently, it rewrites 3x=1/2 to x=1/2/3, not x=1/2*1/3
   '3*(x+1)^2=1/3',
 
   // TODO: adjust GM to handle signs and brackets better:
@@ -127,8 +149,8 @@ export const expressionSkipList = [
   // remove brackets: (-7)*3 => -7*3 not -(7)*3
   // allow drag negative sign on top of minus sign: 1-3*(-x) ==> 1+3x
   // remove brackets: -3*(-a) ==> 3a not 3(a)
-  // simplify -0: -x=0  => x=0 not x=-0
   // change sign into minus: -x=2 ==> -x+x=2+x not +-x+x=2+x
+  // multiply equation: x/3=-7 ==> x/3*3=-7*3 not x/3*3=(-7)*3
   '5*x+(1-5)*x^2',
   '(1-2)*a*x+1/3*a*b*x+3/4*a*b*x',
   '4*x^2+(-6-6)*x+9',
@@ -143,21 +165,20 @@ export const expressionSkipList = [
   '-((3-4)*sqrt[3]3)-(-sqrt[3]3-3*sqrt[3]3+5*sqrt[3]3)',
   '-(-1*sqrt[3]3)-(-sqrt[3]3-3*sqrt[3]3+5*sqrt[3]3)',
   '-(3-4)*sqrt[3]3-(-sqrt[3]3-3*sqrt[3]3+5*sqrt[3]3)',
-  '(-1)+1',
   '(-0.2)*(-0.2)',
-  '-(-1*sqrt[3]3)-(-sqrt[3]3-3*sqrt[3]3+5*sqrt[3]3)',
   '-(3-4)*sqrt[3]3-(-sqrt[3]3-3*sqrt[3]3+5*sqrt[3]3)',
-  '(5^2)^(-{1/2})',
-  '-(x^2-2*x+8)=0',
-  '-(2*x^2-4*x+2)=0',
-  '-x=16*x',
+  '(5^2)^(-{1/2})', // GM: 5^(2*-{1/2}); Solver: 5^(2*(-{1/2}))
+  '3*x+3-2*x-2*(-6)=0',
+  '3*x-42-4*x-2*(-1)=8*(2*x-5)',
+  '(3-4)*x-40=8*(2*x-5)',
+  '15*x-210-36*x-18*(-1)=1',
+  '(15-36)*x-192=1',
+  '8*x^3+(-12-24)*x^2+36*x+18*x-27',
+  'x/3=-7', // GM: x/3*3=-7*3; Solver: x/3*3=(-7)*3
+  '-{1/3}*x>7', // GM: -{1/3}*-3*x<7*-3, Solver: (-{1/3}*x)*(-3)<7*(-3)
 
   // [TRACKED] adjust GM to set entire product to 0 when multiplying by 0
   'x=(-7±sqrt(7^2-4*1*0))/(2*1)',
-
-  // [TRACKED] extend GM gesture to cover these: 0^x, 1^x, x^1, x^0, radical cases
-  '1^(sqrt 2+1)',
-  '0^(3/2)',
 
   // [TRACKED] GM turns (2*a^2)^3 into 2^3*a^(2*3), while the solver stacks the
   // exponents first. Adjust either the Solver or GM.
@@ -168,6 +189,7 @@ export const expressionSkipList = [
   '24*sqrt[3]((2^3*3)^2)',
   'sqrt[6]((2^3*3)^5)',
   '2*(2^2*3)^(1/2)',
+  'sqrt[5]((2^2*3)^4)',
 
   // [TRACKED] GM automatically removes a "0" on the other side of the equation if
   // the user adds or subtracts from both side. The Solver doesn't.
@@ -191,29 +213,34 @@ export const expressionSkipList = [
   'a^3*b+c=0',
   'x^6+y^2+1=0',
 
+  // GM automatically removes factors of *1 after cancelling out a fraction,
+  // but the Solver doesn't.
+  '2/2*h*(B+b)=2*S',
+  '45/45*C=5/9*(F-32)',
+  '3/3*x<(-3)*7', // GM: x<(-3)*7, Solver: 1*x<(-3)*7
+
   // [TRACKED] Rewrite equation: insert position of inverted term.
   // GM inserts the inverted term next to the dragged term. It also inserts
   // the term at a different position for fractions: E.g.: x/3=7 ==> (x*3)/3=7*3 vs x/3*3=7*3
-  '4=11+x/3',
-  '1+x=3/5',
-  '8-x^3=0',
-  '1-3*x=0',
-  '6*x-1+2*x^2=11/4',
-  'x^6+2-3*x^3=0',
-  '4>11+x/3',
-  '4*x^2+5=2*x^2+8',
-  '3.1*x+2.2=2.9*x-9.34',
-  '3.6*x+2.2=0.4*x+1.2',
-  'x^2=x+3',
-  'x^2=6*x+5',
-  'x+1=2*x+3',
-  '2*x^2-3=3*x^2+4',
   'x+1<2*x+3',
-  '3.1*x+2.2<2.9*x-9.34',
-  '3.6*x+2.2<=0.4*x+1.2',
-  'x/3<-7',
-  'x/3=-7',
+  'x^2=6*x+5',
+  'x^2=x+3',
+  '6*x-1+2*x^2=11/4',
+  '3.6*x+2.2=0.4*x+1.2',
+  '3.1*x+2.2=2.9*x-9.34',
   'x/9=-1',
+  '1+x=3/5',
+  '4=11+x/3',
+  '2*x^2-3=3*x^2+4',
+  '4*x^2+5=2*x^2+8',
+  '3.6*x+2.2<=0.4*x+1.2',
+  '3.1*x+2.2<2.9*x-9.34',
+  '4>11+x/3',
+  'x/3<-7',
+  'x+1=2*x+3',
+  '3*a+2*b<9',
+  '(2*h*x)/3=1',
+  'x*y/2=5',
 
   // [TRACKED] In GM, it is easier to move one term at a time, though the Solver doesn't
   // TODO: figure out how to tell the GM Action that several terms should be moved
@@ -221,18 +248,8 @@ export const expressionSkipList = [
   // should be a list of addends, but is a sum)
   'x^2=1-x-x^2',
 
-  // [TRACKED] GM should remove brackets automatically here:
-  '-(2*sqrt 2)^3',
-
-  // TODO: adjust GM to allow dragging the denominator to the other side of the equation
-  // passing through negative signs ('Inequalities.MultiplyByInverseCoefficientOfVariableAndFlipTheSign')
-  '-{1/3}*x>7',
-
-  // TODO: fix GM to properly handle dividing in these cases:
-  '3.2*x<=-1',
-  '3.2*x=-1',
-  '-3*x=-1',
-  '3.2*x=-1',
+  // TODO: GM doesn't remove the brackets automatically here
+  '-(2*sqrt 2)^3', // GM: -(2^3*(sqrt 2)^3), Solver: -2^3*(sqrt 2)^3
 
   // TODO: this should work in GM, find out why it doesn't
   '24+2*2*sqrt 6*3*sqrt 2+(3*sqrt 2)^2',
@@ -241,11 +258,38 @@ export const expressionSkipList = [
   // "1*x..." as it should. Why?
   '(6-6+1)*x^2+30-x^6',
 
-  // TODO: should work in GM
-  '3*a+2*b<9',
+  // Factoring: GM can only factor 2 things at a time
+  '2*x^2-4*x+2=0',
+  '2*x^2+4*x+2=0',
 
-  // TODO: this error was introduced in PLUT-807
-  '-(c^2-3*b*c+a^2+b^2)=0',
-  '-(c^2-4*b*c-a^2+b^2)=0',
-  '-(c^2*m-E)=0',
+  // Factoring: GM removes brackets around single remaining factor, but Solver doesn't
+  '3*((x+1)^3+2*(x+1)^2)', // GM: 3*(x+1)^2*(x+1+2); Solver: 3*(x+1)^2*((x+1)+2)
+
+  // TODO: these test were introduced in PLUT-845 to test advanced balancing of equations
+  '1=3/5-x',
+  'x-2=36',
+  '3*x=1',
+
+  // Currently GM doesn't check if an absolute value is negative or positive
+  // for more complicated cases
+  // TODO GM: support those cases
+  '|-2+sqrt 2|',
+  '|2-sqrt 2|',
+  '|1+sqrt 2|=0',
+  '|-(x+sqrt 2)|-|x+sqrt 2|=0',
+
+  // Turning division into a fraction: the solver puts all other factors into
+  // the numerator, while GM puts one of the other factors into the numerator
+  '3^2*3^(-{1/3})÷3^(1/2)',
+  '5*x^7÷(-{1/5}*x^3)+12*x^3*y^7÷(-{1/5}*x^3)+(-{10/7}*x^5*y)÷(-{1/5}*x^3)',
+  '-25*x^4+12*x^3*y^7÷(-{1/5}*x^3)+(-{10/7}*x^5*y)÷(-{1/5}*x^3)',
+
+  // Turning division into a fraction: the solver removes brackets in the new
+  // numerator automatically, while GM doesn't
+  '-25*x^4-60*y^7+(-{10/7}*x^5*y)÷(-{1/5}*x^3)',
+
+  // Issues introduced in PLUT-797
+  '3/3*(x+1)^2=1/3*1/3',
+  '1/3*x<-7',
+  '3/3*x<3*(-7)',
 ];

@@ -6,7 +6,7 @@ import engine.expressions.IntegerExpression
 import engine.expressions.IntegerFactorView
 import engine.expressions.Power
 import engine.expressions.SumView
-import engine.expressions.isSignedInteger
+import engine.expressions.isSigned
 import engine.expressions.powerOf
 import engine.expressions.productOf
 import engine.expressions.rootOf
@@ -33,8 +33,6 @@ import engine.patterns.withOptionalIntegerCoefficient
 import engine.sign.Sign
 import engine.steps.metadata.Skill
 import engine.steps.metadata.metadata
-import engine.utility.asPowerForRoot
-import engine.utility.asProductForRoot
 import engine.utility.divides
 import engine.utility.greatestSquareFactor
 import engine.utility.hasFactorOfDegree
@@ -211,7 +209,7 @@ enum class IntegerRootsRules(override val runner: Rule) : RunnerMethod {
                         ),
                         move(root.order),
                     ),
-                    explanation = metadata(Explanation.SeparateSquaresUnderSquareRoot, move(base), move(exponent)),
+                    explanation = metadata(Explanation.SeparateSquaresUnderSquareRoot),
                 )
             }
         },
@@ -501,7 +499,7 @@ private val moveSquareFactorOutOfSquareRoot = rule {
 
 private val factorGreatestCommonSquareIntegerFactor = rule {
     onPattern(AnyPattern()) {
-        if (expression.isSignedInteger()) {
+        if (expression.isSigned<IntegerExpression>()) {
             // If it's just an integer we defer to more basic methods
             return@onPattern null
         }

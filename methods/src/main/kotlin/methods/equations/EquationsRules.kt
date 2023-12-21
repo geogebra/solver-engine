@@ -57,6 +57,7 @@ import engine.patterns.VariableExpressionPattern
 import engine.patterns.absoluteValueOf
 import engine.patterns.condition
 import engine.patterns.equationOf
+import engine.patterns.expressionWithFactor
 import engine.patterns.inSolutionVariables
 import engine.patterns.integerCondition
 import engine.patterns.oneOf
@@ -64,6 +65,7 @@ import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.rationalMonomialPattern
+import engine.patterns.squareRootOf
 import engine.patterns.sumContaining
 import engine.patterns.sumOf
 import engine.patterns.withOptionalConstantCoefficient
@@ -275,7 +277,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
     SeparateFactoredEquation(separateFactoredEquation),
 
-    EliminateConstantFactorOfLhsWithZeroRhs(eliminateConstantFactorOfLhsWithZeroRhs),
+    EliminateConstantFactorOfLhsWithZeroRhsDirectly(eliminateConstantFactorOfLhsWithZeroRhsDirectly),
 
     SeparateModulusEqualsPositiveConstant(separateModulusEqualsPositiveConstant),
     ResolveModulusEqualsZero(resolveModulusEqualsZero),
@@ -291,6 +293,8 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
     MultiplyBothSidesOfRationalEquationWithTrivialLCD(multiplyBothSidesOfRationalEquationWithTrivialLCD),
     MultiplyBothSidesOfRationalEquation(multiplyBothSidesOfRationalEquation),
+
+    SplitEquationWithRationalVariables(splitEquationWithRationalVariables),
 }
 
 private val extractSolutionFromEquationInPlusMinusForm = rule {
@@ -382,7 +386,7 @@ private val separateEquationInPlusMinusForm = rule {
     }
 }
 
-private val eliminateConstantFactorOfLhsWithZeroRhs = rule {
+private val eliminateConstantFactorOfLhsWithZeroRhsDirectly = rule {
     val factor = condition { it.isConstant() && it.isDefinitelyNotZero() }
     val unsignedLHS = productContaining(factor)
     val lhs = optionalNegOf(unsignedLHS)
@@ -644,6 +648,26 @@ private val multiplyBothSidesOfRationalEquation = rule {
         ruleResult(
             toExpr = newEq,
             explanation = metadata(Explanation.MultiplyBothSidesByDenominator, lcd),
+        )
+    }
+}
+
+val splitEquationWithRationalVariables = rule {
+    // This is incomplete but enough for what we want to use it for for now, which is to separate
+    // an equation of the form X + Ysqrt[N] = A + Bsqrt[N] into X = A AND Ysqrt[N] = Bsqrt[N]
+    val root = squareRootOf(UnsignedIntegerPattern())
+    val lhsTermWithRoot = expressionWithFactor(root)
+    val lhs = sumContaining(lhsTermWithRoot)
+    val rhsTermWithRoot = expressionWithFactor(root)
+    val rhs = sumContaining(rhsTermWithRoot)
+
+    onEquation(lhs, rhs) {
+        ruleResult(
+            toExpr = statementSystemOf(
+                equationOf(restOf(lhs), restOf(rhs)),
+                equationOf(get(lhsTermWithRoot), get(rhsTermWithRoot)),
+            ),
+            explanation = metadata(Explanation.SplitEquationWithRationalVariables),
         )
     }
 }

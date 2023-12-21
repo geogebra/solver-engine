@@ -4,9 +4,11 @@ import engine.expressions.Fraction
 import engine.expressions.Minus
 import engine.expressions.Power
 import engine.expressions.ValueExpression
+import engine.expressions.containsDecimals
+import engine.expressions.containsFractions
 import engine.expressions.containsPowers
 import engine.expressions.containsRoots
-import engine.expressions.isSignedFraction
+import engine.expressions.isSigned
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
@@ -14,12 +16,14 @@ import engine.methods.plan
 import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.applyAfterMaybeExtractingMinus
 import engine.methods.stepsproducers.steps
+import engine.methods.stepsproducers.stepsWithMinDepth
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.FindPattern
 import engine.patterns.IntegerFractionPattern
 import engine.patterns.RationalPattern
 import engine.patterns.SignedIntegerPattern
+import engine.patterns.absoluteValueOf
 import engine.patterns.condition
 import engine.patterns.integerCondition
 import engine.patterns.optionalNegOf
@@ -113,9 +117,22 @@ enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : Runn
         },
     ),
 
+    SimplifyPowerOfAbsoluteValue(
+        plan {
+            pattern = powerOf(optionalNegOf(absoluteValueOf(AnyPattern())), AnyPattern())
+            explanation = Explanation.SimplifyPowerOfAbsoluteValue
+
+            steps {
+                optionally(GeneralRules.SimplifyOddPowerOfNegative)
+                optionally(GeneralRules.SimplifyEvenPowerOfNegative)
+                optionally(GeneralRules.SimplifyEvenPowerOfAbsoluteValue)
+            }
+        },
+    ),
+
     SimplifyPowerOfFraction(
         plan {
-            pattern = powerOf(condition { it.isSignedFraction() && it.isConstant() }, RationalPattern())
+            pattern = powerOf(condition { it.isSigned<Fraction>() && it.isConstant() }, RationalPattern())
             explanation = Explanation.SimplifyPowerOfFraction
 
             steps {
@@ -157,10 +174,9 @@ enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : Runn
                     firstOf {
                         option { deeply(GeneralRules.SimplifyEvenPowerOfNegative) }
                         option { deeply(GeneralRules.SimplifyOddPowerOfNegative) }
-                        option { deeply(IntegerRootsPlans.SimplifyIntegerRootToInteger) }
+                        option { deeply(IntegerRootsPlans.SimplifyIntegerRoot) }
                         option { deeply(IntegerRootsPlans.CancelPowerOfARoot) }
                         option { deeply(IntegerRootsPlans.SimplifyRootOfRootWithCoefficient) }
-                        option { deeply(IntegerRootsPlans.SimplifyIntegerRoot) }
                         option { deeply(IntegerRootsRules.TurnPowerOfRootToRootOfPower) }
                         option { deeply(FractionRootsPlans.SimplifyFractionOfRoots) }
                         option { deeply(FractionRootsRules.DistributeRadicalOverFraction) }
@@ -244,6 +260,7 @@ val simpleTidyUpSteps = steps {
         option(IntegerRationalExponentsRules.EvaluateNegativeToRationalExponentAsUndefined)
 
         // tidy up decimals
+        // It's bad to have this here as it has depth = 0.  We should do this at the start and then forget about it.
         option(DecimalRules.StripTrailingZerosAfterDecimal)
 
         // handle zeroes
@@ -268,25 +285,38 @@ val simpleTidyUpSteps = steps {
     }
 }
 
-private val trickySimplificationSteps = steps {
+private val rootOfPowerSimplificationSteps = steps {
     check { it.containsRoots() }
     deeply {
         firstOf {
             option(cancelRootOfPower)
-            option(IntegerRootsPlans.SplitRootsAndCancelRootsOfPowers)
+            option(IntegerRootsPlans.SplitAndCancelRootOfPower)
             option(IntegerRootsPlans.SimplifyPowerOfIntegerUnderRoot)
         }
     }
 }
 
+/**
+ * Steps to tidy up fractions (e.g. fractions of fractions, fractions with negative arguments, unsimplified fractions)
+ */
 private val fractionSimplificationSteps = steps {
+    check { it.containsFractions() }
     deeply {
         firstOf {
             option(normalizeFractionsWithinFractions)
             option(normalizeNegativeSignsInFraction)
             option(FractionArithmeticPlans.SimplifyFraction)
+        }
+    }
+}
 
-            // These should be done once and for all at the start I guess, no need to try again and again
+/**
+ * Steps to turn decimals to fractions
+ */
+val decimalToFractionConversionSteps = steps {
+    check { it.containsDecimals() }
+    deeply {
+        firstOf {
             option(DecimalPlans.NormalizeFractionOfDecimals)
             option(DecimalPlans.ConvertTerminatingDecimalToFractionAndSimplify)
             option(DecimalPlans.ConvertRecurringDecimalToFractionAndSimplify)
@@ -294,13 +324,14 @@ private val fractionSimplificationSteps = steps {
     }
 }
 
-val constantSimplificationSteps: StepsProducer = steps {
+// Give it a minDepth of 1 to break cycles.
+val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
     firstOf {
         option { deeply(simpleTidyUpSteps) }
 
         option { deeply(inlineSumsAndProducts) }
 
-        option(trickySimplificationSteps)
+        option(rootOfPowerSimplificationSteps)
 
         option { deeply(evaluateConstantAbsoluteValue) }
 
@@ -311,6 +342,12 @@ val constantSimplificationSteps: StepsProducer = steps {
         option { deeply(addConstantFractions) }
 
         option(fractionSimplificationSteps)
+
+        // It would be better to move this out of constantSimplificationSteps altogether and do it first but the
+        // required behaviour depends on the previous steps being tried first.
+        option(decimalToFractionConversionSteps)
+        // can't think of a better place for this rule for now
+        option(GeneralRules.SimplifyPlusMinusOfAbsoluteValue)
 
         option {
             deeply {
@@ -329,18 +366,25 @@ val constantSimplificationSteps: StepsProducer = steps {
                     option(ConstantExpressionsPlans.SimplifyPowerOfInteger)
                     option(ConstantExpressionsPlans.SimplifyPowerOfProduct)
                     option(ConstantExpressionsPlans.SimplifyPowerOfFraction)
+                    option(ConstantExpressionsPlans.SimplifyPowerOfAbsoluteValue)
                 }
             }
         }
 
-        option { deeply(collectLikeRootsAndSimplify) }
+        option {
+            check { it.containsRoots() }
+            deeply(collectLikeRootsAndSimplify)
+        }
         option { deeply(collectLikeRationalPowersAndSimplify) }
 
         option(ConstantExpressionsPlans.SimplifyRootsInExpression)
         option(simplifyRationalExponentsInProduct)
 
         option { deeply(FractionArithmeticPlans.MultiplyAndSimplifyFractions) }
-        option { deeply(IntegerRootsPlans.SimplifyProductWithRoots) }
+        option {
+            check { it.containsRoots() }
+            deeply(IntegerRootsPlans.SimplifyProductWithRoots)
+        }
 
         option { deeply(IntegerArithmeticPlans.SimplifyIntegersInProduct) }
 
@@ -350,12 +394,19 @@ val constantSimplificationSteps: StepsProducer = steps {
         option {
             check { it.containsRoots() }
             firstOf {
-                // Do this after integers are added we don't apply it to e.g. `sqrt[4 + 8]`
+                // Do this after integers are added, we don't apply it to e.g. `sqrt[4 + 8]`
                 option { deeply(IntegerRootsPlans.SimplifySquareRootWithASquareFactorRadicand) }
+                // Do this after SimplifySquareRootWithASquareFactorRadicand to make it easier
+                option { deeply(IntegerRootsPlans.SimplifySquareRootOfIntegerPlusSurd) }
                 option { deeply(addRootAndFraction) }
                 option { deeply(FractionRootsPlans.RationalizeDenominators) }
             }
         }
+
+        // Now that numerator and denominator have been simplified enough, we can find a common factor in the
+        // numerator and denominator of fractions.  Do this after factoring squares out of roots so that e.g.
+        // [4 + 2sqrt[8] / 8] is transformaed to [4 + 4sqrt[2] / 8] first.
+        option(FractionArithmeticPlans.SimplifyCommonIntegerFactorInFraction)
 
         option { deeply(ExpandRules.DistributeNegativeOverBracket) }
         option { deeply(expandConstantExpression) }

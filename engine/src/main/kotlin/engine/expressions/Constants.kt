@@ -1,9 +1,7 @@
 package engine.expressions
 
-import engine.operators.EulerEOperator
 import engine.operators.ImaginaryUnitOperator
 import engine.operators.InfinityOperator
-import engine.operators.PiOperator
 import engine.operators.UndefinedOperator
 
 @Suppress("MagicNumber")
@@ -17,8 +15,8 @@ object Constants {
 
     val OneHalf = fractionOf(One, Two)
 
-    val Pi = expressionOf(PiOperator, emptyList())
-    val E = expressionOf(EulerEOperator, emptyList())
+    val Pi = PiExpression()
+    val E = EulerEExpression()
     val ImaginaryUnit = expressionOf(ImaginaryUnitOperator, emptyList())
 
     val Infinity = expressionOf(InfinityOperator, emptyList())

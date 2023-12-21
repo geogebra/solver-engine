@@ -1,28 +1,44 @@
 package methods.integerroots
 
+import engine.expressions.Constants
+import engine.expressions.Extractor
 import engine.expressions.Product
 import engine.expressions.Root
 import engine.expressions.SquareRoot
+import engine.expressions.Variable
 import engine.expressions.containsRoots
+import engine.expressions.equationOf
+import engine.expressions.powerOf
+import engine.expressions.productOf
+import engine.expressions.simplifiedProductOf
+import engine.expressions.squareRootOf
+import engine.expressions.sumOf
 import engine.methods.CompositeMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
+import engine.methods.stepsproducers.applyToFactors
 import engine.methods.stepsproducers.steps
+import engine.methods.taskSet
 import engine.patterns.AnyPattern
-import engine.patterns.ConditionPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.commutativeSumOf
 import engine.patterns.condition
-import engine.patterns.integerCondition
 import engine.patterns.integerOrderRootOf
 import engine.patterns.powerOf
 import engine.patterns.rootOf
 import engine.patterns.squareRootOf
+import engine.patterns.withOptionalIntegerCoefficient
+import engine.steps.metadata.metadata
 import engine.utility.isPowerOfDegree
+import methods.equations.EquationsRules
+import methods.equationsystems.EquationSystemsRules
 import methods.general.GeneralRules
 import methods.integerarithmetic.IntegerArithmeticPlans
 import methods.integerarithmetic.IntegerArithmeticRules
 import methods.integerarithmetic.simplifyIntegersInExpression
+import methods.polynomials.PolynomialsPlans
+import methods.solvable.SolvableRules
 
 enum class IntegerRootsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
@@ -75,9 +91,17 @@ enum class IntegerRootsPlans(override val runner: CompositeMethod) : RunnerMetho
             pattern = condition { it is Product && it.containsRoots() }
 
             steps {
-                whilePossible { deeply(IntegerArithmeticRules.EvaluateIntegerPowerDirectly) }
                 optionally(IntegerArithmeticPlans.SimplifyIntegersInProduct)
-                optionally(simplifyProductOfRoots)
+
+                apply {
+                    whilePossible(IntegerRootsRules.SimplifyMultiplicationOfSquareRoots)
+
+                    whilePossible(IntegerRootsRules.BringRootsToSameIndexInProduct)
+                    whilePossible(IntegerRootsRules.MultiplyNthRoots)
+                }
+
+                whilePossible { deeply(IntegerArithmeticRules.EvaluateIntegerPowerDirectly) }
+                optionally { deeply(IntegerArithmeticPlans.SimplifyIntegersInProduct) }
             }
         },
     ),
@@ -88,81 +112,76 @@ enum class IntegerRootsPlans(override val runner: CompositeMethod) : RunnerMetho
      */
     SimplifyIntegerRoot(
         plan {
-            pattern = integerOrderRootOf(UnsignedIntegerPattern())
+            val radicand = UnsignedIntegerPattern()
+            val radical = integerOrderRootOf(radicand)
+            pattern = radical
 
-            explanation = Explanation.SimplifyIntegerRoot
+            explanation {
+                if (getValue(radicand).isPowerOfDegree(getValue(radical.order).toInt())) {
+                    metadata(Explanation.SimplifyIntegerRootToInteger)
+                } else {
+                    metadata(Explanation.SimplifyIntegerRoot)
+                }
+            }
 
             steps {
                 firstOf {
-
                     // First try to do easy factorisation without prime factor decomposition
                     option {
+                        // sqrt[81000]
                         optionally(IntegerRootsRules.WriteRootAsRootProduct)
+                        // sqrt[81 * 1000]
                         optionally(IntegerRootsRules.SplitRootOfProduct)
-                        plan {
-                            explanation = Explanation.WriteRootsAsRootPowers
-
-                            steps {
-                                whilePossible {
-                                    deeply(IntegerRootsRules.WriteRootAsRootPower)
-                                }
-                            }
-                        }
+                        // sqrt[81] * sqrt[1000]
+                        applyToFactors(simplifyRootOfReducedInteger)
+                        // 9 * 10 sqrt[10]
                     }
 
                     // If that fails try prime factor decomposition
                     option {
-                        // root[2^3 * 5^2 * 7^5, 2]
+                        // root[430259200, 4]
                         apply(IntegerRootsRules.FactorizeIntegerUnderRoot)
-
-                        // root[2^3, 2] * root[5^2, 2] * root[7^5, 2]
+                        // root[2^10 * 5^2 * 7^5, 4]
                         optionally(IntegerRootsRules.SplitRootOfProduct)
+                        // root[2^10, 4] * root[5^2, 4] * root[7^5, 4]
+                        applyToFactors(simplifyRootOfReducedIntegerPower)
+                        // 4 sqrt[2] * sqrt[5] * 7 root[7, 4]
                     }
                 }
 
-                optionally(SplitRootsInProduct)
-                optionally(CancelAllRootsOfPowers)
-
-                // 490 * root[14]
                 optionally(SimplifyProductWithRoots)
                 optionally(IntegerArithmeticPlans.SimplifyIntegersInProduct)
             }
         },
     ),
 
-    SimplifyIntegerRootToInteger(
+    SplitAndCancelRootOfPower(
         plan {
-            explanation = Explanation.SimplifyIntegerRootToInteger
-            val radicand = UnsignedIntegerPattern()
-            val radical = integerOrderRootOf(radicand)
-            pattern = ConditionPattern(
-                radical,
-                integerCondition(radicand, radical.order) { n, order -> n.isPowerOfDegree(order.toInt()) },
-            )
+            explanation = Explanation.SplitAndCancelRootOfPower
 
             steps {
-                applyTo(SimplifyIntegerRoot) { it }
+                apply(IntegerRootsRules.SplitPowerUnderRoot)
+                apply(IntegerRootsRules.SplitRootOfProduct)
+                applyToKind<Product>(cancelRootOfPower) { it.firstChild }
             }
         },
     ),
 
-    SplitRootsInProduct(
+    RewriteAndCancelPowerUnderRoot(
         plan {
-            explanation = Explanation.SplitRootsInProduct
+            pattern = rootOf(powerOf(AnyPattern(), UnsignedIntegerPattern()), UnsignedIntegerPattern())
+            explanation = Explanation.RewriteAndCancelPowerUnderRoot
 
             steps {
-                whilePossible { deeply(IntegerRootsRules.SplitPowerUnderRoot) }
-                whilePossible { deeply(IntegerRootsRules.SplitRootOfProduct) }
-            }
-        },
-    ),
+                optionally {
+                    applyTo(GeneralRules.SimplifyEvenPowerOfNegative) { it.firstChild }
+                }
+                optionally {
+                    applyTo(GeneralRules.RewriteEvenPowerOfBaseAsEvenPowerOfAbsoluteValueOfBase) { it.firstChild }
+                }
 
-    SplitRootsAndCancelRootsOfPowers(
-        plan {
-            explanation = Explanation.SplitRootsAndCancelRootsOfPowers
-            steps {
-                apply(SplitRootsInProduct)
-                apply(CancelAllRootsOfPowers)
+                optionally(GeneralRules.RewritePowerUnderRoot)
+                apply(GeneralRules.CancelRootIndexAndExponent)
             }
         },
     ),
@@ -184,35 +203,31 @@ enum class IntegerRootsPlans(override val runner: CompositeMethod) : RunnerMetho
         },
     ),
 
-    CancelAllRootsOfPowers(
-        plan {
-            explanation = Explanation.CancelAllRootsOfPowers
-
-            steps {
-                whilePossible {
-                    deeply(cancelRootOfPower)
-                }
-            }
-        },
-    ),
-
     SimplifyPowerOfIntegerUnderRoot(
         plan {
             explanation = Explanation.SimplifyPowerOfIntegerUnderRoot
+            pattern = integerOrderRootOf(powerOf(SignedIntegerPattern(), UnsignedIntegerPattern()))
 
             // root[[24 ^ 5], 3] -> root[[24 ^ 3], 3] * root[[24 ^ 2], 3]
             steps {
-                optionally(FactorizeAndDistributePowerUnderRoot)
-                optionally(IntegerRootsRules.SplitRootOfProduct)
-                apply {
-                    whilePossible { deeply(cancelRootOfPower) }
+                optionally {
+                    applyTo(GeneralRules.SimplifyEvenPowerOfNegative) { it.firstChild }
                 }
-                whilePossible { deeply(IntegerArithmeticRules.EvaluateIntegerPowerDirectly) }
+
+                apply(FactorizeAndDistributePowerUnderRoot)
+                optionally(IntegerRootsRules.SplitRootOfProduct)
+
+                applyToFactors(simplifyRootOfReducedIntegerPower)
+
+                optionally(SimplifyProductWithRoots)
+                optionally(IntegerArithmeticPlans.SimplifyIntegersInProduct)
             }
         },
     ),
 
     SimplifySquareRootWithASquareFactorRadicand(simplifySquareRootWithASquareFactorRadicand),
+
+    SimplifySquareRootOfIntegerPlusSurd(simplifySquareRootOfIntegerPlusSurd),
 }
 
 val cancelRootOfPower = steps {
@@ -224,32 +239,33 @@ val cancelRootOfPower = steps {
             }
             apply(IntegerRootsRules.SimplifyNthRootOfNthPower)
         }
-        option {
-            plan {
-                pattern = rootOf(powerOf(AnyPattern(), SignedIntegerPattern()), SignedIntegerPattern())
-                explanation = Explanation.RewriteAndCancelPowerUnderRoot
-
-                steps {
-                    optionally {
-                        applyTo(GeneralRules.SimplifyEvenPowerOfNegative) { it.firstChild }
-                    }
-                    optionally(GeneralRules.RewritePowerUnderRoot)
-                    apply(GeneralRules.CancelRootIndexAndExponent)
-                }
-            }
-        }
+        option(IntegerRootsPlans.RewriteAndCancelPowerUnderRoot)
     }
 }
 
-/**
- * Turns a product of roots of integers into a root of a single integer (roots have different orders)
- */
-val simplifyProductOfRoots = steps {
-    whilePossible(IntegerRootsRules.BringRootsToSameIndexInProduct)
-    whilePossible { deeply(IntegerArithmeticRules.EvaluateIntegerPowerDirectly) }
-    optionally(IntegerRootsRules.SimplifyMultiplicationOfSquareRoots)
-    whilePossible(IntegerRootsRules.MultiplyNthRoots)
-    whilePossible { deeply(IntegerArithmeticPlans.SimplifyIntegersInProduct) }
+val simplifyRootOfReducedIntegerPower = plan {
+    explanation = Explanation.SimplifyPowerOfIntegerUnderRoot
+
+    steps {
+        optionally(cancelRootOfPower)
+        optionally(IntegerRootsPlans.SplitAndCancelRootOfPower)
+        // after the above simplifications powers can remain in various positions
+        // we tidy up all cases with a deeply
+        whilePossible { deeply(IntegerArithmeticRules.EvaluateIntegerPowerDirectly) }
+    }
+}
+
+val simplifyRootOfReducedInteger = plan {
+    explanation = Explanation.SimplifyIntegerRoot
+
+    steps {
+        apply(IntegerRootsRules.WriteRootAsRootPower)
+        optionally(cancelRootOfPower)
+        optionally(IntegerRootsPlans.SplitAndCancelRootOfPower)
+        // after the above simplifications powers can remain in various positions
+        // we tidy up all cases with a deeply
+        whilePossible { deeply(IntegerArithmeticRules.EvaluateIntegerPowerDirectly) }
+    }
 }
 
 val simplifySquareRootWithASquareFactorRadicand = plan {
@@ -263,4 +279,83 @@ val simplifySquareRootWithASquareFactorRadicand = plan {
         apply(IntegerRootsRules.MoveSquareFactorOutOfRoot)
         applyTo(IntegerRootsPlans.SimplifyIntegerRoot) { it.firstChild }
     }
+}
+
+val simplifySquareRootOfIntegerPlusSurd = plan {
+    explanation = Explanation.SimplifySquareRootOfIntegerPlusSurd
+    pattern = squareRootOf(
+        commutativeSumOf(
+            UnsignedIntegerPattern(),
+            withOptionalIntegerCoefficient(squareRootOf(UnsignedIntegerPattern())),
+        ),
+    )
+
+    steps {
+        applyTo(writeIntegerPlusSurdAsSquare) { it.firstChild }
+        apply(GeneralRules.CancelRootIndexAndExponent)
+    }
+}
+
+val writeIntegerPlusSurdAsSquare = taskSet {
+    explanation = Explanation.WriteIntegerPlusSquareRootAsSquare
+    val integer = UnsignedIntegerPattern()
+    val radicand = UnsignedIntegerPattern()
+    val root = withOptionalIntegerCoefficient(squareRootOf(radicand))
+
+    // a + b sqrt[c]
+    pattern = commutativeSumOf(integer, root)
+
+    tasks {
+        // E.g. 11 - 6sqrt[2]
+
+        // Task 1 - solve for x and y
+        // (x + y sqrt[2])^2 = 11 - 6sqrt[2]
+        // --> x^2 + 2y^2 + 2xy sqrt[2] = 11 - 6 sqrt[2]
+        // --> x^2 + 2y^2 = 11 AND 2xy sqrt[2] = -6 sqrt[2]
+        // --> x^2 + 2y^2 = 11 AND xy = -3
+        // Now guess two numbers that multiply to -3
+        // --> x = 3 AND y = -1
+
+        val xVar = Variable("x")
+        val yVar = Variable("y")
+
+        val squareInXAndY = powerOf(sumOf(xVar, productOf(yVar, squareRootOf(get(radicand)))), Constants.Two)
+        val findXAndY = task(
+            startExpr = equationOf(squareInXAndY, expression),
+            explanation = metadata(
+                Explanation.WriteEquationInXAndYAndSolveItForFactoringIntegerPlusSurd,
+                squareInXAndY,
+            ),
+            context = context.copy(solutionVariables = listOf("x", "y")),
+            stepsProducer = findXAndYSteps,
+        ) ?: return@tasks null
+
+        // Task 2 - substitute x= 3 and y = 1 into (x + y sqrt[2]) ^ 2
+        // (3 - sqrt[2]) ^ 2
+
+        val solution = findXAndY.result
+        val x = solution.firstChild.secondChild
+        val y = solution.secondChild.secondChild
+
+        val square = powerOf(sumOf(x, simplifiedProductOf(y, squareRootOf(get(radicand)))), Constants.Two)
+
+        task(
+            startExpr = square,
+            explanation = metadata(Explanation.SubstituteXAndYorFactoringIntegerPlusSurd),
+        )
+        allTasks()
+    }
+}
+
+private val findXAndYSteps = steps {
+    applyTo(PolynomialsPlans.ExpandPolynomialExpression) { it.firstChild }
+    apply(EquationsRules.SplitEquationWithRationalVariables)
+    applyTo(Extractor { it.secondChild }) {
+        whilePossible(SolvableRules.CancelCommonFactorOnBothSides)
+        optionally {
+            apply(SolvableRules.FindCommonIntegerFactorOnBothSides)
+            apply(SolvableRules.CancelCommonFactorOnBothSides)
+        }
+    }
+    apply(EquationSystemsRules.GuessIntegerSolutionsOfSystemContainingXYEqualsInteger)
 }

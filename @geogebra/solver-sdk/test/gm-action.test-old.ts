@@ -1,3 +1,5 @@
+// DEPRECATED - will be removed soon
+
 import { describe, expect, it } from 'vitest';
 // If this file doesn't exist, you need to run the kotlin tests in the methods package
 import { testResults } from '../../../solver-poker/test-results-src/test-results';
@@ -11,9 +13,9 @@ import { config } from 'dotenv';
 import { JSDOM } from 'jsdom';
 import { GmMathNode } from '../src/graspable-math/create-path-map';
 import {
-  ruleSkipList,
   expressionSkipList,
   expressionTypeSkipList,
+  ruleSkipList,
 } from './gm-action-test-filters';
 
 global.it = it;
@@ -31,7 +33,7 @@ const dom = new JSDOM(
       });
     </script>
     <script src="${process.env.GMATH_PATH ??
-      'https://graspablemath.com/shared/libs/gmath-dist/gmath.min.js'}"></script>
+      'https://graspablemath.com/shared/libs/gmath-dist/gmath-3.0.0.min.js'}"></script>
     <script>
       window.gmathPromiseResolve(window.gmath);
     </script>`,
@@ -45,13 +47,13 @@ if (WHEN_FOR_PATH) {
   when = (await import(WHEN_FOR_PATH)).when;
 } else {
   when = requireFromUrl(
-    'https://graspablemath.com/shared/libs/gmath-dist/when-for-actions.js',
+    'https://graspablemath.com/shared/libs/gmath-dist/when-for-actions-latest.js',
   ).when;
 }
 
 describe('gmAction tests', () => {
   for (const testResult of testResults) {
-    const transformation: TransformationJson = JSON.parse(testResult.transformation);
+    const transformation: TransformationJson = testResult.transformation;
     if (!transformation) continue;
     const augmentedTransformation = addFullFromExprToTransformation(transformation);
     for (const step of getInnerSteps(augmentedTransformation)) {
@@ -113,10 +115,11 @@ GmActionInfo: ${JSON.stringify(step.gmAction, null, 2)}
             rawGmAction,
           );
 
-          // This setting is the opposite of what is sounds like; we set it here so
-          // GM won't automatically simplify after doing an operation to both side by
-          // dragging, which is how the solver works.
-          let chain = when({ gm: { simplify_after_drag_across_relation: true } });
+          // This setting controls whether GM is automatically simplifying after dragging to apply
+          // an operation to both sides of an equation.
+          // On: 2x=4 ===> x=4/2
+          // Off: 2x=4 ===> (2x)/2=4/2
+          let chain = when({ gm: { simplify_after_drag_across_relation: false } });
           const actorsSelector = getGmSelector(fromExprGm, actors);
           const targetsSelector = getGmSelector(fromExprGm, targets);
           switch (gmAction.type) {
@@ -172,9 +175,7 @@ GmActionInfo: ${JSON.stringify(step.gmAction, null, 2)}
               chain
                 .rewriting(fromExprAscii)
                 .moving(actorsSelector.split(';')[0])
-                .onto(actorsSelector.split(';')[1])
-                .gives(fromExprAscii)
-                .moving('mapped nodes')
+                .and(actorsSelector.split(';')[1])
                 .outside(targetsSelector)
                 .gives(fullToExpr)();
               break;

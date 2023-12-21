@@ -12,6 +12,9 @@ data class FindPattern(
     override val key = pattern
 
     override fun findMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
+        if (subexpression.depth < minDepth) {
+            return emptySequence()
+        }
         val ownMatches = pattern.findMatches(context, match, subexpression)
         val childMatches = subexpression.children.asSequence().flatMap { findMatches(context, match, it) }
         return when {
@@ -20,6 +23,8 @@ data class FindPattern(
             else -> ownMatches + childMatches
         }
     }
+
+    override val minDepth = pattern.minDepth
 }
 
 /**
@@ -31,6 +36,8 @@ data class OneOfPattern(val options: List<Pattern>) : BasePattern() {
         val m = match.newChild(this, subexpression)
         return options.asSequence().flatMap { option -> option.findMatches(context, m, subexpression) }
     }
+
+    override val minDepth = options.minOf { it.minDepth }
 }
 
 fun oneOf(vararg options: Pattern) = OneOfPattern(options.asList())

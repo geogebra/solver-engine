@@ -29,6 +29,8 @@ class Rule(
         }
         return null
     }
+
+    override val minDepth = pattern.minDepth
 }
 
 class RuleBuilder {
@@ -46,6 +48,7 @@ class RuleResultBuilder(ctx: Context, expression: Expression, match: Match) :
     fun ruleResult(
         toExpr: Expression,
         explanation: Metadata,
+        formula: Expression? = null,
         steps: List<Transformation>? = null,
         tasks: List<Task>? = null,
         skills: List<Metadata>? = null,
@@ -59,6 +62,7 @@ class RuleResultBuilder(ctx: Context, expression: Expression, match: Match) :
         steps = steps,
         tasks = tasks,
         explanation = explanation,
+        formula = formula,
         skills = skills,
         gmAction = gmAction,
     )

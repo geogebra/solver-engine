@@ -19,6 +19,8 @@ fun interface StepsProducer {
      * Produces non-empty list of `Transformation` instances or null.
      */
     fun produceSteps(ctx: Context, sub: Expression): List<Transformation>?
+
+    val minDepth get() = 0
 }
 
 /**

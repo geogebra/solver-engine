@@ -1,6 +1,33 @@
-import { ExpressionTree, ExpressionTreeBase, NestedExpression } from '../parser';
+import {
+  ExpressionTree,
+  ExpressionTreeBase,
+  NestedExpression,
+  TrigonometricFunctions,
+} from '../parser';
 import { setsSolutionFormatter, SolutionFormatter } from './solution-formatter';
 import { ColorMap } from '../solutions/coloring';
+
+export interface MathWords {
+  Undefined: string;
+  Given: string;
+  True: string;
+  False: string;
+  And: string;
+  Or: string;
+  NoSolution: string;
+  InfinitelyManySolutions: string;
+}
+
+export const defaultMathWords: MathWords = {
+  Undefined: 'undefined',
+  Given: 'given',
+  True: 'true',
+  False: 'false',
+  And: 'and',
+  Or: 'or',
+  NoSolution: 'no solution',
+  InfinitelyManySolutions: 'infinitely many solutions',
+};
 
 // Make sure to put a space after a latex command to avoid, e.g., "2\\cdotx"
 export type LatexSettings = {
@@ -155,12 +182,14 @@ export function treeToLatex(
   n: ExpressionTree,
   settings?: LatexSettings,
   transformer?: LatexTransformer,
+  mathWords?: MathWords,
 ): string {
   return treeToLatexInner(
     n,
     null,
     { ...DefaultSettings, ...settings },
     transformer || defaultTransformer,
+    mathWords || defaultMathWords,
   );
 }
 
@@ -171,9 +200,10 @@ function treeToLatexInner(
   p: ExpressionTree | null,
   s: LatexSettings,
   t: LatexTransformer,
+  w: MathWords,
 ): string {
   const rec = (n: ExpressionTree, p: ExpressionTree | null): string =>
-    treeToLatexInner(n, p, s, t);
+    treeToLatexInner(n, p, s, t, w);
 
   const tfd = (latex: string): string => {
     const transformed = t.transformNode(n, decorate(latex, n, t, p), p);
@@ -287,6 +317,13 @@ function treeToLatexInner(
       const base = n.operands[0];
       if (base.type === 'Variable' && base.subscript && !base.decorators) {
         return tfd(`${rec(base, n)}^{\\,${rec(n.operands[1], n)}}`);
+      } else if ((base.type as TrigonometricFunctions) && (base as any).powerInside) {
+        return tfd(
+          `\\${base.type.toLowerCase()}^{${rec(n.operands[1], n)}}{${rec(
+            (base as any).operands[0],
+            n,
+          )}}`,
+        );
       } else {
         return tfd(`{${rec(base, n)}}^{${rec(n.operands[1], n)}}`);
       }
@@ -301,25 +338,35 @@ function treeToLatexInner(
     case 'Cot':
     case 'Sec':
     case 'Csc':
-    case 'Arcsin':
-    case 'Arccos':
-    case 'Arctan':
-    case 'Arccot':
-    case 'Arcsec':
-    case 'Arccsc':
     case 'Sinh':
     case 'Cosh':
     case 'Tanh':
     case 'Sech':
     case 'Csch':
     case 'Coth':
+      return tfd(`\\${n.type.toLowerCase()}{${rec(n.operands[0], n)}}`);
+    case 'Arcsin':
+    case 'Arccos':
+    case 'Arctan':
+    case 'Arccot':
+    case 'Arcsec':
+    case 'Arccsc':
+      if (n.inverseNotation === 'superscript') {
+        return tfd(`\\${n.type.slice(3).toLowerCase()}^{-1}{${rec(n.operands[0], n)}}`);
+      } else {
+        return tfd(`\\${n.type.toLowerCase()}{${rec(n.operands[0], n)}}`);
+      }
     case 'Arsinh':
     case 'Arcosh':
     case 'Artanh':
     case 'Arcoth':
     case 'Arcsch':
     case 'Arsech':
-      return tfd(`\\${n.type.toLowerCase()}{${rec(n.operands[0], n)}}`);
+      if (n.inverseNotation === 'superscript') {
+        return tfd(`\\${n.type.slice(2).toLowerCase()}^{-1}{${rec(n.operands[0], n)}}`);
+      } else {
+        return tfd(`\\${n.type.toLowerCase()}{${rec(n.operands[0], n)}}`);
+      }
     case 'Log10':
       return tfd(`\\log{${rec(n.operands[0], n)}}`);
     case 'Log':
@@ -330,41 +377,39 @@ function treeToLatexInner(
       return tfd(colorAbsoluteValue(rec(n.operands[0], n), n, t, p));
     case 'ExpressionWithConstraint': {
       const latexSettings = { ...s, flat: true };
-      const constraint = treeToLatexInner(n.operands[1], n, latexSettings, t);
-      return tfd(`${rec(n.operands[0], n)} \\text{ given } ${constraint}`);
+      const constraint = treeToLatexInner(n.operands[1], n, latexSettings, t, w);
+      return tfd(`${rec(n.operands[0], n)} \\text{ ${w.Given} } ${constraint}`);
     }
     case 'Equation':
-      if (s.align) {
-        return tfd(
-          `${rec(n.operands[0], n)} & ${colorOp('=')} & ${rec(n.operands[1], n)}`,
-        );
-      } else {
-        return tfd(`${rec(n.operands[0], n)} ${colorOp('=')} ${rec(n.operands[1], n)}`);
-      }
+      return tfd(
+        [rec(n.operands[0], n), colorOp('='), rec(n.operands[1], n)].join(
+          s.align ? ' & ' : ' ',
+        ),
+      );
     case 'Inequation':
-      if (s.align) {
-        return tfd(
-          `${rec(n.operands[0], n)} & ${colorOp('\\neq')} & ${rec(n.operands[1], n)}`,
-        );
-      } else {
-        return tfd(
-          `${rec(n.operands[0], n)} ${colorOp('\\neq')} ${rec(n.operands[1], n)}`,
-        );
-      }
+      return tfd(
+        [rec(n.operands[0], n), colorOp('\\neq'), rec(n.operands[1], n)].join(
+          s.align ? ' & ' : ' ',
+        ),
+      );
     case 'EquationSystem': {
       if (s.flat || n.operands.some((child) => !isSolvable(child))) {
         const alignSetting = { ...s, align: false };
         return tfd(
           n.operands
-            .map((el) => treeToLatexInner(el, n, alignSetting, t))
-            .join('\\text{ and }'),
+            .map((el) => treeToLatexInner(el, n, alignSetting, t, w))
+            .join(`\\text{ ${w.And} }`),
         );
       } else {
         const alignSetting = { ...s, align: true };
+        // The array has 5 columns specified, as extra columns do not affect rendering.
+        // Currently we can have expressions with:
+        // - 3 columns: Regular equations/inequalities
+        // - 4 columns: Equations/Inequalities with labels
         return tfd(
-          '\\left\\{\\begin{array}{rcl}\n' +
+          '\\left\\{\\begin{array}{rclrr}\n' +
             n.operands
-              .map((el) => '  ' + treeToLatexInner(el, n, alignSetting, t) + '\\\\\n')
+              .map((el) => '  ' + treeToLatexInner(el, n, alignSetting, t, w) + '\\\\\n')
               .join('') +
             '\\end{array}\\right.',
         );
@@ -374,13 +419,16 @@ function treeToLatexInner(
     case 'SubtractEquations': {
       const alignSetting = { ...s, align: true };
       const operation = n.type === 'AddEquations' ? '+' : '-';
+      // If any equation has labels we need to add an extra column
+      const alignment = n.operands.find((op) => op.name) ? 'rclr|l' : 'rcl|l';
       return tfd(
-        '\\begin{array}{rcl|l}\n' +
+        `\\begin{array}{${alignment}}\n` +
           '  ' +
-          treeToLatexInner(n.operands[0], n, alignSetting, t) +
+          treeToLatexInner(n.operands[0], n, alignSetting, t, w) +
+          (n.operands[0].name ? '' : ' & ') +
           ` & ${operation} \\\\\n` +
           '  ' +
-          treeToLatexInner(n.operands[1], n, alignSetting, t) +
+          treeToLatexInner(n.operands[1], n, alignSetting, t, w) +
           ' & \\\\\n' +
           '\\end{array}',
       );
@@ -389,28 +437,44 @@ function treeToLatexInner(
       const alignSetting = { ...s, align: false };
       return tfd(
         n.operands
-          .map((el) => treeToLatexInner(el, n, alignSetting, t))
-          .join('\\text{ or }'),
+          .map((el) => treeToLatexInner(el, n, alignSetting, t, w))
+          .join(`\\text{ ${w.Or} }`),
       );
     }
     case 'Undefined':
-      return tfd('\\text{undefined}');
+      return tfd(`\\text{${w.Undefined}}`);
     case 'Infinity':
       return tfd('\\infty');
     case 'LessThan':
-      return tfd(`${rec(n.operands[0], n)} ${colorOp('<')} ${rec(n.operands[1], n)}`);
+      return tfd(
+        [rec(n.operands[0], n), colorOp('<'), rec(n.operands[1], n)].join(
+          s.align ? ' & ' : ' ',
+        ),
+      );
     case 'GreaterThan':
-      return tfd(`${rec(n.operands[0], n)} ${colorOp('>')} ${rec(n.operands[1], n)}`);
+      return tfd(
+        [rec(n.operands[0], n), colorOp('>'), rec(n.operands[1], n)].join(
+          s.align ? ' & ' : ' ',
+        ),
+      );
     case 'LessThanEqual':
-      return tfd(`${rec(n.operands[0], n)} ${colorOp('\\leq')} ${rec(n.operands[1], n)}`);
+      return tfd(
+        [rec(n.operands[0], n), colorOp('\\leq'), rec(n.operands[1], n)].join(
+          s.align ? ' & ' : ' ',
+        ),
+      );
     case 'GreaterThanEqual':
-      return tfd(`${rec(n.operands[0], n)} ${colorOp('\\geq')} ${rec(n.operands[1], n)}`);
+      return tfd(
+        [rec(n.operands[0], n), colorOp('\\geq'), rec(n.operands[1], n)].join(
+          s.align ? ' & ' : ' ',
+        ),
+      );
     case 'Solution':
     case 'SetSolution':
     case 'Identity':
     case 'Contradiction':
     case 'ImplicitSolution':
-      return tfd(s.solutionFormatter.formatSolution(n, rec));
+      return tfd(s.solutionFormatter.formatSolution(n, rec, w));
     case 'List':
       if (n.operands.length === 1) {
         return tfd(rec(n.operands[0], n));
@@ -420,7 +484,7 @@ function treeToLatexInner(
             .slice(0, n.operands.length - 1)
             .map((x) => rec(x, n))
             .join(', ') +
-            '\\text{ and }' +
+            `\\text{ ${w.And} }` +
             rec(n.operands[n.operands.length - 1], n),
         );
       }

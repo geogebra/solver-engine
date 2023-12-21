@@ -85,7 +85,21 @@ enum class GeneralExplanation : CategorisedMetadataKey {
     SimplifyUnitFractionToOne,
     SimplifyFractionWithOneDenominator,
     CancelDenominator,
+
+    /**
+     * extract -ve sign from a sum, in this case it isn't necessary for all
+     * sub-terms of sum to have -ve sign, but whether to extract or not "-"
+     * is done on the basis of "pseudo degree."
+     *
+     * e.g.; -x + 1 -> -(x - 1)
+     */
     FactorMinusFromSum,
+
+    /**
+     * extract -ve sign from a sum with all terms have "-" in front of them
+     * e.g.; -x -1 -> -(x + 1)
+     */
+    FactorMinusFromSumWithAllNegativeTerms,
     SimplifyProductOfConjugates,
     DistributePowerOfProduct,
 
@@ -141,6 +155,14 @@ enum class GeneralExplanation : CategorisedMetadataKey {
      */
     @LegacyKeyName("IntegerArithmetic.SimplifyOddPowerOfNegative")
     SimplifyOddPowerOfNegative,
+
+    /**
+     * Rewrite even-power of an expression as even power
+     * of absolute-value of the same base
+     *
+     * E.g.; [y^2] -> abs[[y^2]]
+     */
+    RewriteEvenPowerOfBaseAsEvenPowerOfAbsoluteValueOfBase,
 
     /**
      * 0 to any positive power is 0
@@ -297,6 +319,13 @@ enum class GeneralExplanation : CategorisedMetadataKey {
     SimplifyAbsoluteValueOfNegatedExpression,
 
     /**
+     * Simplify |y|^2k --> y^2k (for any integer k)
+     *
+     * E.g.; |y|^4 --> y^4
+     */
+    SimplifyEvenPowerOfAbsoluteValue,
+
+    /**
      * Simplify the argument of an absolute value then resolve the
      * absolute value.
      *
@@ -307,11 +336,18 @@ enum class GeneralExplanation : CategorisedMetadataKey {
     EvaluateAbsoluteValue,
 
     /**
-     * factorize an integer as product of powers of prime factors to their multiplicities
+     * Factorize an integer as product of powers of prime factors to their multiplicities
      *
      * E.g. 90 -> 2 * [3^2] * 5
      */
     FactorizeInteger,
+
+    /**
+     * Simplify: +/- abs[x] --> +/- x (for any 'x')
+     *
+     * E.g.; +/- abs[x + 1] --> +/- (x + 1)
+     */
+    SimplifyPlusMinusOfAbsoluteValue,
     ;
 
     override val category = "General"

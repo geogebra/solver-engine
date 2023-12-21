@@ -1,13 +1,14 @@
 package methods.equations
 
-import engine.context.Context
-import engine.context.Curriculum
-import engine.methods.testMethod
+import engine.context.BooleanSetting
+import engine.context.Setting
 import engine.methods.testMethodInX
 import methods.algebra.AlgebraExplanation
 import methods.constantexpressions.ConstantExpressionsExplanation
 import methods.expand.ExpandExplanation
 import methods.factor.FactorExplanation
+import methods.fractionarithmetic.FractionArithmeticExplanation
+import methods.general.GeneralExplanation
 import methods.polynomials.PolynomialsExplanation
 import methods.rationalexpressions.RationalExpressionsExplanation
 import org.junit.jupiter.api.Test
@@ -161,10 +162,11 @@ class SolveRationalEquationTest {
     }
 
     @Test
-    fun `test rational equation with one valid solution by US method`() = testMethod {
+    fun `test rational equation with one valid solution without computing the domain`() = testMethodInX {
         method = EquationsPlans.SolveRationalEquation
         inputExpr = "[12 / [x ^ 2] - 9] = [8 x / x - 3] - [2 / x + 3]"
-        context = Context(solutionVariables = listOf("x"), curriculum = Curriculum.US)
+        context =
+            context.copy(settings = mapOf(Setting.SolveEquationsWithoutComputingTheDomain setTo BooleanSetting.True))
 
         check {
             fromExpr = "[12 / [x ^ 2] - 9] = [8 x / x - 3] - [2 / x + 3]"
@@ -331,10 +333,11 @@ class SolveRationalEquationTest {
     }
 
     @Test
-    fun `test solve equation with rational expression on both the sides US method`() = testMethod {
+    fun `test equation with rational expression on both the sides without computing the domain`() = testMethodInX {
         method = EquationsPlans.SolveRationalEquation
         inputExpr = "[x + 2 / x - 3] = [x / 3 x - 2]"
-        context = Context(curriculum = Curriculum.US, solutionVariables = listOf("x"))
+        context =
+            context.copy(settings = mapOf(Setting.SolveEquationsWithoutComputingTheDomain setTo BooleanSetting.True))
 
         check {
             fromExpr = "[x + 2 / x - 3] = [x / 3 x - 2]"
@@ -635,13 +638,146 @@ class SolveRationalEquationTest {
     }
 
     @Test
+    fun `test lcd of additive inverse polynomial`() = testMethodInX {
+        method = EquationsPlans.SolveRationalEquation
+        inputExpr = "[12 / x - 3] = [8x / x - 3] - [2 /-x + 3]"
+
+        check {
+            fromExpr = "[12 / x - 3] = [8 x / x - 3] - [2 / -x + 3]"
+            toExpr = "SetSolution[x: {[5 / 4]}]"
+            explanation {
+                key = EquationsExplanation.SolveEquation
+            }
+
+            task { }
+
+            task {
+                taskId = "#2"
+                startExpr = "[12 / x - 3] = [8 x / x - 3] - [2 / -x + 3]"
+                explanation {
+                    key = EquationsExplanation.SolveEquation
+                }
+
+                step {
+                    fromExpr = "[12 / x - 3] = [8 x / x - 3] - [2 / -x + 3]"
+                    toExpr = "SetSolution[x: {[5 / 4]}]"
+                    explanation {
+                        key = EquationsExplanation.SolveRationalEquation
+                    }
+
+                    step {
+                        fromExpr = "[12 / x - 3] = [8 x / x - 3] - [2 / -x + 3]"
+                        toExpr = "[12 / x - 3] * (x - 3) = [8 x / x - 3] * (x - 3) - [2 / -x + 3] * (x - 3)"
+                        explanation {
+                            key = EquationsExplanation.MultiplyBothSidesByDenominator
+                        }
+                    }
+
+                    step {
+                        fromExpr = "[12 / x - 3] * (x - 3) = [8 x / x - 3] * (x - 3) - [2 / -x + 3] * (x - 3)"
+                        toExpr = "12 = 8 x + 2"
+                        explanation {
+                            key = EquationsExplanation.SimplifyEquation
+                        }
+
+                        step {
+                            fromExpr = "[12 / x - 3] * (x - 3) = [8 x / x - 3] * (x - 3) - [2 / -x + 3] * (x - 3)"
+                            toExpr = "12 = [8 x / x - 3] * (x - 3) - [2 / -x + 3] * (x - 3)"
+                            explanation {
+                                key = RationalExpressionsExplanation.MultiplyRationalExpressions
+                            }
+                        }
+
+                        step {
+                            fromExpr = "12 = [8 x / x - 3] * (x - 3) - [2 / -x + 3] * (x - 3)"
+                            toExpr = "12 = 8 x - [2 / -x + 3] * (x - 3)"
+                            explanation {
+                                key = RationalExpressionsExplanation.MultiplyRationalExpressions
+                            }
+                        }
+
+                        step {
+                            fromExpr = "12 = 8 x - [2 / -x + 3] * (x - 3)"
+                            toExpr = "12 = 8 x - [2 / -1]"
+                            explanation {
+                                key = RationalExpressionsExplanation.MultiplyRationalExpressions
+                            }
+
+                            step {
+                                fromExpr = "[2 / -x + 3] * (x - 3)"
+                                toExpr = "[2 (x - 3) / -x + 3]"
+                                explanation {
+                                    key = FractionArithmeticExplanation.TurnProductOfFractionAndNonFractionFactorIntoFraction
+                                }
+                            }
+
+                            step {
+                                fromExpr = "[2 (x - 3) / -x + 3]"
+                                toExpr = "[2 / -1]"
+                                explanation {
+                                    key = FractionArithmeticExplanation.SimplifyFraction
+                                }
+
+                                step {
+                                    fromExpr = "[2 (x - 3) / -x + 3]"
+                                    toExpr = "[2 (x - 3) / -(x - 3)]"
+                                    explanation {
+                                        key = GeneralExplanation.FactorMinusFromSum
+                                    }
+                                }
+
+                                step {
+                                    fromExpr = "[2 (x - 3) / -(x - 3)]"
+                                    toExpr = "[2 / -1]"
+                                    explanation {
+                                        key = FractionArithmeticExplanation.CancelCommonFactorInFraction
+                                    }
+                                }
+                            }
+                        }
+
+                        step {
+                            fromExpr = "12 = 8 x - [2 / -1]"
+                            toExpr = "12 = 8 x + [2 / 1]"
+                            explanation {
+                                key = FractionArithmeticExplanation.SimplifyNegativeInDenominator
+                            }
+                        }
+
+                        step {
+                            fromExpr = "12 = 8 x + [2 / 1]"
+                            toExpr = "12 = 8 x + 2"
+                            explanation {
+                                key = GeneralExplanation.SimplifyFractionWithOneDenominator
+                            }
+                        }
+                    }
+
+                    step { }
+                    step { }
+                    step { }
+                    step { }
+                }
+            }
+
+            task {
+                taskId = "#3"
+                startExpr = "SetSolution[x: {[5 / 4]}]"
+                explanation {
+                    key = EquationsExplanation.AllSolutionsSatisfyConstraint
+                }
+            }
+        }
+    }
+
+    @Test
     fun `test same denominator in rational equation`() = testMethodInX {
         method = EquationsPlans.SolveRationalEquation
         inputExpr = "[12x / [x^2] - 9] - [1/[x^2] - 9] = 8"
 
         check {
             fromExpr = "[12 x / [x ^ 2] - 9] - [1 / [x ^ 2] - 9] = 8"
-            toExpr = "SetSolution[x : {[12 - 4 sqrt[151] / 16], [12 + 4 sqrt[151] / 16]}]"
+            toExpr = "SetSolution[x : {[3 - sqrt[151] / 4], [3 + sqrt[151] / 4]}]"
             explanation {
                 key = EquationsExplanation.SolveEquation
             }
@@ -658,7 +794,7 @@ class SolveRationalEquationTest {
 
                 step {
                     fromExpr = "[12 x / [x ^ 2] - 9] - [1 / [x ^ 2] - 9] = 8"
-                    toExpr = "SetSolution[x: {[12 - 4 sqrt[151] / 16], [12 + 4 sqrt[151] / 16]}]"
+                    toExpr = "SetSolution[x: {[3 - sqrt[151] / 4], [3 + sqrt[151] / 4]}]"
                     explanation {
                         key = EquationsExplanation.SolveRationalEquation
                     }
@@ -721,15 +857,15 @@ class SolveRationalEquationTest {
 
                     step {
                         fromExpr = "x = [-(-12) +/- sqrt[[(-12) ^ 2] - 4 * 8 * (-71)] / 2 * 8]"
-                        toExpr = "x = [12 +/- 4 sqrt[151] / 16]"
+                        toExpr = "x = [3 +/- sqrt[151] / 4]"
                         explanation {
                             key = ConstantExpressionsExplanation.SimplifyConstantExpression
                         }
                     }
 
                     step {
-                        fromExpr = "x = [12 +/- 4 sqrt[151] / 16]"
-                        toExpr = "SetSolution[x: {[12 - 4 sqrt[151] / 16], [12 + 4 sqrt[151] / 16]}]"
+                        fromExpr = "x = [3 +/-  sqrt[151] / 4]"
+                        toExpr = "SetSolution[x: {[3 - sqrt[151] / 4], [3 + sqrt[151] / 4]}]"
                         explanation {
                             key = EquationsExplanation.ExtractSolutionFromEquationInPlusMinusForm
                         }
@@ -739,7 +875,7 @@ class SolveRationalEquationTest {
 
             task {
                 taskId = "#3"
-                startExpr = "SetSolution[x : {[12 - 4 sqrt[151] / 16], [12 + 4 sqrt[151] / 16]}]"
+                startExpr = "SetSolution[x : {[3 - sqrt[151] / 4], [3 + sqrt[151] / 4]}]"
                 explanation {
                     key = EquationsExplanation.AllSolutionsSatisfyConstraint
                 }
@@ -756,7 +892,7 @@ class SolveRationalEquationTest {
             fromExpr = "[12 / [x ^ 2] - 9] = sqrt[2] - [2 / x + 3]"
             // on one of the good days, we will be able to simplify the below
             // result to "3 + 2sqrt[2]"
-            toExpr = "SetSolution[x : {[2 sqrt[2] + 2 sqrt[38 + 12 sqrt[2]] / 4]}]"
+            toExpr = "SetSolution[x : {sqrt[2] + 3}]"
             explanation {
                 key = EquationsExplanation.SolveEquation
             }
@@ -773,7 +909,7 @@ class SolveRationalEquationTest {
 
                 step {
                     fromExpr = "[12 / [x ^ 2] - 9] = sqrt[2] - [2 / x + 3]"
-                    toExpr = "SetSolution[x: {[2 sqrt[2] - 2 sqrt[38 + 12 sqrt[2]] / 4], [2 sqrt[2] + 2 sqrt[38 + 12 sqrt[2]] / 4]}]"
+                    toExpr = "SetSolution[x: {-3, sqrt[2] + 3}]"
                     explanation {
                         key = EquationsExplanation.SolveRationalEquation
                     }
@@ -809,8 +945,8 @@ class SolveRationalEquationTest {
                     }
 
                     step {
-                        fromExpr = "x = [2 sqrt[2] + (-2 sqrt[19 + 6 sqrt[2]]) sqrt[2] / 4] OR x = [2 sqrt[2] + (2 sqrt[19 + 6 sqrt[2]]) sqrt[2] / 4]"
-                        toExpr = "SetSolution[x: {[2 sqrt[2] - 2 sqrt[38 + 12 sqrt[2]] / 4], [2 sqrt[2] + 2 sqrt[38 + 12 sqrt[2]] / 4]}]"
+                        fromExpr = "x = [2 sqrt[2] + (-(2 + 6 sqrt[2])) sqrt[2] / 4] OR x = [2 sqrt[2] + ((2 + 6 sqrt[2])) sqrt[2] / 4]"
+                        toExpr = "SetSolution[x : {-3, sqrt[2] + 3}]"
                         explanation {
                             key = EquationsExplanation.SolveEquationUnion
                         }
@@ -820,7 +956,7 @@ class SolveRationalEquationTest {
 
             task {
                 taskId = "#3"
-                startExpr = "SetSolution[x : {[2 sqrt[2] + 2 sqrt[38 + 12 sqrt[2]] / 4]}]"
+                startExpr = "SetSolution[x : {sqrt[2] + 3}]"
                 explanation {
                     key = EquationsExplanation.SomeSolutionsDoNotSatisfyConstraint
                 }
@@ -1007,6 +1143,87 @@ class SolveRationalEquationTest {
             task {
                 taskId = "#3"
                 startExpr = "SetSolution[x : {2}]"
+                explanation {
+                    key = EquationsExplanation.AllSolutionsSatisfyConstraint
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test rational equation reducible to polynomial by expanding`() = testMethodInX {
+        method = EquationsPlans.SolveEquation
+        inputExpr = "([1 / x] + 2) x = [2 / x] x"
+
+        check {
+            fromExpr = "([1 / x] + 2) x = [2 / x] x"
+            toExpr = "SetSolution[x: {[1 / 2]}]"
+            explanation {
+                key = EquationsExplanation.SolveEquation
+            }
+
+            // not necessary to test the domain computation task
+            task { }
+
+            task {
+                taskId = "#2"
+                startExpr = "([1 / x] + 2) x = [2 / x] x"
+                explanation {
+                    key = EquationsExplanation.SolveEquation
+                }
+
+                step {
+                    fromExpr = "([1 / x] + 2) x = [2 / x] x"
+                    toExpr = "SetSolution[x: {[1 / 2]}]"
+                    explanation {
+                        key = EquationsExplanation.SolveRationalEquation
+                    }
+
+                    step {
+                        fromExpr = "([1 / x] + 2) x = [2 / x] x"
+                        toExpr = "x ([1 / x] + 2) = 2"
+                        explanation {
+                            key = EquationsExplanation.SimplifyEquation
+                        }
+                    }
+
+                    step {
+                        fromExpr = "x ([1 / x] + 2) = 2"
+                        toExpr = "2 x + 1 = 2"
+                        explanation {
+                            key = ExpandExplanation.ExpandSingleBracketAndSimplify
+                        }
+                    }
+
+                    step {
+                        fromExpr = "2 x + 1 = 2"
+                        toExpr = "2 x = 1"
+                        explanation {
+                            key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                        }
+                    }
+
+                    step {
+                        fromExpr = "2 x = 1"
+                        toExpr = "x = [1 / 2]"
+                        explanation {
+                            key = methods.solvable.EquationsExplanation.DivideByCoefficientOfVariableAndSimplify
+                        }
+                    }
+
+                    step {
+                        fromExpr = "x = [1 / 2]"
+                        toExpr = "SetSolution[x: {[1 / 2]}]"
+                        explanation {
+                            key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
+                        }
+                    }
+                }
+            }
+
+            task {
+                taskId = "#3"
+                startExpr = "SetSolution[x: {[1 / 2]}]"
                 explanation {
                     key = EquationsExplanation.AllSolutionsSatisfyConstraint
                 }

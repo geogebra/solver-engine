@@ -13,6 +13,13 @@ enum class ExpandExplanation : CategorisedMetadataKey {
     DistributeMultiplicationOverSum,
 
     /**
+     * Distribute the numerator of a fraction so the fraction becomes a sum
+     *
+     * e.g. (x + 3)/5 --> x/5 + 3/5
+     */
+    DistributeConstantNumerator,
+
+    /**
      * Distribute negative sign over a bracket to the terms,
      * i.e. -(x + y) -> -x - y
      */
@@ -56,9 +63,16 @@ enum class ExpandExplanation : CategorisedMetadataKey {
     ExpandTrinomialSquaredUsingIdentity,
 
     /**
-     * Expand a * (b1 + b2 + ... + bn) or -(b1 + b2 + ... + bn) and simplfy the result
+     * Expand a * (b1 + b2 + ... + bn) or -(b1 + b2 + ... + bn) and simplify the result
      */
     ExpandSingleBracketAndSimplify,
+
+    /**
+     * Expand a fraction and simplify the result
+     *
+     * E.g. (3x + 2)/6 --> 3x/6 + 2/6 --> x/2 + 1/3
+     */
+    ExpandFractionAndSimplify,
 
     /**
      * Expand the product of two brackets and simplify the result

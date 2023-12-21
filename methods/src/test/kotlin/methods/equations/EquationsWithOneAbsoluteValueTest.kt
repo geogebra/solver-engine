@@ -1,6 +1,8 @@
 package methods.equations
 
-import engine.context.Curriculum
+import engine.context.BalancingModeSetting
+import engine.context.BooleanSetting
+import engine.context.Setting
 import engine.methods.testMethodInX
 import methods.general.GeneralExplanation
 import org.junit.jupiter.api.Test
@@ -629,9 +631,10 @@ class EquationsWithOneAbsoluteValueTest {
     }
 
     @Test
-    fun `test US method for linear equation with 2 solutions`() = testMethodInX {
+    fun `test linear equation with 2 solutions without computing the domain`() = testMethodInX {
         method = EquationsPlans.SolveEquation
-        context = context.copy(curriculum = Curriculum.US)
+        context =
+            context.copy(settings = mapOf(Setting.SolveEquationsWithoutComputingTheDomain setTo BooleanSetting.True))
         inputExpr = "abs[2 x - 1] = x + 5"
 
         check {
@@ -721,9 +724,10 @@ class EquationsWithOneAbsoluteValueTest {
     }
 
     @Test
-    fun `test US method for linear equation with no solution`() = testMethodInX {
+    fun `test linear equation with no solution without computing the domain`() = testMethodInX {
         method = EquationsPlans.SolveEquation
-        context = context.copy(curriculum = Curriculum.US)
+        context =
+            context.copy(settings = mapOf(Setting.SolveEquationsWithoutComputingTheDomain setTo BooleanSetting.True))
         inputExpr = "abs[2 x + 5] = x"
 
         check {
@@ -791,6 +795,82 @@ class EquationsWithOneAbsoluteValueTest {
                 startExpr = "Contradiction[x : SetSolution[x : {-5, -[5 / 3]}] AND abs[2 x + 5] = x]"
                 explanation {
                     key = EquationsExplanation.NoSolutionSatisfiesConstraint
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test moving constant terms one by one and next to`() = testMethodInX {
+        method = EquationsPlans.SolveEquation
+        inputExpr = "sqrt[3] - 5 + abs[x] = 2"
+        context = context.copy(
+            settings = mapOf(
+                Setting.MoveTermsOneByOne setTo BooleanSetting.True,
+                Setting.BalancingMode setTo BalancingModeSetting.NextTo,
+            ),
+        )
+
+        check {
+            fromExpr = "sqrt[3] - 5 + abs[x] = 2"
+            toExpr = "SetSolution[x: {-7 + sqrt[3], 7 - sqrt[3]}]"
+            explanation {
+                key = EquationsExplanation.SolveEquationWithOneAbsoluteValue
+            }
+
+            step {
+                fromExpr = "sqrt[3] - 5 + abs[x] = 2"
+                toExpr = "abs[x] = 7 - sqrt[3]"
+                explanation {
+                    key = EquationsExplanation.IsolateAbsoluteValue
+                }
+
+                step {
+                    fromExpr = "sqrt[3] - 5 + abs[x] = 2"
+                    toExpr = "sqrt[3] - sqrt[3] - 5 + abs[x] = 2 - sqrt[3]"
+                    explanation {
+                        key = methods.solvable.EquationsExplanation.MoveTermsNotContainingModulusToTheRight
+                    }
+                }
+
+                step {
+                    fromExpr = "sqrt[3] - sqrt[3] - 5 + abs[x] = 2 - sqrt[3]"
+                    toExpr = "-5 + abs[x] = 2 - sqrt[3]"
+                    explanation {
+                        key = GeneralExplanation.CancelAdditiveInverseElements
+                    }
+                }
+
+                step {
+                    fromExpr = "-5 + abs[x] = 2 - sqrt[3]"
+                    toExpr = "-5 + 5 + abs[x] = 2 - sqrt[3] + 5"
+                    explanation {
+                        key = methods.solvable.EquationsExplanation.MoveTermsNotContainingModulusToTheRight
+                    }
+                }
+
+                step {
+                    fromExpr = "-5 + 5 + abs[x] = 2 - sqrt[3] + 5"
+                    toExpr = "abs[x] = 7 - sqrt[3]"
+                    explanation {
+                        key = EquationsExplanation.SimplifyEquation
+                    }
+                }
+            }
+
+            step {
+                fromExpr = "abs[x] = 7 - sqrt[3]"
+                toExpr = "x = 7 - sqrt[3] AND x >= 0 OR -x = 7 - sqrt[3] AND x < 0"
+                explanation {
+                    key = EquationsExplanation.SeparateModulusEqualsExpression
+                }
+            }
+
+            step {
+                fromExpr = "x = 7 - sqrt[3] AND x >= 0 OR -x = 7 - sqrt[3] AND x < 0"
+                toExpr = "SetSolution[x: {-7 + sqrt[3], 7 - sqrt[3]}]"
+                explanation {
+                    key = EquationsExplanation.SolveEquationUnion
                 }
             }
         }

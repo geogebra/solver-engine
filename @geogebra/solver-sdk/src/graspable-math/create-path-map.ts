@@ -10,6 +10,7 @@ export type GmMathNode = {
   hidden?: boolean;
   to_ascii: (options?: TodoFigureOutType) => string;
   is_group: (...types: string[]) => boolean;
+  get_root: () => { getMoveActions: (nodes: GmMathNode[]) => GmAction[] };
   getSelectorOfNodes: (nodes: GmMathNode[] | GmMathNode) => string;
   to_latex(options?: TodoFigureOutType): string;
   getNodes(
@@ -18,6 +19,16 @@ export type GmMathNode = {
     unnecessaryParameter2?: TodoFigureOutType,
   ): GmMathNode[];
   type?: 'AlgebraModel';
+};
+
+type GmAction = {
+  name: string;
+  // for tap action
+  actor?: GmMathNode;
+  // for drag action
+  nodes?: GmMathNode[];
+  target?: GmMathNode | GmMathNode[];
+  priority: number;
 };
 
 type TodoFigureOutType = any;
@@ -52,14 +63,15 @@ export function hideImplicitMultiplicationSigns(
 ) {
   if (['Product', 'ImplicitProduct', 'SmartProduct'].includes(tree.type)) {
     (tree as NestedExpression).operands.forEach((factor, index) => {
-      const path = `${factor.path}:op`;
       const show =
         tree.type === 'SmartProduct'
           ? tree.signs[index]
           : tree.type === 'ImplicitProduct'
           ? false
           : index > 0;
-      pathMap.get(path)?.forEach((node) => (node.hidden = !show));
+      pathMap.get(factor.path)?.forEach((node) => {
+        if (node?.ls?.value === '*') node.ls.hidden = !show;
+      });
     });
   } else if ('operands' in tree) {
     tree.operands.forEach((arg) => {
@@ -98,7 +110,7 @@ function annotate(
       break;
     case 'Sum':
       gmTree.children.forEach((addend, i) => {
-        // could be inside a partial sum, use tree.args[i] instead or /${i}
+        // could be inside a partial sum, use tree.args[i] instead of /${i}
         const path = tree.operands[i].path;
         appendMap(addend, `${path}:group`, map);
         const addendHasBrackets = !!tree.operands[i].decorators?.length;
@@ -106,6 +118,9 @@ function annotate(
           (tree.operands[i].type === 'Minus' || tree.operands[i].type === 'PlusMinus') &&
           !addendHasBrackets
         ) {
+          // in a case like 2-1, we want to create an extra ":group" path mapping for the "1"
+          // in the ExprTree to select the "sub" group in GM
+          appendMap(addend, `${path}/0:group`, map);
           annotate(addend, tree.operands[i], map);
         } else {
           const opStr = getOpStr(tree.operands[i]);
@@ -120,20 +135,24 @@ function annotate(
       break;
     case 'Minus':
     case 'PlusMinus':
-    case 'DivideBy':
       appendMap(gmTree.children[0], `${tree.path}:op`, map);
+      annotate(gmTree.children[1], tree.operands[0], map);
+      break;
+    case 'DivideBy':
       annotate(gmTree.children[1], tree.operands[0], map);
       break;
     case 'Product':
     case 'ImplicitProduct':
     case 'SmartProduct':
       gmTree.children.forEach((factor, i) => {
-        appendMap(factor, `${tree.path}/${i}:group`, map);
+        const path = `${tree.path}/${i}`;
+        appendMap(factor, `${path}:group`, map);
         if (tree.operands[i].type === 'DivideBy') {
+          // in a case like 2÷1, we want to create an extra ":group" path mapping for the "1"
+          // in the ExprTree to select the "div" group in GM
+          appendMap(factor, `${path}/0:group`, map);
           annotate(factor, tree.operands[i], map);
         } else {
-          const opStr = getOpStr(tree.operands[i]);
-          appendMap(factor.children[0]!, `${tree.path}/${i}:${opStr}`, map);
           annotate(factor.children[1], tree.operands[i], map);
         }
       });
@@ -146,20 +165,22 @@ function annotate(
         ['Product', 'ImplicitProduct', 'SmartProduct'].includes(tree.operands[0].type)
       ) {
         (gmTree as GmFraction).get_top().forEach((muldiv, i) => {
+          const factor = (tree.operands[0] as NestedExpression).operands[i];
+          if (factor.type === 'Minus' && i === 0) {
+            // we have a leading minus group in a product, which the Solver doesn't support,
+            // so this minus has been moved here to align with GM's structure, e.g.: x=(-6*3)/2
+            appendMap(muldiv, `${factor.operands[0].path}:group`, map);
+          } else {
+            appendMap(muldiv, `${factor.path}:group`, map);
+          }
           // we give all factors in the numerator the same /0 path so we can later
           // select all numerator terms with that path
           appendMap(muldiv, `${tree.path}/0`, map);
-          appendMap(muldiv, `${tree.path}/0/${i}:group`, map);
-          const factor = (tree.operands[0] as NestedExpression).operands[i];
-          const opStr = getOpStr(factor);
-          appendMap(muldiv.children[0]!, `${tree.path}/0/${i}:${opStr}`, map);
           annotate(muldiv.children[1], factor, map);
         });
       } else {
         // single node in numerator
         appendMap(gmTree.children[0], `${tree.path}/0:group`, map);
-        const opStr = getOpStr(tree.operands[0]);
-        appendMap(gmTree.children[0].children[0]!, `${tree.path}/0:${opStr}`, map);
         annotate(gmTree.children[0].children[1], tree.operands[0], map);
       }
 
@@ -167,21 +188,23 @@ function annotate(
         ['Product', 'ImplicitProduct', 'SmartProduct'].includes(tree.operands[1].type)
       ) {
         (gmTree as GmFraction).get_bottom().forEach((muldiv, i) => {
+          const factor = (tree.operands[1] as NestedExpression).operands[i];
+          if (factor.type === 'Minus' && i === 0) {
+            // we have a leading minus group in a product, which the Solver doesn't support,
+            // so this minus has been moved here to align with GM's structure, e.g. x=(-6*3)/2
+            appendMap(muldiv, `${factor.operands[0].path}:group`, map);
+          } else {
+            appendMap(muldiv, `${factor.path}:group`, map);
+          }
           // we give all factors in the denominator the same /1 path so we can later
           // select all denominator terms with that path
           appendMap(muldiv, `${tree.path}/1`, map);
-          appendMap(muldiv, `${tree.path}/1/${i}:group`, map);
-          const factor = (tree.operands[1] as NestedExpression).operands[i];
-          const opStr = getOpStr(factor);
-          appendMap(muldiv.children[0]!, `${tree.path}/1/${i}:${opStr}`, map);
           annotate(muldiv.children[1], factor, map);
         });
       } else {
         // single node in denominator
         const node = gmTree.children[gmTree.children.length - 1];
         appendMap(node, `${tree.path}/1:group`, map);
-        const opStr = getOpStr(tree.operands[0]);
-        appendMap(node.children[0]!, `${tree.path}/1:${opStr}`, map);
         annotate(node.children[1], tree.operands[1], map);
       }
       break;

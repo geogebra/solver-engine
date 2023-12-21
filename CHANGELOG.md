@@ -7,6 +7,96 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 An entry should be added to the _[Unreleased]_ section when committing to main. When a release is made we move its
 contents to a new release section (e.g. _[0.x]_).
 
+## [1.4] 2023-12-21
+
+### Added
+
+- SDK: Added support for entering LaTeX systems of equations separated by '\text{AND}', ';', ',' (PLUT-717)
+- Add solver syntax for inverse trig functions (e.g., `[sin^-1] x`) and power of trig functions (e.g., `[tan^2] x`)
+  (PLUT-715)
+- SDK: add latex rendering for inverse trig functions (e.g., `sin^-1 x`) and power of trig functions (e.g., `tan^2 x`)
+  (PLUT-715)
+- Added support for simplifying the sum of non-constant fractions, such as `[x + 1 / 2] + [3x / 5]` (not applied when
+  solving equations) (PLUT-680)
+- Optimization of deeply: added machinery for avoiding searching too deep into expressions when the plan applied
+  requires a deep expression (PLUT-831)
+- Added gmAction information to factoring plans (PLUT-832)
+- Added simplification of fractions containing a sum with a common integer factor, such as `[2 + 4sqrt[2] / 2]`
+  (PLUT-821)
+- SDK: Localization of math words (e.g. 'and', 'or', 'true', 'false', ...) (PLUT-707)
+- Added solver engine support for "advanced balancing" (PLUT-845)
+- SDK: Allowed setting `advancedBalancing` flag in SDK (PLUT-845)
+- Performance: added caching to deeply calls (PLUT-854)
+- Added formulas to certain transformations (PLUT-694)
+- Add rules to simplify cancellation of root with any base and absolute power (PLUT-852)
+- Added an easy to extend settings system to give users granular control over the steps of the output (PLUT-796).
+- Added the `/settings` and `/presets` endpoints to the API (PLUT-796).
+- Added the `QuickAddLikeFractions` setting to sum like integer fractions in one step (PLUT-796).
+- Added ability to simplify a square root of `a +/- b sqrt[c]` when that can be written as a square (PLUT-582)
+- Added `CopySumSignsWhenDistributing` setting for gm-alignment (PLUT-798)
+- Provide framework for writing new style gmActions tests (PLUT-884)
+- Added the `MoveTermsOneByOne` setting for gm-alignment (PLUT-802)
+- Added new gmActions tests that use the new testing framework, disabled all old gmAction tests (PLUT-888)
+- Added the `MultiplyFractionsAndNotFractionsDirectly` setting for gm-alignment (PLUT-885). Multiplies
+  e.g. `2 * [3 / 4]` to `[2 * 3 / 4]` in one step
+- Added the `/graph` API, which returns a description of a graph that can be drawn from an input (PLUT-912).
+- SDK: Added support for the `/graph` API in SDK and conversion of tree format to ggb format in SDK (PLUT-912)
+- SDK: Added support for generating math problems for various topics, subtopics and difficulty levels (PLUT-911)
+- Added new `EliminateNonZeroFactorByDividing` setting to eliminate non-zero factors in equations = 0 in steps (
+  PLUT-942)
+
+### Fixed
+
+- `ComputeDomainOfAlgebraicExpression` plan isn't shown when `ComputeDomainAndSimplifyAlgebraicExpression` plan can be
+  shown (e.g., for `[3 * 2 / (x - 1)(x - 2)]`) (PLUT-708)
+  - SDK: Fixed LaTeX representation of equation systems (PLUT-717)
+- Fixed rational equations which can be reduced to a polynomial one just by simplifying and expanding,
+  e.g. `([1/x]+2)x=[2/x]x` (PLUT-703)
+- Improved thread-safety of deeply optimization (PLUT-835)
+- Improved handling of negatives in sums by the SDK (PLUT-832)
+- Fixed bug in `productSignRequired` that led to incorrect warnings in parser for divisions (PLUT-841)
+- SDK: Fixed LaTeX representation of addition/subtraction of equations in equation system (PLUT-848)
+- Fix computation of lcd and addition of fractions with additive inverse denominators (PLUT-706)
+- SDK: Fixed ÷ path map issue (PLUT-864)
+- Multiply by denominator of variable on LHS when not a constant (PLUT-711)
+- SDK: Fixed \* and ÷ path issues (PLUT-888)
+- Improved handling of multiplying inverse fractions `[2/3]*[3/2]` (PLUT-894)
+- Improved explanations for multiply by LCD for single denominator (PLUT-894)
+- Fixed regression in solving linear equations (PLUT-923)
+- Made graph API rearrange inequalities as well as equations (PLUT-926)
+- Fixed several Solver <-> GM path mapping issues (PLUT-897)
+
+### Changed
+
+- The Spring configurations have been changed to exclude null values from the returned objects (PLUT-692)
+- SDK: the Transformation type has been changed to reflect the optional fields (PLUT-692)
+- Speed up method execution when it doesn't contain decimals (PLUT-836)
+- Simplification of roots of integers and roots of powers of integers have been improved (PLUT-705)
+- (PLUT-864) switch SDK tests to use gmath-3.0.0, which adds or improves GM alignment for
+  - CancelCommonTermsOnBothSides
+  - TakeRootOfBothSidesRHSIsZero
+  - TakeRootOfBothSides
+  - RewriteFractionOfPowersWithSameExponent
+  - RewriteProductOfPowersWithSameExponent
+  - FractionArithmeticRules
+  - NegateBothSides
+  - x^0, 1^x, 0^x
+- Replaced curricula and the GM friendly flag with presets, which are a combination of various settings (PLUT-796)
+- SDK: Adapted SDK and the poker to use the settings and presets returned by the engine (PLUT-796)
+- Renamed the `AdvancedBalancing` flag to `BalancingMode` and changed the options to `basic`, `advanced` and
+  `nextTo` (PLUT-802)
+- Changed the removal of the coefficients on the left hand sides of equations and inequalities for better compatibility
+  with Graspable Math (PLUT-797)
+- Split GmFriendly preset into GmFriendly and GmFriendlyAdvanced (PLUT-888)
+- Changed setting ReorderProductsInSteps into CommutativeReorderInSteps and made it cover step by step normalization of
+  polynomials (PLUT-888)
+- improved FractionArithmetic rules for signs in fractions (`-[-2/3]` and `-[2/-3]`) (PLUT-888)
+- SDK: don't consider a "Rearrangement" step a trivial step
+- SDK: the "simple" solution formatter now shows "no solution" or "infinitely many solutions" messages for
+  contradictions and identities (PLUT-899)
+
+### Removed
+
 ## [1.3.1] 2023-10-23
 
 ### Added

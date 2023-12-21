@@ -261,10 +261,20 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      * of an equation, to get the equation into a standard form, i.e.
      *  a[x^2] + bx + c = 0, where a > 0 and gcd(a, b, c) = 1
      *
+     * %1: the factor to eliminate
+     *
      * E.g.  [ 2([x^2] - 2x + 1) / 2] = [0 / 2]
      *      --> [x^2] - 2x + 1 = 0
      */
     EliminateConstantFactorOfLhsWithZeroRhs,
+
+    /**
+     * Simplify an equation or inequation with zero RHS by eliminating a
+     * non-zero factor on the LHS.
+     *
+     * E.g 4xy = 0 --> xy = 0
+     */
+    SimplifyByEliminatingConstantFactorOfLhsWithZeroRhs,
 
     /**
      * Simplify a quadratic equation by standardizing the quadratic equation to
@@ -526,6 +536,12 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      */
     MultiplyBothSidesByDenominator,
 
+    /**
+     * Split an equation with rational variables and irrational coefficients
+     *
+     * E.g x + sqrt[2] = y + x sqrt[2] + 1 --> x = y + 1 AND sqrt[2] = x sqrt[2]
+     */
+    SplitEquationWithRationalVariables,
     ;
 
     override val category = "Equations"

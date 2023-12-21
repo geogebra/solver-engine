@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { onUpdated, ref, computed } from 'vue';
+import { computed } from 'vue';
 import { renderExpression } from './render-solution';
-import { showThroughSteps } from './settings';
-import * as solverSdk from '@geogebra/solver-sdk';
+import { latexSettings, showThroughSteps } from './settings';
 import type { TaskJson } from '@geogebra/solver-sdk';
+import * as solverSdk from '@geogebra/solver-sdk';
 import { jsonToTree } from '@geogebra/solver-sdk';
-import { latexSettings } from './settings';
 import Explanation from './explanation.vue';
 import TasksComponent from './tasks-component.vue';
 import StepsComponent from './steps-component.vue';
 import KatexRenderedText from './katex-rendered-text.vue';
+import { treeToLatex } from './render-math.ts';
 
 const props = defineProps<{
   task: TaskJson;
@@ -24,9 +24,9 @@ const rendering = computed(() => {
 
   return (
     solverSdk.specialTransformationLatex(fromExpr, toExpr, latexSettings.value) ||
-    `${solverSdk.treeToLatex(fromExpr, latexSettings.value)}
+    `${treeToLatex(fromExpr)}
       {\\color{#8888ff}\\thickspace\\longmapsto\\thickspace}
-      ${solverSdk.treeToLatex(toExpr, latexSettings.value)}`
+      ${treeToLatex(toExpr)}`
   );
 });
 </script>
@@ -51,7 +51,7 @@ const rendering = computed(() => {
     </template>
     <KatexRenderedText
       v-else-if="startExprTree.type !== 'Void'"
-      :text="renderExpression(solverSdk.treeToLatex(startExprTree, latexSettings))"
+      :text="renderExpression(treeToLatex(startExprTree))"
     ></KatexRenderedText>
   </div>
 </template>

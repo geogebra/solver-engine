@@ -46,7 +46,21 @@ it('Aligned equations in system', () => {
   };
 
   expect(jsonToLatex(system)).to.equal(
-    '\\left\\{\\begin{array}{rcl}\n  a & = & 1\\\\\n  b & = & 2\\\\\n\\end{array}\\right.',
+    '\\left\\{\\begin{array}{rclrr}\n  a & = & 1\\\\\n  b & = & 2\\\\\n\\end{array}\\right.',
+  );
+});
+
+it('Aligned equations with labels in system', () => {
+  const system: MathJson = {
+    type: 'EquationSystem',
+    operands: [
+      { type: 'Equation', operands: [variable('a'), integer('1')], name: '(1)' },
+      { type: 'Equation', operands: [variable('b'), integer('2')], name: '(2)' },
+    ],
+  };
+
+  expect(jsonToLatex(system)).to.equal(
+    '\\left\\{\\begin{array}{rclrr}\n  a & = & 1 & \\textrm{(1)}\\\\\n  b & = & 2 & \\textrm{(2)}\\\\\n\\end{array}\\right.',
   );
 });
 
@@ -91,7 +105,7 @@ it('Univariate empty set solution', () => {
   };
 
   expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
-    'x \\in \\emptyset',
+    '\\text{no solution}',
   );
 });
 
@@ -173,7 +187,7 @@ it('Univariate identity solution', () => {
   };
 
   expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
-    'x \\in \\mathbb{R}',
+    '\\text{infinitely many solutions}',
   );
 });
 
@@ -201,7 +215,7 @@ it('Univariate contradiction solution', () => {
   };
 
   expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
-    'x \\in \\emptyset',
+    '\\text{no solution}',
   );
 });
 
@@ -215,7 +229,7 @@ it('Multivariate contradiction solution', () => {
   };
 
   expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
-    'x, y \\in \\emptyset',
+    '\\text{no solution}',
   );
 });
 
