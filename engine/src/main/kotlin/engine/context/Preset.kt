@@ -33,6 +33,7 @@ enum class Preset(val description: String, val settings: Map<Setting, SettingVal
             Setting.CommutativeReorderInSteps setTo BooleanSetting.True,
             Setting.CopySumSignsWhenDistributing setTo BooleanSetting.True,
             Setting.MultiplyFractionsAndNotFractionsDirectly setTo BooleanSetting.True,
+            Setting.EliminateNonZeroFactorByDividing setTo BooleanSetting.True,
         ),
     ),
 
@@ -47,6 +48,7 @@ enum class Preset(val description: String, val settings: Map<Setting, SettingVal
             Setting.CommutativeReorderInSteps setTo BooleanSetting.True,
             Setting.CopySumSignsWhenDistributing setTo BooleanSetting.True,
             Setting.MultiplyFractionsAndNotFractionsDirectly setTo BooleanSetting.True,
+            Setting.EliminateNonZeroFactorByDividing setTo BooleanSetting.True,
         ),
     ),
 }

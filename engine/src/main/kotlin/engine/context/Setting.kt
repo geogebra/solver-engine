@@ -107,6 +107,12 @@ enum class Setting(val kind: SettingKind, val description: String) {
             "apply to adding an integer and a fraction.",
     ),
 
+    EliminateNonZeroFactorByDividing(
+        BooleanSetting,
+        "when simplifying ab = 0 to b = 0 because a != 0, do it by dividing both sides by a instead " +
+            "of just cancelling the a, which is the default",
+    ),
+
     ;
 
     infix fun setTo(value: SettingValue): Pair<Setting, SettingValue> {

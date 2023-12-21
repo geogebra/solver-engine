@@ -308,6 +308,12 @@ class SolvableRulesTest {
             "(-[1 / 3])(-3x) = (-[1 / 3]) * [1 / 2]",
             advanced to "x = (-[1 / 3]) * [1 / 2]",
         )
+
+        testRuleInX(
+            "3x = 0",
+            SolvableRules.MoveConstantFactorWithNoFractionToTheRight,
+            "[3x / 3] = [0 / 3]",
+        )
     }
 
     @Test
@@ -360,6 +366,12 @@ class SolvableRulesTest {
             advanced to "(B + b) x = 2S",
             nextTo to "[1/2] * 2 (B + b)x = S*2",
         )
+
+        testRuleInX(
+            "[1/3]x = 0",
+            MoveConstantFractionFactorToTheRight,
+            "3*[1/3]x = 3*0",
+        )
     }
 
     @Test
@@ -393,6 +405,11 @@ class SolvableRulesTest {
             SolvableRules.MoveConstantDenominatorToTheRight,
             "2 * [3x / 2] > 2",
             advanced to "3x > 2",
+        )
+        testRuleInX(
+            "[3x / 2] = 0",
+            SolvableRules.MoveConstantDenominatorToTheRight,
+            "2 * [3x / 2] = 2 * 0",
         )
     }
 

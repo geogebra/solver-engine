@@ -79,6 +79,10 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
             val solvable = SolvablePattern(lhs, rhs)
 
             onPattern(solvable) {
+                // At least one side has to be a sum
+                if (!isBound(leftSum) && !isBound(rightSum)) {
+                    return@onPattern null
+                }
                 val restLeft = if (isBound(leftSum)) restOf(leftSum) else Constants.Zero
                 val restRight = if (isBound(rightSum)) restOf(rightSum) else Constants.Zero
 

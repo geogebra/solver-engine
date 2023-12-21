@@ -277,7 +277,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
     SeparateFactoredEquation(separateFactoredEquation),
 
-    EliminateConstantFactorOfLhsWithZeroRhs(eliminateConstantFactorOfLhsWithZeroRhs),
+    EliminateConstantFactorOfLhsWithZeroRhsDirectly(eliminateConstantFactorOfLhsWithZeroRhsDirectly),
 
     SeparateModulusEqualsPositiveConstant(separateModulusEqualsPositiveConstant),
     ResolveModulusEqualsZero(resolveModulusEqualsZero),
@@ -386,7 +386,7 @@ private val separateEquationInPlusMinusForm = rule {
     }
 }
 
-private val eliminateConstantFactorOfLhsWithZeroRhs = rule {
+private val eliminateConstantFactorOfLhsWithZeroRhsDirectly = rule {
     val factor = condition { it.isConstant() && it.isDefinitelyNotZero() }
     val unsignedLHS = productContaining(factor)
     val lhs = optionalNegOf(unsignedLHS)

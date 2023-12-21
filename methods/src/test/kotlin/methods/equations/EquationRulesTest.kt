@@ -3,7 +3,7 @@ package methods.equations
 import engine.methods.testRule
 import engine.methods.testRuleInX
 import methods.equations.EquationsRules.ApplyQuadraticFormula
-import methods.equations.EquationsRules.EliminateConstantFactorOfLhsWithZeroRhs
+import methods.equations.EquationsRules.EliminateConstantFactorOfLhsWithZeroRhsDirectly
 import methods.equations.EquationsRules.MultiplyByInverseOfLeadingCoefficient
 import methods.equations.EquationsRules.SeparateEquationInPlusMinusForm
 import org.junit.jupiter.api.Test
@@ -52,32 +52,32 @@ class EquationRulesTest {
     fun testCancelGcfOfCoefficients() {
         testRuleInX(
             "2 ([x^2] + x + 1) = 0",
-            EliminateConstantFactorOfLhsWithZeroRhs,
+            EliminateConstantFactorOfLhsWithZeroRhsDirectly,
             "[x^2] + x + 1 = 0",
         )
         testRuleInX(
             "2x = 0",
-            EliminateConstantFactorOfLhsWithZeroRhs,
+            EliminateConstantFactorOfLhsWithZeroRhsDirectly,
             "x = 0",
         )
         testRuleInX(
             "-2x = 0",
-            EliminateConstantFactorOfLhsWithZeroRhs,
+            EliminateConstantFactorOfLhsWithZeroRhsDirectly,
             "x = 0",
         )
         testRuleInX(
             "-2x(x-1) = 0",
-            EliminateConstantFactorOfLhsWithZeroRhs,
+            EliminateConstantFactorOfLhsWithZeroRhsDirectly,
             "x(x-1) = 0",
         )
         testRuleInX(
             "-2x(x-1) != 0",
-            EliminateConstantFactorOfLhsWithZeroRhs,
+            EliminateConstantFactorOfLhsWithZeroRhsDirectly,
             "x(x-1) != 0",
         )
         testRuleInX(
             "-2a[b^2] != 0",
-            EliminateConstantFactorOfLhsWithZeroRhs,
+            EliminateConstantFactorOfLhsWithZeroRhsDirectly,
             "a[b^2] != 0",
         )
     }

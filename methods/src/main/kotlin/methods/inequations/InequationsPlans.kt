@@ -26,7 +26,6 @@ import engine.steps.metadata.metadata
 import methods.constantexpressions.constantSimplificationSteps
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.equations.EquationsPlans
-import methods.equations.EquationsRules
 import methods.factor.FactorPlans
 import methods.general.NormalizationPlans
 import methods.polynomials.PolynomialsPlans
@@ -44,7 +43,7 @@ enum class InequationsPlans(override val runner: CompositeMethod) : RunnerMethod
             steps {
                 whilePossible { deeply(simpleTidyUpSteps) }
                 optionally(NormalizationPlans.NormalizeExpression)
-                whilePossible(EquationsRules.EliminateConstantFactorOfLhsWithZeroRhs)
+                whilePossible(EquationsPlans.SimplifyByEliminatingConstantFactorOfLhsWithZeroRhs)
                 whilePossible(SolvableRules.CancelCommonTermsOnBothSides)
                 optionally(algebraicSimplificationStepsWithoutFractionAddition)
             }
@@ -91,7 +90,7 @@ private val solveInequation = object : CompositeMethod() {
 
             optionally(solvablePlansForInequations.moveEverythingToTheLeftAndSimplify)
             applyTo(FactorPlans.FactorGreatestCommonFactor) { it.firstChild }
-            apply(EquationsRules.EliminateConstantFactorOfLhsWithZeroRhs)
+            apply(EquationsPlans.SimplifyByEliminatingConstantFactorOfLhsWithZeroRhs)
         }
     }
 

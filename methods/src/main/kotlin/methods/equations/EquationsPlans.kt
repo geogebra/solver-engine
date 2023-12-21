@@ -3,6 +3,7 @@ package methods.equations
 import engine.context.BooleanSetting
 import engine.context.Context
 import engine.context.Setting
+import engine.expressions.Comparison
 import engine.expressions.Constants
 import engine.expressions.Contradiction
 import engine.expressions.DecimalExpression
@@ -20,10 +21,13 @@ import engine.methods.SolverEngineExplanation
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
+import engine.patterns.AnyPattern
 import engine.patterns.FindPattern
+import engine.patterns.FixedPattern
 import engine.patterns.RecurringDecimalPattern
 import engine.patterns.SignedNumberPattern
 import engine.patterns.SolutionVariablePattern
+import engine.patterns.SolvablePattern
 import engine.patterns.condition
 import engine.patterns.contradictionOf
 import engine.patterns.identityOf
@@ -55,6 +59,25 @@ import methods.solvable.evaluateBothSidesNumerically
 
 enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
+    SimplifyByEliminatingConstantFactorOfLhsWithZeroRhs(
+        plan {
+            explanation = Explanation.SimplifyByEliminatingConstantFactorOfLhsWithZeroRhs
+            pattern = SolvablePattern(AnyPattern(), FixedPattern(Constants.Zero))
+
+            steps {
+                branchOn(Setting.EliminateNonZeroFactorByDividing) {
+                    case(BooleanSetting.False) {
+                        apply(EquationsRules.EliminateConstantFactorOfLhsWithZeroRhsDirectly)
+                    }
+                    case(BooleanSetting.True) {
+                        check { it is Comparison && it.rhs == Constants.Zero }
+                        apply(solvablePlansForEquations.coefficientRemovalSteps)
+                    }
+                }
+            }
+        },
+    ),
+
     SimplifyEquation(
         plan {
             explanation = Explanation.SimplifyEquation
@@ -62,7 +85,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
             steps {
                 whilePossible { deeply(simpleTidyUpSteps) }
                 optionally(NormalizationPlans.NormalizeExpression)
-                whilePossible(EquationsRules.EliminateConstantFactorOfLhsWithZeroRhs)
+                whilePossible(SimplifyByEliminatingConstantFactorOfLhsWithZeroRhs)
                 whilePossible(SolvableRules.CancelCommonTermsOnBothSides)
                 optionally(algebraicSimplificationStepsWithoutFractionAddition)
             }
@@ -112,7 +135,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 applyTo(FactorRules.FactorGreatestCommonIntegerFactor) { it.firstChild }
-                apply(EquationsRules.EliminateConstantFactorOfLhsWithZeroRhs)
+                apply(SimplifyByEliminatingConstantFactorOfLhsWithZeroRhs)
             }
         },
     ),

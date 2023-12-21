@@ -19,7 +19,6 @@ import java.io.File
 class ExampleCollectingListener : TestExecutionListener, SolutionProcessor {
 
     override fun testPlanExecutionStarted(testPlan: TestPlan?) {
-        println("XXXX")
         if (examplesFilePath != null) {
             MethodTestCase.addSolutionProcessor(this)
         }
