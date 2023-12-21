@@ -52,8 +52,8 @@ export function solverPathToGmNodes(
       // to replace that with a tap on the plus.
       if (!isGmFactorAction(actor, target)) {
         // If we are dragging the entire group (-1) we need the operator (-) of the main actor (1) to be tapped
-        const operators = map.get(`${actorPaths[0].replace(':group', '')}:op`);
-        if (operators && !operators[0].hidden) {
+        const operators = map.get(actorPaths[0])?.map((group) => group.children[0]);
+        if (operators && operators[0] && !operators[0].hidden) {
           actors[0] = operators[0];
           targets.splice(0);
           gmAction = { ...info, type: 'Tap' };
@@ -65,12 +65,12 @@ export function solverPathToGmNodes(
 }
 
 function isGmFactorAction(actor: GmMathNode, target: GmMathNode) {
-  return actor
+  const actions = actor
     .get_root()
     .getMoveActions([actor])
-    .some((action) => {
-      return action.name === 'GreatestCommonFactorAction' && action.target === target;
-    });
+    .filter((action) => action.target === target)
+    .sort((a, b) => b.priority - a.priority);
+  return actions[0]?.name === 'GreatestCommonFactorAction';
 }
 
 /** Checks if the passed gm terms are addends or factors that are next to each

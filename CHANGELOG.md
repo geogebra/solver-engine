@@ -62,6 +62,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Improved explanations for multiply by LCD for single denominator (PLUT-894)
 - Fixed regression in solving linear equations (PLUT-923)
 - Made graph API rearrange inequalities as well as equations (PLUT-926)
+- Fixed several Solver <-> GM path mapping issues (PLUT-897)
 
 ### Changed
 

@@ -148,6 +148,7 @@ export type GmAction = {
     position?: 'Above' | 'Below' | 'LeftOf' | 'RightOf' | 'Onto' | 'OutsideOf';
   };
   formulaId?: string;
+  priority: number;
 };
 
 type MappedExpressionBase<MathFormat> = {

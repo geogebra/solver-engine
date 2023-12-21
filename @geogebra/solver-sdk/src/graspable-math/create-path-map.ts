@@ -28,6 +28,7 @@ type GmAction = {
   // for drag action
   nodes?: GmMathNode[];
   target?: GmMathNode | GmMathNode[];
+  priority: number;
 };
 
 type TodoFigureOutType = any;
@@ -62,14 +63,15 @@ export function hideImplicitMultiplicationSigns(
 ) {
   if (['Product', 'ImplicitProduct', 'SmartProduct'].includes(tree.type)) {
     (tree as NestedExpression).operands.forEach((factor, index) => {
-      const path = `${factor.path}:op`;
       const show =
         tree.type === 'SmartProduct'
           ? tree.signs[index]
           : tree.type === 'ImplicitProduct'
           ? false
           : index > 0;
-      pathMap.get(path)?.forEach((node) => (node.hidden = !show));
+      pathMap.get(factor.path)?.forEach((node) => {
+        if (node?.ls?.value === '*') node.ls.hidden = !show;
+      });
     });
   } else if ('operands' in tree) {
     tree.operands.forEach((arg) => {
@@ -163,11 +165,17 @@ function annotate(
         ['Product', 'ImplicitProduct', 'SmartProduct'].includes(tree.operands[0].type)
       ) {
         (gmTree as GmFraction).get_top().forEach((muldiv, i) => {
+          const factor = (tree.operands[0] as NestedExpression).operands[i];
+          if (factor.type === 'Minus' && i === 0) {
+            // we have a leading minus group in a product, which the Solver doesn't support,
+            // so this minus has been moved here to align with GM's structure, e.g.: x=(-6*3)/2
+            appendMap(muldiv, `${factor.operands[0].path}:group`, map);
+          } else {
+            appendMap(muldiv, `${factor.path}:group`, map);
+          }
           // we give all factors in the numerator the same /0 path so we can later
           // select all numerator terms with that path
           appendMap(muldiv, `${tree.path}/0`, map);
-          appendMap(muldiv, `${tree.path}/0/${i}:group`, map);
-          const factor = (tree.operands[0] as NestedExpression).operands[i];
           annotate(muldiv.children[1], factor, map);
         });
       } else {
@@ -180,11 +188,17 @@ function annotate(
         ['Product', 'ImplicitProduct', 'SmartProduct'].includes(tree.operands[1].type)
       ) {
         (gmTree as GmFraction).get_bottom().forEach((muldiv, i) => {
+          const factor = (tree.operands[1] as NestedExpression).operands[i];
+          if (factor.type === 'Minus' && i === 0) {
+            // we have a leading minus group in a product, which the Solver doesn't support,
+            // so this minus has been moved here to align with GM's structure, e.g. x=(-6*3)/2
+            appendMap(muldiv, `${factor.operands[0].path}:group`, map);
+          } else {
+            appendMap(muldiv, `${factor.path}:group`, map);
+          }
           // we give all factors in the denominator the same /1 path so we can later
           // select all denominator terms with that path
           appendMap(muldiv, `${tree.path}/1`, map);
-          appendMap(muldiv, `${tree.path}/1/${i}:group`, map);
-          const factor = (tree.operands[1] as NestedExpression).operands[i];
           annotate(muldiv.children[1], factor, map);
         });
       } else {
