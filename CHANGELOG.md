@@ -15,10 +15,14 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Changed
 
+### Removed
+
+## [1.4.1] 2023-12-22
+
+### Changed
+
 - Normalize polynomials to a stricter standard form (fractional coefficients in front of variables) (PLUT-943)
 - gmAction for adding a fraction and a non-fraction
-
-### Removed
 
 ## [1.4] 2023-12-21
 
