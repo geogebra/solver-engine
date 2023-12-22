@@ -384,7 +384,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
             onPattern(solvable) {
                 ruleResult(
                     toExpr = solvable.deriveSolvable(move(rhs), move(lhs), useDual = true),
-                    gmAction = drag(lhs, null, expression, PM.Operator, Position.Above),
+                    gmAction = drag(rhs, null, lhs, null, Position.Above),
                     explanation = solvableExplanation(SolvableKey.FlipSolvable),
                 )
             }
