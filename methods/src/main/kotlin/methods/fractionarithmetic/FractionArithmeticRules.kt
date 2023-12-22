@@ -551,6 +551,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
                 val newSum = sum.substitute(get(fraction), nonFractionalTermWithDenominator)
                 ruleResult(
                     toExpr = newSum,
+                    gmAction = drag(denominator, PM.Group, nonFractionalTerm, null, DragTargetPosition.RightOf),
                     explanation = metadata(
                         Explanation.BringToCommonDenominatorWithNonFractionalTerm,
                         move(fraction.unsignedPattern),

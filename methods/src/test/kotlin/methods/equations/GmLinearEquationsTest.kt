@@ -79,6 +79,13 @@ class GmOneStepLinearEquationMultiplicationTests {
 @Tag("GmAction")
 class GmOneStepLinearEquationDivisionTests {
     @Test
+    fun `equation flipping`() = testMethodInX(Preset.GMFriendly) {
+        method = EquationsPlans.SolveEquation
+        inputExpr = "4 = 2x"
+        check { toExpr = "SetSolution[x : {2}]" }
+    }
+
+    @Test
     fun `frac{x}{a}=b`() = testMethodInX(Preset.GMFriendly) {
         method = EquationsPlans.SolveEquation
         inputExpr = "[x/3] = 4"

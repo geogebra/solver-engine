@@ -2,6 +2,7 @@ package methods.polynomials
 
 import engine.expressions.Decorator
 import engine.expressions.Expression
+import engine.expressions.Minus
 import engine.expressions.Product
 import engine.expressions.negOf
 import engine.expressions.productOf
@@ -10,7 +11,10 @@ import engine.expressions.variablePowerBase
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
+import engine.patterns.AnyPattern
+import engine.patterns.ConstantInSolutionVariablePattern
 import engine.patterns.defaultPolynomialSpecification
+import engine.patterns.fractionOf
 import engine.patterns.monomialPattern
 import engine.patterns.optionalNegOf
 import engine.patterns.productContaining
@@ -25,6 +29,7 @@ enum class PolynomialRules(override val runner: Rule) : RunnerMethod {
     RearrangeProductOfMonomials(rearrangeProductOfMonomials),
     NormalizePolynomial(normalizePolynomial),
     NormalizePolynomialOneStep(normalizePolynomialOneStep),
+    NormalizeMonomial(normalizeMonomial),
 }
 
 private val rearrangeProductOfMonomials = rule {
@@ -159,5 +164,41 @@ private fun bracketedProductOf(factors: List<List<Expression>>): Expression {
         bracketedFactors[0]
     } else {
         Product(bracketedFactors)
+    }
+}
+
+private val normalizeMonomial = rule {
+    val fraction = fractionOf(AnyPattern(), ConstantInSolutionVariablePattern())
+    val term = optionalNegOf(fraction)
+    val sum = sumContaining(term)
+
+    onPattern(sum) {
+        val spec = defaultPolynomialSpecification(context, expression) ?: return@onPattern null
+        val monomialPattern = monomialPattern(spec, positiveOnly = true)
+        val termValue = get(term)
+        val match = matchPattern(monomialPattern, if (termValue is Minus) termValue.argument else termValue)
+        if (match == null) {
+            null
+        } else {
+            ruleResult(
+                toExpr = sum.substitute(
+                    copySign(
+                        term,
+                        productOf(
+                            monomialPattern.coefficient(match),
+                            match.getBoundExpr(monomialPattern.powerPattern)!!,
+                        ),
+                    ),
+                ),
+                gmAction = drag(
+                    match.getBoundExpr(monomialPattern.powerPattern)!!,
+                    PM.Group,
+                    fraction,
+                    null,
+                    DragTargetPosition.RightOf,
+                ),
+                explanation = metadata(Explanation.NormalizeMonomial),
+            )
+        }
     }
 }
