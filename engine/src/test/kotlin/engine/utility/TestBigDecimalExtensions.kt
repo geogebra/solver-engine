@@ -7,7 +7,6 @@ import kotlin.test.assertEquals
 private fun d(s: String) = BigDecimal(s)
 
 class TestBigDecimalExtensions {
-
     @Test
     fun tesWithMaxDP() {
         assertEquals(d("123"), d("123").withMaxDP(3))

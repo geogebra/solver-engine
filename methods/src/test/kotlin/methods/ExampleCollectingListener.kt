@@ -17,7 +17,6 @@ import java.io.File
  * this will not run either!
  */
 class ExampleCollectingListener : TestExecutionListener, SolutionProcessor {
-
     override fun testPlanExecutionStarted(testPlan: TestPlan?) {
         if (examplesFilePath != null) {
             MethodTestCase.addSolutionProcessor(this)
@@ -56,12 +55,13 @@ class ExampleCollectingListener : TestExecutionListener, SolutionProcessor {
 
 private data class Example(val input: String, val method: String, val key: String)
 
-private fun extractExplanationsKeys(trans: Transformation): Sequence<MetadataKey> = sequence {
-    val explanation = trans.explanation
-    if (explanation != null) {
-        yield(explanation.key)
+private fun extractExplanationsKeys(trans: Transformation): Sequence<MetadataKey> =
+    sequence {
+        val explanation = trans.explanation
+        if (explanation != null) {
+            yield(explanation.key)
+        }
+        for (step in trans.steps ?: emptyList()) {
+            yieldAll(extractExplanationsKeys(step))
+        }
     }
-    for (step in trans.steps ?: emptyList()) {
-        yieldAll(extractExplanationsKeys(step))
-    }
-}

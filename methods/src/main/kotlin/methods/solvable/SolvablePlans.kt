@@ -37,7 +37,6 @@ import methods.approximation.ApproximationPlans
 import methods.polynomials.PolynomialsPlans
 
 class SolvablePlans(private val simplificationPlan: Method, private val constraintSimplificationPlan: Method? = null) {
-
     private fun getExplanationKey(solvableKey: SolvableKey, ctx: Context, expr: Expression): MetadataKey {
         val keyGetter = if (expr is Equation) {
             EquationsExplanation
@@ -52,7 +51,6 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
     }
 
     inner class ApplyRuleAndSimplify(private val key: SolvableKey) : Method {
-
         override fun tryExecute(ctx: Context, sub: Expression): Transformation? {
             val expression = if (sub is ExpressionWithConstraint) sub.expression else sub
 
@@ -80,10 +78,11 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
         }
     }
 
-    private fun applyRuleAndSimplify(key: SolvableKey) = branchOn(Setting.MoveTermsOneByOne) {
-        case(BooleanSetting.True) { whilePossible(ApplyRuleAndSimplify(key)) }
-        case(BooleanSetting.False) { apply(ApplyRuleAndSimplify(key)) }
-    }
+    private fun applyRuleAndSimplify(key: SolvableKey) =
+        branchOn(Setting.MoveTermsOneByOne) {
+            case(BooleanSetting.True) { whilePossible(ApplyRuleAndSimplify(key)) }
+            case(BooleanSetting.False) { apply(ApplyRuleAndSimplify(key)) }
+        }
 
     val moveConstantsToTheLeftAndSimplify = applyRuleAndSimplify(SolvableKey.MoveConstantsToTheLeft)
 

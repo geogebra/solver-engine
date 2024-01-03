@@ -17,6 +17,7 @@ data class Window(val x0: Double, val x1: Double, val y0: Double, val y1: Double
     val width = x1 - x0
 
     fun isVisibleX(x: Double) = x0 <= x && x <= x1
+
     fun isVisibleY(y: Double) = y0 <= y && y <= y1
 
     fun containingPoints(points: List<Point>, padding: Double = 0.5): Window {

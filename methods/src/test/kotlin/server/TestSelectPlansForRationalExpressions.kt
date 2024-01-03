@@ -5,7 +5,6 @@ import methods.polynomials.PolynomialsPlans
 import org.junit.jupiter.api.Test
 
 class TestSelectPlansForRationalExpressions {
-
     @Test
     fun `test addition of rational expressions`() {
         testSelectPlanApiInX(

@@ -8,7 +8,6 @@ import methods.approximation.ApproximationRules.RoundTerminatingDecimal
 import org.junit.jupiter.api.Test
 
 class ApproximationRulesTest {
-
     @Test
     fun testRoundTerminatingDecimal() {
         testRule("42.123", RoundTerminatingDecimal, null)

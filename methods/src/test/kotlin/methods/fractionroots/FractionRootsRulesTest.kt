@@ -12,7 +12,6 @@ import methods.fractionroots.FractionRootsRules.RationalizeSumOfIntegerAndSquare
 import org.junit.jupiter.api.Test
 
 class FractionRootsRulesTest {
-
     @Test
     fun testDistributeRadicalOverFraction() {
         testRule(

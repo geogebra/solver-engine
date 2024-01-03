@@ -23,7 +23,6 @@ import engine.steps.Transformation
 import engine.steps.metadata.metadata
 
 enum class InequationsRules(override val runner: Rule) : RunnerMethod {
-
     ExtractSolutionFromInequationInSolvedForm(
         rule {
             val lhs = SolutionVariablePattern()

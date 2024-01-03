@@ -8,7 +8,6 @@ import kotlin.test.assertEquals
 class NotZeroConditionsTest
 
 class SumTermsAreIncommensurableTest {
-
     private fun testSum(exprString: String, incommensurable: Boolean) {
         val expr = parseExpression(exprString)
         assertEquals(SumOperator, expr.operator)
@@ -28,7 +27,6 @@ class SumTermsAreIncommensurableTest {
 }
 
 class ExpressionIsDefinitelyNotZeroTest {
-
     private fun testNotZero(exprString: String, notZero: Boolean) {
         val expr = parseExpression(exprString)
         assertEquals(notZero, expr.isDefinitelyNotZero())

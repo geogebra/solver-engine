@@ -9,7 +9,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class NaryPatternTest {
-
     @Test
     fun testSinglePattern() {
         val expression = parseExpression("1 + 2 + 3")

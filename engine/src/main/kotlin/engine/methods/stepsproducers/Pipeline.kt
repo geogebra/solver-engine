@@ -37,7 +37,6 @@ private class Pipeline(
     private val optionalSteps: Boolean = false,
     minDepth: Int = -1,
 ) : StepsProducer {
-
     // These vars may be accessed from different request threads, so we want reads and writes to be atomic.  It doesn't
     // matter if two threads call initialize() because they will calculate the same value.  That wastes a little time
     // but that is more than offset by avoiding the slowdown that putting a lock around initialize() and accessing
@@ -76,11 +75,12 @@ private class Pipeline(
         return builder.getFinalSteps()
     }
 
-    override fun toString() = if (::stepsProducers.isInitialized) {
-        "ProceduralPipeline(minDepth=$minDepthValue)"
-    } else {
-        "ProceduralPipeline(uninitialized)"
-    }
+    override fun toString() =
+        if (::stepsProducers.isInitialized) {
+            "ProceduralPipeline(minDepth=$minDepthValue)"
+        } else {
+            "ProceduralPipeline(uninitialized)"
+        }
 }
 
 /**
@@ -89,7 +89,6 @@ private class Pipeline(
  */
 @Suppress("TooManyFunctions")
 private class PipelineCompiler : PipelineBuilder {
-
     private val stepsProducers = mutableListOf<StepsProducer>()
     private val optionalSteps = mutableListOf<Pair<StepsProducer, Int>>()
 
@@ -258,7 +257,6 @@ private class PipelineRunner(
     val builder: StepsBuilder,
     val ctx: Context,
 ) : PipelineBuilder {
-
     private val expression get() = builder.expression
     private var index = 0
 
@@ -267,6 +265,7 @@ private class PipelineRunner(
         index++
         return next
     }
+
     override fun inContext(contextFactory: Context.(Expression) -> Context, init: PipelineFunc) {
         if (!builder.inProgress) return
         addSteps(nextStepsProducer().produceSteps(ctx.contextFactory(expression), expression))
@@ -351,7 +350,7 @@ private class PipelineRunner(
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T : Expression>applyToKind(stepsProducer: StepsProducer, extractor: Extractor<T>) {
+    override fun <T : Expression> applyToKind(stepsProducer: StepsProducer, extractor: Extractor<T>) {
         if (!builder.inProgress) return
 
         addSteps(
@@ -381,6 +380,7 @@ private class PipelineRunner(
             applyTo(stepsProducer, extractor)
         }
     }
+
     override fun applyTo(extractor: Extractor<Expression>, init: PipelineFunc) {
         if (!builder.inProgress) return
 

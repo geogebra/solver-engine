@@ -16,11 +16,7 @@ data class AxisVariables(
  * Decides what are suitable axes for the given [exprs].  Will return null if it can't decide or it's not appropriate
  * (e.g. the expressions are constant, or there are more than 2 variables).œ
  */
-fun selectAxisVariables(
-    allVars: Set<String>,
-    solutionVars: List<String>,
-    exprs: List<Expression>,
-): AxisVariables? {
+fun selectAxisVariables(allVars: Set<String>, solutionVars: List<String>, exprs: List<Expression>): AxisVariables? {
     return when {
         allVars.isEmpty() -> null
         allVars.size == 1 -> {

@@ -47,7 +47,6 @@ data class GeneralMetadataMaker(val init: MappedExpressionBuilder.() -> Metadata
     }
 }
 
-fun metadata(key: MetadataKey, vararg parameters: Expression) =
-    Metadata(key, parameters.asList())
+fun metadata(key: MetadataKey, vararg parameters: Expression) = Metadata(key, parameters.asList())
 
 fun metadata(key: MetadataKey, parameters: List<Expression>) = Metadata(key, parameters)

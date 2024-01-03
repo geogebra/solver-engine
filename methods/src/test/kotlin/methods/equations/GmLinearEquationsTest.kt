@@ -11,39 +11,44 @@ import org.junit.jupiter.api.Test
 @Tag("GmAction")
 class GmOneStepLinearEquationMultiplicationTests {
     @Test
-    fun `ax=c`() = testMethodInX(Preset.GMFriendly) {
-        method = EquationsPlans.SolveEquation
-        inputExpr = "3 x = 4"
-        check { toExpr = "SetSolution[x : {[4 / 3]}]" }
-    }
+    fun `ax=c`() =
+        testMethodInX(Preset.GMFriendly) {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "3 x = 4"
+            check { toExpr = "SetSolution[x : {[4 / 3]}]" }
+        }
 
     @Test
-    fun `ax=-c`() = testMethodInX(Preset.GMFriendly) {
-        method = EquationsPlans.SolveEquation
-        inputExpr = "3 x = -4"
-        check { toExpr = "SetSolution[x : {-[4 / 3]}]" }
-    }
+    fun `ax=-c`() =
+        testMethodInX(Preset.GMFriendly) {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "3 x = -4"
+            check { toExpr = "SetSolution[x : {-[4 / 3]}]" }
+        }
 
     @Test
-    fun `-ax=c`() = testMethodInX(Preset.GMFriendly) {
-        method = EquationsPlans.SolveEquation
-        inputExpr = "-3 x = 4"
-        check { toExpr = "SetSolution[x : {-[4 / 3]}]" }
-    }
+    fun `-ax=c`() =
+        testMethodInX(Preset.GMFriendly) {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "-3 x = 4"
+            check { toExpr = "SetSolution[x : {-[4 / 3]}]" }
+        }
 
     @Test
-    fun `-ax=-c`() = testMethodInX(Preset.GMFriendly) {
-        method = EquationsPlans.SolveEquation
-        inputExpr = "-3 x = -4"
-        check { toExpr = "SetSolution[x : {[4 / 3]}]" }
-    }
+    fun `-ax=-c`() =
+        testMethodInX(Preset.GMFriendly) {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "-3 x = -4"
+            check { toExpr = "SetSolution[x : {[4 / 3]}]" }
+        }
 
     @Test
-    fun `ax=a`() = testMethodInX(Preset.GMFriendly) {
-        method = EquationsPlans.SolveEquation
-        inputExpr = "3 x = 3"
-        check { toExpr = "SetSolution[x : {1}]" }
-    }
+    fun `ax=a`() =
+        testMethodInX(Preset.GMFriendly) {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "3 x = 3"
+            check { toExpr = "SetSolution[x : {1}]" }
+        }
 
     // to-do: Need to have [10/10]x ==> x
     // @Test
@@ -79,46 +84,49 @@ class GmOneStepLinearEquationMultiplicationTests {
 @Tag("GmAction")
 class GmOneStepLinearEquationDivisionTests {
     @Test
-    fun `equation flipping`() = testMethodInX(Preset.GMFriendly) {
-        method = EquationsPlans.SolveEquation
-        inputExpr = "4 = 2x"
-        check { toExpr = "SetSolution[x : {2}]" }
-    }
+    fun `equation flipping`() =
+        testMethodInX(Preset.GMFriendly) {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "4 = 2x"
+            check { toExpr = "SetSolution[x : {2}]" }
+        }
 
     @Test
-    fun `frac{x}{a}=b`() = testMethodInX(Preset.GMFriendly) {
-        method = EquationsPlans.SolveEquation
-        inputExpr = "[x/3] = 4"
-        check { toExpr = "SetSolution[x : {12}]" }
-    }
+    fun `frac{x}{a}=b`() =
+        testMethodInX(Preset.GMFriendly) {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "[x/3] = 4"
+            check { toExpr = "SetSolution[x : {12}]" }
+        }
 
     // TO-DO: Introduce a map of toExpr -> gmToExpr instead so we don't have to go into all the sub-steps
     // TO-DO: Adjust GM to put brackets around the *-4
     @Test
-    fun `frac{x}{-a}=b`() = testMethodInX(Preset.GMFriendly) {
-        method = EquationsPlans.SolveEquation
-        inputExpr = "[x/-3] = 4"
-        check {
-            toExpr = "SetSolution[x : {-12}]"
-            step { toExpr = "-[x / 3] = 4" }
-            step { toExpr = "[x / 3] = -4" }
-            step {
-                step {
-                    toExpr = "[x / 3] * 3 = 3 * (-4)"
-                    gmToExpr = "[x / 3] * 3 = 3 * -4"
-                }
+    fun `frac{x}{-a}=b`() =
+        testMethodInX(Preset.GMFriendly) {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "[x/-3] = 4"
+            check {
+                toExpr = "SetSolution[x : {-12}]"
+                step { toExpr = "-[x / 3] = 4" }
+                step { toExpr = "[x / 3] = -4" }
                 step {
                     step {
-                        toExpr = "x = 3 * (-4)"
-                        gmToExpr = "x = 3 * -4"
+                        toExpr = "[x / 3] * 3 = 3 * (-4)"
+                        gmToExpr = "[x / 3] * 3 = 3 * -4"
                     }
-                    step { }
-                    step { }
+                    step {
+                        step {
+                            toExpr = "x = 3 * (-4)"
+                            gmToExpr = "x = 3 * -4"
+                        }
+                        step { }
+                        step { }
+                    }
                 }
+                step { }
             }
-            step { }
         }
-    }
     // @Test
     // fun `frac{x}{a}=-b`() = testMethodInX(Preset.GMFriendly) {
     //     method = EquationsPlans.SolveEquation
@@ -139,82 +147,93 @@ class GmOneStepLinearEquationDivisionTests {
     // }
 
     @Test
-    fun `-frac{-x}{a}=b`() = testMethodInX(Preset.GMFriendly) {
-        method = EquationsPlans.SolveEquation
-        inputExpr = "-[-x/3] = 4"
-        check { toExpr = "SetSolution[x : {12}]" }
-    }
+    fun `-frac{-x}{a}=b`() =
+        testMethodInX(Preset.GMFriendly) {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "-[-x/3] = 4"
+            check { toExpr = "SetSolution[x : {12}]" }
+        }
 
     @Test
-    fun `-frac{x}{a}=-b`() = testMethodInX(Preset.GMFriendly) {
-        method = EquationsPlans.SolveEquation
-        inputExpr = "-[x/3] = -4"
-        check { toExpr = "SetSolution[x : {12}]" }
-    }
+    fun `-frac{x}{a}=-b`() =
+        testMethodInX(Preset.GMFriendly) {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "-[x/3] = -4"
+            check { toExpr = "SetSolution[x : {12}]" }
+        }
 
     @Test
-    fun `-frac{-x}{-a}=-b`() = testMethodInX(Preset.GMFriendly) {
-        method = EquationsPlans.SolveEquation
-        inputExpr = "-[-x/-3] = -4"
-        check { toExpr = "SetSolution[x : {12}]" }
-    }
+    fun `-frac{-x}{-a}=-b`() =
+        testMethodInX(Preset.GMFriendly) {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "-[-x/-3] = -4"
+            check { toExpr = "SetSolution[x : {12}]" }
+        }
 
     @Test
-    fun `frac{x}{-a}=-b`() = testMethodInX(Preset.GMFriendly) {
-        method = EquationsPlans.SolveEquation
-        inputExpr = "[x/-3] = -4"
-        check { toExpr = "SetSolution[x : {12}]" }
-    }
+    fun `frac{x}{-a}=-b`() =
+        testMethodInX(Preset.GMFriendly) {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "[x/-3] = -4"
+            check { toExpr = "SetSolution[x : {12}]" }
+        }
 }
 
 @Tag("GmAction")
 class GmOneStepLinearEquationAdditionTests {
     @Test
-    fun `x+a=b`() = testMethodInX(Preset.GMFriendly) {
-        method = EquationsPlans.SolveEquation
-        inputExpr = "x+1 = 4"
-        check { toExpr = "SetSolution[x : {3}]" }
-    }
+    fun `x+a=b`() =
+        testMethodInX(Preset.GMFriendly) {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "x+1 = 4"
+            check { toExpr = "SetSolution[x : {3}]" }
+        }
 
     @Test
-    fun `x-a=b`() = testMethodInX(Preset.GMFriendly) {
-        method = EquationsPlans.SolveEquation
-        inputExpr = "x-1 = 4"
-        check { toExpr = "SetSolution[x : {5}]" }
-    }
+    fun `x-a=b`() =
+        testMethodInX(Preset.GMFriendly) {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "x-1 = 4"
+            check { toExpr = "SetSolution[x : {5}]" }
+        }
 
     @Test
-    fun `a-x=b`() = testMethodInX(Preset.GMFriendly) {
-        method = EquationsPlans.SolveEquation
-        inputExpr = "5-x = 7"
-        check { toExpr = "SetSolution[x : {-2}]" }
-    }
+    fun `a-x=b`() =
+        testMethodInX(Preset.GMFriendly) {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "5-x = 7"
+            check { toExpr = "SetSolution[x : {-2}]" }
+        }
 
     @Test
-    fun `-x+a=-b`() = testMethodInX(Preset.GMFriendly) {
-        method = EquationsPlans.SolveEquation
-        inputExpr = "-x+1 = -10"
-        check { toExpr = "SetSolution[x : {11}]" }
-    }
+    fun `-x+a=-b`() =
+        testMethodInX(Preset.GMFriendly) {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "-x+1 = -10"
+            check { toExpr = "SetSolution[x : {11}]" }
+        }
 
     @Test
-    fun `-x-a=b`() = testMethodInX(Preset.GMFriendly) {
-        method = EquationsPlans.SolveEquation
-        inputExpr = "-x-1 = 1"
-        check { toExpr = "SetSolution[x : {-2}]" }
-    }
+    fun `-x-a=b`() =
+        testMethodInX(Preset.GMFriendly) {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "-x-1 = 1"
+            check { toExpr = "SetSolution[x : {-2}]" }
+        }
 
     @Test
-    fun `-x-a=-b`() = testMethodInX(Preset.GMFriendly) {
-        method = EquationsPlans.SolveEquation
-        inputExpr = "-x-3 = -5"
-        check { toExpr = "SetSolution[x : {2}]" }
-    }
+    fun `-x-a=-b`() =
+        testMethodInX(Preset.GMFriendly) {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "-x-3 = -5"
+            check { toExpr = "SetSolution[x : {2}]" }
+        }
 
     @Test
-    fun `x+a=a`() = testMethodInX(Preset.GMFriendly) {
-        method = EquationsPlans.SolveEquation
-        inputExpr = "x+3 = 3"
-        check { toExpr = "SetSolution[x : {0}]" }
-    }
+    fun `x+a=a`() =
+        testMethodInX(Preset.GMFriendly) {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "x+3 = 3"
+            check { toExpr = "SetSolution[x : {0}]" }
+        }
 }

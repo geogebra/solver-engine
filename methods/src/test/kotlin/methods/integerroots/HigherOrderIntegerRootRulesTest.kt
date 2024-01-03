@@ -7,7 +7,6 @@ import methods.integerroots.IntegerRootsRules.TurnPowerOfRootToRootOfPower
 import org.junit.jupiter.api.Test
 
 class HigherOrderIntegerRootRulesTest {
-
     @Test
     fun testTurnPowerOfRootToRootOfPower() {
         testRule(

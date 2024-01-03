@@ -7,7 +7,6 @@ import engine.context.Context
  * expression being constant (e.g. it has no variables or its only variables belong to a list of "constant variables").
  */
 fun interface ConstantChecker {
-
     /**
      * Return true if [expression] is considered to be constant in the given [context]
      */

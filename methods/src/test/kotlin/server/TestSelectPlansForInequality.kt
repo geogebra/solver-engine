@@ -4,7 +4,6 @@ import methods.inequalities.InequalitiesPlans
 import org.junit.jupiter.api.Test
 
 class TestSelectPlansForInequality {
-
     @Test
     fun `test constant inequality`() {
         testSelectPlanApi(

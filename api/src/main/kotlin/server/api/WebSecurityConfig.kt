@@ -10,7 +10,6 @@ import org.springframework.web.cors.CorsConfiguration
 @Configuration
 @ConfigurationProperties("api.web-security")
 data class WebSecurityConfig(var allowedOrigins: List<String> = emptyList()) {
-
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http.csrf().disable()

@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 class TestRecurringDecimal {
-
     @Test
     fun testExpand() {
         assertEquals("0.66[6]", RecurringDecimal("0.6", 1).expand(3).toString())

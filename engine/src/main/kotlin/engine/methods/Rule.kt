@@ -17,7 +17,6 @@ class Rule(
     val pattern: Pattern,
     val transformation: RuleResultBuilder.() -> Transformation?,
 ) : Runner {
-
     override fun run(ctx: Context, sub: Expression): Transformation? {
         val expression = if (sub is ExpressionWithConstraint) sub.expression else sub
 
@@ -34,16 +33,17 @@ class Rule(
 }
 
 class RuleBuilder {
-    fun onPattern(pattern: Pattern, result: RuleResultBuilder.() -> Transformation?): Rule =
-        Rule(pattern, result)
+    fun onPattern(pattern: Pattern, result: RuleResultBuilder.() -> Transformation?): Rule = Rule(pattern, result)
 
     fun onEquation(lhs: Pattern, rhs: Pattern, result: RuleResultBuilder.() -> Transformation?): Rule =
-        Rule(equationOf(lhs, rhs), result)
+        Rule(
+            equationOf(lhs, rhs),
+            result,
+        )
 }
 
 class RuleResultBuilder(ctx: Context, expression: Expression, match: Match) :
     MappedExpressionBuilder(ctx, expression, match) {
-
     @Suppress("LongParameterList")
     fun ruleResult(
         toExpr: Expression,

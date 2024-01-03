@@ -18,7 +18,6 @@ import methods.integerroots.IntegerRootsRules.SplitRootOfProduct
 import org.junit.jupiter.api.Test
 
 class IntegerRootsRulesTest {
-
     @Test
     fun testSimplifyRootOfOne() {
         testRule("sqrt[1]", SimplifyRootOfOne, "1")

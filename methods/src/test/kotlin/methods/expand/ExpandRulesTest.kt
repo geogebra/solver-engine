@@ -16,7 +16,6 @@ import methods.expand.ExpandRules.ExpandTrinomialSquaredUsingIdentity
 import org.junit.jupiter.api.Test
 
 class ExpandRulesTest {
-
     @Test
     fun testExpandBinomialSquaredUsingIdentity() {
         testRule(

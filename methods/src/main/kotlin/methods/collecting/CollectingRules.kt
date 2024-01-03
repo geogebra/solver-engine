@@ -177,10 +177,7 @@ private class CollectLikeTermsRule(
  * E.g. when the common pattern matches roots:
  *  3 sqrt[2] + sqrt[3] + 5 sqrt[2] -> 8 sqrt[2] + sqrt[3]
  */
-private fun createCombineSimpleLikeTermsRule(
-    commonPattern: Pattern,
-    explanationKey: MetadataKey,
-): Rule {
+private fun createCombineSimpleLikeTermsRule(commonPattern: Pattern, explanationKey: MetadataKey): Rule {
     return rule {
         val t1 = withOptionalIntegerCoefficient(commonPattern, false)
         val t2 = withOptionalIntegerCoefficient(commonPattern, false)

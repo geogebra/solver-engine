@@ -45,7 +45,6 @@ class PartialExpressionTaskSet(
     private val skillMakers: List<MetadataMaker>?,
     private val tasksProducer: TasksProducer,
 ) : CompositeMethod() {
-
     private val regularTaskSet = TaskSet(pattern, explanationMaker, skillMakers, tasksProducer)
 
     override fun run(ctx: Context, sub: Expression): Transformation? {
@@ -86,7 +85,6 @@ class PartialExpressionTaskSet(
 }
 
 class TaskSetBuilder : CompositeMethodBuilder() {
-
     fun tasks(init: TasksBuilder.() -> List<Task>?): TaskSet {
         return TaskSet(
             pattern = pattern,

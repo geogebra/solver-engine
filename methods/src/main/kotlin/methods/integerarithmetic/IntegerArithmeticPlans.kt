@@ -163,16 +163,17 @@ enum class IntegerArithmeticPlans(override val runner: CompositeMethod) : Runner
     ),
 }
 
-fun Expression.hasArithmeticOperation() = when (this) {
-    is Minus -> true
-    is Plus -> true
-    is DivideBy -> true
-    is Sum -> true
-    is IntegerExpression -> true
-    is Power -> true
-    is Product -> true
-    else -> false
-}
+fun Expression.hasArithmeticOperation() =
+    when (this) {
+        is Minus -> true
+        is Plus -> true
+        is DivideBy -> true
+        is Sum -> true
+        is IntegerExpression -> true
+        is Power -> true
+        is Product -> true
+        else -> false
+    }
 
 private fun Expression.isArithmeticExpression(): Boolean {
     return hasArithmeticOperation() && children.all { it.isArithmeticExpression() }

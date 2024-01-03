@@ -5,7 +5,9 @@ data class SettingValue(val name: String)
 interface SettingKind {
     val default: SettingValue
     val settingValues: List<SettingValue>
+
     fun fromName(name: String) = settingValues.firstOrNull { it.name == name }
+
     fun get(m: Map<SettingKind, SettingValue>) = m[this] ?: default
 }
 

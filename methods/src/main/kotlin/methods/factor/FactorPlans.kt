@@ -49,18 +49,18 @@ import methods.simplify.algebraicSimplificationSteps
 import java.math.BigInteger
 
 enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
-
     FactorGreatestCommonFactor(
         plan {
             explanation = Explanation.FactorGreatestCommonFactor
             pattern = sumContaining()
 
             // start by factoring the entire sum, then factor from what's left of the sum
-            fun extractLastFactor(exp: Expression): Expression = when (exp) {
-                is Minus -> extractLastFactor(exp.argument)
-                is Product -> exp.children.last()
-                else -> exp
-            }
+            fun extractLastFactor(exp: Expression): Expression =
+                when (exp) {
+                    is Minus -> extractLastFactor(exp.argument)
+                    is Product -> exp.children.last()
+                    else -> exp
+                }
 
             // 77x + 110y + 165z
             // 11(7x + 5(2y + 3z))

@@ -13,12 +13,11 @@ interface Logger {
  * A logger instance that does nothing
  */
 object DefaultLogger : Logger {
-
     override fun log(level: Level, depth: Int, string: String) {
         // Do nothing
     }
 
-    override fun <T>log(level: Level, depth: Int, supplier: Supplier<T>) {
+    override fun <T> log(level: Level, depth: Int, supplier: Supplier<T>) {
         // Do nothing
     }
 }

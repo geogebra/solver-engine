@@ -14,7 +14,6 @@ import server.models.Task
 import server.models.Transformation
 
 class TransformationModeller(val format: Format) {
-
     fun modelTransformation(trans: engine.steps.Transformation): Transformation {
         return Transformation(
             type = trans.type.toString(),

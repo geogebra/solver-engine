@@ -81,7 +81,6 @@ import methods.solvable.extractSumTermsFromSolvable
 import java.math.BigInteger
 
 enum class EquationsRules(override val runner: Rule) : RunnerMethod {
-
     CollectLikeTermsToTheLeft(
         rule {
             val variable = ArbitraryVariablePattern()

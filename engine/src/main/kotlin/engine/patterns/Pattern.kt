@@ -5,7 +5,6 @@ import engine.expressions.Expression
 import engine.expressions.New
 
 interface ExpressionProvider {
-
     /**
      * Returns a list of [Expression] objects from the root of
      * the tree to the where the pattern is present in the
@@ -33,7 +32,6 @@ private class WithinExpressionProvider(
     val expressionsToFilter: ExpressionProvider,
     val parent: ExpressionProvider,
 ) : ExpressionProvider {
-
     override fun getBoundExprs(m: Match): List<Expression> {
         val parentExpressionPath = parent.getBoundExpr(m)?.path
         return if (parentExpressionPath == null) {
@@ -93,7 +91,6 @@ interface SubstitutablePattern : Pattern {
  * A type of pattern which defines a basic way of matching - its [key] is always equal to the instance itself.
  */
 abstract class BasePattern : Pattern {
-
     internal abstract fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match>
 
     /**

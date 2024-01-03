@@ -6,7 +6,6 @@ import engine.steps.metadata.TranslationKeys
 
 @TranslationKeys
 enum class FractionArithmeticExplanation : CategorisedMetadataKey {
-
     /**
      * Rewrite
      *  a : (b / c) -> a * (c / b)

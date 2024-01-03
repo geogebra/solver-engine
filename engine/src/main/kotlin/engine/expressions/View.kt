@@ -7,11 +7,13 @@ import java.math.BigInteger
 
 interface View {
     val original: Expression
+
     fun recombine(): Expression?
 }
 
 interface IntegerView : View {
     val value: BigInteger
+
     fun changeValue(newValue: BigInteger)
 }
 
@@ -30,7 +32,6 @@ class CancellableView(override val original: Expression) : View {
 }
 
 class TermView<T : View>(override val original: Expression, factorViewCreator: (Expression) -> T) : View {
-
     private enum class TermSign(val of: (Expression) -> Expression) {
         PLUS({ it }),
         MINUS({ negOf(it) }),
@@ -79,7 +80,6 @@ class TermView<T : View>(override val original: Expression, factorViewCreator: (
 }
 
 class SumView<T : View>(override val original: Expression, factorViewCreator: (Expression) -> T) : View {
-
     private fun originalTerms() = if (original is Sum) original.terms else listOf(original)
 
     val termViews = originalTerms().map { TermView(it) { factor -> factorViewCreator(factor) } }

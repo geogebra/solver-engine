@@ -27,7 +27,6 @@ interface NumberPattern : Pattern, NumberProvider
 interface IntegerPattern : Pattern, IntegerProvider
 
 class UnsignedIntegerPattern : IntegerPattern, BasePattern() {
-
     fun getBoundInt(m: Match, default: BigInteger): BigInteger {
         return when (val expr = m.getBoundExpr(this)) {
             null -> default
@@ -52,7 +51,6 @@ class UnsignedIntegerPattern : IntegerPattern, BasePattern() {
 }
 
 class UnsignedNumberPattern : NumberPattern, BasePattern() {
-
     override fun getBoundNumber(m: Match): BigDecimal {
         return when (val expr = m.getBoundExpr(this)!!) {
             is DecimalExpression -> expr.value
@@ -71,7 +69,6 @@ class UnsignedNumberPattern : NumberPattern, BasePattern() {
 }
 
 class RecurringDecimalPattern : BasePattern() {
-
     fun getBoundRecurringDecimal(m: Match): RecurringDecimal {
         return when (val expr = m.getBoundExpr(this)!!) {
             is RecurringDecimalExpression -> expr.value
@@ -109,7 +106,6 @@ class IntegerProviderWithDefault(
     private val default: BigInteger,
     private val optionalSign: OptionalNegPattern<*>? = null,
 ) : ProviderWithDefault(integerProvider, xp(default)), IntegerProvider {
-
     override fun getBoundInt(m: Match): BigInteger {
         return if (integerProvider.getBoundExpr(m) != null) {
             val int = integerProvider.getBoundInt(m)

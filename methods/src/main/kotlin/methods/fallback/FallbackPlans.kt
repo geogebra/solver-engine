@@ -26,7 +26,6 @@ import methods.integerarithmetic.IntegerArithmeticPlans
 import methods.simplify.SimplifyPlans
 
 enum class FallbackPlans(override val runner: CompositeMethod) : RunnerMethod {
-
     // Users shouldn't call this method
     @PublicMethod(hiddenFromList = true)
     QuadraticIsIrreducible(

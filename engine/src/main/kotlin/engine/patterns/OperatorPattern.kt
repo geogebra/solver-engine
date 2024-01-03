@@ -50,17 +50,13 @@ data class OperatorPattern internal constructor(
 fun fractionOf(numerator: Pattern, denominator: Pattern) =
     OperatorPattern(BinaryExpressionOperator.Fraction, listOf(numerator, denominator))
 
-fun divideBy(divisor: Pattern) =
-    OperatorPattern(UnaryExpressionOperator.DivideBy, listOf(divisor))
+fun divideBy(divisor: Pattern) = OperatorPattern(UnaryExpressionOperator.DivideBy, listOf(divisor))
 
-fun powerOf(base: Pattern, exponent: Pattern) =
-    OperatorPattern(BinaryExpressionOperator.Power, listOf(base, exponent))
+fun powerOf(base: Pattern, exponent: Pattern) = OperatorPattern(BinaryExpressionOperator.Power, listOf(base, exponent))
 
-fun squareRootOf(radicand: Pattern) =
-    OperatorPattern(UnaryExpressionOperator.SquareRoot, listOf(radicand))
+fun squareRootOf(radicand: Pattern) = OperatorPattern(UnaryExpressionOperator.SquareRoot, listOf(radicand))
 
-fun absoluteValueOf(argument: Pattern) =
-    OperatorPattern(UnaryExpressionOperator.AbsoluteValue, listOf(argument))
+fun absoluteValueOf(argument: Pattern) = OperatorPattern(UnaryExpressionOperator.AbsoluteValue, listOf(argument))
 
 fun mixedNumberOf(
     integer: UnsignedIntegerPattern = UnsignedIntegerPattern(),
@@ -69,35 +65,52 @@ fun mixedNumberOf(
 ) = OperatorPattern(MixedNumberOperator, listOf(integer, numerator, denominator))
 
 fun plusOf(operand: Pattern) = OperatorPattern(UnaryExpressionOperator.Plus, listOf(operand))
+
 fun negOf(operand: Pattern) = OperatorPattern(UnaryExpressionOperator.Minus, listOf(operand))
+
 fun plusMinusOf(operand: Pattern) = OperatorPattern(UnaryExpressionOperator.PlusMinus, listOf(operand))
 
 fun equationOf(lhs: Pattern, rhs: Pattern) = OperatorPattern(ComparisonOperator(Comparator.Equal), listOf(lhs, rhs))
+
 fun inequationOf(lhs: Pattern, rhs: Pattern) =
-    OperatorPattern(ComparisonOperator(Comparator.NotEqual), listOf(lhs, rhs))
+    OperatorPattern(
+        ComparisonOperator(Comparator.NotEqual),
+        listOf(lhs, rhs),
+    )
 
 fun addEquationsOf(eq1: Pattern, eq2: Pattern) = OperatorPattern(AddEquationsOperator, listOf(eq1, eq2))
+
 fun subtractEquationsOf(eq1: Pattern, eq2: Pattern) = OperatorPattern(SubtractEquationsOperator, listOf(eq1, eq2))
 
 fun setSolutionOf(variable: Pattern, solution: Pattern) =
-    OperatorPattern(SolutionOperator.SetSolution, listOf(variable, solution))
+    OperatorPattern(
+        SolutionOperator.SetSolution,
+        listOf(variable, solution),
+    )
 
 fun contradictionOf(variables: Pattern, expr: Pattern = AnyPattern()) =
     OperatorPattern(SolutionOperator.Contradiction, listOf(variables, expr))
 
 fun identityOf(variables: Pattern, expr: Pattern = AnyPattern()) =
-    OperatorPattern(SolutionOperator.Identity, listOf(variables, expr))
+    OperatorPattern(
+        SolutionOperator.Identity,
+        listOf(variables, expr),
+    )
 
 fun variableListOf(items: List<Pattern>) = OperatorPattern(VariableListOperator, items)
+
 fun variableListOf(vararg items: Pattern) = variableListOf(items.asList())
 
 fun solutionSetOf(vararg elements: Pattern) = OperatorPattern(SetOperators.FiniteSet, elements.asList())
 
 fun openIntervalOf(lhs: Pattern, rhs: Pattern) =
     OperatorPattern(IntervalOperator(closedLeft = false, closedRight = false), listOf(lhs, rhs))
+
 fun openClosedIntervalOf(lhs: Pattern, rhs: Pattern) =
     OperatorPattern(IntervalOperator(closedLeft = false, closedRight = true), listOf(lhs, rhs))
+
 fun closedOpenIntervalOf(lhs: Pattern, rhs: Pattern) =
     OperatorPattern(IntervalOperator(closedLeft = true, closedRight = false), listOf(lhs, rhs))
+
 fun closedIntervalOf(lhs: Pattern, rhs: Pattern) =
     OperatorPattern(IntervalOperator(closedLeft = true, closedRight = true), listOf(lhs, rhs))

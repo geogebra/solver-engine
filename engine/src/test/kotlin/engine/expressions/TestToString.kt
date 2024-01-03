@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test
 import parser.parseExpression
 
 class TestToString {
-
     fun test(text: String, solver: String, latex: String) {
         val expr = parseExpression(text)
         assertEquals(solver, expr.toString(), "solver string incorrect")

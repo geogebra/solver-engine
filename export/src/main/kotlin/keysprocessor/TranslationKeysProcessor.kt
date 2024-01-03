@@ -27,7 +27,6 @@ class TranslationKeysProcessor(
     private val codeGenerator: CodeGenerator,
     val logger: KSPLogger,
 ) : SymbolProcessor {
-
     private lateinit var file: OutputStream
     private var invoked = false
 
@@ -86,9 +85,7 @@ class TranslationKeysProcessor(
 }
 
 class TranslationKeysProcessorProvider : SymbolProcessorProvider {
-    override fun create(
-        environment: SymbolProcessorEnvironment,
-    ): SymbolProcessor {
+    override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
         return TranslationKeysProcessor(environment.codeGenerator, environment.logger)
     }
 }

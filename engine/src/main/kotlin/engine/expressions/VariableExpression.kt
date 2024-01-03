@@ -10,10 +10,10 @@ class Variable(
     val subscript: String? = null,
     meta: NodeMeta = BasicMeta(),
 ) : ValueExpression(
-    operator = VariableOperator(variableName, subscript),
-    operands = listOf(),
-    meta = meta,
-) {
+        operator = VariableOperator(variableName, subscript),
+        operands = listOf(),
+        meta = meta,
+    ) {
     override fun signOf() = Sign.UNKNOWN
 
     override fun fillJson(s: MutableMap<String, Any>) {

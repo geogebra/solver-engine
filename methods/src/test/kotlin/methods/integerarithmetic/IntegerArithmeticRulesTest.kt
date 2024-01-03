@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test
 import engine.methods.SerializedGmAction as GmAction
 
 class IntegerArithmeticRulesTest {
-
     @Test
     fun testEvaluateSignedIntegerAddition() {
         testRule("5 - 4", EvaluateSignedIntegerAddition, "1", GmAction("Drag", "./1:group", "./0:group"))

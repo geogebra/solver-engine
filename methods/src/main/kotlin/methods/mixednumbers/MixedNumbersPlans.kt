@@ -15,7 +15,6 @@ import methods.general.GeneralRules
 import methods.integerarithmetic.IntegerArithmeticRules
 
 enum class MixedNumbersPlans(override val runner: CompositeMethod) : RunnerMethod {
-
     ConvertMixedNumbersToSums(
         plan {
             explanation = Explanation.ConvertMixedNumbersToSums

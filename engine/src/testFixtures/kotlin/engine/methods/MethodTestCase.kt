@@ -80,7 +80,13 @@ open class PathMappingsCheck(mappings: List<PathMapping>, private val rootPath: 
     }
 
     fun shift(fromPath: String, toPath: String) {
-        addPathMapping(PathMapping(listOf(parsePathAndScope(fromPath)), PathMappingType.Shift, listOf(parsePathAndScope((toPath)))))
+        addPathMapping(
+            PathMapping(
+                listOf(parsePathAndScope(fromPath)),
+                PathMappingType.Shift,
+                listOf(parsePathAndScope((toPath))),
+            ),
+        )
     }
 
     fun move(init: PathMappingPathsBuilder.() -> Unit) {
@@ -88,7 +94,9 @@ open class PathMappingsCheck(mappings: List<PathMapping>, private val rootPath: 
     }
 
     fun move(fromPath: String, toPath: String) {
-        addPathMapping(PathMapping(listOf(parsePathAndScope(fromPath)), PathMappingType.Move, listOf(parsePathAndScope((toPath)))))
+        addPathMapping(
+            PathMapping(listOf(parsePathAndScope(fromPath)), PathMappingType.Move, listOf(parsePathAndScope((toPath)))),
+        )
     }
 
     fun keep(vararg paths: String) {
@@ -110,7 +118,13 @@ open class PathMappingsCheck(mappings: List<PathMapping>, private val rootPath: 
     }
 
     fun transform(fromPath: String, toPath: String) {
-        addPathMapping(PathMapping(listOf(parsePathAndScope(fromPath)), PathMappingType.Transform, listOf(parsePathAndScope((toPath)))))
+        addPathMapping(
+            PathMapping(
+                listOf(parsePathAndScope(fromPath)),
+                PathMappingType.Transform,
+                listOf(parsePathAndScope((toPath))),
+            ),
+        )
     }
 
     fun cancel(vararg paths: String) {
@@ -136,7 +150,6 @@ open class PathMappingsCheck(mappings: List<PathMapping>, private val rootPath: 
 
 class MappedExpressionCheck(private val mappedExpression: Expression, rootPath: Path) :
     PathMappingsCheck(mappedExpression.mergedPathMappings(), rootPath) {
-
     var expr: String?
         get() = null
         set(value) {
@@ -415,11 +428,9 @@ fun interface SolutionProcessor {
     fun processSolution(context: Context, input: String, method: Method, solution: Transformation?)
 }
 
-private fun Transformation.isThroughStep() =
-    steps?.let { it.size == 1 && it[0].fromExpr == fromExpr } ?: false
+private fun Transformation.isThroughStep() = steps?.let { it.size == 1 && it[0].fromExpr == fromExpr } ?: false
 
-private fun Transformation.isInvisibleStep() =
-    tags?.contains(Transformation.Tag.InvisibleChange) ?: false
+private fun Transformation.isInvisibleStep() = tags?.contains(Transformation.Tag.InvisibleChange) ?: false
 
 private fun checkTransformation(trans: Transformation?, assert: TransformationCheck.() -> Unit) {
     if (trans != null && trans.isThroughStep()) {

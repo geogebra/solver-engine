@@ -13,12 +13,12 @@ plugins {
 }
 
 dependencies {
-    antlr("org.antlr:antlr4:4.10.1")
+    antlr("org.antlr:antlr4:4.12.0")
 
     testFixturesImplementation(kotlin("test"))
     testImplementation(kotlin("test"))
-    testFixturesImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")
+    testFixturesImplementation("org.junit.jupiter:junit-jupiter-params:5.9.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.2")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
     testFixturesImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
     testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.38.0")
@@ -54,5 +54,5 @@ tasks.generateGrammarSource {
 
 detekt {
     buildUponDefaultConfig = true
-    config = files("$rootDir/config/detekt.yaml")
+    config.setFrom(files("$rootDir/config/detekt.yaml"))
 }

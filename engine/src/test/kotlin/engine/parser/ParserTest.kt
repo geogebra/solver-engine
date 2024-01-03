@@ -66,11 +66,11 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFails
 
 class ParserTest {
-
-    private fun rawSumOf(vararg terms: Expression) = expressionOf(
-        SumOperator,
-        terms.asList(),
-    )
+    private fun rawSumOf(vararg terms: Expression) =
+        expressionOf(
+            SumOperator,
+            terms.asList(),
+        )
 
     private fun rawPartialSumOf(vararg terms: Expression) = rawSumOf(*terms).decorate(Decorator.PartialBracket)
 

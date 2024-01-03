@@ -58,7 +58,6 @@ import methods.solvable.computeOverallUnionSolution
 import methods.solvable.evaluateBothSidesNumerically
 
 enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
-
     SimplifyByEliminatingConstantFactorOfLhsWithZeroRhs(
         plan {
             explanation = Explanation.SimplifyByEliminatingConstantFactorOfLhsWithZeroRhs
@@ -388,10 +387,8 @@ val solveConstantEquationSteps = steps {
 }
 
 val solveEquationPlan = object : CompositeMethod() {
-
     // Can't be a rule since rules have been changed to apply only on the expression not the constraint
     private val mergeConstraintsRule = object : Method {
-
         override fun tryExecute(ctx: Context, sub: Expression): Transformation? {
             if (sub !is ExpressionWithConstraint) return null
             val innerExpression = sub.expression

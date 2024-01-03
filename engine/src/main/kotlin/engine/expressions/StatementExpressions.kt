@@ -13,10 +13,10 @@ open class Comparison(
     rhs: Expression,
     meta: NodeMeta = BasicMeta(),
 ) : Expression(
-    operator = ComparisonOperator(comparator),
-    operands = listOf(lhs, rhs),
-    meta = meta,
-) {
+        operator = ComparisonOperator(comparator),
+        operands = listOf(lhs, rhs),
+        meta = meta,
+    ) {
     val lhs get() = firstChild
     val rhs get() = secondChild
 
@@ -51,11 +51,11 @@ class Inequality(
     rhs: Expression,
     meta: NodeMeta = BasicMeta(),
 ) : Comparison(
-    lhs = lhs,
-    comparator = comparator,
-    rhs = rhs,
-    meta = meta,
-)
+        lhs = lhs,
+        comparator = comparator,
+        rhs = rhs,
+        meta = meta,
+    )
 
 class DoubleInequality(
     first: Expression,
@@ -65,10 +65,10 @@ class DoubleInequality(
     third: Expression,
     meta: NodeMeta = BasicMeta(),
 ) : Expression(
-    operator = DoubleComparisonOperator(leftComparator, rightComparator),
-    operands = listOf(first, second, third),
-    meta = meta,
-) {
+        operator = DoubleComparisonOperator(leftComparator, rightComparator),
+        operands = listOf(first, second, third),
+        meta = meta,
+    ) {
     private val first get() = firstChild
     private val second get() = secondChild
     private val third get() = thirdChild

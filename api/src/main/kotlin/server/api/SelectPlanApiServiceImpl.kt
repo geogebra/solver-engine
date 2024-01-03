@@ -15,7 +15,6 @@ import kotlin.time.measureTimedValue
 
 @Service
 class SelectPlanApiServiceImpl : SelectPlansApiService {
-
     override fun selectPlans(solveRequest: SolveRequest): List<PlanSelection> {
         val expr = try {
             parseExpression(solveRequest.input)

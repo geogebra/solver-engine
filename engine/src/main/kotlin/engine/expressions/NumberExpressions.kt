@@ -15,10 +15,10 @@ class IntegerExpression(
     val value: BigInteger,
     meta: NodeMeta = BasicMeta(),
 ) : ValueExpression(
-    operator = IntegerOperator(value),
-    operands = emptyList(),
-    meta,
-) {
+        operator = IntegerOperator(value),
+        operands = emptyList(),
+        meta,
+    ) {
     override fun signOf() = Sign.fromInt(value.signum())
 
     override fun fillJson(s: MutableMap<String, Any>) {
@@ -31,10 +31,10 @@ class DecimalExpression(
     val value: BigDecimal,
     meta: NodeMeta = BasicMeta(),
 ) : ValueExpression(
-    operator = DecimalOperator(value),
-    operands = emptyList(),
-    meta,
-) {
+        operator = DecimalOperator(value),
+        operands = emptyList(),
+        meta,
+    ) {
     override fun signOf() = Sign.fromInt(value.signum())
 
     override fun fillJson(s: MutableMap<String, Any>) {
@@ -47,10 +47,10 @@ class RecurringDecimalExpression(
     val value: RecurringDecimal,
     meta: NodeMeta = BasicMeta(),
 ) : ValueExpression(
-    operator = RecurringDecimalOperator(value),
-    operands = emptyList(),
-    meta,
-) {
+        operator = RecurringDecimalOperator(value),
+        operands = emptyList(),
+        meta,
+    ) {
     override fun signOf() = Sign.POSITIVE // If it was 0, it would not be recurring
 
     override fun fillJson(s: MutableMap<String, Any>) {
@@ -65,29 +65,29 @@ class MixedNumberExpression(
     val denominator: IntegerExpression,
     meta: NodeMeta = BasicMeta(),
 ) : ValueExpression(
-    operator = MixedNumberOperator,
-    operands = listOf(integerPart, numerator, denominator),
-    meta,
-) {
+        operator = MixedNumberOperator,
+        operands = listOf(integerPart, numerator, denominator),
+        meta,
+    ) {
     override fun signOf() = Sign.POSITIVE // If it was 0, it would not be a mixed number
 }
 
 class PiExpression(
     meta: NodeMeta = BasicMeta(),
 ) : ValueExpression(
-    operator = PiOperator,
-    operands = emptyList(),
-    meta = meta,
-) {
+        operator = PiOperator,
+        operands = emptyList(),
+        meta = meta,
+    ) {
     override fun signOf() = Sign.POSITIVE
 }
 
 class EulerEExpression(
     meta: NodeMeta = BasicMeta(),
 ) : ValueExpression(
-    operator = EulerEOperator,
-    operands = emptyList(),
-    meta = meta,
-) {
+        operator = EulerEOperator,
+        operands = emptyList(),
+        meta = meta,
+    ) {
     override fun signOf() = Sign.POSITIVE
 }

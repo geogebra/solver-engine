@@ -1068,7 +1068,6 @@ class GeneralRulesTest {
 }
 
 class PseudoDegreeComparatorTest {
-
     /**
      * Utility function to test the ordering of two expressions.
      * Checks if e1 is smaller than e2 regardless of their input order.

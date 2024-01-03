@@ -139,7 +139,6 @@ interface SolvableExplanation : CategorisedMetadataKey {
  * Enum classes that incarnate [SolvableKey] should provide a companion object that inherits from this class.
  */
 open class SolvableKeyGetter(solvableExplanations: List<SolvableExplanation>) {
-
     private data class ExplanationKey(val key: SolvableKey, val simplify: Boolean, val flipSign: Boolean)
 
     private val explanations = mutableMapOf<ExplanationKey, SolvableExplanation>()
@@ -177,7 +176,6 @@ enum class EquationsExplanation(
     override val simplify: Boolean = false,
     override val flipSign: Boolean = false,
 ) : SolvableExplanation {
-
     /**
      * Cancel common terms on both sides of the equation.
      *
@@ -559,7 +557,6 @@ enum class InequalitiesExplanation(
     override val simplify: Boolean = false,
     override val flipSign: Boolean = false,
 ) : SolvableExplanation {
-
     /**
      * Cancel common terms on both sides of the inequality.
      *

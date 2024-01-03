@@ -60,7 +60,6 @@ import java.math.BigInteger
 import engine.steps.metadata.GmPathModifier as PM
 
 enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
-
     RewriteDivisionAsMultiplicationByReciprocal(
         rule {
             val product = productContaining()
@@ -817,18 +816,20 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
     ),
 }
 
-private fun Expression.canBeTurnedToFraction(): Boolean = when (this) {
-    is Fraction -> false
-    is Power -> firstChild.canBeTurnedToFraction()
-    // is NullaryOperator -> true
-    else -> children.all { it.canBeTurnedToFraction() }
-}
+private fun Expression.canBeTurnedToFraction(): Boolean =
+    when (this) {
+        is Fraction -> false
+        is Power -> firstChild.canBeTurnedToFraction()
+        // is NullaryOperator -> true
+        else -> children.all { it.canBeTurnedToFraction() }
+    }
 
-private fun getView(e: Expression) = if (e is IntegerExpression) {
-    IntegerFactorView(e)
-} else {
-    DefaultView(e)
-}
+private fun getView(e: Expression) =
+    if (e is IntegerExpression) {
+        IntegerFactorView(e)
+    } else {
+        DefaultView(e)
+    }
 
 private val factorGreatestCommonIntegerFactorInFraction = rule {
     val pattern = condition(fractionOf(AnyPattern(), AnyPattern())) { it.firstChild is Sum || it.secondChild is Sum }

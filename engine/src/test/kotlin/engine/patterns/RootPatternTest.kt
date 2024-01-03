@@ -9,7 +9,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class RootPatternTest {
-
     @Test
     fun testMatchesBothSquareAndHigherOrderRoot() {
         val pattern = rootOf(AnyPattern())

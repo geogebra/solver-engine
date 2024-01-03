@@ -19,7 +19,6 @@ import java.io.OutputStream
  * object in the [methods] package which registers all translation keys with a temporary legacy name.
  */
 class LegacyKeyNameProcessor(private val codeGenerator: CodeGenerator) : SymbolProcessor {
-
     private lateinit var file: OutputStream
     private var invoked = false
 
@@ -81,7 +80,6 @@ class LegacyKeyNameProcessor(private val codeGenerator: CodeGenerator) : SymbolP
     }
 
     private inner class PublicMethodVisitor : KSDefaultVisitor<Unit, Entry>() {
-
         override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit): Entry {
             val parentDeclaration = classDeclaration.parentDeclaration
             val qualifiedName = classDeclaration.qualifiedName
@@ -100,10 +98,11 @@ class LegacyKeyNameProcessor(private val codeGenerator: CodeGenerator) : SymbolP
             throw invalidNodeError(node)
         }
 
-        private fun invalidNodeError(node: KSNode) = InvalidPublicMethodException(
-            "The object at ${node.location} is not a valid target for @PublicMethod. " +
-                "Annotated object must be an enum entry.",
-        )
+        private fun invalidNodeError(node: KSNode) =
+            InvalidPublicMethodException(
+                "The object at ${node.location} is not a valid target for @PublicMethod. " +
+                    "Annotated object must be an enum entry.",
+            )
     }
 }
 
@@ -115,9 +114,7 @@ private data class Entry(
 class InvalidPublicMethodException(msg: String) : Exception(msg)
 
 class LegacyKeyNameProcessorProvider : SymbolProcessorProvider {
-    override fun create(
-        environment: SymbolProcessorEnvironment,
-    ): SymbolProcessor {
+    override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
         return LegacyKeyNameProcessor(environment.codeGenerator)
     }
 }

@@ -7,7 +7,6 @@ import methods.polynomials.PolynomialRules.RearrangeProductOfMonomials
 import org.junit.jupiter.api.Test
 
 class PolynomialsRulesTest {
-
     @Test
     fun testRearrangeProductOfMonomials() {
         testRule("3 x y", RearrangeProductOfMonomials, null)

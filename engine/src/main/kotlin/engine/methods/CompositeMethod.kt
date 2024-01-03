@@ -17,7 +17,6 @@ import engine.steps.metadata.MetadataMaker
 abstract class CompositeMethod(
     val specificPlans: List<Method> = emptyList(),
 ) : Method, Runner {
-
     override fun tryExecute(ctx: Context, sub: Expression): Transformation? {
         ctx.requireActive()
         return run(ctx, sub)

@@ -13,22 +13,19 @@ import java.util.function.Supplier
 import java.util.logging.Level
 import kotlin.reflect.KClass
 
-internal fun getContext(
-    apiCtx: server.models.Context?,
-    variables: Set<String>,
-    logger: Logger,
-) = apiCtx?.let {
-    Context(
-        settings = getSettings(apiCtx.presets, apiCtx.settings),
-        precision = apiCtx.precision?.toInt(),
-        solutionVariables = getSolutionVariables(variables, apiCtx.solutionVariable),
-        preferredStrategies = apiCtx.preferredStrategies?.let { getStrategies(it) } ?: emptyMap(),
+internal fun getContext(apiCtx: server.models.Context?, variables: Set<String>, logger: Logger) =
+    apiCtx?.let {
+        Context(
+            settings = getSettings(apiCtx.presets, apiCtx.settings),
+            precision = apiCtx.precision?.toInt(),
+            solutionVariables = getSolutionVariables(variables, apiCtx.solutionVariable),
+            preferredStrategies = apiCtx.preferredStrategies?.let { getStrategies(it) } ?: emptyMap(),
+            logger = ContextLogger(logger),
+        )
+    } ?: Context(
+        solutionVariables = listOfNotNull(variables.firstOrNull()),
         logger = ContextLogger(logger),
     )
-} ?: Context(
-    solutionVariables = listOfNotNull(variables.firstOrNull()),
-    logger = ContextLogger(logger),
-)
 
 private fun getSolutionVariables(expressionVariables: Set<String>, contextVariables: String?): List<String> {
     val apiVariables = contextVariables?.split(",")?.map { it.trim() } ?: emptyList()
@@ -47,8 +44,10 @@ private fun getStrategies(contextStrategies: Map<String, String>): Map<KClass<ou
     }
 }
 
-private fun getSettings(contextPresets: List<String>?, contextSettings: Map<String, String>?):
-    Map<Setting, SettingValue> {
+private fun getSettings(
+    contextPresets: List<String>?,
+    contextSettings: Map<String, String>?,
+): Map<Setting, SettingValue> {
     val settings = mutableMapOf<Setting, SettingValue>()
 
     contextPresets?.forEach {
@@ -76,7 +75,7 @@ private class ContextLogger(val logger: Logger) : engine.logger.Logger {
         logger.log(convertLevel(level), indent + string)
     }
 
-    override fun <T>log(level: Level, depth: Int, supplier: Supplier<T>) {
+    override fun <T> log(level: Level, depth: Int, supplier: Supplier<T>) {
         logger.log(convertLevel(level)) {
             val msg = supplier.get()
             val indent = ". ".repeat(depth)

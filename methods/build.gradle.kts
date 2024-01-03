@@ -23,8 +23,8 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation(testFixtures(project(":engine")))
 
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")
-    testImplementation("org.junit.platform:junit-platform-launcher:1.7.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.2")
+    testImplementation("org.junit.platform:junit-platform-launcher:1.9.2")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
     ksp(project(":export"))
     ksp(project(":methodsProcessor"))
@@ -37,12 +37,16 @@ tasks.test {
 
 detekt {
     buildUponDefaultConfig = true
-    config = files("$rootDir/config/detekt.yaml")
+    config.setFrom(files("$rootDir/config/detekt.yaml"))
 }
 
 ktlint {
     filter {
         exclude {
+            // This needs to be modified as explained in
+            // https://docs.gradle.org/current/userguide/upgrading_version_8.html#project_builddir
+            // before upgrading to gradle 9. I am not trying to change it yet, hoping that future versions of gradle
+            // will offer a better upgrade path.
             it.file.path.contains("$buildDir")
         }
     }

@@ -13,19 +13,15 @@ import engine.patterns.sumContaining
 import engine.steps.metadata.metadata
 
 enum class FallbackRules(override val runner: Rule) : RunnerMethod {
-
     ExpressionIsFullySimplified(
         rule {
             val variablePattern = ArbitraryVariablePattern()
             val fullySimplifiedPtn = oneOf(
-
                 // Any constant expression, if SimplifyConstantExpression didn't apply then it means it's simplify
                 ConstantPattern(),
-
                 // A monomial with a constant coefficient, the coefficient must be simplified otherwise
                 // SimplifyAlgebraicExpressionInOneVariable would have applied.
                 monomialPattern(variablePattern),
-
                 // A sum of constant expressions and monomials of degree 1 in the same variable
                 condition(sumContaining(monomialPattern(variablePattern))) {
                     it.children.all { child ->

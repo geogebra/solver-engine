@@ -6,7 +6,6 @@ import engine.steps.metadata.TranslationKeys
 
 @TranslationKeys
 enum class CollectingExplanation : CategorisedMetadataKey {
-
     /**
      * Collect like roots in a sum
      * E.g. 2 + sqrt(3) - (2 / 3) * sqrt(3) + sqrt(2) + sqrt(3) / 2

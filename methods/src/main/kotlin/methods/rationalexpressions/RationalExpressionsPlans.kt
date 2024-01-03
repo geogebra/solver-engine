@@ -49,7 +49,6 @@ import methods.simplify.algebraicSimplificationSteps
 import java.math.BigInteger
 
 enum class RationalExpressionsPlans(override val runner: CompositeMethod) : RunnerMethod {
-
     FactorNumeratorOfFraction(
         plan {
             explanation = Explanation.FactorNumeratorOfFraction
@@ -347,12 +346,13 @@ fun computeLcdAndMultipliers(factoredFractions: List<Fraction>): Pair<Expression
 
 private data class FactorWithMultiplicity(val base: Expression, val exponent: BigInteger)
 
-private fun extractMultiplicity(exp: Expression) = when {
-    exp is IntegerExpression -> null
-    exp is Power && exp.exponent is IntegerExpression ->
-        FactorWithMultiplicity(exp.base, (exp.exponent as IntegerExpression).value)
-    else -> FactorWithMultiplicity(exp, BigInteger.ONE)
-}
+private fun extractMultiplicity(exp: Expression) =
+    when {
+        exp is IntegerExpression -> null
+        exp is Power && exp.exponent is IntegerExpression ->
+            FactorWithMultiplicity(exp.base, (exp.exponent as IntegerExpression).value)
+        else -> FactorWithMultiplicity(exp, BigInteger.ONE)
+    }
 
 /**
  * Compute the value x such that x * productOf([factors]) = productOf([lcmFactors])

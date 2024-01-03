@@ -25,7 +25,6 @@ import java.io.OutputStream
  * [mehods] package which registers all annotated entries as publicly available methods.
  */
 class MethodsProcessor(private val codeGenerator: CodeGenerator) : SymbolProcessor {
-
     private lateinit var file: OutputStream
     private var invoked = false
 
@@ -123,11 +122,13 @@ class MethodsProcessor(private val codeGenerator: CodeGenerator) : SymbolProcess
     }
 
     private inner class PublicMethodVisitor : KSDefaultVisitor<Unit, Entry>() {
-
         @OptIn(KspExperimental::class)
         override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit): Entry {
             val parentDeclaration = classDeclaration.parentDeclaration
-            if (classDeclaration.qualifiedName == null || parentDeclaration == null || parentDeclaration.qualifiedName == null) {
+            if (classDeclaration.qualifiedName == null ||
+                parentDeclaration == null ||
+                parentDeclaration.qualifiedName == null
+            ) {
                 throw invalidNodeError(classDeclaration)
             }
             val category = classDeclaration.parentDeclaration!!.qualifiedName!!
@@ -156,10 +157,11 @@ class MethodsProcessor(private val codeGenerator: CodeGenerator) : SymbolProcess
             throw invalidNodeError(node)
         }
 
-        private fun invalidNodeError(node: KSNode) = InvalidPublicMethodException(
-            "The object at ${node.location} is not a valid target for @PublicMethod. " +
-                "Annotated object must be an enum entry.",
-        )
+        private fun invalidNodeError(node: KSNode) =
+            InvalidPublicMethodException(
+                "The object at ${node.location} is not a valid target for @PublicMethod. " +
+                    "Annotated object must be an enum entry.",
+            )
     }
 }
 
@@ -171,18 +173,17 @@ private data class Entry(
     val description: String,
     val hiddenFromList: Boolean,
 ) {
-    fun getTranslationKey() = TranslationKey(
-        key = "Method.$category.$name",
-        comment = if (description == "") null else description,
-    )
+    fun getTranslationKey() =
+        TranslationKey(
+            key = "Method.$category.$name",
+            comment = if (description == "") null else description,
+        )
 }
 
 class InvalidPublicMethodException(msg: String) : Exception(msg)
 
 class MethodsProcessorProvider : SymbolProcessorProvider {
-    override fun create(
-        environment: SymbolProcessorEnvironment,
-    ): SymbolProcessor {
+    override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
         return MethodsProcessor(environment.codeGenerator)
     }
 }

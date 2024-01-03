@@ -6,7 +6,6 @@ import engine.steps.metadata.TranslationKeys
 
 @TranslationKeys
 enum class EquationsExplanation : CategorisedMetadataKey {
-
     /**
      * Simplify an equation so that
      * - opposite terms on the same side are cancelled first

@@ -5,7 +5,6 @@ import engine.expressions.Expression
 private const val SET_PRECEDENCE = 0
 
 internal enum class SetOperators : Operator {
-
     FiniteSet {
         override val arity = ARITY_VARIABLE
         override val kind = OperatorKind.SET
@@ -117,6 +116,7 @@ internal enum class SetOperators : Operator {
         }
 
         override fun <T> readableString(children: List<T>) = "/reals/"
+
         override fun latexString(ctx: RenderContext, children: List<LatexRenderable>) = "\\mathbb{R}"
     },
 }
@@ -150,6 +150,7 @@ internal object TupleOperator : Operator {
     override val precedence = 0
     override val arity = ARITY_VARIABLE_FROM_ZERO
     override val kind = OperatorKind.SET_ELEMENT
+
     override fun nthChildAllowed(n: Int, op: Operator): Boolean {
         check(op.kind == OperatorKind.EXPRESSION)
         return true
@@ -161,6 +162,7 @@ internal object TupleOperator : Operator {
         }
         return "(${children.joinToString(", ")})"
     }
+
     override fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String {
         if (children.size == 1) {
             return children[0].toLatexString(ctx)

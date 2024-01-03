@@ -12,7 +12,6 @@ import kotlin.test.assertFails
 class DummyKey(override val keyName: String) : MetadataKey
 
 class MethodTestCaseTest {
-
     private val testRuleMetadataKey = DummyKey("Dummy.rule")
     private val testPlanMetadataKey = DummyKey("Dummy.plan")
     private val testRuleSkillMetadataKey1 = DummyKey("Dummy.skill1")

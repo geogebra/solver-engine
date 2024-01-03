@@ -7,7 +7,6 @@ import kotlin.test.assertEquals
 fun e(s: String) = parseExpression(s)
 
 class TestExpression {
-
     @Test
     fun testSplitPlusMinus() {
         assertEquals(listOf(e("1 + 1")), e("1 + 1").splitPlusMinus())

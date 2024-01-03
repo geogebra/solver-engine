@@ -38,7 +38,6 @@ import methods.simplify.algebraicSimplificationSteps
 import methods.simplify.algebraicSimplificationStepsWithoutFractionAddition
 
 enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod {
-
     NormalizePolynomialInSteps(
         plan {
             explanation = Explanation.NormalizePolynomial

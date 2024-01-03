@@ -6,7 +6,6 @@ import engine.steps.metadata.TranslationKeys
 
 @TranslationKeys
 enum class PolynomialsExplanation : CategorisedMetadataKey {
-
     /**
      * Collect powers of the same variable in a product
      *

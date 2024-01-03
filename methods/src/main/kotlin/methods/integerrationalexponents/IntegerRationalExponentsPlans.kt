@@ -28,7 +28,6 @@ import methods.integerarithmetic.simplifyIntegersInExpression
 import java.math.BigInteger
 
 enum class IntegerRationalExponentsPlans(override val runner: CompositeMethod) : RunnerMethod {
-
     /**
      * Transform [([x ^ a]) ^ b] to [x ^ a * b] and simplify the
      * product of exponents
@@ -187,47 +186,48 @@ private val simplifyRationalExponentOfInteger = simplifyRationalExponentOfIntege
     IntegerRationalExponentsRules.FactorizeIntegerUnderRationalExponent,
 )
 
-private fun simplifyRationalExponentOfInteger(factorizeIntegerUnderRationalExponent: StepsProducer) = plan {
-    pattern = powerOf(UnsignedIntegerPattern(), optionalNegOf(IntegerFractionPattern()))
+private fun simplifyRationalExponentOfInteger(factorizeIntegerUnderRationalExponent: StepsProducer) =
+    plan {
+        pattern = powerOf(UnsignedIntegerPattern(), optionalNegOf(IntegerFractionPattern()))
 
-    explanation = Explanation.SimplifyRationalExponentOfInteger
+        explanation = Explanation.SimplifyRationalExponentOfInteger
 
-    steps {
-        // input: 1350 ^ [2 / 5]
+        steps {
+            // input: 1350 ^ [2 / 5]
 
-        // [ ( 2 * 3^3 * 5^2 ) ^ [2 / 5] ]
-        optionally(factorizeIntegerUnderRationalExponent)
+            // [ ( 2 * 3^3 * 5^2 ) ^ [2 / 5] ]
+            optionally(factorizeIntegerUnderRationalExponent)
 
-        // [2 ^ [2 / 5]] * [ (3^3) ^ [2 / 5]] * [ (5^2) ^ [2 / 5]]
-        optionally(GeneralRules.DistributePowerOfProduct)
+            // [2 ^ [2 / 5]] * [ (3^3) ^ [2 / 5]] * [ (5^2) ^ [2 / 5]]
+            optionally(GeneralRules.DistributePowerOfProduct)
 
-        // [2 ^ [2 / 5] ] * [ 3 ^ [6 / 5] ] * [ 5 ^ [4 / 5] ]
-        whilePossible { deeply(IntegerRationalExponentsPlans.ApplyPowerRuleOfExponents) }
+            // [2 ^ [2 / 5] ] * [ 3 ^ [6 / 5] ] * [ 5 ^ [4 / 5] ]
+            whilePossible { deeply(IntegerRationalExponentsPlans.ApplyPowerRuleOfExponents) }
 
-        // [2 ^ [2 / 5] ] * [ 3 * 3 ^ [1 / 5] ] * [ 5 ^ [4 / 5] ]
-        optionally {
-            plan {
-                explanation = Explanation.SplitProductOfExponentsWithImproperFractionPowers
+            // [2 ^ [2 / 5] ] * [ 3 * 3 ^ [1 / 5] ] * [ 5 ^ [4 / 5] ]
+            optionally {
+                plan {
+                    explanation = Explanation.SplitProductOfExponentsWithImproperFractionPowers
 
-                steps {
-                    whilePossible { deeply(FractionArithmeticPlans.SplitRationalExponent) }
-                    whilePossible { deeply(NormalizationRules.RemoveBracketProductInProduct) }
+                    steps {
+                        whilePossible { deeply(FractionArithmeticPlans.SplitRationalExponent) }
+                        whilePossible { deeply(NormalizationRules.RemoveBracketProductInProduct) }
+                    }
                 }
             }
-        }
 
-        optionally {
-            plan {
-                explanation = Explanation.NormalizeRationalExponentsAndIntegers
+            optionally {
+                plan {
+                    explanation = Explanation.NormalizeRationalExponentsAndIntegers
 
-                steps {
-                    optionally(IntegerRationalExponentsRules.NormaliseProductWithRationalExponents)
-                    whilePossible { deeply(simplifyIntegersInExpression) }
+                    steps {
+                        optionally(IntegerRationalExponentsRules.NormaliseProductWithRationalExponents)
+                        whilePossible { deeply(simplifyIntegersInExpression) }
+                    }
                 }
             }
         }
     }
-}
 
 private val simplifyProductOfIntegerAndRationalExponentOfInteger = plan {
     explanation = Explanation.SimplifyProductOfIntegerAndRationalExponentOfInteger

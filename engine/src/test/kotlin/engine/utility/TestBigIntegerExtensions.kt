@@ -7,7 +7,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class TestBigIntegerExtensions {
-
     private fun i(n: Int) = n.toBigInteger()
 
     private fun p(p: Int, m: Int) = Pair(i(p), i(m))

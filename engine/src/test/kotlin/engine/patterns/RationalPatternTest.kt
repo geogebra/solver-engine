@@ -6,7 +6,6 @@ import parser.parseExpression
 import kotlin.test.assertEquals
 
 class RationalPatternTest {
-
     @Test
     fun testRationalPattern() {
         val expr = parseExpression("-[1/2]")

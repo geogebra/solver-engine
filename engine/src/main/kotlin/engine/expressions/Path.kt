@@ -19,26 +19,30 @@ data class ChildPath(val parent: Path, val index: Int) : Path {
 
     override fun toString() = "$parent/$index"
 
-    override fun hasAncestor(path: Path) = when {
-        path.length > length -> false
-        else -> truncate(path.length) == path
-    }
+    override fun hasAncestor(path: Path) =
+        when {
+            path.length > length -> false
+            else -> truncate(path.length) == path
+        }
 
-    override fun truncate(newLength: Int): Path = when {
-        newLength < length -> parent.truncate(newLength)
-        else -> this
-    }
+    override fun truncate(newLength: Int): Path =
+        when {
+            newLength < length -> parent.truncate(newLength)
+            else -> this
+        }
 
-    override fun relativeTo(path: Path) = when {
-        path is RootPath -> this
-        this == path -> RootPath()
-        this.length <= path.length -> this
-        else -> parent.relativeTo(path).child(index)
-    }
+    override fun relativeTo(path: Path) =
+        when {
+            path is RootPath -> this
+            this == path -> RootPath()
+            this.length <= path.length -> this
+            else -> parent.relativeTo(path).child(index)
+        }
 }
 
 data class RootPath(val rootId: String = ".") : Path {
     override fun toString() = rootId
+
     override val length = 0
 
     override fun relativeTo(path: Path) = this

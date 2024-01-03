@@ -6,7 +6,6 @@ class IncomparableExpressionsException(e1: Expression, e2: Expression) :
     Exception("$e1 and $e2 are incomparable")
 
 fun interface ExpressionComparator : Comparator<Expression> {
-
     /**
      * Returns
      * - Sign.POSITIVE if e1 > e2,
@@ -53,6 +52,7 @@ object SimpleComparator : ExpressionComparator {
     private inline fun verbatimCompare(e1: Expression, e2: Expression): Sign? {
         return if (e1 == e2) Sign.ZERO else null
     }
+
     private inline fun rationalCompare(e1: Expression, e2: Expression): Sign? {
         val q1 = e1.asRational()
         val q2 = e2.asRational()

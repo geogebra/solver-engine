@@ -7,10 +7,10 @@ class ExpressionWithConstraint(
     constraint: Expression,
     meta: NodeMeta = BasicMeta(),
 ) : Expression(
-    operator = ExpressionWithConstraintOperator,
-    operands = listOf(expression, constraint),
-    meta = meta,
-) {
+        operator = ExpressionWithConstraintOperator,
+        operands = listOf(expression, constraint),
+        meta = meta,
+    ) {
     val expression get() = firstChild
     val constraint get() = secondChild
 }

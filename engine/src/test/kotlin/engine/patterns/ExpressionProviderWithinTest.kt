@@ -7,7 +7,6 @@ import parser.parseExpression
 import kotlin.test.assertEquals
 
 class ExpressionProviderWithinTest {
-
     @Test
     fun testExpressionProviderWithin() {
         val expression = parseExpression("[2*4/2*7]").withOrigin(RootOrigin())

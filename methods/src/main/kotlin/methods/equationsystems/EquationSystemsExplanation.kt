@@ -5,7 +5,6 @@ import engine.steps.metadata.TranslationKeys
 
 @TranslationKeys
 enum class EquationSystemsExplanation : CategorisedMetadataKey {
-
     /**
      * Simplify a single equation to prepare for solving the equation system
      */

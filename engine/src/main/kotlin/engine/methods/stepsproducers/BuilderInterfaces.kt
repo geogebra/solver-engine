@@ -27,7 +27,6 @@ typealias BranchOnFunc = BranchOnBuilder.() -> Unit
  */
 @StepsProducerBuilderMarker
 interface FirstOfBuilder {
-
     /**
      * Try the option [opt] and stop if it is valid.
      */
@@ -59,7 +58,6 @@ interface FirstOfBuilder {
  */
 @StepsProducerBuilderMarker
 interface BranchOnBuilder {
-
     fun case(value: SettingValue, opt: StepsProducer)
 
     fun case(value: SettingValue, init: PipelineFunc)
@@ -73,7 +71,6 @@ interface BranchOnBuilder {
 @Suppress("TooManyFunctions")
 @StepsProducerBuilderMarker
 interface PipelineBuilder {
-
     /**
      * Optionally apply steps
      */

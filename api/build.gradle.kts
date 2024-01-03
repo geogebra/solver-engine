@@ -54,6 +54,10 @@ application {
  * OpenAPI configuration
  */
 
+// This needs to be modified as explained in
+// https://docs.gradle.org/current/userguide/upgrading_version_8.html#project_builddir
+// before upgrading to gradle 9. I am not trying to change it yet, hoping that future versions of gradle
+// will offer a better upgrade path.
 val generatedRoot: String = File(buildDir, "generated-src/openapi").absolutePath
 
 sourceSets["main"].java {
@@ -98,18 +102,20 @@ tasks.named<BootBuildImage>("bootBuildImage") {
  * Detect configuration
  */
 
+val detektKotlinVersion: String by project
+
 // See https://github.com/detekt/detekt/issues/6198#issuecomment-1700332653 for why we need this
 configurations.detekt {
     resolutionStrategy.eachDependency {
         if (requested.group == "org.jetbrains.kotlin") {
-            useVersion("1.9.0") // Add the version of Kotlin that detekt needs
+            useVersion(detektKotlinVersion) // Add the version of Kotlin that detekt needs
         }
     }
 }
 
 detekt {
     buildUponDefaultConfig = true
-    config = files("$rootDir/config/detekt.yaml")
+    config.setFrom(files("$rootDir/config/detekt.yaml"))
 }
 
 /*

@@ -7,7 +7,6 @@ import parser.parseExpression
 import kotlin.test.assertEquals
 
 class ConstantCoefficientPatternTest {
-
     private fun assertCoefficientEquals(expr: String, coefficient: String?) {
         val solutionVariablePattern = SolutionVariablePattern()
         val constantCoefficientPattern = withOptionalConstantCoefficient(solutionVariablePattern)

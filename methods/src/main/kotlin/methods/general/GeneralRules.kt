@@ -72,7 +72,6 @@ import engine.steps.metadata.GmPathModifier as PM
 private val maxPowerAsProduct = 5.toBigInteger()
 
 enum class GeneralRules(override val runner: Rule) : RunnerMethod {
-
     // Tidy up rules
     RemoveUnitaryCoefficient(removeUnitaryCoefficient),
     EliminateZeroInSum(eliminateZeroInSum),
@@ -305,8 +304,10 @@ private val moveSignOfNegativeFactorOutOfProduct =
         onPattern(product) {
             ruleResult(
                 toExpr = moveUnaryOperator(
-                    negf, // -x
-                    negOf(product.substitute(get(f))), // -2x
+                    // -x
+                    negf,
+                    // -2x
+                    negOf(product.substitute(get(f))),
                 ),
                 gmAction = drag(negf, PM.Operator, get(product).firstChild, null),
                 explanation = metadata(Explanation.MoveSignOfNegativeFactorOutOfProduct),
@@ -465,17 +466,18 @@ val pseudoDegreeComparator = compareBy<Expression>(
  * @return The non-negative pseudo degree as a [Double].
  */
 @Suppress("MagicNumber")
-private fun Expression.pseudoDegree(constantIsZeroDegree: Boolean = true): Double = when {
-    this.isConstant() && constantIsZeroDegree -> 0.0
-    this is Minus -> this.argument.pseudoDegree(constantIsZeroDegree)
-    this is SquareRoot -> 0.5
-    this is Root -> 1.0 / abs(this.radicand.doubleValue)
-    this is Variable -> 1.0
-    this is Power -> abs(this.base.pseudoDegree(constantIsZeroDegree)) * abs(this.exponent.doubleValue)
-    this is Product -> this.children.sumOf { it.pseudoDegree(constantIsZeroDegree) }
-    this is Sum -> this.children.maxOf { it.pseudoDegree(constantIsZeroDegree) }
-    else -> 0.0
-}
+private fun Expression.pseudoDegree(constantIsZeroDegree: Boolean = true): Double =
+    when {
+        this.isConstant() && constantIsZeroDegree -> 0.0
+        this is Minus -> this.argument.pseudoDegree(constantIsZeroDegree)
+        this is SquareRoot -> 0.5
+        this is Root -> 1.0 / abs(this.radicand.doubleValue)
+        this is Variable -> 1.0
+        this is Power -> abs(this.base.pseudoDegree(constantIsZeroDegree)) * abs(this.exponent.doubleValue)
+        this is Product -> this.children.sumOf { it.pseudoDegree(constantIsZeroDegree) }
+        this is Sum -> this.children.maxOf { it.pseudoDegree(constantIsZeroDegree) }
+        else -> 0.0
+    }
 
 private val factorMinusFromSum =
     rule {
@@ -791,7 +793,7 @@ private val rewriteProductOfPowersWithSameBase =
                 (
                     (exp1Value != Constants.One || exp2Value.doubleValue !in 0.0..1.0) &&
                         (exp2Value != Constants.One || exp1Value.doubleValue !in 0.0..1.0)
-                    )
+                )
 
             if (addExponents) {
                 ruleResult(

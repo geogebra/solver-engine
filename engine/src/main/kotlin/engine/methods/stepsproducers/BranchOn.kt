@@ -11,7 +11,6 @@ import engine.steps.Transformation
  * options and calculate its minDepth, then uses a [BranchOnRunner] to execute the branchOn.
  */
 private class BranchOn(val setting: Setting, val init: BranchOnFunc) : StepsProducer {
-
     // These vars may be accessed from different request threads, so we want reads and writes to be atomic.  It doesn't
     // matter if two threads call initialize() because they will calculate the same value.  That wastes a little time
     // but that is more than offset by avoiding the slowdown that putting a lock around initialize() and accessing
@@ -52,11 +51,11 @@ private class BranchOn(val setting: Setting, val init: BranchOnFunc) : StepsProd
  * precalculate the minDepth of a branchOn.
  */
 private class BranchOnCompiler : BranchOnBuilder {
-
     private val stepsProducers = mutableListOf<StepsProducer>()
     private var minDepth = Int.MAX_VALUE
 
     fun getStepsProducers() = stepsProducers.toList()
+
     fun getMindDepth() = minDepth
 
     private fun registerOption(opt: StepsProducer) {
@@ -88,7 +87,6 @@ private class BranchOnRunner(
     val sub: Expression,
     val ctx: Context,
 ) : BranchOnBuilder {
-
     var steps: List<Transformation>? = null
     private var index = 0
 

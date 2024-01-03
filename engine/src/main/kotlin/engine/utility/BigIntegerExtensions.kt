@@ -84,7 +84,7 @@ fun BigInteger.isFactorizableUnderRationalExponent(numExp: BigInteger, denExp: B
     return (pfd.isNotEmpty()) && (
         pfd.any { (_, p) -> (p * numExp % denExp).isZero() } ||
             pfd.fold(denExp) { acc, f -> acc.gcd(f.second) } != BigInteger.ONE
-        )
+    )
 }
 
 fun BigInteger.hasFactorOfDegree(n: Int): Boolean {
@@ -173,7 +173,6 @@ fun BigInteger.isPrime(): Boolean {
 }
 
 class Factorizer(var n: BigInteger) {
-
     fun fullyFactorized() = n == BigInteger.ONE
 
     fun extractMultiplicity(f: BigInteger): Int {
@@ -212,21 +211,22 @@ fun BigInteger.greatestSquareFactor(): BigInteger {
     return f
 }
 
-fun BigInteger.factors(limit: Int = FACTORS_DEFAULT_LIMIT) = sequence<BigInteger> {
-    if (signum() == 0) {
-        return@sequence
-    }
-    val primeFactors = abs().primeFactorDecomposition().map { Pair(it.first, it.second.toInt() + 1) }
-
-    val combinations = kotlin.math.min(limit, primeFactors.fold(1) { n, fm -> n * fm.second })
-
-    for (i in 1..combinations) {
-        var factor = BigInteger.ONE
-        var ir = i
-        for ((f, m) in primeFactors) {
-            factor *= f.pow(ir % m)
-            ir /= m
+fun BigInteger.factors(limit: Int = FACTORS_DEFAULT_LIMIT) =
+    sequence<BigInteger> {
+        if (signum() == 0) {
+            return@sequence
         }
-        yield(factor)
+        val primeFactors = abs().primeFactorDecomposition().map { Pair(it.first, it.second.toInt() + 1) }
+
+        val combinations = kotlin.math.min(limit, primeFactors.fold(1) { n, fm -> n * fm.second })
+
+        for (i in 1..combinations) {
+            var factor = BigInteger.ONE
+            var ir = i
+            for ((f, m) in primeFactors) {
+                factor *= f.pow(ir % m)
+                ir /= m
+            }
+            yield(factor)
+        }
     }
-}

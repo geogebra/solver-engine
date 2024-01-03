@@ -3,7 +3,6 @@ package engine.methods
 import kotlin.reflect.KClass
 
 class StrategyRegistry {
-
     private val entries: MutableMap<String, List<EntryData>> = mutableMapOf()
 
     data class EntryData(

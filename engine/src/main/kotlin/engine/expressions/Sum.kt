@@ -13,10 +13,10 @@ class Sum(
     terms: List<Expression>,
     meta: NodeMeta = BasicMeta(),
 ) : ValueExpression(
-    operator = SumOperator,
-    operands = terms,
-    meta,
-) {
+        operator = SumOperator,
+        operands = terms,
+        meta,
+    ) {
     val terms get() = children
 
     override fun signOf(): Sign {

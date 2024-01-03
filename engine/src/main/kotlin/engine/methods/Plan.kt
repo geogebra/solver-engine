@@ -24,9 +24,7 @@ class Plan(
     specificPlans: List<Method> = emptyList(),
     private val stepsProducer: StepsProducer,
 ) : CompositeMethod(specificPlans) {
-
-    override fun run(ctx: Context, sub: Expression) =
-        ctx.unlessPreviouslyFailed(this, sub) { doRun(ctx, sub) }
+    override fun run(ctx: Context, sub: Expression) = ctx.unlessPreviouslyFailed(this, sub) { doRun(ctx, sub) }
     // To disable cache, do this instead
     //  doRun(ctx, sub)
 
@@ -51,11 +49,11 @@ class Plan(
             }
         }
     }
+
     override val minDepth get() = maxOf(pattern.minDepth, stepsProducer.minDepth)
 }
 
 class PlanBuilder : CompositeMethodBuilder() {
-
     private lateinit var defaultSteps: StepsProducer
 
     private fun checkNotInitialized() {

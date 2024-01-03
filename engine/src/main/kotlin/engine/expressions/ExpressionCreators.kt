@@ -65,17 +65,21 @@ fun mixedNumberOf(integer: IntegerExpression, numerator: IntegerExpression, deno
     MixedNumberExpression(integer, numerator, denominator)
 
 fun bracketOf(expr: Expression, decorator: Decorator? = null) = expr.decorate(decorator ?: Decorator.RoundBracket)
+
 fun squareBracketOf(expr: Expression) = expr.decorate(Decorator.SquareBracket)
+
 fun curlyBracketOf(expr: Expression) = expr.decorate(Decorator.CurlyBracket)
+
 fun missingBracketOf(expr: Expression) = expr.decorate(Decorator.MissingBracket)
 
 fun negOf(expr: Expression) = buildExpression(UnaryExpressionOperator.Minus, listOf(expr))
 
-fun simplifiedNegOf(expr: Expression) = when (expr) {
-    Constants.Zero -> expr
-    is Minus -> expr.argument
-    else -> negOf(expr)
-}
+fun simplifiedNegOf(expr: Expression) =
+    when (expr) {
+        Constants.Zero -> expr
+        is Minus -> expr.argument
+        else -> negOf(expr)
+    }
 
 /**
  * The simplified negation of an expression, but if [expr] is a sum then each of its terms is negated.  So
@@ -84,10 +88,11 @@ fun simplifiedNegOf(expr: Expression) = when (expr) {
  *
  * Note: it remains to be determined what a good origin would be for the terms in the result.
  */
-fun simplifiedNegOfSum(expr: Expression) = when (expr) {
-    is Sum -> sumOf(expr.children.map { simplifiedNegOf(it).withOrigin(Introduce(listOf(it))) })
-    else -> simplifiedNegOf(expr).withOrigin(Introduce(listOf(expr)))
-}
+fun simplifiedNegOfSum(expr: Expression) =
+    when (expr) {
+        is Sum -> sumOf(expr.children.map { simplifiedNegOf(it).withOrigin(Introduce(listOf(it))) })
+        else -> simplifiedNegOf(expr).withOrigin(Introduce(listOf(expr)))
+    }
 
 fun plusOf(expr: Expression) = buildExpression(UnaryExpressionOperator.Plus, listOf(expr))
 
@@ -96,13 +101,17 @@ fun plusMinusOf(expr: Expression) = buildExpression(UnaryExpressionOperator.Plus
 fun fractionOf(numerator: Expression, denominator: Expression) =
     buildExpression(BinaryExpressionOperator.Fraction, listOf(numerator, denominator))
 
-fun simplifiedFractionOf(numerator: Expression, denominator: Expression) = when {
-    denominator == Constants.One -> numerator
-    else -> fractionOf(numerator, denominator)
-}
+fun simplifiedFractionOf(numerator: Expression, denominator: Expression) =
+    when {
+        denominator == Constants.One -> numerator
+        else -> fractionOf(numerator, denominator)
+    }
 
 fun powerOf(base: Expression, exponent: Expression) =
-    buildExpression(BinaryExpressionOperator.Power, listOf(base, exponent))
+    buildExpression(
+        BinaryExpressionOperator.Power,
+        listOf(base, exponent),
+    )
 
 fun simplifiedPowerOf(base: Expression, exponent: Expression): Expression {
     return if (exponent == Constants.One) {
@@ -115,25 +124,41 @@ fun simplifiedPowerOf(base: Expression, exponent: Expression): Expression {
 fun squareRootOf(radicand: Expression) = buildExpression(UnaryExpressionOperator.SquareRoot, listOf(radicand))
 
 fun rawRootOf(radicand: Expression, order: Expression) =
-    buildExpression(BinaryExpressionOperator.Root, listOf(radicand, order))
+    buildExpression(
+        BinaryExpressionOperator.Root,
+        listOf(radicand, order),
+    )
 
 fun rootOf(radicand: Expression, order: Expression) =
-    if (order == Constants.Two) squareRootOf(radicand) else rawRootOf(radicand, order)
+    if (order == Constants.Two) {
+        squareRootOf(
+            radicand,
+        )
+    } else {
+        rawRootOf(radicand, order)
+    }
 
 fun naturalLogOf(argument: Expression) = buildExpression(UnaryExpressionOperator.NaturalLog, listOf(argument))
+
 fun logBase10Of(argument: Expression) = buildExpression(UnaryExpressionOperator.LogBase10, listOf(argument))
+
 fun logOf(base: Expression, argument: Expression) =
-    buildExpression(BinaryExpressionOperator.Log, listOf(base, argument))
+    buildExpression(
+        BinaryExpressionOperator.Log,
+        listOf(base, argument),
+    )
 
-fun sinOf(argument: Expression) = buildExpression(
-    TrigonometricFunctionOperator(TrigonometricFunctionType.Sin),
-    listOf(argument),
-)
+fun sinOf(argument: Expression) =
+    buildExpression(
+        TrigonometricFunctionOperator(TrigonometricFunctionType.Sin),
+        listOf(argument),
+    )
 
-fun arsinhOf(argument: Expression) = buildExpression(
-    TrigonometricFunctionOperator(TrigonometricFunctionType.Arsinh),
-    listOf(argument),
-)
+fun arsinhOf(argument: Expression) =
+    buildExpression(
+        TrigonometricFunctionOperator(TrigonometricFunctionType.Arsinh),
+        listOf(argument),
+    )
 
 fun absoluteValueOf(argument: Expression) = buildExpression(UnaryExpressionOperator.AbsoluteValue, listOf(argument))
 
@@ -220,7 +245,10 @@ fun divideBy(operand: Expression) = buildExpression(UnaryExpressionOperator.Divi
 fun percentageOf(operand: Expression) = buildExpression(UnaryExpressionOperator.Percentage, listOf(operand))
 
 fun percentageOfOf(part: Expression, base: Expression) =
-    buildExpression(BinaryExpressionOperator.PercentageOf, listOf(part, base))
+    buildExpression(
+        BinaryExpressionOperator.PercentageOf,
+        listOf(part, base),
+    )
 
 fun derivativeOf(function: Expression, variable: Expression) =
     buildExpression(DerivativeOperator, listOf(Constants.One, function, variable))
@@ -248,27 +276,22 @@ fun matrixOf(vararg matrixRows: List<Expression>) = matrixOf(matrixRows.asList()
 
 private fun buildComparison(lhs: Expression, comparator: Comparator, rhs: Expression) =
     buildExpression(ComparisonOperator(comparator), listOf(lhs, rhs))
+
 fun equationOf(lhs: Expression, rhs: Expression) = buildComparison(lhs, Comparator.Equal, rhs)
 
-fun addEquationsOf(eq1: Expression, eq2: Expression) =
-    buildExpression(AddEquationsOperator, listOf(eq1, eq2))
-fun subtractEquationsOf(eq1: Expression, eq2: Expression) =
-    buildExpression(SubtractEquationsOperator, listOf(eq1, eq2))
+fun addEquationsOf(eq1: Expression, eq2: Expression) = buildExpression(AddEquationsOperator, listOf(eq1, eq2))
 
-fun lessThanOf(lhs: Expression, rhs: Expression) =
-    buildComparison(lhs, Comparator.LessThan, rhs)
+fun subtractEquationsOf(eq1: Expression, eq2: Expression) = buildExpression(SubtractEquationsOperator, listOf(eq1, eq2))
 
-fun lessThanEqualOf(lhs: Expression, rhs: Expression) =
-    buildComparison(lhs, Comparator.LessThanOrEqual, rhs)
+fun lessThanOf(lhs: Expression, rhs: Expression) = buildComparison(lhs, Comparator.LessThan, rhs)
 
-fun greaterThanOf(lhs: Expression, rhs: Expression) =
-    buildComparison(lhs, Comparator.GreaterThan, rhs)
+fun lessThanEqualOf(lhs: Expression, rhs: Expression) = buildComparison(lhs, Comparator.LessThanOrEqual, rhs)
 
-fun greaterThanEqualOf(lhs: Expression, rhs: Expression) =
-    buildComparison(lhs, Comparator.GreaterThanOrEqual, rhs)
+fun greaterThanOf(lhs: Expression, rhs: Expression) = buildComparison(lhs, Comparator.GreaterThan, rhs)
 
-fun inequationOf(lhs: Expression, rhs: Expression) =
-    buildComparison(lhs, Comparator.NotEqual, rhs)
+fun greaterThanEqualOf(lhs: Expression, rhs: Expression) = buildComparison(lhs, Comparator.GreaterThanOrEqual, rhs)
+
+fun inequationOf(lhs: Expression, rhs: Expression) = buildComparison(lhs, Comparator.NotEqual, rhs)
 
 /**
  * compound inequality of the form: first < second < third
@@ -355,6 +378,7 @@ fun closedIntervalOf(lhs: Expression, rhs: Expression) =
     buildExpression(IntervalOperator(closedLeft = true, closedRight = true), listOf(lhs, rhs))
 
 fun statementSystemOf(equations: List<Expression>) = buildExpression(StatementSystemOperator, equations)
+
 fun statementSystemOf(vararg equations: Expression) = statementSystemOf(equations.asList())
 
 fun statementSystemOfNotNullOrNull(vararg equations: Expression?): Expression? {
@@ -366,42 +390,57 @@ fun statementSystemOfNotNullOrNull(vararg equations: Expression?): Expression? {
     }
 }
 
-fun statementUnionOf(vararg equations: Expression) =
-    buildExpression(StatementUnionOperator, equations.asList())
+fun statementUnionOf(vararg equations: Expression) = buildExpression(StatementUnionOperator, equations.asList())
 
-fun statementUnionOf(equations: List<Expression>) =
-    buildExpression(StatementUnionOperator, equations)
+fun statementUnionOf(equations: List<Expression>) = buildExpression(StatementUnionOperator, equations)
 
 fun finiteSetOf(elements: List<Expression>) = buildExpression(SetOperators.FiniteSet, elements)
+
 fun finiteSetOf(vararg elements: Expression) = buildExpression(SetOperators.FiniteSet, elements.asList())
 
 fun cartesianProductOf(sets: List<Expression>) = buildExpression(SetOperators.CartesianProduct, sets)
+
 fun cartesianProductOf(vararg sets: Expression) = cartesianProductOf(sets.asList())
 
 fun setUnionOf(sets: List<Expression>) = buildExpression(SetOperators.SetUnion, sets)
+
 fun setUnionOf(vararg sets: Expression) = setUnionOf(sets.asList())
 
 fun setDifferenceOf(left: Expression, right: Expression) =
-    buildExpression(SetOperators.SetDifference, listOf(left, right))
+    buildExpression(
+        SetOperators.SetDifference,
+        listOf(left, right),
+    )
 
 fun tupleOf(variables: List<Expression>) = buildExpression(TupleOperator, variables)
 
 fun tupleOf(vararg variables: Expression) = tupleOf(variables.asList())
 
 fun variableListOf(variables: List<String>) = VariableList(variables.map { xp(it) })
+
 fun variableListOf(vararg variables: String) = variableListOf(variables.asList())
+
 fun variableListOf(vararg variables: Variable) = VariableList(variables.asList())
 
 fun identityOf(variables: VariableList, expr: Expression) =
-    buildExpression(SolutionOperator.Identity, listOf(variables, expr))
+    buildExpression(
+        SolutionOperator.Identity,
+        listOf(variables, expr),
+    )
 
 fun contradictionOf(variables: VariableList, expr: Expression) =
-    buildExpression(SolutionOperator.Contradiction, listOf(variables, expr))
+    buildExpression(
+        SolutionOperator.Contradiction,
+        listOf(variables, expr),
+    )
 
 fun implicitSolutionOf(variables: VariableList, expr: Expression) =
     buildExpression(SolutionOperator.ImplicitSolution, listOf(variables, expr))
 
 fun setSolutionOf(variables: VariableList, set: Expression) =
-    buildExpression(SolutionOperator.SetSolution, listOf(variables, set))
+    buildExpression(
+        SolutionOperator.SetSolution,
+        listOf(variables, set),
+    )
 
 fun nameXp(value: String) = Name(value)

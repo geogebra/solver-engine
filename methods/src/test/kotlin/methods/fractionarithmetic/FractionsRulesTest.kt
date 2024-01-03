@@ -30,7 +30,6 @@ import methods.fractionarithmetic.FractionArithmeticRules.TurnNegativePowerOfZer
 import org.junit.jupiter.api.Test
 
 class FractionsRulesTest {
-
     @Test
     fun testRewriteDivisionByFractionAsProduct() {
         testRule("3 : [2 / 4a]", RewriteDivisionAsMultiplicationByReciprocal, "3 * [4a / 2]")

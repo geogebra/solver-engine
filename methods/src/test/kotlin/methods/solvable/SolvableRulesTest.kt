@@ -14,7 +14,6 @@ import methods.solvable.SolvableRules.MultiplySolvableByLCD
 import org.junit.jupiter.api.Test
 
 class SolvableRulesTest {
-
     private val advanced = mapOf(Setting.BalancingMode setTo BalancingModeSetting.Advanced)
     private val nextTo = mapOf(Setting.BalancingMode setTo BalancingModeSetting.NextTo)
     private val oneByOne = mapOf(Setting.MoveTermsOneByOne setTo BooleanSetting.True)
@@ -224,7 +223,6 @@ class SolvableRulesTest {
             "x - 3 - [x ^ 2] = abs[x + 2] + 3 - abs[x] + [x ^ 2] - 3 - [x ^ 2]",
             advanced to "x - 3 - [x ^ 2] = abs[x + 2] - abs[x]",
             advanced + oneByOne to "x - 3 = abs[x + 2] - abs[x] + [x ^ 2]",
-
         )
         testRuleInX(
             "x > abs[x + 2] + 3 - abs[x] + [x ^ 2]",
@@ -232,7 +230,6 @@ class SolvableRulesTest {
             "x - 3 - [x ^ 2] > abs[x + 2] + 3 - abs[x] + [x ^ 2] - 3 - [x ^ 2]",
             advanced to "x - 3 - [x ^ 2] > abs[x + 2] - abs[x]",
             advanced + oneByOne to "x - 3 > abs[x + 2] - abs[x] + [x ^ 2]",
-
         )
         testRuleInX(
             "x - abs[x + 1] = abs[x + 2] + 3 - abs[x] + [x ^ 2]",
@@ -339,7 +336,6 @@ class SolvableRulesTest {
             "-[x / 5] = 1",
             MoveConstantFractionFactorToTheRight,
             null,
-
         )
         testRuleInX(
             "-[3x / 2] = 1",

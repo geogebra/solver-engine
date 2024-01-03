@@ -30,7 +30,6 @@ enum class EquationSolvingStrategy(
     override val explanation: Explanation,
     override val steps: StepsProducer,
 ) : Strategy {
-
     LinearEquation(
         family = Family.LINEAR,
         priority = 100,

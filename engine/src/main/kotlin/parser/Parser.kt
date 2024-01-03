@@ -71,22 +71,26 @@ fun parseExpression(text: String): Expression {
     return visitor.visit(parser.wholeInput())
 }
 
-private fun adjustBracket(operator: Operator, i: Int, operand: Expression) = when {
-    operand.hasBracket() || operator.nthChildAllowed(i, operand.operator) -> operand
-    else -> operand.decorate(Decorator.MissingBracket)
-}
+private fun adjustBracket(operator: Operator, i: Int, operand: Expression) =
+    when {
+        operand.hasBracket() || operator.nthChildAllowed(i, operand.operator) -> operand
+        else -> operand.decorate(Decorator.MissingBracket)
+    }
 
-private fun makeExpression(operator: Operator, operands: List<Expression>) = expressionOf(
-    operator,
-    operands.mapIndexed { i, operand -> adjustBracket(operator, i, operand) },
-)
+private fun makeExpression(operator: Operator, operands: List<Expression>) =
+    expressionOf(
+        operator,
+        operands.mapIndexed { i, operand -> adjustBracket(operator, i, operand) },
+    )
 
 private fun makeExpression(operator: Operator, vararg operands: Expression) =
-    makeExpression(operator, operands.asList())
+    makeExpression(
+        operator,
+        operands.asList(),
+    )
 
 @Suppress("TooManyFunctions")
 private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
-
     override fun visitWholeInput(ctx: ExpressionParser.WholeInputContext): Expression {
         return visit(ctx.getChild(0))
     }
@@ -526,10 +530,11 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
         return Constants.Undefined
     }
 
-    private fun getAdditiveOperator(tok: Token): UnaryExpressionOperator = when (tok.text) {
-        "+" -> UnaryExpressionOperator.Plus
-        "-" -> UnaryExpressionOperator.Minus
-        "+/-" -> UnaryExpressionOperator.PlusMinus
-        else -> throw IllegalArgumentException(tok.text)
-    }
+    private fun getAdditiveOperator(tok: Token): UnaryExpressionOperator =
+        when (tok.text) {
+            "+" -> UnaryExpressionOperator.Plus
+            "-" -> UnaryExpressionOperator.Minus
+            "+/-" -> UnaryExpressionOperator.PlusMinus
+            else -> throw IllegalArgumentException(tok.text)
+        }
 }

@@ -8,7 +8,6 @@ data class FindPattern(
     val deepFirst: Boolean = false,
     val stopWhenFound: Boolean = false,
 ) : Pattern {
-
     override val key = pattern
 
     override fun findMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {

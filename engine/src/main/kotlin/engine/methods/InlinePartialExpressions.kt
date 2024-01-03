@@ -19,7 +19,6 @@ import engine.steps.metadata.metadata
  * It does not inline labelled partial subexpressions.
  */
 object InlinePartialExpressions : Method {
-
     private fun inlinePartialSums(sum: Sum): Transformation {
         val flatOperands = mutableListOf<Expression>()
         for (child in sum.children) {

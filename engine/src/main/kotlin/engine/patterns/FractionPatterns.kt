@@ -17,7 +17,6 @@ class IntegerFractionPattern : KeyedPattern {
 }
 
 class RationalPattern : KeyedPattern {
-
     private val numerator = UnsignedIntegerPattern()
     private val denominator = UnsignedIntegerPattern()
 

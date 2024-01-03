@@ -16,7 +16,6 @@ import methods.integerroots.IntegerRootsRules
 import methods.integerroots.cancelRootOfPower
 
 enum class FractionRootsPlans(override val runner: CompositeMethod) : RunnerMethod {
-
     RationalizeHigherOrderRoot(
         plan {
             explanation = Explanation.RationalizeHigherOrderRoot

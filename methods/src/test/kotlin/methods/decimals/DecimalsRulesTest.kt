@@ -12,7 +12,6 @@ import methods.decimals.DecimalRules.TurnDivisionOfDecimalsIntoFraction
 import org.junit.jupiter.api.Test
 
 class DecimalsRulesTest {
-
     @Test
     fun testConvertTerminatingDecimalToFraction() {
         testRule("0.567", ConvertTerminatingDecimalToFraction, "[567 / 1000]")

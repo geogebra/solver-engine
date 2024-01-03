@@ -24,7 +24,6 @@ import methods.simplify.simplifyAlgebraicExpressionSteps
 import methods.solvable.computeOverallIntersectionSolution
 
 enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
-
     /**
      * Compute the domain of an algebraic expression then simplify it.
      */
@@ -124,21 +123,22 @@ enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
     ),
 }
 
-fun findDenominatorsAndDivisors(expr: Expression): Sequence<Pair<Expression, Expression>> = sequence {
-    for (child in expr.children) {
-        yieldAll(findDenominatorsAndDivisors(child))
-    }
-
-    when (expr) {
-        is Fraction -> {
-            yield(Pair(expr.denominator, expr))
+fun findDenominatorsAndDivisors(expr: Expression): Sequence<Pair<Expression, Expression>> =
+    sequence {
+        for (child in expr.children) {
+            yieldAll(findDenominatorsAndDivisors(child))
         }
-        is Product -> {
-            for (factor in expr.children) {
-                if (factor is DivideBy) {
-                    yield(Pair(factor.divisor, expr))
+
+        when (expr) {
+            is Fraction -> {
+                yield(Pair(expr.denominator, expr))
+            }
+            is Product -> {
+                for (factor in expr.children) {
+                    if (factor is DivideBy) {
+                        yield(Pair(factor.divisor, expr))
+                    }
                 }
             }
         }
     }
-}

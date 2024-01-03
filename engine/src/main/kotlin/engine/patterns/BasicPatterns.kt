@@ -10,7 +10,6 @@ import engine.operators.UnaryExpressionOperator
  * created with
  */
 data class FixedPattern(val expr: Expression) : BasePattern() {
-
     override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
         return when {
             subexpression.equiv(expr) -> sequenceOf(match.newChild(this, subexpression))
@@ -26,7 +25,6 @@ data class FixedPattern(val expr: Expression) : BasePattern() {
  * expression
  */
 class AnyPattern : BasePattern() {
-
     override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
         return sequenceOf(match.newChild(this, subexpression))
     }
@@ -61,7 +59,6 @@ class ConstantInSolutionVariablePattern : BasePattern() {
 
 open class OptionalNegPattern<T : Pattern>(val unsignedPattern: T) :
     OptionalWrappingPattern(unsignedPattern, ::negOf) {
-
     fun isNeg(m: Match) = isWrapping(m)
 }
 
@@ -88,7 +85,7 @@ class StickyOptionalNegPattern<T : Pattern>(unsignedPattern: T, private val stic
             subExpressionHasMinusParent && (
                 !stickAtInitialPositionOnly ||
                     negatedSubexpressionIsFirstChildOrWithoutParent
-                )
+            )
         ) {
             emptySequence()
         } else {
@@ -98,7 +95,6 @@ class StickyOptionalNegPattern<T : Pattern>(unsignedPattern: T, private val stic
 }
 
 data class SameSignPatten(val from: OptionalNegPattern<Pattern>, val to: Pattern) : BasePattern() {
-
     override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
         val ptn = if (from.isNeg(match)) negOf(to) else to
         return ptn.findMatches(context, match, subexpression).map { it.newChild(this, subexpression) }
@@ -106,7 +102,6 @@ data class SameSignPatten(val from: OptionalNegPattern<Pattern>, val to: Pattern
 }
 
 data class OppositeSignPatten(val from: OptionalNegPattern<Pattern>, val to: Pattern) : BasePattern() {
-
     override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
         val ptn = if (from.isNeg(match)) to else negOf(to)
         return ptn.findMatches(context, match, subexpression).map { it.newChild(this, subexpression) }
@@ -114,7 +109,6 @@ data class OppositeSignPatten(val from: OptionalNegPattern<Pattern>, val to: Pat
 }
 
 open class OptionalWrappingPattern(val pattern: Pattern, wrapper: (Pattern) -> Pattern) : KeyedPattern {
-
     private val wrappingPattern = wrapper(pattern)
     private val ptn = oneOf(wrappingPattern, pattern)
 
@@ -128,7 +122,10 @@ fun optional(pattern: Pattern, wrapper: (Pattern) -> Pattern) = OptionalWrapping
 fun optionalNegOf(operand: Pattern) = OptionalNegPattern(operand)
 
 fun stickyOptionalNegOf(operand: Pattern, initialPositionOnly: Boolean = false) =
-    StickyOptionalNegPattern(operand, initialPositionOnly)
+    StickyOptionalNegPattern(
+        operand,
+        initialPositionOnly,
+    )
 
 fun optionalDivideBy(pattern: Pattern) = OptionalWrappingPattern(pattern, ::divideBy)
 

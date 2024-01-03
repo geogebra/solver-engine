@@ -5,7 +5,6 @@ import parser.parseExpression
 import kotlin.test.assertEquals
 
 class NotPositiveConditionsTest {
-
     private fun testNotPositive(exprString: String, notPositive: Boolean) {
         val expr = parseExpression(exprString)
         assertEquals(notPositive, expr.isDefinitelyNotPositive())

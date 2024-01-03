@@ -15,7 +15,6 @@ import kotlin.time.measureTimedValue
 
 @Service
 class PlanApiServiceImpl : PlansApiService {
-
     override fun applyPlan(planId: String, solveRequest: SolveRequest): Transformation {
         val plan =
             methodRegistry.getMethodByName(planId) ?: throw NotFoundException("plan not found")

@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertContentEquals
 
 class BigIntegerExtensionsTest {
-
     private fun i(n: Int) = n.toBigInteger()
 
     @Test

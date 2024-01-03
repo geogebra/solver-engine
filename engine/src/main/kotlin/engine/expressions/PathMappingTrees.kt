@@ -1,7 +1,6 @@
 package engine.expressions
 
 interface PathMappingTree {
-
     fun nthChild(index: Int): PathMappingTree
 
     fun childList(size: Int): List<PathMappingTree>
@@ -19,30 +18,28 @@ interface PathMappingTree {
 }
 
 data class PathMappingLeaf(val paths: List<Path>, val type: PathMappingType) : PathMappingTree {
-
     override fun nthChild(index: Int): PathMappingTree {
         return PathMappingLeaf(paths.map { it.child(index) }, type)
     }
 
-    override fun childList(size: Int) =
-        (0 until size).map { nthChild(it) }
+    override fun childList(size: Int) = (0 until size).map { nthChild(it) }
 
-    override fun pathMappings(root: Path) = sequenceOf(
-        PathMapping(
-            paths.map { it to PathScope.default },
-            type,
-            listOf(root to PathScope.default),
-        ),
-    )
+    override fun pathMappings(root: Path) =
+        sequenceOf(
+            PathMapping(
+                paths.map { it to PathScope.default },
+                type,
+                listOf(root to PathScope.default),
+            ),
+        )
 
     override fun composeWith(previous: PathMappingTree): PathMappingTree {
-        /* WIP */
+        // WIP
         return previous
     }
 }
 
 data class PathMappingParent(val children: List<PathMappingTree>) : PathMappingTree {
-
     override fun nthChild(index: Int): PathMappingTree {
         return children[index]
     }

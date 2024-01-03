@@ -4,7 +4,6 @@ import engine.expressions.Constants
 import java.math.BigInteger
 
 class OptionalPowerPattern(val base: Pattern, exponent: Pattern) : KeyedPattern {
-
     private val ptn = oneOf(powerOf(base, exponent), base)
 
     /**
@@ -16,7 +15,6 @@ class OptionalPowerPattern(val base: Pattern, exponent: Pattern) : KeyedPattern 
 }
 
 class OptionalIntegerPowerPattern(val base: Pattern, exponent: IntegerPattern) : KeyedPattern {
-
     private val ptn = oneOf(powerOf(base, exponent), base)
 
     /**
@@ -27,8 +25,10 @@ class OptionalIntegerPowerPattern(val base: Pattern, exponent: IntegerPattern) :
     override val key = ptn
 }
 
-fun optionalPowerOf(base: Pattern, exponent: Pattern = AnyPattern()) =
-    OptionalPowerPattern(base, exponent)
+fun optionalPowerOf(base: Pattern, exponent: Pattern = AnyPattern()) = OptionalPowerPattern(base, exponent)
 
 fun optionalIntegerPowerOf(base: Pattern, exponent: IntegerPattern = UnsignedIntegerPattern()) =
-    OptionalIntegerPowerPattern(base, exponent)
+    OptionalIntegerPowerPattern(
+        base,
+        exponent,
+    )

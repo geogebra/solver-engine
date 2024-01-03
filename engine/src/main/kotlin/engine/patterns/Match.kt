@@ -7,7 +7,6 @@ import engine.expressions.Expression
  * thought of as a linked-list of (pattern, pattern's value)
  */
 interface Match {
-
     /** This is redundant. It does the same as [getBoundExpr] */
     fun getLastBinding(p: Pattern): Expression?
 
@@ -43,12 +42,12 @@ interface Match {
  * expression tree.
  */
 object RootMatch : Match {
-
     override fun getLastBinding(p: Pattern): Expression? = null
+
     override fun getBoundExpr(p: Pattern): Expression? = null
 
     override fun accumulateExprs(p: Pattern, acc: MutableList<Expression>) {
-        /* do nothing */
+        // do nothing
     }
 
     override fun getBoundExprs(p: Pattern): List<Expression> = emptyList()
@@ -67,7 +66,6 @@ data class ChildMatch(
     private val value: Expression,
     private val parent: Match,
 ) : Match {
-
     override fun getLastBinding(p: Pattern): Expression? {
         return when {
             key === p.key -> value

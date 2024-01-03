@@ -19,7 +19,6 @@ class TasksBuilder(
     expression: Expression,
     match: Match,
 ) : MappedExpressionBuilder(context, expression, match) {
-
     private val tasks = mutableListOf<Task>()
 
     private fun nextTaskId() = "#${tasks.size + 1}"
@@ -92,7 +91,6 @@ class TasksBuilder(
 }
 
 class ProceduralTasksProducer(val produceTasks: TasksBuilder.() -> List<Task>?) : TasksProducer {
-
     override fun produceTasks(ctx: Context, expression: Expression, match: Match) =
         TasksBuilder(ctx, expression, match).produceTasks()
 }

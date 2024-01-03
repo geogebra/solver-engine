@@ -6,7 +6,6 @@ import parser.parseExpression
 import kotlin.test.assertEquals
 
 class SignTest {
-
     @Test
     fun testSignFromInt() {
         assertEquals(Sign.NEGATIVE, Sign.fromInt(-10))
@@ -49,7 +48,6 @@ class SignTest {
 }
 
 class SignOfTest {
-
     private fun assertSign(exprString: String, sign: Sign) {
         val expr = parseExpression(exprString)
         assertEquals(sign, expr.signOf())

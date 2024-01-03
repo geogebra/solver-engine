@@ -46,14 +46,17 @@ import java.math.BigInteger
 enum class Decorator {
     RoundBracket {
         override fun decorateString(str: String) = "($str)"
+
         override fun decorateLatexString(str: String) = "\\left( $str \\right)"
     },
     SquareBracket {
         override fun decorateString(str: String) = "[. $str .]"
+
         override fun decorateLatexString(str: String) = "\\left[ $str \\right]"
     },
     CurlyBracket {
         override fun decorateString(str: String) = "{. $str .}"
+
         override fun decorateLatexString(str: String) = "\\left\\{ $str \\right\\}"
     },
     MissingBracket,
@@ -64,6 +67,7 @@ enum class Decorator {
     ;
 
     open fun decorateString(str: String): String = str
+
     open fun decorateLatexString(str: String): String = str
 }
 
@@ -72,7 +76,6 @@ class LabelSpace {
 }
 
 data class LabelInstance(val space: LabelSpace, val label: Label) : Extractor<Expression> {
-
     override fun extract(sub: Expression) = sub.labelledPart(this)
 }
 
@@ -146,7 +149,6 @@ open class Expression internal constructor(
     internal val operands: List<Expression>,
     protected val meta: NodeMeta,
 ) : LatexRenderable, ExpressionProvider {
-
     internal val decorators get() = meta.decorators
     internal val origin get() = meta.origin
     private val label get() = meta.label
@@ -187,10 +189,11 @@ open class Expression internal constructor(
     /**
      * Returns a node in the expression tree labelled with [findLabel] if there is one, else null.
      */
-    fun labelledPart(findLabel: LabelInstance): Expression? = when (findLabel) {
-        label -> this
-        else -> children.firstNotNullOfOrNull { it.labelledPart(findLabel) }
-    }
+    fun labelledPart(findLabel: LabelInstance): Expression? =
+        when (findLabel) {
+            label -> this
+            else -> children.firstNotNullOfOrNull { it.labelledPart(findLabel) }
+        }
 
     /**
      * Returns a copy of the expression with all labels cleared recursively.
@@ -219,10 +222,11 @@ open class Expression internal constructor(
      */
     val childCount get() = this.operands.size
 
-    fun factors() = when (operator) {
-        is ProductOperator -> children
-        else -> listOf(this)
-    }
+    fun factors() =
+        when (operator) {
+            is ProductOperator -> children
+            else -> listOf(this)
+        }
 
     val firstChild get() = nthChild(0)
     val secondChild get() = nthChild(1)
@@ -235,6 +239,7 @@ open class Expression internal constructor(
     internal fun pathMappings(rootPath: Path = RootPath()) = origin.computePathMappings(rootPath, children)
 
     fun mergedPathMappings(rootPath: Path = RootPath()) = mergePathMappings(pathMappings(rootPath))
+
     override fun toString(): String {
         val s = decorators.fold(operator.readableString(operands)) { acc, dec -> dec.decorateString(acc) }
         return s
@@ -260,11 +265,12 @@ open class Expression internal constructor(
             operands.zip(other.operands).all { (op1, op2) -> op1.equiv(op2) }
     }
 
-    internal fun withDecorators(decorators: List<Decorator>) = if (decorators == this.decorators) {
-        this
-    } else {
-        expressionOf(operator, operands, meta.copyMeta(decorators = decorators))
-    }
+    internal fun withDecorators(decorators: List<Decorator>) =
+        if (decorators == this.decorators) {
+            this
+        } else {
+            expressionOf(operator, operands, meta.copyMeta(decorators = decorators))
+        }
 
     fun decorate(decorator: Decorator?) = if (decorator == null) this else withDecorators(decorators + decorator)
 
@@ -278,6 +284,7 @@ open class Expression internal constructor(
     fun hasVisibleBracket() = decorators.any { it != Decorator.PartialBracket && it != Decorator.MissingBracket }
 
     fun isPartialSum() = this is Sum && decorators.getOrNull(0) === Decorator.PartialBracket
+
     fun isPartialProduct() = this is Product && decorators.getOrNull(0) === Decorator.PartialBracket
 
     fun outerBracket() = decorators.lastOrNull()
@@ -429,11 +436,12 @@ open class Expression internal constructor(
             },
         )
 
-    internal fun replaceChildren(newChildren: List<Expression>) = expressionOf(
-        operator,
-        newChildren,
-        meta.copyMeta(origin = Build),
-    )
+    internal fun replaceChildren(newChildren: List<Expression>) =
+        expressionOf(
+            operator,
+            newChildren,
+            meta.copyMeta(origin = Build),
+        )
 
     override fun getBoundExprs(m: Match) = listOf(this)
 
@@ -553,64 +561,73 @@ fun Expression.splitPlusMinus(): List<Expression> {
 }
 
 /** Returns `this` or a subexpression without any outer `-`, `±`, and unary `+` */
-fun Expression.withoutNegOrPlus(): Expression = when (operator) {
-    UnaryExpressionOperator.Minus, UnaryExpressionOperator.Plus, UnaryExpressionOperator.PlusMinus ->
-        firstChild.withoutNegOrPlus()
-    else -> this
-}
+fun Expression.withoutNegOrPlus(): Expression =
+    when (operator) {
+        UnaryExpressionOperator.Minus, UnaryExpressionOperator.Plus, UnaryExpressionOperator.PlusMinus ->
+            firstChild.withoutNegOrPlus()
+        else -> this
+    }
 
 fun Expression.isRationalExpression(): Boolean {
     return (this is Fraction && !denominator.isConstant()) ||
         (this is Minus && firstChild is Fraction && !(firstChild as Fraction).denominator.isConstant())
 }
 
-fun Expression.inverse(): Expression = when {
-    this == Constants.One -> this
-    this is Minus -> simplifiedNegOf(firstChild.inverse())
-    this is Fraction -> simplifiedFractionOf(denominator, numerator)
-    else -> fractionOf(Constants.One, this)
-}
-
-fun Expression.asRational(): Rational? = when (operator) {
-    UnaryExpressionOperator.Minus -> firstChild.asPositiveRational()?.let { -it }
-    else -> asPositiveRational()
-}
-
-fun Expression.asPositiveRational(): Rational? = when (this) {
-    is Fraction -> numerator.asPositiveInteger()?.let { num ->
-        denominator.asPositiveInteger()?.let { den -> Rational(num, den) }
+fun Expression.inverse(): Expression =
+    when {
+        this == Constants.One -> this
+        this is Minus -> simplifiedNegOf(firstChild.inverse())
+        this is Fraction -> simplifiedFractionOf(denominator, numerator)
+        else -> fractionOf(Constants.One, this)
     }
-    is IntegerExpression -> Rational(value)
-    else -> null
-}
 
-fun Expression.asInteger(): BigInteger? = when {
-    this is IntegerExpression -> value
-    operator == UnaryExpressionOperator.Minus -> firstChild.asPositiveInteger()?.negate()
-    else -> null
-}
-
-fun Expression.asPositiveInteger(): BigInteger? = when (this) {
-    is IntegerExpression -> value
-    else -> null
-}
-
-fun Expression.asDecimal(): BigDecimal? = when (this) {
-    is Minus -> argument.asDecimal()?.negate()
-    else -> asPositiveDecimal()
-}
-
-fun Expression.asPositiveDecimal(): BigDecimal? = when (this) {
-    is DecimalExpression -> value
-    is IntegerExpression -> value.toBigDecimal()
-    else -> null
-}
-
-fun Expression.hasRedundantBrackets(): Boolean = hasBracket() && outerBracket() != Decorator.MissingBracket &&
-    when (val origin = origin) {
-        is Child -> origin.parent.operator.nthChildAllowed(origin.index, operator)
-        else -> true
+fun Expression.asRational(): Rational? =
+    when (operator) {
+        UnaryExpressionOperator.Minus -> firstChild.asPositiveRational()?.let { -it }
+        else -> asPositiveRational()
     }
+
+fun Expression.asPositiveRational(): Rational? =
+    when (this) {
+        is Fraction -> numerator.asPositiveInteger()?.let { num ->
+            denominator.asPositiveInteger()?.let { den -> Rational(num, den) }
+        }
+        is IntegerExpression -> Rational(value)
+        else -> null
+    }
+
+fun Expression.asInteger(): BigInteger? =
+    when {
+        this is IntegerExpression -> value
+        operator == UnaryExpressionOperator.Minus -> firstChild.asPositiveInteger()?.negate()
+        else -> null
+    }
+
+fun Expression.asPositiveInteger(): BigInteger? =
+    when (this) {
+        is IntegerExpression -> value
+        else -> null
+    }
+
+fun Expression.asDecimal(): BigDecimal? =
+    when (this) {
+        is Minus -> argument.asDecimal()?.negate()
+        else -> asPositiveDecimal()
+    }
+
+fun Expression.asPositiveDecimal(): BigDecimal? =
+    when (this) {
+        is DecimalExpression -> value
+        is IntegerExpression -> value.toBigDecimal()
+        else -> null
+    }
+
+fun Expression.hasRedundantBrackets(): Boolean =
+    hasBracket() && outerBracket() != Decorator.MissingBracket &&
+        when (val origin = origin) {
+            is Child -> origin.parent.operator.nthChildAllowed(origin.index, operator)
+            else -> true
+        }
 
 fun Expression.variablePowerBase(): Variable? {
     return when {
@@ -620,14 +637,15 @@ fun Expression.variablePowerBase(): Variable? {
     }
 }
 
-fun Expression.isPolynomial(): Boolean = when (this) {
-    !is ValueExpression -> false
-    is Fraction -> numerator.isPolynomial() && denominator.isConstant()
-    is DivideBy -> divisor.isConstant()
-    is Root -> radicand.isConstant()
-    is SquareRoot -> argument.isConstant()
-    else -> children.all { it.isPolynomial() }
-}
+fun Expression.isPolynomial(): Boolean =
+    when (this) {
+        !is ValueExpression -> false
+        is Fraction -> numerator.isPolynomial() && denominator.isConstant()
+        is DivideBy -> divisor.isConstant()
+        is Root -> radicand.isConstant()
+        is SquareRoot -> argument.isConstant()
+        else -> children.all { it.isPolynomial() }
+    }
 
 fun Expression.containsRoots(): Boolean {
     return when (this) {
@@ -643,8 +661,9 @@ fun Expression.containsPowers(): Boolean {
     }
 }
 
-fun Expression.containsDecimals(): Boolean = this is DecimalExpression || this is RecurringDecimalExpression ||
-    children.any { it.containsDecimals() }
+fun Expression.containsDecimals(): Boolean =
+    this is DecimalExpression || this is RecurringDecimalExpression ||
+        children.any { it.containsDecimals() }
 
 fun Expression.containsFractions(): Boolean = this is Fraction || children.any { it.containsFractions() }
 
@@ -652,17 +671,13 @@ fun Expression.allSubterms(): List<Expression> = listOf(this) + children.flatMap
 
 fun Expression.complexity(): Int = 1 + children.sumOf { it.complexity() }
 
-inline fun <reified T : Expression>Expression.isSigned(): Boolean = this is T || this is Minus && argument is T
+inline fun <reified T : Expression> Expression.isSigned(): Boolean = this is T || this is Minus && argument is T
 
 internal fun expressionOf(operator: Operator, operands: List<Expression>) =
     expressionOf(operator, operands, BasicMeta())
 
 @Suppress("CyclomaticComplexMethod", "LongMethod")
-private fun expressionOf(
-    operator: Operator,
-    operands: List<Expression>,
-    meta: NodeMeta,
-): Expression {
+private fun expressionOf(operator: Operator, operands: List<Expression>, meta: NodeMeta): Expression {
     return when (operator) {
         is VariableOperator -> Variable(operator.variableName, operator.subscript, meta)
         is IntegerOperator -> IntegerExpression(operator.value, meta)

@@ -26,7 +26,6 @@ interface ExpandAndSimplifyMethodsProvider {
 }
 
 class ExpandAndSimplifier(simplificationSteps: StepsProducer) : ExpandAndSimplifyMethodsProvider {
-
     override val singleBracketMethod = plan {
         explanation = Explanation.ExpandSingleBracketAndSimplify
 

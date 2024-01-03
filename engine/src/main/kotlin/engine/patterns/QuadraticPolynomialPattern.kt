@@ -10,7 +10,6 @@ class QuadraticPolynomialPattern(
     val variable: Pattern,
     constantChecker: ConstantChecker = defaultConstantChecker,
 ) : KeyedPattern, ConstantChecker by constantChecker {
-
     private fun NaryPattern.restIsConstant(context: Context, match: Match) =
         getRestSubexpressions(match).all { rest -> isConstant(context, rest) }
 

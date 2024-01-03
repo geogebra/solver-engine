@@ -10,7 +10,6 @@ import java.util.logging.Level
  * Builder class for creating a [MethodRegistry] instance.
  */
 class MethodRegistryBuilder {
-
     private var registeredEntries = mutableListOf<MethodRegistry.EntryData>()
 
     /**
@@ -87,7 +86,6 @@ class MethodRegistry internal constructor(
      */
     private val sortedEntries: List<EntryData>,
 ) {
-
     data class EntryData(
         val methodId: MethodId,
         val hiddenFromList: Boolean,
@@ -148,7 +146,6 @@ class MethodRegistry internal constructor(
 }
 
 data class MethodId(val category: String, val name: String) {
-
     override fun toString() = "$category.$name"
 }
 

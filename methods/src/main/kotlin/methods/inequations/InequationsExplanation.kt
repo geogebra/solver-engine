@@ -5,7 +5,6 @@ import engine.steps.metadata.TranslationKeys
 
 @TranslationKeys
 enum class InequationsExplanation : CategorisedMetadataKey {
-
     /**
      * Simplify both sides of an inequation (a statement with the not equals != operator).
      */

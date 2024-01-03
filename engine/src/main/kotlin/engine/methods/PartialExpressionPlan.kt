@@ -23,7 +23,6 @@ class PartialExpressionPlan(
     specificPlans: List<Method> = emptyList(),
     val stepsProducer: StepsProducer,
 ) : CompositeMethod(specificPlans) {
-
     private val regularPlan = Plan(pattern, AnyPattern(), explanationMaker, skillMakers, specificPlans, stepsProducer)
 
     override fun run(ctx: Context, sub: Expression): Transformation? {

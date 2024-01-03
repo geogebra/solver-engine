@@ -64,7 +64,6 @@ import methods.mixednumbers.MixedNumbersPlans
 import methods.mixednumbers.MixedNumbersRules
 
 enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : RunnerMethod {
-
     SimplifyPowerOfInteger(
         plan {
             pattern = powerOf(SignedIntegerPattern(), AnyPattern())

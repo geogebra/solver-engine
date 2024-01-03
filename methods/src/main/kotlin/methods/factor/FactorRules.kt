@@ -66,11 +66,6 @@ import java.math.BigInteger
 import engine.steps.metadata.GmPathModifier as PM
 
 enum class FactorRules(override val runner: Rule) : RunnerMethod {
-
-    // when factoring more than two terms the gmAction only factors the factor from the last two
-    // drag two terms next to each other: converted to tapping plus x^2 + x
-    // something going wrong with minus signs?? 16*x^5-32
-
     FactorGreatestCommonIntegerFactor(
         rule {
             onPattern(sumContaining()) {
@@ -577,24 +572,25 @@ class GroupPolynomial(val i: Int) : RunnerMethod {
     }
 }
 
-private fun fractionSqrt(f: Rational?) = f?.let {
-    if (it.numerator.isSquare() && it.denominator.isSquare()) {
-        simplifiedFractionOf(xp(it.numerator.sqrt()), xp(it.denominator.sqrt()))
-    } else {
-        null
+private fun fractionSqrt(f: Rational?) =
+    f?.let {
+        if (it.numerator.isSquare() && it.denominator.isSquare()) {
+            simplifiedFractionOf(xp(it.numerator.sqrt()), xp(it.denominator.sqrt()))
+        } else {
+            null
+        }
     }
-}
 
-private fun fractionCbrt(f: Rational?) = f?.let {
-    if (it.numerator.isCube() && it.denominator.isCube()) {
-        simplifiedFractionOf(xp(it.numerator.cbrt()), xp(it.denominator.cbrt()))
-    } else {
-        null
+private fun fractionCbrt(f: Rational?) =
+    f?.let {
+        if (it.numerator.isCube() && it.denominator.isCube()) {
+            simplifiedFractionOf(xp(it.numerator.cbrt()), xp(it.denominator.cbrt()))
+        } else {
+            null
+        }
     }
-}
 
 private class CommonFactorView(override val original: Expression) : View {
-
     private var newBase: Expression? = null
     private var newExponent: BigInteger? = null
 

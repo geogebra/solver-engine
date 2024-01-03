@@ -31,7 +31,6 @@ class StepsBuilder(
     private var sub: Expression,
     private val optionalSteps: Boolean = false,
 ) {
-
     private enum class Status {
         InProgress,
         Succeeded,
@@ -156,11 +155,12 @@ class StepsBuilder(
     /**
      * Returns the list of steps added to the builder, or null if `abort()` was called at least once.
      */
-    fun getFinalSteps(): List<Transformation>? = when (status) {
-        Status.Aborted -> if (optionalSteps) emptyList() else null
-        else -> if (steps.isNotEmpty() || optionalSteps) steps else null
-        // We should make sure the status is not InProgress, but currently that is often not true
-    }
+    fun getFinalSteps(): List<Transformation>? =
+        when (status) {
+            Status.Aborted -> if (optionalSteps) emptyList() else null
+            else -> if (steps.isNotEmpty() || optionalSteps) steps else null
+            // We should make sure the status is not InProgress, but currently that is often not true
+        }
 
     fun getAlternatives(): List<Alternative> = alternatives
 }

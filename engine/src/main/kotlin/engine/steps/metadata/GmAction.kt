@@ -76,7 +76,11 @@ data class GmDragToInfo(
  * serialized JSON of the canvas.
  */
 enum class DragTargetPosition {
-    Onto, Above, Below, LeftOf, RightOf,
+    Onto,
+    Above,
+    Below,
+    LeftOf,
+    RightOf,
 
     /**
      Drag an expression far enough away from the dragTo expression. Only used in very few

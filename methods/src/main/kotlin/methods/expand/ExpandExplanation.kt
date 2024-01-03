@@ -5,7 +5,6 @@ import engine.steps.metadata.TranslationKeys
 
 @TranslationKeys
 enum class ExpandExplanation : CategorisedMetadataKey {
-
     /**
      * Distribute a product over a bracket to the terms,
      * i.e. a * (b1 + b2 + ... + bn) -> a * b1 + ... + a * bn

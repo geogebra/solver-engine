@@ -5,7 +5,6 @@ import parser.parseExpression
 import kotlin.test.assertEquals
 
 class ProductTest {
-
     /**
      * Checks whether a product sign is required between [left] and [right]
      */

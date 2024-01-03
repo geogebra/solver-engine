@@ -42,7 +42,6 @@ import methods.integerarithmetic.IntegerArithmeticRules
 import java.math.BigInteger
 
 enum class FractionArithmeticPlans(override val runner: CompositeMethod) : RunnerMethod {
-
     RewriteDivisionsAsFractions(
         plan {
             explanation = Explanation.RewriteDivisionsAsFractionInExpression
@@ -153,59 +152,60 @@ enum class FractionArithmeticPlans(override val runner: CompositeMethod) : Runne
     ),
 }
 
-private fun createAddFractionsSteps(numeratorSimplificationSteps: StepsProducer) = steps {
-    optionally {
-        plan {
-            explanation = Explanation.EvaluateProductsInNumeratorAndDenominator
-            steps {
-                whilePossible {
-                    deeply(IntegerArithmeticRules.EvaluateIntegerProductAndDivision)
-                }
-            }
-        }
-    }
-    optionally(FractionArithmeticRules.BringToCommonDenominator)
-    optionally {
-        plan {
-            explanation = Explanation.EvaluateProductsInNumeratorAndDenominator
-
-            steps {
-                whilePossible { deeply(IntegerArithmeticRules.EvaluateIntegerProductAndDivision) }
-            }
-        }
-        check {
-            val f11 = it.firstChild.asRational()
-            val f22 = it.secondChild.asRational()
-            f11 == null || f22 == null || gcd(
-                f11.numerator,
-                f11.denominator,
-                f22.numerator,
-                f22.denominator,
-            ) == BigInteger.ONE
-        }
-    }
-    firstOf {
-        option {
-            check { isSet(Setting.QuickAddLikeFraction) }
-            apply(FractionArithmeticRules.AddAndSimplifyLikeFractions)
-        }
-
-        option {
-            apply(FractionArithmeticRules.AddLikeFractions)
-            optionally {
-                plan {
-                    explanation = Explanation.SimplifyNumerator
-
-                    steps {
-                        applyToKind<Fraction>(numeratorSimplificationSteps) { it.numerator }
+private fun createAddFractionsSteps(numeratorSimplificationSteps: StepsProducer) =
+    steps {
+        optionally {
+            plan {
+                explanation = Explanation.EvaluateProductsInNumeratorAndDenominator
+                steps {
+                    whilePossible {
+                        deeply(IntegerArithmeticRules.EvaluateIntegerProductAndDivision)
                     }
                 }
             }
-            optionally(normalizeNegativeSignsInFraction)
         }
+        optionally(FractionArithmeticRules.BringToCommonDenominator)
+        optionally {
+            plan {
+                explanation = Explanation.EvaluateProductsInNumeratorAndDenominator
+
+                steps {
+                    whilePossible { deeply(IntegerArithmeticRules.EvaluateIntegerProductAndDivision) }
+                }
+            }
+            check {
+                val f11 = it.firstChild.asRational()
+                val f22 = it.secondChild.asRational()
+                f11 == null || f22 == null || gcd(
+                    f11.numerator,
+                    f11.denominator,
+                    f22.numerator,
+                    f22.denominator,
+                ) == BigInteger.ONE
+            }
+        }
+        firstOf {
+            option {
+                check { isSet(Setting.QuickAddLikeFraction) }
+                apply(FractionArithmeticRules.AddAndSimplifyLikeFractions)
+            }
+
+            option {
+                apply(FractionArithmeticRules.AddLikeFractions)
+                optionally {
+                    plan {
+                        explanation = Explanation.SimplifyNumerator
+
+                        steps {
+                            applyToKind<Fraction>(numeratorSimplificationSteps) { it.numerator }
+                        }
+                    }
+                }
+                optionally(normalizeNegativeSignsInFraction)
+            }
+        }
+        optionally(FractionArithmeticPlans.SimplifyFraction)
     }
-    optionally(FractionArithmeticPlans.SimplifyFraction)
-}
 
 fun createAddFractionsPlan(numeratorSimplificationSteps: StepsProducer): Method {
     val addFractionSteps = createAddFractionsSteps(numeratorSimplificationSteps)

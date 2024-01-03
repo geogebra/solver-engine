@@ -16,6 +16,10 @@ pluginManagement {
         val kotlinVersion: String by settings
         val kspVersion: String by settings
         val kotlinBenchmarkVersion: String by settings
+        val jmhGradlePluginVersion: String by settings
+        val ktlintGradlePluginVersion: String by settings
+        val detektVersion: String by settings
+
         kotlin("jvm") version kotlinVersion
         kotlin("plugin.jpa") version kotlinVersion
         kotlin("plugin.spring") version kotlinVersion
@@ -23,8 +27,11 @@ pluginManagement {
         kotlin("plugin.allopen") version kotlinVersion
         id("com.google.devtools.ksp") version kspVersion
 
-        id("me.champeau.jmh") version "0.7.1"
+        id("me.champeau.jmh") version jmhGradlePluginVersion
         id("org.jetbrains.kotlinx.benchmark") version kotlinBenchmarkVersion
+
+        id("org.jlleitschuh.gradle.ktlint") version ktlintGradlePluginVersion
+        id("io.gitlab.arturbosch.detekt") version detektVersion
     }
 }
 

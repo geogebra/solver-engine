@@ -6,7 +6,6 @@ import engine.methods.testRuleInX
 import org.junit.jupiter.api.Test
 
 class InequalitiesRulesTest {
-
     @Test
     fun testExtractSolutionFromConstantInequalityBasedOnSign() {
         testMethodInX {

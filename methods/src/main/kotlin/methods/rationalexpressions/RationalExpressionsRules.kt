@@ -14,7 +14,6 @@ import engine.patterns.sumContaining
 import engine.steps.metadata.metadata
 
 enum class RationalExpressionsRules(override val runner: Rule) : RunnerMethod {
-
     DistributeDivisionOverSum(
         rule {
             val dividend = sumContaining()

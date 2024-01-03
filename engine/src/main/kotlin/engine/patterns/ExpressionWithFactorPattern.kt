@@ -6,7 +6,6 @@ import engine.expressions.productOf
 
 class ExpressionWithFactorPattern(val factor: Pattern, val positiveOnly: Boolean = false) :
     KeyedPattern, SubstitutablePattern {
-
     private val productWithFactor = productContaining(factor)
     private val options = oneOf(factor, productWithFactor)
     private val optionalNegPattern = optionalNegOf(options)
@@ -25,4 +24,7 @@ class ExpressionWithFactorPattern(val factor: Pattern, val positiveOnly: Boolean
 }
 
 fun expressionWithFactor(factor: Pattern, positiveOnly: Boolean = false) =
-    ExpressionWithFactorPattern(factor, positiveOnly)
+    ExpressionWithFactorPattern(
+        factor,
+        positiveOnly,
+    )

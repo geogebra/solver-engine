@@ -12,7 +12,6 @@ import engine.operators.UnaryExpressionOperator
  * It allows treating both in a uniform way in rules.
  */
 class RootPattern<T : Pattern>(val radicand: Pattern, val order: T) : BasePattern() {
-
     override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
         return when (subexpression.operator) {
             BinaryExpressionOperator.Root -> {
@@ -33,4 +32,5 @@ class RootPattern<T : Pattern>(val radicand: Pattern, val order: T) : BasePatter
 }
 
 fun rootOf(radicand: Pattern, index: Pattern = AnyPattern()) = RootPattern(radicand, index)
+
 fun integerOrderRootOf(radicand: Pattern) = RootPattern(radicand, UnsignedIntegerPattern())

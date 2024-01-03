@@ -12,190 +12,192 @@ import methods.polynomials.PolynomialsExplanation
 import org.junit.jupiter.api.Test
 
 class ActivePracticePolynomialSimplificationsTest {
-
     @Test
-    fun testCollectSimpleLikeTerms() = testMethod {
-        method = SimplifyPlans.SimplifyAlgebraicExpression
-        context = Context(settings = mapOf(Setting.QuickAddLikeTerms setTo BooleanSetting.True))
-        inputExpr = "2 x + [x ^ 2] + 3 x - 5 [x ^ 2]"
+    fun testCollectSimpleLikeTerms() =
+        testMethod {
+            method = SimplifyPlans.SimplifyAlgebraicExpression
+            context = Context(settings = mapOf(Setting.QuickAddLikeTerms setTo BooleanSetting.True))
+            inputExpr = "2 x + [x ^ 2] + 3 x - 5 [x ^ 2]"
 
-        check {
-            fromExpr = "2 x + [x ^ 2] + 3 x - 5 [x ^ 2]"
-            toExpr = "-4 [x ^ 2] + 5 x"
-            explanation {
-                key = SimplifyExplanation.SimplifyPolynomialExpression
-            }
-
-            step {
+            check {
                 fromExpr = "2 x + [x ^ 2] + 3 x - 5 [x ^ 2]"
-                toExpr = "5 x + [x ^ 2] - 5 [x ^ 2]"
-                explanation {
-                    key = CollectingExplanation.CombineTwoSimpleLikeTerms
-                }
-            }
-
-            step {
-                fromExpr = "5 x + [x ^ 2] - 5 [x ^ 2]"
-                toExpr = "5 x - 4 [x ^ 2]"
-                explanation {
-                    key = CollectingExplanation.CombineTwoSimpleLikeTerms
-                }
-            }
-
-            step {
-                fromExpr = "5 x - 4 [x ^ 2]"
                 toExpr = "-4 [x ^ 2] + 5 x"
                 explanation {
-                    key = PolynomialsExplanation.NormalizePolynomial
-                }
-            }
-        }
-    }
-
-    @Test
-    fun testMultiplyMonomials() = testMethod {
-        method = SimplifyPlans.SimplifyAlgebraicExpression
-        context = Context(
-            settings = mapOf(
-                Setting.CommutativeReorderInSteps setTo BooleanSetting.True,
-                Setting.QuickAddLikeTerms setTo BooleanSetting.True,
-            ),
-        )
-        inputExpr = "3 [x ^ 2] * 4 [x ^ 3] * x + 5 * 7 [x ^ 6]"
-
-        check {
-            fromExpr = "3 [x ^ 2] * 4 [x ^ 3] * x + 5 * 7 [x ^ 6]"
-            toExpr = "47 [x ^ 6]"
-            explanation {
-                key = SimplifyExplanation.SimplifyPolynomialExpression
-            }
-
-            step {
-                fromExpr = "3 [x ^ 2] * 4 [x ^ 3] * x + 5 * 7 [x ^ 6]"
-                toExpr = "12 [x ^ 6] + 5 * 7 [x ^ 6]"
-                explanation {
-                    key = PolynomialsExplanation.MultiplyMonomialsAndSimplify
+                    key = SimplifyExplanation.SimplifyPolynomialExpression
                 }
 
                 step {
-                    fromExpr = "3 [x ^ 2] * 4 [x ^ 3] * x"
-                    toExpr = "3 [x ^ 5] * 4 x"
+                    fromExpr = "2 x + [x ^ 2] + 3 x - 5 [x ^ 2]"
+                    toExpr = "5 x + [x ^ 2] - 5 [x ^ 2]"
                     explanation {
-                        key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithSameBase
+                        key = CollectingExplanation.CombineTwoSimpleLikeTerms
+                    }
+                }
+
+                step {
+                    fromExpr = "5 x + [x ^ 2] - 5 [x ^ 2]"
+                    toExpr = "5 x - 4 [x ^ 2]"
+                    explanation {
+                        key = CollectingExplanation.CombineTwoSimpleLikeTerms
+                    }
+                }
+
+                step {
+                    fromExpr = "5 x - 4 [x ^ 2]"
+                    toExpr = "-4 [x ^ 2] + 5 x"
+                    explanation {
+                        key = PolynomialsExplanation.NormalizePolynomial
+                    }
+                }
+            }
+        }
+
+    @Test
+    fun testMultiplyMonomials() =
+        testMethod {
+            method = SimplifyPlans.SimplifyAlgebraicExpression
+            context = Context(
+                settings = mapOf(
+                    Setting.CommutativeReorderInSteps setTo BooleanSetting.True,
+                    Setting.QuickAddLikeTerms setTo BooleanSetting.True,
+                ),
+            )
+            inputExpr = "3 [x ^ 2] * 4 [x ^ 3] * x + 5 * 7 [x ^ 6]"
+
+            check {
+                fromExpr = "3 [x ^ 2] * 4 [x ^ 3] * x + 5 * 7 [x ^ 6]"
+                toExpr = "47 [x ^ 6]"
+                explanation {
+                    key = SimplifyExplanation.SimplifyPolynomialExpression
+                }
+
+                step {
+                    fromExpr = "3 [x ^ 2] * 4 [x ^ 3] * x + 5 * 7 [x ^ 6]"
+                    toExpr = "12 [x ^ 6] + 5 * 7 [x ^ 6]"
+                    explanation {
+                        key = PolynomialsExplanation.MultiplyMonomialsAndSimplify
                     }
 
                     step {
                         fromExpr = "3 [x ^ 2] * 4 [x ^ 3] * x"
-                        toExpr = "3 [x ^ 2 + 3] * 4 x"
-                        explanation {
-                            key = GeneralExplanation.RewriteProductOfPowersWithSameBase
-                        }
-                    }
-
-                    step {
-                        fromExpr = "3 [x ^ 2 + 3] * 4 x"
                         toExpr = "3 [x ^ 5] * 4 x"
                         explanation {
-                            key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                            key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithSameBase
                         }
-                    }
-                }
 
-                step {
-                    fromExpr = "3 [x ^ 5] * 4 x"
-                    toExpr = "3 [x ^ 6] * 4"
-                    explanation {
-                        key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithSameBase
+                        step {
+                            fromExpr = "3 [x ^ 2] * 4 [x ^ 3] * x"
+                            toExpr = "3 [x ^ 2 + 3] * 4 x"
+                            explanation {
+                                key = GeneralExplanation.RewriteProductOfPowersWithSameBase
+                            }
+                        }
+
+                        step {
+                            fromExpr = "3 [x ^ 2 + 3] * 4 x"
+                            toExpr = "3 [x ^ 5] * 4 x"
+                            explanation {
+                                key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                            }
+                        }
                     }
 
                     step {
                         fromExpr = "3 [x ^ 5] * 4 x"
-                        toExpr = "3 [x ^ 5 + 1] * 4"
+                        toExpr = "3 [x ^ 6] * 4"
                         explanation {
-                            key = GeneralExplanation.RewriteProductOfPowersWithSameBase
+                            key = IntegerRationalExponentsExplanation.SimplifyProductOfPowersWithSameBase
+                        }
+
+                        step {
+                            fromExpr = "3 [x ^ 5] * 4 x"
+                            toExpr = "3 [x ^ 5 + 1] * 4"
+                            explanation {
+                                key = GeneralExplanation.RewriteProductOfPowersWithSameBase
+                            }
+                        }
+
+                        step {
+                            fromExpr = "3 [x ^ 5 + 1] * 4"
+                            toExpr = "3 [x ^ 6] * 4"
+                            explanation {
+                                key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                            }
                         }
                     }
 
                     step {
-                        fromExpr = "3 [x ^ 5 + 1] * 4"
-                        toExpr = "3 [x ^ 6] * 4"
+                        fromExpr = "3 [x ^ 6] * 4"
+                        toExpr = "12 [x ^ 6]"
                         explanation {
-                            key = IntegerArithmeticExplanation.EvaluateIntegerAddition
+                            key = IntegerArithmeticExplanation.EvaluateIntegerProduct
                         }
                     }
                 }
 
                 step {
-                    fromExpr = "3 [x ^ 6] * 4"
-                    toExpr = "12 [x ^ 6]"
+                    fromExpr = "12 [x ^ 6] + 5 * 7 [x ^ 6]"
+                    toExpr = "12 [x ^ 6] + 35 [x ^ 6]"
                     explanation {
-                        key = IntegerArithmeticExplanation.EvaluateIntegerProduct
+                        key = PolynomialsExplanation.MultiplyMonomialsAndSimplify
                     }
-                }
-            }
 
-            step {
-                fromExpr = "12 [x ^ 6] + 5 * 7 [x ^ 6]"
-                toExpr = "12 [x ^ 6] + 35 [x ^ 6]"
-                explanation {
-                    key = PolynomialsExplanation.MultiplyMonomialsAndSimplify
+                    step {
+                        fromExpr = "5 * 7 [x ^ 6]"
+                        toExpr = "35 [x ^ 6]"
+                        explanation {
+                            key = IntegerArithmeticExplanation.EvaluateIntegerProduct
+                        }
+                    }
                 }
 
                 step {
-                    fromExpr = "5 * 7 [x ^ 6]"
-                    toExpr = "35 [x ^ 6]"
+                    fromExpr = "12 [x ^ 6] + 35 [x ^ 6]"
+                    toExpr = "47 [x ^ 6]"
                     explanation {
-                        key = IntegerArithmeticExplanation.EvaluateIntegerProduct
+                        key = CollectingExplanation.CombineTwoSimpleLikeTerms
                     }
                 }
             }
-
-            step {
-                fromExpr = "12 [x ^ 6] + 35 [x ^ 6]"
-                toExpr = "47 [x ^ 6]"
-                explanation {
-                    key = CollectingExplanation.CombineTwoSimpleLikeTerms
-                }
-            }
         }
-    }
 
     @Test
-    fun testMonomialWithZeroCoefficientEliminated() = testMethod {
-        method = SimplifyPlans.SimplifyAlgebraicExpression
-        context = Context(settings = mapOf(Setting.QuickAddLikeTerms setTo BooleanSetting.True))
-        inputExpr = "3 [a ^ 2] + 2 [a ^ 2] - 3 a - 5 [a ^ 2] + 10 a"
+    fun testMonomialWithZeroCoefficientEliminated() =
+        testMethod {
+            method = SimplifyPlans.SimplifyAlgebraicExpression
+            context = Context(settings = mapOf(Setting.QuickAddLikeTerms setTo BooleanSetting.True))
+            inputExpr = "3 [a ^ 2] + 2 [a ^ 2] - 3 a - 5 [a ^ 2] + 10 a"
 
-        check {
-            fromExpr = "3 [a ^ 2] + 2 [a ^ 2] - 3 a - 5 [a ^ 2] + 10 a"
-            toExpr = "7 a"
-            explanation {
-                key = SimplifyExplanation.SimplifyPolynomialExpression
-            }
-
-            step {
+            check {
                 fromExpr = "3 [a ^ 2] + 2 [a ^ 2] - 3 a - 5 [a ^ 2] + 10 a"
-                toExpr = "5 [a ^ 2] - 3 a - 5 [a ^ 2] + 10 a"
-                explanation {
-                    key = CollectingExplanation.CombineTwoSimpleLikeTerms
-                }
-            }
-
-            step {
-                fromExpr = "5 [a ^ 2] - 3 a - 5 [a ^ 2] + 10 a"
-                toExpr = "-3 a + 10 a"
-                explanation {
-                    key = GeneralExplanation.CancelAdditiveInverseElements
-                }
-            }
-
-            step {
-                fromExpr = "-3 a + 10 a"
                 toExpr = "7 a"
                 explanation {
-                    key = CollectingExplanation.CombineTwoSimpleLikeTerms
+                    key = SimplifyExplanation.SimplifyPolynomialExpression
+                }
+
+                step {
+                    fromExpr = "3 [a ^ 2] + 2 [a ^ 2] - 3 a - 5 [a ^ 2] + 10 a"
+                    toExpr = "5 [a ^ 2] - 3 a - 5 [a ^ 2] + 10 a"
+                    explanation {
+                        key = CollectingExplanation.CombineTwoSimpleLikeTerms
+                    }
+                }
+
+                step {
+                    fromExpr = "5 [a ^ 2] - 3 a - 5 [a ^ 2] + 10 a"
+                    toExpr = "-3 a + 10 a"
+                    explanation {
+                        key = GeneralExplanation.CancelAdditiveInverseElements
+                    }
+                }
+
+                step {
+                    fromExpr = "-3 a + 10 a"
+                    toExpr = "7 a"
+                    explanation {
+                        key = CollectingExplanation.CombineTwoSimpleLikeTerms
+                    }
                 }
             }
         }
-    }
 }

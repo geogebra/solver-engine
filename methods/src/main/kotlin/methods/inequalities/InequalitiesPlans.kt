@@ -47,7 +47,6 @@ import methods.solvable.computeOverallUnionSolution
 import methods.solvable.evaluateBothSidesNumerically
 
 enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMethod {
-
     SimplifyInequality(
         plan {
             explanation = Explanation.SimplifyInequality
@@ -284,9 +283,10 @@ private val solveDoubleInequality = taskSet {
     }
 }
 
-private fun inequalityInOneVariable() = condition(inequalityOf(AnyPattern(), AnyPattern())) {
-    it.variables.size == 1 && solutionVariables.size == 1 && it.variables.contains(solutionVariables[0])
-}
+private fun inequalityInOneVariable() =
+    condition(inequalityOf(AnyPattern(), AnyPattern())) {
+        it.variables.size == 1 && solutionVariables.size == 1 && it.variables.contains(solutionVariables[0])
+    }
 
 val solveConstantInequalitySteps = steps {
     check { it is Inequality && it.isConstant() }

@@ -99,31 +99,32 @@ private val applyReciprocalPowerRule = rule {
     }
 }
 
-private fun factorizeIntegerUnderRationalExponent(alwaysFactorize: Boolean = false) = rule {
-    val integer = integerCondition(UnsignedIntegerPattern()) { !it.isPrime() }
-    val exp = IntegerFractionPattern()
-    val signedExp = optionalNegOf(exp)
-    val power = powerOf(integer, signedExp)
+private fun factorizeIntegerUnderRationalExponent(alwaysFactorize: Boolean = false) =
+    rule {
+        val integer = integerCondition(UnsignedIntegerPattern()) { !it.isPrime() }
+        val exp = IntegerFractionPattern()
+        val signedExp = optionalNegOf(exp)
+        val power = powerOf(integer, signedExp)
 
-    onPattern(power) {
-        val integerValue = getValue(integer)
-        val expNum = getValue(exp.numerator)
-        val expDen = getValue(exp.denominator)
-        if (alwaysFactorize || integerValue.isFactorizableUnderRationalExponent(expNum, expDen)) {
-            val primeFactorization = getValue(integer).primeFactorDecomposition()
-            val factorized = primeFactorization
-                .map { (f, n) -> introduce(if (n == BigInteger.ONE) xp(f) else powerOf(xp(f), xp(n))) }
+        onPattern(power) {
+            val integerValue = getValue(integer)
+            val expNum = getValue(exp.numerator)
+            val expDen = getValue(exp.denominator)
+            if (alwaysFactorize || integerValue.isFactorizableUnderRationalExponent(expNum, expDen)) {
+                val primeFactorization = getValue(integer).primeFactorDecomposition()
+                val factorized = primeFactorization
+                    .map { (f, n) -> introduce(if (n == BigInteger.ONE) xp(f) else powerOf(xp(f), xp(n))) }
 
-            ruleResult(
-                toExpr = powerOf(productOf(factorized), move(signedExp)),
-                explanation = metadata(Explanation.FactorizeIntegerUnderRationalExponent),
-                skills = listOf(metadata(Skill.FactorInteger, move(integer))),
-            )
-        } else {
-            null
+                ruleResult(
+                    toExpr = powerOf(productOf(factorized), move(signedExp)),
+                    explanation = metadata(Explanation.FactorizeIntegerUnderRationalExponent),
+                    skills = listOf(metadata(Skill.FactorInteger, move(integer))),
+                )
+            } else {
+                null
+            }
         }
     }
-}
 
 private val normaliseProductWithRationalExponents = rule {
     val notRationalExponent = condition { it !is Power || it.exponent !is Fraction }

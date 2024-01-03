@@ -15,6 +15,9 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Changed
 
+- Upgraded Kotlin to 1.9.22, ktlint to 1.10, detekt to 1.23.4, and a list of related dependencies. The ktlint upgrade
+  means a style change to a lot of code (PLUT-952)
+
 ### Removed
 
 ## [1.4.1] 2023-12-22

@@ -15,18 +15,18 @@ private class WhileStrategiesAvailableFirstOf<T : Strategy>(
     private val allStrategies: List<Strategy>,
     val init: WhileStrategiesAvailableFirstOfBuilder.() -> Unit,
 ) : CompositeMethod() {
-
     @Suppress("ReturnCount")
     override fun run(ctx: Context, sub: Expression): Transformation? {
         val builder = StepsBuilder(ctx, sub)
         val runner = WhileStrategiesAvailableFirstOfRunner(builder, allStrategies)
         val preferredStrategy = ctx.preferredStrategies[strategyClass]
 
-        fun effectivePriority(strategy: Strategy) = if (preferredStrategy == strategy) {
-            Strategy.MAX_PRIORITY
-        } else {
-            strategy.priority
-        }
+        fun effectivePriority(strategy: Strategy) =
+            if (preferredStrategy == strategy) {
+                Strategy.MAX_PRIORITY
+            } else {
+                strategy.priority
+            }
 
         fun List<Strategy>.hasNoBetterStrategy(bestAlternative: Alternative): Boolean {
             val bestAlternativePriority = effectivePriority(bestAlternative.strategy)
@@ -99,7 +99,6 @@ private class WhileStrategiesAvailableFirstOf<T : Strategy>(
 
 private class WhileStrategiesAvailableFirstOfRunner(val builder: StepsBuilder, allStrategies: List<Strategy>) :
     WhileStrategiesAvailableFirstOfBuilder {
-
     val remainingStrategies = allStrategies.toMutableList()
     private var roundSucceeded = false
 
@@ -144,7 +143,7 @@ private class WhileStrategiesAvailableFirstOfRunner(val builder: StepsBuilder, a
     }
 }
 
-fun <T : Strategy>whileStrategiesAvailableFirstOf(
+fun <T : Strategy> whileStrategiesAvailableFirstOf(
     strategyClass: KClass<T>,
     allStrategies: List<Strategy>,
     init: WhileStrategiesAvailableFirstOfBuilder.() -> Unit,
@@ -152,7 +151,7 @@ fun <T : Strategy>whileStrategiesAvailableFirstOf(
     return WhileStrategiesAvailableFirstOf(strategyClass, allStrategies, init)
 }
 
-inline fun <reified T : Strategy>whileStrategiesAvailableFirstOf(
+inline fun <reified T : Strategy> whileStrategiesAvailableFirstOf(
     allStrategies: List<T>,
     noinline init: WhileStrategiesAvailableFirstOfBuilder.() -> Unit,
 ): CompositeMethod {

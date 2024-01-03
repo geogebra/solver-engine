@@ -6,7 +6,6 @@ import java.math.BigInteger
  * Convenience data structure for arithmetic operations on rational numbers.
  */
 data class Rational(val numerator: BigInteger, val denominator: BigInteger = BigInteger.ONE) {
-
     init {
         check(!denominator.isZero())
     }
@@ -28,10 +27,16 @@ data class Rational(val numerator: BigInteger, val denominator: BigInteger = Big
         ).simplify()
 
     operator fun times(other: Rational) =
-        Rational(numerator * other.numerator, denominator * other.denominator).simplify()
+        Rational(
+            numerator * other.numerator,
+            denominator * other.denominator,
+        ).simplify()
 
     operator fun div(other: Rational) =
-        Rational(numerator * other.denominator, denominator * other.numerator).simplify()
+        Rational(
+            numerator * other.denominator,
+            denominator * other.numerator,
+        ).simplify()
 
     fun simplify(): Rational {
         val gcd = numerator.gcd(denominator)
@@ -42,13 +47,17 @@ data class Rational(val numerator: BigInteger, val denominator: BigInteger = Big
     }
 
     fun squared() = this * this
+
     fun cubed() = this * this * this
 
     fun isZero() = numerator.isZero()
+
     fun isNeg() = numerator * denominator < BigInteger.ZERO
 
     fun sameNumber(other: BigInteger) = numerator == denominator * other
+
     fun sameNumber(other: Int) = numerator == denominator * other.toBigInteger()
+
     fun sameNumber(other: Rational) = numerator * other.denominator == denominator * other.numerator
 
     override fun equals(other: Any?): Boolean {

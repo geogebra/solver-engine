@@ -7,7 +7,6 @@ import methods.collecting.CollectingRules.CombineTwoSimpleLikeTerms
 import org.junit.jupiter.api.Test
 
 class CollectingRulesTest {
-
     @Test
     fun testCollectLikeRoots() {
         testRule("sqrt[2] + 2*sqrt[2] + 2", CollectLikeRoots, "(1 + 2)sqrt[2] + 2")

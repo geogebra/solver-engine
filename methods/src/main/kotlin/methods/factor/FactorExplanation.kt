@@ -6,7 +6,6 @@ import engine.steps.metadata.TranslationKeys
 
 @TranslationKeys
 enum class FactorExplanation : CategorisedMetadataKey {
-
     /**
      * Factor a single common, non-integer factor (with the greatest possible exponent) from a sum.
      *

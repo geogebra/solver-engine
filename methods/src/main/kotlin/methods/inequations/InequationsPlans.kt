@@ -35,7 +35,6 @@ import methods.solvable.SolvableRules
 import methods.solvable.evaluateBothSidesNumerically
 
 enum class InequationsPlans(override val runner: CompositeMethod) : RunnerMethod {
-
     SimplifyInequation(
         plan {
             explanation = Explanation.SimplifyInequation

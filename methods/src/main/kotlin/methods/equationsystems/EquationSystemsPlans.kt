@@ -52,7 +52,6 @@ import methods.equations.solvablePlansForEquations
 import methods.polynomials.PolynomialsPlans
 
 enum class EquationSystemsPlans(override val runner: CompositeMethod) : RunnerMethod {
-
     /**
      * 1. Select which equation (1) will be rearranged to x = ...
      * 2. Rearrange (1) --> (1')
@@ -78,7 +77,6 @@ enum class EquationSystemsPlans(override val runner: CompositeMethod) : RunnerMe
  * This is meant to be a parent class for both solving equation systems by substitution and elimination.
  */
 private abstract class SystemSolver : CompositeMethod() {
-
     override fun run(ctx: Context, sub: Expression): Transformation? {
         if (sub is StatementSystem) {
             val namedSystem = sub.withNamedEquations { i -> label(i + 1) }
@@ -118,39 +116,40 @@ private abstract class SystemSolver : CompositeMethod() {
      * Returns a taskSet that can solve a system of 2 equations, using the values for [explanation],
      * [prearrangeLinearEquationSteps] and [solveIndependentEquations].
      */
-    fun taskSet() = taskSet {
-        explanation = this@SystemSolver.explanation
-        val systemPtn = statementSystemOf(
-            equationOf(AnyPattern(), AnyPattern()),
-            equationOf(AnyPattern(), AnyPattern()),
-        )
-        pattern = condition(systemPtn) { it.variables.size == 2 }
+    fun taskSet() =
+        taskSet {
+            explanation = this@SystemSolver.explanation
+            val systemPtn = statementSystemOf(
+                equationOf(AnyPattern(), AnyPattern()),
+                equationOf(AnyPattern(), AnyPattern()),
+            )
+            pattern = condition(systemPtn) { it.variables.size == 2 }
 
-        tasks {
-            val system = get(systemPtn)
-            val variables = system.variables.sorted()
+            tasks {
+                val system = get(systemPtn)
+                val variables = system.variables.sorted()
 
-            // Simplify both equations and sort them to reduce the number of cases to consider.
-            val (firstEq, secondEq) = prearrangeEquations(system, variables)
+                // Simplify both equations and sort them to reduce the number of cases to consider.
+                val (firstEq, secondEq) = prearrangeEquations(system, variables)
 
-            // Now deal with them according to the outcomes
-            when (firstEq) {
-                is Contradiction -> {
-                    task(
-                        startExpr = contradictionOf(variableListOf(variables), firstEq.secondChild),
-                        explanation = metadata(Explanation.BuildSolutionContradiction),
-                    )
-                }
-                is Identity -> solveSystemContainingIdentity(firstEq, secondEq, variables)
-                is SetSolution -> when {
-                    secondEq is SetSolution -> solveSystemWithBothEquationsSolved(firstEq, secondEq, variables)
-                    else -> solveSystemWithOneEquationSolved(firstEq, secondEq)
-                }
-                else -> solveSystemWithTwoEquationsInBothVariables(firstEq, secondEq, variables)
-            } ?: return@tasks null
-            allTasks()
+                // Now deal with them according to the outcomes
+                when (firstEq) {
+                    is Contradiction -> {
+                        task(
+                            startExpr = contradictionOf(variableListOf(variables), firstEq.secondChild),
+                            explanation = metadata(Explanation.BuildSolutionContradiction),
+                        )
+                    }
+                    is Identity -> solveSystemContainingIdentity(firstEq, secondEq, variables)
+                    is SetSolution -> when {
+                        secondEq is SetSolution -> solveSystemWithBothEquationsSolved(firstEq, secondEq, variables)
+                        else -> solveSystemWithOneEquationSolved(firstEq, secondEq)
+                    }
+                    else -> solveSystemWithTwoEquationsInBothVariables(firstEq, secondEq, variables)
+                } ?: return@tasks null
+                allTasks()
+            }
         }
-    }
 
     private fun TasksBuilder.prearrangeEquations(
         system: Expression,
@@ -281,10 +280,7 @@ private abstract class SystemSolver : CompositeMethod() {
         }
     }
 
-    private fun TasksBuilder.solveSystemWithOneEquationSolved(
-        firstEq: SetSolution,
-        secondEq: Expression,
-    ): Task? {
+    private fun TasksBuilder.solveSystemWithOneEquationSolved(firstEq: SetSolution, secondEq: Expression): Task? {
         val solveSecondEq = substituteAndSolveIn(secondEq, firstEq)?.result as? SetSolution ?: return null
         val solution = combineSolutions(
             firstEq.solutionVariable,
@@ -602,11 +598,7 @@ private object SystemSolverByElimination : SystemSolver() {
     )
 
     @Suppress("ReturnCount")
-    private fun getEquationFactors(
-        eq1: Expression,
-        eq2: Expression,
-        variables: List<String>,
-    ): EquationFactors? {
+    private fun getEquationFactors(eq1: Expression, eq2: Expression, variables: List<String>): EquationFactors? {
         val x = variables[0]
         val y = variables[1]
 

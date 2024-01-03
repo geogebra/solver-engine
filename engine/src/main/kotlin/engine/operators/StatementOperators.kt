@@ -78,6 +78,7 @@ enum class Comparator(
     fun holdsFor(diffSign: Sign): Boolean {
         return diffSign.implies(compareSign)
     }
+
     fun holdsFor(left: BigDecimal, right: BigDecimal): Boolean {
         return holdsFor(Sign.fromInt((left - right).signum()))
     }
@@ -264,7 +265,6 @@ internal object StatementUnionOperator : StatementOperator {
 }
 
 internal enum class SolutionOperator : BinaryOperator, StatementOperator {
-
     Identity {
         override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable): String {
             return "${left.toLatexString(ctx)} \\in \\emptyset"
@@ -316,6 +316,7 @@ internal object VariableListOperator : Operator {
     override val precedence = 0
     override val arity = ARITY_VARIABLE_FROM_ZERO
     override val kind = OperatorKind.INNER
+
     override fun nthChildAllowed(n: Int, op: Operator): Boolean {
         check(op is VariableOperator)
         return true
@@ -327,6 +328,7 @@ internal object VariableListOperator : Operator {
         }
         return children.joinToString(", ")
     }
+
     override fun latexString(ctx: RenderContext, children: List<LatexRenderable>): String {
         if (children.size == 1) {
             return children[0].toLatexString(ctx)

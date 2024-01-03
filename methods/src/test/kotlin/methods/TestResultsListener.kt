@@ -17,7 +17,6 @@ import org.junit.platform.launcher.TestPlan
 import java.io.File
 
 class TestResultsListener : TestExecutionListener, SolutionProcessor {
-
     companion object {
         val gmActionTestTag = TestTag.create("GmAction")
     }

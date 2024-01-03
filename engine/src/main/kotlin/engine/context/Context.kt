@@ -25,7 +25,8 @@ enum class StrategySelectionMode {
 
 data class Context(
     val settings: Map<Setting, SettingValue> = emptyMap(),
-    private val precision: Int? = null, // decimal places
+    // decimal places
+    private val precision: Int? = null,
     val solutionVariables: List<String> = emptyList(),
     private val logger: Logger = DefaultLogger,
     val preferredStrategies: Map<KClass<out Strategy>, Strategy> = emptyMap(),
@@ -60,11 +61,12 @@ data class Context(
         return copy(settings = settings + preset.settings)
     }
 
-    fun addSettings(settings: Map<Setting, SettingValue>) = if (settings.isEmpty()) {
-        this
-    } else {
-        copy(settings = this.settings + settings)
-    }
+    fun addSettings(settings: Map<Setting, SettingValue>) =
+        if (settings.isEmpty()) {
+            this
+        } else {
+            copy(settings = this.settings + settings)
+        }
 
     fun get(flag: Setting): SettingValue {
         return settings.getOrDefault(flag, flag.kind.default)
@@ -90,11 +92,11 @@ data class Context(
     internal data class CacheKey(
         val expression: Expression,
         val plan: Any,
-
         // These fields are for StickOptionalNeg pattern to work, and also rules that check the existence of a parent
         val parentOperator: Operator?,
         val parentIndex: Int?,
     )
+
     private val outcomeCache: MutableMap<CacheKey, Boolean> = mutableMapOf()
 
     internal inline fun <T : Any, U : Any> unlessPreviouslyFailed(plan: T, sub: Expression, build: () -> U?): U? {
@@ -120,4 +122,5 @@ inline fun <reified T : Strategy> strategyChoice(choice: T): Pair<KClass<out Str
 }
 
 val emptyContext = Context()
+
 fun emptyContextWithLabels() = Context(labelSpace = LabelSpace())

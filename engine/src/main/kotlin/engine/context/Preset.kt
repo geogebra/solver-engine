@@ -1,7 +1,6 @@
 package engine.context
 
 enum class Preset(val description: String, val settings: Map<Setting, SettingValue>) {
-
     Default(
         "All settings at default value",
         mapOf(),

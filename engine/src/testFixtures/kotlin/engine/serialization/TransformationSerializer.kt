@@ -25,14 +25,15 @@ data class Context(
     val preferredStrategies: Map<String, String>,
 ) {
     companion object {
-        fun fromContext(context: engine.context.Context) = Context(
-            settings = context.settings.entries.associate { it.key.name to it.value.name },
-            precision = context.effectivePrecision,
-            solutionVariables = context.solutionVariables,
-            preferredStrategies = context.preferredStrategies.entries.associate {
-                it.key.simpleName.toString() to it.value.name
-            },
-        )
+        fun fromContext(context: engine.context.Context) =
+            Context(
+                settings = context.settings.entries.associate { it.key.name to it.value.name },
+                precision = context.effectivePrecision,
+                solutionVariables = context.solutionVariables,
+                preferredStrategies = context.preferredStrategies.entries.associate {
+                    it.key.simpleName.toString() to it.value.name
+                },
+            )
     }
 }
 
@@ -107,10 +108,8 @@ data class Transformation(
     val tasks: List<Task>? = null,
 ) {
     companion object {
-        fun fromTransformation(
-            transformation: engine.steps.Transformation,
-            format: Format = Format.Json,
-        ) = TransformationModeller(format).modelTransformation(transformation)
+        fun fromTransformation(transformation: engine.steps.Transformation, format: Format = Format.Json) =
+            TransformationModeller(format).modelTransformation(transformation)
     }
 }
 
@@ -146,8 +145,7 @@ private class ExpressionSerializer : kotlinx.serialization.KSerializer<Any> {
 }
 
 private class TransformationModeller(val format: Format) {
-
-// ***********************************************************************************************
+    // ***********************************************************************************************
 // The rest of this file is a copy of the TransformationModeller class from the engine
 // module, minus the top half of the file.
 // ***********************************************************************************************

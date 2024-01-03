@@ -9,15 +9,19 @@ import kotlin.math.sign
 
 data class Boundary(
     val value: Expression,
-    val side: Int, // -1 for left, 1 for right
-    val gradient: Int, // 1 for entering a set, -1 for leaving a set
+    // -1 for left, 1 for right
+    val side: Int,
+    // 1 for entering a set, -1 for leaving a set
+    val gradient: Int,
 ) {
     override fun toString() = "($value, $side, $gradient)"
 
     fun isStarting() = gradient > 0
+
     fun isEnding() = gradient < 0
 
     fun isClosed() = gradient * side < 0
+
     fun isOpen() = gradient * side > 0
 }
 
@@ -25,10 +29,11 @@ data class BoundarySet(
     val boundaries: List<Boundary>,
     val initialHeight: Int,
 ) {
-    fun complement(): BoundarySet = BoundarySet(
-        boundaries = boundaries.map { it.copy(gradient = -it.gradient) },
-        initialHeight = 1 - initialHeight,
-    )
+    fun complement(): BoundarySet =
+        BoundarySet(
+            boundaries = boundaries.map { it.copy(gradient = -it.gradient) },
+            initialHeight = 1 - initialHeight,
+        )
 
     @Suppress("CyclomaticComplexMethod")
     fun toSetExpression(): SetExpression {
@@ -138,7 +143,11 @@ private fun joinBoundarySets(
 }
 
 fun boundarySetUnion(boundarySets: List<BoundarySet>, comparator: Comparator<Expression>) =
-    joinBoundarySets(boundarySets, 1, comparator)
+    joinBoundarySets(
+        boundarySets,
+        1,
+        comparator,
+    )
 
 fun boundarySetIntersection(boundarySets: List<BoundarySet>, comparator: Comparator<Expression>) =
     joinBoundarySets(boundarySets, boundarySets.size, comparator)
@@ -148,7 +157,6 @@ abstract class SetExpression internal constructor(
     operands: List<Expression>,
     meta: NodeMeta,
 ) : Expression(operator, operands, meta) {
-
     abstract fun contains(element: Expression, comparator: ExpressionComparator): Boolean?
 
     abstract fun isEmpty(comparator: ExpressionComparator): Boolean?
@@ -191,14 +199,15 @@ class Interval(
     val closedRight: Boolean,
     meta: NodeMeta = BasicMeta(),
 ) : SetExpression(
-    operator = IntervalOperator(closedLeft, closedRight),
-    operands = listOf(leftBound, rightBound),
-    meta,
-) {
+        operator = IntervalOperator(closedLeft, closedRight),
+        operands = listOf(leftBound, rightBound),
+        meta,
+    ) {
     val leftBound get() = firstChild
     val rightBound get() = secondChild
 
     fun leftClosed() = Interval(leftBound, rightBound, true, closedRight, meta)
+
     fun rightClosed() = Interval(leftBound, rightBound, closedLeft, true, meta)
 
     override fun isEmpty(comparator: ExpressionComparator): Boolean {
@@ -235,10 +244,10 @@ class FiniteSet(
     elements: List<Expression>,
     meta: NodeMeta = BasicMeta(),
 ) : SetExpression(
-    operator = SetOperators.FiniteSet,
-    operands = elements,
-    meta,
-) {
+        operator = SetOperators.FiniteSet,
+        operands = elements,
+        meta,
+    ) {
     val elements get() = children
 
     override fun isEmpty(comparator: ExpressionComparator) = elements.isEmpty()
@@ -272,10 +281,10 @@ class CartesianProduct(
     components: List<Expression>,
     meta: NodeMeta = BasicMeta(),
 ) : SetExpression(
-    operator = SetOperators.CartesianProduct,
-    operands = components,
-    meta,
-) {
+        operator = SetOperators.CartesianProduct,
+        operands = components,
+        meta,
+    ) {
     val components get() = children as List<SetExpression>
 
     override fun isEmpty(comparator: ExpressionComparator): Boolean? {
@@ -325,10 +334,10 @@ class SetUnion(
     components: List<Expression>,
     meta: NodeMeta = BasicMeta(),
 ) : SetExpression(
-    operator = SetOperators.SetUnion,
-    operands = components,
-    meta,
-) {
+        operator = SetOperators.SetUnion,
+        operands = components,
+        meta,
+    ) {
     val components get() = children as List<SetExpression>
 
     override fun isEmpty(comparator: ExpressionComparator): Boolean {
@@ -349,10 +358,10 @@ class SetDifference(
     right: SetExpression,
     meta: NodeMeta = BasicMeta(),
 ) : SetExpression(
-    operator = SetOperators.SetDifference,
-    operands = listOf(left, right),
-    meta,
-) {
+        operator = SetOperators.SetDifference,
+        operands = listOf(left, right),
+        meta,
+    ) {
     val left get() = firstChild as SetExpression
     val right get() = secondChild as SetExpression
 
@@ -380,10 +389,10 @@ class SetDifference(
 class Reals(
     meta: NodeMeta = BasicMeta(),
 ) : SetExpression(
-    operator = SetOperators.Reals,
-    operands = listOf(),
-    meta,
-) {
+        operator = SetOperators.Reals,
+        operands = listOf(),
+        meta,
+    ) {
     override fun contains(element: Expression, comparator: ExpressionComparator): Boolean {
         return true
     }

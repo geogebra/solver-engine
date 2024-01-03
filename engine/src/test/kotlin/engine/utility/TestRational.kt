@@ -9,7 +9,6 @@ import kotlin.test.assertNotEquals
 private infix fun Int.over(n: Int) = Rational(this, n)
 
 class TestRational {
-
     @Test
     fun testDenominatorCannotBeZero() {
         assertThrows<IllegalStateException> { 1 over 0 }

@@ -6,7 +6,6 @@ import engine.steps.metadata.TranslationKeys
 
 @TranslationKeys
 enum class SimplifyExplanation : CategorisedMetadataKey {
-
     /**
      * Simplify an expression in brackets
      */

@@ -65,4 +65,6 @@ fun sumTermsAreIncommensurable(terms: List<Expression>): Boolean {
 }
 
 private fun rootIsSimplified(radicand: BigInteger, order: BigInteger): Boolean =
-    !radicand.hasFactorOfDegree(order.toInt())
+    !radicand.hasFactorOfDegree(
+        order.toInt(),
+    )

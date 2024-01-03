@@ -5,7 +5,6 @@ import engine.steps.metadata.TranslationKeys
 
 @TranslationKeys
 enum class InequalitiesExplanation : CategorisedMetadataKey {
-
     /**
      * Simplify an inequality so that
      * - opposite terms on the same side are cancelled first

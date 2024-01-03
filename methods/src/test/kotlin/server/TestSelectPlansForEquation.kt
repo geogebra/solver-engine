@@ -9,7 +9,6 @@ import methods.equations.EquationsPlans
 import org.junit.jupiter.api.Test
 
 class TestSelectPlansForEquation {
-
     @Test
     fun `test constant equation`() {
         testSelectPlanApi(

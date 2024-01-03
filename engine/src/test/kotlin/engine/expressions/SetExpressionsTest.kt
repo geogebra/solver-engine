@@ -49,8 +49,8 @@ private val exprDoubleValueComparator = ExpressionComparator { e1: Expression, e
     }
 }
 
+@Suppress("ktlint:standard:function-naming")
 class SetExpressionsTest {
-
     private fun F(vararg a: Int) = FiniteSet(a.map { xp(it) })
 
     // (-inf, x)

@@ -25,7 +25,6 @@ data class ConditionPattern(
     private val pattern: Pattern,
     private val condition: MatchCondition,
 ) : Pattern {
-
     override val key = pattern.key
 
     override fun findMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
@@ -41,7 +40,6 @@ data class IntegerConditionPattern(
     private val pattern: IntegerPattern,
     private val condition: (BigInteger) -> Boolean,
 ) : IntegerPattern by pattern {
-
     override val key = pattern.key
 
     override fun findMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
@@ -53,7 +51,6 @@ data class NumericConditionPattern(
     private val pattern: NumberPattern,
     private val condition: (BigDecimal) -> Boolean,
 ) : NumberPattern by pattern {
-
     override val key = pattern.key
 
     override fun findMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
@@ -98,15 +95,10 @@ data class BinaryNumericCondition(
 
 fun condition(condition: Context.(Expression) -> Boolean) = PureConditionPattern(condition)
 
-fun condition(
-    ptn: Pattern,
-    condition: Context.(Expression) -> Boolean,
-) = ConditionPattern(ptn) { context, _, expression -> context.condition(expression) }
+fun condition(ptn: Pattern, condition: Context.(Expression) -> Boolean) =
+    ConditionPattern(ptn) { context, _, expression -> context.condition(expression) }
 
-fun integerCondition(
-    ptn: IntegerPattern,
-    condition: (BigInteger) -> Boolean,
-) = IntegerConditionPattern(ptn, condition)
+fun integerCondition(ptn: IntegerPattern, condition: (BigInteger) -> Boolean) = IntegerConditionPattern(ptn, condition)
 
 fun integerCondition(
     ptn1: IntegerProvider,
@@ -121,10 +113,7 @@ fun integerCondition(
     condition: Context.(BigInteger, BigInteger, BigInteger) -> Boolean,
 ) = TernaryIntegerCondition(ptn1, ptn2, ptn3, condition)
 
-fun numericCondition(
-    ptn: NumberPattern,
-    condition: (BigDecimal) -> Boolean,
-) = NumericConditionPattern(ptn, condition)
+fun numericCondition(ptn: NumberPattern, condition: (BigDecimal) -> Boolean) = NumericConditionPattern(ptn, condition)
 
 fun numericCondition(
     ptn1: NumberProvider,

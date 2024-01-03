@@ -55,7 +55,6 @@ open class MappedExpressionBuilder(
     val expression: Expression,
     private val match: Match,
 ) {
-
     fun introduce(expressionProvider: ExpressionProvider, toExpression: Expression) =
         toExpression.withOrigin(Introduce(expressionProvider.getBoundExprs(match)))
 
@@ -134,8 +133,7 @@ open class MappedExpressionBuilder(
     fun distribute(expressionProvider: ExpressionProvider) =
         expressionProvider.getBoundExpr(match)!!.withOrigin(Distribute(expressionProvider.getBoundExprs(match)))
 
-    fun distribute(vararg expressionProviders: ExpressionProvider) =
-        expressionProviders.map { distribute(it) }
+    fun distribute(vararg expressionProviders: ExpressionProvider) = expressionProviders.map { distribute(it) }
 
     fun cancel(expressionProvider: ExpressionProvider, inExpression: Expression): Expression {
         val boundExpressions = expressionProvider.getBoundExprs(match)
@@ -217,8 +215,7 @@ open class MappedExpressionBuilder(
     /**
      Adds a negative sign to [to] if [from] matches a negative expression.
      */
-    fun <T : Pattern> copySign(from: OptionalNegPattern<T>, to: Expression) =
-        if (from.isNeg(match)) negOf(to) else to
+    fun <T : Pattern> copySign(from: OptionalNegPattern<T>, to: Expression) = if (from.isNeg(match)) negOf(to) else to
 
     /**
      Adds a negative sign to [to] unless [from] matches a negative expression.
@@ -226,9 +223,10 @@ open class MappedExpressionBuilder(
     fun <T : Pattern> copyFlippedSign(from: OptionalNegPattern<T>, to: Expression) =
         if (from.isNeg(match)) to else negOf(to)
 
-    fun transformTo(ptn: ExpressionProvider, value: Expression) = value.withOrigin(
-        Combine(ptn.getBoundExprs(match)),
-    )
+    fun transformTo(ptn: ExpressionProvider, value: Expression) =
+        value.withOrigin(
+            Combine(ptn.getBoundExprs(match)),
+        )
 
     fun transformTo(ptn: ExpressionProvider, transformer: (Expression) -> Expression) =
         transformTo(ptn, transformer(ptn.getBoundExpr(match)!!))
@@ -239,36 +237,26 @@ open class MappedExpressionBuilder(
     /**
      * Transforms the integer provided by [ptn] according to the given [operation].
      */
-    fun integerOp(
-        ptn: IntegerProvider,
-        operation: (BigInteger) -> BigInteger,
-    ) = transformTo(ptn, xp(operation(ptn.getBoundInt(match))))
+    fun integerOp(ptn: IntegerProvider, operation: (BigInteger) -> BigInteger) =
+        transformTo(ptn, xp(operation(ptn.getBoundInt(match))))
 
     /**
      * Combines the integer values of [ptn1] and [ptn2] according to the given [operation].
      */
-    fun integerOp(
-        ptn1: IntegerProvider,
-        ptn2: IntegerProvider,
-        operation: (BigInteger, BigInteger) -> BigInteger,
-    ) = combineTo(ptn1, ptn2, xp(operation(ptn1.getBoundInt(match), ptn2.getBoundInt(match))))
+    fun integerOp(ptn1: IntegerProvider, ptn2: IntegerProvider, operation: (BigInteger, BigInteger) -> BigInteger) =
+        combineTo(ptn1, ptn2, xp(operation(ptn1.getBoundInt(match), ptn2.getBoundInt(match))))
 
     /**
      * Combines the numeric values of [ptn1] and [ptn2] according to the given [operation].
      */
-    fun numericOp(
-        ptn: NumberProvider,
-        operation: (BigDecimal) -> BigDecimal,
-    ) = transformTo(ptn, xp(operation(ptn.getBoundNumber(match))))
+    fun numericOp(ptn: NumberProvider, operation: (BigDecimal) -> BigDecimal) =
+        transformTo(ptn, xp(operation(ptn.getBoundNumber(match))))
 
     /**
      * Combines the numeric values of [ptn1] and [ptn2] according to the given [operation].
      */
-    fun numericOp(
-        ptn1: NumberProvider,
-        ptn2: NumberProvider,
-        operation: (BigDecimal, BigDecimal) -> BigDecimal,
-    ) = combineTo(ptn1, ptn2, xp(operation(ptn1.getBoundNumber(match), ptn2.getBoundNumber(match))))
+    fun numericOp(ptn1: NumberProvider, ptn2: NumberProvider, operation: (BigDecimal, BigDecimal) -> BigDecimal) =
+        combineTo(ptn1, ptn2, xp(operation(ptn1.getBoundNumber(match), ptn2.getBoundNumber(match))))
 
     /**
      * Rounds [n] to the context's precision.
@@ -321,7 +309,10 @@ open class MappedExpressionBuilder(
     }
 
     fun optionalDivideBy(pattern: OptionalWrappingPattern, mappedExpression: Expression) =
-        mappedExpression.wrapIf(pattern, ::divideBy)
+        mappedExpression.wrapIf(
+            pattern,
+            ::divideBy,
+        )
 
     fun MetadataMaker.make() = make(context, expression, match)
 
@@ -424,11 +415,12 @@ open class MappedExpressionBuilder(
     /**
      * List all solution variables, useful in explanations
      */
-    fun listOfsolutionVariables() = if (context.solutionVariables.size == 1) {
-        xp(context.solutionVariables[0])
-    } else {
-        variableListOf(context.solutionVariables)
-    }
+    fun listOfsolutionVariables() =
+        if (context.solutionVariables.size == 1) {
+            xp(context.solutionVariables[0])
+        } else {
+            variableListOf(context.solutionVariables)
+        }
 
     fun CoefficientPattern.getCoefficient() = coefficient(match)
 

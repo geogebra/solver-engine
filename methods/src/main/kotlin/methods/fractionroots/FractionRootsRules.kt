@@ -41,7 +41,6 @@ import engine.utility.isPrime
 import java.math.BigInteger
 
 enum class FractionRootsRules(override val runner: Rule) : RunnerMethod {
-
     /**
      * E.g: root[[2 / 3], 4] -> [root[2, 4] / root[3, 4]]
      */

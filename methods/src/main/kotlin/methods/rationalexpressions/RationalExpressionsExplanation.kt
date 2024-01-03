@@ -5,7 +5,6 @@ import engine.steps.metadata.TranslationKeys
 
 @TranslationKeys
 enum class RationalExpressionsExplanation : CategorisedMetadataKey {
-
     /**
      * Factor the numerator of a fraction.
      * E.g. (x^2 + 3x + 2)/(x + 2) -> (x + 2)(x + 1)/(x + 2)

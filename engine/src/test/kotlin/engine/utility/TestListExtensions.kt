@@ -5,7 +5,6 @@ import java.math.BigInteger
 import kotlin.test.assertEquals
 
 class TestListExtensions {
-
     private fun i(n: Int) = n.toBigInteger()
 
     @Test
@@ -25,7 +24,6 @@ class TestListExtensions {
 }
 
 class TestProduct {
-
     private fun <T> p(vararg lists: List<T>) = product(lists.toList()).toList()
 
     @Test

@@ -23,7 +23,6 @@ abstract class CoefficientPattern(val value: Pattern) : KeyedPattern {
  *      -x
  */
 class IntegerCoefficientPattern(value: Pattern, private val positiveOnly: Boolean) : CoefficientPattern(value) {
-
     private val unsignedIntegerCoefficient = UnsignedIntegerPattern()
 
     private val options = oneOf(
@@ -53,7 +52,6 @@ class IntegerCoefficientPattern(value: Pattern, private val positiveOnly: Boolea
  *     any of the above with a negative sign in front.
  */
 class RationalCoefficientPattern(value: Pattern, private val positiveOnly: Boolean) : CoefficientPattern(value) {
-
     private val numerator = UnsignedIntegerPattern()
     private val denominator = UnsignedIntegerPattern()
 
@@ -107,7 +105,6 @@ class ConstantCoefficientPattern(
     constantChecker: ConstantChecker = defaultConstantChecker,
     private val positiveOnly: Boolean = false,
 ) : CoefficientPattern(value), ConstantChecker by constantChecker {
-
     private val product = productContaining(value)
 
     private val numerator = oneOf(
@@ -169,8 +166,7 @@ fun withOptionalConstantCoefficient(
     variable: Pattern,
     constantChecker: ConstantChecker = defaultConstantChecker,
     positiveOnly: Boolean = false,
-) =
-    ConstantCoefficientPattern(variable, constantChecker, positiveOnly)
+) = ConstantCoefficientPattern(variable, constantChecker, positiveOnly)
 
 /**
  * Creates a pattern which matches the given variable optionally multiplied

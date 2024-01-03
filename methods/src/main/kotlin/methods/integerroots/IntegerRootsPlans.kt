@@ -41,7 +41,6 @@ import methods.polynomials.PolynomialsPlans
 import methods.solvable.SolvableRules
 
 enum class IntegerRootsPlans(override val runner: CompositeMethod) : RunnerMethod {
-
     CancelPowerOfARoot(
         plan {
             explanation = Explanation.CancelPowerOfARoot

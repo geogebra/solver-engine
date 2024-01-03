@@ -9,7 +9,6 @@ import methods.equations.EquationsRules.SeparateEquationInPlusMinusForm
 import org.junit.jupiter.api.Test
 
 class EquationRulesTest {
-
     @Test
     fun testMultiplyByInverseCoefficientOfSquaredMonomial() {
         testRuleInX(

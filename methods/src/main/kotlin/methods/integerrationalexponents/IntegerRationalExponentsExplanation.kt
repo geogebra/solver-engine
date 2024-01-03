@@ -5,7 +5,6 @@ import engine.steps.metadata.TranslationKeys
 
 @TranslationKeys
 enum class IntegerRationalExponentsExplanation : CategorisedMetadataKey {
-
     /**
      * factorize integer under rational exponent
      * e.g. [ 18^[2/3] ] --> [ ([2 * [3^2]]) ^ [2/3] ]

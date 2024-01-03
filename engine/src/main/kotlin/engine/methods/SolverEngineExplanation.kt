@@ -5,7 +5,6 @@ import engine.steps.metadata.TranslationKeys
 
 @TranslationKeys
 enum class SolverEngineExplanation : CategorisedMetadataKey {
-
     /**
      * Internal step for extracting neighbouring terms or factors into a partial sum or product
      * for further simplifications focusing on them.
@@ -52,7 +51,6 @@ enum class SolverEngineExplanation : CategorisedMetadataKey {
  */
 @TranslationKeys
 enum class MathWord : CategorisedMetadataKey {
-
     /**
      * Used when an expression has no value
      *
@@ -88,6 +86,11 @@ enum class MathWord : CategorisedMetadataKey {
      */
     And,
 
+    //
+    // The remaining words are used in the SDK, not in the engine.  They are defined here so that they get
+    // automatically uploaded to ggbtrans.
+    //
+
     /**
      * Used to express the disjunction of two conditions
      *
@@ -95,13 +98,11 @@ enum class MathWord : CategorisedMetadataKey {
      */
     Or,
 
-    // Used in SDK, not in engine
     /**
      * Used to express that an equation has no solution
      */
     NoSolution,
 
-    // Used in SDK, not in engine
     /**
      * Used to express that an equation has infinitely many solutions - this is a vague notion,
      * typically used to talk about an identity (e.g. "x = x has infinitely many solutions")

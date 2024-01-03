@@ -47,7 +47,6 @@ import engine.steps.Transformation
 import engine.steps.metadata.metadata
 
 enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
-
     ExtractSolutionFromConstantInequality(
         rule {
             val lhs = ConstantInSolutionVariablePattern()

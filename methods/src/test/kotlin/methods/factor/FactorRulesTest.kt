@@ -15,7 +15,6 @@ import methods.factor.FactorRules.SolveSumProductDiophantineEquationSystemByGues
 import org.junit.jupiter.api.Test
 
 class FactorRulesTest {
-
     @Test
     fun testFactorGreatestCommonIntegerFactor() {
         testRule("[x^2] + x[y^3]", FactorGreatestCommonIntegerFactor, null)

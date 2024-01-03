@@ -38,7 +38,6 @@ class NormalizationRulesTest {
 }
 
 class RemoveBracketsTest {
-
     @Test
     fun testRemoveBracketsSumInSum() {
         testRule("1 + 2", RemoveBracketSumInSum, null)

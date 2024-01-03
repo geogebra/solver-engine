@@ -55,11 +55,12 @@ internal interface Operator {
         return ops.withIndex().all { (i, op) -> nthChildAllowed(i, op) }
     }
 
-    fun minChildCount(): Int = when (arity) {
-        ARITY_VARIABLE -> 2
-        ARITY_VARIABLE_FROM_ZERO -> 0
-        else -> arity
-    }
+    fun minChildCount(): Int =
+        when (arity) {
+            ARITY_VARIABLE -> 2
+            ARITY_VARIABLE_FROM_ZERO -> 0
+            else -> arity
+        }
 
     fun maxChildCount(): Int = if (arity <= ARITY_VARIABLE) MAX_CHILD_COUNT else arity
 
@@ -104,8 +105,8 @@ internal object VoidOperator : NullaryOperator() {
 }
 
 internal interface UnaryOperator : Operator {
-
     override val arity get() = ARITY_ONE
+
     fun childAllowed(op: Operator) = op.precedence > this.precedence
 
     override fun nthChildAllowed(n: Int, op: Operator): Boolean {
@@ -131,20 +132,21 @@ internal interface UnaryOperator : Operator {
 }
 
 internal interface BinaryOperator : Operator {
-
     override val arity get() = ARITY_TWO
 
     fun leftChildAllowed(op: Operator) = op.precedence > this.precedence
+
     fun rightChildAllowed(op: Operator) = op.precedence > this.precedence
 
-    override fun nthChildAllowed(n: Int, op: Operator) = when (n) {
-        0 -> leftChildAllowed(op)
-        1 -> rightChildAllowed(op)
-        else -> throw IllegalArgumentException(
-            "Binary operator ${this::class.simpleName} should have exactly two children. " +
-                "Child $op is invalid at position $n.",
-        )
-    }
+    override fun nthChildAllowed(n: Int, op: Operator) =
+        when (n) {
+            0 -> leftChildAllowed(op)
+            1 -> rightChildAllowed(op)
+            else -> throw IllegalArgumentException(
+                "Binary operator ${this::class.simpleName} should have exactly two children. " +
+                    "Child $op is invalid at position $n.",
+            )
+        }
 
     fun <T> readableString(left: T, right: T): String {
         return "$this($left, $right)"
@@ -164,22 +166,24 @@ internal interface BinaryOperator : Operator {
 }
 
 internal interface TernaryOperator : Operator {
-
     override val arity get() = ARITY_THREE
 
     fun firstChildAllowed(op: Operator) = op.precedence > this.precedence
+
     fun secondChildAllowed(op: Operator) = op.precedence > this.precedence
+
     fun thirdChildAllowed(op: Operator) = op.precedence > this.precedence
 
-    override fun nthChildAllowed(n: Int, op: Operator) = when (n) {
-        0 -> firstChildAllowed(op)
-        1 -> secondChildAllowed(op)
-        2 -> thirdChildAllowed(op)
-        else -> throw IllegalArgumentException(
-            "Ternary operator ${this::class.simpleName} should have exactly three children. " +
-                "Child $op is invalid at position $n.",
-        )
-    }
+    override fun nthChildAllowed(n: Int, op: Operator) =
+        when (n) {
+            0 -> firstChildAllowed(op)
+            1 -> secondChildAllowed(op)
+            2 -> thirdChildAllowed(op)
+            else -> throw IllegalArgumentException(
+                "Ternary operator ${this::class.simpleName} should have exactly three children. " +
+                    "Child $op is invalid at position $n.",
+            )
+        }
 
     fun <T> readableString(first: T, second: T, third: T): String {
         return "$this($first, $second, $third)"

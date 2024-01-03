@@ -30,7 +30,6 @@ class ExpressionNotGraphableException(expression: String) :
 
 @ControllerAdvice
 class FallbackExceptionHandler {
-
     /**
      * On otherwise unhandled exceptions, fall back to logging the exception stack trace
      * and returning a generic internal server error to the client.

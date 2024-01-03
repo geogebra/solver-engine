@@ -64,7 +64,6 @@ import engine.steps.metadata.DragTargetPosition as Position
 import engine.steps.metadata.GmPathModifier as PM
 
 enum class SolvableRules(override val runner: Rule) : RunnerMethod {
-
     CancelCommonTermsOnBothSides(
         rule {
             val common = condition { it != Constants.Zero }
@@ -570,11 +569,12 @@ private fun MappedExpressionBuilder.solvableExplanation(
     }
 }
 
-internal fun Expression.countAbsoluteValues(solutionVariables: List<String>): Int = when {
-    childCount == 0 -> 0
-    this is AbsoluteValue && !isConstantIn(solutionVariables) -> 1
-    else -> children.sumOf { it.countAbsoluteValues(solutionVariables) }
-}
+internal fun Expression.countAbsoluteValues(solutionVariables: List<String>): Int =
+    when {
+        childCount == 0 -> 0
+        this is AbsoluteValue && !isConstantIn(solutionVariables) -> 1
+        else -> children.sumOf { it.countAbsoluteValues(solutionVariables) }
+    }
 
 private val moveConstantFactorWithNoFractionToTheRight = rule {
     val variable = VariableExpressionPattern()
@@ -681,7 +681,7 @@ private val moveConstantDenominatorToTheRight = rule {
         val newLhs = when (context.get(Setting.BalancingMode)) {
             BalancingModeSetting.Advanced -> lhs.substitute(get(variable))
             BalancingModeSetting.NextTo -> lhs.substitute(productOf(get(fraction), denominatorValue))
-            else /* BalancingModeSetting.Basic */ -> productOf(denominatorValue, get(lhs))
+            else -> productOf(denominatorValue, get(lhs))
         }
 
         val newRhs = simplifiedProductOf(denominatorValue, get(rhs))
@@ -719,7 +719,7 @@ private val moveConstantFractionFactorToTheRight = rule {
         val newLhs = when (context.get(Setting.BalancingMode)) {
             BalancingModeSetting.Advanced -> restOf(lhs)
             BalancingModeSetting.NextTo -> lhs.substitute(productOf(fractionValue, inverse))
-            else /* BalancingModeSetting.Basic */ -> productOf(inverse, get(lhs))
+            else -> productOf(inverse, get(lhs))
         }
 
         val newRhs = when (context.get(Setting.BalancingMode)) {

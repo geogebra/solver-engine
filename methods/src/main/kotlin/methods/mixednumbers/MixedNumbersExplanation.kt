@@ -5,7 +5,6 @@ import engine.steps.metadata.TranslationKeys
 
 @TranslationKeys
 enum class MixedNumbersExplanation : CategorisedMetadataKey {
-
     /**
      * Convert a mixed numbers to an improper fraction
      */

@@ -7,7 +7,6 @@ import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
 class FindPatternTest {
-
     @Test
     fun testFindPattern() {
         val n1 = UnsignedIntegerPattern()

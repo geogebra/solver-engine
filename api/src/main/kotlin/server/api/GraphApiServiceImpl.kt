@@ -34,10 +34,11 @@ class GraphApiServiceImpl : GraphApiService {
 
         // Try to find a suitable window.  For now, go through each expression and if it is a function, try to adjust
         // its window
-        fun solveForVariable(expr: Expression, variable: String) = EquationsPlans.SolveEquation.tryExecute(
-            context.copy(solutionVariables = listOf(variable)),
-            expr.withOrigin(RootOrigin()),
-        )?.toExpr
+        fun solveForVariable(expr: Expression, variable: String) =
+            EquationsPlans.SolveEquation.tryExecute(
+                context.copy(solutionVariables = listOf(variable)),
+                expr.withOrigin(RootOrigin()),
+            )?.toExpr
 
         val window = bestWindowForExprs(exprs, axisVariables, ::solveForVariable)
             .bestSquareFit()

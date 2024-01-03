@@ -7,7 +7,6 @@ import methods.mixednumbers.MixedNumbersRules.SplitMixedNumber
 import org.junit.jupiter.api.Test
 
 class MixedNumbersRulesTest {
-
     @Test
     fun testFractionToMixedNumber() {
         testRule("[4 / 21]", FractionToMixedNumber, null)

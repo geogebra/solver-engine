@@ -5,7 +5,6 @@ import engine.steps.metadata.TranslationKeys
 
 @TranslationKeys
 enum class AlgebraExplanation : CategorisedMetadataKey {
-
     /**
      * Compute the domain on which a given algebraic expression is defined (e.g. exclude zero
      * denominators) then simplify it.
