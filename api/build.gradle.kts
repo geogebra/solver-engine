@@ -9,7 +9,10 @@ plugins {
     kotlin("plugin.jpa")
     kotlin("plugin.spring")
 
-    id("org.openapi.generator") version "6.2.1"
+    // We use the kotlin-spring generator but its mustache template files are customized.  This means that when the
+    // version of openapi-generator is bumped, template files for kotlin-spring need to be fetched again from the
+    // repository.  See src/main/resources/openapi-generator-7.2.0/NOTE.md for more details.
+    id("org.openapi.generator") version "7.2.0"
     id("org.springframework.boot") version "2.7.7"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
 
@@ -66,8 +69,8 @@ sourceSets["main"].java {
 
 tasks.openApiGenerate {
     generatorName.set("kotlin-spring")
-    // currently we use our own generators to allow async request handling
-    templateDir.set("$projectDir/src/main/resources/generator-template")
+    // currently we use our own generators to allow async request handling.
+    templateDir.set("$projectDir/src/main/resources/openapi-generator-7.2.0/kotlin-spring")
     inputSpec.set("$projectDir/src/main/openapi/api-specification.yaml")
     packageName.set("server.application")
     apiPackage.set("server.api")
