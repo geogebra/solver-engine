@@ -10,7 +10,7 @@ plugins {
     kotlin("jvm")
 
     id("org.jlleitschuh.gradle.ktlint") apply false
-    id("io.gitlab.arturbosch.detekt")  apply false
+    id("io.gitlab.arturbosch.detekt") apply false
 }
 
 group = "org.geogebra.solver"

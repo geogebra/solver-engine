@@ -12,13 +12,15 @@ import org.springframework.web.cors.CorsConfiguration
 data class WebSecurityConfig(var allowedOrigins: List<String> = emptyList()) {
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
-        http.csrf().disable()
+        http.csrf { it.disable() }
         http
-            .authorizeHttpRequests { it.antMatchers("/**").permitAll() }
-            .cors().configurationSource {
-                CorsConfiguration()
-                    .setAllowedOriginPatterns(allowedOrigins)
-                    .applyPermitDefaultValues()
+            .authorizeHttpRequests { it.requestMatchers("/**").permitAll() }
+            .cors {
+                it.configurationSource {
+                    CorsConfiguration()
+                        .setAllowedOriginPatterns(allowedOrigins)
+                        .applyPermitDefaultValues()
+                }
             }
         return http.build()
     }

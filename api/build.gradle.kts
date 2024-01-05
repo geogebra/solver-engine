@@ -13,8 +13,8 @@ plugins {
     // version of openapi-generator is bumped, template files for kotlin-spring need to be fetched again from the
     // repository.  See src/main/resources/openapi-generator-7.2.0/NOTE.md for more details.
     id("org.openapi.generator") version "7.2.0"
-    id("org.springframework.boot") version "2.7.7"
-    id("io.spring.dependency-management") version "1.0.11.RELEASE"
+    id("org.springframework.boot") version "3.2.1"
+    id("io.spring.dependency-management") version "1.1.4"
 
     id("io.gitlab.arturbosch.detekt")
 }
@@ -26,19 +26,29 @@ dependencies {
     implementation(project(":engine"))
     implementation(project(":methods"))
 
+    // The spring-boot plugin manages the version of many dependencies, see:
+    //   https://docs.spring.io/spring-boot/docs/3.2.1/reference/html/dependency-versions.html
+    // This is why versions are not provided for the dependencies below.  It does not prevent the build from being
+    // reproducible
+
+    // Version managed by spring-boot
     implementation("org.springframework.boot:spring-boot-starter-web") {
         exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
     }
+    // Version managed by spring-boot
     implementation("jakarta.validation:jakarta.validation-api")
-    implementation("jakarta.annotation:jakarta.annotation-api:2.1.1")
-    implementation("org.springdoc:springdoc-openapi-data-rest:1.6.12")
-    implementation("org.springdoc:springdoc-openapi-ui:1.6.12")
-    implementation("org.springdoc:springdoc-openapi-kotlin:1.6.12")
-    implementation("javax.annotation:javax.annotation-api:1.3.2")
+    implementation("jakarta.annotation:jakarta.annotation-api")
+
+    // Version managed by spring-boot
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-log4j2")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+
+    // Spring Doc dependencies
+    implementation("org.springdoc:springdoc-openapi-data-rest:1.6.12")
+    implementation("org.springdoc:springdoc-openapi-ui:1.6.12")
+    implementation("org.springdoc:springdoc-openapi-kotlin:1.6.12")
 }
 
 configurations.implementation {
@@ -81,6 +91,7 @@ tasks.openApiGenerate {
             "serviceInterface" to "true",
             "basePackage" to "server",
             "enumPropertyNaming" to "PascalCase",
+            "useSpringBoot3" to "true",
         ),
     )
 }
@@ -91,7 +102,7 @@ tasks.openApiGenerate {
 
 tasks.named<BootBuildImage>("bootBuildImage") {
     imageName = "registry.git.geogebra.org/solver-team/solver-engine/${project.name}:${project.version}"
-    isPublish = true
+    publish = true
     docker {
         publishRegistry {
             username = System.getenv("CI_REGISTRY_USER")

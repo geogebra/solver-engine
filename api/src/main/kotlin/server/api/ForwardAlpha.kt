@@ -1,8 +1,8 @@
 package server.api
 
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.RequestMapping
-import javax.servlet.http.HttpServletRequest
 
 /**
  * This controller is temporary, so that existing clients do not break immediately when the api URL moves from
