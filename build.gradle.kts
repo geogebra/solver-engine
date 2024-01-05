@@ -23,8 +23,9 @@ subprojects {
     // that work.
     apply(plugin = "kotlin")
     configure<KotlinJvmProjectExtension> {
-        jvmToolchain(17)
+        jvmToolchain(21)
     }
+
     tasks.withType<KotlinCompile> {
         kotlinOptions.allWarningsAsErrors = false
     }
@@ -36,11 +37,12 @@ subprojects {
         version.set(ktlintVersion)
     }
 
-    // Detekt only supports jvm up to 17 according to its documentation (in practice it seem 18 works too)
+    // According to the detekt documentation and the example provided in the README of the project, the Java Target
+    // Level should be set to 1.8 as follows, although it seems to work without this configuration.
     tasks.withType<Detekt>().configureEach {
-        jvmTarget = "17"
+        jvmTarget = "1.8"
     }
     tasks.withType<DetektCreateBaselineTask>().configureEach {
-        jvmTarget = "17"
+        jvmTarget = "1.8"
     }
 }

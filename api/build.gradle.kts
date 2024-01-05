@@ -113,7 +113,7 @@ tasks.named<BootBuildImage>("bootBuildImage") {
 }
 
 /*
- * Detect configuration
+ * Detekt configuration
  */
 
 val detektKotlinVersion: String by project

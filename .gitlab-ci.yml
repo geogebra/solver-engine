@@ -1,5 +1,5 @@
 default:
-  image: gradle:8.5.0-jdk17-alpine
+  image: gradle:8.5.0-jdk21-alpine
   cache:
     key:
       files:

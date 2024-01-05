@@ -19,6 +19,7 @@ contents to a new release section (e.g. _[0.x]_).
   means a style change to a lot of code (PLUT-952)
 - Upgraded openapi-generator to version 7.2.0 (needed to upgrade to spring-boot v3) (PLUT-955)
 - Upgraded spring-boot to version 3.2.1 (needed to be able to use java 21) (PLUT-956)
+- Upgraded runtime JVM and JVM compilation target from 17 to 21, which is the new LTS version (PLUT-954)
 
 ### Removed
 
