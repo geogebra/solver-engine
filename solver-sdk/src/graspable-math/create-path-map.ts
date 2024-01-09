@@ -15,7 +15,7 @@
  *
  */
 
-import { ExpressionTree, NestedExpression } from '../';
+import { ExpressionTree, NestedExpression } from '../index';
 
 export type GmMathNode = {
   parent: GmMathNode | null;

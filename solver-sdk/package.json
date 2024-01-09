@@ -14,7 +14,7 @@
   "scripts": {
     "build": "npm run build:esm && npm run build:cjs && npm run build:web",
     "build:esm": "tsc",
-    "build:cjs": "tsc -p ./tsconfig-cjs.json",
+    "build:cjs": "tsc -p tsconfig-cjs.json",
     "build:web": "vite build",
     "watch": "tsc --watch",
     "start": "vite --host",
@@ -22,7 +22,7 @@
     "test-watch": "vitest",
     "test-watch-full": "vitest --coverage",
     "semantic-release": "semantic-release",
-    "prettier": "cd ../../ && prettier -w ."
+    "prettier": "cd .. && prettier -w ."
   },
   "publishConfig": {
     "access": "restricted"

@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="SDK Source Files" pattern="file[solver-engine]:solver-sdk//*" />
+</component>

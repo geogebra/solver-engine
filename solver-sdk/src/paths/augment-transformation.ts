@@ -15,8 +15,8 @@
  *
  */
 
-import { substituteTree, pathToArray, jsonToTree } from '../';
-import type { ExpressionTree, TransformationJson } from '../';
+import type { ExpressionTree, TransformationJson } from '../index';
+import { jsonToTree, pathToArray, substituteTree } from '../index';
 
 /** Returns all leaf-level steps, which are the ones that a user of GM would
  * be able to directly apply. */

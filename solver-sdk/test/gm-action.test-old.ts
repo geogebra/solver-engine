@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from 'vitest';
 // If this file doesn't exist, you need to run the kotlin tests in the methods package
-import { testResults } from '../../../solver-poker/test-results-src/test-results';
+import { testResults } from '../../solver-poker/test-results-src/test-results';
 import type { ExpressionTree, TransformationJson } from '../src';
 import { addFullFromExprToTransformation, getInnerSteps, treeToLatex } from '../src';
 import { solverPathToGmNodes } from '../src/graspable-math/solver-path-to-gm-nodes';

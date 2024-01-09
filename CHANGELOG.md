@@ -11,6 +11,8 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Added
 
+- Added copyright notice to engine, poker and SDK source files (PLUT-929)
+
 ### Fixed
 
 ### Changed
@@ -20,6 +22,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Upgraded openapi-generator to version 7.2.0 (needed to upgrade to spring-boot v3) (PLUT-955)
 - Upgraded spring-boot to version 3.2.1 (needed to be able to use java 21) (PLUT-956)
 - Upgraded runtime JVM and JVM compilation target from 17 to 21, which is the new LTS version (PLUT-954)
+- Moved `@geogebra/solver-sdk` to `/solver-sdk` (PLUT-959)
 
 ### Removed
 

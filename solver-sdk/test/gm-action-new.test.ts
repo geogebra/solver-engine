@@ -2,7 +2,7 @@ const VERBOSE = false;
 
 import { describe, it } from 'vitest';
 // If this file doesn't exist, you need to run the kotlin tests in the methods package
-import testResults from '../../../methods/build/test-results/gmActionTests.json';
+import testResults from '../../methods/build/test-results/gmActionTests.json';
 import type {
   ExpressionTree,
   MathJson,
@@ -19,6 +19,7 @@ import { solverPathToGmNodes } from '../src/graspable-math/solver-path-to-gm-nod
 
 import { GmMathNode } from '../src/graspable-math/create-path-map';
 import { loadGmEnvironment } from './gm-tools';
+
 const { gmath, when } = await loadGmEnvironment();
 gmath.MathSettings.defaults.set('dont_pass_through_minus_when_dividing', true);
 gmath.MathSettings.defaults.set('cancel_common_terms_after_finding_gcf', false);
@@ -280,6 +281,7 @@ function hasExpressionType(
 // for use when debugging
 global.treeToLatex = treeToLatex;
 global.treeToAscii = treeToAscii;
+
 function treeToAscii(tree): string {
   return new gmath.AlgebraModel(treeToLatex(tree)).to_ascii();
 }

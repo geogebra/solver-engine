@@ -9,7 +9,7 @@
 !/api/src/main/openapi/*
 !/api/src/main/resources/*
 !/api/src/main/resources/static/*
-!/@geogebra/**
+!/solver-sdk/**
 !/config/*
 !/docs/*
 !/solver-poker/**
@@ -19,10 +19,10 @@
 Pipfile.lock
 node_modules
 /helm
-/@geogebra/**/dist
-/@geogebra/**/lib
-/@geogebra/**/coverage
-/@geogebra/**/.nyc_output
-/@geogebra/**/node_modules
-/@geogebra/**/.npm
+/solver-sdk/dist
+/solver-sdk/lib
+/solver-sdk/coverage
+/solver-sdk/.nyc_output
+/solver-sdk/node_modules
+/solver-sdk/.npm
 /solver-poker/test-results-src/test-results.ts
