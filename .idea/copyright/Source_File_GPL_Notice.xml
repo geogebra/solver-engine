@@ -1,0 +1,6 @@
+<component name="CopyrightManager">
+  <copyright>
+    <option name="notice" value="Copyright (c) &amp;#36;originalComment.match(&quot;Copyright \(c\) (\d+)&quot;, 1, &quot;-&quot;, &quot;&amp;#36;today.year&quot;)&amp;#36;today.year GeoGebra GmbH, office@geogebra.org&#10;This file is part of GeoGebra&#10;&#10;The GeoGebra source code is licensed to you under the terms of the&#10;GNU General Public License (version 3 or later)&#10;as published by the Free Software Foundation,&#10;the current text of which can be found via this link:&#10;https://www.gnu.org/licenses/gpl.html (&quot;GPL&quot;)&#10;Attribution (as required by the GPL) should take the form of (at least)&#10;a mention of our name, an appropriate copyright notice&#10;and a link to our website located at https://www.geogebra.org&#10;&#10;For further details, please see https://www.geogebra.org/license&#10;" />
+    <option name="myName" value="Source File GPL Notice" />
+  </copyright>
+</component>

@@ -1,0 +1,9 @@
+<component name="CopyrightManager">
+  <settings>
+    <module2copyright>
+      <element module="Kotlin Source Files" copyright="Source File GPL Notice" />
+      <element module="Poker Source Files" copyright="Source File GPL Notice" />
+      <element module="Helm Source Files" copyright="Short Copyright Notice" />
+    </module2copyright>
+  </settings>
+</component>

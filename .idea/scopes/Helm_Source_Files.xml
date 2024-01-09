@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="Helm Source Files" pattern="file[solver-engine]:helm//*" />
+</component>

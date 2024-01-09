@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="Poker Source Files" pattern="file[solver-engine]:solver-poker/src//*" />
+</component>
