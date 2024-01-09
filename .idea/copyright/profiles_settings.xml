@@ -5,6 +5,7 @@
       <element module="Poker Source Files" copyright="Source File GPL Notice" />
       <element module="Helm Source Files" copyright="Short Copyright Notice" />
       <element module="SDK Source Files" copyright="Source File GPL Notice" />
+      <element module="Scripts" copyright="Short Copyright Notice" />
     </module2copyright>
   </settings>
 </component>

@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+#
+# Copyright (c) 2024 GeoGebra GmbH, office@geogebra.org
+#
+
 # This script outputs to stdout the list of all image tags in the solver engine repository.  It can be used in
 # conjunction with delete_image_tags.sh to help clean up unused tags.
 

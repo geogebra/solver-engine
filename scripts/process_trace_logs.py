@@ -1,3 +1,5 @@
+#  Copyright (c) 2024 GeoGebra GmbH, office@geogebra.org
+
 import argparse
 import os
 import re

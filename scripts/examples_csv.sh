@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+#
+# Copyright (c) 2024 GeoGebra GmbH, office@geogebra.org
+#
+
 # Output a CSV of explanation keys to example inputs, generated from the tests
 
 function abs_path {

@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+#
+# Copyright (c) 2024 GeoGebra GmbH, office@geogebra.org
+#
+
 # This script deletes docker image tags provided on stdout (one per line) from the solver-engine repository.  It can be
 # used in conjunction with fetch_image_tags.sh to help clean up unused tags.
 

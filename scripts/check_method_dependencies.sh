@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+#
+# Copyright (c) 2024 GeoGebra GmbH, office@geogebra.org
+#
+
 WORK_DIR=$(mktemp -d)
 
 # check if tmp dir was created
