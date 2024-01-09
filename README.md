@@ -1,6 +1,7 @@
 # Solver Engine
 
-This project hosts the code for the solver engine.
+This project hosts the code for the solver engine. The GitHub repository is a read-only mirror of the repository
+where development is done, which is a private gitlab repository. Currently, only the `main` branch is mirrored.
 
 ## Overview of the structure
 
@@ -27,17 +28,36 @@ The solver engine project is split into modules:
 
 ## Development
 
-### IntelliJ IDEA
+### Prerequisites
 
-There are two run configurations that can be used out of the box.
+- You need either IntelliJ IDEA or Java 21 installed on your development machine.
+- You need node.js and npm installed. You can use [Volta](https://volta.sh/) to manage them.
+- Run `npm i` to install js dependencies.
+
+### Development quick start
+
+The most convenient way to develop is to use IntelliJ IDEA. Configuration files for it are included in the project,
+so it should more or less work out of the box.
+
+There are a number of run configurations that are included in the project.
 
 - `All Tests`: runs all the unit tests
-- `API Server`: runs the API Server on local machine on port 8080
+- `API Server`: runs the API Server on the local machine on port 8080. You need te rebuild for changes to take effect (
+  this is because building the project all the time would consume a lot of resources)
+- `Poker Dev`: runs the "poker" a small html client that is useful to try out the engine, on http://localhost:4173/.
+  This is configured to reload automatically when the client code changes.
 
 When the API server runs, you can inspect the API by navigating to http://localhost:8080
 and access the _Solver Poker_ at http://localhost:8080/poker, but that will not work
 until you follow the instructions in [the Typescript section of this
 document](#Typescript)
+
+Alternatively you can perform the same tasks without IntelliJ, using gradle or npm
+
+- to run all tests, run `./gradlew test` at the root of the project
+- to start the api server, run `./gradlew run` at the root of the project
+- to start and/or develop the poker, run `npm run poker-dev` at the root of the project. Note that this requires npm to
+  be installed (see the Typescript section)
 
 ### Commit hooks
 
@@ -59,10 +79,6 @@ The project configures IntelliJ to use Prettier for formatting and .js, .html,
 isn't required. Make sure you have node.js installed and run `npm i` at the root
 of this project, so that Prettier and eslint can work.
 
-In IntelliJ, go to "Settings" > "Actions on Save" and disable "Reformat code". If you
-don't do that, then IntelliJ will reformat your code using its own internal formatter,
-which we don't want, because we are using prettier and ktlint instead.
-
 To develop the poker, you can run
 
 ```
@@ -76,27 +92,6 @@ that saves having to open two different terminals.
 
 If you create a solver-poker/.env.local file that says `VITE_AUTO_SUBMISSION_MODE=true`,
 then using Poker locally may be easier. See the code for details.
-
-### Extra Help Testing
-
-Looking at the test results for bigger tests can be difficult. To make it easier, we made
-a fancy reporter for some of the bigger tests. To use it:
-
-1. Follow the instructions in the [Typescript section of this document](#Typescript).
-2. Run the kotlin tests. This can be done by either:
-   - Running the `All Tests` run configuration in IntelliJ
-   - Running `./gradlew methods:test --continuous` so that it will watch for changes and
-     rerun only the the tests in the `methods` module, which is nice because tests outside
-     that module can't use the fancy reporter (and even then it is only some of the tests
-     in that module).
-   - Running `./gradlew test` in the terminal
-3. Run `npm run vite`
-4. Go to http://localhost:4173/test-results.html
-
-The page should automatically update when you rerun the tests. There have been issues with
-that, however, requiring you to restart `npm run vite`. Please pay attention to that so
-that we can figure out some steps to reproduce the issue of needing to restart to restart
-`npm run vite`.
 
 ## Deployment
 
