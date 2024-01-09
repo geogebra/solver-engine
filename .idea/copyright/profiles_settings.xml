@@ -6,6 +6,7 @@
       <element module="Helm Source Files" copyright="Short Copyright Notice" />
       <element module="SDK Source Files" copyright="Source File GPL Notice" />
       <element module="Scripts" copyright="Short Copyright Notice" />
+      <element module="Gradle Build Scripts" copyright="Short Copyright Notice" />
     </module2copyright>
   </settings>
 </component>

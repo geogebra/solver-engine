@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 GeoGebra GmbH, office@geogebra.org
+ */
+
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jlleitschuh.gradle.ktlint.tasks.KtLintCheckTask
 import org.springframework.boot.gradle.tasks.bundling.BootBuildImage

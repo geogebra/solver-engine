@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="Gradle Build Scripts" pattern="file:*.kts" />
+</component>

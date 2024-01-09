@@ -1,7 +1,8 @@
 # Solver Engine
 
-This project hosts the code for the solver engine. The GitHub repository is a read-only mirror of the repository
-where development is done, which is a private gitlab repository. Currently, only the `main` branch is mirrored.
+This project hosts the code for the solver engine. The [GitHub repository](https://github.com/geogebra/solver-engine) is
+a read-only mirror of the repository where development is done, which is a private gitlab repository. Currently, only
+the `main` branch is mirrored.
 
 ## Overview of the structure
 

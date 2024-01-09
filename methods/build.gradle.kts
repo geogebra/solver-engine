@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 GeoGebra GmbH, office@geogebra.org
+ */
+
 import org.jlleitschuh.gradle.ktlint.tasks.KtLintCheckTask
 import org.jlleitschuh.gradle.ktlint.tasks.KtLintFormatTask
 

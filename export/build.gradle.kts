@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 GeoGebra GmbH, office@geogebra.org
+ */
+
 plugins {
     kotlin("jvm")
 }

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 GeoGebra GmbH, office@geogebra.org
+ */
+
 import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
