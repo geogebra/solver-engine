@@ -82,15 +82,19 @@ export type API_PLANS_RESPONSE = PlanId[];
 export type API_STRATEGIES_RESPONSE = StrategyMap;
 
 export type GraphResponseBase<MathFormat> = {
-  coordinateSystem: Cartesian2DSystem;
-  objects: ExpressionGraphObject<MathFormat>[];
+  coordinateSystem: CoordinateSystem;
+  objects: GraphObject<MathFormat>[];
 };
 
-export type ExpressionGraphObject<MathFormat> = {
+export type GraphObject<MathFormat> = Curve2DGraphObject<MathFormat>;
+
+export type Curve2DGraphObject<MathFormat> = {
   type: 'curve2D';
   label?: string;
   expression: MathFormat;
 };
+
+export type CoordinateSystem = Cartesian2DSystem;
 
 export type Cartesian2DSystem = {
   type: 'Cartesian2D';

@@ -101,7 +101,7 @@ if (props.materialId) {
 }
 
 const applet = new GGBApplet(parameters, true);
-applet.setHTML5Codebase('https://www.geogebra.org/apps/5.0.785.0/web3d/');
+applet.setHTML5Codebase('https://www.geogebra.org/apps/5.2.819.0/web3d/');
 
 function onGgbUpdate(name: string) {
   emit('onChange', name, ggbApplet!);

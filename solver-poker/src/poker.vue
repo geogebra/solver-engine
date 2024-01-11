@@ -28,7 +28,8 @@ import type {
   TransformationSolver,
 } from '@geogebra/solver-sdk';
 import * as solverSdk from '@geogebra/solver-sdk';
-import { jsonToTree, treeToGgb, treeToLatex } from '@geogebra/solver-sdk';
+import { GgbAppletGrapher } from '@geogebra/solver-sdk';
+
 import {
   colorScheme,
   demoMode,
@@ -253,42 +254,19 @@ watch([graphJsonFormat, applet], () => {
     return;
   }
   ggbApi.newConstruction();
+  const grapher = new GgbAppletGrapher(ggbApi);
+
   if ('error' in graph) {
     return;
   }
-  const coordinateSystem = graph.coordinateSystem;
-  let varSub: Record<string, string> = {};
-  if (coordinateSystem.type === 'Cartesian2D') {
-    ggbApi.setCoordSystem(
-      coordinateSystem.horizontalAxis.minValue,
-      coordinateSystem.horizontalAxis.maxValue,
-      coordinateSystem.verticalAxis.minValue,
-      coordinateSystem.verticalAxis.maxValue,
-    );
-    ggbApi.setAxisLabels(
-      1,
-      coordinateSystem.horizontalAxis.label,
-      coordinateSystem.verticalAxis.label,
-      '',
-    );
-    varSub[coordinateSystem.horizontalAxis.variable] = 'x';
-    varSub[coordinateSystem.verticalAxis.variable] = 'y';
-  }
-  const colors = [
+  grapher.setCoordinateSystem(graph.coordinateSystem);
+  const colors: Array<[number, number, number]> = [
     [200, 20, 20],
     [10, 120, 10],
     [10, 10, 100],
   ];
   for (const [i, obj] of graph.objects.entries()) {
-    const exprTree = jsonToTree(obj.expression);
-    const color = colors[i % colors.length];
-    ggbApi.evalCommand(`${obj.label}:${treeToGgb(exprTree, varSub)}`);
-    if (obj.label) {
-      ggbApi.setColor(obj.label, color[0], color[1], color[2]);
-      ggbApi.setCaption(obj.label, `$${treeToLatex(exprTree)}$`);
-      ggbApi.setLabelStyle(obj.label, 3);
-      ggbApi.setLabelVisible(obj.label, true);
-    }
+    grapher.drawObject(obj, colors[i % colors.length]);
   }
   // applet.value.showAllObjects();
 });

@@ -14,6 +14,8 @@ contents to a new release section (e.g. _[0.x]_).
 - Added copyright notice to engine, poker and SDK source files (PLUT-929)
 - Added license headers for scripts (PLUT-960)
 - Added license headers for gradle build files (PLUT-961)
+- SDK: Added `Grapher` interface to SDK, with a `GgbApplerGrapher` implementation that knows how to draw a graph using a
+  ggb applet (PLUT-944)
 
 ### Fixed
 

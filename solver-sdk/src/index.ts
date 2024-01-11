@@ -33,6 +33,7 @@ export * from './types';
 export * from './solutions';
 export * from './translations';
 export * from './math-generator';
+export * from './graphing';
 
 export function jsonToLatex(
   json: MathJson,

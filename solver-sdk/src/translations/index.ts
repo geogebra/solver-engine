@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 GeoGebra GmbH, office@geogebra.org
+ * Copyright (c) 2023-2024 GeoGebra GmbH, office@geogebra.org
  * This file is part of GeoGebra
  *
  * The GeoGebra source code is licensed to you under the terms of the
