@@ -37,7 +37,7 @@ export type GgbAppletApi = {
   setValue: (objName: string, value: number) => void;
   getValueString: (objName: string) => string;
   evalCommand: (command: string) => boolean;
-  evalCommandGetLabels: (command: string) => string[];
+  evalCommandGetLabels: (command: string) => string;
   deleteObject: (objName: string) => void;
   newConstruction: () => void;
   // NAME = 0, NAME_VALUE = 1, VALUE = 2 and (from GeoGebra 3.2) CAPTION = 3

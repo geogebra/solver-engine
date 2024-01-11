@@ -35,7 +35,7 @@ export type GgbAppletApi = {
   setValue: (objName: string, value: number) => void;
   getValueString: (objName: string) => string;
   evalCommand: (command: string) => boolean;
-  evalCommandGetLabels: (command: string) => string[];
+  evalCommandGetLabels: (command: string) => string;
   deleteObject: (objName: string) => void;
   newConstruction: () => void;
   // NAME = 0, NAME_VALUE = 1, VALUE = 2 and (from GeoGebra 3.2) CAPTION = 3
@@ -107,17 +107,22 @@ export class GgbAppletGrapher implements Grapher {
         const exprTree = jsonToTree(graphObject.expression);
         const exprGgb = treeToGgb(exprTree, this.varSub);
 
-        // If there is a label, we use it, otherwise we let the applet create one.
-        const label =
-          labelFromObject || this.ggbAppletApi.evalCommandGetLabels(exprGgb)[0];
+        // If there is a label, we use it, otherwise we let the applet create one - but there may be more than one
+        // object created, which would mean more than one label.
+        const labels = labelFromObject
+          ? [labelFromObject]
+          : this.ggbAppletApi.evalCommandGetLabels(exprGgb).split(',');
+
         if (labelFromObject) {
-          this.ggbAppletApi.evalCommand(`${label}:${exprGgb}`);
+          this.ggbAppletApi.evalCommand(`${labelFromObject}:${exprGgb}`);
         }
 
-        this.ggbAppletApi.setColor(label, rgbColor[0], rgbColor[1], rgbColor[2]);
-        this.ggbAppletApi.setCaption(label, `$${treeToLatex(exprTree)}$`);
-        this.ggbAppletApi.setLabelStyle(label, 3);
-        this.ggbAppletApi.setLabelVisible(label, true);
+        for (const label of labels) {
+          this.ggbAppletApi.setColor(label, rgbColor[0], rgbColor[1], rgbColor[2]);
+          this.ggbAppletApi.setCaption(label, `$${treeToLatex(exprTree)}$`);
+          this.ggbAppletApi.setLabelStyle(label, 3);
+          this.ggbAppletApi.setLabelVisible(label, true);
+        }
 
         break;
       }

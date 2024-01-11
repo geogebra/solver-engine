@@ -19,6 +19,8 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Fixed
 
+- SDK: Fixed error in `evalCommnandGetLabels` signature (PLUT-963)
+
 ### Changed
 
 - Upgraded Kotlin to 1.9.22, ktlint to 1.10, detekt to 1.23.4, and a list of related dependencies. The ktlint upgrade
