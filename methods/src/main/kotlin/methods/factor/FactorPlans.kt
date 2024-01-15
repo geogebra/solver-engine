@@ -297,10 +297,9 @@ enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
      * Factor a polynomial in one variable.
      */
     @PublicMethod
-    FactorPolynomialInOneVariable(
+    FactorPolynomial(
         plan {
             explanation = Explanation.FactorPolynomial
-            pattern = condition { it.variables.size <= 1 }
             resultPattern = optionalNegOf(oneOf(productContaining(), powerOf(AnyPattern(), AnyPattern())))
 
             steps {

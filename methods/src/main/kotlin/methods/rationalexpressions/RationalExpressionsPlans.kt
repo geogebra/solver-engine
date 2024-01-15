@@ -271,7 +271,7 @@ private val addRationalExpressions = taskSet {
 }
 
 private val factoringTaskSteps = steps {
-    applyToKind<Fraction>(FactorPlans.FactorPolynomialInOneVariable) { it.denominator }
+    applyToKind<Fraction>(FactorPlans.FactorPolynomial) { it.denominator }
 }
 
 private fun TasksBuilder.factorFractionDenominatorTask(fraction: Fraction): Fraction {

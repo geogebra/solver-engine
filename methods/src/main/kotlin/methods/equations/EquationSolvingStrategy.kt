@@ -131,7 +131,7 @@ enum class EquationSolvingStrategy(
         explanation = EquationsExplanation.SolveEquationByFactoring,
         steps = steps {
             optionally(solvablePlansForEquations.moveEverythingToTheLeftAndSimplify)
-            applyTo(FactorPlans.FactorPolynomialInOneVariable) { it.firstChild }
+            applyTo(FactorPlans.FactorPolynomial) { it.firstChild }
             firstOf {
 
                 // If the equation factored into at least two distinct factors

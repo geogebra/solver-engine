@@ -49,7 +49,7 @@ enum class FallbackPlans(override val runner: CompositeMethod) : RunnerMethod {
         taskSet {
             specificPlans(
                 SimplifyPlans.SimplifyAlgebraicExpression,
-                FactorPlans.FactorPolynomialInOneVariable,
+                FactorPlans.FactorPolynomial,
             )
 
             explanation = Explanation.QuadraticIsIrreducible
@@ -98,7 +98,7 @@ enum class FallbackPlans(override val runner: CompositeMethod) : RunnerMethod {
                 IntegerArithmeticPlans.EvaluateArithmeticExpression,
                 ApproximationPlans.EvaluateExpressionNumerically,
                 SimplifyPlans.SimplifyAlgebraicExpression,
-                FactorPlans.FactorPolynomialInOneVariable,
+                FactorPlans.FactorPolynomial,
                 EquationsPlans.SolveConstantEquation,
                 EquationsPlans.SolveEquation,
                 InequalitiesPlans.SolveConstantInequality,

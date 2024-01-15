@@ -30,7 +30,7 @@ class FactorPlansTest {
     @Test
     fun `test extracting the common integer factor`() =
         testMethod {
-            method = FactorPlans.FactorPolynomialInOneVariable
+            method = FactorPlans.FactorPolynomial
             inputExpr = "16 [x ^ 5] - 32"
 
             check {
@@ -45,7 +45,7 @@ class FactorPlansTest {
     @Test
     fun `test extracting the common monomial factor`() =
         testMethod {
-            method = FactorPlans.FactorPolynomialInOneVariable
+            method = FactorPlans.FactorPolynomial
             inputExpr = "15 [x ^ 5] - 33 [x ^ 2]"
 
             check {
@@ -76,7 +76,7 @@ class FactorPlansTest {
     @Test
     fun `test extracting factor after rearranging its terms`() =
         testMethod {
-            method = FactorPlans.FactorPolynomialInOneVariable
+            method = FactorPlans.FactorPolynomial
             inputExpr = "3 * [(x + 1) ^ 3] + 6 * [(1 + x) ^ 2]"
 
             check {
@@ -139,7 +139,7 @@ class FactorPlansTest {
     @Test
     fun `test factoring monic perfect square`() =
         testMethod {
-            method = FactorPlans.FactorPolynomialInOneVariable
+            method = FactorPlans.FactorPolynomial
             inputExpr = "[x ^ 2] + 14 x + 49"
 
             check {
@@ -170,7 +170,7 @@ class FactorPlansTest {
     @Test
     fun `test factoring non-monic perfect square`() =
         testMethod {
-            method = FactorPlans.FactorPolynomialInOneVariable
+            method = FactorPlans.FactorPolynomial
             inputExpr = "4 [x ^ 2] + 12 x + 9"
 
             check {
@@ -201,7 +201,7 @@ class FactorPlansTest {
     @Test
     fun `test factoring perfect square with negative mixed term`() =
         testMethod {
-            method = FactorPlans.FactorPolynomialInOneVariable
+            method = FactorPlans.FactorPolynomial
             inputExpr = "4 [x ^ 2] - 12 x + 9"
 
             check {
@@ -232,7 +232,7 @@ class FactorPlansTest {
     @Test
     fun `test factoring perfect cube`() =
         testMethod {
-            method = FactorPlans.FactorPolynomialInOneVariable
+            method = FactorPlans.FactorPolynomial
             inputExpr = "[x ^ 3] + 1 + 3 [x ^ 2] + 3 x"
 
             check {
@@ -271,7 +271,7 @@ class FactorPlansTest {
     @Test
     fun `test factoring using the difference of squares formula`() =
         testMethod {
-            method = FactorPlans.FactorPolynomialInOneVariable
+            method = FactorPlans.FactorPolynomial
             inputExpr = "121 [x ^ 4] - 9"
 
             check {
@@ -302,7 +302,7 @@ class FactorPlansTest {
     @Test
     fun `test factoring using the difference of cubes formula`() =
         testMethod {
-            method = FactorPlans.FactorPolynomialInOneVariable
+            method = FactorPlans.FactorPolynomial
             inputExpr = "64 - [x ^ 3]"
 
             check {
@@ -341,7 +341,7 @@ class FactorPlansTest {
     @Test
     fun `test factoring using the sum of cubes formula`() =
         testMethod {
-            method = FactorPlans.FactorPolynomialInOneVariable
+            method = FactorPlans.FactorPolynomial
             inputExpr = "125 + 8 [x ^ 6]"
 
             check {
@@ -396,7 +396,7 @@ class FactorPlansTest {
     @Test
     fun `test factoring monic trinomial by guessing`() =
         testMethod {
-            method = FactorPlans.FactorPolynomialInOneVariable
+            method = FactorPlans.FactorPolynomial
             inputExpr = "[x ^ 2] - 5 x + 6"
 
             check {
@@ -435,7 +435,7 @@ class FactorPlansTest {
     @Test
     fun `test factoring non-monic trinomial by grouping`() =
         testMethod {
-            method = FactorPlans.FactorPolynomialInOneVariable
+            method = FactorPlans.FactorPolynomial
             inputExpr = "6 [x ^ 2] + 11 x + 4"
 
             check {
@@ -498,7 +498,7 @@ class FactorPlansTest {
     @Test
     fun `test factoring by grouping into 2 + 2 terms`() =
         testMethod {
-            method = FactorPlans.FactorPolynomialInOneVariable
+            method = FactorPlans.FactorPolynomial
             inputExpr = "6 [x ^ 3] + 8 [x ^ 2] + 9 x + 12"
 
             check {
@@ -545,7 +545,7 @@ class FactorPlansTest {
     @Test
     fun `test factoring by grouping into 1 + 3 terms`() =
         testMethod {
-            method = FactorPlans.FactorPolynomialInOneVariable
+            method = FactorPlans.FactorPolynomial
             inputExpr = "[x ^ 4] - [x ^ 2] + 2 x - 1"
 
             check {
@@ -608,7 +608,7 @@ class FactorPlansTest {
     @Test
     fun `test factoring by first extracting the gcf then applying difference of squares`() =
         testMethod {
-            method = FactorPlans.FactorPolynomialInOneVariable
+            method = FactorPlans.FactorPolynomial
             inputExpr = "18 [x ^ 6] - 32 [x ^ 2]"
 
             check {
@@ -671,7 +671,7 @@ class FactorPlansTest {
     @Test
     fun `test factoring by first extracting the gcf then applying difference of squares twice`() =
         testMethod {
-            method = FactorPlans.FactorPolynomialInOneVariable
+            method = FactorPlans.FactorPolynomial
             inputExpr = "162 [x ^ 6] - 32 [x ^ 2]"
 
             check {
@@ -758,7 +758,7 @@ class FactorPlansTest {
     @Test
     fun `test minus is distributed before factoring if it cancels with the leading coefficient`() =
         testMethod {
-            method = FactorPlans.FactorPolynomialInOneVariable
+            method = FactorPlans.FactorPolynomial
             inputExpr = "-(-[x ^ 2] - 2 x - 1)"
 
             check {
@@ -789,7 +789,7 @@ class FactorPlansTest {
     @Test
     fun `test bracket is not removed if it is useful for factoring`() =
         testMethod {
-            method = FactorPlans.FactorPolynomialInOneVariable
+            method = FactorPlans.FactorPolynomial
             inputExpr = "[(3 x + 6) ^ 2] - (x + 2)"
 
             check {
