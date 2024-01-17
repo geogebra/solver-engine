@@ -482,6 +482,14 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     SomeSolutionsDoNotSatisfyConstraint,
 
     /**
+     * Write the final solution of an equation with a constraint, in the case that the constraint applies to the
+     * parameters of the solution, not the solution variable.
+     *
+     * E.g. the solution is of the form x = 2y GIVEN y != 0
+     */
+    AddConstraintToSolution,
+
+    /**
      * Write the final solution of an equation with a constraint, in the case that the result
      * is obvious because e.g. the equation has no solution or the constraint is a contradiction.
      */

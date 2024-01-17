@@ -13,6 +13,8 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Fixed
 
+- Fixed problem with multivariate equations with constraints reporting no solution (PLUT-965)
+
 ### Changed
 
 ### Removed

@@ -27,6 +27,7 @@ import engine.expressions.SetExpression
 import engine.expressions.SetSolution
 import engine.expressions.Variable
 import engine.expressions.equationOf
+import engine.expressions.expressionWithConstraintOf
 import engine.expressions.setSolutionOf
 import engine.expressions.statementSystemOf
 import engine.methods.TasksBuilder
@@ -140,7 +141,23 @@ fun TasksBuilder.checkSolutionsAgainstConstraint(solution: Expression, constrain
             )
         }
         solution is SetSolution -> {
-            computeValidSetSolution(solution, constraint)?.let { reportValidSolutions(solution, constraint, it) }
+            when {
+                setOf(solution.solutionVariable) == constraint.variables -> {
+                    // The case when the constraint is about the solution variable.  In this case we try to prune the
+                    // solution set according to the constraint.
+                    computeValidSetSolution(solution, constraint)?.let {
+                        reportValidSolutions(solution, constraint, it)
+                    }
+                }
+                else -> {
+                    // Lastly the constraint does apply to the solutions.  It would be difficult to simplify so for now
+                    // we just write the solution with the constraint.
+                    task(
+                        startExpr = expressionWithConstraintOf(solution, constraint),
+                        explanation = metadata(Explanation.AddConstraintToSolution),
+                    )
+                }
+            }
         }
         else -> null
     }
@@ -153,6 +170,9 @@ fun TasksBuilder.checkSolutionsAgainstConstraint(solution: Expression, constrain
  * This is only partially implemented but covered the currently needed cases.  It can be extended in the future.
  */
 private fun TasksBuilder.computeValidSetSolution(solution: SetSolution, constraint: Expression): SetExpression? {
+    if (setOf(solution.solutionVariable) != constraint.variables) {
+        return null
+    }
     return when (constraint) {
         is SetSolution -> {
             solution.solutionSet.intersect(constraint.solutionSet, expressionComparator)

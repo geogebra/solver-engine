@@ -21,6 +21,7 @@ import engine.context.Context
 import engine.methods.SolverEngineExplanation
 import engine.methods.testMethod
 import engine.methods.testMethodInX
+import methods.algebra.AlgebraExplanation
 import methods.constantexpressions.ConstantExpressionsExplanation
 import methods.general.GeneralExplanation
 import methods.inequalities.InequalitiesExplanation
@@ -28,7 +29,7 @@ import methods.inequations.InequationsExplanation
 import methods.polynomials.PolynomialsExplanation
 import kotlin.test.Test
 
-@Suppress("MaxLineLength", "ktlint:standard:max-line-length")
+@Suppress("LargeClass", "MaxLineLength", "ktlint:standard:max-line-length")
 class MultivariateEquationsTest {
     @Test
     fun `test single step linear equation without constraint`() =
@@ -706,6 +707,61 @@ class MultivariateEquationsTest {
                     toExpr = "SetSolution[x: {[3 / 2 h]}] GIVEN SetSolution[h: /reals/ \\ {0}]"
                     explanation {
                         key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
+                    }
+                }
+            }
+        }
+
+    @Test
+    fun `test multivariate equation with constraint`() =
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "[x / y] = 2"
+
+            check {
+                fromExpr = "[x / y] = 2"
+                toExpr = "SetSolution[x: {2 y}] GIVEN SetSolution[y: /reals/ \\ {0}]"
+                explanation {
+                    key = EquationsExplanation.SolveEquation
+                }
+
+                task {
+                    taskId = "#1"
+                    startExpr = "[x / y] = 2"
+                    explanation {
+                        key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
+                    }
+
+                    step {
+                        fromExpr = "[x / y] = 2"
+                        toExpr = "SetSolution[y: /reals/ \\ {0}]"
+                        explanation {
+                            key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
+                        }
+                    }
+                }
+
+                task {
+                    taskId = "#2"
+                    startExpr = "[x / y] = 2"
+                    explanation {
+                        key = EquationsExplanation.SolveEquation
+                    }
+
+                    step {
+                        fromExpr = "[x / y] = 2"
+                        toExpr = "SetSolution[x: {2 y}]"
+                        explanation {
+                            key = EquationsExplanation.SolveLinearEquation
+                        }
+                    }
+                }
+
+                task {
+                    taskId = "#3"
+                    startExpr = "SetSolution[x: {2 y}] GIVEN SetSolution[y: /reals/ \\ {0}]"
+                    explanation {
+                        key = EquationsExplanation.AddConstraintToSolution
                     }
                 }
             }
