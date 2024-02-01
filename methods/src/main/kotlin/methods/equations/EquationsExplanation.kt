@@ -355,6 +355,14 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     SolveEquation,
 
     /**
+     * For an equation which has a domain constraint, combine the domain constraint with the solutions to obtain
+     * the valid solutions to the equation.
+     *
+     * E.g. [1/x] = [1/[x^2]] has the domain constraint x != 0 so we need to keep only the non-zero solutions.
+     */
+    AddDomainConstraintToSolution,
+
+    /**
      * Determine whether an equation between constants is true or false.
      */
     SolveConstantEquation,

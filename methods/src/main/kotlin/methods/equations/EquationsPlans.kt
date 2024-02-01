@@ -30,6 +30,7 @@ import engine.expressions.ExpressionWithConstraint
 import engine.expressions.RecurringDecimalExpression
 import engine.expressions.StatementSystem
 import engine.expressions.StatementUnion
+import engine.expressions.expressionWithConstraintOf
 import engine.methods.CompositeMethod
 import engine.methods.Method
 import engine.methods.PublicMethod
@@ -463,11 +464,20 @@ val solveEquationPlan = object : CompositeMethod() {
             // no need to check if the constraint(s) is/are satisfied if solution
             // is an empty set
             if (solution !is Contradiction || solution == Constants.EmptySet) {
-                checkSolutionsAgainstConstraint(solution, constraint) ?: return@tasks null
+                taskWithOptionalSteps(
+                    startExpr = expressionWithConstraintOf(solution, constraint),
+                    explanation = metadata(Explanation.AddDomainConstraintToSolution),
+                    stepsProducer = addDomainConstraintToSolution,
+                )
             }
 
             allTasks()
         }
+    }
+
+    private val addDomainConstraintToSolution = steps {
+        optionally(mergeConstraintsRule)
+        optionally(simplifySolutionWithConstraint)
     }
 
     override fun run(ctx: Context, sub: Expression): Transformation? {

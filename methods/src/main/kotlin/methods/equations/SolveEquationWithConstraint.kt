@@ -37,6 +37,7 @@ import engine.patterns.AnyPattern
 import engine.patterns.absoluteValueOf
 import engine.patterns.condition
 import engine.patterns.equationOf
+import engine.patterns.expressionWithConstraintOf
 import engine.patterns.inSolutionVariables
 import engine.patterns.oneOf
 import engine.patterns.statementSystemOf
@@ -118,6 +119,19 @@ internal val solveEquationWithOneAbsoluteValueBySubstitution = taskSet {
 
         checkSolutionsAgainstConstraint(solveWithoutConstraint.result, expression) ?: return@tasks null
 
+        allTasks()
+    }
+}
+
+val simplifySolutionWithConstraint = taskSet {
+    explanation = Explanation.GatherSolutionsAndConstraint
+    pattern = expressionWithConstraintOf(AnyPattern(), AnyPattern())
+
+    tasks {
+        val solution = expression.firstChild
+        val constraint = expression.secondChild
+
+        checkSolutionsAgainstConstraint(solution, constraint) ?: return@tasks null
         allTasks()
     }
 }

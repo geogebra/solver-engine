@@ -170,9 +170,25 @@ class SolveRationalEquationTest {
 
                 task {
                     taskId = "#3"
-                    startExpr = "SetSolution[x : {[1 / 4]}]"
+                    startExpr = "SetSolution[x: {-3, [1 / 4]}] GIVEN SetSolution[x: /reals/ \\ {-3, 3}]"
                     explanation {
-                        key = EquationsExplanation.SomeSolutionsDoNotSatisfyConstraint
+                        key = EquationsExplanation.AddDomainConstraintToSolution
+                    }
+
+                    step {
+                        fromExpr = "SetSolution[x: {-3, [1 / 4]}] GIVEN SetSolution[x: /reals/ \\ {-3, 3}]"
+                        toExpr = "SetSolution[x: {[1 / 4]}]"
+                        explanation {
+                            key = EquationsExplanation.GatherSolutionsAndConstraint
+                        }
+
+                        task {
+                            taskId = "#1"
+                            startExpr = "SetSolution[x: {[1 / 4]}]"
+                            explanation {
+                                key = EquationsExplanation.SomeSolutionsDoNotSatisfyConstraint
+                            }
+                        }
                     }
                 }
             }
@@ -205,57 +221,73 @@ class SolveRationalEquationTest {
 
                 task {
                     taskId = "#2"
-                    startExpr = "[12 / [(-3) ^ 2] - 9] = [8 * (-3) / -3 - 3] - [2 / -3 + 3]"
+                    startExpr = "SetSolution[x: {-3, [1 / 4]}] GIVEN [12 / [x ^ 2] - 9] = [8 x / x - 3] - [2 / x + 3]"
                     explanation {
-                        key = EquationsExplanation.CheckIfSolutionSatisfiesConstraint
+                        key = EquationsExplanation.AddDomainConstraintToSolution
                     }
 
                     step {
-                        fromExpr = "[12 / [(-3) ^ 2] - 9] = [8 * (-3) / -3 - 3] - [2 / -3 + 3]"
-                        toExpr = "/undefined/"
+                        fromExpr = "SetSolution[x: {-3, [1 / 4]}] GIVEN [12 / [x ^ 2] - 9] = [8 x / x - 3] - [2 / x + 3]"
+                        toExpr = "SetSolution[x: {[1 / 4]}]"
                         explanation {
-                            key = EquationsExplanation.SimplifyEquation
+                            key = EquationsExplanation.GatherSolutionsAndConstraint
                         }
-                    }
 
-                    step {
-                        fromExpr = "/undefined/"
-                        toExpr = "Contradiction[/undefined/]"
-                        explanation {
-                            key = EquationsExplanation.UndefinedConstantEquationIsFalse
+                        task {
+                            taskId = "#1"
+                            startExpr = "[12 / [(-3) ^ 2] - 9] = [8 * (-3) / -3 - 3] - [2 / -3 + 3]"
+                            explanation {
+                                key = EquationsExplanation.CheckIfSolutionSatisfiesConstraint
+                            }
+
+                            step {
+                                fromExpr = "[12 / [(-3) ^ 2] - 9] = [8 * (-3) / -3 - 3] - [2 / -3 + 3]"
+                                toExpr = "/undefined/"
+                                explanation {
+                                    key = EquationsExplanation.SimplifyEquation
+                                }
+                            }
+
+                            step {
+                                fromExpr = "/undefined/"
+                                toExpr = "Contradiction[/undefined/]"
+                                explanation {
+                                    key = EquationsExplanation.UndefinedConstantEquationIsFalse
+                                }
+                            }
                         }
-                    }
-                }
 
-                task {
-                    taskId = "#3"
-                    startExpr = "[12 / [([1 / 4]) ^ 2] - 9] = [8 * [1 / 4] / [1 / 4] - 3] - [2 / [1 / 4] + 3]"
-                    explanation {
-                        key = EquationsExplanation.CheckIfSolutionSatisfiesConstraint
-                    }
+                        task {
+                            taskId = "#2"
+                            startExpr = "[12 / [([1 / 4]) ^ 2] - 9] = [8 * [1 / 4] / [1 / 4] - 3] - [2 / [1 / 4] + 3]"
+                            explanation {
+                                key = EquationsExplanation.CheckIfSolutionSatisfiesConstraint
+                            }
 
-                    step {
-                        fromExpr = "[12 / [([1 / 4]) ^ 2] - 9] = [8 * [1 / 4] / [1 / 4] - 3] - [2 / [1 / 4] + 3]"
-                        toExpr = "-[192 / 143] = -[192 / 143]"
-                        explanation {
-                            key = EquationsExplanation.SimplifyEquation
+                            step {
+                                fromExpr = "[12 / [([1 / 4]) ^ 2] - 9] = [8 * [1 / 4] / [1 / 4] - 3] - [2 / [1 / 4] + 3]"
+                                toExpr = "-[192 / 143] = -[192 / 143]"
+                                explanation {
+                                    key = EquationsExplanation.SimplifyEquation
+                                }
+                            }
+
+                            step {
+                                fromExpr = "-[192 / 143] = -[192 / 143]"
+                                toExpr = "Identity[-[192 / 143] = -[192 / 143]]"
+                                explanation {
+                                    key = EquationsExplanation.ExtractTruthFromTrueEquality
+                                }
+                            }
                         }
-                    }
 
-                    step {
-                        fromExpr = "-[192 / 143] = -[192 / 143]"
-                        toExpr = "Identity[-[192 / 143] = -[192 / 143]]"
-                        explanation {
-                            key = EquationsExplanation.ExtractTruthFromTrueEquality
+                        task {
+                            taskId = "#3"
+                            startExpr = "SetSolution[x: {[1 / 4]}]"
+                            explanation {
+                                key = EquationsExplanation.SomeSolutionsDoNotSatisfyConstraint
+                            }
                         }
-                    }
-                }
-
-                task {
-                    taskId = "#4"
-                    startExpr = "SetSolution[x: {[1 / 4]}]"
-                    explanation {
-                        key = EquationsExplanation.SomeSolutionsDoNotSatisfyConstraint
                     }
                 }
             }
@@ -343,9 +375,25 @@ class SolveRationalEquationTest {
 
                 task {
                     taskId = "#3"
-                    startExpr = "SetSolution[x : {-4, [1 / 2]}]"
+                    startExpr = "SetSolution[x: {-4, [1 / 2]}] GIVEN SetSolution[x: /reals/ \\ {[2 / 3], 3}]"
                     explanation {
-                        key = EquationsExplanation.AllSolutionsSatisfyConstraint
+                        key = EquationsExplanation.AddDomainConstraintToSolution
+                    }
+
+                    step {
+                        fromExpr = "SetSolution[x: {-4, [1 / 2]}] GIVEN SetSolution[x: /reals/ \\ {[2 / 3], 3}]"
+                        toExpr = "SetSolution[x: {-4, [1 / 2]}]"
+                        explanation {
+                            key = EquationsExplanation.GatherSolutionsAndConstraint
+                        }
+
+                        task {
+                            taskId = "#1"
+                            startExpr = "SetSolution[x: {-4, [1 / 2]}]"
+                            explanation {
+                                key = EquationsExplanation.AllSolutionsSatisfyConstraint
+                            }
+                        }
                     }
                 }
             }
@@ -361,7 +409,7 @@ class SolveRationalEquationTest {
 
             check {
                 fromExpr = "[x + 2 / x - 3] = [x / 3 x - 2]"
-                toExpr = "SetSolution[x : {-4, [1 / 2]}]"
+                toExpr = "SetSolution[x: {-4, [1 / 2]}]"
                 explanation {
                     key = EquationsExplanation.SolveEquation
                 }
@@ -378,57 +426,73 @@ class SolveRationalEquationTest {
 
                 task {
                     taskId = "#2"
-                    startExpr = "[-4 + 2 / -4 - 3] = [-4 / 3 * (-4) - 2]"
+                    startExpr = "SetSolution[x: {-4, [1 / 2]}] GIVEN [x + 2 / x - 3] = [x / 3 x - 2]"
                     explanation {
-                        key = EquationsExplanation.CheckIfSolutionSatisfiesConstraint
+                        key = EquationsExplanation.AddDomainConstraintToSolution
                     }
 
                     step {
-                        fromExpr = "[-4 + 2 / -4 - 3] = [-4 / 3 * (-4) - 2]"
-                        toExpr = "[2 / 7] = [2 / 7]"
+                        fromExpr = "SetSolution[x: {-4, [1 / 2]}] GIVEN [x + 2 / x - 3] = [x / 3 x - 2]"
+                        toExpr = "SetSolution[x: {-4, [1 / 2]}]"
                         explanation {
-                            key = EquationsExplanation.SimplifyEquation
+                            key = EquationsExplanation.GatherSolutionsAndConstraint
                         }
-                    }
 
-                    step {
-                        fromExpr = "[2 / 7] = [2 / 7]"
-                        toExpr = "Identity[[2 / 7] = [2 / 7]]"
-                        explanation {
-                            key = EquationsExplanation.ExtractTruthFromTrueEquality
+                        task {
+                            taskId = "#1"
+                            startExpr = "[-4 + 2 / -4 - 3] = [-4 / 3 * (-4) - 2]"
+                            explanation {
+                                key = EquationsExplanation.CheckIfSolutionSatisfiesConstraint
+                            }
+
+                            step {
+                                fromExpr = "[-4 + 2 / -4 - 3] = [-4 / 3 * (-4) - 2]"
+                                toExpr = "[2 / 7] = [2 / 7]"
+                                explanation {
+                                    key = EquationsExplanation.SimplifyEquation
+                                }
+                            }
+
+                            step {
+                                fromExpr = "[2 / 7] = [2 / 7]"
+                                toExpr = "Identity[[2 / 7] = [2 / 7]]"
+                                explanation {
+                                    key = EquationsExplanation.ExtractTruthFromTrueEquality
+                                }
+                            }
                         }
-                    }
-                }
 
-                task {
-                    taskId = "#3"
-                    startExpr = "[[1 / 2] + 2 / [1 / 2] - 3] = [[1 / 2] / 3 * [1 / 2] - 2]"
-                    explanation {
-                        key = EquationsExplanation.CheckIfSolutionSatisfiesConstraint
-                    }
+                        task {
+                            taskId = "#2"
+                            startExpr = "[[1 / 2] + 2 / [1 / 2] - 3] = [[1 / 2] / 3 * [1 / 2] - 2]"
+                            explanation {
+                                key = EquationsExplanation.CheckIfSolutionSatisfiesConstraint
+                            }
 
-                    step {
-                        fromExpr = "[[1 / 2] + 2 / [1 / 2] - 3] = [[1 / 2] / 3 * [1 / 2] - 2]"
-                        toExpr = "-1 = -1"
-                        explanation {
-                            key = EquationsExplanation.SimplifyEquation
+                            step {
+                                fromExpr = "[[1 / 2] + 2 / [1 / 2] - 3] = [[1 / 2] / 3 * [1 / 2] - 2]"
+                                toExpr = "-1 = -1"
+                                explanation {
+                                    key = EquationsExplanation.SimplifyEquation
+                                }
+                            }
+
+                            step {
+                                fromExpr = "-1 = -1"
+                                toExpr = "Identity[-1 = -1]"
+                                explanation {
+                                    key = EquationsExplanation.ExtractTruthFromTrueEquality
+                                }
+                            }
                         }
-                    }
 
-                    step {
-                        fromExpr = "-1 = -1"
-                        toExpr = "Identity[-1 = -1]"
-                        explanation {
-                            key = EquationsExplanation.ExtractTruthFromTrueEquality
+                        task {
+                            taskId = "#3"
+                            startExpr = "SetSolution[x: {-4, [1 / 2]}]"
+                            explanation {
+                                key = EquationsExplanation.AllSolutionsSatisfyConstraint
+                            }
                         }
-                    }
-                }
-
-                task {
-                    taskId = "#4"
-                    startExpr = "SetSolution[x : {-4, [1 / 2]}]"
-                    explanation {
-                        key = EquationsExplanation.AllSolutionsSatisfyConstraint
                     }
                 }
             }
@@ -553,9 +617,25 @@ class SolveRationalEquationTest {
 
                 task {
                     taskId = "#3"
-                    startExpr = "SetSolution[x : {[3 - sqrt[53] / 2], [3 + sqrt[53] / 2]}]"
+                    startExpr = "SetSolution[x: {[3 - sqrt[53] / 2], [3 + sqrt[53] / 2]}] GIVEN SetSolution[x: /reals/ \\ {-3, -2, 5}]"
                     explanation {
-                        key = EquationsExplanation.AllSolutionsSatisfyConstraint
+                        key = EquationsExplanation.AddDomainConstraintToSolution
+                    }
+
+                    step {
+                        fromExpr = "SetSolution[x: {[3 - sqrt[53] / 2], [3 + sqrt[53] / 2]}] GIVEN SetSolution[x: /reals/ \\ {-3, -2, 5}]"
+                        toExpr = "SetSolution[x: {[3 - sqrt[53] / 2], [3 + sqrt[53] / 2]}]"
+                        explanation {
+                            key = EquationsExplanation.GatherSolutionsAndConstraint
+                        }
+
+                        task {
+                            taskId = "#1"
+                            startExpr = "SetSolution[x: {[3 - sqrt[53] / 2], [3 + sqrt[53] / 2]}]"
+                            explanation {
+                                key = EquationsExplanation.AllSolutionsSatisfyConstraint
+                            }
+                        }
                     }
                 }
             }
@@ -651,9 +731,25 @@ class SolveRationalEquationTest {
 
                 task {
                     taskId = "#3"
-                    startExpr = "SetSolution[x : {-[207 / 13]}]"
+                    startExpr = "SetSolution[x: {-[207 / 13]}] GIVEN SetSolution[x: /reals/ \\ {9}]"
                     explanation {
-                        key = EquationsExplanation.AllSolutionsSatisfyConstraint
+                        key = EquationsExplanation.AddDomainConstraintToSolution
+                    }
+
+                    step {
+                        fromExpr = "SetSolution[x: {-[207 / 13]}] GIVEN SetSolution[x: /reals/ \\ {9}]"
+                        toExpr = "SetSolution[x: {-[207 / 13]}]"
+                        explanation {
+                            key = EquationsExplanation.GatherSolutionsAndConstraint
+                        }
+
+                        task {
+                            taskId = "#1"
+                            startExpr = "SetSolution[x: {-[207 / 13]}]"
+                            explanation {
+                                key = EquationsExplanation.AllSolutionsSatisfyConstraint
+                            }
+                        }
                     }
                 }
             }
@@ -785,9 +881,25 @@ class SolveRationalEquationTest {
 
                 task {
                     taskId = "#3"
-                    startExpr = "SetSolution[x: {[5 / 4]}]"
+                    startExpr = "SetSolution[x: {[5 / 4]}] GIVEN SetSolution[x: /reals/ \\ {3}]"
                     explanation {
-                        key = EquationsExplanation.AllSolutionsSatisfyConstraint
+                        key = EquationsExplanation.AddDomainConstraintToSolution
+                    }
+
+                    step {
+                        fromExpr = "SetSolution[x: {[5 / 4]}] GIVEN SetSolution[x: /reals/ \\ {3}]"
+                        toExpr = "SetSolution[x: {[5 / 4]}]"
+                        explanation {
+                            key = EquationsExplanation.GatherSolutionsAndConstraint
+                        }
+
+                        task {
+                            taskId = "#1"
+                            startExpr = "SetSolution[x: {[5 / 4]}]"
+                            explanation {
+                                key = EquationsExplanation.AllSolutionsSatisfyConstraint
+                            }
+                        }
                     }
                 }
             }
@@ -899,9 +1011,25 @@ class SolveRationalEquationTest {
 
                 task {
                     taskId = "#3"
-                    startExpr = "SetSolution[x : {[3 - sqrt[151] / 4], [3 + sqrt[151] / 4]}]"
+                    startExpr = "SetSolution[x: {[3 - sqrt[151] / 4], [3 + sqrt[151] / 4]}] GIVEN SetSolution[x: /reals/ \\ {-3, 3}]"
                     explanation {
-                        key = EquationsExplanation.AllSolutionsSatisfyConstraint
+                        key = EquationsExplanation.AddDomainConstraintToSolution
+                    }
+
+                    step {
+                        fromExpr = "SetSolution[x: {[3 - sqrt[151] / 4], [3 + sqrt[151] / 4]}] GIVEN SetSolution[x: /reals/ \\ {-3, 3}]"
+                        toExpr = "SetSolution[x: {[3 - sqrt[151] / 4], [3 + sqrt[151] / 4]}]"
+                        explanation {
+                            key = EquationsExplanation.GatherSolutionsAndConstraint
+                        }
+
+                        task {
+                            taskId = "#1"
+                            startExpr = "SetSolution[x: {[3 - sqrt[151] / 4], [3 + sqrt[151] / 4]}]"
+                            explanation {
+                                key = EquationsExplanation.AllSolutionsSatisfyConstraint
+                            }
+                        }
                     }
                 }
             }
@@ -981,9 +1109,25 @@ class SolveRationalEquationTest {
 
                 task {
                     taskId = "#3"
-                    startExpr = "SetSolution[x : {sqrt[2] + 3}]"
+                    startExpr = "SetSolution[x: {-3, sqrt[2] + 3}] GIVEN SetSolution[x: /reals/ \\ {-3, 3}]"
                     explanation {
-                        key = EquationsExplanation.SomeSolutionsDoNotSatisfyConstraint
+                        key = EquationsExplanation.AddDomainConstraintToSolution
+                    }
+
+                    step {
+                        fromExpr = "SetSolution[x: {-3, sqrt[2] + 3}] GIVEN SetSolution[x: /reals/ \\ {-3, 3}]"
+                        toExpr = "SetSolution[x: {sqrt[2] + 3}]"
+                        explanation {
+                            key = EquationsExplanation.GatherSolutionsAndConstraint
+                        }
+
+                        task {
+                            taskId = "#1"
+                            startExpr = "SetSolution[x: {sqrt[2] + 3}]"
+                            explanation {
+                                key = EquationsExplanation.SomeSolutionsDoNotSatisfyConstraint
+                            }
+                        }
                     }
                 }
             }
@@ -1095,9 +1239,25 @@ class SolveRationalEquationTest {
 
                 task {
                     taskId = "#3"
-                    startExpr = "SetSolution[x : {-[1 / 2]}]"
+                    startExpr = "SetSolution[x: {-[1 / 2]}] GIVEN SetSolution[x: /reals/ \\ {-1}]"
                     explanation {
-                        key = EquationsExplanation.AllSolutionsSatisfyConstraint
+                        key = EquationsExplanation.AddDomainConstraintToSolution
+                    }
+
+                    step {
+                        fromExpr = "SetSolution[x: {-[1 / 2]}] GIVEN SetSolution[x: /reals/ \\ {-1}]"
+                        toExpr = "SetSolution[x: {-[1 / 2]}]"
+                        explanation {
+                            key = EquationsExplanation.GatherSolutionsAndConstraint
+                        }
+
+                        task {
+                            taskId = "#1"
+                            startExpr = "SetSolution[x: {-[1 / 2]}]"
+                            explanation {
+                                key = EquationsExplanation.AllSolutionsSatisfyConstraint
+                            }
+                        }
                     }
                 }
             }
@@ -1111,7 +1271,7 @@ class SolveRationalEquationTest {
 
             check {
                 fromExpr = "[2 x / x] = [4 / x]"
-                toExpr = "SetSolution[x : {2}]"
+                toExpr = "SetSolution[x: {2}]"
                 explanation {
                     key = EquationsExplanation.SolveEquation
                 }
@@ -1169,9 +1329,25 @@ class SolveRationalEquationTest {
 
                 task {
                     taskId = "#3"
-                    startExpr = "SetSolution[x : {2}]"
+                    startExpr = "SetSolution[x: {2}] GIVEN SetSolution[x: /reals/ \\ {0}]"
                     explanation {
-                        key = EquationsExplanation.AllSolutionsSatisfyConstraint
+                        key = EquationsExplanation.AddDomainConstraintToSolution
+                    }
+
+                    step {
+                        fromExpr = "SetSolution[x: {2}] GIVEN SetSolution[x: /reals/ \\ {0}]"
+                        toExpr = "SetSolution[x: {2}]"
+                        explanation {
+                            key = EquationsExplanation.GatherSolutionsAndConstraint
+                        }
+
+                        task {
+                            taskId = "#1"
+                            startExpr = "SetSolution[x: {2}]"
+                            explanation {
+                                key = EquationsExplanation.AllSolutionsSatisfyConstraint
+                            }
+                        }
                     }
                 }
             }
@@ -1251,9 +1427,25 @@ class SolveRationalEquationTest {
 
                 task {
                     taskId = "#3"
-                    startExpr = "SetSolution[x: {[1 / 2]}]"
+                    startExpr = "SetSolution[x: {[1 / 2]}] GIVEN SetSolution[x: /reals/ \\ {0}]"
                     explanation {
-                        key = EquationsExplanation.AllSolutionsSatisfyConstraint
+                        key = EquationsExplanation.AddDomainConstraintToSolution
+                    }
+
+                    step {
+                        fromExpr = "SetSolution[x: {[1 / 2]}] GIVEN SetSolution[x: /reals/ \\ {0}]"
+                        toExpr = "SetSolution[x: {[1 / 2]}]"
+                        explanation {
+                            key = EquationsExplanation.GatherSolutionsAndConstraint
+                        }
+
+                        task {
+                            taskId = "#1"
+                            startExpr = "SetSolution[x: {[1 / 2]}]"
+                            explanation {
+                                key = EquationsExplanation.AllSolutionsSatisfyConstraint
+                            }
+                        }
                     }
                 }
             }

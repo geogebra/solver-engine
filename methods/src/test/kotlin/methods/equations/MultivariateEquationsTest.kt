@@ -761,7 +761,71 @@ class MultivariateEquationsTest {
                     taskId = "#3"
                     startExpr = "SetSolution[x: {2 y}] GIVEN SetSolution[y: /reals/ \\ {0}]"
                     explanation {
-                        key = EquationsExplanation.AddConstraintToSolution
+                        key = EquationsExplanation.AddDomainConstraintToSolution
+                    }
+                }
+            }
+        }
+
+    @Test
+    fun `test multivariate equation with domain constraint and solution constraint`() =
+        testMethod {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "[2 h x / B + b] = S"
+            context = context.copy(solutionVariables = listOf("h"))
+
+            check {
+                fromExpr = "[2 h x / B + b] = S"
+                toExpr = "SetSolution[h: {[S (B + b) / 2 x]}] GIVEN B + b != 0 AND SetSolution[x: /reals/ \\ {0}]"
+                explanation {
+                    key = EquationsExplanation.SolveEquation
+                }
+
+                task {
+                    taskId = "#1"
+                    startExpr = "[2 h x / B + b] = S"
+                    explanation {
+                        key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
+                    }
+
+                    step {
+                        fromExpr = "[2 h x / B + b] = S"
+                        toExpr = "B + b != 0"
+                        explanation {
+                            key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
+                        }
+                    }
+                }
+
+                task {
+                    taskId = "#2"
+                    startExpr = "[2 h x / B + b] = S"
+                    explanation {
+                        key = EquationsExplanation.SolveEquation
+                    }
+
+                    step {
+                        fromExpr = "[2 h x / B + b] = S"
+                        toExpr = "SetSolution[h: {[S (B + b) / 2 x]}] GIVEN SetSolution[x: /reals/ \\ {0}]"
+                        explanation {
+                            key = EquationsExplanation.SolveLinearEquation
+                        }
+                    }
+                }
+
+                task {
+                    taskId = "#3"
+                    startExpr = "SetSolution[h: {[S (B + b) / 2 x]}] GIVEN SetSolution[x: /reals/ \\ {0}] GIVEN B + b != 0"
+                    explanation {
+                        key = EquationsExplanation.AddDomainConstraintToSolution
+                    }
+
+                    step {
+                        fromExpr = "SetSolution[h: {[S (B + b) / 2 x]}] GIVEN SetSolution[x: /reals/ \\ {0}] GIVEN B + b != 0"
+                        toExpr = "SetSolution[h: {[S (B + b) / 2 x]}] GIVEN B + b != 0 AND SetSolution[x: /reals/ \\ {0}]"
+                        explanation {
+                            key = SolverEngineExplanation.MergeConstraints
+                        }
                     }
                 }
             }

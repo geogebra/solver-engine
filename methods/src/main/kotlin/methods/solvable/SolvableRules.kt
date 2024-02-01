@@ -690,7 +690,6 @@ private val moveConstantDenominatorToTheRight = rule {
             when (denominatorValue.signOf()) {
                 Sign.POSITIVE -> false
                 Sign.NEGATIVE -> true
-                Sign.NOT_ZERO -> if (solvable.isSelfDual()) false else return@onPattern null
                 else -> return@onPattern null
             }
         }
