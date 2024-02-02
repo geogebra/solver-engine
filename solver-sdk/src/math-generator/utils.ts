@@ -113,6 +113,20 @@ export function filterTree(predicate: (tree: Tree) => boolean, tree: Tree): Tree
   return result;
 }
 
+export function addMissingParentheses(tree: Tree): Tree {
+  return mapTree(tree, (expr: Tree) => {
+    if (expr.type === 'Product' || expr.type === 'SmartProduct') {
+      expr.operands = expr.operands.map((op) => {
+        if (op.type === 'Minus') {
+          return { decorators: ['RoundBracket'], ...op };
+        }
+        return op;
+      });
+    }
+    return expr;
+  });
+}
+
 export function limitSignCount(tree: Tree, maxSignCount: number): Tree {
   if (maxSignCount < Infinity) {
     const signs: Tree[] = filterTree(

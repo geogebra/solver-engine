@@ -12,6 +12,7 @@ import {
   getValue,
   createCommutedProduct,
   generateFixedNumber,
+  addMissingParentheses,
 } from './utils';
 
 type OoOSettings = {
@@ -354,7 +355,7 @@ export function generateFourOperationsExpression(
   }
 
   let tree = pickOne(choices)(settings);
-  tree = limitSignCount(tree, maxSignCount);
+  tree = addMissingParentheses(limitSignCount(tree, maxSignCount));
   return treeToLatex(tree as ExpressionTree, {
     mulSymbol: ' \\times ',
     solutionFormatter: simpleSolutionFormatter,
@@ -390,7 +391,7 @@ export function generateFractionExpression(
   }
 
   let tree = pickOne(choices)(settings);
-  tree = limitSignCount(tree, maxSignCount);
+  tree = addMissingParentheses(limitSignCount(tree, maxSignCount));
   return treeToLatex(tree as ExpressionTree, {
     mulSymbol: ' \\times ',
     solutionFormatter: simpleSolutionFormatter,
@@ -426,7 +427,7 @@ export function generatePowerExpression(
   }
 
   let tree = pickOne(choices)(settings);
-  tree = limitSignCount(tree, maxSignCount);
+  tree = addMissingParentheses(limitSignCount(tree, maxSignCount));
   return treeToLatex(tree as ExpressionTree, {
     mulSymbol: ' \\times ',
     solutionFormatter: simpleSolutionFormatter,

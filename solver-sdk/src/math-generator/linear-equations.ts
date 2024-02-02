@@ -19,6 +19,7 @@ import {
   getPermutation,
   createNumberOrFraction,
   createCoefficient,
+  addMissingParentheses,
 } from './utils';
 
 type FactorySettings = {
@@ -556,7 +557,7 @@ export function generateOneStepEquation(
   }
 
   let tree = pickOne(choices)(settings);
-  tree = limitSignCount(tree, maxSignCount);
+  tree = addMissingParentheses(limitSignCount(tree, maxSignCount));
   return treeToLatex(tree as ExpressionTree);
 }
 
@@ -605,7 +606,7 @@ export function generateTwoStepEquation(
   }
 
   let tree = pickOne(choices)(settings);
-  tree = limitSignCount(tree, maxSignCount);
+  tree = addMissingParentheses(limitSignCount(tree, maxSignCount));
   return treeToLatex(tree as ExpressionTree);
 }
 
@@ -653,7 +654,7 @@ export function generateMultiStepEquation(
   }
 
   let tree = pickOne(choices)(settings);
-  tree = limitSignCount(tree, maxSignCount);
+  tree = addMissingParentheses(limitSignCount(tree, maxSignCount));
   return treeToLatex(tree as ExpressionTree);
 }
 
@@ -712,6 +713,6 @@ export function generateZeroOrManySolutionEquation(
   if (complexity > 0 && random < 0.1) return generateOneStepEquation(complexity);
   if (complexity > 0 && random < 0.25) return generateTwoStepEquation(complexity);
   let tree = pickOne(choices)(settings);
-  tree = limitSignCount(tree, maxSignCount);
+  tree = addMissingParentheses(limitSignCount(tree, maxSignCount));
   return treeToLatex(tree as ExpressionTree);
 }

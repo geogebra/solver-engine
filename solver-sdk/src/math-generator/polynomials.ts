@@ -17,6 +17,7 @@ import {
   type ProductTree,
   generatePosValue,
   generateFixedNumber,
+  addMissingParentheses,
 } from './utils';
 
 type PolynomialSettings = {
@@ -316,7 +317,7 @@ export function generateUnnormalizedPolynomial(complexity: 0 | 1 | 2 | 3 = 0): s
   // console.log('isNormalized:', isNormalizedPolynomial(latexToTree('-x^7-\\frac{3}{2}x^2+\\frac{1}{2}') as NestedTree));
 
   let tree = pickOne(choices)(settings);
-  tree = limitSignCount(tree, maxSignCount);
+  tree = addMissingParentheses(limitSignCount(tree, maxSignCount));
   return treeToLatex(tree as ExpressionTree);
 }
 
@@ -363,7 +364,7 @@ export function generateMonomialDivision(complexity: 0 | 1 | 2 | 3 = 0): string 
   }
 
   let tree = generatePolynomialDividedByMonomial(settings);
-  tree = limitSignCount(tree, maxSignCount);
+  tree = addMissingParentheses(limitSignCount(tree, maxSignCount));
   return treeToLatex(tree as ExpressionTree);
 }
 
@@ -410,7 +411,7 @@ export function generateSumOfPolynomials(complexity: 0 | 1 | 2 | 3 = 0): string 
   const settings2 = { ...settings, terms: terms2 };
 
   let tree = generateSumOfTwoPolynomials(settings, settings2);
-  tree = limitSignCount(tree, maxSignCount);
+  tree = addMissingParentheses(limitSignCount(tree, maxSignCount));
   return treeToLatex(tree as ExpressionTree);
 }
 
@@ -459,6 +460,6 @@ export function generateLinearCombinationOfPolynomials(
   const settings2 = { ...settings, terms: terms2 };
 
   let tree = generateSumOfTwoScaledPolynomials(settings, settings2);
-  tree = limitSignCount(tree, maxSignCount);
+  tree = addMissingParentheses(limitSignCount(tree, maxSignCount));
   return treeToLatex(tree as ExpressionTree);
 }

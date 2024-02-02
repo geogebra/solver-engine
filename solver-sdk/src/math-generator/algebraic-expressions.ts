@@ -16,6 +16,7 @@ import {
   createCoefficient,
   createNumberOrFraction,
   createVariableWithCoefficient,
+  addMissingParentheses,
 } from './utils';
 
 type Settings = {
@@ -278,7 +279,7 @@ export function generateDistributionExpression(complexity: 0 | 1 | 2 | 3 = 0): s
   }
 
   let tree = pickOne(choices)(settings);
-  tree = limitSignCount(tree, maxSignCount);
+  tree = addMissingParentheses(limitSignCount(tree, maxSignCount));
   return treeToLatex(tree as ExpressionTree);
 }
 
@@ -317,6 +318,6 @@ export function generateDivideMonomialExpression(complexity: 0 | 1 | 2 | 3 = 0):
   }
 
   let tree = pickOne(choices)(settings);
-  tree = limitSignCount(tree, maxSignCount);
+  tree = addMissingParentheses(limitSignCount(tree, maxSignCount));
   return treeToLatex(tree as ExpressionTree);
 }

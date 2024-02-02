@@ -15,6 +15,7 @@ contents to a new release section (e.g. _[0.x]_).
 
 - Fixed problem with multivariate equations with constraints reporting no solution (PLUT-965)
 - Fixed problem with multivariate equations with domain restrictions reporting no solution (PLUT-973)
+- SDK: Fixed missing parentheses in products with negative factors in generated expressions (PLUT-984)
 
 ### Changed
 
