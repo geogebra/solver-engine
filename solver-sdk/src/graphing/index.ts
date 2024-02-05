@@ -49,3 +49,14 @@ export class UnsupportedGraphFeatureError extends Error {
     super(message, ...args);
   }
 }
+
+/**
+ * Error thrown by a Grapher implementation when an operation is done at the wrong time (e.g. setCoordinateSystem
+ * called twice, or drawObject called before setCoordinateSystem
+ */
+
+export class InvalidGrapherOperation extends Error {
+  constructor(message = '', ...args: any) {
+    super(message, ...args);
+  }
+}

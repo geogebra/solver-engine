@@ -18,10 +18,13 @@
 package engine.graphing
 
 import engine.expressions.Comparison
+import engine.expressions.Equation
 import engine.expressions.Expression
 import engine.expressions.StatementSystem
 import engine.expressions.ValueExpression
 import engine.expressions.Variable
+import engine.expressions.equationOf
+import engine.expressions.xp
 import kotlin.math.absoluteValue
 
 /**
@@ -165,17 +168,38 @@ fun getFunction(e: Expression, xVar: String): Function? {
  * Finds all the graphable expressions out of one expression.  E.g. an equation system is divided into individual
  * equations.
  */
-fun extractGraphableExpressions(expr: Expression): List<Expression>? {
+fun extractGraphableExpressions(expr: Expression): Pair<List<Expression>, List<Intersection>>? {
     return when {
         expr.variables.isEmpty() -> null
         expr.variables.size > 2 -> null
         expr is StatementSystem -> if (expr.equations.all { it is Comparison && it.variables.isNotEmpty() }) {
-            expr.equations
+            Pair(expr.equations, emptyList())
         } else {
             null
         }
-        expr is ValueExpression -> if (expr.variables.size == 1) listOf(expr) else null
-        expr is Comparison -> listOf(expr)
+        expr is ValueExpression -> if (expr.variables.size == 1) Pair(listOf(expr), emptyList()) else null
+        expr is Equation && expr.variables.size == 1 -> {
+            // If it's an equation with just one variable, change it so e.g. "x^2 = 2 - x" becomes two equations
+            // "y = x^2" and "y = 2 - x" and say we want to show the intersection.
+            val axisVariables = selectAxisVariables(expr.variables, emptyList(), listOf(expr))
+            if (axisVariables == null || axisVariables.horizontal !in expr.variables) {
+                Pair(listOf(expr), emptyList())
+            } else {
+                val lhs = xp(axisVariables.vertical)
+                val intersection = Intersection(
+                    objectIndexes = listOf(0, 1),
+                    projectOntoHorizontalAxis = true,
+                )
+                Pair(listOf(equationOf(lhs, expr.lhs), equationOf(lhs, expr.rhs)), listOf(intersection))
+            }
+        }
+        expr is Comparison -> Pair(listOf(expr), emptyList())
         else -> null
     }
 }
+
+data class Intersection(
+    val objectIndexes: List<Int>,
+    val projectOntoHorizontalAxis: Boolean = false,
+    val projectOntoVerticalAxis: Boolean = false,
+)

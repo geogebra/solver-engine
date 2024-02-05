@@ -244,7 +244,9 @@ components:
         objects:
           type: array
           items:
-            $ref: '#/components/schemas/ExpressionGraphObject'
+            oneOf:
+              - $ref: '#/components/schemas/ExpressionGraphObject'
+              - $ref: '#/components/schemas/IntersectionGraphObject'
     Cartesian2DSystem:
       type: object
       required:
@@ -274,7 +276,6 @@ components:
       type: object
       required:
         - type
-        - equation
       properties:
         label:
           type: string
@@ -282,6 +283,25 @@ components:
           type: string
           enum: [curve2D]
         expression: {}
+    IntersectionGraphObject:
+      type: object
+      required:
+        - type
+      properties:
+        label:
+          type: string
+        type:
+          type: string
+          enum: [intersection]
+        objectLabels:
+          type: array
+          minItems: 2
+          items:
+            type: string
+        projectOntoHorizontalAxis:
+          type: boolean
+        projectOntoVerticalAxis:
+          type: boolean
     GraphType:
       type: string
       enum: [2DGraph, 3DGraph]

@@ -16,7 +16,7 @@
  */
 
 import { CoordinateSystem, GraphObject, MathJson } from '../types';
-import { Grapher, UnsupportedGraphFeatureError } from './index';
+import { Grapher, InvalidGrapherOperation, UnsupportedGraphFeatureError } from './index';
 import { treeToGgb, treeToLatex } from '../renderer';
 import { jsonToTree } from '../parser';
 
@@ -47,6 +47,8 @@ export type GgbAppletApi = {
     yAxis: string,
     zAxis: string,
   ) => void;
+  setPointStyle: (objName: string, value: number) => void;
+  setLineStyle: (objName: string, value: number) => void;
   setCoordSystem: (xmin: number, xmax: number, ymin: number, ymax: number) => void;
   setColor: (objName: string, red: number, green: number, blue: number) => void;
   setCaption: (objName: string, caption: string) => void;
@@ -64,6 +66,7 @@ export type GgbAppletApi = {
 export class GgbAppletGrapher implements Grapher {
   private readonly ggbAppletApi: GgbAppletApi;
   private readonly varSub: Record<string, string>;
+  private coordinateSystem: CoordinateSystem | undefined;
 
   constructor(ggbAppletApi: GgbAppletApi) {
     this.ggbAppletApi = ggbAppletApi;
@@ -71,6 +74,10 @@ export class GgbAppletGrapher implements Grapher {
   }
 
   setCoordinateSystem(coordinateSystem: CoordinateSystem) {
+    if (this.coordinateSystem) {
+      throw new InvalidGrapherOperation('coordinate system already set');
+    }
+    this.coordinateSystem = coordinateSystem;
     switch (coordinateSystem.type) {
       case 'Cartesian2D': {
         this.ggbAppletApi.setCoordSystem(
@@ -101,6 +108,9 @@ export class GgbAppletGrapher implements Grapher {
     graphObject: GraphObject<MathJson>,
     rgbColor: [number, number, number] = [200, 20, 20],
   ) {
+    if (this.coordinateSystem === undefined) {
+      throw new InvalidGrapherOperation('coordinate system not set');
+    }
     switch (graphObject.type) {
       case 'curve2D': {
         const labelFromObject = graphObject.label;
@@ -111,7 +121,7 @@ export class GgbAppletGrapher implements Grapher {
         // object created, which would mean more than one label.
         const labels = labelFromObject
           ? [labelFromObject]
-          : this.ggbAppletApi.evalCommandGetLabels(exprGgb).split(',');
+          : this.evalCommandGetLabels(exprGgb);
 
         if (labelFromObject) {
           this.ggbAppletApi.evalCommand(`${labelFromObject}:${exprGgb}`);
@@ -119,18 +129,52 @@ export class GgbAppletGrapher implements Grapher {
 
         for (const label of labels) {
           this.ggbAppletApi.setColor(label, rgbColor[0], rgbColor[1], rgbColor[2]);
-          this.ggbAppletApi.setCaption(label, `$${treeToLatex(exprTree)}$`);
-          this.ggbAppletApi.setLabelStyle(label, 3);
-          this.ggbAppletApi.setLabelVisible(label, true);
+          this.setLatexCaption(label, treeToLatex(exprTree));
         }
 
+        break;
+      }
+      case 'intersection': {
+        const labels = this.evalCommandGetLabels(
+          `Intersect(${graphObject.objectLabels.join(', ')})`,
+        );
+        for (const [index, label] of labels.entries()) {
+          this.ggbAppletApi.setPointStyle(label, 1);
+          if (graphObject.projectOntoHorizontalAxis) {
+            const projLabel = this.ggbAppletApi.evalCommandGetLabels(`(x(${label}), 0)`);
+            const segmentLabel = this.ggbAppletApi.evalCommandGetLabels(
+              `Segment(${label}, ${projLabel})`,
+            );
+            // See https://wiki.geogebra.org/en/SetLineStyle_Command?lang=en
+            this.ggbAppletApi.setLineStyle(segmentLabel, 3);
+          }
+          if (graphObject.projectOntoVerticalAxis) {
+            const projLabel = this.ggbAppletApi.evalCommandGetLabels(`(0, y(${label}))`);
+            const segmentLabel = this.ggbAppletApi.evalCommandGetLabels(
+              `Segment(${label}, ${projLabel})`,
+            );
+            // See https://wiki.geogebra.org/en/SetLineStyle_Command?lang=en
+            this.ggbAppletApi.setLineStyle(segmentLabel, 3);
+          }
+        }
         break;
       }
       default:
         throw new UnsupportedGraphFeatureError(
           'Unsupported graph object type',
+          // @ts-ignore
           graphObject.type,
         );
     }
+  }
+
+  private evalCommandGetLabels(command: string) {
+    return this.ggbAppletApi.evalCommandGetLabels(command).split(',');
+  }
+
+  private setLatexCaption(label: string, caption: string) {
+    this.ggbAppletApi.setCaption(label, `$${caption}$`);
+    this.ggbAppletApi.setLabelStyle(label, 3);
+    this.ggbAppletApi.setLabelVisible(label, true);
   }
 }

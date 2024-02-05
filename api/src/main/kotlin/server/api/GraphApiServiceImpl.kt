@@ -28,10 +28,10 @@ import org.apache.logging.log4j.LogManager
 import org.springframework.stereotype.Service
 import parser.parseExpression
 import server.models.Cartesian2DSystem
-import server.models.ExpressionGraphObject
 import server.models.GraphAxis
 import server.models.GraphRequest
 import server.models.GraphResponse
+import server.models.GraphResponseObjectsInner
 import java.math.BigDecimal
 
 @Service
@@ -44,9 +44,10 @@ class GraphApiServiceImpl : GraphApiService {
         }
         val context = getContext(graphRequest.context, expr.variables, logger)
 
-        val exprs = extractGraphableExpressions(expr) ?: throw ExpressionNotGraphableException(graphRequest.input)
+        val (extractedExprs, intersections) = extractGraphableExpressions(expr)
+            ?: throw ExpressionNotGraphableException(graphRequest.input)
 
-        val axisVariables = selectAxisVariables(expr.variables, context.solutionVariables, exprs)
+        val axisVariables = selectAxisVariables(expr.variables, context.solutionVariables, extractedExprs)
             ?: throw ExpressionNotGraphableException(graphRequest.input)
 
         // Try to find a suitable window.  For now, go through each expression and if it is a function, try to adjust
@@ -57,9 +58,26 @@ class GraphApiServiceImpl : GraphApiService {
                 expr.withOrigin(RootOrigin()),
             )?.toExpr
 
-        val window = bestWindowForExprs(exprs, axisVariables, ::solveForVariable)
+        val window = bestWindowForExprs(extractedExprs, axisVariables, ::solveForVariable)
             .bestSquareFit()
             .withPadding(paddingFactor = 0.05)
+
+        val exprObjects = extractedExprs.mapIndexed { i, expr ->
+            GraphResponseObjectsInner(
+                type = GraphResponseObjectsInner.Type.Curve2D,
+                label = "C_${i + 1}",
+                expression = graphRequest.format.modelExpression(expr),
+            )
+        }
+
+        val intersectionObjects = intersections.map { intersection ->
+            GraphResponseObjectsInner(
+                type = GraphResponseObjectsInner.Type.Intersection,
+                objectLabels = intersection.objectIndexes.map { i -> "C_${i + 1}" },
+                projectOntoHorizontalAxis = intersection.projectOntoHorizontalAxis,
+                projectOntoVerticalAxis = intersection.projectOntoVerticalAxis,
+            )
+        }
 
         return GraphResponse(
             coordinateSystem = Cartesian2DSystem(
@@ -77,13 +95,7 @@ class GraphApiServiceImpl : GraphApiService {
                     maxValue = BigDecimal(window.y1),
                 ),
             ),
-            objects = exprs.mapIndexed { i, expr ->
-                ExpressionGraphObject(
-                    type = ExpressionGraphObject.Type.Curve2D,
-                    label = "C_${i + 1}",
-                    expression = graphRequest.format.modelExpression(expr),
-                )
-            },
+            objects = exprObjects + intersectionObjects,
         )
     }
 

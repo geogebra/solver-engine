@@ -86,12 +86,22 @@ export type GraphResponseBase<MathFormat> = {
   objects: GraphObject<MathFormat>[];
 };
 
-export type GraphObject<MathFormat> = Curve2DGraphObject<MathFormat>;
+export type GraphObject<MathFormat> =
+  | Curve2DGraphObject<MathFormat>
+  | IntersectionGraphObject;
 
 export type Curve2DGraphObject<MathFormat> = {
   type: 'curve2D';
   label?: string;
   expression: MathFormat;
+};
+
+export type IntersectionGraphObject = {
+  type: 'intersection';
+  label?: string;
+  objectLabels: string[];
+  projectOntoHorizontalAxis?: boolean;
+  projectOntoVerticalAxis?: boolean;
 };
 
 export type CoordinateSystem = Cartesian2DSystem;
