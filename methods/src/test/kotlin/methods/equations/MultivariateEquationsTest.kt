@@ -22,6 +22,7 @@ import engine.methods.SolverEngineExplanation
 import engine.methods.testMethod
 import engine.methods.testMethodInX
 import methods.algebra.AlgebraExplanation
+import methods.collecting.CollectingExplanation
 import methods.constantexpressions.ConstantExpressionsExplanation
 import methods.general.GeneralExplanation
 import methods.inequalities.InequalitiesExplanation
@@ -826,6 +827,140 @@ class MultivariateEquationsTest {
                         explanation {
                             key = SolverEngineExplanation.MergeConstraints
                         }
+                    }
+                }
+            }
+        }
+
+    @Test
+    fun `test multivariate linear equation with several terms in x`() =
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "x - a x + 2 = 2 a x"
+
+            check {
+                fromExpr = "x - a x + 2 = 2 a x"
+                toExpr = "SetSolution[x: {-[2 / 1 - 3 a]}] GIVEN SetSolution[a: /reals/ \\ {[1 / 3]}]"
+                explanation {
+                    key = EquationsExplanation.SolveLinearEquation
+                }
+
+                step {
+                    fromExpr = "x - a x + 2 = 2 a x"
+                    toExpr = "x - 3 a x + 2 = 0"
+                    explanation {
+                        key = methods.solvable.EquationsExplanation.MoveSomeVariablesToTheLeftAndSimplify
+                    }
+                }
+
+                step {
+                    fromExpr = "x - 3 a x + 2 = 0"
+                    toExpr = "x - 3 a x = -2"
+                    explanation {
+                        key = methods.solvable.EquationsExplanation.MoveConstantsInVariablesToTheRightAndSimplify
+                    }
+                }
+
+                step {
+                    fromExpr = "x - 3 a x = -2"
+                    toExpr = "(1 - 3 a) x = -2"
+                    explanation {
+                        key = CollectingExplanation.CollectLikeTermsAndSimplify
+                    }
+                }
+
+                step {
+                    fromExpr = "(1 - 3 a) x = -2"
+                    toExpr = "x (1 - 3 a) = -2"
+                    explanation {
+                        key = GeneralExplanation.ReorderProduct
+                    }
+                }
+
+                step {
+                    fromExpr = "x (1 - 3 a) = -2"
+                    toExpr = "x = -[2 / 1 - 3 a] GIVEN SetSolution[a: /reals/ \\ {[1 / 3]}]"
+                    explanation {
+                        key = methods.solvable.EquationsExplanation.DivideByCoefficientOfVariableAndSimplifyMultivariate
+                    }
+                }
+
+                step {
+                    fromExpr = "x = -[2 / 1 - 3 a] GIVEN SetSolution[a: /reals/ \\ {[1 / 3]}]"
+                    toExpr = "SetSolution[x: {-[2 / 1 - 3 a]}] GIVEN SetSolution[a: /reals/ \\ {[1 / 3]}]"
+                    explanation {
+                        key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
+                    }
+                }
+            }
+        }
+
+    @Test
+    fun `test root method with several terms in x`() =
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "a [x ^ 3] - 3 = b [x ^ 3] + 11"
+
+            check {
+                fromExpr = "a [x ^ 3] - 3 = b [x ^ 3] + 11"
+                toExpr = "SetSolution[x: {root[[14 / a - b], 3]}] GIVEN a - b != 0"
+                explanation {
+                    key = EquationsExplanation.SolveEquationUsingRootsMethod
+                }
+
+                step {
+                    fromExpr = "a [x ^ 3] - 3 = b [x ^ 3] + 11"
+                    toExpr = "a [x ^ 3] - 3 - b [x ^ 3] = 11"
+                    explanation {
+                        key = methods.solvable.EquationsExplanation.MoveSomeVariablesToTheLeftAndSimplify
+                    }
+                }
+
+                step {
+                    fromExpr = "a [x ^ 3] - 3 - b [x ^ 3] = 11"
+                    toExpr = "a [x ^ 3] - b [x ^ 3] = 14"
+                    explanation {
+                        key = methods.solvable.EquationsExplanation.MoveConstantsInVariablesToTheRightAndSimplify
+                    }
+                }
+
+                step {
+                    fromExpr = "a [x ^ 3] - b [x ^ 3] = 14"
+                    toExpr = "(a - b) [x ^ 3] = 14"
+                    explanation {
+                        key = CollectingExplanation.CollectLikeTermsAndSimplify
+                    }
+                }
+
+                step {
+                    fromExpr = "(a - b) [x ^ 3] = 14"
+                    toExpr = "[x ^ 3] (a - b) = 14"
+                    explanation {
+                        key = GeneralExplanation.ReorderProduct
+                    }
+                }
+
+                step {
+                    fromExpr = "[x ^ 3] (a - b) = 14"
+                    toExpr = "[x ^ 3] = [14 / a - b] GIVEN a - b != 0"
+                    explanation {
+                        key = methods.solvable.EquationsExplanation.DivideByCoefficientOfVariableAndSimplifyMultivariate
+                    }
+                }
+
+                step {
+                    fromExpr = "[x ^ 3] = [14 / a - b] GIVEN a - b != 0"
+                    toExpr = "x = root[[14 / a - b], 3] GIVEN a - b != 0"
+                    explanation {
+                        key = methods.solvable.EquationsExplanation.TakeRootOfBothSidesAndSimplify
+                    }
+                }
+
+                step {
+                    fromExpr = "x = root[[14 / a - b], 3] GIVEN a - b != 0"
+                    toExpr = "SetSolution[x: {root[[14 / a - b], 3]}] GIVEN a - b != 0"
+                    explanation {
+                        key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                     }
                 }
             }

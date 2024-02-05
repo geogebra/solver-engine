@@ -136,3 +136,32 @@ fun createCollectLikeTermsAndSimplifyPlan(simplificationSteps: StepsProducer): M
         }
     }
 }
+
+/**
+ * Create a plan to collect and simplify (using the specified [simplificationSteps]) all terms
+ * containing the same variable power (with a coefficient constant in the solution variables)
+ */
+fun createCollectLikeTermsInSolutionVariablesAndSimplifyPlan(simplificationSteps: StepsProducer): Method {
+    val coefficientSimplificationSteps =
+        createSimplifyCoefficientPlan(simplificationSteps, preferFractionalForm = false)
+
+    return plan {
+        explanation = Explanation.CollectLikeTermsAndSimplify
+
+        steps {
+            firstOf {
+                option {
+                    check { isSet(Setting.QuickAddLikeTerms) }
+                    apply(CollectingRules.CombineTwoSimpleLikeTerms)
+                }
+                option {
+                    withNewLabels {
+                        apply(CollectingRules.CollectLikeTermsInSolutionVariables)
+                        optionally { applyTo(coefficientSimplificationSteps, Label.A) }
+                        optionally(GeneralRules.EliminateZeroInSum)
+                    }
+                }
+            }
+        }
+    }
+}

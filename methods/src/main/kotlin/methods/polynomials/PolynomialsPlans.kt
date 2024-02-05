@@ -43,6 +43,7 @@ import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.stickyOptionalNegOf
 import methods.collecting.createCollectLikeTermsAndSimplifyPlan
+import methods.collecting.createCollectLikeTermsInSolutionVariablesAndSimplifyPlan
 import methods.constantexpressions.constantSimplificationSteps
 import methods.decimals.decimalEvaluationSteps
 import methods.expand.ExpandAndSimplifier
@@ -294,3 +295,7 @@ internal val simplificationSteps = branchOn(Setting.PreferDecimals) {
 }
 
 internal val collectLikeTermsSteps = createCollectLikeTermsAndSimplifyPlan(simplificationSteps)
+
+internal val collectLikeTermsInSolutionVariablesSteps = createCollectLikeTermsInSolutionVariablesAndSimplifyPlan(
+    simplificationSteps,
+)

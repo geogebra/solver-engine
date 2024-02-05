@@ -52,6 +52,7 @@ import engine.steps.metadata.MetadataKey
 import engine.steps.metadata.metadata
 import methods.approximation.ApproximationPlans
 import methods.polynomials.PolynomialsPlans
+import methods.polynomials.collectLikeTermsInSolutionVariablesSteps
 
 class SolvablePlans(private val simplificationPlan: Method, private val constraintSimplificationPlan: Method? = null) {
     private fun getExplanationKey(solvableKey: SolvableKey, ctx: Context, expr: Expression): MetadataKey {
@@ -146,7 +147,8 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
     )
 
     val solvableRearrangementSteps = steps {
-        // three ways to reorganize the solvable into aX = b form
+        // three ways to reorganize the solvable into aX = b form, where X is something that can then be solved
+        // by a particular equation solving strategy.
         firstOf {
             option {
                 // if the solvable is in the form `a = bX + c` with `b` non-negative, then
@@ -167,7 +169,7 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
                 apply(SolvableRules.FlipSolvable)
             }
             option {
-                // if the solvable is in the form `aX + b = cx + d` with an integer and `c` a
+                // if the solvable is in the form `aX + b = cX + d` with an integer and `c` a
                 // positive integer such that `c > a`, we move `aX` to the right hand side, `d` to
                 // the left hand side and flip the solvable
                 checkForm {
@@ -197,8 +199,14 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
                 apply(SolvableRules.FlipSolvable)
             }
             option {
-                // otherwise we first move variables to the left and then constants
-                // to the right
+                // otherwise we first move variables to the left and then constants to the right.  Because the constant
+                // values may be symbolic, e.g.
+                //
+                //      ax = 2x + bx - 3
+                //
+                // we need to consider that there may be more than one "monomial" on each side.  So what we do is move
+                // everything variable to the left and everything constant to the right, then check we obtain a result
+                // of the desired form, i.e. aX = b (or even a = b if the X's cancel out).
                 checkForm {
                     val lhsVariable = withOptionalConstantCoefficientInSolutionVariables(variableTerm)
                     val rhsVariable = withOptionalConstantCoefficientInSolutionVariables(variableTerm)
@@ -206,18 +214,32 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
                     val lhs = oneOf(
                         ConstantInSolutionVariablePattern(),
                         lhsVariable,
-                        sumContaining(lhsVariable) { rest -> rest.isConstantIn(solutionVariables) },
+                        sumContaining(lhsVariable),
                     )
                     val rhs = oneOf(
                         ConstantInSolutionVariablePattern(),
                         rhsVariable,
-                        sumContaining(rhsVariable) { rest -> rest.isConstantIn(solutionVariables) },
+                        sumContaining(rhsVariable),
                     )
 
                     SolvablePattern(lhs, rhs)
                 }
                 optionally(moveVariablesToTheLeftAndSimplify)
                 optionally(moveConstantsToTheRightAndSimplify)
+                optionally {
+                    applyTo(collectLikeTermsInSolutionVariablesSteps) { it.firstChild }
+                }
+
+                // If the result is of the form aX = b or a = b then we have done our job.
+                checkForm {
+                    SolvablePattern(
+                        oneOf(
+                            ConstantInSolutionVariablePattern(),
+                            withOptionalConstantCoefficientInSolutionVariables(variableTerm),
+                        ),
+                        ConstantInSolutionVariablePattern(),
+                    )
+                }
             }
         }
     }

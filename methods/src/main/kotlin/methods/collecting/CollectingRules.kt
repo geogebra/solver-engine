@@ -17,6 +17,7 @@
 
 package methods.collecting
 
+import engine.context.Context
 import engine.expressions.CancellableView
 import engine.expressions.Expression
 import engine.expressions.Factor
@@ -74,6 +75,14 @@ enum class CollectingRules(override val runner: Rule) : RunnerMethod {
         ).rule,
     ),
 
+    CollectLikeTermsInSolutionVariables(
+        CollectLikeTermsRule(
+            factorSelector = { !it.isConstantIn(solutionVariables) },
+            coefficientCondition = { it.isConstantIn(solutionVariables) },
+            explanationKey = Explanation.CollectLikeTerms,
+        ).rule,
+    ),
+
     CombineTwoSimpleLikeRoots(
         createCombineSimpleLikeTermsRule(
             commonPattern = rootOf(UnsignedIntegerPattern()),
@@ -106,8 +115,8 @@ enum class CollectingRules(override val runner: Rule) : RunnerMethod {
  * not collected.
  */
 private class CollectLikeTermsRule(
-    private val factorSelector: (Expression) -> Boolean,
-    private val coefficientCondition: (Expression) -> Boolean,
+    private val factorSelector: Context.(Expression) -> Boolean,
+    private val coefficientCondition: Context.(Expression) -> Boolean,
     private val explanationKey: MetadataKey,
 ) {
     private class SplitTerm(
@@ -122,7 +131,7 @@ private class CollectLikeTermsRule(
         fun findLikeFactor(factor: Expression) = selectedFactors.singleOrNull { it == factor }
     }
 
-    private fun splitTerm(term: Expression): SplitTerm? {
+    private fun Context.splitTerm(term: Expression): SplitTerm? {
         val termView = TermView(term) { CancellableView(it) }
         val selectedFactors = mutableListOf<Expression>()
         for (factor in termView.factors) {
@@ -143,7 +152,7 @@ private class CollectLikeTermsRule(
     val rule = rule {
         onPattern(sumContaining()) {
             val terms = (expression as Sum).terms
-            val splitTerms = terms.map { splitTerm(it) }
+            val splitTerms = terms.map { context.splitTerm(it) }
 
             // Find a split term which has the same selected factors as at least one more term
             // (then we have a like term)

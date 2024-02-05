@@ -11,6 +11,10 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Added
 
+- Collect like terms containing symbolic constants when rearranging equations (PLUT-980)
+- Return intersection data in graphing API when the request if e.g. x + 1 = x^2 (PLUT-988)
+- SDK: support for intersection object returned by graphing API (PLUT-988)
+
 ### Fixed
 
 - Fixed problem with multivariate equations with constraints reporting no solution (PLUT-965)
