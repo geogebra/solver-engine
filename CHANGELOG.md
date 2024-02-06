@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 An entry should be added to the _[Unreleased]_ section when committing to main. When a release is made we move its
 contents to a new release section (e.g. _[0.x]_).
 
-## [Unreleased]
+## [1.4.3] 2024-02-6
 
 ### Added
 
@@ -21,10 +21,6 @@ contents to a new release section (e.g. _[0.x]_).
 - Fixed problem with multivariate equations with domain restrictions reporting no solution (PLUT-973)
 - SDK: Fixed missing parentheses in products with negative factors in generated expressions (PLUT-984)
 - SDK: Updated npm dependencies to remove some vulnerabilities (PLUT-991)
-
-### Changed
-
-### Removed
 
 ## [1.4.2] 2024-01-16
 
@@ -48,8 +44,6 @@ contents to a new release section (e.g. _[0.x]_).
 - Upgraded spring-boot to version 3.2.1 (needed to be able to use java 21) (PLUT-956)
 - Upgraded runtime JVM and JVM compilation target from 17 to 21, which is the new LTS version (PLUT-954)
 - Moved `@geogebra/solver-sdk` to `/solver-sdk` (PLUT-959)
-
-### Removed
 
 ## [1.4.1] 2023-12-22
 
