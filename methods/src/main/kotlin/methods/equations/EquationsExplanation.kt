@@ -373,6 +373,11 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     SolveRationalEquation,
 
     /**
+     * Solve an exponential equation by taking the log of both sides.
+     */
+    SolveExponentialEquation,
+
+    /**
      * Separate an equation of the form |f(x)| = K (positive constant) into two equations,
      * f(x) = K and f(x) = -K so that they can then be solved.
      *

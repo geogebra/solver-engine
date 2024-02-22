@@ -113,7 +113,7 @@ absoluteValue: 'abs[' argument=expr ']';
 logarithm
     : 'ln' argument=implicitProduct                     #naturalLog
     | 'log' argument=implicitProduct                    #logBase10
-    | 'log[' base=expr ']' argument=implicitProduct     #log
+    | 'log_[' base=expr ']' argument=implicitProduct    #log
     ;
 
 trigFunction

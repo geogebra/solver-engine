@@ -21,6 +21,7 @@ import engine.expressions.Decorator
 import engine.expressions.DivideBy
 import engine.expressions.Expression
 import engine.expressions.Fraction
+import engine.expressions.Logarithm
 import engine.expressions.PathScope
 import engine.expressions.Power
 import engine.expressions.Product
@@ -278,7 +279,9 @@ private val priorityComparator = compareBy<Expression>(
         @Suppress("MagicNumber")
         when (if (it is Power) it.base else it) {
             // (x + 1) or (1 + sqrt[3])
-            is Sum -> 4
+            is Sum -> 5
+            // log, log_a, ln
+            is Logarithm -> 4
             // sqrt[...] or root[..., n]
             is Root, is SquareRoot -> 3
             // a, x, [x ^ 2]

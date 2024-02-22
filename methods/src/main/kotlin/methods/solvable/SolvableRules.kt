@@ -30,6 +30,7 @@ import engine.expressions.Expression
 import engine.expressions.ExpressionWithConstraint
 import engine.expressions.Fraction
 import engine.expressions.Minus
+import engine.expressions.Power
 import engine.expressions.Product
 import engine.expressions.Sum
 import engine.expressions.asInteger
@@ -38,6 +39,8 @@ import engine.expressions.fractionOf
 import engine.expressions.greaterThanEqualOf
 import engine.expressions.inequationOf
 import engine.expressions.inverse
+import engine.expressions.logOf
+import engine.expressions.naturalLogOf
 import engine.expressions.plusMinusOf
 import engine.expressions.productOf
 import engine.expressions.rootOf
@@ -74,6 +77,7 @@ import engine.steps.metadata.Metadata
 import engine.utility.extractFirst
 import engine.utility.isEven
 import engine.utility.isOdd
+import engine.utility.knownPowers
 import engine.utility.lcm
 import methods.solvable.DenominatorExtractor.extractDenominator
 import java.math.BigInteger
@@ -164,58 +168,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
         },
     ),
 
-    CancelCommonFactorOnBothSides(
-        rule {
-            val commonFactor = AnyPattern()
-
-            val lhsFactor = optionalIntegerPowerOf(commonFactor)
-            val lhs = expressionWithFactor(lhsFactor)
-
-            val rhsFactor = optionalIntegerPowerOf(commonFactor)
-            val rhs = expressionWithFactor(rhsFactor)
-
-            val solvable = SolvablePattern(lhs, rhs)
-
-            onPattern(solvable) {
-                val factor = get(commonFactor)
-                // factor.isDefinitelyPositive() is too strong but it'll do for now.
-                if (!factor.isDefinitelyPositive()) {
-                    return@onPattern null
-                }
-
-                val newLHS: Expression
-                val newRHS: Expression
-
-                when ((getValue(lhsFactor.exponent) - getValue(rhsFactor.exponent)).signum()) {
-                    1 -> {
-                        val simplifiedPower = simplifiedPowerOf(
-                            get(commonFactor),
-                            integerOp(lhsFactor.exponent, rhsFactor.exponent) { n, m -> n - m },
-                        )
-                        newLHS = lhs.substitute(simplifiedPower)
-                        newRHS = restOf(rhs)
-                    }
-                    0 -> {
-                        newLHS = restOf(lhs)
-                        newRHS = restOf(rhs)
-                    }
-                    else -> {
-                        val simplifiedPower = simplifiedPowerOf(
-                            get(commonFactor),
-                            integerOp(lhsFactor.exponent, rhsFactor.exponent) { n, m -> m - n },
-                        )
-                        newLHS = restOf(lhs)
-                        newRHS = rhs.substitute(simplifiedPower)
-                    }
-                }
-
-                ruleResult(
-                    toExpr = cancel(commonFactor, solvable.deriveSolvable(newLHS, newRHS)),
-                    explanation = solvableExplanation(SolvableKey.CancelCommonFactorOnBothSides),
-                )
-            }
-        },
-    ),
+    CancelCommonFactorOnBothSides(cancelCommonFactorOnBothSides),
 
     MoveConstantsToTheLeft(
         rule {
@@ -451,6 +404,67 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
             }
         },
     ),
+
+    TakeLogOfRHS(takeLogOfRHS),
+    TakeLogOfBothSides(takeLogOfBothSides),
+    CancelCommonBase(cancelCommonBase),
+    RewriteBothSidesWithSameBase(rewriteBothSidesWithSameBase),
+}
+
+private val cancelCommonFactorOnBothSides = rule {
+    val commonFactor = condition { it != Constants.One }
+
+    val lhsFactor = optionalIntegerPowerOf(commonFactor)
+    val lhs = expressionWithFactor(lhsFactor)
+
+    val rhsFactor = optionalIntegerPowerOf(commonFactor)
+    val rhs = expressionWithFactor(rhsFactor)
+
+    val solvable = SolvablePattern(lhs, rhs)
+
+    onPattern(solvable) {
+        val factor = get(commonFactor)
+        // factor.isDefinitelyPositive() is too strong but it'll do for now.
+        if (!factor.isDefinitelyPositive()) {
+            return@onPattern null
+        }
+
+        val newLHS: Expression
+        val newRHS: Expression
+
+        when ((getValue(lhsFactor.exponent) - getValue(rhsFactor.exponent)).signum()) {
+            1 -> {
+                val simplifiedPower = simplifiedPowerOf(
+                    get(commonFactor),
+                    integerOp(lhsFactor.exponent, rhsFactor.exponent) { n, m -> n - m },
+                )
+                newLHS = lhs.substitute(simplifiedPower)
+                newRHS = restOf(rhs)
+            }
+            0 -> {
+                newLHS = restOf(lhs)
+                newRHS = restOf(rhs)
+            }
+            else -> {
+                val simplifiedPower = simplifiedPowerOf(
+                    get(commonFactor),
+                    integerOp(lhsFactor.exponent, rhsFactor.exponent) { n, m -> m - n },
+                )
+                newLHS = restOf(lhs)
+                newRHS = rhs.substitute(simplifiedPower)
+            }
+        }
+
+        ruleResult(
+            toExpr = cancel(commonFactor, solvable.deriveSolvable(newLHS, newRHS)),
+            explanation = solvableExplanation(SolvableKey.CancelCommonFactorOnBothSides),
+            gmAction = drag(
+                commonFactor.within(lhs),
+                null,
+                commonFactor.within(rhs),
+            ),
+        )
+    }
 }
 
 private val moveTermsNotContainingModulusToTheRight = rule {
@@ -566,7 +580,7 @@ object DenominatorExtractor {
     }
 }
 
-private fun MappedExpressionBuilder.solvableExplanation(
+internal fun MappedExpressionBuilder.solvableExplanation(
     solvableKey: SolvableKey,
     flipSign: Boolean = false,
     parameters: List<Expression> = emptyList(),
@@ -763,3 +777,123 @@ private fun Expression.hasFractionFactor(): Boolean {
         else -> false
     }
 }
+
+private val takeLogOfRHS = rule {
+    val exponent = VariableExpressionPattern()
+    val base = UnsignedIntegerPattern()
+    val lhs = powerOf(integerCondition(base) { it >= BigInteger.TWO }, exponent)
+    val rhs = ConstantInSolutionVariablePattern()
+
+    val solvable = SolvablePattern(lhs, rhs)
+
+    onPattern(solvable) {
+        val newLHS = get(exponent)
+        val newRHS = logOf(get(base), get(rhs))
+        ruleResult(
+            toExpr = solvable.deriveSolvable(newLHS, newRHS),
+            explanation = solvableExplanation(
+                SolvableKey.TakeLogOfRHS,
+            ),
+        )
+    }
+}
+
+private val takeLogOfBothSides = rule {
+    val lhs = condition { it.hasFactorsConstantIn(solutionVariables) }
+    val rhs = condition { it.hasFactorsConstantIn(solutionVariables) }
+
+    val solvable = SolvablePattern(lhs, rhs)
+
+    onPattern(solvable) {
+        ruleResult(
+            toExpr = solvable.deriveSolvable(naturalLogOf(get(lhs)), naturalLogOf(get(rhs))),
+            explanation = solvableExplanation(SolvableKey.TakeLogOfBothSides),
+        )
+    }
+}
+
+private fun Expression.hasFactorsConstantIn(variables: List<String>): Boolean {
+    return when (this) {
+        is Product -> factors().all { it.hasFactorsConstantIn(variables) }
+        is Fraction -> numerator.hasFactorsConstantIn(variables) && numerator.hasFactorsConstantIn(variables)
+        is Power -> base.isConstantIn(variables)
+        else -> isConstantIn(variables)
+    }
+}
+
+private val cancelCommonBase = rule {
+    val base = ConstantInSolutionVariablePattern()
+    val lhsExponent = AnyPattern()
+    val rhsExponent = AnyPattern()
+    val lhs = powerOf(base, lhsExponent)
+    val rhs = powerOf(base, rhsExponent)
+
+    val solvable = SolvablePattern(lhs, rhs)
+
+    onPattern(solvable) {
+        ruleResult(
+            toExpr = solvable.deriveSolvable(get(lhsExponent), get(rhsExponent)),
+            explanation = solvableExplanation(
+                SolvableKey.CancelCommonBase,
+            ),
+        )
+    }
+}
+
+private val rewriteBothSidesWithSameBase = rule {
+    val lhsBase = UnsignedIntegerPattern()
+    val rhsBase = UnsignedIntegerPattern()
+    val lhsBaseAtLeast2 = integerCondition(lhsBase) { it >= BigInteger.TWO }
+    val rhsBaseAtLeast2 = integerCondition(rhsBase) { it >= BigInteger.TWO }
+    val lhsExponent = AnyPattern()
+    val rhsExponent = AnyPattern()
+    val lhs = oneOf(
+        lhsBaseAtLeast2,
+        powerOf(lhsBaseAtLeast2, lhsExponent),
+    )
+    val rhs = oneOf(
+        rhsBaseAtLeast2,
+        powerOf(rhsBaseAtLeast2, rhsExponent),
+    )
+
+    val solvable = SolvablePattern(lhs, rhs)
+
+    onPattern(condition(solvable) { !it.isConstant() }) {
+        val lhsBaseValue = getValue(lhsBase)
+        val rhsBaseValue = getValue(rhsBase)
+        if (lhsBaseValue == rhsBaseValue) return@onPattern null
+        val (b, e1, e2) = withSameBase(lhsBaseValue, rhsBaseValue) ?: return@onPattern null
+        ruleResult(
+            toExpr = solvable.deriveSolvable(
+                simplifiedPowerOf(simplifiedPowerOf(xp(b), xp(e1)), get(lhsExponent, Constants.One)),
+                simplifiedPowerOf(simplifiedPowerOf(xp(b), xp(e2)), get(rhsExponent, Constants.One)),
+            ),
+            explanation = solvableExplanation((SolvableKey.RewriteBothSidesWithSameBase)),
+        )
+    }
+}
+
+/**
+ * Finds if [n1] and [n2] can be written (simply) with the same base.  If not, returns null, else returns
+ * (b, e1, e2) such that n1 = b^e1 and n2 = b^e2
+ */
+private fun withSameBase(n1: BigInteger, n2: BigInteger): Triple<BigInteger, BigInteger, BigInteger>? {
+    val n1AsPower = asPower(n1).toMap()
+    val e1 = n1AsPower[n2]
+    if (e1 != null) {
+        return Triple(n2, e1, BigInteger.ONE)
+    }
+
+    for ((b, e2) in asPower(n2)) {
+        val e1 = if (b == n1) BigInteger.ONE else n1AsPower[b]
+        if (e1 != null) {
+            return Triple(b, e1, e2)
+        }
+    }
+    return null
+}
+
+/**
+ * Returns a list of pairs (base, exponent) for [n] such that n = base ^ exponent, with exponent > 1
+ */
+private fun asPower(n: BigInteger) = knownPowers.mapNotNull { (k, v) -> if (k.second == n) Pair(v, k.first) else null }

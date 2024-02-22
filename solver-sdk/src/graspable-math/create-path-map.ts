@@ -266,7 +266,7 @@ function annotate(
     case 'Infinity':
     case 'Reals':
     case 'Pi':
-    case 'ExponentialE':
+    case 'EulerE':
     case 'ImaginaryUnit':
     case 'AddEquations':
     case 'SubtractEquations':
@@ -323,8 +323,8 @@ function annotate(
     case 'Arcsch':
     case 'Arsech':
     case 'Log':
-    case 'Ln':
-    case 'Log10':
+    case 'NaturalLog':
+    case 'LogBase10':
       throw new Error('Unsupported type: ' + tree.type);
     default:
       needToImplement(treeType);

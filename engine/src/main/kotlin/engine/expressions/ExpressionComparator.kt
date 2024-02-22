@@ -71,13 +71,9 @@ object SimpleComparator : ExpressionComparator {
     }
 
     private inline fun rationalCompare(e1: Expression, e2: Expression): Sign? {
-        val q1 = e1.asRational()
-        val q2 = e2.asRational()
-        return if (q1 != null && q2 != null) {
-            Sign.fromInt((q1 - q2).numerator.signum())
-        } else {
-            null
-        }
+        val q1 = e1.asRational() ?: return null
+        val q2 = e2.asRational() ?: return null
+        return Sign.fromInt((q1 - q2).numerator.signum())
     }
 
     private inline fun decimalCompare(e1: Expression, e2: Expression): Sign? {

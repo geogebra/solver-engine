@@ -91,4 +91,15 @@ class TestBigIntegerExtensions {
         assertEquals(49, i(1000000).factors().count())
         assertEquals(10, i(1000000).factors(limit = 10).count())
     }
+
+    @Test
+    fun testAsKnownPower() {
+        assertEquals(p(2, 2), i(4).asKnownPower())
+        assertEquals(p(2, 3), i(8).asKnownPower())
+        assertEquals(p(10, 3), i(1000).asKnownPower())
+        assertEquals(p(30, 2), i(900).asKnownPower())
+        assertEquals(p(200, 3), i(8000000).asKnownPower())
+        assertEquals(null, i(5).asKnownPower())
+        assertEquals(null, i(10).asKnownPower())
+    }
 }

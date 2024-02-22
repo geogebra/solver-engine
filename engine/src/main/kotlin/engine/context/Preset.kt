@@ -50,6 +50,7 @@ enum class Preset(val description: String, val settings: Map<Setting, SettingVal
             Setting.CopySumSignsWhenDistributing setTo BooleanSetting.True,
             Setting.MultiplyFractionsAndNotFractionsDirectly setTo BooleanSetting.True,
             Setting.EliminateNonZeroFactorByDividing setTo BooleanSetting.True,
+            Setting.DontCancelCommonFactorsWhenSimplifyingEquation setTo BooleanSetting.True,
         ),
     ),
 

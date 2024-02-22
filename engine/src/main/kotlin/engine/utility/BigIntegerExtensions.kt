@@ -15,6 +15,8 @@
  *
  */
 
+@file:Suppress("TooManyFunctions")
+
 package engine.utility
 
 import java.math.BigInteger
@@ -28,6 +30,7 @@ private const val MAX_KNOWN_SQUARE = 15
 private const val MAX_KNOWN_CUBE = 5
 
 private const val CUBE_POWER = 3
+private val BIG_THREE = 3.toBigInteger()
 
 /**
  * Map (n, a^n) -> a for n and a >= 2 a small enough
@@ -41,8 +44,20 @@ val knownPowers = buildMap<Pair<BigInteger, BigInteger>, BigInteger> {
     }
     for (n in 2..MAX_KNOWN_CUBE) {
         val bn = n.toBigInteger()
-        put(Pair(CUBE_POWER.toBigInteger(), bn.pow(CUBE_POWER)), bn)
+        put(Pair(BIG_THREE, bn.pow(CUBE_POWER)), bn)
     }
+}
+
+private fun findInKnownPowers(n: BigInteger): Pair<BigInteger, BigInteger>? {
+    val cubeRoot = knownPowers[Pair(BIG_THREE, n)]
+    if (cubeRoot != null) {
+        return Pair(cubeRoot, BIG_THREE)
+    }
+    val squareRoot = knownPowers[Pair(BigInteger.TWO, n)]
+    if (squareRoot != null) {
+        return Pair(squareRoot, BigInteger.TWO)
+    }
+    return null
 }
 
 fun BigInteger.isZero() = this.signum() == 0
@@ -247,3 +262,18 @@ fun BigInteger.factors(limit: Int = FACTORS_DEFAULT_LIMIT) =
             yield(factor)
         }
     }
+
+fun BigInteger.asKnownPower(): Pair<BigInteger, BigInteger>? {
+    val factorizer = Factorizer(this)
+    val m10 = factorizer.extractMultiplicity(BigInteger.TEN)
+    return when {
+        m10 == 0 -> findInKnownPowers(this)
+        m10 == 1 -> null
+        factorizer.n == BigInteger.ONE -> Pair(BigInteger.TEN, m10.toBigInteger())
+        else -> m10.toBigInteger().factors().asIterable().reversed().firstNotNullOfOrNull { m ->
+            knownPowers[Pair(m, factorizer.n)]?.let { a ->
+                Pair(a * BigInteger.TEN.pow(m10 / m.toInt()), m)
+            }
+        }
+    }
+}

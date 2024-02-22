@@ -369,7 +369,7 @@ onMounted(() => {
       <li>\(\left|3x^2 + 2\right|\) is <code>abs[3 [x ^ 2] + 2]</code></li>
       <li>natural log: \(\ln x\) is <code>ln x</code></li>
       <li>base-10 log: \(\log x\) is <code>log x</code></li>
-      <li>base-b log: \(\log_b x\) is <code>log[b] x</code></li>
+      <li>base-b log: \(\log_b x\) is <code>log_[b] x</code></li>
       <li>
         mathematical constants \(e\), \(\pi\), and \(i\) are <code>/e/</code>, <code>/pi/</code>,
         and <code>/i/</code>
@@ -517,7 +517,7 @@ onMounted(() => {
           scaleContainerClass: null, // If we scale, firefox thinks the scale is 0
           allowUpscale: false, // We want width and height to really be 600
         }"
-        @onLoad="onLoad"
+        @on-load="onLoad"
       />
     </div>
   </details>

@@ -108,6 +108,11 @@ class SolvableRulesTest {
             SolvableRules.CancelCommonFactorOnBothSides,
             "1 + [x^2] = 2",
         )
+        testRule(
+            "1 = 1",
+            SolvableRules.CancelCommonFactorOnBothSides,
+            null,
+        )
     }
 
     @Test
@@ -477,5 +482,40 @@ class SolvableRulesTest {
         testRuleInX("[x ^ 5] = -8", SolvableRules.TakeRootOfBothSides, "x = root[-8, 5]")
         testRuleInX("[x ^ 4] = 0", SolvableRules.TakeRootOfBothSides, "x = 0")
         testRuleInX("[x ^ 2] = -1", SolvableRules.TakeRootOfBothSides, null)
+    }
+
+    @Test
+    fun testCancelCommonBase() {
+        testRuleInX("[2 ^ x] = [2 ^ 3]", SolvableRules.CancelCommonBase, "x = 3")
+        testRuleInX("[3 ^ x + 1] = [3 ^ 1 - x]", SolvableRules.CancelCommonBase, "x + 1 = 1 - x")
+    }
+
+    @Test
+    fun testRewriteBothSidesWithSameBase() {
+        testRule(
+            "[2 ^ 3] = [4 ^ x]",
+            SolvableRules.RewriteBothSidesWithSameBase,
+            "[2 ^ 3] = [([2 ^ 2]) ^ x]",
+        )
+        testRule(
+            "3 = [9 ^ x]",
+            SolvableRules.RewriteBothSidesWithSameBase,
+            "3 = [([3 ^ 2]) ^ x]",
+        )
+        testRule(
+            "9 = [3 ^ 2]",
+            SolvableRules.RewriteBothSidesWithSameBase,
+            null,
+        )
+        testRule(
+            "[4 ^ x] = [8 ^ y]",
+            SolvableRules.RewriteBothSidesWithSameBase,
+            "[([2 ^ 2]) ^ x] = [([2 ^ 3]) ^ y]",
+        )
+        testRule(
+            "[4 ^ x + 1] = 8",
+            SolvableRules.RewriteBothSidesWithSameBase,
+            "[([2 ^ 2]) ^ x + 1] = [2 ^ 3]",
+        )
     }
 }

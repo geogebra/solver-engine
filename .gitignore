@@ -10,7 +10,7 @@ build/
 documentation
 
 # Dev server puts logs in here
-logs
+/logs
 
 ### IntelliJ IDEA ###
 .idea/modules.xml

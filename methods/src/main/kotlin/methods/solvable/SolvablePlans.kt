@@ -51,6 +51,8 @@ import engine.steps.metadata.Metadata
 import engine.steps.metadata.MetadataKey
 import engine.steps.metadata.metadata
 import methods.approximation.ApproximationPlans
+import methods.general.GeneralRules
+import methods.logs.LogsRules
 import methods.polynomials.PolynomialsPlans
 import methods.polynomials.collectLikeTermsInSolutionVariablesSteps
 
@@ -136,6 +138,49 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
     }
 
     val takeRootOfBothSidesAndSimplify = ApplyRuleAndSimplify(SolvableKey.TakeRootOfBothSides)
+
+    val takeLogOfRHSAndSimplify = ApplyRuleAndSimplify(SolvableKey.TakeLogOfRHS)
+
+    val takeLogOfBothSidesAndSimplify = plan {
+        explanation {
+            metadata(getExplanationKey(SolvableKey.TakeLogOfBothSides, context, expression))
+        }
+
+        steps {
+            applyToChildren {
+                check { it is Product }
+                applyToChildren(GeneralRules.RewriteIntegerOrderRootAsPower)
+                whilePossible(GeneralRules.RewriteProductOfPowersWithSameBase)
+                optionally(simplificationPlan)
+            }
+            apply(SolvableRules.TakeLogOfBothSides)
+            applyToChildren {
+                whilePossible {
+                    firstOf {
+                        option(LogsRules.SplitLogOfProduct)
+                        option(LogsRules.SplitLogOfFraction)
+                    }
+                }
+                optionally(simplificationPlan)
+            }
+        }
+    }
+
+    val rewriteBothSidesWithSameBaseAndSimplify = plan {
+        explanation {
+            metadata(getExplanationKey(SolvableKey.RewriteBothSidesWithSameBase, context, expression))
+        }
+
+        steps {
+            apply(SolvableRules.RewriteBothSidesWithSameBase)
+            applyToChildren {
+                apply(GeneralRules.MultiplyExponentsUsingPowerRule)
+                optionally {
+                    applyTo(simplificationPlan) { it.secondChild }
+                }
+            }
+        }
+    }
 
     /**
      * Only rearrange when the variable subexpression is "atomic". For example: don't reorganize

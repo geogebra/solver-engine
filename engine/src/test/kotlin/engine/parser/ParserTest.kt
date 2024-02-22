@@ -289,7 +289,7 @@ class ParserTest {
         parsesTo("ln 3x", naturalLogOf(productOf(xp(3), xp("x"))))
         parsesTo("log 9 - 12", sumOf(logBase10Of(xp(9)), negOf(xp(12))))
         parsesTo(
-            "1 + 4 log[5] [3 / 2]",
+            "1 + 4 log_[5] [3 / 2]",
             sumOf(xp(1), productOf(xp(4), logOf(xp(5), fractionOf(xp(3), xp(2))))),
         )
     }

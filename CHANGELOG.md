@@ -11,6 +11,8 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Added
 
+- Added support for solving simple exponential equations (PLUT-990)
+
 ### Fixed
 
 ### Changed

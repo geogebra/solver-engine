@@ -132,6 +132,14 @@ enum class Setting(val kind: SettingKind, val description: String) {
             "of just cancelling the a, which is the default",
     ),
 
+    /*
+     * This setting is added because I don't know how to make the gmAction tests pass after changing SimplifyEquation
+     * plan to cancel common factor on both sides
+     */
+    DontCancelCommonFactorsWhenSimplifyingEquation(
+        BooleanSetting,
+        "when simplifying an equation ,if lhs and rhs have a common non-zero factor, don't cancel it",
+    ),
     ;
 
     infix fun setTo(value: SettingValue): Pair<Setting, SettingValue> {

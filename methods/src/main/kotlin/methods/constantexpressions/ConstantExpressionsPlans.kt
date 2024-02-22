@@ -23,6 +23,7 @@ import engine.expressions.Power
 import engine.expressions.ValueExpression
 import engine.expressions.containsDecimals
 import engine.expressions.containsFractions
+import engine.expressions.containsLogs
 import engine.expressions.containsPowers
 import engine.expressions.containsRoots
 import engine.expressions.isSigned
@@ -77,6 +78,8 @@ import methods.integerrationalexponents.simplifyRationalExponentsInProduct
 import methods.integerroots.IntegerRootsPlans
 import methods.integerroots.IntegerRootsRules
 import methods.integerroots.cancelRootOfPower
+import methods.logs.LogsPlans
+import methods.logs.LogsRules
 import methods.mixednumbers.MixedNumbersPlans
 import methods.mixednumbers.MixedNumbersRules
 
@@ -274,6 +277,7 @@ val simpleTidyUpSteps = steps {
         option(GeneralRules.SimplifyZeroDenominatorFractionToUndefined)
         option(GeneralRules.EvaluateZeroToThePowerOfZero)
         option(IntegerRationalExponentsRules.EvaluateNegativeToRationalExponentAsUndefined)
+        option(LogsRules.EvaluateLogOfNonPositiveAsUndefined)
 
         // tidy up decimals
         // It's bad to have this here as it has depth = 0.  We should do this at the start and then forget about it.
@@ -371,6 +375,19 @@ val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
                 // to handle, we leave the reorganization to the end
                 optionally { applyTo(reorderProductSteps) { if (it is Minus) it.argument else it } }
                 apply(GeneralPlans.NormalizeNegativeSignsInProduct)
+            }
+        }
+
+        option {
+            check { it.containsLogs() }
+            deeply {
+                firstOf {
+                    option(LogsRules.TakePowerOutOfLog)
+                    option(LogsRules.EvaluateLogOfBase)
+                    option(LogsRules.EvaluateLogOfOne)
+                    option(LogsRules.SimplifyLogOfReciprocal)
+                    option(LogsPlans.SimplifyLogOfKnownPower)
+                }
             }
         }
 
