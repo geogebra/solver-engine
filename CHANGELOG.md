@@ -15,6 +15,8 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Fixed
 
+- SDK: Fixed rendering of contradictions with no variables (PLUT-773)
+
 ### Changed
 
 ### Removed

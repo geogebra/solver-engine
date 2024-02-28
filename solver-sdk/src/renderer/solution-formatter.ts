@@ -171,6 +171,10 @@ export const simpleSolutionFormatter: SolutionFormatter = {
         break;
       }
       case 'Contradiction': {
+        const varList = n.operands[0] as VariableListTree;
+        if (varList.operands === undefined || varList.operands.length === 0) {
+          return `\\text{${w.False}}`;
+        }
         return `\\text{${w.NoSolution}}`;
       }
     }
