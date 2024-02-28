@@ -302,6 +302,8 @@ components:
           type: boolean
         projectOntoVerticalAxis:
           type: boolean
+        showLabelWithCoordinates:
+          type: boolean
     GraphType:
       type: string
       enum: [2DGraph, 3DGraph]

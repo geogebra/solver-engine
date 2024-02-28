@@ -102,6 +102,7 @@ export type IntersectionGraphObject = {
   objectLabels: string[];
   projectOntoHorizontalAxis?: boolean;
   projectOntoVerticalAxis?: boolean;
+  showLabelWithCoordinates?: boolean;
 };
 
 export type CoordinateSystem = Cartesian2DSystem;

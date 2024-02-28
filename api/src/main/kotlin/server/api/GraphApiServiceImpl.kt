@@ -76,6 +76,7 @@ class GraphApiServiceImpl : GraphApiService {
                 objectLabels = intersection.objectIndexes.map { i -> "C_${i + 1}" },
                 projectOntoHorizontalAxis = intersection.projectOntoHorizontalAxis,
                 projectOntoVerticalAxis = intersection.projectOntoVerticalAxis,
+                showLabelWithCoordinates = intersection.showLabelWithCoordinates,
             )
         }
 

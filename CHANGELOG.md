@@ -12,12 +12,15 @@ contents to a new release section (e.g. _[0.x]_).
 ### Added
 
 - Added support for solving simple exponential equations (PLUT-990)
+- Return intersection data for systems of linear equations (PLUT-1003)
 
 ### Fixed
 
 - SDK: Fixed rendering of contradictions with no variables (PLUT-773)
 
 ### Changed
+
+- SDK: Updated Grapher to render labels for intersections and projections (PLUT-1003)
 
 ### Removed
 
