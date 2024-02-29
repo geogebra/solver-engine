@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 An entry should be added to the _[Unreleased]_ section when committing to main. When a release is made we move its
 contents to a new release section (e.g. _[0.x]_).
 
-## [Unreleased]
+## [1.4.4] 2024-02-29
 
 ### Added
 
@@ -22,8 +22,6 @@ contents to a new release section (e.g. _[0.x]_).
 ### Changed
 
 - SDK: Updated Grapher to render labels for intersections and projections (PLUT-1003)
-
-### Removed
 
 ## [1.4.3] 2024-02-6
 
