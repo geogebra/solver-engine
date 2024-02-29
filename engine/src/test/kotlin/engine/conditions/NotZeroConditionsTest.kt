@@ -43,16 +43,32 @@ class SumTermsAreIncommensurableTest {
     }
 }
 
-class ExpressionIsDefinitelyNotZeroTest {
-    private fun testNotZero(exprString: String, notZero: Boolean) {
+class ExpressionIsNotZeroTest {
+    private fun testNotZeroBySign(exprString: String, notZero: Boolean) {
+        val expr = parseExpression(exprString)
+        assertEquals(notZero, expr.isNotZeroBySign())
+    }
+
+    private fun testDefinitelyNotZero(exprString: String, notZero: Boolean) {
         val expr = parseExpression(exprString)
         assertEquals(notZero, expr.isDefinitelyNotZero())
     }
 
     @Test
-    fun testExpressionIsDefinitelyNotZero() {
-        testNotZero("1", true)
-        testNotZero("-[1/2]", true)
-        testNotZero("2*(sqrt[3] - sqrt[2])", true)
+    fun testExpressionNotZeroBySign() {
+        testNotZeroBySign("1", true)
+        testNotZeroBySign("-[1/2]", true)
+        testNotZeroBySign("2*(sqrt[3] - sqrt[2])", true)
+        testNotZeroBySign("ln2 - ln3", false)
+        testNotZeroBySign("x - 1", false)
+    }
+
+    @Test
+    fun testExpressionDefinitelyNotZero() {
+        testDefinitelyNotZero("1", true)
+        testDefinitelyNotZero("-[1/2]", true)
+        testDefinitelyNotZero("2*(sqrt[3] - sqrt[2])", true)
+        testDefinitelyNotZero("ln2 - ln3", true)
+        testDefinitelyNotZero("x - 1", false)
     }
 }

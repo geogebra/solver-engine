@@ -17,7 +17,7 @@
 
 package methods.fractionarithmetic
 
-import engine.conditions.isDefinitelyNotZero
+import engine.conditions.isNotZeroBySign
 import engine.expressions.Constants
 import engine.expressions.DefaultView
 import engine.expressions.DivideBy
@@ -387,7 +387,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(frac) {
                 val factor = get(commonFactor)
-                if (!factor.isDefinitelyNotUndefined() || (factor.isConstant() && !factor.isDefinitelyNotZero())) {
+                if (!factor.isDefinitelyNotUndefined() || (factor.isConstant() && !factor.isNotZeroBySign())) {
                     return@onPattern null
                 }
 

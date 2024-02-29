@@ -13,6 +13,7 @@ contents to a new release section (e.g. _[0.x]_).
 
 - Added support for solving simple exponential equations (PLUT-990)
 - Return intersection data for systems of linear equations (PLUT-1003)
+- Simplify fractions with non-obvious non-zero denominator (PLUT-1005)
 
 ### Fixed
 

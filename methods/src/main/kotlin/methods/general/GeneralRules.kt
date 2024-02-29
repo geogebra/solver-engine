@@ -20,6 +20,7 @@ package methods.general
 import engine.conditions.isDefinitelyNotNegative
 import engine.conditions.isDefinitelyNotPositive
 import engine.conditions.isDefinitelyNotZero
+import engine.conditions.isNotZeroBySign
 import engine.expressions.Constants
 import engine.expressions.DivideBy
 import engine.expressions.Expression
@@ -99,6 +100,7 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     MoveSignOfNegativeFactorOutOfProduct(moveSignOfNegativeFactorOutOfProduct),
     SimplifyZeroDenominatorFractionToUndefined(simplifyZeroDenominatorFractionToUndefined),
     SimplifyZeroNumeratorFractionToZero(simplifyZeroNumeratorFractionToZero),
+    SimplifyNonObviousZeroNumeratorFractionToZero(simplifyNonObviousZeroNumeratorFractionToZero),
     SimplifyUnitFractionToOne(simplifyUnitFractionToOne),
     SimplifyFractionWithOneDenominator(simplifyFractionWithOneDenominator),
 
@@ -357,6 +359,29 @@ private val simplifyZeroNumeratorFractionToZero =
     rule {
         val zero = FixedPattern(Constants.Zero)
         val denominator = condition {
+            it.isNotZeroBySign() ||
+                !it.isConstant() // if it is not constant we have already made sure the fraction is defined
+        }
+        val pattern = fractionOf(zero, denominator)
+
+        onPattern(pattern) {
+            ruleResult(
+                toExpr = transformTo(pattern, Constants.Zero),
+                gmAction = tap(zero),
+                explanation = metadata(Explanation.SimplifyZeroNumeratorFractionToZero, move(zero)),
+            )
+        }
+    }
+
+/**
+ * This cancels a fraction of the for [0 / X] where X is not zero, falling back to a numeric evaluation if
+ * general considerations are not enough (e.g. [0 / log 3 - ln 2]
+ *
+ */
+private val simplifyNonObviousZeroNumeratorFractionToZero =
+    rule {
+        val zero = FixedPattern(Constants.Zero)
+        val denominator = condition {
             it.isDefinitelyNotZero() ||
                 !it.isConstant() // if it is not constant we have already made sure the fraction is defined
         }
@@ -377,7 +402,7 @@ private val simplifyZeroNumeratorFractionToZero =
 private val simplifyUnitFractionToOne =
     rule {
         val common = condition {
-            it.isDefinitelyNotZero() ||
+            it.isNotZeroBySign() ||
                 !it.isConstant() // if it is not constant we have already made sure the fraction is defined
         }
         val pattern = fractionOf(common, common)
@@ -683,7 +708,7 @@ private val evaluateZeroToThePowerOfZero =
 private val evaluateExpressionToThePowerOfZero =
     rule {
         val zero = FixedPattern(Constants.Zero)
-        val power = powerOf(condition { it.isDefinitelyNotZero() }, zero)
+        val power = powerOf(condition { it.isNotZeroBySign() }, zero)
         onPattern(power) {
             ruleResult(
                 toExpr = transformTo(power, Constants.One),

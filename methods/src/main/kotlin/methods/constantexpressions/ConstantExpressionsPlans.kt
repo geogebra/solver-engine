@@ -436,9 +436,16 @@ val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
             }
         }
 
+        // This is not a tidy-up rule, we do it only now because at this point the denominator of a fraction has been
+        // simplified as much as possible, and the last resort for finding if a fraction of the for [0 / x] can
+        // be cancelled is to check the denominator numerically.  We only want to do that on a simplified denominator.
+        option {
+            check { it.containsFractions() }
+            deeply(GeneralRules.SimplifyNonObviousZeroNumeratorFractionToZero)
+        }
         // Now that numerator and denominator have been simplified enough, we can find a common factor in the
         // numerator and denominator of fractions.  Do this after factoring squares out of roots so that e.g.
-        // [4 + 2sqrt[8] / 8] is transformaed to [4 + 4sqrt[2] / 8] first.
+        // [4 + 2sqrt[8] / 8] is transformed to [4 + 4sqrt[2] / 8] first.
         option(FractionArithmeticPlans.SimplifyCommonIntegerFactorInFraction)
 
         option { deeply(ExpandRules.DistributeNegativeOverBracket) }

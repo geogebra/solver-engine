@@ -42,6 +42,7 @@ import methods.general.GeneralRules.RewriteProductOfPowersWithSameExponent
 import methods.general.GeneralRules.SimplifyDoubleMinus
 import methods.general.GeneralRules.SimplifyEvenPowerOfNegative
 import methods.general.GeneralRules.SimplifyExpressionToThePowerOfOne
+import methods.general.GeneralRules.SimplifyNonObviousZeroNumeratorFractionToZero
 import methods.general.GeneralRules.SimplifyOddPowerOfNegative
 import methods.general.GeneralRules.SimplifyProductWithTwoNegativeFactors
 import methods.general.GeneralRules.SimplifyUnitFractionToOne
@@ -222,6 +223,7 @@ class GeneralRulesTest {
         testRule("[0 / root[3, 3] + root[5, 3]]", SimplifyZeroNumeratorFractionToZero, "0")
         testRule("[0 / 3 * (sqrt[2] - 1)]", SimplifyZeroNumeratorFractionToZero, "0")
         testRule("[0 / 1 - 1]", SimplifyZeroNumeratorFractionToZero, null)
+        testRule("[0 / ln3 - ln2]", SimplifyZeroNumeratorFractionToZero, null)
 
         testMethod {
             method = SimplifyZeroNumeratorFractionToZero
@@ -233,6 +235,15 @@ class GeneralRulesTest {
                 transform(".", ".")
             }
         }
+    }
+
+    @Test
+    fun testSimplifyNonObviousZeroNumeratorFractionToZero() {
+        testRule("[0 / -1]", SimplifyNonObviousZeroNumeratorFractionToZero, "0")
+        testRule("[0 / root[3, 3] + root[5, 3]]", SimplifyNonObviousZeroNumeratorFractionToZero, "0")
+        testRule("[0 / 3 * (sqrt[2] - 1)]", SimplifyNonObviousZeroNumeratorFractionToZero, "0")
+        testRule("[0 / 1 - 1]", SimplifyNonObviousZeroNumeratorFractionToZero, null)
+        testRule("[0 / ln3 - ln2]", SimplifyNonObviousZeroNumeratorFractionToZero, "0")
     }
 
     @Test

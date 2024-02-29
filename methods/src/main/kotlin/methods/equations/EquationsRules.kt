@@ -18,7 +18,7 @@
 package methods.equations
 
 import engine.conditions.isDefinitelyNegative
-import engine.conditions.isDefinitelyNotZero
+import engine.conditions.isNotZeroBySign
 import engine.expressions.Comparison
 import engine.expressions.Constants
 import engine.expressions.Contradiction
@@ -403,7 +403,7 @@ private val separateEquationInPlusMinusForm = rule {
 }
 
 private val eliminateConstantFactorOfLhsWithZeroRhsDirectly = rule {
-    val factor = condition { it.isConstant() && it.isDefinitelyNotZero() }
+    val factor = condition { it.isConstant() && it.isNotZeroBySign() }
     val unsignedLHS = productContaining(factor)
     val lhs = optionalNegOf(unsignedLHS)
     val rhs = FixedPattern(Constants.Zero)

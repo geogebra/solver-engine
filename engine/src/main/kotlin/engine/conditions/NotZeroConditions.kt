@@ -32,7 +32,7 @@ import java.math.BigInteger
 /**
  * Returns true if the expression is definitely known to be non-zero, according to some heuristics
  */
-fun Expression.isDefinitelyNotZero(): Boolean {
+fun Expression.isNotZeroBySign(): Boolean {
     val sign = signOf()
     return sign != Sign.NONE && !sign.canBeZero
 }
@@ -61,12 +61,12 @@ fun sumTermsAreIncommensurable(terms: List<Expression>): Boolean {
         val fraction = match?.getBoundExpr(fractionTermPtn)
         val key = when {
             match == null -> invalidKey
-            fraction != null -> if (fraction.isDefinitelyNotZero()) rationalKey else invalidKey
+            fraction != null -> if (fraction.isNotZeroBySign()) rationalKey else invalidKey
             else -> {
                 val coeff = rootTermPtn.coefficient(match)
                 val radicand = radicandPtn.getBoundInt(match)
                 val order = rootPtn.order.getBoundInt(match)
-                if (coeff.isDefinitelyNotZero() && order >= BigInteger.TWO && rootIsSimplified(radicand, order)) {
+                if (coeff.isNotZeroBySign() && order >= BigInteger.TWO && rootIsSimplified(radicand, order)) {
                     Pair(radicand, order)
                 } else {
                     invalidKey
