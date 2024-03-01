@@ -7,6 +7,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 An entry should be added to the _[Unreleased]_ section when committing to main. When a release is made we move its
 contents to a new release section (e.g. _[0.x]_).
 
+## [1.4.4] 2024-02-29
+
+### Added
+
+- Added support for solving simple exponential equations (PLUT-990)
+- Return intersection data for systems of linear equations (PLUT-1003)
+- Simplify fractions with non-obvious non-zero denominator (PLUT-1005)
+
+### Fixed
+
+- SDK: Fixed rendering of contradictions with no variables (PLUT-773)
+
+### Changed
+
+- SDK: Updated Grapher to render labels for intersections and projections (PLUT-1003)
+
+### Removed
+
 ## [1.4.3] 2024-02-6
 
 ### Added

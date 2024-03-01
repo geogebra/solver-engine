@@ -87,10 +87,10 @@ open class MappedExpressionBuilder(
     /**
      * Returns the last subexpression bound to pattern
      */
-    fun get(expressionProvider: ExpressionProvider): Expression {
+    fun get(expressionProvider: ExpressionProvider, default: Expression? = null): Expression {
         val expressions = expressionProvider.getBoundExprs(match)
         return when (expressions.size) {
-            0 -> throw EmptyExpressionProviderException()
+            0 -> default ?: throw EmptyExpressionProviderException()
             1 -> expressions[0]
             else -> expressions[0].withOrigin(Factor(expressions))
         }

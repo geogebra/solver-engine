@@ -127,12 +127,12 @@ export function treeToSolver(n: ExpressionTree): string {
       } else {
         return dec(`${n.type.toLowerCase()} ${rec(n.operands[0])}`);
       }
-    case 'Log10':
+    case 'LogBase10':
       return dec(`log ${rec(n.operands[0])}`);
-    case 'Ln':
+    case 'NaturalLog':
       return dec(`ln ${rec(n.operands[0])}`);
     case 'Log':
-      return dec(`log[${rec(n.operands[0])}] ${rec(n.operands[1])}`);
+      return dec(`log_[${rec(n.operands[0])}] ${rec(n.operands[1])}`);
     case 'Percent':
       return dec(`${rec(n.operands[0])} %`);
     case 'AbsoluteValue':
@@ -178,7 +178,7 @@ export function treeToSolver(n: ExpressionTree): string {
       return dec('/reals/');
     case 'Void':
       return dec('/void/');
-    case 'ExponentialE':
+    case 'EulerE':
       return dec('/e/');
     case 'Pi':
       return dec('/pi/');

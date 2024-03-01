@@ -82,6 +82,19 @@ enum class EquationSolvingStrategy(
         },
     ),
 
+    LogsMethod(
+        family = Family.EXPONENTIAL,
+        priority = 10,
+        explanation = EquationsExplanation.SolveExponentialEquation,
+        steps = steps {
+            firstOf {
+                option(solvablePlansForEquations.takeLogOfRHSAndSimplify)
+                option(solvablePlansForEquations.takeLogOfBothSidesAndSimplify)
+            }
+            apply(equationSolvingSteps)
+        },
+    ),
+
     /**
      * Solve an equation by completing the square.
      * The equation can be of higher order than 2 as long as completing the square is possible.
@@ -309,6 +322,7 @@ enum class EquationSolvingStrategy(
         CONSTANT,
         UNDEFINED,
         FALLBACK,
+        EXPONENTIAL,
     }
 
     override fun isIncompatibleWith(other: Strategy): Boolean {

@@ -173,7 +173,15 @@ fun extractGraphableExpressions(expr: Expression): Pair<List<Expression>, List<I
         expr.variables.isEmpty() -> null
         expr.variables.size > 2 -> null
         expr is StatementSystem -> if (expr.equations.all { it is Comparison && it.variables.isNotEmpty() }) {
-            Pair(expr.equations, emptyList())
+            Pair(
+                expr.equations,
+                listOf(
+                    Intersection(
+                        objectIndexes = listOf(0, 1),
+                        showLabelWithCoordinates = true,
+                    ),
+                ),
+            )
         } else {
             null
         }
@@ -202,4 +210,5 @@ data class Intersection(
     val objectIndexes: List<Int>,
     val projectOntoHorizontalAxis: Boolean = false,
     val projectOntoVerticalAxis: Boolean = false,
+    val showLabelWithCoordinates: Boolean = false,
 )

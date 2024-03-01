@@ -104,6 +104,12 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                 optionally(NormalizationPlans.NormalizeExpression)
                 whilePossible(SimplifyByEliminatingConstantFactorOfLhsWithZeroRhs)
                 whilePossible(SolvableRules.CancelCommonTermsOnBothSides)
+                optionally {
+                    check { !isSet(Setting.DontCancelCommonFactorsWhenSimplifyingEquation) }
+                    whilePossible(SolvableRules.CancelCommonFactorOnBothSides)
+                }
+                optionally(solvablePlansForEquations.rewriteBothSidesWithSameBaseAndSimplify)
+                optionally(SolvableRules.CancelCommonBase)
                 optionally(algebraicSimplificationStepsWithoutFractionAddition)
             }
         },

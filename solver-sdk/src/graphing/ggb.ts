@@ -147,6 +147,12 @@ export class GgbAppletGrapher implements Grapher {
             );
             // See https://wiki.geogebra.org/en/SetLineStyle_Command?lang=en
             this.ggbAppletApi.setLineStyle(segmentLabel, 3);
+            this.ggbAppletApi.setCaption(
+              projLabel,
+              `${this.coordinateSystem.horizontalAxis.variable} = %x`,
+            );
+            this.ggbAppletApi.setLabelStyle(projLabel, 3);
+            this.ggbAppletApi.setLabelVisible(projLabel, true);
           }
           if (graphObject.projectOntoVerticalAxis) {
             const projLabel = this.ggbAppletApi.evalCommandGetLabels(`(0, y(${label}))`);
@@ -155,6 +161,16 @@ export class GgbAppletGrapher implements Grapher {
             );
             // See https://wiki.geogebra.org/en/SetLineStyle_Command?lang=en
             this.ggbAppletApi.setLineStyle(segmentLabel, 3);
+            this.ggbAppletApi.setCaption(
+              projLabel,
+              `${this.coordinateSystem.verticalAxis.variable} = %y`,
+            );
+            this.ggbAppletApi.setLabelStyle(projLabel, 3);
+            this.ggbAppletApi.setLabelVisible(projLabel, true);
+          }
+          if (graphObject.showLabelWithCoordinates) {
+            this.ggbAppletApi.setLabelStyle(label, 2);
+            this.ggbAppletApi.setLabelVisible(label, true);
           }
         }
         break;

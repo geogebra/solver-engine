@@ -23,6 +23,7 @@ import engine.expressions.Power
 import engine.expressions.ValueExpression
 import engine.expressions.containsDecimals
 import engine.expressions.containsFractions
+import engine.expressions.containsLogs
 import engine.expressions.containsPowers
 import engine.expressions.containsRoots
 import engine.expressions.isSigned
@@ -77,6 +78,8 @@ import methods.integerrationalexponents.simplifyRationalExponentsInProduct
 import methods.integerroots.IntegerRootsPlans
 import methods.integerroots.IntegerRootsRules
 import methods.integerroots.cancelRootOfPower
+import methods.logs.LogsPlans
+import methods.logs.LogsRules
 import methods.mixednumbers.MixedNumbersPlans
 import methods.mixednumbers.MixedNumbersRules
 
@@ -274,6 +277,7 @@ val simpleTidyUpSteps = steps {
         option(GeneralRules.SimplifyZeroDenominatorFractionToUndefined)
         option(GeneralRules.EvaluateZeroToThePowerOfZero)
         option(IntegerRationalExponentsRules.EvaluateNegativeToRationalExponentAsUndefined)
+        option(LogsRules.EvaluateLogOfNonPositiveAsUndefined)
 
         // tidy up decimals
         // It's bad to have this here as it has depth = 0.  We should do this at the start and then forget about it.
@@ -374,6 +378,19 @@ val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
             }
         }
 
+        option {
+            check { it.containsLogs() }
+            deeply {
+                firstOf {
+                    option(LogsRules.TakePowerOutOfLog)
+                    option(LogsRules.EvaluateLogOfBase)
+                    option(LogsRules.EvaluateLogOfOne)
+                    option(LogsRules.SimplifyLogOfReciprocal)
+                    option(LogsPlans.SimplifyLogOfKnownPower)
+                }
+            }
+        }
+
         option { deeply(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithSameBase) }
         option {
             check { it.containsPowers() }
@@ -419,9 +436,16 @@ val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
             }
         }
 
+        // This is not a tidy-up rule, we do it only now because at this point the denominator of a fraction has been
+        // simplified as much as possible, and the last resort for finding if a fraction of the for [0 / x] can
+        // be cancelled is to check the denominator numerically.  We only want to do that on a simplified denominator.
+        option {
+            check { it.containsFractions() }
+            deeply(GeneralRules.SimplifyNonObviousZeroNumeratorFractionToZero)
+        }
         // Now that numerator and denominator have been simplified enough, we can find a common factor in the
         // numerator and denominator of fractions.  Do this after factoring squares out of roots so that e.g.
-        // [4 + 2sqrt[8] / 8] is transformaed to [4 + 4sqrt[2] / 8] first.
+        // [4 + 2sqrt[8] / 8] is transformed to [4 + 4sqrt[2] / 8] first.
         option(FractionArithmeticPlans.SimplifyCommonIntegerFactorInFraction)
 
         option { deeply(ExpandRules.DistributeNegativeOverBracket) }

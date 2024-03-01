@@ -298,9 +298,14 @@ class SolveBySubstitutionTest {
 
                     step {
                         fromExpr = "2 x = 2"
+                        toExpr = "x = 1"
+                    }
+
+                    step {
+                        fromExpr = "x = 1"
                         toExpr = "SetSolution[x: {1}]"
                         explanation {
-                            key = EquationsExplanation.SolveLinearEquation
+                            key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                         }
                     }
                 }

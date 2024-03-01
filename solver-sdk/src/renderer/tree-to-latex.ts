@@ -384,11 +384,11 @@ function treeToLatexInner(
       } else {
         return tfd(`\\${n.type.toLowerCase()}{${rec(n.operands[0], n)}}`);
       }
-    case 'Log10':
+    case 'LogBase10':
       return tfd(`\\log{${rec(n.operands[0], n)}}`);
     case 'Log':
       return tfd(`\\log_{${rec(n.operands[0], n)}}{${rec(n.operands[1], n)}}`);
-    case 'Ln':
+    case 'NaturalLog':
       return tfd(`\\ln{${rec(n.operands[0], n)}}`);
     case 'AbsoluteValue':
       return tfd(colorAbsoluteValue(rec(n.operands[0], n), n, t, p));
@@ -523,7 +523,7 @@ function treeToLatexInner(
       return tfd('\\mathbb{R}');
     case 'Void':
       return tfd('\\textrm{VOID}');
-    case 'ExponentialE':
+    case 'EulerE':
       return tfd('\\mathrm{e}');
     case 'Pi':
       return tfd('\\pi');

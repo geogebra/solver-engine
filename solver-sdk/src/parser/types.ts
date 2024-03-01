@@ -33,8 +33,8 @@ export type NestedExpressionType =
   | 'SquareRoot' // unary
   | 'Root' // (degree, radicand)
   | 'Log' // binary
-  | 'Ln' // unary
-  | 'Log10' // unary
+  | 'NaturalLog' // unary
+  | 'LogBase10' // unary
   | 'Percent' // unary
   | 'AbsoluteValue' // unary
   | 'ExpressionWithConstraint' // (expression, constraint)
@@ -155,7 +155,7 @@ export type ExpressionTreeBase<T> = ExpressionDecorations &
           | 'Infinity'
           | 'Reals'
           | 'Void'
-          | 'ExponentialE'
+          | 'EulerE'
           | 'Pi'
           | 'ImaginaryUnit';
       }

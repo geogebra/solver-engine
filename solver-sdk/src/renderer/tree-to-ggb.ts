@@ -120,9 +120,9 @@ export function treeToGgb(
     case 'Arcsch':
     case 'Arsech':
       return dec(`${n.type.toLowerCase()} ${rec(n.operands[0])}`);
-    case 'Log10':
+    case 'LogBase10':
       return dec(`log(${rec(n.operands[0])})`);
-    case 'Ln':
+    case 'NaturalLog':
       return dec(`ln(${rec(n.operands[0])})`);
     case 'Log':
       return dec(`log(${rec(n.operands[0])}, ${rec(n.operands[1])})`);
@@ -147,7 +147,7 @@ export function treeToGgb(
       return dec(`${rec(n.operands[0])} <= ${rec(n.operands[1])}`);
     case 'GreaterThanEqual':
       return dec(`${rec(n.operands[0])} >= ${rec(n.operands[1])}`);
-    case 'ExponentialE':
+    case 'EulerE':
       return dec('\u212F');
     case 'Pi':
       return dec('\u03C0');

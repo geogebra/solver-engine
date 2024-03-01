@@ -671,6 +671,13 @@ fun Expression.containsRoots(): Boolean {
     }
 }
 
+fun Expression.containsLogs(): Boolean {
+    return when (this) {
+        is Logarithm -> true
+        else -> children.any { it.containsLogs() }
+    }
+}
+
 fun Expression.containsPowers(): Boolean {
     return when (this) {
         is Power -> true
@@ -719,6 +726,8 @@ private fun expressionOf(operator: Operator, operands: List<Expression>, meta: N
         UnaryExpressionOperator.DivideBy -> DivideBy(operands[0], meta)
         UnaryExpressionOperator.SquareRoot -> SquareRoot(operands[0], meta)
         UnaryExpressionOperator.Percentage -> Percentage(operands[0], meta)
+        UnaryExpressionOperator.NaturalLog -> NaturalLog(operands[0], meta)
+        UnaryExpressionOperator.LogBase10 -> LogBase10(operands[0], meta)
 
         is TrigonometricFunctionOperator ->
             TrigonometricExpression(operator.type, operands[0], operator.powerInside, operator.inverseNotation, meta)
@@ -729,6 +738,7 @@ private fun expressionOf(operator: Operator, operands: List<Expression>, meta: N
         BinaryExpressionOperator.Power -> Power(operands[0], operands[1], meta)
         BinaryExpressionOperator.Root -> Root(operands[0], operands[1], meta)
         BinaryExpressionOperator.PercentageOf -> PercentageOf(operands[0], operands[1], meta)
+        BinaryExpressionOperator.Log -> Log(operands[0], operands[1], meta)
 
         ExpressionWithConstraintOperator -> ExpressionWithConstraint(operands[0], operands[1], meta)
 

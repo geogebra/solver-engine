@@ -32,6 +32,8 @@ fun Expression.isDefinitelyNegative() = isDefinitely(Sign.NEGATIVE)
 
 fun Expression.isDefinitelyPositive() = isDefinitely(Sign.POSITIVE)
 
+fun Expression.isDefinitelyNotZero() = isDefinitely(Sign.NOT_ZERO)
+
 fun Expression.isDefinitely(wantedSign: Sign): Boolean {
     val sign = signOf()
     return when {

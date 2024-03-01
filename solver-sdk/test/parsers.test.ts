@@ -1870,7 +1870,7 @@ describe('Solver Parser Unit Tests', () => {
       {
         solver: 'log x',
         json: {
-          type: 'Log10',
+          type: 'LogBase10',
           operands: [variable('x')],
         },
         latex: ['\\log{x}'],
@@ -1878,7 +1878,7 @@ describe('Solver Parser Unit Tests', () => {
       {
         solver: 'log 2 x',
         json: {
-          type: 'Log10',
+          type: 'LogBase10',
           operands: [
             {
               type: 'ImplicitProduct',
@@ -1899,7 +1899,7 @@ describe('Solver Parser Unit Tests', () => {
               operands: [
                 integer('6'),
                 {
-                  type: 'Log10',
+                  type: 'LogBase10',
                   operands: [variable('x')],
                 },
               ],
@@ -1914,7 +1914,7 @@ describe('Solver Parser Unit Tests', () => {
           type: 'Sum',
           operands: [
             {
-              type: 'Ln',
+              type: 'NaturalLog',
               operands: [
                 {
                   type: 'ImplicitProduct',
@@ -1930,7 +1930,7 @@ describe('Solver Parser Unit Tests', () => {
       {
         solver: 'log (x + 1)',
         json: {
-          type: 'Log10',
+          type: 'LogBase10',
           operands: [
             {
               type: 'Sum',
@@ -1944,7 +1944,7 @@ describe('Solver Parser Unit Tests', () => {
       {
         solver: 'ln x',
         json: {
-          type: 'Ln',
+          type: 'NaturalLog',
           operands: [variable('x')],
         },
         latex: ['\\ln{x}', '{{\\mathrm{\\mathrm{ln}}} x}'],
@@ -1952,7 +1952,7 @@ describe('Solver Parser Unit Tests', () => {
       {
         solver: 'ln (x + 1)',
         json: {
-          type: 'Ln',
+          type: 'NaturalLog',
           operands: [
             {
               type: 'Sum',
@@ -1974,7 +1974,7 @@ describe('Solver Parser Unit Tests', () => {
         latex: ['\\log_{10}{x}'],
       },
       {
-        solver: 'log[5] x',
+        solver: 'log_[5] x',
         json: {
           type: 'Log',
           operands: [integer('5'), variable('x')],
@@ -1982,7 +1982,7 @@ describe('Solver Parser Unit Tests', () => {
         latex: ['\\log_{5}{x}'],
       },
       {
-        solver: 'log[a + 1] (x)',
+        solver: 'log_[a + 1] (x)',
         json: {
           type: 'Log',
           operands: [
@@ -2000,7 +2000,7 @@ describe('Solver Parser Unit Tests', () => {
         latex: ['\\log_{a+1}{\\left(x\\right)}'],
       },
       {
-        solver: '[(log[5] x + 1) ^ 2]',
+        solver: '[(log_[5] x + 1) ^ 2]',
         json: {
           type: 'Power',
           operands: [
@@ -2028,7 +2028,7 @@ describe('Solver Parser Unit Tests', () => {
       {
         solver: '/e/',
         json: {
-          type: 'ExponentialE',
+          type: 'EulerE',
         },
         latex: [
           '\\mathrm{e}',

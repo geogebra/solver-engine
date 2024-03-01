@@ -140,6 +140,38 @@ enum class SolvableKey(val rule: RunnerMethod) {
      * E.g. xy sqrt[2] = 6 sqrt[2] --> xy = 6
      */
     CancelCommonFactorOnBothSides(SolvableRules.CancelCommonFactorOnBothSides),
+
+    /**
+     * Take the log of the RHS so the solvable can be further simplified
+     *
+     * E.g. [2 ^ x] = 3 --> x = log_[2] 3
+     */
+    TakeLogOfRHS(SolvableRules.TakeLogOfRHS),
+
+    /**
+     * Take the log of both sides so the solvable can be further simplified taking the exponents out of the logs.
+     *
+     * E.g.  [2 ^ x] = [3 ^ x - 1] --> ln[2 ^ x] = ln[3 ^ x - 1]
+     *
+     * (then the equation would be rewritten as x ln2 = (x - 1) ln3
+     */
+    TakeLogOfBothSides(SolvableRules.TakeLogOfBothSides),
+
+    /**
+     * When both sides are powers with the same base, rewrite the solvable by cancelling the common base
+     *
+     * E.g.  [2 ^ x] = [2 ^ 1 - x] --> x = 1 - x
+     */
+    CancelCommonBase(SolvableRules.CancelCommonBase),
+
+    /**
+     * Find a common base for both sides by rewriting either or both bases as a power
+     *
+     * E.g. [2 ^ x] = [4 ^ x - 1] --> [2 ^ x] = [(2 ^ 2]) ^ x - 1]
+     *
+     * This is only done in simple cases.
+     */
+    RewriteBothSidesWithSameBase(SolvableRules.RewriteBothSidesWithSameBase),
 }
 
 /**
@@ -560,6 +592,61 @@ enum class EquationsExplanation(
 
     CancelCommonFactorOnBothSides(SolvableKey.CancelCommonFactorOnBothSides),
 
+    /**
+     * Take the log of the RHS so the equation can be solved
+     *
+     * E.g. [2 ^ x] = 3 --> x = log_[2] 3
+     */
+    TakeLogOfRHS(SolvableKey.TakeLogOfRHS),
+
+    /**
+     * Take the log of the RHS and simplify it
+     *
+     * E.g. [2 ^ x] = 9 --> x = log_[2] 9 --> 2 log_[2] 3
+     */
+    TakeLogOfRHSAndSimplify(SolvableKey.TakeLogOfRHS, simplify = true),
+
+    /**
+     * Take the log of both sides so the equation can be solved by taking the exponents out of the logs.
+     *
+     * E.g.  [2 ^ x] = [3 ^ x - 1] --> ln[2 ^ x] = ln[3 ^ x - 1]
+     *
+     * (then the equation would be rewritten as x ln2 = (x - 1) ln3
+     */
+    TakeLogOfBothSides(SolvableKey.TakeLogOfBothSides),
+
+    /**
+     * Take the log of both sides and simply each side
+     *
+     * E.g.  [2 ^ x] = [3 ^ x - 1] --> ln[2 ^ x] = ln[3 ^ x - 1] --> x ln2 = (x - 1) ln3
+     */
+    TakeLogOfBothSidesAndSimplify(SolvableKey.TakeLogOfBothSides, simplify = true),
+
+    /**
+     * When both sides are powers with the same base, rewrite the equation by cancelling the common base
+     *
+     * E.g.  [2 ^ x] = [2 ^ 1 - x] --> x = 1 - x
+     */
+    CancelCommonBase(SolvableKey.CancelCommonBase),
+
+    /**
+     * Find a common base for both sides by rewriting either or both bases as a power
+     *
+     * E.g. [2 ^ x] = [4 ^ x - 1] --> [2 ^ x] = [(2 ^ 2]) ^ x - 1]
+     *
+     * This is only done in simple cases.
+     */
+    RewriteBothSidesWithSameBase(SolvableKey.RewriteBothSidesWithSameBase),
+
+    /**
+     * Find a common base for both sides by rewriting either or both bases as a power, then using the power rule
+     * to simplify the result and obtain an equation in the form a^x = a^y
+     *
+     * E.g. [2 ^ x] = [4 ^ x - 1] --> [2 ^ x] = [(2 ^ 2]) ^ x - 1] --> [2 ^ x] = [2 ^ 2(x - 1)]]
+     *
+     * This is only done in simple cases.
+     */
+    RewriteBothSidesWithSameBaseAndSimplify(SolvableKey.RewriteBothSidesWithSameBase, simplify = true),
     ;
 
     override val category = "Equations"

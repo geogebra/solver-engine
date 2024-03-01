@@ -29,6 +29,7 @@ object Constants {
     val Two = xp(2)
     val Three = xp(3)
     val Four = xp(4)
+    val Ten = xp(10)
 
     val OneHalf = fractionOf(One, Two)
 

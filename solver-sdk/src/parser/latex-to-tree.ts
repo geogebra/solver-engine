@@ -180,8 +180,8 @@ const latexSymbolDefinitions = {
     };
 
     // this is the unicode character '\u212F': https://www.fileformat.info/info/unicode/char/212f/index.htm
-    registerAndAssign('ℯ', 'ExponentialE');
-    registerAndAssign('\\mathrm{e}', 'ExponentialE');
+    registerAndAssign('ℯ', 'EulerE');
+    registerAndAssign('\\mathrm{e}', 'EulerE');
     registerAndAssign('\\pi', 'Pi');
     registerAndAssign('\\iota', 'ImaginaryUnit');
     // this is the unicode character '\u03AF': https://www.fileformat.info/info/unicode/char/03af/index.htm
@@ -417,7 +417,7 @@ const latexSymbolDefinitions = {
       }
       const argument = parser.expression(Infinity);
       return {
-        type: 'Log10',
+        type: 'LogBase10',
         operands: [argument],
       };
     };
@@ -436,7 +436,7 @@ const latexSymbolDefinitions = {
       symbol.nud = function () {
         const argument = parser.expression(Infinity);
         return {
-          type: 'Ln',
+          type: 'NaturalLog',
           operands: [argument],
         };
       };
