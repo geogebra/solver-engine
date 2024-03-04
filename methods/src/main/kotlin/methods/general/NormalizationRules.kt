@@ -29,6 +29,7 @@ import engine.expressions.Root
 import engine.expressions.SquareRoot
 import engine.expressions.Sum
 import engine.expressions.Variable
+import engine.expressions.containsLogs
 import engine.expressions.hasRedundantBrackets
 import engine.expressions.isSigned
 import engine.expressions.productOf
@@ -274,14 +275,14 @@ private val normalizeProductSigns = rule {
 
 // We should add tests for this and then tidy up the logic, probably by doing a case split on isConstant
 private val priorityComparator = compareBy<Expression>(
-    { !it.isConstant() },
+    { !it.isConstant() || it.containsLogs() },
     {
         @Suppress("MagicNumber")
         when (if (it is Power) it.base else it) {
-            // (x + 1) or (1 + sqrt[3])
-            is Sum -> 5
             // log, log_a, ln
-            is Logarithm -> 4
+            is Logarithm -> 5
+            // (x + 1) or (1 + sqrt[3])
+            is Sum -> 4
             // sqrt[...] or root[..., n]
             is Root, is SquareRoot -> 3
             // a, x, [x ^ 2]

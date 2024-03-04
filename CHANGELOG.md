@@ -13,6 +13,8 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Fixed
 
+- Improved output of logarithms, terms containing a product of a logarithm and a variable or a constant (PLUT-1006)
+
 ### Changed
 
 ### Removed
