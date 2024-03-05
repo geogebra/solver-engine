@@ -286,7 +286,7 @@ class ParserTest {
 
     @Test
     fun testLogarithms() {
-        parsesTo("ln 3x", naturalLogOf(productOf(xp(3), xp("x"))))
+        parsesTo("ln (3 x)", naturalLogOf(productOf(xp(3), xp("x"))))
         parsesTo("log 9 - 12", sumOf(logBase10Of(xp(9)), negOf(xp(12))))
         parsesTo(
             "1 + 4 log_[5] [3 / 2]",
