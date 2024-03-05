@@ -7,17 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 An entry should be added to the _[Unreleased]_ section when committing to main. When a release is made we move its
 contents to a new release section (e.g. _[0.x]_).
 
-## [1.4.4] 2024-02-29
-
-### Added
+## [1.4.5] 2024-03-05
 
 ### Fixed
 
 - Improved output of logarithms, terms containing a product of a logarithm and a variable or a constant (PLUT-1006)
-
-### Changed
-
-### Removed
 
 ## [1.4.4] 2024-02-29
 
