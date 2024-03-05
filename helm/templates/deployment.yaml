@@ -33,5 +33,14 @@ spec:
               value: "{{ .Values.deploymentName }}"
             - name: SPRING_PROFILES_ACTIVE
               value: "{{ .Values.springProfile }}"
+      {{ if eq .Values.deploymentDomain "solver-api.geogebra.org" }}
+      nodeSelector:
+        env: prod
+      tolerations:
+        - key: "key"
+          operator: "Equal"
+          value: "value"
+          effect: "NoSchedule"
+      {{ end }}
       imagePullSecrets:
         - name: ggb-registry-key

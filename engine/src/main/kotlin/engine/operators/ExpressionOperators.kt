@@ -251,7 +251,7 @@ internal enum class UnaryExpressionOperator(override val precedence: Int) : Unar
         override fun eval(operand: Double) = sqrt(operand)
     },
     NaturalLog(LOG_PRECEDENCE) {
-        override fun childAllowed(op: Operator) = op.precedence >= PRODUCT_PRECEDENCE
+        override fun childAllowed(op: Operator) = op.precedence > PRODUCT_PRECEDENCE
 
         override fun <T> readableString(child: T) = "ln $child"
 
@@ -260,7 +260,7 @@ internal enum class UnaryExpressionOperator(override val precedence: Int) : Unar
         override fun eval(operand: Double) = ln(operand)
     },
     LogBase10(LOG_PRECEDENCE) {
-        override fun childAllowed(op: Operator) = op.precedence >= PRODUCT_PRECEDENCE
+        override fun childAllowed(op: Operator) = op.precedence > PRODUCT_PRECEDENCE
 
         override fun <T> readableString(child: T) = "log $child"
 
@@ -436,7 +436,7 @@ internal enum class BinaryExpressionOperator(override val precedence: Int) : Bin
     Log(LOG_PRECEDENCE) {
         override fun leftChildAllowed(op: Operator) = true
 
-        override fun rightChildAllowed(op: Operator) = op.precedence >= PRODUCT_PRECEDENCE
+        override fun rightChildAllowed(op: Operator) = op.precedence > PRODUCT_PRECEDENCE
 
         override fun <T> readableString(left: T, right: T) = "log[$left] $right"
 
