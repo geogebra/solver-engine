@@ -7,6 +7,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 An entry should be added to the _[Unreleased]_ section when committing to main. When a release is made we move its
 contents to a new release section (e.g. _[0.x]_).
 
+## [1.4.6] 2024-03-06
+
+### Added
+
+- HPA scaling for deployments (INF-21)
+- Dockerfile for solver engine (INF-21)
+
+### Changed
+
+- Changed CI/CD pipeline to deploy release to prod-cluster (ARM) (INF-21)
+
+### Fixed
+
+- Fixed dependencies between CI/CD jobs (INF-21)
+
 ## [1.4.5] 2024-03-05
 
 ### Fixed
