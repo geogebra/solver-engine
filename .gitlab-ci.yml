@@ -11,7 +11,9 @@ default:
       - cache/.gradle/notifications
 
 variables:
-  GITLAB_CLUSTER: solver-v2
+  GITLAB_CLUSTER_SOLVER_CONTEXT: solver-team/solver-engine:solver-v2
+  GITLAB_CLUSTER_PRODUCTION_CONTEXT: solver-team/k8s-clusters-management:prod-cluster-agent
+  GITLAB_CLUSTER_DEVELOPMENT_CONTEXT: solver-team/k8s-clusters-management:dev-cluster-agent
   GGBTRANS_SOLVER_IMPORT_URL: https://dev.geogebra.org/ggbtrans/props/api/solver_import
   GRADLE: './gradlew --no-daemon --stacktrace --build-cache --gradle-user-home cache/.gradle'
   SOLVER_PRODUCTION_DOMAIN: solver-api.geogebra.org
@@ -52,6 +54,7 @@ stages:
 # - SOLVER_DEPLOYMENT_NAME: a name used to create a k8s namespace and a gitlab environment.  Reuse the same name to
 #   update a deployment (e.g. when releasing a patch version, or for any development branch)
 # - SOLVER_DEPLOYMENT_DOMAIN: the DNS domain where the solver deployment will be available
+# - SOLVER_DEPLOYMENT_CLUSTER: the cluster where the solver deployment will be available
 #
 # These variables are required but computed from the ones above
 # - SOLVER_CONTEXT_PATH: the path at which the solver API root is accessible (e.g. /main, /1.2, /plut-654)
@@ -82,6 +85,9 @@ before_script:
 
       export SOLVER_DEPLOYMENT_DOMAIN="$SOLVER_PRODUCTION_DOMAIN"
 
+      # The cluster where the solver-engine is deployed
+      export SOLVER_DEPLOYMENT_CLUSTER_CONTEXT="$GITLAB_CLUSTER_PRODUCTION_CONTEXT"
+
     elif [[ $CI_COMMIT_BRANCH == $RELEASE_BRANCH ]]; then
       # This pipeline is triggered by committing to the release branch: we deploy only the SDK, not the engine.
 
@@ -104,6 +110,9 @@ before_script:
 
       # The domain where the deployed solver backend will be available
       export SOLVER_DEPLOYMENT_DOMAIN="$SOLVER_DEVELOPMENT_DOMAIN"
+
+      # The cluster where the solver-engine is deployed
+      export SOLVER_DEPLOYMENT_CLUSTER_CONTEXT="$GITLAB_CLUSTER_SOLVER_CONTEXT"
     fi
 
   # For now, the solver context path is always /$SOLVER_VERSION
@@ -147,6 +156,7 @@ print-solver-vars:
     - echo SOLVER_IMAGE_TAG=$SOLVER_IMAGE_TAG
     - echo SOLVER_DEPLOYMENT_NAME=$SOLVER_DEPLOYMENT_NAME
     - echo SOLVER_DEPLOYMENT_DOMAIN=$SOLVER_DEPLOYMENT_DOMAIN
+    - echo SOLVER_DEPLOYMENT_CLUSTER_CONTEXT=$SOLVER_DEPLOYMENT_CLUSTER_CONTEXT
     - echo SOLVER_CONTEXT_PATH=$SOLVER_CONTEXT_PATH
     - echo SOLVER_BASE_URL=$SOLVER_BASE_URL
     - echo API_URL=$API_URL
@@ -154,13 +164,10 @@ print-solver-vars:
     - echo REPO_FULL_NAME=$REPO_FULL_NAME
     - echo REPOSITORY_ID=$REPOSITORY_ID
 
-# Test SDK and build all artifacts from SDK for the poker and for possible release
+# Build all artifacts from SDK for the poker and for possible release
 build-sdk-and-poker:
   stage: build
-  needs:
-    # The Kotlin tests generate solver-poker/test-results-src/test-results.ts which is
-    # needed by the TS tests.
-    - build-engine
+  needs: []
   image: node:18
   tags:
     - docker
@@ -172,29 +179,27 @@ build-sdk-and-poker:
     paths:
       - .npm/
   script:
-    - node -v
-    #- npm config set "@geogebra:registry" https://git.geogebra.org/api/v4/projects/126/packages/npm/
-    #- npm config set "//git.geogebra.org/api/v4/projects/126/packages/npm/:_authToken" ${CI_JOB_TOKEN}
     - npm ci --cache .npm --prefer-offline
     - npm exec -c "prettier . -c"
-    - npm test -ws
   artifacts:
     paths:
-      - 'solver-sdk/lib'
-      - 'solver-sdk/dist'
-      - 'api/src/main/resources/static/poker'
+      - solver-sdk/lib
+      - solver-sdk/dist
+      - api/src/main/resources/static/poker
     expire_in: 1 day
 
 # The gradle 'build' includes running detekt, ktlint, runnings tests.
 build-engine:
   stage: build
-  needs: []
+  needs:
+    - build-sdk-and-poker
   tags:
     - docker
   script:
     - $GRADLE build
   artifacts:
     paths:
+      - api/build/libs/*.jar
       - build/reports/ktlint
       - build/reports/detekt
       - methods/build/generated/ksp/main/resources/TranslationKeys.json
@@ -202,25 +207,53 @@ build-engine:
       - engine/build/generated/ksp/main/resources/TranslationKeys.json
       # Used by SDK tests
       - methods/build/test-results/gmActionTests.json
+      - api/src/main/resources/static/poker
     expire_in: 1 day
 
-# Package the engine into a docker image
-package-engine:
-  extends: .deploy-engine-job
-  stage: publish
+# Test SDK and poker
+test-sdk-and-poker:
+  stage: build
   needs:
     - build-engine
-    - build-sdk-and-poker
+  image: node:18
   tags:
     - docker
   script:
-    - $GRADLE bootBuildImage --imageName="registry.git.geogebra.org/solver-team/solver-engine/api:$SOLVER_IMAGE_TAG"
+    - npm ci --cache .npm --prefer-offline
+    - npm test -ws
+
+# Package the engine into a docker image
+.package-engine:
+  stage: publish
+  image: docker
+  needs:
+    - build-engine
+  script:
+    - export VERSION=$(sed -n 's/version = "\(.*\)"/\1/p' build.gradle.kts)
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build --build-arg VERSION=${VERSION} --tag $CI_REGISTRY_IMAGE/api:$SOLVER_IMAGE_TAG --push .
+
+# With AMD architecture for non-release deployments
+package-engine-amd:
+  extends: .package-engine
+  tags:
+    - docker
+  rules:
+    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $RELEASE_BRANCH
+
+# With ARM architecture for release tags
+package-engine-arm:
+  extends: .package-engine
+  tags:
+    - docker-arm
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^release-[0-9]*\.[0-9]*.*$/
 
 export-translation-keys:
   stage: publish
+  image: curlimages/curl
   needs:
     - build-engine
-  image: curlimages/curl
   tags:
     - docker
   cache: []
@@ -249,8 +282,6 @@ export-translation-keys:
 deploy-engine:
   extends: .deploy-engine-job
   stage: deploy
-  needs:
-    - package-engine
   image: alpine/k8s:1.23.7
   environment:
     name: solver/$CI_COMMIT_REF_SLUG
@@ -264,7 +295,7 @@ deploy-engine:
       dotenv: deploy.env
   script:
     - kubectl config get-contexts
-    - kubectl config use-context $REPO_FULL_NAME:$GITLAB_CLUSTER
+    - kubectl config use-context $SOLVER_DEPLOYMENT_CLUSTER_CONTEXT
     - helm package helm/ --version "6.6.6"
     - |
       helm upgrade --install $SOLVER_DEPLOYMENT_NAME solver-6.6.6.tgz \
@@ -284,6 +315,7 @@ sdk-semantic-release:
   stage: deploy
   needs:
     - build-sdk-and-poker
+    - test-sdk-and-poker
   # We would normally use "node:18-alpine" instead of "node:18" because it is smaller, but
   # we need git installed in order for semantic-release to work.
   image: node:18
@@ -332,7 +364,7 @@ undeploy-engine:
            --header "PRIVATE-TOKEN: $GITLAB_API_PRIVATE_TOKEN" \
            "$CI_API_V4_URL/projects/$CI_PROJECT_ID/registry/repositories/$REPOSITORY_ID/tags/$SOLVER_IMAGE_TAG"
     - kubectl config get-contexts
-    - kubectl config use-context $REPO_FULL_NAME:$GITLAB_CLUSTER
+    - kubectl config use-context $SOLVER_DEPLOYMENT_CLUSTER_CONTEXT
     - helm uninstall $SOLVER_DEPLOYMENT_NAME
   when: manual
   rules:

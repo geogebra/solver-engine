@@ -11,11 +11,16 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Added
 
-### Fixed
+- HPA scaling for deployments (INF-21)
+- Dockerfile for solver engine (INF-21)
 
 ### Changed
 
-### Removed
+- Changed CI/CD pipeline to deploy release to prod-cluster (ARM) (INF-21)
+
+### Fixed
+
+- Fixed dependencies between CI/CD jobs (INF-21)
 
 ## [1.4.5] 2024-03-05
 
