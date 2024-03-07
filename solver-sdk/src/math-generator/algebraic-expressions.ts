@@ -17,6 +17,7 @@ import {
   createNumberOrFraction,
   createVariableWithCoefficient,
   addMissingParentheses,
+  nameChoices,
 } from './utils';
 
 type Settings = {
@@ -263,7 +264,7 @@ export function generateDistributionExpression(complexity: 0 | 1 | 2 | 3 = 0): s
     settings.max = 12;
     settings.excludeZero = false;
     settings.allowNegatives = true;
-    settings.nameChoices = 'abcdghkmnpqrstuvwxyz'.split('');
+    settings.nameChoices = nameChoices;
     maxSignCount = 1;
     choices.push(generateTwoDistributions2, generateDistribution3);
   }
@@ -306,7 +307,7 @@ export function generateDivideMonomialExpression(complexity: 0 | 1 | 2 | 3 = 0):
     settings.max = 12;
     settings.excludeZero = false;
     settings.allowNegatives = true;
-    settings.nameChoices = 'abcdghkmnpqrstuvwxyz'.split('');
+    settings.nameChoices = nameChoices;
     maxSignCount = 1;
   }
   if (complexity > 1) {

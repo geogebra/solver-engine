@@ -20,6 +20,7 @@ import {
   createNumberOrFraction,
   createCoefficient,
   addMissingParentheses,
+  nameChoices,
 } from './utils';
 
 type FactorySettings = {
@@ -537,7 +538,7 @@ export function generateOneStepEquation(
   if (complexity > 0) {
     settings.max = 12;
     settings.allowNegatives = true;
-    settings.nameChoices = 'abcdghkmnpqrstuvwxyz'.split('');
+    settings.nameChoices = nameChoices;
     settings.mayFlipEquation = true;
     maxSignCount = 1;
     choices.push(generateAxEqualsBx);
@@ -586,7 +587,7 @@ export function generateTwoStepEquation(
   if (complexity > 0) {
     settings.max = 12;
     settings.allowNegatives = true;
-    settings.nameChoices = 'abcdghkmnpqrstuvwxyz'.split('');
+    settings.nameChoices = nameChoices;
     settings.mayFlipEquation = true;
     maxSignCount = 1;
     choices.push(
@@ -636,7 +637,7 @@ export function generateMultiStepEquation(
   if (complexity > 0) {
     settings.max = 12;
     settings.allowNegatives = true;
-    settings.nameChoices = 'abcdghkmnpqrstuvwxyz'.split('');
+    settings.nameChoices = nameChoices;
     settings.mayFlipEquation = true;
     maxSignCount = 1;
     choices.push(generateMultiStepDistributionAndFraction);
@@ -690,7 +691,7 @@ export function generateZeroOrManySolutionEquation(
   if (complexity > 0) {
     settings.max = 12;
     settings.allowNegatives = true;
-    settings.nameChoices = 'abcdghkmnpqrstuvwxyz'.split('');
+    settings.nameChoices = nameChoices;
     settings.mayFlipEquation = true;
     maxSignCount = 1;
     choices.push();

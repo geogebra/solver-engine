@@ -18,6 +18,7 @@ import {
   generatePosValue,
   generateFixedNumber,
   addMissingParentheses,
+  nameChoices,
 } from './utils';
 
 type PolynomialSettings = {
@@ -289,7 +290,7 @@ export function generateUnnormalizedPolynomial(complexity: 0 | 1 | 2 | 3 = 0): s
   if (complexity > 0) {
     settings.max = 9;
     settings.allowNegatives = true;
-    settings.nameChoices = 'abcdghkmnpqrstuvwxyz'.split('');
+    settings.nameChoices = nameChoices;
     settings.maxDegree = 4;
     settings.terms = pickOne([2, 3, 3, 4]);
     settings.fractionCount = pickOne([0, 1]);
@@ -339,7 +340,7 @@ export function generateMonomialDivision(complexity: 0 | 1 | 2 | 3 = 0): string 
   if (complexity > 0) {
     settings.max = 9;
     settings.allowNegatives = true;
-    settings.nameChoices = 'abcdghkmnpqrstuvwxyz'.split('');
+    settings.nameChoices = nameChoices;
     settings.maxDegree = 4;
     settings.minDegree = pickOne([1, 2]);
     settings.terms = pickOne([2, 3]);
@@ -387,7 +388,7 @@ export function generateSumOfPolynomials(complexity: 0 | 1 | 2 | 3 = 0): string 
   if (complexity > 0) {
     settings.max = 9;
     settings.allowNegatives = true;
-    settings.nameChoices = 'abcdghkmnpqrstuvwxyz'.split('');
+    settings.nameChoices = nameChoices;
     settings.maxDegree = 4;
     settings.terms = pickOne([2, 3]);
     terms2 = pickOne([2, 3]);
@@ -436,7 +437,7 @@ export function generateLinearCombinationOfPolynomials(
   if (complexity > 0) {
     settings.max = 9;
     settings.allowNegatives = true;
-    settings.nameChoices = 'abcdghkmnpqrstuvwxyz'.split('');
+    settings.nameChoices = nameChoices;
     settings.maxDegree = 4;
     settings.terms = pickOne([2, 3]);
     terms2 = pickOne([2, 3]);

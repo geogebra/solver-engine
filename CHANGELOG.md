@@ -17,6 +17,8 @@ This is a template for a release section.
 
 ### Changed
 
+- SDK: Adjusted math generation logic to avoid using z and s as variables
+
 ### Removed
 
 ## [1.4.6] 2024-03-06

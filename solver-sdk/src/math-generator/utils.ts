@@ -43,6 +43,13 @@ const RELATION_TYPES = [
   'Equation',
 ];
 
+// We exclude some letters:
+// - efij
+// - l, o, s, z because they could easily be confused with 1, 0, 5, 2
+// - e, i, j because they are well-known constants
+// - f because it's often used for a function (so f(x + 1) looks like function application)
+export const nameChoices = 'abcdghkmnpqrtuvwxy'.split('');
+
 export function pickOne<T>(choices: T[]): T {
   return choices[Math.floor(Math.random() * choices.length)];
 }
