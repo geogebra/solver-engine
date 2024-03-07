@@ -33,9 +33,11 @@ spec:
               value: "{{ .Values.deploymentName }}"
             - name: SPRING_PROFILES_ACTIVE
               value: "{{ .Values.springProfile }}"
+          {{ if eq .Values.deploymentDomain "solver-api.geogebra.org" }}
           resources:
             requests:
               cpu: {{ .Values.cpuSoftLimit }}
               memory: {{ .Values.memorySoftLimit }}
+          {{ end }}
       imagePullSecrets:
         - name: ggb-registry-key

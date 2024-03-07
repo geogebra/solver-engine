@@ -15,9 +15,12 @@ This is a template for a release section.
 
 ### Fixed
 
+- Exclude HPA from development. (INF-21)
+
 ### Changed
 
 - SDK: Adjusted math generation logic to avoid using z and s as variables
+- Using 'assemble' insted of 'build' for Gradle (INF-21)
 
 ### Removed
 

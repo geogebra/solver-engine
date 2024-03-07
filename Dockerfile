@@ -4,7 +4,7 @@ COPY --chown=gradle:gradle . /home/gradle/src
 
 WORKDIR /home/gradle/src
 
-RUN gradle build --no-daemon --stacktrace --build-cache --gradle-user-home cache/.gradle
+RUN gradle assemble --no-daemon --stacktrace --build-cache --gradle-user-home cache/.gradle
 
 FROM openjdk:21-slim
 
