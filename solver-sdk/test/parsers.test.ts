@@ -1947,7 +1947,7 @@ describe('Solver Parser Unit Tests', () => {
           type: 'NaturalLog',
           operands: [variable('x')],
         },
-        latex: ['\\ln{x}', '{{\\mathrm{\\mathrm{ln}}} x}'],
+        latex: ['\\ln{x}', '{\\mathrm{ln}}{x}', '{{\\mathrm{\\mathrm{ln}}} x}'],
       },
       {
         solver: 'ln (x + 1)',
@@ -1963,6 +1963,7 @@ describe('Solver Parser Unit Tests', () => {
         },
         latex: [
           '\\ln{\\left(x+1\\right)}',
+          '{{\\mathrm{ln}}\\left({x+1}\\right)}', // solver front pre-processed format
           '{{\\mathrm{\\mathrm{ln}}}\\left({x+1}\\right)}', // ggb keyboard output
         ],
       },

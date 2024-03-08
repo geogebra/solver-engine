@@ -427,12 +427,13 @@ const latexSymbolDefinitions = {
 
   registerNaturalLogarithms(parser: Parser<ExprTree>) {
     const naturalLog = parser.registerSymbol('\\ln', BP_IMPLICIT_MUL);
-    const naturalLogWithMathrm = parser.registerSymbol(
+    const naturalLogWithMathrm = parser.registerSymbol('{\\mathrm{ln}}', BP_IMPLICIT_MUL);
+    const naturalLogWithDoubleMathrm = parser.registerSymbol(
       '{\\mathrm{\\mathrm{ln}}}',
       BP_IMPLICIT_MUL,
     );
 
-    for (const symbol of [naturalLog, naturalLogWithMathrm]) {
+    for (const symbol of [naturalLog, naturalLogWithMathrm, naturalLogWithDoubleMathrm]) {
       symbol.nud = function () {
         const argument = parser.expression(Infinity);
         return {
@@ -444,6 +445,7 @@ const latexSymbolDefinitions = {
 
     naturalLog.led = getLedToExtendNary(parser, 'ImplicitProduct');
     naturalLogWithMathrm.led = getLedToExtendNary(parser, 'ImplicitProduct');
+    naturalLogWithDoubleMathrm.led = getLedToExtendNary(parser, 'ImplicitProduct');
   },
 
   registerTextStyleCommands(parser: Parser<ExprTree>) {

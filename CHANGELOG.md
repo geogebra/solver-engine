@@ -16,6 +16,7 @@ This is a template for a release section.
 ### Fixed
 
 - Exclude HPA from development. (INF-21)
+- SDK: Fixed parsing of natural logarithms (PLUT-1011)
 
 ### Changed
 
