@@ -48,6 +48,7 @@ class QuadraticPolynomialPattern(
         ConditionPattern(incompleteQuadraticPolynomial) { context, match, _ ->
             incompleteQuadraticPolynomial.restIsConstant(context, match)
         },
+        quadraticTerm,
     )
 
     override val key = quadraticPolynomial
@@ -65,7 +66,9 @@ class QuadraticPolynomialPattern(
         return when {
             completeQuadraticPolynomial.getBoundExpr(match) != null ->
                 completeQuadraticPolynomial.substitute(match, arrayOf())
-            else -> incompleteQuadraticPolynomial.substitute(match, arrayOf())
+            incompleteQuadraticPolynomial.getBoundExpr(match) != null ->
+                incompleteQuadraticPolynomial.substitute(match, arrayOf())
+            else -> Constants.Zero
         }
     }
 }

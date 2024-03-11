@@ -343,6 +343,27 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
         },
     ),
 
+    NegateBothSidesUnconditionally(
+        rule {
+            val lhs = AnyPattern()
+            val rhs = AnyPattern()
+
+            val solvable = SolvablePattern(lhs, rhs)
+
+            onPattern(solvable) {
+                ruleResult(
+                    toExpr = solvable.deriveSolvable(
+                        simplifiedNegOf(move(lhs)),
+                        simplifiedNegOf(move(rhs)),
+                        useDual = true,
+                    ),
+                    gmAction = null,
+                    explanation = solvableExplanation(SolvableKey.NegateBothSides),
+                )
+            }
+        },
+    ),
+
     FlipSolvable(
         rule {
             val lhs = AnyPattern()

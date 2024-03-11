@@ -17,13 +17,32 @@
 
 package methods.inequalities
 
+import engine.conditions.isDefinitelyNegative
 import engine.context.BooleanSetting
 import engine.context.Setting
 import engine.expressions.Constants
+import engine.expressions.Contradiction
 import engine.expressions.DoubleInequality
+import engine.expressions.Expression
+import engine.expressions.FiniteSet
 import engine.expressions.Inequality
+import engine.expressions.SetSolution
 import engine.expressions.Solution
 import engine.expressions.StatementUnion
+import engine.expressions.VariableList
+import engine.expressions.closedIntervalOf
+import engine.expressions.closedOpenIntervalOf
+import engine.expressions.contradictionOf
+import engine.expressions.equationOf
+import engine.expressions.finiteSetOf
+import engine.expressions.identityOf
+import engine.expressions.openClosedIntervalOf
+import engine.expressions.openIntervalOf
+import engine.expressions.setDifferenceOf
+import engine.expressions.setSolutionOf
+import engine.expressions.setUnionOf
+import engine.expressions.solutionVariableConstantChecker
+import engine.expressions.variableListOf
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
@@ -31,8 +50,11 @@ import engine.methods.plan
 import engine.methods.stepsproducers.FormChecker
 import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
+import engine.operators.Comparator
 import engine.patterns.AnyPattern
+import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
+import engine.patterns.QuadraticPolynomialPattern
 import engine.patterns.RecurringDecimalPattern
 import engine.patterns.SignedNumberPattern
 import engine.patterns.SolutionVariablePattern
@@ -49,12 +71,14 @@ import engine.patterns.openIntervalOf
 import engine.patterns.optionalNegOf
 import engine.patterns.setSolutionOf
 import engine.patterns.variableListOf
+import engine.steps.metadata.Metadata
 import engine.steps.metadata.metadata
 import methods.constantexpressions.constantSimplificationSteps
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.equations.EquationsPlans
 import methods.general.NormalizationPlans
 import methods.inequations.InequationsPlans
+import methods.polynomials.PolynomialRules
 import methods.polynomials.PolynomialsPlans
 import methods.simplify.algebraicSimplificationStepsWithoutFractionAddition
 import methods.solvable.SolvablePlans
@@ -204,6 +228,11 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
             }
         },
     ),
+
+    SolveQuadraticInequalityInCanonicalForm(solveQuadraticInequalityInCanonicalForm),
+
+    @PublicMethod
+    SolveQuadraticInequality(solveQuadraticInequality),
 }
 
 internal val inequalitySimplificationSteps = steps {
@@ -331,3 +360,201 @@ val solveConstantInequalitySteps = steps {
 }
 
 val solvablePlansForInequalities = SolvablePlans(InequalitiesPlans.SimplifyInequality)
+
+private val ensureLeadCoefficientOfLHSIsPositive = plan {
+    explanation = Explanation.EnsureLeadCoefficientOfLHSIsPositive
+
+    val lhs = QuadraticPolynomialPattern(
+        variable = SolutionVariablePattern(),
+        constantChecker = solutionVariableConstantChecker,
+    )
+
+    // We only reverse the sign when the inequality is of the form ax^2 + bx + c ** 0 where a < 0
+    pattern = inequalityOf(
+        ConditionPattern(lhs) { _, match, _ -> lhs.quadraticCoefficient(match).isDefinitelyNegative() },
+        FixedPattern(Constants.Zero),
+    )
+
+    steps {
+        apply(SolvableRules.NegateBothSidesUnconditionally)
+        optionally(InequalitiesPlans.SimplifyInequality)
+    }
+}
+
+private fun extractSolutions(solutionExpr: Expression): List<Expression>? {
+    return when (solutionExpr) {
+        is Contradiction -> emptyList()
+        is SetSolution -> {
+            val set = solutionExpr.solutionSet
+            if (set is FiniteSet) {
+                set.elements
+            } else {
+                null
+            }
+        }
+        else -> null
+    }
+}
+
+private data class TaskParameters(val explanation: Metadata, val startExpr: Expression)
+
+@Suppress("CyclomaticComplexMethod", "LongMethod")
+private fun getDeduceInequalitySolutionParameters(
+    variables: VariableList,
+    expression: Inequality,
+    solutions: List<Expression>,
+): TaskParameters? {
+    return when (expression.comparator) {
+        // We just apply the appropriate method depending on
+        // - the comparator (< , <=, >, >=)
+        // - the number of solutions (0, 1, 2)
+        // If not any of these, we return null, meaning we don't know what to do.
+        Comparator.GreaterThan -> when (solutions.size) {
+            0 -> TaskParameters(
+                explanation = metadata(Explanation.DeduceInequalitySolutionForGreaterThanAndNoSolution),
+                startExpr = identityOf(variables, expression),
+            )
+            1 -> TaskParameters(
+                explanation = metadata(Explanation.DeduceInequalitySolutionForGreaterThanAndOneSolution),
+                startExpr = setSolutionOf(
+                    variables,
+                    setDifferenceOf(Constants.Reals, finiteSetOf(solutions)),
+                ),
+            )
+            2 -> TaskParameters(
+                explanation = metadata(Explanation.DeduceInequalitySolutionForGreaterThanAndTwoSolutions),
+                startExpr = setSolutionOf(
+                    variables,
+                    setUnionOf(
+                        openIntervalOf(Constants.NegativeInfinity, solutions[0]),
+                        openIntervalOf(solutions[1], Constants.Infinity),
+                    ),
+                ),
+            )
+            else -> null
+        }
+        Comparator.GreaterThanOrEqual -> when (solutions.size) {
+            0 -> TaskParameters(
+                explanation = metadata(Explanation.DeduceInequalitySolutionForGreaterThanOrEqualAndNoSolution),
+                startExpr = identityOf(variables, expression),
+            )
+            1 -> TaskParameters(
+                explanation = metadata(Explanation.DeduceInequalitySolutionForGreaterThanOrEqualAndOneSolution),
+                startExpr = identityOf(variables, expression),
+            )
+            2 -> TaskParameters(
+                explanation = metadata(Explanation.DeduceInequalitySolutionForGreaterThanOrEqualAndTwoSolutions),
+                startExpr = setSolutionOf(
+                    variables,
+                    setUnionOf(
+                        openClosedIntervalOf(Constants.NegativeInfinity, solutions[0]),
+                        closedOpenIntervalOf(solutions[1], Constants.Infinity),
+                    ),
+                ),
+            )
+            else -> null
+        }
+        Comparator.LessThan -> when (solutions.size) {
+            0 -> TaskParameters(
+                explanation = metadata(Explanation.DeduceInequalitySolutionForLessThanAndNoSolution),
+                startExpr = contradictionOf(variables, expression),
+            )
+            1 -> TaskParameters(
+                explanation = metadata(Explanation.DeduceInequalitySolutionForLessThanAndOneSolution),
+                startExpr = contradictionOf(variables, expression),
+            )
+            2 -> TaskParameters(
+                explanation = metadata(Explanation.DeduceInequalitySolutionForLessThanAndTwoSolutions),
+                startExpr = setSolutionOf(
+                    variables,
+                    openIntervalOf(solutions[0], solutions[1]),
+                ),
+            )
+            else -> null
+        }
+        Comparator.LessThanOrEqual -> when (solutions.size) {
+            0 -> TaskParameters(
+                explanation = metadata(Explanation.DeduceInequalitySolutionForLessThanOrEqualAndNoSolution),
+                startExpr = contradictionOf(variables, expression),
+            )
+            1 -> TaskParameters(
+                explanation = metadata(Explanation.DeduceInequalitySolutionForLessThanOrEqualAndOneSolution),
+                startExpr = setSolutionOf(
+                    variables,
+                    finiteSetOf(solutions),
+                ),
+            )
+            2 -> TaskParameters(
+                explanation = metadata(Explanation.DeduceInequalitySolutionForLessThanOrEqualAndTwoSolutions),
+                startExpr = setSolutionOf(
+                    variables,
+                    closedIntervalOf(solutions[0], solutions[1]),
+                ),
+            )
+            else -> null
+        }
+        else -> null
+    }
+}
+
+private val solveQuadraticInequalityInCanonicalForm = taskSet {
+    explanation = Explanation.SolveQuadraticInequalityInCanonicalForm
+    pattern = inequalityOf(
+        QuadraticPolynomialPattern(
+            variable = SolutionVariablePattern(),
+            constantChecker = solutionVariableConstantChecker,
+        ),
+        FixedPattern(Constants.Zero),
+    )
+
+    tasks {
+        // First solve the equation ax^2 + bx + c = 0
+        val solveEquation = task(
+            startExpr = equationOf(expression.firstChild, expression.secondChild),
+            explanation = metadata(Explanation.SolveCorrespondingQuadraticEquation),
+            stepsProducer = EquationsPlans.SolveEquation,
+        ) ?: return@tasks null
+
+        val solutions = extractSolutions(solveEquation.result) ?: return@tasks null
+
+        // Then find the method for solving the inequality, depending on the type of inequality and number of solutions
+        val (explanation, startExpr) = getDeduceInequalitySolutionParameters(
+            variables = variableListOf(context.solutionVariables),
+            expression = expression as Inequality,
+            solutions = solutions,
+        ) ?: return@tasks null
+
+        task(explanation = explanation, startExpr = startExpr)
+
+        allTasks()
+    }
+}
+
+private val solveQuadraticInequality = plan {
+    explanation = Explanation.SolveQuadraticInequality
+    pattern = condition {
+        it is Inequality && solutionVariables.size == 1 &&
+            it.variables.contains(solutionVariables[0])
+    }
+
+    steps {
+        // First tidy up and move all terms to the LSH
+        whilePossible {
+            firstOf {
+                option(NormalizationPlans.NormalizeExpression)
+                option(InequalitiesPlans.SimplifyInequality)
+
+                option(solvablePlansForInequalities.removeConstantDenominatorsSteps)
+                option(PolynomialsPlans.ExpandPolynomialExpressionWithoutNormalization)
+                option(solvablePlansForInequalities.moveEverythingToTheLeftAndSimplify)
+            }
+        }
+
+        // Then make sure the leading coefficient is negative
+        applyToChildren(PolynomialRules.NormalizePolynomial)
+        optionally(ensureLeadCoefficientOfLHSIsPositive)
+
+        // Now the inequality is of the form ax^2 + bx + c (> | >= | < | <=) 0, solve it!
+        apply(InequalitiesPlans.SolveQuadraticInequalityInCanonicalForm)
+    }
+}

@@ -264,6 +264,116 @@ enum class InequalitiesExplanation : CategorisedMetadataKey {
     SolveLinearInequality,
 
     /**
+     * Solve a quadratic inequality in a given variable by collecting all terms to the LHS,
+     * then finding the roots of the quadratic equation and using that to determine the
+     * set of solutions.
+     */
+    SolveQuadraticInequality,
+
+    /**
+     * Multiply both sides by -1 to make the leading coefficient positive (this simplifies
+     * determining the set of solutions to the inequality)
+     */
+    EnsureLeadCoefficientOfLHSIsPositive,
+
+    /**
+     * Solve a quadratic inequality in the form ax^2 + bx + c (>, >=, <, <=) 0, where a > 0
+     * Do it by solving the equation ax^2 + bx + c = 0 first then using the roots to find the
+     * solution set.
+     */
+    SolveQuadraticInequalityInCanonicalForm,
+
+    /**
+     * Solve the quadratic equation corresponding to the inequality (replacing the inequality
+     * sign with an equality sign.
+     */
+    SolveCorrespondingQuadraticEquation,
+
+    /**
+     * Deduce the solution of E(x) > 0 where E(x) is quadratic with no root.
+     *
+     * The solution set is R
+     */
+    DeduceInequalitySolutionForGreaterThanAndNoSolution,
+
+    /**
+     * Deduce the solution of E(x) > 0 where E(x) is quadratic with 1 root a.
+     *
+     * The solution set is x != a
+     */
+    DeduceInequalitySolutionForGreaterThanAndOneSolution,
+
+    /**
+     * Deduce the solution of E(x) > 0 where E(x) is quadratic with 2 roots a < b.
+     *
+     * The solution set is x < a OR x > b
+     */
+    DeduceInequalitySolutionForGreaterThanAndTwoSolutions,
+
+    /**
+     * Deduce the solution of E(x) >= 0 where E(x) is quadratic with no root.
+     *
+     * The solution set is R
+     */
+    DeduceInequalitySolutionForGreaterThanOrEqualAndNoSolution,
+
+    /**
+     * Deduce the solution of E(x) >= 0 where E(x) is quadratic with 1 root a.
+     *
+     * The solution set is R
+     */
+    DeduceInequalitySolutionForGreaterThanOrEqualAndOneSolution,
+
+    /**
+     * Deduce the solution of E(x) >= 0 where E(x) is quadratic with 2 roots a < b.
+     *
+     * The solution set is x <= a OR x >= b
+     */
+    DeduceInequalitySolutionForGreaterThanOrEqualAndTwoSolutions,
+
+    /**
+     * Deduce the solution of E(x) < 0 where E(x) is quadratic with no root.
+     *
+     * The solution set is empty
+     */
+    DeduceInequalitySolutionForLessThanAndNoSolution,
+
+    /**
+     * Deduce the solution of E(x) < 0 where E(x) is quadratic with 1 root a.
+     *
+     * The solution set is empty
+     */
+    DeduceInequalitySolutionForLessThanAndOneSolution,
+
+    /**
+     * Deduce the solution of E(x) < 0 where E(x) is quadratic with 2 roots a < b.
+     *
+     * The solution set is a < x < b
+     */
+    DeduceInequalitySolutionForLessThanAndTwoSolutions,
+
+    /**
+     * Deduce the solution of E(x) <= 0 where E(x) is quadratic with no root.
+     *
+     * The solution set is empty
+     */
+    DeduceInequalitySolutionForLessThanOrEqualAndNoSolution,
+
+    /**
+     * Deduce the solution of E(x) <= 0 where E(x) is quadratic with 1 root a.
+     *
+     * The solution set is x = a
+     */
+    DeduceInequalitySolutionForLessThanOrEqualAndOneSolution,
+
+    /**
+     * Deduce the solution of E(x) <= 0 where E(x) is quadratic with 2 roots a < b.
+     *
+     * The solution set is a <= x <= b
+     */
+    DeduceInequalitySolutionForLessThanOrEqualAndTwoSolutions,
+
+    /**
      * Determine whether an inequality between constants is true or false.
      */
     SolveConstantInequality,
