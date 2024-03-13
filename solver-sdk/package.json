@@ -1,6 +1,6 @@
 {
   "name": "@geogebra/solver-sdk",
-  "version": "3.31.0-main.3",
+  "version": "3.31.1-staging.1",
   "description": "Provides a convenient interface for the GGB Solver API.",
   "main": "lib/cjs/index.js",
   "module": "lib/esm/index.js",
