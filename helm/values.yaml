@@ -32,5 +32,5 @@ imageCredentials:
   username: #username is get from CI/CD variable store while running job.
   password: #password is get from CI/CD variable store while running job.
 
-cpuSoftLimit: 300m # https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
-memorySoftLimit: 1024Mi # https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+cpuSoftLimit: 200m # https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+memorySoftLimit: 1371Mi # https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
