@@ -124,7 +124,8 @@ class QuadraticInequalitiesTest {
 
             check {
                 fromExpr = "[x ^ 2] + x - 3 >= 0"
-                toExpr = "SetSolution[x: SetUnion[(-/infinity/, -[1 + sqrt[13] / 2]], [[-1 + sqrt[13] / 2], /infinity/)]]"
+                toExpr =
+                    "SetSolution[x: SetUnion[(-/infinity/, -[1 + sqrt[13] / 2]], [[-1 + sqrt[13] / 2], /infinity/)]]"
                 explanation {
                     key = InequalitiesExplanation.SolveQuadraticInequalityInCanonicalForm
                 }
@@ -140,7 +141,8 @@ class QuadraticInequalitiesTest {
                 @Suppress("ktlint:standard:max-line-length")
                 task {
                     taskId = "#2"
-                    startExpr = "SetSolution[x: SetUnion[(-/infinity/, -[1 + sqrt[13] / 2]], [[-1 + sqrt[13] / 2], /infinity/)]]"
+                    startExpr =
+                        "SetSolution[x: SetUnion[(-/infinity/, -[1 + sqrt[13] / 2]], [[-1 + sqrt[13] / 2], /infinity/)]]"
                     explanation {
                         key = InequalitiesExplanation.DeduceInequalitySolutionForGreaterThanOrEqualAndTwoSolutions
                     }

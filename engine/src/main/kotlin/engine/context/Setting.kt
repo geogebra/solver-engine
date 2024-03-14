@@ -116,7 +116,7 @@ enum class Setting(val kind: SettingKind, val description: String) {
 
     MultiplyFractionsAndNotFractionsDirectly(
         BooleanSetting,
-        "when multplying e.g. 3*[x / 2], do not turn 3 to a fraction but write it as [3x / 2] directly",
+        "When multplying e.g. 3*[x / 2], do not turn 3 to a fraction but write it as [3x / 2] directly",
     ),
 
     RestrictAddingFractionsWithConstantDenominator(
@@ -128,7 +128,7 @@ enum class Setting(val kind: SettingKind, val description: String) {
 
     EliminateNonZeroFactorByDividing(
         BooleanSetting,
-        "when simplifying ab = 0 to b = 0 because a != 0, do it by dividing both sides by a instead " +
+        "When simplifying ab = 0 to b = 0 because a != 0, do it by dividing both sides by a instead " +
             "of just cancelling the a, which is the default",
     ),
 
@@ -138,7 +138,12 @@ enum class Setting(val kind: SettingKind, val description: String) {
      */
     DontCancelCommonFactorsWhenSimplifyingEquation(
         BooleanSetting,
-        "when simplifying an equation ,if lhs and rhs have a common non-zero factor, don't cancel it",
+        "When simplifying an equation, if lhs and rhs have a common non-zero factor, don't cancel it",
+    ),
+
+    SolveInequalitiesUsingTestPoints(
+        BooleanSetting,
+        "Use test points to check if intervals satisfy the inequality to solve",
     ),
     ;
 

@@ -25,8 +25,11 @@ import engine.expressions.Contradiction
 import engine.expressions.DoubleInequality
 import engine.expressions.Expression
 import engine.expressions.FiniteSet
+import engine.expressions.Identity
 import engine.expressions.Inequality
+import engine.expressions.Interval
 import engine.expressions.SetSolution
+import engine.expressions.SetUnion
 import engine.expressions.Solution
 import engine.expressions.StatementUnion
 import engine.expressions.VariableList
@@ -43,6 +46,7 @@ import engine.expressions.setSolutionOf
 import engine.expressions.setUnionOf
 import engine.expressions.solutionVariableConstantChecker
 import engine.expressions.variableListOf
+import engine.expressions.xp
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
@@ -73,6 +77,7 @@ import engine.patterns.setSolutionOf
 import engine.patterns.variableListOf
 import engine.steps.metadata.Metadata
 import engine.steps.metadata.metadata
+import engine.utility.pickValueInInterval
 import methods.constantexpressions.constantSimplificationSteps
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.equations.EquationsPlans
@@ -497,6 +502,38 @@ private fun getDeduceInequalitySolutionParameters(
     }
 }
 
+private fun getSolutionIntervals(comparator: Comparator, solutions: List<Expression>): List<Interval>? {
+    val isClosed = when (comparator) {
+        Comparator.LessThanOrEqual, Comparator.GreaterThanOrEqual -> true
+        Comparator.LessThan, Comparator.GreaterThan -> false
+        else -> return null
+    }
+
+    return when (solutions.size) {
+        0 -> listOf(
+            Interval(Constants.NegativeInfinity, Constants.Infinity, closedLeft = false, closedRight = false),
+        )
+        1 -> if (isClosed) {
+            listOf(
+                Interval(Constants.NegativeInfinity, Constants.Infinity, closedLeft = false, closedRight = false),
+            )
+        } else {
+            listOf(
+                Interval(Constants.NegativeInfinity, solutions[0], closedLeft = false, closedRight = false),
+                Interval(solutions[0], Constants.Infinity, closedLeft = false, closedRight = false),
+            )
+        }
+        2 -> {
+            listOf(
+                Interval(Constants.NegativeInfinity, solutions[0], closedLeft = false, closedRight = isClosed),
+                Interval(solutions[0], solutions[1], closedLeft = isClosed, closedRight = isClosed),
+                Interval(solutions[1], Constants.Infinity, closedLeft = isClosed, closedRight = false),
+            )
+        }
+        else -> null
+    }
+}
+
 private val solveQuadraticInequalityInCanonicalForm = taskSet {
     explanation = Explanation.SolveQuadraticInequalityInCanonicalForm
     pattern = inequalityOf(
@@ -508,6 +545,8 @@ private val solveQuadraticInequalityInCanonicalForm = taskSet {
     )
 
     tasks {
+        val inequality = expression as Inequality
+
         // First solve the equation ax^2 + bx + c = 0
         val solveEquation = task(
             startExpr = equationOf(expression.firstChild, expression.secondChild),
@@ -517,15 +556,58 @@ private val solveQuadraticInequalityInCanonicalForm = taskSet {
 
         val solutions = extractSolutions(solveEquation.result) ?: return@tasks null
 
-        // Then find the method for solving the inequality, depending on the type of inequality and number of solutions
-        val (explanation, startExpr) = getDeduceInequalitySolutionParameters(
-            variables = variableListOf(context.solutionVariables),
-            expression = expression as Inequality,
-            solutions = solutions,
-        ) ?: return@tasks null
+        if (context.isSet(Setting.SolveInequalitiesUsingTestPoints)) {
+            val solutionIntervals = getSolutionIntervals(inequality.comparator, solutions) ?: return@tasks null
+            val validSolutionIntervals = mutableListOf<Interval>()
+            for (solutionInterval in solutionIntervals) {
+                val testValue = xp(
+                    pickValueInInterval(
+                        solutionInterval.leftBound.doubleValue,
+                        solutionInterval.rightBound.doubleValue,
+                    ),
+                )
+                val testInequality = expression.substituteAllOccurrences(
+                    xp(context.solutionVariables[0]),
+                    testValue,
+                )
+                val checkIntervalTask = task(
+                    startExpr = testInequality,
+                    explanation = metadata(
+                        Explanation.CheckSolutionIntervalUsingTestPoint,
+                        solutionInterval,
+                        testValue,
+                    ),
+                    stepsProducer = solveConstantInequalitySteps,
+                    context = context.copy(solutionVariables = emptyList()),
+                ) ?: return@tasks null
+                val checkSuccessful = when (checkIntervalTask.result) {
+                    is Contradiction -> false
+                    is Identity -> true
+                    else -> null
+                } ?: return@tasks null
+                if (checkSuccessful) {
+                    validSolutionIntervals.add(solutionInterval)
+                }
+            }
+            task(
+                startExpr = when (validSolutionIntervals.size) {
+                    0 -> contradictionOf(variableListOf(context.solutionVariables), expression)
+                    1 -> setSolutionOf(variableListOf(context.solutionVariables), validSolutionIntervals[0])
+                    else -> setSolutionOf(variableListOf(context.solutionVariables), SetUnion(validSolutionIntervals))
+                },
+                explanation = metadata(Explanation.CollectUnionSolutions),
+            )
+        } else {
+            // Then find the method for solving the inequality, depending on the type of inequality and number of
+            // solutions
+            val (explanation, startExpr) = getDeduceInequalitySolutionParameters(
+                variables = variableListOf(context.solutionVariables),
+                expression = inequality,
+                solutions = solutions,
+            ) ?: return@tasks null
 
-        task(explanation = explanation, startExpr = startExpr)
-
+            task(explanation = explanation, startExpr = startExpr)
+        }
         allTasks()
     }
 }

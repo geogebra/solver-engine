@@ -30,6 +30,7 @@ enum class Preset(val description: String, val settings: Map<Setting, SettingVal
             Setting.SolveEquationsWithoutComputingTheDomain setTo BooleanSetting.True,
             Setting.ConvertRecurringDecimalsToFractionsUsingAlgorithm setTo BooleanSetting.True,
             Setting.AddMixedNumbersWithoutConvertingToImproperFractions setTo BooleanSetting.True,
+            Setting.SolveInequalitiesUsingTestPoints setTo BooleanSetting.True,
         ),
     ),
 

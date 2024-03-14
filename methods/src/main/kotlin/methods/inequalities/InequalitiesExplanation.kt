@@ -374,6 +374,22 @@ enum class InequalitiesExplanation : CategorisedMetadataKey {
     DeduceInequalitySolutionForLessThanOrEqualAndTwoSolutions,
 
     /**
+     * Check a solution interval for an inequality using a test point.
+     *
+     * Parameters:
+     * %1: the interval to check
+     * %2: the test value chosen to check the inequality
+     *
+     * E.g. for the inequality x^2 - x > 0, we can check if the intervals
+     * (-\infty, 0), (0, 1), (1, \infty) are solutions.  This explanation
+     * checks *only one* interval, e.g.
+     *
+     * %1 = (-\infty, 0)
+     * %2 = -1
+     */
+    CheckSolutionIntervalUsingTestPoint,
+
+    /**
      * Determine whether an inequality between constants is true or false.
      */
     SolveConstantInequality,
