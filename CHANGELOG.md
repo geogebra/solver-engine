@@ -11,6 +11,9 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Added
 
+- Solving quadratic inequalities by finding the roots and using test points in the resulting intervals (US Curriculum)
+  (PLUT-1021)
+
 ### Fixed
 
 ### Changed
@@ -24,8 +27,6 @@ This is a template for a release section.
 ### Added
 
 - Solving quadratic inequalities by finding the roots and considering the inequality sign (PLUT-1020)
-- Solving quadratic inequalities by finding the roots and using test points in the resulting intervals (US Curriculum)
-  (PLUT-1021)
 
 ### Fixed
 
