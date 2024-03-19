@@ -284,7 +284,8 @@ const latexSymbolDefinitions = {
     const nud = (): ExprTree => {
       const left = parser.expression(100);
       const right = parser.expression(100);
-      return { type: 'Fraction', operands: [left, right] };
+      const derivative = checkDerivative(left, right, parser);
+      return derivative ?? { type: 'Fraction', operands: [left, right] };
     };
     const led = (first: ExprTree): ExprTree => {
       const left = parser.expression(100);
@@ -448,6 +449,41 @@ const latexSymbolDefinitions = {
     naturalLogWithDoubleMathrm.led = getLedToExtendNary(parser, 'ImplicitProduct');
   },
 
+  registerIntegrals(parser: Parser<ExprTree>) {
+    const integralSymbol = parser.registerSymbol('\\int', BP_IMPLICIT_MUL); // TODO: Check what the right BP is
+
+    integralSymbol.nud = function () {
+      let lowerBound, upperBound;
+      if (parser.advance('_', true)) {
+        lowerBound = parser.expression(100);
+        if (lowerBound.type === 'Power') {
+          upperBound = lowerBound.operands[1];
+          lowerBound = lowerBound.operands[0];
+        } else {
+          parser.advance('^');
+          upperBound = parser.expression(100);
+        }
+      }
+      const func = parser.expression(100);
+      parser.advance('\\,', true);
+      let variable = parser.expression(100);
+      if (variable.type === 'Variable' && variable.value === 'd') {
+        variable = parser.expression(100);
+      } else if (variable.type === 'ImplicitProduct') {
+        variable = variable.operands[1];
+      }
+      if (lowerBound && upperBound) {
+        return {
+          type: 'DefiniteIntegral',
+          operands: [lowerBound, upperBound, func, variable],
+        };
+      }
+      return { type: 'IndefiniteIntegral', operands: [func, variable] };
+    };
+
+    integralSymbol.led = getLedToExtendNary(parser, 'ImplicitProduct');
+  },
+
   registerTextStyleCommands(parser: Parser<ExprTree>) {
     // This just ignores text style commands.
     // Need to know the complete list of styling commands we want to remove.
@@ -455,6 +491,14 @@ const latexSymbolDefinitions = {
       const sym = parser.registerSymbol(textStyle, BP_IMPLICIT_MUL);
       sym.nud = function () {
         return parser.expression(Infinity); // Why Infinity?  I copied from registerRoots.
+      };
+      sym.led = function (left) {
+        parser.balancingTokenIds.push('{');
+        const token = parser.advance('{');
+        parser.expression(0);
+        parser.balancingTokenIds.pop();
+        parser.advance('}');
+        return token!.led(left);
       };
     }
   },
@@ -583,6 +627,53 @@ function isInteger(str: string) {
   // We do it this way because obvious algorithm (`Number.isInteger(+str)`) would produce
   // an inaccurate result when fed the input '5555555555555555.5'
   return !!/^\d+$/.test(str);
+}
+
+export function checkDerivative(
+  left: ExprTree,
+  right: ExprTree,
+  parser: Parser<ExprTree>,
+) {
+  if (
+    right.type === 'ImplicitProduct' &&
+    right.operands[0].type === 'Variable' &&
+    right.operands[0].value === 'd' &&
+    !right.operands.find((op) => op.type !== 'Variable')
+  ) {
+    let func;
+    let degree = { type: 'Integer', value: '1' } as ExprTree;
+    // If we have an implicit product we split the d of and handle it as usual, and use the remaining operands as the function
+    if (left.type === 'ImplicitProduct') {
+      if (left.operands.length > 2) {
+        func = { type: 'ImplicitProduct', operands: left.operands.slice(1) } as ExprTree;
+      } else {
+        func = left.operands[1];
+      }
+      left = left.operands[0];
+    }
+    if (left.type === 'Variable' && left.value === 'd') {
+      func = func ?? parser.expression(100);
+    } else if (
+      left.type === 'Power' &&
+      left.operands[0].type === 'Variable' &&
+      left.operands[0].value === 'd'
+    ) {
+      degree = left.operands[1];
+      func = func ?? parser.expression(100);
+    } else {
+      return null;
+    }
+
+    // Decorators are unnecessary around the function, removing them makes the resulting tree more consistent
+    if (func.decorators) {
+      delete func.decorators;
+    }
+    const variables = right.operands.filter(
+      (o) => o.type === 'Variable' && o.value !== 'd',
+    );
+    return { type: 'Derivative', operands: [degree, func, ...variables] } as ExprTree;
+  }
+  return null;
 }
 
 const latexParser = new Parser(Object.values(latexSymbolDefinitions));

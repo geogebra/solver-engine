@@ -28,6 +28,7 @@ This is a template for a release section.
 ### Added
 
 - Solving quadratic inequalities by finding the roots and considering the inequality sign (PLUT-1020)
+- SDK: Add rendering and parsing for derivatives/integrals (PLUT-816)
 
 ### Fixed
 

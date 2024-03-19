@@ -325,6 +325,9 @@ function annotate(
     case 'Log':
     case 'NaturalLog':
     case 'LogBase10':
+    case 'Derivative':
+    case 'IndefiniteIntegral':
+    case 'DefiniteIntegral':
       throw new Error('Unsupported type: ' + tree.type);
     default:
       needToImplement(treeType);

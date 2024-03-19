@@ -133,6 +133,20 @@ export function treeToSolver(n: ExpressionTree): string {
       return dec(`ln ${rec(n.operands[0])}`);
     case 'Log':
       return dec(`log_[${rec(n.operands[0])}] ${rec(n.operands[1])}`);
+    case 'Derivative':
+      return dec(
+        (n.operands[0].type === 'Integer' && n.operands[0].value === '1'
+          ? 'diff'
+          : `[diff ^ ${rec(n.operands[0])}]`) +
+          `[${rec(n.operands[1])} / ${n.operands
+            .slice(2)
+            .map((op) => rec(op))
+            .join(' ')}]`,
+      );
+    case 'IndefiniteIntegral':
+      return dec(`prim[${rec(n.operands[0])}, ${rec(n.operands[1])}]`);
+    case 'DefiniteIntegral':
+      return dec(`int[${n.operands.map((op) => rec(op)).join(', ')}]`);
     case 'Percent':
       return dec(`${rec(n.operands[0])} %`);
     case 'AbsoluteValue':

@@ -390,6 +390,34 @@ function treeToLatexInner(
       return tfd(`\\log_{${rec(n.operands[0], n)}}{${rec(n.operands[1], n)}}`);
     case 'NaturalLog':
       return tfd(`\\ln{${rec(n.operands[0], n)}}`);
+    case 'Derivative':
+      return tfd(
+        '\\frac' +
+          (n.operands[0].type === 'Integer' && n.operands[0].value === '1'
+            ? '{\\mathrm{d}'
+            : `{\\mathrm{d} ^ ${rec(n.operands[0], n)}`) +
+          (n.operands[1].type === 'Variable' || n.operands[1].type === 'Power'
+            ? ' ' + rec(n.operands[1], n)
+            : '') +
+          `}{${n.operands
+            .slice(2)
+            .map((op) => '\\mathrm{d}' + rec(op, n))
+            .join(' \\, ')}}` +
+          (n.operands[1].type !== 'Variable' && n.operands[1].type !== 'Power'
+            ? `\\left(${rec(n.operands[1], n)}\\right)`
+            : ''),
+      );
+    case 'IndefiniteIntegral':
+      return tfd(
+        `\\int {${rec(n.operands[0], n)}} \\, \\mathrm{d} ${rec(n.operands[1], n)}`,
+      );
+    case 'DefiniteIntegral':
+      return tfd(
+        `\\int_{${rec(n.operands[0], n)}}^{${rec(n.operands[1], n)}} {${rec(
+          n.operands[2],
+          n,
+        )}} \\, \\mathrm{d} ${rec(n.operands[3], n)}`,
+      );
     case 'AbsoluteValue':
       return tfd(colorAbsoluteValue(rec(n.operands[0], n), n, t, p));
     case 'ExpressionWithConstraint': {

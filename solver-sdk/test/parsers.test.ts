@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { MathJson } from '../src';
+import type { ExpressionTree, MathJson } from '../src';
 import {
   jsonToLatex,
   jsonToTree,
@@ -8,6 +8,8 @@ import {
   treeToJson,
   treeToSolver,
 } from '../src';
+import { checkDerivative } from '../src/parser/latex-to-tree';
+import { Parser } from '../src/parser/parser';
 
 const latexToJson = (latex) => treeToJson(latexToTree(latex));
 const jsonToSolver = (json) => treeToSolver(jsonToTree(json));
@@ -2023,7 +2025,278 @@ describe('Solver Parser Unit Tests', () => {
       },
     ]);
   });
+  describe('Derivative', () => {
+    testCases([
+      {
+        solver: 'diff[[x ^ 2] / x]',
+        json: {
+          type: 'Derivative',
+          operands: [
+            integer('1'),
+            {
+              type: 'Power',
+              operands: [variable('x'), integer('2')],
+            },
+            variable('x'),
+          ],
+        },
+        latex: [
+          '\\frac{\\mathrm{d} {x}^{2}}{\\mathrm{d}x}',
+          '\\frac{\\mathrm{d}}{\\mathrm{d}x}\\left({x}^{2}\\right)',
+        ],
+      },
+      {
+        solver: 'diff[[x ^ 2] + 2 x / x]',
+        json: {
+          type: 'Derivative',
+          operands: [
+            integer('1'),
+            {
+              type: 'Sum',
+              operands: [
+                {
+                  type: 'Power',
+                  operands: [variable('x'), integer('2')],
+                },
+                {
+                  type: 'ImplicitProduct',
+                  operands: [integer('2'), variable('x')],
+                },
+              ],
+            },
+            variable('x'),
+          ],
+        },
+        latex: ['\\frac{\\mathrm{d}}{\\mathrm{d}x}\\left({x}^{2}+2x\\right)'],
+      },
+      {
+        solver: 'diff[x y / x y]',
+        json: {
+          type: 'Derivative',
+          operands: [
+            integer('1'),
+            {
+              type: 'ImplicitProduct',
+              operands: [variable('x'), variable('y')],
+            },
+            variable('x'),
+            variable('y'),
+          ],
+        },
+        latex: ['\\frac{\\mathrm{d}}{\\mathrm{d}x \\, \\mathrm{d}y}\\left(xy\\right)'],
+      },
+      {
+        solver: '[diff ^ 2][[x ^ 2] / x]',
+        json: {
+          type: 'Derivative',
+          operands: [
+            integer('2'),
+            {
+              type: 'Power',
+              operands: [variable('x'), integer('2')],
+            },
+            variable('x'),
+          ],
+        },
+        latex: ['\\frac{\\mathrm{d} ^ 2 {x}^{2}}{\\mathrm{d}x}'],
+      },
+    ]);
+    it('checkDerivative returns null for non-derivative fractions', () => {
+      expect(
+        checkDerivative(
+          {
+            type: 'ImplicitProduct',
+            operands: [integer('2'), variable('x')],
+          },
+          variable('x'),
+          {
+            expression: () => {
+              return variable('1');
+            },
+          } as any as Parser<ExpressionTree>,
+        ),
+      ).to.equal(null);
+    });
+    it('checkDerivative returns null for non-derivative fractions containing variable d', () => {
+      expect(
+        checkDerivative(
+          {
+            type: 'ImplicitProduct',
+            operands: [integer('2'), variable('d')],
+          },
+          {
+            type: 'ImplicitProduct',
+            operands: [integer('4'), variable('d')],
+          },
+          {
+            expression: () => {
+              return variable('1');
+            },
+          } as any as Parser<ExpressionTree>,
+        ),
+      ).to.equal(null);
+    });
+    it('checkDerivative returns null for non-derivative fractions containing d and x in denominator', () => {
+      expect(
+        checkDerivative(
+          {
+            type: 'ImplicitProduct',
+            operands: [variable('d')],
+          },
+          {
+            type: 'ImplicitProduct',
+            operands: [integer('x'), variable('d')],
+          },
+          {
+            expression: () => {
+              return variable('1');
+            },
+          } as any as Parser<ExpressionTree>,
+        ),
+      ).to.equal(null);
+    });
+    it('checkDerivative parses derivatives of form d(function in x) / dx', () => {
+      expect(
+        checkDerivative(
+          {
+            type: 'ImplicitProduct',
+            operands: [
+              variable('d'),
+              {
+                type: 'Power',
+                operands: [variable('x'), integer('2')],
+              },
+            ],
+          },
+          {
+            type: 'ImplicitProduct',
+            operands: [variable('d'), variable('x')],
+          },
+          {
+            expression: () => {
+              return variable('1');
+            },
+          } as any as Parser<ExpressionTree>,
+        ),
+      ).to.deep.equal({
+        type: 'Derivative',
+        operands: [
+          integer('1'),
+          {
+            type: 'Power',
+            operands: [variable('x'), integer('2')],
+          },
+          variable('x'),
+        ],
+      });
+    });
+    it('checkDerivative parses derivatives of form d^power (function in x) / dx', () => {
+      expect(
+        checkDerivative(
+          {
+            type: 'ImplicitProduct',
+            operands: [
+              {
+                type: 'Power',
+                operands: [variable('d'), integer('2')],
+              },
+              {
+                type: 'Power',
+                operands: [variable('x'), integer('2')],
+              },
+            ],
+          },
+          {
+            type: 'ImplicitProduct',
+            operands: [variable('d'), variable('x')],
+          },
+          {
+            expression: () => {
+              return variable('1');
+            },
+          } as any as Parser<ExpressionTree>,
+        ),
+      ).to.deep.equal({
+        type: 'Derivative',
+        operands: [
+          integer('2'),
+          {
+            type: 'Power',
+            operands: [variable('x'), integer('2')],
+          },
+          variable('x'),
+        ],
+      });
+    });
+    it('checkDerivative parses derivatives of form d / dx (function in x)', () => {
+      expect(
+        checkDerivative(
+          variable('d'),
+          {
+            type: 'ImplicitProduct',
+            operands: [variable('d'), variable('x')],
+          },
+          {
+            expression: () => {
+              return {
+                type: 'ImplicitProduct',
+                operands: [integer('2'), variable('x')],
+              };
+            },
+          } as any as Parser<ExpressionTree>,
+        ),
+      ).to.deep.equal({
+        type: 'Derivative',
+        operands: [
+          integer('1'),
+          {
+            type: 'ImplicitProduct',
+            operands: [integer('2'), variable('x')],
+          },
+          variable('x'),
+        ],
+      });
+    });
+  });
 
+  describe('IndefiniteIntegral', () => {
+    testCases([
+      {
+        solver: 'prim[2 x, x]',
+        json: {
+          type: 'IndefiniteIntegral',
+          operands: [
+            {
+              type: 'ImplicitProduct',
+              operands: [integer('2'), variable('x')],
+            },
+            variable('x'),
+          ],
+        },
+        latex: ['\\int {2x} \\, \\mathrm{d} x'], //
+      },
+    ]);
+  });
+  describe('DefiniteIntegral', () => {
+    testCases([
+      {
+        solver: `int[0, 1, 2 x, x]`,
+        json: {
+          type: 'DefiniteIntegral',
+          operands: [
+            integer('0'),
+            integer('1'),
+            {
+              type: 'ImplicitProduct',
+              operands: [integer('2'), variable('x')],
+            },
+            variable('x'),
+          ],
+        },
+        latex: ['\\int_{0}^{1} {2x} \\, \\mathrm{d} x'],
+      },
+    ]);
+  });
   describe('special symbols', () => {
     testCases([
       {

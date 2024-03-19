@@ -35,6 +35,9 @@ export type NestedExpressionType =
   | 'Log' // binary
   | 'NaturalLog' // unary
   | 'LogBase10' // unary
+  | 'Derivative' // n-ary degree, expression dependents...
+  | 'IndefiniteIntegral' // (function, variable)
+  | 'DefiniteIntegral' // (lowerBound, upperBound, function, variable)
   | 'Percent' // unary
   | 'AbsoluteValue' // unary
   | 'ExpressionWithConstraint' // (expression, constraint)

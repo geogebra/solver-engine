@@ -29,6 +29,13 @@ export type Token = {
 /// a latex command is either a backslash plus a single non-alpha-numeric character
 /// like \, or is a backslash plus a string of alphabetic characters
 export function tokenize(str: string): Token[] {
+  const trig_functions =
+    'sin|cos|tan|cot|csc|sec|' + // Trigonometric functions
+    'arcsin|arccos|arctan|arccot|arccsc|arcsec|' + // inverse trig functions
+    'sinh|cosh|tanh|coth|csch|sech|' + // Hyperbolic functions
+    'arsinh|arcosh|artanh|arcoth|arcsch|arsech|' + // inverse Hyperbolic functions
+    'ln|log'; // Logarithmic functions
+
   const r_symbols =
     /^\s*(\/undefined\/|\/reals\/|\\text\{[Uu]ndefined\}|\\text{[Aa][Nn][Dd]}|\\mathbb\{R\}|ℯ|\\mathrm\{e\}|ί|\\mathrm{i}|\\iota|\\pi(?:\{\})?)/;
   const r_number = /^\s*((([0-9]*(\.[0-9]*|[0-9]+))([eE][-+]?[0-9]+)?)|∞|Infinity)/;
@@ -38,20 +45,17 @@ export function tokenize(str: string): Token[] {
   // this currently handles:
   // * {\mathrm{sin}} (or any other trigonometric function)
   // * {{\mathrm{\mathrm{ln}}}\left(x\right)} (nested natural-log)
+  // TODO: Make sure this only matches trig words / logarithm
   const r_nested_mathrm_with_braces = new RegExp(
-    '^\\s*{\\\\mathrm{(\\\\mathrm{[^}]+}|[^}]+)}}',
+    '^\\s*{\\\\mathrm{(\\\\mathrm{(?:' +
+      trig_functions +
+      ')}|(?:' +
+      trig_functions +
+      '))}}',
   );
   // this doesn't include the opening and closing `{}` pair around it
   // we only want to include selected functions, as we \mathrm{2} shouldn't be tokenize here
-  const r_trig_and_log_mathrm = new RegExp(
-    '^\\s*\\\\mathrm{(' +
-      'sin|cos|tan|cot|csc|sec|' + // Trigonometric functions
-      'arcsin|arccos|arctan|arccot|arccsc|arcsec|' + // inverse trig functions
-      'sinh|cosh|tanh|coth|csch|sech|' + // Hyperbolic functions
-      'arsinh|arcosh|artanh|arcoth|arcsch|arsech|' + // inverse Hyperbolic functions
-      'ln|log' + // Logarithmic functions
-      ')}',
-  );
+  const r_trig_and_log_mathrm = new RegExp('^\\s*\\\\mathrm{(' + trig_functions + ')}');
   const r_greek = new RegExp('^\\s*([α-ωΑ-Ω])'); // single-character greek letters
 
   // we continue to have "iota" and "pi" here,
