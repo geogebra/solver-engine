@@ -13,6 +13,7 @@ contents to a new release section (e.g. _[0.x]_).
 
 - Solving quadratic inequalities by finding the roots and using test points in the resulting intervals (US Curriculum)
   (PLUT-1021)
+- Document plan creation process (PLUT-974)
 
 ### Fixed
 

@@ -89,17 +89,27 @@ interface BranchOnBuilder {
 @StepsProducerBuilderMarker
 interface PipelineBuilder {
     /**
-     * Optionally apply steps
+     * Optionally apply [steps] defined as a StepsProducer  If the step producer does not apply to the input, then it is
+     * simply skipped and the next action in the pipeline is tried on the input.
      */
     fun optionally(steps: StepsProducer)
 
     /**
-     * Optionally follow those steps
+     * Optionally the steps defined by [init].  If the steps do not apply to the input, then they ar simply skipped and
+     * the next action in the pipeline is tried on the input.
      */
     fun optionally(init: PipelineFunc)
 
+    /**
+     * Try applying [steps] defined as a StepsProducer.  If it is a success, then the whole pipeline ends
+     * with success (further steps are not attempted).
+     */
     fun shortcut(steps: StepsProducer)
 
+    /**
+     * Try applying the steps defined by [init].  If it is a success, then the whole pipeline ends
+     * with success (further steps are not attempted).
+     */
     fun shortcut(init: PipelineFunc)
 
     /**
@@ -118,19 +128,36 @@ interface PipelineBuilder {
      */
     fun apply(init: PipelineFunc)
 
+    /**
+     * Check [condition].  If not fulfilled, then the pipeline fails.
+     */
     fun check(condition: Context.(Expression) -> Boolean)
 
     /**
-     * Apply the [stepsProducer] to a subexpression obtained by the [extractor]
+     * Apply the [stepsProducer] to a subexpression obtained by the [extractor].  The whole pipeline fails if the
+     * extractor returns null.
      */
     fun applyTo(stepsProducer: StepsProducer, extractor: Extractor<Expression>)
 
+    /**
+     * Apply the [stepsProducer] to the subexpression with the given [label].  Fail if there is no such label.
+     */
     fun applyTo(stepsProducer: StepsProducer, label: Label)
 
+    /**
+     * Apply the [stepsProducer] to a subexpression obtained by the [extractor], only if the subexpression has type [T].
+     */
     fun <T : Expression> applyToKind(stepsProducer: StepsProducer, extractor: Extractor<T>)
 
+    /**
+     * Apply the pipeline defined by [init] to the subexpression obtained by the [extractor].
+     */
     fun applyTo(extractor: Extractor<Expression>, init: PipelineFunc)
 
+    /**
+     * Apply the pipeline defined by [init] to the subexpression with the given [label].  Fail if there is no such
+     * label.
+     */
     fun applyTo(label: Label, init: PipelineFunc)
 
     /**
@@ -149,6 +176,9 @@ interface PipelineBuilder {
      */
     fun applyToChildren(all: Boolean = false, atLeastOne: Boolean = false, init: PipelineFunc)
 
+    /**
+     * Apply [stepsProducer] to the current constraint, not expression.  Fail if there is no constraint.
+     */
     fun applyToConstraint(stepsProducer: StepsProducer)
 
     /**
@@ -156,6 +186,9 @@ interface PipelineBuilder {
      */
     fun firstOf(init: FirstOfFunc)
 
+    /**
+     * Try different steps depending on the value of [setting] (see [BranchOnBuilder] for details)
+     */
     fun branchOn(setting: Setting, init: BranchOnFunc)
 
     /**
@@ -174,22 +207,32 @@ interface PipelineBuilder {
     fun deeply(stepsProducer: StepsProducer, deepFirst: Boolean = false)
 
     /**
-     * Apply the following steps deeply ([deepFirst] controls whether it is depth first or breadth first).
+     * Apply the pipeline defined by [init] deeply ([deepFirst] controls whether it is depth first or breadth first).
+     * This means that the steps are attempted recursively to child expressions.  Return successfully once one
+     * subexpression has been transformed.
      */
     fun deeply(deepFirst: Boolean = false, init: PipelineFunc)
 
     /**
-     * Apply the following plan.
+     * Apply the following plan.  The whole pipeline fails if the plan fails.
      */
     fun plan(init: PlanBuilder.() -> CompositeMethod)
 
     /**
-     * Apply the following task set
+     * Apply the following task set.  The whole pipeline fails if the task set fails.
      */
     fun taskSet(init: TaskSetBuilder.() -> CompositeMethod)
 
+    /**
+     * Check that the pattern returned by [patternProvider] is matched by the current expression.  The whole pipeline
+     * fails if this is not the case.
+     */
     fun checkForm(patternProvider: () -> Pattern)
 
+    /**
+     * Apply the pipeline defined by [init] in a new context defined by [contextFactory] (which is called on the
+     * current context with the current expression as its sole argument.
+     */
     fun inContext(contextFactory: Context.(Expression) -> Context, init: PipelineFunc)
 }
 
