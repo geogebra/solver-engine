@@ -136,7 +136,7 @@ export class GgbAppletGrapher implements Grapher {
       }
       case 'intersection': {
         const labels = this.evalCommandGetLabels(
-          `Intersect(${graphObject.objectLabels.join(', ')})`,
+          `Intersect(${graphObject.objectLabels.join(', ')}, x(Corner(1)), x(Corner(2)))`,
         );
         for (const [index, label] of labels.entries()) {
           this.ggbAppletApi.setPointStyle(label, 1);

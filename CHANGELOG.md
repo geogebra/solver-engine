@@ -34,6 +34,7 @@ This is a template for a release section.
 
 - Exclude HPA from development. (INF-21)
 - SDK: Fixed parsing of natural logarithms (PLUT-1011)
+- SDK: Fixed only one intersection being shown for exponential equations (PLUT-1018)
 
 ### Changed
 
