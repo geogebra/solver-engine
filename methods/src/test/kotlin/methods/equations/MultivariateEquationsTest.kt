@@ -500,25 +500,9 @@ class MultivariateEquationsTest {
 
             check {
                 fromExpr = "[x ^ 6] + [y ^ 2] + 1 = 0"
-                toExpr = "Contradiction[x: [x ^ 6] = -[y ^ 2] - 1]"
+                toExpr = "Contradiction[x: [x ^ 6] + [y ^ 2] + 1 = 0]"
                 explanation {
-                    key = EquationsExplanation.SolveEquationUsingRootsMethod
-                }
-
-                step {
-                    fromExpr = "[x ^ 6] + [y ^ 2] + 1 = 0"
-                    toExpr = "[x ^ 6] = -[y ^ 2] - 1"
-                    explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsInVariablesToTheRightAndSimplify
-                    }
-                }
-
-                step {
-                    fromExpr = "[x ^ 6] = -[y ^ 2] - 1"
-                    toExpr = "Contradiction[x: [x ^ 6] = -[y ^ 2] - 1]"
-                    explanation {
-                        key = EquationsExplanation.ExtractSolutionFromEvenPowerEqualsNegative
-                    }
+                    key = EquationsExplanation.EquationHasOneZeroAndOneNonZeroSide
                 }
             }
         }

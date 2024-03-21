@@ -99,6 +99,25 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     UndefinedEquationCannotBeSolved,
 
     /**
+     * Solve an equation where both sides are obviously of incompatible
+     * signs, i.e. one side is positive and the other non-positive or
+     * one side is negative and the other non-negative
+     *
+     * E.g. [x^2] = -3   --> contradiction
+     *      [2 ^ x] = -1 --> contradiction
+     */
+    EquationSidesHaveIncompatibleSigns,
+
+    /**
+     * Solve an equation where one side is zero and the other is non-zero
+     * for obvious reasons (e.g. it could be positive or negative)
+     *
+     * E.g. [2 ^ x] = 0     --> contradiction
+     *      [x ^ 2] + 1 = 0 --> contradiction
+     */
+    EquationHasOneZeroAndOneNonZeroSide,
+
+    /**
      * Extract the solution from an equation of the form
      * x^n = negative constant, when n is even.
      *

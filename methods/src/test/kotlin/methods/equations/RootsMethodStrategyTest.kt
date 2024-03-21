@@ -23,32 +23,36 @@ import engine.methods.MethodTestCase
 import engine.methods.getPlan
 import engine.methods.testMethod
 import engine.methods.testMethodInX
+import engine.steps.metadata.MetadataKey
 import methods.collecting.CollectingExplanation
 import methods.constantexpressions.ConstantExpressionsExplanation
 import methods.equations.EquationSolvingStrategy.RootsMethod
 import org.junit.jupiter.api.Test
 
 class RootsMethodStrategyTest {
-    fun shortTest(inputExpr: String, toExpr: String?) =
-        testMethodInX {
-            method = EquationsPlans.SolveEquation
-            context = Context(
-                solutionVariables = listOf("x"),
-                preferredStrategies = mapOf(strategyChoice(RootsMethod)),
-            )
-            this.inputExpr = inputExpr
+    fun shortTest(
+        inputExpr: String,
+        toExpr: String?,
+        explanationKey: MetadataKey = EquationsExplanation.SolveEquationUsingRootsMethod,
+    ) = testMethodInX {
+        method = EquationsPlans.SolveEquation
+        context = Context(
+            solutionVariables = listOf("x"),
+            preferredStrategies = mapOf(strategyChoice(RootsMethod)),
+        )
+        this.inputExpr = inputExpr
 
-            check {
-                if (toExpr != null) {
-                    this.toExpr = toExpr
-                    explanation {
-                        key = EquationsExplanation.SolveEquationUsingRootsMethod
-                    }
-                } else {
-                    noTransformation()
+        check {
+            if (toExpr != null) {
+                this.toExpr = toExpr
+                explanation {
+                    key = explanationKey
                 }
+            } else {
+                noTransformation()
             }
         }
+    }
 
     private fun testRootsMethod(init: MethodTestCase.() -> Unit) {
         val testCase = MethodTestCase()
@@ -85,7 +89,8 @@ class RootsMethodStrategyTest {
     fun testSquareOfSquareEqualsNegative() =
         shortTest(
             inputExpr = "[([x ^ 2]) ^ 2] + 1 = 0",
-            toExpr = "Contradiction[x: [x ^ 4] = -1]",
+            toExpr = "Contradiction[x: [x ^ 4]  + 1 = 0]",
+            explanationKey = EquationsExplanation.SolveEquation,
         )
 
     @Test

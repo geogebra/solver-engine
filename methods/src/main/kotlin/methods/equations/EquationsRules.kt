@@ -22,6 +22,7 @@ import engine.conditions.isNotZeroBySign
 import engine.expressions.Comparison
 import engine.expressions.Constants
 import engine.expressions.Contradiction
+import engine.expressions.Equation
 import engine.expressions.Product
 import engine.expressions.SimpleComparator
 import engine.expressions.Sum
@@ -225,6 +226,8 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
             }
         },
     ),
+
+    SolveEquationWithIncompatibleSigns(solveEquationWithIncompatibleSigns),
 
     ExtractSolutionFromNegativeUnderSquareRootInRealDomain(
         rule {
@@ -685,5 +688,25 @@ val splitEquationWithRationalVariables = rule {
             ),
             explanation = metadata(Explanation.SplitEquationWithRationalVariables),
         )
+    }
+}
+
+val solveEquationWithIncompatibleSigns = rule {
+    onPattern(equationOf(AnyPattern(), AnyPattern())) {
+        val equation = expression as Equation
+        val lhsSign = equation.lhs.signOf()
+        val rhsSign = equation.rhs.signOf()
+        if (lhsSign != Sign.NONE && rhsSign != Sign.NONE && lhsSign.implies(rhsSign.complement())) {
+            val key = when {
+                lhsSign == Sign.ZERO || rhsSign == Sign.ZERO -> Explanation.EquationHasOneZeroAndOneNonZeroSide
+                else -> Explanation.EquationSidesHaveIncompatibleSigns
+            }
+            ruleResult(
+                toExpr = contradictionOf(variableListOf(context.solutionVariables), expression),
+                explanation = metadata(key),
+            )
+        } else {
+            null
+        }
     }
 }

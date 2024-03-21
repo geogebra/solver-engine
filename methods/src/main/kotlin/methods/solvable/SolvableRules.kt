@@ -803,7 +803,7 @@ private val takeLogOfRHS = rule {
     val exponent = VariableExpressionPattern()
     val base = UnsignedIntegerPattern()
     val lhs = powerOf(integerCondition(base) { it >= BigInteger.TWO }, exponent)
-    val rhs = ConstantInSolutionVariablePattern()
+    val rhs = condition(ConstantInSolutionVariablePattern()) { it.isDefinitelyPositive() }
 
     val solvable = SolvablePattern(lhs, rhs)
 
@@ -820,8 +820,8 @@ private val takeLogOfRHS = rule {
 }
 
 private val takeLogOfBothSides = rule {
-    val lhs = condition { it.hasFactorsConstantIn(solutionVariables) }
-    val rhs = condition { it.hasFactorsConstantIn(solutionVariables) }
+    val lhs = condition { it.hasFactorsConstantIn(solutionVariables) && it.isDefinitelyPositive() }
+    val rhs = condition { it.hasFactorsConstantIn(solutionVariables) && it.isDefinitelyPositive() }
 
     val solvable = SolvablePattern(lhs, rhs)
 

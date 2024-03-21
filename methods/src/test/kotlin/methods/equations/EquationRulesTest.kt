@@ -321,4 +321,28 @@ class EquationRulesTest {
             "3x = -2 AND sqrt[5] = y sqrt[5]",
         )
     }
+
+    @Test
+    fun testSolveEquationWithIncompatibleSigns() {
+        testRuleInX(
+            "x + R = [E / I]",
+            EquationsRules.SolveEquationWithIncompatibleSigns,
+            null,
+        )
+        testRuleInX(
+            "[x ^ 6] + 1 = [x ^ 5] - 3",
+            EquationsRules.SolveEquationWithIncompatibleSigns,
+            null,
+        )
+        testRuleInX(
+            "-3 = 2[x^2]",
+            EquationsRules.SolveEquationWithIncompatibleSigns,
+            "Contradiction[x: -3 = 2[x^2]]",
+        )
+        testRuleInX(
+            "[2^x]=-1",
+            EquationsRules.SolveEquationWithIncompatibleSigns,
+            "Contradiction[x: [2^x] = -1]",
+        )
+    }
 }

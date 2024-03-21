@@ -50,6 +50,7 @@ class SignTest {
 
     @Test
     fun testInverse() {
+        assertEquals(Sign.NOT_ZERO, Sign.NOT_ZERO.inverse())
         assertEquals(Sign.NONE, Sign.UNKNOWN.inverse())
         assertEquals(Sign.NEGATIVE, Sign.NEGATIVE.inverse())
         assertEquals(Sign.NONE, Sign.ZERO.inverse())

@@ -58,7 +58,14 @@ enum class Sign(val signum: Int, val canBeZero: Boolean = false) {
 
     fun isKnown() = signum != NOT_KNOWN_SIGNUM
 
-    fun inverse() = if (canBeZero || !isKnown()) NONE else this
+    fun inverse() =
+        when (this) {
+            ZERO -> NONE
+            NON_NEGATIVE -> NONE
+            NON_POSITIVE -> NONE
+            UNKNOWN -> NONE
+            else -> this
+        }
 
     operator fun unaryMinus() =
         when (this) {
@@ -78,6 +85,18 @@ enum class Sign(val signum: Int, val canBeZero: Boolean = false) {
             NON_NEGATIVE -> NEGATIVE
             NON_POSITIVE -> POSITIVE
             else -> this
+        }
+
+    fun complement() =
+        when (this) {
+            ZERO -> NOT_ZERO
+            NOT_ZERO -> ZERO
+            POSITIVE -> NON_POSITIVE
+            NEGATIVE -> NON_NEGATIVE
+            NON_NEGATIVE -> NEGATIVE
+            NON_POSITIVE -> POSITIVE
+            UNKNOWN -> NONE
+            NONE -> UNKNOWN
         }
 
     fun truncateToPositive() =

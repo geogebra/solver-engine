@@ -167,6 +167,13 @@ enum class EquationSolvingStrategy(
         steps = quadraticFormulaSteps,
     ),
 
+    IncompatibleSigns(
+        family = Family.INCOMPATIBLE_SIGNS,
+        priority = 0,
+        explanation = EquationsExplanation.SolveEquation,
+        steps = EquationsRules.SolveEquationWithIncompatibleSigns,
+    ),
+
     SolveEquationWithOneAbsoluteValue(
         family = Family.ABSOLUTE_VALUE,
         priority = 0,
@@ -323,6 +330,7 @@ enum class EquationSolvingStrategy(
         UNDEFINED,
         FALLBACK,
         EXPONENTIAL,
+        INCOMPATIBLE_SIGNS,
     }
 
     override fun isIncompatibleWith(other: Strategy): Boolean {
@@ -395,6 +403,9 @@ internal val solveEquation = lazy {
 
         // simplify the equation
         option(EquationsPlans.SimplifyEquation)
+
+        // Check if LHS and RHS have incompatible signs (e.g. [2^x] = -1
+        // option(EquationSolvingStrategy.IncompatibleSigns)
 
         // Split up equations containing +/- and solve them
         option(EquationSolvingStrategy.ResolvePlusminus)

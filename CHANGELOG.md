@@ -14,6 +14,8 @@ contents to a new release section (e.g. _[0.x]_).
 - Solving quadratic inequalities by finding the roots and using test points in the resulting intervals (US Curriculum)
   (PLUT-1021)
 - Document plan creation process (PLUT-974)
+- SDK: Add rendering and parsing for derivatives/integrals (PLUT-816)
+- Solve equation whose sides have incompatible signs (PLUT-1023)
 
 ### Fixed
 
@@ -28,7 +30,6 @@ This is a template for a release section.
 ### Added
 
 - Solving quadratic inequalities by finding the roots and considering the inequality sign (PLUT-1020)
-- SDK: Add rendering and parsing for derivatives/integrals (PLUT-816)
 
 ### Fixed
 

@@ -21,6 +21,7 @@ import engine.context.BooleanSetting
 import engine.context.Context
 import engine.context.Setting
 import engine.expressions.AbsoluteValue
+import engine.expressions.Constants
 import engine.expressions.Equation
 import engine.expressions.Expression
 import engine.expressions.ExpressionWithConstraint
@@ -85,7 +86,9 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
             if (constraintSimplificationPlan != null && constraint != null) {
                 constraintSimplificationPlan.tryExecute(ctx, constraint)?.let { builder.addStep(it) }
             }
-
+            if (builder.simpleExpression == Constants.Undefined) {
+                return null
+            }
             val explanationKey = getExplanationKey(key, ctx, builder.simpleExpression)
 
             return Transformation(
