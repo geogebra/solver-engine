@@ -135,11 +135,28 @@ export class GgbAppletGrapher implements Grapher {
         break;
       }
       case 'intersection': {
-        const labels = this.evalCommandGetLabels(
-          `Intersect(${graphObject.objectLabels.join(', ')}, x(Corner(1)), x(Corner(2)))`,
+        // Depending on the type of expression one method or the other might produce better results,
+        // so we try both and take the better of the two
+        const points = this.getPointsFromList(
+          `{Intersect(${graphObject.objectLabels.join(
+            ', ',
+          )}, x(Corner(1)), x(Corner(2)))}`,
         );
+        const points2 = this.getPointsFromList(
+          `{Intersect(${graphObject.objectLabels.join(', ')})}`,
+        );
+
+        let labels;
+
+        if (points2.length > points.length) {
+          labels = points2.flatMap((point) => this.evalCommandGetLabels(point));
+        } else {
+          labels = points.flatMap((point) => this.evalCommandGetLabels(point));
+        }
+
         for (const [index, label] of labels.entries()) {
           this.ggbAppletApi.setPointStyle(label, 1);
+          this.ggbAppletApi.setColor(label, 68, 68, 68);
           if (graphObject.projectOntoHorizontalAxis) {
             const projLabel = this.ggbAppletApi.evalCommandGetLabels(`(x(${label}), 0)`);
             const segmentLabel = this.ggbAppletApi.evalCommandGetLabels(
@@ -182,6 +199,20 @@ export class GgbAppletGrapher implements Grapher {
           graphObject.type,
         );
     }
+  }
+
+  // The command passed as an argument must return a list
+  // Returns an array of strings of format '(x, y)'
+  // Invalid points (?, ?) are filtered out
+  private getPointsFromList(command: string) {
+    const listLabel = this.evalCommandGetLabels(command)[0];
+
+    const values = this.ggbAppletApi.getValueString(listLabel);
+    const points = values.split('{')[1].slice(0, -1).replaceAll('),', ');').split(';');
+
+    this.ggbAppletApi.deleteObject(listLabel);
+
+    return points.filter((s) => !s.includes('?')).map((s) => s.trim());
   }
 
   private evalCommandGetLabels(command: string) {

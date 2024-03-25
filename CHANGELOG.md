@@ -7,6 +7,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 An entry should be added to the _[Unreleased]_ section when committing to main. When a release is made we move its
 contents to a new release section (e.g. _[0.x]_).
 
+## [Unreleased]
+
+### Added
+
+### Fixed
+
+### Changed
+
+### Removed
+
+## [1.4.9] 2024-03-25
+
+### Added
+
+### Fixed
+
+- Made rendering of inequalities match the rendering of equations (both sides of the expression rendered with intersection points shown) (PLUT-1027)
+- SDK: Adjusted intersection code to try fallback options if rendering fails (PLUT-1027)
+
+### Changed
+
+### Removed
+
 ## [1.4.8] 2024-03-21
 
 ### Added
