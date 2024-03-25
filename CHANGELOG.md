@@ -13,6 +13,9 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Fixed
 
+- Made rendering of inequalities match the rendering of equations (both sides of the expression rendered with intersection points shown) (PLUT-1027)
+- SDK: Adjusted intersection code to try fallback options if rendering fails (PLUT-1027)
+
 ### Changed
 
 ### Removed

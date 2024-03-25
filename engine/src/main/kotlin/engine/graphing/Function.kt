@@ -20,6 +20,7 @@ package engine.graphing
 import engine.expressions.Comparison
 import engine.expressions.Equation
 import engine.expressions.Expression
+import engine.expressions.Inequality
 import engine.expressions.StatementSystem
 import engine.expressions.ValueExpression
 import engine.expressions.Variable
@@ -186,23 +187,37 @@ fun extractGraphableExpressions(expr: Expression): Pair<List<Expression>, List<I
             null
         }
         expr is ValueExpression -> if (expr.variables.size == 1) Pair(listOf(expr), emptyList()) else null
-        expr is Equation && expr.variables.size == 1 -> {
-            // If it's an equation with just one variable, change it so e.g. "x^2 = 2 - x" becomes two equations
-            // "y = x^2" and "y = 2 - x" and say we want to show the intersection.
-            val axisVariables = selectAxisVariables(expr.variables, emptyList(), listOf(expr))
-            if (axisVariables == null || axisVariables.horizontal !in expr.variables) {
-                Pair(listOf(expr), emptyList())
-            } else {
-                val lhs = xp(axisVariables.vertical)
-                val intersection = Intersection(
-                    objectIndexes = listOf(0, 1),
-                    projectOntoHorizontalAxis = true,
-                )
-                Pair(listOf(equationOf(lhs, expr.lhs), equationOf(lhs, expr.rhs)), listOf(intersection))
-            }
-        }
+        (expr is Equation || expr is Inequality) && expr.variables.size == 1 -> extractEquationOrInequality(expr)
         expr is Comparison -> Pair(listOf(expr), emptyList())
         else -> null
+    }
+}
+
+fun extractEquationOrInequality(expr: Expression): Pair<List<Expression>, List<Intersection>>? {
+    // If it's an equation with just one variable, change it so e.g. "x^2 = 2 - x" becomes two equations
+    // "y = x^2" and "y = 2 - x" and say we want to show the intersection.
+    val axisVariables = selectAxisVariables(expr.variables, emptyList(), listOf(expr))
+    return if (axisVariables == null || axisVariables.horizontal !in expr.variables) {
+        Pair(listOf(expr), emptyList())
+    } else {
+        val lhs = xp(axisVariables.vertical)
+        val intersection = Intersection(
+            objectIndexes = listOf(0, 1),
+            projectOntoHorizontalAxis = true,
+        )
+        // This is needed because the common interface between Equation and Inequality does not
+        // guarantee that lhs and rhs are present
+        when {
+            (expr is Equation) -> Pair(
+                listOf(equationOf(lhs, expr.lhs), equationOf(lhs, expr.rhs)),
+                listOf(intersection),
+            )
+            (expr is Inequality) -> Pair(
+                listOf(equationOf(lhs, expr.lhs), equationOf(lhs, expr.rhs)),
+                listOf(intersection),
+            )
+            else -> null
+        }
     }
 }
 
