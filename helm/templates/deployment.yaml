@@ -37,7 +37,8 @@ spec:
           resources:
             requests:
               cpu: {{ .Values.cpuSoftLimit }}
-              memory: {{ .Values.memorySoftLimit }}
+            limits:
+              memory: {{ .Values.memoryHardLimit }}
           {{ end }}
       imagePullSecrets:
         - name: ggb-registry-key
