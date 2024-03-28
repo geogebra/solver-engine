@@ -30,5 +30,11 @@ module.exports = {
         message: 'chore(release): ${nextRelease.version} [skip ci]',
       },
     ],
+    [
+      '@semantic-release/exec',
+      {
+        publishCmd: 'echo "${nextRelease.version}" >> version.env',
+      },
+    ],
   ],
 };
