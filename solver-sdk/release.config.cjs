@@ -33,7 +33,12 @@ module.exports = {
     [
       '@semantic-release/exec',
       {
-        publishCmd: 'echo "${nextRelease.version}" >> version.env',
+        publishCmd: [
+          'echo "${nextRelease.version}" >> version.env',
+          'echo "$(cat ./solver-sdk/license.txt ./solver-sdk/dist/solver-sdk.es.js)" > ./solver-sdk/dist/solver-sdk.es.js',
+          'echo "$(cat ./solver-sdk/license.txt ./solver-sdk/dist/solver-sdk.umd.js)" > ./solver-sdk/dist/solver-sdk.umd.js',
+          'aws s3 sync ./dist s3://$SDK_BUCKET/solver-sdk/$(cat version.env)/ --exclude="*" --include="solver-sdk.*.js"',
+        ].join(' && '),
       },
     ],
   ],
