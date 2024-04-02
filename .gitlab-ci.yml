@@ -342,11 +342,13 @@ sdk-semantic-release:
     - npm config set "@geogebra:registry" https://git.geogebra.org/api/v4/projects/126/packages/npm/
     - npm config set "//git.geogebra.org/api/v4/projects/126/packages/npm/:_authToken" ${CI_JOB_TOKEN}
     - npm run semantic-release -w solver-sdk
+    #PLEASE DELETE ME
+    - ls -la
     # Append GeoGebra license to dist/solver-sdk.es.js and dist/solver-sdk.umd.js
-    - echo "$(cat ./solver-sdk/license.txt ./@geogebra/solver-sdk/dist/solver-sdk.es.js)" > ./@geogebra/solver-sdk/dist/solver-sdk.es.js
-    - echo "$(cat ./solver-sdk/license.txt ./@geogebra/solver-sdk/dist/solver-sdk.umd.js)" > ./@geogebra/solver-sdk/dist/solver-sdk.umd.js
+    - echo "$(cat ./solver-sdk/license.txt ./solver-sdk/dist/solver-sdk.es.js)" > ./solver-sdk/dist/solver-sdk.es.js
+    - echo "$(cat ./solver-sdk/license.txt ./solver-sdk/dist/solver-sdk.umd.js)" > ./solver-sdk/dist/solver-sdk.umd.js
     # Release dist/solver-sdk.es.js and dist/solver-sdk.umd.js to s3
-    - aws s3 sync ./@geogebra/solver-sdk/dist s3://$SDK_BUCKET/solver-sdk/$(cat version.env)/ --exclude='*' --include='solver-sdk.*.js'
+    - aws s3 sync ./dist s3://$SDK_BUCKET/solver-sdk/$(cat version.env)/ --exclude='*' --include='solver-sdk.*.js'
 
 # Remove kubernetes deployment.  This job is automatically triggered when the feature branch is deleted.
 undeploy-engine:
