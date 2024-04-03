@@ -344,6 +344,7 @@ sdk-semantic-release:
   artifacts:
     paths:
       - solver-sdk/version.env
+      - solver-sdk/dist
     expire_in: 1 day
 
 sdk-semantic-release-to-s3:
