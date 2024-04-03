@@ -38,7 +38,7 @@ module.exports = {
     [
       '@semantic-release/exec',
       {
-        prepareCmd: [
+        publishCmd: [
           'echo "${nextRelease.version}" >> version.env',
           'echo "$(cat ./solver-sdk/license.txt ./solver-sdk/dist/solver-sdk.es.js)" > ./solver-sdk/dist/solver-sdk.es.js',
           'echo "$(cat ./solver-sdk/license.txt ./solver-sdk/dist/solver-sdk.umd.js)" > ./solver-sdk/dist/solver-sdk.umd.js',
