@@ -40,8 +40,9 @@ module.exports = {
       {
         publishCmd: [
           'echo "${nextRelease.version}" >> version.env',
-          'echo "$(cat ./solver-sdk/license.txt ./solver-sdk/dist/solver-sdk.es.js)" > ./solver-sdk/dist/solver-sdk.es.js',
-          'echo "$(cat ./solver-sdk/license.txt ./solver-sdk/dist/solver-sdk.umd.js)" > ./solver-sdk/dist/solver-sdk.umd.js',
+          'ls -la',
+          'echo "$(cat ./license.txt ./solver-sdk/dist/solver-sdk.es.js)" > ./solver-sdk/dist/solver-sdk.es.js',
+          'echo "$(cat ./license.txt ./solver-sdk/dist/solver-sdk.umd.js)" > ./solver-sdk/dist/solver-sdk.umd.js',
           'aws s3 sync ./dist s3://solver-software-development-kit/solver-sdk/$(cat version.env)/ --exclude="*" --include="solver-sdk.*.js"',
         ].join(' && '),
       },
