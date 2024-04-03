@@ -130,7 +130,7 @@ export class Parser<T> {
     } else {
       this.error('Unexpected token.', t);
     }
-    if (!o) this.error("Couldn't find token.", t);
+    if (!o) this.error("Couldn't find token. Test", t);
 
     const token = Object.create(o);
     token.from = t.from;
