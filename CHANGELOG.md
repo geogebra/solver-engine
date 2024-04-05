@@ -22,7 +22,7 @@ contents to a new release section (e.g. _[0.x]_).
 ### Added
 
 - Hard memory limit and liveness probe (INF-137)
-- Hosting for SDK  (INF-15)
+- Hosting for SDK (INF-15)
 
 ### Fixed
 
