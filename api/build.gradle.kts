@@ -44,6 +44,7 @@ dependencies {
     implementation("jakarta.annotation:jakarta.annotation-api")
 
     // Version managed by spring-boot
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-log4j2")
     developmentOnly("org.springframework.boot:spring-boot-devtools")

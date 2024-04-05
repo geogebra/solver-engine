@@ -33,6 +33,16 @@ spec:
               value: "{{ .Values.deploymentName }}"
             - name: SPRING_PROFILES_ACTIVE
               value: "{{ .Values.springProfile }}"
+          livenessProbe:
+            httpGet:
+              scheme: HTTP
+              path: "{{ .Values.contextPath }}/actuator/health/liveness"
+              port: 8080
+              initialDelaySeconds: 15
+              timeoutSeconds: 1
+              periodSeconds: 10
+              successThreshold: 1
+              failureThreshold: 1
           {{ if eq .Values.deploymentDomain "solver-api.geogebra.org" }}
           resources:
             requests:
