@@ -9,7 +9,7 @@ spec:
   selector:
     matchLabels:
       app: {{ .Values.deploymentName }}
-  replicas: 1
+  replicas: {{ .Values.minReplicas }}
   template:
     metadata:
       annotations:
