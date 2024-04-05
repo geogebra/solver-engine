@@ -1,0 +1,4 @@
+/*
+  @author: GeoGebra - Dynamic Mathematics for Everyone, https://www.geogebra.org
+  @license: This file is subject to the GeoGebra Non-Commercial License Agreement, see https://www.geogebra.org/license. For questions please write us at office@geogebra.org.
+*/

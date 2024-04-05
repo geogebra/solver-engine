@@ -14,7 +14,6 @@ module.exports = {
     { name: 'staging', channel: 'staging', prerelease: 'staging' },
     // pre-release new SDK package with @main tag when on "main" branch
     { name: 'main', channel: 'main', prerelease: 'main' },
-
     // We don't do pre-releases on feature branches, because rebasing them on
     // main leads to lost git-tags and semantic-release will try to re-create
     // existing git-tags and fail.
@@ -28,6 +27,16 @@ module.exports = {
       {
         assets: ['package.json'],
         message: 'chore(release): ${nextRelease.version} [skip ci]',
+      },
+    ],
+    [
+      '@semantic-release/exec',
+      {
+        publishCmd: [
+          'echo "${nextRelease.version}" >> version.env',
+          'echo "$(cat ./license.txt ../solver-sdk/dist/solver-sdk.es.js)" > ../solver-sdk/dist/solver-sdk.es.js',
+          'echo "$(cat ./license.txt ../solver-sdk/dist/solver-sdk.umd.js)" > ../solver-sdk/dist/solver-sdk.umd.js',
+        ].join(' && '),
       },
     ],
   ],
