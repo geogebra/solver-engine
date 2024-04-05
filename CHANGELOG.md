@@ -7,9 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 An entry should be added to the _[Unreleased]_ section when committing to main. When a release is made we move its
 contents to a new release section (e.g. _[0.x]_).
 
-## [Unreleased]
+## [1.4.10] 2024-04-05
 
 ### Added
+
+- Hard memory limit and liveness probe (INF-137)
+- Hosting for SDK  (INF-15)
 
 ### Fixed
 
