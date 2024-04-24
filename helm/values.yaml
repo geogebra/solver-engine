@@ -35,5 +35,5 @@ imageCredentials:
 minReplicas: 2
 maxReplicas: 10
 
-cpuSoftLimit: 200m # https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+cpuSoftLimit: 1024m # https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
 memoryHardLimit: 2048Mi # https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
