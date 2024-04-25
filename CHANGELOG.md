@@ -13,6 +13,8 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Fixed
 
+- Updated to gmath version 3.2.0
+
 ### Changed
 
 ### Removed

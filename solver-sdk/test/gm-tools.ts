@@ -20,7 +20,7 @@ export async function loadGmEnvironment() {
         });
       </script>
       <script src="${process.env.GMATH_PATH ??
-        'https://graspablemath.com/shared/libs/gmath-dist/gmath-3.0.5.min.js'}"></script>
+        'https://graspablemath.com/shared/libs/gmath-dist/gmath-3.2.0.min.js'}"></script>
       <script>
         window.gmathPromiseResolve(window.gmath);
       </script>`,
