@@ -17,6 +17,8 @@ documentation
 .idea/jarRepositories.xml
 .idea/compiler.xml
 .idea/libraries/
+.idea/AndroidProjectSystem.xml
+.idea/checkstyle-idea.xml
 *.iws
 *.iml
 *.ipr

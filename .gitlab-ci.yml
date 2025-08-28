@@ -1,5 +1,7 @@
 default:
   image: gradle:8.5.0-jdk21-alpine
+  tags:
+    - amd64
   cache:
     key:
       files:
@@ -11,10 +13,10 @@ default:
       - cache/.gradle/notifications
 
 variables:
-  GITLAB_CLUSTER_SOLVER_CONTEXT: solver-team/solver-engine:solver-v2
+  GITLAB_CLUSTER_SOLVER_CONTEXT: solver-team/k8s-clusters-management:solver-v2-cluster-agent
   GITLAB_CLUSTER_PRODUCTION_CONTEXT: solver-team/k8s-clusters-management:prod-cluster-agent
   GITLAB_CLUSTER_DEVELOPMENT_CONTEXT: solver-team/k8s-clusters-management:dev-cluster-agent
-  GGBTRANS_SOLVER_IMPORT_URL: https://dev.geogebra.org/ggbtrans/props/api/solver_import
+  GGBTRANS_SOLVER_IMPORT_URL: https://dev.geogebra.net/ggbtrans/props/api/solver_import
   GRADLE: './gradlew --no-daemon --stacktrace --build-cache --gradle-user-home cache/.gradle'
   SOLVER_PRODUCTION_DOMAIN: solver-api.geogebra.org
   SOLVER_DEVELOPMENT_DOMAIN: solver.geogebra.net
@@ -22,6 +24,8 @@ variables:
   # The gitlab ID of the repository where our container images are uploaded
   REPOSITORY_ID: 4
   SDK_BUCKET: solver-software-development-kit
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ''
 
 stages:
   - checks
@@ -72,49 +76,46 @@ stages:
 before_script:
   # Define a bunch of variables depending on the commit or branch that triggered the pipeline
   - |
-    if [[ $CI_COMMIT_TAG =~ ^release-[0-9]*\.[0-9]*.*$ ]]; then
-      # This pipeline is triggered by a release tag: we deploy only the engine, not the SDK, to production.
+    case "$CI_COMMIT_TAG" in
+      release-[0-9]*.[0-9]*)
+        # This pipeline is triggered by a release tag: we deploy only the engine, not the SDK, to production.
 
-      # release-1.2.1 ==> 1.2
-      export SOLVER_VERSION=`echo "$CI_COMMIT_TAG" | sed 's/^release-\([0-9]*\.[0-9]*\).*$/\1/'`
+        # release-1.2.1 ==> 1.2
+        SOLVER_VERSION=$(echo "$CI_COMMIT_TAG" | sed 's/^release-\([0-9]*\.[0-9]*\).*$/\1/')
+        export SOLVER_VERSION
 
-      # release-1-2-1 so kubernetes doesn't complain
-      export SOLVER_IMAGE_TAG="$CI_COMMIT_REF_SLUG"
+        # release-1-2-1 so kubernetes doesn't complain
+        export SOLVER_IMAGE_TAG="$CI_COMMIT_REF_SLUG"
 
-      # release-1-2 to only have one deployment per minor version
-      export SOLVER_DEPLOYMENT_NAME=$(echo "release-$SOLVER_VERSION" | tr "." "-")
+        # release-1-2 to only have one deployment per minor version
+        SOLVER_DEPLOYMENT_NAME=$(echo "release-$SOLVER_VERSION" | tr "." "-")
+        export SOLVER_DEPLOYMENT_NAME
 
-      export SOLVER_DEPLOYMENT_DOMAIN="$SOLVER_PRODUCTION_DOMAIN"
+        export SOLVER_DEPLOYMENT_DOMAIN="$SOLVER_PRODUCTION_DOMAIN"
+        export SOLVER_DEPLOYMENT_CLUSTER_CONTEXT="$GITLAB_CLUSTER_PRODUCTION_CONTEXT"
+        ;;
+      *)
+        if [ "$CI_COMMIT_BRANCH" = "$RELEASE_BRANCH" ]; then
+          # This pipeline is triggered by committing to the release branch: we deploy only the SDK, not the engine.
 
-      # The cluster where the solver-engine is deployed
-      export SOLVER_DEPLOYMENT_CLUSTER_CONTEXT="$GITLAB_CLUSTER_PRODUCTION_CONTEXT"
+          RELEASE_TAG=$(git describe --tags --match 'release-*' --abbrev=0)
+          SOLVER_VERSION=$(echo "$RELEASE_TAG" | sed 's/^release-\([0-9]*\.[0-9]*\).*$/\1/')
+          export SOLVER_VERSION
+          export SOLVER_DEPLOYMENT_DOMAIN="$SOLVER_PRODUCTION_DOMAIN"
+        else
+          # This is a development commit - we want to deploy both engine and SDK
 
-    elif [[ $CI_COMMIT_BRANCH == $RELEASE_BRANCH ]]; then
-      # This pipeline is triggered by committing to the release branch: we deploy only the SDK, not the engine.
+          # If the branch name starts with a JIRA ticket number (PLUT-123) use that, else use the whole branch name.
+          SOLVER_VERSION=$(echo "$CI_COMMIT_REF_SLUG" | sed 's/^\([a-z][a-z]*-[0-9][0-9]*\).*/\1/')
+          export SOLVER_VERSION
 
-      # on the release branch, we only do SDK releases on commit, based on the latest tag
-      RELEASE_TAG=`git describe --tags --match 'release-*' --abbrev=0`
-      export SOLVER_VERSION=`echo $RELEASE_TAG | sed 's/^release-\([0-9]*\.[0-9]*\).*$/\1/'`
-      export SOLVER_DEPLOYMENT_DOMAIN="$SOLVER_PRODUCTION_DOMAIN"
-
-    else 
-      # This is a development commit - we want to deploy both engine and SDK
-
-      # If the branch name starts with a JIRA tiket number (PLUT-123) use that, else use the whole branch name.
-      export SOLVER_VERSION=`echo $CI_COMMIT_REF_SLUG | sed 's/^\([a-z][a-z]*\-[0-9][0-9]*\).*/\1/'`
-
-      # The tag for the container image of the solver backend that will be published to the container registry
-      export SOLVER_IMAGE_TAG="$SOLVER_VERSION"
-
-      # The name of the Helm deployment - will also be used as the base for naming the kubernetes entities (see helm templates)
-      export SOLVER_DEPLOYMENT_NAME="$SOLVER_VERSION"
-
-      # The domain where the deployed solver backend will be available
-      export SOLVER_DEPLOYMENT_DOMAIN="$SOLVER_DEVELOPMENT_DOMAIN"
-
-      # The cluster where the solver-engine is deployed
-      export SOLVER_DEPLOYMENT_CLUSTER_CONTEXT="$GITLAB_CLUSTER_SOLVER_CONTEXT"
-    fi
+          export SOLVER_IMAGE_TAG="$SOLVER_VERSION"
+          export SOLVER_DEPLOYMENT_NAME="$SOLVER_VERSION"
+          export SOLVER_DEPLOYMENT_DOMAIN="$SOLVER_DEVELOPMENT_DOMAIN"
+          export SOLVER_DEPLOYMENT_CLUSTER_CONTEXT="$GITLAB_CLUSTER_SOLVER_CONTEXT"
+        fi
+        ;;
+    esac
 
   # For now, the solver context path is always /$SOLVER_VERSION
   - export SOLVER_CONTEXT_PATH="/$SOLVER_VERSION"
@@ -128,7 +129,7 @@ before_script:
   # The URL where the poker can be reached
   - export POKER_URL="$SOLVER_BASE_URL/poker/index.html"
 
-  - export REPO_FULL_NAME=`echo $CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME`
+  - export REPO_FULL_NAME="$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME"
 
 # This encodes the conditions when to perform the jobs that are needed only for releasing the SDK
 .deploy-sdk-job:
@@ -140,12 +141,6 @@ before_script:
   rules:
     - if: $CI_COMMIT_TAG =~ /^release-[0-9]*\.[0-9]*.*$/
     - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $RELEASE_BRANCH
-
-check-circular-dependencies-in-methods:
-  stage: checks
-  cache: []
-  script:
-    - ./scripts/check_method_dependencies.sh
 
 print-solver-vars:
   stage: checks
@@ -171,8 +166,6 @@ build-sdk-and-poker:
   stage: build
   needs: []
   image: node:18
-  tags:
-    - docker
   cache:
     key:
       files:
@@ -195,8 +188,6 @@ build-engine:
   stage: build
   needs:
     - build-sdk-and-poker
-  tags:
-    - docker
   script:
     - $GRADLE build
   artifacts:
@@ -218,63 +209,55 @@ test-sdk-and-poker:
   needs:
     - build-engine
   image: node:18
-  tags:
-    - docker
   script:
     - npm ci --cache .npm --prefer-offline
     - npm test -ws
 
 # Package the engine into a docker image
-.package-engine:
+package-engine:
   stage: publish
-  image: docker
   needs:
     - build-engine
+  image: registry.git.geogebra.org/infra/default-image
+  variables:
+    KUBE_CONTEXT: $CI_PROJECT_NAMESPACE/k8s-clusters-management:build-cluster-agent
+    BUILDER_NAME: $CI_PROJECT_PATH_SLUG-$CI_JOB_ID
   script:
     - export VERSION=$(sed -n 's/version = "\(.*\)"/\1/p' build.gradle.kts)
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build --build-arg VERSION=${VERSION} --tag $CI_REGISTRY_IMAGE/api:$SOLVER_IMAGE_TAG --push .
-
-# With AMD architecture for non-release deployments
-package-engine-amd:
-  extends: .package-engine
-  tags:
-    - docker
-  rules:
-    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $RELEASE_BRANCH
-
-# With ARM architecture for release tags
-package-engine-arm:
-  extends: .package-engine
-  tags:
-    - docker-arm
-  rules:
-    - if: $CI_COMMIT_TAG =~ /^release-[0-9]*\.[0-9]*.*$/
+    - docker buildx build
+      --provenance=false
+      --builder=$BUILDER_NAME
+      --platform=linux/amd64,linux/arm64
+      --build-arg VERSION="${VERSION:?}"
+      --tag $CI_REGISTRY_IMAGE/api:$SOLVER_IMAGE_TAG
+      --push .
+  after_script:
+    # - kubectl config use-context $KUBE_CONTEXT
+    - docker buildx rm $BUILDER_NAME
 
 export-translation-keys:
   stage: publish
   image: curlimages/curl
   needs:
     - build-engine
-  tags:
-    - docker
   cache: []
   script:
     # Translation keys from the methods module (most keys)
     - |
-      curl -X POST "$GGBTRANS_SOLVER_IMPORT_URL/?override_test=1" \
+      curl -X POST "$GGBTRANS_SOLVER_IMPORT_URL?override_test=1" \
         --fail-with-body \
         --header "X-Token: $GGBTRANS_API_TOKEN" \
         --data @methods/build/generated/ksp/main/resources/TranslationKeys.json
     # Public method titles
     - |
-      curl -X POST "$GGBTRANS_SOLVER_IMPORT_URL/?override_test=1" \
+      curl -X POST "$GGBTRANS_SOLVER_IMPORT_URL?override_test=1" \
         --fail-with-body \
         --header "X-Token: $GGBTRANS_API_TOKEN" \
         --data @methods/build/generated/ksp/main/resources/Method.TranslationKeys.json
     # Generic translation keys from the engine module
     - |
-      curl -X POST "$GGBTRANS_SOLVER_IMPORT_URL/?override_test=1" \
+      curl -X POST "$GGBTRANS_SOLVER_IMPORT_URL?override_test=1" \
         --fail-with-body \
         --header "X-Token: $GGBTRANS_API_TOKEN" \
         --data @engine/build/generated/ksp/main/resources/TranslationKeys.json
@@ -284,13 +267,11 @@ export-translation-keys:
 deploy-engine:
   extends: .deploy-engine-job
   stage: deploy
-  image: alpine/k8s:1.23.7
+  image: alpine/k8s:1.29.0
   environment:
     name: solver/$CI_COMMIT_REF_SLUG
     url: $DYNAMIC_ENVIRONMENT_URL
     on_stop: undeploy-engine
-  tags:
-    - docker
   cache: []
   artifacts:
     reports:
@@ -321,8 +302,6 @@ sdk-semantic-release:
   # We would normally use "node:18-alpine" instead of "node:18" because it is smaller, but
   # we need git installed in order for semantic-release to work.
   image: node:18
-  tags:
-    - docker
   cache:
     key:
       files:
@@ -360,15 +339,13 @@ sdk-semantic-release-to-s3:
 undeploy-engine:
   stage: deploy
   dependencies: []
-  image: alpine/k8s:1.23.7
+  image: alpine/k8s:1.29.0
   variables:
     # As the branch is deleted at this point we can't fetch the repo (and we don't need to)
     GIT_STRATEGY: none
   environment:
     name: solver/$CI_COMMIT_REF_SLUG
     action: stop
-  tags:
-    - docker
   cache: []
   script:
     - echo "Attempting do delete tag $SOLVER_IMAGE_TAG of deployment $SOLVER_DEPLOYMENT_NAME..."

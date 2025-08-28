@@ -4,6 +4,8 @@
 
 import org.jlleitschuh.gradle.ktlint.tasks.KtLintCheckTask
 import org.jlleitschuh.gradle.ktlint.tasks.KtLintFormatTask
+import java.nio.file.Path
+import kotlin.io.path.readLines
 
 val kotlinBenchmarkVersion: String by project
 
@@ -119,3 +121,33 @@ benchmark {
         register("benchmarks")
     }
 }
+
+tasks.register("checkMethodDependencies", {
+    doLast {
+        val base = "src/main/kotlin/methods/"
+        val packages = file(base).list()
+        val deps = hashSetOf<String>()
+        val reverseDeps = hashSetOf<String>()
+        val allowed = Path.of(file("$base/allowed_dependencies").toURI()).readLines()
+        packages!!.forEach { pkg ->
+            file(base + pkg).list()?.asList()
+                ?.map { file("$base$pkg/$it") }
+                ?.forEach { file ->
+                    Path.of(file.toURI()).readLines()
+                        .filter { line -> line.startsWith("import methods.") }
+                        .map { line -> line.replace("import methods.([a-z]*).*".toRegex(), "$1") }
+                        .filter { it != pkg && !allowed.any { pattern -> "$it $pkg".matches(pattern.toRegex()) } }
+                        .forEach {
+                            deps.add("$it -> $pkg")
+                            reverseDeps.add("$pkg -> $it")
+                        }
+                }
+        }
+        deps.removeIf {!reverseDeps.contains(it)}
+        if (!deps.isEmpty()) {
+            throw GradleException("Circular dependencies: " + deps.joinToString { it });
+        }
+    }
+})
+
+tasks.named("check") { dependsOn("checkMethodDependencies") }
