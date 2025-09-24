@@ -274,9 +274,11 @@ internal enum class UnaryExpressionOperator(override val precedence: Int) : Unar
         override fun <T> readableString(child: T) = "abs[$child]"
 
         override fun latexString(ctx: RenderContext, child: LatexRenderable) =
-            "\\left|${child.toLatexString(
-                ctx,
-            )}\\right|"
+            "\\left|${
+                child.toLatexString(
+                    ctx,
+                )
+            }\\right|"
 
         override fun eval(operand: Double) = abs(operand)
     },
@@ -292,6 +294,27 @@ internal enum class UnaryExpressionOperator(override val precedence: Int) : Unar
     protected abstract fun eval(operand: Double): Double
 
     override fun eval(children: List<Double>) = eval(children[0])
+}
+
+enum class UnitType(val text: String) {
+    Degree("degree"),
+}
+
+internal data class UnitExpressionOperator(
+    val unit: UnitType,
+) : UnaryOperator, ExpressionOperator {
+    override val name = unit.toString()
+
+    override val precedence = TRIG_PRECEDENCE
+
+    override fun <T> readableString(child: T): String = "$unit[$child]"
+
+    override fun latexString(ctx: RenderContext, child: LatexRenderable): String =
+        "${child.toLatexString(ctx)} \\text{[$unit]}"
+
+    override fun eval(children: List<Double>): Double = children[0]
+
+    override fun nthChildAllowed(n: Int, op: Operator): Boolean = true
 }
 
 enum class TrigonometricFunctionType(

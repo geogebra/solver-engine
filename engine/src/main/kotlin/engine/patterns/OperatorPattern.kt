@@ -32,6 +32,8 @@ import engine.operators.SetOperators
 import engine.operators.SolutionOperator
 import engine.operators.SubtractEquationsOperator
 import engine.operators.UnaryExpressionOperator
+import engine.operators.UnitExpressionOperator
+import engine.operators.UnitType
 import engine.operators.VariableListOperator
 
 /**
@@ -131,3 +133,5 @@ fun closedOpenIntervalOf(lhs: Pattern, rhs: Pattern) =
 
 fun closedIntervalOf(lhs: Pattern, rhs: Pattern) =
     OperatorPattern(IntervalOperator(closedLeft = true, closedRight = true), listOf(lhs, rhs))
+
+fun degreeOf(value: Pattern) = OperatorPattern(UnitExpressionOperator(unit = UnitType.Degree), listOf(value))

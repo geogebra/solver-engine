@@ -37,7 +37,7 @@ export function tokenize(str: string): Token[] {
     'ln|log'; // Logarithmic functions
 
   const r_symbols =
-    /^\s*(\/undefined\/|\/reals\/|\\text\{[Uu]ndefined\}|\\text{[Aa][Nn][Dd]}|\\mathbb\{R\}|ℯ|\\mathrm\{e\}|ί|\\mathrm{i}|\\iota|\\pi(?:\{\})?)/;
+    /^\s*(\/undefined\/|\/reals\/|\\text\{[Uu]ndefined\}|\\text{[Aa][Nn][Dd]}|\\mathbb\{R\}|ℯ|\\mathrm\{e\}|ί|\\mathrm{i}|\\iota|\\pi(?:\{\})?|\\degree(?:\{\})?)/;
   const r_number = /^\s*((([0-9]*(\.[0-9]*|[0-9]+))([eE][-+]?[0-9]+)?)|∞|Infinity)/;
   const r_match = new RegExp('^\\s*\\{(\\??[A-Za-z0-9_]*)\\:'); // named regexp match
   const r_name = new RegExp('^\\s*([a-zA-Z₀₁₂₃₄₅₆₇₈₉⬚])'); // single-character names

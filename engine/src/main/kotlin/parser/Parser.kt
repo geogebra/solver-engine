@@ -68,6 +68,8 @@ import engine.operators.TrigonometricFunctionOperator
 import engine.operators.TrigonometricFunctionType
 import engine.operators.TupleOperator
 import engine.operators.UnaryExpressionOperator
+import engine.operators.UnitExpressionOperator
+import engine.operators.UnitType
 import engine.operators.VectorOperator
 import engine.utility.RecurringDecimal
 import org.antlr.v4.runtime.BailErrorStrategy
@@ -359,8 +361,7 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
     }
 
     override fun visitSignedFactor(ctx: ExpressionParser.SignedFactorContext): Expression {
-        return ctx.signs.foldRight(visit(ctx.factor())) {
-                sign, acc ->
+        return ctx.signs.foldRight(visit(ctx.factor())) { sign, acc ->
             makeExpression(getAdditiveOperator(sign), acc)
         }
     }
@@ -399,6 +400,11 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
 
     override fun visitLog(ctx: ExpressionParser.LogContext): Expression {
         return makeExpression(BinaryExpressionOperator.Log, visit(ctx.base), visit(ctx.argument))
+    }
+
+    override fun visitUnitExpression(ctx: ExpressionParser.UnitExpressionContext): Expression {
+        val unitName = ctx.UNIT().text.replaceFirstChar { it.uppercase() }
+        return makeExpression(UnitExpressionOperator(UnitType.valueOf(unitName)), visit(ctx.argument))
     }
 
     // to parse "trigFunction argument" format

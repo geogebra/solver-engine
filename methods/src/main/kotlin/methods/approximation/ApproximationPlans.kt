@@ -27,8 +27,10 @@ import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.steps
+import engine.patterns.AnyPattern
 import engine.patterns.SignedNumberPattern
 import engine.patterns.condition
+import engine.patterns.degreeOf
 import engine.patterns.productContaining
 import engine.steps.Transformation
 import engine.steps.metadata.Metadata
@@ -127,9 +129,11 @@ enum class ApproximationPlans(override val runner: CompositeMethod) : RunnerMeth
     EvaluateExpressionNumerically(
         object : CompositeMethod(specificPlans = listOf(ConstantExpressionsPlans.SimplifyConstantExpression)) {
             private val numberPattern = SignedNumberPattern()
+            private val degreePattern = degreeOf(AnyPattern())
 
+            @Suppress("detekt.ReturnCount")
             override fun run(ctx: Context, sub: Expression): Transformation? {
-                if (numberPattern.matches(ctx, sub)) return null
+                if (numberPattern.matches(ctx, sub) || degreePattern.matches(ctx, sub)) return null
 
                 val numericValue = sub.doubleValue
                 if (!numericValue.isFinite()) return null

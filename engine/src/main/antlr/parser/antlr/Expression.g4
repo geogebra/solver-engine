@@ -116,6 +116,10 @@ logarithm
     | 'log_[' base=expr ']' argument=implicitProduct    #log
     ;
 
+unitExpression
+    : unit=UNIT'[' argument=implicitProduct ']'
+    ;
+
 trigFunction
     : function=TRIG_FUNCTION argument=implicitProduct                       # simpleTrigFunction
     | '[' base=TRIG_FUNCTION '^' exp=expr ']' argument=implicitProduct      # powerTrigFunction
@@ -128,7 +132,7 @@ bracket
     ;
 
 atom: bracket
-    | sqrt | root | absoluteValue | logarithm | trigFunction
+    | sqrt | root | absoluteValue | logarithm | trigFunction | unitExpression
     | derivative | indefiniteIntegral | definiteIntegral
     | vector | matrix
     | variable | constant | naturalNumber | decimalNumber | recurringDecimalNumber
@@ -215,6 +219,8 @@ TRIG_FUNCTION: 'sin' | 'cos' | 'tan' | 'arcsin' | 'arccos' | 'arctan'
              | 'sinh' | 'cosh' | 'tanh' | 'arsinh' | 'arcosh' | 'artanh'
              | 'sech' | 'csch' | 'coth' | 'arsech' | 'arcsch' | 'arcoth'
              ;
+
+UNIT: 'degree';
 
 NAME: '"' (~ '"')+ '"';
 

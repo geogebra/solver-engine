@@ -239,6 +239,8 @@ export function treeToSolver(n: ExpressionTree): string {
       return n.operands ? n.operands.map(rec).join(', ') : '';
     case 'Name':
       return `"${n.value}"`;
+    case 'Degree':
+      return `deg[ ${rec(n.operands[0])} ])`;
   }
 }
 

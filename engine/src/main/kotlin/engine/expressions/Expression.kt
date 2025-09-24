@@ -45,6 +45,7 @@ import engine.operators.StatementUnionOperator
 import engine.operators.SumOperator
 import engine.operators.TrigonometricFunctionOperator
 import engine.operators.UnaryExpressionOperator
+import engine.operators.UnitExpressionOperator
 import engine.operators.VariableListOperator
 import engine.operators.VariableOperator
 import engine.operators.VoidOperator
@@ -728,6 +729,8 @@ private fun expressionOf(operator: Operator, operands: List<Expression>, meta: N
         UnaryExpressionOperator.Percentage -> Percentage(operands[0], meta)
         UnaryExpressionOperator.NaturalLog -> NaturalLog(operands[0], meta)
         UnaryExpressionOperator.LogBase10 -> LogBase10(operands[0], meta)
+
+        is UnitExpressionOperator -> UnitExpression(operands[0], operator.unit, meta)
 
         is TrigonometricFunctionOperator ->
             TrigonometricExpression(operator.type, operands[0], operator.powerInside, operator.inverseNotation, meta)

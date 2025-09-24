@@ -328,6 +328,7 @@ function annotate(
     case 'Derivative':
     case 'IndefiniteIntegral':
     case 'DefiniteIntegral':
+    case 'Degree':
       throw new Error('Unsupported type: ' + tree.type);
     default:
       needToImplement(treeType);

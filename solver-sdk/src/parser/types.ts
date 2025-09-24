@@ -19,6 +19,8 @@ import { trigFunctions } from './latex-to-tree';
 
 export type { LatexSettings, LatexTransformer } from '../renderer/tree-to-latex';
 
+export type UnitType = 'Degree';
+
 export type NestedExpressionType =
   | 'Sum' // n-ary
   | 'Plus' // unary
@@ -74,7 +76,8 @@ export type NestedExpressionType =
   | 'ReversedOpenRange' // ternary
   | 'ReversedOpenClosedRange' // ternary
   | 'ReversedClosedOpenRange' // ternary
-  | 'ReversedClosedRange'; // ternary
+  | 'ReversedClosedRange' // ternary
+  | UnitType; // unary
 
 export type NestedExpressionBase<T> = {
   type: NestedExpressionType;

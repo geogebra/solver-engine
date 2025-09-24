@@ -1,7 +1,7 @@
 import {
   ExpressionTreeBase,
-  NestedExpressionBase,
   NestedExpression,
+  NestedExpressionBase,
   VariableExpression,
 } from '../parser';
 
@@ -82,6 +82,9 @@ export function getValue(expr: Tree): string {
         return product * +getValue(operand);
       }, 1)
       .toString();
+  }
+  if (expr.type === 'Degree') {
+    return getValue(expr.operands[0]);
   }
   if (expr.type === 'Power') {
     return Math.pow(+getValue(expr.operands[0]), +getValue(expr.operands[1])).toString();

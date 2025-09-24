@@ -7,6 +7,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 An entry should be added to the _[Unreleased]_ section when committing to main. When a release is made we move its
 contents to a new release section (e.g. _[0.x]_).
 
+## [Unreleased]
+
+### Added
+
+- Converting angles in degrees to radians. (PLUT-1045)
+- SDK: Add rendering and parsing for angles in degrees (PLUT-1045)
+
+### Fixed
+
+- Updated CI/CD pipelines for new architecture (INF-274)
+
+### Changed
+
+### Removed
+
 ## [1.4.11] 2024-04-25
 
 ### Added
@@ -38,7 +53,8 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Fixed
 
-- Made rendering of inequalities match the rendering of equations (both sides of the expression rendered with intersection points shown) (PLUT-1027)
+- Made rendering of inequalities match the rendering of equations (both sides of the expression rendered with
+  intersection points shown) (PLUT-1027)
 - SDK: Adjusted intersection code to try fallback options if rendering fails (PLUT-1027)
 
 ### Changed

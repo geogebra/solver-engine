@@ -41,6 +41,7 @@ import engine.operators.TrigonometricFunctionOperator
 import engine.operators.TrigonometricFunctionType
 import engine.operators.TupleOperator
 import engine.operators.UnaryExpressionOperator
+import engine.operators.UnitType
 import engine.operators.VectorOperator
 import engine.utility.RecurringDecimal
 import java.math.BigDecimal
@@ -461,3 +462,5 @@ fun setSolutionOf(variables: VariableList, set: Expression) =
     )
 
 fun nameXp(value: String) = Name(value)
+
+fun degreeOf(value: Expression) = UnitExpression(unit = UnitType.Degree, value = value)

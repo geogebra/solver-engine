@@ -20,6 +20,8 @@ package engine.expressions
 import engine.operators.TrigonometricFunctionOperator
 import engine.operators.TrigonometricFunctionType
 import engine.operators.UnaryExpressionOperator
+import engine.operators.UnitExpressionOperator
+import engine.operators.UnitType
 import engine.sign.Sign
 
 class Minus(
@@ -102,6 +104,20 @@ class Percentage(
 ) : ValueExpression(
         operator = UnaryExpressionOperator.Percentage,
         operands = listOf(argument),
+        meta = meta,
+    ) {
+    val argument get() = firstChild
+
+    override fun signOf() = argument.signOf()
+}
+
+class UnitExpression(
+    value: Expression,
+    val unit: UnitType,
+    meta: NodeMeta = BasicMeta(),
+) : ValueExpression(
+        operator = UnitExpressionOperator(unit),
+        operands = listOf(value),
         meta = meta,
     ) {
     val argument get() = firstChild

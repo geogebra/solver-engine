@@ -204,6 +204,13 @@ const latexSymbolDefinitions = {
     };
   },
 
+  registerDegree(parser: Parser<ExprTree>) {
+    const degree = parser.registerSymbol('\\degree', BP_IMPLICIT_MUL);
+    degree.led = (left) => {
+      return { type: 'Degree', operands: [left] };
+    };
+  },
+
   registerEquation(parser: Parser<ExprTree>) {
     for (const [sym, type] of [
       ['=', 'Equation'],

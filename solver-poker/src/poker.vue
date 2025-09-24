@@ -386,6 +386,7 @@ onMounted(() => {
         the \(-y+z\) into a subexpression called a partial sum. You should never need to input
         partial sums, possibly unless you are trying to test the back end.
       </li>
+      <li>\(45^\circ\) is <code>degree[ 45 ]</code></li>
       <li>\(\frac{\mathrm{d} \sin x}{\mathrm{d} x}\) is <code>diff[sin x / x]</code></li>
       <li>
         \(\frac{\partial^2 \sin x \cos y}{\partial x \partial y}\) is
