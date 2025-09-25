@@ -240,7 +240,7 @@ export function treeToSolver(n: ExpressionTree): string {
     case 'Name':
       return `"${n.value}"`;
     case 'Degree':
-      return `deg[ ${rec(n.operands[0])} ])`;
+      return `degree[ ${rec(n.operands[0])} ]`;
   }
 }
 

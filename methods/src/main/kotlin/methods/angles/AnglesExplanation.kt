@@ -28,9 +28,9 @@ enum class AnglesExplanation : CategorisedMetadataKey {
     ConvertDegreesToRadians,
 
     /**
-     * Simplify the unit.
+     * Convert radians to degrees.
      */
-    SimplifyDegrees,
+    ConvertRadiansToDegrees,
 
     /**
      * Simplify product containing degrees
@@ -42,6 +42,10 @@ enum class AnglesExplanation : CategorisedMetadataKey {
      */
     UseDegreeConversionFormula,
 
+    /**
+     * Use the conversion formula to convert radians to degrees.
+     */
+    UseRadianConversionFormula,
     ;
 
     override val category = "Angles"

@@ -12,11 +12,13 @@ contents to a new release section (e.g. _[0.x]_).
 ### Added
 
 - Converting angles in degrees to radians. (PLUT-1045)
+- Converting angles in radians to degrees. (PLUT-1046)
 - SDK: Add rendering and parsing for angles in degrees (PLUT-1045)
 
 ### Fixed
 
 - Updated CI/CD pipelines for new architecture (INF-274)
+- SDK: Fixed degree rendering in solver format (PLUT-1046)
 
 ### Changed
 

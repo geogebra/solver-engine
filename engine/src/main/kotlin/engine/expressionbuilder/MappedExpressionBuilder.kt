@@ -31,6 +31,7 @@ import engine.expressions.MoveUnaryOperator
 import engine.expressions.New
 import engine.expressions.PathScope
 import engine.expressions.Substitution
+import engine.expressions.UnitExpression
 import engine.expressions.asRational
 import engine.expressions.buildExpression
 import engine.expressions.divideBy
@@ -54,6 +55,7 @@ import engine.patterns.RationalPattern
 import engine.patterns.RecurringDecimalPattern
 import engine.patterns.SolvablePattern
 import engine.patterns.SubstitutablePattern
+import engine.patterns.UnitExpressionPattern
 import engine.steps.metadata.DragTargetPosition
 import engine.steps.metadata.GmAction
 import engine.steps.metadata.GmActionType
@@ -314,6 +316,13 @@ open class MappedExpressionBuilder(
 
     fun OptionalNegPattern<*>.isNeg() = this.isNeg(match)
 
+    // -- Units -- \\
+
+    /** Add the unit from the provided pattern to the expression. */
+    fun Expression.addUnit(pattern: UnitExpressionPattern) = UnitExpression(this, pattern.getBoundUnitType(match))
+
+    fun addUnit(pattern: UnitExpressionPattern, mappedExpression: Expression) = mappedExpression.addUnit(pattern)
+
     /**
      * return a list of mapped expression of, prime factors of `integer`
      * raised to the power of its multiplicity.
@@ -332,6 +341,8 @@ open class MappedExpressionBuilder(
         )
 
     fun MetadataMaker.make() = make(context, expression, match)
+
+    // -- Graspable Math -- \\
 
     /** Returns a [GmAction] that represents a tap/click user interaction on the passed expression to
      * trigger the transformation in Graspable Math (GM). */

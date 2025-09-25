@@ -692,6 +692,8 @@ fun Expression.containsDecimals(): Boolean =
 
 fun Expression.containsFractions(): Boolean = this is Fraction || children.any { it.containsFractions() }
 
+fun Expression.containsUnits(): Boolean = this is UnitExpression || children.any { it.containsUnits() }
+
 fun Expression.allSubterms(): List<Expression> = listOf(this) + children.flatMap { it.allSubterms() }
 
 fun Expression.complexity(): Int = 1 + children.sumOf { it.complexity() }

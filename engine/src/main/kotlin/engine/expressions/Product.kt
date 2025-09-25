@@ -119,10 +119,10 @@ fun productSignRequired(left: Expression, right: Expression): Boolean =
             val leftIsVariable = leftOp is Variable
             val rightIsRoot = rightOp.operator == UnaryExpressionOperator.SquareRoot ||
                 rightOp.operator == BinaryExpressionOperator.Root
-            val rightIsRootOrVariable = rightIsRoot || rightOp is Variable
+            val rightIsRootOrVariableOrPi = rightIsRoot || rightOp is Variable || rightOp is PiExpression
             val differentVariables = leftOp is Variable && rightOp is Variable &&
                 leftOp.variableName != rightOp.variableName
 
-            !(left.isNumbery() && rightIsRootOrVariable || leftIsVariable && rightIsRoot || differentVariables)
+            !(left.isNumbery() && rightIsRootOrVariableOrPi || leftIsVariable && rightIsRoot || differentVariables)
         }
     }

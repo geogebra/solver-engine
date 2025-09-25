@@ -10,15 +10,17 @@ import engine.methods.rule
 import engine.patterns.AnyPattern
 import engine.patterns.FixedPattern
 import engine.patterns.degreeOf
-import engine.patterns.fractionOf
-import engine.patterns.productOf
+import engine.patterns.withOptionalRationalCoefficient
 import engine.steps.metadata.metadata
 
 enum class AnglesRules(override val runner: Rule) : RunnerMethod {
     UseDegreeConversionFormula(useDegreeConversionFormula),
-    SimplifyDegrees(simplifyDegrees),
+    UseRadianConversionFormula(useRadianConversionFormula),
 }
 
+/**
+ * degree[360] --> degree[360] * [ /pi/  / 180]
+ */
 private val useDegreeConversionFormula = rule {
     val value = AnyPattern()
     val pattern = degreeOf(value)
@@ -34,19 +36,17 @@ private val useDegreeConversionFormula = rule {
     }
 }
 
-private val simplifyDegrees = rule {
-    val nominatorVal = AnyPattern()
-    val denominatorVal = AnyPattern()
-    val nominator = degreeOf(nominatorVal)
-    val denominator = degreeOf(denominatorVal)
+/**
+ * [x * /pi/ / y] --> [x * /pi/ / y] * [degree[180] / /pi/]
+ */
+private val useRadianConversionFormula = rule {
     val pi = FixedPattern(Pi)
-
-    val pattern = productOf(nominator, fractionOf(pi, denominator))
+    val pattern = withOptionalRationalCoefficient(pi, false)
 
     onPattern(pattern) {
         ruleResult(
-            toExpr = productOf(move(nominatorVal), fractionOf(get(pi), move(denominatorVal))),
-            explanation = metadata(Explanation.SimplifyDegrees),
+            toExpr = productOf(move(pattern), fractionOf(engine.expressions.degreeOf(OneHundredAndEighty), Pi)),
+            explanation = metadata(Explanation.UseRadianConversionFormula),
         )
     }
 }

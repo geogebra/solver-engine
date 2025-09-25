@@ -26,6 +26,7 @@ import engine.expressions.containsFractions
 import engine.expressions.containsLogs
 import engine.expressions.containsPowers
 import engine.expressions.containsRoots
+import engine.expressions.containsUnits
 import engine.expressions.isSigned
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
@@ -82,6 +83,7 @@ import methods.logs.LogsPlans
 import methods.logs.LogsRules
 import methods.mixednumbers.MixedNumbersPlans
 import methods.mixednumbers.MixedNumbersRules
+import methods.units.UnitsRules
 
 enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : RunnerMethod {
     SimplifyPowerOfInteger(
@@ -330,6 +332,19 @@ private val fractionSimplificationSteps = steps {
     }
 }
 
+private val unitSimplificationSteps = steps {
+    check { it.containsUnits() }
+    deeply {
+        firstOf {
+            option(UnitsRules.SimplifyFractionOfUnits)
+            option(UnitsRules.EvaluateUnitProductAndDivision)
+            option(UnitsRules.SimplifyFractionOfUnitAndConstantToInteger)
+            option(UnitsRules.FindCommonIntegerFactorInFractionOfUnitAndConstant)
+            option(UnitsRules.ConvertTerminatingDecimalWithUnitToFraction)
+        }
+    }
+}
+
 /**
  * Steps to turn decimals to fractions
  */
@@ -362,6 +377,8 @@ val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
         option { deeply(addConstantFractions) }
 
         option(fractionSimplificationSteps)
+
+        option(unitSimplificationSteps)
 
         // It would be better to move this out of constantSimplificationSteps altogether and do it first but the
         // required behaviour depends on the previous steps being tried first.

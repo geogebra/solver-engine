@@ -17,26 +17,18 @@
 
 package methods.angles
 
+import engine.expressions.Constants.Pi
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.patterns.ConstantPattern
+import engine.patterns.FixedPattern
 import engine.patterns.degreeOf
+import engine.patterns.withOptionalRationalCoefficient
 import methods.constantexpressions.ConstantExpressionsPlans
 
 enum class AnglesPlans(override val runner: CompositeMethod) : RunnerMethod {
-    SimplifyExpressionWithDegrees(
-        plan {
-            explanation = Explanation.SimplifyExpressionContainingDegrees
-
-            steps {
-                apply(AnglesRules.SimplifyDegrees)
-                optionally(ConstantExpressionsPlans.SimplifyConstantExpression)
-            }
-        },
-    ),
-
     @PublicMethod
     ConvertDegreesToRadians(
         plan {
@@ -46,7 +38,21 @@ enum class AnglesPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 apply(AnglesRules.UseDegreeConversionFormula)
-                apply(SimplifyExpressionWithDegrees)
+                apply(ConstantExpressionsPlans.SimplifyConstantExpression)
+            }
+        },
+    ),
+
+    @PublicMethod
+    ConvertRadiansToDegrees(
+        plan {
+            pattern = withOptionalRationalCoefficient(FixedPattern(Pi), false)
+
+            explanation = Explanation.ConvertRadiansToDegrees
+
+            steps {
+                apply(AnglesRules.UseRadianConversionFormula)
+                apply(ConstantExpressionsPlans.SimplifyConstantExpression)
             }
         },
     ),
