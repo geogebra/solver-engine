@@ -24,6 +24,7 @@ import engine.expressions.Factor
 import engine.expressions.Fraction
 import engine.expressions.IntegerExpression
 import engine.expressions.Label
+import engine.expressions.PiExpression
 import engine.expressions.Power
 import engine.expressions.Root
 import engine.expressions.SquareRoot
@@ -71,6 +72,14 @@ enum class CollectingRules(override val runner: Rule) : RunnerMethod {
         CollectLikeTermsRule(
             factorSelector = { !it.isConstant() },
             coefficientCondition = { it.isConstant() },
+            explanationKey = Explanation.CollectLikeTerms,
+        ).rule,
+    ),
+
+    CollectLikeTermsWithPi(
+        CollectLikeTermsRule(
+            factorSelector = { it is PiExpression },
+            coefficientCondition = { it.isConstant() && it !is PiExpression },
             explanationKey = Explanation.CollectLikeTerms,
         ).rule,
     ),

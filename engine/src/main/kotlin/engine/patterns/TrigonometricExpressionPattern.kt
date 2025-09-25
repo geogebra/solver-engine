@@ -19,34 +19,33 @@ package engine.patterns
 
 import engine.context.Context
 import engine.expressions.Expression
-import engine.operators.UnitExpressionOperator
-import engine.operators.UnitType
+import engine.expressions.TrigonometricExpression
+import engine.operators.TrigonometricFunctionOperator
+import engine.operators.TrigonometricFunctionType
 
 /**
- * A pattern that matches unit expressions with a specific unit type.
- * If [unitType] type is null, it will match any unit type.
+ * Matches a trigonometric expression with the given type
+ * If [functionType] is null, it matches any trigonometric expression
  */
-data class UnitExpressionPattern(
+data class TrigonometricExpressionPattern(
     val childPattern: Pattern,
-    val unitType: UnitType? = null,
+    val functionType: List<TrigonometricFunctionType>? = null,
 ) : BasePattern() {
-    override fun toString() = "${unitType?.toString() ?: "anyUnit"}[$childPattern]"
+    override fun toString() = "${functionType?.toString() ?: "anyTrigonometricExpression"}[$childPattern]"
 
     override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
-        if (subexpression.operator !is UnitExpressionOperator ||
-            (unitType != null && subexpression.operator.unit != unitType)
+        if (subexpression.operator !is TrigonometricFunctionOperator ||
+            (functionType != null && !functionType.contains(subexpression.operator.type))
         ) {
             return emptySequence()
         }
 
-        val matches = match.newChild(this, subexpression)
+        val match = match.newChild(this, subexpression)
 
-        return childPattern.findMatches(context, matches, subexpression.firstChild)
+        return childPattern.findMatches(context, match, subexpression.firstChild)
     }
 
+    fun getBoundFunctionType(m: Match) = (getBoundExpr(m) as TrigonometricExpression).functionType
+
     override val minDepth = 1
-
-    fun getBoundUnitType(m: Match) = (getBoundExpr(m)?.operator as UnitExpressionOperator).unit
 }
-
-fun degreeOf(value: Pattern) = UnitExpressionPattern(value, UnitType.Degree)

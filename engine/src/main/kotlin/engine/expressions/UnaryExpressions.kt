@@ -126,10 +126,10 @@ class UnitExpression(
 }
 
 class TrigonometricExpression(
-    private val functionType: TrigonometricFunctionType,
+    val functionType: TrigonometricFunctionType,
     operand: Expression,
     val powerInside: Boolean,
-    private val inverseNotation: String,
+    val inverseNotation: String,
     meta: NodeMeta = BasicMeta(),
 ) : ValueExpression(
         operator = TrigonometricFunctionOperator(functionType, powerInside, inverseNotation),

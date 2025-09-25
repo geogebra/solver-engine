@@ -58,6 +58,7 @@ import methods.expand.ExpandRules
 import methods.fractionarithmetic.FractionArithmeticPlans
 import methods.fractionarithmetic.FractionArithmeticRules
 import methods.fractionarithmetic.addIntegerAndFraction
+import methods.fractionarithmetic.addIntegerWithUnitAndFraction
 import methods.fractionarithmetic.createAddFractionsPlan
 import methods.fractionarithmetic.createAddRootAndFractionPlan
 import methods.fractionarithmetic.normalizeFractionsWithinFractions
@@ -337,6 +338,7 @@ private val unitSimplificationSteps = steps {
     deeply {
         firstOf {
             option(UnitsRules.SimplifyFractionOfUnits)
+            option(UnitsRules.EvaluateSignedIntegerWithUnitAddition)
             option(UnitsRules.EvaluateUnitProductAndDivision)
             option(UnitsRules.SimplifyFractionOfUnitAndConstantToInteger)
             option(UnitsRules.FindCommonIntegerFactorInFractionOfUnitAndConstant)
@@ -440,6 +442,7 @@ val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
 
         option { deeply(IntegerArithmeticPlans.SimplifyIntegersInSum) }
         option { deeply(addIntegerAndFraction) }
+        option { deeply(addIntegerWithUnitAndFraction) }
 
         option {
             check { it.containsRoots() }

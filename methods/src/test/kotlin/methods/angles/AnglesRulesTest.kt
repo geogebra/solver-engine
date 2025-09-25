@@ -30,4 +30,50 @@ class AnglesRulesTest {
     fun testRadianConversion() {
         testRule("[/pi/ / 4]", AnglesRules.UseRadianConversionFormula, "[/pi/ / 4] * [degree[180] / /pi/]")
     }
+
+    @Test
+    fun testEvaluatingTrigonometricFunctionOfMainAngles() {
+        testRule("sin degree[30]", AnglesRules.EvaluateExactValueOfMainAngle, "[1 / 2]")
+        testRule("cos [/pi/ / 3]", AnglesRules.EvaluateExactValueOfMainAngle, "[1 / 2]")
+        testRule("tan degree[45]", AnglesRules.EvaluateExactValueOfMainAngle, "1")
+        testRule("cot [/pi/ / 4]", AnglesRules.EvaluateExactValueOfMainAngle, "1")
+    }
+
+    @Test
+    fun testFindReferenceAngleInFirstQuadrantInDegree() {
+        testRule(
+            "cos degree[120]",
+            AnglesRules.FindReferenceAngleInFirstQuadrantInDegree,
+            "-cos (degree[ 180 ] - degree [ 120 ])",
+        )
+        testRule(
+            "cos degree[240]",
+            AnglesRules.FindReferenceAngleInFirstQuadrantInDegree,
+            "-cos (degree[ 240 ] - degree[ 180 ])",
+        )
+        testRule(
+            "cos degree[300]",
+            AnglesRules.FindReferenceAngleInFirstQuadrantInDegree,
+            "cos (degree[ 360 ] - degree[ 300 ])",
+        )
+    }
+
+    @Test
+    fun testFindReferenceAngleInFirstQuadrantInRadian() {
+        testRule(
+            "cos [2 /pi/ / 3]",
+            AnglesRules.FindReferenceAngleInFirstQuadrantInRadian,
+            "-cos (/pi/ - [2 /pi/ / 3])",
+        )
+        testRule(
+            "cos [4 /pi/ / 3]",
+            AnglesRules.FindReferenceAngleInFirstQuadrantInRadian,
+            "-cos ([4 /pi/ / 3] - /pi/)",
+        )
+        testRule(
+            "cos [5 /pi/ / 3]",
+            AnglesRules.FindReferenceAngleInFirstQuadrantInRadian,
+            "cos (2 /pi/ - [5 /pi/ / 3])",
+        )
+    }
 }

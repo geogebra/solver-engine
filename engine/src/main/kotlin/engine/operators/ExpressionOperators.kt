@@ -353,6 +353,8 @@ enum class TrigonometricFunctionType(
     fun eval(x: Double) = evalFunc(x)
 }
 
+// In the future we should check if replacing the string with an enum would be better
+// It might mean a bigger refactor if we also have to change the SDK
 internal data class TrigonometricFunctionOperator(
     val type: TrigonometricFunctionType,
     val powerInside: Boolean = false,

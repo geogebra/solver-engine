@@ -29,10 +29,13 @@ object Constants {
     val Two = xp(2)
     val Three = xp(3)
     val Four = xp(4)
+    val Five = xp(5)
     val Ten = xp(10)
     val OneHundredAndEighty = xp(180)
+    val ThreeHundredAndSixty = xp(360)
 
     val OneHalf = fractionOf(One, Two)
+    val OneQuarter = fractionOf(One, Four)
 
     val Pi = PiExpression()
     val E = EulerEExpression()

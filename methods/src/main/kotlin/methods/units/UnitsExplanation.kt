@@ -23,6 +23,16 @@ import engine.steps.metadata.TranslationKeys
 @TranslationKeys
 enum class UnitsExplanation : CategorisedMetadataKey {
     /**
+     * Evaluate the subtraction of two integers with the same unit
+     */
+    EvaluateIntegerUnitSubtraction,
+
+    /**
+     * Evaluate the addition of two integers with the same unit
+     */
+    EvaluateIntegerUnitAddition,
+
+    /**
      * Evaluate the product of two integers with one containing units.
      */
     EvaluateIntegerUnitProduct,

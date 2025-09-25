@@ -36,14 +36,17 @@ import engine.patterns.divideBy
 import engine.patterns.fractionOf
 import engine.patterns.integerCondition
 import engine.patterns.oneOf
+import engine.patterns.optionalNegOf
 import engine.patterns.productContaining
 import engine.patterns.stickyOptionalNegOf
+import engine.patterns.sumContaining
 import engine.steps.metadata.metadata
 import engine.utility.divides
 import java.math.BigInteger
 import engine.steps.metadata.GmPathModifier as PM
 
 enum class UnitsRules(override val runner: Rule) : RunnerMethod {
+    EvaluateSignedIntegerWithUnitAddition(evaluateSignedIntegerWithUnitAddition),
     EvaluateUnitProductAndDivision(evaluateUnitProductAndDivision),
     SimplifyFractionOfUnits(simplifyFractionOfUnits),
     SimplifyFractionOfUnitAndConstantToInteger(simplifyFractionOfUnitAndConstantToInteger),
@@ -128,7 +131,7 @@ private val simplifyFractionOfUnits = rule {
     val pattern = fractionOf(numerator, denominator)
 
     onPattern(pattern) {
-        if (numeratorUnit.unitType != denominatorUnit.unitType) {
+        if (getUnitType(numeratorUnit) != getUnitType(denominatorUnit)) {
             return@onPattern null
         }
 
@@ -258,5 +261,52 @@ private val convertTerminatingDecimalWithUnitToFraction = rule {
 
             else -> null
         }
+    }
+}
+
+private val evaluateSignedIntegerWithUnitAddition = rule {
+    val term1 = UnsignedIntegerPattern()
+    val term2 = UnsignedIntegerPattern()
+
+    val unit1 = UnitExpressionPattern(term1)
+    val unit2 = UnitExpressionPattern(term2)
+
+    val signedWrapper1 = optionalNegOf(unit1)
+    val signedWrapper2 = optionalNegOf(unit2)
+
+    val sum = sumContaining(signedWrapper1, signedWrapper2)
+
+    onPattern(sum) {
+        if (getUnitType(unit1) != getUnitType(unit2)) {
+            return@onPattern null
+        }
+
+        val explanation = when {
+            !signedWrapper1.isWrapping() && signedWrapper2.isWrapping() ->
+                metadata(
+                    Explanation.EvaluateIntegerUnitSubtraction,
+                    move(unit1),
+                    addUnit(
+                        unit1,
+                        move(term2),
+                    ),
+                )
+            else ->
+                metadata(Explanation.EvaluateIntegerUnitAddition, move(unit1), move(unit2))
+        }
+
+        ruleResult(
+            toExpr = sum.substitute(
+                addUnit(
+                    unit1,
+                    integerOp(term1, term2) { n1, n2 ->
+                        n1.let { if (signedWrapper1.isWrapping()) -it else it } +
+                            n2.let { if (signedWrapper2.isWrapping()) -it else it }
+                    },
+                ),
+            ),
+            gmAction = drag(term2, PM.Group, term1, PM.Group),
+            explanation = explanation,
+        )
     }
 }

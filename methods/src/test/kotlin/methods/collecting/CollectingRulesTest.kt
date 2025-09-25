@@ -63,6 +63,11 @@ class CollectingRulesTest {
     }
 
     @Test
+    fun testCollectLikeTermsWithPi() {
+        testRule("/pi/ - [2 * /pi/ / 3]", CollectingRules.CollectLikeTermsWithPi, "(1 - [2/3]) /pi/")
+    }
+
+    @Test
     fun testCombineTwoSimpleLikeTerms() {
         testRule("x + x", CombineTwoSimpleLikeTerms, "2x")
         testRule(

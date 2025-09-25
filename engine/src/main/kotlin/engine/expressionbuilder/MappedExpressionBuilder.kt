@@ -31,6 +31,7 @@ import engine.expressions.MoveUnaryOperator
 import engine.expressions.New
 import engine.expressions.PathScope
 import engine.expressions.Substitution
+import engine.expressions.TrigonometricExpression
 import engine.expressions.UnitExpression
 import engine.expressions.asRational
 import engine.expressions.buildExpression
@@ -55,6 +56,7 @@ import engine.patterns.RationalPattern
 import engine.patterns.RecurringDecimalPattern
 import engine.patterns.SolvablePattern
 import engine.patterns.SubstitutablePattern
+import engine.patterns.TrigonometricExpressionPattern
 import engine.patterns.UnitExpressionPattern
 import engine.steps.metadata.DragTargetPosition
 import engine.steps.metadata.GmAction
@@ -318,10 +320,27 @@ open class MappedExpressionBuilder(
 
     // -- Units -- \\
 
+    fun getUnitType(pattern: UnitExpressionPattern) = pattern.getBoundUnitType(match)
+
     /** Add the unit from the provided pattern to the expression. */
     fun Expression.addUnit(pattern: UnitExpressionPattern) = UnitExpression(this, pattern.getBoundUnitType(match))
 
     fun addUnit(pattern: UnitExpressionPattern, mappedExpression: Expression) = mappedExpression.addUnit(pattern)
+
+    // -- Trigonometric Functions --\
+
+    fun getFunctionType(pattern: TrigonometricExpressionPattern) = pattern.getBoundFunctionType(match)
+
+    fun Expression.wrapWithTrigonometricFunction(pattern: TrigonometricExpressionPattern) =
+        TrigonometricExpression(
+            pattern.getBoundFunctionType(match),
+            this,
+            (pattern.getBoundExpr(match) as TrigonometricExpression).powerInside,
+            (pattern.getBoundExpr(match) as TrigonometricExpression).inverseNotation,
+        )
+
+    fun wrapWithTrigonometricFunction(pattern: TrigonometricExpressionPattern, mappedExpression: Expression) =
+        mappedExpression.wrapWithTrigonometricFunction(pattern)
 
     /**
      * return a list of mapped expression of, prime factors of `integer`

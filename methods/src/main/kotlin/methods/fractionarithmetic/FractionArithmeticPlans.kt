@@ -39,6 +39,7 @@ import engine.patterns.AnyPattern
 import engine.patterns.ConstantPattern
 import engine.patterns.IntegerFractionPattern
 import engine.patterns.SignedIntegerPattern
+import engine.patterns.UnitExpressionPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.VariableExpressionPattern
 import engine.patterns.commutativeSumContaining
@@ -56,6 +57,7 @@ import methods.general.GeneralPlans
 import methods.general.GeneralRules
 import methods.integerarithmetic.IntegerArithmeticPlans
 import methods.integerarithmetic.IntegerArithmeticRules
+import methods.units.UnitsRules
 import java.math.BigInteger
 
 enum class FractionArithmeticPlans(override val runner: CompositeMethod) : RunnerMethod {
@@ -291,6 +293,39 @@ fun createAddIntegerAndFractionPlan(numeratorSimplificationSteps: StepsProducer)
     }
 }
 
+/**
+ * Only add an integer with unit to a fraction if that fraction already contains an integer with unit
+ * in its numerator
+ */
+fun createAddIntegerWithUnitAndFractionPlan(numeratorSimplificationSteps: StepsProducer): CompositeMethod {
+    val addFractionSteps = createAddFractionsSteps(numeratorSimplificationSteps)
+
+    return plan {
+        val integer = optionalNegOf(UnitExpressionPattern(UnsignedIntegerPattern()))
+        val numeratorFactorWithUnit = optionalNegOf(UnitExpressionPattern(UnsignedIntegerPattern()))
+        val numerator = oneOf(numeratorFactorWithUnit, sumContaining(numeratorFactorWithUnit))
+        val fraction = optionalNegOf(fractionOf(numerator, UnsignedIntegerPattern()))
+        pattern = commutativeSumContaining(integer, fraction)
+
+        explanation = Explanation.AddIntegerAndFraction
+        explanationParameters(integer, fraction)
+
+        partialExpressionSteps {
+            check {
+                if (!isSet(Setting.RestrictAddingFractionsWithConstantDenominator)) {
+                    true
+                } else {
+                    val num = it.firstChild.getNumerator() ?: it.secondChild.getNumerator() ?: return@check false
+                    num.isConstant() || num is Sum
+                }
+            }
+            apply(FractionArithmeticRules.BringToCommonDenominatorWithNonFractionalTerm)
+            deeply(UnitsRules.EvaluateUnitProductAndDivision)
+            apply(addFractionSteps)
+        }
+    }
+}
+
 private fun Expression.getNumerator(): Expression? {
     return when (this) {
         is Minus -> argument.getNumerator()
@@ -353,6 +388,9 @@ fun createAddTermAndFractionPlan(numeratorSimplificationSteps: StepsProducer): C
 
 val addIntegerFractions = createAddFractionsPlan(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
 val addIntegerAndFraction = createAddIntegerAndFractionPlan(IntegerArithmeticRules.EvaluateSignedIntegerAddition)
+val addIntegerWithUnitAndFraction = createAddIntegerWithUnitAndFractionPlan(
+    UnitsRules.EvaluateSignedIntegerWithUnitAddition,
+)
 
 val normalizeFractionsWithinFractions = steps {
     firstOf {

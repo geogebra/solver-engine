@@ -46,6 +46,22 @@ enum class AnglesExplanation : CategorisedMetadataKey {
      * Use the conversion formula to convert radians to degrees.
      */
     UseRadianConversionFormula,
+
+    /**
+     * Evaluate <trigonometric fun>
+     */
+    EvaluateExactValueOfMainAngle,
+
+    /**
+     * Evaluate trigonometric expression.
+     */
+    EvaluateTrigonometricExpression,
+
+    /**
+     * Find reference angle in first quadrant
+     */
+    FindReferenceAngle,
+
     ;
 
     override val category = "Angles"

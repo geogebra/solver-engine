@@ -127,7 +127,10 @@ fun createCollectLikeTermsAndSimplifyPlan(simplificationSteps: StepsProducer): M
                 }
                 option {
                     withNewLabels {
-                        apply(CollectingRules.CollectLikeTerms)
+                        firstOf {
+                            option(CollectingRules.CollectLikeTerms)
+                            option(CollectingRules.CollectLikeTermsWithPi)
+                        }
                         optionally { applyTo(coefficientSimplificationSteps, Label.A) }
                         optionally(GeneralRules.EliminateZeroInSum)
                     }
