@@ -95,6 +95,8 @@ enum class FractionArithmeticPlans(override val runner: CompositeMethod) : Runne
                     check { it is Fraction }
                     firstOf {
                         option(trivialFractionCancellationSteps)
+                        option(UnitsRules.SimplifyFractionOfUnits)
+                        option(UnitsRules.SimplifyFractionOfUnitAndConstantToInteger)
                         option(FractionArithmeticRules.SimplifyFractionToInteger)
                         // simplification of something like: [(1 - sqrt[2])x + 1 / (-1 + sqrt[2])x - 1]
                         // doesn't happen because "simplify" doesn't expand (1 - sqrt[2])x
@@ -102,6 +104,7 @@ enum class FractionArithmeticPlans(override val runner: CompositeMethod) : Runne
                         // the above should get simplified
                         option(extractNegativeFromNumeratorOrDenominatorAndCancelFactor)
                         option(FractionArithmeticRules.ReorganizeCommonSumFactorInFraction)
+                        option(UnitsRules.FindCommonIntegerFactorInFractionOfUnitAndConstant)
                         option(FractionArithmeticRules.FindCommonIntegerFactorInFraction)
                     }
                 }

@@ -46,6 +46,7 @@ import engine.operators.SumOperator
 import engine.operators.TrigonometricFunctionOperator
 import engine.operators.UnaryExpressionOperator
 import engine.operators.UnitExpressionOperator
+import engine.operators.UnitType
 import engine.operators.VariableListOperator
 import engine.operators.VariableOperator
 import engine.operators.VoidOperator
@@ -183,10 +184,11 @@ open class Expression internal constructor(
         else -> null
     }
 
-    val variables: Set<String> get() = when (this) {
-        is Variable -> setOf(variableName)
-        else -> this.operands.flatMap { it.variables }.toSet()
-    }
+    val variables: Set<String>
+        get() = when (this) {
+            is Variable -> setOf(variableName)
+            else -> this.operands.flatMap { it.variables }.toSet()
+        }
 
     /**
      * Returns true if the expression node is labelled (not if the children are labelled).
@@ -692,7 +694,11 @@ fun Expression.containsDecimals(): Boolean =
 
 fun Expression.containsFractions(): Boolean = this is Fraction || children.any { it.containsFractions() }
 
-fun Expression.containsUnits(): Boolean = this is UnitExpression || children.any { it.containsUnits() }
+fun Expression.containsUnits(unitType: UnitType? = null): Boolean =
+    (this is UnitExpression && (unitType == null || unit == unitType)) || children.any { it.containsUnits() }
+
+fun Expression.containsExpression(expression: Expression): Boolean =
+    this == expression || children.any { it.containsExpression(expression) }
 
 fun Expression.allSubterms(): List<Expression> = listOf(this) + children.flatMap { it.allSubterms() }
 

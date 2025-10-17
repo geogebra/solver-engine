@@ -4,13 +4,19 @@ import engine.expressions.Constants.OneHundredAndEighty
 import engine.expressions.Constants.Pi
 import engine.expressions.Constants.ThreeHundredAndSixty
 import engine.expressions.Constants.Two
+import engine.expressions.Constants.Zero
+import engine.expressions.Expression
+import engine.expressions.Fraction
 import engine.expressions.TrigonometricConstants.MainAnglesDegrees
 import engine.expressions.TrigonometricConstants.MainAnglesRadians
+import engine.expressions.TrigonometricExpression
 import engine.expressions.bracketOf
+import engine.expressions.degreeOf
 import engine.expressions.fractionOf
 import engine.expressions.negOf
 import engine.expressions.productOf
 import engine.expressions.sumOf
+import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
@@ -18,12 +24,19 @@ import engine.operators.TrigonometricFunctionType
 import engine.patterns.AnyPattern
 import engine.patterns.FixedPattern
 import engine.patterns.OneOfPattern
+import engine.patterns.SignedIntegerPattern
+import engine.patterns.SignedNumberPattern
 import engine.patterns.TrigonometricExpressionPattern
 import engine.patterns.UnsignedNumberPattern
+import engine.patterns.commutativeProductOf
+import engine.patterns.commutativeSumOf
+import engine.patterns.condition
 import engine.patterns.degreeOf
+import engine.patterns.numericCondition
 import engine.patterns.oneOf
 import engine.patterns.withOptionalRationalCoefficient
 import engine.steps.metadata.metadata
+import java.math.BigDecimal
 import java.math.BigInteger
 
 private fun checkFunctionIsNegativeInQuadrant(type: TrigonometricFunctionType, quadrant: Quadrant): Boolean {
@@ -39,7 +52,11 @@ private fun checkFunctionIsNegativeInQuadrant(type: TrigonometricFunctionType, q
 enum class AnglesRules(override val runner: Rule) : RunnerMethod {
     UseDegreeConversionFormula(useDegreeConversionFormula),
     UseRadianConversionFormula(useRadianConversionFormula),
+    MovePiIntoNumerator(movePiIntoNumerator),
     EvaluateExactValueOfMainAngle(evaluateExactValueOfMainAngle),
+    RewriteAngleInDegreesByExtractingMultiplesOf360(rewriteAngleInDegreesByExtractingMultiplesOf360),
+    RewriteAngleInRadiansByExtractingMultiplesOfTwoPi(rewriteAngleInRadiansByExtractingMultiplesOfTwoPi),
+    SubstituteAngleWithCoterminalAngleFromUnitCircle(substituteAngleWithCoterminalAngleFromUnitCircle),
     FindReferenceAngleInFirstQuadrantInDegree(findReferenceAngleInFirstQuadrantInDegree),
     FindReferenceAngleInFirstQuadrantInRadian(findReferenceAngleInFirstQuadrantInRadian),
 }
@@ -49,13 +66,13 @@ enum class AnglesRules(override val runner: Rule) : RunnerMethod {
  */
 private val useDegreeConversionFormula = rule {
     val value = AnyPattern()
-    val pattern = degreeOf(value)
+    val pattern = withOptionalRationalCoefficient(degreeOf(value))
 
     onPattern(pattern) {
         ruleResult(
             toExpr = productOf(
                 move(pattern),
-                introduce(fractionOf(Pi, engine.expressions.degreeOf(OneHundredAndEighty))),
+                introduce(fractionOf(Pi, degreeOf(OneHundredAndEighty))),
             ),
             explanation = metadata(Explanation.UseDegreeConversionFormula),
         )
@@ -71,8 +88,26 @@ private val useRadianConversionFormula = rule {
 
     onPattern(pattern) {
         ruleResult(
-            toExpr = productOf(move(pattern), fractionOf(engine.expressions.degreeOf(OneHundredAndEighty), Pi)),
+            toExpr = productOf(move(pattern), fractionOf(degreeOf(OneHundredAndEighty), Pi)),
             explanation = metadata(Explanation.UseRadianConversionFormula),
+        )
+    }
+}
+
+/**
+ * [x / y] * /pi/ --> [x /pi/ / y]
+ */
+private val movePiIntoNumerator = rule {
+    val pi = FixedPattern(Pi)
+    val numerator = SignedIntegerPattern()
+    val denominator = SignedIntegerPattern()
+    val fraction = engine.patterns.fractionOf(numerator, denominator)
+    val pattern = commutativeProductOf(pi, fraction)
+
+    onPattern(pattern) {
+        ruleResult(
+            toExpr = fractionOf(productOf(move(numerator), move(pi)), move(denominator)),
+            explanation = metadata(Explanation.RewriteAngleInRadiansAsSingleFraction),
         )
     }
 }
@@ -193,9 +228,9 @@ private val findReferenceAngleInFirstQuadrantInDegree = rule {
     }
 }
 
-/*
-    Find the reference angle and the right sign in first quadrant eg:
-    cos [2 pi / 3] -> - cos [1 pi / 3]
+/**
+ *    Find the reference angle and the right sign in first quadrant eg:
+ *    cos [2 pi / 3] -> - cos [1 pi / 3]
  */
 private val findReferenceAngleInFirstQuadrantInRadian = rule {
     val valueRadian = withOptionalRationalCoefficient(FixedPattern(Pi))
@@ -253,6 +288,154 @@ private val findReferenceAngleInFirstQuadrantInRadian = rule {
         ruleResult(
             toExpr = toExpression,
             explanation = metadata(Explanation.FindReferenceAngle),
+        )
+    }
+}
+
+/**
+ * Rewrite angle in degrees by extracting multiples of 360 degrees.
+ * e.g degree[390] -> degree[360] + degree[30]
+ */
+@Suppress("MagicNumber")
+private val rewriteAngleInDegreesByExtractingMultiplesOf360 = rule {
+    val angleVal = SignedNumberPattern()
+    val angleValCondition = numericCondition(angleVal) { it.abs() > BigDecimal.valueOf(360) }
+    val angleDegree = degreeOf(angleValCondition)
+    // Prevent simplifying just the numerator
+    val pattern = condition(angleDegree) { it.parent !is Fraction }
+
+    onPattern(pattern) {
+        val coefficient = getValue(angleVal).toBigInteger() / 360.toBigInteger()
+        val remainder = numericOp(angleVal) { it % BigDecimal.valueOf(360) }
+
+        val coefficientExpression =
+            if (coefficient == BigInteger.ONE) {
+                degreeOf(ThreeHundredAndSixty)
+            } else {
+                productOf(xp(coefficient), degreeOf(ThreeHundredAndSixty))
+            }
+
+        ruleResult(
+            toExpr = transform(angleDegree, sumOf(coefficientExpression, distribute(degreeOf(remainder)))),
+            explanation = metadata(Explanation.RewriteAngleInDegreesByExtractingMultiplesOf360),
+        )
+    }
+}
+
+/**
+ * Substitute angle with coterminal angle from unit circle.
+ * e.g:
+ * - degree[360] + degree[30] -> degree[30]
+ * - 2 /pi/ + [1 /pi/ / 2] -> degree[1 /pi/ / 2]
+ * - 2 /pi/ + 0 -> 0
+ */
+private val substituteAngleWithCoterminalAngleFromUnitCircle = rule {
+    val angleValDegrees = degreeOf(AnyPattern())
+    val angleValRadians = withOptionalRationalCoefficient(FixedPattern(Pi), true)
+    // We explicitly add the 0 case to be able to run directly after extracting multiples of 360
+    val angleVal = oneOf(
+        angleValDegrees,
+        angleValRadians,
+        withOptionalRationalCoefficient(FixedPattern(Zero)),
+    )
+
+    // We add an optional integer operand to the circle to also cancel out multiples of 2pi/360
+    val circleDegrees = degreeOf(FixedPattern(ThreeHundredAndSixty)).let {
+        oneOf(it, commutativeProductOf(SignedIntegerPattern(), it))
+    }
+    val circleRadians =
+        oneOf(
+            commutativeProductOf(FixedPattern(Two), FixedPattern(Pi)),
+            commutativeProductOf(FixedPattern(Two), FixedPattern(Pi), SignedIntegerPattern()),
+        )
+
+    val circle = oneOf(circleDegrees, circleRadians)
+
+    val sum = commutativeSumOf(angleVal, circle)
+
+    onPattern(sum) {
+        ruleResult(
+            toExpr = sum.substitute(move(angleVal)),
+            explanation = metadata(Explanation.SubstituteAngleWithCoterminalAngleFromUnitCircle),
+        )
+    }
+}
+
+fun isWithinFraction(exp: Expression): Boolean {
+    val parent = exp.parent
+
+    return if (parent == null) {
+        false
+    } else {
+        parent is Fraction || isWithinFraction(parent)
+    }
+}
+
+/**
+ * Rewrite angle in radians by extracting multiples of 2*Pi from the angle.
+ * e.g [5 /pi/ / 2] -> 2 /pi/ + [1 /pi/ / 2]
+ */
+private val rewriteAngleInRadiansByExtractingMultiplesOfTwoPi = rule {
+    val angle = withOptionalRationalCoefficient(FixedPattern(Pi))
+    val pattern = condition(angle) { it.parent is TrigonometricExpression || !isWithinFraction(it) }
+
+    onPattern(pattern) {
+        val coefficientRational = getCoefficientValue(angle)
+
+        // Make sure the coefficient exists
+        if (coefficientRational == null) {
+            return@onPattern null
+        }
+
+        val numerator = coefficientRational.numerator
+        val twoDenominator = coefficientRational.denominator * BigInteger.TWO
+
+        val piCoefficient = numerator / twoDenominator
+        val remainder = numerator % twoDenominator
+
+        if (piCoefficient == BigInteger.ZERO || (piCoefficient == BigInteger.ONE && remainder == BigInteger.ZERO)) {
+            return@onPattern null
+        }
+
+        // Hide coefficient if it is 1
+        val resultNumerator = when (remainder.abs()) {
+            BigInteger.ZERO -> Zero
+            BigInteger.ONE -> Pi
+            else -> productOf(xp(remainder.abs()), Pi)
+        }
+
+        // Only add numerator if it is not 1
+        val result = coefficientRational.denominator.let {
+            if (it == BigInteger.ONE) {
+                resultNumerator
+            } else {
+                fractionOf(
+                    resultNumerator,
+                    xp(it),
+                )
+            }
+        }
+
+        // Hide coefficient if it is 1
+        val extracted = if (piCoefficient == BigInteger.ONE) {
+            productOf(Two, Pi)
+        } else {
+            productOf(xp(piCoefficient), Two, Pi)
+        }
+
+        ruleResult(
+            toExpr = transform(
+                angle,
+                sumOf(
+                    extracted,
+                    if (remainder < BigInteger.ZERO) {
+                        negOf(result)
+                    } else {
+                        result
+                    },
+                ),
+            ),
+            explanation = metadata(Explanation.RewriteAngleInRadiansByExtractingMultiplesOfTwoPi),
         )
     }
 }

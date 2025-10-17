@@ -127,9 +127,34 @@ fun createCollectLikeTermsAndSimplifyPlan(simplificationSteps: StepsProducer): M
                 }
                 option {
                     withNewLabels {
+                        apply(CollectingRules.CollectLikeTerms)
+                        optionally { applyTo(coefficientSimplificationSteps, Label.A) }
+                        optionally(GeneralRules.EliminateZeroInSum)
+                    }
+                }
+            }
+        }
+    }
+}
+
+fun createCollectLikeTrigonometricTermsAndSimplifyPlan(simplificationSteps: StepsProducer): Method {
+    val coefficientSimplificationSteps =
+        createSimplifyCoefficientPlan(simplificationSteps, preferFractionalForm = false)
+
+    return plan {
+        explanation = Explanation.CollectLikeTermsAndSimplify
+
+        steps {
+            firstOf {
+                option {
+                    check { isSet(Setting.QuickAddLikeTerms) }
+                    apply(CollectingRules.CombineTwoSimpleLikeTerms)
+                }
+                option {
+                    withNewLabels {
                         firstOf {
-                            option(CollectingRules.CollectLikeTerms)
                             option(CollectingRules.CollectLikeTermsWithPi)
+                            option(CollectingRules.CollectLikeTermsWithTrigonometricFunctions)
                         }
                         optionally { applyTo(coefficientSimplificationSteps, Label.A) }
                         optionally(GeneralRules.EliminateZeroInSum)

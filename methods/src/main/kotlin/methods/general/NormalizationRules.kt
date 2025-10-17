@@ -28,6 +28,7 @@ import engine.expressions.Product
 import engine.expressions.Root
 import engine.expressions.SquareRoot
 import engine.expressions.Sum
+import engine.expressions.TrigonometricExpression
 import engine.expressions.Variable
 import engine.expressions.containsLogs
 import engine.expressions.hasRedundantBrackets
@@ -284,7 +285,7 @@ private val priorityComparator = compareBy<Expression>(
             // (x + 1) or (1 + sqrt[3])
             is Sum -> 4
             // sqrt[...] or root[..., n]
-            is Root, is SquareRoot -> 3
+            is Root, is SquareRoot, is TrigonometricExpression -> 3
             // a, x, [x ^ 2]
             is Variable -> 1
             else -> 2

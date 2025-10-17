@@ -30,6 +30,7 @@ import engine.expressions.Root
 import engine.expressions.SquareRoot
 import engine.expressions.Sum
 import engine.expressions.TermView
+import engine.expressions.TrigonometricExpression
 import engine.expressions.isSigned
 import engine.expressions.negOf
 import engine.expressions.productOf
@@ -80,6 +81,14 @@ enum class CollectingRules(override val runner: Rule) : RunnerMethod {
         CollectLikeTermsRule(
             factorSelector = { it is PiExpression },
             coefficientCondition = { it.isConstant() && it !is PiExpression },
+            explanationKey = Explanation.CollectLikeTerms,
+        ).rule,
+    ),
+
+    CollectLikeTermsWithTrigonometricFunctions(
+        CollectLikeTermsRule(
+            factorSelector = { it is TrigonometricExpression },
+            coefficientCondition = { it.isConstant() && it !is TrigonometricExpression },
             explanationKey = Explanation.CollectLikeTerms,
         ).rule,
     ),

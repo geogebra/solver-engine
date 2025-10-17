@@ -26,7 +26,6 @@ import engine.expressions.containsFractions
 import engine.expressions.containsLogs
 import engine.expressions.containsPowers
 import engine.expressions.containsRoots
-import engine.expressions.containsUnits
 import engine.expressions.isSigned
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
@@ -49,8 +48,13 @@ import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.utility.divides
+import methods.angles.AnglesPlans
+import methods.angles.AnglesRules
+import methods.angles.createEvaluateTrigonometricExpressionPlan
+import methods.collecting.CollectingRules
 import methods.collecting.createCollectLikeRationalPowersAndSimplifyPlan
 import methods.collecting.createCollectLikeRootsAndSimplifyPlan
+import methods.collecting.createCollectLikeTrigonometricTermsAndSimplifyPlan
 import methods.decimals.DecimalPlans
 import methods.decimals.DecimalRules
 import methods.expand.ExpandAndSimplifier
@@ -305,6 +309,9 @@ val simpleTidyUpSteps = steps {
         option(GeneralRules.SimplifyDoubleMinus)
         option(MixedNumbersRules.SplitMixedNumber)
         option(GeneralRules.CancelAdditiveInverseElements)
+
+        // clean up angles in radians
+        option(AnglesRules.MovePiIntoNumerator)
     }
 }
 
@@ -329,20 +336,6 @@ private val fractionSimplificationSteps = steps {
             option(normalizeFractionsWithinFractions)
             option(normalizeNegativeSignsInFraction)
             option(FractionArithmeticPlans.SimplifyFraction)
-        }
-    }
-}
-
-private val unitSimplificationSteps = steps {
-    check { it.containsUnits() }
-    deeply {
-        firstOf {
-            option(UnitsRules.SimplifyFractionOfUnits)
-            option(UnitsRules.EvaluateSignedIntegerWithUnitAddition)
-            option(UnitsRules.EvaluateUnitProductAndDivision)
-            option(UnitsRules.SimplifyFractionOfUnitAndConstantToInteger)
-            option(UnitsRules.FindCommonIntegerFactorInFractionOfUnitAndConstant)
-            option(UnitsRules.ConvertTerminatingDecimalWithUnitToFraction)
         }
     }
 }
@@ -374,13 +367,17 @@ val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
 
         option(FractionArithmeticPlans.RewriteDivisionsAsFractions)
 
+        // Try to convert expressions with mixed units
+        option { deeply(AnglesPlans.ConvertExpressionWithMixedUnitsToRadians) }
+
         // We do this before simplifying fractions for a variety of reasons, a simple one being e.g.
         // 2/10 + 1/10 --> 3/10
         option { deeply(addConstantFractions) }
 
         option(fractionSimplificationSteps)
 
-        option(unitSimplificationSteps)
+        option { deeply(AnglesPlans.ReduceAngleToUnitCircle) }
+        option { deeply(AnglesRules.SubstituteAngleWithCoterminalAngleFromUnitCircle) }
 
         // It would be better to move this out of constantSimplificationSteps altogether and do it first but the
         // required behaviour depends on the previous steps being tried first.
@@ -429,6 +426,8 @@ val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
         }
         option { deeply(collectLikeRationalPowersAndSimplify) }
 
+        option { deeply(collectLikeTrigonometricTermsAndSimplify) }
+
         option(ConstantExpressionsPlans.SimplifyRootsInExpression)
         option(simplifyRationalExponentsInProduct)
 
@@ -468,6 +467,14 @@ val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
         // [4 + 2sqrt[8] / 8] is transformed to [4 + 4sqrt[2] / 8] first.
         option(FractionArithmeticPlans.SimplifyCommonIntegerFactorInFraction)
 
+        // Handle evaluation after expressions are simplified
+        option { deeply(UnitsRules.EvaluateSignedIntegerWithUnitAddition) }
+        option { deeply(UnitsRules.EvaluateUnitProductAndDivision) }
+
+        option { deeply(CollectingRules.CollectLikeTermsWithPi) }
+
+        option { deeply(evaluateTrigonometricExpression) }
+
         option { deeply(ExpandRules.DistributeNegativeOverBracket) }
         option { deeply(expandConstantExpression) }
 
@@ -476,6 +483,9 @@ val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
     }
 }
 
+private val evaluateTrigonometricExpression =
+    createEvaluateTrigonometricExpressionPlan(ConstantExpressionsPlans.SimplifyConstantExpression)
+
 private val evaluateConstantAbsoluteValue =
     createEvaluateAbsoluteValuePlan(constantSimplificationSteps)
 
@@ -483,6 +493,8 @@ private val collectLikeRootsAndSimplify =
     createCollectLikeRootsAndSimplifyPlan(constantSimplificationSteps)
 private val collectLikeRationalPowersAndSimplify =
     createCollectLikeRationalPowersAndSimplifyPlan(constantSimplificationSteps)
+private val collectLikeTrigonometricTermsAndSimplify =
+    createCollectLikeTrigonometricTermsAndSimplifyPlan(constantSimplificationSteps)
 
 private val expandAndSimplifier = ExpandAndSimplifier(ConstantExpressionsPlans.SimplifyConstantExpression)
 

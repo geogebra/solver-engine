@@ -33,9 +33,9 @@ enum class AnglesExplanation : CategorisedMetadataKey {
     ConvertRadiansToDegrees,
 
     /**
-     * Simplify product containing degrees
+     * Rewrite angle in degrees as a single fraction.
      */
-    SimplifyExpressionContainingDegrees,
+    RewriteAngleInRadiansAsSingleFraction,
 
     /**
      * Use the conversion formula to convert degrees to radians.
@@ -61,6 +61,31 @@ enum class AnglesExplanation : CategorisedMetadataKey {
      * Find reference angle in first quadrant
      */
     FindReferenceAngle,
+
+    /**
+     * Convert expression with mixed units to radians
+     */
+    ConvertExpressionWithMixedUnitsToRadians,
+
+    /**
+     * Normalize angles by reducing them to the interval [0°,360°] or [0,2π].
+     */
+    NormalizeAngles,
+
+    /**
+     * Rewrite angle in degrees by extracting multiples of 360.
+     */
+    RewriteAngleInDegreesByExtractingMultiplesOf360,
+
+    /**
+     * Rewrite angle in radians by extracting multiples of 2 Pi
+     */
+    RewriteAngleInRadiansByExtractingMultiplesOfTwoPi,
+
+    /**
+     * Substitute angle with coterminal angle from unit circle.
+     */
+    SubstituteAngleWithCoterminalAngleFromUnitCircle,
 
     ;
 

@@ -76,4 +76,37 @@ class AnglesRulesTest {
             "cos (2 /pi/ - [5 /pi/ / 3])",
         )
     }
+
+    @Test
+    fun testRewriteAngleInDegrees() {
+        testRule(
+            "degree[390]",
+            AnglesRules.RewriteAngleInDegreesByExtractingMultiplesOf360,
+            "degree[360] + degree[30]",
+        )
+        testRule(
+            "degree[720]",
+            AnglesRules.RewriteAngleInDegreesByExtractingMultiplesOf360,
+            "2 * degree[360] + degree[0]",
+        )
+        testRule(
+            "degree[-420]",
+            AnglesRules.RewriteAngleInDegreesByExtractingMultiplesOf360,
+            "(-1) degree[360] + degree[-60]",
+        )
+    }
+
+    @Test
+    fun testRewriteAngleInRadians() {
+        testRule(
+            "[7 * /pi/ / 2]",
+            AnglesRules.RewriteAngleInRadiansByExtractingMultiplesOfTwoPi,
+            "2 /pi/ + [ 3 /pi/ / 2]",
+        )
+        testRule(
+            "8 * /pi/",
+            AnglesRules.RewriteAngleInRadiansByExtractingMultiplesOfTwoPi,
+            "4 * 2 /pi/ + 0",
+        )
+    }
 }

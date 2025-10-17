@@ -23,7 +23,6 @@ import engine.expressions.Constants.Infinity
 import engine.expressions.Constants.MinusOne
 import engine.expressions.Constants.One
 import engine.expressions.Constants.OneHalf
-import engine.expressions.Constants.OneQuarter
 import engine.expressions.Constants.Pi
 import engine.expressions.Constants.Ten
 import engine.expressions.Constants.Three
@@ -40,20 +39,20 @@ object TrigonometricConstants {
     ) {
         ZeroAngle(Zero, One, Zero, Infinity),
         PiOverTwelve(
-            productOf(OneQuarter, sumOf(squareRootOf(xp(6)), negOf(squareRootOf(Two)))),
-            productOf(OneQuarter, sumOf(squareRootOf(xp(6)), squareRootOf(Two))),
+            fractionOf(sumOf(squareRootOf(xp(6)), negOf(squareRootOf(Two))), Four),
+            fractionOf(sumOf(squareRootOf(xp(6)), squareRootOf(Two)), Four),
             sumOf(Two, negOf(squareRootOf(Three))),
             sumOf(Two, squareRootOf(Three)),
         ),
         PiOverTen(
-            productOf(OneQuarter, sumOf(squareRootOf(Five), negOf(One))),
-            productOf(OneQuarter, squareRootOf(sumOf(Ten, productOf(Two, squareRootOf(Five))))),
-            productOf(fractionOf(One, Five), squareRootOf(sumOf(xp(25), negOf(productOf(Ten, squareRootOf(Five)))))),
+            fractionOf(sumOf(squareRootOf(Five), negOf(One)), Four),
+            fractionOf(squareRootOf(sumOf(Ten, productOf(Two, squareRootOf(Five)))), Four),
+            fractionOf(squareRootOf(sumOf(xp(25), negOf(productOf(Ten, squareRootOf(Five))))), Five),
             squareRootOf(sumOf(Five, productOf(Two, squareRootOf(Five)))),
         ),
         PiOverEight(
-            productOf(OneHalf, squareRootOf(sumOf(Two, negOf(squareRootOf(Two))))),
-            productOf(OneHalf, squareRootOf(sumOf(Two, squareRootOf(Two)))),
+            fractionOf(squareRootOf(sumOf(Two, negOf(squareRootOf(Two)))), Two),
+            fractionOf(squareRootOf(sumOf(Two, squareRootOf(Two))), Two),
             sumOf(squareRootOf(Two), negOf(One)),
             sumOf(squareRootOf(Two), One),
         ),
@@ -64,10 +63,10 @@ object TrigonometricConstants {
             squareRootOf(Three),
         ),
         PiOverFive(
-            productOf(OneQuarter, squareRootOf(sumOf(Ten, negOf(productOf(Two, squareRootOf(Five)))))),
-            productOf(OneQuarter, sumOf(squareRootOf(Five), One)),
+            fractionOf(squareRootOf(sumOf(Ten, negOf(productOf(Two, squareRootOf(Five))))), Four),
+            fractionOf(sumOf(squareRootOf(Five), One), Four),
             squareRootOf(sumOf(Five, negOf(productOf(Two, squareRootOf(Five))))),
-            productOf(fractionOf(One, Five), squareRootOf(sumOf(xp(25), productOf(Ten, squareRootOf(Five))))),
+            fractionOf(squareRootOf(sumOf(xp(25), productOf(Ten, squareRootOf(Five)))), Five),
         ),
         PiOverFour(
             fractionOf(squareRootOf(Two), Two),

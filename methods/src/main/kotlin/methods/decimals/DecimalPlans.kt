@@ -46,6 +46,7 @@ import methods.general.createEvaluateAbsoluteValuePlan
 import methods.general.inlineSumsAndProducts
 import methods.integerarithmetic.IntegerArithmeticPlans
 import methods.integerarithmetic.IntegerArithmeticRules
+import methods.units.UnitsRules
 
 enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
     EvaluateSumOfDecimals(
@@ -111,7 +112,11 @@ enum class DecimalPlans(override val runner: CompositeMethod) : RunnerMethod {
             explanation = Explanation.ConvertTerminatingDecimalToFractionAndSimplify
 
             steps {
-                apply(DecimalRules.ConvertTerminatingDecimalToFraction)
+                firstOf {
+                    option { apply(UnitsRules.ConvertTerminatingDecimalWithUnitToFraction) }
+                    option { apply(DecimalRules.ConvertTerminatingDecimalToFraction) }
+                }
+
                 optionally(FractionArithmeticPlans.SimplifyFraction)
             }
         },
