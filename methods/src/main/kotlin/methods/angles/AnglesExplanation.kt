@@ -87,6 +87,30 @@ enum class AnglesExplanation : CategorisedMetadataKey {
      */
     SubstituteAngleWithCoterminalAngleFromUnitCircle,
 
+    /**
+     * Check if tangent is defined
+     * %1: placeholder that will be substituted with 90° or pi/2 depending on the user input (degrees or radians)
+     */
+    CheckDomainOfTangent,
+
+    /**
+     * Check if cotangent is defined
+     * %1: placeholder that will be substituted with 180° or pi depending on the user input (degrees or radians)
+     */
+    CheckDomainOfCotangent,
+
+    /**
+     * Check if secant is defined
+     * %1: placeholder that will be substituted with 90° or pi/2 depending on the user input (degrees or radians)
+     */
+    CheckDomainOfSecant,
+
+    /**
+     * Check if cosecant is defined
+     * %1: placeholder that will be substituted with 180° or pi depending on the user input (degrees or radians)
+     */
+    CheckDomainOfCosecant,
+
     ;
 
     override val category = "Angles"

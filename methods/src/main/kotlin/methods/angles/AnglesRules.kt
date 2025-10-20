@@ -1,5 +1,7 @@
 package methods.angles
 
+import engine.expressions.Constants
+import engine.expressions.Constants.Ninety
 import engine.expressions.Constants.OneHundredAndEighty
 import engine.expressions.Constants.Pi
 import engine.expressions.Constants.ThreeHundredAndSixty
@@ -23,6 +25,7 @@ import engine.methods.rule
 import engine.operators.TrigonometricFunctionType
 import engine.patterns.AnyPattern
 import engine.patterns.FixedPattern
+import engine.patterns.IntegerConditionPattern
 import engine.patterns.OneOfPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.SignedNumberPattern
@@ -36,6 +39,7 @@ import engine.patterns.numericCondition
 import engine.patterns.oneOf
 import engine.patterns.withOptionalRationalCoefficient
 import engine.steps.metadata.metadata
+import engine.utility.Rational
 import java.math.BigDecimal
 import java.math.BigInteger
 
@@ -59,6 +63,7 @@ enum class AnglesRules(override val runner: Rule) : RunnerMethod {
     SubstituteAngleWithCoterminalAngleFromUnitCircle(substituteAngleWithCoterminalAngleFromUnitCircle),
     FindReferenceAngleInFirstQuadrantInDegree(findReferenceAngleInFirstQuadrantInDegree),
     FindReferenceAngleInFirstQuadrantInRadian(findReferenceAngleInFirstQuadrantInRadian),
+    CheckDomainOfFunction(checkDomainOfFunction),
 }
 
 /**
@@ -436,6 +441,96 @@ private val rewriteAngleInRadiansByExtractingMultiplesOfTwoPi = rule {
                 ),
             ),
             explanation = metadata(Explanation.RewriteAngleInRadiansByExtractingMultiplesOfTwoPi),
+        )
+    }
+}
+
+@Suppress("MagicNumber")
+private val checkDomainOfFunction = rule {
+    val angleDegree = IntegerConditionPattern(SignedIntegerPattern()) {
+        it.remainder(90.toBigInteger()) == BigInteger.ZERO
+    }
+    val zeroAngle = FixedPattern(Zero)
+    val angleRadians = withOptionalRationalCoefficient(FixedPattern(Pi))
+
+    val pattern =
+        TrigonometricExpressionPattern(
+            oneOf(degreeOf(angleDegree), angleRadians, zeroAngle),
+            listOf(
+                TrigonometricFunctionType.Tan,
+                TrigonometricFunctionType.Cot,
+                TrigonometricFunctionType.Sec,
+                TrigonometricFunctionType.Csc,
+            ),
+        )
+
+    onPattern(pattern) {
+        val explanationKey = when (getFunctionType(pattern)) {
+            TrigonometricFunctionType.Tan -> Explanation.CheckDomainOfTangent
+            TrigonometricFunctionType.Cot -> Explanation.CheckDomainOfCotangent
+            TrigonometricFunctionType.Sec -> Explanation.CheckDomainOfSecant
+            TrigonometricFunctionType.Csc -> Explanation.CheckDomainOfCosecant
+            else -> null
+        }
+
+        if (explanationKey == null) {
+            return@onPattern null
+        }
+
+        // If function is Tan or Sec we want odd multiples of π/2, otherwise even multiples of π/2.
+        val expectedMultiplier =
+            if (getFunctionType(pattern) == TrigonometricFunctionType.Tan ||
+                getFunctionType(pattern) == TrigonometricFunctionType.Sec
+            ) {
+                BigInteger.ONE
+            } else {
+                BigInteger.ZERO
+            }
+
+        if (isBound(angleRadians) || isBound(zeroAngle)) {
+            val coefficient = if (isBound(angleRadians)) {
+                getCoefficientValue(angleRadians)
+            } else {
+                Rational(
+                    BigInteger.ZERO,
+                    BigInteger.ONE,
+                )
+            }
+
+            // Adjust the numerator to easily check for multiples of π/2
+            val numeratorAdjusted = (coefficient?.numerator ?: BigInteger.ONE) * BigInteger.TWO
+            val denominator = coefficient?.denominator ?: BigInteger.ONE
+
+            val remainder = numeratorAdjusted.remainder(denominator)
+            val multiplier = (numeratorAdjusted / denominator).mod(BigInteger.TWO)
+
+            if (remainder != BigInteger.ZERO || multiplier != expectedMultiplier) {
+                return@onPattern null
+            }
+        } else {
+            val multiplier = (getValue(angleDegree) / 90.toBigInteger()).mod(BigInteger.TWO)
+            if (multiplier != expectedMultiplier) {
+                return@onPattern null
+            }
+        }
+
+        val explanationParameter = if (isBound(angleRadians)) {
+            if (expectedMultiplier == BigInteger.ONE) {
+                fractionOf(Pi, Two)
+            } else {
+                Pi
+            }
+        } else {
+            if (expectedMultiplier == BigInteger.ONE) {
+                degreeOf(Ninety)
+            } else {
+                degreeOf(OneHundredAndEighty)
+            }
+        }
+
+        ruleResult(
+            toExpr = transformTo(pattern, Constants.Undefined),
+            explanation = metadata(explanationKey, explanationParameter),
         )
     }
 }

@@ -31,6 +31,7 @@ object Constants {
     val Four = xp(4)
     val Five = xp(5)
     val Ten = xp(10)
+    val Ninety = xp(90)
     val OneHundredAndEighty = xp(180)
     val ThreeHundredAndSixty = xp(360)
 

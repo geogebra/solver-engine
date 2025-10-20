@@ -285,6 +285,7 @@ val simpleTidyUpSteps = steps {
         option(GeneralRules.EvaluateZeroToThePowerOfZero)
         option(IntegerRationalExponentsRules.EvaluateNegativeToRationalExponentAsUndefined)
         option(LogsRules.EvaluateLogOfNonPositiveAsUndefined)
+        option(AnglesRules.CheckDomainOfFunction)
 
         // tidy up decimals
         // It's bad to have this here as it has depth = 0.  We should do this at the start and then forget about it.

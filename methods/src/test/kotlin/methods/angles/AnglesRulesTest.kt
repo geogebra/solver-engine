@@ -109,4 +109,88 @@ class AnglesRulesTest {
             "4 * 2 /pi/ + 0",
         )
     }
+
+    @Test
+    fun testCheckDomainOfTrigFunction() {
+        testRule(
+            "tan degree[270]",
+            AnglesRules.CheckDomainOfFunction,
+            "/undefined/",
+        )
+        testRule(
+            "cot degree[270]",
+            AnglesRules.CheckDomainOfFunction,
+            null,
+        )
+        testRule(
+            "sec degree[270]",
+            AnglesRules.CheckDomainOfFunction,
+            "/undefined/",
+        )
+        testRule(
+            "csc degree[270]",
+            AnglesRules.CheckDomainOfFunction,
+            null,
+        )
+        testRule(
+            "cot degree[360]",
+            AnglesRules.CheckDomainOfFunction,
+            "/undefined/",
+        )
+        testRule(
+            "csc degree[360]",
+            AnglesRules.CheckDomainOfFunction,
+            "/undefined/",
+        )
+        testRule(
+            "tan [3 /pi/ / 2]",
+            AnglesRules.CheckDomainOfFunction,
+            "/undefined/",
+        )
+        testRule(
+            "cot [3 /pi/ / 2]",
+            AnglesRules.CheckDomainOfFunction,
+            null,
+        )
+        testRule(
+            "sec [3 /pi/ / 2]",
+            AnglesRules.CheckDomainOfFunction,
+            "/undefined/",
+        )
+        testRule(
+            "csc [3 /pi/ / 2]",
+            AnglesRules.CheckDomainOfFunction,
+            null,
+        )
+        testRule(
+            "cot 2 /pi/",
+            AnglesRules.CheckDomainOfFunction,
+            "/undefined/",
+        )
+        testRule(
+            "csc 2 /pi/",
+            AnglesRules.CheckDomainOfFunction,
+            "/undefined/",
+        )
+        testRule(
+            "tan degree[45]",
+            AnglesRules.CheckDomainOfFunction,
+            null,
+        )
+        testRule(
+            "tan [/pi/ / 4]",
+            AnglesRules.CheckDomainOfFunction,
+            null,
+        )
+        testRule(
+            "cot 0",
+            AnglesRules.CheckDomainOfFunction,
+            "/undefined/",
+        )
+        testRule(
+            "sec 0",
+            AnglesRules.CheckDomainOfFunction,
+            null,
+        )
+    }
 }
