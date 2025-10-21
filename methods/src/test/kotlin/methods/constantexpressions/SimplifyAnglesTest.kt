@@ -112,11 +112,11 @@ class SimplifyAnglesTest {
 
                 step {
                     fromExpr = "sin [/pi/ / 4] + sin [/pi/ / 4]"
-                    toExpr = "2 * sin [/pi/ / 4]"
+                    toExpr = "2 sin [/pi/ / 4]"
                 }
 
                 step {
-                    fromExpr = "2 * sin [/pi/ / 4]"
+                    fromExpr = "2 sin [/pi/ / 4]"
                     toExpr = "2 * [sqrt[2] / 2]"
                 }
 

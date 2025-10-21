@@ -207,4 +207,28 @@ class AnglesRulesTest {
             "[1 / sin [/pi/ / 6]]",
         )
     }
+
+    @Test
+    fun testApplyingNegativeIdentityOfTrigFunctions() {
+        testRule(
+            "sin - degree[30]",
+            AnglesRules.ApplyNegativeIdentityOfTrigFunction,
+            "- sin degree[30]",
+        )
+        testRule(
+            "cos - [/pi/ / 4]",
+            AnglesRules.ApplyNegativeIdentityOfTrigFunction,
+            "cos [/pi/ / 4]",
+        )
+        testRule(
+            "tan -x",
+            AnglesRules.ApplyNegativeIdentityOfTrigFunction,
+            "- tan x",
+        )
+        testRule(
+            "sec -x",
+            AnglesRules.ApplyNegativeIdentityOfTrigFunction,
+            "sec x",
+        )
+    }
 }

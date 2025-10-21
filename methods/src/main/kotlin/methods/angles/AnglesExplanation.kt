@@ -116,6 +116,21 @@ enum class AnglesExplanation : CategorisedMetadataKey {
      */
     DeriveTrigonometricFunctionFromPrimitiveFunctions,
 
+    /**
+     * Apply the odd symmetry of sine
+     */
+    ApplyOddSymmetryOfSine,
+
+    /**
+     * Apply the odd symmetry of tangent
+     */
+    ApplyOddSymmetryOfTangent,
+
+    /**
+     * Apply the even symmetry of cosine
+     */
+    ApplyEvenSymmetryOfCosine,
+
     ;
 
     override val category = "Angles"

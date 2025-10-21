@@ -379,6 +379,7 @@ val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
 
         option { deeply(AnglesPlans.ReduceAngleToUnitCircle) }
         option { deeply(AnglesRules.SubstituteAngleWithCoterminalAngleFromUnitCircle) }
+        option { deeply(AnglesRules.ApplyNegativeIdentityOfTrigFunction) }
 
         // It would be better to move this out of constantSimplificationSteps altogether and do it first but the
         // required behaviour depends on the previous steps being tried first.

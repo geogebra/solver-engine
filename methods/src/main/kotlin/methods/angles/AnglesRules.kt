@@ -35,6 +35,7 @@ import engine.patterns.commutativeProductOf
 import engine.patterns.commutativeSumOf
 import engine.patterns.condition
 import engine.patterns.degreeOf
+import engine.patterns.negOf
 import engine.patterns.numericCondition
 import engine.patterns.oneOf
 import engine.patterns.withOptionalRationalCoefficient
@@ -65,6 +66,7 @@ enum class AnglesRules(override val runner: Rule) : RunnerMethod {
     FindReferenceAngleInFirstQuadrantInRadian(findReferenceAngleInFirstQuadrantInRadian),
     CheckDomainOfFunction(checkDomainOfFunction),
     DeriveTrigonometricFunctionFromPrimitiveFunctions(deriveTrigonometricFunctionFromPrimitiveFunctions),
+    ApplyNegativeIdentityOfTrigFunction(applyNegativeIdentityOfTrigFunction),
 }
 
 /**
@@ -581,6 +583,62 @@ private val checkDomainOfFunction = rule {
         ruleResult(
             toExpr = transformTo(pattern, Constants.Undefined),
             explanation = metadata(explanationKey, explanationParameter),
+        )
+    }
+}
+
+/**
+ * Apply odd identity in case of sine, tangent, cotangent, cosecant:
+ * sin(-x) --> -sin(x)
+ * Apply even identity in case of cosine, sec:
+ * cos(-x) --> cos(x)
+ */
+private val applyNegativeIdentityOfTrigFunction = rule {
+    val value = AnyPattern()
+    val negValue = negOf(value)
+    val pattern = TrigonometricExpressionPattern(
+        negValue,
+        listOf(
+            TrigonometricFunctionType.Sin,
+            TrigonometricFunctionType.Cos,
+            TrigonometricFunctionType.Tan,
+            TrigonometricFunctionType.Cot,
+            TrigonometricFunctionType.Sec,
+            TrigonometricFunctionType.Csc,
+        ),
+    )
+
+    onPattern(pattern) {
+        val (toExpr, explanation) = when (getFunctionType(pattern)) {
+            TrigonometricFunctionType.Sin, TrigonometricFunctionType.Csc ->
+                negOf(
+                    wrapWithTrigonometricFunction(
+                        pattern,
+                        move(value),
+                    ),
+                ) to Explanation.ApplyOddSymmetryOfSine
+            TrigonometricFunctionType.Cos, TrigonometricFunctionType.Sec ->
+                wrapWithTrigonometricFunction(
+                    pattern,
+                    move(value),
+                ) to Explanation.ApplyEvenSymmetryOfCosine
+            TrigonometricFunctionType.Tan, TrigonometricFunctionType.Cot ->
+                negOf(
+                    wrapWithTrigonometricFunction(
+                        pattern,
+                        move(value),
+                    ),
+                ) to Explanation.ApplyOddSymmetryOfTangent
+            else -> null to null
+        }
+
+        if (toExpr == null || explanation == null) {
+            return@onPattern null
+        }
+
+        ruleResult(
+            toExpr = toExpr,
+            explanation = metadata(explanation),
         )
     }
 }
