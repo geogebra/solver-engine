@@ -188,7 +188,13 @@ fun createEvaluateTrigonometricExpressionPlan(simplificationSteps: StepsProducer
         steps {
             shortcut(AnglesRules.EvaluateExactValueOfMainAngle)
 
-            apply(exactAngleEvaluationPlan)
+            firstOf {
+                option(exactAngleEvaluationPlan)
+                option {
+                    apply(AnglesRules.DeriveTrigonometricFunctionFromPrimitiveFunctions)
+                    applyToChildren(exactAngleEvaluationPlan, atLeastOne = true)
+                }
+            }
         }
     }
 }

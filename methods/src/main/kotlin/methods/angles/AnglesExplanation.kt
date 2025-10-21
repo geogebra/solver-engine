@@ -111,6 +111,11 @@ enum class AnglesExplanation : CategorisedMetadataKey {
      */
     CheckDomainOfCosecant,
 
+    /**
+     * Derive trigonometric function from primitive functions
+     */
+    DeriveTrigonometricFunctionFromPrimitiveFunctions,
+
     ;
 
     override val category = "Angles"

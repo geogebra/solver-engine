@@ -193,4 +193,18 @@ class AnglesRulesTest {
             null,
         )
     }
+
+    @Test
+    fun testEvaluatingDerivedTrigonometricFunction() {
+        testRule(
+            "sec degree[60]",
+            AnglesRules.DeriveTrigonometricFunctionFromPrimitiveFunctions,
+            "[1 / cos degree[60]]",
+        )
+        testRule(
+            "csc [/pi/ / 6]",
+            AnglesRules.DeriveTrigonometricFunctionFromPrimitiveFunctions,
+            "[1 / sin [/pi/ / 6]]",
+        )
+    }
 }

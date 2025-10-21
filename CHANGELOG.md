@@ -16,6 +16,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Evaluate sine, cosine, tangent, and cotangent of main angles. (PLUT-1058)
 - Normalize angles by reducing them to the range [0, 2π). (PLUT-1059)
 - Verify the domain of trigonometric functions and evaluate as undefined if necessary (PLUT-1061)
+- Derive sec / csc from primitive trigonometric functions. (PLUT-1062)
 - SDK: Add rendering and parsing for angles in degrees (PLUT-1045)
 
 ### Fixed

@@ -64,6 +64,7 @@ enum class AnglesRules(override val runner: Rule) : RunnerMethod {
     FindReferenceAngleInFirstQuadrantInDegree(findReferenceAngleInFirstQuadrantInDegree),
     FindReferenceAngleInFirstQuadrantInRadian(findReferenceAngleInFirstQuadrantInRadian),
     CheckDomainOfFunction(checkDomainOfFunction),
+    DeriveTrigonometricFunctionFromPrimitiveFunctions(deriveTrigonometricFunctionFromPrimitiveFunctions),
 }
 
 /**
@@ -293,6 +294,55 @@ private val findReferenceAngleInFirstQuadrantInRadian = rule {
         ruleResult(
             toExpr = toExpression,
             explanation = metadata(Explanation.FindReferenceAngle),
+        )
+    }
+}
+
+/**
+ * Replace derived trigonometric function with primitive trigonometric functions.
+ * Only handles sec and csc at the moment, as tan and cot are included in the main angles rules.
+ *
+ * e.g. sec degree[30] -> [1 / cos degree[30]]
+ */
+private val deriveTrigonometricFunctionFromPrimitiveFunctions = rule {
+    val argumentPattern = AnyPattern()
+    val functionPattern = TrigonometricExpressionPattern(
+        argumentPattern,
+        listOf(TrigonometricFunctionType.Sec, TrigonometricFunctionType.Csc),
+    )
+
+    onPattern(functionPattern) {
+        val match = get(functionPattern) as TrigonometricExpression
+
+        val toExpr = when (getFunctionType(functionPattern)) {
+            TrigonometricFunctionType.Sec -> fractionOf(
+                Constants.One,
+                TrigonometricExpression(
+                    operand = move(argumentPattern),
+                    functionType = TrigonometricFunctionType.Cos,
+                    powerInside = match.powerInside,
+                    inverseNotation = match.inverseNotation,
+                ),
+            )
+            TrigonometricFunctionType.Csc -> fractionOf(
+                Constants.One,
+                TrigonometricExpression(
+                    operand = move(argumentPattern),
+                    functionType = TrigonometricFunctionType.Sin,
+                    powerInside = match.powerInside,
+                    inverseNotation = match.inverseNotation,
+                ),
+            )
+            else -> null
+        }
+
+        if (toExpr == null) {
+            return@onPattern null
+        }
+
+        ruleResult(
+            toExpr = toExpr,
+            explanation = metadata(Explanation.DeriveTrigonometricFunctionFromPrimitiveFunctions),
         )
     }
 }
