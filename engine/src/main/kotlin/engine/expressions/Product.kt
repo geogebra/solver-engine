@@ -125,9 +125,11 @@ fun productSignRequired(left: Expression, right: Expression): Boolean =
                 leftOp.variableName != rightOp.variableName
 
             !(
-                left.isNumbery() &&
-                    rightIsRootOrVariableOrTrigExpression ||
-                    leftIsVariable && rightIsRoot ||
+                (
+                    left.isNumbery() &&
+                        rightIsRootOrVariableOrTrigExpression
+                ) ||
+                    (leftIsVariable && rightIsRoot) ||
                     differentVariables
             )
         }

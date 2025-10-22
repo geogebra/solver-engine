@@ -588,9 +588,9 @@ private val checkDomainOfFunction = rule {
 }
 
 /**
- * Apply odd identity in case of sine, tangent, cotangent, cosecant:
+ * Apply odd symmetry in case of sine, tangent, cotangent, cosecant:
  * sin(-x) --> -sin(x)
- * Apply even identity in case of cosine, sec:
+ * Apply even symmetry in case of cosine, sec:
  * cos(-x) --> cos(x)
  */
 private val applyNegativeIdentityOfTrigFunction = rule {
