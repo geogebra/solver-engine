@@ -6,7 +6,7 @@ WORKDIR /home/gradle/src
 
 RUN gradle assemble --no-daemon --stacktrace --build-cache --gradle-user-home cache/.gradle
 
-FROM openjdk:21-slim
+FROM eclipse-temurin:21-jammy
 
 ARG VERSION='0.1'
 
