@@ -11,9 +11,14 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Added
 
+- Apply trigonometric identities of sums. (PLUT-1069)
+
 ### Fixed
 
 ### Changed
+
+- Refactored trigonometric expressions.
+- SDK: Changed trigonometric expression input format to be more consistent with other functions. (PLUT-1069)
 
 ### Removed
 

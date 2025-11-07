@@ -26,34 +26,34 @@ class SimplifyAnglesTest {
     fun testEvaluationOfMainAngles() {
         testMethod {
             method = ConstantExpressionsPlans.SimplifyConstantExpression
-            inputExpr = "sin [10 * /pi/ / 24]"
+            inputExpr = "sin[[10 * /pi/ / 24]]"
 
             check {
-                step { toExpr = "sin [5 /pi/ / 12]" }
+                step { toExpr = "sin[[5 /pi/ / 12]]" }
                 step { toExpr = "[sqrt[6] + sqrt[2] / 4]" }
             }
         }
 
         testMethod {
             method = ConstantExpressionsPlans.SimplifyConstantExpression
-            inputExpr = "cos degree[ 120 ]"
+            inputExpr = "cos[degree[ 120 ]]"
 
             check {
-                fromExpr = "cos degree[ 120 ]"
+                fromExpr = "cos[degree[ 120 ]]"
                 toExpr = "-[1 / 2]"
 
                 step {
-                    fromExpr = "cos degree[ 120 ]"
-                    toExpr = "-cos (degree[ 180 ] - degree[ 120 ])"
+                    fromExpr = "cos[degree[ 120 ]]"
+                    toExpr = "-cos[degree[ 180 ] - degree[ 120 ]]"
                 }
 
                 step {
-                    fromExpr = "-cos (degree[ 180 ] - degree[ 120 ])"
-                    toExpr = "-cos degree[ 60 ]"
+                    fromExpr = "-cos[degree[ 180 ] - degree[ 120 ]]"
+                    toExpr = "-cos[degree[ 60 ]]"
                 }
 
                 step {
-                    fromExpr = "-cos degree[ 60 ]"
+                    fromExpr = "-cos[degree[ 60 ]]"
                     toExpr = "-[1 / 2]"
                 }
             }
@@ -61,33 +61,33 @@ class SimplifyAnglesTest {
 
         testMethod {
             method = ConstantExpressionsPlans.SimplifyConstantExpression
-            inputExpr = "sin degree[ 157.5 ]"
+            inputExpr = "sin[degree[ 157.5 ]]"
 
             check {
-                fromExpr = "sin degree[ 157.5 ]"
+                fromExpr = "sin[degree[ 157.5 ]]"
                 toExpr = "[sqrt[2 - sqrt[2]] / 2]"
 
                 step {
-                    fromExpr = "sin degree[ 157.5 ]"
-                    toExpr = "sin [degree[ 315 ] / 2]"
+                    fromExpr = "sin[degree[ 157.5 ]]"
+                    toExpr = "sin[[degree[ 315 ] / 2]]"
                 }
 
                 step {
-                    fromExpr = "sin [degree[ 315 ] / 2]"
+                    fromExpr = "sin[[degree[ 315 ] / 2]]"
                     toExpr = "[sqrt[2 - sqrt[2]] / 2]"
 
                     step {
-                        fromExpr = "sin [degree[ 315 ] / 2]"
-                        toExpr = "sin (degree[ 180 ] - [degree[ 315 ] / 2])"
+                        fromExpr = "sin[[degree[ 315 ] / 2]]"
+                        toExpr = "sin[degree[ 180 ] - [degree[ 315 ] / 2]]"
                     }
 
                     step {
-                        fromExpr = "sin (degree[ 180 ] - [degree[ 315 ] / 2])"
-                        toExpr = "sin [degree[ 45 ] / 2]"
+                        fromExpr = "sin[degree[ 180 ] - [degree[ 315 ] / 2]]"
+                        toExpr = "sin[[degree[ 45 ] / 2]]"
                     }
 
                     step {
-                        fromExpr = "sin [degree[ 45 ] / 2]"
+                        fromExpr = "sin[[degree[ 45 ] / 2]]"
                         toExpr = "[sqrt[2 - sqrt[2]] / 2]"
                     }
                 }
@@ -99,29 +99,29 @@ class SimplifyAnglesTest {
     fun `test normalize and evaluate multiple main angles`() {
         testMethod {
             method = ConstantExpressionsPlans.SimplifyConstantExpression
-            inputExpr = "sin degree[ 405 ] + sin [/pi/ / 4]"
+            inputExpr = "sin[degree[ 405 ]] + sin[[/pi/ / 4]]"
 
             check {
-                fromExpr = "sin degree[ 405 ] + sin [/pi/ / 4]"
+                fromExpr = "sin[degree[ 405 ]] + sin[[/pi/ / 4]]"
                 toExpr = "sqrt[2]"
 
                 step {
-                    fromExpr = "sin degree[ 405 ] + sin [/pi/ / 4]"
-                    toExpr = "sin [/pi/ / 4] + sin [/pi/ / 4]"
+                    fromExpr = "sin[degree[ 405 ]] + sin[[/pi/ / 4]]"
+                    toExpr = "sin[[/pi/ / 4]] + sin[[/pi/ / 4]]"
                 }
 
                 step {
-                    fromExpr = "sin [/pi/ / 4] + sin [/pi/ / 4]"
-                    toExpr = "2 sin [/pi/ / 4]"
+                    fromExpr = "sin[[/pi/ / 4]] + sin[[/pi/ / 4]]"
+                    toExpr = "2 sin[[/pi/ / 4]]"
                 }
 
                 step {
-                    fromExpr = "2 sin [/pi/ / 4]"
+                    fromExpr = "2 sin[[/pi/ / 4]]"
                     toExpr = "2 * [sqrt[2] / 2]"
                 }
 
                 step {
-                    fromExpr = "2 * [sqrt[2] / 2]"
+                    fromExpr = "2 *[sqrt[2] / 2]"
                     toExpr = "sqrt[2]"
                 }
             }

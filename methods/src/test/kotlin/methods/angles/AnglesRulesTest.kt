@@ -33,47 +33,47 @@ class AnglesRulesTest {
 
     @Test
     fun testEvaluatingTrigonometricFunctionOfMainAngles() {
-        testRule("sin degree[30]", AnglesRules.EvaluateExactValueOfMainAngle, "[1 / 2]")
-        testRule("cos [/pi/ / 3]", AnglesRules.EvaluateExactValueOfMainAngle, "[1 / 2]")
-        testRule("tan degree[45]", AnglesRules.EvaluateExactValueOfMainAngle, "1")
-        testRule("cot [/pi/ / 4]", AnglesRules.EvaluateExactValueOfMainAngle, "1")
+        testRule("sin[degree[30]]", AnglesRules.EvaluateExactValueOfMainAngle, "[1 / 2]")
+        testRule("cos[[/pi/ / 3]]", AnglesRules.EvaluateExactValueOfMainAngle, "[1 / 2]")
+        testRule("tan[degree[45]]", AnglesRules.EvaluateExactValueOfMainAngle, "1")
+        testRule("cot[[/pi/ / 4]]", AnglesRules.EvaluateExactValueOfMainAngle, "1")
     }
 
     @Test
     fun testFindReferenceAngleInFirstQuadrantInDegree() {
         testRule(
-            "cos degree[120]",
+            "cos[degree[120]]",
             AnglesRules.FindReferenceAngleInFirstQuadrantInDegree,
-            "-cos (degree[ 180 ] - degree [ 120 ])",
+            "-cos[degree[ 180 ] - degree [ 120 ]]",
         )
         testRule(
-            "cos degree[240]",
+            "cos[degree[240]]",
             AnglesRules.FindReferenceAngleInFirstQuadrantInDegree,
-            "-cos (degree[ 240 ] - degree[ 180 ])",
+            "-cos[degree[ 240 ] - degree[ 180 ]]",
         )
         testRule(
-            "cos degree[300]",
+            "cos[degree[300]]",
             AnglesRules.FindReferenceAngleInFirstQuadrantInDegree,
-            "cos (degree[ 360 ] - degree[ 300 ])",
+            "cos[degree[ 360 ] - degree[ 300 ]]",
         )
     }
 
     @Test
     fun testFindReferenceAngleInFirstQuadrantInRadian() {
         testRule(
-            "cos [2 /pi/ / 3]",
+            "cos[[2 /pi/ / 3]]",
             AnglesRules.FindReferenceAngleInFirstQuadrantInRadian,
-            "-cos (/pi/ - [2 /pi/ / 3])",
+            "-cos[/pi/ - [2 /pi/ / 3]]",
         )
         testRule(
-            "cos [4 /pi/ / 3]",
+            "cos[[4 /pi/ / 3]]",
             AnglesRules.FindReferenceAngleInFirstQuadrantInRadian,
-            "-cos ([4 /pi/ / 3] - /pi/)",
+            "-cos[[4 /pi/ / 3] - /pi/]",
         )
         testRule(
-            "cos [5 /pi/ / 3]",
+            "cos[[5 /pi/ / 3]]",
             AnglesRules.FindReferenceAngleInFirstQuadrantInRadian,
-            "cos (2 /pi/ - [5 /pi/ / 3])",
+            "cos[2 /pi/ - [5 /pi/ / 3]]",
         )
     }
 
@@ -113,82 +113,82 @@ class AnglesRulesTest {
     @Test
     fun testCheckDomainOfTrigFunction() {
         testRule(
-            "tan degree[270]",
+            "tan[degree[270]]",
             AnglesRules.CheckDomainOfFunction,
             "/undefined/",
         )
         testRule(
-            "cot degree[270]",
+            "cot[degree[270]]",
             AnglesRules.CheckDomainOfFunction,
             null,
         )
         testRule(
-            "sec degree[270]",
+            "sec[degree[270]]",
             AnglesRules.CheckDomainOfFunction,
             "/undefined/",
         )
         testRule(
-            "csc degree[270]",
+            "csc[degree[270]]",
             AnglesRules.CheckDomainOfFunction,
             null,
         )
         testRule(
-            "cot degree[360]",
+            "cot[degree[360]]",
             AnglesRules.CheckDomainOfFunction,
             "/undefined/",
         )
         testRule(
-            "csc degree[360]",
+            "csc[degree[360]]",
             AnglesRules.CheckDomainOfFunction,
             "/undefined/",
         )
         testRule(
-            "tan [3 /pi/ / 2]",
+            "tan[[3 /pi/ / 2]]",
             AnglesRules.CheckDomainOfFunction,
             "/undefined/",
         )
         testRule(
-            "cot [3 /pi/ / 2]",
+            "cot[[3 /pi/ / 2]]",
             AnglesRules.CheckDomainOfFunction,
             null,
         )
         testRule(
-            "sec [3 /pi/ / 2]",
+            "sec[[3 /pi/ / 2]]",
             AnglesRules.CheckDomainOfFunction,
             "/undefined/",
         )
         testRule(
-            "csc [3 /pi/ / 2]",
+            "csc[[3 /pi/ / 2]]",
             AnglesRules.CheckDomainOfFunction,
             null,
         )
         testRule(
-            "cot 2 /pi/",
+            "cot[2 /pi/]",
             AnglesRules.CheckDomainOfFunction,
             "/undefined/",
         )
         testRule(
-            "csc 2 /pi/",
+            "csc[2 /pi/]",
             AnglesRules.CheckDomainOfFunction,
             "/undefined/",
         )
         testRule(
-            "tan degree[45]",
+            "tan[degree[45]]",
             AnglesRules.CheckDomainOfFunction,
             null,
         )
         testRule(
-            "tan [/pi/ / 4]",
+            "tan[[/pi/ / 4]]",
             AnglesRules.CheckDomainOfFunction,
             null,
         )
         testRule(
-            "cot 0",
+            "cot[0]",
             AnglesRules.CheckDomainOfFunction,
             "/undefined/",
         )
         testRule(
-            "sec 0",
+            "sec[0]",
             AnglesRules.CheckDomainOfFunction,
             null,
         )
@@ -197,38 +197,14 @@ class AnglesRulesTest {
     @Test
     fun testEvaluatingDerivedTrigonometricFunction() {
         testRule(
-            "sec degree[60]",
+            "sec[degree[60]]",
             AnglesRules.DeriveTrigonometricFunctionFromPrimitiveFunctions,
-            "[1 / cos degree[60]]",
+            "[1 / cos [degree[60]]]",
         )
         testRule(
-            "csc [/pi/ / 6]",
+            "csc[[/pi/ / 6]]",
             AnglesRules.DeriveTrigonometricFunctionFromPrimitiveFunctions,
-            "[1 / sin [/pi/ / 6]]",
-        )
-    }
-
-    @Test
-    fun testApplyingNegativeIdentityOfTrigFunctions() {
-        testRule(
-            "sin - degree[30]",
-            AnglesRules.ApplyNegativeIdentityOfTrigFunction,
-            "- sin degree[30]",
-        )
-        testRule(
-            "cos - [/pi/ / 4]",
-            AnglesRules.ApplyNegativeIdentityOfTrigFunction,
-            "cos [/pi/ / 4]",
-        )
-        testRule(
-            "tan -x",
-            AnglesRules.ApplyNegativeIdentityOfTrigFunction,
-            "- tan x",
-        )
-        testRule(
-            "sec -x",
-            AnglesRules.ApplyNegativeIdentityOfTrigFunction,
-            "sec x",
+            "[1 / sin[[/pi/ / 6]]]",
         )
     }
 }

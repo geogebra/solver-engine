@@ -20,13 +20,16 @@ package methods.angles
 import engine.expressions.Constants.Pi
 import engine.expressions.Expression
 import engine.expressions.Minus
+import engine.expressions.Product
 import engine.expressions.containsExpression
+import engine.expressions.containsTrigExpression
 import engine.expressions.containsUnits
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.StepsProducer
+import engine.methods.stepsproducers.steps
 import engine.operators.UnitType
 import engine.patterns.AnyPattern
 import engine.patterns.ConstantPattern
@@ -196,5 +199,17 @@ fun createEvaluateTrigonometricExpressionPlan(simplificationSteps: StepsProducer
                 }
             }
         }
+    }
+}
+
+/**
+ * - Check if any of the functions contained in the product are undefined
+ * - Check if the product contains zero
+ */
+val simplifyProductContainingTrigonometricExpressions = steps {
+    check { it is Product && it.containsTrigExpression() }
+    firstOf {
+        option { deeply(AnglesRules.CheckDomainOfFunction) }
+        option(AnglesRules.EvaluateProductContainingTrigonometricExpressionsAsZero)
     }
 }

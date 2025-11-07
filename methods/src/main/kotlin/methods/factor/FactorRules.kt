@@ -625,20 +625,21 @@ private class CommonFactorView(override val original: Expression) : View {
     }
 
     private val baseWithOrigin: Expression get() = newBase?.withOrigin(Combine(listOf(base))) ?: base
-    private val exponentWithOrigin: Expression? get() {
-        val exponent = this.exponent
-        val newExponent = this.newExponent
+    private val exponentWithOrigin: Expression?
+        get() {
+            val exponent = this.exponent
+            val newExponent = this.newExponent
 
-        return if (newExponent != null) {
-            if (exponent != null) {
-                xp(newExponent).withOrigin(Combine(listOf(exponent)))
+            return if (newExponent != null) {
+                if (exponent != null) {
+                    xp(newExponent).withOrigin(Combine(listOf(exponent)))
+                } else {
+                    xp(newExponent)
+                }
             } else {
-                xp(newExponent)
+                exponent
             }
-        } else {
-            exponent
         }
-    }
 
     override fun recombine(): Expression? {
         return when {

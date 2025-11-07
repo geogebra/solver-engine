@@ -80,9 +80,9 @@ export function treeToSolver(n: ExpressionTree): string {
       const base = n.operands[0];
       if ((base.type as TrigonometricFunctions) && (base as any).powerInside) {
         return dec(
-          `[${base.type.toLowerCase()} ^ ${rec(n.operands[1])}] ${rec(
+          `[${base.type.toLowerCase()} ^ ${rec(n.operands[1])}][${rec(
             (base as any).operands[0],
-          )}`,
+          )}]`,
         );
       } else {
         return dec(`[${rec(base)} ^ ${rec(n.operands[1])}]`);
@@ -104,7 +104,7 @@ export function treeToSolver(n: ExpressionTree): string {
     case 'Sech':
     case 'Csch':
     case 'Coth':
-      return dec(`${n.type.toLowerCase()} ${rec(n.operands[0])}`);
+      return dec(`${n.type.toLowerCase()}[${rec(n.operands[0])}]`);
     case 'Arcsin':
     case 'Arccos':
     case 'Arctan':
@@ -112,9 +112,9 @@ export function treeToSolver(n: ExpressionTree): string {
     case 'Arcsec':
     case 'Arccsc':
       if (n.inverseNotation === 'superscript') {
-        return dec(`[${n.type.slice(3).toLowerCase()} ^ -1] ${rec(n.operands[0])}`);
+        return dec(`[${n.type.slice(3).toLowerCase()} ^ -1][${rec(n.operands[0])}]`);
       } else {
-        return dec(`${n.type.toLowerCase()} ${rec(n.operands[0])}`);
+        return dec(`${n.type.toLowerCase()}[${rec(n.operands[0])}]`);
       }
     case 'Arsinh':
     case 'Arcosh':
@@ -123,7 +123,7 @@ export function treeToSolver(n: ExpressionTree): string {
     case 'Arcsch':
     case 'Arsech':
       if (n.inverseNotation === 'superscript') {
-        return dec(`[${n.type.slice(2).toLowerCase()} ^ -1] ${rec(n.operands[0])}`);
+        return dec(`[${n.type.slice(2).toLowerCase()} ^ -1][${rec(n.operands[0])}]`);
       } else {
         return dec(`${n.type.toLowerCase()} ${rec(n.operands[0])}`);
       }

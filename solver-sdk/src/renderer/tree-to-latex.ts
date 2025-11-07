@@ -336,10 +336,10 @@ function treeToLatexInner(
         return tfd(`${rec(base, n)}^{\\,${rec(n.operands[1], n)}}`);
       } else if ((base.type as TrigonometricFunctions) && (base as any).powerInside) {
         return tfd(
-          `\\${base.type.toLowerCase()}^{${rec(n.operands[1], n)}}{${rec(
+          `\\${base.type.toLowerCase()}^{${rec(n.operands[1], n)}}{\\left(${rec(
             (base as any).operands[0],
             n,
-          )}}`,
+          )}\\right)}`,
         );
       } else {
         return tfd(`{${rec(base, n)}}^{${rec(n.operands[1], n)}}`);
@@ -361,7 +361,7 @@ function treeToLatexInner(
     case 'Sech':
     case 'Csch':
     case 'Coth':
-      return tfd(`\\${n.type.toLowerCase()}{${rec(n.operands[0], n)}}`);
+      return tfd(`\\${n.type.toLowerCase()}\\left(${rec(n.operands[0], n)}\\right)`);
     case 'Arcsin':
     case 'Arccos':
     case 'Arctan':
@@ -369,9 +369,14 @@ function treeToLatexInner(
     case 'Arcsec':
     case 'Arccsc':
       if (n.inverseNotation === 'superscript') {
-        return tfd(`\\${n.type.slice(3).toLowerCase()}^{-1}{${rec(n.operands[0], n)}}`);
+        return tfd(
+          `\\${n.type.slice(3).toLowerCase()}^{-1}{\\left(${rec(
+            n.operands[0],
+            n,
+          )}\\right)}`,
+        );
       } else {
-        return tfd(`\\${n.type.toLowerCase()}{${rec(n.operands[0], n)}}`);
+        return tfd(`\\${n.type.toLowerCase()}\\left(${rec(n.operands[0], n)}\\right)`);
       }
     case 'Arsinh':
     case 'Arcosh':
@@ -380,9 +385,14 @@ function treeToLatexInner(
     case 'Arcsch':
     case 'Arsech':
       if (n.inverseNotation === 'superscript') {
-        return tfd(`\\${n.type.slice(2).toLowerCase()}^{-1}{${rec(n.operands[0], n)}}`);
+        return tfd(
+          `\\${n.type.slice(2).toLowerCase()}^{-1}{\\left(${rec(
+            n.operands[0],
+            n,
+          )}\\right)}`,
+        );
       } else {
-        return tfd(`\\${n.type.toLowerCase()}{${rec(n.operands[0], n)}}`);
+        return tfd(`\\${n.type.toLowerCase()}{\\left(${rec(n.operands[0], n)}\\right)}`);
       }
     case 'LogBase10':
       return tfd(`\\log{${rec(n.operands[0], n)}}`);

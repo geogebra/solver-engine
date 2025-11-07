@@ -131,6 +131,56 @@ enum class AnglesExplanation : CategorisedMetadataKey {
      */
     ApplyEvenSymmetryOfCosine,
 
+    /**
+     * Apply the Pythagorean identity
+     */
+    ApplyPythagoreanIdentity,
+
+    /**
+     * Apply the Pythagorean identity and simplify
+     */
+    ApplyPythagoreanIdentityAndSimplify,
+
+    /**
+     * Apply the cosine difference identity
+     */
+    ApplyCosineDifferenceIdentity,
+
+    /**
+     * Apply the cosine sum identity
+     */
+    ApplyCosineSumIdentity,
+
+    /**
+     * Apply the sine difference identity
+     */
+    ApplySineDifferenceIdentity,
+
+    /**
+     * Apply the sine sum identity
+     */
+    ApplySineSumIdentity,
+
+    /**
+     * Apply the tangent difference identity
+     */
+    ApplyTangentDifferenceIdentity,
+
+    /**
+     * Apply the tangent sum identity
+     */
+    ApplyTangentSumIdentity,
+
+    /**
+     * Apply trigonometric identity and simplify
+     */
+    ApplyTrigonometricIdentityAndSimplify,
+
+    /**
+     * Rearrange addends in argument of trigonometric function
+     */
+    RearrangeAddendsInArgument,
+
     ;
 
     override val category = "Angles"

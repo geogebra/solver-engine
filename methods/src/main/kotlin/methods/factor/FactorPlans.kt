@@ -304,6 +304,8 @@ enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             steps {
                 apply(factorizationSteps)
+                // To make sure we get rid of any dangling constants
+                optionally(algebraicSimplificationSteps)
             }
         },
     ),

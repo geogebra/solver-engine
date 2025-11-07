@@ -296,6 +296,11 @@ enum class GeneralExplanation : CategorisedMetadataKey {
     NormalizeProducts,
 
     /**
+     * Normalize trigonometric expression power notation
+     */
+    NormalizeTrigonometricExpressionPower,
+
+    /**
      * Normalize all the negative signs in a product (i.e. cancel pairs of
      * negative signs and potentially bring the remaining sign to the front)
      *

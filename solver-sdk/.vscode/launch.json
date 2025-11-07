@@ -12,7 +12,7 @@
       "name": "Vitest Tests",
       "autoAttachChildProcesses": true,
       "skipFiles": ["<node_internals>/**", "**/node_modules/**", "VM*"],
-      "program": "${workspaceRoot}/../../node_modules/vitest/vitest.mjs",
+      "program": "${workspaceRoot}/../node_modules/vitest/vitest.mjs",
       // You could go without setting --threads to false, but then you may get
       // multiple threads stopping on the same brakepoint at about the same
       // time, and that can be confusing.
@@ -29,7 +29,7 @@
       "name": "Vitest Current Test File",
       "autoAttachChildProcesses": true,
       "skipFiles": ["<node_internals>/**", "**/node_modules/**", "VM*"],
-      "program": "${workspaceRoot}/../../node_modules/vitest/vitest.mjs",
+      "program": "${workspaceRoot}/../node_modules/vitest/vitest.mjs",
       // `${relativeFile}` will be whatever file you are looking at in vscode.
       // You may find it convenient to to replace temporarily replace
       // `${relativeFile}` with the hardcoded path to the test file, so that you

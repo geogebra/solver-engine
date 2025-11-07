@@ -296,9 +296,9 @@ class ParserTest {
 
     @Test
     fun testTrigonometricFunctions() {
-        parsesTo("sin /pi/x", sinOf(productOf(Constants.Pi, xp("x"))))
+        parsesTo("sin [/pi/x]", sinOf(productOf(Constants.Pi, xp("x"))))
         parsesTo(
-            "x arsinh [3 /pi/ / 2] + 1",
+            "x arsinh [[3 /pi/ / 2]] + 1",
             sumOf(productOf(xp("x"), arsinhOf(fractionOf(productOf(xp(3), Constants.Pi), xp(2)))), xp(1)),
         )
     }
@@ -314,17 +314,17 @@ class ParserTest {
 
     @Test
     fun testCalculus() {
-        parsesTo("diff[sin x / x]", derivativeOf(sinOf(xp("x")), xp("x")))
+        parsesTo("diff[sin[x] / x]", derivativeOf(sinOf(xp("x")), xp("x")))
         parsesTo(
-            "[diff ^ 2][sin x * sin y / x y]",
+            "[diff ^ 2][sin[x] * sin[y] / x y]",
             derivativeOf(Constants.Two, productOf(sinOf(xp("x")), sinOf(xp("y"))), xp("x"), xp("y")),
         )
         parsesTo(
-            "[diff ^ 2][sin x / [x ^ 2]]",
+            "[diff ^ 2][sin[x] / [x ^ 2]]",
             derivativeOf(Constants.Two, sinOf(xp("x")), powerOf(xp("x"), xp(2))),
         )
         parsesTo(
-            "prim[arsinh(x + 1), x]",
+            "prim[arsinh[x + 1], x]",
             indefiniteIntegralOf(arsinhOf(sumOf(xp("x"), xp(1))), xp("x")),
         )
         parsesTo(

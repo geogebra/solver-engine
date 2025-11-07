@@ -44,7 +44,7 @@ class TestToJson {
     @Test
     fun sineCubedWithCubeInsideTest() =
         test(
-            "[sin ^ 3] (x)",
+            "[sin ^ 3] [(x)]",
             """{
             "type": "Power",
             "operands": [
@@ -54,7 +54,7 @@ class TestToJson {
                         {"type": "Variable", "value": "x", "decorators": ["RoundBracket"]}
                     ],
                     "inverseNotation": "arcPrefix",
-                    "powerNotation": "inside"
+                    "powerInside": true 
                 },
                 {"type": "Integer", "value": "3"}
             ]
@@ -65,14 +65,14 @@ class TestToJson {
     @Test
     fun sinhInverseTest() =
         test(
-            "[sinh ^ -1] x",
+            "[sinh ^ -1] [x]",
             """{
             "type": "Arsinh",
             "operands": [
                 {"type": "Variable", "value": "x"}
             ],
             "inverseNotation": "superscript",
-            "powerNotation": "outside"
+            "powerInside": true 
         }
         """,
         )

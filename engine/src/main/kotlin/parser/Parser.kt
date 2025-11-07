@@ -59,6 +59,7 @@ import engine.operators.DoubleComparisonOperator
 import engine.operators.ExpressionWithConstraintOperator
 import engine.operators.IndefiniteIntegralOperator
 import engine.operators.IntervalOperator
+import engine.operators.InverseNotationType
 import engine.operators.Operator
 import engine.operators.StatementSystemOperator
 import engine.operators.StatementUnionOperator
@@ -410,7 +411,9 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
     // to parse "trigFunction argument" format
     override fun visitSimpleTrigFunction(ctx: ExpressionParser.SimpleTrigFunctionContext): Expression {
         val functionName = ctx.TRIG_FUNCTION().text.replaceFirstChar { it.uppercase() }
-        val function = TrigonometricFunctionOperator(TrigonometricFunctionType.valueOf(functionName))
+        // This may seem weird, but the first parent is always an atom, and only above that do we have an operator
+        val powerInside = ctx.parent.parent !is ExpressionParser.PowerContext
+        val function = TrigonometricFunctionOperator(TrigonometricFunctionType.valueOf(functionName), powerInside)
         return makeExpression(function, visit(ctx.argument))
     }
 
@@ -422,7 +425,7 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
         return if (exponent == Constants.MinusOne) {
             val inverseTrigFunction = TrigonometricFunctionOperator(
                 baseTrigFunctionType.inverse,
-                inverseNotation = "superscript",
+                inverseNotation = InverseNotationType.Superscript,
             )
             makeExpression(inverseTrigFunction, visit(ctx.argument))
         } else {

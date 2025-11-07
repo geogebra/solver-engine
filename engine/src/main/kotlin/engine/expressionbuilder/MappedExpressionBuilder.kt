@@ -41,6 +41,7 @@ import engine.expressions.simplifiedPowerOf
 import engine.expressions.variableListOf
 import engine.expressions.xp
 import engine.operators.SolvableOperator
+import engine.operators.TrigonometricFunctionType
 import engine.patterns.CoefficientPattern
 import engine.patterns.ExpressionProvider
 import engine.patterns.InequalityPattern
@@ -331,16 +332,27 @@ open class MappedExpressionBuilder(
 
     fun getFunctionType(pattern: TrigonometricExpressionPattern) = pattern.getBoundFunctionType(match)
 
-    fun Expression.wrapWithTrigonometricFunction(pattern: TrigonometricExpressionPattern) =
-        TrigonometricExpression(
-            pattern.getBoundFunctionType(match),
-            this,
-            (pattern.getBoundExpr(match) as TrigonometricExpression).powerInside,
-            (pattern.getBoundExpr(match) as TrigonometricExpression).inverseNotation,
-        )
+    fun Expression.wrapWithTrigonometricFunction(
+        pattern: TrigonometricExpressionPattern,
+        functionType: TrigonometricFunctionType? = null,
+        powerInside: Boolean? = null,
+    ) = TrigonometricExpression(
+        functionType ?: pattern.getBoundFunctionType(match),
+        this,
+        powerInside ?: (pattern.getBoundExpr(match) as TrigonometricExpression).powerInside,
+        (pattern.getBoundExpr(match) as TrigonometricExpression).inverseNotation,
+    )
 
-    fun wrapWithTrigonometricFunction(pattern: TrigonometricExpressionPattern, mappedExpression: Expression) =
-        mappedExpression.wrapWithTrigonometricFunction(pattern)
+    /**
+     * Wrap with trigonometric function matching properties of "pattern"
+     * If the optional functionType is passed, it will override the functionType of the pattern
+     */
+    fun wrapWithTrigonometricFunction(
+        pattern: TrigonometricExpressionPattern,
+        mappedExpression: Expression,
+        functionType: TrigonometricFunctionType? = null,
+        powerInside: Boolean? = null,
+    ) = mappedExpression.wrapWithTrigonometricFunction(pattern, functionType, powerInside)
 
     /**
      * return a list of mapped expression of, prime factors of `integer`

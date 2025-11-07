@@ -37,6 +37,7 @@ enum class NormalizationPlans(override val runner: CompositeMethod) : RunnerMeth
                 whilePossible {
                     firstOf {
                         option { deeply(NormalizationRules.NormalizeNegativeSignOfIntegerInSum) }
+                        option { deeply(NormalizationRules.NormalizeTrigonometricFunctions) }
                         option {
                             check { !isSet(Setting.DontAddClarifyingBrackets) }
                             deeply(NormalizationRules.AddClarifyingBracket)

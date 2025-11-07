@@ -378,8 +378,14 @@ onMounted(() => {
         supported trigonometric functions: <code>sin</code>, <code>cos</code>, <code>tan</code>,
         <code>sec</code>, <code>csc</code>, <code>cot</code>, and their inverse (e.g.
         <code>arcsin</code>), hyperbolic (e.g. <code>sinh</code>) and hyperbolic inverse (e.g.
-        <code>asinh</code>) functions; the argument is written directly after the function name, e.g
-        <code>sin x</code> for \(\sin x\) or <code>asinh(x + 1)</code> for \(\textrm{asinh}(x + 1)\)
+        <code>asinh</code>) functions; the argument is written within square brackets after the
+        function name, e.g <code>sin[x]</code> for \(\sin(x)\) or <code>asinh[x + 1]</code> for
+        \(\textrm{asinh}(x + 1)\).
+      </li>
+      <li>
+        trigonometric expression with exponent: <code>[sin ^ 2][x]</code> for \({\sin}^{2}(x)\), if
+        alternative notation is preferred, <code>[sin[x] ^ 2]</code> can be used for
+        \({\sin(x)}^{2}\)
       </li>
       <li>
         <code>x + &lt;. -y + z .&gt;</code> is another way of writing \(x-y+z\), but it separates
@@ -452,7 +458,7 @@ onMounted(() => {
         v-model="textInTheMathInputTextbox"
         type="text"
         placeholder="Expression"
-        size="30"
+        size="64"
       />
       <input v-if="!autoSubmissionMode" type="submit" value="Submit" />
       <input

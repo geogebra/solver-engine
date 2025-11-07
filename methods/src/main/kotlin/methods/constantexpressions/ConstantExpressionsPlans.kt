@@ -26,6 +26,7 @@ import engine.expressions.containsFractions
 import engine.expressions.containsLogs
 import engine.expressions.containsPowers
 import engine.expressions.containsRoots
+import engine.expressions.containsTrigExpression
 import engine.expressions.isSigned
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
@@ -41,6 +42,7 @@ import engine.patterns.FindPattern
 import engine.patterns.IntegerFractionPattern
 import engine.patterns.RationalPattern
 import engine.patterns.SignedIntegerPattern
+import engine.patterns.TrigonometricExpressionPattern
 import engine.patterns.absoluteValueOf
 import engine.patterns.condition
 import engine.patterns.integerCondition
@@ -50,7 +52,11 @@ import engine.patterns.productContaining
 import engine.utility.divides
 import methods.angles.AnglesPlans
 import methods.angles.AnglesRules
+import methods.angles.TrigonometricFunctionsRules
 import methods.angles.createEvaluateTrigonometricExpressionPlan
+import methods.angles.createUsePythagoreanIdentityAndSimplifyPlan
+import methods.angles.createUseTrigonometricIdentityAndSimplifyPlan
+import methods.angles.simplifyProductContainingTrigonometricExpressions
 import methods.collecting.CollectingRules
 import methods.collecting.createCollectLikeRationalPowersAndSimplifyPlan
 import methods.collecting.createCollectLikeRootsAndSimplifyPlan
@@ -152,6 +158,18 @@ enum class ConstantExpressionsPlans(override val runner: CompositeMethod) : Runn
                 optionally(GeneralRules.SimplifyOddPowerOfNegative)
                 optionally(GeneralRules.SimplifyEvenPowerOfNegative)
                 optionally(GeneralRules.SimplifyEvenPowerOfAbsoluteValue)
+            }
+        },
+    ),
+
+    SimplifyPowerOfTrigonometricFunction(
+        plan {
+            pattern = powerOf(optionalNegOf(TrigonometricExpressionPattern(AnyPattern())), AnyPattern())
+            explanation = Explanation.SimplifyPowerOfTrigonometricFunction
+
+            steps {
+                optionally(GeneralRules.SimplifyOddPowerOfNegative)
+                optionally(GeneralRules.SimplifyEvenPowerOfNegative)
             }
         },
     ),
@@ -286,6 +304,7 @@ val simpleTidyUpSteps = steps {
         option(IntegerRationalExponentsRules.EvaluateNegativeToRationalExponentAsUndefined)
         option(LogsRules.EvaluateLogOfNonPositiveAsUndefined)
         option(AnglesRules.CheckDomainOfFunction)
+        option(simplifyProductContainingTrigonometricExpressions)
 
         // tidy up decimals
         // It's bad to have this here as it has depth = 0.  We should do this at the start and then forget about it.
@@ -355,6 +374,17 @@ val decimalToFractionConversionSteps = steps {
     }
 }
 
+val trigExpressionSimplificationSteps = steps {
+    check { it.containsTrigExpression() }
+    deeply {
+        firstOf {
+            option(TrigonometricFunctionsRules.ApplyNegativeIdentityOfTrigFunction)
+            option(usePythagoreanIdentityAndSimplify)
+            option(applyTrigonometricIdentityAndSimplify)
+        }
+    }
+}
+
 // Give it a minDepth of 1 to break cycles.
 val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
     firstOf {
@@ -379,7 +409,8 @@ val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
 
         option { deeply(AnglesPlans.ReduceAngleToUnitCircle) }
         option { deeply(AnglesRules.SubstituteAngleWithCoterminalAngleFromUnitCircle) }
-        option { deeply(AnglesRules.ApplyNegativeIdentityOfTrigFunction) }
+
+        option(trigExpressionSimplificationSteps)
 
         // It would be better to move this out of constantSimplificationSteps altogether and do it first but the
         // required behaviour depends on the previous steps being tried first.
@@ -418,6 +449,7 @@ val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
                     option(ConstantExpressionsPlans.SimplifyPowerOfProduct)
                     option(ConstantExpressionsPlans.SimplifyPowerOfFraction)
                     option(ConstantExpressionsPlans.SimplifyPowerOfAbsoluteValue)
+                    option(ConstantExpressionsPlans.SimplifyPowerOfTrigonometricFunction)
                 }
             }
         }
@@ -497,6 +529,12 @@ private val collectLikeRationalPowersAndSimplify =
     createCollectLikeRationalPowersAndSimplifyPlan(constantSimplificationSteps)
 private val collectLikeTrigonometricTermsAndSimplify =
     createCollectLikeTrigonometricTermsAndSimplifyPlan(constantSimplificationSteps)
+
+private val applyTrigonometricIdentityAndSimplify =
+    createUseTrigonometricIdentityAndSimplifyPlan(constantSimplificationSteps)
+
+private val usePythagoreanIdentityAndSimplify =
+    createUsePythagoreanIdentityAndSimplifyPlan(constantSimplificationSteps)
 
 private val expandAndSimplifier = ExpandAndSimplifier(ConstantExpressionsPlans.SimplifyConstantExpression)
 

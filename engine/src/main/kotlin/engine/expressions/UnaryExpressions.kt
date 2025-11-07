@@ -17,6 +17,7 @@
 
 package engine.expressions
 
+import engine.operators.InverseNotationType
 import engine.operators.TrigonometricFunctionOperator
 import engine.operators.TrigonometricFunctionType
 import engine.operators.UnaryExpressionOperator
@@ -129,7 +130,7 @@ class TrigonometricExpression(
     val functionType: TrigonometricFunctionType,
     operand: Expression,
     val powerInside: Boolean,
-    val inverseNotation: String,
+    val inverseNotation: InverseNotationType,
     meta: NodeMeta = BasicMeta(),
 ) : ValueExpression(
         operator = TrigonometricFunctionOperator(functionType, powerInside, inverseNotation),
@@ -141,7 +142,14 @@ class TrigonometricExpression(
     override fun fillJson(s: MutableMap<String, Any>) {
         s["type"] = functionType.name
         s["operands"] = operands.map { it.toJson() }
-        s["inverseNotation"] = inverseNotation
-        s["powerNotation"] = if (powerInside) "inside" else "outside"
+        s["inverseNotation"] = inverseNotation.name.camelCase()
+        s["powerInside"] = powerInside
     }
 }
+
+/**
+ * Modify first letter of an enum type name to turn it into
+ * camelcase.
+ * e.g. ArcPrefix --> arcPrefix
+ */
+private fun String.camelCase(): String = replaceFirstChar(Char::lowercase)

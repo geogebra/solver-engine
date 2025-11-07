@@ -376,6 +376,16 @@ const latexSymbolDefinitions = {
             power = parser.expression(BP_POWER - 1);
           }
           const argument = parser.expression(Infinity);
+
+          // Remove redundant round bracket decorator
+          const roundBracketIndex = argument.decorators?.indexOf('RoundBracket');
+          if (roundBracketIndex !== undefined && roundBracketIndex !== -1) {
+            argument.decorators?.splice(roundBracketIndex, 1);
+            if (argument.decorators?.length === 0) {
+              delete argument.decorators;
+            }
+          }
+
           const baseExpression: TrigonometricExpression<any> = {
             type: trigFunc.type,
             operands: [argument],

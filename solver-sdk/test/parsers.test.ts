@@ -1565,50 +1565,31 @@ describe('Solver Parser Unit Tests', () => {
   describe('Trigonometric functions simple operations', () => {
     testCases([
       {
-        solver: 'sin x',
+        solver: 'sin[x]',
         json: {
           type: 'Sin',
           operands: [variable('x')],
         },
-        latex: ['\\sin{x}'],
+        latex: ['\\sin\\left(x\\right)'],
       },
       {
-        solver: 'arcsin x',
+        solver: 'arcsin[x]',
         json: {
           type: 'Arcsin',
           operands: [variable('x')],
         },
-        latex: ['\\arcsin{x}'],
+        latex: ['\\arcsin\\left(x\\right)'],
       },
       {
-        solver: 'sinh x',
+        solver: 'sinh[x]',
         json: {
           type: 'Sinh',
           operands: [variable('x')],
         },
-        latex: ['\\sinh{x}'],
+        latex: ['\\sinh\\left(x\\right)'],
       },
       {
-        solver: 'sin (x)',
-        json: {
-          type: 'Sin',
-          operands: [
-            {
-              type: 'Variable',
-              value: 'x',
-              decorators: ['RoundBracket'],
-            },
-          ],
-        },
-        latex: [
-          '\\sin{\\left(x\\right)}',
-          '{{\\mathrm{sin}}\\left(x\\right)}', // ggb keyboard output
-          '{\\mathrm{sin}\\left(x\\right)}',
-          '\\mathrm{sin}\\left(x\\right)', // ggb keyboard output
-        ],
-      },
-      {
-        solver: '[sin x ^ 2]',
+        solver: '[sin[x] ^ 2]',
         json: {
           type: 'Power',
           operands: [
@@ -1620,12 +1601,12 @@ describe('Solver Parser Unit Tests', () => {
           ],
         },
         latex: [
-          '{\\sin{x}}^{2}',
-          '{{\\mathrm{sin}} x}^{2}', // ggb keyboard output
+          '{\\sin\\left(x\\right)}^{2}',
+          '{{\\mathrm{sin}} \\left(x\\right)}^{2}', // ggb keyboard output
         ],
       },
       {
-        solver: '[(sin x) ^ 2]',
+        solver: '[(sin[x]) ^ 2]',
         json: {
           type: 'Power',
           operands: [
@@ -1637,10 +1618,10 @@ describe('Solver Parser Unit Tests', () => {
             integer('2'),
           ],
         },
-        latex: ['{\\left(\\sin{x}\\right)}^{2}'],
+        latex: ['{\\left(\\sin\\left(x\\right)\\right)}^{2}'],
       },
       {
-        solver: 'sin x + 1',
+        solver: 'sin[x] + 1',
         json: {
           type: 'Sum',
           operands: [
@@ -1651,33 +1632,10 @@ describe('Solver Parser Unit Tests', () => {
             integer('1'),
           ],
         },
-        latex: ['\\sin{x}+1'],
+        latex: ['\\sin\\left(x\\right)+1'],
       },
       {
-        solver: 'sin (x) + 1',
-        json: {
-          type: 'Sum',
-          operands: [
-            {
-              type: 'Sin',
-              operands: [
-                {
-                  type: 'Variable',
-                  value: 'x',
-                  decorators: ['RoundBracket'],
-                },
-              ],
-            },
-            integer('1'),
-          ],
-        },
-        latex: [
-          '\\sin{\\left(x\\right)}+1',
-          '{{\\mathrm{sin}}\\left(x\\right)}+1', // ggb keyboard output
-        ],
-      },
-      {
-        solver: 'sin 2 x',
+        solver: 'sin[2 x]',
         json: {
           type: 'Sin',
           operands: [
@@ -1687,27 +1645,10 @@ describe('Solver Parser Unit Tests', () => {
             },
           ],
         },
-        latex: ['\\sin{2x}'],
+        latex: ['\\sin\\left(2x\\right)'],
       },
       {
-        solver: 'sin (2 x)',
-        json: {
-          type: 'Sin',
-          operands: [
-            {
-              type: 'ImplicitProduct',
-              operands: [integer('2'), variable('x')],
-              decorators: ['RoundBracket'],
-            },
-          ],
-        },
-        latex: [
-          '\\sin{\\left(2x\\right)}',
-          '{{\\mathrm{sin}}\\left({2x}\\right)}', // ggb keyboard output
-        ],
-      },
-      {
-        solver: '[(sin (x)) ^ 2]',
+        solver: '[(sin[x]) ^ 2]',
         json: {
           type: 'Power',
           operands: [
@@ -1717,7 +1658,6 @@ describe('Solver Parser Unit Tests', () => {
                 {
                   type: 'Variable',
                   value: 'x',
-                  decorators: ['RoundBracket'],
                 },
               ],
               decorators: ['RoundBracket'],
@@ -1726,24 +1666,23 @@ describe('Solver Parser Unit Tests', () => {
           ],
         },
         latex: [
-          '{\\left(\\sin{\\left(x\\right)}\\right)}^{2}',
+          '{\\left(\\sin\\left(x\\right)\\right)}^{2}',
           '\\left({{{\\mathrm{sin}}\\left(x\\right)}}\\right)^{2}', // ggb keyboard output
         ],
       },
       {
-        solver: 'tan (x)',
+        solver: 'tan[x]',
         json: {
           type: 'Tan',
           operands: [
             {
               type: 'Variable',
               value: 'x',
-              decorators: ['RoundBracket'],
             },
           ],
         },
         latex: [
-          '\\tan{\\left(x\\right)}',
+          '\\tan\\left(x\\right)',
           '{{\\mathrm{tan}}\\left(x\\right)}', // ggb keyboard output
         ],
       },
@@ -1753,7 +1692,7 @@ describe('Solver Parser Unit Tests', () => {
   describe('Power of trigonometric functions', () => {
     testCases([
       {
-        solver: '[sin ^ 2] (x)',
+        solver: '[sin ^ 2][x]',
         json: {
           type: 'Power',
           operands: [
@@ -1763,7 +1702,6 @@ describe('Solver Parser Unit Tests', () => {
                 {
                   type: 'Variable',
                   value: 'x',
-                  decorators: ['RoundBracket'],
                 },
               ],
               powerInside: true,
@@ -1781,7 +1719,7 @@ describe('Solver Parser Unit Tests', () => {
         ],
       },
       {
-        solver: '[arctan ^ 2] (x)',
+        solver: '[arctan ^ 2][x]',
         json: {
           type: 'Power',
           operands: [
@@ -1791,7 +1729,6 @@ describe('Solver Parser Unit Tests', () => {
                 {
                   type: 'Variable',
                   value: 'x',
-                  decorators: ['RoundBracket'],
                 },
               ],
               powerInside: true,
@@ -1802,7 +1739,7 @@ describe('Solver Parser Unit Tests', () => {
         latex: ['\\arctan^{2}{\\left(x\\right)}', '\\arctan^2 {(x)}'],
       },
       {
-        solver: '[cosh ^ 3] (x)',
+        solver: '[cosh ^ 3][x]',
         json: {
           type: 'Power',
           operands: [
@@ -1812,7 +1749,6 @@ describe('Solver Parser Unit Tests', () => {
                 {
                   type: 'Variable',
                   value: 'x',
-                  decorators: ['RoundBracket'],
                 },
               ],
               powerInside: true,
@@ -1828,14 +1764,13 @@ describe('Solver Parser Unit Tests', () => {
   describe('Inverse trigonometric functions', () => {
     testCases([
       {
-        solver: '[sin ^ -1] (x)',
+        solver: '[sin ^ -1][x]',
         json: {
           type: 'Arcsin',
           operands: [
             {
               type: 'Variable',
               value: 'x',
-              decorators: ['RoundBracket'],
             },
           ],
           inverseNotation: 'superscript',
@@ -1843,14 +1778,13 @@ describe('Solver Parser Unit Tests', () => {
         latex: ['\\sin^{-1}{\\left(x\\right)}', '{{\\mathrm{sin}}^{-1}\\left(x\\right)}'],
       },
       {
-        solver: '[sinh ^ -1] (x)',
+        solver: '[sinh ^ -1][x]',
         json: {
           type: 'Arsinh',
           operands: [
             {
               type: 'Variable',
               value: 'x',
-              decorators: ['RoundBracket'],
             },
           ],
           inverseNotation: 'superscript',

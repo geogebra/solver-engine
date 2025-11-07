@@ -62,6 +62,12 @@ enum class ConstantExpressionsExplanation : CategorisedMetadataKey {
     SimplifyPowerOfAbsoluteValue,
 
     /**
+     * Simplify power of trigonometric function
+     * E.g [-sin x ^ 2] -> sin x^2
+     */
+    SimplifyPowerOfTrigonometricFunction,
+
+    /**
      * Rewrite integer order roots as powers in an expression that also contains rational exponents.
      * This is so that further simplifications of rational exponents can be performed
      *

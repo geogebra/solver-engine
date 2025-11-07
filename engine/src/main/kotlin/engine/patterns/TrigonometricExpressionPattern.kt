@@ -30,12 +30,15 @@ import engine.operators.TrigonometricFunctionType
 data class TrigonometricExpressionPattern(
     val childPattern: Pattern,
     val functionType: List<TrigonometricFunctionType>? = null,
+    val powerInside: Boolean? = null,
 ) : BasePattern() {
     override fun toString() = "${functionType?.toString() ?: "anyTrigonometricExpression"}[$childPattern]"
 
     override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
+        @Suppress("ComplexCondition")
         if (subexpression.operator !is TrigonometricFunctionOperator ||
-            (functionType != null && !functionType.contains(subexpression.operator.type))
+            (functionType != null && !functionType.contains(subexpression.operator.type)) ||
+            (powerInside != null && powerInside != subexpression.operator.powerInside)
         ) {
             return emptySequence()
         }

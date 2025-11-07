@@ -121,8 +121,8 @@ unitExpression
     ;
 
 trigFunction
-    : function=TRIG_FUNCTION argument=implicitProduct                       # simpleTrigFunction
-    | '[' base=TRIG_FUNCTION '^' exp=expr ']' argument=implicitProduct      # powerTrigFunction
+    : function=TRIG_FUNCTION '[' argument=expr ']'                              # simpleTrigFunction
+    | '[' base=TRIG_FUNCTION '^' exp=expr ']' '[' argument=expr ']'  # powerTrigFunction
     ;
 
 bracket

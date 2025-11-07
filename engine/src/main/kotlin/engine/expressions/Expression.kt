@@ -700,6 +700,9 @@ fun Expression.containsUnits(unitType: UnitType? = null): Boolean =
 fun Expression.containsExpression(expression: Expression): Boolean =
     this == expression || children.any { it.containsExpression(expression) }
 
+fun Expression.containsTrigExpression(): Boolean =
+    this is TrigonometricExpression || children.any { it.containsTrigExpression() }
+
 fun Expression.allSubterms(): List<Expression> = listOf(this) + children.flatMap { it.allSubterms() }
 
 fun Expression.complexity(): Int = 1 + children.sumOf { it.complexity() }

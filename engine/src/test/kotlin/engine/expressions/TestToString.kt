@@ -98,22 +98,27 @@ class TestToString {
 
     @Test
     fun testTrigonometry() {
-        test("[sin ^ 2] x", "[sin ^ 2] x", "\\sin^{2} x")
-        test("[sin ^ -1] x", "[sin ^ -1] x", "\\sin^{-1} x")
+        test("[sin ^ 2][x]", "[sin ^ 2][x]", "\\sin^{2}\\left(x\\right)")
+        test("[sin ^ -1][x]", "[sin ^ -1][x]", "\\sin^{-1}\\left(x\\right)")
     }
 
     @Test
     fun testCalculus() {
-        test("diff[sin x / x]", "diff[sin x / x]", "\\frac{\\mathrm{d} \\sin x}{\\mathrm{d} x}")
         test(
-            "[diff ^ 2][sin x * sin y / x y]",
-            "[diff ^ 2][sin x * sin y / x y]",
-            "\\frac{\\mathrm{d}^{2} \\sin x \\times \\sin y}{\\mathrm{d} x \\, \\mathrm{d} y}",
+            "diff[sin[x] / x]",
+            "diff[sin[x] / x]",
+            "\\frac{\\mathrm{d} \\sin\\left(x\\right)}{\\mathrm{d} x}",
         )
         test(
-            "prim[arsinh(x + 1), x]",
-            "prim[arsinh (x + 1), x]",
-            "\\int \\arsinh \\left( x + 1 \\right) \\, \\mathrm{d}x",
+            "[diff ^ 2][sin[x] * sin[y] / x y]",
+            "[diff ^ 2][sin[x] * sin[y] / x y]",
+            "\\frac{\\mathrm{d}^{2} \\sin\\left(x\\right) \\times" +
+                " \\sin\\left(y\\right)}{\\mathrm{d} x \\, \\mathrm{d} y}",
+        )
+        test(
+            "prim[arsinh[x + 1], x]",
+            "prim[arsinh[x + 1], x]",
+            "\\int \\arsinh\\left(x + 1\\right) \\, \\mathrm{d}x",
         )
         test(
             "int[-/infinity/, /pi/, 3x + 1, x]",

@@ -39,6 +39,7 @@ import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
 import engine.patterns.AnyPattern
+import engine.patterns.TrigonometricExpressionPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.condition
 import engine.patterns.negOf
@@ -193,6 +194,7 @@ enum class NormalizationRules(override val runner: Rule) : RunnerMethod {
     ReorderProduct(reorderProduct),
     ReorderProductSingleStep(reorderProductSingleStep),
     NormalizeProductSigns(normalizeProductSigns),
+    NormalizeTrigonometricFunctions(normalizeTrigonometricExpressionNotation),
 }
 
 private val reorderProduct = rule {
@@ -270,6 +272,20 @@ private val normalizeProductSigns = rule {
             toExpr = productOf(productValue.children),
             explanation = metadata(Explanation.NormalizeProducts),
             // gmAction = do nothing, because it happens automatically
+        )
+    }
+}
+
+// [(-sin[x]) ^ 2] -> - [sin ^ 2][x]
+private val normalizeTrigonometricExpressionNotation = rule {
+    val argument = AnyPattern()
+    val pattern = TrigonometricExpressionPattern(argument, powerInside = false)
+
+    onPattern(pattern) {
+        ruleResult(
+            tags = listOf(Transformation.Tag.Cosmetic),
+            toExpr = transform(pattern, wrapWithTrigonometricFunction(pattern, get(argument), powerInside = true)),
+            explanation = metadata(Explanation.NormalizeTrigonometricExpressionPower),
         )
     }
 }

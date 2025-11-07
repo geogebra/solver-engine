@@ -49,7 +49,6 @@ private const val PRODUCT_PRECEDENCE = 20
 private const val FRACTION_PRECEDENCE = 50
 private const val DERIVATIVE_PRECEDENCE = 50
 private const val LOG_PRECEDENCE = 50
-private const val TRIG_PRECEDENCE = 50
 private const val PERCENTAGE_PRECEDENCE = 55
 private const val INTEGRAL_PRECEDENCE = 55
 private const val POWER_PRECEDENCE = 60
@@ -305,7 +304,7 @@ internal data class UnitExpressionOperator(
 ) : UnaryOperator, ExpressionOperator {
     override val name = unit.toString()
 
-    override val precedence = TRIG_PRECEDENCE
+    override val precedence = FUNCTION_LIKE_PRECEDENCE
 
     override fun <T> readableString(child: T): String = "$unit[$child]"
 
@@ -353,36 +352,39 @@ enum class TrigonometricFunctionType(
     fun eval(x: Double) = evalFunc(x)
 }
 
-// In the future we should check if replacing the string with an enum would be better
-// It might mean a bigger refactor if we also have to change the SDK
+enum class InverseNotationType {
+    Superscript, // sin^-1
+    ArcPrefix, // arcsin
+    APrefix, // asin
+}
+
 internal data class TrigonometricFunctionOperator(
     val type: TrigonometricFunctionType,
-    val powerInside: Boolean = false,
-    // possible values are "superscript" (e.g. sin^-1), "arcPrefix" (e.g. arcsin) or "aPrefix" (e.g. "asin")
-    val inverseNotation: String = "arcPrefix",
+    val powerInside: Boolean = true,
+    val inverseNotation: InverseNotationType = InverseNotationType.ArcPrefix,
 ) : UnaryOperator, ExpressionOperator {
     override val name = type.text
 
-    override val precedence = TRIG_PRECEDENCE
+    override val precedence = FUNCTION_LIKE_PRECEDENCE
 
-    override fun childAllowed(op: Operator) = op.precedence >= PRODUCT_PRECEDENCE
+    override fun nthChildAllowed(n: Int, op: Operator): Boolean = true
 
     override fun <T> readableString(child: T): String =
         when (inverseNotation) {
-            "superscript" -> {
+            InverseNotationType.Superscript -> {
                 val inverse = this.type.inverse.text
-                "[$inverse ^ -1] $child"
+                "[$inverse ^ -1][$child]"
             }
-            else -> "${type.text} $child"
+            else -> "${type.text}[$child]"
         }
 
     override fun latexString(ctx: RenderContext, child: LatexRenderable) =
         when (inverseNotation) {
-            "superscript" -> {
+            InverseNotationType.Superscript -> {
                 val inverse = this.type.inverse.text
-                "\\$inverse^{-1} ${child.toLatexString(ctx)}"
+                "\\$inverse^{-1}\\left(${child.toLatexString(ctx)}\\right)"
             }
-            else -> "\\${type.text} ${child.toLatexString(ctx)}"
+            else -> "\\${type.text}\\left(${child.toLatexString(ctx)}\\right)"
         }
 
     override fun eval(children: List<Double>): Double {
@@ -414,7 +416,7 @@ internal enum class BinaryExpressionOperator(override val precedence: Int) : Bin
             return when {
                 left is TrigonometricExpression && left.powerInside -> {
                     val operatorType = left.operator.name
-                    "[$operatorType ^ $right] ${left.operands[0]}"
+                    "[$operatorType ^ $right][${left.operands[0]}]"
                 }
                 else -> "[$left ^ $right]"
             }
@@ -424,7 +426,7 @@ internal enum class BinaryExpressionOperator(override val precedence: Int) : Bin
             return when {
                 left is TrigonometricExpression && left.powerInside -> {
                     val operatorType = left.operator.name
-                    "\\$operatorType^{${right.toLatexString(ctx)}} ${left.operands[0].toLatexString(ctx)}"
+                    "\\$operatorType^{${right.toLatexString(ctx)}}\\left(${left.operands[0].toLatexString(ctx)}\\right)"
                 }
                 else -> "${left.toLatexString(ctx)}^{${right.toLatexString(ctx)}}"
             }

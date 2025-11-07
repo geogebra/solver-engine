@@ -23,6 +23,7 @@ import engine.methods.testRule
 import methods.general.NormalizationRules.NormalizeNegativeSignOfIntegerInSum
 import methods.general.NormalizationRules.RemoveBracketSumInSum
 import methods.general.NormalizationRules.RemoveRedundantBracket
+import methods.simplify.SimplifyPlans
 import org.junit.jupiter.api.Test
 import parser.parseExpression
 
@@ -139,5 +140,21 @@ class RemoveBracketsTest {
         }
 
         testRule("(1)", RemoveRedundantBracket, "1")
+    }
+
+    @Test
+    fun testNormalizeTrigonometricFunctionPower() {
+        testMethod {
+            method = SimplifyPlans.SimplifyAlgebraicExpression
+            inputExpr = "[sin[x] ^ 2]"
+
+            check {
+                fromExpr = "[sin[x] ^ 2]"
+                toExpr = "[sin ^ 2][x]"
+                explanation {
+                    key = GeneralExplanation.NormalizeTrigonometricExpressionPower
+                }
+            }
+        }
     }
 }

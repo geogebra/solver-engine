@@ -7,12 +7,12 @@ import engine.expressions.Constants.Pi
 import engine.expressions.Constants.ThreeHundredAndSixty
 import engine.expressions.Constants.Two
 import engine.expressions.Constants.Zero
+import engine.expressions.DivideBy
 import engine.expressions.Expression
 import engine.expressions.Fraction
 import engine.expressions.TrigonometricConstants.MainAnglesDegrees
 import engine.expressions.TrigonometricConstants.MainAnglesRadians
 import engine.expressions.TrigonometricExpression
-import engine.expressions.bracketOf
 import engine.expressions.degreeOf
 import engine.expressions.fractionOf
 import engine.expressions.negOf
@@ -35,9 +35,10 @@ import engine.patterns.commutativeProductOf
 import engine.patterns.commutativeSumOf
 import engine.patterns.condition
 import engine.patterns.degreeOf
-import engine.patterns.negOf
 import engine.patterns.numericCondition
 import engine.patterns.oneOf
+import engine.patterns.productContaining
+import engine.patterns.stickyOptionalNegOf
 import engine.patterns.withOptionalRationalCoefficient
 import engine.steps.metadata.metadata
 import engine.utility.Rational
@@ -66,7 +67,7 @@ enum class AnglesRules(override val runner: Rule) : RunnerMethod {
     FindReferenceAngleInFirstQuadrantInRadian(findReferenceAngleInFirstQuadrantInRadian),
     CheckDomainOfFunction(checkDomainOfFunction),
     DeriveTrigonometricFunctionFromPrimitiveFunctions(deriveTrigonometricFunctionFromPrimitiveFunctions),
-    ApplyNegativeIdentityOfTrigFunction(applyNegativeIdentityOfTrigFunction),
+    EvaluateProductContainingTrigonometricExpressionsAsZero(evaluateProductContainingTrigonometricExpressionsAsZero),
 }
 
 /**
@@ -217,15 +218,15 @@ private val findReferenceAngleInFirstQuadrantInDegree = rule {
         // 3rd quadrant -> angle - 180
         // 4th quadrant -> 360 - angle
         val referenceAngle = when (quadrant) {
-            Quadrant.SECOND -> sumOf(introduce(engine.expressions.degreeOf(OneHundredAndEighty)), negOf(move(pattern)))
-            Quadrant.THIRD -> sumOf(move(pattern), introduce(negOf(engine.expressions.degreeOf(OneHundredAndEighty))))
-            Quadrant.FOURTH -> sumOf(introduce(engine.expressions.degreeOf(ThreeHundredAndSixty)), negOf(move(pattern)))
+            Quadrant.SECOND -> sumOf(introduce(degreeOf(OneHundredAndEighty)), negOf(move(pattern)))
+            Quadrant.THIRD -> sumOf(move(pattern), introduce(negOf(degreeOf(OneHundredAndEighty))))
+            Quadrant.FOURTH -> sumOf(introduce(degreeOf(ThreeHundredAndSixty)), negOf(move(pattern)))
         }
 
         val negative = checkFunctionIsNegativeInQuadrant(getFunctionType(functionPattern), quadrant)
 
         val toExpression =
-            wrapWithTrigonometricFunction(functionPattern, bracketOf(referenceAngle)).let {
+            wrapWithTrigonometricFunction(functionPattern, referenceAngle).let {
                 if (negative) negOf(it) else it
             }
 
@@ -254,11 +255,7 @@ private val findReferenceAngleInFirstQuadrantInRadian = rule {
     )
 
     onPattern(functionPattern) {
-        val coefficient = getCoefficientValue(valueRadian)
-
-        if (coefficient == null) {
-            return@onPattern null
-        }
+        val coefficient = getCoefficientValue(valueRadian) ?: return@onPattern null
 
         // To avoid floating point operations we can use multiples of these values to check
         val twoNumerator = BigInteger.TWO * coefficient.numerator
@@ -289,7 +286,7 @@ private val findReferenceAngleInFirstQuadrantInRadian = rule {
         val negative = checkFunctionIsNegativeInQuadrant(getFunctionType(functionPattern), quadrant)
 
         val toExpression =
-            wrapWithTrigonometricFunction(functionPattern, bracketOf(referenceAngle)).let {
+            wrapWithTrigonometricFunction(functionPattern, referenceAngle).let {
                 if (negative) negOf(it) else it
             }
 
@@ -437,12 +434,7 @@ private val rewriteAngleInRadiansByExtractingMultiplesOfTwoPi = rule {
     val pattern = condition(angle) { it.parent is TrigonometricExpression || !isWithinFraction(it) }
 
     onPattern(pattern) {
-        val coefficientRational = getCoefficientValue(angle)
-
-        // Make sure the coefficient exists
-        if (coefficientRational == null) {
-            return@onPattern null
-        }
+        val coefficientRational = getCoefficientValue(angle) ?: return@onPattern null
 
         val numerator = coefficientRational.numerator
         val twoDenominator = coefficientRational.denominator * BigInteger.TWO
@@ -587,58 +579,34 @@ private val checkDomainOfFunction = rule {
     }
 }
 
+private fun checkIsDefinitelyNotUndefinedOrTrigFunction(expr: Expression): Boolean {
+    return expr.isDefinitelyNotUndefined() ||
+        expr is TrigonometricExpression ||
+        expr.children.all { checkIsDefinitelyNotUndefinedOrTrigFunction(it) }
+}
+
 /**
- * Apply odd symmetry in case of sine, tangent, cotangent, cosecant:
- * sin(-x) --> -sin(x)
- * Apply even symmetry in case of cosine, sec:
- * cos(-x) --> cos(x)
+ * Evaluate to zero while not checking if trigonometric functions are undefined
+ * The engine itself doesn't have a way to know if a trigonometric function is undefined, without
+ * the use of rules, so we try to apply those rules first, and if they fail, we can evaluate the product
+ * as zero
  */
-private val applyNegativeIdentityOfTrigFunction = rule {
-    val value = AnyPattern()
-    val negValue = negOf(value)
-    val pattern = TrigonometricExpressionPattern(
-        negValue,
-        listOf(
-            TrigonometricFunctionType.Sin,
-            TrigonometricFunctionType.Cos,
-            TrigonometricFunctionType.Tan,
-            TrigonometricFunctionType.Cot,
-            TrigonometricFunctionType.Sec,
-            TrigonometricFunctionType.Csc,
-        ),
-    )
-
-    onPattern(pattern) {
-        val (toExpr, explanation) = when (getFunctionType(pattern)) {
-            TrigonometricFunctionType.Sin, TrigonometricFunctionType.Csc ->
-                negOf(
-                    wrapWithTrigonometricFunction(
-                        pattern,
-                        move(value),
-                    ),
-                ) to Explanation.ApplyOddSymmetryOfSine
-            TrigonometricFunctionType.Cos, TrigonometricFunctionType.Sec ->
-                wrapWithTrigonometricFunction(
-                    pattern,
-                    move(value),
-                ) to Explanation.ApplyEvenSymmetryOfCosine
-            TrigonometricFunctionType.Tan, TrigonometricFunctionType.Cot ->
-                negOf(
-                    wrapWithTrigonometricFunction(
-                        pattern,
-                        move(value),
-                    ),
-                ) to Explanation.ApplyOddSymmetryOfTangent
-            else -> null to null
+private val evaluateProductContainingTrigonometricExpressionsAsZero = rule {
+    val zero = FixedPattern(Zero)
+    val p = productContaining(zero)
+    val pattern = condition(p) { expression ->
+        expression.children.all {
+            it !is DivideBy && checkIsDefinitelyNotUndefinedOrTrigFunction(it)
         }
+    }
 
-        if (toExpr == null || explanation == null) {
-            return@onPattern null
-        }
+    val optionalNegProduct = stickyOptionalNegOf(pattern, initialPositionOnly = true)
 
+    onPattern(optionalNegProduct) {
         ruleResult(
-            toExpr = toExpr,
-            explanation = metadata(explanation),
+            toExpr = move(zero),
+            gmAction = tap(zero),
+            explanation = metadata(methods.general.Explanation.EvaluateProductContainingZero, move(zero)),
         )
     }
 }
