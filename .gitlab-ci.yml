@@ -13,7 +13,7 @@ default:
       - cache/.gradle/notifications
 
 variables:
-  GITLAB_CLUSTER_SOLVER_CONTEXT: solver-team/k8s-clusters-management:solver-v2-cluster-agent
+  GITLAB_CLUSTER_SOLVER_CONTEXT: solver-team/k8s-clusters-management:solver-cluster-agent
   GITLAB_CLUSTER_PRODUCTION_CONTEXT: solver-team/k8s-clusters-management:prod-cluster-agent
   GITLAB_CLUSTER_DEVELOPMENT_CONTEXT: solver-team/k8s-clusters-management:dev-cluster-agent
   GGBTRANS_SOLVER_IMPORT_URL: https://dev.geogebra.net/ggbtrans/props/api/solver_import

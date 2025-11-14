@@ -16,12 +16,11 @@ metadata:
     alb.ingress.kubernetes.io/success-codes: '302'
     alb.ingress.kubernetes.io/healthy-threshold-count: '2'
     alb.ingress.kubernetes.io/unhealthy-threshold-count: '2'
-    {{ if eq .Values.deploymentDomain "solver-api.geogebra.org" }}
     alb.ingress.kubernetes.io/subnets: subnet-3fb33466, subnet-7cb2f719, subnet-d7b2dfa0
+    {{ if eq .Values.deploymentDomain "solver-api.geogebra.org" }}
     alb.ingress.kubernetes.io/group.name: solver-engine-release-prod-cluster
     {{ else }}
-    alb.ingress.kubernetes.io/subnets: subnet-009dd93fa6bc62e8d, subnet-0b57cea732d35796e, subnet-0e0f7fd3700197df9
-    alb.ingress.kubernetes.io/group.name: solver-engine
+    alb.ingress.kubernetes.io/group.name: solver-engine-release-solver-cluster
     {{ end }}
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
     alb.ingress.kubernetes.io/ssl-redirect: '443'
