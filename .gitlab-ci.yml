@@ -218,6 +218,8 @@ package-engine:
   stage: publish
   needs:
     - build-engine
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^release-[0-9]*\.[0-9]*.*$/ || ( $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $RELEASE_BRANCH )
   image: registry.git.geogebra.org/infra/default-image
   variables:
     KUBE_CONTEXT: $CI_PROJECT_NAMESPACE/k8s-clusters-management:build-cluster-agent
