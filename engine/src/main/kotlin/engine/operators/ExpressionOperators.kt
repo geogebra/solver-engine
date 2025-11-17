@@ -311,7 +311,8 @@ internal data class UnitExpressionOperator(
     override fun latexString(ctx: RenderContext, child: LatexRenderable): String =
         "${child.toLatexString(ctx)} \\text{[$unit]}"
 
-    override fun eval(children: List<Double>): Double = children[0]
+    @Suppress("MagicNumber")
+    override fun eval(children: List<Double>): Double = children[0] * Math.PI / 180.0
 
     override fun nthChildAllowed(n: Int, op: Operator): Boolean = true
 }

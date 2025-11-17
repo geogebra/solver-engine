@@ -209,4 +209,19 @@ class ApproximationPlansTest {
                 noTransformation()
             }
         }
+
+    @Test
+    fun testNumericalEvaluationOfTrigonometricFunction() =
+        testMethod {
+            method = ApproximationPlans.EvaluateExpressionNumerically
+            inputExpr = "sin[degree[ 47 ]]"
+
+            check {
+                fromExpr = "sin[degree[ 47 ]]"
+                toExpr = "0.731"
+                explanation {
+                    key = ApproximationExplanation.EvaluateExpressionNumerically
+                }
+            }
+        }
 }

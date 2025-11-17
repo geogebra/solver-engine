@@ -21,7 +21,6 @@ import engine.context.Context
 import engine.expressions.DecimalExpression
 import engine.expressions.Expression
 import engine.expressions.RecurringDecimalExpression
-import engine.expressions.containsUnits
 import engine.expressions.xp
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
@@ -131,7 +130,7 @@ enum class ApproximationPlans(override val runner: CompositeMethod) : RunnerMeth
 
             @Suppress("detekt.ReturnCount")
             override fun run(ctx: Context, sub: Expression): Transformation? {
-                if (numberPattern.matches(ctx, sub) || sub.containsUnits()) return null
+                if (numberPattern.matches(ctx, sub)) return null
 
                 val numericValue = sub.doubleValue
                 if (!numericValue.isFinite()) return null
