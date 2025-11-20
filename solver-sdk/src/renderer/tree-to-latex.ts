@@ -559,6 +559,8 @@ function treeToLatexInner(
       );
     case 'Reals':
       return tfd('\\mathbb{R}');
+    case 'Integers':
+      return tfd('\\mathbb{Z}');
     case 'Void':
       return tfd('\\textrm{VOID}');
     case 'EulerE':

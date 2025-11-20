@@ -10,6 +10,7 @@ import engine.expressions.Constants.Zero
 import engine.expressions.DivideBy
 import engine.expressions.Expression
 import engine.expressions.Fraction
+import engine.expressions.TrigonometricConstants
 import engine.expressions.TrigonometricConstants.MainAnglesDegrees
 import engine.expressions.TrigonometricConstants.MainAnglesRadians
 import engine.expressions.TrigonometricExpression
@@ -59,6 +60,7 @@ enum class AnglesRules(override val runner: Rule) : RunnerMethod {
     UseDegreeConversionFormula(useDegreeConversionFormula),
     UseRadianConversionFormula(useRadianConversionFormula),
     MovePiIntoNumerator(movePiIntoNumerator),
+    EvaluateInverseFunctionOfMainAngle(evaluateInverseFunctionOfMainAngle),
     EvaluateExactValueOfMainAngle(evaluateExactValueOfMainAngle),
     RewriteAngleInDegreesByExtractingMultiplesOf360(rewriteAngleInDegreesByExtractingMultiplesOf360),
     RewriteAngleInRadiansByExtractingMultiplesOfTwoPi(rewriteAngleInRadiansByExtractingMultiplesOfTwoPi),
@@ -168,6 +170,57 @@ private val evaluateExactValueOfMainAngle = rule {
         ruleResult(
             toExpr = transform(toExpr),
             explanation = metadata(Explanation.EvaluateExactValueOfMainAngle),
+        )
+    }
+}
+
+/**
+ * e.g asin(1) --> [/pi/ / 2]
+ */
+private val evaluateInverseFunctionOfMainAngle = rule {
+    val sinValues = OneOfPattern(TrigonometricConstants.MainAngles.entries.map { FixedPattern(it.sine) })
+    val tanValues = OneOfPattern(TrigonometricConstants.MainAngles.entries.map { FixedPattern(it.tangent) })
+
+    val functionSine = TrigonometricExpressionPattern(
+        sinValues,
+        listOf(
+            TrigonometricFunctionType.Arcsin,
+            TrigonometricFunctionType.Arccos,
+        ),
+    )
+    val functionTangent = TrigonometricExpressionPattern(
+        tanValues,
+        listOf(
+            TrigonometricFunctionType.Arctan,
+            TrigonometricFunctionType.Arccot,
+        ),
+    )
+
+    val pattern = oneOf(functionSine, functionTangent)
+
+    onPattern(pattern) {
+        val functionType = when {
+            isBound(functionSine) -> getFunctionType(functionSine)
+            isBound(functionTangent) -> getFunctionType(functionTangent)
+            else -> null
+        }
+
+        val angle = TrigonometricConstants.MainAngles.entries.firstOrNull {
+            when (functionType) {
+                TrigonometricFunctionType.Arcsin -> it.sine == get(sinValues)
+                TrigonometricFunctionType.Arccos -> it.cosine == get(sinValues)
+                TrigonometricFunctionType.Arctan -> it.tangent == get(tanValues)
+                TrigonometricFunctionType.Arccot -> it.cotangent == get(tanValues)
+                else -> false
+            }
+        } ?: return@onPattern null
+
+        val toExpr =
+            MainAnglesRadians.firstNotNullOfOrNull { e -> e.key.takeIf { e.value == angle } } ?: return@onPattern null
+
+        ruleResult(
+            toExpr = transform(pattern, toExpr),
+            explanation = metadata(Explanation.DetermineMainAnglePrincipalValueOfInverseFunction),
         )
     }
 }

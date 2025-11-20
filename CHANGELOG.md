@@ -11,7 +11,11 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Added
 
+- Solve equations containing sines. (PLUT-1076)
+
 ### Fixed
+
+- Fixed numeric evaluation of trigonometric functions with angles in degrees (PLUT-1063)
 
 ### Changed
 
@@ -48,7 +52,6 @@ contents to a new release section (e.g. _[0.x]_).
 ### Fixed
 
 - Updated CI/CD pipelines for new architecture (INF-274)
-- Fixed numeric evaluation of trigonometric functions with angles in degrees (PLUT-1063)
 - SDK: Fixed degree rendering in solver format (PLUT-1046)
 
 ### Changed

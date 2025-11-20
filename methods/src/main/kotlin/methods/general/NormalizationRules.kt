@@ -23,6 +23,7 @@ import engine.expressions.Expression
 import engine.expressions.Fraction
 import engine.expressions.Logarithm
 import engine.expressions.PathScope
+import engine.expressions.PiExpression
 import engine.expressions.Power
 import engine.expressions.Product
 import engine.expressions.Root
@@ -292,7 +293,7 @@ private val normalizeTrigonometricExpressionNotation = rule {
 
 // We should add tests for this and then tidy up the logic, probably by doing a case split on isConstant
 private val priorityComparator = compareBy<Expression>(
-    { !it.isConstant() || it.containsLogs() },
+    { !it.isConstant() || it.containsLogs() || it is PiExpression },
     {
         @Suppress("MagicNumber")
         when (if (it is Power) it.base else it) {

@@ -17,18 +17,32 @@
 
 package methods.equations
 
+import engine.context.BooleanSetting
+import engine.context.Setting
 import engine.context.StrategySelectionMode
+import engine.expressions.Constants
 import engine.expressions.Equation
 import engine.expressions.Expression
+import engine.expressions.TrigonometricExpression
+import engine.expressions.containsTrigExpression
 import engine.expressions.hasSingleValue
 import engine.methods.PublicStrategy
 import engine.methods.Strategy
 import engine.methods.StrategyFamily
 import engine.methods.plan
 import engine.methods.stepsproducers.StepsProducer
+import engine.methods.stepsproducers.branchOn
 import engine.methods.stepsproducers.optionalSteps
 import engine.methods.stepsproducers.steps
 import engine.methods.stepsproducers.whileStrategiesAvailableFirstOf
+import engine.operators.TrigonometricFunctionType
+import engine.patterns.AnyPattern
+import engine.patterns.FixedPattern
+import engine.patterns.TrigonometricExpressionPattern
+import engine.patterns.equationOf
+import engine.patterns.optionalNegOf
+import methods.angles.AnglesRules
+import methods.angles.TrigonometricFunctionsRules
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.equationsystems.EquationSystemsPlans
 import methods.factor.FactorPlans
@@ -51,7 +65,11 @@ enum class EquationSolvingStrategy(
         family = Family.LINEAR,
         priority = 100,
         explanation = EquationsExplanation.SolveLinearEquation,
-        steps = EquationsRules.ExtractSolutionFromEquationInSolvedForm,
+        steps = branchOn(Setting.DontExtractSetSolution) {
+            case(BooleanSetting.False) {
+                apply(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
+            }
+        },
     ),
 
     /**
@@ -298,6 +316,34 @@ enum class EquationSolvingStrategy(
         },
     ),
 
+    /**
+     * - IF possible Balance equations to form sin(x) = sin(y)
+     * - IF both sides are negative, negate both of them
+     * - IF any side still contains a negative expression, apply negative identity
+     * - Apply inverse function to both sides
+     * - Try to simplify equation
+     */
+    TrigonometricEquation(
+        family = Family.LINEAR,
+        priority = -1,
+        explanation = EquationsExplanation.SolveTrigonometricEquation,
+        steps = steps {
+            check { it.containsTrigExpression() }
+
+            optionally(EquationsPlans.SimplifyEquation)
+            optionally(solvablePlansForEquations.solvableRearrangementSteps)
+            optionally(SolvableRules.BalanceEquationWithTrigonometricExpressions)
+            optionally(SolvableRules.NegateBothSidesIfBothNegative)
+            applyToChildren(TrigonometricFunctionsRules.ApplyNegativeIdentityOfTrigFunctionInReverse)
+
+            firstOf {
+                option(sineEquationSteps)
+
+                // Upcoming equation types
+            }
+        },
+    ),
+
     Undefined(
         family = Family.UNDEFINED,
         priority = -1,
@@ -310,9 +356,13 @@ enum class EquationSolvingStrategy(
         priority = -1,
         explanation = EquationsExplanation.ReduceEquation,
         steps = optionalSteps {
-            optionally(solvablePlansForEquations.moveEverythingToTheLeftAndSimplify)
-            optionally {
-                applyTo(normalizePolynomialSteps) { it.firstChild }
+            branchOn(Setting.DontExtractSetSolution) {
+                case(BooleanSetting.False) {
+                    optionally(solvablePlansForEquations.moveEverythingToTheLeftAndSimplify)
+                    optionally {
+                        applyTo(normalizePolynomialSteps) { it.firstChild }
+                    }
+                }
             }
         },
     ),
@@ -399,6 +449,7 @@ internal val solveEquation = lazy {
         option(EquationSolvingStrategy.ConstantEquation)
         option(EquationSolvingStrategy.Undefined)
 
+        option(EquationSolvingStrategy.TrigonometricEquation)
         option(EquationSolvingStrategy.RationalEquation)
 
         // simplify the equation
@@ -492,6 +543,95 @@ private val quadraticFormulaSteps = steps {
             }
             // Δ = 0
             option(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
+        }
+    }
+}
+
+private fun expressionOnlyContainsSine(expr: Expression): Boolean =
+    if (expr is TrigonometricExpression) {
+        expr.functionType == TrigonometricFunctionType.Sin
+    } else {
+        expr.children.isEmpty() ||
+            expr.children.all { expressionOnlyContainsSine(it) }
+    }
+
+private val sineEquationSteps = steps {
+    check { expressionOnlyContainsSine(it) }
+
+    firstOf {
+        option(EquationsRules.ExtractSolutionFromImpossibleSineEquation)
+        option {
+            apply(EquationsRules.ApplyInverseSineFunctionToBothSides)
+
+            applyTo(
+                stepsProducer = steps {
+                    firstOf {
+                        option(TrigonometricFunctionsRules.ApplyIdentityOfInverseTrigonometricFunction)
+                        option(AnglesRules.EvaluateInverseFunctionOfMainAngle)
+                    }
+                },
+                extractor = { it.firstChild },
+            )
+
+            firstOf {
+                option {
+                    checkForm {
+                        equationOf(
+                            AnyPattern(),
+                            TrigonometricExpressionPattern(
+                                optionalNegOf(FixedPattern(Constants.One)),
+                                listOf(TrigonometricFunctionType.Arcsin),
+                            ),
+                        )
+                    }
+                    apply(extractedTrigonometricEquationSolvingSteps)
+                }
+                option {
+                    apply(EquationsRules.ExtractSolutionFromEquationWithInverseSineOfZero)
+
+                    optionally(
+                        trigonometricEquationSolvingSteps,
+                    )
+                }
+                option(
+                    EquationsPlans.SineEquationSolutionExtractionTask,
+                )
+            }
+        }
+    }
+}
+
+val extractedTrigonometricEquationSolvingSteps = steps {
+    optionally {
+        applyTo(extractor = { it.secondChild }) {
+            deeply {
+                firstOf {
+                    option(AnglesRules.EvaluateInverseFunctionOfMainAngle)
+                    option(TrigonometricFunctionsRules.ApplyIdentityOfInverseTrigonometricFunction)
+                }
+            }
+        }
+    }
+
+    apply(EquationsRules.AddPeriodicityOfSine)
+
+    optionally(trigonometricEquationSolvingSteps)
+}
+
+private val trigonometricEquationSolvingSteps = steps {
+    // This may seem a bit redundant, but the extractor removes the constraint already :)
+    applyTo(extractor = { it }) {
+        inContext(contextFactory = {
+            copy(settings = settings + Pair(Setting.DontExtractSetSolution, BooleanSetting.True))
+        }) {
+            optionally(EquationsPlans.SolveEquation)
+        }
+
+        optionally {
+            applyTo(extractor = { it.secondChild }) {
+                deeply(EquationsRules.ExtractPeriodFromFraction)
+                optionally(EquationsPlans.SimplifyEquation)
+            }
         }
     }
 }

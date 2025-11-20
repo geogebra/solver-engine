@@ -21,14 +21,18 @@ import engine.conditions.isDefinitelyNegative
 import engine.conditions.isNotZeroBySign
 import engine.expressions.Comparison
 import engine.expressions.Constants
+import engine.expressions.Constants.Pi
 import engine.expressions.Contradiction
 import engine.expressions.Equation
+import engine.expressions.Expression
 import engine.expressions.Product
 import engine.expressions.SimpleComparator
+import engine.expressions.StatementUnion
 import engine.expressions.Sum
 import engine.expressions.Variable
 import engine.expressions.VariableList
 import engine.expressions.VoidExpression
+import engine.expressions.bracketOf
 import engine.expressions.contradictionOf
 import engine.expressions.equationOf
 import engine.expressions.expressionWithConstraintOf
@@ -62,26 +66,31 @@ import engine.methods.Rule
 import engine.methods.RuleResultBuilder
 import engine.methods.RunnerMethod
 import engine.methods.rule
+import engine.operators.TrigonometricFunctionType
 import engine.patterns.AnyPattern
 import engine.patterns.ArbitraryVariablePattern
 import engine.patterns.ConditionPattern
 import engine.patterns.ConstantInSolutionVariablePattern
 import engine.patterns.FixedPattern
 import engine.patterns.QuadraticPolynomialPattern
+import engine.patterns.RationalPattern
 import engine.patterns.SolutionVariablePattern
 import engine.patterns.SolvablePattern
+import engine.patterns.TrigonometricExpressionPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.VariableExpressionPattern
 import engine.patterns.absoluteValueOf
 import engine.patterns.condition
 import engine.patterns.equationOf
 import engine.patterns.expressionWithFactor
+import engine.patterns.fractionOf
 import engine.patterns.inSolutionVariables
 import engine.patterns.integerCondition
 import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
+import engine.patterns.productOf
 import engine.patterns.rationalMonomialPattern
 import engine.patterns.squareRootOf
 import engine.patterns.sumContaining
@@ -314,6 +323,12 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
     MultiplyBothSidesOfRationalEquation(multiplyBothSidesOfRationalEquation),
 
     SplitEquationWithRationalVariables(splitEquationWithRationalVariables),
+
+    ApplyInverseSineFunctionToBothSides(applyInverseSineFunctionToBothSides),
+    ExtractSolutionFromImpossibleSineEquation(extractSolutionFromImpossibleSineEquation),
+    AddPeriodicityOfSine(addPeriodicityOfSine),
+    ExtractPeriodFromFraction(extractPeriodFromFraction),
+    ExtractSolutionFromEquationWithInverseSineOfZero(extractSolutionFromEquationWithInverseSineOfZero),
 }
 
 private val extractSolutionFromEquationInPlusMinusForm = rule {
@@ -709,4 +724,183 @@ val solveEquationWithIncompatibleSigns = rule {
             null
         }
     }
+}
+
+/**
+ * sin(x) = c --> arcsin(sin(x)) = arcsin(c)
+ * sin(x) = sin(y) --> arcsin(sin(x)) = arcsin(sin(y))
+ */
+
+private val applyInverseSineFunctionToBothSides = rule {
+    val leftValue = AnyPattern()
+    val lhs = TrigonometricExpressionPattern(leftValue, listOf(TrigonometricFunctionType.Sin))
+    val rightValue = AnyPattern()
+    val rightTrig = TrigonometricExpressionPattern(rightValue, listOf(TrigonometricFunctionType.Sin))
+    val rightRational = RationalPattern()
+    val rightConstant = condition { it.isConstant() }
+    val rhs = oneOf(rightTrig, rightRational, rightConstant)
+
+    onEquation(lhs, rhs) {
+        val functionType = getFunctionType(lhs)
+
+        if (isBound(rightRational)) {
+            // Check if inverse function can be applied to constant (-1 <= c <= 1)
+            val value = getValue(rightRational)
+            if (
+                value == null ||
+                value.numerator.abs() > value.denominator.abs()
+            ) {
+                return@onEquation null
+            }
+        }
+
+        val invFunctionType = functionType.getInv()
+
+        ruleResult(
+            toExpr = equationOf(
+                wrapWithTrigonometricFunction(lhs, move(lhs), invFunctionType),
+                wrapWithTrigonometricFunction(lhs, move(rhs), invFunctionType),
+            ),
+            explanation = metadata(methods.angles.Explanation.ApplyInverseSineFunctionToBothSides),
+        )
+    }
+}
+
+/**
+ * sin(x) = c, c not in [-1, 1] --> /undefined/
+ */
+private val extractSolutionFromImpossibleSineEquation = rule {
+    val leftValue = AnyPattern()
+    val lhs = TrigonometricExpressionPattern(leftValue, listOf(TrigonometricFunctionType.Sin))
+    val rightConstant = RationalPattern()
+
+    onEquation(lhs, rightConstant) {
+        val value = getValue(rightConstant)
+
+        if (value == null || value.numerator.abs() <= value.denominator.abs()) {
+            return@onEquation null
+        }
+
+        ruleResult(
+            toExpr = contradictionOf(variableListOf(context.solutionVariables), expression),
+            explanation = metadata(methods.angles.Explanation.ExtractSolutionFromImpossibleSineEquation),
+        )
+    }
+}
+
+/**
+ * After an expression with sine has been simplified:
+ * x = c --> x = c + 2 /pi/ * k
+ */
+private val addPeriodicityOfSine = rule {
+    val equation = equationOf(AnyPattern(), AnyPattern())
+    val equationUnion = condition { it is StatementUnion }
+
+    val pattern = oneOf(
+        equation,
+        equationUnion,
+    )
+
+    onPattern(pattern) {
+        val variableLetter = findUnusedVariableLetter(get(pattern))
+        val variable = Variable(variableLetter)
+
+        val periodicAddend = productOf(Constants.Two, variable, Constants.Pi)
+
+        val equations = if (isBound(equation)) {
+            val content = get(equation)
+            equationOf(content.firstChild, sumOf(content.secondChild, periodicAddend))
+        } else {
+            val content = get(equationUnion)
+            bracketOf(
+                statementUnionOf(
+                    content.children.map {
+                        if (it is Equation) {
+                            equationOf(
+                                it.firstChild,
+                                sumOf(it.secondChild, periodicAddend),
+                            )
+                        } else {
+                            return@onPattern null
+                        }
+                    },
+                ),
+            )
+        }
+
+        val constraint = setSolutionOf(VariableList(listOf(variable)), Constants.Integers)
+
+        ruleResult(
+            toExpr = expressionWithConstraintOf(equations, introduce(constraint)),
+            explanation = metadata(Explanation.AddPeriodicityOfSine),
+        )
+    }
+}
+
+/**
+ * [c1 + c2 * k * /pi/ / c3] -> [c1 / c3] + [c2 * k * /pi/ / c3]
+ */
+private val extractPeriodFromFraction = rule {
+    val variable = condition(ArbitraryVariablePattern()) {
+        it.isConstantIn(solutionVariables)
+    }
+    val coefficient = ConstantInSolutionVariablePattern()
+    val period = optionalNegOf(
+        oneOf(
+            productOf(variable, FixedPattern(Pi)),
+            productOf(coefficient, variable, FixedPattern(Pi)),
+        ),
+    )
+
+    val numerator = sumContaining(period)
+    val denominator = AnyPattern()
+
+    val fraction = fractionOf(numerator, denominator)
+
+    onPattern(fraction) {
+        ruleResult(
+            toExpr = sumOf(
+                fractionOf(
+                    restOf(numerator),
+                    distribute(denominator),
+                ),
+                fractionOf(
+                    move(period),
+                    distribute(denominator),
+                ),
+            ),
+            explanation = metadata(Explanation.ExtractPeriodicityFromFraction),
+        )
+    }
+}
+
+private val extractSolutionFromEquationWithInverseSineOfZero = rule {
+    val lhs = AnyPattern()
+    val rhs = TrigonometricExpressionPattern(
+        FixedPattern(Constants.Zero),
+        listOf(TrigonometricFunctionType.Arcsin),
+    )
+
+    val equation = equationOf(lhs, rhs)
+
+    onPattern(equation) {
+        val variable = Variable(findUnusedVariableLetter(get(equation)))
+
+        ruleResult(
+            toExpr = expressionWithConstraintOf(
+                equationOf(
+                    get(lhs),
+                    transform(rhs, productOf(variable, Pi)),
+                ),
+                setSolutionOf(VariableList(listOf(variable)), Constants.Integers),
+            ),
+            explanation = metadata(Explanation.ExtractSolutionFromEquationWithInverseSineOfZero),
+        )
+    }
+}
+
+fun findUnusedVariableLetter(expression: Expression): String {
+    val usedVariables = expression.variables
+
+    return ('k'..'z').map(Char::toString).first { !usedVariables.contains(it) }
 }

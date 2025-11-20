@@ -136,6 +136,23 @@ internal enum class SetOperators : Operator {
 
         override fun latexString(ctx: RenderContext, children: List<LatexRenderable>) = "\\mathbb{R}"
     },
+
+    Integers {
+        override val arity = ARITY_NULL
+        override val kind = OperatorKind.SET
+        override val precedence = SET_PRECEDENCE
+
+        override fun nthChildAllowed(n: Int, op: Operator): Boolean {
+            throw IllegalArgumentException(
+                "Nullary operator ${this::class.simpleName} should have no children. " +
+                    "Child $op is invalid at position $n.",
+            )
+        }
+
+        override fun <T> readableString(children: List<T>) = "/integers/"
+
+        override fun latexString(ctx: RenderContext, children: List<LatexRenderable>) = "\\mathbb{Z}"
+    },
 }
 
 data class IntervalOperator(

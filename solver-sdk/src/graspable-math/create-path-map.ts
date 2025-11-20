@@ -265,6 +265,7 @@ function annotate(
     case 'Undefined':
     case 'Infinity':
     case 'Reals':
+    case 'Integers':
     case 'Pi':
     case 'EulerE':
     case 'ImaginaryUnit':

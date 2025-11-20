@@ -444,7 +444,8 @@ class MultivariateEquationsTest {
 
                 step {
                     fromExpr = "[x ^ 2] = 2 m GIVEN SetSolution[m: /reals/ \\ {0}]"
-                    toExpr = "x = +/-sqrt[2 m] GIVEN SetSolution[m: [0, /infinity/)] GIVEN SetSolution[m: /reals/ \\ {0}]"
+                    toExpr =
+                        "x = +/-sqrt[2 m] GIVEN SetSolution[m: [0, /infinity/)] GIVEN SetSolution[m: /reals/ \\ {0}]"
                     explanation {
                         key = methods.solvable.EquationsExplanation.TakeRootOfBothSidesAndSimplify
                     }
@@ -475,7 +476,8 @@ class MultivariateEquationsTest {
                 }
 
                 step {
-                    fromExpr = "x = +/-sqrt[2 m] GIVEN SetSolution[m: [0, /infinity/)] GIVEN SetSolution[m: /reals/ \\ {0}]"
+                    fromExpr =
+                        "x = +/-sqrt[2 m] GIVEN SetSolution[m: [0, /infinity/)] GIVEN SetSolution[m: /reals/ \\ {0}]"
                     toExpr = "x = +/-sqrt[2 m] GIVEN SetSolution[m: (0, /infinity/)]"
                     explanation {
                         key = SolverEngineExplanation.MergeConstraints
@@ -800,14 +802,17 @@ class MultivariateEquationsTest {
 
                 task {
                     taskId = "#3"
-                    startExpr = "SetSolution[h: {[S (B + b) / 2 x]}] GIVEN SetSolution[x: /reals/ \\ {0}] GIVEN B + b != 0"
+                    startExpr =
+                        "SetSolution[h: {[S (B + b) / 2 x]}] GIVEN SetSolution[x: /reals/ \\ {0}] GIVEN B + b != 0"
                     explanation {
                         key = EquationsExplanation.AddDomainConstraintToSolution
                     }
 
                     step {
-                        fromExpr = "SetSolution[h: {[S (B + b) / 2 x]}] GIVEN SetSolution[x: /reals/ \\ {0}] GIVEN B + b != 0"
-                        toExpr = "SetSolution[h: {[S (B + b) / 2 x]}] GIVEN B + b != 0 AND SetSolution[x: /reals/ \\ {0}]"
+                        fromExpr =
+                            "SetSolution[h: {[S (B + b) / 2 x]}] GIVEN SetSolution[x: /reals/ \\ {0}] GIVEN B + b != 0"
+                        toExpr =
+                            "SetSolution[h: {[S (B + b) / 2 x]}] GIVEN B + b != 0 AND SetSolution[x: /reals/ \\ {0}]"
                         explanation {
                             key = SolverEngineExplanation.MergeConstraints
                         }

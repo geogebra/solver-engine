@@ -160,6 +160,7 @@ export type ExpressionTreeBase<T> = ExpressionDecorations &
           | 'Undefined'
           | 'Infinity'
           | 'Reals'
+          | 'Integers'
           | 'Void'
           | 'EulerE'
           | 'Pi'

@@ -49,4 +49,5 @@ object Constants {
 
     val EmptySet = FiniteSet(emptyList())
     val Reals = Reals()
+    val Integers = Integers()
 }

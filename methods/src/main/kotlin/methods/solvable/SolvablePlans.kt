@@ -29,6 +29,7 @@ import engine.expressions.Fraction
 import engine.expressions.Power
 import engine.expressions.Product
 import engine.expressions.Sum
+import engine.expressions.TrigonometricExpression
 import engine.expressions.Variable
 import engine.methods.Method
 import engine.methods.plan
@@ -191,7 +192,9 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
      */
     private val variableTerm = oneOf(
         SolutionVariablePattern(),
-        condition { (it is Power || it is AbsoluteValue) && !it.isConstantIn(solutionVariables) },
+        condition {
+            (it is Power || it is AbsoluteValue || it is TrigonometricExpression) && !it.isConstantIn(solutionVariables)
+        },
     )
 
     val solvableRearrangementSteps = steps {
@@ -203,10 +206,11 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
                 // we move `c` to the left hand side and flip the solvable
                 checkForm {
                     val lhs = ConstantInSolutionVariablePattern()
-                    val nonConstantTerm = withOptionalConstantCoefficientInSolutionVariables(
-                        variableTerm,
-                        positiveOnly = true,
-                    )
+                    val nonConstantTerm =
+                        withOptionalConstantCoefficientInSolutionVariables(
+                            variableTerm,
+                            positiveOnly = true,
+                        )
                     val rhs = oneOf(
                         nonConstantTerm,
                         sumContaining(nonConstantTerm) { rest -> rest.isConstantIn(solutionVariables) },

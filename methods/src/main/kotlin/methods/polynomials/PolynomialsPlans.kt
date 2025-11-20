@@ -53,7 +53,7 @@ import methods.general.GeneralRules
 import methods.integerarithmetic.IntegerArithmeticRules
 import methods.simplify.SimplifyPlans
 import methods.simplify.algebraicSimplificationSteps
-import methods.simplify.algebraicSimplificationStepsWithoutFractionAddition
+import methods.simplify.algebraicSimplificationStepsForEquations
 
 enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod {
     NormalizePolynomialInSteps(
@@ -105,7 +105,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
             steps {
                 whilePossible {
                     firstOf {
-                        option(algebraicSimplificationStepsWithoutFractionAddition)
+                        option(algebraicSimplificationStepsForEquations)
                         option { deeply(expandAndSimplifier.steps, deepFirst = true) }
                     }
                 }
@@ -125,7 +125,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
                         applyTo(expandAndSimplifier.steps) { subterm }
                     }
                 }
-                optionally(algebraicSimplificationStepsWithoutFractionAddition)
+                optionally(algebraicSimplificationStepsForEquations)
             }
         },
     ),
@@ -136,7 +136,7 @@ enum class PolynomialsPlans(override val runner: CompositeMethod) : RunnerMethod
             steps {
                 whilePossible {
                     firstOf {
-                        option(algebraicSimplificationStepsWithoutFractionAddition)
+                        option(algebraicSimplificationStepsForEquations)
                         option {
                             deeply {
                                 checkForm {

@@ -840,7 +840,8 @@ class QuadraticFormulaStrategyTest {
 
                 step {
                     fromExpr = "[c ^ 2] - 3 b c + [a ^ 2] + [b ^ 2] = 0"
-                    toExpr = "c = [-(-3 b) +/- sqrt[[(-3 b) ^ 2] - 4 * 1 ([a ^ 2] + [b ^ 2])] / 2 * 1] GIVEN [(-3 b) ^ 2] - 4 * 1 ([a ^ 2] + [b ^ 2]) >= 0"
+                    toExpr =
+                        "c = [-(-3 b) +/- sqrt[[(-3 b) ^ 2] - 4 * 1 ([a ^ 2] + [b ^ 2])] / 2 * 1] GIVEN [(-3 b) ^ 2] - 4 * 1 ([a ^ 2] + [b ^ 2]) >= 0"
                     explanation {
                         key = EquationsExplanation.ApplyQuadraticFormula
                     }
@@ -848,16 +849,20 @@ class QuadraticFormulaStrategyTest {
 
                 // This constraint should be simplified further
                 step {
-                    fromExpr = "c = [-(-3 b) +/- sqrt[[(-3 b) ^ 2] - 4 * 1 ([a ^ 2] + [b ^ 2])] / 2 * 1] GIVEN [(-3 b) ^ 2] - 4 * 1 ([a ^ 2] + [b ^ 2]) >= 0"
-                    toExpr = "c = [-(-3 b) +/- sqrt[[(-3 b) ^ 2] - 4 * 1 ([a ^ 2] + [b ^ 2])] / 2 * 1] GIVEN 9 [b ^ 2] - 4 ([a ^ 2] + [b ^ 2]) >= 0"
+                    fromExpr =
+                        "c = [-(-3 b) +/- sqrt[[(-3 b) ^ 2] - 4 * 1 ([a ^ 2] + [b ^ 2])] / 2 * 1] GIVEN [(-3 b) ^ 2] - 4 * 1 ([a ^ 2] + [b ^ 2]) >= 0"
+                    toExpr =
+                        "c = [-(-3 b) +/- sqrt[[(-3 b) ^ 2] - 4 * 1 ([a ^ 2] + [b ^ 2])] / 2 * 1] GIVEN 9 [b ^ 2] - 4 ([a ^ 2] + [b ^ 2]) >= 0"
                     explanation {
                         key = EquationsExplanation.SimplifyConstraint
                     }
                 }
 
                 step {
-                    fromExpr = "c = [-(-3 b) +/- sqrt[[(-3 b) ^ 2] - 4 * 1 ([a ^ 2] + [b ^ 2])] / 2 * 1] GIVEN 9 [b ^ 2] - 4 ([a ^ 2] + [b ^ 2]) >= 0"
-                    toExpr = "c = [3 b +/- sqrt[5 [b ^ 2] - 4 [a ^ 2]] / 2] GIVEN 9 [b ^ 2] - 4 ([a ^ 2] + [b ^ 2]) >= 0"
+                    fromExpr =
+                        "c = [-(-3 b) +/- sqrt[[(-3 b) ^ 2] - 4 * 1 ([a ^ 2] + [b ^ 2])] / 2 * 1] GIVEN 9 [b ^ 2] - 4 ([a ^ 2] + [b ^ 2]) >= 0"
+                    toExpr =
+                        "c = [3 b +/- sqrt[5 [b ^ 2] - 4 [a ^ 2]] / 2] GIVEN 9 [b ^ 2] - 4 ([a ^ 2] + [b ^ 2]) >= 0"
                     explanation {
                         key = PolynomialsExplanation.ExpandPolynomialExpression
                     }
@@ -904,7 +909,8 @@ class QuadraticFormulaStrategyTest {
 
                 step {
                     fromExpr = "[c ^ 2] - 4 b c - [a ^ 2] + [b ^ 2] = 0"
-                    toExpr = "c = [-(-4 b) +/- sqrt[[(-4 b) ^ 2] - 4 * 1 (-[a ^ 2] + [b ^ 2])] / 2 * 1] GIVEN [(-4 b) ^ 2] - 4 * 1 (-[a ^ 2] + [b ^ 2]) >= 0"
+                    toExpr =
+                        "c = [-(-4 b) +/- sqrt[[(-4 b) ^ 2] - 4 * 1 (-[a ^ 2] + [b ^ 2])] / 2 * 1] GIVEN [(-4 b) ^ 2] - 4 * 1 (-[a ^ 2] + [b ^ 2]) >= 0"
                     explanation {
                         key = EquationsExplanation.ApplyQuadraticFormula
                     }
@@ -912,15 +918,18 @@ class QuadraticFormulaStrategyTest {
 
                 // The steps below should be improved later
                 step {
-                    fromExpr = "c = [-(-4 b) +/- sqrt[[(-4 b) ^ 2] - 4 * 1 (-[a ^ 2] + [b ^ 2])] / 2 * 1] GIVEN [(-4 b) ^ 2] - 4 * 1 (-[a ^ 2] + [b ^ 2]) >= 0"
-                    toExpr = "c = [-(-4 b) +/- sqrt[[(-4 b) ^ 2] - 4 * 1 (-[a ^ 2] + [b ^ 2])] / 2 * 1] GIVEN 16 [b ^ 2] - 4 (-[a ^ 2] + [b ^ 2]) >= 0"
+                    fromExpr =
+                        "c = [-(-4 b) +/- sqrt[[(-4 b) ^ 2] - 4 * 1 (-[a ^ 2] + [b ^ 2])] / 2 * 1] GIVEN [(-4 b) ^ 2] - 4 * 1 (-[a ^ 2] + [b ^ 2]) >= 0"
+                    toExpr =
+                        "c = [-(-4 b) +/- sqrt[[(-4 b) ^ 2] - 4 * 1 (-[a ^ 2] + [b ^ 2])] / 2 * 1] GIVEN 16 [b ^ 2] - 4 (-[a ^ 2] + [b ^ 2]) >= 0"
                     explanation {
                         key = EquationsExplanation.SimplifyConstraint
                     }
                 }
 
                 step {
-                    fromExpr = "c = [-(-4 b) +/- sqrt[[(-4 b) ^ 2] - 4 * 1 (-[a ^ 2] + [b ^ 2])] / 2 * 1] GIVEN 16 [b ^ 2] - 4 (-[a ^ 2] + [b ^ 2]) >= 0"
+                    fromExpr =
+                        "c = [-(-4 b) +/- sqrt[[(-4 b) ^ 2] - 4 * 1 (-[a ^ 2] + [b ^ 2])] / 2 * 1] GIVEN 16 [b ^ 2] - 4 (-[a ^ 2] + [b ^ 2]) >= 0"
                     toExpr = "c = 2 b +/- sqrt[3 [b ^ 2] + [a ^ 2]] GIVEN 16 [b ^ 2] - 4 (-[a ^ 2] + [b ^ 2]) >= 0"
                     explanation {
                         key = SimplifyExplanation.SimplifyAlgebraicExpression
@@ -984,14 +993,16 @@ class QuadraticFormulaStrategyTest {
 
                 step {
                     fromExpr = "c = [-0 +/- sqrt[[0 ^ 2] - 4 m (-E)] / 2 m] GIVEN [0 ^ 2] - 4 m (-E) >= 0 AND 2 m != 0"
-                    toExpr = "c = [-0 +/- sqrt[[0 ^ 2] - 4 m (-E)] / 2 m] GIVEN 4 E m >= 0 AND SetSolution[m: /reals/ \\ {0}]"
+                    toExpr =
+                        "c = [-0 +/- sqrt[[0 ^ 2] - 4 m (-E)] / 2 m] GIVEN 4 E m >= 0 AND SetSolution[m: /reals/ \\ {0}]"
                     explanation {
                         key = EquationsExplanation.SimplifyConstraint
                     }
                 }
 
                 step {
-                    fromExpr = "c = [-0 +/- sqrt[[0 ^ 2] - 4 m (-E)] / 2 m] GIVEN 4 E m >= 0 AND SetSolution[m: /reals/ \\ {0}]"
+                    fromExpr =
+                        "c = [-0 +/- sqrt[[0 ^ 2] - 4 m (-E)] / 2 m] GIVEN 4 E m >= 0 AND SetSolution[m: /reals/ \\ {0}]"
                     toExpr = "c = [+/-2 sqrt[E m] / 2 m] GIVEN 4 E m >= 0 AND SetSolution[m: /reals/ \\ {0}]"
                     explanation {
                         key = SimplifyExplanation.SimplifyAlgebraicExpression

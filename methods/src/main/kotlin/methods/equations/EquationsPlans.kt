@@ -30,7 +30,13 @@ import engine.expressions.ExpressionWithConstraint
 import engine.expressions.RecurringDecimalExpression
 import engine.expressions.StatementSystem
 import engine.expressions.StatementUnion
+import engine.expressions.bracketOf
+import engine.expressions.containsTrigExpression
+import engine.expressions.equationOf
 import engine.expressions.expressionWithConstraintOf
+import engine.expressions.negOf
+import engine.expressions.statementUnionOf
+import engine.expressions.sumOf
 import engine.methods.CompositeMethod
 import engine.methods.Method
 import engine.methods.PublicMethod
@@ -48,6 +54,7 @@ import engine.patterns.SolutionVariablePattern
 import engine.patterns.SolvablePattern
 import engine.patterns.condition
 import engine.patterns.contradictionOf
+import engine.patterns.equationOf
 import engine.patterns.identityOf
 import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
@@ -68,7 +75,7 @@ import methods.inequalities.InequalitiesPlans
 import methods.inequations.InequationsPlans
 import methods.polynomials.PolynomialsPlans
 import methods.simplify.SimplifyPlans
-import methods.simplify.algebraicSimplificationStepsWithoutFractionAddition
+import methods.simplify.algebraicSimplificationStepsForEquations
 import methods.solvable.SolvablePlans
 import methods.solvable.SolvableRules
 import methods.solvable.computeOverallIntersectionSolution
@@ -110,7 +117,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                 }
                 optionally(solvablePlansForEquations.rewriteBothSidesWithSameBaseAndSimplify)
                 optionally(SolvableRules.CancelCommonBase)
-                optionally(algebraicSimplificationStepsWithoutFractionAddition)
+                optionally(algebraicSimplificationStepsForEquations)
             }
         },
     ),
@@ -125,7 +132,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
             steps {
                 whilePossible { deeply(simpleTidyUpSteps) }
                 optionally(NormalizationPlans.NormalizeExpression)
-                optionally(algebraicSimplificationStepsWithoutFractionAddition)
+                optionally(algebraicSimplificationStepsForEquations)
             }
         },
     ),
@@ -284,7 +291,13 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                     copy(settings = settings + Pair(Setting.PreferDecimals, BooleanSetting.True))
                 }) {
                     apply(rearrangeLinearEquationSteps)
-                    optionally(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
+                    optionally {
+                        branchOn(Setting.DontExtractSetSolution) {
+                            case(BooleanSetting.False) {
+                                apply(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
+                            }
+                        }
+                    }
                 }
             }
         },
@@ -297,6 +310,8 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     SolveEquationWithInequalityConstraint(solveEquationWithInequalityConstraint),
 
     SolveRationalEquation(solveEquationPlan),
+
+    SineEquationSolutionExtractionTask(sineEquationSolutionExtractionTask),
 
     @PublicMethod
     SolveConstantEquation(
@@ -322,13 +337,17 @@ val equationSimplificationSteps = steps {
     }
 }
 
-private val optimalEquationSolvingSteps = steps {
+val optimalEquationSolvingSteps = steps {
     firstOf {
         option {
             optionally(EquationsPlans.SimplifyEquation)
-            firstOf {
-                option(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
-                option(EquationsRules.ExtractSolutionFromConstantEquation)
+            branchOn(Setting.DontExtractSetSolution) {
+                case(BooleanSetting.False) {
+                    firstOf {
+                        option(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
+                        option(EquationsRules.ExtractSolutionFromConstantEquation)
+                    }
+                }
             }
         }
         option(EquationsPlans.SolveEquation)
@@ -408,6 +427,75 @@ val solveConstantEquationSteps = steps {
         apply(evaluateBothSidesNumerically)
     }
     apply(EquationsRules.ExtractSolutionFromConstantEquation)
+}
+
+/**
+ * f(x) = arcsin(g(x)) -->
+ *      - solve: f(x) = arcsin(g(x))
+ *      - solve: f(x) = /pi/ - arcsin(g(x))
+ *      - collect the solutions into a statement union
+ */
+val sineEquationSolutionExtractionTask = taskSet {
+    val lhs = condition { !it.isConstantIn(solutionVariables) }
+    val rhs = condition { it.containsTrigExpression() }
+
+    val equation = equationOf(
+        lhs,
+        rhs,
+    )
+
+    pattern = equation
+
+    explanation = Explanation.DeriveGeneralSolutionOfEquationWithSine
+
+    tasks {
+        val params = listOf(
+            get(equation) to metadata(Explanation.FindPrincipalSolution),
+            equationOf(
+                get(lhs),
+                sumOf(Constants.Pi, negOf(get(rhs))),
+            ) to metadata(Explanation.FindSupplementarySolution),
+        )
+
+        val tasks = params.map { (expression, explanation) ->
+            task(
+                startExpr = expression,
+                explanation = explanation,
+                stepsProducer = extractedTrigonometricEquationSolvingSteps,
+            ) ?: return@tasks null
+        }
+
+        val (results, constraints) = tasks.map { t ->
+            t.result.let {
+                it.firstChild to it.secondChild
+            }
+        }.unzip()
+
+        val overallSolution = if (results[0] != results[1]) {
+            statementUnionOf(
+                results,
+            )
+        } else {
+            results[0]
+        }
+
+        val constraint = if (constraints.all { it == constraints[0] }) {
+            constraints[0]
+        } else {
+            // This branch should never be reached, as in this taskset the constraint should always be the same
+            computeOverallIntersectionSolution(constraints)
+        }
+
+        task(
+            startExpr = expressionWithConstraintOf(
+                bracketOf(overallSolution),
+                constraint,
+            ),
+            explanation = metadata(Explanation.CollectSolutions),
+        )
+
+        allTasks()
+    }
 }
 
 val solveEquationPlan = object : CompositeMethod() {

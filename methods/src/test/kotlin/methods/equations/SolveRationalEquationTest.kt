@@ -72,14 +72,16 @@ class SolveRationalEquationTest {
 
                         step {
                             fromExpr = "[12 / (x - 3) (x + 3)] = [8 x / x - 3] - [2 / x + 3]"
-                            toExpr = "[12 / (x - 3) (x + 3)] * <.(x - 3) (x + 3).> = [8 x / x - 3] * <.(x - 3) (x + 3).> - [2 / x + 3] * <.(x - 3) (x + 3).>"
+                            toExpr =
+                                "[12 / (x - 3) (x + 3)] * <.(x - 3) (x + 3).> = [8 x / x - 3] * <.(x - 3) (x + 3).> - [2 / x + 3] * <.(x - 3) (x + 3).>"
                             explanation {
                                 key = EquationsExplanation.MultiplyBothSidesByDenominator
                             }
                         }
 
                         step {
-                            fromExpr = "[12 / (x - 3) (x + 3)] * (x - 3) (x + 3) = [8 x / x - 3] * (x - 3) (x + 3) - [2 / x + 3] * (x - 3) (x + 3)"
+                            fromExpr =
+                                "[12 / (x - 3) (x + 3)] * (x - 3) (x + 3) = [8 x / x - 3] * (x - 3) (x + 3) - [2 / x + 3] * (x - 3) (x + 3)"
                             toExpr = "12 = 8 x (x + 3) - 2 (x - 3)"
                             explanation {
                                 key = EquationsExplanation.SimplifyEquation
@@ -227,7 +229,8 @@ class SolveRationalEquationTest {
                     }
 
                     step {
-                        fromExpr = "SetSolution[x: {-3, [1 / 4]}] GIVEN [12 / [x ^ 2] - 9] = [8 x / x - 3] - [2 / x + 3]"
+                        fromExpr =
+                            "SetSolution[x: {-3, [1 / 4]}] GIVEN [12 / [x ^ 2] - 9] = [8 x / x - 3] - [2 / x + 3]"
                         toExpr = "SetSolution[x: {[1 / 4]}]"
                         explanation {
                             key = EquationsExplanation.GatherSolutionsAndConstraint
@@ -265,7 +268,8 @@ class SolveRationalEquationTest {
                             }
 
                             step {
-                                fromExpr = "[12 / [([1 / 4]) ^ 2] - 9] = [8 * [1 / 4] / [1 / 4] - 3] - [2 / [1 / 4] + 3]"
+                                fromExpr =
+                                    "[12 / [([1 / 4]) ^ 2] - 9] = [8 * [1 / 4] / [1 / 4] - 3] - [2 / [1 / 4] + 3]"
                                 toExpr = "-[192 / 143] = -[192 / 143]"
                                 explanation {
                                     key = EquationsExplanation.SimplifyEquation
@@ -617,13 +621,15 @@ class SolveRationalEquationTest {
 
                 task {
                     taskId = "#3"
-                    startExpr = "SetSolution[x: {[3 - sqrt[53] / 2], [3 + sqrt[53] / 2]}] GIVEN SetSolution[x: /reals/ \\ {-3, -2, 5}]"
+                    startExpr =
+                        "SetSolution[x: {[3 - sqrt[53] / 2], [3 + sqrt[53] / 2]}] GIVEN SetSolution[x: /reals/ \\ {-3, -2, 5}]"
                     explanation {
                         key = EquationsExplanation.AddDomainConstraintToSolution
                     }
 
                     step {
-                        fromExpr = "SetSolution[x: {[3 - sqrt[53] / 2], [3 + sqrt[53] / 2]}] GIVEN SetSolution[x: /reals/ \\ {-3, -2, 5}]"
+                        fromExpr =
+                            "SetSolution[x: {[3 - sqrt[53] / 2], [3 + sqrt[53] / 2]}] GIVEN SetSolution[x: /reals/ \\ {-3, -2, 5}]"
                         toExpr = "SetSolution[x: {[3 - sqrt[53] / 2], [3 + sqrt[53] / 2]}]"
                         explanation {
                             key = EquationsExplanation.GatherSolutionsAndConstraint
@@ -826,7 +832,8 @@ class SolveRationalEquationTest {
                                     fromExpr = "[2 / -x + 3] * (x - 3)"
                                     toExpr = "[2 (x - 3) / -x + 3]"
                                     explanation {
-                                        key = FractionArithmeticExplanation.TurnProductOfFractionAndNonFractionFactorIntoFraction
+                                        key =
+                                            FractionArithmeticExplanation.TurnProductOfFractionAndNonFractionFactorIntoFraction
                                     }
                                 }
 
@@ -937,14 +944,16 @@ class SolveRationalEquationTest {
 
                         step {
                             fromExpr = "[12 x / [x ^ 2] - 9] - [1 / [x ^ 2] - 9] = 8"
-                            toExpr = "[12 x / [x ^ 2] - 9] * ([x ^ 2] - 9) - [1 / [x ^ 2] - 9] * ([x ^ 2] - 9) = 8 * ([x ^ 2] - 9)"
+                            toExpr =
+                                "[12 x / [x ^ 2] - 9] * ([x ^ 2] - 9) - [1 / [x ^ 2] - 9] * ([x ^ 2] - 9) = 8 * ([x ^ 2] - 9)"
                             explanation {
                                 key = EquationsExplanation.MultiplyBothSidesByDenominator
                             }
                         }
 
                         step {
-                            fromExpr = "[12 x / [x ^ 2] - 9] * ([x ^ 2] - 9) - [1 / [x ^ 2] - 9] * ([x ^ 2] - 9) = 8 * ([x ^ 2] - 9)"
+                            fromExpr =
+                                "[12 x / [x ^ 2] - 9] * ([x ^ 2] - 9) - [1 / [x ^ 2] - 9] * ([x ^ 2] - 9) = 8 * ([x ^ 2] - 9)"
                             toExpr = "12 x - 1 = 8 ([x ^ 2] - 9)"
                             explanation {
                                 key = EquationsExplanation.SimplifyEquation
@@ -1011,13 +1020,15 @@ class SolveRationalEquationTest {
 
                 task {
                     taskId = "#3"
-                    startExpr = "SetSolution[x: {[3 - sqrt[151] / 4], [3 + sqrt[151] / 4]}] GIVEN SetSolution[x: /reals/ \\ {-3, 3}]"
+                    startExpr =
+                        "SetSolution[x: {[3 - sqrt[151] / 4], [3 + sqrt[151] / 4]}] GIVEN SetSolution[x: /reals/ \\ {-3, 3}]"
                     explanation {
                         key = EquationsExplanation.AddDomainConstraintToSolution
                     }
 
                     step {
-                        fromExpr = "SetSolution[x: {[3 - sqrt[151] / 4], [3 + sqrt[151] / 4]}] GIVEN SetSolution[x: /reals/ \\ {-3, 3}]"
+                        fromExpr =
+                            "SetSolution[x: {[3 - sqrt[151] / 4], [3 + sqrt[151] / 4]}] GIVEN SetSolution[x: /reals/ \\ {-3, 3}]"
                         toExpr = "SetSolution[x: {[3 - sqrt[151] / 4], [3 + sqrt[151] / 4]}]"
                         explanation {
                             key = EquationsExplanation.GatherSolutionsAndConstraint
@@ -1077,7 +1088,8 @@ class SolveRationalEquationTest {
 
                         step {
                             fromExpr = "[12 / (x - 3) (x + 3)] = sqrt[2] - [2 / x + 3]"
-                            toExpr = "[12 / (x - 3) (x + 3)] * <. (x - 3) (x + 3) .> = sqrt[2] * <. (x - 3) (x + 3) .> - [2 / x + 3] * <. (x - 3) (x + 3) .>"
+                            toExpr =
+                                "[12 / (x - 3) (x + 3)] * <. (x - 3) (x + 3) .> = sqrt[2] * <. (x - 3) (x + 3) .> - [2 / x + 3] * <. (x - 3) (x + 3) .>"
                             explanation {
                                 key = EquationsExplanation.MultiplyBothSidesByDenominator
                             }
@@ -1098,7 +1110,8 @@ class SolveRationalEquationTest {
                         }
 
                         step {
-                            fromExpr = "x = [2 sqrt[2] + (-(2 + 6 sqrt[2])) sqrt[2] / 4] OR x = [2 sqrt[2] + ((2 + 6 sqrt[2])) sqrt[2] / 4]"
+                            fromExpr =
+                                "x = [2 sqrt[2] + (-(2 + 6 sqrt[2])) sqrt[2] / 4] OR x = [2 sqrt[2] + ((2 + 6 sqrt[2])) sqrt[2] / 4]"
                             toExpr = "SetSolution[x : {-3, sqrt[2] + 3}]"
                             explanation {
                                 key = EquationsExplanation.SolveEquationUnion

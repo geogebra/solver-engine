@@ -44,13 +44,15 @@ setUnion: 'SetUnion' '[' first=simpleSet (',' rest+=simpleSet)+ ']';
 
 setDifference: left=simpleSet '\\' right=simpleSet;
 
-simpleSet: emptySet | finiteSet | reals | interval;
+simpleSet: emptySet | finiteSet | reals | integers | interval;
 
 emptySet: '{' '}';
 
 finiteSet: '{' first=element (',' rest+=element)* '}';
 
 reals: REALS;
+
+integers: INTEGERS;
 
 interval: leftBracket=('(' | '[') left=expr ',' right=expr rightBracket=(')' | ']');
 
@@ -126,9 +128,9 @@ trigFunction
     ;
 
 bracket
-    : '(' expr ')'                  #roundBracket
-    | OPEN_SQUARE expr CLOSE_SQUARE #squareBracket
-    | OPEN_CURLY expr CLOSE_CURLY   #curlyBracket
+    : '(' singleInput ')'                  #roundBracket
+    | OPEN_SQUARE singleInput CLOSE_SQUARE #squareBracket
+    | OPEN_CURLY singleInput CLOSE_CURLY   #curlyBracket
     ;
 
 atom: bracket
@@ -205,6 +207,7 @@ PI: '/pi/';
 E: '/e/';
 I: '/i/';
 REALS: '/reals/';
+INTEGERS: '/integers/';
 INFINITY: '/infinity/';
 UNDEFINED: '/undefined/';
 

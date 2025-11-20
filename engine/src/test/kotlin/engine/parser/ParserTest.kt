@@ -23,9 +23,12 @@ import engine.expressions.Expression
 import engine.expressions.ExpressionWithConstraint
 import engine.expressions.FiniteSet
 import engine.expressions.Inequation
+import engine.expressions.Integers
 import engine.expressions.ListExpression
 import engine.expressions.Product
 import engine.expressions.SetDifference
+import engine.expressions.TrigonometricExpression
+import engine.expressions.VariableList
 import engine.expressions.VoidExpression
 import engine.expressions.absoluteValueOf
 import engine.expressions.arsinhOf
@@ -34,6 +37,7 @@ import engine.expressions.cartesianProductOf
 import engine.expressions.contradictionOf
 import engine.expressions.curlyBracketOf
 import engine.expressions.definiteIntegralOf
+import engine.expressions.degreeOf
 import engine.expressions.derivativeOf
 import engine.expressions.divideBy
 import engine.expressions.equationOf
@@ -76,7 +80,9 @@ import engine.expressions.tupleOf
 import engine.expressions.variableListOf
 import engine.expressions.vectorOf
 import engine.expressions.xp
+import engine.operators.InverseNotationType
 import engine.operators.SumOperator
+import engine.operators.TrigonometricFunctionType
 import parser.parseExpression
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -301,6 +307,30 @@ class ParserTest {
             "x arsinh [[3 /pi/ / 2]] + 1",
             sumOf(productOf(xp("x"), arsinhOf(fractionOf(productOf(xp(3), Constants.Pi), xp(2)))), xp(1)),
         )
+        parsesTo(
+            "[sin ^ 2][x]",
+            powerOf(
+                TrigonometricExpression(
+                    TrigonometricFunctionType.Sin,
+                    xp("x"),
+                    powerInside = true,
+                    inverseNotation = InverseNotationType.ArcPrefix,
+                ),
+                xp(2),
+            ),
+        )
+        parsesTo(
+            "[sin[x] ^ 2]",
+            powerOf(
+                TrigonometricExpression(
+                    TrigonometricFunctionType.Sin,
+                    xp("x"),
+                    powerInside = false,
+                    inverseNotation = InverseNotationType.ArcPrefix,
+                ),
+                xp(2),
+            ),
+        )
     }
 
     @Test
@@ -476,6 +506,7 @@ class ParserTest {
                 FiniteSet(listOf(xp(1), xp(2), xp(3))),
             ),
         )
+        parsesTo("/integers/", Constants.Integers)
     }
 
     @Test
@@ -519,6 +550,27 @@ class ParserTest {
                 equationOf(xp("x"), xp(2)),
             ),
         )
+        parsesTo(
+            "( x = 2k OR x = k ) GIVEN SetSolution[k: /integers/]",
+            ExpressionWithConstraint(
+                bracketOf(
+                    statementUnionOf(
+                        equationOf(
+                            xp("x"),
+                            productOf(
+                                xp(2),
+                                xp("k"),
+                            ),
+                        ),
+                        equationOf(
+                            xp("x"),
+                            xp("k"),
+                        ),
+                    ),
+                ),
+                setSolutionOf(VariableList(listOf(xp("k"))), Integers()),
+            ),
+        )
     }
 
     @Test
@@ -555,6 +607,14 @@ class ParserTest {
         parsesTo(
             "/void/",
             VoidExpression(),
+        )
+    }
+
+    @Test
+    fun testUnits() {
+        parsesTo(
+            "degree[33]",
+            degreeOf(xp(33)),
         )
     }
 }

@@ -769,6 +769,7 @@ private fun expressionOf(operator: Operator, operands: List<Expression>, meta: N
         SetOperators.SetUnion -> SetUnion(operands, meta)
         SetOperators.SetDifference -> SetDifference(operands[0] as SetExpression, operands[1] as SetExpression, meta)
         SetOperators.Reals -> Reals(meta)
+        SetOperators.Integers -> Integers(meta)
 
         is ComparisonOperator -> when (operator.comparator) {
             Comparator.Equal -> Equation(operands[0], operands[1], meta)

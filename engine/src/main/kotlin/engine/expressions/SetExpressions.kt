@@ -126,7 +126,8 @@ private fun joinBoundarySets(
     numSets: Int,
     comparator: Comparator<Expression>,
 ): BoundarySet {
-    val boundaryComparator = compareBy<Boundary, Expression>(comparator) { it.value }.thenBy { it.side }
+    val boundaryComparator =
+        compareBy<Boundary, Expression>(comparator) { it.value }.thenBy { it.side }
     val boundaries = boundarySets.flatMap { it.boundaries }.sortedWith(boundaryComparator)
     val initialHeight = boundarySets.sumOf { it.initialHeight } - numSets + 1
 
@@ -412,6 +413,26 @@ class Reals(
     ) {
     override fun contains(element: Expression, comparator: ExpressionComparator): Boolean {
         return true
+    }
+
+    override fun isEmpty(comparator: ExpressionComparator): Boolean {
+        return false
+    }
+
+    override fun toBoundarySet(comparator: Comparator<Expression>): BoundarySet {
+        return BoundarySet(emptyList(), 1)
+    }
+}
+
+class Integers(
+    meta: NodeMeta = BasicMeta(),
+) : SetExpression(
+        operator = SetOperators.Integers,
+        operands = listOf(),
+        meta,
+    ) {
+    override fun contains(element: Expression, comparator: ExpressionComparator): Boolean {
+        return element is IntegerExpression
     }
 
     override fun isEmpty(comparator: ExpressionComparator): Boolean {

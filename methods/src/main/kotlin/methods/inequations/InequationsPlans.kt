@@ -46,7 +46,7 @@ import methods.equations.EquationsPlans
 import methods.factor.FactorPlans
 import methods.general.NormalizationPlans
 import methods.polynomials.PolynomialsPlans
-import methods.simplify.algebraicSimplificationStepsWithoutFractionAddition
+import methods.simplify.algebraicSimplificationStepsForEquations
 import methods.solvable.SolvablePlans
 import methods.solvable.SolvableRules
 import methods.solvable.evaluateBothSidesNumerically
@@ -61,7 +61,7 @@ enum class InequationsPlans(override val runner: CompositeMethod) : RunnerMethod
                 optionally(NormalizationPlans.NormalizeExpression)
                 whilePossible(EquationsPlans.SimplifyByEliminatingConstantFactorOfLhsWithZeroRhs)
                 whilePossible(SolvableRules.CancelCommonTermsOnBothSides)
-                optionally(algebraicSimplificationStepsWithoutFractionAddition)
+                optionally(algebraicSimplificationStepsForEquations)
             }
         },
     ),

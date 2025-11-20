@@ -53,6 +53,11 @@ enum class AnglesExplanation : CategorisedMetadataKey {
     EvaluateExactValueOfMainAngle,
 
     /**
+     * Determine the main angle principal value of inverse trigonometric function
+     */
+    DetermineMainAnglePrincipalValueOfInverseFunction,
+
+    /**
      * Evaluate trigonometric expression.
      */
     EvaluateTrigonometricExpression,
@@ -180,6 +185,26 @@ enum class AnglesExplanation : CategorisedMetadataKey {
      * Rearrange addends in argument of trigonometric function
      */
     RearrangeAddendsInArgument,
+
+    /**
+     * Apply the inverse sine function to both sides
+     */
+    ApplyInverseSineFunctionToBothSides,
+
+    /**
+     * The sine of an angle is always a real number between -1 and 1
+     */
+    ExtractSolutionFromImpossibleSineEquation,
+
+    /**
+     * Apply the identity of the inverse trigonometric function
+     */
+    ApplyIdentityOfInverseTrigonometricFunction,
+
+    /**
+     * Balance the trigonometric functions containing
+     */
+    BalanceEquationWithTrigonometricExpressions,
 
     ;
 

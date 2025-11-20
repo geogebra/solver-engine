@@ -43,6 +43,11 @@ class TrigonometricFunctionsRulesTest {
             TrigonometricFunctionsRules.ApplyNegativeIdentityOfTrigFunction,
             "sec[x]",
         )
+        testRule(
+            "-sin[x]",
+            TrigonometricFunctionsRules.ApplyNegativeIdentityOfTrigFunctionInReverse,
+            "sin[-x]",
+        )
     }
 
     @Test
@@ -100,6 +105,19 @@ class TrigonometricFunctionsRulesTest {
             "tan[x + y]",
             TrigonometricFunctionsRules.ApplyTangentIdentity,
             "[tan[x] + tan[y] / 1 - tan[x] * tan [y]]",
+        )
+    }
+
+    fun testApplyInverseTrigonometricFunctionIdentity() {
+        testRule(
+            "arcsin[sin[x]]",
+            TrigonometricFunctionsRules.ApplyIdentityOfInverseTrigonometricFunction,
+            "x",
+        )
+        testRule(
+            "arcsin[cos[x]]",
+            TrigonometricFunctionsRules.ApplyIdentityOfInverseTrigonometricFunction,
+            null,
         )
     }
 }

@@ -145,6 +145,11 @@ enum class Setting(val kind: SettingKind, val description: String) {
         BooleanSetting,
         "Use test points to check if intervals satisfy the inequality to solve",
     ),
+
+    DontExtractSetSolution(
+        BooleanSetting,
+        "Do not extract set solution from fully solved expression",
+    ),
     ;
 
     infix fun setTo(value: SettingValue): Pair<Setting, SettingValue> {

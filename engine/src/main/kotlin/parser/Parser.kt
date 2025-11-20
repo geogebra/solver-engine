@@ -248,6 +248,10 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
         return Constants.Reals
     }
 
+    override fun visitIntegers(ctx: ExpressionParser.IntegersContext): Expression {
+        return Constants.Integers
+    }
+
     override fun visitInterval(ctx: ExpressionParser.IntervalContext): Expression {
         val leftClosed = ctx.leftBracket.text == "["
         val rightClosed = ctx.rightBracket.text == "]"
@@ -479,15 +483,15 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
     }
 
     override fun visitRoundBracket(ctx: ExpressionParser.RoundBracketContext): Expression {
-        return visit(ctx.expr()).decorate(Decorator.RoundBracket)
+        return visit(ctx.singleInput()).decorate(Decorator.RoundBracket)
     }
 
     override fun visitSquareBracket(ctx: ExpressionParser.SquareBracketContext): Expression {
-        return visit(ctx.expr()).decorate(Decorator.SquareBracket)
+        return visit(ctx.singleInput()).decorate(Decorator.SquareBracket)
     }
 
     override fun visitCurlyBracket(ctx: ExpressionParser.CurlyBracketContext): Expression {
-        return visit(ctx.expr()).decorate(Decorator.CurlyBracket)
+        return visit(ctx.singleInput()).decorate(Decorator.CurlyBracket)
     }
 
     override fun visitMixedNumber(ctx: ExpressionParser.MixedNumberContext): Expression {

@@ -190,6 +190,8 @@ export function treeToSolver(n: ExpressionTree): string {
       return dec(n.operands ? `{${n.operands.map(rec).join(', ')}}` : `{}`);
     case 'Reals':
       return dec('/reals/');
+    case 'Integers':
+      return dec('/integers/');
     case 'Void':
       return dec('/void/');
     case 'EulerE':

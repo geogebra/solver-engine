@@ -397,6 +397,11 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     SolveExponentialEquation,
 
     /**
+     * Solve the trigonometric equation
+     */
+    SolveTrigonometricEquation,
+
+    /**
      * Separate an equation of the form |f(x)| = K (positive constant) into two equations,
      * f(x) = K and f(x) = -K so that they can then be solved.
      *
@@ -598,6 +603,37 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      * E.g x + sqrt[2] = y + x sqrt[2] + 1 --> x = y + 1 AND sqrt[2] = x sqrt[2]
      */
     SplitEquationWithRationalVariables,
+
+    /**
+     * Compute the solution and apply the periodicity of sine
+     */
+    DeriveGeneralSolutionOfEquationWithSine,
+
+    /**
+     * Find the principal solution of equation containing trigonometric expressions
+     */
+    FindPrincipalSolution,
+
+    /**
+     * Find supplementary solution of equation containing trigonometric expressions
+     */
+    FindSupplementarySolution,
+
+    /**
+     * Add periodicity of sine
+     */
+    AddPeriodicityOfSine,
+
+    /**
+     * Extract period from fraction
+     */
+    ExtractPeriodicityFromFraction,
+
+    /**
+     * Extract solution from equation containing inverse sine of zero
+     */
+    ExtractSolutionFromEquationWithInverseSineOfZero,
+
     ;
 
     override val category = "Equations"

@@ -29,6 +29,7 @@ import engine.methods.stepsproducers.steps
 import engine.patterns.condition
 import engine.steps.metadata.metadata
 import methods.algebra.AlgebraPlans
+import methods.angles.createUseTrigonometricIdentityAndSimplifyPlan
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.general.NormalizationPlans
@@ -87,9 +88,18 @@ val algebraicSimplificationSteps = algebraicSimplificationSteps(true)
 
 // when solving equations or inequalities, we don't want to add fractions
 // e.g., in x/2 + x/3 = 1 we want to multiply through by 6 instead of adding the fractions
-val algebraicSimplificationStepsWithoutFractionAddition = algebraicSimplificationSteps(false)
+// In case of trigonometric expressions we want to first try simplifying without expanding
+val algebraicSimplificationStepsForEquations = algebraicSimplificationSteps(
+    addRationalExpressions = false,
+    expandTrigonometricFunctions = false,
+)
 
-private fun algebraicSimplificationSteps(addRationalExpressions: Boolean = true): StepsProducer {
+val useTrigonometricIdentityToExpand = createUseTrigonometricIdentityAndSimplifyPlan(simplificationSteps)
+
+private fun algebraicSimplificationSteps(
+    addRationalExpressions: Boolean = true,
+    expandTrigonometricFunctions: Boolean = true,
+): StepsProducer {
     return steps {
         whilePossible {
             deeply(deepFirst = true) {
@@ -125,6 +135,10 @@ private fun algebraicSimplificationSteps(addRationalExpressions: Boolean = true)
                         option(RationalExpressionsPlans.AddLikeRationalExpressions)
                         option(RationalExpressionsPlans.AddTermAndRationalExpression)
                         option(RationalExpressionsPlans.AddRationalExpressions)
+                    }
+
+                    if (expandTrigonometricFunctions) {
+                        option(useTrigonometricIdentityToExpand)
                     }
                 }
             }

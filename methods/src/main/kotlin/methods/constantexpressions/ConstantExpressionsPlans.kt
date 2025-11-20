@@ -304,7 +304,6 @@ val simpleTidyUpSteps = steps {
         option(IntegerRationalExponentsRules.EvaluateNegativeToRationalExponentAsUndefined)
         option(LogsRules.EvaluateLogOfNonPositiveAsUndefined)
         option(AnglesRules.CheckDomainOfFunction)
-        option(simplifyProductContainingTrigonometricExpressions)
 
         // tidy up decimals
         // It's bad to have this here as it has depth = 0.  We should do this at the start and then forget about it.
@@ -317,6 +316,7 @@ val simpleTidyUpSteps = steps {
         option(GeneralRules.EvaluateZeroToAPositivePower)
         option(GeneralRules.EvaluateExpressionToThePowerOfZero)
         option(IntegerRootsRules.SimplifyRootOfZero)
+        option(simplifyProductContainingTrigonometricExpressions)
 
         // handle ones
         option(GeneralRules.RemoveUnitaryCoefficient)
@@ -329,6 +329,7 @@ val simpleTidyUpSteps = steps {
         option(GeneralRules.SimplifyDoubleMinus)
         option(MixedNumbersRules.SplitMixedNumber)
         option(GeneralRules.CancelAdditiveInverseElements)
+        option(TrigonometricFunctionsRules.ApplyIdentityOfInverseTrigonometricFunction)
 
         // clean up angles in radians
         option(AnglesRules.MovePiIntoNumerator)
@@ -376,6 +377,7 @@ val decimalToFractionConversionSteps = steps {
 
 val trigExpressionSimplificationSteps = steps {
     check { it.containsTrigExpression() }
+
     deeply {
         firstOf {
             option(TrigonometricFunctionsRules.ApplyNegativeIdentityOfTrigFunction)
@@ -508,6 +510,7 @@ val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
         option { deeply(CollectingRules.CollectLikeTermsWithPi) }
 
         option { deeply(evaluateTrigonometricExpression) }
+        option { deeply(AnglesRules.EvaluateInverseFunctionOfMainAngle) }
 
         option { deeply(ExpandRules.DistributeNegativeOverBracket) }
         option { deeply(expandConstantExpression) }
@@ -530,8 +533,13 @@ private val collectLikeRationalPowersAndSimplify =
 private val collectLikeTrigonometricTermsAndSimplify =
     createCollectLikeTrigonometricTermsAndSimplifyPlan(constantSimplificationSteps)
 
-private val applyTrigonometricIdentityAndSimplify =
+private val useTrigonometricIdentityAndSimplify =
     createUseTrigonometricIdentityAndSimplifyPlan(constantSimplificationSteps)
+
+private val applyTrigonometricIdentityAndSimplify = steps {
+    check { it.isConstant() }
+    apply(useTrigonometricIdentityAndSimplify)
+}
 
 private val usePythagoreanIdentityAndSimplify =
     createUsePythagoreanIdentityAndSimplifyPlan(constantSimplificationSteps)

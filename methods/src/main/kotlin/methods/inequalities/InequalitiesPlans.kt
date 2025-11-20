@@ -85,7 +85,7 @@ import methods.general.NormalizationPlans
 import methods.inequations.InequationsPlans
 import methods.polynomials.PolynomialRules
 import methods.polynomials.PolynomialsPlans
-import methods.simplify.algebraicSimplificationStepsWithoutFractionAddition
+import methods.simplify.algebraicSimplificationStepsForEquations
 import methods.solvable.SolvablePlans
 import methods.solvable.SolvableRules
 import methods.solvable.computeOverallIntersectionSolution
@@ -101,7 +101,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
                 whilePossible { deeply(simpleTidyUpSteps) }
                 optionally(NormalizationPlans.NormalizeExpression)
                 whilePossible(SolvableRules.CancelCommonTermsOnBothSides)
-                optionally(algebraicSimplificationStepsWithoutFractionAddition)
+                optionally(algebraicSimplificationStepsForEquations)
             }
         },
     ),

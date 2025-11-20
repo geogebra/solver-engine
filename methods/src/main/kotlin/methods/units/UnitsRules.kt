@@ -120,13 +120,15 @@ private val simplifyFractionOfUnits = rule {
     val denominatorVal = AnyPattern()
 
     val numeratorUnit = UnitExpressionPattern(numeratorVal)
+    val negNumerator = optionalNegOf(numeratorUnit)
     val denominatorUnit = UnitExpressionPattern(denominatorVal)
+    val negDenominator = optionalNegOf(denominatorUnit)
 
-    val productNumerator = commutativeProductContaining(numeratorUnit)
-    val productDenominator = commutativeProductContaining(denominatorUnit)
+    val productNumerator = commutativeProductContaining(negNumerator)
+    val productDenominator = commutativeProductContaining(negDenominator)
 
-    val numerator = oneOf(productNumerator, numeratorUnit)
-    val denominator = oneOf(productDenominator, denominatorUnit)
+    val numerator = oneOf(productNumerator, negNumerator)
+    val denominator = oneOf(productDenominator, negDenominator)
 
     val pattern = fractionOf(numerator, denominator)
 
@@ -138,12 +140,12 @@ private val simplifyFractionOfUnits = rule {
         ruleResult(
             toExpr = fractionOf(
                 if (isBound(productNumerator)) {
-                    productNumerator.substitute(move(numeratorVal))
+                    productNumerator.substitute(copySign(negNumerator, move(numeratorVal)))
                 } else {
                     move(numeratorVal)
                 },
                 if (isBound(productDenominator)) {
-                    productDenominator.substitute(move(denominatorVal))
+                    productDenominator.substitute(copySign(negDenominator, move(denominatorVal)))
                 } else {
                     move(denominatorVal)
                 },
