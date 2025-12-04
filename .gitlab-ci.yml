@@ -60,6 +60,7 @@ stages:
 #   update a deployment (e.g. when releasing a patch version, or for any development branch)
 # - SOLVER_DEPLOYMENT_DOMAIN: the DNS domain where the solver deployment will be available
 # - SOLVER_DEPLOYMENT_CLUSTER: the cluster where the solver deployment will be available
+# - SOLVER_DEPLOYMENT_MIN_REPLICAS: the number of deployment replicas (pods) in the k8s cluster
 #
 # These variables are required but computed from the ones above
 # - SOLVER_CONTEXT_PATH: the path at which the solver API root is accessible (e.g. /main, /1.2, /plut-654)
@@ -93,6 +94,7 @@ before_script:
 
         export SOLVER_DEPLOYMENT_DOMAIN="$SOLVER_PRODUCTION_DOMAIN"
         export SOLVER_DEPLOYMENT_CLUSTER_CONTEXT="$GITLAB_CLUSTER_PRODUCTION_CONTEXT"
+        export SOLVER_DEPLOYMENT_MIN_REPLICAS=2
         ;;
       *)
         if [ "$CI_COMMIT_BRANCH" = "$RELEASE_BRANCH" ]; then
@@ -113,6 +115,8 @@ before_script:
           export SOLVER_DEPLOYMENT_NAME="$SOLVER_VERSION"
           export SOLVER_DEPLOYMENT_DOMAIN="$SOLVER_DEVELOPMENT_DOMAIN"
           export SOLVER_DEPLOYMENT_CLUSTER_CONTEXT="$GITLAB_CLUSTER_SOLVER_CONTEXT"
+          export SOLVER_DEPLOYMENT_MIN_REPLICAS=1
+
         fi
         ;;
     esac
@@ -153,6 +157,7 @@ print-solver-vars:
     - echo SOLVER_DEPLOYMENT_NAME=$SOLVER_DEPLOYMENT_NAME
     - echo SOLVER_DEPLOYMENT_DOMAIN=$SOLVER_DEPLOYMENT_DOMAIN
     - echo SOLVER_DEPLOYMENT_CLUSTER_CONTEXT=$SOLVER_DEPLOYMENT_CLUSTER_CONTEXT
+    - echo SOLVER_DEPLOYMENT_MIN_REPLICAS=$SOLVER_DEPLOYMENT_MIN_REPLICAS
     - echo SOLVER_CONTEXT_PATH=$SOLVER_CONTEXT_PATH
     - echo SOLVER_BASE_URL=$SOLVER_BASE_URL
     - echo API_URL=$API_URL
@@ -288,6 +293,7 @@ deploy-engine:
           --set contextPath=$SOLVER_CONTEXT_PATH \
           --set deploymentName=$SOLVER_DEPLOYMENT_NAME \
           --set solverImageTag=$SOLVER_IMAGE_TAG \
+          --set minReplicas=$SOLVER_DEPLOYMENT_MIN_REPLICAS \
           --set commitSha=$CI_COMMIT_SHA \
           --set imageCredentials.username=$CI_REGISTRY_USER \
           --set imageCredentials.password=$CI_REGISTRY_PASSWORD \
