@@ -605,9 +605,14 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     SplitEquationWithRationalVariables,
 
     /**
-     * Compute the solution and apply the periodicity of sine
+     * Compute the main and supplementary solution of equation with sine
      */
     DeriveGeneralSolutionOfEquationWithSine,
+
+    /**
+     * Compute the main and supplementary solution of equation with cosine
+     */
+    DeriveGeneralSolutionOfEquationWithCosine,
 
     /**
      * Find the principal solution of equation containing trigonometric expressions
@@ -620,9 +625,19 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     FindSupplementarySolution,
 
     /**
+     * Find opposite solution of equation containing trigonometric expressions
+     */
+    FindOppositeSolution,
+
+    /**
      * Add periodicity of sine
      */
     AddPeriodicityOfSine,
+
+    /**
+     * Add periodicity of cosine
+     */
+    AddPeriodicityOfCosine,
 
     /**
      * Extract period from fraction
@@ -630,9 +645,24 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     ExtractPeriodicityFromFraction,
 
     /**
+     * Make sure periodicity is positive
+     */
+    FlipSignOfPeriodicity,
+
+    /**
      * Extract solution from equation containing inverse sine of zero
      */
     ExtractSolutionFromEquationWithInverseSineOfZero,
+
+    /**
+     * Extract solution from equation containing inverse cosine of zero
+     */
+    ExtractSolutionFromEquationWithInverseCosineOfZero,
+
+    /**
+     * Extract the solution of an equation without the period
+     */
+    ExtractSolutionWithoutPeriod,
 
     ;
 

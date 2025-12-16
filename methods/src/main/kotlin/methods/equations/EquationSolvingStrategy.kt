@@ -41,8 +41,8 @@ import engine.patterns.FixedPattern
 import engine.patterns.TrigonometricExpressionPattern
 import engine.patterns.equationOf
 import engine.patterns.optionalNegOf
-import methods.angles.AnglesRules
 import methods.angles.TrigonometricFunctionsRules
+import methods.angles.createEvaluateInverseTrigonometricFunctionExactlyPlan
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.equationsystems.EquationSystemsPlans
 import methods.factor.FactorPlans
@@ -50,6 +50,7 @@ import methods.polynomials.PolynomialsPlans
 import methods.polynomials.normalizePolynomialSteps
 import methods.rationalexpressions.RationalExpressionsPlans
 import methods.simplify.SimplifyPlans
+import methods.simplify.algebraicSimplificationStepsForEquations
 import methods.solvable.DenominatorExtractor.extractFraction
 import methods.solvable.SolvableRules
 import methods.solvable.countAbsoluteValues
@@ -337,7 +338,9 @@ enum class EquationSolvingStrategy(
             applyToChildren(TrigonometricFunctionsRules.ApplyNegativeIdentityOfTrigFunctionInReverse)
 
             firstOf {
-                option(sineEquationSteps)
+                option(EquationsRules.ExtractSolutionFromImpossibleSineLikeEquation)
+
+                option(sineLikeEquationSteps)
 
                 // Upcoming equation types
             }
@@ -547,19 +550,27 @@ private val quadraticFormulaSteps = steps {
     }
 }
 
-private fun expressionOnlyContainsSine(expr: Expression): Boolean =
+private fun expressionOnlyContainsTrigFunctionType(
+    expr: Expression,
+    trigFunctionType: TrigonometricFunctionType,
+): Boolean =
     if (expr is TrigonometricExpression) {
-        expr.functionType == TrigonometricFunctionType.Sin
+        expr.functionType == trigFunctionType
     } else {
         expr.children.isEmpty() ||
-            expr.children.all { expressionOnlyContainsSine(it) }
+            expr.children.all { expressionOnlyContainsTrigFunctionType(it, trigFunctionType) }
     }
 
-private val sineEquationSteps = steps {
-    check { expressionOnlyContainsSine(it) }
+private val evaluateInverseTrigonometricFunctions =
+    createEvaluateInverseTrigonometricFunctionExactlyPlan(algebraicSimplificationStepsForEquations)
+
+private val sineLikeEquationSteps = steps {
+    check {
+        expressionOnlyContainsTrigFunctionType(it, TrigonometricFunctionType.Sin) ||
+            expressionOnlyContainsTrigFunctionType(it, TrigonometricFunctionType.Cos)
+    }
 
     firstOf {
-        option(EquationsRules.ExtractSolutionFromImpossibleSineEquation)
         option {
             apply(EquationsRules.ApplyInverseSineFunctionToBothSides)
 
@@ -567,7 +578,7 @@ private val sineEquationSteps = steps {
                 stepsProducer = steps {
                     firstOf {
                         option(TrigonometricFunctionsRules.ApplyIdentityOfInverseTrigonometricFunction)
-                        option(AnglesRules.EvaluateInverseFunctionOfMainAngle)
+                        option(evaluateInverseTrigonometricFunctions)
                     }
                 },
                 extractor = { it.firstChild },
@@ -580,11 +591,24 @@ private val sineEquationSteps = steps {
                             AnyPattern(),
                             TrigonometricExpressionPattern(
                                 optionalNegOf(FixedPattern(Constants.One)),
-                                listOf(TrigonometricFunctionType.Arcsin),
+                                listOf(TrigonometricFunctionType.Arcsin, TrigonometricFunctionType.Arccos),
                             ),
                         )
                     }
-                    apply(extractedTrigonometricEquationSolvingSteps)
+                    firstOf {
+                        option {
+                            check {
+                                expressionOnlyContainsTrigFunctionType(it, TrigonometricFunctionType.Arcsin)
+                            }
+                            apply(extractedSineEquationSolvingSteps)
+                        }
+                        option {
+                            check {
+                                expressionOnlyContainsTrigFunctionType(it, TrigonometricFunctionType.Arccos)
+                            }
+                            apply(extractedCosineEquationSolvingSteps)
+                        }
+                    }
                 }
                 option {
                     apply(EquationsRules.ExtractSolutionFromEquationWithInverseSineOfZero)
@@ -593,30 +617,53 @@ private val sineEquationSteps = steps {
                         trigonometricEquationSolvingSteps,
                     )
                 }
-                option(
-                    EquationsPlans.SineEquationSolutionExtractionTask,
-                )
-            }
-        }
-    }
-}
+                option {
+                    apply(EquationsRules.ExtractSolutionFromEquationWithInverseCosineOfZero)
 
-val extractedTrigonometricEquationSolvingSteps = steps {
-    optionally {
-        applyTo(extractor = { it.secondChild }) {
-            deeply {
-                firstOf {
-                    option(AnglesRules.EvaluateInverseFunctionOfMainAngle)
-                    option(TrigonometricFunctionsRules.ApplyIdentityOfInverseTrigonometricFunction)
+                    optionally(
+                        trigonometricEquationSolvingSteps,
+                    )
+                }
+                option {
+                    check {
+                        expressionOnlyContainsTrigFunctionType(it, TrigonometricFunctionType.Arcsin)
+                    }
+                    apply(EquationsPlans.SineEquationSolutionExtractionTask)
+                }
+                option {
+                    check {
+                        expressionOnlyContainsTrigFunctionType(it, TrigonometricFunctionType.Arccos)
+                    }
+                    apply(EquationsPlans.CosineEquationSolutionExtractionTask)
                 }
             }
         }
     }
-
-    apply(EquationsRules.AddPeriodicityOfSine)
-
-    optionally(trigonometricEquationSolvingSteps)
 }
+
+val extractedSineEquationSolvingSteps =
+    createExtractedTrigonometricEquationSolvingSteps(EquationsRules.AddPeriodicityOfSine)
+
+val extractedCosineEquationSolvingSteps =
+    createExtractedTrigonometricEquationSolvingSteps(EquationsRules.AddPeriodicityOfCosine)
+
+fun createExtractedTrigonometricEquationSolvingSteps(addPeriodicityRule: StepsProducer) =
+    steps {
+        optionally {
+            applyTo(extractor = { it.secondChild }) {
+                deeply {
+                    firstOf {
+                        option(evaluateInverseTrigonometricFunctions)
+                        option(TrigonometricFunctionsRules.ApplyIdentityOfInverseTrigonometricFunction)
+                    }
+                }
+            }
+        }
+
+        apply(addPeriodicityRule)
+
+        optionally(trigonometricEquationSolvingSteps)
+    }
 
 private val trigonometricEquationSolvingSteps = steps {
     // This may seem a bit redundant, but the extractor removes the constraint already :)
@@ -631,6 +678,19 @@ private val trigonometricEquationSolvingSteps = steps {
             applyTo(extractor = { it.secondChild }) {
                 deeply(EquationsRules.ExtractPeriodFromFraction)
                 optionally(EquationsPlans.SimplifyEquation)
+            }
+        }
+
+        optionally {
+            applyTo(extractor = { it.secondChild }) {
+                deeply(EquationsRules.FlipSignOfPeriod)
+            }
+        }
+
+        optionally {
+            applyTo(extractor = { it }) {
+                apply(EquationsRules.ExtractSolutionWithoutPeriod)
+                apply(EquationsRules.ExtractSolutionFromConstantEquation)
             }
         }
     }

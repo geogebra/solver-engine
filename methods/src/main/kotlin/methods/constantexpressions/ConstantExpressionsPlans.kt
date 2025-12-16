@@ -38,6 +38,7 @@ import engine.methods.stepsproducers.steps
 import engine.methods.stepsproducers.stepsWithMinDepth
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
+import engine.patterns.ConstantPattern
 import engine.patterns.FindPattern
 import engine.patterns.IntegerFractionPattern
 import engine.patterns.RationalPattern
@@ -53,6 +54,7 @@ import engine.utility.divides
 import methods.angles.AnglesPlans
 import methods.angles.AnglesRules
 import methods.angles.TrigonometricFunctionsRules
+import methods.angles.createEvaluateInverseTrigonometricFunctionExactlyPlan
 import methods.angles.createEvaluateTrigonometricExpressionPlan
 import methods.angles.createUsePythagoreanIdentityAndSimplifyPlan
 import methods.angles.createUseTrigonometricIdentityAndSimplifyPlan
@@ -510,7 +512,7 @@ val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
         option { deeply(CollectingRules.CollectLikeTermsWithPi) }
 
         option { deeply(evaluateTrigonometricExpression) }
-        option { deeply(AnglesRules.EvaluateInverseFunctionOfMainAngle) }
+        option { deeply(evaluateInverseFunctionOfMainAngle) }
 
         option { deeply(ExpandRules.DistributeNegativeOverBracket) }
         option { deeply(expandConstantExpression) }
@@ -544,6 +546,9 @@ private val applyTrigonometricIdentityAndSimplify = steps {
 private val usePythagoreanIdentityAndSimplify =
     createUsePythagoreanIdentityAndSimplifyPlan(constantSimplificationSteps)
 
+private val evaluateInverseFunctionOfMainAngle =
+    createEvaluateInverseTrigonometricFunctionExactlyPlan(constantSimplificationSteps)
+
 private val expandAndSimplifier = ExpandAndSimplifier(ConstantExpressionsPlans.SimplifyConstantExpression)
 
 private val expandConstantExpression = steps {
@@ -552,10 +557,12 @@ private val expandConstantExpression = steps {
 }
 
 private val addConstantFractions = run {
-    val fractionAdditionSteps = createAddFractionsPlan(steps { whilePossible(constantSimplificationSteps) })
+    val fractionAdditionSteps = createAddFractionsPlan(
+        numeratorSimplificationSteps = steps { whilePossible(constantSimplificationSteps) },
+        numeratorPatternCreator = ::ConstantPattern,
+    )
 
     steps {
-        check { it.isConstant() }
         apply(fractionAdditionSteps)
     }
 }

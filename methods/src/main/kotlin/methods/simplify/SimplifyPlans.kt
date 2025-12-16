@@ -102,43 +102,53 @@ private fun algebraicSimplificationSteps(
 ): StepsProducer {
     return steps {
         whilePossible {
-            deeply(deepFirst = true) {
-                firstOf {
-                    option {
-                        check { !it.isConstant() }
+            firstOf {
+                option {
+                    deeply(simpleTidyUpSteps)
+                }
+                option {
+                    deeply(deepFirst = true) {
                         firstOf {
-                            option(RationalExpressionsPlans.SimplifyDivisionOfPolynomial)
                             option {
-                                check { it.containsFractions() }
+                                check { !it.isConstant() }
                                 firstOf {
-                                    option(RationalExpressionsPlans.SimplifyRationalExpression)
-                                    option(RationalExpressionsPlans.SimplifyPowerOfRationalExpression)
-                                    option(RationalExpressionsPlans.MultiplyRationalExpressions)
-                                    option(RationalExpressionsPlans.MultiplyRationalExpressionWithNonFractionalFactors)
+                                    option(RationalExpressionsPlans.SimplifyDivisionOfPolynomial)
+                                    option {
+                                        check { it.containsFractions() }
+                                        firstOf {
+                                            option(RationalExpressionsPlans.SimplifyRationalExpression)
+                                            option(RationalExpressionsPlans.SimplifyPowerOfRationalExpression)
+                                            option(RationalExpressionsPlans.MultiplyRationalExpressions)
+                                            option(
+                                                RationalExpressionsPlans
+                                                    .MultiplyRationalExpressionWithNonFractionalFactors,
+                                            )
+                                        }
+                                    }
+                                    option(PolynomialsPlans.MultiplyVariablePowers)
+                                    option(PolynomialsPlans.MultiplyMonomials)
+                                    option(PolynomialsPlans.SimplifyPowerOfNegatedVariable)
+                                    option(PolynomialsPlans.SimplifyPowerOfVariablePower)
+                                    option(PolynomialsPlans.SimplifyPowerOfMonomial)
+                                    option(PolynomialsPlans.SimplifyMonomial)
                                 }
                             }
-                            option(PolynomialsPlans.MultiplyVariablePowers)
-                            option(PolynomialsPlans.MultiplyMonomials)
-                            option(PolynomialsPlans.SimplifyPowerOfNegatedVariable)
-                            option(PolynomialsPlans.SimplifyPowerOfVariablePower)
-                            option(PolynomialsPlans.SimplifyPowerOfMonomial)
-                            option(PolynomialsPlans.SimplifyMonomial)
+
+                            option(simplificationSteps)
+                            option(collectLikeTermsSteps)
+
+                            if (addRationalExpressions) {
+                                option(addFractionsSteps)
+                                option(addTermAndFractionSteps)
+                                option(RationalExpressionsPlans.AddLikeRationalExpressions)
+                                option(RationalExpressionsPlans.AddTermAndRationalExpression)
+                                option(RationalExpressionsPlans.AddRationalExpressions)
+                            }
+
+                            if (expandTrigonometricFunctions) {
+                                option(useTrigonometricIdentityToExpand)
+                            }
                         }
-                    }
-
-                    option(simplificationSteps)
-                    option(collectLikeTermsSteps)
-
-                    if (addRationalExpressions) {
-                        option(addFractionsSteps)
-                        option(addTermAndFractionSteps)
-                        option(RationalExpressionsPlans.AddLikeRationalExpressions)
-                        option(RationalExpressionsPlans.AddTermAndRationalExpression)
-                        option(RationalExpressionsPlans.AddRationalExpressions)
-                    }
-
-                    if (expandTrigonometricFunctions) {
-                        option(useTrigonometricIdentityToExpand)
                     }
                 }
             }

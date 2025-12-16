@@ -38,6 +38,7 @@ import engine.methods.stepsproducers.steps
 import engine.patterns.AnyPattern
 import engine.patterns.ConstantPattern
 import engine.patterns.IntegerFractionPattern
+import engine.patterns.Pattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.UnitExpressionPattern
 import engine.patterns.UnsignedIntegerPattern
@@ -229,12 +230,15 @@ private fun createAddFractionsSteps(numeratorSimplificationSteps: StepsProducer)
         optionally(FractionArithmeticPlans.SimplifyFraction)
     }
 
-fun createAddFractionsPlan(numeratorSimplificationSteps: StepsProducer): Method {
+fun createAddFractionsPlan(
+    numeratorSimplificationSteps: StepsProducer,
+    numeratorPatternCreator: () -> Pattern = ::AnyPattern,
+): Method {
     val addFractionSteps = createAddFractionsSteps(numeratorSimplificationSteps)
 
     return plan {
-        val f1 = optionalNegOf(fractionOf(AnyPattern(), ConstantPattern()))
-        val f2 = optionalNegOf(fractionOf(AnyPattern(), ConstantPattern()))
+        val f1 = optionalNegOf(fractionOf(numeratorPatternCreator(), ConstantPattern()))
+        val f2 = optionalNegOf(fractionOf(numeratorPatternCreator(), ConstantPattern()))
 
         pattern = sumContaining(f1, f2)
 

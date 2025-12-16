@@ -38,6 +38,7 @@ import engine.patterns.condition
 import engine.patterns.degreeOf
 import engine.patterns.numericCondition
 import engine.patterns.oneOf
+import engine.patterns.optionalNegOf
 import engine.patterns.productContaining
 import engine.patterns.stickyOptionalNegOf
 import engine.patterns.withOptionalRationalCoefficient
@@ -181,15 +182,18 @@ private val evaluateInverseFunctionOfMainAngle = rule {
     val sinValues = OneOfPattern(TrigonometricConstants.MainAngles.entries.map { FixedPattern(it.sine) })
     val tanValues = OneOfPattern(TrigonometricConstants.MainAngles.entries.map { FixedPattern(it.tangent) })
 
+    val optNegSine = optionalNegOf(sinValues)
+    val optNegTan = optionalNegOf(tanValues)
+
     val functionSine = TrigonometricExpressionPattern(
-        sinValues,
+        optNegSine,
         listOf(
             TrigonometricFunctionType.Arcsin,
             TrigonometricFunctionType.Arccos,
         ),
     )
     val functionTangent = TrigonometricExpressionPattern(
-        tanValues,
+        optNegTan,
         listOf(
             TrigonometricFunctionType.Arctan,
             TrigonometricFunctionType.Arccot,
@@ -215,8 +219,17 @@ private val evaluateInverseFunctionOfMainAngle = rule {
             }
         } ?: return@onPattern null
 
-        val toExpr =
+        val matchedAngle =
             MainAnglesRadians.firstNotNullOfOrNull { e -> e.key.takeIf { e.value == angle } } ?: return@onPattern null
+
+        val toExpr = if (optNegSine.isNeg() || optNegTan.isNeg()) {
+            when (functionType) {
+                TrigonometricFunctionType.Arccos -> sumOf(Pi, negOf(matchedAngle))
+                else -> negOf(matchedAngle)
+            }
+        } else {
+            matchedAngle
+        }
 
         ruleResult(
             toExpr = transform(pattern, toExpr),

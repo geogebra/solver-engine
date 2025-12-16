@@ -98,3 +98,28 @@ fun createUseTrigonometricIdentityAndSimplifyPlan(simplificationSteps: StepsProd
         }
     }
 }
+
+/**
+ * - Evaluate inverse trigonometric function exactly
+ * - OPTIONALLY: Simplify the result (in case of negative values, the result may be in the form /pi/ - x)
+ */
+fun createEvaluateInverseTrigonometricFunctionExactlyPlan(simplificationSteps: StepsProducer): StepsProducer {
+    return plan {
+        pattern = TrigonometricExpressionPattern(
+            AnyPattern(),
+            listOf(
+                TrigonometricFunctionType.Arcsin,
+                TrigonometricFunctionType.Arccos,
+                TrigonometricFunctionType.Arctan,
+                TrigonometricFunctionType.Arccot,
+            ),
+        )
+
+        explanation = Explanation.DetermineMainAnglePrincipalValueOfInverseFunction
+
+        steps {
+            apply(AnglesRules.EvaluateInverseFunctionOfMainAngle)
+            optionally(simplificationSteps)
+        }
+    }
+}

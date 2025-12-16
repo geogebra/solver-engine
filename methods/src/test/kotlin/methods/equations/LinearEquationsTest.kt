@@ -856,4 +856,25 @@ class LinearEquationWithAdvancedBalancingTest {
                 }
             }
         }
+
+    @Test
+    fun `ax = c1 + k + c2 - constants are simplified first`() =
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "3 x = [5 / 6] + k + [1 / 6]"
+
+            check {
+                toExpr = "SetSolution[x: {[1 + k / 3]}]"
+
+                step {
+                    toExpr = "3 x = 1 + k"
+                }
+
+                step {
+                    toExpr = "x = [1 + k / 3]"
+                }
+
+                step {}
+            }
+        }
 }

@@ -127,14 +127,34 @@ enum class AnglesExplanation : CategorisedMetadataKey {
     ApplyOddSymmetryOfSine,
 
     /**
+     * Apply the even symmetry of cosine
+     */
+    ApplyEvenSymmetryOfCosine,
+
+    /**
+     * Apply the odd symmetry of secant
+     */
+    ApplyEvenSymmetryOfSecant,
+
+    /**
+     * Apply the odd symmetry of cosecant
+     */
+    ApplyOddSymmetryOfCosecant,
+
+    /**
      * Apply the odd symmetry of tangent
      */
     ApplyOddSymmetryOfTangent,
 
     /**
-     * Apply the even symmetry of cosine
+     * Apply the odd symmetry of cotangent
      */
-    ApplyEvenSymmetryOfCosine,
+    ApplyOddSymmetryOfCotangent,
+
+    /**
+     * Apply the negative identity of cosine
+     */
+    ApplyNegativeIdentityOfCosine,
 
     /**
      * Apply the Pythagorean identity

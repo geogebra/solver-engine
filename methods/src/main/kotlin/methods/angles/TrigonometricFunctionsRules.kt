@@ -18,6 +18,7 @@
 package methods.angles
 
 import engine.expressions.Constants.One
+import engine.expressions.Constants.Pi
 import engine.expressions.Constants.Two
 import engine.expressions.fractionOf
 import engine.expressions.negOf
@@ -35,6 +36,7 @@ import engine.patterns.negOf
 import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.sumOf
+import engine.steps.metadata.MetadataKey
 import engine.steps.metadata.metadata
 
 enum class TrigonometricFunctionsRules(override val runner: Rule) : RunnerMethod {
@@ -47,6 +49,17 @@ enum class TrigonometricFunctionsRules(override val runner: Rule) : RunnerMethod
     ApplyTangentIdentity(applyTangentIdentity),
     RearrangeAddendsInArgument(rearrangeAddendsInArgument),
 }
+
+private fun getNegativeIdentityExplanation(functionType: TrigonometricFunctionType): MetadataKey? =
+    when (functionType) {
+        TrigonometricFunctionType.Sin -> Explanation.ApplyOddSymmetryOfSine
+        TrigonometricFunctionType.Cos -> Explanation.ApplyEvenSymmetryOfCosine
+        TrigonometricFunctionType.Sec -> Explanation.ApplyEvenSymmetryOfSecant
+        TrigonometricFunctionType.Csc -> Explanation.ApplyOddSymmetryOfCosecant
+        TrigonometricFunctionType.Tan -> Explanation.ApplyOddSymmetryOfTangent
+        TrigonometricFunctionType.Cot -> Explanation.ApplyOddSymmetryOfCotangent
+        else -> null
+    }
 
 /**
  * Apply odd symmetry in case of sine, tangent, cotangent, cosecant:
@@ -61,55 +74,39 @@ private val applyNegativeIdentityOfTrigFunction = rule {
         negValue,
         listOf(
             TrigonometricFunctionType.Sin,
-            TrigonometricFunctionType.Arcsin,
             TrigonometricFunctionType.Cos,
-            TrigonometricFunctionType.Arccos,
             TrigonometricFunctionType.Tan,
-            TrigonometricFunctionType.Arctan,
             TrigonometricFunctionType.Cot,
-            TrigonometricFunctionType.Arccot,
             TrigonometricFunctionType.Sec,
-            TrigonometricFunctionType.Arcsec,
             TrigonometricFunctionType.Csc,
-            TrigonometricFunctionType.Arccsc,
         ),
     )
 
     onPattern(pattern) {
-        val (toExpr, explanation) = when (getFunctionType(pattern)) {
+        val toExpr = when (getFunctionType(pattern)) {
             TrigonometricFunctionType.Sin,
-            TrigonometricFunctionType.Arcsin,
             TrigonometricFunctionType.Csc,
-            TrigonometricFunctionType.Arccsc,
+            TrigonometricFunctionType.Tan,
+            TrigonometricFunctionType.Cot,
             ->
                 negOf(
                     wrapWithTrigonometricFunction(
                         pattern,
                         move(value),
                     ),
-                ) to Explanation.ApplyOddSymmetryOfSine
+                )
             TrigonometricFunctionType.Cos,
-            TrigonometricFunctionType.Arccos,
             TrigonometricFunctionType.Sec,
-            TrigonometricFunctionType.Arcsec,
             ->
                 wrapWithTrigonometricFunction(
                     pattern,
                     move(value),
-                ) to Explanation.ApplyEvenSymmetryOfCosine
-            TrigonometricFunctionType.Tan,
-            TrigonometricFunctionType.Arctan,
-            TrigonometricFunctionType.Cot,
-            TrigonometricFunctionType.Arccot,
-            ->
-                negOf(
-                    wrapWithTrigonometricFunction(
-                        pattern,
-                        move(value),
-                    ),
-                ) to Explanation.ApplyOddSymmetryOfTangent
-            else -> null to null
+                )
+
+            else -> null
         }
+
+        val explanation = getNegativeIdentityExplanation(getFunctionType(pattern))
 
         if (toExpr == null || explanation == null) {
             return@onPattern null
@@ -132,6 +129,8 @@ private val applyNegativeIdentityOfTrigFunctionInReverse = rule {
         value,
         listOf(
             TrigonometricFunctionType.Sin,
+            TrigonometricFunctionType.Cos,
+            TrigonometricFunctionType.Sec,
             TrigonometricFunctionType.Tan,
             TrigonometricFunctionType.Cot,
             TrigonometricFunctionType.Csc,
@@ -140,23 +139,32 @@ private val applyNegativeIdentityOfTrigFunctionInReverse = rule {
     val pattern = negOf(trigExpression)
 
     onPattern(pattern) {
-        val (toExpr, explanation) = when (getFunctionType(trigExpression)) {
-            TrigonometricFunctionType.Sin, TrigonometricFunctionType.Csc ->
+        val toExpr = when (getFunctionType(trigExpression)) {
+            TrigonometricFunctionType.Sin,
+            TrigonometricFunctionType.Csc,
+            TrigonometricFunctionType.Tan,
+            TrigonometricFunctionType.Cot,
+            ->
                 wrapWithTrigonometricFunction(
                     trigExpression,
                     negOf(
                         move(value),
                     ),
-                ) to Explanation.ApplyOddSymmetryOfSine
-            TrigonometricFunctionType.Tan, TrigonometricFunctionType.Cot ->
+                )
+            TrigonometricFunctionType.Cos,
+            TrigonometricFunctionType.Sec,
+            ->
                 wrapWithTrigonometricFunction(
                     trigExpression,
-                    negOf(
-                        move(value),
+                    sumOf(
+                        introduce(Pi),
+                        negOf(move(value)),
                     ),
-                ) to Explanation.ApplyOddSymmetryOfTangent
-            else -> null to null
+                )
+            else -> null
         }
+
+        val explanation = getNegativeIdentityExplanation(getFunctionType(trigExpression))
 
         if (toExpr == null || explanation == null) {
             return@onPattern null

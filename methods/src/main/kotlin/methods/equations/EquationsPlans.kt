@@ -27,6 +27,7 @@ import engine.expressions.DecimalExpression
 import engine.expressions.Equation
 import engine.expressions.Expression
 import engine.expressions.ExpressionWithConstraint
+import engine.expressions.Identity
 import engine.expressions.RecurringDecimalExpression
 import engine.expressions.StatementSystem
 import engine.expressions.StatementUnion
@@ -43,6 +44,7 @@ import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.SolverEngineExplanation
 import engine.methods.plan
+import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
 import engine.patterns.AnyPattern
@@ -62,6 +64,7 @@ import engine.patterns.setSolutionOf
 import engine.patterns.solutionSetOf
 import engine.patterns.variableListOf
 import engine.steps.Transformation
+import engine.steps.metadata.MetadataKey
 import engine.steps.metadata.metadata
 import methods.algebra.AlgebraExplanation
 import methods.algebra.AlgebraPlans
@@ -313,6 +316,8 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
     SineEquationSolutionExtractionTask(sineEquationSolutionExtractionTask),
 
+    CosineEquationSolutionExtractionTask(cosineEquationSolutionExtractionTask),
+
     @PublicMethod
     SolveConstantEquation(
         plan {
@@ -429,74 +434,122 @@ val solveConstantEquationSteps = steps {
     apply(EquationsRules.ExtractSolutionFromConstantEquation)
 }
 
+fun trigonometricFunctionExtractionTaskBuilder(
+    solvingSteps: StepsProducer,
+    explanationKey: MetadataKey,
+    supplementarySolutionKey: MetadataKey,
+    supplementarySolutionExtractor: (lhs: Expression, rhs: Expression) -> Expression,
+): CompositeMethod =
+    taskSet {
+        val lhs = condition { !it.isConstantIn(solutionVariables) }
+        val rhs = condition { it.containsTrigExpression() }
+
+        val equation = equationOf(
+            lhs,
+            rhs,
+        )
+
+        pattern = equation
+
+        explanation = explanationKey
+
+        tasks {
+            val params = listOf(
+                get(equation) to metadata(Explanation.FindPrincipalSolution),
+                supplementarySolutionExtractor(
+                    get(lhs),
+                    get(rhs),
+                ) to metadata(supplementarySolutionKey),
+            )
+
+            val tasks = params.map { (expression, explanation) ->
+                task(
+                    startExpr = expression,
+                    explanation = explanation,
+                    stepsProducer = solvingSteps,
+                ) ?: return@tasks null
+            }
+
+            val (results, constraints) = tasks.map { t ->
+                t.result.let {
+                    it.firstChild to it.secondChild
+                }
+            }.unzip()
+
+            val startExpression = when {
+                // If any of the options is an identity, the solution is an identity
+                results.any { it is Identity } -> results.first { it is Identity }
+                // If any of the options is a contradiction, only the other solution should be considered
+                results.any { it is Contradiction } -> results.firstOrNull { it !is Contradiction } ?: results.first()
+                // Otherwise merge the solutions into a union of solutions and merge the constraints
+                // into an intersection of constraints
+                else -> {
+                    val overallSolution = if (results[0] != results[1]) {
+                        statementUnionOf(
+                            results,
+                        )
+                    } else {
+                        results[0]
+                    }
+
+                    val constraint = if (constraints.all { it == constraints[0] }) {
+                        constraints[0]
+                    } else {
+                        // This branch should never be reached, as in this taskset the constraint
+                        // should always be the same
+                        computeOverallIntersectionSolution(constraints)
+                    }
+
+                    expressionWithConstraintOf(
+                        bracketOf(overallSolution),
+                        constraint,
+                    )
+                }
+            }
+
+            task(
+                startExpr = startExpression,
+                explanation = metadata(Explanation.CollectSolutions),
+            )
+
+            allTasks()
+        }
+    }
+
 /**
  * f(x) = arcsin(g(x)) -->
  *      - solve: f(x) = arcsin(g(x))
  *      - solve: f(x) = /pi/ - arcsin(g(x))
  *      - collect the solutions into a statement union
  */
-val sineEquationSolutionExtractionTask = taskSet {
-    val lhs = condition { !it.isConstantIn(solutionVariables) }
-    val rhs = condition { it.containsTrigExpression() }
-
-    val equation = equationOf(
+val sineEquationSolutionExtractionTask = trigonometricFunctionExtractionTaskBuilder(
+    extractedSineEquationSolvingSteps,
+    Explanation.DeriveGeneralSolutionOfEquationWithSine,
+    Explanation.FindSupplementarySolution,
+) { lhs: Expression, rhs: Expression ->
+    equationOf(
         lhs,
-        rhs,
+        sumOf(Constants.Pi, negOf(rhs)),
     )
-
-    pattern = equation
-
-    explanation = Explanation.DeriveGeneralSolutionOfEquationWithSine
-
-    tasks {
-        val params = listOf(
-            get(equation) to metadata(Explanation.FindPrincipalSolution),
-            equationOf(
-                get(lhs),
-                sumOf(Constants.Pi, negOf(get(rhs))),
-            ) to metadata(Explanation.FindSupplementarySolution),
-        )
-
-        val tasks = params.map { (expression, explanation) ->
-            task(
-                startExpr = expression,
-                explanation = explanation,
-                stepsProducer = extractedTrigonometricEquationSolvingSteps,
-            ) ?: return@tasks null
-        }
-
-        val (results, constraints) = tasks.map { t ->
-            t.result.let {
-                it.firstChild to it.secondChild
-            }
-        }.unzip()
-
-        val overallSolution = if (results[0] != results[1]) {
-            statementUnionOf(
-                results,
-            )
-        } else {
-            results[0]
-        }
-
-        val constraint = if (constraints.all { it == constraints[0] }) {
-            constraints[0]
-        } else {
-            // This branch should never be reached, as in this taskset the constraint should always be the same
-            computeOverallIntersectionSolution(constraints)
-        }
-
-        task(
-            startExpr = expressionWithConstraintOf(
-                bracketOf(overallSolution),
-                constraint,
-            ),
-            explanation = metadata(Explanation.CollectSolutions),
-        )
-
-        allTasks()
-    }
 }
+
+/**
+ * f(x) = arccos(g(x)) -->
+ *      - solve: f(x) = arccos(g(x))
+ *      - solve: f(x) = - arccos(g(x))
+ *      - collect the solutions into a statement union
+ */
+val cosineEquationSolutionExtractionTask =
+    trigonometricFunctionExtractionTaskBuilder(
+        extractedCosineEquationSolvingSteps,
+        Explanation.DeriveGeneralSolutionOfEquationWithCosine,
+        Explanation.FindOppositeSolution,
+    ) { lhs: Expression, rhs: Expression ->
+        equationOf(
+            lhs,
+            negOf(rhs),
+        )
+    }
 
 val solveEquationPlan = object : CompositeMethod() {
     // Can't be a rule since rules have been changed to apply only on the expression not the constraint

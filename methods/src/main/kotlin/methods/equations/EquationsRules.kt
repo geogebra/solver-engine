@@ -22,6 +22,7 @@ import engine.conditions.isNotZeroBySign
 import engine.expressions.Comparison
 import engine.expressions.Constants
 import engine.expressions.Constants.Pi
+import engine.expressions.Constants.Two
 import engine.expressions.Contradiction
 import engine.expressions.Equation
 import engine.expressions.Expression
@@ -72,6 +73,7 @@ import engine.patterns.ArbitraryVariablePattern
 import engine.patterns.ConditionPattern
 import engine.patterns.ConstantInSolutionVariablePattern
 import engine.patterns.FixedPattern
+import engine.patterns.OptionalWrappingPattern
 import engine.patterns.QuadraticPolynomialPattern
 import engine.patterns.RationalPattern
 import engine.patterns.SolutionVariablePattern
@@ -98,6 +100,7 @@ import engine.patterns.sumOf
 import engine.patterns.withOptionalConstantCoefficient
 import engine.sign.Sign
 import engine.steps.Transformation
+import engine.steps.metadata.MetadataKey
 import engine.steps.metadata.metadata
 import engine.utility.isEven
 import engine.utility.withMaxDP
@@ -324,11 +327,15 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
     SplitEquationWithRationalVariables(splitEquationWithRationalVariables),
 
-    ApplyInverseSineFunctionToBothSides(applyInverseSineFunctionToBothSides),
-    ExtractSolutionFromImpossibleSineEquation(extractSolutionFromImpossibleSineEquation),
-    AddPeriodicityOfSine(addPeriodicityOfSine),
+    ApplyInverseSineFunctionToBothSides(applyInverseFunctionToBothSides),
+    ExtractSolutionFromImpossibleSineLikeEquation(extractSolutionFromImpossibleSineLikeEquation),
+    AddPeriodicityOfSine(createAddPeriodicityOfSineLike(Explanation.AddPeriodicityOfSine)),
+    AddPeriodicityOfCosine(createAddPeriodicityOfSineLike(Explanation.AddPeriodicityOfCosine)),
     ExtractPeriodFromFraction(extractPeriodFromFraction),
+    FlipSignOfPeriod(flipSignOfPeriod),
     ExtractSolutionFromEquationWithInverseSineOfZero(extractSolutionFromEquationWithInverseSineOfZero),
+    ExtractSolutionFromEquationWithInverseCosineOfZero(extractSolutionFromEquationWithInverseCosineOfZero),
+    ExtractSolutionWithoutPeriod(extractSolutionWithoutPeriod),
 }
 
 private val extractSolutionFromEquationInPlusMinusForm = rule {
@@ -731,11 +738,11 @@ val solveEquationWithIncompatibleSigns = rule {
  * sin(x) = sin(y) --> arcsin(sin(x)) = arcsin(sin(y))
  */
 
-private val applyInverseSineFunctionToBothSides = rule {
+private val applyInverseFunctionToBothSides = rule {
     val leftValue = AnyPattern()
-    val lhs = TrigonometricExpressionPattern(leftValue, listOf(TrigonometricFunctionType.Sin))
+    val lhs = TrigonometricExpressionPattern(leftValue)
     val rightValue = AnyPattern()
-    val rightTrig = TrigonometricExpressionPattern(rightValue, listOf(TrigonometricFunctionType.Sin))
+    val rightTrig = TrigonometricExpressionPattern(rightValue)
     val rightRational = RationalPattern()
     val rightConstant = condition { it.isConstant() }
     val rhs = oneOf(rightTrig, rightRational, rightConstant)
@@ -743,7 +750,11 @@ private val applyInverseSineFunctionToBothSides = rule {
     onEquation(lhs, rhs) {
         val functionType = getFunctionType(lhs)
 
-        if (isBound(rightRational)) {
+        if (isBound(rightTrig)) {
+            if (getFunctionType(rightTrig) != functionType) {
+                return@onEquation null
+            }
+        } else if (isBound(rightRational)) {
             // Check if inverse function can be applied to constant (-1 <= c <= 1)
             val value = getValue(rightRational)
             if (
@@ -769,9 +780,12 @@ private val applyInverseSineFunctionToBothSides = rule {
 /**
  * sin(x) = c, c not in [-1, 1] --> /undefined/
  */
-private val extractSolutionFromImpossibleSineEquation = rule {
+private val extractSolutionFromImpossibleSineLikeEquation = rule {
     val leftValue = AnyPattern()
-    val lhs = TrigonometricExpressionPattern(leftValue, listOf(TrigonometricFunctionType.Sin))
+    val lhs = TrigonometricExpressionPattern(
+        leftValue,
+        listOf(TrigonometricFunctionType.Sin, TrigonometricFunctionType.Cos),
+    )
     val rightConstant = RationalPattern()
 
     onEquation(lhs, rightConstant) {
@@ -792,50 +806,51 @@ private val extractSolutionFromImpossibleSineEquation = rule {
  * After an expression with sine has been simplified:
  * x = c --> x = c + 2 /pi/ * k
  */
-private val addPeriodicityOfSine = rule {
-    val equation = equationOf(AnyPattern(), AnyPattern())
-    val equationUnion = condition { it is StatementUnion }
+private fun createAddPeriodicityOfSineLike(explanation: MetadataKey) =
+    rule {
+        val equation = equationOf(AnyPattern(), AnyPattern())
+        val equationUnion = condition { it is StatementUnion }
 
-    val pattern = oneOf(
-        equation,
-        equationUnion,
-    )
+        val pattern = oneOf(
+            equation,
+            equationUnion,
+        )
 
-    onPattern(pattern) {
-        val variableLetter = findUnusedVariableLetter(get(pattern))
-        val variable = Variable(variableLetter)
+        onPattern(pattern) {
+            val variableLetter = findUnusedVariableLetter(get(pattern))
+            val variable = Variable(variableLetter)
 
-        val periodicAddend = productOf(Constants.Two, variable, Constants.Pi)
+            val periodicAddend = productOf(Constants.Two, variable, Pi)
 
-        val equations = if (isBound(equation)) {
-            val content = get(equation)
-            equationOf(content.firstChild, sumOf(content.secondChild, periodicAddend))
-        } else {
-            val content = get(equationUnion)
-            bracketOf(
-                statementUnionOf(
-                    content.children.map {
-                        if (it is Equation) {
-                            equationOf(
-                                it.firstChild,
-                                sumOf(it.secondChild, periodicAddend),
-                            )
-                        } else {
-                            return@onPattern null
-                        }
-                    },
-                ),
+            val equations = if (isBound(equation)) {
+                val content = get(equation)
+                equationOf(content.firstChild, sumOf(content.secondChild, periodicAddend))
+            } else {
+                val content = get(equationUnion)
+                bracketOf(
+                    statementUnionOf(
+                        content.children.map {
+                            if (it is Equation) {
+                                equationOf(
+                                    it.firstChild,
+                                    sumOf(it.secondChild, periodicAddend),
+                                )
+                            } else {
+                                return@onPattern null
+                            }
+                        },
+                    ),
+                )
+            }
+
+            val constraint = setSolutionOf(VariableList(listOf(variable)), Constants.Integers)
+
+            ruleResult(
+                toExpr = expressionWithConstraintOf(equations, introduce(constraint)),
+                explanation = metadata(explanation),
             )
         }
-
-        val constraint = setSolutionOf(VariableList(listOf(variable)), Constants.Integers)
-
-        ruleResult(
-            toExpr = expressionWithConstraintOf(equations, introduce(constraint)),
-            explanation = metadata(Explanation.AddPeriodicityOfSine),
-        )
     }
-}
 
 /**
  * [c1 + c2 * k * /pi/ / c3] -> [c1 / c3] + [c2 * k * /pi/ / c3]
@@ -845,14 +860,14 @@ private val extractPeriodFromFraction = rule {
         it.isConstantIn(solutionVariables)
     }
     val coefficient = ConstantInSolutionVariablePattern()
-    val period = optionalNegOf(
-        oneOf(
-            productOf(variable, FixedPattern(Pi)),
-            productOf(coefficient, variable, FixedPattern(Pi)),
-        ),
+    val period = oneOf(
+        productOf(variable, FixedPattern(Pi)),
+        productOf(coefficient, variable, FixedPattern(Pi)),
     )
 
-    val numerator = sumContaining(period)
+    val optionalNegPeriod = optionalNegOf(period)
+
+    val numerator = sumContaining(optionalNegPeriod)
     val denominator = AnyPattern()
 
     val fraction = fractionOf(numerator, denominator)
@@ -874,6 +889,48 @@ private val extractPeriodFromFraction = rule {
     }
 }
 
+/**
+ * The sign of the period does not matter in case of equations with trigonometric functions, so we want to keep
+ * it always positive
+ */
+private val flipSignOfPeriod = rule {
+    val variable = condition(ArbitraryVariablePattern()) {
+        it.isConstantIn(solutionVariables)
+    }
+    val coefficient = ConstantInSolutionVariablePattern()
+    val period = oneOf(
+        productOf(variable, FixedPattern(Pi)),
+        productOf(coefficient, variable, FixedPattern(Pi)),
+    )
+
+    val negPeriod = engine.patterns.negOf(period)
+
+    val periodFraction = fractionOf(period, AnyPattern())
+
+    val negFraction = engine.patterns.negOf(periodFraction)
+
+    val pattern = oneOf(
+        negPeriod,
+        negFraction,
+    )
+
+    onPattern(pattern) {
+        val toExpr = when {
+            isBound(negPeriod) -> period
+            isBound(negFraction) -> periodFraction
+            else -> return@onPattern null
+        }
+
+        ruleResult(
+            toExpr = move(toExpr),
+            explanation = metadata(Explanation.FlipSignOfPeriodicity),
+        )
+    }
+}
+
+/**
+ * x = arcsin(0) --> x = k * /pi/
+ */
 private val extractSolutionFromEquationWithInverseSineOfZero = rule {
     val lhs = AnyPattern()
     val rhs = TrigonometricExpressionPattern(
@@ -895,6 +952,74 @@ private val extractSolutionFromEquationWithInverseSineOfZero = rule {
                 setSolutionOf(VariableList(listOf(variable)), Constants.Integers),
             ),
             explanation = metadata(Explanation.ExtractSolutionFromEquationWithInverseSineOfZero),
+        )
+    }
+}
+
+/**
+ * x = arccos(0) --> x = [/pi/ / 2] + k * /pi/
+ */
+private val extractSolutionFromEquationWithInverseCosineOfZero = rule {
+    val lhs = AnyPattern()
+    val rhs = TrigonometricExpressionPattern(
+        FixedPattern(Constants.Zero),
+        listOf(TrigonometricFunctionType.Arccos),
+    )
+
+    val equation = equationOf(lhs, rhs)
+
+    onPattern(equation) {
+        val variable = Variable(findUnusedVariableLetter(get(equation)))
+
+        ruleResult(
+            toExpr = expressionWithConstraintOf(
+                equationOf(
+                    get(lhs),
+                    sumOf(fractionOf(Pi, Two), productOf(variable, Pi)),
+                ),
+                setSolutionOf(VariableList(listOf(variable)), Constants.Integers),
+            ),
+            explanation = metadata(Explanation.ExtractSolutionFromEquationWithInverseCosineOfZero),
+        )
+    }
+}
+
+/**
+ * Used for checking if the solution of a trigonometric equation is a contradiction / identity (In these cases the
+ * periodicity can be ignored)
+ * e.g lhs = rhs + 2k * /pi/ --> lhs = rhs
+ */
+private val extractSolutionWithoutPeriod = rule {
+    val variable = condition(ArbitraryVariablePattern()) {
+        it.isConstantIn(solutionVariables)
+    }
+    val coefficient = ConstantInSolutionVariablePattern()
+    val period = optionalNegOf(
+        oneOf(
+            productOf(variable, FixedPattern(Pi)),
+            productOf(coefficient, variable, FixedPattern(Pi)),
+        ),
+    )
+
+    val periodFraction = OptionalWrappingPattern(period) {
+        optionalNegOf(
+            fractionOf(it, AnyPattern()),
+        )
+    }
+
+    val lhs = ConstantInSolutionVariablePattern()
+    val rhsSum = sumContaining(periodFraction)
+
+    onEquation(lhs, oneOf(periodFraction, rhsSum)) {
+        val toExpr = when {
+            isBound(rhsSum) -> restOf(rhsSum)
+            else -> transform(periodFraction, Constants.Zero)
+        }
+
+        ruleResult(
+            equationOf(get(lhs), toExpr),
+            explanation = metadata(Explanation.ExtractSolutionWithoutPeriod),
+            tags = listOf(Transformation.Tag.Pedantic),
         )
     }
 }
