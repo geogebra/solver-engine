@@ -29,7 +29,9 @@ import engine.methods.stepsproducers.steps
 import engine.patterns.condition
 import engine.steps.metadata.metadata
 import methods.algebra.AlgebraPlans
+import methods.angles.TrigonometricFunctionsRules
 import methods.angles.createUseTrigonometricIdentityAndSimplifyPlan
+import methods.collecting.createCollectLikeTrigonometricTermsAndSimplifyPlan
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.general.NormalizationPlans
@@ -96,6 +98,8 @@ val algebraicSimplificationStepsForEquations = algebraicSimplificationSteps(
 
 val useTrigonometricIdentityToExpand = createUseTrigonometricIdentityAndSimplifyPlan(simplificationSteps)
 
+val collectLikeTrigonometricTerms = createCollectLikeTrigonometricTermsAndSimplifyPlan(simplificationSteps)
+
 private fun algebraicSimplificationSteps(
     addRationalExpressions: Boolean = true,
     expandTrigonometricFunctions: Boolean = true,
@@ -103,9 +107,16 @@ private fun algebraicSimplificationSteps(
     return steps {
         whilePossible {
             firstOf {
+                // Try to simplify the whole expression first
                 option {
-                    deeply(simpleTidyUpSteps)
+                    deeply {
+                        firstOf {
+                            option(simpleTidyUpSteps)
+                            option(collectLikeTrigonometricTerms)
+                        }
+                    }
                 }
+                // Try to simplify individual terms
                 option {
                     deeply(deepFirst = true) {
                         firstOf {
@@ -146,6 +157,7 @@ private fun algebraicSimplificationSteps(
                             }
 
                             if (expandTrigonometricFunctions) {
+                                option(TrigonometricFunctionsRules.ApplyNegativeIdentityOfTrigFunction)
                                 option(useTrigonometricIdentityToExpand)
                             }
                         }

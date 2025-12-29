@@ -55,10 +55,8 @@ import engine.methods.rule
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.ConstantInSolutionVariablePattern
-import engine.patterns.FixedPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.SolvablePattern
-import engine.patterns.TrigonometricExpressionPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.VariableExpressionPattern
 import engine.patterns.condition
@@ -72,18 +70,15 @@ import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
-import engine.patterns.sumOf
 import engine.patterns.withOptionalConstantCoefficientInSolutionVariables
 import engine.sign.Sign
 import engine.steps.metadata.DragTargetPosition
 import engine.steps.metadata.Metadata
-import engine.steps.metadata.metadata
 import engine.utility.extractFirst
 import engine.utility.isEven
 import engine.utility.isOdd
 import engine.utility.knownPowers
 import engine.utility.lcm
-import methods.angles.AnglesExplanation
 import methods.solvable.DenominatorExtractor.extractDenominator
 import java.math.BigInteger
 import engine.steps.metadata.DragTargetPosition as Position
@@ -454,7 +449,6 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
     TakeLogOfBothSides(takeLogOfBothSides),
     CancelCommonBase(cancelCommonBase),
     RewriteBothSidesWithSameBase(rewriteBothSidesWithSameBase),
-    BalanceEquationWithTrigonometricExpressions(balanceEquationWithTrigonometricExpressions),
 }
 
 private val cancelCommonFactorOnBothSides = rule {
@@ -915,51 +909,6 @@ private val rewriteBothSidesWithSameBase = rule {
                 simplifiedPowerOf(simplifiedPowerOf(xp(b), xp(e2)), get(rhsExponent, Constants.One)),
             ),
             explanation = solvableExplanation((SolvableKey.RewriteBothSidesWithSameBase)),
-        )
-    }
-}
-
-/**
- * sin(a) ± sin(b) = 0 --> sin(a) = ± sin(b)
- */
-private val balanceEquationWithTrigonometricExpressions = rule {
-    val argument = AnyPattern()
-    val argument2 = AnyPattern()
-    val trigFunction1 = TrigonometricExpressionPattern(argument)
-    val trigFunction2 = TrigonometricExpressionPattern(argument2)
-    val term1 = optionalNegOf(trigFunction1)
-    val term2 = optionalNegOf(trigFunction2)
-    val lhs = sumOf(term1, term2)
-    val rhs = FixedPattern(Constants.Zero)
-
-    val solvableLeft = SolvablePattern(lhs, rhs)
-    val solvableRight = SolvablePattern(rhs, lhs)
-
-    onPattern(oneOf(solvableLeft, solvableRight)) {
-        if (getFunctionType(trigFunction1) != getFunctionType(trigFunction2)) {
-            return@onPattern null
-        }
-
-        val (lhs, rhs) = when {
-            term1.isNeg() -> Pair(move(term2), copyFlippedSign(term1, move(trigFunction1)))
-            else -> Pair(move(term1), copyFlippedSign(term2, move(trigFunction2)))
-        }
-
-        val toExpr = when {
-            isBound(solvableLeft) -> solvableLeft.deriveSolvable(
-                lhs,
-                rhs,
-            )
-            isBound(solvableRight) -> solvableRight.deriveSolvable(
-                rhs,
-                lhs,
-            )
-            else -> null
-        } ?: return@onPattern null
-
-        ruleResult(
-            toExpr = toExpr,
-            explanation = metadata(AnglesExplanation.BalanceEquationWithTrigonometricExpressions),
         )
     }
 }

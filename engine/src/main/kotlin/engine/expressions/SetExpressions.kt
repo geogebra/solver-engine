@@ -127,7 +127,12 @@ private fun joinBoundarySets(
     comparator: Comparator<Expression>,
 ): BoundarySet {
     val boundaryComparator =
-        compareBy<Boundary, Expression>(comparator) { it.value }.thenBy { it.side }
+        compareBy<Boundary, Expression>(comparator) { it.value }
+            // If we could sort by value (e.g. the difference is defined) this sorting does nothing, as the values are
+            // the same, otherwise it will sort the expressions which could not be compared in alphabetical order.
+            // This is done so that we never sort primarily by side, causing the below algorithm to break
+            .thenBy { it.value.toString() }
+            .thenBy { it.side }
     val boundaries = boundarySets.flatMap { it.boundaries }.sortedWith(boundaryComparator)
     val initialHeight = boundarySets.sumOf { it.initialHeight } - numSets + 1
 

@@ -382,7 +382,12 @@ val trigExpressionSimplificationSteps = steps {
 
     deeply {
         firstOf {
-            option(TrigonometricFunctionsRules.ApplyNegativeIdentityOfTrigFunction)
+            option {
+                check {
+                    it.isConstant()
+                }
+                apply(TrigonometricFunctionsRules.ApplyNegativeIdentityOfTrigFunction)
+            }
             option(usePythagoreanIdentityAndSimplify)
             option(applyTrigonometricIdentityAndSimplify)
         }
@@ -413,6 +418,8 @@ val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
 
         option { deeply(AnglesPlans.ReduceAngleToUnitCircle) }
         option { deeply(AnglesRules.SubstituteAngleWithCoterminalAngleFromUnitCircle) }
+
+        option { deeply(collectLikeTrigonometricTermsAndSimplify) }
 
         option(trigExpressionSimplificationSteps)
 
@@ -463,8 +470,6 @@ val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
             deeply(collectLikeRootsAndSimplify)
         }
         option { deeply(collectLikeRationalPowersAndSimplify) }
-
-        option { deeply(collectLikeTrigonometricTermsAndSimplify) }
 
         option(ConstantExpressionsPlans.SimplifyRootsInExpression)
         option(simplifyRationalExponentsInProduct)

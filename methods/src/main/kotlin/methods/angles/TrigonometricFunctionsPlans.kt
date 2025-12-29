@@ -18,6 +18,8 @@
 package methods.angles
 
 import engine.expressions.Constants.Two
+import engine.expressions.Expression
+import engine.expressions.TrigonometricExpression
 import engine.methods.plan
 import engine.methods.stepsproducers.StepsProducer
 import engine.operators.TrigonometricFunctionType
@@ -123,3 +125,19 @@ fun createEvaluateInverseTrigonometricFunctionExactlyPlan(simplificationSteps: S
         }
     }
 }
+
+fun findFunctionsRequiringDomainCheck(expr: Expression): Sequence<Expression> =
+    sequence {
+        for (child in expr.children) {
+            yieldAll(findFunctionsRequiringDomainCheck(child))
+        }
+
+        when (expr) {
+            is TrigonometricExpression ->
+                if (expr.functionType == TrigonometricFunctionType.Tan &&
+                    !expr.argument.isConstant()
+                ) {
+                    yield(expr)
+                }
+        }
+    }

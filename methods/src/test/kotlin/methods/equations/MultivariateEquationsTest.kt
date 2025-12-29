@@ -803,19 +803,9 @@ class MultivariateEquationsTest {
                 task {
                     taskId = "#3"
                     startExpr =
-                        "SetSolution[h: {[S (B + b) / 2 x]}] GIVEN SetSolution[x: /reals/ \\ {0}] GIVEN B + b != 0"
+                        "SetSolution[h: {[S (B + b) / 2 x]}] GIVEN B + b != 0 AND SetSolution[x: /reals/ \\ {0}]"
                     explanation {
                         key = EquationsExplanation.AddDomainConstraintToSolution
-                    }
-
-                    step {
-                        fromExpr =
-                            "SetSolution[h: {[S (B + b) / 2 x]}] GIVEN SetSolution[x: /reals/ \\ {0}] GIVEN B + b != 0"
-                        toExpr =
-                            "SetSolution[h: {[S (B + b) / 2 x]}] GIVEN B + b != 0 AND SetSolution[x: /reals/ \\ {0}]"
-                        explanation {
-                            key = SolverEngineExplanation.MergeConstraints
-                        }
                     }
                 }
             }

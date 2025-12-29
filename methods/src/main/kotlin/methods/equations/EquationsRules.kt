@@ -104,10 +104,12 @@ import engine.steps.metadata.MetadataKey
 import engine.steps.metadata.metadata
 import engine.utility.isEven
 import engine.utility.withMaxDP
+import methods.angles.AnglesExplanation
 import methods.rationalexpressions.computeLcdAndMultipliers
 import methods.solvable.DenominatorExtractor.extractDenominator
 import methods.solvable.DenominatorExtractor.extractFraction
 import methods.solvable.extractSumTermsFromSolvable
+import methods.solvable.findUnusedVariableLetter
 import java.math.BigInteger
 
 enum class EquationsRules(override val runner: Rule) : RunnerMethod {
@@ -329,13 +331,39 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
     ApplyInverseSineFunctionToBothSides(applyInverseFunctionToBothSides),
     ExtractSolutionFromImpossibleSineLikeEquation(extractSolutionFromImpossibleSineLikeEquation),
-    AddPeriodicityOfSine(createAddPeriodicityOfSineLike(Explanation.AddPeriodicityOfSine)),
-    AddPeriodicityOfCosine(createAddPeriodicityOfSineLike(Explanation.AddPeriodicityOfCosine)),
+
+    /**
+     * After an expression with sine has been simplified:
+     * x = c --> x = c + 2k * /pi/
+     */
+    AddPeriodicityOfSine(
+        createAddPeriodicityRule(Explanation.AddPeriodicityOfSine, ::sinePeriodCreator),
+    ),
+
+    /**
+     * After an expression with cosine has been simplified:
+     * x = c --> x = c + 2k * /pi/
+     */
+    AddPeriodicityOfCosine(
+        createAddPeriodicityRule(Explanation.AddPeriodicityOfCosine, ::sinePeriodCreator),
+    ),
+
+    /**
+     * After an expression with tangent has been simplified:
+     * x = c --> x = c + k * /pi/
+     */
+    AddPeriodicityOfTanLike(
+        createAddPeriodicityRule(Explanation.AddPeriodicityOfTan) {
+            productOf(it, Constants.Pi)
+        },
+    ),
     ExtractPeriodFromFraction(extractPeriodFromFraction),
     FlipSignOfPeriod(flipSignOfPeriod),
     ExtractSolutionFromEquationWithInverseSineOfZero(extractSolutionFromEquationWithInverseSineOfZero),
     ExtractSolutionFromEquationWithInverseCosineOfZero(extractSolutionFromEquationWithInverseCosineOfZero),
     ExtractSolutionWithoutPeriod(extractSolutionWithoutPeriod),
+    ReorderSumWithPeriod(reorderSumWithPeriod),
+    BalanceEquationWithTrigonometricExpressions(balanceEquationWithTrigonometricExpressions),
 }
 
 private val extractSolutionFromEquationInPlusMinusForm = rule {
@@ -802,11 +830,21 @@ private val extractSolutionFromImpossibleSineLikeEquation = rule {
     }
 }
 
+private fun sinePeriodCreator(variable: Variable): Expression =
+    productOf(
+        Two,
+        variable,
+        Pi,
+    )
+
 /**
- * After an expression with sine has been simplified:
- * x = c --> x = c + 2 /pi/ * k
+ * After an expression with trigonometric expressions has been simplified:
+ * x = c --> x = c + <period of trigonometric expression>
  */
-private fun createAddPeriodicityOfSineLike(explanation: MetadataKey) =
+private fun createAddPeriodicityRule(
+    explanation: MetadataKey,
+    periodCreator: (variable: Variable) -> Expression,
+): Rule =
     rule {
         val equation = equationOf(AnyPattern(), AnyPattern())
         val equationUnion = condition { it is StatementUnion }
@@ -817,10 +855,9 @@ private fun createAddPeriodicityOfSineLike(explanation: MetadataKey) =
         )
 
         onPattern(pattern) {
-            val variableLetter = findUnusedVariableLetter(get(pattern))
-            val variable = Variable(variableLetter)
+            val variable = Variable(findUnusedVariableLetter(get(pattern)))
 
-            val periodicAddend = productOf(Constants.Two, variable, Pi)
+            val periodicAddend = periodCreator(variable)
 
             val equations = if (isBound(equation)) {
                 val content = get(equation)
@@ -1020,6 +1057,88 @@ private val extractSolutionWithoutPeriod = rule {
             equationOf(get(lhs), toExpr),
             explanation = metadata(Explanation.ExtractSolutionWithoutPeriod),
             tags = listOf(Transformation.Tag.Pedantic),
+        )
+    }
+}
+
+/**
+ * Used for getting a nice order in the result, with the
+ * e.g c1 + 2k * /pi/ + c2 --> c1 + c2 + 2k * /pi/
+ */
+private val reorderSumWithPeriod = rule {
+    val variable = condition(ArbitraryVariablePattern()) {
+        it.isConstantIn(solutionVariables)
+    }
+    val coefficient = ConstantInSolutionVariablePattern()
+    val period = optionalNegOf(
+        oneOf(
+            productOf(variable, FixedPattern(Pi)),
+            productOf(coefficient, variable, FixedPattern(Pi)),
+        ),
+    )
+
+    val periodFraction = OptionalWrappingPattern(period) {
+        optionalNegOf(
+            fractionOf(it, AnyPattern()),
+        )
+    }
+
+    val sum = sumContaining(periodFraction)
+
+    onPattern(sum) {
+        val period = move(periodFraction)
+        val operands = get(sum).children.filter { it != period } + period
+        val toExpr = sumOf(operands)
+
+        ruleResult(
+            toExpr,
+            explanation = metadata(Explanation.ReorderSumWithPeriod),
+            tags = listOf(Transformation.Tag.Rearrangement),
+        )
+    }
+}
+
+/**
+ * sin(a) ± sin(b) = 0 --> sin(a) = ± sin(b)
+ */
+private val balanceEquationWithTrigonometricExpressions = rule {
+    val argument = AnyPattern()
+    val argument2 = AnyPattern()
+    val trigFunction1 = TrigonometricExpressionPattern(argument)
+    val trigFunction2 = TrigonometricExpressionPattern(argument2)
+    val term1 = optionalNegOf(trigFunction1)
+    val term2 = optionalNegOf(trigFunction2)
+    val lhs = sumOf(term1, term2)
+    val rhs = FixedPattern(Constants.Zero)
+
+    val solvableLeft = SolvablePattern(lhs, rhs)
+    val solvableRight = SolvablePattern(rhs, lhs)
+
+    onPattern(oneOf(solvableLeft, solvableRight)) {
+        if (getFunctionType(trigFunction1) != getFunctionType(trigFunction2)) {
+            return@onPattern null
+        }
+
+        val (lhs, rhs) = when {
+            term1.isNeg() -> Pair(move(term2), copyFlippedSign(term1, move(trigFunction1)))
+            else -> Pair(move(term1), copyFlippedSign(term2, move(trigFunction2)))
+        }
+
+        val toExpr = when {
+            isBound(solvableLeft) -> solvableLeft.deriveSolvable(
+                lhs,
+                rhs,
+            )
+            isBound(solvableRight) -> solvableRight.deriveSolvable(
+                rhs,
+                lhs,
+            )
+            else -> null
+        } ?: return@onPattern null
+
+        ruleResult(
+            toExpr = toExpr,
+            explanation = metadata(AnglesExplanation.BalanceEquationWithTrigonometricExpressions),
         )
     }
 }

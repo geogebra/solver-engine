@@ -13,6 +13,7 @@ contents to a new release section (e.g. _[0.x]_).
 
 - Solve equations containing sines. (PLUT-1076)
 - Solve equations containing cosines. (PLUT-1077)
+- Solve equations containing tangents. (PLUT-1080)
 
 ### Fixed
 

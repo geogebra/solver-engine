@@ -14,7 +14,7 @@ class TrigonometricEquationsTest {
 
             check {
                 fromExpr = "sin[[/pi/ / 3] - x] = sin[2 x]"
-                toExpr = "(x = [/pi/ / 9] + [2 k * /pi/ / 3] OR x = [2 /pi/ / 3] + 2 k * /pi/) " +
+                toExpr = "SetSolution[x: {[/pi/ / 9] + [2 k * /pi/ / 3], [2 /pi/ / 3] + 2 k * /pi/}] " +
                     "GIVEN SetSolution[k: /integers/]"
                 explanation {
                     key = EquationsExplanation.SolveTrigonometricEquation
@@ -50,7 +50,7 @@ class TrigonometricEquationsTest {
 
             check {
                 fromExpr = "sin[[/pi/ / 3] - x] - sin[2 x] = 0"
-                toExpr = "(x = [/pi/ / 9] + [2 k * /pi/ / 3] OR x = [2 /pi/ / 3] + 2 k * /pi/) " +
+                toExpr = "SetSolution[x: {[/pi/ / 9] + [2 k * /pi/ / 3], [2 /pi/ / 3] + 2 k * /pi/}] " +
                     "GIVEN SetSolution[k: /integers/]"
                 explanation {
                     key = EquationsExplanation.SolveTrigonometricEquation
@@ -90,7 +90,7 @@ class TrigonometricEquationsTest {
 
             check {
                 fromExpr = "-sin[[/pi/ / 3] - x] + sin[2 x] = 0"
-                toExpr = "(x = [/pi/ / 9] + [2 k * /pi/ / 3] OR x = [2 /pi/ / 3] + 2 k * /pi/) " +
+                toExpr = "SetSolution[x: {[/pi/ / 9] + [2 k * /pi/ / 3], [2 /pi/ / 3] + 2 k * /pi/}] " +
                     "GIVEN SetSolution[k: /integers/]"
                 explanation {
                     key = EquationsExplanation.SolveTrigonometricEquation
@@ -130,7 +130,7 @@ class TrigonometricEquationsTest {
 
             check {
                 fromExpr = "sin[[/pi/ / 3] - x] = -sin[2 x]"
-                toExpr = "(x = 2 k * /pi/ - [/pi/ / 3] OR x = -[2 /pi/ / 9] + [2 k * /pi/ / 3]) " +
+                toExpr = "SetSolution[x: {-[/pi/ / 3] + 2 k * /pi/, -[2 /pi/ / 9] + [2 k * /pi/ / 3]}] " +
                     "GIVEN SetSolution[k: /integers/]"
                 explanation {
                     key = EquationsExplanation.SolveTrigonometricEquation
@@ -173,7 +173,8 @@ class TrigonometricEquationsTest {
 
             check {
                 fromExpr = "sin[2 x] = sin[[2 /pi/ / 7]]"
-                toExpr = "(x = [/pi/ / 7] + k * /pi/ OR x = [5 /pi/ / 14] + k * /pi/) GIVEN SetSolution[k: /integers/]"
+                toExpr = "SetSolution[x: {[/pi/ / 7] + k * /pi/, [5 /pi/ / 14] + k * /pi/}] " +
+                    "GIVEN SetSolution[k: /integers/]"
                 explanation {
                     key = EquationsExplanation.SolveTrigonometricEquation
                 }
@@ -187,9 +188,6 @@ class TrigonometricEquationsTest {
                 }
 
                 step {
-                    toExpr =
-                        "(x = [/pi/ / 7] + k * /pi/ OR x = [5 /pi/ / 14] + k * /pi/) GIVEN SetSolution[k: /integers/]"
-
                     task {
                         taskId = "#1"
                         startExpr = "2 x = arcsin[sin[[2 /pi/ / 7]]]"
@@ -211,8 +209,8 @@ class TrigonometricEquationsTest {
 
             check {
                 fromExpr = "sin[2 x] + sin[[2 /pi/ / 7]] = 0"
-                toExpr =
-                    "(x = -[/pi/ / 7] + k * /pi/ OR x = [9 /pi/ / 14] + k * /pi/) GIVEN SetSolution[k: /integers/]"
+                toExpr = "SetSolution[x: {-[/pi/ / 7] + k * /pi/, [9 /pi/ / 14] + k * /pi/}] " +
+                    "GIVEN SetSolution[k: /integers/]"
                 explanation {
                     key = EquationsExplanation.SolveTrigonometricEquation
                 }
@@ -234,9 +232,6 @@ class TrigonometricEquationsTest {
                 }
 
                 step {
-                    toExpr =
-                        "(x = -[/pi/ / 7] + k * /pi/ OR x = [9 /pi/ / 14] + k * /pi/) GIVEN SetSolution[k: /integers/]"
-
                     task {
                         taskId = "#1"
                         startExpr = "2 x = arcsin[sin[-[2 /pi/ / 7]]]"
@@ -261,7 +256,7 @@ class TrigonometricEquationsTest {
 
             check {
                 fromExpr = "sin[x] = [1 / 2]"
-                toExpr = "(x = [/pi/ / 6] + 2 k * /pi/ OR x = [5 /pi/ / 6] + 2 k * /pi/) " +
+                toExpr = "SetSolution[x: {[/pi/ / 6] + 2 k * /pi/, [5 /pi/ / 6] + 2 k * /pi/}] " +
                     "GIVEN SetSolution[k: /integers/]"
                 explanation {
                     key = EquationsExplanation.SolveTrigonometricEquation
@@ -276,9 +271,6 @@ class TrigonometricEquationsTest {
                 }
 
                 step {
-                    toExpr = "(x = [/pi/ / 6] + 2 k * /pi/ OR x = [5 /pi/ / 6] + 2 k * /pi/) " +
-                        "GIVEN SetSolution[k: /integers/]"
-
                     task {
                         taskId = "#1"
                         startExpr = "x = arcsin[[1 / 2]]"
@@ -289,14 +281,7 @@ class TrigonometricEquationsTest {
                         startExpr = "x = /pi/ - arcsin[[1 / 2]]"
                     }
 
-                    task {
-                        taskId = "#3"
-                        startExpr = "(x = [/pi/ / 6] + 2 k * /pi/ OR x = [5 /pi/ / 6] + 2 k * /pi/) " +
-                            "GIVEN SetSolution[k: /integers/]"
-                        explanation {
-                            key = EquationsExplanation.CollectSolutions
-                        }
-                    }
+                    task {}
                 }
             }
         }
@@ -306,7 +291,7 @@ class TrigonometricEquationsTest {
 
             check {
                 fromExpr = "sin[x] - [1 / 2] = 0"
-                toExpr = "( x = [/pi/ / 6] + 2 k * /pi/ OR x = [5 /pi/ / 6] + 2 k * /pi/ )" +
+                toExpr = "SetSolution[x: {[/pi/ / 6] + 2 k * /pi/, [5 /pi/ / 6] + 2 k * /pi/}] " +
                     "GIVEN SetSolution[k: /integers/]"
                 explanation {
                     key = EquationsExplanation.SolveTrigonometricEquation
@@ -325,9 +310,6 @@ class TrigonometricEquationsTest {
                 }
 
                 step {
-                    toExpr = "(x = [/pi/ / 6] + 2 k * /pi/ OR x = [5 /pi/ / 6] + 2 k * /pi/) " +
-                        "GIVEN SetSolution[k: /integers/]"
-
                     task {
                         taskId = "#1"
                         startExpr = "x = arcsin[[1 / 2]]"
@@ -338,14 +320,7 @@ class TrigonometricEquationsTest {
                         startExpr = "x = /pi/ - arcsin[[1 / 2]]"
                     }
 
-                    task {
-                        taskId = "#3"
-                        startExpr = "(x = [/pi/ / 6] + 2 k * /pi/ OR x = [5 /pi/ / 6] + 2 k * /pi/) " +
-                            "GIVEN SetSolution[k: /integers/]"
-                        explanation {
-                            key = EquationsExplanation.CollectSolutions
-                        }
-                    }
+                    task {}
                 }
             }
         }
@@ -359,7 +334,7 @@ class TrigonometricEquationsTest {
 
             check {
                 fromExpr = "sin[x + 3] = [1 / 4] + [2 / 8]"
-                toExpr = "(x = [/pi/ / 6] + 2 k * /pi/ - 3 OR x = [5 /pi/ / 6] + 2 k * /pi/ - 3) " +
+                toExpr = "SetSolution[x: {[/pi/ / 6] - 3 + 2 k * /pi/, [5 /pi/ / 6] - 3 + 2 k * /pi/}] " +
                     "GIVEN SetSolution[k: /integers/]"
                 explanation {
                     key = EquationsExplanation.SolveTrigonometricEquation
@@ -378,9 +353,6 @@ class TrigonometricEquationsTest {
                 }
 
                 step {
-                    toExpr = "(x = [/pi/ / 6] + 2 k * /pi/ - 3 OR x = [5 /pi/ / 6] + 2 k * /pi/ - 3)" +
-                        " GIVEN SetSolution[k: /integers/]"
-
                     task {
                         taskId = "#1"
                         startExpr = "x + 3 = arcsin[[1 / 2]]"
@@ -391,11 +363,7 @@ class TrigonometricEquationsTest {
                         startExpr = "x + 3 = /pi/ - arcsin[[1 / 2]]"
                     }
 
-                    task {
-                        taskId = "#3"
-                        startExpr = "(x = [/pi/ / 6] + 2 k * /pi/ - 3 OR x = [5 /pi/ / 6] + 2 k * /pi/ - 3) " +
-                            "GIVEN SetSolution[k: /integers/]"
-                    }
+                    task {}
                 }
             }
         }
@@ -405,12 +373,8 @@ class TrigonometricEquationsTest {
             inputExpr = "sin[x + 3] - [1 / 4] = [2 / 8]"
 
             check {
-                toExpr = "(x = [/pi/ / 6] + 2 k * /pi/ - 3 OR x = [5 /pi/ / 6] + 2 k * /pi/ - 3) " +
+                toExpr = "SetSolution[x: {[/pi/ / 6] - 3 + 2 k * /pi/, [5 /pi/ / 6] - 3 + 2 k * /pi/}] " +
                     "GIVEN SetSolution[k: /integers/]"
-
-                step {
-                    toExpr = "sin[x + 3] - [1 / 4] = [1 / 4]"
-                }
 
                 step {
                     toExpr = "sin[x + 3] = [1 / 2]"
@@ -425,9 +389,6 @@ class TrigonometricEquationsTest {
                 }
 
                 step {
-                    toExpr = "(x = [/pi/ / 6] + 2 k * /pi/ - 3 OR x = [5 /pi/ / 6] + 2 k * /pi/ - 3) " +
-                        "GIVEN SetSolution[k: /integers/]"
-
                     task {
                         taskId = "#1"
                         startExpr = "x + 3 = arcsin[[1 / 2]]"
@@ -438,11 +399,7 @@ class TrigonometricEquationsTest {
                         startExpr = "x + 3 = /pi/ - arcsin[[1 / 2]]"
                     }
 
-                    task {
-                        taskId = "#3"
-                        startExpr = "(x = [/pi/ / 6] + 2 k * /pi/ - 3 OR x = [5 /pi/ / 6] + 2 k * /pi/ - 3) " +
-                            "GIVEN SetSolution[k: /integers/]"
-                    }
+                    task {}
                 }
             }
         }
@@ -452,7 +409,7 @@ class TrigonometricEquationsTest {
             inputExpr = "sin[x] = [2 / 5]"
 
             check {
-                toExpr = "(x = arcsin[[2 / 5]] + 2 k * /pi/ OR x = /pi/ - arcsin[[2 / 5]] + 2 k * /pi/) " +
+                toExpr = "SetSolution[x: {/pi/ - arcsin[[2 / 5]] + 2 k * /pi/, arcsin[[2 / 5]] + 2 k * /pi/}] " +
                     "GIVEN SetSolution[k: /integers/]"
 
                 step {
@@ -464,9 +421,6 @@ class TrigonometricEquationsTest {
                 }
 
                 step {
-                    toExpr = "(x = arcsin[[2 / 5]] + 2 k * /pi/ OR x = /pi/ - arcsin[[2 / 5]] + 2 k * /pi/) " +
-                        "GIVEN SetSolution[k: /integers/]"
-
                     task {
                         taskId = "#1"
                         startExpr = "x = arcsin[[2 / 5]]"
@@ -477,11 +431,7 @@ class TrigonometricEquationsTest {
                         startExpr = "x = /pi/ - arcsin[[2 / 5]]"
                     }
 
-                    task {
-                        taskId = "#3"
-                        startExpr = "(x = arcsin[[2 / 5]] + 2 k * /pi/ OR x = /pi/ - arcsin[[2 / 5]] + 2 k * /pi/) " +
-                            "GIVEN SetSolution[k: /integers/]"
-                    }
+                    task {}
                 }
             }
         }
@@ -508,6 +458,10 @@ class TrigonometricEquationsTest {
 
                 step {
                     toExpr = "x = [k * /pi/ / 2] GIVEN SetSolution[k: /integers/]"
+                }
+
+                step {
+                    toExpr = "SetSolution[x: {[k * /pi/ / 2]}] GIVEN SetSolution[k: /integers/]"
                 }
             }
         }
@@ -541,11 +495,11 @@ class TrigonometricEquationsTest {
                 }
 
                 step {
-                    toExpr = "x = [[/pi/ / 2] / 2] + [2 k * /pi/ / 2] GIVEN SetSolution[k: /integers/]"
+                    toExpr = "x = [/pi/ / 4] + k * /pi/ GIVEN SetSolution[k: /integers/]"
                 }
 
                 step {
-                    toExpr = "x = [/pi/ / 4] + k * /pi/ GIVEN SetSolution[k: /integers/]"
+                    toExpr = "SetSolution[x: {[/pi/ / 4] + k * /pi/}] GIVEN SetSolution[k: /integers/]"
                 }
             }
         }
@@ -576,11 +530,11 @@ class TrigonometricEquationsTest {
                 }
 
                 step {
-                    toExpr = "x = [-[/pi/ / 2] / 2] + [2 k * /pi/ / 2] GIVEN SetSolution[k: /integers/]"
+                    toExpr = "x = -[/pi/ / 4] + k * /pi/ GIVEN SetSolution[k: /integers/]"
                 }
 
                 step {
-                    toExpr = "x = -[/pi/ / 4] + k * /pi/ GIVEN SetSolution[k: /integers/]"
+                    toExpr = "SetSolution[x : {-[/pi/ / 4] + k * /pi/}] GIVEN SetSolution[k : /integers/]"
                 }
             }
         }
@@ -594,7 +548,7 @@ class TrigonometricEquationsTest {
 
             check {
                 fromExpr = "cos[[/pi/ / 3] - x] = cos[2 x]"
-                toExpr = "(x = [/pi/ / 9] + [2 k * /pi/ / 3] OR x = 2 k * /pi/ - [/pi/ / 3]) " +
+                toExpr = "SetSolution[x: {- [/pi/ / 3] + 2 k * /pi/, [/pi/ / 9] + [2 k * /pi/ / 3]}] " +
                     "GIVEN SetSolution[k: /integers/]"
                 explanation {
                     key = EquationsExplanation.SolveTrigonometricEquation
@@ -630,8 +584,8 @@ class TrigonometricEquationsTest {
 
             check {
                 fromExpr = "cos[[/pi/ / 3] - x] = -cos[2 x]"
-                toExpr = "(x = [2 /pi/ / 3] + 2 k * /pi/ OR x = [4 /pi/ / 9] + [2 k * /pi/ / 3]) " +
-                    "GIVEN SetSolution[k: /integers/]"
+                toExpr = "SetSolution[x : {[2 /pi/ / 3] + 2 k * /pi/, [4 /pi/ / 9] + [2 k * /pi/ / 3]}]" +
+                    " GIVEN SetSolution[k : /integers/]"
                 explanation {
                     key = EquationsExplanation.SolveTrigonometricEquation
                 }
@@ -673,8 +627,8 @@ class TrigonometricEquationsTest {
 
             check {
                 fromExpr = "cos[2 x] = cos[degree[ 35 ]]"
-                toExpr =
-                    "(x = [7 /pi/ / 72] + k * /pi/ OR x = -[7 /pi/ / 72] + k * /pi/) GIVEN SetSolution[k: /integers/]"
+                toExpr = "SetSolution[x: {-[7 /pi/ / 72] + k * /pi/, [7 /pi/ / 72] + k * /pi/}] " +
+                    "GIVEN SetSolution[k: /integers/]"
                 explanation {
                     key = EquationsExplanation.SolveTrigonometricEquation
                 }
@@ -688,9 +642,6 @@ class TrigonometricEquationsTest {
                 }
 
                 step {
-                    toExpr = "(x = [7 /pi/ / 72] + k * /pi/ OR x = -[7 /pi/ / 72] + k * /pi/) " +
-                        "GIVEN SetSolution[k: /integers/]"
-
                     task {
                         taskId = "#1"
                         startExpr = "2 x = arccos[cos[degree[ 35 ]]]"
@@ -715,7 +666,7 @@ class TrigonometricEquationsTest {
 
             check {
                 fromExpr = "cos[x + [/pi/ / 8]] + [sqrt[2] / 2] = sqrt[2]"
-                toExpr = "(x = [/pi/ / 8] + 2 k * /pi/ OR x = -[3 /pi/ / 8] + 2 k * /pi/) " +
+                toExpr = "SetSolution[x: {-[3 /pi/ / 8] + 2 k * /pi/, [/pi/ / 8] + 2 k * /pi/}] " +
                     "GIVEN SetSolution[k: /integers/]"
                 explanation {
                     key = EquationsExplanation.SolveTrigonometricEquation
@@ -734,9 +685,6 @@ class TrigonometricEquationsTest {
                 }
 
                 step {
-                    toExpr = "(x = [/pi/ / 8] + 2 k * /pi/ OR x = -[3 /pi/ / 8] + 2 k * /pi/) " +
-                        "GIVEN SetSolution[k: /integers/]"
-
                     task {
                         taskId = "#1"
                         startExpr = "x + [/pi/ / 8] = arccos[[sqrt[2] / 2]]"
@@ -747,11 +695,7 @@ class TrigonometricEquationsTest {
                         startExpr = "x + [/pi/ / 8] = -arccos[[sqrt[2] / 2]]"
                     }
 
-                    task {
-                        taskId = "#3"
-                        startExpr = "(x = [/pi/ / 8] + 2 k * /pi/ OR x = -[3 /pi/ / 8] + 2 k * /pi/) " +
-                            "GIVEN SetSolution[k: /integers/]"
-                    }
+                    task {}
                 }
             }
         }
@@ -761,8 +705,8 @@ class TrigonometricEquationsTest {
             inputExpr = "cos[3 x - [/pi/ / 6]] = -[sqrt[3] / 2]"
 
             check {
-                toExpr = "(x = [/pi/ / 3] + [2 k * /pi/ / 3] OR x = -[2 /pi/ / 9] + [2 k * /pi/ / 3]) " +
-                    "GIVEN SetSolution[k: /integers/]"
+                toExpr = "SetSolution[x : {-[2 /pi/ / 9] + [2 k * /pi/ / 3], [/pi/ / 3] + [2 k * /pi/ / 3]}] " +
+                    "GIVEN SetSolution[k : /integers/]"
 
                 step {
                     toExpr = "arccos[cos[3 x - [/pi/ / 6]]] = arccos[-[sqrt[3] / 2]]"
@@ -797,7 +741,7 @@ class TrigonometricEquationsTest {
 
             check {
                 fromExpr = "cos[2 x] = 0"
-                toExpr = "x = [/pi/ / 4] + [k * /pi/ / 2] GIVEN SetSolution[k: /integers/]"
+                toExpr = "SetSolution[x : {[/pi/ / 4] + [k * /pi/ / 2]}] GIVEN SetSolution[k : /integers/]"
                 explanation {
                     key = EquationsExplanation.SolveTrigonometricEquation
                 }
@@ -819,7 +763,7 @@ class TrigonometricEquationsTest {
                 }
 
                 step {
-                    toExpr = "x = [[/pi/ / 2] / 2] + [k * /pi/ / 2] GIVEN SetSolution[k: /integers/]"
+                    toExpr = "x = [/pi/ / 4] + [k * /pi/ / 2] GIVEN SetSolution[k : /integers/]"
                 }
 
                 step {}
@@ -834,7 +778,7 @@ class TrigonometricEquationsTest {
             inputExpr = "cos[x + [5 /pi/ / 6]] = -cos[x - [/pi/ / 3]]"
 
             check {
-                toExpr = "x = [/pi/ / 4] + k * /pi/"
+                toExpr = "SetSolution[x : {[/pi/ / 4] + k * /pi/}]"
 
                 step {
                     toExpr = "cos[x + [5 /pi/ / 6]] = cos[/pi/ - (x - [/pi/ / 3])]"
@@ -860,6 +804,339 @@ class TrigonometricEquationsTest {
                     }
 
                     task {}
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test tan(x) = c`() {
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "tan[x] = [sqrt[3] / 3]"
+
+            check {
+                fromExpr = "tan[x] = [sqrt[3] / 3]"
+                toExpr = "SetSolution[x: {[/pi/ / 6] + k * /pi/}] GIVEN SetSolution[k: /integers/]"
+                explanation {
+                    key = EquationsExplanation.SolveTrigonometricEquation
+                }
+
+                step {
+                    toExpr = "arctan[tan[x]] = arctan[[sqrt[3] / 3]]"
+                }
+
+                step {
+                    toExpr = "x = arctan[[sqrt[3] / 3]]"
+                }
+
+                step {
+                    toExpr = "x = [/pi/ / 6]"
+                }
+
+                step {
+                    toExpr = "x = [/pi/ / 6] + k * /pi/ GIVEN SetSolution[k: /integers/]"
+                }
+
+                step {}
+            }
+        }
+
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "tan[x] = [5 / 3]"
+
+            check {
+                fromExpr = "tan[x] = [5 / 3]"
+                toExpr = "SetSolution[x: {arctan[[5 / 3]] + k * /pi/}] GIVEN SetSolution[k: /integers/]"
+                explanation {
+                    key = EquationsExplanation.SolveTrigonometricEquation
+                }
+
+                step {
+                    toExpr = "arctan[tan[x]] = arctan[[5 / 3]]"
+                }
+
+                step {
+                    toExpr = "x = arctan[[5 / 3]]"
+                }
+
+                step {
+                    toExpr = "x = arctan[[5 / 3]] + k * /pi/ GIVEN SetSolution[k: /integers/]"
+                }
+
+                step {}
+            }
+        }
+
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "tan[x] = -[sqrt[3] / 3]"
+
+            check {
+                fromExpr = "tan[x] = -[sqrt[3] / 3]"
+                toExpr = "SetSolution[x: {-[/pi/ / 6] + k * /pi/}] GIVEN SetSolution[k: /integers/]"
+                explanation {
+                    key = EquationsExplanation.SolveTrigonometricEquation
+                }
+
+                step {
+                    toExpr = "arctan[tan[x]] = arctan[-[sqrt[3] / 3]]"
+                }
+
+                step {
+                    toExpr = "x = arctan[-[sqrt[3] / 3]]"
+                }
+
+                step {
+                    toExpr = "x = -[/pi/ / 6]"
+                }
+
+                step {
+                    toExpr = "x = -[/pi/ / 6] + k * /pi/ GIVEN SetSolution[k: /integers/]"
+                }
+
+                step {}
+            }
+        }
+
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "tan[x] = -[5 / 3]"
+
+            check {
+                fromExpr = "tan[x] = -[5 / 3]"
+                toExpr = "SetSolution[x: {-arctan[[5 / 3]] + k * /pi/}] GIVEN SetSolution[k: /integers/]"
+                explanation {
+                    key = EquationsExplanation.SolveTrigonometricEquation
+                }
+
+                step {
+                    toExpr = "arctan[tan[x]] = arctan[-[5 / 3]]"
+                }
+
+                step {
+                    toExpr = "x = arctan[-[5 / 3]]"
+                }
+
+                step {
+                    toExpr = "x = -arctan[[5 / 3]]"
+                }
+
+                step {
+                    toExpr = "x = -arctan[[5 / 3]] + k * /pi/ GIVEN SetSolution[k: /integers/]"
+                }
+
+                step {}
+            }
+        }
+    }
+
+    @Test
+    fun `test tan(f(x)) = c`() {
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "tan[[/pi/ / 3] - x] = 2"
+
+            check {
+                fromExpr = "tan[[/pi/ / 3] - x] = 2"
+                toExpr = "SetSolution[x: {-arctan[2] + [/pi/ / 3] + k * /pi/}] GIVEN SetSolution[x: /reals/ \\" +
+                    " {-([/pi/ / 6] + k * /pi/)}] AND SetSolution[k: /integers/]"
+
+                task {
+                    taskId = "#1"
+                    startExpr = "tan[[/pi/ / 3] - x] = 2"
+
+                    step {
+                        fromExpr = "tan[[/pi/ / 3] - x] = 2"
+                        toExpr = "SetSolution[x: /reals/ \\ {-([/pi/ / 6] + k * /pi/)}]"
+
+                        task {
+                            taskId = "#1"
+                            startExpr = "[/pi/ / 3] - x != [/pi/ / 2] + k * /pi/"
+                            explanation {
+                                key = AnglesExplanation.ExpressionMustNotBeUndefined
+                            }
+                        }
+
+                        task {
+                            taskId = "#2"
+                            startExpr = "SetSolution[x: /reals/ \\ {-([/pi/ / 6] + k * /pi/)}]"
+                        }
+                    }
+                }
+
+                task {
+                    taskId = "#2"
+                    startExpr = "tan[[/pi/ / 3] - x] = 2"
+
+                    step {
+                        toExpr = "SetSolution[x: {-arctan[2] + [/pi/ / 3] + k * /pi/}] GIVEN SetSolution[k: /integers/]"
+                    }
+                }
+
+                task {}
+            }
+        }
+    }
+
+    @Test
+    fun `test tan(f(x)) = c with like term simplification`() {
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "3 tan[-x] + 2 tan[-x] = 4 tan[-x] + 5"
+
+            check {
+                toExpr =
+                    "SetSolution[x: {-arctan[5] + k * /pi/}] GIVEN " +
+                    "SetSolution[x: /reals/ \\ {-([/pi/ / 2] + k * /pi/)}] AND SetSolution[k: /integers/]"
+
+                task {
+                    taskId = "#1"
+
+                    step {
+                        toExpr = "SetSolution[x: /reals/ \\ {-([/pi/ / 2] + k * /pi/)}]"
+                    }
+                }
+
+                task {
+                    taskId = "#2"
+
+                    step {
+                        toExpr = "SetSolution[x: {-arctan[5] + k * /pi/}] GIVEN SetSolution[k: /integers/]"
+
+                        step {
+                            fromExpr = "3 tan[-x] + 2 tan[-x] = 4 tan[-x] + 5"
+                            toExpr = "tan[-x] = 5"
+                        }
+
+                        step {
+                            toExpr = "arctan[tan[-x]] = arctan[5]"
+                        }
+
+                        step {
+                            toExpr = "-x = arctan[5]"
+                        }
+
+                        step {
+                            toExpr = "-x = arctan[5] + k * /pi/ GIVEN SetSolution[k: /integers/]"
+                        }
+
+                        step {
+                            toExpr = "x = -arctan[5] - k * /pi/ GIVEN SetSolution[k: /integers/]"
+                        }
+
+                        step {
+                            toExpr = "x = -arctan[5] + k * /pi/ GIVEN SetSolution[k: /integers/]"
+                        }
+
+                        step {}
+                    }
+                }
+
+                task {}
+            }
+        }
+
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "3 tan[-x] + 2 tan[-x] = 4 tan[-x] + 5"
+
+            check {
+                toExpr = "SetSolution[x: {-arctan[5] + k * /pi/}] GIVEN " +
+                    "SetSolution[x: /reals/ \\ {-([/pi/ / 2] + k * /pi/)}] AND SetSolution[k: /integers/]"
+
+                task {
+                    taskId = "#1"
+
+                    step {
+                        toExpr = "SetSolution[x: /reals/ \\ {-([/pi/ / 2] + k * /pi/)}]"
+                    }
+                }
+
+                task {
+                    taskId = "#2"
+
+                    step {
+                        toExpr = "SetSolution[x: {-arctan[5] + k * /pi/}] GIVEN SetSolution[k: /integers/]"
+
+                        step {
+                            toExpr = "tan[-x] = 5"
+                        }
+
+                        step {
+                            toExpr = "arctan[tan[-x]] = arctan[5]"
+                        }
+
+                        step {
+                            toExpr = "-x = arctan[5]"
+                        }
+
+                        step {
+                            toExpr = "-x = arctan[5] + k * /pi/ GIVEN SetSolution[k: /integers/]"
+                        }
+
+                        step {
+                            toExpr = "x = -arctan[5] - k * /pi/ GIVEN SetSolution[k: /integers/]"
+                        }
+
+                        step {
+                            toExpr = "x = -arctan[5] + k * /pi/ GIVEN SetSolution[k: /integers/]"
+                        }
+
+                        step {
+                            toExpr = "SetSolution[x: {-arctan[5] + k * /pi/}] GIVEN SetSolution[k: /integers/]"
+                        }
+                    }
+                }
+
+                task {}
+            }
+        }
+    }
+
+    @Test
+    fun `test tan(f(x)) = tan(g(x))`() {
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "tan[[/pi/ / 3] - x] = tan[2 x]"
+
+            check {
+                fromExpr = "tan[[/pi/ / 3] - x] = tan[2 x]"
+                toExpr = "SetSolution[x: {[/pi/ / 9] + [k * /pi/ / 3]}] GIVEN SetSolution[x: /reals/ " +
+                    "\\ {-([/pi/ / 6] + k * /pi/), [/pi/ / 4] + [k * /pi/ / 2] } ] AND SetSolution[k: /integers/]"
+
+                task {
+                    taskId = "#1"
+                    startExpr = "tan[[/pi/ / 3] - x] = tan[2 x]"
+
+                    step {
+                        fromExpr = "tan[[/pi/ / 3] - x] = tan[2 x]"
+                        toExpr = "SetSolution[x : /reals/ \\ {-([/pi/ / 6] + k * /pi/), [/pi/ / 4] + [k * /pi/ / 2]}]"
+
+                        task {
+                            taskId = "#1"
+                            startExpr = "[/pi/ / 3] - x != [/pi/ / 2] + k * /pi/"
+                        }
+
+                        task {
+                            taskId = "#2"
+                            startExpr = "2 x != [/pi/ / 2] + k * /pi/"
+                        }
+
+                        task {}
+                    }
+                }
+
+                task {
+                    taskId = "#2"
+                    startExpr = "tan[[/pi/ / 3] - x] = tan[2 x]"
+
+                    step {}
+                }
+
+                task {
+                    taskId = "#3"
                 }
             }
         }

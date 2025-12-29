@@ -50,6 +50,7 @@ import methods.polynomials.PolynomialsPlans
 import methods.polynomials.normalizePolynomialSteps
 import methods.rationalexpressions.RationalExpressionsPlans
 import methods.simplify.SimplifyPlans
+import methods.simplify.algebraicSimplificationSteps
 import methods.simplify.algebraicSimplificationStepsForEquations
 import methods.solvable.DenominatorExtractor.extractFraction
 import methods.solvable.SolvableRules
@@ -331,9 +332,9 @@ enum class EquationSolvingStrategy(
         steps = steps {
             check { it.containsTrigExpression() }
 
-            optionally(EquationsPlans.SimplifyEquation)
             optionally(solvablePlansForEquations.solvableRearrangementSteps)
-            optionally(SolvableRules.BalanceEquationWithTrigonometricExpressions)
+            optionally(EquationsPlans.SimplifyEquation)
+            optionally(EquationsRules.BalanceEquationWithTrigonometricExpressions)
             optionally(SolvableRules.NegateBothSidesIfBothNegative)
             applyToChildren(TrigonometricFunctionsRules.ApplyNegativeIdentityOfTrigFunctionInReverse)
 
@@ -341,6 +342,8 @@ enum class EquationSolvingStrategy(
                 option(EquationsRules.ExtractSolutionFromImpossibleSineLikeEquation)
 
                 option(sineLikeEquationSteps)
+
+                option(tanEquationSteps)
 
                 // Upcoming equation types
             }
@@ -641,20 +644,42 @@ private val sineLikeEquationSteps = steps {
     }
 }
 
+private val tanEquationSteps = steps {
+    check {
+        expressionOnlyContainsTrigFunctionType(it, TrigonometricFunctionType.Tan)
+    }
+
+    apply(EquationsRules.ApplyInverseSineFunctionToBothSides)
+
+    applyTo(TrigonometricFunctionsRules.ApplyIdentityOfInverseTrigonometricFunction) {
+        it.firstChild
+    }
+
+    apply(extractedTanContainingEquationSolvingSteps)
+}
+
 val extractedSineEquationSolvingSteps =
     createExtractedTrigonometricEquationSolvingSteps(EquationsRules.AddPeriodicityOfSine)
 
 val extractedCosineEquationSolvingSteps =
     createExtractedTrigonometricEquationSolvingSteps(EquationsRules.AddPeriodicityOfCosine)
 
-fun createExtractedTrigonometricEquationSolvingSteps(addPeriodicityRule: StepsProducer) =
+val extractedTanContainingEquationSolvingSteps =
+    createExtractedTrigonometricEquationSolvingSteps(EquationsRules.AddPeriodicityOfTanLike)
+
+private fun createExtractedTrigonometricEquationSolvingSteps(addPeriodicityRule: StepsProducer) =
     steps {
         optionally {
             applyTo(extractor = { it.secondChild }) {
-                deeply {
-                    firstOf {
-                        option(evaluateInverseTrigonometricFunctions)
-                        option(TrigonometricFunctionsRules.ApplyIdentityOfInverseTrigonometricFunction)
+                firstOf {
+                    option {
+                        deeply(evaluateInverseTrigonometricFunctions)
+                    }
+                    option {
+                        deeply(TrigonometricFunctionsRules.ApplyIdentityOfInverseTrigonometricFunction)
+                    }
+                    option {
+                        deeply(TrigonometricFunctionsRules.ApplyNegativeIdentityOfTrigFunction)
                     }
                 }
             }
@@ -668,30 +693,28 @@ fun createExtractedTrigonometricEquationSolvingSteps(addPeriodicityRule: StepsPr
 private val trigonometricEquationSolvingSteps = steps {
     // This may seem a bit redundant, but the extractor removes the constraint already :)
     applyTo(extractor = { it }) {
-        inContext(contextFactory = {
-            copy(settings = settings + Pair(Setting.DontExtractSetSolution, BooleanSetting.True))
-        }) {
-            optionally(EquationsPlans.SolveEquation)
-        }
-
         optionally {
-            applyTo(extractor = { it.secondChild }) {
-                deeply(EquationsRules.ExtractPeriodFromFraction)
-                optionally(EquationsPlans.SimplifyEquation)
+            inContext(
+                contextFactory = {
+                    copy(settings = settings + Pair(Setting.DontExtractSetSolution, BooleanSetting.True))
+                },
+            ) {
+                apply(EquationsPlans.SolveEquation)
             }
         }
 
-        optionally {
-            applyTo(extractor = { it.secondChild }) {
-                deeply(EquationsRules.FlipSignOfPeriod)
-            }
-        }
+        optionally(algebraicSimplificationSteps)
+        optionally(EquationsPlans.NormalizePeriod)
 
-        optionally {
-            applyTo(extractor = { it }) {
-                apply(EquationsRules.ExtractSolutionWithoutPeriod)
-                apply(EquationsRules.ExtractSolutionFromConstantEquation)
+        firstOf {
+            option {
+                applyTo(extractor = { it }) {
+                    optionally(EquationsRules.ExtractSolutionWithoutPeriod)
+                    apply(EquationsRules.ExtractSolutionFromConstantEquation)
+                }
             }
+            option(EquationsRules.ExtractSolutionFromEquationInSolvedForm)
+            option(EquationsRules.ExtractSolutionFromConstantEquation)
         }
     }
 }

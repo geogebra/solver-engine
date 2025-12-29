@@ -24,12 +24,14 @@ import engine.expressions.Constants
 import engine.expressions.Contradiction
 import engine.expressions.Expression
 import engine.expressions.ExpressionComparator
+import engine.expressions.ExpressionWithConstraint
 import engine.expressions.Identity
 import engine.expressions.RootOrigin
 import engine.expressions.SetExpression
 import engine.expressions.SetSolution
 import engine.expressions.Sum
 import engine.expressions.VariableList
+import engine.expressions.expressionWithConstraintOf
 import engine.expressions.negOf
 import engine.expressions.setSolutionOf
 import engine.expressions.statementSystemOf
@@ -46,7 +48,15 @@ import engine.sign.Sign
 import methods.constantexpressions.ConstantExpressionsPlans
 
 fun computeOverallUnionSolution(solutions: List<Expression>): Expression? {
-    val solutionSets = solutions.mapNotNull { solution ->
+    val (extractedSolutions, constraints) = solutions.map {
+        if (it is ExpressionWithConstraint) {
+            it.firstChild to it.secondChild
+        } else {
+            it to null
+        }
+    }.unzip()
+
+    val solutionSets = extractedSolutions.mapNotNull { solution ->
         when (solution) {
             // If one of solutions is an identity, then the overall solution is also an identity
             is Identity -> return solution
@@ -59,9 +69,24 @@ fun computeOverallUnionSolution(solutions: List<Expression>): Expression? {
         }
     }
 
-    return computeUnionOfSets(solutionSets)?.let {
-        setSolutionOf(solutions[0].firstChild as VariableList, it)
+    val filteredConstraints = constraints.filterNotNull()
+
+    val mergedConstraint = if (filteredConstraints.isNotEmpty()) {
+        computeOverallIntersectionSolution(filteredConstraints)
+    } else {
+        null
     }
+
+    val retVal = computeUnionOfSets(solutionSets)?.let {
+        val solution = setSolutionOf(extractedSolutions[0].firstChild as VariableList, it)
+
+        when (mergedConstraint) {
+            null -> solution
+            else -> expressionWithConstraintOf(solution, mergedConstraint)
+        }
+    }
+
+    return retVal
 }
 
 fun computeOverallIntersectionSolution(solutions: List<Expression>): Expression {
@@ -96,10 +121,16 @@ fun intersect(solution1: Expression, solution2: Expression): Expression? {
         solution2 is Contradiction -> solution2
         solution1 is Identity -> solution2
         solution2 is Identity -> solution1
-        solution1 is SetSolution && solution2 is SetSolution &&
-            solution1.solutionVariables == solution2.solutionVariables ->
-            solution1.solutionSet.intersect(solution2.solutionSet, expressionComparator)?.let {
-                setSolutionOf(solution1.solutionVariables, it)
+        solution1 is SetSolution && solution2 is SetSolution ->
+            if (solution1.solutionVariables == solution2.solutionVariables) {
+                solution1.solutionSet.intersect(solution2.solutionSet, expressionComparator)?.let {
+                    setSolutionOf(solution1.solutionVariables, it)
+                }
+            } else {
+                statementSystemOf(
+                    solution1,
+                    solution2,
+                )
             }
         else -> null
     }
@@ -112,6 +143,12 @@ fun computeUnionOfSets(sets: List<SetExpression>): Expression? {
             acc.union(set, expressionComparator) ?: return null
         }
     }
+}
+
+fun findUnusedVariableLetter(expression: Expression): String {
+    val usedVariables = expression.variables
+
+    return ('k'..'z').map(Char::toString).first { !usedVariables.contains(it) }
 }
 
 val expressionComparator = ExpressionComparator { e1: Expression, e2: Expression ->

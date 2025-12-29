@@ -22,6 +22,8 @@ import engine.context.Context
 import engine.context.Setting
 import engine.expressions.Comparison
 import engine.expressions.Constants
+import engine.expressions.Constants.Pi
+import engine.expressions.Constants.Two
 import engine.expressions.Contradiction
 import engine.expressions.DecimalExpression
 import engine.expressions.Equation
@@ -31,12 +33,14 @@ import engine.expressions.Identity
 import engine.expressions.RecurringDecimalExpression
 import engine.expressions.StatementSystem
 import engine.expressions.StatementUnion
-import engine.expressions.bracketOf
+import engine.expressions.Variable
 import engine.expressions.containsTrigExpression
 import engine.expressions.equationOf
 import engine.expressions.expressionWithConstraintOf
+import engine.expressions.fractionOf
+import engine.expressions.inequationOf
 import engine.expressions.negOf
-import engine.expressions.statementUnionOf
+import engine.expressions.productOf
 import engine.expressions.sumOf
 import engine.methods.CompositeMethod
 import engine.methods.Method
@@ -69,8 +73,10 @@ import engine.steps.metadata.metadata
 import methods.algebra.AlgebraExplanation
 import methods.algebra.AlgebraPlans
 import methods.algebra.findDenominatorsAndDivisors
+import methods.angles.findFunctionsRequiringDomainCheck
 import methods.constantexpressions.constantSimplificationSteps
 import methods.constantexpressions.simpleTidyUpSteps
+import methods.equations.EquationsPlans.SimplifyByEliminatingConstantFactorOfLhsWithZeroRhs
 import methods.factor.FactorPlans
 import methods.factor.FactorRules
 import methods.general.NormalizationPlans
@@ -84,6 +90,7 @@ import methods.solvable.SolvableRules
 import methods.solvable.computeOverallIntersectionSolution
 import methods.solvable.computeOverallUnionSolution
 import methods.solvable.evaluateBothSidesNumerically
+import methods.solvable.findUnusedVariableLetter
 
 enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     SimplifyByEliminatingConstantFactorOfLhsWithZeroRhs(
@@ -306,6 +313,60 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
         },
     ),
 
+    ComputeDomainOfTrigonometricExpression(
+        taskSet {
+            explanation = methods.angles.Explanation.ComputeDomainOfTrigonometricExpression
+
+            val solveInequationInOneVariableSteps = steps {
+                inContext({ copy(solutionVariables = it.firstChild.variables.toList()) }) {
+                    apply(InequationsPlans.SolveInequation)
+                    optionally(
+                        EquationsPlans.NormalizePeriod,
+                    )
+                }
+            }
+
+            tasks {
+                val variable = Variable(findUnusedVariableLetter(expression))
+
+                val rhs = sumOf(
+                    fractionOf(Pi, Two),
+                    productOf(variable, Pi),
+                )
+
+                val functions = findFunctionsRequiringDomainCheck(expression).filter {
+                    !it.isConstant() && it.firstChild !is Variable
+                }.distinct().toList()
+
+                if (functions.isEmpty()) {
+                    return@tasks null
+                }
+
+                val constraints = functions.map {
+                    taskWithOptionalSteps(
+                        startExpr = inequationOf(
+                            it.firstChild,
+                            rhs,
+                        ),
+                        explanation = metadata(methods.angles.Explanation.ExpressionMustNotBeUndefined),
+                        stepsProducer = solveInequationInOneVariableSteps,
+                    )
+                }
+
+                val overallSolution = computeOverallIntersectionSolution(
+                    constraints.map { it.result },
+                )
+
+                task(
+                    startExpr = overallSolution,
+                    explanation = metadata(AlgebraExplanation.CollectDomainRestrictions),
+                )
+
+                allTasks()
+            }
+        },
+    ),
+
     @PublicMethod
     SolveEquation(solveEquationPlan),
 
@@ -317,6 +378,8 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     SineEquationSolutionExtractionTask(sineEquationSolutionExtractionTask),
 
     CosineEquationSolutionExtractionTask(cosineEquationSolutionExtractionTask),
+
+    NormalizePeriod(normalizePeriodPlan),
 
     @PublicMethod
     SolveConstantEquation(
@@ -484,13 +547,7 @@ fun trigonometricFunctionExtractionTaskBuilder(
                 // Otherwise merge the solutions into a union of solutions and merge the constraints
                 // into an intersection of constraints
                 else -> {
-                    val overallSolution = if (results[0] != results[1]) {
-                        statementUnionOf(
-                            results,
-                        )
-                    } else {
-                        results[0]
-                    }
+                    val overallSolution = computeOverallUnionSolution(results) ?: return@tasks null
 
                     val constraint = if (constraints.all { it == constraints[0] }) {
                         constraints[0]
@@ -501,7 +558,7 @@ fun trigonometricFunctionExtractionTaskBuilder(
                     }
 
                     expressionWithConstraintOf(
-                        bracketOf(overallSolution),
+                        overallSolution,
                         constraint,
                     )
                 }
@@ -551,6 +608,31 @@ val cosineEquationSolutionExtractionTask =
         )
     }
 
+val normalizePeriodPlan = plan {
+    explanation = Explanation.NormalizePeriod
+
+    steps {
+        optionally {
+            applyTo(extractor = { it.secondChild }) {
+                deeply(EquationsRules.ExtractPeriodFromFraction)
+                optionally(EquationsPlans.SimplifyEquation)
+            }
+        }
+
+        optionally {
+            applyTo(extractor = { it.secondChild }) {
+                deeply(EquationsRules.FlipSignOfPeriod)
+            }
+        }
+
+        optionally {
+            applyTo(EquationsRules.ReorderSumWithPeriod) {
+                it.secondChild
+            }
+        }
+    }
+}
+
 val solveEquationPlan = object : CompositeMethod() {
     // Can't be a rule since rules have been changed to apply only on the expression not the constraint
     private val mergeConstraintsRule = object : Method {
@@ -595,7 +677,12 @@ val solveEquationPlan = object : CompositeMethod() {
                 else -> task(
                     startExpr = expression,
                     explanation = metadata(AlgebraExplanation.ComputeDomainOfAlgebraicExpression),
-                    stepsProducer = AlgebraPlans.ComputeDomainOfAlgebraicExpression,
+                    stepsProducer = steps {
+                        firstOf {
+                            option(AlgebraPlans.ComputeDomainOfAlgebraicExpression)
+                            option(EquationsPlans.ComputeDomainOfTrigonometricExpression)
+                        }
+                    },
                 )?.result ?: return@tasks null
             }
 
@@ -606,13 +693,22 @@ val solveEquationPlan = object : CompositeMethod() {
                 stepsProducer = solveEquation.value,
             ) ?: return@tasks null
 
-            val solution = solvePolynomialEquation.result
+            val result = solvePolynomialEquation.result
+            val (solution, solutionConstraint) = when (result) {
+                is ExpressionWithConstraint -> result.firstChild to result.secondChild
+                else -> result to null
+            }
+
+            val mergedConstraint = when (solutionConstraint) {
+                null -> constraint
+                else -> computeOverallIntersectionSolution(listOf(constraint, solutionConstraint))
+            }
 
             // no need to check if the constraint(s) is/are satisfied if solution
             // is an empty set
             if (solution !is Contradiction || solution == Constants.EmptySet) {
                 taskWithOptionalSteps(
-                    startExpr = expressionWithConstraintOf(solution, constraint),
+                    startExpr = expressionWithConstraintOf(solution, mergedConstraint),
                     explanation = metadata(Explanation.AddDomainConstraintToSolution),
                     stepsProducer = addDomainConstraintToSolution,
                 )
@@ -634,7 +730,14 @@ val solveEquationPlan = object : CompositeMethod() {
             if (sub.variables.contains(solutionVariable)) {
                 val equationContext = ctx.copy(constraintMerger = mergeConstraintsRule)
 
-                return if (findDenominatorsAndDivisors(sub).any { (expr, _) -> !expr.isConstant() }) {
+                return if (
+                    findDenominatorsAndDivisors(sub).any { (expr, _) ->
+                        !expr.isConstant()
+                    } ||
+                    findFunctionsRequiringDomainCheck(sub).any {
+                        !it.isConstant() && it.firstChild !is Variable
+                    }
+                ) {
                     solveEquationWithDomainRestrictions.run(equationContext, sub)
                 } else {
                     solveEquation.value.run(equationContext, sub)

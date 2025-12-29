@@ -640,6 +640,11 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     AddPeriodicityOfCosine,
 
     /**
+     * Add periodicity of tangent
+     */
+    AddPeriodicityOfTan,
+
+    /**
      * Extract period from fraction
      */
     ExtractPeriodicityFromFraction,
@@ -663,6 +668,16 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      * Extract the solution of an equation without the period
      */
     ExtractSolutionWithoutPeriod,
+
+    /**
+     * Reorder sum with period
+     */
+    ReorderSumWithPeriod,
+
+    /**
+     * Normalize period of equation with trigonometric expressions
+     */
+    NormalizePeriod,
 
     ;
 

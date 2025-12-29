@@ -52,12 +52,12 @@ enum class TrigonometricFunctionsRules(override val runner: Rule) : RunnerMethod
 
 private fun getNegativeIdentityExplanation(functionType: TrigonometricFunctionType): MetadataKey? =
     when (functionType) {
-        TrigonometricFunctionType.Sin -> Explanation.ApplyOddSymmetryOfSine
-        TrigonometricFunctionType.Cos -> Explanation.ApplyEvenSymmetryOfCosine
-        TrigonometricFunctionType.Sec -> Explanation.ApplyEvenSymmetryOfSecant
-        TrigonometricFunctionType.Csc -> Explanation.ApplyOddSymmetryOfCosecant
-        TrigonometricFunctionType.Tan -> Explanation.ApplyOddSymmetryOfTangent
-        TrigonometricFunctionType.Cot -> Explanation.ApplyOddSymmetryOfCotangent
+        TrigonometricFunctionType.Sin, TrigonometricFunctionType.Arcsin -> Explanation.ApplyOddSymmetryOfSine
+        TrigonometricFunctionType.Cos, TrigonometricFunctionType.Arccos -> Explanation.ApplyEvenSymmetryOfCosine
+        TrigonometricFunctionType.Sec, TrigonometricFunctionType.Arcsec -> Explanation.ApplyEvenSymmetryOfSecant
+        TrigonometricFunctionType.Csc, TrigonometricFunctionType.Arccsc -> Explanation.ApplyOddSymmetryOfCosecant
+        TrigonometricFunctionType.Tan, TrigonometricFunctionType.Arctan -> Explanation.ApplyOddSymmetryOfTangent
+        TrigonometricFunctionType.Cot, TrigonometricFunctionType.Arccot -> Explanation.ApplyOddSymmetryOfCotangent
         else -> null
     }
 
@@ -74,20 +74,30 @@ private val applyNegativeIdentityOfTrigFunction = rule {
         negValue,
         listOf(
             TrigonometricFunctionType.Sin,
+            TrigonometricFunctionType.Arcsin,
             TrigonometricFunctionType.Cos,
+            TrigonometricFunctionType.Arccos,
             TrigonometricFunctionType.Tan,
+            TrigonometricFunctionType.Arctan,
             TrigonometricFunctionType.Cot,
+            TrigonometricFunctionType.Arccot,
             TrigonometricFunctionType.Sec,
+            TrigonometricFunctionType.Arcsec,
             TrigonometricFunctionType.Csc,
+            TrigonometricFunctionType.Arccsc,
         ),
     )
 
     onPattern(pattern) {
         val toExpr = when (getFunctionType(pattern)) {
             TrigonometricFunctionType.Sin,
+            TrigonometricFunctionType.Arcsin,
             TrigonometricFunctionType.Csc,
+            TrigonometricFunctionType.Arccsc,
             TrigonometricFunctionType.Tan,
+            TrigonometricFunctionType.Arctan,
             TrigonometricFunctionType.Cot,
+            TrigonometricFunctionType.Arccot,
             ->
                 negOf(
                     wrapWithTrigonometricFunction(
@@ -96,7 +106,9 @@ private val applyNegativeIdentityOfTrigFunction = rule {
                     ),
                 )
             TrigonometricFunctionType.Cos,
+            TrigonometricFunctionType.Arccos,
             TrigonometricFunctionType.Sec,
+            TrigonometricFunctionType.Arcsec,
             ->
                 wrapWithTrigonometricFunction(
                     pattern,

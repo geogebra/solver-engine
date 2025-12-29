@@ -226,6 +226,16 @@ enum class AnglesExplanation : CategorisedMetadataKey {
      */
     BalanceEquationWithTrigonometricExpressions,
 
+    /**
+     * The trigonometric function containing a variable must not be undefined
+     */
+    ExpressionMustNotBeUndefined,
+
+    /**
+     * Compute domain of expression containing trigonometric functions
+     */
+    ComputeDomainOfTrigonometricExpression,
+
     ;
 
     override val category = "Angles"
