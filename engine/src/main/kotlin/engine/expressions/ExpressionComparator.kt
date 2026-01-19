@@ -28,7 +28,7 @@ fun interface ExpressionComparator : Comparator<Expression> {
      * - Sign.POSITIVE if e1 > e2,
      * - Sign.NEGATIVE if e1 < e2,
      * - Sign.ZERO if e1 == e2,
-     * - Sign.UNKOWN if it can't tell but e1 and e2 don't have a sign equal to Sign.NONE
+     * - Sign.UNKNOWN if it can't tell but e1 and e2 don't have a sign equal to Sign.NONE
      * - Sign.NONE if either e1 or e2 have sign equal to Sign.NONE
      */
     fun compareExpressions(e1: Expression, e2: Expression): Sign

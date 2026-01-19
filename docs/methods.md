@@ -144,7 +144,7 @@ The main operations are
 
 - `apply`: compulsorily apply a method
 - `optionally`: optionally apply a method
-- `whilePossilbe`: repeatedly apply a method until it fails to apply
+- `whilePossible`: repeatedly apply a method until it fails to apply
 - `deeply`: apply a method to the first matching subexpression
 - `firstOf`: defines a list of alternative methods that can be attempted, the first successful one will be applied
 
@@ -157,7 +157,7 @@ Example.
 
 The example below defines a task that turns `a + b sqrt[c]` into a square of the form `(x + y sqrt[c])^ 2` if possible.
 It does this by creating an equation system and solving it to find `x` and `y`, then putting the values back into
-the expression to give the solution. It's clear tha solving the equation system is a "task" because it's not a
+the expression to give the solution. It's clear that solving the equation system is a "task" because it's not a
 transformation of the original expression.
 
 ```kotlin

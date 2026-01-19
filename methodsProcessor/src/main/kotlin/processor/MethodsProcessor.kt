@@ -39,7 +39,7 @@ import java.io.OutputStream
 
 /**
  * This scans the code for enum entries annotated with @PublicMethod and creates a [methodRegistry] object in the
- * [mehods] package which registers all annotated entries as publicly available methods.
+ * [methods] package which registers all annotated entries as publicly available methods.
  */
 class MethodsProcessor(private val codeGenerator: CodeGenerator) : SymbolProcessor {
     private lateinit var file: OutputStream

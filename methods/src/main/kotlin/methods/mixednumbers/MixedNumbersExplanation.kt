@@ -28,7 +28,7 @@ enum class MixedNumbersExplanation : CategorisedMetadataKey {
     ConvertMixedNumberToImproperFraction,
 
     /**
-     * Convert two or more mixed numbers to sums in parellel
+     * Convert two or more mixed numbers to sums in parallel
      * E.g. [1 2/3] + [3 1/2] -> (1 + [2 / 3]) + (3 + [1 / 2])
      */
     ConvertMixedNumbersToSums,

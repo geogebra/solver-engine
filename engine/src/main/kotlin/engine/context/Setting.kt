@@ -116,7 +116,7 @@ enum class Setting(val kind: SettingKind, val description: String) {
 
     MultiplyFractionsAndNotFractionsDirectly(
         BooleanSetting,
-        "When multplying e.g. 3*[x / 2], do not turn 3 to a fraction but write it as [3x / 2] directly",
+        "When multiplying e.g. 3*[x / 2], do not turn 3 to a fraction but write it as [3x / 2] directly",
     ),
 
     RestrictAddingFractionsWithConstantDenominator(

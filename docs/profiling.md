@@ -37,7 +37,7 @@ python scripts/process_trace_logs.py shell
 This creates a database file at `$PROJECT_ROOT/logs/trace.log.db` and drops you into a sqlite3 shell (you need sqlite3
 installed for the latter to work)
 
-## Run some predifined queries
+## Run some predefined queries
 
 The script also allows running some predefined queries, for now there is one called `method_summary`. I ask for the
 first 10 results, ordered (in descending order) by `cum_own_duration`. The available fields to order by are

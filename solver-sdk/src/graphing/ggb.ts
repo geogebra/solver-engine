@@ -21,7 +21,7 @@ import { treeToGgb, treeToLatex } from '../renderer';
 import { jsonToTree } from '../parser';
 
 /**
- * A partial definition of hte ggb applet API, containing the operations required to implement GgbAppletGrapher.
+ * A partial definition of the ggb applet API, containing the operations required to implement GgbAppletGrapher.
  */
 export type GgbAppletApi = {
   getAllObjectNames: (type?: string) => string[];

@@ -111,14 +111,14 @@ class StickyOptionalNegPattern<T : Pattern>(unsignedPattern: T, private val stic
     }
 }
 
-data class SameSignPatten(val from: OptionalNegPattern<Pattern>, val to: Pattern) : BasePattern() {
+data class SameSignPattern(val from: OptionalNegPattern<Pattern>, val to: Pattern) : BasePattern() {
     override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
         val ptn = if (from.isNeg(match)) negOf(to) else to
         return ptn.findMatches(context, match, subexpression).map { it.newChild(this, subexpression) }
     }
 }
 
-data class OppositeSignPatten(val from: OptionalNegPattern<Pattern>, val to: Pattern) : BasePattern() {
+data class OppositeSignPattern(val from: OptionalNegPattern<Pattern>, val to: Pattern) : BasePattern() {
     override fun doFindMatches(context: Context, match: Match, subexpression: Expression): Sequence<Match> {
         val ptn = if (from.isNeg(match)) to else negOf(to)
         return ptn.findMatches(context, match, subexpression).map { it.newChild(this, subexpression) }
@@ -146,6 +146,6 @@ fun stickyOptionalNegOf(operand: Pattern, initialPositionOnly: Boolean = false) 
 
 fun optionalDivideBy(pattern: Pattern) = OptionalWrappingPattern(pattern, ::divideBy)
 
-fun sameSignPattern(from: OptionalNegPattern<Pattern>, to: Pattern) = SameSignPatten(from, to)
+fun sameSignPattern(from: OptionalNegPattern<Pattern>, to: Pattern) = SameSignPattern(from, to)
 
-fun oppositeSignPattern(from: OptionalNegPattern<Pattern>, to: Pattern) = OppositeSignPatten(from, to)
+fun oppositeSignPattern(from: OptionalNegPattern<Pattern>, to: Pattern) = OppositeSignPattern(from, to)

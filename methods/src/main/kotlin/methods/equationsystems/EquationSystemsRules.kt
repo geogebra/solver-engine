@@ -119,6 +119,6 @@ enum class EquationSystemsRules(override val runner: Rule) : RunnerMethod {
     ),
 }
 
-private fun Expression.substitute(vararg subsitutions: Pair<Expression, Expression>): Expression {
-    return subsitutions.fold(this) { expr, sub -> expr.substituteAllOccurrences(sub.first, sub.second) }
+private fun Expression.substitute(vararg substitutions: Pair<Expression, Expression>): Expression {
+    return substitutions.fold(this) { expr, sub -> expr.substituteAllOccurrences(sub.first, sub.second) }
 }
