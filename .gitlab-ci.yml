@@ -338,7 +338,7 @@ sdk-semantic-release:
 sdk-semantic-release-to-s3:
   extends: .deploy-sdk-job
   stage: deploy
-  image: amazon/aws-cli:2.33.2
+  image: registry.git.geogebra.org/infra/aws-cli
   needs:
     - sdk-semantic-release
   script:
