@@ -165,6 +165,8 @@ enum class EquationSolvingStrategy(
         steps = steps {
             optionally(solvablePlansForEquations.moveEverythingToTheLeftAndSimplify)
             applyTo(FactorPlans.FactorPolynomial) { it.firstChild }
+            // We want to get rid of the constant factors
+            optionally(EquationsPlans.SimplifyEquation)
             firstOf {
 
                 // If the equation factored into at least two distinct factors

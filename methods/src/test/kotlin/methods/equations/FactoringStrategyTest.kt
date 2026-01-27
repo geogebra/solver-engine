@@ -391,7 +391,7 @@ class FactoringStrategyTest {
         }
 
     @Test
-    fun `test constant factor is removed first`() =
+    fun `test constant factor is removed first`() {
         testMethodInX {
             method = EquationsPlans.SolveEquation
             inputExpr = "-11 ([x ^ 2] + x) = 0"
@@ -436,4 +436,49 @@ class FactoringStrategyTest {
                 }
             }
         }
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "2 [x ^ 2] + 4 x = 0"
+
+            check {
+                fromExpr = "2 [x ^ 2] + 4 x = 0"
+                toExpr = "SetSolution[x: {-2, 0}]"
+                explanation {
+                    key = EquationsExplanation.SolveEquationByFactoring
+                }
+
+                step {
+                    fromExpr = "2 [x ^ 2] + 4 x = 0"
+                    toExpr = "2 x (x + 2) = 0"
+                    explanation {
+                        key = FactorExplanation.FactorPolynomial
+                    }
+                }
+
+                step {
+                    fromExpr = "2 x (x + 2) = 0"
+                    toExpr = "x (x + 2) = 0"
+                    explanation {
+                        key = EquationsExplanation.EliminateConstantFactorOfLhsWithZeroRhs
+                    }
+                }
+
+                step {
+                    fromExpr = "x (x + 2) = 0"
+                    toExpr = "x = 0 OR x + 2 = 0"
+                    explanation {
+                        key = EquationsExplanation.SeparateFactoredEquation
+                    }
+                }
+
+                step {
+                    fromExpr = "x = 0 OR x + 2 = 0"
+                    toExpr = "SetSolution[x: {-2, 0}]"
+                    explanation {
+                        key = EquationsExplanation.SolveEquationUnion
+                    }
+                }
+            }
+        }
+    }
 }

@@ -18,6 +18,7 @@ contents to a new release section (e.g. _[0.x]_).
 ### Fixed
 
 - Fixed numeric evaluation of trigonometric functions with angles in degrees (PLUT-1063)
+- Fixed simplification steps not removing constant factors when solving an equation by factoring (PLUT-1089)
 
 ### Changed
 
