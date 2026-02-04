@@ -377,6 +377,10 @@ class TrigonometricEquationsTest {
                     "GIVEN SetSolution[k: /integers/]"
 
                 step {
+                    toExpr = "sin[x + 3] - [1 / 4] = [1 / 4]"
+                }
+
+                step {
                     toExpr = "sin[x + 3] = [1 / 2]"
                 }
 
@@ -778,7 +782,7 @@ class TrigonometricEquationsTest {
             inputExpr = "cos[x + [5 /pi/ / 6]] = -cos[x - [/pi/ / 3]]"
 
             check {
-                toExpr = "SetSolution[x : {[/pi/ / 4] + k * /pi/}]"
+                toExpr = "SetSolution[x : {[/pi/ / 4] + k * /pi/}] GIVEN SetSolution[k : /integers/]"
 
                 step {
                     toExpr = "cos[x + [5 /pi/ / 6]] = cos[/pi/ - (x - [/pi/ / 3])]"
@@ -1007,6 +1011,10 @@ class TrigonometricEquationsTest {
 
                         step {
                             fromExpr = "3 tan[-x] + 2 tan[-x] = 4 tan[-x] + 5"
+                            toExpr = "5 tan[-x] = 4 tan[-x] + 5"
+                        }
+
+                        step {
                             toExpr = "tan[-x] = 5"
                         }
 
@@ -1059,6 +1067,10 @@ class TrigonometricEquationsTest {
 
                     step {
                         toExpr = "SetSolution[x: {-arctan[5] + k * /pi/}] GIVEN SetSolution[k: /integers/]"
+
+                        step {
+                            toExpr = "5 tan[-x] = 4 tan[-x] + 5"
+                        }
 
                         step {
                             toExpr = "tan[-x] = 5"

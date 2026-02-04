@@ -23,6 +23,7 @@ import engine.expressions.Minus
 import engine.expressions.Power
 import engine.expressions.Product
 import engine.expressions.Sum
+import engine.expressions.containsTrigExpression
 import engine.expressions.equationOf
 import engine.expressions.leadingCoefficientOfPolynomial
 import engine.expressions.productOf
@@ -299,7 +300,19 @@ enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
     @PublicMethod
     FactorPolynomial(
         plan {
-            explanation = Explanation.FactorPolynomial
+            val polynomialPattern = AnyPattern()
+            pattern = polynomialPattern
+
+            explanation {
+                metadata(
+                    if (get(polynomialPattern).containsTrigExpression()) {
+                        Explanation.FactorExpression
+                    } else {
+                        Explanation.FactorPolynomial
+                    },
+                )
+            }
+
             resultPattern = optionalNegOf(oneOf(productContaining(), powerOf(AnyPattern(), AnyPattern())))
 
             steps {

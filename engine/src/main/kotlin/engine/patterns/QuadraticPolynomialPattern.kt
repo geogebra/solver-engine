@@ -53,7 +53,11 @@ class QuadraticPolynomialPattern(
 
     override val key = quadraticPolynomial
 
+    fun quadraticTerm(match: Match) = quadraticTerm.getBoundExpr(match)
+
     fun quadraticCoefficient(match: Match) = quadraticTerm.coefficient(match)
+
+    fun linearTerm(match: Match) = linearTerm.getBoundExpr(match)
 
     fun linearCoefficient(match: Match): Expression {
         return when {

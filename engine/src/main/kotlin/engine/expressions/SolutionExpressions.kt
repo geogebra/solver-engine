@@ -78,4 +78,18 @@ class SetSolution(
             else -> null
         }
     }
+
+    fun asEquationList(): List<Expression>? {
+        val variable = when (firstChild.childCount) {
+            1 -> firstChild.firstChild
+            else -> return null
+        }
+
+        return when (secondChild.operator) {
+            SetOperators.FiniteSet -> secondChild.children.map {
+                equationOf(variable, it)
+            }
+            else -> null
+        }
+    }
 }

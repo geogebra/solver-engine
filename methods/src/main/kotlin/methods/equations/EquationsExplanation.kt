@@ -679,6 +679,52 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      */
     NormalizePeriod,
 
+    /**
+     * Solve quadratic trigonometric equations
+     */
+    SolveQuadraticTrigonometricEquations,
+
+    /**
+     * Substitute trigonometric function in quadratic equation
+     *
+     * %1: f(x) = <new variable>
+     */
+    SubstituteTrigonometricFunctionInQuadraticEquation,
+
+    /**
+     * Substitute back solution into original expression
+     *
+     * %1: original expression ( <substituted variable> = f(x) )
+     */
+    SubstituteOriginalExpressionIntoQuadraticTrigEquationAndSolve,
+
+    /**
+     * Substitute back %1 and solve
+     *
+     * %1: original equation ( <substituted variable> = f(x) )
+     */
+    SubstituteAndSolveTrigonometricEquation,
+
+    /**
+     * Reorganize quadratic equation containing trigonometric expressions to a [f(x)^ 2] + b f(x) + c
+     */
+    ReorganizeQuadraticPolynomialWithTrigonometricFunctions,
+
+    /**
+     * Extract solution from impossible quadratic equation containing trigonometric functions
+     */
+    ExtractSolutionFromImpossibleQuadraticEquationWithTrigonometricExpressions,
+
+    /**
+     * Merge solutions of trigonometric equations
+     */
+    MergeTrigonometricEquationSolutions,
+
+    /**
+     * Simplify solution of equation containing trigonometric functions
+     */
+    SimplifyTrigonometricEquationSolution,
+
     ;
 
     override val category = "Equations"

@@ -312,6 +312,14 @@ enum class FactorExplanation : CategorisedMetadataKey {
      */
     @LegacyKeyName("Polynomials.FactorPolynomial")
     FactorPolynomial,
+
+    /**
+     * Factor a polynomial-like expression
+     *
+     * E.g. [cos ^ 2][ x ] + cox[ x ] --> cos[ x ] (cos[ x ] + 1)
+     */
+    FactorExpression,
+
     ;
 
     override val category = "Factor"

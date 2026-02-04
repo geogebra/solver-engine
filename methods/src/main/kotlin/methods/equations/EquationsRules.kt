@@ -26,6 +26,7 @@ import engine.expressions.Constants.Two
 import engine.expressions.Contradiction
 import engine.expressions.Equation
 import engine.expressions.Expression
+import engine.expressions.Minus
 import engine.expressions.Product
 import engine.expressions.SimpleComparator
 import engine.expressions.StatementUnion
@@ -33,6 +34,7 @@ import engine.expressions.Sum
 import engine.expressions.Variable
 import engine.expressions.VariableList
 import engine.expressions.VoidExpression
+import engine.expressions.asInteger
 import engine.expressions.bracketOf
 import engine.expressions.contradictionOf
 import engine.expressions.equationOf
@@ -95,13 +97,16 @@ import engine.patterns.productContaining
 import engine.patterns.productOf
 import engine.patterns.rationalMonomialPattern
 import engine.patterns.squareRootOf
+import engine.patterns.statementUnionOf
 import engine.patterns.sumContaining
 import engine.patterns.sumOf
 import engine.patterns.withOptionalConstantCoefficient
+import engine.patterns.withOptionalRationalCoefficient
 import engine.sign.Sign
 import engine.steps.Transformation
 import engine.steps.metadata.MetadataKey
 import engine.steps.metadata.metadata
+import engine.utility.gcd
 import engine.utility.isEven
 import engine.utility.withMaxDP
 import methods.angles.AnglesExplanation
@@ -331,6 +336,9 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
 
     ApplyInverseSineFunctionToBothSides(applyInverseFunctionToBothSides),
     ExtractSolutionFromImpossibleSineLikeEquation(extractSolutionFromImpossibleSineLikeEquation),
+    ExtractSolutionFromImpossibleQuadraticEquationWithTrigonometricExpressions(
+        extractSolutionFromImpossibleQuadraticEquationWithTrigonometricExpressions,
+    ),
 
     /**
      * After an expression with sine has been simplified:
@@ -364,6 +372,9 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
     ExtractSolutionWithoutPeriod(extractSolutionWithoutPeriod),
     ReorderSumWithPeriod(reorderSumWithPeriod),
     BalanceEquationWithTrigonometricExpressions(balanceEquationWithTrigonometricExpressions),
+    SubstituteTrigFunctionInQuadraticEquation(substituteTrigFunctionInQuadraticEquation),
+    ReorderQuadraticEquationWithTrigonometricFunctions(reorderQuadraticEquationWithTrigonometricFunctions),
+    MergeTrigonometricEquationSolutions(mergeTrigonometricEquationSolutions),
 }
 
 private val extractSolutionFromEquationInPlusMinusForm = rule {
@@ -432,7 +443,9 @@ private val separateFactoredEquation = rule {
     }
 
     onEquation(product, FixedPattern(Constants.Zero)) {
-        val factors = get(product).children
+        val factors = get(product).children.filter {
+            !it.isConstantIn(context.solutionVariables)
+        }
         ruleResult(
             toExpr = statementUnionOf(factors.map { equationOf(it, Constants.Zero) }),
             explanation = metadata(Explanation.SeparateFactoredEquation),
@@ -830,6 +843,29 @@ private val extractSolutionFromImpossibleSineLikeEquation = rule {
     }
 }
 
+/**
+ * Check if the substituted equation solution in the equation system is a contradiction.
+ */
+private val extractSolutionFromImpossibleQuadraticEquationWithTrigonometricExpressions = rule {
+    val contradiction = engine.patterns.contradictionOf(AnyPattern())
+    val originalExpressionEquation = equationOf(
+        ArbitraryVariablePattern(),
+        TrigonometricExpressionPattern(AnyPattern()),
+    )
+
+    val equationUnion = engine.patterns.statementSystemOf(
+        contradiction,
+        originalExpressionEquation,
+    )
+
+    onPattern(equationUnion) {
+        ruleResult(
+            move(contradiction),
+            metadata(Explanation.ExtractSolutionFromImpossibleQuadraticEquationWithTrigonometricExpressions),
+        )
+    }
+}
+
 private fun sinePeriodCreator(variable: Variable): Expression =
     productOf(
         Two,
@@ -1143,8 +1179,246 @@ private val balanceEquationWithTrigonometricExpressions = rule {
     }
 }
 
-fun findUnusedVariableLetter(expression: Expression): String {
-    val usedVariables = expression.variables
+/**
+ * Substitute the trigonometric function with a variable (t if possible) and return it along with the substitution in
+ * a statement union
+ *
+ * a * f^2(x) + b * f(x) + c = 0
+ * -->
+ * ┌ at + bt + c = 0
+ * │
+ * └ t = f(x)
+ */
+private val substituteTrigFunctionInQuadraticEquation = rule {
+    val trigFunction = TrigonometricExpressionPattern(AnyPattern())
 
-    return ('k'..'z').map(Char::toString).first { !usedVariables.contains(it) }
+    val quadraticPolynomial = QuadraticPolynomialPattern(
+        variable = trigFunction,
+        constantChecker = solutionVariableConstantChecker,
+    )
+    val rhs = FixedPattern(Constants.Zero)
+
+    onEquation(quadraticPolynomial, rhs) {
+        val a = get(quadraticPolynomial::quadraticCoefficient)!!
+        val b = get(quadraticPolynomial::linearCoefficient)!!
+        val c = get(quadraticPolynomial::constantTerm)!!
+
+        val substitutedVariable = Variable(
+            findUnusedVariableLetter(
+                get(quadraticPolynomial),
+                listOf('t'),
+            ),
+        )
+
+        fun Expression.withCoefficient(coefficient: Expression): Expression =
+            when (coefficient) {
+                Constants.One -> this
+                is Minus -> Minus(
+                    this.withCoefficient(coefficient.firstChild),
+                )
+                else -> productOf(
+                    coefficient,
+                    this,
+                )
+            }
+
+        val terms = buildList {
+            add(
+                powerOf(
+                    substitutedVariable,
+                    Two,
+                ).withCoefficient(a),
+            )
+            if (b != Constants.Zero) {
+                add(
+                    substitutedVariable.withCoefficient(b),
+                )
+            }
+            if (c != Constants.Zero) {
+                add(c)
+            }
+        }
+
+        val newEquation = equationOf(
+            sumOf(terms),
+            get(rhs),
+        )
+
+        ruleResult(
+            toExpr = statementSystemOf(
+                newEquation,
+                equationOf(
+                    substitutedVariable,
+                    get(trigFunction),
+                ),
+            ),
+            explanation = metadata(
+                key = Explanation.SubstituteTrigonometricFunctionInQuadraticEquation,
+                parameters = listOf(
+                    equationOf(
+                        get(trigFunction),
+                        substitutedVariable,
+                    ),
+                ),
+            ),
+        )
+    }
+}
+
+/**
+ * Reorder the quadratic equation with trigonometric base so that the powers are in descending order.
+ */
+private val reorderQuadraticEquationWithTrigonometricFunctions = rule {
+    val trigFunction = TrigonometricExpressionPattern(AnyPattern())
+
+    val quadraticPolynomial = QuadraticPolynomialPattern(
+        variable = trigFunction,
+        constantChecker = solutionVariableConstantChecker,
+    )
+    val rhs = FixedPattern(Constants.Zero)
+
+    onEquation(quadraticPolynomial, rhs) {
+        val a = get(quadraticPolynomial::quadraticTerm)
+        val b = get(quadraticPolynomial::linearTerm)
+        val c = get(quadraticPolynomial::constantTerm)
+
+        val terms = listOf(a, b, c).filter { it != null && it != Constants.Zero }.map { it!! }
+
+        val lhs = sumOf(terms)
+
+        // Prevent adding redundant steps
+        if (lhs == get(quadraticPolynomial)) {
+            return@onEquation null
+        }
+
+        val newEquation = equationOf(
+            lhs,
+            get(rhs),
+        )
+
+        ruleResult(
+            toExpr = newEquation,
+            explanation = metadata(Explanation.ReorganizeQuadraticPolynomialWithTrigonometricFunctions),
+        )
+    }
+}
+
+/**
+ * Merge two trigonometric equations solutions, when they are at two opposing points of the unit circle and have the
+ * same period.
+ */
+private val mergeTrigonometricEquationSolutions = rule {
+    val variable = condition(ArbitraryVariablePattern()) {
+        it.isConstantIn(solutionVariables)
+    }
+    val coefficient = ConstantInSolutionVariablePattern()
+    val piPattern = FixedPattern(Pi)
+    val period = optionalNegOf(
+        oneOf(
+            productOf(variable, piPattern),
+            productOf(coefficient, variable, piPattern),
+        ),
+    )
+
+    val periodFraction = OptionalWrappingPattern(period) {
+        fractionOf(it, AnyPattern())
+    }
+
+    val expression1 = withOptionalRationalCoefficient(
+        piPattern,
+    )
+
+    val expression2 = withOptionalRationalCoefficient(
+        piPattern,
+    )
+
+    val lhs = SolutionVariablePattern()
+
+    val eq1 = equationOf(
+        lhs,
+        sumOf(expression1, periodFraction),
+    )
+    val eq2 = equationOf(
+        lhs,
+        sumOf(expression2, periodFraction),
+    )
+
+    val pattern = statementUnionOf(
+        eq1,
+        eq2,
+    )
+
+    onPattern(pattern) {
+        val coefficient1 = getCoefficientValue(expression1)
+        val coefficient2 = getCoefficientValue(expression2)
+
+        val periodNumerator = if (isBound(coefficient)) {
+            get(coefficient).asInteger()
+        } else {
+            BigInteger.ONE
+        }
+        val periodDenominator = if (periodFraction.isWrapping()) {
+            get(periodFraction).secondChild.asInteger()
+        } else {
+            BigInteger.ONE
+        }
+
+        // Come on, it's just a null check!
+        @Suppress("ComplexCondition")
+        if (coefficient1 == null || coefficient2 == null || periodNumerator == null || periodDenominator == null) {
+            return@onPattern null
+        }
+
+        // We "calculate" the point that is opposing to the first solution
+        // We work with just the coefficient, as multiplying all expressions by Pi is redundant
+        val c1AndHalfPeriodNumerator = periodNumerator * coefficient1.denominator +
+            coefficient1.numerator * periodDenominator * BigInteger.TWO
+        val c1AndHalfPeriodDenominator = periodDenominator * coefficient1.denominator * BigInteger.TWO
+
+        val gcdC1AndHalfPeriod = gcd(c1AndHalfPeriodDenominator, c1AndHalfPeriodNumerator)
+
+        val numeratorToVerify = c1AndHalfPeriodNumerator / gcdC1AndHalfPeriod
+        val denominatorToVerify = c1AndHalfPeriodDenominator / gcdC1AndHalfPeriod
+
+        // We check if the second solution is the same as the opposing point we calulated
+        if (numeratorToVerify != coefficient2.numerator || denominatorToVerify != coefficient2.denominator) {
+            return@onPattern null
+        }
+
+        // We calculate the new period by halving the original period
+        val newPeriodNumeratorTerms = buildList {
+            if (isBound(coefficient)) add(get(coefficient))
+            add(get(variable))
+            add(get(piPattern))
+        }
+
+        val newPeriodDenominator = if (periodFraction.isWrapping()) {
+            productOf(Two, get(periodFraction).secondChild)
+        } else {
+            Two
+        }
+
+        // Take the smaller positive expression as base. If both are negative take the one closer to 0
+        val smallerExpr = get(expression1)
+        val greaterExpr = get(expression2)
+
+        val newExpression = when (smallerExpr) {
+            is Minus -> greaterExpr
+            else -> smallerExpr
+        }
+
+        ruleResult(
+            toExpr = equationOf(
+                get(lhs),
+                sumOf(
+                    newExpression,
+                    fractionOf(
+                        productOf(newPeriodNumeratorTerms),
+                        newPeriodDenominator,
+                    ),
+                ),
+            ),
+            explanation = metadata(Explanation.MergeTrigonometricEquationSolutions),
+        )
+    }
 }

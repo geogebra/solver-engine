@@ -33,7 +33,6 @@ import engine.patterns.SignedNumberPattern
 import engine.patterns.TrigonometricExpressionPattern
 import engine.patterns.UnsignedNumberPattern
 import engine.patterns.commutativeProductOf
-import engine.patterns.commutativeSumOf
 import engine.patterns.condition
 import engine.patterns.degreeOf
 import engine.patterns.numericCondition
@@ -41,6 +40,7 @@ import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
 import engine.patterns.productContaining
 import engine.patterns.stickyOptionalNegOf
+import engine.patterns.sumContaining
 import engine.patterns.withOptionalRationalCoefficient
 import engine.steps.metadata.metadata
 import engine.utility.Rational
@@ -450,15 +450,6 @@ private val rewriteAngleInDegreesByExtractingMultiplesOf360 = rule {
  * - 2 /pi/ + 0 -> 0
  */
 private val substituteAngleWithCoterminalAngleFromUnitCircle = rule {
-    val angleValDegrees = degreeOf(AnyPattern())
-    val angleValRadians = withOptionalRationalCoefficient(FixedPattern(Pi), true)
-    // We explicitly add the 0 case to be able to run directly after extracting multiples of 360
-    val angleVal = oneOf(
-        angleValDegrees,
-        angleValRadians,
-        withOptionalRationalCoefficient(FixedPattern(Zero)),
-    )
-
     // We add an optional integer operand to the circle to also cancel out multiples of 2pi/360
     val circleDegrees = degreeOf(FixedPattern(ThreeHundredAndSixty)).let {
         oneOf(it, commutativeProductOf(SignedIntegerPattern(), it))
@@ -471,11 +462,15 @@ private val substituteAngleWithCoterminalAngleFromUnitCircle = rule {
 
     val circle = oneOf(circleDegrees, circleRadians)
 
-    val sum = commutativeSumOf(angleVal, circle)
+    val sum = sumContaining(circle)
 
     onPattern(sum) {
+        // We use transform on the whole sum instead of a simple cancel as that corresponds to the angle
         ruleResult(
-            toExpr = sum.substitute(move(angleVal)),
+            toExpr = transform(
+                sum,
+                restOf(sum),
+            ),
             explanation = metadata(Explanation.SubstituteAngleWithCoterminalAngleFromUnitCircle),
         )
     }

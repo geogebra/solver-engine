@@ -145,10 +145,10 @@ fun computeUnionOfSets(sets: List<SetExpression>): Expression? {
     }
 }
 
-fun findUnusedVariableLetter(expression: Expression): String {
+fun findUnusedVariableLetter(expression: Expression, preferredVariables: List<Char> = listOf('k')): String {
     val usedVariables = expression.variables
 
-    return ('k'..'z').map(Char::toString).first { !usedVariables.contains(it) }
+    return (preferredVariables + ('k'..'z')).map(Char::toString).first { !usedVariables.contains(it) }
 }
 
 val expressionComparator = ExpressionComparator { e1: Expression, e2: Expression ->

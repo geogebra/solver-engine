@@ -345,4 +345,23 @@ class EquationRulesTest {
             "Contradiction[x: [2^x] = -1]",
         )
     }
+
+    @Test
+    fun testReorganizeQuadraticEquationWithTrigExpression() {
+        testRuleInX(
+            "sqrt[3][tan ^ 2][x]+3tan[x]=0",
+            EquationsRules.ReorderQuadraticEquationWithTrigonometricFunctions,
+            null,
+        )
+        testRuleInX(
+            "3tan[x] + sqrt[3] * [tan ^ 2][x] = 0",
+            EquationsRules.ReorderQuadraticEquationWithTrigonometricFunctions,
+            "sqrt[3] * [tan ^ 2][x] + 3 tan[x] = 0",
+        )
+        testRuleInX(
+            "sqrt[3][tan ^ 2][x] + 3 = 0",
+            EquationsRules.ReorderQuadraticEquationWithTrigonometricFunctions,
+            null,
+        )
+    }
 }

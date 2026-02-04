@@ -27,6 +27,7 @@ import TasksComponent from './tasks-component.vue';
 import StepsComponent from './steps-component.vue';
 import KatexRenderedText from './katex-rendered-text.vue';
 import { treeToLatex } from './render-math.ts';
+import TransformationComponent from './transformation-component.vue';
 
 const props = defineProps<{
   task: TaskJson;
@@ -46,10 +47,23 @@ const rendering = computed(() => {
       ${treeToLatex(toExpr)}`
   );
 });
+
+const isThrough = computed(
+  () =>
+    props.task.steps &&
+    props.task.steps.length === 1 &&
+    props.task.steps[0].steps &&
+    props.task.steps[0].explanation.key === props.task.explanation.key,
+);
 </script>
 
 <template>
-  <div>
+  <TransformationComponent
+    v-if="!showThroughSteps && isThrough"
+    :transformation="task.steps![0]"
+    :depth="depth"
+  />
+  <div v-else :class="`trans ${isThrough ? 'through-step' : ''}`">
     <Explanation :metadata="task.explanation" />
     <template v-if="task.steps">
       <KatexRenderedText class="expr" :text="renderExpression(rendering)"></KatexRenderedText>

@@ -29,18 +29,20 @@ import engine.expressions.DecimalExpression
 import engine.expressions.Equation
 import engine.expressions.Expression
 import engine.expressions.ExpressionWithConstraint
-import engine.expressions.Identity
 import engine.expressions.RecurringDecimalExpression
+import engine.expressions.SetSolution
 import engine.expressions.StatementSystem
 import engine.expressions.StatementUnion
 import engine.expressions.Variable
 import engine.expressions.containsTrigExpression
 import engine.expressions.equationOf
 import engine.expressions.expressionWithConstraintOf
+import engine.expressions.finiteSetOf
 import engine.expressions.fractionOf
 import engine.expressions.inequationOf
 import engine.expressions.negOf
 import engine.expressions.productOf
+import engine.expressions.statementUnionOf
 import engine.expressions.sumOf
 import engine.methods.CompositeMethod
 import engine.methods.Method
@@ -52,21 +54,26 @@ import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
 import engine.patterns.AnyPattern
+import engine.patterns.ArbitraryVariablePattern
 import engine.patterns.FindPattern
 import engine.patterns.FixedPattern
+import engine.patterns.OptionalWrappingPattern
 import engine.patterns.RecurringDecimalPattern
 import engine.patterns.SignedNumberPattern
 import engine.patterns.SolutionVariablePattern
 import engine.patterns.SolvablePattern
+import engine.patterns.TrigonometricExpressionPattern
 import engine.patterns.condition
 import engine.patterns.contradictionOf
 import engine.patterns.equationOf
+import engine.patterns.expressionWithConstraintOf
 import engine.patterns.identityOf
 import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
 import engine.patterns.setSolutionOf
 import engine.patterns.solutionSetOf
 import engine.patterns.variableListOf
+import engine.steps.Task
 import engine.steps.Transformation
 import engine.steps.metadata.MetadataKey
 import engine.steps.metadata.metadata
@@ -76,7 +83,6 @@ import methods.algebra.findDenominatorsAndDivisors
 import methods.angles.findFunctionsRequiringDomainCheck
 import methods.constantexpressions.constantSimplificationSteps
 import methods.constantexpressions.simpleTidyUpSteps
-import methods.equations.EquationsPlans.SimplifyByEliminatingConstantFactorOfLhsWithZeroRhs
 import methods.factor.FactorPlans
 import methods.factor.FactorRules
 import methods.general.NormalizationPlans
@@ -379,6 +385,10 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
     CosineEquationSolutionExtractionTask(cosineEquationSolutionExtractionTask),
 
+    SubstituteOriginalExpressionIntoQuadraticTrigEquation(substituteOriginalExpressionIntoQuadraticTrigEquation),
+
+    MergeTrigonometricEquationSolutionsTask(mergeTrigonometricEquationSolutionsTask),
+
     NormalizePeriod(normalizePeriodPlan),
 
     @PublicMethod
@@ -497,6 +507,38 @@ val solveConstantEquationSteps = steps {
     apply(EquationsRules.ExtractSolutionFromConstantEquation)
 }
 
+fun mergeSolutionsWithConstraints(tasks: List<Task>): Expression? {
+    val (results, constraints) = tasks.map { task ->
+        task.result.let {
+            when (it) {
+                is ExpressionWithConstraint -> it.firstChild to it.secondChild
+                else -> it to null
+            }
+        }
+    }.unzip()
+
+    val overallUnionSolution = computeOverallUnionSolution(results) ?: return null
+
+    val filteredConstraints = constraints.filterNotNull()
+
+    return if (filteredConstraints.isNotEmpty()) {
+        val constraint = if (filteredConstraints.all { it == constraints[0] }) {
+            constraints[0]
+        } else {
+            // This branch should never be reached, as in this taskset the constraint
+            // should always be the same
+            computeOverallIntersectionSolution(filteredConstraints)
+        }
+
+        expressionWithConstraintOf(
+            overallUnionSolution,
+            constraint,
+        )
+    } else {
+        overallUnionSolution
+    }
+}
+
 fun trigonometricFunctionExtractionTaskBuilder(
     solvingSteps: StepsProducer,
     explanationKey: MetadataKey,
@@ -533,36 +575,7 @@ fun trigonometricFunctionExtractionTaskBuilder(
                 ) ?: return@tasks null
             }
 
-            val (results, constraints) = tasks.map { t ->
-                t.result.let {
-                    it.firstChild to it.secondChild
-                }
-            }.unzip()
-
-            val startExpression = when {
-                // If any of the options is an identity, the solution is an identity
-                results.any { it is Identity } -> results.first { it is Identity }
-                // If any of the options is a contradiction, only the other solution should be considered
-                results.any { it is Contradiction } -> results.firstOrNull { it !is Contradiction } ?: results.first()
-                // Otherwise merge the solutions into a union of solutions and merge the constraints
-                // into an intersection of constraints
-                else -> {
-                    val overallSolution = computeOverallUnionSolution(results) ?: return@tasks null
-
-                    val constraint = if (constraints.all { it == constraints[0] }) {
-                        constraints[0]
-                    } else {
-                        // This branch should never be reached, as in this taskset the constraint
-                        // should always be the same
-                        computeOverallIntersectionSolution(constraints)
-                    }
-
-                    expressionWithConstraintOf(
-                        overallSolution,
-                        constraint,
-                    )
-                }
-            }
+            val startExpression = mergeSolutionsWithConstraints(tasks) ?: return@tasks null
 
             task(
                 startExpr = startExpression,
@@ -608,6 +621,163 @@ val cosineEquationSolutionExtractionTask =
         )
     }
 
+val substituteOriginalExpressionIntoQuadraticTrigEquation = taskSet {
+    val solvedEquation = setSolutionOf(AnyPattern(), AnyPattern())
+
+    val originalExpressionEquation = equationOf(
+        ArbitraryVariablePattern(),
+        TrigonometricExpressionPattern(AnyPattern()),
+    )
+
+    val equationUnion = engine.patterns.statementSystemOf(
+        solvedEquation,
+        originalExpressionEquation,
+    )
+
+    pattern = equationUnion
+    explanation = Explanation.SubstituteOriginalExpressionIntoQuadraticTrigEquationAndSolve
+
+    explanationParameters(originalExpressionEquation)
+
+    tasks {
+        val solutionSet = get(solvedEquation) as SetSolution
+        val substitutedVariable = solutionSet.firstChild.let {
+            if (it.childCount == 1) {
+                it.firstChild
+            } else {
+                return@tasks null
+            }
+        }
+
+        val substitutedValues = solutionSet.secondChild.children.map {
+            equationOf(substitutedVariable, it)
+        }
+
+        val originalEquation = get(originalExpressionEquation)
+        val originalExp = originalEquation.secondChild
+
+        val splitTasks = substitutedValues.map {
+            task(
+                startExpr = equationOf(originalExp, it.secondChild),
+                explanation = metadata(
+                    Explanation.SolveTrigonometricEquation,
+                ),
+                stepsProducer = optimalEquationSolvingSteps,
+            ) ?: return@tasks null
+        }
+
+        if (splitTasks.size > 1) {
+            val overallSolution = mergeSolutionsWithConstraints(splitTasks) ?: return@tasks null
+            task(
+                startExpr = overallSolution,
+                explanation = metadata(Explanation.CollectSolutions),
+            )
+        }
+
+        allTasks()
+    }
+}
+
+val mergeTrigonometricEquationSolutionsTask = taskSet {
+    val solution = setSolutionOf(
+        AnyPattern(),
+        AnyPattern(),
+    )
+    val optionalConstraint = OptionalWrappingPattern(solution) {
+        expressionWithConstraintOf(
+            it,
+            AnyPattern(),
+        )
+    }
+
+    pattern = optionalConstraint
+    explanation = Explanation.MergeTrigonometricEquationSolutions
+
+    tasks {
+        val (solution, constraint) = get(optionalConstraint).let {
+            if (it is ExpressionWithConstraint) {
+                it.firstChild to it.secondChild
+            } else {
+                it to null
+            }
+        }
+
+        val allSolutions = solution.let {
+            if (it is SetSolution) {
+                it.asEquationList()
+            } else {
+                null
+            }
+        }?.toMutableList() ?: return@tasks null
+
+        var modified = true
+        val solutionTasks = mutableListOf<Task>()
+
+        // This may not be the most elegant solution :(
+        // We try to apply the rule for merging to all combinations of solutions, if we merge two, we start the loop
+        // again. If in a pass we didn't merge any, we stop and return the solution.
+        while (modified) {
+            modified = false
+            for (i in 0..<allSolutions.size) {
+                for (j in 0..<allSolutions.size) {
+                    if (i != j) {
+                        val newTask = task(
+                            startExpr = statementUnionOf(
+                                allSolutions[i],
+                                allSolutions[j],
+                            ),
+                            explanation = metadata(Explanation.SimplifyTrigonometricEquationSolution),
+                            stepsProducer = simplifyTrigonometricEquationSolutionSteps,
+                        )
+
+                        newTask?.result?.let { result ->
+                            modified = true
+
+                            allSolutions[i] = result.let {
+                                if (it is SetSolution) {
+                                    it.asEquation() ?: it
+                                } else {
+                                    it
+                                }
+                            }
+
+                            allSolutions.removeAt(j)
+
+                            solutionTasks.add(newTask)
+                        }
+                    }
+                    if (modified) break
+                }
+                if (modified) break
+            }
+        }
+
+        val mergedSolution = engine.expressions.setSolutionOf(
+            engine.expressions.variableListOf(
+                allSolutions.first().firstChild.variables.toList(),
+            ),
+            finiteSetOf(
+                allSolutions.map {
+                    it.secondChild
+                },
+            ),
+        )
+
+        solutionTasks.add(
+            task(
+                startExpr = if (constraint != null) {
+                    expressionWithConstraintOf(mergedSolution, constraint)
+                } else {
+                    mergedSolution
+                },
+                explanation = metadata(Explanation.CollectSolutions),
+            ),
+        )
+
+        solutionTasks
+    }
+}
+
 val normalizePeriodPlan = plan {
     explanation = Explanation.NormalizePeriod
 
@@ -629,6 +799,15 @@ val normalizePeriodPlan = plan {
             applyTo(EquationsRules.ReorderSumWithPeriod) {
                 it.secondChild
             }
+        }
+    }
+}
+
+val simplifyTrigonometricEquationSolutionSteps = steps {
+    apply(EquationsRules.MergeTrigonometricEquationSolutions)
+    optionally {
+        applyTo(algebraicSimplificationStepsForEquations) {
+            it.secondChild
         }
     }
 }

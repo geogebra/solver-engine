@@ -99,6 +99,8 @@ enum class EquationSolvingStrategy(
                     apply(equationSolvingSteps)
                 }
             }
+
+            optionally(EquationsPlans.MergeTrigonometricEquationSolutionsTask)
         },
     ),
 
@@ -163,7 +165,12 @@ enum class EquationSolvingStrategy(
         priority = 8,
         explanation = EquationsExplanation.SolveEquationByFactoring,
         steps = steps {
+            // We add some optional simplification here so that steps are more linear
             optionally(solvablePlansForEquations.moveEverythingToTheLeftAndSimplify)
+
+            // We try to expand before factoring.
+            optionally(algebraicSimplificationSteps)
+
             applyTo(FactorPlans.FactorPolynomial) { it.firstChild }
             // We want to get rid of the constant factors
             optionally(EquationsPlans.SimplifyEquation)
@@ -329,7 +336,7 @@ enum class EquationSolvingStrategy(
      */
     TrigonometricEquation(
         family = Family.LINEAR,
-        priority = -1,
+        priority = 5,
         explanation = EquationsExplanation.SolveTrigonometricEquation,
         steps = steps {
             check { it.containsTrigExpression() }
@@ -349,6 +356,40 @@ enum class EquationSolvingStrategy(
 
                 // Upcoming equation types
             }
+
+            optionally(EquationsPlans.MergeTrigonometricEquationSolutionsTask)
+        },
+    ),
+
+    QuadraticTrigonometricEquation(
+        family = Family.POLYNOMIAL,
+        priority = 5,
+        explanation = EquationsExplanation.SolveQuadraticTrigonometricEquations,
+        steps = steps {
+            optionally(quadraticPreprocessingSteps)
+            optionally(EquationsRules.ReorderQuadraticEquationWithTrigonometricFunctions)
+
+            // a [sin ^ 2][x] + b sin x + c -->
+            // ┌ a * [t ^ 2] + b * t + c = 0
+            // └ t = sin[x]
+            apply(EquationsRules.SubstituteTrigFunctionInQuadraticEquation)
+
+            // solve a * [t^2] + b * t + c = 0
+            inContext({ copy(solutionVariables = it.secondChild.firstChild.variables.toList()) }) {
+                applyTo(EquationsPlans.SolveEquation) {
+                    it.firstChild
+                }
+            }
+
+            // solve equation system by substituting
+            firstOf {
+                option(
+                    EquationsRules.ExtractSolutionFromImpossibleQuadraticEquationWithTrigonometricExpressions,
+                )
+                option(EquationsPlans.SubstituteOriginalExpressionIntoQuadraticTrigEquation)
+            }
+
+            optionally(EquationsPlans.MergeTrigonometricEquationSolutionsTask)
         },
     ),
 
@@ -457,7 +498,6 @@ internal val solveEquation = lazy {
         option(EquationSolvingStrategy.ConstantEquation)
         option(EquationSolvingStrategy.Undefined)
 
-        option(EquationSolvingStrategy.TrigonometricEquation)
         option(EquationSolvingStrategy.RationalEquation)
 
         // simplify the equation
@@ -501,7 +541,7 @@ private val equationSolvingSteps = StepsProducer { ctx, sub ->
         ?.steps
 }
 
-private val quadraticFormulaSteps = steps {
+private val quadraticPreprocessingSteps = steps {
     optionally(solvablePlansForEquations.multiplyByLCDAndSimplify)
     optionally(solvablePlansForEquations.moveEverythingToTheLeftAndSimplify)
 
@@ -514,6 +554,10 @@ private val quadraticFormulaSteps = steps {
     optionally(EquationsPlans.SimplifyByFactoringNegativeSignOfLeadingCoefficient)
     // normalize to the form: a[x^2] + bx + c = 0, where gcd(a,b,c) = 1
     optionally(EquationsPlans.SimplifyByDividingByGcfOfCoefficients)
+}
+
+private val quadraticFormulaSteps = steps {
+    optionally(quadraticPreprocessingSteps)
 
     apply(EquationsRules.ApplyQuadraticFormula)
 
@@ -575,73 +619,69 @@ private val sineLikeEquationSteps = steps {
             expressionOnlyContainsTrigFunctionType(it, TrigonometricFunctionType.Cos)
     }
 
+    apply(EquationsRules.ApplyInverseSineFunctionToBothSides)
+
+    applyTo(
+        stepsProducer = steps {
+            firstOf {
+                option(TrigonometricFunctionsRules.ApplyIdentityOfInverseTrigonometricFunction)
+                option(evaluateInverseTrigonometricFunctions)
+            }
+        },
+        extractor = { it.firstChild },
+    )
+
     firstOf {
         option {
-            apply(EquationsRules.ApplyInverseSineFunctionToBothSides)
-
-            applyTo(
-                stepsProducer = steps {
-                    firstOf {
-                        option(TrigonometricFunctionsRules.ApplyIdentityOfInverseTrigonometricFunction)
-                        option(evaluateInverseTrigonometricFunctions)
-                    }
-                },
-                extractor = { it.firstChild },
-            )
-
+            checkForm {
+                equationOf(
+                    AnyPattern(),
+                    TrigonometricExpressionPattern(
+                        optionalNegOf(FixedPattern(Constants.One)),
+                        listOf(TrigonometricFunctionType.Arcsin, TrigonometricFunctionType.Arccos),
+                    ),
+                )
+            }
             firstOf {
-                option {
-                    checkForm {
-                        equationOf(
-                            AnyPattern(),
-                            TrigonometricExpressionPattern(
-                                optionalNegOf(FixedPattern(Constants.One)),
-                                listOf(TrigonometricFunctionType.Arcsin, TrigonometricFunctionType.Arccos),
-                            ),
-                        )
-                    }
-                    firstOf {
-                        option {
-                            check {
-                                expressionOnlyContainsTrigFunctionType(it, TrigonometricFunctionType.Arcsin)
-                            }
-                            apply(extractedSineEquationSolvingSteps)
-                        }
-                        option {
-                            check {
-                                expressionOnlyContainsTrigFunctionType(it, TrigonometricFunctionType.Arccos)
-                            }
-                            apply(extractedCosineEquationSolvingSteps)
-                        }
-                    }
-                }
-                option {
-                    apply(EquationsRules.ExtractSolutionFromEquationWithInverseSineOfZero)
-
-                    optionally(
-                        trigonometricEquationSolvingSteps,
-                    )
-                }
-                option {
-                    apply(EquationsRules.ExtractSolutionFromEquationWithInverseCosineOfZero)
-
-                    optionally(
-                        trigonometricEquationSolvingSteps,
-                    )
-                }
                 option {
                     check {
                         expressionOnlyContainsTrigFunctionType(it, TrigonometricFunctionType.Arcsin)
                     }
-                    apply(EquationsPlans.SineEquationSolutionExtractionTask)
+                    apply(extractedSineEquationSolvingSteps)
                 }
                 option {
                     check {
                         expressionOnlyContainsTrigFunctionType(it, TrigonometricFunctionType.Arccos)
                     }
-                    apply(EquationsPlans.CosineEquationSolutionExtractionTask)
+                    apply(extractedCosineEquationSolvingSteps)
                 }
             }
+        }
+        option {
+            apply(EquationsRules.ExtractSolutionFromEquationWithInverseSineOfZero)
+
+            optionally(
+                trigonometricEquationSolvingSteps,
+            )
+        }
+        option {
+            apply(EquationsRules.ExtractSolutionFromEquationWithInverseCosineOfZero)
+
+            optionally(
+                trigonometricEquationSolvingSteps,
+            )
+        }
+        option {
+            check {
+                expressionOnlyContainsTrigFunctionType(it, TrigonometricFunctionType.Arcsin)
+            }
+            apply(EquationsPlans.SineEquationSolutionExtractionTask)
+        }
+        option {
+            check {
+                expressionOnlyContainsTrigFunctionType(it, TrigonometricFunctionType.Arccos)
+            }
+            apply(EquationsPlans.CosineEquationSolutionExtractionTask)
         }
     }
 }
