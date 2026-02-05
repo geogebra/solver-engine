@@ -7,15 +7,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 An entry should be added to the _[Unreleased]_ section when committing to main. When a release is made we move its
 contents to a new release section (e.g. _[0.x]_).
 
-## Unreleased
+## [1.4.13] 2026-02-05
 
 ### Added
 
 - Solve equations containing sines. (PLUT-1076)
 - Solve equations containing cosines. (PLUT-1077)
 - Solve equations containing tangents. (PLUT-1080)
-- Solve quadratic equations containing trigonometric functions. (PLUT-1084)
-- Added solution merging for trigonometric equations. (PLUT=1090)
+- Solve quadratic equations containing trigonometric functions. (PLUT-1084, PLUT-1085, PLUT-1090)
+- Added solution merging for trigonometric equations. (PLUT-1090)
 
 ### Fixed
 
