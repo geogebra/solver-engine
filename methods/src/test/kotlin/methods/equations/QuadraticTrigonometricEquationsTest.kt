@@ -168,7 +168,7 @@ class QuadraticTrigonometricEquationsTest {
             inputExpr = "2 [sin ^ 2][x] - 1 = 0"
 
             check {
-                toExpr = "SetSolution[x: {[/pi/ / 4] + [k * /pi/ / 2]}] GIVEN SetSolution[k: /reals/]"
+                toExpr = "SetSolution[x: {[/pi/ / 4] + [k * /pi/ / 2]}] GIVEN SetSolution[k: /integers/]"
 
                 step {
                     toExpr = "2 [sin ^ 2][x] = 1"
@@ -200,7 +200,7 @@ class QuadraticTrigonometricEquationsTest {
                     task {
                         taskId = "#3"
                         startExpr = "SetSolution[x: {-[/pi/ / 4] + 2 k * /pi/, [/pi/ / 4] + 2 k * /pi/," +
-                            " [3 /pi/ / 4] + 2 k * /pi/, [5 /pi/ / 4] + 2 k * /pi/}] GIVEN SetSolution[k: /reals/]"
+                            " [3 /pi/ / 4] + 2 k * /pi/, [5 /pi/ / 4] + 2 k * /pi/}] GIVEN SetSolution[k: /integers/]"
                     }
                 }
 
@@ -216,7 +216,8 @@ class QuadraticTrigonometricEquationsTest {
             inputExpr = "3 [tan ^ 2][x] = 9"
 
             check {
-                toExpr = "SetSolution[x: {-[/pi/ / 3] + k * /pi/, [/pi/ / 3] + k * /pi/}] GIVEN SetSolution[k: /reals/]"
+                toExpr = "SetSolution[x: {-[/pi/ / 3] + k * /pi/, [/pi/ / 3] + k * /pi/}] " +
+                    "GIVEN SetSolution[k: /integers/]"
 
                 step {
                     toExpr = "[tan ^ 2][x] = 3"
@@ -298,7 +299,7 @@ class QuadraticTrigonometricEquationsTest {
 
             check {
                 toExpr = "SetSolution[x: {-[/pi/ / 3] + 2 k * /pi/, [/pi/ / 2] + k * /pi/, [/pi/ / 3] + 2 k * /pi/}]" +
-                    " GIVEN SetSolution[k: /reals/]"
+                    " GIVEN SetSolution[k: /integers/]"
 
                 step {
                     toExpr = "cos[x] (2 cos[x] - 1) = 0"
@@ -342,7 +343,7 @@ class QuadraticTrigonometricEquationsTest {
 
             check {
                 toExpr = "SetSolution[x: {[/pi/ / 6] + 2 k * /pi/, [5 /pi/ / 6] + 2 k * /pi/, k * /pi/}] " +
-                    "GIVEN SetSolution[k: /reals/]"
+                    "GIVEN SetSolution[k: /integers/]"
 
                 step {
                     toExpr = "[sin ^ 2][x] - [1 / 2] sin[degree[ 180 ] - x] = 0"

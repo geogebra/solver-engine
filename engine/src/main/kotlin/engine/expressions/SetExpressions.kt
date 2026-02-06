@@ -188,13 +188,18 @@ abstract class SetExpression internal constructor(
 
     open fun intersect(other: SetExpression, comparator: Comparator<Expression>): SetExpression? {
         return try {
-            boundarySetIntersection(
-                listOf(
-                    toBoundarySet(comparator),
-                    other.toBoundarySet(comparator),
-                ),
-                comparator,
-            ).toSetExpression()
+            // Very often the two sets are the sane (eg. reals, integers)
+            if (this == other) {
+                this
+            } else {
+                boundarySetIntersection(
+                    listOf(
+                        toBoundarySet(comparator),
+                        other.toBoundarySet(comparator),
+                    ),
+                    comparator,
+                ).toSetExpression()
+            }
         } catch (e: IncomparableExpressionsException) {
             null
         }
