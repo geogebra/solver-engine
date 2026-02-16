@@ -18,6 +18,10 @@
 package methods.angles
 
 import engine.methods.testMethod
+import methods.algebra.AlgebraPlans
+import methods.constantexpressions.ConstantExpressionsExplanation
+import methods.constantexpressions.ConstantExpressionsPlans
+import methods.factor.FactorPlans
 import methods.simplify.SimplifyPlans
 import org.junit.jupiter.api.Test
 
@@ -54,6 +58,112 @@ class TrigonometricFunctionsPlansTest {
 
                 step {
                     toExpr = "0"
+                }
+            }
+        }
+
+        testMethod {
+            method = SimplifyPlans.SimplifyAlgebraicExpression
+            inputExpr = "-[sin ^ 2][x] - [cos ^ 2][x]"
+
+            check {
+                explanation {
+                    key = AnglesExplanation.ApplyPythagoreanIdentityAndSimplify
+                }
+
+                step {
+                    toExpr = "-([sin ^ 2][x] + [cos ^ 2][x])"
+                }
+
+                step {
+                    toExpr = "-1"
+                }
+            }
+        }
+    }
+
+    @Suppress("LongMethod")
+    @Test
+    fun reduceDoubleAngleTest() {
+        testMethod {
+            method = FactorPlans.FactorPolynomial
+            inputExpr = "sin[2 x] + sin[x]"
+
+            check {
+                toExpr = "sin[x] (2 cos[x] + 1)"
+
+                step {
+                    toExpr = "2 sin[x] * cos[x] + sin[x]"
+                }
+
+                step {
+                }
+            }
+        }
+
+        testMethod {
+            method = AlgebraPlans.ComputeDomainAndSimplifyAlgebraicExpression
+            inputExpr = "tan[2 x] + [tan[x] / 1 - [tan ^ 2][x]]"
+
+            check {
+                toExpr = "[3 tan[x] / 1 - [tan ^ 2][x]] GIVEN [tan ^ 2][x] != 1"
+
+                task {}
+
+                task {
+                    step {
+                        toExpr = "[2 tan[x] / 1 - [tan ^ 2][x]] + [tan[x] / 1 - [tan ^ 2][x]]"
+                    }
+
+                    step {
+                        toExpr = "[2 tan[x] + tan[x] / 1 - [tan ^ 2][x]]"
+                    }
+
+                    step {
+                        toExpr = "[3 tan[x] / 1 - [tan ^ 2][x]]"
+                    }
+                }
+
+                task {}
+            }
+        }
+
+        testMethod {
+            method = ConstantExpressionsPlans.SimplifyConstantExpression
+            inputExpr = "tan[degree[ 33 ]] + tan[degree[ 66 ]]"
+
+            check {
+                toExpr = "[3 tan[degree[ 33 ]] - [tan ^ 3][degree[ 33 ]] / 1 - [tan ^ 2][degree[ 33 ]]]"
+                explanation {
+                    key = ConstantExpressionsExplanation.SimplifyConstantExpression
+                }
+
+                step {
+                    toExpr = "tan[degree[ 33 ]] + [2 tan[degree[ 33 ]] / 1 - [tan ^ 2][degree[ 33 ]]]"
+                    explanation {
+                        key = AnglesExplanation.SimplifySumContainingDoubleAngles
+                    }
+                }
+
+                step {}
+            }
+        }
+
+        testMethod {
+            method = SimplifyPlans.SimplifyAlgebraicExpression
+            inputExpr = "cos[2 x] - sin[2 x] + 1 + 2 sin[x] * cos[x]"
+
+            check {
+                step {
+                    toExpr = "-sin[2 x] + 1 + <.[cos ^ 2][x] - [sin ^ 2][x] + 2 sin[x] * cos[x].>"
+                }
+
+                step {
+                    toExpr = "1 + <.-2 sin[x] * cos[x] + [cos ^ 2][x].> - [sin ^ 2][x] + 2 sin[x] * cos[x]"
+                }
+
+                step {
+                    toExpr = "1 + [cos ^ 2][x] - [sin ^ 2][x]"
                 }
             }
         }

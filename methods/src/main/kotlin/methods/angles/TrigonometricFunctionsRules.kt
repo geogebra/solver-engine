@@ -20,34 +20,59 @@ package methods.angles
 import engine.expressions.Constants.One
 import engine.expressions.Constants.Pi
 import engine.expressions.Constants.Two
+import engine.expressions.Expression
+import engine.expressions.Label
 import engine.expressions.fractionOf
 import engine.expressions.negOf
+import engine.expressions.powerOf
 import engine.expressions.productOf
 import engine.expressions.sumOf
+import engine.expressions.xp
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
 import engine.operators.TrigonometricFunctionType
 import engine.patterns.AnyPattern
+import engine.patterns.ArbitraryVariablePattern
+import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
+import engine.patterns.NaryPattern
+import engine.patterns.OptionalWrappingPattern
+import engine.patterns.Pattern
+import engine.patterns.SignedIntegerPattern
 import engine.patterns.TrigonometricExpressionPattern
+import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.commutativeSumContaining
+import engine.patterns.degreeOf
+import engine.patterns.fractionOf
+import engine.patterns.integerCondition
 import engine.patterns.negOf
+import engine.patterns.oneOf
+import engine.patterns.optional
 import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
+import engine.patterns.productContaining
+import engine.patterns.productOf
+import engine.patterns.sumContaining
 import engine.patterns.sumOf
+import engine.steps.Transformation
 import engine.steps.metadata.MetadataKey
 import engine.steps.metadata.metadata
+import engine.utility.isOdd
+import java.math.BigInteger
 
 enum class TrigonometricFunctionsRules(override val runner: Rule) : RunnerMethod {
     ApplyNegativeIdentityOfTrigFunction(applyNegativeIdentityOfTrigFunction),
     ApplyNegativeIdentityOfTrigFunctionInReverse(applyNegativeIdentityOfTrigFunctionInReverse),
     ApplyIdentityOfInverseTrigonometricFunction(applyIdentityOfInverseTrigonometricFunction),
     ApplyPythagoreanIdentity(applyPythagoreanIdentity),
-    ApplyCosineIdentity(applyCosineIdentity),
-    ApplySineIdentity(applySineIdentity),
-    ApplyTangentIdentity(applyTangentIdentity),
+    ApplyCosineSumIdentity(applyCosineSumIdentity),
+    ApplySineSumIdentity(applySineSumIdentity),
+    ApplyTangentSumIdentity(applyTangentSumIdentity),
+    ExpressAs2xArgument(expressAs2xArgument),
+    ApplyDoubleAngleIdentity(applyDoubleAngleIdentity),
     RearrangeAddendsInArgument(rearrangeAddendsInArgument),
+    AddLabelToSumContainingDoubleAngle(addLabelToSumContainingDoubleAngle),
 }
 
 private fun getNegativeIdentityExplanation(functionType: TrigonometricFunctionType): MetadataKey? =
@@ -235,7 +260,7 @@ private val applyPythagoreanIdentity = rule {
  * cos(x+y) --> cos x * cos y - sin x * sin y
  * cos(x-y) --> cos x * cos y + sin x * sin y
  */
-private val applyCosineIdentity = rule {
+private val applyCosineSumIdentity = rule {
     val term1 = AnyPattern()
     val term2 = AnyPattern()
     val wrappedTerm2 = optionalNegOf(term2)
@@ -277,7 +302,7 @@ private val applyCosineIdentity = rule {
  * sin (x-y) --> sin x * cos y - cos x * sin y
  * sin (x+y) --> sin x * cos y + cos x * sin y
  */
-private val applySineIdentity = rule {
+private val applySineSumIdentity = rule {
     val term1 = AnyPattern()
     val term2 = AnyPattern()
     val wrappedTerm2 = optionalNegOf(term2)
@@ -319,7 +344,7 @@ private val applySineIdentity = rule {
  * tan (x - y) --> [ tan x - tan y / 1 + tan x * tan y ]
  * tan (x + y) --> [ tan x + tan y / 1 - tan x * tan y ]
  */
-private val applyTangentIdentity = rule {
+private val applyTangentSumIdentity = rule {
     val term1 = AnyPattern()
     val term2 = AnyPattern()
     val wrappedTerm2 = optionalNegOf(term2)
@@ -363,6 +388,156 @@ private val applyTangentIdentity = rule {
     }
 }
 
+// sin[kx] --> sin[2 * [k/2] * x]
+private val expressAs2xArgument = rule {
+    val constantTerm = UnsignedIntegerPattern()
+    val variableTerm = ArbitraryVariablePattern()
+    val degreeTerm = degreeOf(constantTerm)
+
+    val argument = oneOf(
+        constantTerm,
+        productOf(constantTerm, variableTerm),
+        degreeTerm,
+    )
+
+    onPattern(argument) {
+        val constant = getValue(constantTerm)
+
+        if (constant.isOdd() || (constant == BigInteger.TWO && !isBound(variableTerm))) {
+            return@onPattern null
+        }
+
+        val restConstant = constant.div(BigInteger.TWO)
+
+        val terms = buildList {
+            add(Two)
+            if (isBound(degreeTerm)) {
+                add(engine.expressions.degreeOf(xp(restConstant)))
+            } else if (restConstant != BigInteger.ONE) {
+                add(xp(restConstant))
+            }
+            if (isBound(variableTerm)) {
+                add(get(variableTerm))
+            }
+        }
+
+        ruleResult(
+            toExpr = transform(
+                argument,
+                productOf(terms),
+            ),
+            explanation = metadata(Explanation.ExtractTwoFromArgument),
+        )
+    }
+}
+
+// Use double angle identity to simplify
+private val applyDoubleAngleIdentity = rule {
+    val twoTerm = FixedPattern(Two)
+    val constantTerm = optional(SignedIntegerPattern(), ::degreeOf)
+    val variable = ArbitraryVariablePattern()
+    val argument = oneOf(
+        productOf(twoTerm, constantTerm),
+        productOf(twoTerm, variable),
+        productOf(twoTerm, constantTerm, variable),
+    )
+
+    val trigFunction = TrigonometricExpressionPattern(
+        argument,
+        listOf(
+            TrigonometricFunctionType.Sin,
+            TrigonometricFunctionType.Cos,
+            TrigonometricFunctionType.Tan,
+            TrigonometricFunctionType.Cot,
+        ),
+    )
+
+    onPattern(trigFunction) {
+        val angle = distribute(
+            buildList {
+                if (isBound(constantTerm)) add(constantTerm)
+                if (isBound(variable)) add(variable)
+            },
+        ).let {
+            when (it.size) {
+                1 -> it[0]
+                else -> productOf(it)
+            }
+        }
+
+        val two = distribute(twoTerm)
+
+        val (toExpr, explanation) = when (getFunctionType(trigFunction)) {
+            TrigonometricFunctionType.Sin ->
+                productOf(
+                    two,
+                    wrapWithTrigonometricFunction(
+                        trigFunction,
+                        angle,
+                        TrigonometricFunctionType.Sin,
+                    ),
+                    wrapWithTrigonometricFunction(
+                        trigFunction,
+                        angle,
+                        TrigonometricFunctionType.Cos,
+                    ),
+                ) to Explanation.ApplySineDoubleAngleIdentity
+            TrigonometricFunctionType.Cos ->
+                sumOf(
+                    powerOf(
+                        wrapWithTrigonometricFunction(
+                            trigFunction,
+                            angle,
+                            TrigonometricFunctionType.Cos,
+                        ),
+                        two,
+                    ),
+                    negOf(
+                        powerOf(
+                            wrapWithTrigonometricFunction(
+                                trigFunction,
+                                angle,
+                                TrigonometricFunctionType.Sin,
+                            ),
+                            two,
+                        ),
+                    ),
+                ) to Explanation.ApplyCosineDoubleAngleIdentity
+            TrigonometricFunctionType.Tan -> fractionOf(
+                productOf(
+                    two,
+                    wrapWithTrigonometricFunction(
+                        trigFunction,
+                        angle,
+                    ),
+                ),
+                sumOf(
+                    One,
+                    negOf(
+                        powerOf(
+                            wrapWithTrigonometricFunction(
+                                trigFunction,
+                                angle,
+                            ),
+                            Two,
+                        ),
+                    ),
+                ),
+            ) to Explanation.ApplyTangentDoubleAngleIdentity
+            else -> null to null
+        }
+
+        if (toExpr == null || explanation == null) {
+            return@onPattern null
+        }
+
+        ruleResult(
+            toExpr,
+            metadata(explanation),
+        )
+    }
+}
+
 /**
  * sin(-x + y) --> sin(y - x)
  */
@@ -383,3 +558,125 @@ private val rearrangeAddendsInArgument = rule {
         }
     }
 }
+
+// Add a label to the expression containing the double angle in a sum, so it can be easily identified in follow-up steps
+private val addLabelToSumContainingDoubleAngle = rule {
+    val constant1 = UnsignedIntegerPattern()
+    val constant2 = UnsignedIntegerPattern()
+
+    val degree1 = degreeOf(constant1)
+    val degree2 = degreeOf(constant2)
+
+    val variable1 = ArbitraryVariablePattern()
+    val variable2 = ArbitraryVariablePattern()
+
+    val trigFunctionConst1 = TrigonometricExpressionPattern(constant1)
+    val trigFunctionConst2 = TrigonometricExpressionPattern(constant2)
+
+    val trigFunctionDegree1 = TrigonometricExpressionPattern(degree1)
+    val trigFunctionDegree2 = TrigonometricExpressionPattern(degree2)
+
+    val trigFunctionVarKX = TrigonometricExpressionPattern(productOf(constant1, variable1))
+    val trigFunctionVar2KX = TrigonometricExpressionPattern(productOf(constant2, variable2))
+
+    val (sumWithOnlyConstant, sumWithDegree, sumWithVariableAndConstant) = listOf(
+        trigFunctionConst1 to trigFunctionConst2,
+        trigFunctionDegree1 to trigFunctionDegree2,
+        trigFunctionVarKX to trigFunctionVar2KX,
+    ).map {
+        commutativeSumContaining(
+            optionalPatternContaining(it.first),
+            optionalPatternContaining(it.second),
+        )
+    }
+
+    val trigFunctionVarX = TrigonometricExpressionPattern(variable1)
+    val trigFunctionVar2X = TrigonometricExpressionPattern(
+        productOf(FixedPattern(Two), variable2),
+    )
+
+    val sumWithConstant = oneOf(
+        sumWithOnlyConstant,
+        sumWithDegree,
+        sumWithVariableAndConstant,
+    )
+
+    val condition = integerCondition(
+        constant1,
+        constant2,
+    ) { c1, c2 ->
+        c1 * BigInteger.TWO == c2
+    }
+
+    val sumWithCondition = ConditionPattern(
+        sumWithConstant,
+        condition,
+    )
+
+    val sumWithoutConstant = commutativeSumContaining(
+        optionalPatternContaining(trigFunctionVar2X),
+        optionalPatternContaining(trigFunctionVarX),
+    )
+
+    val pattern = oneOf(
+        sumWithoutConstant,
+        sumWithCondition,
+    )
+
+    onPattern(pattern) {
+        if (isBound(variable1) && get(variable1) != get(variable2)) {
+            return@onPattern null
+        }
+
+        fun addLabelToExpr(parent: NaryPattern, expr: Expression) =
+            get(parent).substitute(
+                expr,
+                expr.withLabel(Label.A),
+            )
+
+        val toExpr = when {
+            isBound(sumWithOnlyConstant) -> addLabelToExpr(
+                sumWithOnlyConstant,
+                get(trigFunctionConst2),
+            )
+            isBound(sumWithVariableAndConstant) -> addLabelToExpr(
+                sumWithVariableAndConstant,
+                get(trigFunctionVar2KX),
+            )
+            isBound(sumWithoutConstant) -> addLabelToExpr(
+                sumWithoutConstant,
+                get(trigFunctionVar2X),
+            )
+            isBound(sumWithDegree) -> addLabelToExpr(
+                sumWithDegree,
+                get(trigFunctionDegree2),
+            )
+            else -> return@onPattern null
+        }
+
+        ruleResult(
+            toExpr,
+            explanation = metadata(Explanation.AddLabelToSumContainingDoubleAngle),
+            tags = listOf(Transformation.Tag.InvisibleChange),
+        )
+    }
+}
+
+// This is used only for double angles, instead of the FindPattern so that we don't go
+// unnecessarily deep
+fun optionalPatternContaining(pattern: Pattern) =
+    OptionalWrappingPattern(pattern) {
+        powerOf(pattern, AnyPattern())
+    }.let { power ->
+        optionalNegOf(
+            OptionalWrappingPattern(
+                oneOf(
+                    power,
+                    sumContaining(power),
+                    productContaining(power),
+                ),
+            ) {
+                fractionOf(it, AnyPattern())
+            },
+        )
+    }

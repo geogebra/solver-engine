@@ -157,6 +157,8 @@ open class MappedExpressionBuilder(
 
     fun distribute(vararg expressionProviders: ExpressionProvider) = expressionProviders.map { distribute(it) }
 
+    fun distribute(expressionProviders: List<ExpressionProvider>) = expressionProviders.map { distribute(it) }
+
     fun cancel(expressionProvider: ExpressionProvider, inExpression: Expression): Expression {
         val boundExpressions = expressionProvider.getBoundExprs(match)
         return inExpression.withOrigin(

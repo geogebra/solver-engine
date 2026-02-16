@@ -150,6 +150,13 @@ enum class FractionArithmeticExplanation : CategorisedMetadataKey {
     AddRootAndFraction,
 
     /**
+     * Add a trigonometric expression to a fraction
+     *
+     * E.g tan[degree[33]] + [ 2 tan[degree[33]] / 1 - []tan^2][degree[33]]]
+     */
+    AddTrigonometricExpressionAndFraction,
+
+    /**
      * Add a term to a fraction
      *
      * E.g. x + (x + x^2) / 5 -> (6x + x^2) / 5

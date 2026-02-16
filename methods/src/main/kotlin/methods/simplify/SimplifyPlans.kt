@@ -29,6 +29,7 @@ import engine.methods.stepsproducers.steps
 import engine.patterns.condition
 import engine.steps.metadata.metadata
 import methods.algebra.AlgebraPlans
+import methods.angles.TrigonometricFunctionsPlans
 import methods.angles.TrigonometricFunctionsRules
 import methods.angles.createUseTrigonometricIdentityAndSimplifyPlan
 import methods.collecting.createCollectLikeTrigonometricTermsAndSimplifyPlan
@@ -100,6 +101,7 @@ val useTrigonometricIdentityToExpand = createUseTrigonometricIdentityAndSimplify
 
 val collectLikeTrigonometricTerms = createCollectLikeTrigonometricTermsAndSimplifyPlan(simplificationSteps)
 
+@Suppress("LongMethod")
 private fun algebraicSimplificationSteps(
     addRationalExpressions: Boolean = true,
     expandTrigonometricFunctions: Boolean = true,
@@ -107,12 +109,14 @@ private fun algebraicSimplificationSteps(
     return steps {
         whilePossible {
             firstOf {
-                // Try to simplify the whole expression first
-                option {
-                    deeply {
-                        firstOf {
-                            option(simpleTidyUpSteps)
-                            option(collectLikeTrigonometricTerms)
+                if (!expandTrigonometricFunctions) {
+                    // Try to simplify the whole expression first when not expanding trig expressions
+                    option {
+                        deeply {
+                            firstOf {
+                                option(simpleTidyUpSteps)
+                                option(collectLikeTrigonometricTerms)
+                            }
                         }
                     }
                 }
@@ -120,6 +124,12 @@ private fun algebraicSimplificationSteps(
                 option {
                     deeply(deepFirst = true) {
                         firstOf {
+                            if (expandTrigonometricFunctions) {
+                                option(TrigonometricFunctionsRules.ApplyNegativeIdentityOfTrigFunction)
+                                option(useTrigonometricIdentityToExpand)
+                                option(TrigonometricFunctionsPlans.ReduceDoubleAngleInSum)
+                            }
+
                             option {
                                 check { !it.isConstant() }
                                 firstOf {
@@ -154,11 +164,6 @@ private fun algebraicSimplificationSteps(
                                 option(RationalExpressionsPlans.AddLikeRationalExpressions)
                                 option(RationalExpressionsPlans.AddTermAndRationalExpression)
                                 option(RationalExpressionsPlans.AddRationalExpressions)
-                            }
-
-                            if (expandTrigonometricFunctions) {
-                                option(TrigonometricFunctionsRules.ApplyNegativeIdentityOfTrigFunction)
-                                option(useTrigonometricIdentityToExpand)
                             }
                         }
                     }

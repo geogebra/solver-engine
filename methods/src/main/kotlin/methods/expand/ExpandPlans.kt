@@ -20,6 +20,7 @@ package methods.expand
 import engine.context.BooleanSetting
 import engine.context.Setting
 import engine.expressions.Constants
+import engine.expressions.containsTrigExpression
 import engine.methods.Method
 import engine.methods.plan
 import engine.methods.stepsproducers.StepsProducer
@@ -92,7 +93,15 @@ class ExpandAndSimplifier(simplificationSteps: StepsProducer) : ExpandAndSimplif
                 case(BooleanSetting.False, ExpandRules.ExpandBinomialSquaredUsingIdentity)
             }
 
-            optionally(simplificationSteps)
+            optionally {
+                // This is not the nicest solution, but necessary as the only possible simplification in this case
+                // would be applying the pythagorean identity, and we would prefer simplifying the whole expression
+                // first, not only the expanded binomial.
+                check {
+                    !it.containsTrigExpression()
+                }
+                apply(simplificationSteps)
+            }
         }
     }
 

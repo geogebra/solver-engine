@@ -27,6 +27,7 @@ import engine.expressions.IntegerFactorView
 import engine.expressions.Label
 import engine.expressions.Minus
 import engine.expressions.Power
+import engine.expressions.Product
 import engine.expressions.Sum
 import engine.expressions.SumView
 import engine.expressions.View
@@ -180,7 +181,12 @@ enum class FactorRules(override val runner: Rule) : RunnerMethod {
             onPattern(polynomial) {
                 val polynomialVal = get(polynomial) as Sum
                 val leadingCoefficient = leadingCoefficientOfPolynomial(context, polynomialVal)
-                if ((leadingCoefficient == null) || (leadingCoefficient !is Minus)) {
+                val leadingCoefficientIsNegative = leadingCoefficient is Minus
+                val allTermsNegative = polynomialVal.children.all {
+                    it is Minus || (it is Product && it.children[0] is Minus)
+                }
+
+                if (!leadingCoefficientIsNegative && !allTermsNegative) {
                     return@onPattern null
                 }
 

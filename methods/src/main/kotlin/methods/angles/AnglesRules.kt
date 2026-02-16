@@ -373,37 +373,28 @@ private val deriveTrigonometricFunctionFromPrimitiveFunctions = rule {
     val argumentPattern = AnyPattern()
     val functionPattern = TrigonometricExpressionPattern(
         argumentPattern,
-        listOf(TrigonometricFunctionType.Sec, TrigonometricFunctionType.Csc),
+        listOf(TrigonometricFunctionType.Cot, TrigonometricFunctionType.Sec, TrigonometricFunctionType.Csc),
     )
 
     onPattern(functionPattern) {
         val match = get(functionPattern) as TrigonometricExpression
 
-        val toExpr = when (getFunctionType(functionPattern)) {
-            TrigonometricFunctionType.Sec -> fractionOf(
-                Constants.One,
-                TrigonometricExpression(
-                    operand = move(argumentPattern),
-                    functionType = TrigonometricFunctionType.Cos,
-                    powerInside = match.powerInside,
-                    inverseNotation = match.inverseNotation,
-                ),
-            )
-            TrigonometricFunctionType.Csc -> fractionOf(
-                Constants.One,
-                TrigonometricExpression(
-                    operand = move(argumentPattern),
-                    functionType = TrigonometricFunctionType.Sin,
-                    powerInside = match.powerInside,
-                    inverseNotation = match.inverseNotation,
-                ),
-            )
-            else -> null
+        val functionType = when (getFunctionType(functionPattern)) {
+            TrigonometricFunctionType.Sec -> TrigonometricFunctionType.Cos
+            TrigonometricFunctionType.Csc -> TrigonometricFunctionType.Sin
+            TrigonometricFunctionType.Cot -> TrigonometricFunctionType.Tan
+            else -> return@onPattern null
         }
 
-        if (toExpr == null) {
-            return@onPattern null
-        }
+        val toExpr = fractionOf(
+            Constants.One,
+            TrigonometricExpression(
+                operand = move(argumentPattern),
+                functionType = functionType,
+                powerInside = match.powerInside,
+                inverseNotation = match.inverseNotation,
+            ),
+        )
 
         ruleResult(
             toExpr = toExpr,

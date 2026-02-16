@@ -398,7 +398,8 @@ class ExpandPolynomialsTest {
                 }
 
                 step {
-                    fromExpr = "[(2 x) ^ 2] + [1 ^ 2] + [(sqrt[3]) ^ 2] + 2 * 2 x * 1 + 2 * 1 * sqrt[3] + 2 * sqrt[3] * 2 x"
+                    fromExpr =
+                        "[(2 x) ^ 2] + [1 ^ 2] + [(sqrt[3]) ^ 2] + 2 * 2 x * 1 + 2 * 1 * sqrt[3] + 2 * sqrt[3] * 2 x"
                     toExpr = "4 [x ^ 2] + (4 + 4 sqrt[3]) x + 4 + 2 sqrt[3]"
                     explanation {
                         key = SimplifyExplanation.SimplifyPolynomialExpression
@@ -981,6 +982,65 @@ class ExpandPolynomialsTest {
                             key = SimplifyExplanation.SimplifyPolynomialExpression
                         }
                     }
+                }
+            }
+        }
+
+    fun `expand binomial square`() =
+        testMethod {
+            method = PolynomialsPlans.ExpandPolynomialExpression
+            inputExpr = "cos[2 x] - sin[2 x] + [(sin[x] + cos[x]) ^ 2]"
+
+            check {
+                toExpr = "2 [cos ^ 2][x]"
+                explanation {
+                    key = PolynomialsExplanation.ExpandPolynomialExpression
+                }
+
+                step {
+                    toExpr = "cos[2 x] - sin[2 x] + <.[sin ^ 2][x] + 2 * sin[x] * cos[x] + [cos ^ 2][x].>"
+                    explanation {
+                        key = ExpandExplanation.ExpandBinomialSquaredAndSimplify
+                    }
+                }
+
+                step {
+                    toExpr = "cos[2 x] - sin[2 x] + [sin ^ 2][x] + 2 * sin[x] * cos[x] + [cos ^ 2][x]"
+                }
+
+                step {
+                    toExpr = "cos[2 x] - sin[2 x] + [sin ^ 2][x] + 2 sin[x] * cos[x] + [cos ^ 2][x]"
+                }
+
+                step {
+                    toExpr =
+                        "-sin[2 x] + <.[cos ^ 2][x] - [sin ^ 2][x] + [sin ^ 2][x].> + 2 sin[x] * cos[x] + [cos ^ 2][x]"
+                }
+
+                step {
+                    toExpr = "-sin[2 x] + [cos ^ 2][x] - [sin ^ 2][x] + [sin ^ 2][x] + 2 sin[x] * cos[x] + [cos ^ 2][x]"
+                }
+
+                step {
+                    toExpr =
+                        "<.-2 sin[x] * cos[x] + [cos ^ 2][x].> - [sin ^ 2][x] + [sin ^ 2][x] + 2 sin[x] * cos[x] + [cos ^ 2][x]"
+                }
+
+                step {
+                    toExpr =
+                        "-2 sin[x] * cos[x] + [cos ^ 2][x] - [sin ^ 2][x] + [sin ^ 2][x] + 2 sin[x] * cos[x] + [cos ^ 2][x]"
+                }
+
+                step {
+                    toExpr = "[cos ^ 2][x] - [sin ^ 2][x] + [sin ^ 2][x] + [cos ^ 2][x]"
+                }
+
+                step {
+                    toExpr = "[cos ^ 2][x] + [cos ^ 2][x]"
+                }
+
+                step {
+                    toExpr = "2 [cos ^ 2][x]"
                 }
             }
         }

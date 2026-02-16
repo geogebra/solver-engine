@@ -634,7 +634,7 @@ function treeToLatexInner(
         n,
       )}`;
     case 'Degree':
-      return `${rec(n.operands[0], n)}^{\\circ}`;
+      return tfd(`${rec(n.operands[0], n)}^{\\circ}`);
   }
 }
 

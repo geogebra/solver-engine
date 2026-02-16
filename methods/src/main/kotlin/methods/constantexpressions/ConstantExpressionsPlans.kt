@@ -17,9 +17,13 @@
 
 package methods.constantexpressions
 
+import engine.expressions.Expression
 import engine.expressions.Fraction
 import engine.expressions.Minus
 import engine.expressions.Power
+import engine.expressions.Product
+import engine.expressions.TrigonometricConstants
+import engine.expressions.TrigonometricExpression
 import engine.expressions.ValueExpression
 import engine.expressions.containsDecimals
 import engine.expressions.containsFractions
@@ -53,13 +57,13 @@ import engine.patterns.productContaining
 import engine.utility.divides
 import methods.angles.AnglesPlans
 import methods.angles.AnglesRules
+import methods.angles.TrigonometricFunctionsPlans
 import methods.angles.TrigonometricFunctionsRules
 import methods.angles.createEvaluateInverseTrigonometricFunctionExactlyPlan
 import methods.angles.createEvaluateTrigonometricExpressionPlan
 import methods.angles.createUsePythagoreanIdentityAndSimplifyPlan
 import methods.angles.createUseTrigonometricIdentityAndSimplifyPlan
 import methods.angles.simplifyProductContainingTrigonometricExpressions
-import methods.collecting.CollectingRules
 import methods.collecting.createCollectLikeRationalPowersAndSimplifyPlan
 import methods.collecting.createCollectLikeRootsAndSimplifyPlan
 import methods.collecting.createCollectLikeTrigonometricTermsAndSimplifyPlan
@@ -73,6 +77,7 @@ import methods.fractionarithmetic.addIntegerAndFraction
 import methods.fractionarithmetic.addIntegerWithUnitAndFraction
 import methods.fractionarithmetic.createAddFractionsPlan
 import methods.fractionarithmetic.createAddRootAndFractionPlan
+import methods.fractionarithmetic.createAddTrigonometricExpressionAndFractionPlan
 import methods.fractionarithmetic.normalizeFractionsWithinFractions
 import methods.fractionarithmetic.normalizeNegativeSignsInFraction
 import methods.fractionroots.FractionRootsPlans
@@ -419,8 +424,6 @@ val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
         option { deeply(AnglesPlans.ReduceAngleToUnitCircle) }
         option { deeply(AnglesRules.SubstituteAngleWithCoterminalAngleFromUnitCircle) }
 
-        option { deeply(collectLikeTrigonometricTermsAndSimplify) }
-
         option(trigExpressionSimplificationSteps)
 
         // It would be better to move this out of constantSimplificationSteps altogether and do it first but the
@@ -514,13 +517,27 @@ val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
         option { deeply(UnitsRules.EvaluateSignedIntegerWithUnitAddition) }
         option { deeply(UnitsRules.EvaluateUnitProductAndDivision) }
 
-        option { deeply(CollectingRules.CollectLikeTermsWithPi) }
+        option { deeply(addTrigonometricExpressionAndFraction) }
+        option {
+            deeply {
+                check { it.onlyContainsFunctionsOfMainAngles() }
+                apply(collectLikeTrigonometricTermsAndSimplify)
+            }
+        }
 
         option { deeply(evaluateTrigonometricExpression) }
         option { deeply(evaluateInverseFunctionOfMainAngle) }
 
+        option {
+            deeply(TrigonometricFunctionsPlans.ReduceDoubleAngleInSum)
+        }
+
         option { deeply(ExpandRules.DistributeNegativeOverBracket) }
         option { deeply(expandConstantExpression) }
+
+        // In case a constant trigonometric expression can't be evaluated we want to expand brackets before
+        // collecting
+        option { deeply(collectLikeTrigonometricTermsAndSimplify) }
 
         option { deeply(reorderProductSteps) }
         option { deeply(NormalizationRules.NormalizeProductSigns) }
@@ -557,6 +574,8 @@ private val evaluateInverseFunctionOfMainAngle =
 private val expandAndSimplifier = ExpandAndSimplifier(ConstantExpressionsPlans.SimplifyConstantExpression)
 
 private val expandConstantExpression = steps {
+    // We don't want to expand constant trigonometric expressions as they aren't easily simplified and behave more like
+    // variables
     check { it.isConstant() }
     apply(expandAndSimplifier.steps)
 }
@@ -574,3 +593,26 @@ private val addConstantFractions = run {
 
 private val addRootAndFraction =
     createAddRootAndFractionPlan(steps { whilePossible(constantSimplificationSteps) })
+
+private val addTrigonometricExpressionAndFraction = createAddTrigonometricExpressionAndFractionPlan(
+    steps { whilePossible(constantSimplificationSteps) },
+)
+
+fun Expression.onlyContainsFunctionsOfMainAngles(): Boolean =
+    if (this is TrigonometricExpression) {
+        TrigonometricConstants.MainAnglesRadians.contains(this.firstChild) ||
+            TrigonometricConstants.MainAnglesDegrees.contains(this.firstChild)
+    } else if (this.childCount > 0) {
+        children.all { it.onlyContainsFunctionsOfMainAngles() }
+    } else {
+        true
+    }
+
+fun Expression.trigFunctionCanBeCollected(): Boolean =
+    this.children.all {
+        it is TrigonometricExpression ||
+            it is Product && it.children.any { factor ->
+                factor is TrigonometricExpression
+            } ||
+            !it.containsTrigExpression()
+    }

@@ -11,6 +11,8 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Added
 
+- Reduce double angle arguments in trigonometric expressions. (PLUT-1075)
+
 ### Fixed
 
 ### Changed

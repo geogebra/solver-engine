@@ -306,7 +306,7 @@ internal data class UnitExpressionOperator(
 
     override val precedence = FUNCTION_LIKE_PRECEDENCE
 
-    override fun <T> readableString(child: T): String = "$unit[$child]"
+    override fun <T> readableString(child: T): String = "${name.lowercase()}[$child]"
 
     override fun latexString(ctx: RenderContext, child: LatexRenderable): String =
         "${child.toLatexString(ctx)} \\text{[$unit]}"

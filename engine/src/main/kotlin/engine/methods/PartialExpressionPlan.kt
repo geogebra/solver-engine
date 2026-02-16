@@ -79,8 +79,15 @@ class PartialExpressionPlan(
                 },
             )
 
-            val firstChildIndex = pattern.getMatchedOrigins(match).minOf { (it as Child).index }
-            val steps = stepsProducer.produceSteps(ctx, builder.simpleExpression.nthChild(firstChildIndex))
+            // Sometimes we substitute the expression into the end of the expression, so just looking at the
+            // original indices is not a good solution. It's better to just scan through the children and get the one
+            // that is partial
+            val expression = builder.simpleExpression
+            val partialSubExpression = expression.children.first {
+                it.decorators.contains(Decorator.PartialBracket)
+            }
+
+            val steps = stepsProducer.produceSteps(ctx, partialSubExpression)
 
             if (steps != null) {
                 builder.addSteps(steps)

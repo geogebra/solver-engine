@@ -78,36 +78,37 @@ class TrigonometricFunctionsRulesTest {
     fun testApplyTrigonometricFunctionIdentity() {
         testRule(
             "cos[x + y]",
-            TrigonometricFunctionsRules.ApplyCosineIdentity,
+            TrigonometricFunctionsRules.ApplyCosineSumIdentity,
             "cos[x] * cos[y] - sin[x] * sin[y]",
         )
         testRule(
             "cos[x - y]",
-            TrigonometricFunctionsRules.ApplyCosineIdentity,
+            TrigonometricFunctionsRules.ApplyCosineSumIdentity,
             "cos[x] * cos[y] + sin[x] * sin[y]",
         )
         testRule(
             "sin[x - y]",
-            TrigonometricFunctionsRules.ApplySineIdentity,
+            TrigonometricFunctionsRules.ApplySineSumIdentity,
             "sin[x] * cos[y] - cos[x] * sin[y]",
         )
         testRule(
             "sin[x + y]",
-            TrigonometricFunctionsRules.ApplySineIdentity,
+            TrigonometricFunctionsRules.ApplySineSumIdentity,
             "sin[x] * cos[y] + cos[x] * sin[y]",
         )
         testRule(
             "tan[x - y]",
-            TrigonometricFunctionsRules.ApplyTangentIdentity,
+            TrigonometricFunctionsRules.ApplyTangentSumIdentity,
             "[tan[x] - tan[y] / 1 + tan[x] * tan [y]]",
         )
         testRule(
             "tan[x + y]",
-            TrigonometricFunctionsRules.ApplyTangentIdentity,
+            TrigonometricFunctionsRules.ApplyTangentSumIdentity,
             "[tan[x] + tan[y] / 1 - tan[x] * tan [y]]",
         )
     }
 
+    @Test
     fun testApplyInverseTrigonometricFunctionIdentity() {
         testRule(
             "arcsin[sin[x]]",
@@ -118,6 +119,25 @@ class TrigonometricFunctionsRulesTest {
             "arcsin[cos[x]]",
             TrigonometricFunctionsRules.ApplyIdentityOfInverseTrigonometricFunction,
             null,
+        )
+    }
+
+    @Test
+    fun testApplyDoubleAngleIdentity() {
+        testRule(
+            "sin[2x]",
+            TrigonometricFunctionsRules.ApplyDoubleAngleIdentity,
+            "2 sin[x] cos[x]",
+        )
+        testRule(
+            "cos[2x]",
+            TrigonometricFunctionsRules.ApplyDoubleAngleIdentity,
+            "[cos^2][x] - [sin^2][x]",
+        )
+        testRule(
+            "tan[2x]",
+            TrigonometricFunctionsRules.ApplyDoubleAngleIdentity,
+            "[ 2 tan[x] / 1 - [tan^2][x] ]",
         )
     }
 }

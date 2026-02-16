@@ -40,6 +40,7 @@ import engine.patterns.ConstantPattern
 import engine.patterns.IntegerFractionPattern
 import engine.patterns.Pattern
 import engine.patterns.SignedIntegerPattern
+import engine.patterns.TrigonometricExpressionPattern
 import engine.patterns.UnitExpressionPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.VariableExpressionPattern
@@ -359,6 +360,34 @@ fun createAddRootAndFractionPlan(numeratorSimplificationSteps: StepsProducer): C
         )
         val fraction = optionalNegOf(fractionOf(numerator, UnsignedIntegerPattern()))
         pattern = commutativeSumContaining(rootWithCoefficient, fraction)
+
+        partialExpressionSteps {
+            apply(FractionArithmeticRules.BringToCommonDenominatorWithNonFractionalTerm)
+            apply(addFractionSteps)
+        }
+    }
+}
+
+/**
+ * Only add a trigonometric function to a fraction if that fraction already contains the same function in
+ * its numerator (i.e. don't add sin[degree[33]] and [1 / 2] but do add sin[degree[33]] and [1 + sin[degree[33]] / 2])
+ */
+fun createAddTrigonometricExpressionAndFractionPlan(numeratorSimplificationSteps: StepsProducer): CompositeMethod {
+    val addFractionSteps = createAddFractionsSteps(numeratorSimplificationSteps)
+
+    return plan {
+        explanation = Explanation.AddTrigonometricExpressionAndFraction
+
+        val trigFunction = TrigonometricExpressionPattern(AnyPattern())
+        val functionWithCoefficient = withOptionalIntegerCoefficient(trigFunction)
+        val functionWithAnotherCoefficient = withOptionalIntegerCoefficient(trigFunction)
+
+        val numerator = oneOf(
+            functionWithAnotherCoefficient,
+            sumContaining(functionWithAnotherCoefficient),
+        )
+        val fraction = optionalNegOf(fractionOf(numerator, ConstantPattern()))
+        pattern = commutativeSumContaining(functionWithCoefficient, fraction)
 
         partialExpressionSteps {
             apply(FractionArithmeticRules.BringToCommonDenominatorWithNonFractionalTerm)

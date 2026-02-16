@@ -197,6 +197,21 @@ enum class AnglesExplanation : CategorisedMetadataKey {
     ApplyTangentSumIdentity,
 
     /**
+     * Apply the sine double-angle identity
+     */
+    ApplySineDoubleAngleIdentity,
+
+    /**
+     * Apply the cosine double-angle identity
+     */
+    ApplyCosineDoubleAngleIdentity,
+
+    /**
+     * Apply the tangent double-angle identity
+     */
+    ApplyTangentDoubleAngleIdentity,
+
+    /**
      * Apply trigonometric identity and simplify
      */
     ApplyTrigonometricIdentityAndSimplify,
@@ -235,6 +250,21 @@ enum class AnglesExplanation : CategorisedMetadataKey {
      * Compute domain of expression containing trigonometric functions
      */
     ComputeDomainOfTrigonometricExpression,
+
+    /**
+     * Simplify sum of trigonometric functions, where the argument of one is double the argument of the other
+     */
+    SimplifySumContainingDoubleAngles,
+
+    /**
+     * Reorder addends in sum containing double angle
+     */
+    AddLabelToSumContainingDoubleAngle,
+
+    /**
+     * Extract 2 from Trigonometric Function argument
+     */
+    ExtractTwoFromArgument,
 
     ;
 

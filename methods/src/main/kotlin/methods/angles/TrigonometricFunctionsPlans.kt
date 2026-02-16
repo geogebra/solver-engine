@@ -17,21 +17,172 @@
 
 package methods.angles
 
+import engine.expressions.Constants.Pi
 import engine.expressions.Constants.Two
 import engine.expressions.Expression
+import engine.expressions.Label
+import engine.expressions.Minus
 import engine.expressions.TrigonometricExpression
+import engine.expressions.Variable
+import engine.expressions.fractionOf
+import engine.expressions.inequationOf
+import engine.expressions.productOf
+import engine.methods.CompositeMethod
+import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.StepsProducer
+import engine.methods.stepsproducers.steps
+import engine.methods.taskSet
 import engine.operators.TrigonometricFunctionType
 import engine.patterns.AnyPattern
+import engine.patterns.ArbitraryVariablePattern
 import engine.patterns.FixedPattern
 import engine.patterns.TrigonometricExpressionPattern
+import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.commutativeSumContaining
+import engine.patterns.degreeOf
+import engine.patterns.negOf
 import engine.patterns.oneOf
+import engine.patterns.optional
 import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.sumOf
+import engine.steps.metadata.metadata
+import methods.algebra.AlgebraExplanation
 import methods.factor.FactorRules
+import methods.general.GeneralRules
+import methods.inequations.InequationsPlans
+import methods.solvable.computeOverallIntersectionSolution
+import methods.solvable.findUnusedVariableLetter
+
+enum class TrigonometricFunctionsPlans(override val runner: CompositeMethod) : RunnerMethod {
+    ComputeDomainOfTrigonometricExpression(
+        taskSet {
+            explanation = Explanation.ComputeDomainOfTrigonometricExpression
+
+            val solveInequationInOneVariableSteps = steps {
+                inContext({ copy(solutionVariables = it.firstChild.variables.toList()) }) {
+                    apply(InequationsPlans.SolveInequation)
+                }
+            }
+
+            tasks {
+                val variable = Variable(findUnusedVariableLetter(expression))
+
+                val rhs = engine.expressions.sumOf(
+                    fractionOf(Pi, Two),
+                    productOf(variable, Pi),
+                )
+
+                val functions = findFunctionsRequiringDomainCheck(expression).filter {
+                    !it.isConstant() && it.firstChild !is Variable
+                }.distinct().toList()
+
+                if (functions.isEmpty()) {
+                    return@tasks null
+                }
+
+                val constraints = functions.map {
+                    taskWithOptionalSteps(
+                        startExpr = inequationOf(
+                            it.firstChild,
+                            rhs,
+                        ),
+                        explanation = metadata(Explanation.ExpressionMustNotBeUndefined),
+                        stepsProducer = solveInequationInOneVariableSteps,
+                    )
+                }
+
+                val overallSolution = computeOverallIntersectionSolution(
+                    constraints.map { it.result },
+                )
+
+                task(
+                    startExpr = overallSolution,
+                    explanation = metadata(AlgebraExplanation.CollectDomainRestrictions),
+                )
+
+                allTasks()
+            }
+        },
+    ),
+
+    ReduceDoubleAngleInSum(
+        plan {
+            val constant1 = optional(UnsignedIntegerPattern(), ::degreeOf)
+            val constant2 = optional(UnsignedIntegerPattern(), ::degreeOf)
+
+            val variable1 = ArbitraryVariablePattern()
+            val variable2 = ArbitraryVariablePattern()
+
+            val variableArgument1 = engine.patterns.productOf(constant1, variable1)
+            val variableArgument2 = engine.patterns.productOf(constant2, variable2)
+
+            val trigFunction1 =
+                optionalPatternContaining(
+                    TrigonometricExpressionPattern(
+                        oneOf(
+                            constant1,
+                            variableArgument1,
+                            variable1,
+                        ),
+                    ),
+                )
+
+            // We don't include the variable pattern as it is not possible for both trigonometric functions to have
+            // only a variable as an argument and one to be double the other.
+            val trigFunction2 = optionalPatternContaining(
+                TrigonometricExpressionPattern(
+                    oneOf(
+                        constant2,
+                        variableArgument2,
+                    ),
+                ),
+            )
+
+            pattern = commutativeSumContaining(trigFunction1, trigFunction2)
+
+            explanation = Explanation.SimplifySumContainingDoubleAngles
+
+            partialExpressionSteps {
+                withNewLabels {
+                    apply(TrigonometricFunctionsRules.AddLabelToSumContainingDoubleAngle)
+                    applyTo(Label.A) {
+                        applyTo(extractor = {
+                            if (it is Minus) {
+                                it.firstChild
+                            } else {
+                                it
+                            }
+                        }) {
+                            firstOf {
+                                option {
+                                    apply(doubleAngleSolvingSteps)
+                                }
+                                option {
+                                    apply(AnglesRules.DeriveTrigonometricFunctionFromPrimitiveFunctions)
+                                    applyToChildren(
+                                        stepsProducer = doubleAngleSolvingSteps,
+                                        atLeastOne = true,
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+    ),
+}
+
+private val doubleAngleSolvingSteps = steps {
+    optionally {
+        applyTo(TrigonometricFunctionsRules.ExpressAs2xArgument) {
+            it.firstChild
+        }
+    }
+    apply(TrigonometricFunctionsRules.ApplyDoubleAngleIdentity)
+}
 
 /**
  * Try to apply the pythagorean identity to an expressions, in this case we should try factoring as well in case
@@ -41,6 +192,8 @@ import methods.factor.FactorRules
  * │    - [sin^2]\[x\] + [cos^2]\[x\] --> 1
  * └ ELSE we try to factor the expression and apply the identity to the result
  *      - k [sin ^ 2]\[x\] + k [cos ^ 2]\[x\] --> k (sin^2)\[x\] + k (cos^2)\[x\] --> k (1) --> k
+ *      OR
+ *      - -[sin^2][ x ] - [cos^2] [ x ] --> - ( [sin ^ 2][ x ] + [cos ^ 2] [ x ]) --> -( 1 ) --> -1
  */
 fun createUsePythagoreanIdentityAndSimplifyPlan(simplificationSteps: StepsProducer): StepsProducer {
     return plan {
@@ -54,6 +207,7 @@ fun createUsePythagoreanIdentityAndSimplifyPlan(simplificationSteps: StepsProduc
         pattern = oneOf(
             commutativeSumContaining(sine, cosine),
             commutativeSumContaining(productContaining(sine), productContaining(cosine)),
+            commutativeSumContaining(negOf(sine), negOf(cosine)),
         )
 
         explanation = Explanation.ApplyPythagoreanIdentityAndSimplify
@@ -61,12 +215,19 @@ fun createUsePythagoreanIdentityAndSimplifyPlan(simplificationSteps: StepsProduc
         steps {
             shortcut(TrigonometricFunctionsRules.ApplyPythagoreanIdentity)
 
-            applyTo(FactorRules.FactorCommonFactor) {
-                it
+            firstOf {
+                option(FactorRules.FactorCommonFactor)
+                option(GeneralRules.FactorMinusFromSumWithAllNegativeTerms)
             }
+
             applyTo(TrigonometricFunctionsRules.ApplyPythagoreanIdentity) {
-                it.secondChild
+                if (it is Minus) {
+                    it.firstChild
+                } else {
+                    it.secondChild
+                }
             }
+
             whilePossible(simplificationSteps)
         }
     }
@@ -92,9 +253,9 @@ fun createUseTrigonometricIdentityAndSimplifyPlan(simplificationSteps: StepsProd
         steps {
             optionally(TrigonometricFunctionsRules.RearrangeAddendsInArgument)
             firstOf {
-                option(TrigonometricFunctionsRules.ApplyCosineIdentity)
-                option(TrigonometricFunctionsRules.ApplySineIdentity)
-                option(TrigonometricFunctionsRules.ApplyTangentIdentity)
+                option(TrigonometricFunctionsRules.ApplyCosineSumIdentity)
+                option(TrigonometricFunctionsRules.ApplySineSumIdentity)
+                option(TrigonometricFunctionsRules.ApplyTangentSumIdentity)
             }
             whilePossible(simplificationSteps)
         }

@@ -46,6 +46,7 @@ import engine.patterns.ArbitraryVariablePattern
 import engine.patterns.ConditionPattern
 import engine.patterns.ConstantPattern
 import engine.patterns.SignedIntegerPattern
+import engine.patterns.TrigonometricExpressionPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.VariableExpressionPattern
 import engine.patterns.condition
@@ -313,7 +314,15 @@ enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
                 )
             }
 
-            resultPattern = optionalNegOf(oneOf(productContaining(), powerOf(AnyPattern(), AnyPattern())))
+            // Adding trigonometric expression here as well, as sometimes when factoring trig expressions everything
+            // else can be simplified
+            resultPattern = optionalNegOf(
+                oneOf(
+                    productContaining(),
+                    powerOf(AnyPattern(), AnyPattern()),
+                    TrigonometricExpressionPattern(AnyPattern()),
+                ),
+            )
 
             steps {
                 apply(factorizationSteps)
