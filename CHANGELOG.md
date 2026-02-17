@@ -15,6 +15,8 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Fixed
 
+- SDK: Fixed expression with degree coloring. (PLUT-1075)
+
 ### Changed
 
 ### Removed
