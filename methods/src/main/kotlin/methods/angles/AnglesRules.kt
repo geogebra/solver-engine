@@ -455,7 +455,9 @@ private val substituteAngleWithCoterminalAngleFromUnitCircle = rule {
 
     val sum = sumContaining(circle)
 
-    onPattern(sum) {
+    val pattern = condition(sum) { !it.isWithinFraction() }
+
+    onPattern(pattern) {
         // We use transform on the whole sum instead of a simple cancel as that corresponds to the angle
         ruleResult(
             toExpr = transform(
@@ -467,13 +469,13 @@ private val substituteAngleWithCoterminalAngleFromUnitCircle = rule {
     }
 }
 
-fun isWithinFraction(exp: Expression): Boolean {
-    val parent = exp.parent
+fun Expression.isWithinFraction(): Boolean {
+    val parent = this.parent
 
     return if (parent == null) {
         false
     } else {
-        parent is Fraction || isWithinFraction(parent)
+        parent is Fraction || parent.isWithinFraction()
     }
 }
 
@@ -483,7 +485,7 @@ fun isWithinFraction(exp: Expression): Boolean {
  */
 private val rewriteAngleInRadiansByExtractingMultiplesOfTwoPi = rule {
     val angle = withOptionalRationalCoefficient(FixedPattern(Pi))
-    val pattern = condition(angle) { it.parent is TrigonometricExpression || !isWithinFraction(it) }
+    val pattern = condition(angle) { it.parent is TrigonometricExpression || !it.isWithinFraction() }
 
     onPattern(pattern) {
         val coefficientRational = getCoefficientValue(angle) ?: return@onPattern null

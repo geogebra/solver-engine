@@ -16,6 +16,7 @@ contents to a new release section (e.g. _[0.x]_).
 ### Fixed
 
 - SDK: Fixed expression with degree coloring. (PLUT-1075)
+- Reduction to unit circle in expression with fractions. (PLUT-1095)
 
 ### Changed
 
@@ -27,17 +28,7 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Fixed
 
-- Merging integers and reals sets
-
-### Changed
-
-### Removed
-
-## [1.4.13] 2025-11-14
-
-### Added
-
-### Fixed
+- Merging integers and reals sets.
 
 ### Changed
 

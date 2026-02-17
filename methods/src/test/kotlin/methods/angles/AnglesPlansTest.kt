@@ -18,6 +18,7 @@
 package methods.angles
 
 import engine.methods.testMethod
+import methods.constantexpressions.ConstantExpressionsPlans
 import org.junit.jupiter.api.Test
 
 class AnglesPlansTest {
@@ -44,6 +45,39 @@ class AnglesPlansTest {
                 step { toExpr = "[3 * /pi/ / 4] * [degree[ 180 ] / /pi/]" }
                 step { toExpr = "3 * degree[ 45 ]" }
                 step { toExpr = "degree[ 135 ]" }
+            }
+        }
+    }
+
+    @Test
+    fun testReductionToUnitCircle() {
+        testMethod {
+            method = ConstantExpressionsPlans.SimplifyConstantExpression
+            inputExpr = "3 /pi/ + 2 /pi/"
+
+            check {
+                step {
+                    toExpr = "/pi/ + 2 /pi/"
+                }
+
+                step {
+                    toExpr = "/pi/"
+                }
+            }
+        }
+
+        testMethod {
+            method = ConstantExpressionsPlans.SimplifyConstantExpression
+            inputExpr = "[2 /pi/ + 3 /pi/ / 2]"
+
+            check {
+                step {
+                    toExpr = "[5 /pi/ / 2]"
+                }
+
+                step {
+                    toExpr = "[/pi/ / 2]"
+                }
             }
         }
     }

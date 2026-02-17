@@ -66,6 +66,9 @@ enum class AnglesPlans(override val runner: CompositeMethod) : RunnerMethod {
             explanation = Explanation.NormalizeAngles
 
             steps {
+                check {
+                    !it.isWithinFraction()
+                }
                 firstOf {
                     option(AnglesRules.RewriteAngleInDegreesByExtractingMultiplesOf360)
                     option(AnglesRules.RewriteAngleInRadiansByExtractingMultiplesOfTwoPi)
