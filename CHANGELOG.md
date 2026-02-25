@@ -12,6 +12,7 @@ contents to a new release section (e.g. _[0.x]_).
 ### Added
 
 - Reduce double angle arguments in trigonometric expressions. (PLUT-1075)
+- Solve linear trigonometric equation of the form a sin(f(x)) + b cos(f(x)) = 0. (PLUT-1096)
 
 ### Fixed
 

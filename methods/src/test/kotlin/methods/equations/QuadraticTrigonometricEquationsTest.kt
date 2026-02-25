@@ -118,19 +118,34 @@ class QuadraticTrigonometricEquationsTest {
             check {
                 toExpr = "SetSolution[x: {[/pi/ / 3] + k * /pi/}] GIVEN SetSolution[k: /integers/]"
 
-                step {
-                    toExpr = "[t ^ 2] - 2 sqrt[3] t + 3 = 0 AND t = tan[x]"
+                task {
+                    step {
+                        toExpr = "SetSolution[x: /reals/ \\ {[/pi/ / 2] + k * /pi/}]"
+                    }
                 }
 
-                step {
-                    toExpr = "SetSolution[t: {sqrt[3]}] AND t = tan[x]"
+                task {
+                    step {
+                        step {
+                            toExpr = "[t ^ 2] - 2 sqrt[3] * t + 3 = 0 AND t = tan[x]"
+                        }
+
+                        step {
+                            toExpr = "SetSolution[t: {sqrt[3]}] AND t = tan[x]"
+                        }
+
+                        step {
+                            toExpr = "SetSolution[x: {[/pi/ / 3] + k * /pi/}] GIVEN SetSolution[k: /integers/]"
+                        }
+                    }
                 }
 
-                step {
-                    toExpr = "SetSolution[x: {[/pi/ / 3] + k * /pi/}] GIVEN SetSolution[k: /integers/]"
+                task {
+                    startExpr = "SetSolution[x: {[/pi/ / 3] + k * /pi/}] GIVEN " +
+                        "SetSolution[x: /reals/ \\ {[/pi/ / 2] + k * /pi/}] AND SetSolution[k: /integers/]"
 
-                    task {
-                        startExpr = "tan[x] = sqrt[3]"
+                    step {
+                        toExpr = "SetSolution[x: {[/pi/ / 3] + k * /pi/}] GIVEN SetSolution[k: /integers/]"
                     }
                 }
             }
@@ -216,33 +231,41 @@ class QuadraticTrigonometricEquationsTest {
             inputExpr = "3 [tan ^ 2][x] = 9"
 
             check {
-                toExpr = "SetSolution[x: {-[/pi/ / 3] + k * /pi/, [/pi/ / 3] + k * /pi/}] " +
-                    "GIVEN SetSolution[k: /integers/]"
-
-                step {
-                    toExpr = "[tan ^ 2][x] = 3"
-                }
-
-                step {
-                    toExpr = "tan[x] = +/-sqrt[3]"
-                }
-
-                step {
-                    toExpr = "tan[x] = -sqrt[3] OR tan[x] = sqrt[3]"
-                }
-
-                step {
-                    task {
-                        taskId = "#1"
-                        startExpr = "tan[x] = -sqrt[3]"
+                task {
+                    step {
+                        toExpr = "SetSolution[x: /reals/ \\ {[/pi/ / 2] + k * /pi/}]"
                     }
+                }
 
-                    task {
-                        taskId = "#2"
-                        startExpr = "tan[x] = sqrt[3]"
+                task {
+                    step {
+                        step {
+                            toExpr = "[tan ^ 2][x] = 3"
+                        }
+
+                        step {
+                            toExpr = "tan[x] = +/-sqrt[3]"
+                        }
+
+                        step {
+                            toExpr = "tan[x] = -sqrt[3] OR tan[x] = sqrt[3]"
+                        }
+
+                        step {
+                            toExpr = "SetSolution[x: {-[/pi/ / 3] + k * /pi/, [/pi/ / 3] + k * /pi/}] GIVEN " +
+                                "SetSolution[k: /integers/]"
+                        }
                     }
+                }
 
-                    task {}
+                task {
+                    startExpr = "SetSolution[x: {-[/pi/ / 3] + k * /pi/, [/pi/ / 3] + k * /pi/}] GIVEN " +
+                        "SetSolution[x: /reals/ \\ {[/pi/ / 2] + k * /pi/}] AND SetSolution[k: /integers/]"
+
+                    step {
+                        toExpr = "SetSolution[x: {-[/pi/ / 3] + k * /pi/, [/pi/ / 3] + k * /pi/}] GIVEN " +
+                            "SetSolution[k: /integers/]"
+                    }
                 }
             }
         }

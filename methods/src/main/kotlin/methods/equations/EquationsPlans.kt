@@ -53,6 +53,7 @@ import engine.methods.plan
 import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
+import engine.operators.TrigonometricFunctionType
 import engine.patterns.AnyPattern
 import engine.patterns.ArbitraryVariablePattern
 import engine.patterns.FindPattern
@@ -63,6 +64,7 @@ import engine.patterns.SignedNumberPattern
 import engine.patterns.SolutionVariablePattern
 import engine.patterns.SolvablePattern
 import engine.patterns.TrigonometricExpressionPattern
+import engine.patterns.commutativeSumOf
 import engine.patterns.condition
 import engine.patterns.contradictionOf
 import engine.patterns.equationOf
@@ -73,6 +75,7 @@ import engine.patterns.optionalNegOf
 import engine.patterns.setSolutionOf
 import engine.patterns.solutionSetOf
 import engine.patterns.variableListOf
+import engine.patterns.withOptionalConstantCoefficient
 import engine.steps.Task
 import engine.steps.Transformation
 import engine.steps.metadata.MetadataKey
@@ -80,6 +83,7 @@ import engine.steps.metadata.metadata
 import methods.algebra.AlgebraExplanation
 import methods.algebra.AlgebraPlans
 import methods.algebra.findDenominatorsAndDivisors
+import methods.angles.TrigonometricFunctionsRules
 import methods.angles.findFunctionsRequiringDomainCheck
 import methods.constantexpressions.constantSimplificationSteps
 import methods.constantexpressions.simpleTidyUpSteps
@@ -340,9 +344,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                     productOf(variable, Pi),
                 )
 
-                val functions = findFunctionsRequiringDomainCheck(expression).filter {
-                    !it.isConstant() && it.firstChild !is Variable
-                }.distinct().toList()
+                val functions = findFunctionsRequiringDomainCheck(expression).distinct().toList()
 
                 if (functions.isEmpty()) {
                     return@tasks null
@@ -390,6 +392,8 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     MergeTrigonometricEquationSolutionsTask(mergeTrigonometricEquationSolutionsTask),
 
     NormalizePeriod(normalizePeriodPlan),
+
+    DivideByCosAndSimplify(divideByCosAndSimplify),
 
     @PublicMethod
     SolveConstantEquation(
@@ -803,6 +807,49 @@ val normalizePeriodPlan = plan {
     }
 }
 
+// Divide equation of form sin[x] + b cos [x] = 0 by the cosine term and simplify the equation.
+val divideByCosAndSimplify = plan {
+    val argument = AnyPattern()
+    val sine = withOptionalConstantCoefficient(
+        TrigonometricExpressionPattern(
+            argument,
+            listOf(TrigonometricFunctionType.Sin),
+        ),
+    )
+    val cosine =
+        TrigonometricExpressionPattern(
+            argument,
+            listOf(TrigonometricFunctionType.Cos),
+        )
+
+    val cosineTerm = withOptionalConstantCoefficient(cosine)
+
+    pattern = equationOf(commutativeSumOf(sine, cosineTerm), FixedPattern(Constants.Zero))
+
+    explanation = Explanation.DivideByTrigFunctionAndSimplify
+
+    explanationParameters(cosine)
+
+    steps {
+        applyTo(EquationsRules.DivideByCos) {
+            it.firstChild
+        }
+
+        applyTo(extractor = { it.firstChild }) {
+            optionally { deeply(EquationsRules.ExtractSineOverCosine) }
+            deeply(TrigonometricFunctionsRules.SimplifyToDerivedFunction)
+        }
+
+        optionally(algebraicSimplificationStepsForEquations)
+
+        // The expression should only contain tangents. Otherwise, something went wrong with the simplification and
+        // we could enter an infinite loop.
+        check {
+            it.onlyContainsTrigFunctionType(TrigonometricFunctionType.Tan)
+        }
+    }
+}
+
 val simplifyTrigonometricEquationSolutionSteps = steps {
     apply(EquationsRules.MergeTrigonometricEquationSolutions)
     optionally {
@@ -913,9 +960,7 @@ val solveEquationPlan = object : CompositeMethod() {
                     findDenominatorsAndDivisors(sub).any { (expr, _) ->
                         !expr.isConstant()
                     } ||
-                    findFunctionsRequiringDomainCheck(sub).any {
-                        !it.isConstant() && it.firstChild !is Variable
-                    }
+                    findFunctionsRequiringDomainCheck(sub).toList().isNotEmpty()
                 ) {
                     solveEquationWithDomainRestrictions.run(equationContext, sub)
                 } else {

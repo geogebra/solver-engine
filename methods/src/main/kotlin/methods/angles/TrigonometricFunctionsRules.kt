@@ -73,6 +73,7 @@ enum class TrigonometricFunctionsRules(override val runner: Rule) : RunnerMethod
     ApplyDoubleAngleIdentity(applyDoubleAngleIdentity),
     RearrangeAddendsInArgument(rearrangeAddendsInArgument),
     AddLabelToSumContainingDoubleAngle(addLabelToSumContainingDoubleAngle),
+    SimplifyToDerivedFunction(simplifyToDerivedFunction),
 }
 
 private fun getNegativeIdentityExplanation(functionType: TrigonometricFunctionType): MetadataKey? =
@@ -658,6 +659,74 @@ private val addLabelToSumContainingDoubleAngle = rule {
             toExpr,
             explanation = metadata(Explanation.AddLabelToSumContainingDoubleAngle),
             tags = listOf(Transformation.Tag.InvisibleChange),
+        )
+    }
+}
+
+/**
+ * Given a fraction containing trigonometric functions, simplify it to a derived function if possible
+ *
+ * e.g. sin(x) / cos(x) -> tan(x)
+ */
+private val simplifyToDerivedFunction = rule {
+    val argument = AnyPattern()
+
+    val sine = TrigonometricExpressionPattern.sin(argument)
+    val cosine = TrigonometricExpressionPattern.cos(argument)
+
+    val tanFraction = fractionOf(
+        sine,
+        cosine,
+    )
+
+    val cotFraction = fractionOf(
+        cosine,
+        sine,
+    )
+
+    val secFraction = fractionOf(
+        FixedPattern(One),
+        cosine,
+    )
+
+    val cscFraction = fractionOf(
+        FixedPattern(One),
+        sine,
+    )
+
+    val pattern = oneOf(tanFraction, cotFraction, secFraction, cscFraction)
+
+    onPattern(pattern) {
+        val argument = get(argument)
+        val toExpression = transform(
+            when {
+                isBound(tanFraction) -> wrapWithTrigonometricFunction(
+                    sine,
+                    argument,
+                    TrigonometricFunctionType.Tan,
+                )
+                isBound(cotFraction) -> wrapWithTrigonometricFunction(
+                    cosine,
+                    argument,
+                    TrigonometricFunctionType.Cot,
+                )
+                isBound(secFraction) -> wrapWithTrigonometricFunction(
+                    cosine,
+                    argument,
+                    TrigonometricFunctionType.Sec,
+                )
+                isBound(cscFraction) -> wrapWithTrigonometricFunction(
+                    sine,
+                    argument,
+                    TrigonometricFunctionType.Csc,
+                )
+                else -> return@onPattern null
+            },
+        )
+
+        ruleResult(
+            toExpr = toExpression,
+            explanation = metadata(Explanation.DeriveTrigonometricFunction),
         )
     }
 }

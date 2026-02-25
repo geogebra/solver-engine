@@ -266,6 +266,11 @@ enum class AnglesExplanation : CategorisedMetadataKey {
      */
     ExtractTwoFromArgument,
 
+    /**
+     * Derive trigonometric function
+     */
+    DeriveTrigonometricFunction,
+
     ;
 
     override val category = "Angles"

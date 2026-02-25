@@ -26,6 +26,7 @@ import engine.expressions.Constants.Two
 import engine.expressions.Contradiction
 import engine.expressions.Equation
 import engine.expressions.Expression
+import engine.expressions.Fraction
 import engine.expressions.Minus
 import engine.expressions.Product
 import engine.expressions.SimpleComparator
@@ -375,6 +376,8 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
     SubstituteTrigFunctionInQuadraticEquation(substituteTrigFunctionInQuadraticEquation),
     ReorderQuadraticEquationWithTrigonometricFunctions(reorderQuadraticEquationWithTrigonometricFunctions),
     MergeTrigonometricEquationSolutions(mergeTrigonometricEquationSolutions),
+    DivideByCos(divideByCos),
+    ExtractSineOverCosine(extractSineOverCosine),
 }
 
 private val extractSolutionFromEquationInPlusMinusForm = rule {
@@ -1122,8 +1125,14 @@ private val reorderSumWithPeriod = rule {
     val sum = sumContaining(periodFraction)
 
     onPattern(sum) {
+        val sum = get(sum)
         val period = move(periodFraction)
-        val operands = get(sum).children.filter { it != period } + period
+
+        if (sum.children.last() == period) {
+            return@onPattern null
+        }
+
+        val operands = sum.children.filter { it != period } + period
         val toExpr = sumOf(operands)
 
         ruleResult(
@@ -1419,6 +1428,83 @@ private val mergeTrigonometricEquationSolutions = rule {
                 ),
             ),
             explanation = metadata(Explanation.MergeTrigonometricEquationSolutions),
+        )
+    }
+}
+
+// Find the term with cosine in a sum and divide each term by it
+private val divideByCos = rule {
+    val cosine = TrigonometricExpressionPattern.cos(AnyPattern())
+
+    val pattern = sumContaining(withOptionalConstantCoefficient(cosine))
+
+    onPattern(pattern) {
+        val children = get(pattern).children
+        val divisor = distribute(cosine)
+
+        val dividedChildren = children.map {
+            when (it) {
+                is Fraction -> fractionOf(
+                    it.firstChild,
+                    productOf(divisor, it.secondChild),
+                )
+                else -> fractionOf(it, divisor)
+            }
+        }
+
+        ruleResult(
+            toExpr = sumOf(dividedChildren),
+            explanation = metadata(
+                Explanation.DivideByTrigFunction,
+                divisor,
+            ),
+        )
+    }
+}
+
+// Extract [ sin[ a ] / cos[ a ] ] from a fraction with other terms in numerator and denominator
+private val extractSineOverCosine = rule {
+    val argument = AnyPattern()
+
+    val sine = TrigonometricExpressionPattern.sin(argument)
+    val cosine = TrigonometricExpressionPattern.cos(argument)
+
+    val numeratorProduct = productContaining(sine)
+    val denominatorProduct = productContaining(cosine)
+
+    val pattern = fractionOf(
+        oneOf(numeratorProduct, sine),
+        oneOf(denominatorProduct, cosine),
+    )
+
+    onPattern(pattern) {
+        if (!isBound(numeratorProduct) && !isBound(denominatorProduct)) {
+            return@onPattern null
+        }
+        val restNumerator = if (isBound(numeratorProduct)) {
+            restOf(numeratorProduct)
+        } else {
+            Constants.One
+        }
+
+        val restDenominator = if (isBound(denominatorProduct)) {
+            restOf(denominatorProduct)
+        } else {
+            Constants.One
+        }
+
+        ruleResult(
+            toExpr = productOf(
+                fractionOf(
+                    restNumerator,
+                    restDenominator,
+                ),
+                fractionOf(
+                    get(sine),
+                    get(cosine),
+                ),
+            ),
+            explanation = metadata(Explanation.ExtractSineOverCosine),
         )
     }
 }

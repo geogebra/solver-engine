@@ -725,6 +725,27 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      */
     SimplifyTrigonometricEquationSolution,
 
+    /**
+     * Divide by %1 and simplify
+     *
+     * %1 : trigonometric term to divide by
+     */
+    DivideByTrigFunctionAndSimplify,
+
+    /**
+     * Divide by %1
+     *
+     * %1 : trigonometric term to divide by
+     */
+    DivideByTrigFunction,
+
+    /**
+     * Extract sine over cosine
+     *
+     * Maybe use a placeholder here
+     */
+    ExtractSineOverCosine,
+
     ;
 
     override val category = "Equations"

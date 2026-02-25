@@ -39,8 +39,10 @@ import engine.operators.TrigonometricFunctionType
 import engine.patterns.AnyPattern
 import engine.patterns.FixedPattern
 import engine.patterns.TrigonometricExpressionPattern
+import engine.patterns.commutativeSumOf
 import engine.patterns.equationOf
 import engine.patterns.optionalNegOf
+import engine.patterns.withOptionalConstantCoefficient
 import methods.angles.TrigonometricFunctionsRules
 import methods.angles.createEvaluateInverseTrigonometricFunctionExactlyPlan
 import methods.constantexpressions.ConstantExpressionsPlans
@@ -341,7 +343,8 @@ enum class EquationSolvingStrategy(
         steps = steps {
             check { it.containsTrigExpression() }
 
-            optionally(solvablePlansForEquations.solvableRearrangementSteps)
+            optionally(solvablePlansForEquations.moveVariablesToTheLeftAndSimplify)
+            optionally(solvablePlansForEquations.moveConstantsToTheRightAndSimplify)
             optionally(EquationsPlans.SimplifyEquation)
             optionally(EquationsRules.BalanceEquationWithTrigonometricExpressions)
             optionally(SolvableRules.NegateBothSidesIfBothNegative)
@@ -353,6 +356,8 @@ enum class EquationSolvingStrategy(
                 option(sineLikeEquationSteps)
 
                 option(tanEquationSteps)
+
+                option(linearTrigEquationSteps)
 
                 // Upcoming equation types
             }
@@ -599,15 +604,12 @@ private val quadraticFormulaSteps = steps {
     }
 }
 
-private fun expressionOnlyContainsTrigFunctionType(
-    expr: Expression,
-    trigFunctionType: TrigonometricFunctionType,
-): Boolean =
-    if (expr is TrigonometricExpression) {
-        expr.functionType == trigFunctionType
+fun Expression.onlyContainsTrigFunctionType(trigFunctionType: TrigonometricFunctionType): Boolean =
+    if (this is TrigonometricExpression) {
+        functionType == trigFunctionType
     } else {
-        expr.children.isEmpty() ||
-            expr.children.all { expressionOnlyContainsTrigFunctionType(it, trigFunctionType) }
+        children.isEmpty() ||
+            children.all { it.onlyContainsTrigFunctionType(trigFunctionType) }
     }
 
 private val evaluateInverseTrigonometricFunctions =
@@ -615,8 +617,8 @@ private val evaluateInverseTrigonometricFunctions =
 
 private val sineLikeEquationSteps = steps {
     check {
-        expressionOnlyContainsTrigFunctionType(it, TrigonometricFunctionType.Sin) ||
-            expressionOnlyContainsTrigFunctionType(it, TrigonometricFunctionType.Cos)
+        it.onlyContainsTrigFunctionType(TrigonometricFunctionType.Sin) ||
+            it.onlyContainsTrigFunctionType(TrigonometricFunctionType.Cos)
     }
 
     apply(EquationsRules.ApplyInverseSineFunctionToBothSides)
@@ -645,13 +647,13 @@ private val sineLikeEquationSteps = steps {
             firstOf {
                 option {
                     check {
-                        expressionOnlyContainsTrigFunctionType(it, TrigonometricFunctionType.Arcsin)
+                        it.onlyContainsTrigFunctionType(TrigonometricFunctionType.Arcsin)
                     }
                     apply(extractedSineEquationSolvingSteps)
                 }
                 option {
                     check {
-                        expressionOnlyContainsTrigFunctionType(it, TrigonometricFunctionType.Arccos)
+                        it.onlyContainsTrigFunctionType(TrigonometricFunctionType.Arccos)
                     }
                     apply(extractedCosineEquationSolvingSteps)
                 }
@@ -673,13 +675,13 @@ private val sineLikeEquationSteps = steps {
         }
         option {
             check {
-                expressionOnlyContainsTrigFunctionType(it, TrigonometricFunctionType.Arcsin)
+                it.onlyContainsTrigFunctionType(TrigonometricFunctionType.Arcsin)
             }
             apply(EquationsPlans.SineEquationSolutionExtractionTask)
         }
         option {
             check {
-                expressionOnlyContainsTrigFunctionType(it, TrigonometricFunctionType.Arccos)
+                it.onlyContainsTrigFunctionType(TrigonometricFunctionType.Arccos)
             }
             apply(EquationsPlans.CosineEquationSolutionExtractionTask)
         }
@@ -688,7 +690,7 @@ private val sineLikeEquationSteps = steps {
 
 private val tanEquationSteps = steps {
     check {
-        expressionOnlyContainsTrigFunctionType(it, TrigonometricFunctionType.Tan)
+        it.onlyContainsTrigFunctionType(TrigonometricFunctionType.Tan)
     }
 
     apply(EquationsRules.ApplyInverseSineFunctionToBothSides)
@@ -759,4 +761,26 @@ private val trigonometricEquationSolvingSteps = steps {
             option(EquationsRules.ExtractSolutionFromConstantEquation)
         }
     }
+}
+
+private val linearTrigEquationSteps = steps {
+    checkForm {
+        val argument = AnyPattern()
+        val sine = withOptionalConstantCoefficient(
+            TrigonometricExpressionPattern.sin(
+                argument,
+            ),
+        )
+        val cosine = withOptionalConstantCoefficient(
+            TrigonometricExpressionPattern.cos(
+                argument,
+            ),
+        )
+
+        equationOf(commutativeSumOf(sine, cosine), FixedPattern(Constants.Zero))
+    }
+
+    apply(EquationsPlans.DivideByCosAndSimplify)
+
+    apply(EquationsPlans.SolveEquation)
 }

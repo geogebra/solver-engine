@@ -17,15 +17,19 @@
 
 package methods.equations
 
+import engine.expressions.Constants.Pi
 import engine.expressions.Contradiction
 import engine.expressions.Equation
 import engine.expressions.Expression
 import engine.expressions.FiniteSet
 import engine.expressions.Identity
 import engine.expressions.Inequality
+import engine.expressions.SetDifference
 import engine.expressions.SetExpression
 import engine.expressions.SetSolution
+import engine.expressions.StatementSystem
 import engine.expressions.Variable
+import engine.expressions.containsExpression
 import engine.expressions.equationOf
 import engine.expressions.expressionWithConstraintOf
 import engine.expressions.setSolutionOf
@@ -164,10 +168,13 @@ fun TasksBuilder.checkSolutionsAgainstConstraint(solution: Expression, constrain
                     }
                 }
                 else -> {
+                    val filteredConstraints =
+                        filterConstraintsThatDoNotApplyToTrigonometricSolution(solution, constraint)
+
                     // Lastly the constraint does apply to the solutions.  It would be difficult to simplify so for now
                     // we just write the solution with the constraint.
                     task(
-                        startExpr = expressionWithConstraintOf(solution, constraint),
+                        startExpr = expressionWithConstraintOf(solution, filteredConstraints),
                         explanation = metadata(Explanation.AddConstraintToSolution),
                     )
                 }
@@ -302,5 +309,78 @@ private fun TasksBuilder.reportValidSolutions(
                 explanation = metadata(Explanation.SomeSolutionsDoNotSatisfyConstraint),
             )
         }
+    }
+}
+
+// Just trying to keep this simple for now, we should add a proper way to check and remove redundant constraints
+// in the future
+@Suppress("CyclomaticComplexMethod")
+private fun filterConstraintsThatDoNotApplyToTrigonometricSolution(
+    solution: SetSolution,
+    constraint: Expression,
+): Expression {
+    // Get the solution variable. We only handle the single variable case for now
+    val variable = solution.firstChild.let {
+        when (it.childCount) {
+            1 -> it.firstChild
+            else -> null
+        }
+    }
+
+    // Extract the solution expressions from the solution set
+    val solutions = solution.secondChild.let {
+        if (it is FiniteSet) {
+            it.children
+        } else {
+            null
+        }
+    }
+
+    // Check if all the solutions contain a period, otherwise the simplification steps do not apply
+    @Suppress("ComplexCondition")
+    if (
+        variable == null ||
+        solutions == null ||
+        !solutions.all { it.childCount == 2 && it.secondChild.containsExpression(Pi) }
+    ) {
+        return constraint
+    }
+
+    // Get the constraints as a list
+    val constraints = constraint.let {
+        if (it is StatementSystem) {
+            it.children
+        } else {
+            listOf(it)
+        }
+    }
+
+    val filteredConstraints = constraints.filterNot {
+        // Only check constraints that apply to the solution variable and are a set difference (so that there is only
+        // one expression to compare)
+        @Suppress("ComplexCondition")
+        if (it is SetSolution &&
+            it.firstChild.childCount == 1 &&
+            it.firstChild.firstChild == variable &&
+            it.secondChild is SetDifference
+        ) {
+            val constraintEquation = it.secondChild.secondChild.firstChild
+            // Check if the periods are the same but the solutions are different
+            constraintEquation.childCount == 2 &&
+                solutions.all { solution ->
+                    solution.secondChild == constraintEquation.secondChild &&
+                        solution.firstChild != constraintEquation.firstChild
+                }
+        } else {
+            false
+        }
+    }
+
+    // We can return the filtered constraints directly, if the filtering failed it will be the same as the original
+    return when (filteredConstraints.size) {
+        1 -> filteredConstraints.first()
+        else -> statementSystemOf(
+            filteredConstraints,
+        )
     }
 }

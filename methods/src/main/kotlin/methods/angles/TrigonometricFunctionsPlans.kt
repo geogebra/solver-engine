@@ -17,22 +17,16 @@
 
 package methods.angles
 
-import engine.expressions.Constants.Pi
 import engine.expressions.Constants.Two
 import engine.expressions.Expression
 import engine.expressions.Label
 import engine.expressions.Minus
 import engine.expressions.TrigonometricExpression
-import engine.expressions.Variable
-import engine.expressions.fractionOf
-import engine.expressions.inequationOf
-import engine.expressions.productOf
 import engine.methods.CompositeMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
 import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.steps
-import engine.methods.taskSet
 import engine.operators.TrigonometricFunctionType
 import engine.patterns.AnyPattern
 import engine.patterns.ArbitraryVariablePattern
@@ -47,66 +41,10 @@ import engine.patterns.optional
 import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.sumOf
-import engine.steps.metadata.metadata
-import methods.algebra.AlgebraExplanation
 import methods.factor.FactorRules
 import methods.general.GeneralRules
-import methods.inequations.InequationsPlans
-import methods.solvable.computeOverallIntersectionSolution
-import methods.solvable.findUnusedVariableLetter
 
 enum class TrigonometricFunctionsPlans(override val runner: CompositeMethod) : RunnerMethod {
-    ComputeDomainOfTrigonometricExpression(
-        taskSet {
-            explanation = Explanation.ComputeDomainOfTrigonometricExpression
-
-            val solveInequationInOneVariableSteps = steps {
-                inContext({ copy(solutionVariables = it.firstChild.variables.toList()) }) {
-                    apply(InequationsPlans.SolveInequation)
-                }
-            }
-
-            tasks {
-                val variable = Variable(findUnusedVariableLetter(expression))
-
-                val rhs = engine.expressions.sumOf(
-                    fractionOf(Pi, Two),
-                    productOf(variable, Pi),
-                )
-
-                val functions = findFunctionsRequiringDomainCheck(expression).filter {
-                    !it.isConstant() && it.firstChild !is Variable
-                }.distinct().toList()
-
-                if (functions.isEmpty()) {
-                    return@tasks null
-                }
-
-                val constraints = functions.map {
-                    taskWithOptionalSteps(
-                        startExpr = inequationOf(
-                            it.firstChild,
-                            rhs,
-                        ),
-                        explanation = metadata(Explanation.ExpressionMustNotBeUndefined),
-                        stepsProducer = solveInequationInOneVariableSteps,
-                    )
-                }
-
-                val overallSolution = computeOverallIntersectionSolution(
-                    constraints.map { it.result },
-                )
-
-                task(
-                    startExpr = overallSolution,
-                    explanation = metadata(AlgebraExplanation.CollectDomainRestrictions),
-                )
-
-                allTasks()
-            }
-        },
-    ),
-
     ReduceDoubleAngleInSum(
         plan {
             val constant1 = optional(UnsignedIntegerPattern(), ::degreeOf)

@@ -51,4 +51,22 @@ data class TrigonometricExpressionPattern(
     fun getBoundFunctionType(m: Match) = (getBoundExpr(m) as TrigonometricExpression).functionType
 
     override val minDepth = 1
+
+    companion object {
+        fun sin(argument: Pattern) =
+            TrigonometricExpressionPattern(
+                argument,
+                listOf(
+                    TrigonometricFunctionType.Sin,
+                ),
+            )
+
+        fun cos(argument: Pattern) =
+            TrigonometricExpressionPattern(
+                argument,
+                listOf(
+                    TrigonometricFunctionType.Cos,
+                ),
+            )
+    }
 }
