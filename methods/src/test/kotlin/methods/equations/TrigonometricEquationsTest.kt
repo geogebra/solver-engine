@@ -1,6 +1,7 @@
 package methods.equations
 
 import engine.methods.testMethodInX
+import methods.algebra.AlgebraExplanation
 import methods.angles.AnglesExplanation
 import org.junit.jupiter.api.Test
 
@@ -1263,7 +1264,7 @@ class TrigonometricEquationsTest {
                     "SetSolution[x: {[arctan[[1 / 2]] / 2] + [k * /pi/ / 2]}] " +
                     "GIVEN SetSolution[k: /integers/]"
                 explanation {
-                    key = EquationsExplanation.SolveTrigonometricEquation
+                    key = EquationsExplanation.SolveLinearTrigonometricEquations
                 }
 
                 step {
@@ -1308,7 +1309,7 @@ class TrigonometricEquationsTest {
             check {
                 toExpr = "SetSolution[x: {[/pi/ / 3] + k * /pi/}] GIVEN SetSolution[k: /integers/]"
                 explanation {
-                    key = EquationsExplanation.SolveTrigonometricEquation
+                    key = EquationsExplanation.SolveLinearTrigonometricEquations
                 }
 
                 step {
@@ -1335,6 +1336,223 @@ class TrigonometricEquationsTest {
                 }
 
                 step {}
+            }
+        }
+    }
+
+    // PLUT-1098
+    @Test
+    fun `test half angle substitution strategy when constraint is not a solution`() {
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "sin[6 x] + cos[6 x] - 1 = 0"
+
+            check {
+                explanation {
+                    key = EquationsExplanation.SubstituteTangentHalfAngleAndSolve
+                }
+
+                task {
+                    explanation {
+                        key = EquationsExplanation.SubstituteTangentHalfAngleTask
+                    }
+
+                    step {
+                        toExpr = "[2 t / 1 + [t ^ 2]] + [1 - [t ^ 2] / 1 + [t ^ 2]] - 1 = 0 AND t = tan[3x]"
+                    }
+                }
+
+                task {
+                    explanation {
+                        key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
+                    }
+
+                    step {
+                        fromExpr = "tan[3x]"
+                        toExpr = "SetSolution[x: /reals/ \\ {[/pi/ / 6] + [k * /pi/ / 3]}]"
+                    }
+                }
+
+                task {
+                    explanation {
+                        key = EquationsExplanation.SolveSubstitutedHalfAngleTangentEquation
+                    }
+
+                    step {
+                        fromExpr = "[2 t / 1 + [t ^ 2]] + [1 - [t ^ 2] / 1 + [t ^ 2]] - 1 = 0 AND t = tan[3x]"
+                        toExpr = "SetSolution[t: {0, 1}] AND t = tan[3x]"
+                    }
+
+                    step {
+                        toExpr = "SetSolution[x: {[/pi/ / 12] + [k * /pi/ / 3], [k * /pi/ / 3]}] " +
+                            "GIVEN SetSolution[k: /integers/]"
+                    }
+                }
+
+                task {
+                    explanation {
+                        key = EquationsExplanation.CheckIfConstraintIsSolution
+                    }
+
+                    step {
+                        fromExpr = "sin[6 x] + cos[6 x] - 1 = 0 AND x = [/pi/ / 6]"
+                        toExpr = "sin[6 * [/pi/ / 6]] + cos[6 * [/pi/ / 6]] - 1 = 0"
+                    }
+
+                    step {
+                        toExpr = "Contradiction[x: -2 = 0]"
+                    }
+                }
+
+                task {
+                    startExpr = "SetSolution[x: {[/pi/ / 12] + [k * /pi/ / 3], [k * /pi/ / 3]}] " +
+                        "GIVEN SetSolution[k: /integers/]"
+                }
+            }
+        }
+    }
+
+    // PLUT-1098
+    @Test
+    fun `test half angle substitution strategy when constraint is a solution`() {
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "sin[x] + cos[x] + 1 = 0"
+
+            check {
+                explanation {
+                    key = EquationsExplanation.SubstituteTangentHalfAngleAndSolve
+                }
+
+                task {
+                    explanation {
+                        key = EquationsExplanation.SubstituteTangentHalfAngleTask
+                    }
+
+                    step {
+                        toExpr = "[2 t / 1 + [t ^ 2]] + [1 - [t ^ 2] / 1 + [t ^ 2]] + 1 = 0 AND t = tan[[x / 2]]"
+                    }
+                }
+
+                task {
+                    explanation {
+                        key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
+                    }
+
+                    step {
+                        fromExpr = "tan[[x / 2]]"
+                        toExpr = "SetSolution[x: /reals/ \\ {/pi/ + 2 k * /pi/}]"
+                    }
+                }
+
+                task {
+                    explanation {
+                        key = EquationsExplanation.SolveSubstitutedHalfAngleTangentEquation
+                    }
+
+                    step {
+                        fromExpr = "[2 t / 1 + [t ^ 2]] + [1 - [t ^ 2] / 1 + [t ^ 2]] + 1 = 0 AND t = tan[[x / 2]]"
+                        toExpr = "SetSolution[t: {-1}] AND t = tan[[x / 2]]"
+                    }
+
+                    step {
+                        toExpr = "SetSolution[x: {-[/pi/ / 2] + 2 k * /pi/}] GIVEN SetSolution[k: /integers/]"
+                    }
+                }
+
+                task {
+                    explanation {
+                        key = EquationsExplanation.CheckIfConstraintIsSolution
+                    }
+
+                    step {
+                        fromExpr = "sin[x] + cos[x] + 1 = 0 AND x = /pi/"
+                        toExpr = "sin[/pi/] + cos[/pi/] + 1 = 0"
+                    }
+
+                    step {
+                        toExpr = "Identity[x: 0 = 0]"
+                    }
+                }
+
+                task {
+                    startExpr =
+                        "SetSolution[x: {-[/pi/ / 2] + 2 k * /pi/, /pi/ + 2 k * /pi/}] GIVEN SetSolution[k: /integers/]"
+                }
+            }
+        }
+    }
+
+    // PLUT-1098
+    @Test
+    fun `test half angle substitution strategy with f(x) argument`() {
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "cos[6 x + /pi/] + sin[6 x + /pi/] + 1 = 0"
+
+            check {
+                explanation {
+                    key = EquationsExplanation.SubstituteTangentHalfAngleAndSolve
+                }
+
+                task {
+                    explanation {
+                        key = EquationsExplanation.SubstituteTangentHalfAngleTask
+                    }
+
+                    step {
+                        fromExpr = "cos[6 x + /pi/] + sin[6 x + /pi/] + 1 = 0"
+                        toExpr =
+                            "[1 - [t ^ 2] / 1 + [t ^ 2]] + [2 t / 1 + [t ^ 2]] + 1 = 0 AND t = tan[[6 x + /pi/ / 2]]"
+                    }
+                }
+
+                task {
+                    explanation {
+                        key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
+                    }
+
+                    step {
+                        fromExpr = "tan[[6 x + /pi/ / 2]]"
+                        toExpr = "SetSolution[x: /reals/ \\ {[k * /pi/ / 3]}]"
+                    }
+                }
+
+                task {
+                    explanation {
+                        key = EquationsExplanation.SolveSubstitutedHalfAngleTangentEquation
+                    }
+
+                    step {
+                        fromExpr = "[1 - [t ^ 2] / 1 + [t ^ 2]] + [2 t / 1 + [t ^ 2]] + 1 = 0 " +
+                            "AND t = tan[[6 x + /pi/ / 2]]"
+                        toExpr = "SetSolution[t: {-1}] AND t = tan[[6 x + /pi/ / 2]]"
+                    }
+
+                    step {
+                        toExpr = "SetSolution[x: {-[/pi/ / 12] + [k * /pi/ / 3]}] GIVEN SetSolution[k: /integers/]"
+                    }
+                }
+
+                task {
+                    explanation {
+                        key = EquationsExplanation.CheckIfConstraintIsSolution
+                    }
+
+                    step {
+                        fromExpr = "cos[6 x + /pi/] + sin[6 x + /pi/] + 1 = 0 AND x = 0"
+                        toExpr = "cos[6 * 0 + /pi/] + sin[6 * 0 + /pi/] + 1 = 0"
+                    }
+
+                    step {
+                        toExpr = "Identity[x: 0 = 0]"
+                    }
+                }
+
+                task {
+                    startExpr = "SetSolution[x: {-[/pi/ / 12] + [k * /pi/ / 3], 0 + [k * /pi/ / 3]}] " +
+                        "GIVEN SetSolution[k: /integers/]"
+                }
             }
         }
     }

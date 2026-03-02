@@ -21,12 +21,14 @@ import engine.conditions.isDefinitelyNegative
 import engine.conditions.isNotZeroBySign
 import engine.expressions.Comparison
 import engine.expressions.Constants
+import engine.expressions.Constants.One
 import engine.expressions.Constants.Pi
 import engine.expressions.Constants.Two
 import engine.expressions.Contradiction
 import engine.expressions.Equation
 import engine.expressions.Expression
 import engine.expressions.Fraction
+import engine.expressions.IntegerExpression
 import engine.expressions.Minus
 import engine.expressions.Product
 import engine.expressions.SimpleComparator
@@ -58,6 +60,7 @@ import engine.expressions.simplifiedNegOf
 import engine.expressions.simplifiedProductOf
 import engine.expressions.solutionVariableConstantChecker
 import engine.expressions.splitPlusMinus
+import engine.expressions.squareOf
 import engine.expressions.squareRootOf
 import engine.expressions.statementSystemOf
 import engine.expressions.statementSystemOfNotNullOrNull
@@ -77,6 +80,7 @@ import engine.patterns.ConditionPattern
 import engine.patterns.ConstantInSolutionVariablePattern
 import engine.patterns.FixedPattern
 import engine.patterns.OptionalWrappingPattern
+import engine.patterns.Pattern
 import engine.patterns.QuadraticPolynomialPattern
 import engine.patterns.RationalPattern
 import engine.patterns.SolutionVariablePattern
@@ -85,6 +89,7 @@ import engine.patterns.TrigonometricExpressionPattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.VariableExpressionPattern
 import engine.patterns.absoluteValueOf
+import engine.patterns.commutativeSumContaining
 import engine.patterns.condition
 import engine.patterns.equationOf
 import engine.patterns.expressionWithFactor
@@ -98,6 +103,7 @@ import engine.patterns.productContaining
 import engine.patterns.productOf
 import engine.patterns.rationalMonomialPattern
 import engine.patterns.squareRootOf
+import engine.patterns.statementSystemOf
 import engine.patterns.statementUnionOf
 import engine.patterns.sumContaining
 import engine.patterns.sumOf
@@ -378,6 +384,8 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
     MergeTrigonometricEquationSolutions(mergeTrigonometricEquationSolutions),
     DivideByCos(divideByCos),
     ExtractSineOverCosine(extractSineOverCosine),
+    SubstituteValueOfVariable(substituteValueOfVariable),
+    SubstituteHalfAngleTangentIntoLinearEquation(substituteHalfAngleTangentIntoLinearEquation),
 }
 
 private val extractSolutionFromEquationInPlusMinusForm = rule {
@@ -1060,12 +1068,7 @@ private val extractSolutionFromEquationWithInverseCosineOfZero = rule {
     }
 }
 
-/**
- * Used for checking if the solution of a trigonometric equation is a contradiction / identity (In these cases the
- * periodicity can be ignored)
- * e.g lhs = rhs + 2k * /pi/ --> lhs = rhs
- */
-private val extractSolutionWithoutPeriod = rule {
+fun createPeriodPattern(): Pattern {
     val variable = condition(ArbitraryVariablePattern()) {
         it.isConstantIn(solutionVariables)
     }
@@ -1077,19 +1080,28 @@ private val extractSolutionWithoutPeriod = rule {
         ),
     )
 
-    val periodFraction = OptionalWrappingPattern(period) {
+    return OptionalWrappingPattern(period) {
         optionalNegOf(
             fractionOf(it, AnyPattern()),
         )
     }
+}
+
+/**
+ * Used for checking if the solution of a trigonometric equation is a contradiction / identity (In these cases the
+ * periodicity can be ignored)
+ * e.g lhs = rhs + 2k * /pi/ --> lhs = rhs
+ */
+private val extractSolutionWithoutPeriod = rule {
+    val period = createPeriodPattern()
 
     val lhs = ConstantInSolutionVariablePattern()
-    val rhsSum = sumContaining(periodFraction)
+    val rhsSum = sumContaining(period)
 
-    onEquation(lhs, oneOf(periodFraction, rhsSum)) {
+    onEquation(lhs, oneOf(period, rhsSum)) {
         val toExpr = when {
             isBound(rhsSum) -> restOf(rhsSum)
-            else -> transform(periodFraction, Constants.Zero)
+            else -> transform(period, Constants.Zero)
         }
 
         ruleResult(
@@ -1105,28 +1117,13 @@ private val extractSolutionWithoutPeriod = rule {
  * e.g c1 + 2k * /pi/ + c2 --> c1 + c2 + 2k * /pi/
  */
 private val reorderSumWithPeriod = rule {
-    val variable = condition(ArbitraryVariablePattern()) {
-        it.isConstantIn(solutionVariables)
-    }
-    val coefficient = ConstantInSolutionVariablePattern()
-    val period = optionalNegOf(
-        oneOf(
-            productOf(variable, FixedPattern(Pi)),
-            productOf(coefficient, variable, FixedPattern(Pi)),
-        ),
-    )
+    val period = createPeriodPattern()
 
-    val periodFraction = OptionalWrappingPattern(period) {
-        optionalNegOf(
-            fractionOf(it, AnyPattern()),
-        )
-    }
-
-    val sum = sumContaining(periodFraction)
+    val sum = sumContaining(period)
 
     onPattern(sum) {
         val sum = get(sum)
-        val period = move(periodFraction)
+        val period = move(period)
 
         if (sum.children.last() == period) {
             return@onPattern null
@@ -1218,18 +1215,6 @@ private val substituteTrigFunctionInQuadraticEquation = rule {
                 listOf('t'),
             ),
         )
-
-        fun Expression.withCoefficient(coefficient: Expression): Expression =
-            when (coefficient) {
-                Constants.One -> this
-                is Minus -> Minus(
-                    this.withCoefficient(coefficient.firstChild),
-                )
-                else -> productOf(
-                    coefficient,
-                    this,
-                )
-            }
 
         val terms = buildList {
             add(
@@ -1505,6 +1490,205 @@ private val extractSineOverCosine = rule {
                 ),
             ),
             explanation = metadata(Explanation.ExtractSineOverCosine),
+        )
+    }
+}
+
+// Substitute each occurrence of a variable in the first equation with the value in the second equation
+private val substituteValueOfVariable = rule {
+    val variable = ArbitraryVariablePattern()
+    val value = AnyPattern()
+
+    val equation1 = AnyPattern()
+    val equation2 = equationOf(variable, value)
+
+    val pattern = statementSystemOf(
+        equation1,
+        equation2,
+    )
+
+    onPattern(pattern) {
+        val newValue = distribute(value)
+        val variableExpr = get(variable)
+
+        val equation = get(equation1)
+
+        val toExpr = equation.substituteAllOccurrences(variableExpr, newValue)
+
+        ruleResult(
+            toExpr = toExpr,
+            explanation = metadata(
+                Explanation.SubstituteValueOfVariable,
+                get(equation2),
+            ),
+        )
+    }
+}
+
+fun halfOf(exp: Expression): Expression? =
+    if (exp is IntegerExpression && exp.value.isEven()) {
+        xp(exp.value.div(BigInteger.TWO))
+    } else {
+        null
+    }
+
+fun Expression.withCoefficient(coefficient: Expression): Expression =
+    when (coefficient) {
+        One -> this
+        is Minus -> Minus(
+            this.withCoefficient(coefficient.firstChild),
+        )
+        else -> productOf(
+            coefficient,
+            this,
+        )
+    }
+
+fun calculateHalfAngle(variable: Expression, coefficient: Expression, argument: Expression): Expression =
+    coefficient.let {
+        val halfCoefficient = halfOf(it)
+        when {
+            halfCoefficient != null -> variable.withCoefficient(halfCoefficient)
+            it is Fraction -> {
+                val numerator = it.firstChild
+                val denominator = it.secondChild
+                val halfNumerator = halfOf(numerator)
+                when {
+                    halfNumerator != null ->
+                        fractionOf(
+                            variable.withCoefficient(halfNumerator),
+                            it.secondChild,
+                        )
+                    denominator is IntegerExpression -> fractionOf(
+                        variable.withCoefficient(numerator),
+                        xp(
+                            denominator.value.multiply(
+                                BigInteger.TWO,
+                            ),
+                        ),
+                    )
+                    else -> fractionOf(
+                        variable.withCoefficient(numerator),
+                        productOf(Two, denominator),
+                    )
+                }
+            }
+            else -> fractionOf(argument, Two)
+        }
+    }
+
+// Substitute sine and cosine terms with the tangent of the half angle
+private val substituteHalfAngleTangentIntoLinearEquation = rule {
+    val variable = SolutionVariablePattern()
+    val argument = withOptionalConstantCoefficient(variable)
+
+    val genericArgument = condition {
+        !it.isConstantIn(solutionVariables)
+    }
+
+    val argumentTerm = oneOf(
+        argument,
+        genericArgument,
+    )
+
+    val sine = TrigonometricExpressionPattern.sin(
+        argumentTerm,
+    )
+    val sineTerm = withOptionalConstantCoefficient(
+        sine,
+    )
+    val cosine = TrigonometricExpressionPattern.cos(
+        argumentTerm,
+    )
+    val cosineTerm = withOptionalConstantCoefficient(
+        cosine,
+    )
+
+    val lhs = commutativeSumContaining(sineTerm, cosineTerm)
+
+    val rhs = FixedPattern(Constants.Zero)
+
+    val equation = equationOf(lhs, rhs)
+
+    onPattern(equation) {
+        val substitutedVariable = distribute(
+            Variable(findUnusedVariableLetter(expression, listOf('t'))),
+        )
+
+        val sineExpr = get(sine)
+        val cosineExpr = get(cosine)
+
+        val sineTermExpr = get(sineTerm)
+        val cosineTermExpr = get(cosineTerm)
+
+        val sineSubstitution = fractionOf(
+            productOf(Two, substitutedVariable),
+            sumOf(One, squareOf(substitutedVariable)),
+        )
+
+        val newSine = get(sineTermExpr).substitute(
+            sineExpr,
+            sineSubstitution,
+        )
+
+        val cosineSubstitution = fractionOf(
+            sumOf(One, Minus(squareOf(substitutedVariable))),
+            sumOf(One, squareOf(substitutedVariable)),
+        )
+
+        val newCosine = get(cosineTermExpr).substitute(
+            cosineExpr,
+            cosineSubstitution,
+        )
+
+        val newSum = sumOf(
+            get(lhs).children.map {
+                when (it) {
+                    sineTermExpr -> newSine
+                    cosineTermExpr -> newCosine
+                    else -> it
+                }
+            },
+        )
+
+        val halfAngle = if (isBound(genericArgument)) {
+            fractionOf(
+                get(genericArgument),
+                Two,
+            )
+        } else {
+            calculateHalfAngle(
+                get(variable),
+                argument.getCoefficient(),
+                get(argument),
+            )
+        }
+
+        val originalExpression = equationOf(
+            substitutedVariable,
+            wrapWithTrigonometricFunction(
+                sine,
+                halfAngle,
+                TrigonometricFunctionType.Tan,
+            ),
+        )
+
+        ruleResult(
+            toExpr = statementSystemOf(
+                equationOf(
+                    newSum,
+                    get(rhs),
+                ),
+                originalExpression,
+            ),
+            explanation = metadata(
+                Explanation.SubstituteTangentHalfAngle,
+                listOf(
+                    equationOf(originalExpression.secondChild, originalExpression.firstChild),
+                    equationOf(sineExpr, sineSubstitution),
+                    equationOf(cosineExpr, cosineSubstitution),
+                ),
+            ),
         )
     }
 }

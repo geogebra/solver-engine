@@ -81,20 +81,22 @@ enum class InequationsPlans(override val runner: CompositeMethod) : RunnerMethod
     ),
 }
 
+val inequationSimplificationSteps = steps {
+    firstOf {
+        option(NormalizationPlans.NormalizeExpression)
+        // check for contradiction or identity
+        option(InequationsRules.ExtractSolutionFromConstantInequation)
+        // normalize the equation
+        option(InequationsPlans.SimplifyInequation)
+
+        option(solvablePlansForInequations.removeConstantDenominatorsSteps)
+        option(PolynomialsPlans.ExpandPolynomialExpressionWithoutNormalization)
+    }
+}
+
 private val solveInequation = object : CompositeMethod() {
     val solveOrSimplifyInequation = steps {
-        whilePossible {
-            firstOf {
-                option(NormalizationPlans.NormalizeExpression)
-                // check for contradiction or identity
-                option(InequationsRules.ExtractSolutionFromConstantInequation)
-                // normalize the equation
-                option(InequationsPlans.SimplifyInequation)
-
-                option(solvablePlansForInequations.removeConstantDenominatorsSteps)
-                option(PolynomialsPlans.ExpandPolynomialExpressionWithoutNormalization)
-            }
-        }
+        whilePossible(inequationSimplificationSteps)
 
         optionally(solvablePlansForInequations.solvableRearrangementSteps)
         optionally(solvablePlansForInequations.coefficientRemovalSteps)

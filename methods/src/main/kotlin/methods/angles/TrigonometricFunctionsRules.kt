@@ -24,8 +24,8 @@ import engine.expressions.Expression
 import engine.expressions.Label
 import engine.expressions.fractionOf
 import engine.expressions.negOf
-import engine.expressions.powerOf
 import engine.expressions.productOf
+import engine.expressions.squareOf
 import engine.expressions.sumOf
 import engine.expressions.xp
 import engine.methods.Rule
@@ -485,22 +485,20 @@ private val applyDoubleAngleIdentity = rule {
                 ) to Explanation.ApplySineDoubleAngleIdentity
             TrigonometricFunctionType.Cos ->
                 sumOf(
-                    powerOf(
+                    squareOf(
                         wrapWithTrigonometricFunction(
                             trigFunction,
                             angle,
                             TrigonometricFunctionType.Cos,
                         ),
-                        two,
                     ),
                     negOf(
-                        powerOf(
+                        squareOf(
                             wrapWithTrigonometricFunction(
                                 trigFunction,
                                 angle,
                                 TrigonometricFunctionType.Sin,
                             ),
-                            two,
                         ),
                     ),
                 ) to Explanation.ApplyCosineDoubleAngleIdentity
@@ -515,12 +513,11 @@ private val applyDoubleAngleIdentity = rule {
                 sumOf(
                     One,
                     negOf(
-                        powerOf(
+                        squareOf(
                             wrapWithTrigonometricFunction(
                                 trigFunction,
                                 angle,
                             ),
-                            Two,
                         ),
                     ),
                 ),

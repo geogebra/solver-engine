@@ -24,16 +24,22 @@ import engine.expressions.Comparison
 import engine.expressions.Constants
 import engine.expressions.Constants.Pi
 import engine.expressions.Constants.Two
+import engine.expressions.Constants.Zero
 import engine.expressions.Contradiction
 import engine.expressions.DecimalExpression
 import engine.expressions.Equation
 import engine.expressions.Expression
 import engine.expressions.ExpressionWithConstraint
+import engine.expressions.Fraction
+import engine.expressions.Identity
+import engine.expressions.Product
 import engine.expressions.RecurringDecimalExpression
 import engine.expressions.SetSolution
 import engine.expressions.StatementSystem
 import engine.expressions.StatementUnion
+import engine.expressions.Sum
 import engine.expressions.Variable
+import engine.expressions.VariableList
 import engine.expressions.containsTrigExpression
 import engine.expressions.equationOf
 import engine.expressions.expressionWithConstraintOf
@@ -42,6 +48,7 @@ import engine.expressions.fractionOf
 import engine.expressions.inequationOf
 import engine.expressions.negOf
 import engine.expressions.productOf
+import engine.expressions.statementSystemOf
 import engine.expressions.statementUnionOf
 import engine.expressions.sumOf
 import engine.methods.CompositeMethod
@@ -64,6 +71,7 @@ import engine.patterns.SignedNumberPattern
 import engine.patterns.SolutionVariablePattern
 import engine.patterns.SolvablePattern
 import engine.patterns.TrigonometricExpressionPattern
+import engine.patterns.commutativeSumContaining
 import engine.patterns.commutativeSumOf
 import engine.patterns.condition
 import engine.patterns.contradictionOf
@@ -87,13 +95,18 @@ import methods.angles.TrigonometricFunctionsRules
 import methods.angles.findFunctionsRequiringDomainCheck
 import methods.constantexpressions.constantSimplificationSteps
 import methods.constantexpressions.simpleTidyUpSteps
+import methods.expand.ExpandRules
 import methods.factor.FactorPlans
 import methods.factor.FactorRules
 import methods.general.NormalizationPlans
 import methods.inequalities.InequalitiesPlans
 import methods.inequations.InequationsPlans
+import methods.inequations.InequationsRules
+import methods.inequations.inequationSimplificationSteps
+import methods.inequations.solvablePlansForInequations
 import methods.polynomials.PolynomialsPlans
 import methods.simplify.SimplifyPlans
+import methods.simplify.algebraicSimplificationSteps
 import methods.simplify.algebraicSimplificationStepsForEquations
 import methods.solvable.SolvablePlans
 import methods.solvable.SolvableRules
@@ -329,10 +342,28 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             val solveInequationInOneVariableSteps = steps {
                 inContext({ copy(solutionVariables = it.firstChild.variables.toList()) }) {
-                    apply(InequationsPlans.SolveInequation)
+                    // Based on SolveInequations with some extra steps woven in because of the period
+                    whilePossible(inequationSimplificationSteps)
+
+                    optionally(solvablePlansForInequations.solvableRearrangementSteps)
+                    optionally(solvablePlansForInequations.coefficientRemovalSteps)
+
+                    optionally {
+                        check {
+                            it.secondChild is Product ||
+                                (it.secondChild is Fraction && it.secondChild.firstChild is Product)
+                        }
+                        deeply {
+                            apply(ExpandRules.DistributeMultiplicationOverSum)
+                            applyToChildren(algebraicSimplificationStepsForEquations)
+                        }
+                    }
+
                     optionally(
-                        EquationsPlans.NormalizePeriod,
+                        NormalizePeriod,
                     )
+
+                    optionally(InequationsRules.ExtractSolutionFromInequationInSolvedForm)
                 }
             }
 
@@ -388,6 +419,8 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     CosineEquationSolutionExtractionTask(cosineEquationSolutionExtractionTask),
 
     SubstituteOriginalExpressionIntoQuadraticTrigEquation(substituteOriginalExpressionIntoQuadraticTrigEquation),
+
+    SubstituteTangentHalfAngleIntoLinearTrigEquation(substituteTangentHalfAngleIntoLinearTrigEquation),
 
     MergeTrigonometricEquationSolutionsTask(mergeTrigonometricEquationSolutionsTask),
 
@@ -511,13 +544,15 @@ val solveConstantEquationSteps = steps {
     apply(EquationsRules.ExtractSolutionFromConstantEquation)
 }
 
-fun mergeSolutionsWithConstraints(tasks: List<Task>): Expression? {
-    val (results, constraints) = tasks.map { task ->
-        task.result.let {
-            when (it) {
-                is ExpressionWithConstraint -> it.firstChild to it.secondChild
-                else -> it to null
-            }
+// Renamed to avoid clash as both have lists as arguments resulting in same JVM signature
+fun mergeTaskSolutionsWithConstraints(tasks: List<Task>): Expression? =
+    mergeSolutionsWithConstraints(tasks.map { it.result })
+
+fun mergeSolutionsWithConstraints(expression: List<Expression>): Expression? {
+    val (results, constraints) = expression.map {
+        when (it) {
+            is ExpressionWithConstraint -> it.firstChild to it.secondChild
+            else -> it to null
         }
     }.unzip()
 
@@ -579,7 +614,7 @@ fun trigonometricFunctionExtractionTaskBuilder(
                 ) ?: return@tasks null
             }
 
-            val startExpression = mergeSolutionsWithConstraints(tasks) ?: return@tasks null
+            val startExpression = mergeTaskSolutionsWithConstraints(tasks) ?: return@tasks null
 
             task(
                 startExpr = startExpression,
@@ -663,20 +698,189 @@ val substituteOriginalExpressionIntoQuadraticTrigEquation = taskSet {
         val splitTasks = substitutedValues.map {
             task(
                 startExpr = equationOf(originalExp, it.secondChild),
-                explanation = metadata(
-                    Explanation.SolveTrigonometricEquation,
-                ),
-                stepsProducer = optimalEquationSolvingSteps,
+                explanation = metadata(Explanation.SolveTrigonometricEquation),
+                stepsProducer = solveEquation.value,
             ) ?: return@tasks null
         }
 
         if (splitTasks.size > 1) {
-            val overallSolution = mergeSolutionsWithConstraints(splitTasks) ?: return@tasks null
+            val overallSolution = mergeTaskSolutionsWithConstraints(splitTasks) ?: return@tasks null
             task(
                 startExpr = overallSolution,
                 explanation = metadata(Explanation.CollectSolutions),
             )
         }
+
+        allTasks()
+    }
+}
+
+val solveSubstitutedHalfAngleTangentEquationSteps = steps {
+    inContext({ copy(solutionVariables = it.secondChild.firstChild.variables.toList()) }) {
+        applyTo(solveEquation.value) {
+            it.firstChild
+        }
+    }
+
+    apply(EquationsPlans.SubstituteOriginalExpressionIntoQuadraticTrigEquation)
+}
+
+val solveConstraintVerification = steps {
+    apply(EquationsRules.SubstituteValueOfVariable)
+    apply(EquationsPlans.SolveConstantEquation)
+}
+
+val substituteTangentHalfAngleIntoLinearTrigEquation = taskSet {
+    val variable = SolutionVariablePattern()
+    val argument = withOptionalConstantCoefficient(variable)
+
+    val genericArgument = condition {
+        !it.isConstantIn(solutionVariables)
+    }
+
+    val argumentTerm = oneOf(
+        argument,
+        genericArgument,
+    )
+
+    val sine = TrigonometricExpressionPattern.sin(
+        argumentTerm,
+    )
+    val sineTerm = withOptionalConstantCoefficient(
+        sine,
+    )
+    val cosine = withOptionalConstantCoefficient(
+        TrigonometricExpressionPattern.cos(
+            argumentTerm,
+        ),
+    )
+
+    val lhs = commutativeSumContaining(sineTerm, cosine)
+
+    val rhs = FixedPattern(Zero)
+
+    val equation = equationOf(lhs, rhs)
+
+    pattern = equation
+    explanation = Explanation.SubstituteTangentHalfAngleAndSolve
+
+    explanationParameters {
+        val substitutionVariable = findUnusedVariableLetter(expression, listOf('t'))
+
+        val argumentExpression = if (isBound(genericArgument)) {
+            fractionOf(
+                get(genericArgument),
+                Two,
+            )
+        } else {
+            calculateHalfAngle(
+                get(variable),
+                argument.getCoefficient(),
+                get(argument),
+            )
+        }
+
+        listOf(
+            equationOf(
+                wrapWithTrigonometricFunction(
+                    sine,
+                    argumentExpression,
+                    TrigonometricFunctionType.Tan,
+                ),
+                Variable(substitutionVariable),
+            ),
+        )
+    }
+
+    tasks {
+        val substitutionTask = task(
+            startExpr = get(equation),
+            explanation = metadata(
+                Explanation.SubstituteTangentHalfAngleTask,
+            ),
+            stepsProducer = steps {
+                apply(EquationsRules.SubstituteHalfAngleTangentIntoLinearEquation)
+                optionally {
+                    applyTo(algebraicSimplificationSteps) {
+                        it.secondChild.secondChild
+                    }
+                }
+            },
+        )
+
+        val (substitutedEquation, originalExpression) =
+            substitutionTask?.result?.let {
+                it.firstChild to it.secondChild
+            } ?: return@tasks null
+
+        val constraintTask = task(
+            startExpr = originalExpression.secondChild,
+            explanation = metadata(AlgebraExplanation.ComputeDomainOfAlgebraicExpression),
+            stepsProducer = EquationsPlans.ComputeDomainOfTrigonometricExpression,
+        ) ?: return@tasks null
+
+        val solutionTask = task(
+            startExpr = statementSystemOf(
+                substitutedEquation,
+                originalExpression,
+            ),
+            explanation = metadata(Explanation.SolveSubstitutedHalfAngleTangentEquation),
+            stepsProducer = solveSubstitutedHalfAngleTangentEquationSteps,
+        ) ?: return@tasks null
+
+        val (constraintBase, constraintPeriod) = constraintTask.result.let {
+            if (it !is SetSolution) {
+                return@tasks null
+            }
+
+            // Extract the solution from SetSolution -> SetDifference -> FiniteSet
+            val solution = it.secondChild.secondChild.firstChild
+
+            if (solution is Sum && solution.childCount == 2) {
+                solution.firstChild to solution.secondChild
+            } else if (createPeriodPattern().matches(context, solution)) {
+                Zero to solution
+            } else {
+                return@tasks null
+            }
+        }
+
+        val solutionVariable = Variable(context.solutionVariables.first())
+
+        val constraintEquation = equationOf(
+            solutionVariable,
+            constraintBase,
+        )
+
+        val constraintCheckTask = task(
+            startExpr = statementSystemOf(
+                get(equation),
+                constraintEquation,
+            ),
+            explanation = metadata(
+                Explanation.CheckIfConstraintIsSolution,
+                equationOf(constraintEquation.firstChild, sumOf(constraintBase, constraintPeriod)),
+            ),
+            stepsProducer = solveConstraintVerification,
+        ) ?: return@tasks null
+
+        val mergedSolution = when (constraintCheckTask.result) {
+            is Identity -> mergeSolutionsWithConstraints(
+                listOf(
+                    solutionTask.result,
+                    engine.expressions.setSolutionOf(
+                        VariableList(listOf(solutionVariable)),
+                        finiteSetOf(sumOf(constraintBase, constraintPeriod)),
+                    ),
+                ),
+            )
+            else -> solutionTask.result
+        } ?: return@tasks null
+
+        task(
+            startExpr = mergedSolution,
+            explanation = metadata(Explanation.CollectSolutions),
+        )
 
         allTasks()
     }

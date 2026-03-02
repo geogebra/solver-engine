@@ -464,3 +464,9 @@ fun setSolutionOf(variables: VariableList, set: Expression) =
 fun nameXp(value: String) = Name(value)
 
 fun degreeOf(value: Expression) = UnitExpression(unit = UnitType.Degree, value = value)
+
+fun squareOf(expr: Expression) =
+    powerOf(
+        expr,
+        Constants.Two,
+    )

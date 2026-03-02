@@ -357,12 +357,26 @@ enum class EquationSolvingStrategy(
 
                 option(tanEquationSteps)
 
-                option(linearTrigEquationSteps)
-
                 // Upcoming equation types
             }
 
             optionally(EquationsPlans.MergeTrigonometricEquationSolutionsTask)
+        },
+    ),
+
+    LinearTrigonometricEquation(
+        family = Family.LINEAR,
+        priority = 5,
+        explanation = EquationsExplanation.SolveLinearTrigonometricEquations,
+        steps = steps {
+            check { it.containsTrigExpression() }
+
+            optionally(solvablePlansForEquations.moveEverythingToTheLeftAndSimplify)
+
+            firstOf {
+                option(linearTrigEquationSteps)
+                option(EquationsPlans.SubstituteTangentHalfAngleIntoLinearTrigEquation)
+            }
         },
     ),
 

@@ -402,6 +402,11 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     SolveTrigonometricEquation,
 
     /**
+     * Solve the linear trigonometric equation
+     */
+    SolveLinearTrigonometricEquations,
+
+    /**
      * Separate an equation of the form |f(x)| = K (positive constant) into two equations,
      * f(x) = K and f(x) = -K so that they can then be solved.
      *
@@ -745,6 +750,47 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      * Maybe use a placeholder here
      */
     ExtractSineOverCosine,
+
+    /**
+     * Apply the tangent half angle substitution with %1 using the formulas %2 and %3
+     *
+     * %1 The substituted tangent value, e.g. tan(x) = t
+     * %2 sin(x) = 2t/(1-t^2)
+     * %3 cos(x) = (1-t^2)/2t
+     *
+     */
+    SubstituteTangentHalfAngle,
+
+    /**
+     * Substitute the tangent half angle formulas into the equation
+     */
+    SubstituteTangentHalfAngleTask,
+
+    /**
+     * Apply the tangent half angle substitution with %1 and solve
+     *
+     * %1 The substituted tangent value, e.g. tan(x) = t
+     */
+    SubstituteTangentHalfAngleAndSolve,
+
+    /**
+     * Solve the substituted equation containing tangent half angles
+     */
+    SolveSubstitutedHalfAngleTangentEquation,
+
+    /**
+     * Check if %1 is a solution of the given equation
+     *
+     * %1 - constraint equation of the form x = c + period
+     */
+    CheckIfConstraintIsSolution,
+
+    /**
+     * Substitute %1 and simplify
+     *
+     * %1 - Equation of the form x = c
+     */
+    SubstituteValueOfVariable,
 
     ;
 
