@@ -407,6 +407,16 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     SolveLinearTrigonometricEquations,
 
     /**
+     * Solve the linear trigonometric equation using half angle substitution.
+     */
+    SolveLinearTrigonometricEquationsUsingHalfAngleSubstitution,
+
+    /**
+     * Solve the linear trigonometric equation using auxiliary angle substitution.
+     */
+    SolveLinearTrigonometricEquationsUsingAuxiliaryAngleSubstitution,
+
+    /**
      * Separate an equation of the form |f(x)| = K (positive constant) into two equations,
      * f(x) = K and f(x) = -K so that they can then be solved.
      *
@@ -704,13 +714,6 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     SubstituteOriginalExpressionIntoQuadraticTrigEquationAndSolve,
 
     /**
-     * Substitute back %1 and solve
-     *
-     * %1: original equation ( <substituted variable> = f(x) )
-     */
-    SubstituteAndSolveTrigonometricEquation,
-
-    /**
      * Reorganize quadratic equation containing trigonometric expressions to a [f(x)^ 2] + b f(x) + c
      */
     ReorganizeQuadraticPolynomialWithTrigonometricFunctions,
@@ -791,6 +794,42 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      * %1 - Equation of the form x = c
      */
     SubstituteValueOfVariable,
+
+    /**
+     * Rewrite the given equation as A sin (omega * x + phi) = c
+     *
+     * %1 - A sin (omega * x + phi) = c
+     */
+    SubstituteAuxiliaryAngleAndSolve,
+
+    /**
+     * Identify omega
+     */
+    IdentifyAuxiliaryAngleCoefficient,
+
+    /**
+     * Substitute %1 and %2 into A = sqrt(a^2 + b^2) and solve.
+     *
+     * %1 - a = ...
+     * %2 - b = ...
+     * %3 - A = sqrt(a^2 + b^2)
+     */
+    AuxiliaryAngleCalculateA,
+
+    /**
+     * Substitute %1 and %2 into tan(phi) = b / a and solve.
+     *
+     * %1 - a = ...
+     * %2 - b = ...
+     */
+    AuxiliaryAngleCalculatePhi,
+
+    /**
+     * Rewrite equation as A sin (omega * x + phi) = c and solve.
+     *
+     * %1 - A sin (omega * x + phi)
+     */
+    AuxiliaryAngleRewriteAndSolveEquation,
 
     ;
 

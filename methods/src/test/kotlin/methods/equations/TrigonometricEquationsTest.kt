@@ -1,5 +1,8 @@
 package methods.equations
 
+import engine.context.Context
+import engine.context.strategyChoice
+import engine.methods.testMethod
 import engine.methods.testMethodInX
 import methods.algebra.AlgebraExplanation
 import methods.angles.AnglesExplanation
@@ -1340,12 +1343,18 @@ class TrigonometricEquationsTest {
         }
     }
 
+    private val halfAngleContext = Context(
+        solutionVariables = listOf("x"),
+        preferredStrategies = mapOf(strategyChoice(EquationSolvingStrategy.HalfAngleSubstitutionMethod)),
+    )
+
     // PLUT-1098
     @Test
     fun `test half angle substitution strategy when constraint is not a solution`() {
         testMethodInX {
             method = EquationsPlans.SolveEquation
             inputExpr = "sin[6 x] + cos[6 x] - 1 = 0"
+            context = halfAngleContext
 
             check {
                 explanation {
@@ -1418,6 +1427,7 @@ class TrigonometricEquationsTest {
         testMethodInX {
             method = EquationsPlans.SolveEquation
             inputExpr = "sin[x] + cos[x] + 1 = 0"
+            context = halfAngleContext
 
             check {
                 explanation {
@@ -1552,6 +1562,143 @@ class TrigonometricEquationsTest {
                 task {
                     startExpr = "SetSolution[x: {-[/pi/ / 12] + [k * /pi/ / 3], 0 + [k * /pi/ / 3]}] " +
                         "GIVEN SetSolution[k: /integers/]"
+                }
+            }
+        }
+    }
+
+    private val substituteAuxiliaryAngleContext = Context(
+        solutionVariables = listOf("x"),
+        preferredStrategies = mapOf(strategyChoice(EquationSolvingStrategy.AuxiliaryAngleSubstitutionMethod)),
+    )
+
+    // PLUT-1099
+    @Test
+    fun `test auxiliary angle substitution strategy`() {
+        testMethod {
+            method = EquationsPlans.SolveEquation
+            context = substituteAuxiliaryAngleContext
+            inputExpr = "cos[x] + sqrt[3] * sin[x] + 1 = 0"
+
+            check {
+                explanation {
+                    key = EquationsExplanation.SolveLinearTrigonometricEquationsUsingAuxiliaryAngleSubstitution
+                }
+
+                step {
+                    toExpr = "cos[x] + sqrt[3] * sin[x] = -1"
+                }
+
+                step {
+                    fromExpr = "cos[x] + sqrt[3] * sin[x] = -1"
+                    explanation {
+                        key = EquationsExplanation.SubstituteAuxiliaryAngleAndSolve
+                    }
+
+                    task {
+                        startExpr = "SetSolution[\\omega: {1}]"
+                        explanation {
+                            key = EquationsExplanation.IdentifyAuxiliaryAngleCoefficient
+                        }
+                    }
+
+                    task {
+                        startExpr = "A = sqrt[[(sqrt[3]) ^ 2] + [1 ^ 2]]"
+
+                        step {
+                            toExpr = "SetSolution[A: {2}]"
+                        }
+                    }
+
+                    task {
+                        startExpr = "tan[\\phi] = [1 / sqrt[3]]"
+                        explanation {
+                            key = EquationsExplanation.AuxiliaryAngleCalculatePhi
+                        }
+
+                        step {
+                            toExpr = "SetSolution[\\phi: {[/pi/ / 6] + k * /pi/}] GIVEN SetSolution[k: /integers/]"
+                        }
+                    }
+
+                    task {
+                        startExpr = "2 sin[x + [/pi/ / 6]] = -1"
+                        explanation {
+                            key = EquationsExplanation.AuxiliaryAngleRewriteAndSolveEquation
+                        }
+
+                        step {
+                            toExpr = "SetSolution[x: {-[/pi/ / 3] + 2 k * /pi/, /pi/ + 2 k * /pi/}] " +
+                                "GIVEN SetSolution[k: /integers/]"
+                            explanation {
+                                key = EquationsExplanation.SolveTrigonometricEquation
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        testMethod {
+            method = EquationsPlans.SolveEquation
+            context = substituteAuxiliaryAngleContext
+            inputExpr = "sin[6 x] + cos[6 x] - 1 = 0"
+
+            check {
+                explanation {
+                    key = EquationsExplanation.SolveLinearTrigonometricEquationsUsingAuxiliaryAngleSubstitution
+                }
+
+                step {
+                    toExpr = "sin[6 x] + cos[6 x] = 1"
+                }
+
+                step {
+                    explanation {
+                        key = EquationsExplanation.SubstituteAuxiliaryAngleAndSolve
+                    }
+
+                    task {
+                        startExpr = "SetSolution[\\omega: {6}]"
+                        explanation {
+                            key = EquationsExplanation.IdentifyAuxiliaryAngleCoefficient
+                        }
+                    }
+
+                    task {
+                        startExpr = "A = sqrt[[1 ^ 2] + [1 ^ 2]]"
+                        explanation {
+                            key = EquationsExplanation.AuxiliaryAngleCalculateA
+                        }
+
+                        step {
+                            toExpr = "SetSolution[A: {sqrt[2]}]"
+                        }
+                    }
+
+                    task {
+                        startExpr = "tan[\\phi] = 1"
+                        explanation {
+                            key = EquationsExplanation.AuxiliaryAngleCalculatePhi
+                        }
+
+                        step {
+                            toExpr = "SetSolution[\\phi: {[/pi/ / 4] + k * /pi/}] GIVEN SetSolution[k: /integers/]"
+                        }
+                    }
+
+                    task {
+                        startExpr = "sqrt[2] * sin[6 x + [/pi/ / 4]] = 1"
+                        explanation {
+                            key = EquationsExplanation.AuxiliaryAngleRewriteAndSolveEquation
+                        }
+
+                        step {
+                            toExpr =
+                                "SetSolution[x: {[/pi/ / 12] + [k * /pi/ / 3], [k * /pi/ / 3]}] " +
+                                "GIVEN SetSolution[k: /integers/]"
+                        }
+                    }
                 }
             }
         }

@@ -726,7 +726,7 @@ describe('Solver Parser Unit Tests', () => {
           type: 'Sum',
           operands: [variable('\\alpha'), variable('x'), variable('\\Beta')],
         },
-        latex: ['\\alpha+x+\\Beta', '\\alpha{}+x+\\Beta{}'],
+        latex: ['\\alpha{}+x+\\Beta{}', '\\alpha+x+\\Beta'],
       },
       {
         solver: 'x [\\alpha ^ 2]',
@@ -740,7 +740,7 @@ describe('Solver Parser Unit Tests', () => {
             },
           ],
         },
-        latex: ['x{\\alpha}^{2}', 'x {\\alpha{} ^ 2}'],
+        latex: ['x{\\alpha{}}^{2}', 'x {\\alpha{} ^ 2}'],
       },
     ]);
   });

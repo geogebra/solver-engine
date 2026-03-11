@@ -30,6 +30,7 @@ import engine.expressions.DecimalExpression
 import engine.expressions.Equation
 import engine.expressions.Expression
 import engine.expressions.ExpressionWithConstraint
+import engine.expressions.FiniteSet
 import engine.expressions.Fraction
 import engine.expressions.Identity
 import engine.expressions.Product
@@ -48,6 +49,8 @@ import engine.expressions.fractionOf
 import engine.expressions.inequationOf
 import engine.expressions.negOf
 import engine.expressions.productOf
+import engine.expressions.squareOf
+import engine.expressions.squareRootOf
 import engine.expressions.statementSystemOf
 import engine.expressions.statementUnionOf
 import engine.expressions.sumOf
@@ -63,6 +66,7 @@ import engine.methods.taskSet
 import engine.operators.TrigonometricFunctionType
 import engine.patterns.AnyPattern
 import engine.patterns.ArbitraryVariablePattern
+import engine.patterns.ConstantInSolutionVariablePattern
 import engine.patterns.FindPattern
 import engine.patterns.FixedPattern
 import engine.patterns.OptionalWrappingPattern
@@ -119,7 +123,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     SimplifyByEliminatingConstantFactorOfLhsWithZeroRhs(
         plan {
             explanation = Explanation.SimplifyByEliminatingConstantFactorOfLhsWithZeroRhs
-            pattern = SolvablePattern(AnyPattern(), FixedPattern(Constants.Zero))
+            pattern = SolvablePattern(AnyPattern(), FixedPattern(Zero))
 
             steps {
                 branchOn(Setting.EliminateNonZeroFactorByDividing) {
@@ -127,7 +131,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                         apply(EquationsRules.EliminateConstantFactorOfLhsWithZeroRhsDirectly)
                     }
                     case(BooleanSetting.True) {
-                        check { it is Comparison && it.rhs == Constants.Zero }
+                        check { it is Comparison && it.rhs == Zero }
                         apply(solvablePlansForEquations.coefficientRemovalSteps)
                     }
                 }
@@ -185,7 +189,7 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
             explanation = Explanation.SimplifyByFactoringNegativeSignOfLeadingCoefficient
 
             steps {
-                check { it.secondChild == Constants.Zero }
+                check { it.secondChild == Zero }
                 applyTo(FactorRules.FactorNegativeSignOfLeadingCoefficient) { it.firstChild }
                 apply(SolvableRules.NegateBothSides)
             }
@@ -422,6 +426,8 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
     SubstituteTangentHalfAngleIntoLinearTrigEquation(substituteTangentHalfAngleIntoLinearTrigEquation),
 
+    SubstituteAuxiliaryAngleAndSolve(substituteAuxiliaryAngleAndSolve),
+
     MergeTrigonometricEquationSolutionsTask(mergeTrigonometricEquationSolutionsTask),
 
     NormalizePeriod(normalizePeriodPlan),
@@ -638,7 +644,7 @@ val sineEquationSolutionExtractionTask = trigonometricFunctionExtractionTaskBuil
 ) { lhs: Expression, rhs: Expression ->
     equationOf(
         lhs,
-        sumOf(Constants.Pi, negOf(rhs)),
+        sumOf(Pi, negOf(rhs)),
     )
 }
 
@@ -886,6 +892,208 @@ val substituteTangentHalfAngleIntoLinearTrigEquation = taskSet {
     }
 }
 
+fun Expression.extractSolutionFromSolutionSet(): Expression? =
+    if (this is SetSolution && this.secondChild is FiniteSet && this.secondChild.childCount == 1) {
+        this.secondChild.firstChild
+    } else {
+        null
+    }
+
+val substituteAuxiliaryAngleAndSolve = taskSet {
+    val variable = SolutionVariablePattern()
+    val argument = withOptionalConstantCoefficient(variable)
+    val sine = TrigonometricExpressionPattern.sin(
+        argument,
+    )
+    val sineTerm = withOptionalConstantCoefficient(
+        sine,
+    )
+    val cosine = withOptionalConstantCoefficient(
+        TrigonometricExpressionPattern.cos(
+            argument,
+        ),
+    )
+
+    val lhs = commutativeSumOf(sineTerm, cosine)
+
+    val constant = ConstantInSolutionVariablePattern()
+
+    val rhs = condition(constant) { it != Zero }
+
+    val equation = equationOf(lhs, rhs)
+
+    pattern = equation
+    explanation = Explanation.SubstituteAuxiliaryAngleAndSolve
+
+    val omegaVariable = Variable("\\omega")
+    val amplitudeVariable = Variable("A")
+    val phiVariable = Variable("\\phi")
+
+    explanationParameters {
+        listOf(
+            equationOf(
+                productOf(
+                    amplitudeVariable,
+                    wrapWithTrigonometricFunction(
+                        sine,
+                        sumOf(
+                            get(variable).withCoefficient(omegaVariable),
+                            phiVariable,
+                        ),
+                    ),
+                ),
+                Variable("c"),
+            ),
+        )
+    }
+
+    tasks {
+        val coefficient = argument.getCoefficient()
+        val omegaTask = task(
+            startExpr = engine.expressions.setSolutionOf(
+                VariableList(listOf(omegaVariable)),
+                finiteSetOf(
+                    coefficient,
+                ),
+            ),
+            explanation = metadata(Explanation.IdentifyAuxiliaryAngleCoefficient),
+        )
+
+        val aCoefficient = sineTerm.getCoefficient()
+        val bCoefficient = cosine.getCoefficient()
+
+        val aEquation = equationOf(
+            Variable("a"),
+            aCoefficient,
+        )
+        val bEquation = equationOf(
+            Variable("b"),
+            bCoefficient,
+        )
+
+        // solve A = sqrt(a^2 + b^2)
+        // We don't have formulas for tasks, so the formula is just a placeholder here
+        val amplitudeTask = task(
+            startExpr = equationOf(
+                amplitudeVariable,
+                squareRootOf(
+                    sumOf(
+                        squareOf(aCoefficient),
+                        squareOf(bCoefficient),
+                    ),
+                ),
+            ),
+            explanation = metadata(
+                Explanation.AuxiliaryAngleCalculateA,
+                listOf(
+                    aEquation,
+                    bEquation,
+                    equationOf(
+                        amplitudeVariable,
+                        squareRootOf(
+                            sumOf(
+                                squareOf(Variable("a")),
+                                squareOf(Variable("b")),
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+            stepsProducer = steps {
+                inContext({ copy(solutionVariables = it.firstChild.variables.toList()) }) {
+                    apply(EquationsPlans.SolveEquation)
+                }
+            },
+        )
+
+        // phi = atan(b/a)
+        // We solve tan(phi) = b/a
+        val phiTask = task(
+            startExpr = equationOf(
+                wrapWithTrigonometricFunction(
+                    sine,
+                    phiVariable,
+                    TrigonometricFunctionType.Tan,
+                ),
+                when (aCoefficient) {
+                    Constants.One -> bCoefficient
+                    else -> fractionOf(
+                        bCoefficient,
+                        aCoefficient,
+                    )
+                },
+            ),
+            explanation = metadata(
+                Explanation.AuxiliaryAngleCalculatePhi,
+                listOf(
+                    aEquation,
+                    bEquation,
+                ),
+            ),
+            stepsProducer = steps {
+                inContext({ copy(solutionVariables = it.firstChild.variables.toList()) }) {
+                    apply(EquationsPlans.SolveEquation)
+                }
+            },
+        )
+
+        val calculatedAValue = amplitudeTask?.result?.extractSolutionFromSolutionSet()
+        val omegaValue = omegaTask.result.extractSolutionFromSolutionSet()
+
+        if (
+            calculatedAValue == null ||
+            omegaValue == null
+        ) {
+            return@tasks null
+        }
+
+        // We ignore the period and the constraint for phi, and check if it contains an arctan. In that case we will not
+        // be using this strategy
+        val calculatedPhiValue = phiTask?.result?.firstChild?.extractSolutionFromSolutionSet()?.firstChild.let {
+            if (it != null && it.containsTrigExpression(TrigonometricFunctionType.Arctan)) {
+                null
+            } else {
+                it
+            }
+        } ?: return@tasks null
+
+        // Substitute calculated into [ A sin(omega * x + phi) = c ] and solve for x:
+        task(
+            startExpr = equationOf(
+                productOf(
+                    calculatedAValue,
+                    wrapWithTrigonometricFunction(
+                        sine,
+                        sumOf(
+                            get(variable).withCoefficient(omegaValue),
+                            calculatedPhiValue,
+                        ),
+                    ),
+                ),
+                get(rhs),
+            ),
+            explanation = metadata(
+                Explanation.AuxiliaryAngleRewriteAndSolveEquation,
+                listOf(
+                    productOf(
+                        amplitudeVariable,
+                        wrapWithTrigonometricFunction(
+                            sine,
+                            sumOf(
+                                get(variable).withCoefficient(omegaVariable),
+                                phiVariable,
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+            stepsProducer = EquationsPlans.SolveEquation,
+        )
+
+        allTasks()
+    }
+}
+
 val mergeTrigonometricEquationSolutionsTask = taskSet {
     val solution = setSolutionOf(
         AnyPattern(),
@@ -1028,7 +1236,7 @@ val divideByCosAndSimplify = plan {
 
     val cosineTerm = withOptionalConstantCoefficient(cosine)
 
-    pattern = equationOf(commutativeSumOf(sine, cosineTerm), FixedPattern(Constants.Zero))
+    pattern = equationOf(commutativeSumOf(sine, cosineTerm), FixedPattern(Zero))
 
     explanation = Explanation.DivideByTrigFunctionAndSimplify
 

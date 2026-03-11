@@ -44,6 +44,7 @@ import engine.operators.StatementSystemOperator
 import engine.operators.StatementUnionOperator
 import engine.operators.SumOperator
 import engine.operators.TrigonometricFunctionOperator
+import engine.operators.TrigonometricFunctionType
 import engine.operators.UnaryExpressionOperator
 import engine.operators.UnitExpressionOperator
 import engine.operators.UnitType
@@ -700,8 +701,9 @@ fun Expression.containsUnits(unitType: UnitType? = null): Boolean =
 fun Expression.containsExpression(expression: Expression): Boolean =
     this == expression || children.any { it.containsExpression(expression) }
 
-fun Expression.containsTrigExpression(): Boolean =
-    this is TrigonometricExpression || children.any { it.containsTrigExpression() }
+fun Expression.containsTrigExpression(functionType: TrigonometricFunctionType? = null): Boolean =
+    this is TrigonometricExpression && (functionType == null || this.functionType == functionType) ||
+        children.any { it.containsTrigExpression(functionType) }
 
 fun Expression.allSubterms(): List<Expression> = listOf(this) + children.flatMap { it.allSubterms() }
 

@@ -262,7 +262,13 @@ function treeToLatexInner(
       if (n.subscript && !n.decorators) {
         return `${tfd(n.value)}_{${tfd(n.subscript)}}`;
       } else {
-        return tfd(`${n.value}${n.subscript ? `_{${n.subscript}}` : ''}`);
+        // We need an extra {} at the end to avoid confusion with special symbols
+        // e.g. \\omega * x --> \\omegax
+        return tfd(
+          `${n.value}${n.value.startsWith('\\') ? '{}' : ''}${
+            n.subscript ? `_{${n.subscript}}` : ''
+          }`,
+        );
       }
     case 'Name':
       return tfd(`\\textrm{${n.value}}`);

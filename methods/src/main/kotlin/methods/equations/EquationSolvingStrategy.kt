@@ -241,7 +241,7 @@ enum class EquationSolvingStrategy(
 
                 // The solution without domain computation doesn't always work, so we try it first
                 option {
-                    check { isSet(engine.context.Setting.SolveEquationsWithoutComputingTheDomain) }
+                    check { isSet(Setting.SolveEquationsWithoutComputingTheDomain) }
                     apply(EquationsPlans.SolveEquationWithOneAbsoluteValueBySubstitution)
                 }
 
@@ -375,6 +375,38 @@ enum class EquationSolvingStrategy(
 
             firstOf {
                 option(linearTrigEquationSteps)
+            }
+        },
+    ),
+
+    @PublicStrategy
+    AuxiliaryAngleSubstitutionMethod(
+        family = Family.LINEAR,
+        priority = 5,
+        explanation = EquationsExplanation.SolveLinearTrigonometricEquationsUsingAuxiliaryAngleSubstitution,
+        steps = steps {
+            check { it.containsTrigExpression() }
+
+            optionally(solvablePlansForEquations.moveVariablesToTheLeftAndSimplify)
+            optionally(solvablePlansForEquations.moveConstantsToTheRightAndSimplify)
+
+            firstOf {
+                option(EquationsPlans.SubstituteAuxiliaryAngleAndSolve)
+            }
+        },
+    ),
+
+    @PublicStrategy
+    HalfAngleSubstitutionMethod(
+        family = Family.LINEAR,
+        priority = 5,
+        explanation = EquationsExplanation.SolveLinearTrigonometricEquationsUsingHalfAngleSubstitution,
+        steps = steps {
+            check { it.containsTrigExpression() }
+
+            optionally(solvablePlansForEquations.moveEverythingToTheLeftAndSimplify)
+
+            firstOf {
                 option(EquationsPlans.SubstituteTangentHalfAngleIntoLinearTrigEquation)
             }
         },

@@ -41,7 +41,7 @@ const alternatives = computed(() => props.transformation.alternatives || []);
 
 <template>
   <TransformationComponent
-    v-if="!showThroughSteps && isThrough"
+    v-if="!showThroughSteps && isThrough && alternatives.length == 0"
     :transformation="transformation.steps![0]"
     :depth="depth"
   />

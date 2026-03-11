@@ -14,11 +14,13 @@ contents to a new release section (e.g. _[0.x]_).
 - Reduce double angle arguments in trigonometric expressions. (PLUT-1075)
 - Solve linear trigonometric equation of the form a sin(f(x)) + b cos(f(x)) = 0. (PLUT-1096)
 - Solve linear trigonometric equations using tangent half angle substitution. (PLUT-1098)
+- Solve linear trigonometric equations using the auxiliary angle method. (PLUT-1099)
 
 ### Fixed
 
 - SDK: Fixed expression with degree coloring. (PLUT-1075)
 - Reduction to unit circle in expression with fractions. (PLUT-1095)
+- SDK: Fixed special symbol rendering. (PLUT-1099)
 
 ### Changed
 
