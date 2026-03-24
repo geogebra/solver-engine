@@ -34,6 +34,7 @@ import engine.expressions.Product
 import engine.expressions.SimpleComparator
 import engine.expressions.StatementUnion
 import engine.expressions.Sum
+import engine.expressions.TrigonometricExpression
 import engine.expressions.Variable
 import engine.expressions.VariableList
 import engine.expressions.VoidExpression
@@ -90,6 +91,7 @@ import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.VariableExpressionPattern
 import engine.patterns.absoluteValueOf
 import engine.patterns.commutativeSumContaining
+import engine.patterns.commutativeSumOf
 import engine.patterns.condition
 import engine.patterns.equationOf
 import engine.patterns.expressionWithFactor
@@ -253,6 +255,39 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
         },
     ),
 
+    SumOfNonZeroSquaresIsNonZero(
+        rule {
+            val argument = condition {
+                !it.isConstantIn(solutionVariables)
+            }
+
+            val pattern = equationOf(
+                commutativeSumOf(
+                    withOptionalConstantCoefficient(
+                        engine.patterns.squareOf(
+                            TrigonometricExpressionPattern.sin(argument),
+                        ),
+                        positiveOnly = true,
+                    ),
+                    withOptionalConstantCoefficient(
+                        engine.patterns.squareOf(
+                            TrigonometricExpressionPattern.cos(argument),
+                        ),
+                        positiveOnly = true,
+                    ),
+                ),
+                FixedPattern(Constants.Zero),
+            )
+
+            onPattern(pattern) {
+                ruleResult(
+                    toExpr = Contradiction(variableListOf(context.solutionVariables), expression),
+                    explanation = metadata(Explanation.SumOfNonZeroSquaresIsNonZero),
+                )
+            }
+        },
+    ),
+
     SolveEquationWithIncompatibleSigns(solveEquationWithIncompatibleSigns),
 
     ExtractSolutionFromNegativeUnderSquareRootInRealDomain(
@@ -383,9 +418,11 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
     ReorderQuadraticEquationWithTrigonometricFunctions(reorderQuadraticEquationWithTrigonometricFunctions),
     MergeTrigonometricEquationSolutions(mergeTrigonometricEquationSolutions),
     DivideByCos(divideByCos),
+    DivideBySquaredCosTerm(divideBySquaredCosTerm),
     ExtractSineOverCosine(extractSineOverCosine),
     SubstituteValueOfVariable(substituteValueOfVariable),
     SubstituteHalfAngleTangentIntoLinearEquation(substituteHalfAngleTangentIntoLinearEquation),
+    MultiplyRhsByPythagoreanIdentity(multiplyRhsByTrigonometricIdentity),
 }
 
 private val extractSolutionFromEquationInPlusMinusForm = rule {
@@ -1417,42 +1454,56 @@ private val mergeTrigonometricEquationSolutions = rule {
     }
 }
 
-// Find the term with cosine in a sum and divide each term by it
-private val divideByCos = rule {
-    val cosine = TrigonometricExpressionPattern.cos(AnyPattern())
+private fun createDivideSumByTermRule(termPattern: Pattern, explanationKey: MetadataKey) =
+    rule {
+        val pattern = sumContaining(withOptionalConstantCoefficient(termPattern))
 
-    val pattern = sumContaining(withOptionalConstantCoefficient(cosine))
+        onPattern(pattern) {
+            val children = get(pattern).children
+            val divisor = distribute(termPattern)
 
-    onPattern(pattern) {
-        val children = get(pattern).children
-        val divisor = distribute(cosine)
-
-        val dividedChildren = children.map {
-            when (it) {
-                is Fraction -> fractionOf(
-                    it.firstChild,
-                    productOf(divisor, it.secondChild),
-                )
-                else -> fractionOf(it, divisor)
+            val dividedChildren = children.map {
+                when (it) {
+                    is Fraction -> fractionOf(
+                        it.firstChild,
+                        productOf(divisor, it.secondChild),
+                    )
+                    else -> fractionOf(it, divisor)
+                }
             }
+
+            ruleResult(
+                toExpr = sumOf(dividedChildren),
+                explanation = metadata(
+                    explanationKey,
+                    divisor,
+                ),
+            )
         }
-
-        ruleResult(
-            toExpr = sumOf(dividedChildren),
-            explanation = metadata(
-                Explanation.DivideByTrigFunction,
-                divisor,
-            ),
-        )
     }
-}
 
-// Extract [ sin[ a ] / cos[ a ] ] from a fraction with other terms in numerator and denominator
+// Find the term with cosine in a sum and divide each term by it
+private val divideByCos = createDivideSumByTermRule(
+    TrigonometricExpressionPattern.cos(AnyPattern()),
+    Explanation.DivideByTrigFunction,
+)
+
+private val divideBySquaredCosTerm = createDivideSumByTermRule(
+    engine.patterns.squareOf(TrigonometricExpressionPattern.cos(AnyPattern())),
+    Explanation.DivideByTrigFunction,
+)
+
+// Extract [ sin[ a ] / cos[ a ] ] from a fraction with other terms in numerator and denominator,
+// extracts optional powers as well
 private val extractSineOverCosine = rule {
     val argument = AnyPattern()
 
-    val sine = TrigonometricExpressionPattern.sin(argument)
-    val cosine = TrigonometricExpressionPattern.cos(argument)
+    val sine = OptionalWrappingPattern(TrigonometricExpressionPattern.sin(argument)) {
+        powerOf(it, AnyPattern())
+    }
+    val cosine = OptionalWrappingPattern(TrigonometricExpressionPattern.cos(argument)) {
+        powerOf(it, AnyPattern())
+    }
 
     val numeratorProduct = productContaining(sine)
     val denominatorProduct = productContaining(cosine)
@@ -1469,13 +1520,13 @@ private val extractSineOverCosine = rule {
         val restNumerator = if (isBound(numeratorProduct)) {
             restOf(numeratorProduct)
         } else {
-            Constants.One
+            One
         }
 
         val restDenominator = if (isBound(denominatorProduct)) {
             restOf(denominatorProduct)
         } else {
-            Constants.One
+            One
         }
 
         ruleResult(
@@ -1689,6 +1740,39 @@ private val substituteHalfAngleTangentIntoLinearEquation = rule {
                     equationOf(cosineExpr, cosineSubstitution),
                 ),
             ),
+        )
+    }
+}
+
+private val multiplyRhsByTrigonometricIdentity = rule {
+    val lhs = AnyPattern()
+    val rhs = ConstantInSolutionVariablePattern()
+
+    onEquation(lhs, rhs) {
+        val newRhs = productOf(
+            move(rhs),
+            sumOf(
+                squareOf(
+                    TrigonometricExpression(
+                        TrigonometricFunctionType.Sin,
+                        Variable(context.solutionVariables.first()),
+                    ),
+                ),
+                squareOf(
+                    TrigonometricExpression(
+                        TrigonometricFunctionType.Cos,
+                        Variable(context.solutionVariables.first()),
+                    ),
+                ),
+            ),
+        )
+
+        ruleResult(
+            toExpr = equationOf(
+                get(lhs),
+                newRhs,
+            ),
+            explanation = metadata(Explanation.MultiplyConstantTermByPythagoreanIdentity),
         )
     }
 }

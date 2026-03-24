@@ -24,6 +24,7 @@ import engine.expressions.Constants
 import engine.expressions.Equation
 import engine.expressions.Expression
 import engine.expressions.TrigonometricExpression
+import engine.expressions.containsSquaredTrigExpression
 import engine.expressions.containsTrigExpression
 import engine.expressions.hasSingleValue
 import engine.methods.PublicStrategy
@@ -39,9 +40,13 @@ import engine.operators.TrigonometricFunctionType
 import engine.patterns.AnyPattern
 import engine.patterns.FixedPattern
 import engine.patterns.TrigonometricExpressionPattern
+import engine.patterns.commutativeProductContaining
 import engine.patterns.commutativeSumOf
+import engine.patterns.condition
 import engine.patterns.equationOf
+import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
+import engine.patterns.squareOf
 import engine.patterns.withOptionalConstantCoefficient
 import methods.angles.TrigonometricFunctionsRules
 import methods.angles.createEvaluateInverseTrigonometricFunctionExactlyPlan
@@ -154,6 +159,109 @@ enum class EquationSolvingStrategy(
 
             // take root of both sides and solve
             apply(RootsMethod.steps)
+        },
+    ),
+
+    QuadraticHomogeneousTrigonometricEquation(
+        family = Family.POLYNOMIAL,
+        priority = 9,
+        explanation = EquationsExplanation.SolveQuadraticHomogeneousTrigonometricEquation,
+        steps = steps {
+            check { it.containsSquaredTrigExpression() }
+
+            // bring to form: a sin^2[x] + b sin[x]cos[x] + c cos^2[x] = d
+            optionally(solvablePlansForEquations.moveVariablesToTheLeftAndSimplify)
+            optionally(solvablePlansForEquations.moveConstantsToTheRightAndSimplify)
+
+            optionally(EquationsPlans.ReduceGeneralQuadraticTrigEquationToHomogeneous)
+
+            firstOf {
+                // Case 1 & 3 - One of the squared terms is zero
+                option {
+                    checkForm {
+                        val argument = condition {
+                            !it.isConstantIn(solutionVariables)
+                        }
+
+                        val firstDegreeTerm = commutativeProductContaining(
+                            TrigonometricExpressionPattern.sin(argument),
+                            TrigonometricExpressionPattern.cos(argument),
+                        )
+
+                        equationOf(
+                            commutativeSumOf(
+                                withOptionalConstantCoefficient(
+                                    squareOf(
+                                        oneOf(
+                                            TrigonometricExpressionPattern.sin(argument),
+                                            TrigonometricExpressionPattern.cos(argument),
+                                        ),
+                                    ),
+                                ),
+                                firstDegreeTerm,
+                            ),
+                            FixedPattern(Constants.Zero),
+                        )
+                    }
+
+                    applyTo(FactorPlans.FactorGreatestCommonFactor) {
+                        it.firstChild
+                    }
+
+                    optionally(EquationsPlans.SimplifyEquation)
+
+                    firstOf {
+                        // If the equation factored into at least two distinct factors
+                        option(separateFactoredEquationSteps)
+
+                        // If the equation factored into a single power P(x)^n = 0
+                        option(RootsMethod.steps)
+                    }
+                }
+                // Case 2.1 - First degree term is zero, squared terms are positive
+                option(EquationsRules.SumOfNonZeroSquaresIsNonZero)
+                // Case 2.2 - First degree term is zero, squared terms are negative
+                option {
+                    checkForm {
+                        val argument = condition {
+                            !it.isConstantIn(solutionVariables)
+                        }
+
+                        val sineTerm =
+                            withOptionalConstantCoefficient(
+                                squareOf(
+                                    TrigonometricExpressionPattern.sin(argument),
+                                ),
+                            )
+
+                        val cosineTerm =
+                            withOptionalConstantCoefficient(
+                                squareOf(
+                                    TrigonometricExpressionPattern.cos(argument),
+                                ),
+                            )
+
+                        equationOf(
+                            commutativeSumOf(
+                                sineTerm,
+                                cosineTerm,
+                            ),
+                            FixedPattern(Constants.Zero),
+                        )
+                    }
+
+                    apply(SolvableRules.NegateBothSidesUnconditionally)
+                    optionally(EquationsPlans.SimplifyEquation)
+
+                    apply(EquationsRules.SumOfNonZeroSquaresIsNonZero)
+                }
+                // Check: This does not work when argument is a sum
+                // case 4 - Both squared terms are non-zero, any b value
+                option {
+                    apply(EquationsPlans.DivideByCosSquaredAndSimplify)
+                    apply(EquationsPlans.SolveEquation)
+                }
+            }
         },
     ),
 
@@ -414,7 +522,7 @@ enum class EquationSolvingStrategy(
 
     QuadraticTrigonometricEquation(
         family = Family.POLYNOMIAL,
-        priority = 5,
+        priority = 8,
         explanation = EquationsExplanation.SolveQuadraticTrigonometricEquations,
         steps = steps {
             optionally(quadraticPreprocessingSteps)
@@ -486,7 +594,9 @@ enum class EquationSolvingStrategy(
     override fun isIncompatibleWith(other: Strategy): Boolean {
         return family != other.family ||
             this == RootsMethod && other == CompletingTheSquare ||
-            this == CompletingTheSquare && other == RootsMethod
+            this == CompletingTheSquare && other == RootsMethod ||
+            this == QuadraticHomogeneousTrigonometricEquation && other == Factoring ||
+            this == Factoring && other == QuadraticHomogeneousTrigonometricEquation
     }
 }
 

@@ -16,7 +16,9 @@
  */
 
 import engine.methods.testMethodInX
+import methods.equations.EquationsExplanation
 import methods.equations.EquationsPlans
+import methods.factor.FactorExplanation
 import org.junit.jupiter.api.Test
 
 class QuadraticTrigonometricEquationsTest {
@@ -396,6 +398,333 @@ class QuadraticTrigonometricEquationsTest {
                     }
 
                     task {}
+                }
+            }
+        }
+    }
+
+    @Suppress("LongMethod")
+    @Test
+    fun `solve homogeneous equation with zero product property`() {
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "sqrt[3] * [cos ^ 2][x] + 3 sin[x] * cos[x] = 0"
+
+            check {
+                explanation {
+                    key = EquationsExplanation.SolveQuadraticHomogeneousTrigonometricEquation
+                }
+
+                step {
+                    toExpr = "cos[x] (sqrt[3] * cos[x] + 3 sin[x]) = 0"
+                    explanation {
+                        key = FactorExplanation.FactorGreatestCommonFactorInExpression
+                    }
+                }
+
+                step {
+                    toExpr = "cos[x] = 0 OR sqrt[3] * cos[x] + 3 sin[x] = 0"
+                }
+
+                step {
+                    task {
+                        startExpr = "cos[x] = 0"
+                        explanation {
+                            key = EquationsExplanation.SolveEquationInEquationUnion
+                        }
+                    }
+
+                    task {
+                        startExpr = "sqrt[3] * cos[x] + 3 sin[x] = 0"
+                        explanation {
+                            key = EquationsExplanation.SolveEquationInEquationUnion
+                        }
+                    }
+
+                    task {
+                        startExpr = "SetSolution[x: {-[/pi/ / 6] + k * /pi/, [/pi/ / 2] + k * /pi/}] " +
+                            "GIVEN SetSolution[k: /integers/]"
+                    }
+                }
+            }
+        }
+
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "sqrt[3] * [cos ^ 2][2 x] + 3 sin[2 x] * cos[2 x] = 0"
+
+            check {
+                explanation {
+                    key = EquationsExplanation.SolveQuadraticHomogeneousTrigonometricEquation
+                }
+
+                step {
+                    toExpr = "cos[2 x] (sqrt[3] * cos[2 x] + 3 sin[2 x]) = 0"
+                    explanation {
+                        key = FactorExplanation.FactorGreatestCommonFactorInExpression
+                    }
+                }
+
+                step {
+                    toExpr = "cos[2 x] = 0 OR sqrt[3] * cos[2 x] + 3 sin[2 x] = 0"
+                }
+
+                step {
+                    task {
+                        startExpr = "cos[2 x] = 0"
+                        explanation {
+                            key = EquationsExplanation.SolveEquationInEquationUnion
+                        }
+                    }
+
+                    task {
+                        startExpr = "sqrt[3] * cos[2 x] + 3 sin[2 x] = 0"
+                        explanation {
+                            key = EquationsExplanation.SolveEquationInEquationUnion
+                        }
+                    }
+
+                    task {
+                        startExpr = "SetSolution[x: {-[/pi/ / 12] + [k * /pi/ / 2], [/pi/ / 4] + [k * /pi/ / 2]}]" +
+                            " GIVEN SetSolution[k: /integers/]"
+                    }
+                }
+            }
+        }
+
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "[sin ^ 2][x] + sqrt[3] * sin[x] * cos[x] = 0"
+
+            check {
+                explanation {
+                    key = EquationsExplanation.SolveQuadraticHomogeneousTrigonometricEquation
+                }
+
+                step {
+                    toExpr = "sin[x] (sin[x] + sqrt[3] * cos[x]) = 0"
+                    explanation {
+                        key = FactorExplanation.FactorGreatestCommonFactorInExpression
+                    }
+                }
+
+                step {
+                    toExpr = "sin[x] = 0 OR sin[x] + sqrt[3] * cos[x] = 0"
+                }
+
+                step {
+                    toExpr = "SetSolution[x: {-[/pi/ / 3] + k * /pi/, k * /pi/}] GIVEN SetSolution[k: /integers/]"
+
+                    task {
+                        startExpr = "sin[x] = 0"
+                        explanation {
+                            key = EquationsExplanation.SolveEquationInEquationUnion
+                        }
+                    }
+
+                    task {
+                        startExpr = "sin[x] + sqrt[3] * cos[x] = 0"
+                        explanation {
+                            key = EquationsExplanation.SolveEquationInEquationUnion
+                        }
+                    }
+
+                    task {
+                        startExpr =
+                            "SetSolution[x: {-[/pi/ / 3] + k * /pi/, k * /pi/}] GIVEN SetSolution[k: /integers/]"
+                    }
+                }
+            }
+        }
+
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "[sin ^ 2][x + [/pi/ / 3]] + sqrt[3] * sin[x + [/pi/ / 3]] * cos[x + [/pi/ / 3]] = 0"
+
+            check {
+                explanation {
+                    key = EquationsExplanation.SolveQuadraticHomogeneousTrigonometricEquation
+                }
+
+                step {
+                    toExpr = "sin[x + [/pi/ / 3]] (sin[x + [/pi/ / 3]] + sqrt[3] * cos[x + [/pi/ / 3]]) = 0"
+                    explanation {
+                        key = FactorExplanation.FactorGreatestCommonFactorInExpression
+                    }
+                }
+
+                step {
+                    toExpr = "sin[x + [/pi/ / 3]] = 0 OR sin[x + [/pi/ / 3]] + sqrt[3] * cos[x + [/pi/ / 3]] = 0"
+                }
+
+                step {
+                    task {
+                        startExpr = "sin[x + [/pi/ / 3]] = 0"
+                        explanation {
+                            key = EquationsExplanation.SolveEquationInEquationUnion
+                        }
+                    }
+
+                    task {
+                        startExpr = "sin[x + [/pi/ / 3]] + sqrt[3] * cos[x + [/pi/ / 3]] = 0"
+                        explanation {
+                            key = EquationsExplanation.SolveEquationInEquationUnion
+                        }
+                    }
+
+                    task {
+                        startExpr = "SetSolution[x: {-[/pi/ / 3] + k * /pi/, -[2 /pi/ / 3] + k * /pi/}] " +
+                            "GIVEN SetSolution[k: /integers/]"
+                        explanation {
+                            key = EquationsExplanation.CollectSolutions
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `solve homogeneous equation with no linear terms`() {
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "[sin ^ 2][x] + 3 [cos ^ 2][x] = 0"
+
+            check {
+                toExpr = "Contradiction[x: [sin ^ 2][x] + 3 [cos ^ 2][x] = 0]"
+                explanation {
+                    key = EquationsExplanation.SumOfNonZeroSquaresIsNonZero
+                }
+            }
+        }
+
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "-[sin ^ 2][x] - 3 [cos ^ 2][x] = 0"
+
+            check {
+                explanation {
+                    key = EquationsExplanation.SolveQuadraticHomogeneousTrigonometricEquation
+                }
+
+                step {
+                    toExpr = "-(-[sin ^ 2][x] - 3 [cos ^ 2][x]) = 0"
+                }
+
+                step {
+                    toExpr = "[sin ^ 2][x] + 3 [cos ^ 2][x] = 0"
+                }
+
+                step {
+                    toExpr = "Contradiction[x: [sin ^ 2][x] + 3 [cos ^ 2][x] = 0]"
+                    explanation {
+                        key = EquationsExplanation.SumOfNonZeroSquaresIsNonZero
+                    }
+                }
+            }
+        }
+
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "-[sin ^ 2][3 x - 2] - 3 [cos ^ 2][3 x - 2] = 0"
+
+            check {
+                explanation {
+                    key = EquationsExplanation.SolveQuadraticHomogeneousTrigonometricEquation
+                }
+
+                step {
+                    toExpr = "-(-[sin ^ 2][3 x - 2] - 3 [cos ^ 2][3 x - 2]) = 0"
+                }
+
+                step {
+                    toExpr = "[sin ^ 2][3 x - 2] + 3 [cos ^ 2][3 x - 2] = 0"
+                }
+
+                step {
+                    toExpr = "Contradiction[x: [sin ^ 2][3 x - 2] + 3 [cos ^ 2][3 x - 2] = 0]"
+                    explanation {
+                        key = EquationsExplanation.SumOfNonZeroSquaresIsNonZero
+                    }
+                }
+            }
+        }
+    }
+
+    @Suppress("LongMethod")
+    @Test
+    fun `solve general homogeneous equation`() {
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "[sin ^ 2][x] - sin[x] * cos[x] - 2 [cos ^ 2][x] = 0"
+
+            check {
+                explanation {
+                    key = EquationsExplanation.SolveQuadraticHomogeneousTrigonometricEquation
+                }
+
+                step {
+                    toExpr = "[tan ^ 2][x] - tan[x] - 2 = 0"
+                    explanation {
+                        key = EquationsExplanation.DivideByTrigFunctionAndSimplify
+                    }
+                }
+
+                step {
+                    toExpr =
+                        "SetSolution[x: {-[/pi/ / 4] + k * /pi/, arctan[2] + k * /pi/}] " +
+                        "GIVEN SetSolution[k: /integers/]"
+                }
+            }
+        }
+
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr =
+                "[sin ^ 2][2 x + [/pi/ / 3]] - sin[2 x + [/pi/ / 3]] * cos[2 x + [/pi/ / 3]] " +
+                "- 2 [cos ^ 2][2 x + [/pi/ / 3]] = 0"
+
+            check {
+                explanation {
+                    key = EquationsExplanation.SolveQuadraticHomogeneousTrigonometricEquation
+                }
+
+                step {
+                    toExpr = "[tan ^ 2][2 x + [/pi/ / 3]] - tan[2 x + [/pi/ / 3]] - 2 = 0"
+                    explanation {
+                        key = EquationsExplanation.DivideByTrigFunctionAndSimplify
+                    }
+                }
+
+                step {
+                    toExpr = "SetSolution[x: {-[7 /pi/ / 24] + [k * /pi/ / 2]," +
+                        " [arctan[2] - [/pi/ / 3] / 2] + [k * /pi/ / 2]}] GIVEN SetSolution[k: /integers/]"
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `simplify to homogeneous equation and solve`() {
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "3 [sin ^ 2][x] + [cos ^ 2][x] + 2 sin[x] * cos[x] = 2"
+
+            check {
+                step {
+                    toExpr = "[sin ^ 2][x] - [cos ^ 2][x] + 2 sin[x] * cos[x] = 0"
+                }
+
+                step {
+                    toExpr = "[tan ^ 2][x] - 1 + 2 tan[x] = 0"
+                    explanation {
+                        key = EquationsExplanation.DivideByTrigFunctionAndSimplify
+                    }
+                }
+
+                step {
+                    toExpr = "SetSolution[x: {arctan[-1 + sqrt[2]] + k * /pi/, arctan[-1 - sqrt[2]] + k * /pi/}] " +
+                        "GIVEN SetSolution[k: /integers/]"
                 }
             }
         }

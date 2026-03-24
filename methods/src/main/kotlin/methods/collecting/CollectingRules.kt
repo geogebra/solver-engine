@@ -87,7 +87,10 @@ enum class CollectingRules(override val runner: Rule) : RunnerMethod {
 
     CollectLikeTermsWithTrigonometricFunctions(
         CollectLikeTermsRule(
-            factorSelector = { it is TrigonometricExpression },
+            factorSelector = {
+                it is TrigonometricExpression ||
+                    it is Power && it.firstChild is TrigonometricExpression
+            },
             coefficientCondition = { it.isConstant() && it !is TrigonometricExpression },
             explanationKey = Explanation.CollectLikeTerms,
         ).rule,

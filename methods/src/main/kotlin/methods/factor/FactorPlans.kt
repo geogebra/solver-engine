@@ -70,8 +70,19 @@ import java.math.BigInteger
 enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
     FactorGreatestCommonFactor(
         plan {
-            explanation = Explanation.FactorGreatestCommonFactor
-            pattern = sumContaining()
+            val sumPattern = sumContaining()
+
+            pattern = sumPattern
+
+            explanation {
+                metadata(
+                    if (get(sumPattern).containsTrigExpression()) {
+                        Explanation.FactorGreatestCommonFactorInExpression
+                    } else {
+                        Explanation.FactorGreatestCommonFactor
+                    },
+                )
+            }
 
             // start by factoring the entire sum, then factor from what's left of the sum
             fun extractLastFactor(exp: Expression): Expression =

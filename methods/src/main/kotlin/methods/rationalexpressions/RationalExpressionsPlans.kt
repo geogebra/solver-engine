@@ -62,7 +62,7 @@ import methods.fractionarithmetic.FractionArithmeticRules
 import methods.general.GeneralRules
 import methods.polynomials.PolynomialsPlans
 import methods.simplify.SimplifyPlans
-import methods.simplify.algebraicSimplificationSteps
+import methods.simplify.algebraicSimplificationStepsForEquations
 import java.math.BigInteger
 
 enum class RationalExpressionsPlans(override val runner: CompositeMethod) : RunnerMethod {
@@ -206,7 +206,7 @@ private val rationalExpressionSimplificationSteps = steps {
     optionally(RationalExpressionsPlans.FactorNumeratorOfFraction)
     optionally(RationalExpressionsPlans.FactorDenominatorOfFraction)
     apply(FractionArithmeticPlans.SimplifyFraction)
-    optionally(algebraicSimplificationSteps)
+    optionally(algebraicSimplificationStepsForEquations)
 }
 
 private val addRationalExpressions = taskSet {
@@ -337,8 +337,7 @@ fun computeLcdAndMultipliers(factoredFractions: List<Fraction>): Pair<Expression
         }
     }
 
-    val integerList = factorsList.map {
-            factors ->
+    val integerList = factorsList.map { factors ->
         factors.singleOrNull { it is IntegerExpression }?.asInteger() ?: BigInteger.ONE
     }
 

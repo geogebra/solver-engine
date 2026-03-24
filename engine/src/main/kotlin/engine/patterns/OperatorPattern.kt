@@ -20,6 +20,7 @@
 package engine.patterns
 
 import engine.context.Context
+import engine.expressions.Constants
 import engine.expressions.Expression
 import engine.operators.AddEquationsOperator
 import engine.operators.BinaryExpressionOperator
@@ -70,6 +71,8 @@ fun fractionOf(numerator: Pattern, denominator: Pattern) =
 fun divideBy(divisor: Pattern) = OperatorPattern(UnaryExpressionOperator.DivideBy, listOf(divisor))
 
 fun powerOf(base: Pattern, exponent: Pattern) = OperatorPattern(BinaryExpressionOperator.Power, listOf(base, exponent))
+
+fun squareOf(base: Pattern) = powerOf(base, FixedPattern(Constants.Two))
 
 fun squareRootOf(radicand: Pattern) = OperatorPattern(UnaryExpressionOperator.SquareRoot, listOf(radicand))
 

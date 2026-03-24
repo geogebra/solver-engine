@@ -79,7 +79,12 @@ export function isThroughStep(
   // https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates
   // for documentation on this language feature.
 ): trans is Transformation & { steps: NonNullable<Transformation['steps']> } {
-  return !!trans.steps && trans.steps.length === 1 && trans.steps[0].path === trans.path;
+  return (
+    !!trans.steps &&
+    trans.steps.length === 1 &&
+    trans.steps[0].path === trans.path &&
+    !trans.alternatives?.length
+  );
 }
 
 // If we end up using this more, then we can change to a library that has a faster cloning

@@ -129,8 +129,8 @@ class UnitExpression(
 class TrigonometricExpression(
     val functionType: TrigonometricFunctionType,
     operand: Expression,
-    val powerInside: Boolean,
-    val inverseNotation: InverseNotationType,
+    val powerInside: Boolean = true,
+    val inverseNotation: InverseNotationType = InverseNotationType.ArcPrefix,
     meta: NodeMeta = BasicMeta(),
 ) : ValueExpression(
         operator = TrigonometricFunctionOperator(functionType, powerInside, inverseNotation),

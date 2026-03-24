@@ -262,7 +262,7 @@ private val simplifyPowerOfMonomial = plan {
 
         applyAfterMaybeExtractingMinus {
             apply(GeneralRules.DistributePowerOfProduct)
-            optionally(algebraicSimplificationSteps)
+            optionally(algebraicSimplificationStepsForEquations)
         }
     }
 }

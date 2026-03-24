@@ -1293,10 +1293,6 @@ class TrigonometricEquationsTest {
                     }
 
                     step {
-                        toExpr = "2 tan[2 x] - [cos[2 x] / cos[2 x]] = 0"
-                    }
-
-                    step {
                         toExpr = "2 tan[2 x] - 1 = 0"
                     }
                 }
@@ -1327,10 +1323,6 @@ class TrigonometricEquationsTest {
 
                     step {
                         toExpr = "tan[x] + [-sqrt[3] * cos[x] / cos[x]] = 0"
-                    }
-
-                    step {
-                        toExpr = "tan[x] - [sqrt[3] * cos[x] / cos[x]] = 0"
                     }
 
                     step {

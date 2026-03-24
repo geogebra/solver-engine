@@ -705,6 +705,21 @@ fun Expression.containsTrigExpression(functionType: TrigonometricFunctionType? =
     this is TrigonometricExpression && (functionType == null || this.functionType == functionType) ||
         children.any { it.containsTrigExpression(functionType) }
 
+fun Expression.containsSquaredTrigExpression(functionType: TrigonometricFunctionType? = null): Boolean {
+    val isMatching = if (this is Power) {
+        val trigBase = base
+
+        trigBase is TrigonometricExpression && (
+            functionType == null ||
+                trigBase.functionType == functionType
+        ) && exponent == Constants.Two
+    } else {
+        false
+    }
+
+    return isMatching || children.any { it.containsSquaredTrigExpression(functionType) }
+}
+
 fun Expression.allSubterms(): List<Expression> = listOf(this) + children.flatMap { it.allSubterms() }
 
 fun Expression.complexity(): Int = 1 + children.sumOf { it.complexity() }

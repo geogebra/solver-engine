@@ -831,6 +831,26 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      */
     AuxiliaryAngleRewriteAndSolveEquation,
 
+    /**
+     * Solve quadratic homogeneous trigonometric equation.
+     */
+    SolveQuadraticHomogeneousTrigonometricEquation,
+
+    /**
+     * Sum of the squares of two non-zero values is always non-zero
+     */
+    SumOfNonZeroSquaresIsNonZero,
+
+    /**
+     * Multiply the constant term by the pythagorean identity
+     */
+    MultiplyConstantTermByPythagoreanIdentity,
+
+    /**
+     * Reduce general quadratic trigonometric equation to quadratic homogeneous
+     */
+    ReduceGeneralQuadraticTrigEquationToHomogeneous,
+
     ;
 
     override val category = "Equations"

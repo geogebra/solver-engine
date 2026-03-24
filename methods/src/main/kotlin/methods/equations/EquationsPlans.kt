@@ -97,11 +97,14 @@ import methods.algebra.AlgebraPlans
 import methods.algebra.findDenominatorsAndDivisors
 import methods.angles.TrigonometricFunctionsRules
 import methods.angles.findFunctionsRequiringDomainCheck
+import methods.collecting.CollectingRules
 import methods.constantexpressions.constantSimplificationSteps
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.expand.ExpandRules
 import methods.factor.FactorPlans
 import methods.factor.FactorRules
+import methods.fractionarithmetic.FractionArithmeticRules
+import methods.general.GeneralRules
 import methods.general.NormalizationPlans
 import methods.inequalities.InequalitiesPlans
 import methods.inequations.InequationsPlans
@@ -110,7 +113,6 @@ import methods.inequations.inequationSimplificationSteps
 import methods.inequations.solvablePlansForInequations
 import methods.polynomials.PolynomialsPlans
 import methods.simplify.SimplifyPlans
-import methods.simplify.algebraicSimplificationSteps
 import methods.simplify.algebraicSimplificationStepsForEquations
 import methods.solvable.SolvablePlans
 import methods.solvable.SolvableRules
@@ -433,6 +435,10 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     NormalizePeriod(normalizePeriodPlan),
 
     DivideByCosAndSimplify(divideByCosAndSimplify),
+
+    DivideByCosSquaredAndSimplify(divideByCosSquaredAndSimplify),
+
+    ReduceGeneralQuadraticTrigEquationToHomogeneous(reduceGeneralQuadraticTrigEquationToHomogeneous),
 
     @PublicMethod
     SolveConstantEquation(
@@ -807,7 +813,7 @@ val substituteTangentHalfAngleIntoLinearTrigEquation = taskSet {
             stepsProducer = steps {
                 apply(EquationsRules.SubstituteHalfAngleTangentIntoLinearEquation)
                 optionally {
-                    applyTo(algebraicSimplificationSteps) {
+                    applyTo(algebraicSimplificationStepsForEquations) {
                         it.secondChild.secondChild
                     }
                 }
@@ -1262,12 +1268,102 @@ val divideByCosAndSimplify = plan {
     }
 }
 
+val divideByCosSquaredAndSimplify = plan {
+    val argument = condition {
+        !it.isConstantIn(solutionVariables)
+    }
+
+    val sineTerm =
+        withOptionalConstantCoefficient(
+            engine.patterns.squareOf(
+                TrigonometricExpressionPattern.sin(argument),
+            ),
+        )
+
+    val cosine = engine.patterns.squareOf(
+        TrigonometricExpressionPattern.cos(argument),
+    )
+
+    val cosineTerm = withOptionalConstantCoefficient(cosine)
+
+    val equation = equationOf(
+        commutativeSumContaining(
+            sineTerm,
+            cosineTerm,
+        ),
+        FixedPattern(Zero),
+    )
+
+    pattern = equation
+
+    explanation = Explanation.DivideByTrigFunctionAndSimplify
+
+    explanationParameters(cosine)
+
+    steps {
+        applyTo(EquationsRules.DivideBySquaredCosTerm) {
+            it.firstChild
+        }
+
+        optionally(algebraicSimplificationStepsForEquations)
+
+        applyTo(extractor = { it.firstChild }) {
+            whilePossible {
+                deeply {
+                    firstOf {
+                        option(EquationsRules.ExtractSineOverCosine)
+                        option(FractionArithmeticRules.CancelCommonFactorInFraction)
+                        option(FractionArithmeticRules.SimplifyNegativeInNumerator)
+                    }
+                }
+            }
+            whilePossible {
+                deeply(TrigonometricFunctionsRules.SimplifyToDerivedFunction)
+            }
+        }
+
+        optionally(algebraicSimplificationStepsForEquations)
+
+        // The expression should only contain tangents at this point
+        check {
+            it.onlyContainsTrigFunctionType(TrigonometricFunctionType.Tan)
+        }
+    }
+}
+
 val simplifyTrigonometricEquationSolutionSteps = steps {
     apply(EquationsRules.MergeTrigonometricEquationSolutions)
     optionally {
         applyTo(algebraicSimplificationStepsForEquations) {
             it.secondChild
         }
+    }
+}
+
+// if rhs is not zero, then we can multiply it by pythagorean identity and simplify the equation so it
+// becomes homogeneous
+val reduceGeneralQuadraticTrigEquationToHomogeneous = plan {
+    pattern = equationOf(
+        AnyPattern(),
+        condition { it != Zero },
+    )
+
+    explanation = Explanation.ReduceGeneralQuadraticTrigEquationToHomogeneous
+
+    steps {
+        apply(EquationsRules.MultiplyRhsByPythagoreanIdentity)
+
+        // Move multiplied constant term to the left
+        apply(SolvableRules.MoveVariablesToTheLeft)
+        applyTo(GeneralRules.CancelAdditiveInverseElements) {
+            it.secondChild
+        }
+
+        deeply(ExpandRules.DistributeMultiplicationOverSum)
+
+        whilePossible { deeply(CollectingRules.CollectLikeTermsWithTrigonometricFunctions) }
+
+        apply(algebraicSimplificationStepsForEquations)
     }
 }
 

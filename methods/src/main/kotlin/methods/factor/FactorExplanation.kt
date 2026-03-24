@@ -320,6 +320,14 @@ enum class FactorExplanation : CategorisedMetadataKey {
      */
     FactorExpression,
 
+    /**
+     * Factor out the greatest common factor from a sum containing polynomial-like expressions
+     *
+     * E.g. sqrt[3] * [cos ^ 2][ x ] + 3 sin[ x ] * cos[ x ] = 0 ->
+     *      cos[x] (sqrt[3] * cos[x] + 3 sin[x]) = 0
+     */
+    FactorGreatestCommonFactorInExpression,
+
     ;
 
     override val category = "Factor"

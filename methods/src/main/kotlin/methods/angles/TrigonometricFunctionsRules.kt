@@ -37,6 +37,7 @@ import engine.patterns.ArbitraryVariablePattern
 import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
 import engine.patterns.NaryPattern
+import engine.patterns.OptionalPowerPattern
 import engine.patterns.OptionalWrappingPattern
 import engine.patterns.Pattern
 import engine.patterns.SignedIntegerPattern
@@ -671,55 +672,78 @@ private val simplifyToDerivedFunction = rule {
     val sine = TrigonometricExpressionPattern.sin(argument)
     val cosine = TrigonometricExpressionPattern.cos(argument)
 
+    val powerSine = OptionalPowerPattern(sine, AnyPattern())
+
+    val powerCosine = OptionalPowerPattern(cosine, AnyPattern())
+
     val tanFraction = fractionOf(
-        sine,
-        cosine,
+        powerSine,
+        powerCosine,
     )
 
     val cotFraction = fractionOf(
-        cosine,
-        sine,
+        powerCosine,
+        powerSine,
     )
 
     val secFraction = fractionOf(
         FixedPattern(One),
-        cosine,
+        powerCosine,
     )
 
     val cscFraction = fractionOf(
         FixedPattern(One),
-        sine,
+        powerSine,
     )
 
     val pattern = oneOf(tanFraction, cotFraction, secFraction, cscFraction)
 
     onPattern(pattern) {
         val argument = get(argument)
-        val toExpression = transform(
+
+        fun Expression.optionalDerivedPower(
+            power1: OptionalPowerPattern,
+            power2: OptionalPowerPattern? = null,
+        ): Expression? {
+            val exponent1 = get(power1.exponent)
+            val exponent2 = power2?.let { get(it.exponent) } ?: exponent1
+
+            return if (exponent1 == exponent2) {
+                when (exponent1) {
+                    One -> this
+                    else -> engine.expressions.powerOf(this, exponent1)
+                }
+            } else {
+                null
+            }
+        }
+
+        val derivedExpression =
             when {
                 isBound(tanFraction) -> wrapWithTrigonometricFunction(
                     sine,
                     argument,
                     TrigonometricFunctionType.Tan,
-                )
+                ).optionalDerivedPower(powerSine, powerCosine)
                 isBound(cotFraction) -> wrapWithTrigonometricFunction(
                     cosine,
                     argument,
                     TrigonometricFunctionType.Cot,
-                )
+                ).optionalDerivedPower(powerSine, powerCosine)
                 isBound(secFraction) -> wrapWithTrigonometricFunction(
                     cosine,
                     argument,
                     TrigonometricFunctionType.Sec,
-                )
+                ).optionalDerivedPower(powerCosine)
                 isBound(cscFraction) -> wrapWithTrigonometricFunction(
                     sine,
                     argument,
                     TrigonometricFunctionType.Csc,
-                )
-                else -> return@onPattern null
-            },
-        )
+                ).optionalDerivedPower(powerSine)
+                else -> null
+            } ?: return@onPattern null
+
+        val toExpression = transform(derivedExpression)
 
         ruleResult(
             toExpr = toExpression,

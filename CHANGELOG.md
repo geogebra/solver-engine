@@ -15,6 +15,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Solve linear trigonometric equation of the form a sin(f(x)) + b cos(f(x)) = 0. (PLUT-1096)
 - Solve linear trigonometric equations using tangent half angle substitution. (PLUT-1098)
 - Solve linear trigonometric equations using the auxiliary angle method. (PLUT-1099)
+- Solve quadratic homogeneous trigonometric equations. (PLUT-1103)
 
 ### Fixed
 

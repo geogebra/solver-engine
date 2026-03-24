@@ -30,6 +30,7 @@ import engine.expressions.Minus
 import engine.expressions.Power
 import engine.expressions.Sum
 import engine.expressions.SumView
+import engine.expressions.TrigonometricExpression
 import engine.expressions.areEquivalentSums
 import engine.expressions.fractionOf
 import engine.expressions.inverse
@@ -387,7 +388,10 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
 
             onPattern(frac) {
                 val factor = get(commonFactor)
-                if (!factor.isDefinitelyNotUndefined() || (factor.isConstant() && !factor.isNotZeroBySign())) {
+
+                val factorIsNotDefined = !factor.isDefinitelyNotUndefined() && factor !is TrigonometricExpression
+
+                if (factorIsNotDefined || (factor.isConstant() && !factor.isNotZeroBySign())) {
                     return@onPattern null
                 }
 
