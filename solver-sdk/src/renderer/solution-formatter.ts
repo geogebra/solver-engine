@@ -16,7 +16,7 @@
  */
 
 import { ExpressionTree } from '../parser';
-import { MathWords } from './tree-to-latex';
+import { MathWords, treeToLatex } from './tree-to-latex';
 
 export interface SolutionFormatter {
   formatSolution(
@@ -163,7 +163,9 @@ export const simpleSolutionFormatter: SolutionFormatter = {
             case 0:
               break;
             case 1:
-              return `\\text{${w.InfinitelyManySolutions}}`;
+              return w.InfinitelyManySolutions.split('%v')
+                .map((t) => (t ? `\\text{${t}}` : t)) // If string is empty avoid extra \\text tag
+                .join(treeToLatex(varList.operands[0]));
             default:
               return `${rec(varList, null)} \\in \\mathbb{R}`;
           }

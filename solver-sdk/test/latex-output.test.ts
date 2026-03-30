@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { LatexSettings } from '../src';
+import { defaultMathWords, LatexSettings } from '../src';
 import {
   jsonToLatex,
   latexToTree,
@@ -189,6 +189,23 @@ it('Univariate identity solution', () => {
   expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
     '\\text{infinitely many solutions}',
   );
+});
+
+it('Univariate identity solution, with placeholder', () => {
+  const solution: MathJson = {
+    type: 'Identity',
+    operands: [
+      { type: 'VariableList', operands: [variable('y')] },
+      { type: 'Equation', operands: [variable('y'), variable('y')] },
+    ],
+  };
+
+  expect(
+    jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter }, null, {
+      ...defaultMathWords,
+      InfinitelyManySolutions: 'for all %v in R',
+    }),
+  ).to.equal('\\text{for all }y\\text{ in R}');
 });
 
 it('Multivariate identity solution', () => {

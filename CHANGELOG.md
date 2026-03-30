@@ -25,6 +25,8 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Changed
 
+- SDK: Allow for placeholder in Identity math word. (PLUT-1097)
+
 ### Removed
 
 ## [1.4.15] 2026-02-06
