@@ -18,15 +18,18 @@
 package methods.algebra
 
 import engine.expressions.Constants
+import engine.expressions.Contradiction
 import engine.expressions.DivideBy
 import engine.expressions.Expression
 import engine.expressions.ExpressionWithConstraint
 import engine.expressions.Fraction
 import engine.expressions.Identity
 import engine.expressions.ListExpression
+import engine.expressions.Logarithm
 import engine.expressions.Product
 import engine.expressions.SetSolution
 import engine.expressions.ValueExpression
+import engine.expressions.greaterThanOf
 import engine.expressions.inequationOf
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
@@ -35,6 +38,7 @@ import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
 import engine.patterns.condition
 import engine.steps.metadata.metadata
+import methods.inequalities.InequalitiesPlans
 import methods.inequations.InequationsPlans
 import methods.simplify.SimplifyExplanation
 import methods.simplify.simplifyAlgebraicExpressionSteps
@@ -57,7 +61,14 @@ enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
                     stepsProducer = ComputeDomainOfAlgebraicExpression,
                 ) ?: return@tasks null
 
-                if (domainComputationTask.result == Constants.Reals) return@tasks null
+                // In case the domain is a contradiction we don't need to solve it, and can fall back to
+                // the ComputeDomainOfAlgebraicExpression method
+                if (
+                    domainComputationTask.result == Constants.Reals ||
+                    domainComputationTask.result is Contradiction
+                ) {
+                    return@tasks allTasks()
+                }
 
                 val simplificationTask = task(
                     startExpr = expression,
@@ -81,9 +92,18 @@ enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
             explanation = Explanation.ComputeDomainOfAlgebraicExpression
             specificPlans(ComputeDomainAndSimplifyAlgebraicExpression)
 
-            val solveInequationInOneVariableSteps = steps {
+            val solveInequationDomainConstraintSteps = steps {
                 inContext({ copy(solutionVariables = it.variables.toList()) }) {
                     apply(InequationsPlans.SolveInequation)
+                }
+            }
+
+            val solveInequalityDomainConstraintSteps = steps {
+                inContext({ copy(solutionVariables = it.variables.toList()) }) {
+                    firstOf {
+                        option(InequalitiesPlans.SolveLinearInequality)
+                        option(InequalitiesPlans.SolveQuadraticInequality)
+                    }
                 }
             }
 
@@ -95,7 +115,14 @@ enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
                         valueTransform = { (_, inExpression) -> inExpression },
                     )
 
-                if (denominatorsAndDivisors.isEmpty()) return@tasks null
+                val logConstraints = findLogarithmDomainConstraints(expression)
+                    .filter { (domainExpression, _) -> !domainExpression.isConstant() }
+                    .groupBy(
+                        keySelector = { (domainExpression, kind) -> Pair(domainExpression.removeBrackets(), kind) },
+                        valueTransform = { (_, _, inExpression) -> inExpression },
+                    )
+
+                if (denominatorsAndDivisors.isEmpty() && logConstraints.isEmpty()) return@tasks null
 
                 val constraintTasks = denominatorsAndDivisors.map { (denominatorOrDivisor, inExpressions) ->
                     val explanation = if (inExpressions.size == 1) {
@@ -114,7 +141,70 @@ enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
 
                     taskWithOptionalSteps(
                         startExpr = inequationOf(denominatorOrDivisor, Constants.Zero),
-                        stepsProducer = solveInequationInOneVariableSteps,
+                        stepsProducer = solveInequationDomainConstraintSteps,
+                        explanation = explanation,
+                    )
+                } + logConstraints.map { entry ->
+                    val (key, inExpressions) = entry
+                    val (domainExpression, kind) = key
+
+                    val explanation = when (kind) {
+                        LogDomainConstraintKind.Argument -> if (inExpressions.size == 1) {
+                            metadata(
+                                Explanation.LogArgumentMustBePositive,
+                                domainExpression,
+                                inExpressions[0],
+                            )
+                        } else {
+                            metadata(
+                                Explanation.LogArgumentMustBePositivePlural,
+                                domainExpression,
+                                ListExpression(inExpressions),
+                            )
+                        }
+
+                        LogDomainConstraintKind.BasePositive -> if (inExpressions.size == 1) {
+                            metadata(
+                                Explanation.LogBaseMustBePositive,
+                                domainExpression,
+                                inExpressions[0],
+                            )
+                        } else {
+                            metadata(
+                                Explanation.LogBaseMustBePositivePlural,
+                                domainExpression,
+                                ListExpression(inExpressions),
+                            )
+                        }
+
+                        LogDomainConstraintKind.BaseNotOne -> if (inExpressions.size == 1) {
+                            metadata(
+                                Explanation.LogBaseMustNotEqualOne,
+                                domainExpression,
+                                inExpressions[0],
+                            )
+                        } else {
+                            metadata(
+                                Explanation.LogBaseMustNotEqualOnePlural,
+                                domainExpression,
+                                ListExpression(inExpressions),
+                            )
+                        }
+                    }
+
+                    taskWithOptionalSteps(
+                        startExpr = when (kind) {
+                            LogDomainConstraintKind.Argument, LogDomainConstraintKind.BasePositive ->
+                                greaterThanOf(domainExpression, Constants.Zero)
+
+                            LogDomainConstraintKind.BaseNotOne -> inequationOf(domainExpression, Constants.One)
+                        },
+                        stepsProducer = when (kind) {
+                            LogDomainConstraintKind.Argument, LogDomainConstraintKind.BasePositive ->
+                                solveInequalityDomainConstraintSteps
+
+                            LogDomainConstraintKind.BaseNotOne -> solveInequationDomainConstraintSteps
+                        },
                         explanation = explanation,
                     )
                 }
@@ -126,6 +216,10 @@ enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
                         metadata(Explanation.ExpressionIsDefinedEverywhere, overallSolution.solutionVariables)
                     overallSolution is SetSolution && overallSolution.solutionSet == Constants.Reals ->
                         metadata(Explanation.ExpressionIsDefinedEverywhere, overallSolution.solutionVariables)
+                    overallSolution is Contradiction -> metadata(
+                        Explanation.ExpressionIsUndefinedEverywhere,
+                        overallSolution.solutionVariables,
+                    )
                     else -> metadata(Explanation.CollectDomainRestrictions)
                 }
 
@@ -157,5 +251,30 @@ fun findDenominatorsAndDivisors(expr: Expression): Sequence<Pair<Expression, Exp
                     }
                 }
             }
+        }
+    }
+
+private enum class LogDomainConstraintKind {
+    Argument,
+    BasePositive,
+    BaseNotOne,
+}
+
+private data class LogDomainConstraint(
+    val expression: Expression,
+    val kind: LogDomainConstraintKind,
+    val inExpression: Expression,
+)
+
+private fun findLogarithmDomainConstraints(expr: Expression): Sequence<LogDomainConstraint> =
+    sequence {
+        for (child in expr.children) {
+            yieldAll(findLogarithmDomainConstraints(child))
+        }
+
+        if (expr is Logarithm) {
+            yield(LogDomainConstraint(expr.argument, LogDomainConstraintKind.Argument, expr))
+            yield(LogDomainConstraint(expr.base, LogDomainConstraintKind.BasePositive, expr))
+            yield(LogDomainConstraint(expr.base, LogDomainConstraintKind.BaseNotOne, expr))
         }
     }

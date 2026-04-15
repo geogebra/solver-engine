@@ -310,6 +310,8 @@ val simpleTidyUpSteps = steps {
         option(GeneralRules.EvaluateZeroToThePowerOfZero)
         option(IntegerRationalExponentsRules.EvaluateNegativeToRationalExponentAsUndefined)
         option(LogsRules.EvaluateLogOfNonPositiveAsUndefined)
+        option(LogsRules.EvaluateLogWithNonPositiveBaseAsUndefined)
+        option(LogsRules.EvaluateLogWithBaseOneAsUndefined)
         option(AnglesRules.CheckDomainOfFunction)
 
         // tidy up decimals

@@ -223,6 +223,145 @@ class DomainComputationsTest {
         }
 
     @Test
+    fun `test computing the domain of a logarithmic expression`() =
+        testMethod {
+            method = AlgebraPlans.ComputeDomainOfAlgebraicExpression
+            inputExpr = "ln x"
+
+            check {
+                fromExpr = "ln x"
+                explanation {
+                    key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
+                }
+
+                task {
+                    taskId = "#1"
+                    startExpr = "x > 0"
+                    explanation {
+                        key = AlgebraExplanation.LogArgumentMustBePositive
+                    }
+                }
+
+                task {
+                    taskId = "#2"
+                    explanation {
+                        key = AlgebraExplanation.CollectDomainRestrictions
+                    }
+                }
+            }
+        }
+
+    @Test
+    fun `test computing the domain of a logarithmic expression with a quadratic argument`() =
+        testMethod {
+            method = AlgebraPlans.ComputeDomainOfAlgebraicExpression
+            inputExpr = "log_[2] ([x ^ 2] - 3)"
+
+            check {
+                explanation {
+                    key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
+                }
+
+                task {
+                    startExpr = "[x ^ 2] - 3 > 0"
+                    explanation {
+                        key = AlgebraExplanation.LogArgumentMustBePositive
+                    }
+                }
+
+                task {
+                    startExpr = "SetSolution[x: SetUnion[(-/infinity/, -sqrt[3]), (sqrt[3], /infinity/)]]"
+                    explanation {
+                        key = AlgebraExplanation.CollectDomainRestrictions
+                    }
+                }
+            }
+        }
+
+    @Test
+    fun `test computing the domain of multiple logarithms keeps checks grouped by expression`() =
+        testMethod {
+            method = AlgebraPlans.ComputeDomainOfAlgebraicExpression
+            inputExpr = "log_[a] x + log_[b] y"
+
+            check {
+                explanation {
+                    key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
+                }
+
+                task {
+                    startExpr = "x > 0"
+                    explanation {
+                        key = AlgebraExplanation.LogArgumentMustBePositive
+                    }
+                }
+
+                task {
+                    startExpr = "a > 0"
+                    explanation {
+                        key = AlgebraExplanation.LogBaseMustBePositive
+                    }
+                }
+
+                task {
+                    startExpr = "a != 1"
+                    explanation {
+                        key = AlgebraExplanation.LogBaseMustNotEqualOne
+                    }
+                }
+
+                task {
+                    startExpr = "y > 0"
+                    explanation {
+                        key = AlgebraExplanation.LogArgumentMustBePositive
+                    }
+                }
+
+                task {
+                    startExpr = "b > 0"
+                    explanation {
+                        key = AlgebraExplanation.LogBaseMustBePositive
+                    }
+                }
+
+                task {
+                    startExpr = "b != 1"
+                    explanation {
+                        key = AlgebraExplanation.LogBaseMustNotEqualOne
+                    }
+                }
+
+                task {
+                    explanation {
+                        key = AlgebraExplanation.CollectDomainRestrictions
+                    }
+                }
+            }
+        }
+
+    @Test
+    fun `test simplifying a logarithmic expression with an empty domain`() =
+        testMethod {
+            method = AlgebraPlans.ComputeDomainAndSimplifyAlgebraicExpression
+            inputExpr = "log_[2](-[x ^ 2] - 3)"
+
+            check {
+                fromExpr = "log_[2](-[x ^ 2] - 3)"
+                toExpr = "Contradiction[x : [x ^ 2] + 3 < 0]"
+                explanation {
+                    key = AlgebraExplanation.ComputeDomainAndSimplifyAlgebraicExpression
+                }
+
+                task {
+                    startExpr = "log_[2](-[x ^ 2] - 3)"
+                    explanation {
+                        key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
+                    }
+                }
+            }
+        }
+
+    @Test
     fun `test simplifying an algebraic expression after computing its domain`() =
         testMethod {
             method = AlgebraPlans.ComputeDomainAndSimplifyAlgebraicExpression

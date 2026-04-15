@@ -44,6 +44,8 @@ enum class LogsRules(override val runner: Rule) : RunnerMethod {
     EvaluateLogOfBase(evaluateLogOfBase),
     EvaluateLogOfOne(evaluateLogOfOne),
     EvaluateLogOfNonPositiveAsUndefined(evaluateLogOfNonPositiveAsUndefined),
+    EvaluateLogWithNonPositiveBaseAsUndefined(evaluateLogWithNonPositiveBaseAsUndefined),
+    EvaluateLogWithBaseOneAsUndefined(evaluateLogWithBaseOneAsUndefined),
     SimplifyLogOfReciprocal(simplifyLogOfReciprocal),
     RewriteLogOfKnownPower(rewriteLogOfKnownPower),
     SplitLogOfProduct(splitLogOfProduct),
@@ -95,6 +97,30 @@ private val evaluateLogOfNonPositiveAsUndefined = rule {
         ruleResult(
             toExpr = transform(expr, Constants.Undefined),
             explanation = metadata(Explanation.EvaluateLogOfNonPositiveAsUndefined),
+        )
+    }
+}
+
+private val evaluateLogWithNonPositiveBaseAsUndefined = rule {
+    val base = condition { it.isDefinitelyNotPositive() }
+    val expr = logOf(AnyPattern(), base)
+
+    onPattern(expr) {
+        ruleResult(
+            toExpr = transform(expr, Constants.Undefined),
+            explanation = metadata(Explanation.EvaluateLogWithNonPositiveBaseAsUndefined),
+        )
+    }
+}
+
+private val evaluateLogWithBaseOneAsUndefined = rule {
+    val base = FixedPattern(Constants.One)
+    val expr = logOf(AnyPattern(), base)
+
+    onPattern(expr) {
+        ruleResult(
+            toExpr = transform(expr, Constants.Undefined),
+            explanation = metadata(Explanation.EvaluateLogWithBaseOne),
         )
     }
 }

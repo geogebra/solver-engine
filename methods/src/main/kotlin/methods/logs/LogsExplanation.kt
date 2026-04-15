@@ -81,6 +81,16 @@ enum class LogsExplanation : CategorisedMetadataKey {
 
     SplitLogOfProduct,
     SplitLogOfFraction,
+
+    /**
+     * Evaluate logarithm with non-positive base as an undefined expression
+     */
+    EvaluateLogWithNonPositiveBaseAsUndefined,
+
+    /**
+     * Evaluate log with base one as an undefined expression
+     */
+    EvaluateLogWithBaseOne,
     ;
 
     override val category = "Logs"

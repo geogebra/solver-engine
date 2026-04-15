@@ -35,6 +35,54 @@ enum class AlgebraExplanation : CategorisedMetadataKey {
     ComputeDomainOfAlgebraicExpression,
 
     /**
+     * States that a logarithm argument must be positive.
+     *
+     * %1 - the logarithm argument which must be positive
+     * %2 - the expression containing the logarithm argument
+     */
+    LogArgumentMustBePositive,
+
+    /**
+     * States that logarithm arguments must be positive.
+     *
+     * %1 - the logarithm argument which must be positive
+     * %2 - a list of expressions containing the logarithm argument
+     */
+    LogArgumentMustBePositivePlural,
+
+    /**
+     * Logarithm base must be positive
+     *
+     * %1 - the logarithm base which must be positive and not one
+     * %2 - the expression containing the logarithm base
+     */
+    LogBaseMustBePositive,
+
+    /**
+     * Logarithm base must be positive in all expressions
+     *
+     * %1 - the logarithm base which must be positive and not one
+     * %2 - a list of expressions containing the logarithm base
+     */
+    LogBaseMustBePositivePlural,
+
+    /**
+     * Logarithm base must not be equal to one
+     *
+     * %1 - the logarithm base which must be positive and not one
+     * %2 - the expression containing the logarithm base
+     */
+    LogBaseMustNotEqualOne,
+
+    /**
+     * Logarithm base must not be equal to one in all expressions
+     *
+     * %1 - the logarithm base which must be positive and not one
+     * %2 - a list of expressions containing the logarithm base
+     */
+    LogBaseMustNotEqualOnePlural,
+
+    /**
      * Combine the domain of the expression (e.g. x > 0) with the simplified expression (e.g. x + 1) to get
      * an expression with a constraint (e.g. x + 1 given that x > 0).
      */
@@ -44,6 +92,13 @@ enum class AlgebraExplanation : CategorisedMetadataKey {
      * The given expression is defined for all real numbers.
      */
     ExpressionIsDefinedEverywhere,
+
+    /**
+     * The given expression is undefined for all real values of %1
+     *
+     * %1 - solution variable
+     */
+    ExpressionIsUndefinedEverywhere,
 
     /**
      * States that a subexpression cannot be zero because it would make another (e.g. fraction
