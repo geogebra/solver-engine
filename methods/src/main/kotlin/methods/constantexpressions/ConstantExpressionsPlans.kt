@@ -64,6 +64,7 @@ import methods.angles.createEvaluateTrigonometricExpressionPlan
 import methods.angles.createUsePythagoreanIdentityAndSimplifyPlan
 import methods.angles.createUseTrigonometricIdentityAndSimplifyPlan
 import methods.angles.simplifyProductContainingTrigonometricExpressions
+import methods.collecting.createCollectLikeLogarithmicTermsAndSimplifyPlan
 import methods.collecting.createCollectLikeRationalPowersAndSimplifyPlan
 import methods.collecting.createCollectLikeRootsAndSimplifyPlan
 import methods.collecting.createCollectLikeTrigonometricTermsAndSimplifyPlan
@@ -99,6 +100,7 @@ import methods.integerroots.IntegerRootsRules
 import methods.integerroots.cancelRootOfPower
 import methods.logs.LogsPlans
 import methods.logs.LogsRules
+import methods.logs.createSwitchLogsToSmallestBase
 import methods.mixednumbers.MixedNumbersPlans
 import methods.mixednumbers.MixedNumbersRules
 import methods.units.UnitsRules
@@ -401,6 +403,16 @@ val trigExpressionSimplificationSteps = steps {
     }
 }
 
+val logExpansionSteps = steps {
+    check { it.containsLogs() && it.isConstant() }
+
+    deeply {
+        firstOf {
+            option(LogsPlans.ExpandLogNotMatchingBase)
+        }
+    }
+}
+
 // Give it a minDepth of 1 to break cycles.
 val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
     firstOf {
@@ -443,18 +455,24 @@ val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
             }
         }
 
+        option { deeply(collectLikeLogarithmicTermsAndSimplify) }
+
         option {
             check { it.containsLogs() }
-            deeply {
+            deeply(deepFirst = true) {
                 firstOf {
                     option(LogsRules.TakePowerOutOfLog)
                     option(LogsRules.EvaluateLogOfBase)
                     option(LogsRules.EvaluateLogOfOne)
                     option(LogsRules.SimplifyLogOfReciprocal)
+                    option(LogsPlans.SimplifyLogWithMatchingPowers)
                     option(LogsPlans.SimplifyLogOfKnownPower)
+                    option(switchLogsToSmallestBase)
                 }
             }
         }
+
+        option(logExpansionSteps)
 
         option { deeply(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithSameBase) }
         option {
@@ -558,6 +576,8 @@ private val collectLikeRationalPowersAndSimplify =
     createCollectLikeRationalPowersAndSimplifyPlan(constantSimplificationSteps)
 private val collectLikeTrigonometricTermsAndSimplify =
     createCollectLikeTrigonometricTermsAndSimplifyPlan(constantSimplificationSteps)
+private val collectLikeLogarithmicTermsAndSimplify =
+    createCollectLikeLogarithmicTermsAndSimplifyPlan(constantSimplificationSteps)
 
 private val useTrigonometricIdentityAndSimplify =
     createUseTrigonometricIdentityAndSimplifyPlan(constantSimplificationSteps)
@@ -572,6 +592,9 @@ private val usePythagoreanIdentityAndSimplify =
 
 private val evaluateInverseFunctionOfMainAngle =
     createEvaluateInverseTrigonometricFunctionExactlyPlan(constantSimplificationSteps)
+
+private val switchLogsToSmallestBase =
+    createSwitchLogsToSmallestBase(constantSimplificationSteps)
 
 private val expandAndSimplifier = ExpandAndSimplifier(ConstantExpressionsPlans.SimplifyConstantExpression)
 

@@ -19,7 +19,11 @@ package methods.logs
 
 import engine.conditions.isDefinitelyNotPositive
 import engine.expressions.Constants
+import engine.expressions.Expression
+import engine.expressions.IntegerExpression
 import engine.expressions.Logarithm
+import engine.expressions.logBase10Of
+import engine.expressions.naturalLogOf
 import engine.expressions.negOf
 import engine.expressions.powerOf
 import engine.expressions.productOf
@@ -37,7 +41,10 @@ import engine.patterns.logOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.steps.metadata.metadata
+import engine.utility.Power
 import engine.utility.asKnownPower
+import engine.utility.asPower
+import engine.utility.asPowerOf
 
 enum class LogsRules(override val runner: Rule) : RunnerMethod {
     TakePowerOutOfLog(takePowerOutOfLog),
@@ -48,8 +55,10 @@ enum class LogsRules(override val runner: Rule) : RunnerMethod {
     EvaluateLogWithBaseOneAsUndefined(evaluateLogWithBaseOneAsUndefined),
     SimplifyLogOfReciprocal(simplifyLogOfReciprocal),
     RewriteLogOfKnownPower(rewriteLogOfKnownPower),
+    RewriteLogWithMatchingPowers(rewriteLogWithMatchingPowers),
     SplitLogOfProduct(splitLogOfProduct),
     SplitLogOfFraction(splitLogOfFraction),
+    SimplifyLogWithCommonExponents(simplifyLogWithCommonExponents),
 }
 
 private val takePowerOutOfLog = rule {
@@ -139,11 +148,25 @@ private val simplifyLogOfReciprocal = rule {
 
 private val rewriteLogOfKnownPower = rule {
     val arg = UnsignedIntegerPattern()
-    val expr = logOf(arg)
+    val base = AnyPattern()
+    val expr = logOf(arg, base)
 
     onPattern(expr) {
-        val (a, n) = getValue(arg).asKnownPower() ?: return@onPattern null
+        val argument = getValue(arg)
+
+        val (a, n) = get(base).let {
+            if (it is IntegerExpression) {
+                val baseValue = it.value
+                val exponentOfBase = argument.asPowerOf(baseValue)
+                if (exponentOfBase != null) {
+                    return@let Power(baseValue, exponentOfBase)
+                }
+            }
+            getValue(arg).asKnownPower() ?: return@onPattern null
+        }
+
         val logExpr = expression as Logarithm
+
         ruleResult(
             toExpr = logExpr.withArgument(transform(arg, powerOf(xp(a), xp(n)))),
             explanation = metadata(Explanation.RewriteLogOfKnownPower),
@@ -180,3 +203,104 @@ private val splitLogOfFraction = rule {
         )
     }
 }
+
+private val simplifyLogWithCommonExponents = rule {
+    val exponent = AnyPattern()
+    val base1 = AnyPattern()
+    val base2 = AnyPattern()
+
+    val power1 = powerOf(base1, exponent)
+    val power2 = powerOf(base2, exponent)
+
+    val logarithm = logOf(
+        power2,
+        power1,
+    )
+
+    onPattern(logarithm) {
+        ruleResult(
+            toExpr = createLog(
+                transform(power1, get(base1)),
+                transform(power2, get(base2)),
+            ),
+            explanation = metadata(Explanation.SimplifyLogWithCommonExponents),
+        )
+    }
+}
+
+private val rewriteLogWithMatchingPowers =
+    rule {
+        val base = UnsignedIntegerPattern()
+        val argument = UnsignedIntegerPattern()
+
+        val expr = logOf(argument, base)
+
+        onPattern(expr) {
+            val basePowers = getValue(base).asPower()
+            val argumentPowers = getValue(argument).asPower()
+
+            val matchingPower = basePowers.map { it.exponent }
+                .intersect(
+                    argumentPowers.map { it.exponent }.toSet(),
+                ).maxOrNull()
+
+            if (matchingPower == null) {
+                return@onPattern null
+            }
+
+            val baseBase = basePowers.find { it.exponent == matchingPower }?.base
+            val argumentBase = argumentPowers.find { it.exponent == matchingPower }?.base
+
+            if (baseBase == null || argumentBase == null) {
+                return@onPattern null
+            }
+
+            ruleResult(
+                toExpr = createLog(
+                    transform(base, powerOf(xp(baseBase), xp(matchingPower))),
+                    transform(argument, powerOf(xp(argumentBase), xp(matchingPower))),
+                ),
+                explanation = metadata(Explanation.RewriteLogUsingMatchingPowers),
+            )
+        }
+    }
+
+private fun switchLogBase(targetBase: Expression) =
+    rule {
+        val base = AnyPattern()
+        val argument = AnyPattern()
+        val expr = logOf(argument, base)
+
+        onPattern(expr) {
+            ruleResult(
+                toExpr = engine.expressions.fractionOf(
+                    createLog(targetBase, move(argument)),
+                    createLog(targetBase, move(base)),
+                ),
+                explanation = metadata(
+                    Explanation.SwitchBaseOfLogarithm,
+                ),
+            )
+        }
+    }
+
+fun switchLogBaseRule(targetBase: Expression): RunnerMethod =
+    object : RunnerMethod {
+        override val name = "SwitchBaseOfLogarithm_$targetBase"
+
+        override val runner = switchLogBase(targetBase)
+    }
+
+fun createLog(base: Expression, argument: Expression) =
+    when (base) {
+        Constants.E -> naturalLogOf(
+            argument,
+        )
+        Constants.Ten -> logBase10Of(
+            argument,
+        )
+        else -> engine.expressions.logOf(
+            base,
+            argument,
+        )
+    }

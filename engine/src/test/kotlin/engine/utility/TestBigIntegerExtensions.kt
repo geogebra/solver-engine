@@ -28,6 +28,8 @@ class TestBigIntegerExtensions {
 
     private fun p(p: Int, m: Int) = Pair(i(p), i(m))
 
+    private fun pow(b: Int, e: Int) = Power(i(b), i(e))
+
     @Test
     fun testIsPowerOfDegree() {
         assertTrue(i(1000000).isPowerOfDegree(2))
@@ -94,12 +96,35 @@ class TestBigIntegerExtensions {
 
     @Test
     fun testAsKnownPower() {
-        assertEquals(p(2, 2), i(4).asKnownPower())
-        assertEquals(p(2, 3), i(8).asKnownPower())
-        assertEquals(p(10, 3), i(1000).asKnownPower())
-        assertEquals(p(30, 2), i(900).asKnownPower())
-        assertEquals(p(200, 3), i(8000000).asKnownPower())
+        assertEquals(pow(2, 2), i(4).asKnownPower())
+        assertEquals(pow(2, 3), i(8).asKnownPower())
+        assertEquals(pow(10, 3), i(1000).asKnownPower())
+        assertEquals(pow(30, 2), i(900).asKnownPower())
+        assertEquals(pow(200, 3), i(8000000).asKnownPower())
         assertEquals(null, i(5).asKnownPower())
         assertEquals(null, i(10).asKnownPower())
+    }
+
+    @Test
+    fun testAsPower() {
+        assertContentEquals(
+            listOf(pow(3, 4), pow(9, 2)),
+            i(81).asPower(),
+        )
+        assertContentEquals(
+            listOf(pow(2, 6), pow(4, 3), pow(8, 2)),
+            i(64).asPower(),
+        )
+        assertContentEquals(emptyList(), i(10).asPower())
+        assertContentEquals(emptyList(), i(1).asPower())
+    }
+
+    @Test
+    fun asPowerOf() {
+        assertEquals(i(2), i(4).asPowerOf(i(2)))
+        assertEquals(i(3), i(343).asPowerOf(i(7)))
+        assertEquals(null, i(10).asPowerOf(i(2)))
+        assertEquals(i(0), i(1).asPowerOf(i(2)))
+        assertEquals(null, i(-2).asPowerOf(i(2)))
     }
 }

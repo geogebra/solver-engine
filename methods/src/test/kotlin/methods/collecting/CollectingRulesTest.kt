@@ -91,4 +91,18 @@ class CollectingRulesTest {
         testRule("z + [1/2]*z + [z / 2] - z*3", CombineTwoSimpleLikeTerms, null)
         testRule("t*sqrt[3] + 2*t - [t*sqrt[2]/2]", CombineTwoSimpleLikeTerms, null)
     }
+
+    @Test
+    fun testCollectLikeLogarithmicTerms() {
+        testRule(
+            "log_[2] 3 + log_[2] 3 + log_[2] 3",
+            CollectingRules.CollectLikeLogarithmicTerms,
+            "(1 + 1 + 1) log_[2] 3",
+        )
+        testRule(
+            "2 log_[2] 3 + 3 log_[2] 3 - log_[2] 3",
+            CollectingRules.CollectLikeLogarithmicTerms,
+            "(2 + 3 - 1) log_[2] 3",
+        )
+    }
 }

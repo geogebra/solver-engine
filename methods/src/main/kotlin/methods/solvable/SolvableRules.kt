@@ -74,10 +74,10 @@ import engine.patterns.withOptionalConstantCoefficientInSolutionVariables
 import engine.sign.Sign
 import engine.steps.metadata.DragTargetPosition
 import engine.steps.metadata.Metadata
+import engine.utility.asPower
 import engine.utility.extractFirst
 import engine.utility.isEven
 import engine.utility.isOdd
-import engine.utility.knownPowers
 import engine.utility.lcm
 import methods.solvable.DenominatorExtractor.extractDenominator
 import java.math.BigInteger
@@ -918,13 +918,13 @@ private val rewriteBothSidesWithSameBase = rule {
  * (b, e1, e2) such that n1 = b^e1 and n2 = b^e2
  */
 private fun withSameBase(n1: BigInteger, n2: BigInteger): Triple<BigInteger, BigInteger, BigInteger>? {
-    val n1AsPower = asPower(n1).toMap()
+    val n1AsPower = n1.asPower().associate { it.base to it.exponent }
     val e1 = n1AsPower[n2]
     if (e1 != null) {
         return Triple(n2, e1, BigInteger.ONE)
     }
 
-    for ((b, e2) in asPower(n2)) {
+    for ((b, e2) in n2.asPower()) {
         val e1 = if (b == n1) BigInteger.ONE else n1AsPower[b]
         if (e1 != null) {
             return Triple(b, e1, e2)
@@ -932,8 +932,3 @@ private fun withSameBase(n1: BigInteger, n2: BigInteger): Triple<BigInteger, Big
     }
     return null
 }
-
-/**
- * Returns a list of pairs (base, exponent) for [n] such that n = base ^ exponent, with exponent > 1
- */
-private fun asPower(n: BigInteger) = knownPowers.mapNotNull { (k, v) -> if (k.second == n) Pair(v, k.first) else null }

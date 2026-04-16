@@ -17,6 +17,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Solve linear trigonometric equations using the auxiliary angle method. (PLUT-1099)
 - Solve quadratic homogeneous trigonometric equations. (PLUT-1103)
 - Check domain of logarithmic expressions. (PLUT-1114)
+- Bring logarithms to the same base. (PLUT-1113)
 
 ### Fixed
 

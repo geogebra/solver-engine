@@ -37,7 +37,7 @@ private val BIG_THREE = 3.toBigInteger()
  * This represents the powers that students should know by heart
  * (e.g. 36 = 6^2, 8 = 2^3)
  */
-val knownPowers = buildMap<Pair<BigInteger, BigInteger>, BigInteger> {
+val knownPowers = buildMap {
     for (n in 2..MAX_KNOWN_SQUARE) {
         val bn = n.toBigInteger()
         put(Pair(BigInteger.TWO, bn * bn), bn)
@@ -48,14 +48,14 @@ val knownPowers = buildMap<Pair<BigInteger, BigInteger>, BigInteger> {
     }
 }
 
-private fun findInKnownPowers(n: BigInteger): Pair<BigInteger, BigInteger>? {
+private fun findInKnownPowers(n: BigInteger): Power? {
     val cubeRoot = knownPowers[Pair(BIG_THREE, n)]
     if (cubeRoot != null) {
-        return Pair(cubeRoot, BIG_THREE)
+        return Power(cubeRoot, BIG_THREE)
     }
     val squareRoot = knownPowers[Pair(BigInteger.TWO, n)]
     if (squareRoot != null) {
-        return Pair(squareRoot, BigInteger.TWO)
+        return Power(squareRoot, BigInteger.TWO)
     }
     return null
 }
@@ -263,17 +263,60 @@ fun BigInteger.factors(limit: Int = FACTORS_DEFAULT_LIMIT) =
         }
     }
 
-fun BigInteger.asKnownPower(): Pair<BigInteger, BigInteger>? {
+fun BigInteger.asKnownPower(): Power? {
     val factorizer = Factorizer(this)
     val m10 = factorizer.extractMultiplicity(BigInteger.TEN)
     return when {
         m10 == 0 -> findInKnownPowers(this)
         m10 == 1 -> null
-        factorizer.n == BigInteger.ONE -> Pair(BigInteger.TEN, m10.toBigInteger())
+        factorizer.n == BigInteger.ONE -> Power(BigInteger.TEN, m10.toBigInteger())
         else -> m10.toBigInteger().factors().asIterable().reversed().firstNotNullOfOrNull { m ->
             knownPowers[Pair(m, factorizer.n)]?.let { a ->
-                Pair(a * BigInteger.TEN.pow(m10 / m.toInt()), m)
+                Power(a * BigInteger.TEN.pow(m10 / m.toInt()), m)
             }
         }
     }
 }
+
+/**
+ * Returns all pairs (base, exponent) such that `this = base ^ exponent`, with exponent > 1.
+ */
+fun BigInteger.asPower(): List<Power> {
+    if (signum() <= 0) {
+        return emptyList()
+    }
+
+    return (bitLength() - 1 downTo 2)
+        .mapNotNull { exponent: Int ->
+            val base = nthRoot(exponent)
+            if (base.pow(exponent) == this) {
+                Power(base, exponent.toBigInteger())
+            } else {
+                null
+            }
+        }
+}
+
+/**
+ * If [this] equals [base] raised to some non-negative integer exponent, returns that exponent.
+ * Otherwise returns null.
+ *
+ * Requires [base] >= 2 and [this] >= 1.
+ */
+fun BigInteger.asPowerOf(base: BigInteger): BigInteger? {
+    if (base < BigInteger.TWO || this < BigInteger.ONE) return null
+    var remainder = this
+    var exponent = 0
+    while (remainder > BigInteger.ONE) {
+        val (quotient, mod) = remainder.divideAndRemainder(base)
+        if (mod != BigInteger.ZERO) return null
+        remainder = quotient
+        exponent++
+    }
+    return exponent.toBigInteger()
+}
+
+data class Power(
+    val base: BigInteger,
+    val exponent: BigInteger,
+)

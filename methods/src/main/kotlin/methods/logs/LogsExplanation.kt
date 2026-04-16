@@ -91,6 +91,49 @@ enum class LogsExplanation : CategorisedMetadataKey {
      * Evaluate log with base one as an undefined expression
      */
     EvaluateLogWithBaseOne,
+
+    /**
+     * Convert logarithm to base %1
+     *
+     * %1 - new base
+     */
+    SwitchBaseOfLogarithm,
+
+    /**
+     * Bring logarithms to common base
+     *
+     */
+    BringLogsToCommonBase,
+
+    /**
+     * Switch the base of a logarithm to %1 and simplify
+     *
+     * %1 - new base
+     */
+    SwitchBaseOfLogarithmAndSimplify,
+
+    /**
+     * Rewrite the base and argument as powers with same exponent
+     */
+    RewriteLogUsingMatchingPowers,
+
+    /**
+     * Simplify the common exponents in base and argument
+     */
+    SimplifyLogWithCommonExponents,
+
+    /**
+     * Expand a logarithm which has an argument that is not a power of the base
+     *
+     * e.g. log_[2] 45 -> log_[2] [3^2] + log_[2] 5
+     */
+    ExpandLogNotMatchingBase,
+
+    /**
+     * Simplify logarithm where the base and argument can be rewritten as powers with same exponent
+     */
+    SimplifyLogWithMatchingPowers,
+
     ;
 
     override val category = "Logs"

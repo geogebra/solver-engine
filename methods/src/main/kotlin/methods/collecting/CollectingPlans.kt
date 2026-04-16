@@ -148,7 +148,7 @@ fun createCollectLikeTrigonometricTermsAndSimplifyPlan(simplificationSteps: Step
             firstOf {
                 option {
                     check { isSet(Setting.QuickAddLikeTerms) }
-                    apply(CollectingRules.CombineTwoSimpleLikeTerms)
+                    apply(CollectingRules.CombineTwoSimpleLikeTrigonometricFunctions)
                 }
                 option {
                     withNewLabels {
@@ -156,6 +156,31 @@ fun createCollectLikeTrigonometricTermsAndSimplifyPlan(simplificationSteps: Step
                             option(CollectingRules.CollectLikeTermsWithPi)
                             option(CollectingRules.CollectLikeTermsWithTrigonometricFunctions)
                         }
+                        optionally { applyTo(coefficientSimplificationSteps, Label.A) }
+                        optionally(GeneralRules.EliminateZeroInSum)
+                    }
+                }
+            }
+        }
+    }
+}
+
+fun createCollectLikeLogarithmicTermsAndSimplifyPlan(simplificationSteps: StepsProducer): Method {
+    val coefficientSimplificationSteps =
+        createSimplifyCoefficientPlan(simplificationSteps, preferFractionalForm = false)
+
+    return plan {
+        explanation = Explanation.CollectLikeTermsAndSimplify
+
+        steps {
+            firstOf {
+                option {
+                    check { isSet(Setting.QuickAddLikeTerms) }
+                    apply(CollectingRules.CombineTwoSimpleLikeLogarithmicTerms)
+                }
+                option {
+                    withNewLabels {
+                        apply(CollectingRules.CollectLikeLogarithmicTerms)
                         optionally { applyTo(coefficientSimplificationSteps, Label.A) }
                         optionally(GeneralRules.EliminateZeroInSum)
                     }

@@ -24,6 +24,7 @@ import engine.expressions.Factor
 import engine.expressions.Fraction
 import engine.expressions.IntegerExpression
 import engine.expressions.Label
+import engine.expressions.Logarithm
 import engine.expressions.PiExpression
 import engine.expressions.Power
 import engine.expressions.Root
@@ -39,10 +40,13 @@ import engine.expressions.sumOf
 import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
+import engine.patterns.AnyPattern
 import engine.patterns.ArbitraryVariablePattern
 import engine.patterns.IntegerFractionPattern
 import engine.patterns.Pattern
+import engine.patterns.TrigonometricExpressionPattern
 import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.logOf
 import engine.patterns.oneOf
 import engine.patterns.powerOf
 import engine.patterns.rootOf
@@ -96,6 +100,14 @@ enum class CollectingRules(override val runner: Rule) : RunnerMethod {
         ).rule,
     ),
 
+    CollectLikeLogarithmicTerms(
+        CollectLikeTermsRule(
+            factorSelector = { it is Logarithm },
+            coefficientCondition = { it.isConstant() && it !is Logarithm },
+            explanationKey = Explanation.CollectLikeTerms,
+        ).rule,
+    ),
+
     CollectLikeTermsInSolutionVariables(
         CollectLikeTermsRule(
             factorSelector = { !it.isConstantIn(solutionVariables) },
@@ -124,6 +136,23 @@ enum class CollectingRules(override val runner: Rule) : RunnerMethod {
                 ArbitraryVariablePattern(),
                 powerOf(ArbitraryVariablePattern(), UnsignedIntegerPattern()),
             ),
+            explanationKey = Explanation.CombineTwoSimpleLikeTerms,
+        ),
+    ),
+
+    CombineTwoSimpleLikeTrigonometricFunctions(
+        createCombineSimpleLikeTermsRule(
+            commonPattern = oneOf(
+                TrigonometricExpressionPattern(AnyPattern()),
+                powerOf(TrigonometricExpressionPattern(AnyPattern()), UnsignedIntegerPattern()),
+            ),
+            explanationKey = Explanation.CombineTwoSimpleLikeTerms,
+        ),
+    ),
+
+    CombineTwoSimpleLikeLogarithmicTerms(
+        createCombineSimpleLikeTermsRule(
+            commonPattern = logOf(AnyPattern()),
             explanationKey = Explanation.CombineTwoSimpleLikeTerms,
         ),
     ),
