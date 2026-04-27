@@ -134,6 +134,10 @@ fun BigInteger.hasFactorOfDegree(n: Int): Boolean {
 
 @Suppress("ReturnCount")
 fun BigInteger.isPowerOfDegree(n: Int): Boolean {
+    if (n <= 0) {
+        return false
+    }
+
     var remainder = this
     var factor = BigInteger.ONE
 

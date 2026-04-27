@@ -40,6 +40,8 @@ class TestBigIntegerExtensions {
         assertFalse(i(125).isPowerOfDegree(2))
         assertTrue(i(1).isPowerOfDegree(6))
         assertTrue(i(0).isPowerOfDegree(10))
+        assertFalse(i(16).isPowerOfDegree(0))
+        assertFalse(i(16).isPowerOfDegree(-2))
         assertTrue(i(11).isPrime())
     }
 
