@@ -161,6 +161,20 @@ enum class LogsExplanation : CategorisedMetadataKey {
      */
     MoveNegatedLogarithmicTermsToOppositeSideAndSimplify,
 
+    /**
+     * Exponentiate both sides of the equation using base %1
+     *
+     * %1 - base of logarithmic expressions
+     */
+    ExponentiateBothSides,
+
+    /**
+     * Simplify expression using %f
+     *
+     * %f - a ^ log_a x = x
+     */
+    SimplifyLogInExponentWithMatchingBase,
+
     ;
 
     override val category = "Logs"

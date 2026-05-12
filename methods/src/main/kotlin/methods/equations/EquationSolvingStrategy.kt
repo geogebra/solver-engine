@@ -531,6 +531,25 @@ enum class EquationSolvingStrategy(
 
                 apply(LogsRules.RewriteCoefficientsAsExponents)
             }
+
+            // This should be turned into a firstOf once we have all cases covered
+            optionally {
+                checkForm {
+                    equationOf(
+                        logOf(AnyPattern()),
+                        condition {
+                            !it.isLogarithmicTerm() && it.isConstantIn(solutionVariables)
+                        },
+                    )
+                }
+
+                apply(LogsRules.ExponentiateBothSides)
+                applyTo(LogsRules.SimplifyLogInExponentWithMatchingBase) {
+                    it.firstChild
+                }
+
+                optionally(EquationsPlans.SolveEquation)
+            }
         },
     ),
 

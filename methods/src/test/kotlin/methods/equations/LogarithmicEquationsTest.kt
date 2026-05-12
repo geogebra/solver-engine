@@ -25,6 +25,7 @@ import kotlin.test.Test
 class LogarithmicEquationsTest {
     // Right now these are only for the normalization part, but should be updated once
     // we have solutions implemented.
+    @Suppress("LongMethod")
     @Test
     fun `solve equation with one log term`() {
         testMethodInX {
@@ -40,8 +41,6 @@ class LogarithmicEquationsTest {
                     startExpr = "2 = -log (x + 1)"
 
                     step {
-                        fromExpr = "2 = -log (x + 1)"
-                        toExpr = "log (x + 1) = -2"
                         explanation {
                             key = EquationsExplanation.SolveLogarithmicEquations
                         }
@@ -53,11 +52,123 @@ class LogarithmicEquationsTest {
                         step {
                             toExpr = "log (x + 1) = -2"
                         }
+
+                        step {
+                            toExpr = "[10 ^ log (x + 1)] = [10 ^ -2]"
+                        }
+
+                        step {
+                            toExpr = "x + 1 = [10 ^ -2]"
+                        }
+
+                        step {
+                            toExpr = "SetSolution[x : {-[99 / 100]}]"
+                        }
                     }
                 }
 
                 task {
-                    startExpr = "log (x + 1) = -2 GIVEN SetSolution[x: (-1, /infinity/)]"
+                    startExpr = "SetSolution[x : {-[99 / 100]}] GIVEN SetSolution[x: (-1, /infinity/)]"
+                }
+            }
+        }
+
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "log_[2] (2 x - 1) = 1"
+
+            check {
+                task {
+                    explanation {
+                        key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
+                    }
+
+                    step {
+                        toExpr = "SetSolution[x: ([1 / 2], /infinity/)]"
+                    }
+                }
+
+                task {
+                    step {
+                        explanation {
+                            key = EquationsExplanation.SolveLogarithmicEquations
+                        }
+
+                        step {
+                            toExpr = "[2 ^ log_[2] (2 x - 1)] = [2 ^ 1]"
+                            explanation {
+                                key = LogsExplanation.ExponentiateBothSides
+                            }
+                        }
+
+                        step {
+                            toExpr = "2 x - 1 = [2 ^ 1]"
+                            explanation {
+                                key = LogsExplanation.SimplifyLogInExponentWithMatchingBase
+                            }
+                        }
+
+                        step {
+                            toExpr = "SetSolution[x: {[3 / 2]}]"
+                            explanation {
+                                key = EquationsExplanation.SolveLinearEquation
+                            }
+                        }
+                    }
+                }
+
+                task {
+                    startExpr = "SetSolution[x: {[3 / 2]}] GIVEN SetSolution[x: ([1 / 2], /infinity/)]"
+                }
+            }
+        }
+
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "ln (x - 2) = 3"
+
+            check {
+                task {
+                    explanation {
+                        key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
+                    }
+
+                    step {
+                        toExpr = "SetSolution[x: (2, /infinity/)]"
+                    }
+                }
+
+                task {
+                    step {
+                        explanation {
+                            key = EquationsExplanation.SolveLogarithmicEquations
+                        }
+
+                        step {
+                            toExpr = "[/e/ ^ ln (x - 2)] = [/e/ ^ 3]"
+                            explanation {
+                                key = LogsExplanation.ExponentiateBothSides
+                            }
+                        }
+
+                        step {
+                            toExpr = "x - 2 = [/e/ ^ 3]"
+                            explanation {
+                                key = LogsExplanation.SimplifyLogInExponentWithMatchingBase
+                            }
+                        }
+
+                        step {
+                            toExpr = "SetSolution[x: {[/e/ ^ 3] + 2}]"
+                            explanation {
+                                key = EquationsExplanation.SolveLinearEquation
+                            }
+                        }
+                    }
+                }
+
+                task {
+                    startExpr = "SetSolution[x: {[/e/ ^ 3] + 2}] GIVEN SetSolution[x: (2, /infinity/)]"
                 }
             }
         }
@@ -101,11 +212,23 @@ class LogarithmicEquationsTest {
                         step {
                             toExpr = "log (x + 1) = -[3 / 7]"
                         }
+
+                        step {
+                            toExpr = "[10 ^ log (x + 1)] = [10 ^ -[3 / 7]]"
+                        }
+
+                        step {
+                            toExpr = "x + 1 = [10 ^ -[3 / 7]]"
+                        }
+
+                        step {
+                            toExpr = "SetSolution[x : {[10 ^ -[3 / 7]] - 1}]"
+                        }
                     }
                 }
 
                 task {
-                    startExpr = "log (x + 1) = -[3 / 7] GIVEN SetSolution[x: (-1, /infinity/)]"
+                    startExpr = "SetSolution[x : {[10 ^ -[3 / 7]] - 1}] GIVEN SetSolution[x: (-1, /infinity/)]"
                 }
             }
         }

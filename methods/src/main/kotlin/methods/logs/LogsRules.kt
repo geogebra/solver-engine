@@ -39,6 +39,7 @@ import engine.methods.Rule
 import engine.methods.RunnerMethod
 import engine.methods.rule
 import engine.patterns.AnyPattern
+import engine.patterns.ConstantInSolutionVariablePattern
 import engine.patterns.FixedPattern
 import engine.patterns.SolvablePattern
 import engine.patterns.UnsignedIntegerPattern
@@ -69,9 +70,14 @@ enum class LogsRules(override val runner: Rule) : RunnerMethod {
     SimplifyLogWithCommonExponents(simplifyLogWithCommonExponents),
     CollectLogarithmsUsingProductRule(collectLogarithmsUsingProductRule),
     RewriteCoefficientsAsExponents(rewriteCoefficientsAsExponents),
+    ExponentiateBothSides(exponentiateBothSides),
+    SimplifyLogInExponentWithMatchingBase(simplifyLogInExponentWithMatchingBase),
     MoveNegatedLogarithmicTermsToTheOtherSide(moveNegatedLogarithmicTermsToTheOtherSide),
 }
 
+/**
+ * log(a^b) = b * log(a)
+ */
 private val takePowerOutOfLog = rule {
     val base = AnyPattern()
     val exponent = AnyPattern()
@@ -86,6 +92,9 @@ private val takePowerOutOfLog = rule {
     }
 }
 
+/**
+ * log_a a --> 1
+ */
 private val evaluateLogOfBase = rule {
     val base = AnyPattern()
     val expr = logOf(base, base)
@@ -98,6 +107,9 @@ private val evaluateLogOfBase = rule {
     }
 }
 
+/**
+ * log 1 --> 0
+ */
 private val evaluateLogOfOne = rule {
     val expr = logOf(FixedPattern(Constants.One))
 
@@ -109,6 +121,9 @@ private val evaluateLogOfOne = rule {
     }
 }
 
+/**
+ * log -a --> undefined
+ */
 private val evaluateLogOfNonPositiveAsUndefined = rule {
     val arg = condition { it.isDefinitelyNotPositive() }
     val expr = logOf(arg)
@@ -121,6 +136,9 @@ private val evaluateLogOfNonPositiveAsUndefined = rule {
     }
 }
 
+/**
+ * log_-a b --> undefined
+ */
 private val evaluateLogWithNonPositiveBaseAsUndefined = rule {
     val base = condition { it.isDefinitelyNotPositive() }
     val expr = logOf(AnyPattern(), base)
@@ -133,6 +151,9 @@ private val evaluateLogWithNonPositiveBaseAsUndefined = rule {
     }
 }
 
+/**
+ * log_1 a --> undefined
+ */
 private val evaluateLogWithBaseOneAsUndefined = rule {
     val base = FixedPattern(Constants.One)
     val expr = logOf(AnyPattern(), base)
@@ -145,6 +166,9 @@ private val evaluateLogWithBaseOneAsUndefined = rule {
     }
 }
 
+/**
+ * log [1/a] --> -log a
+ */
 private val simplifyLogOfReciprocal = rule {
     val denominator = AnyPattern()
     val expr = logOf(fractionOf(FixedPattern(Constants.One), denominator))
@@ -185,6 +209,9 @@ private val rewriteLogOfKnownPower = rule {
     }
 }
 
+/**
+ * log a * b --> log a + log b
+ */
 private val splitLogOfProduct = rule {
     val product = productContaining()
     val expr = logOf(product)
@@ -198,6 +225,9 @@ private val splitLogOfProduct = rule {
     }
 }
 
+/**
+ * log a / b --> log a - log b
+ */
 private val splitLogOfFraction = rule {
     val numerator = AnyPattern()
     val denominator = AnyPattern()
@@ -215,6 +245,9 @@ private val splitLogOfFraction = rule {
     }
 }
 
+/**
+ * log_[x^a] [y^a] --> log_[ x ] y
+ */
 private val simplifyLogWithCommonExponents = rule {
     val exponent = AnyPattern()
     val base1 = AnyPattern()
@@ -328,6 +361,9 @@ private fun Expression.extractSignedLogTerm(): SignedLogTerm? =
         else -> null
     }
 
+/**
+ * a * log x --> log [x^a]
+ */
 private val rewriteCoefficientsAsExponents = rule {
     val coefficient = UnsignedIntegerPattern()
     val argument = AnyPattern()
@@ -342,6 +378,70 @@ private val rewriteCoefficientsAsExponents = rule {
                 powerOf(move(argument), move(coefficient)),
             ),
             explanation = metadata(Explanation.RewriteCoefficientsAsExponents),
+        )
+    }
+}
+
+/**
+ * log_a x = c --> a ^ log_a x = a ^ c
+ */
+private val exponentiateBothSides = rule {
+    val base = AnyPattern()
+
+    val log = logOf(AnyPattern(), base)
+    val rhs = ConstantInSolutionVariablePattern()
+
+    onEquation(log, rhs) {
+        val baseValue = distribute(base)
+
+        ruleResult(
+            toExpr = equationOf(
+                powerOf(
+                    baseValue,
+                    move(log),
+                ),
+                powerOf(
+                    baseValue,
+                    move(rhs),
+                ),
+            ),
+            explanation = metadata(
+                Explanation.ExponentiateBothSides,
+                baseValue,
+            ),
+        )
+    }
+}
+
+/**
+ * a ^ log_a x --> x
+ */
+private val simplifyLogInExponentWithMatchingBase = rule {
+    val base = AnyPattern()
+    val argument = AnyPattern()
+
+    val log = logOf(argument, base)
+    val power = powerOf(base, log)
+
+    onPattern(power) {
+        val a = substitute(base, "a")
+        val x = substitute(argument, "x")
+
+        ruleResult(
+            toExpr = move(argument),
+            explanation = metadata(
+                Explanation.SimplifyLogInExponentWithMatchingBase,
+            ),
+            formula = equationOf(
+                powerOf(
+                    a,
+                    engine.expressions.logOf(
+                        a,
+                        x,
+                    ),
+                ),
+                x,
+            ),
         )
     }
 }
