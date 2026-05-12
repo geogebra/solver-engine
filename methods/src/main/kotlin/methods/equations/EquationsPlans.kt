@@ -95,6 +95,7 @@ import engine.steps.metadata.metadata
 import methods.algebra.AlgebraExplanation
 import methods.algebra.AlgebraPlans
 import methods.algebra.findDenominatorsAndDivisors
+import methods.algebra.findLogarithmDomainConstraints
 import methods.angles.TrigonometricFunctionsRules
 import methods.angles.findFunctionsRequiringDomainCheck
 import methods.collecting.CollectingRules
@@ -1468,7 +1469,10 @@ val solveEquationPlan = object : CompositeMethod() {
                     findDenominatorsAndDivisors(sub).any { (expr, _) ->
                         !expr.isConstant()
                     } ||
-                    findFunctionsRequiringDomainCheck(sub).toList().isNotEmpty()
+                    findFunctionsRequiringDomainCheck(sub).toList().isNotEmpty() ||
+                    findLogarithmDomainConstraints(sub).any { (expr, _) ->
+                        !expr.isConstant()
+                    }
                 ) {
                     solveEquationWithDomainRestrictions.run(equationContext, sub)
                 } else {

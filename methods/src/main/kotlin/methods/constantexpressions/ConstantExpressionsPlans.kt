@@ -414,155 +414,164 @@ val logExpansionSteps = steps {
 }
 
 // Give it a minDepth of 1 to break cycles.
-val constantSimplificationSteps: StepsProducer = stepsWithMinDepth(1) {
-    firstOf {
-        option { deeply(simpleTidyUpSteps) }
+val constantSimplificationSteps: StepsProducer = createConstantSimplificationSteps(true)
 
-        option { deeply(inlineSumsAndProducts) }
+val constantSimplificationStepsForEquations = createConstantSimplificationSteps(false)
 
-        option(rootOfPowerSimplificationSteps)
+@Suppress("LongMethod")
+fun createConstantSimplificationSteps(expandLogs: Boolean) =
+    stepsWithMinDepth(1) {
+        firstOf {
+            option { deeply(simpleTidyUpSteps) }
 
-        option { deeply(evaluateConstantAbsoluteValue) }
+            option { deeply(inlineSumsAndProducts) }
 
-        option(FractionArithmeticPlans.RewriteDivisionsAsFractions)
+            option(rootOfPowerSimplificationSteps)
 
-        // Try to convert expressions with mixed units
-        option { deeply(AnglesPlans.ConvertExpressionWithMixedUnitsToRadians) }
+            option { deeply(evaluateConstantAbsoluteValue) }
 
-        // We do this before simplifying fractions for a variety of reasons, a simple one being e.g.
-        // 2/10 + 1/10 --> 3/10
-        option { deeply(addConstantFractions) }
+            option(FractionArithmeticPlans.RewriteDivisionsAsFractions)
 
-        option(fractionSimplificationSteps)
+            // Try to convert expressions with mixed units
+            option { deeply(AnglesPlans.ConvertExpressionWithMixedUnitsToRadians) }
 
-        option { deeply(AnglesPlans.ReduceAngleToUnitCircle) }
-        option { deeply(AnglesRules.SubstituteAngleWithCoterminalAngleFromUnitCircle) }
+            // We do this before simplifying fractions for a variety of reasons, a simple one being e.g.
+            // 2/10 + 1/10 --> 3/10
+            option { deeply(addConstantFractions) }
 
-        option(trigExpressionSimplificationSteps)
+            option(fractionSimplificationSteps)
 
-        // It would be better to move this out of constantSimplificationSteps altogether and do it first but the
-        // required behaviour depends on the previous steps being tried first.
-        option(decimalToFractionConversionSteps)
-        // can't think of a better place for this rule for now
-        option(GeneralRules.SimplifyPlusMinusOfAbsoluteValue)
+            option { deeply(AnglesPlans.ReduceAngleToUnitCircle) }
+            option { deeply(AnglesRules.SubstituteAngleWithCoterminalAngleFromUnitCircle) }
 
-        option {
-            deeply {
-                // We reorganize the product before extracting the signs, but if we don't have signs
-                // to handle, we leave the reorganization to the end
-                optionally { applyTo(reorderProductSteps) { if (it is Minus) it.argument else it } }
-                apply(GeneralPlans.NormalizeNegativeSignsInProduct)
-            }
-        }
+            option(trigExpressionSimplificationSteps)
 
-        option { deeply(collectLikeLogarithmicTermsAndSimplify) }
+            // It would be better to move this out of constantSimplificationSteps altogether and do it first but the
+            // required behaviour depends on the previous steps being tried first.
+            option(decimalToFractionConversionSteps)
+            // can't think of a better place for this rule for now
+            option(GeneralRules.SimplifyPlusMinusOfAbsoluteValue)
 
-        option {
-            check { it.containsLogs() }
-            deeply(deepFirst = true) {
-                firstOf {
-                    option(LogsRules.TakePowerOutOfLog)
-                    option(LogsRules.EvaluateLogOfBase)
-                    option(LogsRules.EvaluateLogOfOne)
-                    option(LogsRules.SimplifyLogOfReciprocal)
-                    option(LogsPlans.SimplifyLogWithMatchingPowers)
-                    option(LogsPlans.SimplifyLogOfKnownPower)
-                    option(switchLogsToSmallestBase)
+            option {
+                deeply {
+                    // We reorganize the product before extracting the signs, but if we don't have signs
+                    // to handle, we leave the reorganization to the end
+                    optionally { applyTo(reorderProductSteps) { if (it is Minus) it.argument else it } }
+                    apply(GeneralPlans.NormalizeNegativeSignsInProduct)
                 }
             }
-        }
 
-        option(logExpansionSteps)
+            option { deeply(collectLikeLogarithmicTermsAndSimplify) }
 
-        option { deeply(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithSameBase) }
-        option {
-            check { it.containsPowers() }
-            deeply(deepFirst = true) {
-                firstOf {
-                    option(ConstantExpressionsPlans.SimplifyPowerOfInteger)
-                    option(ConstantExpressionsPlans.SimplifyPowerOfProduct)
-                    option(ConstantExpressionsPlans.SimplifyPowerOfFraction)
-                    option(ConstantExpressionsPlans.SimplifyPowerOfAbsoluteValue)
-                    option(ConstantExpressionsPlans.SimplifyPowerOfTrigonometricFunction)
+            option {
+                check { it.containsLogs() }
+                deeply(deepFirst = true) {
+                    firstOf {
+                        option(LogsRules.TakePowerOutOfLog)
+                        option(LogsRules.EvaluateLogOfBase)
+                        option(LogsRules.EvaluateLogOfOne)
+                        option(LogsRules.SimplifyLogOfReciprocal)
+                        option(LogsPlans.SimplifyLogWithMatchingPowers)
+                        option(LogsPlans.SimplifyLogOfKnownPower)
+                        option(switchLogsToSmallestBase)
+                    }
                 }
             }
-        }
 
-        option {
-            check { it.containsRoots() }
-            deeply(collectLikeRootsAndSimplify)
-        }
-        option { deeply(collectLikeRationalPowersAndSimplify) }
-
-        option(ConstantExpressionsPlans.SimplifyRootsInExpression)
-        option(simplifyRationalExponentsInProduct)
-
-        option { deeply(FractionArithmeticPlans.MultiplyAndSimplifyFractions) }
-        option {
-            check { it.containsRoots() }
-            deeply(IntegerRootsPlans.SimplifyProductWithRoots)
-        }
-
-        option { deeply(IntegerArithmeticPlans.SimplifyIntegersInProduct) }
-
-        option { deeply(IntegerArithmeticPlans.SimplifyIntegersInSum) }
-        option { deeply(addIntegerAndFraction) }
-        option { deeply(addIntegerWithUnitAndFraction) }
-
-        option {
-            check { it.containsRoots() }
-            firstOf {
-                // Do this after integers are added, we don't apply it to e.g. `sqrt[4 + 8]`
-                option { deeply(IntegerRootsPlans.SimplifySquareRootWithASquareFactorRadicand) }
-                // Do this after SimplifySquareRootWithASquareFactorRadicand to make it easier
-                option { deeply(IntegerRootsPlans.SimplifySquareRootOfIntegerPlusSurd) }
-                option { deeply(addRootAndFraction) }
-                option { deeply(FractionRootsPlans.RationalizeDenominators) }
+            if (expandLogs) {
+                option(logExpansionSteps)
             }
-        }
 
-        // This is not a tidy-up rule, we do it only now because at this point the denominator of a fraction has been
-        // simplified as much as possible, and the last resort for finding if a fraction of the for [0 / x] can
-        // be cancelled is to check the denominator numerically.  We only want to do that on a simplified denominator.
-        option {
-            check { it.containsFractions() }
-            deeply(GeneralRules.SimplifyNonObviousZeroNumeratorFractionToZero)
-        }
-        // Now that numerator and denominator have been simplified enough, we can find a common factor in the
-        // numerator and denominator of fractions.  Do this after factoring squares out of roots so that e.g.
-        // [4 + 2sqrt[8] / 8] is transformed to [4 + 4sqrt[2] / 8] first.
-        option(FractionArithmeticPlans.SimplifyCommonIntegerFactorInFraction)
-
-        // Handle evaluation after expressions are simplified
-        option { deeply(UnitsRules.EvaluateSignedIntegerWithUnitAddition) }
-        option { deeply(UnitsRules.EvaluateUnitProductAndDivision) }
-
-        option { deeply(addTrigonometricExpressionAndFraction) }
-        option {
-            deeply {
-                check { it.onlyContainsFunctionsOfMainAngles() }
-                apply(collectLikeTrigonometricTermsAndSimplify)
+            option { deeply(IntegerRationalExponentsPlans.SimplifyProductOfPowersWithSameBase) }
+            option {
+                check { it.containsPowers() }
+                deeply(deepFirst = true) {
+                    firstOf {
+                        option(ConstantExpressionsPlans.SimplifyPowerOfInteger)
+                        option(ConstantExpressionsPlans.SimplifyPowerOfProduct)
+                        option(ConstantExpressionsPlans.SimplifyPowerOfFraction)
+                        option(ConstantExpressionsPlans.SimplifyPowerOfAbsoluteValue)
+                        option(ConstantExpressionsPlans.SimplifyPowerOfTrigonometricFunction)
+                    }
+                }
             }
+
+            option {
+                check { it.containsRoots() }
+                deeply(collectLikeRootsAndSimplify)
+            }
+            option { deeply(collectLikeRationalPowersAndSimplify) }
+
+            option(ConstantExpressionsPlans.SimplifyRootsInExpression)
+            option(simplifyRationalExponentsInProduct)
+
+            option { deeply(FractionArithmeticPlans.MultiplyAndSimplifyFractions) }
+            option {
+                check { it.containsRoots() }
+                deeply(IntegerRootsPlans.SimplifyProductWithRoots)
+            }
+
+            option { deeply(IntegerArithmeticPlans.SimplifyIntegersInProduct) }
+
+            option { deeply(IntegerArithmeticPlans.SimplifyIntegersInSum) }
+            option { deeply(addIntegerAndFraction) }
+            option { deeply(addIntegerWithUnitAndFraction) }
+
+            option {
+                check { it.containsRoots() }
+                firstOf {
+                    // Do this after integers are added, we don't apply it to e.g. `sqrt[4 + 8]`
+                    option { deeply(IntegerRootsPlans.SimplifySquareRootWithASquareFactorRadicand) }
+                    // Do this after SimplifySquareRootWithASquareFactorRadicand to make it easier
+                    option { deeply(IntegerRootsPlans.SimplifySquareRootOfIntegerPlusSurd) }
+                    option { deeply(addRootAndFraction) }
+                    option { deeply(FractionRootsPlans.RationalizeDenominators) }
+                }
+            }
+
+            // This is not a tidy-up rule, we do it only now because at this point the denominator of a fraction has
+            // been simplified as much as possible, and the last resort for finding if a fraction of the for [0 / x] can
+            // be cancelled is to check the denominator numerically.  We only want to do that on a simplified
+            // denominator.
+            option {
+                check { it.containsFractions() }
+                deeply(GeneralRules.SimplifyNonObviousZeroNumeratorFractionToZero)
+            }
+            // Now that numerator and denominator have been simplified enough, we can find a common factor in the
+            // numerator and denominator of fractions.  Do this after factoring squares out of roots so that e.g.
+            // [4 + 2sqrt[8] / 8] is transformed to [4 + 4sqrt[2] / 8] first.
+            option(FractionArithmeticPlans.SimplifyCommonIntegerFactorInFraction)
+
+            // Handle evaluation after expressions are simplified
+            option { deeply(UnitsRules.EvaluateSignedIntegerWithUnitAddition) }
+            option { deeply(UnitsRules.EvaluateUnitProductAndDivision) }
+
+            option { deeply(addTrigonometricExpressionAndFraction) }
+            option {
+                deeply {
+                    check { it.onlyContainsFunctionsOfMainAngles() }
+                    apply(collectLikeTrigonometricTermsAndSimplify)
+                }
+            }
+
+            option { deeply(evaluateTrigonometricExpression) }
+            option { deeply(evaluateInverseFunctionOfMainAngle) }
+
+            option {
+                deeply(TrigonometricFunctionsPlans.ReduceDoubleAngleInSum)
+            }
+
+            option { deeply(ExpandRules.DistributeNegativeOverBracket) }
+            option { deeply(expandConstantExpression) }
+
+            // In case a constant trigonometric expression can't be evaluated we want to expand brackets before
+            // collecting
+            option { deeply(collectLikeTrigonometricTermsAndSimplify) }
+
+            option { deeply(reorderProductSteps) }
+            option { deeply(NormalizationRules.NormalizeProductSigns) }
         }
-
-        option { deeply(evaluateTrigonometricExpression) }
-        option { deeply(evaluateInverseFunctionOfMainAngle) }
-
-        option {
-            deeply(TrigonometricFunctionsPlans.ReduceDoubleAngleInSum)
-        }
-
-        option { deeply(ExpandRules.DistributeNegativeOverBracket) }
-        option { deeply(expandConstantExpression) }
-
-        // In case a constant trigonometric expression can't be evaluated we want to expand brackets before
-        // collecting
-        option { deeply(collectLikeTrigonometricTermsAndSimplify) }
-
-        option { deeply(reorderProductSteps) }
-        option { deeply(NormalizationRules.NormalizeProductSigns) }
     }
-}
 
 private val evaluateTrigonometricExpression =
     createEvaluateTrigonometricExpressionPlan(ConstantExpressionsPlans.SimplifyConstantExpression)

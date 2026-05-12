@@ -130,9 +130,36 @@ enum class LogsExplanation : CategorisedMetadataKey {
     ExpandLogNotMatchingBase,
 
     /**
+     * Collect logarithmic terms with same base in sum
+     */
+    CollectLogarithmsInSum,
+
+    /**
      * Simplify logarithm where the base and argument can be rewritten as powers with same exponent
      */
     SimplifyLogWithMatchingPowers,
+
+    /**
+     * Use product rule to collect sum of logarithms
+     */
+    CollectLogarithmsUsingProductRule,
+
+    /**
+     * Rewrite coefficients as exponents in logarithm
+     *
+     * e.g. 3*log_[2] 4 -> log_[2] 4^3
+     */
+    RewriteCoefficientsAsExponents,
+
+    /**
+     * Move all negated logarithmic terms to the other side of an equation
+     */
+    MoveNegatedLogarithmicTermsToTheOtherSide,
+
+    /**
+     * Move negated logarithmic terms to opposite side of equation and simplify the resulting equation
+     */
+    MoveNegatedLogarithmicTermsToOppositeSideAndSimplify,
 
     ;
 

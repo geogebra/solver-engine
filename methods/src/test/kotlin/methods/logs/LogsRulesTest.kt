@@ -67,4 +67,35 @@ class LogsRulesTest {
         testRule("log_[3] 8000", LogsRules.RewriteLogOfKnownPower, "log_[3][20 ^ 3]")
         testRule("log_[2] 10", LogsRules.RewriteLogOfKnownPower, null)
     }
+
+    @Test
+    fun testRewriteCoefficientsAsExponents() {
+        testRule("2 ln x", LogsRules.RewriteCoefficientsAsExponents, "ln[x ^ 2]")
+        testRule("3 log_[2] x", LogsRules.RewriteCoefficientsAsExponents, "log_[2][x ^ 3]")
+        testRule("ln x", LogsRules.RewriteCoefficientsAsExponents, null)
+    }
+
+    @Test
+    fun testCollectLogarithmsUsingProductRule() {
+        testRule(
+            "ln x + ln y",
+            LogsRules.CollectLogarithmsUsingProductRule,
+            "ln (x y)",
+        )
+        testRule(
+            "-ln x + ln y",
+            LogsRules.CollectLogarithmsUsingProductRule,
+            "ln [y / x]",
+        )
+        testRule(
+            "-ln x + -ln y",
+            LogsRules.CollectLogarithmsUsingProductRule,
+            "-ln (x y)",
+        )
+        testRule(
+            "log_[2] a + log_[2] b + -log_[2] c",
+            LogsRules.CollectLogarithmsUsingProductRule,
+            "log_[2] [a b / c]",
+        )
+    }
 }

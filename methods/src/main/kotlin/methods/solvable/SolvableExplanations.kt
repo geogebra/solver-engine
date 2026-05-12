@@ -110,6 +110,11 @@ enum class SolvableKey(val rule: RunnerMethod) {
     MultiplyByInverseCoefficientOfVariable(SolvableRules.MoveConstantFractionFactorToTheRight),
 
     /**
+     * Multiply both sides by the inverse of a constant fraction to simplify the LHS
+     */
+    MultiplyByInverseCoefficientOfLogarithm(SolvableRules.MoveConstantFactorWithNoFractionOfLogarithmToTheRight),
+
+    /**
      * Multiply both the side by denominator of a fraction in the LHS to simplify it.
      *
      * E.g.  [xh / 2] = 1 --> 2 * [xh / 2] = 2 * 1
@@ -118,9 +123,22 @@ enum class SolvableKey(val rule: RunnerMethod) {
     MultiplyByDenominatorOfVariableLHS(SolvableRules.MoveConstantDenominatorToTheRight),
 
     /**
+     * Multiply both the side by denominator of a fraction in the LHS to simplify it.
+     *
+     * E.g.  [xh / 2] = 1 --> 2 * [xh / 2] = 2 * 1
+     *       [x/2](y - x) = 6 -> 2 * [x/2](y - x) = 2 * 6
+     */
+    MultiplyByDenominatorOfLogarithmLHS(SolvableRules.MoveConstantDenominatorOfLogarithmToTheRight),
+
+    /**
      * Divide both sides by the coefficient of the variable
      */
     DivideByCoefficientOfVariable(SolvableRules.MoveConstantFactorWithNoFractionToTheRight),
+
+    /**
+     * Divide both sides by the coefficient of the logarithm
+     */
+    DivideByCoefficientOfLogarithm(SolvableRules.MoveConstantFactorWithNoFractionOfLogarithmToTheRight),
 
     NegateBothSides(SolvableRules.NegateBothSides),
 
@@ -477,11 +495,48 @@ enum class EquationsExplanation(
     MultiplyByInverseCoefficientOfVariable(SolvableKey.MultiplyByInverseCoefficientOfVariable),
 
     /**
+     * Multiply both sides of the equation by the inverse of the coefficient (if it's a numeric constant)
+     * of the variable.
+     *
+     * E.g. [x / 9] = 3 -> 9 * [x / 9] = 9 * 3
+     * [2x / 5] = 3 -> [5 / 2] * [2x / 5] = [5 / 2] * 3
+     */
+    MultiplyByInverseCoefficientOfLogarithm(SolvableKey.MultiplyByInverseCoefficientOfLogarithm),
+
+    /**
+     * Multiply both sides of the equation by the inverse of the coefficient (if it's a numeric constant)
+     * of the variable and simplify.
+     *
+     * E.g. [x / 9] = 3 -> 9 * [x / 9] = 9 * 3 -> x = 27
+     */
+    MultiplyByInverseCoefficientOfLogarithmAndSimplify(
+        SolvableKey.MultiplyByInverseCoefficientOfLogarithm,
+        simplify = true,
+    ),
+
+    /**
      * Multiply both sides of the equation by denominator of the variable
      *
      * E.g. [hx / 9] = 3 -> 9 * [hx / 9] = 9 * 3
      */
     MultiplyByDenominatorOfVariableLHS(SolvableKey.MultiplyByDenominatorOfVariableLHS),
+
+    /**
+     * Multiply both sides of the equation by denominator of the variable
+     *
+     * E.g. [hx / 9] = 3 -> 9 * [hx / 9] = 9 * 3
+     */
+    MultiplyByDenominatorOfLogarithmLHS(SolvableKey.MultiplyByDenominatorOfLogarithmLHS),
+
+    /**
+     * Multiply both the side by denominator of a fraction in the LHS and simplify the result.
+     *
+     * E.g.  [xh / 2] = 1 --> 2 * [xh / 2] = 2 * 1 --> xh = 2
+     */
+    MultiplyByDenominatorOfLogarithmLHSAndSimplify(
+        SolvableKey.MultiplyByDenominatorOfLogarithmLHS,
+        simplify = true,
+    ),
 
     /**
      * Multiply both sides of the equation by the inverse of the coefficient
@@ -514,6 +569,27 @@ enum class EquationsExplanation(
      * E.g. 2 sqrt[2] x = 3 -> [2 sqrt[2] x / 2 sqrt[2]] = [3 / 2 sqrt[2]]
      */
     DivideByCoefficientOfVariable(SolvableKey.DivideByCoefficientOfVariable),
+
+    /**
+     * Divide both sides of the equation by the coefficient of the
+     * variable.
+     *
+     * E.g. 2 sqrt[2] x = 3 -> [2 sqrt[2] x / 2 sqrt[2]] = [3 / 2 sqrt[2]]
+     */
+    DivideByCoefficientOfLogarithm(SolvableKey.DivideByCoefficientOfLogarithm),
+
+    /**
+     * Divide both sides of the equation by the coefficient of the variable
+     * and simplify.
+     *
+     * E.g. 2 sqrt[2] x = 3
+     *      -> [2 sqrt[2] x / 2 sqrt[2]] = [3 / 2 sqrt[2]]
+     *      -> x = [3 sqrt[2] / 4]
+     */
+    DivideByCoefficientOfLogarithmAndSimplify(
+        SolvableKey.DivideByCoefficientOfLogarithm,
+        simplify = true,
+    ),
 
     /**
      * Divide both sides of the equation by the coefficient of the solution variable in a
@@ -892,12 +968,29 @@ enum class InequalitiesExplanation(
     MultiplyByInverseCoefficientOfVariable(SolvableKey.MultiplyByInverseCoefficientOfVariable),
 
     /**
+     * Multiply both sides of the inequality by the inverse of the coefficient (a numeric constant)
+     * of the variable (which is a positive value).
+     *
+     * E.g. [x / 9] < 3 -> 9 * [x / 9] < 9 * 3
+     * [2x / 5] > 3 -> [5 / 2] * [2x / 5] > [5 / 2] * 3
+     */
+    MultiplyByInverseCoefficientOfLogarithm(SolvableKey.MultiplyByInverseCoefficientOfLogarithm),
+
+    /**
      * Multiply both the side by denominator of a fraction in the LHS to simplify it.
      *
      * E.g.  [xh / 2] < 1 --> 2 * [xh / 2] < 2 * 1
      *       [x/2](y - x) < 6 -> 2 * [x/2](y - x) < 2 * 6
      */
     MultiplyByDenominatorOfVariableLHS(SolvableKey.MultiplyByDenominatorOfVariableLHS),
+
+    /**
+     * Multiply both the side by denominator of a fraction in the LHS to simplify it.
+     *
+     * E.g.  [xh / 2] < 1 --> 2 * [xh / 2] < 2 * 1
+     *       [x/2](y - x) < 6 -> 2 * [x/2](y - x) < 2 * 6
+     */
+    MultiplyByDenominatorOfLogarithmLHS(SolvableKey.MultiplyByDenominatorOfLogarithmLHS),
 
     /**
      * Multiply both sides of the inequality by the inverse of the coefficient
@@ -953,6 +1046,14 @@ enum class InequalitiesExplanation(
      * E.g. 2 sqrt[2] x <= 3 -> [2 sqrt[2] x / 2 sqrt[2]] <= [3 / 2 sqrt[2]]
      */
     DivideByCoefficientOfVariable(SolvableKey.DivideByCoefficientOfVariable),
+
+    /**
+     * Divide both sides of the equation by the coefficient of the
+     * variable.
+     *
+     * E.g. 2 sqrt[2] x = 3 -> [2 sqrt[2] x / 2 sqrt[2]] = [3 / 2 sqrt[2]]
+     */
+    DivideByCoefficientOfLogarithm(SolvableKey.DivideByCoefficientOfLogarithm),
 
     /**
      * Divide both sides of the inequality by the coefficient of the

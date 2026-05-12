@@ -23,7 +23,9 @@ import engine.context.StrategySelectionMode
 import engine.expressions.Constants
 import engine.expressions.Equation
 import engine.expressions.Expression
+import engine.expressions.Minus
 import engine.expressions.TrigonometricExpression
+import engine.expressions.containsLogs
 import engine.expressions.containsSquaredTrigExpression
 import engine.expressions.containsTrigExpression
 import engine.expressions.hasSingleValue
@@ -44,6 +46,7 @@ import engine.patterns.commutativeProductContaining
 import engine.patterns.commutativeSumOf
 import engine.patterns.condition
 import engine.patterns.equationOf
+import engine.patterns.logOf
 import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
 import engine.patterns.squareOf
@@ -53,6 +56,10 @@ import methods.angles.createEvaluateInverseTrigonometricFunctionExactlyPlan
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.equationsystems.EquationSystemsPlans
 import methods.factor.FactorPlans
+import methods.logs.LogsPlans
+import methods.logs.LogsRules
+import methods.logs.extractLogTerms
+import methods.logs.isLogarithmicTerm
 import methods.polynomials.PolynomialsPlans
 import methods.polynomials.normalizePolynomialSteps
 import methods.rationalexpressions.RationalExpressionsPlans
@@ -469,6 +476,61 @@ enum class EquationSolvingStrategy(
             }
 
             optionally(EquationsPlans.MergeTrigonometricEquationSolutionsTask)
+        },
+    ),
+
+    LogarithmicEquation(
+        family = Family.LINEAR,
+        priority = 5,
+        explanation = EquationsExplanation.SolveLogarithmicEquations,
+        steps = steps {
+            check { it.containsLogs() }
+
+            optionally {
+                firstOf {
+                    option {
+                        checkForm {
+                            val lhs = condition { it.isConstantIn(solutionVariables) }
+                            val rhs = withOptionalConstantCoefficient(logOf(AnyPattern()))
+
+                            equationOf(lhs, rhs)
+                        }
+
+                        firstOf {
+                            option {
+                                check { it.secondChild is Minus }
+                                apply(solvablePlansForEquations.moveVariablesToTheLeftAndSimplify)
+                                apply(solvablePlansForEquations.moveConstantsToTheRightAndSimplify)
+                            }
+                            option(SolvableRules.FlipSolvable)
+                        }
+                    }
+                    option {
+                        check {
+                            val logs = it.firstChild.extractLogTerms() + it.secondChild.extractLogTerms()
+
+                            logs.distinct().size == 1
+                        }
+                        apply(solvablePlansForEquations.moveVariablesToTheLeftAndSimplify)
+                        apply(solvablePlansForEquations.moveConstantsToTheRightAndSimplify)
+                    }
+                    option(LogsPlans.MoveNegatedLogarithmicTermsToOppositeSideAndSimplify)
+                }
+            }
+
+            optionally(solvablePlansForEquations.multiplyByLCDAndSimplify)
+
+            optionally(solvablePlansForEquations.logarithmCoefficientRemovalSteps)
+
+            applyToChildren(LogsPlans.CollectLogarithmsInSum)
+
+            applyToChildren {
+                check {
+                    it.isLogarithmicTerm()
+                }
+
+                apply(LogsRules.RewriteCoefficientsAsExponents)
+            }
         },
     ),
 

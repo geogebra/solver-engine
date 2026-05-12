@@ -1187,6 +1187,7 @@ private val balanceEquationWithTrigonometricExpressions = rule {
     val trigFunction2 = TrigonometricExpressionPattern(argument2)
     val term1 = optionalNegOf(trigFunction1)
     val term2 = optionalNegOf(trigFunction2)
+
     val lhs = sumOf(term1, term2)
     val rhs = FixedPattern(Constants.Zero)
 

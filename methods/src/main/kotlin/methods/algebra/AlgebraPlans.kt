@@ -145,8 +145,10 @@ enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
                         explanation = explanation,
                     )
                 } + logConstraints.map { entry ->
-                    val (key, inExpressions) = entry
+                    val (key, rawInExpressions) = entry
                     val (domainExpression, kind) = key
+
+                    val inExpressions = rawInExpressions.distinct()
 
                     val explanation = when (kind) {
                         LogDomainConstraintKind.Argument -> if (inExpressions.size == 1) {
@@ -254,19 +256,19 @@ fun findDenominatorsAndDivisors(expr: Expression): Sequence<Pair<Expression, Exp
         }
     }
 
-private enum class LogDomainConstraintKind {
+enum class LogDomainConstraintKind {
     Argument,
     BasePositive,
     BaseNotOne,
 }
 
-private data class LogDomainConstraint(
+data class LogDomainConstraint(
     val expression: Expression,
     val kind: LogDomainConstraintKind,
     val inExpression: Expression,
 )
 
-private fun findLogarithmDomainConstraints(expr: Expression): Sequence<LogDomainConstraint> =
+fun findLogarithmDomainConstraints(expr: Expression): Sequence<LogDomainConstraint> =
     sequence {
         for (child in expr.children) {
             yieldAll(findLogarithmDomainConstraints(child))

@@ -11,6 +11,8 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Added
 
+- Normalize equations with logarithmic terms. (PLUT-1120)
+
 ### Fixed
 
 ### Changed

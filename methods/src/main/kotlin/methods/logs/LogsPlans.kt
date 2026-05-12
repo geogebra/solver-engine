@@ -34,15 +34,19 @@ import engine.methods.plan
 import engine.methods.stepsproducers.StepsProducer
 import engine.patterns.AnyPattern
 import engine.patterns.logOf
+import engine.patterns.sumContaining
 import engine.steps.Transformation
 import engine.steps.metadata.metadata
 import methods.general.GeneralRules
+import methods.simplify.algebraicSimplificationStepsForEquations
 import java.math.BigDecimal
 
 enum class LogsPlans(override val runner: CompositeMethod) : RunnerMethod {
     SimplifyLogOfKnownPower(simplifyLogOfKnownPower),
     SimplifyLogWithMatchingPowers(simplifyLogWithMatchingPowers),
     ExpandLogNotMatchingBase(expandLogNotMatchingBase),
+    MoveNegatedLogarithmicTermsToOppositeSideAndSimplify(moveNegatedLogarithmicTermsToOppositeSideAndSimplify),
+    CollectLogarithmsInSum(collectLogarithmsInSum),
 }
 
 private val simplifyLogOfKnownPower = plan {
@@ -74,6 +78,33 @@ private val expandLogNotMatchingBase = plan {
         }
 
         apply(LogsRules.SplitLogOfProduct)
+    }
+}
+
+private val collectLogarithmsInSum = plan {
+    explanation = Explanation.CollectLogarithmsInSum
+
+    pattern = sumContaining()
+
+    steps {
+        whilePossible {
+            deeply(LogsRules.RewriteCoefficientsAsExponents)
+        }
+        apply(LogsRules.CollectLogarithmsUsingProductRule)
+        optionally {
+            applyTo(algebraicSimplificationStepsForEquations) {
+                it.extractLogarithmArgument()
+            }
+        }
+    }
+}
+
+val moveNegatedLogarithmicTermsToOppositeSideAndSimplify = plan {
+    explanation = Explanation.MoveNegatedLogarithmicTermsToOppositeSideAndSimplify
+
+    steps {
+        apply(LogsRules.MoveNegatedLogarithmicTermsToTheOtherSide)
+        apply(algebraicSimplificationStepsForEquations)
     }
 }
 
@@ -152,7 +183,7 @@ private fun smallestLogBase(logTerms: List<LogOccurrence>): Expression? {
     return comparableBases.minBy { it.first }.second
 }
 
-private data class LogOccurrence(val term: Expression, val log: Logarithm) {
+data class LogOccurrence(val term: Expression, val log: Logarithm) {
     val base get() = log.base
 }
 
@@ -177,4 +208,12 @@ private fun Expression.sortKey(): BigDecimal? =
         this == Constants.E -> BigDecimal.valueOf(Math.E)
         this == Constants.Pi -> BigDecimal.valueOf(Math.PI)
         else -> asDecimal() ?: asInteger()?.toBigDecimal()
+    }
+
+fun Expression.extractLogTerms() =
+    when (this) {
+        is Sum -> this.terms.map { it.extractLogTerm() }
+        else -> listOf(this.extractLogTerm())
+    }.mapNotNull {
+        it?.log
     }

@@ -44,7 +44,7 @@ import engine.patterns.powerOf
 import engine.patterns.stickyOptionalNegOf
 import methods.collecting.createCollectLikeTermsAndSimplifyPlan
 import methods.collecting.createCollectLikeTermsInSolutionVariablesAndSimplifyPlan
-import methods.constantexpressions.constantSimplificationSteps
+import methods.constantexpressions.constantSimplificationStepsForEquations
 import methods.decimals.decimalEvaluationSteps
 import methods.expand.ExpandAndSimplifier
 import methods.fractionarithmetic.createAddFractionsPlan
@@ -291,7 +291,7 @@ val addTermAndFractionSteps = createAddTermAndFractionPlan(
 
 internal val simplificationSteps = branchOn(Setting.PreferDecimals) {
     case(BooleanSetting.True, decimalEvaluationSteps)
-    case(BooleanSetting.False, constantSimplificationSteps)
+    case(BooleanSetting.False, constantSimplificationStepsForEquations)
 }
 
 internal val collectLikeTermsSteps = createCollectLikeTermsAndSimplifyPlan(simplificationSteps)

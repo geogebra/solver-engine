@@ -43,6 +43,7 @@ import engine.patterns.SolutionVariablePattern
 import engine.patterns.SolvablePattern
 import engine.patterns.VariableExpressionPattern
 import engine.patterns.condition
+import engine.patterns.logOf
 import engine.patterns.negOf
 import engine.patterns.oneOf
 import engine.patterns.sumContaining
@@ -122,12 +123,24 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
         SolvableKey.MultiplyByInverseCoefficientOfVariable,
     )
 
+    val multiplyByInverseCoefficientOfLogarithmAndSimplify = ApplyRuleAndSimplify(
+        SolvableKey.MultiplyByInverseCoefficientOfLogarithm,
+    )
+
     val multiplyByDenominatorOfVariableLHSAndSimplify = ApplyRuleAndSimplify(
         SolvableKey.MultiplyByDenominatorOfVariableLHS,
     )
 
+    val multiplyByDenominatorOfLogarithmLHSAndSimplify = ApplyRuleAndSimplify(
+        SolvableKey.MultiplyByDenominatorOfLogarithmLHS,
+    )
+
     val divideByCoefficientOfVariableAndSimplify = ApplyRuleAndSimplify(
         SolvableKey.DivideByCoefficientOfVariable,
+    )
+
+    val divideByCoefficientOfLogarithmAndSimplify = ApplyRuleAndSimplify(
+        SolvableKey.DivideByCoefficientOfLogarithm,
     )
 
     val multiplyByLCDAndSimplify = plan {
@@ -328,6 +341,33 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
                 // Last if the coefficient has a fraction with a constant denominator, multiply by this denominator
                 // E.g. [5x / 3] = 8 -> 5x = 3 * 8
                 option(multiplyByDenominatorOfVariableLHSAndSimplify)
+            }
+        }
+    }
+
+    val logarithmCoefficientRemovalSteps = steps {
+        whilePossible {
+            firstOf {
+                option(divideByCoefficientOfLogarithmAndSimplify)
+
+                option {
+                    checkForm {
+                        SolvablePattern(
+                            negOf(
+                                logOf(
+                                    condition {
+                                        !it.isConstantIn(solutionVariables)
+                                    },
+                                ),
+                            ),
+                            ConstantInSolutionVariablePattern(),
+                        )
+                    }
+                    apply(SolvableRules.NegateBothSides)
+                }
+
+                option(multiplyByInverseCoefficientOfLogarithmAndSimplify)
+                option(multiplyByDenominatorOfLogarithmLHSAndSimplify)
             }
         }
     }

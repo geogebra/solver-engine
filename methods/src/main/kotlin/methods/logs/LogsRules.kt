@@ -22,11 +22,17 @@ import engine.expressions.Constants
 import engine.expressions.Expression
 import engine.expressions.IntegerExpression
 import engine.expressions.Logarithm
+import engine.expressions.Minus
+import engine.expressions.Product
+import engine.expressions.Sum
+import engine.expressions.equationOf
 import engine.expressions.logBase10Of
 import engine.expressions.naturalLogOf
 import engine.expressions.negOf
 import engine.expressions.powerOf
 import engine.expressions.productOf
+import engine.expressions.simplifiedFractionOf
+import engine.expressions.simplifiedNegOf
 import engine.expressions.sumOf
 import engine.expressions.xp
 import engine.methods.Rule
@@ -34,12 +40,14 @@ import engine.methods.RunnerMethod
 import engine.methods.rule
 import engine.patterns.AnyPattern
 import engine.patterns.FixedPattern
+import engine.patterns.SolvablePattern
 import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.condition
 import engine.patterns.fractionOf
 import engine.patterns.logOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
+import engine.patterns.sumContaining
 import engine.steps.metadata.metadata
 import engine.utility.Power
 import engine.utility.asKnownPower
@@ -59,6 +67,9 @@ enum class LogsRules(override val runner: Rule) : RunnerMethod {
     SplitLogOfProduct(splitLogOfProduct),
     SplitLogOfFraction(splitLogOfFraction),
     SimplifyLogWithCommonExponents(simplifyLogWithCommonExponents),
+    CollectLogarithmsUsingProductRule(collectLogarithmsUsingProductRule),
+    RewriteCoefficientsAsExponents(rewriteCoefficientsAsExponents),
+    MoveNegatedLogarithmicTermsToTheOtherSide(moveNegatedLogarithmicTermsToTheOtherSide),
 }
 
 private val takePowerOutOfLog = rule {
@@ -264,6 +275,116 @@ private val rewriteLogWithMatchingPowers =
             )
         }
     }
+
+private val collectLogarithmsUsingProductRule = rule {
+    onPattern(sumContaining()) {
+        val sum = expression as? Sum ?: return@onPattern null
+        val logTerms = sum.terms.mapNotNull { it.extractSignedLogTerm() }
+        if (logTerms.size < 2 || logTerms.size != sum.terms.size) return@onPattern null
+
+        val base = logTerms.first().log.base
+        if (logTerms.any { it.log.base != base }) return@onPattern null
+
+        val positiveArguments = logTerms.filterNot { it.isNegative }.map { move(it.log.argument) }
+        val negativeArguments = logTerms.filter { it.isNegative }.map { move(it.log.argument) }
+
+        val logarithm = logTerms.first().log
+
+        val collectedLog = when {
+            positiveArguments.isNotEmpty() && negativeArguments.isNotEmpty() -> {
+                logarithm.withArgument(
+                    simplifiedFractionOf(
+                        productOf(positiveArguments),
+                        productOf(negativeArguments),
+                    ),
+                )
+            }
+
+            positiveArguments.isNotEmpty() -> {
+                logarithm.withArgument(productOf(positiveArguments))
+            }
+
+            else -> {
+                negOf(logarithm.withArgument(productOf(negativeArguments)))
+            }
+        }
+
+        ruleResult(
+            toExpr = collectedLog,
+            explanation = metadata(Explanation.CollectLogarithmsUsingProductRule),
+        )
+    }
+}
+
+private data class SignedLogTerm(
+    val log: Logarithm,
+    val isNegative: Boolean,
+)
+
+private fun Expression.extractSignedLogTerm(): SignedLogTerm? =
+    when (this) {
+        is Logarithm -> SignedLogTerm(this, false)
+        is Minus -> (argument as? Logarithm)?.let { SignedLogTerm(it, true) }
+        else -> null
+    }
+
+private val rewriteCoefficientsAsExponents = rule {
+    val coefficient = UnsignedIntegerPattern()
+    val argument = AnyPattern()
+    val expression = logOf(argument)
+
+    val product = engine.patterns.productOf(coefficient, expression)
+
+    onPattern(product) {
+        ruleResult(
+            toExpr = createLog(
+                (get(expression) as Logarithm).base,
+                powerOf(move(argument), move(coefficient)),
+            ),
+            explanation = metadata(Explanation.RewriteCoefficientsAsExponents),
+        )
+    }
+}
+
+private val moveNegatedLogarithmicTermsToTheOtherSide = rule {
+    val lhs = AnyPattern()
+    val rhs = AnyPattern()
+    val solvable = SolvablePattern(lhs, rhs)
+
+    onPattern(solvable) {
+        val lhsTerms = get(lhs).balancingTerms()
+        val rhsTerms = get(rhs).balancingTerms()
+
+        val negatedLogTerms = lhsTerms.filter { it.isNegatedLogTerm() } + rhsTerms.filter { it.isNegatedLogTerm() }
+
+        if (negatedLogTerms.isEmpty()) {
+            return@onPattern null
+        }
+
+        val oppositeTerms = negatedLogTerms.map {
+            simplifiedNegOf(it)
+        }
+
+        ruleResult(
+            toExpr = equationOf(
+                sumOf(lhsTerms + oppositeTerms),
+                sumOf(rhsTerms + oppositeTerms),
+            ),
+            explanation = metadata(Explanation.MoveNegatedLogarithmicTermsToTheOtherSide),
+        )
+    }
+}
+
+private fun Expression.isNegatedLogTerm() = this is Minus && argument.isLogarithmicTerm()
+
+private fun Expression.balancingTerms() = if (this is Sum) terms else listOf(this)
+
+fun Expression.isLogarithmicTerm(): Boolean =
+    this is Logarithm ||
+        this is Minus && this.firstChild.isLogarithmicTerm() ||
+        this is Product && this.children.singleOrNull { factor ->
+            factor is Logarithm
+        } != null
 
 private fun switchLogBase(targetBase: Expression) =
     rule {

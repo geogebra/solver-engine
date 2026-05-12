@@ -23,6 +23,7 @@ import methods.equations.EquationsRules.ApplyQuadraticFormula
 import methods.equations.EquationsRules.EliminateConstantFactorOfLhsWithZeroRhsDirectly
 import methods.equations.EquationsRules.MultiplyByInverseOfLeadingCoefficient
 import methods.equations.EquationsRules.SeparateEquationInPlusMinusForm
+import methods.logs.LogsRules
 import org.junit.jupiter.api.Test
 
 class EquationRulesTest {
@@ -343,6 +344,35 @@ class EquationRulesTest {
             "[2^x]=-1",
             EquationsRules.SolveEquationWithIncompatibleSigns,
             "Contradiction[x: [2^x] = -1]",
+        )
+    }
+
+    @Test
+    fun testMoveNegatedLogarithmicTermsToTheOtherSide() {
+        testRule(
+            "ln x - ln y = 3",
+            LogsRules.MoveNegatedLogarithmicTermsToTheOtherSide,
+            "ln x - ln y + ln y = 3 + ln y",
+        )
+        testRule(
+            "ln x - ln y + ln z = 3",
+            LogsRules.MoveNegatedLogarithmicTermsToTheOtherSide,
+            "ln x - ln y + ln z  + ln y = 3 + ln y",
+        )
+        testRule(
+            "3 = ln x - ln y - ln z",
+            LogsRules.MoveNegatedLogarithmicTermsToTheOtherSide,
+            "3 + ln y + ln z = ln x - ln y - ln z + ln y + ln z",
+        )
+        testRule(
+            "ln x + ln y = 3",
+            LogsRules.MoveNegatedLogarithmicTermsToTheOtherSide,
+            null,
+        )
+        testRule(
+            "ln x - ln y = 3 - ln z",
+            LogsRules.MoveNegatedLogarithmicTermsToTheOtherSide,
+            "ln x - ln y + ln y + ln z = 3 - ln z + ln y + ln z",
         )
     }
 

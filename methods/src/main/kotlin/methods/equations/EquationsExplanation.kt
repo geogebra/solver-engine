@@ -851,6 +851,11 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      */
     ReduceGeneralQuadraticTrigEquationToHomogeneous,
 
+    /**
+     * Solve equation containing logarithmic expressions
+     */
+    SolveLogarithmicEquations,
+
     ;
 
     override val category = "Equations"
