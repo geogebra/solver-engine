@@ -32,6 +32,7 @@ import engine.expressions.Sum
 import engine.expressions.SumView
 import engine.expressions.View
 import engine.expressions.areEquivalentSums
+import engine.expressions.asRational
 import engine.expressions.bracketOf
 import engine.expressions.equationOf
 import engine.expressions.explicitProductOf
@@ -126,15 +127,21 @@ enum class FactorRules(override val runner: Rule) : RunnerMethod {
                     if (factor.base == Constants.One) continue
 
                     val (minExponent, sameBaseFactors) = sumView.findSameBaseFactors(factor.base)
-                    if (minExponent > BigInteger.ZERO) {
+                    if (minExponent.isPositive()) {
+                        val factoredExponent = minExponent.toExpression()
+                            .withCommonExponentOrigin(sameBaseFactors.mapNotNull { it.exponent })
                         val commonFactor = simplifiedPowerOf(
                             factor.base.withOrigin(Factor(sameBaseFactors.map { it.base })),
-                            xp(minExponent)
-                                .withOrigin(Factor(sameBaseFactors.mapNotNull { it.exponent })),
+                            factoredExponent,
                         )
 
                         for (sameBaseFactor in sameBaseFactors) {
-                            sameBaseFactor.changeExponent(sameBaseFactor.exponentValue - minExponent)
+                            sameBaseFactor.changeExponent(
+                                sumOf(
+                                    sameBaseFactor.exponent ?: Constants.One,
+                                    negOf(factoredExponent),
+                                ),
+                            )
                         }
 
                         val lastFactor = sameBaseFactors.last().original
@@ -615,18 +622,19 @@ private fun fractionCbrt(f: Rational?) =
 
 private class CommonFactorView(override val original: Expression) : View {
     private var newBase: Expression? = null
-    private var newExponent: BigInteger? = null
+    private var newExponent: Expression? = null
 
     val base get() = if (original is Power) original.base else original
-    val exponent get() = if (original is Power) original.exponent as? IntegerExpression else null
+    val exponent get() = if (original is Power) original.exponent else null
 
-    val exponentValue: BigInteger get() = exponent?.value ?: BigInteger.ONE
+    val exponentValue: Rational?
+        get() = exponent?.asRational() ?: if (original is Power) null else Rational(BigInteger.ONE)
 
     fun changeBase(newBase: Expression) {
         this.newBase = newBase
     }
 
-    fun changeExponent(newExponent: BigInteger) {
+    fun changeExponent(newExponent: Expression) {
         this.newExponent = newExponent
     }
 
@@ -636,22 +644,12 @@ private class CommonFactorView(override val original: Expression) : View {
             val exponent = this.exponent
             val newExponent = this.newExponent
 
-            return if (newExponent != null) {
-                if (exponent != null) {
-                    xp(newExponent).withOrigin(Combine(listOf(exponent)))
-                } else {
-                    xp(newExponent)
-                }
-            } else {
-                exponent
-            }
+            return newExponent ?: exponent
         }
 
     override fun recombine(): Expression? {
         return when {
             newBase == null && newExponent == null -> original
-            newExponent == BigInteger.ZERO -> null
-            newExponent == BigInteger.ONE -> baseWithOrigin
             exponent == null && newExponent == null -> baseWithOrigin
             // the previous branch makes sure exponentWithOrigin is not null
             else -> powerOf(baseWithOrigin, exponentWithOrigin!!)
@@ -671,14 +669,40 @@ private fun SumView<CommonFactorView>.findEquivalentBaseFactors(base: Expression
     return equivalentBaseFactors
 }
 
-private fun SumView<CommonFactorView>.findSameBaseFactors(base: Expression): Pair<BigInteger, List<CommonFactorView>> {
+private fun SumView<CommonFactorView>.findSameBaseFactors(base: Expression): Pair<Rational, List<CommonFactorView>> {
     val sameBaseFactors = ArrayList<CommonFactorView>(termViews.size)
     for (term in termViews) {
-        val factor = term.findSingleFactor { it.base == base && it.exponentValue != BigInteger.ZERO }
-            ?: return Pair(BigInteger.ZERO, emptyList())
+        val factor = term.findSingleFactor {
+            val exponentValue = it.exponentValue
+            it.base == base && exponentValue != null && exponentValue != Rational(BigInteger.ZERO)
+        } ?: return Pair(Rational(BigInteger.ZERO), emptyList())
         sameBaseFactors.add(factor)
     }
-    return Pair(sameBaseFactors.minOfOrNull { it.exponentValue } ?: BigInteger.ZERO, sameBaseFactors)
+    return Pair(
+        sameBaseFactors.mapNotNull { it.exponentValue }.reduceOrNull { min, exponent ->
+            if (exponent.isLessThan(min)) exponent else min
+        } ?: Rational(BigInteger.ZERO),
+        sameBaseFactors,
+    )
+}
+
+private fun Rational.isPositive() = numerator * denominator > BigInteger.ZERO
+
+private fun Rational.isLessThan(other: Rational) = numerator * other.denominator < other.numerator * denominator
+
+private fun Rational.toExpression() =
+    if (sameNumber(numerator / denominator)) {
+        xp(numerator / denominator)
+    } else {
+        simplifiedFractionOf(xp(numerator), xp(denominator))
+    }
+
+private fun Expression.withCommonExponentOrigin(from: List<Expression>): Expression {
+    return if (from.isNotEmpty() && from.all { it.childCount >= childCount }) {
+        withOrigin(Factor(from))
+    } else {
+        withOrigin(Combine(from))
+    }
 }
 
 val rewriteSquareOfBinomial = rule {

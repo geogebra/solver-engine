@@ -56,17 +56,33 @@ class FactorRulesTest {
         testRule(
             "[(x + 1)^2] sqrt[2] + [(y + 1)^3] sqrt[2]",
             FactorCommonFactor,
-            "sqrt[2] ([(x + 1)^2] + [(y + 1)^3])",
+            "sqrt[2] ([(x + 1)^2] [(sqrt[2]) ^ 1 - 1]" +
+                " + [(y + 1)^3] [(sqrt[2]) ^ 1 - 1])",
         )
         testRule(
             "3[(x + 1)^3] + 6(x + 1)",
             FactorCommonFactor,
-            "(x + 1)(3[(x + 1)^2] + 6)",
+            "(x + 1)(3[(x + 1) ^ 3 - 1] + 6[(x + 1) ^ 1 - 1])",
         )
         testRule(
             "3[(x + 1)^3] + 6[(x + 1)^2]",
             FactorCommonFactor,
-            "[(x + 1)^2](3(x + 1) + 6)",
+            "[(x + 1)^2](3[(x + 1) ^ 3 - 2] + 6[(x + 1) ^ 2 - 2])",
+        )
+        testRule(
+            "[x^[1 / 2]] + [x^[3 / 2]]",
+            FactorCommonFactor,
+            "[x^[1 / 2]]([x ^ [1 / 2] - [1 / 2]] + [x ^ [3 / 2] - [1 / 2]])",
+        )
+        testRule(
+            "[x^[1 / 2]] + [x^2]",
+            FactorCommonFactor,
+            "[x^[1 / 2]]([x ^ [1 / 2] - [1 / 2]] + [x ^ 2 - [1 / 2]])",
+        )
+        testRule(
+            "[x^a] + [x^2]",
+            FactorCommonFactor,
+            null,
         )
     }
 

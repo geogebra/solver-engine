@@ -67,7 +67,7 @@ class FactorPlansTest {
                     fromExpr = "3 (5 [x ^ 5] - 11 [x ^ 2])"
                     toExpr = "3 <. [x ^ 2] (5 [x ^ 3] - 11) .>"
                     explanation {
-                        key = FactorExplanation.FactorCommonFactor
+                        key = FactorExplanation.FactorCommonFactorAndSimplify
                     }
                 }
             }
@@ -88,7 +88,7 @@ class FactorPlansTest {
 
                 step {
                     fromExpr = "3 * [(x + 1) ^ 3] + 6 * [(1 + x) ^ 2]"
-                    toExpr = "3 * [(x + 1) ^ 2] ((x + 1) + 2)"
+                    toExpr = "3 * [(x + 1) ^ 2] (x + 1 + 2)"
                     explanation {
                         key = FactorExplanation.FactorGreatestCommonFactor
                     }
@@ -111,18 +111,10 @@ class FactorPlansTest {
 
                     step {
                         fromExpr = "3 ([(x + 1) ^ 3] + 2 * [(x + 1) ^ 2])"
-                        toExpr = "3 * <. [(x + 1) ^ 2] ((x + 1) + 2) .>"
+                        toExpr = "3 * <. [(x + 1) ^ 2] (x + 1 + 2) .>"
                         explanation {
-                            key = FactorExplanation.FactorCommonFactor
+                            key = FactorExplanation.FactorCommonFactorAndSimplify
                         }
-                    }
-                }
-
-                step {
-                    fromExpr = "3 * [(x + 1) ^ 2] ((x + 1) + 2)"
-                    toExpr = "3 * [(x + 1) ^ 2] (x + 1 + 2)"
-                    explanation {
-                        key = GeneralExplanation.RemoveAllBracketSumInSum
                     }
                 }
 
@@ -536,7 +528,7 @@ class FactorPlansTest {
                     fromExpr = "2 [x ^ 2] (3 x + 4) + 3 (3 x + 4)"
                     toExpr = "(3 x + 4) (2 [x ^ 2] + 3)"
                     explanation {
-                        key = FactorExplanation.FactorCommonFactor
+                        key = FactorExplanation.FactorCommonFactorAndSimplify
                     }
                 }
             }
@@ -637,7 +629,7 @@ class FactorPlansTest {
                         fromExpr = "2 (9 [x ^ 6] - 16 [x ^ 2])"
                         toExpr = "2 <. [x ^ 2] (9 [x ^ 4] - 16) .>"
                         explanation {
-                            key = FactorExplanation.FactorCommonFactor
+                            key = FactorExplanation.FactorCommonFactorAndSimplify
                         }
                     }
                 }
@@ -700,7 +692,7 @@ class FactorPlansTest {
                         fromExpr = "2 (81 [x ^ 6] - 16 [x ^ 2])"
                         toExpr = "2 <. [x ^ 2] (81 [x ^ 4] - 16) .>"
                         explanation {
-                            key = FactorExplanation.FactorCommonFactor
+                            key = FactorExplanation.FactorCommonFactorAndSimplify
                         }
                     }
                 }
@@ -819,7 +811,7 @@ class FactorPlansTest {
                     fromExpr = "9 * [(x + 2) ^ 2] - (x + 2)"
                     toExpr = "(x + 2) (9 (x + 2) - 1)"
                     explanation {
-                        key = FactorExplanation.FactorCommonFactor
+                        key = FactorExplanation.FactorCommonFactorAndSimplify
                     }
                 }
 

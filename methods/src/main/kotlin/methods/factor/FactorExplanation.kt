@@ -26,9 +26,16 @@ enum class FactorExplanation : CategorisedMetadataKey {
     /**
      * Factor a single common, non-integer factor (with the greatest possible exponent) from a sum.
      *
-     * E.g. 3 (x + 1)^3 + 6 (x + 1)^2 -> (x + 1)^2 (3(x+1) + 6)
+     * E.g. 3 (x + 1)^3 + 6 (x + 1)^2 -> (x + 1)^2 (3(x+1)^(3-2) + 6*(x+1)^(2-2))
      */
     FactorCommonFactor,
+
+    /**
+     * Factor a common factor and simplify the resulting exponents
+     *
+     * E.g. 3 (x + 1)^3 + 6 (x + 1)^2 -> (x + 1)^2 (3(x+1)^(3-2) + 6^(2-2)) -> (x + 1)^2 (3(x+1) + 6)
+     */
+    FactorCommonFactorAndSimplify,
 
     /**
      * Rearrange a sum before factoring common terms, to make the common term obvious.

@@ -36,6 +36,7 @@ import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
 import engine.methods.RunnerMethod
 import engine.methods.plan
+import engine.methods.rule
 import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.applyAfterMaybeExtractingMinus
 import engine.methods.stepsproducers.steps
@@ -45,6 +46,7 @@ import engine.patterns.AnyPattern
 import engine.patterns.ArbitraryVariablePattern
 import engine.patterns.ConditionPattern
 import engine.patterns.ConstantPattern
+import engine.patterns.FixedPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.TrigonometricExpressionPattern
 import engine.patterns.UnsignedIntegerPattern
@@ -61,6 +63,8 @@ import engine.patterns.sumContaining
 import engine.patterns.sumOf
 import engine.steps.metadata.metadata
 import methods.expand.ExpandRules
+import methods.general.GeneralExplanation
+import methods.general.GeneralRules
 import methods.integerarithmetic.IntegerArithmeticRules
 import methods.polynomials.expandAndSimplifier
 import methods.polynomials.normalizePolynomialSteps
@@ -68,6 +72,17 @@ import methods.simplify.algebraicSimplificationSteps
 import java.math.BigInteger
 
 enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
+    FactorCommonFactorAndSimplify(
+        plan {
+            explanation = Explanation.FactorCommonFactorAndSimplify
+
+            steps {
+                apply(FactorRules.FactorCommonFactor)
+                whilePossible(factorCommonFactorCleanupSteps)
+            }
+        },
+    ),
+
     FactorGreatestCommonFactor(
         plan {
             val sumPattern = sumContaining()
@@ -103,12 +118,12 @@ enum class FactorPlans(override val runner: CompositeMethod) : RunnerMethod {
                         applyTo(FactorRules.FactorGreatestCommonIntegerFactor, ::extractLastFactor)
                     }
                     whilePossible {
-                        applyTo(FactorRules.FactorCommonFactor, ::extractLastFactor)
+                        applyTo(FactorCommonFactorAndSimplify, ::extractLastFactor)
                     }
                     whilePossible {
                         applyTo(::extractLastFactor) {
                             apply(FactorRules.RearrangeEquivalentSums)
-                            apply(FactorRules.FactorCommonFactor)
+                            apply(FactorCommonFactorAndSimplify)
                         }
                     }
                 }
@@ -425,6 +440,36 @@ val factorizationSteps: StepsProducer = stepsWithMinDepth(1) {
         option(factorizeMinusSteps)
         option(factorizeProductSteps)
         option(factorizePowerSteps)
+    }
+}
+
+private val evaluateFactoredPowerToZero = object : RunnerMethod {
+    override val name = "EvaluateFactoredPowerToZero"
+    override val runner = rule {
+        val base = AnyPattern()
+        val zero = FixedPattern(Constants.Zero)
+        val power = powerOf(base, zero)
+
+        onPattern(power) {
+            ruleResult(
+                toExpr = transformTo(power, Constants.One),
+                explanation = metadata(GeneralExplanation.EvaluateExpressionToThePowerOfZero),
+            )
+        }
+    }
+}
+
+private val factorCommonFactorCleanupSteps = steps {
+    firstOf {
+        option {
+            deeply {
+                check { it is Power }
+                applyToKind<Power>(algebraicSimplificationSteps) { it.exponent }
+            }
+        }
+        option { deeply(GeneralRules.SimplifyExpressionToThePowerOfOne, deepFirst = true) }
+        option { deeply(evaluateFactoredPowerToZero, deepFirst = true) }
+        option { deeply(GeneralRules.RemoveUnitaryCoefficient, deepFirst = true) }
     }
 }
 

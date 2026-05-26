@@ -41,7 +41,7 @@ import engine.patterns.optional
 import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.sumOf
-import methods.factor.FactorRules
+import methods.factor.FactorPlans
 import methods.general.GeneralRules
 
 enum class TrigonometricFunctionsPlans(override val runner: CompositeMethod) : RunnerMethod {
@@ -154,7 +154,7 @@ fun createUsePythagoreanIdentityAndSimplifyPlan(simplificationSteps: StepsProduc
             shortcut(TrigonometricFunctionsRules.ApplyPythagoreanIdentity)
 
             firstOf {
-                option(FactorRules.FactorCommonFactor)
+                option(FactorPlans.FactorCommonFactorAndSimplify)
                 option(GeneralRules.FactorMinusFromSumWithAllNegativeTerms)
             }
 
