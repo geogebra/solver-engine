@@ -63,6 +63,66 @@ class TestToJson {
         )
 
     @Test
+    fun logarithmPowerInsideTest() =
+        test(
+            "[ln ^ 2] x ",
+            """{
+            "type": "Power",
+            "operands": [
+                {
+                    "type": "NaturalLog",
+                    "operands": [
+                        {"type": "Variable", "value": "x"}
+                    ],
+                    "powerInside": true
+                },
+                {"type": "Integer", "value": "2"}
+            ]
+        }
+        """,
+        )
+
+    @Test
+    fun logarithmPowerOutsideTest() =
+        test(
+            "[ln x ^ 2]",
+            """{
+            "type": "Power",
+            "operands": [
+                {
+                    "type": "NaturalLog",
+                    "operands": [
+                        {"type": "Variable", "value": "x"}
+                    ],
+                    "powerInside": false
+                },
+                {"type": "Integer", "value": "2"}
+            ]
+        }
+        """,
+        )
+
+    @Test
+    fun base10LogarithmPowerInsideTest() =
+        test(
+            "[log ^ 2] x",
+            """{
+            "type": "Power",
+            "operands": [
+                {
+                    "type": "LogBase10",
+                    "operands": [
+                        {"type": "Variable", "value": "x"}
+                    ],
+                    "powerInside": true
+                },
+                {"type": "Integer", "value": "2"}
+            ]
+        }
+        """,
+        )
+
+    @Test
     fun sinhInverseTest() =
         test(
             "[sinh ^ -1] [x]",

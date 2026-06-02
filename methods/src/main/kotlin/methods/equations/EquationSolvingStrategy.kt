@@ -30,6 +30,7 @@ import engine.expressions.containsLogs
 import engine.expressions.containsSquaredTrigExpression
 import engine.expressions.containsTrigExpression
 import engine.expressions.hasSingleValue
+import engine.expressions.isLogarithmicTerm
 import engine.methods.PublicStrategy
 import engine.methods.Strategy
 import engine.methods.StrategyFamily
@@ -60,8 +61,8 @@ import methods.factor.FactorPlans
 import methods.logs.LogsPlans
 import methods.logs.LogsRules
 import methods.logs.extractLogTerms
-import methods.logs.isLogarithmicTerm
 import methods.polynomials.PolynomialsPlans
+import methods.polynomials.expandAndSimplifier
 import methods.polynomials.normalizePolynomialSteps
 import methods.rationalexpressions.RationalExpressionsPlans
 import methods.simplify.SimplifyPlans
@@ -443,7 +444,14 @@ enum class EquationSolvingStrategy(
             }
             apply(equationSolvingSteps)
         },
-    ),
+    ) {
+        override fun explanationFor(expression: Expression) =
+            if (expression.containsLogs()) {
+                EquationsExplanation.SolveLogarithmicEquations
+            } else {
+                explanation
+            }
+    },
 
     /**
      * - IF possible Balance equations to form sin(x) = sin(y)
@@ -568,6 +576,48 @@ enum class EquationSolvingStrategy(
                     apply(EquationsPlans.SolveEquation)
                 }
             }
+        },
+    ),
+
+    SubstituteLogarithmInEquation(
+        family = Family.POLYNOMIAL,
+        priority = 5,
+        explanation = EquationsExplanation.SolveLogarithmicEquationBySubstitution,
+        steps = steps {
+            optionally {
+                firstOf {
+                    option {
+                        checkForm {
+                            equationOf(
+                                FixedPattern(Constants.Zero),
+                                AnyPattern(),
+                            )
+                        }
+                        apply(SolvableRules.FlipSolvable)
+                    }
+                    option(solvablePlansForEquations.moveEverythingToTheLeftAndSimplify)
+                }
+            }
+
+            optionally(expandAndSimplifier.steps)
+
+            optionally(solvablePlansForEquations.multiplyByLCDAndSimplify)
+
+            optionally {
+                applyTo(EquationsRules.ReorderLogarithmicTrinomial) {
+                    it.firstChild
+                }
+            }
+
+            apply(EquationsRules.SubstituteLogsInEquation)
+
+            inContext({ copy(solutionVariables = it.secondChild.firstChild.variables.toList()) }) {
+                applyTo(EquationsPlans.SolveEquation) {
+                    it.firstChild
+                }
+            }
+
+            apply(EquationsPlans.SubstituteOriginalExpressionIntoLogarithmicEquation)
         },
     ),
 

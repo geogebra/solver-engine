@@ -18,11 +18,61 @@
 import type {
   DecoratorType,
   ExpressionTree,
+  LogarithmFunctions,
   NestedExpression,
   TrigonometricFunctions,
 } from '../parser';
 
 export type TransformerFunction = (node: ExpressionTree, defaultResult: string) => string;
+
+const trigonometricFunctions: readonly TrigonometricFunctions[] = [
+  'Sin',
+  'Cos',
+  'Tan',
+  'Cot',
+  'Sec',
+  'Csc',
+  'Sinh',
+  'Cosh',
+  'Tanh',
+  'Sech',
+  'Csch',
+  'Coth',
+  'Arcsin',
+  'Arccos',
+  'Arctan',
+  'Arccot',
+  'Arcsec',
+  'Arccsc',
+  'Arsinh',
+  'Arcosh',
+  'Artanh',
+  'Arcoth',
+  'Arcsch',
+  'Arsech',
+];
+
+function isPoweredTrig(base: ExpressionTree): base is ExpressionTree & {
+  type: TrigonometricFunctions;
+  powerInside: true;
+} {
+  return (
+    trigonometricFunctions.includes(base.type as TrigonometricFunctions) &&
+    'powerInside' in base &&
+    base.powerInside === true
+  );
+}
+
+function isPoweredLog(base: ExpressionTree): base is ExpressionTree & {
+  type: LogarithmFunctions;
+  powerInside: true;
+} {
+  return (
+    (base.type === 'NaturalLog' || base.type === 'LogBase10' || base.type === 'Log') &&
+    'powerInside' in base &&
+    base.powerInside === true
+  );
+}
 
 export function treeToSolver(n: ExpressionTree): string {
   const rec = (n: ExpressionTree): string => treeToSolver(n);
@@ -78,11 +128,21 @@ export function treeToSolver(n: ExpressionTree): string {
       return dec(`[${rec(n.operands[0])} ${rec(n.operands[1])} / ${rec(n.operands[2])}]`);
     case 'Power': {
       const base = n.operands[0];
-      if ((base.type as TrigonometricFunctions) && (base as any).powerInside) {
+      if (isPoweredTrig(base)) {
         return dec(
           `[${base.type.toLowerCase()} ^ ${rec(n.operands[1])}][${rec(
-            (base as any).operands[0],
+            base.operands[0],
           )}]`,
+        );
+      } else if (isPoweredLog(base) && base.type === 'NaturalLog') {
+        return dec(`[ln ^ ${rec(n.operands[1])}] ${rec(base.operands[0])}`);
+      } else if (isPoweredLog(base) && base.type === 'LogBase10') {
+        return dec(`[log ^ ${rec(n.operands[1])}] ${rec(base.operands[0])}`);
+      } else if (isPoweredLog(base) && base.type === 'Log') {
+        return dec(
+          `[log_[${rec(base.operands[0])}] ^ ${rec(n.operands[1])}] ${rec(
+            base.operands[1],
+          )}`,
         );
       } else {
         return dec(`[${rec(base)} ^ ${rec(n.operands[1])}]`);

@@ -203,6 +203,20 @@ enum class LogsExplanation : CategorisedMetadataKey {
      */
     ApplyEqualityRuleOfLogs,
 
+    /**
+     * Substitute %1
+     *
+     * %1 - log (x) = t
+     */
+    SubstituteLogsInEquation,
+
+    /**
+     * Substitute back %1 and solve
+     *
+     * %1 - log (x) = t
+     */
+    SubstituteOriginalExpressionIntoLogarithmicEquation,
+
     ;
 
     override val category = "Logs"

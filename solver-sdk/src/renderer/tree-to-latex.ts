@@ -18,11 +18,14 @@
 import {
   ExpressionTree,
   ExpressionTreeBase,
+  LogarithmExpression,
   NestedExpression,
-  TrigonometricFunctions,
+  TrigonometricExpression,
 } from '../parser';
 import { setsSolutionFormatter, SolutionFormatter } from './solution-formatter';
 import { ColorMap } from '../solutions/coloring';
+
+type LatexExpressionTreeBase = ExpressionTreeBase<{ path: string }>;
 
 export interface MathWords {
   Undefined: string;
@@ -195,6 +198,18 @@ const defaultTransformer: LatexTransformer = {
   transformDecorator: (node, originalLatex) => originalLatex,
 };
 
+function isPoweredTrig(
+  base: LatexExpressionTreeBase,
+): base is TrigonometricExpression<{ path: string }> {
+  return 'powerInside' in base && base.powerInside === true;
+}
+
+function isPoweredLog(
+  base: LatexExpressionTreeBase,
+): base is LogarithmExpression<{ path: string }> {
+  return 'operands' in base && 'powerInside' in base && base.powerInside === true;
+}
+
 export function treeToLatex(
   n: ExpressionTree,
   settings?: LatexSettings,
@@ -336,20 +351,34 @@ function treeToLatexInner(
         )}}`,
       );
     case 'Power': {
-      // Special case for the
       const base = n.operands[0];
       if (base.type === 'Variable' && base.subscript && !base.decorators) {
         return tfd(`${rec(base, n)}^{\\,${rec(n.operands[1], n)}}`);
-      } else if ((base.type as TrigonometricFunctions) && (base as any).powerInside) {
+      } else if (isPoweredLog(base) && base.type === 'NaturalLog') {
+        return tfd(
+          `\\ln^{${rec(n.operands[1], n)}}\\left(${rec(base.operands[0], n)}\\right)`,
+        );
+      } else if (isPoweredLog(base) && base.type === 'LogBase10') {
+        return tfd(
+          `\\log^{${rec(n.operands[1], n)}}\\left(${rec(base.operands[0], n)}\\right)`,
+        );
+      } else if (isPoweredLog(base) && base.type === 'Log') {
+        return tfd(
+          `\\log_{${rec(base.operands[0], n)}}^{${rec(n.operands[1], n)}}\\left(${rec(
+            base.operands[1],
+            n,
+          )}\\right)`,
+        );
+      } else if (isPoweredTrig(base)) {
         return tfd(
           `\\${base.type.toLowerCase()}^{${rec(n.operands[1], n)}}{\\left(${rec(
-            (base as any).operands[0],
+            base.operands[0],
             n,
           )}\\right)}`,
         );
-      } else {
-        return tfd(`{${rec(base, n)}}^{${rec(n.operands[1], n)}}`);
       }
+
+      return tfd(`{${rec(base, n)}}^{${rec(n.operands[1], n)}}`);
     }
     case 'SquareRoot':
       return tfd(`\\sqrt{${rec(n.operands[0], n)}}`);

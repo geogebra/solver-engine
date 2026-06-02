@@ -116,6 +116,9 @@ logarithm
     : 'ln' argument=implicitProduct                     #naturalLog
     | 'log' argument=implicitProduct                    #logBase10
     | 'log_[' base=expr ']' argument=implicitProduct    #log
+    | '[' 'ln' '^' exp=expr ']' argument=implicitProduct    #powerNaturalLog
+    | '[' 'log' '^' exp=expr ']' argument=implicitProduct    #powerLogBase10
+    | '[' 'log_[' base=expr ']' '^' exp=expr ']'  argument=implicitProduct  #powerLog
     ;
 
 unitExpression

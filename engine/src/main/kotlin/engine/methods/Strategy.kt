@@ -17,6 +17,7 @@
 
 package engine.methods
 
+import engine.expressions.Expression
 import engine.methods.stepsproducers.StepsProducer
 import engine.steps.metadata.MetadataKey
 
@@ -31,6 +32,8 @@ interface Strategy {
     val name: String
     val explanation: MetadataKey
     val steps: StepsProducer
+
+    fun explanationFor(expression: Expression): MetadataKey = explanation
 
     fun isIncompatibleWith(other: Strategy): Boolean {
         return other.family != family

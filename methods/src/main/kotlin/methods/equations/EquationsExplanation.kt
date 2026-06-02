@@ -856,6 +856,16 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      */
     SolveLogarithmicEquations,
 
+    /**
+     * Solve logarithmic equation by substitution
+     */
+    SolveLogarithmicEquationBySubstitution,
+
+    /**
+     * Reorder trinomial terms in decreasing order of exponents
+     */
+    ReorderTrinomial,
+
     ;
 
     override val category = "Equations"

@@ -111,6 +111,7 @@ fun productSignRequired(left: Expression, right: Expression): Boolean =
         right.isPartialProduct() -> productSignRequired(left, right.children.first())
         left.operator == UnaryExpressionOperator.DivideBy || right.operator == UnaryExpressionOperator.DivideBy -> true
         right.isNumbery() -> true
+        left is Logarithm -> true
         left.hasVisibleBracket() || right.hasVisibleBracket() -> false
         else -> {
             val rightOp = getBaseOfPower(right)

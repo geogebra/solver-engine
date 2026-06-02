@@ -199,11 +199,11 @@ open class Expression internal constructor(
     /**
      * Returns a copy labelled with [newLabel] instead of the existing label.
      */
-    fun withLabel(newLabel: LabelInstance?) = expressionOf(operator, operands, meta.copyMeta(label = newLabel))
+    fun withLabel(newLabel: LabelInstance?) = copyWithMeta(meta.copyMeta(label = newLabel))
 
     fun byName() = if (name != null) nameXp(name!!) else this
 
-    fun withName(newName: String?) = expressionOf(operator, operands, meta.copyMeta(name = newName))
+    fun withName(newName: String?) = copyWithMeta(meta.copyMeta(name = newName))
 
     fun withoutName() = withName(null)
 
@@ -220,10 +220,9 @@ open class Expression internal constructor(
      * Returns a copy of the expression with all labels cleared recursively.
      */
     fun clearLabels(labelSpace: LabelSpace): Expression {
-        return expressionOf(
-            operator = operator,
-            operands = operands.map { it.clearLabels(labelSpace) },
+        return copyWithMeta(
             meta = if (meta.label?.space == labelSpace) meta.copyMeta(label = null) else meta,
+            newOperands = operands.map { it.clearLabels(labelSpace) },
         )
     }
 
@@ -255,7 +254,7 @@ open class Expression internal constructor(
 
     fun nthChild(n: Int) = children[n]
 
-    fun withOrigin(newOrigin: Origin) = expressionOf(operator, operands, meta.copyMeta(origin = newOrigin))
+    fun withOrigin(newOrigin: Origin) = copyWithMeta(meta.copyMeta(origin = newOrigin))
 
     internal fun pathMappings(rootPath: Path = RootPath()) = origin.computePathMappings(rootPath, children)
 
@@ -280,7 +279,7 @@ open class Expression internal constructor(
         return decorators.fold(operator.latexString(ctx, operands)) { acc, dec -> dec.decorateLatexString(acc) }
     }
 
-    fun equiv(other: Expression): Boolean {
+    open fun equiv(other: Expression): Boolean {
         return operator == other.operator &&
             operands.size == other.operands.size &&
             operands.zip(other.operands).all { (op1, op2) -> op1.equiv(op2) }
@@ -290,7 +289,7 @@ open class Expression internal constructor(
         if (decorators == this.decorators) {
             this
         } else {
-            expressionOf(operator, operands, meta.copyMeta(decorators = decorators))
+            copyWithMeta(meta.copyMeta(decorators = decorators))
         }
 
     fun decorate(decorator: Decorator?) = if (decorator == null) this else withDecorators(decorators + decorator)
@@ -458,11 +457,10 @@ open class Expression internal constructor(
         )
 
     internal fun replaceChildren(newChildren: List<Expression>) =
-        expressionOf(
-            operator,
-            newChildren,
-            meta.copyMeta(origin = Build),
-        )
+        copyWithMeta(meta.copyMeta(origin = Build), newChildren)
+
+    protected open fun copyWithMeta(meta: NodeMeta, newOperands: List<Expression> = operands): Expression =
+        expressionOf(operator, newOperands, meta)
 
     override fun getBoundExprs(m: Match) = listOf(this)
 

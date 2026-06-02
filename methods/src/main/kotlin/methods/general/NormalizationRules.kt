@@ -33,6 +33,7 @@ import engine.expressions.TrigonometricExpression
 import engine.expressions.Variable
 import engine.expressions.containsLogs
 import engine.expressions.hasRedundantBrackets
+import engine.expressions.isLogarithmicTerm
 import engine.expressions.isSigned
 import engine.expressions.productOf
 import engine.expressions.variablePowerBase
@@ -295,12 +296,20 @@ private val normalizeTrigonometricExpressionNotation = rule {
 private val priorityComparator = compareBy<Expression>(
     { !it.isConstant() || it.containsLogs() || it is PiExpression },
     {
+        val comparable = if (it is Power) it.base else it
+
         @Suppress("MagicNumber")
-        when (if (it is Power) it.base else it) {
+        when (comparable) {
             // log, log_a, ln
             is Logarithm -> 5
             // (x + 1) or (1 + sqrt[3])
-            is Sum -> 4
+            is Sum -> if (comparable.children.any { child -> child.isLogarithmicTerm() }) {
+                // Sums containing logarithms should be after bare logarithms
+                // e.g 5 log x * (log x - 1)
+                6
+            } else {
+                4
+            }
             // sqrt[...] or root[..., n]
             is Root, is SquareRoot, is TrigonometricExpression -> 3
             // a, x, [x ^ 2]

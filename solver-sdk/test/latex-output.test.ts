@@ -64,6 +64,57 @@ it('Aligned equations with labels in system', () => {
   );
 });
 
+it('Powered logarithms render in compact form', () => {
+  const poweredLog: MathJson = {
+    type: 'Power',
+    operands: [
+      {
+        type: 'NaturalLog',
+        operands: [{ type: 'Variable', value: 'x' }],
+        powerInside: true,
+      },
+      { type: 'Integer', value: '2' },
+    ],
+  };
+
+  expect(jsonToLatex(poweredLog)).to.equal('\\ln^{2}\\left(x\\right)');
+});
+
+it('Powered base-10 logarithms render in compact form', () => {
+  const poweredLog: MathJson = {
+    type: 'Power',
+    operands: [
+      {
+        type: 'LogBase10',
+        operands: [{ type: 'Variable', value: 'x' }],
+        powerInside: true,
+      },
+      { type: 'Integer', value: '2' },
+    ],
+  };
+
+  expect(jsonToLatex(poweredLog)).to.equal('\\log^{2}\\left(x\\right)');
+});
+
+it('Powered arbitrary-base logarithms render in compact form', () => {
+  const poweredLog: MathJson = {
+    type: 'Power',
+    operands: [
+      {
+        type: 'Log',
+        operands: [
+          { type: 'Variable', value: 'a' },
+          { type: 'Variable', value: 'x' },
+        ],
+        powerInside: true,
+      },
+      { type: 'Integer', value: '2' },
+    ],
+  };
+
+  expect(jsonToLatex(poweredLog)).to.equal('\\log_{a}^{2}\\left(x\\right)');
+});
+
 it('Aligned equations in union', () => {
   const union: MathJson = {
     type: 'EquationUnion',

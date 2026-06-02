@@ -40,6 +40,9 @@ import kotlin.math.sinh
 import kotlin.math.sqrt
 import kotlin.math.tan
 import kotlin.math.tanh
+import engine.expressions.Log as LogExpression
+import engine.expressions.LogBase10 as LogBase10Expression
+import engine.expressions.NaturalLog as NaturalLogExpression
 
 private const val EXPRESSION_WITH_CONSTRAINT_PRECEDENCE = 5
 private const val SUM_PRECEDENCE = 10
@@ -409,7 +412,10 @@ internal enum class BinaryExpressionOperator(override val precedence: Int) : Bin
     Power(POWER_PRECEDENCE) {
         override fun leftChildAllowed(op: Operator) =
             (op.precedence == MAX_PRECEDENCE) ||
-                (op is TrigonometricFunctionOperator)
+                (op is TrigonometricFunctionOperator) ||
+                (op == UnaryExpressionOperator.NaturalLog) ||
+                (op == UnaryExpressionOperator.LogBase10) ||
+                (op == Log)
 
         override fun rightChildAllowed(op: Operator) = true
 
@@ -419,6 +425,9 @@ internal enum class BinaryExpressionOperator(override val precedence: Int) : Bin
                     val operatorType = left.operator.name
                     "[$operatorType ^ $right][${left.operands[0]}]"
                 }
+                left is NaturalLogExpression && left.powerInside -> "[ln ^ $right] ${left.argument}"
+                left is LogBase10Expression && left.powerInside -> "[log ^ $right] ${left.argument}"
+                left is LogExpression && left.powerInside -> "[log_[${left.base}] ^ $right] ${left.argument}"
                 else -> "[$left ^ $right]"
             }
         }
@@ -429,6 +438,13 @@ internal enum class BinaryExpressionOperator(override val precedence: Int) : Bin
                     val operatorType = left.operator.name
                     "\\$operatorType^{${right.toLatexString(ctx)}}\\left(${left.operands[0].toLatexString(ctx)}\\right)"
                 }
+                left is NaturalLogExpression && left.powerInside ->
+                    "\\ln^{${right.toLatexString(ctx)}}\\left(${left.argument.toLatexString(ctx)}\\right)"
+                left is LogBase10Expression && left.powerInside ->
+                    "\\log^{${right.toLatexString(ctx)}}\\left(${left.argument.toLatexString(ctx)}\\right)"
+                left is LogExpression && left.powerInside ->
+                    "\\log_{${left.base.toLatexString(ctx)}}^{${right.toLatexString(ctx)}}" +
+                        "\\left(${left.argument.toLatexString(ctx)}\\right)"
                 else -> "${left.toLatexString(ctx)}^{${right.toLatexString(ctx)}}"
             }
         }
@@ -466,7 +482,7 @@ internal enum class BinaryExpressionOperator(override val precedence: Int) : Bin
 
         override fun rightChildAllowed(op: Operator) = op.precedence > PRODUCT_PRECEDENCE
 
-        override fun <T> readableString(left: T, right: T) = "log[$left] $right"
+        override fun <T> readableString(left: T, right: T) = "log_[$left] $right"
 
         override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable) =
             "\\log_{${left.toLatexString(ctx)}} ${right.toLatexString(ctx)}"

@@ -34,9 +34,6 @@ export type NestedExpressionType =
   | 'Power' // (base, power)
   | 'SquareRoot' // unary
   | 'Root' // (degree, radicand)
-  | 'Log' // binary
-  | 'NaturalLog' // unary
-  | 'LogBase10' // unary
   | 'Derivative' // n-ary degree, expression dependents...
   | 'IndefiniteIntegral' // (function, variable)
   | 'DefiniteIntegral' // (lowerBound, upperBound, function, variable)
@@ -145,6 +142,14 @@ export type TrigonometricExpression<T> = {
   inverseNotation?: InverseNotation;
 } & T;
 
+export type LogarithmFunctions = 'Log' | 'NaturalLog' | 'LogBase10';
+
+export type LogarithmExpression<T> = {
+  type: LogarithmFunctions;
+  operands: ExpressionTreeBase<T>[];
+  powerInside?: boolean;
+} & T;
+
 export type ExpressionTreeBase<T> = ExpressionDecorations &
   (
     | NestedExpressionBase<T>
@@ -155,6 +160,7 @@ export type ExpressionTreeBase<T> = ExpressionDecorations &
     | VariableExpression
     | NameExpression
     | TrigonometricExpression<T>
+    | LogarithmExpression<T>
     | {
         type:
           | 'Undefined'

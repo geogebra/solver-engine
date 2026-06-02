@@ -22,6 +22,7 @@ import type {
   ExpressionTree,
   ExpressionTreeBase,
   IntegerExpression,
+  LogarithmExpression,
   TrigonometricExpression,
 } from './types';
 
@@ -64,6 +65,32 @@ export const trigFunctions = [
   { latexName: 'arcsch', type: 'Arcsch', inverseType: 'Csch', isInverse: true },
   { latexName: 'arcoth', type: 'Arcoth', inverseType: 'Coth', isInverse: true },
 ] as const;
+
+function removeRoundBracketDecorator(argument: ExprTree) {
+  const roundBracketIndex = argument.decorators?.indexOf('RoundBracket');
+  if (roundBracketIndex !== undefined && roundBracketIndex !== -1) {
+    argument.decorators?.splice(roundBracketIndex, 1);
+    if (argument.decorators?.length === 0) {
+      delete argument.decorators;
+    }
+  }
+}
+
+function withPowerInsideLog(
+  baseExpression: LogarithmExpression<any>,
+  power: ExprTree | null,
+) {
+  if (!power) {
+    return baseExpression;
+  }
+
+  baseExpression.operands.forEach(removeRoundBracketDecorator);
+
+  return {
+    type: 'Power',
+    operands: [{ ...baseExpression, powerInside: true }, power],
+  };
+}
 
 const latexSymbolDefinitions = {
   registerSum(parser: Parser<ExprTree>) {
@@ -377,14 +404,7 @@ const latexSymbolDefinitions = {
           }
           const argument = parser.expression(Infinity);
 
-          // Remove redundant round bracket decorator
-          const roundBracketIndex = argument.decorators?.indexOf('RoundBracket');
-          if (roundBracketIndex !== undefined && roundBracketIndex !== -1) {
-            argument.decorators?.splice(roundBracketIndex, 1);
-            if (argument.decorators?.length === 0) {
-              delete argument.decorators;
-            }
-          }
+          removeRoundBracketDecorator(argument);
 
           const baseExpression: TrigonometricExpression<any> = {
             type: trigFunc.type,
@@ -424,20 +444,29 @@ const latexSymbolDefinitions = {
   registerLogarithms(parser: Parser<ExprTree>) {
     const logSymbol = parser.registerSymbol('\\log', BP_IMPLICIT_MUL);
     logSymbol.nud = function () {
-      if (parser.advance('_', true)) {
-        const base = parser.expression(BP_SUBSCRIPT - 1);
-        const argument = parser.expression(Infinity);
+      let base: ExprTree | null = null;
+      let power: ExprTree | null = null;
 
-        return {
-          type: 'Log',
-          operands: [base, argument],
-        };
+      if (parser.advance('_', true)) {
+        base = parser.expression(BP_SUBSCRIPT - 1);
       }
+
+      if (parser.advance('^', true)) {
+        power = parser.expression(BP_POWER - 1);
+      }
+
       const argument = parser.expression(Infinity);
-      return {
-        type: 'LogBase10',
-        operands: [argument],
-      };
+      const baseExpression: LogarithmExpression<any> = base
+        ? {
+            type: 'Log',
+            operands: [base, argument],
+          }
+        : {
+            type: 'LogBase10',
+            operands: [argument],
+          };
+
+      return withPowerInsideLog(baseExpression, power);
     };
 
     logSymbol.led = getLedToExtendNary(parser, 'ImplicitProduct');
@@ -453,11 +482,20 @@ const latexSymbolDefinitions = {
 
     for (const symbol of [naturalLog, naturalLogWithMathrm, naturalLogWithDoubleMathrm]) {
       symbol.nud = function () {
+        let power: ExprTree | null = null;
+
+        if (parser.advance('^', true)) {
+          power = parser.expression(BP_POWER - 1);
+        }
+
         const argument = parser.expression(Infinity);
-        return {
-          type: 'NaturalLog',
-          operands: [argument],
-        };
+        return withPowerInsideLog(
+          {
+            type: 'NaturalLog',
+            operands: [argument],
+          },
+          power,
+        );
       };
     }
 

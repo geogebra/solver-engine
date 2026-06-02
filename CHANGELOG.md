@@ -14,6 +14,8 @@ contents to a new release section (e.g. _[0.x]_).
 - Normalize equations with logarithmic terms. (PLUT-1120)
 - Solve elementary logarithmic equations. (PLUT-1123)
 - Solve logarithmic equations of form log(f) = log(g). (PLUT-1125)
+- Solve logarithmic equations that can be reduced to a quadratic equation with substitution. (PLUT-1127)
+- SDK: Add support for exponent on log function. (PLUT-1127)
 
 ### Fixed
 

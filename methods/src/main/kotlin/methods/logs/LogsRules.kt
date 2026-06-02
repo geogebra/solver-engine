@@ -24,9 +24,9 @@ import engine.expressions.Expression
 import engine.expressions.IntegerExpression
 import engine.expressions.Logarithm
 import engine.expressions.Minus
-import engine.expressions.Product
 import engine.expressions.Sum
 import engine.expressions.equationOf
+import engine.expressions.isLogarithmicTerm
 import engine.expressions.logBase10Of
 import engine.expressions.naturalLogOf
 import engine.expressions.negOf
@@ -574,13 +574,6 @@ private fun createMoveNegatedTermsToTheOtherSideRule(
 private fun Expression.isNegatedLogTerm() = this is Minus && argument.isLogarithmicTerm()
 
 private fun Expression.balancingTerms() = if (this is Sum) terms else listOf(this)
-
-fun Expression.isLogarithmicTerm(): Boolean =
-    this is Logarithm ||
-        this is Minus && this.firstChild.isLogarithmicTerm() ||
-        this is Product && this.children.singleOrNull { factor ->
-            factor is Logarithm
-        } != null
 
 private fun switchLogBase(targetBase: Expression) =
     rule {

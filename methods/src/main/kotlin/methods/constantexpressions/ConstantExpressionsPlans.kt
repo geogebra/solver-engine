@@ -32,6 +32,7 @@ import engine.expressions.containsLogs
 import engine.expressions.containsPowers
 import engine.expressions.containsRoots
 import engine.expressions.containsTrigExpression
+import engine.expressions.isLogarithmicTerm
 import engine.expressions.isSigned
 import engine.methods.CompositeMethod
 import engine.methods.PublicMethod
@@ -102,7 +103,6 @@ import methods.integerroots.cancelRootOfPower
 import methods.logs.LogsPlans
 import methods.logs.LogsRules
 import methods.logs.createSwitchLogsToSmallestBase
-import methods.logs.isLogarithmicTerm
 import methods.mixednumbers.MixedNumbersPlans
 import methods.mixednumbers.MixedNumbersRules
 import methods.units.UnitsRules

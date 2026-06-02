@@ -97,15 +97,16 @@ private class WhileStrategiesAvailableFirstOf<T : Strategy>(
         } else {
             null
         }
+        val explanation = mainAlternative.strategy.explanationFor(mainAlternative.steps.first().fromExpr)
         if (mainAlternative.steps.size == 1) {
             val mainStep = mainAlternative.steps[0]
-            if (mainStep.explanation?.key == mainAlternative.strategy.explanation) {
+            if (mainStep.explanation?.key == explanation) {
                 return mainStep.copy(alternatives = secondaryAlternatives)
             }
         }
         return Transformation(
             type = Transformation.Type.Plan,
-            explanation = metadata(mainAlternative.strategy.explanation),
+            explanation = metadata(explanation),
             fromExpr = mainAlternative.steps.first().fromExpr,
             toExpr = mainAlternative.steps.last().toExpr,
             steps = mainAlternative.steps,

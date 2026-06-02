@@ -82,8 +82,10 @@ import engine.patterns.contradictionOf
 import engine.patterns.equationOf
 import engine.patterns.expressionWithConstraintOf
 import engine.patterns.identityOf
+import engine.patterns.logOf
 import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
+import engine.patterns.optionalPowerOf
 import engine.patterns.setSolutionOf
 import engine.patterns.solutionSetOf
 import engine.patterns.variableListOf
@@ -429,6 +431,8 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
 
     SubstituteTangentHalfAngleIntoLinearTrigEquation(substituteTangentHalfAngleIntoLinearTrigEquation),
 
+    SubstituteOriginalExpressionIntoLogarithmicEquation(substituteOriginalExpressionIntoLogarithmicEquation),
+
     SubstituteAuxiliaryAngleAndSolve(substituteAuxiliaryAngleAndSolve),
 
     MergeTrigonometricEquationSolutionsTask(mergeTrigonometricEquationSolutionsTask),
@@ -673,6 +677,20 @@ val cosineEquationSolutionExtractionTask =
         )
     }
 
+fun getSubstitutedEquations(solutionSet: SetSolution): List<Expression>? {
+    val substitutedVariable = solutionSet.firstChild.let {
+        if (it.childCount == 1) {
+            it.firstChild
+        } else {
+            return null
+        }
+    }
+
+    return solutionSet.secondChild.children.map {
+        equationOf(substitutedVariable, it)
+    }
+}
+
 val substituteOriginalExpressionIntoQuadraticTrigEquation = taskSet {
     val solvedEquation = setSolutionOf(AnyPattern(), AnyPattern())
 
@@ -693,17 +711,8 @@ val substituteOriginalExpressionIntoQuadraticTrigEquation = taskSet {
 
     tasks {
         val solutionSet = get(solvedEquation) as SetSolution
-        val substitutedVariable = solutionSet.firstChild.let {
-            if (it.childCount == 1) {
-                it.firstChild
-            } else {
-                return@tasks null
-            }
-        }
 
-        val substitutedValues = solutionSet.secondChild.children.map {
-            equationOf(substitutedVariable, it)
-        }
+        val substitutedValues = getSubstitutedEquations(solutionSet) ?: return@tasks null
 
         val originalEquation = get(originalExpressionEquation)
         val originalExp = originalEquation.secondChild
@@ -894,6 +903,55 @@ val substituteTangentHalfAngleIntoLinearTrigEquation = taskSet {
             startExpr = mergedSolution,
             explanation = metadata(Explanation.CollectSolutions),
         )
+
+        allTasks()
+    }
+}
+
+val substituteOriginalExpressionIntoLogarithmicEquation = taskSet {
+    val solvedEquation = setSolutionOf(
+        AnyPattern(),
+        AnyPattern(),
+    )
+
+    val originalExpressionEquation = equationOf(
+        ArbitraryVariablePattern(),
+        optionalPowerOf(logOf(AnyPattern())),
+    )
+
+    val equationSystem = engine.patterns.statementSystemOf(
+        solvedEquation,
+        originalExpressionEquation,
+    )
+
+    pattern = equationSystem
+    explanation = methods.logs.Explanation.SubstituteOriginalExpressionIntoLogarithmicEquation
+
+    explanationParameters(originalExpressionEquation)
+
+    tasks {
+        val solutionSet = get(solvedEquation) as SetSolution
+
+        val substitutedValues = getSubstitutedEquations(solutionSet) ?: return@tasks null
+
+        val originalEquation = get(originalExpressionEquation)
+        val originalExp = originalEquation.secondChild
+
+        val splitTasks = substitutedValues.map {
+            task(
+                startExpr = engine.expressions.equationOf(originalExp, it.secondChild),
+                explanation = metadata(methods.equations.Explanation.SolveLogarithmicEquations),
+                stepsProducer = solveEquation.value,
+            ) ?: return@tasks null
+        }
+
+        if (splitTasks.size > 1) {
+            val overallSolution = mergeTaskSolutionsWithConstraints(splitTasks) ?: return@tasks null
+            task(
+                startExpr = overallSolution,
+                explanation = metadata(methods.equations.Explanation.CollectSolutions),
+            )
+        }
 
         allTasks()
     }

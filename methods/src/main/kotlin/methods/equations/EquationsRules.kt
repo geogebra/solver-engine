@@ -98,8 +98,10 @@ import engine.patterns.expressionWithFactor
 import engine.patterns.fractionOf
 import engine.patterns.inSolutionVariables
 import engine.patterns.integerCondition
+import engine.patterns.logOf
 import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
+import engine.patterns.optionalPowerOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.productOf
@@ -415,7 +417,9 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
     ReorderSumWithPeriod(reorderSumWithPeriod),
     BalanceEquationWithTrigonometricExpressions(balanceEquationWithTrigonometricExpressions),
     SubstituteTrigFunctionInQuadraticEquation(substituteTrigFunctionInQuadraticEquation),
+    SubstituteLogsInEquation(substituteLogsInEquation),
     ReorderQuadraticEquationWithTrigonometricFunctions(reorderQuadraticEquationWithTrigonometricFunctions),
+    ReorderLogarithmicTrinomial(reorderLogarithmicTrinomial),
     MergeTrigonometricEquationSolutions(mergeTrigonometricEquationSolutions),
     DivideByCos(divideByCos),
     DivideBySquaredCosTerm(divideBySquaredCosTerm),
@@ -1298,6 +1302,107 @@ private val substituteTrigFunctionInQuadraticEquation = rule {
 }
 
 /**
+ * Substitute the logarithm in a quadratic equation. The logarithms can also be inside powers with
+ * exponents n and 2n.
+ *
+ * a * [log ^ 2n] x + b * [log ^ n] x + c = 0
+ * -->
+ * ┌ at + bt + c = 0
+ * │
+ * └ t = [log ^ n] x
+ */
+private val substituteLogsInEquation = rule {
+    val log = logOf(AnyPattern())
+
+    val linearPower = UnsignedIntegerPattern()
+    val quadraticPower = UnsignedIntegerPattern()
+
+    val linearValue = optionalPowerOf(
+        log,
+        linearPower,
+    )
+
+    val linearTerm = withOptionalConstantCoefficient(
+        linearValue,
+    )
+
+    val quadraticTerm = withOptionalConstantCoefficient(
+        powerOf(
+            log,
+            quadraticPower,
+        ),
+    )
+
+    val constant = ConstantInSolutionVariablePattern()
+
+    val lhs = sumOf(
+        quadraticTerm,
+        linearTerm,
+        constant,
+    )
+
+    onEquation(
+        lhs,
+        FixedPattern(Constants.Zero),
+    ) {
+        val linearPowerValue = if (isBound(linearPower)) {
+            getValue(linearPower)
+        } else {
+            BigInteger.ONE
+        }
+
+        val quadraticPowerValue = getValue(quadraticPower)
+
+        if (quadraticPowerValue != linearPowerValue.times(BigInteger.TWO)) {
+            return@onEquation null
+        }
+
+        val extractedTerm = move(linearValue)
+
+        val substitutedVariable = Variable(
+            findUnusedVariableLetter(
+                get(lhs),
+                listOf('t'),
+            ),
+        )
+
+        val a = quadraticTerm.getCoefficient()
+        val b = linearTerm.getCoefficient()
+        val c = get(constant)
+
+        val newEquation = equationOf(
+            sumOf(
+                squareOf(substitutedVariable).withCoefficient(a),
+                substitutedVariable.withCoefficient(b),
+                c,
+            ),
+            Constants.Zero,
+        )
+
+        val substitutedEquation = equationOf(
+            substitutedVariable,
+            extractedTerm,
+        )
+
+        ruleResult(
+            toExpr = statementSystemOf(
+                newEquation,
+                substitutedEquation,
+            ),
+            explanation = metadata(
+                key = methods.logs.Explanation.SubstituteLogsInEquation,
+                parameters = listOf(
+                    equationOf(
+                        extractedTerm,
+                        substitutedVariable,
+                    ),
+                ),
+            ),
+        )
+    }
+}
+
+/**
  * Reorder the quadratic equation with trigonometric base so that the powers are in descending order.
  */
 private val reorderQuadraticEquationWithTrigonometricFunctions = rule {
@@ -1331,6 +1436,66 @@ private val reorderQuadraticEquationWithTrigonometricFunctions = rule {
         ruleResult(
             toExpr = newEquation,
             explanation = metadata(Explanation.ReorganizeQuadraticPolynomialWithTrigonometricFunctions),
+        )
+    }
+}
+
+private val reorderLogarithmicTrinomial = rule {
+    val exponent1 = UnsignedIntegerPattern()
+
+    val exponent2 = UnsignedIntegerPattern()
+
+    val term1 = withOptionalConstantCoefficient(
+        powerOf(
+            logOf(AnyPattern()),
+            exponent1,
+        ),
+    )
+
+    val power2 = optionalPowerOf(
+        logOf(AnyPattern()),
+        exponent2,
+    )
+
+    val term2 = withOptionalConstantCoefficient(
+        power2,
+    )
+
+    val sum = commutativeSumContaining(
+        term1,
+        term2,
+    )
+
+    onPattern(sum) {
+        val (leftTerm, rightTerm) = when (isBound(exponent2)) {
+            false -> term1 to term2
+            true -> if (getValue(exponent1) > getValue(exponent2)) {
+                term1 to term2
+            } else {
+                term2 to term1
+            }
+        }
+
+        val rest = restOf(sum)
+
+        if (!rest.isConstantIn(context.solutionVariables)) {
+            return@onPattern null
+        }
+
+        val newExpr = sumOf(
+            move(leftTerm),
+            move(rightTerm),
+            restOf(sum),
+        )
+
+        // Make sure we don't do unnecessary steps
+        if (newExpr == get(sum)) {
+            return@onPattern null
+        }
+
+        ruleResult(
+            toExpr = newExpr,
+            explanation = metadata(Explanation.ReorderTrinomial),
         )
     }
 }

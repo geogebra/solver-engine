@@ -1957,6 +1957,51 @@ describe('Solver Parser Unit Tests', () => {
         },
         latex: ['{\\left(\\log_{5}{x}+1\\right)}^{2}'],
       },
+      {
+        solver: '[ln ^ 2] x',
+        json: {
+          type: 'Power',
+          operands: [
+            {
+              type: 'NaturalLog',
+              operands: [variable('x')],
+              powerInside: true,
+            },
+            integer('2'),
+          ],
+        },
+        latex: ['\\ln^{2}\\left(x\\right)'],
+      },
+      {
+        solver: '[log ^ 2] x',
+        json: {
+          type: 'Power',
+          operands: [
+            {
+              type: 'LogBase10',
+              operands: [variable('x')],
+              powerInside: true,
+            },
+            integer('2'),
+          ],
+        },
+        latex: ['\\log^{2}\\left(x\\right)'],
+      },
+      {
+        solver: '[log_[a] ^ 2] x',
+        json: {
+          type: 'Power',
+          operands: [
+            {
+              type: 'Log',
+              operands: [variable('a'), variable('x')],
+              powerInside: true,
+            },
+            integer('2'),
+          ],
+        },
+        latex: ['\\log_{a}^{2}\\left(x\\right)'],
+      },
     ]);
   });
   describe('Derivative', () => {
