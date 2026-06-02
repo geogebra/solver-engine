@@ -24,6 +24,7 @@ import engine.expressions.Constants
 import engine.expressions.Equation
 import engine.expressions.Expression
 import engine.expressions.Minus
+import engine.expressions.Sum
 import engine.expressions.TrigonometricExpression
 import engine.expressions.containsLogs
 import engine.expressions.containsSquaredTrigExpression
@@ -499,8 +500,8 @@ enum class EquationSolvingStrategy(
                         firstOf {
                             option {
                                 check { it.secondChild is Minus }
-                                apply(solvablePlansForEquations.moveVariablesToTheLeftAndSimplify)
-                                apply(solvablePlansForEquations.moveConstantsToTheRightAndSimplify)
+                                optionally(solvablePlansForEquations.moveVariablesToTheLeftAndSimplify)
+                                optionally(solvablePlansForEquations.moveConstantsToTheRightAndSimplify)
                             }
                             option(SolvableRules.FlipSolvable)
                         }
@@ -511,8 +512,8 @@ enum class EquationSolvingStrategy(
 
                             logs.distinct().size == 1
                         }
-                        apply(solvablePlansForEquations.moveVariablesToTheLeftAndSimplify)
-                        apply(solvablePlansForEquations.moveConstantsToTheRightAndSimplify)
+                        optionally(solvablePlansForEquations.moveVariablesToTheLeftAndSimplify)
+                        optionally(solvablePlansForEquations.moveConstantsToTheRightAndSimplify)
                     }
                     option(LogsPlans.MoveNegatedLogarithmicTermsToOppositeSideAndSimplify)
                 }
@@ -522,8 +523,10 @@ enum class EquationSolvingStrategy(
 
             optionally(solvablePlansForEquations.logarithmCoefficientRemovalSteps)
 
+            // Make sure there is only one logarithmic term left
             applyToChildren(LogsPlans.CollectLogarithmsInSum)
 
+            // Get rid of constant coefficients
             applyToChildren {
                 check {
                     it.isLogarithmicTerm()
@@ -532,23 +535,38 @@ enum class EquationSolvingStrategy(
                 apply(LogsRules.RewriteCoefficientsAsExponents)
             }
 
-            // This should be turned into a firstOf once we have all cases covered
-            optionally {
-                checkForm {
-                    equationOf(
-                        logOf(AnyPattern()),
-                        condition {
-                            !it.isLogarithmicTerm() && it.isConstantIn(solutionVariables)
-                        },
-                    )
-                }
+            firstOf {
+                option {
+                    checkForm {
+                        equationOf(
+                            logOf(AnyPattern()),
+                            condition {
+                                !it.isLogarithmicTerm() &&
+                                    (it !is Sum || it.children.none { term -> term.isLogarithmicTerm() }) &&
+                                    it.isConstantIn(solutionVariables)
+                            },
+                        )
+                    }
 
-                apply(LogsRules.ExponentiateBothSides)
-                applyTo(LogsRules.SimplifyLogInExponentWithMatchingBase) {
-                    it.firstChild
-                }
+                    apply(LogsRules.ExponentiateBothSides)
+                    applyTo(LogsRules.SimplifyLogInExponentWithMatchingBase) {
+                        it.firstChild
+                    }
 
-                optionally(EquationsPlans.SolveEquation)
+                    optionally(EquationsPlans.SolveEquation)
+                }
+                option {
+                    // Make sure the constant terms are positive so we avoid dealing with fractions
+                    optionally(LogsPlans.MoveNegatedConstantTermsToOppositeSideAndSimplify)
+                    // If there are constant terms on either side, express them as logarithms and collect them in
+                    // a single term
+                    applyToChildren {
+                        apply(LogsPlans.ExpressConstantInSumAsLogAndSimplify)
+                        apply(LogsPlans.CollectLogarithmsInSum)
+                    }
+                    apply(LogsRules.ApplyEqualityRuleOfLogs)
+                    apply(EquationsPlans.SolveEquation)
+                }
             }
         },
     ),

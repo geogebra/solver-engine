@@ -1231,7 +1231,13 @@ private val simplifyEvenPowerOfAbsoluteValue = rule {
 private val factorizeInteger = rule {
     val integer = UnsignedIntegerPattern()
     onPattern(integer) {
-        val primeFactorization = productOf(productOfPrimeFactors(integer))
+        val factors = productOfPrimeFactors(integer)
+
+        if (factors.size == 1 && factors.first() == expression) {
+            return@onPattern null
+        }
+
+        val primeFactorization = productOf(factors)
         ruleResult(
             toExpr = transform(integer, primeFactorization),
             gmAction = edit(integer),

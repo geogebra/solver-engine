@@ -35,6 +35,11 @@ enum class AlgebraExplanation : CategorisedMetadataKey {
     ComputeDomainOfAlgebraicExpression,
 
     /**
+     * Compute the domain on which a given equation is defined (e.g. exclude zero denominators).
+     */
+    ComputeDomainOfEquation,
+
+    /**
      * States that a logarithm argument must be positive.
      *
      * %1 - the logarithm argument which must be positive

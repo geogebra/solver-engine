@@ -157,9 +157,19 @@ enum class LogsExplanation : CategorisedMetadataKey {
     MoveNegatedLogarithmicTermsToTheOtherSide,
 
     /**
+     * Move all negated constant terms to the other side of an equation
+     */
+    MoveNegatedConstantTermsToTheOppositeSide,
+
+    /**
      * Move negated logarithmic terms to opposite side of equation and simplify the resulting equation
      */
     MoveNegatedLogarithmicTermsToOppositeSideAndSimplify,
+
+    /**
+     * Move negated constant terms to opposite side of equation and simplify the resulting equation
+     */
+    MoveNegatedConstantTermsToTheOppositeSideAndSimplify,
 
     /**
      * Exponentiate both sides of the equation using base %1
@@ -174,6 +184,24 @@ enum class LogsExplanation : CategorisedMetadataKey {
      * %f - a ^ log_a x = x
      */
     SimplifyLogInExponentWithMatchingBase,
+
+    /**
+     * Express constant in sum as log with matching base using the identity %f
+     *
+     * %f = log_b [b ^ n] = n
+     */
+    ExpressConstantInSumAsLog,
+
+    /**
+     * Express constant in sum as log with matching base and simplify the resulting equation
+     *
+     */
+    ExpressConstantInSumAsLogAndSimplify,
+
+    /**
+     * Apply the equality rule of logs
+     */
+    ApplyEqualityRuleOfLogs,
 
     ;
 

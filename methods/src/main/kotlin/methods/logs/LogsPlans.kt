@@ -24,6 +24,7 @@ import engine.expressions.ExpressionWithConstraint
 import engine.expressions.Fraction
 import engine.expressions.Logarithm
 import engine.expressions.Minus
+import engine.expressions.Power
 import engine.expressions.Product
 import engine.expressions.Sum
 import engine.expressions.asDecimal
@@ -46,6 +47,8 @@ enum class LogsPlans(override val runner: CompositeMethod) : RunnerMethod {
     SimplifyLogWithMatchingPowers(simplifyLogWithMatchingPowers),
     ExpandLogNotMatchingBase(expandLogNotMatchingBase),
     MoveNegatedLogarithmicTermsToOppositeSideAndSimplify(moveNegatedLogarithmicTermsToOppositeSideAndSimplify),
+    MoveNegatedConstantTermsToOppositeSideAndSimplify(moveNegatedConstantTermsToOppositeSideAndSimplify),
+    ExpressConstantInSumAsLogAndSimplify(expressConstantInSumAsLogAndSimplify),
     CollectLogarithmsInSum(collectLogarithmsInSum),
 }
 
@@ -105,6 +108,26 @@ val moveNegatedLogarithmicTermsToOppositeSideAndSimplify = plan {
     steps {
         apply(LogsRules.MoveNegatedLogarithmicTermsToTheOtherSide)
         apply(algebraicSimplificationStepsForEquations)
+    }
+}
+
+val moveNegatedConstantTermsToOppositeSideAndSimplify = plan {
+    explanation = Explanation.MoveNegatedConstantTermsToTheOppositeSideAndSimplify
+
+    steps {
+        apply(LogsRules.MoveNegatedConstantTermsToTheOtherSide)
+        apply(algebraicSimplificationStepsForEquations)
+    }
+}
+
+val expressConstantInSumAsLogAndSimplify = plan {
+    explanation = Explanation.ExpressConstantInSumAsLogAndSimplify
+
+    steps {
+        apply(LogsRules.ExpressConstantInSumAsLog)
+        applyTo(algebraicSimplificationStepsForEquations) {
+            it.children.firstNotNullOfOrNull { term -> term.extractLogarithmArgument() as? Power }
+        }
     }
 }
 
@@ -175,12 +198,15 @@ fun createSwitchLogsToSmallestBase(simplificationSteps: StepsProducer) =
         }
     }
 
+// Select the smallest base that is an integer or known constant (e, pi)
 private fun smallestLogBase(logTerms: List<LogOccurrence>): Expression? {
     val bases = logTerms.map { it.base }.distinct()
     val comparableBases = bases.mapNotNull { base -> base.sortKey()?.let { it to base } }
-    if (comparableBases.size != bases.size) return null
 
-    return comparableBases.minBy { it.first }.second
+    return comparableBases.minByOrNull { it.first }?.second
+        ?: bases
+            .mapNotNull { base -> base.sortKey(true)?.let { it to base } }
+            .minByOrNull { it.first }?.second
 }
 
 data class LogOccurrence(val term: Expression, val log: Logarithm) {
@@ -203,10 +229,18 @@ private fun Expression.extractLogTerm(): LogOccurrence? {
     }
 }
 
-private fun Expression.sortKey(): BigDecimal? =
+private fun Expression.sortKey(calculateFractions: Boolean = false): BigDecimal? =
     when {
         this == Constants.E -> BigDecimal.valueOf(Math.E)
         this == Constants.Pi -> BigDecimal.valueOf(Math.PI)
+        this is Fraction && calculateFractions -> {
+            val n = numerator.sortKey(true)
+            val d = numerator.sortKey(true)
+
+            d?.let {
+                n?.divide(d)
+            }
+        }
         else -> asDecimal() ?: asInteger()?.toBigDecimal()
     }
 

@@ -18,6 +18,7 @@
 package methods.logs
 
 import engine.conditions.isDefinitelyNotPositive
+import engine.conditions.isDefinitelyPositive
 import engine.expressions.Constants
 import engine.expressions.Expression
 import engine.expressions.IntegerExpression
@@ -36,6 +37,7 @@ import engine.expressions.simplifiedNegOf
 import engine.expressions.sumOf
 import engine.expressions.xp
 import engine.methods.Rule
+import engine.methods.RuleResultBuilder
 import engine.methods.RunnerMethod
 import engine.methods.rule
 import engine.patterns.AnyPattern
@@ -43,12 +45,14 @@ import engine.patterns.ConstantInSolutionVariablePattern
 import engine.patterns.FixedPattern
 import engine.patterns.SolvablePattern
 import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.commutativeSumContaining
 import engine.patterns.condition
 import engine.patterns.fractionOf
 import engine.patterns.logOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
+import engine.steps.metadata.MetadataKey
 import engine.steps.metadata.metadata
 import engine.utility.Power
 import engine.utility.asKnownPower
@@ -72,7 +76,10 @@ enum class LogsRules(override val runner: Rule) : RunnerMethod {
     RewriteCoefficientsAsExponents(rewriteCoefficientsAsExponents),
     ExponentiateBothSides(exponentiateBothSides),
     SimplifyLogInExponentWithMatchingBase(simplifyLogInExponentWithMatchingBase),
-    MoveNegatedLogarithmicTermsToTheOtherSide(moveNegatedLogarithmicTermsToTheOtherSide),
+    ExpressConstantInSumAsLog(expressConstantInSumAsLog),
+    ApplyEqualityRuleOfLogs(applyEqualityRuleOfLogs),
+    MoveNegatedLogarithmicTermsToTheOtherSide(moveNegatedLogarithmicTermsToTheOppositeSide),
+    MoveNegatedConstantTermsToTheOtherSide(moveNegatedConstantTermsToTheOppositeSide),
 }
 
 /**
@@ -446,7 +453,96 @@ private val simplifyLogInExponentWithMatchingBase = rule {
     }
 }
 
-private val moveNegatedLogarithmicTermsToTheOtherSide = rule {
+private val expressConstantInSumAsLog = rule {
+    val constantVal = ConstantInSolutionVariablePattern()
+
+    val constant = condition(constantVal) {
+        it.isDefinitelyPositive()
+    }
+
+    val log = logOf(AnyPattern())
+
+    val sum = commutativeSumContaining(constant, log)
+
+    onPattern(sum) {
+        val logExpr = get(log) as Logarithm
+        val base = distribute(logExpr.base)
+
+        val newTerm = transform(
+            constant,
+            logExpr.withArgument(
+                powerOf(
+                    base,
+                    move(constant),
+                ),
+            ),
+        )
+
+        val b = substitute(
+            base,
+            "b",
+        )
+
+        val n = substitute(
+            constant,
+            "n",
+        )
+
+        ruleResult(
+            toExpr = get(sum).substitute(
+                get(constant),
+                newTerm,
+            ),
+            explanation = metadata(Explanation.ExpressConstantInSumAsLog),
+            formula = equationOf(
+                engine.expressions.logOf(
+                    b,
+                    powerOf(
+                        b,
+                        n,
+                    ),
+                ),
+                n,
+            ),
+        )
+    }
+}
+
+private val applyEqualityRuleOfLogs = rule {
+    val base = AnyPattern()
+    val argument1 = AnyPattern()
+    val argument2 = AnyPattern()
+
+    val log1 = logOf(argument1, base)
+    val log2 = logOf(argument2, base)
+
+    onEquation(log1, log2) {
+        ruleResult(
+            toExpr = equationOf(
+                move(argument1),
+                move(argument2),
+            ),
+            explanation = metadata(Explanation.ApplyEqualityRuleOfLogs),
+        )
+    }
+}
+
+private val moveNegatedLogarithmicTermsToTheOppositeSide = createMoveNegatedTermsToTheOtherSideRule(
+    Explanation.MoveNegatedLogarithmicTermsToTheOtherSide,
+) {
+    it.isNegatedLogTerm()
+}
+
+private val moveNegatedConstantTermsToTheOppositeSide = createMoveNegatedTermsToTheOtherSideRule(
+    Explanation.MoveNegatedConstantTermsToTheOppositeSide,
+) {
+    it.isConstantIn(context.solutionVariables) && it is Minus
+}
+
+private fun createMoveNegatedTermsToTheOtherSideRule(
+    explanationKey: MetadataKey,
+    termFilter: RuleResultBuilder.(term: Expression) -> Boolean,
+) = rule {
     val lhs = AnyPattern()
     val rhs = AnyPattern()
     val solvable = SolvablePattern(lhs, rhs)
@@ -455,13 +551,13 @@ private val moveNegatedLogarithmicTermsToTheOtherSide = rule {
         val lhsTerms = get(lhs).balancingTerms()
         val rhsTerms = get(rhs).balancingTerms()
 
-        val negatedLogTerms = lhsTerms.filter { it.isNegatedLogTerm() } + rhsTerms.filter { it.isNegatedLogTerm() }
+        val negatedTerms = lhsTerms.filter { termFilter(it) } + rhsTerms.filter { termFilter(it) }
 
-        if (negatedLogTerms.isEmpty()) {
+        if (negatedTerms.isEmpty()) {
             return@onPattern null
         }
 
-        val oppositeTerms = negatedLogTerms.map {
+        val oppositeTerms = negatedTerms.map {
             simplifiedNegOf(it)
         }
 
@@ -470,7 +566,7 @@ private val moveNegatedLogarithmicTermsToTheOtherSide = rule {
                 sumOf(lhsTerms + oppositeTerms),
                 sumOf(rhsTerms + oppositeTerms),
             ),
-            explanation = metadata(Explanation.MoveNegatedLogarithmicTermsToTheOtherSide),
+            explanation = metadata(explanationKey),
         )
     }
 }

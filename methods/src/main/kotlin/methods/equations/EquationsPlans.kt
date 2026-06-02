@@ -1133,8 +1133,13 @@ val mergeTrigonometricEquationSolutionsTask = taskSet {
             }
         }?.toMutableList() ?: return@tasks null
 
-        var modified = true
         val solutionTasks = mutableListOf<Task>()
+
+        if (allSolutions.isEmpty()) {
+            return@tasks null
+        }
+
+        var modified = true
 
         // This may not be the most elegant solution :(
         // We try to apply the rule for merging to all combinations of solutions, if we merge two, we start the loop
@@ -1411,7 +1416,7 @@ val solveEquationPlan = object : CompositeMethod() {
                 context.isSet(Setting.SolveEquationsWithoutComputingTheDomain) -> expression
                 else -> task(
                     startExpr = expression,
-                    explanation = metadata(AlgebraExplanation.ComputeDomainOfAlgebraicExpression),
+                    explanation = metadata(AlgebraExplanation.ComputeDomainOfEquation),
                     stepsProducer = steps {
                         firstOf {
                             option(AlgebraPlans.ComputeDomainOfAlgebraicExpression)

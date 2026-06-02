@@ -716,14 +716,14 @@ class MultivariateEquationsTest {
                     taskId = "#1"
                     startExpr = "[x / y] = 2"
                     explanation {
-                        key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
+                        key = AlgebraExplanation.ComputeDomainOfEquation
                     }
 
                     step {
                         fromExpr = "[x / y] = 2"
                         toExpr = "SetSolution[y: /reals/ \\ {0}]"
                         explanation {
-                            key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
+                            key = AlgebraExplanation.ComputeDomainOfEquation
                         }
                     }
                 }
@@ -772,14 +772,14 @@ class MultivariateEquationsTest {
                     taskId = "#1"
                     startExpr = "[2 h x / B + b] = S"
                     explanation {
-                        key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
+                        key = AlgebraExplanation.ComputeDomainOfEquation
                     }
 
                     step {
                         fromExpr = "[2 h x / B + b] = S"
                         toExpr = "B + b != 0"
                         explanation {
-                            key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
+                            key = AlgebraExplanation.ComputeDomainOfEquation
                         }
                     }
                 }

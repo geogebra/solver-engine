@@ -18,6 +18,9 @@
 package methods.logs
 
 import engine.methods.testMethod
+import engine.methods.testMethodInX
+import methods.algebra.AlgebraExplanation
+import methods.algebra.AlgebraPlans
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.constantexpressions.constantSimplificationSteps
 import org.junit.jupiter.api.Test
@@ -93,6 +96,96 @@ class LogsPlansTest {
                     toExpr = "[3 / 2] + log_[2] 3"
                     explanation {
                         key = LogsExplanation.BringLogsToCommonBase
+                    }
+                }
+            }
+        }
+
+    @Test
+    fun `constant logarithmic simplification does not loop`() =
+        testMethod {
+            method = ConstantExpressionsPlans.SimplifyConstantExpression
+            inputExpr = "log_[2] 3 + ln 3"
+
+            check {
+                toExpr = "(1 + [1 / log_[2] /e/]) log_[2] 3"
+            }
+        }
+
+    @Test
+    fun `convert logs with rational base to known base`() =
+        testMethodInX {
+            method = AlgebraPlans.ComputeDomainAndSimplifyAlgebraicExpression
+            inputExpr = "log_[[1 / 2]] ([x ^ 2] - 4 x) + log_[2] (2 x) - 1"
+
+            check {
+                task {
+                    step {
+                        toExpr = "SetSolution[x: (4, /infinity/)]"
+                        explanation {
+                            key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
+                        }
+                    }
+                }
+
+                task {
+                    step {
+                        toExpr = "-log_[2] ([x ^ 2] - 4 x) + log_[2] (2 x) - 1"
+                        explanation {
+                            key = LogsExplanation.BringLogsToCommonBase
+                        }
+                    }
+                }
+
+                task {
+                    startExpr = "-log_[2] ([x ^ 2] - 4 x) + log_[2] (2 x) - 1 GIVEN SetSolution[x: (4, /infinity/)]"
+                    explanation {
+                        key = AlgebraExplanation.CombineSimplifiedExpressionWithConstraint
+                    }
+                }
+            }
+        }
+
+    @Test
+    fun `convert logs with rational bases`() =
+        testMethodInX {
+            method = AlgebraPlans.ComputeDomainAndSimplifyAlgebraicExpression
+            inputExpr = "log_[[1 / 2]] x + log_[[2 / 3]] x"
+
+            check {
+                explanation {
+                    key = AlgebraExplanation.ComputeDomainAndSimplifyAlgebraicExpression
+                }
+
+                task {
+                    explanation {
+                        key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
+                    }
+
+                    step {
+                        toExpr = "SetSolution[x: (0, /infinity/)]"
+                    }
+                }
+
+                task {
+                    step {
+                        toExpr = "log_[[1 / 2]] x + [log_[[1 / 2]] x / log_[[1 / 2]] [2 / 3]]"
+                        explanation {
+                            key = LogsExplanation.BringLogsToCommonBase
+                        }
+                    }
+
+                    step {
+                        toExpr = "(1 + [1 / log_[[1 / 2]] [2 / 3]]) log_[[1 / 2]] x"
+                    }
+                }
+
+                task {
+                    taskId = "#3"
+                    startExpr = "(1 + [1 / log_[[1 / 2]] [2 / 3]]) log_[[1 / 2]] x" +
+                        " GIVEN SetSolution[x: (0, /infinity/)]"
+                    explanation {
+                        key = AlgebraExplanation.CombineSimplifiedExpressionWithConstraint
                     }
                 }
             }

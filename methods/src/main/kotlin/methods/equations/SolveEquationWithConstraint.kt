@@ -204,9 +204,22 @@ private fun TasksBuilder.computeValidSetSolution(solution: SetSolution, constrai
         is Equation -> {
             computeValidSetSolutionForEquationConstraint(solution, constraint)
         }
+        is StatementSystem -> computeValidStatementSystemSolution(solution, constraint)
         else -> null
     }
 }
+
+private fun TasksBuilder.computeValidStatementSystemSolution(
+    solution: SetSolution,
+    constraint: StatementSystem,
+): SetExpression? =
+    constraint.equations
+        .map { childConstraint ->
+            computeValidSetSolution(solution, childConstraint) ?: return null
+        }
+        .reduceOrNull { acc, next ->
+            acc.intersect(next, expressionComparator) ?: return null
+        }
 
 /**
  * Given a [solution] which is a set, computes the valid solutions (restricted by the [constraint] which is an

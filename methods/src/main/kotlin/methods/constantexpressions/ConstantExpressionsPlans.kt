@@ -22,6 +22,7 @@ import engine.expressions.Fraction
 import engine.expressions.Minus
 import engine.expressions.Power
 import engine.expressions.Product
+import engine.expressions.Sum
 import engine.expressions.TrigonometricConstants
 import engine.expressions.TrigonometricExpression
 import engine.expressions.ValueExpression
@@ -101,6 +102,7 @@ import methods.integerroots.cancelRootOfPower
 import methods.logs.LogsPlans
 import methods.logs.LogsRules
 import methods.logs.createSwitchLogsToSmallestBase
+import methods.logs.isLogarithmicTerm
 import methods.mixednumbers.MixedNumbersPlans
 import methods.mixednumbers.MixedNumbersRules
 import methods.units.UnitsRules
@@ -416,7 +418,7 @@ val logExpansionSteps = steps {
 // Give it a minDepth of 1 to break cycles.
 val constantSimplificationSteps: StepsProducer = createConstantSimplificationSteps(true)
 
-val constantSimplificationStepsForEquations = createConstantSimplificationSteps(false)
+val constantSimplificationStepsForEquations: StepsProducer = createConstantSimplificationSteps(false)
 
 @Suppress("LongMethod")
 fun createConstantSimplificationSteps(expandLogs: Boolean) =
@@ -609,10 +611,19 @@ private val expandAndSimplifier = ExpandAndSimplifier(ConstantExpressionsPlans.S
 
 private val expandConstantExpression = steps {
     // We don't want to expand constant trigonometric expressions as they aren't easily simplified and behave more like
-    // variables
-    check { it.isConstant() }
+    // variables, we also want to avoid expanding logarithmic terms that have been collected
+    check { it.isConstant() && !it.containsLogCollectionCycle() }
     apply(expandAndSimplifier.steps)
 }
+
+private fun Expression.containsLogCollectionCycle(): Boolean =
+    when (this) {
+        is Product ->
+            children.any { it is Sum && it.containsLogs() } &&
+                children.any { it.isLogarithmicTerm() }
+
+        else -> children.any { it.containsLogCollectionCycle() }
+    }
 
 private val addConstantFractions = run {
     val fractionAdditionSteps = createAddFractionsPlan(

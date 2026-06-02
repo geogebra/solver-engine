@@ -519,14 +519,14 @@ class SolveRationalEquationTest {
                     taskId = "#1"
                     startExpr = "[[x ^ 2] + 5 x + 6 / x + 3] = [x + 2 / [x ^ 2] - 3 x - 10]"
                     explanation {
-                        key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
+                        key = AlgebraExplanation.ComputeDomainOfEquation
                     }
 
                     step {
                         fromExpr = "[[x ^ 2] + 5 x + 6 / x + 3] = [x + 2 / [x ^ 2] - 3 x - 10]"
                         toExpr = "SetSolution[x : /reals/ \\ {-3, -2, 5}]"
                         explanation {
-                            key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
+                            key = AlgebraExplanation.ComputeDomainOfEquation
                         }
                     }
                 }

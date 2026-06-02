@@ -20,6 +20,7 @@ package methods.algebra
 import engine.expressions.Constants
 import engine.expressions.Contradiction
 import engine.expressions.DivideBy
+import engine.expressions.Equation
 import engine.expressions.Expression
 import engine.expressions.ExpressionWithConstraint
 import engine.expressions.Fraction
@@ -89,7 +90,15 @@ enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
     @PublicMethod
     ComputeDomainOfAlgebraicExpression(
         taskSet {
-            explanation = Explanation.ComputeDomainOfAlgebraicExpression
+            explanation {
+                metadata(
+                    if (expression is Equation) {
+                        Explanation.ComputeDomainOfEquation
+                    } else {
+                        Explanation.ComputeDomainOfAlgebraicExpression
+                    },
+                )
+            }
             specificPlans(ComputeDomainAndSimplifyAlgebraicExpression)
 
             val solveInequationDomainConstraintSteps = steps {
