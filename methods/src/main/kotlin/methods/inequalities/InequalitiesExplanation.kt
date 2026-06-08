@@ -403,6 +403,17 @@ enum class InequalitiesExplanation : CategorisedMetadataKey {
      */
     SolveInequalityWithVariablesInOneAbsoluteValue,
 
+    /**
+     * Solve the logarithmic inequality
+     *
+     */
+    SolveLogarithmicInequality,
+
+    /**
+     * Given inequality is not defined
+     */
+    EvaluateInequalityWithImpossibleConstraint,
+
     ;
 
     override val category = "Inequalities"

@@ -1431,67 +1431,77 @@ val reduceGeneralQuadraticTrigEquationToHomogeneous = plan {
     }
 }
 
-val solveEquationPlan = object : CompositeMethod() {
-    // Can't be a rule since rules have been changed to apply only on the expression not the constraint
-    private val mergeConstraintsRule = object : Method {
-        override fun tryExecute(ctx: Context, sub: Expression): Transformation? {
-            if (sub !is ExpressionWithConstraint) return null
-            val innerExpression = sub.expression
-            val constraint1 = sub.constraint
+// Can't be a rule since rules have been changed to apply only on the expression not the constraint
+val mergeConstraintsRule = object : Method {
+    override fun tryExecute(ctx: Context, sub: Expression): Transformation? {
+        if (sub !is ExpressionWithConstraint) return null
+        val innerExpression = sub.expression
+        val constraint1 = sub.constraint
 
-            if (innerExpression !is ExpressionWithConstraint) return null
-            val expression = innerExpression.expression
-            val constraint2 = innerExpression.constraint
+        if (innerExpression !is ExpressionWithConstraint) return null
+        val expression = innerExpression.expression
+        val constraint2 = innerExpression.constraint
 
-            val constraintList = mutableListOf<Expression>()
-            if (constraint1 is StatementSystem) {
-                constraintList.addAll(constraint1.equations)
-            } else {
-                constraintList.add(constraint1)
-            }
-            if (constraint2 is StatementSystem) {
-                constraintList.addAll(constraint2.equations)
-            } else {
-                constraintList.add(constraint2)
-            }
-
-            val mergedConstraints = computeOverallIntersectionSolution(constraintList)
-
-            return Transformation(
-                type = Transformation.Type.Rule,
-                fromExpr = sub,
-                toExpr = ExpressionWithConstraint(expression, mergedConstraints),
-                explanation = metadata(SolverEngineExplanation.MergeConstraints),
-            )
+        val constraintList = mutableListOf<Expression>()
+        if (constraint1 is StatementSystem) {
+            constraintList.addAll(constraint1.equations)
+        } else {
+            constraintList.add(constraint1)
         }
+        if (constraint2 is StatementSystem) {
+            constraintList.addAll(constraint2.equations)
+        } else {
+            constraintList.add(constraint2)
+        }
+
+        val mergedConstraints = computeOverallIntersectionSolution(constraintList)
+
+        return Transformation(
+            type = Transformation.Type.Rule,
+            fromExpr = sub,
+            toExpr = ExpressionWithConstraint(expression, mergedConstraints),
+            explanation = metadata(SolverEngineExplanation.MergeConstraints),
+        )
     }
+}
 
-    private val solveEquationWithDomainRestrictions = taskSet {
-        explanation = Explanation.SolveEquation
+fun createSolveSolvableWithDomainRestrictions(
+    explanationKey: MetadataKey,
+    impossibleConstraintExplanationKey: MetadataKey,
+    stepsProducer: StepsProducer,
+) = taskSet {
+    explanation = explanationKey
 
-        tasks {
-            val constraint = when {
-                context.isSet(Setting.SolveEquationsWithoutComputingTheDomain) -> expression
-                else -> task(
-                    startExpr = expression,
-                    explanation = metadata(AlgebraExplanation.ComputeDomainOfEquation),
-                    stepsProducer = steps {
-                        firstOf {
-                            option(AlgebraPlans.ComputeDomainOfAlgebraicExpression)
-                            option(EquationsPlans.ComputeDomainOfTrigonometricExpression)
-                        }
-                    },
-                )?.result ?: return@tasks null
-            }
+    tasks {
+        val constraint = when {
+            context.isSet(Setting.SolveEquationsWithoutComputingTheDomain) -> expression
+            else -> task(
+                startExpr = expression,
+                explanation = metadata(AlgebraExplanation.ComputeDomainOfEquation),
+                stepsProducer = steps {
+                    firstOf {
+                        option(AlgebraPlans.ComputeDomainOfAlgebraicExpression)
+                        option(EquationsPlans.ComputeDomainOfTrigonometricExpression)
+                    }
+                },
+            )?.result ?: return@tasks null
+        }
 
-            val solvePolynomialEquation = task(
+        if (constraint is Contradiction) {
+            task(
+                startExpr = expressionWithConstraintOf(expression, constraint),
+                explanation = metadata(impossibleConstraintExplanationKey),
+                stepsProducer = simplifySolutionWithConstraint,
+            )
+        } else {
+            val solvable = task(
                 startExpr = expression,
                 context = context.copy(constraintMerger = mergeConstraintsRule),
-                explanation = metadata(Explanation.SolveEquation),
-                stepsProducer = solveEquation.value,
+                explanation = metadata(explanationKey),
+                stepsProducer = stepsProducer,
             ) ?: return@tasks null
 
-            val result = solvePolynomialEquation.result
+            val result = solvable.result
             val (solution, solutionConstraint) = when (result) {
                 is ExpressionWithConstraint -> result.firstChild to result.secondChild
                 else -> result to null
@@ -1511,15 +1521,32 @@ val solveEquationPlan = object : CompositeMethod() {
                     stepsProducer = addDomainConstraintToSolution,
                 )
             }
-
-            allTasks()
         }
-    }
 
-    private val addDomainConstraintToSolution = steps {
-        optionally(mergeConstraintsRule)
-        optionally(simplifySolutionWithConstraint)
+        allTasks()
     }
+}
+
+private val addDomainConstraintToSolution = steps {
+    optionally(mergeConstraintsRule)
+    optionally(simplifySolutionWithConstraint)
+}
+
+fun Expression.shouldAddDomainRestriction() =
+    findDenominatorsAndDivisors(this).any { (expr, _) ->
+        !expr.isConstant()
+    } ||
+        findFunctionsRequiringDomainCheck(this).toList().isNotEmpty() ||
+        findLogarithmDomainConstraints(this).any { (expr, _) ->
+            !expr.isConstant()
+        }
+
+val solveEquationPlan = object : CompositeMethod() {
+    private val solveEquationWithDomainRestrictions = createSolveSolvableWithDomainRestrictions(
+        Explanation.SolveEquation,
+        Explanation.EvaluateEquationWithImpossibleConstraint,
+        solveEquation.value,
+    )
 
     override fun run(ctx: Context, sub: Expression): Transformation? {
         if (sub is Equation) {
@@ -1528,15 +1555,7 @@ val solveEquationPlan = object : CompositeMethod() {
             if (sub.variables.contains(solutionVariable)) {
                 val equationContext = ctx.copy(constraintMerger = mergeConstraintsRule)
 
-                return if (
-                    findDenominatorsAndDivisors(sub).any { (expr, _) ->
-                        !expr.isConstant()
-                    } ||
-                    findFunctionsRequiringDomainCheck(sub).toList().isNotEmpty() ||
-                    findLogarithmDomainConstraints(sub).any { (expr, _) ->
-                        !expr.isConstant()
-                    }
-                ) {
+                return if (sub.shouldAddDomainRestriction()) {
                     solveEquationWithDomainRestrictions.run(equationContext, sub)
                 } else {
                     solveEquation.value.run(equationContext, sub)

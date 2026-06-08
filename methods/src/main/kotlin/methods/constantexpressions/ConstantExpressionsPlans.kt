@@ -67,6 +67,7 @@ import methods.angles.createUsePythagoreanIdentityAndSimplifyPlan
 import methods.angles.createUseTrigonometricIdentityAndSimplifyPlan
 import methods.angles.simplifyProductContainingTrigonometricExpressions
 import methods.collecting.createCollectLikeLogarithmicTermsAndSimplifyPlan
+import methods.collecting.createCollectLikeMathematicalConstants
 import methods.collecting.createCollectLikeRationalPowersAndSimplifyPlan
 import methods.collecting.createCollectLikeRootsAndSimplifyPlan
 import methods.collecting.createCollectLikeTrigonometricTermsAndSimplifyPlan
@@ -503,6 +504,7 @@ fun createConstantSimplificationSteps(expandLogs: Boolean) =
                 deeply(collectLikeRootsAndSimplify)
             }
             option { deeply(collectLikeRationalPowersAndSimplify) }
+            option { deeply(collectLikeMathematicalConstantsAndSimplify) }
 
             option(ConstantExpressionsPlans.SimplifyRootsInExpression)
             option(simplifyRationalExponentsInProduct)
@@ -587,6 +589,8 @@ private val collectLikeRationalPowersAndSimplify =
     createCollectLikeRationalPowersAndSimplifyPlan(constantSimplificationSteps)
 private val collectLikeTrigonometricTermsAndSimplify =
     createCollectLikeTrigonometricTermsAndSimplifyPlan(constantSimplificationSteps)
+private val collectLikeMathematicalConstantsAndSimplify =
+    createCollectLikeMathematicalConstants(constantSimplificationSteps)
 private val collectLikeLogarithmicTermsAndSimplify =
     createCollectLikeLogarithmicTermsAndSimplifyPlan(constantSimplificationSteps)
 

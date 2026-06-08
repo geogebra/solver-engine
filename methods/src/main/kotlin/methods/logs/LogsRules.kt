@@ -20,11 +20,17 @@ package methods.logs
 import engine.conditions.isDefinitelyNotPositive
 import engine.conditions.isDefinitelyPositive
 import engine.expressions.Constants
+import engine.expressions.DecimalExpression
+import engine.expressions.Equation
+import engine.expressions.EulerEExpression
 import engine.expressions.Expression
+import engine.expressions.Fraction
 import engine.expressions.IntegerExpression
 import engine.expressions.Logarithm
 import engine.expressions.Minus
+import engine.expressions.PiExpression
 import engine.expressions.Sum
+import engine.expressions.asInteger
 import engine.expressions.equationOf
 import engine.expressions.isLogarithmicTerm
 import engine.expressions.logBase10Of
@@ -58,6 +64,7 @@ import engine.utility.Power
 import engine.utility.asKnownPower
 import engine.utility.asPower
 import engine.utility.asPowerOf
+import java.math.BigDecimal
 
 enum class LogsRules(override val runner: Rule) : RunnerMethod {
     TakePowerOutOfLog(takePowerOutOfLog),
@@ -398,27 +405,63 @@ private val exponentiateBothSides = rule {
     val log = logOf(AnyPattern(), base)
     val rhs = ConstantInSolutionVariablePattern()
 
-    onEquation(log, rhs) {
-        val baseValue = distribute(base)
+    val solvable = SolvablePattern(
+        log,
+        rhs,
+    )
+
+    onPattern(solvable) {
+        val baseValue = get(base)
+
+        val flipSign =
+            shouldFlipSignOfLogSolvable(baseValue) ?: if (get(solvable) is Equation) {
+                false
+            } else {
+                return@onPattern null
+            }
+
+        val newLhs = powerOf(
+            baseValue,
+            move(log),
+        )
+        val newRhs = powerOf(
+            baseValue,
+            move(rhs),
+        )
 
         ruleResult(
-            toExpr = equationOf(
-                powerOf(
-                    baseValue,
-                    move(log),
-                ),
-                powerOf(
-                    baseValue,
-                    move(rhs),
-                ),
+            toExpr = solvable.deriveSolvable(
+                newLhs,
+                newRhs,
+                flipSign,
             ),
             explanation = metadata(
-                Explanation.ExponentiateBothSides,
+                if (flipSign) {
+                    Explanation.ExponentiateBothSidesAndFlip
+                } else {
+                    Explanation.ExponentiateBothSides
+                },
                 baseValue,
             ),
         )
     }
 }
+
+private fun shouldFlipSignOfLogSolvable(expression: Expression): Boolean? =
+    when (expression) {
+        is Fraction -> {
+            val (numerator, denominator) = expression.numerator.asInteger() to expression.denominator.asInteger()
+
+            if (numerator == null || denominator == null) {
+                null
+            } else {
+                numerator < denominator
+            }
+        }
+        is DecimalExpression -> expression.value < BigDecimal.ONE
+        is IntegerExpression, is EulerEExpression, is PiExpression -> false
+        else -> null
+    }
 
 /**
  * a ^ log_a x --> x
@@ -510,19 +553,44 @@ private val expressConstantInSumAsLog = rule {
 
 private val applyEqualityRuleOfLogs = rule {
     val base = AnyPattern()
+
     val argument1 = AnyPattern()
     val argument2 = AnyPattern()
 
     val log1 = logOf(argument1, base)
     val log2 = logOf(argument2, base)
 
-    onEquation(log1, log2) {
+    val solvable = SolvablePattern(
+        log1,
+        log2,
+    )
+
+    onPattern(solvable) {
+        val solvableValue = get(solvable)
+
+        val baseValue = get(base)
+
+        val flipSign = shouldFlipSignOfLogSolvable(baseValue) ?: if (solvableValue is Equation) {
+            false
+        } else {
+            return@onPattern null
+        }
+
         ruleResult(
-            toExpr = equationOf(
+            toExpr = solvable.deriveSolvable(
                 move(argument1),
                 move(argument2),
+                flipSign,
             ),
-            explanation = metadata(Explanation.ApplyEqualityRuleOfLogs),
+            explanation = metadata(
+                when (solvableValue) {
+                    is Equation -> Explanation.ApplyEqualityRuleOfLogs
+                    else -> when (flipSign) {
+                        true -> Explanation.ApplyEqualityRuleOfLogsWithSignFlip
+                        false -> Explanation.ApplyEqualityRuleOfLogsWithoutSignFlip
+                    }
+                },
+            ),
         )
     }
 }
@@ -562,7 +630,7 @@ private fun createMoveNegatedTermsToTheOtherSideRule(
         }
 
         ruleResult(
-            toExpr = equationOf(
+            toExpr = solvable.deriveSolvable(
                 sumOf(lhsTerms + oppositeTerms),
                 sumOf(rhsTerms + oppositeTerms),
             ),

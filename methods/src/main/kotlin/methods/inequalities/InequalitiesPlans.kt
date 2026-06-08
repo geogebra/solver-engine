@@ -28,6 +28,7 @@ import engine.expressions.FiniteSet
 import engine.expressions.Identity
 import engine.expressions.Inequality
 import engine.expressions.Interval
+import engine.expressions.Minus
 import engine.expressions.SetSolution
 import engine.expressions.SetUnion
 import engine.expressions.Solution
@@ -35,10 +36,12 @@ import engine.expressions.StatementUnion
 import engine.expressions.VariableList
 import engine.expressions.closedIntervalOf
 import engine.expressions.closedOpenIntervalOf
+import engine.expressions.containsLogs
 import engine.expressions.contradictionOf
 import engine.expressions.equationOf
 import engine.expressions.finiteSetOf
 import engine.expressions.identityOf
+import engine.expressions.isLogarithmicTerm
 import engine.expressions.openClosedIntervalOf
 import engine.expressions.openIntervalOf
 import engine.expressions.setDifferenceOf
@@ -69,20 +72,27 @@ import engine.patterns.contradictionOf
 import engine.patterns.fractionOf
 import engine.patterns.identityOf
 import engine.patterns.inequalityOf
+import engine.patterns.logOf
 import engine.patterns.oneOf
 import engine.patterns.openClosedIntervalOf
 import engine.patterns.openIntervalOf
 import engine.patterns.optionalNegOf
 import engine.patterns.setSolutionOf
 import engine.patterns.variableListOf
+import engine.patterns.withOptionalConstantCoefficient
 import engine.steps.metadata.Metadata
 import engine.steps.metadata.metadata
 import engine.utility.pickValueInInterval
 import methods.constantexpressions.constantSimplificationSteps
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.equations.EquationsPlans
+import methods.equations.createSolveSolvableWithDomainRestrictions
+import methods.equations.simplificationStepsForEquationsWithTwoLogs
 import methods.general.NormalizationPlans
 import methods.inequations.InequationsPlans
+import methods.logs.LogsPlans
+import methods.logs.LogsRules
+import methods.logs.extractLogTerms
 import methods.polynomials.PolynomialRules
 import methods.polynomials.PolynomialsPlans
 import methods.simplify.algebraicSimplificationStepsForEquations
@@ -238,6 +248,11 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
 
     @PublicMethod
     SolveQuadraticInequality(solveQuadraticInequality),
+
+    SolveElementaryLogInequality(solveElementaryLogInequality),
+
+    @PublicMethod
+    SolveLogInequality(solveLogInequality),
 }
 
 internal val inequalitySimplificationSteps = steps {
@@ -640,3 +655,109 @@ private val solveQuadraticInequality = plan {
         apply(InequalitiesPlans.SolveQuadraticInequalityInCanonicalForm)
     }
 }
+
+private val solveElementaryLogInequality = plan {
+    explanation = Explanation.SolveLogarithmicInequality
+
+    pattern = condition {
+        it is Inequality && it.containsLogs()
+    }
+
+    steps {
+        optionally(logInequalitySimplificationSteps)
+
+        apply(LogsRules.ExponentiateBothSides)
+
+        applyToChildren(LogsRules.SimplifyLogInExponentWithMatchingBase, atLeastOne = true)
+
+        apply(inequalitySolvingSteps)
+    }
+}
+
+private val solveLogInequalityWithTwoLogs = plan {
+    explanation = Explanation.SolveLogarithmicInequality
+
+    pattern = condition {
+        it is Inequality && it.containsLogs()
+    }
+
+    steps {
+        optionally(logInequalitySimplificationSteps)
+
+        optionally(simplificationStepsForEquationsWithTwoLogs)
+
+        apply(LogsRules.ApplyEqualityRuleOfLogs)
+
+        apply(inequalitySolvingSteps)
+    }
+}
+
+private val logInequalitySimplificationSteps = steps {
+    optionally(algebraicSimplificationStepsForEquations)
+    optionally {
+        firstOf {
+            option {
+                checkForm {
+                    val lhs = condition { it.isConstantIn(solutionVariables) }
+                    val rhs = withOptionalConstantCoefficient(logOf(AnyPattern()))
+
+                    inequalityOf(lhs, rhs)
+                }
+
+                firstOf {
+                    option {
+                        check { it.secondChild is Minus }
+                        optionally(solvablePlansForInequalities.moveVariablesToTheLeftAndSimplify)
+                        optionally(solvablePlansForInequalities.moveConstantsToTheRightAndSimplify)
+                    }
+                    option(SolvableRules.FlipSolvable)
+                }
+            }
+            option {
+                check {
+                    val logs = it.firstChild.extractLogTerms() + it.secondChild.extractLogTerms()
+
+                    logs.distinct().size == 1
+                }
+                optionally(solvablePlansForInequalities.moveVariablesToTheLeftAndSimplify)
+                optionally(solvablePlansForInequalities.moveConstantsToTheRightAndSimplify)
+            }
+            option(LogsPlans.MoveNegatedLogarithmicTermsToOppositeSideAndSimplify)
+        }
+    }
+
+    optionally(solvablePlansForInequalities.multiplyByLCDAndSimplify)
+
+    optionally(solvablePlansForInequalities.logarithmCoefficientRemovalSteps)
+
+    // Make sure there is only one logarithmic term left
+    applyToChildren(LogsPlans.CollectLogarithmsInSum)
+
+    // Get rid of constant coefficients
+    applyToChildren {
+        check {
+            it.isLogarithmicTerm()
+        }
+
+        apply(LogsRules.RewriteCoefficientsAsExponents)
+    }
+}
+
+val inequalitySolvingSteps = steps {
+    firstOf {
+        option(InequalitiesPlans.SolveLinearInequality)
+        option(InequalitiesPlans.SolveQuadraticInequality)
+        option(InequalitiesPlans.SolveInequalityWithVariablesInOneAbsoluteValue)
+    }
+}
+
+private val solveLogInequality = createSolveSolvableWithDomainRestrictions(
+    Explanation.SolveLogarithmicInequality,
+    Explanation.EvaluateInequalityWithImpossibleConstraint,
+    steps {
+        firstOf {
+            option(solveElementaryLogInequality)
+            option(solveLogInequalityWithTwoLogs)
+        }
+    },
+)

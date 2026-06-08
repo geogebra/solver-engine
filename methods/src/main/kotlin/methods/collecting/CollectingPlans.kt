@@ -153,13 +153,32 @@ fun createCollectLikeTrigonometricTermsAndSimplifyPlan(simplificationSteps: Step
                 option {
                     withNewLabels {
                         firstOf {
-                            option(CollectingRules.CollectLikeTermsWithPi)
                             option(CollectingRules.CollectLikeTermsWithTrigonometricFunctions)
                         }
                         optionally { applyTo(coefficientSimplificationSteps, Label.A) }
                         optionally(GeneralRules.EliminateZeroInSum)
                     }
                 }
+            }
+        }
+    }
+}
+
+fun createCollectLikeMathematicalConstants(simplificationSteps: StepsProducer): Method {
+    val coefficientSimplificationSteps =
+        createSimplifyCoefficientPlan(simplificationSteps, preferFractionalForm = false)
+
+    return plan {
+        explanation = Explanation.CollectLikeTermsAndSimplify
+
+        steps {
+            withNewLabels {
+                firstOf {
+                    option(CollectingRules.CollectLikeTermsWithPi)
+                    option(CollectingRules.CollectLikeTermsWithEulerE)
+                }
+                optionally { applyTo(coefficientSimplificationSteps, Label.A) }
+                optionally(GeneralRules.EliminateZeroInSum)
             }
         }
     }

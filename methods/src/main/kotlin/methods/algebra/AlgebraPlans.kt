@@ -30,6 +30,7 @@ import engine.expressions.Logarithm
 import engine.expressions.Product
 import engine.expressions.SetSolution
 import engine.expressions.ValueExpression
+import engine.expressions.contradictionOf
 import engine.expressions.greaterThanOf
 import engine.expressions.inequationOf
 import engine.methods.CompositeMethod
@@ -39,7 +40,7 @@ import engine.methods.stepsproducers.steps
 import engine.methods.taskSet
 import engine.patterns.condition
 import engine.steps.metadata.metadata
-import methods.inequalities.InequalitiesPlans
+import methods.inequalities.inequalitySolvingSteps
 import methods.inequations.InequationsPlans
 import methods.simplify.SimplifyExplanation
 import methods.simplify.simplifyAlgebraicExpressionSteps
@@ -109,10 +110,7 @@ enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
 
             val solveInequalityDomainConstraintSteps = steps {
                 inContext({ copy(solutionVariables = it.variables.toList()) }) {
-                    firstOf {
-                        option(InequalitiesPlans.SolveLinearInequality)
-                        option(InequalitiesPlans.SolveQuadraticInequality)
-                    }
+                    apply(inequalitySolvingSteps)
                 }
             }
 
@@ -220,7 +218,13 @@ enum class AlgebraPlans(override val runner: CompositeMethod) : RunnerMethod {
                     )
                 }
 
-                val overallSolution = computeOverallIntersectionSolution(constraintTasks.map { it.result })
+                val overallSolution = computeOverallIntersectionSolution(constraintTasks.map { it.result }).let {
+                    if (it is SetSolution && it.solutionSet.children.isEmpty()) {
+                        contradictionOf(it.solutionVariables, expression)
+                    } else {
+                        it
+                    }
+                }
 
                 val explanation = when {
                     overallSolution is Identity ->

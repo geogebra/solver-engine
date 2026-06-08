@@ -866,6 +866,11 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      */
     ReorderTrinomial,
 
+    /**
+     * Given equation is not defined
+     */
+    EvaluateEquationWithImpossibleConstraint,
+
     ;
 
     override val category = "Equations"

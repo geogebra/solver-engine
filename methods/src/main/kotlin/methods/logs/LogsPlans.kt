@@ -19,9 +19,11 @@ package methods.logs
 
 import engine.context.Context
 import engine.expressions.Constants
+import engine.expressions.Equation
 import engine.expressions.Expression
 import engine.expressions.ExpressionWithConstraint
 import engine.expressions.Fraction
+import engine.expressions.Inequality
 import engine.expressions.Logarithm
 import engine.expressions.Minus
 import engine.expressions.Power
@@ -151,8 +153,20 @@ fun createSwitchLogsToSmallestBase(simplificationSteps: StepsProducer) =
         @Suppress("ReturnCount")
         override fun run(ctx: Context, sub: Expression): Transformation? {
             val expression = if (sub is ExpressionWithConstraint) sub.expression else sub
-            val sum = expression as? Sum ?: return null
-            val terms = sum.terms
+
+            fun Expression.extractTerms(): List<Expression> =
+                when (this) {
+                    is Logarithm -> listOf(this)
+                    is Sum -> terms
+                    is Equation,
+                    is Inequality,
+                    -> children.flatMap {
+                        it.extractTerms()
+                    }
+                    else -> emptyList()
+                }
+
+            val terms = expression.extractTerms().ifEmpty { null } ?: return null
             val logTerms = terms.mapNotNull { it.extractLogTerm() }
             if (logTerms.map { it.base }.distinct().size < 2) return null
 

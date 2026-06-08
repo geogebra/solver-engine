@@ -557,21 +557,12 @@ enum class EquationSolvingStrategy(
                     }
 
                     apply(LogsRules.ExponentiateBothSides)
-                    applyTo(LogsRules.SimplifyLogInExponentWithMatchingBase) {
-                        it.firstChild
-                    }
+                    applyToChildren(LogsRules.SimplifyLogInExponentWithMatchingBase, atLeastOne = true)
 
                     optionally(EquationsPlans.SolveEquation)
                 }
                 option {
-                    // Make sure the constant terms are positive so we avoid dealing with fractions
-                    optionally(LogsPlans.MoveNegatedConstantTermsToOppositeSideAndSimplify)
-                    // If there are constant terms on either side, express them as logarithms and collect them in
-                    // a single term
-                    applyToChildren {
-                        apply(LogsPlans.ExpressConstantInSumAsLogAndSimplify)
-                        apply(LogsPlans.CollectLogarithmsInSum)
-                    }
+                    optionally(simplificationStepsForEquationsWithTwoLogs)
                     apply(LogsRules.ApplyEqualityRuleOfLogs)
                     apply(EquationsPlans.SolveEquation)
                 }
@@ -1088,4 +1079,15 @@ private val linearTrigEquationSteps = steps {
     apply(EquationsPlans.DivideByCosAndSimplify)
 
     apply(EquationsPlans.SolveEquation)
+}
+
+val simplificationStepsForEquationsWithTwoLogs = steps {
+    // Make sure the constant terms are positive so we avoid dealing with fractions
+    optionally(LogsPlans.MoveNegatedConstantTermsToOppositeSideAndSimplify)
+    // If there are constant terms on either side, express them as logarithms and collect them in
+    // a single term
+    applyToChildren {
+        apply(LogsPlans.ExpressConstantInSumAsLogAndSimplify)
+        apply(LogsPlans.CollectLogarithmsInSum)
+    }
 }

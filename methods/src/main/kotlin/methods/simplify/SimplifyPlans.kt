@@ -36,6 +36,7 @@ import methods.collecting.createCollectLikeTrigonometricTermsAndSimplifyPlan
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.general.NormalizationPlans
+import methods.logs.createSwitchLogsToSmallestBase
 import methods.polynomials.PolynomialsPlans
 import methods.polynomials.addFractionsSteps
 import methods.polynomials.addTermAndFractionSteps
@@ -101,6 +102,8 @@ val useTrigonometricIdentityToExpand = createUseTrigonometricIdentityAndSimplify
 
 val collectLikeTrigonometricTerms = createCollectLikeTrigonometricTermsAndSimplifyPlan(simplificationSteps)
 
+val switchLogsToSmallestBase = createSwitchLogsToSmallestBase(simplificationSteps)
+
 @Suppress("LongMethod")
 private fun algebraicSimplificationSteps(
     addRationalExpressions: Boolean = true,
@@ -109,16 +112,23 @@ private fun algebraicSimplificationSteps(
     return steps {
         whilePossible {
             firstOf {
+                // Try to simplify the whole expression first when
+                // -> not expanding trig expressions
                 if (!expandTrigonometricFunctions) {
-                    // Try to simplify the whole expression first when not expanding trig expressions
                     option {
                         deeply {
                             firstOf {
                                 option(simpleTidyUpSteps)
                                 option(collectLikeTrigonometricTerms)
+                                option(switchLogsToSmallestBase)
                             }
                         }
                     }
+                }
+                // Try to simplify whole expression first
+                // -> bringing logs to common base
+                option {
+                    deeply(switchLogsToSmallestBase)
                 }
                 // Try to simplify individual terms
                 option {

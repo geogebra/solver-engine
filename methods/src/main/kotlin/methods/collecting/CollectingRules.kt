@@ -19,6 +19,7 @@ package methods.collecting
 
 import engine.context.Context
 import engine.expressions.CancellableView
+import engine.expressions.EulerEExpression
 import engine.expressions.Expression
 import engine.expressions.Factor
 import engine.expressions.Fraction
@@ -85,6 +86,14 @@ enum class CollectingRules(override val runner: Rule) : RunnerMethod {
         CollectLikeTermsRule(
             factorSelector = { it is PiExpression },
             coefficientCondition = { it.isConstant() && it !is PiExpression },
+            explanationKey = Explanation.CollectLikeTerms,
+        ).rule,
+    ),
+
+    CollectLikeTermsWithEulerE(
+        CollectLikeTermsRule(
+            factorSelector = { it is EulerEExpression },
+            coefficientCondition = { it.isConstant() && it !is EulerEExpression },
             explanationKey = Explanation.CollectLikeTerms,
         ).rule,
     ),

@@ -121,7 +121,8 @@ fun productSignRequired(left: Expression, right: Expression): Boolean =
             val rightIsRoot = rightOp.operator == UnaryExpressionOperator.SquareRoot ||
                 rightOp.operator == BinaryExpressionOperator.Root
             val rightIsRootOrVariableOrTrigExpression =
-                rightIsRoot || rightOp is Variable || rightOp is PiExpression || rightOp is TrigonometricExpression
+                rightIsRoot || rightOp is Variable || rightOp is EulerEExpression ||
+                    rightOp is PiExpression || rightOp is TrigonometricExpression
             val differentVariables = leftOp is Variable && rightOp is Variable &&
                 leftOp.variableName != rightOp.variableName
 

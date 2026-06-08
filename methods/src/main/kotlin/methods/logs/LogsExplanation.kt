@@ -179,6 +179,13 @@ enum class LogsExplanation : CategorisedMetadataKey {
     ExponentiateBothSides,
 
     /**
+     * Exponentiate both sides of the equation using base %1 and flip the sign
+     *
+     * %1 - base of logarithmic expressions
+     */
+    ExponentiateBothSidesAndFlip,
+
+    /**
      * Simplify expression using %f
      *
      * %f - a ^ log_a x = x
@@ -202,6 +209,16 @@ enum class LogsExplanation : CategorisedMetadataKey {
      * Apply the equality rule of logs
      */
     ApplyEqualityRuleOfLogs,
+
+    /**
+     * Apply the equality rule of logs with sign flip as it is strictly decreasing
+     */
+    ApplyEqualityRuleOfLogsWithSignFlip,
+
+    /**
+     * Apply the equality rule of logs without sign flip as it is strictly increasing
+     */
+    ApplyEqualityRuleOfLogsWithoutSignFlip,
 
     /**
      * Substitute %1
