@@ -23,79 +23,79 @@ import org.junit.jupiter.api.Test
 class LogsRulesTest {
     @Test
     fun testTakePowerOutOfLog() {
-        testRule("ln[x ^ 2]", LogsRules.TakePowerOutOfLog, "2 ln x")
-        testRule("log_[2][3 ^ x]", LogsRules.TakePowerOutOfLog, "x log_[2] 3")
-        testRule("log[5^(n + 1)]", LogsRules.TakePowerOutOfLog, "(n + 1)log 5")
+        testRule("ln[[x ^ 2]]", LogsRules.TakePowerOutOfLog, "2 ln[x]")
+        testRule("log_[2][[3 ^ x]]", LogsRules.TakePowerOutOfLog, "x log_[2][3]")
+        testRule("log[[5^(n + 1)]]", LogsRules.TakePowerOutOfLog, "(n + 1)log[5]")
     }
 
     @Test
     fun testEvaluateLogOfBase() {
-        testRule("log_[2] 2", LogsRules.EvaluateLogOfBase, "1")
-        testRule("ln /e/", LogsRules.EvaluateLogOfBase, "1")
-        testRule("log 10", LogsRules.EvaluateLogOfBase, "1")
-        testRule("log /e/", LogsRules.EvaluateLogOfBase, null)
-        testRule("ln 10", LogsRules.EvaluateLogOfBase, null)
+        testRule("log_[2][2]", LogsRules.EvaluateLogOfBase, "1")
+        testRule("ln[/e/]", LogsRules.EvaluateLogOfBase, "1")
+        testRule("log[10]", LogsRules.EvaluateLogOfBase, "1")
+        testRule("log[/e/]", LogsRules.EvaluateLogOfBase, null)
+        testRule("ln[10]", LogsRules.EvaluateLogOfBase, null)
     }
 
     @Test
     fun testEvaluateLogOfOne() {
-        testRule("log_[a] 1", LogsRules.EvaluateLogOfOne, "0")
-        testRule("ln 1", LogsRules.EvaluateLogOfOne, "0")
-        testRule("log 1", LogsRules.EvaluateLogOfOne, "0")
+        testRule("log_[a][1]", LogsRules.EvaluateLogOfOne, "0")
+        testRule("ln[1]", LogsRules.EvaluateLogOfOne, "0")
+        testRule("log[1]", LogsRules.EvaluateLogOfOne, "0")
     }
 
     @Test
     fun testEvaluateLogOfNonPositiveAsUndefined() {
-        testRule("log_[3](-2)", LogsRules.EvaluateLogOfNonPositiveAsUndefined, "/undefined/")
-        testRule("ln(-[x^2])", LogsRules.EvaluateLogOfNonPositiveAsUndefined, "/undefined/")
-        testRule("ln(-[x^3])", LogsRules.EvaluateLogOfNonPositiveAsUndefined, null)
-        testRule("log 0", LogsRules.EvaluateLogOfNonPositiveAsUndefined, "/undefined/")
+        testRule("log_[3][-2]", LogsRules.EvaluateLogOfNonPositiveAsUndefined, "/undefined/")
+        testRule("ln[-[x^2]]", LogsRules.EvaluateLogOfNonPositiveAsUndefined, "/undefined/")
+        testRule("ln[-[x^3]]", LogsRules.EvaluateLogOfNonPositiveAsUndefined, null)
+        testRule("log[0]", LogsRules.EvaluateLogOfNonPositiveAsUndefined, "/undefined/")
     }
 
     @Test
     fun testSimplifyLogOfReciprocal() {
-        testRule("ln[1 / x]", LogsRules.SimplifyLogOfReciprocal, "-ln x")
-        testRule("log[1 / x - 1]", LogsRules.SimplifyLogOfReciprocal, "-log(x - 1)")
-        testRule("log_[a][1 / 5]", LogsRules.SimplifyLogOfReciprocal, "-log_[a] 5")
+        testRule("ln[[1 / x]]", LogsRules.SimplifyLogOfReciprocal, "-ln[x]")
+        testRule("log[[1 / x - 1]]", LogsRules.SimplifyLogOfReciprocal, "-log[x - 1]")
+        testRule("log_[a][[1 / 5]]", LogsRules.SimplifyLogOfReciprocal, "-log_[a][5]")
     }
 
     @Test
     fun testRewriteLogOfKnownPower() {
-        testRule("ln 25", LogsRules.RewriteLogOfKnownPower, "ln[5 ^ 2]")
-        testRule("ln 128", LogsRules.RewriteLogOfKnownPower, null)
-        testRule("log 10000", LogsRules.RewriteLogOfKnownPower, "log[10 ^ 4]")
-        testRule("log_[3] 8000", LogsRules.RewriteLogOfKnownPower, "log_[3][20 ^ 3]")
-        testRule("log_[2] 10", LogsRules.RewriteLogOfKnownPower, null)
+        testRule("ln[25]", LogsRules.RewriteLogOfKnownPower, "ln[[5 ^ 2]]")
+        testRule("ln[128]", LogsRules.RewriteLogOfKnownPower, null)
+        testRule("log[10000]", LogsRules.RewriteLogOfKnownPower, "log[[10 ^ 4]]")
+        testRule("log_[3][8000]", LogsRules.RewriteLogOfKnownPower, "log_[3][[20 ^ 3]]")
+        testRule("log_[2][10]", LogsRules.RewriteLogOfKnownPower, null)
     }
 
     @Test
     fun testRewriteCoefficientsAsExponents() {
-        testRule("2 ln x", LogsRules.RewriteCoefficientsAsExponents, "ln[x ^ 2]")
-        testRule("3 log_[2] x", LogsRules.RewriteCoefficientsAsExponents, "log_[2][x ^ 3]")
-        testRule("ln x", LogsRules.RewriteCoefficientsAsExponents, null)
+        testRule("2 ln[x]", LogsRules.RewriteCoefficientsAsExponents, "ln[[x ^ 2]]")
+        testRule("3 log_[2][x]", LogsRules.RewriteCoefficientsAsExponents, "log_[2][[x ^ 3]]")
+        testRule("ln[x]", LogsRules.RewriteCoefficientsAsExponents, null)
     }
 
     @Test
     fun testCollectLogarithmsUsingProductRule() {
         testRule(
-            "ln x + ln y",
+            "ln[x] + ln[y]",
             LogsRules.CollectLogarithmsUsingProductRule,
-            "ln (x y)",
+            "ln[x y]",
         )
         testRule(
-            "-ln x + ln y",
+            "-ln[x] + ln[y]",
             LogsRules.CollectLogarithmsUsingProductRule,
-            "ln [y / x]",
+            "ln[[y / x]]",
         )
         testRule(
-            "-ln x + -ln y",
+            "-ln[x] + -ln[y]",
             LogsRules.CollectLogarithmsUsingProductRule,
-            "-ln (x y)",
+            "-ln[x y]",
         )
         testRule(
-            "log_[2] a + log_[2] b + -log_[2] c",
+            "log_[2][a] + log_[2][b] + -log_[2][c]",
             LogsRules.CollectLogarithmsUsingProductRule,
-            "log_[2] [a b / c]",
+            "log_[2][[a b / c]]",
         )
     }
 }

@@ -456,6 +456,9 @@ const latexSymbolDefinitions = {
       }
 
       const argument = parser.expression(Infinity);
+
+      removeRoundBracketDecorator(argument);
+
       const baseExpression: LogarithmExpression<any> = base
         ? {
             type: 'Log',
@@ -489,6 +492,9 @@ const latexSymbolDefinitions = {
         }
 
         const argument = parser.expression(Infinity);
+
+        removeRoundBracketDecorator(argument);
+
         return withPowerInsideLog(
           {
             type: 'NaturalLog',

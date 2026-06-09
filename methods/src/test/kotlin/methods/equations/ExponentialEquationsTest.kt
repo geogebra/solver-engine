@@ -79,30 +79,30 @@ class ExponentialEquationsTest {
 
             check {
                 fromExpr = "[3 ^ x + 1] = 5"
-                toExpr = "SetSolution[x: {log_[3] 5 - 1}]"
+                toExpr = "SetSolution[x: {log_[3][5] - 1}]"
                 explanation {
                     key = EquationsExplanation.SolveExponentialEquation
                 }
 
                 step {
                     fromExpr = "[3 ^ x + 1] = 5"
-                    toExpr = "x + 1 = log_[3] 5"
+                    toExpr = "x + 1 = log_[3][5]"
                     explanation {
                         key = methods.solvable.EquationsExplanation.TakeLogOfRHS
                     }
                 }
 
                 step {
-                    fromExpr = "x + 1 = log_[3] 5"
-                    toExpr = "x = log_[3] 5 - 1"
+                    fromExpr = "x + 1 = log_[3][5]"
+                    toExpr = "x = log_[3][5] - 1"
                     explanation {
                         key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
                     }
                 }
 
                 step {
-                    fromExpr = "x = log_[3] 5 - 1"
-                    toExpr = "SetSolution[x: {log_[3] 5 - 1}]"
+                    fromExpr = "x = log_[3][5] - 1"
+                    toExpr = "SetSolution[x: {log_[3][5] - 1}]"
                     explanation {
                         key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                     }
@@ -118,36 +118,36 @@ class ExponentialEquationsTest {
 
             check {
                 fromExpr = "[2 ^ x + 1] = [3 ^ x]"
-                toExpr = "SetSolution[x: {-[ln 2 / ln 2 - ln 3]}]"
+                toExpr = "SetSolution[x: {-[ln[2] / ln[2] - ln[3]]}]"
                 explanation {
                     key = EquationsExplanation.SolveExponentialEquation
                 }
 
                 step {
                     fromExpr = "[2 ^ x + 1] = [3 ^ x]"
-                    toExpr = "(x + 1) ln 2 = x * ln 3"
+                    toExpr = "(x + 1) ln[2] = x * ln[3]"
                     explanation {
                         key = methods.solvable.EquationsExplanation.TakeLogOfBothSidesAndSimplify
                     }
 
                     step {
                         fromExpr = "[2 ^ x + 1] = [3 ^ x]"
-                        toExpr = "ln [2 ^ x + 1] = ln [3 ^ x]"
+                        toExpr = "ln[[2 ^ x + 1]] = ln[[3 ^ x]]"
                         explanation {
                             key = methods.solvable.EquationsExplanation.TakeLogOfBothSides
                         }
                     }
 
                     step {
-                        fromExpr = "ln [2 ^ x + 1] = ln [3 ^ x]"
-                        toExpr = "(x + 1) ln 2 = ln [3 ^ x]"
+                        fromExpr = "ln[[2 ^ x + 1]] = ln[[3 ^ x]]"
+                        toExpr = "(x + 1) ln[2] = ln[[3 ^ x]]"
                         explanation {
                             key = EquationsExplanation.SimplifyEquation
                         }
 
                         step {
-                            fromExpr = "ln [2 ^ x + 1]"
-                            toExpr = "(x + 1) ln 2"
+                            fromExpr = "ln[[2 ^ x + 1]]"
+                            toExpr = "(x + 1) ln[2]"
                             explanation {
                                 key = LogsExplanation.TakePowerOutOfLog
                             }
@@ -155,15 +155,15 @@ class ExponentialEquationsTest {
                     }
 
                     step {
-                        fromExpr = "(x + 1) ln 2 = ln [3 ^ x]"
-                        toExpr = "(x + 1) ln 2 = x * ln 3"
+                        fromExpr = "(x + 1) ln[2] = ln[[3 ^ x]]"
+                        toExpr = "(x + 1) ln[2] = x * ln[3]"
                         explanation {
                             key = EquationsExplanation.SimplifyEquation
                         }
 
                         step {
-                            fromExpr = "ln [3 ^ x]"
-                            toExpr = "x * ln 3"
+                            fromExpr = "ln[[3 ^ x]]"
+                            toExpr = "x * ln[3]"
                             explanation {
                                 key = LogsExplanation.TakePowerOutOfLog
                             }
@@ -172,23 +172,23 @@ class ExponentialEquationsTest {
                 }
 
                 step {
-                    fromExpr = "(x + 1) ln 2 = x * ln 3"
-                    toExpr = "x * ln 2 + ln 2 = x * ln 3"
+                    fromExpr = "(x + 1) ln[2] = x * ln[3]"
+                    toExpr = "x * ln[2] + ln[2] = x * ln[3]"
                     explanation {
                         key = ExpandExplanation.ExpandSingleBracketAndSimplify
                     }
 
                     step {
-                        fromExpr = "(x + 1) ln 2"
-                        toExpr = "x * ln 2 + 1 * ln 2"
+                        fromExpr = "(x + 1) ln[2]"
+                        toExpr = "x * ln[2] + 1 * ln[2]"
                         explanation {
                             key = ExpandExplanation.DistributeMultiplicationOverSum
                         }
                     }
 
                     step {
-                        fromExpr = "x * ln 2 + 1 * ln 2"
-                        toExpr = "x * ln 2 + ln 2"
+                        fromExpr = "x * ln[2] + 1 * ln[2]"
+                        toExpr = "x * ln[2] + ln[2]"
                         explanation {
                             key = GeneralExplanation.RemoveUnitaryCoefficient
                         }
@@ -196,32 +196,32 @@ class ExponentialEquationsTest {
                 }
 
                 step {
-                    fromExpr = "x * ln 2 + ln 2 = x * ln 3"
-                    toExpr = "x (ln 2 - ln 3) + ln 2 = 0"
+                    fromExpr = "x * ln[2] + ln[2] = x * ln[3]"
+                    toExpr = "x (ln[2] - ln[3]) + ln[2] = 0"
                     explanation {
                         key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeftAndSimplify
                     }
                 }
 
                 step {
-                    fromExpr = "x (ln 2 - ln 3) + ln 2 = 0"
-                    toExpr = "x (ln 2 - ln 3) = -ln 2"
+                    fromExpr = "x (ln[2] - ln[3]) + ln[2] = 0"
+                    toExpr = "x (ln[2] - ln[3]) = -ln[2]"
                     explanation {
                         key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
                     }
                 }
 
                 step {
-                    fromExpr = "x (ln 2 - ln 3) = -ln 2"
-                    toExpr = "x = -[ln 2 / ln 2 - ln 3]"
+                    fromExpr = "x (ln[2] - ln[3]) = -ln[2]"
+                    toExpr = "x = -[ln[2] / ln[2] - ln[3]]"
                     explanation {
                         key = methods.solvable.EquationsExplanation.DivideByCoefficientOfVariableAndSimplify
                     }
                 }
 
                 step {
-                    fromExpr = "x = -[ln 2 / ln 2 - ln 3]"
-                    toExpr = "SetSolution[x: {-[ln 2 / ln 2 - ln 3]}]"
+                    fromExpr = "x = -[ln[2] / ln[2] - ln[3]]"
+                    toExpr = "SetSolution[x: {-[ln[2] / ln[2] - ln[3]]}]"
                     explanation {
                         key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                     }

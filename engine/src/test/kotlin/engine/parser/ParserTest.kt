@@ -53,9 +53,12 @@ import engine.expressions.indefiniteIntegralOf
 import engine.expressions.inequationOf
 import engine.expressions.lessThanEqualOf
 import engine.expressions.lessThanOf
+import engine.expressions.logBase10Of
+import engine.expressions.logOf
 import engine.expressions.matrixOf
 import engine.expressions.missingBracketOf
 import engine.expressions.nameXp
+import engine.expressions.naturalLogOf
 import engine.expressions.negOf
 import engine.expressions.openIntervalOf
 import engine.expressions.percentageOf
@@ -64,9 +67,6 @@ import engine.expressions.plusMinusOf
 import engine.expressions.plusOf
 import engine.expressions.powerOf
 import engine.expressions.productOf
-import engine.expressions.rawLogBase10Of
-import engine.expressions.rawLogOf
-import engine.expressions.rawNaturalLogOf
 import engine.expressions.rawRootOf
 import engine.expressions.setSolutionOf
 import engine.expressions.setUnionOf
@@ -292,35 +292,34 @@ class ParserTest {
 
     @Test
     fun testLogarithms() {
-        parsesTo("ln (3 x)", rawNaturalLogOf(bracketOf(productOf(xp(3), xp("x")))))
-        parsesTo("log 9 - 12", sumOf(rawLogBase10Of(xp(9)), negOf(xp(12))))
+        parsesTo("ln [3 x]", naturalLogOf(productOf(xp(3), xp("x"))))
         parsesTo(
-            "1 + 4 * log_[5] [3 / 2]",
-            sumOf(xp(1), productOf(xp(4), rawLogOf(xp(5), fractionOf(xp(3), xp(2))))),
+            "1 + 4 * log_[5] [[3 / 2]]",
+            sumOf(xp(1), productOf(xp(4), logOf(xp(5), fractionOf(xp(3), xp(2))))),
         )
         parsesTo(
-            "[ln ^ 2] x",
-            powerOf(rawNaturalLogOf(xp("x"), powerInside = true), xp(2)),
+            "[ln ^ 2][x]",
+            powerOf(naturalLogOf(xp("x"), powerInside = true), xp(2)),
         )
         parsesTo(
-            "[ln x ^ 2]",
-            powerOf(rawNaturalLogOf(xp("x"), powerInside = false), xp(2)),
+            "[ln[x] ^ 2]",
+            powerOf(naturalLogOf(xp("x"), powerInside = false), xp(2)),
         )
         parsesTo(
-            "[log_[a] ^ 2] x",
-            powerOf(rawLogOf(xp("a"), xp("x"), powerInside = true), xp(2)),
+            "[log_[a] ^ 2][x]",
+            powerOf(logOf(xp("a"), xp("x"), powerInside = true), xp(2)),
         )
         parsesTo(
-            "[log_[a] x ^ 2]",
-            powerOf(rawLogOf(xp("a"), xp("x"), powerInside = false), xp(2)),
+            "[log_[a][x] ^ 2]",
+            powerOf(logOf(xp("a"), xp("x"), powerInside = false), xp(2)),
         )
         parsesTo(
-            "[log ^ 2] x",
-            powerOf(rawLogBase10Of(xp("x"), powerInside = true), xp(2)),
+            "[log ^ 2][x]",
+            powerOf(logBase10Of(xp("x"), powerInside = true), xp(2)),
         )
         parsesTo(
-            "[log x ^ 2]",
-            powerOf(rawLogBase10Of(xp("x"), powerInside = false), xp(2)),
+            "[log[x] ^ 2]",
+            powerOf(logBase10Of(xp("x"), powerInside = false), xp(2)),
         )
     }
 

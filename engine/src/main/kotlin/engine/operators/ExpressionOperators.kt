@@ -253,20 +253,22 @@ internal enum class UnaryExpressionOperator(override val precedence: Int) : Unar
         override fun eval(operand: Double) = sqrt(operand)
     },
     NaturalLog(LOG_PRECEDENCE) {
-        override fun childAllowed(op: Operator) = op.precedence > PRODUCT_PRECEDENCE
+        override fun childAllowed(op: Operator) = true
 
-        override fun <T> readableString(child: T) = "ln $child"
+        override fun <T> readableString(child: T) = "ln[$child]"
 
-        override fun latexString(ctx: RenderContext, child: LatexRenderable) = "\\ln ${child.toLatexString(ctx)}"
+        override fun latexString(ctx: RenderContext, child: LatexRenderable) =
+            "\\ln \\left(${child.toLatexString(ctx)}\\right)"
 
         override fun eval(operand: Double) = ln(operand)
     },
     LogBase10(LOG_PRECEDENCE) {
-        override fun childAllowed(op: Operator) = op.precedence > PRODUCT_PRECEDENCE
+        override fun childAllowed(op: Operator) = true
 
-        override fun <T> readableString(child: T) = "log $child"
+        override fun <T> readableString(child: T) = "log[$child]"
 
-        override fun latexString(ctx: RenderContext, child: LatexRenderable) = "\\log ${child.toLatexString(ctx)}"
+        override fun latexString(ctx: RenderContext, child: LatexRenderable) =
+            "\\log \\left( ${child.toLatexString(ctx)}\\right)"
 
         override fun eval(operand: Double) = log10(operand)
     },
@@ -425,9 +427,9 @@ internal enum class BinaryExpressionOperator(override val precedence: Int) : Bin
                     val operatorType = left.operator.name
                     "[$operatorType ^ $right][${left.operands[0]}]"
                 }
-                left is NaturalLogExpression && left.powerInside -> "[ln ^ $right] ${left.argument}"
-                left is LogBase10Expression && left.powerInside -> "[log ^ $right] ${left.argument}"
-                left is LogExpression && left.powerInside -> "[log_[${left.base}] ^ $right] ${left.argument}"
+                left is NaturalLogExpression && left.powerInside -> "[ln ^ $right][${left.argument}]"
+                left is LogBase10Expression && left.powerInside -> "[log ^ $right][${left.argument}]"
+                left is LogExpression && left.powerInside -> "[log_[${left.base}] ^ $right][${left.argument}]"
                 else -> "[$left ^ $right]"
             }
         }
@@ -480,12 +482,12 @@ internal enum class BinaryExpressionOperator(override val precedence: Int) : Bin
     Log(LOG_PRECEDENCE) {
         override fun leftChildAllowed(op: Operator) = true
 
-        override fun rightChildAllowed(op: Operator) = op.precedence > PRODUCT_PRECEDENCE
+        override fun rightChildAllowed(op: Operator) = true
 
-        override fun <T> readableString(left: T, right: T) = "log_[$left] $right"
+        override fun <T> readableString(left: T, right: T) = "log_[$left][$right]"
 
         override fun latexString(ctx: RenderContext, left: LatexRenderable, right: LatexRenderable) =
-            "\\log_{${left.toLatexString(ctx)}} ${right.toLatexString(ctx)}"
+            "\\log_{${left.toLatexString(ctx)}}{${right.toLatexString(ctx)}}"
 
         override fun eval(first: Double, second: Double) = log(second, first)
     },

@@ -367,9 +367,9 @@ onMounted(() => {
       <li>\(\sqrt{x}\) is <code>sqrt[x]</code>,</li>
       <li>\(\sqrt[3]{12}\) is <code>root[12, 3]</code>.</li>
       <li>\(\left|3x^2 + 2\right|\) is <code>abs[3 [x ^ 2] + 2]</code></li>
-      <li>natural log: \(\ln x\) is <code>ln x</code></li>
-      <li>base-10 log: \(\log x\) is <code>log x</code></li>
-      <li>base-b log: \(\log_b x\) is <code>log_[b] x</code></li>
+      <li>natural log: \(\ln x\) is <code>ln[x]</code></li>
+      <li>base-10 log: \(\log x\) is <code>log[x]</code></li>
+      <li>base-b log: \(\log_b x\) is <code>log_[b][x]</code></li>
       <li>
         mathematical constants \(e\), \(\pi\), and \(i\) are <code>/e/</code>, <code>/pi/</code>,
         and <code>/i/</code>

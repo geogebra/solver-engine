@@ -77,7 +77,7 @@ it('Powered logarithms render in compact form', () => {
     ],
   };
 
-  expect(jsonToLatex(poweredLog)).to.equal('\\ln^{2}\\left(x\\right)');
+  expect(jsonToLatex(poweredLog)).to.equal('\\ln^{2}{\\left(x\\right)}');
 });
 
 it('Powered base-10 logarithms render in compact form', () => {
@@ -93,7 +93,7 @@ it('Powered base-10 logarithms render in compact form', () => {
     ],
   };
 
-  expect(jsonToLatex(poweredLog)).to.equal('\\log^{2}\\left(x\\right)');
+  expect(jsonToLatex(poweredLog)).to.equal('\\log^{2}{\\left(x\\right)}');
 });
 
 it('Powered arbitrary-base logarithms render in compact form', () => {
@@ -112,7 +112,7 @@ it('Powered arbitrary-base logarithms render in compact form', () => {
     ],
   };
 
-  expect(jsonToLatex(poweredLog)).to.equal('\\log_{a}^{2}\\left(x\\right)');
+  expect(jsonToLatex(poweredLog)).to.equal('\\log_{a}^{2}{\\left(x\\right)}');
 });
 
 it('Aligned equations in union', () => {

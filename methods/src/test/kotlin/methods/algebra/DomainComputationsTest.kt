@@ -226,10 +226,10 @@ class DomainComputationsTest {
     fun `test computing the domain of a logarithmic expression`() =
         testMethod {
             method = AlgebraPlans.ComputeDomainOfAlgebraicExpression
-            inputExpr = "ln x"
+            inputExpr = "ln[x]"
 
             check {
-                fromExpr = "ln x"
+                fromExpr = "ln[x]"
                 explanation {
                     key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
                 }
@@ -255,7 +255,7 @@ class DomainComputationsTest {
     fun `test computing the domain of a logarithmic expression with a quadratic argument`() =
         testMethod {
             method = AlgebraPlans.ComputeDomainOfAlgebraicExpression
-            inputExpr = "log_[2] ([x ^ 2] - 3)"
+            inputExpr = "log_[2][[x ^ 2] - 3]"
 
             check {
                 explanation {
@@ -282,7 +282,7 @@ class DomainComputationsTest {
     fun `test computing the domain of multiple logarithms keeps checks grouped by expression`() =
         testMethod {
             method = AlgebraPlans.ComputeDomainOfAlgebraicExpression
-            inputExpr = "log_[a] x + log_[b] y"
+            inputExpr = "log_[a][x] + log_[b][y]"
 
             check {
                 explanation {
@@ -343,17 +343,17 @@ class DomainComputationsTest {
     fun `test simplifying a logarithmic expression with an empty domain`() =
         testMethod {
             method = AlgebraPlans.ComputeDomainAndSimplifyAlgebraicExpression
-            inputExpr = "log_[2](-[x ^ 2] - 3)"
+            inputExpr = "log_[2][-[x ^ 2] - 3]"
 
             check {
-                fromExpr = "log_[2](-[x ^ 2] - 3)"
+                fromExpr = "log_[2][-[x ^ 2] - 3]"
                 toExpr = "Contradiction[x : [x ^ 2] + 3 < 0]"
                 explanation {
                     key = AlgebraExplanation.ComputeDomainAndSimplifyAlgebraicExpression
                 }
 
                 task {
-                    startExpr = "log_[2](-[x ^ 2] - 3)"
+                    startExpr = "log_[2][-[x ^ 2] - 3]"
                     explanation {
                         key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
                     }

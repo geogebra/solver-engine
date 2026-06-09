@@ -1804,15 +1804,15 @@ describe('Solver Parser Unit Tests', () => {
   describe('Logarithm', () => {
     testCases([
       {
-        solver: 'log x',
+        solver: 'log[x]',
         json: {
           type: 'LogBase10',
           operands: [variable('x')],
         },
-        latex: ['\\log{x}'],
+        latex: ['\\log{\\left(x\\right)}'],
       },
       {
-        solver: 'log 2 x',
+        solver: 'log[2 x]',
         json: {
           type: 'LogBase10',
           operands: [
@@ -1822,10 +1822,10 @@ describe('Solver Parser Unit Tests', () => {
             },
           ],
         },
-        latex: ['\\log{2x}'],
+        latex: ['\\log{\\left(2x\\right)}'],
       },
       {
-        solver: '1 + 6 * log x',
+        solver: '1 + 6 * log[x]',
         json: {
           type: 'Sum',
           operands: [
@@ -1842,10 +1842,10 @@ describe('Solver Parser Unit Tests', () => {
             },
           ],
         },
-        latex: ['1+6 \\cdot \\log{x}'],
+        latex: ['1+6 \\cdot \\log{\\left(x\\right)}'],
       },
       {
-        solver: 'ln 2 x + 1',
+        solver: 'ln[2 x] + 1',
         json: {
           type: 'Sum',
           operands: [
@@ -1861,39 +1861,41 @@ describe('Solver Parser Unit Tests', () => {
             integer('1'),
           ],
         },
-        latex: ['\\ln{2x}+1'],
+        latex: ['\\ln{\\left(2x\\right)}+1'],
       },
       {
-        solver: 'log (x + 1)',
+        solver: 'log[x + 1]',
         json: {
           type: 'LogBase10',
           operands: [
             {
               type: 'Sum',
               operands: [variable('x'), integer('1')],
-              decorators: ['RoundBracket'],
             },
           ],
         },
         latex: ['\\log{\\left(x+1\\right)}'],
       },
       {
-        solver: 'ln x',
+        solver: 'ln[x]',
         json: {
           type: 'NaturalLog',
           operands: [variable('x')],
         },
-        latex: ['\\ln{x}', '{\\mathrm{ln}}{x}', '{{\\mathrm{\\mathrm{ln}}} x}'],
+        latex: [
+          '\\ln{\\left(x\\right)}',
+          '{\\mathrm{ln}}\\left({x}\\right)',
+          '{{\\mathrm{\\mathrm{ln}}}\\left({x}\\right)}',
+        ],
       },
       {
-        solver: 'ln (x + 1)',
+        solver: 'ln[x + 1]',
         json: {
           type: 'NaturalLog',
           operands: [
             {
               type: 'Sum',
               operands: [variable('x'), integer('1')],
-              decorators: ['RoundBracket'],
             },
           ],
         },
@@ -1908,18 +1910,18 @@ describe('Solver Parser Unit Tests', () => {
           type: 'Log',
           operands: [integer('10'), variable('x')],
         },
-        latex: ['\\log_{10}{x}'],
+        latex: ['\\log_{10}{\\left(x\\right)}'],
       },
       {
-        solver: 'log_[5] x',
+        solver: 'log_[5][x]',
         json: {
           type: 'Log',
           operands: [integer('5'), variable('x')],
         },
-        latex: ['\\log_{5}{x}'],
+        latex: ['\\log_{5}{\\left(x\\right)}'],
       },
       {
-        solver: 'log_[a + 1] (x)',
+        solver: 'log_[a + 1][x]',
         json: {
           type: 'Log',
           operands: [
@@ -1930,14 +1932,13 @@ describe('Solver Parser Unit Tests', () => {
             {
               type: 'Variable',
               value: 'x',
-              decorators: ['RoundBracket'],
             },
           ],
         },
         latex: ['\\log_{a+1}{\\left(x\\right)}'],
       },
       {
-        solver: '[(log_[5] x + 1) ^ 2]',
+        solver: '[(log_[5][x] + 1) ^ 2]',
         json: {
           type: 'Power',
           operands: [
@@ -1955,7 +1956,7 @@ describe('Solver Parser Unit Tests', () => {
             integer('2'),
           ],
         },
-        latex: ['{\\left(\\log_{5}{x}+1\\right)}^{2}'],
+        latex: ['{\\left(\\log_{5}{\\left(x\\right)}+1\\right)}^{2}'],
       },
       {
         solver: '[ln ^ 2] x',
@@ -1970,7 +1971,7 @@ describe('Solver Parser Unit Tests', () => {
             integer('2'),
           ],
         },
-        latex: ['\\ln^{2}\\left(x\\right)'],
+        latex: ['\\ln^{2}{\\left(x\\right)}'],
       },
       {
         solver: '[log ^ 2] x',
@@ -1985,7 +1986,7 @@ describe('Solver Parser Unit Tests', () => {
             integer('2'),
           ],
         },
-        latex: ['\\log^{2}\\left(x\\right)'],
+        latex: ['\\log^{2}{\\left(x\\right)}'],
       },
       {
         solver: '[log_[a] ^ 2] x',
@@ -2000,7 +2001,7 @@ describe('Solver Parser Unit Tests', () => {
             integer('2'),
           ],
         },
-        latex: ['\\log_{a}^{2}\\left(x\\right)'],
+        latex: ['\\log_{a}^{2}{\\left(x\\right)}'],
       },
     ]);
   });

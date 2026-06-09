@@ -188,11 +188,11 @@ export function treeToSolver(n: ExpressionTree): string {
         return dec(`${n.type.toLowerCase()} ${rec(n.operands[0])}`);
       }
     case 'LogBase10':
-      return dec(`log ${rec(n.operands[0])}`);
+      return dec(`log[${rec(n.operands[0])}]`);
     case 'NaturalLog':
-      return dec(`ln ${rec(n.operands[0])}`);
+      return dec(`ln[${rec(n.operands[0])}]`);
     case 'Log':
-      return dec(`log_[${rec(n.operands[0])}] ${rec(n.operands[1])}`);
+      return dec(`log_[${rec(n.operands[0])}][${rec(n.operands[1])}]`);
     case 'Derivative':
       return dec(
         (n.operands[0].type === 'Integer' && n.operands[0].value === '1'

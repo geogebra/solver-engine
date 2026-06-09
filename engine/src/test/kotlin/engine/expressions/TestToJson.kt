@@ -65,7 +65,7 @@ class TestToJson {
     @Test
     fun logarithmPowerInsideTest() =
         test(
-            "[ln ^ 2] x ",
+            "[ln ^ 2] [x] ",
             """{
             "type": "Power",
             "operands": [
@@ -85,7 +85,7 @@ class TestToJson {
     @Test
     fun logarithmPowerOutsideTest() =
         test(
-            "[ln x ^ 2]",
+            "[ln [x] ^ 2]",
             """{
             "type": "Power",
             "operands": [
@@ -105,7 +105,7 @@ class TestToJson {
     @Test
     fun base10LogarithmPowerInsideTest() =
         test(
-            "[log ^ 2] x",
+            "[log ^ 2] [x]",
             """{
             "type": "Power",
             "operands": [

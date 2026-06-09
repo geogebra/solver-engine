@@ -223,7 +223,7 @@ class GeneralRulesTest {
         testRule("[0 / root[3, 3] + root[5, 3]]", SimplifyZeroNumeratorFractionToZero, "0")
         testRule("[0 / 3 * (sqrt[2] - 1)]", SimplifyZeroNumeratorFractionToZero, "0")
         testRule("[0 / 1 - 1]", SimplifyZeroNumeratorFractionToZero, null)
-        testRule("[0 / ln3 - ln2]", SimplifyZeroNumeratorFractionToZero, null)
+        testRule("[0 / ln[3] - ln[2]]", SimplifyZeroNumeratorFractionToZero, null)
 
         testMethod {
             method = SimplifyZeroNumeratorFractionToZero
@@ -243,7 +243,7 @@ class GeneralRulesTest {
         testRule("[0 / root[3, 3] + root[5, 3]]", SimplifyNonObviousZeroNumeratorFractionToZero, "0")
         testRule("[0 / 3 * (sqrt[2] - 1)]", SimplifyNonObviousZeroNumeratorFractionToZero, "0")
         testRule("[0 / 1 - 1]", SimplifyNonObviousZeroNumeratorFractionToZero, null)
-        testRule("[0 / ln3 - ln2]", SimplifyNonObviousZeroNumeratorFractionToZero, "0")
+        testRule("[0 / ln[3] - ln[2]]", SimplifyNonObviousZeroNumeratorFractionToZero, "0")
     }
 
     @Test

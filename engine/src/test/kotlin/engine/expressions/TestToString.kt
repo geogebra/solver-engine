@@ -104,12 +104,12 @@ class TestToString {
 
     @Test
     fun testLogarithms() {
-        test("[ln ^ 2] x", "[ln ^ 2] x", "\\ln^{2}\\left(x\\right)")
-        test("[ln x ^ 2]", "[ln x ^ 2]", "\\ln x^{2}")
-        test("[log ^ 2] x", "[log ^ 2] x", "\\log^{2}\\left(x\\right)")
-        test("[log x ^ 2]", "[log x ^ 2]", "\\log x^{2}")
-        test("[log_[a] ^ 2] x", "[log_[a] ^ 2] x", "\\log_{a}^{2}\\left(x\\right)")
-        test("[log_[a] x ^ 2]", "[log_[a] x ^ 2]", "\\log_{a} x^{2}")
+        test("[ln ^ 2] [x]", "[ln ^ 2][x]", "\\ln^{2}\\left(x\\right)")
+        test("[ln[x] ^ 2]", "[ln[x] ^ 2]", "\\ln \\left(x\\right)^{2}")
+        test("[log ^ 2][x]", "[log ^ 2][x]", "\\log^{2}\\left(x\\right)")
+        test("[log[x] ^ 2]", "[log[x] ^ 2]", "\\log \\left( x\\right)^{2}")
+        test("[log_[a] ^ 2][x]", "[log_[a] ^ 2][x]", "\\log_{a}^{2}\\left(x\\right)")
+        test("[log_[a][x] ^ 2]", "[log_[a][x] ^ 2]", "\\log_{a}{x}^{2}")
     }
 
     @Test

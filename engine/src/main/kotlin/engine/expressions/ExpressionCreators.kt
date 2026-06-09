@@ -159,48 +159,13 @@ fun rootOf(radicand: Expression, order: Expression) =
 fun naturalLogOf(argument: Expression, powerInside: Boolean = true) =
     NaturalLog(argument.adjustBracketFor(UnaryExpressionOperator.NaturalLog, 0), powerInside = powerInside)
 
-fun rawNaturalLogOf(argument: Expression, powerInside: Boolean = true) =
-    NaturalLog(
-        if (argument.hasBracket() || UnaryExpressionOperator.NaturalLog.nthChildAllowed(0, argument.operator)) {
-            argument
-        } else {
-            missingBracketOf(argument)
-        },
-        powerInside = powerInside,
-    )
-
 fun logBase10Of(argument: Expression, powerInside: Boolean = true) =
     LogBase10(argument.adjustBracketFor(UnaryExpressionOperator.LogBase10, 0), powerInside = powerInside)
-
-fun rawLogBase10Of(argument: Expression, powerInside: Boolean = true) =
-    LogBase10(
-        if (argument.hasBracket() || UnaryExpressionOperator.LogBase10.nthChildAllowed(0, argument.operator)) {
-            argument
-        } else {
-            missingBracketOf(argument)
-        },
-        powerInside = powerInside,
-    )
 
 fun logOf(base: Expression, argument: Expression, powerInside: Boolean = true) =
     Log(
         base.adjustBracketFor(BinaryExpressionOperator.Log, 0),
         argument.adjustBracketFor(BinaryExpressionOperator.Log, 1),
-        powerInside = powerInside,
-    )
-
-fun rawLogOf(base: Expression, argument: Expression, powerInside: Boolean = true) =
-    Log(
-        if (base.hasBracket() || BinaryExpressionOperator.Log.nthChildAllowed(0, base.operator)) {
-            base
-        } else {
-            missingBracketOf(base)
-        },
-        if (argument.hasBracket() || BinaryExpressionOperator.Log.nthChildAllowed(1, argument.operator)) {
-            argument
-        } else {
-            missingBracketOf(argument)
-        },
         powerInside = powerInside,
     )
 

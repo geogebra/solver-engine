@@ -25,6 +25,8 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Changed
 
+- SDK: Change logarithm syntax to enforce parentheses around argument. (PLUT-1134)
+
 ### Removed
 
 ## [1.4.16] 2026-04-28

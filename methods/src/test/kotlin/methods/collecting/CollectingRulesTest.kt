@@ -95,14 +95,14 @@ class CollectingRulesTest {
     @Test
     fun testCollectLikeLogarithmicTerms() {
         testRule(
-            "log_[2] 3 + log_[2] 3 + log_[2] 3",
+            "log_[2][3] + log_[2][3] + log_[2][3]",
             CollectingRules.CollectLikeLogarithmicTerms,
-            "(1 + 1 + 1) log_[2] 3",
+            "(1 + 1 + 1) log_[2][3]",
         )
         testRule(
-            "2 log_[2] 3 + 3 log_[2] 3 - log_[2] 3",
+            "2 log_[2][3] + 3 log_[2][3] - log_[2][3]",
             CollectingRules.CollectLikeLogarithmicTerms,
-            "(2 + 3 - 1) log_[2] 3",
+            "(2 + 3 - 1) log_[2][3]",
         )
     }
 }

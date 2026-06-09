@@ -113,12 +113,12 @@ root: 'root[' radicand=expr ',' order=expr ']';
 absoluteValue: 'abs[' argument=expr ']';
 
 logarithm
-    : 'ln' argument=implicitProduct                     #naturalLog
-    | 'log' argument=implicitProduct                    #logBase10
-    | 'log_[' base=expr ']' argument=implicitProduct    #log
-    | '[' 'ln' '^' exp=expr ']' argument=implicitProduct    #powerNaturalLog
-    | '[' 'log' '^' exp=expr ']' argument=implicitProduct    #powerLogBase10
-    | '[' 'log_[' base=expr ']' '^' exp=expr ']'  argument=implicitProduct  #powerLog
+    : 'ln' '[' argument=expr ']'                    #naturalLog
+    | 'log' '[' argument=expr ']'                   #logBase10
+    | 'log_[' base=expr ']' '[' argument=expr ']'   #log
+    | '[' 'ln' '^' exp=expr ']' '[' argument=expr ']'   #powerNaturalLog
+    | '[' 'log' '^' exp=expr ']' '[' argument=expr ']'   #powerLogBase10
+    | '[' 'log_[' base=expr ']' '^' exp=expr ']'  '[' argument=expr ']' #powerLog
     ;
 
 unitExpression

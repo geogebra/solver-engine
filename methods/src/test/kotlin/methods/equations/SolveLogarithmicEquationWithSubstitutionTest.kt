@@ -29,7 +29,7 @@ class SolveLogarithmicEquationWithSubstitutionTest {
     fun `solve quadratic equation`() {
         testMethodInX {
             method = EquationsPlans.SolveEquation
-            inputExpr = "5 * log x * (log x - 1) = 2 (log x + 6)"
+            inputExpr = "5 * log[x] * (log[x] - 1) = 2 (log[x] + 6)"
 
             check {
                 task {
@@ -48,32 +48,32 @@ class SolveLogarithmicEquationWithSubstitutionTest {
                         }
 
                         step {
-                            toExpr = "5 * log x * (log x - 1) = 2 * log x + 12"
+                            toExpr = "5 * log[x] * (log[x] - 1) = 2 * log[x] + 12"
                             explanation {
                                 key = ExpandExplanation.ExpandSingleBracketAndSimplify
                             }
                         }
 
                         step {
-                            toExpr = "5 * [log ^ 2] x - 5 * log x = 2 * log x + 12"
+                            toExpr = "5 * [log ^ 2][x] - 5 * log[x] = 2 * log[x] + 12"
                             explanation {
                                 key = ExpandExplanation.ExpandSingleBracketAndSimplify
                             }
                         }
 
                         step {
-                            toExpr = "5 * [log ^ 2] x - 7 * log x - 12 = 0"
+                            toExpr = "5 * [log ^ 2][x] - 7 * log[x] - 12 = 0"
                         }
 
                         step {
-                            toExpr = "5 [t ^ 2] - 7 t - 12 = 0 AND t = log x"
+                            toExpr = "5 [t ^ 2] - 7 t - 12 = 0 AND t = log[x]"
                             explanation {
                                 key = LogsExplanation.SubstituteLogsInEquation
                             }
                         }
 
                         step {
-                            toExpr = "SetSolution[t: {-1, [12 / 5]}] AND t = log x"
+                            toExpr = "SetSolution[t: {-1, [12 / 5]}] AND t = log[x]"
                             explanation {
                                 key = EquationsExplanation.SolveEquationByFactoring
                             }
@@ -90,7 +90,7 @@ class SolveLogarithmicEquationWithSubstitutionTest {
                                 }
 
                                 step {
-                                    fromExpr = "log x = -1"
+                                    fromExpr = "log[x] = -1"
                                     toExpr = "SetSolution[x: {[1 / 10]}]"
                                     explanation {
                                         key = EquationsExplanation.SolveLogarithmicEquations
@@ -104,7 +104,7 @@ class SolveLogarithmicEquationWithSubstitutionTest {
                                 }
 
                                 step {
-                                    fromExpr = "log x = [12 / 5]"
+                                    fromExpr = "log[x] = [12 / 5]"
                                     toExpr = "SetSolution[x: {100 * [10 ^ [2 / 5]]}]"
                                     explanation {
                                         key = EquationsExplanation.SolveLogarithmicEquations
@@ -144,7 +144,7 @@ class SolveLogarithmicEquationWithSubstitutionTest {
     fun `reorder and solve quadratic equation`() {
         testMethodInX {
             method = EquationsPlans.SolveEquation
-            inputExpr = "0 = log_[2] [x ^ 2] + [log_[2] ^ 2] x"
+            inputExpr = "0 = log_[2][[x ^ 2]] + [log_[2] ^ 2][x]"
 
             check {
                 task {
@@ -163,23 +163,23 @@ class SolveLogarithmicEquationWithSubstitutionTest {
                         }
 
                         step {
-                            toExpr = "0 = 2 * log_[2] x + [log_[2] ^ 2] x"
+                            toExpr = "0 = 2 * log_[2][x] + [log_[2] ^ 2][x]"
                         }
 
                         step {
-                            toExpr = "2 * log_[2] x + [log_[2] ^ 2] x = 0"
+                            toExpr = "2 * log_[2][x] + [log_[2] ^ 2][x] = 0"
                         }
 
                         step {
-                            toExpr = "[log_[2] ^ 2] x + 2 * log_[2] x + 0 = 0"
+                            toExpr = "[log_[2] ^ 2][x] + 2 * log_[2][x] + 0 = 0"
                         }
 
                         step {
-                            toExpr = "[t ^ 2] + 2 t + 0 = 0 AND t = log_[2] x"
+                            toExpr = "[t ^ 2] + 2 t + 0 = 0 AND t = log_[2][x]"
                         }
 
                         step {
-                            toExpr = "SetSolution[t: {-2, 0}] AND t = log_[2] x"
+                            toExpr = "SetSolution[t: {-2, 0}] AND t = log_[2][x]"
                             explanation {
                                 key = EquationsExplanation.SolveEquationByFactoring
                             }
@@ -213,7 +213,7 @@ class SolveLogarithmicEquationWithSubstitutionTest {
     fun `solve trinomial with odd n`() {
         testMethodInX {
             method = EquationsPlans.SolveEquation
-            inputExpr = "2 * [log ^ 6] x + 5 * [log ^ 3] x - 3 = 0"
+            inputExpr = "2 * [log ^ 6][x] + 5 * [log ^ 3][x] - 3 = 0"
 
             check {
                 task {
@@ -232,14 +232,14 @@ class SolveLogarithmicEquationWithSubstitutionTest {
                         }
 
                         step {
-                            toExpr = "2 [t ^ 2] + 5 t - 3 = 0 AND t = [log ^ 3] x"
+                            toExpr = "2 [t ^ 2] + 5 t - 3 = 0 AND t = [log ^ 3][x]"
                             explanation {
                                 key = LogsExplanation.SubstituteLogsInEquation
                             }
                         }
 
                         step {
-                            toExpr = "SetSolution[t: {-3, [1 / 2]}] AND t = [log ^ 3] x"
+                            toExpr = "SetSolution[t: {-3, [1 / 2]}] AND t = [log ^ 3][x]"
                             explanation {
                                 key = EquationsExplanation.SolveEquationByFactoring
                             }
@@ -257,7 +257,7 @@ class SolveLogarithmicEquationWithSubstitutionTest {
                                 }
 
                                 step {
-                                    fromExpr = "[log ^ 3] x = -3"
+                                    fromExpr = "[log ^ 3][x] = -3"
                                     toExpr = "SetSolution[x: {[10 ^ -root[3, 3]]}]"
                                     explanation {
                                         key = EquationsExplanation.SolveEquationUsingRootsMethod
@@ -271,7 +271,7 @@ class SolveLogarithmicEquationWithSubstitutionTest {
                                 }
 
                                 step {
-                                    fromExpr = "[log ^ 3] x = [1 / 2]"
+                                    fromExpr = "[log ^ 3][x] = [1 / 2]"
                                     toExpr = "SetSolution[x: {[10 ^ [root[4, 3] / 2]]}]"
                                     explanation {
                                         key = EquationsExplanation.SolveEquationUsingRootsMethod
@@ -313,7 +313,7 @@ class SolveLogarithmicEquationWithSubstitutionTest {
     fun `solve trinomial with even n`() {
         testMethodInX {
             method = EquationsPlans.SolveEquation
-            inputExpr = "2 * [log ^ 4] x + 5 * [log ^ 2] x - 3 = 0"
+            inputExpr = "2 * [log ^ 4][x] + 5 * [log ^ 2][x] - 3 = 0"
 
             check {
                 task {
@@ -334,14 +334,14 @@ class SolveLogarithmicEquationWithSubstitutionTest {
                         }
 
                         step {
-                            toExpr = "2 [t ^ 2] + 5 t - 3 = 0 AND t = [log ^ 2] x"
+                            toExpr = "2 [t ^ 2] + 5 t - 3 = 0 AND t = [log ^ 2][x]"
                             explanation {
                                 key = LogsExplanation.SubstituteLogsInEquation
                             }
                         }
 
                         step {
-                            toExpr = "SetSolution[t: {-3, [1 / 2]}] AND t = [log ^ 2] x"
+                            toExpr = "SetSolution[t: {-3, [1 / 2]}] AND t = [log ^ 2][x]"
                             explanation {
                                 key = EquationsExplanation.SolveEquationByFactoring
                             }
@@ -359,8 +359,8 @@ class SolveLogarithmicEquationWithSubstitutionTest {
                                 }
 
                                 step {
-                                    fromExpr = "[log ^ 2] x = -3"
-                                    toExpr = "Contradiction[x: [log ^ 2] x = -3]"
+                                    fromExpr = "[log ^ 2][x] = -3"
+                                    toExpr = "Contradiction[x: [log ^ 2][x] = -3]"
                                 }
                             }
 
@@ -370,7 +370,7 @@ class SolveLogarithmicEquationWithSubstitutionTest {
                                 }
 
                                 step {
-                                    fromExpr = "[log ^ 2] x = [1 / 2]"
+                                    fromExpr = "[log ^ 2][x] = [1 / 2]"
                                     toExpr = "SetSolution[x: {[10 ^ -[sqrt[2] / 2]], [10 ^ [sqrt[2] / 2]]}]"
                                 }
                             }

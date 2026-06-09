@@ -31,15 +31,15 @@ class LogarithmicEquationsTest {
     fun `solve equation with one log term`() {
         testMethodInX {
             method = EquationsPlans.SolveEquation
-            inputExpr = "2 = -log (x + 1)"
+            inputExpr = "2 = -log[x + 1]"
 
             check {
                 task {
-                    startExpr = "2 = -log (x + 1)"
+                    startExpr = "2 = -log[x + 1]"
                 }
 
                 task {
-                    startExpr = "2 = -log (x + 1)"
+                    startExpr = "2 = -log[x + 1]"
 
                     step {
                         explanation {
@@ -47,15 +47,15 @@ class LogarithmicEquationsTest {
                         }
 
                         step {
-                            toExpr = "2 + log (x + 1) = 0"
+                            toExpr = "2 + log[x + 1] = 0"
                         }
 
                         step {
-                            toExpr = "log (x + 1) = -2"
+                            toExpr = "log[x + 1] = -2"
                         }
 
                         step {
-                            toExpr = "[10 ^ log (x + 1)] = [10 ^ -2]"
+                            toExpr = "[10 ^ log[x + 1]] = [10 ^ -2]"
                         }
 
                         step {
@@ -76,7 +76,7 @@ class LogarithmicEquationsTest {
 
         testMethodInX {
             method = EquationsPlans.SolveEquation
-            inputExpr = "log_[2] (2 x - 1) = 1"
+            inputExpr = "log_[2][2 x - 1] = 1"
 
             check {
                 task {
@@ -96,7 +96,7 @@ class LogarithmicEquationsTest {
                         }
 
                         step {
-                            toExpr = "[2 ^ log_[2] (2 x - 1)] = [2 ^ 1]"
+                            toExpr = "[2 ^ log_[2][2 x - 1]] = [2 ^ 1]"
                             explanation {
                                 key = LogsExplanation.ExponentiateBothSides
                             }
@@ -126,7 +126,7 @@ class LogarithmicEquationsTest {
 
         testMethodInX {
             method = EquationsPlans.SolveEquation
-            inputExpr = "ln (x - 2) = 3"
+            inputExpr = "ln[x - 2] = 3"
 
             check {
                 task {
@@ -146,7 +146,7 @@ class LogarithmicEquationsTest {
                         }
 
                         step {
-                            toExpr = "[/e/ ^ ln (x - 2)] = [/e/ ^ 3]"
+                            toExpr = "[/e/ ^ ln[x - 2]] = [/e/ ^ 3]"
                             explanation {
                                 key = LogsExplanation.ExponentiateBothSides
                             }
@@ -176,7 +176,7 @@ class LogarithmicEquationsTest {
 
         testMethodInX {
             method = EquationsPlans.SolveEquation
-            inputExpr = "log (x + 7) - 5 = 0"
+            inputExpr = "log[x + 7] - 5 = 0"
 
             check {
                 task {
@@ -196,11 +196,11 @@ class LogarithmicEquationsTest {
                         }
 
                         step {
-                            toExpr = "log (x + 7) = 5"
+                            toExpr = "log[x + 7] = 5"
                         }
 
                         step {
-                            toExpr = "[10 ^ log (x + 7)] = [10 ^ 5]"
+                            toExpr = "[10 ^ log[x + 7]] = [10 ^ 5]"
                             explanation {
                                 key = LogsExplanation.ExponentiateBothSides
                             }
@@ -243,11 +243,11 @@ class LogarithmicEquationsTest {
     fun `solve equation with multiple logs with same argument and base`() {
         testMethodInX {
             method = EquationsPlans.SolveEquation
-            inputExpr = "2 + 3 * log (x + 1) + 5 * log (x + 1) + 4 = 3 - log (x + 1) + 2 * log (x + 1)"
+            inputExpr = "2 + 3 * log[x + 1] + 5 * log[x + 1] + 4 = 3 - log[x + 1] + 2 * log[x + 1]"
 
             check {
                 task {
-                    startExpr = "2 + 3 * log (x + 1) + 5 * log (x + 1) + 4 = 3 - log (x + 1) + 2 * log (x + 1)"
+                    startExpr = "2 + 3 * log[x + 1] + 5 * log[x + 1] + 4 = 3 - log[x + 1] + 2 * log[x + 1]"
 
                     step {
                         toExpr = "SetSolution[x: (-1, /infinity/)]"
@@ -255,7 +255,7 @@ class LogarithmicEquationsTest {
                 }
 
                 task {
-                    startExpr = "2 + 3 * log (x + 1) + 5 * log (x + 1) + 4 = 3 - log (x + 1) + 2 * log (x + 1)"
+                    startExpr = "2 + 3 * log[x + 1] + 5 * log[x + 1] + 4 = 3 - log[x + 1] + 2 * log[x + 1]"
 
                     step {
                         explanation {
@@ -263,23 +263,23 @@ class LogarithmicEquationsTest {
                         }
 
                         step {
-                            toExpr = "6 + 8 * log (x + 1) = 3 + log (x + 1)"
+                            toExpr = "6 + 8 * log[x + 1] = 3 + log[x + 1]"
                         }
 
                         step {
-                            toExpr = "6 + 7 * log (x + 1) = 3"
+                            toExpr = "6 + 7 * log[x + 1] = 3"
                         }
 
                         step {
-                            toExpr = "7 * log (x + 1) = -3"
+                            toExpr = "7 * log[x + 1] = -3"
                         }
 
                         step {
-                            toExpr = "log (x + 1) = -[3 / 7]"
+                            toExpr = "log[x + 1] = -[3 / 7]"
                         }
 
                         step {
-                            toExpr = "[10 ^ log (x + 1)] = [10 ^ -[3 / 7]]"
+                            toExpr = "[10 ^ log[x + 1]] = [10 ^ -[3 / 7]]"
                         }
 
                         step {
@@ -304,7 +304,7 @@ class LogarithmicEquationsTest {
     fun `move negative constant terms and express as logs`() {
         testMethodInX {
             method = EquationsPlans.SolveEquation
-            inputExpr = "log_[2] x = log_[2] 7 - 2"
+            inputExpr = "log_[2][x] = log_[2][7] - 2"
 
             check {
                 task {
@@ -324,21 +324,21 @@ class LogarithmicEquationsTest {
                         }
 
                         step {
-                            toExpr = "log_[2] x + 2 = log_[2] 7"
+                            toExpr = "log_[2][x] + 2 = log_[2][7]"
                             explanation {
                                 key = LogsExplanation.MoveNegatedConstantTermsToTheOppositeSideAndSimplify
                             }
                         }
 
                         step {
-                            toExpr = "log_[2] x + log_[2] 4 = log_[2] 7"
+                            toExpr = "log_[2][x] + log_[2][4] = log_[2][7]"
                             explanation {
                                 key = LogsExplanation.ExpressConstantInSumAsLogAndSimplify
                             }
                         }
 
                         step {
-                            toExpr = "log_[2] (4 x) = log_[2] 7"
+                            toExpr = "log_[2][4 x] = log_[2][7]"
                             explanation {
                                 key = LogsExplanation.CollectLogarithmsInSum
                             }
@@ -378,7 +378,7 @@ class LogarithmicEquationsTest {
 
         testMethodInX {
             method = EquationsPlans.SolveEquation
-            inputExpr = "log (x + 1) - log (x - 2) - 3 = 0"
+            inputExpr = "log[x + 1] - log[x - 2] - 3 = 0"
 
             check {
                 task {
@@ -398,28 +398,28 @@ class LogarithmicEquationsTest {
                         }
 
                         step {
-                            toExpr = "log (x + 1) - 3 = log (x - 2)"
+                            toExpr = "log[x + 1] - 3 = log[x - 2]"
                             explanation {
                                 key = LogsExplanation.MoveNegatedLogarithmicTermsToOppositeSideAndSimplify
                             }
                         }
 
                         step {
-                            toExpr = "log (x + 1) = log (x - 2) + 3"
+                            toExpr = "log[x + 1] = log[x - 2] + 3"
                             explanation {
                                 key = LogsExplanation.MoveNegatedConstantTermsToTheOppositeSideAndSimplify
                             }
                         }
 
                         step {
-                            toExpr = "log (x + 1) = log (x - 2) + log 1000"
+                            toExpr = "log[x + 1] = log[x - 2] + log[1000]"
                             explanation {
                                 key = LogsExplanation.ExpressConstantInSumAsLogAndSimplify
                             }
                         }
 
                         step {
-                            toExpr = "log (x + 1) = log (1000 (x - 2))"
+                            toExpr = "log[x + 1] = log[1000 (x - 2)]"
                             explanation {
                                 key = LogsExplanation.CollectLogarithmsInSum
                             }
@@ -458,11 +458,11 @@ class LogarithmicEquationsTest {
     fun `solve equation with multiple logs with different arguments`() {
         testMethodInX {
             method = EquationsPlans.SolveEquation
-            inputExpr = "-2 * log_[2] (x + 1) + log_[4] (2 x) = log_[2] (x + 1) + log_[2] 5 - log_[2] (x - 2)"
+            inputExpr = "-2 * log_[2][x + 1] + log_[4][2 x] = log_[2][x + 1] + log_[2][5] - log_[2][x - 2]"
 
             check {
                 task {
-                    startExpr = "-2 * log_[2] (x + 1) + log_[4] (2 x) = log_[2] (x + 1) + log_[2] 5 - log_[2] (x - 2)"
+                    startExpr = "-2 * log_[2][x + 1] + log_[4][2 x] = log_[2][x + 1] + log_[2][5] - log_[2][x - 2]"
 
                     step {
                         toExpr = "SetSolution[x: (2, /infinity/)]"
@@ -514,13 +514,13 @@ class LogarithmicEquationsTest {
                 }
 
                 task {
-                    startExpr = "-2 * log_[2] (x + 1) + log_[4] (2 x) = log_[2] (x + 1) + log_[2] 5 - log_[2] (x - 2)"
+                    startExpr = "-2 * log_[2][x + 1] + log_[4][2 x] = log_[2][x + 1] + log_[2][5] - log_[2][x - 2]"
 
                     step {
                         step {
                             toExpr =
-                                "-2 * log_[2] (x + 1) + [log_[2] (2 x) / 2] =" +
-                                " log_[2] (x + 1) + log_[2] 5 - log_[2] (x - 2)"
+                                "-2 * log_[2][x + 1] + [log_[2][2 x] / 2] =" +
+                                " log_[2][x + 1] + log_[2][5] - log_[2][x - 2]"
                             explanation {
                                 key = LogsExplanation.BringLogsToCommonBase
                             }
@@ -528,26 +528,26 @@ class LogarithmicEquationsTest {
 
                         step {
                             toExpr =
-                                "[log_[2] (2 x) / 2] + log_[2] (x - 2) " +
-                                "= 3 * log_[2] (x + 1) + log_[2] 5"
+                                "[log_[2][2 x] / 2] + log_[2][x - 2] " +
+                                "= 3 * log_[2][x + 1] + log_[2][5]"
                             explanation {
                                 key = LogsExplanation.MoveNegatedLogarithmicTermsToOppositeSideAndSimplify
                             }
                         }
 
                         step {
-                            toExpr = "log_[2] (2 x) + 2 * log_[2] (x - 2) = 6 * log_[2] (x + 1) + 2 * log_[2] 5"
+                            toExpr = "log_[2][2 x] + 2 * log_[2][x - 2] = 6 * log_[2][x + 1] + 2 * log_[2][5]"
                         }
 
                         step {
-                            toExpr = "log_[2] (2 x * [(x - 2) ^ 2]) = 6 * log_[2] (x + 1) + 2 * log_[2] 5"
+                            toExpr = "log_[2][2 x * [(x - 2) ^ 2]] = 6 * log_[2][x + 1] + 2 * log_[2][5]"
                             explanation {
                                 key = LogsExplanation.CollectLogarithmsInSum
                             }
                         }
 
                         step {
-                            toExpr = "log_[2] (2 x * [(x - 2) ^ 2]) = log_[2] (25 * [(x + 1) ^ 6])"
+                            toExpr = "log_[2][2 x * [(x - 2) ^ 2]] = log_[2][25 * [(x + 1) ^ 6]]"
                             explanation {
                                 key = LogsExplanation.CollectLogarithmsInSum
                             }
@@ -579,7 +579,7 @@ class LogarithmicEquationsTest {
     fun `solve already balanced equation`() {
         testMethodInX {
             method = EquationsPlans.SolveEquation
-            inputExpr = "3 * log (x + 1) = log ([x ^ 3] + 3 x + 7)"
+            inputExpr = "3 * log[x + 1] = log[[x ^ 3] + 3 x + 7]"
 
             check {
                 task {
@@ -594,7 +594,7 @@ class LogarithmicEquationsTest {
                 task {
                     step {
                         step {
-                            toExpr = "log [(x + 1) ^ 3] = log ([x ^ 3] + 3 x + 7)"
+                            toExpr = "log[[(x + 1) ^ 3]] = log[[x ^ 3] + 3 x + 7]"
                             explanation {
                                 key = LogsExplanation.RewriteCoefficientsAsExponents
                             }
@@ -624,7 +624,7 @@ class LogarithmicEquationsTest {
     fun `collects constant and non-constant log expressions`() {
         testMethodInX {
             method = EquationsPlans.SolveEquation
-            inputExpr = "[1 / 2] * log (9 - x) = log 3 + [1 / 2] * log x"
+            inputExpr = "[1 / 2] * log[9 - x] = log[3] + [1 / 2] * log[x]"
 
             check {
                 task {
@@ -644,11 +644,11 @@ class LogarithmicEquationsTest {
                         }
 
                         step {
-                            toExpr = "log (9 - x) = 2 * log 3 + log x"
+                            toExpr = "log[9 - x] = 2 * log[3] + log[x]"
                         }
 
                         step {
-                            toExpr = "log (9 - x) = log (9 x)"
+                            toExpr = "log[9 - x] = log[9 x]"
                             explanation {
                                 key = LogsExplanation.CollectLogarithmsInSum
                             }
@@ -680,7 +680,7 @@ class LogarithmicEquationsTest {
     fun `does not expand constant logarithms`() {
         testMethodInX {
             method = EquationsPlans.SolveEquation
-            inputExpr = "log (x - 16) = log (105) - log (x)"
+            inputExpr = "log[x - 16] = log[105] - log[x]"
 
             check {
                 task {
@@ -700,15 +700,11 @@ class LogarithmicEquationsTest {
                         }
 
                         step {
-                            toExpr = "log (x - 16) = log 105 - log x"
+                            toExpr = "log[x - 16] + log[x] = log[105]"
                         }
 
                         step {
-                            toExpr = "log (x - 16) + log x = log 105"
-                        }
-
-                        step {
-                            toExpr = "log (x (x - 16)) = log 105"
+                            toExpr = "log[x (x - 16)] = log[105]"
                         }
 
                         step {
@@ -740,7 +736,7 @@ class LogarithmicEquationsTest {
     fun `eliminate invalid solutions in eq with multiple constraints`() {
         testMethodInX {
             method = EquationsPlans.SolveEquation
-            inputExpr = "3 * log (x + 1) = log ([x ^ 3] + 3 x + 7)"
+            inputExpr = "3 * log[x + 1] = log[[x ^ 3] + 3 x + 7]"
 
             check {
                 task {
@@ -760,7 +756,7 @@ class LogarithmicEquationsTest {
                         }
 
                         step {
-                            toExpr = "log [(x + 1) ^ 3] = log ([x ^ 3] + 3 x + 7)"
+                            toExpr = "log[[(x + 1) ^ 3]] = log[[x ^ 3] + 3 x + 7]"
                             explanation {
                                 key = LogsExplanation.RewriteCoefficientsAsExponents
                             }

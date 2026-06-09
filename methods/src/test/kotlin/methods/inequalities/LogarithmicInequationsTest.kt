@@ -29,7 +29,7 @@ class LogarithmicInequationsTest {
     fun `elementary equation with base in (1, inf)`() {
         testMethodInX {
             method = InequalitiesPlans.SolveLogInequality
-            inputExpr = "log_[2] (2 x - 1) > 1"
+            inputExpr = "log_[2][2 x - 1] > 1"
 
             check {
                 explanation {
@@ -56,7 +56,7 @@ class LogarithmicInequationsTest {
                         }
 
                         step {
-                            toExpr = "[2 ^ log_[2] (2 x - 1)] > [2 ^ 1]"
+                            toExpr = "[2 ^ log_[2][2 x - 1]] > [2 ^ 1]"
                             explanation {
                                 key = LogsExplanation.ExponentiateBothSides
                             }
@@ -96,7 +96,7 @@ class LogarithmicInequationsTest {
 
         testMethodInX {
             method = InequalitiesPlans.SolveLogInequality
-            inputExpr = "1 < log_[2] (2 x - 1)"
+            inputExpr = "1 < log_[2][2 x - 1]"
 
             check {
                 task {
@@ -116,11 +116,11 @@ class LogarithmicInequationsTest {
                         }
 
                         step {
-                            toExpr = "log_[2] (2 x - 1) > 1"
+                            toExpr = "log_[2][2 x - 1] > 1"
                         }
 
                         step {
-                            toExpr = "[2 ^ log_[2] (2 x - 1)] > [2 ^ 1]"
+                            toExpr = "[2 ^ log_[2][2 x - 1]] > [2 ^ 1]"
                             explanation {
                                 key = LogsExplanation.ExponentiateBothSides
                             }
@@ -156,7 +156,7 @@ class LogarithmicInequationsTest {
 
         testMethodInX {
             method = InequalitiesPlans.SolveLogInequality
-            inputExpr = "ln (x) < 1"
+            inputExpr = "ln[x] < 1"
 
             check {
                 task {
@@ -175,7 +175,7 @@ class LogarithmicInequationsTest {
                         }
 
                         step {
-                            toExpr = "[/e/ ^ ln (x)] < [/e/ ^ 1]"
+                            toExpr = "[/e/ ^ ln[x]] < [/e/ ^ 1]"
                             explanation {
                                 key = LogsExplanation.ExponentiateBothSides
                             }
@@ -216,10 +216,10 @@ class LogarithmicInequationsTest {
     fun `elementary equation with base in (0,1)`() {
         testMethodInX {
             method = InequalitiesPlans.SolveLogInequality
-            inputExpr = "log_[[1 / 2]] (x - 2) > 3"
+            inputExpr = "log_[[1 / 2]][x - 2] > 3"
 
             check {
-                fromExpr = "log_[[1 / 2]] (x - 2) > 3"
+                fromExpr = "log_[[1 / 2]][x - 2] > 3"
                 toExpr = "SetSolution[x: (2, [17 / 8])]"
                 explanation {
                     key = InequalitiesExplanation.SolveLogarithmicInequality
@@ -246,7 +246,7 @@ class LogarithmicInequationsTest {
                         }
 
                         step {
-                            toExpr = "[([1 / 2]) ^ log_[[1 / 2]] (x - 2)] < [([1 / 2]) ^ 3]"
+                            toExpr = "[([1 / 2]) ^ log_[[1 / 2]][x - 2]] < [([1 / 2]) ^ 3]"
                             explanation {
                                 key = LogsExplanation.ExponentiateBothSidesAndFlip
                             }
@@ -286,7 +286,7 @@ class LogarithmicInequationsTest {
 
         testMethodInX {
             method = InequalitiesPlans.SolveLogInequality
-            inputExpr = "log_[0.5] (x - 2) > 3"
+            inputExpr = "log_[0.5][x - 2] > 3"
 
             check {
                 explanation {
@@ -313,11 +313,11 @@ class LogarithmicInequationsTest {
                         }
 
                         step {
-                            toExpr = "log_[[1/2]] (x - 2) > 3"
+                            toExpr = "log_[[1/2]][x - 2] > 3"
                         }
 
                         step {
-                            toExpr = "[([1 / 2]) ^ log_[[1 / 2]] (x - 2)] < [([1 / 2]) ^ 3]"
+                            toExpr = "[([1 / 2]) ^ log_[[1 / 2]][x - 2]] < [([1 / 2]) ^ 3]"
                             explanation {
                                 key = LogsExplanation.ExponentiateBothSidesAndFlip
                             }
@@ -358,7 +358,7 @@ class LogarithmicInequationsTest {
     fun `inequality with two logs with base in (1, inf)`() {
         testMethodInX {
             method = InequalitiesPlans.SolveLogInequality
-            inputExpr = "log (x + 3) > log (2 x - 1)"
+            inputExpr = "log[x + 3] > log[2 x - 1]"
 
             check {
                 explanation {
@@ -415,7 +415,7 @@ class LogarithmicInequationsTest {
 
         testMethodInX {
             method = InequalitiesPlans.SolveLogInequality
-            inputExpr = "log x (x + 3) > log (x - 2)"
+            inputExpr = "log[x (x + 3)] > log[x - 2]"
 
             check {
                 explanation {
@@ -475,7 +475,7 @@ class LogarithmicInequationsTest {
     fun `inequality with two logs with base in (0,1)`() {
         testMethodInX {
             method = InequalitiesPlans.SolveLogInequality
-            inputExpr = "log_[[1 / 3]] (x + 1) >= log_[[1 / 3]] 4 x"
+            inputExpr = "log_[[1 / 3]][x + 1] >= log_[[1 / 3]][4 x]"
 
             check {
                 explanation {
@@ -535,7 +535,7 @@ class LogarithmicInequationsTest {
     fun `inequality with impossible constraint`() {
         testMethodInX {
             method = InequalitiesPlans.SolveLogInequality
-            inputExpr = "log (x + 3) > log (-x - 7)"
+            inputExpr = "log[x + 3] > log[-x - 7]"
 
             check {
                 task {
@@ -544,7 +544,7 @@ class LogarithmicInequationsTest {
                     }
 
                     step {
-                        toExpr = "Contradiction[x: log (x + 3) > log (-x - 7)]"
+                        toExpr = "Contradiction[x: log[x + 3] > log[-x - 7]]"
                         explanation {
                             key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
                         }
@@ -557,8 +557,8 @@ class LogarithmicInequationsTest {
                     }
 
                     step {
-                        fromExpr = "log (x + 3) > log (-x - 7) GIVEN Contradiction[x: log (x + 3) > log (-x - 7)]"
-                        toExpr = "Contradiction[x: log (x + 3) > log (-x - 7)]"
+                        fromExpr = "log[x + 3] > log[-x - 7] GIVEN Contradiction[x: log[x + 3] > log[-x - 7]]"
+                        toExpr = "Contradiction[x: log[x + 3] > log[-x - 7]]"
                         explanation {
                             key = EquationsExplanation.GatherSolutionsAndConstraint
                         }

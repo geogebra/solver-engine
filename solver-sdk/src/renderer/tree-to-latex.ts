@@ -356,18 +356,18 @@ function treeToLatexInner(
         return tfd(`${rec(base, n)}^{\\,${rec(n.operands[1], n)}}`);
       } else if (isPoweredLog(base) && base.type === 'NaturalLog') {
         return tfd(
-          `\\ln^{${rec(n.operands[1], n)}}\\left(${rec(base.operands[0], n)}\\right)`,
+          `\\ln^{${rec(n.operands[1], n)}}{\\left(${rec(base.operands[0], n)}\\right)}`,
         );
       } else if (isPoweredLog(base) && base.type === 'LogBase10') {
         return tfd(
-          `\\log^{${rec(n.operands[1], n)}}\\left(${rec(base.operands[0], n)}\\right)`,
+          `\\log^{${rec(n.operands[1], n)}}{\\left(${rec(base.operands[0], n)}\\right)}`,
         );
       } else if (isPoweredLog(base) && base.type === 'Log') {
         return tfd(
-          `\\log_{${rec(base.operands[0], n)}}^{${rec(n.operands[1], n)}}\\left(${rec(
+          `\\log_{${rec(base.operands[0], n)}}^{${rec(n.operands[1], n)}}{\\left(${rec(
             base.operands[1],
             n,
-          )}\\right)`,
+          )}\\right)}`,
         );
       } else if (isPoweredTrig(base)) {
         return tfd(
@@ -430,11 +430,13 @@ function treeToLatexInner(
         return tfd(`\\${n.type.toLowerCase()}{\\left(${rec(n.operands[0], n)}\\right)}`);
       }
     case 'LogBase10':
-      return tfd(`\\log{${rec(n.operands[0], n)}}`);
+      return tfd(`\\log{\\left(${rec(n.operands[0], n)}\\right)}`);
     case 'Log':
-      return tfd(`\\log_{${rec(n.operands[0], n)}}{${rec(n.operands[1], n)}}`);
+      return tfd(
+        `\\log_{${rec(n.operands[0], n)}}{\\left(${rec(n.operands[1], n)}\\right)}`,
+      );
     case 'NaturalLog':
-      return tfd(`\\ln{${rec(n.operands[0], n)}}`);
+      return tfd(`\\ln{\\left(${rec(n.operands[0], n)}\\right)}`);
     case 'Derivative':
       return tfd(
         '\\frac' +

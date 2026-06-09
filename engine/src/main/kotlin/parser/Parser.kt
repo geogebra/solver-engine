@@ -42,14 +42,14 @@ import engine.expressions.greaterThanEqualOf
 import engine.expressions.greaterThanOf
 import engine.expressions.lessThanEqualOf
 import engine.expressions.lessThanOf
+import engine.expressions.logBase10Of
+import engine.expressions.logOf
 import engine.expressions.matrixOf
 import engine.expressions.mixedNumber
 import engine.expressions.nameXp
+import engine.expressions.naturalLogOf
 import engine.expressions.negOf
 import engine.expressions.productSignRequired
-import engine.expressions.rawLogBase10Of
-import engine.expressions.rawLogOf
-import engine.expressions.rawNaturalLogOf
 import engine.expressions.setUnionOf
 import engine.expressions.xp
 import engine.operators.AddEquationsOperator
@@ -400,23 +400,23 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
 
     override fun visitNaturalLog(ctx: ExpressionParser.NaturalLogContext): Expression {
         val powerInside = ctx.parent.parent !is ExpressionParser.PowerContext
-        return rawNaturalLogOf(visit(ctx.argument), powerInside)
+        return naturalLogOf(visit(ctx.argument), powerInside)
     }
 
     override fun visitLogBase10(ctx: ExpressionParser.LogBase10Context): Expression {
         val powerInside = ctx.parent.parent !is ExpressionParser.PowerContext
-        return rawLogBase10Of(visit(ctx.argument), powerInside)
+        return logBase10Of(visit(ctx.argument), powerInside)
     }
 
     override fun visitLog(ctx: ExpressionParser.LogContext): Expression {
         val powerInside = ctx.parent.parent !is ExpressionParser.PowerContext
-        return rawLogOf(visit(ctx.base), visit(ctx.argument), powerInside)
+        return logOf(visit(ctx.base), visit(ctx.argument), powerInside)
     }
 
     override fun visitPowerNaturalLog(ctx: ExpressionParser.PowerNaturalLogContext): Expression {
         return makeExpression(
             BinaryExpressionOperator.Power,
-            rawNaturalLogOf(visit(ctx.argument)),
+            naturalLogOf(visit(ctx.argument)),
             visit(ctx.exp),
         )
     }
@@ -424,7 +424,7 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
     override fun visitPowerLogBase10(ctx: ExpressionParser.PowerLogBase10Context): Expression {
         return makeExpression(
             BinaryExpressionOperator.Power,
-            rawLogBase10Of(visit(ctx.argument)),
+            logBase10Of(visit(ctx.argument)),
             visit(ctx.exp),
         )
     }
@@ -432,7 +432,7 @@ private class ExpressionVisitor : ExpressionBaseVisitor<Expression>() {
     override fun visitPowerLog(ctx: ExpressionParser.PowerLogContext): Expression {
         return makeExpression(
             BinaryExpressionOperator.Power,
-            rawLogOf(visit(ctx.base), visit(ctx.argument)),
+            logOf(visit(ctx.base), visit(ctx.argument)),
             visit(ctx.exp),
         )
     }
