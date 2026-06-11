@@ -840,4 +840,263 @@ class LogarithmicEquationsTest {
             }
         }
     }
+
+    @Suppress("LongMethod")
+    @Test
+    fun `solves equation with nested logs`() {
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "4 * log_[2][log_[3][x - 5]] - 8 = 0"
+
+            check {
+                task {
+                    step {
+                        toExpr = "SetSolution[x: (6, /infinity/)]"
+                        explanation {
+                            key = AlgebraExplanation.ComputeDomainOfEquation
+                        }
+                    }
+                }
+
+                task {
+                    step {
+                        explanation {
+                            key = EquationsExplanation.SolveLogarithmicEquations
+                        }
+
+                        step {
+                            toExpr = "4 * log_[2][log_[3][x - 5]] = 8"
+                        }
+
+                        step {
+                            toExpr = "log_[2][log_[3][x - 5]] = 2"
+                        }
+
+                        step {
+                            toExpr = "[2 ^ log_[2][log_[3][x - 5]]] = [2 ^ 2]"
+                            explanation {
+                                key = LogsExplanation.ExponentiateBothSides
+                            }
+                        }
+
+                        step {
+                            toExpr = "log_[3][x - 5] = [2 ^ 2]"
+                            explanation {
+                                key = LogsExplanation.SimplifyLogInExponentWithMatchingBase
+                            }
+                        }
+
+                        step {
+                            task {
+                                step {
+                                    toExpr = "SetSolution[x: (5, /infinity/)]"
+                                    explanation {
+                                        key = AlgebraExplanation.ComputeDomainOfEquation
+                                    }
+                                }
+                            }
+
+                            task {
+                                step {
+                                    toExpr = "SetSolution[x: {86}]"
+                                    explanation {
+                                        key = EquationsExplanation.SolveLogarithmicEquations
+                                    }
+                                }
+                            }
+
+                            task {
+                                startExpr = "SetSolution[x: {86}] GIVEN SetSolution[x: (5, /infinity/)]"
+
+                                step {
+                                    toExpr = "SetSolution[x: {86}]"
+                                    explanation {
+                                        key = EquationsExplanation.GatherSolutionsAndConstraint
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                task {
+                    taskId = "#3"
+                    startExpr = "SetSolution[x: {86}] GIVEN SetSolution[x: (6, /infinity/)]"
+                    explanation {
+                        key = EquationsExplanation.AddDomainConstraintToSolution
+                    }
+
+                    step {
+                        fromExpr = "SetSolution[x: {86}] GIVEN SetSolution[x: (6, /infinity/)]"
+                        toExpr = "SetSolution[x: {86}]"
+                        explanation {
+                            key = EquationsExplanation.GatherSolutionsAndConstraint
+                        }
+
+                        task {
+                            taskId = "#1"
+                            startExpr = "SetSolution[x: {86}]"
+                            explanation {
+                                key = EquationsExplanation.AllSolutionsSatisfyConstraint
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "log_[2][log_[[1 / 3]] [x - 5]] = 0"
+
+            check {
+                task {
+                    step {
+                        toExpr = "SetSolution[x: (5, 6)]"
+                        explanation {
+                            key = AlgebraExplanation.ComputeDomainOfEquation
+                        }
+                    }
+                }
+
+                task {
+                    step {
+                        explanation {
+                            key = EquationsExplanation.SolveLogarithmicEquations
+                        }
+
+                        step {
+                            toExpr = "[2 ^ log_[2][log_[[1 / 3]][x - 5]]] = [2 ^ 0]"
+                            explanation {
+                                key = LogsExplanation.ExponentiateBothSides
+                            }
+                        }
+
+                        step {
+                            toExpr = "log_[[1 / 3]][x - 5] = [2 ^ 0]"
+                            explanation {
+                                key = LogsExplanation.SimplifyLogInExponentWithMatchingBase
+                            }
+                        }
+
+                        step {
+                            toExpr = "SetSolution[x: {[16 / 3]}]"
+
+                            task {
+                                step {
+                                    toExpr = "SetSolution[x: (5, /infinity/)]"
+                                    explanation {
+                                        key = AlgebraExplanation.ComputeDomainOfEquation
+                                    }
+                                }
+                            }
+
+                            task {
+                                step {
+                                    fromExpr = "log_[[1 / 3]][x - 5] = [2 ^ 0]"
+                                    toExpr = "SetSolution[x: {[16 / 3]}]"
+                                    explanation {
+                                        key = EquationsExplanation.SolveLogarithmicEquations
+                                    }
+                                }
+                            }
+
+                            task {
+                                step {
+                                    toExpr = "SetSolution[x: {[16 / 3]}]"
+                                    explanation {
+                                        key = EquationsExplanation.GatherSolutionsAndConstraint
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                task {
+                    step {
+                        toExpr = "SetSolution[x: {[16 / 3]}]"
+                        explanation {
+                            key = EquationsExplanation.GatherSolutionsAndConstraint
+                        }
+                    }
+                }
+            }
+        }
+
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "ln[ln[2 x + 4]] = 0"
+
+            check {
+                task {
+                    step {
+                        toExpr = "SetSolution[x: (-[3 / 2], /infinity/)]"
+                        explanation {
+                            key = AlgebraExplanation.ComputeDomainOfEquation
+                        }
+                    }
+                }
+
+                task {
+                    step {
+                        explanation {
+                            key = EquationsExplanation.SolveLogarithmicEquations
+                        }
+
+                        step {
+                            toExpr = "[/e/ ^ ln[ln[2 x + 4]]] = [/e/ ^ 0]"
+                            explanation {
+                                key = LogsExplanation.ExponentiateBothSides
+                            }
+                        }
+
+                        step {
+                            toExpr = "ln [2 x + 4] = [/e/ ^ 0]"
+                            explanation {
+                                key = LogsExplanation.SimplifyLogInExponentWithMatchingBase
+                            }
+                        }
+
+                        step {
+                            task {
+                                step {
+                                    toExpr = "SetSolution[x: (-2, /infinity/)]"
+                                    explanation {
+                                        key = AlgebraExplanation.ComputeDomainOfEquation
+                                    }
+                                }
+                            }
+
+                            task {
+                                step {
+                                    toExpr = "SetSolution[x: {[/e/ - 4 / 2]}]"
+                                    explanation {
+                                        key = EquationsExplanation.SolveLogarithmicEquations
+                                    }
+                                }
+                            }
+
+                            task {
+                                step {
+                                    toExpr = "SetSolution[x: {[/e/ - 4 / 2]}]"
+                                }
+                            }
+                        }
+                    }
+                }
+
+                task {
+                    startExpr = "SetSolution[x: {[/e/ - 4 / 2]}] GIVEN SetSolution[x: (-[3 / 2], /infinity/)]"
+
+                    step {
+                        toExpr = "SetSolution[x: {[/e/ - 4 / 2]}]"
+                        explanation {
+                            key = EquationsExplanation.GatherSolutionsAndConstraint
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

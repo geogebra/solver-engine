@@ -17,6 +17,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Solve logarithmic equations that can be reduced to a quadratic equation with substitution. (PLUT-1127)
 - Solve elementary logarithmic inequalities. (PLUT-1135)
 - Solve logarithmic inequalities of form log(f) < log(g). (PLUT-1136)
+- Solve nested logarithmic equaqions. (PLUT-1140)
 - SDK: Add support for exponent on log function. (PLUT-1127)
 
 ### Fixed

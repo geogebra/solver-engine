@@ -414,10 +414,10 @@ private val exponentiateBothSides = rule {
         val baseValue = get(base)
 
         val flipSign =
-            shouldFlipSignOfLogSolvable(baseValue) ?: if (get(solvable) is Equation) {
+            if (get(solvable) is Equation) {
                 false
             } else {
-                return@onPattern null
+                shouldFlipSignOfLogSolvable(baseValue) ?: return@onPattern null
             }
 
         val newLhs = powerOf(
@@ -570,10 +570,10 @@ private val applyEqualityRuleOfLogs = rule {
 
         val baseValue = get(base)
 
-        val flipSign = shouldFlipSignOfLogSolvable(baseValue) ?: if (solvableValue is Equation) {
+        val flipSign = if (solvableValue is Equation) {
             false
         } else {
-            return@onPattern null
+            shouldFlipSignOfLogSolvable(baseValue) ?: return@onPattern null
         }
 
         ruleResult(

@@ -748,6 +748,8 @@ val inequalitySolvingSteps = steps {
         option(InequalitiesPlans.SolveLinearInequality)
         option(InequalitiesPlans.SolveQuadraticInequality)
         option(InequalitiesPlans.SolveInequalityWithVariablesInOneAbsoluteValue)
+        option(InequalitiesPlans.SolveElementaryLogInequality)
+        option(InequalitiesPlans.SolveLogInequality)
     }
 }
 
