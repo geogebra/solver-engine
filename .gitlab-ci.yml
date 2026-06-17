@@ -252,19 +252,19 @@ export-translation-keys:
   script:
     # Translation keys from the methods module (most keys)
     - |
-      curl -X POST "$GGBTRANS_SOLVER_IMPORT_URL?override_test=1" \
+      curl -X POST "$GGBTRANS_SOLVER_IMPORT_URL" \
         --fail-with-body \
         --header "X-Token: $GGBTRANS_API_TOKEN" \
         --data @methods/build/generated/ksp/main/resources/TranslationKeys.json
     # Public method titles
     - |
-      curl -X POST "$GGBTRANS_SOLVER_IMPORT_URL?override_test=1" \
+      curl -X POST "$GGBTRANS_SOLVER_IMPORT_URL" \
         --fail-with-body \
         --header "X-Token: $GGBTRANS_API_TOKEN" \
         --data @methods/build/generated/ksp/main/resources/Method.TranslationKeys.json
     # Generic translation keys from the engine module
     - |
-      curl -X POST "$GGBTRANS_SOLVER_IMPORT_URL?override_test=1" \
+      curl -X POST "$GGBTRANS_SOLVER_IMPORT_URL" \
         --fail-with-body \
         --header "X-Token: $GGBTRANS_API_TOKEN" \
         --data @engine/build/generated/ksp/main/resources/TranslationKeys.json

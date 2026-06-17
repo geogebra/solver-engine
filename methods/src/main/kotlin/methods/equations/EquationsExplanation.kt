@@ -748,9 +748,8 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     DivideByTrigFunction,
 
     /**
-     * Extract sine over cosine
+     * Extract sine over cosine from a fraction with other terms in numerator and denominator
      *
-     * Maybe use a placeholder here
      */
     ExtractSineOverCosine,
 
