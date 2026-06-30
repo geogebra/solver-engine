@@ -138,6 +138,6 @@ inline fun <reified T : Strategy> strategyChoice(choice: T): Pair<KClass<out Str
     return T::class to choice
 }
 
-val emptyContext = Context()
+val emptyContext: Context get() = Context()
 
 fun emptyContextWithLabels() = Context(labelSpace = LabelSpace())

@@ -50,8 +50,8 @@ class GraphApiServiceImpl : GraphApiService {
         val axisVariables = selectAxisVariables(expr.variables, context.solutionVariables, extractedExprs)
             ?: throw ExpressionNotGraphableException(graphRequest.input)
 
-        // Try to find a suitable window.  For now, go through each expression and if it is a function, try to adjust
-        // its window
+        // Try to find a suitable window.  For now, go through each expression and if it is a function,
+        // try to adjust its window
         fun solveForVariable(expr: Expression, variable: String) =
             EquationsPlans.SolveEquation.tryExecute(
                 context.copy(solutionVariables = listOf(variable)),
@@ -62,11 +62,11 @@ class GraphApiServiceImpl : GraphApiService {
             .bestSquareFit()
             .withPadding(paddingFactor = 0.05)
 
-        val exprObjects = extractedExprs.mapIndexed { i, expr ->
+        val exprObjects = extractedExprs.mapIndexed { i, extractedExpr ->
             GraphResponseObjectsInner(
                 type = GraphResponseObjectsInner.Type.Curve2D,
                 label = "C_${i + 1}",
-                expression = graphRequest.format.modelExpression(expr),
+                expression = graphRequest.format.modelExpression(extractedExpr),
             )
         }
 

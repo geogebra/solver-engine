@@ -26,6 +26,7 @@ contents to a new release section (e.g. _[0.x]_).
 
 ### Changed
 
+- Adjusted solving context retention. (PLUT-1143)
 - SDK: Change logarithm syntax to enforce parentheses around argument. (PLUT-1134)
 
 ### Removed
