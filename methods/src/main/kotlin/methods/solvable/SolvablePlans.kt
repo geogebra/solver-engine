@@ -369,6 +369,7 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
 
                 option(multiplyByInverseCoefficientOfLogarithmAndSimplify)
                 option(multiplyByDenominatorOfLogarithmLHSAndSimplify)
+                option(moveConstantFractionFactorOfLogarithmToTheRight)
             }
         }
     }

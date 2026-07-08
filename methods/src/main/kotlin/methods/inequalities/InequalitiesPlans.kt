@@ -722,6 +722,18 @@ private val logInequalitySimplificationSteps = steps {
                 optionally(solvablePlansForInequalities.moveVariablesToTheLeftAndSimplify)
                 optionally(solvablePlansForInequalities.moveConstantsToTheRightAndSimplify)
             }
+            option {
+                check {
+                    it.firstChild is Minus &&
+                        it.firstChild.extractLogTerms().size == 1 &&
+                        it.secondChild.isConstantIn(solutionVariables)
+                }
+
+                firstOf {
+                    option(solvablePlansForInequalities.divideByCoefficientOfLogarithmAndSimplify)
+                    option(SolvableRules.NegateBothSides)
+                }
+            }
             option(LogsPlans.MoveNegatedLogarithmicTermsToOppositeSideAndSimplify)
         }
     }

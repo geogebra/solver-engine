@@ -24,7 +24,7 @@ import methods.logs.LogsExplanation
 import kotlin.test.Test
 
 @Suppress("LargeClass")
-class LogarithmicInequationsTest {
+class LogarithmicInequalitiesTest {
     @Suppress("LongMethod")
     @Test
     fun `elementary equation with base in (1, inf)`() {
@@ -208,6 +208,15 @@ class LogarithmicInequationsTest {
                         }
                     }
                 }
+            }
+        }
+
+        testMethodInX {
+            method = InequalitiesPlans.SolveLogInequality
+            inputExpr = "[2/3] * log_[2][x] > [1 / /pi/]"
+
+            check {
+                toExpr = "SetSolution[x: ([2 ^ [3 / 2 /pi/]], /infinity/)]"
             }
         }
     }
@@ -737,6 +746,93 @@ class LogarithmicInequationsTest {
                         explanation {
                             key = EquationsExplanation.GatherSolutionsAndConstraint
                         }
+                    }
+                }
+            }
+        }
+
+        testMethodInX {
+            method = InequalitiesPlans.SolveLogInequality
+            inputExpr = "-2 * log_[[1 / 2]][log_[[1 / 2]][5 x + 9]] <= 2"
+
+            check {
+                task {
+                    step {
+                        toExpr = "SetSolution[x: (-[9 / 5], -[8 / 5])]"
+                        explanation {
+                            key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
+                        }
+                    }
+                }
+
+                task {
+                    step {
+                        fromExpr = "-2 * log_[[1 / 2]][log_[[1 / 2]][5 x+ 9]] <= 2"
+                        toExpr = "SetSolution[x: [-[7 / 4], /infinity/)]"
+                        explanation {
+                            key = InequalitiesExplanation.SolveLogarithmicInequality
+                        }
+
+                        step {
+                            toExpr = "log_[[1 / 2]][log_[[1 / 2]][5 x + 9]] >= -1"
+                        }
+
+                        step {
+                            toExpr = "[([1 / 2]) ^ log_[[1 / 2]][log_[[1 / 2]][ 5 x + 9]]] <= [([1 / 2]) ^ -1]"
+                            explanation {
+                                key = LogsExplanation.ExponentiateBothSidesAndFlip
+                            }
+                        }
+
+                        step {
+                            toExpr = "log_[[1 / 2]][5 x + 9] <= [([1 / 2]) ^ -1]"
+                            explanation {
+                                key = LogsExplanation.SimplifyLogInExponentWithMatchingBase
+                            }
+                        }
+
+                        step {
+                            explanation {
+                                key = InequalitiesExplanation.SolveLogarithmicInequality
+                            }
+
+                            step {
+                                toExpr = "log_[[1 / 2]][5 x + 9] <= [2 / 1]"
+                            }
+
+                            step {
+                                toExpr = "log_[[1 / 2]][5 x + 9] <= 2"
+                            }
+
+                            step {
+                                toExpr = "[([1 / 2]) ^ log_[[1 / 2]][5 x + 9]] >= [([1 / 2]) ^ 2]"
+                                explanation {
+                                    key = LogsExplanation.ExponentiateBothSidesAndFlip
+                                }
+                            }
+
+                            step {
+                                toExpr = "5 x + 9 >= [([1 / 2]) ^ 2]"
+                                explanation {
+                                    key = LogsExplanation.SimplifyLogInExponentWithMatchingBase
+                                }
+                            }
+
+                            step {
+                                toExpr = "SetSolution[x: [-[7 / 4], /infinity/)]"
+                                explanation {
+                                    key = InequalitiesExplanation.SolveLinearInequality
+                                }
+                            }
+                        }
+                    }
+                }
+
+                task {
+                    startExpr = "SetSolution[x: [-[7 / 4], /infinity/)] GIVEN SetSolution[x: (-[9 / 5], -[8 / 5])]"
+
+                    step {
+                        toExpr = "SetSolution[x: [-[7 / 4], -[8 / 5])]"
                     }
                 }
             }

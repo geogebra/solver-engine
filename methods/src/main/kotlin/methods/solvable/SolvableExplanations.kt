@@ -1108,6 +1108,13 @@ enum class InequalitiesExplanation(
     MultiplyByLCDAndSimplify(SolvableKey.MultiplyBothSidesByLCD, simplify = true),
 
     /**
+     * Multiply both sides of the inequality by the integer denominator so the equation no longer has a denominator.
+     *
+     * E.g. [x / 2] + 5 < 3x --> 2([x / 2] + 5) < 2 * 3x
+     */
+    MultiplyBothSidesByIntegerDenominator(SolvableKey.MultiplyBothSidesByIntegerDenominator),
+
+    /**
      * Multiply both sides of the inequality by the inverse of the coefficient (a numeric constant)
      * of the variable (which is a positive value).
      *
@@ -1124,6 +1131,16 @@ enum class InequalitiesExplanation(
      * [2x / 5] > 3 -> [5 / 2] * [2x / 5] > [5 / 2] * 3
      */
     MultiplyByInverseCoefficientOfLogarithm(SolvableKey.MultiplyByInverseCoefficientOfLogarithm),
+
+    /** Multiply both sides of the equation by the inverse of the coefficient (if it's a numeric constant)
+     * of the variable and simplify.
+     *
+     * E.g. [log[ x ] / 9] = 3 -> 9 * [log[ x ] / 9] = 9 * 3 -> log[ x ] = 27
+     */
+    MultiplyByInverseCoefficientOfLogarithmAndSimplify(
+        SolvableKey.MultiplyByInverseCoefficientOfLogarithm,
+        simplify = true,
+    ),
 
     /**
      * Multiply both the side by denominator of a fraction in the LHS to simplify it.
@@ -1200,9 +1217,20 @@ enum class InequalitiesExplanation(
      * Divide both sides of the inequality by the coefficient of the
      * logarithm.
      *
-     * E.g. 2 sqrt[2] log[ x ] = 3 -> [2 sqrt[2] log[ x ] / 2 sqrt[2]] = [3 / 2 sqrt[2]]
+     * E.g. 2 sqrt[2] log[ x ] < 3 -> [2 sqrt[2] log[ x ] / 2 sqrt[2]] < [3 / 2 sqrt[2]]
      */
     DivideByCoefficientOfLogarithm(SolvableKey.DivideByCoefficientOfLogarithm),
+
+    /**
+     * Divide both sides of the inequality by the coefficient of the
+     * logarithm.
+     *
+     * E.g. -2 sqrt[2] log[ x ] < 3 -> [-2 sqrt[2] log[ x ] / -2 sqrt[2]] > [3 / - 2 sqrt[2]]
+     */
+    DivideByCoefficientOfLogarithmAndFlipSign(
+        SolvableKey.DivideByCoefficientOfLogarithm,
+        flipSign = true,
+    ),
 
     /**
      * Divide both sides of the inequality by the coefficient of the logarithm

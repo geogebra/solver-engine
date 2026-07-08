@@ -823,7 +823,27 @@ private fun createMoveConstantDenominatorToTheRight(variablePattern: Pattern, ex
         }
     }
 
-private val moveConstantFractionFactorToTheRight = rule {
+private val moveConstantFractionFactorToTheRight = createMoveConstantFractionFactorToTheRight(
+    VariableExpressionPattern(),
+    { SolvableKey.MultiplyByInverseCoefficientOfVariable },
+)
+
+private val moveConstantFractionFactorOfLogarithmToTheRightRule = createMoveConstantFractionFactorToTheRight(
+    condition(logOf(AnyPattern())) { !it.isConstantIn(solutionVariables) },
+    { SolvableKey.MultiplyByInverseCoefficientOfLogarithm },
+    isolateLhs = true,
+)
+
+internal val moveConstantFractionFactorOfLogarithmToTheRight = object : RunnerMethod {
+    override val runner = moveConstantFractionFactorOfLogarithmToTheRightRule
+    override val name = "MoveConstantFractionFactorOfLogarithmToTheRight"
+}
+
+private fun createMoveConstantFractionFactorToTheRight(
+    variablePattern: Pattern,
+    explanationKey: () -> SolvableKey,
+    isolateLhs: Boolean = false,
+) = rule {
     val fraction = fractionOf(ConstantInSolutionVariablePattern(), ConstantInSolutionVariablePattern())
     val lhs = expressionWithFactor(fraction)
     val rhs = ConstantInSolutionVariablePattern()
@@ -831,6 +851,10 @@ private val moveConstantFractionFactorToTheRight = rule {
     val solvable = SolvablePattern(lhs, rhs)
 
     onPattern(solvable) {
+        if (!variablePattern.matches(context, restOf(lhs))) {
+            return@onPattern null
+        }
+
         val fractionValue = get(fraction)
         val useDual = when (fractionValue.signOf()) {
             Sign.POSITIVE -> false
@@ -841,9 +865,12 @@ private val moveConstantFractionFactorToTheRight = rule {
 
         val inverse = introduce(fraction, fractionValue.inverse())
 
-        val newLhs = when (context.get(Setting.BalancingMode)) {
-            BalancingModeSetting.Advanced -> restOf(lhs)
-            BalancingModeSetting.NextTo -> lhs.substitute(productOf(fractionValue, inverse))
+        val newLhs = when {
+            isolateLhs -> restOf(lhs)
+            context.get(Setting.BalancingMode) == BalancingModeSetting.Advanced -> restOf(lhs)
+            context.get(Setting.BalancingMode) == BalancingModeSetting.NextTo -> lhs.substitute(
+                productOf(fractionValue, inverse),
+            )
             else -> productOf(inverse, get(lhs))
         }
 
@@ -856,7 +883,7 @@ private val moveConstantFractionFactorToTheRight = rule {
             toExpr = solvable.deriveSolvable(newLhs, newRhs, useDual),
             gmAction = drag(fraction, PM.Group, rhs),
             explanation = solvableExplanation(
-                SolvableKey.MultiplyByInverseCoefficientOfVariable,
+                explanationKey(),
                 flipSign = useDual && !solvable.isSelfDual(),
                 parameters = listOf(fractionValue),
             ),
