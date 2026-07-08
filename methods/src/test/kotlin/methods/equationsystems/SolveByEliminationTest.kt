@@ -397,7 +397,8 @@ class SolveByEliminationTest {
                         fromExpr = "x + y = 3"
                         toExpr = "x = 3 - y"
                         explanation {
-                            key = methods.solvable.EquationsExplanation.MoveConstantsInVariablesToTheRightAndSimplify
+                            key = methods.solvable.EquationsExplanation
+                                .MoveConstantsToTheRightBySubtraction
                         }
                     }
                 }

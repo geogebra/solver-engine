@@ -50,14 +50,14 @@ class MultivariateEquationsTest {
                     fromExpr = "A - b h = 0"
                     toExpr = "A = b h"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsInVariablesToTheRightAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightByAddition
                     }
 
                     step {
                         fromExpr = "A - b h = 0"
                         toExpr = "A - b h + b h = b h"
                         explanation {
-                            key = methods.solvable.EquationsExplanation.MoveConstantsInVariablesToTheRight
+                            key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightByAddition
                         }
                     }
 
@@ -98,14 +98,14 @@ class MultivariateEquationsTest {
                     fromExpr = "F = [9 / 5] C + 32"
                     toExpr = "F - 32 = [9 / 5] C"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsInVariablesToTheLeftAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheLeftBySubtraction
                     }
 
                     step {
                         fromExpr = "F = [9 / 5] C + 32"
                         toExpr = "F - 32 = [9 / 5] C + 32 - 32"
                         explanation {
-                            key = methods.solvable.EquationsExplanation.MoveConstantsInVariablesToTheLeft
+                            key = methods.solvable.EquationsExplanation.MoveConstantsToTheLeftBySubtraction
                         }
                     }
 
@@ -218,14 +218,14 @@ class MultivariateEquationsTest {
                     fromExpr = "r + R = [E / I] GIVEN SetSolution[I: /reals/ \\ {0}]"
                     toExpr = "r = [E / I] - R GIVEN SetSolution[I: /reals/ \\ {0}]"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsInVariablesToTheRightAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightBySubtraction
                     }
 
                     step {
                         fromExpr = "r + R = [E / I]"
                         toExpr = "r + R - R = [E / I] - R"
                         explanation {
-                            key = methods.solvable.EquationsExplanation.MoveConstantsInVariablesToTheRight
+                            key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightBySubtraction
                         }
                     }
 
@@ -274,7 +274,7 @@ class MultivariateEquationsTest {
                     fromExpr = "x z + 1 = [1 / y + 2] GIVEN SetSolution[y: /reals/ \\ {-2}]"
                     toExpr = "x z = [1 / y + 2] - 1 GIVEN SetSolution[y: /reals/ \\ {-2}]"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsInVariablesToTheRightAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightBySubtraction
                     }
                 }
 
@@ -327,7 +327,7 @@ class MultivariateEquationsTest {
                     fromExpr = "[a ^ 3] b + c = 0"
                     toExpr = "[a ^ 3] b = -c"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsInVariablesToTheRightAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightBySubtraction
                     }
                 }
 
@@ -828,7 +828,7 @@ class MultivariateEquationsTest {
                     fromExpr = "x - a x + 2 = 2 a x"
                     toExpr = "x - 3 a x + 2 = 0"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveSomeVariablesToTheLeftAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeftBySubtraction
                     }
                 }
 
@@ -836,7 +836,7 @@ class MultivariateEquationsTest {
                     fromExpr = "x - 3 a x + 2 = 0"
                     toExpr = "x - 3 a x = -2"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsInVariablesToTheRightAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightBySubtraction
                     }
                 }
 
@@ -891,7 +891,7 @@ class MultivariateEquationsTest {
                     fromExpr = "a [x ^ 3] - 3 = b [x ^ 3] + 11"
                     toExpr = "a [x ^ 3] - 3 - b [x ^ 3] = 11"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveSomeVariablesToTheLeftAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeftBySubtraction
                     }
                 }
 
@@ -899,7 +899,7 @@ class MultivariateEquationsTest {
                     fromExpr = "a [x ^ 3] - 3 - b [x ^ 3] = 11"
                     toExpr = "a [x ^ 3] - b [x ^ 3] = 14"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsInVariablesToTheRightAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightByAddition
                     }
                 }
 

@@ -17,6 +17,7 @@
 
 package methods.solvable
 
+import engine.conditions.isDefinitelyNegative
 import engine.conditions.isDefinitelyPositive
 import engine.context.BalancingModeSetting
 import engine.context.Context
@@ -184,9 +185,10 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     toExpr = solvable.deriveSolvable(result.toSide, result.fromSide),
                     gmAction = drag(result.movedTerms, PM.Group, lhs),
-                    explanation = solvableExplanation(
-                        SolvableKey.MoveConstantsToTheLeft,
-                        parameters = listOf(result.movedTerms),
+                    explanation = getSignedExplanation(
+                        result.movedTerms,
+                        SolvableKey.MoveConstantsToTheLeftByAddition,
+                        SolvableKey.MoveConstantsToTheLeftBySubtraction,
                     ),
                 )
             }
@@ -205,9 +207,10 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     toExpr = solvable.deriveSolvable(result.fromSide, result.toSide),
                     gmAction = drag(result.movedTerms, PM.Group, rhs),
-                    explanation = solvableExplanation(
-                        SolvableKey.MoveConstantsToTheRight,
-                        parameters = listOf(result.movedTerms),
+                    explanation = getSignedExplanation(
+                        result.movedTerms,
+                        SolvableKey.MoveConstantsToTheRightByAddition,
+                        SolvableKey.MoveConstantsToTheRightBySubtraction,
                     ),
                 )
             }
@@ -226,9 +229,10 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     toExpr = solvable.deriveSolvable(result.toSide, result.fromSide),
                     gmAction = drag(result.movedTerms, if (get(rhs) is Sum) PM.Group else null, lhs),
-                    explanation = solvableExplanation(
-                        SolvableKey.MoveVariablesToTheLeft,
-                        parameters = listOf(result.movedTerms),
+                    explanation = getSignedExplanation(
+                        result.movedTerms,
+                        SolvableKey.MoveVariablesToTheLeftByAddition,
+                        SolvableKey.MoveVariablesToTheLeftBySubtraction,
                     ),
                 )
             }
@@ -247,9 +251,10 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     toExpr = solvable.deriveSolvable(result.fromSide, result.toSide),
                     gmAction = drag(result.movedTerms, if (get(lhs) is Sum) PM.Group else null, rhs),
-                    explanation = solvableExplanation(
-                        SolvableKey.MoveVariablesToTheRight,
-                        parameters = listOf(result.movedTerms),
+                    explanation = getSignedExplanation(
+                        result.movedTerms,
+                        SolvableKey.MoveVariablesToTheRightByAddition,
+                        SolvableKey.MoveVariablesToTheRightBySubtraction,
                     ),
                 )
             }
@@ -542,6 +547,23 @@ private val moveTermsNotContainingModulusToTheLeft = rule {
         )
     }
 }
+
+private fun MappedExpressionBuilder.getSignedExplanation(
+    parameter: Expression,
+    negativeExplanation: SolvableKey,
+    positiveExplanation: SolvableKey,
+): Metadata =
+    if (parameter is Minus || parameter.isDefinitelyNegative()) {
+        solvableExplanation(
+            negativeExplanation,
+            parameters = listOf(simplifiedNegOf(parameter)),
+        )
+    } else {
+        solvableExplanation(
+            positiveExplanation,
+            parameters = listOf(parameter),
+        )
+    }
 
 private enum class Mover {
     ConstantTerms {

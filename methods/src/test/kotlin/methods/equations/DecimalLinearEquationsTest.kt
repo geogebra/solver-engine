@@ -39,7 +39,7 @@ class DecimalLinearEquationsTest {
                     fromExpr = "3.1 x + 2.2 = 2.9 x - 9.34"
                     toExpr = "0.2 x + 2.2 = -9.34"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeftAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeftBySubtraction
                     }
                 }
 
@@ -47,7 +47,7 @@ class DecimalLinearEquationsTest {
                     fromExpr = "0.2 x + 2.2 = -9.34"
                     toExpr = "0.2 x = -11.54"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightBySubtraction
                     }
                 }
 
@@ -94,7 +94,7 @@ class DecimalLinearEquationsTest {
                     fromExpr = "3.6 x + 2.2 = 0.4 x + 1.2"
                     toExpr = "3.2 x + 2.2 = 1.2"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeftAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeftBySubtraction
                     }
                 }
 
@@ -102,7 +102,7 @@ class DecimalLinearEquationsTest {
                     fromExpr = "3.2 x + 2.2 = 1.2"
                     toExpr = "3.2 x = -1"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightBySubtraction
                     }
                 }
 

@@ -25,7 +25,10 @@ import engine.steps.metadata.TranslationKeys
  * Abstract explanation keys for operations on Solvable.  These are mapped to [EquationsExplanation] and
  * [InequalitiesExplanation] values
  */
-enum class SolvableKey(val rule: RunnerMethod) {
+enum class SolvableKey(
+    val rule: RunnerMethod,
+    val supportsLookupVariants: Boolean = true,
+) {
     /**
      * Cancel common terms on both sides of the equation.
      *
@@ -45,6 +48,22 @@ enum class SolvableKey(val rule: RunnerMethod) {
     MoveConstantsToTheLeft(SolvableRules.MoveConstantsToTheLeft),
 
     /**
+     * Add the constant %1 appearing in RHS to both sides.
+     * Used in case the term we want to move to the other side is negative
+     *
+     * %1: constant term
+     */
+    MoveConstantsToTheLeftByAddition(SolvableRules.MoveConstantsToTheLeft, supportsLookupVariants = false),
+
+    /**
+     * Subtract the constant %1 appearing in RHS from both sides.
+     * Used in case the term we want to move to the other side is positive
+     *
+     * %1: constant term
+     */
+    MoveConstantsToTheLeftBySubtraction(SolvableRules.MoveConstantsToTheLeft, supportsLookupVariants = false),
+
+    /**
      * Add the opposite of the constants appearing on the LHS
      * of the equation to both sides.
      *
@@ -54,6 +73,22 @@ enum class SolvableKey(val rule: RunnerMethod) {
      * 2x - 1 = 3 -> 2x - 1 + 1 = 3 + 1
      */
     MoveConstantsToTheRight(SolvableRules.MoveConstantsToTheRight),
+
+    /**
+     * Add the constant %1 appearing in LHS to both sides.
+     * Used in case the term we want to move to the other side is negative
+     *
+     * %1: constant term
+     */
+    MoveConstantsToTheRightByAddition(SolvableRules.MoveConstantsToTheRight, supportsLookupVariants = false),
+
+    /**
+     * Subtract the constant %1 appearing in LHS from both sides.
+     * Used in case the term we want to move to the other side is positive
+     *
+     * %1: constant term
+     */
+    MoveConstantsToTheRightBySubtraction(SolvableRules.MoveConstantsToTheRight, supportsLookupVariants = false),
 
     /**
      * Add the opposite of the variables appearing on the RHS
@@ -66,12 +101,44 @@ enum class SolvableKey(val rule: RunnerMethod) {
     MoveVariablesToTheLeft(SolvableRules.MoveVariablesToTheLeft),
 
     /**
+     * Add the variables %1 appearing in RHS to both sides.
+     * Used in case the term we want to move to the other side is negative
+     *
+     * %1: constant term
+     */
+    MoveVariablesToTheLeftByAddition(SolvableRules.MoveVariablesToTheLeft, supportsLookupVariants = false),
+
+    /**
+     * Subtract the variables %1 appearing in RHS from both sides.
+     * Used in case the term we want to move to the other side is positive
+     *
+     * %1: constant term
+     */
+    MoveVariablesToTheLeftBySubtraction(SolvableRules.MoveVariablesToTheLeft, supportsLookupVariants = false),
+
+    /**
      * Add the opposite of the variables appearing on the LHS
      * of the equation to both sides.
      *
      * E.g. 2x + 2 = 3x + 1 -> 2x + 2 - 2x = 3x + 1 - 2x
      */
     MoveVariablesToTheRight(SolvableRules.MoveVariablesToTheRight),
+
+    /**
+     * Add the variables %1 appearing in LHS to both sides.
+     * Used in case the term we want to move to the other side is negative
+     *
+     * %1: constant term
+     */
+    MoveVariablesToTheRightByAddition(SolvableRules.MoveVariablesToTheRight, supportsLookupVariants = false),
+
+    /**
+     * Subtract the variables %1 appearing in LHS from both sides.
+     * Used in case the term we want to move to the other side is positive
+     *
+     * %1: constant term
+     */
+    MoveVariablesToTheRightBySubtraction(SolvableRules.MoveVariablesToTheRight, supportsLookupVariants = false),
 
     MoveEverythingToTheLeft(SolvableRules.MoveEverythingToTheLeft),
 
@@ -227,8 +294,10 @@ open class SolvableKeyGetter(solvableExplanations: List<SolvableExplanation>) {
         flipSign: Boolean = false,
         simplify: Boolean = false,
     ): SolvableExplanation {
-        val mapKey = ExplanationKey(solvableKey, simplify, flipSign)
-        if (explicitVariables) {
+        val lookupExplicitVariables = explicitVariables && solvableKey.supportsLookupVariants
+        val lookupSimplify = simplify && solvableKey.supportsLookupVariants
+        val mapKey = ExplanationKey(solvableKey, lookupSimplify, flipSign)
+        if (lookupExplicitVariables) {
             val key = explicitVariablesExplanations[mapKey]
             if (key != null) return key
         }
@@ -262,6 +331,16 @@ enum class EquationsExplanation(
      * 1 = 2x - 3 -> 1 + 3 = 2x - 3 + 3
      */
     MoveConstantsToTheLeft(SolvableKey.MoveConstantsToTheLeft),
+
+    /**
+     * Add the constant %1 appearing on the RHS of the equation to both sides.
+     */
+    MoveConstantsToTheLeftByAddition(SolvableKey.MoveConstantsToTheLeftByAddition),
+
+    /**
+     * Subtract the constant %1 appearing on the RHS of the equation from both sides.
+     */
+    MoveConstantsToTheLeftBySubtraction(SolvableKey.MoveConstantsToTheLeftBySubtraction),
 
     /**
      * Add the opposite of the constants appearing on the RHS
@@ -312,6 +391,16 @@ enum class EquationsExplanation(
     MoveConstantsToTheRight(SolvableKey.MoveConstantsToTheRight),
 
     /**
+     * Add the constant %1 appearing on the LHS of the equation to both sides.
+     */
+    MoveConstantsToTheRightByAddition(SolvableKey.MoveConstantsToTheRightByAddition),
+
+    /**
+     * Subtract the constant %1 appearing on the LHS of the equation from both sides.
+     */
+    MoveConstantsToTheRightBySubtraction(SolvableKey.MoveConstantsToTheRightBySubtraction),
+
+    /**
      * Add the opposite of the constants appearing on the LHS
      * of the equation to both sides.
      *
@@ -359,6 +448,16 @@ enum class EquationsExplanation(
     MoveVariablesToTheLeft(SolvableKey.MoveVariablesToTheLeft),
 
     /**
+     * Add the variable term %1 appearing on the RHS of the equation to both sides.
+     */
+    MoveVariablesToTheLeftByAddition(SolvableKey.MoveVariablesToTheLeftByAddition),
+
+    /**
+     * Subtract the variable term %1 appearing on the RHS of the equation from both sides.
+     */
+    MoveVariablesToTheLeftBySubtraction(SolvableKey.MoveVariablesToTheLeftBySubtraction),
+
+    /**
      * Add the opposite of some variables appearing on the RHS
      * of the equation to both sides.
      *
@@ -403,6 +502,16 @@ enum class EquationsExplanation(
      * E.g. 2x + 2 = 3x + 1 -> 2x + 2 - 2x = 3x + 1 - 2x
      */
     MoveVariablesToTheRight(SolvableKey.MoveVariablesToTheRight),
+
+    /**
+     * Add the variable term %1 appearing on the LHS of the equation to both sides.
+     */
+    MoveVariablesToTheRightByAddition(SolvableKey.MoveVariablesToTheRightByAddition),
+
+    /**
+     * Subtract the variable term %1 appearing on the LHS of the equation from both sides.
+     */
+    MoveVariablesToTheRightBySubtraction(SolvableKey.MoveVariablesToTheRightBySubtraction),
 
     /**
      * Add the opposite of some variables appearing on the LHS
@@ -758,6 +867,16 @@ enum class InequalitiesExplanation(
     MoveConstantsToTheLeft(SolvableKey.MoveConstantsToTheLeft),
 
     /**
+     * Add the constant %1 appearing on the RHS of the inequality to both sides.
+     */
+    MoveConstantsToTheLeftByAddition(SolvableKey.MoveConstantsToTheLeftByAddition),
+
+    /**
+     * Subtract the constant %1 appearing on the RHS of the inequality from both sides.
+     */
+    MoveConstantsToTheLeftBySubtraction(SolvableKey.MoveConstantsToTheLeftBySubtraction),
+
+    /**
      * Add the opposite of the constants appearing on the RHS
      * of the inequality to both sides.
      *
@@ -804,6 +923,16 @@ enum class InequalitiesExplanation(
      * 2x - 1 >= 3 -> 2x - 1 + 1 >= 3 + 1
      */
     MoveConstantsToTheRight(SolvableKey.MoveConstantsToTheRight),
+
+    /**
+     * Add the constant %1 appearing on the LHS of the inequality to both sides.
+     */
+    MoveConstantsToTheRightByAddition(SolvableKey.MoveConstantsToTheRightByAddition),
+
+    /**
+     * Subtract the constant %1 appearing on the LHS of the inequality from both sides.
+     */
+    MoveConstantsToTheRightBySubtraction(SolvableKey.MoveConstantsToTheRightBySubtraction),
 
     /**
      * Add the opposite of the constants appearing on the LHS
@@ -853,6 +982,16 @@ enum class InequalitiesExplanation(
     MoveVariablesToTheLeft(SolvableKey.MoveVariablesToTheLeft),
 
     /**
+     * Add the variable term %1 appearing on the RHS of the inequality to both sides.
+     */
+    MoveVariablesToTheLeftByAddition(SolvableKey.MoveVariablesToTheLeftByAddition),
+
+    /**
+     * Subtract the variable term %1 appearing on the RHS of the inequality from both sides.
+     */
+    MoveVariablesToTheLeftBySubtraction(SolvableKey.MoveVariablesToTheLeftBySubtraction),
+
+    /**
      * Add the opposite of some variables appearing on the RHS
      * of the inequality to both sides.
      *
@@ -897,6 +1036,16 @@ enum class InequalitiesExplanation(
      * E.g. 2x + 2 > 3x + 1 -> 2x + 2 - 2x > 3x + 1 - 2x
      */
     MoveVariablesToTheRight(SolvableKey.MoveVariablesToTheRight),
+
+    /**
+     * Add the variable term %1 appearing on the LHS of the inequality to both sides.
+     */
+    MoveVariablesToTheRightByAddition(SolvableKey.MoveVariablesToTheRightByAddition),
+
+    /**
+     * Subtract the variable term %1 appearing on the LHS of the inequality from both sides.
+     */
+    MoveVariablesToTheRightBySubtraction(SolvableKey.MoveVariablesToTheRightBySubtraction),
 
     /**
      * Add the opposite of some variables appearing on the LHS
@@ -1048,12 +1197,25 @@ enum class InequalitiesExplanation(
     DivideByCoefficientOfVariable(SolvableKey.DivideByCoefficientOfVariable),
 
     /**
-     * Divide both sides of the equation by the coefficient of the
-     * variable.
+     * Divide both sides of the inequality by the coefficient of the
+     * logarithm.
      *
-     * E.g. 2 sqrt[2] x = 3 -> [2 sqrt[2] x / 2 sqrt[2]] = [3 / 2 sqrt[2]]
+     * E.g. 2 sqrt[2] log[ x ] = 3 -> [2 sqrt[2] log[ x ] / 2 sqrt[2]] = [3 / 2 sqrt[2]]
      */
     DivideByCoefficientOfLogarithm(SolvableKey.DivideByCoefficientOfLogarithm),
+
+    /**
+     * Divide both sides of the inequality by the coefficient of the logarithm
+     * and simplify.
+     *
+     * E.g. 2 sqrt[2] log [ x ] = 3
+     *      -> [2 sqrt[2] log [ x ] / 2 sqrt[2]] = [3 / 2 sqrt[2]]
+     *      -> log [ x ] = [3 sqrt[2] / 4]
+     */
+    DivideByCoefficientOfLogarithmAndSimplify(
+        SolvableKey.DivideByCoefficientOfLogarithm,
+        simplify = true,
+    ),
 
     /**
      * Divide both sides of the inequality by the coefficient of the

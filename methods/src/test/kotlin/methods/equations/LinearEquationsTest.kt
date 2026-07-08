@@ -156,14 +156,14 @@ class LinearEquationsTest {
                     fromExpr = "x - 2 = 36"
                     toExpr = "x = 38"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightByAddition
                     }
 
                     step {
                         fromExpr = "x - 2 = 36"
                         toExpr = "x - 2 + 2 = 36 + 2"
                         explanation {
-                            key = methods.solvable.EquationsExplanation.MoveConstantsToTheRight
+                            key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightByAddition
                         }
                     }
 
@@ -203,7 +203,7 @@ class LinearEquationsTest {
                     fromExpr = "1 = [3 / 5] - x"
                     toExpr = "1 + x = [3 / 5]"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeftAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeftByAddition
                     }
                 }
 
@@ -211,7 +211,7 @@ class LinearEquationsTest {
                     fromExpr = "1 + x = [3 / 5]"
                     toExpr = "x = -[2 / 5]"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightBySubtraction
                     }
                 }
 
@@ -281,7 +281,7 @@ class LinearEquationsTest {
                     fromExpr = "1 - 3 x = 0"
                     toExpr = "-3 x = -1"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightBySubtraction
                     }
                 }
 
@@ -320,7 +320,7 @@ class LinearEquationsTest {
                     fromExpr = "4 = 11 + [x / 3]"
                     toExpr = "-7 = [x / 3]"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheLeftAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheLeftBySubtraction
                     }
                 }
 
@@ -367,7 +367,7 @@ class LinearEquationsTest {
                     fromExpr = "x + 1 = 2 x + 3"
                     toExpr = "1 = x + 3"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveVariablesToTheRightAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveVariablesToTheRightBySubtraction
                     }
                 }
 
@@ -375,7 +375,7 @@ class LinearEquationsTest {
                     fromExpr = "1 = x + 3"
                     toExpr = "-2 = x"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheLeftAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheLeftBySubtraction
                     }
                 }
 
@@ -422,7 +422,7 @@ class LinearEquationsTest {
                     fromExpr = "x + 15 = 0"
                     toExpr = "x = -15"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightBySubtraction
                     }
                 }
 
@@ -773,14 +773,14 @@ class LinearEquationWithAdvancedBalancingTest {
                     fromExpr = "x - 2 = 36"
                     toExpr = "x = 38"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightByAddition
                     }
 
                     step {
                         fromExpr = "x - 2 = 36"
                         toExpr = "x = 36 + 2"
                         explanation {
-                            key = methods.solvable.EquationsExplanation.MoveConstantsToTheRight
+                            key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightByAddition
                         }
                     }
 
@@ -821,7 +821,7 @@ class LinearEquationWithAdvancedBalancingTest {
                     fromExpr = "1 = [3 / 5] - x"
                     toExpr = "1 + x = [3 / 5]"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeft
+                        key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeftByAddition
                     }
                 }
 
@@ -829,13 +829,13 @@ class LinearEquationWithAdvancedBalancingTest {
                     fromExpr = "1 + x = [3 / 5]"
                     toExpr = "x = -[2 / 5]"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightBySubtraction
                     }
 
                     step {
                         toExpr = "x = [3 / 5] - 1"
                         explanation {
-                            key = methods.solvable.EquationsExplanation.MoveConstantsToTheRight
+                            key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightBySubtraction
                         }
                     }
 

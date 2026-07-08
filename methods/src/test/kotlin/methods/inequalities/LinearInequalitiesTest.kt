@@ -118,7 +118,7 @@ class LinearInequalitiesTest {
                     fromExpr = "4 > 11 + [x / 3]"
                     toExpr = "-7 > [x / 3]"
                     explanation {
-                        key = methods.solvable.InequalitiesExplanation.MoveConstantsToTheLeftAndSimplify
+                        key = methods.solvable.InequalitiesExplanation.MoveConstantsToTheLeftBySubtraction
                     }
                 }
 
@@ -165,7 +165,7 @@ class LinearInequalitiesTest {
                     fromExpr = "x + 1 < 2 x + 3"
                     toExpr = "1 < x + 3"
                     explanation {
-                        key = methods.solvable.InequalitiesExplanation.MoveVariablesToTheRightAndSimplify
+                        key = methods.solvable.InequalitiesExplanation.MoveVariablesToTheRightBySubtraction
                     }
                 }
 
@@ -173,7 +173,7 @@ class LinearInequalitiesTest {
                     fromExpr = "1 < x + 3"
                     toExpr = "-2 < x"
                     explanation {
-                        key = methods.solvable.InequalitiesExplanation.MoveConstantsToTheLeftAndSimplify
+                        key = methods.solvable.InequalitiesExplanation.MoveConstantsToTheLeftBySubtraction
                     }
                 }
 
@@ -330,7 +330,8 @@ class LinearInequalitiesTest {
                     fromExpr = "3 a + 2 b < 9"
                     toExpr = "2 b < 9 - 3 a"
                     explanation {
-                        key = methods.solvable.InequalitiesExplanation.MoveConstantsInVariablesToTheRightAndSimplify
+                        key = methods.solvable.InequalitiesExplanation
+                            .MoveConstantsToTheRightBySubtraction
                     }
                 }
 
@@ -338,7 +339,8 @@ class LinearInequalitiesTest {
                     fromExpr = "2 b < 9 - 3 a"
                     toExpr = "b < [9 - 3 a / 2]"
                     explanation {
-                        key = methods.solvable.InequalitiesExplanation.DivideByCoefficientOfVariableAndSimplify
+                        key = methods.solvable.InequalitiesExplanation
+                            .DivideByCoefficientOfVariableAndSimplify
                     }
                 }
 

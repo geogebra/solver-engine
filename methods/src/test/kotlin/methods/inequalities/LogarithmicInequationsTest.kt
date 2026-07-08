@@ -23,6 +23,7 @@ import methods.equations.EquationsExplanation
 import methods.logs.LogsExplanation
 import kotlin.test.Test
 
+@Suppress("LargeClass")
 class LogarithmicInequationsTest {
     @Suppress("LongMethod")
     @Test
@@ -559,6 +560,180 @@ class LogarithmicInequationsTest {
                     step {
                         fromExpr = "log[x + 3] > log[-x - 7] GIVEN Contradiction[x: log[x + 3] > log[-x - 7]]"
                         toExpr = "Contradiction[x: log[x + 3] > log[-x - 7]]"
+                        explanation {
+                            key = EquationsExplanation.GatherSolutionsAndConstraint
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Suppress("LongMethod")
+    @Test
+    fun `inequality with nested logarithms`() {
+        testMethodInX {
+            method = InequalitiesPlans.SolveLogInequality
+            inputExpr = "4 * log_[2] [log_[3][x - 5]] - 8 > 0"
+
+            check {
+                explanation {
+                    key = InequalitiesExplanation.SolveLogarithmicInequality
+                }
+
+                task {
+                    step {
+                        toExpr = "SetSolution[x: (6, /infinity/)]"
+                        explanation {
+                            key = AlgebraExplanation.ComputeDomainOfAlgebraicExpression
+                        }
+                    }
+                }
+
+                task {
+                    step {
+                        step {
+                            toExpr = "4 * log_[2][log_[3][x - 5]] > 8"
+                        }
+
+                        step {
+                            toExpr = "log_[2][log_[3][x - 5]] > 2"
+                        }
+
+                        step {
+                            toExpr = "[2 ^ log_[2][log_[3][x - 5]]] > [2 ^ 2]"
+                            explanation {
+                                key = LogsExplanation.ExponentiateBothSides
+                            }
+                        }
+
+                        step {
+                            toExpr = "log_[3][x - 5] > [2 ^ 2]"
+                            explanation {
+                                key = LogsExplanation.SimplifyLogInExponentWithMatchingBase
+                            }
+                        }
+
+                        step {
+                            explanation {
+                                key = InequalitiesExplanation.SolveLogarithmicInequality
+                            }
+
+                            step {
+                                toExpr = "log_[3][x - 5] > 4"
+                            }
+
+                            step {
+                                toExpr = "[3 ^ log_[3][x - 5]] > [3 ^ 4]"
+                                explanation {
+                                    key = LogsExplanation.ExponentiateBothSides
+                                }
+                            }
+
+                            step {
+                                toExpr = "x - 5 > [3 ^ 4]"
+                                explanation {
+                                    key = LogsExplanation.SimplifyLogInExponentWithMatchingBase
+                                }
+                            }
+
+                            step {
+                                toExpr = "SetSolution[x: (86, /infinity/)]"
+                                explanation {
+                                    key = InequalitiesExplanation.SolveLinearInequality
+                                }
+                            }
+                        }
+                    }
+                }
+
+                task {
+                    startExpr = "SetSolution[x: (86, /infinity/)] GIVEN SetSolution[x: (6, /infinity/)]"
+
+                    step {
+                        toExpr = "SetSolution[x: (86, /infinity/)]"
+                        explanation {
+                            key = EquationsExplanation.GatherSolutionsAndConstraint
+                        }
+                    }
+                }
+            }
+        }
+
+        testMethodInX {
+            method = InequalitiesPlans.SolveLogInequality
+            inputExpr = "log_[3][log_[[1 / 2]][x - 5]] > 2"
+
+            check {
+                explanation {
+                    key = InequalitiesExplanation.SolveLogarithmicInequality
+                }
+
+                task {
+                    step {
+                        toExpr = "SetSolution[x: (5, 6)]"
+                    }
+                }
+
+                task {
+                    explanation {
+                        key = InequalitiesExplanation.SolveLogarithmicInequality
+                    }
+
+                    step {
+                        step {
+                            toExpr = "[3 ^ log_[3][log_[[1 / 2]][x - 5]]] > [3 ^ 2]"
+                            explanation {
+                                key = LogsExplanation.ExponentiateBothSides
+                            }
+                        }
+
+                        step {
+                            toExpr = "log_[[1 / 2]][x - 5] > [3 ^ 2]"
+                            explanation {
+                                key = LogsExplanation.SimplifyLogInExponentWithMatchingBase
+                            }
+                        }
+
+                        step {
+                            toExpr = "SetSolution[x: (-/infinity/, [2561 / 512])]"
+                            explanation {
+                                key = InequalitiesExplanation.SolveLogarithmicInequality
+                            }
+
+                            step {
+                                toExpr = "log_[[1 / 2]][x - 5] > 9"
+                            }
+
+                            step {
+                                toExpr = "[([1 / 2]) ^ log_[[1 / 2]][x - 5]] < [([1 / 2]) ^ 9]"
+                                explanation {
+                                    key = LogsExplanation.ExponentiateBothSidesAndFlip
+                                }
+                            }
+
+                            step {
+                                toExpr = "x - 5 < [([1 / 2]) ^ 9]"
+                                explanation {
+                                    key = LogsExplanation.SimplifyLogInExponentWithMatchingBase
+                                }
+                            }
+
+                            step {
+                                toExpr = "SetSolution[x: (-/infinity/, [2561 / 512])]"
+                                explanation {
+                                    key = InequalitiesExplanation.SolveLinearInequality
+                                }
+                            }
+                        }
+                    }
+                }
+
+                task {
+                    startExpr = "SetSolution[x: (-/infinity/, [2561 / 512])] GIVEN SetSolution[x: (5, 6)]"
+
+                    step {
+                        toExpr = "SetSolution[x: (5, [2561 / 512])]"
                         explanation {
                             key = EquationsExplanation.GatherSolutionsAndConstraint
                         }

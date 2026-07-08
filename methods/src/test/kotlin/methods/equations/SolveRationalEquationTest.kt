@@ -705,7 +705,7 @@ class SolveRationalEquationTest {
                             fromExpr = "37 x - 9 = 24 x - 216"
                             toExpr = "13 x - 9 = -216"
                             explanation {
-                                key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeftAndSimplify
+                                key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeftBySubtraction
                             }
                         }
 
@@ -713,7 +713,7 @@ class SolveRationalEquationTest {
                             fromExpr = "13 x - 9 = -216"
                             toExpr = "13 x = -207"
                             explanation {
-                                key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                                key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightByAddition
                             }
                         }
 
@@ -1220,7 +1220,7 @@ class SolveRationalEquationTest {
                             fromExpr = "0 = 2 x + 1"
                             toExpr = "-1 = 2 x"
                             explanation {
-                                key = methods.solvable.EquationsExplanation.MoveConstantsToTheLeftAndSimplify
+                                key = methods.solvable.EquationsExplanation.MoveConstantsToTheLeftBySubtraction
                             }
                         }
 
@@ -1416,7 +1416,7 @@ class SolveRationalEquationTest {
                             fromExpr = "2 x + 1 = 2"
                             toExpr = "2 x = 1"
                             explanation {
-                                key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                                key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightBySubtraction
                             }
                         }
 

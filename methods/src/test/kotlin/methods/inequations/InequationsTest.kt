@@ -41,7 +41,7 @@ class InequationsTest {
                     fromExpr = "3 x - 1 != 2"
                     toExpr = "3 x != 3"
                     explanation {
-                        key = methods.solvable.InequalitiesExplanation.MoveConstantsToTheRightAndSimplify
+                        key = methods.solvable.InequalitiesExplanation.MoveConstantsToTheRightByAddition
                     }
                 }
 

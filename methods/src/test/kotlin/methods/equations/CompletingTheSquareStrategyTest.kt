@@ -159,7 +159,7 @@ class CompletingTheSquareStrategyTest {
                     fromExpr = "[x ^ 2] = 6 x + 5"
                     toExpr = "[x ^ 2] - 6 x = 5"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeftAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeftBySubtraction
                     }
                 }
 
@@ -238,7 +238,7 @@ class CompletingTheSquareStrategyTest {
                     fromExpr = "x - 3 = +/-sqrt[14]"
                     toExpr = "x = +/-sqrt[14] + 3"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightByAddition
                     }
                 }
 
@@ -363,7 +363,7 @@ class CompletingTheSquareStrategyTest {
                     fromExpr = "x + [5 / 4] = +/-[9 / 4]"
                     toExpr = "x = +/-[9 / 4] - [5 / 4]"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightBySubtraction
                     }
                 }
 
@@ -462,7 +462,7 @@ class CompletingTheSquareStrategyTest {
                     fromExpr = "6 x - 1 + 2 [x ^ 2] = [11 / 4]"
                     toExpr = "6 x + 2 [x ^ 2] = [15 / 4]"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightByAddition
                     }
                 }
 
@@ -491,7 +491,7 @@ class CompletingTheSquareStrategyTest {
                     fromExpr = "[(x + 1) ^ 2] + 2 (x + 1) + 3 = 0"
                     toExpr = "[(x + 1) ^ 2] + 2 (x + 1) = -3"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightBySubtraction
                     }
                 }
 
@@ -593,7 +593,7 @@ class CompletingTheSquareStrategyTest {
                     fromExpr = "[(x + 1) ^ 4] + 2 * [(x + 1) ^ 2] - 6 = 0"
                     toExpr = "[(x + 1) ^ 4] + 2 * [(x + 1) ^ 2] = 6"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightByAddition
                     }
                 }
 
@@ -617,7 +617,7 @@ class CompletingTheSquareStrategyTest {
                     fromExpr = "[(x + 1) ^ 2] + 1 = +/-sqrt[7]"
                     toExpr = "[(x + 1) ^ 2] = +/-sqrt[7] - 1"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightBySubtraction
                     }
                 }
 

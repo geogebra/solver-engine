@@ -49,7 +49,7 @@ class ExponentialEquationsTest {
                     fromExpr = "x = 1 - x"
                     toExpr = "2 x = 1"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeftAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeftByAddition
                     }
                 }
 
@@ -96,7 +96,7 @@ class ExponentialEquationsTest {
                     fromExpr = "x + 1 = log_[3][5]"
                     toExpr = "x = log_[3][5] - 1"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightBySubtraction
                     }
                 }
 
@@ -199,7 +199,7 @@ class ExponentialEquationsTest {
                     fromExpr = "x * ln[2] + ln[2] = x * ln[3]"
                     toExpr = "x (ln[2] - ln[3]) + ln[2] = 0"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeftAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeftBySubtraction
                     }
                 }
 
@@ -207,7 +207,7 @@ class ExponentialEquationsTest {
                     fromExpr = "x (ln[2] - ln[3]) + ln[2] = 0"
                     toExpr = "x (ln[2] - ln[3]) = -ln[2]"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightBySubtraction
                     }
                 }
 

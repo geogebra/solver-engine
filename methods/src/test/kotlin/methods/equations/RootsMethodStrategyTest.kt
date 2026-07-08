@@ -116,7 +116,7 @@ class RootsMethodStrategyTest {
                     fromExpr = "2 [x ^ 2] - 3 = 3 [x ^ 2] + 4"
                     toExpr = "-3 = [x ^ 2] + 4"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveVariablesToTheRightAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveVariablesToTheRightBySubtraction
                     }
                 }
 
@@ -124,7 +124,7 @@ class RootsMethodStrategyTest {
                     fromExpr = "-3 = [x ^ 2] + 4"
                     toExpr = "-7 = [x ^ 2]"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheLeftAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheLeftBySubtraction
                     }
                 }
 
@@ -170,7 +170,7 @@ class RootsMethodStrategyTest {
                     fromExpr = "[5 / 2] [x ^ 2] = [x ^ 2]"
                     toExpr = "[3 / 2] [x ^ 2] = 0"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeftAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeftBySubtraction
                     }
                 }
 
@@ -216,7 +216,7 @@ class RootsMethodStrategyTest {
                     fromExpr = "4 [x ^ 2] + 5 = 2 [x ^ 2] + 8"
                     toExpr = "2 [x ^ 2] + 5 = 8"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeftAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveVariablesToTheLeftBySubtraction
                     }
                 }
 
@@ -224,7 +224,7 @@ class RootsMethodStrategyTest {
                     fromExpr = "2 [x ^ 2] + 5 = 8"
                     toExpr = "2 [x ^ 2] = 3"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightBySubtraction
                     }
                 }
 
@@ -287,7 +287,7 @@ class RootsMethodStrategyTest {
                     fromExpr = "2 [y ^ 2] - 3 = 4"
                     toExpr = "2 [y ^ 2] = 7"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightByAddition
                     }
                 }
 
@@ -353,7 +353,7 @@ class RootsMethodStrategyTest {
                     fromExpr = "[x ^ 2] + 1 = +/-2"
                     toExpr = "[x ^ 2] = +/-2 - 1"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightBySubtraction
                     }
                 }
 

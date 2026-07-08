@@ -27,6 +27,7 @@ contents to a new release section (e.g. _[0.x]_).
 ### Changed
 
 - Adjusted solving context retention. (PLUT-1143)
+- Add separate translation based on sign of the moved term in algebraic movement steps. (PLUT-1144)
 - SDK: Change logarithm syntax to enforce parentheses around argument. (PLUT-1134)
 
 ### Removed

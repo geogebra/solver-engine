@@ -55,7 +55,7 @@ class LinearEquationsWithFractionsTest {
                     fromExpr = "-x = 16 x"
                     toExpr = "0 = 17 x"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveVariablesToTheRightAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveVariablesToTheRightByAddition
                     }
                 }
 
@@ -110,7 +110,7 @@ class LinearEquationsWithFractionsTest {
                     fromExpr = "-21 x - 192 = 1"
                     toExpr = "-21 x = 193"
                     explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightAndSimplify
+                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightByAddition
                     }
                 }
 
