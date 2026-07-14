@@ -944,4 +944,59 @@ class MultivariateEquationsTest {
                 }
             }
         }
+
+    @Test
+    fun `test divide and simplify explanation is correctly computed`() =
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "x y = 0"
+
+            check {
+                fromExpr = "x y = 0"
+                toExpr = "SetSolution[x: {0}] GIVEN SetSolution[y: /reals/ \\ {0}]"
+                explanation {
+                    key = EquationsExplanation.SolveLinearEquation
+                }
+
+                step {
+                    fromExpr = "x y = 0"
+                    toExpr = "x = 0 GIVEN SetSolution[y: /reals/ \\ {0}]"
+                    explanation {
+                        key = methods.solvable.EquationsExplanation.DivideByCoefficientOfVariableAndSimplifyMultivariate
+                    }
+
+                    step {
+                        fromExpr = "x y = 0"
+                        toExpr = "[x y / y] = [0 / y] GIVEN y != 0"
+                        explanation {
+                            key = methods.solvable.EquationsExplanation.DivideByCoefficientOfVariableMultivariate
+                        }
+                    }
+
+                    step {
+                        fromExpr = "[x y / y] = [0 / y] GIVEN y != 0"
+                        toExpr = "x = 0 GIVEN y != 0"
+                        explanation {
+                            key = EquationsExplanation.SimplifyEquation
+                        }
+                    }
+
+                    step {
+                        fromExpr = "x = 0 GIVEN y != 0"
+                        toExpr = "x = 0 GIVEN SetSolution[y: /reals/ \\ {0}]"
+                        explanation {
+                            key = EquationsExplanation.SimplifyConstraint
+                        }
+                    }
+                }
+
+                step {
+                    fromExpr = "x = 0 GIVEN SetSolution[y: /reals/ \\ {0}]"
+                    toExpr = "SetSolution[x: {0}] GIVEN SetSolution[y: /reals/ \\ {0}]"
+                    explanation {
+                        key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
+                    }
+                }
+            }
+        }
 }

@@ -92,7 +92,7 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
                 return null
             }
             val initialExplanationKey = initialStep.explanation!!.key as SolvableExplanation
-            val explanationKey = getExplanationKey(initialExplanationKey.solvableKey, ctx, builder.simpleExpression)
+            val explanationKey = getExplanationKey(initialExplanationKey.solvableKey, ctx, expression)
 
             return Transformation(
                 type = Transformation.Type.Plan,

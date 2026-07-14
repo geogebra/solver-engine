@@ -24,6 +24,7 @@ contents to a new release section (e.g. _[0.x]_).
 ### Fixed
 
 - Fixed expressions with rational exponents being collected as if they had no exponents. (PLUT-1129)
+- Fixed incorrect explanation in multivariate equation simplification (PLUT-964)
 
 ### Changed
 
