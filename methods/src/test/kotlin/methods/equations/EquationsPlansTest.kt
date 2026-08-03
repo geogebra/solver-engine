@@ -19,6 +19,7 @@ package methods.equations
 
 import engine.methods.testMethodInX
 import methods.factor.FactorExplanation
+import methods.general.GeneralExplanation
 import org.junit.jupiter.api.Test
 
 class EquationsPlansTest {
@@ -125,6 +126,37 @@ class EquationsPlansTest {
                     toExpr = "/undefined/"
                     explanation {
                         key = EquationsExplanation.SimplifyEquation
+                    }
+                }
+
+                step {
+                    fromExpr = "/undefined/"
+                    toExpr = "/void/"
+                    explanation {
+                        key = EquationsExplanation.UndefinedEquationCannotBeSolved
+                    }
+                }
+            }
+        }
+
+    @Test
+    fun `test equation with negative-base exponential cannot be solved`() =
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "[(-2) ^ x] = 3"
+
+            check {
+                fromExpr = "[(-2) ^ x] = 3"
+                toExpr = "/void/"
+                explanation {
+                    key = EquationsExplanation.SolveEquation
+                }
+
+                step {
+                    fromExpr = "[(-2) ^ x] = 3"
+                    toExpr = "/undefined/"
+                    explanation {
+                        key = GeneralExplanation.EvaluateExponentialWithNegativeBaseAsUndefined
                     }
                 }
 

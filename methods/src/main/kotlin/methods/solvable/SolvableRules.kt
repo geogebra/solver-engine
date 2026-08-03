@@ -45,6 +45,7 @@ import engine.expressions.naturalLogOf
 import engine.expressions.plusMinusOf
 import engine.expressions.productOf
 import engine.expressions.rootOf
+import engine.expressions.simplifiedFractionOf
 import engine.expressions.simplifiedNegOf
 import engine.expressions.simplifiedPowerOf
 import engine.expressions.simplifiedProductOf
@@ -57,6 +58,7 @@ import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.ConstantInSolutionVariablePattern
 import engine.patterns.Pattern
+import engine.patterns.RationalPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.SolvablePattern
 import engine.patterns.UnsignedIntegerPattern
@@ -70,6 +72,7 @@ import engine.patterns.negOf
 import engine.patterns.oneOf
 import engine.patterns.optionalIntegerPowerOf
 import engine.patterns.optionalNegOf
+import engine.patterns.optionalPowerOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
@@ -77,6 +80,7 @@ import engine.patterns.withOptionalConstantCoefficientInSolutionVariables
 import engine.sign.Sign
 import engine.steps.metadata.DragTargetPosition
 import engine.steps.metadata.Metadata
+import engine.utility.Rational
 import engine.utility.asPower
 import engine.utility.extractFirst
 import engine.utility.isEven
@@ -945,16 +949,21 @@ private fun Expression.hasFactorsConstantIn(variables: List<String>): Boolean {
 
 private val cancelCommonBase = rule {
     val base = ConstantInSolutionVariablePattern()
-    val lhsExponent = AnyPattern()
-    val rhsExponent = AnyPattern()
-    val lhs = powerOf(base, lhsExponent)
-    val rhs = powerOf(base, rhsExponent)
+    val lhs = optionalPowerOf(base, AnyPattern())
+    val rhs = optionalPowerOf(base, AnyPattern())
 
     val solvable = SolvablePattern(lhs, rhs)
 
     onPattern(solvable) {
+        val lhsExp = get(lhs.exponent)
+        val rhsExp = get(rhs.exponent)
+
+        if (lhsExp == Constants.One && rhsExp == Constants.One) {
+            return@onPattern null
+        }
+
         ruleResult(
-            toExpr = solvable.deriveSolvable(get(lhsExponent), get(rhsExponent)),
+            toExpr = solvable.deriveSolvable(lhsExp, rhsExp),
             explanation = solvableExplanation(
                 SolvableKey.CancelCommonBase,
             ),
@@ -963,26 +972,27 @@ private val cancelCommonBase = rule {
 }
 
 private val rewriteBothSidesWithSameBase = rule {
-    val lhsBase = UnsignedIntegerPattern()
-    val rhsBase = UnsignedIntegerPattern()
-    val lhsBaseAtLeast2 = integerCondition(lhsBase) { it >= BigInteger.TWO }
-    val rhsBaseAtLeast2 = integerCondition(rhsBase) { it >= BigInteger.TWO }
+    val lhsBase = RationalPattern()
+    val rhsBase = RationalPattern()
     val lhsExponent = AnyPattern()
     val rhsExponent = AnyPattern()
     val lhs = oneOf(
-        lhsBaseAtLeast2,
-        powerOf(lhsBaseAtLeast2, lhsExponent),
+        lhsBase,
+        powerOf(lhsBase, lhsExponent),
     )
     val rhs = oneOf(
-        rhsBaseAtLeast2,
-        powerOf(rhsBaseAtLeast2, rhsExponent),
+        rhsBase,
+        powerOf(rhsBase, rhsExponent),
     )
 
     val solvable = SolvablePattern(lhs, rhs)
 
     onPattern(condition(solvable) { !it.isConstant() }) {
-        val lhsBaseValue = getValue(lhsBase)
-        val rhsBaseValue = getValue(rhsBase)
+        val lhsBaseValue = getValue(lhsBase)?.simplify() ?: return@onPattern null
+        val rhsBaseValue = getValue(rhsBase)?.simplify() ?: return@onPattern null
+        if (!lhsBaseValue.isSupportedExponentialBase() || !rhsBaseValue.isSupportedExponentialBase()) {
+            return@onPattern null
+        }
         if (lhsBaseValue == rhsBaseValue) return@onPattern null
         val (b, e1, e2) = withSameBase(lhsBaseValue, rhsBaseValue) ?: return@onPattern null
         ruleResult(
@@ -995,22 +1005,99 @@ private val rewriteBothSidesWithSameBase = rule {
     }
 }
 
+private data class IntegerPower(
+    val base: BigInteger,
+    val exponent: BigInteger,
+)
+
+private data class RationalPower(
+    val base: Rational,
+    val exponent: BigInteger,
+)
+
 /**
  * Finds if [n1] and [n2] can be written (simply) with the same base.  If not, returns null, else returns
  * (b, e1, e2) such that n1 = b^e1 and n2 = b^e2
  */
-private fun withSameBase(n1: BigInteger, n2: BigInteger): Triple<BigInteger, BigInteger, BigInteger>? {
-    val n1AsPower = n1.asPower().associate { it.base to it.exponent }
-    val e1 = n1AsPower[n2]
-    if (e1 != null) {
-        return Triple(n2, e1, BigInteger.ONE)
+private fun withSameBase(n1: Rational, n2: Rational): Triple<Rational, BigInteger, BigInteger>? {
+    val n1Powers = n1.asPowerCandidates()
+    val n2Powers = n2.asPowerCandidates()
+
+    val matches = n1Powers.flatMap { p1 ->
+        n2Powers
+            .filter { p2 -> p2.base == p1.base }
+            .map { p2 -> Triple(p1.base, p1.exponent, p2.exponent) }
     }
 
-    for ((b, e2) in n2.asPower()) {
-        val e1 = if (b == n1) BigInteger.ONE else n1AsPower[b]
-        if (e1 != null) {
-            return Triple(b, e1, e2)
-        }
+    if ((n1.denominator == BigInteger.ONE) != (n2.denominator == BigInteger.ONE)) {
+        return matches.firstOrNull { (base, _, _) -> base.denominator == BigInteger.ONE }
     }
-    return null
+
+    return matches.firstOrNull()
+}
+
+private fun Rational.asPowerCandidates(): List<RationalPower> {
+    val rational = simplify()
+    if (rational.numerator <= BigInteger.ZERO || rational.denominator <= BigInteger.ZERO) {
+        return emptyList()
+    }
+
+    return buildList {
+        addAll(rationalPowerCandidates(rational, BigInteger.ONE))
+        addAll(rational.decomposedPowerCandidates())
+    }
+}
+
+private fun Rational.decomposedPowerCandidates(): List<RationalPower> {
+    val numeratorPowers = numerator.integerPowerCandidates()
+    val denominatorPowers = denominator.integerPowerCandidates()
+
+    return when {
+        denominator == BigInteger.ONE -> numeratorPowers.flatMap { numeratorPower ->
+            rationalPowerCandidates(Rational(numeratorPower.base), numeratorPower.exponent)
+        }
+        numerator == BigInteger.ONE -> denominatorPowers.flatMap { denominatorPower ->
+            rationalPowerCandidates(Rational(BigInteger.ONE, denominatorPower.base), denominatorPower.exponent)
+        }
+        else -> matchingRationalPowerCandidates(numeratorPowers, denominatorPowers)
+    }
+}
+
+private fun matchingRationalPowerCandidates(
+    numeratorPowers: List<IntegerPower>,
+    denominatorPowers: List<IntegerPower>,
+): List<RationalPower> {
+    return numeratorPowers.flatMap { numeratorPower ->
+        denominatorPowers
+            .filter { denominatorPower -> denominatorPower.exponent == numeratorPower.exponent }
+            .flatMap { denominatorPower ->
+                rationalPowerCandidates(
+                    Rational(numeratorPower.base, denominatorPower.base),
+                    numeratorPower.exponent,
+                )
+            }
+    }
+}
+
+private fun rationalPowerCandidates(base: Rational, exponent: BigInteger): List<RationalPower> {
+    val simplifiedBase = base.simplify()
+    return listOf(
+        RationalPower(simplifiedBase, exponent),
+        RationalPower(simplifiedBase.inverse(), -exponent),
+    )
+}
+
+private fun BigInteger.integerPowerCandidates(): List<IntegerPower> {
+    return asPower().map { IntegerPower(it.base, it.exponent) } + IntegerPower(this, BigInteger.ONE)
+}
+
+private fun Rational.isSupportedExponentialBase(): Boolean {
+    return !isZero() && !isNeg() && !sameNumber(BigInteger.ONE)
+}
+
+private fun Rational.inverse() = Rational(denominator, numerator).simplify()
+
+private fun xp(rational: Rational): Expression {
+    val simplified = rational.simplify()
+    return simplifiedFractionOf(xp(simplified.numerator), xp(simplified.denominator))
 }

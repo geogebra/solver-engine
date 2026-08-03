@@ -25,6 +25,60 @@ import org.junit.jupiter.api.Test
 
 class ExponentialEquationsTest {
     @Test
+    fun `test reorder equation with one power and one constant`() =
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "[3 ^ x] + 2 = 11"
+
+            check {
+                step {
+                    toExpr = "[3 ^ x] = 9"
+                }
+
+                step {
+                    toExpr = "[3 ^ x] = [3 ^ 2]"
+                }
+
+                step {
+                    toExpr = "SetSolution[x: {2}]"
+                }
+            }
+        }
+
+    @Test
+    fun `test balance equation with two exponents`() =
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "[2 ^ x] - [2 ^ 1 - x] = 0"
+
+            check {
+                step {
+                    toExpr = "[2 ^ x] = [2 ^ 1 - x]"
+                    explanation {
+                        key = EquationsExplanation.BalanceExponentialEquation
+                    }
+                }
+
+                step {
+                    explanation {
+                        key = EquationsExplanation.SimplifyExponentialEquationWithSameBasesAndSolve
+                    }
+
+                    step {
+                        toExpr = "x = 1 - x"
+                    }
+
+                    step {
+                        toExpr = "SetSolution[x: {[1 / 2]}]"
+                        explanation {
+                            key = EquationsExplanation.SolveLinearEquation
+                        }
+                    }
+                }
+            }
+        }
+
+    @Test
     fun `test same base`() =
         testMethodInX {
             method = EquationsPlans.SolveEquation
@@ -72,6 +126,137 @@ class ExponentialEquationsTest {
         }
 
     @Test
+    fun `test rewrite rhs one as zero exponent`() =
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "[3 ^ x] = 1"
+
+            check {
+                toExpr = "SetSolution[x: {0}]"
+
+                step {
+                    toExpr = "[3 ^ x] = [3 ^ 0]"
+                    explanation {
+                        key = EquationsExplanation.UsePowerRuleToRewriteExponentialEquation
+                    }
+                }
+
+                step {
+                    toExpr = "SetSolution[x: {0}]"
+                    explanation {
+                        key = EquationsExplanation.SimplifyExponentialEquationWithSameBasesAndSolve
+                    }
+                }
+            }
+        }
+
+    @Test
+    fun `test same base after rewriting both sides`() {
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "[2 ^ x + 1] = [8 ^ 2x]"
+
+            check {
+                fromExpr = "[2 ^ x + 1] = [8 ^ 2x]"
+                toExpr = "SetSolution[x: {[1 / 5]}]"
+            }
+        }
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "[([2/3]) ^ 2x] = [8/27]"
+
+            check {
+                toExpr = "SetSolution[x: {[3/2]}]"
+            }
+        }
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "[([2 ^ x]) ^ x] = 2"
+
+            check {
+                explanation {
+                    key = EquationsExplanation.SolveExponentialEquation
+                }
+
+                step {
+                    toExpr = "[2 ^ x * x] = 2"
+                    explanation {
+                        key = GeneralExplanation.MultiplyExponentsUsingPowerRule
+                    }
+                }
+
+                step {
+                    explanation {
+                        key = EquationsExplanation.SimplifyExponentialEquationWithSameBasesAndSolve
+                    }
+
+                    step {
+                        toExpr = "x * x = 1"
+                    }
+
+                    step {
+                        toExpr = "SetSolution[x: {-1, 1}]"
+                        explanation {
+                            key = EquationsExplanation.SolveEquationUsingRootsMethod
+                        }
+                    }
+                }
+            }
+        }
+
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "[([([2 / 3]) ^ x]) ^ 2] = [8 / 27]"
+
+            check {
+                explanation {
+                    key = EquationsExplanation.SolveExponentialEquation
+                }
+
+                step {
+                    toExpr = "[([2 / 3]) ^ x * 2] = [8 / 27]"
+                    explanation {
+                        key = GeneralExplanation.MultiplyExponentsUsingPowerRule
+                    }
+                }
+
+                step {
+                    toExpr = "[([2 / 3]) ^ x * 2] = [([2 / 3]) ^ 3]"
+                }
+
+                step {
+                    explanation {
+                        key = EquationsExplanation.SimplifyExponentialEquationWithSameBasesAndSolve
+                    }
+
+                    step {
+                        toExpr = "x * 2 = 3"
+                    }
+
+                    step {
+                        toExpr = "SetSolution[x: {[3 / 2]}]"
+                        explanation {
+                            key = EquationsExplanation.SolveLinearEquation
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test identical exponents with different bases`() =
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "[2 ^ x] = [3 ^ x]"
+
+            check {
+                fromExpr = "[2 ^ x] = [3 ^ x]"
+                toExpr = "SetSolution[x: {0}]"
+            }
+        }
+
+    @Test
     fun `test take log of RHS`() =
         testMethodInX {
             method = EquationsPlans.SolveEquation
@@ -79,34 +264,22 @@ class ExponentialEquationsTest {
 
             check {
                 fromExpr = "[3 ^ x + 1] = 5"
-                toExpr = "SetSolution[x: {log_[3][5] - 1}]"
+                toExpr = "SetSolution[x: {[ln[5] / ln[3]] - 1}]"
                 explanation {
                     key = EquationsExplanation.SolveExponentialEquation
                 }
+            }
+        }
 
-                step {
-                    fromExpr = "[3 ^ x + 1] = 5"
-                    toExpr = "x + 1 = log_[3][5]"
-                    explanation {
-                        key = methods.solvable.EquationsExplanation.TakeLogOfRHS
-                    }
-                }
+    @Test
+    fun `test general exponential equation by taking logs on both sides`() =
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "[5 ^ x + 2] = [7 ^ x - 1]"
 
-                step {
-                    fromExpr = "x + 1 = log_[3][5]"
-                    toExpr = "x = log_[3][5] - 1"
-                    explanation {
-                        key = methods.solvable.EquationsExplanation.MoveConstantsToTheRightBySubtraction
-                    }
-                }
-
-                step {
-                    fromExpr = "x = log_[3][5] - 1"
-                    toExpr = "SetSolution[x: {log_[3][5] - 1}]"
-                    explanation {
-                        key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
-                    }
-                }
+            check {
+                fromExpr = "[5 ^ x + 2] = [7 ^ x - 1]"
+                toExpr = "SetSolution[x: {-[ln[7] + 2 * ln[5] / ln[5] - ln[7]]}]"
             }
         }
 
@@ -239,7 +412,7 @@ class ExponentialEquationsTest {
                 fromExpr = "[2 ^ x] = -3"
                 toExpr = "Contradiction[x: [2 ^ x] = -3]"
                 explanation {
-                    key = EquationsExplanation.EquationSidesHaveIncompatibleSigns
+                    key = EquationsExplanation.ExtractSolutionFromExponentialEquationWithNonPositiveConstantRhs
                 }
             }
         }

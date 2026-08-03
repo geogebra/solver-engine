@@ -348,6 +348,82 @@ class EquationRulesTest {
     }
 
     @Test
+    fun testExtractSolutionFromImpossibleExponentialEquation() {
+        testRuleInX(
+            "[2 ^ x] = 0",
+            EquationsRules.ExtractSolutionFromImpossibleExponentialEquation,
+            "Contradiction[x: [2 ^ x] = 0]",
+        )
+        testRuleInX(
+            "[2 ^ x + 1] = -3",
+            EquationsRules.ExtractSolutionFromImpossibleExponentialEquation,
+            "Contradiction[x: [2 ^ x + 1] = -3]",
+        )
+        testRuleInX(
+            "[2 ^ x] = 3",
+            EquationsRules.ExtractSolutionFromImpossibleExponentialEquation,
+            null,
+        )
+    }
+
+    @Test
+    fun testRewriteExponentialEquationWithOneRhs() {
+        testRuleInX(
+            "[3 ^ x] = 1",
+            EquationsRules.RewriteExponentialEquationWithOneRhs,
+            "[3 ^ x] = [3 ^ 0]",
+        )
+        testRuleInX(
+            "[5 ^ x - 2] = 1",
+            EquationsRules.RewriteExponentialEquationWithOneRhs,
+            "[5 ^ x - 2] = [5 ^ 0]",
+        )
+        testRuleInX(
+            "[x ^ y] = 1",
+            EquationsRules.RewriteExponentialEquationWithOneRhs,
+            null,
+        )
+    }
+
+    @Test
+    fun testBalanceEquationWithExponentialExpressions() {
+        testRuleInX(
+            "[2 ^ x] - [2 ^ 1 - x] = 0",
+            EquationsRules.BalanceEquationWithExponentialExpressions,
+            "[2 ^ x] = [2 ^ 1 - x]",
+        )
+        testRuleInX(
+            "0 = [9 ^ x] - [3 ^ x + 1]",
+            EquationsRules.BalanceEquationWithExponentialExpressions,
+            "[3 ^ x + 1] = [9 ^ x]",
+        )
+        testRuleInX(
+            "[2 ^ x] + [3 ^ x] = 0",
+            EquationsRules.BalanceEquationWithExponentialExpressions,
+            "[2 ^ x] = -[3 ^ x]",
+        )
+    }
+
+    @Test
+    fun testSimplifyExponentialEquationWithIdenticalExponents() {
+        testRuleInX(
+            "[2 ^ x] = [3 ^ x]",
+            EquationsRules.SimplifyExponentialEquationWithIdenticalExponents,
+            "x = 0",
+        )
+        testRuleInX(
+            "[4 ^ x + 1] = [8 ^ x + 1]",
+            EquationsRules.SimplifyExponentialEquationWithIdenticalExponents,
+            "x + 1 = 0",
+        )
+        testRuleInX(
+            "[2 ^ x] = [2 ^ x]",
+            EquationsRules.SimplifyExponentialEquationWithIdenticalExponents,
+            null,
+        )
+    }
+
+    @Test
     fun testMoveNegatedLogarithmicTermsToTheOtherSide() {
         testRule(
             "ln[x] - ln[y] = 3",

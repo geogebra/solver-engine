@@ -196,6 +196,13 @@ enum class GeneralExplanation : CategorisedMetadataKey {
     EvaluateOneToAnyPower,
 
     /**
+     * A negative constant base raised to a non-constant exponent is undefined
+     *
+     * E.g. [(-2) ^ x] -> /undefined/
+     */
+    EvaluateExponentialWithNegativeBaseAsUndefined,
+
+    /**
      * Convert [a ^ b] * [a ^ c] to [a ^ b + c]
      *
      * E.g. [3 ^ [1 / 2]] * [3 ^ [2 / 3]] -> [3 ^ [1 / 2] + [2 / 3]]

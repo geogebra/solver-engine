@@ -517,5 +517,25 @@ class SolvableRulesTest {
             SolvableRules.RewriteBothSidesWithSameBase,
             "[([2 ^ 2]) ^ x + 1] = [2 ^ 3]",
         )
+        testRule(
+            "[([1/2]) ^ x + 1] = 2",
+            SolvableRules.RewriteBothSidesWithSameBase,
+            "[([2 ^ -1]) ^ x + 1] = 2",
+        )
+        testRule(
+            "[2 ^ x + 1] = [8 ^ 2x]",
+            SolvableRules.RewriteBothSidesWithSameBase,
+            "[2 ^ x + 1] = [([2 ^ 3]) ^ 2x]",
+        )
+        testRule(
+            "[([1 / 4]) ^ x] = [8 ^ y]",
+            SolvableRules.RewriteBothSidesWithSameBase,
+            "[([2 ^ -2]) ^ x] = [([2 ^ 3]) ^ y]",
+        )
+        testRule(
+            "[([9 / 16]) ^ x] = [([27 / 64]) ^ y]",
+            SolvableRules.RewriteBothSidesWithSameBase,
+            "[([([3 / 4]) ^ 2]) ^ x] = [([([3 / 4]) ^ 3]) ^ y]",
+        )
     }
 }

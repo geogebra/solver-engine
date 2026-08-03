@@ -114,6 +114,7 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     RewritePowerAsProduct(rewritePowerAsProduct),
     SimplifyExpressionToThePowerOfOne(simplifyExpressionToThePowerOfOne),
     EvaluateOneToAnyPower(evaluateOneToAnyPower),
+    EvaluateExponentialWithNegativeBaseAsUndefined(evaluateExponentialWithNegativeBaseAsUndefined),
     EvaluateZeroToThePowerOfZero(evaluateZeroToThePowerOfZero),
     EvaluateExpressionToThePowerOfZero(evaluateExpressionToThePowerOfZero),
     EvaluateZeroToAPositivePower(evaluateZeroToAPositivePower),
@@ -683,6 +684,24 @@ private val evaluateOneToAnyPower =
                 toExpr = move(one),
                 gmAction = tap(one),
                 explanation = metadata(Explanation.EvaluateOneToAnyPower),
+            )
+        }
+    }
+
+/**
+ * [(-a) ^ f(x)] -> undefined, where a is a positive constant and f(x) is non-constant
+ */
+private val evaluateExponentialWithNegativeBaseAsUndefined =
+    rule {
+        val base = condition { it.isConstant() && it.signOf() == Sign.NEGATIVE }
+        val exponent = condition { !it.isConstant() }
+        val power = powerOf(base, exponent)
+
+        onPattern(power) {
+            ruleResult(
+                toExpr = transformTo(power, Constants.Undefined),
+                gmAction = noGmSupport(),
+                explanation = metadata(Explanation.EvaluateExponentialWithNegativeBaseAsUndefined),
             )
         }
     }

@@ -84,10 +84,12 @@ import engine.patterns.OptionalWrappingPattern
 import engine.patterns.Pattern
 import engine.patterns.QuadraticPolynomialPattern
 import engine.patterns.RationalPattern
+import engine.patterns.SignedNumberPattern
 import engine.patterns.SolutionVariablePattern
 import engine.patterns.SolvablePattern
 import engine.patterns.TrigonometricExpressionPattern
 import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.UnsignedNumberPattern
 import engine.patterns.VariableExpressionPattern
 import engine.patterns.absoluteValueOf
 import engine.patterns.commutativeSumContaining
@@ -99,6 +101,7 @@ import engine.patterns.fractionOf
 import engine.patterns.inSolutionVariables
 import engine.patterns.integerCondition
 import engine.patterns.logOf
+import engine.patterns.negOf
 import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
 import engine.patterns.optionalPowerOf
@@ -126,6 +129,7 @@ import methods.solvable.DenominatorExtractor.extractDenominator
 import methods.solvable.DenominatorExtractor.extractFraction
 import methods.solvable.extractSumTermsFromSolvable
 import methods.solvable.findUnusedVariableLetter
+import java.math.BigDecimal
 import java.math.BigInteger
 
 enum class EquationsRules(override val runner: Rule) : RunnerMethod {
@@ -415,7 +419,7 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
     ExtractSolutionFromEquationWithInverseCosineOfZero(extractSolutionFromEquationWithInverseCosineOfZero),
     ExtractSolutionWithoutPeriod(extractSolutionWithoutPeriod),
     ReorderSumWithPeriod(reorderSumWithPeriod),
-    BalanceEquationWithTrigonometricExpressions(balanceEquationWithTrigonometricExpressions),
+    BalanceEquationWithTrigonometricExpressions(createBalanceEquationWithTrigonometricExpressions()),
     SubstituteTrigFunctionInQuadraticEquation(substituteTrigFunctionInQuadraticEquation),
     SubstituteLogsInEquation(substituteLogsInEquation),
     ReorderQuadraticEquationWithTrigonometricFunctions(reorderQuadraticEquationWithTrigonometricFunctions),
@@ -427,6 +431,10 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
     SubstituteValueOfVariable(substituteValueOfVariable),
     SubstituteHalfAngleTangentIntoLinearEquation(substituteHalfAngleTangentIntoLinearEquation),
     MultiplyRhsByPythagoreanIdentity(multiplyRhsByTrigonometricIdentity),
+    ExtractSolutionFromImpossibleExponentialEquation(extractSolutionFromImpossibleExponentialEquation),
+    RewriteExponentialEquationWithOneRhs(rewriteExponentialEquationWithOneRhs),
+    BalanceEquationWithExponentialExpressions(createBalanceEquationWithExponentialExpression()),
+    SimplifyExponentialEquationWithIdenticalExponents(simplifyExponentialEquationWithIdenticalExponents),
 }
 
 private val extractSolutionFromEquationInPlusMinusForm = rule {
@@ -1184,48 +1192,65 @@ private val reorderSumWithPeriod = rule {
 /**
  * sin(a) ± sin(b) = 0 --> sin(a) = ± sin(b)
  */
-private val balanceEquationWithTrigonometricExpressions = rule {
+private fun createBalanceEquationWithTrigonometricExpressions(): Rule {
     val argument = AnyPattern()
     val argument2 = AnyPattern()
     val trigFunction1 = TrigonometricExpressionPattern(argument)
     val trigFunction2 = TrigonometricExpressionPattern(argument2)
-    val term1 = optionalNegOf(trigFunction1)
-    val term2 = optionalNegOf(trigFunction2)
 
-    val lhs = sumOf(term1, term2)
-    val rhs = FixedPattern(Constants.Zero)
-
-    val solvableLeft = SolvablePattern(lhs, rhs)
-    val solvableRight = SolvablePattern(rhs, lhs)
-
-    onPattern(oneOf(solvableLeft, solvableRight)) {
-        if (getFunctionType(trigFunction1) != getFunctionType(trigFunction2)) {
-            return@onPattern null
-        }
-
-        val (lhs, rhs) = when {
-            term1.isNeg() -> Pair(move(term2), copyFlippedSign(term1, move(trigFunction1)))
-            else -> Pair(move(term1), copyFlippedSign(term2, move(trigFunction2)))
-        }
-
-        val toExpr = when {
-            isBound(solvableLeft) -> solvableLeft.deriveSolvable(
-                lhs,
-                rhs,
-            )
-            isBound(solvableRight) -> solvableRight.deriveSolvable(
-                rhs,
-                lhs,
-            )
-            else -> null
-        } ?: return@onPattern null
-
-        ruleResult(
-            toExpr = toExpr,
-            explanation = metadata(AnglesExplanation.BalanceEquationWithTrigonometricExpressions),
-        )
+    return createBalanceEquationRule(
+        trigFunction1,
+        trigFunction2,
+        AnglesExplanation.BalanceEquationWithTrigonometricExpressions,
+    ) {
+        getFunctionType(trigFunction1) == getFunctionType(trigFunction2)
     }
 }
+
+private fun createBalanceEquationRule(
+    pattern1: Pattern,
+    pattern2: Pattern,
+    explanation: MetadataKey,
+    additionalCheck: (RuleResultBuilder.() -> Boolean)? = null,
+): Rule =
+    rule {
+        val term1 = optionalNegOf(pattern1)
+        val term2 = optionalNegOf(pattern2)
+
+        val lhs = sumOf(term1, term2)
+        val rhs = FixedPattern(Constants.Zero)
+
+        val solvableLeft = SolvablePattern(lhs, rhs)
+        val solvableRight = SolvablePattern(rhs, lhs)
+
+        onPattern(oneOf(solvableLeft, solvableRight)) {
+            if (additionalCheck != null && !additionalCheck()) {
+                return@onPattern null
+            }
+
+            val (lhs, rhs) = when {
+                term1.isNeg() -> Pair(move(term2), copyFlippedSign(term1, move(pattern1)))
+                else -> Pair(move(term1), copyFlippedSign(term2, move(pattern2)))
+            }
+
+            val toExpr = when {
+                isBound(solvableLeft) -> solvableLeft.deriveSolvable(
+                    lhs,
+                    rhs,
+                )
+                isBound(solvableRight) -> solvableRight.deriveSolvable(
+                    rhs,
+                    lhs,
+                )
+                else -> null
+            } ?: return@onPattern null
+
+            ruleResult(
+                toExpr = toExpr,
+                explanation = metadata(explanation),
+            )
+        }
+    }
 
 /**
  * Substitute the trigonometric function with a variable (t if possible) and return it along with the substitution in
@@ -1939,6 +1964,115 @@ private val multiplyRhsByTrigonometricIdentity = rule {
                 newRhs,
             ),
             explanation = metadata(Explanation.MultiplyConstantTermByPythagoreanIdentity),
+        )
+    }
+}
+
+fun createExponentialPattern(
+    base: Pattern = ConstantInSolutionVariablePattern(),
+    exponent: Pattern = condition { !it.isConstantIn(solutionVariables) },
+) = powerOf(
+    base,
+    exponent,
+)
+
+private val extractSolutionFromImpossibleExponentialEquation = rule {
+    val lhs = createExponentialPattern()
+
+    val constantRhs = SignedNumberPattern()
+
+    val pattern = equationOf(
+        lhs,
+        constantRhs,
+    )
+
+    onPattern(pattern) {
+        if (getValue(constantRhs) > BigDecimal.ZERO) {
+            return@onPattern null
+        }
+
+        ruleResult(
+            toExpr = contradictionOf(variableListOf(context.solutionVariables), expression),
+            explanation = metadata(
+                Explanation.ExtractSolutionFromExponentialEquationWithNonPositiveConstantRhs,
+            ),
+        )
+    }
+}
+
+private val rewriteExponentialEquationWithOneRhs = rule {
+    val base = UnsignedNumberPattern()
+    val lhs = createExponentialPattern(base)
+    val rhs = FixedPattern(One)
+
+    onEquation(lhs, rhs) {
+        val base = distribute(base)
+
+        ruleResult(
+            toExpr = equationOf(
+                get(lhs),
+                transform(
+                    get(rhs),
+                    powerOf(
+                        base,
+                        Constants.Zero,
+                    ),
+                ),
+            ),
+            explanation = metadata(
+                Explanation.UsePowerRuleToRewriteExponentialEquation,
+                equationOf(
+                    powerOf(
+                        base,
+                        Constants.Zero,
+                    ),
+                    One,
+                ),
+            ),
+        )
+    }
+}
+
+private fun createBalanceEquationWithExponentialExpression(): Rule {
+    val pattern1 = createExponentialPattern()
+    val pattern2 = createExponentialPattern()
+
+    return createBalanceEquationRule(
+        pattern1,
+        pattern2,
+        Explanation.BalanceExponentialEquation,
+    )
+}
+
+private val simplifyExponentialEquationWithIdenticalExponents = rule {
+    val exponent = AnyPattern()
+
+    val base1 = AnyPattern()
+    val base2 = AnyPattern()
+
+    val lhs = createExponentialPattern(
+        base1,
+        exponent,
+    )
+
+    val rhs = createExponentialPattern(
+        base2,
+        exponent,
+    )
+
+    onEquation(lhs, rhs) {
+        if (get(base1) == get(base2)) {
+            return@onEquation null
+        }
+
+        ruleResult(
+            toExpr = equationOf(
+                move(exponent),
+                introduce(Constants.Zero),
+            ),
+            explanation = metadata(
+                Explanation.SimplifyExponentialEquationWithIdenticalExponents,
+            ),
         )
     }
 }

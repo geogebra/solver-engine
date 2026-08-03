@@ -157,7 +157,6 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
                     check { !isSet(Setting.DontCancelCommonFactorsWhenSimplifyingEquation) }
                     whilePossible(SolvableRules.CancelCommonFactorOnBothSides)
                 }
-                optionally(solvablePlansForEquations.rewriteBothSidesWithSameBaseAndSimplify)
                 optionally(SolvableRules.CancelCommonBase)
                 optionally(algebraicSimplificationStepsForEquations)
             }
@@ -444,6 +443,17 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     DivideByCosSquaredAndSimplify(divideByCosSquaredAndSimplify),
 
     ReduceGeneralQuadraticTrigEquationToHomogeneous(reduceGeneralQuadraticTrigEquationToHomogeneous),
+
+    SimplifyExponentialEquationWithSameBasesAndSolve(
+        plan {
+            explanation = Explanation.SimplifyExponentialEquationWithSameBasesAndSolve
+
+            steps {
+                apply(SolvableRules.CancelCommonBase)
+                apply(SolveEquation)
+            }
+        },
+    ),
 
     @PublicMethod
     SolveConstantEquation(

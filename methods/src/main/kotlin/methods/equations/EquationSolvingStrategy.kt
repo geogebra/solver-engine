@@ -42,6 +42,7 @@ import engine.methods.stepsproducers.steps
 import engine.methods.stepsproducers.whileStrategiesAvailableFirstOf
 import engine.operators.TrigonometricFunctionType
 import engine.patterns.AnyPattern
+import engine.patterns.ConstantInSolutionVariablePattern
 import engine.patterns.FixedPattern
 import engine.patterns.TrigonometricExpressionPattern
 import engine.patterns.commutativeProductContaining
@@ -58,6 +59,7 @@ import methods.angles.createEvaluateInverseTrigonometricFunctionExactlyPlan
 import methods.constantexpressions.ConstantExpressionsPlans
 import methods.equationsystems.EquationSystemsPlans
 import methods.factor.FactorPlans
+import methods.general.GeneralRules
 import methods.logs.LogsPlans
 import methods.logs.LogsRules
 import methods.logs.extractLogTerms
@@ -91,6 +93,88 @@ enum class EquationSolvingStrategy(
     ),
 
     /**
+     * Solve an equation in the form a^f(x) = b^g(x) or a^f(x) = c  where a and b are constants, by trying to equate
+     * the bases or taking the logarithm of both sides.
+     */
+    ElementaryExponential(
+        family = Family.EXPONENTIAL,
+        priority = 10,
+        explanation = Explanation.SolveExponentialEquation,
+        steps = steps {
+            optionally {
+                deeply(GeneralRules.MultiplyExponentsUsingPowerRule)
+            }
+
+            optionally {
+                check {
+                    // We don't want to rearrange an equation already in the shape [c_1 ^ f(x)] = [c_2 ^ g(x)]
+                    val exponentialPattern = createExponentialPattern()
+
+                    !exponentialPattern.matches(this, it.firstChild) ||
+                        !exponentialPattern.matches(this, it.secondChild)
+                }
+                optionally(solvablePlansForEquations.moveConstantsToTheRightAndSimplify)
+                optionally(solvablePlansForEquations.moveVariablesToTheLeftAndSimplify)
+            }
+
+            optionally {
+                // Make sure lhs is positive
+                check {
+                    it.firstChild is Minus
+                }
+
+                apply(SolvableRules.NegateBothSides)
+            }
+
+            optionally(EquationsRules.BalanceEquationWithExponentialExpressions)
+
+            check {
+                it
+                true
+            }
+
+            checkForm {
+                equationOf(
+                    createExponentialPattern(),
+                    oneOf(
+                        ConstantInSolutionVariablePattern(),
+                        createExponentialPattern(),
+                    ),
+                )
+            }
+
+            check {
+                it
+                true
+            }
+
+            firstOf {
+                // I am quite confident that the other impossible equation checking rules catch all of
+                // these cases by this point
+                option(EquationsRules.ExtractSolutionFromImpossibleExponentialEquation)
+                // [c ^ f(x)] = [c ^ g(x)]
+                option {
+                    // [c ^ f(x)] = 1
+                    optionally(EquationsRules.RewriteExponentialEquationWithOneRhs)
+                    // [c_1 ^ f(x)] = [c_2 ^ g(x)] where c_2 = [c_1 ^ k]
+                    optionally(solvablePlansForEquations.rewriteBothSidesWithSameBaseAndSimplify)
+                    apply(EquationsPlans.SimplifyExponentialEquationWithSameBasesAndSolve)
+                }
+                // [c_1 ^ f(x)] = [c_2 ^ f(x)]
+                option {
+                    apply(EquationsRules.SimplifyExponentialEquationWithIdenticalExponents)
+                    apply(EquationsPlans.SolveEquation)
+                }
+                // generic case
+                option {
+                    apply(solvablePlansForEquations.takeLogOfBothSidesAndSimplify)
+                    apply(equationSolvingSteps)
+                }
+            }
+        },
+    ),
+
+    /**
      * Solve an equation in one variable in the form p(x)^n = k
      * by taking the nth root from both sides
      */
@@ -117,19 +201,6 @@ enum class EquationSolvingStrategy(
             }
 
             optionally(EquationsPlans.MergeTrigonometricEquationSolutionsTask)
-        },
-    ),
-
-    LogsMethod(
-        family = Family.EXPONENTIAL,
-        priority = 10,
-        explanation = EquationsExplanation.SolveExponentialEquation,
-        steps = steps {
-            firstOf {
-                option(solvablePlansForEquations.takeLogOfRHSAndSimplify)
-                option(solvablePlansForEquations.takeLogOfBothSidesAndSimplify)
-            }
-            apply(equationSolvingSteps)
         },
     ),
 

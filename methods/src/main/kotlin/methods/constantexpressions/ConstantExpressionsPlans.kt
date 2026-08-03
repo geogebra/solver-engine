@@ -312,6 +312,7 @@ val simpleTidyUpSteps = steps {
     firstOf {
         // simplify to undefined
         option(GeneralRules.SimplifyZeroDenominatorFractionToUndefined)
+        option(GeneralRules.EvaluateExponentialWithNegativeBaseAsUndefined)
         option(GeneralRules.EvaluateZeroToThePowerOfZero)
         option(IntegerRationalExponentsRules.EvaluateNegativeToRationalExponentAsUndefined)
         option(LogsRules.EvaluateLogOfNonPositiveAsUndefined)

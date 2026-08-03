@@ -870,6 +870,41 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      */
     EvaluateEquationWithImpossibleConstraint,
 
+    /**
+     * Extract solution from exponential equation with non-positive constant rhs
+     *
+     * e.g. [3 ^ x-2] = -1 --> No Solution
+     */
+    ExtractSolutionFromExponentialEquationWithNonPositiveConstantRhs,
+
+    /**
+     * Apply the power rule %1
+     *
+     * %1 - base ^ 0 = 1
+     *
+     * e.g. [3 ^ x - 2] = 0 --> [3 ^ x - 2] = [3 ^ 0]
+     */
+    UsePowerRuleToRewriteExponentialEquation,
+
+    /**
+     * Bases are equal: equate the exponents and solve the equation
+     *
+     * e.g. [3 ^ x - 2] = [3 ^ 0] --> x - 2 = 0 --> x = 2
+     */
+    SimplifyExponentialEquationWithSameBasesAndSolve,
+
+    /**
+     * Isolate the exponential terms
+     *
+     * e.g. [3 ^ x - 2] - [4 ^ 2x + 1] = 0 --> [3 ^ x - 2] = [4 ^ 2x + 1]
+     */
+    BalanceExponentialEquation,
+
+    /**
+     * Powers with identical exponents and different bases are only equal when the exponent is zero
+     */
+    SimplifyExponentialEquationWithIdenticalExponents,
+
     ;
 
     override val category = "Equations"

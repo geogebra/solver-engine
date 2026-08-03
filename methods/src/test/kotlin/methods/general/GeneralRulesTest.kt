@@ -23,6 +23,7 @@ import methods.general.GeneralRules.CancelAdditiveInverseElements
 import methods.general.GeneralRules.DistributePowerOfProduct
 import methods.general.GeneralRules.DistributeSumOfPowers
 import methods.general.GeneralRules.EliminateZeroInSum
+import methods.general.GeneralRules.EvaluateExponentialWithNegativeBaseAsUndefined
 import methods.general.GeneralRules.EvaluateExpressionToThePowerOfZero
 import methods.general.GeneralRules.EvaluateOneToAnyPower
 import methods.general.GeneralRules.EvaluateProductContainingZero
@@ -528,6 +529,13 @@ class GeneralRulesTest {
         }
         testRule("[(-x)^7]", SimplifyOddPowerOfNegative, "-[x^7]", GmAction("Drag", "./1", "./0/0"))
         testRule("[(-[1 / 2]) ^ 3]", SimplifyOddPowerOfNegative, "-[([1 / 2]) ^ 3]")
+    }
+
+    @Test
+    fun testEvaluateExponentialWithNegativeBaseAsUndefined() {
+        testRule("[(-2) ^ x]", EvaluateExponentialWithNegativeBaseAsUndefined, "/undefined/")
+        testRule("[(-2) ^ sqrt[x]]", EvaluateExponentialWithNegativeBaseAsUndefined, "/undefined/")
+        testRule("[(-2) ^ 4]", EvaluateExponentialWithNegativeBaseAsUndefined, null)
     }
 
     @Test
