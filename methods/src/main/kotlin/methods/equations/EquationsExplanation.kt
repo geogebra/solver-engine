@@ -878,15 +878,6 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     ExtractSolutionFromExponentialEquationWithNonPositiveConstantRhs,
 
     /**
-     * Apply the power rule %1
-     *
-     * %1 - base ^ 0 = 1
-     *
-     * e.g. [3 ^ x - 2] = 0 --> [3 ^ x - 2] = [3 ^ 0]
-     */
-    UsePowerRuleToRewriteExponentialEquation,
-
-    /**
      * Bases are equal: equate the exponents and solve the equation
      *
      * e.g. [3 ^ x - 2] = [3 ^ 0] --> x - 2 = 0 --> x = 2

@@ -239,4 +239,68 @@ class InequalitiesRulesTest {
             "-5 <= 2(3x + 1) <= 5",
         )
     }
+
+    @Test
+    fun `extract solutions from exponential inequalities with non-positive fractional rhs`() {
+        testRuleInX(
+            "[2 ^ x] < -2",
+            InequalitiesRules.ExtractSolutionFromImpossibleExponentialInequality,
+            "Contradiction[x: [2 ^ x] < -2]",
+        )
+        testRuleInX(
+            "[2 ^ x] <= -2",
+            InequalitiesRules.ExtractSolutionFromImpossibleExponentialInequality,
+            "Contradiction[x: [2 ^ x] <= -2]",
+        )
+        testRuleInX(
+            "[2 ^ x] > -2",
+            InequalitiesRules.ExtractSolutionFromAlwaysTrueInequality,
+            "Identity[x: [2 ^ x] > -2]",
+        )
+        testRuleInX(
+            "[2 ^ x] >= -2",
+            InequalitiesRules.ExtractSolutionFromAlwaysTrueInequality,
+            "Identity[x: [2 ^ x] >= -2]",
+        )
+        testRuleInX(
+            "[2 ^ x] < 2",
+            InequalitiesRules.ExtractSolutionFromImpossibleExponentialInequality,
+            null,
+        )
+        testRuleInX(
+            "[2 ^ x] > 2",
+            InequalitiesRules.ExtractSolutionFromAlwaysTrueInequality,
+            null,
+        )
+        testRuleInX(
+            "[2 ^ x] < -[1 / 2]",
+            InequalitiesRules.ExtractSolutionFromImpossibleExponentialInequality,
+            "Contradiction[x: [2 ^ x] < -[1 / 2]]",
+        )
+        testRuleInX(
+            "[2 ^ x] <= -[1 / 2]",
+            InequalitiesRules.ExtractSolutionFromImpossibleExponentialInequality,
+            "Contradiction[x: [2 ^ x] <= -[1 / 2]]",
+        )
+        testRuleInX(
+            "[2 ^ x] > -[1 / 2]",
+            InequalitiesRules.ExtractSolutionFromAlwaysTrueInequality,
+            "Identity[x: [2 ^ x] > -[1 / 2]]",
+        )
+        testRuleInX(
+            "[2 ^ x] >= -[1 / 2]",
+            InequalitiesRules.ExtractSolutionFromAlwaysTrueInequality,
+            "Identity[x: [2 ^ x] >= -[1 / 2]]",
+        )
+        testRuleInX(
+            "[2 ^ x] < [1 / 2]",
+            InequalitiesRules.ExtractSolutionFromImpossibleExponentialInequality,
+            null,
+        )
+        testRuleInX(
+            "[2 ^ x] > [1 / 2]",
+            InequalitiesRules.ExtractSolutionFromAlwaysTrueInequality,
+            null,
+        )
+    }
 }

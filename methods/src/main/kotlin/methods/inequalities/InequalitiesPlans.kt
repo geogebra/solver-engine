@@ -60,6 +60,7 @@ import engine.methods.taskSet
 import engine.operators.Comparator
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
+import engine.patterns.ConstantInSolutionVariablePattern
 import engine.patterns.FixedPattern
 import engine.patterns.QuadraticPolynomialPattern
 import engine.patterns.RecurringDecimalPattern
@@ -69,6 +70,7 @@ import engine.patterns.UnsignedNumberPattern
 import engine.patterns.closedOpenIntervalOf
 import engine.patterns.condition
 import engine.patterns.contradictionOf
+import engine.patterns.exponentialOf
 import engine.patterns.fractionOf
 import engine.patterns.identityOf
 import engine.patterns.inequalityOf
@@ -88,6 +90,7 @@ import methods.constantexpressions.simpleTidyUpSteps
 import methods.equations.EquationsPlans
 import methods.equations.createSolveSolvableWithDomainRestrictions
 import methods.equations.simplificationStepsForEquationsWithTwoLogs
+import methods.general.GeneralRules
 import methods.general.NormalizationPlans
 import methods.inequations.InequationsPlans
 import methods.logs.LogsPlans
@@ -253,6 +256,22 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
 
     @PublicMethod
     SolveLogInequality(solveLogInequality),
+
+    @PublicMethod
+    SolveExponentialInequality(solveExponentialInequality),
+
+    // For now let's leave the duplicated plan (very similar for equations/inequalities). If we encounter any more
+    // plans of the form "apply solvable rule and solve" we can adjust the solvable plans to incorporate them.
+    SimplifyExponentialInequalityWithSameBasesAndSolve(
+        plan {
+            explanation = Explanation.SimplifyExponentialEquationWithSameBasesAndSolve
+
+            steps {
+                apply(SolvableRules.CancelCommonBase)
+                apply(inequalitySolvingSteps)
+            }
+        },
+    ),
 }
 
 internal val inequalitySimplificationSteps = steps {
@@ -775,3 +794,84 @@ private val solveLogInequality = createSolveSolvableWithDomainRestrictions(
         }
     },
 )
+
+private val solveExponentialInequality = plan {
+    explanation = Explanation.SolveExponentialInequality
+
+    pattern = inequalityOf(
+        AnyPattern(),
+        AnyPattern(),
+    )
+
+    steps {
+        // Let's leave simplification here for now, if we need more plans that require similar preprocessing
+        // (currently log and exponential) we can refactor to have a strategies pipeline similar to equations
+        optionally(algebraicSimplificationStepsForEquations)
+
+        optionally {
+            deeply(GeneralRules.MultiplyExponentsUsingPowerRule)
+        }
+
+        optionally {
+            check {
+                // We don't want to rearrange an inequality already in the shape [c_1 ^ f(x)] <> [c_2 ^ g(x)]
+                val exponentialPattern = exponentialOf()
+
+                !exponentialPattern.matches(this, it.firstChild) ||
+                    !exponentialPattern.matches(this, it.secondChild)
+            }
+            optionally(solvablePlansForInequalities.moveConstantsToTheRightAndSimplify)
+            optionally(solvablePlansForInequalities.moveVariablesToTheLeftAndSimplify)
+        }
+
+        // Isolate the exponential expression, e.g. 4 * 2^x < 1/4 -> 2^x < 1/16.
+        optionally(solvablePlansForInequalities.coefficientRemovalSteps)
+
+        optionally {
+            // Make sure lhs is positive
+            check {
+                it.firstChild is Minus
+            }
+
+            apply(SolvableRules.NegateBothSides)
+        }
+
+        // We won't handle inequalities with two exponential expressions in this ticket,
+        // but we want them in the long run
+        // optionally(EquationsRules.BalanceEquationWithExponentialExpressions)
+
+        checkForm {
+            inequalityOf(
+                exponentialOf(),
+                oneOf(
+                    ConstantInSolutionVariablePattern(),
+                    exponentialOf(),
+                ),
+            )
+        }
+
+        firstOf {
+            option(InequalitiesRules.ExtractSolutionFromImpossibleExponentialInequality)
+            option(InequalitiesRules.ExtractSolutionFromAlwaysTrueInequality)
+            // [c ^ f(x)] <> [c ^ g(x)]
+            option {
+                // [c ^ f(x)] <> 1
+                optionally(SolvableRules.UsePowerRuleToRewriteExponentialSolvable)
+                // [c_1 ^ f(x)] <> [c_2 ^ g(x)] where c_2 = [c_1 ^ k]
+                optionally(solvablePlansForInequalities.rewriteBothSidesWithSameBaseAndSimplify)
+                apply(InequalitiesPlans.SimplifyExponentialInequalityWithSameBasesAndSolve)
+            }
+            // Will be handled as part of a future ticket
+            // // [c_1 ^ f(x)] <> [c_2 ^ f(x)]
+            // option {
+            //     apply(EquationsRules.SimplifyExponentialEquationWithIdenticalExponents)
+            //     apply(EquationsPlans.SolveEquation)
+            // }
+            // generic case
+            option {
+                apply(solvablePlansForInequalities.takeLogOfBothSidesAndSimplify)
+                apply(inequalitySolvingSteps)
+            }
+        }
+    }
+}

@@ -447,7 +447,7 @@ private val exponentiateBothSides = rule {
     }
 }
 
-private fun shouldFlipSignOfLogSolvable(expression: Expression): Boolean? =
+fun shouldFlipSignOfLogSolvable(expression: Expression): Boolean? =
     when (expression) {
         is Fraction -> {
             val (numerator, denominator) = expression.numerator.asInteger() to expression.denominator.asInteger()

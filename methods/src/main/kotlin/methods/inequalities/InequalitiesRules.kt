@@ -17,6 +17,7 @@
 
 package methods.inequalities
 
+import engine.conditions.isDefinitelyNotPositive
 import engine.expressions.Comparison
 import engine.expressions.Constants
 import engine.expressions.Expression
@@ -52,6 +53,7 @@ import engine.patterns.Pattern
 import engine.patterns.SolutionVariablePattern
 import engine.patterns.absoluteValueOf
 import engine.patterns.condition
+import engine.patterns.exponentialOf
 import engine.patterns.greaterThanEqualOf
 import engine.patterns.greaterThanOf
 import engine.patterns.inequalityOf
@@ -115,6 +117,9 @@ enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
             }
         },
     ),
+
+    ExtractSolutionFromImpossibleExponentialInequality(extractSolutionFromImpossibleExponentialInequality),
+    ExtractSolutionFromAlwaysTrueInequality(extractSolutionFromAlwaysTrueInequality),
 }
 
 /**
@@ -350,6 +355,50 @@ private val convertModulusLessThanEqualToPositiveConstant = rule {
                 closedRangeOf(negOf(get(rhs)), newLHS, get(rhs)),
             ),
             explanation = metadata(Explanation.ConvertModulusLessThanEqualToPositiveConstant),
+        )
+    }
+}
+
+private val extractSolutionFromImpossibleExponentialInequality = rule {
+    val lhs = exponentialOf()
+
+    val constantRhs = condition {
+        it.isConstantIn(solutionVariables) && it.isDefinitelyNotPositive()
+    }
+
+    val pattern = oneOf(
+        lessThanOf(lhs, constantRhs),
+        lessThanEqualOf(lhs, constantRhs),
+    )
+
+    onPattern(pattern) {
+        ruleResult(
+            toExpr = contradictionOf(variableListOf(context.solutionVariables), expression),
+            explanation = metadata(
+                Explanation.ExtractSolutionFromImpossibleExponentialInequality,
+            ),
+        )
+    }
+}
+
+private val extractSolutionFromAlwaysTrueInequality = rule {
+    val lhs = exponentialOf()
+
+    val constantRhs = condition {
+        it.isConstantIn(solutionVariables) && it.isDefinitelyNotPositive()
+    }
+
+    val pattern = oneOf(
+        greaterThanOf(lhs, constantRhs),
+        greaterThanEqualOf(lhs, constantRhs),
+    )
+
+    onPattern(pattern) {
+        ruleResult(
+            toExpr = identityOf(variableListOf(context.solutionVariables), expression),
+            explanation = metadata(
+                Explanation.ExtractSolutionFromAlwaysTrueInequality,
+            ),
         )
     }
 }

@@ -26,6 +26,9 @@ export const translationsFetched = ref(false);
 
 export const fetchDefaultTranslations = () =>
   fetchTranslationsMap().then((map) => {
+    // Inject the updated key here, as we want to keep the mathword interface clean in the sdk
+    map['MathWord.InfinitelyManySolutions'] =
+      map['MathWord.InfinitelyManySolutionsInX'] ?? map['MathWord.InfinitelyManySolutions'];
     translationData.value = map;
     mathWords.value = getMathWords(map);
     translationsFetched.value = true;

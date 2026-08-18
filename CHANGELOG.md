@@ -19,6 +19,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Solve logarithmic inequalities of form log(f) < log(g). (PLUT-1136)
 - Solve nested logarithmic equaqions. (PLUT-1140)
 - Solve nested logarithmic inequalities. (PLUT-1142)
+- Solve exponential inequalities with one exponential expression. (PLUT-1151)
 - SDK: Add support for exponent on log function. (PLUT-1127)
 
 ### Fixed

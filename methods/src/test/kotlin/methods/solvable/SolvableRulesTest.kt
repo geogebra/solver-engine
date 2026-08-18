@@ -485,6 +485,50 @@ class SolvableRulesTest {
     }
 
     @Test
+    fun testTakeLogOfBothSides() {
+        testRuleInX(
+            "[10 ^ x] = [3 ^ x + 1]",
+            SolvableRules.TakeLogOfBothSides,
+            "log[[10 ^ x]] = log[[3 ^ x + 1]]",
+        )
+        testRuleInX(
+            "100 = [3 ^ x + 1]",
+            SolvableRules.TakeLogOfBothSides,
+            "log[100] = log[[3 ^ x + 1]]",
+        )
+        testRuleInX(
+            "[1/10] = [3 ^ x + 1]",
+            SolvableRules.TakeLogOfBothSides,
+            "log[[1/10]] = log[[3 ^ x + 1]]",
+        )
+        testRuleInX(
+            "[100 ^ x] = [3 ^ x + 1]",
+            SolvableRules.TakeLogOfBothSides,
+            "log[[100 ^ x]] = log[[3 ^ x + 1]]",
+        )
+        testRuleInX(
+            "[([1 / 10]) ^ x] = [3 ^ x + 1]",
+            SolvableRules.TakeLogOfBothSides,
+            "log[[([1 / 10]) ^ x]] = log[[3 ^ x + 1]]",
+        )
+        testRuleInX(
+            "[3 ^ x + 1] = [([1 / 100]) ^ x]",
+            SolvableRules.TakeLogOfBothSides,
+            "log[[3 ^ x + 1]] = log[[([1 / 100]) ^ x]]",
+        )
+        testRuleInX(
+            "[([10 / 100]) ^ x] = [3 ^ x + 1]",
+            SolvableRules.TakeLogOfBothSides,
+            "log[[([10 / 100]) ^ x]] = log[[3 ^ x + 1]]",
+        )
+        testRuleInX(
+            "[2 ^ x] = [3 ^ x + 1]",
+            SolvableRules.TakeLogOfBothSides,
+            "ln[[2 ^ x]] = ln[[3 ^ x + 1]]",
+        )
+    }
+
+    @Test
     fun testCancelCommonBase() {
         testRuleInX("[2 ^ x] = [2 ^ 3]", SolvableRules.CancelCommonBase, "x = 3")
         testRuleInX("[3 ^ x + 1] = [3 ^ 1 - x]", SolvableRules.CancelCommonBase, "x + 1 = 1 - x")
@@ -536,6 +580,35 @@ class SolvableRulesTest {
             "[([9 / 16]) ^ x] = [([27 / 64]) ^ y]",
             SolvableRules.RewriteBothSidesWithSameBase,
             "[([([3 / 4]) ^ 2]) ^ x] = [([([3 / 4]) ^ 3]) ^ y]",
+        )
+    }
+
+    @Test
+    fun testRewriteExponentialSolvableWithOneRhs() {
+        testRuleInX(
+            "[3 ^ x] = 1",
+            SolvableRules.UsePowerRuleToRewriteExponentialSolvable,
+            "[3 ^ x] = [3 ^ 0]",
+        )
+        testRuleInX(
+            "[5 ^ x - 2] = 1",
+            SolvableRules.UsePowerRuleToRewriteExponentialSolvable,
+            "[5 ^ x - 2] = [5 ^ 0]",
+        )
+        testRuleInX(
+            "[0.5 ^ x] = 1",
+            SolvableRules.UsePowerRuleToRewriteExponentialSolvable,
+            "[0.5 ^ x] = [0.5 ^ 0]",
+        )
+        testRuleInX(
+            "[([2 / 3]) ^ x] = 1",
+            SolvableRules.UsePowerRuleToRewriteExponentialSolvable,
+            "[([2 / 3]) ^ x] = [([2 / 3]) ^ 0]",
+        )
+        testRuleInX(
+            "[x ^ y] = 1",
+            SolvableRules.UsePowerRuleToRewriteExponentialSolvable,
+            null,
         )
     }
 }

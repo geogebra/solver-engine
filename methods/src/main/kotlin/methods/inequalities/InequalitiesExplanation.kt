@@ -414,6 +414,38 @@ enum class InequalitiesExplanation : CategorisedMetadataKey {
      */
     EvaluateInequalityWithImpossibleConstraint,
 
+    /**
+     * Solve exponential inequality
+     */
+    SolveExponentialInequality,
+
+    /**
+     * An exponential expression is always positive
+     *
+     * Extract solution from exponential inequality with exponential lhs less than
+     * or equal to non-positive constant rhs
+     *
+     * e.g. [3 ^ x-2] < -1 --> No Solution
+     */
+    ExtractSolutionFromImpossibleExponentialInequality,
+
+    /**
+     * An exponential expression is always positive
+     *
+     * Extract solution from exponential inequality with exponential lhs greater than
+     * or equal to non-positive constant rhs
+     *
+     * e.g. [3 ^ x-2] > -1 --> Infinitely many solutions
+     */
+    ExtractSolutionFromAlwaysTrueInequality,
+
+    /**
+     * Bases are equal: equate the exponents and solve the inequality
+     *
+     * e.g. [3 ^ x - 2] < [3 ^ 0] --> x - 2 < 0 --> x = 2
+     */
+    SimplifyExponentialEquationWithSameBasesAndSolve,
+
     ;
 
     override val category = "Inequalities"

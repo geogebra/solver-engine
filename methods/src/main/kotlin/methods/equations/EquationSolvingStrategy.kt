@@ -49,6 +49,7 @@ import engine.patterns.commutativeProductContaining
 import engine.patterns.commutativeSumOf
 import engine.patterns.condition
 import engine.patterns.equationOf
+import engine.patterns.exponentialOf
 import engine.patterns.logOf
 import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
@@ -108,7 +109,7 @@ enum class EquationSolvingStrategy(
             optionally {
                 check {
                     // We don't want to rearrange an equation already in the shape [c_1 ^ f(x)] = [c_2 ^ g(x)]
-                    val exponentialPattern = createExponentialPattern()
+                    val exponentialPattern = exponentialOf()
 
                     !exponentialPattern.matches(this, it.firstChild) ||
                         !exponentialPattern.matches(this, it.secondChild)
@@ -128,24 +129,14 @@ enum class EquationSolvingStrategy(
 
             optionally(EquationsRules.BalanceEquationWithExponentialExpressions)
 
-            check {
-                it
-                true
-            }
-
             checkForm {
                 equationOf(
-                    createExponentialPattern(),
+                    exponentialOf(),
                     oneOf(
                         ConstantInSolutionVariablePattern(),
-                        createExponentialPattern(),
+                        exponentialOf(),
                     ),
                 )
-            }
-
-            check {
-                it
-                true
             }
 
             firstOf {
@@ -155,7 +146,7 @@ enum class EquationSolvingStrategy(
                 // [c ^ f(x)] = [c ^ g(x)]
                 option {
                     // [c ^ f(x)] = 1
-                    optionally(EquationsRules.RewriteExponentialEquationWithOneRhs)
+                    optionally(SolvableRules.UsePowerRuleToRewriteExponentialSolvable)
                     // [c_1 ^ f(x)] = [c_2 ^ g(x)] where c_2 = [c_1 ^ k]
                     optionally(solvablePlansForEquations.rewriteBothSidesWithSameBaseAndSimplify)
                     apply(EquationsPlans.SimplifyExponentialEquationWithSameBasesAndSolve)

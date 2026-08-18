@@ -136,9 +136,6 @@ class ExponentialEquationsTest {
 
                 step {
                     toExpr = "[3 ^ x] = [3 ^ 0]"
-                    explanation {
-                        key = EquationsExplanation.UsePowerRuleToRewriteExponentialEquation
-                    }
                 }
 
                 step {
@@ -150,6 +147,7 @@ class ExponentialEquationsTest {
             }
         }
 
+    @Suppress("LongMethod")
     @Test
     fun `test same base after rewriting both sides`() {
         testMethodInX {
@@ -283,6 +281,7 @@ class ExponentialEquationsTest {
             }
         }
 
+    @Suppress("LongMethod")
     @Test
     fun `test log of both sides`() =
         testMethodInX {
@@ -398,6 +397,19 @@ class ExponentialEquationsTest {
                     explanation {
                         key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
                     }
+                }
+            }
+        }
+
+    @Test
+    fun `test base ten log of both sides and simplify explanation`() =
+        testMethodInX {
+            method = solvablePlansForEquations.takeLogOfBothSidesAndSimplify
+            inputExpr = "[10 ^ x] = [3 ^ x + 1]"
+
+            check {
+                explanation {
+                    key = methods.solvable.EquationsExplanation.TakeLogBaseTenOfBothSidesAndSimplify
                 }
             }
         }

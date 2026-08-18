@@ -243,6 +243,14 @@ enum class SolvableKey(
     TakeLogOfBothSides(SolvableRules.TakeLogOfBothSides),
 
     /**
+     * Take the log in base ten of both sides so the solvable can be further simplified taking the exponents out of
+     * the logs.
+     *
+     * E.g.  [10 ^ x] = [3 ^ x - 1] --> log[10 ^ x] = log[3 ^ x - 1]
+     */
+    TakeLogBaseTenOfBothSides(SolvableRules.TakeLogOfBothSides),
+
+    /**
      * When both sides are powers with the same base, rewrite the solvable by cancelling the common base
      *
      * E.g.  [2 ^ x] = [2 ^ 1 - x] --> x = 1 - x
@@ -257,6 +265,15 @@ enum class SolvableKey(
      * This is only done in simple cases.
      */
     RewriteBothSidesWithSameBase(SolvableRules.RewriteBothSidesWithSameBase),
+
+    /**
+     * Apply the power rule %1 to rewrite rhs
+     *
+     * %1 - base ^ 0 = 1
+     *
+     * e.g. [3 ^ x - 2] = 0 --> [3 ^ x - 2] = [3 ^ 0]
+     */
+    UsePowerRuleToRewriteExponentialSolvable(SolvableRules.UsePowerRuleToRewriteExponentialSolvable),
 }
 
 /**
@@ -808,6 +825,18 @@ enum class EquationsExplanation(
     TakeLogOfBothSidesAndSimplify(SolvableKey.TakeLogOfBothSides, simplify = true),
 
     /**
+     * Take the log in base 10 of both sides so the equation can be solved by taking the exponents out of the logs.
+     *
+     * E.g.  [2 ^ x] = [10 ^ x - 1] --> log[2 ^ x] = log[10 ^ x - 1]
+     */
+    TakeLogBaseTenOfBothSides(SolvableKey.TakeLogBaseTenOfBothSides),
+
+    /**
+     * Take the log in base 10 of both sides and simplify each side
+     */
+    TakeLogBaseTenOfBothSidesAndSimplify(SolvableKey.TakeLogBaseTenOfBothSides, simplify = true),
+
+    /**
      * When both sides are powers with the same base, rewrite the equation by cancelling the common base
      *
      * E.g.  [2 ^ x] = [2 ^ 1 - x] --> x = 1 - x
@@ -832,6 +861,15 @@ enum class EquationsExplanation(
      * This is only done in simple cases.
      */
     RewriteBothSidesWithSameBaseAndSimplify(SolvableKey.RewriteBothSidesWithSameBase, simplify = true),
+
+    /**
+     * Apply the power rule %1
+     *
+     * %1 - base ^ 0 = 1
+     *
+     * e.g. [3 ^ x - 2] = 0 --> [3 ^ x - 2] = [3 ^ 0]
+     */
+    UsePowerRuleToRewriteExponentialEquation(SolvableKey.UsePowerRuleToRewriteExponentialSolvable),
     ;
 
     override val category = "Equations"
@@ -1278,6 +1316,77 @@ enum class InequalitiesExplanation(
      * E.g. 7 < 3x -> 3x > 7
      */
     FlipInequality(SolvableKey.FlipSolvable),
+
+    /**
+     * Take the log of both sides so the inequality can be solved by taking the exponents out of the logs.
+     *
+     * E.g.  [2 ^ x] < [3 ^ x - 1] --> ln[2 ^ x] < ln[3 ^ x - 1]
+     *
+     * (then the equation would be rewritten as x ln2 = (x - 1) ln3
+     */
+    TakeLogOfBothSides(SolvableKey.TakeLogOfBothSides),
+
+    /**
+     * Take the log of both sides and simply each side
+     *
+     * E.g.  [2 ^ x] < [3 ^ x - 1] --> ln[2 ^ x] < ln[3 ^ x - 1] --> x ln2 < (x - 1) ln3
+     */
+    TakeLogOfBothSidesAndSimplify(SolvableKey.TakeLogOfBothSides, simplify = true),
+
+    /**
+     * Take the log in base 10 of both sides so the inequality can be solved by taking the exponents out of the logs.
+     *
+     * E.g.  [2 ^ x] < [10 ^ x - 1] --> log[2 ^ x] < log[10 ^ x - 1]
+     */
+    TakeLogBaseTenOfBothSides(SolvableKey.TakeLogBaseTenOfBothSides),
+
+    /**
+     * Take the log in base 10 of both sides and simplify each side
+     */
+    TakeLogBaseTenOfBothSidesAndSimplify(SolvableKey.TakeLogBaseTenOfBothSides, simplify = true),
+
+    /**
+     * When both sides are powers with the same base, rewrite the inequality by cancelling the common base
+     *
+     * E.g.  [2 ^ x] < [2 ^ 1 - x] --> x < 1 - x
+     */
+    CancelCommonBase(SolvableKey.CancelCommonBase),
+
+    /**
+     * When both sides are powers with the same base (base in (0,1) ), rewrite the inequality by cancelling the
+     * common base and flipping the sign
+     *
+     * E.g.  [0.7 ^ x] = [0.7 ^ 1 - x] --> x = 1 - x
+     */
+    CancelCommonBaseAndFlipSign(SolvableKey.CancelCommonBase, flipSign = true),
+
+    /**
+     * Find a common base for both sides by rewriting either or both bases as a power
+     *
+     * E.g. [2 ^ x] < [4 ^ x - 1] --> [2 ^ x] < [(2 ^ 2]) ^ x - 1]
+     *
+     * This is only done in simple cases.
+     */
+    RewriteBothSidesWithSameBase(SolvableKey.RewriteBothSidesWithSameBase),
+
+    /**
+     * Find a common base for both sides by rewriting either or both bases as a power, then using the power rule
+     * to simplify the result and obtain an equation in the form a^x = a^y
+     *
+     * E.g. [2 ^ x] < [4 ^ x - 1] --> [2 ^ x] < [(2 ^ 2]) ^ x - 1] --> [2 ^ x] < [2 ^ 2(x - 1)]]
+     *
+     * This is only done in simple cases.
+     */
+    RewriteBothSidesWithSameBaseAndSimplify(SolvableKey.RewriteBothSidesWithSameBase, simplify = true),
+
+    /**
+     * Apply the power rule %1
+     *
+     * %1 - base ^ 0 = 1
+     *
+     * e.g. [3 ^ x - 2] < 0 --> [3 ^ x - 2] < [3 ^ 0]
+     */
+    UsePowerRuleToRewriteExponentialInequality(SolvableKey.UsePowerRuleToRewriteExponentialSolvable),
     ;
 
     override val category = "Inequalities"

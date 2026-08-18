@@ -21,6 +21,7 @@ import engine.context.BooleanSetting
 import engine.context.Context
 import engine.context.Setting
 import engine.expressions.AbsoluteValue
+import engine.expressions.Combine
 import engine.expressions.Constants
 import engine.expressions.Equation
 import engine.expressions.Expression
@@ -159,19 +160,17 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
 
     val takeLogOfRHSAndSimplify = ApplyRuleAndSimplify(SolvableKey.TakeLogOfRHS)
 
-    val takeLogOfBothSidesAndSimplify = plan {
-        explanation {
-            metadata(getExplanationKey(SolvableKey.TakeLogOfBothSides, context, expression))
-        }
-
-        steps {
+    val takeLogOfBothSidesAndSimplify = object : Method {
+        private val prepareForTakingLogs = steps {
             applyToChildren {
                 check { it is Product }
                 applyToChildren(GeneralRules.RewriteIntegerOrderRootAsPower)
                 whilePossible(GeneralRules.RewriteProductOfPowersWithSameBase)
                 optionally(simplificationPlan)
             }
-            apply(SolvableRules.TakeLogOfBothSides)
+        }
+
+        private val simplifyLogs = steps {
             applyToChildren {
                 whilePossible {
                     firstOf {
@@ -181,6 +180,29 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
                 }
                 optionally(simplificationPlan)
             }
+        }
+
+        override fun tryExecute(ctx: Context, sub: Expression): Transformation? {
+            val expression = if (sub is ExpressionWithConstraint) sub.expression else sub
+            val builder = StepsBuilder(ctx, sub)
+
+            prepareForTakingLogs.produceSteps(ctx, builder.expression)?.let { builder.addSteps(it) }
+            val takeLogsStep = SolvableRules.TakeLogOfBothSides.tryExecute(ctx, builder.simpleExpression) ?: return null
+            builder.addStep(takeLogsStep)
+            simplifyLogs.produceSteps(ctx, builder.expression)?.let { builder.addSteps(it) }
+
+            val innerExplanation = takeLogsStep.explanation!!
+            val innerExplanationKey = innerExplanation.key as SolvableExplanation
+            return Transformation(
+                type = Transformation.Type.Plan,
+                fromExpr = sub,
+                toExpr = builder.expression.withOrigin(Combine(listOf(sub))),
+                steps = builder.getFinalSteps(),
+                explanation = Metadata(
+                    getExplanationKey(innerExplanationKey.solvableKey, ctx, expression),
+                    innerExplanation.mappedParams,
+                ),
+            )
         }
     }
 

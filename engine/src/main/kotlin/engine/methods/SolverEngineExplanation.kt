@@ -126,6 +126,13 @@ enum class MathWord : CategorisedMetadataKey {
      */
     InfinitelyManySolutions,
 
+    /**
+     * Used to express that an equation/inequality is true for all real values of %v. A more specific version of the
+     * InfinitelyManySolutions key.
+     *
+     * For all real values of %v
+     */
+    InfinitelyManySolutionsInX,
     ;
 
     override val category = "MathWord"

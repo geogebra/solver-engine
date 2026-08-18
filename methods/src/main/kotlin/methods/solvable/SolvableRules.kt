@@ -26,6 +26,7 @@ import engine.context.emptyContext
 import engine.expressionbuilder.MappedExpressionBuilder
 import engine.expressions.AbsoluteValue
 import engine.expressions.Constants
+import engine.expressions.Constants.One
 import engine.expressions.Equation
 import engine.expressions.Expression
 import engine.expressions.ExpressionWithConstraint
@@ -41,11 +42,9 @@ import engine.expressions.greaterThanEqualOf
 import engine.expressions.inequationOf
 import engine.expressions.inverse
 import engine.expressions.logOf
-import engine.expressions.naturalLogOf
 import engine.expressions.plusMinusOf
 import engine.expressions.productOf
 import engine.expressions.rootOf
-import engine.expressions.simplifiedFractionOf
 import engine.expressions.simplifiedNegOf
 import engine.expressions.simplifiedPowerOf
 import engine.expressions.simplifiedProductOf
@@ -57,13 +56,17 @@ import engine.methods.rule
 import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.ConstantInSolutionVariablePattern
+import engine.patterns.FixedPattern
+import engine.patterns.IntegerFractionPattern
 import engine.patterns.Pattern
 import engine.patterns.RationalPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.SolvablePattern
 import engine.patterns.UnsignedIntegerPattern
+import engine.patterns.UnsignedNumberPattern
 import engine.patterns.VariableExpressionPattern
 import engine.patterns.condition
+import engine.patterns.exponentialOf
 import engine.patterns.expressionWithFactor
 import engine.patterns.fractionOf
 import engine.patterns.integerCondition
@@ -80,12 +83,12 @@ import engine.patterns.withOptionalConstantCoefficientInSolutionVariables
 import engine.sign.Sign
 import engine.steps.metadata.DragTargetPosition
 import engine.steps.metadata.Metadata
-import engine.utility.Rational
-import engine.utility.asPower
 import engine.utility.extractFirst
 import engine.utility.isEven
 import engine.utility.isOdd
 import engine.utility.lcm
+import methods.logs.createLog
+import methods.logs.shouldFlipSignOfLogSolvable
 import methods.solvable.DenominatorExtractor.extractDenominator
 import java.math.BigInteger
 import engine.steps.metadata.DragTargetPosition as Position
@@ -464,6 +467,7 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
     TakeLogOfBothSides(takeLogOfBothSides),
     CancelCommonBase(cancelCommonBase),
     RewriteBothSidesWithSameBase(rewriteBothSidesWithSameBase),
+    UsePowerRuleToRewriteExponentialSolvable(usePowerRuleToRewriteExponentialSolvable),
 }
 
 private val cancelCommonFactorOnBothSides = rule {
@@ -931,9 +935,27 @@ private val takeLogOfBothSides = rule {
     val solvable = SolvablePattern(lhs, rhs)
 
     onPattern(solvable) {
+        val lhsVal = get(lhs)
+        val rhsVal = get(rhs)
+
+        val base = if (lhsVal.isPowerOfTen() || rhsVal.isPowerOfTen()) {
+            Constants.Ten
+        } else {
+            Constants.E
+        }
+
         ruleResult(
-            toExpr = solvable.deriveSolvable(naturalLogOf(get(lhs)), naturalLogOf(get(rhs))),
-            explanation = solvableExplanation(SolvableKey.TakeLogOfBothSides),
+            toExpr = solvable.deriveSolvable(
+                createLog(base, lhsVal),
+                createLog(base, rhsVal),
+            ),
+            explanation = solvableExplanation(
+                if (base == Constants.Ten) {
+                    SolvableKey.TakeLogBaseTenOfBothSides
+                } else {
+                    SolvableKey.TakeLogOfBothSides
+                },
+            ),
         )
     }
 }
@@ -958,14 +980,23 @@ private val cancelCommonBase = rule {
         val lhsExp = get(lhs.exponent)
         val rhsExp = get(rhs.exponent)
 
+        val flipSign =
+            get(solvable) !is Equation &&
+                (shouldFlipSignOfLogSolvable(get(base)) ?: return@onPattern null)
+
         if (lhsExp == Constants.One && rhsExp == Constants.One) {
             return@onPattern null
         }
 
         ruleResult(
-            toExpr = solvable.deriveSolvable(lhsExp, rhsExp),
+            toExpr = solvable.deriveSolvable(
+                lhsExp,
+                rhsExp,
+                flipSign,
+            ),
             explanation = solvableExplanation(
                 SolvableKey.CancelCommonBase,
+                flipSign = flipSign,
             ),
         )
     }
@@ -1005,99 +1036,42 @@ private val rewriteBothSidesWithSameBase = rule {
     }
 }
 
-private data class IntegerPower(
-    val base: BigInteger,
-    val exponent: BigInteger,
-)
-
-private data class RationalPower(
-    val base: Rational,
-    val exponent: BigInteger,
-)
-
-/**
- * Finds if [n1] and [n2] can be written (simply) with the same base.  If not, returns null, else returns
- * (b, e1, e2) such that n1 = b^e1 and n2 = b^e2
- */
-private fun withSameBase(n1: Rational, n2: Rational): Triple<Rational, BigInteger, BigInteger>? {
-    val n1Powers = n1.asPowerCandidates()
-    val n2Powers = n2.asPowerCandidates()
-
-    val matches = n1Powers.flatMap { p1 ->
-        n2Powers
-            .filter { p2 -> p2.base == p1.base }
-            .map { p2 -> Triple(p1.base, p1.exponent, p2.exponent) }
-    }
-
-    if ((n1.denominator == BigInteger.ONE) != (n2.denominator == BigInteger.ONE)) {
-        return matches.firstOrNull { (base, _, _) -> base.denominator == BigInteger.ONE }
-    }
-
-    return matches.firstOrNull()
-}
-
-private fun Rational.asPowerCandidates(): List<RationalPower> {
-    val rational = simplify()
-    if (rational.numerator <= BigInteger.ZERO || rational.denominator <= BigInteger.ZERO) {
-        return emptyList()
-    }
-
-    return buildList {
-        addAll(rationalPowerCandidates(rational, BigInteger.ONE))
-        addAll(rational.decomposedPowerCandidates())
-    }
-}
-
-private fun Rational.decomposedPowerCandidates(): List<RationalPower> {
-    val numeratorPowers = numerator.integerPowerCandidates()
-    val denominatorPowers = denominator.integerPowerCandidates()
-
-    return when {
-        denominator == BigInteger.ONE -> numeratorPowers.flatMap { numeratorPower ->
-            rationalPowerCandidates(Rational(numeratorPower.base), numeratorPower.exponent)
-        }
-        numerator == BigInteger.ONE -> denominatorPowers.flatMap { denominatorPower ->
-            rationalPowerCandidates(Rational(BigInteger.ONE, denominatorPower.base), denominatorPower.exponent)
-        }
-        else -> matchingRationalPowerCandidates(numeratorPowers, denominatorPowers)
-    }
-}
-
-private fun matchingRationalPowerCandidates(
-    numeratorPowers: List<IntegerPower>,
-    denominatorPowers: List<IntegerPower>,
-): List<RationalPower> {
-    return numeratorPowers.flatMap { numeratorPower ->
-        denominatorPowers
-            .filter { denominatorPower -> denominatorPower.exponent == numeratorPower.exponent }
-            .flatMap { denominatorPower ->
-                rationalPowerCandidates(
-                    Rational(numeratorPower.base, denominatorPower.base),
-                    numeratorPower.exponent,
-                )
-            }
-    }
-}
-
-private fun rationalPowerCandidates(base: Rational, exponent: BigInteger): List<RationalPower> {
-    val simplifiedBase = base.simplify()
-    return listOf(
-        RationalPower(simplifiedBase, exponent),
-        RationalPower(simplifiedBase.inverse(), -exponent),
+private val usePowerRuleToRewriteExponentialSolvable = rule {
+    val base = oneOf(
+        UnsignedNumberPattern(),
+        IntegerFractionPattern(),
     )
-}
+    val lhs = exponentialOf(base)
+    val rhs = FixedPattern(One)
 
-private fun BigInteger.integerPowerCandidates(): List<IntegerPower> {
-    return asPower().map { IntegerPower(it.base, it.exponent) } + IntegerPower(this, BigInteger.ONE)
-}
+    val solvable = SolvablePattern(lhs, rhs)
 
-private fun Rational.isSupportedExponentialBase(): Boolean {
-    return !isZero() && !isNeg() && !sameNumber(BigInteger.ONE)
-}
+    onPattern(solvable) {
+        val base = distribute(base)
 
-private fun Rational.inverse() = Rational(denominator, numerator).simplify()
-
-private fun xp(rational: Rational): Expression {
-    val simplified = rational.simplify()
-    return simplifiedFractionOf(xp(simplified.numerator), xp(simplified.denominator))
+        ruleResult(
+            toExpr = solvable.deriveSolvable(
+                get(lhs),
+                transform(
+                    get(rhs),
+                    engine.expressions.powerOf(
+                        base,
+                        Constants.Zero,
+                    ),
+                ),
+            ),
+            explanation = solvableExplanation(
+                SolvableKey.UsePowerRuleToRewriteExponentialSolvable,
+                parameters = listOf(
+                    equationOf(
+                        engine.expressions.powerOf(
+                            base,
+                            Constants.Zero,
+                        ),
+                        One,
+                    ),
+                ),
+            ),
+        )
+    }
 }

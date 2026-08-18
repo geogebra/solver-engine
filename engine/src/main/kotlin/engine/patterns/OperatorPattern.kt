@@ -134,3 +134,11 @@ fun closedOpenIntervalOf(lhs: Pattern, rhs: Pattern) =
 
 fun closedIntervalOf(lhs: Pattern, rhs: Pattern) =
     OperatorPattern(IntervalOperator(closedLeft = true, closedRight = true), listOf(lhs, rhs))
+
+fun exponentialOf(
+    base: Pattern = ConstantInSolutionVariablePattern(),
+    exponent: Pattern = condition { !it.isConstantIn(solutionVariables) },
+) = powerOf(
+    base,
+    exponent,
+)

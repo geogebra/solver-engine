@@ -367,25 +367,6 @@ class EquationRulesTest {
     }
 
     @Test
-    fun testRewriteExponentialEquationWithOneRhs() {
-        testRuleInX(
-            "[3 ^ x] = 1",
-            EquationsRules.RewriteExponentialEquationWithOneRhs,
-            "[3 ^ x] = [3 ^ 0]",
-        )
-        testRuleInX(
-            "[5 ^ x - 2] = 1",
-            EquationsRules.RewriteExponentialEquationWithOneRhs,
-            "[5 ^ x - 2] = [5 ^ 0]",
-        )
-        testRuleInX(
-            "[x ^ y] = 1",
-            EquationsRules.RewriteExponentialEquationWithOneRhs,
-            null,
-        )
-    }
-
-    @Test
     fun testBalanceEquationWithExponentialExpressions() {
         testRuleInX(
             "[2 ^ x] - [2 ^ 1 - x] = 0",
