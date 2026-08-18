@@ -103,6 +103,13 @@ class TestToString {
     }
 
     @Test
+    fun testDegrees() {
+        test("degree[45]", "degree[45]", "45^{\\circ}")
+        test("degree[x]", "degree[x]", "x^{\\circ}")
+        test("sin[degree[30]]", "sin[degree[30]]", "\\sin\\left(30^{\\circ}\\right)")
+    }
+
+    @Test
     fun testLogarithms() {
         test("[ln ^ 2] [x]", "[ln ^ 2][x]", "\\ln^{2}\\left(x\\right)")
         test("[ln[x] ^ 2]", "[ln[x] ^ 2]", "\\ln \\left(x\\right)^{2}")

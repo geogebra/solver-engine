@@ -25,6 +25,7 @@ contents to a new release section (e.g. _[0.x]_).
 
 - Fixed expressions with rational exponents being collected as if they had no exponents. (PLUT-1129)
 - Fixed incorrect explanation in multivariate equation simplification (PLUT-964)
+- Fixed latex rendering for degrees. (PLUT-1152)
 
 ### Changed
 

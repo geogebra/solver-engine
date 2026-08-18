@@ -300,8 +300,8 @@ internal enum class UnaryExpressionOperator(override val precedence: Int) : Unar
     override fun eval(children: List<Double>) = eval(children[0])
 }
 
-enum class UnitType(val text: String) {
-    Degree("degree"),
+enum class UnitType(val latex: String) {
+    Degree("^{\\circ}"),
 }
 
 internal data class UnitExpressionOperator(
@@ -314,7 +314,7 @@ internal data class UnitExpressionOperator(
     override fun <T> readableString(child: T): String = "${name.lowercase()}[$child]"
 
     override fun latexString(ctx: RenderContext, child: LatexRenderable): String =
-        "${child.toLatexString(ctx)} \\text{[$unit]}"
+        "${child.toLatexString(ctx)}${unit.latex}"
 
     @Suppress("MagicNumber")
     override fun eval(children: List<Double>): Double = children[0] * Math.PI / 180.0

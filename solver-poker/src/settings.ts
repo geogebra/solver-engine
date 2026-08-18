@@ -68,6 +68,7 @@ export const solutionFormatters = {
 };
 
 export type SolutionFormat = keyof typeof solutionFormatters;
+export type ResponseSourceFormat = 'solver' | 'json' | 'latex';
 
 export const colorScheme = ref<ColorScheme>('default');
 export const solutionFormat = ref<SolutionFormat>('simple');
@@ -94,7 +95,7 @@ export const params = useUrlSearchParams('history', {
   showCosmeticSteps?: '1' | '';
   showInvisibleChangeSteps?: '1' | '';
   showTranslationKeys?: '1' | '';
-  jsonFormat?: '1' | '';
+  responseSourceFormat?: ResponseSourceFormat;
 } & {
   // settings
   [key: string]: string;
@@ -120,7 +121,16 @@ export const showPedanticSteps = booleanRefSyncedWithUrlParam('showPedanticSteps
 export const showCosmeticSteps = booleanRefSyncedWithUrlParam('showCosmeticSteps');
 export const showInvisibleChangeSteps = booleanRefSyncedWithUrlParam('showInvisibleChangeSteps');
 export const showTranslationKeys = booleanRefSyncedWithUrlParam('showTranslationKeys');
-export const jsonFormat = booleanRefSyncedWithUrlParam('jsonFormat');
+export const responseSourceFormat = computed<ResponseSourceFormat>({
+  get: () => {
+    if (params.responseSourceFormat === 'json') return 'json';
+    if (params.responseSourceFormat === 'latex') return 'latex';
+    return 'solver';
+  },
+  set: (value) => {
+    params.responseSourceFormat = value;
+  },
+});
 
 export const getSettingValue = (settingName: string) => params[settingName] === 'true';
 

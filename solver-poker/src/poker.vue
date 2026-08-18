@@ -21,10 +21,12 @@ import type {
   GraphResponseJson,
   GraphResponseSolver,
   PlanSelectionJson,
+  PlanSelectionLatex,
   PlanSelectionSolver,
   ServerErrorResponse,
   SolverContext,
   TransformationJson,
+  TransformationLatex,
   TransformationSolver,
 } from '@geogebra/solver-sdk';
 import * as solverSdk from '@geogebra/solver-sdk';
@@ -34,9 +36,9 @@ import {
   colorScheme,
   demoMode,
   hideWarnings,
-  jsonFormat,
   params,
   presets,
+  responseSourceFormat,
   settings,
   showCosmeticSteps,
   showInvisibleChangeSteps,
@@ -169,27 +171,41 @@ const resultJsonFormatIsAListOfPlans = computed(() => {
   return Array.isArray(resultJsonFormat.value);
 });
 
-const resultSolverFormat = computed(() => {
-  // We don't want to query Solver for the result in Solver format, unless the user
-  // clicked on the things in the UI that would require showing the result in Solver
-  // format.
-  if (!jsonFormat.value && responseSourceDetailsOpen.value) {
-    return resultSolverFormat_Helper.value;
+const responseSource = computed(() => {
+  if (!responseSourceDetailsOpen.value) return undefined;
+  if (responseSourceFormat.value === 'json') {
+    return resultJsonFormat.value;
   }
-  return undefined;
+  return resultTextFormatSource.value;
 });
 
-const resultSolverFormat_Helper = computedAsync<
-  TransformationSolver | PlanSelectionSolver[] | ServerErrorResponse | undefined
+const resultTextFormatSource = computedAsync<
+  | TransformationSolver
+  | TransformationLatex
+  | PlanSelectionSolver[]
+  | PlanSelectionLatex[]
+  | ServerErrorResponse
+  | undefined
 >(
   async () => {
     // Read this value, to make this `computedAsync` reactively depend on its value.
     reactivityTriggerForQueryingSolver.value;
-    const ret =
-      params.plan === 'selectPlans'
-        ? await solverSdk.api.selectPlans(params.input, 'solver', solverContext.value)
-        : await solverSdk.api.applyPlan(params.input, params.plan, 'solver', solverContext.value);
-    console.log('Fetched result in Solver format:', ret);
+    const format = responseSourceFormat.value;
+    if (format === 'json') return undefined;
+
+    let ret;
+    if (params.plan === 'selectPlans') {
+      ret =
+        format === 'solver'
+          ? await solverSdk.api.selectPlans(params.input, 'solver', solverContext.value)
+          : await solverSdk.api.selectPlans(params.input, 'latex', solverContext.value);
+    } else {
+      ret =
+        format === 'solver'
+          ? await solverSdk.api.applyPlan(params.input, params.plan, 'solver', solverContext.value)
+          : await solverSdk.api.applyPlan(params.input, params.plan, 'latex', solverContext.value);
+    }
+    console.log(`Fetched result in ${format} format:`, ret);
     return ret;
   },
   undefined,
@@ -502,11 +518,13 @@ onMounted(() => {
     @toggle="responseSourceDetailsOpen = !responseSourceDetailsOpen"
   >
     <summary>Response Source</summary>
-    <input id="jsonFormatCheckbox" v-model="jsonFormat" type="checkbox" />
-    <label for="jsonFormatCheckbox">JSON Format</label>
-    <pre id="source">{{
-      JSON.stringify(jsonFormat ? resultJsonFormat : resultSolverFormat, null, 4)
-    }}</pre>
+    <label for="responseSourceFormat">Format</label>
+    <select id="responseSourceFormat" v-model="responseSourceFormat">
+      <option value="solver">solver</option>
+      <option value="json">json</option>
+      <option value="latex">latex</option>
+    </select>
+    <pre id="source">{{ JSON.stringify(responseSource, null, 4) }}</pre>
   </details>
   <details>
     <summary>Graph</summary>
