@@ -32,6 +32,8 @@ import engine.expressions.Product
 import engine.expressions.Sum
 import engine.expressions.TrigonometricExpression
 import engine.expressions.Variable
+import engine.expressions.variableListOf
+import engine.expressions.xp
 import engine.methods.Method
 import engine.methods.plan
 import engine.methods.stepsproducers.StepsBuilder
@@ -50,9 +52,9 @@ import engine.patterns.oneOf
 import engine.patterns.sumContaining
 import engine.patterns.withOptionalConstantCoefficientInSolutionVariables
 import engine.patterns.withOptionalIntegerCoefficient
+import engine.sign.Sign
 import engine.steps.Transformation
 import engine.steps.metadata.Metadata
-import engine.steps.metadata.MetadataKey
 import engine.steps.metadata.metadata
 import methods.approximation.ApproximationPlans
 import methods.general.GeneralRules
@@ -61,7 +63,7 @@ import methods.polynomials.PolynomialsPlans
 import methods.polynomials.collectLikeTermsInSolutionVariablesSteps
 
 class SolvablePlans(private val simplificationPlan: Method, private val constraintSimplificationPlan: Method? = null) {
-    private fun getExplanationKey(solvableKey: SolvableKey, ctx: Context, expr: Expression): MetadataKey {
+    private fun getExplanationKey(solvableKey: SolvableKey, ctx: Context, expr: Expression): SolvableExplanation {
         val keyGetter = if (expr is Equation) {
             EquationsExplanation
         } else {
@@ -74,11 +76,14 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
         )
     }
 
-    inner class ApplyRuleAndSimplify(private val key: SolvableKey) : Method {
+    inner class ApplyRuleAndSimplify(
+        private val key: SolvableKey,
+        private val rule: Method = key.rule,
+    ) : Method {
         override fun tryExecute(ctx: Context, sub: Expression): Transformation? {
             val expression = if (sub is ExpressionWithConstraint) sub.expression else sub
 
-            val initialStep = key.rule.tryExecute(ctx, expression) ?: return null
+            val initialStep = rule.tryExecute(ctx, expression) ?: return null
 
             val builder = StepsBuilder(ctx, expression)
             builder.addStep(initialStep)
@@ -140,6 +145,34 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
     val divideByCoefficientOfVariableAndSimplify = ApplyRuleAndSimplify(
         SolvableKey.DivideByCoefficientOfVariable,
     )
+
+    fun divideByCoefficientOfVariableAndSimplify(knownCoefficientSign: Sign) =
+        ApplyRuleAndSimplify(
+            SolvableKey.DivideByCoefficientOfVariable,
+            divideByCoefficientOfVariableWithKnownSign(knownCoefficientSign),
+        )
+
+    fun divideByCoefficientOfVariableAndSimplifyExplanation(
+        ctx: Context,
+        expression: Expression,
+        coefficient: Expression,
+    ): Metadata {
+        val explanationKey = getExplanationKey(SolvableKey.DivideByCoefficientOfVariable, ctx, expression)
+        val parameters = if (explanationKey.explicitVariables) {
+            val variables = if (ctx.solutionVariables.size == 1) {
+                xp(ctx.solutionVariables.single())
+            } else {
+                variableListOf(ctx.solutionVariables)
+            }
+            listOf(variables, coefficient)
+        } else {
+            listOf(coefficient)
+        }
+        return Metadata(
+            explanationKey,
+            parameters,
+        )
+    }
 
     val divideByCoefficientOfLogarithmAndSimplify = ApplyRuleAndSimplify(
         SolvableKey.DivideByCoefficientOfLogarithm,

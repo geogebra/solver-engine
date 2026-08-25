@@ -57,11 +57,26 @@ abstract class Logarithm internal constructor(
     override fun signOf(): Sign {
         val signOfBase = base.signOf()
         val signOfArgument = argument.signOf()
-        return when {
-            signOfBase == Sign.NONE || signOfArgument == Sign.NONE -> Sign.NONE
-            signOfBase.implies(Sign.NON_POSITIVE) -> Sign.NONE
-            signOfArgument.implies(Sign.NON_POSITIVE) -> Sign.NONE
-            else -> SimpleComparator.compareExpressions(argument, Constants.One)
+        // Broke into two to improve readability and get rid of lint warning
+        if (signOfBase == Sign.NONE || signOfArgument == Sign.NONE) {
+            return Sign.NONE
+        }
+        if (signOfBase.implies(Sign.NON_POSITIVE) || signOfArgument.implies(Sign.NON_POSITIVE)) {
+            return Sign.NONE
+        }
+
+        val baseComparedToOne = if (base == Constants.E || base == Constants.Pi) {
+            Sign.POSITIVE
+        } else {
+            SimpleComparator.compareExpressions(base, Constants.One)
+        }
+        val argumentComparedToOne = SimpleComparator.compareExpressions(argument, Constants.One)
+
+        return when (baseComparedToOne) {
+            Sign.POSITIVE -> argumentComparedToOne
+            Sign.NEGATIVE -> -argumentComparedToOne
+            Sign.ZERO, Sign.NONE -> Sign.NONE
+            else -> Sign.UNKNOWN
         }
     }
 }

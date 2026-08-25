@@ -417,6 +417,19 @@ val logExpansionSteps = steps {
     }
 }
 
+internal val normalizeConstantExpressionForSign = steps {
+    check { it.isConstant() }
+
+    firstOf {
+        option {
+            optionally(ConstantExpressionsPlans.SimplifyConstantExpression)
+            // SimplifyConstantExpression does not combine unlike logarithms.
+            apply(LogsPlans.CollectLogarithmsInSum)
+        }
+        option(ConstantExpressionsPlans.SimplifyConstantExpression)
+    }
+}
+
 // Give it a minDepth of 1 to break cycles.
 val constantSimplificationSteps: StepsProducer = createConstantSimplificationSteps(true)
 

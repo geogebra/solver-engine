@@ -18,6 +18,7 @@
 package methods.inequalities
 
 import engine.conditions.isDefinitelyNotPositive
+import engine.conditions.isDefinitelyPositive
 import engine.expressions.Comparison
 import engine.expressions.Constants
 import engine.expressions.Expression
@@ -27,6 +28,7 @@ import engine.expressions.closedOpenIntervalOf
 import engine.expressions.closedRangeOf
 import engine.expressions.contradictionOf
 import engine.expressions.equationOf
+import engine.expressions.fractionOf
 import engine.expressions.greaterThanEqualOf
 import engine.expressions.greaterThanOf
 import engine.expressions.identityOf
@@ -51,6 +53,7 @@ import engine.patterns.ConstantInSolutionVariablePattern
 import engine.patterns.FixedPattern
 import engine.patterns.Pattern
 import engine.patterns.SolutionVariablePattern
+import engine.patterns.SolvablePattern
 import engine.patterns.absoluteValueOf
 import engine.patterns.condition
 import engine.patterns.exponentialOf
@@ -59,6 +62,7 @@ import engine.patterns.greaterThanOf
 import engine.patterns.inequalityOf
 import engine.patterns.lessThanEqualOf
 import engine.patterns.lessThanOf
+import engine.patterns.negOf
 import engine.patterns.oneOf
 import engine.patterns.withOptionalConstantCoefficient
 import engine.sign.Sign
@@ -119,7 +123,15 @@ enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
     ),
 
     ExtractSolutionFromImpossibleExponentialInequality(extractSolutionFromImpossibleExponentialInequality),
+    ExtractSolutionFromImpossibleExponentialEqualityWithTwoExponentials(
+        extractSolutionFromImpossibleExponentialEqualityWithTwoExponentials,
+    ),
     ExtractSolutionFromAlwaysTrueInequality(extractSolutionFromAlwaysTrueInequality),
+    ExtractSolutionFromAlwaysTrueExponentialEqualityWithTwoExponentials(
+        extractSolutionFromAlwaysTrueExponentialEqualityWithTwoExponentials,
+    ),
+
+    SimplifyExponentialInequalityWithIdenticalExponents(simplifyExponentialInequalityWithIdenticalExponents),
 }
 
 /**
@@ -381,6 +393,27 @@ private val extractSolutionFromImpossibleExponentialInequality = rule {
     }
 }
 
+private val extractSolutionFromImpossibleExponentialEqualityWithTwoExponentials = rule {
+    val positiveExponential = exponentialOf()
+    val negativeExponential = negOf(exponentialOf())
+
+    val pattern = oneOf(
+        lessThanOf(positiveExponential, negativeExponential),
+        lessThanEqualOf(positiveExponential, negativeExponential),
+        greaterThanOf(negativeExponential, positiveExponential),
+        greaterThanEqualOf(negativeExponential, positiveExponential),
+    )
+
+    onPattern(pattern) {
+        ruleResult(
+            toExpr = contradictionOf(variableListOf(context.solutionVariables), expression),
+            explanation = metadata(
+                Explanation.ExtractSolutionFromImpossibleExponentialInequalityWithTwoExponentials,
+            ),
+        )
+    }
+}
+
 private val extractSolutionFromAlwaysTrueInequality = rule {
     val lhs = exponentialOf()
 
@@ -398,6 +431,77 @@ private val extractSolutionFromAlwaysTrueInequality = rule {
             toExpr = identityOf(variableListOf(context.solutionVariables), expression),
             explanation = metadata(
                 Explanation.ExtractSolutionFromAlwaysTrueInequality,
+            ),
+        )
+    }
+}
+
+private val extractSolutionFromAlwaysTrueExponentialEqualityWithTwoExponentials = rule {
+    val positiveExponential = exponentialOf()
+    val negativeExponential = negOf(exponentialOf())
+
+    val pattern = oneOf(
+        lessThanOf(negativeExponential, positiveExponential),
+        lessThanEqualOf(negativeExponential, positiveExponential),
+        greaterThanOf(positiveExponential, negativeExponential),
+        greaterThanEqualOf(positiveExponential, negativeExponential),
+    )
+
+    onPattern(pattern) {
+        ruleResult(
+            toExpr = identityOf(variableListOf(context.solutionVariables), expression),
+            explanation = metadata(
+                Explanation.ExtractSolutionFromAlwaysTrueInequalityWithTwoExponentials,
+            ),
+        )
+    }
+}
+
+private val simplifyExponentialInequalityWithIdenticalExponents = rule {
+    val exponent = AnyPattern()
+
+    val base1 = condition(AnyPattern()) {
+        it.isDefinitelyPositive()
+    }
+    val base2 = condition(AnyPattern()) {
+        it.isDefinitelyPositive()
+    }
+
+    val lhs = exponentialOf(
+        base1,
+        exponent,
+    )
+
+    val rhs = exponentialOf(
+        base2,
+        exponent,
+    )
+
+    val pattern = SolvablePattern(lhs, rhs)
+
+    onPattern(pattern) {
+        val baseVal1 = get(base1)
+        val baseVal2 = get(base2)
+        if (baseVal1 == baseVal2 || baseVal1 == Constants.One || baseVal2 == Constants.One) {
+            return@onPattern null
+        }
+
+        val rhsVal = distribute(rhs)
+
+        ruleResult(
+            toExpr = pattern.deriveSolvable(
+                fractionOf(
+                    get(lhs),
+                    rhsVal,
+                ),
+                fractionOf(
+                    rhsVal,
+                    rhsVal,
+                ),
+            ),
+            explanation = metadata(
+                Explanation.DivideInequalityByRhs,
+                rhsVal,
             ),
         )
     }

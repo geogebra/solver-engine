@@ -40,6 +40,7 @@ import methods.general.GeneralRules.RewriteProductOfPowersWithInverseFractionBas
 import methods.general.GeneralRules.RewriteProductOfPowersWithNegatedExponent
 import methods.general.GeneralRules.RewriteProductOfPowersWithSameBase
 import methods.general.GeneralRules.RewriteProductOfPowersWithSameExponent
+import methods.general.GeneralRules.RewriteReciprocalPowerAsPowerOfReciprocal
 import methods.general.GeneralRules.SimplifyDoubleMinus
 import methods.general.GeneralRules.SimplifyEvenPowerOfNegative
 import methods.general.GeneralRules.SimplifyExpressionToThePowerOfOne
@@ -331,6 +332,8 @@ class GeneralRulesTest {
         testRule("x - 1", GeneralRules.FactorMinusFromSum, null)
         testRule("1 - sqrt[2]", GeneralRules.FactorMinusFromSum, "-(-1 + sqrt[2])")
         testRule("-1 + sqrt[2]", GeneralRules.FactorMinusFromSum, null)
+        testRule("ln[2] - ln[3]", GeneralRules.FactorMinusFromSum, "-(-ln[2] + ln[3])")
+        testRule("ln[3] - ln[2]", GeneralRules.FactorMinusFromSum, null)
         testRule("x - sqrt[2]", GeneralRules.FactorMinusFromSum, null)
         testRule("-x + sqrt[2]", GeneralRules.FactorMinusFromSum, "-(x - sqrt[2])")
         testRule("sqrt[2] - x", GeneralRules.FactorMinusFromSum, "-(-sqrt[2] + x)")
@@ -713,6 +716,23 @@ class GeneralRulesTest {
         testRule("[[x^2] / [y^2]]", RewriteFractionOfPowersWithSameExponent, "[([x / y]) ^ 2]")
         testRule("[[3^4] / [2^4]]", RewriteFractionOfPowersWithSameExponent, "[([3 / 2]) ^ 4]")
         testRule("[[3^[2 / 3]] / [4^[2 / 3]]]", RewriteFractionOfPowersWithSameExponent, "[([3 / 4]) ^ [2 / 3]]")
+    }
+
+    @Test
+    fun testRewriteReciprocalPowerAsPowerOfReciprocal() {
+        testRule(
+            "[1 / [2 ^ [x ^ 2]]]",
+            RewriteReciprocalPowerAsPowerOfReciprocal,
+            "[([1 / 2]) ^ [x ^ 2]]",
+        )
+        testRule(
+            "[1 / [([2 / 3]) ^ x]]",
+            RewriteReciprocalPowerAsPowerOfReciprocal,
+            "[([3 / 2]) ^ x]",
+        )
+        testRule("[3 / [2 ^ x]]", RewriteReciprocalPowerAsPowerOfReciprocal, null)
+        testRule("[1 / [0 ^ x]]", RewriteReciprocalPowerAsPowerOfReciprocal, null)
+        testRule("[1 / [(-2) ^ x]]", RewriteReciprocalPowerAsPowerOfReciprocal, null)
     }
 
     @Test

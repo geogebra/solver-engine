@@ -18,8 +18,10 @@
 package methods.collecting
 
 import engine.methods.testRule
+import engine.methods.testRuleInX
 import methods.collecting.CollectingRules.CollectLikeRoots
 import methods.collecting.CollectingRules.CollectLikeTerms
+import methods.collecting.CollectingRules.CollectLikeTermsInSolutionVariables
 import methods.collecting.CollectingRules.CombineTwoSimpleLikeTerms
 import org.junit.jupiter.api.Test
 
@@ -56,6 +58,12 @@ class CollectingRulesTest {
         testRule("2*y - 3*y", CollectLikeTerms, "(2 - 3) y")
         testRule("z + [1/2]*z + [z / 2] - z*3", CollectLikeTerms, "(1 + [1/2] + [1/2] - 3) z")
         testRule("t*sqrt[3] + 2*t - [t*sqrt[2]/2]", CollectLikeTerms, "(sqrt[3] + 2 - [sqrt[2]/2]) t")
+        testRule("x * ln[2] - 2 x * ln[3]", CollectLikeTerms, "x (ln[2] - 2 * ln[3])")
+        testRuleInX(
+            "x * ln[2] - 2 x * ln[3]",
+            CollectLikeTermsInSolutionVariables,
+            "x (ln[2] - 2 * ln[3])",
+        )
         // the factors should be simplified first
         testRule("3xy*y + 2xy*y", CollectLikeTerms, null)
         // should use fraction addition
@@ -103,6 +111,11 @@ class CollectingRulesTest {
             "2 log_[2][3] + 3 log_[2][3] - log_[2][3]",
             CollectingRules.CollectLikeLogarithmicTerms,
             "(2 + 3 - 1) log_[2][3]",
+        )
+        testRule(
+            "log_[[1 / 2]][x] + [log_[[1 / 2]][x] / log_[[1 / 2]][[2 / 3]]]",
+            CollectingRules.CollectLikeLogarithmicTerms,
+            "(1 + [1 / log_[[1 / 2]][[2 / 3]]]) log_[[1 / 2]][x]",
         )
     }
 }

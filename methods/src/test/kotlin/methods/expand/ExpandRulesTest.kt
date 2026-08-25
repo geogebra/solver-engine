@@ -182,6 +182,16 @@ class ExpandRulesTest {
             null,
         )
         testRule(
+            "2 (x + 1) ln[2]",
+            DistributeMultiplicationOverSum,
+            "<. 2 ln[2] .> * x + <. 2 ln[2] .> * 1",
+        )
+        testRule(
+            "2 (x + 1) y",
+            DistributeMultiplicationOverSum,
+            null,
+        )
+        testRule(
             "x*(1 + sqrt[3])",
             DistributeMultiplicationOverSum,
             null,

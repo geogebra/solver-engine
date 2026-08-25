@@ -374,61 +374,7 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
 
     FactorGreatestCommonIntegerFactorInFraction(factorGreatestCommonIntegerFactorInFraction),
 
-    CancelCommonFactorInFraction(
-        rule {
-            val commonFactor = condition { it != Constants.One }
-
-            val numeratorFactor = optionalIntegerPowerOf(commonFactor)
-            val numerator = expressionWithFactor(numeratorFactor)
-
-            val denominatorFactor = optionalIntegerPowerOf(commonFactor)
-            val denominator = expressionWithFactor(denominatorFactor)
-
-            val frac = fractionOf(numerator, denominator)
-
-            onPattern(frac) {
-                val factor = get(commonFactor)
-
-                val factorIsNotDefined = !factor.isDefinitelyNotUndefined() && factor !is TrigonometricExpression
-
-                if (factorIsNotDefined || (factor.isConstant() && !factor.isNotZeroBySign())) {
-                    return@onPattern null
-                }
-
-                val num: Expression
-                val den: Expression
-
-                when ((getValue(numeratorFactor.exponent) - getValue(denominatorFactor.exponent)).signum()) {
-                    1 -> {
-                        val simplifiedPower = simplifiedPowerOf(
-                            get(commonFactor),
-                            integerOp(numeratorFactor.exponent, denominatorFactor.exponent) { n, m -> n - m },
-                        )
-                        num = numerator.substitute(simplifiedPower)
-                        den = restOf(denominator)
-                    }
-                    0 -> {
-                        num = restOf(numerator)
-                        den = restOf(denominator)
-                    }
-                    else -> {
-                        val simplifiedPower = simplifiedPowerOf(
-                            get(commonFactor),
-                            integerOp(numeratorFactor.exponent, denominatorFactor.exponent) { n, m -> m - n },
-                        )
-                        num = restOf(numerator)
-                        den = denominator.substitute(simplifiedPower)
-                    }
-                }
-
-                ruleResult(
-                    toExpr = cancel(commonFactor, fractionOf(num, den)),
-                    gmAction = drag(denominatorFactor, PM.Group, numeratorFactor, PM.Group),
-                    explanation = metadata(Explanation.CancelCommonFactorInFraction),
-                )
-            }
-        },
-    ),
+    CancelCommonFactorInFraction(createCancelCommonFactorInFraction()),
 
     ReorganizeCommonSumFactorInFraction(
         rule {
@@ -835,6 +781,71 @@ enum class FractionArithmeticRules(override val runner: Rule) : RunnerMethod {
             }
         },
     ),
+}
+
+private fun createCancelCommonFactorInFraction(knownNonZeroFactor: Expression? = null) =
+    rule {
+        val commonFactor = condition { it != Constants.One }
+
+        val numeratorFactor = optionalIntegerPowerOf(commonFactor)
+        val numerator = expressionWithFactor(numeratorFactor)
+
+        val denominatorFactor = optionalIntegerPowerOf(commonFactor)
+        val denominator = expressionWithFactor(denominatorFactor)
+
+        val frac = fractionOf(numerator, denominator)
+
+        onPattern(frac) {
+            val factor = get(commonFactor)
+            val factorIsKnownNonZero = knownNonZeroFactor?.let { factor.equiv(it) } == true
+            val factorIsNotDefined = !factor.isDefinitelyNotUndefined() && factor !is TrigonometricExpression
+            val constantFactorMayBeZero =
+                factor.isConstant() && !factorIsKnownNonZero && !factor.isNotZeroBySign()
+
+            if (factorIsNotDefined || constantFactorMayBeZero) {
+                return@onPattern null
+            }
+
+            val num: Expression
+            val den: Expression
+
+            when ((getValue(numeratorFactor.exponent) - getValue(denominatorFactor.exponent)).signum()) {
+                1 -> {
+                    val simplifiedPower = simplifiedPowerOf(
+                        get(commonFactor),
+                        integerOp(numeratorFactor.exponent, denominatorFactor.exponent) { n, m -> n - m },
+                    )
+                    num = numerator.substitute(simplifiedPower)
+                    den = restOf(denominator)
+                }
+                0 -> {
+                    num = restOf(numerator)
+                    den = restOf(denominator)
+                }
+                else -> {
+                    val simplifiedPower = simplifiedPowerOf(
+                        get(commonFactor),
+                        integerOp(numeratorFactor.exponent, denominatorFactor.exponent) { n, m -> m - n },
+                    )
+                    num = restOf(numerator)
+                    den = denominator.substitute(simplifiedPower)
+                }
+            }
+
+            ruleResult(
+                toExpr = cancel(commonFactor, fractionOf(num, den)),
+                gmAction = drag(denominatorFactor, PM.Group, numeratorFactor, PM.Group),
+                explanation = metadata(Explanation.CancelCommonFactorInFraction),
+            )
+        }
+    }
+
+internal fun cancelCommonFactorInFractionWithKnownNonZeroFactor(factor: Expression): RunnerMethod {
+    val rule = createCancelCommonFactorInFraction(factor)
+    return object : RunnerMethod {
+        override val name = "CancelCommonFactorInFractionWithKnownNonZeroFactor"
+        override val runner = rule
+    }
 }
 
 private fun Expression.canBeTurnedToFraction(): Boolean =

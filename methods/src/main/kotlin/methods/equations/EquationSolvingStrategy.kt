@@ -127,7 +127,7 @@ enum class EquationSolvingStrategy(
                 apply(SolvableRules.NegateBothSides)
             }
 
-            optionally(EquationsRules.BalanceEquationWithExponentialExpressions)
+            optionally(SolvableRules.BalanceSolvableWithExponentialExpressions)
 
             checkForm {
                 equationOf(
@@ -861,6 +861,9 @@ internal val solveEquation = lazy {
         option(EquationSolvingStrategy.ConstantEquation)
         option(EquationSolvingStrategy.Undefined)
 
+        option {
+            deeply(GeneralRules.RewriteReciprocalPowerAsPowerOfReciprocal)
+        }
         option(EquationSolvingStrategy.RationalEquation)
 
         // simplify the equation

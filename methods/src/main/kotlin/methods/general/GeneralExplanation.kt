@@ -217,6 +217,13 @@ enum class GeneralExplanation : CategorisedMetadataKey {
     RewriteProductOfPowersWithSameExponent,
 
     /**
+     * Convert [1 / [a ^ c]] to [([1 / a]) ^ c].
+     *
+     * E.g. [1 / [2 ^ x]] -> [([1 / 2]) ^ x]
+     */
+    RewriteReciprocalPowerAsPowerOfReciprocal,
+
+    /**
      * Convert [[a ^ b] / [a ^ c]] to [a ^ b - c]
      *
      * E.g. [[3 ^ [1 / 2]] / [3 ^ [2 / 3]]] -> [3 ^ [1 / 2] - [2 / 3]]

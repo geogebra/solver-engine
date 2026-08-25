@@ -1959,7 +1959,7 @@ describe('Solver Parser Unit Tests', () => {
         latex: ['{\\left(\\log_{5}{\\left(x\\right)}+1\\right)}^{2}'],
       },
       {
-        solver: '[ln ^ 2] x',
+        solver: '[ln ^ 2][x]',
         json: {
           type: 'Power',
           operands: [
@@ -1974,7 +1974,7 @@ describe('Solver Parser Unit Tests', () => {
         latex: ['\\ln^{2}{\\left(x\\right)}'],
       },
       {
-        solver: '[log ^ 2] x',
+        solver: '[log ^ 2][x]',
         json: {
           type: 'Power',
           operands: [
@@ -1989,7 +1989,7 @@ describe('Solver Parser Unit Tests', () => {
         latex: ['\\log^{2}{\\left(x\\right)}'],
       },
       {
-        solver: '[log_[a] ^ 2] x',
+        solver: '[log_[a] ^ 2][x]',
         json: {
           type: 'Power',
           operands: [

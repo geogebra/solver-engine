@@ -51,6 +51,7 @@ import engine.expressions.simplifiedProductOf
 import engine.expressions.sumOf
 import engine.expressions.xp
 import engine.methods.Rule
+import engine.methods.RuleResultBuilder
 import engine.methods.RunnerMethod
 import engine.methods.rule
 import engine.patterns.AnyPattern
@@ -79,6 +80,7 @@ import engine.patterns.optionalPowerOf
 import engine.patterns.powerOf
 import engine.patterns.productContaining
 import engine.patterns.sumContaining
+import engine.patterns.sumOf
 import engine.patterns.withOptionalConstantCoefficientInSolutionVariables
 import engine.sign.Sign
 import engine.steps.metadata.DragTargetPosition
@@ -468,7 +470,46 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
     CancelCommonBase(cancelCommonBase),
     RewriteBothSidesWithSameBase(rewriteBothSidesWithSameBase),
     UsePowerRuleToRewriteExponentialSolvable(usePowerRuleToRewriteExponentialSolvable),
+    BalanceSolvableWithExponentialExpressions(createBalanceSolvableWithExponentialExpressions()),
 }
+
+private fun createBalanceSolvableWithExponentialExpressions(): Rule =
+    createBalanceSolvableRule(
+        exponentialOf(),
+        exponentialOf(),
+        explanation = { solvableExplanation(SolvableKey.BalanceSolvableWithExponentialExpressions) },
+    )
+
+fun createBalanceSolvableRule(
+    pattern1: Pattern,
+    pattern2: Pattern,
+    explanation: RuleResultBuilder.() -> Metadata,
+    additionalCheck: (RuleResultBuilder.() -> Boolean)? = null,
+): Rule =
+    rule {
+        val term1 = optionalNegOf(pattern1)
+        val term2 = optionalNegOf(pattern2)
+        val lhs = sumOf(term1, term2)
+        val rhs = FixedPattern(Constants.Zero)
+        val solvableLeft = SolvablePattern(lhs, rhs)
+        val solvableRight = SolvablePattern(rhs, lhs)
+
+        onPattern(oneOf(solvableLeft, solvableRight)) {
+            if (additionalCheck != null && !additionalCheck()) return@onPattern null
+
+            val (balancedLhs, balancedRhs) = when {
+                term1.isNeg() -> Pair(move(term2), copyFlippedSign(term1, move(pattern1)))
+                else -> Pair(move(term1), copyFlippedSign(term2, move(pattern2)))
+            }
+            val toExpr = when {
+                isBound(solvableLeft) -> solvableLeft.deriveSolvable(balancedLhs, balancedRhs)
+                isBound(solvableRight) -> solvableRight.deriveSolvable(balancedRhs, balancedLhs)
+                else -> null
+            } ?: return@onPattern null
+
+            ruleResult(toExpr = toExpr, explanation = explanation())
+        }
+    }
 
 private val cancelCommonFactorOnBothSides = rule {
     val commonFactor = condition { it != Constants.One }
@@ -696,11 +737,14 @@ private val moveConstantFactorWithNoFractionOfLogarithmToTheRight = createMoveCo
     { SolvableKey.DivideByCoefficientOfLogarithm },
 )
 
+private fun coefficientSign(coefficient: Expression, knownSign: Sign?) = knownSign ?: coefficient.signOf()
+
 @Suppress("LongMethod")
 private fun createMoveConstantFactorWithNoFractionToTheRight(
     variablePattern: Pattern,
     multiplyExplanationKey: () -> SolvableKey,
     divideByReciprocalExplanationKey: () -> SolvableKey,
+    knownCoefficientSign: Sign? = null,
 ) = rule {
     val lhs = withOptionalConstantCoefficientInSolutionVariables(variablePattern)
     val rhs = ConstantInSolutionVariablePattern()
@@ -761,7 +805,7 @@ private fun createMoveConstantFactorWithNoFractionToTheRight(
                 ),
             )
         } else {
-            val useDual = when (coefficientValue.signOf()) {
+            val useDual = when (coefficientSign(coefficientValue, knownCoefficientSign)) {
                 Sign.POSITIVE -> false
                 Sign.NEGATIVE -> true
                 else -> return@onPattern null
@@ -777,6 +821,20 @@ private fun createMoveConstantFactorWithNoFractionToTheRight(
                 ),
             )
         }
+    }
+}
+
+internal fun divideByCoefficientOfVariableWithKnownSign(sign: Sign): RunnerMethod {
+    require(sign == Sign.POSITIVE || sign == Sign.NEGATIVE)
+    val rule = createMoveConstantFactorWithNoFractionToTheRight(
+        VariableExpressionPattern(),
+        { SolvableKey.MultiplyByInverseCoefficientOfVariable },
+        { SolvableKey.DivideByCoefficientOfVariable },
+        knownCoefficientSign = sign,
+    )
+    return object : RunnerMethod {
+        override val name = "DivideByCoefficientOfVariableWithKnownSign"
+        override val runner = rule
     }
 }
 

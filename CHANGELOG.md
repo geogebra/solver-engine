@@ -20,6 +20,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Solve nested logarithmic equaqions. (PLUT-1140)
 - Solve nested logarithmic inequalities. (PLUT-1142)
 - Solve exponential inequalities with one exponential expression. (PLUT-1151)
+- Solve exponential inequalities with two exponential expressions. (PLUT-1154)
 - SDK: Add support for exponent on log function. (PLUT-1127)
 
 ### Fixed
@@ -27,6 +28,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Fixed expressions with rational exponents being collected as if they had no exponents. (PLUT-1129)
 - Fixed incorrect explanation in multivariate equation simplification (PLUT-964)
 - Fixed latex rendering for degrees. (PLUT-1152)
+- SDK: Fixed incorrect powered log rendering in solver format (PLUT-1154)
 
 ### Changed
 

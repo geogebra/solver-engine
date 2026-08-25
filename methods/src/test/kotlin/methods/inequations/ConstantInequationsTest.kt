@@ -19,9 +19,46 @@ package methods.inequations
 
 import engine.methods.testMethod
 import methods.expand.ExpandExplanation
+import methods.logs.LogsExplanation
 import org.junit.jupiter.api.Test
 
 class ConstantInequationsTest {
+    @Test
+    fun `test logarithmic inequation is solved exactly`() =
+        testMethod {
+            method = solveConstantInequationExactly
+            inputExpr = "ln[3] - ln[2] != 0"
+
+            check {
+                toExpr = "Identity[ln[[3 / 2]] != 0]"
+
+                step {
+                    toExpr = "ln[[3 / 2]] != 0"
+                    explanation {
+                        key = LogsExplanation.CollectLogarithmsInSum
+                    }
+                }
+
+                step {
+                    toExpr = "Identity[ln[[3 / 2]] != 0]"
+                    explanation {
+                        key = InequationsExplanation.ExtractTruthFromTrueInequation
+                    }
+                }
+            }
+        }
+
+    @Test
+    fun `test exact solving does not approximate`() =
+        testMethod {
+            method = solveConstantInequationExactly
+            inputExpr = "ln[2] != 0.693"
+
+            check {
+                noTransformation()
+            }
+        }
+
     @Test
     fun `test trivial false inequation`() =
         testMethod {

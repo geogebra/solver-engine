@@ -35,6 +35,25 @@ class SolvableRulesTest {
     private val nextTo = mapOf(Setting.BalancingMode setTo BalancingModeSetting.NextTo)
     private val oneByOne = mapOf(Setting.MoveTermsOneByOne setTo BooleanSetting.True)
 
+    @Test
+    fun testBalanceSolvableWithExponentialExpressions() {
+        testRuleInX(
+            "[2 ^ x] - [2 ^ 1 - x] = 0",
+            SolvableRules.BalanceSolvableWithExponentialExpressions,
+            "[2 ^ x] = [2 ^ 1 - x]",
+        )
+        testRuleInX(
+            "0 < [9 ^ x] - [3 ^ x + 1]",
+            SolvableRules.BalanceSolvableWithExponentialExpressions,
+            "[3 ^ x + 1] < [9 ^ x]",
+        )
+        testRuleInX(
+            "[2 ^ x] + [3 ^ x] >= 0",
+            SolvableRules.BalanceSolvableWithExponentialExpressions,
+            "[2 ^ x] >= -[3 ^ x]",
+        )
+    }
+
     private fun testRuleInX(
         inputExpr: String,
         rule: Method,

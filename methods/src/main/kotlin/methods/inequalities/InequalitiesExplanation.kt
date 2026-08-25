@@ -264,6 +264,16 @@ enum class InequalitiesExplanation : CategorisedMetadataKey {
     SolveLinearInequality,
 
     /**
+     * Determine the sign of a coefficient, then divide an inequality by that coefficient.
+     */
+    DetermineCoefficientSignAndDivide,
+
+    /**
+     * Determine whether coefficient %1 is positive or negative.
+     */
+    DetermineSignOfCoefficient,
+
+    /**
      * Solve a quadratic inequality in a given variable by collecting all terms to the LHS,
      * then finding the roots of the quadratic equation and using that to determine the
      * set of solutions.
@@ -430,6 +440,16 @@ enum class InequalitiesExplanation : CategorisedMetadataKey {
     ExtractSolutionFromImpossibleExponentialInequality,
 
     /**
+     * An exponential expression is always positive, and a positive quantity can't be less than a negative quantity
+     *
+     * Extract solution from exponential inequality with exponential lhs less than
+     * or equal to the negative of an exponential rhs
+     *
+     * e.g. [3 ^ x-2] < -[4 ^ x + 1] --> No Solution
+     */
+    ExtractSolutionFromImpossibleExponentialInequalityWithTwoExponentials,
+
+    /**
      * An exponential expression is always positive
      *
      * Extract solution from exponential inequality with exponential lhs greater than
@@ -440,11 +460,37 @@ enum class InequalitiesExplanation : CategorisedMetadataKey {
     ExtractSolutionFromAlwaysTrueInequality,
 
     /**
+     * An exponential expression is always positive
+     *
+     * Extract solution from exponential inequality with exponential lhs greater than
+     * or equal to the negative of an exponential rhs
+     *
+     * e.g. [3 ^ x-2] > -[4 ^ x + 1] --> Infinitely many solutions
+     */
+    ExtractSolutionFromAlwaysTrueInequalityWithTwoExponentials,
+
+    /**
      * Bases are equal: equate the exponents and solve the inequality
      *
      * e.g. [3 ^ x - 2] < [3 ^ 0] --> x - 2 < 0 --> x = 2
      */
     SimplifyExponentialEquationWithSameBasesAndSolve,
+
+    /**
+     * Divide both sides by %1
+     *
+     * To simplify an exponential inequality with two exponentials having the same exponents we divide by one of them
+     *
+     * e.g. [3 ^ x - 2] < [4 ^ x - 2] --> [[3 ^ x - 2] / [4 ^ x - 2]] < [[4 ^ x - 2] / [4 ^ x - 2]]
+     */
+    DivideInequalityByRhs,
+
+    /**
+     * Divide both sides by %1 and simplify
+     *
+     * e.g. [3 ^ x - 2] < [4 ^ x - 2] --> ... -> [([3/4]) ^ x - 2] < 1
+     */
+    DivideInequalityByRhsAndSimplify,
 
     ;
 

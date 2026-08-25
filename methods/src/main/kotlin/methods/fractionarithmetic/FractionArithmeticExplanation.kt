@@ -112,6 +112,12 @@ enum class FractionArithmeticExplanation : CategorisedMetadataKey {
     @LegacyKeyName("General.CancelCommonTerms")
     CancelCommonFactorInFraction,
 
+    /** Determine whether a common factor is nonzero, then cancel it from a fraction. */
+    DetermineCommonFactorIsNotZeroAndCancel,
+
+    /** Determine whether common factor %1 is nonzero. */
+    DetermineCommonFactorIsNotZero,
+
     ReorganizeCommonSumFactorInFraction,
 
     SimplifyFractionToInteger,

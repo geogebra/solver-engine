@@ -885,13 +885,6 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     SimplifyExponentialEquationWithSameBasesAndSolve,
 
     /**
-     * Isolate the exponential terms
-     *
-     * e.g. [3 ^ x - 2] - [4 ^ 2x + 1] = 0 --> [3 ^ x - 2] = [4 ^ 2x + 1]
-     */
-    BalanceExponentialEquation,
-
-    /**
      * Powers with identical exponents and different bases are only equal when the exponent is zero
      */
     SimplifyExponentialEquationWithIdenticalExponents,

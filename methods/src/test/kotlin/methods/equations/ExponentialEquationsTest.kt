@@ -22,6 +22,7 @@ import methods.expand.ExpandExplanation
 import methods.general.GeneralExplanation
 import methods.logs.LogsExplanation
 import org.junit.jupiter.api.Test
+import methods.solvable.EquationsExplanation as SolvableEquationsExplanation
 
 class ExponentialEquationsTest {
     @Test
@@ -55,7 +56,7 @@ class ExponentialEquationsTest {
                 step {
                     toExpr = "[2 ^ x] = [2 ^ 1 - x]"
                     explanation {
-                        key = EquationsExplanation.BalanceExponentialEquation
+                        key = SolvableEquationsExplanation.BalanceExponentialEquation
                     }
                 }
 
@@ -150,6 +151,14 @@ class ExponentialEquationsTest {
     @Suppress("LongMethod")
     @Test
     fun `test same base after rewriting both sides`() {
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "[1 / [2 ^ [x ^ 2]]] = [1 / 2]"
+
+            check {
+                toExpr = "SetSolution[x: {-1, 1}]"
+            }
+        }
         testMethodInX {
             method = EquationsPlans.SolveEquation
             inputExpr = "[2 ^ x + 1] = [8 ^ 2x]"
@@ -278,6 +287,18 @@ class ExponentialEquationsTest {
             check {
                 fromExpr = "[5 ^ x + 2] = [7 ^ x - 1]"
                 toExpr = "SetSolution[x: {-[ln[7] + 2 * ln[5] / ln[5] - ln[7]]}]"
+            }
+        }
+
+    @Test
+    fun `test expand constant factors around bracket when solving`() =
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "[2 ^ 2(x + 1)] = [3 ^ x]"
+
+            check {
+                fromExpr = "[2 ^ 2 (x + 1)] = [3 ^ x]"
+                toExpr = "SetSolution[x: {-[2 * ln[2] / 2 * ln[2] - ln[3]]}]"
             }
         }
 

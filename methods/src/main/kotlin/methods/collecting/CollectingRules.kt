@@ -33,6 +33,7 @@ import engine.expressions.SquareRoot
 import engine.expressions.Sum
 import engine.expressions.TermView
 import engine.expressions.TrigonometricExpression
+import engine.expressions.containsLogs
 import engine.expressions.isSigned
 import engine.expressions.negOf
 import engine.expressions.productOf
@@ -232,10 +233,14 @@ private class CollectLikeTermsRule(
             }
 
             // Construct the factored term
-            val factoredLikeTerms = productOf(
-                sumOf(likeTerms.map { it.coefficient }),
-                productOf(commonFactorsWithOrigins),
-            ).withLabel(Label.A)
+            val coefficient = sumOf(likeTerms.map { it.coefficient }).withLabel(Label.B)
+            val commonFactors = productOf(commonFactorsWithOrigins)
+            // Make sure the result is in the expected order, so that there isn't an extra normalization step
+            val factoredLikeTerms = if (coefficient.containsLogs() && !commonFactors.containsLogs()) {
+                productOf(commonFactors, coefficient)
+            } else {
+                productOf(coefficient, commonFactors)
+            }.withLabel(Label.A)
 
             // Then substitute that back into the sum
             val result = sumOf(

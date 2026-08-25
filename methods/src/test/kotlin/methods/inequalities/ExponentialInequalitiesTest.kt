@@ -23,7 +23,7 @@ import kotlin.test.Test
 
 class ExponentialInequalitiesTest {
     @Test
-    fun `exponential equation with no solution`() {
+    fun `exponential inequality with no solution`() {
         testMethodInX {
             method = InequalitiesPlans.SolveExponentialInequality
             inputExpr = "[3 ^ 2 x + 2] < 0"
@@ -61,10 +61,29 @@ class ExponentialInequalitiesTest {
                 }
             }
         }
+
+        testMethodInX {
+            method = InequalitiesPlans.SolveExponentialInequality
+            inputExpr = "[3 ^ 2 x + 2] + [4 ^ x + 1] < 0"
+
+            check {
+                step {
+                    toExpr = "[3 ^ 2 x + 2] < -[4 ^ x + 1]"
+                }
+
+                step {
+                    toExpr = "Contradiction[x: [3 ^ 2 x + 2] < -[4 ^ x + 1]]"
+                    explanation {
+                        key = InequalitiesExplanation
+                            .ExtractSolutionFromImpossibleExponentialInequalityWithTwoExponentials
+                    }
+                }
+            }
+        }
     }
 
     @Test
-    fun `exponential equation with infinitely many solutions`() {
+    fun `exponential inequality with infinitely many solutions`() {
         testMethodInX {
             method = InequalitiesPlans.SolveExponentialInequality
             inputExpr = "[3 ^ 2 x + 2] > 0"
@@ -77,10 +96,28 @@ class ExponentialInequalitiesTest {
                 }
             }
         }
+
+        testMethodInX {
+            method = InequalitiesPlans.SolveExponentialInequality
+            inputExpr = "[3 ^ 2 x + 2] + [4 ^ x + 1] > 0"
+
+            check {
+                step {
+                    toExpr = "[3 ^ 2 x + 2] > -[4 ^ x + 1]"
+                }
+
+                step {
+                    toExpr = "Identity[x: [3 ^ 2 x + 2] > -[4 ^ x + 1]]"
+                    explanation {
+                        key = InequalitiesExplanation.ExtractSolutionFromAlwaysTrueInequalityWithTwoExponentials
+                    }
+                }
+            }
+        }
     }
 
     @Test
-    fun `exponential equation with rhs equal to one`() {
+    fun `exponential inequality with rhs equal to one`() {
         testMethodInX {
             method = InequalitiesPlans.SolveExponentialInequality
             inputExpr = "[3 ^ 2 x + 2] > 1"
@@ -105,7 +142,7 @@ class ExponentialInequalitiesTest {
     }
 
     @Test
-    fun `exponential equation with base in (0,1) and rhs equal to one`() {
+    fun `exponential inequality with base in (0,1) and rhs equal to one`() {
         testMethodInX {
             method = InequalitiesPlans.SolveExponentialInequality
             inputExpr = "[([1 / 2]) ^ 2 x + 2] - 1 > 0"
@@ -134,7 +171,15 @@ class ExponentialInequalitiesTest {
     }
 
     @Test
-    fun `exponential equation with bases powers of each-other`() {
+    fun `exponential inequality with bases powers of each-other`() {
+        testMethodInX {
+            method = InequalitiesPlans.SolveExponentialInequality
+            inputExpr = "[1 / [2 ^ [x ^ 2]]] > [1 / 2]"
+
+            check {
+                toExpr = "SetSolution[x: (-1, 1)]"
+            }
+        }
         testMethodInX {
             method = InequalitiesPlans.SolveExponentialInequality
             inputExpr = "[2 ^ 3 x] > 8"
@@ -156,10 +201,54 @@ class ExponentialInequalitiesTest {
                 }
             }
         }
+
+        testMethodInX {
+            method = InequalitiesPlans.SolveExponentialInequality
+            inputExpr = "[2 ^ 3 x] < [8 ^ -x + 2]"
+
+            check {
+                explanation {
+                    key = InequalitiesExplanation.SolveExponentialInequality
+                }
+
+                step {
+                    toExpr = "[2 ^ 3 x] < [2 ^ 3 (-x + 2)]"
+                }
+
+                step {
+                    toExpr = "SetSolution[x: (-/infinity/, 1)]"
+                    explanation {
+                        key = InequalitiesExplanation.SimplifyExponentialEquationWithSameBasesAndSolve
+                    }
+                }
+            }
+        }
+
+        testMethodInX {
+            method = InequalitiesPlans.SolveExponentialInequality
+            inputExpr = "[([2 / 3]) ^ 3 x] < [([8 / 27]) ^ -x + 2]"
+
+            check {
+                explanation {
+                    key = InequalitiesExplanation.SolveExponentialInequality
+                }
+
+                step {
+                    toExpr = "[([2 / 3]) ^ 3 x] < [([2 / 3]) ^ 3 (-x + 2)]"
+                }
+
+                step {
+                    toExpr = "SetSolution[x: (1, /infinity/)]"
+                    explanation {
+                        key = InequalitiesExplanation.SimplifyExponentialEquationWithSameBasesAndSolve
+                    }
+                }
+            }
+        }
     }
 
     @Test
-    fun `exponential equation solvable with logarithm with base greater than one`() {
+    fun `exponential inequality solvable with logarithm with base greater than one`() {
         testMethodInX {
             method = InequalitiesPlans.SolveExponentialInequality
             inputExpr = "[2 ^ x] - 3 > 0"
@@ -188,7 +277,7 @@ class ExponentialInequalitiesTest {
     }
 
     @Test
-    fun `exponential equation solvable with logarithm with base in (0,1)`() {
+    fun `exponential inequality solvable with logarithm with base in (0,1)`() {
         testMethodInX {
             method = InequalitiesPlans.SolveExponentialInequality
             inputExpr = "[([2 / 3]) ^ x] - 3 > 0"
@@ -249,7 +338,7 @@ class ExponentialInequalitiesTest {
     }
 
     @Test
-    fun `exponential equation with coefficients`() {
+    fun `exponential inequality with coefficients`() {
         testMethodInX {
             method = InequalitiesPlans.SolveExponentialInequality
             inputExpr = "4 * [2 ^ x] < [1 / 4]"
@@ -271,6 +360,269 @@ class ExponentialInequalitiesTest {
                     toExpr = "SetSolution[x: (-/infinity/, -4)]"
                     explanation {
                         key = InequalitiesExplanation.SimplifyExponentialEquationWithSameBasesAndSolve
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `exponential inequality with two exponentials with same exponents`() {
+        testMethodInX {
+            method = InequalitiesPlans.SolveExponentialInequality
+            inputExpr = "[3 ^ 2 x + 2] > [5 ^ 2 x + 2]"
+
+            check {
+                explanation {
+                    key = InequalitiesExplanation.SolveExponentialInequality
+                }
+
+                step {
+                    toExpr = "[([3 / 5]) ^ 2 x + 2] > 1"
+                    explanation {
+                        key = InequalitiesExplanation.DivideInequalityByRhsAndSimplify
+                    }
+                }
+
+                step {
+                    toExpr = "[([3 / 5]) ^ 2 x + 2] > [([3 / 5]) ^ 0]"
+                }
+
+                step {
+                    explanation {
+                        key = InequalitiesExplanation.SimplifyExponentialEquationWithSameBasesAndSolve
+                    }
+
+                    step {
+                        toExpr = "2 x + 2 < 0"
+                    }
+
+                    step {
+                        toExpr = "SetSolution[x: (-/infinity/, -1)]"
+                        explanation {
+                            key = InequalitiesExplanation.SolveLinearInequality
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `exponential inequality with two exponentials with same bases`() {
+        testMethodInX {
+            method = InequalitiesPlans.SolveExponentialInequality
+            inputExpr = "[3 ^ 2 x + 2] > [3 ^ x - 1]"
+
+            check {
+                explanation {
+                    key = InequalitiesExplanation.SimplifyExponentialEquationWithSameBasesAndSolve
+                }
+
+                step {
+                    toExpr = "2 x + 2 > x - 1"
+                }
+
+                step {
+                    toExpr = "SetSolution[x: (-3, /infinity/)]"
+                    explanation {
+                        key = InequalitiesExplanation.SolveLinearInequality
+                    }
+                }
+            }
+        }
+
+        testMethodInX {
+            method = InequalitiesPlans.SolveExponentialInequality
+            inputExpr = "[([2 / 5]) ^ 2 x + 2] > [([2 / 5]) ^ x - 1]"
+
+            check {
+                explanation {
+                    key = InequalitiesExplanation.SimplifyExponentialEquationWithSameBasesAndSolve
+                }
+
+                step {
+                    toExpr = "2 x + 2 < x - 1"
+                }
+
+                step {
+                    toExpr = "SetSolution[x: (-/infinity/, -3)]"
+                    explanation {
+                        key = InequalitiesExplanation.SolveLinearInequality
+                    }
+                }
+            }
+        }
+    }
+
+    @Suppress("LongMethod")
+    @Test
+    fun `exponential inequality with two exponentials - general case`() {
+        testMethodInX {
+            method = InequalitiesPlans.SolveExponentialInequality
+            inputExpr = "[2 ^ x] - [3 ^ 2 x + 1] > 0"
+
+            check {
+                explanation {
+                    key = InequalitiesExplanation.SolveExponentialInequality
+                }
+
+                step {
+                    toExpr = "[2 ^ x] > [3 ^ 2 x + 1]"
+                }
+
+                step {
+                    toExpr = "x * ln[2] > (2 x + 1) ln[3]"
+                }
+
+                step {
+                    explanation {
+                        key = InequalitiesExplanation.SolveLinearInequality
+                    }
+
+                    step {
+                        toExpr = "x * ln[2] > 2 x * ln[3] + ln[3]"
+                    }
+
+                    step {
+                        toExpr = "x (ln[2] - 2 * ln[3]) > ln[3]"
+                    }
+
+                    step {
+                        toExpr = "x < [ln[3] / ln[2] - 2 * ln[3]]"
+                        explanation {
+                            key = InequalitiesExplanation.DetermineCoefficientSignAndDivide
+                        }
+
+                        task {
+                            taskId = "#1"
+                            startExpr = "ln[2] - 2 * ln[3] < 0"
+                            explanation {
+                                key = InequalitiesExplanation.DetermineSignOfCoefficient
+                            }
+
+                            step {
+                                toExpr = "ln[[2 / 9]] < 0"
+                            }
+
+                            step {
+                                toExpr = "Identity[ln[[2 / 9]] < 0]"
+                            }
+                        }
+
+                        task {
+                            taskId = "#2"
+                            startExpr = "x (ln[2] - 2 * ln[3]) > ln[3]"
+
+                            step {
+                                toExpr = "x < [ln[3] / ln[2] - 2 * ln[3]]"
+                            }
+                        }
+                    }
+
+                    step {
+                        toExpr = "SetSolution[x: (-/infinity/, [ln[3] / ln[2] - 2 * ln[3]])]"
+                        explanation {
+                            key = InequalitiesExplanation.ExtractSolutionFromInequalityInSolvedForm
+                        }
+                    }
+                }
+            }
+        }
+
+        testMethodInX {
+            method = InequalitiesPlans.SolveExponentialInequality
+            inputExpr = "[7 ^ x] - [2 ^ 2 x + 1] > 0"
+
+            check {
+                explanation {
+                    key = InequalitiesExplanation.SolveExponentialInequality
+                }
+
+                step {
+                    toExpr = "[7 ^ x] > [2 ^ 2 x + 1]"
+                }
+
+                step {
+                    toExpr = "x * ln[7] > (2 x + 1) ln[2]"
+                }
+
+                step {
+                    explanation {
+                        key = InequalitiesExplanation.SolveLinearInequality
+                    }
+
+                    step {
+                        toExpr = "x * ln[7] > 2 x * ln[2] + ln[2]"
+                    }
+
+                    step {
+                        toExpr = "x (ln[7] - 2 * ln[2]) > ln[2]"
+                    }
+
+                    step {
+                        toExpr = "x > [ln[2] / ln[7] - 2 * ln[2]]"
+                        explanation {
+                            key = InequalitiesExplanation.DetermineCoefficientSignAndDivide
+                        }
+
+                        task {
+                            taskId = "#1"
+                            startExpr = "ln[7] - 2 * ln [2] > 0"
+                            explanation {
+                                key = InequalitiesExplanation.DetermineSignOfCoefficient
+                            }
+
+                            step {
+                                toExpr = "ln[[7 / 4]] > 0"
+                            }
+
+                            step {
+                                toExpr = "Identity[ln[[7 / 4]] > 0]"
+                            }
+                        }
+
+                        task {
+                            taskId = "#2"
+                            startExpr = "x (ln[7] - 2 * ln[2]) > ln[2]"
+
+                            step {
+                                toExpr = "x > [ln[2] / ln[7] - 2 * ln[2]]"
+                            }
+                        }
+                    }
+
+                    step {
+                        toExpr = "SetSolution[x: ([ln[2] / ln[7] - 2 * ln[2]], /infinity/)]"
+                        explanation {
+                            key = InequalitiesExplanation.ExtractSolutionFromInequalityInSolvedForm
+                        }
+                    }
+                }
+            }
+        }
+
+        testMethodInX {
+            method = InequalitiesPlans.SolveExponentialInequality
+            inputExpr = "[3 ^ 2 x + 2] - [4 ^ x + 1] < 0"
+
+            check {
+                explanation {
+                    key = InequalitiesExplanation.SolveExponentialInequality
+                }
+
+                step {
+                    toExpr = "[3 ^ 2 x + 2] < [4 ^ x + 1]"
+                }
+
+                step {
+                    toExpr = "(2 x + 2) ln[3] < 2 (x + 1) ln[2]"
+                }
+
+                step {
+                    toExpr = "SetSolution[x: (-/infinity/, -1)]"
+                    explanation {
+                        key = InequalitiesExplanation.SolveLinearInequality
                     }
                 }
             }

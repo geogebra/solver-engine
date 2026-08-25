@@ -29,6 +29,7 @@ import engine.expressions.Identity
 import engine.expressions.Inequality
 import engine.expressions.Interval
 import engine.expressions.Minus
+import engine.expressions.RootOrigin
 import engine.expressions.SetSolution
 import engine.expressions.SetUnion
 import engine.expressions.Solution
@@ -40,8 +41,10 @@ import engine.expressions.containsLogs
 import engine.expressions.contradictionOf
 import engine.expressions.equationOf
 import engine.expressions.finiteSetOf
+import engine.expressions.greaterThanOf
 import engine.expressions.identityOf
 import engine.expressions.isLogarithmicTerm
+import engine.expressions.lessThanOf
 import engine.expressions.openClosedIntervalOf
 import engine.expressions.openIntervalOf
 import engine.expressions.setDifferenceOf
@@ -82,10 +85,12 @@ import engine.patterns.optionalNegOf
 import engine.patterns.setSolutionOf
 import engine.patterns.variableListOf
 import engine.patterns.withOptionalConstantCoefficient
+import engine.sign.Sign
 import engine.steps.metadata.Metadata
 import engine.steps.metadata.metadata
 import engine.utility.pickValueInInterval
 import methods.constantexpressions.constantSimplificationSteps
+import methods.constantexpressions.normalizeConstantExpressionForSign
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.equations.EquationsPlans
 import methods.equations.createSolveSolvableWithDomainRestrictions
@@ -157,7 +162,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
                     it.variables.contains(solutionVariables[0])
             }
 
-            steps {
+            val linearSteps = steps {
                 whilePossible {
                     firstOf {
                         option(NormalizationPlans.NormalizeExpression)
@@ -172,12 +177,36 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
                 }
 
                 optionally(solvablePlansForInequalities.solvableRearrangementSteps)
-                optionally(solvablePlansForInequalities.coefficientRemovalSteps)
+                optionally {
+                    firstOf {
+                        option(solvablePlansForInequalities.coefficientRemovalSteps)
+                        option(determineCoefficientSignAndDivide)
+                    }
+                }
                 optionally(InequalitiesRules.ExtractSolutionFromInequalityInSolvedForm)
 
                 branchOn(Setting.PreferDecimals) {
                     case(BooleanSetting.True, decimalSolutionFormChecker)
                     case(BooleanSetting.False, FormChecker(condition { it is Solution }))
+                }
+            }
+
+            steps {
+                firstOf {
+                    option(linearSteps)
+                    option {
+                        whilePossible {
+                            firstOf {
+                                option(PolynomialsPlans.ExpandSingleBracketWithIntegerCoefficient)
+
+                                option(solvablePlansForInequalities.coefficientRemovalSteps)
+
+                                option(PolynomialsPlans.ExpandMostComplexSubterm)
+                            }
+                        }
+
+                        apply(linearSteps)
+                    }
                 }
             }
         },
@@ -269,6 +298,22 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
             steps {
                 apply(SolvableRules.CancelCommonBase)
                 apply(inequalitySolvingSteps)
+            }
+        },
+    ),
+
+    DivideInequalityByRhsAndSimplify(
+        plan {
+            explanation = Explanation.DivideInequalityByRhsAndSimplify
+
+            explanationParameters { listOf(expression.secondChild) }
+
+            steps {
+                apply(InequalitiesRules.SimplifyExponentialInequalityWithIdenticalExponents)
+                apply(SimplifyInequality)
+                applyTo(GeneralRules.RewriteFractionOfPowersWithSameExponent) {
+                    it.firstChild
+                }
             }
         },
     ),
@@ -399,6 +444,65 @@ val solveConstantInequalitySteps = steps {
 }
 
 val solvablePlansForInequalities = SolvablePlans(InequalitiesPlans.SimplifyInequality)
+
+private val determineCoefficientSignAndDivide = taskSet {
+    explanation = Explanation.DetermineCoefficientSignAndDivide
+
+    val lhs = withOptionalConstantCoefficient(
+        SolutionVariablePattern(),
+        solutionVariableConstantChecker,
+    )
+    val rhs = ConstantInSolutionVariablePattern()
+    pattern = inequalityOf(lhs, rhs)
+
+    tasks {
+        val coefficient = lhs.getCoefficient()
+        if (coefficient.signOf() != Sign.UNKNOWN) {
+            return@tasks null
+        }
+
+        val normalizedCoefficient = normalizeConstantExpressionForSign
+            .produceSteps(context, coefficient.withOrigin(RootOrigin()))
+            ?.lastOrNull()
+            ?.toExpr
+            ?: coefficient
+        val coefficientSign = normalizedCoefficient.signOf()
+        val signCheck = when (coefficientSign) {
+            Sign.POSITIVE -> greaterThanOf(coefficient, Constants.Zero)
+            Sign.NEGATIVE -> lessThanOf(coefficient, Constants.Zero)
+            else -> return@tasks null
+        }
+
+        val determineSign = task(
+            context = context.copy(solutionVariables = emptyList()),
+            startExpr = signCheck,
+            explanation = metadata(Explanation.DetermineSignOfCoefficient, coefficient),
+            stepsProducer = steps {
+                applyTo(normalizeConstantExpressionForSign) { it.firstChild }
+                apply(solveConstantInequalitySteps)
+            },
+        ) ?: return@tasks null
+        if (determineSign.result !is Identity) {
+            return@tasks null
+        }
+
+        // We reuse the explanation from the inner step to force a "through-step", and avoid excessive nesting
+        task(
+            startExpr = expression,
+            explanation = solvablePlansForInequalities
+                .divideByCoefficientOfVariableAndSimplifyExplanation(
+                    context,
+                    expression,
+                    coefficient,
+                ),
+            dependsOn = listOf(determineSign),
+            stepsProducer = solvablePlansForInequalities
+                .divideByCoefficientOfVariableAndSimplify(coefficientSign),
+        ) ?: return@tasks null
+
+        allTasks()
+    }
+}
 
 private val ensureLeadCoefficientOfLHSIsPositive = plan {
     explanation = Explanation.EnsureLeadCoefficientOfLHSIsPositive
@@ -804,6 +908,17 @@ private val solveExponentialInequality = plan {
     )
 
     steps {
+        // Do not execute the steps if the expression is undefined
+        shortcut {
+            deeply(
+                GeneralRules.EvaluateExponentialWithNegativeBaseAsUndefined,
+                deepFirst = true,
+            )
+        }
+
+        optionally {
+            deeply(GeneralRules.RewriteReciprocalPowerAsPowerOfReciprocal)
+        }
         // Let's leave simplification here for now, if we need more plans that require similar preprocessing
         // (currently log and exponential) we can refactor to have a strategies pipeline similar to equations
         optionally(algebraicSimplificationStepsForEquations)
@@ -836,23 +951,25 @@ private val solveExponentialInequality = plan {
             apply(SolvableRules.NegateBothSides)
         }
 
-        // We won't handle inequalities with two exponential expressions in this ticket,
-        // but we want them in the long run
-        // optionally(EquationsRules.BalanceEquationWithExponentialExpressions)
+        optionally(SolvableRules.BalanceSolvableWithExponentialExpressions)
 
         checkForm {
             inequalityOf(
-                exponentialOf(),
-                oneOf(
-                    ConstantInSolutionVariablePattern(),
-                    exponentialOf(),
+                optionalNegOf(exponentialOf()),
+                optionalNegOf(
+                    oneOf(
+                        ConstantInSolutionVariablePattern(),
+                        exponentialOf(),
+                    ),
                 ),
             )
         }
 
         firstOf {
             option(InequalitiesRules.ExtractSolutionFromImpossibleExponentialInequality)
+            option(InequalitiesRules.ExtractSolutionFromImpossibleExponentialEqualityWithTwoExponentials)
             option(InequalitiesRules.ExtractSolutionFromAlwaysTrueInequality)
+            option(InequalitiesRules.ExtractSolutionFromAlwaysTrueExponentialEqualityWithTwoExponentials)
             // [c ^ f(x)] <> [c ^ g(x)]
             option {
                 // [c ^ f(x)] <> 1
@@ -861,12 +978,12 @@ private val solveExponentialInequality = plan {
                 optionally(solvablePlansForInequalities.rewriteBothSidesWithSameBaseAndSimplify)
                 apply(InequalitiesPlans.SimplifyExponentialInequalityWithSameBasesAndSolve)
             }
-            // Will be handled as part of a future ticket
-            // // [c_1 ^ f(x)] <> [c_2 ^ f(x)]
-            // option {
-            //     apply(EquationsRules.SimplifyExponentialEquationWithIdenticalExponents)
-            //     apply(EquationsPlans.SolveEquation)
-            // }
+            // [c_1 ^ f(x)] <> [c_2 ^ f(x)]
+            option {
+                apply(InequalitiesPlans.DivideInequalityByRhsAndSimplify)
+                apply(SolvableRules.UsePowerRuleToRewriteExponentialSolvable)
+                apply(InequalitiesPlans.SimplifyExponentialInequalityWithSameBasesAndSolve)
+            }
             // generic case
             option {
                 apply(solvablePlansForInequalities.takeLogOfBothSidesAndSimplify)

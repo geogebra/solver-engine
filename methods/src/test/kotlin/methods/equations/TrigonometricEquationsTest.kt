@@ -62,6 +62,9 @@ class TrigonometricEquationsTest {
 
                 step {
                     toExpr = "sin[[/pi/ / 3] - x] = sin[2 x]"
+                    explanation {
+                        key = AnglesExplanation.BalanceEquationWithTrigonometricExpressions
+                    }
                 }
 
                 step {

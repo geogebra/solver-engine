@@ -367,25 +367,6 @@ class EquationRulesTest {
     }
 
     @Test
-    fun testBalanceEquationWithExponentialExpressions() {
-        testRuleInX(
-            "[2 ^ x] - [2 ^ 1 - x] = 0",
-            EquationsRules.BalanceEquationWithExponentialExpressions,
-            "[2 ^ x] = [2 ^ 1 - x]",
-        )
-        testRuleInX(
-            "0 = [9 ^ x] - [3 ^ x + 1]",
-            EquationsRules.BalanceEquationWithExponentialExpressions,
-            "[3 ^ x + 1] = [9 ^ x]",
-        )
-        testRuleInX(
-            "[2 ^ x] + [3 ^ x] = 0",
-            EquationsRules.BalanceEquationWithExponentialExpressions,
-            "[2 ^ x] = -[3 ^ x]",
-        )
-    }
-
-    @Test
     fun testSimplifyExponentialEquationWithIdenticalExponents() {
         testRuleInX(
             "[2 ^ x] = [3 ^ x]",

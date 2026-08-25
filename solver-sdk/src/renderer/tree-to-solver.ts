@@ -135,14 +135,14 @@ export function treeToSolver(n: ExpressionTree): string {
           )}]`,
         );
       } else if (isPoweredLog(base) && base.type === 'NaturalLog') {
-        return dec(`[ln ^ ${rec(n.operands[1])}] ${rec(base.operands[0])}`);
+        return dec(`[ln ^ ${rec(n.operands[1])}][${rec(base.operands[0])}]`);
       } else if (isPoweredLog(base) && base.type === 'LogBase10') {
-        return dec(`[log ^ ${rec(n.operands[1])}] ${rec(base.operands[0])}`);
+        return dec(`[log ^ ${rec(n.operands[1])}][${rec(base.operands[0])}]`);
       } else if (isPoweredLog(base) && base.type === 'Log') {
         return dec(
-          `[log_[${rec(base.operands[0])}] ^ ${rec(n.operands[1])}] ${rec(
+          `[log_[${rec(base.operands[0])}] ^ ${rec(n.operands[1])}][${rec(
             base.operands[1],
-          )}`,
+          )}]`,
         );
       } else {
         return dec(`[${rec(base)} ^ ${rec(n.operands[1])}]`);

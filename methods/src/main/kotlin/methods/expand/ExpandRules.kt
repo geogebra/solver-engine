@@ -69,7 +69,8 @@ enum class ExpandRules(override val runner: Rule) : RunnerMethod {
  * - a * (b + c) -> -a * b - a * c
  * (b + c) * a -> b * a + c * a
  * - (b + c) * a -> rule doesn't apply
- * a * (b + c) * d -> rule doesn't apply
+ * c1 * (a + b) * c2 -> c1 * c2 * a + c1 * c2 * b, when c1 and c2 are constant
+ * a * (b + c) * d -> rule doesn't apply when a or d is not constant
  * a * (b + c) * (d + e) -> rule doesn't apply
  */
 private val distributeMultiplicationOverSum = rule {
@@ -79,23 +80,23 @@ private val distributeMultiplicationOverSum = rule {
 
     onPattern(optionalNegProduct) {
         val factors = get(product).children
+        val sumValue = get(sum) as Sum
+        val toDistribute = distribute(restOf(product))
 
         val multiplyFromRight = when {
             factors.first() is Sum -> if (expression is Minus) return@onPattern null else true
             factors.last() is Sum -> false
-            else -> return@onPattern null
+            sumValue.isConstant() || !toDistribute.isConstant() -> return@onPattern null
+            else -> false
         }
-
-        val sumValue = get(sum) as Sum
-        val toDistribute = distribute(restOf(product))
 
         // variableExpression * (c1 + c2 + ... + cn) --> shouldn't be expanded
         if (sumValue.isConstant() && !toDistribute.isConstant()) return@onPattern null
 
         val distributedTerms = if (context.isSet(Setting.CopySumSignsWhenDistributing)) {
-            val toDistribute = copySign(optionalNegProduct, toDistribute)
+            val signedToDistribute = copySign(optionalNegProduct, toDistribute)
             sumValue.terms.map {
-                multiplyDistributedTerm(toDistribute, it, multiplyFromRight, extractMinus = true)
+                multiplyDistributedTerm(signedToDistribute, it, multiplyFromRight, extractMinus = true)
             }
         } else {
             sumValue.terms.map {

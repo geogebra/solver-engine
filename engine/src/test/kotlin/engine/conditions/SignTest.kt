@@ -94,6 +94,29 @@ class SignOfTest {
     }
 
     @Test
+    fun testSignOfLogarithm() {
+        assertSign("ln[2]", Sign.POSITIVE)
+        assertSign("ln[[1 / 2]]", Sign.NEGATIVE)
+        assertSign("log_[2][4]", Sign.POSITIVE)
+        assertSign("log_[2][1]", Sign.ZERO)
+        assertSign("log_[2][[1 / 2]]", Sign.NEGATIVE)
+        assertSign("log_[[1 / 2]][4]", Sign.NEGATIVE)
+        assertSign("log_[[1 / 2]][1]", Sign.ZERO)
+        assertSign("log_[[1 / 2]][[1 / 2]]", Sign.POSITIVE)
+    }
+
+    @Test
+    fun testSignOfLogarithmWithInvalidOrUnknownBase() {
+        assertSign("log_[1][2]", Sign.NONE)
+        assertSign("log_[0][2]", Sign.NONE)
+        assertSign("log_[-2][2]", Sign.NONE)
+        assertSign("log_[2][0]", Sign.NONE)
+        assertSign("log_[2][-1]", Sign.NONE)
+        assertSign("log_[x][2]", Sign.UNKNOWN)
+        assertSign("log_[x][-1]", Sign.NONE)
+    }
+
+    @Test
     fun testSignOfAlgebraicExpression() {
         assertSign("x", Sign.UNKNOWN)
         assertSign("[x^2]", Sign.NON_NEGATIVE)

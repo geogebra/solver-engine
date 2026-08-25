@@ -19,10 +19,103 @@ package methods.constantexpressions
 
 import engine.methods.testMethod
 import methods.fractionarithmetic.FractionArithmeticExplanation
+import methods.fractionarithmetic.FractionArithmeticPlans
 import methods.general.GeneralExplanation
 import org.junit.jupiter.api.Test
 
 class SimplifyFractionTest {
+    @Test
+    fun `test simplify identical non-obvious logarithmic factors`() =
+        testMethod {
+            method = FractionArithmeticPlans.SimplifyFraction
+            inputExpr = "[ln[3] - ln[2] / ln[3] - ln[2]]"
+
+            check {
+                toExpr = "1"
+            }
+        }
+
+    @Test
+    fun `test simplify fraction with logarithmic additive inverse`() =
+        testMethod {
+            method = FractionArithmeticPlans.SimplifyFraction
+            inputExpr = "[ln[2] - ln[3] / ln[3] - ln[2]]"
+
+            check {
+                toExpr = "-1"
+
+                step {
+                    toExpr = "[-(-ln[2] + ln[3]) / ln[3] - ln[2]]"
+                    explanation {
+                        key = GeneralExplanation.FactorMinusFromSum
+                    }
+                }
+
+                step {
+                    toExpr = "[-(-ln[2] + ln[3]) / -ln[2] + ln[3]]"
+                    explanation {
+                        key = FractionArithmeticExplanation.ReorganizeCommonSumFactorInFraction
+                    }
+                }
+
+                step {
+                    toExpr = "[-1 / 1]"
+                    explanation {
+                        key = FractionArithmeticExplanation.DetermineCommonFactorIsNotZeroAndCancel
+                    }
+
+                    task {
+                        taskId = "#1"
+                        startExpr = "-ln[2] + ln[3] != 0"
+                        explanation {
+                            key = FractionArithmeticExplanation.DetermineCommonFactorIsNotZero
+                            param { expr = "(-ln[2] + ln[3])" }
+                        }
+
+                        step {
+                            toExpr = "Identity[ln[[3 / 2]] != 0]"
+                            explanation {
+                                key = methods.inequations.InequationsExplanation.SolveConstantInequation
+                            }
+                        }
+                    }
+
+                    task {
+                        taskId = "#2"
+                        startExpr = "[-(-ln[2] + ln[3]) / -ln[2] + ln[3]]"
+                        explanation {
+                            key = FractionArithmeticExplanation.CancelCommonFactorInFraction
+                        }
+
+                        step {
+                            toExpr = "[-1 / 1]"
+                            explanation {
+                                key = FractionArithmeticExplanation.CancelCommonFactorInFraction
+                            }
+                        }
+                    }
+                }
+
+                step {
+                    toExpr = "-1"
+                    explanation {
+                        key = GeneralExplanation.SimplifyFractionWithOneDenominator
+                    }
+                }
+            }
+        }
+
+    @Test
+    fun `test do not cancel zero logarithmic factor`() =
+        testMethod {
+            method = FractionArithmeticPlans.SimplifyFraction
+            inputExpr = "[ln[2] - ln[2] / ln[2] - ln[2]]"
+
+            check {
+                noTransformation()
+            }
+        }
+
     @Test
     fun `test simplify fraction with sum numerator & denominator additive inverse`() =
         testMethod {

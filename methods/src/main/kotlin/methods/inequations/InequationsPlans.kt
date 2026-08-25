@@ -41,6 +41,7 @@ import engine.steps.Transformation
 import engine.steps.metadata.MetadataKey
 import engine.steps.metadata.metadata
 import methods.constantexpressions.constantSimplificationSteps
+import methods.constantexpressions.normalizeConstantExpressionForSign
 import methods.constantexpressions.simpleTidyUpSteps
 import methods.equations.EquationsPlans
 import methods.factor.FactorPlans
@@ -174,28 +175,46 @@ private val solveInequation = object : CompositeMethod() {
 
 val solvablePlansForInequations = SolvablePlans(InequationsPlans.SimplifyInequation)
 
-val solveConstantInequationSteps = steps {
-    check { it is Inequation && it.isConstant() }
+val solveConstantInequationSteps = createSolveConstantInequationSteps(allowApproximation = true)
 
-    optionally {
-        plan {
-            explanation = Explanation.SimplifyInequation
+internal val solveConstantInequationExactly = plan {
+    explanation = Explanation.SolveConstantInequation
 
-            steps {
-                whilePossible(constantSimplificationSteps)
+    steps {
+        apply(createSolveConstantInequationSteps(allowApproximation = false))
+    }
+}
+
+private fun createSolveConstantInequationSteps(allowApproximation: Boolean) =
+    steps {
+        check { it is Inequation && it.isConstant() }
+
+        optionally {
+            plan {
+                explanation = Explanation.SimplifyInequation
+
+                steps {
+                    whilePossible(constantSimplificationSteps)
+                }
             }
         }
+        shortcut(InequationsRules.ExtractSolutionFromConstantInequation)
+
+        optionally(InequationsPlans.SimplifyInequation)
+        shortcut(InequationsRules.ExtractSolutionFromConstantInequation)
+
+        optionally(solvablePlansForInequations.moveEverythingToTheLeftAndSimplify)
+        shortcut(InequationsRules.ExtractSolutionFromConstantInequation)
+
+        optionally {
+            applyTo(normalizeConstantExpressionForSign) { it.firstChild }
+        }
+        shortcut(InequationsRules.ExtractSolutionFromConstantInequation)
+
+        if (allowApproximation) {
+            inContext(contextFactory = { copy(precision = 10) }) {
+                apply(evaluateBothSidesNumerically)
+            }
+        }
+        apply(InequationsRules.ExtractSolutionFromConstantInequation)
     }
-    shortcut(InequationsRules.ExtractSolutionFromConstantInequation)
-
-    optionally(InequationsPlans.SimplifyInequation)
-    shortcut(InequationsRules.ExtractSolutionFromConstantInequation)
-
-    optionally(solvablePlansForInequations.moveEverythingToTheLeftAndSimplify)
-    shortcut(InequationsRules.ExtractSolutionFromConstantInequation)
-
-    inContext(contextFactory = { copy(precision = 10) }) {
-        apply(evaluateBothSidesNumerically)
-    }
-    apply(InequationsRules.ExtractSolutionFromConstantInequation)
-}

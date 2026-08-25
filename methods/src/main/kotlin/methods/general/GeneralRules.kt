@@ -24,6 +24,7 @@ import engine.conditions.isNotZeroBySign
 import engine.expressions.Constants
 import engine.expressions.DivideBy
 import engine.expressions.Expression
+import engine.expressions.Logarithm
 import engine.expressions.Minus
 import engine.expressions.PathScope
 import engine.expressions.Power
@@ -34,8 +35,10 @@ import engine.expressions.Sum
 import engine.expressions.Variable
 import engine.expressions.absoluteValueOf
 import engine.expressions.asInteger
+import engine.expressions.asRational
 import engine.expressions.equationOf
 import engine.expressions.fractionOf
+import engine.expressions.inverse
 import engine.expressions.negOf
 import engine.expressions.powerOf
 import engine.expressions.productOf
@@ -52,6 +55,7 @@ import engine.patterns.AnyPattern
 import engine.patterns.ConditionPattern
 import engine.patterns.FixedPattern
 import engine.patterns.FractionPattern
+import engine.patterns.RationalPattern
 import engine.patterns.SignedIntegerPattern
 import engine.patterns.SignedNumberPattern
 import engine.patterns.UnsignedIntegerPattern
@@ -133,6 +137,7 @@ enum class GeneralRules(override val runner: Rule) : RunnerMethod {
     RewriteProductOfPowersWithInverseBase(rewriteProductOfPowersWithInverseBase),
 
     // Fractions of powers
+    RewriteReciprocalPowerAsPowerOfReciprocal(rewriteReciprocalPowerAsPowerOfReciprocal),
     RewriteFractionOfPowersWithSameBase(rewriteFractionOfPowersWithSameBase),
     RewriteFractionOfPowersWithSameExponent(rewriteFractionOfPowersWithSameExponent),
     FlipFractionUnderNegativePower(flipFractionUnderNegativePower),
@@ -513,6 +518,7 @@ private fun Expression.pseudoDegree(constantIsZeroDegree: Boolean = true): Doubl
     when {
         this.isConstant() && constantIsZeroDegree -> 0.0
         this is Minus -> this.argument.pseudoDegree(constantIsZeroDegree)
+        this is Logarithm -> logarithmPseudoDegree(constantIsZeroDegree)
         this is SquareRoot -> 0.5
         this is Root -> 1.0 / abs(this.radicand.doubleValue)
         this is Variable -> 1.0
@@ -520,6 +526,17 @@ private fun Expression.pseudoDegree(constantIsZeroDegree: Boolean = true): Doubl
         this is Product -> this.children.sumOf { it.pseudoDegree(constantIsZeroDegree) }
         this is Sum -> this.children.maxOf { it.pseudoDegree(constantIsZeroDegree) }
         else -> 0.0
+    }
+
+@Suppress("MagicNumber")
+private fun Logarithm.logarithmPseudoDegree(constantIsZeroDegree: Boolean): Double =
+    if (!constantIsZeroDegree && isConstant()) {
+        // Distinguish values with the same complexity, e.g. ln[2] and ln[3], during secondary sorting.
+        abs(doubleValue).takeIf { it.isFinite() } ?: 0.0
+    } else {
+        0.55 +
+            base.pseudoDegree(constantIsZeroDegree) +
+            argument.pseudoDegree(constantIsZeroDegree)
     }
 
 private val factorMinusFromSum =
@@ -920,6 +937,24 @@ private val rewriteFractionOfPowersWithSameBase =
             )
         }
     }
+
+private val rewriteReciprocalPowerAsPowerOfReciprocal = rule {
+    val one = FixedPattern(Constants.One)
+    val base = RationalPattern()
+    val exponent = AnyPattern()
+    val reciprocalPower = fractionOf(one, powerOf(base, exponent))
+
+    onPattern(reciprocalPower) {
+        val baseValue = get(base).asRational() ?: return@onPattern null
+        if (baseValue.isZero() || baseValue.isNeg()) return@onPattern null
+
+        ruleResult(
+            toExpr = powerOf(transform(base, get(base).inverse()), move(exponent)),
+            gmAction = edit(reciprocalPower),
+            explanation = metadata(Explanation.RewriteReciprocalPowerAsPowerOfReciprocal),
+        )
+    }
+}
 
 private val rewriteFractionOfPowersWithSameExponent =
     rule {

@@ -274,6 +274,8 @@ enum class SolvableKey(
      * e.g. [3 ^ x - 2] = 0 --> [3 ^ x - 2] = [3 ^ 0]
      */
     UsePowerRuleToRewriteExponentialSolvable(SolvableRules.UsePowerRuleToRewriteExponentialSolvable),
+
+    BalanceSolvableWithExponentialExpressions(SolvableRules.BalanceSolvableWithExponentialExpressions),
 }
 
 /**
@@ -870,6 +872,13 @@ enum class EquationsExplanation(
      * e.g. [3 ^ x - 2] = 0 --> [3 ^ x - 2] = [3 ^ 0]
      */
     UsePowerRuleToRewriteExponentialEquation(SolvableKey.UsePowerRuleToRewriteExponentialSolvable),
+
+    /**
+     * Balance equation with two exponential expressions
+     *
+     * e.g. [4^x-1]-[3^2x] = 0 --> [4^x-1] = [3^2(x+1)]
+     */
+    BalanceExponentialEquation(SolvableKey.BalanceSolvableWithExponentialExpressions),
     ;
 
     override val category = "Equations"
@@ -1387,6 +1396,13 @@ enum class InequalitiesExplanation(
      * e.g. [3 ^ x - 2] < 0 --> [3 ^ x - 2] < [3 ^ 0]
      */
     UsePowerRuleToRewriteExponentialInequality(SolvableKey.UsePowerRuleToRewriteExponentialSolvable),
+
+    /**
+     * Balance inequality with two exponential expressions
+     *
+     * e.g. [4^x-1]-[3^2x] > 0 --> [4^x-1] > [3^2(x+1)]
+     */
+    BalanceInequalityWithExponentialExpressions(SolvableKey.BalanceSolvableWithExponentialExpressions),
     ;
 
     override val category = "Inequalities"

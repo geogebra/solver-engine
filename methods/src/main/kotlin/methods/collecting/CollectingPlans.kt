@@ -30,7 +30,7 @@ private fun createSimplifyCoefficientPlan(simplificationSteps: StepsProducer, pr
         explanation = Explanation.SimplifyCoefficient
 
         steps {
-            applyTo(extractor = { it.firstChild }) {
+            applyTo(Label.B) {
                 whilePossible(simplificationSteps)
             }
             optionally(GeneralRules.EvaluateProductContainingZero)

@@ -21,6 +21,8 @@ import engine.context.Context
 import engine.methods.testMethod
 import engine.methods.testMethodInX
 import org.junit.jupiter.api.Test
+import parser.parseExpression
+import kotlin.test.assertEquals
 
 class LinearInequalitiesTest {
     @Test
@@ -97,6 +99,137 @@ class LinearInequalitiesTest {
                     explanation {
                         key = InequalitiesExplanation.ExtractSolutionFromInequalityInSolvedForm
                     }
+                }
+            }
+        }
+
+    @Test
+    fun `test linear inequality with a negative logarithmic coefficient`() =
+        testMethodInX {
+            method = InequalitiesPlans.SolveLinearInequality
+            inputExpr = "x * ln[2] < 2 x * ln[3] + ln[3]"
+
+            check {
+                toExpr = "SetSolution[x: ([ln[3] / ln[2] - 2 ln[3]], /infinity/)]"
+                explanation {
+                    key = InequalitiesExplanation.SolveLinearInequality
+                }
+
+                step {
+                    toExpr = "x (ln[2] - 2 ln[3]) < ln[3]"
+                }
+
+                step {
+                    fromExpr = "x (ln[2] - 2 ln[3]) < ln[3]"
+                    toExpr = "x > [ln[3] / ln[2] - 2 ln[3]]"
+                    explanation {
+                        key = InequalitiesExplanation.DetermineCoefficientSignAndDivide
+                    }
+
+                    task {
+                        taskId = "#1"
+                        startExpr = "ln[2] - 2 ln[3] < 0"
+                        explanation {
+                            key = InequalitiesExplanation.DetermineSignOfCoefficient
+                            param { expr = "(ln[2] - 2 ln[3])" }
+                        }
+
+                        step {
+                            toExpr = "ln[[2 / 9]] < 0"
+                            explanation {
+                                key = methods.logs.LogsExplanation.CollectLogarithmsInSum
+                            }
+                        }
+
+                        step {
+                            toExpr = "Identity[ln[[2 / 9]] < 0]"
+                            explanation {
+                                key = InequalitiesExplanation.ExtractTruthFromTrueInequality
+                            }
+                        }
+                    }
+
+                    task {
+                        taskId = "#2"
+                        startExpr = "x (ln[2] - 2 ln[3]) < ln[3]"
+                        explanation {
+                            key = methods.solvable.InequalitiesExplanation
+                                .DivideByCoefficientOfVariableAndSimplify
+                            param { expr = "(ln[2] - 2 ln[3])" }
+                        }
+
+                        step {
+                            toExpr = "x > [ln[3] / ln[2] - 2 ln[3]]"
+                            explanation {
+                                key = methods.solvable.InequalitiesExplanation
+                                    .DivideByCoefficientOfVariableAndSimplify
+                            }
+                        }
+                    }
+                }
+
+                step {
+                    toExpr = "SetSolution[x: ([ln[3] / ln[2] - 2 ln[3]], /infinity/)]"
+                    explanation {
+                        key = InequalitiesExplanation.ExtractSolutionFromInequalityInSolvedForm
+                    }
+                }
+            }
+        }
+
+    @Test
+    fun `test linear inequality with a positive logarithmic coefficient`() =
+        testMethodInX {
+            method = InequalitiesPlans.SolveLinearInequality
+            inputExpr = "x * ln[3] > x * ln[2] + ln[2]"
+
+            check {
+                toExpr = "SetSolution[x: ([ln[2] / ln[3] - ln[2]], /infinity/)]"
+                explanation {
+                    key = InequalitiesExplanation.SolveLinearInequality
+                }
+            }
+        }
+
+    @Test
+    fun `test linear inequality with a positive coefficient of logs with base below one`() =
+        testMethodInX {
+            method = InequalitiesPlans.SolveLinearInequality
+            inputExpr = "x * log_[[1 / 2]][2] < 2 x * log_[[1 / 2]][3] + 1"
+
+            check {
+                toExpr =
+                    "SetSolution[x: (-/infinity/, [1 / log_[[1 / 2]][2] - 2 log_[[1 / 2]][3]])]"
+                explanation {
+                    key = InequalitiesExplanation.SolveLinearInequality
+                }
+            }
+        }
+
+    @Test
+    fun `test linear inequality with a negative radical coefficient`() =
+        testMethodInX {
+            method = InequalitiesPlans.SolveLinearInequality
+            inputExpr = "x * (sqrt[2] - sqrt[8]) > 1"
+
+            check {
+                toExpr = "SetSolution[x: (-/infinity/, -[sqrt[2] / 2])]"
+                explanation {
+                    key = InequalitiesExplanation.SolveLinearInequality
+                }
+            }
+        }
+
+    @Test
+    fun `test linear inequality with a zero logarithmic coefficient is not divided`() =
+        testMethodInX {
+            method = InequalitiesPlans.SolveLinearInequality
+            inputExpr = "x * ln[4] < 2 x * ln[2] + 1"
+
+            check {
+                toExpr = "Identity[x: 0 < 1]"
+                explanation {
+                    key = InequalitiesExplanation.SolveLinearInequality
                 }
             }
         }
@@ -386,4 +519,32 @@ class LinearInequalitiesTest {
                 noTransformation()
             }
         }
+
+    @Test
+    fun `test unknown factored coefficient does not make fallback oscillate`() =
+        testMethodInX {
+            method = InequalitiesPlans.SolveLinearInequality
+            inputExpr = "x (a + b) < 1"
+
+            check {
+                noTransformation()
+            }
+        }
+
+    @Test
+    fun `test divide task uses plan explanation for multivariate inequality`() {
+        val context = Context(solutionVariables = listOf("x"))
+        val expression = parseExpression("x (ln[2] - 2 ln[3]) < y")
+        val coefficient = parseExpression("ln[2] - 2 ln[3]")
+        val explanation = solvablePlansForInequalities.divideByCoefficientOfVariableAndSimplifyExplanation(
+            context,
+            expression,
+            coefficient,
+        )
+
+        assertEquals(
+            methods.solvable.InequalitiesExplanation.DivideByCoefficientOfVariableAndSimplify,
+            explanation.key,
+        )
+    }
 }

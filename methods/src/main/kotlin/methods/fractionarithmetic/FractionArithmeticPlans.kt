@@ -19,13 +19,16 @@ package methods.fractionarithmetic
 
 import engine.context.BooleanSetting
 import engine.context.Setting
+import engine.expressions.Constants
 import engine.expressions.Expression
 import engine.expressions.Fraction
+import engine.expressions.Identity
 import engine.expressions.Minus
 import engine.expressions.Power
 import engine.expressions.Product
 import engine.expressions.Sum
 import engine.expressions.asRational
+import engine.expressions.inequationOf
 import engine.expressions.isPolynomial
 import engine.expressions.isSigned
 import engine.methods.CompositeMethod
@@ -35,6 +38,7 @@ import engine.methods.plan
 import engine.methods.stepsproducers.StepsProducer
 import engine.methods.stepsproducers.firstOf
 import engine.methods.stepsproducers.steps
+import engine.methods.taskSet
 import engine.patterns.AnyPattern
 import engine.patterns.ConstantPattern
 import engine.patterns.IntegerFractionPattern
@@ -46,17 +50,21 @@ import engine.patterns.UnsignedIntegerPattern
 import engine.patterns.VariableExpressionPattern
 import engine.patterns.commutativeSumContaining
 import engine.patterns.condition
+import engine.patterns.expressionWithFactor
 import engine.patterns.fractionOf
 import engine.patterns.integerOrderRootOf
 import engine.patterns.oneOf
+import engine.patterns.optionalIntegerPowerOf
 import engine.patterns.optionalNegOf
 import engine.patterns.powerOf
 import engine.patterns.sumContaining
 import engine.patterns.withOptionalIntegerCoefficient
 import engine.steps.metadata.Skill
+import engine.steps.metadata.metadata
 import engine.utility.gcd
 import methods.general.GeneralPlans
 import methods.general.GeneralRules
+import methods.inequations.solveConstantInequationExactly
 import methods.integerarithmetic.IntegerArithmeticPlans
 import methods.integerarithmetic.IntegerArithmeticRules
 import methods.units.UnitsRules
@@ -474,6 +482,7 @@ private val trivialFractionCancellationSteps = firstOf {
     option(GeneralRules.SimplifyFractionWithOneDenominator)
     option(GeneralRules.CancelDenominator)
     option(FractionArithmeticRules.CancelCommonFactorInFraction)
+    option(determineCommonFactorIsNotZeroAndCancel())
 }
 
 private val extractMinusFromPower = steps {
@@ -523,12 +532,55 @@ private val extractNegativeFromNumeratorOrDenominatorAndCancelFactor = steps {
         option {
             applyToKind<Fraction>(extractMinusFromProductOrSumOrPower) { it.numerator }
             optionally(FractionArithmeticRules.ReorganizeCommonSumFactorInFraction)
-            apply(FractionArithmeticRules.CancelCommonFactorInFraction)
+            firstOf {
+                option(FractionArithmeticRules.CancelCommonFactorInFraction)
+                option(determineCommonFactorIsNotZeroAndCancel())
+            }
         }
         option {
             applyToKind<Fraction>(extractMinusFromProductOrSumOrPower) { it.denominator }
             optionally(FractionArithmeticRules.ReorganizeCommonSumFactorInFraction)
-            apply(FractionArithmeticRules.CancelCommonFactorInFraction)
+            firstOf {
+                option(FractionArithmeticRules.CancelCommonFactorInFraction)
+                option(determineCommonFactorIsNotZeroAndCancel())
+            }
         }
     }
 }
+
+private fun determineCommonFactorIsNotZeroAndCancel() =
+    taskSet {
+        explanation = Explanation.DetermineCommonFactorIsNotZeroAndCancel
+
+        val commonFactor = condition { it != Constants.One && it.isConstant() }
+        val numeratorFactor = optionalIntegerPowerOf(commonFactor)
+        val numerator = expressionWithFactor(numeratorFactor)
+        val denominatorFactor = optionalIntegerPowerOf(commonFactor)
+        val denominator = expressionWithFactor(denominatorFactor)
+        pattern = fractionOf(numerator, denominator)
+
+        tasks {
+            val factor = get(commonFactor)
+
+            val determineNonZero = task(
+                context = context.copy(solutionVariables = emptyList()),
+                startExpr = inequationOf(factor, Constants.Zero),
+                explanation = metadata(Explanation.DetermineCommonFactorIsNotZero, factor),
+                stepsProducer = solveConstantInequationExactly,
+            ) ?: return@tasks null
+            if (determineNonZero.result !is Identity) {
+                return@tasks null
+            }
+
+            task(
+                startExpr = expression,
+                explanation = metadata(Explanation.CancelCommonFactorInFraction),
+                dependsOn = listOf(determineNonZero),
+                stepsProducer = steps {
+                    apply(cancelCommonFactorInFractionWithKnownNonZeroFactor(factor))
+                },
+            ) ?: return@tasks null
+
+            allTasks()
+        }
+    }
