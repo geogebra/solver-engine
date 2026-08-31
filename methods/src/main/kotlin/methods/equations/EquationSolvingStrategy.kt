@@ -55,6 +55,7 @@ import engine.patterns.oneOf
 import engine.patterns.optionalNegOf
 import engine.patterns.squareOf
 import engine.patterns.withOptionalConstantCoefficient
+import engine.patterns.withOptionalConstantCoefficientInSolutionVariables
 import methods.angles.TrigonometricFunctionsRules
 import methods.angles.createEvaluateInverseTrigonometricFunctionExactlyPlan
 import methods.constantexpressions.ConstantExpressionsPlans
@@ -97,7 +98,7 @@ enum class EquationSolvingStrategy(
      * Solve an equation in the form a^f(x) = b^g(x) or a^f(x) = c  where a and b are constants, by trying to equate
      * the bases or taking the logarithm of both sides.
      */
-    ElementaryExponential(
+    Exponential(
         family = Family.EXPONENTIAL,
         priority = 10,
         explanation = Explanation.SolveExponentialEquation,
@@ -109,7 +110,7 @@ enum class EquationSolvingStrategy(
             optionally {
                 check {
                     // We don't want to rearrange an equation already in the shape [c_1 ^ f(x)] = [c_2 ^ g(x)]
-                    val exponentialPattern = exponentialOf()
+                    val exponentialPattern = withOptionalConstantCoefficientInSolutionVariables(exponentialOf())
 
                     !exponentialPattern.matches(this, it.firstChild) ||
                         !exponentialPattern.matches(this, it.secondChild)
@@ -131,10 +132,10 @@ enum class EquationSolvingStrategy(
 
             checkForm {
                 equationOf(
-                    exponentialOf(),
+                    withOptionalConstantCoefficientInSolutionVariables(exponentialOf()),
                     oneOf(
                         ConstantInSolutionVariablePattern(),
-                        exponentialOf(),
+                        withOptionalConstantCoefficientInSolutionVariables(exponentialOf()),
                     ),
                 )
             }
@@ -158,6 +159,7 @@ enum class EquationSolvingStrategy(
                 }
                 // generic case
                 option {
+                    optionally(solvablePlansForEquations.exponentialCoefficientRemovalSteps)
                     apply(solvablePlansForEquations.takeLogOfBothSidesAndSimplify)
                     apply(equationSolvingSteps)
                 }

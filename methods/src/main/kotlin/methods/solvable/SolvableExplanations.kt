@@ -202,6 +202,10 @@ enum class SolvableKey(
      */
     DivideByCoefficientOfVariable(SolvableRules.MoveConstantFactorWithNoFractionToTheRight),
 
+    DivideByCoefficientOfVariableUnconditionally(
+        SolvableRules.MoveConstantFactorWithNoFractionToTheRightUnconditionally,
+    ),
+
     /**
      * Divide both sides by the coefficient of the logarithm
      */
@@ -276,6 +280,14 @@ enum class SolvableKey(
     UsePowerRuleToRewriteExponentialSolvable(SolvableRules.UsePowerRuleToRewriteExponentialSolvable),
 
     BalanceSolvableWithExponentialExpressions(SolvableRules.BalanceSolvableWithExponentialExpressions),
+
+    /**
+     * Divide both sides of a solvable by the exponential factor on the RHS.
+     *
+     * E.g. [a ^ f(x)] = c * [b ^ f(x)]
+     *      -> [[a ^ f(x)] / [b ^ f(x)]] = [c * [b ^ f(x)] / [b ^ f(x)]]
+     */
+    DivideSolvableByExponentialRhs(SolvableRules.DivideSolvableByExponentialRhs),
 }
 
 /**
@@ -879,6 +891,26 @@ enum class EquationsExplanation(
      * e.g. [4^x-1]-[3^2x] = 0 --> [4^x-1] = [3^2(x+1)]
      */
     BalanceExponentialEquation(SolvableKey.BalanceSolvableWithExponentialExpressions),
+
+    /**
+     * Divide both sides of an equation by the exponential factor %1 on the RHS.
+     *
+     * E.g. [2 ^ x] = 3 * [5 ^ x]
+     *      -> [[2 ^ x] / [5 ^ x]] = [3 * [5 ^ x] / [5 ^ x]]
+     */
+    DivideEquationByExponentialRhs(SolvableKey.DivideSolvableByExponentialRhs),
+
+    /**
+     * Divide both sides of an equation by the exponential factor %1 on the RHS and simplify.
+     *
+     * E.g. [2 ^ x] = 3 * [5 ^ x]
+     *      -> [[2 ^ x] / [5 ^ x]] = [3 * [5 ^ x] / [5 ^ x]]
+     *      -> [([2 / 5]) ^ x] = 3
+     */
+    DivideEquationByExponentialRhsAndSimplify(
+        SolvableKey.DivideSolvableByExponentialRhs,
+        simplify = true,
+    ),
     ;
 
     override val category = "Equations"
@@ -1403,6 +1435,26 @@ enum class InequalitiesExplanation(
      * e.g. [4^x-1]-[3^2x] > 0 --> [4^x-1] > [3^2(x+1)]
      */
     BalanceInequalityWithExponentialExpressions(SolvableKey.BalanceSolvableWithExponentialExpressions),
+
+    /**
+     * Divide both sides of an inequality by the positive exponential factor %1 on the RHS.
+     *
+     * E.g. [2 ^ x] < 3 * [5 ^ x]
+     *      -> [[2 ^ x] / [5 ^ x]] < [3 * [5 ^ x] / [5 ^ x]]
+     */
+    DivideInequalityByExponentialRhs(SolvableKey.DivideSolvableByExponentialRhs),
+
+    /**
+     * Divide both sides of an inequality by the positive exponential factor %1 on the RHS and simplify.
+     *
+     * E.g. [2 ^ x] < 3 * [5 ^ x]
+     *      -> [[2 ^ x] / [5 ^ x]] < [3 * [5 ^ x] / [5 ^ x]]
+     *      -> [([2 / 5]) ^ x] < 3
+     */
+    DivideInequalityByExponentialRhsAndSimplify(
+        SolvableKey.DivideSolvableByExponentialRhs,
+        simplify = true,
+    ),
     ;
 
     override val category = "Inequalities"

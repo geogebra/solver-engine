@@ -46,9 +46,11 @@ import engine.patterns.SolutionVariablePattern
 import engine.patterns.SolvablePattern
 import engine.patterns.VariableExpressionPattern
 import engine.patterns.condition
+import engine.patterns.exponentialOf
 import engine.patterns.logOf
 import engine.patterns.negOf
 import engine.patterns.oneOf
+import engine.patterns.productOf
 import engine.patterns.sumContaining
 import engine.patterns.withOptionalConstantCoefficientInSolutionVariables
 import engine.patterns.withOptionalIntegerCoefficient
@@ -146,6 +148,14 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
         SolvableKey.DivideByCoefficientOfVariable,
     )
 
+    val divideByCoefficientOfVariableUnconditionallyAndSimplify = ApplyRuleAndSimplify(
+        SolvableKey.DivideByCoefficientOfVariableUnconditionally,
+    )
+
+    val divideSolvableByExponentialRhsAndSimplify = ApplyRuleAndSimplify(
+        SolvableKey.DivideSolvableByExponentialRhs,
+    )
+
     fun divideByCoefficientOfVariableAndSimplify(knownCoefficientSign: Sign) =
         ApplyRuleAndSimplify(
             SolvableKey.DivideByCoefficientOfVariable,
@@ -208,7 +218,10 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
                 whilePossible {
                     firstOf {
                         option(LogsRules.SplitLogOfProduct)
-                        option(LogsRules.SplitLogOfFraction)
+                        option {
+                            check { !it.isConstantIn(solutionVariables) }
+                            apply(LogsRules.SplitLogOfFraction)
+                        }
                     }
                 }
                 optionally(simplificationPlan)
@@ -426,6 +439,33 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
                 option(multiplyByDenominatorOfLogarithmLHSAndSimplify)
                 option(moveConstantFractionFactorOfLogarithmToTheRight)
             }
+        }
+    }
+
+    val exponentialCoefficientRemovalSteps = steps {
+        checkForm {
+            val coefficient = ConstantInSolutionVariablePattern()
+            val exponent = condition { !it.isConstantIn(solutionVariables) }
+
+            oneOf(
+                SolvablePattern(
+                    withOptionalConstantCoefficientInSolutionVariables(
+                        exponentialOf(exponent = exponent),
+                    ),
+                    productOf(coefficient, exponentialOf(exponent = exponent)),
+                ),
+                SolvablePattern(
+                    productOf(coefficient, exponentialOf(exponent = exponent)),
+                    withOptionalConstantCoefficientInSolutionVariables(
+                        exponentialOf(exponent = exponent),
+                    ),
+                ),
+            )
+        }
+        optionally(divideByCoefficientOfVariableUnconditionallyAndSimplify)
+        apply(divideSolvableByExponentialRhsAndSimplify)
+        applyTo(GeneralRules.RewriteFractionOfPowersWithSameExponent) {
+            it.firstChild
         }
     }
 }

@@ -125,6 +125,15 @@ fun simplifiedFractionOf(numerator: Expression, denominator: Expression) =
         else -> fractionOf(numerator, denominator)
     }
 
+fun flattenedFractionOf(numerator: Expression, denominator: Expression) =
+    when (numerator) {
+        is Fraction -> fractionOf(
+            numerator.numerator,
+            productOf(numerator.denominator, denominator),
+        )
+        else -> fractionOf(numerator, denominator)
+    }
+
 fun powerOf(base: Expression, exponent: Expression) =
     buildExpression(
         BinaryExpressionOperator.Power,

@@ -17,6 +17,7 @@
 
 package methods.inequalities
 
+import engine.conditions.isDefinitelyNegative
 import engine.conditions.isDefinitelyNotPositive
 import engine.conditions.isDefinitelyPositive
 import engine.expressions.Comparison
@@ -62,9 +63,9 @@ import engine.patterns.greaterThanOf
 import engine.patterns.inequalityOf
 import engine.patterns.lessThanEqualOf
 import engine.patterns.lessThanOf
-import engine.patterns.negOf
 import engine.patterns.oneOf
 import engine.patterns.withOptionalConstantCoefficient
+import engine.patterns.withOptionalConstantCoefficientInSolutionVariables
 import engine.sign.Sign
 import engine.steps.Transformation
 import engine.steps.metadata.metadata
@@ -394,8 +395,17 @@ private val extractSolutionFromImpossibleExponentialInequality = rule {
 }
 
 private val extractSolutionFromImpossibleExponentialEqualityWithTwoExponentials = rule {
-    val positiveExponential = exponentialOf()
-    val negativeExponential = negOf(exponentialOf())
+    val positiveExponential = condition(
+        withOptionalConstantCoefficientInSolutionVariables(exponentialOf()),
+    ) {
+        it.isDefinitelyPositive()
+    }
+
+    val negativeExponential = condition(
+        withOptionalConstantCoefficientInSolutionVariables(exponentialOf()),
+    ) {
+        it.isDefinitelyNegative()
+    }
 
     val pattern = oneOf(
         lessThanOf(positiveExponential, negativeExponential),
@@ -437,8 +447,17 @@ private val extractSolutionFromAlwaysTrueInequality = rule {
 }
 
 private val extractSolutionFromAlwaysTrueExponentialEqualityWithTwoExponentials = rule {
-    val positiveExponential = exponentialOf()
-    val negativeExponential = negOf(exponentialOf())
+    val positiveExponential = condition(
+        withOptionalConstantCoefficientInSolutionVariables(exponentialOf()),
+    ) {
+        it.isDefinitelyPositive()
+    }
+
+    val negativeExponential = condition(
+        withOptionalConstantCoefficientInSolutionVariables(exponentialOf()),
+    ) {
+        it.isDefinitelyNegative()
+    }
 
     val pattern = oneOf(
         lessThanOf(negativeExponential, positiveExponential),

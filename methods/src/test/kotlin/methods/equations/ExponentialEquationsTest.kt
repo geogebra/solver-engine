@@ -17,6 +17,7 @@
 
 package methods.equations
 
+import engine.methods.plan
 import engine.methods.testMethodInX
 import methods.expand.ExpandExplanation
 import methods.general.GeneralExplanation
@@ -25,6 +26,14 @@ import org.junit.jupiter.api.Test
 import methods.solvable.EquationsExplanation as SolvableEquationsExplanation
 
 class ExponentialEquationsTest {
+    private val removeExponentialCoefficients = plan {
+        explanation = EquationsExplanation.SolveExponentialEquation
+
+        steps {
+            apply(solvablePlansForEquations.exponentialCoefficientRemovalSteps)
+        }
+    }
+
     @Test
     fun `test reorder equation with one power and one constant`() =
         testMethodInX {
@@ -264,6 +273,57 @@ class ExponentialEquationsTest {
         }
 
     @Test
+    fun `test identical exponents with different bases and coefficients`() =
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "4 * [5 ^ 2 x + 1] = 3 * [7 ^ 2 x + 1]"
+
+            check {
+                explanation {
+                    key = EquationsExplanation.SolveExponentialEquation
+                }
+
+                step {
+                    toExpr = "[5 ^ 2 x + 1] = [3 * [7 ^ 2 x + 1] / 4]"
+                }
+
+                step {
+                    toExpr = "[[5 ^ 2 x + 1] / [7 ^ 2 x + 1]] = [3 / 4]"
+                }
+
+                step {
+                    toExpr = "[([5 / 7]) ^ 2 x + 1] = [3 / 4]"
+                    explanation {
+                        key = GeneralExplanation.RewriteFractionOfPowersWithSameExponent
+                    }
+                }
+
+                step {
+                    toExpr = "(2 x + 1) ln[[5 / 7]] = ln[[3 / 4]]"
+                }
+
+                step {
+                    toExpr = "2 x + 1 = [ln[[3 / 4]] / ln[[5 / 7]]]"
+                }
+
+                step {
+                    toExpr = "2 x = [ln[[3 / 4]] / ln[[5 / 7]]] - 1"
+                }
+
+                step {
+                    toExpr = "x = [[ln[[3 / 4]] / ln[[5 / 7]]] - 1 / 2]"
+                }
+
+                step {
+                    toExpr = "SetSolution[x: {[[ln[[3 / 4]] / ln[[5 / 7]]] - 1 / 2]}]"
+                    explanation {
+                        key = EquationsExplanation.ExtractSolutionFromEquationInSolvedForm
+                    }
+                }
+            }
+        }
+
+    @Test
     fun `test take log of RHS`() =
         testMethodInX {
             method = EquationsPlans.SolveEquation
@@ -289,6 +349,34 @@ class ExponentialEquationsTest {
                 toExpr = "SetSolution[x: {-[ln[7] + 2 * ln[5] / ln[5] - ln[7]]}]"
             }
         }
+
+    @Test
+    fun `test remove coefficients from exponentials with the same exponent`() {
+        testMethodInX {
+            method = removeExponentialCoefficients
+            inputExpr = "4 * [5 ^ 2x + 1] = 3 * [7 ^ 2x + 1]"
+
+            check {
+                toExpr = "[([5 / 7]) ^ 2x + 1] = [3 / 4]"
+            }
+        }
+        testMethodInX {
+            method = removeExponentialCoefficients
+            inputExpr = "4 * [5 ^ 2x + 1] = [7 ^ 2x + 1]"
+
+            check {
+                toExpr = "[([5 / 7]) ^ 2x + 1] = [1 / 4]"
+            }
+        }
+        testMethodInX {
+            method = removeExponentialCoefficients
+            inputExpr = "[5 ^ 2x + 1] = 3 * [7 ^ 2x + 1]"
+
+            check {
+                toExpr = "[([5 / 7]) ^ 2x + 1] = 3"
+            }
+        }
+    }
 
     @Test
     fun `test expand constant factors around bracket when solving`() =

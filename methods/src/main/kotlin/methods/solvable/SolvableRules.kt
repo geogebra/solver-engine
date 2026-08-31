@@ -26,7 +26,6 @@ import engine.context.emptyContext
 import engine.expressionbuilder.MappedExpressionBuilder
 import engine.expressions.AbsoluteValue
 import engine.expressions.Constants
-import engine.expressions.Constants.One
 import engine.expressions.Equation
 import engine.expressions.Expression
 import engine.expressions.ExpressionWithConstraint
@@ -37,6 +36,7 @@ import engine.expressions.Product
 import engine.expressions.Sum
 import engine.expressions.asInteger
 import engine.expressions.equationOf
+import engine.expressions.flattenedFractionOf
 import engine.expressions.fractionOf
 import engine.expressions.greaterThanEqualOf
 import engine.expressions.inequationOf
@@ -340,6 +340,10 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
 
     MoveConstantFactorWithNoFractionToTheRight(moveConstantFactorWithNoFractionToTheRight),
 
+    MoveConstantFactorWithNoFractionToTheRightUnconditionally(
+        moveConstantFactorWithNoFractionToTheRightUnconditionally,
+    ),
+
     MoveConstantFactorWithNoFractionOfLogarithmToTheRight(moveConstantFactorWithNoFractionOfLogarithmToTheRight),
 
     NegateBothSides(
@@ -471,6 +475,30 @@ enum class SolvableRules(override val runner: Rule) : RunnerMethod {
     RewriteBothSidesWithSameBase(rewriteBothSidesWithSameBase),
     UsePowerRuleToRewriteExponentialSolvable(usePowerRuleToRewriteExponentialSolvable),
     BalanceSolvableWithExponentialExpressions(createBalanceSolvableWithExponentialExpressions()),
+    DivideSolvableByExponentialRhs(
+        rule {
+            val lhs = AnyPattern()
+            val exponential = exponentialOf()
+            val rhs = withOptionalConstantCoefficientInSolutionVariables(exponential)
+
+            val solvable = SolvablePattern(lhs, rhs)
+
+            onPattern(solvable) {
+                val exponentialExpr = distribute(exponential)
+
+                ruleResult(
+                    toExpr = solvable.deriveSolvable(
+                        fractionOf(get(lhs), exponentialExpr),
+                        flattenedFractionOf(get(rhs), exponentialExpr),
+                    ),
+                    explanation = solvableExplanation(
+                        SolvableKey.DivideSolvableByExponentialRhs,
+                        parameters = listOf(exponentialExpr),
+                    ),
+                )
+            }
+        },
+    ),
 }
 
 private fun createBalanceSolvableWithExponentialExpressions(): Rule =
@@ -731,6 +759,15 @@ private val moveConstantFactorWithNoFractionToTheRight =
         { SolvableKey.DivideByCoefficientOfVariable },
     )
 
+// I don't think we need a new key for this, it is a separate rule only because it has to be applied more selectively
+private val moveConstantFactorWithNoFractionToTheRightUnconditionally =
+    createMoveConstantFactorWithNoFractionToTheRight(
+        VariableExpressionPattern(),
+        { SolvableKey.MultiplyByInverseCoefficientOfVariable },
+        { SolvableKey.MultiplyByInverseCoefficientOfVariable },
+        rhsPattern = AnyPattern(),
+    )
+
 private val moveConstantFactorWithNoFractionOfLogarithmToTheRight = createMoveConstantFactorWithNoFractionToTheRight(
     condition(logOf(AnyPattern())) { !it.isConstantIn(solutionVariables) },
     { SolvableKey.MultiplyByInverseCoefficientOfLogarithm },
@@ -745,11 +782,11 @@ private fun createMoveConstantFactorWithNoFractionToTheRight(
     multiplyExplanationKey: () -> SolvableKey,
     divideByReciprocalExplanationKey: () -> SolvableKey,
     knownCoefficientSign: Sign? = null,
+    rhsPattern: Pattern = ConstantInSolutionVariablePattern(),
 ) = rule {
     val lhs = withOptionalConstantCoefficientInSolutionVariables(variablePattern)
-    val rhs = ConstantInSolutionVariablePattern()
 
-    val solvable = SolvablePattern(lhs, rhs)
+    val solvable = SolvablePattern(lhs, rhsPattern)
 
     onPattern(solvable) {
         val coefficientValue = get(lhs::coefficient)!!
@@ -762,7 +799,7 @@ private fun createMoveConstantFactorWithNoFractionToTheRight(
 
         val coefficient = introduce(coefficientValue, coefficientValue)
 
-        val rhsValue = get(rhs)
+        val rhsValue = get(rhsPattern)
         val multiplyByReciprocal = rhsValue.hasFractionFactor()
 
         val newLhs = when {
@@ -797,7 +834,7 @@ private fun createMoveConstantFactorWithNoFractionToTheRight(
 
             ruleResult(
                 toExpr = toExpr,
-                gmAction = drag(coefficient, PM.Group, rhs),
+                gmAction = drag(coefficient, PM.Group, rhsPattern),
                 explanation = solvableExplanation(
                     explanationKey,
                     flipSign = false,
@@ -813,7 +850,7 @@ private fun createMoveConstantFactorWithNoFractionToTheRight(
 
             ruleResult(
                 toExpr = solvable.deriveSolvable(newLhs, newRhs, useDual),
-                gmAction = drag(coefficient, PM.Group, rhs),
+                gmAction = drag(coefficient, PM.Group, rhsPattern),
                 explanation = solvableExplanation(
                     explanationKey,
                     flipSign = useDual,
@@ -1100,7 +1137,7 @@ private val usePowerRuleToRewriteExponentialSolvable = rule {
         IntegerFractionPattern(),
     )
     val lhs = exponentialOf(base)
-    val rhs = FixedPattern(One)
+    val rhs = FixedPattern(Constants.One)
 
     val solvable = SolvablePattern(lhs, rhs)
 
@@ -1126,7 +1163,7 @@ private val usePowerRuleToRewriteExponentialSolvable = rule {
                             base,
                             Constants.Zero,
                         ),
-                        One,
+                        Constants.One,
                     ),
                 ),
             ),

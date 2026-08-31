@@ -85,6 +85,7 @@ import engine.patterns.optionalNegOf
 import engine.patterns.setSolutionOf
 import engine.patterns.variableListOf
 import engine.patterns.withOptionalConstantCoefficient
+import engine.patterns.withOptionalConstantCoefficientInSolutionVariables
 import engine.sign.Sign
 import engine.steps.metadata.Metadata
 import engine.steps.metadata.metadata
@@ -930,7 +931,7 @@ private val solveExponentialInequality = plan {
         optionally {
             check {
                 // We don't want to rearrange an inequality already in the shape [c_1 ^ f(x)] <> [c_2 ^ g(x)]
-                val exponentialPattern = exponentialOf()
+                val exponentialPattern = withOptionalConstantCoefficientInSolutionVariables(exponentialOf())
 
                 !exponentialPattern.matches(this, it.firstChild) ||
                     !exponentialPattern.matches(this, it.secondChild)
@@ -955,12 +956,10 @@ private val solveExponentialInequality = plan {
 
         checkForm {
             inequalityOf(
-                optionalNegOf(exponentialOf()),
-                optionalNegOf(
-                    oneOf(
-                        ConstantInSolutionVariablePattern(),
-                        exponentialOf(),
-                    ),
+                withOptionalConstantCoefficientInSolutionVariables(exponentialOf()),
+                oneOf(
+                    ConstantInSolutionVariablePattern(),
+                    withOptionalConstantCoefficientInSolutionVariables(exponentialOf()),
                 ),
             )
         }
@@ -986,7 +985,11 @@ private val solveExponentialInequality = plan {
             }
             // generic case
             option {
+                optionally(solvablePlansForInequalities.exponentialCoefficientRemovalSteps)
                 apply(solvablePlansForInequalities.takeLogOfBothSidesAndSimplify)
+                // In this case we want to try to divide by the coefficient first, before trying to expand
+                // (see linear inequalities)
+                optionally(solvablePlansForInequalities.coefficientRemovalSteps)
                 apply(inequalitySolvingSteps)
             }
         }

@@ -80,6 +80,18 @@ class ExponentialInequalitiesTest {
                 }
             }
         }
+        testMethodInX {
+            method = InequalitiesRules.ExtractSolutionFromImpossibleExponentialEqualityWithTwoExponentials
+            inputExpr = "-5 * [3 ^ 2x + 1] > 2 * [8 ^ 2x + 1]"
+
+            check {
+                toExpr = "Contradiction[x: -5 * [3 ^ 2x + 1] > 2 * [8 ^ 2x + 1]]"
+                explanation {
+                    key = InequalitiesExplanation
+                        .ExtractSolutionFromImpossibleExponentialInequalityWithTwoExponentials
+                }
+            }
+        }
     }
 
     @Test
@@ -111,6 +123,17 @@ class ExponentialInequalitiesTest {
                     explanation {
                         key = InequalitiesExplanation.ExtractSolutionFromAlwaysTrueInequalityWithTwoExponentials
                     }
+                }
+            }
+        }
+        testMethodInX {
+            method = InequalitiesRules.ExtractSolutionFromAlwaysTrueExponentialEqualityWithTwoExponentials
+            inputExpr = "5 * [3 ^ 2x + 1] > -2 * [8 ^ 2x + 1]"
+
+            check {
+                toExpr = "Identity[x: 5 * [3 ^ 2x + 1] > -2 * [8 ^ 2x + 1]]"
+                explanation {
+                    key = InequalitiesExplanation.ExtractSolutionFromAlwaysTrueInequalityWithTwoExponentials
                 }
             }
         }
@@ -267,9 +290,13 @@ class ExponentialInequalitiesTest {
                 }
 
                 step {
+                    toExpr = "x > [ln[3] / ln[2]]"
+                }
+
+                step {
                     toExpr = "SetSolution[x: ([ln[3] / ln[2]], /infinity/)]"
                     explanation {
-                        key = InequalitiesExplanation.SolveLinearInequality
+                        key = InequalitiesExplanation.ExtractSolutionFromInequalityInSolvedForm
                     }
                 }
             }
@@ -296,9 +323,13 @@ class ExponentialInequalitiesTest {
                 }
 
                 step {
+                    toExpr = "x < [ln[3] / ln[[2 / 3]]]"
+                }
+
+                step {
                     toExpr = "SetSolution[x: (-/infinity/, [ln[3] / ln[[2 / 3]]])]"
                     explanation {
-                        key = InequalitiesExplanation.SolveLinearInequality
+                        key = InequalitiesExplanation.ExtractSolutionFromInequalityInSolvedForm
                     }
                 }
             }
@@ -321,17 +352,14 @@ class ExponentialInequalitiesTest {
                 }
 
                 step {
+                    toExpr = "x < -[ln[3] / ln[2]]"
+                }
+
+                step {
                     explanation {
-                        key = InequalitiesExplanation.SolveLinearInequality
+                        key = InequalitiesExplanation.ExtractSolutionFromInequalityInSolvedForm
                     }
-
-                    step {
-                        toExpr = "x < -[ln[3] / ln[2]]"
-                    }
-
-                    step {
-                        toExpr = "SetSolution[x: (-/infinity/, -[ln[3] / ln[2]])]"
-                    }
+                    toExpr = "SetSolution[x: (-/infinity/, -[ln[3] / ln[2]])]"
                 }
             }
         }
@@ -402,6 +430,47 @@ class ExponentialInequalitiesTest {
                         explanation {
                             key = InequalitiesExplanation.SolveLinearInequality
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `exponential inequality with two exponentials with same exponents and coefficients`() {
+        testMethodInX {
+            method = InequalitiesPlans.SolveExponentialInequality
+            inputExpr = "4 * [5 ^ 2 x + 1] < 3 * [7 ^ 2 x + 1]"
+
+            check {
+                explanation {
+                    key = InequalitiesExplanation.SolveExponentialInequality
+                }
+
+                step {
+                    toExpr = "[5 ^ 2 x + 1] < [3 * [7 ^ 2 x + 1] / 4]"
+                }
+
+                step {
+                    toExpr = "[[5 ^ 2 x + 1] / [7 ^ 2 x + 1]] < [3 / 4]"
+                }
+
+                step {
+                    toExpr = "[([5 / 7]) ^ 2 x + 1] < [3 / 4]"
+                }
+
+                step {
+                    toExpr = "(2 x + 1) ln[[5 / 7]] < ln[[3 / 4]]"
+                }
+
+                step {
+                    toExpr = "2x + 1 > [ln[[3/4]] / ln[[5 / 7]]]"
+                }
+
+                step {
+                    toExpr = "SetSolution[x: ([[ln[[3/4]] / ln[[5 / 7]]] - 1 / 2], /infinity/)]"
+                    explanation {
+                        key = InequalitiesExplanation.SolveLinearInequality
                     }
                 }
             }
