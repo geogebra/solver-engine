@@ -13,13 +13,23 @@
       "autoAttachChildProcesses": true,
       "skipFiles": ["<node_internals>/**", "**/node_modules/**", "VM*"],
       "program": "${workspaceRoot}/../node_modules/vitest/vitest.mjs",
-      // You could go without setting --threads to false, but then you may get
-      // multiple threads stopping on the same brakepoint at about the same
+      // You could use the configured worker settings, but making them explicit
+      // here also works when running from a different root directory.
+      // Without them, multiple workers may stop on the same breakpoint at the same
       // time, and that can be confusing.
       //
       // The `--environment jsdom` is redundant, unless you are running in a
       // different root project directory.
-      "args": ["run", "--threads", "false", "--environment", "jsdom"],
+      "args": [
+        "run",
+        "--pool",
+        "threads",
+        "--maxWorkers",
+        "1",
+        "--no-file-parallelism",
+        "--environment",
+        "jsdom",
+      ],
       "smartStep": true,
       "console": "integratedTerminal",
     },
@@ -34,7 +44,17 @@
       // You may find it convenient to to replace temporarily replace
       // `${relativeFile}` with the hardcoded path to the test file, so that you
       // can start the debugger from any file in the project.
-      "args": ["run", "--environment", "jsdom", "${relativeFile}"],
+      "args": [
+        "run",
+        "--pool",
+        "threads",
+        "--maxWorkers",
+        "1",
+        "--no-file-parallelism",
+        "--environment",
+        "jsdom",
+        "${relativeFile}",
+      ],
       "smartStep": true,
       "console": "integratedTerminal",
     },

@@ -1,6 +1,6 @@
-/// <reference types="vitest" />
 import path from 'path';
-import { defineConfig, normalizePath } from 'vite';
+import { normalizePath } from 'vite';
+import { defineConfig } from 'vitest/config';
 
 import dns from 'dns';
 // print address as localhost, not 127.0.0.1 because this is what the solver API
@@ -21,7 +21,9 @@ export default defineConfig({
     // Needed to run the gmath library in a node environment
     environment: 'jsdom',
     reporters: ['dot'],
-    singleThread: true,
+    pool: 'threads',
+    fileParallelism: false,
+    maxWorkers: 1,
   },
 });
 
@@ -29,5 +31,5 @@ function toAbsolutePath(relativePath: string) {
   // `normalizePath()` is used because
   // https://github.com/sapphi-red/vite-plugin-static-copy/blob/main/README.md#usage
   // suggested it.
-  return normalizePath(path.resolve(__dirname, relativePath));
+  return normalizePath(path.resolve(import.meta.dirname, relativePath));
 }

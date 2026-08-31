@@ -170,7 +170,7 @@ print-solver-vars:
 build-sdk-and-poker:
   stage: build
   needs: []
-  image: node:18
+  image: node:22.22.2
   cache:
     key:
       files:
@@ -213,7 +213,7 @@ test-sdk-and-poker:
   stage: build
   needs:
     - build-engine
-  image: node:18
+  image: node:22.22.2
   script:
     - npm ci --cache .npm --prefer-offline
     - npm test -ws
@@ -307,9 +307,9 @@ sdk-semantic-release:
   needs:
     - build-sdk-and-poker
     - test-sdk-and-poker
-  # We would normally use "node:18-alpine" instead of "node:18" because it is smaller, but
+  # We would normally use "node:22.22.2-alpine" instead because it is smaller, but
   # we need git installed in order for semantic-release to work.
-  image: node:18
+  image: node:22.22.2
   cache:
     key:
       files:

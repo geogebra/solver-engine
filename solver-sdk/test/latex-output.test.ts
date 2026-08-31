@@ -151,6 +151,7 @@ it('Univariate empty set solution', () => {
       { type: 'VariableList', operands: [variable('x')] },
       {
         type: 'FiniteSet',
+        operands: [],
       },
     ],
   };

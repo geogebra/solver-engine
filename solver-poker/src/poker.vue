@@ -86,6 +86,9 @@ watch(
 
 const strategySectionOpen = ref<boolean>(!!params.strategy);
 const responseSourceDetailsOpen = ref<boolean>(false);
+const updateResponseSourceDetailsOpen = (event: ToggleEvent) => {
+  responseSourceDetailsOpen.value = (event.currentTarget as HTMLDetailsElement).open;
+};
 
 const textInTheMathInputTextbox = ref<string>(params.input);
 /** Change this to reactively trigger re-querying Solver, since the solver backend might
@@ -303,7 +306,7 @@ onMounted(() => {
       </option>
     </select>
     <br />
-    <template v-for="setting of settings ?? []" :key="setting">
+    <template v-for="setting of settings ?? []" :key="setting.name">
       <select :id="setting.name" v-model="params[setting.name]">
         <option name="-" value="" selected>-</option>
         <option v-for="value in setting.values" :value="value">
@@ -515,7 +518,7 @@ onMounted(() => {
   <details
     v-show="!demoMode"
     :open="responseSourceDetailsOpen"
-    @toggle="responseSourceDetailsOpen = !responseSourceDetailsOpen"
+    @toggle="updateResponseSourceDetailsOpen"
   >
     <summary>Response Source</summary>
     <label for="responseSourceFormat">Format</label>

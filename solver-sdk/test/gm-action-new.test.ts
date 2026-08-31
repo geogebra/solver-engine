@@ -1,6 +1,6 @@
 const VERBOSE = false;
 
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 // If this file doesn't exist, you need to run the kotlin tests in the methods package
 import testResults from '../../methods/build/test-results/gmActionTests.json';
 import type {
@@ -52,6 +52,12 @@ const unsupportedExpressionTypes = [
 ];
 
 describe('GM - Solver Integration Tests', () => {
+  if (testResults.length === 0) {
+    it('Generated GM action tests are available', () => {
+      expect(testResults.length).toBeGreaterThan(0);
+    });
+  }
+
   for (const testResult of testResults) {
     const transformation = testResult.transformation as TransformationJsonWithGmToExpr;
     if (!transformation) continue;

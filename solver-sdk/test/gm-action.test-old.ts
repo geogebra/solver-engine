@@ -24,7 +24,7 @@ global.it = it;
 config({ path: path.resolve(__dirname, '../.env') });
 expect(typeof document).to.not.equal(
   'undefined',
-  'This failure is caused by not running vitest with the `--environment jsdom` option. If you ran the command from the @graspable/solver-sdk directory, then this is done for you automatically, via the config in @geogebra/solver-sdk/vite.config.ts . Otherwise, you can just add `--environment jsdom` onto the command you ran. `jsdom` is a tool that can stub things like `document` into the nodejs environment. `document` is needed by the GM library.',
+  'This failure is caused by not running vitest with the `--environment jsdom` option. If you ran the command from the @graspable/solver-sdk directory, then this is done for you automatically, via the config in @geogebra/solver-sdk/vite.config.mts. Otherwise, you can just add `--environment jsdom` onto the command you ran. `jsdom` is a tool that can stub things like `document` into the nodejs environment. `document` is needed by the GM library.',
 );
 const dom = new JSDOM(
   /* HTML */ ` <script>

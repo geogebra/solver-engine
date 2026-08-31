@@ -36,6 +36,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Add separate translation based on sign of the moved term in algebraic movement steps. (PLUT-1144)
 - Reworked elementary exponential equation solving. (PLUT-1148)
 - SDK: Change logarithm syntax to enforce parentheses around argument. (PLUT-1134)
+- SDK: Update to more modern node and vite versions. (PLUT-1156)
 
 ### Removed
 

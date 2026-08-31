@@ -152,7 +152,7 @@ watching. (This seems to happen whenever you make changes close enough together,
 chronologically, that it can't finish the first run before the second one is supposed to
 start.) If this happens, tap the Enter key in the terminal to retest.
 
-To see the test results in the browser, you may run `npx vitest --ui`.
+To run tests in watch mode, use `npm run test-watch`.
 
 ## Deployment
 

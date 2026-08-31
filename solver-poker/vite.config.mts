@@ -21,5 +21,5 @@ function toAbsolutePath(relativePath: string) {
   // `normalizePath()` is used because
   // https://github.com/sapphi-red/vite-plugin-static-copy/blob/main/README.md#usage
   // suggested it.
-  return normalizePath(path.resolve(__dirname, relativePath));
+  return normalizePath(path.resolve(import.meta.dirname, relativePath));
 }
