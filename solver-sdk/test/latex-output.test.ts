@@ -35,6 +35,29 @@ describe('Custom LaTeX output', () => {
 
 const integer = (value: string): MathJson => ({ type: 'Integer', value });
 const variable = (value: string): MathJson => ({ type: 'Variable', value });
+const infinity: MathJson = { type: 'Infinity' };
+const minusInfinity: MathJson = { type: 'Minus', operands: [infinity] };
+
+type IntervalType =
+  | 'OpenInterval'
+  | 'ClosedInterval'
+  | 'OpenClosedInterval'
+  | 'ClosedOpenInterval';
+
+function intervalSolution(
+  type: IntervalType,
+  left: MathJson,
+  right: MathJson,
+  variables: MathJson[] = [variable('x')],
+): MathJson {
+  return {
+    type: 'SetSolution',
+    operands: [
+      { type: 'VariableList', operands: variables },
+      { type, operands: [left, right] },
+    ],
+  };
+}
 
 it('Aligned equations in system', () => {
   const system: MathJson = {
@@ -179,6 +202,79 @@ it('Univariate solution with holes', () => {
   expect(jsonToLatex(solution, { solutionFormatter: simpleSolutionFormatter })).to.equal(
     'x \\neq 2 \\text{ and } x \\neq 3',
   );
+});
+
+describe('Simple interval solutions', () => {
+  const cases: Array<{
+    type: IntervalType;
+    left: MathJson;
+    right: MathJson;
+    expected: string;
+  }> = [
+    {
+      type: 'OpenInterval',
+      left: integer('0'),
+      right: integer('5'),
+      expected: '0 \\lt x \\lt 5',
+    },
+    {
+      type: 'ClosedInterval',
+      left: integer('0'),
+      right: integer('5'),
+      expected: '0 \\leq x \\leq 5',
+    },
+    {
+      type: 'OpenClosedInterval',
+      left: integer('0'),
+      right: integer('5'),
+      expected: '0 \\lt x \\leq 5',
+    },
+    {
+      type: 'ClosedOpenInterval',
+      left: integer('0'),
+      right: integer('5'),
+      expected: '0 \\leq x \\lt 5',
+    },
+    {
+      type: 'OpenInterval',
+      left: minusInfinity,
+      right: integer('5'),
+      expected: 'x \\lt 5',
+    },
+    {
+      type: 'OpenClosedInterval',
+      left: minusInfinity,
+      right: integer('5'),
+      expected: 'x \\leq 5',
+    },
+    { type: 'OpenInterval', left: integer('5'), right: infinity, expected: 'x \\gt 5' },
+    {
+      type: 'ClosedOpenInterval',
+      left: integer('5'),
+      right: infinity,
+      expected: 'x \\geq 5',
+    },
+  ];
+
+  it.each(cases)('$type formats as $expected', ({ type, left, right, expected }) => {
+    expect(
+      jsonToLatex(intervalSolution(type, left, right), {
+        solutionFormatter: simpleSolutionFormatter,
+      }),
+    ).to.equal(expected);
+  });
+
+  it('falls back to set notation for multiple variables', () => {
+    expect(
+      jsonToLatex(
+        intervalSolution('ClosedInterval', integer('0'), integer('5'), [
+          variable('x'),
+          variable('y'),
+        ]),
+        { solutionFormatter: simpleSolutionFormatter },
+      ),
+    ).to.equal('\\left(x, y\\right) \\in \\left[ 0, 5 \\right]');
+  });
 });
 
 it('Multivariate finite set solution', () => {

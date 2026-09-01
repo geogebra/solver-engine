@@ -151,6 +151,59 @@ export const simpleSolutionFormatter: SolutionFormatter = {
                 .map((s) => `${varsTuple} \\neq ${rec(s, null)}`)
                 .join(` \\text{ ${w.And} } `);
             }
+            break;
+          case 'OpenInterval':
+            if (variableCount === 1) {
+              return formatIntervalSolution(
+                varsTuple,
+                set.operands[0],
+                set.operands[1],
+                IntervalBorder.OPEN,
+                IntervalBorder.OPEN,
+                set,
+                rec,
+              );
+            }
+            break;
+          case 'ClosedInterval':
+            if (variableCount === 1) {
+              return formatIntervalSolution(
+                varsTuple,
+                set.operands[0],
+                set.operands[1],
+                IntervalBorder.CLOSED,
+                IntervalBorder.CLOSED,
+                set,
+                rec,
+              );
+            }
+            break;
+          case 'OpenClosedInterval':
+            if (variableCount === 1) {
+              return formatIntervalSolution(
+                varsTuple,
+                set.operands[0],
+                set.operands[1],
+                IntervalBorder.OPEN,
+                IntervalBorder.CLOSED,
+                set,
+                rec,
+              );
+            }
+            break;
+          case 'ClosedOpenInterval':
+            if (variableCount === 1) {
+              return formatIntervalSolution(
+                varsTuple,
+                set.operands[0],
+                set.operands[1],
+                IntervalBorder.CLOSED,
+                IntervalBorder.OPEN,
+                set,
+                rec,
+              );
+            }
+            break;
         }
         break;
       }
@@ -197,5 +250,36 @@ function variableListToLatexTuple(
       return [rec(vars[0], null), 1];
     default:
       return [`\\left(${vars.map((x) => rec(x, null)).join(', ')}\\right)`, vars.length];
+  }
+}
+
+const IntervalBorder = {
+  OPEN: { lessThan: '\\lt', greaterThan: '\\gt' },
+  CLOSED: { lessThan: '\\leq', greaterThan: '\\geq' },
+} as const;
+
+type IntervalBorder = (typeof IntervalBorder)[keyof typeof IntervalBorder];
+
+function formatIntervalSolution(
+  varsTuple: string,
+  left: ExpressionTree,
+  right: ExpressionTree,
+  leftBorder: IntervalBorder,
+  rightBorder: IntervalBorder,
+  n: ExpressionTree,
+  rec: (n: ExpressionTree, p: ExpressionTree | null) => string,
+): string {
+  const leftUnbounded = left.type === 'Minus' && left.operands[0].type === 'Infinity';
+  const rightUnbounded = right.type === 'Infinity';
+
+  if (leftUnbounded && !rightUnbounded) {
+    return `${varsTuple} ${rightBorder.lessThan} ${rec(right, n)}`;
+  } else if (rightUnbounded && !leftUnbounded) {
+    return `${varsTuple} ${leftBorder.greaterThan} ${rec(left, n)}`;
+  } else {
+    return (
+      `${rec(left, n)} ${leftBorder.lessThan} ${varsTuple} ` +
+      `${rightBorder.lessThan} ${rec(right, n)}`
+    );
   }
 }

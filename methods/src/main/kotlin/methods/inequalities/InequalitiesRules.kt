@@ -118,6 +118,7 @@ enum class InequalitiesRules(override val runner: Rule) : RunnerMethod {
                 ruleResult(
                     toExpr = setSolutionOf(variableListOf(move(lhs) as Variable), interval),
                     explanation = metadata(Explanation.ExtractSolutionFromInequalityInSolvedForm),
+                    tags = listOf(Transformation.Tag.Pedantic),
                 )
             }
         },
