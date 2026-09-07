@@ -31,6 +31,7 @@ import engine.expressions.Expression
 import engine.expressions.Fraction
 import engine.expressions.IntegerExpression
 import engine.expressions.Minus
+import engine.expressions.Power
 import engine.expressions.Product
 import engine.expressions.SimpleComparator
 import engine.expressions.StatementUnion
@@ -129,6 +130,8 @@ import methods.solvable.DenominatorExtractor.extractFraction
 import methods.solvable.createBalanceSolvableRule
 import methods.solvable.extractSumTermsFromSolvable
 import methods.solvable.findUnusedVariableLetter
+import methods.solvable.isSupportedExponentialBase
+import methods.solvable.withSameBase
 import java.math.BigInteger
 
 enum class EquationsRules(override val runner: Rule) : RunnerMethod {
@@ -384,7 +387,16 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
     ApplyInverseSineFunctionToBothSides(applyInverseFunctionToBothSides),
     ExtractSolutionFromImpossibleSineLikeEquation(extractSolutionFromImpossibleSineLikeEquation),
     ExtractSolutionFromImpossibleQuadraticEquationWithTrigonometricExpressions(
-        extractSolutionFromImpossibleQuadraticEquationWithTrigonometricExpressions,
+        createExtractSolutionFromImpossibleQuadraticEquation(
+            originalExpression = TrigonometricExpressionPattern(AnyPattern()),
+            explanation = Explanation.ExtractSolutionFromImpossibleQuadraticEquationWithTrigonometricExpressions,
+        ),
+    ),
+    ExtractSolutionFromImpossibleQuadraticEquationWithExponentialExpressions(
+        createExtractSolutionFromImpossibleQuadraticEquation(
+            originalExpression = exponentialOf(),
+            explanation = Explanation.ExtractSolutionFromImpossibleQuadraticEquationWithExponentialExpressions,
+        ),
     ),
 
     /**
@@ -420,9 +432,12 @@ enum class EquationsRules(override val runner: Rule) : RunnerMethod {
     ReorderSumWithPeriod(reorderSumWithPeriod),
     BalanceEquationWithTrigonometricExpressions(createBalanceEquationWithTrigonometricExpressions()),
     SubstituteTrigFunctionInQuadraticEquation(substituteTrigFunctionInQuadraticEquation),
-    SubstituteLogsInEquation(substituteLogsInEquation),
+    SubstituteLogsInEquation(createSubstituteLogsInEquation()),
+    SubstituteExponentialsInEquation(createSubstituteExponentialsInEquation()),
+    RewriteExponentialTermsWithSameBase(rewriteExponentialTermsWithSameBase),
     ReorderQuadraticEquationWithTrigonometricFunctions(reorderQuadraticEquationWithTrigonometricFunctions),
-    ReorderLogarithmicTrinomial(reorderLogarithmicTrinomial),
+    ReorderLogarithmicTrinomial(createReorderLogarithmicTrinomial()),
+    ReorderExponentialTrinomial(createReorderExponentialTrinomial()),
     MergeTrigonometricEquationSolutions(mergeTrigonometricEquationSolutions),
     DivideByCos(divideByCos),
     DivideBySquaredCosTerm(divideBySquaredCosTerm),
@@ -903,14 +918,17 @@ private val extractSolutionFromImpossibleSineLikeEquation = rule {
 /**
  * Check if the substituted equation solution in the equation system is a contradiction.
  */
-private val extractSolutionFromImpossibleQuadraticEquationWithTrigonometricExpressions = rule {
+private fun createExtractSolutionFromImpossibleQuadraticEquation(
+    originalExpression: Pattern,
+    explanation: MetadataKey,
+) = rule {
     val contradiction = engine.patterns.contradictionOf(AnyPattern())
     val originalExpressionEquation = equationOf(
         ArbitraryVariablePattern(),
-        TrigonometricExpressionPattern(AnyPattern()),
+        originalExpression,
     )
 
-    val equationUnion = engine.patterns.statementSystemOf(
+    val equationUnion = statementSystemOf(
         contradiction,
         originalExpressionEquation,
     )
@@ -918,7 +936,7 @@ private val extractSolutionFromImpossibleQuadraticEquationWithTrigonometricExpre
     onPattern(equationUnion) {
         ruleResult(
             move(contradiction),
-            metadata(Explanation.ExtractSolutionFromImpossibleQuadraticEquationWithTrigonometricExpressions),
+            metadata(explanation),
         )
     }
 }
@@ -1287,7 +1305,7 @@ private val substituteTrigFunctionInQuadraticEquation = rule {
  * │
  * └ t = [log ^ n] x
  */
-private val substituteLogsInEquation = rule {
+private fun createSubstituteLogsInEquation(): Rule {
     val log = logOf(AnyPattern())
 
     val linearPower = UnsignedIntegerPattern()
@@ -1298,15 +1316,141 @@ private val substituteLogsInEquation = rule {
         linearPower,
     )
 
+    val quadraticValue = powerOf(
+        log,
+        quadraticPower,
+    )
+
+    return createSubstituteEquationRule(
+        linearValue = linearValue,
+        quadraticValue = quadraticValue,
+        checkExponents = {
+            val linearPower = get(linearValue).getExponent()
+            val quadraticPower = get(quadraticValue).getExponent()
+
+            linearPower !is IntegerExpression ||
+                quadraticPower !is IntegerExpression ||
+                quadraticPower.value == linearPower.value.times(BigInteger.TWO)
+        },
+        explanation = methods.logs.Explanation.SubstituteLogsInEquation,
+    )
+}
+
+/**
+ * Substitute the exponential expressions in a quadratic equation.
+ *
+ * a_1 * [b ^ k * f(x)] x + a_2 * [b ^ f(x)] x + c = 0
+ * -->
+ * ┌ a_1 * t + a_2 * t + c = 0
+ * │
+ * └ t = b ^ f(x)
+ */
+private fun createSubstituteExponentialsInEquation(): Rule {
+    val base = ConstantInSolutionVariablePattern()
+
+    val anchor = condition { !it.isConstantIn(solutionVariables) }
+
+    val linearPower = withOptionalConstantCoefficient(anchor)
+    val quadraticPower = withOptionalConstantCoefficient(anchor)
+
+    val linearValue = powerOf(
+        base,
+        linearPower,
+    )
+
+    val quadraticValue = powerOf(
+        base,
+        quadraticPower,
+    )
+
+    return createSubstituteEquationRule(
+        linearValue = linearValue,
+        quadraticValue = quadraticValue,
+        checkExponents = {
+            val linearCoefficient = get(linearPower::coefficient)
+            val quadraticCoefficient = get(quadraticPower::coefficient)
+
+            linearCoefficient is IntegerExpression &&
+                quadraticCoefficient is IntegerExpression &&
+                linearCoefficient.value > BigInteger.ZERO &&
+                quadraticCoefficient.value == linearCoefficient.value.times(BigInteger.TWO)
+        },
+        explanation = Explanation.SubstituteExponentialsInEquation,
+    )
+}
+
+/**
+ * Rewrite two exponential terms with compatible rational bases using the same base.
+ *
+ * [a ^ f(x)] + [b ^ g(x)] --> [c ^ m * f(x)] + [c ^ n * g(x)] where a = [c ^ m] and b = [c ^ n].
+ */
+private val rewriteExponentialTermsWithSameBase = rule {
+    val base1 = RationalPattern()
+    val base2 = RationalPattern()
+    val exponent1 = condition { !it.isConstantIn(solutionVariables) }
+    val exponent2 = condition { !it.isConstantIn(solutionVariables) }
+    val exponential1 = powerOf(base1, exponent1)
+    val exponential2 = powerOf(base2, exponent2)
+    val term1 = withOptionalConstantCoefficient(exponential1)
+    val term2 = withOptionalConstantCoefficient(exponential2)
+    val sum = commutativeSumContaining(term1, term2)
+
+    onPattern(sum) {
+        val baseValue1 = getValue(base1)?.simplify() ?: return@onPattern null
+        val baseValue2 = getValue(base2)?.simplify() ?: return@onPattern null
+
+        if (baseValue1 == baseValue2 ||
+            !baseValue1.isSupportedExponentialBase() ||
+            !baseValue2.isSupportedExponentialBase()
+        ) {
+            return@onPattern null
+        }
+
+        val (commonBase, basePower1, basePower2) = withSameBase(baseValue1, baseValue2)
+            ?: return@onPattern null
+
+        if (basePower1 <= BigInteger.ZERO || basePower2 <= BigInteger.ZERO) {
+            return@onPattern null
+        }
+
+        val rewrittenExponential1 = powerOf(
+            methods.solvable.xp(commonBase),
+            simplifiedProductOf(xp(basePower1), move(exponent1)),
+        )
+        val rewrittenExponential2 = powerOf(
+            methods.solvable.xp(commonBase),
+            simplifiedProductOf(xp(basePower2), move(exponent2)),
+        )
+
+        ruleResult(
+            toExpr = sum.substitute(
+                rewrittenExponential1.withCoefficient(term1.getCoefficient()),
+                rewrittenExponential2.withCoefficient(term2.getCoefficient()),
+            ),
+            explanation = metadata(Explanation.RewriteExponentialTermsWithSameBase),
+        )
+    }
+}
+
+private fun Expression.getExponent() =
+    if (this is Power) {
+        this.exponent
+    } else {
+        One
+    }
+
+private fun createSubstituteEquationRule(
+    linearValue: Pattern,
+    quadraticValue: Pattern,
+    checkExponents: (RuleResultBuilder.() -> Boolean),
+    explanation: MetadataKey,
+) = rule {
     val linearTerm = withOptionalConstantCoefficient(
         linearValue,
     )
 
     val quadraticTerm = withOptionalConstantCoefficient(
-        powerOf(
-            log,
-            quadraticPower,
-        ),
+        quadraticValue,
     )
 
     val constant = ConstantInSolutionVariablePattern()
@@ -1321,15 +1465,7 @@ private val substituteLogsInEquation = rule {
         lhs,
         FixedPattern(Constants.Zero),
     ) {
-        val linearPowerValue = if (isBound(linearPower)) {
-            getValue(linearPower)
-        } else {
-            BigInteger.ONE
-        }
-
-        val quadraticPowerValue = getValue(quadraticPower)
-
-        if (quadraticPowerValue != linearPowerValue.times(BigInteger.TWO)) {
+        if (!checkExponents()) {
             return@onEquation null
         }
 
@@ -1366,7 +1502,7 @@ private val substituteLogsInEquation = rule {
                 substitutedEquation,
             ),
             explanation = metadata(
-                key = methods.logs.Explanation.SubstituteLogsInEquation,
+                key = explanation,
                 parameters = listOf(
                     equationOf(
                         extractedTerm,
@@ -1416,9 +1552,8 @@ private val reorderQuadraticEquationWithTrigonometricFunctions = rule {
     }
 }
 
-private val reorderLogarithmicTrinomial = rule {
+private fun createReorderLogarithmicTrinomial(): Rule {
     val exponent1 = UnsignedIntegerPattern()
-
     val exponent2 = UnsignedIntegerPattern()
 
     val term1 = withOptionalConstantCoefficient(
@@ -1437,13 +1572,8 @@ private val reorderLogarithmicTrinomial = rule {
         power2,
     )
 
-    val sum = commutativeSumContaining(
-        term1,
-        term2,
-    )
-
-    onPattern(sum) {
-        val (leftTerm, rightTerm) = when (isBound(exponent2)) {
+    return createReorderTrinomialRule(term1, term2) {
+        when (isBound(exponent2)) {
             false -> term1 to term2
             true -> if (getValue(exponent1) > getValue(exponent2)) {
                 term1 to term2
@@ -1451,6 +1581,42 @@ private val reorderLogarithmicTrinomial = rule {
                 term2 to term1
             }
         }
+    }
+}
+
+private fun createReorderExponentialTrinomial(): Rule {
+    val base = ConstantInSolutionVariablePattern()
+    val anchor = condition { !it.isConstantIn(solutionVariables) }
+    val exponent1 = withOptionalConstantCoefficient(anchor)
+    val exponent2 = withOptionalConstantCoefficient(anchor)
+
+    val term1 = withOptionalConstantCoefficient(powerOf(base, exponent1))
+    val term2 = withOptionalConstantCoefficient(powerOf(base, exponent2))
+
+    return createReorderTrinomialRule(term1, term2) {
+        val coefficient1 = get(exponent1::coefficient) as? IntegerExpression ?: return@createReorderTrinomialRule null
+        val coefficient2 = get(exponent2::coefficient) as? IntegerExpression ?: return@createReorderTrinomialRule null
+
+        if (coefficient1.value.abs() > coefficient2.value.abs()) {
+            term1 to term2
+        } else {
+            term2 to term1
+        }
+    }
+}
+
+private fun createReorderTrinomialRule(
+    term1: Pattern,
+    term2: Pattern,
+    orderedTerms: RuleResultBuilder.() -> Pair<Pattern, Pattern>?,
+) = rule {
+    val sum = commutativeSumContaining(
+        term1,
+        term2,
+    )
+
+    onPattern(sum) {
+        val (leftTerm, rightTerm) = orderedTerms() ?: return@onPattern null
 
         val rest = restOf(sum)
 

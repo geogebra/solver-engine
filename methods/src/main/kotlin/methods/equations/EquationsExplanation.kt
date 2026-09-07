@@ -724,6 +724,11 @@ enum class EquationsExplanation : CategorisedMetadataKey {
     ExtractSolutionFromImpossibleQuadraticEquationWithTrigonometricExpressions,
 
     /**
+     * Extract solution from impossible quadratic equation containing exponential expressions
+     */
+    ExtractSolutionFromImpossibleQuadraticEquationWithExponentialExpressions,
+
+    /**
      * Merge solutions of trigonometric equations
      */
     MergeTrigonometricEquationSolutions,
@@ -888,6 +893,29 @@ enum class EquationsExplanation : CategorisedMetadataKey {
      * Powers with identical exponents and different bases are only equal when the exponent is zero
      */
     SimplifyExponentialEquationWithIdenticalExponents,
+
+    /**
+     * Substitute the exponential expressions in a quadratic equation.
+     *
+     * a_1 * [b ^ k * f(x)] x + a_2 * [b ^ f(x)] x + c = 0
+     * -->
+     * ┌ a_1 * t + a_2 * t + c = 0
+     * │
+     * └ t = b ^ f(x)
+     */
+    SubstituteExponentialsInEquation,
+
+    /**
+     * Rewrite exponential terms with compatible rational bases using the same base.
+     */
+    RewriteExponentialTermsWithSameBase,
+
+    /**
+     * Substitute the original exponential expression back and solve.
+     *
+     * %1 - [b ^ f(x)] = t
+     */
+    SubstituteOriginalExpressionIntoExponentialEquation,
 
     ;
 

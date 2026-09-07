@@ -70,6 +70,7 @@ import engine.patterns.ConstantInSolutionVariablePattern
 import engine.patterns.FindPattern
 import engine.patterns.FixedPattern
 import engine.patterns.OptionalWrappingPattern
+import engine.patterns.Pattern
 import engine.patterns.RecurringDecimalPattern
 import engine.patterns.SignedNumberPattern
 import engine.patterns.SolutionVariablePattern
@@ -80,6 +81,7 @@ import engine.patterns.commutativeSumOf
 import engine.patterns.condition
 import engine.patterns.contradictionOf
 import engine.patterns.equationOf
+import engine.patterns.exponentialOf
 import engine.patterns.expressionWithConstraintOf
 import engine.patterns.identityOf
 import engine.patterns.logOf
@@ -431,6 +433,8 @@ enum class EquationsPlans(override val runner: CompositeMethod) : RunnerMethod {
     SubstituteTangentHalfAngleIntoLinearTrigEquation(substituteTangentHalfAngleIntoLinearTrigEquation),
 
     SubstituteOriginalExpressionIntoLogarithmicEquation(substituteOriginalExpressionIntoLogarithmicEquation),
+
+    SubstituteOriginalExpressionIntoExponentialEquation(substituteOriginalExpressionIntoExponentialEquation),
 
     SubstituteAuxiliaryAngleAndSolve(substituteAuxiliaryAngleAndSolve),
 
@@ -918,7 +922,11 @@ val substituteTangentHalfAngleIntoLinearTrigEquation = taskSet {
     }
 }
 
-val substituteOriginalExpressionIntoLogarithmicEquation = taskSet {
+private fun createSubstituteOriginalExpressionAndSolve(
+    originalExpression: Pattern,
+    substitutionExplanation: MetadataKey,
+    solveExplanation: MetadataKey,
+) = taskSet {
     val solvedEquation = setSolutionOf(
         AnyPattern(),
         AnyPattern(),
@@ -926,7 +934,7 @@ val substituteOriginalExpressionIntoLogarithmicEquation = taskSet {
 
     val originalExpressionEquation = equationOf(
         ArbitraryVariablePattern(),
-        optionalPowerOf(logOf(AnyPattern())),
+        originalExpression,
     )
 
     val equationSystem = engine.patterns.statementSystemOf(
@@ -935,7 +943,7 @@ val substituteOriginalExpressionIntoLogarithmicEquation = taskSet {
     )
 
     pattern = equationSystem
-    explanation = methods.logs.Explanation.SubstituteOriginalExpressionIntoLogarithmicEquation
+    explanation = substitutionExplanation
 
     explanationParameters(originalExpressionEquation)
 
@@ -949,8 +957,8 @@ val substituteOriginalExpressionIntoLogarithmicEquation = taskSet {
 
         val splitTasks = substitutedValues.map {
             task(
-                startExpr = engine.expressions.equationOf(originalExp, it.secondChild),
-                explanation = metadata(methods.equations.Explanation.SolveLogarithmicEquations),
+                startExpr = equationOf(originalExp, it.secondChild),
+                explanation = metadata(solveExplanation),
                 stepsProducer = solveEquation.value,
             ) ?: return@tasks null
         }
@@ -959,13 +967,25 @@ val substituteOriginalExpressionIntoLogarithmicEquation = taskSet {
             val overallSolution = mergeTaskSolutionsWithConstraints(splitTasks) ?: return@tasks null
             task(
                 startExpr = overallSolution,
-                explanation = metadata(methods.equations.Explanation.CollectSolutions),
+                explanation = metadata(Explanation.CollectSolutions),
             )
         }
 
         allTasks()
     }
 }
+
+val substituteOriginalExpressionIntoLogarithmicEquation = createSubstituteOriginalExpressionAndSolve(
+    originalExpression = optionalPowerOf(logOf(AnyPattern())),
+    substitutionExplanation = methods.logs.Explanation.SubstituteOriginalExpressionIntoLogarithmicEquation,
+    solveExplanation = Explanation.SolveLogarithmicEquations,
+)
+
+val substituteOriginalExpressionIntoExponentialEquation = createSubstituteOriginalExpressionAndSolve(
+    originalExpression = exponentialOf(),
+    substitutionExplanation = Explanation.SubstituteOriginalExpressionIntoExponentialEquation,
+    solveExplanation = Explanation.SolveExponentialEquation,
+)
 
 fun Expression.extractSolutionFromSolutionSet(): Expression? =
     if (this is SetSolution && this.secondChild is FiniteSet && this.secondChild.childCount == 1) {

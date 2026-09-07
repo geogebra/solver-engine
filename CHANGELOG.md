@@ -22,6 +22,7 @@ contents to a new release section (e.g. _[0.x]_).
 - Solve exponential inequalities with one exponential expression. (PLUT-1151)
 - Solve exponential inequalities with two exponential expressions. (PLUT-1154)
 - Coefficient removal for exponential equalities and inequalities. (PLUT-1157)
+- Solve quadratic exponential equations by substitution. (PLUT-1160)
 - SDK: Add support for exponent on log function. (PLUT-1127)
 - SDK: Add support for simple interval solution formatting. (PLUT-1155)
 

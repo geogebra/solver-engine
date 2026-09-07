@@ -35,6 +35,84 @@ class ExponentialEquationsTest {
     }
 
     @Test
+    fun `solve quadratic exponential equation by substitution`() =
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "[2 ^ 2 x] - 5 * [2 ^ x] + 4 = 0"
+
+            check {
+                explanation {
+                    key = EquationsExplanation.SolveExponentialEquation
+                }
+
+                step {
+                    toExpr = "[t ^ 2] - 5 t + 4 = 0 AND t = [2 ^ x]"
+                    explanation {
+                        key = EquationsExplanation.SubstituteExponentialsInEquation
+                    }
+                }
+
+                step {
+                    toExpr = "SetSolution[t: {1, 4}] AND t = [2 ^ x]"
+                    explanation {
+                        key = EquationsExplanation.SolveEquationByFactoring
+                    }
+                }
+
+                step {
+                    toExpr = "SetSolution[x: {0, 2}]"
+                    explanation {
+                        key = EquationsExplanation.SubstituteOriginalExpressionIntoExponentialEquation
+                    }
+                }
+            }
+        }
+
+    @Test
+    fun `solve quadratic exponential equation after rewriting to the same base`() =
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "[4 ^ x] - 5 * [2 ^ x] + 4 = 0"
+
+            check {
+                toExpr = "SetSolution[x: {0, 2}]"
+            }
+        }
+
+    @Test
+    fun `solve quadratic exponential equation after reordering terms`() =
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "[2 ^ x] + [2 ^ 2 x] - 2 = 0"
+
+            check {
+                toExpr = "SetSolution[x: {0}]"
+
+                step {
+                    toExpr = "[2 ^ 2 x] + [2 ^ x] - 2 = 0"
+                    explanation {
+                        key = EquationsExplanation.ReorderTrinomial
+                    }
+                }
+
+                step {}
+                step {}
+                step {}
+            }
+        }
+
+    @Test
+    fun `solve impossible quadratic exponential equation by substitution`() =
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "[2 ^ 2 x] + [2 ^ x] + 1 = 0"
+
+            check {
+                toExpr = "Contradiction[t: t = [-1 +/- sqrt[-3] / 2]]"
+            }
+        }
+
+    @Test
     fun `test reorder equation with one power and one constant`() =
         testMethodInX {
             method = EquationsPlans.SolveEquation
@@ -376,6 +454,14 @@ class ExponentialEquationsTest {
                 toExpr = "[([5 / 7]) ^ 2x + 1] = 3"
             }
         }
+        testMethodInX {
+            method = removeExponentialCoefficients
+            inputExpr = "9*[5^2x] =2"
+
+            check {
+                toExpr = "[5^2x] = [2/9]"
+            }
+        }
     }
 
     @Test
@@ -534,6 +620,50 @@ class ExponentialEquationsTest {
                 toExpr = "Contradiction[x: [2 ^ x] = -3]"
                 explanation {
                     key = EquationsExplanation.ExtractSolutionFromExponentialEquationWithNonPositiveConstantRhs
+                }
+            }
+        }
+
+    @Test
+    fun `test bring to same base and solve`() =
+        testMethodInX {
+            method = EquationsPlans.SolveEquation
+            inputExpr = "[25 ^ x] + 9 * [5 ^ 2 x] = 2"
+
+            check {
+                explanation {
+                    key = EquationsExplanation.SolveExponentialEquation
+                }
+
+                step {
+                    toExpr = "[5 ^ 2 x] + 9 * [5 ^ 2 x] = 2"
+                    explanation {
+                        key = EquationsExplanation.RewriteExponentialTermsWithSameBase
+                    }
+                }
+
+                step {
+                    toExpr = "10 * [5 ^ 2 x] = 2"
+                }
+
+                step {
+                    toExpr = "[5 ^ 2 x] = [1 / 5]"
+                }
+
+                step {
+                    toExpr = "2 x * ln[5] = -ln[5]"
+                }
+
+                step {
+                    toExpr = "2 x = -1"
+                }
+
+                step {
+                    toExpr = "x = -[1 / 2]"
+                }
+
+                step {
+                    toExpr = "SetSolution[x: {-[1 / 2]}]"
                 }
             }
         }

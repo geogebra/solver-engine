@@ -24,6 +24,7 @@ import engine.expressions.Constants
 import engine.expressions.Equation
 import engine.expressions.Expression
 import engine.expressions.Minus
+import engine.expressions.Power
 import engine.expressions.Sum
 import engine.expressions.TrigonometricExpression
 import engine.expressions.containsLogs
@@ -62,6 +63,7 @@ import methods.constantexpressions.ConstantExpressionsPlans
 import methods.equationsystems.EquationSystemsPlans
 import methods.factor.FactorPlans
 import methods.general.GeneralRules
+import methods.integerarithmetic.IntegerArithmeticRules
 import methods.logs.LogsPlans
 import methods.logs.LogsRules
 import methods.logs.extractLogTerms
@@ -163,6 +165,76 @@ enum class EquationSolvingStrategy(
                     apply(solvablePlansForEquations.takeLogOfBothSidesAndSimplify)
                     apply(equationSolvingSteps)
                 }
+            }
+        },
+    ),
+
+    /**
+     * Solve an equation in the form a^f(x) = b^g(x) or a^f(x) = c  where a and b are constants, by trying to equate
+     * the bases or taking the logarithm of both sides.
+     */
+    QuadraticExponential(
+        family = Family.POLYNOMIAL,
+        priority = 5,
+        explanation = Explanation.SolveExponentialEquation,
+        steps = steps {
+            optionally(solvablePlansForEquations.moveEverythingToTheLeftAndSimplify)
+
+            optionally {
+                applyTo(extractor = { it.firstChild }) {
+                    whilePossible {
+                        deeply(GeneralRules.MultiplyExponentsUsingPowerRule)
+                    }
+                    // Optional clean up in case of deeper nesting, e.g. 2*3*x --> 6*x
+                    whilePossible {
+                        deeply {
+                            check { it is Power }
+                            applyToKind<Power>(
+                                IntegerArithmeticRules.EvaluateIntegerProductAndDivision,
+                            ) {
+                                it.exponent
+                            }
+                        }
+                    }
+                }
+            }
+
+            optionally {
+                applyTo(EquationsRules.RewriteExponentialTermsWithSameBase) {
+                    it.firstChild
+                }
+            }
+
+            optionally {
+                applyTo(extractor = { it.firstChild }) {
+                    deeply {
+                        check { it is Power }
+                        applyToKind<Power>(FactorPlans.FactorPolynomial) {
+                            it.exponent
+                        }
+                    }
+                }
+            }
+
+            optionally {
+                applyTo(EquationsRules.ReorderExponentialTrinomial) {
+                    it.firstChild
+                }
+            }
+
+            apply(EquationsRules.SubstituteExponentialsInEquation)
+
+            inContext({ copy(solutionVariables = it.secondChild.firstChild.variables.toList()) }) {
+                applyTo(EquationsPlans.SolveEquation) {
+                    it.firstChild
+                }
+            }
+
+            firstOf {
+                option(
+                    EquationsRules.ExtractSolutionFromImpossibleQuadraticEquationWithExponentialExpressions,
+                )
+                option(EquationsPlans.SubstituteOriginalExpressionIntoExponentialEquation)
             }
         },
     ),
@@ -898,6 +970,10 @@ internal val solveEquation = lazy {
         option(solvablePlansForEquations.coefficientRemovalSteps)
 
         option(PolynomialsPlans.ExpandMostComplexSubterm)
+
+        option {
+            deeply(EquationsRules.RewriteExponentialTermsWithSameBase)
+        }
 
         fallback(EquationSolvingStrategy.Fallback)
     }

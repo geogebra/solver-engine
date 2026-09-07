@@ -443,29 +443,46 @@ class SolvablePlans(private val simplificationPlan: Method, private val constrai
     }
 
     val exponentialCoefficientRemovalSteps = steps {
-        checkForm {
-            val coefficient = ConstantInSolutionVariablePattern()
-            val exponent = condition { !it.isConstantIn(solutionVariables) }
+        firstOf {
+            option {
+                checkForm {
+                    val coefficient = ConstantInSolutionVariablePattern()
+                    val exponent = condition { !it.isConstantIn(solutionVariables) }
 
-            oneOf(
-                SolvablePattern(
-                    withOptionalConstantCoefficientInSolutionVariables(
-                        exponentialOf(exponent = exponent),
-                    ),
-                    productOf(coefficient, exponentialOf(exponent = exponent)),
-                ),
-                SolvablePattern(
-                    productOf(coefficient, exponentialOf(exponent = exponent)),
-                    withOptionalConstantCoefficientInSolutionVariables(
-                        exponentialOf(exponent = exponent),
-                    ),
-                ),
-            )
-        }
-        optionally(divideByCoefficientOfVariableUnconditionallyAndSimplify)
-        apply(divideSolvableByExponentialRhsAndSimplify)
-        applyTo(GeneralRules.RewriteFractionOfPowersWithSameExponent) {
-            it.firstChild
+                    oneOf(
+                        SolvablePattern(
+                            withOptionalConstantCoefficientInSolutionVariables(
+                                exponentialOf(exponent = exponent),
+                            ),
+                            productOf(coefficient, exponentialOf(exponent = exponent)),
+                        ),
+                        SolvablePattern(
+                            productOf(coefficient, exponentialOf(exponent = exponent)),
+                            withOptionalConstantCoefficientInSolutionVariables(
+                                exponentialOf(exponent = exponent),
+                            ),
+                        ),
+                    )
+                }
+                optionally(divideByCoefficientOfVariableUnconditionallyAndSimplify)
+                apply(divideSolvableByExponentialRhsAndSimplify)
+                applyTo(GeneralRules.RewriteFractionOfPowersWithSameExponent) {
+                    it.firstChild
+                }
+            }
+            option {
+                // Constant RHS case, we can just divide by coefficient
+                checkForm {
+                    SolvablePattern(
+                        productOf(
+                            ConstantInSolutionVariablePattern(),
+                            exponentialOf(),
+                        ),
+                        ConstantInSolutionVariablePattern(),
+                    )
+                }
+                apply(divideByCoefficientOfVariableUnconditionallyAndSimplify)
+            }
         }
     }
 }
