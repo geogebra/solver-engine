@@ -285,7 +285,7 @@ enum class InequalitiesPlans(override val runner: CompositeMethod) : RunnerMetho
     SolveElementaryLogInequality(solveElementaryLogInequality),
 
     @PublicMethod
-    SolveLogInequality(solveLogInequality),
+    SolveLogarithmicInequality(solveLogInequality),
 
     @PublicMethod
     SolveExponentialInequality(solveExponentialInequality),
@@ -885,7 +885,7 @@ val inequalitySolvingSteps = steps {
         option(InequalitiesPlans.SolveQuadraticInequality)
         option(InequalitiesPlans.SolveInequalityWithVariablesInOneAbsoluteValue)
         option(InequalitiesPlans.SolveElementaryLogInequality)
-        option(InequalitiesPlans.SolveLogInequality)
+        option(InequalitiesPlans.SolveLogarithmicInequality)
     }
 }
 

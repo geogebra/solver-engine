@@ -29,7 +29,7 @@ class LogarithmicInequalitiesTest {
     @Test
     fun `elementary equation with base in (1, inf)`() {
         testMethodInX {
-            method = InequalitiesPlans.SolveLogInequality
+            method = InequalitiesPlans.SolveLogarithmicInequality
             inputExpr = "log_[2][2 x - 1] > 1"
 
             check {
@@ -96,7 +96,7 @@ class LogarithmicInequalitiesTest {
         }
 
         testMethodInX {
-            method = InequalitiesPlans.SolveLogInequality
+            method = InequalitiesPlans.SolveLogarithmicInequality
             inputExpr = "1 < log_[2][2 x - 1]"
 
             check {
@@ -156,7 +156,7 @@ class LogarithmicInequalitiesTest {
         }
 
         testMethodInX {
-            method = InequalitiesPlans.SolveLogInequality
+            method = InequalitiesPlans.SolveLogarithmicInequality
             inputExpr = "ln[x] < 1"
 
             check {
@@ -212,7 +212,7 @@ class LogarithmicInequalitiesTest {
         }
 
         testMethodInX {
-            method = InequalitiesPlans.SolveLogInequality
+            method = InequalitiesPlans.SolveLogarithmicInequality
             inputExpr = "[2/3] * log_[2][x] > [1 / /pi/]"
 
             check {
@@ -225,7 +225,7 @@ class LogarithmicInequalitiesTest {
     @Test
     fun `elementary equation with base in (0,1)`() {
         testMethodInX {
-            method = InequalitiesPlans.SolveLogInequality
+            method = InequalitiesPlans.SolveLogarithmicInequality
             inputExpr = "log_[[1 / 2]][x - 2] > 3"
 
             check {
@@ -295,7 +295,7 @@ class LogarithmicInequalitiesTest {
         }
 
         testMethodInX {
-            method = InequalitiesPlans.SolveLogInequality
+            method = InequalitiesPlans.SolveLogarithmicInequality
             inputExpr = "log_[0.5][x - 2] > 3"
 
             check {
@@ -367,7 +367,7 @@ class LogarithmicInequalitiesTest {
     @Test
     fun `inequality with two logs with base in (1, inf)`() {
         testMethodInX {
-            method = InequalitiesPlans.SolveLogInequality
+            method = InequalitiesPlans.SolveLogarithmicInequality
             inputExpr = "log[x + 3] > log[2 x - 1]"
 
             check {
@@ -424,7 +424,7 @@ class LogarithmicInequalitiesTest {
         }
 
         testMethodInX {
-            method = InequalitiesPlans.SolveLogInequality
+            method = InequalitiesPlans.SolveLogarithmicInequality
             inputExpr = "log[x (x + 3)] > log[x - 2]"
 
             check {
@@ -484,7 +484,7 @@ class LogarithmicInequalitiesTest {
     @Test
     fun `inequality with two logs with base in (0,1)`() {
         testMethodInX {
-            method = InequalitiesPlans.SolveLogInequality
+            method = InequalitiesPlans.SolveLogarithmicInequality
             inputExpr = "log_[[1 / 3]][x + 1] >= log_[[1 / 3]][4 x]"
 
             check {
@@ -544,7 +544,7 @@ class LogarithmicInequalitiesTest {
     @Test
     fun `inequality with impossible constraint`() {
         testMethodInX {
-            method = InequalitiesPlans.SolveLogInequality
+            method = InequalitiesPlans.SolveLogarithmicInequality
             inputExpr = "log[x + 3] > log[-x - 7]"
 
             check {
@@ -582,7 +582,7 @@ class LogarithmicInequalitiesTest {
     @Test
     fun `inequality with nested logarithms`() {
         testMethodInX {
-            method = InequalitiesPlans.SolveLogInequality
+            method = InequalitiesPlans.SolveLogarithmicInequality
             inputExpr = "4 * log_[2] [log_[3][x - 5]] - 8 > 0"
 
             check {
@@ -670,7 +670,7 @@ class LogarithmicInequalitiesTest {
         }
 
         testMethodInX {
-            method = InequalitiesPlans.SolveLogInequality
+            method = InequalitiesPlans.SolveLogarithmicInequality
             inputExpr = "log_[3][log_[[1 / 2]][x - 5]] > 2"
 
             check {
@@ -752,7 +752,7 @@ class LogarithmicInequalitiesTest {
         }
 
         testMethodInX {
-            method = InequalitiesPlans.SolveLogInequality
+            method = InequalitiesPlans.SolveLogarithmicInequality
             inputExpr = "-2 * log_[[1 / 2]][log_[[1 / 2]][5 x + 9]] <= 2"
 
             check {
